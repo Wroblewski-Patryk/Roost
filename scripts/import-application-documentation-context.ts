@@ -237,9 +237,33 @@ async function api<T>(baseUrl: string, token: string, pathname: string, init?: R
   return body as T;
 }
 
+function batches<T>(items: T[], size: number) {
+  const result: T[][] = [];
+  for (let index = 0; index < items.length; index += size) result.push(items.slice(index, index + size));
+  return result;
+}
+
+function aggregateImportResults(results: Array<Record<string, unknown>>) {
+  const numeric = (key: string) => results.reduce((sum, result) => sum + (typeof result[key] === "number" ? result[key] as number : 0), 0);
+  return {
+    mode: results[0]?.mode,
+    sourceSystem: results[0]?.sourceSystem,
+    sourceRoot: results[0]?.sourceRoot,
+    batches: results.length,
+    recordCount: numeric("recordCount"),
+    architectureCount: numeric("architectureCount"),
+    createCount: numeric("createCount"),
+    updateCount: numeric("updateCount"),
+    deleteCount: numeric("deleteCount")
+  };
+}
+
 async function main() {
   const apply = process.argv.includes("--apply");
   const localPreview = process.argv.includes("--local-preview");
+  const documentsOnly = process.argv.includes("--documents-only");
+  const architectureOnly = process.argv.includes("--architecture-only");
+  if (documentsOnly && architectureOnly) throw new Error("Choose either --documents-only or --architecture-only.");
   const requestedSlug = process.argv.find((argument) => argument.startsWith("--application="))?.split("=")[1];
   const baseUrl = process.env.ROOST_API_URL || "https://roost.luckysparrow.ch";
   const selectedRoots = Object.entries(applicationRoots).filter(([slug]) => !requestedSlug || slug === requestedSlug);
@@ -248,8 +272,8 @@ async function main() {
     const results = selectedRoots.map(([applicationSlug, root]) => {
       const files = canonicalFiles(assertApprovedRoot(root));
       if (!files.length) throw new Error(`No canonical documentation files found for ${applicationSlug}: ${root}`);
-      const records = files.flatMap((file) => recordsForFile(root, file));
-      const registry = registryFor(applicationSlug, root);
+      const records = architectureOnly ? [] : files.flatMap((file) => recordsForFile(root, file));
+      const registry = documentsOnly ? null : registryFor(applicationSlug, root);
       const byType = Object.fromEntries([...new Set(records.map((record) => record.recordType))].sort().map((type) => [type, records.filter((record) => record.recordType === type).length]));
       return { application: applicationSlug, root, revision: revisionFor(root), files: files.length, records: records.length, byType, architectureAtoms: registry?.architecture.length ?? 0, architectureRelations: registry?.architecture.reduce((sum, component) => sum + component.relations.length, 0) ?? 0, payloadBytes: Buffer.byteLength(JSON.stringify({ records, architecture: registry?.architecture ?? [] })) };
     });
@@ -275,7 +299,7 @@ async function main() {
     const root = application.root;
     const files = canonicalFiles(root);
     if (!files.length) throw new Error(`No canonical documentation files found for ${application.slug}: ${root}`);
-    const records = files.flatMap((file) => recordsForFile(root, file));
+    const records = architectureOnly ? [] : files.flatMap((file) => recordsForFile(root, file));
     const documentationPayload = {
       mode: apply ? "apply" : "preview",
       sourceSystem: "repository-docs-v1",
@@ -283,13 +307,20 @@ async function main() {
       sourceRevision: revisionFor(root),
       records
     };
-    const documentationResponse = await api<{ data: Record<string, unknown> }>(baseUrl, token, `/v1/product-engineering/applications/${application.id}/actions/import-documentation-context`, { method: "POST", body: JSON.stringify(documentationPayload) });
-    const registry = registryFor(application.slug, root);
+    const documentationResponses: Array<Record<string, unknown>> = [];
+    if (!architectureOnly) {
+      const documentationBatches = apply ? batches(records, 150) : [records];
+      for (const recordBatch of documentationBatches) {
+        const response = await api<{ data: Record<string, unknown> }>(baseUrl, token, `/v1/product-engineering/applications/${application.id}/actions/import-documentation-context`, { method: "POST", body: JSON.stringify({ ...documentationPayload, records: recordBatch }) });
+        documentationResponses.push(response.data);
+      }
+    }
+    const registry = documentsOnly ? null : registryFor(application.slug, root);
     const registryResponse = registry?.architecture.length ? await api<{ data: Record<string, unknown> }>(baseUrl, token, `/v1/product-engineering/applications/${application.id}/actions/import-documentation-context`, {
       method: "POST",
       body: JSON.stringify({ mode: apply ? "apply" : "preview", sourceSystem: registry.sourceSystem, sourceRoot: root.replace(/\\/g, "/"), sourceRevision: revisionFor(root), architecture: registry.architecture })
     }) : null;
-    results.push({ slug: application.slug, files: files.length, documentation: documentationResponse.data, architecture: registryResponse?.data ?? null });
+    results.push({ slug: application.slug, files: files.length, documentation: documentationResponses.length ? aggregateImportResults(documentationResponses) : null, architecture: registryResponse?.data ?? null });
   }
   console.log(JSON.stringify({ mode: apply ? "apply" : "preview", baseUrl, results }, null, 2));
 }

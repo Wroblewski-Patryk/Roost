@@ -262,6 +262,9 @@ top-level Product and Architecture Markdown for the registered Aviary,
 Featherly, Nest, Roost, and Soar repositories. With a workspace-scoped
 `ROOST_API_TOKEN`, the same command previews the production import through
 HTTPS; `npm run import:application-docs:apply` performs the audited write.
+Apply mode batches documentation records to keep production requests bounded.
+The optional `--documents-only` and `--architecture-only` flags isolate retries
+to one source family and are mutually exclusive.
 Markdown documents and headings
 become hierarchical `CompanyRecord` context attached to the existing
 application. Stable source IDs make the import idempotent, Git revisions and

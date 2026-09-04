@@ -46,7 +46,9 @@ Preview performs no writes. Apply upserts matching records and
 registry relations, records repository provenance in metadata, writes one
 audit/event summary, and never deletes records missing from a later payload. The bundled
 `import:application-docs` client uses HTTPS and a workspace-scoped
-`ROOST_API_TOKEN`; it never connects to PostgreSQL.
+`ROOST_API_TOKEN`; it never connects to PostgreSQL. Apply mode sends document
+records in bounded batches. `--documents-only` and `--architecture-only` let
+operators retry either source family independently without changing the other.
 
 ## Procedure management
 
