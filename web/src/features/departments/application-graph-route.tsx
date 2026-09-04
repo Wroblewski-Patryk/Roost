@@ -43,6 +43,7 @@ const graphExitDuration = 150;
 function iconFor(type: ApplicationGraphNode["type"]) {
   if (type === "portfolio") return "ph-app-window";
   if (type === "application") return "ph-app-window";
+  if (type === "context") return "ph-file-text";
   if (type === "domain") return "ph-circles-three-plus";
   if (type === "capability") return "ph-hexagon";
   if (type === "layer") return "ph-stack";
@@ -150,6 +151,8 @@ function nextLevelLabel(type: ApplicationGraphNode["type"], children: Applicatio
   const labels: Record<ApplicationGraphNode["type"], [string, string]> = {
     portfolio: ["application", "applications"],
     application: ["domain", "domains"],
+    context: ["section", "sections"],
+    requirement: ["part", "parts"],
     domain: ["capability", "capabilities"],
     capability: ["feature", "features"],
     feature: ["layer", "layers"],
@@ -165,6 +168,8 @@ function nextLevelLabel(type: ApplicationGraphNode["type"], children: Applicatio
   const labelType = childTypes.length === 1 ? childTypes[0] : null;
   const explicitChildLabels: Partial<Record<ApplicationGraphNode["type"], [string, string]>> = {
     application: ["application", "applications"],
+    context: ["context record", "context records"],
+    requirement: ["requirement", "requirements"],
     domain: ["domain", "domains"],
     capability: ["capability", "capabilities"],
     feature: ["feature", "features"],

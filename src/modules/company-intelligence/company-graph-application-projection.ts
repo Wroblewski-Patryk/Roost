@@ -3,10 +3,10 @@ import type { ApplicationGraphPacket } from "../product-engineering/application-
 type ProjectionNode = { id: string; entityType: string; recordType: string; label: string; state: string };
 type ProjectionEdge = { id: string; type: string; from: { entityType: string; entityId: string }; to: { entityType: string; entityId: string }; status: string; source: "derived" };
 
-const nativeCompanyEntityTypes = new Set(["application", "requirement", "capability", "feature", "implementation", "procedure", "procedure_step", "project", "task_list", "task"]);
+const nativeCompanyEntityTypes = new Set(["application", "context", "requirement", "capability", "feature", "implementation", "procedure", "procedure_step", "project", "task_list", "task"]);
 
 function companyEntityType(type: string) {
-  return type === "requirement" ? "company_record" : type;
+  return type === "requirement" || type === "context" ? "company_record" : type;
 }
 
 function companyNodeId(node: ApplicationGraphPacket["nodes"][number]) {

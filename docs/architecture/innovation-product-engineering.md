@@ -270,6 +270,12 @@ file paths preserve provenance, and imported declarations remain
 not claim that documentation proves implementation and does not delete records
 that disappear from a later scan.
 
+In `application-graph-v2`, imported documentation records use the `context`
+node type while canonical product requirements retain `requirement`. Their
+specific record type remains the node category. This prevents goals,
+principles, decisions, and documentation sections from being visually or
+semantically misrepresented as requirements.
+
 When a repository contains a curated architecture `registry/nodes.csv`, the
 same command also imports those rows as idempotent
 `ApplicationArchitectureComponent` atoms. Only target IDs present in the same
