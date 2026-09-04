@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { resolveGraphSelection } from "./unified-graph-selection";
+import { directLabelLimit, resolveGraphSelection, visibleSelectionLabelIds } from "./unified-graph-selection";
 
 const edges = [
   { id: "root-area", source: "root", target: "area" },
@@ -39,4 +39,21 @@ test("uses a deterministic shortest path when cycles provide alternatives", () =
     { id: "a-root", source: "a", target: "root" }
   ], "selected", "root")!;
   assert.deepEqual(selection.pathIds, ["selected", "a", "root"]);
+});
+
+test("keeps all direct labels near sparse selections", () => {
+  const selection = resolveGraphSelection(edges, "human", "root")!;
+  assert.deepEqual([...visibleSelectionLabelIds(selection)].sort(), ["area", "folder", "human", "note", "root", "task"]);
+});
+
+test("reveals dense direct labels on hover without hiding the active path", () => {
+  const denseEdges = Array.from({ length: directLabelLimit + 2 }, (_, index) => ({
+    id: `hub-${index}`,
+    source: "hub",
+    target: `node-${index}`
+  }));
+  denseEdges.push({ id: "root-hub", source: "root", target: "hub" });
+  const selection = resolveGraphSelection(denseEdges, "hub", "root")!;
+  assert.deepEqual([...visibleSelectionLabelIds(selection)].sort(), ["hub", "root"]);
+  assert.deepEqual([...visibleSelectionLabelIds(selection, "node-3")].sort(), ["hub", "node-3", "root"]);
 });

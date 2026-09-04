@@ -637,9 +637,11 @@ domain packets to its shared node and typed-edge contract.
   removing records. Selecting a node highlights its immediate relationships
   and the shortest recorded path back to the workspace root while the
   remaining company topology stays visible as context. Every node on that
-  path and every immediate neighbour receives a label that identifies its role
-  in the selection context; the root is not implied when no recorded path
-  exists.
+  path receives a label that identifies its role in the selection context. A
+  sparse selection labels every immediate neighbour; a dense hub keeps every
+  neighbour and edge highlighted but reveals neighbour labels on hover instead
+  of detaching or stacking them outside the viewport. The root is not implied
+  when no recorded path exists.
 - Node markers are compact, matte, low-poly objects that inherit the Roost
   work-surface palette. Branches keep enough three-dimensional separation for
   the camera to travel between records instead of collapsing into solid balls.

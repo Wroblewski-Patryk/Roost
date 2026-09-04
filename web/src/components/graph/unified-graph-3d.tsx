@@ -3,7 +3,7 @@ import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber"
 import { type ComponentRef, type CSSProperties, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { layoutUnifiedGraph3D, type UnifiedGraphPosition } from "./unified-graph-layout";
-import { resolveGraphSelection, type GraphSelectionContext } from "./unified-graph-selection";
+import { directLabelLimit, resolveGraphSelection, visibleSelectionLabelIds, type GraphSelectionContext } from "./unified-graph-selection";
 import "./unified-graph-3d.css";
 
 export type UnifiedGraphNode = {
@@ -205,13 +205,13 @@ function NodeCloud({ nodes, positions, focusId, selectedId, hoveredId, highlight
   </instancedMesh>;
 }
 
-function GraphScene(props: Props & { hovered: UnifiedGraphNode | null; resetSequence: number; zoomCommand: ZoomCommand; onHover: (node: UnifiedGraphNode | null) => void }) {
+function GraphScene(props: Props & { hovered: UnifiedGraphNode | null; resetSequence: number; selection: GraphSelectionContext | null; zoomCommand: ZoomCommand; onHover: (node: UnifiedGraphNode | null) => void }) {
   const positions = useMemo(() => layoutUnifiedGraph3D(props.nodes, props.edges, props.focusId || props.rootId), [props.edges, props.focusId, props.nodes, props.rootId]);
   const focusId = props.focusId || props.rootId;
   const pivotId = props.selectedId || focusId;
-  const selection = useMemo(() => resolveGraphSelection(props.edges, props.selectedId, props.rootId), [props.edges, props.rootId, props.selectedId]);
+  const selection = props.selection;
   const labelNodes = useMemo(() => {
-    const ids = new Set<string>(selection ? selection.highlightedIds : [focusId]);
+    const ids = selection ? visibleSelectionLabelIds(selection, props.hovered?.id) : new Set([focusId]);
     if (props.hovered?.id) ids.add(props.hovered.id);
     return [...ids].map((id) => props.nodes.find((node) => node.id === id)).filter((node): node is UnifiedGraphNode => Boolean(node));
   }, [focusId, props.hovered?.id, props.nodes, selection]);
@@ -231,7 +231,7 @@ function GraphScene(props: Props & { hovered: UnifiedGraphNode | null; resetSequ
       const onPath = Boolean(selection?.pathIds.includes(node.id));
       const directLabelIds = selection ? [...selection.directIds].filter((id) => !selection.pathIds.includes(id)) : [];
       const directIndex = directLabelIds.indexOf(node.id);
-      const labelStyle = directIndex >= 0 ? { "--graph-label-lift": `${(directIndex + 1) * 5.5}rem` } as CSSProperties : undefined;
+      const labelStyle = directIndex >= 0 ? { "--graph-label-lift": `${((directIndex % 3) + 1) * 0.75}rem` } as CSSProperties : undefined;
       const relationshipContext = !selection ? null : node.id === props.selectedId ? "Selected" : node.id === props.rootId && onPath ? "Workspace root" : onPath ? "Path to workspace" : selection.directIds.has(node.id) ? "Direct relationship" : null;
       return <Html key={node.id} position={[position.x, position.y + radiusFor(node, false, active) + 0.34, position.z]} zIndexRange={[12, 1]}>
         <div className="unified-graph3d-label-anchor" style={labelStyle}>
@@ -250,17 +250,18 @@ export function UnifiedGraph3D(props: Props) {
   const [hovered, setHovered] = useState<UnifiedGraphNode | null>(null);
   const [resetSequence, setResetSequence] = useState(0);
   const [zoomCommand, setZoomCommand] = useState<ZoomCommand>({ sequence: 0, factor: 1 });
+  const selection = useMemo(() => resolveGraphSelection(props.edges, props.selectedId, props.rootId), [props.edges, props.rootId, props.selectedId]);
   if (!props.nodes.length) return <div className="unified-graph3d unified-graph3d--empty">{props.emptyLabel || "No graph records to display."}</div>;
 
   return <div aria-label={props.ariaLabel} className="unified-graph3d" role="application">
     <Canvas camera={{ fov: 48, near: 0.1, far: 240 }} dpr={[1, 1.65]} gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }} onPointerMissed={props.onClearSelection}>
-      <GraphScene {...props} hovered={hovered} onHover={setHovered} resetSequence={resetSequence} zoomCommand={zoomCommand} />
+      <GraphScene {...props} hovered={hovered} onHover={setHovered} resetSequence={resetSequence} selection={selection} zoomCommand={zoomCommand} />
     </Canvas>
     <div className="unified-graph3d-controls">
       {props.selectedId ? <button onClick={props.onClearSelection} title="Clear graph selection" type="button"><i className="ph-bold ph-x" aria-hidden="true"></i><span>Clear selection</span></button> : null}
       <div aria-label="Graph zoom" className="unified-graph3d-zoom" role="group"><button aria-label="Zoom in" onClick={() => setZoomCommand((value) => ({ sequence: value.sequence + 1, factor: 0.72 }))} title="Zoom in" type="button"><i className="ph-bold ph-plus" aria-hidden="true"></i></button><button aria-label="Zoom out" onClick={() => setZoomCommand((value) => ({ sequence: value.sequence + 1, factor: 1.38 }))} title="Zoom out" type="button"><i className="ph-bold ph-minus" aria-hidden="true"></i></button></div>
       <button onClick={() => setResetSequence((value) => value + 1)} title="Reset 3D view" type="button"><i className="ph-bold ph-crosshair" aria-hidden="true"></i><span>Reset</span></button>
-      <span><i className="ph-bold ph-cube" aria-hidden="true"></i> Drag to orbit · scroll zooms {props.selectedId ? "selection" : "focus"}</span>
+      <span><i className="ph-bold ph-cube" aria-hidden="true"></i> {selection && selection.directIds.size > directLabelLimit ? `${selection.directIds.size} direct · hover connected nodes` : `Drag to orbit · scroll zooms ${props.selectedId ? "selection" : "focus"}`}</span>
     </div>
     <div className="unified-graph3d-access" aria-label="Keyboard graph navigation">
       {props.nodes.slice(0, 80).map((node) => <button key={node.id} onClick={() => props.onNodeSelect?.(node)} onDoubleClick={() => props.onNodeActivate?.(node)} type="button">{node.label}</button>)}

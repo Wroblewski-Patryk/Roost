@@ -12,6 +12,21 @@ export type GraphSelectionContext = {
   pathEdgeIds: Set<string>;
 };
 
+export const directLabelLimit = 6;
+
+export function visibleSelectionLabelIds(
+  selection: GraphSelectionContext,
+  hoveredId?: string | null
+) {
+  const ids = new Set(selection.pathIds);
+  if (selection.directIds.size <= directLabelLimit) {
+    selection.directIds.forEach((id) => ids.add(id));
+  } else if (hoveredId && selection.directIds.has(hoveredId)) {
+    ids.add(hoveredId);
+  }
+  return ids;
+}
+
 export function resolveGraphSelection(
   edges: GraphSelectionEdge[],
   selectedId: string | null | undefined,
