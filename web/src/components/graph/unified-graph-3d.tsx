@@ -1,8 +1,9 @@
 import { Html, OrbitControls } from "@react-three/drei";
-import { Canvas, type ThreeEvent, useThree } from "@react-three/fiber";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
+import { type ComponentRef, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { layoutUnifiedGraph3D, type UnifiedGraphPosition } from "./unified-graph-layout";
+import { resolveGraphSelection, type GraphSelectionContext } from "./unified-graph-selection";
 import "./unified-graph-3d.css";
 
 export type UnifiedGraphNode = {
@@ -49,18 +50,19 @@ function radiusFor(node: UnifiedGraphNode, selected: boolean, focused: boolean) 
   return base * (1 + Math.min(0.28, (node.weight || 0) / 360)) * (selected || focused ? 1.22 : 1);
 }
 
-function colorFor(node: UnifiedGraphNode, active: boolean, dimmed: boolean) {
-  if (dimmed) return new THREE.Color("#2b3446");
-  const color = new THREE.Color(node.emphasis === "blocked" ? "#d96b67" : node.emphasis === "attention" ? "#d0a354" : node.color || fallbackColor);
-  if (active) return color.lerp(new THREE.Color("#dce3ff"), 0.16);
-  return color.lerp(new THREE.Color("#637089"), 0.18);
+function colorFor(node: UnifiedGraphNode) {
+  return new THREE.Color(node.emphasis === "blocked" ? "#d96b67" : node.emphasis === "attention" ? "#d0a354" : node.color || fallbackColor);
 }
 
-function CameraRig({ positions, pivotId, zoomCommand }: { positions: Map<string, UnifiedGraphPosition>; pivotId: string; zoomCommand: ZoomCommand }) {
+function CameraRig({ positions, pivotId, resetSequence, zoomCommand }: { positions: Map<string, UnifiedGraphPosition>; pivotId: string; resetSequence: number; zoomCommand: ZoomCommand }) {
   const { camera, size } = useThree();
+  const controls = useRef<ComponentRef<typeof OrbitControls>>(null);
   const target = positions.get(pivotId) || { x: 0, y: 0, z: 0 };
   const initialized = useRef(false);
-  const previousTarget = useRef(new THREE.Vector3(target.x, target.y, target.z));
+  const transitioning = useRef(false);
+  const desiredTarget = useRef(new THREE.Vector3(target.x, target.y, target.z));
+  const desiredPosition = useRef(new THREE.Vector3());
+  const previousResetSequence = useRef(resetSequence);
   const previousZoomSequence = useRef(zoomCommand.sequence);
   const extent = useMemo(() => {
     let value = 8;
@@ -70,39 +72,73 @@ function CameraRig({ positions, pivotId, zoomCommand }: { positions: Map<string,
     return value;
   }, [positions, target.x, target.y, target.z]);
 
+  const framedPosition = () => {
+    const aspect = Math.max(0.55, size.width / Math.max(1, size.height));
+    const distance = extent * (aspect < 1 ? 1.85 / aspect : 1.85);
+    return new THREE.Vector3(target.x + distance * 0.24, target.y + distance * 0.16, target.z + distance * 0.94);
+  };
+
   useEffect(() => {
     const nextTarget = new THREE.Vector3(target.x, target.y, target.z);
     if (initialized.current) {
-      camera.position.add(nextTarget.clone().sub(previousTarget.current));
-      camera.lookAt(nextTarget);
-      camera.updateProjectionMatrix();
-      previousTarget.current.copy(nextTarget);
+      const currentTarget = controls.current?.target || desiredTarget.current;
+      const offset = camera.position.clone().sub(currentTarget);
+      desiredTarget.current.copy(nextTarget);
+      desiredPosition.current.copy(nextTarget).add(offset);
+      transitioning.current = true;
       return;
     }
-    const aspect = Math.max(0.55, size.width / Math.max(1, size.height));
-    const distance = extent * (aspect < 1 ? 1.85 / aspect : 1.85);
-    camera.position.set(target.x + distance * 0.24, target.y + distance * 0.16, target.z + distance * 0.94);
+    const initialPosition = framedPosition();
+    camera.position.copy(initialPosition);
+    controls.current?.target.copy(nextTarget);
+    desiredTarget.current.copy(nextTarget);
+    desiredPosition.current.copy(initialPosition);
     camera.lookAt(nextTarget);
     camera.updateProjectionMatrix();
-    previousTarget.current.copy(nextTarget);
     initialized.current = true;
   }, [camera, extent, size.height, size.width, target.x, target.y, target.z]);
 
   useEffect(() => {
+    if (resetSequence === previousResetSequence.current) return;
+    previousResetSequence.current = resetSequence;
+    desiredTarget.current.set(target.x, target.y, target.z);
+    desiredPosition.current.copy(framedPosition());
+    transitioning.current = true;
+  }, [extent, resetSequence, size.height, size.width, target.x, target.y, target.z]);
+
+  useEffect(() => {
     if (zoomCommand.sequence === previousZoomSequence.current) return;
     previousZoomSequence.current = zoomCommand.sequence;
-    const pivot = new THREE.Vector3(target.x, target.y, target.z);
+    const pivot = controls.current?.target.clone() || new THREE.Vector3(target.x, target.y, target.z);
     const offset = camera.position.clone().sub(pivot);
     const nextDistance = THREE.MathUtils.clamp(offset.length() * zoomCommand.factor, 0.8, Math.max(96, extent * 8));
-    camera.position.copy(pivot.clone().add(offset.setLength(nextDistance)));
-    camera.lookAt(pivot);
-    camera.updateProjectionMatrix();
+    desiredTarget.current.copy(pivot);
+    desiredPosition.current.copy(pivot).add(offset.setLength(nextDistance));
+    transitioning.current = true;
   }, [camera, extent, target.x, target.y, target.z, zoomCommand.factor, zoomCommand.sequence]);
 
-  return <OrbitControls makeDefault target={[target.x, target.y, target.z]} enableDamping dampingFactor={0.09} minDistance={0.8} maxDistance={Math.max(96, extent * 8)} screenSpacePanning zoomSpeed={0.82} />;
+  useFrame((_, delta) => {
+    if (!transitioning.current || !controls.current) return;
+    const step = Math.min(delta, 0.1);
+    camera.position.x = THREE.MathUtils.damp(camera.position.x, desiredPosition.current.x, 5.2, step);
+    camera.position.y = THREE.MathUtils.damp(camera.position.y, desiredPosition.current.y, 5.2, step);
+    camera.position.z = THREE.MathUtils.damp(camera.position.z, desiredPosition.current.z, 5.2, step);
+    controls.current.target.x = THREE.MathUtils.damp(controls.current.target.x, desiredTarget.current.x, 6.4, step);
+    controls.current.target.y = THREE.MathUtils.damp(controls.current.target.y, desiredTarget.current.y, 6.4, step);
+    controls.current.target.z = THREE.MathUtils.damp(controls.current.target.z, desiredTarget.current.z, 6.4, step);
+    controls.current.update();
+    if (camera.position.distanceToSquared(desiredPosition.current) < 0.0004 && controls.current.target.distanceToSquared(desiredTarget.current) < 0.0004) {
+      camera.position.copy(desiredPosition.current);
+      controls.current.target.copy(desiredTarget.current);
+      controls.current.update();
+      transitioning.current = false;
+    }
+  });
+
+  return <OrbitControls ref={controls} makeDefault enableDamping dampingFactor={0.09} minDistance={0.8} maxDistance={Math.max(96, extent * 8)} onEnd={() => { if (!controls.current) return; desiredTarget.current.copy(controls.current.target); desiredPosition.current.copy(camera.position); }} onStart={() => { transitioning.current = false; }} screenSpacePanning zoomSpeed={0.82} />;
 }
 
-function EdgeCloud({ edges, positions, selectedId }: { edges: UnifiedGraphEdge[]; positions: Map<string, UnifiedGraphPosition>; selectedId?: string | null }) {
+function EdgeCloud({ edges, positions, selection }: { edges: UnifiedGraphEdge[]; positions: Map<string, UnifiedGraphPosition>; selection: GraphSelectionContext | null }) {
   const geometry = useMemo(() => {
     const coordinates: number[] = [];
     const colors: number[] = [];
@@ -111,18 +147,19 @@ function EdgeCloud({ edges, positions, selectedId }: { edges: UnifiedGraphEdge[]
       const target = positions.get(edge.target);
       if (!source || !target) return;
       coordinates.push(source.x, source.y, source.z, target.x, target.y, target.z);
-      const connected = selectedId === edge.source || selectedId === edge.target;
-      const color = new THREE.Color(selectedId && !connected ? "#202839" : edge.emphasis === "blocked" ? "#d66565" : edge.emphasis === "attention" ? "#d4a35d" : connected ? "#c9d2ff" : edge.emphasis === "muted" ? "#37445c" : "#667694");
+      const active = selection?.highlightedEdgeIds.has(edge.id);
+      const onPath = selection?.pathEdgeIds.has(edge.id);
+      const color = new THREE.Color(selection && !active ? "#202839" : onPath ? "#eef1ff" : active ? "#aebcf2" : edge.emphasis === "blocked" ? "#d66565" : edge.emphasis === "attention" ? "#d4a35d" : edge.emphasis === "muted" ? "#37445c" : "#667694");
       colors.push(color.r, color.g, color.b, color.r, color.g, color.b);
     });
     const value = new THREE.BufferGeometry();
     value.setAttribute("position", new THREE.Float32BufferAttribute(coordinates, 3));
     value.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
     return value;
-  }, [edges, positions, selectedId]);
+  }, [edges, positions, selection]);
 
   useEffect(() => () => geometry.dispose(), [geometry]);
-  return <lineSegments geometry={geometry}><lineBasicMaterial vertexColors transparent opacity={selectedId ? 0.72 : 0.56} /></lineSegments>;
+  return <lineSegments geometry={geometry}><lineBasicMaterial vertexColors transparent opacity={selection ? 0.76 : 0.56} /></lineSegments>;
 }
 
 function NodeCloud({ nodes, positions, focusId, selectedId, hoveredId, highlightedIds, onHover, onSelect, onActivate }: {
@@ -142,14 +179,13 @@ function NodeCloud({ nodes, positions, focusId, selectedId, hoveredId, highlight
     if (!mesh.current) return;
     nodes.forEach((node, index) => {
       const position = positions.get(node.id) || { x: 0, y: 0, z: 0 };
-      const active = node.id === selectedId || node.id === focusId;
-      const radius = radiusFor(node, node.id === selectedId || node.id === hoveredId, node.id === focusId);
+      const active = highlightedIds?.has(node.id) || (!highlightedIds && node.id === focusId);
+      const radius = radiusFor(node, node.id === selectedId || node.id === hoveredId, Boolean(active));
       dummy.position.set(position.x, position.y, position.z);
       dummy.scale.setScalar(radius);
       dummy.updateMatrix();
       mesh.current!.setMatrixAt(index, dummy.matrix);
-      const dimmed = highlightedIds && !highlightedIds.has(node.id);
-      mesh.current!.setColorAt(index, colorFor(node, active || node.id === hoveredId, Boolean(dimmed)));
+      mesh.current!.setColorAt(index, colorFor(node));
     });
     mesh.current.instanceMatrix.needsUpdate = true;
     if (mesh.current.instanceColor) mesh.current.instanceColor.needsUpdate = true;
@@ -169,23 +205,16 @@ function NodeCloud({ nodes, positions, focusId, selectedId, hoveredId, highlight
   </instancedMesh>;
 }
 
-function GraphScene(props: Props & { hovered: UnifiedGraphNode | null; viewKey: number; zoomCommand: ZoomCommand; onHover: (node: UnifiedGraphNode | null) => void }) {
+function GraphScene(props: Props & { hovered: UnifiedGraphNode | null; resetSequence: number; zoomCommand: ZoomCommand; onHover: (node: UnifiedGraphNode | null) => void }) {
   const positions = useMemo(() => layoutUnifiedGraph3D(props.nodes, props.edges, props.focusId || props.rootId), [props.edges, props.focusId, props.nodes, props.rootId]);
   const focusId = props.focusId || props.rootId;
   const pivotId = props.selectedId || focusId;
-  const highlightedIds = useMemo(() => {
-    if (!props.selectedId) return null;
-    const ids = new Set<string>([props.selectedId]);
-    props.edges.forEach((edge) => {
-      if (edge.source === props.selectedId) ids.add(edge.target);
-      if (edge.target === props.selectedId) ids.add(edge.source);
-    });
-    return ids;
-  }, [props.edges, props.selectedId]);
+  const selection = useMemo(() => resolveGraphSelection(props.edges, props.selectedId, props.rootId), [props.edges, props.rootId, props.selectedId]);
   const labelNodes = useMemo(() => {
-    const ids = new Set([focusId, props.selectedId, props.hovered?.id].filter((id): id is string => Boolean(id)));
+    const ids = new Set<string>(selection ? selection.highlightedIds : [focusId]);
+    if (props.hovered?.id) ids.add(props.hovered.id);
     return [...ids].map((id) => props.nodes.find((node) => node.id === id)).filter((node): node is UnifiedGraphNode => Boolean(node));
-  }, [focusId, props.hovered?.id, props.nodes, props.selectedId]);
+  }, [focusId, props.hovered?.id, props.nodes, selection]);
 
   return <>
     <color attach="background" args={["#080d19"]} />
@@ -193,39 +222,41 @@ function GraphScene(props: Props & { hovered: UnifiedGraphNode | null; viewKey: 
     <ambientLight intensity={1.28} />
     <directionalLight intensity={1.45} position={[8, 12, 10]} />
     <pointLight color="#7187ef" intensity={18} position={[0, 1, 0]} distance={92} />
-    <EdgeCloud edges={props.edges} positions={positions} selectedId={props.selectedId} />
-    <NodeCloud nodes={props.nodes} positions={positions} focusId={focusId} highlightedIds={highlightedIds} hoveredId={props.hovered?.id} selectedId={props.selectedId} onHover={props.onHover} onSelect={(node) => node.id === props.selectedId ? props.onClearSelection?.() : props.onNodeSelect?.(node)} onActivate={props.onNodeActivate} />
+    <EdgeCloud edges={props.edges} positions={positions} selection={selection} />
+    <NodeCloud nodes={props.nodes} positions={positions} focusId={focusId} highlightedIds={selection?.highlightedIds || null} hoveredId={props.hovered?.id} selectedId={props.selectedId} onHover={props.onHover} onSelect={(node) => node.id === props.selectedId ? props.onClearSelection?.() : props.onNodeSelect?.(node)} onActivate={props.onNodeActivate} />
     {labelNodes.map((node) => {
       const position = positions.get(node.id);
       if (!position) return null;
-      const active = node.id === focusId || node.id === props.selectedId;
+      const active = node.id === props.selectedId || (!selection && node.id === focusId);
+      const onPath = Boolean(selection?.pathIds.includes(node.id));
+      const relationshipContext = !selection ? null : node.id === props.selectedId ? "Selected" : node.id === props.rootId && onPath ? "Workspace root" : onPath ? "Path to workspace" : selection.directIds.has(node.id) ? "Direct relationship" : null;
       return <Html key={node.id} position={[position.x, position.y + radiusFor(node, false, active) + 0.34, position.z]} zIndexRange={[12, 1]}>
         <div className="unified-graph3d-label-anchor">
-          <button className="unified-graph3d-label" data-active={active || undefined} data-hovered={node.id === props.hovered?.id || undefined} onClick={(event) => { event.stopPropagation(); node.id === props.selectedId ? props.onClearSelection?.() : props.onNodeSelect?.(node); }} onDoubleClick={(event) => { event.stopPropagation(); props.onNodeActivate?.(node); }} type="button">
-            <small>{node.category || node.type}</small><strong>{node.label}</strong>{node.status ? <span>{node.status}</span> : null}
+          <button className="unified-graph3d-label" data-active={active || undefined} data-hovered={node.id === props.hovered?.id || undefined} data-path={onPath || undefined} onClick={(event) => { event.stopPropagation(); node.id === props.selectedId ? props.onClearSelection?.() : props.onNodeSelect?.(node); }} onDoubleClick={(event) => { event.stopPropagation(); props.onNodeActivate?.(node); }} type="button">
+            <small>{node.category || node.type}</small><strong>{node.label}</strong>{node.status || relationshipContext ? <span>{[relationshipContext, node.status].filter(Boolean).join(" · ")}</span> : null}
           </button>
         </div>
         </Html>;
     })}
     <gridHelper args={[80, 40, "#28344d", "#131c2c"]} position={[0, -10, 0]} />
-    <CameraRig key={props.viewKey} positions={positions} pivotId={pivotId} zoomCommand={props.zoomCommand} />
+    <CameraRig positions={positions} pivotId={pivotId} resetSequence={props.resetSequence} zoomCommand={props.zoomCommand} />
   </>;
 }
 
 export function UnifiedGraph3D(props: Props) {
   const [hovered, setHovered] = useState<UnifiedGraphNode | null>(null);
-  const [viewKey, setViewKey] = useState(0);
+  const [resetSequence, setResetSequence] = useState(0);
   const [zoomCommand, setZoomCommand] = useState<ZoomCommand>({ sequence: 0, factor: 1 });
   if (!props.nodes.length) return <div className="unified-graph3d unified-graph3d--empty">{props.emptyLabel || "No graph records to display."}</div>;
 
   return <div aria-label={props.ariaLabel} className="unified-graph3d" role="application">
     <Canvas camera={{ fov: 48, near: 0.1, far: 240 }} dpr={[1, 1.65]} gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }} onPointerMissed={props.onClearSelection}>
-      <GraphScene {...props} hovered={hovered} onHover={setHovered} viewKey={viewKey} zoomCommand={zoomCommand} />
+      <GraphScene {...props} hovered={hovered} onHover={setHovered} resetSequence={resetSequence} zoomCommand={zoomCommand} />
     </Canvas>
     <div className="unified-graph3d-controls">
       {props.selectedId ? <button onClick={props.onClearSelection} title="Clear graph selection" type="button"><i className="ph-bold ph-x" aria-hidden="true"></i><span>Clear selection</span></button> : null}
       <div aria-label="Graph zoom" className="unified-graph3d-zoom" role="group"><button aria-label="Zoom in" onClick={() => setZoomCommand((value) => ({ sequence: value.sequence + 1, factor: 0.72 }))} title="Zoom in" type="button"><i className="ph-bold ph-plus" aria-hidden="true"></i></button><button aria-label="Zoom out" onClick={() => setZoomCommand((value) => ({ sequence: value.sequence + 1, factor: 1.38 }))} title="Zoom out" type="button"><i className="ph-bold ph-minus" aria-hidden="true"></i></button></div>
-      <button onClick={() => setViewKey((value) => value + 1)} title="Reset 3D view" type="button"><i className="ph-bold ph-crosshair" aria-hidden="true"></i><span>Reset</span></button>
+      <button onClick={() => setResetSequence((value) => value + 1)} title="Reset 3D view" type="button"><i className="ph-bold ph-crosshair" aria-hidden="true"></i><span>Reset</span></button>
       <span><i className="ph-bold ph-cube" aria-hidden="true"></i> Drag to orbit · scroll zooms {props.selectedId ? "selection" : "focus"}</span>
     </div>
     <div className="unified-graph3d-access" aria-label="Keyboard graph navigation">

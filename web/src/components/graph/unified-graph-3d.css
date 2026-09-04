@@ -10,6 +10,7 @@
 .unified-graph3d-label span { overflow: hidden; color: #98a4ba; font-size: .58rem; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
 .unified-graph3d-label:hover, .unified-graph3d-label:focus-visible, .unified-graph3d-label[data-active] { border-color: rgba(143, 160, 255, .62); background: rgba(19, 27, 47, .97); outline: none; box-shadow: 0 0 0 3px rgba(99, 102, 241, .14), 0 .65rem 1.6rem rgba(0, 0, 0, .36); }
 .unified-graph3d-label[data-hovered] { border-color: rgba(132, 159, 255, .82); }
+.unified-graph3d-label[data-path] { border-left-color: rgba(207, 215, 255, .96); }
 @keyframes unified-graph-label-in { from { opacity: 0; } to { opacity: 1; } }
 .unified-graph3d-controls { position: absolute; z-index: 5; right: .75rem; bottom: .75rem; display: flex; align-items: center; gap: .42rem; color: #78869f; font-size: .66rem; font-weight: 700; pointer-events: none; }
 .unified-graph3d-controls button { display: inline-flex; min-height: 2.5rem; align-items: center; justify-content: center; gap: .42rem; padding: 0 .68rem; border: 1px solid rgba(132, 151, 193, .24); border-radius: .5rem; background: rgba(13, 20, 34, .9); color: #d7deed; font-size: .68rem; font-weight: 800; pointer-events: auto; backdrop-filter: blur(9px); }

@@ -635,7 +635,11 @@ domain packets to its shared node and typed-edge contract.
   two, three, or all descendant levels without a hidden node cap.
 - Dense graph clouds use restrained labels and visual de-emphasis instead of
   removing records. Selecting a node highlights its immediate relationships
-  while the remaining company topology stays visible as context.
+  and the shortest recorded path back to the workspace root while the
+  remaining company topology stays visible as context. Every node on that
+  path and every immediate neighbour receives a label that identifies its role
+  in the selection context; the root is not implied when no recorded path
+  exists.
 - Node markers are compact, matte, low-poly objects that inherit the Roost
   work-surface palette. Branches keep enough three-dimensional separation for
   the camera to travel between records instead of collapsing into solid balls.
@@ -643,9 +647,11 @@ domain packets to its shared node and typed-edge contract.
   the currently hovered node. Hover and selection disclose type, name, and
   status; labels are anchored fully above their node and must not scale into
   large perspective cards, cover the active record, or obscure other branches.
-- Selection changes the camera orbit and zoom pivot to that node. Clicking the
-  selected node again, clicking the canvas background, or using the visible
-  clear-selection action restores the active graph focus as the pivot.
+- Selection smoothly changes the camera orbit and zoom pivot to that node
+  without changing semantic node colors or teleporting the viewpoint.
+  Clicking the selected node again, clicking the canvas background, or using
+  the visible clear-selection action restores the active graph focus as the
+  pivot.
 - Edges connect node centers in three-dimensional space and use emphasis only
   to communicate blocked, attention, selected, or supporting relationships.
   Topology must never be inferred from color or array order.
