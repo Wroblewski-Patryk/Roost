@@ -1121,6 +1121,10 @@ test("product engineering keeps definitions shared, observations explicit, and p
   const importedArchitecture = await prisma.applicationArchitectureComponent.findMany({ where: { applicationId: roostId, name: { in: ["Owner console", "Roost API"] } } });
   assert.equal(importedArchitecture.length, 2);
   assert.equal((importedArchitecture.find((component) => component.name === "Owner console")?.metadata as { relations?: unknown[] }).relations?.length, 1);
+  const capabilityEntityContext = await request(`/v1/company-intelligence/entities/capability/${assignments[0]}`, { headers: auth });
+  assert.equal(capabilityEntityContext.status, 200);
+  const implementationEntityContext = await request(`/v1/company-intelligence/entities/implementation/${importedArchitecture[0]!.id}`, { headers: auth });
+  assert.equal(implementationEntityContext.status, 200);
   const documentationSecondPreview = await request(`/v1/product-engineering/applications/${roostId}/actions/import-documentation-context`, { method: "POST", headers: auth, body: JSON.stringify({ ...documentationPayload, mode: "preview" }) });
   assert.equal((documentationSecondPreview.body as { data: { createCount: number; updateCount: number } }).data.createCount, 0);
   assert.equal((documentationSecondPreview.body as { data: { updateCount: number } }).data.updateCount, 4);

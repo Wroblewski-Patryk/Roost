@@ -21,7 +21,10 @@ async function resolveEntity(workspaceId: string, entityType: string, entityId: 
   if (entityType === "metric") return prisma.metric.findFirst({ where: { id: entityId, workspaceId }, include: { process: true, pipeline: true } });
   if (entityType === "policy") return prisma.policy.findFirst({ where: { id: entityId, workspaceId }, include: { process: true, procedure: true } });
   if (entityType === "application") return prisma.application.findFirst({ where: { id: entityId, workspaceId }, include: { architecture: true, interfaces: true, repositories: true, technologies: { include: { technologyDefinition: true } } } });
+  if (entityType === "capability") return prisma.applicationCapability.findFirst({ where: { id: entityId, application: { workspaceId } }, include: { capabilityDefinition: { include: { domain: true } }, application: true, features: { include: { featureDefinition: true } }, evidence: true } });
   if (entityType === "feature") return prisma.applicationFeature.findFirst({ where: { id: entityId, application: { workspaceId } }, include: { featureDefinition: true, application: true } });
+  if (entityType === "implementation") return prisma.applicationArchitectureComponent.findFirst({ where: { id: entityId, application: { workspaceId } }, include: { application: true, technologyDefinition: true } });
+  if (entityType === "procedure_step") return prisma.procedureStep.findFirst({ where: { id: entityId, procedure: { workspaceId } }, include: { procedure: true } });
   if (entityType === "client") return prisma.client.findFirst({ where: { id: entityId, workspaceId } });
   if (entityType === "file") return prisma.googleDriveFile.findFirst({ where: { id: entityId, workspaceId }, include: { operatingArea: true, operatingFolder: true, operatingTable: true, contentSnapshots: { orderBy: { createdAt: "desc" }, take: 1 } } });
   if (entityType === "workforce") return prisma.workforceEntity.findFirst({ where: { id: entityId, workspaceId } });

@@ -26,7 +26,8 @@ test("projects the application slice under Innovation while reusing native compa
 
   assert.equal(result.nodes.some((node) => node.id === "app-1"), false);
   assert.equal(result.nodes.some((node) => node.id === "portfolio:workspace-1" && node.label === "Applications"), true);
-  assert.equal(result.nodes.some((node) => node.id === "capability:cap-1"), true);
+  assert.equal(result.nodes.some((node) => node.id === "cap-1"), true);
   assert.equal(result.edges.some((edge) => edge.from.entityId === "department:innovation" && edge.to.entityId === "portfolio:workspace-1"), true);
   assert.equal(result.edges.some((edge) => edge.from.entityId === "portfolio:workspace-1" && edge.to.entityId === "app-1"), true);
+  assert.equal(result.edges.some((edge) => edge.from.entityId === "app-1" && edge.to.entityId === "cap-1"), true);
 });

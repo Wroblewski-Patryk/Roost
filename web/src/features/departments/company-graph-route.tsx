@@ -17,7 +17,7 @@ type PerspectiveDepth = 1 | 2 | 3 | "all";
 function entityHref(node: GraphNode) {
   if (node.entityType === "workspace") return "/areas?area=00-ogolny&view=overview";
   if (node.entityType === "department" && node.recordType) return `/areas?area=${encodeURIComponent(node.recordType)}&view=overview`;
-  if (node.entityType === "portfolio") return "/areas?area=11-innowacje&view=application-graph";
+  if (["portfolio", "domain", "layer"].includes(node.entityType)) return "/areas?area=11-innowacje&view=application-graph";
   return `/areas?area=00-ogolny&view=entity&type=${encodeURIComponent(node.recordType === "requirement" ? "requirement" : node.entityType)}&id=${encodeURIComponent(node.id)}`;
 }
 

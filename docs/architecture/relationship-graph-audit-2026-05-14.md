@@ -84,7 +84,8 @@ The Company Graph projection now bridges existing ClickUp list mappings,
 Google Drive operating-area assignments, and the complete Product Engineering
 application projection into department context as derived edges. The
 application branch is rooted at `11 Innovation -> Applications`; native
-applications, procedures, projects, task lists, tasks, and requirements retain
+applications, capabilities, features, implementation atoms, procedures,
+procedure steps, projects, task lists, tasks, and requirements retain
 their existing Company Graph identities, while deterministic navigation groups
 such as domains and implementation layers remain explicitly derived.
 
