@@ -48,7 +48,7 @@ function radiusFor(node: UnifiedGraphNode, selected: boolean, focused: boolean) 
 }
 
 function CameraRig({ positions, focusId }: { positions: Map<string, UnifiedGraphPosition>; focusId: string }) {
-  const { camera } = useThree();
+  const { camera, size } = useThree();
   const target = positions.get(focusId) || { x: 0, y: 0, z: 0 };
   const extent = useMemo(() => {
     let value = 8;
@@ -59,12 +59,14 @@ function CameraRig({ positions, focusId }: { positions: Map<string, UnifiedGraph
   }, [positions, target.x, target.y, target.z]);
 
   useEffect(() => {
-    camera.position.set(target.x + extent * 0.72, target.y + extent * 0.48, target.z + extent * 1.12);
+    const aspect = Math.max(0.55, size.width / Math.max(1, size.height));
+    const distance = extent * (aspect < 1 ? 3.15 / aspect : 2.75);
+    camera.position.set(target.x + distance * 0.24, target.y + distance * 0.16, target.z + distance * 0.94);
     camera.lookAt(target.x, target.y, target.z);
     camera.updateProjectionMatrix();
-  }, [camera, extent, target.x, target.y, target.z]);
+  }, [camera, extent, size.height, size.width, target.x, target.y, target.z]);
 
-  return <OrbitControls makeDefault target={[target.x, target.y, target.z]} enableDamping dampingFactor={0.09} minDistance={3.5} maxDistance={Math.max(42, extent * 4)} />;
+  return <OrbitControls makeDefault target={[target.x, target.y, target.z]} enableDamping dampingFactor={0.09} minDistance={3.5} maxDistance={Math.max(72, extent * 6)} />;
 }
 
 function EdgeCloud({ edges, positions, selectedId }: { edges: UnifiedGraphEdge[]; positions: Map<string, UnifiedGraphPosition>; selectedId?: string | null }) {
