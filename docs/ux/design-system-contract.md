@@ -636,6 +636,13 @@ domain packets to its shared node and typed-edge contract.
 - Dense graph clouds use restrained labels and visual de-emphasis instead of
   removing records. Selecting a node highlights its immediate relationships
   while the remaining company topology stays visible as context.
+- Dense canvases keep labels screen-sharp and limited to focus, selection, and
+  the currently hovered node. Hover and selection disclose type, name, and
+  status; labels must not scale into large perspective cards or obscure other
+  branches.
+- Selection changes the camera orbit and zoom pivot to that node. Clicking the
+  selected node again, clicking the canvas background, or using the visible
+  clear-selection action restores the active graph focus as the pivot.
 - Edges connect node centers in three-dimensional space and use emphasis only
   to communicate blocked, attention, selected, or supporting relationships.
   Topology must never be inferred from color or array order.
