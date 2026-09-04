@@ -38,8 +38,9 @@ documentation projection for an agent prompt. An optional
 principles, decisions, requirements, layers, components, and sections while
 retaining selected records' ancestors. The response reports the total,
 selected, and omitted record counts and includes a document index so the agent
-can open omitted source material in its local repository. Without this profile,
-the endpoint returns the complete record collection.
+can open omitted source material in its local repository. Duplicate nested
+application collections are omitted and architecture metadata is compacted in
+this profile. Without it, the endpoint returns the complete record collection.
 
 The graph endpoints return the versioned `application-graph-v2` read model.
 `/graph` is the lightweight Applications/application portfolio projection;

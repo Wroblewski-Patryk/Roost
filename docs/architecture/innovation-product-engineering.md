@@ -188,7 +188,9 @@ bounded prompt-oriented projection used by the local Agent Host. It keeps the
 complete application, capability, execution, architecture, and authority
 context, but ranks documentation records against the current task, preserves
 their ancestors, caps selected records and description characters, and
-returns a source-document index. The default endpoint remains the complete
+returns a source-document index. It also removes duplicate nested collections
+from the application identity and compacts architecture metadata while keeping
+typed relations and provenance. The default endpoint remains the complete
 read model. This prevents a large documentation graph from becoming an
 unstructured multi-megabyte prompt while keeping omitted source paths
 discoverable to the repository-local agent.

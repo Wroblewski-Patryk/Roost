@@ -305,17 +305,17 @@ function executionRecordSelection<T extends AgentContextRecord>(records: T[], qu
   const byId = new Map(records.map((record) => [record.id, record]));
   const selectedIds = new Set<string>();
   for (const candidate of records.slice().sort((left, right) => score(right) - score(left) || left.title.localeCompare(right.title))) {
-    if (selectedIds.size >= 100) break;
+    if (selectedIds.size >= 72) break;
     const chain: string[] = [];
     let current: T | undefined = candidate;
     while (current && !selectedIds.has(current.id)) {
       chain.push(current.id);
       current = current.parentId ? byId.get(current.parentId) : undefined;
     }
-    if (selectedIds.size + chain.length > 100) continue;
+    if (selectedIds.size + chain.length > 72) continue;
     chain.reverse().forEach((id) => selectedIds.add(id));
   }
-  const descriptionBudget = 100_000;
+  const descriptionBudget = 60_000;
   let usedDescriptionCharacters = 0;
   const selected = records
     .filter((record) => selectedIds.has(record.id))
@@ -323,7 +323,7 @@ function executionRecordSelection<T extends AgentContextRecord>(records: T[], qu
     .map((record) => {
       const metadata = record.metadata && typeof record.metadata === "object" && !Array.isArray(record.metadata) ? record.metadata as Record<string, unknown> : {};
       const remaining = Math.max(0, descriptionBudget - usedDescriptionCharacters);
-      const description = record.description?.slice(0, Math.min(2400, remaining)) || null;
+      const description = record.description?.slice(0, Math.min(1600, remaining)) || null;
       usedDescriptionCharacters += description?.length ?? 0;
       return {
         id: record.id,
@@ -730,11 +730,46 @@ productEngineeringRouter.get("/applications/:id/agent-context", asyncHandler(asy
   const executionContext = executionProfile
     ? executionRecordSelection(records, contextQuery.slice(0, 4000))
     : null;
+  const executionApplication = executionProfile ? {
+    ...application,
+    architecture: undefined,
+    technologies: undefined,
+    interfaces: undefined,
+    offerings: undefined,
+    procedures: undefined,
+    projects: undefined
+  } : application;
+  const executionArchitecture = executionProfile ? application.architecture.map((component) => {
+    const metadata = component.metadata && typeof component.metadata === "object" && !Array.isArray(component.metadata) ? component.metadata as Record<string, unknown> : {};
+    return {
+      id: component.id,
+      type: component.type,
+      name: component.name,
+      description: component.description?.slice(0, 1000) ?? null,
+      status: component.status,
+      technology: component.technologyDefinition ? { id: component.technologyDefinition.id, name: component.technologyDefinition.name } : null,
+      metadata: {
+        sourceSystem: metadata.sourceSystem ?? null,
+        sourceKind: metadata.sourceKind ?? null,
+        sourceId: metadata.sourceId ?? null,
+        parentSourceId: metadata.parentSourceId ?? null,
+        atomType: metadata.atomType ?? null,
+        layer: metadata.layer ?? null,
+        module: metadata.module ?? null,
+        feature: metadata.feature ?? null,
+        completionPercent: metadata.completionPercent ?? null,
+        verificationStatus: metadata.verificationStatus ?? null,
+        riskLevel: metadata.riskLevel ?? null,
+        filePath: metadata.filePath ?? null,
+        relations: metadata.relations ?? []
+      }
+    };
+  }) : application.architecture;
   res.json({
     data: {
       schemaVersion: "application-agent-context-v2",
       generatedAt: new Date().toISOString(),
-      application,
+      application: executionApplication,
       lifecycle: { innovation: application.innovationStage, product: application.productStage, status: application.status },
       targetCapabilities: capabilities.filter((item) => item.applicability !== "not_applicable").map((item) => ({ id: item.id, definition: item.capabilityDefinition, applicability: item.applicability, targetState: item.targetState })),
       observedCapabilities: capabilities.map((item) => ({ id: item.id, definitionKey: item.capabilityDefinition.key, observedState: item.observedState, observedSummary: item.observedSummary, evidence: item.evidence })),
@@ -755,7 +790,7 @@ productEngineeringRouter.get("/applications/:id/agent-context", asyncHandler(asy
         }))),
         projects: application.projects
       },
-      architecture: application.architecture,
+      architecture: executionArchitecture,
       technologies: application.technologies,
       interfaces: application.interfaces,
       evidenceSummary: {
