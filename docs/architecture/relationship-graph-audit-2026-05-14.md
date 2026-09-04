@@ -10,7 +10,9 @@ integration readiness, and AI tools from inventing links that are not already
 supported by the database or approved inference rules.
 
 Company City, strategy-game visuals, gamification, and native mobile remain V2
-scope. The current foundation needs a trustworthy relationship read model that
+scope. A reusable WebGL relationship workbench is part of the current human and
+agent context foundation; it is not a simulated city or a parallel source of
+truth. The current foundation needs a trustworthy relationship read model that
 helps owners and AI agents answer:
 
 - what is linked to this workspace, area, table, provider item, Drive file, or
@@ -86,6 +88,23 @@ company-scope relationship remain visible through an explicitly labelled
 The owner UI opens in a bounded context-exploration mode; the full topology is
 an intentional secondary view because rendering every imported file and task
 at once obscures rather than explains the operating model.
+
+## Shared 3D renderer
+
+Company Graph and Application Graph now adapt their existing packets to one
+frontend contract: `nodes`, typed `edges`, `rootId`, `focusId`, and
+`selectedId`. `UnifiedGraph3D` owns WebGL rendering, deterministic
+relationship-based placement, camera controls, selection, focus activation,
+labels, and the keyboard navigation fallback. Route workbenches continue to
+own domain filters, progressive loading, breadcrumbs, inspectors, and links to
+canonical records.
+
+The renderer accepts arbitrary record types. Color and emphasis are visual
+metadata only; topology always comes from recorded hierarchy, organizational
+context, or typed dependency edges. It uses GPU-instanced node geometry and a
+batched edge geometry so a larger company projection does not create one draw
+call per record. Labels are progressively disclosed for anchors, focus,
+selection, and a bounded nearby set.
 
 ## Canonical Next Architecture
 

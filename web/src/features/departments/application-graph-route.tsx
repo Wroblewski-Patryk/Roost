@@ -19,6 +19,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
 import { CcNotice } from "../../components/cc-notice";
+import { UnifiedGraph3D, type UnifiedGraphEdge, type UnifiedGraphNode } from "../../components/graph/unified-graph-3d";
 import { humanizeBusinessValue } from "./shared";
 import { getApplicationGraphNodeSize, layoutApplicationGraphNodes, type GraphPosition } from "./application-graph-layout";
 import { interpolateApplicationGraphPositions } from "./application-graph-motion";
@@ -28,22 +29,6 @@ import type {
   ApplicationGraphPacket
 } from "./application-graph-types";
 import "./application-graph.css";
-
-type GraphNodeData = {
-  record: ApplicationGraphNode;
-  mode: ApplicationGraphMode;
-  role: "focus" | "lineage" | "descendant" | "relation";
-  hoverState: "active" | "context" | "muted" | null;
-  departing: boolean;
-  motionIndex: number;
-  dimmed: boolean;
-  focused: boolean;
-  accent: string;
-  onInteractionStart: (id: string) => void;
-  onInteractionEnd: (id: string) => void;
-};
-
-type GraphFlowNode = Node<GraphNodeData, "applicationGraph">;
 
 type GraphFilters = {
   status: string;
@@ -97,7 +82,6 @@ function useAnimatedGraphPositions(targetPositions: Map<string, GraphPosition>) 
       setIsAnimating(false);
       return;
     }
-
     setIsAnimating(true);
     const startPositions = new Map<string, GraphPosition>();
     targetPositions.forEach((target, id) => startPositions.set(id, currentPositions.get(id) ?? target));
@@ -108,29 +92,16 @@ function useAnimatedGraphPositions(targetPositions: Map<string, GraphPosition>) 
       currentPositionsRef.current = nextPositions;
       setAnimatedPositions(nextPositions);
       if (progress < 1) animationFrameRef.current = requestAnimationFrame(animate);
-      else {
-        animationFrameRef.current = null;
-        settledTargetRef.current = targetPositions;
-        setIsAnimating(false);
-      }
+      else { animationFrameRef.current = null; settledTargetRef.current = targetPositions; setIsAnimating(false); }
     };
     animationFrameRef.current = requestAnimationFrame(animate);
-    return () => {
-      if (animationFrameRef.current !== null) cancelAnimationFrame(animationFrameRef.current);
-    };
+    return () => { if (animationFrameRef.current !== null) cancelAnimationFrame(animationFrameRef.current); };
   }, [targetPositions]);
-
-  return {
-    isAnimating: isAnimating || settledTargetRef.current !== targetPositions,
-    positions: animatedPositions.size === 0 ? targetPositions : animatedPositions
-  };
+  return { isAnimating: isAnimating || settledTargetRef.current !== targetPositions, positions: animatedPositions.size === 0 ? targetPositions : animatedPositions };
 }
 
 function applicationGraphBounds(records: ApplicationGraphNode[], focus: ApplicationGraphNode, positions: Map<string, GraphPosition>) {
-  const boxes = records.flatMap((record) => {
-    const position = positions.get(record.id);
-    return position ? [{ ...position, ...getApplicationGraphNodeSize(record, focus.id) }] : [];
-  });
+  const boxes = records.flatMap((record) => { const position = positions.get(record.id); return position ? [{ ...position, ...getApplicationGraphNodeSize(record, focus.id) }] : []; });
   if (!boxes.length) return null;
   const x = Math.min(...boxes.map((box) => box.x));
   const y = Math.min(...boxes.map((box) => box.y));
@@ -170,75 +141,6 @@ function branchAccent(record: ApplicationGraphNode) {
   for (const character of applicationId) hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
   return branchPalette[hash % branchPalette.length];
 }
-
-function ApplicationGraphNodeView({ data }: NodeProps<GraphFlowNode>) {
-  const { record, dimmed, focused, mode, accent, motionIndex } = data;
-  const progress = Math.max(0, Math.min(100, record.completeness));
-  const modeAttention = mode === "agent-ready"
-    ? record.details.missingEvidence || record.completeness < 90
-    : mode === "productization"
-      ? record.isRequired && record.completeness < 90
-      : false;
-
-  return (
-    <article
-      className="application-graph-node"
-      data-attention={modeAttention || undefined}
-      data-blocked={record.isBlocked || undefined}
-      data-dimmed={dimmed || undefined}
-      data-focused={focused || undefined}
-      data-hover-active={data.hoverState === "active" || undefined}
-      data-hover-context={data.hoverState === "context" || undefined}
-      data-hover-muted={data.hoverState === "muted" || undefined}
-      data-departing={data.departing || undefined}
-      data-role={data.role}
-      data-type={record.type}
-      style={{
-        "--graph-accent": accent,
-        "--graph-reveal-delay": `${Math.min(motionIndex, 10) * 24}ms`
-      } as React.CSSProperties}
-    >
-      {[Position.Top, Position.Right, Position.Bottom, Position.Left].map((position) => (
-        <Handle className="application-graph-handle" id={`target-${position}`} key={`target-${position}`} position={position} type="target" />
-      ))}
-      <button
-      aria-label={`Focus ${record.type} ${record.label}. ${statusLabel(record)}, ${record.completeness}% complete.`}
-      className="application-graph-node__button nodrag nopan"
-      onBlur={() => data.onInteractionEnd(record.id)}
-      onFocus={() => data.onInteractionStart(record.id)}
-      type="button"
-      >
-        <span
-          aria-hidden="true"
-          className="application-graph-node__progress"
-          style={{ "--graph-progress": `${progress * 3.6}deg` } as React.CSSProperties}
-        >
-          <span><i className={`ph-bold ${iconFor(record.type)}`}></i></span>
-        </span>
-        <span className="min-w-0 text-left">
-          <span className="application-graph-node__category">{record.category}</span>
-          <strong className="application-graph-node__label">{record.shortLabel}</strong>
-          <span className="application-graph-node__meta">
-            {record.isBlocked ? <i className="ph-bold ph-warning-diamond" aria-hidden="true"></i> : null}
-            {record.type === "company"
-              ? `${record.childCount} ${record.childCount === 1 ? "application" : "applications"}`
-              : record.type === "application" && mode === "structure"
-                ? "Open application map"
-                : mode === "structure"
-                  ? `${record.childCount} ${record.childCount === 1 ? "child" : "children"}`
-                  : `${progress}% · ${statusLabel(record)}`}
-          </span>
-        </span>
-        {record.type === "application" ? <span className="application-graph-node__readiness">{progress}%</span> : null}
-      </button>
-      {[Position.Top, Position.Right, Position.Bottom, Position.Left].map((position) => (
-        <Handle className="application-graph-handle" id={`source-${position}`} key={`source-${position}`} position={position} type="source" />
-      ))}
-    </article>
-  );
-}
-
-const nodeTypes = { applicationGraph: ApplicationGraphNodeView };
 
 function mergePackets(portfolio: ApplicationGraphPacket | null, applicationPackets: Map<string, ApplicationGraphPacket>) {
   const nodes = new Map<string, ApplicationGraphNode>();
@@ -353,11 +255,9 @@ function nextLevelLabel(type: ApplicationGraphNode["type"], children: Applicatio
 function handlesForEdge(source: { x: number; y: number }, target: { x: number; y: number }) {
   const dx = target.x - source.x;
   const dy = target.y - source.y;
-  if (Math.abs(dx) >= Math.abs(dy)) {
-    return dx >= 0
-      ? { sourceHandle: `source-${Position.Right}`, targetHandle: `target-${Position.Left}` }
-      : { sourceHandle: `source-${Position.Left}`, targetHandle: `target-${Position.Right}` };
-  }
+  if (Math.abs(dx) >= Math.abs(dy)) return dx >= 0
+    ? { sourceHandle: `source-${Position.Right}`, targetHandle: `target-${Position.Left}` }
+    : { sourceHandle: `source-${Position.Left}`, targetHandle: `target-${Position.Right}` };
   return dy >= 0
     ? { sourceHandle: `source-${Position.Bottom}`, targetHandle: `target-${Position.Top}` }
     : { sourceHandle: `source-${Position.Top}`, targetHandle: `target-${Position.Bottom}` };
@@ -631,6 +531,29 @@ function ApplicationGraphCanvas() {
       };
     }), [byId, graph.edges, hoveredId, hoverNeighbourhood, mode, pendingNeighbourhood, positions, targetPositions, visibleIds]);
 
+  const unifiedNodes = useMemo<UnifiedGraphNode[]>(() => visibleRecords.map((record) => ({
+    id: record.id,
+    type: record.type,
+    label: record.shortLabel || record.label,
+    category: record.category,
+    status: `${statusLabel(record)} · ${record.completeness}% complete`,
+    parentId: record.parentNodeId,
+    color: branchAccent(record),
+    weight: record.childCount + (record.details.relationCount || 0),
+    emphasis: record.isBlocked ? "blocked" : record.id === focus?.id || ["company", "application"].includes(record.type) ? "anchor" : record.details.missingEvidence ? "attention" : "standard"
+  })), [focus?.id, visibleRecords]);
+  const unifiedEdges = useMemo<UnifiedGraphEdge[]>(() => graph.edges
+    .filter((edge) => visibleIds.has(edge.source) && visibleIds.has(edge.target))
+    .filter((edge) => mode === "dependencies" || edge.type === "hierarchy")
+    .map((edge) => ({
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      type: edge.type,
+      label: edge.label,
+      emphasis: edge.type === "blocks" ? "blocked" : edge.type === "hierarchy" ? "standard" : "muted"
+    })), [graph.edges, mode, visibleIds]);
+
   useEffect(() => {
     if (!focus || !nodesInitialized || !targetPositions.has(focus.id)) return;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -761,31 +684,17 @@ function ApplicationGraphCanvas() {
       <div className="application-graph-canvas" data-inspector-open={Boolean(inspectorNode) || undefined} data-layout-moving={interactionLocked || undefined}>
         {error ? <div className="application-graph-inline-error" role="alert"><i className="ph-bold ph-warning-diamond" aria-hidden="true"></i><span>The requested graph branch could not be loaded ({error}).</span><button aria-label="Dismiss graph error" onClick={() => setError(null)} type="button"><i className="ph-bold ph-x" aria-hidden="true"></i></button></div> : null}
         {portfolio.nodes.filter((node) => node.type === "application").length === 0 ? <div className="application-graph-empty"><CcNotice action={<CcButton href="/areas?area=11-innowacje&view=overview" size="sm" variant="primary">Create an application</CcButton>} detail="Application Graph is a projection of Product Engineering. Add an application there to place it on this canvas." tone="empty" title="No applications to map yet" /></div> : null}
-        <ReactFlow<GraphFlowNode>
-          colorMode="dark"
-          edges={flowEdges}
-          elementsSelectable
-          fitViewOptions={{ maxZoom: 1, minZoom: 0.48, padding: 0.16 }}
-          maxZoom={1.8}
-          minZoom={0.48}
-          nodes={flowNodes}
-          nodesConnectable={false}
-          nodesDraggable={false}
-          nodeTypes={nodeTypes}
-          onNodeClick={(_event, node) => void focusNode(node.data.record)}
-          onNodeMouseEnter={(_event, node) => startNodeInteraction(node.id)}
-          onNodeMouseLeave={(_event, node) => endNodeInteraction(node.id)}
-          onPaneClick={() => setInspectorId(null)}
-          panOnDrag
-          proOptions={{ hideAttribution: true }}
-          selectionOnDrag={false}
-          zoomOnPinch
-          zoomOnScroll
-        >
-          <Background color="rgba(126, 143, 179, .22)" gap={28} size={1} variant={BackgroundVariant.Dots} />
-          <Controls position="bottom-left" showInteractive={false} />
-          <MiniMap ariaLabel="Application Graph minimap" maskColor="rgba(9, 13, 25, .72)" nodeColor={(node) => node.data?.record.isBlocked ? "#d66565" : node.data?.focused ? "#8ea5ff" : "#52617c"} pannable position="bottom-right" zoomable />
-        </ReactFlow>
+        <UnifiedGraph3D
+          ariaLabel="Interactive 3D map of applications, capabilities, procedures and execution work"
+          edges={unifiedEdges}
+          focusId={focus.id}
+          nodes={unifiedNodes}
+          onClearSelection={() => setInspectorId(null)}
+          onNodeActivate={(node) => { const record = byId.get(node.id); if (record) void focusNode(record); }}
+          onNodeSelect={(node) => setInspectorId(node.id)}
+          rootId={portfolio.rootNodeId}
+          selectedId={inspectorId}
+        />
         <div className="application-graph-help" aria-label="Keyboard shortcuts"><span><kbd>Esc</kbd> Back</span><span><kbd>Home</kbd> Portfolio</span><span><kbd>F</kbd> Search</span></div>
         {inspectorNode ? <GraphInspector key={inspectorNode.id} node={inspectorNode} onClose={() => setInspectorId(null)} /> : null}
       </div>
@@ -796,3 +705,18 @@ function ApplicationGraphCanvas() {
 export function ApplicationGraphRoute() {
   return <ReactFlowProvider><ApplicationGraphCanvas /></ReactFlowProvider>;
 }
+type GraphNodeData = {
+  record: ApplicationGraphNode;
+  mode: ApplicationGraphMode;
+  role: "focus" | "lineage" | "descendant" | "relation";
+  hoverState: "active" | "context" | "muted" | null;
+  departing: boolean;
+  motionIndex: number;
+  dimmed: boolean;
+  focused: boolean;
+  accent: string;
+  onInteractionStart: (id: string) => void;
+  onInteractionEnd: (id: string) => void;
+};
+
+type GraphFlowNode = Node<GraphNodeData, "applicationGraph">;

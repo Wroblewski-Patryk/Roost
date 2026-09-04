@@ -233,13 +233,14 @@ implementation layers and atoms, hierarchy edges, typed implementation
 relations, blockers, evidence summaries, ancestor paths, and deterministic
 completeness derived from Product Engineering state.
 
-The web client uses a bounded 2.5D constellation rather than literal WebGL
-3D. The focused node remains central, direct children form an orbit or readable
-grid, and the complete ancestor path remains visible as a compact canvas spine
-as well as in the breadcrumb. Optional depth two reveals one additional ring.
-Dependency mode adds only the focused node's bounded relation neighbourhood.
-This preserves spatial context and readable text without occlusion, camera
-navigation, or a whole-portfolio hairball. The client may load all application
+The web client uses the shared `UnifiedGraph3D` relationship renderer also used
+by Company Graph. The focused node remains central, direct children occupy a
+deterministic three-dimensional shell, and the complete ancestor path remains
+visible through the same typed edges and breadcrumb. Optional depth two reveals
+one additional shell. Dependency mode adds only the focused node's bounded
+relation neighbourhood. Orbit, pan, zoom, reset, selection, keyboard access,
+and the record inspector preserve navigation without creating an
+application-specific graph implementation. The client may load all application
 projections only after a cross-portfolio search is requested.
 
 `npm run seed:soar-graph -- <path-to-soar>` is an explicit local/import command

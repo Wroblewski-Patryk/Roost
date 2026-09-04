@@ -623,7 +623,8 @@ primitives before adding a route-local modal recipe.
 ## Interactive Graph Contract
 
 Company and application graphs are relationship workbenches, not catalog
-visualizations.
+visualizations. They use the same `UnifiedGraph3D` renderer and adapt their
+domain packets to its shared node and typed-edge contract.
 
 - Position nodes from recorded relationships or hierarchy. Never use backend
   type or array order as the primary layout axis.
@@ -631,17 +632,18 @@ visualizations.
   focused neighbourhood. The overview packs records into their department
   clusters and keeps every relationship on one navigable canvas; focus mode
   progressively discloses one record's direct neighbourhood.
-- Edges attach through invisible cardinal ports selected from node geometry.
-  Visible handle dots or unrelated top/bottom stubs must not compete with the
-  relationship path, and edge paths must remain legible where clusters meet.
-- The canvas must have a definite responsive height before React Flow measures
-  nodes. Refit only after visible nodes are initialized and after filters,
-  focus, or inspector width changes.
+- Edges connect node centers in three-dimensional space and use emphasis only
+  to communicate blocked, attention, selected, or supporting relationships.
+  Topology must never be inferred from color or array order.
+- The canvas must have a definite responsive height before WebGL initializes.
+  Reset the camera around the active focus after filters, focus, or inspector
+  width changes.
 - Preserve a readable minimum zoom. It is preferable to pan through a larger
   graph than to shrink labels and controls below legibility.
-- Keep zoom and fit controls at least 42px square, visibly focused, and styled
-  as part of the Roost work surface. Mini-maps use the active dark surface and
-  must never appear as an opaque light rectangle.
+- Keep orbit, zoom, and reset controls keyboard reachable, visibly focused, and
+  styled as part of the Roost work surface. A text/search and inspector path
+  must remain available because a WebGL canvas is not itself an accessible
+  record directory.
 - Initial fit, filter changes, and focus transitions must retain visible node
   content and relationship edges. Empty, loading, and error states remain
   outside the graph viewport and provide a clear recovery action.

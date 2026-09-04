@@ -38,6 +38,7 @@
     "test:application-graph-layout": "tsx --test web/src/features/departments/application-graph-layout.test.ts",
     "test:application-graph-motion": "tsx --test web/src/features/departments/application-graph-motion.test.ts",
     "test:company-graph-layout": "tsx --test web/src/features/departments/company-graph-layout.test.ts",
+    "test:unified-graph-layout": "tsx --test web/src/components/graph/unified-graph-layout.test.ts",
     "check:public-js": "node -e \"console.log('legacy public JS removed; React/Vite build is the web syntax gate')\"",
     "check:route-capabilities": "node scripts/check-route-capabilities.mjs",
     "test:api": "npm run build && npm run prisma:migrate:deploy && node --test \"dist/tests/api.test.js\"",
@@ -48,6 +49,8 @@
   "dependencies": {
     "@phosphor-icons/web": "^2.1.2",
     "@prisma/client": "^5.22.0",
+    "@react-three/drei": "^10.7.8",
+    "@react-three/fiber": "^9.7.0",
     "@tailwindcss/vite": "^4.3.0",
     "@vitejs/plugin-react": "^6.0.1",
     "@xyflow/react": "^12.11.5",
@@ -58,6 +61,7 @@
     "react": "^19.2.6",
     "react-dom": "^19.2.3",
     "tailwindcss": "^4.3.0",
+    "three": "^0.185.1",
     "vite": "^8.0.11",
     "zod": "^3.24.1"
   },
