@@ -45,8 +45,15 @@ type ZoomCommand = { sequence: number; factor: number };
 const fallbackColor = "#7f8da8";
 
 function radiusFor(node: UnifiedGraphNode, selected: boolean, focused: boolean) {
-  const base = node.emphasis === "anchor" ? 0.72 : node.emphasis === "blocked" ? 0.6 : 0.48;
-  return base * (1 + Math.min(0.45, (node.weight || 0) / 250)) * (selected || focused ? 1.28 : 1);
+  const base = node.emphasis === "anchor" ? 0.46 : node.emphasis === "blocked" ? 0.34 : node.emphasis === "attention" ? 0.3 : 0.24;
+  return base * (1 + Math.min(0.28, (node.weight || 0) / 360)) * (selected || focused ? 1.22 : 1);
+}
+
+function colorFor(node: UnifiedGraphNode, active: boolean, dimmed: boolean) {
+  if (dimmed) return new THREE.Color("#2b3446");
+  const color = new THREE.Color(node.emphasis === "blocked" ? "#d96b67" : node.emphasis === "attention" ? "#d0a354" : node.color || fallbackColor);
+  if (active) return color.lerp(new THREE.Color("#dce3ff"), 0.16);
+  return color.lerp(new THREE.Color("#637089"), 0.18);
 }
 
 function CameraRig({ positions, pivotId, zoomCommand }: { positions: Map<string, UnifiedGraphPosition>; pivotId: string; zoomCommand: ZoomCommand }) {
@@ -86,13 +93,13 @@ function CameraRig({ positions, pivotId, zoomCommand }: { positions: Map<string,
     previousZoomSequence.current = zoomCommand.sequence;
     const pivot = new THREE.Vector3(target.x, target.y, target.z);
     const offset = camera.position.clone().sub(pivot);
-    const nextDistance = THREE.MathUtils.clamp(offset.length() * zoomCommand.factor, 3.5, Math.max(72, extent * 6));
+    const nextDistance = THREE.MathUtils.clamp(offset.length() * zoomCommand.factor, 0.8, Math.max(96, extent * 8));
     camera.position.copy(pivot.clone().add(offset.setLength(nextDistance)));
     camera.lookAt(pivot);
     camera.updateProjectionMatrix();
   }, [camera, extent, target.x, target.y, target.z, zoomCommand.factor, zoomCommand.sequence]);
 
-  return <OrbitControls makeDefault target={[target.x, target.y, target.z]} enableDamping dampingFactor={0.09} minDistance={3.5} maxDistance={Math.max(72, extent * 6)} screenSpacePanning />;
+  return <OrbitControls makeDefault target={[target.x, target.y, target.z]} enableDamping dampingFactor={0.09} minDistance={0.8} maxDistance={Math.max(96, extent * 8)} screenSpacePanning zoomSpeed={0.82} />;
 }
 
 function EdgeCloud({ edges, positions, selectedId }: { edges: UnifiedGraphEdge[]; positions: Map<string, UnifiedGraphPosition>; selectedId?: string | null }) {
@@ -118,11 +125,12 @@ function EdgeCloud({ edges, positions, selectedId }: { edges: UnifiedGraphEdge[]
   return <lineSegments geometry={geometry}><lineBasicMaterial vertexColors transparent opacity={selectedId ? 0.72 : 0.56} /></lineSegments>;
 }
 
-function NodeCloud({ nodes, positions, focusId, selectedId, highlightedIds, onHover, onSelect, onActivate }: {
+function NodeCloud({ nodes, positions, focusId, selectedId, hoveredId, highlightedIds, onHover, onSelect, onActivate }: {
   nodes: UnifiedGraphNode[];
   positions: Map<string, UnifiedGraphPosition>;
   focusId: string;
   selectedId?: string | null;
+  hoveredId?: string | null;
   highlightedIds: Set<string> | null;
   onHover: (node: UnifiedGraphNode | null) => void;
   onSelect?: (node: UnifiedGraphNode) => void;
@@ -134,17 +142,18 @@ function NodeCloud({ nodes, positions, focusId, selectedId, highlightedIds, onHo
     if (!mesh.current) return;
     nodes.forEach((node, index) => {
       const position = positions.get(node.id) || { x: 0, y: 0, z: 0 };
-      const radius = radiusFor(node, node.id === selectedId, node.id === focusId);
+      const active = node.id === selectedId || node.id === focusId;
+      const radius = radiusFor(node, node.id === selectedId || node.id === hoveredId, node.id === focusId);
       dummy.position.set(position.x, position.y, position.z);
       dummy.scale.setScalar(radius);
       dummy.updateMatrix();
       mesh.current!.setMatrixAt(index, dummy.matrix);
       const dimmed = highlightedIds && !highlightedIds.has(node.id);
-      mesh.current!.setColorAt(index, new THREE.Color(dimmed ? "#394153" : node.emphasis === "blocked" ? "#d66565" : node.emphasis === "attention" ? "#d4a35d" : node.color || fallbackColor));
+      mesh.current!.setColorAt(index, colorFor(node, active || node.id === hoveredId, Boolean(dimmed)));
     });
     mesh.current.instanceMatrix.needsUpdate = true;
     if (mesh.current.instanceColor) mesh.current.instanceColor.needsUpdate = true;
-  }, [dummy, focusId, highlightedIds, nodes, positions, selectedId]);
+  }, [dummy, focusId, highlightedIds, hoveredId, nodes, positions, selectedId]);
 
   const resolveNode = (event: ThreeEvent<PointerEvent | MouseEvent>) => typeof event.instanceId === "number" ? nodes[event.instanceId] : null;
   return <instancedMesh
@@ -155,8 +164,8 @@ function NodeCloud({ nodes, positions, focusId, selectedId, highlightedIds, onHo
     onPointerOver={(event) => { event.stopPropagation(); const node = resolveNode(event); if (node) onHover(node); }}
     onPointerOut={() => onHover(null)}
   >
-    <icosahedronGeometry args={[1, 2]} />
-    <meshStandardMaterial roughness={0.38} metalness={0.18} emissive="#111827" emissiveIntensity={0.32} />
+    <icosahedronGeometry args={[1, 1]} />
+    <meshStandardMaterial roughness={0.78} metalness={0.04} emissive="#141d30" emissiveIntensity={0.14} />
   </instancedMesh>;
 }
 
@@ -181,19 +190,21 @@ function GraphScene(props: Props & { hovered: UnifiedGraphNode | null; viewKey: 
   return <>
     <color attach="background" args={["#080d19"]} />
     <fog attach="fog" args={["#080d19", 48, 180]} />
-    <ambientLight intensity={1.08} />
-    <directionalLight intensity={2.2} position={[8, 12, 10]} />
-    <pointLight color="#7187ef" intensity={38} position={[0, 1, 0]} distance={72} />
+    <ambientLight intensity={1.28} />
+    <directionalLight intensity={1.45} position={[8, 12, 10]} />
+    <pointLight color="#7187ef" intensity={18} position={[0, 1, 0]} distance={92} />
     <EdgeCloud edges={props.edges} positions={positions} selectedId={props.selectedId} />
-    <NodeCloud nodes={props.nodes} positions={positions} focusId={focusId} highlightedIds={highlightedIds} selectedId={props.selectedId} onHover={props.onHover} onSelect={(node) => node.id === props.selectedId ? props.onClearSelection?.() : props.onNodeSelect?.(node)} onActivate={props.onNodeActivate} />
+    <NodeCloud nodes={props.nodes} positions={positions} focusId={focusId} highlightedIds={highlightedIds} hoveredId={props.hovered?.id} selectedId={props.selectedId} onHover={props.onHover} onSelect={(node) => node.id === props.selectedId ? props.onClearSelection?.() : props.onNodeSelect?.(node)} onActivate={props.onNodeActivate} />
     {labelNodes.map((node) => {
       const position = positions.get(node.id);
       if (!position) return null;
       const active = node.id === focusId || node.id === props.selectedId;
-      return <Html center key={node.id} position={[position.x, position.y + radiusFor(node, false, active) + 0.48, position.z]} zIndexRange={[12, 1]}>
+      return <Html key={node.id} position={[position.x, position.y + radiusFor(node, false, active) + 0.34, position.z]} zIndexRange={[12, 1]}>
+        <div className="unified-graph3d-label-anchor">
           <button className="unified-graph3d-label" data-active={active || undefined} data-hovered={node.id === props.hovered?.id || undefined} onClick={(event) => { event.stopPropagation(); node.id === props.selectedId ? props.onClearSelection?.() : props.onNodeSelect?.(node); }} onDoubleClick={(event) => { event.stopPropagation(); props.onNodeActivate?.(node); }} type="button">
             <small>{node.category || node.type}</small><strong>{node.label}</strong>{node.status ? <span>{node.status}</span> : null}
           </button>
+        </div>
         </Html>;
     })}
     <gridHelper args={[80, 40, "#28344d", "#131c2c"]} position={[0, -10, 0]} />

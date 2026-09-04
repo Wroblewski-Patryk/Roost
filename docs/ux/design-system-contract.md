@@ -636,10 +636,13 @@ domain packets to its shared node and typed-edge contract.
 - Dense graph clouds use restrained labels and visual de-emphasis instead of
   removing records. Selecting a node highlights its immediate relationships
   while the remaining company topology stays visible as context.
+- Node markers are compact, matte, low-poly objects that inherit the Roost
+  work-surface palette. Branches keep enough three-dimensional separation for
+  the camera to travel between records instead of collapsing into solid balls.
 - Dense canvases keep labels screen-sharp and limited to focus, selection, and
   the currently hovered node. Hover and selection disclose type, name, and
-  status; labels must not scale into large perspective cards or obscure other
-  branches.
+  status; labels are anchored fully above their node and must not scale into
+  large perspective cards, cover the active record, or obscure other branches.
 - Selection changes the camera orbit and zoom pivot to that node. Clicking the
   selected node again, clicking the canvas background, or using the visible
   clear-selection action restores the active graph focus as the pivot.
@@ -649,8 +652,9 @@ domain packets to its shared node and typed-edge contract.
 - The canvas must have a definite responsive height before WebGL initializes.
   Reset the camera around the active focus after filters, focus, or inspector
   width changes.
-- Preserve a readable minimum zoom. It is preferable to pan through a larger
-  graph than to shrink labels and controls below legibility.
+- Preserve readable controls and labels while allowing the camera to enter the
+  cloud and inspect close relationships. It is preferable to pan through a
+  larger graph than to compress nodes into an unnavigable overview.
 - Keep orbit, zoom, and reset controls keyboard reachable, visibly focused, and
   styled as part of the Roost work surface. A text/search and inspector path
   must remain available because a WebGL canvas is not itself an accessible

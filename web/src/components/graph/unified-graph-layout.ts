@@ -89,7 +89,7 @@ export function layoutUnifiedGraph3D(
     const yUnit = count === 1 ? 0 : 1 - (index / (count - 1)) * 2;
     const radial = Math.sqrt(Math.max(0, 1 - yUnit * yUnit));
     const angle = index * goldenAngle + hashUnit(branchId, 13) * 0.8;
-    const radius = 14 + Math.log2(Math.max(2, nodes.length)) * 1.35;
+    const radius = 18 + Math.log2(Math.max(2, nodes.length)) * 1.7;
     branchCenters.set(branchId, { x: Math.cos(angle) * radial * radius, y: yUnit * radius * 0.72, z: Math.sin(angle) * radial * radius });
   });
 
@@ -97,13 +97,13 @@ export function layoutUnifiedGraph3D(
   positions.set(resolvedRootId, { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0 });
   orderedBranches.forEach(([branchId, branchNodes]) => {
     const center = branchCenters.get(branchId)!;
-    const spread = 3.8 + Math.cbrt(branchNodes.length) * 1.45;
+    const spread = 6 + Math.cbrt(branchNodes.length) * 2.2;
     branchNodes.sort((left, right) => (depth.get(left.id) || 0) - (depth.get(right.id) || 0) || (right.weight || 0) - (left.weight || 0) || left.id.localeCompare(right.id));
     branchNodes.forEach((node, index) => {
       const level = Math.max(1, depth.get(node.id) || 1);
       const phi = Math.acos(1 - 2 * hashUnit(node.id, 7));
       const theta = Math.PI * 2 * hashUnit(node.id, 19) + index * goldenAngle;
-      const localRadius = node.id === branchId ? 0 : spread * (0.28 + 0.72 * hashUnit(node.id, 31)) + Math.min(level, 6) * 0.55;
+      const localRadius = node.id === branchId ? 0 : spread * (0.4 + 0.8 * hashUnit(node.id, 31)) + Math.min(level, 8) * 1;
       positions.set(node.id, {
         x: center.x + Math.sin(phi) * Math.cos(theta) * localRadius,
         y: center.y + Math.cos(phi) * localRadius * 0.82,
@@ -128,8 +128,8 @@ export function layoutUnifiedGraph3D(
       const dy = target.y - source.y;
       const dz = target.z - source.z;
       const distance = Math.max(0.01, Math.hypot(dx, dy, dz));
-      const desired = parentFor(byId.get(edge.target)!) === edge.source ? 3.2 : 6.4;
-      const force = (distance - desired) * 0.018 * cooling;
+      const desired = parentFor(byId.get(edge.target)!) === edge.source ? 5.2 : 9.2;
+      const force = (distance - desired) * 0.015 * cooling;
       const fx = dx / distance * force;
       const fy = dy / distance * force;
       const fz = dz / distance * force;
@@ -140,7 +140,7 @@ export function layoutUnifiedGraph3D(
       if (node.id === resolvedRootId) return;
       const position = positions.get(node.id)!;
       const center = branchCenters.get(branchFor(node.id)) || { x: 0, y: 0, z: 0 };
-      const gravity = node.id === branchFor(node.id) ? 0.045 : 0.008;
+      const gravity = node.id === branchFor(node.id) ? 0.032 : 0.0045;
       position.vx += (center.x - position.x) * gravity * cooling;
       position.vy += (center.y - position.y) * gravity * cooling;
       position.vz += (center.z - position.z) * gravity * cooling;
@@ -152,7 +152,7 @@ export function layoutUnifiedGraph3D(
         const dy = position.y - other.y;
         const dz = position.z - other.z;
         const squared = Math.max(0.35, dx * dx + dy * dy + dz * dz);
-        const force = 0.12 * cooling / squared;
+        const force = 0.34 * cooling / squared;
         position.vx += dx * force;
         position.vy += dy * force;
         position.vz += dz * force;
