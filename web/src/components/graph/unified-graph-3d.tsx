@@ -229,8 +229,9 @@ function GraphScene(props: Props & { hovered: UnifiedGraphNode | null; resetSequ
       if (!position) return null;
       const active = node.id === props.selectedId || (!selection && node.id === focusId);
       const onPath = Boolean(selection?.pathIds.includes(node.id));
-      const directIndex = selection && !onPath ? [...selection.directIds].indexOf(node.id) : -1;
-      const labelStyle = directIndex >= 0 ? { "--graph-label-lift": `${(directIndex + 1) * 3.15}rem` } as CSSProperties : undefined;
+      const directLabelIds = selection ? [...selection.directIds].filter((id) => !selection.pathIds.includes(id)) : [];
+      const directIndex = directLabelIds.indexOf(node.id);
+      const labelStyle = directIndex >= 0 ? { "--graph-label-lift": `${(directIndex + 1) * 5.5}rem` } as CSSProperties : undefined;
       const relationshipContext = !selection ? null : node.id === props.selectedId ? "Selected" : node.id === props.rootId && onPath ? "Workspace root" : onPath ? "Path to workspace" : selection.directIds.has(node.id) ? "Direct relationship" : null;
       return <Html key={node.id} position={[position.x, position.y + radiusFor(node, false, active) + 0.34, position.z]} zIndexRange={[12, 1]}>
         <div className="unified-graph3d-label-anchor" style={labelStyle}>
