@@ -2469,9 +2469,14 @@ functional state automatically.
 canonical business records, explicit dependency edges, and structural edges
 derived from organizational ownership, record/goal hierarchy, project task
 lists and tasks, project resources, application project/procedure links, and
-Google Drive folder membership. Provider-derived edges also bridge ClickUp
+Google Drive folder membership. The durable Company OS definition branch also
+projects business functions, accountable roles, processes, pipelines and
+stages, procedures and steps, standards, controls, targets, and decisions from
+their existing foreign keys. Provider-derived edges also bridge ClickUp
 task-list mappings and Drive operating-area assignments into the canonical
-department graph without persisting duplicate `Dependency` rows.
+department graph without persisting duplicate `Dependency` rows. Recorded
+legacy department keys on processes and workforce entities are normalized to
+the same department anchors as organizational memberships.
 Every returned record is incident to at least one edge. When a record has no
 more specific source-of-truth relationship, the packet emits a `fallback`
 `needs_context` edge rather than presenting generic workspace containment as a

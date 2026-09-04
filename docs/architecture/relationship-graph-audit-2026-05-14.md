@@ -89,6 +89,15 @@ procedure steps, projects, task lists, tasks, and requirements retain
 their existing Company Graph identities, while deterministic navigation groups
 such as domains and implementation layers remain explicitly derived.
 
+The whole-company packet also includes the durable Company OS definition
+chain: department -> process -> pipeline -> stage -> procedure -> step, plus
+business functions, accountable/owner roles, goals and targets, standards,
+controls, risks, metrics, policies, resources, and decisions wherever canonical
+foreign keys prove the relationship. Workforce reporting lines and recorded
+department keys are projected as structural/derived relationships. Runtime
+runs, logs, audit events, and outbox records remain evidence instead of being
+misrepresented as durable company objects.
+
 Context coverage is measured by undirected reachability from the workspace
 root, not merely by whether a record participates in any edge. A connected but
 unrooted project/list/task island is therefore still a coverage gap. Each
