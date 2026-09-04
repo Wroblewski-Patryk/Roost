@@ -9,7 +9,29 @@ test("places the focus at the origin and every related node in 3D space", () => 
   assert.deepEqual(positions.get("company"), { x: 0, y: 0, z: 0 });
   assert.equal(positions.size, nodes.length);
   assert.notDeepEqual(positions.get("department-a"), positions.get("department-b"));
-  assert.ok(Math.hypot(...Object.values(positions.get("task")!)) > Math.hypot(...Object.values(positions.get("department-a")!)));
+  assert.notDeepEqual(positions.get("task"), positions.get("department-a"));
+});
+
+test("keeps deep descendants inside the semantic cloud of their top-level branch", () => {
+  const nodes = [
+    { id: "company" },
+    { id: "department-a", parentId: "company" },
+    { id: "department-b", parentId: "company" },
+    { id: "project-a", parentId: "department-a" },
+    { id: "task-a", parentId: "project-a" }
+  ];
+  const edges = [
+    { source: "company", target: "department-a" },
+    { source: "company", target: "department-b" },
+    { source: "department-a", target: "project-a" },
+    { source: "project-a", target: "task-a" }
+  ];
+  const positions = layoutUnifiedGraph3D(nodes, edges, "company");
+  const task = positions.get("task-a")!;
+  const ownBranch = positions.get("department-a")!;
+  const otherBranch = positions.get("department-b")!;
+  const distance = (left: typeof task, right: typeof task) => Math.hypot(left.x - right.x, left.y - right.y, left.z - right.z);
+  assert.ok(distance(task, ownBranch) < distance(task, otherBranch));
 });
 
 test("layout is deterministic regardless of repeated calculation", () => {

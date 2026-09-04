@@ -1,28 +1,9 @@
-import {
-  Background,
-  BackgroundVariant,
-  Controls,
-  Handle,
-  MarkerType,
-  MiniMap,
-  Position,
-  ReactFlow,
-  ReactFlowProvider,
-  useNodesInitialized,
-  useReactFlow,
-  type Edge,
-  type Node,
-  type NodeProps
-} from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
 import { CcNotice } from "../../components/cc-notice";
 import { UnifiedGraph3D, type UnifiedGraphEdge, type UnifiedGraphNode } from "../../components/graph/unified-graph-3d";
 import { humanizeBusinessValue } from "./shared";
-import { getApplicationGraphNodeSize, layoutApplicationGraphNodes, type GraphPosition } from "./application-graph-layout";
-import { interpolateApplicationGraphPositions } from "./application-graph-motion";
 import type {
   ApplicationGraphMode,
   ApplicationGraphNode,
@@ -57,58 +38,7 @@ const modes: Array<{ id: ApplicationGraphMode; label: string; icon: string }> = 
   { id: "productization", label: "Productization", icon: "ph-rocket-launch" }
 ];
 
-const graphMotionDuration = 720;
 const graphExitDuration = 150;
-
-function graphMotionEase(progress: number) {
-  return progress * progress * (3 - 2 * progress);
-}
-
-function useAnimatedGraphPositions(targetPositions: Map<string, GraphPosition>) {
-  const currentPositionsRef = useRef(targetPositions);
-  const settledTargetRef = useRef(targetPositions);
-  const animationFrameRef = useRef<number | null>(null);
-  const [animatedPositions, setAnimatedPositions] = useState(targetPositions);
-  const [isAnimating, setIsAnimating] = useState(false);
-
-  useEffect(() => {
-    if (animationFrameRef.current !== null) cancelAnimationFrame(animationFrameRef.current);
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const currentPositions = currentPositionsRef.current;
-    if (reducedMotion || currentPositions.size === 0) {
-      currentPositionsRef.current = targetPositions;
-      settledTargetRef.current = targetPositions;
-      setAnimatedPositions(targetPositions);
-      setIsAnimating(false);
-      return;
-    }
-    setIsAnimating(true);
-    const startPositions = new Map<string, GraphPosition>();
-    targetPositions.forEach((target, id) => startPositions.set(id, currentPositions.get(id) ?? target));
-    const startedAt = performance.now();
-    const animate = (now: number) => {
-      const progress = Math.min(1, (now - startedAt) / graphMotionDuration);
-      const nextPositions = interpolateApplicationGraphPositions(startPositions, targetPositions, graphMotionEase(progress));
-      currentPositionsRef.current = nextPositions;
-      setAnimatedPositions(nextPositions);
-      if (progress < 1) animationFrameRef.current = requestAnimationFrame(animate);
-      else { animationFrameRef.current = null; settledTargetRef.current = targetPositions; setIsAnimating(false); }
-    };
-    animationFrameRef.current = requestAnimationFrame(animate);
-    return () => { if (animationFrameRef.current !== null) cancelAnimationFrame(animationFrameRef.current); };
-  }, [targetPositions]);
-  return { isAnimating: isAnimating || settledTargetRef.current !== targetPositions, positions: animatedPositions.size === 0 ? targetPositions : animatedPositions };
-}
-
-function applicationGraphBounds(records: ApplicationGraphNode[], focus: ApplicationGraphNode, positions: Map<string, GraphPosition>) {
-  const boxes = records.flatMap((record) => { const position = positions.get(record.id); return position ? [{ ...position, ...getApplicationGraphNodeSize(record, focus.id) }] : []; });
-  if (!boxes.length) return null;
-  const x = Math.min(...boxes.map((box) => box.x));
-  const y = Math.min(...boxes.map((box) => box.y));
-  const right = Math.max(...boxes.map((box) => box.x + box.width));
-  const bottom = Math.max(...boxes.map((box) => box.y + box.height));
-  return { x, y, width: right - x, height: bottom - y };
-}
 
 function iconFor(type: ApplicationGraphNode["type"]) {
   if (type === "company") return "ph-buildings";
@@ -175,13 +105,13 @@ function visibleNodeIds(
   focus: ApplicationGraphNode,
   mode: ApplicationGraphMode,
   filters: GraphFilters,
-  revealDepth: 1 | 2
+  revealDepth: 1 | 2 | 3 | "all"
 ) {
   const byId = new Map(allNodes.map((node) => [node.id, node]));
   const visible = new Set<string>(focus.path);
   let frontier = [focus.id];
   const descendants: ApplicationGraphNode[] = [];
-  for (let depth = 0; depth < revealDepth; depth += 1) {
+  for (let depth = 0; frontier.length && (revealDepth === "all" || depth < revealDepth); depth += 1) {
     const parents = new Set(frontier);
     const children = allNodes
       .filter((node) => node.parentNodeId && parents.has(node.parentNodeId))
@@ -209,9 +139,7 @@ function visibleNodeIds(
       if (related && !["company", "application", "domain"].includes(related.type) && matchesFilters(related, filters)) relatedIds.push(relatedId);
     }
 
-    // A local dependency neighbourhood remains readable; global discovery is
-    // handled by search and successive focus changes.
-    relatedIds.slice(0, 18).forEach((id) => visible.add(id));
+    relatedIds.forEach((id) => visible.add(id));
   }
 
   return visible;
@@ -250,17 +178,6 @@ function nextLevelLabel(type: ApplicationGraphNode["type"], children: Applicatio
   };
   const nouns = labelType ? explicitChildLabels[labelType] : labels[type];
   return `${count} ${nouns?.[count === 1 ? 0 : 1] ?? (count === 1 ? "record" : "records")}`;
-}
-
-function handlesForEdge(source: { x: number; y: number }, target: { x: number; y: number }) {
-  const dx = target.x - source.x;
-  const dy = target.y - source.y;
-  if (Math.abs(dx) >= Math.abs(dy)) return dx >= 0
-    ? { sourceHandle: `source-${Position.Right}`, targetHandle: `target-${Position.Left}` }
-    : { sourceHandle: `source-${Position.Left}`, targetHandle: `target-${Position.Right}` };
-  return dy >= 0
-    ? { sourceHandle: `source-${Position.Bottom}`, targetHandle: `target-${Position.Top}` }
-    : { sourceHandle: `source-${Position.Top}`, targetHandle: `target-${Position.Bottom}` };
 }
 
 function GraphInspector({ node, onClose }: { node: ApplicationGraphNode; onClose: () => void }) {
@@ -320,16 +237,13 @@ function ApplicationGraphCanvas() {
   const [error, setError] = useState<string | null>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
   const [pendingFocusId, setPendingFocusId] = useState<string | null>(null);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [inspectorId, setInspectorId] = useState<string | null>(null);
   const [mode, setMode] = useState<ApplicationGraphMode>("structure");
-  const [revealDepth, setRevealDepth] = useState<1 | 2>(1);
+  const [revealDepth, setRevealDepth] = useState<1 | 2 | 3 | "all">("all");
   const [filters, setFilters] = useState<GraphFilters>(initialFilters);
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [allSearchDataLoaded, setAllSearchDataLoaded] = useState(false);
-  const { fitBounds, setCenter } = useReactFlow<GraphFlowNode>();
-  const nodesInitialized = useNodesInitialized();
 
   useEffect(() => {
     let active = true;
@@ -360,7 +274,6 @@ function ApplicationGraphCanvas() {
 
   const scheduleFocus = useCallback((nextFocusId: string, nextInspectorId: string | null) => {
     if (focusTransitionTimerRef.current !== null) window.clearTimeout(focusTransitionTimerRef.current);
-    setHoveredId(null);
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reducedMotion) {
       setPendingFocusId(null);
@@ -383,7 +296,6 @@ function ApplicationGraphCanvas() {
 
   const focusNode = useCallback(async (node: ApplicationGraphNode) => {
     try {
-      setHoveredId(null);
       if (node.type === "application") await ensureApplication(node);
       setError(null);
       if (node.id === focusId) {
@@ -421,6 +333,10 @@ function ApplicationGraphCanvas() {
     if (query.trim().length >= 2) void loadAllForSearch();
   }, [loadAllForSearch, query]);
 
+  useEffect(() => {
+    if (portfolio) void loadAllForSearch();
+  }, [loadAllForSearch, portfolio]);
+
   const searchResults = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase();
     if (normalized.length < 2) return [];
@@ -433,103 +349,11 @@ function ApplicationGraphCanvas() {
     : [], [activeApplicationNodeId, graph.nodes]);
   const visibleIds = useMemo(() => focus ? visibleNodeIds(graph.nodes, graph.edges, focus, mode, filters, revealDepth) : new Set<string>(), [filters, focus, graph.edges, graph.nodes, mode, revealDepth]);
   const visibleRecords = useMemo(() => graph.nodes.filter((node) => visibleIds.has(node.id)), [graph.nodes, visibleIds]);
-  const targetPositions = useMemo(() => focus ? layoutApplicationGraphNodes(visibleRecords, focus) : new Map<string, GraphPosition>(), [focus, visibleRecords]);
-  const { isAnimating: layoutAnimating, positions } = useAnimatedGraphPositions(targetPositions);
   const visibleChildren = useMemo(() => visibleRecords.filter((node) => node.parentNodeId === focus?.id), [focus?.id, visibleRecords]);
   const dependencyNeighbourCount = useMemo(() => focus
     ? visibleRecords.filter((node) => !focus.path.includes(node.id) && !node.path.includes(focus.id)).length
     : 0, [focus, visibleRecords]);
-  const hoverNeighbourhood = useMemo(() => {
-    if (!hoveredId) return null;
-    const hovered = byId.get(hoveredId);
-    if (!hovered) return null;
-    const ids = new Set<string>([hovered.id]);
-    if (hovered.parentNodeId) ids.add(hovered.parentNodeId);
-    graph.nodes.forEach((node) => {
-      if (node.parentNodeId === hovered.id) ids.add(node.id);
-    });
-    return ids;
-  }, [byId, graph.nodes, hoveredId]);
-  const pendingNeighbourhood = useMemo(() => {
-    if (!pendingFocusId) return null;
-    const pending = byId.get(pendingFocusId);
-    if (!pending) return null;
-    const ids = new Set(pending.path);
-    graph.nodes.forEach((node) => {
-      if (node.parentNodeId === pending.id) ids.add(node.id);
-    });
-    return ids;
-  }, [byId, graph.nodes, pendingFocusId]);
-  const interactionLocked = Boolean(pendingFocusId) || layoutAnimating;
-  const startNodeInteraction = useCallback((id: string) => {
-    if (!interactionLocked) setHoveredId(id);
-  }, [interactionLocked]);
-  const endNodeInteraction = useCallback((id: string) => {
-    setHoveredId((current) => current === id ? null : current);
-  }, []);
-
-  const flowNodes = useMemo<GraphFlowNode[]>(() => visibleRecords.map((record, motionIndex) => ({
-    id: record.id,
-    type: "applicationGraph",
-    position: positions.get(record.id) ?? targetPositions.get(record.id) ?? { x: 0, y: 0 },
-    data: {
-      record,
-      mode,
-      motionIndex,
-      hoverState: !hoverNeighbourhood
-        ? null
-        : record.id === hoveredId
-          ? "active"
-          : hoverNeighbourhood.has(record.id)
-            ? "context"
-            : "muted",
-      departing: Boolean(pendingNeighbourhood && !pendingNeighbourhood.has(record.id)),
-      role: record.id === focus?.id ? "focus" : focus?.path.includes(record.id) ? "lineage" : record.path.includes(focus?.id || "") ? "descendant" : "relation",
-      focused: record.id === focus?.id,
-      dimmed: record.id !== focus?.id && !record.path.includes(focus?.id || "") && !focus?.path.includes(record.id),
-      accent: branchAccent(record),
-      onInteractionStart: startNodeInteraction,
-      onInteractionEnd: endNodeInteraction
-    },
-    draggable: false,
-    selectable: true,
-    focusable: false,
-    ariaLabel: `${record.label}, ${record.category}, ${record.completeness}% complete`
-  })), [endNodeInteraction, focus, hoverNeighbourhood, hoveredId, mode, pendingNeighbourhood, positions, startNodeInteraction, targetPositions, visibleRecords]);
-
-  const flowEdges = useMemo<Edge[]>(() => graph.edges
-    .filter((edge) => visibleIds.has(edge.source) && visibleIds.has(edge.target))
-    .filter((edge) => mode === "dependencies" || edge.type === "hierarchy")
-    .map((edge) => {
-      const sourceNode = byId.get(edge.source);
-      const targetNode = byId.get(edge.target);
-      const hoverConnected = Boolean(
-        hoveredId
-        && hoverNeighbourhood?.has(edge.source)
-        && hoverNeighbourhood.has(edge.target)
-        && (edge.source === hoveredId || edge.target === hoveredId)
-      );
-      const pendingConnected = Boolean(pendingNeighbourhood?.has(edge.source) && pendingNeighbourhood.has(edge.target));
-      const hierarchyAccent = sourceNode?.type === "company" && targetNode ? branchAccent(targetNode) : sourceNode ? branchAccent(sourceNode) : "#7f8da8";
-      const handles = handlesForEdge(
-        positions.get(edge.source) ?? targetPositions.get(edge.source) ?? { x: 0, y: 0 },
-        positions.get(edge.target) ?? targetPositions.get(edge.target) ?? { x: 0, y: 0 }
-      );
-      return {
-        id: edge.id,
-        source: edge.source,
-        target: edge.target,
-        ...handles,
-        type: "bezier",
-        animated: edge.type === "blocks",
-        label: mode === "dependencies" && edge.type !== "hierarchy" ? edge.label || (edge.type === "blocks" ? "blocks" : "depends on") : undefined,
-        markerEnd: edge.type === "hierarchy" ? undefined : { type: MarkerType.ArrowClosed, color: edge.type === "blocks" ? "#d66565" : "#7f8da8" },
-        style: edge.type === "hierarchy"
-          ? { stroke: hierarchyAccent, strokeOpacity: 0.78, strokeWidth: 2 }
-          : { stroke: edge.type === "blocks" ? "#d66565" : "#7f8da8", strokeWidth: edge.type === "blocks" ? 2.5 : 1.5, strokeDasharray: "6 6" },
-        className: `application-graph-edge application-graph-edge--${edge.type}${hoveredId ? hoverConnected ? " application-graph-edge--hover-connected" : " application-graph-edge--hover-muted" : ""}${pendingNeighbourhood && !pendingConnected ? " application-graph-edge--departing" : ""}`
-      };
-    }), [byId, graph.edges, hoveredId, hoverNeighbourhood, mode, pendingNeighbourhood, positions, targetPositions, visibleIds]);
+  const interactionLocked = Boolean(pendingFocusId);
 
   const unifiedNodes = useMemo<UnifiedGraphNode[]>(() => visibleRecords.map((record) => ({
     id: record.id,
@@ -544,39 +368,14 @@ function ApplicationGraphCanvas() {
   })), [focus?.id, visibleRecords]);
   const unifiedEdges = useMemo<UnifiedGraphEdge[]>(() => graph.edges
     .filter((edge) => visibleIds.has(edge.source) && visibleIds.has(edge.target))
-    .filter((edge) => mode === "dependencies" || edge.type === "hierarchy")
     .map((edge) => ({
       id: edge.id,
       source: edge.source,
       target: edge.target,
       type: edge.type,
       label: edge.label,
-      emphasis: edge.type === "blocks" ? "blocked" : edge.type === "hierarchy" ? "standard" : "muted"
+      emphasis: edge.type === "blocks" ? "blocked" : edge.type === "hierarchy" || mode === "dependencies" ? "standard" : "muted"
     })), [graph.edges, mode, visibleIds]);
-
-  useEffect(() => {
-    if (!focus || !nodesInitialized || !targetPositions.has(focus.id)) return;
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const timer = window.setTimeout(() => {
-      const bounds = applicationGraphBounds(visibleRecords, focus, targetPositions);
-      if (visibleRecords.length > 2 && bounds) void fitBounds(bounds, {
-        padding: 0.14,
-        duration: reducedMotion ? 0 : graphMotionDuration,
-        ease: graphMotionEase,
-        interpolate: "smooth"
-      });
-      else {
-        const position = targetPositions.get(focus.id)!;
-        void setCenter(position.x + 120, position.y + 52, {
-          zoom: 1,
-          duration: reducedMotion ? 0 : graphMotionDuration,
-          ease: graphMotionEase,
-          interpolate: "smooth"
-        });
-      }
-    }, reducedMotion ? 0 : 56);
-    return () => window.clearTimeout(timer);
-  }, [fitBounds, focus, inspectorId, mode, nodesInitialized, setCenter, targetPositions, visibleRecords]);
 
   const goToParent = useCallback(() => {
     if (!focus?.parentNodeId) return;
@@ -668,7 +467,7 @@ function ApplicationGraphCanvas() {
         <span><i className="ph-bold ph-flow-arrow" aria-hidden="true"></i> {nextLevelLabel(focus.type, visibleChildren)}</span>
         <span className="application-graph-depth" aria-label="Visible graph depth">
           <i className="ph-bold ph-circles-three" aria-hidden="true"></i> Depth
-          {([1, 2] as const).map((depth) => <button aria-pressed={revealDepth === depth} className={revealDepth === depth ? "is-active" : ""} key={depth} onClick={() => setRevealDepth(depth)} type="button">{depth}</button>)}
+          {([1, 2, 3, "all"] as const).map((depth) => <button aria-pressed={revealDepth === depth} className={revealDepth === depth ? "is-active" : ""} key={depth} onClick={() => setRevealDepth(depth)} type="button">{depth === "all" ? "All" : depth}</button>)}
         </span>
         <span className="application-graph-context__hint">
           {mode === "dependencies"
@@ -703,20 +502,5 @@ function ApplicationGraphCanvas() {
 }
 
 export function ApplicationGraphRoute() {
-  return <ReactFlowProvider><ApplicationGraphCanvas /></ReactFlowProvider>;
+  return <ApplicationGraphCanvas />;
 }
-type GraphNodeData = {
-  record: ApplicationGraphNode;
-  mode: ApplicationGraphMode;
-  role: "focus" | "lineage" | "descendant" | "relation";
-  hoverState: "active" | "context" | "muted" | null;
-  departing: boolean;
-  motionIndex: number;
-  dimmed: boolean;
-  focused: boolean;
-  accent: string;
-  onInteractionStart: (id: string) => void;
-  onInteractionEnd: (id: string) => void;
-};
-
-type GraphFlowNode = Node<GraphNodeData, "applicationGraph">;

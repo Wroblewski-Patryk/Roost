@@ -85,16 +85,17 @@ Google Drive operating-area assignments into department context as derived
 edges. Records with no stronger direct, structural, provider-derived, or
 company-scope relationship remain visible through an explicitly labelled
 `needs_context` fallback edge and are counted as relationship coverage gaps.
-The owner UI opens in a bounded context-exploration mode; the full topology is
-an intentional secondary view because rendering every imported file and task
-at once obscures rather than explains the operating model.
+The owner UI opens on the complete topology. A focused perspective keeps the
+selected record's full lineage and can reveal one, two, three, or every level
+of descendants. Filters reduce visual density without silently truncating the
+underlying company map.
 
 ## Shared 3D renderer
 
 Company Graph and Application Graph now adapt their existing packets to one
 frontend contract: `nodes`, typed `edges`, `rootId`, `focusId`, and
 `selectedId`. `UnifiedGraph3D` owns WebGL rendering, deterministic
-relationship-based placement, camera controls, selection, focus activation,
+relationship-based force placement into semantic branch clouds, camera controls, selection, focus activation,
 labels, and the keyboard navigation fallback. Route workbenches continue to
 own domain filters, progressive loading, breadcrumbs, inspectors, and links to
 canonical records.
@@ -104,7 +105,8 @@ metadata only; topology always comes from recorded hierarchy, organizational
 context, or typed dependency edges. It uses GPU-instanced node geometry and a
 batched edge geometry so a larger company projection does not create one draw
 call per record. Labels are progressively disclosed for anchors, focus,
-selection, and a bounded nearby set.
+selection, and a bounded high-signal set. Selecting a record visually mutes
+the rest of the cloud while retaining the surrounding topology.
 
 ## Canonical Next Architecture
 

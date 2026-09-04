@@ -629,9 +629,13 @@ domain packets to its shared node and typed-edge contract.
 - Position nodes from recorded relationships or hierarchy. Never use backend
   type or array order as the primary layout axis.
 - Whole-company graphs support both an `All relationships` overview and a
-  focused neighbourhood. The overview packs records into their department
-  clusters and keeps every relationship on one navigable canvas; focus mode
-  progressively discloses one record's direct neighbourhood.
+  focused perspective. The overview packs records into organic department or
+  application clusters and keeps every relationship on one navigable 3D
+  canvas. Focus mode retains the complete ancestor lineage and offers one,
+  two, three, or all descendant levels without a hidden node cap.
+- Dense graph clouds use restrained labels and visual de-emphasis instead of
+  removing records. Selecting a node highlights its immediate relationships
+  while the remaining company topology stays visible as context.
 - Edges connect node centers in three-dimensional space and use emphasis only
   to communicate blocked, attention, selected, or supporting relationships.
   Topology must never be inferred from color or array order.

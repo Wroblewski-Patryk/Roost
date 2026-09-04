@@ -12,8 +12,8 @@ type GraphEdge = { id: string; type: string; from: { entityType: string; entityI
 type GraphPacket = { schemaVersion: string; generatedAt: string; rootNodeId: string; nodes: GraphNode[]; edges: GraphEdge[]; summary?: { recordCount: number; contextualizedRecordCount: number; unassignedRecordCount: number; relationshipCoverage: number }; organizationalMemberships: Array<{ entityType: string; entityId: string; departmentKey: string; role: string }> };
 
 const typeColors: Record<string, string> = { workspace: "#8ea5ff", department: "#7c8bad", goal: "#7c3aed", project: "#2563eb", application: "#0891b2", company_record: "#4f46e5", task: "#ea580c", task_list: "#b7791f", procedure: "#16a34a", risk: "#dc2626", metric: "#0d9488", resource: "#64748b", file: "#64748b", policy: "#9333ea", client: "#db2777", workforce: "#ca8a04" };
-const maximumNeighbourhoodSize = 28;
 type GraphMode = "all" | "explore";
+type PerspectiveDepth = 1 | 2 | 3 | "all";
 function entityHref(node: GraphNode) {
   if (node.entityType === "workspace") return "/areas?area=00-ogolny&view=overview";
   if (node.entityType === "department" && node.recordType) return `/areas?area=${encodeURIComponent(node.recordType)}&view=overview`;
@@ -29,7 +29,7 @@ function nodePriority(node: GraphNode) {
 }
 
 export function CompanyGraphRoute() {
-  const { locale, t } = useLanguage(); const graph = useOwnerPacket<GraphPacket>("/v1/company-intelligence/graph", true, t); const [query, setQuery] = useState(""); const [enabledTypes, setEnabledTypes] = useState<string[]>([]); const [selectedId, setSelectedId] = useState<string | null>(null); const [focusId, setFocusId] = useState<string | null>(null); const [mode, setMode] = useState<GraphMode>("explore");
+  const { locale, t } = useLanguage(); const graph = useOwnerPacket<GraphPacket>("/v1/company-intelligence/graph", true, t); const [query, setQuery] = useState(""); const [enabledTypes, setEnabledTypes] = useState<string[]>([]); const [selectedId, setSelectedId] = useState<string | null>(null); const [focusId, setFocusId] = useState<string | null>(null); const [mode, setMode] = useState<GraphMode>("all"); const [perspectiveDepth, setPerspectiveDepth] = useState<PerspectiveDepth>("all");
   const allRecords = useMemo(() => graph.data?.nodes || [], [graph.data]);
   const allEdges = useMemo(() => graph.data?.edges || [], [graph.data]);
   const recordById = useMemo(() => new Map(allRecords.map((node) => [node.id, node])), [allRecords]);
@@ -47,37 +47,71 @@ export function CompanyGraphRoute() {
       const records = allRecords.filter(passesType).sort((left, right) => nodePriority(left) - nodePriority(right) || left.label.localeCompare(right.label));
       return { records, total: records.length };
     }
+    const incoming = new Map<string, string[]>();
+    const outgoing = new Map<string, string[]>();
+    allEdges.forEach((edge) => {
+      incoming.set(edge.to.entityId, [...(incoming.get(edge.to.entityId) || []), edge.from.entityId]);
+      outgoing.set(edge.from.entityId, [...(outgoing.get(edge.from.entityId) || []), edge.to.entityId]);
+    });
     const candidateIds = new Set<string>([activeFocus.id]);
+    const addAncestors = (startId: string) => {
+      const frontier = [startId];
+      for (let cursor = 0; cursor < frontier.length; cursor += 1) {
+        (incoming.get(frontier[cursor]) || []).forEach((id) => {
+          if (candidateIds.has(id)) return;
+          candidateIds.add(id);
+          frontier.push(id);
+        });
+      }
+    };
+    addAncestors(activeFocus.id);
     if (normalized.length >= 2) {
       const matches = allRecords
         .filter((node) => !["workspace", "department"].includes(node.entityType))
         .filter(passesType)
         .filter((node) => `${node.label} ${node.entityType} ${node.recordType || ""}`.toLocaleLowerCase().includes(normalized))
         .sort((left, right) => nodePriority(left) - nodePriority(right) || left.label.localeCompare(right.label));
-      matches.slice(0, 18).forEach((node) => candidateIds.add(node.id));
-      allEdges.forEach((edge) => {
-        if (candidateIds.has(edge.from.entityId) && ["workspace", "department", "application", "project", "task_list"].includes(edge.to.entityType)) candidateIds.add(edge.to.entityId);
-        if (candidateIds.has(edge.to.entityId) && ["workspace", "department", "application", "project", "task_list"].includes(edge.from.entityType)) candidateIds.add(edge.from.entityId);
-      });
+      matches.forEach((node) => { candidateIds.add(node.id); addAncestors(node.id); });
     } else {
-      const neighbours = allEdges.flatMap((edge) => edge.from.entityId === activeFocus.id ? [recordById.get(edge.to.entityId)] : edge.to.entityId === activeFocus.id ? [recordById.get(edge.from.entityId)] : []).filter((node): node is GraphNode => Boolean(node)).filter((node) => activeFocus.entityType !== "workspace" || node.entityType === "department").filter(passesType).sort((left, right) => nodePriority(left) - nodePriority(right) || left.label.localeCompare(right.label));
-      neighbours.forEach((node) => candidateIds.add(node.id));
+      let frontier = [activeFocus.id];
+      let depth = 0;
+      while (frontier.length && (perspectiveDepth === "all" || depth < perspectiveDepth)) {
+        const next: string[] = [];
+        frontier.forEach((id) => (outgoing.get(id) || []).forEach((childId) => {
+          if (candidateIds.has(childId)) return;
+          const child = recordById.get(childId);
+          if (!child || !passesType(child)) return;
+          candidateIds.add(childId);
+          next.push(childId);
+        }));
+        frontier = next;
+        depth += 1;
+      }
     }
     const candidates = [...candidateIds].map((id) => recordById.get(id)).filter((node): node is GraphNode => Boolean(node)).sort((left, right) => left.id === activeFocus.id ? -1 : right.id === activeFocus.id ? 1 : nodePriority(left) - nodePriority(right) || left.label.localeCompare(right.label));
-    return { records: candidates.slice(0, maximumNeighbourhoodSize), total: candidates.length };
-  }, [activeFocus, allEdges, allRecords, enabledTypes, mode, query, recordById]);
+    return { records: candidates, total: candidates.length };
+  }, [activeFocus, allEdges, allRecords, enabledTypes, mode, perspectiveDepth, query, recordById]);
   const visibleRecords = visibility.records;
   const visibleIds = useMemo(() => new Set(visibleRecords.map((node) => node.id)), [visibleRecords]);
+  const parentById = useMemo(() => {
+    const priority = (edge: GraphEdge) => edge.source === "structural" ? 0 : edge.source === "derived" ? 1 : edge.source === "fallback" ? 2 : 3;
+    const incoming = [...allEdges].sort((left, right) => priority(left) - priority(right)).reduce((result, edge) => {
+      if (!result.has(edge.to.entityId)) result.set(edge.to.entityId, edge.from.entityId);
+      return result;
+    }, new Map<string, string>());
+    return incoming;
+  }, [allEdges]);
   const nodes = useMemo<UnifiedGraphNode[]>(() => visibleRecords.map((record) => ({
     id: record.id,
     type: record.entityType,
     label: record.label,
     category: humanizeBusinessValue(record.recordType || record.entityType, undefined, locale),
     status: record.entityType === "workspace" ? `${allRecords.length - 1} mapped records` : humanizeBusinessValue(record.state || "unknown", undefined, locale),
+    parentId: parentById.get(record.id),
     color: typeColors[record.entityType] || "#64748b",
     weight: allEdges.filter((edge) => edge.from.entityId === record.id || edge.to.entityId === record.id).length,
     emphasis: ["workspace", "department"].includes(record.entityType) ? "anchor" : record.state === "blocked" ? "blocked" : "standard"
-  })), [allEdges, allRecords.length, locale, visibleRecords]);
+  })), [allEdges, allRecords.length, locale, parentById, visibleRecords]);
   const edges = useMemo<UnifiedGraphEdge[]>(() => allEdges.filter((edge) => visibleIds.has(edge.from.entityId) && visibleIds.has(edge.to.entityId)).map((edge) => ({
     id: edge.id,
     source: edge.from.entityId,
@@ -92,9 +126,9 @@ export function CompanyGraphRoute() {
   function focusNode(id: string) { setFocusId(id); setSelectedId(id); setQuery(""); }
   return <><CcPageHeader actions={<CcButton href="/areas?area=00-ogolny&view=overview" iconLeft="ph-gauge" size="sm" variant="outline">Company dashboard</CcButton>} description="Interactive, whole-workspace state graph. Filter layers, inspect typed relationships and open any canonical object without switching between mini-applications." eyebrow="00 General · Company intelligence" title="Company Graph" />
     <section className="roost-work-panel rounded-company overflow-hidden">
-      <header className="company-graph-toolbar"><label className="company-graph-search"><i className="ph-bold ph-magnifying-glass" aria-hidden="true"></i><input aria-label="Search Company Graph" onChange={(event) => setQuery(event.target.value)} placeholder="Search objects and relationships…" type="search" value={query} /></label><div className="company-graph-mode" aria-label="Graph scope"><button aria-pressed={mode === "explore"} className={mode === "explore" ? "is-active" : ""} onClick={() => setMode("explore")} type="button"><i className="ph-bold ph-crosshair" aria-hidden="true"></i> Explore context</button><button aria-pressed={mode === "all"} className={mode === "all" ? "is-active" : ""} onClick={() => setMode("all")} type="button"><i className="ph-bold ph-share-network" aria-hidden="true"></i> Full topology</button></div><div className="company-graph-health"><span className={`badge badge-outline company-graph-health--${graph.data?.summary?.unassignedRecordCount ? "attention" : "healthy"}`}>{graph.data?.summary ? `${graph.data.summary.relationshipCoverage}% contextualized` : "Coverage…"}</span><span>{visibleRecords.length} nodes · {edges.length} relations{visibility.total > visibleRecords.length ? ` · ${visibility.total - visibleRecords.length} more` : ""}{graph.data?.summary?.unassignedRecordCount ? ` · ${graph.data.summary.unassignedRecordCount} need context` : ""}</span></div></header>
+      <header className="company-graph-toolbar"><label className="company-graph-search"><i className="ph-bold ph-magnifying-glass" aria-hidden="true"></i><input aria-label="Search Company Graph" onChange={(event) => setQuery(event.target.value)} placeholder="Search objects and relationships…" type="search" value={query} /></label><div className="company-graph-mode" aria-label="Graph scope"><button aria-pressed={mode === "all"} className={mode === "all" ? "is-active" : ""} onClick={() => setMode("all")} type="button"><i className="ph-bold ph-share-network" aria-hidden="true"></i> Full company</button><button aria-pressed={mode === "explore"} className={mode === "explore" ? "is-active" : ""} onClick={() => setMode("explore")} type="button"><i className="ph-bold ph-crosshair" aria-hidden="true"></i> Focused perspective</button></div><div className="company-graph-health"><span className={`badge badge-outline company-graph-health--${graph.data?.summary?.unassignedRecordCount ? "attention" : "healthy"}`}>{graph.data?.summary ? `${graph.data.summary.relationshipCoverage}% contextualized` : "Coverage…"}</span><span>{visibleRecords.length} nodes · {edges.length} relations{graph.data?.summary?.unassignedRecordCount ? ` · ${graph.data.summary.unassignedRecordCount} need context` : ""}</span></div></header>
       <div className="company-graph-filterbar" aria-label="Entity layer filters">{availableTypes.map((type) => <button aria-pressed={enabledTypes.includes(type)} className={enabledTypes.includes(type) ? "is-active" : ""} key={type} onClick={() => toggleType(type)} type="button"><span style={{ backgroundColor: typeColors[type] || "#64748b" }}></span>{humanizeBusinessValue(type, undefined, locale)}<small>{graph.data?.nodes.filter((node) => node.entityType === type).length}</small></button>)}{enabledTypes.length ? <button onClick={() => setEnabledTypes([])} type="button"><i className="ph-bold ph-x" aria-hidden="true"></i> Clear</button> : null}</div>
-      {activeFocus ? <div className="company-graph-focusbar"><button disabled={mode === "all" || activeFocus.id === graph.data?.rootNodeId} onClick={() => graph.data?.rootNodeId && focusNode(graph.data.rootNodeId)} type="button"><i className="ph-bold ph-buildings" aria-hidden="true"></i>{mode === "all" ? "Whole company" : "Company map"}</button><i className="ph-bold ph-caret-right" aria-hidden="true"></i><strong>{mode === "all" ? "Every mapped object and relationship" : activeFocus.label}</strong><span>{mode === "all" ? "Use layer filters to reduce the canvas without losing the company context." : "Double-click a node to explore its direct relationships."}</span></div> : null}
+      {activeFocus ? <div className="company-graph-focusbar"><button disabled={mode === "all" || activeFocus.id === graph.data?.rootNodeId} onClick={() => graph.data?.rootNodeId && focusNode(graph.data.rootNodeId)} type="button"><i className="ph-bold ph-buildings" aria-hidden="true"></i>{mode === "all" ? "Whole company" : "Company map"}</button><i className="ph-bold ph-caret-right" aria-hidden="true"></i><strong>{mode === "all" ? "Every mapped object and relationship" : activeFocus.label}</strong>{mode === "explore" ? <span className="application-graph-depth" aria-label="Perspective depth"><i className="ph-bold ph-circles-three" aria-hidden="true"></i> Depth {([1, 2, 3, "all"] as const).map((depth) => <button aria-pressed={perspectiveDepth === depth} className={perspectiveDepth === depth ? "is-active" : ""} key={depth} onClick={() => setPerspectiveDepth(depth)} type="button">{depth === "all" ? "All" : depth}</button>)}</span> : <span>Use layer filters to reduce the cloud without losing company context.</span>}<span>{mode === "explore" ? "The complete lineage and selected depth of descendants stay visible." : "Double-click any node to open its complete perspective."}</span></div> : null}
       {graph.status === "error" ? <div className="p-4"><CcNotice live tone="error" title={graph.error || "Company Graph could not load."} /></div> : null}
       {graph.status === "loading" ? <div className="p-4"><CcNotice live tone="loading" title="Building Company Graph…" detail="Loading canonical objects, organizational memberships and typed dependencies." /></div> : null}
       {graph.status === "ready" && !visibleRecords.length ? <div className="p-4"><CcNotice tone="empty" title="No objects match these filters" detail="Clear a layer filter or adjust the graph search." /></div> : null}

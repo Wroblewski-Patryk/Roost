@@ -79,7 +79,7 @@ function EdgeCloud({ edges, positions, selectedId }: { edges: UnifiedGraphEdge[]
       if (!source || !target) return;
       coordinates.push(source.x, source.y, source.z, target.x, target.y, target.z);
       const connected = selectedId === edge.source || selectedId === edge.target;
-      const color = new THREE.Color(edge.emphasis === "blocked" ? "#d66565" : edge.emphasis === "attention" ? "#d4a35d" : connected ? "#b8c4ff" : edge.emphasis === "muted" ? "#37445c" : "#667694");
+      const color = new THREE.Color(selectedId && !connected ? "#202839" : edge.emphasis === "blocked" ? "#d66565" : edge.emphasis === "attention" ? "#d4a35d" : connected ? "#c9d2ff" : edge.emphasis === "muted" ? "#37445c" : "#667694");
       colors.push(color.r, color.g, color.b, color.r, color.g, color.b);
     });
     const value = new THREE.BufferGeometry();
@@ -92,11 +92,12 @@ function EdgeCloud({ edges, positions, selectedId }: { edges: UnifiedGraphEdge[]
   return <lineSegments geometry={geometry}><lineBasicMaterial vertexColors transparent opacity={selectedId ? 0.72 : 0.56} /></lineSegments>;
 }
 
-function NodeCloud({ nodes, positions, focusId, selectedId, onHover, onSelect, onActivate }: {
+function NodeCloud({ nodes, positions, focusId, selectedId, highlightedIds, onHover, onSelect, onActivate }: {
   nodes: UnifiedGraphNode[];
   positions: Map<string, UnifiedGraphPosition>;
   focusId: string;
   selectedId?: string | null;
+  highlightedIds: Set<string> | null;
   onHover: (node: UnifiedGraphNode | null) => void;
   onSelect?: (node: UnifiedGraphNode) => void;
   onActivate?: (node: UnifiedGraphNode) => void;
@@ -112,11 +113,12 @@ function NodeCloud({ nodes, positions, focusId, selectedId, onHover, onSelect, o
       dummy.scale.setScalar(radius);
       dummy.updateMatrix();
       mesh.current!.setMatrixAt(index, dummy.matrix);
-      mesh.current!.setColorAt(index, new THREE.Color(node.emphasis === "blocked" ? "#d66565" : node.emphasis === "attention" ? "#d4a35d" : node.color || fallbackColor));
+      const dimmed = highlightedIds && !highlightedIds.has(node.id);
+      mesh.current!.setColorAt(index, new THREE.Color(dimmed ? "#394153" : node.emphasis === "blocked" ? "#d66565" : node.emphasis === "attention" ? "#d4a35d" : node.color || fallbackColor));
     });
     mesh.current.instanceMatrix.needsUpdate = true;
     if (mesh.current.instanceColor) mesh.current.instanceColor.needsUpdate = true;
-  }, [dummy, focusId, nodes, positions, selectedId]);
+  }, [dummy, focusId, highlightedIds, nodes, positions, selectedId]);
 
   const resolveNode = (event: ThreeEvent<PointerEvent | MouseEvent>) => typeof event.instanceId === "number" ? nodes[event.instanceId] : null;
   return <instancedMesh
@@ -135,6 +137,15 @@ function NodeCloud({ nodes, positions, focusId, selectedId, onHover, onSelect, o
 function GraphScene(props: Props & { viewKey: number; onHover: (node: UnifiedGraphNode | null) => void }) {
   const positions = useMemo(() => layoutUnifiedGraph3D(props.nodes, props.edges, props.focusId || props.rootId), [props.edges, props.focusId, props.nodes, props.rootId]);
   const focusId = props.focusId || props.rootId;
+  const highlightedIds = useMemo(() => {
+    if (!props.selectedId) return null;
+    const ids = new Set<string>([props.selectedId]);
+    props.edges.forEach((edge) => {
+      if (edge.source === props.selectedId) ids.add(edge.target);
+      if (edge.target === props.selectedId) ids.add(edge.source);
+    });
+    return ids;
+  }, [props.edges, props.selectedId]);
   const labelNodes = useMemo(() => {
     const preferred = props.nodes.filter((node) => node.id === focusId || node.id === props.selectedId || node.emphasis === "anchor");
     const remaining = props.nodes.filter((node) => !preferred.includes(node));
@@ -148,7 +159,7 @@ function GraphScene(props: Props & { viewKey: number; onHover: (node: UnifiedGra
     <directionalLight intensity={2.2} position={[8, 12, 10]} />
     <pointLight color="#7187ef" intensity={34} position={[0, 1, 0]} distance={24} />
     <EdgeCloud edges={props.edges} positions={positions} selectedId={props.selectedId} />
-    <NodeCloud nodes={props.nodes} positions={positions} focusId={focusId} selectedId={props.selectedId} onHover={props.onHover} onSelect={props.onNodeSelect} onActivate={props.onNodeActivate} />
+    <NodeCloud nodes={props.nodes} positions={positions} focusId={focusId} highlightedIds={highlightedIds} selectedId={props.selectedId} onHover={props.onHover} onSelect={props.onNodeSelect} onActivate={props.onNodeActivate} />
     {labelNodes.map((node) => {
       const position = positions.get(node.id);
       if (!position) return null;
