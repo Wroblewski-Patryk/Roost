@@ -270,6 +270,16 @@ file paths preserve provenance, and imported declarations remain
 not claim that documentation proves implementation and does not delete records
 that disappear from a later scan.
 
+When a repository contains a curated architecture `registry/nodes.csv`, the
+same command also imports those rows as idempotent
+`ApplicationArchitectureComponent` atoms. Only target IDs present in the same
+curated registry or an earlier import are accepted. Parent and dependency
+edges come from explicit registry columns or curated relation CSV files; the
+importer does not infer relationships from similar names. Existing Soar atoms
+retain the established `soar-architecture-registry` identity, preventing a
+second copy during reconciliation. Automatically discovered file/function
+inventories are intentionally excluded until their evidence state is reviewed.
+
 The supported visual modes are Structure, Execution, Progress, Dependencies,
 Agent Ready, and Productization. They are alternate interpretations of one packet, not
 stored state. Required incomplete dependencies are represented as blocker

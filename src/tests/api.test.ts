@@ -1099,21 +1099,31 @@ test("product engineering keeps definitions shared, observations explicit, and p
     records: [
       { sourceId: "file:docs/product/product.md", recordType: "architecture_document", title: "Product", description: "Canonical product truth.", filePath: "docs/product/product.md", headingPath: ["Product"] },
       { sourceId: "file:docs/product/product.md#goal", parentSourceId: "file:docs/product/product.md", recordType: "application_goal", title: "Goal", description: "Operate the company coherently.", filePath: "docs/product/product.md", headingPath: ["Product", "Goal"] }
+    ],
+    architecture: [
+      { sourceId: "WEB", type: "frontend", name: "Owner console", atomType: "application", layer: "frontend", completionPercent: 75, verificationStatus: "documented", filePath: "web/src/app.tsx", relations: [{ targetSourceId: "API", type: "calls", status: "documented" }] },
+      { sourceId: "API", parentSourceId: "WEB", type: "backend", name: "Roost API", atomType: "service", layer: "backend", completionPercent: 80, verificationStatus: "documented", filePath: "src/app.ts", relations: [] }
     ]
   };
   const documentationPreview = await request(`/v1/product-engineering/applications/${roostId}/actions/import-documentation-context`, { method: "POST", headers: auth, body: JSON.stringify({ ...documentationPayload, mode: "preview" }) });
   assert.equal(documentationPreview.status, 200);
-  assert.equal((documentationPreview.body as { data: { createCount: number; deleteCount: number } }).data.createCount, 2);
+  assert.equal((documentationPreview.body as { data: { createCount: number; recordCreateCount: number; architectureCreateCount: number; deleteCount: number } }).data.createCount, 4);
+  assert.equal((documentationPreview.body as { data: { recordCreateCount: number } }).data.recordCreateCount, 2);
+  assert.equal((documentationPreview.body as { data: { architectureCreateCount: number } }).data.architectureCreateCount, 2);
   assert.equal((documentationPreview.body as { data: { deleteCount: number } }).data.deleteCount, 0);
   assert.equal(await prisma.companyRecord.count({ where: { applicationId: roostId, source: "documentation-import" } }), 0, "preview must not write documentation records");
+  assert.equal(await prisma.applicationArchitectureComponent.count({ where: { applicationId: roostId } }), 0, "preview must not write architecture components");
   const documentationApply = await request(`/v1/product-engineering/applications/${roostId}/actions/import-documentation-context`, { method: "POST", headers: auth, body: JSON.stringify({ ...documentationPayload, mode: "apply" }) });
   assert.equal(documentationApply.status, 200);
   const importedDocumentation = await prisma.companyRecord.findMany({ where: { applicationId: roostId, source: "documentation-import" }, orderBy: { title: "asc" } });
   assert.equal(importedDocumentation.length, 2);
   assert.equal(importedDocumentation.find((record) => record.recordType === "application_goal")?.parentId, importedDocumentation.find((record) => record.recordType === "architecture_document")?.id);
+  const importedArchitecture = await prisma.applicationArchitectureComponent.findMany({ where: { applicationId: roostId, name: { in: ["Owner console", "Roost API"] } } });
+  assert.equal(importedArchitecture.length, 2);
+  assert.equal((importedArchitecture.find((component) => component.name === "Owner console")?.metadata as { relations?: unknown[] }).relations?.length, 1);
   const documentationSecondPreview = await request(`/v1/product-engineering/applications/${roostId}/actions/import-documentation-context`, { method: "POST", headers: auth, body: JSON.stringify({ ...documentationPayload, mode: "preview" }) });
   assert.equal((documentationSecondPreview.body as { data: { createCount: number; updateCount: number } }).data.createCount, 0);
-  assert.equal((documentationSecondPreview.body as { data: { updateCount: number } }).data.updateCount, 2);
+  assert.equal((documentationSecondPreview.body as { data: { updateCount: number } }).data.updateCount, 4);
   const documentedGraphResponse = await request(`/v1/product-engineering/applications/${roostId}/graph`, { headers: auth });
   const documentedNodes = (documentedGraphResponse.body as { data: { nodes: Array<{ id: string; entityId: string; parentNodeId: string | null }> } }).data.nodes;
   const importedDocumentNode = documentedNodes.find((node) => node.entityId === importedDocumentation.find((record) => record.recordType === "architecture_document")?.id);

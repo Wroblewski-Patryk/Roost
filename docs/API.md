@@ -40,10 +40,11 @@ and require `product-engineering:read`.
 
 The documentation-context command requires `product-engineering:write` and
 accepts `mode: preview|apply`, a stable source-system/root/revision tuple, and
-hierarchical records with stable source IDs. Preview performs no writes. Apply
-upserts matching imported records, preserves parent hierarchy, records
-repository provenance in metadata, writes one audit/event summary, and never
-deletes records missing from a later payload. The bundled
+hierarchical records and architecture-registry atoms with stable source IDs.
+Preview performs no writes. Apply upserts matching records and
+`ApplicationArchitectureComponent` atoms, preserves parent hierarchy and typed
+registry relations, records repository provenance in metadata, writes one
+audit/event summary, and never deletes records missing from a later payload. The bundled
 `import:application-docs` client uses HTTPS and a workspace-scoped
 `ROOST_API_TOKEN`; it never connects to PostgreSQL.
 

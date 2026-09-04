@@ -232,8 +232,29 @@ const documentationContextImportSchema = z.object({
     description: z.string().trim().max(10000).nullable().optional(),
     filePath: z.string().trim().min(1).max(1000),
     headingPath: z.array(z.string().trim().min(1).max(240)).max(12).default([])
-  }).strict()).max(2500)
-}).strict();
+  }).strict()).max(2500).default([]),
+  architecture: z.array(z.object({
+    sourceId: z.string().trim().min(1).max(500),
+    parentSourceId: z.string().trim().min(1).max(500).nullable().optional(),
+    type: z.nativeEnum(ArchitectureComponentType),
+    name: z.string().trim().min(1).max(240),
+    description: z.string().trim().max(10000).nullable().optional(),
+    atomType: z.string().trim().min(1).max(120),
+    layer: z.string().trim().min(1).max(120),
+    module: z.string().trim().max(200).nullable().optional(),
+    feature: z.string().trim().max(200).nullable().optional(),
+    completionPercent: z.number().min(0).max(100).default(0),
+    verificationStatus: z.string().trim().max(120).nullable().optional(),
+    riskLevel: z.string().trim().max(80).nullable().optional(),
+    filePath: z.string().trim().max(1000).nullable().optional(),
+    relations: z.array(z.object({
+      targetSourceId: z.string().trim().min(1).max(500),
+      type: z.string().trim().min(1).max(120),
+      status: z.string().trim().max(120).nullable().optional(),
+      description: z.string().trim().max(2000).nullable().optional()
+    }).strict()).max(200).default([])
+  }).strict()).max(2500).default([])
+}).strict().refine((input) => input.records.length > 0 || input.architecture.length > 0, { message: "documentation_import_empty" });
 
 function documentationRecordKey(applicationSlug: string, sourceSystem: string, sourceId: string) {
   const readable = `${applicationSlug}-${sourceSystem}-${sourceId}`.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -346,14 +367,26 @@ productEngineeringRouter.post("/applications/:id/actions/import-documentation-co
   const input = documentationContextImportSchema.parse(req.body);
   const duplicateSourceIds = input.records.filter((record, index) => input.records.findIndex((candidate) => candidate.sourceId === record.sourceId) !== index);
   if (duplicateSourceIds.length) return sendApiError(res, 400, "duplicate_documentation_source_id", { details: { sourceIds: [...new Set(duplicateSourceIds.map((record) => record.sourceId))] } });
-  const existingRecords = await prisma.companyRecord.findMany({ where: { workspaceId, applicationId: application.id, source: "documentation-import" } });
+  const duplicateArchitectureSourceIds = input.architecture.filter((component, index) => input.architecture.findIndex((candidate) => candidate.sourceId === component.sourceId) !== index);
+  if (duplicateArchitectureSourceIds.length) return sendApiError(res, 400, "duplicate_architecture_source_id", { details: { sourceIds: [...new Set(duplicateArchitectureSourceIds.map((component) => component.sourceId))] } });
+  const [existingRecords, existingArchitecture] = await Promise.all([
+    prisma.companyRecord.findMany({ where: { workspaceId, applicationId: application.id, source: "documentation-import" } }),
+    prisma.applicationArchitectureComponent.findMany({ where: { applicationId: application.id } })
+  ]);
   const existingBySourceId = new Map(existingRecords.flatMap((record) => {
     const metadata = record.metadata && typeof record.metadata === "object" && !Array.isArray(record.metadata) ? record.metadata as Record<string, unknown> : {};
     return metadata.sourceSystem === input.sourceSystem && typeof metadata.sourceId === "string" ? [[metadata.sourceId, record] as const] : [];
   }));
+  const existingArchitectureBySourceId = new Map(existingArchitecture.flatMap((component) => {
+    const metadata = component.metadata && typeof component.metadata === "object" && !Array.isArray(component.metadata) ? component.metadata as Record<string, unknown> : {};
+    return metadata.sourceSystem === input.sourceSystem && typeof metadata.sourceId === "string" ? [[metadata.sourceId, component] as const] : [];
+  }));
   const parentIds = new Set(input.records.map((record) => record.sourceId));
   const missingParentSourceIds = [...new Set(input.records.map((record) => record.parentSourceId).filter((sourceId): sourceId is string => Boolean(sourceId) && !parentIds.has(sourceId!) && !existingBySourceId.has(sourceId!)))];
   if (missingParentSourceIds.length) return sendApiError(res, 400, "documentation_parent_not_found", { details: { sourceIds: missingParentSourceIds } });
+  const architectureSourceIds = new Set([...existingArchitectureBySourceId.keys(), ...input.architecture.map((component) => component.sourceId)]);
+  const missingArchitectureTargetIds = [...new Set(input.architecture.flatMap((component) => [component.parentSourceId, ...component.relations.map((relation) => relation.targetSourceId)]).filter((sourceId): sourceId is string => Boolean(sourceId) && !architectureSourceIds.has(sourceId!)))];
+  if (missingArchitectureTargetIds.length) return sendApiError(res, 400, "architecture_relation_target_not_found", { details: { sourceIds: missingArchitectureTargetIds } });
 
   const preview = {
     applicationId: application.id,
@@ -362,8 +395,13 @@ productEngineeringRouter.post("/applications/:id/actions/import-documentation-co
     sourceSystem: input.sourceSystem,
     sourceRoot: input.sourceRoot,
     recordCount: input.records.length,
-    createCount: input.records.filter((record) => !existingBySourceId.has(record.sourceId)).length,
-    updateCount: input.records.filter((record) => existingBySourceId.has(record.sourceId)).length,
+    architectureCount: input.architecture.length,
+    recordCreateCount: input.records.filter((record) => !existingBySourceId.has(record.sourceId)).length,
+    recordUpdateCount: input.records.filter((record) => existingBySourceId.has(record.sourceId)).length,
+    architectureCreateCount: input.architecture.filter((component) => !existingArchitectureBySourceId.has(component.sourceId)).length,
+    architectureUpdateCount: input.architecture.filter((component) => existingArchitectureBySourceId.has(component.sourceId)).length,
+    createCount: input.records.filter((record) => !existingBySourceId.has(record.sourceId)).length + input.architecture.filter((component) => !existingArchitectureBySourceId.has(component.sourceId)).length,
+    updateCount: input.records.filter((record) => existingBySourceId.has(record.sourceId)).length + input.architecture.filter((component) => existingArchitectureBySourceId.has(component.sourceId)).length,
     deleteCount: 0
   };
   if (input.mode === "preview") return res.json({ data: preview });
@@ -402,6 +440,29 @@ productEngineeringRouter.post("/applications/:id/actions/import-documentation-co
         ? await transaction.companyRecord.update({ where: { id: existing.id }, data })
         : await transaction.companyRecord.create({ data: { ...data, workspaceId, key: documentationRecordKey(application.slug, input.sourceSystem, record.sourceId) } });
       idBySourceId.set(record.sourceId, saved.id);
+    }
+    for (const component of input.architecture) {
+      const existing = existingArchitectureBySourceId.get(component.sourceId);
+      const metadata = {
+        sourceSystem: input.sourceSystem,
+        sourceId: component.sourceId,
+        sourceRoot: input.sourceRoot,
+        sourceRevision: input.sourceRevision ?? null,
+        parentSourceId: component.parentSourceId ?? null,
+        atomType: component.atomType,
+        layer: component.layer,
+        module: component.module ?? null,
+        feature: component.feature ?? null,
+        completionPercent: component.completionPercent,
+        verificationStatus: component.verificationStatus ?? null,
+        riskLevel: component.riskLevel ?? null,
+        filePath: component.filePath ?? null,
+        relations: component.relations,
+        provenance: "architecture-registry"
+      } satisfies Prisma.InputJsonObject;
+      const data = { type: component.type, name: component.name, description: component.description ?? null, status: OperatingStatus.active, metadata };
+      if (existing) await transaction.applicationArchitectureComponent.update({ where: { id: existing.id }, data });
+      else await transaction.applicationArchitectureComponent.create({ data: { ...data, applicationId: application.id } });
     }
   }, { maxWait: 10_000, timeout: 120_000 });
   await audit(req, "application.documentation_context.import", "Application", application.id, { ...preview, sourceRevision: input.sourceRevision ?? null });

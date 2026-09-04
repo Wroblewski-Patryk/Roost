@@ -12,6 +12,23 @@ type ImportRecord = {
   filePath: string;
   headingPath: string[];
 };
+type CsvRow = Record<string, string>;
+type ArchitectureImport = {
+  sourceId: string;
+  parentSourceId?: string;
+  type: "frontend" | "backend" | "database" | "orm" | "cache" | "queue" | "realtime" | "authentication" | "storage" | "deployment" | "hosting" | "ci_cd" | "external_service" | "other";
+  name: string;
+  description?: string;
+  atomType: string;
+  layer: string;
+  module?: string;
+  feature?: string;
+  completionPercent: number;
+  verificationStatus?: string;
+  riskLevel?: string;
+  filePath?: string;
+  relations: Array<{ targetSourceId: string; type: string; status?: string; description?: string }>;
+};
 
 const applicationRoots: Record<string, string> = {
   aviary: "C:/Personal/Projekty/Aplikacje/Aviary",
@@ -30,6 +47,96 @@ function assertApprovedRoot(root: string) {
 
 function slug(value: string) {
   return value.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "section";
+}
+
+function parseCsv(source: string): CsvRow[] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let value = "";
+  let quoted = false;
+  for (let index = 0; index < source.length; index += 1) {
+    const character = source[index]!;
+    if (character === '"') {
+      if (quoted && source[index + 1] === '"') { value += '"'; index += 1; }
+      else quoted = !quoted;
+    } else if (character === "," && !quoted) {
+      row.push(value); value = "";
+    } else if ((character === "\n" || character === "\r") && !quoted) {
+      if (character === "\r" && source[index + 1] === "\n") index += 1;
+      row.push(value);
+      if (row.some(Boolean)) rows.push(row);
+      row = []; value = "";
+    } else value += character;
+  }
+  if (value.length || row.length) { row.push(value); rows.push(row); }
+  const [headers, ...data] = rows;
+  return headers ? data.map((cells) => Object.fromEntries(headers.map((header, index) => [header.trim(), (cells[index] ?? "").trim()]))) : [];
+}
+
+function splitIds(value?: string) {
+  return (value || "").split(/[;|]/).map((item) => item.trim()).filter(Boolean);
+}
+
+function componentType(row: CsvRow): ArchitectureImport["type"] {
+  const type = row.type.toLowerCase();
+  const layer = row.layer.toLowerCase();
+  if (type.includes("database") || type === "model" || layer === "data") return "database";
+  if (type.includes("auth")) return "authentication";
+  if (type.includes("queue")) return "queue";
+  if (type.includes("cache")) return "cache";
+  if (type.includes("storage")) return "storage";
+  if (type.includes("realtime") || type.includes("websocket")) return "realtime";
+  if (layer === "frontend" || ["page", "component", "ui_element"].includes(type)) return "frontend";
+  if (layer === "backend" || ["api_route", "service", "worker"].includes(type)) return "backend";
+  if (layer === "ci") return "ci_cd";
+  if (["deployment", "operations"].includes(layer)) return "deployment";
+  if (type.includes("external")) return "external_service";
+  return "other";
+}
+
+function registryFor(applicationSlug: string, root: string): { sourceSystem: string; architecture: ArchitectureImport[] } | null {
+  const nodesPath = path.join(root, "docs", "architecture", "registry", "nodes.csv");
+  if (!fs.existsSync(nodesPath)) return null;
+  const relationCandidates = applicationSlug === "soar"
+    ? [path.join(root, "docs", "architecture", "relations", "dependencies.csv")]
+    : [path.join(root, "docs", "architecture", "registry", "relations.csv"), path.join(root, "docs", "architecture", "registry", "dependencies.csv")];
+  const nodeRows = parseCsv(fs.readFileSync(nodesPath, "utf8")).filter((row) => row.id && row.name && !(applicationSlug === "soar" && row.type === "feature"));
+  const nodeIds = new Set(nodeRows.map((row) => row.id));
+  const relationsBySource = new Map<string, ArchitectureImport["relations"]>();
+  for (const relationPath of relationCandidates.filter((candidate) => fs.existsSync(candidate))) {
+    for (const relation of parseCsv(fs.readFileSync(relationPath, "utf8"))) {
+      if (!nodeIds.has(relation.source_id) || !nodeIds.has(relation.target_id)) continue;
+      const rows = relationsBySource.get(relation.source_id) ?? [];
+      if (!rows.some((row) => row.targetSourceId === relation.target_id && row.type === (relation.relation_type || "relates_to"))) {
+        rows.push({ targetSourceId: relation.target_id, type: relation.relation_type || "relates_to", status: relation.status || undefined, description: relation.description || undefined });
+      }
+      relationsBySource.set(relation.source_id, rows);
+    }
+  }
+  for (const row of nodeRows) {
+    const relations = relationsBySource.get(row.id) ?? [];
+    for (const targetSourceId of splitIds(row.depends_on)) {
+      if (nodeIds.has(targetSourceId) && !relations.some((relation) => relation.targetSourceId === targetSourceId && relation.type === "depends_on")) relations.push({ targetSourceId, type: "depends_on", status: row.verification_status || row.status || undefined, description: "Dependency declared by the architecture registry node." });
+    }
+    relationsBySource.set(row.id, relations);
+  }
+  const architecture = nodeRows.map<ArchitectureImport>((row) => ({
+    sourceId: row.id,
+    parentSourceId: nodeIds.has(row.parent_id) ? row.parent_id : undefined,
+    type: componentType(row),
+    name: row.name,
+    description: row.description || undefined,
+    atomType: row.type || "component",
+    layer: row.layer || "other",
+    module: row.module || undefined,
+    feature: row.feature || undefined,
+    completionPercent: Math.max(0, Math.min(100, Number(row.completion_percent) || 0)),
+    verificationStatus: row.verification_status || row.status || undefined,
+    riskLevel: row.risk_level || undefined,
+    filePath: row.file_path || undefined,
+    relations: relationsBySource.get(row.id) ?? []
+  }));
+  return { sourceSystem: `${applicationSlug}-architecture-registry`, architecture };
 }
 
 function canonicalFiles(root: string) {
@@ -142,8 +249,9 @@ async function main() {
       const files = canonicalFiles(assertApprovedRoot(root));
       if (!files.length) throw new Error(`No canonical documentation files found for ${applicationSlug}: ${root}`);
       const records = files.flatMap((file) => recordsForFile(root, file));
+      const registry = registryFor(applicationSlug, root);
       const byType = Object.fromEntries([...new Set(records.map((record) => record.recordType))].sort().map((type) => [type, records.filter((record) => record.recordType === type).length]));
-      return { application: applicationSlug, root, revision: revisionFor(root), files: files.length, records: records.length, byType, payloadBytes: Buffer.byteLength(JSON.stringify(records)) };
+      return { application: applicationSlug, root, revision: revisionFor(root), files: files.length, records: records.length, byType, architectureAtoms: registry?.architecture.length ?? 0, architectureRelations: registry?.architecture.reduce((sum, component) => sum + component.relations.length, 0) ?? 0, payloadBytes: Buffer.byteLength(JSON.stringify({ records, architecture: registry?.architecture ?? [] })) };
     });
     console.log(JSON.stringify({ mode: "local-preview", results }, null, 2));
     return;
@@ -168,15 +276,20 @@ async function main() {
     const files = canonicalFiles(root);
     if (!files.length) throw new Error(`No canonical documentation files found for ${application.slug}: ${root}`);
     const records = files.flatMap((file) => recordsForFile(root, file));
-    const payload = {
+    const documentationPayload = {
       mode: apply ? "apply" : "preview",
       sourceSystem: "repository-docs-v1",
       sourceRoot: root.replace(/\\/g, "/"),
       sourceRevision: revisionFor(root),
       records
     };
-    const response = await api<{ data: Record<string, unknown> }>(baseUrl, token, `/v1/product-engineering/applications/${application.id}/actions/import-documentation-context`, { method: "POST", body: JSON.stringify(payload) });
-    results.push({ slug: application.slug, files: files.length, ...response.data });
+    const documentationResponse = await api<{ data: Record<string, unknown> }>(baseUrl, token, `/v1/product-engineering/applications/${application.id}/actions/import-documentation-context`, { method: "POST", body: JSON.stringify(documentationPayload) });
+    const registry = registryFor(application.slug, root);
+    const registryResponse = registry?.architecture.length ? await api<{ data: Record<string, unknown> }>(baseUrl, token, `/v1/product-engineering/applications/${application.id}/actions/import-documentation-context`, {
+      method: "POST",
+      body: JSON.stringify({ mode: apply ? "apply" : "preview", sourceSystem: registry.sourceSystem, sourceRoot: root.replace(/\\/g, "/"), sourceRevision: revisionFor(root), architecture: registry.architecture })
+    }) : null;
+    results.push({ slug: application.slug, files: files.length, documentation: documentationResponse.data, architecture: registryResponse?.data ?? null });
   }
   console.log(JSON.stringify({ mode: apply ? "apply" : "preview", baseUrl, results }, null, 2));
 }
