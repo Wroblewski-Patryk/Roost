@@ -43,14 +43,14 @@ export const departmentRegistry = [
     canonicalKey: "02-produkt",
     backendAreaKey: "projects-delivery",
     position: 2,
-    aliases: ["02-produkt", "02-product", "02-product-delivery", "projects-delivery", "product", "delivery", "service"],
+    aliases: ["02-produkt", "02-product", "02-product-delivery", "projects-delivery", "product", "delivery", "service", "design", "ux"],
     hintTerms: ["product", "delivery", "acceptance", "test", "scope", "service", "project"]
   },
   {
     canonicalKey: "03-sprzedaz",
     backendAreaKey: "sales-crm",
     position: 3,
-    aliases: ["03-sprzedaz", "03-sales", "sales-crm", "sales", "crm", "deals"],
+    aliases: ["03-sprzedaz", "03-sales", "sales-crm", "sales", "crm", "deals", "marketing"],
     hintTerms: ["lead", "deal", "offer", "proposal", "sales", "client prospect", "promotion", "ad", "crm"]
   },
   {
@@ -64,14 +64,14 @@ export const departmentRegistry = [
     canonicalKey: "05-relacje",
     backendAreaKey: "sales-crm",
     position: 5,
-    aliases: ["05-relacje", "05-relations", "05-client-relations", "relationships", "clients", "support", "feedback"],
+    aliases: ["05-relacje", "05-relations", "05-client-relations", "relationships", "clients", "support", "feedback", "customer-success"],
     hintTerms: ["client", "support", "feedback", "follow-up", "relationship", "customer"]
   },
   {
     canonicalKey: "06-kadry",
     backendAreaKey: "people-roles",
     position: 6,
-    aliases: ["06-kadry", "06-people", "06-people-agents-roles", "people-roles", "people", "roles", "agents"],
+    aliases: ["06-kadry", "06-people", "06-people-agents-roles", "people-roles", "people", "roles", "agents", "hr", "human-resources", "agent-management"],
     hintTerms: ["role", "people", "agent capacity", "capacity", "escalation", "owner", "hiring"]
   },
   {
@@ -85,14 +85,14 @@ export const departmentRegistry = [
     canonicalKey: "08-zasoby",
     backendAreaKey: "assets-storage",
     position: 8,
-    aliases: ["08-zasoby", "08-resources", "08-assets-knowledge", "assets-storage", "assets", "storage", "resources"],
+    aliases: ["08-zasoby", "08-resources", "08-assets-knowledge", "assets-storage", "assets", "storage", "resources", "knowledge", "documentation"],
     hintTerms: ["drive", "file", "folder", "resource", "asset", "knowledge", "document", "storage"]
   },
   {
     canonicalKey: "09-technologia",
     backendAreaKey: "automations-integrations",
     position: 9,
-    aliases: ["09-technologia", "09-technology", "09-technology-automation", "automations-integrations", "technology", "automation", "integration"],
+    aliases: ["09-technologia", "09-technology", "09-technology-automation", "automations-integrations", "technology", "automation", "integration", "engineering"],
     hintTerms: ["mcp", "api", "integration", "runtime", "webhook", "automation", "technology"]
   },
   {
@@ -113,7 +113,7 @@ export const departmentRegistry = [
     canonicalKey: "12-zarzadzanie",
     backendAreaKey: "knowledge-decisions",
     position: 12,
-    aliases: ["12-zarzadzanie", "12-management", "knowledge-decisions", "management", "decisions", "executive"],
+    aliases: ["12-zarzadzanie", "12-management", "knowledge-decisions", "management", "decisions", "executive", "ceo-office"],
     hintTerms: ["management", "executive", "decision", "report", "review", "command"]
   }
 ] as const satisfies readonly DepartmentRegistryEntry[];

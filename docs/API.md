@@ -2476,7 +2476,9 @@ their existing foreign keys. Provider-derived edges also bridge ClickUp
 task-list mappings and Drive operating-area assignments into the canonical
 department graph without persisting duplicate `Dependency` rows. Recorded
 legacy department keys on processes and workforce entities are normalized to
-the same department anchors as organizational memberships.
+the same department anchors as organizational memberships. Composite legacy
+labels such as `Operations / Product` retain every recognized department
+instead of being collapsed to one branch.
 Every returned record is incident to at least one edge. When a record has no
 more specific source-of-truth relationship, the packet emits a `fallback`
 `needs_context` edge rather than presenting generic workspace containment as a

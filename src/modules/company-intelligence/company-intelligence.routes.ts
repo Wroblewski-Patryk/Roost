@@ -219,7 +219,11 @@ companyIntelligenceRouter.get("/graph", asyncHandler(async (req, res) => {
     if (!department) return;
     derivedEdges.push({ id: `derived:${sourceId}`, type: "mapped_to", from: { entityType: "department", entityId: departmentNodeId(department.id) }, to: { entityType, entityId }, status: "active", source: "derived" });
   };
-  processes.forEach((process) => addDerivedDepartmentEdge("process", process.id, resolveDepartmentEntry(process.department || "")?.canonicalKey, `process:${process.id}`));
+  const departmentKeysFromLabel = (label: string | null | undefined) => [...new Set([label || "", ...(label || "").split("/")]
+    .map((part) => resolveDepartmentEntry(part)?.canonicalKey)
+    .filter((key): key is NonNullable<typeof key> => Boolean(key)))];
+  processes.forEach((process) => departmentKeysFromLabel(process.department).forEach((key) => addDerivedDepartmentEdge("process", process.id, key, `process:${process.id}:${key}`)));
+  businessFunctions.forEach((item) => departmentKeysFromLabel(item.name).forEach((key) => addDerivedDepartmentEdge("business_function", item.id, key, `business-function:${item.id}:${key}`)));
   workforce.forEach((person) => addDerivedDepartmentEdge("workforce", person.id, resolveDepartmentEntry(person.department || "")?.canonicalKey, `workforce:${person.id}`));
   const mappingByIdentity = new Map(containerMappings.map((mapping) => [`${mapping.provider}:${mapping.entityType}:${mapping.externalId}`, mapping]));
   taskLists.forEach((taskList) => {
