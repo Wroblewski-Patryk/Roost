@@ -1,6 +1,6 @@
 import { Html, OrbitControls } from "@react-three/drei";
 import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
-import { type ComponentRef, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { type ComponentRef, type CSSProperties, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { layoutUnifiedGraph3D, type UnifiedGraphPosition } from "./unified-graph-layout";
 import { resolveGraphSelection, type GraphSelectionContext } from "./unified-graph-selection";
@@ -229,9 +229,11 @@ function GraphScene(props: Props & { hovered: UnifiedGraphNode | null; resetSequ
       if (!position) return null;
       const active = node.id === props.selectedId || (!selection && node.id === focusId);
       const onPath = Boolean(selection?.pathIds.includes(node.id));
+      const directIndex = selection && !onPath ? [...selection.directIds].indexOf(node.id) : -1;
+      const labelStyle = directIndex >= 0 ? { "--graph-label-lift": `${(directIndex + 1) * 3.15}rem` } as CSSProperties : undefined;
       const relationshipContext = !selection ? null : node.id === props.selectedId ? "Selected" : node.id === props.rootId && onPath ? "Workspace root" : onPath ? "Path to workspace" : selection.directIds.has(node.id) ? "Direct relationship" : null;
       return <Html key={node.id} position={[position.x, position.y + radiusFor(node, false, active) + 0.34, position.z]} zIndexRange={[12, 1]}>
-        <div className="unified-graph3d-label-anchor">
+        <div className="unified-graph3d-label-anchor" style={labelStyle}>
           <button className="unified-graph3d-label" data-active={active || undefined} data-hovered={node.id === props.hovered?.id || undefined} data-path={onPath || undefined} onClick={(event) => { event.stopPropagation(); node.id === props.selectedId ? props.onClearSelection?.() : props.onNodeSelect?.(node); }} onDoubleClick={(event) => { event.stopPropagation(); props.onNodeActivate?.(node); }} type="button">
             <small>{node.category || node.type}</small><strong>{node.label}</strong>{node.status || relationshipContext ? <span>{[relationshipContext, node.status].filter(Boolean).join(" · ")}</span> : null}
           </button>
