@@ -30,6 +30,14 @@ type ArchitectureImport = {
   relations: Array<{ targetSourceId: string; type: string; status?: string; description?: string }>;
 };
 
+type DocumentationSource = {
+  applicationSlug: string;
+  root: string;
+  sourceSystem: string;
+  sourceKind: "canonical_documentation" | "legacy_assumption";
+  files: (root: string) => string[];
+};
+
 const applicationRoots: Record<string, string> = {
   aviary: "C:/Personal/Projekty/Aplikacje/Aviary",
   featherly: "C:/Personal/Projekty/Aplikacje/Featherly",
@@ -154,6 +162,30 @@ function canonicalFiles(root: string) {
   return [...files].sort();
 }
 
+function aviaryLegacyAssumptionFiles(root: string) {
+  return fs.readdirSync(root, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && /^\d{2}_.+\.md$/i.test(entry.name))
+    .map((entry) => path.join(root, entry.name))
+    .sort();
+}
+
+function selectedDocumentationSources(requestedSlug?: string, requestedSource?: string): DocumentationSource[] {
+  if (requestedSource === "aviary-legacy-assumptions") {
+    if (requestedSlug && requestedSlug !== "aviary") throw new Error("The Aviary legacy assumptions source can only be imported for Aviary.");
+    return [{
+      applicationSlug: "aviary",
+      root: "C:/Personal/Projekty/Aplikacje/Aviary/Aviary - docs/architecture",
+      sourceSystem: "aviary-legacy-assumptions-v1",
+      sourceKind: "legacy_assumption",
+      files: aviaryLegacyAssumptionFiles
+    }];
+  }
+  if (requestedSource) throw new Error(`Unsupported documentation source: ${requestedSource}`);
+  return Object.entries(applicationRoots)
+    .filter(([applicationSlug]) => !requestedSlug || applicationSlug === requestedSlug)
+    .map(([applicationSlug, root]) => ({ applicationSlug, root, sourceSystem: "repository-docs-v1", sourceKind: "canonical_documentation" as const, files: canonicalFiles }));
+}
+
 function classify(relativePath: string, heading: string): ImportRecord["recordType"] {
   const value = heading.toLowerCase();
   if (/\b(goal|goals|primary outcome|vision|mission|product intent|system definition)\b/.test(value)) return "application_goal";
@@ -265,17 +297,20 @@ async function main() {
   const architectureOnly = process.argv.includes("--architecture-only");
   if (documentsOnly && architectureOnly) throw new Error("Choose either --documents-only or --architecture-only.");
   const requestedSlug = process.argv.find((argument) => argument.startsWith("--application="))?.split("=")[1];
+  const requestedSource = process.argv.find((argument) => argument.startsWith("--source="))?.split("=")[1];
   const baseUrl = process.env.ROOST_API_URL || "https://roost.luckysparrow.ch";
-  const selectedRoots = Object.entries(applicationRoots).filter(([slug]) => !requestedSlug || slug === requestedSlug);
-  if (requestedSlug && !selectedRoots.length) throw new Error(`Unsupported application: ${requestedSlug}`);
+  const documentationSources = selectedDocumentationSources(requestedSlug, requestedSource);
+  if (requestedSlug && !documentationSources.length) throw new Error(`Unsupported application: ${requestedSlug}`);
+  if (requestedSource && architectureOnly) throw new Error("The legacy assumptions source contains documentation records, not architecture registry atoms.");
   if (localPreview) {
-    const results = selectedRoots.map(([applicationSlug, root]) => {
-      const files = canonicalFiles(assertApprovedRoot(root));
-      if (!files.length) throw new Error(`No canonical documentation files found for ${applicationSlug}: ${root}`);
+    const results = documentationSources.map((source) => {
+      const root = assertApprovedRoot(source.root);
+      const files = source.files(root);
+      if (!files.length) throw new Error(`No documentation files found for ${source.applicationSlug}: ${root}`);
       const records = architectureOnly ? [] : files.flatMap((file) => recordsForFile(root, file));
-      const registry = documentsOnly ? null : registryFor(applicationSlug, root);
+      const registry = documentsOnly || source.sourceKind === "legacy_assumption" ? null : registryFor(source.applicationSlug, root);
       const byType = Object.fromEntries([...new Set(records.map((record) => record.recordType))].sort().map((type) => [type, records.filter((record) => record.recordType === type).length]));
-      return { application: applicationSlug, root, revision: revisionFor(root), files: files.length, records: records.length, byType, architectureAtoms: registry?.architecture.length ?? 0, architectureRelations: registry?.architecture.reduce((sum, component) => sum + component.relations.length, 0) ?? 0, payloadBytes: Buffer.byteLength(JSON.stringify({ records, architecture: registry?.architecture ?? [] })) };
+      return { application: source.applicationSlug, sourceSystem: source.sourceSystem, sourceKind: source.sourceKind, root, revision: revisionFor(root), files: files.length, records: records.length, byType, architectureAtoms: registry?.architecture.length ?? 0, architectureRelations: registry?.architecture.reduce((sum, component) => sum + component.relations.length, 0) ?? 0, payloadBytes: Buffer.byteLength(JSON.stringify({ records, architecture: registry?.architecture ?? [] })) };
     });
     console.log(JSON.stringify({ mode: "local-preview", results }, null, 2));
     return;
@@ -284,25 +319,27 @@ async function main() {
   if (!token) throw new Error("ROOST_API_TOKEN is required. Use a workspace-scoped API token; the token is never written to disk.");
   const applicationResponse = await api<{ data: Array<{ id: string; slug: string; name: string; metadata?: unknown }> }>(baseUrl, token, "/v1/product-engineering/applications");
   const applications = applicationResponse.data
-    .filter((application) => applicationRoots[application.slug] && (!requestedSlug || application.slug === requestedSlug))
+    .filter((application) => documentationSources.some((source) => source.applicationSlug === application.slug))
     .map((application) => {
+      const source = documentationSources.find((candidate) => candidate.applicationSlug === application.slug)!;
       const metadata = application.metadata && typeof application.metadata === "object" && !Array.isArray(application.metadata) ? application.metadata as Record<string, unknown> : {};
-      const configuredRoot = typeof metadata.localWorkspaceRoot === "string" && typeof metadata.localDirectory === "string"
+      const configuredRoot = source.sourceKind === "canonical_documentation" && typeof metadata.localWorkspaceRoot === "string" && typeof metadata.localDirectory === "string"
         ? path.resolve(metadata.localWorkspaceRoot, metadata.localDirectory)
-        : applicationRoots[application.slug]!;
-      return { ...application, root: assertApprovedRoot(configuredRoot) };
+        : source.root;
+      return { ...application, source, root: assertApprovedRoot(configuredRoot) };
     });
   if (requestedSlug && !applications.length) throw new Error(`Registered application not found or unsupported: ${requestedSlug}`);
 
   const results = [];
   for (const application of applications) {
     const root = application.root;
-    const files = canonicalFiles(root);
+    const files = application.source.files(root);
     if (!files.length) throw new Error(`No canonical documentation files found for ${application.slug}: ${root}`);
     const records = architectureOnly ? [] : files.flatMap((file) => recordsForFile(root, file));
     const documentationPayload = {
       mode: apply ? "apply" : "preview",
-      sourceSystem: "repository-docs-v1",
+      sourceSystem: application.source.sourceSystem,
+      sourceKind: application.source.sourceKind,
       sourceRoot: root.replace(/\\/g, "/"),
       sourceRevision: revisionFor(root),
       records
@@ -315,7 +352,7 @@ async function main() {
         documentationResponses.push(response.data);
       }
     }
-    const registry = documentsOnly ? null : registryFor(application.slug, root);
+    const registry = documentsOnly || application.source.sourceKind === "legacy_assumption" ? null : registryFor(application.slug, root);
     const registryResponse = registry?.architecture.length ? await api<{ data: Record<string, unknown> }>(baseUrl, token, `/v1/product-engineering/applications/${application.id}/actions/import-documentation-context`, {
       method: "POST",
       body: JSON.stringify({ mode: apply ? "apply" : "preview", sourceSystem: registry.sourceSystem, sourceRoot: root.replace(/\\/g, "/"), sourceRevision: revisionFor(root), architecture: registry.architecture })

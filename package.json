@@ -22,6 +22,8 @@
     "import:application-docs": "tsx scripts/import-application-documentation-context.ts",
     "import:application-docs:local-preview": "tsx scripts/import-application-documentation-context.ts --local-preview",
     "import:application-docs:apply": "tsx scripts/import-application-documentation-context.ts --apply",
+    "import:aviary-legacy-context:preview": "tsx scripts/import-application-documentation-context.ts --application=aviary --source=aviary-legacy-assumptions --documents-only",
+    "import:aviary-legacy-context:apply": "tsx scripts/import-application-documentation-context.ts --application=aviary --source=aviary-legacy-assumptions --documents-only --apply",
     "adapter:smoke": "node scripts/adapter-smoke.mjs",
     "agent:training-smoke": "node scripts/agent-training-smoke.mjs",
     "agent:codex-host": "node scripts/roost-codex-agent-host.mjs",

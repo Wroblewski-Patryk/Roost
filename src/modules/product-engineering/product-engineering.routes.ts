@@ -222,6 +222,7 @@ const createArchitectureComponentSchema = z.object({
 const documentationContextImportSchema = z.object({
   mode: z.enum(["preview", "apply"]).default("preview"),
   sourceSystem: z.string().trim().min(1).max(80),
+  sourceKind: z.enum(["canonical_documentation", "legacy_assumption"]).default("canonical_documentation"),
   sourceRoot: z.string().trim().min(1).max(1000),
   sourceRevision: z.string().trim().max(200).nullable().optional(),
   records: z.array(z.object({
@@ -260,6 +261,114 @@ function documentationRecordKey(applicationSlug: string, sourceSystem: string, s
   const readable = `${applicationSlug}-${sourceSystem}-${sourceId}`.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   const digest = createHash("sha256").update(`${applicationSlug}:${sourceSystem}:${sourceId}`).digest("hex").slice(0, 12);
   return `docs-${readable.slice(0, 100)}-${digest}`.slice(0, 120);
+}
+
+type AgentContextRecord = {
+  id: string;
+  parentId: string | null;
+  recordType: string;
+  key: string;
+  title: string;
+  description: string | null;
+  priority: string;
+  status: string;
+  functionalState: string;
+  verificationState: string;
+  source: string;
+  metadata: Prisma.JsonValue;
+};
+
+function normalizedTerms(value: string) {
+  const ignored = new Set(["the", "and", "for", "with", "from", "this", "that", "task", "status", "created", "updated", "null", "true", "false"]);
+  return [...new Set(value.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, " ").split(/\s+/).filter((term) => term.length >= 3 && !ignored.has(term)))].slice(0, 40);
+}
+
+function executionRecordSelection<T extends AgentContextRecord>(records: T[], query: string) {
+  const terms = normalizedTerms(query);
+  const typeWeight: Record<string, number> = {
+    application_goal: 100,
+    architecture_principle: 90,
+    architecture_decision: 85,
+    architecture_requirement: 80,
+    architecture_layer: 65,
+    architecture_component: 60,
+    architecture_document: 50,
+    architecture_section: 20
+  };
+  const score = (record: T) => {
+    const metadata = record.metadata && typeof record.metadata === "object" && !Array.isArray(record.metadata) ? record.metadata as Record<string, unknown> : {};
+    const searchable = `${record.title} ${record.description ?? ""} ${typeof metadata.filePath === "string" ? metadata.filePath : ""}`.toLowerCase().normalize("NFKD");
+    const matches = terms.reduce((sum, term) => sum + (searchable.includes(term) ? 18 : 0), 0);
+    const legacyBonus = metadata.sourceKind === "legacy_assumption" ? 6 : 0;
+    return (typeWeight[record.recordType] ?? 10) + matches + legacyBonus;
+  };
+  const byId = new Map(records.map((record) => [record.id, record]));
+  const selectedIds = new Set<string>();
+  for (const candidate of records.slice().sort((left, right) => score(right) - score(left) || left.title.localeCompare(right.title))) {
+    if (selectedIds.size >= 100) break;
+    const chain: string[] = [];
+    let current: T | undefined = candidate;
+    while (current && !selectedIds.has(current.id)) {
+      chain.push(current.id);
+      current = current.parentId ? byId.get(current.parentId) : undefined;
+    }
+    if (selectedIds.size + chain.length > 100) continue;
+    chain.reverse().forEach((id) => selectedIds.add(id));
+  }
+  const descriptionBudget = 100_000;
+  let usedDescriptionCharacters = 0;
+  const selected = records
+    .filter((record) => selectedIds.has(record.id))
+    .sort((left, right) => score(right) - score(left) || left.title.localeCompare(right.title))
+    .map((record) => {
+      const metadata = record.metadata && typeof record.metadata === "object" && !Array.isArray(record.metadata) ? record.metadata as Record<string, unknown> : {};
+      const remaining = Math.max(0, descriptionBudget - usedDescriptionCharacters);
+      const description = record.description?.slice(0, Math.min(2400, remaining)) || null;
+      usedDescriptionCharacters += description?.length ?? 0;
+      return {
+        id: record.id,
+        parentId: record.parentId,
+        recordType: record.recordType,
+        key: record.key,
+        title: record.title,
+        description,
+        priority: record.priority,
+        status: record.status,
+        functionalState: record.functionalState,
+        verificationState: record.verificationState,
+        source: record.source,
+        metadata: {
+          sourceSystem: metadata.sourceSystem ?? null,
+          sourceKind: metadata.sourceKind ?? "canonical_documentation",
+          sourceId: metadata.sourceId ?? null,
+          filePath: metadata.filePath ?? null,
+          headingPath: metadata.headingPath ?? []
+        }
+      };
+    });
+  const documentationIndex = records.flatMap((record) => {
+    const metadata = record.metadata && typeof record.metadata === "object" && !Array.isArray(record.metadata) ? record.metadata as Record<string, unknown> : {};
+    return record.recordType === "architecture_document" && typeof metadata.filePath === "string" ? [{
+      id: record.id,
+      title: record.title,
+      filePath: metadata.filePath,
+      sourceSystem: metadata.sourceSystem ?? null,
+      sourceKind: metadata.sourceKind ?? "canonical_documentation"
+    }] : [];
+  });
+  return {
+    records: selected,
+    documentationIndex,
+    selection: {
+      profile: "execution",
+      totalRecordCount: records.length,
+      selectedRecordCount: selected.length,
+      omittedRecordCount: Math.max(0, records.length - selected.length),
+      queryTerms: terms,
+      descriptionCharacterBudget: descriptionBudget,
+      usedDescriptionCharacters
+    }
+  };
 }
 
 const createInterfaceSchema = z.object({
@@ -393,6 +502,7 @@ productEngineeringRouter.post("/applications/:id/actions/import-documentation-co
     application: application.name,
     mode: input.mode,
     sourceSystem: input.sourceSystem,
+    sourceKind: input.sourceKind,
     sourceRoot: input.sourceRoot,
     recordCount: input.records.length,
     architectureCount: input.architecture.length,
@@ -414,6 +524,7 @@ productEngineeringRouter.post("/applications/:id/actions/import-documentation-co
       const parentId = record.parentSourceId ? idBySourceId.get(record.parentSourceId) ?? null : null;
       const metadata = {
         sourceSystem: input.sourceSystem,
+        sourceKind: input.sourceKind,
         sourceId: record.sourceId,
         sourceRoot: input.sourceRoot,
         sourceRevision: input.sourceRevision ?? null,
@@ -445,6 +556,7 @@ productEngineeringRouter.post("/applications/:id/actions/import-documentation-co
       const existing = existingArchitectureBySourceId.get(component.sourceId);
       const metadata = {
         sourceSystem: input.sourceSystem,
+        sourceKind: input.sourceKind,
         sourceId: component.sourceId,
         sourceRoot: input.sourceRoot,
         sourceRevision: input.sourceRevision ?? null,
@@ -613,6 +725,11 @@ productEngineeringRouter.get("/applications/:id/agent-context", asyncHandler(asy
   ]);
   const gaps = gapsFor(capabilities);
   const readiness = calculateApplicationReadiness(readinessInput(capabilities));
+  const executionProfile = req.query.profile === "execution";
+  const contextQuery = req.get("X-Roost-Agent-Context-Query") ?? (typeof req.query.query === "string" ? req.query.query : "");
+  const executionContext = executionProfile
+    ? executionRecordSelection(records, contextQuery.slice(0, 4000))
+    : null;
   res.json({
     data: {
       schemaVersion: "application-agent-context-v2",
@@ -624,7 +741,9 @@ productEngineeringRouter.get("/applications/:id/agent-context", asyncHandler(asy
       gaps,
       blockers: gaps.filter((gap) => gap.blocked),
       dependencies: capabilities.flatMap((item) => item.dependenciesFrom),
-      companyRecords: records,
+      companyRecords: executionContext?.records ?? records,
+      documentationIndex: executionContext?.documentationIndex ?? undefined,
+      contextSelection: executionContext?.selection ?? { profile: "complete", totalRecordCount: records.length, selectedRecordCount: records.length, omittedRecordCount: 0 },
       genericEvidence,
       entityRelations,
       operatingModel: {

@@ -32,6 +32,15 @@ target and observed capabilities, evidence, gaps, dependencies, architecture,
 interfaces, and readiness. It is a derived packet; PostgreSQL domain records
 remain the source of truth.
 
+The optional `profile=execution` query selects a bounded, task-oriented
+documentation projection for an agent prompt. An optional
+`X-Roost-Agent-Context-Query` header (or interactive `query` fallback) ranks goals,
+principles, decisions, requirements, layers, components, and sections while
+retaining selected records' ancestors. The response reports the total,
+selected, and omitted record counts and includes a document index so the agent
+can open omitted source material in its local repository. Without this profile,
+the endpoint returns the complete record collection.
+
 The graph endpoints return the versioned `application-graph-v2` read model.
 `/graph` is the lightweight Applications/application portfolio projection;
 `/applications/:id/graph` contains one application's Domain -> Capability ->
@@ -41,6 +50,9 @@ and require `product-engineering:read`.
 The documentation-context command requires `product-engineering:write` and
 accepts `mode: preview|apply`, a stable source-system/root/revision tuple, and
 hierarchical records and architecture-registry atoms with stable source IDs.
+`sourceKind` distinguishes canonical documentation from a
+`legacy_assumption`; both remain expected declarations with verification not
+started until separate evidence proves implementation.
 Preview performs no writes. Apply upserts matching records and
 `ApplicationArchitectureComponent` atoms, preserves parent hierarchy and typed
 registry relations, records repository provenance in metadata, writes one

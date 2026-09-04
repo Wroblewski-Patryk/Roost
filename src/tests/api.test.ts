@@ -1136,6 +1136,14 @@ test("product engineering keeps definitions shared, observations explicit, and p
   const agentContextResponse = await request(`/v1/product-engineering/applications/${roostId}/agent-context`, { headers: auth });
   assert.equal(agentContextResponse.status, 200);
   assert.equal((agentContextResponse.body as { data: { authority: { declarationIsNotObservation: boolean } } }).data.authority.declarationIsNotObservation, true);
+  const executionAgentContextResponse = await request(`/v1/product-engineering/applications/${roostId}/agent-context?profile=execution&query=operate%20company`, { headers: auth });
+  assert.equal(executionAgentContextResponse.status, 200);
+  const executionAgentContext = (executionAgentContextResponse.body as { data: { companyRecords: Array<{ metadata: { sourceKind: string } }>; documentationIndex: unknown[]; contextSelection: { profile: string; totalRecordCount: number; selectedRecordCount: number } } }).data;
+  assert.equal(executionAgentContext.contextSelection.profile, "execution");
+  assert.equal(executionAgentContext.contextSelection.totalRecordCount, 2);
+  assert.equal(executionAgentContext.contextSelection.selectedRecordCount, 2);
+  assert.equal(executionAgentContext.documentationIndex.length, 1);
+  assert.ok(executionAgentContext.companyRecords.every((record) => record.metadata.sourceKind === "canonical_documentation"));
   const crossWorkspace = await request(`/v1/product-engineering/applications/${roostId}`, { headers: { Authorization: `Bearer ${otherOwner.token}` } });
   assert.equal(crossWorkspace.status, 404);
 

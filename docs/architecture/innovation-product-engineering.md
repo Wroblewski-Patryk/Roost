@@ -183,6 +183,16 @@ technologies, interfaces, evidence coverage, and readiness. It explicitly
 states that declarations are not observations and evidence does not silently
 promote state.
 
+`GET /applications/:id/agent-context?profile=execution&query=...` is the
+bounded prompt-oriented projection used by the local Agent Host. It keeps the
+complete application, capability, execution, architecture, and authority
+context, but ranks documentation records against the current task, preserves
+their ancestors, caps selected records and description characters, and
+returns a source-document index. The default endpoint remains the complete
+read model. This prevents a large documentation graph from becoming an
+unstructured multi-megabyte prompt while keeping omitted source paths
+discoverable to the repository-local agent.
+
 ## Application Graph
 
 `11 Innovation / Application Graph` is an interactive read projection of the
@@ -272,6 +282,14 @@ file paths preserve provenance, and imported declarations remain
 `functionalState=expected` with verification not started. The importer does
 not claim that documentation proves implementation and does not delete records
 that disappear from a later scan.
+
+The explicit `--source=aviary-legacy-assumptions` source imports only Aviary's
+hand-authored numbered Markdown series from
+`Aviary/Aviary - docs/architecture`. Generated node registries, graphs, CSV
+inventories, and derived evidence are excluded. These records use the separate
+`aviary-legacy-assumptions-v1` identity and `sourceKind=legacy_assumption`, so
+agents can use the owner's original intent without treating it as current,
+verified implementation or overriding canonical repository documentation.
 
 In `application-graph-v2`, imported documentation records use the `context`
 node type while canonical product requirements retain `requirement`. Their
