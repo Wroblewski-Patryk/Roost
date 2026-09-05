@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CcButton } from "../../components/cc-button";
 import { CcNotice } from "../../components/cc-notice";
 import { CcRecordEditorModal, CcRecordEditorSection } from "../../components/cc-record-editor";
@@ -14,6 +14,8 @@ type AgentHost = {
   platform: string;
   lastSeenAt?: string | null;
   applicationSlugs: string[];
+  workspaceId: string;
+  metadata?: { runnerVersion?: string; executionMode?: string };
 };
 
 type RuntimeReadiness = {
@@ -28,7 +30,7 @@ function tomlString(value: string) {
 
 function formatHeartbeat(value: string | null | undefined, locale: string) {
   if (!value) return "—";
-  return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+  return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "medium" }).format(new Date(value));
 }
 
 export function AgentConnectionsSection({ connection }: { connection: ConnectionPacket | null }) {
@@ -36,6 +38,10 @@ export function AgentConnectionsSection({ connection }: { connection: Connection
   const polish = locale === "pl";
   const [setupOpen, setSetupOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  useEffect(() => {
+    const timer = window.setInterval(() => { if (document.visibilityState === "visible") setRefreshKey((value) => value + 1); }, 15000);
+    return () => window.clearInterval(timer);
+  }, []);
   const [copied, setCopied] = useState<string | null>(null);
   const hosts = useOwnerPacket<AgentHost[]>(`/v1/agent-runtime/hosts?refresh=${refreshKey}`, true, t);
   const readiness = useOwnerPacket<RuntimeReadiness>(`/v1/agent-runtime/readiness?refresh=${refreshKey}`, true, t);
@@ -68,11 +74,9 @@ export function AgentConnectionsSection({ connection }: { connection: Connection
   ].join("\n") : "";
 
   const hostPowerShell = setup ? [
-    `$env:ROOST_BASE_URL = ${tomlString(setup.api.baseUrl)}`,
-    "$env:ROOST_AGENT_API_KEY = \"<WKLEJ_KLUCZ_LOCAL_CODEX_WORKER>\"",
-    "$env:ROOST_AGENT_HOST_CONFIG = \"$env:USERPROFILE\\.roost\\agent-host.json\"",
-    "npm run agent:codex-host:check",
-    setup.agentHost.runtimeCommand
+    "# C:\\Personal\\Projekty\\Aplikacje\\Roost",
+    ".\\scripts\\roost-agent-host-windows.ps1 -Action Status",
+    ".\\scripts\\roost-agent-host-windows.ps1 -Action Start"
   ].join("\n") : "";
 
   async function copy(label: string, value: string) {
@@ -103,15 +107,22 @@ export function AgentConnectionsSection({ connection }: { connection: Connection
         </div>
         <div className="roost-agent-connection-row">
           <span className="roost-agent-connection-icon"><i className="ph-bold ph-laptop" aria-hidden="true"></i></span>
-          <div><strong>Windows Agent Host</strong><small>{latestHost ? `${latestHost.name} · ${formatHeartbeat(latestHost.lastSeenAt, locale)}` : (polish ? "Host nie został jeszcze uruchomiony" : "No host has connected yet")}</small></div>
-          <span className={`badge badge-outline ${onlineHosts.length ? "badge-success" : "badge-warning"}`}>{onlineHosts.length ? `${onlineHosts.length} online` : "offline"}</span>
+          <div><strong>Windows Agent Host</strong><small>{latestHost ? `${latestHost.name} · ${formatHeartbeat(latestHost.lastSeenAt, locale)}` : hosts.status === "ready" ? (polish ? "Host nie został jeszcze uruchomiony" : "No host has connected yet") : (polish ? "Oczekiwanie na stan hosta" : "Waiting for host status")}</small></div>
+          <span className={`badge badge-outline ${onlineHosts.length ? "badge-success" : "badge-warning"}`}>{hosts.status !== "ready" ? "—" : onlineHosts.length ? `${onlineHosts.length} online` : "offline"}</span>
         </div>
+        {latestHost ? <dl className="roost-connection-facts px-4 py-3">
+          <div><dt>{polish ? "Tryb hosta" : "Host mode"}</dt><dd>{latestHost.metadata?.executionMode === "observe" ? (polish ? "Obserwacja — zadania nie są pobierane" : "Observer — no tasks claimed") : (latestHost.metadata?.executionMode || "—")}</dd></div>
+          <div><dt>{polish ? "Wersja hosta" : "Host version"}</dt><dd>{latestHost.metadata?.runnerVersion || "—"}</dd></div>
+          <div><dt>Workspace</dt><dd>{connection?.workspace?.name || latestHost.workspaceId}</dd></div>
+          <div><dt>{polish ? "Zadeklarowane aplikacje" : "Declared applications"}</dt><dd>{latestHost.applicationSlugs.join(", ") || "—"}</dd></div>
+        </dl> : null}
         <div className="roost-agent-connection-row">
           <span className="roost-agent-connection-icon"><i className="ph-bold ph-shield-check" aria-hidden="true"></i></span>
           <div><strong>{polish ? "Tryb wykonywania" : "Execution mode"}</strong><small>{polish ? `${readyApplications}/${readiness.data?.applications.length || 0} aplikacji ma gotową strukturę lokalną` : `${readyApplications}/${readiness.data?.applications.length || 0} applications have a ready local structure`}</small></div>
           <span className={`badge badge-outline ${readiness.data?.executionEnabled ? "badge-success" : "badge-warning"}`}>{readiness.data?.executionEnabled ? (polish ? "nadzorowany" : "supervised") : (polish ? "fundament" : "foundation")}</span>
         </div>
       </div>
+      {hosts.status === "error" ? <CcNotice title={polish ? "Nie udało się odczytać stanu hosta" : "Host status could not be loaded"} detail={polish ? "Odśwież stan po sprawdzeniu połączenia z API." : "Check the API connection and refresh status."} tone="warning" /> : null}
       <div className="roost-settings-actions mt-3">
         <CcButton disabled={!setup} iconLeft="ph-terminal-window" onClick={() => setSetupOpen(true)} variant="primary">{polish ? "Skonfiguruj API i MCP" : "Configure API and MCP"}</CcButton>
         <CcButton href="/areas?area=06-kadry&view=executions" iconLeft="ph-pulse" variant="outline">{polish ? "Podgląd pracy agentów" : "View agent activity"}</CcButton>

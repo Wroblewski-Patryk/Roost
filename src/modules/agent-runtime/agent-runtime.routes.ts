@@ -75,6 +75,14 @@ function executionEnabled() {
   return process.env.ROOST_CODEX_EXECUTION_ENABLED === "true";
 }
 
+function hostRuntime(workspaceId: string) {
+  return { workspaceId, executionEnabled: executionEnabled(), mode: executionEnabled() ? "supervised_execution" : "foundation_only" };
+}
+
+function visibleHost<T extends { status: string; lastSeenAt: Date | null }>(host: T) {
+  return { ...host, status: host.status === "online" && (!host.lastSeenAt || host.lastSeenAt.getTime() < Date.now() - 60_000) ? "offline" : host.status };
+}
+
 async function appendExecutionEvent(params: { workspaceId: string; executionId: string; type: string; message: string; level?: string; payload?: unknown }) {
   return prisma.agentExecutionEvent.create({
     data: {
@@ -199,7 +207,7 @@ agentRuntimeRouter.get("/readiness", asyncHandler(async (req, res) => {
       executionEnabled: executionEnabled(),
       mode: executionEnabled() ? "supervised_execution" : "foundation_only",
       applications: records,
-      hosts,
+      hosts: hosts.map(visibleHost),
       triggerPolicy: triggerRule,
       executionCounts: Object.fromEntries(executionCounts.map((item) => [item.status, item._count._all])),
       activationRequirements: ["review_application_context", "validate_local_allowlist", "create_scoped_worker_key", "start_windows_host", "run_non_critical_trial", "explicitly_enable_runtime"]
@@ -208,12 +216,8 @@ agentRuntimeRouter.get("/readiness", asyncHandler(async (req, res) => {
 }));
 
 agentRuntimeRouter.get("/hosts", asyncHandler(async (req, res) => {
-  await prisma.agentHost.updateMany({
-    where: { workspaceId: req.auth!.workspaceId, status: "online", lastSeenAt: { lt: new Date(Date.now() - 60_000) } },
-    data: { status: "offline" }
-  });
   const hosts = await prisma.agentHost.findMany({ where: { workspaceId: req.auth!.workspaceId }, orderBy: { updatedAt: "desc" } });
-  res.json({ data: hosts });
+  res.json({ data: hosts.map(visibleHost) });
 }));
 
 agentRuntimeRouter.post("/hosts/register", asyncHandler(async (req, res) => {
@@ -226,7 +230,7 @@ agentRuntimeRouter.post("/hosts/register", asyncHandler(async (req, res) => {
     create: { ...input, capabilities: json(input.capabilities), applicationSlugs: json(input.applicationSlugs), metadata: json(input.metadata), workspaceId: req.auth!.workspaceId, status: "online", lastSeenAt: now },
     update: { name: input.name, platform: input.platform, capabilities: json(input.capabilities), applicationSlugs: json(input.applicationSlugs), metadata: json(input.metadata), status: "online", lastSeenAt: now }
   });
-  res.json({ data: host });
+  res.json({ data: { ...host, runtime: hostRuntime(req.auth!.workspaceId) } });
 }));
 
 agentRuntimeRouter.post("/hosts/:id/heartbeat", asyncHandler(async (req, res) => {
@@ -234,7 +238,7 @@ agentRuntimeRouter.post("/hosts/:id/heartbeat", asyncHandler(async (req, res) =>
   const existing = await prisma.agentHost.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, status: { not: "disabled" } } });
   if (!existing) return sendApiError(res, 404, "agent_host_not_found");
   const host = await prisma.agentHost.update({ where: { id: existing.id }, data: { status: "online", lastSeenAt: new Date(), ...(input.capabilities ? { capabilities: json(input.capabilities) } : {}), ...(input.applicationSlugs ? { applicationSlugs: json(input.applicationSlugs) } : {}), ...(input.metadata ? { metadata: json(input.metadata) } : {}) } });
-  res.json({ data: host });
+  res.json({ data: { ...host, runtime: hostRuntime(req.auth!.workspaceId) } });
 }));
 
 agentRuntimeRouter.get("/executions", asyncHandler(async (req, res) => {

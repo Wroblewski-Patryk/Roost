@@ -9,6 +9,7 @@ import { createExecutionLease, terminateWindowsProcessTree } from "./lib/agent-h
 import { acquireWriterLock } from "./lib/agent-host-writer-lock.mjs";
 import { validateExecutionPacket } from "./lib/agent-host-execution-packet.mjs";
 import { assertRecoverySnapshot, classifyRecovery, recoveryError, workspaceDigest } from "./lib/agent-host-recovery.mjs";
+import { runObserver } from "./lib/agent-host-observer.mjs";
 
 const baseUrl = String(process.env.ROOST_BASE_URL || process.env.COMPANYCORE_BASE_URL || "").replace(/\/+$/, "");
 const apiKey = process.env.ROOST_AGENT_API_KEY || process.env.COMPANYCORE_API_KEY;
@@ -19,6 +20,7 @@ if (!apiKey) throw new Error("ROOST_AGENT_API_KEY is required.");
 if (!configPath) throw new Error("ROOST_AGENT_HOST_CONFIG must point to the local, secret-free Agent Host JSON configuration.");
 
 let config = JSON.parse(await readFile(path.resolve(configPath), "utf8"));
+if (![undefined, "observe", "supervised"].includes(config.executionMode)) throw new Error("agent_host_execution_mode_invalid");
 const host = {
   name: String(config.host?.name || os.hostname()),
   slug: String(config.host?.slug || os.hostname().toLowerCase().replace(/[^a-z0-9._-]+/g, "-")),
@@ -277,6 +279,8 @@ process.on("SIGTERM", () => { stopping = true; });
 // Dependency injection lets process-level tests use a private temporary lock directory.
 // The CLI always uses the fixed machine-wide location; config cannot override it.
 export async function runHost({ acquireLock = (options) => acquireWriterLock(undefined, options), onCheckpoint } = {}) {
+  // Observe never enters recovery, writer locking, claim, or execution code.
+  if (config.executionMode === "observe") return runObserver({ config, api, stopped: () => stopping });
   const recovery = await api(`/v1/agent-runtime/recovery?hostSlug=${encodeURIComponent(host.slug)}`);
   if (!Array.isArray(recovery?.executions)) throw recoveryError("context_unavailable");
   const pending = recovery.executions;

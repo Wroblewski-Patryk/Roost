@@ -33,6 +33,7 @@
     "test:agent-host-writer": "node --test scripts/agent-host-writer-lock.test.mjs",
     "test:agent-host-packet": "node --test scripts/agent-host-execution-packet.test.mjs",
     "test:agent-host-recovery": "node --test scripts/agent-host-recovery.test.mjs",
+    "test:agent-host-observer": "node --test scripts/agent-host-observer.test.mjs",
     "owner-console:ux-smoke": "node scripts/owner-console-ux-smoke.mjs",
     "company-os:trace-smoke": "node scripts/company-os-lifecycle-trace-smoke.mjs",
     "operating-model:registry-smoke": "node scripts/operating-model-registry-lifecycle-smoke.mjs",

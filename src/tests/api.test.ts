@@ -1236,6 +1236,10 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
     body: JSON.stringify({ name: "Windows Codex host", profileId: "mcp_codex_worker" })
   });
   assert.equal(keyResponse.status, 201);
+  const workerKeyId = (keyResponse.body as { data: { id: string } }).data.id;
+  const keyAudit = await prisma.event.findFirstOrThrow({ where: { type: "api_key.created", resourceId: workerKeyId } });
+  assert.equal((keyAudit.payload as { profileId: string }).profileId, "mcp_codex_worker");
+  assert.ok(!JSON.stringify(keyAudit).includes((keyResponse.body as { data: { key: string } }).data.key));
   const workerAuth = { "X-API-Key": (keyResponse.body as { data: { key: string } }).data.key };
 
   const hostResponse = await request("/v1/agent-runtime/hosts/register", {
@@ -1244,6 +1248,13 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
     body: JSON.stringify({ name: "Test laptop", slug: "test-windows", platform: "win32-x64", capabilities: ["codex_exec_json"], applicationSlugs: [application.slug], metadata: {} })
   });
   assert.equal(hostResponse.status, 200);
+  assert.deepEqual((hostResponse.body as { data: { runtime: unknown } }).data.runtime, { workspaceId: owner.workspace.id, executionEnabled: false, mode: "foundation_only" });
+  const originalHost = (hostResponse.body as { data: { id: string } }).data;
+  const repeatHost = await request("/v1/agent-runtime/hosts/register", { method: "POST", headers: workerAuth, body: JSON.stringify({ name: "Test laptop", slug: "test-windows", platform: "win32-x64", capabilities: ["codex_exec_json"], applicationSlugs: [application.slug], metadata: { executionMode: "observe" } }) });
+  assert.equal((repeatHost.body as { data: { id: string } }).data.id, originalHost.id);
+  await prisma.agentHost.update({ where: { id: originalHost.id }, data: { lastSeenAt: new Date(Date.now() - 61_000) } });
+  const staleReadiness = await request("/v1/agent-runtime/readiness", { headers: ownerAuth });
+  assert.equal((staleReadiness.body as { data: { hosts: Array<{ id: string; status: string }> } }).data.hosts.find((host) => host.id === originalHost.id)?.status, "offline");
 
   const foundationReadiness = await request("/v1/agent-runtime/readiness", { headers: ownerAuth });
   assert.equal(foundationReadiness.status, 200);
@@ -1371,7 +1382,38 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
   const retryCancelled = await request(`/v1/agent-runtime/executions/${cancelExecutionId}/actions/retry`, { method: "POST", headers: ownerAuth, body: "{}" });
   assert.equal(retryCancelled.status, 201);
   assert.equal((retryCancelled.body as { data: { status: string } }).data.status, "queued");
+  const revokedKey = await request(`/v1/api-keys/${workerKeyId}`, { method: "PATCH", headers: ownerAuth, body: JSON.stringify({ active: false }) });
+  assert.equal(revokedKey.status, 200);
+  const revokeAudit = await prisma.event.findFirstOrThrow({ where: { type: "api_key.revoked", resourceId: workerKeyId } });
+  assert.deepEqual(revokeAudit.payload, { active: false });
+  const revokedHeartbeat = await request(`/v1/agent-runtime/hosts/${originalHost.id}/heartbeat`, { method: "POST", headers: workerAuth, body: "{}" });
+  assert.equal(revokedHeartbeat.status, 403);
+  assert.equal((revokedHeartbeat.body as { error: string }).error, "invalid_api_key");
   delete process.env.ROOST_CODEX_EXECUTION_ENABLED;
+});
+
+test("owner-authorized host provisioning fixes scope, rejects duplicate credentials and audits revocation", async () => {
+  const { provisionHostKey } = await import("../operations/provision-agent-host-key");
+  const owner = await registerOwner("host-provisioning@example.com", "Host Provisioning");
+  const input = { action: "create", workspaceId: owner.workspace.id, name: "Dedicated observer", ownerAuthorized: true };
+  await assert.rejects(provisionHostKey({ ...input, ownerAuthorized: false }));
+  await assert.rejects(provisionHostKey({ ...input, scopes: ["companycore:*"] }));
+  const credential = await provisionHostKey(input);
+  assert.ok("key" in credential);
+  if (!("key" in credential)) throw new Error("credential_missing");
+  assert.equal(credential.profileId, "mcp_codex_worker");
+  await assert.rejects(provisionHostKey(input), /active_key_already_exists/);
+  const record = await prisma.apiKey.findUniqueOrThrow({ where: { id: credential.id } });
+  assert.equal(record.key, null);
+  const event = await prisma.event.findFirstOrThrow({ where: { resourceId: record.id, type: "api_key.created" } });
+  assert.equal(event.source, "owner_authorized_host_provisioning");
+  assert.ok(!JSON.stringify(event).includes(credential.key));
+  const workerAuth = { "X-API-Key": credential.key };
+  assert.equal((await request("/v1/connection", { headers: workerAuth })).status, 200);
+  assert.equal((await request("/v1/api-keys", { headers: workerAuth })).status, 403);
+  await provisionHostKey({ ...input, action: "revoke", keyId: record.id });
+  assert.equal((await request("/v1/connection", { headers: workerAuth })).status, 403);
+  assert.ok(await prisma.event.findFirst({ where: { resourceId: record.id, type: "api_key.revoked" } }));
 });
 
 test("execution recovery fences old leases and preserves an auditable same-attempt checkpoint", async () => {

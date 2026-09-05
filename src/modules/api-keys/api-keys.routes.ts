@@ -2,7 +2,7 @@ import { Router } from "express";
 import type { Request, Response } from "express";
 import { z } from "zod";
 import { prisma } from "../../db/prisma";
-import { apiKeyPrefix, generateApiKey, hashApiKey } from "../../auth/api-key";
+import { createAuditedApiKey, setAuditedApiKeyActive } from "./api-key.service";
 import { agentKeyProfiles, findAgentKeyProfile } from "../../auth/agent-key-profiles";
 import { capabilities, scopesAreBroad } from "../../auth/capabilities";
 import { asyncHandler } from "../../middleware/async-handler";
@@ -96,19 +96,11 @@ apiKeysRouter.post("/", asyncHandler(async (req, res) => {
     return sendApiError(res, 400, "api_key_full_access_confirmation_required");
   }
 
-  const rawKey = generateApiKey();
-  const record = await prisma.apiKey.create({
-    data: {
-      workspaceId: req.auth!.workspaceId,
-      name: input.name,
-      key: null,
-      keyHash: hashApiKey(rawKey),
-      keyPrefix: apiKeyPrefix(rawKey),
-      scopes,
-      active: true
-    }
+  const { record, rawKey } = await createAuditedApiKey({
+    workspaceId: req.auth!.workspaceId, name: input.name, scopes, profileId: profile?.id ?? null,
+    actorType: req.auth!.authType === "user" ? "user" : "agent", actorId: req.auth!.userId ?? req.auth!.apiKeyId,
+    source: "roost_api"
   });
-
   res.status(201).json({
     data: {
       ...safeApiKey(record),
@@ -139,10 +131,10 @@ apiKeysRouter.patch("/:id", asyncHandler(async (req, res) => {
     return sendApiError(res, 404, "not_found");
   }
 
-  const record = await prisma.apiKey.update({
-    where: { id: existing.id },
-    data: { active: input.active }
+  const record = await setAuditedApiKeyActive({
+    workspaceId: req.auth!.workspaceId, id: existing.id, active: input.active,
+    actorType: req.auth!.authType === "user" ? "user" : "agent", actorId: req.auth!.userId ?? req.auth!.apiKeyId,
+    source: "roost_api"
   });
-
   res.json({ data: safeApiKey(record) });
 }));

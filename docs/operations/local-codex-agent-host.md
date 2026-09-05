@@ -3,6 +3,93 @@
 This runbook connects a Windows laptop containing application repositories to
 the production Roost queue on the VPS. The connection is outbound HTTPS only.
 
+## Observer Login Autostart
+
+The approved foundation installation uses exactly one task, `Roost Agent Host
+Observer`, triggered at the owner's Windows login. It runs hidden, at limited
+privilege, using the interactive Windows identity and `IgnoreNew` for duplicate
+task starts. The launcher mutex also excludes repeated manual launcher starts;
+the observer's fixed exclusive loopback port `127.0.0.1:43179` excludes a second
+Node observer across sessions. This socket accepts no commands and immediately
+closes connections. Windows releases the socket after a crash. Observer mode
+does not use or clear the supervised writer/recovery lock.
+
+Canonical user files are under `%LOCALAPPDATA%\Roost\AgentHost`:
+
+- `agent-host.json`: secret-free config copied from the example, with
+  `executionMode: "observe"`, `baseUrl: "https://api.roost.luckysparrow.ch"`,
+  one stable host slug and declared repository mappings.
+- `status.json`: PID, host/workspace IDs, version, mode, last confirmed heartbeat
+  and fixed diagnostic reasons. This is a last observation, not proof that its
+  PID is still alive. Check the task and current heartbeat together.
+- `stop.request`: cooperative stop signal; the launcher clears it on next start.
+- `launcher-status.txt`: fixed launch-failure diagnostic when needed.
+
+Keep this directory writable only by the Windows owner, SYSTEM and
+administrators. The launcher references the canonical Roost checkout and reads
+the generic Windows Credential Manager target `Roost/AgentHost/Observer`.
+`Persist=2` persists for this user on this machine; it does not grant other
+Windows users access. The dedicated API key uses `mcp_codex_worker`, never the
+bootstrap/seed key. Provision through authenticated `POST /v1/api-keys` and
+transfer its one-time response directly into `RoostCredential.Write` in memory
+using `scripts/roost-agent-credential.ps1`. Never paste secrets into commands,
+JSON, task arguments, Git, transcripts, or screenshots. The launcher passes the
+key only in the child process environment, removes its own reference, and
+does not write process output to log files.
+
+From the canonical Roost checkout:
+
+```powershell
+.\scripts\roost-agent-host-windows.ps1 -Action Install
+.\scripts\roost-agent-host-windows.ps1 -Action Start
+.\scripts\roost-agent-host-windows.ps1 -Action Status
+.\scripts\roost-agent-host-windows.ps1 -Action Stop
+```
+
+`Install` replaces the same named task; it does not create another host.
+`Start` does not register another task. `Stop` asks the host to exit and waits
+up to 30 seconds; production projects offline within 60 seconds after its last
+heartbeat. Run `Start` to restart. Stop before editing config or updating the
+checkout. A stable workspace and slug upsert the same production host record.
+Network failures retry without executing work. Invalid credentials or disabled
+hosts stop with a fixed reason. After correcting them, explicitly start again.
+Unexpected process exit is retried by Task Scheduler three times, one minute
+apart. A port conflict fails closed; inspect its owning process before changing
+anything, rather than killing an unknown process or deleting writer locks.
+
+To rotate, stop the host, create a new dedicated scoped key, write it directly
+to the same credential target, revoke the old key with `PATCH /v1/api-keys/:id`
+and `{ "active": false }`, then start and verify a fresh heartbeat. If storage
+fails, revoke the newly created key before retrying. Creation and revocation
+are recorded atomically as `api_key.created` / `api_key.revoked` events with
+actor, resource ID and safe scope/profile metadata, never raw key material.
+
+When an authorized production operator has container access but no human API
+session, `dist/operations/provision-agent-host-key.js` provides a narrow
+administrative path inside the existing backend container. It uses the same
+audited key service as the API. Its strict input contains action (`create` or
+`revoke`), workspace UUID, dedicated name, `ownerAuthorized: true`, and key ID
+only for revoke. Creation fixes the profile to `mcp_codex_worker` and rejects an
+existing active name; revocation requires matching workspace, name and exact
+profile. It cannot create broad keys. It requires production mode and a captured
+stdout receiver; never run it directly in a terminal. Pipe the one-time JSON
+response through SSH straight into the Windows credential-store receiver in
+memory, and print only the new key ID/profile after successful storage. Audit
+source is `owner_authorized_host_provisioning`, actor is system (not an
+impersonated human). This administrative operation requires explicit owner
+authority and does not relax the API's human-admin checks.
+
+In `Workspace settings -> Agent connections`, verify online/offline, heartbeat,
+host version, observer mode, workspace and declared applications. The visible
+panel refreshes every 15 seconds and shows a read error separately from offline.
+Observer mode
+always disables execution locally, independently of the server flag. Production
+must remain `foundation_only` / execution disabled until a separate owner
+decision. No Codex login is required for observation and no application
+repository is inspected or changed. Supervised setup below is a separate,
+explicit activation path; an omitted `executionMode` retains legacy supervised
+behavior. The login launcher rejects any mode other than `observe`.
+
 ## Prerequisites
 
 - The Roost migration and API/web build containing the agent-runtime endpoints

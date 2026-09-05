@@ -2,6 +2,21 @@
 
 ## Current Supervised Runtime
 
+The Windows login host also supports `executionMode: "observe"`. This mode
+branches before recovery, writer locking and repository validation into a
+separate registration/heartbeat loop. It cannot claim/recover executions or
+spawn Codex, even when the API execution flag is enabled. Its application
+mapping is advertised as **declared only**, not verified runnable readiness.
+It advertises observer/heartbeat capabilities, host version and mode; the API
+returns workspace-scoped runtime readiness in register/heartbeat responses.
+Both host listings and readiness project an expired heartbeat as offline after
+60 seconds. See the [Windows observer runbook](../operations/local-codex-agent-host.md#observer-login-autostart).
+
+The canonical login launcher uses a dedicated `mcp_codex_worker` credential in
+Windows Credential Manager for the current user. Key creation and activation/
+revocation commit a secret-free event atomically with the key mutation. Raw key
+material is returned only at creation and never included in audit events.
+
 This document describes the implemented supervised baseline. The accepted
 [autonomy activation contract](autonomy-activation-contract.md) defines the
 future model and evidence gates. Its autonomous release target does not change
