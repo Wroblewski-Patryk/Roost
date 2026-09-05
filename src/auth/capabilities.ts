@@ -435,6 +435,10 @@ export const adapterManifest = {
     ],
     agentRuntime: [
       { method: "GET", path: "/v1/agent-runtime/hosts", capability: "agent-runtime:read" },
+      { method: "GET", path: "/v1/agent-runtime/recovery", capability: "agent-runtime:claim" },
+      { method: "POST", path: "/v1/agent-runtime/executions/:id/checkpoint", capability: "agent-runtime:report" },
+      { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/recover", capability: "agent-runtime:claim" },
+      { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/recovery-blocked", capability: "agent-runtime:report" },
       { method: "GET", path: "/v1/agent-runtime/readiness", capability: "agent-runtime:read" },
       { method: "POST", path: "/v1/agent-runtime/hosts/register", capability: "agent-runtime:claim" },
       { method: "POST", path: "/v1/agent-runtime/hosts/:id/heartbeat", capability: "agent-runtime:claim" },

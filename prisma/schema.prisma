@@ -1921,6 +1921,8 @@ model AgentExecution {
   verification      Json                  @default("{}")
   usage             Json                  @default("{}")
   errorState        Json?                 @map("error_state")
+  checkpoint        Json                  @default("{}")
+  checkpointVersion Int                   @default(0) @map("checkpoint_version")
   metadata          Json                  @default("{}")
   events            AgentExecutionEvent[]
   createdAt         DateTime              @default(now()) @map("created_at")

@@ -8,6 +8,7 @@ import { repositoryForExecution, validateAgentHostWorkspace } from "./lib/agent-
 import { createExecutionLease, terminateWindowsProcessTree } from "./lib/agent-host-execution-lease.mjs";
 import { acquireWriterLock } from "./lib/agent-host-writer-lock.mjs";
 import { validateExecutionPacket } from "./lib/agent-host-execution-packet.mjs";
+import { assertRecoverySnapshot, classifyRecovery, recoveryError, workspaceDigest } from "./lib/agent-host-recovery.mjs";
 
 const baseUrl = String(process.env.ROOST_BASE_URL || process.env.COMPANYCORE_BASE_URL || "").replace(/\/+$/, "");
 const apiKey = process.env.ROOST_AGENT_API_KEY || process.env.COMPANYCORE_API_KEY;
@@ -17,7 +18,7 @@ if (!baseUrl) throw new Error("ROOST_BASE_URL is required.");
 if (!apiKey) throw new Error("ROOST_AGENT_API_KEY is required.");
 if (!configPath) throw new Error("ROOST_AGENT_HOST_CONFIG must point to the local, secret-free Agent Host JSON configuration.");
 
-const config = await validateAgentHostWorkspace(JSON.parse(await readFile(path.resolve(configPath), "utf8")));
+let config = JSON.parse(await readFile(path.resolve(configPath), "utf8"));
 const host = {
   name: String(config.host?.name || os.hostname()),
   slug: String(config.host?.slug || os.hostname().toLowerCase().replace(/[^a-z0-9._-]+/g, "-")),
@@ -123,7 +124,7 @@ function summarizeItem(item) {
   return null;
 }
 
-async function execute(claimed) {
+async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint } = {}) {
   const repository = repositoryForExecution(config, claimed);
   const repositoryPath = path.resolve(String(repository.path));
   const taskContext = await api(`/v1/company-intelligence/tasks/${claimed.taskId}/agent-context?executionId=${encodeURIComponent(claimed.id)}`);
@@ -154,6 +155,19 @@ async function execute(claimed) {
     }
   });
 
+  async function checkpoint(stage, packetRevision, digest) {
+    const next = { schemaVersion: "roost-recovery-v1", stage, sessionId: writerLock.sessionId, packetRevision, workspaceDigest: digest };
+    const expectedVersion = claimed.checkpointVersion;
+    // Persist locally first. Any crash between the two stores leaves a mismatch
+    // and must stop recovery. The spawn barrier is durable before a child exists.
+    await writerLock.checkpoint({ ...claimed, checkpoint: next, checkpointVersion: expectedVersion + 1 }).catch(() => { throw recoveryError("local_state_invalid"); });
+    const saved = await api(`/v1/agent-runtime/executions/${claimed.id}/checkpoint`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, expectedVersion, checkpoint: next }) }).catch((error) => { lease.reject(error); throw recoveryError("checkpoint_mismatch"); });
+    if (saved?.checkpointVersion !== expectedVersion + 1) throw recoveryError("checkpoint_mismatch");
+    claimed.checkpoint = next;
+    claimed.checkpointVersion = saved.checkpointVersion;
+    await onCheckpoint?.(stage, claimed);
+  }
+
   try {
     await lease.refresh();
     lease.assertValid();
@@ -161,6 +175,11 @@ async function execute(claimed) {
     // No execution-specific subprocess (including git) is started for an invalid packet.
     await validateAgentHostWorkspace(config);
     const beforeStatus = await gitStatus(repositoryPath);
+    const digest = await workspaceDigest(repositoryPath);
+    if (resumeCheckpoint) assertRecoverySnapshot(resumeCheckpoint, taskContext.executionPacket.revision, digest);
+    if (claimed.checkpoint?.stage === "claimed") await checkpoint("prepared", taskContext.executionPacket.revision, digest);
+    else if (claimed.checkpoint?.stage !== "prepared") throw recoveryError("checkpoint_mismatch");
+    await checkpoint("spawn_intent", taskContext.executionPacket.revision, digest);
     lease.assertValid();
     await api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, type: "runner_started", message: `Starting Codex in ${claimed.application.slug}.`, payload: { sandbox, baseBranch: repository.baseBranch || claimed.baseBranch || null, preExistingDirtyFiles: beforeStatus.map(statusPath) } }) }).catch((error) => { lease.reject(error); throw lease.failure ?? error; });
     lease.assertValid();
@@ -180,6 +199,8 @@ async function execute(claimed) {
       while (stderrTail.join("").length > 20_000) stderrTail.shift();
     });
 
+    await checkpoint("running", taskContext.executionPacket.revision, digest);
+
     const lines = readline.createInterface({ input: child.stdout, crlfDelay: Infinity });
     for await (const line of lines) {
       if (!line.trim()) continue;
@@ -189,6 +210,7 @@ async function execute(claimed) {
       if (event.type === "turn.completed") usage = event.usage || {};
       if (event.type === "item.completed" && event.item?.type === "agent_message") finalResponse = String(event.item.text || "");
       if (event.type === "item.completed" && event.item?.type === "command_execution") verification.commands.push({ command: event.item.command, status: event.item.status, exitCode: event.item.exit_code });
+      if (!lease.failure && claimed.checkpoint.stage === "running" && ["command_execution", "mcp_tool_call"].includes(event.item?.type)) await checkpoint("effect_possible", taskContext.executionPacket.revision, digest);
       const summary = event.type === "item.completed" ? summarizeItem(event.item) : null;
       if (summary && !lease.failure) await api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, ...summary }) }).catch((error) => lease.reject(error));
     }
@@ -227,10 +249,26 @@ async function execute(claimed) {
 
 async function reportFailure(execution, error) {
   if (!execution?.leaseToken || error.leaseLost) return;
-  await api(`/v1/agent-runtime/executions/${execution.id}/actions/fail`, {
+  return api(`/v1/agent-runtime/executions/${execution.id}/actions/fail`, {
     method: "POST",
     body: JSON.stringify({ leaseToken: execution.leaseToken, code: String(error.message || "agent_host_failed").split(":")[0], message: String(error.publicMessage || error.message || "Agent Host failed."), retryable: error.retryable ?? true, details: error.details || {} })
-  }).catch((reportError) => process.stderr.write(`Could not report failure: ${reportError.message}\n`));
+  }).then(() => true).catch(() => { retainWriterLock = true; stopping = true; process.stderr.write("Could not confirm the failure report; recovery required.\n"); return false; });
+}
+
+function recoveryReason(error) {
+  if (error.recoveryReason) return error.recoveryReason;
+  if (error.leaseLost || error.message === "agent_recovery_lease_expired") return "lease_expired";
+  if (error.message === "execution_packet_invalid") return "packet_invalid";
+  if (/sandbox/.test(error.message)) return "sandbox_invalid";
+  if (/writer|ENOENT|JSON/.test(error.message)) return "writer_locked";
+  if (/repository|workspace_root|origin/.test(error.message)) return "repository_mismatch";
+  return "context_unavailable";
+}
+
+async function reportRecovery(execution, reason) {
+  if (!execution?.id) return;
+  await api(`/v1/agent-runtime/executions/${execution.id}/actions/recovery-blocked`, { method: "POST", body: JSON.stringify({ hostSlug: host.slug, reason }) })
+    .catch(() => process.stderr.write("Recovery diagnostic could not reach Roost; local ownership remains retained.\n"));
 }
 
 process.on("SIGINT", () => { stopping = true; });
@@ -238,30 +276,55 @@ process.on("SIGTERM", () => { stopping = true; });
 
 // Dependency injection lets process-level tests use a private temporary lock directory.
 // The CLI always uses the fixed machine-wide location; config cannot override it.
-export async function runHost({ acquireLock = acquireWriterLock } = {}) {
-  const writerLock = await acquireLock();
+export async function runHost({ acquireLock = (options) => acquireWriterLock(undefined, options), onCheckpoint } = {}) {
+  const recovery = await api(`/v1/agent-runtime/recovery?hostSlug=${encodeURIComponent(host.slug)}`);
+  if (!Array.isArray(recovery?.executions)) throw recoveryError("context_unavailable");
+  const pending = recovery.executions;
+  if (pending.length > 1) {
+    for (const execution of pending) await reportRecovery(execution, "multiple_executions");
+    throw recoveryError("multiple_executions");
+  }
+  let writerLock;
   try {
+    if (pending[0]) classifyRecovery(pending[0], recovery.executionEnabled);
+    writerLock = await acquireLock({ recoveryCandidate: pending[0] });
+    config = await validateAgentHostWorkspace(config);
     await register();
+    if (pending[0]) {
+      const resumed = await api(`/v1/agent-runtime/executions/${pending[0].id}/actions/recover`, { method: "POST", body: JSON.stringify({ hostSlug: host.slug, sessionId: writerLock.sessionId, expectedVersion: pending[0].checkpointVersion }) });
+      if (resumed?.id !== pending[0].id || resumed?.attempt !== pending[0].attempt) throw recoveryError("recovery_conflict");
+      await writerLock.checkpoint(resumed);
+      await execute(resumed, writerLock, { resumeCheckpoint: pending[0].checkpoint, onCheckpoint });
+    }
     while (!stopping) {
       let execution = null;
       try {
-        execution = await api("/v1/agent-runtime/executions/claim", { method: "POST", body: JSON.stringify({ hostSlug: host.slug }) });
+        execution = await api("/v1/agent-runtime/executions/claim", { method: "POST", body: JSON.stringify({ hostSlug: host.slug, sessionId: writerLock.sessionId }) });
         if (execution) {
           process.stdout.write(`Claimed ${execution.id}: ${execution.task.title}\n`);
-          await execute(execution);
+          await writerLock.checkpoint(execution).catch(() => { throw recoveryError("local_state_invalid"); });
+          await onCheckpoint?.("claimed", execution);
+          await execute(execution, writerLock, { onCheckpoint });
         } else if (registeredHost) {
           await api(`/v1/agent-runtime/hosts/${registeredHost.id}/heartbeat`, { method: "POST", body: JSON.stringify({ applicationSlugs: host.applicationSlugs, capabilities: host.capabilities }) });
         }
       } catch (error) {
         process.stderr.write(`Agent Host error: ${error.message}\n`);
-        await reportFailure(execution, error);
+        if (error.recoveryReason || error.leaseLost) {
+          stopping = true; retainWriterLock = true;
+          await reportRecovery(execution, recoveryReason(error));
+        } else await reportFailure(execution, error);
+        if (error.message === "agent_host_recovery_required") stopping = true;
         if (error.status === 401 || error.status === 403 || error.status === 422) break;
       }
       if (!stopping) await delay(execution ? 1_000 : pollIntervalMs);
     }
+  } catch (error) {
+    if (pending[0]) { retainWriterLock = true; await reportRecovery(pending[0], recoveryReason(error)); }
+    throw error;
   } finally {
     if (retainWriterLock) process.stderr.write("Writer lock retained: reconcile the interrupted execution before restarting.\n");
-    else await writerLock.release();
+    else await writerLock?.release();
   }
   process.stdout.write("Roost Agent Host stopped.\n");
 }

@@ -80,8 +80,9 @@ visible.
    one application.
 2. The owner queues a Codex execution from the task workbench or the agent
    runtime API.
-3. A Windows Agent Host registers its supported application slugs and polls the
-   production API over HTTPS.
+3. A Windows Agent Host inspects its pending executions and local ownership
+   through [safe recovery](agent-host-recovery.md), then registers its supported
+   application slugs and polls the production API over HTTPS.
 4. The host atomically claims one compatible queued execution with a short
    renewable lease.
 5. The host fetches current task/application context with the execution-bound
@@ -122,8 +123,10 @@ visible.
 
 ## Failure And Recovery
 
-These are current lease/retry semantics, not checkpoint-based resumption. The
-host acquires the machine-wide writer slot before registration and processes
+The [recovery contract](agent-host-recovery.md) supports the same execution/attempt
+only from matching durable `claimed`/`prepared` checkpoints with valid authority.
+Later stages, expired leases and ambiguous state stop with owner-visible
+diagnostics. The host acquires the machine-wide writer slot before registration and processes
 executions sequentially. An expired API lease does not prove that the old process
 stopped. The host
 renews before launch, uses bounded API requests, and stops the Windows child
@@ -141,12 +144,14 @@ workspace or host key. It is secret-free process/recovery state outside applicat
 repositories. A second host fails before registering or claiming work. Normal
 shutdown releases only the lock owned by that process. A crash, empty/corrupted
 lock or uncertain execution does not trigger automatic stale-lock removal: old
-Codex descendants may still be running. The state directory must be a physical
+Codex descendants may still be running. Recovery can reclaim only a matched
+pre-spawn checkpoint from a confirmed dead owner under the exclusive recovery
+gate; neither PID nor age alone is sufficient. The state directory must be a physical
 directory writable only by the trusted host operator; permission failures stop
 startup. The CLI configuration cannot choose another lock location.
 
-- Expired `claimed` or `running` leases return to `queued`; another compatible
-  host may claim them.
+- Expired `claimed` or `running` leases retain their execution and host identity;
+  they require reconciliation and are never automatically put back in the queue.
 - Failed and cancelled executions are immutable history. Retry creates a new
   execution linked to the same task and application.
 - A disabled host cannot register heartbeats or claim work.

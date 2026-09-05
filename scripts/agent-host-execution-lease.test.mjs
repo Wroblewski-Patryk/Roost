@@ -125,7 +125,7 @@ test(sandboxBlocked ? "the real host rejects unrestricted sandbox before registe
     routes.push(req.url);
     res.setHeader("Content-Type", "application/json");
     if (req.url.endsWith("/heartbeat")) { res.writeHead(409); res.end(JSON.stringify({ error: "agent_execution_lease_invalid" })); return; }
-    const data = req.url.endsWith("/register") ? { id: "host", name: "test" }
+    const data = req.url.startsWith("/v1/agent-runtime/recovery?") ? { executions: [], executionEnabled: true } : req.url.endsWith("/register") ? { id: "host", name: "test" }
       : req.url.endsWith("/claim") ? { id: "execution", taskId: "task", applicationId: "app", leaseToken: "test-only", task: { title: "test" }, application: { id: "app", name: "Roost", slug: "roost", repositories: [{ url: "https://github.com/Wroblewski-Patryk/Roost.git", isPrimary: true }] } }
       : {};
     res.end(JSON.stringify({ data }));
@@ -147,8 +147,8 @@ test(sandboxBlocked ? "the real host rejects unrestricted sandbox before registe
     assert.equal(code, sandboxBlocked ? 1 : 0);
     assert.match(stderr, sandboxBlocked ? /agent_host_sandbox_not_approved/ : /agent_execution_lease_rejected/);
     assert.equal(routes.filter((route) => route.endsWith("/claim")).length, sandboxBlocked ? 0 : 1);
-    if (sandboxBlocked) assert.deepEqual(routes, []);
-    assert.equal(routes.some((route) => /events|actions/.test(route)), false);
+    if (sandboxBlocked) assert.equal(routes.length, 1, "only the read-only recovery inspection precedes config validation");
+    assert.equal(routes.some((route) => /events|actions\/(complete|fail)/.test(route)), false);
     if (!sandboxBlocked) {
       const lock = JSON.parse(await readFile(path.join(directory, writerLockFilename), "utf8"));
       assert.equal(lock.ownerPid, host.pid, "lease loss retains the writer slot until reconciliation");

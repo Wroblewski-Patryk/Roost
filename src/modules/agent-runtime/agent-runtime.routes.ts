@@ -6,6 +6,7 @@ import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
 import { sendApiError } from "../../middleware/api-error";
 import { createEvent } from "../events/event.service";
+import { nextCheckpointStage, recoveryCheckpoint, recoveryMessage, recoveryReasons } from "./execution-recovery";
 
 const jsonRecord = z.record(z.unknown());
 const hostSchema = z.object({
@@ -23,7 +24,7 @@ const createExecutionSchema = z.object({
   baseBranch: z.string().trim().max(240).optional(),
   metadata: jsonRecord.default({})
 }).strict();
-const claimSchema = z.object({ hostSlug: z.string().trim().min(1).max(120) }).strict();
+const claimSchema = z.object({ hostSlug: z.string().trim().min(1).max(120), sessionId: z.string().uuid().optional() }).strict();
 const leaseSchema = z.object({ leaseToken: z.string().uuid() }).strict();
 const heartbeatSchema = leaseSchema.extend({
   codexThreadId: z.string().trim().max(240).nullable().optional(),
@@ -105,6 +106,65 @@ async function applicationForTask(workspaceId: string, taskId: string, requested
 }
 
 export const agentRuntimeRouter = Router();
+
+agentRuntimeRouter.get("/recovery", asyncHandler(async (req, res) => {
+  const { hostSlug } = claimSchema.pick({ hostSlug: true }).parse(req.query);
+  const host = await prisma.agentHost.findFirst({ where: { workspaceId: req.auth!.workspaceId, slug: hostSlug, status: { not: "disabled" } } });
+  const executions = host ? await prisma.agentExecution.findMany({ where: { workspaceId: req.auth!.workspaceId, agentHostId: host.id, status: { in: ["queued", "claimed", "running", "waiting_for_approval"] } }, include: executionInclude, take: 3, orderBy: { createdAt: "asc" } }) : [];
+  res.json({ data: { executionEnabled: executionEnabled(), executions: executions.map(({ leaseToken: _leaseToken, ...execution }) => execution) } });
+}));
+
+agentRuntimeRouter.post("/executions/:id/checkpoint", asyncHandler(async (req, res) => {
+  const input = leaseSchema.extend({ expectedVersion: z.number().int().min(0), checkpoint: recoveryCheckpoint }).strict().parse(req.body);
+  const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, leaseToken: input.leaseToken, leaseExpiresAt: { gt: new Date() }, cancelRequestedAt: null, status: { in: ["claimed", "running"] } } });
+  if (!existing) return sendApiError(res, 409, "agent_execution_lease_invalid");
+  const previous = recoveryCheckpoint.safeParse(existing.checkpoint);
+  if (!previous.success || previous.data.sessionId !== input.checkpoint.sessionId || !nextCheckpointStage(previous.data.stage, input.checkpoint.stage)) return sendApiError(res, 409, "agent_checkpoint_transition_invalid");
+  if (previous.data.stage !== "claimed" && (previous.data.packetRevision !== input.checkpoint.packetRevision || previous.data.workspaceDigest !== input.checkpoint.workspaceDigest)) return sendApiError(res, 409, "agent_checkpoint_identity_changed");
+  const saved = await prisma.$transaction(async (tx) => {
+    const updated = await tx.agentExecution.updateMany({ where: { id: existing.id, leaseToken: input.leaseToken, leaseExpiresAt: { gt: new Date() }, cancelRequestedAt: null, checkpointVersion: input.expectedVersion, status: { in: ["claimed", "running"] } }, data: { checkpoint: json(input.checkpoint), checkpointVersion: { increment: 1 } } });
+    if (!updated.count) return null;
+    await tx.agentExecutionEvent.create({ data: { workspaceId: existing.workspaceId, executionId: existing.id, type: "checkpoint", message: `Recovery checkpoint: ${input.checkpoint.stage}.`, payload: json({ stage: input.checkpoint.stage, version: input.expectedVersion + 1 }) } });
+    return { checkpoint: input.checkpoint, checkpointVersion: input.expectedVersion + 1 };
+  });
+  if (!saved) return sendApiError(res, 409, "agent_checkpoint_conflict");
+  res.json({ data: saved });
+}));
+
+agentRuntimeRouter.post("/executions/:id/actions/recover", asyncHandler(async (req, res) => {
+  if (!executionEnabled()) return sendApiError(res, 409, "agent_execution_disabled");
+  const input = z.object({ hostSlug: z.string().min(1).max(120), sessionId: z.string().uuid(), expectedVersion: z.number().int().min(1) }).strict().parse(req.body);
+  const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, agentHost: { slug: input.hostSlug, status: { not: "disabled" } }, status: { in: ["claimed", "running"] }, cancelRequestedAt: null } });
+  if (!existing) return sendApiError(res, 409, "agent_recovery_conflict");
+  const parsed = recoveryCheckpoint.safeParse(existing.checkpoint);
+  if (!parsed.success || !["claimed", "prepared"].includes(parsed.data.stage) || parsed.data.sessionId === input.sessionId) return sendApiError(res, 409, "agent_recovery_ambiguous");
+  if (!existing.leaseExpiresAt || existing.leaseExpiresAt <= new Date()) return sendApiError(res, 409, "agent_recovery_lease_expired");
+  const checkpoint = { ...parsed.data, sessionId: input.sessionId };
+  const token = randomUUID();
+  const updated = await prisma.$transaction(async (tx) => {
+    const changed = await tx.agentExecution.updateMany({ where: { id: existing.id, checkpointVersion: input.expectedVersion, leaseToken: existing.leaseToken, leaseExpiresAt: { gt: new Date() }, cancelRequestedAt: null, status: { in: ["claimed", "running"] } }, data: { checkpoint: json(checkpoint), checkpointVersion: { increment: 1 }, leaseToken: token, leaseExpiresAt: new Date(Date.now() + 90_000), lastHeartbeatAt: new Date(), errorState: Prisma.DbNull } });
+    if (!changed.count) return null;
+    const mode = checkpoint.stage === "prepared" ? "resume_from_checkpoint" : "restart_same_attempt";
+    await tx.agentExecutionEvent.create({ data: { workspaceId: existing.workspaceId, executionId: existing.id, type: "recovering", message: `Recovering the same execution and attempt from ${checkpoint.stage}: ${mode}; no worker had been started.`, payload: json({ schemaVersion: "roost-recovery-v1", stage: checkpoint.stage, mode, version: input.expectedVersion + 1, attempt: existing.attempt }) } });
+    return tx.agentExecution.findUniqueOrThrow({ where: { id: existing.id }, include: executionInclude });
+  });
+  if (!updated) return sendApiError(res, 409, "agent_recovery_conflict");
+  res.json({ data: updated });
+}));
+
+agentRuntimeRouter.post("/executions/:id/actions/recovery-blocked", asyncHandler(async (req, res) => {
+  const input = z.object({ hostSlug: z.string().min(1).max(120), reason: recoveryReasons }).strict().parse(req.body);
+  const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, agentHost: { slug: input.hostSlug }, status: { in: ["queued", "claimed", "running", "waiting_for_approval"] } } });
+  if (!existing) return sendApiError(res, 404, "agent_execution_not_found");
+  const checkpoint = recoveryCheckpoint.safeParse(existing.checkpoint);
+  const stage = checkpoint.success ? checkpoint.data.stage : "unknown";
+  const message = recoveryMessage(input.reason, stage);
+  await prisma.$transaction(async (tx) => {
+    const changed = await tx.agentExecution.updateMany({ where: { id: existing.id, checkpointVersion: existing.checkpointVersion, status: { in: ["queued", "claimed", "running", "waiting_for_approval"] } }, data: { errorState: json({ code: "agent_execution_recovery_blocked", message, retryable: false, details: { schemaVersion: "roost-recovery-v1", stage, reason: input.reason } }) } });
+    if (changed.count) await tx.agentExecutionEvent.create({ data: { workspaceId: existing.workspaceId, executionId: existing.id, type: "recovery_blocked", level: "warning", message, payload: json({ stage, reason: input.reason }) } });
+  });
+  res.json({ data: { code: "agent_execution_recovery_blocked", stage, reason: input.reason } });
+}));
 
 agentRuntimeRouter.get("/readiness", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
@@ -215,14 +275,15 @@ agentRuntimeRouter.post("/executions/claim", asyncHandler(async (req, res) => {
   if (!host) return sendApiError(res, 404, "agent_host_not_found");
   const applicationSlugs = Array.isArray(host.applicationSlugs) ? host.applicationSlugs.filter((value): value is string => typeof value === "string") : [];
   const now = new Date();
-  await prisma.agentExecution.updateMany({ where: { workspaceId, status: { in: ["claimed", "running", "waiting_for_approval"] }, leaseExpiresAt: { lt: now }, cancelRequestedAt: null }, data: { status: "queued", agentHostId: null, leaseToken: null, leaseExpiresAt: null } });
-  await prisma.agentExecution.updateMany({ where: { workspaceId, status: { in: ["claimed", "running", "waiting_for_approval"] }, leaseExpiresAt: { lt: now }, cancelRequestedAt: { not: null } }, data: { status: "cancelled", completedAt: now, leaseToken: null, leaseExpiresAt: null } });
+  // Expiry is not proof that an old worker stopped. Keep ownership and identity.
+  if (await prisma.agentExecution.count({ where: { workspaceId, agentHostId: host.id, status: { in: ["claimed", "running", "waiting_for_approval"] } } })) return sendApiError(res, 409, "agent_host_recovery_required");
   if (!applicationSlugs.length) return res.status(204).send();
   for (let attempt = 0; attempt < 5; attempt += 1) {
-    const candidate = await prisma.agentExecution.findFirst({ where: { workspaceId, status: "queued", cancelRequestedAt: null, ...(applicationSlugs.length ? { application: { slug: { in: applicationSlugs } } } : {}) }, orderBy: { createdAt: "asc" } });
+    const candidate = await prisma.agentExecution.findFirst({ where: { workspaceId, status: "queued", attempt: 0, cancelRequestedAt: null, ...(applicationSlugs.length ? { application: { slug: { in: applicationSlugs } } } : {}) }, orderBy: { createdAt: "asc" } });
     if (!candidate) return res.status(204).send();
     const leaseToken = randomUUID();
-    const claimed = await prisma.agentExecution.updateMany({ where: { id: candidate.id, workspaceId, status: "queued" }, data: { status: "claimed", agentHostId: host.id, leaseToken, leaseExpiresAt: new Date(Date.now() + 90_000), lastHeartbeatAt: now, startedAt: candidate.startedAt ?? now, attempt: { increment: 1 } } });
+    const checkpoint = { schemaVersion: "roost-recovery-v1", stage: "claimed", sessionId: input.sessionId ?? randomUUID(), packetRevision: null, workspaceDigest: null };
+    const claimed = await prisma.agentExecution.updateMany({ where: { id: candidate.id, workspaceId, status: "queued", attempt: 0 }, data: { status: "claimed", agentHostId: host.id, leaseToken, leaseExpiresAt: new Date(Date.now() + 90_000), lastHeartbeatAt: now, startedAt: candidate.startedAt ?? now, attempt: { increment: 1 }, checkpoint: json(checkpoint), checkpointVersion: 1 } });
     if (!claimed.count) continue;
     await prisma.agentHost.update({ where: { id: host.id }, data: { status: "online", lastSeenAt: now } });
     await appendExecutionEvent({ workspaceId, executionId: candidate.id, type: "claimed", message: `Execution claimed by ${host.name}.`, payload: { hostId: host.id, attempt: candidate.attempt + 1 } });
@@ -238,8 +299,11 @@ agentRuntimeRouter.post("/executions/:id/heartbeat", asyncHandler(async (req, re
   const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, leaseToken: input.leaseToken, status: { in: ["claimed", "running", "waiting_for_approval"] } } });
   if (!existing) return sendApiError(res, 409, "agent_execution_lease_invalid");
   if (existing.cancelRequestedAt) return res.status(409).json({ error: "agent_execution_cancel_requested", data: { cancelRequested: true } });
-  const execution = await prisma.agentExecution.update({ where: { id: existing.id }, data: { status: input.status ?? (existing.status === "claimed" ? "running" : existing.status), codexThreadId: input.codexThreadId === undefined ? existing.codexThreadId : input.codexThreadId, lastHeartbeatAt: new Date(), leaseExpiresAt: new Date(Date.now() + 90_000), ...(input.metadata ? { metadata: json(input.metadata) } : {}) } });
-  res.json({ data: { id: execution.id, status: execution.status, cancelRequested: false, leaseExpiresAt: execution.leaseExpiresAt } });
+  const leaseExpiresAt = new Date(Date.now() + 90_000);
+  const status = input.status ?? (existing.status === "claimed" ? "running" : existing.status);
+  const updated = await prisma.agentExecution.updateMany({ where: { id: existing.id, leaseToken: input.leaseToken, leaseExpiresAt: { gt: new Date() }, cancelRequestedAt: null, status: { in: ["claimed", "running", "waiting_for_approval"] } }, data: { status, codexThreadId: input.codexThreadId === undefined ? existing.codexThreadId : input.codexThreadId, lastHeartbeatAt: new Date(), leaseExpiresAt, ...(input.metadata ? { metadata: json(input.metadata) } : {}) } });
+  if (!updated.count) return sendApiError(res, 409, "agent_execution_lease_invalid");
+  res.json({ data: { id: existing.id, status, cancelRequested: false, leaseExpiresAt } });
 }));
 
 agentRuntimeRouter.post("/executions/:id/events", asyncHandler(async (req, res) => {
@@ -254,7 +318,9 @@ agentRuntimeRouter.post("/executions/:id/actions/complete", asyncHandler(async (
   const input = completeSchema.parse(req.body);
   const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, leaseToken: input.leaseToken, status: { in: ["claimed", "running", "waiting_for_approval"] } }, include: { task: true } });
   if (!existing) return sendApiError(res, 409, "agent_execution_lease_invalid");
-  const execution = await prisma.agentExecution.update({ where: { id: existing.id }, data: { status: "completed", summary: input.summary, finalResponse: input.finalResponse, codexThreadId: input.codexThreadId === undefined ? existing.codexThreadId : input.codexThreadId, changedFiles: json(input.changedFiles), verification: json(input.verification), usage: json(input.usage), ...(input.metadata ? { metadata: json(input.metadata) } : {}), completedAt: new Date(), leaseExpiresAt: null, leaseToken: null } });
+  const completed = await prisma.agentExecution.updateMany({ where: { id: existing.id, leaseToken: input.leaseToken, leaseExpiresAt: { gt: new Date() }, cancelRequestedAt: null, status: { in: ["claimed", "running", "waiting_for_approval"] } }, data: { status: "completed", summary: input.summary, finalResponse: input.finalResponse, codexThreadId: input.codexThreadId === undefined ? existing.codexThreadId : input.codexThreadId, changedFiles: json(input.changedFiles), verification: json(input.verification), usage: json(input.usage), ...(input.metadata ? { metadata: json(input.metadata) } : {}), errorState: Prisma.DbNull, completedAt: new Date(), leaseExpiresAt: null, leaseToken: null } });
+  if (!completed.count) return sendApiError(res, 409, "agent_execution_lease_invalid");
+  const execution = await prisma.agentExecution.findUniqueOrThrow({ where: { id: existing.id } });
   await appendExecutionEvent({ workspaceId: req.auth!.workspaceId, executionId: execution.id, type: "completed", message: input.summary, payload: { changedFiles: input.changedFiles, verification: input.verification } });
   await prisma.evidenceRecord.create({ data: { workspaceId: req.auth!.workspaceId, entityType: "task", entityId: execution.taskId, type: "manual_verification", source: "agent", reference: `Codex execution ${execution.id}`, description: input.summary, metadata: json({ executionId: execution.id, applicationId: execution.applicationId, changedFiles: input.changedFiles, verification: input.verification }) } });
   await createEvent({ type: "agent_execution_completed", workspaceId: req.auth!.workspaceId, taskId: execution.taskId, projectId: existing.task.projectId, resourceType: "agent_execution", resourceId: execution.id, source: "codex", payload: { executionId: execution.id, applicationId: execution.applicationId, changedFiles: input.changedFiles } });
@@ -265,7 +331,9 @@ agentRuntimeRouter.post("/executions/:id/actions/fail", asyncHandler(async (req,
   const input = failSchema.parse(req.body);
   const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, leaseToken: input.leaseToken, status: { in: ["claimed", "running", "waiting_for_approval"] } }, include: { task: true } });
   if (!existing) return sendApiError(res, 409, "agent_execution_lease_invalid");
-  const execution = await prisma.agentExecution.update({ where: { id: existing.id }, data: { status: "failed", errorState: json({ code: input.code, message: input.message, retryable: input.retryable, details: input.details }), completedAt: new Date(), leaseExpiresAt: null, leaseToken: null } });
+  const failed = await prisma.agentExecution.updateMany({ where: { id: existing.id, leaseToken: input.leaseToken, leaseExpiresAt: { gt: new Date() }, status: { in: ["claimed", "running", "waiting_for_approval"] } }, data: { status: "failed", errorState: json({ code: input.code, message: input.message, retryable: input.retryable, details: input.details }), completedAt: new Date(), leaseExpiresAt: null, leaseToken: null } });
+  if (!failed.count) return sendApiError(res, 409, "agent_execution_lease_invalid");
+  const execution = await prisma.agentExecution.findUniqueOrThrow({ where: { id: existing.id } });
   await appendExecutionEvent({ workspaceId: req.auth!.workspaceId, executionId: execution.id, type: "failed", level: "error", message: input.message, payload: { code: input.code, retryable: input.retryable } });
   await createEvent({ type: "agent_execution_failed", workspaceId: req.auth!.workspaceId, taskId: execution.taskId, projectId: existing.task.projectId, resourceType: "agent_execution", resourceId: execution.id, source: "codex", payload: { executionId: execution.id, code: input.code, retryable: input.retryable } });
   res.json({ data: execution });
@@ -275,7 +343,9 @@ agentRuntimeRouter.post("/executions/:id/actions/cancelled", asyncHandler(async 
   const input = leaseSchema.parse(req.body);
   const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, leaseToken: input.leaseToken, cancelRequestedAt: { not: null }, status: { in: ["claimed", "running", "waiting_for_approval"] } } });
   if (!existing) return sendApiError(res, 409, "agent_execution_lease_invalid");
-  const execution = await prisma.agentExecution.update({ where: { id: existing.id }, data: { status: "cancelled", completedAt: new Date(), leaseExpiresAt: null, leaseToken: null } });
+  const cancelled = await prisma.agentExecution.updateMany({ where: { id: existing.id, leaseToken: input.leaseToken, leaseExpiresAt: { gt: new Date() }, status: { in: ["claimed", "running", "waiting_for_approval"] } }, data: { status: "cancelled", completedAt: new Date(), leaseExpiresAt: null, leaseToken: null } });
+  if (!cancelled.count) return sendApiError(res, 409, "agent_execution_lease_invalid");
+  const execution = await prisma.agentExecution.findUniqueOrThrow({ where: { id: existing.id } });
   await appendExecutionEvent({ workspaceId: req.auth!.workspaceId, executionId: execution.id, type: "cancelled", level: "warning", message: "Local Codex execution stopped after an owner cancellation request." });
   res.json({ data: execution });
 }));

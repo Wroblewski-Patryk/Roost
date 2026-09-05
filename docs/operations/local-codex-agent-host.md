@@ -112,6 +112,13 @@ rejects queueing rather than guessing which local repository to edit.
 
 ## Production Service
 
+At startup the host first inspects its own nonterminal Roost executions.
+[Recovery v1](../architecture/agent-host-recovery.md) can resume the same execution
+only before the durable spawn barrier, with a matching local/API checkpoint,
+confirmed dead prior parent, valid lease, unchanged prepared packet/workspace
+and a single writer lock. Long shutdowns that outlast the lease, interrupted
+Codex work and uncertain effects require operator reconciliation.
+
 After an interactive trial, run the host under a Windows service wrapper or
 Task Scheduler using the same Windows user that owns the Codex login and local
 repositories. Configure automatic restart, a working directory of the Roost
@@ -155,6 +162,8 @@ as a recovery shortcut. A late heartbeat cannot revive lost authority.
 | `agent_host_writer_locked` | Another host or unresolved prior execution owns the slot. Reconcile it before removing the exact lock; never start a second writer or auto-clear by PID/age. |
 | `execution_packet_invalid` | Read the field/reason list in Agent activity or execution details. Correct the contract or referenced versions. Diagnostics contain no rejected values or raw logs. |
 | `agent_execution_requires_correction` | The previous failure disallows blind retry. Correct the source records and queue a new execution contract. |
+| `agent_execution_recovery_blocked` | Read the stage/reason in Agent activity. Preserve local files and reconcile the old process/effects; do not create a duplicate execution or clear locks by age/PID. |
+| `agent_host_recovery_required` | The host has an unresolved nonterminal execution. Resolve recovery instead of polling for another task. |
 | `agent_host_writer_lock_owner_changed` | Lock ownership is inconsistent. Stop and reconcile; the host will not delete another owner's lock. |
 | `workspace_root_not_approved` | Restore the exact `C:\Personal\Projekty\Aplikacje` root. |
 | `repository_path_outside_workspace` | Use one direct child directory; remove traversal or nested paths. |
@@ -180,7 +189,7 @@ as a recovery shortcut. A late heartbeat cannot revive lost authority.
 
 ## OpenAI Runtime References
 
-Local regression checks: `npm run test:agent-host-packet`, `npm run test:agent-host-guard` and
+Local regression checks: `npm run test:agent-host-recovery` (separately), `npm run test:agent-host-packet`, `npm run test:agent-host-guard` and
 `npm run test:agent-host-lease`, plus `npm run test:agent-host-writer` for
 cross-process exclusion, crash retention and safe release. Lease tests cover renewal, rejection, timeout,
 late-response behavior and Windows process-tree termination without a real

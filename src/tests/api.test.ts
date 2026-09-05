@@ -1374,6 +1374,77 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
   delete process.env.ROOST_CODEX_EXECUTION_ENABLED;
 });
 
+test("execution recovery fences old leases and preserves an auditable same-attempt checkpoint", async () => {
+  const owner = await registerOwner("recovery-owner@example.com", "Recovery Fixture");
+  const outsider = await registerOwner("recovery-outsider@example.com", "Recovery Outsider");
+  const ownerAuth = { Authorization: `Bearer ${owner.token}` };
+  const outsiderAuth = { Authorization: `Bearer ${outsider.token}` };
+  const key = await request("/v1/api-keys", { method: "POST", headers: ownerAuth, body: JSON.stringify({ name: "Recovery worker", profileId: "mcp_codex_worker" }) });
+  const workerAuth = { "X-API-Key": (key.body as { data: { key: string } }).data.key };
+  const application = await prisma.application.create({ data: { workspaceId: owner.workspace.id, name: "Recovery Fixture", slug: "recovery-fixture", targetPlatforms: ["web"] } });
+  const project = await prisma.project.create({ data: { workspaceId: owner.workspace.id, name: "Recovery Project" } });
+  await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id, relationType: "delivery" } });
+  const task = await prisma.task.create({ data: { workspaceId: owner.workspace.id, projectId: project.id, title: "Recover same execution" } });
+  const hostSlug = "recovery-fixture";
+  assert.equal((await request("/v1/agent-runtime/hosts/register", { method: "POST", headers: workerAuth, body: JSON.stringify({ name: "Recovery host", slug: hostSlug, platform: "win32", applicationSlugs: [application.slug] }) })).status, 200);
+  process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
+  try {
+    await request("/v1/agent-runtime/executions", { method: "POST", headers: ownerAuth, body: JSON.stringify({ taskId: task.id }) });
+    const sessionId = "00000000-0000-4000-8000-000000000001";
+    const claim = await request("/v1/agent-runtime/executions/claim", { method: "POST", headers: workerAuth, body: JSON.stringify({ hostSlug, sessionId }) });
+    const claimed = (claim.body as { data: { id: string; leaseToken: string; checkpointVersion: number; attempt: number } }).data;
+    assert.equal(claim.status, 200); assert.equal(claimed.checkpointVersion, 1);
+    const checkpoint = { schemaVersion: "roost-recovery-v1", stage: "prepared", sessionId, packetRevision: "a".repeat(64), workspaceDigest: "b".repeat(64) };
+    const checkpointRoute = `/v1/agent-runtime/executions/${claimed.id}/checkpoint`;
+    assert.equal((await request(checkpointRoute, { method: "POST", headers: outsiderAuth, body: JSON.stringify({ leaseToken: claimed.leaseToken, expectedVersion: 1, checkpoint }) })).status, 409);
+    const saved = await request(checkpointRoute, { method: "POST", headers: workerAuth, body: JSON.stringify({ leaseToken: claimed.leaseToken, expectedVersion: 1, checkpoint }) });
+    assert.equal(saved.status, 200);
+    assert.equal((saved.body as { data: { checkpointVersion: number } }).data.checkpointVersion, 2);
+    const inspectionRoute = `/v1/agent-runtime/recovery?hostSlug=${hostSlug}`;
+    assert.equal((await request(inspectionRoute)).status, 401);
+    const foreignInspection = await request(inspectionRoute, { headers: outsiderAuth });
+    assert.deepEqual((foreignInspection.body as { data: { executions: unknown[] } }).data.executions, []);
+    const inspection = await request(inspectionRoute, { headers: workerAuth });
+    assert.equal(inspection.status, 200);
+    assert.equal(JSON.stringify(inspection.body).includes(claimed.leaseToken), false);
+    assert.equal((inspection.body as { data: { executions: Array<{ id: string }> } }).data.executions[0]!.id, claimed.id);
+    const recoverRoute = `/v1/agent-runtime/executions/${claimed.id}/actions/recover`;
+    const responses = await Promise.all([2, 3].map((n) => request(recoverRoute, { method: "POST", headers: workerAuth, body: JSON.stringify({ hostSlug, expectedVersion: 2, sessionId: `00000000-0000-4000-8000-00000000000${n}` }) })));
+    assert.equal(responses.filter((result) => result.status === 200).length, 1);
+    assert.equal(responses.filter((result) => result.status === 409).length, 1);
+    const recovered = (responses.find((result) => result.status === 200)!.body as { data: { id: string; attempt: number; leaseToken: string; checkpointVersion: number; checkpoint: typeof checkpoint } }).data;
+    assert.equal(recovered.id, claimed.id); assert.equal(recovered.attempt, claimed.attempt); assert.notEqual(recovered.leaseToken, claimed.leaseToken);
+    assert.equal(await prisma.agentExecution.count({ where: { taskId: task.id } }), 1);
+    for (const action of ["heartbeat", "actions/complete", "actions/fail"]) {
+      const stale = await request(`/v1/agent-runtime/executions/${claimed.id}/${action}`, { method: "POST", headers: workerAuth, body: JSON.stringify({ leaseToken: claimed.leaseToken, ...(action.endsWith("complete") ? { summary: "Must not complete" } : action.endsWith("fail") ? { code: "stale", message: "Must not fail" } : {}) }) });
+      assert.equal(stale.status, 409);
+    }
+    const spawnCheckpoint = { ...recovered.checkpoint, stage: "spawn_intent" };
+    const leakedCheckpoint = await request(checkpointRoute, { method: "POST", headers: workerAuth, body: JSON.stringify({ leaseToken: recovered.leaseToken, expectedVersion: recovered.checkpointVersion, checkpoint: { ...spawnCheckpoint, secret: "synthetic-checkpoint-secret" } }) });
+    assert.equal(leakedCheckpoint.status, 400);
+    assert.equal(JSON.stringify(leakedCheckpoint.body).includes("synthetic-checkpoint-secret"), false);
+    assert.equal((await request(checkpointRoute, { method: "POST", headers: workerAuth, body: JSON.stringify({ leaseToken: recovered.leaseToken, expectedVersion: recovered.checkpointVersion, checkpoint: spawnCheckpoint }) })).status, 200);
+    assert.equal((await request(recoverRoute, { method: "POST", headers: workerAuth, body: JSON.stringify({ hostSlug, expectedVersion: 4, sessionId: "00000000-0000-4000-8000-000000000004" }) })).status, 409);
+    const diagnosticRoute = `/v1/agent-runtime/executions/${claimed.id}/actions/recovery-blocked`;
+    assert.equal((await request(diagnosticRoute, { method: "POST", headers: workerAuth, body: JSON.stringify({ hostSlug, reason: "process_may_be_running" }) })).status, 200);
+    assert.equal((await request(diagnosticRoute, { method: "POST", headers: outsiderAuth, body: JSON.stringify({ hostSlug, reason: "process_may_be_running" }) })).status, 404);
+    assert.equal((await request(diagnosticRoute, { method: "POST", headers: workerAuth, body: JSON.stringify({ hostSlug, reason: "synthetic-secret-reason" }) })).status, 400);
+    const visible = await request(`/v1/agent-runtime/executions/${claimed.id}`, { headers: ownerAuth });
+    const visibleData = (visible.body as { data: { status: string; errorState: { code: string }; events: Array<{ type: string; message: string }> } }).data;
+    assert.notEqual(visibleData.status, "completed");
+    assert.equal(visibleData.errorState.code, "agent_execution_recovery_blocked");
+    assert.ok(visibleData.events.some((event) => event.type === "recovering" && event.message.includes("prepared")));
+    assert.ok(visibleData.events.some((event) => event.type === "recovery_blocked" && event.message.includes("spawn_intent")));
+    await prisma.agentExecution.update({ where: { id: claimed.id }, data: { checkpoint: recovered.checkpoint, checkpointVersion: 5, leaseExpiresAt: new Date(0) } });
+    const expired = await request(recoverRoute, { method: "POST", headers: workerAuth, body: JSON.stringify({ hostSlug, expectedVersion: 5, sessionId: "00000000-0000-4000-8000-000000000005" }) });
+    assert.equal(expired.status, 409); assert.equal((expired.body as { error: string }).error, "agent_recovery_lease_expired");
+    assert.equal((await request(`/v1/agent-runtime/executions/${claimed.id}/heartbeat`, { method: "POST", headers: workerAuth, body: JSON.stringify({ leaseToken: recovered.leaseToken }) })).status, 409);
+    assert.equal((await request("/v1/agent-runtime/executions/claim", { method: "POST", headers: workerAuth, body: JSON.stringify({ hostSlug }) })).status, 409);
+    assert.notEqual((await prisma.agentExecution.findUniqueOrThrow({ where: { id: claimed.id } })).status, "queued");
+    assert.equal(await prisma.agentExecution.count({ where: { taskId: task.id } }), 1);
+  } finally { delete process.env.ROOST_CODEX_EXECUTION_ENABLED; }
+});
+
 test("CompanyCore v1 protected API flow", async () => {
   const health = await request("/health");
   assert.equal(health.status, 200);

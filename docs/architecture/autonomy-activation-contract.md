@@ -174,6 +174,11 @@ a reason and retained attempt history. An expired lease alone is not evidence
 that the old process stopped. A worker with lost authority must stop writing;
 another attempt must not overlap a still-running writer.
 
+The current [bounded recovery implementation](agent-host-recovery.md) resumes
+only matching pre-spawn checkpoints with an unexpired lease. It retains the same
+execution/attempt and records owner-visible diagnosis for later or uncertain
+stages; it does not yet resume an interrupted Codex session or external operation.
+
 Incidents may preempt work through a safe checkpoint. Recovery and scheduling
 must preserve one writer, prevent duplicate task execution and avoid creating
 extra runtimes. Avoid arbitrary CPU/RAM caps; check resource exhaustion risk and
