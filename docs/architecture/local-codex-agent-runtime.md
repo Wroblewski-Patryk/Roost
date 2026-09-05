@@ -109,6 +109,9 @@ visible.
   path. It is validated at host startup and again before every execution.
 - Non-interactive Codex runs use `--ephemeral` so automated session rollout
   files are not persisted outside the approved project workspace.
+- The local configuration must select `workspace-write` (also the default).
+  Startup and pre-execution validation reject other sandbox values; free-form
+  task, plan or role claims cannot override this configured execution boundary.
 - Workspaces scope hosts, queues, leases, events, and results. Lease tokens
   prevent another host from updating a claimed execution.
 - Production PostgreSQL is never exposed publicly and is never used by a local

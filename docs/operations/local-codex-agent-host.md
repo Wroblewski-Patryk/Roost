@@ -129,6 +129,7 @@ as a recovery shortcut. A late heartbeat cannot revive lost authority.
 | No task is claimed | Match application slugs in Roost and the JSON config; confirm the task-project-application link. |
 | `repository_mapping_missing` | Add the exact application slug and a valid local path. |
 | `agent_host_platform_not_approved` | Run this host on the approved Windows laptop, not on the VPS. |
+| `agent_host_sandbox_not_approved` | Use `workspace-write`. Other sandbox modes require a separately implemented execution contract and cannot be enabled through local config. |
 | `workspace_root_not_approved` | Restore the exact `C:\Personal\Projekty\Aplikacje` root. |
 | `repository_path_outside_workspace` | Use one direct child directory; remove traversal or nested paths. |
 | `repository_directory_missing_or_linked` | Restore a physical local repository; links and junctions are rejected. |

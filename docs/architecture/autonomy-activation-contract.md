@@ -13,6 +13,12 @@ any implication that the bootstrap implementation automation may modify Soar.
 Portfolio and self-improvement requirements: accepted handoff
 `roost-interview-multi-app-self-improvement-2026-09-05-v1` from the same source.
 
+Protected governance requirements: accepted handoff
+`roost-interview-protected-constitution-2026-09-05-v1` from the same source.
+
+Self-improvement release authority: accepted handoff
+`roost-interview-self-improvement-risk-authority-2026-09-05-v1` from the same source.
+
 ## Bootstrap Responsibility
 
 `Roost - Wywiad` defines Roost; `Roost - implementacja` builds and configures
@@ -251,6 +257,22 @@ The owner remains responsible for oversight, ideas and judgment, rather than
 manual programming or everyday scheduling. Current generic task/context APIs
 and the supervised worker do not yet prove this complete lifecycle.
 
+The accepted target release authority for Roost self-improvement is:
+
+| Change | Required authority before deployment |
+| --- | --- |
+| Low or medium risk | Autonomous release only after all risk-specific tests, independent review, evidence, audit and rollback gates pass. |
+| High or critical risk | A recorded owner Decision in addition to the required verification gates. |
+| Constitution or its protected principles | A recorded owner Decision regardless of the estimated risk. |
+| Uncertain or incomplete classification | Treat as higher risk and obtain additional independent assessment; do not infer permission to release. |
+
+Classify the cumulative scope of related tasks, not each small diff in isolation.
+Agents cannot lower the risk class or split work to bypass required owner
+approval. Risk, rationale, evidence and the approval path must remain visible
+in Roost. The owner can stop, reject or roll back autonomous changes. Tests for
+the future release gate must include a risky change split across several tasks.
+This matrix does not activate autonomous release in the current runtime.
+
 ## Bootstrap Retirement Gate
 
 Retire both temporary interview/implementation automations only after the native
@@ -266,6 +288,41 @@ native operation. Preserve their history; record the retirement outcome and a
 recovery decision if the native flow fails. Disabling them must not disable
 native Agent Hosts or the company queue. This is an acceptance procedure, not an
 instruction to disable the current automations before these gates pass.
+
+Retirement additionally requires an implemented and adversarially tested
+Constitution gate as defined below. Documentation or this handoff alone cannot
+satisfy that gate.
+
+## Protected Constitution Target
+
+Roost requires a canonical, versioned and validated governance contract covering
+the owner's direction and final authority, the twelve peer departments,
+separation of competence and independent review, secrets, production access,
+audit, rollback, stop controls and bounded self-improvement. Agents may propose
+revisions with impact, risk, alternatives and a recommendation. Only an explicit
+owner Decision in Roost can authorize adoption; neither a group of agents nor a
+role/configuration/plan declaration substitutes for it.
+
+Each revision requires immutable version identity, authors, reviewers, verified
+owner-decision provenance, durable audit, migration and rollback plans. A prior
+version is restored through an authorized audited transition, not by deleting
+history. Conflicting tasks/actions must be blocked before execution, and attempts
+to modify protected principles must enter the owner's decision queue. Tests must
+exercise bypasses through tasks, plans, roles and configuration.
+
+Current limitations are explicit: ordinary Policy records are mutable and lack
+constitution versioning, and ordinary Decision author/status fields are not
+proof of an authenticated owner approval. No active Constitution is inferred
+from these records. The runtime has no complete constitutional task/action
+validator or native bootstrap-retirement command yet. Enforcing those contracts
+also requires a release/permission boundary that the agent editing Roost cannot
+weaken in the same change it seeks to authorize.
+
+The current local host enforces one prerequisite in code: configuration cannot
+select a sandbox other than `workspace-write`; the check runs at startup and
+before each execution. This closes a configuration override of the current
+supervised boundary. It is not a complete Constitution or authorization to run
+agents, change the protected rules, or retire bootstrap automation.
 
 Their scheduling, handoff execution state and issue queues stay outside the
 repository. This document records durable architecture, not an agent task board.

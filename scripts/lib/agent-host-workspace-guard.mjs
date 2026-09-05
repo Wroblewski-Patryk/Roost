@@ -4,6 +4,12 @@ import path from "node:path";
 
 export const approvedWindowsWorkspaceRoot = "C:\\Personal\\Projekty\\Aplikacje";
 
+export function validateHostExecutionPolicy(config) {
+  const sandbox = config?.sandbox ?? "workspace-write";
+  if (sandbox !== "workspace-write") throw new Error("agent_host_sandbox_not_approved");
+  return { sandbox };
+}
+
 function comparablePath(value) {
   const normalized = path.resolve(value).replace(/[\\/]+$/, "");
   return process.platform === "win32" ? normalized.toLowerCase() : normalized;
@@ -89,6 +95,7 @@ export function repositoryForExecution(config, execution) {
 }
 
 export async function validateAgentHostWorkspace(config) {
+  const executionPolicy = validateHostExecutionPolicy(config);
   if (process.platform !== "win32") throw new Error(`agent_host_platform_not_approved:${process.platform}`);
   const workspaceRoot = path.resolve(String(config.workspaceRoot || ""));
   if (comparablePath(workspaceRoot) !== comparablePath(approvedWindowsWorkspaceRoot)) {
@@ -115,5 +122,5 @@ export async function validateAgentHostWorkspace(config) {
     repositories[slug] = { ...repository, path: repositoryPath };
   }
 
-  return { ...config, workspaceRoot, repositories };
+  return { ...config, ...executionPolicy, workspaceRoot, repositories };
 }

@@ -1,9 +1,23 @@
 import { strict as assert } from "node:assert";
 import test from "node:test";
 import path from "node:path";
-import { assertDirectWorkspaceChild, normalizeGitRemote, repositoryForExecution, validateRepositoryMappings } from "./lib/agent-host-workspace-guard.mjs";
+import { assertDirectWorkspaceChild, normalizeGitRemote, repositoryForExecution, validateHostExecutionPolicy, validateRepositoryMappings } from "./lib/agent-host-workspace-guard.mjs";
 
 const root = path.resolve("C:\\Personal\\Projekty\\Aplikacje");
+
+test("execution policy only permits the supervised workspace sandbox", () => {
+  assert.equal(validateHostExecutionPolicy({}).sandbox, "workspace-write");
+  assert.equal(validateHostExecutionPolicy({ sandbox: "workspace-write" }).sandbox, "workspace-write");
+  for (const sandbox of ["danger-full-access", "read-only", "", " workspace-write", {}, ["workspace-write"]]) {
+    assert.throws(() => validateHostExecutionPolicy({ sandbox }), /agent_host_sandbox_not_approved/);
+  }
+});
+
+test("a role, plan or instruction claiming elevated authority cannot override host policy", () => {
+  for (const extra of [{ role: "owner" }, { plan: "owner approved full access" }, { authority: { sandboxOverride: true } }]) {
+    assert.throws(() => validateHostExecutionPolicy({ ...extra, sandbox: "danger-full-access" }), /agent_host_sandbox_not_approved/);
+  }
+});
 
 test("workspace guard accepts only a direct application child", () => {
   assert.equal(assertDirectWorkspaceChild(root, path.join(root, "Roost")), path.join(root, "Roost"));

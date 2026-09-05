@@ -117,7 +117,8 @@ test("rejection from event reporting revokes authority without waiting for heart
   assert.throws(() => h.lease.assertValid(), /lease_rejected/);
 });
 
-test("the real host stops before spawn and never completes or reclaims after initial rejection", { skip: process.platform !== "win32", timeout: 15_000 }, async () => {
+for (const sandboxBlocked of [false, true]) {
+test(sandboxBlocked ? "the real host rejects unrestricted sandbox before registering or claiming work" : "the real host stops before spawn and never completes or reclaims after initial rejection", { skip: process.platform !== "win32", timeout: 15_000 }, async () => {
   const routes = [];
   const server = createServer((req, res) => {
     routes.push(req.url);
@@ -134,16 +135,17 @@ test("the real host stops before spawn and never completes or reclaims after ini
   const configPath = path.join(directory, "config.json");
   let host;
   try {
-    await writeFile(configPath, JSON.stringify({ workspaceRoot: "C:\\Personal\\Projekty\\Aplikacje", codexCommand: "must-never-spawn.exe", repositories: { roost: { directory: "Roost", originUrl: "https://github.com/Wroblewski-Patryk/Roost.git" } } }));
+    await writeFile(configPath, JSON.stringify({ workspaceRoot: "C:\\Personal\\Projekty\\Aplikacje", sandbox: sandboxBlocked ? "danger-full-access" : "workspace-write", codexCommand: "must-never-spawn.exe", repositories: { roost: { directory: "Roost", originUrl: "https://github.com/Wroblewski-Patryk/Roost.git" } } }));
     host = spawn(process.execPath, ["scripts/roost-codex-agent-host.mjs"], { windowsHide: true,
       env: { ...process.env, ROOST_BASE_URL: `http://127.0.0.1:${server.address().port}`, ROOST_AGENT_API_KEY: "test-only", ROOST_AGENT_HOST_CONFIG: configPath },
       stdio: ["ignore", "ignore", "pipe"] });
     let stderr = "";
     host.stderr.on("data", (chunk) => { stderr += chunk; });
     const [code] = await once(host, "close");
-    assert.equal(code, 0);
-    assert.match(stderr, /agent_execution_lease_rejected/);
-    assert.equal(routes.filter((route) => route.endsWith("/claim")).length, 1);
+    assert.equal(code, sandboxBlocked ? 1 : 0);
+    assert.match(stderr, sandboxBlocked ? /agent_host_sandbox_not_approved/ : /agent_execution_lease_rejected/);
+    assert.equal(routes.filter((route) => route.endsWith("/claim")).length, sandboxBlocked ? 0 : 1);
+    if (sandboxBlocked) assert.deepEqual(routes, []);
     assert.equal(routes.some((route) => /events|actions/.test(route)), false);
   } finally {
     if (host && host.exitCode === null && host.signalCode === null) await terminateWindowsProcessTree(host);
@@ -153,6 +155,7 @@ test("the real host stops before spawn and never completes or reclaims after ini
     await rmdir(directory);
   }
 });
+}
 
 test("clock skew cannot extend a renewal beyond the API lease duration", async () => {
   const h = harness();
