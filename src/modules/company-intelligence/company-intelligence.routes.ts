@@ -6,6 +6,7 @@ import { contextualEntityIds, organizationalContextsForEntities } from "../organ
 import { loadApplicationGraphPacket } from "../product-engineering/application-graph-projection.service";
 import { projectApplicationPacketsIntoCompanyGraph } from "./company-graph-application-projection";
 import { analyzeCompanyGraphConnectivity } from "./company-graph-connectivity";
+import { prepareExecutionPacket } from "../agent-runtime/execution-packet";
 
 export const companyIntelligenceRouter = Router();
 
@@ -340,6 +341,10 @@ companyIntelligenceRouter.get("/health", asyncHandler(async (req, res) => {
 
 companyIntelligenceRouter.get("/tasks/:id/agent-context", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId; const task = await prisma.task.findFirst({ where: { id: String(req.params.id), workspaceId }, include: { project: true, goal: true, target: true, taskList: true, assignedWorkforceEntity: true, reviewerUser: { select: { id: true, name: true } } } });
+  const executionId = typeof req.query.executionId === "string" ? req.query.executionId : undefined;
+  if (executionId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(executionId)) return res.status(400).json({ error: "execution_id_invalid" });
+  const execution = executionId ? await prisma.agentExecution.findFirst({ where: { id: executionId, taskId: String(req.params.id), workspaceId } }) : null;
+  if (executionId && !execution) return res.status(404).json({ error: "agent_execution_not_found" });
   if (!task) return res.status(404).json({ error: "task_not_found" }); const [contexts, dependencies, policies, procedures] = await Promise.all([
     organizationalContextsForEntities(workspaceId, "task", [task.id]), prisma.dependency.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ fromEntityType: "task", fromEntityId: task.id }, { toEntityType: "task", toEntityId: task.id }] } }),
     prisma.policy.findMany({ where: { workspaceId, status: { not: "archived" } }, take: 50 }), prisma.procedure.findMany({ where: { workspaceId, status: { not: "archived" } }, include: { steps: { orderBy: { stepOrder: "asc" } } }, take: 50 })
@@ -361,6 +366,7 @@ companyIntelligenceRouter.get("/tasks/:id/agent-context", asyncHandler(async (re
   const evidence = await prisma.evidenceRecord.findMany({ where: { workspaceId, OR: [{ entityType: "task", entityId: task.id }, { entityId: { in: records.map((record) => record.id) } }] }, orderBy: { observedAt: "desc" } });
   res.json({ data: {
     schemaVersion: "task-agent-execution-context-v1", generatedAt: new Date().toISOString(), task, organizationalContext: contexts.get(task.id),
+    ...(execution ? { executionPacket: await prepareExecutionPacket(execution, task) } : {}),
     intent: { objective: task.goal, target: task.target, project: task.project, businessContext: records.map((record) => ({ id: record.id, type: record.recordType, purpose: record.businessPurpose, rationale: record.rationale })) },
     requirements: records.filter((record) => record.recordType === "requirement"), relatedRecords: records, features, applications,
     affectedComponents: applications.flatMap((application) => application.architecture), dependencies, resources, procedures, policies, decisions, evidence,

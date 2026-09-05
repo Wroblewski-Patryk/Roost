@@ -294,6 +294,8 @@ agentRuntimeRouter.post("/executions/:id/actions/retry", asyncHandler(async (req
   if (!executionEnabled()) return sendApiError(res, 409, "agent_execution_disabled");
   const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, status: { in: ["failed", "cancelled"] } } });
   if (!existing) return sendApiError(res, 409, "agent_execution_not_retryable");
+  const errorState = existing.errorState as { retryable?: boolean } | null;
+  if (errorState?.retryable === false) return sendApiError(res, 409, "agent_execution_requires_correction");
   const active = await prisma.agentExecution.findFirst({ where: { workspaceId: req.auth!.workspaceId, taskId: existing.taskId, status: { in: ["queued", "claimed", "running", "waiting_for_approval"] } } });
   if (active) return res.status(409).json({ error: "task_agent_execution_active", data: { executionId: active.id } });
   const execution = await prisma.agentExecution.create({ data: { workspaceId: existing.workspaceId, taskId: existing.taskId, applicationId: existing.applicationId, prompt: existing.prompt, baseBranch: existing.baseBranch, metadata: existing.metadata as Prisma.InputJsonValue, ...actor(req) }, include: executionInclude });

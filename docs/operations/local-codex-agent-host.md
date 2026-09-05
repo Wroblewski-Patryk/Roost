@@ -91,6 +91,13 @@ $env:ROOST_BASE_URL = "http://localhost:3102"
 
 ## Queue And Observe Work
 
+Before queueing, prepare `metadata.executionContract` through the existing
+execution API using the [packet contract](../architecture/execution-packet-contract.md).
+Task-only console requests do not fill its mandatory fields. The host fetches
+the current execution-bound packet and rejects missing or inconsistent context
+before starting execution subprocesses. Corrections require updated source records
+and a new execution with an explicit corrected contract.
+
 1. Link the Roost task's project to one application in Product Engineering.
 2. Open the task workbench and select **Run with Codex**.
 3. Open **Codex runs** to inspect queue state, host heartbeat, progress events,
@@ -146,6 +153,8 @@ as a recovery shortcut. A late heartbeat cannot revive lost authority.
 | `agent_host_platform_not_approved` | Run this host on the approved Windows laptop, not on the VPS. |
 | `agent_host_sandbox_not_approved` | Use `workspace-write`. Other sandbox modes require a separately implemented execution contract and cannot be enabled through local config. |
 | `agent_host_writer_locked` | Another host or unresolved prior execution owns the slot. Reconcile it before removing the exact lock; never start a second writer or auto-clear by PID/age. |
+| `execution_packet_invalid` | Read the field/reason list in Agent activity or execution details. Correct the contract or referenced versions. Diagnostics contain no rejected values or raw logs. |
+| `agent_execution_requires_correction` | The previous failure disallows blind retry. Correct the source records and queue a new execution contract. |
 | `agent_host_writer_lock_owner_changed` | Lock ownership is inconsistent. Stop and reconcile; the host will not delete another owner's lock. |
 | `workspace_root_not_approved` | Restore the exact `C:\Personal\Projekty\Aplikacje` root. |
 | `repository_path_outside_workspace` | Use one direct child directory; remove traversal or nested paths. |
@@ -171,7 +180,7 @@ as a recovery shortcut. A late heartbeat cannot revive lost authority.
 
 ## OpenAI Runtime References
 
-Local regression checks: `npm run test:agent-host-guard` and
+Local regression checks: `npm run test:agent-host-packet`, `npm run test:agent-host-guard` and
 `npm run test:agent-host-lease`, plus `npm run test:agent-host-writer` for
 cross-process exclusion, crash retention and safe release. Lease tests cover renewal, rejection, timeout,
 late-response behavior and Windows process-tree termination without a real

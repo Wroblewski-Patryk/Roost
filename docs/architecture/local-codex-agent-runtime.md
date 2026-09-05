@@ -84,9 +84,12 @@ visible.
    production API over HTTPS.
 4. The host atomically claims one compatible queued execution with a short
    renewable lease.
-5. The host fetches the task and application agent-context packets, resolves
-   the application slug to a configured local repository, and starts
-   `codex exec --json --sandbox workspace-write -`.
+5. The host fetches current task/application context with the execution-bound
+   [versioned packet](execution-packet-contract.md), confirms its lease and
+   validates completeness and consistency before execution-specific processes.
+   It checks the local repository, then validates again immediately before
+   `codex exec --json --sandbox workspace-write -`. Missing contracts fail with
+   owner-visible field diagnostics; they do not start Codex.
 6. Heartbeats renew the lease. Structured Codex progress becomes execution
    events visible in Roost. An owner cancellation stops the local process.
 7. The host reports the final response, changed paths, verification commands,

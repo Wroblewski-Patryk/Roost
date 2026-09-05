@@ -1307,6 +1307,50 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
   assert.deepEqual(ownerExecution.changedFiles, ["src/app.ts"]);
   assert.ok(ownerExecution.events.some((event) => event.type === "completed"));
 
+  const packetRoute = `/v1/company-intelligence/tasks/${task.id}/agent-context?executionId=${queued.id}`;
+  assert.equal((await request(packetRoute)).status, 401);
+  assert.equal((await request(packetRoute, { headers: { Authorization: `Bearer ${outsider.token}` } })).status, 404);
+  assert.equal((await request(`/v1/company-intelligence/tasks/${task.id}/agent-context?executionId=invalid`, { headers: workerAuth })).status, 400);
+  const packetRead = await request(packetRoute, { headers: workerAuth });
+  assert.equal(packetRead.status, 200);
+  const prepared = (packetRead.body as { data: { executionPacket: { schemaVersion: string; revision: string; identity: { executionId: string; workspaceId: string; taskId: string }; contract: unknown } } }).data.executionPacket;
+  assert.equal(prepared.schemaVersion, "roost-execution-packet-v1");
+  assert.equal(prepared.identity.executionId, queued.id);
+  assert.equal(prepared.identity.taskId, task.id);
+  assert.equal(prepared.identity.workspaceId, owner.workspace.id);
+  assert.equal(prepared.contract, null, "missing intent must not be manufactured from defaults");
+  assert.match(prepared.revision, /^[a-f0-9]{64}$/);
+  assert.equal(JSON.stringify(prepared).includes(claimed.leaseToken), false);
+  const source = await prisma.companyRecord.create({ data: { workspaceId: owner.workspace.id, recordType: "requirement", key: "packet-source", title: "Company source", description: "Synthetic company context", metadata: { secret: "synthetic-source-secret" } } });
+  const foreignSource = await prisma.companyRecord.create({ data: { workspaceId: outsider.workspace.id, recordType: "requirement", key: "foreign-packet-source", title: "Foreign source", description: "must-not-leak" } });
+  await prisma.agentExecution.update({ where: { id: queued.id }, data: { metadata: { executionContract: { version: "1", context: { company: [{ id: source.id, revision: source.updatedAt.toISOString() }], product: [{ id: foreignSource.id, revision: "1" }] } } } } });
+  const sourcedRead = await request(packetRoute, { headers: workerAuth });
+  const sourced = (sourcedRead.body as { data: { executionPacket: { revision: string; sources: Array<{ id: string; revision: string }> } } }).data.executionPacket;
+  assert.notEqual(sourced.revision, prepared.revision);
+  assert.deepEqual(sourced.sources.map((item) => item.id), [source.id]);
+  assert.equal(sourced.sources[0]!.revision, source.updatedAt.toISOString());
+  assert.equal(JSON.stringify(sourced).includes("synthetic-source-secret"), false);
+  assert.equal(JSON.stringify(sourced).includes("must-not-leak"), false);
+
+  const invalidTask = await prisma.task.create({ data: { workspaceId: owner.workspace.id, projectId: project.id, title: "Incomplete packet", status: "todo" } });
+  assert.equal((await request(`/v1/company-intelligence/tasks/${invalidTask.id}/agent-context?executionId=${queued.id}`, { headers: workerAuth })).status, 404);
+  const invalidQueue = await request("/v1/agent-runtime/executions", { method: "POST", headers: ownerAuth, body: JSON.stringify({ taskId: invalidTask.id }) });
+  assert.equal(invalidQueue.status, 201);
+  const invalidClaim = await request("/v1/agent-runtime/executions/claim", { method: "POST", headers: workerAuth, body: JSON.stringify({ hostSlug: "test-windows" }) });
+  const invalid = (invalidClaim.body as { data: { id: string; leaseToken: string } }).data;
+  const diagnostic = { schemaVersion: "roost-execution-packet-diagnostics-v1", issues: [{ field: "contract.acceptance", reason: "missing" }] };
+  const rejected = await request(`/v1/agent-runtime/executions/${invalid.id}/actions/fail`, { method: "POST", headers: workerAuth, body: JSON.stringify({ leaseToken: invalid.leaseToken, code: "execution_packet_invalid", message: "Correct: contract.acceptance (missing).", retryable: false, details: diagnostic }) });
+  assert.equal(rejected.status, 200);
+  const visible = await request(`/v1/agent-runtime/executions/${invalid.id}`, { headers: ownerAuth });
+  const visibleData = (visible.body as { data: { errorState: { code: string; retryable: boolean; details: unknown }; events: Array<{ message: string }> } }).data;
+  assert.equal(visibleData.errorState.code, "execution_packet_invalid");
+  assert.equal(visibleData.errorState.retryable, false);
+  assert.deepEqual(visibleData.errorState.details, diagnostic);
+  assert.ok(visibleData.events.some((event) => event.message.includes("contract.acceptance")));
+  const rejectedRetry = await request(`/v1/agent-runtime/executions/${invalid.id}/actions/retry`, { method: "POST", headers: ownerAuth, body: "{}" });
+  assert.equal(rejectedRetry.status, 409);
+  assert.equal((rejectedRetry.body as { error: string }).error, "agent_execution_requires_correction");
+
   const retryCompleted = await request(`/v1/agent-runtime/executions/${queued.id}/actions/retry`, { method: "POST", headers: ownerAuth, body: "{}" });
   assert.equal(retryCompleted.status, 409, "completed work requires a new owner decision, not an automatic retry");
 

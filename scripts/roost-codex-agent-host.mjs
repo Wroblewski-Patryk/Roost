@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { repositoryForExecution, validateAgentHostWorkspace } from "./lib/agent-host-workspace-guard.mjs";
 import { createExecutionLease, terminateWindowsProcessTree } from "./lib/agent-host-execution-lease.mjs";
 import { acquireWriterLock } from "./lib/agent-host-writer-lock.mjs";
+import { validateExecutionPacket } from "./lib/agent-host-execution-packet.mjs";
 
 const baseUrl = String(process.env.ROOST_BASE_URL || process.env.COMPANYCORE_BASE_URL || "").replace(/\/+$/, "");
 const apiKey = process.env.ROOST_AGENT_API_KEY || process.env.COMPANYCORE_API_KEY;
@@ -123,11 +124,9 @@ function summarizeItem(item) {
 }
 
 async function execute(claimed) {
-  const currentConfig = await validateAgentHostWorkspace(config);
-  const repository = repositoryForExecution(currentConfig, claimed);
+  const repository = repositoryForExecution(config, claimed);
   const repositoryPath = path.resolve(String(repository.path));
-  const beforeStatus = await gitStatus(repositoryPath);
-  const taskContext = await api(`/v1/company-intelligence/tasks/${claimed.taskId}/agent-context`);
+  const taskContext = await api(`/v1/company-intelligence/tasks/${claimed.taskId}/agent-context?executionId=${encodeURIComponent(claimed.id)}`);
   const applicationQuery = JSON.stringify({ task: taskContext?.task ?? taskContext, ownerInstruction: claimed.prompt ?? null }).slice(0, 4000);
   const applicationContext = await api(`/v1/product-engineering/applications/${claimed.applicationId}/agent-context?profile=execution`, { headers: { "X-Roost-Agent-Context-Query": applicationQuery } });
   const context = JSON.stringify({ schemaVersion: "roost-codex-input-v1", execution: { id: claimed.id, taskId: claimed.taskId, applicationId: claimed.applicationId }, taskContext, applicationContext });
@@ -158,8 +157,14 @@ async function execute(claimed) {
   try {
     await lease.refresh();
     lease.assertValid();
+    validateExecutionPacket(taskContext?.executionPacket, claimed, taskContext, applicationContext);
+    // No execution-specific subprocess (including git) is started for an invalid packet.
+    await validateAgentHostWorkspace(config);
+    const beforeStatus = await gitStatus(repositoryPath);
+    lease.assertValid();
     await api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, type: "runner_started", message: `Starting Codex in ${claimed.application.slug}.`, payload: { sandbox, baseBranch: repository.baseBranch || claimed.baseBranch || null, preExistingDirtyFiles: beforeStatus.map(statusPath) } }) }).catch((error) => { lease.reject(error); throw lease.failure ?? error; });
     lease.assertValid();
+    validateExecutionPacket(taskContext?.executionPacket, claimed, taskContext, applicationContext);
     child = spawn(codexCommand, args, { cwd: repositoryPath, env: safeChildEnvironment(), shell: false, windowsHide: true, stdio: ["pipe", "pipe", "pipe"] });
     const exitPromise = new Promise((resolve, reject) => {
       child.once("error", reject);
@@ -224,7 +229,7 @@ async function reportFailure(execution, error) {
   if (!execution?.leaseToken || error.leaseLost) return;
   await api(`/v1/agent-runtime/executions/${execution.id}/actions/fail`, {
     method: "POST",
-    body: JSON.stringify({ leaseToken: execution.leaseToken, code: String(error.message || "agent_host_failed").split(":")[0], message: String(error.message || "Agent Host failed."), retryable: true, details: error.details || {} })
+    body: JSON.stringify({ leaseToken: execution.leaseToken, code: String(error.message || "agent_host_failed").split(":")[0], message: String(error.publicMessage || error.message || "Agent Host failed."), retryable: error.retryable ?? true, details: error.details || {} })
   }).catch((reportError) => process.stderr.write(`Could not report failure: ${reportError.message}\n`));
 }
 

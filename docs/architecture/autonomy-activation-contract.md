@@ -100,6 +100,12 @@ change active work.
 
 ## Execution Packet And Governance
 
+The current [supervised packet gate](execution-packet-contract.md) validates an
+explicit versioned contract against the current task, assignment and scoped
+sources before process start, and reports safe field diagnostics. It is the
+implemented admission foundation for the target below, not a complete semantic
+compiler, hard budget meter or independent review/release workflow.
+
 Before starting an agent, Roost must deterministically compile and validate:
 
 - goal and parent, business purpose, scope and prohibited actions;
