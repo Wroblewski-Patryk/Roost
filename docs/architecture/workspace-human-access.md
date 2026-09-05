@@ -57,3 +57,9 @@ departments to one human or agent. The first selected role and department are
 the primary working role and accountable department retained in the legacy
 scalar fields; the full selection is stored through organizational role scopes
 and department relations.
+
+This is current editor behavior. The accepted
+[autonomy target](autonomy-activation-contract.md) requires one accountable
+department and one direct supervisor per worker. Additional department relevance
+must not imply multiple reporting lines. Existing multi-department records are
+preserved; reconciliation requires a scoped contract, not automatic data removal.

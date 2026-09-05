@@ -71,6 +71,16 @@ not authorize new product scope or change existing API/database identifiers.
   keeping existing raw keys hidden and execution triggers disabled until the
   explicit activation gate is satisfied.
 
+## Accepted Autonomy Target
+
+The [autonomy activation contract](../architecture/autonomy-activation-contract.md)
+records the accepted company model: the owner sets direction and resolves
+material ambiguity; humans and agents deliver through department responsibility,
+bounded context, risk controls and independent evidence. Autonomous releases are
+a staged target. The current supervised runtime and owner review described above
+remain in effect until the corresponding command and activation gates are proven.
+The first delivery proof is a low-risk Soar repair under a separate task contract.
+
 ## Product Rules
 
 - Key constraints: records, service keys, integration settings, and provider

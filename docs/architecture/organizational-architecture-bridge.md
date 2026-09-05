@@ -52,7 +52,7 @@ The vertical organization and horizontal workflows must coexist:
 
 ```text
 Vertical authority/accountability:
-Patryk -> AssistantAI -> Directors -> Managers -> TeamLeaders -> Workers
+Owner -> Department Directors -> Managers -> TeamLeaders -> Workers
 
 Horizontal value flow:
 intake -> process domain -> workflow -> task/handoff -> evidence -> KPI
@@ -61,6 +61,11 @@ intake -> process domain -> workflow -> task/handoff -> evidence -> KPI
 Vertical structure answers who owns, approves, escalates, and is accountable.
 Process structure answers how value moves across departments and roles.
 CompanyCore must not collapse one into the other.
+
+Under the [accepted autonomy contract](autonomy-activation-contract.md), the
+Management Director/CEO and assistants coordinate across peer directors without
+becoming their supervisors. That contract also defines staged future release
+authority; the supervised owner-approval baseline below is not the final target.
 
 The unified workforce and organizational world-state layer is specified in
 `docs/architecture/unified-organizational-operating-system.md`. That document

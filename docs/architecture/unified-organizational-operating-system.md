@@ -110,6 +110,12 @@ hybrid profile contract explicitly requires it.
 
 ## Organizational Hierarchy
 
+The [accepted autonomy contract](autonomy-activation-contract.md) refines this
+target: the twelve department directors are peers, and the Management
+Director/CEO coordinates rather than supervising them. Each worker has one
+accountable department and one direct supervisor. Cross-department context and
+specialist clarification do not bypass delegated responsibility.
+
 The default authority hierarchy is:
 
 ```text
@@ -137,8 +143,8 @@ is accountable, who supervises, and who can decide.
 Task delegation flows downward. Reporting and escalation flow upward.
 
 ```text
-CEO Assistant
-  -> Director
+Owner
+  -> Department Director
   -> Manager
   -> Leader
   -> Worker
@@ -150,9 +156,10 @@ Worker reports blocker
   -> original work resumes
 ```
 
-This recursive organizational loop is a core architecture requirement. It
-should apply equally when the worker, leader, manager, or assistant is human or
-AI.
+An assistant or CEO may coordinate this loop but is not an extra reporting
+layer above the directors. This recursive loop is a core architecture requirement.
+It should apply equally when the worker, leader, manager, or assistant is human
+or AI.
 
 CompanyCore must store enough structure to answer:
 

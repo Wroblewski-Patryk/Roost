@@ -95,8 +95,13 @@ repositories. Configure automatic restart, a working directory of the Roost
 checkout, and environment variables from a protected machine-level secret
 source. Do not embed the API key in a checked-in script or task XML export.
 
-Only one host is necessary initially. Multiple hosts are safe: atomic claims
-and leases prevent the same queued execution from being assigned twice.
+Run only one writing host on the laptop. Atomic claims protect a queued record,
+but do not provide a laptop-wide process lock or prove an expired worker stopped.
+The host renews before launching Codex, makes API calls with a ten-second timeout,
+and stops the Windows process tree when authority is rejected or the confirmed
+lease reaches its five-second stop margin. It then stops polling for new work.
+Reconcile local processes and files before restarting; do not start a second host
+as a recovery shortcut. A late heartbeat cannot revive lost authority.
 
 ## Troubleshooting
 
@@ -113,7 +118,9 @@ and leases prevent the same queued execution from being assigned twice.
 | `repository_directory_missing_or_linked` | Restore a physical local repository; links and junctions are rejected. |
 | `repository_origin_mismatch` | Correct the local `origin` or the allowlisted canonical GitHub URL after owner review. |
 | `codex_process_failed` | Run `codex login`, confirm CLI availability, and inspect the local terminal plus the Roost execution event. |
-| Run returns to queued | The host stopped renewing its 90-second lease; restart it and review the interrupted worktree before retrying. |
+| Run returns to queued | Reconcile the old process, interrupted files and resources before restarting; expiry alone does not prove safe ownership. |
+| `agent_execution_lease_expired` / `agent_execution_lease_rejected` | The host stopped after losing authority. Check API availability/access and reconcile the previous process before restarting. |
+| `agent_process_tree_stop_failed` | Do not restart or claim more work until the previous process tree is confirmed stopped. |
 | Cancellation is delayed | The host checks cancellation on heartbeats, normally within 20 seconds. |
 
 ## Key Rotation And Shutdown
@@ -126,6 +133,12 @@ and leases prevent the same queued execution from being assigned twice.
   audit chain remains visible.
 
 ## OpenAI Runtime References
+
+Local regression checks: `npm run test:agent-host-guard` and
+`npm run test:agent-host-lease`. The latter tests renewal, rejection, timeout,
+late-response behavior and Windows process-tree termination without a real
+Codex task or production data. The host runs from the canonical Roost checkout;
+shipping its script to the VPS does not activate the local worker or task queue.
 
 - [Codex non-interactive mode](https://learn.chatgpt.com/docs/non-interactive-mode)
   defines `codex exec`, stdin prompts, JSONL events, sandbox selection, and

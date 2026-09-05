@@ -54,6 +54,12 @@ subscription product unless the owner creates a distinct product entity.
 
 ## Core Model Contract
 
+The [autonomy activation contract](autonomy-activation-contract.md) adds accepted
+target requirements for hierarchical versioned procedures, run context,
+independent review, budgets and evidence gates. Implement these through the
+existing models below. A pipeline executes a procedure; that relationship does
+not authorize a second workflow engine or change current run behavior by itself.
+
 The initial Process Core target is expressed as a reusable model set. Existing
 Company OS tables and command contracts should be reused first; new migrations
 must be justified by a gap audit.

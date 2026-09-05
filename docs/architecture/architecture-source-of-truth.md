@@ -99,6 +99,13 @@ should always stay current.
 
 ## CompanyCore v1 Approved Direction
 
+The accepted [autonomy activation contract](autonomy-activation-contract.md)
+refines the future organizational and release model from the September 2026
+owner interview. It explicitly separates that target from the implemented V1
+baseline below. Its staged gates do not grant existing workers release authority
+or authorize broad rewrites; preserve one canonical clone/runtime per application
+and one writing task across the laptop.
+
 The approved v1 direction is:
 
 - API-first product foundation with a role-governed human web console

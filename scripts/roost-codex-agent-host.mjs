@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import readline from "node:readline";
 import { validateAgentHostWorkspace } from "./lib/agent-host-workspace-guard.mjs";
+import { createExecutionLease, terminateWindowsProcessTree } from "./lib/agent-host-execution-lease.mjs";
 
 const baseUrl = String(process.env.ROOST_BASE_URL || process.env.COMPANYCORE_BASE_URL || "").replace(/\/+$/, "");
 const apiKey = process.env.ROOST_AGENT_API_KEY || process.env.COMPANYCORE_API_KEY;
@@ -40,6 +41,7 @@ function delay(milliseconds) {
 async function api(route, options = {}) {
   const response = await fetch(`${baseUrl}${route}`, {
     ...options,
+    signal: options.signal ?? AbortSignal.timeout(10_000),
     headers: { "X-API-Key": apiKey, "Content-Type": "application/json", ...(options.headers || {}) }
   });
   if (response.status === 204) return null;
@@ -132,66 +134,91 @@ async function execute(claimed) {
   let codexThreadId = null;
   let finalResponse = "";
   let usage = {};
-  let cancelled = false;
   const verification = { commands: [] };
   const stderrTail = [];
-
-  await api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, type: "runner_started", message: `Starting Codex in ${claimed.application.slug}.`, payload: { sandbox, baseBranch: repository.baseBranch || claimed.baseBranch || null, preExistingDirtyFiles: beforeStatus.map(statusPath) } }) });
-  const child = spawn(codexCommand, args, { cwd: repositoryPath, env: safeChildEnvironment(), shell: false, windowsHide: true, stdio: ["pipe", "pipe", "pipe"] });
-  const exitPromise = new Promise((resolve, reject) => {
-    child.once("error", reject);
-    child.once("close", resolve);
-  });
-  child.stdin.end(prompt);
-
-  const heartbeat = setInterval(() => {
-    void api(`/v1/agent-runtime/executions/${claimed.id}/heartbeat`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, status: "running", codexThreadId }) })
-      .catch((error) => {
-        if (error.status === 409 && error.body?.error === "agent_execution_cancel_requested") {
-          cancelled = true;
-          child.kill();
-        }
+  let child;
+  let stopPromise = Promise.resolve();
+  let stopError;
+  const lease = createExecutionLease({
+    renew: () => api(`/v1/agent-runtime/executions/${claimed.id}/heartbeat`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, status: "running", codexThreadId }) }),
+    onLost: () => {
+      // Never claim more work after an uncertain execution. Reconcile before restarting.
+      stopping = true;
+      stopPromise = terminateWindowsProcessTree(child).catch((error) => {
+        stopError = error;
+        process.stderr.write("Agent Host stopped: process-tree termination could not be confirmed; manual reconciliation required.\n");
+        child?.kill();
       });
-  }, 20_000);
-
-  child.stderr.on("data", (chunk) => {
-    stderrTail.push(chunk.toString());
-    while (stderrTail.join("").length > 20_000) stderrTail.shift();
+    }
   });
 
-  const lines = readline.createInterface({ input: child.stdout, crlfDelay: Infinity });
-  for await (const line of lines) {
-    if (!line.trim()) continue;
-    let event;
-    try { event = JSON.parse(line); } catch { continue; }
-    if (event.type === "thread.started") codexThreadId = event.thread_id || null;
-    if (event.type === "turn.completed") usage = event.usage || {};
-    if (event.type === "item.completed" && event.item?.type === "agent_message") finalResponse = String(event.item.text || "");
-    if (event.type === "item.completed" && event.item?.type === "command_execution") verification.commands.push({ command: event.item.command, status: event.item.status, exitCode: event.item.exit_code });
-    const summary = event.type === "item.completed" ? summarizeItem(event.item) : null;
-    if (summary) await api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, ...summary }) }).catch(() => undefined);
-    if (codexThreadId) await api(`/v1/agent-runtime/executions/${claimed.id}/heartbeat`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, status: "running", codexThreadId }) }).catch(() => undefined);
+  try {
+    await lease.refresh();
+    lease.assertValid();
+    await api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, type: "runner_started", message: `Starting Codex in ${claimed.application.slug}.`, payload: { sandbox, baseBranch: repository.baseBranch || claimed.baseBranch || null, preExistingDirtyFiles: beforeStatus.map(statusPath) } }) }).catch((error) => { lease.reject(error); throw lease.failure ?? error; });
+    lease.assertValid();
+    child = spawn(codexCommand, args, { cwd: repositoryPath, env: safeChildEnvironment(), shell: false, windowsHide: true, stdio: ["pipe", "pipe", "pipe"] });
+    const exitPromise = new Promise((resolve, reject) => {
+      child.once("error", reject);
+      child.once("close", resolve);
+    });
+    // Attach a rejection handler immediately; stdout may finish after a spawn error.
+    void exitPromise.catch(() => undefined);
+    child.stdin.on("error", () => undefined);
+    child.stdin.end(prompt);
+
+    child.stderr.on("data", (chunk) => {
+      stderrTail.push(chunk.toString());
+      while (stderrTail.join("").length > 20_000) stderrTail.shift();
+    });
+
+    const lines = readline.createInterface({ input: child.stdout, crlfDelay: Infinity });
+    for await (const line of lines) {
+      if (!line.trim()) continue;
+      let event;
+      try { event = JSON.parse(line); } catch { continue; }
+      if (event.type === "thread.started") codexThreadId = event.thread_id || null;
+      if (event.type === "turn.completed") usage = event.usage || {};
+      if (event.type === "item.completed" && event.item?.type === "agent_message") finalResponse = String(event.item.text || "");
+      if (event.type === "item.completed" && event.item?.type === "command_execution") verification.commands.push({ command: event.item.command, status: event.item.status, exitCode: event.item.exit_code });
+      const summary = event.type === "item.completed" ? summarizeItem(event.item) : null;
+      if (summary && !lease.failure) await api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, ...summary }) }).catch((error) => lease.reject(error));
+    }
+
+    const exitCode = await exitPromise;
+    await stopPromise;
+    if (stopError) throw Object.assign(new Error("agent_process_tree_stop_failed"), { leaseLost: true });
+
+    if (lease.failure?.message === "agent_execution_cancel_requested") {
+      await api(`/v1/agent-runtime/executions/${claimed.id}/actions/cancelled`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken }) });
+      return;
+    }
+    lease.assertValid();
+    if (exitCode !== 0) throw Object.assign(new Error("codex_process_failed"), { details: { exitCode, stderrCaptured: Boolean(stderrTail.length) } });
+
+    const afterStatus = await gitStatus(repositoryPath);
+    const changedFiles = [...new Set(afterStatus.map(statusPath))];
+    const summary = finalResponse.trim() || `Codex completed execution ${claimed.id}.`;
+    await lease.refresh();
+    lease.assertValid();
+    // The child has exited. Avoid racing a heartbeat with the terminal API transition.
+    lease.stop();
+    await api(`/v1/agent-runtime/executions/${claimed.id}/actions/complete`, {
+      method: "POST",
+      body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: summary.slice(0, 10000), finalResponse, codexThreadId, changedFiles, verification, usage, metadata: { repositoryPathLabel: path.basename(repositoryPath), preExistingDirtyFiles: beforeStatus.map(statusPath) } })
+    });
+  } finally {
+    lease.stop();
+    await stopPromise;
+    if (child && child.exitCode === null && child.signalCode === null) {
+      stopping = true;
+      await terminateWindowsProcessTree(child);
+    }
   }
-
-  const exitCode = await exitPromise.finally(() => clearInterval(heartbeat));
-
-  if (cancelled) {
-    await api(`/v1/agent-runtime/executions/${claimed.id}/actions/cancelled`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken }) });
-    return;
-  }
-  if (exitCode !== 0) throw Object.assign(new Error("codex_process_failed"), { details: { exitCode, stderrCaptured: Boolean(stderrTail.length) } });
-
-  const afterStatus = await gitStatus(repositoryPath);
-  const changedFiles = [...new Set(afterStatus.map(statusPath))];
-  const summary = finalResponse.trim() || `Codex completed execution ${claimed.id}.`;
-  await api(`/v1/agent-runtime/executions/${claimed.id}/actions/complete`, {
-    method: "POST",
-    body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: summary.slice(0, 10000), finalResponse, codexThreadId, changedFiles, verification, usage, metadata: { repositoryPathLabel: path.basename(repositoryPath), preExistingDirtyFiles: beforeStatus.map(statusPath) } })
-  });
 }
 
 async function reportFailure(execution, error) {
-  if (!execution?.leaseToken) return;
+  if (!execution?.leaseToken || error.leaseLost) return;
   await api(`/v1/agent-runtime/executions/${execution.id}/actions/fail`, {
     method: "POST",
     body: JSON.stringify({ leaseToken: execution.leaseToken, code: String(error.message || "agent_host_failed").split(":")[0], message: String(error.message || "Agent Host failed."), retryable: true, details: error.details || {} })

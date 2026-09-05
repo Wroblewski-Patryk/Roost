@@ -16,6 +16,8 @@ only transient process state outside the repository.
   `architecture/innovation-product-engineering.md`,
   `architecture/local-codex-agent-runtime.md`
   `architecture/workspace-human-access.md`
+  `architecture/autonomy-activation-contract.md` (accepted target and staged gates;
+  not current execution authority)
 - Engineering: `engineering/local-development.md`, `engineering/testing.md`
 - Operations: `DEPLOYMENT.md`, `operations/coolify-vps-deployment-contract.md`,
   `operations/rollback-and-recovery.md`, `operations/post-deploy-smoke.md`,

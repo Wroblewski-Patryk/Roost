@@ -1,6 +1,11 @@
 # Local Codex Agent Runtime
 
-## Decision
+## Current Supervised Runtime
+
+This document describes the implemented supervised baseline. The accepted
+[autonomy activation contract](autonomy-activation-contract.md) defines the
+future model and evidence gates. Its autonomous release target does not change
+this host's current authority or turn an execution report into task delivery.
 
 Roost uses a split runtime:
 
@@ -103,6 +108,19 @@ visible.
 
 ## Failure And Recovery
 
+These are current lease/retry semantics, not checkpoint-based resumption or a
+guarantee of process exclusion across the laptop. The current host loop is
+sequential within one process; there is no laptop-wide writer lock. Expired work
+can be reclaimed without proving that the old process stopped. The host now
+renews before launch, uses bounded API requests, and stops the Windows child
+process tree on cancellation, rejected authority or expiry of its last confirmed
+lease (with a five-second stop margin). A late response cannot revive authority.
+The host stops polling after lease loss and never reports that execution as a
+success. Manual reconciliation is required before restart, particularly if tree
+termination failed. These controls do not replace a laptop-wide lock or guarantee
+termination during an OS freeze. Do not activate autonomous writing based on
+lease expiry alone.
+
 - Expired `claimed` or `running` leases return to `queued`; another compatible
   host may claim them.
 - Failed and cancelled executions are immutable history. Retry creates a new
@@ -127,6 +145,24 @@ allowlist validation, a scoped worker key, a running Windows host, and one
 explicitly approved non-critical trial.
 - Production deployment and local host rollout are separate. Deploy the
   migration/API/web first, then start the laptop host with its production key.
+
+The flag enables only `supervised_execution`. Target read-only, local-change,
+pilot-release and broader autonomy stages are defined in the activation contract;
+they are not implemented modes of this flag. Before expanding execution, prove
+the corresponding context, exclusion, recovery, review and release controls.
+
+## Required Resource Invariants
+
+All implementation work uses one canonical clone per application, without
+additional worktrees or copies, and at most one declared local runtime per
+application. Initially one writing task is allowed across the entire laptop;
+read-only analysis may run concurrently. Existing files and unknown resources
+must be preserved until their provenance is understood.
+
+The current path/origin allowlist is a foundation for these rules, not full
+enforcement: it does not inventory Docker resources, enforce a task branch or
+provide a cross-process writer lock. A future manifest and recovery contract
+must extend existing host/API boundaries before claiming those guarantees.
 
 ## Explicit Non-Goals
 
