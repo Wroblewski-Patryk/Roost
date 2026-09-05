@@ -30,6 +30,7 @@
     "agent:codex-host:check": "node scripts/validate-roost-agent-host-config.mjs",
     "test:agent-host-guard": "node --test scripts/agent-host-workspace-guard.test.mjs",
     "test:agent-host-lease": "node --test scripts/agent-host-execution-lease.test.mjs",
+    "test:agent-host-writer": "node --test scripts/agent-host-writer-lock.test.mjs",
     "owner-console:ux-smoke": "node scripts/owner-console-ux-smoke.mjs",
     "company-os:trace-smoke": "node scripts/company-os-lifecycle-trace-smoke.mjs",
     "operating-model:registry-smoke": "node scripts/operating-model-registry-lifecycle-smoke.mjs",

@@ -119,18 +119,28 @@ visible.
 
 ## Failure And Recovery
 
-These are current lease/retry semantics, not checkpoint-based resumption or a
-guarantee of process exclusion across the laptop. The current host loop is
-sequential within one process; there is no laptop-wide writer lock. Expired work
-can be reclaimed without proving that the old process stopped. The host now
+These are current lease/retry semantics, not checkpoint-based resumption. The
+host acquires the machine-wide writer slot before registration and processes
+executions sequentially. An expired API lease does not prove that the old process
+stopped. The host
 renews before launch, uses bounded API requests, and stops the Windows child
 process tree on cancellation, rejected authority or expiry of its last confirmed
 lease (with a five-second stop margin). A late response cannot revive authority.
 The host stops polling after lease loss and never reports that execution as a
-success. Manual reconciliation is required before restart, particularly if tree
-termination failed. These controls do not replace a laptop-wide lock or guarantee
-termination during an OS freeze. Do not activate autonomous writing based on
-lease expiry alone.
+success. Its writer lock remains after lease loss or unconfirmed tree termination;
+manual reconciliation is required before restart. These controls cannot guarantee
+termination during an OS freeze or coordinate tools bypassing the host entrypoint.
+Do not activate autonomous writing based on lease expiry alone.
+
+The supported Windows host uses exclusive creation of
+`C:\ProgramData\Roost\agent-host-writer.lock`, independent of application slug,
+workspace or host key. It is secret-free process/recovery state outside application
+repositories. A second host fails before registering or claiming work. Normal
+shutdown releases only the lock owned by that process. A crash, empty/corrupted
+lock or uncertain execution does not trigger automatic stale-lock removal: old
+Codex descendants may still be running. The state directory must be a physical
+directory writable only by the trusted host operator; permission failures stop
+startup. The CLI configuration cannot choose another lock location.
 
 - Expired `claimed` or `running` leases return to `queued`; another compatible
   host may claim them.
@@ -171,9 +181,11 @@ read-only analysis may run concurrently. Existing files and unknown resources
 must be preserved until their provenance is understood.
 
 The current path/origin allowlist is a foundation for these rules, not full
-enforcement: it does not inventory Docker resources, enforce a task branch or
-provide a cross-process writer lock. A future manifest and recovery contract
-must extend existing host/API boundaries before claiming those guarantees.
+enforcement: it does not inventory Docker resources or enforce a task branch.
+The writer lock coordinates supported host processes, not arbitrary editors,
+bootstrap sessions or external tools; those must still honor the one-writer rule.
+A future manifest and recovery contract must extend existing host/API boundaries
+before claiming automatic reconciliation or resource hygiene guarantees.
 
 ## Explicit Non-Goals
 

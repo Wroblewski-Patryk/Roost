@@ -1,4 +1,4 @@
-# Autonomous Company Activation Contract
+# Agent Delivery Foundations And Activation Contract
 
 Status: accepted target; not an assertion of implemented autonomy.
 
@@ -10,14 +10,13 @@ Scope correction: accepted handoff
 `roost-interview-scope-correction-2026-09-05-v1` from the same source supersedes
 any implication that the bootstrap implementation automation may modify Soar.
 
-Portfolio and self-improvement requirements: accepted handoff
-`roost-interview-multi-app-self-improvement-2026-09-05-v1` from the same source.
-
-Protected governance requirements: accepted handoff
-`roost-interview-protected-constitution-2026-09-05-v1` from the same source.
-
-Self-improvement release authority: accepted handoff
-`roost-interview-self-improvement-risk-authority-2026-09-05-v1` from the same source.
+Current authority: accepted scope reset
+`roost-interview-foundations-scope-reset-2026-09-05-v1`. It retains multi-application
+delivery under owner supervision and defers native Roost self-development,
+Constitution work and bootstrap retirement. Earlier self-improvement and
+Constitution handoffs do not authorize current implementation work or block
+these foundations. Both bootstrap automations remain active until a separate
+future owner decision.
 
 ## Bootstrap Responsibility
 
@@ -215,7 +214,7 @@ scoped command/permission contract. Failed controls prevent expansion.
 | 2. Read-only agents | Scoped audits through existing read boundaries. | Correct task context, source provenance, access isolation, budgets and no unauthorized writes. |
 | 3. Local changes | Task branches in the single canonical clone, without release operations. | Validated packet, one laptop-wide writer, lease-loss containment, recovery, resource hygiene and independent checks. Isolation uses scope/authority, not extra worktrees. |
 | 4. Soar repair pilot | One reproducible, reversible, low-risk defect outside live trading, keys and data migrations. | Detection, plan/decomposition, implementation, independent tests, merge, exact-commit Coolify deployment and production proof; rollback capability verified. No owner assistance except a product Decision. |
-| 5. Broader operations | Additional applications and departments, including Roost self-improvement, under reviewed mandates. | Configuration-based onboarding, repeated delivery and incident/recovery evidence with correct delegation, independent review, permissions and shared records. |
+| 5. Broader operations | Additional applications and departments under reviewed mandates and owner supervision. | Configuration-based onboarding, repeated delivery and incident/recovery evidence with correct delegation, independent review, permissions and shared records. Native Roost self-development remains deferred. |
 | 6. Soar optimization | Configuration optimization through Soar under a separate mandate. | Validated backtest-to-paper-to-live gates, configuration/version/run identity and safe configuration rollback. |
 
 Soar is the pilot and is changed only by a worker launched from a native Roost
@@ -225,104 +224,41 @@ configuration rollback selects a prior version. Open positions remain managed
 by the version that opened them. The agent optimizes configuration; Soar executes
 trading. No orders may be placed by the agent outside Soar.
 
-## Multi-Application Operation And Controlled Self-Improvement
+## Multi-Application Operation
 
 Soar is the first proof, not a specialization of the orchestration core.
 Application identity, workspace boundaries, task/project links, context packets,
-procedures, routing and activation gates apply uniformly to all applications,
-including Roost itself. Add applications through existing Application,
-ApplicationProject, repository, capability/blueprint and host configuration
-contracts. Do not add a scheduler, task store or agent directory per application.
+procedures, routing and activation gates apply uniformly across the portfolio.
+Add applications through existing Application, ApplicationProject, repository,
+capability/blueprint and host configuration contracts. Do not add a scheduler,
+task store or agent directory per application.
 
-Onboarding must validate a unique application slug, one canonical clone/origin,
+Onboarding validates a unique application slug, one canonical clone/origin,
 the declared deployment/runtime, complete versioned product and technical context,
-task ownership, applicable procedures, access and evidence requirements.
-The current host validates distinct mappings and compares a claimed application's
-ID and primary repository with the allowlist before using its directory. This
-is an identity check, not proof of a complete execution packet or autonomous
-readiness. A second application's code must not require changes to the host core.
+task ownership, applicable procedures, access and evidence requirements. The host
+validates distinct mappings and compares a claimed application's ID and primary
+repository with the allowlist before using its directory. This identity check
+does not prove a complete execution packet or autonomous readiness. Adding
+another application must not require per-application host code.
 
-Controlled Roost self-improvement follows the same native lifecycle: detect a
-gap with evidence, derive a goal from the owner's direction, plan small tasks,
-assign competent workers, implement, independently review and test, release,
-verify and use results to improve versioned procedures. The author must not
-approve their own change, alter their permissions or weaken the gate governing
-the same run. Changes to the running host or its control plane must preserve
-the in-flight version/attempt, allow safe handoff and provide a rollback path;
-restart is not a shortcut around review or reconciliation.
+Roost remains the bootstrap implementation repository. Its presence in the
+application registry does not activate native autonomous self-development.
+The owner supervises work, supplies ideas and makes required decisions; manual
+programming and daily orchestration are not the intended operating model.
 
-Self-improvement needs explicit risk, cost, review, release and rollback policies,
-actor audit and owner Decisions for strategic changes or material ambiguity.
-The owner remains responsible for oversight, ideas and judgment, rather than
-manual programming or everyday scheduling. Current generic task/context APIs
-and the supervised worker do not yet prove this complete lifecycle.
+## Current Foundations And Deferred Scope
 
-The accepted target release authority for Roost self-improvement is:
+The current goal is reliable supervised delivery of Soar and subsequent
+applications through Roost and local agents: lease safety and recovery, complete
+execution packets and competent routing, one writer and one application runtime,
+tests and independent review, evidence and releases with rollback, visible work
+and owner Decisions, and configuration-based onboarding.
 
-| Change | Required authority before deployment |
-| --- | --- |
-| Low or medium risk | Autonomous release only after all risk-specific tests, independent review, evidence, audit and rollback gates pass. |
-| High or critical risk | A recorded owner Decision in addition to the required verification gates. |
-| Constitution or its protected principles | A recorded owner Decision regardless of the estimated risk. |
-| Uncertain or incomplete classification | Treat as higher risk and obtain additional independent assessment; do not infer permission to release. |
+The accepted scope reset defers native autonomous self-development of Roost,
+a protected Constitution and its enforcement/trust boundary without a deadline.
+They are not prerequisites or blockers for the current foundations. Their earlier
+accepted designs remain in Git history rather than as active implementation gates.
 
-Classify the cumulative scope of related tasks, not each small diff in isolation.
-Agents cannot lower the risk class or split work to bypass required owner
-approval. Risk, rationale, evidence and the approval path must remain visible
-in Roost. The owner can stop, reject or roll back autonomous changes. Tests for
-the future release gate must include a risky change split across several tasks.
-This matrix does not activate autonomous release in the current runtime.
-
-## Bootstrap Retirement Gate
-
-Retire both temporary interview/implementation automations only after the native
-Soar pilot is proven AND another application can be onboarded through validated
-configuration/contracts without changing core orchestration. Native processes
-must own the queue, context, scheduling, reviews, releases, recovery and required
-owner Decisions without relying on either bootstrap automation. Confirm owner
-visibility and emergency stop/rollback before disabling the bootstrap.
-
-At retirement, drain or explicitly hand off in-flight bootstrap work, verify
-native ownership and evidence, disable both schedules, and observe continued
-native operation. Preserve their history; record the retirement outcome and a
-recovery decision if the native flow fails. Disabling them must not disable
-native Agent Hosts or the company queue. This is an acceptance procedure, not an
-instruction to disable the current automations before these gates pass.
-
-Retirement additionally requires an implemented and adversarially tested
-Constitution gate as defined below. Documentation or this handoff alone cannot
-satisfy that gate.
-
-## Protected Constitution Target
-
-Roost requires a canonical, versioned and validated governance contract covering
-the owner's direction and final authority, the twelve peer departments,
-separation of competence and independent review, secrets, production access,
-audit, rollback, stop controls and bounded self-improvement. Agents may propose
-revisions with impact, risk, alternatives and a recommendation. Only an explicit
-owner Decision in Roost can authorize adoption; neither a group of agents nor a
-role/configuration/plan declaration substitutes for it.
-
-Each revision requires immutable version identity, authors, reviewers, verified
-owner-decision provenance, durable audit, migration and rollback plans. A prior
-version is restored through an authorized audited transition, not by deleting
-history. Conflicting tasks/actions must be blocked before execution, and attempts
-to modify protected principles must enter the owner's decision queue. Tests must
-exercise bypasses through tasks, plans, roles and configuration.
-
-Current limitations are explicit: ordinary Policy records are mutable and lack
-constitution versioning, and ordinary Decision author/status fields are not
-proof of an authenticated owner approval. No active Constitution is inferred
-from these records. The runtime has no complete constitutional task/action
-validator or native bootstrap-retirement command yet. Enforcing those contracts
-also requires a release/permission boundary that the agent editing Roost cannot
-weaken in the same change it seeks to authorize.
-
-The current local host enforces one prerequisite in code: configuration cannot
-select a sandbox other than `workspace-write`; the check runs at startup and
-before each execution. This closes a configuration override of the current
-supervised boundary. It is not a complete Constitution or authorization to run
-agents, change the protected rules, or retire bootstrap automation.
-
-Their scheduling, handoff execution state and issue queues stay outside the
-repository. This document records durable architecture, not an agent task board.
+Both bootstrap automations remain active until a separate future owner decision.
+No pilot, onboarding milestone or automated readiness score currently authorizes
+their shutdown. Scheduler state and execution queues remain outside this repository.

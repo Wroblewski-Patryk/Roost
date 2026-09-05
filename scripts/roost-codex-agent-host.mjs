@@ -3,8 +3,10 @@ import { readFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import readline from "node:readline";
+import { fileURLToPath } from "node:url";
 import { repositoryForExecution, validateAgentHostWorkspace } from "./lib/agent-host-workspace-guard.mjs";
 import { createExecutionLease, terminateWindowsProcessTree } from "./lib/agent-host-execution-lease.mjs";
+import { acquireWriterLock } from "./lib/agent-host-writer-lock.mjs";
 
 const baseUrl = String(process.env.ROOST_BASE_URL || process.env.COMPANYCORE_BASE_URL || "").replace(/\/+$/, "");
 const apiKey = process.env.ROOST_AGENT_API_KEY || process.env.COMPANYCORE_API_KEY;
@@ -32,6 +34,7 @@ const pollIntervalMs = Math.max(2_000, Number(config.pollIntervalMs || 5_000));
 const codexCommand = String(config.codexCommand || "codex");
 const sandbox = String(config.sandbox || "workspace-write");
 let stopping = false;
+let retainWriterLock = false;
 let registeredHost = null;
 
 function delay(milliseconds) {
@@ -143,6 +146,7 @@ async function execute(claimed) {
     onLost: () => {
       // Never claim more work after an uncertain execution. Reconcile before restarting.
       stopping = true;
+      retainWriterLock = true;
       stopPromise = terminateWindowsProcessTree(child).catch((error) => {
         stopError = error;
         process.stderr.write("Agent Host stopped: process-tree termination could not be confirmed; manual reconciliation required.\n");
@@ -211,7 +215,7 @@ async function execute(claimed) {
     await stopPromise;
     if (child && child.exitCode === null && child.signalCode === null) {
       stopping = true;
-      await terminateWindowsProcessTree(child);
+      await terminateWindowsProcessTree(child).catch((error) => { retainWriterLock = true; throw error; });
     }
   }
 }
@@ -227,22 +231,34 @@ async function reportFailure(execution, error) {
 process.on("SIGINT", () => { stopping = true; });
 process.on("SIGTERM", () => { stopping = true; });
 
-await register();
-while (!stopping) {
-  let execution = null;
+// Dependency injection lets process-level tests use a private temporary lock directory.
+// The CLI always uses the fixed machine-wide location; config cannot override it.
+export async function runHost({ acquireLock = acquireWriterLock } = {}) {
+  const writerLock = await acquireLock();
   try {
-    execution = await api("/v1/agent-runtime/executions/claim", { method: "POST", body: JSON.stringify({ hostSlug: host.slug }) });
-    if (execution) {
-      process.stdout.write(`Claimed ${execution.id}: ${execution.task.title}\n`);
-      await execute(execution);
-    } else if (registeredHost) {
-      await api(`/v1/agent-runtime/hosts/${registeredHost.id}/heartbeat`, { method: "POST", body: JSON.stringify({ applicationSlugs: host.applicationSlugs, capabilities: host.capabilities }) });
+    await register();
+    while (!stopping) {
+      let execution = null;
+      try {
+        execution = await api("/v1/agent-runtime/executions/claim", { method: "POST", body: JSON.stringify({ hostSlug: host.slug }) });
+        if (execution) {
+          process.stdout.write(`Claimed ${execution.id}: ${execution.task.title}\n`);
+          await execute(execution);
+        } else if (registeredHost) {
+          await api(`/v1/agent-runtime/hosts/${registeredHost.id}/heartbeat`, { method: "POST", body: JSON.stringify({ applicationSlugs: host.applicationSlugs, capabilities: host.capabilities }) });
+        }
+      } catch (error) {
+        process.stderr.write(`Agent Host error: ${error.message}\n`);
+        await reportFailure(execution, error);
+        if (error.status === 401 || error.status === 403 || error.status === 422) break;
+      }
+      if (!stopping) await delay(execution ? 1_000 : pollIntervalMs);
     }
-  } catch (error) {
-    process.stderr.write(`Agent Host error: ${error.message}\n`);
-    await reportFailure(execution, error);
-    if (error.status === 401 || error.status === 403 || error.status === 422) break;
+  } finally {
+    if (retainWriterLock) process.stderr.write("Writer lock retained: reconcile the interrupted execution before restarting.\n");
+    else await writerLock.release();
   }
-  if (!stopping) await delay(execution ? 1_000 : pollIntervalMs);
+  process.stdout.write("Roost Agent Host stopped.\n");
 }
-process.stdout.write("Roost Agent Host stopped.\n");
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await runHost();

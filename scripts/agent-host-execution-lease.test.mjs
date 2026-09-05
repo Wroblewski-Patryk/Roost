@@ -2,8 +2,9 @@ import { strict as assert } from "node:assert";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { createServer } from "node:http";
-import { mkdtemp, writeFile, unlink, rmdir } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile, unlink, rmdir } from "node:fs/promises";
 import path from "node:path";
+import { writerLockFilename } from "./lib/agent-host-writer-lock.mjs";
 import test from "node:test";
 import { createExecutionLease, terminateWindowsProcessTree } from "./lib/agent-host-execution-lease.mjs";
 
@@ -136,7 +137,8 @@ test(sandboxBlocked ? "the real host rejects unrestricted sandbox before registe
   let host;
   try {
     await writeFile(configPath, JSON.stringify({ workspaceRoot: "C:\\Personal\\Projekty\\Aplikacje", sandbox: sandboxBlocked ? "danger-full-access" : "workspace-write", codexCommand: "must-never-spawn.exe", repositories: { roost: { directory: "Roost", originUrl: "https://github.com/Wroblewski-Patryk/Roost.git" } } }));
-    host = spawn(process.execPath, ["scripts/roost-codex-agent-host.mjs"], { windowsHide: true,
+    const startHost = `import { runHost } from './scripts/roost-codex-agent-host.mjs'; import { acquireWriterLock } from './scripts/lib/agent-host-writer-lock.mjs'; await runHost({ acquireLock: () => acquireWriterLock(${JSON.stringify(directory)}) });`;
+    host = spawn(process.execPath, ["--input-type=module", "-e", startHost], { windowsHide: true,
       env: { ...process.env, ROOST_BASE_URL: `http://127.0.0.1:${server.address().port}`, ROOST_AGENT_API_KEY: "test-only", ROOST_AGENT_HOST_CONFIG: configPath },
       stdio: ["ignore", "ignore", "pipe"] });
     let stderr = "";
@@ -147,11 +149,16 @@ test(sandboxBlocked ? "the real host rejects unrestricted sandbox before registe
     assert.equal(routes.filter((route) => route.endsWith("/claim")).length, sandboxBlocked ? 0 : 1);
     if (sandboxBlocked) assert.deepEqual(routes, []);
     assert.equal(routes.some((route) => /events|actions/.test(route)), false);
+    if (!sandboxBlocked) {
+      const lock = JSON.parse(await readFile(path.join(directory, writerLockFilename), "utf8"));
+      assert.equal(lock.ownerPid, host.pid, "lease loss retains the writer slot until reconciliation");
+    }
   } finally {
     if (host && host.exitCode === null && host.signalCode === null) await terminateWindowsProcessTree(host);
     server.closeAllConnections();
     await new Promise((resolve) => server.close(resolve));
     await unlink(configPath).catch((error) => { if (error.code !== "ENOENT") throw error; });
+    await unlink(path.join(directory, writerLockFilename)).catch((error) => { if (error.code !== "ENOENT") throw error; });
     await rmdir(directory);
   }
 });

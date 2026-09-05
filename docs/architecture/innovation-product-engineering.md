@@ -32,11 +32,10 @@ desired and observed product model that can drive that execution.
   and product `CapabilityDefinition` records are separate namespaces.
 
 The [autonomy activation contract](autonomy-activation-contract.md) requires
-configuration-based onboarding across the application portfolio and controlled
-self-improvement of Roost through the same shared models. Soar is the first
-pilot; neither task orchestration nor application identity may depend on it.
-Retiring the temporary bootstrap requires both the native pilot and verified
-onboarding readiness for another application.
+configuration-based onboarding across the application portfolio. Soar is the
+first pilot; neither task orchestration nor application identity may depend on
+it. Native autonomous self-development of Roost is deferred. Both bootstrap
+automations remain active until a separate future owner decision.
 
 ## Domain model
 
