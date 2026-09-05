@@ -35,6 +35,14 @@ Future applications may be added only by creating their repository directly
 under this root and explicitly adding their slug, directory, canonical origin,
 and deployment URL to the local allowlist.
 
+The allowlist rejects duplicate directories (case-insensitively on the Windows
+host) and duplicate normalized origins. Before using a claimed application's
+directory, the host requires its ID to match the execution's application ID and
+its primary repository to match the local origin. A single repository needs no
+primary flag; multiple repositories require exactly one primary. Missing or
+ambiguous identity fails before reading execution context or starting Codex.
+These checks are generic for every application, including Roost.
+
 The production database is private to the VPS deployment. Neither Codex nor a
 local development server connects directly to it. Local development uses a
 separate local PostgreSQL database. Production work is exchanged through the

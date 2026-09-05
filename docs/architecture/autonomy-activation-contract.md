@@ -10,6 +10,9 @@ Scope correction: accepted handoff
 `roost-interview-scope-correction-2026-09-05-v1` from the same source supersedes
 any implication that the bootstrap implementation automation may modify Soar.
 
+Portfolio and self-improvement requirements: accepted handoff
+`roost-interview-multi-app-self-improvement-2026-09-05-v1` from the same source.
+
 ## Bootstrap Responsibility
 
 `Roost - Wywiad` defines Roost; `Roost - implementacja` builds and configures
@@ -206,7 +209,7 @@ scoped command/permission contract. Failed controls prevent expansion.
 | 2. Read-only agents | Scoped audits through existing read boundaries. | Correct task context, source provenance, access isolation, budgets and no unauthorized writes. |
 | 3. Local changes | Task branches in the single canonical clone, without release operations. | Validated packet, one laptop-wide writer, lease-loss containment, recovery, resource hygiene and independent checks. Isolation uses scope/authority, not extra worktrees. |
 | 4. Soar repair pilot | One reproducible, reversible, low-risk defect outside live trading, keys and data migrations. | Detection, plan/decomposition, implementation, independent tests, merge, exact-commit Coolify deployment and production proof; rollback capability verified. No owner assistance except a product Decision. |
-| 5. Broader operations | Additional applications and departments under reviewed mandates. | Repeated delivery and incident/recovery evidence with correct delegation, permissions and shared records. |
+| 5. Broader operations | Additional applications and departments, including Roost self-improvement, under reviewed mandates. | Configuration-based onboarding, repeated delivery and incident/recovery evidence with correct delegation, independent review, permissions and shared records. |
 | 6. Soar optimization | Configuration optimization through Soar under a separate mandate. | Validated backtest-to-paper-to-live gates, configuration/version/run identity and safe configuration rollback. |
 
 Soar is the pilot and is changed only by a worker launched from a native Roost
@@ -216,7 +219,53 @@ configuration rollback selects a prior version. Open positions remain managed
 by the version that opened them. The agent optimizes configuration; Soar executes
 trading. No orders may be placed by the agent outside Soar.
 
-The two temporary interview/implementation automations are retired after the
-full pilot is proven and replaced by native Roost processes. Their scheduling,
-handoff execution state and issue queues stay outside the repository. This
-document records durable architecture, not an agent task board.
+## Multi-Application Operation And Controlled Self-Improvement
+
+Soar is the first proof, not a specialization of the orchestration core.
+Application identity, workspace boundaries, task/project links, context packets,
+procedures, routing and activation gates apply uniformly to all applications,
+including Roost itself. Add applications through existing Application,
+ApplicationProject, repository, capability/blueprint and host configuration
+contracts. Do not add a scheduler, task store or agent directory per application.
+
+Onboarding must validate a unique application slug, one canonical clone/origin,
+the declared deployment/runtime, complete versioned product and technical context,
+task ownership, applicable procedures, access and evidence requirements.
+The current host validates distinct mappings and compares a claimed application's
+ID and primary repository with the allowlist before using its directory. This
+is an identity check, not proof of a complete execution packet or autonomous
+readiness. A second application's code must not require changes to the host core.
+
+Controlled Roost self-improvement follows the same native lifecycle: detect a
+gap with evidence, derive a goal from the owner's direction, plan small tasks,
+assign competent workers, implement, independently review and test, release,
+verify and use results to improve versioned procedures. The author must not
+approve their own change, alter their permissions or weaken the gate governing
+the same run. Changes to the running host or its control plane must preserve
+the in-flight version/attempt, allow safe handoff and provide a rollback path;
+restart is not a shortcut around review or reconciliation.
+
+Self-improvement needs explicit risk, cost, review, release and rollback policies,
+actor audit and owner Decisions for strategic changes or material ambiguity.
+The owner remains responsible for oversight, ideas and judgment, rather than
+manual programming or everyday scheduling. Current generic task/context APIs
+and the supervised worker do not yet prove this complete lifecycle.
+
+## Bootstrap Retirement Gate
+
+Retire both temporary interview/implementation automations only after the native
+Soar pilot is proven AND another application can be onboarded through validated
+configuration/contracts without changing core orchestration. Native processes
+must own the queue, context, scheduling, reviews, releases, recovery and required
+owner Decisions without relying on either bootstrap automation. Confirm owner
+visibility and emergency stop/rollback before disabling the bootstrap.
+
+At retirement, drain or explicitly hand off in-flight bootstrap work, verify
+native ownership and evidence, disable both schedules, and observe continued
+native operation. Preserve their history; record the retirement outcome and a
+recovery decision if the native flow fails. Disabling them must not disable
+native Agent Hosts or the company queue. This is an acceptance procedure, not an
+instruction to disable the current automations before these gates pass.
+
+Their scheduling, handoff execution state and issue queues stay outside the
+repository. This document records durable architecture, not an agent task board.

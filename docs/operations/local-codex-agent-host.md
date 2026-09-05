@@ -50,6 +50,22 @@ The check fails closed for missing/non-Git directories, paths outside the
 approved root, nested paths, links/junctions, Git-root mismatches, and origin
 mismatches. The same validation runs before every claimed execution.
 
+## Add An Application Through Configuration
+
+Use the existing workspace-scoped Application and delivery-project relationship.
+Set the application's canonical repository (exactly one primary when multiple
+repositories exist), deployment metadata and technical/product context. Add its
+slug, direct-child directory and origin to the same host allowlist, then run
+`npm run agent:codex-host:check -- <config-path>`. No per-application host code is
+needed. Adding a mapping alone does not satisfy execution-context or activation
+gates and does not authorize the bootstrap automation to edit that application.
+
+Two slugs cannot point at the same Windows directory or duplicate clones of the
+same remote. A claimed application's ID and repository must agree with the local
+mapping before the host reads task context or starts Codex. Correct inconsistent
+metadata/configuration through its owning contract rather than bypassing the
+check. The same onboarding rules apply when the target application is Roost.
+
 ## Start In PowerShell
 
 Set secrets only for the current process and start the long-running host:
@@ -117,6 +133,9 @@ as a recovery shortcut. A late heartbeat cannot revive lost authority.
 | `repository_path_outside_workspace` | Use one direct child directory; remove traversal or nested paths. |
 | `repository_directory_missing_or_linked` | Restore a physical local repository; links and junctions are rejected. |
 | `repository_origin_mismatch` | Correct the local `origin` or the allowlisted canonical GitHub URL after owner review. |
+| `repository_directory_ambiguous` / `repository_origin_ambiguous` | Remove ambiguous mapping aliases through the owning configuration; do not create another clone. |
+| `execution_application_mismatch` / `execution_repository_mismatch` | Reconcile the Roost application identity and canonical repository with the approved mapping. |
+| `execution_repository_ambiguous` | Declare a repository, or exactly one primary when there are several. |
 | `codex_process_failed` | Run `codex login`, confirm CLI availability, and inspect the local terminal plus the Roost execution event. |
 | Run returns to queued | Reconcile the old process, interrupted files and resources before restarting; expiry alone does not prove safe ownership. |
 | `agent_execution_lease_expired` / `agent_execution_lease_rejected` | The host stopped after losing authority. Check API availability/access and reconcile the previous process before restarting. |

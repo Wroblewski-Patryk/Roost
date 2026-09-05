@@ -124,7 +124,7 @@ test("the real host stops before spawn and never completes or reclaims after ini
     res.setHeader("Content-Type", "application/json");
     if (req.url.endsWith("/heartbeat")) { res.writeHead(409); res.end(JSON.stringify({ error: "agent_execution_lease_invalid" })); return; }
     const data = req.url.endsWith("/register") ? { id: "host", name: "test" }
-      : req.url.endsWith("/claim") ? { id: "execution", taskId: "task", applicationId: "app", leaseToken: "test-only", task: { title: "test" }, application: { name: "Roost", slug: "roost" } }
+      : req.url.endsWith("/claim") ? { id: "execution", taskId: "task", applicationId: "app", leaseToken: "test-only", task: { title: "test" }, application: { id: "app", name: "Roost", slug: "roost", repositories: [{ url: "https://github.com/Wroblewski-Patryk/Roost.git", isPrimary: true }] } }
       : {};
     res.end(JSON.stringify({ data }));
   });

@@ -41,7 +41,7 @@ function git(repositoryPath, args) {
 }
 
 function validateRepositoryConfig(slug, repository) {
-  if (!repository || typeof repository !== "object") throw new Error(`repository_config_invalid:${slug}`);
+  if (!repository || typeof repository !== "object" || Array.isArray(repository)) throw new Error(`repository_config_invalid:${slug}`);
   const directory = String(repository.directory || "").trim();
   if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,119}$/.test(directory) || directory === "." || directory === "..") {
     throw new Error(`repository_directory_invalid:${slug}`);
@@ -55,6 +55,39 @@ function validateRepositoryConfig(slug, repository) {
   return { ...repository, directory, originUrl, deploymentUrl: deploymentUrl || null, baseBranch: String(repository.baseBranch || "main") };
 }
 
+export function validateRepositoryMappings(input) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("repository_allowlist_invalid");
+  const entries = Object.entries(input);
+  if (!entries.length) throw new Error("repository_allowlist_empty");
+  const directories = new Set();
+  const origins = new Set();
+  return Object.fromEntries(entries.map(([slug, rawRepository]) => {
+    if (!/^[a-z0-9][a-z0-9._-]{0,119}$/.test(slug)) throw new Error(`repository_slug_invalid:${slug}`);
+    const repository = validateRepositoryConfig(slug, rawRepository);
+    // The approved host is Windows: differently cased names still identify one directory.
+    const directory = repository.directory.toLowerCase();
+    const origin = normalizeGitRemote(repository.originUrl);
+    if (directories.has(directory)) throw new Error(`repository_directory_ambiguous:${slug}`);
+    if (origins.has(origin)) throw new Error(`repository_origin_ambiguous:${slug}`);
+    directories.add(directory);
+    origins.add(origin);
+    return [slug, repository];
+  }));
+}
+
+export function repositoryForExecution(config, execution) {
+  const application = execution?.application;
+  if (!application?.id || application.id !== execution.applicationId) throw new Error("execution_application_mismatch");
+  const repository = Object.hasOwn(config.repositories, application.slug) ? config.repositories[application.slug] : null;
+  if (!repository?.path) throw new Error("repository_mapping_missing");
+  const declared = Array.isArray(application.repositories) ? application.repositories : [];
+  const primary = declared.filter((item) => item?.isPrimary === true);
+  const selected = primary.length === 1 ? primary[0] : primary.length === 0 && declared.length === 1 ? declared[0] : null;
+  if (!selected?.url || typeof selected.url !== "string") throw new Error("execution_repository_ambiguous");
+  if (normalizeGitRemote(selected.url) !== normalizeGitRemote(repository.originUrl)) throw new Error("execution_repository_mismatch");
+  return repository;
+}
+
 export async function validateAgentHostWorkspace(config) {
   if (process.platform !== "win32") throw new Error(`agent_host_platform_not_approved:${process.platform}`);
   const workspaceRoot = path.resolve(String(config.workspaceRoot || ""));
@@ -65,12 +98,9 @@ export async function validateAgentHostWorkspace(config) {
   if (!rootStat?.isDirectory() || rootStat.isSymbolicLink()) throw new Error(`workspace_root_invalid:${workspaceRoot}`);
   const physicalRoot = await realpath(workspaceRoot);
 
-  const entries = Object.entries(config.repositories || {});
-  if (!entries.length) throw new Error("repository_allowlist_empty");
+  const entries = Object.entries(validateRepositoryMappings(config.repositories));
   const repositories = {};
-  for (const [slug, rawRepository] of entries) {
-    if (!/^[a-z0-9][a-z0-9._-]{0,119}$/.test(slug)) throw new Error(`repository_slug_invalid:${slug}`);
-    const repository = validateRepositoryConfig(slug, rawRepository);
+  for (const [slug, repository] of entries) {
     const repositoryPath = assertDirectWorkspaceChild(workspaceRoot, path.join(workspaceRoot, repository.directory));
     const repositoryStat = await lstat(repositoryPath).catch(() => null);
     if (!repositoryStat?.isDirectory() || repositoryStat.isSymbolicLink()) throw new Error(`repository_directory_missing_or_linked:${slug}`);

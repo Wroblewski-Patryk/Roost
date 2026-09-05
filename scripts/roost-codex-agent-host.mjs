@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import readline from "node:readline";
-import { validateAgentHostWorkspace } from "./lib/agent-host-workspace-guard.mjs";
+import { repositoryForExecution, validateAgentHostWorkspace } from "./lib/agent-host-workspace-guard.mjs";
 import { createExecutionLease, terminateWindowsProcessTree } from "./lib/agent-host-execution-lease.mjs";
 
 const baseUrl = String(process.env.ROOST_BASE_URL || process.env.COMPANYCORE_BASE_URL || "").replace(/\/+$/, "");
@@ -121,8 +121,7 @@ function summarizeItem(item) {
 
 async function execute(claimed) {
   const currentConfig = await validateAgentHostWorkspace(config);
-  const repository = currentConfig.repositories?.[claimed.application.slug];
-  if (!repository?.path) throw new Error(`repository_mapping_missing:${claimed.application.slug}`);
+  const repository = repositoryForExecution(currentConfig, claimed);
   const repositoryPath = path.resolve(String(repository.path));
   const beforeStatus = await gitStatus(repositoryPath);
   const taskContext = await api(`/v1/company-intelligence/tasks/${claimed.taskId}/agent-context`);
