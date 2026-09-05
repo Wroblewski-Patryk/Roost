@@ -16,7 +16,7 @@ async function until(check) {
 
 test("observer CLI ignores enabled execution, duplicate starts, and recovers after process death", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "roost-observer-"));
-  const state = path.join(directory, "Roost", "AgentHost");
+  const state = path.join(directory, ".roost", "agent-host");
   await mkdir(state, { recursive: true });
   const config = path.join(directory, "config.json");
   await writeFile(config, JSON.stringify({ ...example, executionMode: "observe", codexCommand: "must-never-be-started" }));
@@ -32,7 +32,7 @@ test("observer CLI ignores enabled execution, duplicate starts, and recovers aft
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const children = [];
   function start() {
-    const child = spawn(process.execPath, ["scripts/roost-codex-agent-host.mjs"], { windowsHide: true, env: { ...process.env, LOCALAPPDATA: directory, ROOST_AGENT_HOST_CONFIG: config, ROOST_AGENT_API_KEY: "test-key", ROOST_BASE_URL: `http://127.0.0.1:${server.address().port}` }, stdio: "ignore" });
+    const child = spawn(process.execPath, ["scripts/roost-codex-agent-host.mjs"], { windowsHide: true, env: { ...process.env, USERPROFILE: directory, ROOST_AGENT_HOST_CONFIG: config, ROOST_AGENT_API_KEY: "test-key", ROOST_BASE_URL: `http://127.0.0.1:${server.address().port}` }, stdio: "ignore" });
     children.push(child); return child;
   }
   try {

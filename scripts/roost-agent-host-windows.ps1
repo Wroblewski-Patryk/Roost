@@ -1,7 +1,9 @@
 param([ValidateSet('Install','Run','Start','Stop','Status')][string]$Action = 'Status')
 $ErrorActionPreference = 'Stop'
 $taskName = 'Roost Agent Host Observer'
-$stateDirectory = Join-Path $env:LOCALAPPDATA 'Roost\AgentHost'
+# A direct user-profile directory is shared with Task Scheduler. Packaged-app
+# LocalAppData virtualization can hide files from the Windows login process.
+$stateDirectory = Join-Path $env:USERPROFILE '.roost\agent-host'
 $configPath = Join-Path $stateDirectory 'agent-host.json'
 $stopPath = Join-Path $stateDirectory 'stop.request'
 $scriptPath = $PSCommandPath
@@ -68,8 +70,10 @@ switch ($Action) {
   'Start' { Start-ScheduledTask -TaskName $taskName; Write-Output 'Observer start requested.' }
   'Stop' { Stop-RoostObserver; Write-Output 'Observer stopped; production expires the heartbeat within 60 seconds.' }
   'Status' {
-    Get-ScheduledTask -TaskName $taskName | Select-Object TaskName, State
-    if (Test-Path -LiteralPath (Join-Path $stateDirectory 'status.json')) { Get-Content -Raw -LiteralPath (Join-Path $stateDirectory 'status.json') }
-    Get-ScheduledTaskInfo -TaskName $taskName | Select-Object LastRunTime, LastTaskResult
+    $task = Get-ScheduledTask -TaskName $taskName
+    $info = Get-ScheduledTaskInfo -TaskName $taskName
+    $status = $null
+    if (Test-Path -LiteralPath (Join-Path $stateDirectory 'status.json')) { $status = Get-Content -Raw -LiteralPath (Join-Path $stateDirectory 'status.json') | ConvertFrom-Json }
+    [PSCustomObject]@{ TaskName = $taskName; State = [string]$task.State; LastRunTime = $info.LastRunTime; LastTaskResult = $info.LastTaskResult; Host = $status } | ConvertTo-Json -Depth 5
   }
 }

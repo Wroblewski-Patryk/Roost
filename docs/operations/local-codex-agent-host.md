@@ -14,7 +14,9 @@ Node observer across sessions. This socket accepts no commands and immediately
 closes connections. Windows releases the socket after a crash. Observer mode
 does not use or clear the supervised writer/recovery lock.
 
-Canonical user files are under `%LOCALAPPDATA%\Roost\AgentHost`:
+Canonical user files are under `%USERPROFILE%\.roost\agent-host` (a direct
+profile directory avoids packaged-app LocalAppData virtualization, so both
+Codex and the Windows login task see the same files):
 
 - `agent-host.json`: secret-free config copied from the example, with
   `executionMode: "observe"`, `baseUrl: "https://api.roost.luckysparrow.ch"`,

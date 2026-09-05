@@ -16,7 +16,7 @@ export async function acquireObserverLock(port = observerPort) {
   return () => new Promise((resolve) => server.close(resolve));
 }
 
-export async function runObserver({ config, api, stopped = () => false, acquireLock = acquireObserverLock, stateDirectory = path.join(process.env.LOCALAPPDATA || os.homedir(), "Roost", "AgentHost"), interval = 5000 }) {
+export async function runObserver({ config, api, stopped = () => false, acquireLock = acquireObserverLock, stateDirectory = path.join(process.env.USERPROFILE || os.homedir(), ".roost", "agent-host"), interval = 5000 }) {
   if (config.executionMode !== "observe") throw new Error("observer_mode_required");
   if (config.workspaceRoot !== approvedWindowsWorkspaceRoot) throw new Error("observer_workspace_invalid");
   const repositories = validateRepositoryMappings(config.repositories);
