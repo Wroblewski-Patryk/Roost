@@ -37,6 +37,7 @@ and bounded to 2,000 characters; required text lists contain at most 30 entries.
 | `objective` | `outcome` and `goalId` matching the task's current workspace-scoped Goal. v1 uses the existing Goal link as the product/goal basis. |
 | `scope` | Nonempty `allowed` and `forbidden` lists; the same entry cannot occur in both, ignoring case. |
 | `assignment` | `agentId`, `role`, `competencies`; match the active assigned workforce entity of type `agent`, its primary role and `skillIndex`. |
+| `modelSelection` | Explicit `model` and `reasoningEffort` admitted by the Foundation V2 policy below. No inherited/default selection. |
 | `context` | Nonempty `company`, `product`, `technical` lists of `{id, revision}`; at most 10 per category. |
 | `procedures` | Explicit set of `{id, revision}` referencing active procedures; revision is the string form of their numeric `version`. All application/capability-linked procedures must be included. |
 | `skills` | Explicit set of `{name, version}` matching `name@version` entries in the assigned agent's `skillIndex`. |
@@ -68,6 +69,33 @@ The executable synthetic example in
 production data. Its fixture IDs must be replaced by actual scoped record IDs.
 
 ## Start Gate And Diagnostic Result
+
+### Foundation V2 explicit model admission (RF-HOST-016)
+
+Every contract now requires `modelSelection: {model, reasoningEffort}`. Supported
+model IDs are `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna` and `gpt-6-astra`.
+Efforts are `low`, `medium`, `high`, `xhigh`, `max` and `ultra`, except Luna does
+not support `ultra`. This bounded allowlist implements the owner minimum 5.6;
+unknown aliases, older models, absent values and unsupported pairs fail before
+any execution subprocess. Previously prepared contracts without this field must
+be corrected and reissued. The envelope remains v1; its explicit contract revision
+and digest change with the new field. No task or workforce default fills it in.
+
+The launcher passes `--model`, `--config model_provider="openai"` and
+`--config model_reasoning_effort="..."` explicitly, overriding local defaults.
+`runner_started.payload.requestedModelSelection` records the requested pair;
+it is not provider-confirmed model usage. There is no retry on a different model
+or downgrade on provider failure. Availability checks, dynamic routing, risk minima,
+owner override UI and observed model telemetry remain separate requirements.
+No paid model call or execution activation is needed to verify argument dispatch.
+
+The allowlist/effort support was checked against the installed Codex model catalog
+on 2026-09-06. The CLI flags were checked using `codex exec --help`; config keys
+and explicit-override precedence are documented in the
+[official Codex configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference).
+Catalog changes require an explicit policy update; they are never inferred from
+a model-name numeric prefix. Future automatic delegation must still meet the
+separate Roost scheduler and resource gates.
 
 After obtaining fresh task/application context, the host renews and checks its
 lease, validates the packet, and only then performs execution-specific Git

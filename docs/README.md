@@ -10,6 +10,9 @@ only transient process state outside the repository.
 
 ## Start here
 
+- Accepted interview baseline: [Foundation V2 requirements](product/interview-foundation-v2.md)
+  and [implementation traceability](architecture/traceability-matrix.md).
+  Read these for autonomy requirements; their acceptance does not activate agents.
 - Product: `product/product.md`, `product/overview.md`, `product/mvp_scope.md`
 - Architecture: `architecture/architecture-source-of-truth.md`,
   `architecture/system-architecture.md`, `architecture/tech-stack.md`,

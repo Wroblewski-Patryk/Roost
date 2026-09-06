@@ -2,6 +2,15 @@
 
 Status: accepted target; not an assertion of implemented autonomy.
 
+The frozen [Foundation V2 registry](../product/interview-foundation-v2.md) is the
+current accepted requirements baseline through 2026-09-06 03:36:23.550 UTC.
+Its explicit supersessions take precedence over earlier descriptions below;
+the [traceability matrix](traceability-matrix.md) separates existing mechanisms
+from missing gates. Live tests need fresh single-use consent, Soar deployment
+uses 20/30-minute thresholds, and no temporary Soar watchdog is authorized.
+Deferred features are not activation prerequisites. No batch completion enables
+execution by itself.
+
 Source: owner decisions in `Roost - Wywiad`, task
 `01a06d26-73a0-79e1-a035-6b4e42380274`, accepted handoff
 `roost-interview-foundation-2026-09-05-v1` (2026-09-05).

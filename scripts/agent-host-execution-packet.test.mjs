@@ -16,7 +16,7 @@ test("a complete packet passes without changing its contents", () => {
   assert.equal(validate(f), f.packet); assert.equal(JSON.stringify(f), before);
 });
 
-for (const category of ["version", "objective", "scope", "assignment", "context", "procedures", "skills", "access", "dependencies", "decisions", "budgets", "acceptance", "recovery"]) {
+for (const category of ["version", "objective", "scope", "assignment", "modelSelection", "context", "procedures", "skills", "access", "dependencies", "decisions", "budgets", "acceptance", "recovery"]) {
   test(`missing ${category} is rejected with a safe field diagnostic`, () => {
     const f = validPacketFixture(); delete f.packet.contract[category]; sealPacket(f.packet);
     assert.throws(() => validate(f), (error) => error.message === "execution_packet_invalid" && error.retryable === false && error.details.issues.some((issue) => issue.field === `contract.${category}` && issue.reason === "missing"));
@@ -54,6 +54,12 @@ const contradictions = {
   ambiguousNone: (f) => { f.packet.contract.procedures.noneReason = null; },
   schema: (f) => { f.packet.schemaVersion = "future"; }
 };
+Object.assign(contradictions, {
+  olderModel: (f) => { f.packet.contract.modelSelection.model = "gpt-5.5"; },
+  unknownModel: (f) => { f.packet.contract.modelSelection.model = "gpt-6-unknown"; },
+  missingEffort: (f) => { delete f.packet.contract.modelSelection.reasoningEffort; },
+  unsupportedEffort: (f) => { f.packet.contract.modelSelection = { model: "gpt-5.6-luna", reasoningEffort: "ultra" }; }
+});
 for (const [name, mutate] of Object.entries(contradictions)) test(`rejects inconsistent ${name}`, () => {
   const f = validPacketFixture(); mutate(f); sealPacket(f.packet); assert.throws(() => validate(f), /execution_packet_invalid/);
 });
@@ -86,6 +92,7 @@ test("diagnostics never echo values, unknown keys, source contents or lease secr
   const f = validPacketFixture(); const secret = "SYNTHETIC_SECRET_DO_NOT_ECHO";
   f.packet.contract.access.tools = [secret]; f.packet.contract[secret] = secret;
   f.packet.sources[0].description = secret; f.packet.identity.workspaceId = secret; f.claimed.leaseToken = secret;
+  f.packet.contract.modelSelection = { model: secret, reasoningEffort: secret, [secret]: secret };
   sealPacket(f.packet);
   assert.throws(() => validate(f), (error) => {
     assert.equal(JSON.stringify({ message: error.publicMessage, details: error.details, stack: error.stack }).includes(secret), false);
@@ -93,9 +100,15 @@ test("diagnostics never echo values, unknown keys, source contents or lease secr
   });
 });
 
-for (const valid of [false, true]) test(`real host ${valid ? "executes a valid packet with the existing completion flow" : "reports an invalid packet before any execution subprocess"}`, { skip: process.platform !== "win32", timeout: 20000 }, async () => {
+for (const scenario of ["valid", "missingAcceptance", "missingModel", "olderModel", "unsupportedEffort"]) test(`real host model admission: ${scenario}`, { skip: process.platform !== "win32", timeout: 20000 }, async () => {
+  const valid = scenario === "valid";
   const f = validPacketFixture();
-  if (!valid) { delete f.packet.contract.acceptance; sealPacket(f.packet); }
+  const diagnosticField = scenario === "missingAcceptance" ? "contract.acceptance" : "contract.modelSelection";
+  if (scenario === "missingAcceptance") delete f.packet.contract.acceptance;
+  if (scenario === "missingModel") delete f.packet.contract.modelSelection;
+  if (scenario === "olderModel") f.packet.contract.modelSelection.model = "gpt-5.5";
+  if (scenario === "unsupportedEffort") f.packet.contract.modelSelection = { model: "gpt-5.6-luna", reasoningEffort: "ultra" };
+  sealPacket(f.packet);
   const requests = []; let finished = false;
   const server = createServer(async (req, res) => {
     let body = ""; for await (const chunk of req) body += chunk;
@@ -119,7 +132,7 @@ for (const valid of [false, true]) test(`real host ${valid ? "executes a valid p
   try {
     await writeFile(configPath, JSON.stringify({ workspaceRoot: "C:\\Personal\\Projekty\\Aplikacje", codexCommand: "packet-test-codex", repositories: { soar: { directory: "Soar", originUrl: "https://github.com/Wroblewski-Patryk/Soar.git" } } }));
     const fakeCodex = `let input=''; process.stdin.on('data', c=>input+=c); process.stdin.on('end',()=>{ if(!input.includes('roost-execution-packet-v1')) process.exit(2); console.log(JSON.stringify({type:'item.completed',item:{type:'agent_message',text:'Synthetic packet execution complete'}})); });`;
-    const script = `import cp from 'node:child_process'; import {syncBuiltinESMExports} from 'node:module'; const original=cp.spawn; cp.spawn=(command,args,options)=>{ process.stdout.write('SPAWN:'+command+'\\n'); return command==='packet-test-codex' ? original(process.execPath,['-e',${JSON.stringify(fakeCodex)}],options) : original(command,args,options); }; syncBuiltinESMExports(); const {runHost}=await import('./scripts/roost-codex-agent-host.mjs'); const {acquireWriterLock}=await import('./scripts/lib/agent-host-writer-lock.mjs'); await runHost({acquireLock:()=>acquireWriterLock(${JSON.stringify(directory)})});`;
+    const script = `import cp from 'node:child_process'; import {syncBuiltinESMExports} from 'node:module'; const original=cp.spawn; cp.spawn=(command,args,options)=>{ process.stdout.write('SPAWN:'+command+'\\n'); if(command==='packet-test-codex' && JSON.stringify(args)!==${JSON.stringify(JSON.stringify(["exec", "--ephemeral", "--json", "--sandbox", "workspace-write", "--model", "gpt-5.6-sol", "--config", 'model_provider="openai"', "--config", 'model_reasoning_effort="medium"', "-"]))}) throw new Error('unexpected_codex_model_arguments'); return command==='packet-test-codex' ? original(process.execPath,['-e',${JSON.stringify(fakeCodex)}],options) : original(command,args,options); }; syncBuiltinESMExports(); const {runHost}=await import('./scripts/roost-codex-agent-host.mjs'); const {acquireWriterLock}=await import('./scripts/lib/agent-host-writer-lock.mjs'); await runHost({acquireLock:()=>acquireWriterLock(${JSON.stringify(directory)})});`;
     host = spawn(process.execPath, ["--input-type=module", "-e", script], { windowsHide: true, stdio: ["ignore", "pipe", "pipe"], env: { ...process.env, ROOST_BASE_URL: `http://127.0.0.1:${server.address().port}`, ROOST_AGENT_API_KEY: "synthetic-only", ROOST_AGENT_HOST_CONFIG: configPath } });
     let output = "", errors = ""; host.stdout.on("data", (chunk) => { output += chunk; }); host.stderr.on("data", (chunk) => { errors += chunk; });
     assert.equal((await once(host, "close"))[0], 0, errors);
@@ -128,8 +141,12 @@ for (const valid of [false, true]) test(`real host ${valid ? "executes a valid p
     const terminal = requests.find((request) => /actions\/(fail|complete)$/.test(request.url));
     assert.ok(terminal);
     assert.ok(requests.findIndex((request) => request.url.endsWith("/heartbeat")) < requests.indexOf(terminal));
-    if (valid) { assert.ok(terminal.url.endsWith("/complete")); assert.equal(terminal.body.summary, "Synthetic packet execution complete"); }
-    else { assert.equal(terminal.body.code, "execution_packet_invalid"); assert.equal(terminal.body.retryable, false); assert.ok(terminal.body.details.issues.some((issue) => issue.field === "contract.acceptance")); assert.equal(requests.some((request) => request.url.endsWith("/events")), false); }
+    if (valid) {
+      assert.ok(terminal.url.endsWith("/complete")); assert.equal(terminal.body.summary, "Synthetic packet execution complete");
+      const started = requests.find((request) => request.body?.type === "runner_started");
+      assert.deepEqual(started.body.payload.requestedModelSelection, f.packet.contract.modelSelection);
+    }
+    else { assert.equal(terminal.body.code, "execution_packet_invalid"); assert.equal(terminal.body.retryable, false); assert.ok(terminal.body.details.issues.some((issue) => issue.field.startsWith(diagnosticField))); assert.equal(requests.some((request) => request.url.endsWith("/events")), false); }
   } finally {
     if (host && host.exitCode === null && host.signalCode === null) await terminateWindowsProcessTree(host);
     server.closeAllConnections(); await new Promise((resolve) => server.close(resolve));

@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import { normalizeGitRemote } from "./agent-host-workspace-guard.mjs";
+import { modelSelectionSchema } from "./agent-host-model-policy.mjs";
 
 const text = z.string().trim().min(1).max(2000);
 const texts = z.array(text).min(1).max(30);
@@ -15,6 +16,7 @@ export const executionContractSchema = z.object({
   objective: z.object({ outcome: text, goalId: id }).strict(),
   scope: z.object({ allowed: texts, forbidden: texts }).strict(),
   assignment: z.object({ agentId: id, role: text, competencies: texts }).strict(),
+  modelSelection: modelSelectionSchema,
   context: z.object({ company: refs, product: refs, technical: refs }).strict(),
   procedures: optionalSet(ref),
   skills: optionalSet(z.object({ name: text, version: text }).strict()),

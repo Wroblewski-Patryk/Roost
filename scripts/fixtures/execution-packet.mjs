@@ -19,6 +19,7 @@ export function validPacketFixture() {
     version: "1", objective: { outcome: "Repair the synthetic fixture", goalId },
     scope: { allowed: ["Repair the fixture"], forbidden: ["Change sibling repositories"] },
     assignment: { agentId, role: "engineer", competencies: ["javascript"] },
+    modelSelection: { model: "gpt-5.6-sol", reasoningEffort: "medium" },
     context: Object.fromEntries(["company", "product", "technical"].map((category, index) => [category, [{ id: sources[index].id, revision }]])),
     procedures: { items: [], noneReason: "No applicable procedure for this fixture" },
     skills: { items: [], noneReason: "No additional skill required" },
