@@ -2672,6 +2672,7 @@ model Task {
   ownerUser                 User?                 @relation("TaskOwnerUser", fields: [ownerUserId], references: [id], onDelete: SetNull)
   assignedWorkforceEntityId String?               @map("assigned_workforce_entity_id") @db.Uuid
   assignedWorkforceEntity   WorkforceEntity?      @relation("TaskAssignedWorkforce", fields: [assignedWorkforceEntityId], references: [id], onDelete: SetNull)
+  executionReadiness         Json?                 @map("execution_readiness")
   reviewerUserId            String?               @map("reviewer_user_id") @db.Uuid
   reviewerUser              User?                 @relation("TaskReviewerUser", fields: [reviewerUserId], references: [id], onDelete: SetNull)
   title                     String

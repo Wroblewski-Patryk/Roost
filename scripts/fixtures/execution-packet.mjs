@@ -1,3 +1,4 @@
+import readyContext from "../lib/agent-host-ready-context.cjs";
 import { createHash } from "node:crypto";
 
 export function sealPacket(packet) {
@@ -36,5 +37,15 @@ export function validPacketFixture() {
       assignedWorkforceEntity: { id: agentId, workspaceId, type: "agent", status: "active", role: "engineer", skillIndex: ["javascript"], toolIndex: contract.access.tools, authorityScope: contract.access.permissions } },
     procedures: [], dependencies: [], decisions: [] };
   const applicationContext = { schemaVersion: "application-agent-context-v2", application: claimed.application, operatingModel: { projects: [{ projectId }], applicationProcedures: [], capabilityProcedures: [] } };
-  return { packet, claimed, taskContext, applicationContext };
+  const fixture = { packet, claimed, taskContext, applicationContext };
+  pinReadyFixture(fixture);
+  return fixture;
+}
+
+export function pinReadyFixture(f) {
+  const revision = readyContext.readyContextRevision(f.taskContext, f.applicationContext, f.claimed);
+  const pinId = "00000000-0000-4000-8000-000000000090";
+  f.claimed.metadata = { ...f.claimed.metadata, readyContextPin: { pinId, revision } };
+  f.taskContext.readyAdmission = { status: "ready", pinId, revision, validationRevision: revision };
+  return f;
 }

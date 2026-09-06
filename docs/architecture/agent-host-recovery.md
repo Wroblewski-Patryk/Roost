@@ -69,12 +69,15 @@ even a missing such event cannot make the earlier spawn barrier safe to replay.
    writer-file creation again. A competing process cannot own the same slot.
 5. Revalidate workspace, origin and sandbox, refresh protocol admission, then call the existing
    execution's `/actions/recover` with the expected checkpoint version and new
-   session UUID. Roost atomically rotates its lease token, increments only the
+   session UUID. Roost first revalidates the original execution-bound Ready pin
+   against canonical context in the same transaction. Missing/legacy/changed
+   pins reject recovery without changing the lease, attempt or checkpoint.
+   Roost then atomically rotates its lease token, increments only the
    checkpoint version, retains execution ID/attempt/task/host, and records
    `recovering` with the stage and reason. Concurrent recovery of one version
    has exactly one winner. The prior lease cannot heartbeat or complete/fail it.
 6. Fetch current task/application context, renew authority and pass the execution
-   packet gate again. For `prepared`, require the same packet revision, resolved
+   packet and Ready gates again. For `prepared`, require the same packet revision, resolved
    context fingerprint and Git workspace digest. `context_changed` stops recovery
    even if the packet alone remains unchanged. Then repeat the final
    [authoritative refresh before spawn](execution-packet-contract.md#fresh-authoritative-context-before-spawn-rf-ctx-006).
@@ -99,6 +102,12 @@ execution preparation or spawn. An exhausted `claimed`/`prepared` execution
 reports `agent_execution_duration_exceeded` with the rotated lease and
 `retryable: false`, retains its identity/attempt and the writer lock, and stops.
 It cannot automatically resume, claim again or remove that lock after reporting.
+
+A Ready rejection after successful lease rotation similarly reports
+`agent_ready_context_revalidation_required`, nonretryable, using the rotated
+lease. The writer record remains retained. Rejection by the recovery API before
+rotation instead records a blocked recovery and preserves the original authority.
+An old execution is never rebound to a newly submitted acceptance.
 
 ## Diagnostics, Cleanup And Release
 

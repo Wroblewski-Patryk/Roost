@@ -1,5 +1,5 @@
 {
   "version": 1,
-  "apiCapabilities": ["scoped_execution_v1", "recovery_context_pin_v1", "host_admission_v1"],
-  "requiredHostCapabilities": ["codex_exec_json", "workspace_write", "git_status", "heartbeat", "cancellation", "single_writer_v1", "execution_lease_v1", "execution_packet_v1", "recovery_context_pin_v1", "execution_duration_v1", "explicit_model_v1", "fresh_context_v1"]
+  "apiCapabilities": ["scoped_execution_v1", "recovery_context_pin_v1", "host_admission_v1", "ready_context_pin_v1"],
+  "requiredHostCapabilities": ["codex_exec_json", "workspace_write", "git_status", "heartbeat", "cancellation", "single_writer_v1", "execution_lease_v1", "execution_packet_v1", "recovery_context_pin_v1", "execution_duration_v1", "explicit_model_v1", "fresh_context_v1", "ready_context_pin_v1"]
 }

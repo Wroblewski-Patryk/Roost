@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { AgentExecution, Task } from "@prisma/client";
+import type { AgentExecution, Task, Prisma } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 
 function object(value: unknown): Record<string, unknown> {
@@ -8,7 +8,7 @@ function object(value: unknown): Record<string, unknown> {
 
 // This is an envelope over an explicit execution contract, not inferred task intent.
 // Missing/invalid contract fields are deliberately preserved for host diagnostics.
-export async function prepareExecutionPacket(execution: AgentExecution, task: Task) {
+export async function prepareExecutionPacket(execution: AgentExecution, task: Task, db: Prisma.TransactionClient = prisma) {
   const contract = object(execution.metadata).executionContract ?? null;
   const context = object(object(contract).context);
   const ids = [...new Set(["company", "product", "technical"].flatMap((category) => {
@@ -16,7 +16,7 @@ export async function prepareExecutionPacket(execution: AgentExecution, task: Ta
     return Array.isArray(refs) ? refs.slice(0, 10).map((ref) => object(ref).id)
       .filter((id): id is string => typeof id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) : [];
   }))];
-  const sources = await prisma.companyRecord.findMany({
+  const sources = await db.companyRecord.findMany({
     where: { workspaceId: execution.workspaceId, id: { in: ids }, status: { not: "archived" }, OR: [{ applicationId: null }, { applicationId: execution.applicationId }] },
     select: { id: true, workspaceId: true, applicationId: true, recordType: true, title: true, description: true, businessPurpose: true, desiredState: true, expectedBehavior: true, updatedAt: true },
     orderBy: { id: "asc" }

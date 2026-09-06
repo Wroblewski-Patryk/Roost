@@ -134,6 +134,11 @@ for (const reason of ["lease_expired", "packet_changed", "context_changed", "rep
   if (reason === "repository_mismatch") { h.config.repositories.soar.originUrl = "https://github.com/example/other.git"; await writeFile(h.configPath, JSON.stringify(h.config)); }
   if (reason === "sandbox_invalid") { h.config.sandbox = "danger-full-access"; await writeFile(h.configPath, JSON.stringify(h.config)); }
   if (reason === "writer_locked") { const lockPath = path.join(h.directory, writerLockFilename); const record = JSON.parse(await readFile(lockPath, "utf8")); record.ownerPid = process.pid; await writeFile(lockPath, JSON.stringify(record)); }
-  const restarted = await h.run(); assert.equal(restarted.code, 1); assert.equal(restarted.spawned, 0); assert.equal(h.finished, false);
-  assert.equal(h.reports.at(-1).reason, reason);
+  const restarted = await h.run(); assert.equal(restarted.code, 1); assert.equal(restarted.spawned, 0);
+  if (["packet_changed", "context_changed"].includes(reason)) {
+    assert.equal(h.finished, true);
+    assert.equal(h.reports.at(-1).code, "agent_ready_context_revalidation_required");
+    assert.equal(h.reports.at(-1).retryable, false);
+    assert.equal(h.reports.at(-1).leaseToken, h.active.leaseToken);
+  } else { assert.equal(h.finished, false); assert.equal(h.reports.at(-1).reason, reason); }
 });

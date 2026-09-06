@@ -32,43 +32,43 @@ for later changes to these same canonical files.
 
 ## Atomic P0 selection
 
-The prior explicit-model gate (`2741b82f`), duration gate (`62b8e8f3`), GUI
-observer launcher (`03a9a42a`) and fresh-context admission (`d7e5c7c2`) are retained.
-The latter integrated the GUI correction in one runtime release, with exact
-production commit/health verification. RF-CTX-006 remains partial: preparation
-and pre-spawn pins are implemented; Ready pinning and in-flight invalidation
-remain missing, and final reads cannot lock out subsequent source edits.
+The retained baseline includes explicit model admission, the duration gate,
+Windows observer launcher, fresh-context admission and host/API protocol
+admission (`a1a6d0fa`). The current bounded P0 slice is **RF-CTX-006:
+accepted context revision pinned at Ready**.
 
-The current bounded P0 slice is **RF-HOST-014: host/API protocol admission**.
-One shared wire declaration extends existing host metadata/capabilities and
-register/heartbeat/readiness responses. Client and API independently reject
-missing/unknown version or required capabilities before recovery/claim, including
-legacy requests that reuse a newer host record. The host also checks before
-spawn; incompatibility leaves a heartbeat-only process, with retained ownership
-and reconciliation after a claim. Observer mode never enters execution code.
-Settings displays admission separately from online status.
+Submit-for-execution resolves canonical context and runs the shared packet
+validator before recording a Task pin and validation proof for the same hash.
+Queue/claim, pre-spawn checkpoints, active context reads and recovery revalidate
+that acceptance; missing/legacy pins fail closed. Changed context persists
+`needs_revalidation` without replacing prior proof. Queue binds the accepted
+pin; reports cannot overwrite it. Duplicate admission uses task locking and
+serializable transactions. Host checks both Ready and the retained preparation
+fingerprint, including the final refresh immediately before spawn.
 
-Local verification (2026-09-06): protocol admission 30/30, host regression
-176/176, observer 7/7 and local API/database 16/16. `npm run validate` passed
-(278 manifest routes, 44 route files, TypeScript and production build); existing
-Phosphor/ambient asset and large-chunk warnings remain. Registry/matrix retain
-162 requirements. Protocol admission includes compatible and
-legacy/future/missing contracts, unknown capabilities, missing acknowledgement,
-disabled/unknown runtime and server rejection after a compatible heartbeat.
-Windows regressions cover leases, writer ownership, recovery, context, model and
-duration; added pre-spawn protocol-change/unavailable cases prevent model start.
-API tests cover register/heartbeat visibility and rejection without changing
-attempt/checkpoint/lease. Component fixture QA covers seven states across
-390/834/1440px with no horizontal overflow or page errors; this is not a live
-signed-in UI or provider trial. Exact deployment proof is recorded in the completed handoff after verification.
+The additive nullable Task migration intentionally leaves legacy tasks unready.
+The shared `ready_context_pin_v1` capability prevents execution across a mixed
+host/API rollout. Existing observer, protocol, model, duration, lease and writer
+ownership boundaries remain. Production stays disabled/observe, with no live
+provider call or Soar work. Exact deployment proof belongs in the completed
+handoff after verification.
 
-RF-HOST-014 remains **cz�ciowo dzia�a**: no coordinated backend/UI/schema
-release, drain, migration/rollback orchestration, binary attestation, automatic
-host update or in-flight invalidation. No API deployment lock spans final read
-to spawn. Production remains disabled/observe; no model/provider live test or
-Soar change is authorized. Next single candidate for separate selection:
-**RF-CTX-006: pin the accepted context revision at Ready**, before execution
-preparation, so changes after approval require a new reviewed contract. Not started.
+Local verification (2026-09-06): host regression **232/232**, including 21 Ready
+fingerprint checks and five added Windows Ready admission scenarios; local
+API/database **17/17**; observer **7/7**, with normal Stop/Start. `npm run validate`
+passed: 280 manifest routes across 44 route files, TypeScript and production
+build. Existing Phosphor/ambient asset and large-chunk warnings remain.
+Registry/matrix retain 162 requirement rows. Tests use synthetic data and child
+processes. No provider call or UI change; native launcher QA was not repeated.
+
+RF-CTX-006 remains **częściowo działa**: invalidation is detected at admission,
+not eagerly on every source write, and already spawned work is not invalidated.
+No database lock spans the final read to local spawn. RF-CTX-008 now has a
+validated Ready command and stored state separate from ordinary task status;
+full Draft/Needs-context/Decision workflow and console authoring remain partial.
+One next candidate for separate selection: **RF-CTX-008, owner-facing contract
+submission and readiness diagnostics in the task workbench**, using the existing
+Ready command. Not started.
 
 ## Matrix
 
@@ -99,9 +99,9 @@ preparation, so changes after approval require a new reviewed contract. Not star
 | [RF-CTX-003](../product/interview-foundation-v2.md#rf-ctx-003) | P0 | częściowo działa | [CTX](#e-ctx) | Record/evidence models exist; epistemic labeling not uniformly enforced. |
 | [RF-CTX-004](../product/interview-foundation-v2.md#rf-ctx-004) | P0 | częściowo działa | [PACKET](#e-packet) | Application context exists; validated full manifest absent. |
 | [RF-CTX-005](../product/interview-foundation-v2.md#rf-ctx-005) | P0 | częściowo działa | [PACKET](#e-packet) | Packet references versions; complete layered selection/reason trace missing. |
-| [RF-CTX-006](../product/interview-foundation-v2.md#rf-ctx-006) | P0 | częściowo działa | [PACKET](#e-packet) | Prepared context pin, authoritative refresh before spawn and recovery comparison verified; Ready pinning and mid-execution invalidation remain missing. No atomic source-edit lock. |
+| [RF-CTX-006](../product/interview-foundation-v2.md#rf-ctx-006) | P0 | częściowo działa | [PACKET](#e-packet) | Ready acceptance/proof, queue/claim/preparation/recovery gates and final authoritative refresh are implemented; eager source-write and mid-execution invalidation remain missing. No atomic source-edit-to-spawn lock. |
 | [RF-CTX-007](../product/interview-foundation-v2.md#rf-ctx-007) | P1 | brak | [CTX](#e-ctx) | No runtime context expansion protocol. |
-| [RF-CTX-008](../product/interview-foundation-v2.md#rf-ctx-008) | P0 | częściowo działa | [TASK](#e-task) | Task todo and execution queued exist; validated Ready state absent. |
+| [RF-CTX-008](../product/interview-foundation-v2.md#rf-ctx-008) | P0 | częściowo działa | [TASK](#e-task) | Submit-for-execution validates and stores Ready separately from task status; full Draft/Needs-context/Decision workflow and console authoring remain partial. |
 | [RF-CTX-009](../product/interview-foundation-v2.md#rf-ctx-009) | P0 | częściowo działa | [TASK](#e-task) | Task fields exist; atomicity enforcement absent. |
 | [RF-CTX-010](../product/interview-foundation-v2.md#rf-ctx-010) | P0 | częściowo działa | [TASK](#e-task) | Assignment exists; role separation gates absent. |
 | [RF-CTX-011](../product/interview-foundation-v2.md#rf-ctx-011) | P1 | częściowo działa | [PROC](#e-proc) | Registry primitives exist; task-type execution contract incomplete. |
@@ -132,7 +132,7 @@ preparation, so changes after approval require a new reviewed contract. Not star
 | [RF-HOST-011](../product/interview-foundation-v2.md#rf-host-011) | P1 | częściowo działa | [BUDGET](#e-budget) | Observer/integration retries exist; general execution loop breaker absent. |
 | [RF-HOST-012](../product/interview-foundation-v2.md#rf-host-012) | P1 | częściowo działa | [BUDGET](#e-budget) | Usage stored per execution; attribution and quality-constrained optimization absent. |
 | [RF-HOST-013](../product/interview-foundation-v2.md#rf-host-013) | P0 | brak | [RESOURCE](#e-resource) | No resource-aware host/service-operation broker. |
-| [RF-HOST-014](../product/interview-foundation-v2.md#rf-host-014) | P0 | cz�ciowo dzia�a | [PROTOCOL](#e-protocol) | Host/API admission before recovery/claim/spawn implemented; coordinated backend/UI/schema drain/update/rollback remains missing. |
+| [RF-HOST-014](../product/interview-foundation-v2.md#rf-host-014) | P0 | częściowo działa | [PROTOCOL](#e-protocol) | Host/API admission before recovery/claim/spawn implemented; coordinated backend/UI/schema drain/update/rollback remains missing. |
 | [RF-HOST-015](../product/interview-foundation-v2.md#rf-host-015) | P1 | częściowo działa | [AUTH](#e-auth) | Host identity and scoped provisioning exist; interactive pairing absent. |
 | [RF-HOST-016](../product/interview-foundation-v2.md#rf-host-016) | P0 | działa | [MODEL](#e-model) | Explicit allowlist/pair validation and exact argv verified by synthetic host tests; no provider call/activation. Full routing/observed usage remain RF-HOST-017/018. |
 | [RF-HOST-017](../product/interview-foundation-v2.md#rf-host-017) | P1 | brak | [MODEL](#e-model) | No stage router, minima, availability or override UI. |
@@ -272,10 +272,13 @@ Each entry links existing canonical files; a test link is not a passing result.
 [src/modules/events/events.routes.ts](../../src/modules/events/events.routes.ts), [src/modules/agent-logs/agent-logs.routes.ts](../../src/modules/agent-logs/agent-logs.routes.ts), [src/modules/evidence/evidence.routes.ts](../../src/modules/evidence/evidence.routes.ts), [scripts/ignored-evidence-retention-guardrail.mjs](../../scripts/ignored-evidence-retention-guardrail.mjs).
 
 <a id="e-packet"></a>
-**PACKET** — Structural/referential packet gate plus pinned-context comparison against fresh authoritative reads immediately before spawn; no Ready/mid-execution invalidation.
+**PACKET** — Shared structural/referential validator, accepted Ready pin and preparation pin with fresh authoritative comparison before spawn; no mid-execution invalidation.
 
 [scripts/lib/agent-host-execution-packet.mjs](../../scripts/lib/agent-host-execution-packet.mjs), [src/modules/agent-runtime/execution-packet.ts](../../src/modules/agent-runtime/execution-packet.ts), [scripts/agent-host-execution-packet.test.mjs](../../scripts/agent-host-execution-packet.test.mjs), [docs/architecture/execution-packet-contract.md](../../docs/architecture/execution-packet-contract.md).
 
+[Ready API service](../../src/modules/agent-runtime/task-execution-readiness.ts),
+[shared Ready fingerprint](../../scripts/lib/agent-host-ready-context.cjs),
+[Ready tests](../../scripts/agent-host-ready-context.test.mjs),
 [context admission helper](../../scripts/lib/agent-host-execution-context.mjs),
 [context unit tests](../../scripts/agent-host-execution-context.test.mjs),
 [Windows context process tests](../../scripts/agent-host-context-process.test.mjs),
@@ -288,7 +291,7 @@ Each entry links existing canonical files; a test link is not a passing result.
 [src/modules/company-intelligence/company-intelligence.routes.ts](../../src/modules/company-intelligence/company-intelligence.routes.ts), [src/modules/company-records/company-records.routes.ts](../../src/modules/company-records/company-records.routes.ts), [scripts/import-application-documentation-context.ts](../../scripts/import-application-documentation-context.ts).
 
 <a id="e-task"></a>
-**TASK** — Task CRUD and assignments; no validated Ready command/state.
+**TASK** — Task CRUD and assignments plus explicit validated Ready command/state; ordinary edits cannot author readiness.
 
 [src/modules/tasks/tasks.routes.ts](../../src/modules/tasks/tasks.routes.ts), [src/modules/agent-runtime/agent-runtime.routes.ts](../../src/modules/agent-runtime/agent-runtime.routes.ts), [src/tests/api.test.ts](../../src/tests/api.test.ts).
 
@@ -318,7 +321,7 @@ Each entry links existing canonical files; a test link is not a passing result.
 [scripts/roost-codex-agent-host.mjs](../../scripts/roost-codex-agent-host.mjs), [src/modules/agent-runtime/agent-runtime.routes.ts](../../src/modules/agent-runtime/agent-runtime.routes.ts), [src/config/env.ts](../../src/config/env.ts), [docs/architecture/local-codex-agent-runtime.md](../../docs/architecture/local-codex-agent-runtime.md).
 
 <a id="e-protocol"></a>
-**PROTOCOL** � Shared version/capability declaration, dual admission and visible blocking without offline host status; no full update orchestration.
+**PROTOCOL** — Shared version/capability declaration, dual admission and visible blocking without offline host status; no full update orchestration.
 
 [wire declaration](../../src/modules/agent-runtime/host-protocol.json), [API admission](../../src/modules/agent-runtime/host-protocol.ts), [host admission](../../scripts/lib/agent-host-protocol.mjs), [process tests](../../scripts/agent-host-protocol.test.mjs), [API tests](../../src/tests/api.test.ts), [protocol contract](local-codex-agent-runtime.md#hostapi-protocol-admission-rf-host-014).
 

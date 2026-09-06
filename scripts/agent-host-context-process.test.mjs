@@ -7,13 +7,18 @@ import { mkdtemp, readFile, writeFile, unlink, rmdir } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { validPacketFixture, sealPacket } from "./fixtures/execution-packet.mjs";
+import { validPacketFixture, sealPacket, pinReadyFixture } from "./fixtures/execution-packet.mjs";
 import { writerLockFilename } from "./lib/agent-host-writer-lock.mjs";
 import { terminateWindowsProcessTree } from "./lib/agent-host-execution-lease.mjs";
 
-for (const scenario of ["unchanged", "taskChanged", "goalChanged", "applicationChanged", "sourceChanged", "accessRevoked", "lateTaskChange", "taskUnavailable", "applicationUnavailable", "authorityRejected", "reportUnavailable", "protocolChanged", "protocolUnavailable"]) {
+for (const scenario of ["unchanged", "readyMissing", "readyLegacy", "readyChanged", "readyApiPrepare", "readyApiFinal", "taskChanged", "goalChanged", "applicationChanged", "sourceChanged", "accessRevoked", "lateTaskChange", "taskUnavailable", "applicationUnavailable", "authorityRejected", "reportUnavailable", "protocolChanged", "protocolUnavailable"]) {
   test(`real host fresh-context admission: ${scenario}`, { skip: process.platform !== "win32", timeout: 20000 }, async () => {
     const f = validPacketFixture(); f.taskContext.task.title = "Authoritative fixture title";
+    pinReadyFixture(f);
+    const readyFailure = scenario.startsWith("ready") && scenario !== "readyApiFinal";
+    if (scenario === "readyMissing") delete f.taskContext.readyAdmission;
+    if (scenario === "readyLegacy") delete f.claimed.metadata.readyContextPin;
+    if (scenario === "readyChanged") f.taskContext.task.description = "Changed since Ready before claim";
     const directory = await mkdtemp(path.join(os.tmpdir(), "roost-context-"));
     const configPath = path.join(directory, "config.json"), requests = [];
     let host, taskReads = 0, appReads = 0, finished = false, active, output = "", errors = "";
@@ -40,6 +45,7 @@ for (const scenario of ["unchanged", "taskChanged", "goalChanged", "applicationC
       }
       if (req.url.includes("company-intelligence")) {
         taskReads++;
+        if (taskReads === 2 && scenario === "readyApiFinal") return send("task_ready_revalidation_required", 409);
         if (taskReads === 2 && ["taskUnavailable", "authorityRejected"].includes(scenario)) return send("SYNTHETIC_SECRET_TRANSPORT", scenario === "authorityRejected" ? 403 : 503);
         return send({ ...f.taskContext, generatedAt: taskReads === 1 ? "2026-09-06T00:00:00Z" : "2026-09-06T00:00:01Z" });
       }
@@ -50,6 +56,7 @@ for (const scenario of ["unchanged", "taskChanged", "goalChanged", "applicationC
       }
       if (req.url.endsWith("/heartbeat")) return send({ leaseExpiresAt: new Date(Date.now() + 90000).toISOString() });
       if (req.url.endsWith("/checkpoint")) {
+        if (scenario === "readyApiPrepare" && input.checkpoint.stage === "prepared") return send("task_ready_revalidation_required", 409);
         active.checkpoint = input.checkpoint; active.checkpointVersion++;
         if (input.checkpoint.stage === "prepared") {
           if (["taskChanged", "reportUnavailable"].includes(scenario)) f.taskContext.task.description = "Changed task after prepare";
@@ -75,9 +82,9 @@ for (const scenario of ["unchanged", "taskChanged", "goalChanged", "applicationC
       host = spawn(process.execPath, ["--input-type=module", "-e", launch], { windowsHide: true, stdio: ["ignore", "pipe", "pipe"], env: { ...process.env, ROOST_BASE_URL: `http://127.0.0.1:${server.address().port}`, ROOST_AGENT_API_KEY: "synthetic-context-key", ROOST_AGENT_HOST_CONFIG: configPath } });
       host.stdout.on("data", (c) => { output += c; }); host.stderr.on("data", (c) => { errors += c; });
       assert.equal((await once(host, "close"))[0], scenario.startsWith("protocol") ? 1 : 0, errors);
-      assert.equal(taskReads, scenario.startsWith("protocol") ? 1 : 2);
+      assert.equal(taskReads, scenario.startsWith("protocol") || readyFailure ? 1 : 2);
       const started = requests.findIndex((r) => r.input.type === "runner_started");
-      if (!scenario.startsWith("protocol")) assert.ok(requests.findLastIndex((r) => r.url.includes("company-intelligence")) > started);
+      if (!scenario.startsWith("protocol") && !readyFailure) assert.ok(requests.findLastIndex((r) => r.url.includes("company-intelligence")) > started);
       assert.equal(output.includes("MODEL_SPAWN"), scenario === "unchanged");
       const complete = requests.find((r) => r.url.endsWith("/complete")), failure = requests.find((r) => r.url.endsWith("/fail"));
       if (scenario === "unchanged") {
@@ -86,10 +93,17 @@ for (const scenario of ["unchanged", "taskChanged", "goalChanged", "applicationC
         assert.equal(complete, undefined);
         assert.equal(requests.filter((r) => r.url.endsWith("/claim")).length, 1);
         const lock = JSON.parse(await readFile(path.join(directory, writerLockFilename), "utf8"));
-        assert.equal(lock.checkpoint.stage, "spawn_intent");
-        assert.match(lock.checkpoint.contextRevision, /^[a-f0-9]{64}$/);
-        assert.equal(lock.checkpoint.contextRevision, requests.find((r) => r.input.checkpoint?.stage === "prepared").input.checkpoint.contextRevision);
-        if (scenario.startsWith("protocol")) { assert.equal(failure.input.code, "agent_host_protocol_blocked"); assert.equal(failure.input.retryable, false); }
+        assert.equal(lock.checkpoint.stage, scenario === "readyApiPrepare" ? "prepared" : readyFailure ? "claimed" : "spawn_intent");
+        if (!readyFailure) {
+          assert.match(lock.checkpoint.contextRevision, /^[a-f0-9]{64}$/);
+          assert.equal(lock.checkpoint.contextRevision, requests.find((r) => r.input.checkpoint?.stage === "prepared").input.checkpoint.contextRevision);
+        }
+        if (readyFailure || scenario === "readyApiFinal") {
+          if (readyFailure) assert.equal(started, -1);
+          if (readyFailure && scenario !== "readyApiPrepare") assert.equal(requests.some(r => r.input.checkpoint?.stage === "prepared"), false);
+          assert.equal(failure.input.code, "agent_ready_context_revalidation_required"); assert.equal(failure.input.retryable, false);
+        }
+        else if (scenario.startsWith("protocol")) { assert.equal(failure.input.code, "agent_host_protocol_blocked"); assert.equal(failure.input.retryable, false); }
         else if (scenario === "authorityRejected") { assert.equal(failure, undefined); assert.ok(requests.some((r) => r.url.endsWith("/recovery-blocked"))); }
         else {
           const reason = scenario.endsWith("Unavailable") && scenario !== "reportUnavailable" ? "unavailable" : scenario === "accessRevoked" ? "invalid" : "changed";

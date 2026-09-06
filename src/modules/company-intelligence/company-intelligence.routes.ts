@@ -1,3 +1,4 @@
+import { inspectReady, readyTransaction } from "../agent-runtime/task-execution-readiness";
 import { Router } from "express";
 import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
@@ -6,7 +7,7 @@ import { contextualEntityIds, organizationalContextsForEntities } from "../organ
 import { loadApplicationGraphPacket } from "../product-engineering/application-graph-projection.service";
 import { projectApplicationPacketsIntoCompanyGraph } from "./company-graph-application-projection";
 import { analyzeCompanyGraphConnectivity } from "./company-graph-connectivity";
-import { prepareExecutionPacket } from "../agent-runtime/execution-packet";
+import { loadTaskAgentContext } from "./task-agent-context";
 
 export const companyIntelligenceRouter = Router();
 
@@ -340,40 +341,17 @@ companyIntelligenceRouter.get("/health", asyncHandler(async (req, res) => {
 }));
 
 companyIntelligenceRouter.get("/tasks/:id/agent-context", asyncHandler(async (req, res) => {
-  const workspaceId = req.auth!.workspaceId; const task = await prisma.task.findFirst({ where: { id: String(req.params.id), workspaceId }, include: { project: true, goal: true, target: true, taskList: true, assignedWorkforceEntity: true, reviewerUser: { select: { id: true, name: true } } } });
+  const workspaceId = req.auth!.workspaceId, taskId = String(req.params.id);
   const executionId = typeof req.query.executionId === "string" ? req.query.executionId : undefined;
   if (executionId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(executionId)) return res.status(400).json({ error: "execution_id_invalid" });
-  const execution = executionId ? await prisma.agentExecution.findFirst({ where: { id: executionId, taskId: String(req.params.id), workspaceId } }) : null;
+  const execution = executionId ? await prisma.agentExecution.findFirst({ where: { id: executionId, taskId, workspaceId } }) : null;
   if (executionId && !execution) return res.status(404).json({ error: "agent_execution_not_found" });
-  if (!task) return res.status(404).json({ error: "task_not_found" }); const [contexts, dependencies, policies, procedures] = await Promise.all([
-    organizationalContextsForEntities(workspaceId, "task", [task.id]), prisma.dependency.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ fromEntityType: "task", fromEntityId: task.id }, { toEntityType: "task", toEntityId: task.id }] } }),
-    prisma.policy.findMany({ where: { workspaceId, status: { not: "archived" } }, take: 50 }), prisma.procedure.findMany({ where: { workspaceId, status: { not: "archived" } }, include: { steps: { orderBy: { stepOrder: "asc" } } }, take: 50 })
-  ]);
-  const related = dependencies.map((dependency) => dependency.fromEntityType === "task" && dependency.fromEntityId === task.id
-    ? { entityType: dependency.toEntityType, entityId: dependency.toEntityId }
-    : { entityType: dependency.fromEntityType, entityId: dependency.fromEntityId });
-  const ids = (entityType: string) => related.filter((item) => item.entityType === entityType && item.entityId).map((item) => item.entityId!);
-  const taskDepartmentKeys = [contexts.get(task.id)?.ownerDepartment?.key, ...(contexts.get(task.id)?.relatedDepartments ?? []).map((department) => department.key), ...(contexts.get(task.id)?.applicableDepartments ?? []).map((department) => department.key)].filter((key): key is string => Boolean(key));
-  const contextualRiskIds = [...new Set((await Promise.all(taskDepartmentKeys.map((key) => contextualEntityIds(workspaceId, "risk", key)))).flat())];
-  const [records, features, resources, decisions, applications, risks, knownIssues] = await Promise.all([
-    prisma.companyRecord.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ id: { in: [...ids("company_record"), ...ids("requirement")] } }, ...(task.projectId ? [{ projectId: task.projectId }] : [])] } }),
-    prisma.applicationFeature.findMany({ where: { id: { in: ids("feature") }, application: { workspaceId } }, include: { featureDefinition: true, application: { select: { id: true, name: true } } } }),
-    prisma.resource.findMany({ where: { workspaceId, id: { in: ids("resource") } } }), prisma.decision.findMany({ where: { workspaceId, id: { in: ids("decision") } } }),
-    prisma.application.findMany({ where: { workspaceId, id: { in: ids("application") } }, include: { architecture: true, interfaces: true, repositories: true, technologies: { include: { technologyDefinition: true } } } }),
-    prisma.risk.findMany({ where: { workspaceId, status: { not: "archived" }, id: { in: [...ids("risk"), ...contextualRiskIds] } }, include: { controls: true } }),
-    prisma.companyRecord.findMany({ where: { workspaceId, status: { not: "archived" }, recordType: { in: ["operational_issue", "technical_incident", "escalation"] }, OR: [{ id: { in: [...ids("company_record"), ...ids("requirement")] } }, ...(task.projectId ? [{ projectId: task.projectId }] : [])] } })
-  ]);
-  const evidence = await prisma.evidenceRecord.findMany({ where: { workspaceId, OR: [{ entityType: "task", entityId: task.id }, { entityId: { in: records.map((record) => record.id) } }] }, orderBy: { observedAt: "desc" } });
-  res.json({ data: {
-    schemaVersion: "task-agent-execution-context-v1", generatedAt: new Date().toISOString(), task, organizationalContext: contexts.get(task.id),
-    ...(execution ? { executionPacket: await prepareExecutionPacket(execution, task) } : {}),
-    intent: { objective: task.goal, target: task.target, project: task.project, businessContext: records.map((record) => ({ id: record.id, type: record.recordType, purpose: record.businessPurpose, rationale: record.rationale })) },
-    requirements: records.filter((record) => record.recordType === "requirement"), relatedRecords: records, features, applications,
-    affectedComponents: applications.flatMap((application) => application.architecture), dependencies, resources, procedures, policies, decisions, evidence,
-    risks, knownIssues: knownIssues.filter((record) => record.recordType === "operational_issue"), incidents: knownIssues.filter((record) => record.recordType === "technical_incident"),
-    permissions: task.assignedWorkforceEntity ? { authorityScope: task.assignedWorkforceEntity.authorityScope, tools: task.assignedWorkforceEntity.toolIndex, runtimeMode: task.assignedWorkforceEntity.runtimeMode } : null,
-    verification: { acceptanceCriteria: records.flatMap((record) => Array.isArray(record.acceptanceCriteria) ? record.acceptanceCriteria : []), requiredEvidence: ["implementation", "test", "runtime_or_human_verification"] },
-    constraints: { sourceOfTruth: "roost", requireVerifiedEvidenceForCompletion: true, preserveHumanApprovalRequirements: true, declarationIsNotObservation: true, escalateWhenAuthorityMissing: true },
-    escalationRules: { records: knownIssues.filter((record) => record.recordType === "escalation"), policyModesRequiringApproval: policies.filter((policy) => policy.enforcementMode === "require_approval" || policy.enforcementMode === "block") }
-  } });
+  if (execution && ["queued", "claimed", "running"].includes(execution.status)) {
+    const ready = await readyTransaction(tx => inspectReady(tx, workspaceId, taskId, execution));
+    if ("error" in ready && ready.error) return res.status(409).json({ error: ready.error });
+    return res.json({ data: (ready as { taskContext: unknown }).taskContext });
+  }
+  const context = await loadTaskAgentContext(workspaceId, taskId, execution);
+  if (!context) return res.status(404).json({ error: "task_not_found" });
+  res.json({ data: context });
 }));

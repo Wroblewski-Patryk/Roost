@@ -375,6 +375,28 @@ for the remaining concurrent-edit and Ready/mid-execution boundaries.
 
 ## OpenAI Runtime References
 
+Ready rollout: apply additive migration `20260906141000_task_ready_context_pin`
+with the API release, keep `ROOST_CODEX_EXECUTION_ENABLED=false`, and restart the
+local observer normally to load `ready_context_pin_v1`. Verify exact API image,
+migration metadata, health, and observer `online`/`observe`/`runtime_disabled`.
+Older tasks stay unpinned; never backfill Ready from status or assignment.
+Mixed host/API versions fail capability admission. Rollback can leave the
+nullable column in place, but must keep execution disabled: an older API/host
+pair lacks the Ready gate. No destructive schema rollback is needed.
+
+To prepare future authorized work, submit the reviewed contract through
+`POST /v1/agent-runtime/tasks/:id/actions/submit-for-execution`; inspect
+`GET /v1/agent-runtime/tasks/:id/execution-readiness`, then explicitly queue.
+`needs_revalidation` requires review/replan and resubmission after reconciling
+the prior active execution. Readiness inspection can persist an invalidation.
+This release does not add a console contract editor or enable execution.
+
+`node --test scripts/agent-host-ready-context.test.mjs` covers Ready fingerprint
+semantics. Context process tests cover missing/legacy/changed pins, API rejection
+at preparation/final read and no spawn/second claim. Local API tests cover safe
+migration, acceptance history, queue races, changed source/goal, checkpoint and
+recovery rejection, immutable execution pins and successful completion.
+
 Local regression checks: `npm run test:agent-host-recovery` (separately), `npm run test:agent-host-packet`, `npm run test:agent-host-guard` and
 `npm run test:agent-host-lease`, plus `npm run test:agent-host-writer` for
 cross-process exclusion, crash retention and safe release. Lease tests cover renewal, rejection, timeout,

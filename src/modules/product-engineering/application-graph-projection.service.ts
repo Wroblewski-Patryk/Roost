@@ -1,4 +1,4 @@
-import { ApplicationStatus } from "@prisma/client";
+import { ApplicationStatus, type Prisma } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { buildApplicationGraph } from "./application-graph";
 import { calculateApplicationReadiness } from "./readiness";
@@ -31,8 +31,8 @@ export const capabilityInclude = {
   dependenciesTo: { include: { fromCapability: { include: { capabilityDefinition: true } } } }
 };
 
-export async function loadCapabilities(applicationId: string) {
-  return prisma.applicationCapability.findMany({
+export async function loadCapabilities(applicationId: string, db: Prisma.TransactionClient = prisma) {
+  return db.applicationCapability.findMany({
     where: { applicationId },
     include: capabilityInclude,
     orderBy: [{ capabilityDefinition: { domain: { position: "asc" } } }, { priority: "desc" }]

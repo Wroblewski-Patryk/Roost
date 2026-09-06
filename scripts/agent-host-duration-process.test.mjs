@@ -7,13 +7,14 @@ import { mkdtemp, readFile, writeFile, unlink, rmdir } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { validPacketFixture, sealPacket } from "./fixtures/execution-packet.mjs";
+import { validPacketFixture, sealPacket, pinReadyFixture } from "./fixtures/execution-packet.mjs";
 import { writerLockFilename } from "./lib/agent-host-writer-lock.mjs";
 import { terminateWindowsProcessTree } from "./lib/agent-host-execution-lease.mjs";
 
 for (const scenario of ["hungWorker", "lateSuccess", "expiredBeforeSpawn", "missingStart", "failureReportUnavailable", "stopUnconfirmed"]) {
   test(`real host duration enforcement: ${scenario}`, { skip: process.platform !== "win32", timeout: 15000 }, async () => {
     const f = validPacketFixture(); f.packet.contract.budgets.maxDurationSeconds = 60; sealPacket(f.packet);
+    pinReadyFixture(f);
     const directory = await mkdtemp(path.join(os.tmpdir(), "roost-duration-"));
     const configPath = path.join(directory, "config.json"), requests = [];
     let host, output = "", errors = "";

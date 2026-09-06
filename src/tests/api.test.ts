@@ -4,6 +4,8 @@ const validHostMetadata = { runnerVersion: "roost-codex-agent-host-v1", protocol
 import { strict as assert } from "assert";
 import type { Prisma } from "@prisma/client";
 import { spawn } from "node:child_process";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
 import type { AddressInfo } from "net";
 import test, { after, before } from "node:test";
 import { createApp } from "../app";
@@ -1221,6 +1223,103 @@ test("product engineering keeps definitions shared, observations explicit, and p
   assert.equal(revisionBody.status, "draft");
 });
 
+async function prepareReadyFixture(workspaceId: string, taskId: string, applicationId: string, auth: Record<string, string>) {
+  const { validPacketFixture } = await new Function("specifier", "return import(specifier)")(pathToFileURL(path.resolve("scripts/fixtures/execution-packet.mjs")).href);
+  const f = validPacketFixture();
+  const goal = await prisma.goal.create({ data: { workspaceId, title: "Synthetic accepted goal" } });
+  const agent = await prisma.workforceEntity.create({ data: { workspaceId, name: "Synthetic engineer", slug: `fixture-${taskId}`, type: "agent", role: "engineer", skillIndex: ["javascript"], toolIndex: f.packet.contract.access.tools, authorityScope: f.packet.contract.access.permissions } });
+  await prisma.task.update({ where: { id: taskId }, data: { goalId: goal.id, assignedWorkforceEntityId: agent.id } });
+  if (!await prisma.applicationRepository.count({ where: { applicationId } })) await prisma.applicationRepository.create({ data: { applicationId, name: "Synthetic repository", url: "https://github.com/example/fixture.git", isPrimary: true } });
+  const sources = [];
+  for (const category of ["company", "product", "technical"]) {
+    const source = await prisma.companyRecord.create({ data: { workspaceId, applicationId: category === "company" ? null : applicationId, recordType: "requirement", key: `${category}-${taskId}`, title: `Synthetic ${category}`, description: "Synthetic accepted context" } });
+    sources.push(source);
+    f.packet.contract.context[category] = [{ id: source.id, revision: source.updatedAt.toISOString() }];
+  }
+  f.packet.contract.objective.goalId = goal.id;
+  f.packet.contract.assignment.agentId = agent.id;
+  const input = { applicationId, contract: f.packet.contract };
+  const ready = await request(`/v1/agent-runtime/tasks/${taskId}/actions/submit-for-execution`, { method: "POST", headers: auth, body: JSON.stringify(input) });
+  assert.equal(ready.status, 200, JSON.stringify(ready.body));
+  return { input, sources, goal, agent, readiness: (ready.body as { data: { readiness: { revision: string; pinId: string } } }).data.readiness };
+}
+
+test("Ready pins validation and rejects stale queue, preparation and recovery without replacing evidence", async () => {
+  const owner = await registerOwner("ready-owner@example.com", "Ready Fixture");
+  const outsider = await registerOwner("ready-outsider@example.com", "Ready Outsider");
+  const auth = { Authorization: `Bearer ${owner.token}` };
+  const key = await request("/v1/api-keys", { method: "POST", headers: auth, body: JSON.stringify({ name: "Ready worker", profileId: "mcp_codex_worker" }) });
+  const workerAuth = { "X-API-Key": (key.body as { data: { key: string } }).data.key, ...hostProtocolHeaders };
+  const application = await prisma.application.create({ data: { workspaceId: owner.workspace.id, name: "Ready fixture", slug: "ready-fixture" } });
+  const project = await prisma.project.create({ data: { workspaceId: owner.workspace.id, name: "Ready fixture" } });
+  await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id } });
+  const task = await prisma.task.create({ data: { workspaceId: owner.workspace.id, projectId: project.id, title: "Accepted task intent" } });
+  const route = `/v1/agent-runtime/tasks/${task.id}`;
+  const post = (url: string, body: unknown, headers = auth as Record<string, string>) => request(url, { method: "POST", headers, body: JSON.stringify(body) });
+  const queue = (extra = {}) => post("/v1/agent-runtime/executions", { taskId: task.id, ...extra });
+  const readiness = () => request(`${route}/execution-readiness`, { headers: auth });
+  assert.equal(task.executionReadiness, null);
+  assert.equal((await readiness()).status, 200);
+  process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
+  try {
+    assert.equal((await queue()).status, 409);
+    assert.equal(await prisma.agentExecution.count({ where: { taskId: task.id } }), 0);
+    // A legacy-looking proof must not be promoted to a valid acceptance.
+    await prisma.task.update({ where: { id: task.id }, data: { executionReadiness: { status: "ready", revision: "legacy" } } });
+    assert.equal(((await queue()).body as { error: string }).error, "task_ready_pin_required");
+    const f = await prepareReadyFixture(owner.workspace.id, task.id, application.id, auth);
+    assert.equal((await post(`${route}/actions/submit-for-execution`, f.input, workerAuth)).status, 403);
+    assert.match(f.readiness.revision, /^[a-f0-9]{64}$/);
+    assert.equal(((await readiness()).body as { data: { status: string } }).data.status, "ready");
+    assert.equal((await request(`${route}/execution-readiness`, { headers: { Authorization: `Bearer ${outsider.token}` } })).status, 404);
+    const invalid = await post(`${route}/actions/submit-for-execution`, { ...f.input, contract: { secret: "SYNTHETIC_SECRET" } });
+    assert.equal(invalid.status, 409); assert.equal(JSON.stringify(invalid.body).includes("SYNTHETIC_SECRET"), false);
+    assert.equal(((await readiness()).body as { data: { pinId: string } }).data.pinId, f.readiness.pinId);
+    await prisma.task.update({ where: { id: task.id }, data: { title: task.title } });
+    assert.equal(((await readiness()).body as { data: { status: string } }).data.status, "ready");
+    assert.equal(((await queue({ prompt: "Different owner instruction" })).body as { error: string }).error, "task_ready_contract_mismatch");
+    await prisma.goal.update({ where: { id: f.goal.id }, data: { description: "Changed accepted outcome" } });
+    assert.equal(((await queue()).body as { error: string }).error, "task_ready_revalidation_required");
+    const invalidated = (await readiness()).body as { data: { status: string; revision: string } };
+    assert.equal(invalidated.data.status, "needs_revalidation"); assert.equal(invalidated.data.revision, f.readiness.revision);
+    assert.equal(await prisma.event.count({ where: { taskId: task.id, type: "task_execution_ready_invalidated" } }), 1);
+    // Reverting the edit does not silently restore an invalidated acceptance.
+    await prisma.goal.update({ where: { id: f.goal.id }, data: { description: null } });
+    assert.equal(((await queue()).body as { error: string }).error, "task_ready_revalidation_required");
+    assert.equal((await post(`${route}/actions/submit-for-execution`, f.input)).status, 200);
+    const fresh = (await readiness()).body as { data: { pinId: string; revision: string } };
+    assert.notEqual(fresh.data.pinId, f.readiness.pinId);
+    const queues = await Promise.all([queue({ metadata: { readyContextPin: { pinId: "forged", revision: "forged" } } }), queue()]);
+    assert.deepEqual(queues.map(r => r.status).sort(), [201, 409]);
+    const queued = (queues.find(r => r.status === 201)!.body as { data: { id: string; metadata: { readyContextPin: { pinId: string } } } }).data;
+    assert.equal(queued.metadata.readyContextPin.pinId, fresh.data.pinId);
+    assert.equal((await post(`${route}/actions/submit-for-execution`, f.input)).status, 409);
+    const hostSlug = "ready-fixture";
+    assert.equal((await post("/v1/agent-runtime/hosts/register", { name: "Ready host", slug: hostSlug, platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities }, workerAuth)).status, 200);
+    await prisma.task.update({ where: { id: task.id }, data: { description: "Changed between queue and claim" } });
+    assert.equal((await post("/v1/agent-runtime/executions/claim", { hostSlug }, workerAuth)).status, 409);
+    const unclaimed = await prisma.agentExecution.findUniqueOrThrow({ where: { id: queued.id } });
+    assert.equal(unclaimed.attempt, 0); assert.equal(unclaimed.leaseToken, null); assert.equal(unclaimed.status, "queued");
+    assert.equal((await post(`/v1/agent-runtime/executions/${queued.id}/actions/cancel`, {})).status, 200);
+    assert.equal((await post(`${route}/actions/submit-for-execution`, f.input)).status, 200);
+    assert.equal((await queue()).status, 201);
+    const sessionId = "00000000-0000-4000-8000-000000000077";
+    const claim = await post("/v1/agent-runtime/executions/claim", { hostSlug, sessionId }, workerAuth);
+    assert.equal(claim.status, 200, JSON.stringify(claim.body));
+    const claimed = (claim.body as { data: { id: string; leaseToken: string } }).data;
+    const checkpoint = { schemaVersion: "roost-recovery-v1", stage: "prepared", sessionId, packetRevision: "a".repeat(64), workspaceDigest: "b".repeat(64), contextRevision: "c".repeat(64) };
+    await prisma.companyRecord.update({ where: { id: f.sources[0]!.id }, data: { description: "Changed after claim before preparation" } });
+    const prepare = await post(`/v1/agent-runtime/executions/${claimed.id}/checkpoint`, { leaseToken: claimed.leaseToken, expectedVersion: 1, checkpoint }, workerAuth);
+    assert.equal(prepare.status, 409); assert.equal((prepare.body as { error: string }).error, "task_ready_revalidation_required");
+    assert.equal((await post(`/v1/agent-runtime/executions/${claimed.id}/actions/recover`, { hostSlug, expectedVersion: 1, sessionId }, workerAuth)).status, 409);
+    const unchanged = await prisma.agentExecution.findUniqueOrThrow({ where: { id: claimed.id } });
+    assert.equal(unchanged.checkpointVersion, 1); assert.equal(unchanged.leaseToken, claimed.leaseToken); assert.equal(unchanged.attempt, 1);
+    assert.equal(await prisma.agentExecution.count({ where: { taskId: task.id } }), 2);
+    const proofs = await prisma.event.findMany({ where: { taskId: task.id, type: "task_execution_ready" } });
+    assert.equal(proofs.length, 3); assert.ok(proofs.some(e => (e.payload as { pinId: string }).pinId === f.readiness.pinId));
+  } finally { delete process.env.ROOST_CODEX_EXECUTION_ENABLED; }
+});
+
 test("local Codex Agent Host claims scoped work and reports owner-visible evidence", async () => {
   delete process.env.ROOST_CODEX_EXECUTION_ENABLED;
   const owner = await registerOwner("codex-runtime-owner@example.com", "Codex Runtime Workspace");
@@ -1268,6 +1367,7 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
   assert.equal((disabledQueue.body as { error: string }).error, "agent_execution_disabled");
   process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
 
+  await prepareReadyFixture(owner.workspace.id, task.id, application.id, ownerAuth);
   const queueResponse = await request("/v1/agent-runtime/executions", {
     method: "POST",
     headers: ownerAuth,
@@ -1295,12 +1395,16 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
   assert.equal(claimed.status, "claimed");
   assert.ok(claimed.leaseToken);
   assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).status, "in_progress");
+  const acceptedMetadata = (await prisma.agentExecution.findUniqueOrThrow({ where: { id: queued.id } })).metadata as { readyContextPin: unknown; executionContract: unknown };
 
   const heartbeat = await request(`/v1/agent-runtime/executions/${queued.id}/heartbeat`, {
     method: "POST", headers: workerAuth,
-    body: JSON.stringify({ leaseToken: claimed.leaseToken, status: "running", codexThreadId: "thread-test" })
+    body: JSON.stringify({ leaseToken: claimed.leaseToken, status: "running", codexThreadId: "thread-test", metadata: { readyContextPin: { pinId: "forged" }, executionContract: { version: "forged" }, runtimeObservation: "synthetic heartbeat" } })
   });
   assert.equal(heartbeat.status, 200);
+  const heartbeatMetadata = (await prisma.agentExecution.findUniqueOrThrow({ where: { id: queued.id } })).metadata as { readyContextPin: unknown; executionContract: unknown };
+  assert.deepEqual(heartbeatMetadata.readyContextPin, acceptedMetadata.readyContextPin);
+  assert.deepEqual(heartbeatMetadata.executionContract, acceptedMetadata.executionContract);
   const progressEvent = await request(`/v1/agent-runtime/executions/${queued.id}/events`, {
     method: "POST", headers: workerAuth,
     body: JSON.stringify({ leaseToken: claimed.leaseToken, type: "file_change", message: "Updated src/app.ts", payload: { path: "src/app.ts" } })
@@ -1309,10 +1413,11 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
 
   const complete = await request(`/v1/agent-runtime/executions/${queued.id}/actions/complete`, {
     method: "POST", headers: workerAuth,
-    body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: "Implemented and verified.", finalResponse: "Ready for owner review.", codexThreadId: "thread-test", changedFiles: ["src/app.ts"], verification: { commands: [{ command: "npm run typecheck", exitCode: 0 }] }, usage: { input_tokens: 10 } })
+    body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: "Implemented and verified.", finalResponse: "Ready for owner review.", codexThreadId: "thread-test", changedFiles: ["src/app.ts"], verification: { commands: [{ command: "npm run typecheck", exitCode: 0 }] }, usage: { input_tokens: 10 }, metadata: { repositoryPathLabel: "synthetic-fixture" } })
   });
   assert.equal(complete.status, 200);
   assert.equal((complete.body as { data: { status: string } }).data.status, "completed");
+  assert.deepEqual((complete.body as { data: { metadata: { readyContextPin: unknown } } }).data.metadata.readyContextPin, acceptedMetadata.readyContextPin);
   assert.equal(await prisma.evidenceRecord.count({ where: { workspaceId: owner.workspace.id, entityType: "task", entityId: task.id, metadata: { path: ["executionId"], equals: queued.id } } }), 1);
 
   const ownerRead = await request(`/v1/agent-runtime/executions/${queued.id}`, { headers: ownerAuth });
@@ -1333,7 +1438,7 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
   assert.equal(prepared.identity.executionId, queued.id);
   assert.equal(prepared.identity.taskId, task.id);
   assert.equal(prepared.identity.workspaceId, owner.workspace.id);
-  assert.equal(prepared.contract, null, "missing intent must not be manufactured from defaults");
+  assert.ok(prepared.contract, "queued intent comes from the explicitly validated Ready contract");
   assert.match(prepared.revision, /^[a-f0-9]{64}$/);
   assert.equal(JSON.stringify(prepared).includes(claimed.leaseToken), false);
   const source = await prisma.companyRecord.create({ data: { workspaceId: owner.workspace.id, recordType: "requirement", key: "packet-source", title: "Company source", description: "Synthetic company context", metadata: { secret: "synthetic-source-secret" } } });
@@ -1350,9 +1455,10 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
   const invalidTask = await prisma.task.create({ data: { workspaceId: owner.workspace.id, projectId: project.id, title: "Incomplete packet", status: "todo" } });
   assert.equal((await request(`/v1/company-intelligence/tasks/${invalidTask.id}/agent-context?executionId=${queued.id}`, { headers: workerAuth })).status, 404);
   const invalidQueue = await request("/v1/agent-runtime/executions", { method: "POST", headers: ownerAuth, body: JSON.stringify({ taskId: invalidTask.id }) });
-  assert.equal(invalidQueue.status, 201);
-  const invalidClaim = await request("/v1/agent-runtime/executions/claim", { method: "POST", headers: workerAuth, body: JSON.stringify({ hostSlug: "test-windows" }) });
-  const invalid = (invalidClaim.body as { data: { id: string; leaseToken: string } }).data;
+  assert.equal(invalidQueue.status, 409);
+  assert.equal((invalidQueue.body as { error: string }).error, "task_ready_pin_required");
+  // Legacy history can still report a safe terminal failure; it cannot be claimed anew.
+  const invalid = await prisma.agentExecution.create({ data: { workspaceId: owner.workspace.id, taskId: invalidTask.id, applicationId: application.id, requestedByType: "user", status: "claimed", agentHostId: originalHost.id, leaseToken: "00000000-0000-4000-8000-000000000081", leaseExpiresAt: new Date(Date.now() + 90000), attempt: 1 } });
   const diagnostic = { schemaVersion: "roost-execution-packet-diagnostics-v1", issues: [{ field: "contract.acceptance", reason: "missing" }] };
   const rejected = await request(`/v1/agent-runtime/executions/${invalid.id}/actions/fail`, { method: "POST", headers: workerAuth, body: JSON.stringify({ leaseToken: invalid.leaseToken, code: "execution_packet_invalid", message: "Correct: contract.acceptance (missing).", retryable: false, details: diagnostic }) });
   assert.equal(rejected.status, 200);
@@ -1370,6 +1476,7 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
   assert.equal(retryCompleted.status, 409, "completed work requires a new owner decision, not an automatic retry");
 
   const cancelledTask = await prisma.task.create({ data: { workspaceId: owner.workspace.id, projectId: project.id, title: "Cancel the runtime slice", status: "todo" } });
+  await prepareReadyFixture(owner.workspace.id, cancelledTask.id, application.id, ownerAuth);
   const cancelQueue = await request("/v1/agent-runtime/executions", { method: "POST", headers: ownerAuth, body: JSON.stringify({ taskId: cancelledTask.id }) });
   assert.equal(cancelQueue.status, 201);
   const cancelExecutionId = (cancelQueue.body as { data: { id: string } }).data.id;
@@ -1483,6 +1590,7 @@ test("execution recovery fences old leases and preserves an auditable same-attem
   assert.equal((await request("/v1/agent-runtime/hosts/register", { method: "POST", headers: workerAuth, body: JSON.stringify({ name: "Recovery host", slug: hostSlug, platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities }) })).status, 200);
   process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
   try {
+    await prepareReadyFixture(owner.workspace.id, task.id, application.id, ownerAuth);
     await request("/v1/agent-runtime/executions", { method: "POST", headers: ownerAuth, body: JSON.stringify({ taskId: task.id }) });
     const sessionId = "00000000-0000-4000-8000-000000000001";
     const claim = await request("/v1/agent-runtime/executions/claim", { method: "POST", headers: workerAuth, body: JSON.stringify({ hostSlug, sessionId }) });

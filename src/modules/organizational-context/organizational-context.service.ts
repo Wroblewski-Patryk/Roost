@@ -112,15 +112,15 @@ export async function replaceOrganizationalContext(
   }
 }
 
-export async function organizationalContextsForEntities(workspaceId: string, entityType: string, entityIds: string[]) {
+export async function organizationalContextsForEntities(workspaceId: string, entityType: string, entityIds: string[], db: Prisma.TransactionClient = prisma) {
   entityType = canonicalOrganizationalEntityType(entityType);
   const [relations, scopes, ownerships] = await Promise.all([
-    prisma.organizationalDepartmentRelation.findMany({
+    db.organizationalDepartmentRelation.findMany({
       where: { workspaceId, entityType, entityId: { in: entityIds } },
       include: { department: true }
     }),
-    prisma.organizationalScope.findMany({ where: { workspaceId, entityType, entityId: { in: entityIds } } }),
-    prisma.entityOwnership.findMany({ where: { workspaceId, entityType, entityId: { in: entityIds } } })
+    db.organizationalScope.findMany({ where: { workspaceId, entityType, entityId: { in: entityIds } } }),
+    db.entityOwnership.findMany({ where: { workspaceId, entityType, entityId: { in: entityIds } } })
   ]);
   return new Map(entityIds.map((entityId) => {
     const entityRelations = relations.filter((relation) => relation.entityId === entityId);
@@ -165,16 +165,16 @@ export async function entityExists(workspaceId: string, entityType: string, enti
   }
 }
 
-export async function contextualEntityIds(workspaceId: string, entityType: string, departmentKey: string, includeCompanyWide = true) {
+export async function contextualEntityIds(workspaceId: string, entityType: string, departmentKey: string, includeCompanyWide = true, db: Prisma.TransactionClient = prisma) {
   entityType = canonicalOrganizationalEntityType(entityType);
-  const department = await prisma.workspaceDepartment.findFirst({ where: { workspaceId, key: departmentKey } });
+  const department = await db.workspaceDepartment.findFirst({ where: { workspaceId, key: departmentKey } });
   if (!department) return [];
   const [relations, companyScopes] = await Promise.all([
-    prisma.organizationalDepartmentRelation.findMany({
+    db.organizationalDepartmentRelation.findMany({
       where: { workspaceId, entityType, departmentId: department.id },
       select: { entityId: true }
     }),
-    includeCompanyWide ? prisma.organizationalScope.findMany({
+    includeCompanyWide ? db.organizationalScope.findMany({
       where: { workspaceId, entityType, scopeType: "company" },
       select: { entityId: true }
     }) : Promise.resolve([])
@@ -182,7 +182,7 @@ export async function contextualEntityIds(workspaceId: string, entityType: strin
   const inferredIds: string[] = [];
 
   if (entityType === "task" || entityType === "task_list") {
-    const taskLists = await prisma.taskList.findMany({
+    const taskLists = await db.taskList.findMany({
       where: { workspaceId },
       select: { id: true, source: true, externalId: true }
     });
@@ -192,7 +192,7 @@ export async function contextualEntityIds(workspaceId: string, entityType: strin
       entityType: taskList.source === "clickup" ? "list" : "task_list",
       externalId: taskList.externalId || taskList.id
     }));
-    const mappings = identities.length ? await prisma.externalContainerMapping.findMany({
+    const mappings = identities.length ? await db.externalContainerMapping.findMany({
       where: {
         workspaceId,
         OR: identities.map((identity) => ({
@@ -215,7 +215,7 @@ export async function contextualEntityIds(workspaceId: string, entityType: strin
     if (entityType === "task_list") {
       inferredIds.push(...contextualTaskListIds);
     } else if (contextualTaskListIds.length) {
-      const tasks = await prisma.task.findMany({
+      const tasks = await db.task.findMany({
         where: { workspaceId, taskListId: { in: contextualTaskListIds } },
         select: { id: true }
       });
@@ -224,7 +224,7 @@ export async function contextualEntityIds(workspaceId: string, entityType: strin
   }
 
   if (entityType === "file") {
-    const files = await prisma.googleDriveFile.findMany({
+    const files = await db.googleDriveFile.findMany({
       where: { workspaceId, trashed: false },
       select: { id: true, rawMetadata: true, operatingArea: { select: { key: true } } }
     });

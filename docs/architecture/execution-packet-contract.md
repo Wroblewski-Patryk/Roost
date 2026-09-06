@@ -6,10 +6,70 @@ It does not activate production agents, automatic recovery or the Soar pilot.
 
 ## Preparation And Authority
 
-Queue through the existing `POST /v1/agent-runtime/executions` API, supplying
-an explicit `metadata.executionContract`. The existing task-only console trigger
-does not author this contract; such a run fails validation until its contract is
-prepared through the API. No defaults invent missing intent or permissions.
+First submit the explicit contract through
+`POST /v1/agent-runtime/tasks/:id/actions/submit-for-execution` with
+`{applicationId, contract, prompt?, baseBranch?}`. This requires
+`agent-runtime:write`; the worker claim/report profile cannot accept Ready.
+The API resolves current canonical context and runs the same packet validator
+as the host. Only successful validation creates Ready. Creation, assignment and
+ordinary task status edits do not create it. Submission itself never queues work
+and is available while execution is disabled.
+
+Then queue through `POST /v1/agent-runtime/executions` with `taskId` (and
+`applicationId` when needed). The API copies the accepted contract, instruction,
+branch and pin into the execution. Supplied alternatives must match; caller pins
+cannot override the server pin. The existing task-only console trigger can queue
+an already Ready task, but does not author or validate the contract itself.
+No defaults invent missing intent or permissions.
+
+### Accepted context at Ready (RF-CTX-006)
+
+`Task.executionReadiness` is a nullable JSON field, separate from ordinary
+`Task.status`. Migration `20260906141000_task_ready_context_pin` adds it without
+backfilling older tasks. It stores schema `roost-ready-context-v1`, acceptance
+UUID, SHA-256 revision, accepted contract/instruction/branch/application,
+validator identity, the same validated revision, timestamp and submitting actor.
+Source context stays in its canonical records. `task_execution_ready` events
+retain prior acceptance proofs; invalidation adds `task_execution_ready_invalidated`
+with hashes and fixed reasons. This is an operational validation record, not
+independent owner release approval or an immutable audit ledger.
+
+The shared Ready fingerprint covers both resolved context responses, explicit
+contract and source revisions, plus instruction and branch. It omits response
+`generatedAt`, the execution-specific packet envelope, Ready bookkeeping, and
+this task's `updatedAt`/`todo` to `in_progress` claim transition. Object keys and
+entity collections identified by `id` are sorted. Other ordered arrays, source
+revisions, statuses, goal/scope/assignment/access/dependency/procedure and context
+changes remain material. The existing bounded context selection is reused;
+this is not a new complete-context compiler. Explicit contract sources are
+always resolved and validated independently of that selection.
+
+Acceptance, queue, claim, `prepared`/`spawn_intent` checkpoint and pre-spawn
+recovery gates use a serializable transaction and lock the Task row. Queue and
+retry bind one accepted pin, reject active duplicates, and never refresh a pin
+implicitly. Heartbeat/completion metadata cannot replace the contract or pin.
+Serialization/timeouts fail closed with `task_ready_context_conflict`.
+An execution-bound active task-context read also checks Ready.
+`GET /v1/agent-runtime/tasks/:id/execution-readiness` returns the derived state
+and persists a detected invalidation; it requires `agent-runtime:read`.
+
+Missing/legacy proofs return `task_ready_pin_required`. Material differences
+return `task_ready_revalidation_required`, persist `needs_revalidation` and keep
+the previous proof. Reverting records after detected invalidation does not
+restore Ready. Reconcile/cancel the prior execution, review/replan the task and
+submit the current contract explicitly. Changing a referenced source revision
+also requires updating that contract reference. An invalid submission preserves
+the existing proof and returns safe field/reason diagnostics.
+
+Invalidation is checked at these admission gates, not eagerly on every source
+write. An edit and exact revert between checks is not a recorded invalidation.
+The host checks the execution-bound Ready proof against its fetched contexts
+before preparation and again after the final fresh fetch. A missing/changed
+proof or API rejection yields `agent_ready_context_revalidation_required`,
+`retryable: false`, no model start, no further claim, and retained ownership
+after claim. API rejection before claim does not reserve an execution.
+These gates do not stop already spawned work on later source edits; that remains
+a separate RF-CTX-006 slice. No transaction spans database commit to local spawn.
 
 The host reads
 `GET /v1/company-intelligence/tasks/:taskId/agent-context?executionId=:executionId`.
@@ -142,12 +202,13 @@ Prepared recovery requires the same context fingerprint, packet and workspace
 digests, then repeats the final refresh. Legacy prepared checkpoints without the
 new fingerprint cannot be automatically recovered. The API reads legacy records
 for diagnostics but rejects unpinned new checkpoint transitions and pins the hash
-immutably after preparation. No database column or migration is added.
+immutably after preparation. These checkpoint fields use the earlier recovery
+storage; the separate Ready pin uses the additive Task migration above.
 
 These are two ordinary authoritative API reads, not an atomic database snapshot
 or a lock over concurrent source edits. A change after the last read may escape
-this pre-spawn check; mid-execution invalidation and pinning at Ready remain
-separate gates. Neither is implemented or claimed by this bounded slice.
+this pre-spawn check. Ready now adds the earlier acceptance gate above;
+mid-execution invalidation remains outside this bounded slice.
 
 An invalid packet reports `execution_packet_invalid` through the existing fail
 action with `retryable: false` and:

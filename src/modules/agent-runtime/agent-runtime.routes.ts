@@ -1,3 +1,5 @@
+import { isDeepStrictEqual } from "node:util";
+import { inspectReady, lockReadyTask, readyTransaction, submitReady } from "./task-execution-readiness";
 import { randomUUID } from "node:crypto";
 import { AgentExecutionStatus, Prisma } from "@prisma/client";
 import { Router } from "express";
@@ -130,6 +132,27 @@ async function applicationForTask(workspaceId: string, taskId: string, requested
 
 export const agentRuntimeRouter = Router();
 
+function executionReportMetadata(existing: Prisma.JsonValue, reported: Record<string, unknown>) {
+  const prior = existing && typeof existing === "object" && !Array.isArray(existing) ? existing : {};
+  const { executionContract: _contract, readyContextPin: _pin, ...details } = reported;
+  // Reports add runtime observations; only Ready/queue author the accepted contract and pin.
+  return json({ ...prior, ...details });
+}
+
+agentRuntimeRouter.post("/tasks/:id/actions/submit-for-execution", asyncHandler(async (req, res) => {
+  const taskId = z.string().uuid().parse(req.params.id);
+  const input = z.object({ applicationId: z.string().uuid(), contract: z.record(z.unknown()), prompt: z.string().max(20000).nullable().optional(), baseBranch: z.string().max(240).nullable().optional() }).strict().parse(req.body);
+  const result = await readyTransaction(tx => submitReady(tx, req.auth!.workspaceId, taskId, input, actor(req)));
+  if ("error" in result && result.error) return sendApiError(res, result.error === "task_not_found" ? 404 : 409, result.error, { details: result });
+  res.json({ data: result });
+}));
+
+agentRuntimeRouter.get("/tasks/:id/execution-readiness", asyncHandler(async (req, res) => {
+  const result = await readyTransaction(tx => inspectReady(tx, req.auth!.workspaceId, z.string().uuid().parse(req.params.id)));
+  if ("error" in result && result.error === "task_not_found") return sendApiError(res, 404, result.error);
+  res.json({ data: "readiness" in result ? result.readiness : { status: "needs_revalidation", reason: result.error } });
+}));
+
 agentRuntimeRouter.get("/recovery", asyncHandler(async (req, res) => {
   const { hostSlug } = claimSchema.pick({ hostSlug: true }).parse(req.query);
   const host = await prisma.agentHost.findFirst({ where: { workspaceId: req.auth!.workspaceId, slug: hostSlug, status: { not: "disabled" } } });
@@ -147,12 +170,17 @@ agentRuntimeRouter.post("/executions/:id/checkpoint", asyncHandler(async (req, r
   if (!input.checkpoint.contextRevision) return sendApiError(res, 409, "agent_checkpoint_context_required");
   if (!previous.success || previous.data.sessionId !== input.checkpoint.sessionId || !nextCheckpointStage(previous.data.stage, input.checkpoint.stage)) return sendApiError(res, 409, "agent_checkpoint_transition_invalid");
   if (previous.data.stage !== "claimed" && (previous.data.packetRevision !== input.checkpoint.packetRevision || previous.data.workspaceDigest !== input.checkpoint.workspaceDigest || previous.data.contextRevision !== input.checkpoint.contextRevision)) return sendApiError(res, 409, "agent_checkpoint_identity_changed");
-  const saved = await prisma.$transaction(async (tx) => {
+  const saved = await readyTransaction(async (tx) => {
+    if (["prepared", "spawn_intent"].includes(input.checkpoint.stage)) {
+      const ready = await inspectReady(tx, req.auth!.workspaceId, existing.taskId, existing);
+      if (ready.error) return { error: ready.error };
+    }
     const updated = await tx.agentExecution.updateMany({ where: { id: existing.id, leaseToken: input.leaseToken, leaseExpiresAt: { gt: new Date() }, cancelRequestedAt: null, checkpointVersion: input.expectedVersion, status: { in: ["claimed", "running"] } }, data: { checkpoint: json(input.checkpoint), checkpointVersion: { increment: 1 } } });
     if (!updated.count) return null;
     await tx.agentExecutionEvent.create({ data: { workspaceId: existing.workspaceId, executionId: existing.id, type: "checkpoint", message: `Recovery checkpoint: ${input.checkpoint.stage}.`, payload: json({ stage: input.checkpoint.stage, version: input.expectedVersion + 1 }) } });
     return { checkpoint: input.checkpoint, checkpointVersion: input.expectedVersion + 1 };
   });
+  if (saved && "error" in saved) return sendApiError(res, 409, saved.error!);
   if (!saved) return sendApiError(res, 409, "agent_checkpoint_conflict");
   res.json({ data: saved });
 }));
@@ -170,13 +198,16 @@ agentRuntimeRouter.post("/executions/:id/actions/recover", asyncHandler(async (r
   if (!existing.leaseExpiresAt || existing.leaseExpiresAt <= new Date()) return sendApiError(res, 409, "agent_recovery_lease_expired");
   const checkpoint = { ...parsed.data, sessionId: input.sessionId };
   const token = randomUUID();
-  const updated = await prisma.$transaction(async (tx) => {
+  const updated = await readyTransaction(async (tx) => {
+    const ready = await inspectReady(tx, req.auth!.workspaceId, existing.taskId, existing);
+    if (ready.error) return { error: ready.error };
     const changed = await tx.agentExecution.updateMany({ where: { id: existing.id, checkpointVersion: input.expectedVersion, leaseToken: existing.leaseToken, leaseExpiresAt: { gt: new Date() }, cancelRequestedAt: null, status: { in: ["claimed", "running"] } }, data: { checkpoint: json(checkpoint), checkpointVersion: { increment: 1 }, leaseToken: token, leaseExpiresAt: new Date(Date.now() + 90_000), lastHeartbeatAt: new Date(), errorState: Prisma.DbNull } });
     if (!changed.count) return null;
     const mode = checkpoint.stage === "prepared" ? "resume_from_checkpoint" : "restart_same_attempt";
     await tx.agentExecutionEvent.create({ data: { workspaceId: existing.workspaceId, executionId: existing.id, type: "recovering", message: `Recovering the same execution and attempt from ${checkpoint.stage}: ${mode}; no worker had been started.`, payload: json({ schemaVersion: "roost-recovery-v1", stage: checkpoint.stage, mode, version: input.expectedVersion + 1, attempt: existing.attempt }) } });
     return tx.agentExecution.findUniqueOrThrow({ where: { id: existing.id }, include: executionInclude });
   });
+  if (updated && "error" in updated) return sendApiError(res, 409, updated.error);
   if (!updated) return sendApiError(res, 409, "agent_recovery_conflict");
   res.json({ data: updated });
 }));
@@ -282,12 +313,19 @@ agentRuntimeRouter.post("/executions", asyncHandler(async (req, res) => {
   const input = createExecutionSchema.parse(req.body);
   const resolved = await applicationForTask(req.auth!.workspaceId, input.taskId, input.applicationId);
   if (resolved.error) return sendApiError(res, resolved.error === "task_not_found" || resolved.error === "application_not_found" ? 404 : 422, resolved.error);
-  const active = await prisma.agentExecution.findFirst({ where: { workspaceId: req.auth!.workspaceId, taskId: resolved.task!.id, status: { in: ["queued", "claimed", "running", "waiting_for_approval"] } } });
-  if (active) return res.status(409).json({ error: "task_agent_execution_active", data: { executionId: active.id } });
-  const execution = await prisma.agentExecution.create({
-    data: { workspaceId: req.auth!.workspaceId, taskId: resolved.task!.id, applicationId: resolved.application!.id, prompt: input.prompt, baseBranch: input.baseBranch, metadata: json(input.metadata), ...actor(req) },
-    include: executionInclude
+  const result = await readyTransaction(async tx => {
+    await lockReadyTask(tx, req.auth!.workspaceId, input.taskId);
+    if (await tx.agentExecution.count({ where: { workspaceId: req.auth!.workspaceId, taskId: input.taskId, status: { in: ["queued", "claimed", "running", "waiting_for_approval"] } } })) return { error: "task_agent_execution_active" };
+    const ready = await inspectReady(tx, req.auth!.workspaceId, input.taskId);
+    if (ready.error) return ready;
+    const pin = ready.pin!;
+    if (resolved.application!.id !== pin.applicationId || (input.prompt !== undefined && input.prompt !== pin.prompt) || (input.baseBranch !== undefined && input.baseBranch !== pin.baseBranch) || (input.metadata.executionContract !== undefined && !isDeepStrictEqual(input.metadata.executionContract, pin.contract))) return { error: "task_ready_contract_mismatch" };
+    const execution = await tx.agentExecution.create({ data: { workspaceId: req.auth!.workspaceId, taskId: input.taskId, applicationId: pin.applicationId,
+      prompt: pin.prompt, baseBranch: pin.baseBranch, metadata: json({ ...input.metadata, executionContract: pin.contract, readyContextPin: { pinId: pin.pinId, revision: pin.revision } }), ...actor(req) }, include: executionInclude });
+    return { execution };
   });
+  if ("error" in result && result.error) return sendApiError(res, 409, result.error, { details: "readiness" in result ? result.readiness : undefined });
+  const execution = (result as { execution: Prisma.AgentExecutionGetPayload<{ include: typeof executionInclude }> }).execution;
   await appendExecutionEvent({ workspaceId: req.auth!.workspaceId, executionId: execution.id, type: "queued", message: "Codex execution queued for a local agent host." });
   await createEvent({ type: "agent_execution_queued", workspaceId: req.auth!.workspaceId, taskId: execution.taskId, projectId: execution.task.projectId, resourceType: "agent_execution", resourceId: execution.id, source: "roost", payload: { executionId: execution.id, applicationId: execution.applicationId } });
   res.status(201).json({ data: execution });
@@ -310,7 +348,14 @@ agentRuntimeRouter.post("/executions/claim", asyncHandler(async (req, res) => {
     if (!candidate) return res.status(204).send();
     const leaseToken = randomUUID();
     const checkpoint = { schemaVersion: "roost-recovery-v1", stage: "claimed", sessionId: input.sessionId ?? randomUUID(), packetRevision: null, workspaceDigest: null };
-    const claimed = await prisma.agentExecution.updateMany({ where: { id: candidate.id, workspaceId, status: "queued", attempt: 0 }, data: { status: "claimed", agentHostId: host.id, leaseToken, leaseExpiresAt: new Date(Date.now() + 90_000), lastHeartbeatAt: now, startedAt: candidate.startedAt ?? now, attempt: { increment: 1 }, checkpoint: json(checkpoint), checkpointVersion: 1 } });
+    const admitted = await readyTransaction(async tx => {
+      const ready = await inspectReady(tx, workspaceId, candidate.taskId, candidate);
+      if (ready.error) return { error: ready.error };
+    const changed = await tx.agentExecution.updateMany({ where: { id: candidate.id, workspaceId, status: "queued", attempt: 0 }, data: { status: "claimed", agentHostId: host.id, leaseToken, leaseExpiresAt: new Date(Date.now() + 90_000), lastHeartbeatAt: now, startedAt: candidate.startedAt ?? now, attempt: { increment: 1 }, checkpoint: json(checkpoint), checkpointVersion: 1 } });
+      return { count: changed.count };
+    });
+    if ("error" in admitted) return sendApiError(res, 409, admitted.error!);
+    const claimed = admitted;
     if (!claimed.count) continue;
     await prisma.agentHost.update({ where: { id: host.id }, data: { status: "online", lastSeenAt: now } });
     await appendExecutionEvent({ workspaceId, executionId: candidate.id, type: "claimed", message: `Execution claimed by ${host.name}.`, payload: { hostId: host.id, attempt: candidate.attempt + 1 } });
@@ -328,7 +373,7 @@ agentRuntimeRouter.post("/executions/:id/heartbeat", asyncHandler(async (req, re
   if (existing.cancelRequestedAt) return res.status(409).json({ error: "agent_execution_cancel_requested", data: { cancelRequested: true } });
   const leaseExpiresAt = new Date(Date.now() + 90_000);
   const status = input.status ?? (existing.status === "claimed" ? "running" : existing.status);
-  const updated = await prisma.agentExecution.updateMany({ where: { id: existing.id, leaseToken: input.leaseToken, leaseExpiresAt: { gt: new Date() }, cancelRequestedAt: null, status: { in: ["claimed", "running", "waiting_for_approval"] } }, data: { status, codexThreadId: input.codexThreadId === undefined ? existing.codexThreadId : input.codexThreadId, lastHeartbeatAt: new Date(), leaseExpiresAt, ...(input.metadata ? { metadata: json(input.metadata) } : {}) } });
+  const updated = await prisma.agentExecution.updateMany({ where: { id: existing.id, leaseToken: input.leaseToken, leaseExpiresAt: { gt: new Date() }, cancelRequestedAt: null, status: { in: ["claimed", "running", "waiting_for_approval"] } }, data: { status, codexThreadId: input.codexThreadId === undefined ? existing.codexThreadId : input.codexThreadId, lastHeartbeatAt: new Date(), leaseExpiresAt, ...(input.metadata ? { metadata: executionReportMetadata(existing.metadata, input.metadata) } : {}) } });
   if (!updated.count) return sendApiError(res, 409, "agent_execution_lease_invalid");
   res.json({ data: { id: existing.id, status, cancelRequested: false, leaseExpiresAt } });
 }));
@@ -345,7 +390,7 @@ agentRuntimeRouter.post("/executions/:id/actions/complete", asyncHandler(async (
   const input = completeSchema.parse(req.body);
   const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, leaseToken: input.leaseToken, status: { in: ["claimed", "running", "waiting_for_approval"] } }, include: { task: true } });
   if (!existing) return sendApiError(res, 409, "agent_execution_lease_invalid");
-  const completed = await prisma.agentExecution.updateMany({ where: { id: existing.id, leaseToken: input.leaseToken, leaseExpiresAt: { gt: new Date() }, cancelRequestedAt: null, status: { in: ["claimed", "running", "waiting_for_approval"] } }, data: { status: "completed", summary: input.summary, finalResponse: input.finalResponse, codexThreadId: input.codexThreadId === undefined ? existing.codexThreadId : input.codexThreadId, changedFiles: json(input.changedFiles), verification: json(input.verification), usage: json(input.usage), ...(input.metadata ? { metadata: json(input.metadata) } : {}), errorState: Prisma.DbNull, completedAt: new Date(), leaseExpiresAt: null, leaseToken: null } });
+  const completed = await prisma.agentExecution.updateMany({ where: { id: existing.id, leaseToken: input.leaseToken, leaseExpiresAt: { gt: new Date() }, cancelRequestedAt: null, status: { in: ["claimed", "running", "waiting_for_approval"] } }, data: { status: "completed", summary: input.summary, finalResponse: input.finalResponse, codexThreadId: input.codexThreadId === undefined ? existing.codexThreadId : input.codexThreadId, changedFiles: json(input.changedFiles), verification: json(input.verification), usage: json(input.usage), ...(input.metadata ? { metadata: executionReportMetadata(existing.metadata, input.metadata) } : {}), errorState: Prisma.DbNull, completedAt: new Date(), leaseExpiresAt: null, leaseToken: null } });
   if (!completed.count) return sendApiError(res, 409, "agent_execution_lease_invalid");
   const execution = await prisma.agentExecution.findUniqueOrThrow({ where: { id: existing.id } });
   await appendExecutionEvent({ workspaceId: req.auth!.workspaceId, executionId: execution.id, type: "completed", message: input.summary, payload: { changedFiles: input.changedFiles, verification: input.verification } });
@@ -393,9 +438,14 @@ agentRuntimeRouter.post("/executions/:id/actions/retry", asyncHandler(async (req
   if (!existing) return sendApiError(res, 409, "agent_execution_not_retryable");
   const errorState = existing.errorState as { retryable?: boolean } | null;
   if (errorState?.retryable === false) return sendApiError(res, 409, "agent_execution_requires_correction");
-  const active = await prisma.agentExecution.findFirst({ where: { workspaceId: req.auth!.workspaceId, taskId: existing.taskId, status: { in: ["queued", "claimed", "running", "waiting_for_approval"] } } });
-  if (active) return res.status(409).json({ error: "task_agent_execution_active", data: { executionId: active.id } });
-  const execution = await prisma.agentExecution.create({ data: { workspaceId: existing.workspaceId, taskId: existing.taskId, applicationId: existing.applicationId, prompt: existing.prompt, baseBranch: existing.baseBranch, metadata: existing.metadata as Prisma.InputJsonValue, ...actor(req) }, include: executionInclude });
+  const result = await readyTransaction(async tx => {
+    const ready = await inspectReady(tx, req.auth!.workspaceId, existing.taskId, existing);
+    if (ready.error) return { error: ready.error };
+    if (await tx.agentExecution.count({ where: { workspaceId: req.auth!.workspaceId, taskId: existing.taskId, status: { in: ["queued", "claimed", "running", "waiting_for_approval"] } } })) return { error: "task_agent_execution_active" };
+    return { execution: await tx.agentExecution.create({ data: { workspaceId: existing.workspaceId, taskId: existing.taskId, applicationId: existing.applicationId, prompt: existing.prompt, baseBranch: existing.baseBranch, metadata: existing.metadata as Prisma.InputJsonValue, ...actor(req) }, include: executionInclude }) };
+  });
+  if ("error" in result) return sendApiError(res, 409, result.error!);
+  const execution = result.execution;
   await appendExecutionEvent({ workspaceId: req.auth!.workspaceId, executionId: execution.id, type: "queued", message: `Retry queued from execution ${existing.id}.`, payload: { previousExecutionId: existing.id } });
   res.status(201).json({ data: execution });
 }));

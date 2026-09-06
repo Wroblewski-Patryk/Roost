@@ -102,8 +102,10 @@ visible.
 
 1. The owner creates a normal Roost task linked through its project to exactly
    one application.
-2. The owner queues a Codex execution from the task workbench or the agent
-   runtime API.
+2. The owner submits an explicit execution contract through the runtime API.
+   Successful validation pins [Ready context](execution-packet-contract.md#accepted-context-at-ready-rf-ctx-006)
+   on the existing task. The owner can then queue an execution from the task
+   workbench or API. Missing/changed Ready blocks queue and claim.
 3. A Windows Agent Host registers for visibility, confirms protocol admission,
    then inspects pending executions and local ownership through
    [safe recovery](agent-host-recovery.md). Registration grants no writer slot.
@@ -202,6 +204,11 @@ Existing `metadata.protocolVersion` advertises numeric version `1`,
 `metadata.executionMode` explicitly declares `supervised` or `observe`, and
 existing `capabilities` advertises implemented controls. No new host table,
 version registry, endpoint or migration is used.
+
+Both capability lists now include `ready_context_pin_v1` while protocol version
+stays `1`. A host without Ready support cannot claim from the new API; a new host
+cannot run against an API missing that capability. The separate Ready task
+contract adds two task endpoints and one nullable column, documented above.
 
 Register/heartbeat, host listings and readiness expose `runtime.protocol` (or
 root `protocol` for readiness): `version`, `apiCapabilities` and
