@@ -296,6 +296,18 @@ Reconcile processes/files and independently review the plan and new budget
 before another execution; do not clear the lock or retry automatically.
 This change does not enable execution or change observe mode.
 
+Supervised hosts also refresh authoritative task/application context after the
+durable spawn barrier and before creating the model process. The refreshed
+context must match `contextRevision` saved at preparation. Context changes,
+validation failures or failed refresh stop further claims and retain the lock;
+review the current records and reconcile the execution before queuing a new
+contract. A `runner_started` event alone does not prove a model started. Legacy
+prepared checkpoints without a context pin require reconciliation. Deploy the
+updated API and use the updated canonical host before supervised execution:
+old hosts cannot write the newly required pinned checkpoints. Observation is
+unaffected. See the [fresh-context contract](../architecture/execution-packet-contract.md#fresh-authoritative-context-before-spawn-rf-ctx-006)
+for the remaining concurrent-edit and Ready/mid-execution boundaries.
+
 ## Troubleshooting
 
 | Symptom | Check |
@@ -312,6 +324,9 @@ This change does not enable execution or change observe mode.
 | `agent_execution_requires_correction` | The previous failure disallows blind retry. Correct the source records and queue a new execution contract. |
 | `agent_execution_duration_exceeded` | The original time budget is exhausted. Reconcile the retained writer lock and effects, independently review the plan and approve a new budget before queuing another execution. |
 | `agent_execution_duration_context_invalid` | Correct missing/invalid execution start time or duration and synchronize the host/server clocks; reconcile the retained writer lock before restart. |
+| `agent_execution_context_changed` / `agent_execution_context_invalid` | No model started. Review the current task/application records, reconcile the retained checkpoint and prepare a corrected execution contract. |
+| `agent_execution_context_unavailable` | No model started. Restore authoritative context access, reconcile the existing execution and its retained lock; do not bypass the refresh with a cached snapshot. |
+| `agent_checkpoint_context_required` | Update the canonical host to include the resolved-context pin; never fabricate one for an older prepared checkpoint. |
 | `agent_execution_recovery_blocked` | Read the stage/reason in Agent activity. Preserve local files and reconcile the old process/effects; do not create a duplicate execution or clear locks by age/PID. |
 | `agent_host_recovery_required` | The host has an unresolved nonterminal execution. Resolve recovery instead of polling for another task. |
 | `agent_host_writer_lock_owner_changed` | Lock ownership is inconsistent. Stop and reconcile; the host will not delete another owner's lock. |
@@ -350,6 +365,11 @@ shipping its script to the VPS does not activate the local worker or task queue.
 late completion, invalid/expired admission, synthetic Windows child/descendant
 termination, unavailable reporting and uncertain stops. Recovery tests also
 cover exhausted budgets at both safe pre-spawn stages without resetting time.
+
+`npm run test:agent-host-context` covers context/permission/source changes,
+late prepare-to-spawn edits, unavailable refresh/reporting, revoked authority
+and unchanged context delivered fresh to a synthetic child. Recovery and local
+API suites cover pin preservation, legacy rejection and duplicate prevention.
 
 - [Codex non-interactive mode](https://learn.chatgpt.com/docs/non-interactive-mode)
   defines `codex exec`, stdin prompts, JSONL events, sandbox selection, and

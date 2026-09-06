@@ -97,12 +97,57 @@ Catalog changes require an explicit policy update; they are never inferred from
 a model-name numeric prefix. Future automatic delegation must still meet the
 separate Roost scheduler and resource gates.
 
-After obtaining fresh task/application context, the host renews and checks its
-lease, validates the packet, and only then performs execution-specific Git
-checks. It validates again after reporting `runner_started`, immediately before
-Codex spawn, with a valid lease. Invalid packets start neither Codex nor a Git
-subprocess for that execution. Host startup still performs the existing local
-allowlist Git checks before it registers or claims any task.
+After obtaining task/application context, the host renews and checks its lease,
+validates the packet, and only then performs execution-specific Git checks.
+Initial invalid packets start neither Codex nor a Git subprocess for that
+execution. Host startup still performs the existing local allowlist Git checks
+before it registers or claims any task. Final fresh-context admission below
+also applies after those read-only preparation checks.
+
+### Fresh authoritative context before spawn (RF-CTX-006)
+
+The host fingerprints both existing context responses at preparation and stores
+`contextRevision` alongside `packetRevision` and `workspaceDigest` in the same
+local/server recovery checkpoint. SHA-256 covers the complete resolved task and
+application contexts, including goal, assignment, access, procedures, decisions,
+dependencies, sources and evidence. Only each response's top-level `generatedAt`
+is omitted. Object keys are sorted; array order remains significant, so even an
+order-only change can conservatively require replanning. This fingerprint is
+not an approval signature or a second context store; no context content is saved
+in the checkpoint.
+
+After durably recording `spawn_intent` and sending `runner_started`, the host
+fetches both scoped context endpoints again with cache bypass. It runs the
+existing packet validator on those responses and compares their fingerprint
+with the prepared checkpoint. The prompt and task/application labels use the
+fresh responses. Lease and elapsed-duration checks then run synchronously before
+spawn; there is no further awaited network or repository operation in between.
+`runner_started` remains an admission-attempt event, not proof that a model ran.
+
+A changed or invalid final context reports `agent_execution_context_changed`
+or `agent_execution_context_invalid`; failed retrieval reports
+`agent_execution_context_unavailable`. These use the existing fail action,
+`retryable: false`, fixed diagnostics and hash-only comparison details with
+schema `roost-context-admission-v1`. Invalid packets also retain the existing
+safe field/reason diagnostics as `packetIssues`, without rejected values.
+They prevent spawn and further claims and retain
+the writer checkpoint. Authentication rejection follows the existing lease-loss
+path. Failed reporting never removes the lock or permits another execution.
+Review changed records, reconcile the execution and prepare a corrected contract;
+the existing API rejects blind retries. The pre-spawn intent barrier is retained
+even when this process knows no model started, because a restart cannot assume
+that from the barrier alone.
+
+Prepared recovery requires the same context fingerprint, packet and workspace
+digests, then repeats the final refresh. Legacy prepared checkpoints without the
+new fingerprint cannot be automatically recovered. The API reads legacy records
+for diagnostics but rejects unpinned new checkpoint transitions and pins the hash
+immutably after preparation. No database column or migration is added.
+
+These are two ordinary authoritative API reads, not an atomic database snapshot
+or a lock over concurrent source edits. A change after the last read may escape
+this pre-spawn check; mid-execution invalidation and pinning at Ready remain
+separate gates. Neither is implemented or claimed by this bounded slice.
 
 An invalid packet reports `execution_packet_invalid` through the existing fail
 action with `retryable: false` and:

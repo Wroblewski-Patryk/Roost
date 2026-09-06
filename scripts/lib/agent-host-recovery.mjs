@@ -14,7 +14,10 @@ export function classifyRecovery(execution, enabled) {
   const c = execution?.checkpoint;
   if (c?.schemaVersion !== "roost-recovery-v1" || !Number.isInteger(execution.checkpointVersion) || execution.checkpointVersion < 1) throw recoveryError("checkpoint_missing");
   if (c.stage === "claimed" && c.packetRevision === null && c.workspaceDigest === null) return "restart_same_attempt";
-  if (c.stage === "prepared" && /^[a-f0-9]{64}$/.test(c.packetRevision) && /^[a-f0-9]{64}$/.test(c.workspaceDigest)) return "resume_from_checkpoint";
+  if (c.stage === "prepared") {
+    if (!/^[a-f0-9]{64}$/.test(c.contextRevision)) throw recoveryError("checkpoint_missing");
+    if (/^[a-f0-9]{64}$/.test(c.packetRevision) && /^[a-f0-9]{64}$/.test(c.workspaceDigest)) return "resume_from_checkpoint";
+  }
   throw recoveryError(c.stage === "effect_possible" ? "effect_may_have_occurred" : "process_may_be_running");
 }
 
@@ -40,9 +43,10 @@ export async function workspaceDigest(directory) {
   return hash.digest("hex");
 }
 
-export function assertRecoverySnapshot(checkpoint, packetRevision, digest) {
+export function assertRecoverySnapshot(checkpoint, packetRevision, digest, contextRevision) {
   if (checkpoint.stage === "prepared") {
     if (checkpoint.packetRevision !== packetRevision) throw recoveryError("packet_changed");
     if (checkpoint.workspaceDigest !== digest) throw recoveryError("workspace_changed");
+    if (!checkpoint.contextRevision || checkpoint.contextRevision !== contextRevision) throw recoveryError("context_changed");
   }
 }

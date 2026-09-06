@@ -9,7 +9,7 @@ remains separately controlled; this implementation does not enable the Soar pilo
 | Durable checkpoint | Startup classification | Action |
 | --- | --- | --- |
 | `claimed` | `restart_same_attempt` | Repeat context/preflight for the existing execution and attempt; no worker has run. |
-| `prepared` | `resume_from_checkpoint` | Revalidate context and compare packet/workspace digests before proceeding from the pre-spawn checkpoint. |
+| `prepared` | `resume_from_checkpoint` | Revalidate context and compare packet/context/workspace digests before proceeding from the pre-spawn checkpoint. |
 | `spawn_intent` | Ambiguous: a worker may have started | Stop with diagnostic; never repeat automatically. |
 | `running` | Worker or descendants may remain; work may have effects | Stop with diagnostic. |
 | `effect_possible` | A command or external tool may have acted | Stop with diagnostic; reconcile evidence first. |
@@ -30,8 +30,11 @@ stages. They are not inferred from a thread ID or an apparently clean Git tree.
 
 Roost stores `AgentExecution.checkpoint` and its integer `checkpointVersion`.
 The strict `roost-recovery-v1` checkpoint contains a stage, process session UUID,
-packet revision and workspace digest. `claimed` has null digests; later stages
-require SHA-256 digests. A compare-and-swap version update records each stage
+packet revision, workspace digest and `contextRevision`. `claimed` has null or
+absent context revision; new later stages require all three SHA-256 digests.
+The API reads older checkpoints for diagnostics, but rejects new transitions
+without a context pin and cannot recover a legacy prepared record without it.
+After preparation all three digests are immutable. A compare-and-swap version update records each stage
 and a human-readable event in the same database transaction. Unknown fields and
 arbitrary diagnostic reasons are rejected. No credentials, prompts, command
 text, source content or production data enter the checkpoint.
@@ -70,8 +73,11 @@ even a missing such event cannot make the earlier spawn barrier safe to replay.
    `recovering` with the stage and reason. Concurrent recovery of one version
    has exactly one winner. The prior lease cannot heartbeat or complete/fail it.
 6. Fetch current task/application context, renew authority and pass the execution
-   packet gate again. For `prepared`, require the same packet revision and Git
-   workspace digest. Proceed only after all checks pass. No new task, execution,
+   packet gate again. For `prepared`, require the same packet revision, resolved
+   context fingerprint and Git workspace digest. `context_changed` stops recovery
+   even if the packet alone remains unchanged. Then repeat the final
+   [authoritative refresh before spawn](execution-packet-contract.md#fresh-authoritative-context-before-spawn-rf-ctx-006).
+   Proceed only after all checks pass. No new task, execution,
    branch, worktree, clone, runtime or application directory is created.
 
 The workspace digest covers HEAD, current branch identity, staged/unstaged diffs
@@ -103,7 +109,8 @@ recovery cannot be proven. Transport failure stops locally and preserves the
 record instead of pretending that Roost received a diagnostic.
 
 Normal terminal execution releases only its own writer lock; duration expiry
-retains it even when tree termination was confirmed. Successful reclaim
+and context-admission failure retain it even when no child exists or tree
+termination was confirmed. Successful reclaim
 removes only the matched prior writer file and its own temporary recovery gate.
 An orphan recovery gate, corrupt state or uncertain process tree needs trusted
 operator reconciliation. Never clear either file merely by age, empty contents

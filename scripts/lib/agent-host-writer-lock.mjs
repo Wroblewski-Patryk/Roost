@@ -36,7 +36,7 @@ export function localCheckpoint(execution) {
   return { schemaVersion: checkpoint?.schemaVersion, executionId: execution?.id, workspaceId: execution?.workspaceId,
     applicationId: execution?.applicationId, taskId: execution?.taskId, attempt: execution?.attempt,
     checkpointVersion: execution?.checkpointVersion, stage: checkpoint?.stage, sessionId: checkpoint?.sessionId,
-    packetRevision: checkpoint?.packetRevision, workspaceDigest: checkpoint?.workspaceDigest };
+    packetRevision: checkpoint?.packetRevision, workspaceDigest: checkpoint?.workspaceDigest, contextRevision: checkpoint?.contextRevision };
 }
 
 export async function acquireWriterLock(directory = writerStateDirectory, { recoveryCandidate } = {}) {

@@ -4,9 +4,12 @@ export const recoveryStage = z.enum(["claimed", "prepared", "spawn_intent", "run
 export const recoveryCheckpoint = z.object({
   schemaVersion: z.literal("roost-recovery-v1"), stage: recoveryStage,
   sessionId: z.string().uuid(), packetRevision: z.string().regex(/^[a-f0-9]{64}$/).nullable(),
-  workspaceDigest: z.string().regex(/^[a-f0-9]{64}$/).nullable()
-}).strict().refine((value) => value.stage === "claimed" ? value.packetRevision === null && value.workspaceDigest === null : Boolean(value.packetRevision && value.workspaceDigest));
-export const recoveryReasons = z.enum(["lease_expired", "checkpoint_missing", "checkpoint_mismatch", "process_may_be_running", "effect_may_have_occurred", "writer_locked", "packet_changed", "workspace_changed", "repository_mismatch", "sandbox_invalid", "packet_invalid", "multiple_executions", "runtime_disabled", "recovery_conflict", "context_unavailable", "local_state_invalid"]);
+  workspaceDigest: z.string().regex(/^[a-f0-9]{64}$/).nullable(),
+  // Optional for reading/reporting legacy state. New transitions and prepared
+  // recovery require the pin; absence never silently upgrades old evidence.
+  contextRevision: z.string().regex(/^[a-f0-9]{64}$/).nullable().optional()
+}).strict().refine((value) => value.stage === "claimed" ? value.packetRevision === null && value.workspaceDigest === null && value.contextRevision == null : Boolean(value.packetRevision && value.workspaceDigest));
+export const recoveryReasons = z.enum(["lease_expired", "checkpoint_missing", "checkpoint_mismatch", "process_may_be_running", "effect_may_have_occurred", "writer_locked", "packet_changed", "workspace_changed", "context_changed", "repository_mismatch", "sandbox_invalid", "packet_invalid", "multiple_executions", "runtime_disabled", "recovery_conflict", "context_unavailable", "local_state_invalid"]);
 export type RecoveryReason = z.infer<typeof recoveryReasons>;
 export function recoveryMessage(reason: RecoveryReason, stage: string) {
   return `Execution recovery stopped at ${stage}: ${reason}. No work was restarted; reconcile the previous execution.`;

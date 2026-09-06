@@ -129,8 +129,9 @@ agentRuntimeRouter.post("/executions/:id/checkpoint", asyncHandler(async (req, r
   const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, leaseToken: input.leaseToken, leaseExpiresAt: { gt: new Date() }, cancelRequestedAt: null, status: { in: ["claimed", "running"] } } });
   if (!existing) return sendApiError(res, 409, "agent_execution_lease_invalid");
   const previous = recoveryCheckpoint.safeParse(existing.checkpoint);
+  if (!input.checkpoint.contextRevision) return sendApiError(res, 409, "agent_checkpoint_context_required");
   if (!previous.success || previous.data.sessionId !== input.checkpoint.sessionId || !nextCheckpointStage(previous.data.stage, input.checkpoint.stage)) return sendApiError(res, 409, "agent_checkpoint_transition_invalid");
-  if (previous.data.stage !== "claimed" && (previous.data.packetRevision !== input.checkpoint.packetRevision || previous.data.workspaceDigest !== input.checkpoint.workspaceDigest)) return sendApiError(res, 409, "agent_checkpoint_identity_changed");
+  if (previous.data.stage !== "claimed" && (previous.data.packetRevision !== input.checkpoint.packetRevision || previous.data.workspaceDigest !== input.checkpoint.workspaceDigest || previous.data.contextRevision !== input.checkpoint.contextRevision)) return sendApiError(res, 409, "agent_checkpoint_identity_changed");
   const saved = await prisma.$transaction(async (tx) => {
     const updated = await tx.agentExecution.updateMany({ where: { id: existing.id, leaseToken: input.leaseToken, leaseExpiresAt: { gt: new Date() }, cancelRequestedAt: null, checkpointVersion: input.expectedVersion, status: { in: ["claimed", "running"] } }, data: { checkpoint: json(input.checkpoint), checkpointVersion: { increment: 1 } } });
     if (!updated.count) return null;
@@ -148,6 +149,7 @@ agentRuntimeRouter.post("/executions/:id/actions/recover", asyncHandler(async (r
   if (!existing) return sendApiError(res, 409, "agent_recovery_conflict");
   const parsed = recoveryCheckpoint.safeParse(existing.checkpoint);
   if (!parsed.success || !["claimed", "prepared"].includes(parsed.data.stage) || parsed.data.sessionId === input.sessionId) return sendApiError(res, 409, "agent_recovery_ambiguous");
+  if (parsed.data.stage === "prepared" && !parsed.data.contextRevision) return sendApiError(res, 409, "agent_recovery_ambiguous");
   if (!existing.leaseExpiresAt || existing.leaseExpiresAt <= new Date()) return sendApiError(res, 409, "agent_recovery_lease_expired");
   const checkpoint = { ...parsed.data, sessionId: input.sessionId };
   const token = randomUUID();

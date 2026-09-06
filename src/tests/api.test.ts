@@ -1436,8 +1436,12 @@ test("execution recovery fences old leases and preserves an auditable same-attem
     const claim = await request("/v1/agent-runtime/executions/claim", { method: "POST", headers: workerAuth, body: JSON.stringify({ hostSlug, sessionId }) });
     const claimed = (claim.body as { data: { id: string; leaseToken: string; checkpointVersion: number; attempt: number } }).data;
     assert.equal(claim.status, 200); assert.equal(claimed.checkpointVersion, 1);
-    const checkpoint = { schemaVersion: "roost-recovery-v1", stage: "prepared", sessionId, packetRevision: "a".repeat(64), workspaceDigest: "b".repeat(64) };
+    const checkpoint = { schemaVersion: "roost-recovery-v1", stage: "prepared", sessionId, packetRevision: "a".repeat(64), workspaceDigest: "b".repeat(64), contextRevision: "c".repeat(64) };
     const checkpointRoute = `/v1/agent-runtime/executions/${claimed.id}/checkpoint`;
+    const { contextRevision: _contextRevision, ...legacyCheckpoint } = checkpoint;
+    const missingPin = await request(checkpointRoute, { method: "POST", headers: workerAuth, body: JSON.stringify({ leaseToken: claimed.leaseToken, expectedVersion: 1, checkpoint: legacyCheckpoint }) });
+    assert.equal(missingPin.status, 409);
+    assert.equal((missingPin.body as { error: string }).error, "agent_checkpoint_context_required");
     assert.equal((await request(checkpointRoute, { method: "POST", headers: outsiderAuth, body: JSON.stringify({ leaseToken: claimed.leaseToken, expectedVersion: 1, checkpoint }) })).status, 409);
     const saved = await request(checkpointRoute, { method: "POST", headers: workerAuth, body: JSON.stringify({ leaseToken: claimed.leaseToken, expectedVersion: 1, checkpoint }) });
     assert.equal(saved.status, 200);
@@ -1451,6 +1455,11 @@ test("execution recovery fences old leases and preserves an auditable same-attem
     assert.equal(JSON.stringify(inspection.body).includes(claimed.leaseToken), false);
     assert.equal((inspection.body as { data: { executions: Array<{ id: string }> } }).data.executions[0]!.id, claimed.id);
     const recoverRoute = `/v1/agent-runtime/executions/${claimed.id}/actions/recover`;
+    await prisma.agentExecution.update({ where: { id: claimed.id }, data: { checkpoint: legacyCheckpoint } });
+    const legacyRecovery = await request(recoverRoute, { method: "POST", headers: workerAuth, body: JSON.stringify({ hostSlug, expectedVersion: 2, sessionId: "00000000-0000-4000-8000-000000000009" }) });
+    assert.equal(legacyRecovery.status, 409);
+    assert.equal((legacyRecovery.body as { error: string }).error, "agent_recovery_ambiguous");
+    await prisma.agentExecution.update({ where: { id: claimed.id }, data: { checkpoint } });
     const responses = await Promise.all([2, 3].map((n) => request(recoverRoute, { method: "POST", headers: workerAuth, body: JSON.stringify({ hostSlug, expectedVersion: 2, sessionId: `00000000-0000-4000-8000-00000000000${n}` }) })));
     assert.equal(responses.filter((result) => result.status === 200).length, 1);
     assert.equal(responses.filter((result) => result.status === 409).length, 1);
@@ -1462,6 +1471,10 @@ test("execution recovery fences old leases and preserves an auditable same-attem
       assert.equal(stale.status, 409);
     }
     const spawnCheckpoint = { ...recovered.checkpoint, stage: "spawn_intent" };
+    assert.equal(recovered.checkpoint.contextRevision, checkpoint.contextRevision);
+    const changedPin = await request(checkpointRoute, { method: "POST", headers: workerAuth, body: JSON.stringify({ leaseToken: recovered.leaseToken, expectedVersion: recovered.checkpointVersion, checkpoint: { ...spawnCheckpoint, contextRevision: "d".repeat(64) } }) });
+    assert.equal(changedPin.status, 409);
+    assert.equal((changedPin.body as { error: string }).error, "agent_checkpoint_identity_changed");
     const leakedCheckpoint = await request(checkpointRoute, { method: "POST", headers: workerAuth, body: JSON.stringify({ leaseToken: recovered.leaseToken, expectedVersion: recovered.checkpointVersion, checkpoint: { ...spawnCheckpoint, secret: "synthetic-checkpoint-secret" } }) });
     assert.equal(leakedCheckpoint.status, 400);
     assert.equal(JSON.stringify(leakedCheckpoint.body).includes("synthetic-checkpoint-secret"), false);

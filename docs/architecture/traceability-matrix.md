@@ -38,35 +38,40 @@ validation and exact production commit/health verification. Its port-conflict
 test failures were resolved by stopping the legitimate observer before testing
 and restoring observe mode afterward. Registry/matrix checks covered 162 rows.
 
-The next bounded ready P0 implementation is the **hard duration limit within
-RF-HOST-010**, selected against that baseline. It uses the existing server start
-time, packet duration, process-tree stop and writer fencing, without requiring
-owner input, schema migration, playground resources or activation. It includes
-preparation and pre-spawn recovery time, stops independently of heartbeats, and
-prevents late success or further claims. This closes only the duration slice:
-RF-HOST-010 remains partial for token/cost enforcement and independent new-budget
-approval orchestration. No second gap is included.
+The hard-duration slice of RF-HOST-010 was delivered in `62b8e8f3`, with 151/151
+non-observer checks, 4/4 observer checks and exact deployed-commit health proof.
+Token/cost enforcement and independent new-budget approval remain incomplete.
+The local console-free launcher correction `03a9a42a` is preserved and joins
+the next runtime release; its bounded evidence is under [OBSERVER](#e-observer).
 
-Duration-slice local verification (2026-09-06): 151/151 non-observer checks passed,
-including 11 timer units, six synthetic Windows process cases and two exhausted
-pre-spawn recovery cases. The Windows cases prove child/descendant stop, retained
-writer fencing, no late completion/second claim and conservative handling of
-unavailable failure reporting or unconfirmed termination. Full model routing
-(RF-HOST-017) and provider-observed usage (RF-HOST-018) remain separate.
-Observer checks passed 4/4 after a normal stop; the observer was restored online
-in `observe` mode with `runtime_disabled`. `npm run validate` passed (278 manifest
-routes, 44 route files, TypeScript and production build). Documentation checks
-passed for 162 registry/matrix IDs and 296 local links; default context is
-37,692 bytes. Build retains the pre-existing unresolved Phosphor/ambient asset
-and large-chunk warnings.
-API/database suites were not rerun: no API, schema or persistence behavior changed.
-No provider call, live test, relogin/reboot or full activation dry run was performed.
-These are local proofs; exact deployed commit/health must be checked during release.
+The current bounded P0 slice is **RF-CTX-006: authoritative refresh immediately
+before spawn**, using the existing scoped context endpoints, packet validator,
+checkpoint and failure/recovery paths. A resolved-context fingerprint is pinned
+at preparation, immutable in subsequent checkpoints and checked on recovery.
+After the durable spawn barrier and start-attempt event, both contexts are read
+again, validated and compared before synchronous lease/duration checks and spawn.
+Changes or unavailable refresh prevent model start and further claims and retain
+the checkpoint for reconciliation. Legacy prepared checkpoints without a pin
+cannot silently acquire one. No second gap is included.
 
-Next bounded P0 candidate for separate selection: the immediately-before-spawn
-authoritative context refresh within **RF-CTX-006**; validating the same fetched
-snapshot twice does not prove freshness. Mid-execution invalidation needs its
-own contract. Production activation remains blocked by the other P0 gates.
+Local verification (2026-09-06): context admission 21/21 (10 unit, 11 Windows
+synthetic-process cases); host regression 153/153, including changed-context
+recovery and missing-pin rejection; observer 4/4 after normal Stop/Start.
+Local API/database suite passed 15/15, including pin requirement, immutability,
+legacy prepared rejection, lease rotation and concurrent recovery exclusion.
+`npm run validate` passed (278 manifest routes, 44 route files, TypeScript and
+production build). The existing unresolved Phosphor/ambient asset and large-chunk
+build warnings remain. Frozen registry and matrix still contain 162 requirements.
+No database migration or new API route is needed. No provider call, live test,
+relogin/reboot or full activation dry run was performed. Exact deployed commit
+and health still require release verification.
+
+RF-CTX-006 remains partial: pinning at Ready, atomic multi-source snapshots and
+mid-execution invalidation are not claimed. The final reads cannot lock out
+source edits after they return. Production activation remains blocked by the
+other P0 gates. Next single candidate for separate selection: the host/API
+protocol-compatibility admission slice within **RF-HOST-014**, before supervised
+claims; coordinated drain/update orchestration would remain separate.
 
 ## Matrix
 
@@ -97,7 +102,7 @@ own contract. Production activation remains blocked by the other P0 gates.
 | [RF-CTX-003](../product/interview-foundation-v2.md#rf-ctx-003) | P0 | częściowo działa | [CTX](#e-ctx) | Record/evidence models exist; epistemic labeling not uniformly enforced. |
 | [RF-CTX-004](../product/interview-foundation-v2.md#rf-ctx-004) | P0 | częściowo działa | [PACKET](#e-packet) | Application context exists; validated full manifest absent. |
 | [RF-CTX-005](../product/interview-foundation-v2.md#rf-ctx-005) | P0 | częściowo działa | [PACKET](#e-packet) | Packet references versions; complete layered selection/reason trace missing. |
-| [RF-CTX-006](../product/interview-foundation-v2.md#rf-ctx-006) | P0 | częściowo działa | [PACKET](#e-packet) | Host validates one fetched snapshot twice; no authoritative mid-run source refresh. |
+| [RF-CTX-006](../product/interview-foundation-v2.md#rf-ctx-006) | P0 | częściowo działa | [PACKET](#e-packet) | Prepared context pin, authoritative refresh before spawn and recovery comparison verified; Ready pinning and mid-execution invalidation remain missing. No atomic source-edit lock. |
 | [RF-CTX-007](../product/interview-foundation-v2.md#rf-ctx-007) | P1 | brak | [CTX](#e-ctx) | No runtime context expansion protocol. |
 | [RF-CTX-008](../product/interview-foundation-v2.md#rf-ctx-008) | P0 | częściowo działa | [TASK](#e-task) | Task todo and execution queued exist; validated Ready state absent. |
 | [RF-CTX-009](../product/interview-foundation-v2.md#rf-ctx-009) | P0 | częściowo działa | [TASK](#e-task) | Task fields exist; atomicity enforcement absent. |
@@ -270,9 +275,15 @@ Each entry links existing canonical files; a test link is not a passing result.
 [src/modules/events/events.routes.ts](../../src/modules/events/events.routes.ts), [src/modules/agent-logs/agent-logs.routes.ts](../../src/modules/agent-logs/agent-logs.routes.ts), [src/modules/evidence/evidence.routes.ts](../../src/modules/evidence/evidence.routes.ts), [scripts/ignored-evidence-retention-guardrail.mjs](../../scripts/ignored-evidence-retention-guardrail.mjs).
 
 <a id="e-packet"></a>
-**PACKET** — Structural/referential snapshot gate; pre-spawn check uses fetched snapshot, not a fresh source query.
+**PACKET** — Structural/referential packet gate plus pinned-context comparison against fresh authoritative reads immediately before spawn; no Ready/mid-execution invalidation.
 
 [scripts/lib/agent-host-execution-packet.mjs](../../scripts/lib/agent-host-execution-packet.mjs), [src/modules/agent-runtime/execution-packet.ts](../../src/modules/agent-runtime/execution-packet.ts), [scripts/agent-host-execution-packet.test.mjs](../../scripts/agent-host-execution-packet.test.mjs), [docs/architecture/execution-packet-contract.md](../../docs/architecture/execution-packet-contract.md).
+
+[context admission helper](../../scripts/lib/agent-host-execution-context.mjs),
+[context unit tests](../../scripts/agent-host-execution-context.test.mjs),
+[Windows context process tests](../../scripts/agent-host-context-process.test.mjs),
+[checkpoint API](../../src/modules/agent-runtime/agent-runtime.routes.ts),
+[local API tests](../../src/tests/api.test.ts).
 
 <a id="e-ctx"></a>
 **CTX** — Context projections and company records; full policy compiler is not established.

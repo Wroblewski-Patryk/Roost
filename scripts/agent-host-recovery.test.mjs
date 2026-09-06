@@ -11,7 +11,7 @@ import { recoveryLockFilename, writerLockFilename } from "./lib/agent-host-write
 import { validPacketFixture, sealPacket } from "./fixtures/execution-packet.mjs";
 
 for (const [stage, expected] of [["claimed", "restart_same_attempt"], ["prepared", "resume_from_checkpoint"], ["spawn_intent", "process_may_be_running"], ["running", "process_may_be_running"], ["effect_possible", "effect_may_have_occurred"]]) test(`classifies ${stage}`, () => {
-  const execution = { leaseExpiresAt: new Date(Date.now() + 90000).toISOString(), checkpointVersion: 1, checkpoint: { schemaVersion: "roost-recovery-v1", stage, packetRevision: stage === "claimed" ? null : "a".repeat(64), workspaceDigest: stage === "claimed" ? null : "b".repeat(64) } };
+  const execution = { leaseExpiresAt: new Date(Date.now() + 90000).toISOString(), checkpointVersion: 1, checkpoint: { schemaVersion: "roost-recovery-v1", stage, packetRevision: stage === "claimed" ? null : "a".repeat(64), workspaceDigest: stage === "claimed" ? null : "b".repeat(64), contextRevision: stage === "claimed" ? null : "c".repeat(64) } };
   if (stage === "claimed" || stage === "prepared") assert.equal(classifyRecovery(execution, true), expected);
   else assert.throws(() => classifyRecovery(execution, true), (error) => error.recoveryReason === expected);
   execution.leaseExpiresAt = new Date(0).toISOString();
@@ -21,6 +21,11 @@ test("changed packet/workspace and a disabled runtime stop recovery", () => {
   assert.throws(() => classifyRecovery({}, false), (error) => error.recoveryReason === "runtime_disabled");
   assert.throws(() => assertRecoverySnapshot({ stage: "prepared", packetRevision: "old" }, "new", "same"), (error) => error.recoveryReason === "packet_changed");
   assert.throws(() => assertRecoverySnapshot({ stage: "prepared", packetRevision: "same", workspaceDigest: "old" }, "same", "new"), (error) => error.recoveryReason === "workspace_changed");
+});
+test("legacy prepared checkpoints without a context pin cannot recover", () => {
+  assert.throws(() => classifyRecovery({ leaseExpiresAt: new Date(Date.now() + 90000).toISOString(), checkpointVersion: 1,
+    checkpoint: { schemaVersion: "roost-recovery-v1", stage: "prepared", packetRevision: "a".repeat(64), workspaceDigest: "b".repeat(64) } }, true),
+    (error) => error.recoveryReason === "checkpoint_missing");
 });
 
 async function harness(t, stopStage) {
@@ -119,9 +124,10 @@ for (const stage of ["claimed", "prepared"]) test(`expired time budget cannot re
   const local = JSON.parse(await readFile(path.join(h.directory, writerLockFilename), "utf8"));
   assert.equal(local.checkpoint.executionId, id);
 });
-for (const reason of ["lease_expired", "packet_changed", "repository_mismatch", "sandbox_invalid", "writer_locked"]) test(`restart stops on ${reason}`, { skip: process.platform !== "win32", timeout: 15000 }, async (t) => {
+for (const reason of ["lease_expired", "packet_changed", "context_changed", "repository_mismatch", "sandbox_invalid", "writer_locked"]) test(`restart stops on ${reason}`, { skip: process.platform !== "win32", timeout: 15000 }, async (t) => {
   const h = await harness(t, "prepared");
   if (reason === "lease_expired") h.active.leaseExpiresAt = new Date(0).toISOString();
+  if (reason === "context_changed") h.f.taskContext.task.goal.description = "Changed goal after preparation";
   if (reason === "packet_changed") { h.f.packet.contract.version = "2"; sealPacket(h.f.packet); }
   if (reason === "repository_mismatch") { h.config.repositories.soar.originUrl = "https://github.com/example/other.git"; await writeFile(h.configPath, JSON.stringify(h.config)); }
   if (reason === "sandbox_invalid") { h.config.sandbox = "danger-full-access"; await writeFile(h.configPath, JSON.stringify(h.config)); }

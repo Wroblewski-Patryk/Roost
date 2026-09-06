@@ -112,8 +112,11 @@ visible.
 5. The host fetches current task/application context with the execution-bound
    [versioned packet](execution-packet-contract.md), confirms its lease and
    validates completeness and consistency before execution-specific processes.
-   It checks the local repository, then validates again immediately before
-   `codex exec --json --sandbox workspace-write -`. Missing contracts fail with
+   It pins both resolved contexts in the existing checkpoint, checks the local
+   repository, then fetches and validates both contexts again immediately before
+   `codex exec --json --sandbox workspace-write -`. Changed context prevents
+   spawn and requires reconciliation/replanning; recovery compares the same pin.
+   Missing contracts fail with
    owner-visible field diagnostics; they do not start Codex.
 6. Heartbeats renew the lease. Structured Codex progress becomes execution
    events visible in Roost. An owner cancellation stops the local process.
