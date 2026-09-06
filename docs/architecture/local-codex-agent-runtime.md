@@ -17,6 +17,15 @@ Windows Credential Manager for the current user. Key creation and activation/
 revocation commit a secret-free event atomically with the key mutation. Raw key
 material is returned only at creation and never included in audit events.
 
+Task Scheduler enters through a locally compiled Windows GUI executable, which
+creates PowerShell with `CreateNoWindow=true`/`UseShellExecute=false`; PowerShell
+starts Node the same way. This prevents console creation before script-level
+window settings take effect. The GUI launcher waits and forwards the child's
+exit code to preserve automatic restart. The same interactive identity, limited
+privileges, launcher mutex, singleton port and Credential Manager path remain
+in effect. Installation updates one canonical task/binary and restores a running
+observer after an action/binary change; unchanged reinstall does not restart it.
+
 This document describes the implemented supervised baseline. The accepted
 [autonomy activation contract](autonomy-activation-contract.md) defines the
 future model and evidence gates. Its autonomous release target does not change

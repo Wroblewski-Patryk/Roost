@@ -123,7 +123,7 @@ own contract. Production activation remains blocked by the other P0 gates.
 | [RF-HOST-004](../product/interview-foundation-v2.md#rf-host-004) | P0 | częściowo działa | [WORKSPACE](#e-workspace) | Path/origin guard exists; full clean-main and unknown-change admission absent. |
 | [RF-HOST-005](../product/interview-foundation-v2.md#rf-host-005) | P1 | częściowo działa | [WORKSPACE](#e-workspace) | No governed branch lifecycle or WIP broker. |
 | [RF-HOST-006](../product/interview-foundation-v2.md#rf-host-006) | P0 | częściowo działa | [LEASE](#e-lease) | Lease/process-tree and durable spawn barriers exist; all operation checkpoints incomplete. |
-| [RF-HOST-007](../product/interview-foundation-v2.md#rf-host-007) | P0 | częściowo działa | [OBSERVER](#e-observer) | Observer implemented; real relogin/reboot and forced-crash restart unproven. |
+| [RF-HOST-007](../product/interview-foundation-v2.md#rf-host-007) | P0 | częściowo działa | [OBSERVER](#e-observer) | Console-free GUI launcher and synthetic action-start retry verified; real relogin/reboot and forced-crash restart unproven. |
 | [RF-HOST-008](../product/interview-foundation-v2.md#rf-host-008) | P1 | brak | [HOST](#e-host) | No signed update protocol. |
 | [RF-HOST-009](../product/interview-foundation-v2.md#rf-host-009) | P0 | częściowo działa | [SCHED](#e-sched) | Existing claim is FIFO, not readiness/priority scheduler. |
 | [RF-HOST-010](../product/interview-foundation-v2.md#rf-host-010) | P0 | częściowo działa | [BUDGET](#e-budget) | Attempts validated; hard elapsed-duration stop tested, including recovery and retained writer fencing. Token/cost enforcement and independent new-budget approval orchestration remain missing. |
@@ -333,6 +333,20 @@ Each entry links existing canonical files; a test link is not a passing result.
 **OBSERVER** — Observer mode isolates registration/heartbeat from claim/spawn; 271beb36 and f0c7faae.
 
 [scripts/lib/agent-host-observer.mjs](../../scripts/lib/agent-host-observer.mjs), [scripts/roost-agent-host-windows.ps1](../../scripts/roost-agent-host-windows.ps1), [scripts/agent-host-observer.test.mjs](../../scripts/agent-host-observer.test.mjs), [docs/operations/local-codex-agent-host.md](../../docs/operations/local-codex-agent-host.md).
+
+Local console-flash correction (2026-09-06): the task enters through a Windows
+GUI executable and creates PowerShell without a console. Eight native launcher
+checks passed, including GUI PE subsystem, `GetConsoleWindow()==0`, source
+upgrade/no-op rebuild, failed-build preservation, exit-code propagation and
+Task Scheduler retry after an action-start failure; observer regression 4/4.
+The installed task's repeated Install/Start preserved one PID and one listener;
+Stop/Start returned the same host online in observe/runtime_disabled. A synthetic
+nonzero child exit did not itself cause Scheduler restart; this is explicitly
+outside the claimed proof. No real logout/reboot or forced observer crash was
+performed, and no VPS release is required for this local launcher change.
+[GUI source](../../scripts/roost-agent-host-launcher.cs),
+[build helper](../../scripts/lib/agent-host-windows-launcher.ps1),
+[Windows launcher tests](../../scripts/agent-host-windows-launcher.test.ps1).
 
 <a id="e-sched"></a>
 **SCHED** — Claim currently orders queued executions by createdAt; no priority aging or resource scheduler.

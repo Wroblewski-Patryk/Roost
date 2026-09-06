@@ -9,7 +9,7 @@ $stopPath = Join-Path $stateDirectory 'stop.request'
 $scriptPath = $PSCommandPath
 $nodePath = 'C:\Program Files\nodejs\node.exe'
 $runnerPath = Join-Path $PSScriptRoot 'roost-codex-agent-host.mjs'
-$powershellPath = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+$launcherPath = Join-Path $stateDirectory 'roost-agent-host-launcher.exe'
 
 function Stop-RoostObserver {
   [IO.File]::WriteAllText($stopPath, 'stop')
@@ -26,11 +26,35 @@ switch ($Action) {
     $config = Get-Content -Raw -LiteralPath $configPath | ConvertFrom-Json
     if ($config.executionMode -ne 'observe') { throw 'observer_mode_required' }
     $identity = [Security.Principal.WindowsIdentity]::GetCurrent().Name
-    $taskAction = New-ScheduledTaskAction -Execute $powershellPath -Argument ('-NoProfile -NonInteractive -WindowStyle Hidden -File "{0}" -Action Run' -f $scriptPath) -WorkingDirectory $PSScriptRoot
+    $taskAction = New-ScheduledTaskAction -Execute $launcherPath -Argument ('"{0}"' -f $scriptPath) -WorkingDirectory $PSScriptRoot
     $trigger = New-ScheduledTaskTrigger -AtLogOn -User $identity
     $principal = New-ScheduledTaskPrincipal -UserId $identity -LogonType Interactive -RunLevel Limited
     $settings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -Hidden -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::Zero) -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1) -StartWhenAvailable
-    Register-ScheduledTask -TaskName $taskName -Action $taskAction -Trigger $trigger -Principal $principal -Settings $settings -Force | Out-Null
+    . (Join-Path $PSScriptRoot 'lib\agent-host-windows-launcher.ps1')
+    $installMutex = New-Object Threading.Mutex($false, 'Local\Roost.AgentHost.Install')
+    $installOwned = $false
+    $restart = $false
+    $build = $null
+    try {
+      try { $installOwned = $installMutex.WaitOne(0) } catch [Threading.AbandonedMutexException] { $installOwned = $true }
+      if (-not $installOwned) { throw 'observer_install_already_running' }
+      # Build successfully before interrupting an existing observer.
+      $build = Build-RoostObserverLauncher (Join-Path $PSScriptRoot 'roost-agent-host-launcher.cs') $launcherPath
+      $existing = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+      $actionChanged = $existing -and ($existing.Actions.Count -ne 1 -or $existing.Actions[0].Execute -ne $launcherPath -or $existing.Actions[0].Arguments -ne $taskAction.Arguments)
+      if ($existing -and $existing.State -eq 'Running' -and ($build -or $actionChanged)) {
+        Stop-RoostObserver
+        $restart = $true
+      }
+      Publish-RoostObserverLauncher $build $launcherPath
+      Register-ScheduledTask -TaskName $taskName -Action $taskAction -Trigger $trigger -Principal $principal -Settings $settings -Force | Out-Null
+    } finally {
+      try { if ($build -and (Test-Path -LiteralPath $build.PendingPath)) { Remove-Item -LiteralPath $build.PendingPath } }
+      finally {
+        try { if ($restart) { Start-ScheduledTask -TaskName $taskName } }
+        finally { if ($installOwned) { $installMutex.ReleaseMutex() }; $installMutex.Dispose() }
+      }
+    }
     Write-Output 'Observer login task installed.'
   }
   'Run' {

@@ -13,7 +13,16 @@ the production Roost queue on the VPS. The connection is outbound HTTPS only.
 The approved foundation installation uses exactly one task, `Roost Agent Host
 Observer`, triggered at the owner's Windows login. It runs hidden, at limited
 privilege, using the interactive Windows identity and `IgnoreNew` for duplicate
-task starts. The launcher mutex also excludes repeated manual launcher starts;
+task starts. The task's executable is the locally compiled Windows GUI launcher
+`roost-agent-host-launcher.exe`, not a console executable. It creates the system
+Windows PowerShell process with `UseShellExecute=false` and `CreateNoWindow=true`
+before PowerShell runs `roost-agent-host-windows.ps1 -Action Run`. PowerShell
+likewise starts Node without a console. `-WindowStyle Hidden` and the task's
+`Hidden` setting alone do not prevent an initial console flash; the GUI subsystem
+and no-console process creation are the actual mechanism. The GUI launcher waits
+for PowerShell and returns its exit code so Task Scheduler can detect failure
+and restart the same action. It does not read credentials or log child output.
+The launcher mutex also excludes repeated manual launcher starts;
 the observer's fixed exclusive loopback port `127.0.0.1:43179` excludes a second
 Node observer across sessions. This socket accepts no commands and immediately
 closes connections. Windows releases the socket after a crash. Observer mode
@@ -31,6 +40,12 @@ Codex and the Windows login task see the same files):
   PID is still alive. Check the task and current heartbeat together.
 - `stop.request`: cooperative stop signal; the launcher clears it on next start.
 - `launcher-status.txt`: fixed launch-failure diagnostic when needed.
+- `roost-agent-host-launcher.exe`: compiled from the canonical
+  `scripts/roost-agent-host-launcher.cs` with the Windows .NET Framework 4 compiler
+  as `winexe`; no SDK download or executable committed to Git.
+- `roost-agent-host-launcher.exe.build.json`: source/binary SHA-256 fingerprints
+  only, used to skip rebuilding an unchanged binary. A temporary `.pending.exe`
+  is published only after compilation succeeds and removed on handled failure.
 
 Keep this directory writable only by the Windows owner, SYSTEM and
 administrators. The launcher references the canonical Roost checkout and reads
@@ -53,16 +68,46 @@ From the canonical Roost checkout:
 .\scripts\roost-agent-host-windows.ps1 -Action Stop
 ```
 
-`Install` replaces the same named task; it does not create another host.
+`Install` replaces the same named task; it does not create another host. A local
+installation mutex serializes updates. It compiles before interrupting a running
+observer; changing the binary/action cooperatively stops the old observer,
+publishes the binary and restores a previously running task. Unchanged source
+and binary hashes skip compilation and leave the observer process running.
+The Windows .NET Framework 4 x64 compiler must exist at
+`%SystemRoot%\Microsoft.NET\Framework64\v4.0.30319\csc.exe`; a missing compiler or
+failed build leaves the current task untouched. An invalid build fingerprint is
+rebuilt, never executed as configuration. Keep the source checkout and local
+state under trusted owner control.
 `Start` does not register another task. `Stop` asks the host to exit and waits
 up to 30 seconds; production projects offline within 60 seconds after its last
 heartbeat. Run `Start` to restart. Stop before editing config or updating the
 checkout. A stable workspace and slug upsert the same production host record.
 Network failures retry without executing work. Invalid credentials or disabled
 hosts stop with a fixed reason. After correcting them, explicitly start again.
-Unexpected process exit is retried by Task Scheduler three times, one minute
-apart. A port conflict fails closed; inspect its owning process before changing
+The existing Task Scheduler policy allows three retries, one minute apart,
+after an action-start failure. It is not proof of restart after arbitrary child
+exit: a synthetic child returning 17 did not restart on this Windows host,
+whether the initial start was manual or time-triggered. The GUI wrapper passes
+that code through unchanged; a separate process supervisor is outside this fix.
+A port conflict fails closed; inspect its owning process before changing
 anything, rather than killing an unknown process or deleting writer locks.
+
+`npm run test:agent-host-launcher` is Windows-only. It compiles the real source,
+checks its GUI PE subsystem, verifies `GetConsoleWindow()==0` from a synthetic
+PowerShell child, path quoting, exit-code propagation and unchanged-build
+idempotence and safe source upgrades/build failures. A uniquely named temporary
+scheduled task tests automatic retry after a controlled action-start failure,
+then is removed along
+with its exact temporary files. It does not read credentials or stop/crash the
+real observer. A real login/reboot is not simulated by this test: inspect the
+owner-specific logon trigger and verify at the next normal login. Launcher-only
+changes require local `Install` and verification, not a VPS rollout.
+
+Windows mechanism references: Microsoft documents the
+[Windows executable compiler target](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/output#outputtype)
+and [CreateNoWindow with UseShellExecute=false](https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.processstartinfo.createnowindow?view=netframework-4.8.1).
+The [Task Scheduler protocol](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-tsch/2ff4aa5a-7bc4-449f-bbb1-27475645867f)
+defines the bounded meaning of `RestartOnFailure` used by that test.
 
 To rotate, stop the host, create a new dedicated scoped key, write it directly
 to the same credential target, revoke the old key with `PATCH /v1/api-keys/:id`
