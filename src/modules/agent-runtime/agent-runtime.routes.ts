@@ -7,6 +7,8 @@ import { asyncHandler } from "../../middleware/async-handler";
 import { sendApiError } from "../../middleware/api-error";
 import { createEvent } from "../events/event.service";
 import { nextCheckpointStage, recoveryCheckpoint, recoveryMessage, recoveryReasons } from "./execution-recovery";
+import { protocol, hostCompatibility, requestCompatibility } from "./host-protocol";
+import type { Request, Response } from "express";
 
 const jsonRecord = z.record(z.unknown());
 const hostSchema = z.object({
@@ -75,12 +77,23 @@ function executionEnabled() {
   return process.env.ROOST_CODEX_EXECUTION_ENABLED === "true";
 }
 
-function hostRuntime(workspaceId: string) {
-  return { workspaceId, executionEnabled: executionEnabled(), mode: executionEnabled() ? "supervised_execution" : "foundation_only" };
+function hostRuntime(host: { workspaceId: string; metadata: unknown; capabilities: unknown }) {
+  const compatibility = hostCompatibility(host);
+  const metadata = host.metadata && typeof host.metadata === "object" && !Array.isArray(host.metadata) ? host.metadata as Record<string, unknown> : {};
+  const clientReasons = Array.isArray(metadata.executionUnavailableReasons) ? metadata.executionUnavailableReasons.filter((value): value is string => typeof value === "string" && ["api_protocol_missing", "api_protocol_mismatch", "api_capabilities_missing", "api_contract_invalid", "api_unavailable", "execution_reconciliation_required"].includes(value)) : [];
+  return { workspaceId: host.workspaceId, executionEnabled: executionEnabled(), mode: executionEnabled() ? "supervised_execution" : "foundation_only", protocol, compatibility,
+    executionUnavailableReasons: [...new Set([...(compatibility.reason ? [compatibility.reason] : []), ...clientReasons, ...(!executionEnabled() ? ["runtime_disabled"] : [])])] };
 }
 
-function visibleHost<T extends { status: string; lastSeenAt: Date | null }>(host: T) {
-  return { ...host, status: host.status === "online" && (!host.lastSeenAt || host.lastSeenAt.getTime() < Date.now() - 60_000) ? "offline" : host.status };
+function visibleHost<T extends { status: string; lastSeenAt: Date | null; workspaceId: string; metadata: unknown; capabilities: unknown }>(host: T) {
+  return { ...host, runtime: hostRuntime(host), status: host.status === "online" && (!host.lastSeenAt || host.lastSeenAt.getTime() < Date.now() - 60_000) ? "offline" : host.status };
+}
+
+function protocolBlocked(req: Request, res: Response, host: { metadata: unknown; capabilities: unknown }) {
+  const admission = requestCompatibility(host, req.headers["x-roost-host-protocol"], req.headers["x-roost-host-capabilities"]);
+  if (admission.compatible) return false;
+  sendApiError(res, 409, "agent_host_protocol_blocked", { message: "Host/API compatibility is not confirmed; execution is blocked.", details: admission });
+  return true;
 }
 
 async function appendExecutionEvent(params: { workspaceId: string; executionId: string; type: string; message: string; level?: string; payload?: unknown }) {
@@ -120,6 +133,8 @@ export const agentRuntimeRouter = Router();
 agentRuntimeRouter.get("/recovery", asyncHandler(async (req, res) => {
   const { hostSlug } = claimSchema.pick({ hostSlug: true }).parse(req.query);
   const host = await prisma.agentHost.findFirst({ where: { workspaceId: req.auth!.workspaceId, slug: hostSlug, status: { not: "disabled" } } });
+  if (!host) return sendApiError(res, 404, "agent_host_not_found");
+  if (protocolBlocked(req, res, host)) return;
   const executions = host ? await prisma.agentExecution.findMany({ where: { workspaceId: req.auth!.workspaceId, agentHostId: host.id, status: { in: ["queued", "claimed", "running", "waiting_for_approval"] } }, include: executionInclude, take: 3, orderBy: { createdAt: "asc" } }) : [];
   res.json({ data: { executionEnabled: executionEnabled(), executions: executions.map(({ leaseToken: _leaseToken, ...execution }) => execution) } });
 }));
@@ -147,6 +162,8 @@ agentRuntimeRouter.post("/executions/:id/actions/recover", asyncHandler(async (r
   const input = z.object({ hostSlug: z.string().min(1).max(120), sessionId: z.string().uuid(), expectedVersion: z.number().int().min(1) }).strict().parse(req.body);
   const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, agentHost: { slug: input.hostSlug, status: { not: "disabled" } }, status: { in: ["claimed", "running"] }, cancelRequestedAt: null } });
   if (!existing) return sendApiError(res, 409, "agent_recovery_conflict");
+  const host = await prisma.agentHost.findUniqueOrThrow({ where: { id: existing.agentHostId! } });
+  if (protocolBlocked(req, res, host)) return;
   const parsed = recoveryCheckpoint.safeParse(existing.checkpoint);
   if (!parsed.success || !["claimed", "prepared"].includes(parsed.data.stage) || parsed.data.sessionId === input.sessionId) return sendApiError(res, 409, "agent_recovery_ambiguous");
   if (parsed.data.stage === "prepared" && !parsed.data.contextRevision) return sendApiError(res, 409, "agent_recovery_ambiguous");
@@ -210,6 +227,7 @@ agentRuntimeRouter.get("/readiness", asyncHandler(async (req, res) => {
     data: {
       executionEnabled: executionEnabled(),
       mode: executionEnabled() ? "supervised_execution" : "foundation_only",
+      protocol,
       applications: records,
       hosts: hosts.map(visibleHost),
       triggerPolicy: triggerRule,
@@ -234,7 +252,7 @@ agentRuntimeRouter.post("/hosts/register", asyncHandler(async (req, res) => {
     create: { ...input, capabilities: json(input.capabilities), applicationSlugs: json(input.applicationSlugs), metadata: json(input.metadata), workspaceId: req.auth!.workspaceId, status: "online", lastSeenAt: now },
     update: { name: input.name, platform: input.platform, capabilities: json(input.capabilities), applicationSlugs: json(input.applicationSlugs), metadata: json(input.metadata), status: "online", lastSeenAt: now }
   });
-  res.json({ data: { ...host, runtime: hostRuntime(req.auth!.workspaceId) } });
+  res.json({ data: visibleHost(host) });
 }));
 
 agentRuntimeRouter.post("/hosts/:id/heartbeat", asyncHandler(async (req, res) => {
@@ -242,7 +260,7 @@ agentRuntimeRouter.post("/hosts/:id/heartbeat", asyncHandler(async (req, res) =>
   const existing = await prisma.agentHost.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, status: { not: "disabled" } } });
   if (!existing) return sendApiError(res, 404, "agent_host_not_found");
   const host = await prisma.agentHost.update({ where: { id: existing.id }, data: { status: "online", lastSeenAt: new Date(), ...(input.capabilities ? { capabilities: json(input.capabilities) } : {}), ...(input.applicationSlugs ? { applicationSlugs: json(input.applicationSlugs) } : {}), ...(input.metadata ? { metadata: json(input.metadata) } : {}) } });
-  res.json({ data: { ...host, runtime: hostRuntime(req.auth!.workspaceId) } });
+  res.json({ data: visibleHost(host) });
 }));
 
 agentRuntimeRouter.get("/executions", asyncHandler(async (req, res) => {
@@ -281,6 +299,7 @@ agentRuntimeRouter.post("/executions/claim", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
   const host = await prisma.agentHost.findFirst({ where: { workspaceId, slug: input.hostSlug, status: { not: "disabled" } } });
   if (!host) return sendApiError(res, 404, "agent_host_not_found");
+  if (protocolBlocked(req, res, host)) return;
   const applicationSlugs = Array.isArray(host.applicationSlugs) ? host.applicationSlugs.filter((value): value is string => typeof value === "string" && value !== "roost") : [];
   const now = new Date();
   // Expiry is not proof that an old worker stopped. Keep ownership and identity.

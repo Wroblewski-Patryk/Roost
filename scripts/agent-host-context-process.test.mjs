@@ -1,3 +1,4 @@
+import { compatibleHostFixture } from "./fixtures/host-protocol.mjs";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
@@ -10,7 +11,7 @@ import { validPacketFixture, sealPacket } from "./fixtures/execution-packet.mjs"
 import { writerLockFilename } from "./lib/agent-host-writer-lock.mjs";
 import { terminateWindowsProcessTree } from "./lib/agent-host-execution-lease.mjs";
 
-for (const scenario of ["unchanged", "taskChanged", "goalChanged", "applicationChanged", "sourceChanged", "accessRevoked", "lateTaskChange", "taskUnavailable", "applicationUnavailable", "authorityRejected", "reportUnavailable"]) {
+for (const scenario of ["unchanged", "taskChanged", "goalChanged", "applicationChanged", "sourceChanged", "accessRevoked", "lateTaskChange", "taskUnavailable", "applicationUnavailable", "authorityRejected", "reportUnavailable", "protocolChanged", "protocolUnavailable"]) {
   test(`real host fresh-context admission: ${scenario}`, { skip: process.platform !== "win32", timeout: 20000 }, async () => {
     const f = validPacketFixture(); f.taskContext.task.title = "Authoritative fixture title";
     const directory = await mkdtemp(path.join(os.tmpdir(), "roost-context-"));
@@ -21,8 +22,17 @@ for (const scenario of ["unchanged", "taskChanged", "goalChanged", "applicationC
       const input = body ? JSON.parse(body) : {};
       requests.push({ url: req.url, input });
       const send = (data, status = 200) => { res.writeHead(status, { "Content-Type": "application/json" }); res.end(JSON.stringify(status === 200 ? { data } : { error: data })); };
+      if (req.url === "/v1/agent-runtime/hosts/host/heartbeat") {
+        if (scenario.startsWith("protocol") && finished) return send("fixture_finished", 401);
+        const admission = compatibleHostFixture();
+        if (active?.checkpoint.stage === "spawn_intent") {
+          if (scenario === "protocolChanged") admission.runtime.protocol.version = 2;
+          if (scenario === "protocolUnavailable") return send("SYNTHETIC_SECRET_TRANSPORT", 503);
+        }
+        return send(admission);
+      }
       if (req.url.startsWith("/v1/agent-runtime/recovery?")) return send({ executions: [], executionEnabled: true });
-      if (req.url.endsWith("/register")) return send({ id: "host", name: "fixture" });
+      if (req.url.endsWith("/register")) return send(compatibleHostFixture());
       if (req.url.endsWith("/claim")) {
         if (finished) return send("fixture_finished", 401);
         active = { ...f.claimed, checkpointVersion: 1, checkpoint: { schemaVersion: "roost-recovery-v1", stage: "claimed", sessionId: input.sessionId, packetRevision: null, workspaceDigest: null } };
@@ -64,10 +74,10 @@ for (const scenario of ["unchanged", "taskChanged", "goalChanged", "applicationC
       const launch = `import cp from 'node:child_process';import {syncBuiltinESMExports} from 'node:module';const original=cp.spawn;cp.spawn=(command,args,options)=>{if(command!=='context-test-codex')return original(command,args,options);process.stdout.write('MODEL_SPAWN\\n');return original(process.execPath,['-e',${JSON.stringify(fake)}],options);};syncBuiltinESMExports();const {runHost}=await import('./scripts/roost-codex-agent-host.mjs');const {acquireWriterLock}=await import('./scripts/lib/agent-host-writer-lock.mjs');await runHost({acquireLock:()=>acquireWriterLock(${JSON.stringify(directory)})});`;
       host = spawn(process.execPath, ["--input-type=module", "-e", launch], { windowsHide: true, stdio: ["ignore", "pipe", "pipe"], env: { ...process.env, ROOST_BASE_URL: `http://127.0.0.1:${server.address().port}`, ROOST_AGENT_API_KEY: "synthetic-context-key", ROOST_AGENT_HOST_CONFIG: configPath } });
       host.stdout.on("data", (c) => { output += c; }); host.stderr.on("data", (c) => { errors += c; });
-      assert.equal((await once(host, "close"))[0], 0, errors);
-      assert.equal(taskReads, 2);
+      assert.equal((await once(host, "close"))[0], scenario.startsWith("protocol") ? 1 : 0, errors);
+      assert.equal(taskReads, scenario.startsWith("protocol") ? 1 : 2);
       const started = requests.findIndex((r) => r.input.type === "runner_started");
-      assert.ok(requests.findLastIndex((r) => r.url.includes("company-intelligence")) > started);
+      if (!scenario.startsWith("protocol")) assert.ok(requests.findLastIndex((r) => r.url.includes("company-intelligence")) > started);
       assert.equal(output.includes("MODEL_SPAWN"), scenario === "unchanged");
       const complete = requests.find((r) => r.url.endsWith("/complete")), failure = requests.find((r) => r.url.endsWith("/fail"));
       if (scenario === "unchanged") {
@@ -79,7 +89,8 @@ for (const scenario of ["unchanged", "taskChanged", "goalChanged", "applicationC
         assert.equal(lock.checkpoint.stage, "spawn_intent");
         assert.match(lock.checkpoint.contextRevision, /^[a-f0-9]{64}$/);
         assert.equal(lock.checkpoint.contextRevision, requests.find((r) => r.input.checkpoint?.stage === "prepared").input.checkpoint.contextRevision);
-        if (scenario === "authorityRejected") { assert.equal(failure, undefined); assert.ok(requests.some((r) => r.url.endsWith("/recovery-blocked"))); }
+        if (scenario.startsWith("protocol")) { assert.equal(failure.input.code, "agent_host_protocol_blocked"); assert.equal(failure.input.retryable, false); }
+        else if (scenario === "authorityRejected") { assert.equal(failure, undefined); assert.ok(requests.some((r) => r.url.endsWith("/recovery-blocked"))); }
         else {
           const reason = scenario.endsWith("Unavailable") && scenario !== "reportUnavailable" ? "unavailable" : scenario === "accessRevoked" ? "invalid" : "changed";
           assert.equal(failure.input.code, `agent_execution_context_${reason}`); assert.equal(failure.input.retryable, false);

@@ -1,3 +1,4 @@
+import { compatibleHostFixture } from "./fixtures/host-protocol.mjs";
 import { strict as assert } from "node:assert";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
@@ -119,13 +120,14 @@ test("rejection from event reporting revokes authority without waiting for heart
 });
 
 for (const sandboxBlocked of [false, true]) {
-test(sandboxBlocked ? "the real host rejects unrestricted sandbox before registering or claiming work" : "the real host stops before spawn and never completes or reclaims after initial rejection", { skip: process.platform !== "win32", timeout: 15_000 }, async () => {
+test(sandboxBlocked ? "the real host rejects unrestricted sandbox before claiming work" : "the real host stops before spawn and never completes or reclaims after initial rejection", { skip: process.platform !== "win32", timeout: 15_000 }, async () => {
   const routes = [];
   const server = createServer((req, res) => {
     routes.push(req.url);
     res.setHeader("Content-Type", "application/json");
+    if (req.url === "/v1/agent-runtime/hosts/host/heartbeat") { res.end(JSON.stringify({ data: compatibleHostFixture() })); return; }
     if (req.url.endsWith("/heartbeat")) { res.writeHead(409); res.end(JSON.stringify({ error: "agent_execution_lease_invalid" })); return; }
-    const data = req.url.startsWith("/v1/agent-runtime/recovery?") ? { executions: [], executionEnabled: true } : req.url.endsWith("/register") ? { id: "host", name: "test" }
+    const data = req.url.startsWith("/v1/agent-runtime/recovery?") ? { executions: [], executionEnabled: true } : req.url.endsWith("/register") ? compatibleHostFixture()
       : req.url.endsWith("/claim") ? { id: "execution", taskId: "task", applicationId: "app", leaseToken: "test-only", task: { title: "test" }, application: { id: "app", name: "Soar", slug: "soar", repositories: [{ url: "https://github.com/Wroblewski-Patryk/Soar.git", isPrimary: true }] } }
       : {};
     res.end(JSON.stringify({ data }));
@@ -147,7 +149,7 @@ test(sandboxBlocked ? "the real host rejects unrestricted sandbox before registe
     assert.equal(code, sandboxBlocked ? 1 : 0);
     assert.match(stderr, sandboxBlocked ? /agent_host_sandbox_not_approved/ : /agent_execution_lease_rejected/);
     assert.equal(routes.filter((route) => route.endsWith("/claim")).length, sandboxBlocked ? 0 : 1);
-    if (sandboxBlocked) assert.equal(routes.length, 1, "only the read-only recovery inspection precedes config validation");
+    if (sandboxBlocked) assert.equal(routes.length, 2, "only registration admission and recovery inspection precede config validation");
     assert.equal(routes.some((route) => /events|actions\/(complete|fail)/.test(route)), false);
     if (!sandboxBlocked) {
       const lock = JSON.parse(await readFile(path.join(directory, writerLockFilename), "utf8"));

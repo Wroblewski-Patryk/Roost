@@ -1,3 +1,4 @@
+import { compatibleHostFixture } from "./fixtures/host-protocol.mjs";
 import { strict as assert } from "node:assert";
 import { spawn, execFile } from "node:child_process";
 import { once } from "node:events";
@@ -40,8 +41,9 @@ async function harness(t, stopStage) {
     let body = ""; for await (const chunk of req) body += chunk;
     const input = body ? JSON.parse(body) : {};
     const send = (data, status = 200) => { res.writeHead(status, { "Content-Type": "application/json" }); res.end(JSON.stringify(status === 200 ? { data } : { error: data })); };
+      if (req.url === "/v1/agent-runtime/hosts/host/heartbeat") return send(compatibleHostFixture());
     if (req.url.startsWith("/v1/agent-runtime/recovery?")) return send({ executionEnabled: true, executions: active && !finished ? [active] : [] });
-    if (req.url.endsWith("/register")) return send({ id: "host", name: "fixture" });
+    if (req.url.endsWith("/register")) return send(compatibleHostFixture());
     if (req.url.endsWith("/claim")) {
       if (finished || active) return send("fixture_finished", 401);
       claimCount++;

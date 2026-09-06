@@ -32,46 +32,43 @@ for later changes to these same canonical files.
 
 ## Atomic P0 selection
 
-The prior V2 model admission delivery is commit `2741b82f`: RF-HOST-016 has
-synthetic launcher proof, 132/132 non-observer and 4/4 observer checks, successful
-validation and exact production commit/health verification. Its port-conflict
-test failures were resolved by stopping the legitimate observer before testing
-and restoring observe mode afterward. Registry/matrix checks covered 162 rows.
+The prior explicit-model gate (`2741b82f`), duration gate (`62b8e8f3`), GUI
+observer launcher (`03a9a42a`) and fresh-context admission (`d7e5c7c2`) are retained.
+The latter integrated the GUI correction in one runtime release, with exact
+production commit/health verification. RF-CTX-006 remains partial: preparation
+and pre-spawn pins are implemented; Ready pinning and in-flight invalidation
+remain missing, and final reads cannot lock out subsequent source edits.
 
-The hard-duration slice of RF-HOST-010 was delivered in `62b8e8f3`, with 151/151
-non-observer checks, 4/4 observer checks and exact deployed-commit health proof.
-Token/cost enforcement and independent new-budget approval remain incomplete.
-The local console-free launcher correction `03a9a42a` is preserved and joins
-the next runtime release; its bounded evidence is under [OBSERVER](#e-observer).
+The current bounded P0 slice is **RF-HOST-014: host/API protocol admission**.
+One shared wire declaration extends existing host metadata/capabilities and
+register/heartbeat/readiness responses. Client and API independently reject
+missing/unknown version or required capabilities before recovery/claim, including
+legacy requests that reuse a newer host record. The host also checks before
+spawn; incompatibility leaves a heartbeat-only process, with retained ownership
+and reconciliation after a claim. Observer mode never enters execution code.
+Settings displays admission separately from online status.
 
-The current bounded P0 slice is **RF-CTX-006: authoritative refresh immediately
-before spawn**, using the existing scoped context endpoints, packet validator,
-checkpoint and failure/recovery paths. A resolved-context fingerprint is pinned
-at preparation, immutable in subsequent checkpoints and checked on recovery.
-After the durable spawn barrier and start-attempt event, both contexts are read
-again, validated and compared before synchronous lease/duration checks and spawn.
-Changes or unavailable refresh prevent model start and further claims and retain
-the checkpoint for reconciliation. Legacy prepared checkpoints without a pin
-cannot silently acquire one. No second gap is included.
+Local verification (2026-09-06): protocol admission 30/30, host regression
+176/176, observer 7/7 and local API/database 16/16. `npm run validate` passed
+(278 manifest routes, 44 route files, TypeScript and production build); existing
+Phosphor/ambient asset and large-chunk warnings remain. Registry/matrix retain
+162 requirements. Protocol admission includes compatible and
+legacy/future/missing contracts, unknown capabilities, missing acknowledgement,
+disabled/unknown runtime and server rejection after a compatible heartbeat.
+Windows regressions cover leases, writer ownership, recovery, context, model and
+duration; added pre-spawn protocol-change/unavailable cases prevent model start.
+API tests cover register/heartbeat visibility and rejection without changing
+attempt/checkpoint/lease. Component fixture QA covers seven states across
+390/834/1440px with no horizontal overflow or page errors; this is not a live
+signed-in UI or provider trial. Exact deployment proof is recorded in the completed handoff after verification.
 
-Local verification (2026-09-06): context admission 21/21 (10 unit, 11 Windows
-synthetic-process cases); host regression 153/153, including changed-context
-recovery and missing-pin rejection; observer 4/4 after normal Stop/Start.
-Local API/database suite passed 15/15, including pin requirement, immutability,
-legacy prepared rejection, lease rotation and concurrent recovery exclusion.
-`npm run validate` passed (278 manifest routes, 44 route files, TypeScript and
-production build). The existing unresolved Phosphor/ambient asset and large-chunk
-build warnings remain. Frozen registry and matrix still contain 162 requirements.
-No database migration or new API route is needed. No provider call, live test,
-relogin/reboot or full activation dry run was performed. Exact deployed commit
-and health still require release verification.
-
-RF-CTX-006 remains partial: pinning at Ready, atomic multi-source snapshots and
-mid-execution invalidation are not claimed. The final reads cannot lock out
-source edits after they return. Production activation remains blocked by the
-other P0 gates. Next single candidate for separate selection: the host/API
-protocol-compatibility admission slice within **RF-HOST-014**, before supervised
-claims; coordinated drain/update orchestration would remain separate.
+RF-HOST-014 remains **cz�ciowo dzia�a**: no coordinated backend/UI/schema
+release, drain, migration/rollback orchestration, binary attestation, automatic
+host update or in-flight invalidation. No API deployment lock spans final read
+to spawn. Production remains disabled/observe; no model/provider live test or
+Soar change is authorized. Next single candidate for separate selection:
+**RF-CTX-006: pin the accepted context revision at Ready**, before execution
+preparation, so changes after approval require a new reviewed contract. Not started.
 
 ## Matrix
 
@@ -135,7 +132,7 @@ claims; coordinated drain/update orchestration would remain separate.
 | [RF-HOST-011](../product/interview-foundation-v2.md#rf-host-011) | P1 | częściowo działa | [BUDGET](#e-budget) | Observer/integration retries exist; general execution loop breaker absent. |
 | [RF-HOST-012](../product/interview-foundation-v2.md#rf-host-012) | P1 | częściowo działa | [BUDGET](#e-budget) | Usage stored per execution; attribution and quality-constrained optimization absent. |
 | [RF-HOST-013](../product/interview-foundation-v2.md#rf-host-013) | P0 | brak | [RESOURCE](#e-resource) | No resource-aware host/service-operation broker. |
-| [RF-HOST-014](../product/interview-foundation-v2.md#rf-host-014) | P0 | brak | [HOST](#e-host) | No coordinated version compatibility/drain gate. |
+| [RF-HOST-014](../product/interview-foundation-v2.md#rf-host-014) | P0 | cz�ciowo dzia�a | [PROTOCOL](#e-protocol) | Host/API admission before recovery/claim/spawn implemented; coordinated backend/UI/schema drain/update/rollback remains missing. |
 | [RF-HOST-015](../product/interview-foundation-v2.md#rf-host-015) | P1 | częściowo działa | [AUTH](#e-auth) | Host identity and scoped provisioning exist; interactive pairing absent. |
 | [RF-HOST-016](../product/interview-foundation-v2.md#rf-host-016) | P0 | działa | [MODEL](#e-model) | Explicit allowlist/pair validation and exact argv verified by synthetic host tests; no provider call/activation. Full routing/observed usage remain RF-HOST-017/018. |
 | [RF-HOST-017](../product/interview-foundation-v2.md#rf-host-017) | P1 | brak | [MODEL](#e-model) | No stage router, minima, availability or override UI. |
@@ -319,6 +316,11 @@ Each entry links existing canonical files; a test link is not a passing result.
 **HOST** — Existing supervised host, disabled by default; no activation stage state machine.
 
 [scripts/roost-codex-agent-host.mjs](../../scripts/roost-codex-agent-host.mjs), [src/modules/agent-runtime/agent-runtime.routes.ts](../../src/modules/agent-runtime/agent-runtime.routes.ts), [src/config/env.ts](../../src/config/env.ts), [docs/architecture/local-codex-agent-runtime.md](../../docs/architecture/local-codex-agent-runtime.md).
+
+<a id="e-protocol"></a>
+**PROTOCOL** � Shared version/capability declaration, dual admission and visible blocking without offline host status; no full update orchestration.
+
+[wire declaration](../../src/modules/agent-runtime/host-protocol.json), [API admission](../../src/modules/agent-runtime/host-protocol.ts), [host admission](../../scripts/lib/agent-host-protocol.mjs), [process tests](../../scripts/agent-host-protocol.test.mjs), [API tests](../../src/tests/api.test.ts), [protocol contract](local-codex-agent-runtime.md#hostapi-protocol-admission-rf-host-014).
 
 <a id="e-lock"></a>
 **LOCK** — Exclusive machine writer and durable ownership checks; pending broader scheduler/resource gates.

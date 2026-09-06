@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { writeFile, access } from "node:fs/promises";
 import { validateRepositoryMappings, approvedWindowsWorkspaceRoot } from "./agent-host-workspace-guard.mjs";
+import { protocol, apiProtocolReason } from "./agent-host-protocol.mjs";
 
 // Fixed machine-wide port: the OS releases it even after a crash. No PID-based
 // stale lock deletion and no shared writer lock or execution recovery.
@@ -23,7 +24,7 @@ export async function runObserver({ config, api, stopped = () => false, acquireL
   const release = await acquireLock();
   let host;
   let stopReason;
-  const metadata = { runnerVersion: "roost-agent-host-observer-v1", executionMode: "observe", workspaceRoot: config.workspaceRoot, executionUnavailableReasons: ["observer_mode"], mappingStatus: "declared_only" };
+  const metadata = { runnerVersion: "roost-agent-host-observer-v1", protocolVersion: protocol.version, executionMode: "observe", workspaceRoot: config.workspaceRoot, executionUnavailableReasons: ["observer_mode"], mappingStatus: "declared_only" };
   const registration = { ...config.host, platform: `${process.platform}-${process.arch}`, capabilities: ["heartbeat", "observer"], applicationSlugs: Object.keys(repositories), metadata };
   const stopPath = path.join(stateDirectory, "stop.request");
   const statusPath = path.join(stateDirectory, "status.json");
@@ -36,7 +37,8 @@ export async function runObserver({ config, api, stopped = () => false, acquireL
       try {
         host = await api(host ? `/v1/agent-runtime/hosts/${host.id}/heartbeat` : "/v1/agent-runtime/hosts/register", { method: "POST", body: JSON.stringify(host ? { metadata, capabilities: registration.capabilities, applicationSlugs: registration.applicationSlugs } : registration) });
         // Runtime information is returned only for the authenticated workspace.
-        metadata.executionUnavailableReasons = ["observer_mode", ...(host.runtime?.executionEnabled === false ? ["runtime_disabled"] : [])];
+        const incompatibility = apiProtocolReason(host.runtime);
+        metadata.executionUnavailableReasons = ["observer_mode", ...(host.runtime?.executionEnabled === false ? ["runtime_disabled"] : []), ...(incompatibility ? [incompatibility] : [])];
         await save("online");
       } catch (error) {
         // Never persist response bodies, headers, keys, or arbitrary error text.

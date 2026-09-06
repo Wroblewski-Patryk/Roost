@@ -104,9 +104,9 @@ visible.
    one application.
 2. The owner queues a Codex execution from the task workbench or the agent
    runtime API.
-3. A Windows Agent Host inspects its pending executions and local ownership
-   through [safe recovery](agent-host-recovery.md), then registers its supported
-   application slugs and polls the production API over HTTPS.
+3. A Windows Agent Host registers for visibility, confirms protocol admission,
+   then inspects pending executions and local ownership through
+   [safe recovery](agent-host-recovery.md). Registration grants no writer slot.
 4. The host atomically claims one compatible queued execution with a short
    renewable lease.
 5. The host fetches current task/application context with the execution-bound
@@ -153,7 +153,7 @@ visible.
 The [recovery contract](agent-host-recovery.md) supports the same execution/attempt
 only from matching durable `claimed`/`prepared` checkpoints with valid authority.
 Later stages, expired leases and ambiguous state stop with owner-visible
-diagnostics. The host acquires the machine-wide writer slot before registration and processes
+diagnostics. The host acquires the machine-wide writer slot after protocol admission and before claims, and processes
 executions sequentially. An expired API lease does not prove that the old process
 stopped. The host
 renews before launch, uses bounded API requests, and stops the Windows child
@@ -176,7 +176,7 @@ of a replacement budget remain separate gates. Observe mode does not run this ti
 The supported Windows host uses exclusive creation of
 `C:\ProgramData\Roost\agent-host-writer.lock`, independent of application slug,
 workspace or host key. It is secret-free process/recovery state outside application
-repositories. A second host fails before registering or claiming work. Normal
+repositories. A second compatible host may register a heartbeat but fails before claiming work. Normal
 shutdown releases only the lock owned by that process. A crash, empty/corrupted
 lock or uncertain execution does not trigger automatic stale-lock removal: old
 Codex descendants may still be running. Recovery can reclaim only a matched
@@ -192,6 +192,55 @@ startup. The CLI configuration cannot choose another lock location.
 - A disabled host cannot register heartbeats or claim work.
 - The owner can cancel queued work immediately. Active cancellation is observed
   on the next heartbeat and acknowledged by the host.
+
+## Host/API Protocol Admission (RF-HOST-014)
+
+The single wire declaration is
+[`host-protocol.json`](../../src/modules/agent-runtime/host-protocol.json), shared
+by API and host. `runnerVersion` remains a diagnostic build label, not admission.
+Existing `metadata.protocolVersion` advertises numeric version `1`,
+`metadata.executionMode` explicitly declares `supervised` or `observe`, and
+existing `capabilities` advertises implemented controls. No new host table,
+version registry, endpoint or migration is used.
+
+Register/heartbeat, host listings and readiness expose `runtime.protocol` (or
+root `protocol` for readiness): `version`, `apiCapabilities` and
+`requiredHostCapabilities`. Per-host `runtime.compatibility` contains
+`compatible`, a fixed `reason` and `missingCapabilities`. Missing, malformed,
+older or newer versions are rejected without downgrade. Extra API capabilities
+are tolerated, but every baseline capability must exist; an unknown required
+host capability blocks the host.
+
+The host checks the API declaration and positive acknowledgement before recovery
+inspection, writer acquisition, each claim, recovery lease rotation, context
+preparation and final pre-spawn context reads. Final synchronous protocol,
+lease and duration assertions precede spawn. Disabled or unknown runtime state
+also blocks work. A blocked process continues registration/heartbeat without
+writer acquisition, recovery or claim. Blocking after a claim reports failure
+when authorized, retains ownership and enters heartbeat-only reconciliation
+until operator restart; restoring compatibility cannot replay that execution.
+
+Independently, API recovery inspection, recovery lease rotation and claim check
+stored host mode/version/capabilities plus the current request headers
+`X-Roost-Host-Protocol` and comma-separated `X-Roost-Host-Capabilities`.
+Legacy requests cannot borrow a newer process's stored declaration for the same
+host slug. Rejection returns 409 `agent_host_protocol_blocked` with fixed
+reasons, without changing attempts, checkpoints or leases. Unknown host returns
+404. Lease/terminal reporting remains available for safe stop.
+`executionEnabled=true` never bypasses admission.
+
+Observer advertises only observer/heartbeat capabilities and never enters
+supervised code. Missing/mismatched API protocol is recorded while online.
+Online means recent heartbeat, not runnable readiness. Settings -> Agent
+connections shows admission separately from heartbeat and runtime mode.
+Server-derived reasons and allowlisted host-reported API/reconciliation reasons
+are secret-free; client diagnostics cannot grant authority.
+
+This is a declared compatibility contract, not binary attestation or an
+authorization replacement. It does not lock deployments between the final
+response and spawn, invalidate running work, coordinate backend/UI/schema
+releases, drain/migrate/rollback, or update binaries. RF-HOST-014 remains partial.
+Production stays disabled/observe.
 
 ## Activation Gate
 

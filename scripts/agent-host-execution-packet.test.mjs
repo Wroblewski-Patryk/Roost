@@ -1,3 +1,4 @@
+import { compatibleHostFixture } from "./fixtures/host-protocol.mjs";
 import { strict as assert } from "node:assert";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
@@ -117,7 +118,8 @@ for (const scenario of ["valid", "missingAcceptance", "missingModel", "olderMode
     if (req.url.endsWith("/claim") && finished) { res.writeHead(401); res.end('{"error":"test_finished"}'); return; }
     let data = {};
     if (req.url.startsWith("/v1/agent-runtime/recovery?")) data = { executions: [], executionEnabled: true };
-    if (req.url.endsWith("/register")) data = { id: "host", name: "fixture" };
+    if (req.url === "/v1/agent-runtime/hosts/host/heartbeat") { res.end(JSON.stringify({ data: compatibleHostFixture() })); return; }
+      if (req.url.endsWith("/register")) data = compatibleHostFixture();
     if (req.url.endsWith("/claim")) data = { ...f.claimed, checkpointVersion: 1, checkpoint: { schemaVersion: "roost-recovery-v1", stage: "claimed", sessionId: JSON.parse(body).sessionId, packetRevision: null, workspaceDigest: null } };
     if (req.url.endsWith("/checkpoint")) { const input = JSON.parse(body); data = { checkpoint: input.checkpoint, checkpointVersion: input.expectedVersion + 1 }; }
     if (req.url.includes("company-intelligence")) data = f.taskContext;

@@ -7,6 +7,7 @@ import os from "node:os";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { acquireObserverLock, runObserver } from "./lib/agent-host-observer.mjs";
+import { compatibleHostFixture } from "./fixtures/host-protocol.mjs";
 
 const example = JSON.parse(await readFile(new URL("../config/roost-agent-host.example.json", import.meta.url), "utf8"));
 async function until(check) {
@@ -23,6 +24,8 @@ test("observer CLI ignores enabled execution, duplicate starts, and recovers aft
   const requests = [];
   const bodies = [];
   const server = createServer(async (req, res) => {
+    assert.equal(req.headers["x-roost-host-protocol"], "1");
+    assert.equal(req.headers["x-roost-host-capabilities"], "heartbeat,observer");
     let body = "";
     for await (const chunk of req) body += chunk;
     requests.push(req.url); bodies.push(JSON.parse(body));
@@ -54,7 +57,7 @@ test("observer CLI ignores enabled execution, duplicate starts, and recovers aft
     const saved = JSON.parse(await readFile(path.join(state, "status.json"), "utf8"));
     assert.equal(saved.hostId, "stable-host");
     assert.equal(saved.status, "stopped");
-    assert.deepEqual(saved.executionUnavailableReasons, ["observer_mode"]);
+    assert.deepEqual(saved.executionUnavailableReasons, ["observer_mode", "api_protocol_missing"]);
     assert.ok(!JSON.stringify(saved).includes("test-key"));
   } finally {
     for (const child of children) if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
@@ -82,4 +85,15 @@ test("exclusive observer lock is reusable after release", async () => {
   await assert.rejects(acquireObserverLock(), /already_running/);
   await release();
   await (await acquireObserverLock())();
+});
+
+for (const version of [1, 2, undefined]) test(`observer reports protocol ${version} without recovery or claims`, async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "roost-observer-protocol-"));
+  let calls = 0;
+  try {
+    await runObserver({ config: { ...example, executionMode: "observe" }, stateDirectory: directory, acquireLock: async () => async () => {}, stopped: () => calls > 0,
+      api: async route => { assert.equal(route, "/v1/agent-runtime/hosts/register"); calls++; const h = compatibleHostFixture(); h.runtime.protocol.version = version; h.runtime.executionEnabled = false; return h; } });
+    const status = JSON.parse(await readFile(path.join(directory, "status.json"), "utf8"));
+    assert.deepEqual(status.executionUnavailableReasons, ["observer_mode", "runtime_disabled", ...(version === 1 ? [] : [version === undefined ? "api_protocol_missing" : "api_protocol_mismatch"])]);
+  } finally { await rm(directory, { recursive: true, force: true }); }
 });

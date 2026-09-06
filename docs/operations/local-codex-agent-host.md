@@ -164,6 +164,27 @@ at localhost. Do not copy production data down, point the local backend at the
 VPS database, or synchronize database files. Apply the same reviewed Prisma
 migrations independently in local and production environments.
 
+## Host/API Compatibility
+
+Ship the same [protocol declaration](../../src/modules/agent-runtime/host-protocol.json)
+with API and host. `runnerVersion` is informational; do not edit config or claim
+extra capabilities to bypass an incompatible binary. Register/heartbeat and
+Settings -> Agent connections expose admission reasons separately from online.
+`host_protocol_missing/mismatch`, `host_capabilities_missing` and
+`request_protocol_missing/mismatch` require a compatible host/API release;
+`observer_mode` and `runtime_disabled` are intentional in production.
+
+Deploy API first while execution remains disabled, then normally stop/start the
+observer to load updated modules. A new host against an old API stays online with
+`api_protocol_missing`; an old host against a new API cannot recover/claim
+without the required contract. No automatic update, drain or rollback is provided.
+Do not activate agents as part of upgrading.
+
+After a post-claim compatibility failure, inspect the existing execution and
+writer checkpoint before restart. `execution_reconciliation_required` is a
+heartbeat-only hold, not authority to clear ownership or create another run.
+See the [protocol contract](../architecture/local-codex-agent-runtime.md#hostapi-protocol-admission-rf-host-014).
+
 ## Configure Repository Mapping
 
 Copy `config/roost-agent-host.example.json` to a user-owned location such as:

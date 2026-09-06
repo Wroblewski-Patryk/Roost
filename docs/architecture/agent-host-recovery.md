@@ -54,7 +54,8 @@ even a missing such event cannot make the earlier spawn barrier safe to replay.
 
 ## Startup And Lease Fencing
 
-1. Read `/v1/agent-runtime/recovery?hostSlug=...` before registration or claims.
+1. Register and pass [protocol admission](local-codex-agent-runtime.md#hostapi-protocol-admission-rf-host-014), then read
+   `/v1/agent-runtime/recovery?hostSlug=...` before writer acquisition or claims.
    It returns this workspace/host's nonterminal executions without lease tokens.
    Multiple pending executions stop startup rather than choosing one silently.
 2. Classify the checkpoint and lease. A disabled runtime, cancellation, expired
@@ -66,7 +67,7 @@ even a missing such event cannot make the earlier spawn barrier safe to replay.
 4. An exclusive `agent-host-recovery.lock` serializes reclaim checks. Recheck
    ownership before removing the exact prior writer file, then use exclusive
    writer-file creation again. A competing process cannot own the same slot.
-5. Revalidate the approved workspace, origin and sandbox. Call the existing
+5. Revalidate workspace, origin and sandbox, refresh protocol admission, then call the existing
    execution's `/actions/recover` with the expected checkpoint version and new
    session UUID. Roost atomically rotates its lease token, increments only the
    checkpoint version, retains execution ID/attempt/task/host, and records

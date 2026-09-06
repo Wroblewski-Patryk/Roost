@@ -16,6 +16,7 @@ type AgentHost = {
   applicationSlugs: string[];
   workspaceId: string;
   metadata?: { runnerVersion?: string; executionMode?: string };
+  runtime?: { compatibility?: { compatible: boolean; reason: string | null }; executionUnavailableReasons?: string[] };
 };
 
 type RuntimeReadiness = {
@@ -31,6 +32,18 @@ function tomlString(value: string) {
 function formatHeartbeat(value: string | null | undefined, locale: string) {
   if (!value) return "—";
   return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "medium" }).format(new Date(value));
+}
+
+function admissionLabel(host: AgentHost, polish: boolean) {
+  const admission = host.runtime?.compatibility;
+  const reasons = host.runtime?.executionUnavailableReasons || [];
+  if (reasons.includes("execution_reconciliation_required")) return polish ? "Wykonanie zatrzymane. Uzgodnij jego stan przed ponownym startem hosta." : "Execution stopped. Reconcile it before restarting the host.";
+  if (reasons.some(reason => reason.startsWith("api_"))) return polish ? "Host nie potwierdza zgodności API — praca zablokowana. Sprawdź wersje i połączenie." : "The host cannot confirm API compatibility — work is blocked. Check versions and connectivity.";
+  if (admission?.compatible) return polish ? "Zgodność potwierdzona" : "Compatibility confirmed";
+  if (admission?.reason === "observer_mode") return polish ? "Tryb obserwacji — bez wykonywania zadań" : "Observer mode — no task execution";
+  if (admission?.reason === "host_capabilities_missing") return polish ? "Brak wymaganych funkcji hosta. Zaktualizuj hosta przed uruchomieniem pracy." : "Required host features are missing. Update the host before starting work.";
+  if (admission?.reason === "host_mode_missing") return polish ? "Brak jawnego trybu hosta. Sprawdź konfigurację." : "Host mode is unspecified. Check the configuration.";
+  return polish ? "Zgodność niepotwierdzona — praca zablokowana. Sprawdź wersje API i hosta." : "Compatibility is unconfirmed — work is blocked. Check the API and host versions.";
 }
 
 export function AgentConnectionsSection({ connection }: { connection: ConnectionPacket | null }) {
@@ -113,6 +126,7 @@ export function AgentConnectionsSection({ connection }: { connection: Connection
         {latestHost ? <dl className="roost-connection-facts px-4 py-3">
           <div><dt>{polish ? "Tryb hosta" : "Host mode"}</dt><dd>{latestHost.metadata?.executionMode === "observe" ? (polish ? "Obserwacja — zadania nie są pobierane" : "Observer — no tasks claimed") : (latestHost.metadata?.executionMode || "—")}</dd></div>
           <div><dt>{polish ? "Wersja hosta" : "Host version"}</dt><dd>{latestHost.metadata?.runnerVersion || "—"}</dd></div>
+          <div><dt>{polish ? "Dopuszczenie do pracy" : "Execution admission"}</dt><dd>{admissionLabel(latestHost, polish)}</dd></div>
           <div><dt>Workspace</dt><dd>{connection?.workspace?.name || latestHost.workspaceId}</dd></div>
           <div><dt>{polish ? "Zadeklarowane aplikacje" : "Declared applications"}</dt><dd>{latestHost.applicationSlugs.join(", ") || "—"}</dd></div>
         </dl> : null}

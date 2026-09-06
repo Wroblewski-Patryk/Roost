@@ -1,3 +1,6 @@
+import { protocol } from "../modules/agent-runtime/host-protocol";
+const hostProtocolHeaders = { "X-Roost-Host-Protocol": String(protocol.version), "X-Roost-Host-Capabilities": protocol.requiredHostCapabilities.join(",") };
+const validHostMetadata = { runnerVersion: "roost-codex-agent-host-v1", protocolVersion: protocol.version, executionMode: "supervised" };
 import { strict as assert } from "assert";
 import type { Prisma } from "@prisma/client";
 import { spawn } from "node:child_process";
@@ -1240,7 +1243,7 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
   const keyAudit = await prisma.event.findFirstOrThrow({ where: { type: "api_key.created", resourceId: workerKeyId } });
   assert.equal((keyAudit.payload as { profileId: string }).profileId, "mcp_codex_worker");
   assert.ok(!JSON.stringify(keyAudit).includes((keyResponse.body as { data: { key: string } }).data.key));
-  const workerAuth = { "X-API-Key": (keyResponse.body as { data: { key: string } }).data.key };
+  const workerAuth = { "X-API-Key": (keyResponse.body as { data: { key: string } }).data.key, ...hostProtocolHeaders };
 
   const hostResponse = await request("/v1/agent-runtime/hosts/register", {
     method: "POST",
@@ -1248,7 +1251,7 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
     body: JSON.stringify({ name: "Test laptop", slug: "test-windows", platform: "win32-x64", capabilities: ["codex_exec_json"], applicationSlugs: [application.slug], metadata: {} })
   });
   assert.equal(hostResponse.status, 200);
-  assert.deepEqual((hostResponse.body as { data: { runtime: unknown } }).data.runtime, { workspaceId: owner.workspace.id, executionEnabled: false, mode: "foundation_only" });
+  assert.equal((hostResponse.body as { data: { runtime: { compatibility: { reason: string } } } }).data.runtime.compatibility.reason, "host_protocol_missing");
   const originalHost = (hostResponse.body as { data: { id: string } }).data;
   const repeatHost = await request("/v1/agent-runtime/hosts/register", { method: "POST", headers: workerAuth, body: JSON.stringify({ name: "Test laptop", slug: "test-windows", platform: "win32-x64", capabilities: ["codex_exec_json"], applicationSlugs: [application.slug], metadata: { executionMode: "observe" } }) });
   assert.equal((repeatHost.body as { data: { id: string } }).data.id, originalHost.id);
@@ -1280,6 +1283,7 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
   const outsiderRead = await request(`/v1/agent-runtime/executions/${queued.id}`, { headers: { Authorization: `Bearer ${outsider.token}` } });
   assert.equal(outsiderRead.status, 404);
 
+  await prisma.agentHost.update({ where: { id: originalHost.id }, data: { metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities } });
   const claimResponse = await request("/v1/agent-runtime/executions/claim", {
     method: "POST",
     headers: workerAuth,
@@ -1416,19 +1420,67 @@ test("owner-authorized host provisioning fixes scope, rejects duplicate credenti
   assert.ok(await prisma.event.findFirst({ where: { resourceId: record.id, type: "api_key.revoked" } }));
 });
 
+test("host protocol admission fails closed while incompatible hosts remain online", async () => {
+  const owner = await registerOwner("protocol-owner@example.com", "Protocol Fixture");
+  const auth = { Authorization: `Bearer ${owner.token}` };
+  const headers = { ...auth, ...hostProtocolHeaders };
+  const application = await prisma.application.create({ data: { workspaceId: owner.workspace.id, name: "Protocol fixture", slug: "protocol-fixture" } });
+  const task = await prisma.task.create({ data: { workspaceId: owner.workspace.id, title: "Synthetic admission only" } });
+  const declaration = { name: "Protocol host", slug: "protocol-fixture", platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities };
+  const register = (value: unknown) => request("/v1/agent-runtime/hosts/register", { method: "POST", headers, body: JSON.stringify(value) });
+  const response = await register(declaration);
+  const host = (response.body as { data: { id: string } }).data;
+  const pending = await prisma.agentExecution.create({ data: { workspaceId: owner.workspace.id, taskId: task.id, applicationId: application.id, agentHostId: host.id, requestedByType: "user", status: "claimed", attempt: 1, leaseToken: "00000000-0000-4000-8000-000000000001", leaseExpiresAt: new Date(Date.now() + 90000), checkpointVersion: 1, checkpoint: { schemaVersion: "roost-recovery-v1", stage: "claimed", sessionId: "00000000-0000-4000-8000-000000000001", packetRevision: null, workspaceDigest: null } } });
+  const scenarios: Array<[string, unknown, Record<string, string>]> = [
+    ["host_protocol_missing", { ...declaration, metadata: {} }, headers],
+    ...[0, 2, "1", null].map(version => ["host_protocol_mismatch", { ...declaration, metadata: { ...validHostMetadata, protocolVersion: version } }, headers] as [string, unknown, Record<string, string>]),
+    ["host_capabilities_missing", { ...declaration, capabilities: ["heartbeat"] }, headers],
+    ["host_capabilities_missing", { ...declaration, capabilities: undefined }, headers],
+    ["observer_mode", { ...declaration, metadata: { ...validHostMetadata, executionMode: "observe" } }, headers],
+    ["host_mode_missing", { ...declaration, metadata: { protocolVersion: 1 } }, headers],
+    ["request_protocol_missing", declaration, auth],
+    ["request_protocol_mismatch", declaration, { ...headers, "X-Roost-Host-Protocol": "2" }],
+    ["request_capabilities_missing", declaration, { ...headers, "X-Roost-Host-Capabilities": "heartbeat" }]
+  ];
+  process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
+  try {
+    for (const [reason, value, requestHeaders] of scenarios) {
+      const registered = await register(value);
+      assert.equal(registered.status, 200);
+      assert.equal((registered.body as { data: { status: string } }).data.status, "online");
+      assert.equal((await request(`/v1/agent-runtime/hosts/${host.id}/heartbeat`, { method: "POST", headers, body: "{}" })).status, 200);
+      for (const [route, body] of [
+        ["/v1/agent-runtime/executions/claim", { hostSlug: declaration.slug }],
+        [`/v1/agent-runtime/recovery?hostSlug=${declaration.slug}`, null],
+        [`/v1/agent-runtime/executions/${pending.id}/actions/recover`, { hostSlug: declaration.slug, sessionId: "00000000-0000-4000-8000-000000000002", expectedVersion: 1 }]
+      ] as const) {
+        const rejected = await request(route, { method: body ? "POST" : "GET", headers: requestHeaders, ...(body ? { body: JSON.stringify(body) } : {}) });
+        assert.equal(rejected.status, 409, `${reason}: ${route}`);
+        assert.equal((rejected.body as { errorDetails: { details: { reason: string } } }).errorDetails.details.reason, reason);
+      }
+      const unchanged = await prisma.agentExecution.findUniqueOrThrow({ where: { id: pending.id } });
+      assert.equal(unchanged.attempt, 1); assert.equal(unchanged.checkpointVersion, 1); assert.equal(unchanged.leaseToken, pending.leaseToken);
+    }
+    await register(declaration);
+    assert.equal((await request(`/v1/agent-runtime/recovery?hostSlug=${declaration.slug}`, { headers })).status, 200);
+    const visible = await request("/v1/agent-runtime/hosts", { headers: auth });
+    assert.equal((visible.body as { data: Array<{ runtime: { compatibility: { compatible: boolean } } }> }).data[0]!.runtime.compatibility.compatible, true);
+  } finally { delete process.env.ROOST_CODEX_EXECUTION_ENABLED; }
+});
+
 test("execution recovery fences old leases and preserves an auditable same-attempt checkpoint", async () => {
   const owner = await registerOwner("recovery-owner@example.com", "Recovery Fixture");
   const outsider = await registerOwner("recovery-outsider@example.com", "Recovery Outsider");
   const ownerAuth = { Authorization: `Bearer ${owner.token}` };
   const outsiderAuth = { Authorization: `Bearer ${outsider.token}` };
   const key = await request("/v1/api-keys", { method: "POST", headers: ownerAuth, body: JSON.stringify({ name: "Recovery worker", profileId: "mcp_codex_worker" }) });
-  const workerAuth = { "X-API-Key": (key.body as { data: { key: string } }).data.key };
+  const workerAuth = { "X-API-Key": (key.body as { data: { key: string } }).data.key, ...hostProtocolHeaders };
   const application = await prisma.application.create({ data: { workspaceId: owner.workspace.id, name: "Recovery Fixture", slug: "recovery-fixture", targetPlatforms: ["web"] } });
   const project = await prisma.project.create({ data: { workspaceId: owner.workspace.id, name: "Recovery Project" } });
   await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id, relationType: "delivery" } });
   const task = await prisma.task.create({ data: { workspaceId: owner.workspace.id, projectId: project.id, title: "Recover same execution" } });
   const hostSlug = "recovery-fixture";
-  assert.equal((await request("/v1/agent-runtime/hosts/register", { method: "POST", headers: workerAuth, body: JSON.stringify({ name: "Recovery host", slug: hostSlug, platform: "win32", applicationSlugs: [application.slug] }) })).status, 200);
+  assert.equal((await request("/v1/agent-runtime/hosts/register", { method: "POST", headers: workerAuth, body: JSON.stringify({ name: "Recovery host", slug: hostSlug, platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities }) })).status, 200);
   process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
   try {
     await request("/v1/agent-runtime/executions", { method: "POST", headers: ownerAuth, body: JSON.stringify({ taskId: task.id }) });
@@ -1449,7 +1501,7 @@ test("execution recovery fences old leases and preserves an auditable same-attem
     const inspectionRoute = `/v1/agent-runtime/recovery?hostSlug=${hostSlug}`;
     assert.equal((await request(inspectionRoute)).status, 401);
     const foreignInspection = await request(inspectionRoute, { headers: outsiderAuth });
-    assert.deepEqual((foreignInspection.body as { data: { executions: unknown[] } }).data.executions, []);
+    assert.equal(foreignInspection.status, 404);
     const inspection = await request(inspectionRoute, { headers: workerAuth });
     assert.equal(inspection.status, 200);
     assert.equal(JSON.stringify(inspection.body).includes(claimed.leaseToken), false);

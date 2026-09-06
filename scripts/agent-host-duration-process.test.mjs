@@ -1,3 +1,4 @@
+import { compatibleHostFixture } from "./fixtures/host-protocol.mjs";
 import assert from "node:assert/strict";
 import { spawn, execFile } from "node:child_process";
 import { once } from "node:events";
@@ -23,7 +24,8 @@ for (const scenario of ["hungWorker", "lateSuccess", "expiredBeforeSpawn", "miss
       res.setHeader("Content-Type", "application/json");
       let data = {};
       if (req.url.startsWith("/v1/agent-runtime/recovery?")) data = { executionEnabled: true, executions: [] };
-      if (req.url.endsWith("/register")) data = { id: "host", name: "duration fixture" };
+      if (req.url === "/v1/agent-runtime/hosts/host/heartbeat") { res.end(JSON.stringify({ data: compatibleHostFixture() })); return; }
+      if (req.url.endsWith("/register")) data = compatibleHostFixture();
       if (req.url.endsWith("/claim")) {
         if (requests.filter((r) => r.url.endsWith("/claim")).length > 1) { res.writeHead(401); res.end('{}'); return; }
         data = { ...f.claimed, startedAt: scenario === "missingStart" ? null : new Date(Date.now() - (scenario === "expiredBeforeSpawn" ? 60000 : 52000)).toISOString(),
