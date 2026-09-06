@@ -12,17 +12,20 @@ export class AppApiError extends Error {
   status: number;
   requestId?: string;
   rawMessage?: string;
+  details?: unknown;
 
   constructor({
     code,
     status,
     requestId,
-    rawMessage
+    rawMessage,
+    details
   }: {
     code: string;
     status: number;
     requestId?: string;
     rawMessage?: string;
+    details?: unknown;
   }) {
     super(code);
     this.name = "AppApiError";
@@ -30,6 +33,7 @@ export class AppApiError extends Error {
     this.status = status;
     this.requestId = requestId;
     this.rawMessage = rawMessage;
+    this.details = details;
   }
 }
 
@@ -95,6 +99,7 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
       code: errorCode,
       status: response.status,
       requestId: typeof body?.requestId === "string" ? body.requestId : undefined,
+      details: body?.errorDetails?.details,
       rawMessage: typeof body?.message === "string" ? body.message : undefined
     });
   }

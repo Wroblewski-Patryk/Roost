@@ -111,12 +111,14 @@ export function CcButton(props: CcButtonProps) {
     );
   }
 
-  const { type = "button", onClick } = props;
+  const { type = "button", onClick, name, value } = props as CcButtonButtonProps;
   return (
     <button
       aria-label={ariaLabel}
       className={buttonClass}
       disabled={isDisabled}
+      name={name}
+      value={value}
       onClick={onClick}
       title={title}
       type={type}

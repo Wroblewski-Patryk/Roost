@@ -921,7 +921,7 @@ operationsRouter.patch("/work-items/:id", asyncHandler(async (req, res) => {
     return res.status(404).json({ error: "not_found" });
   }
 
-  if (existing.source === "clickup" && existing.externalId) {
+  if (existing.source === "clickup" && existing.externalId && ["title", "description", "status", "priority", "dueDate"].some(key => key in input)) {
     try {
       await writeBackCompanyCoreTaskToClickUp({
         workspaceId,

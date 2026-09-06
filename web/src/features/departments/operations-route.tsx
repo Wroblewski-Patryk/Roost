@@ -16,6 +16,7 @@ import { CoreAreaKey, OperationsDepartment, OperationsPacket, OperationsStatusCo
 import { departmentLabel } from "./department-labels";
 import { DepartmentScopeControl } from "./department-scope-control";
 import { ProceduresWorkbench } from "./procedures-workbench";
+import { TaskReadinessModal } from "./task-readiness";
 
 type OperationsView = "tasks" | "calendar" | "procedures";
 type CalendarMode = "day" | "week" | "month";
@@ -426,13 +427,14 @@ function TaskFields({
   );
 }
 
-function TaskPreviewModal({
+export function TaskPreviewModal({
   item,
   taskLists,
   statuses,
   assignmentOptions,
   onClose,
-  onSaved
+  onSaved,
+  onReady
 }: {
   item: OperationsWorkItem;
   taskLists: OperationsTaskList[];
@@ -440,12 +442,15 @@ function TaskPreviewModal({
   assignmentOptions?: OperationsPacket["assignmentOptions"];
   onClose: () => void;
   onSaved: () => void;
+  onReady: (taskId: string) => void;
 }) {
   const { t } = useLanguage();
   const [saveState, setSaveState] = useState<"idle" | "saving" | "error">("idle");
   const [error, setError] = useState("");
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const submitter = (event.nativeEvent as SubmitEvent).submitter;
+    const prepare = submitter instanceof HTMLButtonElement && submitter.value === "prepare";
     const form = new FormData(event.currentTarget);
     const dueDate = String(form.get("dueDate") || "");
     const startDate = String(form.get("startDate") || "");
@@ -480,6 +485,7 @@ function TaskPreviewModal({
       });
       onSaved();
       onClose();
+      if (prepare) onReady(item.id);
     } catch (saveError) {
       setSaveState("error");
       setError(userErrorMessage(saveError, t));
@@ -488,7 +494,7 @@ function TaskPreviewModal({
 
   return (
     <CcRecordEditorModal
-      actions={<><CcButton onClick={onClose} variant="ghost">{t("operations.cancel")}</CcButton><CcButton loading={saveState === "saving"} type="submit" variant="primary">{t("operations.saveTask")}</CcButton></>}
+      actions={<><CcButton name="action" value="prepare" disabled={saveState === "saving"} type="submit" variant="outline">{t("ready.saveAndPrepare")}</CcButton><CcButton onClick={onClose} variant="ghost">{t("operations.cancel")}</CcButton><CcButton loading={saveState === "saving"} type="submit" variant="primary">{t("operations.saveTask")}</CcButton></>}
       description={item.hierarchy?.taskList?.name || t("operations.unassigned")}
       eyebrow="04 Operations · Task"
       maxWidthClassName="max-w-5xl"
@@ -1313,6 +1319,7 @@ export function OperationsRoute() {
   const [selectedListIds, setSelectedListIds] = useState<string[]>([]);
   const [listSelectionInitialized, setListSelectionInitialized] = useState(false);
   const [selectedTask, setSelectedTask] = useState<OperationsWorkItem | null>(null);
+  const [readinessTask, setReadinessTask] = useState<string | null>(null);
   const [selectedList, setSelectedList] = useState<OperationsTaskList | null>(null);
   const [createTaskListId, setCreateTaskListId] = useState<string | null>(null);
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
@@ -1427,7 +1434,8 @@ export function OperationsRoute() {
         </section>
       ) : null}
 
-      {selectedTask ? <TaskPreviewModal assignmentOptions={assignmentOptions} item={selectedTask} statuses={statuses} taskLists={taskLists} onClose={() => setSelectedTask(null)} onSaved={refresh} /> : null}
+      {readinessTask ? <TaskReadinessModal key={readinessTask} taskId={readinessTask} onClose={() => setReadinessTask(null)} onSaved={refresh} /> : null}
+      {selectedTask ? <TaskPreviewModal onReady={setReadinessTask} assignmentOptions={assignmentOptions} item={selectedTask} statuses={statuses} taskLists={taskLists} onClose={() => setSelectedTask(null)} onSaved={refresh} /> : null}
       {isCreateTaskOpen ? <TaskCreateModal assignmentOptions={assignmentOptions} taskLists={taskLists} statuses={statuses} defaultTaskListId={createTaskListId || undefined} onClose={() => setIsCreateTaskOpen(false)} onSaved={refresh} /> : null}
       {isCreateListOpen ? <TaskListModal departments={departments} onClose={() => setIsCreateListOpen(false)} onSaved={refresh} /> : null}
       {selectedList ? <TaskListModal list={selectedList} departments={departments} onClose={() => setSelectedList(null)} onSaved={refresh} /> : null}

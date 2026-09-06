@@ -1,5 +1,6 @@
 import { isDeepStrictEqual } from "node:util";
-import { inspectReady, lockReadyTask, readyTransaction, submitReady } from "./task-execution-readiness";
+import { inspectReady, lockReadyTask, readyTransaction, submitReady, readyEditorData } from "./task-execution-readiness";
+import { requireWorkspaceRole, roleAtLeast } from "../../auth/workspace-access";
 import { randomUUID } from "node:crypto";
 import { AgentExecutionStatus, Prisma } from "@prisma/client";
 import { Router } from "express";
@@ -140,6 +141,7 @@ function executionReportMetadata(existing: Prisma.JsonValue, reported: Record<st
 }
 
 agentRuntimeRouter.post("/tasks/:id/actions/submit-for-execution", asyncHandler(async (req, res) => {
+  if (!requireWorkspaceRole(req, res, "member")) return;
   const taskId = z.string().uuid().parse(req.params.id);
   const input = z.object({ applicationId: z.string().uuid(), contract: z.record(z.unknown()), prompt: z.string().max(20000).nullable().optional(), baseBranch: z.string().max(240).nullable().optional() }).strict().parse(req.body);
   const result = await readyTransaction(tx => submitReady(tx, req.auth!.workspaceId, taskId, input, actor(req)));
@@ -148,8 +150,16 @@ agentRuntimeRouter.post("/tasks/:id/actions/submit-for-execution", asyncHandler(
 }));
 
 agentRuntimeRouter.get("/tasks/:id/execution-readiness", asyncHandler(async (req, res) => {
-  const result = await readyTransaction(tx => inspectReady(tx, req.auth!.workspaceId, z.string().uuid().parse(req.params.id)));
+  const taskId = z.string().uuid().parse(req.params.id);
+  const result = await readyTransaction(async tx => {
+    const ready = await inspectReady(tx, req.auth!.workspaceId, taskId);
+    if (ready.error === "task_not_found" || req.query.editor !== "1") return ready;
+    const editor = await readyEditorData(tx, req.auth!.workspaceId, taskId, req.query.applicationId ? z.string().uuid().parse(req.query.applicationId) : undefined);
+    if (editor && "error" in editor) return { error: editor.error };
+    return { ...ready, readiness: { ...ready.readiness, editor, canSubmit: req.auth!.authType === "user" && roleAtLeast(req.auth!.workspaceRole, "member"), executionEnabled: executionEnabled() } };
+  });
   if ("error" in result && result.error === "task_not_found") return sendApiError(res, 404, result.error);
+  if ("error" in result && result.error === "application_not_found") return sendApiError(res, 404, result.error);
   res.json({ data: "readiness" in result ? result.readiness : { status: "needs_revalidation", reason: result.error } });
 }));
 

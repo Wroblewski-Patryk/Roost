@@ -1320,6 +1320,55 @@ test("Ready pins validation and rejects stale queue, preparation and recovery wi
   } finally { delete process.env.ROOST_CODEX_EXECUTION_ENABLED; }
 });
 
+test("Ready workbench projects safe catalogs and requires a current human role for acceptance", async () => {
+  const owner = await registerOwner("ready-editor@example.com", "Ready Editor Fixture");
+  const ownerUser = await prisma.user.findFirstOrThrow({ where: { email: "ready-editor@example.com" } });
+  const auth = { Authorization: `Bearer ${owner.token}` };
+  const application = await prisma.application.create({ data: { workspaceId: owner.workspace.id, name: "Editor application", slug: "editor-fixture" } });
+  const project = await prisma.project.create({ data: { workspaceId: owner.workspace.id, name: "Editor project" } });
+  await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id } });
+  const task = await prisma.task.create({ data: { workspaceId: owner.workspace.id, projectId: project.id, title: "Prepare an accessible contract" } });
+  const f = await prepareReadyFixture(owner.workspace.id, task.id, application.id, auth);
+  const route = `/v1/agent-runtime/tasks/${task.id}`;
+  const keyResponse = await request("/v1/api-keys", { method: "POST", headers: auth, body: JSON.stringify({ name: "Broad fixture key", scopes: ["*"], fullAccessConfirmed: true }) });
+  assert.equal(keyResponse.status, 201);
+  const key = (keyResponse.body as { data: { key: string } }).data.key;
+  const broad = await request(`${route}/actions/submit-for-execution`, { method: "POST", headers: { "X-API-Key": key }, body: JSON.stringify(f.input) });
+  assert.equal(broad.status, 403);
+  await prisma.companyRecord.update({ where: { id: f.sources[0]!.id }, data: { metadata: { secret: "SYNTHETIC_SECRET_SOURCE" } } });
+  await prisma.workforceEntity.update({ where: { id: f.agent.id }, data: { runtimeProfile: { secret: "SYNTHETIC_SECRET_AGENT" } } });
+  for (const role of ["owner", "admin", "member", "viewer"] as const) {
+    await prisma.workspaceMembership.update({ where: { workspaceId_userId: { workspaceId: owner.workspace.id, userId: ownerUser.id } }, data: { role } });
+    const read = await request(`${route}/execution-readiness?editor=1`, { headers: auth });
+    assert.equal(read.status, 200);
+    const body = read.body as { data: { canSubmit: boolean; editor: { acceptance: { authorType: string }; sources: Array<Record<string, unknown>>; agent: Record<string, unknown>; applications: Array<{ id: string }>; models: Array<{ id: string; efforts: string[] }> } } };
+    assert.equal(body.data.canSubmit, role !== "viewer");
+    assert.equal(body.data.editor.applications[0]!.id, application.id);
+    assert.equal(body.data.editor.acceptance.authorType, "user");
+    assert.equal(body.data.editor.models.find(model => model.id === "gpt-5.6-luna")!.efforts.includes("ultra"), false);
+    assert.equal(JSON.stringify(read.body).includes("SYNTHETIC_SECRET"), false);
+    assert.equal("description" in body.data.editor.sources[0]!, false);
+    assert.equal("runtimeProfile" in body.data.editor.agent, false);
+    const updatedSource = await prisma.companyRecord.findUniqueOrThrow({ where: { id: f.sources[0]!.id } });
+    f.input.contract.context.company[0].revision = updatedSource.updatedAt.toISOString();
+    const submit = await request(`${route}/actions/submit-for-execution`, { method: "POST", headers: auth, body: JSON.stringify(f.input) });
+    assert.equal(submit.status, role === "viewer" ? 403 : 200, JSON.stringify(submit.body));
+  }
+  await prisma.workspaceMembership.update({ where: { workspaceId_userId: { workspaceId: owner.workspace.id, userId: ownerUser.id } }, data: { role: "owner" } });
+  const forged = await request(`${route}/actions/submit-for-execution`, { method: "POST", headers: auth, body: JSON.stringify({ ...f.input, pinId: "SYNTHETIC_SECRET_FORGED", revision: "a".repeat(64), validation: {} }) });
+  assert.equal(forged.status, 400); assert.equal(JSON.stringify(forged.body).includes("SYNTHETIC_SECRET"), false);
+  const outsider = await registerOwner("ready-editor-outsider@example.com", "Editor outsider");
+  assert.equal((await request(`${route}/execution-readiness?editor=1`, { headers: { Authorization: `Bearer ${outsider.token}` } })).status, 404);
+  assert.equal((await request(`${route}/execution-readiness?editor=1&applicationId=${outsider.workspace.id}`, { headers: auth })).status, 404);
+  assert.equal(await prisma.agentExecution.count({ where: { taskId: task.id } }), 0);
+  // Internal readiness links must not attempt an empty ClickUp writeback.
+  // This synthetic workspace has no provider configuration or credentials.
+  await prisma.task.update({ where: { id: task.id }, data: { source: "clickup", externalId: "synthetic-ready-links" } });
+  const links = await request(`/v1/operations/work-items/${task.id}`, { method: "PATCH", headers: auth, body: JSON.stringify({ projectId: project.id, goalId: f.input.contract.objective.goalId, assignedWorkforceEntityId: f.agent.id }) });
+  assert.equal(links.status, 200, JSON.stringify(links.body));
+  assert.equal(await prisma.event.count({ where: { taskId: task.id, type: "operations_work_item_writeback_failed" } }), 0);
+});
+
 test("local Codex Agent Host claims scoped work and reports owner-visible evidence", async () => {
   delete process.env.ROOST_CODEX_EXECUTION_ENABLED;
   const owner = await registerOwner("codex-runtime-owner@example.com", "Codex Runtime Workspace");

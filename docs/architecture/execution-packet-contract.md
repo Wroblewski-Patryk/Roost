@@ -9,7 +9,8 @@ It does not activate production agents, automatic recovery or the Soar pilot.
 First submit the explicit contract through
 `POST /v1/agent-runtime/tasks/:id/actions/submit-for-execution` with
 `{applicationId, contract, prompt?, baseBranch?}`. This requires
-`agent-runtime:write`; the worker claim/report profile cannot accept Ready.
+`agent-runtime:write` and a current human workspace owner/admin/member role.
+Viewers and API keys, including wildcard keys and worker profiles, cannot accept Ready.
 The API resolves current canonical context and runs the same packet validator
 as the host. Only successful validation creates Ready. Creation, assignment and
 ordinary task status edits do not create it. Submission itself never queues work
@@ -18,9 +19,35 @@ and is available while execution is disabled.
 Then queue through `POST /v1/agent-runtime/executions` with `taskId` (and
 `applicationId` when needed). The API copies the accepted contract, instruction,
 branch and pin into the execution. Supplied alternatives must match; caller pins
-cannot override the server pin. The existing task-only console trigger can queue
-an already Ready task, but does not author or validate the contract itself.
+cannot override the server pin. The task workbench opens a shared PL/EN contract
+editor through **Prepare execution**. The Operations task preview saves ordinary
+task edits before opening it through **Save and prepare execution**. Acceptance
+and queueing are separate actions; disabled runtime keeps queueing unavailable.
 No defaults invent missing intent or permissions.
+
+### Owner contract editor (RF-CTX-008)
+
+`GET /v1/agent-runtime/tasks/:id/execution-readiness?editor=1` adds a workspace-scoped
+editor projection to the existing readiness result. Optional `applicationId`
+must identify an application linked to the task project. It returns labels,
+revision references, the accepted editable contract, acceptance author/time,
+current human write eligibility and execution availability. It excludes resolved
+source bodies and agent runtime metadata. Company/application sources are bounded
+to 500 recent nonarchived records; project/goal/agent choices to 500; procedure,
+dependency and decision choices retain the task-context loader's bounds. This is
+a bounded catalog, not global source search. Server resolution remains authoritative
+and may reject a reference absent from the resolved execution context.
+
+The form authors intent, scope, context references, model/effort, permitted tools,
+budgets, acceptance evidence and recovery. Missing optional context requires an
+explicit reason. Adding a reference preserves selected revisions; upgrading stale
+references requires a separate action. Project/goal/executor corrections use the
+existing work-item PATCH; changes to only internal links do not call ClickUp.
+The client sends no pin, hash, validation proof or acceptance identity. Only the
+existing submit command can validate and persist these. Task status remains
+separate from Ready, and prior acceptance proof remains visible after invalidation.
+Errors display fixed translated diagnostic groups without echoing raw payloads.
+Full Draft/Needs-context/Decision and automatic interviews remain outside this slice.
 
 ### Accepted context at Ready (RF-CTX-006)
 

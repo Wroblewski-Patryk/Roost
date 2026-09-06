@@ -32,43 +32,44 @@ for later changes to these same canonical files.
 
 ## Atomic P0 selection
 
-The retained baseline includes explicit model admission, the duration gate,
-Windows observer launcher, fresh-context admission and host/API protocol
-admission (`a1a6d0fa`). The current bounded P0 slice is **RF-CTX-006:
-accepted context revision pinned at Ready**.
+The retained baseline includes model, duration, observer, fresh-context and
+protocol admission, plus accepted Ready pins (`9552fcd5`). The current bounded
+P0 slice is **RF-CTX-008: owner-facing contract submission and readiness
+diagnostics in the existing task workbench**.
 
-Submit-for-execution resolves canonical context and runs the shared packet
-validator before recording a Task pin and validation proof for the same hash.
-Queue/claim, pre-spawn checkpoints, active context reads and recovery revalidate
-that acceptance; missing/legacy pins fail closed. Changed context persists
-`needs_revalidation` without replacing prior proof. Queue binds the accepted
-pin; reports cannot overwrite it. Duplicate admission uses task locking and
-serializable transactions. Host checks both Ready and the retained preparation
-fingerprint, including the final refresh immediately before spawn.
+The PL/EN editor authors the contract through the existing submit command and
+shows task status separately from Ready, prior fingerprint, validation match,
+acceptance author/time and the reason for revalidation. Current human
+owner/admin/member roles can accept; viewers and all API keys cannot. Safe
+catalog projections omit source bodies and agent runtime metadata. Selected
+revisions change only through explicit owner action. Internal link corrections
+use existing task PATCH without an empty ClickUp writeback. Operations preserves
+ordinary edits by saving before opening the shared editor. Acceptance does not
+queue work, and the disabled runtime keeps queueing unavailable.
 
-The additive nullable Task migration intentionally leaves legacy tasks unready.
-The shared `ready_context_pin_v1` capability prevents execution across a mixed
-host/API rollout. Existing observer, protocol, model, duration, lease and writer
-ownership boundaries remain. Production stays disabled/observe, with no live
-provider call or Soar work. Exact deployment proof belongs in the completed
-handoff after verification.
+Local verification (2026-09-06): API/database **18/18**, Ready fingerprint
+**21/21**, UI model tests **2/2** and browser scenarios **44/44**. Browser evidence
+covers seven states in PL/EN at 390/834/1440 pixels, selector keyboard trapping,
+safe validation errors, resubmission, dirty-close, reduced-height reflow and
+Operations save-before-prepare. Screenshots were visually inspected, including
+the source picker and lower form; baseline screenshots use `9552fcd5`. Fixtures
+are synthetic and local. `npm run validate` passed: route manifest, backend
+TypeScript and production build. Existing asset/chunk warnings remain. An
+additional strict web check has 21 pre-existing diagnostics in route registry,
+data table, department scope and locale key parity (baseline: 23); it is not a
+passing full-web typecheck. Registry/matrix retain 162 requirement rows.
 
-Local verification (2026-09-06): host regression **232/232**, including 21 Ready
-fingerprint checks and five added Windows Ready admission scenarios; local
-API/database **17/17**; observer **7/7**, with normal Stop/Start. `npm run validate`
-passed: 280 manifest routes across 44 route files, TypeScript and production
-build. Existing Phosphor/ambient asset and large-chunk warnings remain.
-Registry/matrix retain 162 requirement rows. Tests use synthetic data and child
-processes. No provider call or UI change; native launcher QA was not repeated.
+No migration, protocol or local-host change is introduced. Production remains
+disabled/observe; no agent activation, live provider test or Soar work. Exact
+deployment and observer status proof belongs in the completed handoff. The
+full 232 host and seven observer tests from the retained baseline were not
+repeated for this UI/API projection slice.
 
-RF-CTX-006 remains **częściowo działa**: invalidation is detected at admission,
-not eagerly on every source write, and already spawned work is not invalidated.
-No database lock spans the final read to local spawn. RF-CTX-008 now has a
-validated Ready command and stored state separate from ordinary task status;
-full Draft/Needs-context/Decision workflow and console authoring remain partial.
-One next candidate for separate selection: **RF-CTX-008, owner-facing contract
-submission and readiness diagnostics in the task workbench**, using the existing
-Ready command. Not started.
+RF-CTX-008 remains **częściowo działa**: full Draft/Needs-context/Decision workflow
+and automatic interviews remain outside this slice. RF-CTX-006 still lacks
+eager source-write and mid-execution invalidation; no lock spans read-to-spawn.
+One next candidate for separate selection: **RF-HOST-010, hard maxOutputTokens
+enforcement**. Not started.
 
 ## Matrix
 
@@ -101,7 +102,7 @@ Ready command. Not started.
 | [RF-CTX-005](../product/interview-foundation-v2.md#rf-ctx-005) | P0 | częściowo działa | [PACKET](#e-packet) | Packet references versions; complete layered selection/reason trace missing. |
 | [RF-CTX-006](../product/interview-foundation-v2.md#rf-ctx-006) | P0 | częściowo działa | [PACKET](#e-packet) | Ready acceptance/proof, queue/claim/preparation/recovery gates and final authoritative refresh are implemented; eager source-write and mid-execution invalidation remain missing. No atomic source-edit-to-spawn lock. |
 | [RF-CTX-007](../product/interview-foundation-v2.md#rf-ctx-007) | P1 | brak | [CTX](#e-ctx) | No runtime context expansion protocol. |
-| [RF-CTX-008](../product/interview-foundation-v2.md#rf-ctx-008) | P0 | częściowo działa | [TASK](#e-task) | Submit-for-execution validates and stores Ready separately from task status; full Draft/Needs-context/Decision workflow and console authoring remain partial. |
+| [RF-CTX-008](../product/interview-foundation-v2.md#rf-ctx-008) | P0 | częściowo działa | [TASK](#e-task) | Human role-gated PL/EN contract editor and diagnostics use validated Ready separately from task status; full Draft/Needs-context/Decision workflow and automatic interviews remain missing. |
 | [RF-CTX-009](../product/interview-foundation-v2.md#rf-ctx-009) | P0 | częściowo działa | [TASK](#e-task) | Task fields exist; atomicity enforcement absent. |
 | [RF-CTX-010](../product/interview-foundation-v2.md#rf-ctx-010) | P0 | częściowo działa | [TASK](#e-task) | Assignment exists; role separation gates absent. |
 | [RF-CTX-011](../product/interview-foundation-v2.md#rf-ctx-011) | P1 | częściowo działa | [PROC](#e-proc) | Registry primitives exist; task-type execution contract incomplete. |
@@ -291,9 +292,14 @@ Each entry links existing canonical files; a test link is not a passing result.
 [src/modules/company-intelligence/company-intelligence.routes.ts](../../src/modules/company-intelligence/company-intelligence.routes.ts), [src/modules/company-records/company-records.routes.ts](../../src/modules/company-records/company-records.routes.ts), [scripts/import-application-documentation-context.ts](../../scripts/import-application-documentation-context.ts).
 
 <a id="e-task"></a>
-**TASK** — Task CRUD and assignments plus explicit validated Ready command/state; ordinary edits cannot author readiness.
+**TASK** — Task CRUD, assignments and a human role-gated PL/EN contract editor using the explicit validated Ready command/state; ordinary edits cannot author readiness.
 
 [src/modules/tasks/tasks.routes.ts](../../src/modules/tasks/tasks.routes.ts), [src/modules/agent-runtime/agent-runtime.routes.ts](../../src/modules/agent-runtime/agent-runtime.routes.ts), [src/tests/api.test.ts](../../src/tests/api.test.ts).
+
+[shared Ready editor](../../web/src/features/departments/task-readiness.tsx),
+[contract form mapping](../../web/src/features/departments/task-readiness-model.ts),
+[browser interaction/visual fixtures](../../scripts/task-readiness-ui.test.mjs),
+[revision and diagnostic tests](../../web/src/features/departments/task-readiness-model.test.ts).
 
 <a id="e-proc"></a>
 **PROC** — Versioned procedure and process data, not complete task execution governance.

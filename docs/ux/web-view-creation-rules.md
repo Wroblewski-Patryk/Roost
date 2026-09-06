@@ -131,6 +131,28 @@ Use when the module manages workforce profiles and runtime configuration.
 - Primary actions: create, edit, manual sync where allowed.
 - Avoid hero copy, generic KPI bands, and repeated badges.
 
+### Task Execution Readiness Pattern
+
+Use the existing task workbench and Operations task preview to open
+`TaskReadinessModal`; do not create a separate task system or JSON editor.
+Show task status independently from execution readiness, with the accepted
+fingerprint, validation match, author/time and revalidation reason together.
+Keep contract acceptance separate from queueing and explain runtime-disabled,
+active-execution and human read-only states next to the available actions.
+
+Reuse `CcRecordEditorModal`, `CcField`, `CcSelect`, `CcMultiSelect`, `CcNotice` and
+the existing PL/EN messages. Use labelled revision choices, explicit optional
+context absence and translated validation groups. Never silently upgrade a
+selected revision or render raw server diagnostics. Preserve unsaved contract
+edits on validation failure and ask before discarding them.
+
+The modal keeps its actions visible while the form scrolls. Selectors use native
+checkbox semantics inside a labelled popup dialog attached to the parent modal.
+Tab stays in the active popup; Escape closes that popup first and restores its
+trigger. The parent trap excludes hidden and disabled fields. Verify PL/EN at
+390, 834 and 1440 pixels, a reduced-height viewport, error recovery, dirty-close,
+and the Operations save-before-prepare entry with synthetic data.
+
 ## Checklist Before Shipping A New View
 
 - [ ] The first viewport contains real work controls, not a hero.

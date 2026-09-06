@@ -1,7 +1,9 @@
 import type { Locale } from "./locales";
+import { readyMessages } from "./task-readiness.messages";
 
 export const messages = {
   en: {
+    ...readyMessages.en,
     "app.name": "Roost",
     "app.operatingSystem": "Operating center",
     "route.loading": "Loading view",
@@ -1041,6 +1043,7 @@ export const messages = {
     "state.needsContext": "needs context"
   },
   pl: {
+    ...readyMessages.pl,
     "app.name": "Roost",
     "app.operatingSystem": "Centrum operacyjne",
     "route.loading": "Ładowanie widoku",

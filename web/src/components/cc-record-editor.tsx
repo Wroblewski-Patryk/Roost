@@ -11,6 +11,7 @@ type CcRecordEditorModalProps = {
   onClose: () => void;
   onSubmit: FormEventHandler<HTMLFormElement>;
   maxWidthClassName?: string;
+  closeLabel?: string;
 };
 
 export function CcRecordEditorModal({
@@ -23,7 +24,8 @@ export function CcRecordEditorModal({
   actions,
   onClose,
   onSubmit,
-  maxWidthClassName = "max-w-4xl"
+  maxWidthClassName = "max-w-4xl",
+  closeLabel = "Close editor"
 }: CcRecordEditorModalProps) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const onCloseRef = useRef(onClose);
@@ -38,11 +40,11 @@ export function CcRecordEditorModal({
       if (!dialogRef.current) return [];
       return Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
         'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
-      )).filter((element) => !element.hasAttribute("hidden") && element.getAttribute("aria-hidden") !== "true");
+      )).filter((element) => !element.matches(":disabled") && !element.hasAttribute("hidden") && element.getAttribute("aria-hidden") !== "true" && element.getClientRects().length > 0);
     }
 
     const focusFrame = window.requestAnimationFrame(() => {
-      const firstField = dialogRef.current?.querySelector<HTMLElement>('input:not([disabled]), select:not([disabled]), textarea:not([disabled])');
+      const firstField = focusableElements().find(element => element.matches('input, select, textarea'));
       (firstField || focusableElements()[0])?.focus();
     });
 
@@ -102,7 +104,7 @@ export function CcRecordEditorModal({
             <h2 className="mt-1 text-2xl font-black text-company-ink" id={titleId}>{title}</h2>
             {description ? <p className="mt-1 max-w-3xl text-sm leading-6 text-company-muted" id={`${titleId}-description`}>{description}</p> : null}
           </div>
-          <button className="btn btn-ghost btn-circle h-11 min-h-11 w-11 min-w-11 shrink-0" aria-label="Close editor" onClick={onClose} type="button">
+          <button className="btn btn-ghost btn-circle h-11 min-h-11 w-11 min-w-11 shrink-0" aria-label={closeLabel} onClick={onClose} type="button">
             <i className="ph-bold ph-x" aria-hidden="true"></i>
           </button>
         </header>

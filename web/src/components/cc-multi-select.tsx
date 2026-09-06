@@ -25,7 +25,9 @@ export function CcMultiSelect({
   onChange,
   placeholder = "Select values",
   searchPlaceholder = "Search available values...",
-  emptyLabel = "No matching values"
+  emptyLabel = "No matching values",
+  clearLabel = "Clear", doneLabel = "Done", selectedLabel = "selected",
+  showValues = true, describedBy, invalid, disabled = false, popupLabel = placeholder
 }: {
   id?: string;
   name: string;
@@ -35,6 +37,9 @@ export function CcMultiSelect({
   placeholder?: string;
   searchPlaceholder?: string;
   emptyLabel?: string;
+  clearLabel?: string; doneLabel?: string; selectedLabel?: string;
+  showValues?: boolean; describedBy?: string; invalid?: boolean; disabled?: boolean;
+  popupLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -44,6 +49,7 @@ export function CcMultiSelect({
   const searchRef = useRef<HTMLInputElement | null>(null);
   const panelId = useId();
   const selected = useMemo(() => options.filter((option) => value.includes(option.value)), [options, value]);
+  useEffect(() => { if (disabled) setOpen(false); }, [disabled]);
   const filtered = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     if (!normalized) return options;
@@ -102,15 +108,23 @@ export function CcMultiSelect({
       if (!triggerRef.current?.contains(target) && !panelRef.current?.contains(target)) close();
     }
     function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Tab" && panelRef.current?.contains(document.activeElement)) {
+        const focusable = Array.from(panelRef.current.querySelectorAll<HTMLElement>('input:not([disabled]), button:not([disabled])'));
+        const edge = event.shiftKey ? focusable[0] : focusable.at(-1);
+        if (document.activeElement === edge) { event.preventDefault(); (event.shiftKey ? focusable.at(-1) : focusable[0])?.focus(); }
+        event.stopImmediatePropagation();
+        return;
+      }
       if (event.key !== "Escape") return;
+      event.preventDefault(); event.stopImmediatePropagation();
       close();
       triggerRef.current?.focus();
     }
     document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", onKeyDown, true);
     return () => {
       document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("keydown", onKeyDown, true);
     };
   }, [open]);
 
@@ -132,6 +146,8 @@ export function CcMultiSelect({
       id={panelId}
       ref={panelRef}
       style={panelStyle}
+      role="dialog"
+      aria-label={popupLabel}
     >
       <label className="input input-bordered input-sm flex w-full min-w-0 items-center gap-2 bg-base-100/75">
         <i className="ph-bold ph-magnifying-glass shrink-0 text-company-muted" aria-hidden="true"></i>
@@ -145,30 +161,30 @@ export function CcMultiSelect({
           value={query}
         />
       </label>
-      <div aria-multiselectable="true" className="min-h-0 flex-1 overflow-y-auto" role="listbox">
+      <div className="min-h-0 flex-1 overflow-y-auto" role="group" aria-label={popupLabel}>
         {filtered.length ? filtered.map((option) => {
           const checked = value.includes(option.value);
           return (
             <label className={`flex cursor-pointer items-start gap-3 rounded-md px-2 py-2.5 hover:bg-base-200/70 ${option.disabled ? "cursor-not-allowed opacity-50" : ""}`} key={option.value}>
               <input checked={checked} className="checkbox checkbox-primary checkbox-sm mt-0.5" disabled={option.disabled} onChange={() => toggle(option)} type="checkbox" />
               <span className="min-w-0">
-                <strong className="block text-sm text-company-ink">{option.label}</strong>
-                <span className="block break-all text-xs text-company-muted">{option.value}{option.description ? ` · ${option.description}` : ""}</span>
+                <strong className="block break-words text-sm text-company-ink">{option.label}</strong>
+                {showValues || option.description ? <span className="block break-all text-xs text-company-muted">{showValues ? option.value : ""}{option.description ? `${showValues ? " · " : ""}${option.description}` : ""}</span> : null}
               </span>
             </label>
           );
         }) : <p className="px-2 py-4 text-center text-sm text-company-muted">{emptyLabel}</p>}
       </div>
       <div className="flex items-center justify-between border-t border-base-300 px-1 pt-2">
-        <span className="text-xs font-bold text-company-muted">{value.length} selected</span>
+        <span className="text-xs font-bold text-company-muted">{value.length} {selectedLabel}</span>
         <div className="flex gap-1">
-          <CcButton disabled={!value.length} onClick={() => onChange([])} size="xs" variant="ghost">Clear</CcButton>
-          <CcButton onClick={() => { close(); triggerRef.current?.focus(); }} size="xs" variant="outline">Done</CcButton>
+          <CcButton disabled={!value.length} onClick={() => onChange([])} size="xs" variant="ghost">{clearLabel}</CcButton>
+          <CcButton onClick={() => { close(); triggerRef.current?.focus(); }} size="xs" variant="outline">{doneLabel}</CcButton>
         </div>
       </div>
     </div>
   ) : null;
-  const portalHost = triggerRef.current?.closest<HTMLElement>(".roost-liquid-shell, [data-theme]") || document.body;
+  const portalHost = triggerRef.current?.closest<HTMLElement>('[role="dialog"]') || triggerRef.current?.closest<HTMLElement>(".roost-liquid-shell, [data-theme]") || document.body;
 
   return (
     <div className="grid w-full gap-2">
@@ -176,7 +192,10 @@ export function CcMultiSelect({
       <button
         aria-controls={open ? panelId : undefined}
         aria-expanded={open}
-        aria-haspopup="listbox"
+        aria-haspopup="dialog"
+        aria-describedby={describedBy}
+        aria-invalid={invalid || undefined}
+        disabled={disabled}
         className="select select-bordered flex h-auto min-h-12 w-full items-center justify-between gap-3 py-2 text-left"
         id={id}
         onClick={() => open ? close() : setOpen(true)}
@@ -185,7 +204,7 @@ export function CcMultiSelect({
       >
         <span className="flex min-w-0 flex-1 flex-wrap gap-1.5">
           {selected.length ? selected.map((option) => (
-            <span className="rounded-md border border-base-300 bg-base-200/70 px-2 py-1 text-xs font-bold text-company-ink" key={option.value}>{option.label}</span>
+            <span className="min-w-0 break-words rounded-md border border-base-300 bg-base-200/70 px-2 py-1 text-xs font-bold text-company-ink" key={option.value}>{option.label}</span>
           )) : <span className="text-company-muted">{placeholder}</span>}
         </span>
         <i className={`ph-bold ${open ? "ph-caret-up" : "ph-caret-down"} shrink-0 text-company-muted`} aria-hidden="true"></i>

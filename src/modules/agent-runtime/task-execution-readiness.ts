@@ -12,7 +12,7 @@ const { readyContextRevision, readyContextQuery } = require("../../../scripts/li
 };
 // Preserve native ESM loading in this CommonJS build. The specifier is a fixed
 // repository module, never request data; the host and API use one validator.
-const loadESM = new Function("specifier", "return import(specifier)") as (specifier: string) => Promise<{ validateExecutionPacket: (...args: any[]) => unknown }>;
+const loadESM = new Function("specifier", "return import(specifier)") as (specifier: string) => Promise<{ validateExecutionPacket: (...args: any[]) => unknown; executionContractSchema: { shape: any; safeParse: (value: unknown) => { success: boolean; data?: any } } }>;
 const validation = loadESM(pathToFileURL(path.resolve(__dirname, "../../../scripts/lib/agent-host-execution-packet.mjs")).href);
 const object = (value: unknown): Record<string, any> => value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, any> : {};
 const wire = (value: unknown) => JSON.parse(JSON.stringify(value));
@@ -66,7 +66,7 @@ export async function inspectReady(db: Prisma.TransactionClient, workspaceId: st
   if (pin.schemaVersion !== "roost-ready-context-v1" || !pin.pinId || !/^[a-f0-9]{64}$/.test(pin.revision) || pin.validation?.validator !== "execution-packet-v1" || pin.validation?.revision !== pin.revision) {
     return { error: "task_ready_pin_required", readiness: { status: "not_ready", reason: "ready_pin_required" } };
   }
-  let reason = pin.status !== "ready" ? "revalidation_required" : null;
+  let reason = pin.status !== "ready" ? (["context_changed", "context_invalid"].includes(pin.reason) ? pin.reason : "revalidation_required") : null;
   let context;
   if (!reason) {
     try {
@@ -87,4 +87,40 @@ export async function inspectReady(db: Prisma.TransactionClient, workspaceId: st
   }
   const readiness = { status: "ready", ...proof };
   return { readiness, pin, taskContext: { ...context!.taskContext, readyAdmission: readiness }, applicationContext: context!.applicationContext };
+}
+
+// Human editor projection: labels and revision references, never resolved source
+// bodies, agent metadata, credentials or client-authorable acceptance evidence.
+export async function readyEditorData(db: Prisma.TransactionClient, workspaceId: string, taskId: string, applicationId?: string) {
+  const context = await loadTaskAgentContext(workspaceId, taskId, null, db);
+  if (!context) return null;
+  const task = context.task, pin = object(task.executionReadiness);
+  const applications = await db.application.findMany({ where: { workspaceId, slug: { not: "roost" }, projects: { some: { projectId: task.projectId ?? "00000000-0000-0000-0000-000000000000" } } }, select: { id: true, name: true }, orderBy: { name: "asc" } });
+  const selected = applicationId ?? (applications.some(app => app.id === pin.applicationId) ? pin.applicationId : applications.length === 1 ? applications[0]!.id : null);
+  if (selected && !applications.some(app => app.id === selected)) return { error: "application_not_found" };
+  const records = await db.companyRecord.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ applicationId: null }, ...(selected ? [{ applicationId: selected }] : [])] }, select: { id: true, title: true, applicationId: true, updatedAt: true }, orderBy: { updatedAt: "desc" }, take: 501 });
+  const accepted = (await validation).executionContractSchema.safeParse(pin.contract);
+  const modelSchema = (await validation).executionContractSchema.shape.modelSelection;
+  const modelShape = modelSchema.innerType().shape;
+  const author = pin.requestedByType === "user" && typeof pin.requestedById === "string" ? await db.workspaceMembership.findFirst({ where: { workspaceId, userId: pin.requestedById }, select: { user: { select: { name: true } } } }) : null;
+  const active = await db.agentExecution.count({ where: { workspaceId, taskId, status: { in: ["queued", "claimed", "running", "waiting_for_approval"] } } });
+  const [projects, goals, agents] = await Promise.all([
+    db.project.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, name: true }, orderBy: { name: "asc" }, take: 500 }),
+    db.goal.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, title: true }, orderBy: { title: "asc" }, take: 500 }),
+    db.workforceEntity.findMany({ where: { workspaceId, status: "active", type: "agent" }, select: { id: true, name: true }, orderBy: { name: "asc" }, take: 500 })
+  ]);
+  const agent = task.assignedWorkforceEntity;
+  const strings = (value: unknown) => Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+  return {
+    task: { id: task.id, title: task.title, status: task.status, project: task.project ? { id: task.project.id, name: task.project.name } : null, goal: task.goal ? { id: task.goal.id, title: task.goal.title } : null },
+    agent: agent ? { id: agent.id, name: agent.name, role: agent.role, eligible: agent.type === "agent" && agent.status === "active", competencies: strings(agent.skillIndex), tools: strings(agent.toolIndex).filter(item => ["repository_read", "repository_write", "local_test"].includes(item)), permissions: strings(agent.authorityScope).filter(item => ["repository_read", "repository_write", "local_test"].includes(item)) } : null,
+    applications, projects, goals, agents, applicationId: selected, activeExecution: active > 0, catalogTruncated: records.length > 500,
+    models: modelShape.model.options.map((id: string) => ({ id, efforts: modelShape.reasoningEffort.options.filter((reasoningEffort: string) => modelSchema.safeParse({ model: id, reasoningEffort }).success) })),
+    sources: records.slice(0, 500).map(item => ({ id: item.id, label: item.title, revision: item.updatedAt.toISOString(), applicationId: item.applicationId })),
+    procedures: context.procedures.map(item => ({ id: item.id, label: item.name, revision: String(item.version), eligible: item.status === "active" })),
+    dependencies: context.dependencies.map(item => ({ id: item.id, label: item.dependencyType, revision: item.updatedAt.toISOString(), eligible: item.status !== "blocked" })),
+    decisions: context.decisions.map(item => ({ id: item.id, label: item.title, revision: item.updatedAt.toISOString(), eligible: item.status === "approved" })),
+    accepted: accepted.success ? { contract: accepted.data, applicationId: pin.applicationId, prompt: pin.prompt, baseBranch: pin.baseBranch } : null,
+    acceptance: typeof pin.validatedAt === "string" && Number.isFinite(Date.parse(pin.validatedAt)) ? { validatedAt: new Date(pin.validatedAt).toISOString(), authorName: author?.user.name ?? null, authorType: pin.requestedByType === "user" ? "user" : "agent" } : null
+  };
 }

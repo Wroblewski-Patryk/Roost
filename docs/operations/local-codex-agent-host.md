@@ -389,7 +389,11 @@ To prepare future authorized work, submit the reviewed contract through
 `GET /v1/agent-runtime/tasks/:id/execution-readiness`, then explicitly queue.
 `needs_revalidation` requires review/replan and resubmission after reconciling
 the prior active execution. Readiness inspection can persist an invalidation.
-This release does not add a console contract editor or enable execution.
+The owner task workbench now authors and revalidates the contract through the
+existing Ready command. Its human owner/admin/member gate excludes API keys;
+the observer's capabilities are unchanged. Acceptance is available while execution
+is disabled, but does not queue work or activate the host. This UI/API slice adds
+no migration and does not enable execution.
 
 `node --test scripts/agent-host-ready-context.test.mjs` covers Ready fingerprint
 semantics. Context process tests cover missing/legacy/changed pins, API rejection
