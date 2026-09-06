@@ -34,8 +34,23 @@ desired and observed product model that can drive that execution.
 The [autonomy activation contract](autonomy-activation-contract.md) requires
 configuration-based onboarding across the application portfolio. Soar is the
 first pilot; neither task orchestration nor application identity may depend on
-it. Native autonomous self-development of Roost is deferred. Both bootstrap
+it. Roost itself is excluded from this portfolio and from agent execution targets.
+The managed portfolio is Aviary, Featherly, Nest and Soar. Do not import Roost
+requirements, development tasks, documentation or repositories as a managed application. Both bootstrap
 automations remain active until a separate future owner decision.
+
+## Removing the former Roost portfolio entry
+
+The September 2026 cleanup migration removes the `roost` application, its
+application-owned engineering data and offerings, exclusively linked delivery
+projects, tasks, imported context descendants and their direct graph links.
+Shared capability definitions, procedures, company-wide operating knowledge and
+audit/event history remain system records, not a mandate to develop Roost.
+The migration stops before deletion if a delivery project is shared with another
+application or an execution is still active; reconcile those owners first.
+Historical migrations remain immutable; the cleanup follows them on fresh installs.
+The seed and documentation importer no longer register Roost, the application
+create API rejects its reserved slug, and the Agent Host rejects Roost mappings.
 
 ## Domain model
 
@@ -65,7 +80,7 @@ and evidence are intentionally separate:
 
 ```text
 CapabilityDefinition(Authentication)
-  -> ApplicationCapability(Roost, REQUIRED, target COMPLETE)
+  -> ApplicationCapability(Soar, REQUIRED, target COMPLETE)
   -> CapabilityObservation(PARTIAL, observedAt, source, actor)
   -> ApplicationEvidence(test/path/API, verification status)
 ```
@@ -164,7 +179,7 @@ endpoints, screenshots, deployments, documentation, database objects, metrics,
 external URLs, and manual verification. Provenance distinguishes human, agent,
 system, import, and repository scan sources.
 
-Seeded application records register the documentation roots for Roost, Soar,
+Seeded application records register the documentation roots for Soar
 and Featherly as unverified documentation evidence. Nest and Aviary are
 registered with `documentationImport=source_missing` until source documents
 exist. A documentation root proves provenance only; it does not prove runtime
@@ -277,7 +292,7 @@ not infer verified runtime state beyond the source registry's declarations.
 
 `npm run import:application-docs:local-preview` inventories canonical
 top-level Product and Architecture Markdown for the registered Aviary,
-Featherly, Nest, Roost, and Soar repositories. With a workspace-scoped
+Featherly, Nest, and Soar repositories. With a workspace-scoped
 `ROOST_API_TOKEN`, the same command previews the production import through
 HTTPS; `npm run import:application-docs:apply` performs the audited write.
 Apply mode batches documentation records to keep production requests bounded.

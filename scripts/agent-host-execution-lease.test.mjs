@@ -126,7 +126,7 @@ test(sandboxBlocked ? "the real host rejects unrestricted sandbox before registe
     res.setHeader("Content-Type", "application/json");
     if (req.url.endsWith("/heartbeat")) { res.writeHead(409); res.end(JSON.stringify({ error: "agent_execution_lease_invalid" })); return; }
     const data = req.url.startsWith("/v1/agent-runtime/recovery?") ? { executions: [], executionEnabled: true } : req.url.endsWith("/register") ? { id: "host", name: "test" }
-      : req.url.endsWith("/claim") ? { id: "execution", taskId: "task", applicationId: "app", leaseToken: "test-only", task: { title: "test" }, application: { id: "app", name: "Roost", slug: "roost", repositories: [{ url: "https://github.com/Wroblewski-Patryk/Roost.git", isPrimary: true }] } }
+      : req.url.endsWith("/claim") ? { id: "execution", taskId: "task", applicationId: "app", leaseToken: "test-only", task: { title: "test" }, application: { id: "app", name: "Soar", slug: "soar", repositories: [{ url: "https://github.com/Wroblewski-Patryk/Soar.git", isPrimary: true }] } }
       : {};
     res.end(JSON.stringify({ data }));
   });
@@ -136,7 +136,7 @@ test(sandboxBlocked ? "the real host rejects unrestricted sandbox before registe
   const configPath = path.join(directory, "config.json");
   let host;
   try {
-    await writeFile(configPath, JSON.stringify({ workspaceRoot: "C:\\Personal\\Projekty\\Aplikacje", sandbox: sandboxBlocked ? "danger-full-access" : "workspace-write", codexCommand: "must-never-spawn.exe", repositories: { roost: { directory: "Roost", originUrl: "https://github.com/Wroblewski-Patryk/Roost.git" } } }));
+    await writeFile(configPath, JSON.stringify({ workspaceRoot: "C:\\Personal\\Projekty\\Aplikacje", sandbox: sandboxBlocked ? "danger-full-access" : "workspace-write", codexCommand: "must-never-spawn.exe", repositories: { soar: { directory: "Soar", originUrl: "https://github.com/Wroblewski-Patryk/Soar.git" } } }));
     const startHost = `import { runHost } from './scripts/roost-codex-agent-host.mjs'; import { acquireWriterLock } from './scripts/lib/agent-host-writer-lock.mjs'; await runHost({ acquireLock: () => acquireWriterLock(${JSON.stringify(directory)}) });`;
     host = spawn(process.execPath, ["--input-type=module", "-e", startHost], { windowsHide: true,
       env: { ...process.env, ROOST_BASE_URL: `http://127.0.0.1:${server.address().port}`, ROOST_AGENT_API_KEY: "test-only", ROOST_AGENT_HOST_CONFIG: configPath },

@@ -106,10 +106,12 @@ async function applicationForTask(workspaceId: string, taskId: string, requested
       include: { application: { include: { repositories: true } } }
     });
     const application = link?.application ?? null;
+    if (application?.slug === "roost") return { task, application: null, error: "roost_self_development_excluded" } as const;
     return application ? { task, application, error: null } as const : { task, application: null, error: "application_not_found" } as const;
   }
   const links = await prisma.applicationProject.findMany({ where: { projectId: task.projectId, application: { workspaceId } }, include: { application: { include: { repositories: true } } } });
   if (links.length !== 1) return { task, application: null, error: links.length ? "task_application_ambiguous" : "task_application_required" } as const;
+  if (links[0]!.application.slug === "roost") return { task, application: null, error: "roost_self_development_excluded" } as const;
   return { task, application: links[0]!.application, error: null } as const;
 }
 
@@ -277,7 +279,7 @@ agentRuntimeRouter.post("/executions/claim", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
   const host = await prisma.agentHost.findFirst({ where: { workspaceId, slug: input.hostSlug, status: { not: "disabled" } } });
   if (!host) return sendApiError(res, 404, "agent_host_not_found");
-  const applicationSlugs = Array.isArray(host.applicationSlugs) ? host.applicationSlugs.filter((value): value is string => typeof value === "string") : [];
+  const applicationSlugs = Array.isArray(host.applicationSlugs) ? host.applicationSlugs.filter((value): value is string => typeof value === "string" && value !== "roost") : [];
   const now = new Date();
   // Expiry is not proof that an old worker stopped. Keep ownership and identity.
   if (await prisma.agentExecution.count({ where: { workspaceId, agentHostId: host.id, status: { in: ["claimed", "running", "waiting_for_approval"] } } })) return sendApiError(res, 409, "agent_host_recovery_required");

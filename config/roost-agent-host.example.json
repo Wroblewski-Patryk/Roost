@@ -26,12 +26,6 @@
       "deploymentUrl": "https://nest.luckysparrow.ch/",
       "baseBranch": "main"
     },
-    "roost": {
-      "directory": "Roost",
-      "originUrl": "https://github.com/Wroblewski-Patryk/Roost.git",
-      "deploymentUrl": "https://roost.luckysparrow.ch/",
-      "baseBranch": "main"
-    },
     "soar": {
       "directory": "Soar",
       "originUrl": "https://github.com/Wroblewski-Patryk/Soar.git",

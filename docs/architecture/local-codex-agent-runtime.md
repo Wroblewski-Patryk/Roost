@@ -56,7 +56,7 @@ directory, the host requires its ID to match the execution's application ID and
 its primary repository to match the local origin. A single repository needs no
 primary flag; multiple repositories require exactly one primary. Missing or
 ambiguous identity fails before reading execution context or starting Codex.
-These checks are generic for every application, including Roost.
+Roost is excluded from the managed portfolio and cannot be an Agent Host execution target. The host rejects its slug, directory and canonical origin.
 
 The production database is private to the VPS deployment. Neither Codex nor a
 local development server connects directly to it. Local development uses a
@@ -226,7 +226,6 @@ before claiming automatic reconciliation or resource hygiene guarantees.
 | `aviary` | `Aviary` | `https://github.com/Wroblewski-Patryk/Aviary.git` | `https://aviary.luckysparrow.ch/` |
 | `featherly` | `Featherly` | `https://github.com/Wroblewski-Patryk/Featherly.git` | `https://test.wroblewskipatryk.pl/pl` |
 | `nest` | `Nest` | `https://github.com/Wroblewski-Patryk/Nest.git` | `https://nest.luckysparrow.ch/` |
-| `roost` | `Roost` | `https://github.com/Wroblewski-Patryk/Roost.git` | `https://roost.luckysparrow.ch/` |
 | `soar` | `Soar` | `https://github.com/Wroblewski-Patryk/Soar.git` | `https://soar.luckysparrow.ch/` |
 
 A commit and push may trigger Coolify deployment, but the Agent Host must not

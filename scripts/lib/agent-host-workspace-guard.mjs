@@ -56,6 +56,9 @@ function validateRepositoryConfig(slug, repository) {
   if (!/^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(?:\.git)?$/i.test(originUrl)) {
     throw new Error(`repository_origin_invalid:${slug}`);
   }
+  if (slug.toLowerCase() === "roost" || directory.toLowerCase() === "roost" || normalizeGitRemote(originUrl) === "https://github.com/wroblewski-patryk/roost") {
+    throw new Error("roost_self_development_excluded");
+  }
   const deploymentUrl = String(repository.deploymentUrl || "").trim();
   if (deploymentUrl && !/^https:\/\//i.test(deploymentUrl)) throw new Error(`repository_deployment_url_invalid:${slug}`);
   return { ...repository, directory, originUrl, deploymentUrl: deploymentUrl || null, baseBranch: String(repository.baseBranch || "main") };
@@ -86,6 +89,7 @@ export function repositoryForExecution(config, execution) {
   if (!application?.id || application.id !== execution.applicationId) throw new Error("execution_application_mismatch");
   const repository = Object.hasOwn(config.repositories, application.slug) ? config.repositories[application.slug] : null;
   if (!repository?.path) throw new Error("repository_mapping_missing");
+  validateRepositoryConfig(application.slug, repository);
   const declared = Array.isArray(application.repositories) ? application.repositories : [];
   const primary = declared.filter((item) => item?.isPrimary === true);
   const selected = primary.length === 1 ? primary[0] : primary.length === 0 && declared.length === 1 ? declared[0] : null;

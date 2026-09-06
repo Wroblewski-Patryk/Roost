@@ -252,8 +252,11 @@ repository with the allowlist before using its directory. This identity check
 does not prove a complete execution packet or autonomous readiness. Adding
 another application must not require per-application host code.
 
-Roost remains the bootstrap implementation repository. Its presence in the
-application registry does not activate native autonomous self-development.
+Owner correction (2026-09-06): Roost remains the bootstrap implementation
+repository but is excluded from the Innovation application registry, imported
+application context and local Agent Host targets. The managed portfolio contains
+only Aviary, Featherly, Nest and Soar. Do not create self-development work for
+Roost through that portfolio.
 The owner supervises work, supplies ideas and makes required decisions; manual
 programming and daily orchestration are not the intended operating model.
 

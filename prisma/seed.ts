@@ -1567,7 +1567,6 @@ async function ensureProductEngineeringFoundation(workspaceId: string) {
     { slug: "aviary", name: "Aviary", description: "LuckySparrow application maintained in the approved local application workspace.", stage: "development" as const, directory: "Aviary", repositoryUrl: "https://github.com/Wroblewski-Patryk/Aviary.git", frontendUrl: "https://aviary.luckysparrow.ch/", path: "C:/Personal/Projekty/Aplikacje/Aviary/docs/README.md" },
     { slug: "featherly", name: "Featherly", description: "Content management and application delivery system.", stage: "development" as const, directory: "Featherly", repositoryUrl: "https://github.com/Wroblewski-Patryk/Featherly.git", frontendUrl: "https://test.wroblewskipatryk.pl/pl", path: "C:/Personal/Projekty/Aplikacje/Featherly/docs/README.md" },
     { slug: "nest", name: "Nest", description: "LuckySparrow application maintained in the approved local application workspace.", stage: "development" as const, directory: "Nest", repositoryUrl: "https://github.com/Wroblewski-Patryk/Nest.git", frontendUrl: "https://nest.luckysparrow.ch/", path: "C:/Personal/Projekty/Aplikacje/Nest/docs/README.md" },
-    { slug: "roost", name: "Roost", description: "LuckySparrow company operating system and source of truth for products, work, evidence and supervised agents.", stage: "development" as const, directory: "Roost", repositoryUrl: "https://github.com/Wroblewski-Patryk/Roost.git", frontendUrl: "https://roost.luckysparrow.ch/", path: "C:/Personal/Projekty/Aplikacje/Roost/docs/README.md" },
     { slug: "soar", name: "Soar", description: "Trading automation platform.", stage: "development" as const, directory: "Soar", repositoryUrl: "https://github.com/Wroblewski-Patryk/Soar.git", frontendUrl: "https://soar.luckysparrow.ch/", path: "C:/Personal/Projekty/Aplikacje/Soar/docs/README.md" }
   ];
   for (const item of applications) {
@@ -1600,7 +1599,7 @@ async function ensureProductEngineeringFoundation(workspaceId: string) {
       const reference = `documentation-root:${item.path}`;
       if (!await prisma.applicationEvidence.findFirst({ where: { applicationId: application.id, reference } })) await prisma.applicationEvidence.create({ data: { workspaceId, applicationId: application.id, type: "documentation", source: "import", reference, description: "Registered documentation root. This proves documentation provenance, not runtime implementation.", verificationStatus: "unverified" } });
     }
-    const specific = item.slug === "roost" ? ["organization-management", "department-management", "process-core", "workforce-agents"] : item.slug === "soar" ? ["trading-engine", "market-data", "position-management", "risk-management"] : [];
+    const specific = item.slug === "soar" ? ["trading-engine", "market-data", "position-management", "risk-management"] : [];
     for (const capabilityKey of [...coreSaasKeys, ...aiReadyKeys, ...specific]) await prisma.applicationCapability.upsert({ where: { applicationId_capabilityDefinitionId: { applicationId: application.id, capabilityDefinitionId: capabilityByKey.get(capabilityKey)!.id } }, update: {}, create: { applicationId: application.id, capabilityDefinitionId: capabilityByKey.get(capabilityKey)!.id, applicability: "required", targetState: "complete", observedState: "unknown" } });
   }
   const codexCandidateRule = await prisma.automationRule.upsert({

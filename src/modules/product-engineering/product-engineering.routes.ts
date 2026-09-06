@@ -37,7 +37,7 @@ const idSchema = z.string().uuid();
 
 const createApplicationSchema = z.object({
   name: z.string().trim().min(1),
-  slug: keySchema,
+  slug: keySchema.refine((value) => value !== "roost", "roost_self_development_excluded"),
   description: optionalText,
   problemStatement: optionalText,
   targetUsers: optionalText,

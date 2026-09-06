@@ -32,9 +32,9 @@ test("GitHub HTTPS and SSH origin spellings normalize to the same repository", (
 
 const entry = (name) => ({ directory: name, originUrl: `https://github.com/example/${name}.git` });
 
-test("another application and Roost use the same configuration contract", () => {
-  const config = validateRepositoryMappings({ roost: entry("Roost"), second: entry("SecondApplication") });
-  assert.deepEqual(Object.keys(config), ["roost", "second"]);
+test("managed applications use the same configuration contract", () => {
+  const config = validateRepositoryMappings({ soar: entry("Soar"), second: entry("SecondApplication") });
+  assert.deepEqual(Object.keys(config), ["soar", "second"]);
   for (const [slug, repository] of Object.entries(config)) {
     repository.path = path.join(root, repository.directory);
     const result = repositoryForExecution({ repositories: config }, { applicationId: slug, application: { id: slug, slug, repositories: [{ url: repository.originUrl }] } });
@@ -93,4 +93,15 @@ test("equivalent SSH remote identity is accepted without changing configuration"
   const { config, execution } = executionFixture();
   execution.application.repositories[0].url = "git@github.com:example/App.git";
   assert.equal(repositoryForExecution(config, execution), config.repositories.app);
+});
+
+test("Roost cannot be restored as an execution target through aliases", () => {
+  for (const repositories of [
+    { roost: entry("Other") },
+    { alias: entry("rOoSt") },
+    { alias: { ...entry("Other"), originUrl: "https://github.com/Wroblewski-Patryk/Roost.git" } }
+  ]) assert.throws(() => validateRepositoryMappings(repositories), /roost_self_development_excluded/);
+  const { config, execution } = executionFixture();
+  config.repositories.app.directory = "Roost";
+  assert.throws(() => repositoryForExecution(config, execution), /roost_self_development_excluded/);
 });

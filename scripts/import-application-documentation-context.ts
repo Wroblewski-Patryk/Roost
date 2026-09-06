@@ -42,7 +42,6 @@ const applicationRoots: Record<string, string> = {
   aviary: "C:/Personal/Projekty/Aplikacje/Aviary",
   featherly: "C:/Personal/Projekty/Aplikacje/Featherly",
   nest: "C:/Personal/Projekty/Aplikacje/Nest",
-  roost: "C:/Personal/Projekty/Aplikacje/Roost",
   soar: "C:/Personal/Projekty/Aplikacje/Soar"
 };
 const approvedApplicationsRoot = path.resolve("C:/Personal/Projekty/Aplikacje");
