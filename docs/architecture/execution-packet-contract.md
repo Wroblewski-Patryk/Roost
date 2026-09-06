@@ -122,12 +122,38 @@ activity timeline; structured details remain in `errorState.details`.
 Blind retry is rejected with `agent_execution_requires_correction`. Correct the
 underlying records and queue a new execution with a corrected contract.
 
+## Hard Duration Limit
+
+The supervised host enforces `budgets.maxDurationSeconds` from the server's
+original `AgentExecution.startedAt`, including preparation and time before a
+pre-spawn recovery. Heartbeats do not renew this budget. A separate timer starts
+Windows process-tree termination five seconds before the deadline. Admission
+checks also reject late operation results, launch and completion submission.
+The child must have exited and final checks passed before the timer is disarmed
+for the bounded terminal API request; waiting for that acknowledgement is outside
+the execution budget.
+
+Expiry reports `agent_execution_duration_exceeded` with `retryable: false` through
+the existing fail action when authority and termination permit it. Missing,
+invalid or future `startedAt` fails closed as
+`agent_execution_duration_context_invalid`. Diagnostics contain fixed messages
+and numeric limits only. Both cases stop new claims and retain the writer lock.
+An unavailable report cannot restart work; uncertain termination uses the
+existing reconciliation path instead of claiming a confirmed stop.
+
+Synchronize host/server clocks. Elapsed time cannot decrease within one host
+process because a monotonic clock backs wall-clock checks. Clock rollback between
+processes, OS/event-loop freezes and detached descendants outside the existing
+process-tree containment are not solved by this timer. Independent plan review
+and approval of a new budget are required policy; their orchestration remains
+separate work. Token and cost meters are not implemented by this duration slice.
+
 ## Practical Limits
 
 This is a structural and referential admission gate. It cannot establish the
 semantic quality of prose, the truth of dependency evidence, or that an agent
-will obey every instruction. v1 validates declared duration/token budgets and
-passes them in context; it does not add a hard runtime/token meter. The sandbox,
+will obey every instruction. The host enforces elapsed duration as described
+above; output token budgets remain declared values without a hard meter. The sandbox,
 existing lease containment and one-host writer lock remain separate controls.
 No worker receives new release permissions through this packet. Scope enforcement,
 automatic recovery, independent review orchestration and pilot activation remain

@@ -153,6 +153,14 @@ manual reconciliation is required before restart. These controls cannot guarante
 termination during an OS freeze or coordinate tools bypassing the host entrypoint.
 Do not activate autonomous writing based on lease expiry alone.
 
+The [packet duration limit](execution-packet-contract.md#hard-duration-limit)
+independently stops work five seconds before `maxDurationSeconds` elapses from
+the original server `startedAt`. Healthy heartbeats and pre-spawn recovery do
+not reset it. Expired or invalid duration context prevents launch/completion,
+stops new claims, reports a non-retryable failure when possible and retains the
+writer lock for reconciliation. Token/cost enforcement and independent approval
+of a replacement budget remain separate gates. Observe mode does not run this timer.
+
 The supported Windows host uses exclusive creation of
 `C:\ProgramData\Roost\agent-host-writer.lock`, independent of application slug,
 workspace or host key. It is secret-free process/recovery state outside application

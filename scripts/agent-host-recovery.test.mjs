@@ -104,6 +104,21 @@ for (const stage of ["spawn_intent", "running", "effect_possible"]) test(`restar
   assert.equal(restarted.code, 1); assert.equal(restarted.spawned, 0); assert.equal(h.recoverCount, 0); assert.equal(h.finished, false);
   assert.equal(h.reports.at(-1).reason, stage === "effect_possible" ? "effect_may_have_occurred" : "process_may_be_running");
 });
+for (const stage of ["claimed", "prepared"]) test(`expired time budget cannot restart from ${stage}`, { skip: process.platform !== "win32", timeout: 15000 }, async (t) => {
+  const h = await harness(t, stage);
+  h.active.startedAt = new Date(Date.now() - 601000).toISOString();
+  const id = h.active.id, attempt = h.active.attempt;
+  const result = await h.run();
+  assert.equal(result.code, 1);
+  assert.equal(result.spawned, 0);
+  assert.equal(h.claimCount, 1); assert.equal(h.recoverCount, 1);
+  assert.equal(h.active.id, id); assert.equal(h.active.attempt, attempt);
+  assert.equal(h.reports.at(-1).code, "agent_execution_duration_exceeded");
+  assert.equal(h.reports.at(-1).retryable, false);
+  assert.equal(h.reports.at(-1).leaseToken, h.active.leaseToken);
+  const local = JSON.parse(await readFile(path.join(h.directory, writerLockFilename), "utf8"));
+  assert.equal(local.checkpoint.executionId, id);
+});
 for (const reason of ["lease_expired", "packet_changed", "repository_mismatch", "sandbox_invalid", "writer_locked"]) test(`restart stops on ${reason}`, { skip: process.platform !== "win32", timeout: 15000 }, async (t) => {
   const h = await harness(t, "prepared");
   if (reason === "lease_expired") h.active.leaseExpiresAt = new Date(0).toISOString();

@@ -85,6 +85,14 @@ cancelled. It only admits never-started queued work (`attempt = 0`) and refuses
 another claim while this host has nonterminal claimed/running work. A separate
 owner-created retry remains a separate explicit action, not host recovery.
 
+Recovery preserves the original server `startedAt`: a rotated lease does not
+grant a fresh duration budget. After packet validation, the host checks the
+[duration deadline](execution-packet-contract.md#hard-duration-limit) before
+execution preparation or spawn. An exhausted `claimed`/`prepared` execution
+reports `agent_execution_duration_exceeded` with the rotated lease and
+`retryable: false`, retains its identity/attempt and the writer lock, and stops.
+It cannot automatically resume, claim again or remove that lock after reporting.
+
 ## Diagnostics, Cleanup And Release
 
 `/actions/recovery-blocked` accepts fixed reason codes under the existing
@@ -94,7 +102,8 @@ execution completed, failed or cancelled. The local slot remains retained when
 recovery cannot be proven. Transport failure stops locally and preserves the
 record instead of pretending that Roost received a diagnostic.
 
-Normal terminal execution releases only its own writer lock. Successful reclaim
+Normal terminal execution releases only its own writer lock; duration expiry
+retains it even when tree termination was confirmed. Successful reclaim
 removes only the matched prior writer file and its own temporary recovery gate.
 An orphan recovery gate, corrupt state or uncertain process tree needs trusted
 operator reconciliation. Never clear either file merely by age, empty contents

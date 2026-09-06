@@ -11,6 +11,7 @@ import { validateExecutionPacket } from "./lib/agent-host-execution-packet.mjs";
 import { assertRecoverySnapshot, classifyRecovery, recoveryError, workspaceDigest } from "./lib/agent-host-recovery.mjs";
 import { runObserver } from "./lib/agent-host-observer.mjs";
 import { codexExecutionArgs } from "./lib/agent-host-model-policy.mjs";
+import { createExecutionDuration } from "./lib/agent-host-execution-duration.mjs";
 
 const baseUrl = String(process.env.ROOST_BASE_URL || process.env.COMPANYCORE_BASE_URL || "").replace(/\/+$/, "");
 const apiKey = process.env.ROOST_AGENT_API_KEY || process.env.COMPANYCORE_API_KEY;
@@ -143,18 +144,22 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint } =
   let child;
   let stopPromise = Promise.resolve();
   let stopError;
+  let stopRequested = false;
+  let duration;
+  function stopWorker() {
+    stopping = true;
+    retainWriterLock = true;
+    if (stopRequested) return;
+    stopRequested = true;
+    stopPromise = terminateWindowsProcessTree(child).catch((error) => {
+      stopError = error;
+      process.stderr.write("Agent Host stopped: process-tree termination could not be confirmed; manual reconciliation required.\n");
+      child?.kill();
+    });
+  }
   const lease = createExecutionLease({
     renew: () => api(`/v1/agent-runtime/executions/${claimed.id}/heartbeat`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, status: "running", codexThreadId }) }),
-    onLost: () => {
-      // Never claim more work after an uncertain execution. Reconcile before restarting.
-      stopping = true;
-      retainWriterLock = true;
-      stopPromise = terminateWindowsProcessTree(child).catch((error) => {
-        stopError = error;
-        process.stderr.write("Agent Host stopped: process-tree termination could not be confirmed; manual reconciliation required.\n");
-        child?.kill();
-      });
-    }
+    onLost: stopWorker
   });
 
   async function checkpoint(stage, packetRevision, digest) {
@@ -174,18 +179,22 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint } =
     await lease.refresh();
     lease.assertValid();
     validateExecutionPacket(taskContext?.executionPacket, claimed, taskContext, applicationContext);
+    duration = createExecutionDuration({ startedAt: claimed.startedAt,
+      maxDurationSeconds: taskContext.executionPacket.contract.budgets.maxDurationSeconds, onExpired: stopWorker });
+    duration.assertWithinBudget();
     // No execution-specific subprocess (including git) is started for an invalid packet.
-    await validateAgentHostWorkspace(config);
-    const beforeStatus = await gitStatus(repositoryPath);
-    const digest = await workspaceDigest(repositoryPath);
+    await duration.wait(validateAgentHostWorkspace(config));
+    const beforeStatus = await duration.wait(gitStatus(repositoryPath));
+    const digest = await duration.wait(workspaceDigest(repositoryPath));
     if (resumeCheckpoint) assertRecoverySnapshot(resumeCheckpoint, taskContext.executionPacket.revision, digest);
-    if (claimed.checkpoint?.stage === "claimed") await checkpoint("prepared", taskContext.executionPacket.revision, digest);
+    if (claimed.checkpoint?.stage === "claimed") await duration.wait(checkpoint("prepared", taskContext.executionPacket.revision, digest));
     else if (claimed.checkpoint?.stage !== "prepared") throw recoveryError("checkpoint_mismatch");
-    await checkpoint("spawn_intent", taskContext.executionPacket.revision, digest);
+    await duration.wait(checkpoint("spawn_intent", taskContext.executionPacket.revision, digest));
     lease.assertValid();
     await api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, type: "runner_started", message: `Starting Codex in ${claimed.application.slug}.`, payload: { sandbox, requestedModelSelection: taskContext.executionPacket.contract.modelSelection, baseBranch: repository.baseBranch || claimed.baseBranch || null, preExistingDirtyFiles: beforeStatus.map(statusPath) } }) }).catch((error) => { lease.reject(error); throw lease.failure ?? error; });
     lease.assertValid();
     validateExecutionPacket(taskContext?.executionPacket, claimed, taskContext, applicationContext);
+    duration.assertWithinBudget();
     const args = codexExecutionArgs(taskContext.executionPacket.contract.modelSelection, sandbox);
     child = spawn(codexCommand, args, { cwd: repositoryPath, env: safeChildEnvironment(), shell: false, windowsHide: true, stdio: ["pipe", "pipe", "pipe"] });
     const exitPromise = new Promise((resolve, reject) => {
@@ -202,10 +211,13 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint } =
       while (stderrTail.join("").length > 20_000) stderrTail.shift();
     });
 
-    await checkpoint("running", taskContext.executionPacket.revision, digest);
+    await duration.wait(checkpoint("running", taskContext.executionPacket.revision, digest));
 
     const lines = readline.createInterface({ input: child.stdout, crlfDelay: Infinity });
-    for await (const line of lines) {
+    const iterator = lines[Symbol.asyncIterator]();
+    while (true) {
+      const { value: line, done } = await duration.wait(iterator.next());
+      if (done) break;
       if (!line.trim()) continue;
       let event;
       try { event = JSON.parse(line); } catch { continue; }
@@ -213,12 +225,12 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint } =
       if (event.type === "turn.completed") usage = event.usage || {};
       if (event.type === "item.completed" && event.item?.type === "agent_message") finalResponse = String(event.item.text || "");
       if (event.type === "item.completed" && event.item?.type === "command_execution") verification.commands.push({ command: event.item.command, status: event.item.status, exitCode: event.item.exit_code });
-      if (!lease.failure && claimed.checkpoint.stage === "running" && ["command_execution", "mcp_tool_call"].includes(event.item?.type)) await checkpoint("effect_possible", taskContext.executionPacket.revision, digest);
+      if (!lease.failure && claimed.checkpoint.stage === "running" && ["command_execution", "mcp_tool_call"].includes(event.item?.type)) await duration.wait(checkpoint("effect_possible", taskContext.executionPacket.revision, digest));
       const summary = event.type === "item.completed" ? summarizeItem(event.item) : null;
       if (summary && !lease.failure) await api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, ...summary }) }).catch((error) => lease.reject(error));
     }
 
-    const exitCode = await exitPromise;
+    const exitCode = await duration.wait(exitPromise);
     await stopPromise;
     if (stopError) throw Object.assign(new Error("agent_process_tree_stop_failed"), { leaseLost: true });
 
@@ -229,24 +241,36 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint } =
     lease.assertValid();
     if (exitCode !== 0) throw Object.assign(new Error("codex_process_failed"), { details: { exitCode, stderrCaptured: Boolean(stderrTail.length) } });
 
-    const afterStatus = await gitStatus(repositoryPath);
+    const afterStatus = await duration.wait(gitStatus(repositoryPath));
     const changedFiles = [...new Set(afterStatus.map(statusPath))];
     const summary = finalResponse.trim() || `Codex completed execution ${claimed.id}.`;
-    await lease.refresh();
+    await duration.wait(lease.refresh());
     lease.assertValid();
+    duration.assertWithinBudget();
     // The child has exited. Avoid racing a heartbeat with the terminal API transition.
     lease.stop();
+    duration.stop();
     await api(`/v1/agent-runtime/executions/${claimed.id}/actions/complete`, {
       method: "POST",
       body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: summary.slice(0, 10000), finalResponse, codexThreadId, changedFiles, verification, usage, metadata: { repositoryPathLabel: path.basename(repositoryPath), preExistingDirtyFiles: beforeStatus.map(statusPath) } })
     });
+  } catch (error) {
+    // A pending RPC/stream must never turn an expired run into success or a retry.
+    if (duration?.failure) throw lease.failure ?? duration.failure;
+    throw error;
   } finally {
+    duration?.stop();
     lease.stop();
     await stopPromise;
-    if (child && child.exitCode === null && child.signalCode === null) {
+    // taskkill may finish before Node delivers the child's exit event. Do not
+    // race a successful stop with a second taskkill against the same PID.
+    if (!stopRequested && child && child.exitCode === null && child.signalCode === null) {
       stopping = true;
       await terminateWindowsProcessTree(child).catch((error) => { retainWriterLock = true; throw error; });
     }
+    child?.stdout?.destroy();
+    child?.stderr?.destroy();
+    if (stopError) throw Object.assign(new Error("agent_process_tree_stop_failed"), { leaseLost: true });
   }
 }
 
@@ -260,6 +284,7 @@ async function reportFailure(execution, error) {
 
 function recoveryReason(error) {
   if (error.recoveryReason) return error.recoveryReason;
+  if (error.message === "agent_process_tree_stop_failed") return "process_may_be_running";
   if (error.leaseLost || error.message === "agent_recovery_lease_expired") return "lease_expired";
   if (error.message === "execution_packet_invalid") return "packet_invalid";
   if (/sandbox/.test(error.message)) return "sandbox_invalid";
@@ -290,6 +315,7 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
     throw recoveryError("multiple_executions");
   }
   let writerLock;
+  let resumedExecution;
   try {
     if (pending[0]) classifyRecovery(pending[0], recovery.executionEnabled);
     writerLock = await acquireLock({ recoveryCandidate: pending[0] });
@@ -297,6 +323,7 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
     await register();
     if (pending[0]) {
       const resumed = await api(`/v1/agent-runtime/executions/${pending[0].id}/actions/recover`, { method: "POST", body: JSON.stringify({ hostSlug: host.slug, sessionId: writerLock.sessionId, expectedVersion: pending[0].checkpointVersion }) });
+      resumedExecution = resumed;
       if (resumed?.id !== pending[0].id || resumed?.attempt !== pending[0].attempt) throw recoveryError("recovery_conflict");
       await writerLock.checkpoint(resumed);
       await execute(resumed, writerLock, { resumeCheckpoint: pending[0].checkpoint, onCheckpoint });
@@ -325,7 +352,11 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
       if (!stopping) await delay(execution ? 1_000 : pollIntervalMs);
     }
   } catch (error) {
-    if (pending[0]) { retainWriterLock = true; await reportRecovery(pending[0], recoveryReason(error)); }
+    if (pending[0]) {
+      retainWriterLock = true;
+      if (error.durationLimit && resumedExecution) await reportFailure(resumedExecution, error);
+      else await reportRecovery(pending[0], recoveryReason(error));
+    }
     throw error;
   } finally {
     if (retainWriterLock) process.stderr.write("Writer lock retained: reconcile the interrupted execution before restarting.\n");

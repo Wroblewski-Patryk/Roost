@@ -242,6 +242,15 @@ lease reaches its five-second stop margin. It then stops polling for new work.
 Reconcile local processes and files before restarting; do not start a second host
 as a recovery shortcut. A late heartbeat cannot revive lost authority.
 
+The supervised host also enforces the packet's `maxDurationSeconds` from the
+original server `startedAt`, with a five-second process-stop reserve. This clock
+includes preparation and downtime before safe pre-spawn recovery; heartbeats
+cannot extend it. Keep Windows and server clocks synchronized. Duration expiry
+stops claims and retains the writer lock even after confirmed termination.
+Reconcile processes/files and independently review the plan and new budget
+before another execution; do not clear the lock or retry automatically.
+This change does not enable execution or change observe mode.
+
 ## Troubleshooting
 
 | Symptom | Check |
@@ -256,6 +265,8 @@ as a recovery shortcut. A late heartbeat cannot revive lost authority.
 | `agent_host_writer_locked` | Another host or unresolved prior execution owns the slot. Reconcile it before removing the exact lock; never start a second writer or auto-clear by PID/age. |
 | `execution_packet_invalid` | Read the field/reason list in Agent activity or execution details. Correct the contract or referenced versions. Diagnostics contain no rejected values or raw logs. |
 | `agent_execution_requires_correction` | The previous failure disallows blind retry. Correct the source records and queue a new execution contract. |
+| `agent_execution_duration_exceeded` | The original time budget is exhausted. Reconcile the retained writer lock and effects, independently review the plan and approve a new budget before queuing another execution. |
+| `agent_execution_duration_context_invalid` | Correct missing/invalid execution start time or duration and synchronize the host/server clocks; reconcile the retained writer lock before restart. |
 | `agent_execution_recovery_blocked` | Read the stage/reason in Agent activity. Preserve local files and reconcile the old process/effects; do not create a duplicate execution or clear locks by age/PID. |
 | `agent_host_recovery_required` | The host has an unresolved nonterminal execution. Resolve recovery instead of polling for another task. |
 | `agent_host_writer_lock_owner_changed` | Lock ownership is inconsistent. Stop and reconcile; the host will not delete another owner's lock. |
@@ -289,6 +300,11 @@ cross-process exclusion, crash retention and safe release. Lease tests cover ren
 late-response behavior and Windows process-tree termination without a real
 Codex task or production data. The host runs from the canonical Roost checkout;
 shipping its script to the VPS does not activate the local worker or task queue.
+
+`npm run test:agent-host-duration` covers the independent timer, clock changes,
+late completion, invalid/expired admission, synthetic Windows child/descendant
+termination, unavailable reporting and uncertain stops. Recovery tests also
+cover exhausted budgets at both safe pre-spawn stages without resetting time.
 
 - [Codex non-interactive mode](https://learn.chatgpt.com/docs/non-interactive-mode)
   defines `codex exec`, stdin prompts, JSONL events, sandbox selection, and

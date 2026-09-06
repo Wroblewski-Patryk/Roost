@@ -32,32 +32,41 @@ for later changes to these same canonical files.
 
 ## Atomic P0 selection
 
-V2 local verification (2026-09-06): 132/132 non-observer host checks passed,
-including real launcher dispatch to a synthetic Codex child and rejection before
-execution subprocesses. Observer checks passed 4/4 after stopping the legitimate
-observer that occupied its fixed port; its initial two port-conflict failures
-were environmental, not hidden. Observer was then restored in observe mode with
-`runtime_disabled`. `npm run validate` passed (278 manifest routes, 44 route files,
-TypeScript and build); registry/matrix IDs, supersession anchors and file links
-passed for all 162 requirements. Default documentation context is 37,128 bytes.
+The prior V2 model admission delivery is commit `2741b82f`: RF-HOST-016 has
+synthetic launcher proof, 132/132 non-observer and 4/4 observer checks, successful
+validation and exact production commit/health verification. Its port-conflict
+test failures were resolved by stopping the legitimate observer before testing
+and restoring observe mode afterward. Registry/matrix checks covered 162 rows.
+
+The next bounded ready P0 implementation is the **hard duration limit within
+RF-HOST-010**, selected against that baseline. It uses the existing server start
+time, packet duration, process-tree stop and writer fencing, without requiring
+owner input, schema migration, playground resources or activation. It includes
+preparation and pre-spawn recovery time, stops independently of heartbeats, and
+prevents late success or further claims. This closes only the duration slice:
+RF-HOST-010 remains partial for token/cost enforcement and independent new-budget
+approval orchestration. No second gap is included.
+
+Duration-slice local verification (2026-09-06): 151/151 non-observer checks passed,
+including 11 timer units, six synthetic Windows process cases and two exhausted
+pre-spawn recovery cases. The Windows cases prove child/descendant stop, retained
+writer fencing, no late completion/second claim and conservative handling of
+unavailable failure reporting or unconfirmed termination. Full model routing
+(RF-HOST-017) and provider-observed usage (RF-HOST-018) remain separate.
+Observer checks passed 4/4 after a normal stop; the observer was restored online
+in `observe` mode with `runtime_disabled`. `npm run validate` passed (278 manifest
+routes, 44 route files, TypeScript and production build). Documentation checks
+passed for 162 registry/matrix IDs and 296 local links; default context is
+37,692 bytes. Build retains the pre-existing unresolved Phosphor/ambient asset
+and large-chunk warnings.
 API/database suites were not rerun: no API, schema or persistence behavior changed.
 No provider call, live test, relogin/reboot or full activation dry run was performed.
 These are local proofs; exact deployed commit/health must be checked during release.
 
-The bounded ready implementation is **RF-HOST-016**: reject unspecified,
-unsupported or below-5.6 model/effort and pass the validated pair explicitly to
-Codex. It closes an unconditional launch defect without needing owner input,
-schema migration, external test resources or activation. Full model routing
-(RF-HOST-017) and provider-observed usage (RF-HOST-018) remain separate.
-Higher-impact broker, readonly canary and readiness work still require their
-own bounded contracts and proofs; this patch does not claim to close them.
-No second gap is authorized in this run.
-
-Next independently ready P0 candidate after this delivery: a hard duration
-watchdog within **RF-HOST-010**, reusing lease process-tree stop and writer fencing;
-scope it to elapsed-time enforcement, without claiming token/cost metering.
-Production activation remains blocked by the other P0 gates. Playground inputs
-are not needed for this candidate.
+Next bounded P0 candidate for separate selection: the immediately-before-spawn
+authoritative context refresh within **RF-CTX-006**; validating the same fetched
+snapshot twice does not prove freshness. Mid-execution invalidation needs its
+own contract. Production activation remains blocked by the other P0 gates.
 
 ## Matrix
 
@@ -117,7 +126,7 @@ are not needed for this candidate.
 | [RF-HOST-007](../product/interview-foundation-v2.md#rf-host-007) | P0 | częściowo działa | [OBSERVER](#e-observer) | Observer implemented; real relogin/reboot and forced-crash restart unproven. |
 | [RF-HOST-008](../product/interview-foundation-v2.md#rf-host-008) | P1 | brak | [HOST](#e-host) | No signed update protocol. |
 | [RF-HOST-009](../product/interview-foundation-v2.md#rf-host-009) | P0 | częściowo działa | [SCHED](#e-sched) | Existing claim is FIFO, not readiness/priority scheduler. |
-| [RF-HOST-010](../product/interview-foundation-v2.md#rf-host-010) | P0 | częściowo działa | [BUDGET](#e-budget) | Attempts validated; duration/token hard stop and cost meters missing. |
+| [RF-HOST-010](../product/interview-foundation-v2.md#rf-host-010) | P0 | częściowo działa | [BUDGET](#e-budget) | Attempts validated; hard elapsed-duration stop tested, including recovery and retained writer fencing. Token/cost enforcement and independent new-budget approval orchestration remain missing. |
 | [RF-HOST-011](../product/interview-foundation-v2.md#rf-host-011) | P1 | częściowo działa | [BUDGET](#e-budget) | Observer/integration retries exist; general execution loop breaker absent. |
 | [RF-HOST-012](../product/interview-foundation-v2.md#rf-host-012) | P1 | częściowo działa | [BUDGET](#e-budget) | Usage stored per execution; attribution and quality-constrained optimization absent. |
 | [RF-HOST-013](../product/interview-foundation-v2.md#rf-host-013) | P0 | brak | [RESOURCE](#e-resource) | No resource-aware host/service-operation broker. |
@@ -331,9 +340,9 @@ Each entry links existing canonical files; a test link is not a passing result.
 [src/modules/agent-runtime/agent-runtime.routes.ts](../../src/modules/agent-runtime/agent-runtime.routes.ts).
 
 <a id="e-budget"></a>
-**BUDGET** — Usage reporting and declared packet limits; no complete hard budget enforcement.
+**BUDGET** — Validated attempts and hard duration stop; token/cost metering and independent replacement-budget approval are incomplete.
 
-[scripts/roost-codex-agent-host.mjs](../../scripts/roost-codex-agent-host.mjs), [scripts/lib/agent-host-execution-packet.mjs](../../scripts/lib/agent-host-execution-packet.mjs).
+[duration contract](execution-packet-contract.md#hard-duration-limit), [host](../../scripts/roost-codex-agent-host.mjs), [packet gate](../../scripts/lib/agent-host-execution-packet.mjs), [duration timer](../../scripts/lib/agent-host-execution-duration.mjs), [timer tests](../../scripts/agent-host-execution-duration.test.mjs), [Windows process tests](../../scripts/agent-host-duration-process.test.mjs), [recovery tests](../../scripts/agent-host-recovery.test.mjs).
 
 <a id="e-model"></a>
 **MODEL** — RF-HOST-016 now admits explicit supported model/effort, dispatches exact CLI arguments and records requested pair. Current synthetic verification passed.
