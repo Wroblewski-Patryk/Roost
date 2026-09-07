@@ -2,11 +2,11 @@ import assert from "node:assert/strict";
 import test, { after } from "node:test";
 import { randomUUID } from "node:crypto";
 import { prisma } from "../db/prisma";
-import { encryptSecret } from "../integrations/secrets";
+import { decryptSecret, encryptSecret } from "../integrations/secrets";
 import { ClickUpClient } from "../integrations/clickup/clickup.client";
 import { mapClickUpTaskToCompanyCoreTask } from "../integrations/clickup/clickup.mapper";
 import { syncClickUpTasksForWorkspaceWithOptions } from "../integrations/clickup/clickup.sync";
-import { processClickUpProviderEvent, writeBackCompanyCoreTaskToClickUp } from "../integrations/clickup/clickup.webhooks";
+import { clickUpWebhookEvents, reconcileClickUpWebhooksForWorkspace, processClickUpProviderEvent, writeBackCompanyCoreTaskToClickUp } from "../integrations/clickup/clickup.webhooks";
 import { reconcileGoogleDriveChangesForWorkspace } from "../integrations/google-drive/google-drive.sync";
 import { withIntegrationLock } from "../integrations/sync-lock";
 import { providerRequest } from "../integrations/provider-request";
@@ -51,13 +51,14 @@ test("missing ClickUp tasks are verified individually; archives preserve IDs and
     const path = new URL(String(input)).pathname;
     if (path.endsWith("/team/team/task")) return json({ tasks: [], last_page: true });
     if (path.endsWith("/task/archived")) return json({ id: "archived", name: "Archived", archived: true, status: { type: "open" }, list: { id: "list" } });
-    return json({}, 404);
+    return json({}, 401);
   };
   await syncClickUpTasksForWorkspaceWithOptions(id);
   assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: original.id } })).status, "archived");
   assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: unavailable.id } })).status, "todo");
   const again = await syncClickUpTasksForWorkspaceWithOptions(id);
   assert.equal(again.updatedCount, 0);
+  assert.equal(again.unavailableCount, 1);
 });
 
 test("ClickUp writes archive, unarchive, real List status and cleared fields", async () => {
@@ -71,6 +72,24 @@ test("ClickUp writes archive, unarchive, real List status and cleared fields", a
   await writeBackCompanyCoreTaskToClickUp({ workspaceId: id, externalId: "task", changes: { status: "archived" } });
   await writeBackCompanyCoreTaskToClickUp({ workspaceId: id, externalId: "task", changes: { status: "done", dueDate: null, priority: null } });
   assert.deepEqual(writes, [{ archived: true }, { archived: false, status: "Delivered", due_date: null, priority: null }]);
+});
+
+test("ClickUp reconciliation repairs unreadable webhook secrets and active endpoint drift", async () => {
+  const id = await workspace("clickup", { teamId: "team", listIds: ["list"] });
+  const registration = await prisma.externalWebhookRegistration.create({ data: {
+    workspaceId: id, provider: "clickup", externalId: "webhook", scopeType: "list", scopeExternalId: "list",
+    endpointUrl: "https://old.example.test", events: [], status: "active", secretCiphertext: "invalid-old-key"
+  } });
+  let updated = false;
+  globalThis.fetch = async (_input, init) => {
+    if (init?.method === "PUT") { updated = true; return json({ webhook: { id: "webhook", health: { status: "active" } } }); }
+    return json({ webhooks: [{ id: "webhook", endpoint: "https://old.example.test", events: [], secret: "synthetic-provider-secret", health: { status: "active" } }] });
+  };
+  await reconcileClickUpWebhooksForWorkspace(id, { protocol: "https", get: () => "api.example.test" });
+  const repaired = await prisma.externalWebhookRegistration.findUniqueOrThrow({ where: { id: registration.id } });
+  assert.equal(updated, true);
+  assert.equal(decryptSecret(repaired.secretCiphertext), "synthetic-provider-secret");
+  assert.deepEqual(repaired.events, [...clickUpWebhookEvents]);
 });
 
 test("Drive consumes all pages, excludes other folders, and replay emits no duplicate agent events", async () => {

@@ -64,8 +64,11 @@ export async function getClickUpSettingsForWorkspace(workspaceId: string) {
     return null;
   }
 
+  let token: string;
+  try { token = decryptSecret(setting.secretCiphertext); }
+  catch { throw new IntegrationError("integration_invalid_token", 401, "Stored ClickUp credential must be connected again."); }
   return {
-    token: decryptSecret(setting.secretCiphertext),
+    token,
     config: setting.config as ClickUpIntegrationConfig,
     rawSetting: setting
   };

@@ -156,6 +156,7 @@ async function syncClickUpTasks(
   try {
     const client = new ClickUpClient(settings.token);
     const clickUpTasks = await client.getWorkspaceTasks({ teamId, listIds });
+    let unavailableCount = 0;
     // A missing list result is not proof of deletion. Read known tasks directly,
     // including archived tasks and tasks moved to a different List.
     if (importMode === "merge" || importMode === "replace_selected_lists") {
@@ -169,7 +170,10 @@ async function syncClickUpTasks(
         if (!task.externalId || returnedIds.has(task.externalId)) continue;
         try { clickUpTasks.push(await client.getTask(task.externalId)); }
         catch (error) {
-          if (!(error instanceof IntegrationError) || error.code !== "not_found") throw error;
+          // The workspace request already authenticated. ClickUp also returns
+          // 401/403 for individual tasks whose access has been withdrawn.
+          if (!(error instanceof IntegrationError) || !["not_found", "integration_invalid_token"].includes(error.code)) throw error;
+          unavailableCount += 1;
           await createEvent({ workspaceId, source: "clickup", type: "clickup_task_access_unavailable",
             payload: { externalId: task.externalId, action: "preserved", correlationId } });
         }
@@ -271,6 +275,7 @@ async function syncClickUpTasks(
         operation: "sync_tasks",
         importMode,
         itemCount: clickUpTasks.length,
+        unavailableCount,
         createdCount,
         updatedCount,
         skippedCount,
@@ -285,6 +290,7 @@ async function syncClickUpTasks(
       workspaceId,
       importMode,
       itemCount: clickUpTasks.length,
+      unavailableCount,
       createdCount,
       updatedCount,
       skippedCount,

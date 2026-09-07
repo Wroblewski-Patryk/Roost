@@ -16,6 +16,10 @@ ClickUp List and use the v3 home-list endpoint. Notes send comment edits and arc
 to ClickUp first. Native-only relationships remain Roost-owned. Missing tasks in a
 complete pull are fetched individually; 404/access loss preserves the row and emits
 `clickup_task_access_unavailable`. A confirmed delete webhook archives locally.
+After a successful workspace read, individual task 401/403/404 responses count as
+`unavailableCount` without blocking accessible task refresh. Webhook reconciliation
+repairs endpoint/event drift and re-encrypts provider-returned signing secrets;
+an unreadable secret with no recoverable provider copy requires replacement.
 Webhook task/note changes, events, agent signals and inbox completion commit
 together. Failed and pending entries retry, with workspace serialization.
 

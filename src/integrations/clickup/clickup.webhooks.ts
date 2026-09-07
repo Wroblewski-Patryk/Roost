@@ -216,7 +216,9 @@ export async function reconcileClickUpWebhooksForWorkspace(
     if (existing) {
       existingCount += 1;
       const remoteWebhook = remoteById.get(existing.externalId);
-      if (!remoteWebhook) {
+      let localSecretValid = false;
+      try { localSecretValid = Boolean(decryptSecret(existing.secretCiphertext)); } catch { /* Reconcile from provider. */ }
+      if (!remoteWebhook || (!localSecretValid && !remoteWebhook.secret)) {
         const webhook = await client.createWebhook({
           teamId,
           endpoint: endpointUrl,
@@ -237,11 +239,14 @@ export async function reconcileClickUpWebhooksForWorkspace(
         });
         replacedCount += 1;
         reconciled.push(safeRegistration(registration));
+        if (remoteWebhook) await client.deleteWebhook(remoteWebhook.id);
         continue;
       }
 
       let nextStatus = remoteWebhook.health?.status ?? existing.status;
-      if (nextStatus !== "active") {
+      const configurationChanged = remoteWebhook.endpoint !== endpointUrl ||
+        clickUpWebhookEvents.some(event => !remoteWebhook.events?.includes(event));
+      if (nextStatus !== "active" || configurationChanged) {
         const updated = await client.updateWebhook(existing.externalId, {
           endpoint: endpointUrl,
           events: [...clickUpWebhookEvents],
@@ -255,7 +260,8 @@ export async function reconcileClickUpWebhooksForWorkspace(
         where: { id: existing.id },
         data: {
           endpointUrl,
-          events: toJson(remoteWebhook.events ?? [...clickUpWebhookEvents]),
+          ...(remoteWebhook.secret ? { secretCiphertext: encryptSecret(remoteWebhook.secret) } : {}),
+          events: toJson([...clickUpWebhookEvents]),
           status: nextStatus,
           lastHealthAt: new Date(),
           lastErrorCode: remoteWebhook.health?.fail_count ? `fail_count:${remoteWebhook.health.fail_count}` : null
