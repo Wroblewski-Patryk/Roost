@@ -481,6 +481,7 @@ export const adapterManifest = {
     googleDrive: [
       { method: "GET", path: "/v1/google-drive/files", capability: "google-drive:files:read" },
       { method: "GET", path: "/v1/google-drive/files/:id/content", capability: "google-drive:files:read" },
+      { method: "PATCH", path: "/v1/google-drive/files/:id/metadata", capability: "google-drive:files:write" },
       { method: "PATCH", path: "/v1/google-drive/files/:id/description", capability: "google-drive:files:write" },
       { method: "PATCH", path: "/v1/google-drive/files/:id/text-content", capability: "google-drive:files:write" },
       { method: "PATCH", path: "/v1/google-drive/files/:id/scope", capability: "google-drive:files:scope:write" },

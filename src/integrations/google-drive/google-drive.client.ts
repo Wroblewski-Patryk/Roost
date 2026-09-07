@@ -1,4 +1,5 @@
 import { IntegrationError } from "../errors";
+import { providerRequest } from "../provider-request";
 
 const driveBaseUrl = "https://www.googleapis.com/drive/v3";
 const docsBaseUrl = "https://docs.googleapis.com/v1";
@@ -20,6 +21,7 @@ export type GoogleDriveFileMetadata = {
   headRevisionId?: string;
   md5Checksum?: string;
   modifiedTime?: string;
+  version?: string;
 };
 
 export type GoogleDriveFileListResponse = {
@@ -32,6 +34,7 @@ export type GoogleDriveChangesResponse = {
   changes?: Array<{
     fileId?: string;
     removed?: boolean;
+    time?: string;
     file?: GoogleDriveFileMetadata;
   }>;
   nextPageToken?: string;
@@ -39,7 +42,7 @@ export type GoogleDriveChangesResponse = {
 };
 
 export class GoogleDriveClient {
-  constructor(private readonly accessToken: string) {}
+  constructor(private accessToken: string, private readonly refreshAccessToken?: () => Promise<string>) {}
 
   async listFiles(input: {
     query?: string;
@@ -56,7 +59,7 @@ export class GoogleDriveClient {
     url.searchParams.set("fields", input.fields ?? [
       "nextPageToken",
       "incompleteSearch",
-      "files(id,name,description,mimeType,driveId,parents,trashed,webViewLink,webContentLink,iconLink,thumbnailLink,size,headRevisionId,md5Checksum,modifiedTime)"
+      "files(id,name,description,mimeType,driveId,parents,trashed,webViewLink,webContentLink,iconLink,thumbnailLink,size,headRevisionId,md5Checksum,modifiedTime,version)"
     ].join(","));
 
     if (input.query) {
@@ -82,7 +85,7 @@ export class GoogleDriveClient {
   async getFile(fileId: string) {
     const url = new URL(`${driveBaseUrl}/files/${encodeURIComponent(fileId)}`);
     url.searchParams.set("supportsAllDrives", "true");
-    url.searchParams.set("fields", "id,name,description,mimeType,driveId,parents,trashed,webViewLink,webContentLink,iconLink,thumbnailLink,size,headRevisionId,md5Checksum,modifiedTime");
+    url.searchParams.set("fields", "id,name,description,mimeType,driveId,parents,trashed,webViewLink,webContentLink,iconLink,thumbnailLink,size,headRevisionId,md5Checksum,modifiedTime,version");
     return this.request<GoogleDriveFileMetadata>(url);
   }
 
@@ -109,6 +112,7 @@ export class GoogleDriveClient {
     const url = new URL(`${driveBaseUrl}/changes`);
     url.searchParams.set("pageToken", input.pageToken);
     url.searchParams.set("pageSize", String(input.pageSize ?? 100));
+    url.searchParams.set("fields", "nextPageToken,newStartPageToken,changes(fileId,removed,time,file(id,name,description,mimeType,driveId,parents,trashed,webViewLink,webContentLink,iconLink,thumbnailLink,size,headRevisionId,md5Checksum,modifiedTime,version))");
     url.searchParams.set("spaces", "drive");
     url.searchParams.set("includeItemsFromAllDrives", "true");
     url.searchParams.set("supportsAllDrives", "true");
@@ -141,7 +145,7 @@ export class GoogleDriveClient {
 
   async updateFileMedia(fileId: string, content: string, mimeType: string) {
     return this.request<GoogleDriveFileMetadata>(
-      `https://www.googleapis.com/upload/drive/v3/files/${encodeURIComponent(fileId)}?uploadType=media&supportsAllDrives=true&fields=id,name,description,mimeType,driveId,parents,trashed,webViewLink,webContentLink,iconLink,thumbnailLink,size,headRevisionId,md5Checksum,modifiedTime`,
+      `https://www.googleapis.com/upload/drive/v3/files/${encodeURIComponent(fileId)}?uploadType=media&supportsAllDrives=true&fields=id,name,description,mimeType,driveId,parents,trashed,webViewLink,webContentLink,iconLink,thumbnailLink,size,headRevisionId,md5Checksum,modifiedTime,version`,
       {
         method: "PATCH",
         body: content,
@@ -160,6 +164,17 @@ export class GoogleDriveClient {
         ...(writeControl ? { writeControl } : {})
       })
     });
+  }
+
+  async updateFileMetadata(fileId: string, input: { name?: string; trashed?: boolean; parentId?: string }, currentParents: string[] = []) {
+    const url = new URL(`${driveBaseUrl}/files/${encodeURIComponent(fileId)}`);
+    url.searchParams.set("supportsAllDrives", "true");
+    url.searchParams.set("fields", "id,name,mimeType,parents,trashed,driveId,version,modifiedTime");
+    if (input.parentId && !currentParents.includes(input.parentId)) {
+      url.searchParams.set("addParents", input.parentId);
+      if (currentParents.length) url.searchParams.set("removeParents", currentParents.join(","));
+    }
+    return this.request<GoogleDriveFileMetadata>(url, { method: "PATCH", body: JSON.stringify({ name: input.name, trashed: input.trashed }) });
   }
 
   async createSpreadsheet(input: Record<string, unknown>) {
@@ -184,9 +199,19 @@ export class GoogleDriveClient {
     });
   }
 
+  private async authorizedRequest(url: string | URL, init: RequestInit) {
+    let response = await providerRequest(url, init);
+    if (response.status === 401 && this.refreshAccessToken) {
+      await response.body?.cancel();
+      this.accessToken = await this.refreshAccessToken();
+      response = await providerRequest(url, { ...init, headers: { ...init.headers, Authorization: `Bearer ${this.accessToken}` } });
+    }
+    return response;
+  }
+
   private async request<T>(pathOrUrl: string | URL, init: RequestInit = {}): Promise<T> {
     const url = pathOrUrl instanceof URL ? pathOrUrl : new URL(pathOrUrl);
-    const response = await fetch(url, {
+    const response = await this.authorizedRequest(url, {
       ...init,
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
@@ -196,6 +221,7 @@ export class GoogleDriveClient {
     });
 
     if (!response.ok) {
+      if (response.status === 404) throw new IntegrationError("not_found", 404, "Google Drive resource is unavailable or no longer accessible.");
       if (response.status === 401 || response.status === 403) {
         throw new IntegrationError(
           "integration_invalid_token",
@@ -225,7 +251,7 @@ export class GoogleDriveClient {
 
   private async requestText(pathOrUrl: string | URL, init: RequestInit = {}) {
     const url = pathOrUrl instanceof URL ? pathOrUrl : new URL(pathOrUrl);
-    const response = await fetch(url, {
+    const response = await this.authorizedRequest(url, {
       ...init,
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
@@ -234,6 +260,7 @@ export class GoogleDriveClient {
     });
 
     if (!response.ok) {
+      if (response.status === 404) throw new IntegrationError("not_found", 404, "Google Drive resource is unavailable or no longer accessible.");
       if (response.status === 401 || response.status === 403) {
         throw new IntegrationError(
           "integration_invalid_token",
@@ -262,7 +289,7 @@ export class GoogleDriveClient {
 
   private async requestBinary(pathOrUrl: string | URL, init: RequestInit = {}) {
     const url = pathOrUrl instanceof URL ? pathOrUrl : new URL(pathOrUrl);
-    const response = await fetch(url, {
+    const response = await this.authorizedRequest(url, {
       ...init,
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
@@ -271,6 +298,7 @@ export class GoogleDriveClient {
     });
 
     if (!response.ok) {
+      if (response.status === 404) throw new IntegrationError("not_found", 404, "Google Drive resource is unavailable or no longer accessible.");
       if (response.status === 401 || response.status === 403) {
         throw new IntegrationError(
           "integration_invalid_token",

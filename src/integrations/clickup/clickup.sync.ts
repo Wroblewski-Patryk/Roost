@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { withIntegrationLock } from "../sync-lock";
 import { prisma } from "../../db/prisma";
 import { createEvent } from "../../modules/events/event.service";
 import { IntegrationError } from "../errors";
@@ -108,6 +109,13 @@ export async function syncClickUpTasksForWorkspaceWithOptions(
   workspaceId: string,
   options: ClickUpSyncOptions = {}
 ): Promise<SyncResult> {
+  return withIntegrationLock(`clickup:${workspaceId}`, () => syncClickUpTasks(workspaceId, options));
+}
+
+async function syncClickUpTasks(
+  workspaceId: string,
+  options: ClickUpSyncOptions
+): Promise<SyncResult> {
   const correlationId = randomUUID();
   const settings = await getClickUpSettingsForWorkspace(workspaceId);
 
@@ -148,36 +156,31 @@ export async function syncClickUpTasksForWorkspaceWithOptions(
   try {
     const client = new ClickUpClient(settings.token);
     const clickUpTasks = await client.getWorkspaceTasks({ teamId, listIds });
+    // A missing list result is not proof of deletion. Read known tasks directly,
+    // including archived tasks and tasks moved to a different List.
+    if (importMode === "merge" || importMode === "replace_selected_lists") {
+      const returnedIds = new Set(clickUpTasks.map(task => task.id));
+      const known = await prisma.task.findMany({
+        where: { workspaceId, source: "clickup", externalId: { not: null },
+          taskList: { source: "clickup", externalId: { in: listIds } } },
+        select: { externalId: true }
+      });
+      for (const task of known) {
+        if (!task.externalId || returnedIds.has(task.externalId)) continue;
+        try { clickUpTasks.push(await client.getTask(task.externalId)); }
+        catch (error) {
+          if (!(error instanceof IntegrationError) || error.code !== "not_found") throw error;
+          await createEvent({ workspaceId, source: "clickup", type: "clickup_task_access_unavailable",
+            payload: { externalId: task.externalId, action: "preserved", correlationId } });
+        }
+      }
+    }
     let createdCount = 0;
     let updatedCount = 0;
     let skippedCount = 0;
     let deletedCount = 0;
     let wouldCreateCount = 0;
     let wouldUpdateCount = 0;
-
-    if (importMode === "replace_selected_lists") {
-      const selectedTaskLists = await prisma.taskList.findMany({
-        where: {
-          workspaceId,
-          source: "clickup",
-          externalId: { in: listIds }
-        },
-        select: { id: true }
-      });
-
-      if (selectedTaskLists.length > 0) {
-        const deleteResult = await prisma.task.deleteMany({
-          where: {
-            workspaceId,
-            source: "clickup",
-            taskListId: {
-              in: selectedTaskLists.map((taskList) => taskList.id)
-            }
-          }
-        });
-        deletedCount = deleteResult.count;
-      }
-    }
 
     for (const clickUpTask of clickUpTasks) {
       if (!clickUpTask.id || !clickUpTask.name) {

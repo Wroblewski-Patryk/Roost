@@ -55,6 +55,7 @@ const googleDriveConfigSchema = z.object({
   syncMode: z.enum(["pull", "two_way"]).optional(),
   importMode: z.enum(["merge", "skip_existing", "replace_selected_folders", "inspect_only"]).optional(),
   changesPageToken: z.string().min(1).optional(),
+  changesPageTokens: z.record(z.string().min(1)).optional(),
   operatingScopeMappings: z.array(z.object({
     folderId: z.string().min(1),
     operatingAreaId: z.string().uuid().optional(),

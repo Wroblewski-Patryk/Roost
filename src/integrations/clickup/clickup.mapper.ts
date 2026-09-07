@@ -1,7 +1,8 @@
 import type { Prisma, TaskStatus } from "@prisma/client";
 import type { ClickUpTask } from "./clickup.client";
 
-function mapStatus(task: ClickUpTask): TaskStatus {
+export function mapStatus(task: ClickUpTask): TaskStatus {
+  if (task.archived) return "archived";
   const value = `${task.status?.type ?? ""} ${task.status?.status ?? ""}`.toLowerCase();
 
   if (value.includes("closed") || value.includes("complete") || value.includes("done")) {
@@ -14,12 +15,13 @@ function mapStatus(task: ClickUpTask): TaskStatus {
     return "blocked";
   }
 
+  if (task.status?.type === "custom") return "in_progress";
   return "todo";
 }
 
 function mapDueDate(value?: string | null) {
   if (!value) {
-    return undefined;
+    return value === null ? null : undefined;
   }
 
   const timestamp = Number(value);
@@ -37,9 +39,9 @@ export function mapClickUpTaskToCompanyCoreTask(
   return {
     workspaceId,
     title: task.name,
-    description: task.markdown_description ?? task.description ?? task.text_content ?? undefined,
+    description: task.markdown_description ?? task.description ?? task.text_content ?? (task.description === null ? null : undefined),
     status: mapStatus(task),
-    priority: task.priority?.priority ?? undefined,
+    priority: task.priority === null ? null : task.priority?.priority,
     dueDate: mapDueDate(task.due_date),
     externalId: task.id,
     source: "clickup"

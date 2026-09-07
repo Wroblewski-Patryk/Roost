@@ -1,3 +1,4 @@
+import { IntegrationError } from "../integrations/errors";
 import type { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import { sendApiError } from "./api-error";
@@ -8,6 +9,8 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ) {
+  if (error instanceof IntegrationError) return sendApiError(res, error.status, error.code);
+
   if (error instanceof ZodError) {
     return sendApiError(res, 400, "validation_error", { details: error.flatten() });
   }

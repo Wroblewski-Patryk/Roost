@@ -800,6 +800,12 @@ create a ClickUp task comment first and then store the returned comment ID.
 n8n remains optional orchestration for workflows better kept outside the
 backend. It is not the required primary ClickUp path in v1.
 
+Drive also runs an independent in-process maintenance scheduler, importing selected
+folders and draining user/shared-drive changes with durable per-stream cursors.
+The compatibility replace modes now reconcile in place, preserving record IDs.
+See `docs/INTEGRATIONS.md` for the current archive, scope and retry contract.
+No separate worker service is added.
+
 ## Google Drive Operating Model
 
 Google Drive is the next native integration after ClickUp. It must reuse the

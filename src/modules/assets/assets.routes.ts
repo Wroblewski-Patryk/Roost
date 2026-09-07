@@ -259,7 +259,7 @@ async function descendantExternalIds(workspaceId: string, rootExternalId: string
         workspaceId,
         provider: "google_drive",
         parentExternalId: { in: parents },
-        trashed: false
+        trashed: false, syncStatus: { notIn: ["removed", "out_of_scope", "trashed", "unavailable"] }
       },
       select: {
         externalId: true
@@ -290,7 +290,7 @@ async function driveFolderScopeRoot(workspaceId: string, folder: { externalId: s
         provider: "google_drive",
         externalId: current.parentExternalId,
         isFolder: true,
-        trashed: false
+        trashed: false, syncStatus: { notIn: ["removed", "out_of_scope", "trashed", "unavailable"] }
       },
       select: {
         externalId: true,
@@ -319,7 +319,7 @@ async function managedParentFolder(workspaceId: string, parentExternalId: string
       provider: "google_drive",
       externalId: parentExternalId,
       isFolder: true,
-      trashed: false
+      trashed: false, syncStatus: { notIn: ["removed", "out_of_scope", "trashed", "unavailable"] }
     },
     select: {
       externalId: true,
@@ -415,7 +415,7 @@ assetsRouter.patch("/folders/:id", asyncHandler(async (req, res) => {
       workspaceId,
       provider: "google_drive",
       isFolder: true,
-      trashed: false
+      trashed: false, syncStatus: { notIn: ["removed", "out_of_scope", "trashed", "unavailable"] }
     },
     include: {
       operatingArea: true
@@ -548,7 +548,7 @@ assetsRouter.get("/files/:id/preview", asyncHandler(async (req, res) => {
       id: fileId,
       workspaceId,
       provider: "google_drive",
-      trashed: false
+      trashed: false, syncStatus: { notIn: ["removed", "out_of_scope", "trashed", "unavailable"] }
     }
   });
 
@@ -592,7 +592,7 @@ assetsRouter.get("/context", asyncHandler(async (req, res) => {
 
   const driveFileWhere = {
     workspaceId,
-    trashed: false,
+    trashed: false, syncStatus: { notIn: ["removed", "out_of_scope", "trashed", "unavailable"] },
     ...(assetsArea ? { operatingAreaId: assetsArea.id } : {})
   };
   const driveFileInclude = {
@@ -660,9 +660,9 @@ assetsRouter.get("/context", asyncHandler(async (req, res) => {
       include: { area: true, folder: true, table: true }
     }),
     Promise.all([
-      prisma.googleDriveFile.count({ where: { workspaceId, trashed: false } }),
-      prisma.googleDriveFile.count({ where: { workspaceId, trashed: false, operatingAreaId: null } }),
-      prisma.googleDriveFile.count({ where: { workspaceId, trashed: false, description: null } }),
+      prisma.googleDriveFile.count({ where: { workspaceId, trashed: false, syncStatus: { notIn: ["removed", "out_of_scope", "trashed", "unavailable"] } } }),
+      prisma.googleDriveFile.count({ where: { workspaceId, trashed: false, syncStatus: { notIn: ["removed", "out_of_scope", "trashed", "unavailable"] }, operatingAreaId: null } }),
+      prisma.googleDriveFile.count({ where: { workspaceId, trashed: false, syncStatus: { notIn: ["removed", "out_of_scope", "trashed", "unavailable"] }, description: null } }),
       prisma.googleDriveContentSnapshot.count({ where: { workspaceId } }),
       prisma.resource.count({ where: { workspaceId } }),
       prisma.knowledgeItem.count({ where: { workspaceId } }),

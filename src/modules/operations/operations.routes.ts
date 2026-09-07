@@ -921,17 +921,18 @@ operationsRouter.patch("/work-items/:id", asyncHandler(async (req, res) => {
     return res.status(404).json({ error: "not_found" });
   }
 
-  if (existing.source === "clickup" && existing.externalId && ["title", "description", "status", "priority", "dueDate"].some(key => key in input)) {
+  if (existing.source === "clickup" && existing.externalId && ["title", "description", "status", "priority", "dueDate", "taskListId"].some(key => key in input)) {
     try {
       await writeBackCompanyCoreTaskToClickUp({
         workspaceId,
         externalId: existing.externalId,
         changes: {
           title: input.title,
-          description: input.description ?? undefined,
+          description: input.description,
           status: input.status,
-          priority: input.priority ?? undefined,
-          dueDate: input.dueDate ?? undefined
+          priority: input.priority,
+          dueDate: input.dueDate,
+          taskListId: input.taskListId
         }
       });
     } catch (error) {

@@ -23,17 +23,17 @@ export const googleDriveOAuthScopes = [
 
 export async function getGoogleDriveClientForWorkspace(workspaceId: string) {
   const oauth = await getFreshGoogleDriveOAuthForWorkspace(workspaceId);
-  return new GoogleDriveClient(oauth.accessToken!);
+  return new GoogleDriveClient(oauth.accessToken!, async () => (await getFreshGoogleDriveOAuthForWorkspace(workspaceId, true)).accessToken!);
 }
 
-export async function getFreshGoogleDriveOAuthForWorkspace(workspaceId: string) {
+export async function getFreshGoogleDriveOAuthForWorkspace(workspaceId: string, forceRefresh = false) {
   const settings = await getGoogleDriveSettingsForWorkspace(workspaceId);
 
   if (!settings) {
     throw new IntegrationError("integration_not_configured", 404, "Google Drive is not configured.");
   }
 
-  if (hasFreshAccessToken(settings.oauth)) {
+  if (!forceRefresh && hasFreshAccessToken(settings.oauth)) {
     return settings.oauth;
   }
 

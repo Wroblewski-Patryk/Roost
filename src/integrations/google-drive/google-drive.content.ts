@@ -1,8 +1,10 @@
+import { resolveDriveScope, driveScopeFields } from "./google-drive.scope";
+import { createHash } from "crypto";
 import { Prisma, type GoogleDriveFile } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { createEvent } from "../../modules/events/event.service";
 import { IntegrationError } from "../errors";
-import { toJsonInput } from "../integration-settings.service";
+import { getGoogleDriveSettingsForWorkspace, toJsonInput } from "../integration-settings.service";
 import { getGoogleDriveClientForWorkspace } from "./google-drive.auth";
 import { GoogleDriveClient, type GoogleDriveFileMetadata } from "./google-drive.client";
 
@@ -18,7 +20,7 @@ const editableTextMimeTypes = new Set([
 
 export async function listGoogleDriveFiles(workspaceId: string) {
   return prisma.googleDriveFile.findMany({
-    where: { workspaceId },
+    where: { workspaceId, trashed: false, syncStatus: { notIn: ["removed", "out_of_scope", "trashed", "unavailable"] } },
     include: {
       contentSnapshots: {
         orderBy: { updatedAt: "desc" },
@@ -57,7 +59,7 @@ export async function createGoogleDoc(input: {
   const metadata = await client.createDriveFile({
     name: input.name,
     mimeType: googleDocMimeType,
-    parentId: input.parentId
+    parentId: await resolveWriteParent(input.workspaceId, input.parentId, client)
   });
 
   if (input.initialText) {
@@ -92,7 +94,9 @@ export async function updateGoogleDoc(input: {
   }
 
   const client = await getWorkspaceGoogleDriveClient(input.workspaceId);
-  await client.updateDocument(file.externalId, input.requests, input.writeControl);
+  const currentDocument = input.writeControl ? null : await client.getDocument(file.externalId);
+  const writeControl = input.writeControl ?? (currentDocument?.revisionId ? { requiredRevisionId: currentDocument.revisionId } : undefined);
+  await client.updateDocument(file.externalId, input.requests, writeControl);
   const metadata = await client.getFile(file.externalId);
   const refreshedFile = await upsertGoogleDriveFileFromMetadata(input.workspaceId, metadata);
   const snapshot = await refreshGoogleDriveFileContent({
@@ -115,7 +119,7 @@ export async function createGoogleSheet(input: {
   const createdMetadata = await client.createDriveFile({
     name: input.title,
     mimeType: googleSheetMimeType,
-    parentId: input.parentId
+    parentId: await resolveWriteParent(input.workspaceId, input.parentId, client)
   });
   const spreadsheetId = createdMetadata.id;
   if (!spreadsheetId) {
@@ -204,7 +208,7 @@ async function getWorkspaceDriveFile(workspaceId: string, id: string) {
   const file = await prisma.googleDriveFile.findFirst({
     where: {
       id,
-      workspaceId
+      workspaceId, syncStatus: { notIn: ["removed", "out_of_scope", "unavailable"] }
     }
   });
 
@@ -221,7 +225,8 @@ export async function refreshGoogleDriveFileContent(input: {
   client: GoogleDriveClient;
   range?: string;
 }) {
-  const snapshotInput = await extractSnapshot(input);
+  const extracted = await extractSnapshot(input);
+  const snapshotInput = { ...extracted, metadata: toJsonInput({ ...(extracted.metadata as Record<string, unknown>), snapshotSchemaVersion: 2 }) };
   const snapshot = await prisma.googleDriveContentSnapshot.upsert({
     where: {
       googleDriveFileId_sourceRevisionId: {
@@ -263,7 +268,7 @@ async function extractSnapshot(input: {
     const document = await input.client.getDocument(input.file.externalId);
     const text = extractGoogleDocText(document);
     return {
-      sourceRevisionId: input.file.headRevisionId ?? `doc:${input.file.externalId}`,
+      sourceRevisionId: String(document.revisionId ?? createHash("sha256").update(JSON.stringify(document)).digest("hex")),
       contentKind: "google_doc",
       extractedText: text,
       structuredPreview: document as Prisma.InputJsonValue,
@@ -275,18 +280,15 @@ async function extractSnapshot(input: {
   }
 
   if (input.file.mimeType === googleSheetMimeType) {
-    const range = input.range ?? "A1:Z100";
-    const values = await input.client.getSheetValues(input.file.externalId, range);
-    const text = extractSheetText(values);
+    const ranges = input.range ? [input.range] : await spreadsheetRanges(input.client, input.file.externalId);
+    const blocks = [];
+    for (const range of ranges) blocks.push({ range, values: await input.client.getSheetValues(input.file.externalId, range) });
+    const text = blocks.map(block => `${block.range}\n${extractSheetText(block.values)}`).join("\n\n");
     return {
-      sourceRevisionId: `${input.file.headRevisionId ?? input.file.externalId}:${range}`,
-      contentKind: "google_sheet",
-      extractedText: text,
-      structuredPreview: values as Prisma.InputJsonValue,
-      summary: summarizeText(input.file.name, text),
-      scanStatus: "completed",
-      errorCode: null,
-      metadata: toJsonInput({ spreadsheetId: input.file.externalId, range })
+      sourceRevisionId: createHash("sha256").update(JSON.stringify(blocks)).digest("hex"),
+      contentKind: "google_sheet", extractedText: text, structuredPreview: toJsonInput({ ranges: blocks }),
+      summary: summarizeText(input.file.name, text), scanStatus: "completed", errorCode: null,
+      metadata: toJsonInput({ spreadsheetId: input.file.externalId, ranges, partial: Boolean(input.range) })
     };
   }
 
@@ -396,7 +398,7 @@ function toGoogleDriveFileUpdate(file: GoogleDriveFileMetadata) {
     name: file.name,
     mimeType: file.mimeType,
     driveId: file.driveId,
-    parentExternalId: file.parents?.[0],
+    parentExternalId: file.parents?.[0] ?? null,
     isFolder: file.mimeType === "application/vnd.google-apps.folder",
     trashed: Boolean(file.trashed),
     webViewLink: file.webViewLink,
@@ -473,4 +475,47 @@ async function emitFileEvent(workspaceId: string, type: string, file: GoogleDriv
       ...extra
     })
   });
+}
+
+async function spreadsheetRanges(client: GoogleDriveClient, id: string): Promise<string[]> {
+  const sheet = await client.getSpreadsheet(id);
+  const tabs = sheet.sheets as Array<{ properties?: { title?: string } }> | undefined;
+  if (!tabs?.length) throw new IntegrationError("sync_failed", 502, "Google Sheets did not return its worksheets.");
+  return tabs.map(tab => "'" + String(tab.properties?.title ?? "").replace(/'/g, "''") + "'");
+}
+
+export async function updateGoogleDriveFileMetadata(input: { workspaceId: string; fileId: string; name?: string; parentId?: string; trashed?: boolean }) {
+  const file = await getWorkspaceDriveFile(input.workspaceId, input.fileId);
+  const client = await getWorkspaceGoogleDriveClient(input.workspaceId);
+  const settings = await getGoogleDriveSettingsForWorkspace(input.workspaceId);
+  if (!settings) throw new IntegrationError("integration_not_configured", 422, "Google Drive is not configured.");
+  if (input.parentId) {
+    const parent = await client.getFile(input.parentId);
+    const scope = await resolveDriveScope(parent, settings.config, client);
+    if (parent.mimeType !== "application/vnd.google-apps.folder" || !scope.included || parent.trashed) {
+      throw new IntegrationError("sync_failed", 422, "The destination must be an active folder inside the configured Drive scope.");
+    }
+  }
+  const current = await client.getFile(file.externalId);
+  await client.updateFileMetadata(file.externalId, input, current.parents);
+  const metadata = await client.getFile(file.externalId);
+  const updated = await upsertGoogleDriveFileFromMetadata(input.workspaceId, metadata);
+  const scope = await resolveDriveScope(metadata, settings.config, client);
+  await prisma.googleDriveFile.update({ where: { id: updated.id }, data: driveScopeFields(scope.mapping) });
+  await emitFileEvent(input.workspaceId, "google_drive_metadata_updated", updated);
+  return updated;
+}
+
+async function resolveWriteParent(workspaceId: string, requested: string | undefined, client: GoogleDriveClient) {
+  const settings = await getGoogleDriveSettingsForWorkspace(workspaceId);
+  if (!settings) throw new IntegrationError("integration_not_configured", 422, "Google Drive is not configured.");
+  const roots = settings.config.selectedFolderIds ?? settings.config.rootFolderIds ?? [];
+  const parentId = requested ?? roots[0];
+  if (parentId && roots.length) {
+    const folder = await client.getFile(parentId);
+    if (folder.trashed || folder.mimeType !== "application/vnd.google-apps.folder" || !(await resolveDriveScope(folder, settings.config, client)).included) {
+      throw new IntegrationError("sync_failed", 422, "Choose a writable folder inside the configured Google Drive scope.");
+    }
+  }
+  return parentId;
 }

@@ -9764,13 +9764,15 @@ test("CompanyCore v1 protected API flow", async () => {
     }
 
     if (url.origin === "https://sheets.googleapis.com") {
-      assert.equal(url.pathname, "/v4/spreadsheets/drive-sheet-1/values/A1%3AZ100");
+      if (url.pathname === "/v4/spreadsheets/drive-sheet-1") return new Response(JSON.stringify({ sheets: [{ properties: { title: "Sheet1" } }] }), { status: 200 });
+      assert.equal(decodeURIComponent(url.pathname), "/v4/spreadsheets/drive-sheet-1/values/'Sheet1'");
       return new Response(JSON.stringify({
         range: "A1:Z100",
         values: [["Metric", "Value"], ["Imported sheet", "indexed"]]
       }), { status: 200 });
     }
 
+    if (url.pathname.startsWith("/drive/v3/files/") && !url.pathname.endsWith("/drive-folder-root")) return new Response(JSON.stringify({}), { status: 404 });
     assert.equal(url.origin, "https://www.googleapis.com");
     assert.ok(url.pathname === "/drive/v3/files" || url.pathname === "/drive/v3/files/drive-folder-root");
     assert.equal(url.searchParams.get("supportsAllDrives"), "true");
@@ -9921,8 +9923,8 @@ test("CompanyCore v1 protected API flow", async () => {
     assert.equal(repeatDriveImportBody.data.createdCount, 0);
     assert.equal(repeatDriveImportBody.data.updatedCount, 5);
     assert.equal(repeatDriveImportBody.data.wouldUpdateCount, 5);
-    assert.equal(repeatDriveImportBody.data.contentRefreshedCount, 3);
-    assert.equal(repeatDriveImportBody.data.contentSkippedCount, 2);
+    assert.equal(repeatDriveImportBody.data.contentRefreshedCount, 1);
+    assert.equal(repeatDriveImportBody.data.contentSkippedCount, 4);
   } finally {
     globalThis.fetch = originalFetchBeforeGoogleDriveImport;
   }
@@ -9994,6 +9996,7 @@ test("CompanyCore v1 protected API flow", async () => {
   const googleDriveCalls: Array<{ path: string; method: string; body?: unknown }> = [];
   globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
     const url = new URL(String(input));
+    if (url.pathname === "/drive/v3/files/drive-folder-root") return new Response(JSON.stringify({ id: "drive-folder-root", name: "Root", mimeType: "application/vnd.google-apps.folder" }), { status: 200 });
     googleDriveCalls.push({
       path: url.pathname,
       method: init?.method ?? "GET",
@@ -10198,6 +10201,7 @@ test("CompanyCore v1 protected API flow", async () => {
   globalThis.fetch = (async (input: string | URL | Request) => {
     const url = new URL(String(input));
 
+    if (url.pathname === "/drive/v3/files/drive-folder-root") return new Response(JSON.stringify({ id: "drive-folder-root", name: "Root", mimeType: "application/vnd.google-apps.folder" }), { status: 200 });
     if (url.pathname === "/drive/v3/changes") {
       assert.equal(url.searchParams.get("pageToken"), "changes-token-1");
       return new Response(JSON.stringify({
@@ -10349,6 +10353,8 @@ test("CompanyCore v1 protected API flow", async () => {
   globalThis.fetch = (async (input: string | URL | Request) => {
     const url = new URL(String(input));
 
+    if (url.pathname === "/drive/v3/files/drive-folder-root") return new Response(JSON.stringify({ id: "drive-folder-root", name: "Root", mimeType: "application/vnd.google-apps.folder" }), { status: 200 });
+    if (url.pathname === "/drive/v3/files") return new Response(JSON.stringify({ files: [] }), { status: 200 });
     if (url.pathname === "/drive/v3/changes/startPageToken") {
       return new Response(JSON.stringify({
         startPageToken: "changes-baseline-token"
@@ -10972,6 +10978,7 @@ test("CompanyCore v1 protected API flow", async () => {
   let writeBackPayload: unknown = null;
   globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
     const url = new URL(String(input));
+    if (url.pathname === "/api/v2/task/clickup-task-live" && !init?.method) return new Response(JSON.stringify({ id: "clickup-task-live", name: "Task", status: { status: "in progress", type: "custom" }, list: { id: "list-1" } }), { status: 200 });
     if (url.pathname === "/api/v2/task/clickup-task-live" && init?.method === "PUT") {
       writeBackPayload = JSON.parse(String(init.body ?? "{}"));
       return new Response(JSON.stringify({
@@ -10998,6 +11005,7 @@ test("CompanyCore v1 protected API flow", async () => {
   }
   assert.deepEqual(writeBackPayload, {
     name: "CompanyCore owned title",
+    archived: false,
     status: "in progress",
     priority: 2
   });
@@ -11220,7 +11228,9 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(serviceCannotDiscoverClickUp.status, 403);
 
   const originalFetch = globalThis.fetch;
-  globalThis.fetch = (async () => new Response(JSON.stringify({
+  globalThis.fetch = (async (input: string | URL | Request) => {
+    if (new URL(String(input)).pathname.includes("/task/")) return new Response(JSON.stringify({}), { status: 404 });
+    return new Response(JSON.stringify({
     tasks: [
       {
         id: "clickup-task-1",
@@ -11233,7 +11243,7 @@ test("CompanyCore v1 protected API flow", async () => {
       }
     ],
     last_page: true
-  }), { status: 200 })) as typeof fetch;
+  }), { status: 200 }); }) as typeof fetch;
 
   try {
     const sync = await request("/tasks/sync/clickup/native", {
@@ -11318,7 +11328,9 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(importedTask?.taskList?.externalId, "list-1");
   assert.equal(importedTask?.taskList?.name, "Jarvis");
 
-  globalThis.fetch = (async () => new Response(JSON.stringify({
+  globalThis.fetch = (async (input: string | URL | Request) => {
+    if (new URL(String(input)).pathname.includes("/task/")) return new Response(JSON.stringify({}), { status: 404 });
+    return new Response(JSON.stringify({
     tasks: [
       {
         id: "clickup-task-1",
@@ -11338,7 +11350,7 @@ test("CompanyCore v1 protected API flow", async () => {
       }
     ],
     last_page: true
-  }), { status: 200 })) as typeof fetch;
+  }), { status: 200 }); }) as typeof fetch;
 
   try {
     const skipExistingSync = await request("/tasks/sync/clickup/native", {
@@ -11385,7 +11397,9 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(secondImportedTask?.title, "Only new ClickUp task");
   assert.equal(secondImportedTask?.priority, "normal");
 
-  globalThis.fetch = (async () => new Response(JSON.stringify({
+  globalThis.fetch = (async (input: string | URL | Request) => {
+    if (new URL(String(input)).pathname.includes("/task/")) return new Response(JSON.stringify({}), { status: 404 });
+    return new Response(JSON.stringify({
     tasks: [
       {
         id: "clickup-task-2",
@@ -11405,7 +11419,7 @@ test("CompanyCore v1 protected API flow", async () => {
       }
     ],
     last_page: true
-  }), { status: 200 })) as typeof fetch;
+  }), { status: 200 }); }) as typeof fetch;
 
   try {
     const inspectOnlySync = await request("/tasks/sync/clickup/native", {
@@ -11451,7 +11465,9 @@ test("CompanyCore v1 protected API flow", async () => {
   });
   assert.equal(inspectedOnlyTask, null);
 
-  globalThis.fetch = (async () => new Response(JSON.stringify({
+  globalThis.fetch = (async (input: string | URL | Request) => {
+    if (new URL(String(input)).pathname.includes("/task/")) return new Response(JSON.stringify({}), { status: 404 });
+    return new Response(JSON.stringify({
     tasks: [
       {
         id: "clickup-task-1",
@@ -11463,7 +11479,7 @@ test("CompanyCore v1 protected API flow", async () => {
       }
     ],
     last_page: true
-  }), { status: 200 })) as typeof fetch;
+  }), { status: 200 }); }) as typeof fetch;
 
   try {
     const replaceSync = await request("/tasks/sync/clickup/native", {
@@ -11479,9 +11495,9 @@ test("CompanyCore v1 protected API flow", async () => {
     };
     assert.equal(replaceBody.data.importMode, "replace_selected_lists");
     assert.equal(replaceBody.data.itemCount, 1);
-    assert.equal(replaceBody.data.createdCount, 1);
-    assert.equal(replaceBody.data.updatedCount, 0);
-    assert.equal(replaceBody.data.deletedCount, 5);
+    assert.equal(replaceBody.data.createdCount, 0);
+    assert.equal(replaceBody.data.updatedCount, 1);
+    assert.equal(replaceBody.data.deletedCount, 0);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -11507,7 +11523,7 @@ test("CompanyCore v1 protected API flow", async () => {
       }
     }
   });
-  assert.equal(removedClickUpTask, null);
+  assert.ok(removedClickUpTask, "replacement preserves existing record identities");
 
   const manualTaskAfterReplace = await prisma.task.findUnique({
     where: { id: taskId }
@@ -11519,6 +11535,7 @@ test("CompanyCore v1 protected API flow", async () => {
   let archivePayload: unknown = null;
   globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
     const url = new URL(String(input));
+    if (url.pathname === "/api/v2/list/list-1" && !init?.method) return new Response(JSON.stringify({ id: "list-1", statuses: [{ status: "to do", type: "open" }] }), { status: 200 });
     if (url.pathname === "/api/v2/list/list-1/task" && init?.method === "POST") {
       createdInClickUpPayload = JSON.parse(String(init.body ?? "{}"));
       return new Response(JSON.stringify({
@@ -11583,6 +11600,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.deepEqual(createdInClickUpPayload, {
     name: "Created from CompanyCore",
     description: "This should be created in ClickUp first",
+    archived: false,
     status: "to do",
     priority: 1
   });

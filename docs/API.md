@@ -1,5 +1,11 @@
 # API
 
+`PATCH /v1/google-drive/files/:id/metadata` accepts optional `name`, `parentId`
+and `trashed`, using workspace-scoped `google-drive:files:write` authorization.
+The provider is updated first and local metadata refreshed afterward. Destinations
+must be folders inside configured roots. No hard delete is performed. The separate
+description endpoint edits a Roost-owned explanatory note.
+
 ## Product Engineering
 
 Protected routes under `/v1/product-engineering` expose workspace-scoped

@@ -37,7 +37,9 @@ const createTaskSchema = z.object({
   organizationalContext: organizationalContextSchema.optional()
 });
 
-const updateTaskSchema = createTaskSchema.partial().omit({ externalId: true, source: true });
+const updateTaskSchema = createTaskSchema.partial().omit({ externalId: true, source: true }).extend({
+  description: z.string().nullable().optional(), priority: z.string().nullable().optional(), dueDate: z.coerce.date().nullable().optional()
+});
 
 const clickUpCustomFieldSchema = z.object({
   value: z.unknown()
@@ -198,7 +200,8 @@ tasksRouter.patch("/:id", asyncHandler(async (req, res) => {
           description: taskInput.description,
           status: taskInput.status,
           priority: taskInput.priority,
-          dueDate: taskInput.dueDate
+          dueDate: taskInput.dueDate,
+          taskListId: taskInput.taskListId
         }
       });
     } catch (error) {

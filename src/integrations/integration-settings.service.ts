@@ -32,6 +32,7 @@ export type GoogleDriveIntegrationConfig = {
   syncMode?: "pull" | "two_way";
   importMode?: "merge" | "skip_existing" | "replace_selected_folders" | "inspect_only";
   changesPageToken?: string;
+  changesPageTokens?: Record<string, string>;
   operatingScopeMappings?: Array<{
     folderId: string;
     operatingAreaId?: string;

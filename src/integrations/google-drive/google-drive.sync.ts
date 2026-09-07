@@ -1,3 +1,6 @@
+import { createHash } from "crypto";
+import { withIntegrationLock } from "../sync-lock";
+import { resolveDriveScope, driveScopeFields } from "./google-drive.scope";
 import { prisma } from "../../db/prisma";
 import { IntegrationError } from "../errors";
 import { getGoogleDriveSettingsForWorkspace, toJsonInput, type GoogleDriveIntegrationConfig } from "../integration-settings.service";
@@ -22,6 +25,7 @@ export type GoogleDriveImportResult = {
   wouldUpdateCount: number;
   contentRefreshedCount: number;
   contentSkippedCount: number;
+  contentFailedCount?: number;
 };
 
 export type GoogleDriveChangesResult = {
@@ -35,7 +39,12 @@ export type GoogleDriveChangesResult = {
   newStartPageToken?: string;
 };
 
-export async function importGoogleDriveFoldersForWorkspace(input: {
+type DriveImportInput = Parameters<typeof importGoogleDriveFolders>[0];
+export async function importGoogleDriveFoldersForWorkspace(input: DriveImportInput) {
+  return withIntegrationLock(`google_drive:${input.workspaceId}`, () => importGoogleDriveFolders(input));
+}
+
+async function importGoogleDriveFolders(input: {
   workspaceId: string;
   folderIds?: string[];
   importMode?: GoogleDriveImportMode;
@@ -63,6 +72,8 @@ export async function importGoogleDriveFoldersForWorkspace(input: {
 
   const importMode = input.importMode ?? config.importMode ?? "merge";
   const client = await getGoogleDriveClientForWorkspace(input.workspaceId);
+  const baseline = !config.changesPageToken && importMode !== "inspect_only"
+    ? await client.getStartPageToken() : null;
   const files = await fetchSelectedFolderFiles({
     client,
     folderIds,
@@ -76,10 +87,13 @@ export async function importGoogleDriveFoldersForWorkspace(input: {
     },
     select: {
       id: true,
-      externalId: true
+      externalId: true, modifiedTime: true, headRevisionId: true, scanStatus: true,
+      contentSnapshots: { orderBy: { updatedAt: "desc" }, take: 1, select: { metadata: true } }
     }
   });
   const existingByExternalId = new Map(existing.map((file) => [file.externalId, file.id]));
+  const existingMetadata = new Map(existing.map(file => [file.externalId, file]));
+  const metadataCache = new Map(files.map(file => [file.id, file]));
   let createdCount = 0;
   let updatedCount = 0;
   let skippedCount = 0;
@@ -88,6 +102,7 @@ export async function importGoogleDriveFoldersForWorkspace(input: {
   let wouldUpdateCount = 0;
   let contentRefreshedCount = 0;
   let contentSkippedCount = 0;
+  let contentFailedCount = 0;
 
   for (const file of files) {
     if (existingByExternalId.has(file.id)) {
@@ -129,18 +144,6 @@ export async function importGoogleDriveFoldersForWorkspace(input: {
     };
   }
 
-  if (importMode === "replace_selected_folders") {
-    const deleted = await prisma.googleDriveFile.deleteMany({
-      where: {
-        workspaceId: input.workspaceId,
-        provider: "google_drive",
-        parentExternalId: { in: folderIds }
-      }
-    });
-    deletedCount = deleted.count;
-    existingByExternalId.clear();
-  }
-
   for (const file of files) {
     const existingId = existingByExternalId.get(file.id);
     if (importMode === "skip_existing" && existingId) {
@@ -148,6 +151,8 @@ export async function importGoogleDriveFoldersForWorkspace(input: {
       continue;
     }
 
+    const scope = await resolveDriveScope(file, { ...config, selectedFolderIds: folderIds }, client, metadataCache);
+    const scopeFields = driveScopeFields(scope.mapping);
     const upsertedFile = await prisma.googleDriveFile.upsert({
       where: {
         workspaceId_provider_externalId: {
@@ -156,8 +161,8 @@ export async function importGoogleDriveFoldersForWorkspace(input: {
           externalId: file.id
         }
       },
-      create: toGoogleDriveFileCreate(input.workspaceId, file, config),
-      update: toGoogleDriveFileUpdate(file, config)
+      create: { ...toGoogleDriveFileCreate(input.workspaceId, file, config), ...scopeFields },
+      update: { ...toGoogleDriveFileUpdate(file, config), ...scopeFields }
     });
 
     if (existingId) {
@@ -166,17 +171,49 @@ export async function importGoogleDriveFoldersForWorkspace(input: {
       createdCount += 1;
     }
 
-    if (isContentRefreshSupported(file)) {
-      await refreshGoogleDriveFileContent({
-        workspaceId: input.workspaceId,
-        file: upsertedFile,
-        client
-      });
-      contentRefreshedCount += 1;
+    const previous = existingMetadata.get(file.id);
+    const contentChanged = !previous || (previous.contentSnapshots[0]?.metadata as { snapshotSchemaVersion?: number } | undefined)?.snapshotSchemaVersion !== 2 || previous.scanStatus !== "completed" || previous.headRevisionId !== (file.headRevisionId ?? null)
+      || previous.modifiedTime?.toISOString() !== file.modifiedTime;
+    if (!file.trashed && isContentRefreshSupported(file) && contentChanged) {
+      try {
+        await refreshGoogleDriveFileContent({ workspaceId: input.workspaceId, file: upsertedFile, client });
+        contentRefreshedCount += 1;
+      } catch (error) {
+        contentFailedCount++;
+        await prisma.googleDriveFile.update({ where: { id: upsertedFile.id }, data: { scanStatus: "failed" } });
+        await prisma.event.create({ data: { workspaceId: input.workspaceId, source: "google_drive", type: "google_drive_content_refresh_failed",
+          payload: { externalId: file.id, errorCode: error instanceof IntegrationError ? error.code : "sync_failed" } } });
+      }
     } else {
       contentSkippedCount += 1;
     }
   }
+
+  if (importMode !== "skip_existing") {
+    const known = await prisma.googleDriveFile.findMany({ where: { workspaceId: input.workspaceId, provider: "google_drive" }, select: { externalId: true, parentExternalId: true } });
+    const knownById = new Map(known.map(file => [file.externalId, file]));
+    const fetchedIds = new Set(files.map(file => file.id));
+    const selected = new Set(folderIds);
+    for (const knownFile of known) {
+      if (fetchedIds.has(knownFile.externalId)) continue;
+      let ancestor: string | null | undefined = knownFile.externalId;
+      const ancestors = new Set<string>();
+      while (ancestor && !selected.has(ancestor) && !ancestors.has(ancestor)) {
+        ancestors.add(ancestor); ancestor = knownById.get(ancestor)?.parentExternalId;
+      }
+      if (!ancestor || !selected.has(ancestor)) continue;
+      try {
+        const metadata = await client.getFile(knownFile.externalId);
+        const scope = await resolveDriveScope(metadata, { ...config, selectedFolderIds: folderIds }, client, metadataCache);
+        await upsertGoogleDriveFileFromMetadata(input.workspaceId, metadata);
+        if (metadata.trashed || !scope.included) await markDriveTreeUnavailable(input.workspaceId, metadata.id, metadata.trashed ? "trashed" : "out_of_scope");
+      } catch (error) {
+        if (!(error instanceof IntegrationError) || error.code !== "not_found") throw error;
+        await markDriveTreeUnavailable(input.workspaceId, knownFile.externalId, "unavailable");
+      }
+    }
+  }
+  if (baseline) await saveDriveCursor(input.workspaceId, undefined, baseline.startPageToken);
 
   const result = {
     provider: "google_drive" as const,
@@ -190,7 +227,7 @@ export async function importGoogleDriveFoldersForWorkspace(input: {
     wouldCreateCount,
     wouldUpdateCount,
     contentRefreshedCount,
-    contentSkippedCount
+    contentSkippedCount, contentFailedCount
   };
   await emitGoogleDriveImportEvent(input.workspaceId, result);
   return result;
@@ -235,6 +272,7 @@ async function fetchSelectedFolderFiles(input: {
         pageToken
       });
 
+      if (response.incompleteSearch) throw new IntegrationError("sync_failed", 502, "Drive search is incomplete; existing records were preserved.");
       for (const file of response.files ?? []) {
         if (!file.id || seen.has(file.id)) {
           continue;
@@ -248,6 +286,9 @@ async function fetchSelectedFolderFiles(input: {
 
       if (!response.nextPageToken) {
         break;
+      }
+      if (page + 1 === (input.maxPagesPerFolder ?? DEFAULT_MAX_PAGES_PER_FOLDER)) {
+        throw new IntegrationError("sync_failed", 502, "Drive folder listing exceeded its page budget.");
       }
       pageToken = response.nextPageToken;
     }
@@ -282,7 +323,7 @@ function toGoogleDriveFileUpdate(file: GoogleDriveFileMetadata, config: GoogleDr
     name: file.name,
     mimeType: file.mimeType,
     driveId: file.driveId,
-    parentExternalId: file.parents?.[0],
+    parentExternalId: file.parents?.[0] ?? null,
     isFolder: file.mimeType === "application/vnd.google-apps.folder",
     trashed: Boolean(file.trashed),
     webViewLink: file.webViewLink,
@@ -327,214 +368,122 @@ async function emitGoogleDriveImportEvent(workspaceId: string, result: GoogleDri
   });
 }
 
-export async function reconcileGoogleDriveChangesForWorkspace(input: {
-  workspaceId: string;
-  pageToken?: string;
-  driveId?: string;
-}) {
+type DriveChangesInput = { workspaceId: string; pageToken?: string; driveId?: string };
+
+export async function reconcileGoogleDriveChangesForWorkspace(input: DriveChangesInput) {
+  return withIntegrationLock(`google_drive:${input.workspaceId}`, () => reconcileDriveChanges(input));
+}
+
+async function saveDriveCursor(workspaceId: string, driveId: string | undefined, token: string) {
+  // Read inside the transaction: do not overwrite a concurrently edited folder configuration.
+  await prisma.$transaction(async tx => {
+    const setting = await tx.integrationSetting.findUniqueOrThrow({ where: { workspaceId_provider: { workspaceId, provider: "google_drive" } } });
+    const config = setting.config as GoogleDriveIntegrationConfig;
+    await tx.integrationSetting.update({ where: { id: setting.id }, data: { config: toJsonInput({ ...config,
+      ...(driveId ? { changesPageTokens: { ...config.changesPageTokens, [driveId]: token } } : { changesPageToken: token })
+    }) } });
+  });
+}
+
+async function reconcileDriveChanges(input: DriveChangesInput): Promise<GoogleDriveChangesResult> {
   const settings = await getGoogleDriveSettingsForWorkspace(input.workspaceId);
-
-  if (!settings) {
-    throw new IntegrationError(
-      "integration_not_configured",
-      404,
-      "Google Drive is not configured for this workspace."
-    );
-  }
-
-  const pageToken = input.pageToken ?? settings.config.changesPageToken;
-  if (!pageToken) {
-    const client = await getGoogleDriveClientForWorkspace(input.workspaceId);
-    const response = await client.getStartPageToken(input.driveId);
-    await prisma.integrationSetting.update({
-      where: {
-        workspaceId_provider: {
-          workspaceId: input.workspaceId,
-          provider: "google_drive"
-        }
-      },
-      data: {
-        config: toJsonInput({
-          ...settings.config,
-          changesPageToken: response.startPageToken
-        })
-      }
-    });
-
-    const result: GoogleDriveChangesResult = {
-      provider: "google_drive",
-      processedCount: 0,
-      refreshedCount: 0,
-      removedCount: 0,
-      skippedCount: 0,
-      baselineInitialized: true,
-      newStartPageToken: response.startPageToken
-    };
-
-    await prisma.event.create({
-      data: {
-        workspaceId: input.workspaceId,
-        type: "google_drive_changes_reconciled",
-        source: "google_drive",
-        payload: toJsonInput(result)
-      }
-    });
-
-    return result;
-  }
-
+  if (!settings) throw new IntegrationError("integration_not_configured", 404, "Google Drive is not configured.");
   const client = await getGoogleDriveClientForWorkspace(input.workspaceId);
-  const response = await client.listChanges({
-    pageToken,
-    driveId: input.driveId
-  });
-
-  let processedCount = 0;
-  let refreshedCount = 0;
-  let removedCount = 0;
-  let skippedCount = 0;
-
-  for (const change of response.changes ?? []) {
-    const externalId = change.fileId ?? change.file?.id;
-    if (!externalId) {
-      skippedCount += 1;
-      continue;
-    }
-
-    await recordGoogleDriveChangeInbox(input.workspaceId, change);
-    processedCount += 1;
-
-    if (change.removed) {
-      const removed = await prisma.googleDriveFile.updateMany({
-        where: {
-          workspaceId: input.workspaceId,
-          provider: "google_drive",
-          externalId
-        },
-        data: {
-          trashed: true,
-          syncStatus: "removed",
-          lastSyncedAt: new Date()
-        }
-      });
-      removedCount += removed.count;
-      await enqueueGoogleDriveAgentEvent(input.workspaceId, "google_drive_file_removed", {
-        externalId
-      });
-      continue;
-    }
-
-    if (!change.file) {
-      skippedCount += 1;
-      continue;
-    }
-
-    const file = await upsertGoogleDriveFileFromMetadata(input.workspaceId, change.file);
-    if (!file.isFolder) {
-      await refreshGoogleDriveFileContent({
-        workspaceId: input.workspaceId,
-        file,
-        client
-      });
-      refreshedCount += 1;
-    }
-    await enqueueGoogleDriveAgentEvent(input.workspaceId, "google_drive_file_changed", {
-      fileId: file.id,
-      externalId: file.externalId,
-      name: file.name,
-      mimeType: file.mimeType
-    });
+  const storedToken = input.driveId ? settings.config.changesPageTokens?.[input.driveId] : settings.config.changesPageToken;
+  const checkpointEnabled = !input.pageToken || input.pageToken === storedToken;
+  let pageToken = input.pageToken ?? storedToken;
+  if (!pageToken) {
+    const baseline = await client.getStartPageToken(input.driveId);
+    const roots = settings.config.selectedFolderIds ?? settings.config.rootFolderIds ?? [];
+    if (roots.length) await importGoogleDriveFolders({ workspaceId: input.workspaceId, importMode: "merge" });
+    await saveDriveCursor(input.workspaceId, input.driveId, baseline.startPageToken);
+    return { provider: "google_drive", processedCount: 0, refreshedCount: 0, removedCount: 0, skippedCount: 0,
+      baselineInitialized: true, newStartPageToken: baseline.startPageToken };
   }
-
-  if (response.newStartPageToken) {
-    await prisma.integrationSetting.update({
-      where: {
-        workspaceId_provider: {
-          workspaceId: input.workspaceId,
-          provider: "google_drive"
+  const result: GoogleDriveChangesResult = { provider: "google_drive", processedCount: 0, refreshedCount: 0, removedCount: 0, skippedCount: 0 };
+  const cache = new Map<string, GoogleDriveFileMetadata>();
+  for (let page = 0; page < 1000; page++) {
+    const response = await client.listChanges({ pageToken, driveId: input.driveId });
+    for (const change of response.changes ?? []) {
+      const externalId = change.fileId ?? change.file?.id;
+      if (!externalId) { result.skippedCount++; continue; }
+      const key = createHash("sha256").update(JSON.stringify([input.driveId ?? "user", pageToken, change])).digest("hex");
+      const inbox = await prisma.providerEventInbox.upsert({
+        where: { workspaceId_provider_idempotencyKey: { workspaceId: input.workspaceId, provider: "google_drive", idempotencyKey: key } },
+        create: { workspaceId: input.workspaceId, provider: "google_drive", externalWebhookId: "drive_changes",
+          eventName: change.removed ? "file_removed" : "file_changed", idempotencyKey: key, payloadHash: key,
+          payload: toJsonInput({ externalId, removed: Boolean(change.removed), time: change.time }), signatureVerified: true }, update: {}
+      });
+      if (inbox.processingStatus === "processed") { result.skippedCount++; continue; }
+      try {
+        const existing = await prisma.googleDriveFile.findUnique({ where: { workspaceId_provider_externalId: {
+          workspaceId: input.workspaceId, provider: "google_drive", externalId
+        } } });
+        let eventType: string | null = null;
+        if (change.removed) {
+          if (existing) {
+            await markDriveTreeUnavailable(input.workspaceId, externalId, "removed");
+            result.removedCount++; eventType = "google_drive_file_removed";
+          }
+        } else {
+          const metadata = change.file ?? await client.getFile(externalId);
+          // No configured roots: only reconcile already tracked records, never import the whole account.
+          const hasRoots = Boolean((settings.config.selectedFolderIds ?? settings.config.rootFolderIds)?.length);
+          const scope = hasRoots ? await resolveDriveScope(metadata, settings.config, client, cache) : { included: false, mapping: undefined };
+          if ((!scope.included && hasRoots) || (!hasRoots && !existing)) {
+            if (existing) { await markDriveTreeUnavailable(input.workspaceId, externalId, "out_of_scope"); eventType = "google_drive_file_removed"; }
+            result.skippedCount++;
+          } else {
+            const file = await upsertGoogleDriveFileFromMetadata(input.workspaceId, metadata);
+            if (hasRoots) await prisma.googleDriveFile.update({ where: { id: file.id }, data: driveScopeFields(scope.mapping) });
+            if (metadata.trashed) {
+              await markDriveTreeUnavailable(input.workspaceId, externalId, "trashed");
+              result.removedCount++; eventType = "google_drive_file_removed";
+            } else {
+              if (!file.isFolder && isContentRefreshSupported(metadata)) {
+                await refreshGoogleDriveFileContent({ workspaceId: input.workspaceId, file, client }); result.refreshedCount++;
+              }
+              eventType = "google_drive_file_changed";
+            }
+          }
         }
-      },
-      data: {
-        config: toJsonInput({
-          ...settings.config,
-          changesPageToken: response.newStartPageToken
-        })
+        // Completion and the agent signal commit together. Failed content extraction remains retryable.
+        await prisma.$transaction(async tx => {
+          if (eventType) await tx.agentEventOutbox.create({ data: { workspaceId: input.workspaceId, eventType,
+            scope: toJsonInput({ provider: "google_drive" }), payload: toJsonInput({ provider: "google_drive", externalId, inboxId: inbox.id }) } });
+          await tx.providerEventInbox.update({ where: { id: inbox.id }, data: { processingStatus: "processed", processedAt: new Date(), lastErrorCode: null } });
+        });
+        result.processedCount++;
+      } catch (error) {
+        await prisma.providerEventInbox.update({ where: { id: inbox.id }, data: { processingStatus: "failed", retryCount: { increment: 1 },
+          lastErrorCode: error instanceof IntegrationError ? error.code : "sync_failed" } });
+        throw error;
       }
-    });
-  }
-
-  const result: GoogleDriveChangesResult = {
-    provider: "google_drive",
-    processedCount,
-    refreshedCount,
-    removedCount,
-    skippedCount,
-    nextPageToken: response.nextPageToken,
-    newStartPageToken: response.newStartPageToken
-  };
-
-  await prisma.event.create({
-    data: {
-      workspaceId: input.workspaceId,
-      type: "google_drive_changes_reconciled",
-      source: "google_drive",
-      payload: toJsonInput(result)
     }
-  });
-
-  return result;
+    const next = response.nextPageToken ?? response.newStartPageToken;
+    if (!next) throw new IntegrationError("sync_failed", 502, "Drive changes response is missing its continuation cursor.");
+    if (checkpointEnabled) await saveDriveCursor(input.workspaceId, input.driveId, next);
+    if (!response.nextPageToken) {
+      result.newStartPageToken = next;
+      await prisma.event.create({ data: { workspaceId: input.workspaceId, type: "google_drive_changes_reconciled", source: "google_drive", payload: toJsonInput(result) } });
+      return result;
+    }
+    if (next === pageToken) throw new IntegrationError("sync_failed", 502, "Drive repeated a changes cursor.");
+    pageToken = next;
+  }
+  throw new IntegrationError("sync_failed", 502, "Drive changes page budget reached; saved cursor can be resumed.");
 }
 
-async function recordGoogleDriveChangeInbox(workspaceId: string, change: {
-  fileId?: string;
-  removed?: boolean;
-  file?: GoogleDriveFileMetadata;
-}) {
-  const externalId = change.fileId ?? change.file?.id ?? "unknown";
-  const idempotencyKey = [
-    "google_drive_change",
-    externalId,
-    change.removed ? "removed" : "changed",
-    change.file?.headRevisionId ?? "no-revision"
-  ].join(":");
-
-  await prisma.providerEventInbox.upsert({
-    where: {
-      workspaceId_provider_idempotencyKey: {
-        workspaceId,
-        provider: "google_drive",
-        idempotencyKey
-      }
-    },
-    create: {
-      workspaceId,
-      provider: "google_drive",
-      externalWebhookId: "drive_changes",
-      eventName: change.removed ? "file_removed" : "file_changed",
-      idempotencyKey,
-      payloadHash: idempotencyKey,
-      payload: toJsonInput(change),
-      signatureVerified: true,
-      processingStatus: "processed",
-      processedAt: new Date()
-    },
-    update: {
-      processingStatus: "processed",
-      processedAt: new Date()
-    }
-  });
-}
-
-async function enqueueGoogleDriveAgentEvent(workspaceId: string, eventType: string, payload: Record<string, unknown>) {
-  await prisma.agentEventOutbox.create({
-    data: {
-      workspaceId,
-      eventType,
-      scope: toJsonInput({ provider: "google_drive" }),
-      payload: toJsonInput({
-        provider: "google_drive",
-        ...payload
-      })
-    }
-  });
+export async function markDriveTreeUnavailable(workspaceId: string, externalId: string, syncStatus: string) {
+  let ids = [externalId];
+  const seen = new Set<string>();
+  while (ids.length) {
+    const fresh = ids.filter(id => !seen.has(id));
+    if (!fresh.length) break;
+    fresh.forEach(id => seen.add(id));
+    const children = await prisma.googleDriveFile.findMany({ where: { workspaceId, parentExternalId: { in: fresh } }, select: { externalId: true } });
+    await prisma.googleDriveFile.updateMany({ where: { workspaceId, externalId: { in: fresh } },
+      data: { syncStatus, ...(["trashed", "removed"].includes(syncStatus) ? { trashed: true } : {}), lastSyncedAt: new Date() } });
+    ids = children.map(file => file.externalId);
+  }
 }

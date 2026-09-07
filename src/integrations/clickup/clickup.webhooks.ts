@@ -1,4 +1,5 @@
 import { createHash } from "crypto";
+import { withIntegrationLock } from "../sync-lock";
 import type { Prisma, TaskStatus } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { env } from "../../config/env";
@@ -7,7 +8,7 @@ import { decryptSecret, encryptSecret } from "../secrets";
 import { getClickUpSettingsForWorkspace } from "../integration-settings.service";
 import { IntegrationError } from "../errors";
 import { ClickUpClient, type ClickUpTask } from "./clickup.client";
-import { mapClickUpTaskToCompanyCoreTask, safeClickUpTaskPayload } from "./clickup.mapper";
+import { mapStatus, mapClickUpTaskToCompanyCoreTask, safeClickUpTaskPayload } from "./clickup.mapper";
 import { clickUpImportModes, findOrCreateClickUpTaskList, syncClickUpTasksForWorkspaceWithOptions, type ClickUpImportMode } from "./clickup.sync";
 import { verifyClickUpWebhookSignature } from "./webhook-signature";
 
@@ -361,7 +362,7 @@ export async function deleteClickUpWebhookRegistration(input: {
 function idempotencyKey(payload: ClickUpWebhookPayload, payloadHash: string) {
   const historyId = payload.history_items?.find((item) => item.id)?.id;
   if (payload.webhook_id && historyId) {
-    return `${payload.webhook_id}:${historyId}`;
+    return `${payload.webhook_id}:${payload.event ?? "unknown"}:${historyId}`;
   }
   return `${payload.webhook_id ?? "unknown"}:${payload.event ?? "unknown"}:${payload.task_id ?? "unknown"}:${payloadHash}`;
 }
@@ -412,13 +413,13 @@ function clickUpCommentFromWebhook(payload: ClickUpWebhookPayload) {
   };
 }
 
-async function upsertClickUpCommentNote(input: {
+export async function upsertClickUpCommentNote(input: {
   workspaceId: string;
   taskId: string;
   externalCommentId: string;
   content: string;
-}) {
-  return prisma.note.upsert({
+}, db: Prisma.TransactionClient = prisma) {
+  return db.note.upsert({
     where: {
       workspaceId_source_externalId: {
         workspaceId: input.workspaceId,
@@ -504,6 +505,11 @@ export async function ingestClickUpWebhook(input: {
 }
 
 export async function processClickUpProviderEvent(inboxId: string) {
+  const event = await prisma.providerEventInbox.findUniqueOrThrow({ where: { id: inboxId } });
+  return withIntegrationLock(`clickup:${event.workspaceId}`, () => processClickUpProviderEventLocked(inboxId));
+}
+
+async function processClickUpProviderEventLocked(inboxId: string) {
   const inbox = await prisma.providerEventInbox.findUniqueOrThrow({
     where: { id: inboxId },
     include: { webhookRegistration: true }
@@ -515,131 +521,128 @@ export async function processClickUpProviderEvent(inboxId: string) {
   }
 
   try {
-    let taskId: string | null = null;
-    let externalId = payload.task_id ?? null;
-
-    const webhookComment = clickUpCommentFromWebhook(payload);
-
-    if (payload.event === "taskDeleted" && externalId) {
-      const archivedTask = await prisma.task.update({
-        where: {
-          workspaceId_source_externalId: {
-            workspaceId: inbox.workspaceId,
-            source: "clickup",
-            externalId
-          }
-        },
-        data: { status: "archived" }
-      }).catch(() => null);
-      taskId = archivedTask?.id ?? null;
-    } else if (externalId) {
+    let fetchedTask: ClickUpTask | null = null;
+    let mappedList: Awaited<ReturnType<typeof findOrCreateClickUpTaskList>> = null;
+    if (payload.event !== "taskDeleted" && payload.task_id) {
       const settings = await getClickUpSettingsForWorkspace(inbox.workspaceId);
-      if (!settings) {
-        throw new IntegrationError("integration_not_configured", 422, "ClickUp integration is not configured for this workspace.");
-      }
-      const client = new ClickUpClient(settings.token);
-      const clickUpTask = await client.getTask(externalId);
-      const data = mapClickUpTaskToCompanyCoreTask(clickUpTask, inbox.workspaceId);
-      const taskList = await findOrCreateClickUpTaskList(inbox.workspaceId, clickUpTask.list?.id);
-      if (taskList) {
-        data.taskListId = taskList.id;
-      }
-      const task = await prisma.task.upsert({
-        where: {
-          workspaceId_source_externalId: {
-            workspaceId: inbox.workspaceId,
-            source: "clickup",
-            externalId
-          }
-        },
-        update: data,
-        create: data
-      });
-      taskId = task.id;
+      if (!settings) throw new IntegrationError("integration_not_configured", 422, "ClickUp integration is not configured.");
+      fetchedTask = await new ClickUpClient(settings.token).getTask(payload.task_id);
+      mappedList = await findOrCreateClickUpTaskList(inbox.workspaceId, fetchedTask.list?.id);
+    }
+    return await prisma.$transaction(async tx => {
+      let taskId: string | null = null;
+      let externalId = payload.task_id ?? null;
 
-      if (webhookComment) {
-        const note = await upsertClickUpCommentNote({
-          workspaceId: inbox.workspaceId,
-          taskId: task.id,
-          externalCommentId: webhookComment.id,
-          content: webhookComment.content
+      const webhookComment = clickUpCommentFromWebhook(payload);
+
+      if (payload.event === "taskDeleted" && externalId) {
+        const where = { workspaceId: inbox.workspaceId, source: "clickup", externalId };
+        await tx.task.updateMany({ where, data: { status: "archived" } });
+        taskId = (await tx.task.findFirst({ where, select: { id: true } }))?.id ?? null;
+      } else if (externalId) {
+        const clickUpTask = fetchedTask!;
+        const data = mapClickUpTaskToCompanyCoreTask(clickUpTask, inbox.workspaceId);
+        const taskList = mappedList;
+        if (taskList) {
+          data.taskListId = taskList.id;
+        }
+        const task = await tx.task.upsert({
+          where: {
+            workspaceId_source_externalId: {
+              workspaceId: inbox.workspaceId,
+              source: "clickup",
+              externalId
+            }
+          },
+          update: data,
+          create: data
         });
+        taskId = task.id;
 
-        await prisma.agentEventOutbox.create({
+        if (webhookComment) {
+          const note = await upsertClickUpCommentNote({
+            workspaceId: inbox.workspaceId,
+            taskId: task.id,
+            externalCommentId: webhookComment.id,
+            content: webhookComment.content
+          }, tx);
+
+          await tx.agentEventOutbox.create({
+            data: {
+              workspaceId: inbox.workspaceId,
+              eventType: "task_comment_posted_from_clickup",
+              targetAgent: null,
+              scope: toJson({
+                taskId: task.id,
+                externalId,
+                noteId: note.id,
+                externalCommentId: webhookComment.id,
+                webhookRegistrationId: inbox.webhookRegistrationId
+              }),
+              payload: toJson({
+                provider: "clickup",
+                taskId: task.id,
+                externalId,
+                noteId: note.id,
+                externalCommentId: webhookComment.id,
+                content: webhookComment.content,
+                actor: webhookComment.actor
+              })
+            }
+          });
+        }
+      }
+
+      const event = await tx.event.create({ data: {
+        type: `clickup_${payload.event}`,
+        workspaceId: inbox.workspaceId,
+        taskId,
+        source: "clickup",
+        payload: {
+          provider: "clickup",
+          inboxId: inbox.id,
+          externalId,
+          eventName: payload.event, historyItemCount: payload.history_items?.length ?? 0
+        } as Prisma.InputJsonValue
+      } });
+
+      if (payload.event === "taskStatusUpdated" && taskId && externalId) {
+        const change = statusChange(payload);
+        await tx.agentEventOutbox.create({
           data: {
             workspaceId: inbox.workspaceId,
-            eventType: "task_comment_posted_from_clickup",
+            eventId: event.id,
+            eventType: "task_status_updated_from_clickup",
             targetAgent: null,
             scope: toJson({
-              taskId: task.id,
+              taskId,
               externalId,
-              noteId: note.id,
-              externalCommentId: webhookComment.id,
+              externalListId: change.parentExternalId,
               webhookRegistrationId: inbox.webhookRegistrationId
             }),
             payload: toJson({
               provider: "clickup",
-              taskId: task.id,
+              taskId,
               externalId,
-              noteId: note.id,
-              externalCommentId: webhookComment.id,
-              content: webhookComment.content,
-              actor: webhookComment.actor
+              before: change.before,
+              after: change.after,
+              actor: change.actor,
+              changedAt: change.changedAt
             })
           }
         });
       }
-    }
 
-    const event = await createEvent({
-      type: `clickup_${payload.event}`,
-      workspaceId: inbox.workspaceId,
-      taskId,
-      source: "clickup",
-      payload: {
-        provider: "clickup",
-        inboxId: inbox.id,
-        externalId,
-        raw: payload
-      } as Prisma.InputJsonValue
-    });
-
-    if (payload.event === "taskStatusUpdated" && taskId && externalId) {
-      const change = statusChange(payload);
-      await prisma.agentEventOutbox.create({
+      await tx.providerEventInbox.update({
+        where: { id: inbox.id },
         data: {
-          workspaceId: inbox.workspaceId,
-          eventId: event.id,
-          eventType: "task_status_updated_from_clickup",
-          targetAgent: null,
-          scope: toJson({
-            taskId,
-            externalId,
-            externalListId: change.parentExternalId,
-            webhookRegistrationId: inbox.webhookRegistrationId
-          }),
-          payload: toJson({
-            provider: "clickup",
-            taskId,
-            externalId,
-            before: change.before,
-            after: change.after,
-            actor: change.actor,
-            changedAt: change.changedAt
-          })
+          processingStatus: "processed",
+          processedAt: new Date(),
+          lastErrorCode: null
         }
       });
-    }
-
-    await prisma.providerEventInbox.update({
-      where: { id: inbox.id },
-      data: {
-        processingStatus: "processed",
-        processedAt: new Date(),
-        lastErrorCode: null
-      }
+      return { status: "processed", inboxId: inbox.id };
     });
-    return { status: "processed", inboxId: inbox.id };
   } catch (error) {
     const errorCode = error instanceof IntegrationError ? error.code : "sync_failed";
     await prisma.providerEventInbox.update({
@@ -663,7 +666,7 @@ export async function retryFailedClickUpProviderEvents(input: {
     where: {
       workspaceId: input.workspaceId,
       provider: "clickup",
-      processingStatus: "failed",
+      processingStatus: { in: ["failed", "pending"] },
       ...(input.eventIds && input.eventIds.length > 0 ? { id: { in: input.eventIds } } : {})
     },
     orderBy: { receivedAt: "asc" },
@@ -675,11 +678,6 @@ export async function retryFailedClickUpProviderEvents(input: {
   const results = [];
 
   for (const event of events) {
-    await prisma.providerEventInbox.update({
-      where: { id: event.id },
-      data: { processingStatus: "pending" }
-    });
-
     try {
       const result = await processClickUpProviderEvent(event.id);
       processedCount += result.status === "processed" || result.status === "already_processed" ? 1 : 0;
@@ -739,7 +737,11 @@ export async function runClickUpMaintenanceForWorkspace(input: {
     })
   ]);
 
-  const webhookReconcile = await reconcileClickUpWebhooksForWorkspace(input.workspaceId, input.req);
+  let webhookReconcile;
+  try { webhookReconcile = await reconcileClickUpWebhooksForWorkspace(input.workspaceId, input.req); }
+  catch (error) {
+    webhookReconcile = { errorCode: error instanceof IntegrationError ? error.code : "sync_failed" };
+  }
   const retry = await retryFailedClickUpProviderEvents({
     workspaceId: input.workspaceId,
     limit: 100
@@ -853,10 +855,14 @@ function clickUpTaskPayload(input: {
     status?: string;
     priority?: number | null;
     due_date?: number | null;
+    archived?: boolean;
   } = {};
   if (input.title !== undefined) payload.name = input.title;
   if (input.description !== undefined) payload.description = input.description || " ";
-  if (input.status !== undefined) payload.status = clickUpStatus(input.status);
+  if (input.status !== undefined) {
+    payload.archived = input.status === "archived";
+    if (input.status !== "archived") payload.status = clickUpStatus(input.status);
+  }
   if (input.priority !== undefined) payload.priority = clickUpPriority(input.priority) ?? null;
   if (input.dueDate !== undefined) payload.due_date = input.dueDate ? input.dueDate.getTime() : null;
   return payload;
@@ -884,6 +890,9 @@ export async function createCompanyCoreTaskInClickUp(input: {
   }
 
   const client = new ClickUpClient(settings.token);
+  if (input.task.status && input.task.status !== "archived") {
+    payload.status = await resolveClickUpStatus(client, input.listExternalId, input.task.status);
+  }
   return client.createTask(input.listExternalId, payload as {
     name: string;
     description?: string;
@@ -898,10 +907,11 @@ export async function writeBackCompanyCoreTaskToClickUp(input: {
   externalId: string;
   changes: {
     title?: string;
-    description?: string;
+    description?: string | null;
     status?: TaskStatus;
     priority?: string | null;
     dueDate?: Date | null;
+    taskListId?: string | null;
   };
 }) {
   const settings = await getClickUpSettingsForWorkspace(input.workspaceId);
@@ -911,12 +921,56 @@ export async function writeBackCompanyCoreTaskToClickUp(input: {
 
   const payload = clickUpTaskPayload(input.changes);
 
-  if (Object.keys(payload).length === 0) {
+  if (Object.keys(payload).length === 0 && input.changes.taskListId === undefined) {
     return null;
   }
 
   const client = new ClickUpClient(settings.token);
-  return client.updateTask(input.externalId, payload);
+  const remote = (input.changes.status !== undefined && input.changes.status !== "archived") || input.changes.taskListId !== undefined
+    ? await client.getTask(input.externalId) : null;
+  let listId = remote?.list?.id;
+  let destination: { externalId: string | null } | null = null;
+  if (input.changes.taskListId !== undefined) {
+    destination = input.changes.taskListId ? await prisma.taskList.findFirst({ where: {
+      id: input.changes.taskListId, workspaceId: input.workspaceId, source: "clickup"
+    } }) : null;
+    if (!destination?.externalId || !settings.config.teamId) throw new IntegrationError("sync_failed", 422, "A ClickUp-backed task must remain in a mapped ClickUp List.");
+    listId = destination.externalId;
+  }
+  if (input.changes.status && input.changes.status !== "archived") {
+    if (!listId) throw new IntegrationError("sync_failed", 422, "ClickUp task has no List for status mapping.");
+    payload.status = remote && !destination && mapStatus({ ...remote, archived: false }) === input.changes.status
+      ? remote.status?.status ?? undefined
+      : await resolveClickUpStatus(client, listId, input.changes.status);
+  }
+  if (destination?.externalId && destination.externalId !== remote?.list?.id) {
+    const destinationList = await client.getList(destination.externalId);
+    const currentStatus = input.changes.status && input.changes.status !== "archived" ? input.changes.status : mapStatus({ ...remote!, archived: false });
+    const destinationStatusName = payload.status ?? await resolveClickUpStatus(client, destination.externalId, currentStatus);
+    const destinationStatus = destinationList.statuses.find(status => status.status === destinationStatusName);
+    const mappings = remote?.status?.id && destinationStatus?.id ? [{ source_status_id: remote.status.id, destination_status_id: destinationStatus.id }] : undefined;
+    await client.moveTask(settings.config.teamId!, input.externalId, destination.externalId, mappings);
+  }
+  return Object.keys(payload).length ? client.updateTask(input.externalId, payload) : client.getTask(input.externalId);
+}
+
+async function resolveClickUpStatus(client: ClickUpClient, listId: string, status: TaskStatus) {
+  const list = await client.getList(listId);
+  const candidates = (list.statuses ?? []).filter(candidate => mapStatus({ id: "", name: "", status: candidate }) === status);
+  const exact = candidates.find(candidate => candidate.status.toLowerCase() === clickUpStatus(status));
+  if (exact) return exact.status;
+  if (candidates.length === 1) return candidates[0].status;
+  throw new IntegrationError("sync_failed", 422, "ClickUp List status mapping is missing or ambiguous.");
+}
+
+export async function writeBackCompanyCoreNoteToClickUp(input: { workspaceId: string; externalId: string; content?: string; archived?: boolean }) {
+  const settings = await getClickUpSettingsForWorkspace(input.workspaceId);
+  if (!settings) throw new IntegrationError("integration_not_configured", 422, "ClickUp is not configured.");
+  const client = new ClickUpClient(settings.token);
+  if (input.archived) {
+    try { await client.deleteComment(input.externalId); }
+    catch (error) { if (!(error instanceof IntegrationError) || error.code !== "not_found") throw error; }
+  } else if (input.content !== undefined) await client.updateComment(input.externalId, input.content);
 }
 
 export async function archiveCompanyCoreTaskInClickUp(input: {

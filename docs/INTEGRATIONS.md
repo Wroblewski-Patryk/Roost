@@ -1,5 +1,58 @@
 # Integrations
 
+## Current reliability contract (September 2026)
+
+Both adapters support provider-first writes and periodic inbound repair.
+ClickUp and Drive maintenance run independently every 15 minutes by default.
+`CLICKUP_MAINTENANCE_INTERVAL_MINUTES` and
+`GOOGLE_DRIVE_MAINTENANCE_INTERVAL_MINUTES` configure the intervals; zero disables.
+Provider reads have bounded timeouts and transient retries. Writes are not blindly
+retried because a timed-out provider write may already have succeeded.
+
+ClickUp maps archive separately from workflow status. Task and Operations writes
+send archive/unarchive flags, explicit null dates/priorities and actual List status
+names. Ambiguous status mapping fails visibly. Task moves require another mapped
+ClickUp List and use the v3 home-list endpoint. Notes send comment edits and archive
+to ClickUp first. Native-only relationships remain Roost-owned. Missing tasks in a
+complete pull are fetched individually; 404/access loss preserves the row and emits
+`clickup_task_access_unavailable`. A confirmed delete webhook archives locally.
+Webhook task/note changes, events, agent signals and inbox completion commit
+together. Failed and pending entries retry, with workspace serialization.
+
+`merge` is the normal refresh mode. `skip_existing` is an import policy, not a
+freshness guarantee. Compatibility `replace_selected_lists` and
+`replace_selected_folders` now reconcile in place, preserving IDs and relationships
+instead of deleting/recreating records. `deletedCount` remains zero. Provider
+page-budget exhaustion is an error, not a successful partial inventory.
+
+Drive imports acquire a start cursor before initial enumeration. Changes drain all
+pages and checkpoint each completed page, independently for user/shared-drive
+streams. Explicit replay never rewinds the current cursor. Inbox entries remain
+retryable until content succeeds; completion and agent signals are atomic.
+Changes stay inside configured root descendants (or already tracked files when no
+roots exist). Scope mappings inherit through ancestors. Inaccessible/out-of-scope
+subtrees are hidden from active assets without deleting rows. Periodic inventories
+repair pre-cursor gaps and folder moves. Individual content errors appear in
+`contentFailedCount`, `scanStatus=failed`, and safe failure events; later inventories
+retry them. An import with content failures is not fully healthy.
+
+`PATCH /v1/google-drive/files/:id/metadata` writes optional `name`, `parentId`, and
+`trashed`. New Docs/Sheets default to the first configured root if parentId is
+omitted. Explicit destinations must stay in scope. `description` remains a
+Roost-owned explanatory note. Docs use revision control when available. Sheets
+refresh without a range reads every worksheet; explicit-range snapshots are
+marked partial. Content-derived revision keys replace unsupported Docs/Sheets
+headRevisionId assumptions. Snapshot schema version 2 refreshes older snapshots
+on the next inventory. OAuth expiry during a scan can refresh and retry once.
+
+Official contracts checked: [ClickUp Update Task](https://developer.clickup.com/reference/updatetask),
+[Get List](https://developer.clickup.com/reference/getlist),
+[Move Task](https://developer.clickup.com/reference/movetask),
+[Update Comment](https://developer.clickup.com/reference/updatecomment),
+[Delete Comment](https://developer.clickup.com/reference/deletecomment),
+[Drive changes](https://developers.google.com/workspace/drive/api/guides/manage-changes),
+[Drive metadata updates](https://developers.google.com/workspace/drive/api/reference/rest/v3/files/update).
+
 ## Service Adapter Onboarding
 
 Codex Agent Host, Jarvis, Jarvan, Aviary, n8n, and future service clients should start
@@ -126,8 +179,7 @@ Initial import policy mirrors the ClickUp discipline:
   snapshots.
 - `skip_existing`: add only new Drive rows and leave existing provider-owned
   rows untouched.
-- `replace_selected_folders`: after a successful provider fetch, replace only
-  provider-owned Drive rows inside selected folders.
+- `replace_selected_folders`: reconcile provider-owned rows inside selected folders in place, preserving IDs and relationships.
 - `inspect_only`: fetch and report would-create/would-update counts without
   writing.
 
@@ -188,10 +240,10 @@ Implemented first native slice:
 POST /tasks/sync/clickup/native
 ```
 
-The endpoint performs pull-only task sync from configured ClickUp lists. It uses
+This endpoint performs inbound task sync from configured ClickUp lists. It uses
 ClickUp's `GET /api/v2/team/{team_Id}/task` endpoint with `list_ids[]` filters,
 `include_closed=true`, `subtasks=true`, and
-`include_markdown_description=true`. v1 does not write changes back to ClickUp.
+`include_markdown_description=true`. Write-back is implemented as described in the current reliability contract above.
 Production operators can configure the workspace token and trigger the first
 pull through `npm run clickup:bootstrap`; see
 `docs/operations/clickup-production-bootstrap.md`.
@@ -202,9 +254,7 @@ The task import policy is explicit per workspace and per sync run:
   tasks are upserted by `(workspace_id, source = clickup, external_id)`.
 - `skip_existing` leaves existing ClickUp tasks unchanged and adds only new
   ClickUp tasks.
-- `replace_selected_lists` deletes only existing `source = clickup` tasks under
-  the selected ClickUp Lists after a successful provider fetch, then inserts
-  the fetched tasks fresh. Native/manual CompanyCore tasks are not deleted.
+- `replace_selected_lists` reconciles selected provider records in place, preserving IDs and relationships. Native/manual CompanyCore tasks are not deleted.
 - `inspect_only` performs a no-write provider fetch and reports the number of
   tasks that would be created or updated.
 
@@ -224,9 +274,7 @@ Workspace persists non-secret structural metadata into the operating registry,
 so later sync can place ClickUp tasks under the matching CompanyCore task list
 and operating table.
 
-Setting a ClickUp token does not automatically start continuous listening.
-Continuous updates require an approved scheduled sync, webhook receiver, or
-external orchestration task.
+Active ClickUp settings are picked up by backend maintenance, which reconciles webhooks and performs an inbound merge. Active Drive settings are picked up by the independent Drive scheduler.
 
 ## ClickUp Structural Mapping
 

@@ -207,3 +207,13 @@ database schema or migrations, validation, error states, restart behavior, and
 regression risk are verified.
 
 Completion evidence must satisfy `DEFINITION_OF_DONE.md`.
+
+## Native integration reliability
+
+With NODE_ENV=test, COMPANYCORE_SKIP_DOTENV=1 and DATABASE_URL pointing to a
+migrated disposable local companycore_test database, run npm run test:integrations.
+The suite mocks all provider calls and rejects non-local/non-test database URLs.
+It covers archive/restore/null mapping, pagination, missing-task repair preserving
+IDs, actual List statuses, Drive scope and page cursors, replay deduplication,
+failed-content recovery and concurrent webhook processing. Run the API suite too
+to verify HTTP authorization and compatibility.

@@ -60,6 +60,7 @@
     "test:unified-graph-layout": "tsx --test web/src/components/graph/unified-graph-layout.test.ts web/src/components/graph/unified-graph-selection.test.ts web/src/components/graph/unified-graph-interaction.test.ts",
     "check:public-js": "node -e \"console.log('legacy public JS removed; React/Vite build is the web syntax gate')\"",
     "check:route-capabilities": "node scripts/check-route-capabilities.mjs",
+    "test:integrations": "tsx --test src/tests/integration-reliability.test.ts",
     "test:api": "npm run build && npm run prisma:migrate:deploy && node --test \"dist/tests/api.test.js\"",
     "test:api:local": "node scripts/test-api-local.mjs",
     "test": "npm run test:api",

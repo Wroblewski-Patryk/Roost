@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../db/prisma";
-import { createCompanyCoreNoteInClickUp } from "../../integrations/clickup/clickup.webhooks";
+import { createCompanyCoreNoteInClickUp, writeBackCompanyCoreNoteToClickUp } from "../../integrations/clickup/clickup.webhooks";
 import { IntegrationError } from "../../integrations/errors";
 import { asyncHandler } from "../../middleware/async-handler";
 import { createEvent } from "../events/event.service";
@@ -148,6 +148,10 @@ notesRouter.patch("/:id", asyncHandler(async (req, res) => {
     return res.status(404).json({ error: "not_found" });
   }
 
+  if (existing.source === "clickup" && existing.externalId) {
+    await writeBackCompanyCoreNoteToClickUp({ workspaceId, externalId: existing.externalId, content: input.content, archived: input.status === "archived" });
+  }
+
   const note = await prisma.note.update({
     where: { id: existing.id },
     data: input
@@ -173,6 +177,10 @@ notesRouter.delete("/:id", asyncHandler(async (req, res) => {
 
   if (!existing) {
     return res.status(404).json({ error: "not_found" });
+  }
+
+  if (existing.source === "clickup" && existing.externalId) {
+    await writeBackCompanyCoreNoteToClickUp({ workspaceId, externalId: existing.externalId, archived: true });
   }
 
   const note = await prisma.note.update({

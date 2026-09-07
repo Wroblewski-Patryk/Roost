@@ -1,14 +1,17 @@
 import { IntegrationError } from "../errors";
+import { providerRequest } from "../provider-request";
 
 const clickUpBaseUrl = "https://api.clickup.com/api/v2";
 
 export type ClickUpTask = {
   id: string;
   name: string;
+  archived?: boolean;
   description?: string | null;
   markdown_description?: string | null;
   text_content?: string | null;
   status?: {
+    id?: string;
     status?: string | null;
     type?: string | null;
   } | null;
@@ -273,7 +276,7 @@ export class ClickUpClient {
     includeClosed?: boolean;
     maxPages?: number;
   }) {
-    const maxPages = input.maxPages ?? 10;
+    const maxPages = input.maxPages ?? 1000;
     const tasks: ClickUpTask[] = [];
 
     for (let page = 0; page < maxPages; page += 1) {
@@ -287,21 +290,44 @@ export class ClickUpClient {
       }
 
       const payload = await this.request<ClickUpTasksResponse>(url);
+      if (!Array.isArray(payload.tasks) || payload.tasks.some(task => !task.id || !task.name)) {
+        throw new IntegrationError("sync_failed", 502, "ClickUp returned an invalid task page.");
+      }
       const pageTasks = payload.tasks ?? [];
       tasks.push(...pageTasks);
 
       if (payload.last_page || pageTasks.length === 0) {
-        break;
+        return tasks;
       }
     }
 
-    return tasks;
+    throw new IntegrationError("sync_failed", 502, "ClickUp task listing exceeded its page budget; no complete snapshot is available.");
   }
 
   async getTask(taskId: string) {
     const url = new URL(`${clickUpBaseUrl}/task/${encodeURIComponent(taskId)}`);
     url.searchParams.set("include_markdown_description", "true");
-    return this.request<ClickUpTask>(url);
+    const task = await this.request<ClickUpTask>(url);
+    if (task.id !== taskId || !task.name) throw new IntegrationError("sync_failed", 502, "ClickUp returned an invalid task.");
+    return task;
+  }
+
+  async getList(listId: string) {
+    return this.request<{ id: string; statuses: Array<{ id?: string; status: string; type?: string }> }>(`/list/${encodeURIComponent(listId)}`);
+  }
+
+  async moveTask(teamId: string, taskId: string, listId: string, statusMappings?: Array<{ source_status_id: string; destination_status_id: string }>) {
+    return this.request<ClickUpTask>(new URL(`https://api.clickup.com/api/v3/workspaces/${encodeURIComponent(teamId)}/tasks/${encodeURIComponent(taskId)}/home_list/${encodeURIComponent(listId)}`), {
+      method: "PUT", body: JSON.stringify({ ...(statusMappings?.length ? { status_mappings: statusMappings } : {}) })
+    });
+  }
+
+  async updateComment(commentId: string, content: string) {
+    return this.request(`/comment/${encodeURIComponent(commentId)}`, { method: "PUT", body: JSON.stringify({ comment_text: content }) });
+  }
+
+  async deleteComment(commentId: string) {
+    return this.request(`/comment/${encodeURIComponent(commentId)}`, { method: "DELETE" });
   }
 
   async updateTask(taskId: string, input: {
@@ -459,7 +485,7 @@ export class ClickUpClient {
       ? pathOrUrl
       : new URL(`${clickUpBaseUrl}${pathOrUrl}`);
 
-    const response = await fetch(url, {
+    const response = await providerRequest(url, {
       ...init,
       headers: {
         Authorization: this.token,
@@ -469,6 +495,7 @@ export class ClickUpClient {
     });
 
     if (!response.ok) {
+      if (response.status === 404) throw new IntegrationError("not_found", 404, "ClickUp resource is unavailable or no longer accessible.");
       if (response.status === 401 || response.status === 403) {
         throw new IntegrationError(
           "integration_invalid_token",

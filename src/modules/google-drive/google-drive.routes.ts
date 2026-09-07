@@ -9,6 +9,7 @@ import {
   listGoogleDriveFiles,
   readGoogleDriveFileContent,
   updateGoogleDoc,
+  updateGoogleDriveFileMetadata,
   updateGoogleDriveTextFileContent,
   updateGoogleSheetValues
 } from "../../integrations/google-drive/google-drive.content";
@@ -301,4 +302,10 @@ googleDriveRouter.put("/sheets/:id/values", asyncHandler(async (req, res) => {
     }
     throw error;
   }
+}));
+
+googleDriveRouter.patch("/files/:id/metadata", asyncHandler(async (req, res) => {
+  const input = z.object({ name: z.string().min(1).optional(), parentId: z.string().min(1).optional(), trashed: z.boolean().optional() }).strict().parse(req.body);
+  const file = await updateGoogleDriveFileMetadata({ workspaceId: req.auth!.workspaceId, fileId: String(req.params.id), ...input });
+  res.json({ data: file });
 }));
