@@ -63,6 +63,15 @@ document read/edit/create, and Sheets for spreadsheet read/edit/create.
    connect Drive as a test user.
 6. Save the consent screen.
 
+Before submitting OAuth verification, verify ownership of `luckysparrow.ch`
+in Google Search Console using the project owner's or editor's Google account.
+A Domain property with the Google-issued DNS TXT record covers its subdomains.
+Keep that verification record in place. The homepage includes its purpose and
+the exact privacy-policy URL in the initial HTML, before React loads; `/privacy`
+and `/terms` serve dedicated public HTML documents without authentication.
+After deployment, check these URLs return HTTP 200 and `text/html`, then request
+verification again rather than relying on results from an earlier deployment.
+
 Testing mode is suitable for setup checks, not unattended production sync:
 external apps in Testing receive refresh tokens that expire after seven days
 for Drive scopes. Configure an appropriate production/internal audience before
