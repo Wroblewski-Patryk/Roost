@@ -24,6 +24,15 @@ repairs endpoint/event drift and re-encrypts provider-returned signing secrets;
 an unreadable secret with no recoverable provider copy requires replacement.
 Webhook task/note changes, events, agent signals and inbox completion commit
 together. Failed and pending entries retry, with workspace serialization.
+Webhook HTTP acknowledgement follows durable inbox storage; provider reads and
+lock waits run asynchronously so a maintenance pull cannot time out delivery.
+Google OAuth retains the registered `/settings/drive` callback independently of
+the settings page route, with state verification and one exchange per code.
+Reconnect requests Drive write scope for existing selected folder trees. The
+former `drive.file` scope only authorized files created/opened by the app and
+could not support metadata writes to arbitrary imported files. Roost still limits
+sync and file destinations to its configured folder scope. See
+[Google's scope definitions](https://developers.google.com/workspace/drive/api/guides/api-specific-auth).
 
 `merge` is the normal refresh mode. `skip_existing` is an import policy, not a
 freshness guarantee. Compatibility `replace_selected_lists` and

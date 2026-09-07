@@ -506,7 +506,9 @@ export async function ingestClickUpWebhook(input: {
     return { status: "duplicate", inboxId: inbox.id };
   }
 
-  await processClickUpProviderEvent(inbox.id);
+  // Acknowledge the durable inbox before provider reads or a maintenance lock.
+  // Failed/pending entries survive a restart and are retried by maintenance.
+  void processClickUpProviderEvent(inbox.id).catch(() => console.error("clickup_webhook_processing_deferred"));
   return { status: "accepted", inboxId: inbox.id };
 }
 

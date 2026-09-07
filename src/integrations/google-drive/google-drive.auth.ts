@@ -15,8 +15,9 @@ const googleOAuthTokenUrl = "https://oauth2.googleapis.com/token";
 const tokenRefreshSkewMs = 60_000;
 
 export const googleDriveOAuthScopes = [
-  "https://www.googleapis.com/auth/drive.file",
-  "https://www.googleapis.com/auth/drive.metadata.readonly",
+  // Existing folder trees are selected in Roost, not granted per-file by Picker.
+  // Metadata moves/trash and binary edits therefore require Drive write scope.
+  "https://www.googleapis.com/auth/drive",
   "https://www.googleapis.com/auth/documents",
   "https://www.googleapis.com/auth/spreadsheets"
 ] as const;

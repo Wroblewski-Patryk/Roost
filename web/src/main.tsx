@@ -319,7 +319,7 @@ function App() {
     return <>{metadata}<PrivateAppRoute><AccountSettingsRoute /></PrivateAppRoute></>;
   }
 
-  if (pathname === "/workspace/settings") {
+  if (pathname === "/workspace/settings" || pathname === "/settings/drive") {
     return <>{metadata}<PrivateAppRoute><WorkspaceSettingsRoute /></PrivateAppRoute></>;
   }
 

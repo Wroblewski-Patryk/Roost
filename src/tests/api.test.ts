@@ -9763,7 +9763,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(authorizationUrl.searchParams.get("client_id"), "workspace-google-client-id");
   assert.equal(authorizationUrl.searchParams.get("access_type"), "offline");
   assert.equal(authorizationUrl.searchParams.get("include_granted_scopes"), "true");
-  assert.ok(authorizationUrl.searchParams.get("scope")?.includes("https://www.googleapis.com/auth/drive.file"));
+  assert.ok(authorizationUrl.searchParams.get("scope")?.split(" ").includes("https://www.googleapis.com/auth/drive"));
 
   const serviceCannotCreateGoogleDriveAuthUrl = await request("/v1/integration-settings/google_drive/oauth/authorize-url", {
     method: "POST",
@@ -10673,7 +10673,7 @@ test("CompanyCore v1 protected API flow", async () => {
     globalThis.fetch = originalFetchBeforeDiscovery;
   }
 
-  globalThis.fetch = (async () => new Response(JSON.stringify({ err: "Rate limited" }), { status: 429 })) as typeof fetch;
+  globalThis.fetch = (async () => new Response(JSON.stringify({ err: "Rate limited" }), { status: 429, headers: { "Retry-After": "0.001" } })) as typeof fetch;
 
   try {
     const rateLimitedDiscovery = await request("/v1/integration-settings/clickup/discover", {
@@ -10975,6 +10975,12 @@ test("CompanyCore v1 protected API flow", async () => {
     });
     assert.equal(liveWebhook.status, 202);
     assert.equal((liveWebhook.body as { data: { status: string } }).data.status, "accepted");
+    const inboxId = (liveWebhook.body as { data: { inboxId: string } }).data.inboxId;
+    for (let attempt = 0; attempt < 100; attempt++) {
+      if ((await prisma.providerEventInbox.findUniqueOrThrow({ where: { id: inboxId } })).processingStatus === "processed") break;
+      await new Promise(resolve => setTimeout(resolve, 20));
+    }
+    assert.equal((await prisma.providerEventInbox.findUniqueOrThrow({ where: { id: inboxId } })).processingStatus, "processed");
   } finally {
     globalThis.fetch = originalFetchBeforeDiscovery;
   }
@@ -11041,6 +11047,12 @@ test("CompanyCore v1 protected API flow", async () => {
       body: commentWebhookBody
     });
     assert.equal(commentWebhook.status, 202);
+    const inboxId = (commentWebhook.body as { data: { inboxId: string } }).data.inboxId;
+    for (let attempt = 0; attempt < 100; attempt++) {
+      if ((await prisma.providerEventInbox.findUniqueOrThrow({ where: { id: inboxId } })).processingStatus === "processed") break;
+      await new Promise(resolve => setTimeout(resolve, 20));
+    }
+    assert.equal((await prisma.providerEventInbox.findUniqueOrThrow({ where: { id: inboxId } })).processingStatus, "processed");
   } finally {
     globalThis.fetch = originalFetchBeforeDiscovery;
   }
@@ -11259,6 +11271,12 @@ test("CompanyCore v1 protected API flow", async () => {
       }), { status: 200 });
     }
 
+    if (url.pathname === "/api/v2/webhook/webhook-list-1" && init?.method === "PUT") {
+      const body = JSON.parse(String(init.body));
+      assert.ok(body.events.includes("taskMoved"));
+      assert.equal(body.status, "active");
+      return new Response(JSON.stringify({ webhook: { id: "webhook-list-1", health: { status: "active" } } }), { status: 200 });
+    }
     if (url.pathname === "/api/v2/team/team-1/task") {
       return new Response(JSON.stringify({
         tasks: [

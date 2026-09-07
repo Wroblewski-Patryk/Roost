@@ -49,16 +49,17 @@ document read/edit/create, and Sheets for spreadsheet read/edit/create.
    - User support email: the operator/support email
    - Developer contact email: the operator/support email
 4. Add the required scopes:
-   - `https://www.googleapis.com/auth/drive.file`
-   - `https://www.googleapis.com/auth/drive.metadata.readonly`
+   - `https://www.googleapis.com/auth/drive`
    - `https://www.googleapis.com/auth/documents`
    - `https://www.googleapis.com/auth/spreadsheets`
 5. If the consent screen is in testing mode, add the Google account that will
    connect Drive as a test user.
 6. Save the consent screen.
 
-Keep the app in testing mode if only the owner/operator account will connect
-Drive. Publish or verify the app only when broader Google accounts need access.
+Testing mode is suitable for setup checks, not unattended production sync:
+external apps in Testing receive refresh tokens that expire after seven days
+for Drive scopes. Configure an appropriate production/internal audience before
+reconnecting for sustained operation. See [Google refresh token expiration](https://developers.google.com/identity/protocols/oauth2#expiration).
 
 ### 4. Create OAuth Credentials
 

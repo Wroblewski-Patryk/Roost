@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import test, { after } from "node:test";
-import { randomUUID } from "node:crypto";
+import { createHmac, randomUUID } from "node:crypto";
 import { prisma } from "../db/prisma";
 import { decryptSecret, encryptSecret } from "../integrations/secrets";
 import { ClickUpClient } from "../integrations/clickup/clickup.client";
 import { mapClickUpTaskToCompanyCoreTask } from "../integrations/clickup/clickup.mapper";
 import { syncClickUpTasksForWorkspaceWithOptions } from "../integrations/clickup/clickup.sync";
-import { clickUpWebhookEvents, reconcileClickUpWebhooksForWorkspace, processClickUpProviderEvent, writeBackCompanyCoreTaskToClickUp } from "../integrations/clickup/clickup.webhooks";
+import { ingestClickUpWebhook, clickUpWebhookEvents, reconcileClickUpWebhooksForWorkspace, processClickUpProviderEvent, writeBackCompanyCoreTaskToClickUp } from "../integrations/clickup/clickup.webhooks";
 import { reconcileGoogleDriveChangesForWorkspace } from "../integrations/google-drive/google-drive.sync";
 import { withIntegrationLock } from "../integrations/sync-lock";
 import { providerRequest } from "../integrations/provider-request";
@@ -149,6 +149,25 @@ test("integration serialization continues after failure", async () => {
   const first = withIntegrationLock("test", async () => { order.push(1); throw new Error("test failure"); });
   const second = withIntegrationLock("test", async () => { order.push(2); });
   await Promise.allSettled([first, second]); assert.deepEqual(order, [1, 2]);
+});
+
+test("ClickUp acknowledges a durable webhook while maintenance holds the workspace lock", async () => {
+  const id = await workspace("clickup", { teamId: "team", listIds: ["list"] });
+  await prisma.externalWebhookRegistration.create({ data: { workspaceId: id, provider: "clickup", externalId: "blocked-webhook", scopeType: "list", scopeExternalId: "list", endpointUrl: "https://example.test", events: [], status: "active", secretCiphertext: encryptSecret("synthetic") } });
+  let release!: () => void;
+  const blocked = withIntegrationLock(`clickup:${id}`, () => new Promise<void>(resolve => { release = resolve; }));
+  const rawBody = Buffer.from(JSON.stringify({ webhook_id: "blocked-webhook", event: "taskDeleted", task_id: "missing" }));
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let inboxId: string | undefined;
+  try {
+    const result = await Promise.race([ingestClickUpWebhook({ rawBody, signature: createHmac("sha256", "synthetic").update(rawBody).digest("hex") }), new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error("webhook acknowledgement waited for maintenance")), 1000); })]);
+    inboxId = result.inboxId;
+    assert.equal((await prisma.providerEventInbox.findUniqueOrThrow({ where: { id: inboxId } })).processingStatus, "pending");
+  } finally { clearTimeout(timer); release(); await blocked; }
+  if (inboxId) {
+    await processClickUpProviderEvent(inboxId);
+    assert.equal((await prisma.providerEventInbox.findUniqueOrThrow({ where: { id: inboxId } })).processingStatus, "processed");
+  }
 });
 
 test("concurrent ClickUp webhook replay commits one event and one agent signal", async () => {

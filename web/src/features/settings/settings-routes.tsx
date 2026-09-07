@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
 import { CcField } from "../../components/cc-field";
@@ -300,6 +300,7 @@ export function AccountSettingsRoute() {
 
 export function WorkspaceSettingsRoute() {
   const { t } = useLanguage();
+  const exchangedCode = useRef<string | null>(null);
   const [editor, setEditor] = useState<IntegrationEditor>(null);
   const [saving, setSaving] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -333,7 +334,7 @@ export function WorkspaceSettingsRoute() {
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
     const state = params.get("state");
-    if (!code || params.get("provider") !== "google_drive") return;
+    if (!code || (window.location.pathname !== "/settings/drive" && params.get("provider") !== "google_drive") || exchangedCode.current === code) return;
 
     const expectedState = window.sessionStorage.getItem("roost.google-drive-oauth-state");
     if (!state || !expectedState || state !== expectedState) {
@@ -342,12 +343,14 @@ export function WorkspaceSettingsRoute() {
     }
 
     setSaving(true);
-    const redirectUri = `${window.location.origin}/workspace/settings?provider=google_drive`;
+    exchangedCode.current = code;
+    const redirectUri = window.sessionStorage.getItem("roost.google-drive-oauth-redirect") ?? `${window.location.origin}/settings/drive`;
     api<{ data: IntegrationStatus }>("/v1/integration-settings/google_drive/oauth/exchange", {
       method: "POST",
       body: JSON.stringify({ code, redirectUri, active: true })
     }).then(() => {
       window.sessionStorage.removeItem("roost.google-drive-oauth-state");
+      window.sessionStorage.removeItem("roost.google-drive-oauth-redirect");
       window.history.replaceState({}, "", "/workspace/settings");
       setRefreshKey((value) => value + 1);
       setActionSuccess(t("workspaceSettings.googleConnected"));
@@ -404,12 +407,13 @@ export function WorkspaceSettingsRoute() {
         });
       }
       const state = crypto.randomUUID();
-      const redirectUri = `${window.location.origin}/workspace/settings?provider=google_drive`;
+      const redirectUri = `${window.location.origin}/settings/drive`;
       const response = await api<{ data: { authorizationUrl: string } }>("/v1/integration-settings/google_drive/oauth/authorize-url", {
         method: "POST",
         body: JSON.stringify({ redirectUri, state })
       });
       window.sessionStorage.setItem("roost.google-drive-oauth-state", state);
+      window.sessionStorage.setItem("roost.google-drive-oauth-redirect", redirectUri);
       window.location.assign(response.data.authorizationUrl);
     } catch (error) {
       setActionError(t("workspaceSettings.saveErrorDetail"));
@@ -579,7 +583,7 @@ export function WorkspaceSettingsRoute() {
               <label className="form-control"><span className="label py-1"><span className="label-text font-bold">{t("workspaceSettings.googleClientSecret")}{googleDriveSetting.data?.hasClientId && googleDriveSetting.data?.hasClientSecret ? "" : " *"}</span></span><input autoComplete="new-password" className="input input-bordered w-full" data-1p-ignore="true" data-lpignore="true" name="clientSecret" placeholder={googleDriveSetting.data?.hasClientSecret ? t("workspaceSettings.secretKeepPlaceholder") : ""} required={!(googleDriveSetting.data?.hasClientId && googleDriveSetting.data?.hasClientSecret)} type="password" /></label>
             </div>
           </CcRecordEditorSection>
-          <CcNotice detail={t("workspaceSettings.googleRedirectDetail", { url: `${window.location.origin}/workspace/settings?provider=google_drive` })} title={t("workspaceSettings.googleRedirectTitle")} tone="info" />
+          <CcNotice detail={t("workspaceSettings.googleRedirectDetail", { url: `${window.location.origin}/settings/drive` })} title={t("workspaceSettings.googleRedirectTitle")} tone="info" />
         </CcRecordEditorModal>
       ) : null}
     </>

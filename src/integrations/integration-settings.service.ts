@@ -123,6 +123,8 @@ export function googleDriveSecretStatus(secretCiphertext: string | null | undefi
   return {
     hasClientId,
     hasClientSecret,
+    hasRefreshToken: Boolean(secret?.refreshToken),
+    hasAccessToken: Boolean(secret?.accessToken),
     oauthClientConfigured: hasClientId,
     oauthTokenConfigured: Boolean(secret?.refreshToken || secret?.accessToken)
   };
