@@ -253,7 +253,7 @@ application, workspace, execution and assigned workforce agent, includes the
 task's `updatedAt` revision, and resolves the explicitly named context sources.
 
 The packet has `schemaVersion: roost-execution-packet-v1`, `identity`,
-`taskRevision`, `contract`, `sources`, and `revision`. Its revision is SHA-256
+`taskRevision`, `contract`, `scopeAuthorities`, `sources`, and `revision`. Its revision is SHA-256
 over the JSON envelope before the revision field is added. This detects a changed
 snapshot; it is not an approval signature or an immutable governance ledger.
 Lease tokens and source metadata are not included in this envelope.
@@ -270,6 +270,7 @@ and bounded to 2,000 characters; required text lists contain at most 30 entries.
 | `objective` | `outcome` and `goalId` matching the task's current workspace-scoped Goal. v1 uses the existing Goal link as the product/goal basis. |
 | `scope` | Nonempty `allowed` and `forbidden` lists; the same entry cannot occur in both, ignoring case. |
 | `assignment` | `agentId`, `role`, `competencies`; match the active assigned workforce entity of type `agent`, its primary role and `skillIndex`. |
+| `singleTask` | Required `roost-single-task-v1` scope described below; one resolved application/component, accountable manager, assigned executor, measured outcome and deterministic task branch. |
 | `modelSelection` | Explicit `model` and `reasoningEffort` admitted by the Foundation V2 policy below. No inherited/default selection. |
 | `context` | Nonempty `company`, `product`, `technical` lists of `{id, revision}`; at most 10 per category. |
 | `procedures` | Explicit set of `{id, revision}` referencing active procedures; revision is the string form of their numeric `version`. All application/capability-linked procedures must be included. |
@@ -300,6 +301,54 @@ selection is not allowed to silently stand in for a missing required source.
 The executable synthetic example in
 `scripts/fixtures/execution-packet.mjs` demonstrates the complete shape without
 production data. Its fixture IDs must be replaced by actual scoped record IDs.
+
+### Single-task scope (RF-CTX-009)
+
+`singleTask` is mandatory at Submit, queue, claim and host packet admission. Its
+stable `contractId` is `roost-task:<task UUID>` and its sole permitted `branch` is
+`codex/task-<task UUID>`, including resubmission and retry. `applicationId` must
+match the execution. `component: {id, revision}` resolves an active architecture
+component in that application; `accountableManager: {id, revision}` resolves an
+active workforce entity in the current workspace. Revisions are exact `updatedAt`
+ISO timestamps. The existing assigned agent is the sole executor. No default
+manager, inferred component or extra executor is added.
+
+`measurement` requires `metric`, `comparison` (`eq`, `lte`, `gte`), a finite numeric
+`target`, `unit` and an explicit verification `method`. `problems` has one to three
+distinct entries with `statement`, `componentId`, `outcome` and nullable
+`causalLink`. Every entry must refer to the same component and exactly the same
+`objective.outcome`. A single problem requires null `causalLink` and `commonCause`.
+Two or three symptoms require a nonempty causal link of at least 20 characters
+per symptom and `commonCause: {mechanism, inseparability, evidence: {id, revision}}`.
+Both explanations require at least 20 characters; evidence must be one of the
+explicit current technical sources, which undergoes normal source validation.
+Different components or outcomes, duplicate symptoms, lists and explicit compound
+action/independent-problem signals in PL/EN fail with split advice and Needs
+context. Outcome/problem statements and the common mechanism are limited to 400
+characters by this ambiguity gate. These are deterministic structural and textual
+checks, not proof that arbitrary prose describes a truly inseparable cause.
+Semantic completeness and independent acceptance remain outstanding; RF-CTX-009
+therefore remains partially implemented. Role separation belongs to RF-CTX-010.
+
+The owner editor exposes these fields in PL/EN, preserves old contracts for editing,
+shows the accepted exception and records the exact scope/outcome in the Ready event.
+It creates no child tasks. Scope authorities are included in packet and Ready
+fingerprints; their watched source changes invalidate acceptance immediately.
+Any contract edit needs a new Submit using the existing version/concurrency and
+idempotency checks. Migration `20260908001000_single_task_scope` moves all historical
+Ready pins to Needs revalidation without inferring scope, preserving their history
+and fencing active attempts. An additive DB trigger prevents an old API from
+writing legacy Ready during rollout. Full validation and same-transaction Submit
+receipts remain required; status changes, assignment, imports and direct ordinary
+Task writes do not grant acceptance.
+
+The supervised host reads Git's current symbolic branch before preparation and
+again before the final fresh-context check immediately preceding spawn. Detached
+HEAD or a mismatch fails with `agent_task_branch_mismatch`, retains recovery
+evidence/writer protection and starts no model process. It does not create or
+switch branches. Arbitrary external Git writers are outside the host lock's
+coordination boundary. Protocol version stays 1, with mandatory
+`single_task_scope_v1` on both sides; older supervised hosts fail closed.
 
 ## Start Gate And Diagnostic Result
 

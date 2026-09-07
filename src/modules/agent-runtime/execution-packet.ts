@@ -21,11 +21,20 @@ export async function prepareExecutionPacket(execution: AgentExecution, task: Ta
     select: { id: true, workspaceId: true, applicationId: true, recordType: true, title: true, description: true, businessPurpose: true, desiredState: true, expectedBehavior: true, updatedAt: true },
     orderBy: { id: "asc" }
   });
+  const single = object(object(contract).singleTask), componentRef = object(single.component), managerRef = object(single.accountableManager);
+  const validId = (value: unknown): value is string => typeof value === "string" && /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(value);
+  const scopeApplication = await db.application.findFirst({ where: { id: execution.applicationId, workspaceId: execution.workspaceId }, select: { id: true } });
+  const component = scopeApplication && validId(componentRef.id) ? await db.applicationArchitectureComponent.findFirst({ where: { id: componentRef.id, applicationId: scopeApplication.id }, select: { id: true, applicationId: true, status: true, updatedAt: true } }) : null;
+  const manager = validId(managerRef.id) ? await db.workforceEntity.findFirst({ where: { id: managerRef.id, workspaceId: execution.workspaceId }, select: { id: true, workspaceId: true, status: true, updatedAt: true } }) : null;
   const body = {
     schemaVersion: "roost-execution-packet-v1",
     identity: { executionId: execution.id, workspaceId: execution.workspaceId, taskId: task.id, applicationId: execution.applicationId, agentId: task.assignedWorkforceEntityId },
     taskRevision: task.updatedAt.toISOString(),
     contract,
+    scopeAuthorities: {
+      component: component ? { id: component.id, applicationId: component.applicationId, status: component.status, revision: component.updatedAt.toISOString() } : null,
+      manager: manager ? { id: manager.id, workspaceId: manager.workspaceId, status: manager.status, revision: manager.updatedAt.toISOString() } : null
+    },
     sources: sources.map(({ updatedAt, ...source }) => ({ ...source, revision: updatedAt.toISOString() }))
   };
   return { ...body, revision: createHash("sha256").update(JSON.stringify(body)).digest("hex") };

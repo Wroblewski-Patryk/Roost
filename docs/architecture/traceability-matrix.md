@@ -34,8 +34,8 @@ for later changes to these same canonical files.
 
 The retained baseline includes pinned Ready context, source watches and active
 context stopping, plus model/duration/protocol and fail-closed output admission.
-The current bounded P0 slice is **RF-CTX-008: Submit for execution as the only
-transition to executable Ready**.
+The current bounded P0 slice is **RF-CTX-009: one task scope in the existing
+Submit for execution contract**. The RF-CTX-008 command boundary remains in place.
 
 The existing command and owner contract editor now require a reviewed context
 version and an idempotency request ID. One authoritative transaction validates
@@ -47,19 +47,28 @@ an old receipt; receipt mutation is rejected. Earlier acceptance is invalidated
 on migration and never upgraded silently. Current human role checks apply to
 submission and replay. Queueing remains a separate explicit guarded action.
 
-PostgreSQL/API tests cover incomplete input, stale task/source versions, rejected
-alternative writes, idempotency, concurrent submissions, atomic rollback, a fresh
-API process and no claim after create/assign/edit. PL/EN browser fixtures cover
-Draft/Needs context/Needs decision, diagnostics, the existing contract editor and
-retry with the same request ID after an ambiguous response. Verification:
-**49/49 API/database tests**, **102/102 host contract/context tests**, **58/58 Ready
-browser checks**, **18/18 active-stop UI checks**, **2/2 form-model tests**, and
-`npm run validate`. Mobile/tablet/desktop states were visually reviewed. Existing
-asset/chunk warnings remain; full-web strict typechecking and observer fault
-tests were not rerun. Production identity is recorded in the completed handoff.
+The additive scope requires one current application/component, accountable
+manager, executor, measured outcome and deterministic task branch. Two or three
+symptoms require explicit per-symptom links, an inseparability explanation and
+current technical evidence. Independent structured outcomes/components and
+bounded PL/EN compound-intent signals produce Needs context with split advice.
+Historical Ready is invalidated; stable task identity survives resubmission.
+Manager/component changes invalidate acceptance, and host branch mismatches stop
+before preparation or spawn. The accepted common-cause explanation is visible
+in the owner editor and recorded in the acceptance event.
 
-The RF-CTX-008 command boundary works within the existing supervised runtime.
-This does not claim arbitrary semantic completeness, automatic interviews, live
+Verification: **64/64 API/database tests**, **300 host regression cases** (the
+affected packet process suite was corrected for the new branch fixture and rerun
+**65/65**), **72 Ready browser checks**, **18/18 active-stop UI checks**,
+**2/2 form-model tests**, and `npm run validate`. This covers ordinary alternate
+writes, idempotency/concurrency, legacy editing, source invalidation, claim and
+synthetic process admission. Mobile/tablet/desktop PL/EN views were visually
+reviewed. Existing asset/chunk warnings remain; full-web strict typechecking and
+observer fault tests were not rerun. Production identity is recorded in the
+completed handoff.
+
+RF-CTX-009 remains **częściowo działa**: structural/textual checks do not prove
+arbitrary semantic completeness or independent acceptance. There are no automatic interviews, live
 provider proof or activation. RF-CTX-006 and RF-HOST-010 retain their documented
 limits. Production stays execution disabled; the canonical host stays observe.
 No next requirement, automatic interview or Soar work was started. Registry and
@@ -97,7 +106,7 @@ matrix retain 162 requirements.
 | [RF-CTX-006](../product/interview-foundation-v2.md#rf-ctx-006) | P0 | częściowo działa | [PACKET](#e-packet) | Ready invalidation and active-attempt fencing stop work at observed checkpoint/event/heartbeat boundaries; late authority and restart are rejected. Arbitrary internal runner operations/OS freezes and atomic database-to-spawn remain outside the guarantee; no live provider proof. |
 | [RF-CTX-007](../product/interview-foundation-v2.md#rf-ctx-007) | P1 | brak | [CTX](#e-ctx) | No runtime context expansion protocol. |
 | [RF-CTX-008](../product/interview-foundation-v2.md#rf-ctx-008) | P0 | działa | [SUBMIT](#e-submit) | Within the supervised runtime, only the explicit versioned/idempotent Submit command grants Ready after validation. Draft/Needs context/Needs decision are durable; create/assign/edit/import and alternate database writes cannot admit work. Automatic interviews and semantic completeness belong to separate requirements. |
-| [RF-CTX-009](../product/interview-foundation-v2.md#rf-ctx-009) | P0 | częściowo działa | [TASK](#e-task) | Task fields exist; atomicity enforcement absent. |
+| [RF-CTX-009](../product/interview-foundation-v2.md#rf-ctx-009) | P0 | częściowo działa | [TASK](#e-task), [single-task contract](execution-packet-contract.md#single-task-scope-rf-ctx-009), `scripts/agent-host-single-task.test.mjs`, `src/tests/api.test.ts`, `scripts/task-readiness-ui.test.mjs` | Submit requires one resolved app/component, manager, executor, measured result and deterministic branch; bounded shared-cause exception is visible/auditable. API/DB/host gates, legacy invalidation and source revision checks prevent ordinary bypass. Structural and PL/EN ambiguity checks do not prove arbitrary prose semantics; independent acceptance/role separation remains RF-CTX-010. |
 | [RF-CTX-010](../product/interview-foundation-v2.md#rf-ctx-010) | P0 | częściowo działa | [TASK](#e-task) | Assignment exists; role separation gates absent. |
 | [RF-CTX-011](../product/interview-foundation-v2.md#rf-ctx-011) | P1 | częściowo działa | [PROC](#e-proc) | Registry primitives exist; task-type execution contract incomplete. |
 | [RF-CTX-012](../product/interview-foundation-v2.md#rf-ctx-012) | P0 | częściowo działa | [PROC](#e-proc) | Procedure refs validated; composition and exception authority absent. |

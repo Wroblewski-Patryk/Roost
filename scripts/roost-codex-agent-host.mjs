@@ -17,6 +17,7 @@ import { fetchExecutionContext, executionContextRevision, assertFreshExecutionCo
 import { protocol, protocolHeaders, apiCompatibility, protocolAdmissionError } from "./lib/agent-host-protocol.mjs";
 import readyContext from "./lib/agent-host-ready-context.cjs";
 import { contextStopError } from "./lib/agent-host-context-stop.mjs";
+import { assertTaskBranch, readCurrentTaskBranch } from "./lib/agent-host-single-task.mjs";
 
 const baseUrl = String(process.env.ROOST_BASE_URL || process.env.COMPANYCORE_BASE_URL || "").replace(/\/+$/, "");
 const apiKey = process.env.ROOST_AGENT_API_KEY || process.env.COMPANYCORE_API_KEY;
@@ -181,7 +182,7 @@ async function confirmContextStop(execution, writerLock) {
   await writerLock?.checkpoint({ ...execution, checkpoint: ack.checkpoint, checkpointVersion: ack.checkpointVersion });
 }
 
-async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, createOutputBudget = createCodexOutputBudget } = {}) {
+async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, createOutputBudget = createCodexOutputBudget, readTaskBranch = readCurrentTaskBranch } = {}) {
   const repository = repositoryForExecution(config, claimed);
   const repositoryPath = path.resolve(String(repository.path));
   let taskContext, applicationContext, contextRevision;
@@ -242,6 +243,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     duration.assertWithinBudget();
     // No execution-specific subprocess (including git) is started for an invalid packet.
     await duration.wait(validateAgentHostWorkspace(config));
+    assertTaskBranch(await duration.wait(readTaskBranch(repositoryPath)), taskContext.executionPacket.contract.singleTask.branch);
     const beforeStatus = await duration.wait(gitStatus(repositoryPath));
     const digest = await duration.wait(workspaceDigest(repositoryPath));
     if (resumeCheckpoint) assertRecoverySnapshot(resumeCheckpoint, taskContext.executionPacket.revision, digest, contextRevision);
@@ -252,6 +254,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     await api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, type: "runner_started", message: `Starting Codex in ${claimed.application.slug}.`, payload: { sandbox, requestedModelSelection: taskContext.executionPacket.contract.modelSelection, baseBranch: repository.baseBranch || claimed.baseBranch || null, preExistingDirtyFiles: beforeStatus.map(statusPath) } }) }).catch((error) => { lease.reject(error); throw lease.failure ?? error; });
     lease.assertValid();
     await duration.wait(assertAdmission());
+    assertTaskBranch(await duration.wait(readTaskBranch(repositoryPath)), taskContext.executionPacket.contract.singleTask.branch);
     const fresh = await duration.wait(fetchExecutionContext(api, claimed));
     assertFreshExecutionContext(contextRevision, fresh, claimed);
     readyContext.assertReadyContext(fresh.taskContext, fresh.applicationContext, claimed);
@@ -407,10 +410,10 @@ async function reportRecovery(execution, reason) {
 process.on("SIGINT", () => { stopping = true; shutdownRequested = true; });
 process.on("SIGTERM", () => { stopping = true; shutdownRequested = true; });
 
-// Process tests inject a private lock and synthetic post-turn budget guard.
-// The CLI always uses the fixed lock and fail-closed Codex guard. Neither
+// Process tests inject a private lock, branch reader and synthetic post-turn budget guard.
+// The CLI always uses the fixed lock, Git branch reader and fail-closed Codex guard. No
 // dependency can be selected by configuration, environment or an API packet.
-export async function runHost({ acquireLock = (options) => acquireWriterLock(undefined, options), onCheckpoint, createOutputBudget = createCodexOutputBudget } = {}) {
+export async function runHost({ acquireLock = (options) => acquireWriterLock(undefined, options), onCheckpoint, createOutputBudget = createCodexOutputBudget, readTaskBranch = readCurrentTaskBranch } = {}) {
   // Observe never enters recovery, writer locking, claim, or execution code.
   if (config.executionMode === "observe") return runObserver({ config, api, stopped: () => stopping });
   if (!await waitForAdmission()) return;
@@ -439,7 +442,7 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
       resumedExecution = resumed;
       if (resumed?.id !== pending[0].id || resumed?.attempt !== pending[0].attempt) throw recoveryError("recovery_conflict");
       await writerLock.checkpoint(resumed);
-      await execute(resumed, writerLock, { resumeCheckpoint: pending[0].checkpoint, onCheckpoint, createOutputBudget });
+      await execute(resumed, writerLock, { resumeCheckpoint: pending[0].checkpoint, onCheckpoint, createOutputBudget, readTaskBranch });
     }
     while (!stopping) {
       let execution = null;
@@ -450,7 +453,7 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
           process.stdout.write(`Claimed ${execution.id}: ${execution.task.title}\n`);
           await writerLock.checkpoint(execution).catch(() => { throw recoveryError("local_state_invalid"); });
           await onCheckpoint?.("claimed", execution);
-          await execute(execution, writerLock, { onCheckpoint, createOutputBudget });
+          await execute(execution, writerLock, { onCheckpoint, createOutputBudget, readTaskBranch });
         }
       } catch (error) {
         if (error.protocolAdmission) { protocolHalted = true; stopping = true; retainWriterLock = true; }

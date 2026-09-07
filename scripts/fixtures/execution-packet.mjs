@@ -1,5 +1,6 @@
 import readyContext from "../lib/agent-host-ready-context.cjs";
 import { createHash } from "node:crypto";
+import { singleTaskIdentity } from "../lib/agent-host-single-task.mjs";
 
 export function sealPacket(packet) {
   const { revision, ...body } = packet;
@@ -19,6 +20,10 @@ export function validPacketFixture() {
     description: `Synthetic ${category} context`, businessPurpose: null, desiredState: null, expectedBehavior: null, revision }));
   const contract = {
     version: "1", objective: { outcome: "Repair the synthetic fixture", goalId },
+    singleTask: { schemaVersion: "roost-single-task-v1", ...singleTaskIdentity(taskId), applicationId,
+      component: { id: uuid(20), revision }, accountableManager: { id: uuid(21), revision },
+      measurement: { metric: "Failing fixture cases", comparison: "eq", target: 0, unit: "cases", method: "Run the fixture acceptance test" },
+      problems: [{ statement: "The fixture rejects valid input", componentId: uuid(20), outcome: "Repair the synthetic fixture", causalLink: null }], commonCause: null },
     scope: { allowed: ["Repair the fixture"], forbidden: ["Change sibling repositories"] },
     assignment: { agentId, role: "engineer", competencies: ["javascript"] },
     modelSelection: { model: "gpt-5.6-sol", reasoningEffort: "medium" },
@@ -31,7 +36,8 @@ export function validPacketFixture() {
     acceptance: { criteria: ["Fixture passes"], tests: ["node --test fixture.test.mjs"], evidence: ["Test result and changed paths"] },
     recovery: { handoff: "Leave changes for owner review", failure: "Report failed checks", escalation: "Ask owner when intent is ambiguous", rollback: { mode: "restore_task_changes", instructions: "Restore only this execution's changes; preserve unrelated work" } }
   };
-  const packet = sealPacket({ schemaVersion: "roost-execution-packet-v1", identity: { executionId: claimed.id, workspaceId, taskId, applicationId, agentId }, taskRevision: revision, contract, sources });
+  const packet = sealPacket({ schemaVersion: "roost-execution-packet-v1", identity: { executionId: claimed.id, workspaceId, taskId, applicationId, agentId }, taskRevision: revision, contract, sources,
+    scopeAuthorities: { component: { id: uuid(20), applicationId, status: "active", revision }, manager: { id: uuid(21), workspaceId, status: "active", revision } } });
   const taskContext = { schemaVersion: "task-agent-execution-context-v1", executionPacket: packet,
     task: { id: taskId, workspaceId, projectId, goalId, goal: { id: goalId, workspaceId }, assignedWorkforceEntityId: agentId, status: "in_progress", updatedAt: revision,
       assignedWorkforceEntity: { id: agentId, workspaceId, type: "agent", status: "active", role: "engineer", skillIndex: ["javascript"], toolIndex: contract.access.tools, authorityScope: contract.access.permissions } },

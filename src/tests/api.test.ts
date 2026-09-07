@@ -1244,13 +1244,111 @@ async function prepareReadyFixture(workspaceId: string, taskId: string, applicat
   }
   f.packet.contract.objective.goalId = goal.id;
   f.packet.contract.assignment.agentId = agent.id;
+  const manager = await prisma.workforceEntity.create({ data: { workspaceId, name: "Synthetic accountable manager", slug: `manager-${taskId}`, type: "human", role: "manager" } });
+  const component = await prisma.applicationArchitectureComponent.create({ data: { applicationId, name: "Synthetic target component", type: "backend" } });
+  f.packet.contract.singleTask = { ...f.packet.contract.singleTask, contractId: `roost-task:${taskId}`, branch: `codex/task-${taskId}`, applicationId,
+    component: { id: component.id, revision: component.updatedAt.toISOString() }, accountableManager: { id: manager.id, revision: manager.updatedAt.toISOString() },
+    problems: [{ ...f.packet.contract.singleTask.problems[0], componentId: component.id }] };
   const input = { applicationId, contract: f.packet.contract };
-  if (!accept) return { input, sources, goal, agent, readiness: { revision: "", pinId: "" } };
+  if (!accept) return { input, sources, goal, agent, manager, component, readiness: { revision: "", pinId: "" } };
   const route = `/v1/agent-runtime/tasks/${taskId}/actions/submit-for-execution`;
   const ready = await request(route, { method: "POST", headers: auth, body: JSON.stringify(await submissionInput(route, input, auth)) });
   assert.equal(ready.status, 200, JSON.stringify(ready.body));
-  return { input, sources, goal, agent, readiness: (ready.body as { data: { readiness: { revision: string; pinId: string } } }).data.readiness };
+  return { input, sources, goal, agent, manager, component, readiness: (ready.body as { data: { readiness: { revision: string; pinId: string } } }).data.readiness };
 }
+
+test("single-task scope requires one resolved target, manager, result and branch", async t => {
+  const owner = await registerOwner("single-scope@example.com", "Single scope fixture");
+  const workspaceId = owner.workspace.id, auth = { Authorization: `Bearer ${owner.token}` };
+  const application = await prisma.application.create({ data: { workspaceId, name: "Single scope app", slug: "single-scope" } });
+  const project = await prisma.project.create({ data: { workspaceId, name: "Single scope project" } });
+  await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id } });
+  const task = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: "Repair one parser" } });
+  const f = await prepareReadyFixture(workspaceId, task.id, application.id, auth, false);
+  const route = `/v1/agent-runtime/tasks/${task.id}`, command = `${route}/actions/submit-for-execution`;
+  const post = (url: string, body: any, headers: Record<string, string> = auth) => request(url, { method: "POST", headers, body: JSON.stringify(body) });
+  const submit = async (input = f.input) => post(command, await submissionInput(command, input, auth));
+  const pin = async () => (await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness as any;
+  let accepted: any;
+  await t.test("missing scope and legacy contract remain editable but never Ready", async () => {
+    const { singleTask, ...legacy } = f.input.contract;
+    assert.equal((await submit({ ...f.input, contract: legacy })).status, 409);
+    assert.equal((await pin()).status, "needs_context");
+    await prisma.task.update({ where: { id: task.id }, data: { executionReadiness: { status: "needs_revalidation", reason: "single_task_scope_required", contract: legacy, applicationId: application.id } } });
+    const editor = (await request(`${route}/execution-readiness?editor=1`, { headers: auth })).body as any;
+    assert.equal(editor.data.status === "ready", false); assert.equal(editor.data.editor.accepted.contract.objective.outcome, legacy.objective.outcome);
+    assert.equal(editor.data.editor.taskIdentity.branch, `codex/task-${task.id}`);
+    assert.equal((await submit()).status, 200); accepted = await pin();
+    await assert.rejects(prisma.task.update({ where: { id: task.id }, data: { executionReadiness: { ...accepted, contract: legacy } } }), /task_single_scope_required/);
+  });
+  for (const [name, mutate] of Object.entries({
+    application: (c: any) => { c.singleTask.applicationId = project.id; },
+    multipleComponents: (c: any) => { c.singleTask.component = [c.singleTask.component]; },
+    multipleExecutors: (c: any) => { c.assignment.agentId = [f.agent.id, f.manager.id]; },
+    multipleOutcomes: (c: any) => { c.objective.outcome = [c.objective.outcome, "Another result"]; },
+    independentProblems: (c: any) => { c.singleTask.problems.push({ ...c.singleTask.problems[0], statement: "An unrelated defect", outcome: "A different outcome" }); },
+    compoundIntent: (c: any) => { c.singleTask.problems[0].statement = "Napraw parser oraz dodaj płatności"; },
+    invalidBranch: (c: any) => { c.singleTask.branch = "main"; },
+    wrongIdentity: (c: any) => { c.singleTask.contractId = `roost-task:${project.id}`; },
+    missingMetric: (c: any) => { c.singleTask.measurement.target = "successful"; },
+    unsupportedException: (c: any) => { c.singleTask.problems.push({ ...c.singleTask.problems[0], statement: "Another parser symptom" }); }
+  })) await t.test(`reject ${name} and retain Needs context`, async () => {
+    const contract = structuredClone(f.input.contract); mutate(contract);
+    const result = await submit({ ...f.input, contract }); assert.equal(result.status, 409, JSON.stringify(result.body));
+    assert.equal((await pin()).status, "needs_context");
+    assert.equal(await prisma.agentExecution.count({ where: { taskId: task.id } }), 0);
+  });
+  await t.test("foreign or inactive manager and component cannot resolve", async () => {
+    const outside = await registerOwner("scope-outsider@example.com", "Outside scope");
+    const manager = await prisma.workforceEntity.create({ data: { workspaceId: outside.workspace.id, name: "Other manager", slug: "other-manager", type: "human" } });
+    const otherApp = await prisma.application.create({ data: { workspaceId, name: "Other target", slug: "other-scope-target" } });
+    const component = await prisma.applicationArchitectureComponent.create({ data: { applicationId: otherApp.id, name: "Other component", type: "backend" } });
+    for (const singleTask of [
+      { ...f.input.contract.singleTask, accountableManager: { id: manager.id, revision: manager.updatedAt.toISOString() } },
+      { ...f.input.contract.singleTask, component: { id: component.id, revision: component.updatedAt.toISOString() } }
+    ]) assert.equal((await submit({ ...f.input, contract: { ...f.input.contract, singleTask } })).status, 409);
+    await prisma.workforceEntity.update({ where: { id: f.manager.id }, data: { status: "inactive" } });
+    assert.equal((await submit()).status, 409);
+    const current = await prisma.workforceEntity.update({ where: { id: f.manager.id }, data: { status: "active" } });
+    f.input.contract.singleTask.accountableManager.revision = current.updatedAt.toISOString();
+  });
+  await t.test("one evidence-backed inseparable cause stays visible and auditable", async () => {
+    const contract = structuredClone(f.input.contract), scope = contract.singleTask;
+    scope.problems[0].causalLink = "The parser removes the shared required input token";
+    scope.problems.push({ ...scope.problems[0], statement: "Preview rejects the same valid input", causalLink: "Preview uses the same failing parser code path" });
+    scope.commonCause = { mechanism: "One parser removes the shared required token", inseparability: "Both observations exercise the same parser; a partial change leaves this defect unresolved", evidence: { ...contract.context.technical[0] } };
+    const input = { ...f.input, contract }, submitted = await submissionInput(command, input, auth);
+    assert.equal((await post(command, submitted)).status, 200);
+    const first = await pin(); assert.equal((await post(command, submitted)).status, 200); assert.equal((await pin()).pinId, first.pinId);
+    const event = await prisma.event.findFirstOrThrow({ where: { taskId: task.id, type: "task_execution_ready", payload: { path: ["pinId"], equals: first.pinId } } });
+    assert.deepEqual((event.payload as any).singleTask.commonCause, scope.commonCause);
+    assert.equal(first.contract.singleTask.contractId, accepted.contract.singleTask.contractId);
+    assert.equal(first.contract.singleTask.branch, accepted.contract.singleTask.branch);
+    scope.commonCause.evidence.revision = "stale";
+    assert.equal((await submit(input)).status, 409);
+  });
+  await t.test("manager or component revisions invalidate admission and reject late claim", async () => {
+    process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
+    try {
+      assert.equal((await submit()).status, 200);
+      await prisma.workforceEntity.update({ where: { id: f.manager.id }, data: { role: "delivery manager" } });
+      assert.equal((await pin()).status, "needs_revalidation");
+      assert.ok((await pin()).changedSources.some((item: any) => item.id === f.manager.id));
+      assert.equal((await submit()).status, 409); // stale explicit manager reference
+      f.input.contract.singleTask.accountableManager.revision = (await prisma.workforceEntity.findUniqueOrThrow({ where: { id: f.manager.id } })).updatedAt.toISOString();
+      assert.equal((await submit()).status, 200);
+      const queued = await post("/v1/agent-runtime/executions", { taskId: task.id, applicationId: application.id }); assert.equal(queued.status, 201);
+      const key = await post("/v1/api-keys", { name: "Scope worker", profileId: "mcp_codex_worker" });
+      const worker = { "X-API-Key": (key.body as any).data.key, ...hostProtocolHeaders };
+      await post("/v1/agent-runtime/hosts/register", { name: "Scope host", slug: "scope-host", platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities }, worker);
+      await prisma.applicationArchitectureComponent.update({ where: { id: f.component.id }, data: { description: "Changed component boundary" } });
+      assert.equal((await pin()).status, "needs_revalidation");
+      const claim = await post("/v1/agent-runtime/executions/claim", { hostSlug: "scope-host" }, worker); assert.equal(claim.status, 409);
+      const execution = await prisma.agentExecution.findUniqueOrThrow({ where: { id: (queued.body as any).data.id } });
+      assert.equal(execution.leaseToken, null); assert.equal(execution.attempt, 0);
+    } finally { delete process.env.ROOST_CODEX_EXECUTION_ENABLED; }
+  });
+});
 
 test("Submit for execution is the sole durable and versioned Ready command", async t => {
   const owner = await registerOwner("submit-only@example.com", "Submit-only fixture");

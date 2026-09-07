@@ -24,7 +24,7 @@ function readyContextRevision(taskContext, applicationContext, input = {}) {
   const { generatedAt: _taskTime, executionPacket, readyAdmission: _admission, ...task } = taskContext;
   const { generatedAt: _appTime, ...application } = applicationContext;
   const body = normalize({ schemaVersion: "roost-ready-context-v1", task, application,
-    contract: executionPacket.contract, sources: executionPacket.sources,
+    contract: executionPacket.contract, sources: executionPacket.sources, scopeAuthorities: executionPacket.scopeAuthorities,
     prompt: input.prompt ?? null, baseBranch: input.baseBranch ?? null }, taskContext.task.id);
   return createHash("sha256").update(JSON.stringify(body)).digest("hex");
 }

@@ -2,6 +2,8 @@ export type Reference = { id: string; revision: string; evidence?: string };
 export type CatalogEntry = { id: string; label: string; revision: string; eligible?: boolean; applicationId?: string | null };
 export type ReadyEditor = {
   submissionVersion: string;
+  taskIdentity: { contractId: string; branch: string };
+  components: CatalogEntry[]; managers: CatalogEntry[];
   task: { id: string; title: string; status: string; project: { id: string; name: string } | null; goal: { id: string; title: string } | null };
   agent: { id: string; name: string; role: string; eligible: boolean; competencies: string[]; tools: string[]; permissions: string[] } | null;
   applications: { id: string; name: string }[]; applicationId: string | null;
@@ -22,17 +24,21 @@ export const fields = {
   recovery: ["handoff", "failure", "escalation", "rollbackInstructions"]
 } as const;
 export type FieldName = typeof fields[keyof typeof fields][number];
-export type Draft = { values: Record<FieldName, string>; model: string; effort: string; competencies: string[]; tools: string[]; permissions: string[]; refs: Record<RefGroup, Reference[]>; none: Record<RefGroup, string>; rollbackMode: string };
+export type ScopeDraft = { component: Reference | null; manager: Reference | null; metric: string; comparison: string; target: string; unit: string; method: string; problems: { statement: string; causalLink: string }[]; mechanism: string; inseparability: string; evidence: Reference | null };
+export type Draft = { singleTask: ScopeDraft; values: Record<FieldName, string>; model: string; effort: string; competencies: string[]; tools: string[]; permissions: string[]; refs: Record<RefGroup, Reference[]>; none: Record<RefGroup, string>; rollbackMode: string };
 const lines = (value: string) => value.split(/\r?\n/).map(item => item.trim()).filter(Boolean);
 const join = (value: unknown) => Array.isArray(value) ? value.join("\n") : typeof value === "string" || typeof value === "number" ? String(value) : "";
 export function draftFrom(editor: ReadyEditor): Draft {
   const c = editor.accepted?.contract ?? {};
+  const s = c.singleTask ?? {}, m = s.measurement ?? {};
   const values = {
     version: c.version, outcome: c.objective?.outcome, allowed: c.scope?.allowed, forbidden: c.scope?.forbidden,
     prompt: editor.accepted?.prompt, baseBranch: editor.accepted?.baseBranch, ...c.budgets,
     restrictions: c.access?.restrictions, ...c.acceptance, ...c.recovery, rollbackInstructions: c.recovery?.rollback?.instructions
   };
   return { values: Object.fromEntries(Object.values(fields).flat().map(key => [key, join(values[key])])) as Draft["values"],
+    singleTask: { component: s.component ?? null, manager: s.accountableManager ?? null, metric: m.metric ?? "", comparison: m.comparison ?? "eq", target: m.target === undefined ? "" : String(m.target), unit: m.unit ?? "", method: m.method ?? "",
+      problems: (s.problems ?? [{ statement: "" }]).map((p: any) => ({ statement: p.statement, causalLink: p.causalLink ?? "" })), mechanism: s.commonCause?.mechanism ?? "", inseparability: s.commonCause?.inseparability ?? "", evidence: s.commonCause?.evidence ?? null },
     model: c.modelSelection?.model ?? "", effort: c.modelSelection?.reasoningEffort ?? "", competencies: c.assignment?.competencies ?? [], tools: c.access?.tools ?? [], permissions: c.access?.permissions ?? [],
     refs: Object.fromEntries(groups.map(key => [key, key === "skills" ? (c.skills?.items ?? []).map((item: { name: string; version: string }) => ({ id: item.name, revision: item.version })) : c.context?.[key] ?? c[key]?.items ?? []])) as Draft["refs"],
     none: Object.fromEntries(groups.map(key => [key, c[key]?.noneReason ?? ""])) as Draft["none"], rollbackMode: c.recovery?.rollback?.mode ?? "" };
@@ -50,9 +56,14 @@ export function selectReferences(previous: Reference[], catalog: CatalogEntry[],
 }
 export function contractInput(editor: ReadyEditor, draft: Draft) {
   const v = draft.values;
+  const s = draft.singleTask;
   const set = (key: RefGroup) => ({ items: draft.refs[key].map(item => key === "skills" ? { name: item.id, version: item.revision } : key === "dependencies" ? { id: item.id, revision: item.revision, evidence: item.evidence ?? "", resolution: "satisfied" } : { id: item.id, revision: item.revision }), noneReason: draft.refs[key].length ? null : draft.none[key] });
   return { expectedVersion: editor.submissionVersion, applicationId: editor.applicationId, prompt: v.prompt || null, baseBranch: v.baseBranch || null, contract: {
     version: v.version, objective: { outcome: v.outcome, goalId: editor.task.goal?.id }, scope: { allowed: lines(v.allowed), forbidden: lines(v.forbidden) },
+    singleTask: { schemaVersion: "roost-single-task-v1", ...editor.taskIdentity, applicationId: editor.applicationId, component: s.component, accountableManager: s.manager,
+      measurement: { metric: s.metric, comparison: s.comparison, target: s.target.trim() ? Number(s.target) : null, unit: s.unit, method: s.method },
+      problems: s.problems.map(p => ({ statement: p.statement, componentId: s.component?.id, outcome: v.outcome, causalLink: s.problems.length > 1 ? p.causalLink : null })),
+      commonCause: s.problems.length > 1 ? { mechanism: s.mechanism, inseparability: s.inseparability, evidence: s.evidence } : null },
     assignment: { agentId: editor.agent?.id, role: editor.agent?.role, competencies: draft.competencies }, modelSelection: { model: draft.model, reasoningEffort: draft.effort },
     context: Object.fromEntries(["company", "product", "technical"].map(key => [key, draft.refs[key as RefGroup].map(({ id, revision }) => ({ id, revision }))])),
     procedures: set("procedures"), skills: set("skills"), dependencies: set("dependencies"), decisions: set("decisions"),
@@ -70,6 +81,7 @@ export function validationSections(details: unknown): string[] {
   return [...new Set(issues.map(issue => {
     if (!issue || typeof issue.field !== "string") return "general";
     const field = issue.field as string;
+    if (/^contract\.singleTask/.test(field)) return "singleTask";
     if (/^contract\.context\.(company|product|technical)(\.|$)/.test(field)) return field.split(".")[2]!;
     if (/^contract\.(procedures|skills|dependencies|decisions)(\.|$)/.test(field)) return field.split(".")[1]!;
     if (/^contract\.(objective|scope|version)/.test(field)) return "intent";

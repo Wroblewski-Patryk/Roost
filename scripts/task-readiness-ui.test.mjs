@@ -30,23 +30,29 @@ let checked = 0;
 function fixture(mode) {
   const f = validPacketFixture(), c = f.packet.contract;
   const task = { id: f.claimed.taskId, title: "Poprawa formularza zgłoszeń", status: "todo", project: { id: f.taskContext.task.projectId, name: "Portal obsługi klienta" }, goal: { id: c.objective.goalId, title: "Czytelne zgłoszenia bez barier" } };
-  const e = { submissionVersion: "a".repeat(64), task, agent: { ...f.taskContext.task.assignedWorkforceEntity, name: "Marta · Quality Engineer", eligible: true, competencies: ["javascript"], tools: c.access.tools, permissions: c.access.permissions }, applications: [{ id: f.claimed.applicationId, name: "Portal obsługi klienta" }], applicationId: f.claimed.applicationId,
+  const e = { taskIdentity: { contractId: c.singleTask.contractId, branch: c.singleTask.branch }, components: [{ ...c.singleTask.component, label: "Parser formularza" }], managers: [{ ...c.singleTask.accountableManager, label: "Aleksandra Nowak" }], submissionVersion: "a".repeat(64), task, agent: { ...f.taskContext.task.assignedWorkforceEntity, name: "Marta · Quality Engineer", eligible: true, competencies: ["javascript"], tools: c.access.tools, permissions: c.access.permissions }, applications: [{ id: f.claimed.applicationId, name: "Portal obsługi klienta" }], applicationId: f.claimed.applicationId,
     projects: [task.project], goals: [task.goal], agents: [{ id: c.assignment.agentId, name: "Marta · Quality Engineer" }], activeExecution: mode === "blocked", catalogTruncated: false,
     models: [{ id: "gpt-5.6-sol", efforts: ["low", "medium", "high"] }],
     sources: f.packet.sources.map((item, i) => ({ id: item.id, label: ["Zasady firmy", "Wymagania portalu", "Architektura formularza"][i], applicationId: item.applicationId, revision: item.revision })), procedures: [], dependencies: [], decisions: [],
     accepted: { contract: c, applicationId: f.claimed.applicationId, prompt: null, baseBranch: null }, acceptance: { validatedAt: "2026-09-06T10:00:00Z", authorName: "Aleksandra Nowak", authorType: "user" } };
   if (mode === "empty") { e.task.goal = null; e.agent = null; e.applications = []; e.applicationId = null; e.accepted = null; e.acceptance = null; }
-  const packet = { status: ["ready", "viewer", "blocked"].includes(mode) ? "ready" : mode === "empty" ? "draft" : ["needs_context", "needs_decision"].includes(mode) ? mode : "needs_revalidation", reason: mode === "empty" ? "ready_pin_required" : "context_changed", revision: "a".repeat(64), validationRevision: "a".repeat(64), pinId: "accepted-fixture", canSubmit: mode !== "viewer", executionEnabled: false, editor: e };
+  const packet = { status: ["ready", "viewer", "blocked", "scope_exception"].includes(mode) ? "ready" : mode === "empty" ? "draft" : ["needs_context", "needs_decision"].includes(mode) ? mode : "needs_revalidation", reason: mode === "empty" ? "ready_pin_required" : "context_changed", revision: "a".repeat(64), validationRevision: "a".repeat(64), pinId: "accepted-fixture", canSubmit: mode !== "viewer", executionEnabled: false, editor: e };
   if (["needs_context", "needs_decision"].includes(mode)) { packet.reason = "submission_incomplete"; packet.issues = [{ field: mode === "needs_decision" ? "contract.decisions" : "contract.context.company", reason: "missing" }]; }
   if (["empty", "needs_context", "needs_decision"].includes(mode)) { delete packet.revision; delete packet.validationRevision; }
   if (mode === "changed") packet.changedSources = [
     { table: "company_records", id: f.packet.sources[0].id, label: "Zasady akceptacji zmian i potwierdzania aktualności dokumentacji technicznej", operation: "update", changedAt: "2026-09-07T20:00:00Z" },
     { table: "application_repositories", id: "00000000-0000-4000-8000-000000000123", label: "application_repositories", operation: "delete", changedAt: "2026-09-07T20:01:00Z" }
   ];
+  if (mode === "scope_exception") {
+    c.singleTask.problems[0].causalLink = "The parser removes the required token from input";
+    c.singleTask.problems.push({ ...c.singleTask.problems[0], statement: "Preview rejects the same input", causalLink: "The same parser supplies the preview result" });
+    c.singleTask.commonCause = { mechanism: "One parser drops a required token", inseparability: "Both symptoms exercise the same shared parser correction", evidence: { ...c.context.technical[0] } };
+  }
+  if (mode === "scope_split") { packet.status = "needs_context"; packet.reason = "submission_incomplete"; packet.issues = [{ field: "contract.singleTask.problems", reason: "split_required" }]; delete packet.revision; }
   return { f, packet };
 }
 try {
-  for (const locale of process.env.ROOST_QA_INTERACTION_ONLY === "1" ? [] : ["pl", "en"]) for (const width of [390, 834, 1440]) for (const mode of ["ready", "changed", "empty", "viewer", "blocked", "needs_context", "needs_decision", "error", "loading"]) {
+  for (const locale of process.env.ROOST_QA_INTERACTION_ONLY === "1" ? [] : ["pl", "en"]) for (const width of [390, 834, 1440]) for (const mode of ["ready", "changed", "empty", "viewer", "blocked", "needs_context", "needs_decision", "scope_exception", "scope_split", "error", "loading"]) {
     const page = await browser.newPage({ viewport: { width, height: 960 } });
     const errors = []; page.on("pageerror", error => errors.push(error.message));
     await page.addInitScript(value => localStorage.setItem("companycoreLocale", value), locale);
@@ -162,6 +168,65 @@ try {
     await submit.focus(); await retryPage.keyboard.press("Enter");
     await retryPage.getByText(locale === "pl" ? "Bieżący kontrakt został sprawdzony i zaakceptowany." : "The current contract was validated and accepted.", { exact: true }).waitFor();
     assert.equal(attempts.length, 2); await retryPage.close(); checked++;
+  }
+  for (const locale of ["en", "pl"]) {
+    const scopePage = await browser.newPage({ viewport: { width: 834, height: 960 } });
+    await scopePage.addInitScript(value => localStorage.setItem("companycoreLocale", value), locale);
+    const { f: scopeFixture, packet: scopePacket } = fixture("changed"); let scopeSubmits = 0;
+    await scopePage.route("**/v1/**", async route => {
+      const url = route.request().url();
+      if (url.includes("execution-readiness")) return route.fulfill({ json: { data: scopePacket } });
+      if (url.includes("submit-for-execution")) {
+        const input = route.request().postDataJSON(); scopeSubmits++;
+        scopeFixture.packet.contract = input.contract; sealPacket(scopeFixture.packet);
+        if (scopeSubmits === 1) {
+          assert.throws(() => validateExecutionPacket(scopeFixture.packet, scopeFixture.claimed, scopeFixture.taskContext, scopeFixture.applicationContext));
+          scopePacket.status = "needs_context"; scopePacket.reason = "submission_incomplete"; scopePacket.editor.submissionVersion = "b".repeat(64);
+          return route.fulfill({ status: 409, json: { error: "task_execution_contract_invalid", errorDetails: { details: { issues: [{ field: "contract.singleTask.problems", reason: "split_required" }] } } } });
+        }
+        validateExecutionPacket(scopeFixture.packet, scopeFixture.claimed, scopeFixture.taskContext, scopeFixture.applicationContext);
+        assert.equal(input.contract.singleTask.problems.length, 2);
+        assert.equal(input.contract.singleTask.commonCause.evidence.id, scopeFixture.packet.sources[2].id);
+        scopePacket.status = "ready"; scopePacket.editor.accepted.contract = input.contract;
+        return route.fulfill({ json: { data: { readiness: scopePacket } } });
+      }
+      assert.equal(route.request().method(), "GET", "scope editing must not create child tasks");
+      return route.fulfill({ json: { data: url.includes("/v1/tasks?") ? [{ ...scopePacket.editor.task, priority: "normal" }] : { departments: [] } } });
+    });
+    await scopePage.goto(`http://127.0.0.1:${server.address().port}`);
+    await scopePage.locator("button:visible").filter({ hasText: locale === "pl" ? "Przygotuj wykonanie" : "Prepare execution" }).first().click();
+    await scopePage.getByLabel(locale === "pl" ? /^Docelowy komponent/ : /^Target component/).selectOption(scopeFixture.packet.contract.singleTask.component.id);
+    await scopePage.getByLabel(/^Accountable manager/).selectOption(scopeFixture.packet.contract.singleTask.accountableManager.id);
+    const outcome = scopePage.getByLabel(locale === "pl" ? /^Oczekiwany rezultat/ : /^Expected outcome/);
+    const originalOutcome = await outcome.inputValue();
+    await outcome.fill(locale === "pl" ? "Napraw logowanie oraz dodaj płatności" : "Fix login and add billing");
+    const submit = scopePage.getByRole("button", { name: locale === "pl" ? "Przekaż do wykonania" : "Submit for execution", exact: true });
+    await submit.click();
+    await scopePage.getByText(locale === "pl" ? /^Zachowaj jedną aplikację/ : /^Keep one application/).first().waitFor();
+    await outcome.fill(originalOutcome);
+    await scopePage.getByRole("button", { name: locale === "pl" ? "Dodaj symptom tej samej przyczyny" : "Add a symptom of the same cause", exact: true }).click();
+    await scopePage.getByLabel(locale === "pl" ? /^Problem lub symptom 2/ : /^Problem or symptom 2/).fill("Preview rejects valid input");
+    const causalLinks = scopePage.getByLabel(locale === "pl" ? /^Jak symptom wynika/ : /^How this symptom follows/);
+    await causalLinks.nth(0).fill("The shared parser removes the required token");
+    await causalLinks.nth(1).fill("The preview uses the same parser result");
+    await scopePage.getByLabel(locale === "pl" ? /^Jeden wspólny mechanizm/ : /^One common mechanism/).fill("The shared parser removes a required input token");
+    await scopePage.getByLabel(locale === "pl" ? /^Dlaczego nie można/ : /^Why the fixes cannot/).fill("Both symptoms are caused by one shared parser correction");
+    await scopePage.getByLabel(locale === "pl" ? /^Źródło techniczne potwierdzające/ : /^Technical source supporting/).selectOption(scopeFixture.packet.sources[2].id);
+    await scopePage.screenshot({ path: path.join(output, `${locale}-scope-authoring-834.png`), fullPage: true });
+    await submit.click();
+    await scopePage.getByText(locale === "pl" ? "Bieżący kontrakt został sprawdzony i zaakceptowany." : "The current contract was validated and accepted.", { exact: true }).waitFor();
+    await scopePage.getByText(locale === "pl" ? "Wyjątek wspólnej przyczyny" : "Shared-cause exception", { exact: true }).waitFor();
+    assert.equal(scopeSubmits, 2);
+    await scopePage.getByText(locale === "pl" ? "Wyjątek wspólnej przyczyny" : "Shared-cause exception", { exact: true }).click();
+    await scopePage.screenshot({ path: path.join(output, `${locale}-scope-exception-expanded-834.png`), fullPage: true });
+    await scopePage.getByRole("button", { name: locale === "pl" ? "Sprawdź lub zmień kontrakt" : "Review or update contract", exact: true }).click();
+    for (const width of [390, 1440]) {
+      await scopePage.setViewportSize({ width, height: 960 });
+      await scopePage.getByLabel(locale === "pl" ? /^Docelowy komponent/ : /^Target component/).scrollIntoViewIfNeeded();
+      await scopePage.screenshot({ path: path.join(output, `${locale}-scope-fields-${width}.png`), fullPage: true });
+      assert.equal(await scopePage.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+    }
+    await scopePage.close(); checked++;
   }
   console.log(JSON.stringify({ checked, output }));
 } finally { await browser.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }

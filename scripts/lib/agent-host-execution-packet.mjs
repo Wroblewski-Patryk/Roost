@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 import { normalizeGitRemote } from "./agent-host-workspace-guard.mjs";
 import { modelSelectionSchema } from "./agent-host-model-policy.mjs";
+import { singleTaskSchema, singleTaskIssues } from "./agent-host-single-task.mjs";
 
 const text = z.string().trim().min(1).max(2000);
 const texts = z.array(text).min(1).max(30);
@@ -13,6 +14,7 @@ const optionalSet = (item) => z.object({ items: z.array(item).max(30), noneReaso
 const operations = z.enum(["repository_read", "repository_write", "local_test"]);
 export const executionContractSchema = z.object({
   version: text,
+  singleTask: singleTaskSchema,
   objective: z.object({ outcome: text, goalId: id }).strict(),
   scope: z.object({ allowed: texts, forbidden: texts }).strict(),
   assignment: z.object({ agentId: id, role: text, competencies: texts }).strict(),
@@ -30,10 +32,17 @@ export const executionContractSchema = z.object({
     rollback: z.object({ mode: z.enum(["restore_task_changes", "not_applicable"]), instructions: text }).strict() }).strict()
 }).strict();
 
+// Editor migration may retain validated legacy fields, but admission never uses this schema.
+export const executionEditorContractSchema = executionContractSchema.partial({ singleTask: true });
+
 const packetSchema = z.object({
   schemaVersion: z.literal("roost-execution-packet-v1"), revision: z.string().regex(/^[a-f0-9]{64}$/),
   identity: z.object({ executionId: id, workspaceId: id, taskId: id, applicationId: id, agentId: id }).strict(),
   taskRevision: text, contract: executionContractSchema,
+  scopeAuthorities: z.object({
+    component: z.object({ id, applicationId: id, status: text, revision: text }).strict().nullable(),
+    manager: z.object({ id, workspaceId: id, status: text, revision: text }).strict().nullable()
+  }).strict(),
   sources: z.array(z.object({ id, workspaceId: id, applicationId: id.nullable(), recordType: text, title: text,
     description: z.string().nullable(), businessPurpose: z.string().nullable(), desiredState: z.string().nullable(), expectedBehavior: z.string().nullable(), revision: text }).strict()).max(30)
 }).strict();
@@ -48,6 +57,7 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
     for (const issue of parsed.error.issues) add(issue.path.join(".") || "packet", issue.code === "invalid_type" && issue.received === "undefined" ? "missing" : "invalid");
   } else {
     const p = parsed.data, c = p.contract, task = taskContext?.task, agent = task?.assignedWorkforceEntity;
+    issues.push(...singleTaskIssues(c, p, claimed));
     const { revision, ...body } = packet;
     if (createHash("sha256").update(JSON.stringify(body)).digest("hex") !== revision) add("revision", "mismatch");
     for (const [field, expected] of Object.entries({ executionId: claimed?.id, taskId: claimed?.taskId, workspaceId: claimed?.workspaceId, applicationId: claimed?.applicationId, agentId: task?.assignedWorkforceEntityId })) {

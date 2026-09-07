@@ -226,7 +226,7 @@ existing `capabilities` advertises implemented controls. Protocol metadata uses
 the existing host table without a separate version registry.
 
 Both capability lists include `ready_context_pin_v1`,
-`output_budget_fail_closed_v1` and `active_context_stop_v1` while protocol version
+`output_budget_fail_closed_v1`, `active_context_stop_v1` and `single_task_scope_v1` while protocol version
 stays `1`. A host without
 these controls cannot claim from the new API; a new host cannot run against an
 API missing any capability. The separate Ready and active-stop contracts add
@@ -302,7 +302,9 @@ read-only analysis may run concurrently. Existing files and unknown resources
 must be preserved until their provenance is understood.
 
 The current path/origin allowlist is a foundation for these rules, not full
-enforcement: it does not inventory Docker resources or enforce a task branch.
+enforcement: it does not inventory Docker resources. The supervised host now
+requires the accepted deterministic task branch before preparation and before
+the final pre-spawn context fetch; it never creates or switches that branch.
 The writer lock coordinates supported host processes, not arbitrary editors,
 bootstrap sessions or external tools; those must still honor the one-writer rule.
 A future manifest and recovery contract must extend existing host/API boundaries
