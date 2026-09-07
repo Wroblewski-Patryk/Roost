@@ -1369,6 +1369,42 @@ test("Ready workbench projects safe catalogs and requires a current human role f
   assert.equal(await prisma.event.count({ where: { taskId: task.id, type: "operations_work_item_writeback_failed" } }), 0);
 });
 
+test("accepted output budgets remain pinned and budget failures cannot retry or complete late", async () => {
+  const owner = await registerOwner("output-budget@example.com", "Output Budget Fixture");
+  const auth = { Authorization: `Bearer ${owner.token}`, ...hostProtocolHeaders };
+  const application = await prisma.application.create({ data: { workspaceId: owner.workspace.id, name: "Output budget fixture", slug: "output-budget-fixture" } });
+  const project = await prisma.project.create({ data: { workspaceId: owner.workspace.id, name: "Output budget project" } });
+  await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id } });
+  const task = await prisma.task.create({ data: { workspaceId: owner.workspace.id, projectId: project.id, title: "Bound a synthetic execution" } });
+  const f = await prepareReadyFixture(owner.workspace.id, task.id, application.id, auth);
+  const post = (route: string, body: unknown) => request(route, { method: "POST", headers: auth, body: JSON.stringify(body) });
+  for (const maxOutputTokens of [undefined, 0, -1, 100001]) {
+    const rejected = await post(`/v1/agent-runtime/tasks/${task.id}/actions/submit-for-execution`, { ...f.input, contract: { ...f.input.contract, budgets: { ...f.input.contract.budgets, maxOutputTokens } } });
+    assert.equal(rejected.status, 409);
+  }
+  const registered = await post("/v1/agent-runtime/hosts/register", { name: "Output host", slug: "output-host", platform: "win32", applicationSlugs: [application.slug], capabilities: protocol.requiredHostCapabilities, metadata: { ...validHostMetadata, outputTokenBudgetEnforcement: "unavailable" } });
+  assert.equal(registered.status, 200);
+  assert.ok((registered.body as { data: { runtime: { executionUnavailableReasons: string[] } } }).data.runtime.executionUnavailableReasons.includes("output_token_limit_unsupported"));
+  process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
+  try {
+    for (const code of ["agent_execution_output_budget_invalid", "agent_execution_output_budget_exceeded", "agent_execution_output_budget_unsupported"]) {
+      assert.equal((await post("/v1/agent-runtime/executions", { taskId: task.id, applicationId: application.id })).status, 201);
+      const claim = await post("/v1/agent-runtime/executions/claim", { hostSlug: "output-host" });
+      assert.equal(claim.status, 200, JSON.stringify(claim.body));
+      const execution = (claim.body as { data: { id: string; leaseToken: string } }).data;
+      assert.equal((await post(`/v1/agent-runtime/executions/${execution.id}/heartbeat`, { leaseToken: execution.leaseToken, metadata: { executionContract: { budgets: { maxOutputTokens: 99999 } } } })).status, 200);
+      const stored = await prisma.agentExecution.findUniqueOrThrow({ where: { id: execution.id } });
+      assert.equal((stored.metadata as { executionContract: { budgets: { maxOutputTokens: number } } }).executionContract.budgets.maxOutputTokens, f.input.contract.budgets.maxOutputTokens);
+      const failed = await post(`/v1/agent-runtime/executions/${execution.id}/actions/fail`, { leaseToken: execution.leaseToken, code, message: "Synthetic budget diagnostic", retryable: true });
+      assert.equal(failed.status, 200);
+      assert.equal((failed.body as { data: { errorState: { retryable: boolean } } }).data.errorState.retryable, false);
+      assert.equal((await post(`/v1/agent-runtime/executions/${execution.id}/actions/complete`, { leaseToken: execution.leaseToken, summary: "SYNTHETIC_SECRET_LATE_SUCCESS" })).status, 409);
+      const retry = await post(`/v1/agent-runtime/executions/${execution.id}/actions/retry`, {});
+      assert.equal(retry.status, 409); assert.equal((retry.body as { error: string }).error, "agent_execution_requires_correction");
+    }
+  } finally { delete process.env.ROOST_CODEX_EXECUTION_ENABLED; }
+});
+
 test("local Codex Agent Host claims scoped work and reports owner-visible evidence", async () => {
   delete process.env.ROOST_CODEX_EXECUTION_ENABLED;
   const owner = await registerOwner("codex-runtime-owner@example.com", "Codex Runtime Workspace");
@@ -1591,10 +1627,12 @@ test("host protocol admission fails closed while incompatible hosts remain onlin
     ["host_protocol_missing", { ...declaration, metadata: {} }, headers],
     ...[0, 2, "1", null].map(version => ["host_protocol_mismatch", { ...declaration, metadata: { ...validHostMetadata, protocolVersion: version } }, headers] as [string, unknown, Record<string, string>]),
     ["host_capabilities_missing", { ...declaration, capabilities: ["heartbeat"] }, headers],
+    ["host_capabilities_missing", { ...declaration, capabilities: declaration.capabilities.filter(value => value !== "output_budget_fail_closed_v1") }, headers],
     ["host_capabilities_missing", { ...declaration, capabilities: undefined }, headers],
     ["observer_mode", { ...declaration, metadata: { ...validHostMetadata, executionMode: "observe" } }, headers],
     ["host_mode_missing", { ...declaration, metadata: { protocolVersion: 1 } }, headers],
     ["request_protocol_missing", declaration, auth],
+    ["request_capabilities_missing", declaration, { ...headers, "X-Roost-Host-Capabilities": declaration.capabilities.filter(value => value !== "output_budget_fail_closed_v1").join(",") }],
     ["request_protocol_mismatch", declaration, { ...headers, "X-Roost-Host-Protocol": "2" }],
     ["request_capabilities_missing", declaration, { ...headers, "X-Roost-Host-Capabilities": "heartbeat" }]
   ];

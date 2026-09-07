@@ -12,6 +12,7 @@ import { assertRecoverySnapshot, classifyRecovery, recoveryError, workspaceDiges
 import { runObserver } from "./lib/agent-host-observer.mjs";
 import { codexExecutionArgs } from "./lib/agent-host-model-policy.mjs";
 import { createExecutionDuration } from "./lib/agent-host-execution-duration.mjs";
+import { createCodexOutputBudget } from "./lib/agent-host-output-budget.mjs";
 import { fetchExecutionContext, executionContextRevision, assertFreshExecutionContext } from "./lib/agent-host-execution-context.mjs";
 import { protocol, protocolHeaders, apiCompatibility, protocolAdmissionError } from "./lib/agent-host-protocol.mjs";
 import readyContext from "./lib/agent-host-ready-context.cjs";
@@ -36,6 +37,7 @@ const host = {
     runnerVersion: "roost-codex-agent-host-v1",
     protocolVersion: protocol.version,
     executionMode: "supervised",
+    outputTokenBudgetEnforcement: "unavailable",
     hostname: os.hostname(),
     workspacePolicy: "approved_direct_children_only",
     repositories: Object.entries(config.repositories).map(([slug, repository]) => ({ slug, originUrl: repository.originUrl, deploymentUrl: repository.deploymentUrl }))
@@ -171,7 +173,7 @@ function summarizeItem(item) {
   return null;
 }
 
-async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint } = {}) {
+async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, createOutputBudget = createCodexOutputBudget } = {}) {
   const repository = repositoryForExecution(config, claimed);
   const repositoryPath = path.resolve(String(repository.path));
   let taskContext, applicationContext, contextRevision;
@@ -185,6 +187,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint } =
   let stopError;
   let stopRequested = false;
   let duration;
+  let outputBudget;
   function stopWorker() {
     stopping = true;
     retainWriterLock = true;
@@ -221,6 +224,8 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint } =
     lease.assertValid();
     validateExecutionPacket(taskContext?.executionPacket, claimed, taskContext, applicationContext);
     readyContext.assertReadyContext(taskContext, applicationContext, claimed);
+    outputBudget = createOutputBudget({ maxOutputTokens: taskContext.executionPacket.contract.budgets.maxOutputTokens, onStopped: stopWorker });
+    outputBudget.assertWithinBudget();
     contextRevision = executionContextRevision(taskContext, applicationContext);
     duration = createExecutionDuration({ startedAt: claimed.startedAt,
       maxDurationSeconds: taskContext.executionPacket.contract.budgets.maxDurationSeconds, onExpired: stopWorker });
@@ -249,6 +254,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint } =
     lease.assertValid();
     duration.assertWithinBudget();
     const args = codexExecutionArgs(taskContext.executionPacket.contract.modelSelection, sandbox);
+    outputBudget.assertWithinBudget();
     child = spawn(codexCommand, args, { cwd: repositoryPath, env: safeChildEnvironment(), shell: false, windowsHide: true, stdio: ["pipe", "pipe", "pipe"] });
     const exitPromise = new Promise((resolve, reject) => {
       child.once("error", reject);
@@ -275,7 +281,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint } =
       let event;
       try { event = JSON.parse(line); } catch { continue; }
       if (event.type === "thread.started") codexThreadId = event.thread_id || null;
-      if (event.type === "turn.completed") usage = event.usage || {};
+      if (event.type === "turn.completed") { outputBudget.observeUsage(event.usage); usage = event.usage || {}; }
       if (event.type === "item.completed" && event.item?.type === "agent_message") finalResponse = String(event.item.text || "");
       if (event.type === "item.completed" && event.item?.type === "command_execution") verification.commands.push({ command: event.item.command, status: event.item.status, exitCode: event.item.exit_code });
       if (!lease.failure && claimed.checkpoint.stage === "running" && ["command_execution", "mcp_tool_call"].includes(event.item?.type)) await duration.wait(checkpoint("effect_possible", taskContext.executionPacket.revision, digest));
@@ -300,6 +306,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint } =
     await duration.wait(lease.refresh());
     lease.assertValid();
     duration.assertWithinBudget();
+    outputBudget.assertWithinBudget();
     // The child has exited. Avoid racing a heartbeat with the terminal API transition.
     lease.stop();
     duration.stop();
@@ -308,10 +315,13 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint } =
       body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: summary.slice(0, 10000), finalResponse, codexThreadId, changedFiles, verification, usage, metadata: { repositoryPathLabel: path.basename(repositoryPath), preExistingDirtyFiles: beforeStatus.map(statusPath) } })
     });
   } catch (error) {
+    if (error.outputLimit) stopWorker();
+    if (error.message === "execution_packet_invalid" && error.details?.issues?.some(issue => ["contract", "contract.budgets", "contract.budgets.maxOutputTokens"].includes(issue.field))) stopWorker();
     if (error.protocolAdmission) { protocolHalted = true; lease.reject(error); stopWorker(); if (lease.failure) throw lease.failure; }
     if (error.contextAdmission || error.readyAdmission) { lease.reject(error); stopWorker(); if (lease.failure) throw lease.failure; }
     // A pending RPC/stream must never turn an expired run into success or a retry.
     if (duration?.failure) throw lease.failure ?? duration.failure;
+    if (outputBudget?.failure) throw lease.failure ?? outputBudget.failure;
     throw error;
   } finally {
     duration?.stop();
@@ -358,9 +368,10 @@ async function reportRecovery(execution, reason) {
 process.on("SIGINT", () => { stopping = true; shutdownRequested = true; });
 process.on("SIGTERM", () => { stopping = true; shutdownRequested = true; });
 
-// Dependency injection lets process-level tests use a private temporary lock directory.
-// The CLI always uses the fixed machine-wide location; config cannot override it.
-export async function runHost({ acquireLock = (options) => acquireWriterLock(undefined, options), onCheckpoint } = {}) {
+// Process tests inject a private lock and synthetic post-turn budget guard.
+// The CLI always uses the fixed lock and fail-closed Codex guard. Neither
+// dependency can be selected by configuration, environment or an API packet.
+export async function runHost({ acquireLock = (options) => acquireWriterLock(undefined, options), onCheckpoint, createOutputBudget = createCodexOutputBudget } = {}) {
   // Observe never enters recovery, writer locking, claim, or execution code.
   if (config.executionMode === "observe") return runObserver({ config, api, stopped: () => stopping });
   if (!await waitForAdmission()) return;
@@ -389,7 +400,7 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
       resumedExecution = resumed;
       if (resumed?.id !== pending[0].id || resumed?.attempt !== pending[0].attempt) throw recoveryError("recovery_conflict");
       await writerLock.checkpoint(resumed);
-      await execute(resumed, writerLock, { resumeCheckpoint: pending[0].checkpoint, onCheckpoint });
+      await execute(resumed, writerLock, { resumeCheckpoint: pending[0].checkpoint, onCheckpoint, createOutputBudget });
     }
     while (!stopping) {
       let execution = null;
@@ -400,7 +411,7 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
           process.stdout.write(`Claimed ${execution.id}: ${execution.task.title}\n`);
           await writerLock.checkpoint(execution).catch(() => { throw recoveryError("local_state_invalid"); });
           await onCheckpoint?.("claimed", execution);
-          await execute(execution, writerLock, { onCheckpoint });
+          await execute(execution, writerLock, { onCheckpoint, createOutputBudget });
         }
       } catch (error) {
         if (error.protocolAdmission) { protocolHalted = true; stopping = true; retainWriterLock = true; }
@@ -419,7 +430,7 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
     if (error.protocolAdmission) { protocolHalted = true; stopping = true; retainWriterLock = true; }
     if (pending[0]) {
       retainWriterLock = true;
-      if ((error.durationLimit || error.contextAdmission || error.protocolAdmission || error.readyAdmission) && resumedExecution) await reportFailure(resumedExecution, error);
+      if ((error.outputLimit || error.durationLimit || error.contextAdmission || error.protocolAdmission || error.readyAdmission) && resumedExecution) await reportFailure(resumedExecution, error);
       else await reportRecovery(pending[0], recoveryReason(error));
     }
     throw error;

@@ -85,7 +85,7 @@ function hostRuntime(host: { workspaceId: string; metadata: unknown; capabilitie
   const metadata = host.metadata && typeof host.metadata === "object" && !Array.isArray(host.metadata) ? host.metadata as Record<string, unknown> : {};
   const clientReasons = Array.isArray(metadata.executionUnavailableReasons) ? metadata.executionUnavailableReasons.filter((value): value is string => typeof value === "string" && ["api_protocol_missing", "api_protocol_mismatch", "api_capabilities_missing", "api_contract_invalid", "api_unavailable", "execution_reconciliation_required"].includes(value)) : [];
   return { workspaceId: host.workspaceId, executionEnabled: executionEnabled(), mode: executionEnabled() ? "supervised_execution" : "foundation_only", protocol, compatibility,
-    executionUnavailableReasons: [...new Set([...(compatibility.reason ? [compatibility.reason] : []), ...clientReasons, ...(!executionEnabled() ? ["runtime_disabled"] : [])])] };
+    executionUnavailableReasons: [...new Set([...(compatibility.reason ? [compatibility.reason] : []), ...clientReasons, ...(metadata.executionMode === "supervised" && metadata.outputTokenBudgetEnforcement === "unavailable" ? ["output_token_limit_unsupported"] : []), ...(!executionEnabled() ? ["runtime_disabled"] : [])])] };
 }
 
 function visibleHost<T extends { status: string; lastSeenAt: Date | null; workspaceId: string; metadata: unknown; capabilities: unknown }>(host: T) {
@@ -411,6 +411,7 @@ agentRuntimeRouter.post("/executions/:id/actions/complete", asyncHandler(async (
 
 agentRuntimeRouter.post("/executions/:id/actions/fail", asyncHandler(async (req, res) => {
   const input = failSchema.parse(req.body);
+  if (["agent_execution_output_budget_invalid", "agent_execution_output_budget_exceeded", "agent_execution_output_budget_unsupported"].includes(input.code)) input.retryable = false;
   const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, leaseToken: input.leaseToken, status: { in: ["claimed", "running", "waiting_for_approval"] } }, include: { task: true } });
   if (!existing) return sendApiError(res, 409, "agent_execution_lease_invalid");
   const failed = await prisma.agentExecution.updateMany({ where: { id: existing.id, leaseToken: input.leaseToken, leaseExpiresAt: { gt: new Date() }, status: { in: ["claimed", "running", "waiting_for_approval"] } }, data: { status: "failed", errorState: json({ code: input.code, message: input.message, retryable: input.retryable, details: input.details }), completedAt: new Date(), leaseExpiresAt: null, leaseToken: null } });

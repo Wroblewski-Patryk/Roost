@@ -109,6 +109,16 @@ lease. The writer record remains retained. Rejection by the recovery API before
 rotation instead records a blocked recovery and preserves the original authority.
 An old execution is never rebound to a newly submitted acceptance.
 
+Output-token admission also runs after recovery. Claimed/prepared checkpoints
+prove no worker has started; their execution ID, attempt and accepted budget
+are retained. The production Codex runner rejects them with
+`agent_execution_output_budget_unsupported`, using the rotated lease and retaining
+the local writer fence. There is no restored or reset usage counter: all stages
+where output may have been generated already prohibit automatic recovery.
+Synthetic exhaustion followed by a lost failure report leaves the running
+checkpoint intact and blocks restart before reclaim/rotation/another claim.
+Blind retries of all output-budget failures are rejected by the API.
+
 ## Diagnostics, Cleanup And Release
 
 `/actions/recovery-blocked` accepts fixed reason codes under the existing
@@ -119,7 +129,7 @@ recovery cannot be proven. Transport failure stops locally and preserves the
 record instead of pretending that Roost received a diagnostic.
 
 Normal terminal execution releases only its own writer lock; duration expiry
-and context-admission failure retain it even when no child exists or tree
+and context/output-budget admission failure retain it even when no child exists or tree
 termination was confirmed. Successful reclaim
 removes only the matched prior writer file and its own temporary recovery gate.
 An orphan recovery gate, corrupt state or uncertain process tree needs trusted

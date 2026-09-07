@@ -281,12 +281,74 @@ process-tree containment are not solved by this timer. Independent plan review
 and approval of a new budget are required policy; their orchestration remains
 separate work. Token and cost meters are not implemented by this duration slice.
 
+## Hard Output Token Admission (RF-HOST-010)
+
+`budgets.maxOutputTokens` remains an explicit accepted contract integer in
+128–100000, with the existing model/effort allowlist. Ready pins it; queue copies
+it into execution metadata, and worker heartbeats/reports cannot replace it.
+It is an output budget for one execution/attempt, including reasoning, not a
+duration, input/context limit, monetary cap or authority to approve more budget.
+No selected model is runnable without a proven enforcing transport.
+
+**Current guarantee: fail closed before Codex spawn.** On 2026-09-06 the installed
+`codex-cli 0.153.4` (`codex exec --help`) and the
+[official configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
+did not establish a hard output-token cap covering an entire `codex exec` run.
+`tool_output_token_limit` truncates tool results; it does not cap model generation.
+The [JSONL interface](https://learn.chatgpt.com/docs/non-interactive-mode) reports
+usage on `turn.completed`, after generation. This is not synchronous admission
+for every provider response and descendant agent. There is no proven finite
+overshoot margin. No guessed flag, prompt instruction, account usage percentage,
+text-length estimate or post-turn meter is accepted as a hard limit.
+
+The production CLI therefore always uses `createCodexOutputBudget`, which rejects
+even a valid budget as `agent_execution_output_budget_unsupported`. This occurs
+after packet/Ready validation and before execution-specific Git preparation or
+the durable spawn barrier. A malformed output budget fails the packet gate and
+also halts further claims. No configuration, environment or packet field can
+enable the observational guard instead. A binary update does not remove this
+block; a proven runner contract and separate implementation review are required.
+The factory injection on exported `runHost` exists for trusted synthetic process
+tests, like the existing lock injection; the CLI does not expose it.
+
+The shared `output_budget_fail_closed_v1` capability is mandatory on both sides,
+with protocol version still 1. An older process cannot reuse stored host metadata
+to claim or recover because request headers are checked too. Supervised host
+metadata and runtime diagnostics expose `output_token_limit_unsupported`.
+Observer behavior is unchanged and never enters this gate.
+
+For synthetic runner verification only, the observational guard sums output and
+any separately reported reasoning counts conservatively across completed turns.
+It never subtracts input/cache counts or resets the total on a heartbeat. At or
+above the limit, or on invalid usage, it calls the existing idempotent stop path,
+rejects late completion, stops further claims and retains the writer checkpoint.
+Windows process-tree termination, reporting uncertainty and lease loss retain
+their existing reconciliation boundaries. This proves the containment path,
+**not a usable hard cap for Codex or a bound on its overshoot**.
+
+`agent_execution_output_budget_invalid`, `agent_execution_output_budget_exceeded`
+and `agent_execution_output_budget_unsupported` are nonretryable, including when
+a caller submits `retryable: true`. Diagnostics contain fixed text, numeric
+limits/counts and enforcement mode only. Failed terminal reports preserve the
+local fence. No prompt, response text or raw usage payload is echoed in errors.
+
+Recovery cannot replenish a pool: matching claimed/prepared checkpoints prove
+no worker started, retain identity/attempt/contract and rerun the same blocking
+gate. The existing spawn-intent barrier prevents automatic recovery from any
+potentially consumed state; no consumption ledger is reset or invented. A
+failed run cannot use blind retry to obtain another pool. Independent approval
+of a replacement plan/budget and monetary enforcement remain separate work.
+
+Verification: `npm run test:agent-host-output-budget`, the complete host regression
+suite and local API tests. No paid/provider model calls or production activation.
+
 ## Practical Limits
 
 This is a structural and referential admission gate. It cannot establish the
 semantic quality of prose, the truth of dependency evidence, or that an agent
 will obey every instruction. The host enforces elapsed duration as described
-above; output token budgets remain declared values without a hard meter. The sandbox,
+above; output token guarantees currently use the fail-closed admission described
+above, so supervised Codex execution is unavailable. The sandbox,
 existing lease containment and one-host writer lock remain separate controls.
 No worker receives new release permissions through this packet. Scope enforcement,
 automatic recovery, independent review orchestration and pilot activation remain

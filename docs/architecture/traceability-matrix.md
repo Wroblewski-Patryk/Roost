@@ -33,43 +33,46 @@ for later changes to these same canonical files.
 ## Atomic P0 selection
 
 The retained baseline includes model, duration, observer, fresh-context and
-protocol admission, plus accepted Ready pins (`9552fcd5`). The current bounded
-P0 slice is **RF-CTX-008: owner-facing contract submission and readiness
-diagnostics in the existing task workbench**.
+protocol admission, accepted Ready pins and the owner contract editor (`6d1e3487`).
+The current bounded P0 slice is **RF-HOST-010: fail-closed output-token admission**.
 
-The PL/EN editor authors the contract through the existing submit command and
-shows task status separately from Ready, prior fingerprint, validation match,
-acceptance author/time and the reason for revalidation. Current human
-owner/admin/member roles can accept; viewers and all API keys cannot. Safe
-catalog projections omit source bodies and agent runtime metadata. Selected
-revisions change only through explicit owner action. Internal link corrections
-use existing task PATCH without an empty ClickUp writeback. Operations preserves
-ordinary edits by saving before opening the shared editor. Acceptance does not
-queue work, and the disabled runtime keeps queueing unavailable.
+The accepted contract owns `maxOutputTokens`; queue and worker reporting preserve
+that value. Shared packet validation rejects missing, zero, negative, fractional
+and excessive limits. No model can run through the production CLI because the
+checked Codex interface does not establish an execution-wide hard output cap.
+The host rejects valid contracts before execution-specific preparation/spawn,
+stops further claims and retains writer ownership with a fixed nonretryable
+diagnostic. Config/env/packet input cannot choose an observational guard.
+The new mandatory `output_budget_fail_closed_v1` capability fences older host/API
+pairs and stale request headers. No migration is introduced.
 
-Local verification (2026-09-06): API/database **18/18**, Ready fingerprint
-**21/21**, UI model tests **2/2** and browser scenarios **44/44**. Browser evidence
-covers seven states in PL/EN at 390/834/1440 pixels, selector keyboard trapping,
-safe validation errors, resubmission, dirty-close, reduced-height reflow and
-Operations save-before-prepare. Screenshots were visually inspected, including
-the source picker and lower form; baseline screenshots use `9552fcd5`. Fixtures
-are synthetic and local. `npm run validate` passed: route manifest, backend
-TypeScript and production build. Existing asset/chunk warnings remain. An
-additional strict web check has 21 pre-existing diagnostics in route registry,
-data table, department scope and locale key parity (baseline: 23); it is not a
-passing full-web typecheck. Registry/matrix retain 162 requirement rows.
+Synthetic process tests exercise the existing tree-stop path using post-turn
+usage, including exhaustion before/after spawn, late success, one stop only,
+failure-report loss, no further claims and restart fencing. This observational
+path is test-injected; it is not a provider guarantee or a proven overshoot bound.
+Recovery from pre-spawn state keeps execution/attempt/accepted contract and
+repeats refusal. Potentially consumed stages never automatically restart.
+The API makes all output-budget failures nonretryable and rejects late completion.
 
-No migration, protocol or local-host change is introduced. Production remains
-disabled/observe; no agent activation, live provider test or Soar work. Exact
-deployment and observer status proof belongs in the completed handoff. The
-full 232 host and seven observer tests from the retained baseline were not
-repeated for this UI/API projection slice.
+Local verification (2026-09-06–07): **264/264 host tests**, including **32 output
+budget tests**; API/database **19/19**; observer **7/7** after releasing its fixed
+singleton port. The initial combined run was 269/271, with the two observer
+failures caused by the canonical observer occupying that port. The isolated
+observer rerun passed. `npm run validate` passed: 280 manifest routes/44 route
+files, backend TypeScript and production build; existing asset/chunk warnings
+remain. No UI change, new live provider/model call or Soar modification. The
+earlier UI proof is retained in `6d1e3487`; UI QA and full-web typechecking were
+not repeated. Registry/matrix retain 162 requirement rows.
 
-RF-CTX-008 remains **częściowo działa**: full Draft/Needs-context/Decision workflow
-and automatic interviews remain outside this slice. RF-CTX-006 still lacks
-eager source-write and mid-execution invalidation; no lock spans read-to-spawn.
-One next candidate for separate selection: **RF-HOST-010, hard maxOutputTokens
-enforcement**. Not started.
+**Guarantee boundary:** refusal before Codex spawn, not successful model execution
+within a measured hard cap. RF-HOST-010 remains **częściowo działa**: a proven
+enforcing provider transport, monetary caps and independent replacement-budget
+approval orchestration remain absent. Duration remains a separate existing guard.
+Production stays execution disabled/observe. Exact deployment and fresh observer
+proof belong in the completed handoff, without claiming agent activation readiness.
+
+One next candidate for separate selection: **RF-CTX-006, immediate Ready
+invalidation when an accepted source is edited**. Not started.
 
 ## Matrix
 
@@ -129,7 +132,7 @@ enforcement**. Not started.
 | [RF-HOST-007](../product/interview-foundation-v2.md#rf-host-007) | P0 | częściowo działa | [OBSERVER](#e-observer) | Console-free GUI launcher and synthetic action-start retry verified; real relogin/reboot and forced-crash restart unproven. |
 | [RF-HOST-008](../product/interview-foundation-v2.md#rf-host-008) | P1 | brak | [HOST](#e-host) | No signed update protocol. |
 | [RF-HOST-009](../product/interview-foundation-v2.md#rf-host-009) | P0 | częściowo działa | [SCHED](#e-sched) | Existing claim is FIFO, not readiness/priority scheduler. |
-| [RF-HOST-010](../product/interview-foundation-v2.md#rf-host-010) | P0 | częściowo działa | [BUDGET](#e-budget) | Attempts validated; hard elapsed-duration stop tested, including recovery and retained writer fencing. Token/cost enforcement and independent new-budget approval orchestration remain missing. |
+| [RF-HOST-010](../product/interview-foundation-v2.md#rf-host-010) | P0 | częściowo działa | [BUDGET](#e-budget) | Attempts/duration validated and contained; output tokens fail closed before Codex spawn because an execution-wide enforcing interface is unproven. Synthetic exhaustion/recovery fencing tested. Usable provider hard cap, cost enforcement and independent new-budget approval remain missing. |
 | [RF-HOST-011](../product/interview-foundation-v2.md#rf-host-011) | P1 | częściowo działa | [BUDGET](#e-budget) | Observer/integration retries exist; general execution loop breaker absent. |
 | [RF-HOST-012](../product/interview-foundation-v2.md#rf-host-012) | P1 | częściowo działa | [BUDGET](#e-budget) | Usage stored per execution; attribution and quality-constrained optimization absent. |
 | [RF-HOST-013](../product/interview-foundation-v2.md#rf-host-013) | P0 | brak | [RESOURCE](#e-resource) | No resource-aware host/service-operation broker. |
@@ -376,9 +379,15 @@ performed, and no VPS release is required for this local launcher change.
 [src/modules/agent-runtime/agent-runtime.routes.ts](../../src/modules/agent-runtime/agent-runtime.routes.ts).
 
 <a id="e-budget"></a>
-**BUDGET** — Validated attempts and hard duration stop; token/cost metering and independent replacement-budget approval are incomplete.
+**BUDGET** — Validated attempts, hard duration stop and fail-closed output-token admission; usable provider output cap, cost enforcement and independent replacement-budget approval are incomplete.
 
 [duration contract](execution-packet-contract.md#hard-duration-limit), [host](../../scripts/roost-codex-agent-host.mjs), [packet gate](../../scripts/lib/agent-host-execution-packet.mjs), [duration timer](../../scripts/lib/agent-host-execution-duration.mjs), [timer tests](../../scripts/agent-host-execution-duration.test.mjs), [Windows process tests](../../scripts/agent-host-duration-process.test.mjs), [recovery tests](../../scripts/agent-host-recovery.test.mjs).
+
+[output guarantee](execution-packet-contract.md#hard-output-token-admission-rf-host-010),
+[output guard](../../scripts/lib/agent-host-output-budget.mjs),
+[output unit tests](../../scripts/agent-host-output-budget.test.mjs),
+[synthetic process tests](../../scripts/agent-host-output-budget-process.test.mjs),
+[API immutability/retry tests](../../src/tests/api.test.ts).
 
 <a id="e-model"></a>
 **MODEL** — RF-HOST-016 now admits explicit supported model/effort, dispatches exact CLI arguments and records requested pair. Current synthetic verification passed.

@@ -2,6 +2,11 @@
 
 ## Current Supervised Runtime
 
+Supervised Codex execution is currently blocked by the
+[hard output-token admission gate](execution-packet-contract.md#hard-output-token-admission-rf-host-010):
+the installed CLI has no proven execution-wide output cap. Even a valid accepted
+budget cannot authorize spawn. This is independent of the production disabled flag.
+
 The Windows login host also supports `executionMode: "observe"`. This mode
 branches before recovery, writer locking and repository validation into a
 separate registration/heartbeat loop. It cannot claim/recover executions or
@@ -175,8 +180,9 @@ independently stops work five seconds before `maxDurationSeconds` elapses from
 the original server `startedAt`. Healthy heartbeats and pre-spawn recovery do
 not reset it. Expired or invalid duration context prevents launch/completion,
 stops new claims, reports a non-retryable failure when possible and retains the
-writer lock for reconciliation. Token/cost enforcement and independent approval
-of a replacement budget remain separate gates. Observe mode does not run this timer.
+writer lock for reconciliation. Output-token admission now fails closed until an
+enforcing runner is proven. Cost enforcement and independent approval of a
+replacement budget remain separate gates. Observe mode does not run this timer.
 
 The supported Windows host uses exclusive creation of
 `C:\ProgramData\Roost\agent-host-writer.lock`, independent of application slug,
@@ -208,9 +214,10 @@ Existing `metadata.protocolVersion` advertises numeric version `1`,
 existing `capabilities` advertises implemented controls. No new host table,
 version registry, endpoint or migration is used.
 
-Both capability lists now include `ready_context_pin_v1` while protocol version
-stays `1`. A host without Ready support cannot claim from the new API; a new host
-cannot run against an API missing that capability. The separate Ready task
+Both capability lists include `ready_context_pin_v1` and
+`output_budget_fail_closed_v1` while protocol version stays `1`. A host without
+these controls cannot claim from the new API; a new host cannot run against an
+API missing either capability. The separate Ready task
 contract adds two task endpoints and one nullable column, documented above.
 
 Register/heartbeat, host listings and readiness expose `runtime.protocol` (or

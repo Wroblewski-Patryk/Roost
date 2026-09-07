@@ -362,6 +362,8 @@ for the remaining concurrent-edit and Ready/mid-execution boundaries.
 | Run returns to queued | Reconcile the old process, interrupted files and resources before restarting; expiry alone does not prove safe ownership. |
 | `agent_execution_lease_expired` / `agent_execution_lease_rejected` | The host stopped after losing authority. Check API availability/access and reconcile the previous process before restarting. |
 | `agent_process_tree_stop_failed` | Do not restart or claim more work until the previous process tree is confirmed stopped. |
+| `agent_execution_output_budget_unsupported` | No supervised execution can start with the current CLI. An execution-wide enforcing runner must be proven and approved; do not add a guessed flag or disable the gate. |
+| `agent_execution_output_budget_invalid` / `agent_execution_output_budget_exceeded` | Retain the writer fence, reconcile the run and obtain independent review of any replacement budget. No blind retry. |
 | Cancellation is delayed | The host checks cancellation on heartbeats, normally within 20 seconds. |
 
 ## Key Rotation And Shutdown
@@ -374,6 +376,14 @@ for the remaining concurrent-edit and Ready/mid-execution boundaries.
   audit chain remains visible.
 
 ## OpenAI Runtime References
+
+Output-budget rollout adds no migration. Keep execution disabled, deploy API and
+host with `output_budget_fail_closed_v1`, then normally Stop/Start the observer.
+Verify exact image/commit, health and observer online/observe/runtime_disabled.
+The production CLI remains blocked even if the execution environment flag is
+later enabled. Its budget factory cannot be selected through host JSON or env.
+Do not roll back to a mixed or older executing pair; keep execution disabled
+through rollback. See the [guarantee and reference evidence](../architecture/execution-packet-contract.md#hard-output-token-admission-rf-host-010).
 
 Ready rollout: apply additive migration `20260906141000_task_ready_context_pin`
 with the API release, keep `ROOST_CODEX_EXECUTION_ENABLED=false`, and restart the
