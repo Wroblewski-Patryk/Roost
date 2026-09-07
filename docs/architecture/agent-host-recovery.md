@@ -4,6 +4,30 @@ Current bounded recovery contract, accepted in
 `roost-interview-foundation-safe-resume-2026-09-05-v1`. Production activation
 remains separately controlled; this implementation does not enable the Soar pilot.
 
+## Context-invalidated attempts
+
+`contextInvalidatedAt` takes precedence over lease age and every checkpoint stage,
+including `claimed`/`prepared`. Classification and writer reclamation both reject
+it. Restart never rotates its lease, resumes, spawns, retries or claims new work.
+The server preserves the dedicated context-change diagnosis when the host reports
+blocked recovery. See the [active stop contract](execution-packet-contract.md#active-work-after-accepted-context-changes-rf-ctx-006).
+
+After confirmed process-tree termination, the host's idempotent `context-stopped`
+report retains the API lease and returns the last confirmed checkpoint. Only its
+successful acknowledgement allows synchronization of a rejected local checkpoint
+intent. A lost acknowledgement leaves local ownership intact; PID absence alone
+cannot authorize acknowledgement or recovery on restart.
+
+The trusted operator must verify the old process tree is stopped and inspect
+local changes before reconciling the retained writer. If the stop report never
+reached Roost, its scoped endpoint accepts the retained token even after expiry
+solely to confirm the stop; it does not renew execution authority. Do not expose
+the token in logs or repository artifacts. Once confirmed, explicit owner cancel
+closes the old attempt and releases only its API lease. Reconcile the local
+writer through the existing operator procedure before new work, then explicitly
+accept new Ready context and queue a new execution. Never clear the context fence
+or treat an effect-bearing checkpoint as safe to replay.
+
 ## Supported Stages
 
 | Durable checkpoint | Startup classification | Action |

@@ -16,6 +16,7 @@ import { createCodexOutputBudget } from "./lib/agent-host-output-budget.mjs";
 import { fetchExecutionContext, executionContextRevision, assertFreshExecutionContext } from "./lib/agent-host-execution-context.mjs";
 import { protocol, protocolHeaders, apiCompatibility, protocolAdmissionError } from "./lib/agent-host-protocol.mjs";
 import readyContext from "./lib/agent-host-ready-context.cjs";
+import { contextStopError } from "./lib/agent-host-context-stop.mjs";
 
 const baseUrl = String(process.env.ROOST_BASE_URL || process.env.COMPANYCORE_BASE_URL || "").replace(/\/+$/, "");
 const apiKey = process.env.ROOST_AGENT_API_KEY || process.env.COMPANYCORE_API_KEY;
@@ -66,6 +67,7 @@ async function api(route, options = {}) {
   if (response.status === 204) return null;
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
+    if (body.error === "agent_execution_context_invalidated") throw contextStopError();
     if (body.error === "agent_host_protocol_blocked") throw protocolAdmissionError("host_admission_rejected");
     if (["task_ready_pin_required", "task_ready_revalidation_required", "task_ready_context_conflict"].includes(body.error)) throw readyContext.readyAdmissionError();
     const error = new Error(String(body.error || `roost_http_${response.status}`));
@@ -173,6 +175,12 @@ function summarizeItem(item) {
   return null;
 }
 
+async function confirmContextStop(execution, writerLock) {
+  const ack = await api(`/v1/agent-runtime/executions/${execution.id}/actions/context-stopped`, { method: "POST", body: JSON.stringify({ leaseToken: execution.leaseToken }) });
+  if (ack?.stopped !== true || !Number.isInteger(ack.checkpointVersion) || !ack.checkpoint) throw new Error("context_stop_ack_invalid");
+  await writerLock?.checkpoint({ ...execution, checkpoint: ack.checkpoint, checkpointVersion: ack.checkpointVersion });
+}
+
 async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, createOutputBudget = createCodexOutputBudget } = {}) {
   const repository = repositoryForExecution(config, claimed);
   const repositoryPath = path.resolve(String(repository.path));
@@ -205,12 +213,14 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
   });
 
   async function checkpoint(stage, packetRevision, digest) {
+    await lease.refresh();
+    lease.assertValid();
     const next = { schemaVersion: "roost-recovery-v1", stage, sessionId: writerLock.sessionId, packetRevision, workspaceDigest: digest, contextRevision };
     const expectedVersion = claimed.checkpointVersion;
     // Persist locally first. Any crash between the two stores leaves a mismatch
     // and must stop recovery. The spawn barrier is durable before a child exists.
     await writerLock.checkpoint({ ...claimed, checkpoint: next, checkpointVersion: expectedVersion + 1 }).catch(() => { throw recoveryError("local_state_invalid"); });
-    const saved = await api(`/v1/agent-runtime/executions/${claimed.id}/checkpoint`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, expectedVersion, checkpoint: next }) }).catch((error) => { lease.reject(error); if (error.readyAdmission) throw error; throw recoveryError("checkpoint_mismatch"); });
+    const saved = await api(`/v1/agent-runtime/executions/${claimed.id}/checkpoint`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, expectedVersion, checkpoint: next }) }).catch((error) => { lease.reject(error); if (error.readyAdmission || error.contextStop) throw error; throw recoveryError("checkpoint_mismatch"); });
     if (saved?.checkpointVersion !== expectedVersion + 1) throw recoveryError("checkpoint_mismatch");
     claimed.checkpoint = next;
     claimed.checkpointVersion = saved.checkpointVersion;
@@ -277,9 +287,16 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     while (true) {
       const { value: line, done } = await duration.wait(iterator.next());
       if (done) break;
+      lease.assertValid();
       if (!line.trim()) continue;
       let event;
       try { event = JSON.parse(line); } catch { continue; }
+      // Observable runner boundaries plus the periodic heartbeat cover quiet
+      // work. They do not establish atomicity inside a Codex tool/OS operation.
+      if (["item.started", "item.completed", "turn.completed"].includes(event.type)) {
+        await duration.wait(lease.refresh());
+        lease.assertValid();
+      }
       if (event.type === "thread.started") codexThreadId = event.thread_id || null;
       if (event.type === "turn.completed") { outputBudget.observeUsage(event.usage); usage = event.usage || {}; }
       if (event.type === "item.completed" && event.item?.type === "agent_message") finalResponse = String(event.item.text || "");
@@ -315,6 +332,19 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: summary.slice(0, 10000), finalResponse, codexThreadId, changedFiles, verification, usage, metadata: { repositoryPathLabel: path.basename(repositoryPath), preExistingDirtyFiles: beforeStatus.map(statusPath) } })
     });
   } catch (error) {
+    if (error.contextStop || lease.failure?.contextStop) {
+      stopWorker();
+      lease.stop();
+      await stopPromise;
+      if (!stopError) {
+        try {
+          // Only after confirmed stop and server acknowledgement may an
+          // unaccepted local checkpoint intent be replaced by the durable one.
+          await confirmContextStop(claimed, writerLock);
+        } catch { process.stderr.write("Context stop acknowledgement could not be confirmed; ownership retained for reconciliation.\n"); }
+      }
+      throw lease.failure?.contextStop ? lease.failure : error;
+    }
     if (error.outputLimit) stopWorker();
     if (error.message === "execution_packet_invalid" && error.details?.issues?.some(issue => ["contract", "contract.budgets", "contract.budgets.maxOutputTokens"].includes(issue.field))) stopWorker();
     if (error.protocolAdmission) { protocolHalted = true; lease.reject(error); stopWorker(); if (lease.failure) throw lease.failure; }
@@ -339,15 +369,24 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
   }
 }
 
-async function reportFailure(execution, error) {
+async function reportFailure(execution, error, writerLock) {
   if (!execution?.leaseToken || error.leaseLost) return;
   return api(`/v1/agent-runtime/executions/${execution.id}/actions/fail`, {
     method: "POST",
     body: JSON.stringify({ leaseToken: execution.leaseToken, code: String(error.message || "agent_host_failed").split(":")[0], message: String(error.publicMessage || error.message || "Agent Host failed."), retryable: error.retryable ?? true, details: error.details || {} })
-  }).then(() => true).catch(() => { retainWriterLock = true; stopping = true; process.stderr.write("Could not confirm the failure report; recovery required.\n"); return false; });
+  }).then(() => true).catch(async failure => {
+    retainWriterLock = true; stopping = true;
+    // execute() has already confirmed tree termination in its finally block.
+    // A source change racing an ordinary failure still requires the stop ACK.
+    if (failure.contextStop) {
+      await confirmContextStop(execution, writerLock).catch(() => { process.stderr.write("Context stop acknowledgement could not be confirmed; ownership retained for reconciliation.\n"); });
+    } else process.stderr.write("Could not confirm the failure report; recovery required.\n");
+    return false;
+  });
 }
 
 function recoveryReason(error) {
+  if (error.contextStop) return "context_changed";
   if (error.recoveryReason) return error.recoveryReason;
   if (error.message === "agent_process_tree_stop_failed") return "process_may_be_running";
   if (error.leaseLost || error.message === "agent_recovery_lease_expired") return "lease_expired";
@@ -420,7 +459,7 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
         if (error.recoveryReason || error.leaseLost) {
           stopping = true; retainWriterLock = true;
           await reportRecovery(execution, recoveryReason(error));
-        } else await reportFailure(execution, error);
+        } else await reportFailure(execution, error, writerLock);
         if (error.message === "agent_host_recovery_required") stopping = true;
         if (error.status === 401 || error.status === 403 || error.status === 422) break;
       }
@@ -430,7 +469,7 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
     if (error.protocolAdmission) { protocolHalted = true; stopping = true; retainWriterLock = true; }
     if (pending[0]) {
       retainWriterLock = true;
-      if ((error.outputLimit || error.durationLimit || error.contextAdmission || error.protocolAdmission || error.readyAdmission) && resumedExecution) await reportFailure(resumedExecution, error);
+      if ((error.outputLimit || error.durationLimit || error.contextAdmission || error.protocolAdmission || error.readyAdmission) && resumedExecution) await reportFailure(resumedExecution, error, writerLock);
       else await reportRecovery(pending[0], recoveryReason(error));
     }
     throw error;

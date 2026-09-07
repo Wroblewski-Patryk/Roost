@@ -9,6 +9,7 @@ export function recoveryError(reason) {
 
 export function classifyRecovery(execution, enabled) {
   if (!enabled) throw recoveryError("runtime_disabled");
+  if (execution?.contextInvalidatedAt) throw recoveryError("context_changed");
   if (execution?.cancelRequestedAt) throw recoveryError("recovery_conflict");
   if (!Number.isFinite(Date.parse(execution?.leaseExpiresAt)) || Date.parse(execution.leaseExpiresAt) <= Date.now()) throw recoveryError("lease_expired");
   const c = execution?.checkpoint;

@@ -37,6 +37,8 @@
     "test:agent-host-output-budget": "node --test scripts/agent-host-output-budget.test.mjs scripts/agent-host-output-budget-process.test.mjs",
     "test:agent-host-protocol": "node --test scripts/agent-host-protocol.test.mjs",
     "test:agent-host-context": "node --test scripts/agent-host-execution-context.test.mjs scripts/agent-host-context-process.test.mjs",
+    "test:agent-host-context-stop": "node --test scripts/agent-host-context-stop.test.mjs scripts/agent-host-active-context-process.test.mjs",
+    "test:agent-context-stop-ui": "npm run build:web && node scripts/agent-context-stop-ui.test.mjs",
     "test:agent-host-recovery": "node --test scripts/agent-host-recovery.test.mjs",
     "test:agent-host-observer": "node --test scripts/agent-host-observer.test.mjs",
     "test:task-readiness-ui": "npm run build:web && tsx --test web/src/features/departments/task-readiness-model.test.ts && node scripts/task-readiness-ui.test.mjs",

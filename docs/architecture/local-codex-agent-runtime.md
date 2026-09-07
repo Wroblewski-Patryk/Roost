@@ -133,6 +133,11 @@ visible.
    owner-visible field diagnostics; they do not start Codex.
 6. Heartbeats renew the lease. Structured Codex progress becomes execution
    events visible in Roost. An owner cancellation stops the local process.
+   Accepted-source invalidation also durably fences active attempts. The host
+   observes it at checkpoints, runner boundaries or heartbeat, stops the process
+   tree once and retains ownership for owner reconciliation. Late progress or
+   completion cannot renew authority; see the
+   [active stop contract](execution-packet-contract.md#active-work-after-accepted-context-changes-rf-ctx-006).
 7. The host reports the final response, changed paths, verification commands,
    usage, or a structured failure. Roost stores completion evidence linked to
    the task. The task remains open for owner review.
@@ -214,14 +219,15 @@ The single wire declaration is
 by API and host. `runnerVersion` remains a diagnostic build label, not admission.
 Existing `metadata.protocolVersion` advertises numeric version `1`,
 `metadata.executionMode` explicitly declares `supervised` or `observe`, and
-existing `capabilities` advertises implemented controls. No new host table,
-version registry, endpoint or migration is used.
+existing `capabilities` advertises implemented controls. Protocol metadata uses
+the existing host table without a separate version registry.
 
-Both capability lists include `ready_context_pin_v1` and
-`output_budget_fail_closed_v1` while protocol version stays `1`. A host without
+Both capability lists include `ready_context_pin_v1`,
+`output_budget_fail_closed_v1` and `active_context_stop_v1` while protocol version
+stays `1`. A host without
 these controls cannot claim from the new API; a new host cannot run against an
-API missing either capability. The separate Ready task
-contract adds two task endpoints and one nullable column, documented above.
+API missing any capability. The separate Ready and active-stop contracts add
+their task/execution fields, migrations and scoped endpoints, documented above.
 
 Register/heartbeat, host listings and readiness expose `runtime.protocol` (or
 root `protocol` for readiness): `version`, `apiCapabilities` and

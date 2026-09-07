@@ -1311,7 +1311,7 @@ test("Ready pins validation and rejects stale queue, preparation and recovery wi
     const checkpoint = { schemaVersion: "roost-recovery-v1", stage: "prepared", sessionId, packetRevision: "a".repeat(64), workspaceDigest: "b".repeat(64), contextRevision: "c".repeat(64) };
     await prisma.companyRecord.update({ where: { id: f.sources[0]!.id }, data: { description: "Changed after claim before preparation" } });
     const prepare = await post(`/v1/agent-runtime/executions/${claimed.id}/checkpoint`, { leaseToken: claimed.leaseToken, expectedVersion: 1, checkpoint }, workerAuth);
-    assert.equal(prepare.status, 409); assert.equal((prepare.body as { error: string }).error, "task_ready_revalidation_required");
+    assert.equal(prepare.status, 409); assert.equal((prepare.body as { error: string }).error, "agent_execution_context_invalidated");
     assert.equal((await post(`/v1/agent-runtime/executions/${claimed.id}/actions/recover`, { hostSlug, expectedVersion: 1, sessionId }, workerAuth)).status, 409);
     const unchanged = await prisma.agentExecution.findUniqueOrThrow({ where: { id: claimed.id } });
     assert.equal(unchanged.checkpointVersion, 1); assert.equal(unchanged.leaseToken, claimed.leaseToken); assert.equal(unchanged.attempt, 1);
@@ -1476,6 +1476,131 @@ test("Ready source writes atomically invalidate accepted read scopes without a r
     }), /ready_source_trigger_missing/);
     assert.equal((await pin()).pinId, previous.pinId);
   });
+});
+
+test("active context stop fences late reports, checkpoints, recovery and completion races", async (t) => {
+  const owner = await registerOwner("active-context@example.com", "Active context fixture");
+  const workspaceId = owner.workspace.id, auth = { Authorization: `Bearer ${owner.token}` };
+  const key = await request("/v1/api-keys", { method: "POST", headers: auth, body: JSON.stringify({ name: "Context stop fixture", profileId: "mcp_codex_worker" }) });
+  const worker = { "X-API-Key": (key.body as any).data.key, ...hostProtocolHeaders };
+  const post = (url: string, body: any, headers: Record<string, string> = worker) => request(url, { method: "POST", headers, body: JSON.stringify(body) });
+  let serial = 0;
+  async function fixture(stage = "running") {
+    const slug = `active-context-${++serial}`;
+    const application = await prisma.application.create({ data: { workspaceId, name: slug, slug } });
+    const project = await prisma.project.create({ data: { workspaceId, name: slug } });
+    await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id } });
+    const task = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: slug } });
+    const f = await prepareReadyFixture(workspaceId, task.id, application.id, auth);
+    await post("/v1/agent-runtime/hosts/register", { name: slug, slug, platform: "win32", applicationSlugs: [slug], metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities });
+    assert.equal((await post("/v1/agent-runtime/executions", { taskId: task.id }, auth)).status, 201);
+    const claim = await post("/v1/agent-runtime/executions/claim", { hostSlug: slug });
+    assert.equal(claim.status, 200, JSON.stringify(claim.body));
+    let execution = (claim.body as any).data;
+    const route = `/v1/agent-runtime/executions/${execution.id}`;
+    for (const next of ["prepared", "spawn_intent", "running"]) {
+      const checkpoint = { ...execution.checkpoint, stage: next, packetRevision: "a".repeat(64), workspaceDigest: "b".repeat(64), contextRevision: "c".repeat(64) };
+      const saved = await post(`${route}/checkpoint`, { leaseToken: execution.leaseToken, expectedVersion: execution.checkpointVersion, checkpoint });
+      assert.equal(saved.status, 200, JSON.stringify(saved.body));
+      execution = { ...execution, ...(saved.body as any).data };
+      if (stage === next) break;
+    }
+    return { ...f, task, application, route, execution, post: (suffix: string, extra = {}) => post(route + suffix, { leaseToken: execution.leaseToken, ...extra }),
+      read: () => prisma.agentExecution.findUniqueOrThrow({ where: { id: execution.id } }),
+      change: () => prisma.goal.update({ where: { id: f.goal.id }, data: { description: "Accepted goal changed" } }) };
+  }
+  process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
+  try {
+    await t.test("unrelated source keeps active work valid through completion", async () => {
+      const f = await fixture();
+      assert.equal((await f.post("/actions/context-stopped")).status, 409);
+      await prisma.companyRecord.create({ data: { workspaceId, recordType: "requirement", key: "unrelated-active-context", title: "Outside accepted scope" } });
+      assert.equal((await f.read()).contextInvalidatedAt, null);
+      assert.equal((await f.post("/heartbeat")).status, 200);
+      assert.equal((await f.post("/actions/complete", { summary: "Synthetic valid completion" })).status, 200);
+      assert.equal((await f.read()).status, "completed");
+    });
+    for (const stage of ["prepared", "running"]) await t.test(`change after ${stage} permanently fences the attempt and keeps its checkpoint/lease`, async () => {
+      const f = await fixture(stage), before = await f.read();
+      await f.change(); await f.change();
+      const invalid = await f.read();
+      assert.ok(invalid.contextInvalidatedAt); assert.equal(invalid.contextStoppedAt, null);
+      assert.deepEqual(invalid.checkpoint, before.checkpoint); assert.equal(invalid.checkpointVersion, before.checkpointVersion);
+      assert.equal(invalid.leaseToken, before.leaseToken); assert.deepEqual(invalid.leaseExpiresAt, before.leaseExpiresAt);
+      assert.equal((invalid.contextInvalidation as any).changedSources[0].id, f.goal.id);
+      assert.equal(await prisma.agentExecutionEvent.count({ where: { executionId: invalid.id, type: "context_stop_requested" } }), 1);
+      for (const [suffix, data] of [["/heartbeat", {}], ["/actions/complete", { summary: "Late success" }], ["/checkpoint", { expectedVersion: before.checkpointVersion, checkpoint: { ...(before.checkpoint as any), stage: "effect_possible" } }], ["/actions/fail", { code: "late_failure", message: "Late failure", retryable: true }]] as const) {
+        const response = await f.post(suffix, data);
+        assert.equal(response.status, 409); assert.equal((response.body as any).error, "agent_execution_context_invalidated");
+      }
+      assert.equal((await post(`${f.route}/actions/recover`, { hostSlug: f.application.slug, expectedVersion: before.checkpointVersion, sessionId: "00000000-0000-4000-8000-000000000987" })).status, 409);
+      const first = await f.post("/actions/context-stopped");
+      await prisma.workforceEntity.update({ where: { id: f.agent.id }, data: { name: "Another accepted source changed after stop" } });
+      const second = await f.post("/actions/context-stopped");
+      assert.equal(first.status, 200); assert.deepEqual(second.body, first.body);
+      const stopped = await f.read();
+      assert.equal(stopped.status, "waiting_for_approval"); assert.ok(stopped.contextStoppedAt);
+      assert.equal(stopped.leaseToken, before.leaseToken); assert.deepEqual(stopped.leaseExpiresAt, before.leaseExpiresAt);
+      assert.equal((stopped.contextInvalidation as any).changedSources.length, 2);
+      assert.equal(await prisma.agentExecutionEvent.count({ where: { executionId: stopped.id, type: "context_sources_changed" } }), 1);
+      assert.deepEqual(stopped.checkpoint, before.checkpoint); assert.equal(stopped.checkpointVersion, before.checkpointVersion); assert.equal(stopped.attempt, before.attempt);
+      assert.equal(await prisma.agentExecutionEvent.count({ where: { executionId: stopped.id, type: "context_stopped" } }), 1);
+      assert.equal(await prisma.agentExecutionEvent.count({ where: { executionId: stopped.id, type: "completed" } }), 0);
+      assert.equal((await f.post("/heartbeat")).status, 409);
+      await assert.rejects(prisma.agentExecution.update({ where: { id: stopped.id }, data: { status: "completed", leaseToken: null, completedAt: new Date() } }), /agent_execution_context_invalidated/);
+      await assert.rejects(prisma.agentExecution.update({ where: { id: stopped.id }, data: { lastHeartbeatAt: new Date(), leaseExpiresAt: new Date(Date.now() + 90_000) } }), /agent_execution_context_invalidated/);
+      await assert.rejects(prisma.agentExecution.update({ where: { id: stopped.id }, data: { checkpointVersion: { increment: 1 } } }), /agent_execution_context_invalidated/);
+      assert.equal((await post(`${f.route}/actions/cancel`, {}, auth)).status, 200);
+      assert.equal((await f.read()).status, "cancelled");
+      assert.equal((await post(`${f.route}/actions/retry`, {}, auth)).status, 409);
+      assert.equal((await post(`/v1/agent-runtime/tasks/${f.task.id}/actions/submit-for-execution`, f.input, auth)).status, 200);
+      const fresh = await post("/v1/agent-runtime/executions", { taskId: f.task.id }, auth);
+      assert.equal(fresh.status, 201); assert.notEqual((fresh.body as any).data.id, stopped.id);
+      assert.notEqual((fresh.body as any).data.metadata.readyContextPin.pinId, (stopped.metadata as any).readyContextPin.pinId);
+      assert.equal((await f.post("/actions/complete", { summary: "Old token after new acceptance" })).status, 409);
+    });
+    await t.test("stop acknowledgment after lease expiry is allowed but cannot renew authority", async () => {
+      const f = await fixture();
+      await prisma.agentExecution.update({ where: { id: f.execution.id }, data: { leaseExpiresAt: new Date(0) } });
+      await f.change();
+      assert.equal((await f.post("/actions/context-stopped")).status, 200);
+      assert.equal((await f.read()).leaseExpiresAt?.getTime(), 0);
+      assert.equal((await f.post("/heartbeat")).status, 409);
+    });
+    for (const suffix of ["/checkpoint", "/actions/complete"]) await t.test(`source commit wins the race against ${suffix}`, async () => {
+      const f = await fixture(), before = await f.read();
+      let acquired!: () => void, release!: () => void;
+      const acquiredSignal = new Promise<void>(resolve => { acquired = resolve; });
+      const releaseSignal = new Promise<void>(resolve => { release = resolve; });
+      const writing = prisma.$transaction(async tx => {
+        await tx.goal.update({ where: { id: f.goal.id }, data: { description: "Concurrent source change" } });
+        acquired(); await releaseSignal;
+      });
+      await acquiredSignal;
+      const reporting = f.post(suffix, suffix === "/checkpoint" ? { expectedVersion: before.checkpointVersion, checkpoint: { ...(before.checkpoint as any), stage: "effect_possible" } } : { summary: "Racing success" });
+      try {
+        let waiting = false;
+        for (let attempt = 0; attempt < 100; attempt++) {
+          const rows = await prisma.$queryRaw<Array<{ waiting: boolean }>>`SELECT EXISTS (SELECT 1 FROM pg_stat_activity WHERE wait_event_type = 'Lock' AND query LIKE '%ready_source_fence%') AS waiting`;
+          if (rows[0]?.waiting) { waiting = true; break; }
+          await new Promise(resolve => setTimeout(resolve, 10));
+        }
+        assert.equal(waiting, true);
+      } finally { release(); }
+      await writing;
+      assert.equal((await reporting).status, 409);
+      const after = await f.read();
+      assert.ok(after.contextInvalidatedAt); assert.deepEqual(after.checkpoint, before.checkpoint); assert.equal(after.checkpointVersion, before.checkpointVersion);
+      assert.equal(after.leaseToken, before.leaseToken); assert.equal(after.completedAt, null);
+      assert.equal(await prisma.agentExecutionEvent.count({ where: { executionId: after.id, type: "completed" } }), 0);
+    });
+    await t.test("a committed completion is not retroactively turned into an active stop", async () => {
+      const f = await fixture();
+      assert.equal((await f.post("/actions/complete", { summary: "Completed before edit" })).status, 200);
+      await f.change();
+      const done = await f.read(); assert.equal(done.status, "completed"); assert.equal(done.contextInvalidatedAt, null);
+    });
+  } finally { delete process.env.ROOST_CODEX_EXECUTION_ENABLED; }
 });
 
 test("Ready workbench projects safe catalogs and requires a current human role for acceptance", async () => {

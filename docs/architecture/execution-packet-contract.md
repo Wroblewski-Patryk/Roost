@@ -71,7 +71,7 @@ changes remain material. The existing bounded context selection is reused;
 this is not a new complete-context compiler. Explicit contract sources are
 always resolved and validated independently of that selection.
 
-Acceptance, queue, claim, `prepared`/`spawn_intent` checkpoint and pre-spawn
+Acceptance, queue, claim, every checkpoint and pre-spawn
 recovery gates use a serializable transaction, update the source fence, then
 lock the Task row. Queue and
 retry bind one accepted pin, reject active duplicates, and never refresh a pin
@@ -140,10 +140,56 @@ proof or API rejection yields `agent_ready_context_revalidation_required`,
 after claim. API rejection before claim does not reserve an execution.
 These gates and source writes are serialized at database admission: a source
 write committed before claim prevents claiming the old pin; a later write
-invalidates it for the next checkpoint/context/recovery gate. They do not stop
-already spawned work on later source edits; that remains a separate RF-CTX-006
-slice. No transaction spans database commit to local spawn. The production
+invalidates it and requests the active-work stop described below. No transaction
+spans database commit to local spawn. The production
 output-budget guard still refuses model spawn, and execution remains disabled.
+
+### Active work after accepted context changes (RF-CTX-006)
+
+Migration `20260907220000_active_context_stop` adds `contextInvalidatedAt`,
+`contextStoppedAt` and `contextInvalidation` to AgentExecution. Ready invalidation
+atomically fences claimed/running/waiting attempts, preserving the last confirmed
+checkpoint, attempt and lease. The signal records the accepted pin and changed
+source references. The first change emits `context_stop_requested`; subsequent
+distinct sources update diagnostics without another stop request. Revert, restart
+or new Ready acceptance never clears an old attempt's fence. Deployment backfills
+already invalid pins.
+
+Execution mutations share the source fence. Heartbeat, every checkpoint,
+completion and recovery reject fenced attempts with
+`agent_execution_context_invalidated`. Completion and evidence commit in one
+guarded transaction: source-first rejects completion; completion-first remains
+historical completed work. A database guard also prevents older API code from
+advancing checkpoints, renewing/rotating leases or completing/failing fenced
+attempts. Both protocol lists require `active_context_stop_v1` for admission.
+
+The host checks authority before local checkpoint intents, at observed runner
+item/turn boundaries and through its periodic 20-second heartbeat. It invokes
+the idempotent process-tree stop once, stops renewal and claims, and retains the
+writer lock. Only confirmed tree termination permits the scoped report
+`POST /executions/:id/actions/context-stopped` with the retained lease token.
+This report is idempotent, accepts an expired token without renewal, records
+`context_stopped`, and returns the last server-confirmed checkpoint. Only after
+successful acknowledgement does the host synchronize its local checkpoint.
+Failed tree termination or lost acknowledgement never authorizes checkpoint
+replacement or automatic restart. This is a host report, not machine attestation.
+
+The PL/EN owner view distinguishes requested and confirmed stops, lists changed
+sources and asks for local-change reconciliation. After confirmation the owner
+may explicitly close the old attempt, releasing its API lease only. Review new
+context opens the existing Ready editor. Explicit acceptance and a new queue
+action create new authority; the old attempt cannot retry or rebind. Local writer
+reconciliation remains a trusted operator action; see
+[recovery](agent-host-recovery.md#context-invalidated-attempts).
+
+Stopping occurs at the next host-observable checkpoint/event/heartbeat, not
+atomically inside an arbitrary runner tool or OS operation. Work can occur
+between source commit and observation. Transport/lease safeguards bound normal
+operation but cannot guarantee termination during an OS freeze. A retained
+checkpoint does not prove rollback or replay safety after effects. PostgreSQL
+tests cover late writes and source/completion races; fake-runner tests cover
+actual child/descendant termination, duplicate signals, lost acknowledgements
+and refused restart. No live provider/model test or activation is claimed.
 
 The host reads
 `GET /v1/company-intelligence/tasks/:taskId/agent-context?executionId=:executionId`.
@@ -281,8 +327,9 @@ storage; the separate Ready pin uses the additive Task migration above.
 
 These are two ordinary authoritative API reads, not an atomic database snapshot
 or a lock over concurrent source edits. A change after the last read may escape
-this pre-spawn check. Ready now adds the earlier acceptance gate above;
-mid-execution invalidation remains outside this bounded slice.
+this pre-spawn check. Ready adds the acceptance gate; active-work stopping above
+handles subsequent observed invalidation without an atomic database-to-process
+transition.
 
 An invalid packet reports `execution_packet_invalid` through the existing fail
 action with `retryable: false` and:

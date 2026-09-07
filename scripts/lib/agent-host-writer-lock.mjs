@@ -20,7 +20,7 @@ async function reclaimBeforeSpawn(directory, candidate) {
     const lockPath = path.join(directory, writerLockFilename);
     const current = JSON.parse(await readFile(lockPath, "utf8"));
     const expected = localCheckpoint(candidate);
-    if (!candidate?.leaseExpiresAt || Date.parse(candidate.leaseExpiresAt) <= Date.now() || !["claimed", "prepared"].includes(expected.stage)
+    if (candidate?.contextInvalidatedAt || !candidate?.leaseExpiresAt || Date.parse(candidate.leaseExpiresAt) <= Date.now() || !["claimed", "prepared"].includes(expected.stage)
       || current.ownerNonce !== expected.sessionId || JSON.stringify(current.checkpoint) !== JSON.stringify(expected)
       || !ownerIsGone(current.ownerPid)) throw new Error("agent_host_writer_locked");
     // A dead PID alone is never sufficient. A matching durable pre-spawn barrier
