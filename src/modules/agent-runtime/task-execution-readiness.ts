@@ -5,6 +5,7 @@ import { Prisma, type AgentExecution } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { loadTaskAgentContext } from "../company-intelligence/task-agent-context";
 import { loadApplicationAgentContext } from "../product-engineering/application-agent-context";
+import { watchReadySources } from "./ready-source-watch";
 
 const { readyContextRevision, readyContextQuery } = require("../../../scripts/lib/agent-host-ready-context.cjs") as {
   readyContextRevision: (task: any, application: any, input: any) => string;
@@ -19,17 +20,22 @@ const wire = (value: unknown) => JSON.parse(JSON.stringify(value));
 export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T | { error: string }> {
   try { return await prisma.$transaction(work, { isolationLevel: "Serializable", maxWait: 5000, timeout: 20000 }); }
   catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && ["P2034", "P2028"].includes(error.code)) return { error: "task_ready_context_conflict" };
+    if (error instanceof Prisma.PrismaClientKnownRequestError && (["P2034", "P2028"].includes(error.code) ||
+      error.code === "P2010" && ["40001", "40P01"].includes(String(error.meta?.code)))) return { error: "task_ready_context_conflict" };
     throw error;
   }
 }
 
 export async function lockReadyTask(db: Prisma.TransactionClient, workspaceId: string, taskId: string) {
+  const locked = await db.$executeRaw`UPDATE ready_source_fence SET revision = revision + 1 WHERE id = 1`;
+  if (locked !== 1) throw new Error("ready_source_fence_missing");
   await db.$queryRaw`SELECT id FROM tasks WHERE id = ${taskId}::uuid AND workspace_id = ${workspaceId}::uuid FOR UPDATE`;
   return db.task.findFirst({ where: { id: taskId, workspaceId } });
 }
 
 async function resolved(db: Prisma.TransactionClient, workspaceId: string, taskId: string, input: Record<string, any>, execution?: AgentExecution) {
+  const watched = watchReadySources(db);
+  db = watched.db;
   const application = await db.application.findFirst({ where: { id: input.applicationId, workspaceId, slug: { not: "roost" } }, include: { repositories: true } });
   if (!application) throw new Error("application_not_found");
   // A validation envelope has no execution record and cannot claim or run work.
@@ -39,7 +45,7 @@ async function resolved(db: Prisma.TransactionClient, workspaceId: string, taskI
   const applicationContext = wire(await loadApplicationAgentContext(workspaceId, application.id, true, readyContextQuery(taskContext.task, input.prompt), db));
   const claimed = { ...envelope, attempt: Math.max(1, envelope.attempt), application };
   (await validation).validateExecutionPacket(taskContext.executionPacket, claimed, taskContext, applicationContext);
-  return { taskContext, applicationContext, revision: readyContextRevision(taskContext, applicationContext, execution ?? input) };
+  return { taskContext, applicationContext, watched, revision: readyContextRevision(taskContext, applicationContext, execution ?? input) };
 }
 
 export async function submitReady(db: Prisma.TransactionClient, workspaceId: string, taskId: string, input: Record<string, any>, actor: { requestedByType: string; requestedById: string | null }) {
@@ -49,7 +55,8 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
   let context;
   try { context = await resolved(db, workspaceId, taskId, input); }
   catch (error) { return { error: "task_execution_contract_invalid", issues: object(error).details?.issues ?? [] }; }
-  const pin = { schemaVersion: "roost-ready-context-v1", status: "ready", pinId: randomUUID(), revision: context.revision,
+  await context.watched.persist(taskId);
+  const pin = { schemaVersion: "roost-ready-context-v1", sourceWatchVersion: "1", status: "ready", pinId: randomUUID(), revision: context.revision,
     applicationId: input.applicationId, contract: input.contract, prompt: input.prompt ?? null, baseBranch: input.baseBranch ?? null,
     validatedAt: new Date().toISOString(), validation: { validator: "execution-packet-v1", revision: context.revision }, ...actor };
   await db.task.update({ where: { id: task.id }, data: { executionReadiness: pin } });
@@ -66,7 +73,7 @@ export async function inspectReady(db: Prisma.TransactionClient, workspaceId: st
   if (pin.schemaVersion !== "roost-ready-context-v1" || !pin.pinId || !/^[a-f0-9]{64}$/.test(pin.revision) || pin.validation?.validator !== "execution-packet-v1" || pin.validation?.revision !== pin.revision) {
     return { error: "task_ready_pin_required", readiness: { status: "not_ready", reason: "ready_pin_required" } };
   }
-  let reason = pin.status !== "ready" ? (["context_changed", "context_invalid"].includes(pin.reason) ? pin.reason : "revalidation_required") : null;
+  let reason = pin.status !== "ready" ? (["context_changed", "context_invalid", "source_watch_required"].includes(pin.reason) ? pin.reason : "revalidation_required") : pin.sourceWatchVersion !== "1" ? "source_watch_required" : null;
   let context;
   if (!reason) {
     try {
@@ -83,7 +90,7 @@ export async function inspectReady(db: Prisma.TransactionClient, workspaceId: st
       await db.task.update({ where: { id: taskId }, data: { executionReadiness: { ...pin, status: "needs_revalidation", reason, invalidatedAt: new Date().toISOString() } } });
       await db.event.create({ data: { workspaceId, taskId, type: "task_execution_ready_invalidated", source: "roost", resourceType: "task", resourceId: taskId, payload: { ...proof, reason } } });
     }
-    return { error: "task_ready_revalidation_required", readiness: { status: "needs_revalidation", reason, ...proof } };
+    return { error: "task_ready_revalidation_required", readiness: { status: "needs_revalidation", reason, changedSources: pin.changedSources ?? [], ...proof } };
   }
   const readiness = { status: "ready", ...proof };
   return { readiness, pin, taskContext: { ...context!.taskContext, readyAdmission: readiness }, applicationContext: context!.applicationContext };

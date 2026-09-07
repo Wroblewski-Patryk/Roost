@@ -72,7 +72,8 @@ this is not a new complete-context compiler. Explicit contract sources are
 always resolved and validated independently of that selection.
 
 Acceptance, queue, claim, `prepared`/`spawn_intent` checkpoint and pre-spawn
-recovery gates use a serializable transaction and lock the Task row. Queue and
+recovery gates use a serializable transaction, update the source fence, then
+lock the Task row. Queue and
 retry bind one accepted pin, reject active duplicates, and never refresh a pin
 implicitly. Heartbeat/completion metadata cannot replace the contract or pin.
 Serialization/timeouts fail closed with `task_ready_context_conflict`.
@@ -88,15 +89,61 @@ submit the current contract explicitly. Changing a referenced source revision
 also requires updating that contract reference. An invalid submission preserves
 the existing proof and returns safe field/reason diagnostics.
 
-Invalidation is checked at these admission gates, not eagerly on every source
-write. An edit and exact revert between checks is not a recorded invalidation.
+Migration `20260907213000_ready_source_invalidation` makes source invalidation
+eager and transactional. Ready acceptance records `sourceWatchVersion: "1"`
+and a persisted read scope in `task_ready_source_watches`. The scope compiler
+wraps only the two context loaders: it follows Prisma's relation metadata and
+captures their scalar filters and nested includes, including empty collections.
+It covers explicit contract sources, task/goal/assignment, organizational
+context, dependencies, procedures/policies, and the application graph. Collection
+filters conservatively cover selection candidates before ordering/truncation;
+a change to an omitted candidate can therefore invalidate Ready. This is not
+a promise of minimum invalidations. Rows outside the captured predicates do not
+invalidate the pin. The bounded feature-ID query retains its ID predicate while
+omitting its redundant application-tenant guard for invalidation only.
+Unsupported query/relation shapes and missing source triggers fail acceptance.
+No source bodies or runtime credentials are stored in the watch table.
+
+Every INSERT/UPDATE/DELETE on the covered source tables first updates the
+singleton `ready_source_fence` in a BEFORE STATEMENT trigger. This is a global
+database serialization point, including shared definitions: source mutation and
+Ready admission acquire it before task/source row locks. The revision write
+forces an older serializable snapshot to abort instead of installing a pin that
+missed a committed edit. SQLSTATE 40001/40P01 (including Prisma raw-query P2010),
+P2034 and transaction timeouts fail admission closed. It deliberately trades
+parallel source-write throughput for a small, explicit correctness boundary;
+it is not a per-workspace concurrent scheduler.
+
+An AFTER ROW trigger matches both old and new source rows and atomically sets
+affected pins to `needs_revalidation` / `context_changed`. The old revision,
+contract and validation proof remain historical evidence, never valid admission.
+The same transaction records one transition event per pin and accumulates one
+`changedSources` entry per table/ID with label, operation and first-change time.
+Duplicate edits and an edit followed by an exact revert cannot restore Ready;
+rolling back the source transaction also rolls back invalidation and its event.
+Task Ready bookkeeping and the accepted task's todo/in_progress claim transition
+remain excluded. A task update that changes only its automatic timestamp is a
+no-op for eager invalidation; the existing full fingerprint comparison remains
+the conservative fallback for other accepted task projections.
+
+The owner readiness response and PL/EN workbench expose the reason and changed
+source references on their next read/refresh. The UI has no push subscription.
+Reacceptance replaces the watch scope and clears the change list. Older Ready
+proofs are explicitly invalidated by migration (`source_watch_required`); a
+database guard rejects an older API trying to store Ready without source watches.
+Watches and invalidations survive API restart; no in-memory queue is required.
+
 The host checks the execution-bound Ready proof against its fetched contexts
 before preparation and again after the final fresh fetch. A missing/changed
 proof or API rejection yields `agent_ready_context_revalidation_required`,
 `retryable: false`, no model start, no further claim, and retained ownership
 after claim. API rejection before claim does not reserve an execution.
-These gates do not stop already spawned work on later source edits; that remains
-a separate RF-CTX-006 slice. No transaction spans database commit to local spawn.
+These gates and source writes are serialized at database admission: a source
+write committed before claim prevents claiming the old pin; a later write
+invalidates it for the next checkpoint/context/recovery gate. They do not stop
+already spawned work on later source edits; that remains a separate RF-CTX-006
+slice. No transaction spans database commit to local spawn. The production
+output-budget guard still refuses model spawn, and execution remains disabled.
 
 The host reads
 `GET /v1/company-intelligence/tasks/:taskId/agent-context?executionId=:executionId`.

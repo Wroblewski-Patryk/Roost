@@ -38,6 +38,10 @@ function fixture(mode) {
   if (mode === "empty") { e.task.goal = null; e.agent = null; e.applications = []; e.applicationId = null; e.accepted = null; e.acceptance = null; }
   const packet = { status: ["ready", "viewer", "blocked"].includes(mode) ? "ready" : mode === "empty" ? "not_ready" : "needs_revalidation", reason: mode === "empty" ? "ready_pin_required" : "context_changed", revision: "a".repeat(64), validationRevision: "a".repeat(64), pinId: "accepted-fixture", canSubmit: mode !== "viewer", executionEnabled: false, editor: e };
   if (mode === "empty") { delete packet.revision; delete packet.validationRevision; }
+  if (mode === "changed") packet.changedSources = [
+    { table: "company_records", id: f.packet.sources[0].id, label: "Zasady akceptacji zmian i potwierdzania aktualności dokumentacji technicznej", operation: "update", changedAt: "2026-09-07T20:00:00Z" },
+    { table: "application_repositories", id: "00000000-0000-4000-8000-000000000123", label: "application_repositories", operation: "delete", changedAt: "2026-09-07T20:01:00Z" }
+  ];
   return { f, packet };
 }
 try {
@@ -64,6 +68,10 @@ try {
     else await page.getByText(locale === "pl" ? mode === "loading" ? "Sprawdzanie kontekstu i zaakceptowanej rewizji…" : "Nie udało się potwierdzić żądania." : mode === "loading" ? "Checking context and accepted revision…" : "The request could not be confirmed.", { exact: false }).waitFor();
     if (["viewer", "blocked"].includes(mode)) assert.equal(await page.getByRole("button", { name: locale === "pl" ? "Sprawdź i zaakceptuj ponownie" : "Validate and accept again", exact: true }).count(), 0);
     if (mode === "ready") assert.equal(await page.getByRole("button", { name: locale === "pl" ? "Dodaj zaakceptowane zadanie do kolejki" : "Queue accepted task", exact: true }).isDisabled(), true);
+    if (mode === "changed") {
+      await page.getByText(locale === "pl" ? "Zmienione źródła (2)" : "Changed sources (2)", { exact: true }).waitFor();
+      assert.equal(await page.getByText("application_repositories", { exact: true }).count(), 0);
+    }
     assert.equal((await page.locator("body").innerText()).includes("SYNTHETIC_SECRET"), false);
     await page.screenshot({ path: path.join(output, `${locale}-${mode}-${width}.png`), fullPage: true });
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${locale}/${mode}/${width}`);

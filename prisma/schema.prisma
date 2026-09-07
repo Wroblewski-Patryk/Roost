@@ -2673,6 +2673,7 @@ model Task {
   assignedWorkforceEntityId String?               @map("assigned_workforce_entity_id") @db.Uuid
   assignedWorkforceEntity   WorkforceEntity?      @relation("TaskAssignedWorkforce", fields: [assignedWorkforceEntityId], references: [id], onDelete: SetNull)
   executionReadiness         Json?                 @map("execution_readiness")
+  readySourceWatches         TaskReadySourceWatch[]
   reviewerUserId            String?               @map("reviewer_user_id") @db.Uuid
   reviewerUser              User?                 @relation("TaskReviewerUser", fields: [reviewerUserId], references: [id], onDelete: SetNull)
   title                     String
@@ -2699,6 +2700,22 @@ model Task {
   @@index([workspaceId, reviewerUserId])
   @@index([workspaceId, startDate])
   @@map("tasks")
+}
+
+model ReadySourceFence {
+  id       Int    @id
+  revision BigInt @default(0)
+  @@map("ready_source_fence")
+}
+
+model TaskReadySourceWatch {
+  taskId      String @map("task_id") @db.Uuid
+  task        Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  sourceTable String @map("source_table")
+  predicate   Json
+  @@id([taskId, sourceTable])
+  @@index([sourceTable])
+  @@map("task_ready_source_watches")
 }
 
 model Client {

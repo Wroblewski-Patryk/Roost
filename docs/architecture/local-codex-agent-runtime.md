@@ -113,7 +113,10 @@ visible.
    cannot accept the contract.
    Successful validation pins [Ready context](execution-packet-contract.md#accepted-context-at-ready-rf-ctx-006)
    on the existing task. The owner can then queue an execution from the task
-   workbench or API. Missing/changed Ready blocks queue and claim.
+   workbench or API. Missing/changed Ready blocks queue and claim. Accepted source
+   writes now invalidate Ready in the same database transaction via persisted
+   source watches and the shared source/admission fence. The owner can inspect
+   changed sources; a reverted edit still requires explicit acceptance again.
 3. A Windows Agent Host registers for visibility, confirms protocol admission,
    then inspects pending executions and local ownership through
    [safe recovery](agent-host-recovery.md). Registration grants no writer slot.

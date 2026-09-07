@@ -32,47 +32,51 @@ for later changes to these same canonical files.
 
 ## Atomic P0 selection
 
-The retained baseline includes model, duration, observer, fresh-context and
-protocol admission, accepted Ready pins and the owner contract editor (`6d1e3487`).
-The current bounded P0 slice is **RF-HOST-010: fail-closed output-token admission**.
+The retained baseline includes accepted Ready pins, the owner contract editor,
+model/duration/context/protocol gates and fail-closed output-token admission.
+The current bounded P0 slice is **RF-CTX-006: immediate Ready invalidation on
+accepted source changes**.
 
-The accepted contract owns `maxOutputTokens`; queue and worker reporting preserve
-that value. Shared packet validation rejects missing, zero, negative, fractional
-and excessive limits. No model can run through the production CLI because the
-checked Codex interface does not establish an execution-wide hard output cap.
-The host rejects valid contracts before execution-specific preparation/spawn,
-stops further claims and retains writer ownership with a fixed nonretryable
-diagnostic. Config/env/packet input cannot choose an observational guard.
-The new mandatory `output_budget_fail_closed_v1` capability fences older host/API
-pairs and stale request headers. No migration is introduced.
+Ready acceptance persists source read scopes, including explicit sources,
+nested relations and empty collections. PostgreSQL source-write triggers and
+Ready admission share a revision fence before source/task row locks. A committed
+source edit atomically invalidates the pin and its admission, keeps historical
+acceptance evidence, and records the changed sources. Inserts/deletes that enter
+or leave a watched collection also invalidate it. An edit/revert cannot restore
+Ready; rollback does not leave a false invalidation. Unrelated rows outside the
+accepted read scopes do not invalidate the pin. Candidate sets are conservative
+before context selection/truncation. The global fence serializes source writes;
+per-workspace parallelism is not claimed.
 
-Synthetic process tests exercise the existing tree-stop path using post-turn
-usage, including exhaustion before/after spawn, late success, one stop only,
-failure-report loss, no further claims and restart fencing. This observational
-path is test-injected; it is not a provider guarantee or a proven overshoot bound.
-Recovery from pre-spawn state keeps execution/attempt/accepted contract and
-repeats refusal. Potentially consumed stages never automatically restart.
-The API makes all output-budget failures nonretryable and rejects late completion.
+The owner PL/EN workbench shows the reason and changed source references on
+read/refresh. Reacceptance replaces the scope and clears the change list.
+Migration `20260907213000_ready_source_invalidation` invalidates older untracked
+Ready proofs and rejects an older API trying to accept without source watches.
+Source invalidation survives API restart and needs no in-memory dispatcher.
 
-Local verification (2026-09-06–07): **264/264 host tests**, including **32 output
-budget tests**; API/database **19/19**; observer **7/7** after releasing its fixed
-singleton port. The initial combined run was 269/271, with the two observer
-failures caused by the canonical observer occupying that port. The isolated
-observer rerun passed. `npm run validate` passed: 280 manifest routes/44 route
-files, backend TypeScript and production build; existing asset/chunk warnings
-remain. No UI change, new live provider/model call or Soar modification. The
-earlier UI proof is retained in `6d1e3487`; UI QA and full-web typechecking were
-not repeated. Registry/matrix retain 162 requirement rows.
+Verification: real PostgreSQL/API cases cover immediate state without polling,
+raw SQL writes, rollback, exact revert, duplicate/multiple changes, unrelated
+sources/tenants, nested collection inserts/deletes, a fresh API process, stale
+snapshot refusal, source writes waiting on the acceptance fence, missing trigger
+refusal, old API rejection, and the existing stale-claim/checkpoint/recovery gates.
+Host/context regression and PL/EN browser fixtures cover the unchanged admission
+boundary and owner-visible reasons. Local verification: **30/30 API/database
+tests**, **69/69 host/context/recovery tests**, **44/44 PL/EN browser states and
+flows**, **2/2 form-model tests**, and `npm run validate` passed. The final API
+run rebuilt server and web after the final source-watch/UI corrections. Existing
+asset/chunk warnings remain; full-web strict typechecking and observer fault
+tests were not rerun. Deployment identity is recorded in the completed handoff;
+no live provider/model or activation test. Registry/matrix retain 162 rows.
 
-**Guarantee boundary:** refusal before Codex spawn, not successful model execution
-within a measured hard cap. RF-HOST-010 remains **częściowo działa**: a proven
-enforcing provider transport, monetary caps and independent replacement-budget
-approval orchestration remain absent. Duration remains a separate existing guard.
-Production stays execution disabled/observe. Exact deployment and fresh observer
-proof belong in the completed handoff, without claiming agent activation readiness.
+**Guarantee boundary:** source changes and database admission are serialized.
+There is still no transaction from database commit to local OS spawn, and no
+mechanism to stop already spawned work on a later source change. RF-CTX-006
+therefore remains **częściowo działa**. Production stays execution disabled,
+and the canonical local host stays observe. RF-HOST-010's proven provider hard
+cap and budget-approval gaps remain unchanged. No Soar/other-application work.
 
-One next candidate for separate selection: **RF-CTX-006, immediate Ready
-invalidation when an accepted source is edited**. Not started.
+One next candidate for separate selection: **RF-CTX-006, stopping active work at
+a safe checkpoint after its accepted context changes**. Not started.
 
 ## Matrix
 
@@ -103,7 +107,7 @@ invalidation when an accepted source is edited**. Not started.
 | [RF-CTX-003](../product/interview-foundation-v2.md#rf-ctx-003) | P0 | częściowo działa | [CTX](#e-ctx) | Record/evidence models exist; epistemic labeling not uniformly enforced. |
 | [RF-CTX-004](../product/interview-foundation-v2.md#rf-ctx-004) | P0 | częściowo działa | [PACKET](#e-packet) | Application context exists; validated full manifest absent. |
 | [RF-CTX-005](../product/interview-foundation-v2.md#rf-ctx-005) | P0 | częściowo działa | [PACKET](#e-packet) | Packet references versions; complete layered selection/reason trace missing. |
-| [RF-CTX-006](../product/interview-foundation-v2.md#rf-ctx-006) | P0 | częściowo działa | [PACKET](#e-packet) | Ready acceptance/proof, queue/claim/preparation/recovery gates and final authoritative refresh are implemented; eager source-write and mid-execution invalidation remain missing. No atomic source-edit-to-spawn lock. |
+| [RF-CTX-006](../product/interview-foundation-v2.md#rf-ctx-006) | P0 | częściowo działa | [PACKET](#e-packet) | Ready acceptance/proof, eager transactional source-write invalidation, queue/claim/preparation/recovery gates and final authoritative refresh are implemented. Mid-execution stopping remains missing; no database-to-OS-spawn transaction. |
 | [RF-CTX-007](../product/interview-foundation-v2.md#rf-ctx-007) | P1 | brak | [CTX](#e-ctx) | No runtime context expansion protocol. |
 | [RF-CTX-008](../product/interview-foundation-v2.md#rf-ctx-008) | P0 | częściowo działa | [TASK](#e-task) | Human role-gated PL/EN contract editor and diagnostics use validated Ready separately from task status; full Draft/Needs-context/Decision workflow and automatic interviews remain missing. |
 | [RF-CTX-009](../product/interview-foundation-v2.md#rf-ctx-009) | P0 | częściowo działa | [TASK](#e-task) | Task fields exist; atomicity enforcement absent. |
@@ -281,6 +285,8 @@ Each entry links existing canonical files; a test link is not a passing result.
 [scripts/lib/agent-host-execution-packet.mjs](../../scripts/lib/agent-host-execution-packet.mjs), [src/modules/agent-runtime/execution-packet.ts](../../src/modules/agent-runtime/execution-packet.ts), [scripts/agent-host-execution-packet.test.mjs](../../scripts/agent-host-execution-packet.test.mjs), [docs/architecture/execution-packet-contract.md](../../docs/architecture/execution-packet-contract.md).
 
 [Ready API service](../../src/modules/agent-runtime/task-execution-readiness.ts),
+[source watch compiler](../../src/modules/agent-runtime/ready-source-watch.ts),
+[source invalidation migration](../../prisma/migrations/20260907213000_ready_source_invalidation/migration.sql),
 [shared Ready fingerprint](../../scripts/lib/agent-host-ready-context.cjs),
 [Ready tests](../../scripts/agent-host-ready-context.test.mjs),
 [context admission helper](../../scripts/lib/agent-host-execution-context.mjs),

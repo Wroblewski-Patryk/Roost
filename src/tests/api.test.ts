@@ -1265,7 +1265,7 @@ test("Ready pins validation and rejects stale queue, preparation and recovery wi
     assert.equal((await queue()).status, 409);
     assert.equal(await prisma.agentExecution.count({ where: { taskId: task.id } }), 0);
     // A legacy-looking proof must not be promoted to a valid acceptance.
-    await prisma.task.update({ where: { id: task.id }, data: { executionReadiness: { status: "ready", revision: "legacy" } } });
+    await prisma.task.update({ where: { id: task.id }, data: { executionReadiness: { status: "needs_revalidation", revision: "legacy" } } });
     assert.equal(((await queue()).body as { error: string }).error, "task_ready_pin_required");
     const f = await prepareReadyFixture(owner.workspace.id, task.id, application.id, auth);
     assert.equal((await post(`${route}/actions/submit-for-execution`, f.input, workerAuth)).status, 403);
@@ -1297,6 +1297,7 @@ test("Ready pins validation and rejects stale queue, preparation and recovery wi
     const hostSlug = "ready-fixture";
     assert.equal((await post("/v1/agent-runtime/hosts/register", { name: "Ready host", slug: hostSlug, platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities }, workerAuth)).status, 200);
     await prisma.task.update({ where: { id: task.id }, data: { description: "Changed between queue and claim" } });
+    assert.equal(((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness as any).status, "needs_revalidation");
     assert.equal((await post("/v1/agent-runtime/executions/claim", { hostSlug }, workerAuth)).status, 409);
     const unclaimed = await prisma.agentExecution.findUniqueOrThrow({ where: { id: queued.id } });
     assert.equal(unclaimed.attempt, 0); assert.equal(unclaimed.leaseToken, null); assert.equal(unclaimed.status, "queued");
@@ -1318,6 +1319,163 @@ test("Ready pins validation and rejects stale queue, preparation and recovery wi
     const proofs = await prisma.event.findMany({ where: { taskId: task.id, type: "task_execution_ready" } });
     assert.equal(proofs.length, 3); assert.ok(proofs.some(e => (e.payload as { pinId: string }).pinId === f.readiness.pinId));
   } finally { delete process.env.ROOST_CODEX_EXECUTION_ENABLED; }
+});
+
+test("Ready source writes atomically invalidate accepted read scopes without a readiness read", async (t) => {
+  const owner = await registerOwner("ready-source-write@example.com", "Ready source writes");
+  const workspaceId = owner.workspace.id, auth = { Authorization: `Bearer ${owner.token}` };
+  const application = await prisma.application.create({ data: { workspaceId, name: "Watched application", slug: "watched-application" } });
+  const project = await prisma.project.create({ data: { workspaceId, name: "Watched project" } });
+  await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id } });
+  const domain = await prisma.capabilityDomain.create({ data: { workspaceId, key: "watched-domain", name: "Watched domain" } });
+  const definition = await prisma.capabilityDefinition.create({ data: { workspaceId, domainId: domain.id, key: "watched-capability", name: "Watched capability" } });
+  await prisma.applicationCapability.create({ data: { applicationId: application.id, capabilityDefinitionId: definition.id, applicability: "recommended" } });
+  const task = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: "Watched task" } });
+  const f = await prepareReadyFixture(workspaceId, task.id, application.id, auth);
+  const { readyTransaction, submitReady, inspectReady, lockReadyTask } = await import("../modules/agent-runtime/task-execution-readiness");
+  const actor = { requestedByType: "user", requestedById: null };
+  const pin = async () => (await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness as any;
+  const accept = async () => {
+    for (const category of ["company", "product", "technical"]) {
+      const ref = f.input.contract.context[category][0];
+      ref.revision = (await prisma.companyRecord.findUniqueOrThrow({ where: { id: ref.id } })).updatedAt.toISOString();
+    }
+    const result = await readyTransaction(tx => submitReady(tx, workspaceId, task.id, f.input, actor));
+    assert.equal("error" in result, false, JSON.stringify(result));
+    return pin();
+  };
+  await t.test("unrelated source, application, task and foreign workspace keep acceptance", async () => {
+    const otherApp = await prisma.application.create({ data: { workspaceId, name: "Unrelated", slug: "unrelated-watch" } });
+    const other = await prisma.companyRecord.create({ data: { workspaceId, applicationId: otherApp.id, recordType: "requirement", key: "unrelated-watch", title: "Unrelated" } });
+    await prisma.companyRecord.update({ where: { id: other.id }, data: { title: "Still unrelated" } });
+    await prisma.task.create({ data: { workspaceId, title: "Unrelated task" } });
+    const outside = await registerOwner("ready-write-outsider@example.com", "Outside watches");
+    await prisma.policy.create({ data: { workspaceId: outside.workspace.id, name: "Outside policy", appliesTo: "task", ruleType: "guideline" } });
+    assert.equal((await pin()).status, "ready");
+    assert.equal((await pin()).pinId, f.readiness.pinId);
+  });
+  await t.test("rollback preserves Ready; raw SQL edit and exact revert commit one invalidation", async () => {
+    await assert.rejects(prisma.$transaction(async tx => {
+      await tx.goal.update({ where: { id: f.goal.id }, data: { title: "Rolled back" } });
+      assert.equal(((await tx.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness as any).status, "needs_revalidation");
+      throw new Error("synthetic rollback");
+    }), /synthetic rollback/);
+    assert.equal((await pin()).status, "ready");
+    await prisma.$transaction(async tx => {
+      await tx.$executeRaw`UPDATE goals SET title = 'Temporary accepted-source change' WHERE id = ${f.goal.id}::uuid`;
+      await tx.$executeRaw`UPDATE goals SET title = ${f.goal.title} WHERE id = ${f.goal.id}::uuid`;
+    });
+    const invalid = await pin();
+    assert.equal(invalid.status, "needs_revalidation"); assert.equal(invalid.revision, f.readiness.revision);
+    assert.equal(invalid.changedSources.length, 1); assert.equal(invalid.changedSources[0].id, f.goal.id);
+    assert.equal(await prisma.event.count({ where: { taskId: task.id, type: "task_execution_ready_invalidated" } }), 1);
+    const read = await request(`/v1/agent-runtime/tasks/${task.id}/execution-readiness`, { headers: auth });
+    assert.deepEqual((read.body as any).data.changedSources, invalid.changedSources);
+  });
+  await t.test("a new API process retains the invalidation and cannot readmit the old pin", async () => {
+    const code = `const {prisma}=require('./dist/db/prisma');const {inspectReady}=require('./dist/modules/agent-runtime/task-execution-readiness');prisma.$transaction(tx=>inspectReady(tx,${JSON.stringify(workspaceId)},${JSON.stringify(task.id)}),{isolationLevel:'Serializable'}).then(r=>{if(r.error!=='task_ready_revalidation_required')process.exitCode=1;else process.stdout.write('blocked');}).catch(()=>{process.exitCode=1}).finally(()=>prisma.$disconnect());`;
+    const child = spawn(process.execPath, ["-e", code], { cwd: process.cwd(), env: process.env, windowsHide: true, stdio: ["ignore", "pipe", "ignore"] });
+    let output = ""; child.stdout.on("data", chunk => { output += chunk.toString(); });
+    const exit = await new Promise<number | null>((resolve, reject) => { child.on("error", reject); child.on("close", resolve); });
+    assert.equal(exit, 0); assert.equal(output, "blocked");
+    assert.equal(await prisma.event.count({ where: { taskId: task.id, type: "task_execution_ready_invalidated" } }), 1);
+  });
+  await t.test("deep nested relation inserts and accepted definition updates are watched", async () => {
+    await accept();
+    const feature = await prisma.featureDefinition.create({ data: { capabilityDefinitionId: definition.id, key: "watched-feature", name: "Nested feature" } });
+    assert.equal((await pin()).status, "needs_revalidation");
+    assert.equal((await pin()).changedSources[0].id, feature.id);
+    await accept();
+    await prisma.capabilityDomain.update({ where: { id: domain.id }, data: { name: "Changed domain" } });
+    assert.equal((await pin()).status, "needs_revalidation");
+    assert.equal((await pin()).changedSources[0].id, domain.id);
+  });
+  await t.test("new collection member and delete invalidate without polling", async () => {
+    await accept();
+    const repository = await prisma.applicationRepository.create({ data: { applicationId: application.id, name: "New relation", url: "https://github.com/example/secondary.git" } });
+    assert.equal((await pin()).status, "needs_revalidation");
+    assert.equal((await pin()).changedSources[0].operation, "insert");
+    await accept();
+    await prisma.applicationRepository.delete({ where: { id: repository.id } });
+    assert.equal((await pin()).status, "needs_revalidation");
+    assert.equal((await pin()).changedSources[0].operation, "delete");
+    await accept();
+    await prisma.organizationalScope.create({ data: { workspaceId, entityType: "task", entityId: task.id, scopeType: "company" } });
+    assert.equal((await pin()).status, "needs_revalidation");
+  });
+  await t.test("multiple sources accumulate once and explicit reacceptance clears them", async () => {
+    await accept();
+    await prisma.$transaction(async tx => {
+      await tx.companyRecord.update({ where: { id: f.sources[0]!.id }, data: { description: "Changed source" } });
+      await tx.workforceEntity.update({ where: { id: f.agent.id }, data: { name: "Changed assignment source" } });
+      await tx.companyRecord.update({ where: { id: f.sources[0]!.id }, data: { description: "Changed source" } });
+    });
+    assert.equal((await pin()).changedSources.length, 2);
+    const fresh = await accept();
+    assert.equal(fresh.status, "ready"); assert.equal(fresh.changedSources, undefined);
+    await prisma.task.update({ where: { id: task.id }, data: { status: "in_progress" } });
+    assert.equal((await pin()).status, "ready");
+    await prisma.task.update({ where: { id: task.id }, data: { title: "Material task change" } });
+    assert.equal((await pin()).status, "needs_revalidation");
+  });
+  await t.test("source write waiting behind acceptance invalidates the newly committed pin", async () => {
+    let acquired!: () => void, release!: () => void;
+    const locked = new Promise<void>(resolve => { acquired = resolve; });
+    const released = new Promise<void>(resolve => { release = resolve; });
+    const accepting = readyTransaction(async tx => {
+      await lockReadyTask(tx, workspaceId, task.id); acquired(); await released;
+      return submitReady(tx, workspaceId, task.id, f.input, actor);
+    });
+    await locked;
+    const writing = prisma.$transaction(async tx => {
+      await tx.$executeRaw`SET LOCAL application_name = 'roost_ready_source_race'`;
+      return tx.goal.update({ where: { id: f.goal.id }, data: { description: "After acceptance" } });
+    });
+    try {
+      let blocked = false;
+      for (let attempt = 0; attempt < 100; attempt++) {
+        const rows = await prisma.$queryRaw<Array<{ blocked: boolean }>>`SELECT EXISTS (SELECT 1 FROM pg_stat_activity WHERE application_name = 'roost_ready_source_race' AND wait_event_type = 'Lock') AS blocked`;
+        if (rows[0]?.blocked) { blocked = true; break; }
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+      assert.equal(blocked, true, "source writer must be waiting on the acceptance fence");
+    } finally { release(); }
+    assert.equal("error" in await accepting, false);
+    await writing;
+    assert.equal((await pin()).status, "needs_revalidation");
+    const admission = await readyTransaction(tx => inspectReady(tx, workspaceId, task.id));
+    assert.equal((admission as any).error, "task_ready_revalidation_required");
+  });
+  await t.test("an older serializable snapshot cannot accept after a committed source write", async () => {
+    let read!: () => void, release!: () => void;
+    const readDone = new Promise<void>(resolve => { read = resolve; });
+    const releaseRead = new Promise<void>(resolve => { release = resolve; });
+    const accepting = readyTransaction(async tx => {
+      await tx.goal.findUniqueOrThrow({ where: { id: f.goal.id } }); read(); await releaseRead;
+      return submitReady(tx, workspaceId, task.id, f.input, actor);
+    });
+    await readDone;
+    await prisma.goal.update({ where: { id: f.goal.id }, data: { description: "Before acceptance" } });
+    release();
+    assert.equal((await accepting as any).error, "task_ready_context_conflict");
+    assert.equal((await pin()).status, "needs_revalidation");
+    assert.equal((await accept()).status, "ready");
+  });
+  await t.test("older API cannot store an untracked Ready proof", async () => {
+    const current = await pin();
+    const { sourceWatchVersion, ...legacy } = current;
+    await assert.rejects(prisma.task.update({ where: { id: task.id }, data: { executionReadiness: legacy } }));
+    assert.equal((await pin()).pinId, current.pinId);
+  });
+  await t.test("acceptance refuses a missing source fence and preserves the prior pin", async () => {
+    const previous = await pin();
+    await assert.rejects(prisma.$transaction(async tx => {
+      // Transactional DDL in the isolated fixture database; rejection rolls it back.
+      await tx.$executeRaw`ALTER TABLE goals DISABLE TRIGGER ready_source_fence`;
+      await submitReady(tx, workspaceId, task.id, f.input, actor);
+    }), /ready_source_trigger_missing/);
+    assert.equal((await pin()).pinId, previous.pinId);
+  });
 });
 
 test("Ready workbench projects safe catalogs and requires a current human role for acceptance", async () => {

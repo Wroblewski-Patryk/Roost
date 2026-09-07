@@ -11,7 +11,7 @@ export type ReadyEditor = {
   accepted: { contract: Record<string, any>; prompt: string | null; baseBranch: string | null; applicationId: string } | null;
   acceptance: { validatedAt: string; authorName: string | null; authorType: string } | null;
 };
-export type ReadyPacket = { status: string; reason?: string; revision?: string; validationRevision?: string; pinId?: string; canSubmit: boolean; executionEnabled: boolean; editor: ReadyEditor };
+export type ReadyPacket = { status: string; reason?: string; changedSources?: { table: string; id: string; label: string; operation: string; changedAt: string }[]; revision?: string; validationRevision?: string; pinId?: string; canSubmit: boolean; executionEnabled: boolean; editor: ReadyEditor };
 export const groups = ["company", "product", "technical", "procedures", "skills", "dependencies", "decisions"] as const;
 export type RefGroup = typeof groups[number];
 export const fields = {
