@@ -10,8 +10,8 @@ export const procedureInclude = {
 };
 
 export const projectInclude = {
-  taskLists: { include: { tasks: { orderBy: [{ status: "asc" as const }, { updatedAt: "desc" as const }] } }, orderBy: { name: "asc" as const } },
-  tasks: { where: { taskListId: null }, orderBy: [{ status: "asc" as const }, { updatedAt: "desc" as const }] }
+  taskLists: { include: { tasks: { where: { status: { not: "archived" as const } }, orderBy: [{ status: "asc" as const }, { updatedAt: "desc" as const }] } }, orderBy: { name: "asc" as const } },
+  tasks: { where: { taskListId: null, status: { not: "archived" as const } }, orderBy: [{ status: "asc" as const }, { updatedAt: "desc" as const }] }
 };
 
 export const capabilityInclude = {

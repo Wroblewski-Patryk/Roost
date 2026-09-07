@@ -894,7 +894,7 @@ function OperationsBoard({
   async function moveTaskToStatus(status: string) {
     if (!draggedTaskId) return;
     const task = rows.find((row) => row.id === draggedTaskId);
-    if (!task || task.task.status === status) {
+    if (!task || task.task.status === "archived" || task.task.status === status) {
       setDraggedTaskId("");
       setDragOverStatus("");
       return;
@@ -1014,8 +1014,9 @@ function OperationsBoard({
                     <TaskCard
                       key={row.id}
                       row={row}
+                      draggable={row.task.status !== "archived"}
                       isDragging={draggedTaskId === row.id}
-                      onOpen={() => setSelectedTask(row)}
+                      onOpen={() => row.task.status === "archived" ? window.location.assign(`/areas?area=00-ogolny&view=entity&type=task&id=${row.id}`) : setSelectedTask(row)}
                       onDragStart={(event) => startTaskDrag(event, row.id)}
                       onDragEnd={clearTaskDrag}
                     />
@@ -1312,7 +1313,8 @@ function OperationsCalendar({
 }
 
 export function OperationsRoute() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const [archive, setArchive] = useState("exclude");
   const activeView = currentOperationsView();
   const departmentScope = new URLSearchParams(window.location.search).get("department") as CoreAreaKey | null;
   const [refreshKey, setRefreshKey] = useState(0);
@@ -1328,7 +1330,7 @@ export function OperationsRoute() {
   const [taskQuery, setTaskQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState<TaskPriorityFilter>("all");
   const [dateFilter, setDateFilter] = useState<TaskDateFilter>("all");
-  const packet = useOwnerPacket<OperationsPacket>(`/v1/operations/work-items?limit=200${departmentScope ? `&departmentKey=${encodeURIComponent(departmentScope)}&includeCompanyWide=false` : ""}&refresh=${refreshKey}`, activeView !== "procedures", t);
+  const packet = useOwnerPacket<OperationsPacket>(`/v1/operations/work-items?limit=200&archive=${activeView === "calendar" ? "exclude" : archive}${departmentScope ? `&departmentKey=${encodeURIComponent(departmentScope)}&includeCompanyWide=false` : ""}&refresh=${refreshKey}`, activeView !== "procedures", t);
   const rows = useMemo(() => (packet.data?.workItems || []).map((item) => ({ ...item, id: item.task.id })), [packet.data?.workItems]);
   const taskLists = packet.data?.taskLists || [];
   const departments = packet.data?.departments || [];
@@ -1378,7 +1380,7 @@ export function OperationsRoute() {
   return (
     <>
       <CcPageHeader
-        actions={<DepartmentScopeControl baseHref={`/areas?area=04-operacje&view=${activeView}`} value={departmentScope} />}
+        actions={<><DepartmentScopeControl baseHref={`/areas?area=04-operacje&view=${activeView}`} value={departmentScope} />{activeView !== "calendar" ? <CcSelect aria-label={locale === "pl" ? "Widok zadań" : "Task view"} value={archive} onChange={event => { setArchive(event.target.value); setListSelectionInitialized(false); clearTaskFilters(); }}><option value="exclude">{locale === "pl" ? "Bieżące" : "Current"}</option><option value="only">{locale === "pl" ? "Archiwum" : "Archive"}</option><option value="all">{locale === "pl" ? "Wszystkie" : "All"}</option></CcSelect> : null}</>}
         description={departmentScope ? `Filtered to work assigned to ${departmentLabel(departmentScope, t)}.` : t(activeView === "calendar" ? "operations.calendarDescription" : "operations.description")}
         eyebrow={departmentScope ? `${t("areas.04.label")} · ${departmentLabel(departmentScope, t)}` : t("areas.04.label")}
         title={departmentScope ? `${t(activeView === "calendar" ? "operations.calendarTitle" : "operations.title")} · ${departmentLabel(departmentScope, t)}` : t(activeView === "calendar" ? "operations.calendarTitle" : "operations.title")}
@@ -1415,7 +1417,7 @@ export function OperationsRoute() {
           ) : (
             <OperationsBoard
               rows={taskFilteredRows}
-              statuses={statuses}
+              statuses={statuses.filter(status => archive === "all" || (archive === "only" ? status.key === "archived" : status.key !== "archived"))}
               selectedListIds={selectedListIds}
               hasSelectableLists={selectableListIds.length > 0}
               setSelectedTask={setSelectedTask}

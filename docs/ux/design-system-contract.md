@@ -676,3 +676,13 @@ domain packets to its shared node and typed-edge contract.
   outside the graph viewport and provide a clear recovery action.
 - On narrow screens, hide the mini-map before reducing graph controls or node
   labels; the canvas remains pannable and preserves readable zoom.
+
+## Task archive visibility
+
+The canonical Operations task board defaults to Current (all non-archived statuses,
+including completed tasks), with explicit Archive and All views. Switching views resets text, date and
+priority filters. The calendar always excludes archives. Archived tasks retain their identity and history link but do
+not offer readiness, editing or drag-to-restore actions on the board. ClickUp
+delete notifications archive the local record; they do not erase audit history.
+Department previews and current-work graphs omit archived tasks. Record details
+and historical evidence remain accessible through explicit links.

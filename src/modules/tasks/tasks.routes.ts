@@ -86,10 +86,11 @@ async function visibleTaskRelations(workspaceId: string, input: {
 }
 
 tasksRouter.get("/", asyncHandler(async (req, res) => {
+  const archive = z.enum(["exclude", "only", "all"]).default("exclude").parse(req.query.archive);
   const workspaceId = req.auth!.workspaceId; const departmentKey = typeof req.query.departmentKey === "string" ? req.query.departmentKey : null;
   const ids = departmentKey ? await contextualEntityIds(workspaceId, "task", departmentKey, req.query.includeCompanyWide !== "false") : null;
   const tasks = await prisma.task.findMany({
-    where: { workspaceId, ...(ids ? { id: { in: ids } } : {}) }, include: taskInclude,
+    where: { workspaceId, ...(archive === "all" ? {} : { status: archive === "only" ? "archived" : { not: "archived" as const } }), ...(ids ? { id: { in: ids } } : {}) }, include: taskInclude,
     orderBy: { createdAt: "desc" }
   });
   res.json({ data: await serializeTasks(workspaceId, tasks) });

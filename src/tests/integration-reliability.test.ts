@@ -55,6 +55,8 @@ test("missing ClickUp tasks are verified individually; archives preserve IDs and
   const list = await prisma.taskList.create({ data: { workspaceId: id, name: "List", source: "clickup", externalId: "list" } });
   const original = await prisma.task.create({ data: { workspaceId: id, taskListId: list.id, title: "Before", source: "clickup", externalId: "archived", status: "todo" } });
   const unavailable = await prisma.task.create({ data: { workspaceId: id, taskListId: list.id, title: "Keep", source: "clickup", externalId: "inaccessible", status: "todo" } });
+  const deleted = await prisma.task.create({ data: { workspaceId: id, taskListId: list.id, title: "Deleted", source: "clickup", externalId: "deleted", status: "archived" } });
+  await prisma.providerEventInbox.create({ data: { workspaceId: id, provider: "clickup", externalWebhookId: "synthetic", externalTaskId: "deleted", eventName: "taskDeleted", idempotencyKey: randomUUID(), payloadHash: "synthetic", payload: {}, signatureVerified: true, processingStatus: "processed" } });
   globalThis.fetch = async input => {
     const path = new URL(String(input)).pathname;
     if (path.endsWith("/team/team/task")) return json({ tasks: [], last_page: true });
@@ -67,6 +69,7 @@ test("missing ClickUp tasks are verified individually; archives preserve IDs and
   const again = await syncClickUpTasksForWorkspaceWithOptions(id);
   assert.equal(again.updatedCount, 0);
   assert.equal(again.unavailableCount, 1);
+  assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: deleted.id } })).status, "archived");
 });
 
 test("ClickUp writes archive, unarchive, real List status and cleared fields", async () => {

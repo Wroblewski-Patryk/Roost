@@ -116,6 +116,7 @@ salesRouter.get("/context", asyncHandler(async (req, res) => {
     prisma.task.findMany({
       where: {
         workspaceId,
+        status: { not: "archived" },
         OR: [
           ...salesTerms.map((term) => ({ title: { contains: term, mode: "insensitive" as const } })),
           ...salesTerms.map((term) => ({ description: { contains: term, mode: "insensitive" as const } }))

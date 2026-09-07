@@ -173,6 +173,7 @@ financeRouter.get("/context", asyncHandler(async (req, res) => {
     prisma.task.findMany({
       where: {
         workspaceId,
+        status: { not: "archived" },
         OR: [
           { title: { contains: "invoice", mode: "insensitive" } },
           { title: { contains: "payment", mode: "insensitive" } },

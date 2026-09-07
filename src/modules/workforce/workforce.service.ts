@@ -628,7 +628,7 @@ export async function listWorkforceEntities(workspaceId: string, filters: {
   ]);
   const [tasks, assignments] = await Promise.all([
     prisma.task.findMany({
-      where: { workspaceId },
+      where: { workspaceId, status: { not: "archived" } },
       orderBy: { updatedAt: "desc" },
       take: 200,
       include: {

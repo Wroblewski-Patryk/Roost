@@ -19,7 +19,9 @@ to ClickUp first. Native-only relationships remain Roost-owned. Missing tasks in
 complete pull are fetched individually; 404/access loss preserves the row and emits
 `clickup_task_access_unavailable`. A confirmed delete webhook archives locally.
 After a successful workspace read, individual task 401/403/404 responses count as
-`unavailableCount` without blocking accessible task refresh. Webhook reconciliation
+`unavailableCount` without blocking accessible task refresh. Already-archived
+records with a processed, signed `taskDeleted` event are excluded from that
+warning count; direct reads still discover provider restores. Webhook reconciliation
 repairs endpoint/event drift and re-encrypts provider-returned signing secrets;
 an unreadable secret with no recoverable provider copy requires replacement.
 Webhook task/note changes, events, agent signals and inbox completion commit

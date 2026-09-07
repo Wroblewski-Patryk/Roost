@@ -47,7 +47,7 @@ strategyRouter.get("/context", asyncHandler(async (req, res) => {
           take: 8,
           include: { metricRef: true, pipeline: true }
         },
-        tasks: { orderBy: { updatedAt: "desc" }, take: 8 }
+        tasks: { where: { status: { not: "archived" } }, orderBy: { updatedAt: "desc" }, take: 8 }
       }
     }),
     prisma.metric.findMany({
@@ -88,7 +88,7 @@ strategyRouter.get("/context", asyncHandler(async (req, res) => {
       include: { operatingArea: true }
     }),
     prisma.task.findMany({
-      where: { workspaceId },
+      where: { workspaceId, status: { not: "archived" } },
       orderBy: { updatedAt: "desc" },
       take: 50
     }),

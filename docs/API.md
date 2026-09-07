@@ -2681,6 +2681,15 @@ the task in ClickUp first, then stores the returned ClickUp task ID as
 `externalId` with `source = clickup`. This keeps CompanyCore as the API source
 of truth while preserving ClickUp as the mapped external workspace/list surface.
 
+`GET /v1/tasks` excludes archived tasks by default. Use `archive=only` for
+archive history or `archive=all` for an explicit combined listing; `archive=exclude`
+is the default. Invalid archive values return 400. These filters retain workspace
+and department scoping. Individual task reads remain available for history.
+`GET /v1/operations/work-items` also excludes archived tasks unless an explicit
+`status=archived` filter is supplied; it also accepts the same `archive` values.
+An explicit status takes precedence over the archive filter. Current-work previews, search and task graph
+projections exclude archives before applying result limits.
+
 `DELETE /v1/tasks/:id` archives ClickUp-sourced tasks in ClickUp before marking
 the local task `archived`. Native/manual CompanyCore tasks are archived locally.
 

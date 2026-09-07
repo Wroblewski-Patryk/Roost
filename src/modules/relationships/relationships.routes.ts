@@ -157,7 +157,7 @@ relationshipsRouter.get("/context", asyncHandler(async (req, res) => {
       take: 50
     }),
     prisma.task.findMany({
-      where: { workspaceId },
+      where: { workspaceId, status: { not: "archived" } },
       orderBy: { updatedAt: "desc" },
       take: 80
     }),

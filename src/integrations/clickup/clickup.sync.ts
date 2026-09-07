@@ -165,8 +165,12 @@ async function syncClickUpTasks(
       const known = await prisma.task.findMany({
         where: { workspaceId, source: "clickup", externalId: { not: null },
           taskList: { source: "clickup", externalId: { in: listIds } } },
-        select: { externalId: true }
+        select: { externalId: true, status: true }
       });
+      const confirmedDeletions = new Set((await prisma.providerEventInbox.findMany({
+        where: { workspaceId, provider: "clickup", eventName: "taskDeleted", processingStatus: "processed", signatureVerified: true },
+        select: { externalTaskId: true }
+      })).map(event => event.externalTaskId));
       for (const task of known) {
         if (!task.externalId || returnedIds.has(task.externalId)) continue;
         try { clickUpTasks.push(await client.getTask(task.externalId)); }
@@ -174,6 +178,9 @@ async function syncClickUpTasks(
           // The workspace request already authenticated. ClickUp also returns
           // 401/403 for individual tasks whose access has been withdrawn.
           if (!(error instanceof IntegrationError) || !["not_found", "integration_invalid_token"].includes(error.code)) throw error;
+          // A processed, signed deletion already explains this archived record.
+          // Still fetch it above so a provider restore can be discovered.
+          if (task.status === "archived" && confirmedDeletions.has(task.externalId)) continue;
           unavailableCount += 1;
           await createEvent({ workspaceId, source: "clickup", type: "clickup_task_access_unavailable",
             payload: { externalId: task.externalId, action: "preserved", correlationId } });

@@ -72,7 +72,7 @@ const goalInclude = {
   process: true,
   parentGoal: { select: { id: true, title: true, status: true } },
   targets: { orderBy: { updatedAt: "desc" as const }, take: 20 },
-  tasks: { orderBy: { updatedAt: "desc" as const }, take: 20 }
+  tasks: { where: { status: { not: "archived" as const } }, orderBy: { updatedAt: "desc" as const }, take: 20 }
 };
 
 goalsRouter.get("/", asyncHandler(async (req, res) => {

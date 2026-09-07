@@ -14,6 +14,7 @@ const OPERATIONS_LIMIT = 12;
 const WORK_ITEM_LIMIT = 100;
 
 const workItemsQuerySchema = z.object({
+  archive: z.enum(["exclude", "only", "all"]).default("exclude"),
   status: z.enum(["todo", "in_progress", "blocked", "done", "archived"]).optional(),
   priority: z.string().min(1).optional(),
   source: z.string().min(1).optional(),
@@ -338,7 +339,7 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
     where: {
       workspaceId,
       ...(contextualTaskIds ? { id: { in: contextualTaskIds } } : {}),
-      ...(query.status ? { status: query.status } : {}),
+      ...(query.status ? { status: query.status } : query.archive === "all" ? {} : { status: query.archive === "only" ? "archived" : { not: "archived" as const } }),
       ...(query.priority ? { priority: query.priority } : {}),
       ...(query.source ? { source: query.source } : {}),
       ...(query.taskListId ? { taskListId: query.taskListId } : {})
@@ -366,7 +367,7 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
     }),
     prisma.task.groupBy({
       by: ["taskListId"],
-      where: { workspaceId, ...(contextualTaskIds ? { id: { in: contextualTaskIds } } : {}) },
+      where: { workspaceId, ...(query.status ? { status: query.status } : query.archive === "all" ? {} : { status: query.archive === "only" ? "archived" : { not: "archived" as const } }), ...(contextualTaskIds ? { id: { in: contextualTaskIds } } : {}) },
       _count: { _all: true }
     }),
     prisma.workspaceMembership.findMany({
@@ -1038,7 +1039,7 @@ operationsRouter.get("/context", asyncHandler(async (req, res) => {
       include: { accountableRole: true }
     }),
     prisma.task.findMany({
-      where: { workspaceId },
+      where: { workspaceId, status: { not: "archived" } },
       orderBy: { updatedAt: "desc" },
       take: 50
     }),

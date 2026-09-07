@@ -277,22 +277,22 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
       where: { workspaceId, ...(shouldLoadAllGoals ? {} : { id: EMPTY_UUID }) },
       orderBy: { createdAt: "desc" },
       take: limit,
-      include: { targets: true, tasks: true, project: true, process: true }
+      include: { targets: true, tasks: { where: { status: { not: "archived" } } }, project: true, process: true }
     }),
     prisma.target.findMany({
       where: { workspaceId, ...(shouldLoadAllTargets ? {} : { id: EMPTY_UUID }) },
       orderBy: { createdAt: "desc" },
       take: limit,
-      include: { goal: true, tasks: true, metricRef: true, pipeline: true }
+      include: { goal: true, tasks: { where: { status: { not: "archived" } } }, metricRef: true, pipeline: true }
     }),
     prisma.taskList.findMany({
       where: { workspaceId, ...(shouldLoadAllTaskLists ? {} : { id: EMPTY_UUID }) },
       orderBy: { createdAt: "desc" },
       take: limit,
-      include: { tasks: true, project: true }
+      include: { tasks: { where: { status: { not: "archived" } } }, project: true }
     }),
     prisma.task.findMany({
-      where: { workspaceId, ...(shouldLoadAllTasks ? {} : { id: EMPTY_UUID }) },
+      where: { workspaceId, status: { not: "archived" }, ...(shouldLoadAllTasks ? {} : { id: EMPTY_UUID }) },
       orderBy: { createdAt: "desc" },
       take: limit,
       include: { goal: true, target: true, taskList: true, project: true }
@@ -396,6 +396,7 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
     ? await prisma.task.findMany({
       where: {
         workspaceId,
+        status: { not: "archived" },
         OR: [
           ...(goalIds.size ? [{ goalId: { in: [...goalIds] } }] : []),
           ...(targetIds.size ? [{ targetId: { in: [...targetIds] } }] : [])

@@ -446,6 +446,7 @@ intakeRouter.get("/", asyncHandler(async (req, res) => {
     prisma.task.findMany({
       where: {
         workspaceId,
+        status: { not: "archived" },
         OR: [
           { projectId: null, goalId: null, targetId: null, taskListId: null },
           { source: { in: ["agent_runtime", "codex", "jarvis", "clickup", "google_drive"] } }

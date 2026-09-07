@@ -644,6 +644,40 @@ after(async () => {
   await prisma.$disconnect();
 });
 
+test("task archives stay out of current work and remain explicitly accessible", async () => {
+  const owner = await registerOwner("archive-owner@example.test", "Archive scope");
+  const other = await registerOwner("archive-other@example.test", "Other archive scope");
+  const headers = { Authorization: `Bearer ${owner.token}` };
+  const active = await prisma.task.create({ data: { workspaceId: owner.workspace.id, title: "Current invoice sales strategy operation", status: "todo" } });
+  const archived = await prisma.task.create({ data: { workspaceId: owner.workspace.id, title: "Archived invoice sales strategy operation", status: "archived", source: "clickup", externalId: "deleted-archive-test" } });
+  const foreign = await prisma.task.create({ data: { workspaceId: other.workspace.id, title: "Foreign archive", status: "archived" } });
+  for (const [query, expected] of [["", [active.id]], ["?archive=exclude", [active.id]], ["?archive=only", [archived.id]], ["?archive=all", [active.id, archived.id]]] as const) {
+    const result = await request(`/v1/tasks${query}`, { headers });
+    assert.equal(result.status, 200);
+    assert.deepEqual((result.body as any).data.map((row: any) => row.id).sort(), [...expected].sort());
+    assert.equal(JSON.stringify(result.body).includes(foreign.id), false);
+  }
+  assert.equal((await request("/v1/tasks?archive=invalid", { headers })).status, 400);
+  assert.equal((await request(`/v1/tasks/${archived.id}`, { headers })).status, 200);
+  assert.equal((await request(`/v1/tasks/${foreign.id}`, { headers })).status, 404);
+  for (const route of ["/v1/operations/work-items", "/v1/operations/context", "/v1/strategy/context", "/v1/finance/context", "/v1/sales/context", "/v1/relationships/context", "/v1/intake"]) {
+    const result = await request(route, { headers });
+    assert.equal(result.status, 200, route);
+    assert.equal(JSON.stringify(result.body).includes(archived.id), false, route);
+  }
+  for (const [scope, expected] of [["exclude", [active.id]], ["only", [archived.id]], ["all", [active.id, archived.id]]] as const) {
+    const board = await request(`/v1/operations/work-items?archive=${scope}`, { headers });
+    assert.equal(board.status, 200);
+    assert.deepEqual((board.body as any).data.workItems.map((row: any) => row.task.id).sort(), [...expected].sort());
+  }
+  const archiveWork = await request("/v1/operations/work-items?status=archived", { headers });
+  assert.equal(archiveWork.status, 200);
+  assert.ok(JSON.stringify(archiveWork.body).includes(archived.id));
+  // An ordinary task archived through the public API disappears on the next read.
+  assert.equal((await request(`/v1/tasks/${active.id}`, { method: "DELETE", headers })).status, 200);
+  assert.deepEqual((await request("/v1/tasks", { headers })).body, { data: [] });
+});
+
 test("account and workspace settings profile contract exposes active owner workspace", async () => {
   const owner = await registerOwner("settings-profile-owner@example.com", "Settings Profile Workspace");
   const headers = { Authorization: `Bearer ${owner.token}` };
