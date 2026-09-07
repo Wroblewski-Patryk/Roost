@@ -209,6 +209,12 @@ export function createApp() {
 
     res.sendFile(path.join(publicRoot, "react", "index.html"));
   });
+  for (const document of ["privacy", "terms"]) {
+    app.get(`/${document}`, (req, res, next) => {
+      if (isApiHost(req.headers.host)) return next();
+      res.sendFile(path.join(publicRoot, `${document}.html`));
+    });
+  }
   app.get(/^\/auth\/invitations\/[^/]+$/, (req, res, next) => {
     if (isApiHost(req.headers.host)) return next();
     res.sendFile(path.join(publicRoot, "react", "index.html"));

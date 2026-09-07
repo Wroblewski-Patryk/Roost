@@ -45,9 +45,16 @@ document read/edit/create, and Sheets for spreadsheet read/edit/create.
    - `Internal` if this is only for the LuckySparrow Google Workspace.
    - `External` if the Google account is outside the Workspace.
 3. Fill the required app information:
-   - App name: `CompanyCore`
+   - App name: `Roost`
    - User support email: the operator/support email
    - Developer contact email: the operator/support email
+   - Application home page: `https://roost.luckysparrow.ch/`
+   - Privacy policy: `https://roost.luckysparrow.ch/privacy`
+   - Terms of use: `https://roost.luckysparrow.ch/terms`
+   - Authorized domain: `luckysparrow.ch`
+   The public policies identify the individual operator, Patryk Wróblewski
+   (LuckySparrow), and the owner-provided contact address. They do not represent
+   LuckySparrow as a registered legal entity.
 4. Add the required scopes:
    - `https://www.googleapis.com/auth/drive`
    - `https://www.googleapis.com/auth/documents`

@@ -2266,6 +2266,14 @@ test("CompanyCore v1 protected API flow", async () => {
   const oauthCallback = await realFetch(`${baseUrl}/settings/drive?code=synthetic&state=synthetic`);
   assert.equal(oauthCallback.status, 200);
   assert.ok(oauthCallback.headers.get("content-type")?.includes("text/html"));
+  for (const route of ["/privacy", "/terms"]) {
+    const document = await realFetch(`${baseUrl}${route}`);
+    assert.equal(document.status, 200);
+    assert.ok(document.headers.get("content-type")?.includes("text/html"));
+    const html = await document.text();
+    assert.ok(html.includes("Patryk Wróblewski"));
+    assert.equal(html.includes("_PENDING"), false);
+  }
   const health = await request("/health");
   assert.equal(health.status, 200);
   const v1Health = await request("/v1/health");
