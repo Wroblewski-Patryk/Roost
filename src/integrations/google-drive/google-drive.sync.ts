@@ -431,7 +431,11 @@ async function reconcileDriveChanges(input: DriveChangesInput): Promise<GoogleDr
           // No configured roots: only reconcile already tracked records, never import the whole account.
           const hasRoots = Boolean((settings.config.selectedFolderIds ?? settings.config.rootFolderIds)?.length);
           const scope = hasRoots ? await resolveDriveScope(metadata, settings.config, client, cache) : { included: false, mapping: undefined };
-          if ((!scope.included && hasRoots) || (!hasRoots && !existing)) {
+          if (metadata.trashed && existing) {
+            await upsertGoogleDriveFileFromMetadata(input.workspaceId, metadata);
+            await markDriveTreeUnavailable(input.workspaceId, externalId, "trashed");
+            result.removedCount++; eventType = "google_drive_file_removed";
+          } else if ((!scope.included && hasRoots) || (!hasRoots && !existing)) {
             if (existing) { await markDriveTreeUnavailable(input.workspaceId, externalId, "out_of_scope"); eventType = "google_drive_file_removed"; }
             result.skippedCount++;
           } else {

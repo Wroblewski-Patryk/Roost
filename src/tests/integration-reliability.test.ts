@@ -151,6 +151,24 @@ test("integration serialization continues after failure", async () => {
   await Promise.allSettled([first, second]); assert.deepEqual(order, [1, 2]);
 });
 
+test("Drive trash events remain restorable instead of being classified outside the folder scope", async () => {
+  const id = await workspace("google_drive", { selectedFolderIds: ["root"], changesPageToken: "before" });
+  const file = await prisma.googleDriveFile.create({ data: { workspaceId: id, externalId: "file", name: "File", mimeType: "image/png", parentExternalId: "root" } });
+  let trashed = true;
+  globalThis.fetch = async input => {
+    const path = new URL(String(input)).pathname;
+    if (path.endsWith("/changes")) return json({ newStartPageToken: trashed ? "trashed" : "restored", changes: [{ fileId: "file", time: trashed ? "1" : "2", file: { id: "file", name: "File", mimeType: "image/png", parents: ["root"], trashed } }] });
+    return json({ id: "root", name: "Root", mimeType: "application/vnd.google-apps.folder" });
+  };
+  await reconcileGoogleDriveChangesForWorkspace({ workspaceId: id });
+  const deleted = await prisma.googleDriveFile.findUniqueOrThrow({ where: { id: file.id } });
+  assert.equal(deleted.trashed, true); assert.equal(deleted.syncStatus, "trashed");
+  trashed = false;
+  await reconcileGoogleDriveChangesForWorkspace({ workspaceId: id });
+  const restored = await prisma.googleDriveFile.findUniqueOrThrow({ where: { id: file.id } });
+  assert.equal(restored.trashed, false); assert.equal(restored.syncStatus, "synced");
+});
+
 test("ClickUp acknowledges a durable webhook while maintenance holds the workspace lock", async () => {
   const id = await workspace("clickup", { teamId: "team", listIds: ["list"] });
   await prisma.externalWebhookRegistration.create({ data: { workspaceId: id, provider: "clickup", externalId: "blocked-webhook", scopeType: "list", scopeExternalId: "list", endpointUrl: "https://example.test", events: [], status: "active", secretCiphertext: encryptSecret("synthetic") } });
