@@ -11,6 +11,7 @@ import { reconcileGoogleDriveChangesForWorkspace } from "../integrations/google-
 import { withIntegrationLock } from "../integrations/sync-lock";
 import { providerRequest } from "../integrations/provider-request";
 import { GoogleDriveClient } from "../integrations/google-drive/google-drive.client";
+import { googleDriveSecretStatus } from "../integrations/integration-settings.service";
 import { readGoogleDriveFileContent, updateGoogleDriveFileMetadata } from "../integrations/google-drive/google-drive.content";
 
 const url = new URL(process.env.DATABASE_URL!);
@@ -32,6 +33,13 @@ test("ClickUp archive, restore and explicit field removal preserve semantics", (
   const archived = mapClickUpTaskToCompanyCoreTask(input, "workspace");
   assert.equal(archived.status, "archived"); assert.equal(archived.dueDate, null); assert.equal(archived.priority, null);
   assert.equal(mapClickUpTaskToCompanyCoreTask({ ...input, archived: false }, "workspace").status, "todo");
+});
+
+test("Drive settings expose saved OAuth client presence for reconnect without exposing credentials", () => {
+  const status = googleDriveSecretStatus(encryptSecret(JSON.stringify({ clientId: "synthetic-id", clientSecret: "synthetic-secret" })));
+  assert.equal(status.hasClientId, true);
+  assert.equal(status.hasClientSecret, true);
+  assert.equal(JSON.stringify(status).includes("synthetic"), false);
 });
 
 test("ClickUp pagination goes beyond ten pages and fails on incomplete capped results", async () => {

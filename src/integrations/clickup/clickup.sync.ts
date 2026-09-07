@@ -13,6 +13,7 @@ type SyncResult = {
   workspaceId: string;
   importMode: ClickUpImportMode;
   itemCount: number;
+  unavailableCount: number;
   createdCount: number;
   updatedCount: number;
   skippedCount: number;

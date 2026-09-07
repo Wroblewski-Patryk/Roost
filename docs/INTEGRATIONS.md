@@ -3,6 +3,8 @@
 ## Current reliability contract (September 2026)
 
 Both adapters support provider-first writes and periodic inbound repair.
+Drive settings expose only OAuth client presence flags, including server-configured
+credentials, so reconnect can reuse a saved client without re-entering its secrets.
 ClickUp and Drive maintenance run independently every 15 minutes by default.
 `CLICKUP_MAINTENANCE_INTERVAL_MINUTES` and
 `GOOGLE_DRIVE_MAINTENANCE_INTERVAL_MINUTES` configure the intervals; zero disables.

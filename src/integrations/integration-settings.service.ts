@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "../db/prisma";
 import { IntegrationError } from "./errors";
 import { decryptSecret } from "./secrets";
+import { env } from "../config/env";
 
 export const supportedIntegrationProviders = ["clickup", "google_drive"] as const;
 export type IntegrationProvider = typeof supportedIntegrationProviders[number];
@@ -117,8 +118,12 @@ export function parseGoogleDriveOAuthSecret(
 
 export function googleDriveSecretStatus(secretCiphertext: string | null | undefined) {
   const secret = parseGoogleDriveOAuthSecret(secretCiphertext, { failClosed: false });
+  const hasClientId = Boolean(secret?.clientId ?? env.googleOAuthClientId);
+  const hasClientSecret = Boolean(secret?.clientSecret ?? env.googleOAuthClientSecret);
   return {
-    oauthClientConfigured: Boolean(secret?.clientId),
+    hasClientId,
+    hasClientSecret,
+    oauthClientConfigured: hasClientId,
     oauthTokenConfigured: Boolean(secret?.refreshToken || secret?.accessToken)
   };
 }
