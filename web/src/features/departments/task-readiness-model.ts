@@ -1,6 +1,7 @@
 export type Reference = { id: string; revision: string; evidence?: string };
 export type CatalogEntry = { id: string; label: string; revision: string; eligible?: boolean; applicationId?: string | null };
 export type ReadyEditor = {
+  submissionVersion: string;
   task: { id: string; title: string; status: string; project: { id: string; name: string } | null; goal: { id: string; title: string } | null };
   agent: { id: string; name: string; role: string; eligible: boolean; competencies: string[]; tools: string[]; permissions: string[] } | null;
   applications: { id: string; name: string }[]; applicationId: string | null;
@@ -50,7 +51,7 @@ export function selectReferences(previous: Reference[], catalog: CatalogEntry[],
 export function contractInput(editor: ReadyEditor, draft: Draft) {
   const v = draft.values;
   const set = (key: RefGroup) => ({ items: draft.refs[key].map(item => key === "skills" ? { name: item.id, version: item.revision } : key === "dependencies" ? { id: item.id, revision: item.revision, evidence: item.evidence ?? "", resolution: "satisfied" } : { id: item.id, revision: item.revision }), noneReason: draft.refs[key].length ? null : draft.none[key] });
-  return { applicationId: editor.applicationId, prompt: v.prompt || null, baseBranch: v.baseBranch || null, contract: {
+  return { expectedVersion: editor.submissionVersion, applicationId: editor.applicationId, prompt: v.prompt || null, baseBranch: v.baseBranch || null, contract: {
     version: v.version, objective: { outcome: v.outcome, goalId: editor.task.goal?.id }, scope: { allowed: lines(v.allowed), forbidden: lines(v.forbidden) },
     assignment: { agentId: editor.agent?.id, role: editor.agent?.role, competencies: draft.competencies }, modelSelection: { model: draft.model, reasoningEffort: draft.effort },
     context: Object.fromEntries(["company", "product", "technical"].map(key => [key, draft.refs[key as RefGroup].map(({ id, revision }) => ({ id, revision }))])),

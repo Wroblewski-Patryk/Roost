@@ -8,7 +8,7 @@ It does not activate production agents, automatic recovery or the Soar pilot.
 
 First submit the explicit contract through
 `POST /v1/agent-runtime/tasks/:id/actions/submit-for-execution` with
-`{applicationId, contract, prompt?, baseBranch?}`. This requires
+`{requestId, expectedVersion, applicationId, contract, prompt?, baseBranch?}`. This requires
 `agent-runtime:write` and a current human workspace owner/admin/member role.
 Viewers and API keys, including wildcard keys and worker profiles, cannot accept Ready.
 The API resolves current canonical context and runs the same packet validator
@@ -30,7 +30,7 @@ No defaults invent missing intent or permissions.
 `GET /v1/agent-runtime/tasks/:id/execution-readiness?editor=1` adds a workspace-scoped
 editor projection to the existing readiness result. Optional `applicationId`
 must identify an application linked to the task project. It returns labels,
-revision references, the accepted editable contract, acceptance author/time,
+revision references, an opaque `submissionVersion`, the accepted editable contract, acceptance author/time,
 current human write eligibility and execution availability. It excludes resolved
 source bodies and agent runtime metadata. Company/application sources are bounded
 to 500 recent nonarchived records; project/goal/agent choices to 500; procedure,
@@ -43,17 +43,69 @@ budgets, acceptance evidence and recovery. Missing optional context requires an
 explicit reason. Adding a reference preserves selected revisions; upgrading stale
 references requires a separate action. Project/goal/executor corrections use the
 existing work-item PATCH; changes to only internal links do not call ClickUp.
-The client sends no pin, hash, validation proof or acceptance identity. Only the
-existing submit command can validate and persist these. Task status remains
+The client sends the reviewed `submissionVersion` as `expectedVersion` and a
+UUID `requestId`, never an admission pin, validation proof or acceptance identity.
+Only the existing submit command can validate and persist admission. Task status remains
 separate from Ready, and prior acceptance proof remains visible after invalidation.
 Errors display fixed translated diagnostic groups without echoing raw payloads.
-Full Draft/Needs-context/Decision and automatic interviews remain outside this slice.
+The form action is **Submit for execution / Przekaż do wykonania**. Missing input
+persists **Needs context**, or **Needs decision** when all diagnostics concern
+decisions. Translated diagnostics survive refresh; rejected input is not stored.
+The form retains unaccepted edits, uses the same request ID on ambiguous network
+retry, and requires refreshing/reviewing a stale version. Automatic interviews
+remain outside this slice.
+
+### Submit is the only Ready transition (RF-CTX-008)
+
+Migration `20260907230000_submit_only_ready` makes `Task.executionReadiness`
+non-null with a durable `draft` default, preserving ordinary `Task.status` as the
+independent delivery workflow. Creation, assignment, imports and free status edits
+cannot grant executable Ready. Missing/legacy command preconditions are rejected;
+the command continues to require a current human owner/admin/member, including a
+membership recheck inside its transaction. Wildcard API keys remain ineligible.
+
+The editor's opaque version hashes its canonical task/application context, selected
+application, task update time and current admission state. The submit transaction
+locks the shared source fence and task, compares that reviewed version, resolves
+the submitted references and runs the complete existing packet validator. Scope,
+assignment, sources, model, access, budget, acceptance and recovery validation all
+run before persisting source watches, the Ready pin, command receipt and event.
+An incomplete command atomically records a nonexecuting state and safe field/reason
+diagnostics instead. Stale versions and transaction conflicts fail closed without
+acceptance. Structural validation is not a proof of arbitrary semantic completeness
+or execution/provider readiness.
+
+`task_execution_submissions` holds task/request identity, actor, canonical request
+hash, transaction identity, admission digest and bounded result. No rejected input
+or source body is stored there. A task/request key accepts only the same payload
+and actor. Repeated delivery returns the durable result without a new pin/event;
+an accepted receipt is rechecked against current Ready and cannot restore a
+superseded or invalidated pin. Concurrent transactions may return a serialization
+conflict; retrying the same command safely resolves the committed receipt. A new
+payload or reviewed version requires a new request ID. API restart loses no receipt.
+
+A database trigger permits new/changed Ready only with a matching successful
+command receipt, exact admission digest, eligible member and the same database
+transaction. Ordinary ORM/SQL writes, old API code and imports cannot forge or
+restore it from a prior receipt. Receipts are immutable until their owning task
+is deleted. Earlier Ready proofs are invalidated with `submission_required` during
+migration; active attempts receive the existing stop fence. The receipt insertion
+is a trusted command implementation boundary: unrestricted database writers who
+can fabricate command records, disable triggers or replace code are outside it.
+No trigger or client check substitutes for server authorization and validation.
+
+Submission grants Ready only. Queue and claim remain separate guarded operations;
+there is no automatic interview, scheduling, activation, or new execution on
+create/assign/edit. PostgreSQL tests cover rollback, stale context, concurrency,
+receipt replay across a fresh API process, rejected alternate writes and explicit
+queue/claim. PL/EN browser tests cover durable states and retry after a lost response.
 
 ### Accepted context at Ready (RF-CTX-006)
 
-`Task.executionReadiness` is a nullable JSON field, separate from ordinary
-`Task.status`. Migration `20260906141000_task_ready_context_pin` adds it without
-backfilling older tasks. It stores schema `roost-ready-context-v1`, acceptance
+`Task.executionReadiness` is a JSON field, separate from ordinary
+`Task.status`. Migration `20260906141000_task_ready_context_pin` originally added
+it as nullable; the Submit-only migration above introduces durable Draft defaults.
+Ready stores schema `roost-ready-context-v1`, command UUID, acceptance
 UUID, SHA-256 revision, accepted contract/instruction/branch/application,
 validator identity, the same validated revision, timestamp and submitting actor.
 Source context stays in its canonical records. `task_execution_ready` events
@@ -87,7 +139,8 @@ the previous proof. Reverting records after detected invalidation does not
 restore Ready. Reconcile/cancel the prior execution, review/replan the task and
 submit the current contract explicitly. Changing a referenced source revision
 also requires updating that contract reference. An invalid submission preserves
-the existing proof and returns safe field/reason diagnostics.
+the historical proof but changes admission to a nonexecuting state and returns
+safe field/reason diagnostics.
 
 Migration `20260907213000_ready_source_invalidation` makes source invalidation
 eager and transactional. Ready acceptance records `sourceWatchVersion: "1"`

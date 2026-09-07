@@ -144,9 +144,9 @@ function executionReportMetadata(existing: Prisma.JsonValue, reported: Record<st
 agentRuntimeRouter.post("/tasks/:id/actions/submit-for-execution", asyncHandler(async (req, res) => {
   if (!requireWorkspaceRole(req, res, "member")) return;
   const taskId = z.string().uuid().parse(req.params.id);
-  const input = z.object({ applicationId: z.string().uuid(), contract: z.record(z.unknown()), prompt: z.string().max(20000).nullable().optional(), baseBranch: z.string().max(240).nullable().optional() }).strict().parse(req.body);
+  const input = z.object({ requestId: z.string().uuid(), expectedVersion: z.string().regex(/^[a-f0-9]{64}$/), applicationId: z.string().uuid(), contract: z.record(z.unknown()), prompt: z.string().max(20000).nullable().optional(), baseBranch: z.string().max(240).nullable().optional() }).strict().parse(req.body);
   const result = await readyTransaction(tx => submitReady(tx, req.auth!.workspaceId, taskId, input, actor(req)));
-  if ("error" in result && result.error) return sendApiError(res, result.error === "task_not_found" ? 404 : 409, result.error, { details: result });
+  if ("error" in result && result.error) return sendApiError(res, result.error === "task_not_found" ? 404 : result.error === "forbidden" ? 403 : 409, result.error, { details: result });
   res.json({ data: result });
 }));
 

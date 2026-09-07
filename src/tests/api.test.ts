@@ -2,6 +2,7 @@ import { protocol } from "../modules/agent-runtime/host-protocol";
 const hostProtocolHeaders = { "X-Roost-Host-Protocol": String(protocol.version), "X-Roost-Host-Capabilities": protocol.requiredHostCapabilities.join(",") };
 const validHostMetadata = { runnerVersion: "roost-codex-agent-host-v1", protocolVersion: protocol.version, executionMode: "supervised" };
 import { strict as assert } from "assert";
+import { randomUUID } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { spawn } from "node:child_process";
 import path from "node:path";
@@ -1223,7 +1224,12 @@ test("product engineering keeps definitions shared, observations explicit, and p
   assert.equal(revisionBody.status, "draft");
 });
 
-async function prepareReadyFixture(workspaceId: string, taskId: string, applicationId: string, auth: Record<string, string>) {
+async function submissionInput(route: string, input: any, auth: Record<string, string>) {
+  if (!route.endsWith("/actions/submit-for-execution")) return input;
+  const read = await request(`${route.replace("/actions/submit-for-execution", "/execution-readiness")}?editor=1&applicationId=${input.applicationId}`, { headers: auth });
+  return { ...input, requestId: randomUUID(), expectedVersion: (read.body as any).data?.editor?.submissionVersion ?? "a".repeat(64) };
+}
+async function prepareReadyFixture(workspaceId: string, taskId: string, applicationId: string, auth: Record<string, string>, accept = true) {
   const { validPacketFixture } = await new Function("specifier", "return import(specifier)")(pathToFileURL(path.resolve("scripts/fixtures/execution-packet.mjs")).href);
   const f = validPacketFixture();
   const goal = await prisma.goal.create({ data: { workspaceId, title: "Synthetic accepted goal" } });
@@ -1239,10 +1245,135 @@ async function prepareReadyFixture(workspaceId: string, taskId: string, applicat
   f.packet.contract.objective.goalId = goal.id;
   f.packet.contract.assignment.agentId = agent.id;
   const input = { applicationId, contract: f.packet.contract };
-  const ready = await request(`/v1/agent-runtime/tasks/${taskId}/actions/submit-for-execution`, { method: "POST", headers: auth, body: JSON.stringify(input) });
+  if (!accept) return { input, sources, goal, agent, readiness: { revision: "", pinId: "" } };
+  const route = `/v1/agent-runtime/tasks/${taskId}/actions/submit-for-execution`;
+  const ready = await request(route, { method: "POST", headers: auth, body: JSON.stringify(await submissionInput(route, input, auth)) });
   assert.equal(ready.status, 200, JSON.stringify(ready.body));
   return { input, sources, goal, agent, readiness: (ready.body as { data: { readiness: { revision: string; pinId: string } } }).data.readiness };
 }
+
+test("Submit for execution is the sole durable and versioned Ready command", async t => {
+  const owner = await registerOwner("submit-only@example.com", "Submit-only fixture");
+  const workspaceId = owner.workspace.id, auth = { Authorization: `Bearer ${owner.token}` };
+  const application = await prisma.application.create({ data: { workspaceId, name: "Submit application", slug: "submit-only" } });
+  const project = await prisma.project.create({ data: { workspaceId, name: "Submit project" } });
+  await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id } });
+  const created = await request("/v1/tasks", { method: "POST", headers: auth, body: JSON.stringify({ title: "Draft submission", projectId: project.id, status: "in_progress", executionReadiness: { status: "ready" } }) });
+  assert.equal(created.status, 201);
+  const taskId = (created.body as any).data.id, route = `/v1/agent-runtime/tasks/${taskId}/actions/submit-for-execution`;
+  const f = await prepareReadyFixture(workspaceId, taskId, application.id, auth, false);
+  const post = (url: string, body: any, headers: Record<string, string> = auth) => request(url, { method: "POST", headers, body: JSON.stringify(body) });
+  const input = (body = f.input) => submissionInput(route, body, auth);
+  const read = async () => (await prisma.task.findUniqueOrThrow({ where: { id: taskId } })).executionReadiness as any;
+  const queue = () => post("/v1/agent-runtime/executions", { taskId, applicationId: application.id });
+  const key = await post("/v1/api-keys", { name: "Synthetic worker", profileId: "mcp_codex_worker" });
+  const worker = { "X-API-Key": (key.body as any).data.key, ...hostProtocolHeaders };
+  const hostSlug = "submit-only-host";
+  await post("/v1/agent-runtime/hosts/register", { name: "Submit fixture", slug: hostSlug, platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities }, worker);
+  const claim = () => post("/v1/agent-runtime/executions/claim", { hostSlug }, worker);
+  process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
+  let accepted: any, proof: any;
+  try {
+    await t.test("create, assign, import and free status edits stay Draft and cannot queue or claim", async () => {
+      assert.equal((await read()).status, "draft");
+      await request(`/v1/operations/work-items/${taskId}`, { method: "PATCH", headers: auth, body: JSON.stringify({ assignedWorkforceEntityId: f.agent.id, status: "todo" }) });
+      await request(`/v1/tasks/${taskId}`, { method: "PATCH", headers: auth, body: JSON.stringify({ status: "in_progress", executionReadiness: { status: "ready" } }) });
+      await prisma.task.update({ where: { id: taskId }, data: { source: "clickup", externalId: "synthetic-import" } });
+      assert.equal((await read()).status, "draft"); assert.equal((await queue()).status, 409);
+      assert.equal((await claim()).status, 204);
+      const freeReady = await request(`/v1/tasks/${taskId}`, { method: "PATCH", headers: auth, body: JSON.stringify({ status: "ready" }) });
+      assert.equal(freeReady.status, 400);
+      assert.equal((await post(route, f.input)).status, 400); // old API without preconditions
+      await assert.rejects(prisma.task.update({ where: { id: taskId }, data: { executionReadiness: { status: "ready", sourceWatchVersion: "1" } } }));
+    });
+    await t.test("incomplete submission persists Needs context, safe diagnostics and one receipt", async () => {
+      const bad = await input({ ...f.input, contract: { secret: "SYNTHETIC_REJECTED_VALUE" } });
+      const first = await post(route, bad), second = await post(route, bad);
+      assert.equal(first.status, 409); assert.deepEqual((second.body as any).errorDetails.details, (first.body as any).errorDetails.details);
+      assert.equal((await read()).status, "needs_context");
+      assert.equal((await queue()).status, 409); assert.equal((await claim()).status, 204);
+      const receipts = await prisma.$queryRaw<any[]>`SELECT result FROM task_execution_submissions WHERE task_id = ${taskId}::uuid`;
+      assert.equal(receipts.length, 1); assert.equal(JSON.stringify(receipts).includes("SYNTHETIC_REJECTED_VALUE"), false);
+      assert.equal(await prisma.event.count({ where: { taskId, type: "task_execution_submission_rejected" } }), 1);
+    });
+    await t.test("missing decision is durable and nonexecuting", async () => {
+      const bad = await input({ ...f.input, contract: { ...f.input.contract, decisions: { items: [], noneReason: null } } });
+      assert.equal((await post(route, bad)).status, 409); assert.equal((await read()).status, "needs_decision");
+      assert.equal((await queue()).status, 409);
+    });
+    await t.test("task and source edits after review reject stale versions without accepting", async () => {
+      let stale = await input();
+      await prisma.goal.update({ where: { id: f.goal.id }, data: { description: "Changed after review" } });
+      assert.equal(((await post(route, stale)).body as any).error, "task_submission_version_conflict");
+      stale = await input();
+      await prisma.task.update({ where: { id: taskId }, data: { title: "Revised task intent" } });
+      assert.equal(((await post(route, stale)).body as any).error, "task_submission_version_conflict");
+      assert.equal((await read()).status, "needs_decision");
+    });
+    await t.test("one explicit complete submission pins Ready; duplicate delivery does not duplicate evidence", async () => {
+      accepted = await input();
+      const first = await post(route, accepted), second = await post(route, accepted);
+      assert.equal(first.status, 200, JSON.stringify(first.body)); assert.equal(second.status, 200);
+      assert.deepEqual(first.body, second.body); proof = await read();
+      assert.equal(proof.submissionId, accepted.requestId);
+      assert.equal(await prisma.event.count({ where: { taskId, type: "task_execution_ready" } }), 1);
+      assert.equal(await prisma.agentExecution.count({ where: { taskId } }), 0);
+      assert.equal(((await post(route, { ...accepted, prompt: "Changed payload" })).body as any).error, "task_submission_key_conflict");
+    });
+    await t.test("raw writes cannot forge, edit or restore admission using an old receipt", async () => {
+      await assert.rejects(prisma.$executeRaw`DELETE FROM task_execution_submissions WHERE task_id = ${taskId}::uuid`);
+      await assert.rejects(prisma.$executeRaw`UPDATE task_execution_submissions SET result = '{}'::jsonb WHERE task_id = ${taskId}::uuid`);
+      await assert.rejects(prisma.task.update({ where: { id: taskId }, data: { executionReadiness: { ...proof, prompt: "Forged" } } }));
+      await assert.rejects(prisma.task.create({ data: { workspaceId, title: "Forged import", executionReadiness: proof } }));
+      await prisma.task.update({ where: { id: taskId }, data: { executionReadiness: { ...proof, status: "needs_context" } } });
+      await assert.rejects(prisma.task.update({ where: { id: taskId }, data: { executionReadiness: proof } }));
+      assert.equal(((await post(route, accepted)).body as any).error, "task_submission_superseded");
+      assert.equal((await queue()).status, 409);
+    });
+    await t.test("concurrent submissions from one reviewed version grant only one new pin", async () => {
+      const first = await input(), second = { ...first, requestId: randomUUID() };
+      const responses = await Promise.all([post(route, first), post(route, second)]);
+      assert.deepEqual(responses.map(r => r.status).sort(), [200, 409]);
+      accepted = responses[0]!.status === 200 ? first : second;
+      const before = await read();
+      const duplicate = await Promise.all([post(route, accepted), post(route, accepted)]);
+      for (const response of duplicate) assert.ok([200, 409].includes(response.status));
+      assert.equal((await post(route, accepted)).status, 200);
+      assert.equal((await read()).pinId, before.pinId);
+      assert.equal(await prisma.event.count({ where: { taskId, type: "task_execution_ready" } }), 2);
+    });
+    await t.test("a transaction rollback leaves no Ready, receipt, or acceptance event", async () => {
+      const { submitReady, readyTransaction } = await import("../modules/agent-runtime/task-execution-readiness");
+      const user = await prisma.user.findFirstOrThrow({ where: { email: "submit-only@example.com" } });
+      const command = await input(), before = await read();
+      await assert.rejects(readyTransaction(async tx => {
+        const result = await submitReady(tx, workspaceId, taskId, command, { requestedByType: "user", requestedById: user.id });
+        assert.equal(result.readiness?.status, "ready"); throw new Error("synthetic_rollback");
+      }), /synthetic_rollback/);
+      assert.deepEqual(await read(), before);
+      assert.equal((await prisma.$queryRaw<any[]>`SELECT request_id FROM task_execution_submissions WHERE task_id = ${taskId}::uuid AND request_id = ${command.requestId}::uuid`).length, 0);
+      assert.equal(await prisma.event.count({ where: { taskId, type: "task_execution_ready" } }), 2);
+    });
+    await t.test("a fresh API process replays the durable receipt without granting a new pin", async () => {
+      const script = `const {createApp}=require('./dist/app');const {prisma}=require('./dist/db/prisma');const server=createApp().listen(0,'127.0.0.1',async()=>{try{const r=await fetch('http://127.0.0.1:'+server.address().port+process.env.FIXTURE_ROUTE,{method:'POST',headers:{'Content-Type':'application/json',Authorization:process.env.FIXTURE_AUTH},body:process.env.FIXTURE_BODY});const b=await r.json();console.log(JSON.stringify({status:r.status,pinId:b.data?.readiness?.pinId}));}finally{server.closeAllConnections();server.close();await prisma.$disconnect();}});`;
+      const child = spawn(process.execPath, ["-e", script], { windowsHide: true, env: { ...process.env, FIXTURE_ROUTE: route, FIXTURE_AUTH: auth.Authorization, FIXTURE_BODY: JSON.stringify(accepted) }, stdio: ["ignore", "pipe", "pipe"] });
+      let output = ""; child.stdout.on("data", chunk => { output += chunk; });
+      const exit = await new Promise(resolve => child.on("exit", resolve)); assert.equal(exit, 0);
+      const result = JSON.parse(output.trim().split(/\r?\n/).at(-1)!);
+      assert.equal(result.status, 200); assert.equal(result.pinId, (await read()).pinId);
+    });
+    await t.test("current role is required for replay; only explicit queue can produce a claim", async () => {
+      assert.equal((await post(route, accepted, worker)).status, 403);
+      const user = await prisma.user.findFirstOrThrow({ where: { email: "submit-only@example.com" } });
+      await prisma.workspaceMembership.update({ where: { workspaceId_userId: { workspaceId, userId: user.id } }, data: { role: "viewer" } });
+      assert.equal((await post(route, accepted)).status, 403);
+      await prisma.workspaceMembership.update({ where: { workspaceId_userId: { workspaceId, userId: user.id } }, data: { role: "owner" } });
+      assert.equal((await claim()).status, 204);
+      assert.equal((await queue()).status, 201);
+      assert.equal((await claim()).status, 200);
+    });
+  } finally { delete process.env.ROOST_CODEX_EXECUTION_ENABLED; }
+});
 
 test("Ready pins validation and rejects stale queue, preparation and recovery without replacing evidence", async () => {
   const owner = await registerOwner("ready-owner@example.com", "Ready Fixture");
@@ -1255,10 +1386,10 @@ test("Ready pins validation and rejects stale queue, preparation and recovery wi
   await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id } });
   const task = await prisma.task.create({ data: { workspaceId: owner.workspace.id, projectId: project.id, title: "Accepted task intent" } });
   const route = `/v1/agent-runtime/tasks/${task.id}`;
-  const post = (url: string, body: unknown, headers = auth as Record<string, string>) => request(url, { method: "POST", headers, body: JSON.stringify(body) });
+  const post = async (url: string, body: unknown, headers = auth as Record<string, string>) => request(url, { method: "POST", headers, body: JSON.stringify(await submissionInput(url, body, headers)) });
   const queue = (extra = {}) => post("/v1/agent-runtime/executions", { taskId: task.id, ...extra });
   const readiness = () => request(`${route}/execution-readiness`, { headers: auth });
-  assert.equal(task.executionReadiness, null);
+  assert.deepEqual(task.executionReadiness, { status: "draft" });
   assert.equal((await readiness()).status, 200);
   process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
   try {
@@ -1274,7 +1405,9 @@ test("Ready pins validation and rejects stale queue, preparation and recovery wi
     assert.equal((await request(`${route}/execution-readiness`, { headers: { Authorization: `Bearer ${outsider.token}` } })).status, 404);
     const invalid = await post(`${route}/actions/submit-for-execution`, { ...f.input, contract: { secret: "SYNTHETIC_SECRET" } });
     assert.equal(invalid.status, 409); assert.equal(JSON.stringify(invalid.body).includes("SYNTHETIC_SECRET"), false);
-    assert.equal(((await readiness()).body as { data: { pinId: string } }).data.pinId, f.readiness.pinId);
+    assert.equal(((await readiness()).body as any).data.status, "needs_context");
+    assert.equal(((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness as any).pinId, f.readiness.pinId);
+    assert.equal((await post(`${route}/actions/submit-for-execution`, f.input)).status, 200);
     await prisma.task.update({ where: { id: task.id }, data: { title: task.title } });
     assert.equal(((await readiness()).body as { data: { status: string } }).data.status, "ready");
     assert.equal(((await queue({ prompt: "Different owner instruction" })).body as { error: string }).error, "task_ready_contract_mismatch");
@@ -1317,7 +1450,7 @@ test("Ready pins validation and rejects stale queue, preparation and recovery wi
     assert.equal(unchanged.checkpointVersion, 1); assert.equal(unchanged.leaseToken, claimed.leaseToken); assert.equal(unchanged.attempt, 1);
     assert.equal(await prisma.agentExecution.count({ where: { taskId: task.id } }), 2);
     const proofs = await prisma.event.findMany({ where: { taskId: task.id, type: "task_execution_ready" } });
-    assert.equal(proofs.length, 3); assert.ok(proofs.some(e => (e.payload as { pinId: string }).pinId === f.readiness.pinId));
+    assert.equal(proofs.length, 4); assert.ok(proofs.some(e => (e.payload as { pinId: string }).pinId === f.readiness.pinId));
   } finally { delete process.env.ROOST_CODEX_EXECUTION_ENABLED; }
 });
 
@@ -1332,15 +1465,15 @@ test("Ready source writes atomically invalidate accepted read scopes without a r
   await prisma.applicationCapability.create({ data: { applicationId: application.id, capabilityDefinitionId: definition.id, applicability: "recommended" } });
   const task = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: "Watched task" } });
   const f = await prepareReadyFixture(workspaceId, task.id, application.id, auth);
-  const { readyTransaction, submitReady, inspectReady, lockReadyTask } = await import("../modules/agent-runtime/task-execution-readiness");
-  const actor = { requestedByType: "user", requestedById: null };
+  const { readyTransaction, submitReady, inspectReady, lockReadyTask, submissionVersion } = await import("../modules/agent-runtime/task-execution-readiness");
+  const actor = { requestedByType: "user", requestedById: (await prisma.user.findFirstOrThrow({ where: { email: "ready-source-write@example.com" } })).id };
   const pin = async () => (await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness as any;
   const accept = async () => {
     for (const category of ["company", "product", "technical"]) {
       const ref = f.input.contract.context[category][0];
       ref.revision = (await prisma.companyRecord.findUniqueOrThrow({ where: { id: ref.id } })).updatedAt.toISOString();
     }
-    const result = await readyTransaction(tx => submitReady(tx, workspaceId, task.id, f.input, actor));
+    const result = await readyTransaction(async tx => submitReady(tx, workspaceId, task.id, { ...f.input, requestId: randomUUID(), expectedVersion: await submissionVersion(tx, workspaceId, task.id, application.id) }, actor));
     assert.equal("error" in result, false, JSON.stringify(result));
     return pin();
   };
@@ -1424,7 +1557,7 @@ test("Ready source writes atomically invalidate accepted read scopes without a r
     const released = new Promise<void>(resolve => { release = resolve; });
     const accepting = readyTransaction(async tx => {
       await lockReadyTask(tx, workspaceId, task.id); acquired(); await released;
-      return submitReady(tx, workspaceId, task.id, f.input, actor);
+      return submitReady(tx, workspaceId, task.id, { ...f.input, requestId: randomUUID(), expectedVersion: await submissionVersion(tx, workspaceId, task.id, application.id) }, actor);
     });
     await locked;
     const writing = prisma.$transaction(async tx => {
@@ -1452,7 +1585,7 @@ test("Ready source writes atomically invalidate accepted read scopes without a r
     const releaseRead = new Promise<void>(resolve => { release = resolve; });
     const accepting = readyTransaction(async tx => {
       await tx.goal.findUniqueOrThrow({ where: { id: f.goal.id } }); read(); await releaseRead;
-      return submitReady(tx, workspaceId, task.id, f.input, actor);
+      return submitReady(tx, workspaceId, task.id, { ...f.input, requestId: randomUUID(), expectedVersion: await submissionVersion(tx, workspaceId, task.id, application.id) }, actor);
     });
     await readDone;
     await prisma.goal.update({ where: { id: f.goal.id }, data: { description: "Before acceptance" } });
@@ -1472,7 +1605,7 @@ test("Ready source writes atomically invalidate accepted read scopes without a r
     await assert.rejects(prisma.$transaction(async tx => {
       // Transactional DDL in the isolated fixture database; rejection rolls it back.
       await tx.$executeRaw`ALTER TABLE goals DISABLE TRIGGER ready_source_fence`;
-      await submitReady(tx, workspaceId, task.id, f.input, actor);
+      await submitReady(tx, workspaceId, task.id, { ...f.input, requestId: randomUUID(), expectedVersion: await submissionVersion(tx, workspaceId, task.id, application.id) }, actor);
     }), /ready_source_trigger_missing/);
     assert.equal((await pin()).pinId, previous.pinId);
   });
@@ -1483,7 +1616,7 @@ test("active context stop fences late reports, checkpoints, recovery and complet
   const workspaceId = owner.workspace.id, auth = { Authorization: `Bearer ${owner.token}` };
   const key = await request("/v1/api-keys", { method: "POST", headers: auth, body: JSON.stringify({ name: "Context stop fixture", profileId: "mcp_codex_worker" }) });
   const worker = { "X-API-Key": (key.body as any).data.key, ...hostProtocolHeaders };
-  const post = (url: string, body: any, headers: Record<string, string> = worker) => request(url, { method: "POST", headers, body: JSON.stringify(body) });
+  const post = async (url: string, body: any, headers: Record<string, string> = worker) => request(url, { method: "POST", headers, body: JSON.stringify(await submissionInput(url, body, headers)) });
   let serial = 0;
   async function fixture(stage = "running") {
     const slug = `active-context-${++serial}`;
@@ -1634,7 +1767,7 @@ test("Ready workbench projects safe catalogs and requires a current human role f
     assert.equal("runtimeProfile" in body.data.editor.agent, false);
     const updatedSource = await prisma.companyRecord.findUniqueOrThrow({ where: { id: f.sources[0]!.id } });
     f.input.contract.context.company[0].revision = updatedSource.updatedAt.toISOString();
-    const submit = await request(`${route}/actions/submit-for-execution`, { method: "POST", headers: auth, body: JSON.stringify(f.input) });
+    const submit = await request(`${route}/actions/submit-for-execution`, { method: "POST", headers: auth, body: JSON.stringify(await submissionInput(`${route}/actions/submit-for-execution`, f.input, auth)) });
     assert.equal(submit.status, role === "viewer" ? 403 : 200, JSON.stringify(submit.body));
   }
   await prisma.workspaceMembership.update({ where: { workspaceId_userId: { workspaceId: owner.workspace.id, userId: ownerUser.id } }, data: { role: "owner" } });
@@ -1660,11 +1793,12 @@ test("accepted output budgets remain pinned and budget failures cannot retry or 
   await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id } });
   const task = await prisma.task.create({ data: { workspaceId: owner.workspace.id, projectId: project.id, title: "Bound a synthetic execution" } });
   const f = await prepareReadyFixture(owner.workspace.id, task.id, application.id, auth);
-  const post = (route: string, body: unknown) => request(route, { method: "POST", headers: auth, body: JSON.stringify(body) });
+  const post = async (route: string, body: unknown) => request(route, { method: "POST", headers: auth, body: JSON.stringify(await submissionInput(route, body, auth)) });
   for (const maxOutputTokens of [undefined, 0, -1, 100001]) {
     const rejected = await post(`/v1/agent-runtime/tasks/${task.id}/actions/submit-for-execution`, { ...f.input, contract: { ...f.input.contract, budgets: { ...f.input.contract.budgets, maxOutputTokens } } });
     assert.equal(rejected.status, 409);
   }
+  assert.equal((await post(`/v1/agent-runtime/tasks/${task.id}/actions/submit-for-execution`, f.input)).status, 200);
   const registered = await post("/v1/agent-runtime/hosts/register", { name: "Output host", slug: "output-host", platform: "win32", applicationSlugs: [application.slug], capabilities: protocol.requiredHostCapabilities, metadata: { ...validHostMetadata, outputTokenBudgetEnforcement: "unavailable" } });
   assert.equal(registered.status, 200);
   assert.ok((registered.body as { data: { runtime: { executionUnavailableReasons: string[] } } }).data.runtime.executionUnavailableReasons.includes("output_token_limit_unsupported"));

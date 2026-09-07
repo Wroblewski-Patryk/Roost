@@ -30,14 +30,15 @@ let checked = 0;
 function fixture(mode) {
   const f = validPacketFixture(), c = f.packet.contract;
   const task = { id: f.claimed.taskId, title: "Poprawa formularza zgłoszeń", status: "todo", project: { id: f.taskContext.task.projectId, name: "Portal obsługi klienta" }, goal: { id: c.objective.goalId, title: "Czytelne zgłoszenia bez barier" } };
-  const e = { task, agent: { ...f.taskContext.task.assignedWorkforceEntity, name: "Marta · Quality Engineer", eligible: true, competencies: ["javascript"], tools: c.access.tools, permissions: c.access.permissions }, applications: [{ id: f.claimed.applicationId, name: "Portal obsługi klienta" }], applicationId: f.claimed.applicationId,
+  const e = { submissionVersion: "a".repeat(64), task, agent: { ...f.taskContext.task.assignedWorkforceEntity, name: "Marta · Quality Engineer", eligible: true, competencies: ["javascript"], tools: c.access.tools, permissions: c.access.permissions }, applications: [{ id: f.claimed.applicationId, name: "Portal obsługi klienta" }], applicationId: f.claimed.applicationId,
     projects: [task.project], goals: [task.goal], agents: [{ id: c.assignment.agentId, name: "Marta · Quality Engineer" }], activeExecution: mode === "blocked", catalogTruncated: false,
     models: [{ id: "gpt-5.6-sol", efforts: ["low", "medium", "high"] }],
     sources: f.packet.sources.map((item, i) => ({ id: item.id, label: ["Zasady firmy", "Wymagania portalu", "Architektura formularza"][i], applicationId: item.applicationId, revision: item.revision })), procedures: [], dependencies: [], decisions: [],
     accepted: { contract: c, applicationId: f.claimed.applicationId, prompt: null, baseBranch: null }, acceptance: { validatedAt: "2026-09-06T10:00:00Z", authorName: "Aleksandra Nowak", authorType: "user" } };
   if (mode === "empty") { e.task.goal = null; e.agent = null; e.applications = []; e.applicationId = null; e.accepted = null; e.acceptance = null; }
-  const packet = { status: ["ready", "viewer", "blocked"].includes(mode) ? "ready" : mode === "empty" ? "not_ready" : "needs_revalidation", reason: mode === "empty" ? "ready_pin_required" : "context_changed", revision: "a".repeat(64), validationRevision: "a".repeat(64), pinId: "accepted-fixture", canSubmit: mode !== "viewer", executionEnabled: false, editor: e };
-  if (mode === "empty") { delete packet.revision; delete packet.validationRevision; }
+  const packet = { status: ["ready", "viewer", "blocked"].includes(mode) ? "ready" : mode === "empty" ? "draft" : ["needs_context", "needs_decision"].includes(mode) ? mode : "needs_revalidation", reason: mode === "empty" ? "ready_pin_required" : "context_changed", revision: "a".repeat(64), validationRevision: "a".repeat(64), pinId: "accepted-fixture", canSubmit: mode !== "viewer", executionEnabled: false, editor: e };
+  if (["needs_context", "needs_decision"].includes(mode)) { packet.reason = "submission_incomplete"; packet.issues = [{ field: mode === "needs_decision" ? "contract.decisions" : "contract.context.company", reason: "missing" }]; }
+  if (["empty", "needs_context", "needs_decision"].includes(mode)) { delete packet.revision; delete packet.validationRevision; }
   if (mode === "changed") packet.changedSources = [
     { table: "company_records", id: f.packet.sources[0].id, label: "Zasady akceptacji zmian i potwierdzania aktualności dokumentacji technicznej", operation: "update", changedAt: "2026-09-07T20:00:00Z" },
     { table: "application_repositories", id: "00000000-0000-4000-8000-000000000123", label: "application_repositories", operation: "delete", changedAt: "2026-09-07T20:01:00Z" }
@@ -45,7 +46,7 @@ function fixture(mode) {
   return { f, packet };
 }
 try {
-  for (const locale of process.env.ROOST_QA_INTERACTION_ONLY === "1" ? [] : ["pl", "en"]) for (const width of [390, 834, 1440]) for (const mode of ["ready", "changed", "empty", "viewer", "blocked", "error", "loading"]) {
+  for (const locale of process.env.ROOST_QA_INTERACTION_ONLY === "1" ? [] : ["pl", "en"]) for (const width of [390, 834, 1440]) for (const mode of ["ready", "changed", "empty", "viewer", "blocked", "needs_context", "needs_decision", "error", "loading"]) {
     const page = await browser.newPage({ viewport: { width, height: 960 } });
     const errors = []; page.on("pageerror", error => errors.push(error.message));
     await page.addInitScript(value => localStorage.setItem("companycoreLocale", value), locale);
@@ -66,7 +67,7 @@ try {
     await page.getByRole("dialog").waitFor();
     if (!["loading", "error"].includes(mode)) await page.getByText(locale === "pl" ? "Status zadania:" : "Task status:", { exact: false }).waitFor();
     else await page.getByText(locale === "pl" ? mode === "loading" ? "Sprawdzanie kontekstu i zaakceptowanej rewizji…" : "Nie udało się potwierdzić żądania." : mode === "loading" ? "Checking context and accepted revision…" : "The request could not be confirmed.", { exact: false }).waitFor();
-    if (["viewer", "blocked"].includes(mode)) assert.equal(await page.getByRole("button", { name: locale === "pl" ? "Sprawdź i zaakceptuj ponownie" : "Validate and accept again", exact: true }).count(), 0);
+    if (["viewer", "blocked"].includes(mode)) assert.equal(await page.getByRole("button", { name: locale === "pl" ? "Przekaż do wykonania" : "Submit for execution", exact: true }).count(), 0);
     if (mode === "ready") assert.equal(await page.getByRole("button", { name: locale === "pl" ? "Dodaj zaakceptowane zadanie do kolejki" : "Queue accepted task", exact: true }).isDisabled(), true);
     if (mode === "changed") {
       await page.getByText(locale === "pl" ? "Zmienione źródła (2)" : "Changed sources (2)", { exact: true }).waitFor();
@@ -84,9 +85,9 @@ try {
     const url = route.request().url();
     if (url.includes("execution-readiness")) return route.fulfill({ json: { data: packet } });
     if (url.includes("submit-for-execution")) {
-      const input = route.request().postDataJSON(); assert.deepEqual(Object.keys(input).sort(), ["applicationId", "baseBranch", "contract", "prompt"]);
+      const input = route.request().postDataJSON(); assert.deepEqual(Object.keys(input).sort(), ["applicationId", "baseBranch", "contract", "expectedVersion", "prompt", "requestId"]);
       f.packet.contract = input.contract; sealPacket(f.packet); validateExecutionPacket(f.packet, f.claimed, f.taskContext, f.applicationContext); submitCount++;
-      if (submitCount === 1) return route.fulfill({ status: 409, json: { error: "task_execution_contract_invalid", message: "SYNTHETIC_SECRET", errorDetails: { details: { issues: [{ field: "contract.context.company", reason: "stale" }, { field: "SYNTHETIC_SECRET", reason: "SYNTHETIC_SECRET" }] } } } });
+      if (submitCount === 1) { packet.status = "needs_context"; packet.reason = "submission_incomplete"; packet.editor.submissionVersion = "b".repeat(64); return route.fulfill({ status: 409, json: { error: "task_execution_contract_invalid", message: "SYNTHETIC_SECRET", errorDetails: { details: { issues: [{ field: "contract.context.company", reason: "stale" }, { field: "SYNTHETIC_SECRET", reason: "SYNTHETIC_SECRET" }] } } } }); }
       packet.status = "ready"; delete packet.reason; packet.revision = "b".repeat(64); packet.validationRevision = packet.revision;
       return route.fulfill({ json: { data: { readiness: packet } } });
     }
@@ -102,12 +103,12 @@ try {
   assert.equal(await page.getByRole("searchbox").last().evaluate(node => node === document.activeElement), true);
   await page.screenshot({ path: path.join(output, "en-source-picker-1440.png"), fullPage: true });
   await page.keyboard.press("Escape"); assert.equal(await page.getByRole("dialog").count(), 1);
-  await page.getByRole("button", { name: "Validate and accept again", exact: true }).click();
+  await page.getByRole("button", { name: "Submit for execution", exact: true }).click();
   await page.getByText("Choose at least one current company source with usable content.").first().waitFor();
   assert.equal((await page.locator("body").innerText()).includes("SYNTHETIC_SECRET"), false);
   assert.equal(await page.getByLabel(/^Expected outcome/).inputValue(), f.packet.contract.objective.outcome);
   await page.screenshot({ path: path.join(output, "en-validation-error-1440.png"), fullPage: true });
-  await page.getByRole("button", { name: "Validate and accept again", exact: true }).click();
+  await page.getByRole("button", { name: "Submit for execution", exact: true }).click();
   await page.getByText("The current contract was validated and accepted.", { exact: true }).waitFor();
   assert.equal(submitCount, 2);
   await page.getByRole("button", { name: "Review or update contract" }).last().click();
@@ -135,5 +136,32 @@ try {
   assert.equal(savedTitle, "Saved before Ready");
   assert.equal(await preview.evaluate(() => window.readyOpened), packet.editor.task.id);
   await preview.close(); checked++;
+  for (const locale of ["en", "pl"]) {
+    const retryPage = await browser.newPage({ viewport: { width: 834, height: 960 } });
+    await retryPage.addInitScript(value => localStorage.setItem("companycoreLocale", value), locale);
+    const { packet: retryPacket } = fixture("changed"); const attempts = [];
+    await retryPage.route("**/v1/**", async route => {
+      const url = route.request().url();
+      if (url.includes("execution-readiness")) return route.fulfill({ json: { data: retryPacket } });
+      if (url.includes("submit-for-execution")) {
+        attempts.push(route.request().postDataJSON());
+        if (attempts.length === 1) return route.abort("failed"); // ambiguous ACK; keep the same command identity
+        assert.deepEqual(attempts[1], attempts[0]); assert.match(attempts[0].requestId, /^[a-f0-9-]{36}$/);
+        assert.equal(attempts[0].expectedVersion, retryPacket.editor.submissionVersion);
+        retryPacket.status = "ready";
+        return route.fulfill({ json: { data: { readiness: retryPacket } } });
+      }
+      assert.equal(route.request().method(), "GET");
+      return route.fulfill({ json: { data: url.includes("/v1/tasks?") ? [{ ...retryPacket.editor.task, priority: "normal" }] : { departments: [] } } });
+    });
+    await retryPage.goto(`http://127.0.0.1:${server.address().port}`);
+    await retryPage.locator("button:visible").filter({ hasText: locale === "pl" ? "Przygotuj wykonanie" : "Prepare execution" }).first().click();
+    const submit = retryPage.getByRole("button", { name: locale === "pl" ? "Przekaż do wykonania" : "Submit for execution", exact: true });
+    await submit.click();
+    await retryPage.getByText(locale === "pl" ? "Nie udało się potwierdzić żądania." : "The request could not be confirmed.", { exact: false }).waitFor();
+    await submit.focus(); await retryPage.keyboard.press("Enter");
+    await retryPage.getByText(locale === "pl" ? "Bieżący kontrakt został sprawdzony i zaakceptowany." : "The current contract was validated and accepted.", { exact: true }).waitFor();
+    assert.equal(attempts.length, 2); await retryPage.close(); checked++;
+  }
   console.log(JSON.stringify({ checked, output }));
 } finally { await browser.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }

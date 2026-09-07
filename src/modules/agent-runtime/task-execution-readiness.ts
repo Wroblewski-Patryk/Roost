@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { Prisma, type AgentExecution } from "@prisma/client";
@@ -17,6 +17,16 @@ const loadESM = new Function("specifier", "return import(specifier)") as (specif
 const validation = loadESM(pathToFileURL(path.resolve(__dirname, "../../../scripts/lib/agent-host-execution-packet.mjs")).href);
 const object = (value: unknown): Record<string, any> => value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, any> : {};
 const wire = (value: unknown) => JSON.parse(JSON.stringify(value));
+const canonical = (value: any): any => Array.isArray(value) ? value.map(canonical) : value && typeof value === "object" ? Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])])) : value;
+const digest = (value: unknown) => createHash("sha256").update(JSON.stringify(canonical(wire(value)))).digest("hex");
+
+export async function submissionVersion(db: Prisma.TransactionClient, workspaceId: string, taskId: string, applicationId?: string | null, loaded?: any) {
+  const context = loaded ?? await loadTaskAgentContext(workspaceId, taskId, null, db);
+  if (!context) return null;
+  const application = applicationId ? await loadApplicationAgentContext(workspaceId, applicationId, true, readyContextQuery(context.task, null), db) : {};
+  const revision = readyContextRevision({ ...wire(context), executionPacket: { contract: null, sources: [] } }, wire(application ?? {}), {});
+  return digest({ revision, applicationId: applicationId ?? null, updatedAt: context.task.updatedAt, readiness: context.task.executionReadiness });
+}
 export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T | { error: string }> {
   try { return await prisma.$transaction(work, { isolationLevel: "Serializable", maxWait: 5000, timeout: 20000 }); }
   catch (error) {
@@ -51,29 +61,61 @@ async function resolved(db: Prisma.TransactionClient, workspaceId: string, taskI
 export async function submitReady(db: Prisma.TransactionClient, workspaceId: string, taskId: string, input: Record<string, any>, actor: { requestedByType: string; requestedById: string | null }) {
   const task = await lockReadyTask(db, workspaceId, taskId);
   if (!task) return { error: "task_not_found" };
+  if (actor.requestedByType !== "user" || !actor.requestedById || !await db.workspaceMembership.findFirst({ where: { workspaceId, userId: actor.requestedById, role: { in: ["owner", "admin", "member"] } } })) return { error: "forbidden" };
+  if (!/^[a-f0-9]{64}$/.test(input.expectedVersion ?? "") || !/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(input.requestId ?? "")) return { error: "task_submission_precondition_required" };
+  const requestHash = digest({ ...input, ...actor });
+  const receipts = await db.$queryRaw<Array<{ request_hash: string; result: any }>>`SELECT request_hash, result FROM task_execution_submissions WHERE task_id = ${taskId}::uuid AND request_id = ${input.requestId}::uuid`;
+  if (receipts[0]) {
+    if (receipts[0].request_hash !== requestHash) return { error: "task_submission_key_conflict" };
+    if (receipts[0].result.readiness?.status === "ready") {
+      const current = await inspectReady(db, workspaceId, taskId);
+      if (current.readiness.status !== "ready" || object(current.readiness).pinId !== receipts[0].result.readiness.pinId) return { error: "task_submission_superseded", readiness: current.readiness };
+    }
+    return receipts[0].result;
+  }
   if (await db.agentExecution.count({ where: { workspaceId, taskId, status: { in: ["queued", "claimed", "running", "waiting_for_approval"] } } })) return { error: "task_agent_execution_active" };
+  if (input.expectedVersion !== await submissionVersion(db, workspaceId, taskId, input.applicationId)) return { error: "task_submission_version_conflict" };
+  async function receipt(result: any, pin?: any) {
+    const encodedPin = pin ? JSON.stringify(pin) : null, encodedResult = JSON.stringify(result);
+    await db.$executeRaw`INSERT INTO task_execution_submissions (task_id, request_id, actor_id, request_hash, pin_digest, result)
+      VALUES (${taskId}::uuid, ${input.requestId}::uuid, ${actor.requestedById}::uuid, ${requestHash},
+        CASE WHEN ${encodedPin}::text IS NULL THEN NULL ELSE encode(sha256(convert_to((${encodedPin}::jsonb)::text, 'UTF8')), 'hex') END, ${encodedResult}::jsonb)`;
+    return result;
+  }
   let context;
   try { context = await resolved(db, workspaceId, taskId, input); }
-  catch (error) { return { error: "task_execution_contract_invalid", issues: object(error).details?.issues ?? [] }; }
+  catch (error) {
+    const issues = object(error).details?.issues ?? [];
+    const status = issues.length > 0 && issues.every((issue: any) => /^(contract|taskContext)\.decisions(\.|$)/.test(issue.field)) ? "needs_decision" : "needs_context";
+    const previous = object(task.executionReadiness);
+    await db.task.update({ where: { id: taskId }, data: { executionReadiness: { ...previous, status, reason: "submission_incomplete", issues } } });
+    const result = { error: "task_execution_contract_invalid", issues, readiness: { status, reason: "submission_incomplete", issues } };
+    await receipt(result);
+    await db.event.create({ data: { workspaceId, taskId, type: "task_execution_submission_rejected", source: "roost", resourceType: "task", resourceId: taskId, payload: { requestId: input.requestId, status, issues, ...actor } } });
+    return result;
+  }
   await context.watched.persist(taskId);
-  const pin = { schemaVersion: "roost-ready-context-v1", sourceWatchVersion: "1", status: "ready", pinId: randomUUID(), revision: context.revision,
+  const pin = { schemaVersion: "roost-ready-context-v1", sourceWatchVersion: "1", submissionId: input.requestId, status: "ready", pinId: randomUUID(), revision: context.revision,
     applicationId: input.applicationId, contract: input.contract, prompt: input.prompt ?? null, baseBranch: input.baseBranch ?? null,
     validatedAt: new Date().toISOString(), validation: { validator: "execution-packet-v1", revision: context.revision }, ...actor };
+  const result = { readiness: { status: "ready", pinId: pin.pinId, revision: pin.revision, validationRevision: pin.validation.revision } };
+  await receipt(result, pin);
   await db.task.update({ where: { id: task.id }, data: { executionReadiness: pin } });
   await db.event.create({ data: { workspaceId, taskId, type: "task_execution_ready", source: "roost", resourceType: "task", resourceId: taskId,
     payload: { pinId: pin.pinId, revision: pin.revision, validation: pin.validation, validatedAt: pin.validatedAt, ...actor } } });
-  return { readiness: { status: "ready", pinId: pin.pinId, revision: pin.revision, validationRevision: pin.validation.revision } };
+  return result;
 }
 
 export async function inspectReady(db: Prisma.TransactionClient, workspaceId: string, taskId: string, execution?: AgentExecution) {
   const task = await lockReadyTask(db, workspaceId, taskId);
   if (!task) return { error: "task_not_found", readiness: { status: "not_ready" } };
   const pin = object(task.executionReadiness);
+  if (["draft", "needs_context", "needs_decision"].includes(pin.status)) return { error: "task_ready_pin_required", readiness: { status: pin.status, reason: pin.reason ?? "ready_pin_required", issues: pin.issues ?? [] } };
   const proof = { pinId: pin.pinId, revision: pin.revision, validationRevision: pin.validation?.revision };
   if (pin.schemaVersion !== "roost-ready-context-v1" || !pin.pinId || !/^[a-f0-9]{64}$/.test(pin.revision) || pin.validation?.validator !== "execution-packet-v1" || pin.validation?.revision !== pin.revision) {
     return { error: "task_ready_pin_required", readiness: { status: "not_ready", reason: "ready_pin_required" } };
   }
-  let reason = pin.status !== "ready" ? (["context_changed", "context_invalid", "source_watch_required"].includes(pin.reason) ? pin.reason : "revalidation_required") : pin.sourceWatchVersion !== "1" ? "source_watch_required" : null;
+  let reason = pin.status !== "ready" ? (["context_changed", "context_invalid", "source_watch_required", "submission_required"].includes(pin.reason) ? pin.reason : "revalidation_required") : !pin.submissionId ? "submission_required" : pin.sourceWatchVersion !== "1" ? "source_watch_required" : null;
   let context;
   if (!reason) {
     try {
@@ -119,6 +161,7 @@ export async function readyEditorData(db: Prisma.TransactionClient, workspaceId:
   const agent = task.assignedWorkforceEntity;
   const strings = (value: unknown) => Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
   return {
+    submissionVersion: await submissionVersion(db, workspaceId, taskId, selected, context),
     task: { id: task.id, title: task.title, status: task.status, project: task.project ? { id: task.project.id, name: task.project.name } : null, goal: task.goal ? { id: task.goal.id, title: task.goal.title } : null },
     agent: agent ? { id: agent.id, name: agent.name, role: agent.role, eligible: agent.type === "agent" && agent.status === "active", competencies: strings(agent.skillIndex), tools: strings(agent.toolIndex).filter(item => ["repository_read", "repository_write", "local_test"].includes(item)), permissions: strings(agent.authorityScope).filter(item => ["repository_read", "repository_write", "local_test"].includes(item)) } : null,
     applications, projects, goals, agents, applicationId: selected, activeExecution: active > 0, catalogTruncated: records.length > 500,

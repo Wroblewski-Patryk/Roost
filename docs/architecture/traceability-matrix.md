@@ -32,42 +32,38 @@ for later changes to these same canonical files.
 
 ## Atomic P0 selection
 
-The retained baseline includes accepted Ready pins, persisted source watches,
-transactional Ready invalidation and model/duration/context/protocol gates.
-The current bounded P0 slice is **RF-CTX-006: stopping active work after accepted
-context changes**.
+The retained baseline includes pinned Ready context, source watches and active
+context stopping, plus model/duration/protocol and fail-closed output admission.
+The current bounded P0 slice is **RF-CTX-008: Submit for execution as the only
+transition to executable Ready**.
 
-A source mutation now durably fences active attempts in the same transaction as
-Ready invalidation. The attempt retains its checkpoint, writer ownership and
-lease. Heartbeat, checkpoint, completion and recovery cannot advance it; SQL
-also guards older API writes during rollout. The host observes the signal at
-checkpoint/event/heartbeat boundaries, stops its process tree once and reports
-confirmation idempotently. Additional changed sources remain owner-visible.
-Lost acknowledgement, restart, revert and a newly accepted Ready pin cannot
-resume the old attempt. Closing the confirmed stopped attempt and accepting
-new context are explicit owner actions; local writer reconciliation is separate.
+The existing command and owner contract editor now require a reviewed context
+version and an idempotency request ID. One authoritative transaction validates
+completeness and commits the source watches, accepted pin, command receipt and
+event. Draft, Needs context and Needs decision are durable nonexecuting states.
+Create/assign/free status edits and import writes cannot launch work. A database
+guard rejects alternate Ready mutations, including old API writes and reuse of
+an old receipt; receipt mutation is rejected. Earlier acceptance is invalidated
+on migration and never upgraded silently. Current human role checks apply to
+submission and replay. Queueing remains a separate explicit guarded action.
 
-Verification: **38/38 PostgreSQL/API tests** cover durable signals, unrelated
-changes, retained authority, late writes, duplicate reports, expired stop reports,
-source-first checkpoint/completion races, completion-first history and explicit
-new acceptance. **277/277 host regression tests** include seven fake-runner
-process scenarios proving child/descendant termination once, duplicate signals,
-late completion, lost acknowledgement and refused restart. PL/EN browser fixtures
-cover pending/confirmed/closed stop states (**18/18**), the existing Ready flow
-(**44/44**) and form-model behavior (**2/2**). `npm run validate` passed after
-the final UI changes; mobile/tablet/desktop screenshots were visually reviewed.
-Existing asset/chunk warnings remain. Full-web strict typechecking and observer
-fault tests were not rerun. Deployment identity is in the completed handoff.
+PostgreSQL/API tests cover incomplete input, stale task/source versions, rejected
+alternative writes, idempotency, concurrent submissions, atomic rollback, a fresh
+API process and no claim after create/assign/edit. PL/EN browser fixtures cover
+Draft/Needs context/Needs decision, diagnostics, the existing contract editor and
+retry with the same request ID after an ambiguous response. Verification:
+**49/49 API/database tests**, **102/102 host contract/context tests**, **58/58 Ready
+browser checks**, **18/18 active-stop UI checks**, **2/2 form-model tests**, and
+`npm run validate`. Mobile/tablet/desktop states were visually reviewed. Existing
+asset/chunk warnings remain; full-web strict typechecking and observer fault
+tests were not rerun. Production identity is recorded in the completed handoff.
 
-**Guarantee boundary:** stopping occurs at host-observable checkpoints, events
-or heartbeat, not atomically inside arbitrary runner tools or OS operations.
-There is no database-to-OS-spawn transaction or guarantee during an OS freeze.
-Retained checkpoints do not prove rollback/replay safety after effects, and
-stop acknowledgement is a host report. RF-CTX-006 remains **częściowo działa**
-under these boundaries and without live provider proof. Production remains
-execution disabled; the canonical host remains observe. Output-budget admission
-still fails closed. No real provider/model calls, activation or Soar changes.
-No next requirement is started. Registry/matrix retain 162 requirement rows.
+The RF-CTX-008 command boundary works within the existing supervised runtime.
+This does not claim arbitrary semantic completeness, automatic interviews, live
+provider proof or activation. RF-CTX-006 and RF-HOST-010 retain their documented
+limits. Production stays execution disabled; the canonical host stays observe.
+No next requirement, automatic interview or Soar work was started. Registry and
+matrix retain 162 requirements.
 
 ## Matrix
 
@@ -100,7 +96,7 @@ No next requirement is started. Registry/matrix retain 162 requirement rows.
 | [RF-CTX-005](../product/interview-foundation-v2.md#rf-ctx-005) | P0 | częściowo działa | [PACKET](#e-packet) | Packet references versions; complete layered selection/reason trace missing. |
 | [RF-CTX-006](../product/interview-foundation-v2.md#rf-ctx-006) | P0 | częściowo działa | [PACKET](#e-packet) | Ready invalidation and active-attempt fencing stop work at observed checkpoint/event/heartbeat boundaries; late authority and restart are rejected. Arbitrary internal runner operations/OS freezes and atomic database-to-spawn remain outside the guarantee; no live provider proof. |
 | [RF-CTX-007](../product/interview-foundation-v2.md#rf-ctx-007) | P1 | brak | [CTX](#e-ctx) | No runtime context expansion protocol. |
-| [RF-CTX-008](../product/interview-foundation-v2.md#rf-ctx-008) | P0 | częściowo działa | [TASK](#e-task) | Human role-gated PL/EN contract editor and diagnostics use validated Ready separately from task status; full Draft/Needs-context/Decision workflow and automatic interviews remain missing. |
+| [RF-CTX-008](../product/interview-foundation-v2.md#rf-ctx-008) | P0 | działa | [SUBMIT](#e-submit) | Within the supervised runtime, only the explicit versioned/idempotent Submit command grants Ready after validation. Draft/Needs context/Needs decision are durable; create/assign/edit/import and alternate database writes cannot admit work. Automatic interviews and semantic completeness belong to separate requirements. |
 | [RF-CTX-009](../product/interview-foundation-v2.md#rf-ctx-009) | P0 | częściowo działa | [TASK](#e-task) | Task fields exist; atomicity enforcement absent. |
 | [RF-CTX-010](../product/interview-foundation-v2.md#rf-ctx-010) | P0 | częściowo działa | [TASK](#e-task) | Assignment exists; role separation gates absent. |
 | [RF-CTX-011](../product/interview-foundation-v2.md#rf-ctx-011) | P1 | częściowo działa | [PROC](#e-proc) | Registry primitives exist; task-type execution contract incomplete. |
@@ -295,6 +291,17 @@ Each entry links existing canonical files; a test link is not a passing result.
 **CTX** — Context projections and company records; full policy compiler is not established.
 
 [src/modules/company-intelligence/company-intelligence.routes.ts](../../src/modules/company-intelligence/company-intelligence.routes.ts), [src/modules/company-records/company-records.routes.ts](../../src/modules/company-records/company-records.routes.ts), [scripts/import-application-documentation-context.ts](../../scripts/import-application-documentation-context.ts).
+
+<a id="e-submit"></a>
+**SUBMIT** — One human-authorized, versioned Submit command and immutable receipts;
+Draft/Needs context/Needs decision remain nonexecuting. No automatic queue/claim.
+
+[command and version service](../../src/modules/agent-runtime/task-execution-readiness.ts),
+[database admission guard](../../prisma/migrations/20260907230000_submit_only_ready/migration.sql),
+[API contract](execution-packet-contract.md#submit-is-the-only-ready-transition-rf-ctx-008),
+[PostgreSQL/API tests](../../src/tests/api.test.ts),
+[owner form](../../web/src/features/departments/task-readiness.tsx),
+[browser fixtures](../../scripts/task-readiness-ui.test.mjs).
 
 <a id="e-task"></a>
 **TASK** — Task CRUD, assignments and a human role-gated PL/EN contract editor using the explicit validated Ready command/state; ordinary edits cannot author readiness.

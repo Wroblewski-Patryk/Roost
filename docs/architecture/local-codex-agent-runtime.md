@@ -107,10 +107,13 @@ visible.
 
 1. The owner creates a normal Roost task linked through its project to exactly
    one application.
-2. A human owner/admin/member submits an explicit execution contract through
-   **Prepare execution** in the task workbench or the runtime API. The Operations
-   preview also supports **Save and prepare execution**. Viewers and API keys
-   cannot accept the contract.
+2. A human owner/admin/member opens **Prepare execution** in the task workbench
+   (or **Save and prepare execution** in Operations), reviews the contract and
+   invokes **Submit for execution / Przekaż do wykonania**. This is the only
+   versioned, idempotent Ready command, shared with the runtime API. Draft and
+   Needs context/decision are durable nonexecuting states. Creation, assignment,
+   ordinary edits, old API writes and imports cannot bypass it. Viewers and API
+   keys cannot accept the contract.
    Successful validation pins [Ready context](execution-packet-contract.md#accepted-context-at-ready-rf-ctx-006)
    on the existing task. The owner can then queue an execution from the task
    workbench or API. Missing/changed Ready blocks queue and claim. Accepted source

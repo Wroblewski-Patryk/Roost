@@ -20,6 +20,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
   const [dirty, setDirty] = useState(false), [leave, setLeave] = useState(false), [expanded, setExpanded] = useState(false);
   const [links, setLinks] = useState({ projectId: "", goalId: "", assignedWorkforceEntityId: "" });
   const mounted = useRef(true), errorRef = useRef<HTMLDivElement>(null);
+  const submission = useRef<{ body: string; requestId: string } | null>(null);
   function close() { if (busy && busy !== "loading") return; if (dirty) setLeave(true); else onClose(); }
   function update(next: Draft) { setDraft(next); setDirty(true); setSuccess(null); }
   function errorCopy(caught: unknown) {
@@ -27,7 +28,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
     if (["forbidden", "workspace_read_only"].includes(caught.code)) return "error.forbidden";
     if (caught.code === "task_agent_execution_active") return "active";
     if (caught.code === "agent_execution_disabled") return "disabled";
-    if (["task_ready_revalidation_required", "task_ready_context_conflict", "task_ready_contract_mismatch"].includes(caught.code)) return "error.conflict";
+    if (["task_ready_revalidation_required", "task_ready_context_conflict", "task_ready_contract_mismatch", "task_submission_version_conflict", "task_submission_key_conflict", "task_submission_superseded"].includes(caught.code)) return "error.conflict";
     if (caught.code === "task_execution_contract_invalid") return "invalid";
     return "error.failed";
   }
@@ -38,6 +39,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
       if (!mounted.current) return;
       if (!response.data.editor) throw new Error("editor_unavailable");
       setPacket(response.data);
+      if (["needs_context", "needs_decision"].includes(response.data.status)) { setError("invalid"); setIssues(validationSections(response.data)); }
       if (!preserve) { setDraft(draftFrom(response.data.editor)); setDirty(false); }
       setLinks({ projectId: response.data.editor.task.project?.id ?? "", goalId: response.data.editor.task.goal?.id ?? "", assignedWorkforceEntityId: response.data.editor.agent?.id ?? "" });
     } catch (caught) { if (mounted.current) setError(errorCopy(caught)); }
@@ -48,11 +50,14 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
     event.preventDefault(); if (!packet || !draft || !packet.canSubmit || packet.editor.activeExecution || busy) return;
     setBusy("submitting"); setError(null); setIssues([]); setSuccess(null);
     try {
-      await api(`/v1/agent-runtime/tasks/${taskId}/actions/submit-for-execution`, { method: "POST", body: JSON.stringify(contractInput(packet.editor, draft)) });
+      const input = contractInput(packet.editor, draft), body = JSON.stringify(input);
+      if (submission.current?.body !== body) submission.current = { body, requestId: crypto.randomUUID() };
+      await api(`/v1/agent-runtime/tasks/${taskId}/actions/submit-for-execution`, { method: "POST", body: JSON.stringify({ ...input, requestId: submission.current!.requestId }) });
       if (!mounted.current) return;
-      setDirty(false); setExpanded(false); await load(); setSuccess("accepted"); onSaved?.();
+      submission.current = null; setDirty(false); setExpanded(false); await load(); setSuccess("accepted"); onSaved?.();
     } catch (caught) {
       if (!mounted.current) return;
+      if (caught instanceof AppApiError && caught.code === "task_execution_contract_invalid") await load(packet.editor.applicationId ?? undefined, true);
       setError(errorCopy(caught)); setIssues(caught instanceof AppApiError && caught.code === "task_execution_contract_invalid" ? validationSections(caught.details) : []);
       setExpanded(true); requestAnimationFrame(() => errorRef.current?.focus());
     } finally { if (mounted.current) setBusy(null); }
@@ -75,7 +80,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
   const pendingLinks = e && (links.projectId !== e.task.project?.id || links.goalId !== e.task.goal?.id || links.assignedWorkforceEntityId !== e.agent?.id);
   const linksValid = Boolean(!pendingLinks && e?.task.project && e.task.goal && e.agent?.eligible && e.applicationId && ["todo", "in_progress"].includes(e.task.status));
   const showForm = e && draft && (expanded || packet?.status !== "ready");
-  const reason = ["ready_pin_required", "context_changed", "context_invalid", "revalidation_required", "source_watch_required"].includes(packet?.reason ?? "") ? packet!.reason! : "revalidation_required";
+  const reason = ["ready_pin_required", "context_changed", "context_invalid", "revalidation_required", "source_watch_required", "submission_required", "submission_incomplete"].includes(packet?.reason ?? "") ? packet!.reason! : "revalidation_required";
   function input(name: FieldName) {
     const bounds: Record<string, [number, number]> = { maxAttempts: [1, 5], maxDurationSeconds: [60, 3600], maxOutputTokens: [128, 100000] };
     const multiline = !["version", "baseBranch", ...Object.keys(bounds)].includes(name);
@@ -111,7 +116,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
     {success ? <CcNotice live tone="success" title={tr(success)} /> : null}
     {packet && e && draft ? <>
       <section aria-label={tr("title")} className="grid gap-4 border-b border-base-300 pb-4">
-        <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-3"><span className={`badge ${packet.status === "ready" ? "badge-success" : "badge-warning"}`}>{tr(["ready", "not_ready", "needs_revalidation"].includes(packet.status) ? packet.status : "needs_revalidation")}</span><span className="text-sm text-company-muted">{tr("taskStatus")}: {humanizeBusinessValue(e.task.status, undefined, locale)}</span></div><CcButton size="sm" variant="outline" disabled={Boolean(busy)} onClick={() => void load(e.applicationId ?? undefined, dirty)}>{tr("refresh")}</CcButton></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-3"><span className={`badge ${packet.status === "ready" ? "badge-success" : "badge-warning"}`}>{tr(["ready", "draft", "needs_context", "needs_decision", "not_ready", "needs_revalidation"].includes(packet.status) ? packet.status : "needs_revalidation")}</span><span className="text-sm text-company-muted">{tr("taskStatus")}: {humanizeBusinessValue(e.task.status, undefined, locale)}</span></div><CcButton size="sm" variant="outline" disabled={Boolean(busy)} onClick={() => void load(e.applicationId ?? undefined, dirty)}>{tr("refresh")}</CcButton></div>
         {packet.status !== "ready" ? <p className="text-sm">{tr(`reason.${reason}`)}</p> : null}
         <ChangedContextSources sources={packet.changedSources} />
         {packet.revision ? <dl className="grid gap-3 text-sm sm:grid-cols-3"><div><dt className="text-company-muted">{tr("fingerprint")}</dt><dd className="font-mono break-all">{packet.revision.slice(0, 12)}…{packet.revision.slice(-8)}</dd><dd className="mt-1 text-xs text-company-muted">{packet.validationRevision === packet.revision ? tr("proof") : tr("reason.revalidation_required")}</dd></div><div><dt className="text-company-muted">{tr("author")}</dt><dd>{e.acceptance?.authorName || tr(e.acceptance?.authorType === "agent" ? "agentAuthor" : "unknownAuthor")}</dd></div><div><dt className="text-company-muted">{tr("date")}</dt><dd>{e.acceptance?.validatedAt ? new Date(e.acceptance.validatedAt).toLocaleString(locale) : "—"}</dd></div></dl> : null}
