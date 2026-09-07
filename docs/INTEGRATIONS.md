@@ -28,6 +28,9 @@ Webhook HTTP acknowledgement follows durable inbox storage; provider reads and
 lock waits run asynchronously so a maintenance pull cannot time out delivery.
 Google OAuth retains the registered `/settings/drive` callback independently of
 the settings page route, with state verification and one exchange per code.
+The callback serves the React entry point; API authentication is enforced when
+the signed-in browser exchanges the code. Sheet writes refresh all worksheets,
+and maintenance replaces snapshots produced by explicit partial-range reads.
 Reconnect requests Drive write scope for existing selected folder trees. The
 former `drive.file` scope only authorized files created/opened by the app and
 could not support metadata writes to arbitrary imported files. Roost still limits

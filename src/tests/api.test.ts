@@ -2263,6 +2263,9 @@ test("execution recovery fences old leases and preserves an auditable same-attem
 });
 
 test("CompanyCore v1 protected API flow", async () => {
+  const oauthCallback = await realFetch(`${baseUrl}/settings/drive?code=synthetic&state=synthetic`);
+  assert.equal(oauthCallback.status, 200);
+  assert.ok(oauthCallback.headers.get("content-type")?.includes("text/html"));
   const health = await request("/health");
   assert.equal(health.status, 200);
   const v1Health = await request("/v1/health");
@@ -10092,6 +10095,7 @@ test("CompanyCore v1 protected API flow", async () => {
 
   const originalFetchBeforeGoogleDriveContent = globalThis.fetch;
   const googleDriveCalls: Array<{ path: string; method: string; body?: unknown }> = [];
+  let createdSheetValues = [["Name", "Value"], ["Jarvis", "ready"]];
   globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
     const url = new URL(String(input));
     if (url.pathname === "/drive/v3/files/drive-folder-root") return new Response(JSON.stringify({ id: "drive-folder-root", name: "Root", mimeType: "application/vnd.google-apps.folder" }), { status: 200 });
@@ -10192,8 +10196,14 @@ test("CompanyCore v1 protected API flow", async () => {
       }), { status: 200 });
     }
 
-    if (url.pathname === "/v4/spreadsheets/created-sheet-1/values/A1%3AZ100" && init?.method === "PUT") {
+    if (url.pathname.startsWith("/v4/spreadsheets/created-sheet-1/values/") && init?.method === "PUT") {
+      createdSheetValues = JSON.parse(String(init.body)).values;
       return new Response(JSON.stringify({ updatedRange: "A1:B2" }), { status: 200 });
+    }
+
+    if (url.pathname === "/v4/spreadsheets/created-sheet-1") return new Response(JSON.stringify({ sheets: [{ properties: { title: "Sheet1" } }] }), { status: 200 });
+    if (decodeURIComponent(url.pathname) === "/v4/spreadsheets/created-sheet-1/values/'Sheet1'") {
+      return new Response(JSON.stringify({ values: createdSheetValues }), { status: 200 });
     }
 
     if (url.pathname === "/v4/spreadsheets/created-sheet-1/values/A1%3AZ100") {

@@ -172,7 +172,8 @@ async function importGoogleDriveFolders(input: {
     }
 
     const previous = existingMetadata.get(file.id);
-    const contentChanged = !previous || (previous.contentSnapshots[0]?.metadata as { snapshotSchemaVersion?: number } | undefined)?.snapshotSchemaVersion !== 2 || previous.scanStatus !== "completed" || previous.headRevisionId !== (file.headRevisionId ?? null)
+    const snapshotMetadata = previous?.contentSnapshots[0]?.metadata as { snapshotSchemaVersion?: number; partial?: boolean } | undefined;
+    const contentChanged = !previous || snapshotMetadata?.snapshotSchemaVersion !== 2 || snapshotMetadata.partial === true || previous.scanStatus !== "completed" || previous.headRevisionId !== (file.headRevisionId ?? null)
       || previous.modifiedTime?.toISOString() !== file.modifiedTime;
     if (!file.trashed && isContentRefreshSupported(file) && contentChanged) {
       try {

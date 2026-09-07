@@ -125,6 +125,7 @@ const reactAppRoutes = [
   "/areas",
   "/account/settings",
   "/workspace/settings",
+  "/settings/drive",
   "/auth/login",
   "/auth/register",
   "/react-dashboard"

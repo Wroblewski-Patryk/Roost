@@ -12,7 +12,7 @@ import { withIntegrationLock } from "../integrations/sync-lock";
 import { providerRequest } from "../integrations/provider-request";
 import { GoogleDriveClient } from "../integrations/google-drive/google-drive.client";
 import { googleDriveSecretStatus } from "../integrations/integration-settings.service";
-import { readGoogleDriveFileContent, updateGoogleDriveFileMetadata } from "../integrations/google-drive/google-drive.content";
+import { readGoogleDriveFileContent, updateGoogleDriveFileMetadata, updateGoogleSheetValues } from "../integrations/google-drive/google-drive.content";
 
 const url = new URL(process.env.DATABASE_URL!);
 assert.ok(["127.0.0.1", "localhost"].includes(url.hostname) && url.pathname.startsWith("/companycore_test"), "Disposable local database required");
@@ -238,4 +238,22 @@ test("Drive metadata write denies a foreign workspace before contacting the prov
   globalThis.fetch = async () => { calls++; return json({}); };
   await assert.rejects(updateGoogleDriveFileMetadata({ workspaceId: second, fileId: file.id, trashed: true }));
   assert.equal(calls, 0);
+});
+
+test("Sheets range writes preserve a complete snapshot of every worksheet", async () => {
+  const id = await workspace("google_drive", {});
+  const file = await prisma.googleDriveFile.create({ data: { workspaceId: id, externalId: "sheet", name: "Sheet", mimeType: "application/vnd.google-apps.spreadsheet" } });
+  let writes = 0;
+  globalThis.fetch = async (input, init) => {
+    const url = new URL(String(input));
+    if (init?.method === "PUT") { writes++; return json({ updatedCells: 1 }); }
+    if (url.pathname.endsWith("/files/sheet")) return json({ id: "sheet", name: "Sheet", mimeType: "application/vnd.google-apps.spreadsheet" });
+    if (url.pathname.endsWith("/spreadsheets/sheet")) return json({ sheets: [{ properties: { title: "First" } }, { properties: { title: "Second" } }] });
+    return json({ values: [[decodeURIComponent(url.pathname.split("/values/")[1])]] });
+  };
+  const result = await updateGoogleSheetValues({ workspaceId: id, fileId: file.id, range: "Second!A1", values: [["Changed"]] });
+  assert.equal(writes, 1);
+  assert.ok(result.snapshot.extractedText?.includes("First"));
+  assert.ok(result.snapshot.extractedText?.includes("Second"));
+  assert.equal((result.snapshot.metadata as any).partial, false);
 });

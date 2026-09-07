@@ -139,8 +139,7 @@ export async function createGoogleSheet(input: {
   const snapshot = await refreshGoogleDriveFileContent({
     workspaceId: input.workspaceId,
     file,
-    client,
-    range: input.range ?? "A1:Z100"
+    client
   });
   await emitFileEvent(input.workspaceId, "google_drive_sheet_created", file);
   return { file, snapshot };
@@ -168,8 +167,7 @@ export async function updateGoogleSheetValues(input: {
   const snapshot = await refreshGoogleDriveFileContent({
     workspaceId: input.workspaceId,
     file: refreshedFile,
-    client,
-    range: input.range
+    client
   });
   await emitFileEvent(input.workspaceId, "google_drive_sheet_updated", refreshedFile);
   return { file: refreshedFile, snapshot };
