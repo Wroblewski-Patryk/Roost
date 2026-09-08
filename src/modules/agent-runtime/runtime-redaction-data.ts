@@ -36,7 +36,7 @@ export function installRuntimeRedaction(client: PrismaClient) {
         }
         let names = fields[params.model ?? ""] ?? [];
         if (params.model === "Task") names = ["executionReadiness"];
-        if (params.model === "Event" && (nativeEvent || /^(?:agent_execution|task_execution|task_review|task_capability|task_handoff|task_clarification)/.test(data.type ?? ""))) names = ["payload"];
+        if (params.model === "Event" && (nativeEvent || /^(?:agent_execution|task_execution|task_review|task_capability|task_handoff|task_clarification|task_interview)/.test(data.type ?? ""))) names = ["payload"];
         if (params.model === "EvidenceRecord" && (nativeEvidence || data.source === "agent" || data.metadata?.executionId)) names = ["reference", "url", "description", "metadata"];
         if (params.model === "AgentLog" && data.metadata?.executionId) names = ["message", "metadata"];
         const scope = { ...(safeRuntimeId(data.workspaceId) ? { workspaceId: data.workspaceId } : {}), ...(safeRuntimeId(data.taskId) ? { taskId: data.taskId } : {}), ...(safeRuntimeId(data.executionId) ? { executionId: data.executionId } : {}), ...(safeRuntimeId(data.id) ? { recordId: data.id } : {}) };

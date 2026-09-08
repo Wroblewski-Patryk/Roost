@@ -1374,8 +1374,9 @@ const admissionFixtureDetail=(gate:string)=>({
  owner_approval:{decision:"approve_exact_operation",residualRisk:"Only isolated synthetic effects accepted"}
 } as Record<string,any>)[gate];
 const handoffFixtureInputs=new WeakSet<object>();
+const interviewFixtureInputs=new WeakSet<object>();
 const clarificationFixtureInputs=new WeakSet<object>();
-const fixtureAdmissionOperations=(input:any)=>["runtime_execute","review_decision","return_to_executor","create_specialist_task",...(handoffFixtureInputs.has(input)?["handoff_create","handoff_accept","handoff_reject"]:[]),...(clarificationFixtureInputs.has(input)?["clarification_send","clarification_reply"]:[])];
+const fixtureAdmissionOperations=(input:any)=>["runtime_execute","review_decision","return_to_executor","create_specialist_task",...(handoffFixtureInputs.has(input)?["handoff_create","handoff_accept","handoff_reject"]:[]),...(clarificationFixtureInputs.has(input)?["clarification_send","clarification_reply"]:[]),...(interviewFixtureInputs.has(input)?["interview_prepare"]:[])];
 async function prepareAdmissionFixture(route:string,input:any,auth:Record<string,string>) {
  const resources=await admissionFixtureResources(input.applicationId);if(!resources)return;
  const taskId=route.split("/")[4]!;
@@ -1927,7 +1928,7 @@ async function prepareHandoffResultFixture(execution:any,pin:any){
  await prisma.agentExecution.update({where:{id:execution.id},data:{checkpointVersion:5,checkpoint:{schemaVersion:"roost-recovery-v1",stage:"effect_possible",sessionId:randomUUID(),packetRevision:"b".repeat(64),workspaceDigest:"c".repeat(64),contextRevision:pin.revision},metadata:{...execution.metadata,resultRevision:{schemaVersion:"roost-result-revision-v1",id:randomUUID(),executionId:execution.id,attempt:execution.attempt,hostId:execution.agentHostId,checkpointVersion:5,observedAt:new Date().toISOString(),commit:"d".repeat(40),branch:pin.contract.singleTask.branch,workingTree:"dirty"}}}});
 }
 let reviewFixtureSequence=0;
-  async function prepareReviewFixture(agentMode = false, autoGrants = true, handoff = false, clarification = false) {
+  async function prepareReviewFixture(agentMode = false, autoGrants = true, handoff = false, clarification = false, interview = false) {
     const suffix = `${Date.now()}-${reviewFixtureSequence++}`;
     const owner = await registerOwner(`review-${suffix}@example.test`, "Review fixture"), workspaceId = owner.workspace.id;
     const auth = { Authorization: `Bearer ${owner.token}` };
@@ -1959,6 +1960,7 @@ let reviewFixtureSequence=0;
     const submitRoute = `${root}/actions/submit-for-execution`;
     if(handoff)handoffFixtureInputs.add(f.input);
     if(clarification)clarificationFixtureInputs.add(f.input);
+    if(interview)interviewFixtureInputs.add(f.input);
     const accepted = await post(submitRoute, await submissionInput(submitRoute, f.input, auth)); assert.equal(accepted.status, 200, JSON.stringify(accepted.body));
     const pin = (await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness as any;
     const execution = await prisma.agentExecution.create({ data: { workspaceId, taskId: task.id, applicationId: app.id, status: "completed", requestedByType: "user", requestedById: manager.externalId, attempt: 1, startedAt: new Date(Date.now()-1000), completedAt: new Date(), summary: "Parser result", finalResponse: "Changed empty-input handling", changedFiles: ["src/parser.ts"], verification: { command: "npm test -- parser", result: "fixture completed" }, metadata: { executionContract: f.input.contract, readyContextPin: { pinId: pin.pinId, revision: pin.revision, compositionSeal:pin.procedureComposition.seal, riskAdmissionSeal:pin.riskAdmissionSeal, riskAdmissionCommit:pin.riskAdmissionCommit } } } });
@@ -13699,3 +13701,81 @@ async function historicalRiskExecution(args: Prisma.AgentExecutionCreateArgs) {
 }
 
 async function fixtureExecutionMetadata(taskId:string) { const pin=(await prisma.task.findUniqueOrThrow({where:{id:taskId}})).executionReadiness as any;return {executionContract:pin.contract,readyContextPin:{pinId:pin.pinId,revision:pin.revision,riskAdmissionSeal:pin.riskAdmissionSeal,riskAdmissionCommit:pin.riskAdmissionCommit,compositionSeal:pin.procedureComposition?.seal}}; }
+
+
+test("material interview publication, deferral and explicit Decision acceptance",async()=>{
+ const owner=await registerOwner("interview-owner@example.test","Interview fixture"),w=owner.workspace.id,headers={Authorization:`Bearer ${owner.token}`};
+ const u=await prisma.workspaceMembership.findFirstOrThrow({where:{workspaceId:w,role:"owner"}});
+ const app=await prisma.application.create({data:{workspaceId:w,name:"Interview fixture",slug:"interview-fixture"}});
+ const project=await prisma.project.create({data:{workspaceId:w,name:"Interview project"}});await prisma.applicationProject.create({data:{applicationId:app.id,projectId:project.id}});
+ const task=await prisma.task.create({data:{workspaceId:w,projectId:project.id,title:"Define delivery scope"}});
+ const unrelated=await prisma.task.create({data:{workspaceId:w,projectId:project.id,title:"Independent research"}});
+ await prisma.companyRecord.create({data:{workspaceId:w,applicationId:app.id,recordType:"technical_evidence",key:"interview-evidence",title:"Existing source",metadata:{result:"Scope choices remain open"}}});
+ const url=`/v1/agent-runtime/tasks/${task.id}/interviews`;
+ const view=async()=>{const r=await request(url,{headers});assert.equal(r.status,200,JSON.stringify(r.body));return (r.body as any).data;};
+ const v=await view(),block={topic:"Delivery scope",unknownKey:"delivery_scope",missing:"Choose the first delivery",impact:"Implementation depends on the choice",material:true,decisionClass:"task_scope",principalId:u.userId,context:"Both choices are feasible",recommendation:"Start with the smaller version",consequences:"A broader version adds work",scope:"Only the delivery task",deferralEffect:"Implementation remains blocked",dependencies:[{taskId:task.id,blockedPart:"Implementation of selected scope"}],gathering:{status:"completed",checkedSources:[{...v.sources[0],title:undefined,findings:"Source provides alternatives but no decision"}],remainingHumanDecision:"Select a delivery scope"},questions:[{field:"delivery_scope",type:"choice",question:"Which scope should be delivered first?",requiresHuman:true,options:["Yes","No"]}]};
+ const publish={requestId:randomUUID(),expectedVersion:v.expectedVersion,block};
+ for(const bad of [{...block,questions:Array(4).fill(block.questions[0])},{...block,material:false},{...block,gathering:{...block.gathering,checkedSources:[]}},{...block,dependencies:[{taskId:unrelated.id,blockedPart:"Unrelated work"}]}]){
+  const r=await request(url,{method:"POST",headers,body:JSON.stringify({...publish,requestId:randomUUID(),block:bad})});assert.ok([400,409].includes(r.status),JSON.stringify(r.body));
+ }
+ const created=await request(url,{method:"POST",headers,body:JSON.stringify(publish)});assert.equal(created.status,201,JSON.stringify(created.body));const c=(created.body as any).data.record;
+ assert.equal((await request(url,{method:"POST",headers,body:JSON.stringify(publish)})).status,200);
+ assert.equal((await prisma.$queryRaw<any[]>`SELECT task_interview_pending(${task.id}::uuid) AS a,task_interview_pending(${unrelated.id}::uuid) AS b`)[0].b,false);
+ const act=async(action:string,extra:any={})=>{const value=await view();return request(`${url}/actions/respond`,{method:"POST",headers,body:JSON.stringify({requestId:randomUUID(),expectedVersion:value.expectedVersion,caseId:c.id,action,reason:"Explicit scoped choice",...extra})});};
+ assert.equal((await act("defer")).status,201);assert.equal((await view()).blocking,true);
+ assert.equal((await prisma.event.count({where:{workspaceId:w,type:"task_interview_attention"}})),1);
+ const answer=await act("answer",{answers:[{field:"delivery_scope",value:"No"}]});assert.equal(answer.status,201,JSON.stringify(answer.body));const decisionId=(answer.body as any).data.record.decisionId;
+ assert.equal((await prisma.decision.findUniqueOrThrow({where:{id:decisionId}})).status,"proposed");assert.equal((await view()).blocking,true);
+ assert.equal((await request(`/v1/decisions/${decisionId}`,{method:"PATCH",headers,body:JSON.stringify({status:"accepted"})})).status,409);
+ const accepted=await act("accept");assert.equal(accepted.status,201,JSON.stringify(accepted.body));assert.equal((await view()).blocking,false);
+ assert.equal((await prisma.decision.findUniqueOrThrow({where:{id:decisionId}})).status,"accepted");
+ await assert.rejects(prisma.decision.delete({where:{id:decisionId}}),/interview_decision_immutable/);
+ const ordinary=await prisma.decision.create({data:{workspaceId:w,title:"Ordinary decision",status:"proposed",source:"manual"}});
+ await prisma.decision.update({where:{id:ordinary.id},data:{status:"accepted"}});
+ await prisma.decision.delete({where:{id:ordinary.id}});
+ assert.equal(await prisma.decision.findUnique({where:{id:ordinary.id}}),null);
+
+ const foreign=await registerOwner("interview-foreign@example.test","Other interview workspace");
+ assert.equal((await request(url,{headers:{Authorization:`Bearer ${foreign.token}`}})).status,404);
+ const revision={...publish,requestId:randomUUID(),expectedVersion:(await view()).expectedVersion,supersedesId:c.id,revisionReason:"Clarify the next scope boundary",block:{...block,questions:[...block.questions,{field:"deadline",type:"fact",question:"Which deadline is agreed?",requiresHuman:true,options:[]},{field:"budget",type:"decision",question:"Which budget boundary applies?",requiresHuman:true,options:[]}]}};
+ const revised=await request(url,{method:"POST",headers,body:JSON.stringify(revision)});assert.equal(revised.status,201,JSON.stringify(revised.body));const next=(revised.body as any).data.record;
+ const current=await view(),defer={requestId:randomUUID(),expectedVersion:current.expectedVersion,caseId:next.id,action:"defer",reason:"Wait for the external constraint"};
+ const races=await Promise.all([defer,{...defer,requestId:randomUUID()}].map(body=>request(url+"/actions/respond",{method:"POST",headers,body:JSON.stringify(body)})));
+ assert.deepEqual(races.map(r=>r.status).sort(),[201,409]);
+ assert.equal((await request(url,{method:"POST",headers,body:JSON.stringify({...revision,requestId:randomUUID()})})).status,409);
+ await assert.rejects(prisma.$executeRaw`DELETE FROM task_interview_entries WHERE case_id=${c.id}::uuid`,/interview_history_immutable/);
+ for(const badBody of [{...revision.block,material:false},{...revision.block,questions:[...revision.block.questions,revision.block.questions[0]]}])await assert.rejects(prisma.$executeRaw`INSERT INTO task_interview_cases SELECT (jsonb_populate_record(NULL::task_interview_cases,to_jsonb(c)||jsonb_build_object('id',${randomUUID()}::text,'version',3,'supersedes_id',${next.id}::text,'request_id',${randomUUID()}::text,'body',${JSON.stringify(badBody)}::jsonb))).* FROM task_interview_cases c WHERE id=${next.id}::uuid`,/interview_content_invalid/);
+
+});
+
+test("material interview exact agent grant and immutable replay",async()=>{
+ const f=await prepareReviewFixture(true,false,false,true,true),headers={"X-API-Key":f.managerKey.key},url=f.root+"/interviews";
+ const read=async()=>{const r=await request(url,{headers});assert.equal(r.status,200,JSON.stringify(r.body));return (r.body as any).data;};
+ const v=await read(),ref=v.sources[0];assert.ok(ref);
+ const block={topic:"Choose delivery scope",unknownKey:"scope_question",missing:"Delivery scope remains undecided",impact:"Implementation waits for a decision",material:true,decisionClass:"task_scope",principalId:f.input.contract.taskRoles.requester.id,context:"Existing evidence provides two paths",recommendation:"Start with the smaller path",consequences:"A broader version needs more work",scope:"Only the parser task",deferralEffect:"Parser delivery stays blocked",dependencies:[{taskId:f.task.id,blockedPart:"Parser delivery"}],gathering:{status:"completed",checkedSources:[{id:ref.id,revision:ref.revision,findings:"No delivery choice is recorded"}],remainingHumanDecision:"Choose one delivery path"},questions:[{field:"delivery_scope",type:"decision",question:"Which delivery path should be used?",requiresHuman:true,options:["Small version","Broad version"]}]};
+ const oldReview=await f.grant("review_decision");assert.equal(oldReview.response.status,201,JSON.stringify(oldReview.response.body));const oldReviewId=(oldReview.response.body as any).data.grant.id;
+ const command={requestId:randomUUID(),expectedVersion:v.expectedVersion,block};
+ const denied=await f.post(url,command,headers);assert.equal(denied.status,409,JSON.stringify(denied.body));
+ const issued=await f.grant("interview_prepare",{credentialId:f.managerKey.id,interview:{unknownKey:block.unknownKey,decisionClass:block.decisionClass,principalId:block.principalId}});
+ assert.equal(issued.response.status,201,JSON.stringify(issued.response.body));
+ const grantId=(issued.response.body as any).data.grant.id;
+ const input={...command,expectedVersion:(await read()).expectedVersion,grantId};
+ const created=await f.post(url,input,headers);assert.equal(created.status,201,JSON.stringify(created.body));
+ assert.equal((await f.post(url,input,headers)).status,200);
+ const {execFile}=await import("node:child_process"),{promisify}=await import("node:util");
+ const code="const {createApp}=require('./dist/app');const server=createApp().listen(0,'127.0.0.1',async()=>{const x=JSON.parse(process.env.FIXTURE_REQUEST);const r=await fetch('http://127.0.0.1:'+server.address().port+x.path,{method:'POST',headers:{'Content-Type':'application/json',...x.auth},body:JSON.stringify(x.body)});const data=await r.json();console.log(JSON.stringify({status:r.status,replayed:data.data?.replayed}));server.close(()=>process.exit());});";
+ const restarted=await promisify(execFile)(process.execPath,["-e",code],{windowsHide:true,timeout:15000,env:{...process.env,FIXTURE_REQUEST:JSON.stringify({path:url,auth:headers,body:input})}});assert.deepEqual(JSON.parse(restarted.stdout.trim()),{status:200,replayed:true});
+
+ const c=(created.body as any).data.record;
+ assert.equal(await prisma.taskCapabilityUse.count({where:{grantId,interviewCaseId:c.id}}),1);
+ const gates=(await prisma.$queryRaw<any[]>`SELECT task_admission_view(${f.task.id}::uuid,'runtime_execute')->>'reason' AS runtime,task_admission_seal(${f.task.id}::uuid,'review_decision') AS review,task_admission_seal(${f.task.id}::uuid,'clarification_send') AS gather`)[0];
+ assert.equal(gates.runtime,"material_unknown_pending");assert.equal(gates.review,null);assert.ok(gates.gather);
+
+ assert.equal((await f.post(url+"/actions/respond",{requestId:randomUUID(),expectedVersion:(await read()).expectedVersion,caseId:c.id,action:"accept",reason:"Agent cannot accept"},headers)).status,403);
+ assert.equal((await f.post(f.root+"/capability-grants/"+grantId+"/actions/revoke",{requestId:randomUUID(),reason:"Revoke this preparation grant"})).status,200);
+ assert.equal((await f.post(url,input,headers)).status,409);
+ const human=async(action:string)=>{const v=(await request(url,{headers:f.auth})).body as any;return f.post(url+"/actions/respond",{requestId:randomUUID(),expectedVersion:v.data.expectedVersion,caseId:c.id,action,reason:"Human owner resolves delivery scope",...(action==="answer"?{answers:[{field:"delivery_scope",value:"Small version"}]}:{})});};
+ assert.equal((await human("answer")).status,201);assert.equal((await human("accept")).status,201);
+ assert.equal((await prisma.$queryRaw<any[]>`SELECT task_capability_status(g) AS status FROM task_capability_grants g WHERE id=${oldReviewId}::uuid`)[0].status,"invalidated");
+
+});

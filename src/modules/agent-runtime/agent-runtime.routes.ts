@@ -1,3 +1,4 @@
+import { interviewView,interviewCommand } from "./task-interview";
 import { clarificationView,clarificationCommand } from "./task-clarification";
 import { taskHandoffView, handoffCommand } from "./task-handoff";
 import { reviewTransaction } from "./task-capability-admission";
@@ -142,6 +143,19 @@ async function applicationForTask(workspaceId: string, taskId: string, requested
 
 export const agentRuntimeRouter = Router();
 agentRuntimeRouter.use("/capability-suspensions", capabilitySuspensionRouter);
+
+agentRuntimeRouter.get("/tasks/:id/interviews",asyncHandler(async(req,res)=>{
+ const result=await reviewTransaction(db=>interviewView(db,req.auth!.workspaceId,z.string().uuid().parse(req.params.id),req.auth!,z.string().uuid().optional().parse(req.query.caseId)));
+ if("error" in result)return sendApiError(res,result.error?.endsWith("not_found")?404:result.error==="interview_forbidden"?403:409,result.error!);
+ res.json({data:result});
+}));
+const interviewHandler=(kind:"publish"|"respond")=>asyncHandler(async(req,res)=>{
+ const result=await reviewTransaction(db=>interviewCommand(db,req.auth!.workspaceId,z.string().uuid().parse(req.params.id),req.auth!,kind,req.body));
+ if("error" in result)return sendApiError(res,result.error?.endsWith("not_found")?404:result.error==="interview_forbidden"?403:409,result.error!);
+ res.status(result.replayed?200:201).json({data:result});
+});
+agentRuntimeRouter.post("/tasks/:id/interviews",interviewHandler("publish"));
+agentRuntimeRouter.post("/tasks/:id/interviews/actions/respond",interviewHandler("respond"));
 
 agentRuntimeRouter.get("/tasks/:id/clarifications",asyncHandler(async(req,res)=>{
  const query=z.object({relatedTaskId:z.string().uuid().optional(),threadId:z.string().uuid().optional(),before:z.coerce.number().int().min(1).max(501).optional()}).strict().parse(req.query);

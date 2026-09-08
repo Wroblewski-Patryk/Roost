@@ -44,6 +44,7 @@ export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) =
     if (riskError) return {error:riskError};
     const admissionError = nativeDiagnostic.match(/\brisk_admission_[a-z_]+\b/)?.[0];
     if (admissionError) return {error:admissionError};
+    const interviewError=nativeDiagnostic.match(/\binterview_(?:history_immutable|scope_invalid|content_invalid|forbidden|grant_required|revision_invalid|evidence_invalid|stale|transition_invalid|proposal_required|ready_required|decision_immutable|receipt_required)\b/)?.[0];if(interviewError)return {error:interviewError};
     const compositionError=nativeDiagnostic.match(/\bprocedure_composition_[a-z_]+\b/)?.[0];
     if(compositionError)return {error:compositionError};
     if (error instanceof Prisma.PrismaClientKnownRequestError && (["P2034", "P2028"].includes(error.code) ||
@@ -139,7 +140,8 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
     return receipt({error:admission.error,readiness});
   }
   const procedureCompositionSet=Object.fromEntries(await Promise.all(admissionOperations.map(async op=>[op,await composeProcedure(db,taskId,op,true)])));
-  const pin = { schemaVersion: "roost-ready-context-v1", sourceWatchVersion: "1", submissionId: input.requestId, status: "ready", pinId: randomUUID(), revision: context.revision,
+  const interviewVersion=(await db.$queryRaw<any[]>`SELECT task_interview_version(${taskId}::uuid) AS value`)[0].value;
+  const pin = { interviewVersion, schemaVersion: "roost-ready-context-v1", sourceWatchVersion: "1", submissionId: input.requestId, status: "ready", pinId: randomUUID(), revision: context.revision,
     riskAssessmentId: risk.id,
     riskAdmissionSeal: admission.seal, riskAdmissionCommit: admission.commit,
     procedureComposition: composition, procedureCompositionSet,
@@ -157,6 +159,8 @@ export async function inspectReady(db: Prisma.TransactionClient, workspaceId: st
   const task = await lockReadyTask(db, workspaceId, taskId);
   if (!task) return { error: "task_not_found", readiness: { status: "not_ready" } };
   const pin = object(task.executionReadiness);
+  const interview=(await db.$queryRaw<any[]>`SELECT task_interview_pending(${taskId}::uuid) AS pending,task_interview_version(${taskId}::uuid) AS version,EXISTS(SELECT 1 FROM task_interview_cases c WHERE c.body->'dependencies' @> jsonb_build_array(jsonb_build_object('taskId',${taskId}::text))) AS present`)[0];
+  if(interview.pending||interview.present&&pin.interviewVersion!==interview.version)return {error:"interview_ready_required",readiness:{status:interview.pending?"needs_decision":"needs_revalidation",reason:"material_unknown",interviewVersion:interview.version}};
   if (execution?.contextInvalidatedAt) return {error:"agent_execution_context_invalidated",readiness:{status:"needs_revalidation",reason:"context_changed"}};
   if (pin.applicationId && await suspensionBlocks(db,workspaceId,taskId,pin.applicationId,"runtime_execute",task.assignedWorkforceEntityId,null,execution?.agentHostId)) return {error:"native_capability_suspended",readiness:{status:"needs_decision",reason:"native_capability_suspended"}};
   const reviewError = await reviewAdmissionError(db, workspaceId, taskId, pin.contract);

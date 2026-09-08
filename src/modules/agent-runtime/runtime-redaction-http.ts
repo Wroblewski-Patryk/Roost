@@ -55,7 +55,7 @@ function project(body: any, all: boolean, state: RedactionState, allowLease: boo
     if (!value || typeof value !== "object" || value instanceof Date) return value;
     if (--budget < 0 || depth > 32) return { redacted: true, policy: redactionPolicy.POLICY };
     if (Array.isArray(value)) return value.map(v => visit(v, depth + 1));
-    if (value.executionId && value.payload || value.checkpointVersion !== undefined && value.taskId || value.metadata?.executionId || /^(?:agent_execution|task_execution|task_review|task_capability|task_handoff|task_clarification)/.test(value.type ?? "")) return inspectRuntime(value, "read.shared_native", "diagnostic", { recordId: safeRuntimeId(value.id), executionId: safeRuntimeId(value.executionId ?? value.metadata?.executionId) }).value;
+    if (value.executionId && value.payload || value.checkpointVersion !== undefined && value.taskId || value.metadata?.executionId || /^(?:agent_execution|task_execution|task_review|task_capability|task_handoff|task_clarification|task_interview)/.test(value.type ?? "")) return inspectRuntime(value, "read.shared_native", "diagnostic", { recordId: safeRuntimeId(value.id), executionId: safeRuntimeId(value.executionId ?? value.metadata?.executionId) }).value;
     return Object.fromEntries(Object.entries(value).map(([key, child]) => [key, key === "executionReadiness" ? inspectRuntime(child, "read.task_readiness").value : visit(child, depth + 1)]));
   }
   return visit(body, 0);

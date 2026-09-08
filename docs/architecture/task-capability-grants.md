@@ -133,3 +133,12 @@ is needed to verify it. Production execution remains disabled and the host obser
 ## Clarification operations
 
 [Governed clarification](governed-task-clarification.md) adds `clarification_send` and `clarification_reply`. Grants pin exact sender/recipient roles, both linked task contexts, and exact send/reply/read action; replies and reads also pin thread/message. These operations alone may omit a completed execution. Consumption is linked by `clarification_entry_id`, with the same one-effect and deferred receipt guards.
+
+## Interview preparation
+
+[Material unknown interviews](material-unknown-interviews.md) add `interview_prepare`.
+A human issuer supplies an exact `interview` binding with `unknownKey`,
+`decisionClass` and `principalId` to the existing grant command. The task agent
+needs current task roles, credential and operation-specific risk admission.
+The use receipt links `interview_case_id`; the grant never permits answering or
+accepting a Decision.

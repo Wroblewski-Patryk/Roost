@@ -4,6 +4,7 @@ import { object, reviewDigest } from "./task-review-contract";
 // Review decisions do not queue work. A rejected correction needs the manager's
 // explicit disposition and a fresh, independently validated Submit contract.
 export async function reviewAdmissionError(db: Prisma.TransactionClient, workspaceId: string, taskId: string, contract?: any) {
+  if((await db.$queryRaw<any[]>`SELECT task_interview_pending(${taskId}::uuid) AS value`)[0].value)return "material_unknown_pending";
   const latest = await db.taskReviewDecision.findFirst({ where: { workspaceId, taskId }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], include: { action: true } });
   if (latest?.decision === "reject" && !latest.action) return "task_review_manager_action_required";
   if (latest?.decision === "reject" && latest.action?.childTaskId) {

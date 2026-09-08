@@ -1,3 +1,4 @@
+import { requireRuntimeContent } from "../agent-runtime/runtime-redaction-policy";
 import { Router } from "express";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
@@ -57,6 +58,11 @@ decisionsRouter.get("/", asyncHandler(async (req, res) => {
   res.json({ data: await serializeDecisions(workspaceId, decisions) });
 }));
 
+decisionsRouter.get("/interview-queue",asyncHandler(async(req,res)=>{
+ const rows=await prisma.$queryRaw<any[]>`SELECT c.id,c.task_id AS "taskId",c.body->>'topic' AS topic,task_interview_status(c.id) AS status FROM task_interview_cases c WHERE workspace_id=${req.auth!.workspaceId}::uuid AND NOT EXISTS(SELECT 1 FROM task_interview_cases n WHERE n.supersedes_id=c.id) AND task_interview_status(c.id)<>'accepted' ORDER BY created_at LIMIT 100`;
+ requireRuntimeContent(rows,"interview.queue",{workspaceId:req.auth!.workspaceId});res.json({data:rows});
+}));
+
 decisionsRouter.get("/:id", asyncHandler(async (req, res) => {
   const decision = await prisma.decision.findFirst({
     where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId }
@@ -71,6 +77,7 @@ decisionsRouter.get("/:id", asyncHandler(async (req, res) => {
 
 decisionsRouter.post("/", asyncHandler(async (req, res) => {
   const input = createDecisionSchema.parse(req.body);
+  if(input.source==="roost_interview")return res.status(403).json({error:"interview_proposal_required"});
   const { organizationalContext, alternatives, ...decisionInput } = input;
   if (organizationalContext && !departmentKeysAreValid(organizationalContext)) return res.status(400).json({ error: "invalid_department_key" });
   if (input.supersedesId && !await prisma.decision.findFirst({ where: { id: input.supersedesId, workspaceId: req.auth!.workspaceId } })) return res.status(404).json({ error: "superseded_decision_not_found" });
@@ -113,6 +120,7 @@ decisionsRouter.patch("/:id", asyncHandler(async (req, res) => {
     return res.status(404).json({ error: "not_found" });
   }
 
+  if(existing.source==="roost_interview")return res.status(409).json({error:"interview_decision_immutable"});
   if (input.supersedesId === existing.id) return res.status(400).json({ error: "self_supersession_not_allowed" });
   if (input.supersedesId && !await prisma.decision.findFirst({ where: { id: input.supersedesId, workspaceId: req.auth!.workspaceId } })) return res.status(404).json({ error: "superseded_decision_not_found" });
   await ensureDefaultDepartments(req.auth!.workspaceId);
@@ -138,6 +146,7 @@ decisionsRouter.delete("/:id", asyncHandler(async (req, res) => {
     return res.status(404).json({ error: "not_found" });
   }
 
+  if(existing.source==="roost_interview")return res.status(409).json({error:"interview_decision_immutable"});
   const decision = await prisma.decision.update({
     where: { id: existing.id },
     data: { status: "archived" }

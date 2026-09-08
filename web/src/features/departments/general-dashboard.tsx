@@ -205,7 +205,7 @@ export function GeneralDashboard() {
             <section>
               <h3>{t("general.nextActions")}</h3>
               <div className="roost-inspector-actions-list">
-                {nextActions.slice(0, 3).map((action) => action.target ? <a href={action.target} key={action.key}><span><strong>{action.label}</strong><small>{action.priority || t("state.normal")}</small></span><i className="ph-bold ph-arrow-up-right" aria-hidden="true"></i></a> : <span key={action.key}><strong>{action.label}</strong><small>{action.priority || t("state.normal")}</small></span>)}
+                {nextActions.slice(0, 3).map((action) => action.target ? <a href={action.target} key={action.key}><span><strong>{action.key==="resolve_material_questions"?(locale==="pl"?"Rozstrzygnij materialne pytania":"Resolve material questions"):action.label}</strong><small>{action.priority || t("state.normal")}</small></span><i className="ph-bold ph-arrow-up-right" aria-hidden="true"></i></a> : <span key={action.key}><strong>{action.key==="resolve_material_questions"?(locale==="pl"?"Rozstrzygnij materialne pytania":"Resolve material questions"):action.label}</strong><small>{action.priority || t("state.normal")}</small></span>)}
                 {!nextActions.length ? <p>{t("general.noImmediateActions")}</p> : null}
               </div>
             </section>

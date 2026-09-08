@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const admissionPolicy = "roost-native-risk-admission-v1";
-export const admissionOperations = ["runtime_execute", "review_decision", "return_to_executor", "create_specialist_task" , "handoff_create", "handoff_accept", "handoff_reject","clarification_send","clarification_reply"] as const;
+export const admissionOperations = ["runtime_execute", "review_decision", "return_to_executor", "create_specialist_task" , "handoff_create", "handoff_accept", "handoff_reject","clarification_send","clarification_reply", "interview_prepare"] as const;
 export const admissionGates = ["procedure", "extended_review", "mandate", "backup", "restore_plan", "owner_approval"] as const;
 const uuid = z.string().uuid(), text = z.string().trim().min(3).max(2000);
 const hash = z.string().regex(/^[a-f0-9]{64}$/);

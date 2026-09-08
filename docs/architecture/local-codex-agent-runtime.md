@@ -1,5 +1,7 @@
 # Local Codex Agent Runtime
 
+[Material unknown interviews](material-unknown-interviews.md) bind short question blocks to exact human decisions, immutable proposals and dependency-specific Ready fences. Resolution requires fresh Submit and never revives old dependent-operation grants.
+
 [Governed task clarification](governed-task-clarification.md) provides typed specialist conversation and deterministic receipt summaries without changing task authority.
 
 [Typed work handoff](typed-work-handoff.md) records exact recipient acceptance
