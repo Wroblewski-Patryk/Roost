@@ -18,7 +18,7 @@ selection; “missing” there is intentional, not permission to implement them.
 Evidence links identify inspected code/config and available tests. Unless a
 specific proof is stated below, tests were **not rerun for that requirement** and
 production configuration/behavior are **unverified**. In particular there was
-no Soar audit, exchange permission check, live test, agent activation or
+no DemoApp audit, exchange permission check, live test, agent activation or
 readiness certification. Generic record CRUD is only a partial mechanism.
 
 Historical proof: packet gate commit `90adf37e`, pre-spawn recovery
@@ -71,7 +71,7 @@ RF-CTX-009 remains **częściowo działa**: structural/textual checks do not pro
 arbitrary semantic completeness or independent acceptance. There are no automatic interviews, live
 provider proof or activation. RF-CTX-006 and RF-HOST-010 retain their documented
 limits. Production stays execution disabled; the canonical host stays observe.
-No next requirement, automatic interview or Soar work was started. Registry and
+No next requirement, automatic interview or DemoApp work was started. Registry and
 matrix retain 162 requirements.
 
 ## Matrix
@@ -92,7 +92,7 @@ matrix retain 162 requirements.
 | [RF-GOV-012](../product/interview-foundation-v2.md#rf-gov-012) | P1 | częściowo działa | [ORG](#e-org) | Profile configuration and allocation unverified. |
 | [RF-GOV-013](../product/interview-foundation-v2.md#rf-gov-013) | P1 | brak | [SCHED](#e-sched) | No governed subagent scheduler. |
 | [RF-GOV-014](../product/interview-foundation-v2.md#rf-gov-014) | P0 | częściowo działa | [AUTH](#e-auth) | Scoped keys exist; per-agent runtime binding incomplete. |
-| [RF-GOV-015](../product/interview-foundation-v2.md#rf-gov-015) | P0 | działa | [GOV](#e-gov) | Boundary is governing policy; no Soar change authorized. |
+| [RF-GOV-015](../product/interview-foundation-v2.md#rf-gov-015) | P0 | działa | [GOV](#e-gov) | Boundary is governing policy; no DemoApp change authorized. |
 | [RF-GOV-016](../product/interview-foundation-v2.md#rf-gov-016) | P0 | działa | [GOV](#e-gov) | Closed-batch contract governs this delivery. |
 | [RF-GOV-017](../product/interview-foundation-v2.md#rf-gov-017) | P0 | działa | [DOC](#e-doc) | 162 stable requirements, decision status and supersession links; all 162 mapped to inspected evidence and limitations in this V2 registry. |
 | [RF-GOV-018](../product/interview-foundation-v2.md#rf-gov-018) | P0 | działa | [GOV](#e-gov) | Governance boundary, not a new runtime feature. |
@@ -120,7 +120,7 @@ matrix retain 162 requirements.
 | [RF-CTX-020](../product/interview-foundation-v2.md#rf-ctx-020) | P1 | częściowo działa | [LEARN](#e-learn) | Knowledge/standard records exist; promotion/eval loop absent. |
 | [RF-CTX-021](../product/interview-foundation-v2.md#rf-ctx-021) | P0 | częściowo działa | [FIND](#e-find) | Capability observations exist; governed triage-to-task pipeline incomplete. |
 | [RF-CTX-022](../product/interview-foundation-v2.md#rf-ctx-022) | P1 | brak | [FIND](#e-find) | No complete prioritization rule engine. |
-| [RF-CTX-023](../product/interview-foundation-v2.md#rf-ctx-023) | P1 | brak | [FIND](#e-find) | Soar audit not executed. |
+| [RF-CTX-023](../product/interview-foundation-v2.md#rf-ctx-023) | P1 | brak | [FIND](#e-find) | DemoApp audit not executed. |
 | [RF-CTX-024](../product/interview-foundation-v2.md#rf-ctx-024) | P1 | brak | [CTX](#e-ctx) | No automated provenance/license release gate. |
 | [RF-CTX-025](../product/interview-foundation-v2.md#rf-ctx-025) | P1 | brak | [REVIEW](#e-review) | No dispute protocol. |
 | [RF-HOST-001](../product/interview-foundation-v2.md#rf-host-001) | P0 | częściowo działa | [HOST](#e-host) | Queue/observer implemented; full scheduler pending. |
@@ -179,7 +179,7 @@ matrix retain 162 requirements.
 | [RF-REL-014](../product/interview-foundation-v2.md#rf-rel-014) | P0 | brak | [RELEASE](#e-release) | No desired-state reconciliation service. |
 | [RF-REL-015](../product/interview-foundation-v2.md#rf-rel-015) | P0 | częściowo działa | [HEALTH](#e-health) | Roost public health/build exists; complete app contracts absent. |
 | [RF-REL-016](../product/interview-foundation-v2.md#rf-rel-016) | P1 | brak | [RELEASE](#e-release) | No scheduler-enforced windows or drain. |
-| [RF-REL-017](../product/interview-foundation-v2.md#rf-rel-017) | P1 | brak | [RELEASE](#e-release) | Future Soar release configuration, not implemented here. |
+| [RF-REL-017](../product/interview-foundation-v2.md#rf-rel-017) | P1 | brak | [RELEASE](#e-release) | Future DemoApp release configuration, not implemented here. |
 | [RF-REL-018](../product/interview-foundation-v2.md#rf-rel-018) | P1 | działa | [GOV](#e-gov) | Risk-based target policy retained. |
 | [RF-ACT-001](../product/interview-foundation-v2.md#rf-act-001) | P0 | częściowo działa | [HOST](#e-host) | Default execution flag works; formal staged readiness state absent. |
 | [RF-ACT-002](../product/interview-foundation-v2.md#rf-act-002) | P0 | częściowo działa | [DRY](#e-dry) | Lease/recovery fixture tests exist; complete dry-run certification absent. |
@@ -192,23 +192,23 @@ matrix retain 162 requirements.
 | [RF-ACT-009](../product/interview-foundation-v2.md#rf-act-009) | P1 | brak | [ACT](#e-act) | No probation counters/certification. |
 | [RF-ACT-010](../product/interview-foundation-v2.md#rf-act-010) | P1 | brak | [ACT](#e-act) | No app-onboarding readiness procedure. |
 | [RF-ACT-011](../product/interview-foundation-v2.md#rf-act-011) | P0 | działa | [GOV](#e-gov) | This batch is registry plus one runtime gap; future runs require scoped readiness selection. |
-| [RF-SOAR-001](../product/interview-foundation-v2.md#rf-soar-001) | P1 | wymaga konfiguracji | [SOAR](#e-soar) | Mapping declared; full product card and production baseline need audit. |
-| [RF-SOAR-002](../product/interview-foundation-v2.md#rf-soar-002) | P1 | brak | [SOAR](#e-soar) | No Soar code audit in this batch. |
-| [RF-SOAR-003](../product/interview-foundation-v2.md#rf-soar-003) | P1 | brak | [SOAR](#e-soar) | Future Soar acceptance; not verified. |
-| [RF-SOAR-004](../product/interview-foundation-v2.md#rf-soar-004) | P0 | brak | [SOAR](#e-soar) | Future application-safe-deploy gate; no Soar modification. |
-| [RF-SOAR-005](../product/interview-foundation-v2.md#rf-soar-005) | P0 | wymaga konfiguracji | [SOAR](#e-soar) | Owner mandate recorded; never treat balance as enforcement. |
-| [RF-SOAR-006](../product/interview-foundation-v2.md#rf-soar-006) | P0 | wymaga konfiguracji | [SOAR](#e-soar) | Required confirmation not obtained from exchanges; no live permission granted here. |
-| [RF-SOAR-007](../product/interview-foundation-v2.md#rf-soar-007) | P0 | brak | [SOAR](#e-soar) | Supersedes unrestricted live-test approval; no consent issued in this batch. |
-| [RF-SOAR-008](../product/interview-foundation-v2.md#rf-soar-008) | P0 | wymaga konfiguracji | [SOAR](#e-soar) | No guarantee of autonomous closure claimed; native strategy/risk configuration must be verified. |
-| [RF-SOAR-009](../product/interview-foundation-v2.md#rf-soar-009) | P0 | wymaga konfiguracji | [SOAR](#e-soar) | Limits are mandates, not verified exchange settings. |
-| [RF-SOAR-010](../product/interview-foundation-v2.md#rf-soar-010) | P0 | brak | [SOAR](#e-soar) | Target test failure procedure absent. |
-| [RF-SOAR-011](../product/interview-foundation-v2.md#rf-soar-011) | P0 | brak | [SOAR](#e-soar) | No live or production trading test run. |
-| [RF-SOAR-012](../product/interview-foundation-v2.md#rf-soar-012) | P0 | brak | [SOAR](#e-soar) | Certification evidence not established. |
-| [RF-SOAR-013](../product/interview-foundation-v2.md#rf-soar-013) | P1 | brak | [SOAR](#e-soar) | Future Soar controlled test lifecycle. |
-| [RF-SOAR-014](../product/interview-foundation-v2.md#rf-soar-014) | P0 | brak | [SOAR](#e-soar) | Future Soar idempotency proof required. |
-| [RF-SOAR-015](../product/interview-foundation-v2.md#rf-soar-015) | P1 | częściowo działa | [INTEGRATION](#e-integration) | Connectors exist; test-scope admission incomplete. |
-| [RF-SOAR-016](../product/interview-foundation-v2.md#rf-soar-016) | P0 | częściowo działa | [INTEGRATION](#e-integration) | Provider operations exist; generic test ownership/cost guard absent. |
-| [RF-SOAR-017](../product/interview-foundation-v2.md#rf-soar-017) | P1 | brak | [INTEGRATION](#e-integration) | No generic integration test ladder controller. |
+| [RF-PILOT-001](../product/interview-foundation-v2.md#rf-demoapp-001) | P1 | wymaga konfiguracji | [PILOT](#e-demoapp) | Mapping declared; full product card and production baseline need audit. |
+| [RF-PILOT-002](../product/interview-foundation-v2.md#rf-demoapp-002) | P1 | brak | [PILOT](#e-demoapp) | No DemoApp code audit in this batch. |
+| [RF-PILOT-003](../product/interview-foundation-v2.md#rf-demoapp-003) | P1 | brak | [PILOT](#e-demoapp) | Future DemoApp acceptance; not verified. |
+| [RF-PILOT-004](../product/interview-foundation-v2.md#rf-demoapp-004) | P0 | brak | [PILOT](#e-demoapp) | Future application-safe-deploy gate; no DemoApp modification. |
+| [RF-PILOT-005](../product/interview-foundation-v2.md#rf-demoapp-005) | P0 | wymaga konfiguracji | [PILOT](#e-demoapp) | Owner mandate recorded; never treat balance as enforcement. |
+| [RF-PILOT-006](../product/interview-foundation-v2.md#rf-demoapp-006) | P0 | wymaga konfiguracji | [PILOT](#e-demoapp) | Required confirmation not obtained from exchanges; no live permission granted here. |
+| [RF-PILOT-007](../product/interview-foundation-v2.md#rf-demoapp-007) | P0 | brak | [PILOT](#e-demoapp) | Supersedes unrestricted live-test approval; no consent issued in this batch. |
+| [RF-PILOT-008](../product/interview-foundation-v2.md#rf-demoapp-008) | P0 | wymaga konfiguracji | [PILOT](#e-demoapp) | No guarantee of autonomous closure claimed; native strategy/risk configuration must be verified. |
+| [RF-PILOT-009](../product/interview-foundation-v2.md#rf-demoapp-009) | P0 | wymaga konfiguracji | [PILOT](#e-demoapp) | Limits are mandates, not verified exchange settings. |
+| [RF-PILOT-010](../product/interview-foundation-v2.md#rf-demoapp-010) | P0 | brak | [PILOT](#e-demoapp) | Target test failure procedure absent. |
+| [RF-PILOT-011](../product/interview-foundation-v2.md#rf-demoapp-011) | P0 | brak | [PILOT](#e-demoapp) | No live or production trading test run. |
+| [RF-PILOT-012](../product/interview-foundation-v2.md#rf-demoapp-012) | P0 | brak | [PILOT](#e-demoapp) | Certification evidence not established. |
+| [RF-PILOT-013](../product/interview-foundation-v2.md#rf-demoapp-013) | P1 | brak | [PILOT](#e-demoapp) | Future DemoApp controlled test lifecycle. |
+| [RF-PILOT-014](../product/interview-foundation-v2.md#rf-demoapp-014) | P0 | brak | [PILOT](#e-demoapp) | Future DemoApp idempotency proof required. |
+| [RF-PILOT-015](../product/interview-foundation-v2.md#rf-demoapp-015) | P1 | częściowo działa | [INTEGRATION](#e-integration) | Connectors exist; test-scope admission incomplete. |
+| [RF-PILOT-016](../product/interview-foundation-v2.md#rf-demoapp-016) | P0 | częściowo działa | [INTEGRATION](#e-integration) | Provider operations exist; generic test ownership/cost guard absent. |
+| [RF-PILOT-017](../product/interview-foundation-v2.md#rf-demoapp-017) | P1 | brak | [INTEGRATION](#e-integration) | No generic integration test ladder controller. |
 | [RF-UX-001](../product/interview-foundation-v2.md#rf-ux-001) | P1 | częściowo działa | [ATTENTION](#e-attention) | Dashboards/events exist; unified attention lifecycle incomplete. |
 | [RF-UX-002](../product/interview-foundation-v2.md#rf-ux-002) | P1 | częściowo działa | [ATTENTION](#e-attention) | Execution timeline exists; complete explainable evidence view partial. |
 | [RF-UX-003](../product/interview-foundation-v2.md#rf-ux-003) | P0 | częściowo działa | [HOST](#e-host) | Cancel and observer stop exist; full owner controls absent. |
@@ -220,7 +220,7 @@ matrix retain 162 requirements.
 | [RF-UX-009](../product/interview-foundation-v2.md#rf-ux-009) | P1 | brak | [TIME](#e-time) | No native timezone-aware recurring task scheduler. |
 | [RF-DEF-001](../product/interview-foundation-v2.md#rf-def-001) | P2 | brak | [AUTH](#e-auth) | Deferred; do not add an activation gate. |
 | [RF-DEF-002](../product/interview-foundation-v2.md#rf-def-002) | P2 | brak | [RELEASE](#e-release) | Deferred; current constraints remain valid. |
-| [RF-DEF-003](../product/interview-foundation-v2.md#rf-def-003) | P2 | brak | [SOAR](#e-soar) | Deferred; no optimization worker activated. |
+| [RF-DEF-003](../product/interview-foundation-v2.md#rf-def-003) | P2 | brak | [PILOT](#e-demoapp) | Deferred; no optimization worker activated. |
 | [RF-DEF-004](../product/interview-foundation-v2.md#rf-def-004) | P2 | brak | [LANG](#e-lang) | Deferred; creation choice remains immutable. |
 | [RF-DEF-005](../product/interview-foundation-v2.md#rf-def-005) | P2 | brak | [ATTENTION](#e-attention) | Deferred; no external notification channel activation. |
 | [RF-DEF-006](../product/interview-foundation-v2.md#rf-def-006) | P2 | brak | [GOV](#e-gov) | Deferred; neither automation is retired by this batch. |
@@ -229,12 +229,12 @@ matrix retain 162 requirements.
 | [RF-ORG-003](../product/interview-foundation-v2.md#rf-org-003) | P1 | częściowo działa | [PORT](#e-port) | Product-engineering readiness exists; lifecycle gates need configuration/proof. |
 | [RF-ORG-004](../product/interview-foundation-v2.md#rf-org-004) | P1 | częściowo działa | [LEARN](#e-learn) | Generic knowledge/procedure records do not enforce promotion. |
 | [RF-ORG-005](../product/interview-foundation-v2.md#rf-org-005) | P1 | częściowo działa | [CTX](#e-ctx) | Documentation imports exist; approval/provenance reconciliation incomplete. |
-| [RF-OLD-001](../product/interview-foundation-v2.md#rf-old-001) | P2 | brak | [SOAR](#e-soar) | Superseded by RF-SOAR-007 at messages 576–578. |
+| [RF-OLD-001](../product/interview-foundation-v2.md#rf-old-001) | P2 | brak | [PILOT](#e-demoapp) | Superseded by RF-PILOT-007 at messages 576–578. |
 | [RF-OLD-002](../product/interview-foundation-v2.md#rf-old-002) | P2 | brak | [RELEASE](#e-release) | Superseded by RF-REL-017 at messages 704–706. |
-| [RF-OLD-003](../product/interview-foundation-v2.md#rf-old-003) | P2 | brak | [INTEGRATION](#e-integration) | Superseded by RF-SOAR-015 at messages 630–634; application test accounts remain distinct. |
+| [RF-OLD-003](../product/interview-foundation-v2.md#rf-old-003) | P2 | brak | [INTEGRATION](#e-integration) | Superseded by RF-PILOT-015 at messages 630–634; application test accounts remain distinct. |
 | [RF-OLD-004](../product/interview-foundation-v2.md#rf-old-004) | P2 | brak | [RESOURCE](#e-resource) | Rejected/superseded by RF-ACT-003 and RF-ACT-004. |
 | [RF-OLD-005](../product/interview-foundation-v2.md#rf-old-005) | P2 | brak | [GOV](#e-gov) | Superseded by RF-REL-018; flags only where actual risk requires. |
-| [RF-OLD-006](../product/interview-foundation-v2.md#rf-old-006) | P2 | brak | [SOAR](#e-soar) | Superseded by RF-SOAR-008 and RF-SOAR-010; test target functions only. |
+| [RF-OLD-006](../product/interview-foundation-v2.md#rf-old-006) | P2 | brak | [PILOT](#e-demoapp) | Superseded by RF-PILOT-008 and RF-PILOT-010; test target functions only. |
 | [RF-OLD-007](../product/interview-foundation-v2.md#rf-old-007) | P2 | brak | [GOV](#e-gov) | Superseded by RF-GOV-016 closed versioned batches. |
 | [RF-OLD-008](../product/interview-foundation-v2.md#rf-old-008) | P2 | brak | [WORKSPACE](#e-workspace) | Superseded by RF-HOST-002 and RF-HOST-004: one laptop writer, one canonical clone per app. |
 | [RF-OLD-009](../product/interview-foundation-v2.md#rf-old-009) | P2 | brak | [ORG](#e-org) | Superseded by RF-GOV-010 and RF-ACT-010: portable competence, separate app readiness. |
@@ -482,8 +482,8 @@ performed, and no VPS release is required for this local launcher change.
 
 [docs/architecture/autonomy-activation-contract.md](../../docs/architecture/autonomy-activation-contract.md), [src/modules/agent-runtime/agent-runtime.routes.ts](../../src/modules/agent-runtime/agent-runtime.routes.ts).
 
-<a id="e-soar"></a>
-**SOAR** — Declared Soar identity only; no Soar runtime correctness, exchange permissions or live-test proof asserted.
+<a id="e-demoapp"></a>
+**PILOT** — Declared DemoApp identity only; no DemoApp runtime correctness, exchange permissions or live-test proof asserted.
 
 [config/roost-agent-host.example.json](../../config/roost-agent-host.example.json), [docs/architecture/autonomy-activation-contract.md](../../docs/architecture/autonomy-activation-contract.md).
 

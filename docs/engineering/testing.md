@@ -49,7 +49,32 @@ Migration files must be UTF-8 without BOM. A fresh `prisma migrate deploy`
 test is required because TypeScript build does not prove migration SQL can be
 applied.
 
+## Installation bootstrap regression
+
+`npm run test:bootstrap` requires `BOOTSTRAP_TEST_DATABASE_URL` pointing to a
+migrated, disposable local database named exactly `companycore_test_bootstrap`
+in the `public` schema. The test refuses other targets and clears only that test
+database's application tables. Never supply production connection settings.
+It verifies empty installation contents, concurrent startup, actual owner login
+and email/password changes, byte-equivalent preservation of all existing rows
+on repeated bootstrap, existing-user-only skip, transaction rollback and retry.
+
 ## Critical Areas
+
+Public-installation checks:
+
+- `tsx --test src/tests/public-urls.test.ts` verifies neutral defaults and explicit
+  web/API/CORS configuration for both single-domain and separate-domain installs.
+- `tsx --test src/tests/legal-pages.test.ts` verifies installation-specific policy
+  identity, safe fallback contact text and HTML escaping. Product-map tests use the
+  default `ISSUE` namespace; deployed installations can retain their own namespace
+  through `ROOST_ISSUE_PREFIX`.
+- `tsx --test src/tests/privacy-upgrade.test.ts` requires a newly created local
+  `companycore_test_privacy_upgrade` database via `PRIVACY_TEST_DATABASE_URL` and
+  `PRIVACY_TEST_LEGACY_SCHEMA` pointing to a private pre-sanitization Prisma schema
+  with its original migrations. It applies the old distribution, creates synthetic
+  company data, upgrades to the public distribution and compares every database row,
+  including migration checksums. It never uses a production connection.
 
 - owner registration and login
 - workspace scoping for all business data

@@ -70,12 +70,12 @@ Use JSON for repeatable manual or automated scenarios:
   "test_name": "memory_recall",
   "risk_area": "memory_consistency",
   "steps": [
-    { "user": "My name is Patryk" },
+    { "user": "My name is Alex" },
     { "user": "Let's talk about cars" },
     { "user": "Now about food" },
     { "user": "What is my name?" }
   ],
-  "expected": "Patryk",
+  "expected": "Alex",
   "must_not": [
     "invent a different name",
     "claim memory was saved if persistence is unavailable"

@@ -26,16 +26,16 @@ desired and observed product model that can drive that execution.
   and may reference an application.
 - Innovation and Products & Services read the same application record. Moving
   into productization never copies or hides the application.
-- Roost stores knowledge about Soar's trading capabilities; it does not
-  implement Soar's trading behavior.
+- Roost stores knowledge about DemoApp's trading capabilities; it does not
+  implement DemoApp's trading behavior.
 - API authorization capabilities, adapter `IntegrationCapability` records,
   and product `CapabilityDefinition` records are separate namespaces.
 
 The [autonomy activation contract](autonomy-activation-contract.md) requires
-configuration-based onboarding across the application portfolio. Soar is the
+configuration-based onboarding across the application portfolio. DemoApp is the
 first pilot; neither task orchestration nor application identity may depend on
 it. Roost itself is excluded from this portfolio and from agent execution targets.
-The managed portfolio is Aviary, Featherly, Nest and Soar. Do not import Roost
+The managed portfolio is NotesApp, ContentApp, PortalApp and DemoApp. Do not import Roost
 requirements, development tasks, documentation or repositories as a managed application. Both bootstrap
 automations remain active until a separate future owner decision.
 
@@ -80,7 +80,7 @@ and evidence are intentionally separate:
 
 ```text
 CapabilityDefinition(Authentication)
-  -> ApplicationCapability(Soar, REQUIRED, target COMPLETE)
+  -> ApplicationCapability(DemoApp, REQUIRED, target COMPLETE)
   -> CapabilityObservation(PARTIAL, observedAt, source, actor)
   -> ApplicationEvidence(test/path/API, verification status)
 ```
@@ -129,8 +129,9 @@ specific checks without adding columns to the capability table.
 - Applying either structure upserts application-specific configurations while
   preserving the global definitions.
 
-The seed includes Core SaaS, AI Ready, and a SaaS Web Application blueprint.
-The catalog remains editable without code migrations.
+Existing installations may retain Core SaaS, AI Ready, and a SaaS Web Application
+blueprint from the former seed. New installation bootstrap creates none of these
+records; catalogs are created explicitly and remain editable without code migrations.
 
 ## Architecture, technologies, and interfaces
 
@@ -179,8 +180,8 @@ endpoints, screenshots, deployments, documentation, database objects, metrics,
 external URLs, and manual verification. Provenance distinguishes human, agent,
 system, import, and repository scan sources.
 
-Seeded application records register the documentation roots for Soar
-and Featherly as unverified documentation evidence. Nest and Aviary are
+Seeded application records register the documentation roots for DemoApp
+and ContentApp as unverified documentation evidence. PortalApp and NotesApp are
 registered with `documentationImport=source_missing` until source documents
 exist. A documentation root proves provenance only; it does not prove runtime
 implementation.
@@ -235,7 +236,7 @@ Capability -> Reusable Procedure -> Procedure Step
 
 `Applications` is a deterministic portfolio projection node. The contextual
 Application Graph deliberately omits the workspace and Innovation ancestors;
-the complete Company Graph places the same projection under `LuckySparrow ->
+the complete Company Graph places the same projection under `Example Company ->
 11 Innovation -> Applications`. The two views reuse the same Product
 Engineering packet builder and native record identities rather than
 maintaining separate graph data.
@@ -283,36 +284,19 @@ and the record inspector preserve navigation without creating an
 application-specific graph implementation. The client may load all application
 projections only after a cross-portfolio search is requested.
 
-`npm run seed:soar-graph -- <path-to-soar>` is an explicit local/import command
-for the Soar architecture registry. It converts Soar feature records to native
-Roost feature assignments and imports non-feature registry records and chains
-as architecture atoms. It is idempotent for records whose metadata source is
-`soar-architecture-registry`; it is not part of the production seed and does
-not infer verified runtime state beyond the source registry's declarations.
+Installation-specific direct-database import scripts are not distributed and never
+run on deployment. Existing imported data remains owned by its workspace.
 
-`npm run import:application-docs:local-preview` inventories canonical
-top-level Product and Architecture Markdown for the registered Aviary,
-Featherly, Nest, and Soar repositories. With a workspace-scoped
-`ROOST_API_TOKEN`, the same command previews the production import through
-HTTPS; `npm run import:application-docs:apply` performs the audited write.
-Apply mode batches documentation records to keep production requests bounded.
-The optional `--documents-only` and `--architecture-only` flags isolate retries
-to one source family and are mutually exclusive.
-Markdown documents and headings
-become hierarchical `CompanyRecord` context attached to the existing
-application. Stable source IDs make the import idempotent, Git revisions and
-file paths preserve provenance, and imported declarations remain
-`functionalState=expected` with verification not started. The importer does
-not claim that documentation proves implementation and does not delete records
-that disappear from a later scan.
-
-The explicit `--source=aviary-legacy-assumptions` source imports only Aviary's
-hand-authored numbered Markdown series from
-`Aviary/Aviary - docs/architecture`. Generated node registries, graphs, CSV
-inventories, and derived evidence are excluded. These records use the separate
-`aviary-legacy-assumptions-v1` identity and `sourceKind=legacy_assumption`, so
-agents can use the owner's original intent without treating it as current,
-verified implementation or overriding canonical repository documentation.
+`npm run import:application-docs:local-preview -- --config=<private-config.json>`
+reads a private application mapping (see `config/application-import.example.json`).
+No local directories, application portfolio or production URL are hardcoded.
+For an authenticated preview or explicit apply, set `ROOST_API_URL` and
+`ROOST_API_TOKEN`; use `import:application-docs:apply` only with a reviewed scope.
+The optional `--documents-only` and `--architecture-only` flags are mutually exclusive.
+`--source=legacy-assumptions --application=<slug>` reads the configured legacy
+directory and uses the stable `<slug>-legacy-assumptions-v1` source identity.
+Canonical imports retain source IDs, provenance and expected/unverified state;
+they do not delete missing records or claim runtime verification.
 
 In `application-graph-v2`, imported documentation records use the `context`
 node type while canonical product requirements retain `requirement`. Their
@@ -325,8 +309,8 @@ same command also imports those rows as idempotent
 `ApplicationArchitectureComponent` atoms. Only target IDs present in the same
 curated registry or an earlier import are accepted. Parent and dependency
 edges come from explicit registry columns or curated relation CSV files; the
-importer does not infer relationships from similar names. Existing Soar atoms
-retain the established `soar-architecture-registry` identity, preventing a
+importer does not infer relationships from similar names. Existing DemoApp atoms
+retain the established `demoapp-architecture-registry` identity, preventing a
 second copy during reconciliation. Automatically discovered file/function
 inventories are intentionally excluded until their evidence state is reviewed.
 

@@ -1,14 +1,14 @@
 # Adapter Onboarding
 
 CompanyCore v1 is ready for service adapters such as Codex Agent Host, Jarvis,
-Jarvan, Aviary, n8n, and other AI agents through the HTTP API. Adapters must
+Jarvan, NotesApp, n8n, and other AI agents through the HTTP API. Adapters must
 use the API only; they must not connect directly to PostgreSQL or provider
 tools such as ClickUp.
 
 ## Production Base URL
 
 ```text
-https://api.roost.luckysparrow.ch
+https://api.roost.example.com
 ```
 
 v1 routes use `/v1/*` without an `/api` prefix because the API already has a
@@ -17,7 +17,7 @@ dedicated domain.
 ## Required Adapter Environment
 
 ```text
-COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch
+COMPANYCORE_BASE_URL=https://api.roost.example.com
 COMPANYCORE_API_KEY=cc_v1_...
 ```
 
@@ -48,7 +48,7 @@ Expected success shape:
     },
     "workspace": {
       "id": "uuid",
-      "name": "LuckySparrow"
+      "name": "Example Company"
     },
     "capabilities": ["tasks:read", "tasks:write", "events:read"],
     "adapterManifest": {
@@ -124,7 +124,7 @@ After an owner creates a workspace service API key, run the adapter smoke script
 before wiring Codex Agent Host or Jarvis:
 
 ```powershell
-$env:COMPANYCORE_BASE_URL="https://api.roost.luckysparrow.ch"
+$env:COMPANYCORE_BASE_URL="https://api.roost.example.com"
 $env:COMPANYCORE_API_KEY="cc_v1_..."
 $env:COMPANYCORE_ADAPTER_NAME="Jarvis"
 $env:COMPANYCORE_ADAPTER_SOURCE="jarvis"

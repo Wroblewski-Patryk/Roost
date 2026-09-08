@@ -77,8 +77,8 @@ for (const scenario of ["unrelated", "beforeCheckpoint", "afterCheckpoint", "hea
       return { code, stdout, stderr };
     }
     try {
-      await writeFile(configPath, JSON.stringify({ workspaceRoot: "C:\\Personal\\Projekty\\Aplikacje", codexCommand: "active-context-fixture",
-        repositories: { soar: { directory: "Soar", originUrl: "https://github.com/Wroblewski-Patryk/Soar.git" } } }));
+      await writeFile(configPath, JSON.stringify({ workspaceRoot: "C:\\Workspaces", codexCommand: "active-context-fixture",
+        repositories: { demoapp: { directory: "DemoApp", originUrl: "https://github.com/example-org/DemoApp.git" } } }));
       const result = await run(); assert.equal(result.code, 0, result.stderr);
       assert.equal(totalStops, longWorker ? 1 : 0, "one termination for a live tree, none after natural exit");
       assert.equal(unsafeAck, false, "stop must be confirmed before acknowledgement");

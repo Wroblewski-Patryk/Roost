@@ -34,4 +34,4 @@ COPY --from=build /app/public ./public
 COPY scripts ./scripts
 COPY package*.json ./
 EXPOSE 3000
-CMD ["sh", "-c", "npm run prisma:migrate:deploy && npm run seed && node dist/server.js"]
+CMD ["sh", "-c", "npm run prisma:migrate:deploy && npm run bootstrap && node dist/server.js"]

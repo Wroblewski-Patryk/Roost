@@ -31,7 +31,7 @@ CompanyCore tracks durable deployment guidance in
 
 Production Jarvis must have these environment variables:
 
-- `COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch`
+- `COMPANYCORE_BASE_URL=https://api.roost.example.com`
 - `COMPANYCORE_API_KEY=<Jarvis workspace service API key>`
 - `COMPANYCORE_ADAPTER_SOURCE=jarvis`
 
@@ -52,7 +52,7 @@ environment.
 Run the targeted OpenJarvis tests before deploying:
 
 ```powershell
-cd C:\Personal\Projekty\Aplikacje\OpenJarvis
+cd C:\Workspaces\OpenJarvis
 .\.venv\Scripts\python -m pytest tests\connectors\test_companycore.py tests\server\test_companycore_context.py -q
 ```
 
@@ -66,7 +66,7 @@ Also run syntax validation for the touched server files when doing a narrow
 hotfix:
 
 ```powershell
-cd C:\Personal\Projekty\Aplikacje\OpenJarvis
+cd C:\Workspaces\OpenJarvis
 .\.venv\Scripts\python -m py_compile `
   src\openjarvis\connectors\companycore.py `
   src\openjarvis\server\companycore_context.py `
@@ -82,7 +82,7 @@ The current production app is a Docker Compose deployment on the VPS.
 - Source checkout: `/home/codex/apps/openjarvis`
 - Compose app: `/home/codex/apps/openjarvis-prod`
 - Jarvis container: `openjarvis-prod-jarvis-1`
-- Public URL: `https://jarvis.luckysparrow.ch`
+- Public URL: `https://jarvis.example.com`
 
 Deploy from the VPS:
 
@@ -117,14 +117,14 @@ Set-Content -LiteralPath $body `
   -Encoding ASCII
 curl.exe -sk -c $cookie -H "Content-Type: application/json" `
   --data-binary "@$body" `
-  "https://jarvis.luckysparrow.ch/auth/login"
+  "https://jarvis.example.com/auth/login"
 Remove-Item $body -Force
 ```
 
 Verify the connector:
 
 ```powershell
-curl.exe -sk -b $cookie "https://jarvis.luckysparrow.ch/v1/connectors/companycore"
+curl.exe -sk -b $cookie "https://jarvis.example.com/v1/connectors/companycore"
 ```
 
 Expected result:
@@ -141,13 +141,13 @@ Expected result:
 Trigger a sync:
 
 ```powershell
-curl.exe -sk -b $cookie -X POST "https://jarvis.luckysparrow.ch/v1/connectors/companycore/sync"
+curl.exe -sk -b $cookie -X POST "https://jarvis.example.com/v1/connectors/companycore/sync"
 ```
 
 Then list connectors and confirm that `companycore` has indexed chunks:
 
 ```powershell
-curl.exe -sk -b $cookie "https://jarvis.luckysparrow.ch/v1/connectors"
+curl.exe -sk -b $cookie "https://jarvis.example.com/v1/connectors"
 ```
 
 Expected result:
@@ -176,7 +176,7 @@ $body = Join-Path $env:TEMP "jarvis-chat-companycore.json"
 
 curl.exe -sk -b $cookie -H "Content-Type: application/json" `
   --data-binary "@$body" `
-  "https://jarvis.luckysparrow.ch/v1/chat/completions"
+  "https://jarvis.example.com/v1/chat/completions"
 
 Remove-Item $body -Force
 ```

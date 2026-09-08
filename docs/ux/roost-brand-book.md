@@ -4,7 +4,7 @@ Last updated: 2026-05-24
 
 ## Brand Description
 
-Roost is the operational center for LuckySparrow: the digital nest where
+Roost is the operational center for Example Company: the digital nest where
 people, AI agents, processes, knowledge, tasks, pipelines, and company
 resources cooperate.
 
@@ -216,7 +216,7 @@ The public homepage should make Roost recognizable in the first viewport:
   data-flow layer, cockpit surface, or system graph
 - the next section should peek below the first viewport on desktop and mobile
 - footer attribution should read `Made with [theme-colored symbol] by
-  luckysparrow.ch`
+  example.com`
 
 ## Emotional Target
 

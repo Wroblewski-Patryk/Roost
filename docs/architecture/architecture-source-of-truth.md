@@ -115,7 +115,7 @@ The approved v1 direction is:
 - PostgreSQL is the source of truth
 - API is the supported access layer for agents, automations, future dashboards,
   and future mobile clients
-- development bootstrap registration may create a workspace; LuckySparrow
+- development bootstrap registration may create a workspace; Example Company
   production uses invitation-only membership in one canonical workspace
 - business data, service API keys, integration settings, and integration sync
   state are workspace-scoped

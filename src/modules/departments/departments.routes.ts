@@ -4,6 +4,7 @@ import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
 import { sendApiError } from "../../middleware/api-error";
 import { normalizeDepartmentKey } from "../../operating-model/department-registry";
+import { DEFAULT_DEPARTMENTS } from "./default-departments";
 
 type ViewDefinition = {
   id: string;
@@ -13,22 +14,6 @@ type ViewDefinition = {
   sourceDepartmentKey: string;
   enabled: boolean;
 };
-
-const DEFAULT_DEPARTMENTS = [
-  { key: "00-ogolny", name: "00 General", description: "Company orchestration, routing, and cross-department command.", icon: "ph-map-trifold", position: 0, linkedViews: ["general.overview", "general.company-graph", "general.company-updates"] },
-  { key: "01-strategia", name: "01 Strategy", description: "Strategic goals, decisions, priorities, and roadmap governance.", icon: "ph-target", position: 1, linkedViews: ["strategy.overview", "strategy.goals", "strategy.metrics", "strategy.initiatives", "strategy.decisions"] },
-  { key: "02-produkt", name: "02 Product", description: "Product and service definition, delivery scope, and improvement loops.", icon: "ph-package", position: 2, linkedViews: ["product.overview", "product.requirements", "product.deliverables"] },
-  { key: "03-sprzedaz", name: "03 Sales", description: "Lead, offer, deal, and commercial follow-up management.", icon: "ph-handshake", position: 3, linkedViews: ["sales.overview", "sales.offers"] },
-  { key: "04-operacje", name: "04 Operations", description: "Procedures, task boards, calendars, routines, and operational controls.", icon: "ph-list-checks", position: 4, linkedViews: ["operations.overview", "operations.tasks", "operations.calendar", "operations.procedures", "operations.issues", "operations.events"] },
-  { key: "05-relacje", name: "05 Relationships", description: "Clients, partners, support, feedback, and relationship evidence.", icon: "ph-address-book", position: 5, linkedViews: ["relationships.overview", "relationships.feedback"] },
-  { key: "06-kadry", name: "06 People / Agents", description: "People, AI agents, roles, responsibilities, and workload context.", icon: "ph-users-three", position: 6, linkedViews: ["people.overview", "people.directory", "people.competencies"] },
-  { key: "07-finanse", name: "07 Finance", description: "Revenue, costs, budgets, invoices, and commercial exceptions.", icon: "ph-bank", position: 7, linkedViews: ["finance.overview", "finance.budgets", "finance.invoices"] },
-  { key: "08-zasoby", name: "08 Assets", description: "Files, folders, resources, repositories, prompts, and knowledge roots.", icon: "ph-folder-open", position: 8, linkedViews: ["assets.overview", "assets.files", "assets.resources", "assets.knowledge"] },
-  { key: "09-technologia", name: "09 Technology", description: "Code, infrastructure, deployments, integrations, and technical health.", icon: "ph-cpu", position: 9, linkedViews: ["technology.overview", "technology.integrations", "technology.automations", "technology.incidents", "technology.environments"] },
-  { key: "10-prawo", name: "10 Legal", description: "Contracts, compliance, approvals, and legal risk control.", icon: "ph-scales", position: 10, linkedViews: ["legal.overview", "legal.contracts", "legal.policies", "legal.compliance"] },
-  { key: "11-innowacje", name: "11 Innovation", description: "Research, experiments, discovery, and improvement portfolio.", icon: "ph-lightbulb", position: 11, linkedViews: ["innovation.overview", "innovation.projects", "innovation.application-graph", "product.requirements", "innovation.experiments"] },
-  { key: "12-zarzadzanie", name: "12 Management", description: "Executive control, department administration, approvals, and portfolio steering.", icon: "ph-chart-line-up", position: 12, linkedViews: ["management.overview", "management.departments", "management.portfolio", "management.risks", "management.escalations", "management.reviews"] }
-] as const;
 
 const AVAILABLE_VIEWS: ViewDefinition[] = [
   { id: "general.overview", label: "Company dashboard", href: "/areas?area=00-ogolny&view=overview", icon: "ph-gauge", sourceDepartmentKey: "00-ogolny", enabled: true },

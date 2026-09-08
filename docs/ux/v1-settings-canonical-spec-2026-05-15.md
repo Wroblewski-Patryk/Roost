@@ -43,9 +43,9 @@ mapping debt, review tables, or operational dashboards.
 ## Canonical Images
 
 - Desktop target:
-  `docs/ux/assets/companycore-v1-settings-desktop-canonical.png`
+  private visual reference (archived outside the public repository)
 - Mobile target:
-  `docs/ux/assets/companycore-v1-settings-mobile-canonical.png`
+  private visual reference (archived outside the public repository)
 - Render source:
   `docs/ux/assets/companycore-v1-settings-canonical.html`
 

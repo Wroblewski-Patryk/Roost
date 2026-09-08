@@ -41,7 +41,7 @@ Every meaningful UI change should preserve or improve:
 
 ## Brand Theme Foundation
 
-Roost is the target brand and visual system for the LuckySparrow operating
+Roost is the target brand and visual system for the Example Company operating
 center. Roost is the digital nest where humans, AI agents, processes,
 knowledge, tasks, pipelines, and company resources coordinate. It is not a
 classic ERP and not another task manager; it is the operating center for an
@@ -212,7 +212,7 @@ layer.
 V1 navigation should express the company first:
 
 ```text
-LuckySparrow
+Example Company
   Dzialy
     00 Ogolny
     01 Strategia
@@ -233,8 +233,8 @@ Capabilities such as goals, workflows, tasks, knowledge, resources, decisions,
 and AI should be area-scoped views, not primary global sidebar modules. The
 canonical V1 desktop and mobile references are:
 
-- `docs/ux/assets/companycore-v1-area-first-dashboard-desktop-canonical.png`
-- `docs/ux/assets/companycore-v1-area-first-dashboard-mobile-canonical.png`
+- private visual reference (archived outside the public repository)
+- private visual reference (archived outside the public repository)
 
 The product should guide the user through:
 
@@ -314,7 +314,7 @@ route build its own product chrome.
 
 Canonical V1 shell zones:
 
-- `AreaSidebar`: `Company Atlas`, `00 Ogolny`, and the 12 LuckySparrow
+- `AreaSidebar`: `Company Atlas`, `00 Ogolny`, and the 12 Example Company
   departments, with exactly one expanded area on desktop.
 - `AreaSubnav`: selected-area views such as Overview, Goals, Workflows, Tasks,
   Knowledge, Resources, Decisions, AI, and `+ Add view`.

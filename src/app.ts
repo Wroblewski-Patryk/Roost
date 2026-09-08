@@ -2,6 +2,8 @@ import { env } from "./config/env";
 import cors from "cors";
 import express, { Router } from "express";
 import path from "path";
+import fs from "node:fs";
+import { renderLegalPage } from "./config/legal-pages";
 import { requireApiKey } from "./auth/api-key.middleware";
 import { errorHandler } from "./middleware/error-handler";
 import { createRateLimiter, requestContext, securityHeaders } from "./middleware/security";
@@ -107,13 +109,13 @@ function isApiHost(host = "") {
   return env.apiHostnames.includes(host.split(":")[0]);
 }
 
-function publicUrlsForHost(host = "") {
-  const apiHost = host.split(":")[0] || env.apiHostnames[0] || "api.roost.luckysparrow.ch";
-  const webHost = apiHost.startsWith("api.") ? apiHost.slice(4) : "roost.luckysparrow.ch";
+function publicUrlsForHost(host = "", protocol = "https") {
+  const apiHost = host || env.apiHostnames[0] || "localhost";
+  const webHost = apiHost.startsWith("api.") ? apiHost.slice(4) : apiHost;
 
   return {
-    web: `https://${webHost}`,
-    api: `https://${apiHost}`
+    web: env.publicWebBaseUrl || `${protocol}://${webHost}`,
+    api: env.publicApiBaseUrl || `${protocol}://${apiHost}`
   };
 }
 
@@ -181,7 +183,7 @@ export function createApp() {
       return;
     }
 
-    const publicUrls = publicUrlsForHost(req.headers.host);
+    const publicUrls = publicUrlsForHost(req.headers.host, env.nodeEnv === "production" ? "https" : req.protocol);
 
     res.json({
       data: {
@@ -193,6 +195,13 @@ export function createApp() {
       }
     });
   });
+  for (const document of ["privacy", "terms"]) {
+    app.get([`/${document}`, `/${document}.html`], (req, res, next) => {
+      if (isApiHost(req.headers.host)) return next();
+      const template = fs.readFileSync(path.join(publicRoot, `${document}.html`), "utf8");
+      res.type("html").send(renderLegalPage(template, process.env));
+    });
+  }
   app.use((req, res, next) => {
     if (isApiHost(req.headers.host)) {
       next();
@@ -209,12 +218,6 @@ export function createApp() {
 
     res.sendFile(path.join(publicRoot, "react", "index.html"));
   });
-  for (const document of ["privacy", "terms"]) {
-    app.get(`/${document}`, (req, res, next) => {
-      if (isApiHost(req.headers.host)) return next();
-      res.sendFile(path.join(publicRoot, `${document}.html`));
-    });
-  }
   app.get(/^\/auth\/invitations\/[^/]+$/, (req, res, next) => {
     if (isApiHost(req.headers.host)) return next();
     res.sendFile(path.join(publicRoot, "react", "index.html"));

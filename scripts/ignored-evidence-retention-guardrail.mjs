@@ -141,7 +141,7 @@ function manifestFindings(bundleName, manifestResult, now) {
     add("missing_owner", "Name an accountable owner in .retention.json.");
   }
   if (!manifest || typeof manifest.issueId !== "string" || !/^[A-Z][A-Z0-9]+-\d+$/.test(manifest.issueId)) {
-    add("missing_issue", "Add a valid issueId such as LUC-2729 to .retention.json.");
+    add("missing_issue", "Add a valid issueId such as EXAMPLE-123 to .retention.json.");
   }
   if (!manifest || !RETENTION_STATES.has(manifest.state)) {
     add("missing_retention_state", "Set state to quarantine or retain in .retention.json.");

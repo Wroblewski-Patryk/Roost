@@ -51,7 +51,7 @@ only. The baseline development settings are:
 - NODE_ENV=development
 - PORT=3102
 - DATABASE_URL pointing to a local PostgreSQL database
-- local-only SEED_API_KEY, owner seed values, and cryptographic placeholders
+- optional first-install owner values and local cryptographic placeholders; no seeded API key
 
 The ClickUp and Google Drive entries in .env.example are operator placeholders.
 Leave them as placeholders for ordinary local development. Workspace-owned
@@ -62,7 +62,7 @@ committed file or command transcript.
 
 npm run dev runs the TypeScript server in watch mode on the host. Roost reserves
 host port `3102` for the backend and uses `ROOST_POSTGRES_PORT` for PostgreSQL
-(`55432` by default); this keeps it clear of Soar's `5432` PostgreSQL and `6379`
+(`55432` by default); this keeps it clear of DemoApp's `5432` PostgreSQL and `6379`
 Redis ports. When Windows reserves the default port through an excluded port
 range, set one available port in `.env` and use that same value in
 `DATABASE_URL`. The local test runner reads this override automatically. Start
@@ -134,7 +134,7 @@ required secrets are missing or still use development placeholders.
 
 For a container-image readback, build the repository image and run the backend
 through the Compose network. The image entrypoint applies migrations, runs the
-idempotent seed, and then starts dist/server.js:
+empty-installation bootstrap, and then starts dist/server.js:
 
 ~~~powershell
 docker compose up -d postgres
@@ -162,10 +162,11 @@ if ($health.status -ne 'ok' -or $ready.status -ne 'ok') {
 }
 ~~~
 
-Protected API readback and denied-path check:
+Protected API readback and denied-path check (fresh-install defaults below; use your current local credentials if already changed):
 
 ~~~powershell
-$projects = Invoke-RestMethod -Uri http://localhost:3102/v1/projects -Headers @{ 'X-API-Key' = 'dev-companycore-key' }
+$login = Invoke-RestMethod -Uri http://localhost:3102/auth/login -Method Post -ContentType 'application/json' -Body (@{ email = 'owner@owner.com'; password = 'password' } | ConvertTo-Json)
+$projects = Invoke-RestMethod -Uri http://localhost:3102/v1/projects -Headers @{ Authorization = "Bearer $($login.data.token)" }
 
 if ($null -eq $projects.data) {
   throw 'Protected project-list response is missing its data envelope.'
@@ -183,8 +184,9 @@ Manual owner-console check:
 1. Open http://localhost:3102/ and confirm the React application renders.
 2. Open http://localhost:3102/auth/login and confirm the owner login form
    renders without a separate frontend server.
-3. For an authenticated UI check, use only the local seed owner from .env; do
-   not use a live account.
+3. Log in with the local installation owner (fresh default: owner@owner.com /
+   password, or first-install overrides). Change email/password in account settings.
+   Existing databases retain their current credentials; do not use a live account.
 
 Use [Testing Strategy](testing.md) for integration and regression commands.
 npm run test:api:local creates and drops only `companycore_test` in the same

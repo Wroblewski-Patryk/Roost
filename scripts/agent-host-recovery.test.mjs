@@ -35,7 +35,7 @@ async function harness(t, stopStage) {
   const reports = [], modes = [], childPids = [];
   const directory = await mkdtemp(path.join(os.tmpdir(), "roost-recovery-test-"));
   const configPath = path.join(directory, "config.json");
-  const config = { workspaceRoot: "C:\\Personal\\Projekty\\Aplikacje", codexCommand: "recovery-test-codex", repositories: { soar: { directory: "Soar", originUrl: "https://github.com/Wroblewski-Patryk/Soar.git" } } };
+  const config = { workspaceRoot: "C:\\Workspaces", codexCommand: "recovery-test-codex", repositories: { demoapp: { directory: "DemoApp", originUrl: "https://github.com/example-org/DemoApp.git" } } };
   await writeFile(configPath, JSON.stringify(config));
   const server = createServer(async (req, res) => {
     let body = ""; for await (const chunk of req) body += chunk;
@@ -131,7 +131,7 @@ for (const reason of ["lease_expired", "packet_changed", "context_changed", "rep
   if (reason === "lease_expired") h.active.leaseExpiresAt = new Date(0).toISOString();
   if (reason === "context_changed") h.f.taskContext.task.goal.description = "Changed goal after preparation";
   if (reason === "packet_changed") { h.f.packet.contract.version = "2"; sealPacket(h.f.packet); }
-  if (reason === "repository_mismatch") { h.config.repositories.soar.originUrl = "https://github.com/example/other.git"; await writeFile(h.configPath, JSON.stringify(h.config)); }
+  if (reason === "repository_mismatch") { h.config.repositories.demoapp.originUrl = "https://github.com/example/other.git"; await writeFile(h.configPath, JSON.stringify(h.config)); }
   if (reason === "sandbox_invalid") { h.config.sandbox = "danger-full-access"; await writeFile(h.configPath, JSON.stringify(h.config)); }
   if (reason === "writer_locked") { const lockPath = path.join(h.directory, writerLockFilename); const record = JSON.parse(await readFile(lockPath, "utf8")); record.ownerPid = process.pid; await writeFile(lockPath, JSON.stringify(record)); }
   const restarted = await h.run(); assert.equal(restarted.code, 1); assert.equal(restarted.spawned, 0);

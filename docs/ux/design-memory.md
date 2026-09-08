@@ -139,7 +139,7 @@ of rediscovering them.
 ### 2026-05-17 - Roost Brand Operating Center
 - Type: visual_direction
 - Context: The owner supplied a dedicated brand definition for Roost as the
-  LuckySparrow operating center: a digital nest for humans, AI agents,
+  Example Company operating center: a digital nest for humans, AI agents,
   processes, knowledge, tasks, pipelines, and company resources.
 - Decision: Treat Roost as the target brand direction for future UI work.
   Roost should feel like a cinematic dark operations cockpit with Inter
@@ -290,8 +290,8 @@ of rediscovering them.
   owner task.
 - Evidence:
   `docs/ux/v1-settings-canonical-spec-2026-05-15.md`,
-  `docs/ux/assets/companycore-v1-settings-desktop-canonical.png`, and
-  `docs/ux/assets/companycore-v1-settings-mobile-canonical.png`.
+  private visual reference (archived outside the public repository), and
+  private visual reference (archived outside the public repository).
 
 ### 2026-05-15 - V1 Five Canonical Web Surfaces
 - Type: reusable_pattern
@@ -345,8 +345,8 @@ of rediscovering them.
   `docs/ux/v1-area-detail-canonical-spec-2026-05-15.md` and
   `docs/planning/v1-area-detail-canonical-task-contract.md`. Current
   canonical desktop/mobile visual targets:
-  `docs/ux/assets/companycore-v1-area-detail-desktop-canonical.png` and
-  `docs/ux/assets/companycore-v1-area-detail-mobile-canonical.png`.
+  private visual reference (archived outside the public repository) and
+  private visual reference (archived outside the public repository).
   V1AREA-003 proof screenshots:
   `docs/ux/evidence/v1-area-detail-tabs-desktop.png` and
   `docs/ux/evidence/v1-area-detail-tabs-mobile.png`. V1AREA-004 polish proof:
@@ -373,9 +373,9 @@ of rediscovering them.
   `docs/ux/v1-simple-dashboard-canonical-spec-2026-05-15.md`,
   `docs/ux/v1-simple-dashboard-canonical-audit-2026-05-15.md`, and
   the current canonical desktop/mobile references:
-  `docs/ux/assets/companycore-v1-area-first-dashboard-desktop-canonical.png`
+  private visual reference (archived outside the public repository)
   and
-  `docs/ux/assets/companycore-v1-area-first-dashboard-mobile-canonical.png`.
+  private visual reference (archived outside the public repository).
   Latest implementation proof refreshed
   `docs/ux/evidence/v1-area-dashboard-desktop-1366x900.png` and
   `docs/ux/evidence/v1-area-dashboard-mobile-390x844.png` after the parity
@@ -439,7 +439,7 @@ of rediscovering them.
 - Evidence:
   `docs/ux/authenticated-shell-layout-audit-2026-05-14.md` and APP-AUDIT-001
   screenshot artifacts from
-  `C:\Users\wrobl\AppData\Local\Temp\companycore-full-audit-20260514-180653`.
+  `C:\Users\developer\AppData\Local\Temp\companycore-full-audit-20260514-180653`.
 
 ### 2026-05-14 - Company Command Rail Repair
 - Type: reusable_pattern
@@ -643,7 +643,7 @@ of rediscovering them.
   clearer Dashboard V2 target and a table-like inventory of elements to prevent
   future drift between generated images and implementation.
 - Decision: Use `docs/ux/company-city-dashboard-v3-spec.md` and
-  `docs/ux/assets/company-city-dashboard-v2-target.png` as the current
+  private visual reference (archived outside the public repository) as the current
   dashboard target. Implementation must follow the corrected structure in the
   spec: `GENERAL` as area `00`, exactly 12 numbered operating districts, a
   right `Command Brief`, bottom `Value Journey`, and subtle status strip.
@@ -683,7 +683,7 @@ of rediscovering them.
 - Avoid when: A detail route is a narrow CRUD editor; keep those calmer but
   preserve department identity and command context.
 - Evidence:
-  `docs/ux/assets/company-city-management-department-v1-target.png`.
+  private visual reference (archived outside the public repository).
 
 ### 2026-05-09 - React Canonical Route Switch Gate
 - Type: ux_learning

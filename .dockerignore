@@ -2,6 +2,11 @@ node_modules
 dist
 .git
 .env
+.env.*
+private
+.codex-remote-attachments
+config/*.local.json
+config/roost-agent-host.json
 *.log
 tmp
 temp

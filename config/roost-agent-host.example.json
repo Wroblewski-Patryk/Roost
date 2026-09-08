@@ -3,33 +3,33 @@
     "name": "Development laptop",
     "slug": "development-windows"
   },
-  "workspaceRoot": "C:\\Personal\\Projekty\\Aplikacje",
+  "workspaceRoot": "C:\\Workspaces",
   "codexCommand": "codex",
   "sandbox": "workspace-write",
   "pollIntervalMs": 5000,
   "repositories": {
-    "aviary": {
-      "directory": "Aviary",
-      "originUrl": "https://github.com/Wroblewski-Patryk/Aviary.git",
-      "deploymentUrl": "https://aviary.luckysparrow.ch/",
+    "notesapp": {
+      "directory": "NotesApp",
+      "originUrl": "https://github.com/example-org/NotesApp.git",
+      "deploymentUrl": "https://notesapp.example.com/",
       "baseBranch": "main"
     },
-    "featherly": {
-      "directory": "Featherly",
-      "originUrl": "https://github.com/Wroblewski-Patryk/Featherly.git",
-      "deploymentUrl": "https://test.wroblewskipatryk.pl/pl",
+    "contentapp": {
+      "directory": "ContentApp",
+      "originUrl": "https://github.com/example-org/ContentApp.git",
+      "deploymentUrl": "https://content.example.com/pl",
       "baseBranch": "main"
     },
-    "nest": {
-      "directory": "Nest",
-      "originUrl": "https://github.com/Wroblewski-Patryk/Nest.git",
-      "deploymentUrl": "https://nest.luckysparrow.ch/",
+    "portalapp": {
+      "directory": "PortalApp",
+      "originUrl": "https://github.com/example-org/PortalApp.git",
+      "deploymentUrl": "https://portalapp.example.com/",
       "baseBranch": "main"
     },
-    "soar": {
-      "directory": "Soar",
-      "originUrl": "https://github.com/Wroblewski-Patryk/Soar.git",
-      "deploymentUrl": "https://soar.luckysparrow.ch/",
+    "demoapp": {
+      "directory": "DemoApp",
+      "originUrl": "https://github.com/example-org/DemoApp.git",
+      "deploymentUrl": "https://demoapp.example.com/",
       "baseBranch": "main"
     }
   }

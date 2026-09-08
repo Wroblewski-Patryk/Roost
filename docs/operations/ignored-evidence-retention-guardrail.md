@@ -2,8 +2,8 @@
 
 Roost producers may write local evidence beneath only these ignored roots:
 
-- `C:/Personal/Projekty/Aplikacje/Roost/.tmp`
-- `C:/Personal/Projekty/Aplikacje/Roost/tmp`
+- `C:/Workspaces/Roost/.tmp`
+- `C:/Workspaces/Roost/tmp`
 
 The retention guardrail inventories filesystem metadata so ignored evidence
 cannot accumulate silently. It does not delete, move, upload, or print evidence
@@ -20,7 +20,7 @@ roots. Put one `.retention.json` file directly in that bundle:
 ~~~json
 {
   "owner": "Roost Project Manager",
-  "issueId": "LUC-2729",
+  "issueId": "EXAMPLE-123",
   "state": "quarantine",
   "expiresAt": "2026-08-21T12:00:00.000Z"
 }

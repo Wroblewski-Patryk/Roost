@@ -24,7 +24,10 @@ services:
       NODE_ENV: production
       PORT: 3000
       DATABASE_URL: postgresql://companycore:${SERVICE_PASSWORD_POSTGRES:-companycore}@postgres:5432/companycore?schema=public
-      SEED_API_KEY: ${SERVICE_PASSWORD_API_KEY:-dev-companycore-key}
+      SEED_OWNER_EMAIL: ${SEED_OWNER_EMAIL:-owner@owner.com}
+      SEED_OWNER_PASSWORD: ${SEED_OWNER_PASSWORD:-password}
+      SEED_OWNER_NAME: ${SEED_OWNER_NAME:-Owner}
+      SEED_WORKSPACE_NAME: ${SEED_WORKSPACE_NAME:-Roost}
       SERVICE_URL_BACKEND_3000: ${SERVICE_URL_BACKEND_3000:-http://localhost:3102}
     ports:
       - "${ROOST_BACKEND_PORT:-3102}:3000"

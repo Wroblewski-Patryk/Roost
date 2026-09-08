@@ -20,9 +20,9 @@ execution pressure, knowledge, provider context, and safe AI handoff.
 ## Canonical Images
 
 - Desktop target:
-  `docs/ux/assets/companycore-v1-area-detail-desktop-canonical.png`
+  private visual reference (archived outside the public repository)
 - Mobile target:
-  `docs/ux/assets/companycore-v1-area-detail-mobile-canonical.png`
+  private visual reference (archived outside the public repository)
 
 These images are the current visual implementation targets for the selected
 department view. They should be treated as a focused operating-room pattern:

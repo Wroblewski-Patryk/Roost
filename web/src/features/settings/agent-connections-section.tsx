@@ -87,7 +87,7 @@ export function AgentConnectionsSection({ connection }: { connection: Connection
   ].join("\n") : "";
 
   const hostPowerShell = setup ? [
-    "# C:\\Personal\\Projekty\\Aplikacje\\Roost",
+    "# C:\\Workspaces\\Roost",
     ".\\scripts\\roost-agent-host-windows.ps1 -Action Status",
     ".\\scripts\\roost-agent-host-windows.ps1 -Action Start"
   ].join("\n") : "";

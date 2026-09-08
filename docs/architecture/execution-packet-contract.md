@@ -2,7 +2,7 @@
 
 Current contract for the local Agent Host, accepted in
 `roost-interview-foundation-execution-packet-gate-2026-09-05-v1`.
-It does not activate production agents, automatic recovery or the Soar pilot.
+It does not activate production agents, automatic recovery or the DemoApp pilot.
 
 ## Preparation And Authority
 

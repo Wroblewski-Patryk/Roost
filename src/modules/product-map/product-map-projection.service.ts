@@ -37,7 +37,9 @@ const nonBlank = (max: number) => z.string().min(1).max(max).refine((value) => v
 const isoDateTimeSchema = z.string().datetime({ offset: true });
 const gitShaSchema = z.string().regex(/^[a-f0-9]{40}$/).nullable();
 const stableIdSchema = z.string().min(1).max(128).regex(/^[A-Za-z0-9._:-]+$/);
-const issueIdentifierSchema = z.string().regex(/^LUC-[1-9][0-9]*$/);
+const issuePrefix = process.env.ROOST_ISSUE_PREFIX?.trim() || "ISSUE";
+if (!/^[A-Z][A-Z0-9]{0,15}$/.test(issuePrefix)) throw new Error("Invalid ROOST_ISSUE_PREFIX");
+const issueIdentifierSchema = z.string().regex(new RegExp(`^${issuePrefix}-[1-9][0-9]*$`));
 const uuidSchema = z.string().uuid();
 const documentKeySchema = z.string().regex(/^[a-z0-9][a-z0-9-]{0,63}$/);
 
@@ -440,7 +442,7 @@ function evidenceKey(ref: AgentExecutionEvidenceRef) {
 }
 
 function evidenceHref(ref: AgentExecutionEvidenceRef) {
-  const base = `/LUC/issues/${ref.issueIdentifier}`;
+  const base = `/${ref.issueIdentifier.split("-")[0]}/issues/${ref.issueIdentifier}`;
   if (ref.kind === "comment") return `${base}#comment-${ref.commentId}`;
   if (ref.kind === "document") return `${base}#document-${ref.documentKey}`;
   if (ref.kind === "attachment") return `${base}#attachment-${ref.objectId}`;

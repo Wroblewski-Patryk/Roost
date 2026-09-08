@@ -93,7 +93,7 @@ export function AuthRoute({ mode }: { mode: "login" | "register" }) {
                 {({ id, describedBy, invalid }) => (
                   <CcTextInput
                     aria-describedby={describedBy}
-                    defaultValue="LuckySparrow"
+                    defaultValue="My Company"
                     id={id}
                     invalid={invalid}
                     name="workspaceName"

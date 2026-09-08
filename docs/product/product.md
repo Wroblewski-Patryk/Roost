@@ -2,7 +2,7 @@
 
 ## Product Identity
 
-Roost is LuckySparrow's internal company operating system. It gives the owner
+Roost is a self-hosted company operating system. It gives the owner
 and supervised agents one workspace-scoped place to operate company work:
 strategy and delivery, customer context, operating-model records,
 integrations, knowledge, decisions, and governed automation.
@@ -28,12 +28,12 @@ not authorize new product scope or change existing API/database identifiers.
 - Core promise: give an owner and approved agents a reliable, workspace-scoped
   operating record with an API/MCP boundary and a human control plane.
 - Business intent: establish the web, backend, and MCP foundation required to
-  run LuckySparrow operations safely before expanding into V2 visual, mobile,
+  run Example Company operations safely before expanding into V2 visual, mobile,
   or gamified experiences.
 
 ## Target Users
 
-- Primary users: the LuckySparrow workspace owner, administrators, employees,
+- Primary users: the Example Company workspace owner, administrators, employees,
   and read-only collaborators who operate from one role-governed workspace.
 - Secondary users: supervised agents and automations (including local Codex
   Agent Hosts and Jarvis) that use workspace-scoped API keys or MCP tools.
@@ -79,7 +79,7 @@ material ambiguity; humans and agents deliver through department responsibility,
 bounded context, risk controls and independent evidence. Autonomous releases are
 a staged target. The current supervised runtime and owner review described above
 remain in effect until the corresponding command and activation gates are proven.
-The first delivery proof is a low-risk Soar repair under a separate task contract.
+The first delivery proof is a low-risk DemoApp repair under a separate task contract.
 
 ## Product Rules
 

@@ -9,13 +9,13 @@ without storing raw Google credentials in docs or chat.
 
 ## What You Need
 
-- Owner login for `https://roost.luckysparrow.ch`.
+- Owner login for `https://roost.example.com`.
 - Access to the Google account or Google Workspace that owns the target Drive
   folders.
 - Access to the production environment variables for the CompanyCore backend.
 - A public HTTPS Roost URL. Production uses:
-  - web: `https://roost.luckysparrow.ch`
-  - API: `https://api.roost.luckysparrow.ch`
+  - web: `https://roost.example.com`
+  - API: `https://api.roost.example.com`
 
 ## Google Cloud Setup
 
@@ -24,7 +24,7 @@ without storing raw Google credentials in docs or chat.
 1. Open [Google Cloud Console](https://console.cloud.google.com/).
 2. Select the project that should own the CompanyCore OAuth app.
 3. If there is no project yet, create one named `CompanyCore` or
-   `LuckySparrow CompanyCore`.
+   `Example Company CompanyCore`.
 
 ### 2. Enable Required APIs
 
@@ -42,19 +42,17 @@ document read/edit/create, and Sheets for spreadsheet read/edit/create.
 
 1. Open `APIs & Services` -> `OAuth consent screen`.
 2. Choose the audience:
-   - `Internal` if this is only for the LuckySparrow Google Workspace.
+   - `Internal` if this is only for the Example Company Google Workspace.
    - `External` if the Google account is outside the Workspace.
 3. Fill the required app information:
    - App name: `Roost`
    - User support email: the operator/support email
    - Developer contact email: the operator/support email
-   - Application home page: `https://roost.luckysparrow.ch/`
-   - Privacy policy: `https://roost.luckysparrow.ch/privacy`
-   - Terms of use: `https://roost.luckysparrow.ch/terms`
-   - Authorized domain: `luckysparrow.ch`
-   The public policies identify the individual operator, Patryk Wróblewski
-   (LuckySparrow), and the owner-provided contact address. They do not represent
-   LuckySparrow as a registered legal entity.
+   - Application home page: `https://roost.example.com/`
+   - Privacy policy: `https://roost.example.com/privacy`
+   - Terms of use: `https://roost.example.com/terms`
+   - Authorized domain: `example.com`
+   Configure `ROOST_OPERATOR_NAME` and `ROOST_OPERATOR_CONTACT_EMAIL` in the installation environment so public policies identify the actual operator and contact.
 4. Add the required scopes:
    - `https://www.googleapis.com/auth/drive`
    - `https://www.googleapis.com/auth/documents`
@@ -63,7 +61,7 @@ document read/edit/create, and Sheets for spreadsheet read/edit/create.
    connect Drive as a test user.
 6. Save the consent screen.
 
-Before submitting OAuth verification, verify ownership of `luckysparrow.ch`
+Before submitting OAuth verification, verify ownership of `example.com`
 in Google Search Console using the project owner's or editor's Google account.
 A Domain property with the Google-issued DNS TXT record covers its subdomains.
 Keep that verification record in place. The homepage includes its purpose and
@@ -86,7 +84,7 @@ reconnecting for sustained operation. See [Google refresh token expiration](http
 5. Add this Authorized redirect URI:
 
 ```text
-https://roost.luckysparrow.ch/settings/drive
+https://roost.example.com/settings/drive
 ```
 
 6. Click `Create`.
@@ -102,7 +100,7 @@ in Coolify:
 ```text
 GOOGLE_OAUTH_CLIENT_ID=<client-id-from-google>
 GOOGLE_OAUTH_CLIENT_SECRET=<client-secret-from-google>
-COMPANYCORE_PUBLIC_API_BASE_URL=https://api.roost.luckysparrow.ch
+COMPANYCORE_PUBLIC_API_BASE_URL=https://api.roost.example.com
 ```
 
 Then redeploy or restart the CompanyCore backend so the OAuth client values are
@@ -110,9 +108,9 @@ loaded.
 
 Required safety checks after restart:
 
-1. `GET https://api.roost.luckysparrow.ch/health` returns healthy JSON.
-2. `GET https://api.roost.luckysparrow.ch/v1/health` returns healthy JSON.
-3. Owner can sign in at `https://roost.luckysparrow.ch/auth/login`.
+1. `GET https://api.roost.example.com/health` returns healthy JSON.
+2. `GET https://api.roost.example.com/v1/health` returns healthy JSON.
+3. Owner can sign in at `https://roost.example.com/auth/login`.
 
 ## Drive Folder Selection
 
@@ -134,18 +132,18 @@ Use folder IDs, not folder names. Names can change and are not unique.
 
 ## CompanyCore Owner UI Setup
 
-1. Open `https://roost.luckysparrow.ch/auth/login`.
+1. Open `https://roost.example.com/auth/login`.
 2. Sign in as the CompanyCore workspace owner.
 3. Open `Drive` in the sidebar, or go directly to:
 
 ```text
-https://roost.luckysparrow.ch/settings/drive
+https://roost.example.com/settings/drive
 ```
 
 4. Confirm the `Redirect URI` field shows:
 
 ```text
-https://roost.luckysparrow.ch/settings/drive
+https://roost.example.com/settings/drive
 ```
 
 5. Paste the selected Google Drive folder IDs into `Folder IDs to import`,
@@ -193,7 +191,7 @@ service key.
 ## Troubleshooting
 
 - `redirect_uri_mismatch`: the redirect URI in Google Cloud must exactly match
-  `https://roost.luckysparrow.ch/settings/drive`.
+  `https://roost.example.com/settings/drive`.
 - `access_denied`: the selected Google account did not grant consent, or the
   account is not allowed by the OAuth consent screen test users.
 - `integration_not_configured`: the backend may not have

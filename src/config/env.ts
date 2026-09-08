@@ -1,23 +1,8 @@
 import { config as loadDotenv } from "dotenv";
+import { publicUrlConfiguration } from "./public-urls";
 
 if (process.env.NODE_ENV !== "test" && process.env.COMPANYCORE_SKIP_DOTENV !== "1") {
   loadDotenv();
-}
-
-const productionCorsFallbackOrigins = [
-  "https://roost.luckysparrow.ch",
-  "https://api.roost.luckysparrow.ch"
-];
-
-const productionApiHostFallbacks = [
-  "api.roost.luckysparrow.ch"
-];
-
-function splitCsv(value: string | undefined) {
-  return (value ?? "")
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
 }
 
 function firstEnv(names: string[], fallback = "unknown") {
@@ -53,32 +38,13 @@ function requireProductionSecret(name: string, fallback?: string): string {
   return value;
 }
 
-function getCorsAllowedOrigins() {
-  if (process.env.NODE_ENV !== "production") {
-    return splitCsv(process.env.COMPANYCORE_ALLOWED_ORIGINS);
-  }
-
-  const configuredOrigins = splitCsv(process.env.COMPANYCORE_ALLOWED_ORIGINS);
-  return configuredOrigins.length > 0
-    ? configuredOrigins
-    : productionCorsFallbackOrigins;
-}
-
-function getApiHostnames() {
-  const configuredHosts = splitCsv(process.env.COMPANYCORE_API_HOSTS);
-  return configuredHosts.length > 0
-    ? configuredHosts
-    : productionApiHostFallbacks;
-}
-
 const nodeEnv = process.env.NODE_ENV ?? "development";
 
 export const env = {
   nodeEnv,
   port: Number(process.env.PORT ?? 3102),
   databaseUrl: requireProductionValue("DATABASE_URL"),
-  publicApiBaseUrl: process.env.COMPANYCORE_PUBLIC_API_BASE_URL,
-  apiHostnames: getApiHostnames(),
+  ...publicUrlConfiguration(process.env),
   googleOAuthClientId: process.env.GOOGLE_OAUTH_CLIENT_ID ?? (process.env.NODE_ENV === "production" ? undefined : "dev-google-oauth-client-id"),
   googleOAuthClientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET ?? (process.env.NODE_ENV === "production" ? undefined : "dev-google-oauth-client-secret"),
   buildCommit: firstEnv([
@@ -109,6 +75,5 @@ export const env = {
       ? undefined
       : "dev-companycore-auth-secret-change-me")
   ),
-  corsAllowedOrigins: getCorsAllowedOrigins(),
   workspaceCreationEnabled: process.env.ROOST_ALLOW_WORKSPACE_CREATION === "true" || nodeEnv !== "production"
 };

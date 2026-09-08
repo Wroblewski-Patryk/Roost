@@ -64,7 +64,8 @@ switch ($Action) {
       try { $owned = $mutex.WaitOne(0) } catch [Threading.AbandonedMutexException] { $owned = $true }
       if (-not $owned) { exit 0 }
       $config = Get-Content -Raw -LiteralPath $configPath | ConvertFrom-Json
-      if ($config.executionMode -ne 'observe' -or $config.baseUrl -ne 'https://api.roost.luckysparrow.ch') { throw 'observer_configuration_invalid' }
+      $roostObserverUri = $null
+      if ($config.executionMode -ne 'observe' -or -not [Uri]::TryCreate($config.baseUrl, [UriKind]::Absolute, [ref]$roostObserverUri) -or $roostObserverUri.Scheme -ne 'https' -or $roostObserverUri.UserInfo) { throw 'observer_configuration_invalid' }
       if (Test-Path -LiteralPath $stopPath) { Remove-Item -LiteralPath $stopPath }
       . (Join-Path $PSScriptRoot 'roost-agent-credential.ps1')
       $startInfo = New-Object Diagnostics.ProcessStartInfo

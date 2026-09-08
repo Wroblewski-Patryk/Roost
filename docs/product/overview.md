@@ -2,7 +2,7 @@
 
 ## Plain-Language Summary
 
-Roost is LuckySparrow's internal company operating system for an owner and
+Roost is Example Company's internal company operating system for an owner and
 supervised agents. It keeps operational records, integrations, decisions, and
 agent activity within a workspace-scoped PostgreSQL and API foundation instead
 of allowing them to drift across tools. The first delivered foundation must

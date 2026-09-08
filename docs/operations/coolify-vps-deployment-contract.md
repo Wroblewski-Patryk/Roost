@@ -7,11 +7,11 @@ PostgreSQL data.
 
 ## Deployment Target
 
-- VPS provider: LuckySparrow-managed VPS.
+- VPS provider: Example Company-managed VPS.
 - Platform: Coolify.
 - Public domains:
-  - Web UI: `roost.luckysparrow.ch`
-  - API: `api.roost.luckysparrow.ch`
+  - Web UI: `roost.example.com`
+  - API: `api.roost.example.com`
 - Public service: `backend` on container port `3000`.
 - Public web surface: React owner console served by `backend` from the generated
   `public/react/` bundle; legacy vanilla owner-console routes are not active.
@@ -35,8 +35,8 @@ PostgreSQL data.
 - Coolify Compose path: `docker-compose.coolify.yml`.
 - Env example file: `.env.example`.
 - Health/readiness endpoint: `GET /health`.
-- Owner console: `GET https://roost.luckysparrow.ch/`.
-- API metadata: `GET https://api.roost.luckysparrow.ch/`.
+- Owner console: `GET https://roost.example.com/`.
+- API metadata: `GET https://api.roost.example.com/`.
 - Migration entrypoint:
   - Runtime startup runs `npm run prisma:migrate:deploy`.
   - Local development may use `npm run prisma:migrate:dev`.
@@ -51,19 +51,17 @@ Current foundation secrets:
 
 - `DATABASE_URL`
 - `SERVICE_PASSWORD_POSTGRES`
-- `SERVICE_PASSWORD_API_KEY` or `SEED_API_KEY`
 - `AUTH_TOKEN_SECRET`
 - `API_KEY_HASH_SECRET` is recommended for secret separation. If omitted,
   production falls back to `AUTH_TOKEN_SECRET` for backward compatibility with
   existing service API key hashes.
 - `INTEGRATION_SECRET_KEY`
-- `COMPANYCORE_ALLOWED_ORIGINS` as a comma-separated allowlist for browser
-  CORS. Production defaults to
-  `https://roost.luckysparrow.ch,https://api.roost.luckysparrow.ch`
-  when the value is omitted.
-- `COMPANYCORE_API_HOSTS` as a comma-separated list of hostnames that should
-  receive API metadata at `/` instead of the web app. Production defaults to
-  `api.roost.luckysparrow.ch`.
+- `COMPANYCORE_PUBLIC_WEB_BASE_URL`: public web origin for this installation
+- `COMPANYCORE_PUBLIC_API_BASE_URL`: optional separate API origin
+- `COMPANYCORE_ALLOWED_ORIGINS`: optional explicit CORS allowlist, otherwise
+  derived from configured public origins
+- `COMPANYCORE_API_HOSTS`: optional API-only hostnames, otherwise derived only
+  when separate web/API origins are configured
 - optional `PORT`
 
 Production startup fails closed when `DATABASE_URL`, `AUTH_TOKEN_SECRET`, or
@@ -101,11 +99,11 @@ Required checks before deploy:
 
 Required smoke checks after deploy:
 
-- `GET https://api.roost.luckysparrow.ch/health`
-- `GET https://roost.luckysparrow.ch/`
-- `GET https://api.roost.luckysparrow.ch/`
-- CORS preflight from `https://roost.luckysparrow.ch` to
-  `https://api.roost.luckysparrow.ch`
+- `GET https://api.roost.example.com/health`
+- `GET https://roost.example.com/`
+- `GET https://api.roost.example.com/`
+- CORS preflight from `https://roost.example.com` to
+  `https://api.roost.example.com`
 - owner registration/login or approved first-owner bootstrap
 - protected workspace-scoped project/task call
 - denied unauthenticated or cross-workspace request
@@ -123,7 +121,7 @@ Current status as of 2026-05-24:
 - Coolify services are healthy on the VPS.
 - CompanyCore manual runtime rollover is proven and documented.
 - The GitHub app previously saw the pre-rename repository with admin
-  permissions; the current repository is `Wroblewski-Patryk/Roost`.
+  permissions; the current repository is `example-org/Roost`.
 - The available GitHub connector tool surface does not expose repository
   webhook list/create/update/delete actions.
 - The local `gh` CLI is not installed in the Codex workspace.
@@ -141,9 +139,9 @@ Current status as of 2026-05-24:
   `COOLIFY_CONTAINER_NAME` into the backend metadata path.
 - Coolify `Auto Deploy` is enabled for the `companycore` application.
 - On 2026-05-19, the pre-rename Coolify source was aligned with the working
-  LuckySparrow projects:
-  - Git source: official Coolify GitHub App `vps-luckysparrow`.
-  - Repository then: `Wroblewski-Patryk/companycore`.
+  Example Company projects:
+  - Git source: official Coolify GitHub App `vps-example-company`.
+  - Repository then: `example-org/companycore`.
   - Branch: `main`.
   - Commit selector: `HEAD`.
   - Deploy key removed from the application source so Coolify no longer treats
@@ -168,15 +166,15 @@ Current status as of 2026-05-24:
   `main` should be used as the end-to-end proof that Coolify creates a
   `Webhook` deployment record for `companycore`.
 - On 2026-05-24, the GitHub repository was renamed to
-  `Wroblewski-Patryk/Roost`. Local `origin` now points to
-  `https://github.com/Wroblewski-Patryk/Roost.git`. Coolify was checked under
-  the `LuckySparrow` team, project `LuckySparrow`, production environment,
-  application `Roost`; its Git Source now uses `Wroblewski-Patryk/Roost` on
+  `example-org/Roost`. Local `origin` now points to
+  `https://github.com/example-org/Roost.git`. Coolify was checked under
+  the `Example Company` team, project `Example Company`, production environment,
+  application `Roost`; its Git Source now uses `example-org/Roost` on
   branch `main` with commit selector `HEAD`. No manual redeploy was triggered
   during the rename checkpoint.
 - The next normal push to `main` after the repository rename triggered a
   Coolify deployment for `Roost`. Public health briefly returned `503` during
-  rollout and then recovered; `https://api.roost.luckysparrow.ch/health`
+  rollout and then recovered; `https://api.roost.example.com/health`
   reported `status: ok` and build commit
   `c5b9aca6d5470060344b8f83a4d3e020f24cc6b7`.
 
@@ -211,13 +209,17 @@ Production baseline recovery:
 
 First-owner bootstrap:
 
-- Prefer `POST /auth/register` when public registration is temporarily allowed
-  and immediately protect/disable that path if deployment policy requires it.
-- Alternatively run `npm run seed` once with explicit production bootstrap
-  secrets.
-- After bootstrap, rotate temporary owner password/API key material if it was
-  shared through deployment tooling.
-- Do not rely on repeat production seed runs as an admin access mechanism.
+- Container startup runs migrations, then `npm run bootstrap`.
+- With no users and no workspaces, bootstrap atomically creates the owner,
+  workspace and twelve departments plus `00 General`. First login defaults:
+  `owner@owner.com` / `password`; change email/password in account settings.
+- Any existing user or workspace skips all bootstrap writes. Changed environment
+  values never reset existing credentials or ownership, and redeploy does not
+  restore missing records or remove old seeded data.
+- No service/API keys or business data are provisioned. Historical
+  `SERVICE_PASSWORD_API_KEY` / `SEED_API_KEY` settings are unused by bootstrap.
+- See [Deployment](../DEPLOYMENT.md) for optional first-install owner overrides.
+  Do not roll back to an image that still runs the former data-populating seed.
 
 ## Local Codex Agent Runtime Rollout
 

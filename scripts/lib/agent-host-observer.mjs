@@ -2,7 +2,7 @@ import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { writeFile, access } from "node:fs/promises";
-import { validateRepositoryMappings, approvedWindowsWorkspaceRoot } from "./agent-host-workspace-guard.mjs";
+import { validateRepositoryMappings, validateConfiguredWorkspaceRoot } from "./agent-host-workspace-guard.mjs";
 import { protocol, apiProtocolReason } from "./agent-host-protocol.mjs";
 
 // Fixed machine-wide port: the OS releases it even after a crash. No PID-based
@@ -19,7 +19,7 @@ export async function acquireObserverLock(port = observerPort) {
 
 export async function runObserver({ config, api, stopped = () => false, acquireLock = acquireObserverLock, stateDirectory = path.join(process.env.USERPROFILE || os.homedir(), ".roost", "agent-host"), interval = 5000 }) {
   if (config.executionMode !== "observe") throw new Error("observer_mode_required");
-  if (config.workspaceRoot !== approvedWindowsWorkspaceRoot) throw new Error("observer_workspace_invalid");
+  try { validateConfiguredWorkspaceRoot(config.workspaceRoot); } catch { throw new Error("observer_workspace_invalid"); }
   const repositories = validateRepositoryMappings(config.repositories);
   const release = await acquireLock();
   let host;

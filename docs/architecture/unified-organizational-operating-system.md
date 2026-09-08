@@ -20,7 +20,7 @@ AI agents = workforce members using API/MCP and service integrations
 Providers = external systems connected through adapters
 ```
 
-AI systems such as Codex Agent Host, Aviary, Jarvis, Codex, or future automation
+AI systems such as Codex Agent Host, NotesApp, Jarvis, Codex, or future automation
 runtimes must remain external clients. They may receive work, read context,
 report progress, request approvals, and execute allowed commands only through
 CompanyCore API/MCP/service boundaries.

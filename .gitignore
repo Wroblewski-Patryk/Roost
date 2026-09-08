@@ -16,6 +16,11 @@ output/
 .env
 .env.local
 .env.*.local
+.env.*
+!.env.example
+/private/
+/.codex-remote-attachments/
+/config/*.local.json
 
 # Node / build output
 node_modules/

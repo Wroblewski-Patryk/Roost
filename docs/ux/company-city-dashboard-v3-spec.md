@@ -13,9 +13,9 @@ value-chain department model with the user's universal 13-area company model.
 ## Canonical Reference
 
 - Current reference asset:
-  `docs/ux/assets/company-city-dashboard-v3-target.png`
+  private visual reference (archived outside the public repository)
 - Previous reference asset:
-  `docs/ux/assets/company-city-dashboard-v2-target.png`
+  private visual reference (archived outside the public repository)
 - Source type: approved generated visual target.
 - Fidelity target for first implementation: structurally faithful with strong
   visual fidelity. Pixel-close work requires a later asset extraction and
@@ -127,7 +127,7 @@ use this corrected product structure:
 ## Department Detail Target: 12 Zarzadzanie
 
 - Current reference asset:
-  `docs/ux/assets/company-city-management-department-v1-target.png`
+  private visual reference (archived outside the public repository)
 - Role: governance and control workbench reached from the Company City map.
 - Required header: `12 Zarzadzanie` with secondary role `Governance & Control`.
 - Required sections: `Decyzje strategiczne`, `Ryzyka i kontrole`,

@@ -237,7 +237,7 @@ pipeline cuts across them:
 | Learning engine | 09 Knowledge and decisions, 01 Strategy and governance | all areas through improvement tasks |
 | Operating foundation | 00 Glowny, 11 Automations and integrations, 12 AI agents and observability | all areas |
 
-Area labels in user-facing UI may use the current LuckySparrow Polish names,
+Area labels in user-facing UI may use the current Example Company Polish names,
 but repository architecture artifacts should preserve English source-of-truth
 language.
 

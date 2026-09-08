@@ -91,8 +91,8 @@ Use this prompt when risk is meaningful:
 - Residual risk:
   - rate limiting and lockout policy still need implementation planning
   - production secret rotation must be verified during deployment tasks
-  - production seed/bootstrap must be run once intentionally or replaced by
-    owner registration, never left as an ungoverned admin shortcut
+  - first-install credentials must be changed after login; bootstrap skips all
+    writes once any user or workspace exists and cannot restore admin access
 
 ## Bootstrap Security
 
@@ -100,8 +100,10 @@ First-owner bootstrap is security-sensitive because it creates the identity
 that owns the company workspace. Allowed v1 bootstrap paths:
 
 - owner registration through `POST /auth/register`
-- one-time production seed with explicit `SEED_OWNER_EMAIL`,
-  `SEED_OWNER_PASSWORD`, `SEED_WORKSPACE_NAME`, and `SEED_API_KEY`
+- automatic empty-installation bootstrap with no API key provisioning;
+  optional `SEED_OWNER_EMAIL`, `SEED_OWNER_PASSWORD`, `SEED_OWNER_NAME`, and
+  `SEED_WORKSPACE_NAME` override first-install defaults only (see
+  [Deployment](../DEPLOYMENT.md)). Any existing user/workspace blocks all writes.
 
 After bootstrap:
 

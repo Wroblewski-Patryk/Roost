@@ -138,7 +138,7 @@ instead of duplicating these existing foundations.
   pull requests, pages, graphics, prompts, contracts, and invoices.
 - `dependencies`: dependencies between resources and runtime or business
   entities.
-- `business_functions`: LuckySparrow department/business-function catalog with
+- `business_functions`: Example Company department/business-function catalog with
   accountable roles.
 - `stakeholders`: client, internal, partner, vendor, and other stakeholders.
 - `api_keys`: workspace-scoped service credentials for agents and automations.
@@ -179,8 +179,9 @@ or MCP behavior.
 
 The schema includes a registry that keeps business areas, folders, tables, API
 surfaces, storage, knowledge roots, automations, and provider mappings aligned.
-Registration and seed/bootstrap paths create the standard operating model for
-each workspace.
+Registration and operating-model API paths create the standard operating registry
+for each workspace. Installation bootstrap creates only the department navigation
+records; it does not populate the operating registry or business records.
 
 Target hierarchy:
 
@@ -483,29 +484,17 @@ transaction.
 
 ## Seed And Bootstrap
 
-`prisma/seed.ts` creates local/bootstrap data:
+`prisma/seed.ts` calls the minimal installation bootstrap in
+`src/bootstrap/installation.ts`. It creates only an owner user, workspace,
+owner membership and twelve departments plus `00 General` on a new installation.
+It creates no service keys or business/example data.
 
-- owner user from `SEED_OWNER_EMAIL`
-- owner password from `SEED_OWNER_PASSWORD`
-- workspace from `SEED_WORKSPACE_NAME`
-- local workspace API key from `SEED_API_KEY`
-- default pipeline stages
-- Company OS Stage 1 foundation records:
-  - Human Owner plus CEO, CTO, Project Manager, Developer, QA,
-    Documentation, Sales, and Finance agent roles
-  - ClickUp, Google Drive, GitHub, Coolify, and n8n tool adapters with
-    provider-neutral capabilities
-  - the first seven LuckySparrow pipelines:
-    Feature Development, Client Onboarding, Content Production, Agent Task
-    Execution, Integration Onboarding, Documentation Update, and Deployment
-  - matching processes, SOP procedures, procedure steps, pipeline stages, and
-    provider-neutral pipeline resources
-
-This seed path is acceptable for local development and intentional first-owner
-bootstrap. It must not become a permanent production admin shortcut. Production
-operators should prefer `POST /auth/register` for the first owner when public
-registration is acceptable, or run seed once with explicit deployment secrets
-and then rotate bootstrap credentials.
+Any existing user or workspace makes bootstrap a complete no-op. The emptiness
+check and inserts run under transaction-scoped table locks; partial installation
+rolls back and parallel starts serialize. It never updates or deletes existing
+rows, resets credentials, restores removed departments, or backfills workspaces.
+The old seed's data remains untouched. See [Deployment](DEPLOYMENT.md) for first
+login defaults, configuration and redeploy behavior.
 
 ## Service API Keys
 
@@ -525,7 +514,7 @@ added. Existing plaintext foundation keys require a migration or explicit
 rotation plan before production use.
 
 Current transition state keeps the legacy `key` column for compatibility while
-new seed/bootstrap paths populate `key_hash` and `key_prefix`. Middleware checks
+authenticated key-creation paths populate `key_hash` and `key_prefix`. Middleware checks
 `key_hash` first and only falls back to plaintext rows when `key_hash` is null.
 Production should rotate service keys and remove plaintext dependence in a
 future cleanup migration.
@@ -582,7 +571,7 @@ business processing:
   - verified provider deliveries, idempotency key, payload hash, safe payload,
     processing state, retry count, and timestamps
 - `agent_event_outbox`
-  - provider-neutral follow-up events for Codex Agent Host, Jarvis, Aviary, and future
+  - provider-neutral follow-up events for Codex Agent Host, Jarvis, NotesApp, and future
     consumers
 
 ## Local Agent Runtime Tables

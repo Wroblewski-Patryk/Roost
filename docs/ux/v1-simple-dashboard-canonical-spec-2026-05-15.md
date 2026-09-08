@@ -4,25 +4,25 @@ Date: 2026-05-15
 Stage: planning
 Task: `V1UX-CANON-001`
 Original canonical image target:
-`docs/ux/assets/companycore-v1-simple-dashboard-canonical.png`
+private visual reference (archived outside the public repository)
 
 Refined CEO canonical image target:
-`docs/ux/assets/companycore-v1-ceo-dashboard-refined-canonical.png`
+private visual reference (archived outside the public repository)
 
 APQC executive atlas canonical target:
-`docs/ux/assets/companycore-v1-apqc-executive-atlas-canonical.png`
+private visual reference (archived outside the public repository)
 
 Polished executive atlas canonical target:
-`docs/ux/assets/companycore-v1-executive-atlas-awwwards-canonical.png`
+private visual reference (archived outside the public repository)
 
 Area-first atlas canonical target:
-`docs/ux/assets/companycore-v1-area-first-atlas-canonical.png`
+private visual reference (archived outside the public repository)
 
 Area-first desktop layout target:
-`docs/ux/assets/companycore-v1-area-first-dashboard-desktop-canonical.png`
+private visual reference (archived outside the public repository)
 
 Area-first mobile layout target:
-`docs/ux/assets/companycore-v1-area-first-dashboard-mobile-canonical.png`
+private visual reference (archived outside the public repository)
 
 These two images are the current canonical desktop and mobile layout references
 for the V1 area-first dashboard.
@@ -176,7 +176,7 @@ department.
 Example expanded row:
 
 ```text
-LuckySparrow
+Example Company
   Dzialy
     00 Ogolny
     01 Strategia
@@ -209,7 +209,7 @@ The top title/search bar should be quieter than previous concepts.
 
 Desktop header:
 
-- Left: current workspace and view label, for example `LuckySparrow / Company
+- Left: current workspace and view label, for example `Example Company / Company
   Atlas`.
 - Center: one compact command search.
 - Right: one quiet status sentence or pill group with at most three signals.
@@ -218,7 +218,7 @@ Desktop header:
 
 Mobile header:
 
-- One row only: menu, `LuckySparrow`, search icon, status dot.
+- One row only: menu, `Example Company`, search icon, status dot.
 - Area title appears below as part of the content, not crammed into the topbar.
 
 Avoid:
@@ -230,7 +230,7 @@ Avoid:
 The canonical desktop target follows this by using:
 
 ```text
-LuckySparrow / Company Atlas
+Example Company / Company Atlas
 Search area, process, resource...
 13 areas / 87% ownership / 2 decisions
 settings/filter icon
@@ -239,7 +239,7 @@ settings/filter icon
 The canonical mobile target follows this by using:
 
 ```text
-menu icon | LuckySparrow + online dot | search icon | guarded status
+menu icon | Example Company + online dot | search icon | guarded status
 ```
 
 No mobile page should inherit the full desktop header.

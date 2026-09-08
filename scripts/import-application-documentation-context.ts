@@ -38,17 +38,25 @@ type DocumentationSource = {
   files: (root: string) => string[];
 };
 
-const applicationRoots: Record<string, string> = {
-  aviary: "C:/Personal/Projekty/Aplikacje/Aviary",
-  featherly: "C:/Personal/Projekty/Aplikacje/Featherly",
-  nest: "C:/Personal/Projekty/Aplikacje/Nest",
-  soar: "C:/Personal/Projekty/Aplikacje/Soar"
+type ImportConfiguration = {
+  workspaceRoot: string;
+  applications: Record<string, { directory: string; legacyAssumptionsDirectory?: string; separateFeatureRegistry?: boolean }>;
 };
-const approvedApplicationsRoot = path.resolve("C:/Personal/Projekty/Aplikacje");
+const configPath = process.argv.find((argument) => argument.startsWith("--config="))?.slice("--config=".length) || process.env.ROOST_IMPORT_CONFIG;
+if (!configPath) throw new Error("Provide --config=<private-config.json> or ROOST_IMPORT_CONFIG. No installation paths are bundled.");
+const importConfiguration = JSON.parse(fs.readFileSync(configPath, "utf8")) as ImportConfiguration;
+if (!path.isAbsolute(importConfiguration.workspaceRoot || "")) throw new Error("Import workspaceRoot must be absolute.");
+const approvedApplicationsRoot = fs.realpathSync(importConfiguration.workspaceRoot);
+if (!importConfiguration.applications || typeof importConfiguration.applications !== "object" || Array.isArray(importConfiguration.applications)) throw new Error("Import applications mapping is required.");
+const applicationRoots: Record<string, string> = Object.fromEntries(Object.entries(importConfiguration.applications).map(([key, value]) => {
+  if (!/^[a-z0-9][a-z0-9._-]*$/.test(key) || key === "roost" || !value || typeof value.directory !== "string") throw new Error("Invalid import application mapping.");
+  return [key, assertApprovedRoot(path.resolve(approvedApplicationsRoot, value.directory))];
+}));
 
 function assertApprovedRoot(root: string) {
-  const resolved = path.resolve(root);
-  if (resolved !== approvedApplicationsRoot && !resolved.startsWith(`${approvedApplicationsRoot}${path.sep}`)) throw new Error(`Application root is outside the approved workspace: ${resolved}`);
+  const resolved = fs.realpathSync(path.resolve(root));
+  const relative = path.relative(approvedApplicationsRoot, resolved);
+  if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) throw new Error("Application root is outside the approved workspace.");
   return resolved;
 }
 
@@ -104,10 +112,8 @@ function componentType(row: CsvRow): ArchitectureImport["type"] {
 function registryFor(applicationSlug: string, root: string): { sourceSystem: string; architecture: ArchitectureImport[] } | null {
   const nodesPath = path.join(root, "docs", "architecture", "registry", "nodes.csv");
   if (!fs.existsSync(nodesPath)) return null;
-  const relationCandidates = applicationSlug === "soar"
-    ? [path.join(root, "docs", "architecture", "relations", "dependencies.csv")]
-    : [path.join(root, "docs", "architecture", "registry", "relations.csv"), path.join(root, "docs", "architecture", "registry", "dependencies.csv")];
-  const nodeRows = parseCsv(fs.readFileSync(nodesPath, "utf8")).filter((row) => row.id && row.name && !(applicationSlug === "soar" && row.type === "feature"));
+  const relationCandidates = [path.join(root, "docs", "architecture", "relations", "dependencies.csv"), path.join(root, "docs", "architecture", "registry", "relations.csv"), path.join(root, "docs", "architecture", "registry", "dependencies.csv")];
+  const nodeRows = parseCsv(fs.readFileSync(nodesPath, "utf8")).filter((row) => row.id && row.name && !(importConfiguration.applications[applicationSlug]?.separateFeatureRegistry && row.type === "feature"));
   const nodeIds = new Set(nodeRows.map((row) => row.id));
   const relationsBySource = new Map<string, ArchitectureImport["relations"]>();
   for (const relationPath of relationCandidates.filter((candidate) => fs.existsSync(candidate))) {
@@ -161,7 +167,7 @@ function canonicalFiles(root: string) {
   return [...files].sort();
 }
 
-function aviaryLegacyAssumptionFiles(root: string) {
+function legacyAssumptionFiles(root: string) {
   return fs.readdirSync(root, { withFileTypes: true })
     .filter((entry) => entry.isFile() && /^\d{2}_.+\.md$/i.test(entry.name))
     .map((entry) => path.join(root, entry.name))
@@ -169,14 +175,16 @@ function aviaryLegacyAssumptionFiles(root: string) {
 }
 
 function selectedDocumentationSources(requestedSlug?: string, requestedSource?: string): DocumentationSource[] {
-  if (requestedSource === "aviary-legacy-assumptions") {
-    if (requestedSlug && requestedSlug !== "aviary") throw new Error("The Aviary legacy assumptions source can only be imported for Aviary.");
+  if (requestedSource === "legacy-assumptions") {
+    if (!requestedSlug || !applicationRoots[requestedSlug]) throw new Error("Select one configured --application for legacy assumptions.");
+    const directory = importConfiguration.applications[requestedSlug]?.legacyAssumptionsDirectory;
+    if (!directory) throw new Error("The selected application has no configured legacyAssumptionsDirectory.");
     return [{
-      applicationSlug: "aviary",
-      root: "C:/Personal/Projekty/Aplikacje/Aviary/Aviary - docs/architecture",
-      sourceSystem: "aviary-legacy-assumptions-v1",
+      applicationSlug: requestedSlug,
+      root: assertApprovedRoot(path.resolve(applicationRoots[requestedSlug], directory)),
+      sourceSystem: `${requestedSlug}-legacy-assumptions-v1`,
       sourceKind: "legacy_assumption",
-      files: aviaryLegacyAssumptionFiles
+      files: legacyAssumptionFiles
     }];
   }
   if (requestedSource) throw new Error(`Unsupported documentation source: ${requestedSource}`);
@@ -297,7 +305,7 @@ async function main() {
   if (documentsOnly && architectureOnly) throw new Error("Choose either --documents-only or --architecture-only.");
   const requestedSlug = process.argv.find((argument) => argument.startsWith("--application="))?.split("=")[1];
   const requestedSource = process.argv.find((argument) => argument.startsWith("--source="))?.split("=")[1];
-  const baseUrl = process.env.ROOST_API_URL || "https://roost.luckysparrow.ch";
+  const baseUrl = process.env.ROOST_API_URL;
   const documentationSources = selectedDocumentationSources(requestedSlug, requestedSource);
   if (requestedSlug && !documentationSources.length) throw new Error(`Unsupported application: ${requestedSlug}`);
   if (requestedSource && architectureOnly) throw new Error("The legacy assumptions source contains documentation records, not architecture registry atoms.");
@@ -314,6 +322,7 @@ async function main() {
     console.log(JSON.stringify({ mode: "local-preview", results }, null, 2));
     return;
   }
+  if (!baseUrl) throw new Error("ROOST_API_URL is required for an API import. Local preview needs no API connection.");
   const token = process.env.ROOST_API_TOKEN;
   if (!token) throw new Error("ROOST_API_TOKEN is required. Use a workspace-scoped API token; the token is never written to disk.");
   const applicationResponse = await api<{ data: Array<{ id: string; slug: string; name: string; metadata?: unknown }> }>(baseUrl, token, "/v1/product-engineering/applications");

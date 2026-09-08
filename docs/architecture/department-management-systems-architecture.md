@@ -113,7 +113,7 @@ horizontal flow.
 
 ## Canonical Department Systems
 
-User-facing labels may use the current LuckySparrow Polish names. Architecture
+User-facing labels may use the current Example Company Polish names. Architecture
 source of truth keeps English names for clarity.
 
 | Area | User-facing label | Department management system | Primary value layer | Core subsystems |

@@ -2,10 +2,18 @@
 
 ## Decision
 
-LuckySparrow production uses one canonical workspace. Humans join that
+Example Company production uses one canonical workspace. Humans join that
 workspace through expiring invitations; public registration and authenticated
 creation of additional workspaces are disabled in production unless
 `ROOST_ALLOW_WORKSPACE_CREATION=true` is explicitly configured.
+
+## Installation
+
+A new installation creates one owner login and workspace plus twelve departments
+and the system `00 General` surface. First login defaults and optional overrides
+are documented in [Deployment](../DEPLOYMENT.md). Account settings allow changing
+email (with the current password) and password. Bootstrap never updates an
+existing account or workspace and provisions no API keys or business records.
 
 ## Roles
 

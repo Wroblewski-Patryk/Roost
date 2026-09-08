@@ -47,7 +47,7 @@ async function testDeterministicSignals() {
     await utimes(evidence, new Date("2026-01-01T00:00:00.000Z"), new Date("2026-01-01T00:00:00.000Z"));
     await writeFile(path.join(bundle, ".retention.json"), JSON.stringify({
       owner: "Roost Project Manager",
-      issueId: "LUC-2729",
+      issueId: "EXAMPLE-123",
       state: "quarantine",
       expiresAt: "2026-01-05T00:00:00.000Z"
     }));
@@ -70,7 +70,7 @@ async function testDeterministicSignals() {
     assert.equal(first.roots[0].bundles[0].oldestAgeHours, 216);
     assert.deepEqual(first.roots[0].bundles[0].metadata, {
       owner: "Roost Project Manager",
-      issueId: "LUC-2729",
+      issueId: "EXAMPLE-123",
       state: "quarantine",
       expiresAt: "2026-01-05T00:00:00.000Z"
     });

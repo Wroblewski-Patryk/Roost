@@ -441,7 +441,7 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
         <div className="roost-page-content" data-active-area={settingsRoute ? "settings" : activeArea}>
           {children}
           <footer className="roost-app-footer">
-            <span>{t("footer.copy")} {t("footer.madeWith")} <a href="https://luckysparrow.ch" rel="noreferrer" target="_blank">LuckySparrow.ch</a></span>
+            <span>{t("footer.copy")}</span>
             <span>{t("shell.ownerConsole")}</span>
           </footer>
         </div>

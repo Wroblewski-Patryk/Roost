@@ -1,8 +1,8 @@
-const baseUrl = process.env.COMPANYCORE_BASE_URL ?? "https://api.roost.luckysparrow.ch";
+const baseUrl = process.env.COMPANYCORE_BASE_URL;
 const apiKey = process.env.COMPANYCORE_API_KEY;
 
-if (!apiKey) {
-  console.error("COMPANYCORE_API_KEY is required for protected Google Drive smoke.");
+if (!apiKey || !baseUrl) {
+  console.error("COMPANYCORE_BASE_URL and COMPANYCORE_API_KEY are required for protected Google Drive smoke.");
   process.exit(1);
 }
 

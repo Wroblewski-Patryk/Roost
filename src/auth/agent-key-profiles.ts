@@ -45,7 +45,7 @@ export const agentKeyProfiles = [
     id: "mcp_knowledge_reader",
     label: "MCP Knowledge Reader",
     description: "Read-only MCP access to company context, notes, decisions, Drive file metadata/content, and Company OS knowledge links.",
-    recommendedFor: ["Documentation Agent", "Research Agent", "Jarvis", "Aviary"],
+    recommendedFor: ["Documentation Agent", "Research Agent", "Jarvis", "NotesApp"],
     riskLevel: "low",
     scopes: [
       ...mcpBaseScopes,

@@ -35,11 +35,11 @@ achievement boundary and external blocker list.
 
 ## Production Endpoints
 
-- Web console: `https://roost.luckysparrow.ch/`
-- API: `https://api.roost.luckysparrow.ch/`
-- Health: `https://api.roost.luckysparrow.ch/health`
-- V1 health: `https://api.roost.luckysparrow.ch/v1/health`
-- Jarvis: `https://jarvis.luckysparrow.ch/`
+- Web console: `https://roost.example.com/`
+- API: `https://api.roost.example.com/`
+- Health: `https://api.roost.example.com/health`
+- V1 health: `https://api.roost.example.com/v1/health`
+- Jarvis: `https://jarvis.example.com/`
 - Codex Agent Host: outbound local process; no separate public endpoint
 
 ## Current Runtime
@@ -113,10 +113,10 @@ achievement boundary and external blocker list.
 Run after any deploy, credential rotation, or provider incident:
 
 ```bash
-curl -fsS https://api.roost.luckysparrow.ch/health
-curl -fsS https://api.roost.luckysparrow.ch/v1/health
-curl -fsS https://roost.luckysparrow.ch/
-curl -fsS https://jarvis.luckysparrow.ch/health
+curl -fsS https://api.roost.example.com/health
+curl -fsS https://api.roost.example.com/v1/health
+curl -fsS https://roost.example.com/
+curl -fsS https://jarvis.example.com/health
 ```
 
 Run protected checks with service credentials stored in the target service
@@ -141,7 +141,7 @@ environment. Do not print raw API keys in terminals, logs, docs, or chat.
 
 - GitHub-to-Coolify auto-deploy:
   - GitHub repository visibility shows admin permission for
-    `Wroblewski-Patryk/Roost`.
+    `example-org/Roost`.
   - Available GitHub connector tools do not expose repository webhook
     administration.
   - Local `gh` CLI is not installed.

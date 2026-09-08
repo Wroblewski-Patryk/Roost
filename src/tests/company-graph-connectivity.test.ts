@@ -6,13 +6,13 @@ test("detects a connected but unrooted project execution island", () => {
   const nodes = [
     { id: "workspace:1", entityType: "workspace" },
     { id: "department:innovation", entityType: "department" },
-    { id: "project:soar", entityType: "project" },
+    { id: "project:demoapp", entityType: "project" },
     { id: "list:delivery", entityType: "task_list" },
     { id: "task:ship", entityType: "task" }
   ];
   const edges = [
     { from: { entityId: "workspace:1" }, to: { entityId: "department:innovation" } },
-    { from: { entityId: "project:soar" }, to: { entityId: "list:delivery" } },
+    { from: { entityId: "project:demoapp" }, to: { entityId: "list:delivery" } },
     { from: { entityId: "list:delivery" }, to: { entityId: "task:ship" } }
   ];
 
@@ -20,8 +20,8 @@ test("detects a connected but unrooted project execution island", () => {
 
   assert.deepEqual([...result.reachableNodeIds].sort(), ["department:innovation", "workspace:1"]);
   assert.deepEqual(result.unrootedComponents, [{
-    anchorNodeId: "project:soar",
-    nodeIds: ["list:delivery", "project:soar", "task:ship"]
+    anchorNodeId: "project:demoapp",
+    nodeIds: ["list:delivery", "project:demoapp", "task:ship"]
   }]);
 });
 

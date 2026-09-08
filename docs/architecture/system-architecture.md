@@ -1,6 +1,6 @@
 # System Architecture
 
-Roost is the operational core for LuckySparrow. It stores company
+Roost is the operational core for Example Company. It stores company
 projects, goals, targets, tasks, CRM context, decisions, notes, AI agent
 metadata, agent logs, integration state, and system events. PostgreSQL is the
 source of truth, and the HTTP API is the supported integration access layer.
@@ -352,7 +352,7 @@ condition/action contract that should run or escalate work. Artifacts record
 work outputs, and dependencies connect resources or entities so agents can
 see blockers before acting.
 
-Business functions are the approved LuckySparrow departments and operating
+Business functions are the approved Example Company departments and operating
 functions. Stakeholders provide the broader client, vendor, partner, internal,
 or other people map beyond CRM clients.
 
@@ -749,7 +749,7 @@ webhook flow is:
 Owner enables ClickUp integration -> CompanyCore creates scoped ClickUp webhook
   -> ClickUp POSTs signed event -> CompanyCore verifies signature from raw body
   -> provider event inbox deduplicates -> task delta is reconciled
-  -> CompanyCore event/outbox notifies Codex Agent Host, Jarvis, Aviary, or future agents
+  -> CompanyCore event/outbox notifies Codex Agent Host, Jarvis, NotesApp, or future agents
 ```
 
 ClickUp webhook registrations are tied to the user token that created them, so
@@ -787,7 +787,7 @@ explicit owner/operator action.
 Webhook processing should be event-first and bridge-friendly. Status changes,
 for example `taskStatusUpdated`, must update the CompanyCore task state and
 also emit a durable internal event that downstream agents can consume. Codex Agent Host
-can use status changes as work triggers, while Jarvis and Aviary can consume the
+can use status changes as work triggers, while Jarvis and NotesApp can consume the
 same event stream for context refreshes, decisions, notifications, or future
 automation modules.
 
@@ -875,7 +875,7 @@ The Google Drive adapter should deliver in vertical slices:
    metadata/content snapshots after successful provider writes.
 6. Reconcile external edits through Drive `changes.list`, then add
    `changes.watch` channels for push-based freshness.
-7. Expose provider-neutral file/content APIs for Jarvis, Codex Agent Host, Aviary, and
+7. Expose provider-neutral file/content APIs for Jarvis, Codex Agent Host, NotesApp, and
    future GUI modules.
 
 CompanyCore remains the source of truth for operational interpretation. Google
@@ -904,8 +904,8 @@ directly to PostgreSQL.
 - Runtime services: `backend`, `postgres`.
 - Public entry point: backend service on port `3000`.
 - Production domains to document and verify:
-  - `roost.luckysparrow.ch`
-  - `api.roost.luckysparrow.ch`
+  - `roost.example.com`
+  - `api.roost.example.com`
 - Private infrastructure: PostgreSQL service and persistent Docker volume.
 - Health/readiness endpoint: `GET /health`.
 - Required persistence: `companycore_postgres` Docker volume.

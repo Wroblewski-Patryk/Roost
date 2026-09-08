@@ -14,7 +14,7 @@ export function validPacketFixture() {
   const workspaceId = uuid(1), taskId = uuid(2), applicationId = uuid(3), agentId = uuid(4), goalId = uuid(5), projectId = uuid(6);
   const claimed = { id: uuid(7), workspaceId, taskId, applicationId, attempt: 1, leaseToken: uuid(8),
     startedAt: new Date().toISOString(),
-    task: { title: "Repair a synthetic fixture" }, application: { id: applicationId, workspaceId, slug: "soar", name: "Soar", repositories: [{ url: "https://github.com/Wroblewski-Patryk/Soar.git", isPrimary: true }] } };
+    task: { title: "Repair a synthetic fixture" }, application: { id: applicationId, workspaceId, slug: "demoapp", name: "DemoApp", repositories: [{ url: "https://github.com/example-org/DemoApp.git", isPrimary: true }] } };
   const sources = ["company", "product", "technical"].map((category, index) => ({ id: uuid(10 + index), workspaceId,
     applicationId: category === "company" ? null : applicationId, recordType: "requirement", title: category,
     description: `Synthetic ${category} context`, businessPurpose: null, desiredState: null, expectedBehavior: null, revision }));

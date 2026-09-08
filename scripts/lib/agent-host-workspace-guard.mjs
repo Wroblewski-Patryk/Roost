@@ -2,7 +2,14 @@ import { spawn } from "node:child_process";
 import { lstat, realpath } from "node:fs/promises";
 import path from "node:path";
 
-export const approvedWindowsWorkspaceRoot = "C:\\Personal\\Projekty\\Aplikacje";
+export function validateConfiguredWorkspaceRoot(value) {
+  if (typeof value !== "string" || !path.win32.isAbsolute(value) || !/^[A-Za-z]:[\\/]/.test(value)) {
+    throw new Error("workspace_root_not_approved");
+  }
+  const root = path.win32.normalize(value);
+  if (root === path.win32.parse(root).root) throw new Error("workspace_root_not_approved");
+  return root;
+}
 
 export function validateHostExecutionPolicy(config) {
   const sandbox = config?.sandbox ?? "workspace-write";
@@ -56,7 +63,7 @@ function validateRepositoryConfig(slug, repository) {
   if (!/^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(?:\.git)?$/i.test(originUrl)) {
     throw new Error(`repository_origin_invalid:${slug}`);
   }
-  if (slug.toLowerCase() === "roost" || directory.toLowerCase() === "roost" || normalizeGitRemote(originUrl) === "https://github.com/wroblewski-patryk/roost") {
+  if (slug.toLowerCase() === "roost" || directory.toLowerCase() === "roost" || /\/roost$/i.test(normalizeGitRemote(originUrl))) {
     throw new Error("roost_self_development_excluded");
   }
   const deploymentUrl = String(repository.deploymentUrl || "").trim();
@@ -101,10 +108,7 @@ export function repositoryForExecution(config, execution) {
 export async function validateAgentHostWorkspace(config) {
   const executionPolicy = validateHostExecutionPolicy(config);
   if (process.platform !== "win32") throw new Error(`agent_host_platform_not_approved:${process.platform}`);
-  const workspaceRoot = path.resolve(String(config.workspaceRoot || ""));
-  if (comparablePath(workspaceRoot) !== comparablePath(approvedWindowsWorkspaceRoot)) {
-    throw new Error(`workspace_root_not_approved:${workspaceRoot}`);
-  }
+  const workspaceRoot = path.resolve(validateConfiguredWorkspaceRoot(config.workspaceRoot));
   const rootStat = await lstat(workspaceRoot).catch(() => null);
   if (!rootStat?.isDirectory() || rootStat.isSymbolicLink()) throw new Error(`workspace_root_invalid:${workspaceRoot}`);
   const physicalRoot = await realpath(workspaceRoot);

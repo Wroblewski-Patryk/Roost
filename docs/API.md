@@ -275,7 +275,7 @@ Planned registration payload:
   "email": "owner@example.com",
   "password": "strong-password",
   "name": "Owner Name",
-  "workspaceName": "LuckySparrow"
+  "workspaceName": "Example Company"
 }
 ```
 
@@ -507,12 +507,12 @@ Safe discovery response:
     "workspaces": [
       {
         "id": "clickup-workspace-id",
-        "name": "LuckySparrow"
+        "name": "Example Company"
       }
     ],
     "selectedWorkspace": {
       "id": "clickup-workspace-id",
-      "name": "LuckySparrow"
+      "name": "Example Company"
     },
     "spaces": [
       {
@@ -572,7 +572,7 @@ Safe response:
     },
     "workspace": {
       "id": "uuid",
-      "name": "LuckySparrow"
+      "name": "Example Company"
     },
     "operatingModel": {
       "hierarchy": "workspace -> operating_area -> operating_folder -> operating_table -> record",
@@ -602,13 +602,13 @@ Safe response:
     "scopeMode": "scoped",
     "agentAccess": {
       "api": {
-        "baseUrl": "https://api.roost.luckysparrow.ch",
+        "baseUrl": "https://api.roost.example.com",
         "authHeader": "X-API-Key"
       },
       "mcp": {
         "serverName": "roost",
         "transport": "stdio",
-        "bridgeWorkingDirectory": "C:\\Personal\\Projekty\\Aplikacje\\Roost",
+        "bridgeWorkingDirectory": "C:\\Workspaces\\Roost",
         "secretEnvironmentVariable": "COMPANYCORE_API_KEY"
       },
       "codex": {
@@ -617,7 +617,7 @@ Safe response:
       },
       "agentHost": {
         "transport": "outbound_https",
-        "workspaceRoot": "C:\\Personal\\Projekty\\Aplikacje"
+        "workspaceRoot": "C:\\Workspaces"
       }
     },
     "adapterManifest": {
@@ -708,7 +708,7 @@ Safe response:
 ```
 
 The `adapterManifest` is the machine-readable v1 onboarding surface for
-Codex Agent Host, Jarvis, Jarvan, Aviary, n8n, and similar clients. It lists canonical
+Codex Agent Host, Jarvis, Jarvan, NotesApp, n8n, and similar clients. It lists canonical
 paths, methods, expected capabilities, payload field hints, safe error
 behavior, and write rules without exposing secrets. `data.capabilities` is
 filtered to the authenticated key's effective capabilities unless the key is in
@@ -967,7 +967,7 @@ Response shape:
   "data": {
     "workspace": {
       "id": "workspace-id",
-      "name": "LuckySparrow"
+      "name": "Example Company"
     },
     "graph": {
       "nodes": [
@@ -2397,7 +2397,7 @@ GET /v1/goals?departmentKey=11-innowacje&includeCompanyWide=false
 ```json
 {
   "projectId": "uuid",
-  "title": "Release Soar production version",
+  "title": "Release DemoApp production version",
   "businessPurpose": "Make the validated application available to customers",
   "priority": "high",
   "deadline": "2026-10-01T12:00:00.000Z",
@@ -2936,7 +2936,7 @@ and invalid signatures return `invalid_webhook_signature`.
 
 Valid signed ClickUp events are stored idempotently in the provider inbox,
 processed into CompanyCore task records, and status changes create
-provider-neutral agent events for Codex Agent Host, Jarvis, Aviary, and future
+provider-neutral agent events for Codex Agent Host, Jarvis, NotesApp, and future
 consumers.
 
 ClickUp task comment events are mapped to CompanyCore notes attached to the

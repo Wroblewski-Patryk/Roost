@@ -6,17 +6,17 @@ import {
   graphDomainFor
 } from "../modules/product-engineering/application-graph";
 
-const workspace = { id: "workspace-1", name: "LuckySparrow" };
+const workspace = { id: "workspace-1", name: "Example Company" };
 const application = {
   id: "application-1",
-  name: "Soar",
-  slug: "soar",
+  name: "DemoApp",
+  slug: "demoapp",
   description: "Trading automation platform.",
   owner: "Product Engineering",
   innovationStage: "development" as const,
   productStage: "candidate" as const,
   status: "active" as const,
-  frontendUrl: "https://soar.example.test",
+  frontendUrl: "https://demoapp.example.test",
   backendUrl: null,
   documentationUrl: null
 };
@@ -48,7 +48,7 @@ function capability(overrides: Partial<{
     lifecycleStatus: "implementing",
     targetDescription: "A safe trading engine.",
     observedSummary: null,
-    owner: "Soar",
+    owner: "DemoApp",
     capabilityDefinition: {
       id: `definition-${values.id}`,
       key: values.key,
@@ -234,7 +234,7 @@ test("application execution projects procedures, steps, projects and tasks witho
     capabilities: [auth],
     readiness: { overall: 50, blockers: [] },
     procedures: [{ relationType: "governs", required: true, procedure: { id: "procedure-release", name: "Release SOP", purpose: "Release safely.", status: "draft", version: 1, process: null, qualityStandard: null, steps: [{ id: "step-release", stepOrder: 1, instruction: "Run checks", stepType: "automation" }] } }],
-    projects: [{ relationType: "delivery", project: { id: "project-soar", name: "Soar delivery", status: "active", taskLists: [{ id: "list-verification", name: "Verification", status: "active", tasks: [{ id: "task-login", title: "Verify login", status: "in_progress", priority: "high", dueDate: null }] }], tasks: [] } }]
+    projects: [{ relationType: "delivery", project: { id: "project-demoapp", name: "DemoApp delivery", status: "active", taskLists: [{ id: "list-verification", name: "Verification", status: "active", tasks: [{ id: "task-login", title: "Verify login", status: "in_progress", priority: "high", dueDate: null }] }], tasks: [] } }]
   });
 
   const release = packet.nodes.find((node) => node.entityId === "procedure-release");
@@ -247,5 +247,5 @@ test("application execution projects procedures, steps, projects and tasks witho
   assert.equal(inherited?.parentNodeId, capabilityNode?.id);
   assert.equal(task?.type, "task");
   assert.equal(task?.completeness, 50);
-  assert.equal(packet.nodes.some((node) => node.type === "project" && node.entityId === "project-soar"), true);
+  assert.equal(packet.nodes.some((node) => node.type === "project" && node.entityId === "project-demoapp"), true);
 });

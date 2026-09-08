@@ -22,7 +22,7 @@ Use it with:
 | Backend app composition | `src/app.ts` | Express app, static asset host, React route allowlist, protected `/v1` routes. |
 | Server entrypoint | `src/server.ts` | Runtime startup. |
 | Database schema | `prisma/schema.prisma` | PostgreSQL source-of-truth schema. |
-| Seed data | `prisma/seed.ts` | LuckySparrow baseline data, operating model, Company OS seeds. |
+| Seed data | `prisma/seed.ts` | Empty-installation owner/workspace/departments bootstrap; existing installations are unchanged. |
 | React app source | `web/src/main.tsx` | React dashboards and workbenches. |
 | React route registry | `web/src/app-route-registry.ts` | Canonical active routes, compatibility aliases, navigation metadata, and post-auth normalization. |
 | React shared route kit | `web/src/react-route-kit.tsx` | Shared API clients, state hooks, shell, notices, metrics, table primitives. |
@@ -122,7 +122,7 @@ Use it with:
 | `npm run owner-console:ux-smoke` | Authenticated owner-console screenshots and route checks. |
 | `npm run mcp:smoke` | MCP bridge initialize, tools/list, and safe Company OS tool call. |
 | `docker compose build backend` | Local container image build; runtime smoke follows `docs/engineering/local-development.md`. |
-| `docker compose exec -T backend sh -lc "npm run prisma:migrate:deploy && npm run seed"` | Container migration and seed gate. |
+| `docker compose exec -T backend sh -lc "npm run prisma:migrate:deploy && npm run bootstrap"` | Container migrations and empty-installation bootstrap; existing installations skip bootstrap writes. |
 | `git diff --check` | Whitespace/conflict marker guard. |
 
 ## Index Maintenance Rules

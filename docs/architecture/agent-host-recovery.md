@@ -2,7 +2,7 @@
 
 Current bounded recovery contract, accepted in
 `roost-interview-foundation-safe-resume-2026-09-05-v1`. Production activation
-remains separately controlled; this implementation does not enable the Soar pilot.
+remains separately controlled; this implementation does not enable the DemoApp pilot.
 
 ## Context-invalidated attempts
 

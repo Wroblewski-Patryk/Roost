@@ -227,7 +227,7 @@ export const operatingTables = [
     tableName: "business_functions",
     apiSlug: "business-functions",
     name: "Business functions",
-    description: "LuckySparrow department and business-function map with accountable roles"
+    description: "Company department and business-function map with accountable roles"
   },
   {
     areaKey: "people-roles",

@@ -38,9 +38,9 @@ function validPacket() {
         summary: `${stage.title} verified.`,
         ownerRole: stage.accountableSourceOwner,
         verifiedAt: observedAt,
-        evidenceRefs: [{ kind: "issue", issueIdentifier: "LUC-2193", label: `${stage.title} evidence` }]
+        evidenceRefs: [{ kind: "issue", issueIdentifier: "ISSUE-123", label: `${stage.title} evidence` }]
       })),
-      evidenceRefs: [{ kind: "issue", issueIdentifier: "LUC-2193", label: "Lifecycle evidence" }],
+      evidenceRefs: [{ kind: "issue", issueIdentifier: "ISSUE-123", label: "Lifecycle evidence" }],
       supersession: { status: "active", supersedesVersion: null, supersededByVersion: null },
       source: lifecycleOperatingContractSource
     },
@@ -126,7 +126,7 @@ test("unknown, private, legacy, malformed gate, and unsafe evidence fields are r
       ...validPacket(),
       lifecycleProcedure: {
         ...validPacket().lifecycleProcedure,
-        evidenceRefs: [{ kind: "issue", issueIdentifier: "LUC-2193", label: "Evidence", href: "https://example.com" }]
+        evidenceRefs: [{ kind: "issue", issueIdentifier: "ISSUE-123", label: "Evidence", href: "https://example.com" }]
       }
     },
     {

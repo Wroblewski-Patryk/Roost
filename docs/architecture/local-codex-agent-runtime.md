@@ -51,14 +51,12 @@ Local Codex Agent Host on Windows ---> local application repositories
 Local Roost development ---> local Roost API ---> local PostgreSQL
 ```
 
-The approved Windows application workspace is exactly:
+The operator selects an absolute Windows application workspace in the private
+Agent Host configuration, for example `C:\Workspaces`. Drive roots and relative
+paths are rejected; the repository does not prescribe a machine-specific path.
 
-```text
-C:\Personal\Projekty\Aplikacje
-```
-
-Every runnable repository must be a direct physical child of this directory.
-The Agent Host rejects a different root, nested paths, `..` traversal,
+Every runnable repository must be a direct physical child of the configured root.
+The Agent Host rejects paths outside that root, nested paths, `..` traversal,
 symlinks/junctions, a mismatched Git toplevel, and a mismatched `origin` URL.
 Future applications may be added only by creating their repository directly
 under this root and explicitly adding their slug, directory, canonical origin,
@@ -279,8 +277,9 @@ new execution requests and the Agent Host claim endpoint returns no work. The
 database may contain applications, delivery projects, repositories, paused
 trigger definitions, and historical executions while execution remains off.
 
-The initial `task_ready_for_codex` trigger and its automation rule are seeded
-as paused definitions. They document the future event boundary and may only
+Existing installations may retain the former seed's `task_ready_for_codex`
+trigger and automation rule. Minimal installation bootstrap neither creates nor
+resets these definitions. They document the future event boundary and may only
 emit a `codex_execution_candidate` proposal; they do not create tasks or agent
 executions. Activation requires a reviewed automation command contract, local
 allowlist validation, a scoped worker key, a running Windows host, and one
@@ -323,10 +322,10 @@ before claiming automatic reconciliation or resource hygiene guarantees.
 
 | Slug | Local directory | GitHub origin | Deployment |
 | --- | --- | --- | --- |
-| `aviary` | `Aviary` | `https://github.com/Wroblewski-Patryk/Aviary.git` | `https://aviary.luckysparrow.ch/` |
-| `featherly` | `Featherly` | `https://github.com/Wroblewski-Patryk/Featherly.git` | `https://test.wroblewskipatryk.pl/pl` |
-| `nest` | `Nest` | `https://github.com/Wroblewski-Patryk/Nest.git` | `https://nest.luckysparrow.ch/` |
-| `soar` | `Soar` | `https://github.com/Wroblewski-Patryk/Soar.git` | `https://soar.luckysparrow.ch/` |
+| `notesapp` | `NotesApp` | `https://github.com/example-org/NotesApp.git` | `https://notesapp.example.com/` |
+| `contentapp` | `ContentApp` | `https://github.com/example-org/ContentApp.git` | `https://content.example.com/pl` |
+| `portalapp` | `PortalApp` | `https://github.com/example-org/PortalApp.git` | `https://portalapp.example.com/` |
+| `demoapp` | `DemoApp` | `https://github.com/example-org/DemoApp.git` | `https://demoapp.example.com/` |
 
 A commit and push may trigger Coolify deployment, but the Agent Host must not
 perform either action unless the governing Roost task explicitly grants that

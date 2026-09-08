@@ -33,7 +33,7 @@ profile directory avoids packaged-app LocalAppData virtualization, so both
 Codex and the Windows login task see the same files):
 
 - `agent-host.json`: secret-free config copied from the example, with
-  `executionMode: "observe"`, `baseUrl: "https://api.roost.luckysparrow.ch"`,
+  `executionMode: "observe"`, `baseUrl: "https://api.roost.example.com"`,
   one stable host slug and declared repository mappings.
 - `status.json`: PID, host/workspace IDs, version, mode, last confirmed heartbeat
   and fixed diagnostic reasons. This is a last observation, not proof that its
@@ -193,9 +193,9 @@ Copy `config/roost-agent-host.example.json` to a user-owned location such as:
 C:\Users\<user>\.roost\agent-host.json
 ```
 
-Edit only the application-slug-to-path mapping and host label. The file is
-secret-free. Keep `workspaceRoot` exactly
-`C:\Personal\Projekty\Aplikacje`. A slug must match the Roost
+Set the host label, absolute `workspaceRoot`, public `baseUrl` and repository
+mapping for this installation. The example paths and applications are fictional.
+Keep the real file outside Git. A slug must match the Roost
 `Application.slug`; each `directory` must be a direct child of the root and its
 `originUrl` must match the local Git `origin`.
 
@@ -231,7 +231,7 @@ check. The same onboarding rules apply when the target application is Roost.
 Set secrets only for the current process and start the long-running host:
 
 ```powershell
-$env:ROOST_BASE_URL = "https://api.roost.luckysparrow.ch"
+$env:ROOST_BASE_URL = "https://api.roost.example.com"
 $env:ROOST_AGENT_API_KEY = "cc_v1_replace_with_one_time_key"
 $env:ROOST_AGENT_HOST_CONFIG = "$env:USERPROFILE\.roost\agent-host.json"
 npm run agent:codex-host
@@ -351,7 +351,7 @@ for the remaining concurrent-edit and Ready/mid-execution boundaries.
 | `agent_execution_recovery_blocked` | Read the stage/reason in Agent activity. Preserve local files and reconcile the old process/effects; do not create a duplicate execution or clear locks by age/PID. |
 | `agent_host_recovery_required` | The host has an unresolved nonterminal execution. Resolve recovery instead of polling for another task. |
 | `agent_host_writer_lock_owner_changed` | Lock ownership is inconsistent. Stop and reconcile; the host will not delete another owner's lock. |
-| `workspace_root_not_approved` | Restore the exact `C:\Personal\Projekty\Aplikacje` root. |
+| `workspace_root_not_approved` | Restore the exact `C:\Workspaces` root. |
 | `repository_path_outside_workspace` | Use one direct child directory; remove traversal or nested paths. |
 | `repository_directory_missing_or_linked` | Restore a physical local repository; links and junctions are rejected. |
 | `repository_origin_mismatch` | Correct the local `origin` or the allowlisted canonical GitHub URL after owner review. |

@@ -310,7 +310,7 @@ function CreateApplicationPanel({
       <CcRecordEditorSection title="Identity" description="Give the application a durable name, identifier and concise definition.">
         <div className="grid items-start gap-4 md:grid-cols-2">
           <CcField label="Name" required>{({ id }) => <CcTextInput autoFocus id={id} name="name" required />}</CcField>
-          <CcField label="Stable slug" hint="Lowercase letters, numbers, dots and hyphens.">{({ id, describedBy }) => <CcTextInput aria-describedby={describedBy} id={id} name="slug" pattern="[a-z0-9._-]+" placeholder="soar" required />}</CcField>
+          <CcField label="Stable slug" hint="Lowercase letters, numbers, dots and hyphens.">{({ id, describedBy }) => <CcTextInput aria-describedby={describedBy} id={id} name="slug" pattern="[a-z0-9._-]+" placeholder="demoapp" required />}</CcField>
           <div className="md:col-span-2"><CcField label="Description">{({ id }) => <textarea className="textarea textarea-bordered min-h-24 w-full" id={id} name="description" />}</CcField></div>
         </div>
       </CcRecordEditorSection>

@@ -83,9 +83,7 @@ export function PublicLayout({ active, children }: { active: PublicLayoutActive;
             <span>{t("footer.madeWith")}</span>
             <span className="roost-gradient-text text-base" aria-label={t("footer.heartLabel")}>♥</span>
             <span>{t("footer.by")}</span>
-            <a className="font-semibold text-base-content transition hover:text-accent" href="https://luckysparrow.ch" rel="noreferrer" target="_blank">
-              luckysparrow.ch
-            </a>
+            <span className="font-semibold text-base-content">Roost contributors</span>
           </p>
         </div>
       </footer>

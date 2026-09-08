@@ -6,18 +6,17 @@ The frozen [Foundation V2 registry](../product/interview-foundation-v2.md) is th
 current accepted requirements baseline through 2026-09-06 03:36:23.550 UTC.
 Its explicit supersessions take precedence over earlier descriptions below;
 the [traceability matrix](traceability-matrix.md) separates existing mechanisms
-from missing gates. Live tests need fresh single-use consent, Soar deployment
-uses 20/30-minute thresholds, and no temporary Soar watchdog is authorized.
+from missing gates. Live tests need fresh single-use consent, DemoApp deployment
+uses 20/30-minute thresholds, and no temporary DemoApp watchdog is authorized.
 Deferred features are not activation prerequisites. No batch completion enables
 execution by itself.
 
-Source: owner decisions in `Roost - Wywiad`, task
-`01a06d26-73a0-79e1-a035-6b4e42380274`, accepted handoff
-`roost-interview-foundation-2026-09-05-v1` (2026-09-05).
+Source: the public Foundation V2 requirements. Private interview provenance is
+maintained outside this repository.
 
 Scope correction: accepted handoff
 `roost-interview-scope-correction-2026-09-05-v1` from the same source supersedes
-any implication that the bootstrap implementation automation may modify Soar.
+any implication that the bootstrap implementation automation may modify DemoApp.
 
 Current authority: accepted scope reset
 `roost-interview-foundations-scope-reset-2026-09-05-v1`. It retains multi-application
@@ -31,13 +30,13 @@ future owner decision.
 
 `Roost - Wywiad` defines Roost; `Roost - implementacja` builds and configures
 only Roost, its local Agent Host and Roost production infrastructure. It must
-not create branches, edit, commit, push or deploy Soar or any other application.
+not create branches, edit, commit, push or deploy DemoApp or any other application.
 Their requirements are use cases and acceptance criteria for Roost.
 
 The later native flow is: owner Decisions in Roost, complete assigned Roost
 task, Agent Host launch of the appropriate worker, work in the application's
 canonical repository, and Roost supervision of tests, review, merge, deployment,
-evidence, recovery and process improvement. The Soar pilot must use this flow.
+evidence, recovery and process improvement. The DemoApp pilot must use this flow.
 The bootstrap automation may prepare and observe it in Roost, but cannot perform
 the application change itself, even under a pilot contract.
 
@@ -49,7 +48,7 @@ interview task if a required stage is unavailable; do not label it Done.
 
 ## Authority And Current Boundary
 
-Roost is LuckySparrow's company operating system. It owns company intent,
+Roost is Example Company's company operating system. It owns company intent,
 organization, goals, procedures, product definitions and application assumptions.
 Each application's repository owns its current technical architecture, contracts,
 startup and tests. Roost may reference that technical knowledge, but must retain
@@ -233,20 +232,20 @@ scoped command/permission contract. Failed controls prevent expansion.
 | 1. Contracts | Define organization, context, resources and authority without activating execution. | Current/target separation, bounded task contracts and an audit against existing models. |
 | 2. Read-only agents | Scoped audits through existing read boundaries. | Correct task context, source provenance, access isolation, budgets and no unauthorized writes. |
 | 3. Local changes | Task branches in the single canonical clone, without release operations. | Validated packet, one laptop-wide writer, lease-loss containment, recovery, resource hygiene and independent checks. Isolation uses scope/authority, not extra worktrees. |
-| 4. Soar repair pilot | One reproducible, reversible, low-risk defect outside live trading, keys and data migrations. | Detection, plan/decomposition, implementation, independent tests, merge, exact-commit Coolify deployment and production proof; rollback capability verified. No owner assistance except a product Decision. |
+| 4. DemoApp repair pilot | One reproducible, reversible, low-risk defect outside live trading, keys and data migrations. | Detection, plan/decomposition, implementation, independent tests, merge, exact-commit Coolify deployment and production proof; rollback capability verified. No owner assistance except a product Decision. |
 | 5. Broader operations | Additional applications and departments under reviewed mandates and owner supervision. | Configuration-based onboarding, repeated delivery and incident/recovery evidence with correct delegation, independent review, permissions and shared records. Native Roost self-development remains deferred. |
-| 6. Soar optimization | Configuration optimization through Soar under a separate mandate. | Validated backtest-to-paper-to-live gates, configuration/version/run identity and safe configuration rollback. |
+| 6. DemoApp optimization | Configuration optimization through DemoApp under a separate mandate. | Validated backtest-to-paper-to-live gates, configuration/version/run identity and safe configuration rollback. |
 
-Soar is the pilot and is changed only by a worker launched from a native Roost
+DemoApp is the pilot and is changed only by a worker launched from a native Roost
 task, never by the bootstrap implementation automation. Its future strategy, immutable configuration version
 and run are distinct. Backtest/paper/live reference configuration versions;
 configuration rollback selects a prior version. Open positions remain managed
-by the version that opened them. The agent optimizes configuration; Soar executes
-trading. No orders may be placed by the agent outside Soar.
+by the version that opened them. The agent optimizes configuration; DemoApp executes
+trading. No orders may be placed by the agent outside DemoApp.
 
 ## Multi-Application Operation
 
-Soar is the first proof, not a specialization of the orchestration core.
+DemoApp is the first proof, not a specialization of the orchestration core.
 Application identity, workspace boundaries, task/project links, context packets,
 procedures, routing and activation gates apply uniformly across the portfolio.
 Add applications through existing Application, ApplicationProject, repository,
@@ -264,14 +263,14 @@ another application must not require per-application host code.
 Owner correction (2026-09-06): Roost remains the bootstrap implementation
 repository but is excluded from the Innovation application registry, imported
 application context and local Agent Host targets. The managed portfolio contains
-only Aviary, Featherly, Nest and Soar. Do not create self-development work for
+only NotesApp, ContentApp, PortalApp and DemoApp. Do not create self-development work for
 Roost through that portfolio.
 The owner supervises work, supplies ideas and makes required decisions; manual
 programming and daily orchestration are not the intended operating model.
 
 ## Current Foundations And Deferred Scope
 
-The current goal is reliable supervised delivery of Soar and subsequent
+The current goal is reliable supervised delivery of DemoApp and subsequent
 applications through Roost and local agents: lease safety and recovery, complete
 execution packets and competent routing, one writer and one application runtime,
 tests and independent review, evidence and releases with rollback, visible work

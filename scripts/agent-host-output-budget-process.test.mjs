@@ -70,8 +70,8 @@ for (const scenario of scenarios) test(`output budget process containment: ${sce
   }
   try {
     // Deliberately bogus configuration cannot opt the production guard out.
-    await writeFile(configPath, JSON.stringify({ workspaceRoot: "C:\\Personal\\Projekty\\Aplikacje", codexCommand: "output-budget-fixture", allowUnbounded: true, outputTokenBudgetEnforcement: "supported",
-      repositories: { soar: { directory: "Soar", originUrl: "https://github.com/Wroblewski-Patryk/Soar.git" } } }));
+    await writeFile(configPath, JSON.stringify({ workspaceRoot: "C:\\Workspaces", codexCommand: "output-budget-fixture", allowUnbounded: true, outputTokenBudgetEnforcement: "supported",
+      repositories: { demoapp: { directory: "DemoApp", originUrl: "https://github.com/example-org/DemoApp.git" } } }));
     const recovering = scenario.startsWith("recover");
     let identity, start, attempt;
     if (recovering) {

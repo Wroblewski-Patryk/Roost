@@ -128,7 +128,7 @@ connectionRouter.get("/", asyncHandler(async (req, res) => {
           transport: "stdio",
           bridgeCommand: "npm",
           bridgeArgs: ["run", "mcp:server"],
-          bridgeWorkingDirectory: "C:\\Personal\\Projekty\\Aplikacje\\Roost",
+          bridgeWorkingDirectory: "C:\\Workspaces\\Roost",
           manifestPath: "/v1/mcp/manifest",
           secretEnvironmentVariable: "COMPANYCORE_API_KEY",
           baseUrlEnvironmentVariable: "COMPANYCORE_BASE_URL",
@@ -141,7 +141,7 @@ connectionRouter.get("/", asyncHandler(async (req, res) => {
         },
         agentHost: {
           transport: "outbound_https",
-          workspaceRoot: "C:\\Personal\\Projekty\\Aplikacje",
+          workspaceRoot: "C:\\Workspaces",
           configPath: "%USERPROFILE%\\.roost\\agent-host.json",
           runtimeCommand: "npm run agent:codex-host",
           readinessPath: "/v1/agent-runtime/readiness",

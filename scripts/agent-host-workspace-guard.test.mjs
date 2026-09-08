@@ -1,9 +1,16 @@
 import { strict as assert } from "node:assert";
 import test from "node:test";
 import path from "node:path";
-import { assertDirectWorkspaceChild, normalizeGitRemote, repositoryForExecution, validateHostExecutionPolicy, validateRepositoryMappings } from "./lib/agent-host-workspace-guard.mjs";
+import { assertDirectWorkspaceChild, normalizeGitRemote, repositoryForExecution, validateHostExecutionPolicy, validateRepositoryMappings, validateConfiguredWorkspaceRoot } from "./lib/agent-host-workspace-guard.mjs";
 
-const root = path.resolve("C:\\Personal\\Projekty\\Aplikacje");
+const root = path.resolve("C:\\Workspaces");
+
+test("workspace root is configured by the installer and excludes drive roots and relative paths", () => {
+  assert.equal(validateConfiguredWorkspaceRoot("D:/Company/Applications"), "D:\\Company\\Applications");
+  for (const invalid of [undefined, "", ".", "C:\\", "C:", "\\\\server\\share", "C:\\Workspaces\\.."]) {
+    assert.throws(() => validateConfiguredWorkspaceRoot(invalid), /workspace_root_not_approved/);
+  }
+});
 
 test("execution policy only permits the supervised workspace sandbox", () => {
   assert.equal(validateHostExecutionPolicy({}).sandbox, "workspace-write");
@@ -27,14 +34,14 @@ test("workspace guard accepts only a direct application child", () => {
 });
 
 test("GitHub HTTPS and SSH origin spellings normalize to the same repository", () => {
-  assert.equal(normalizeGitRemote("https://github.com/Wroblewski-Patryk/Roost.git"), normalizeGitRemote("git@github.com:Wroblewski-Patryk/Roost.git"));
+  assert.equal(normalizeGitRemote("https://github.com/example-org/Roost.git"), normalizeGitRemote("git@github.com:example-org/Roost.git"));
 });
 
 const entry = (name) => ({ directory: name, originUrl: `https://github.com/example/${name}.git` });
 
 test("managed applications use the same configuration contract", () => {
-  const config = validateRepositoryMappings({ soar: entry("Soar"), second: entry("SecondApplication") });
-  assert.deepEqual(Object.keys(config), ["soar", "second"]);
+  const config = validateRepositoryMappings({ demoapp: entry("DemoApp"), second: entry("SecondApplication") });
+  assert.deepEqual(Object.keys(config), ["demoapp", "second"]);
   for (const [slug, repository] of Object.entries(config)) {
     repository.path = path.join(root, repository.directory);
     const result = repositoryForExecution({ repositories: config }, { applicationId: slug, application: { id: slug, slug, repositories: [{ url: repository.originUrl }] } });
@@ -99,7 +106,7 @@ test("Roost cannot be restored as an execution target through aliases", () => {
   for (const repositories of [
     { roost: entry("Other") },
     { alias: entry("rOoSt") },
-    { alias: { ...entry("Other"), originUrl: "https://github.com/Wroblewski-Patryk/Roost.git" } }
+    { alias: { ...entry("Other"), originUrl: "https://github.com/example-org/Roost.git" } }
   ]) assert.throws(() => validateRepositoryMappings(repositories), /roost_self_development_excluded/);
   const { config, execution } = executionFixture();
   config.repositories.app.directory = "Roost";

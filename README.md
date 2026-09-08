@@ -1,6 +1,6 @@
 # Roost (CompanyCore runtime) v1
 
-Roost is the central operating system for LuckySparrow operations. It stores the
+Roost is a self-hosted operating system for company operations. It stores the
 company's projects, goals, targets, tasks, clients, CRM pipeline, notes,
 decisions, AI agents, agent logs, system events, and API keys.
 
@@ -52,7 +52,7 @@ completion evidence. Local Codex Agent Hosts claim authorized work through the
 production API and report results back to Roost.
 
 The local execution boundary is fixed at
-`C:\Personal\Projekty\Aplikacje`. Agent Host configuration may select only
+`C:\Workspaces`. Agent Host configuration may select only
 allowlisted, direct-child Git repositories under that root; path traversal,
 nested repositories, links/junctions, and mismatched origins fail closed.
 

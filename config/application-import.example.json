@@ -1,0 +1,10 @@
+{
+  "workspaceRoot": "C:/Workspaces",
+  "applications": {
+    "my-app": {
+      "directory": "MyApp",
+      "legacyAssumptionsDirectory": "docs/legacy-assumptions",
+      "separateFeatureRegistry": false
+    }
+  }
+}

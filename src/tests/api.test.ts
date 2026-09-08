@@ -56,9 +56,9 @@ function productMapPacket(observedAt: string, offeringId = "roost") {
         summary: `${stage.title} verified.`,
         ownerRole: stage.accountableSourceOwner,
         verifiedAt: observedAt,
-        evidenceRefs: [{ kind: "issue" as const, issueIdentifier: "LUC-2193", label: `${stage.title} evidence` }]
+        evidenceRefs: [{ kind: "issue" as const, issueIdentifier: "ISSUE-123", label: `${stage.title} evidence` }]
       })),
-      evidenceRefs: [{ kind: "issue" as const, issueIdentifier: "LUC-2193", label: "Lifecycle evidence" }],
+      evidenceRefs: [{ kind: "issue" as const, issueIdentifier: "ISSUE-123", label: "Lifecycle evidence" }],
       supersession: { status: "active" as const, supersedesVersion: null, supersededByVersion: null },
       source: lifecycleOperatingContractSource
     },
@@ -517,7 +517,7 @@ test("production CORS allows approved origins and rejects unknown browser origin
       method: "OPTIONS",
       headers: {
         ...headers,
-        Origin: "https://roost.luckysparrow.ch"
+        Origin: "https://roost.example.com"
       }
     });
     const denied = await fetch(baseUrl + "/health", {
@@ -540,7 +540,7 @@ test("production CORS allows approved origins and rejects unknown browser origin
     AUTH_TOKEN_SECRET: "production-auth-token-secret-for-tests",
     INTEGRATION_SECRET_KEY: "production-integration-secret-for-tests",
     API_KEY_HASH_SECRET: "production-api-key-hash-secret-for-tests",
-    COMPANYCORE_ALLOWED_ORIGINS: "https://roost.luckysparrow.ch"
+    COMPANYCORE_ALLOWED_ORIGINS: "https://roost.example.com"
   });
 
   assert.equal(result.exitCode, 0, `stdout:\n${result.stdout}\nstderr:\n${result.stderr}`);
@@ -551,12 +551,12 @@ test("production CORS allows approved origins and rejects unknown browser origin
     deniedOrigin: string | null;
   };
   assert.equal(summary.allowedStatus, 204);
-  assert.equal(summary.allowedOrigin, "https://roost.luckysparrow.ch");
+  assert.equal(summary.allowedOrigin, "https://roost.example.com");
   assert.equal(summary.deniedStatus, 403);
   assert.equal(summary.deniedOrigin, null);
 });
 
-test("production defaults recognize Roost web and API domains", async () => {
+test("production recognizes installation-configured web and API domains", async () => {
   const result = await runNodeScript(`
     const http = await import("node:http");
     const { createApp } = await import("./dist/app.js");
@@ -583,14 +583,14 @@ test("production defaults recognize Roost web and API domains", async () => {
       path: "/health",
       headers: {
         ...headers,
-        Origin: "https://roost.luckysparrow.ch"
+        Origin: "https://roost.example.com"
       }
     });
     const apiRoot = await request({
       method: "GET",
       path: "/",
       headers: {
-        Host: "api.roost.luckysparrow.ch"
+        Host: "api.roost.example.com"
       }
     });
     const apiRootBody = JSON.parse(apiRoot.body);
@@ -607,6 +607,8 @@ test("production defaults recognize Roost web and API domains", async () => {
     AUTH_TOKEN_SECRET: "production-auth-token-secret-for-tests",
     INTEGRATION_SECRET_KEY: "production-integration-secret-for-tests",
     API_KEY_HASH_SECRET: "production-api-key-hash-secret-for-tests",
+    COMPANYCORE_PUBLIC_WEB_BASE_URL: "https://roost.example.com",
+    COMPANYCORE_PUBLIC_API_BASE_URL: "https://api.roost.example.com",
     COMPANYCORE_ALLOWED_ORIGINS: undefined,
     COMPANYCORE_API_HOSTS: undefined
   });
@@ -619,11 +621,11 @@ test("production defaults recognize Roost web and API domains", async () => {
     apiRootData: { service: string; web: string; api: string };
   };
   assert.equal(summary.roostCorsStatus, 204);
-  assert.equal(summary.roostCorsOrigin, "https://roost.luckysparrow.ch");
+  assert.equal(summary.roostCorsOrigin, "https://roost.example.com");
   assert.equal(summary.apiRootStatus, 200);
   assert.equal(summary.apiRootData.service, "companycore");
-  assert.equal(summary.apiRootData.web, "https://roost.luckysparrow.ch");
-  assert.equal(summary.apiRootData.api, "https://api.roost.luckysparrow.ch");
+  assert.equal(summary.apiRootData.web, "https://roost.example.com");
+  assert.equal(summary.apiRootData.api, "https://api.roost.example.com");
 });
 
 before(async () => {
@@ -987,17 +989,17 @@ test("workspace owner can update scoped workspace identity", async () => {
   const updated = await request(`/v1/workspaces/${owner.workspace.id}`, {
     method: "PATCH",
     headers,
-    body: JSON.stringify({ name: "LuckySparrow Studio", logo: "icon:ph-bird", accentColor: "#06B6D4" })
+    body: JSON.stringify({ name: "Example Company Studio", logo: "icon:ph-bird", accentColor: "#06B6D4" })
   });
   assert.equal(updated.status, 200);
   const updatedWorkspace = (updated.body as { data: { name: string; logo: string; accentColor: string } }).data;
-  assert.equal(updatedWorkspace.name, "LuckySparrow Studio");
+  assert.equal(updatedWorkspace.name, "Example Company Studio");
   assert.equal(updatedWorkspace.logo, "icon:ph-bird");
   assert.equal(updatedWorkspace.accentColor, "#06B6D4");
 
   const profile = await request("/v1/auth/me", { headers });
   const workspace = (profile.body as { data: { workspaces: Array<{ name: string; logo: string; accentColor: string }> } }).data.workspaces[0];
-  assert.equal(workspace.name, "LuckySparrow Studio");
+  assert.equal(workspace.name, "Example Company Studio");
   assert.equal(workspace.logo, "icon:ph-bird");
   assert.equal(workspace.accentColor, "#06B6D4");
 
@@ -1073,7 +1075,7 @@ test("product engineering keeps definitions shared, observations explicit, and p
     return (response.body as { data: { id: string } }).data.id;
   }
   const roostId = await createApplication("Roost Test", "roost-test");
-  const soarId = await createApplication("Soar Test", "soar-test");
+  const soarId = await createApplication("DemoApp Test", "demoapp-test");
   const assignments: string[] = [];
   for (const applicationId of [roostId, soarId]) {
     const response = await request(`/v1/product-engineering/applications/${applicationId}/capabilities`, { method: "POST", headers: auth, body: JSON.stringify({ capabilityDefinitionId: definitionId, applicability: "required", targetState: "complete" }) });
@@ -1134,7 +1136,7 @@ test("product engineering keeps definitions shared, observations explicit, and p
   assert.equal(graphCapability?.details.evidenceCount, 1);
   const documentationPayload = {
     sourceSystem: "repository-docs-v1",
-    sourceRoot: "C:/Personal/Projekty/Aplikacje/Roost",
+    sourceRoot: "C:/Workspaces/Roost",
     sourceRevision: "test-revision",
     records: [
       { sourceId: "file:docs/product/product.md", recordType: "architecture_document", title: "Product", description: "Canonical product truth.", filePath: "docs/product/product.md", headingPath: ["Product"] },
@@ -1960,9 +1962,9 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
   const outsider = await registerOwner("codex-runtime-outsider@example.com", "Other Runtime Workspace");
   const ownerAuth = { Authorization: `Bearer ${owner.token}` };
   const application = await prisma.application.create({
-    data: { workspaceId: owner.workspace.id, name: "Soar Runtime Test", slug: "soar-runtime-test", targetPlatforms: ["web"] }
+    data: { workspaceId: owner.workspace.id, name: "DemoApp Runtime Test", slug: "demoapp-runtime-test", targetPlatforms: ["web"] }
   });
-  const project = await prisma.project.create({ data: { workspaceId: owner.workspace.id, name: "Soar runtime delivery", status: "active" } });
+  const project = await prisma.project.create({ data: { workspaceId: owner.workspace.id, name: "DemoApp runtime delivery", status: "active" } });
   await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id, relationType: "delivery" } });
   const task = await prisma.task.create({ data: { workspaceId: owner.workspace.id, projectId: project.id, title: "Implement the runtime slice", status: "todo" } });
 
@@ -2305,7 +2307,7 @@ test("CompanyCore v1 protected API flow", async () => {
     assert.equal(document.status, 200);
     assert.ok(document.headers.get("content-type")?.includes("text/html"));
     const html = await document.text();
-    assert.ok(html.includes("Patryk Wróblewski"));
+    assert.ok(html.includes("workspace administrator"));
     assert.equal(html.includes("_PENDING"), false);
   }
   const health = await request("/health");
@@ -8386,12 +8388,12 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(connectionBody.data.agentAccess.api.connectionPath, "/v1/connection");
   assert.equal(connectionBody.data.agentAccess.mcp.serverName, "roost");
   assert.equal(connectionBody.data.agentAccess.mcp.transport, "stdio");
-  assert.equal(connectionBody.data.agentAccess.mcp.bridgeWorkingDirectory, "C:\\Personal\\Projekty\\Aplikacje\\Roost");
+  assert.equal(connectionBody.data.agentAccess.mcp.bridgeWorkingDirectory, "C:\\Workspaces\\Roost");
   assert.equal(connectionBody.data.agentAccess.mcp.secretEnvironmentVariable, "COMPANYCORE_API_KEY");
   assert.equal(connectionBody.data.agentAccess.codex.configPath, "~/.codex/config.toml");
   assert.equal(connectionBody.data.agentAccess.codex.defaultToolsApprovalMode, "writes");
   assert.equal(connectionBody.data.agentAccess.agentHost.transport, "outbound_https");
-  assert.equal(connectionBody.data.agentAccess.agentHost.workspaceRoot, "C:\\Personal\\Projekty\\Aplikacje");
+  assert.equal(connectionBody.data.agentAccess.agentHost.workspaceRoot, "C:\\Workspaces");
   assert.equal(
     connectionBody.data.operatingModel.hierarchy,
     "workspace -> operating_area -> operating_folder -> operating_table -> record"
@@ -9797,7 +9799,7 @@ test("CompanyCore v1 protected API flow", async () => {
     method: "POST",
     headers: authA,
     body: JSON.stringify({
-      redirectUri: "https://roost.luckysparrow.ch/settings/google-drive/callback",
+      redirectUri: "https://roost.example.com/settings/google-drive/callback",
       state: "workspace-a-google-drive",
       loginHint: "owner-a@example.com"
     })
@@ -9814,7 +9816,7 @@ test("CompanyCore v1 protected API flow", async () => {
     method: "POST",
     headers: { "X-API-Key": serviceKey },
     body: JSON.stringify({
-      redirectUri: "https://roost.luckysparrow.ch/settings/google-drive/callback"
+      redirectUri: "https://roost.example.com/settings/google-drive/callback"
     })
   });
   assert.equal(serviceCannotCreateGoogleDriveAuthUrl.status, 403);
@@ -9835,7 +9837,7 @@ test("CompanyCore v1 protected API flow", async () => {
     method: "POST",
     headers: authA,
     body: JSON.stringify({
-      redirectUri: "https://roost.luckysparrow.ch/settings/drive",
+      redirectUri: "https://roost.example.com/settings/drive",
       state: "repair-google-drive-oauth"
     })
   });
@@ -9862,7 +9864,7 @@ test("CompanyCore v1 protected API flow", async () => {
       headers: authA,
       body: JSON.stringify({
         code: "repair-google-drive-code",
-        redirectUri: "https://roost.luckysparrow.ch/settings/drive",
+        redirectUri: "https://roost.example.com/settings/drive",
         active: true,
         config: {
           rootFolderIds: ["drive-folder-root"],
@@ -10751,7 +10753,7 @@ test("CompanyCore v1 protected API flow", async () => {
     if (path === "/api/v2/team") {
       return new Response(JSON.stringify({
         teams: [
-          { id: "team-1", name: "LuckySparrow" },
+          { id: "team-1", name: "Example Company" },
           { id: "team-2", name: "Archive" }
         ]
       }), { status: 200 });

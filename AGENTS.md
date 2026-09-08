@@ -20,3 +20,21 @@ execution state outside this repository.
   sensitive logs in repository files or generated artifacts.
 - Commits, pushes, deployments, destructive operations and external writes
   require the authority stated by the user or governing task.
+
+## Public distribution and deployment data
+
+- Keep company names, personal identifiers, real deployment domains, machine
+  paths, application portfolios and operator runbooks out of distributed code
+  and examples. Use per-installation configuration and fictional examples.
+- Follow `docs/operations/self-hosting-and-private-configuration.md` when moving
+  installation settings out of code. Preserve encryption/authentication secrets,
+  database credentials, persistent volumes and existing company records.
+- Bootstrap may initialize an empty installation only. Never introduce recurring
+  production seeding, data resets or automatic business-data population on deploy.
+- Review new migration SQL for data loss before a release. Do not edit applied
+  migrations or accept a database reset to resolve drift. The one historical
+  privacy sanitization is documented and regression-tested; it is not a precedent
+  for future migration edits.
+- A cleanup commit does not erase Git history. Coordinate any history rewrite
+  explicitly; never force-push or rotate production credentials as an implicit
+  side effect of repository cleanup.

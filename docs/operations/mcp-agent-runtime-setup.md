@@ -59,7 +59,7 @@ in repository files or prompt text.
 Every runtime should start the same bridge process:
 
 ```bash
-COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch \
+COMPANYCORE_BASE_URL=https://api.roost.example.com \
 COMPANYCORE_API_KEY=cc_v1_workspace_service_key \
 npm run mcp:server
 ```
@@ -94,14 +94,14 @@ local environment and forward it with `env_vars`; do not place it in
 [mcp_servers.roost]
 command = "npm"
 args = ["run", "mcp:server"]
-cwd = "C:\\Personal\\Projekty\\Aplikacje\\Roost"
+cwd = "C:\\Workspaces\\Roost"
 env_vars = ["COMPANYCORE_API_KEY"]
 startup_timeout_sec = 15
 tool_timeout_sec = 60
 default_tools_approval_mode = "writes"
 
 [mcp_servers.roost.env]
-COMPANYCORE_BASE_URL = "https://api.roost.luckysparrow.ch"
+COMPANYCORE_BASE_URL = "https://api.roost.example.com"
 COMPANYCORE_MCP_COMMAND_MODE = "read_only"
 ```
 
@@ -138,7 +138,7 @@ Any MCP-compatible runtime needs only a stdio process plus environment:
   "args": ["run", "mcp:server"],
   "cwd": "/path/to/companycore",
   "env": {
-    "COMPANYCORE_BASE_URL": "https://api.roost.luckysparrow.ch",
+    "COMPANYCORE_BASE_URL": "https://api.roost.example.com",
     "COMPANYCORE_API_KEY": "cc_v1_workspace_service_key"
   }
 }

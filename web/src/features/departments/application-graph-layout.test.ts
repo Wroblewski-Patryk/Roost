@@ -38,9 +38,9 @@ function assertCollisionFree(nodes: ApplicationGraphNode[], focus: ApplicationGr
   assert.deepEqual(findApplicationGraphLayoutCollisions(nodes, focus, positions), []);
 }
 
-test("application focus keeps a Featherly-sized domain set collision free", () => {
+test("application focus keeps a ContentApp-sized domain set collision free", () => {
   const company = graphNode({ id: "company", type: "company", parentNodeId: null, path: ["company"] });
-  const application = graphNode({ id: "featherly", type: "application", parentNodeId: "company", path: ["company", "featherly"] });
+  const application = graphNode({ id: "contentapp", type: "application", parentNodeId: "company", path: ["company", "contentapp"] });
   const domains = ["AI / MCP / Agents", "API / Integrations", "Backend", "Data", "Frontend", "Infrastructure", "Quality"].map((label, index) =>
     graphNode({ id: `domain-${index}`, type: "domain", parentNodeId: application.id, path: [...application.path, `domain-${index}`], label })
   );
@@ -52,7 +52,7 @@ test("application focus keeps a Featherly-sized domain set collision free", () =
 
 test("two-level project focus keeps thirty task nodes collision free", () => {
   const company = graphNode({ id: "company", type: "company", parentNodeId: null, path: ["company"] });
-  const application = graphNode({ id: "soar", type: "application", parentNodeId: company.id, path: [company.id, "soar"] });
+  const application = graphNode({ id: "demoapp", type: "application", parentNodeId: company.id, path: [company.id, "demoapp"] });
   const delivery = graphNode({ id: "delivery", type: "domain", parentNodeId: application.id, path: [...application.path, "delivery"] });
   const project = graphNode({ id: "project", type: "project", parentNodeId: delivery.id, path: [...delivery.path, "project"] });
   const taskList = graphNode({ id: "task-list", type: "task_list", parentNodeId: project.id, path: [...project.path, "task-list"] });
@@ -68,7 +68,7 @@ test("two-level project focus keeps thirty task nodes collision free", () => {
 
 test("second-level records stay grouped beneath their direct parent", () => {
   const company = graphNode({ id: "company", type: "company", parentNodeId: null, path: ["company"] });
-  const application = graphNode({ id: "soar", type: "application", parentNodeId: company.id, path: [company.id, "soar"] });
+  const application = graphNode({ id: "demoapp", type: "application", parentNodeId: company.id, path: [company.id, "demoapp"] });
   const domains = Array.from({ length: 7 }, (_, index) => graphNode({
     id: `domain-${index}`,
     type: "domain",

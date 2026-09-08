@@ -87,7 +87,7 @@ Official contracts checked: [ClickUp Update Task](https://developer.clickup.com/
 
 ## Service Adapter Onboarding
 
-Codex Agent Host, Jarvis, Jarvan, Aviary, n8n, and future service clients should start
+Codex Agent Host, Jarvis, Jarvan, NotesApp, n8n, and future service clients should start
 from `docs/integrations/adapter-onboarding.md`.
 
 The required first call for adapters is:
@@ -177,10 +177,10 @@ CompanyCore is responsible for:
 - refreshing local metadata/content snapshots after successful provider writes
 - reconciling external edits through Drive `changes.list` first and
   `changes.watch` channels after the polling path is proven
-- emitting provider-neutral file/content events for Jarvis, Codex Agent Host, Aviary,
+- emitting provider-neutral file/content events for Jarvis, Codex Agent Host, NotesApp,
   and future GUI modules
 
-Jarvis, Codex Agent Host, Aviary, and future agents must read Google Drive metadata
+Jarvis, Codex Agent Host, NotesApp, and future agents must read Google Drive metadata
 and content through CompanyCore APIs. They must not receive raw Google OAuth
 tokens or write directly to PostgreSQL. Structured extraction from Sheets or
 Docs into CompanyCore business tables is allowed only when an explicit table
@@ -224,7 +224,7 @@ Implemented foundation:
   with `secretConfigured`, `oauthClientConfigured`, and
   `oauthTokenConfigured`, never OAuth tokens or client secrets.
 - `GET /v1/connection` exposes safe Google Drive configuration state to
-  Jarvis, Codex Agent Host, Aviary, and future adapters.
+  Jarvis, Codex Agent Host, NotesApp, and future adapters.
 - `src/integrations/google-drive/google-drive.client.ts` contains the safe
   client boundary for Drive file listing, Drive file creation, Drive changes,
   Docs get/batchUpdate, and Sheets create/read/write methods.
@@ -235,7 +235,7 @@ Implemented foundation:
 - Google Drive import emits `google_drive_import_succeeded` events with safe
   counts and selected folder IDs.
 - `/v1/google-drive/files` lists imported Drive files with their latest content
-  snapshot for Jarvis, Codex Agent Host, Aviary, and future GUI clients.
+  snapshot for Jarvis, Codex Agent Host, NotesApp, and future GUI clients.
 - `/v1/google-drive/files/:id/content` refreshes a local content snapshot from
   Google Docs or Sheets through CompanyCore.
 - `/v1/google-drive/files/:id/description` updates the CompanyCore-owned
@@ -380,7 +380,7 @@ CompanyCore. The implementation must follow the current ClickUp docs:
 - Verify every incoming webhook using the `X-Signature` header and HMAC
   SHA-256 over the exact raw request body before trusting any payload fields.
 - Treat `taskStatusUpdated` as a first-class business trigger because it can
-  tell Codex Agent Host, Jarvis, Aviary, or future agents that a record crossed a
+  tell Codex Agent Host, Jarvis, NotesApp, or future agents that a record crossed a
   workflow boundary.
 - Track webhook health and support reactivation because ClickUp webhooks are
   tied to the user token that created them.
@@ -400,7 +400,7 @@ Runtime layers:
   changes, fetches the full task from ClickUp when the payload is only a delta,
   and emits internal events.
 - `agent event bridge`: durable outbox or event API surface that lets
-  Codex Agent Host, Jarvis, Aviary, and future modules consume CompanyCore events
+  Codex Agent Host, Jarvis, NotesApp, and future modules consume CompanyCore events
   without each agent implementing ClickUp-specific webhook logic.
 
 Idempotency:
@@ -422,7 +422,7 @@ Agent bridge behavior:
   workflow work.
 - Jarvis can use the same event stream to refresh context and answer with
   current task state.
-- Aviary can use the same event stream for notification or orchestration
+- NotesApp can use the same event stream for notification or orchestration
   surfaces.
 - Agents should read CompanyCore events/outbox through CompanyCore APIs; they
   should not receive raw ClickUp tokens or verify ClickUp signatures
@@ -436,7 +436,7 @@ Delivery slices:
 3. Add ClickUp webhook registration/reconciliation service and owner API.
 4. Add task event processor for `taskCreated`, `taskUpdated`, `taskDeleted`,
    and `taskStatusUpdated`.
-5. Add agent event bridge endpoints and Codex Agent Host/Jarvis/Aviary consumption
+5. Add agent event bridge endpoints and Codex Agent Host/Jarvis/NotesApp consumption
    contract.
 6. Deploy behind the existing API domain, create webhooks for selected Lists,
    and run a real ClickUp status-change smoke.

@@ -87,7 +87,7 @@ not drift into generic default UI.
 
 ### 2026-05-17 Roost Brand Direction
 
-Roost is the target product brand for the LuckySparrow operating center. It is
+Roost is the target product brand for the Example Company operating center. It is
 the digital nest for humans, AI agents, processes, knowledge, tasks,
 pipelines, and company resources. The visual thesis is a cinematic dark
 operations cockpit: quiet, modular, outline-first, system-intelligent, and
@@ -111,7 +111,7 @@ surface has Roost parity evidence.
 - One-sentence direction: Roost should feel like a cinematic dark operating
   center for an autonomous company, with clear hierarchy, thin outlines,
   modular surfaces, and subtle digital light.
-- Why this fits the product: LuckySparrow needs one practical center where
+- Why this fits the product: Example Company needs one practical center where
   company knowledge, tasks, resources, processes, and agents can be operated
   without making the UI feel like a generic ERP or noisy task app.
 
@@ -229,9 +229,9 @@ actions easier to understand.
 
 - First surface after login: `Company City Map`.
 - Current target spec: `docs/ux/company-city-dashboard-v3-spec.md`.
-- Current target asset: `docs/ux/assets/company-city-dashboard-v3-target.png`.
+- Current target asset: private visual reference (archived outside the public repository).
 - Current department-detail target:
-  `docs/ux/assets/company-city-management-department-v1-target.png`.
+  private visual reference (archived outside the public repository).
 - Central district: `GENERAL`, the zero-area intake and orchestration hub where
   unassigned work, imports, support items, ideas, and ambiguous ownership land
   before deliberate routing.

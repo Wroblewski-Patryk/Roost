@@ -21,7 +21,7 @@
   audited atomic operation.
 - Service API keys are workspace-scoped credentials for Codex Agent Host, Jarvis, n8n,
   and other agents.
-- API key material is hashed for new seed/bootstrap paths. Legacy plaintext
+- API key material is hashed for authenticated key-creation paths. Legacy plaintext
   rows are accepted only as a documented transition path when `key_hash` is
   missing.
 - Protected routes must resolve `workspaceId` from user auth or service API key.
@@ -58,7 +58,7 @@ inside the backend process and never exposes the token through API responses.
 
 ## Service API Key Rotation
 
-Service API keys should be rotated by creating or seeding a new workspace key,
+Service API keys should be rotated by explicitly creating a new workspace key,
 updating the agent/client secret, verifying `last_used_at`, and then disabling
 the old key. Raw key material must only be shown at creation/bootstrap time and
 must not be logged. `key_prefix` can identify keys operationally without

@@ -9,7 +9,7 @@ function publicRuntimeInfo() {
   return {
     status: "ok",
     service: "companycore",
-    name: "LuckySparrow Company Core",
+    name: "Roost",
     build: {
       commit: env.buildCommit,
       image: env.buildImage
