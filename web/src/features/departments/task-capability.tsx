@@ -10,7 +10,7 @@ import { CcRecordEditorModal } from "../../components/cc-record-editor";
 import { useLanguage } from "../../i18n/i18n";
 import { capabilityMessages } from "./task-capability-messages";
 
-const optionKey=(o:any)=>`${o.operation}:${o.credentialId}${o.handoff?":"+JSON.stringify(o.handoff):""}`;
+const optionKey=(o:any)=>`${o.operation}:${o.credentialId}${o.clarification?":"+JSON.stringify(o.clarification):""}${o.handoff?":"+JSON.stringify(o.handoff):""}`;
 const localTime = (date: Date) => new Date(+date - date.getTimezoneOffset() * 60000).toISOString().slice(0, 19);
 export function TaskCapabilityModal({ taskId, onClose }: { taskId: string; onClose: () => void }) {
   const { locale } = useLanguage(), c = capabilityMessages[locale === "pl" ? "pl" : "en"];
@@ -35,7 +35,7 @@ export function TaskCapabilityModal({ taskId, onClose }: { taskId: string; onClo
   function edit() { setDirty(true); setSaved(false); }
   const option = data?.options.find((o: any) => optionKey(o) === selected);
   const validWindow = Number.isFinite(Date.parse(from)) && Number.isFinite(Date.parse(until)) && Date.parse(from) >= Date.now() - 60000 && Date.parse(from) < Date.parse(until) && Date.parse(until) > Date.now() && Date.parse(until) <= Date.now() + 3600000 && Date.parse(until) <= Date.parse(option?.credentialExpiresAt);
-  const currentInput = revoking ? { reason } : option && Number.isFinite(Date.parse(from)) && Number.isFinite(Date.parse(until)) ? { expectedVersion: data.expectedVersion, credentialId: option.credentialId, operation: option.operation, ...(option.handoff?{handoff:option.handoff}:{}), validFrom: new Date(from).toISOString(), validUntil: new Date(until).toISOString(), reason } : null;
+  const currentInput = revoking ? { reason } : option && Number.isFinite(Date.parse(from)) && Number.isFinite(Date.parse(until)) ? { expectedVersion: data.expectedVersion, credentialId: option.credentialId, operation: option.operation, ...(option.clarification?{clarification:option.clarification,clarificationContextVersion:option.contextVersion}:{}), ...(option.handoff?{handoff:option.handoff}:{}), validFrom: new Date(from).toISOString(), validUntil: new Date(until).toISOString(), reason } : null;
   const currentRoute = revoking ? `${root}/${revoking.id}/actions/revoke` : root;
   const isRetry = Boolean(currentInput && request.current?.signature === JSON.stringify({ route: currentRoute, input: currentInput }));
   async function submit(event: FormEvent) {
@@ -62,7 +62,7 @@ export function TaskCapabilityModal({ taskId, onClose }: { taskId: string; onClo
       {busy && !data ? <CcNotice tone="loading" title={c.loading} /> : null}
       <div className="flex flex-wrap justify-end gap-2"><CcButton variant="outline" size="sm" disabled={busy} onClick={() => void load()}>{c.refresh}</CcButton></div>
       {revoking ? <section className="grid gap-3"><h3 className="font-bold">{c.revoke} · {label(revoking.operation)}</h3><p>{revoking.snapshot.agentLabel} · {revoking.snapshot.credentialPrefix}</p><p>{c.revokedHint}</p><CcButton variant="ghost" disabled={busy} onClick={() => { setRevoking(null); setReason(""); setDirty(false); }}>{c.cancel}</CcButton></section> : data?.options.length ? <section className="grid gap-4">
-        <p>{c.application}: {data.applicationLabel}</p><CcField label={c.operation} required>{({ id }) => <CcSelect id={id} required value={selected} disabled={busy} onChange={e => { setSelected(e.target.value); setFrom(localTime(new Date())); edit(); }}><option value="">{c.choose}</option>{data.options.map((o: any) => <option key={optionKey(o)} value={optionKey(o)}>{o.agentLabel} · {label(o.operation)} · {o.credentialPrefix}{o.handoff?` · ${o.handoff.recipientRole??o.handoff.role} · ${o.handoff.recipient?.id??o.handoff.handoffId}`:""}</option>)}</CcSelect>}</CcField>
+        <p>{c.application}: {data.applicationLabel}</p><CcField label={c.operation} required>{({ id }) => <CcSelect id={id} required value={selected} disabled={busy} onChange={e => { setSelected(e.target.value); setFrom(localTime(new Date())); edit(); }}><option value="">{c.choose}</option>{data.options.map((o: any) => <option key={optionKey(o)} value={optionKey(o)}>{o.agentLabel} · {label(o.operation)} · {o.credentialPrefix}{o.clarification?` · ${o.clarification.action} · ${o.clarification.recipient.role} · ${(o.clarification.entryId??o.clarification.recipient.taskId).slice(0,8)}`:""}{o.handoff?` · ${o.handoff.recipientRole??o.handoff.role} · ${o.handoff.recipient?.id??o.handoff.handoffId}`:""}</option>)}</CcSelect>}</CcField>
         {option ? <p className="break-words text-sm">{option.agentLabel} · {label(option.operation)} · {c.credential}: {option.credentialPrefix}</p> : null}
         <div className="grid gap-4 sm:grid-cols-2">{[[c.from, from, setFrom], [c.until, until, setUntil]].map(([caption, value, setter]) => <CcField key={caption as string} label={caption as string} required>{({ id }) => <input id={id} className="input input-bordered w-full min-w-0" type="datetime-local" step="1" required disabled={busy} value={value as string} onChange={e => { (setter as (value: string) => void)(e.target.value); edit(); }} />}</CcField>)}</div><p className="text-sm text-company-muted">{c.window}</p>
       </section> : data ? <p role="status">{c.unavailable}</p> : null}

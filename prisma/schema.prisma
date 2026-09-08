@@ -3158,8 +3158,8 @@ model TaskCapabilityGrant {
   task Task @relation(fields: [taskId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   applicationId String @map("application_id") @db.Uuid
   application Application @relation(fields: [applicationId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  executionId String @map("execution_id") @db.Uuid
-  execution AgentExecution @relation(fields: [executionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  executionId String? @map("execution_id") @db.Uuid
+  execution AgentExecution? @relation(fields: [executionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   operation String
   validFrom DateTime @map("valid_from")
   validUntil DateTime @map("valid_until")
@@ -3192,6 +3192,7 @@ model TaskCapabilityRevocation {
   @@map("task_capability_revocations")
 }
 model TaskCapabilityUse {
+  clarificationEntryId String? @unique @map("clarification_entry_id") @db.Uuid
   handoffId String? @unique @map("handoff_id") @db.Uuid
   handoffDecisionId String? @unique @map("handoff_decision_id") @db.Uuid
   id String @id @default(uuid()) @db.Uuid

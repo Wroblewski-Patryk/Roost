@@ -19,7 +19,8 @@ only transient process state outside the repository.
   `architecture/innovation-product-engineering.md`,
   `architecture/local-codex-agent-runtime.md`
   `architecture/workspace-human-access.md`
-  `architecture/typed-work-handoff.md`
+  `architecture/typed-work-handoff.md`,
+  `architecture/governed-task-clarification.md`
   `architecture/autonomy-activation-contract.md` (accepted target and staged gates;
   not current execution authority)
 - Engineering: `engineering/local-development.md`, `engineering/testing.md`

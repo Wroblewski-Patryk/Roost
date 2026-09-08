@@ -1,3 +1,4 @@
+import { clarificationView,clarificationCommand } from "./task-clarification";
 import { taskHandoffView, handoffCommand } from "./task-handoff";
 import { reviewTransaction } from "./task-capability-admission";
 import { capabilitySuspensionRouter, suspensionBlocks } from "./capability-suspension";
@@ -141,6 +142,22 @@ async function applicationForTask(workspaceId: string, taskId: string, requested
 
 export const agentRuntimeRouter = Router();
 agentRuntimeRouter.use("/capability-suspensions", capabilitySuspensionRouter);
+
+agentRuntimeRouter.get("/tasks/:id/clarifications",asyncHandler(async(req,res)=>{
+ const query=z.object({relatedTaskId:z.string().uuid().optional(),threadId:z.string().uuid().optional(),before:z.coerce.number().int().min(1).max(501).optional()}).strict().parse(req.query);
+ const result=await reviewTransaction(db=>clarificationView(db,req.auth!.workspaceId,z.string().uuid().parse(req.params.id),req.auth!,query));
+ if("error" in result)return sendApiError(res,result.error?.endsWith("not_found")?404:result.error==="clarification_forbidden"?403:409,result.error!);
+ res.json({data:result});
+}));
+const clarificationHandler=(action:"send"|"reply"|"read")=>asyncHandler(async(req,res)=>{
+ if(req.auth!.authType==="user"?!roleAtLeast(req.auth!.workspaceRole,"member"):!req.auth!.agentId)return sendApiError(res,403,"clarification_forbidden");
+ const result=await reviewTransaction(db=>clarificationCommand(db,req.auth!.workspaceId,z.string().uuid().parse(req.params.id),req.auth!,action,req.body));
+ if("error" in result)return sendApiError(res,result.error?.endsWith("not_found")?404:result.error==="clarification_forbidden"?403:409,result.error!);
+ res.status(result.replayed?200:201).json({data:result});
+});
+agentRuntimeRouter.post("/tasks/:id/clarifications",clarificationHandler("send"));
+agentRuntimeRouter.post("/tasks/:id/clarifications/actions/reply",clarificationHandler("reply"));
+agentRuntimeRouter.post("/tasks/:id/clarifications/actions/read",clarificationHandler("read"));
 
 agentRuntimeRouter.get("/tasks/:id/handoffs", asyncHandler(async(req,res)=>{
  const result=await readyTransaction(db=>taskHandoffView(db,req.auth!.workspaceId,z.string().uuid().parse(req.params.id),req.auth!,z.string().uuid().optional().parse(req.query.cursor)));

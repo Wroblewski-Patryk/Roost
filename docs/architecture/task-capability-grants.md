@@ -129,3 +129,7 @@ RF-SEC-003 remains partial: this is the native review command boundary, not a
 provider/OS/Git/network/tool or secrets broker, risk engine, automatic issuer,
 reviewer invocation, routing system or release authority. No real agent execution
 is needed to verify it. Production execution remains disabled and the host observe.
+
+## Clarification operations
+
+[Governed clarification](governed-task-clarification.md) adds `clarification_send` and `clarification_reply`. Grants pin exact sender/recipient roles, both linked task contexts, and exact send/reply/read action; replies and reads also pin thread/message. These operations alone may omit a completed execution. Consumption is linked by `clarification_entry_id`, with the same one-effect and deferred receipt guards.

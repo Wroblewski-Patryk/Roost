@@ -48,6 +48,7 @@ test("capability suspension migration preserves 71 historical sanitizer incident
     assert.equal(sql("SELECT count(*) FROM task_admission_scopes; SELECT count(*) FROM task_admission_evidence; SELECT count(*) FROM task_admission_heads;").trim(), "0\n0\n0");
     assert.equal(sql("SELECT count(*) FROM procedure_contract_versions; SELECT count(*) FROM procedure_contract_withdrawals; SELECT count(*) FROM task_composition_selections; SELECT count(*) FROM task_composition_exceptions;").trim(),"0\n0\n0\n0");
     assert.equal(sql("SELECT count(*) FROM task_handoffs; SELECT count(*) FROM task_handoff_decisions; SELECT count(*) FROM task_handoff_result_revisions;").trim(),"0\n0\n0");
+    assert.equal(sql("SELECT count(*) FROM task_clarification_threads; SELECT count(*) FROM task_clarification_entries;").trim(),"0\n0");
     assert.equal(sql("SELECT task_handoff_source('00000000-0000-4000-8000-000000000003') IS NULL;").trim(),"t");
     assert.equal(sql("SELECT task_composition('00000000-0000-4000-8000-000000000003','runtime_execute')->>'status';").trim(),"blocked");
     assert.equal(sql("SELECT count(*) FROM api_keys WHERE bound_agent_id IS NOT NULL;").trim(), "1");

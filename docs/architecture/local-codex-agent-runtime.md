@@ -1,5 +1,7 @@
 # Local Codex Agent Runtime
 
+[Governed task clarification](governed-task-clarification.md) provides typed specialist conversation and deterministic receipt summaries without changing task authority.
+
 [Typed work handoff](typed-work-handoff.md) records exact recipient acceptance
 of a pinned completed result without authorizing review, release or execution.
 

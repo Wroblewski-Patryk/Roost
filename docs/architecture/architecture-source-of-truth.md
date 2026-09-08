@@ -1,5 +1,7 @@
 # Architecture Source Of Truth
 
+[Governed task clarification](governed-task-clarification.md) provides typed specialist conversation and deterministic receipt summaries without changing task authority.
+
 Native completed-result handoff is governed by [typed work handoff](typed-work-handoff.md):
 immutable source versions and exact recipient receipts, with no implied execution
 or release authority.

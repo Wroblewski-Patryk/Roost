@@ -1,3 +1,4 @@
+import { TaskClarificationModal } from "./task-clarification";
 import { TaskHandoffModal } from "./task-handoff";
 import { TaskCapabilityModal } from "./task-capability";
 import { CapabilitySuspensionModal, SuspensionNotice } from "./capability-suspension";
@@ -17,6 +18,7 @@ const initial = { summary: "", reference: "", testResult: "", reproduction: "", 
 export function TaskReviewModal({ taskId, onClose, onSaved }: { taskId: string; onClose: () => void; onSaved?: () => void }) {
   const { locale } = useLanguage(), c = reviewMessages[locale === "pl" ? "pl" : "en"];
   const [showHandoff,setShowHandoff]=useState(false);
+  const [showClarification,setShowClarification]=useState(false);
   const [showGrants, setShowGrants] = useState(false);
   const [showSuspensions, setShowSuspensions] = useState(false);
   const credentialLabel = locale === "pl" ? "Poświadczenie agenta" : "Agent credential";
@@ -47,6 +49,7 @@ export function TaskReviewModal({ taskId, onClose, onSaved }: { taskId: string; 
     } catch { if(mounted.current){setError(true);requestAnimationFrame(()=>notice.current?.focus());} } finally {if(mounted.current)setBusy(false);}
   }
   const field = (key: keyof typeof initial, multiline = false) => <CcField key={key} label={c[key]} required>{({id,describedBy})=>multiline ? <textarea id={id} aria-describedby={describedBy} className="textarea textarea-bordered min-h-24 w-full" required minLength={3} maxLength={2000} value={draft[key]} onChange={e=>edit(key,e.target.value)}/> : <input id={id} aria-describedby={describedBy} className="input input-bordered w-full" required minLength={3} maxLength={2000} value={draft[key]} onChange={e=>edit(key,e.target.value)}/>}</CcField>;
+  if(showClarification)return <TaskClarificationModal taskId={taskId} onClose={()=>{setShowClarification(false);void load();}}/>;
   if(showHandoff)return <TaskHandoffModal taskId={taskId} onClose={()=>{setShowHandoff(false);void load();}}/>;
   if(showGrants)return <TaskCapabilityModal taskId={taskId} onClose={()=>{setShowGrants(false);void load();}}/>;
   if(showSuspensions)return <CapabilitySuspensionModal taskId={taskId} onClose={()=>{setShowSuspensions(false);void load();}}/>;
@@ -54,6 +57,7 @@ export function TaskReviewModal({ taskId, onClose, onSaved }: { taskId: string; 
   return <CcRecordEditorModal titleId="review-title" title={data?.task.title ?? c.title} eyebrow={c.title} description={c.boundary} closeLabel={c.close} onClose={close} onSubmit={submit} maxWidthClassName="max-w-5xl" actions={<><CcButton variant="ghost" disabled={busy} onClick={close}>{c.close}</CcButton>{data?.canReview || data?.canManage ? <CcButton variant="primary" type="submit" disabled={busy || data.canManage && (!scope.length || disposition === "create_specialist_task" && !specialist)}>{data.canReview ? c.recordReview : c.recordAction}</CcButton> : null}</>}>
     <div className="grid min-w-0 gap-5">
       <div ref={notice} tabIndex={-1}>{error ? <CcNotice tone="error" title={c.error} live/> : saved ? <CcNotice tone="success" title={c.saved} live/> : null}</div>
+      <CcButton disabled={busy||dirty} variant="outline" onClick={()=>setShowClarification(true)}>{locale==="pl"?"Doprecyzowanie zadania":"Task clarification"}</CcButton>
       <CcButton disabled={busy||dirty} variant="outline" onClick={()=>setShowHandoff(true)}>{locale==="pl"?"Przekazanie pracy":"Work handoff"}</CcButton>
       <SuspensionNotice items={data?.suspensions??[]} onOpen={()=>setShowSuspensions(true)}/>
       {busy && !data ? <CcNotice tone="loading" title={c.loading}/> : null}

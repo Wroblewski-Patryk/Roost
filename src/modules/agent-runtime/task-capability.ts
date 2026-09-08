@@ -1,3 +1,4 @@
+import { clarificationGrantChoices } from "./task-clarification";
 import { handoffGrantChoices } from "./task-handoff";
 import type { Prisma } from "@prisma/client";
 import { suspensionBlocks, suspensionList } from "./capability-suspension";
@@ -14,7 +15,7 @@ async function administer(db: Db, workspaceId: string, userId?: string) {
 async function safeGrant(db: Db, g: any) {
   return { ...g, status: (await grantState(db, g.id)).status };
 }
-async function choices(db: Db, workspaceId: string, s: any) {
+async function reviewChoices(db: Db, workspaceId: string, s: any) {
   if ("error" in await riskAdmission(db,s.task.id)) return [];
   if (!s.current || s.roleIssues.length || !["todo", "in_progress"].includes(s.task.status) || s.execution.cancelRequestedAt) return [];
   const options = [];
@@ -31,6 +32,7 @@ async function choices(db: Db, workspaceId: string, s: any) {
   }
   return [...options, ...await handoffGrantChoices(db,workspaceId,s.task.id,s.principal?.kind==="user"?s.principal.id:"")];
 }
+async function choices(db:Db,workspaceId:string,s:any):Promise<any[]>{return [...await reviewChoices(db,workspaceId,s),...await clarificationGrantChoices(db,workspaceId,s.task.id)];}
 export async function taskCapabilityView(db: Db, workspaceId: string, taskId: string, userId?: string, cursor?: string) {
   const s = await reviewState(db, workspaceId, taskId, userId);
   if ("error" in s) return { error: s.error! };
@@ -40,9 +42,10 @@ export async function taskCapabilityView(db: Db, workspaceId: string, taskId: st
   const rows = await db.taskCapabilityGrant.findMany({ where: { workspaceId, taskId }, include: { usage: true, revocation: true }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 51, ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}) });
   const options = await choices(db, workspaceId, s);
   const available = [];
-  for (const option of options) if (await grantScope(db, taskId, option.credentialId, userId!)) available.push(option);
-  const application = s.execution ? await db.application.findUnique({ where: { id: s.execution.applicationId }, select: { name: true } }) : null;
-  return { task: { id: taskId, title: s.task.title }, applicationLabel: application?.name ?? null, applicationId: s.execution?.applicationId ?? null, expectedVersion: s.expectedVersion, canAdminister, options: available,
+  for (const option of options) if (await grantScope(db, taskId, option.credentialId, userId!,option.clarification)) available.push(option);
+  const applicationId=s.execution?.applicationId??available[0]?.applicationId??null;
+  const application=applicationId?await db.application.findUnique({where:{id:applicationId},select:{name:true}}):null;
+  return { task: { id: taskId, title: s.task.title }, applicationLabel: application?.name ?? null, applicationId, optionsTruncated:options.length>=500, expectedVersion: s.expectedVersion, canAdminister, options: available,
     ...await suspensionList(db, workspaceId, taskId), grants: await Promise.all(rows.slice(0, 50).map(g => safeGrant(db, g))), nextCursor: rows.length > 50 ? rows[49]!.id : null };
 }
 export async function issueTaskCapability(db: Db, workspaceId: string, taskId: string, userId: string, body: unknown) {
@@ -53,19 +56,19 @@ export async function issueTaskCapability(db: Db, workspaceId: string, taskId: s
   const prior = await db.taskCapabilityGrant.findUnique({ where: { workspaceId_requestId: { workspaceId, requestId: input.requestId } } });
   if (prior) return prior.requestHash === requestHash ? { grant: await safeGrant(db, prior), replayed: true } : { error: "capability_request_conflict" };
   if (input.expectedVersion !== s.expectedVersion) return { error: "capability_scope_stale" };
-  const option = (await choices(db, workspaceId, s)).find(o => o.operation === input.operation && o.credentialId === input.credentialId && reviewDigest(o.handoff??null) === reviewDigest(input.handoff??null));
+  const option = (await choices(db, workspaceId, s)).find(o => o.operation === input.operation && o.credentialId === input.credentialId && reviewDigest(o.handoff??null) === reviewDigest(input.handoff??null) && reviewDigest(o.clarification??null)===reviewDigest(input.clarification??null) && (!o.clarification||o.contextVersion===input.clarificationContextVersion));
   if (!option) return { error: "capability_role_or_credential_invalid" };
-  const scopeHash = await grantScope(db, taskId, option.credentialId, userId);
+  const scopeHash = await grantScope(db, taskId, option.credentialId, userId,option.clarification);
   if (!scopeHash) return { error: "capability_application_invalid" };
   const risk = await riskAdmission(db,taskId);
   if ("error" in risk) return {error:risk.error!};
   const validFrom = new Date(input.validFrom), validUntil = new Date(input.validUntil);
   if (!capabilityWindow(validFrom, validUntil, option.credentialExpiresAt!)) return { error: "capability_window_invalid" };
   const issuer = await db.user.findUniqueOrThrow({ where: { id: userId }, select: { name: true } });
-  const application = await db.application.findUniqueOrThrow({ where: { id: s.execution!.applicationId }, select: { name: true } });
-  const grant = await db.taskCapabilityGrant.create({ data: { workspaceId, taskId, applicationId: s.execution!.applicationId, executionId: s.execution!.id, agentId: option.agentId,
+  const application = await db.application.findUniqueOrThrow({ where: { id: (option.applicationId??s.execution?.applicationId)! }, select: { name: true } });
+  const grant = await db.taskCapabilityGrant.create({ data: { workspaceId, taskId, applicationId: (option.applicationId??s.execution?.applicationId)!, executionId: option.clarification?null:s.execution!.id, agentId: option.agentId,
     credentialId: option.credentialId, credentialVersion: option.credentialVersion, operation: input.operation, validFrom, validUntil, issuerUserId: userId,
-    reason: input.reason, requestId: input.requestId, requestHash, scopeHash, snapshot: wire({ handoff:option.handoff, handoffSourceVersion:option.handoffSourceVersion, agentLabel: option.agentLabel, issuerLabel: issuer.name ?? "Workspace administrator", applicationLabel: application.name,
+    reason: input.reason, requestId: input.requestId, requestHash, scopeHash, snapshot: wire({ clarification:option.clarification, clarificationContextVersion:option.contextVersion, handoff:option.handoff, handoffSourceVersion:option.handoffSourceVersion, agentLabel: option.agentLabel, issuerLabel: issuer.name ?? "Workspace administrator", applicationLabel: application.name,
       taskLabel: s.task.title, credentialPrefix: option.credentialPrefix, role: option.role, materialVersion: s.materialVersion, riskAssessmentId:risk.id }) } });
   await db.event.create({ data: { workspaceId, taskId, type: "task_capability.issued", source: "roost", actorType: "user", actorId: userId, resourceType: "task_capability_grant", resourceId: grant.id,
     payload: { grantId: grant.id, agentId: grant.agentId, credentialId: grant.credentialId, operation: grant.operation, applicationId: grant.applicationId } } });

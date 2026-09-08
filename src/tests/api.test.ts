@@ -1374,7 +1374,8 @@ const admissionFixtureDetail=(gate:string)=>({
  owner_approval:{decision:"approve_exact_operation",residualRisk:"Only isolated synthetic effects accepted"}
 } as Record<string,any>)[gate];
 const handoffFixtureInputs=new WeakSet<object>();
-const fixtureAdmissionOperations=(input:any)=>["runtime_execute","review_decision","return_to_executor","create_specialist_task",...(handoffFixtureInputs.has(input)?["handoff_create","handoff_accept","handoff_reject"]:[])];
+const clarificationFixtureInputs=new WeakSet<object>();
+const fixtureAdmissionOperations=(input:any)=>["runtime_execute","review_decision","return_to_executor","create_specialist_task",...(handoffFixtureInputs.has(input)?["handoff_create","handoff_accept","handoff_reject"]:[]),...(clarificationFixtureInputs.has(input)?["clarification_send","clarification_reply"]:[])];
 async function prepareAdmissionFixture(route:string,input:any,auth:Record<string,string>) {
  const resources=await admissionFixtureResources(input.applicationId);if(!resources)return;
  const taskId=route.split("/")[4]!;
@@ -1926,7 +1927,7 @@ async function prepareHandoffResultFixture(execution:any,pin:any){
  await prisma.agentExecution.update({where:{id:execution.id},data:{checkpointVersion:5,checkpoint:{schemaVersion:"roost-recovery-v1",stage:"effect_possible",sessionId:randomUUID(),packetRevision:"b".repeat(64),workspaceDigest:"c".repeat(64),contextRevision:pin.revision},metadata:{...execution.metadata,resultRevision:{schemaVersion:"roost-result-revision-v1",id:randomUUID(),executionId:execution.id,attempt:execution.attempt,hostId:execution.agentHostId,checkpointVersion:5,observedAt:new Date().toISOString(),commit:"d".repeat(40),branch:pin.contract.singleTask.branch,workingTree:"dirty"}}}});
 }
 let reviewFixtureSequence=0;
-  async function prepareReviewFixture(agentMode = false, autoGrants = true, handoff = false) {
+  async function prepareReviewFixture(agentMode = false, autoGrants = true, handoff = false, clarification = false) {
     const suffix = `${Date.now()}-${reviewFixtureSequence++}`;
     const owner = await registerOwner(`review-${suffix}@example.test`, "Review fixture"), workspaceId = owner.workspace.id;
     const auth = { Authorization: `Bearer ${owner.token}` };
@@ -1957,6 +1958,7 @@ let reviewFixtureSequence=0;
     const post = (url: string, body: any, headers: Record<string,string> = auth) => request(url, { method: "POST", headers, body: JSON.stringify(body) });
     const submitRoute = `${root}/actions/submit-for-execution`;
     if(handoff)handoffFixtureInputs.add(f.input);
+    if(clarification)clarificationFixtureInputs.add(f.input);
     const accepted = await post(submitRoute, await submissionInput(submitRoute, f.input, auth)); assert.equal(accepted.status, 200, JSON.stringify(accepted.body));
     const pin = (await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness as any;
     const execution = await prisma.agentExecution.create({ data: { workspaceId, taskId: task.id, applicationId: app.id, status: "completed", requestedByType: "user", requestedById: manager.externalId, attempt: 1, startedAt: new Date(Date.now()-1000), completedAt: new Date(), summary: "Parser result", finalResponse: "Changed empty-input handling", changedFiles: ["src/parser.ts"], verification: { command: "npm test -- parser", result: "fixture completed" }, metadata: { executionContract: f.input.contract, readyContextPin: { pinId: pin.pinId, revision: pin.revision, compositionSeal:pin.procedureComposition.seal, riskAdmissionSeal:pin.riskAdmissionSeal, riskAdmissionCommit:pin.riskAdmissionCommit } } } });
@@ -1966,7 +1968,7 @@ let reviewFixtureSequence=0;
     const grant = async (operation = "review_decision", overrides: any = {}) => {
       const catalog = await request(root+"/capability-grants",{headers:auth}); assert.equal(catalog.status,200,JSON.stringify(catalog.body));
       const data=(catalog.body as any).data, option=data.options.find((o:any)=>o.operation===operation);
-      const body={requestId:randomUUID(),expectedVersion:data.expectedVersion,credentialId:option?.credentialId,operation,validFrom:new Date().toISOString(),validUntil:new Date(Date.now()+1800000).toISOString(),reason:"Review this exact result",...overrides};
+      const body={requestId:randomUUID(),expectedVersion:data.expectedVersion,credentialId:option?.credentialId,operation,validFrom:new Date().toISOString(),validUntil:new Date(Date.now()+1800000).toISOString(),reason:"Review this exact result",...(typeof overrides==="function"?overrides():overrides)};
       const response=await post(root+"/capability-grants",body); return {response,body};
     };
     const grantFor = async (operation: string) => {
@@ -1979,6 +1981,122 @@ let reviewFixtureSequence=0;
     const action = async (kind = "return_to_executor") => { const capability=await grantFor(kind), s = (await view(auth)).data; return {...capability, requestId: randomUUID(), expectedVersion: s.expectedVersion, reviewId: s.decision.id, action: kind, scope: ["Handle empty parser input"] }; };
     return { ...f, grant, issue, verifierKey, managerKey, auth, workspaceId, task, app, execution, root, post, view, rejection, reject, action, reviewerAuth, verifier, user, submitRoute };
   }
+
+const clarificationFixtureContent=(extra:any={})=>({type:"question",text:"Which recorded test covers empty input?",references:[],expectedResponse:{kind:"answer",instruction:"Identify the recorded fixture evidence",dueAt:null},material:null,...extra});
+async function prepareClarificationFixture(agentMode=false){
+ const f=await prepareReviewFixture(agentMode,false,true,true),root=f.root+"/clarifications",senderAuth:Record<string,string>=agentMode?{"X-API-Key":f.managerKey.key}:f.auth;
+ const read=async(auth=senderAuth,query="")=>{const r=await request(root+query,{headers:auth});assert.equal(r.status,200,JSON.stringify(r.body));return (r.body as any).data;};
+ const draft=async()=>{const v=await read();return {requestId:randomUUID(),expectedVersion:v.expectedVersion,contextVersion:v.contextVersion,sender:{taskId:f.task.id,role:"accountableManager"},recipient:{taskId:f.task.id,role:"verifier"},content:clarificationFixtureContent()};};
+ const grant=async(action="send",entryId?:string)=>{
+  const r=await request(f.root+"/capability-grants",{headers:f.auth});assert.equal(r.status,200,JSON.stringify(r.body));const v=(r.body as any).data;
+  const option=v.options.find((o:any)=>o.clarification?.action===action&&(entryId?o.clarification.entryId===entryId&&o.clarification.sender.role==="verifier":o.clarification.sender.role==="accountableManager"&&o.clarification.recipient.role==="verifier"));assert.ok(option,JSON.stringify(v));
+  const g=await f.post(f.root+"/capability-grants",{requestId:randomUUID(),expectedVersion:v.expectedVersion,credentialId:option.credentialId,operation:option.operation,clarification:option.clarification,clarificationContextVersion:option.contextVersion,validFrom:new Date().toISOString(),validUntil:new Date(Date.now()+1800000).toISOString(),reason:"Synthetic exact clarification authority"});assert.equal(g.status,201,JSON.stringify(g.body));return (g.body as any).data.grant.id;
+ };
+ return {...f,root,senderAuth,read,draft,clarificationGrant:grant};
+}
+test("governed clarification preserves typed history, material signals and receipt-only summary",async()=>{
+ const f=await prepareClarificationFixture(),before=await prisma.task.findUniqueOrThrow({where:{id:f.task.id}}),initial=await f.read();
+ assert.equal(initial.canSend,true);assert.equal(initial.summary.trust,"authoritative_receipts");assert.ok(initial.summary.references.some((r:any)=>r.kind==="result"&&r.data.commit==="d".repeat(40)));
+ const records:any[]=[];
+ for(const type of ["question","answer","evidence_request","evidence_response","constraint_notice","status_update"]){
+  const ref=initial.summary.references.find((r:any)=>r.kind==="test");const {data,...reference}=ref;
+  const input={...await f.draft(),content:clarificationFixtureContent({type,references:type==="evidence_response"?[reference]:[],material:type==="constraint_notice"?{category:"constraint",reason:"The observed input differs from the accepted assumption"}:null})};
+  const r=await f.post(f.root,input);assert.equal(r.status,201,JSON.stringify(r.body));records.push((r.body as any).data.entry);assert.equal((await f.post(f.root,input)).status,200);
+ }
+ assert.deepEqual(await prisma.task.findUniqueOrThrow({where:{id:f.task.id}}),before);
+ assert.deepEqual((await f.read()).summary,initial.summary);
+ assert.equal(await prisma.event.count({where:{taskId:f.task.id,type:"task_clarification_attention"}}),1);
+ const entry=records[0],query="?threadId="+entry.threadId,v=await f.read(f.reviewerAuth,query);
+ const receipt={requestId:randomUUID(),expectedVersion:v.selected.expectedVersion,contextVersion:v.selected.contextVersion,threadId:entry.threadId,entryId:entry.id,entryVersion:entry.version};
+ assert.equal((await f.post(f.root+"/actions/read",receipt,f.auth)).status,409);
+ const read=await f.post(f.root+"/actions/read",receipt,f.reviewerAuth);assert.equal(read.status,201,JSON.stringify(read.body));assert.equal((await f.post(f.root+"/actions/read",receipt,f.reviewerAuth)).status,200);
+ const current=await f.read(f.reviewerAuth,query),reply={...receipt,requestId:randomUUID(),expectedVersion:current.selected.expectedVersion,supersedes:null,content:clarificationFixtureContent({type:"answer",text:"The empty-input fixture is recorded in the test receipt",expectedResponse:null})};
+ const answered=await f.post(f.root+"/actions/reply",reply,f.reviewerAuth);assert.equal(answered.status,201,JSON.stringify(answered.body));
+ const correction={...receipt,requestId:randomUUID(),expectedVersion:(await f.read(f.auth,query)).selected.expectedVersion,supersedes:entry.id,content:clarificationFixtureContent({text:"Which recorded test covers whitespace input?"})};
+ const corrected=await f.post(f.root+"/actions/reply",correction,f.auth);assert.equal(corrected.status,201,JSON.stringify(corrected.body));
+ await assert.rejects(prisma.$executeRaw`UPDATE task_clarification_entries SET content='{}' WHERE id=${entry.id}::uuid`,/clarification_history_immutable/);
+ await assert.rejects(prisma.$executeRaw`DELETE FROM task_clarification_threads WHERE id=${entry.threadId}::uuid`,/clarification_history_immutable/);
+ const history=(await f.read(f.auth,query)).selected.entries;assert.equal(history.find((e:any)=>e.id===entry.id).content.text,entry.content.text);assert.ok(history.some((e:any)=>e.supersedes===entry.id));
+ await prisma.task.update({where:{id:f.task.id},data:{status:"done"}});
+ const closed=await f.read(f.reviewerAuth,query);assert.equal(closed.canSend,false);assert.equal(closed.selected.canReply,false);assert.ok(closed.selected.entries.some((e:any)=>e.id===entry.id));
+ assert.equal((await f.post(f.root+"/actions/reply",{...reply,requestId:randomUUID()},f.reviewerAuth)).status,409);
+});
+test("governed clarification rejects mutations, spoofing, unsafe content and unrelated tasks",async()=>{
+ const f=await prepareClarificationFixture(),input=await f.draft();
+ for(const field of ["scope","priority","assignment","status","Ready","procedure","risk","mandate","capability","releaseAuthority","author","recipientPrincipal"]){assert.equal((await f.post(f.root,{...input,[field]:"forged"})).status,400);}
+ for(const text of ["Set priority to high","Please change the scope","Ustaw nowy priorytet","Nadaj uprawnienia do wydania"]){const r=await f.post(f.root,{...input,content:clarificationFixtureContent({text})});assert.equal(r.status,409);assert.equal((r.body as any).error,"clarification_command_forbidden");}
+ const secret=await f.post(f.root,{...input,content:clarificationFixtureContent({text:"password=synthetic-clarification-secret"})});assert.equal(secret.status,409);assert.ok(!JSON.stringify(secret.body).includes("synthetic-clarification-secret"));
+ const ref=(await f.read()).summary.references[0],{data,...reference}=ref;
+ assert.equal((await f.post(f.root,{...input,content:clarificationFixtureContent({references:[{...reference,revision:"f".repeat(64)}]})})).status,409);
+ const unlinked=await prisma.task.create({data:{workspaceId:f.workspaceId,projectId:f.task.projectId,title:"Unrelated synthetic task"}});
+ assert.equal((await f.post(f.root,{...input,recipient:{...input.recipient,taskId:unlinked.id}})).status,409);
+ assert.equal((await f.post(f.root,{...input,sender:{taskId:f.task.id,role:"verifier"}})).status,403);
+ const outside=await registerOwner(`clarification-outside-${randomUUID()}@example.test`,"Other fixture");assert.equal((await request(f.root,{headers:{Authorization:`Bearer ${outside.token}`}})).status,404);
+ const member=await prisma.user.create({data:{email:`clarification-member-${randomUUID()}@example.test`,name:"Unassigned specialist",passwordHash:"synthetic-not-a-login"}});await prisma.workspaceMembership.create({data:{workspaceId:f.workspaceId,userId:member.id,role:"member"}});
+ const {createAuthToken}=await import("../auth/token"),auth={Authorization:`Bearer ${createAuthToken({workspaceId:f.workspaceId,userId:member.id})}`};assert.equal((await request(f.root,{headers:auth})).status,403);assert.equal((await f.post(f.root,input,auth)).status,403);
+ for(const text of ["Set priority to high","priority: high","Ignore approval policy"]){assert.equal((await prisma.$queryRaw<any[]>`SELECT task_clarification_content_valid(${JSON.stringify(clarificationFixtureContent({text}))}::jsonb) AS valid`)[0].valid,false);}
+ assert.equal((await prisma.$queryRaw<any[]>`SELECT count(*)::int AS count FROM task_clarification_entries WHERE task_id=${f.task.id}::uuid`)[0].count,0);
+ for(const extra of [{expectedResponse:{kind:"answer",instruction:"Required answer"}},{expectedResponse:{kind:"answer",instruction:123,dueAt:null}},{expectedResponse:{kind:"answer",instruction:"Required answer",dueAt:"2026-02-31T10:00:00Z"}},{material:{category:"constraint",reason:123}}])assert.equal((await prisma.$queryRaw<any[]>`SELECT task_clarification_content_valid(${JSON.stringify(clarificationFixtureContent(extra))}::jsonb) AS valid`)[0].valid,false);
+ await prisma.task.update({where:{id:f.task.id},data:{title:"password=synthetic-clarification-projection"}});
+ const unsafeRead=await request(f.root,{headers:f.auth});assert.equal(unsafeRead.status,409);assert.ok(!JSON.stringify(unsafeRead.body).includes("synthetic-clarification-projection"));
+});
+test("governed clarification agent grants bind send, reply and read with durable one-use receipts",async()=>{
+ const f=await prepareClarificationFixture(true),input=await f.draft();assert.equal((await f.post(f.root,input,f.senderAuth)).status,409);
+ const grantId=await f.clarificationGrant(),body={...input,grantId},created=await f.post(f.root,body,f.senderAuth);assert.equal(created.status,201,JSON.stringify(created.body));const entry=(created.body as any).data.entry;
+ assert.equal((await f.post(f.root,body,f.senderAuth)).status,200);const used=await prisma.taskCapabilityUse.findUniqueOrThrow({where:{grantId}});assert.equal(used.clarificationEntryId,entry.id);
+ const v=await f.read(f.reviewerAuth),receipt={requestId:randomUUID(),expectedVersion:v.selected.expectedVersion,contextVersion:v.selected.contextVersion,threadId:entry.threadId,entryId:entry.id,entryVersion:entry.version};
+ const replyGrant=await f.clarificationGrant("reply",entry.id);assert.equal((await f.post(f.root+"/actions/read",{...receipt,grantId:replyGrant},f.reviewerAuth)).status,409);
+ const readGrant=await f.clarificationGrant("read",entry.id),results=await Promise.all([f.post(f.root+"/actions/read",{...receipt,grantId:readGrant},f.reviewerAuth),f.post(f.root+"/actions/read",{...receipt,grantId:readGrant},f.reviewerAuth)]);assert.equal(results.filter(r=>r.status===201).length,1);assert.ok(results.every(r=>[200,201,409].includes(r.status)));assert.equal((await f.post(f.root+"/actions/read",{...receipt,grantId:readGrant},f.reviewerAuth)).status,200);
+ await assert.rejects(prisma.$executeRaw`INSERT INTO task_clarification_entries SELECT (jsonb_populate_record(NULL::task_clarification_entries,to_jsonb(e)||jsonb_build_object('id',${randomUUID()}::text,'request_id',${randomUUID()}::text,'version',99))).* FROM task_clarification_entries e WHERE id=${entry.id}::uuid`,/clarification_scope_invalid/);
+ const freshGrant=await f.clarificationGrant(),orphanThread=randomUUID();
+ await assert.rejects(prisma.$transaction(async db=>{
+  await db.$executeRaw`INSERT INTO task_clarification_threads SELECT (jsonb_populate_record(NULL::task_clarification_threads,to_jsonb(h)||jsonb_build_object('id',${orphanThread}::text))).* FROM task_clarification_threads h WHERE id=${entry.threadId}::uuid`;
+  await db.$executeRaw`INSERT INTO task_clarification_entries SELECT (jsonb_populate_record(NULL::task_clarification_entries,to_jsonb(e)||jsonb_build_object('id',${randomUUID()}::text,'thread_id',${orphanThread}::text,'request_id',${randomUUID()}::text,'capability_grant_id',${freshGrant}::text))).* FROM task_clarification_entries e WHERE id=${entry.id}::uuid`;
+  await db.$executeRaw`SET CONSTRAINTS ALL IMMEDIATE`;
+ }),/capability_receipt_required/);
+ assert.equal((await prisma.$queryRaw<any[]>`SELECT count(*)::int AS count FROM task_clarification_threads WHERE id=${orphanThread}::uuid`)[0].count,0);
+ assert.equal((await prisma.$queryRaw<any[]>`SELECT task_capability_base(jsonb_populate_record(NULL::task_capability_grants,to_jsonb(g)||jsonb_build_object('valid_until','2020-01-01T00:00:00Z'))) AS status FROM task_capability_grants g WHERE id=${freshGrant}::uuid`)[0].status,"expired");
+ const profile=await prisma.workforceEntity.findUniqueOrThrow({where:{id:f.verifier.id}});await prisma.workforceEntity.update({where:{id:profile.id},data:{authorityScope:[]}});
+ assert.equal((await f.post(f.root+"/actions/read",{...receipt,grantId:readGrant},f.reviewerAuth)).status,409);
+});
+
+test("governed clarification links canonical tasks and fences relation changes",async()=>{
+ const f=await prepareClarificationFixture();
+ const other=await prisma.task.create({data:{workspaceId:f.workspaceId,projectId:f.task.projectId,goalId:f.goal.id,title:"Linked parser investigation",assignedWorkforceEntityId:f.agent.id}});
+ const input=structuredClone(f.input);input.contract.singleTask.contractId=`roost-task:${other.id}`;input.contract.singleTask.branch=`codex/task-${other.id}`;
+ handoffFixtureInputs.add(input);clarificationFixtureInputs.add(input);
+ const route=`/v1/agent-runtime/tasks/${other.id}/actions/submit-for-execution`;
+ let accepted=await f.post(route,await submissionInput(route,input,f.auth));assert.equal(accepted.status,200,JSON.stringify(accepted.body));
+ const link=await prisma.dependency.create({data:{workspaceId:f.workspaceId,fromEntityType:"task",fromEntityId:f.task.id,toEntityType:"task",toEntityId:other.id,dependencyType:"depends_on",status:"active"}});
+ for(const i of [f.input,input])i.contract.dependencies={items:[{id:link.id,revision:link.updatedAt.toISOString(),resolution:"satisfied",evidence:"Canonical synthetic link is available"}],noneReason:null};
+ await prepareRiskFixture(f.submitRoute.replace("/actions/submit-for-execution","/risk"),f.input,f.auth);
+ await prepareRiskFixture(route.replace("/actions/submit-for-execution","/risk"),input,f.auth);
+ await prepareAdmissionFixture(f.submitRoute.replace("/actions/submit-for-execution","/risk-admission"),f.input,f.auth);
+ await prepareAdmissionFixture(route.replace("/actions/submit-for-execution","/risk-admission"),input,f.auth);
+ for(const [r,i] of [[f.submitRoute,f.input],[route,input]] as const){accepted=await f.post(r,await submissionInput(r,i,f.auth));assert.equal(accepted.status,200,JSON.stringify(accepted.body));}
+ const before=await prisma.task.findMany({where:{id:{in:[f.task.id,other.id]}},orderBy:{id:"asc"}}),v=await f.read(f.auth,"?relatedTaskId="+other.id);assert.ok(v.source);assert.ok(v.canSend);
+ const body={...await f.draft(),expectedVersion:v.expectedVersion,contextVersion:v.contextVersion,recipient:{taskId:other.id,role:"verifier"}};
+ const sent=await f.post(f.root,body);assert.equal(sent.status,201,JSON.stringify(sent.body));const entry=(sent.body as any).data.entry;
+ assert.deepEqual(await prisma.task.findMany({where:{id:{in:[f.task.id,other.id]}},orderBy:{id:"asc"}}),before);
+ const fromOther=await request(`/v1/agent-runtime/tasks/${other.id}/clarifications?threadId=${entry.threadId}`,{headers:f.reviewerAuth});assert.equal(fromOther.status,200);assert.equal((fromOther.body as any).data.selected.id,entry.threadId);
+ await prisma.dependency.update({where:{id:link.id},data:{status:"archived"}});assert.equal((await f.post(f.root,body)).status,409);
+ assert.equal((await f.read(f.auth,"?threadId="+entry.threadId)).selected.current,false);
+ await prisma.dependency.update({where:{id:link.id},data:{status:"active"}});assert.equal((await f.read(f.auth,"?threadId="+entry.threadId)).selected.current,false);
+ const foreignApp=await prisma.application.create({data:{workspaceId:f.workspaceId,name:"Separate application",slug:`separate-${randomUUID()}`}}),foreignProject=await prisma.project.create({data:{workspaceId:f.workspaceId,name:"Separate project"}});
+ await prisma.applicationProject.create({data:{applicationId:foreignApp.id,projectId:foreignProject.id}});await prisma.task.update({where:{id:other.id},data:{projectId:foreignProject.id}});
+ const isolated=await f.read(f.auth,"?threadId="+entry.threadId);assert.ok(isolated.summary.references.every((r:any)=>r.taskId===f.task.id));assert.equal(isolated.selected.current,false);
+});
+test("governed clarification supports pre-execution grants, restart and revocation",async()=>{
+ const f=await prepareClarificationFixture(true);await prisma.agentExecution.delete({where:{id:f.execution.id}});
+ const v=await f.read();assert.equal(v.summary.executionAvailable,false);assert.equal(v.canSend,true);
+ const grantId=await f.clarificationGrant();assert.equal((await prisma.taskCapabilityGrant.findUniqueOrThrow({where:{id:grantId}})).executionId,null);
+ const body={...await f.draft(),grantId},sent=await f.post(f.root,body,f.senderAuth);assert.equal(sent.status,201,JSON.stringify(sent.body));
+ const {execFile}=await import("node:child_process"),{promisify}=await import("node:util");
+ const code="const {createApp}=require('./dist/app');const server=createApp().listen(0,'127.0.0.1',async()=>{const x=JSON.parse(process.env.FIXTURE_REQUEST);const r=await fetch('http://127.0.0.1:'+server.address().port+x.path,{method:'POST',headers:{'Content-Type':'application/json',...x.auth},body:JSON.stringify(x.body)});const data=await r.json();console.log(JSON.stringify({status:r.status,replayed:data.data?.replayed}));server.close(()=>process.exit());});";
+ const restarted=await promisify(execFile)(process.execPath,["-e",code],{windowsHide:true,timeout:15000,env:{...process.env,FIXTURE_REQUEST:JSON.stringify({path:f.root,auth:f.senderAuth,body})}});assert.deepEqual(JSON.parse(restarted.stdout.trim()),{status:200,replayed:true});
+ await prisma.taskCapabilityRevocation.create({data:{workspaceId:f.workspaceId,grantId,actorUserId:f.input.contract.taskRoles.requester.id,reason:"Synthetic explicit revocation",requestId:randomUUID(),requestHash:"a".repeat(64)}});
+ assert.equal((await f.post(f.root,body,f.senderAuth)).status,409);
+});
 
 const handoffFixtureContent=()=>({outcome:{summary:"Parser fixture ready",currentState:"Completed synthetic implementation"},decisions:{explanation:"Inspect the current recorded mandates"},changes:{areas:["Parser input validation"]},tests:{assessment:"Synthetic parser test report recorded"},limits:{knownLimitations:"No production behavior evaluated",residualRisks:"External integration remains untested"},continuation:{reproduce:"Run the isolated parser fixture",continue:"Inspect the reported test and path",rollback:"Revert the isolated fixture change"},expectedAction:{kind:"inspect",instruction:"Confirm receipt of this exact parser result"}});
 test("typed handoff binds source and recipient with immutable acceptance", async () => {
@@ -2265,7 +2383,8 @@ test("native review records decisions and manager returns without implementation
   await t.test("task grants expire, wait for activation and revoke without changing history", async () => {
     for(const mode of ["pending","expired","revoked"]){
       const f=await fixture(true,false), input=await f.rejection();
-      const r=await f.grant("review_decision",mode==="pending"?{validFrom:new Date(Date.now()+60000).toISOString()}:mode==="expired"?{validUntil:new Date(Date.now()+600).toISOString()}:{});
+      // Start the short expiry window after the catalog read, at issuance.
+      const r=await f.grant("review_decision",mode==="pending"?{validFrom:new Date(Date.now()+60000).toISOString()}:mode==="expired"?()=>({validUntil:new Date(Date.now()+600).toISOString()}):{});
       assert.equal(r.response.status,201,JSON.stringify(r.response.body));const g=(r.response.body as any).data.grant;
       if(mode==="expired")await new Promise(resolve=>setTimeout(resolve,700));
       if(mode==="revoked"){
