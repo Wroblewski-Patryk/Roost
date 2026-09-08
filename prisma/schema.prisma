@@ -3192,6 +3192,8 @@ model TaskCapabilityRevocation {
   @@map("task_capability_revocations")
 }
 model TaskCapabilityUse {
+  handoffId String? @unique @map("handoff_id") @db.Uuid
+  handoffDecisionId String? @unique @map("handoff_decision_id") @db.Uuid
   id String @id @default(uuid()) @db.Uuid
   workspaceId String @map("workspace_id") @db.Uuid
   grantId String @unique @map("grant_id") @db.Uuid

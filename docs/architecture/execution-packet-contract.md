@@ -1,5 +1,8 @@
 # Supervised Execution Packet v1
 
+[Typed work handoff](typed-work-handoff.md) records exact recipient acceptance
+of a pinned completed result without authorizing review, release or execution.
+
 [Versioned procedure composition](versioned-procedure-composition.md) binds the base,
 application extension and risk requirements to the same Ready/execution seal.
 

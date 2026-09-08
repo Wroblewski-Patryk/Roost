@@ -52,6 +52,12 @@ suite result. Procedure composition also has schema tests in
 `src/tests/procedure-composition-contract.test.ts` and PL/EN responsive checks in
 `scripts/procedure-composition-ui.test.mjs` (run after the web build).
 
+Typed handoff uses `scripts/task-handoff-contract.test.mjs` (after server build),
+`typed handoff` API tests, `scripts/task-handoff-ui.test.mjs` (after web build),
+and the additive `scripts/capability-suspension-migration.test.mjs` preservation
+check. UI artifacts go to the OS temporary directory. These fixtures never
+activate a model or execute handoff instructions.
+
 Migration files must be UTF-8 without BOM. A fresh `prisma migrate deploy`
 test is required because TypeScript build does not prove migration SQL can be
 applied.

@@ -47,3 +47,16 @@ test("common-cause exception requires per-symptom links and a current technical 
   validate(f);
   s.commonCause.evidence.revision = "stale"; assert.throws(() => validate(f));
 });
+
+// A disposable checkout verifies committed additions/deletions independently of
+// dirty-worktree reporting. No repository or global Git settings are changed.
+test("result revision reads final Git HEAD and committed paths", async()=>{
+ const {mkdtemp,writeFile,unlink,rm}=await import("node:fs/promises"),{tmpdir}=await import("node:os"),{join,resolve}=await import("node:path"),{promisify}=await import("node:util"),{execFile}=await import("node:child_process");
+ const {readCurrentTaskCommit,readCommittedTaskPaths}=await import("./lib/agent-host-single-task.mjs");
+ const directory=await mkdtemp(join(tmpdir(),"roost-result-revision-")),git=(...args)=>promisify(execFile)("git",args,{cwd:directory,windowsHide:true});
+ try{
+  await git("init","--initial-branch=codex/task-fixture");await writeFile(join(directory,"removed.txt"),"old");await git("add",".");await git("-c","user.name=Synthetic Fixture","-c","user.email=fixture@example.test","commit","-m","Base fixture");
+  const base=await readCurrentTaskCommit(directory);await unlink(join(directory,"removed.txt"));await writeFile(join(directory,"changed file.txt"),"new");await git("add","-A");await git("-c","user.name=Synthetic Fixture","-c","user.email=fixture@example.test","commit","-m","Result fixture");
+  const head=await readCurrentTaskCommit(directory);assert.notEqual(base,head);assert.equal(await readCurrentTaskBranch(directory),"codex/task-fixture");assert.deepEqual((await readCommittedTaskPaths(directory,base,head)).sort(),["changed file.txt","removed.txt"]);assert.deepEqual(await readCommittedTaskPaths(directory,head,head),[]);await assert.rejects(readCommittedTaskPaths(directory,"--bad",head),/agent_task_branch_mismatch/);
+ }finally{assert.ok(resolve(directory).startsWith(resolve(tmpdir())+"\\" )||resolve(directory).startsWith(resolve(tmpdir())+"/"));await rm(directory,{recursive:true,force:true});}
+});

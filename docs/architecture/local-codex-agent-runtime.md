@@ -1,5 +1,8 @@
 # Local Codex Agent Runtime
 
+[Typed work handoff](typed-work-handoff.md) records exact recipient acceptance
+of a pinned completed result without authorizing review, release or execution.
+
 [Versioned procedure composition](versioned-procedure-composition.md) binds the base,
 application extension and risk requirements to the same Ready/execution seal.
 
@@ -249,7 +252,9 @@ the existing host table without a separate version registry.
 
 Both capability lists include `ready_context_pin_v1`,
 `output_budget_fail_closed_v1`, `active_context_stop_v1`, `single_task_scope_v1`
-and `task_role_separation_v1` while protocol version
+`task_role_separation_v1`, `native_runtime_redaction_v1`,
+`native_risk_admission_v1`, `procedure_composition_v1` and
+`typed_result_revision_v1` while protocol version
 stays `1`. A host without
 these controls cannot claim from the new API; a new host cannot run against an
 API missing any capability. The separate Ready and active-stop contracts add

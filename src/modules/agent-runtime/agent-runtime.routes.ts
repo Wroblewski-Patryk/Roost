@@ -1,3 +1,4 @@
+import { taskHandoffView, handoffCommand } from "./task-handoff";
 import { reviewTransaction } from "./task-capability-admission";
 import { capabilitySuspensionRouter, suspensionBlocks } from "./capability-suspension";
 import { taskCapabilityView, issueTaskCapability, revokeTaskCapability } from "./task-capability";
@@ -51,6 +52,7 @@ const executionEventSchema = leaseSchema.extend({
 const completeSchema = leaseSchema.extend({
   summary: z.string().trim().min(1).max(10000),
   finalResponse: z.string().max(100000).optional(),
+  resultRevision: z.object({commit:z.string().regex(/^[a-f0-9]{40}$/),branch:z.string().min(1).max(240),workingTree:z.enum(["clean","dirty"])}).strict().optional(),
   codexThreadId: z.string().trim().max(240).nullable().optional(),
   changedFiles: z.array(z.string().max(1000)).max(2000).default([]),
   verification: jsonRecord.default({}),
@@ -140,6 +142,22 @@ async function applicationForTask(workspaceId: string, taskId: string, requested
 export const agentRuntimeRouter = Router();
 agentRuntimeRouter.use("/capability-suspensions", capabilitySuspensionRouter);
 
+agentRuntimeRouter.get("/tasks/:id/handoffs", asyncHandler(async(req,res)=>{
+ const result=await readyTransaction(db=>taskHandoffView(db,req.auth!.workspaceId,z.string().uuid().parse(req.params.id),req.auth!,z.string().uuid().optional().parse(req.query.cursor)));
+ if("error" in result)return sendApiError(res,result.error==="task_not_found"?404:409,result.error!);
+ res.json({data:result});
+}));
+const handoffHandler=(action:"create"|"accept"|"reject")=>asyncHandler(async(req,res)=>{
+ if(req.auth!.authType==="user"?!roleAtLeast(req.auth!.workspaceRole,"member"):!req.auth!.agentId)return sendApiError(res,403,"task_handoff_forbidden");
+ if(action!=="create"&&req.body?.decision!==action)return sendApiError(res,400,"task_handoff_decision_mismatch");
+ const result=await reviewTransaction(db=>handoffCommand(db,req.auth!.workspaceId,z.string().uuid().parse(req.params.id),req.auth!,action==="create"?"create":"decision",req.body));
+ if("error" in result)return sendApiError(res,result.error?.endsWith("not_found")?404:result.error==="task_handoff_forbidden"?403:409,result.error!);
+ res.status(result.replayed?200:201).json({data:result});
+});
+agentRuntimeRouter.post("/tasks/:id/handoffs",handoffHandler("create"));
+agentRuntimeRouter.post("/tasks/:id/handoffs/actions/accept",handoffHandler("accept"));
+agentRuntimeRouter.post("/tasks/:id/handoffs/actions/reject",handoffHandler("reject"));
+
 agentRuntimeRouter.get("/tasks/:id/capability-grants", asyncHandler(async (req, res) => {
   if (!requireWorkspaceRole(req, res, "admin")) return;
   const taskId = z.string().uuid().parse(req.params.id), cursor = z.string().uuid().optional().parse(req.query.cursor);
@@ -184,7 +202,7 @@ agentRuntimeRouter.post("/tasks/:id/actions/review-return", asyncHandler(async (
 
 function executionReportMetadata(existing: Prisma.JsonValue, reported: Record<string, unknown>) {
   const prior = existing && typeof existing === "object" && !Array.isArray(existing) ? existing : {};
-  const { executionContract: _contract, readyContextPin: _pin, ...details } = reported;
+  const { executionContract: _contract, readyContextPin: _pin, resultRevision: _resultRevision, ...details } = reported;
   // Reports add runtime observations; only Ready/queue author the accepted contract and pin.
   return json({ ...prior, ...details });
 }
@@ -510,7 +528,11 @@ agentRuntimeRouter.post("/executions/:id/actions/complete", asyncHandler(async (
   const result = await readyTransaction(async tx => {
     const context = await guardExecutionContext(tx, existing, true);
     if (context.error) return context;
-    const completed = await tx.agentExecution.updateMany({ where: { id: existing.id, contextInvalidatedAt: null, leaseToken: input.leaseToken, leaseExpiresAt: { gt: new Date() }, cancelRequestedAt: null, status: { in: ["claimed", "running", "waiting_for_approval"] } }, data: { status: "completed", summary: input.summary, finalResponse: input.finalResponse, codexThreadId: input.codexThreadId === undefined ? existing.codexThreadId : input.codexThreadId, changedFiles: json(input.changedFiles), verification: json(input.verification), usage: json(input.usage), ...(input.metadata ? { metadata: executionReportMetadata(existing.metadata, input.metadata) } : {}), errorState: Prisma.DbNull, completedAt: new Date(), leaseExpiresAt: null, leaseToken: null } });
+    const current = await tx.agentExecution.findUniqueOrThrow({where:{id:existing.id}});
+    const metadata=executionReportMetadata(current.metadata,input.metadata??{}) as Record<string,any>;
+    if(input.resultRevision && input.resultRevision.branch!==(metadata.executionContract as any)?.singleTask?.branch)return {error:"agent_execution_result_revision_invalid"};
+    const resultRevision=input.resultRevision?{schemaVersion:"roost-result-revision-v1",id:randomUUID(),executionId:current.id,attempt:current.attempt,hostId:current.agentHostId,checkpointVersion:current.checkpointVersion,observedAt:new Date().toISOString(),...input.resultRevision}:null;
+    const completed = await tx.agentExecution.updateMany({ where: { id: existing.id, contextInvalidatedAt: null, leaseToken: input.leaseToken, leaseExpiresAt: { gt: new Date() }, cancelRequestedAt: null, status: { in: ["claimed", "running", "waiting_for_approval"] } }, data: { status: "completed", summary: input.summary, finalResponse: input.finalResponse, codexThreadId: input.codexThreadId === undefined ? existing.codexThreadId : input.codexThreadId, changedFiles: json(input.changedFiles), verification: json(input.verification), usage: json(input.usage), metadata:json({...metadata,resultRevision}), errorState: Prisma.DbNull, completedAt: new Date(), leaseExpiresAt: null, leaseToken: null } });
     if (!completed.count) return { error: "agent_execution_lease_invalid" };
     const execution = await tx.agentExecution.findUniqueOrThrow({ where: { id: existing.id } });
     await tx.agentExecutionEvent.create({ data: { workspaceId: req.auth!.workspaceId, executionId: execution.id, type: "completed", message: input.summary, payload: json({ changedFiles: input.changedFiles, verification: input.verification }) } });

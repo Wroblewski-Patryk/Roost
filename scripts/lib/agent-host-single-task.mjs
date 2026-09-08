@@ -17,6 +17,12 @@ export const readCurrentTaskCommit = directory => new Promise((resolve,reject) =
   execFile("git",["rev-parse","HEAD"],{cwd:directory,windowsHide:true,timeout:5000,maxBuffer:4096},
     (error,output)=>error?reject(branchAdmissionError()):resolve(output.trim()));
 });
+export const readCommittedTaskPaths = (directory, base, head) => {
+  if (!/^[a-f0-9]{40}$/.test(base) || !/^[a-f0-9]{40}$/.test(head)) return Promise.reject(branchAdmissionError());
+  if (base === head) return Promise.resolve([]);
+  return new Promise((resolve,reject)=>execFile("git",["diff","--name-only","-z",base,head,"--"],{cwd:directory,windowsHide:true,timeout:5000,maxBuffer:262144},
+    (error,output)=>error?reject(branchAdmissionError()):resolve(output.split("\0").filter(Boolean))));
+};
 export const singleTaskSchema = z.object({
   schemaVersion: z.literal("roost-single-task-v1"), contractId: text, applicationId: id,
   component: ref, accountableManager: ref, branch: text,

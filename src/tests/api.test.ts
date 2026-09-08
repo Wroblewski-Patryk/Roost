@@ -1373,6 +1373,8 @@ const admissionFixtureDetail=(gate:string)=>({
  restore_plan:{restoreProcedure:"Restore isolated synthetic fixture",validation:"Check isolated fixture rows",expectedResult:"Fixture row count matches",prerequisites:"Disposable isolated fixture available"},
  owner_approval:{decision:"approve_exact_operation",residualRisk:"Only isolated synthetic effects accepted"}
 } as Record<string,any>)[gate];
+const handoffFixtureInputs=new WeakSet<object>();
+const fixtureAdmissionOperations=(input:any)=>["runtime_execute","review_decision","return_to_executor","create_specialist_task",...(handoffFixtureInputs.has(input)?["handoff_create","handoff_accept","handoff_reject"]:[])];
 async function prepareAdmissionFixture(route:string,input:any,auth:Record<string,string>) {
  const resources=await admissionFixtureResources(input.applicationId);if(!resources)return;
  const taskId=route.split("/")[4]!;
@@ -1390,7 +1392,7 @@ async function prepareAdmissionFixture(route:string,input:any,auth:Record<string
  const source=await prisma.companyRecord.findFirst({where:{id:input.contract?.context?.company?.[0]?.id,workspaceId:resources.workspaceId}});if(!source)return;
  await prepareCompositionFixture(taskId,input,resources,owner,auth,v.scope.input.taskType);
  v=await get();
- for(const operation of ["runtime_execute","review_decision","return_to_executor","create_specialist_task"]){
+ for(const operation of fixtureAdmissionOperations(input)){
   for(const required of v.operations[operation].gates){
    v=await get();if(v.operations[operation].gates.find((g:any)=>g.gate===required.gate)?.status==="present")continue;
    const r=await post("evidence",{requestId:randomUUID(),expectedVersion:v.expectedVersion,operation,gate:required.gate,verdict:"passed",evidence:{id:source.id,revision:source.updatedAt.toISOString()},rationale:"Synthetic exact scope proof",...admissionFixtureDetail(required.gate)},["extended_review","backup"].includes(required.gate)?independent:owner);
@@ -1400,7 +1402,7 @@ async function prepareAdmissionFixture(route:string,input:any,auth:Record<string
 }
 async function prepareCompositionFixture(taskId:string,input:any,resources:any,owner:Record<string,string>,auth:Record<string,string>,taskType:string) {
  const root=`/v1/agent-runtime/tasks/${taskId}/procedure-composition`;
- for(const operation of ["runtime_execute","review_decision","return_to_executor","create_specialist_task"]) {
+ for(const operation of fixtureAdmissionOperations(input)) {
   for(const kind of ["base","extension"]){
    const procedureId=kind==="base"?resources.procedure.id:resources.extension.id;
    const route=`/v1/process-core/procedures/${procedureId}/contracts`;
@@ -1418,7 +1420,7 @@ async function prepareCompositionFixture(taskId:string,input:any,resources:any,o
    }
   }
  }
- for(const operation of ["runtime_execute","review_decision","return_to_executor","create_specialist_task"]){
+ for(const operation of fixtureAdmissionOperations(input)){
   const v=((await request(root,{headers:auth})).body as any).data;
   if(v.operations[operation].seal)continue;
   const r=await request(root+"/selection",{method:"POST",headers:auth,body:JSON.stringify({requestId:randomUUID(),expectedVersion:v.expectedVersion,operation,baseProcedureId:resources.procedure.id,extensionProcedureId:resources.extension.id,rationale:"Select exact synthetic contract"})});assert.equal(r.status,200,JSON.stringify(r.body));
@@ -1920,10 +1922,12 @@ test("explicit task roles enforce identity, provenance and independent admission
   });
 });
 
-test("native review records decisions and manager returns without implementation side effects", async t => {
-  let sequence = 0;
-  async function fixture(agentMode = false, autoGrants = true) {
-    const suffix = `${Date.now()}-${sequence++}`;
+async function prepareHandoffResultFixture(execution:any,pin:any){
+ await prisma.agentExecution.update({where:{id:execution.id},data:{checkpointVersion:5,checkpoint:{schemaVersion:"roost-recovery-v1",stage:"effect_possible",sessionId:randomUUID(),packetRevision:"b".repeat(64),workspaceDigest:"c".repeat(64),contextRevision:pin.revision},metadata:{...execution.metadata,resultRevision:{schemaVersion:"roost-result-revision-v1",id:randomUUID(),executionId:execution.id,attempt:execution.attempt,hostId:execution.agentHostId,checkpointVersion:5,observedAt:new Date().toISOString(),commit:"d".repeat(40),branch:pin.contract.singleTask.branch,workingTree:"dirty"}}}});
+}
+let reviewFixtureSequence=0;
+  async function prepareReviewFixture(agentMode = false, autoGrants = true, handoff = false) {
+    const suffix = `${Date.now()}-${reviewFixtureSequence++}`;
     const owner = await registerOwner(`review-${suffix}@example.test`, "Review fixture"), workspaceId = owner.workspace.id;
     const auth = { Authorization: `Bearer ${owner.token}` };
     const app = await prisma.application.create({ data: { workspaceId, name: "Review fixture app", slug: `review-${suffix}` } });
@@ -1952,9 +1956,11 @@ test("native review records decisions and manager returns without implementation
     const root = `/v1/agent-runtime/tasks/${task.id}`;
     const post = (url: string, body: any, headers: Record<string,string> = auth) => request(url, { method: "POST", headers, body: JSON.stringify(body) });
     const submitRoute = `${root}/actions/submit-for-execution`;
+    if(handoff)handoffFixtureInputs.add(f.input);
     const accepted = await post(submitRoute, await submissionInput(submitRoute, f.input, auth)); assert.equal(accepted.status, 200, JSON.stringify(accepted.body));
     const pin = (await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness as any;
     const execution = await prisma.agentExecution.create({ data: { workspaceId, taskId: task.id, applicationId: app.id, status: "completed", requestedByType: "user", requestedById: manager.externalId, attempt: 1, startedAt: new Date(Date.now()-1000), completedAt: new Date(), summary: "Parser result", finalResponse: "Changed empty-input handling", changedFiles: ["src/parser.ts"], verification: { command: "npm test -- parser", result: "fixture completed" }, metadata: { executionContract: f.input.contract, readyContextPin: { pinId: pin.pinId, revision: pin.revision, compositionSeal:pin.procedureComposition.seal, riskAdmissionSeal:pin.riskAdmissionSeal, riskAdmissionCommit:pin.riskAdmissionCommit } } } });
+    if(handoff)await prepareHandoffResultFixture(execution,pin);
     const view = async (headers = reviewerAuth) => (await request(`${root}/review`, { headers })).body as any;
     const grants: Record<string,string> = {};
     const grant = async (operation = "review_decision", overrides: any = {}) => {
@@ -1973,6 +1979,159 @@ test("native review records decisions and manager returns without implementation
     const action = async (kind = "return_to_executor") => { const capability=await grantFor(kind), s = (await view(auth)).data; return {...capability, requestId: randomUUID(), expectedVersion: s.expectedVersion, reviewId: s.decision.id, action: kind, scope: ["Handle empty parser input"] }; };
     return { ...f, grant, issue, verifierKey, managerKey, auth, workspaceId, task, app, execution, root, post, view, rejection, reject, action, reviewerAuth, verifier, user, submitRoute };
   }
+
+const handoffFixtureContent=()=>({outcome:{summary:"Parser fixture ready",currentState:"Completed synthetic implementation"},decisions:{explanation:"Inspect the current recorded mandates"},changes:{areas:["Parser input validation"]},tests:{assessment:"Synthetic parser test report recorded"},limits:{knownLimitations:"No production behavior evaluated",residualRisks:"External integration remains untested"},continuation:{reproduce:"Run the isolated parser fixture",continue:"Inspect the reported test and path",rollback:"Revert the isolated fixture change"},expectedAction:{kind:"inspect",instruction:"Confirm receipt of this exact parser result"}});
+test("typed handoff binds source and recipient with immutable acceptance", async () => {
+  const f=await prepareReviewFixture(false,false,true),root=f.root+"/handoffs";
+  const read=async(headers:Record<string,string>=f.auth)=>{const r=await request(root,{headers});assert.equal(r.status,200,JSON.stringify(r.body));return (r.body as any).data;};
+  const s=await read();assert.equal(s.canCreate,true,JSON.stringify(s));assert.ok(s.source.packetRevision);assert.equal(s.source.commit,"d".repeat(40));assert.equal(s.source.workingTree,"dirty");assert.notEqual(s.source.baseCommit,s.source.commit);assert.equal(s.source.resultRevision.executionId,f.execution.id);assert.ok(s.source.evidence[0].evidenceId);assert.equal(s.source.tests.kind,"execution_verification");assert.equal(s.source.tests.executionId,f.execution.id);assert.match(s.source.tests.revision,/^[a-f0-9]{64}$/);
+  for(const [verification,state] of [[{commands:[]},"not_recorded"],[{commands:[{command:"npm test",status:"completed",exitCode:0}]},"reported"],[{commands:[{command:"npm test",status:"completed",exitCode:"0"}]},null],[{unstructured:"Tests passed"},null]] as const){
+   const result=(await prisma.$queryRaw<any[]>`SELECT task_handoff_tests(jsonb_populate_record(NULL::agent_executions,jsonb_build_object('id',${f.execution.id}::text,'verification',${JSON.stringify(verification)}::jsonb))) AS value`)[0].value;
+   assert.equal(result?.state??null,state);
+  }
+  const recipient=s.recipients.find((r:any)=>r.role==="verifier");
+  const content=handoffFixtureContent();
+  const body={requestId:randomUUID(),expectedVersion:s.expectedVersion,sourceVersion:s.sourceVersion,senderRole:"accountableManager",recipientRole:recipient.role,recipient:recipient.principal,supersedes:null,content};
+  const before=await prisma.task.findUniqueOrThrow({where:{id:f.task.id}});
+  const created=await f.post(root,body);assert.equal(created.status,201,JSON.stringify(created.body));const h=(created.body as any).data.record;
+  assert.equal((await f.post(root,body)).status,200);
+  const v=await read(f.reviewerAuth);assert.equal(v.history[0].canAccept,true);
+  const decision={requestId:randomUUID(),expectedVersion:v.expectedVersion,handoffId:h.id,handoffVersion:h.version,decision:"accept"};
+  assert.equal((await f.post(root+"/actions/accept",decision,f.auth)).status,403);
+  const accepted=await f.post(root+"/actions/accept",decision,f.reviewerAuth);assert.equal(accepted.status,201,JSON.stringify(accepted.body));
+  assert.equal((await f.post(root+"/actions/accept",decision,f.reviewerAuth)).status,200);
+  assert.deepEqual(await prisma.task.findUniqueOrThrow({where:{id:f.task.id}}),before);
+  assert.equal(await prisma.taskReviewDecision.count({where:{taskId:f.task.id}}),0);
+  await assert.rejects(prisma.$executeRaw`INSERT INTO task_handoffs SELECT (jsonb_populate_record(NULL::task_handoffs,to_jsonb(h)||jsonb_build_object('id',${randomUUID()}::text,'version',2,'request_id',${randomUUID()}::text,'source',h.source||jsonb_build_object('commit',repeat('f',40))))).* FROM task_handoffs h WHERE id=${h.id}::uuid`,/task_handoff_scope_invalid/);
+  await assert.rejects(prisma.$executeRaw`UPDATE task_handoffs SET content='{}' WHERE id=${h.id}::uuid`,/task_handoff_immutable/);
+  await assert.rejects(prisma.$executeRaw`DELETE FROM task_handoff_decisions WHERE handoff_id=${h.id}::uuid`,/task_handoff_immutable/);
+  const completed=await prisma.agentExecution.findUniqueOrThrow({where:{id:f.execution.id}}),metadata=completed.metadata as any;
+  for(const revision of [null,{...metadata.resultRevision,executionId:randomUUID()},{...metadata.resultRevision,attempt:2},{...metadata.resultRevision,checkpointVersion:4},{...metadata.resultRevision,branch:"main"},{...metadata.resultRevision,workingTree:"unknown"}]){
+   await prisma.agentExecution.update({where:{id:completed.id},data:{metadata:{...metadata,resultRevision:revision}}});
+   assert.equal((await prisma.$queryRaw<any[]>`SELECT task_handoff_source(${f.task.id}::uuid) AS source`)[0].source,null);
+  }
+  await prisma.agentExecution.update({where:{id:completed.id},data:{metadata}});
+  const restored=await read();assert.ok(restored.source);assert.notEqual(restored.sourceVersion,s.sourceVersion);assert.equal(restored.history[0].current,false);assert.equal(restored.history[0].decision.decision,"accept");
+
+});
+
+async function prepareHandoffFixture(agentMode=false) {
+ const f=await prepareReviewFixture(agentMode,false,true),root=f.root+"/handoffs",senderAuth:Record<string,string>=agentMode?{"X-API-Key":f.managerKey.key}:f.auth;
+ const read=async(headers:Record<string,string>=senderAuth)=>{const r=await request(root,{headers});assert.equal(r.status,200,JSON.stringify(r.body));return (r.body as any).data;};
+ const draft=async()=>{const s=await read(),recipient=s.recipients.find((r:any)=>r.role==="verifier");return {requestId:randomUUID(),expectedVersion:s.expectedVersion,sourceVersion:s.sourceVersion,senderRole:"accountableManager",recipientRole:"verifier",recipient:recipient.principal,supersedes:null as string|null,content:handoffFixtureContent()};};
+ const grant=async(operation:string,handoffId?:string,overrides:Record<string,unknown>={})=>{
+  const r=await request(f.root+"/capability-grants",{headers:f.auth});assert.equal(r.status,200,JSON.stringify(r.body));
+  const v=(r.body as any).data,o=v.options.find((o:any)=>o.operation===operation&&(handoffId?o.handoff?.handoffId===handoffId:o.handoff?.role==="accountableManager"&&o.handoff?.recipientRole==="verifier"));assert.ok(o,JSON.stringify(v));
+  const g=await f.post(f.root+"/capability-grants",{requestId:randomUUID(),expectedVersion:v.expectedVersion,credentialId:o.credentialId,operation,handoff:o.handoff,validFrom:new Date().toISOString(),validUntil:new Date(Date.now()+1800000).toISOString(),reason:"Exact synthetic handoff operation",...overrides});assert.equal(g.status,201,JSON.stringify(g.body));return (g.body as any).data.grant.id as string;
+ };
+ return {...f,root,senderAuth,read,draft,handoffGrant:grant};
+}
+
+test("typed handoff rejects incomplete references, isolates principals and versions rejected resubmissions", async()=>{
+ const f=await prepareHandoffFixture(),input=await f.draft();
+ for(const section of Object.keys(input.content)) {
+  const body=structuredClone(input) as any;delete body.content[section];assert.equal((await f.post(f.root,body)).status,400,section);
+ }
+ for(const extra of [{commit:"f".repeat(40)},{tests:[{result:"passed"}]},{source:{...((await f.read()).source),commit:"f".repeat(40)}},{actorAgentId:f.verifier.id}])assert.equal((await f.post(f.root,{...input,...extra})).status,400);
+ assert.equal((await f.post(f.root,{...input,sourceVersion:"f".repeat(64)})).status,409);
+ assert.equal((await f.post(f.root,{...input,recipientRole:"requester",recipient:{kind:"user",id:f.input.contract.taskRoles.requester.id}})).status,403);
+ const outsider=await registerOwner(`handoff-outsider-${randomUUID()}@example.test`,"Other fixture");
+ assert.equal((await request(f.root,{headers:{Authorization:`Bearer ${outsider.token}`}})).status,404);
+ assert.equal((await f.post(f.root,{...input,recipient:{kind:"user",id:(await prisma.workspace.findUniqueOrThrow({where:{id:outsider.workspace.id}})).ownerUserId}})).status,403);
+ const unsafe={...input,content:{...input.content,continuation:{...input.content.continuation,continue:"password=synthetic-handoff-secret"}}};
+ const blocked=await f.post(f.root,unsafe);assert.equal(blocked.status,409);assert.ok(!JSON.stringify(blocked.body).includes("synthetic-handoff-secret"));
+ assert.equal((await prisma.$queryRaw<any[]>`SELECT count(*)::int AS count FROM task_handoffs WHERE task_id=${f.task.id}::uuid`)[0].count,0);
+ const created=await f.post(f.root,input);assert.equal(created.status,201,JSON.stringify(created.body));const h=(created.body as any).data.record;
+ const d={requestId:randomUUID(),expectedVersion:(await f.read(f.reviewerAuth)).expectedVersion,handoffId:h.id,handoffVersion:h.version,decision:"reject",code:"insufficient_evidence",reason:"Missing independent reproduction detail",sections:["tests","continuation"]};
+ assert.equal((await f.post(f.root+"/actions/reject",{...d,sections:[]},f.reviewerAuth)).status,400);
+ assert.equal((await f.post(f.root+"/actions/reject",{...d,handoffVersion:99},f.reviewerAuth)).status,409);
+ assert.equal((await f.post(f.root+"/actions/reject",d,f.reviewerAuth)).status,201);
+ assert.equal((await f.post(f.root+"/actions/reject",d,f.reviewerAuth)).status,200);
+ assert.equal((await f.post(f.root+"/actions/reject",{...d,requestId:randomUUID()},f.reviewerAuth)).status,409);
+ const next={...await f.draft(),supersedes:h.id};next.content.tests.assessment="Additional fixture reproduction documented";
+ const race=await Promise.all([f.post(f.root,next),f.post(f.root,{...next,requestId:randomUUID()})]);assert.deepEqual(race.map(r=>r.status).sort(),[201,409]);
+ const history=(await f.read()).history;assert.equal(history.length,2);assert.equal(history[0].supersedes,h.id);assert.equal(history[1].content.tests.assessment,input.content.tests.assessment);
+ const receipt={requestId:randomUUID(),expectedVersion:(await f.read(f.reviewerAuth)).expectedVersion,handoffId:history[0].id,handoffVersion:history[0].version,decision:"accept"};
+ const before=await prisma.agentExecution.findUniqueOrThrow({where:{id:f.execution.id}});
+ await prisma.agentExecution.update({where:{id:f.execution.id},data:{verification:{result:"Changed synthetic report"}}});
+ await prisma.agentExecution.update({where:{id:f.execution.id},data:{verification:before.verification!}});
+ assert.equal((await f.read()).history[0].current,false);
+ assert.equal((await f.post(f.root+"/actions/accept",receipt,f.reviewerAuth)).status,409);
+ assert.equal((await f.post(f.root,input)).status,409);
+});
+
+test("typed handoff agent grants bind operation, recipient and durable one-use receipts",async()=>{
+ const f=await prepareHandoffFixture(true),input=await f.draft();
+ assert.equal((await f.post(f.root,input,f.senderAuth)).status,409);
+ const createGrant=await f.handoffGrant("handoff_create"),body={...input,grantId:createGrant};
+ const created=await f.post(f.root,body,f.senderAuth);assert.equal(created.status,201,JSON.stringify(created.body));const h=(created.body as any).data.record;
+ assert.equal((await f.post(f.root,body,f.senderAuth)).status,200);
+ assert.equal((await f.post(f.root,{...body,requestId:randomUUID()},f.senderAuth)).status,409);
+ const usage=await prisma.taskCapabilityUse.findUniqueOrThrow({where:{grantId:createGrant}});assert.equal(usage.handoffId,h.id);assert.equal(usage.decisionId,null);assert.equal(usage.actionId,null);
+ const unusedGrant=await f.handoffGrant("handoff_create");
+ await assert.rejects(prisma.$executeRaw`INSERT INTO task_handoffs SELECT (jsonb_populate_record(NULL::task_handoffs,to_jsonb(h)||jsonb_build_object('id',${randomUUID()}::text,'version',2,'request_id',${randomUUID()}::text,'capability_grant_id',${unusedGrant}::text))).* FROM task_handoffs h WHERE id=${h.id}::uuid`,/capability_receipt_required/);
+ assert.equal(await prisma.taskCapabilityUse.count({where:{grantId:unusedGrant}}),0);
+ const read=await f.read(f.reviewerAuth);assert.equal(read.history[0].canAccept,false);
+ const d={requestId:randomUUID(),expectedVersion:read.expectedVersion,handoffId:h.id,handoffVersion:h.version,decision:"accept"};
+ assert.equal((await f.post(f.root+"/actions/accept",d,f.reviewerAuth)).status,409);
+ const wrongGrant=await f.handoffGrant("handoff_reject",h.id);
+ assert.equal((await f.post(f.root+"/actions/accept",{...d,grantId:wrongGrant},f.reviewerAuth)).status,409);
+ const acceptGrant=await f.handoffGrant("handoff_accept",h.id),decision={...d,grantId:acceptGrant};
+ const responses=await Promise.all([f.post(f.root+"/actions/accept",decision,f.reviewerAuth),f.post(f.root+"/actions/accept",decision,f.reviewerAuth)]);
+ assert.equal(responses.filter(r=>r.status===201).length,1,JSON.stringify(responses));assert.ok(responses.every(r=>[200,201,409].includes(r.status)));
+ assert.equal((await f.post(f.root+"/actions/accept",decision,f.reviewerAuth)).status,200);
+ assert.equal((await prisma.taskCapabilityUse.findUniqueOrThrow({where:{grantId:acceptGrant}})).handoffDecisionId,(responses.find(r=>r.status===201)!.body as any).data.record.id);
+ const {execFile}=await import("node:child_process"),{promisify}=await import("node:util");
+ const code="const {createApp}=require('./dist/app');const server=createApp().listen(0,'127.0.0.1',async()=>{const x=JSON.parse(process.env.FIXTURE_REQUEST);const r=await fetch('http://127.0.0.1:'+server.address().port+x.path,{method:'POST',headers:{'Content-Type':'application/json',...x.auth},body:JSON.stringify(x.body)});const data=await r.json();console.log(JSON.stringify({status:r.status,replayed:data.data?.replayed}));server.close(()=>process.exit());});";
+ const restarted=await promisify(execFile)(process.execPath,["-e",code],{windowsHide:true,timeout:15000,env:{...process.env,FIXTURE_REQUEST:JSON.stringify({path:f.root+"/actions/accept",auth:f.reviewerAuth,body:decision})}});
+ assert.deepEqual(JSON.parse(restarted.stdout.trim()),{status:200,replayed:true});
+ assert.equal(await prisma.taskReviewDecision.count({where:{taskId:f.task.id}}),0);
+ const incident=await prisma.companyRecord.create({data:{workspaceId:f.workspaceId,recordType:"technical_incident",key:"handoff-synthetic-suspension",title:"Synthetic handoff suspension"}});
+ const suspended=await f.post("/v1/agent-runtime/capability-suspensions",{requestId:randomUUID(),incidentId:incident.id,taskId:f.task.id,applicationId:f.app.id,operation:"handoff_accept",agentId:f.verifier.id,credentialId:f.verifierKey.id,reason:"Synthetic exact operation suspension",scopeProof:"Exact receipt scope"});assert.equal(suspended.status,201,JSON.stringify(suspended.body));
+ assert.equal((await f.post(f.root+"/actions/accept",decision,f.reviewerAuth)).status,409);
+ assert.equal((await prisma.$queryRaw<any[]>`SELECT task_capability_base(g) AS status FROM task_capability_grants g WHERE id=${acceptGrant}::uuid`)[0].status,"suspended");
+ for(const route of [f.submitRoute,"/v1/agent-runtime/executions","/v1/agent-runtime/hosts"]){const r=await f.post(route,{},f.reviewerAuth);assert.equal(r.status,403);}
+});
+
+test("typed handoff rechecks grant windows, exact recipient and current role authority",async()=>{
+ const f=await prepareHandoffFixture(true),input=await f.draft();
+ const pending=await f.handoffGrant("handoff_create",undefined,{validFrom:new Date(Date.now()+60000).toISOString()});
+ assert.equal((await f.post(f.root,{...input,grantId:pending},f.senderAuth)).status,409);
+ await assert.rejects(prisma.$executeRaw`UPDATE task_capability_grants SET valid_until=now()-interval '1 minute' WHERE id=${pending}::uuid`,/capability_history_immutable/);
+ // Move only the disposable fixture's clock window; the production guard is
+ // tested above and restored within this same isolated transaction.
+ await prisma.$transaction(async db=>{
+  await db.$executeRaw`ALTER TABLE task_capability_grants DISABLE TRIGGER task_capability_guard`;
+  await db.$executeRaw`UPDATE task_capability_grants SET valid_from=now()-interval '2 minutes',valid_until=now()-interval '1 minute' WHERE id=${pending}::uuid`;
+  await db.$executeRaw`ALTER TABLE task_capability_grants ENABLE TRIGGER task_capability_guard`;
+ });
+ assert.equal((await prisma.$queryRaw<any[]>`SELECT task_capability_base(g) AS status FROM task_capability_grants g WHERE id=${pending}::uuid`)[0].status,"expired");
+ assert.equal((await f.post(f.root,{...input,grantId:pending},f.senderAuth)).status,409);
+ const grantId=await f.handoffGrant("handoff_create"),other=(await f.read()).recipients.find((r:any)=>r.role==="releaser");
+ assert.equal((await f.post(f.root,{...input,grantId,recipientRole:other.role,recipient:other.principal},f.senderAuth)).status,409);
+ const created=await f.post(f.root,{...input,grantId},f.senderAuth);assert.equal(created.status,201,JSON.stringify(created.body));const h=(created.body as any).data.record;
+ const acceptGrant=await f.handoffGrant("handoff_accept",h.id),d={requestId:randomUUID(),expectedVersion:(await f.read(f.reviewerAuth)).expectedVersion,handoffId:h.id,handoffVersion:h.version,decision:"accept",grantId:acceptGrant};
+ await prisma.workforceEntity.update({where:{id:f.verifier.id},data:{authorityScope:[]}});
+ assert.equal((await f.read()).history[0].current,false);
+ assert.equal((await f.post(f.root+"/actions/accept",d,f.reviewerAuth)).status,409);
+ assert.equal(await prisma.taskCapabilityUse.count({where:{grantId:acceptGrant}}),0);
+});
+
+test("typed handoff requires its own admission while preserving older Ready source references",async()=>{
+ const f=await prepareReviewFixture(),pin=(await prisma.task.findUniqueOrThrow({where:{id:f.task.id}})).executionReadiness as any;
+ await prepareHandoffResultFixture(f.execution,pin);
+ const compatible=(await prisma.$queryRaw<any[]>`SELECT task_risk_sources(${f.task.id}::uuid)=(SELECT jsonb_agg(source||jsonb_build_object('compositionRefs',(SELECT jsonb_object_agg(op,task_composition_refs((source->>'taskId')::uuid,op)) FROM unnest(ARRAY['runtime_execute','review_decision','return_to_executor','create_specialist_task']) op)) ORDER BY source->>'taskId') FROM jsonb_array_elements(task_risk_sources_before_composition(${f.task.id}::uuid)) source) AS same`)[0].same;
+ assert.equal(compatible,true);
+ const read=await request(f.root+"/handoffs",{headers:f.auth});assert.equal(read.status,200,JSON.stringify(read.body));const v=(read.body as any).data;
+ assert.ok(v.source);assert.equal(v.canCreate,false);assert.deepEqual(v.operations,{handoff_create:false,handoff_accept:false,handoff_reject:false});
+ const recipient=v.recipients.find((r:any)=>r.role==="verifier");
+ const r=await f.post(f.root+"/handoffs",{requestId:randomUUID(),expectedVersion:v.expectedVersion,sourceVersion:v.sourceVersion,senderRole:"accountableManager",recipientRole:"verifier",recipient:recipient.principal,supersedes:null,content:handoffFixtureContent()});assert.equal(r.status,409);assert.equal((r.body as any).error,"risk_admission_required");
+ assert.equal(((await prisma.task.findUniqueOrThrow({where:{id:f.task.id}})).executionReadiness as any).status,"ready");
+});
+
+test("native review records decisions and manager returns without implementation side effects", async t => {
+  let sequence=0;
+  const fixture=prepareReviewFixture;
 
   await t.test("serious incident suspension narrows authority and independently restores without reviving old grants", async () => {
     const f=await fixture(true,false), original=await f.grant(), grant=(original.response.body as any).data.grant;
@@ -3175,13 +3334,20 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
   });
   assert.equal(progressEvent.status, 201);
 
+  const resultRevision={commit:"d".repeat(40),branch:(acceptedMetadata as any).executionContract.singleTask.branch,workingTree:"dirty"};
+  for(const revision of [{...resultRevision,branch:"main"},{...resultRevision,commit:"not-a-commit"},{...resultRevision,executionId:randomUUID()}]){
+   const invalid=await request(`/v1/agent-runtime/executions/${queued.id}/actions/complete`,{method:"POST",headers:workerAuth,body:JSON.stringify({leaseToken:claimed.leaseToken,summary:"Invalid revision fixture",resultRevision:revision})});
+   assert.equal(invalid.status,revision.branch==="main"?409:400);
+  }
   const complete = await request(`/v1/agent-runtime/executions/${queued.id}/actions/complete`, {
     method: "POST", headers: workerAuth,
-    body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: "Implemented and verified.", finalResponse: "Ready for owner review.", codexThreadId: "thread-test", changedFiles: ["src/app.ts"], verification: { commands: [{ command: "npm run typecheck", exitCode: 0 }] }, usage: { input_tokens: 10 }, metadata: { repositoryPathLabel: "synthetic-fixture" } })
+    body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: "Implemented and verified.", finalResponse: "Ready for owner review.", codexThreadId: "thread-test", changedFiles: ["src/app.ts"], verification: { commands: [{ command: "npm run typecheck", exitCode: 0 }] }, usage: { input_tokens: 10 }, resultRevision, metadata: { repositoryPathLabel: "synthetic-fixture",resultRevision:{id:"spoofed",commit:"f".repeat(40)} } })
   });
   assert.equal(complete.status, 200);
   assert.equal((complete.body as { data: { status: string } }).data.status, "completed");
   assert.deepEqual((complete.body as { data: { metadata: { readyContextPin: unknown } } }).data.metadata.readyContextPin, acceptedMetadata.readyContextPin);
+  const receipt=(complete.body as any).data.metadata.resultRevision;
+  assert.equal(receipt.schemaVersion,"roost-result-revision-v1");assert.match(receipt.id,/^[a-f0-9-]{36}$/);assert.equal(receipt.executionId,queued.id);assert.equal(receipt.attempt,(complete.body as any).data.attempt);assert.equal(receipt.commit,resultRevision.commit);assert.equal(receipt.workingTree,"dirty");assert.equal(receipt.branch,resultRevision.branch);assert.equal(receipt.checkpointVersion,(complete.body as any).data.checkpointVersion);assert.equal(receipt.hostId,(complete.body as any).data.agentHostId);
   assert.equal(await prisma.evidenceRecord.count({ where: { workspaceId: owner.workspace.id, entityType: "task", entityId: task.id, metadata: { path: ["executionId"], equals: queued.id } } }), 1);
 
   const ownerRead = await request(`/v1/agent-runtime/executions/${queued.id}`, { headers: ownerAuth });

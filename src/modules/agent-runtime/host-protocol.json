@@ -11,7 +11,8 @@
     "task_role_separation_v1",
     "native_runtime_redaction_v1",
     "native_risk_admission_v1",
-    "procedure_composition_v1"
+    "procedure_composition_v1",
+    "typed_result_revision_v1"
   ],
   "requiredHostCapabilities": [
     "codex_exec_json",
@@ -33,6 +34,7 @@
     "task_role_separation_v1",
     "native_runtime_redaction_v1",
     "native_risk_admission_v1",
-    "procedure_composition_v1"
+    "procedure_composition_v1",
+    "typed_result_revision_v1"
   ]
 }

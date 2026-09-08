@@ -17,7 +17,7 @@ import { fetchExecutionContext, executionContextRevision, assertFreshExecutionCo
 import { protocol, protocolHeaders, apiCompatibility, protocolAdmissionError } from "./lib/agent-host-protocol.mjs";
 import readyContext from "./lib/agent-host-ready-context.cjs";
 import { contextStopError } from "./lib/agent-host-context-stop.mjs";
-import { assertTaskBranch, readCurrentTaskBranch, readCurrentTaskCommit } from "./lib/agent-host-single-task.mjs";
+import { assertTaskBranch, readCurrentTaskBranch, readCurrentTaskCommit, readCommittedTaskPaths } from "./lib/agent-host-single-task.mjs";
 
 const baseUrl = String(process.env.ROOST_BASE_URL || process.env.COMPANYCORE_BASE_URL || "").replace(/\/+$/, "");
 const apiKey = process.env.ROOST_AGENT_API_KEY || process.env.COMPANYCORE_API_KEY;
@@ -184,7 +184,7 @@ async function confirmContextStop(execution, writerLock) {
   await writerLock?.checkpoint({ ...execution, checkpoint: ack.checkpoint, checkpointVersion: ack.checkpointVersion });
 }
 
-async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, createOutputBudget = createCodexOutputBudget, readTaskBranch = readCurrentTaskBranch, readTaskCommit = readCurrentTaskCommit } = {}) {
+async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, createOutputBudget = createCodexOutputBudget, readTaskBranch = readCurrentTaskBranch, readTaskCommit = readCurrentTaskCommit, readTaskPaths = readCommittedTaskPaths } = {}) {
   const repository = repositoryForExecution(config, claimed);
   const repositoryPath = path.resolve(String(repository.path));
   let taskContext, applicationContext, contextRevision;
@@ -338,7 +338,12 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     if (exitCode !== 0) throw Object.assign(new Error("codex_process_failed"), { details: { exitCode, stderrCaptured: Boolean(stderrTail.length) } });
 
     const afterStatus = await duration.wait(gitStatus(repositoryPath));
-    const changedFiles = [...new Set(afterStatus.map(statusPath))];
+    const resultBranch=await duration.wait(readTaskBranch(repositoryPath));
+    assertTaskBranch(resultBranch,taskContext.executionPacket.contract.singleTask.branch);
+    const resultCommit=await duration.wait(readTaskCommit(repositoryPath));
+    const committedPaths=await duration.wait(readTaskPaths(repositoryPath,currentCommit,resultCommit));
+    const changedFiles = [...new Set([...committedPaths,...afterStatus.map(statusPath)])];
+    const resultRevision={commit:resultCommit,branch:resultBranch,workingTree:afterStatus.length?"dirty":"clean"};
     const summary = finalResponse.trim() || `Codex completed execution ${claimed.id}.`;
     await duration.wait(lease.refresh());
     lease.assertValid();
@@ -349,7 +354,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     duration.stop();
     await api(`/v1/agent-runtime/executions/${claimed.id}/actions/complete`, {
       method: "POST",
-      body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: summary.slice(0, 10000), finalResponse, codexThreadId, changedFiles, verification, usage, metadata: { repositoryPathLabel: path.basename(repositoryPath), preExistingDirtyFiles: beforeStatus.map(statusPath) } })
+      body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: summary.slice(0, 10000), finalResponse, codexThreadId, changedFiles, verification, usage, resultRevision, metadata: { repositoryPathLabel: path.basename(repositoryPath), preExistingDirtyFiles: beforeStatus.map(statusPath) } })
     });
   } catch (error) {
     if (error.contextStop || lease.failure?.contextStop) {
@@ -431,7 +436,7 @@ process.on("SIGTERM", () => { stopping = true; shutdownRequested = true; });
 // Process tests inject a private lock, branch reader and synthetic post-turn budget guard.
 // The CLI always uses the fixed lock, Git branch reader and fail-closed Codex guard. No
 // dependency can be selected by configuration, environment or an API packet.
-export async function runHost({ acquireLock = (options) => acquireWriterLock(undefined, options), onCheckpoint, createOutputBudget = createCodexOutputBudget, readTaskBranch = readCurrentTaskBranch, readTaskCommit = readCurrentTaskCommit } = {}) {
+export async function runHost({ acquireLock = (options) => acquireWriterLock(undefined, options), onCheckpoint, createOutputBudget = createCodexOutputBudget, readTaskBranch = readCurrentTaskBranch, readTaskCommit = readCurrentTaskCommit, readTaskPaths = readCommittedTaskPaths } = {}) {
   // Observe never enters recovery, writer locking, claim, or execution code.
   if (config.executionMode === "observe") return runObserver({ config, api, stopped: () => stopping });
   if (!await waitForAdmission()) return;
@@ -460,7 +465,7 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
       resumedExecution = resumed;
       if (resumed?.id !== pending[0].id || resumed?.attempt !== pending[0].attempt) throw recoveryError("recovery_conflict");
       await writerLock.checkpoint(resumed);
-      await execute(resumed, writerLock, { resumeCheckpoint: pending[0].checkpoint, onCheckpoint, createOutputBudget, readTaskBranch, readTaskCommit });
+      await execute(resumed, writerLock, { resumeCheckpoint: pending[0].checkpoint, onCheckpoint, createOutputBudget, readTaskBranch, readTaskCommit, readTaskPaths });
     }
     while (!stopping) {
       let execution = null;
@@ -471,7 +476,7 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
           process.stdout.write("Execution claimed.\n");
           await writerLock.checkpoint(execution).catch(() => { throw recoveryError("local_state_invalid"); });
           await onCheckpoint?.("claimed", execution);
-          await execute(execution, writerLock, { onCheckpoint, createOutputBudget, readTaskBranch, readTaskCommit });
+          await execute(execution, writerLock, { onCheckpoint, createOutputBudget, readTaskBranch, readTaskCommit, readTaskPaths });
         }
       } catch (error) {
         if (error.protocolAdmission) { protocolHalted = true; stopping = true; retainWriterLock = true; }

@@ -7,7 +7,7 @@ is followed by [level-specific native admission](native-risk-admission.md); neit
 [Serious-incident suspension](native-capability-suspension.md) independently denies
 affected native operations and prevents old grants from reviving after restore.
 
-Native agent review commands require an explicit, durable, single-use grant in
+Native agent review and [typed handoff](typed-work-handoff.md) commands require an explicit, durable, single-use grant in
 addition to the verified [agent principal](agent-credential-principal.md), current
 RF-CTX-010 roles and the [review contract](task-review-workflow.md). Human review
 keeps its existing membership and role gates. Deployment issues no grants.
@@ -23,6 +23,14 @@ context. It authorizes exactly one of:
 - `return_to_executor`: the current agent manager may return the review correction.
 - `create_specialist_task`: the current agent manager may create one dependent
   specialist draft under the existing correction and competency checks.
+- `handoff_create`: one current agent sender role may record a typed handoff for
+  an exact recipient principal and role.
+- `handoff_accept` / `handoff_reject`: the exact agent recipient may decide receipt
+  of the named handoff version. Each is a distinct operation and grant.
+
+Handoff grants also pin `snapshot.handoff` (role and exact recipient or handoff ID)
+and `handoffSourceVersion`. Consumption links to the handoff or its decision in
+the existing one-effect receipt ledger. These operations do not run the receiver.
 
 The immutable record binds workspace, agent, credential ID/version/class, task,
 application, completed execution, operation, start, expiry, human issuer and reason.

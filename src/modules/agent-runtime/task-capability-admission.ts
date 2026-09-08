@@ -15,8 +15,8 @@ export async function reviewTransaction<T>(work: (db: Db) => Promise<T>) {
       return result;
     });
   } catch (error) {
-    const diagnostic = error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2010" && error.meta?.code === "P0001" ? String(error.meta.message) : error instanceof Prisma.PrismaClientUnknownRequestError ? error.message : "";
-    if (/\b(?:capability_(?:receipt_required|use_invalid|scope_invalid|grant_denied)|task_review_child_invalid)\b/.test(diagnostic)) return { error: "capability_context_changed" };
+    const diagnostic = error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2010" && error.meta?.code === "P0001" ? String(error.meta.message) : error instanceof Prisma.PrismaClientUnknownRequestError ? error.message.split("Error occurred during query execution:").at(-1) ?? "" : "";
+    if (/\b(?:capability_(?:receipt_required|use_invalid|scope_invalid|grant_denied)|task_review_child_invalid|task_handoff_(?:stale|scope_invalid|supersedes_invalid))\b/.test(diagnostic)) return { error: "capability_context_changed" };
     throw error;
   }
 }
@@ -44,17 +44,17 @@ export async function admitCapability(db: Db, workspaceId: string, taskId: strin
   if (prior) {
     if (state.base !== "active") return { error: `capability_grant_${state.base}` };
     const usage = grant.usage;
-    if (prior.capabilityGrantId !== grant.id || !usage || usage.requestId !== prior.requestId || !(usage.decisionId === prior.id || usage.actionId === prior.id) ||
+    if (prior.capabilityGrantId !== grant.id || !usage || usage.requestId !== prior.requestId || !(usage.decisionId === prior.id || usage.actionId === prior.id || usage.handoffId === prior.id || usage.handoffDecisionId === prior.id) ||
       usage.postScopeHash !== await grantScope(db, taskId, principal.credentialId, grant.issuerUserId)) return { error: "capability_grant_replay_stale" };
   } else if (state.status !== "active") return { error: `capability_grant_${state.status}` };
   return { grant };
 }
-export async function recordCapabilityUse(db: Db, grant: any, requestId: string, kind: "decision" | "action", businessId: string) {
+export async function recordCapabilityUse(db: Db, grant: any, requestId: string, kind: "decision" | "action" | "handoff" | "handoffDecision", businessId: string) {
   if (!grant) return;
   const postScopeHash = await grantScope(db, grant.taskId, grant.credentialId, grant.issuerUserId);
   if (!postScopeHash) throw new Error("capability_scope_invalid");
   await db.taskCapabilityUse.create({ data: { workspaceId: grant.workspaceId, grantId: grant.id, requestId,
-    ...(kind === "decision" ? { decisionId: businessId } : { actionId: businessId }), postScopeHash,
+    ...({ decision: { decisionId: businessId }, action: { actionId: businessId }, handoff: { handoffId: businessId }, handoffDecision: { handoffDecisionId: businessId } }[kind]), postScopeHash,
     snapshot: { agentId: grant.agentId, credentialId: grant.credentialId, credentialClass: grant.credentialClass, operation: grant.operation, applicationId: grant.applicationId, taskId: grant.taskId } } });
   await db.event.create({ data: { workspaceId: grant.workspaceId, taskId: grant.taskId, type: "task_capability.used", source: "roost", actorType: "agent", actorId: grant.agentId,
     resourceType: "task_capability_grant", resourceId: grant.id, payload: { grantId: grant.id, operation: grant.operation, credentialId: grant.credentialId, requestId, businessId } } });

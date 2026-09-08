@@ -1,5 +1,9 @@
 # Architecture Source Of Truth
 
+Native completed-result handoff is governed by [typed work handoff](typed-work-handoff.md):
+immutable source versions and exact recipient receipts, with no implied execution
+or release authority.
+
 This document defines how architecture decisions should be treated in the
 repository.
 

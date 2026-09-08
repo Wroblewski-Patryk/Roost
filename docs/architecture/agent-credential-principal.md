@@ -8,9 +8,10 @@ and not be a human login profile (`source=user`). Names, aliases, models,
 runtime profile text, request bodies and headers never select the principal.
 No human membership or owner session is created for an agent.
 
-This credential class supports the native RF-CTX-014 review workflow. Its explicit
-capabilities allow connection metadata, task/workforce reads, task review reads
-and the two review/manager commands. A separate method/path allowlist rejects
+This credential class supports native RF-CTX-014 review and
+[RF-CTX-013 typed handoff](typed-work-handoff.md). Its explicit capabilities allow
+connection metadata, task/workforce reads, review/handoff reads, the two
+review/manager commands and exact handoff create/accept/reject commands. A separate method/path allowlist rejects
 other commands, host execution, Submit, key administration, MCP dispatch and
 release operations even if another route uses the same capability. The current
 supported agent interface for these commands is HTTP. Other service clients keep
