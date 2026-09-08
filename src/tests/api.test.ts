@@ -378,6 +378,90 @@ async function runNodeScript(script: string, envOverrides: NodeJS.ProcessEnv = {
   return { exitCode, stdout, stderr };
 }
 
+test("native runtime redaction gates persistence, model input, legacy reads and safe incidents", async () => {
+  const owner = await registerOwner("redaction-owner@example.test", "Synthetic redaction workspace"), workspaceId = owner.workspace.id;
+  const auth = { Authorization: `Bearer ${owner.token}` };
+  const task = await prisma.task.create({ data: { workspaceId, title: "Synthetic runtime task" } });
+  const application = await prisma.application.create({ data: { workspaceId, name: "Synthetic redaction app", slug: "redaction-fixture" } });
+  const leaseToken = randomUUID();
+  const execution = await prisma.agentExecution.create({ data: { workspaceId, taskId: task.id, applicationId: application.id, requestedByType: "user", status: "claimed", leaseToken, attempt: 1 } });
+  const root = `/v1/agent-runtime/executions/${execution.id}`;
+  const post = (url: string, body: any, headers: Record<string, string> = auth) => request(url, { method: "POST", headers, body: JSON.stringify(body) });
+  const marker = "SYNTHETIC_private_runtime_9pT4jQ2vL7zR";
+  process.env.ROOST_REDACTION_TEST_SECRET = marker;
+  try {
+    const cases = [{ text: marker }, { headers: { cookie: "synthetic-session-value" } }, { email: "synthetic-person@example.test" }, { text: Buffer.from("api_key=synthetic-encoded-value").toString("base64") }];
+    for (const payload of cases) {
+      const response = await post(root + "/events", { leaseToken, type: "progress", message: "Synthetic progress", payload });
+      assert.equal(response.status, 201, JSON.stringify(response.body));
+      assert.equal(JSON.stringify(response.body).includes(marker), false);
+      assert.ok(JSON.stringify(response.body).includes("[REDACTED]"));
+    }
+    const count = await prisma.companyRecord.count({ where: { workspaceId, source: "runtime_redaction_v1" } });
+    const retries = await Promise.all(Array.from({ length: 4 }, () => post(root + "/events", { leaseToken, type: "progress", message: "Synthetic progress", payload: cases[0] })));
+    assert.ok(retries.every(r => r.status === 201));
+    assert.equal(await prisma.companyRecord.count({ where: { workspaceId, source: "runtime_redaction_v1" } }), count);
+    // Fresh middleware/ALS state on every request reuses durable dedup identity.
+    assert.equal((await post(root + "/events", { leaseToken, type: "progress", message: "Synthetic progress", payload: cases[0] })).status, 201);
+    assert.equal(await prisma.companyRecord.count({ where: { workspaceId, source: "runtime_redaction_v1" } }), count);
+    for (const [url, body] of [["/v1/agent-runtime/executions", { taskId: task.id, prompt: marker }], [root + "/checkpoint", { leaseToken, checkpoint: { secret: marker } }]] as const) {
+      const blocked = await post(url, body); assert.equal(blocked.status, 409); assert.equal(JSON.stringify(blocked.body).includes(marker), false);
+    }
+    const unsupported = await request(root + "/events", { method: "POST", headers: { ...auth, "Content-Type": "application/octet-stream" }, body: marker });
+    assert.equal(unsupported.status, 409);
+    const binary = await post(root + "/events", { leaseToken, type: "progress", payload: { mimeType: "application/pdf", content: marker } });
+    assert.equal(binary.status, 409);
+    await assert.rejects(prisma.agentExecution.update({ where: { id: execution.id }, data: { summary: marker } }), /agent_runtime_content_blocked/);
+    await assert.rejects(prisma.agentExecution.update({ where: { id: execution.id }, data: { events: { create: { workspaceId, type: "progress", message: marker } } } }), /agent_runtime_content_blocked/);
+    assert.equal(await prisma.agentExecution.count({ where: { taskId: task.id } }), 1);
+    assert.equal((await prisma.agentExecution.findUniqueOrThrow({ where: { id: execution.id } })).checkpointVersion, 0);
+    const project = await prisma.project.create({ data: { workspaceId, name: "Synthetic result project" } });
+    await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id } });
+    const resultTask = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: "Synthetic result evidence" } });
+    const fixture = await prepareReadyFixture(workspaceId, resultTask.id, application.id, auth);
+    const resultLease = randomUUID();
+    const resultExecution = await prisma.agentExecution.create({ data: { workspaceId, taskId: resultTask.id, applicationId: application.id, requestedByType: "user", status: "running", attempt: 1, leaseToken: resultLease, leaseExpiresAt: new Date(Date.now() + 90000), startedAt: new Date(), metadata: { executionContract: fixture.input.contract, readyContextPin: fixture.readiness } } });
+    const completed = await post(`/v1/agent-runtime/executions/${resultExecution.id}/actions/complete`, { leaseToken: resultLease, summary: marker, finalResponse: marker, changedFiles: ["password=synthetic-path-value"], verification: { cookie: "synthetic-cookie-value" }, usage: {}, metadata: { email: "synthetic-result@example.test" } });
+    assert.equal(completed.status, 200, JSON.stringify(completed.body));
+    const savedResult = await prisma.agentExecution.findUniqueOrThrow({ where: { id: resultExecution.id } });
+    assert.equal(savedResult.summary, "[REDACTED]"); assert.equal(savedResult.finalResponse, "[REDACTED]");
+    assert.equal(JSON.stringify(savedResult).includes(marker), false);
+    const evidence = await prisma.evidenceRecord.findMany({ where: { workspaceId, entityId: resultTask.id, source: "agent" } });
+    assert.ok(evidence.length); assert.equal(JSON.stringify(evidence).includes(marker), false);
+    // Synthetic local-only SQL fixture represents history written before this
+    // gate. Read protection must not scan or rewrite the stored legacy row.
+    const old = await prisma.agentExecutionEvent.create({ data: { workspaceId, executionId: execution.id, type: "legacy_fixture", message: "Before redaction" } });
+    await prisma.$executeRaw`UPDATE agent_execution_events SET message = ${marker}, payload = ${JSON.stringify({ personalName: "Synthetic Person" })}::jsonb WHERE id = ${old.id}::uuid`;
+    const projected = await request(root, { headers: auth });
+    assert.equal(projected.status, 200); assert.equal(JSON.stringify(projected.body).includes(marker), false);
+    assert.equal(JSON.stringify(projected.body).includes("Synthetic Person"), false);
+    assert.equal((await prisma.agentExecutionEvent.findUniqueOrThrow({ where: { id: old.id } })).message, marker);
+    await prisma.task.update({ where: { id: task.id }, data: { description: marker } });
+    const model = await request(`/v1/company-intelligence/tasks/${task.id}/agent-context`, { headers: auth });
+    assert.equal(model.status, 409); assert.equal(JSON.stringify(model.body).includes(marker), false);
+    assert.equal((await post("/v1/agent-runtime/executions", { taskId: task.id, requestId: leaseToken, leaseToken, prompt: marker })).status, 409);
+    const incidents = await prisma.companyRecord.findMany({ where: { workspaceId, source: "runtime_redaction_v1" } });
+    assert.ok(incidents.length > count);
+    for (const incident of incidents) {
+      const metadata = incident.metadata as any;
+      assert.match(metadata.fingerprint, /^[a-f0-9-]{36}$/); assert.ok(metadata.findings.length);
+      assert.equal(JSON.stringify(metadata).includes(marker), false);
+      assert.equal(JSON.stringify(metadata).includes(leaseToken), false);
+      assert.equal(JSON.stringify(metadata).includes("synthetic-session-value"), false);
+      assert.ok(metadata.findings.every((f: any) => Object.keys(f).sort().join() === "category,location"));
+    }
+    const registry = await request("/v1/company-records?recordType=technical_incident&departmentKey=09-technologia&includeCompanyWide=true", { headers: auth });
+    assert.equal(registry.status, 200); assert.equal((registry.body as any).data.length, incidents.length);
+    const immutable = await request(`/v1/company-records/${incidents[0]!.id}`, { method: "PATCH", headers: auth, body: JSON.stringify({ metadata: { secret: marker } }) });
+    assert.equal(immutable.status, 409);
+    await assert.rejects(prisma.companyRecord.createMany({ data: [{ workspaceId, recordType: "technical_incident", key: "forged-runtime-incident", title: "Synthetic forged incident", source: "runtime_redaction_v1", metadata: { secret: marker } }] }), /agent_runtime_content_blocked/);
+    await assert.rejects(prisma.companyRecord.updateMany({ where: { workspaceId, source: "runtime_redaction_v1" }, data: { description: marker } }), /agent_runtime_content_blocked/);
+    const logs: unknown[] = [], original = console.error; console.error = (...args) => { logs.push(args); };
+    try { await request(`/v1/agent-runtime/executions/${marker}`, { headers: auth }); } finally { console.error = original; }
+    assert.equal(JSON.stringify(logs).includes(marker), false);
+  } finally { delete process.env.ROOST_REDACTION_TEST_SECRET; }
+});
+
 test("production environment validation fails closed when required secrets are missing", async () => {
   const result = await runNodeScript(`
     try {
@@ -1504,7 +1588,8 @@ test("native review records decisions and manager returns without implementation
     assert.equal((await request(f.root+"/capability-grants",{headers:f.reviewerAuth})).status,403);
     const {createAuthToken}=await import("../auth/token");const member={Authorization:`Bearer ${createAuthToken({userId:f.user.id,workspaceId:f.workspaceId})}`};
     assert.equal((await f.post(f.root+"/capability-grants",issued.body,member)).status,403);
-    for(const extra of [{operation:"*"},{taskId:"*"},{agentId:f.manager.id},{credentialId:"*"},{applicationId:f.app.id},{reason:f.verifierKey.key}]) assert.equal((await f.post(f.root+"/capability-grants",{...issued.body,requestId:randomUUID(),...extra})).status,400);
+    for(const extra of [{operation:"*"},{taskId:"*"},{agentId:f.manager.id},{credentialId:"*"},{applicationId:f.app.id}]) assert.equal((await f.post(f.root+"/capability-grants",{...issued.body,requestId:randomUUID(),...extra})).status,400);
+    assert.equal((await f.post(f.root+"/capability-grants",{...issued.body,requestId:randomUUID(),reason:f.verifierKey.key})).status,409);
     assert.equal((await f.grant("return_to_executor")).response.status,400);
     assert.equal((await f.grant("review_decision",{credentialId:f.managerKey.id})).response.status,409);
     assert.equal((await f.grant("review_decision",{validUntil:new Date(Date.now()+7200000).toISOString()})).response.status,409);
@@ -1942,7 +2027,7 @@ test("Submit for execution is the sole durable and versioned Ready command", asy
       await assert.rejects(prisma.task.update({ where: { id: taskId }, data: { executionReadiness: { status: "ready", sourceWatchVersion: "1" } } }));
     });
     await t.test("incomplete submission persists Needs context, safe diagnostics and one receipt", async () => {
-      const bad = await input({ ...f.input, contract: { secret: "SYNTHETIC_REJECTED_VALUE" } });
+      const bad = await input({ ...f.input, contract: { unsupportedField: "SYNTHETIC_REJECTED_VALUE" } });
       const first = await post(route, bad), second = await post(route, bad);
       assert.equal(first.status, 409); assert.deepEqual((second.body as any).errorDetails.details, (first.body as any).errorDetails.details);
       assert.equal((await read()).status, "needs_context");
@@ -2061,7 +2146,7 @@ test("Ready pins validation and rejects stale queue, preparation and recovery wi
     assert.match(f.readiness.revision, /^[a-f0-9]{64}$/);
     assert.equal(((await readiness()).body as { data: { status: string } }).data.status, "ready");
     assert.equal((await request(`${route}/execution-readiness`, { headers: { Authorization: `Bearer ${outsider.token}` } })).status, 404);
-    const invalid = await post(`${route}/actions/submit-for-execution`, { ...f.input, contract: { secret: "SYNTHETIC_SECRET" } });
+    const invalid = await post(`${route}/actions/submit-for-execution`, { ...f.input, contract: { unsupportedField: "SYNTHETIC_SECRET" } });
     assert.equal(invalid.status, 409); assert.equal(JSON.stringify(invalid.body).includes("SYNTHETIC_SECRET"), false);
     assert.equal(((await readiness()).body as any).data.status, "needs_context");
     assert.equal(((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness as any).pinId, f.readiness.pinId);
@@ -2431,7 +2516,7 @@ test("Ready workbench projects safe catalogs and requires a current human role f
     f.input.contract.taskRoles.requester.revision = (await prisma.workspaceMembership.findUniqueOrThrow({ where: { workspaceId_userId: { workspaceId: owner.workspace.id, userId: ownerUser.id } } })).updatedAt.toISOString();
     f.input.contract.taskRoles.executor.revision = (await prisma.workforceEntity.findUniqueOrThrow({ where: { id: f.agent.id } })).updatedAt.toISOString();
     const submit = await request(`${route}/actions/submit-for-execution`, { method: "POST", headers: auth, body: JSON.stringify(await submissionInput(`${route}/actions/submit-for-execution`, f.input, auth)) });
-    assert.equal(submit.status, role === "viewer" ? 403 : 200, JSON.stringify(submit.body));
+    assert.equal(submit.status, role === "viewer" ? 403 : 409, JSON.stringify(submit.body));
   }
   await prisma.workspaceMembership.update({ where: { workspaceId_userId: { workspaceId: owner.workspace.id, userId: ownerUser.id } }, data: { role: "owner" } });
   const forged = await request(`${route}/actions/submit-for-execution`, { method: "POST", headers: auth, body: JSON.stringify({ ...f.input, pinId: "SYNTHETIC_SECRET_FORGED", revision: "a".repeat(64), validation: {} }) });
@@ -2803,7 +2888,7 @@ test("execution recovery fences old leases and preserves an auditable same-attem
     assert.equal(changedPin.status, 409);
     assert.equal((changedPin.body as { error: string }).error, "agent_checkpoint_identity_changed");
     const leakedCheckpoint = await request(checkpointRoute, { method: "POST", headers: workerAuth, body: JSON.stringify({ leaseToken: recovered.leaseToken, expectedVersion: recovered.checkpointVersion, checkpoint: { ...spawnCheckpoint, secret: "synthetic-checkpoint-secret" } }) });
-    assert.equal(leakedCheckpoint.status, 400);
+    assert.equal(leakedCheckpoint.status, 409);
     assert.equal(JSON.stringify(leakedCheckpoint.body).includes("synthetic-checkpoint-secret"), false);
     assert.equal((await request(checkpointRoute, { method: "POST", headers: workerAuth, body: JSON.stringify({ leaseToken: recovered.leaseToken, expectedVersion: recovered.checkpointVersion, checkpoint: spawnCheckpoint }) })).status, 200);
     assert.equal((await request(recoverRoute, { method: "POST", headers: workerAuth, body: JSON.stringify({ hostSlug, expectedVersion: 4, sessionId: "00000000-0000-4000-8000-000000000004" }) })).status, 409);

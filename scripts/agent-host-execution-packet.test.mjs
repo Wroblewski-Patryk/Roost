@@ -146,7 +146,7 @@ for (const scenario of ["valid", "missingAcceptance", "missingModel", "olderMode
     host = spawn(process.execPath, ["--input-type=module", "-e", script], { windowsHide: true, stdio: ["ignore", "pipe", "pipe"], env: { ...process.env, ROOST_BASE_URL: `http://127.0.0.1:${server.address().port}`, ROOST_AGENT_API_KEY: "synthetic-only", ROOST_AGENT_HOST_CONFIG: configPath } });
     let output = "", errors = ""; host.stdout.on("data", (chunk) => { output += chunk; }); host.stderr.on("data", (chunk) => { errors += chunk; });
     assert.equal((await once(host, "close"))[0], 0, errors);
-    const afterClaim = output.slice(output.indexOf("Claimed "));
+    const afterClaim = output.slice(output.indexOf("Execution claimed."));
     assert.equal(afterClaim.includes("SPAWN:"), valid);
     const terminal = requests.find((request) => /actions\/(fail|complete)$/.test(request.url));
     assert.ok(terminal);

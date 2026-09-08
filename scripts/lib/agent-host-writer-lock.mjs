@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { guardHostContent } from "./agent-host-redaction.mjs";
 import { lstat, mkdir, open, readFile, unlink } from "node:fs/promises";
 import path from "node:path";
 
@@ -68,7 +69,7 @@ export async function acquireWriterLock(directory = writerStateDirectory, { reco
     async checkpoint(execution) {
       const current = JSON.parse(await readFile(lockPath, "utf8"));
       if (current.ownerNonce !== ownerNonce) throw new Error("agent_host_writer_lock_owner_changed");
-      record.checkpoint = localCheckpoint(execution);
+      record.checkpoint = guardHostContent(localCheckpoint(execution)).value;
       const handle = await open(lockPath, "r+");
       try {
         // Truncation makes torn writes unreadable, never a valid earlier stage.

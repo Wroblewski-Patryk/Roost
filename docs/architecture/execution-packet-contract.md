@@ -1,5 +1,9 @@
 # Supervised Execution Packet v1
 
+Required packet/model content also passes the shared
+[native runtime redaction gate](native-runtime-redaction.md). Sensitive or
+previously redacted content cannot authorize model spawn.
+
 Current contract for the local Agent Host, extending the original execution
 packet gate with versioned Submit, one task scope and explicit role admission.
 It does not activate production agents, automatic recovery or the DemoApp pilot.

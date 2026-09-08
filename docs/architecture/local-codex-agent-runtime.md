@@ -2,6 +2,11 @@
 
 ## Current Supervised Runtime
 
+The [native content redaction gate](native-runtime-redaction.md) applies before
+model dispatch, diagnostics and checkpoint persistence in the API and host.
+`native_runtime_redaction_v1` is required for supervised admission. Sensitive
+required content blocks; incidents contain no detected values.
+
 Supervised Codex execution is currently blocked by the
 [hard output-token admission gate](execution-packet-contract.md#hard-output-token-admission-rf-host-010):
 the installed CLI has no proven execution-wide output cap. Even a valid accepted

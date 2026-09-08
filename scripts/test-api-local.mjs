@@ -2,12 +2,29 @@ import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { config as loadDotenv } from "dotenv";
+import { randomBytes } from "node:crypto";
 
 const composeEnvironment = {};
 loadDotenv({ path: resolve(process.cwd(), ".env"), processEnv: composeEnvironment, quiet: true });
 const port = process.env.ROOST_POSTGRES_PORT || process.env.COMPANYCORE_TEST_DB_PORT || composeEnvironment.ROOST_POSTGRES_PORT || "55432";
 const postgresPassword = process.env.SERVICE_PASSWORD_POSTGRES || composeEnvironment.SERVICE_PASSWORD_POSTGRES || "companycore";
-const databaseUrl = process.env.DATABASE_URL || `postgresql://companycore:${encodeURIComponent(postgresPassword)}@127.0.0.1:${port}/companycore_test?schema=public`;
+// A public application/source enum must not also be the runtime credential in
+// redaction tests. Use a disposable local-only role, without changing the
+// operator's PostgreSQL password or writing generated credentials to disk.
+const testRole = `roost_test_${randomBytes(8).toString("hex")}`;
+const testPassword = randomBytes(32).toString("hex");
+const externalDatabaseUrl = process.env.DATABASE_URL;
+const databaseUrl = externalDatabaseUrl || `postgresql://${testRole}:${testPassword}@127.0.0.1:${port}/companycore_test?schema=public`;
+let testRoleCreated = false;
+async function manageTestRole(create) {
+  const { PrismaClient } = await import("@prisma/client");
+  const admin = new PrismaClient({ datasources: { db: { url: `postgresql://companycore:${encodeURIComponent(postgresPassword)}@127.0.0.1:${port}/postgres` } } });
+  try {
+    await admin.$executeRawUnsafe(create ? `CREATE ROLE ${testRole} LOGIN PASSWORD '${testPassword}'` : `DROP ROLE IF EXISTS ${testRole}`);
+    testRoleCreated = create;
+  } catch { throw new Error("Local test role setup or cleanup failed."); }
+  finally { await admin.$disconnect(); }
+}
 const dockerDesktopPath = process.env.COMPANYCORE_DOCKER_DESKTOP_PATH || "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe";
 const allowDockerDesktopLaunch = process.env.COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP !== "0";
 const isolatedDotenvPath = resolve(process.cwd(), ".env.test-isolated-does-not-exist");
@@ -182,7 +199,8 @@ async function startDatabase() {
       if (dropped.code !== 0) {
         throw new Error(`Could not reset the Roost test database.\n${dropped.stderr || dropped.stdout}`.trim());
       }
-      const created = await run("docker", ["compose", "exec", "-T", "postgres", "createdb", "-U", "companycore", "companycore_test"], { capture: true, timeoutMs: 30000 });
+      await manageTestRole(true);
+      const created = await run("docker", ["compose", "exec", "-T", "postgres", "createdb", "-U", "companycore", "-O", testRole, "companycore_test"], { capture: true, timeoutMs: 30000 });
       if (created.code !== 0) {
         throw new Error(`Could not create the Roost test database.\n${created.stderr || created.stdout}`.trim());
       }
@@ -194,8 +212,9 @@ async function startDatabase() {
 }
 
 async function cleanupDatabase(wasRunning) {
-  if (!process.env.DATABASE_URL) {
+  if (!externalDatabaseUrl) {
     await run("docker", ["compose", "exec", "-T", "postgres", "dropdb", "-U", "companycore", "--if-exists", "companycore_test"], { capture: true, timeoutMs: 30000 });
+    if (testRoleCreated) await manageTestRole(false);
   }
   if (!wasRunning) {
     await run("docker", ["compose", "stop", "postgres"], { capture: true, timeoutMs: 30000 });
@@ -205,7 +224,7 @@ async function cleanupDatabase(wasRunning) {
 let wasRunning = false;
 try {
   assertSafeTestDatabaseUrl(databaseUrl);
-  if (!process.env.DATABASE_URL) {
+  if (!externalDatabaseUrl) {
     await ensureDocker();
     wasRunning = await containerRunning();
     await startDatabase();

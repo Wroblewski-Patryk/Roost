@@ -34,34 +34,34 @@ for later changes to these same canonical files.
 
 The retained baseline includes versioned Submit, single-task scope, pinned Ready
 context, explicit roles, source invalidation and active context stopping.
-The current bounded P0 slice is **RF-SEC-003: task-scoped capability grants**.
+The current bounded P0 slice is **RF-SEC-004: native runtime redaction**.
 
-The verified agent principal now also needs an explicit, single-use grant for
-review decision, return to executor or specialist correction creation. Only a
-current human owner/admin may issue or revoke. Exact workspace/agent/credential/
-task/application/operation/time scope, current roles and a context hash are
-checked at use and replay. Missing, expired, revoked or changed authority is denied.
+The API and local host share one fail-closed content policy before native writes,
+read projections and model dispatch. Required sensitive content blocks. Bounded
+text/JSON diagnostics may be redacted with a safe technical incident; unsupported
+content is withheld. Known credentials remain in memory. Incident fingerprints
+are random and dedup keys depend only on classification and technical scope.
+Legacy reads sanitize on demand without rewriting stored history. Source-change
+triggers use fixed labels rather than copying source content.
 
-Append-only grants, revocations and use receipts bind the command and business
-effect in one serializable transaction. Database guards require the exact grant
-and a receipt at commit. Concurrent requests have at most one effect; exact retries
-and process restarts use durable receipts. The PL/EN review panel provides issue,
-status/history and explicit revocation without exposing credentials.
+Verification is covered by `src/tests/api.test.ts`,
+`scripts/agent-runtime-redaction.test.mjs`, `scripts/agent-host-context-process.test.mjs`,
+`scripts/agent-runtime-redaction-migration.test.mjs` and
+`scripts/agent-runtime-redaction-ui.test.mjs`. Synthetic coverage includes DB/API
+absence checks, legacy preservation, concurrent/repeated incident dedup, model
+spawn denial, host transport/log capture, migration preservation and PL/EN UI.
+Verified: 105 API/DB checks, 340 host/policy checks, 8 PL/EN UI variants and
+one historical-data migration check. The fixed-port observer CLI test is
+excluded while the canonical observer owns that port; isolated observer lock
+checks pass. `npm run validate` passes. No real provider/model execution or
+production history scan forms part of this verification.
 
-Verification is recorded through `src/tests/task-capability-contract.test.ts`,
-`src/tests/api.test.ts`, `scripts/task-capability-migration.test.mjs`,
-`scripts/task-capability-ui.test.mjs` and the existing review/credential regressions.
-Verified: 104 API/DB checks, 4 focused unit checks, 78 grant UI checks,
-74 review UI checks and 2 existing-data migration checks. The migration fixtures
-preserve existing business data, credential columns and human/agent review attribution. `npm run validate` is the release check. Full host regression,
-full-web strict typechecking and observer fault/reboot checks were not rerun;
-no provider or real agent execution was invoked.
-
-RF-SEC-003 remains **częściowo działa** for the full company: this is the native
-review command boundary, not a provider/OS/Git/network/tool or secrets broker,
-risk engine, automatic issuer, routing or release authority. No grant or credential
-is provisioned on deployment. Production execution stays disabled and the canonical
-host stays observe. See the [grant contract](task-capability-grants.md).
+RF-SEC-004 remains **częściowo działa** for the full company. The
+[policy contract](native-runtime-redaction.md) defines exact fields, encodings,
+limits and supported surfaces; this is not whole-Roost DLP or a history cleanup.
+Production execution stays disabled and the canonical host stays observe.
+The retained [RF-SEC-003 grants](task-capability-grants.md) remain required for
+native agent review commands; general tool/secrets brokering remains absent.
 
 ## Matrix
 
@@ -135,7 +135,7 @@ host stays observe. See the [grant contract](task-capability-grants.md).
 | [RF-SEC-001](../product/interview-foundation-v2.md#rf-sec-001) | P0 | częściowo działa | [RISK](#e-risk) | Risk records exist; computed classification absent. |
 | [RF-SEC-002](../product/interview-foundation-v2.md#rf-sec-002) | P0 | brak | [RISK](#e-risk) | No complete risk admission gate. |
 | [RF-SEC-003](../product/interview-foundation-v2.md#rf-sec-003) | P0 | częściowo działa | [BROKER](#e-broker) | Durable exact task/agent/credential/application/operation/time grants govern the three native review commands, with human issue/revoke, atomic use receipts and context invalidation. General sensitive-tool/secrets brokering, risk and automatic issuance remain absent. |
-| [RF-SEC-004](../product/interview-foundation-v2.md#rf-sec-004) | P0 | częściowo działa | [BROKER](#e-broker) | Partial credential exclusions; arbitrary execution events/results remain unredacted. |
+| [RF-SEC-004](../product/interview-foundation-v2.md#rf-sec-004) | P0 | częściowo działa | [REDACTION](#e-redaction) | Shared native runtime policy gates required model/checkpoint input and sanitizes diagnostics/projections with safe deduplicated incidents. Whole-Roost DLP, arbitrary encodings/files and historical cleanup remain outside this slice. |
 | [RF-SEC-005](../product/interview-foundation-v2.md#rf-sec-005) | P0 | brak | [BROKER](#e-broker) | No tool/network/install broker. |
 | [RF-SEC-006](../product/interview-foundation-v2.md#rf-sec-006) | P0 | częściowo działa | [BROKER](#e-broker) | Workspace scoping exists, not field-level diagnostic access. |
 | [RF-SEC-007](../product/interview-foundation-v2.md#rf-sec-007) | P0 | brak | [REVIEW](#e-review) | No mandatory security-review or emergency-exception lifecycle. |
@@ -451,8 +451,20 @@ performed, and no VPS release is required for this local launcher change.
 
 [src/modules/agent-runtime/agent-runtime.routes.ts](../../src/modules/agent-runtime/agent-runtime.routes.ts), [prisma/schema.prisma](../../prisma/schema.prisma), [src/integrations/clickup/clickup.sync.ts](../../src/integrations/clickup/clickup.sync.ts).
 
+<a id="e-redaction"></a>
+**REDACTION** — One bounded API/host policy, fail-closed required input, sanitized
+native diagnostics and on-demand legacy projections; value-free incidents.
+
+[Contract](native-runtime-redaction.md), [canonical policy](../../scripts/lib/agent-runtime-redaction.cjs),
+[API boundary](../../src/modules/agent-runtime/runtime-redaction-http.ts),
+[write boundary](../../src/modules/agent-runtime/runtime-redaction-data.ts),
+[host boundary](../../scripts/lib/agent-host-redaction.mjs),
+[tests](../../scripts/agent-runtime-redaction.test.mjs), [API/DB tests](../../src/tests/api.test.ts),
+[UI checks](../../scripts/agent-runtime-redaction-ui.test.mjs),
+[migration checks](../../scripts/agent-runtime-redaction-migration.test.mjs).
+
 <a id="e-incident"></a>
-**INCIDENT** — Incident records only; no automated containment/recertification workflow.
+**INCIDENT** — Canonical records include safe native redaction incidents; no general automated containment/recertification workflow.
 
 [src/modules/company-records/company-records.routes.ts](../../src/modules/company-records/company-records.routes.ts).
 

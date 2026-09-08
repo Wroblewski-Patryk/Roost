@@ -8,6 +8,7 @@ import { loadApplicationGraphPacket } from "../product-engineering/application-g
 import { projectApplicationPacketsIntoCompanyGraph } from "./company-graph-application-projection";
 import { analyzeCompanyGraphConnectivity } from "./company-graph-connectivity";
 import { loadTaskAgentContext } from "./task-agent-context";
+import { requireRuntimeContent } from "../agent-runtime/runtime-redaction-policy";
 
 export const companyIntelligenceRouter = Router();
 
@@ -353,5 +354,6 @@ companyIntelligenceRouter.get("/tasks/:id/agent-context", asyncHandler(async (re
   }
   const context = await loadTaskAgentContext(workspaceId, taskId, execution);
   if (!context) return res.status(404).json({ error: "task_not_found" });
+  requireRuntimeContent(context, "model.task_context", { taskId, executionId });
   res.json({ data: context });
 }));

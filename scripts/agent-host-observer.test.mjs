@@ -81,10 +81,12 @@ test("observer authentication failure stops and saves only fixed diagnostics", a
 });
 
 test("exclusive observer lock is reusable after release", async () => {
-  const release = await acquireObserverLock();
-  await assert.rejects(acquireObserverLock(), /already_running/);
+  const probe = createServer(); await new Promise(resolve => probe.listen(0, "127.0.0.1", resolve));
+  const port = probe.address().port; await new Promise(resolve => probe.close(resolve));
+  const release = await acquireObserverLock(port);
+  await assert.rejects(acquireObserverLock(port), /already_running/);
   await release();
-  await (await acquireObserverLock())();
+  await (await acquireObserverLock(port))();
 });
 
 for (const version of [1, 2, undefined]) test(`observer reports protocol ${version} without recovery or claims`, async () => {

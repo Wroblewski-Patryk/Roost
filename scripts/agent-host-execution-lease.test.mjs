@@ -149,7 +149,7 @@ test(sandboxBlocked ? "the real host rejects unrestricted sandbox before claimin
     host.stderr.on("data", (chunk) => { stderr += chunk; });
     const [code] = await once(host, "close");
     assert.equal(code, sandboxBlocked ? 1 : 0);
-    assert.match(stderr, sandboxBlocked ? /agent_host_sandbox_not_approved/ : /agent_execution_lease_rejected/);
+    assert.match(stderr, sandboxBlocked ? /agent_host_sandbox_not_approved/ : /Agent Host operation failed; inspect safe execution diagnostics/);
     assert.equal(routes.filter((route) => route.endsWith("/claim")).length, sandboxBlocked ? 0 : 1);
     if (sandboxBlocked) assert.equal(routes.length, 2, "only registration admission and recovery inspection precede config validation");
     assert.equal(routes.some((route) => /events|actions\/(complete|fail)/.test(route)), false);

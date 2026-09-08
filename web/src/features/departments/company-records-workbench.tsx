@@ -14,9 +14,11 @@ import { useLanguage } from "../../i18n/i18n";
 import type { CoreAreaKey } from "../../types";
 import { departmentLabel } from "./department-labels";
 import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
+import { RuntimeRedactionNotice, type RedactionIncident } from "./runtime-redaction-notice";
 
 type Department = { id: string; key: CoreAreaKey; name: string; status: string };
 type CompanyRecord = {
+  source?: string; metadata?: RedactionIncident;
   id: string; recordType: string; key: string; title: string; description?: string | null; businessPurpose?: string | null;
   currentState?: string | null; desiredState?: string | null; expectedBehavior?: string | null; rationale?: string | null;
   acceptanceCriteria?: Array<string | Record<string, unknown>>; priority: string; status: string; functionalState: string; verificationState: string;
@@ -53,6 +55,7 @@ function RecordEditor({ record, recordType, departmentKey, departments, onClose,
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy(true); setError(null);
     try {
+      if (record?.source === "runtime_redaction_v1") { await api(`/v1/company-records/${record.id}`, { method: "PATCH", body: JSON.stringify({ status: draft.status, priority: draft.priority }) }); onSaved(); return; }
       await api(record ? `/v1/company-records/${record.id}` : "/v1/company-records", { method: record ? "PATCH" : "POST", body: JSON.stringify({
         ...(!record ? { recordType } : {}), title: draft.title, description: draft.description || null, businessPurpose: draft.businessPurpose || null,
         currentState: draft.currentState || null, desiredState: draft.desiredState || null, expectedBehavior: draft.expectedBehavior || null, rationale: draft.rationale || null,
@@ -63,8 +66,14 @@ function RecordEditor({ record, recordType, departmentKey, departments, onClose,
       }) }); onSaved();
     } catch (caught) { setError(caught instanceof AppApiError ? caught.code : "request_failed"); } finally { setBusy(false); }
   }
+  if (record?.source === "runtime_redaction_v1") return <CcRecordEditorModal actions={<><CcButton onClick={onClose} variant="ghost">{t("common.cancel")}</CcButton><CcButton loading={busy} type="submit" variant="primary">{t("common.save")}</CcButton></>} eyebrow={recordName} onClose={onClose} onSubmit={submit} title={polish ? "Incydent ochrony treści" : "Content protection incident"} titleId="company-record-editor-title">
+    {error ? <CcNotice tone="error" title={humanizeBusinessValue(error)} /> : null}
+    <RuntimeRedactionNotice incidents={[record.metadata || {}]} />
+    <CcField label="Status">{({ id }) => <CcSelect id={id} value={draft.status} onChange={event => setDraft({ ...draft, status: event.target.value })}>{["active", "blocked", "completed"].map(value => <option key={value} value={value}>{humanizeBusinessValue(value, undefined, locale)}</option>)}</CcSelect>}</CcField>
+  </CcRecordEditorModal>;
   return <CcRecordEditorModal actions={<><CcButton onClick={onClose} variant="ghost">{t("common.cancel")}</CcButton><CcButton loading={busy} type="submit" variant="primary">{t("common.save")}</CcButton></>} description={polish ? "Jeden wspólny rekord firmy, dostępny w każdym właściwym kontekście działowym." : "One shared company record, available in every relevant department context."} eyebrow={recordName} onClose={onClose} onSubmit={submit} title={`${record ? polish ? "Edytuj" : "Edit" : polish ? "Utwórz" : "Create"} ${recordName.toLowerCase()}`} titleId="company-record-editor-title">
     {error ? <CcNotice live tone="error" title={humanizeBusinessValue(error)} /> : null}
+    {record?.source === "runtime_redaction_v1" ? <RuntimeRedactionNotice incidents={[record.metadata || {}]} /> : null}
     <CcRecordEditorSection title={polish ? "Definicja" : "Definition"}><div className="grid gap-4 md:grid-cols-2">
       <CcField label={polish ? "Tytuł" : "Title"} required>{({ id, describedBy }) => <input aria-describedby={describedBy} className="input input-bordered w-full" id={id} maxLength={240} onChange={(event) => setDraft({ ...draft, title: event.target.value })} required value={draft.title} />}</CcField>
       <CcField label={polish ? "Cel biznesowy" : "Business purpose"}>{({ id, describedBy }) => <input aria-describedby={describedBy} className="input input-bordered w-full" id={id} onChange={(event) => setDraft({ ...draft, businessPurpose: event.target.value })} value={draft.businessPurpose} />}</CcField>

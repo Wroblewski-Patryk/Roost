@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { guardHostContent } from "./agent-host-redaction.mjs";
 import { validateExecutionPacket } from "./agent-host-execution-packet.mjs";
 import readyContext from "./agent-host-ready-context.cjs";
 
@@ -32,12 +33,13 @@ export async function fetchExecutionContext(api, claimed) {
   try {
     const fresh = { cache: "no-store", headers: { "Cache-Control": "no-cache" } };
     const taskContext = await api(`/v1/company-intelligence/tasks/${claimed.taskId}/agent-context?executionId=${encodeURIComponent(claimed.id)}`, fresh);
+    guardHostContent({ taskContext, prompt: claimed.prompt }, "required", [claimed.leaseToken]);
     const query = readyContext.readyContextQuery(taskContext?.task ?? taskContext, claimed.prompt);
     const applicationContext = await api(`/v1/product-engineering/applications/${claimed.applicationId}/agent-context?profile=execution`,
       { ...fresh, headers: { ...fresh.headers, "X-Roost-Agent-Context-Query": query } });
     return { taskContext, applicationContext };
   } catch (error) {
-    if (error.readyAdmission) throw error;
+    if (error.readyAdmission || error.redaction) throw error;
     // Never echo arbitrary transport errors or response bodies.
     const safe = contextAdmissionError("unavailable");
     if ([401, 403].includes(error.status)) safe.status = error.status;

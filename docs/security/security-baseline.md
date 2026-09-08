@@ -1,5 +1,10 @@
 # Security Baseline
 
+Native execution content follows the shared [runtime redaction contract](../architecture/native-runtime-redaction.md)
+before persistence, projection and model dispatch. Sensitive required content
+blocks; diagnostics may be redacted with a value-free technical incident. Other
+Roost flows and historical stored data are not certified by this boundary.
+
 ## Always Check
 
 - auth and session boundaries

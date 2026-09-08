@@ -1,5 +1,10 @@
 # Agent Host Recovery v1
 
+Checkpoint metadata is required input to the shared
+[native redaction policy](native-runtime-redaction.md), checked before local
+writer-state and API persistence. Blocked content cannot resume or spawn. This
+does not rewrite old checkpoints or authorize deleting a retained writer lock.
+
 Current bounded recovery contract, accepted in
 `roost-interview-foundation-safe-resume-2026-09-05-v1`. Production activation
 remains separately controlled; this implementation does not enable the DemoApp pilot.

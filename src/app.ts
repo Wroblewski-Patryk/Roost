@@ -1,4 +1,5 @@
 import { env } from "./config/env";
+import { runtimeRedactionBoundary } from "./modules/agent-runtime/runtime-redaction-http";
 import cors from "cors";
 import express, { Router } from "express";
 import path from "path";
@@ -233,6 +234,7 @@ export function createApp() {
 
   app.use(apiRateLimiter);
   app.use(requireApiKey);
+  app.use(runtimeRedactionBoundary);
   app.use(enforceHumanWorkspaceAccess);
   mountProtectedRoutes(app);
 

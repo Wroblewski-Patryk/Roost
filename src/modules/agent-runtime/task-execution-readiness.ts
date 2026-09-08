@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
+import { requireRuntimeContent } from "./runtime-redaction-policy";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { Prisma, type AgentExecution } from "@prisma/client";
@@ -54,6 +55,7 @@ async function resolved(db: Prisma.TransactionClient, workspaceId: string, taskI
   const taskContext = wire(await loadTaskAgentContext(workspaceId, taskId, envelope, db, submission));
   if (!taskContext) throw new Error("task_not_found");
   const applicationContext = wire(await loadApplicationAgentContext(workspaceId, application.id, true, readyContextQuery(taskContext.task, input.prompt), db));
+  requireRuntimeContent({ input, taskContext, applicationContext }, "model.ready_context", { workspaceId, taskId, executionId: execution?.id });
   const claimed = { ...envelope, attempt: Math.max(1, envelope.attempt), application };
   (await validation).validateExecutionPacket(taskContext.executionPacket, claimed, taskContext, applicationContext);
   return { taskContext, applicationContext, watched, revision: readyContextRevision(taskContext, applicationContext, execution ?? input) };
@@ -88,6 +90,7 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
   let context;
   try { context = await resolved(db, workspaceId, taskId, input, undefined, { authorId: actor.requestedById, requestId: input.requestId }); }
   catch (error) {
+    if (error instanceof Error && error.message === "agent_runtime_content_blocked") throw error;
     const issues = object(error).details?.issues ?? [];
     const status = issues.length > 0 && issues.every((issue: any) => /^(contract|taskContext)\.decisions(\.|$)/.test(issue.field)) ? "needs_decision" : "needs_context";
     const previous = object(task.executionReadiness);

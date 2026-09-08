@@ -1,4 +1,5 @@
 import { loadApplicationAgentContext } from "./application-agent-context";
+import { requireRuntimeContent } from "../agent-runtime/runtime-redaction-policy";
 import {
   ActorType,
   ApplicationInterfaceType,
@@ -598,8 +599,10 @@ productEngineeringRouter.get("/applications/:id/readiness", asyncHandler(async (
 
 productEngineeringRouter.get("/applications/:id/agent-context", asyncHandler(async (req, res) => {
   const query = req.get("X-Roost-Agent-Context-Query") ?? (typeof req.query.query === "string" ? req.query.query : "");
+  requireRuntimeContent(query, "model.context_query");
   const context = await loadApplicationAgentContext(req.auth!.workspaceId, String(req.params.id), req.query.profile === "execution", query);
   if (!context) return sendApiError(res, 404, "application_not_found");
+  requireRuntimeContent(context, "model.application_context");
   res.json({ data: context });
 }));
 
