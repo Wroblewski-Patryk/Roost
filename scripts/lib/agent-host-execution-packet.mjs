@@ -3,6 +3,7 @@ import { z } from "zod";
 import { normalizeGitRemote } from "./agent-host-workspace-guard.mjs";
 import { modelSelectionSchema } from "./agent-host-model-policy.mjs";
 import { singleTaskSchema, singleTaskIssues } from "./agent-host-single-task.mjs";
+import { taskRolesSchema, roleAuthoritiesSchema, taskRoleIssues } from "./agent-host-task-roles.mjs";
 
 const text = z.string().trim().min(1).max(2000);
 const texts = z.array(text).min(1).max(30);
@@ -15,6 +16,7 @@ const operations = z.enum(["repository_read", "repository_write", "local_test"])
 export const executionContractSchema = z.object({
   version: text,
   singleTask: singleTaskSchema,
+  taskRoles: taskRolesSchema,
   objective: z.object({ outcome: text, goalId: id }).strict(),
   scope: z.object({ allowed: texts, forbidden: texts }).strict(),
   assignment: z.object({ agentId: id, role: text, competencies: texts }).strict(),
@@ -33,12 +35,13 @@ export const executionContractSchema = z.object({
 }).strict();
 
 // Editor migration may retain validated legacy fields, but admission never uses this schema.
-export const executionEditorContractSchema = executionContractSchema.partial({ singleTask: true });
+export const executionEditorContractSchema = executionContractSchema.partial({ singleTask: true, taskRoles: true });
 
 const packetSchema = z.object({
   schemaVersion: z.literal("roost-execution-packet-v1"), revision: z.string().regex(/^[a-f0-9]{64}$/),
   identity: z.object({ executionId: id, workspaceId: id, taskId: id, applicationId: id, agentId: id }).strict(),
   taskRevision: text, contract: executionContractSchema,
+  roleAuthorities: roleAuthoritiesSchema,
   scopeAuthorities: z.object({
     component: z.object({ id, applicationId: id, status: text, revision: text }).strict().nullable(),
     manager: z.object({ id, workspaceId: id, status: text, revision: text }).strict().nullable()
@@ -58,6 +61,7 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
   } else {
     const p = parsed.data, c = p.contract, task = taskContext?.task, agent = task?.assignedWorkforceEntity;
     issues.push(...singleTaskIssues(c, p, claimed));
+    issues.push(...taskRoleIssues(c, p, claimed));
     const { revision, ...body } = packet;
     if (createHash("sha256").update(JSON.stringify(body)).digest("hex") !== revision) add("revision", "mismatch");
     for (const [field, expected] of Object.entries({ executionId: claimed?.id, taskId: claimed?.taskId, workspaceId: claimed?.workspaceId, applicationId: claimed?.applicationId, agentId: task?.assignedWorkforceEntityId })) {

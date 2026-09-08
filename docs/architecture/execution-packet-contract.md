@@ -1,8 +1,68 @@
 # Supervised Execution Packet v1
 
-Current contract for the local Agent Host, accepted in
-`roost-interview-foundation-execution-packet-gate-2026-09-05-v1`.
+Current contract for the local Agent Host, extending the original execution
+packet gate with versioned Submit, one task scope and explicit role admission.
 It does not activate production agents, automatic recovery or the DemoApp pilot.
+
+## Explicit task roles (RF-CTX-010)
+
+The existing Submit contract requires `taskRoles`, schema version
+`roost-task-roles-v1`, with exactly one `{id, revision}` reference for each of
+`requester`, `accountableManager`, `executor`, `verifier` and `releaser`.
+The requester ID is a User ID and its revision is the current workspace
+membership `updatedAt`. Other IDs and revisions reference current workspace
+WorkforceEntity records. The manager reference must equal the existing
+`singleTask.accountableManager`; executor must equal the task assignment and
+contract `assignment.agentId`. There is no second role assignment store.
+
+The first successful governed Submit binds the authenticated human requester
+and submission ID into nullable `Task.executionRoleProvenance`, schema
+`roost-role-provenance-v1`. This establishes the origin of governed admission;
+it does not reconstruct the creator or authors of a historical/imported task.
+Rejected submissions leave that origin unset. Accepted submissions preserve
+the original requester and append the submitting human and executor to a
+deduplicated author history (maximum 1,000 principals). The receipt, accepted
+pin, provenance and event commit atomically. No client supplies provenance.
+Removing or replacing that origin/history through ordinary writes is rejected.
+
+All role workers must be active, workspace scoped and have a declared working
+role. A human worker must link through `source=user` and `externalId` to a
+current owner/admin/member membership. An agent principal is its workforce ID;
+an agent using a human source link is ambiguous and rejected. Requester and
+current Submit author also require current write-eligible memberships.
+Manager `authorityScope` must explicitly contain `task_accountability`, verifier
+`task_verification`, and releaser `release_authorization`. Verifier and executor
+`skillIndex` must cover the contract assignment competencies. Existing executor
+tool/access checks also apply. These are declared profile mandates and skills,
+not certification or proof of a particular credential-bound running agent.
+
+Verifier and releaser must be independent of the current executor and every
+accepted author/executor principal. Human workforce aliases resolve to User IDs,
+so choosing another profile of the same author does not bypass independence.
+Changing the executor does not erase its earlier authorship. This slice does
+not require verifier and releaser to be different from each other.
+
+Current role authorities and provenance are part of the Ready fingerprint and
+source watches. Membership/profile/assignment edits invalidate acceptance;
+queue, claim and host admission recheck it before an attempt or model spawn.
+An ordinary task edit remains allowed and invalidates Ready through the existing
+source trigger. Missing, stale, conflicting or insufficient role evidence yields
+Needs context. Status edits, imports, old APIs and prompt text grant no authority.
+Both protocol capability lists require `task_role_separation_v1`; protocol
+version remains 1 and observe mode is unchanged.
+
+The shared PL/EN editor exposes current requester, manager, executor, verifier
+and releaser, explicit revision refresh, conflict diagnostics and accepted-role
+summary. Its worker catalog is capped at 500 and signals truncation; server
+resolution remains authoritative. Legacy contracts remain editable. Migrations
+`20260908040000` through `20260908040200` add nullable provenance, invalidate old
+Ready without inventing roles, watch memberships and preserve ordinary source
+edits. They preserve business rows, credentials and volumes and do not seed.
+The forward corrections retain already-applied migration history.
+
+RF-CTX-010 remains partially implemented: native review/return and release
+execution, delegated authority certification, per-agent credential attestation,
+broker/merge/push and activation are outside this role-admission slice.
 
 ## Preparation And Authority
 
@@ -328,7 +388,7 @@ context. Outcome/problem statements and the common mechanism are limited to 400
 characters by this ambiguity gate. These are deterministic structural and textual
 checks, not proof that arbitrary prose describes a truly inseparable cause.
 Semantic completeness and independent acceptance remain outstanding; RF-CTX-009
-therefore remains partially implemented. Role separation belongs to RF-CTX-010.
+therefore remains partially implemented. Role admission is defined in RF-CTX-010 below.
 
 The owner editor exposes these fields in PL/EN, preserves old contracts for editing,
 shows the accepted exception and records the exact scope/outcome in the Ready event.

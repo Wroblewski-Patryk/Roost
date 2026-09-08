@@ -47,6 +47,9 @@ for (const name of ["APPDATA", "ComSpec", "LOCALAPPDATA", "PATH", "Path", "PATHE
   }
 }
 Object.assign(testProcessEnvironment, testEnvironment);
+// Prisma can also load .env; pin fictional OAuth fixtures before any imports.
+const oauthFixtures = { GOOGLE_OAUTH_CLIENT_ID: "dev-google-oauth-client-id", GOOGLE_OAUTH_CLIENT_SECRET: "dev-google-oauth-client-secret" };
+Object.assign(testProcessEnvironment, oauthFixtures);
 
 function assertSafeTestDatabaseUrl(url) {
   if (process.env.COMPANYCORE_ALLOW_DESTRUCTIVE_TEST_DB === "1") {
@@ -70,10 +73,10 @@ function run(command, args, options = {}) {
       ? { ...options.env }
       : { ...process.env, ...options.env };
     for (const name of options.unsetEnv || []) {
-      delete childEnvironment[name];
+      if (!(options.assertIsolatedTestEnvironment && name in oauthFixtures)) delete childEnvironment[name];
     }
     if (options.assertIsolatedTestEnvironment) {
-      const unexpectedVariables = isolatedApplicationVariables.filter((name) => childEnvironment[name] !== undefined);
+      const unexpectedVariables = isolatedApplicationVariables.filter((name) => name in oauthFixtures ? childEnvironment[name] !== oauthFixtures[name] : childEnvironment[name] !== undefined);
       if (childEnvironment.NODE_ENV !== "test" || childEnvironment.COMPANYCORE_SKIP_DOTENV !== "1" || unexpectedVariables.length > 0) {
         throw new Error(`Local API test environment is not isolated (${unexpectedVariables.join(", ") || "invalid test flags"}).`);
       }

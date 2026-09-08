@@ -3,7 +3,7 @@ const hostProtocolHeaders = { "X-Roost-Host-Protocol": String(protocol.version),
 const validHostMetadata = { runnerVersion: "roost-codex-agent-host-v1", protocolVersion: protocol.version, executionMode: "supervised" };
 import { strict as assert } from "assert";
 import { randomUUID } from "node:crypto";
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { spawn } from "node:child_process";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -1280,18 +1280,134 @@ async function prepareReadyFixture(workspaceId: string, taskId: string, applicat
   }
   f.packet.contract.objective.goalId = goal.id;
   f.packet.contract.assignment.agentId = agent.id;
-  const manager = await prisma.workforceEntity.create({ data: { workspaceId, name: "Synthetic accountable manager", slug: `manager-${taskId}`, type: "human", role: "manager" } });
+  const manager = await prisma.workforceEntity.create({ data: { workspaceId, name: "Synthetic accountable manager", slug: `manager-${taskId}`, type: "agent", role: "manager", authorityScope: ["task_accountability"] } });
+  const verifier = await prisma.workforceEntity.create({ data: { workspaceId, name: "Synthetic verifier", slug: `verifier-${taskId}`, type: "agent", role: "reviewer", skillIndex: ["javascript"], authorityScope: ["task_verification"] } });
+  const releaser = await prisma.workforceEntity.create({ data: { workspaceId, name: "Synthetic releaser", slug: `releaser-${taskId}`, type: "agent", role: "release manager", authorityScope: ["release_authorization"] } });
   const component = await prisma.applicationArchitectureComponent.create({ data: { applicationId, name: "Synthetic target component", type: "backend" } });
   f.packet.contract.singleTask = { ...f.packet.contract.singleTask, contractId: `roost-task:${taskId}`, branch: `codex/task-${taskId}`, applicationId,
     component: { id: component.id, revision: component.updatedAt.toISOString() }, accountableManager: { id: manager.id, revision: manager.updatedAt.toISOString() },
     problems: [{ ...f.packet.contract.singleTask.problems[0], componentId: component.id }] };
+  const editor = (await request(`/v1/agent-runtime/tasks/${taskId}/execution-readiness?editor=1&applicationId=${applicationId}`, { headers: auth })).body as any;
+  const ref = (item: { id: string; updatedAt: Date }) => ({ id: item.id, revision: item.updatedAt.toISOString() });
+  f.packet.contract.taskRoles = { schemaVersion: "roost-task-roles-v1", requester: { id: editor.data.editor.requester.id, revision: editor.data.editor.requester.revision }, accountableManager: ref(manager), executor: ref(agent), verifier: ref(verifier), releaser: ref(releaser) };
   const input = { applicationId, contract: f.packet.contract };
-  if (!accept) return { input, sources, goal, agent, manager, component, readiness: { revision: "", pinId: "" } };
+  if (!accept) return { input, sources, goal, agent, manager, component, verifier, releaser, readiness: { revision: "", pinId: "" } };
   const route = `/v1/agent-runtime/tasks/${taskId}/actions/submit-for-execution`;
   const ready = await request(route, { method: "POST", headers: auth, body: JSON.stringify(await submissionInput(route, input, auth)) });
   assert.equal(ready.status, 200, JSON.stringify(ready.body));
-  return { input, sources, goal, agent, manager, component, readiness: (ready.body as { data: { readiness: { revision: string; pinId: string } } }).data.readiness };
+  return { input, sources, goal, agent, manager, component, verifier, releaser, readiness: (ready.body as { data: { readiness: { revision: string; pinId: string } } }).data.readiness };
 }
+
+test("explicit task roles enforce identity, provenance and independent admission", async t => {
+  const owner = await registerOwner("role-owner@example.test", "Role admission fixture"), workspaceId = owner.workspace.id, auth = { Authorization: `Bearer ${owner.token}` };
+  const application = await prisma.application.create({ data: { workspaceId, name: "Role fixture app", slug: "role-fixture" } });
+  const project = await prisma.project.create({ data: { workspaceId, name: "Role fixture project" } });
+  await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id } });
+  const task = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: "Repair one fixture" } });
+  const f = await prepareReadyFixture(workspaceId, task.id, application.id, auth, false);
+  const route = `/v1/agent-runtime/tasks/${task.id}`, command = `${route}/actions/submit-for-execution`;
+  const post = (url: string, body: any, headers: Record<string, string> = auth) => request(url, { method: "POST", headers, body: JSON.stringify(body) });
+  const submit = async (contract = f.input.contract) => post(command, await submissionInput(command, { ...f.input, contract }, auth));
+  const read = () => prisma.task.findUniqueOrThrow({ where: { id: task.id } });
+  const ref = (item: { id: string; updatedAt: Date }) => ({ id: item.id, revision: item.updatedAt.toISOString() });
+  await t.test("legacy input stays editable, with no invented requester or Ready", async () => {
+    const { taskRoles, ...legacy } = f.input.contract;
+    assert.equal((await submit(legacy)).status, 409);
+    assert.equal((await read()).executionRoleProvenance, null);
+    assert.equal(((await read()).executionReadiness as any).status, "needs_context");
+  });
+  await t.test("acceptance records immutable origin, canonical roles and idempotent evidence", async () => {
+    const input = await submissionInput(command, f.input, auth);
+    assert.equal((await post(command, input)).status, 200);
+    const accepted = await read(), provenance = accepted.executionRoleProvenance as any;
+    assert.equal(provenance.requesterUserId, f.input.contract.taskRoles.requester.id);
+    assert.equal(provenance.originatingSubmissionId, input.requestId);
+    assert.ok(provenance.authors.some((p: any) => p.kind === "agent" && p.id === f.agent.id));
+    assert.equal((await post(command, input)).status, 200);
+    assert.deepEqual((await read()).executionReadiness, accepted.executionReadiness);
+    const event = await prisma.event.findFirstOrThrow({ where: { taskId: task.id, type: "task_execution_ready" } });
+    assert.deepEqual((event.payload as any).taskRoles, f.input.contract.taskRoles);
+    await assert.rejects(prisma.task.update({ where: { id: task.id }, data: { executionRoleProvenance: Prisma.DbNull } }), /task_role_provenance_immutable/);
+    await assert.rejects(prisma.task.update({ where: { id: task.id }, data: { executionRoleProvenance: { ...provenance, requesterUserId: f.agent.id } } }), /task_role_provenance_immutable/);
+    const changed = structuredClone(accepted.executionReadiness) as any; changed.contract.taskRoles.verifier = changed.contract.taskRoles.executor;
+    await assert.rejects(prisma.task.update({ where: { id: task.id }, data: { executionReadiness: changed } }), /task_role_independence_required|task_submit_for_execution_required/);
+  });
+  for (const [name, mutate] of Object.entries({
+    selfReview: (c: any) => { c.taskRoles.verifier = c.taskRoles.executor; },
+    selfRelease: (c: any) => { c.taskRoles.releaser = c.taskRoles.executor; },
+    missing: (c: any) => { delete c.taskRoles.verifier; },
+    ambiguous: (c: any) => { c.taskRoles.releaser = [c.taskRoles.releaser]; },
+    stale: (c: any) => { c.taskRoles.verifier.revision = "stale"; },
+    requesterReplacement: (c: any) => { c.taskRoles.requester.id = f.agent.id; },
+    executorMismatch: (c: any) => { c.taskRoles.executor = c.taskRoles.verifier; },
+    managerMismatch: (c: any) => { c.taskRoles.accountableManager = c.taskRoles.releaser; }
+  })) await t.test(`reject ${name} with Needs context`, async () => {
+    const c = structuredClone(f.input.contract); mutate(c);
+    const response = await submit(c); assert.equal(response.status, 409, JSON.stringify(response.body));
+    assert.equal(((await read()).executionReadiness as any).status, "needs_context");
+    assert.equal(await prisma.agentExecution.count({ where: { taskId: task.id } }), 0);
+  });
+  await t.test("current profile, mandates, skills and workspace must resolve", async () => {
+    const other = await registerOwner("role-foreign@example.test", "Foreign role fixture");
+    const worker = await prisma.workforceEntity.create({ data: { workspaceId: other.workspace.id, name: "Foreign verifier", slug: "foreign-verifier", type: "agent", role: "reviewer", skillIndex: ["javascript"], authorityScope: ["task_verification"] } });
+    const foreign = structuredClone(f.input.contract); foreign.taskRoles.verifier = ref(worker); assert.equal((await submit(foreign)).status, 409);
+    for (const data of [{ status: "inactive" as const }, { role: null }, { skillIndex: [] }, { authorityScope: [] }]) {
+      const changed = await prisma.workforceEntity.update({ where: { id: f.verifier.id }, data });
+      const c = structuredClone(f.input.contract); c.taskRoles.verifier = ref(changed); assert.equal((await submit(c)).status, 409);
+      const restored = await prisma.workforceEntity.update({ where: { id: f.verifier.id }, data: { status: "active", role: "reviewer", skillIndex: ["javascript"], authorityScope: ["task_verification"] } });
+      f.input.contract.taskRoles.verifier = ref(restored);
+    }
+  });
+  await t.test("human aliases cannot self-review; membership removal invalidates human review", async () => {
+    const memberId = f.input.contract.taskRoles.requester.id;
+    const ownProfile = await prisma.workforceEntity.findFirstOrThrow({ where: { workspaceId, source: "user", externalId: memberId } });
+    const own = await prisma.workforceEntity.update({ where: { id: ownProfile.id }, data: { role: "reviewer", skillIndex: ["javascript"], authorityScope: ["task_verification", "release_authorization"] } });
+    for (const name of ["verifier", "releaser"]) { const c = structuredClone(f.input.contract); c.taskRoles[name] = ref(own); assert.equal((await submit(c)).status, 409); }
+    const member = await prisma.user.create({ data: { email: "independent-member@example.test", name: "Independent member", passwordHash: "synthetic-not-a-login" } });
+    const membership = await prisma.workspaceMembership.create({ data: { workspaceId, userId: member.id, role: "member" } });
+    const human = await prisma.workforceEntity.create({ data: { workspaceId, name: "Independent human", slug: "independent-human", type: "human", source: "user", externalId: member.id, role: "reviewer", skillIndex: ["javascript"], authorityScope: ["task_verification"] } });
+    const c = structuredClone(f.input.contract); c.taskRoles.verifier = ref(human); assert.equal((await submit(c)).status, 200);
+    const reviewed = await submissionInput(command, { ...f.input, contract: c }, auth);
+    await prisma.workspaceMembership.delete({ where: { id: membership.id } });
+    assert.equal(((await read()).executionReadiness as any).status, "needs_revalidation");
+    assert.equal((await post(command, reviewed)).status, 409);
+    assert.equal((await submit(c)).status, 409);
+  });
+  await t.test("later author cannot be laundered into verifier and requester stays fixed", async () => {
+    const user = await prisma.user.create({ data: { email: "later-author@example.test", name: "Later contract author", passwordHash: "synthetic-not-a-login" } });
+    await prisma.workspaceMembership.create({ data: { workspaceId, userId: user.id, role: "member" } });
+    const profile = await prisma.workforceEntity.create({ data: { workspaceId, name: "Later author profile", slug: "later-author", type: "human", source: "user", externalId: user.id, role: "reviewer", skillIndex: ["javascript"], authorityScope: ["task_verification"] } });
+    const { readyTransaction, submitReady, submissionVersion } = await import("../modules/agent-runtime/task-execution-readiness");
+    const result = await readyTransaction(async tx => submitReady(tx, workspaceId, task.id, { ...f.input, requestId: randomUUID(), expectedVersion: await submissionVersion(tx, workspaceId, task.id, application.id) }, { requestedByType: "user", requestedById: user.id }));
+    assert.equal("error" in result, false, JSON.stringify(result));
+    const provenance = (await read()).executionRoleProvenance as any;
+    assert.equal(provenance.requesterUserId, f.input.contract.taskRoles.requester.id);
+    assert.ok(provenance.authors.some((p: any) => p.kind === "user" && p.id === user.id));
+    const c = structuredClone(f.input.contract); c.taskRoles.verifier = ref(profile); assert.equal((await submit(c)).status, 409);
+  });
+  await t.test("ordinary assignment edits invalidate Ready and preserve role origin", async () => {
+    assert.equal((await submit()).status, 200);
+    const provenance = (await read()).executionRoleProvenance;
+    await prisma.task.update({ where: { id: task.id }, data: { assignedWorkforceEntityId: f.verifier.id } });
+    assert.equal(((await read()).executionReadiness as any).status, "needs_revalidation");
+    assert.deepEqual((await read()).executionRoleProvenance, provenance);
+    assert.equal((await submit()).status, 409);
+    await prisma.task.update({ where: { id: task.id }, data: { assignedWorkforceEntityId: f.agent.id } });
+  });
+  await t.test("role changes after Ready block claim without creating an attempt", async () => {
+    assert.equal((await submit()).status, 200);
+    process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
+    try {
+      const queued = await post("/v1/agent-runtime/executions", { taskId: task.id, applicationId: application.id }); assert.equal(queued.status, 201, JSON.stringify(queued.body));
+      const key = await post("/v1/api-keys", { name: "Role test host", profileId: "mcp_codex_worker" }); const worker = { "X-API-Key": (key.body as any).data.key, ...hostProtocolHeaders };
+      await post("/v1/agent-runtime/hosts/register", { name: "Role host", slug: "role-host", platform: "win32", applicationSlugs: [application.slug], metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities }, worker);
+      await prisma.workforceEntity.update({ where: { id: f.releaser.id }, data: { status: "inactive" } });
+      assert.equal(((await read()).executionReadiness as any).status, "needs_revalidation");
+      assert.equal((await post("/v1/agent-runtime/executions/claim", { hostSlug: "role-host" }, worker)).status, 409);
+      const execution = await prisma.agentExecution.findUniqueOrThrow({ where: { id: (queued.body as any).data.id } }); assert.equal(execution.attempt, 0); assert.equal(execution.leaseToken, null);
+    } finally { delete process.env.ROOST_CODEX_EXECUTION_ENABLED; }
+  });
+});
 
 test("single-task scope requires one resolved target, manager, result and branch", async t => {
   const owner = await registerOwner("single-scope@example.com", "Single scope fixture");
@@ -1315,7 +1431,7 @@ test("single-task scope requires one resolved target, manager, result and branch
     assert.equal(editor.data.status === "ready", false); assert.equal(editor.data.editor.accepted.contract.objective.outcome, legacy.objective.outcome);
     assert.equal(editor.data.editor.taskIdentity.branch, `codex/task-${task.id}`);
     assert.equal((await submit()).status, 200); accepted = await pin();
-    await assert.rejects(prisma.task.update({ where: { id: task.id }, data: { executionReadiness: { ...accepted, contract: legacy } } }), /task_single_scope_required/);
+    await assert.rejects(prisma.task.update({ where: { id: task.id }, data: { executionReadiness: { ...accepted, contract: legacy } } }), /task_single_scope_required|task_roles_required/);
   });
   for (const [name, mutate] of Object.entries({
     application: (c: any) => { c.singleTask.applicationId = project.id; },
@@ -1347,6 +1463,7 @@ test("single-task scope requires one resolved target, manager, result and branch
     assert.equal((await submit()).status, 409);
     const current = await prisma.workforceEntity.update({ where: { id: f.manager.id }, data: { status: "active" } });
     f.input.contract.singleTask.accountableManager.revision = current.updatedAt.toISOString();
+    f.input.contract.taskRoles.accountableManager.revision = current.updatedAt.toISOString();
   });
   await t.test("one evidence-backed inseparable cause stays visible and auditable", async () => {
     const contract = structuredClone(f.input.contract), scope = contract.singleTask;
@@ -1372,6 +1489,7 @@ test("single-task scope requires one resolved target, manager, result and branch
       assert.ok((await pin()).changedSources.some((item: any) => item.id === f.manager.id));
       assert.equal((await submit()).status, 409); // stale explicit manager reference
       f.input.contract.singleTask.accountableManager.revision = (await prisma.workforceEntity.findUniqueOrThrow({ where: { id: f.manager.id } })).updatedAt.toISOString();
+      f.input.contract.taskRoles.accountableManager.revision = f.input.contract.singleTask.accountableManager.revision;
       assert.equal((await submit()).status, 200);
       const queued = await post("/v1/agent-runtime/executions", { taskId: task.id, applicationId: application.id }); assert.equal(queued.status, 201);
       const key = await post("/v1/api-keys", { name: "Scope worker", profileId: "mcp_codex_worker" });
@@ -1503,6 +1621,9 @@ test("Submit for execution is the sole durable and versioned Ready command", asy
       assert.equal((await post(route, accepted)).status, 403);
       await prisma.workspaceMembership.update({ where: { workspaceId_userId: { workspaceId, userId: user.id } }, data: { role: "owner" } });
       assert.equal((await claim()).status, 204);
+      assert.equal((await queue()).status, 409); // reverting membership never restores acceptance
+      f.input.contract.taskRoles.requester.revision = (await prisma.workspaceMembership.findUniqueOrThrow({ where: { workspaceId_userId: { workspaceId, userId: user.id } } })).updatedAt.toISOString();
+      assert.equal((await post(route, await input())).status, 200);
       assert.equal((await queue()).status, 201);
       assert.equal((await claim()).status, 200);
     });
@@ -1603,6 +1724,7 @@ test("Ready source writes atomically invalidate accepted read scopes without a r
   const actor = { requestedByType: "user", requestedById: (await prisma.user.findFirstOrThrow({ where: { email: "ready-source-write@example.com" } })).id };
   const pin = async () => (await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness as any;
   const accept = async () => {
+    f.input.contract.taskRoles.executor.revision = (await prisma.workforceEntity.findUniqueOrThrow({ where: { id: f.agent.id } })).updatedAt.toISOString();
     for (const category of ["company", "product", "technical"]) {
       const ref = f.input.contract.context[category][0];
       ref.revision = (await prisma.companyRecord.findUniqueOrThrow({ where: { id: ref.id } })).updatedAt.toISOString();
@@ -1820,7 +1942,9 @@ test("active context stop fences late reports, checkpoints, recovery and complet
       assert.equal((await post(`${f.route}/actions/cancel`, {}, auth)).status, 200);
       assert.equal((await f.read()).status, "cancelled");
       assert.equal((await post(`${f.route}/actions/retry`, {}, auth)).status, 409);
-      assert.equal((await post(`/v1/agent-runtime/tasks/${f.task.id}/actions/submit-for-execution`, f.input, auth)).status, 200);
+      f.input.contract.taskRoles.executor.revision = (await prisma.workforceEntity.findUniqueOrThrow({ where: { id: f.agent.id } })).updatedAt.toISOString();
+      const resubmitted = await post(`/v1/agent-runtime/tasks/${f.task.id}/actions/submit-for-execution`, f.input, auth);
+      assert.equal(resubmitted.status, 200, JSON.stringify(resubmitted.body));
       const fresh = await post("/v1/agent-runtime/executions", { taskId: f.task.id }, auth);
       assert.equal(fresh.status, 201); assert.notEqual((fresh.body as any).data.id, stopped.id);
       assert.notEqual((fresh.body as any).data.metadata.readyContextPin.pinId, (stopped.metadata as any).readyContextPin.pinId);
@@ -1901,6 +2025,8 @@ test("Ready workbench projects safe catalogs and requires a current human role f
     assert.equal("runtimeProfile" in body.data.editor.agent, false);
     const updatedSource = await prisma.companyRecord.findUniqueOrThrow({ where: { id: f.sources[0]!.id } });
     f.input.contract.context.company[0].revision = updatedSource.updatedAt.toISOString();
+    f.input.contract.taskRoles.requester.revision = (await prisma.workspaceMembership.findUniqueOrThrow({ where: { workspaceId_userId: { workspaceId: owner.workspace.id, userId: ownerUser.id } } })).updatedAt.toISOString();
+    f.input.contract.taskRoles.executor.revision = (await prisma.workforceEntity.findUniqueOrThrow({ where: { id: f.agent.id } })).updatedAt.toISOString();
     const submit = await request(`${route}/actions/submit-for-execution`, { method: "POST", headers: auth, body: JSON.stringify(await submissionInput(`${route}/actions/submit-for-execution`, f.input, auth)) });
     assert.equal(submit.status, role === "viewer" ? 403 : 200, JSON.stringify(submit.body));
   }

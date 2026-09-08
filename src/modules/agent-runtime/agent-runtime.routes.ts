@@ -155,7 +155,7 @@ agentRuntimeRouter.get("/tasks/:id/execution-readiness", asyncHandler(async (req
   const result = await readyTransaction(async tx => {
     const ready = await inspectReady(tx, req.auth!.workspaceId, taskId);
     if (ready.error === "task_not_found" || req.query.editor !== "1") return ready;
-    const editor = await readyEditorData(tx, req.auth!.workspaceId, taskId, req.query.applicationId ? z.string().uuid().parse(req.query.applicationId) : undefined);
+    const editor = await readyEditorData(tx, req.auth!.workspaceId, taskId, req.query.applicationId ? z.string().uuid().parse(req.query.applicationId) : undefined, req.auth!.userId ?? undefined);
     if (editor && "error" in editor) return { error: editor.error };
     return { ...ready, readiness: { ...ready.readiness, editor, canSubmit: req.auth!.authType === "user" && roleAtLeast(req.auth!.workspaceRole, "member"), executionEnabled: executionEnabled() } };
   });

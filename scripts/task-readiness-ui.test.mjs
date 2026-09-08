@@ -30,7 +30,7 @@ let checked = 0;
 function fixture(mode) {
   const f = validPacketFixture(), c = f.packet.contract;
   const task = { id: f.claimed.taskId, title: "Poprawa formularza zgłoszeń", status: "todo", project: { id: f.taskContext.task.projectId, name: "Portal obsługi klienta" }, goal: { id: c.objective.goalId, title: "Czytelne zgłoszenia bez barier" } };
-  const e = { taskIdentity: { contractId: c.singleTask.contractId, branch: c.singleTask.branch }, components: [{ ...c.singleTask.component, label: "Parser formularza" }], managers: [{ ...c.singleTask.accountableManager, label: "Aleksandra Nowak" }], submissionVersion: "a".repeat(64), task, agent: { ...f.taskContext.task.assignedWorkforceEntity, name: "Marta · Quality Engineer", eligible: true, competencies: ["javascript"], tools: c.access.tools, permissions: c.access.permissions }, applications: [{ id: f.claimed.applicationId, name: "Portal obsługi klienta" }], applicationId: f.claimed.applicationId,
+  const e = { roleCatalog: Object.entries(f.packet.roleAuthorities).filter(([name]) => ["accountableManager","executor","verifier","releaser"].includes(name)).map(([name, item]) => ({ id: item.id, revision: item.revision, label: name === "verifier" ? "Review Worker" : name === "releaser" ? "Release Worker" : name, type: item.type, role: item.role, competencies: item.competencies, mandates: item.authorityScope, principalKey: `${item.principal.kind}:${item.principal.id}`, eligible: true })), requester: { ...c.taskRoles.requester, label: "Requesting Member" }, roleOrigin: { established: true, submissionId: f.packet.roleAuthorities.provenance.originatingSubmissionId }, excludedRolePrincipals: f.packet.roleAuthorities.provenance.authors.map(p => `${p.kind}:${p.id}`), taskIdentity: { contractId: c.singleTask.contractId, branch: c.singleTask.branch }, components: [{ ...c.singleTask.component, label: "Parser formularza" }], managers: [{ ...c.singleTask.accountableManager, label: "Aleksandra Nowak" }], submissionVersion: "a".repeat(64), task, agent: { ...f.taskContext.task.assignedWorkforceEntity, name: "Marta · Quality Engineer", eligible: true, competencies: ["javascript"], tools: c.access.tools, permissions: c.access.permissions }, applications: [{ id: f.claimed.applicationId, name: "Portal obsługi klienta" }], applicationId: f.claimed.applicationId,
     projects: [task.project], goals: [task.goal], agents: [{ id: c.assignment.agentId, name: "Marta · Quality Engineer" }], activeExecution: mode === "blocked", catalogTruncated: false,
     models: [{ id: "gpt-5.6-sol", efforts: ["low", "medium", "high"] }],
     sources: f.packet.sources.map((item, i) => ({ id: item.id, label: ["Zasady firmy", "Wymagania portalu", "Architektura formularza"][i], applicationId: item.applicationId, revision: item.revision })), procedures: [], dependencies: [], decisions: [],
@@ -227,6 +227,58 @@ try {
       assert.equal(await scopePage.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     }
     await scopePage.close(); checked++;
+  }
+  for (const locale of ["en", "pl"]) {
+    const rolePage = await browser.newPage({ viewport: { width: 834, height: 960 } });
+    await rolePage.addInitScript(value => localStorage.setItem("companycoreLocale", value), locale);
+    const { f: roleFixture, packet: rolePacket } = fixture("changed"), savedRoles = roleFixture.packet.contract.taskRoles;
+    delete rolePacket.editor.accepted.contract.taskRoles; let submissions = 0;
+    await rolePage.route("**/v1/**", async route => {
+      const url = route.request().url();
+      if (url.includes("execution-readiness")) return route.fulfill({ json: { data: rolePacket } });
+      if (url.includes("submit-for-execution")) {
+        const input = route.request().postDataJSON(); submissions++;
+        assert.equal("roleProvenance" in input, false); assert.equal("roleProvenance" in input.contract, false);
+        roleFixture.packet.contract = input.contract; sealPacket(roleFixture.packet);
+        const badRole = submissions === 1 ? "verifier" : "releaser";
+        roleFixture.packet.roleAuthorities.verifier = submissions === 1 ? roleFixture.packet.roleAuthorities.executor : roleFixture.packet.roleAuthorities.verifier;
+        // Resolve the selected fixture identity as the API does; restore independent authority on correction.
+        for (const name of ["verifier", "releaser"]) roleFixture.packet.roleAuthorities[name] = input.contract.taskRoles[name].id === savedRoles.executor.id
+          ? { ...roleFixture.packet.roleAuthorities.executor }
+          : { id: savedRoles[name].id, workspaceId: roleFixture.claimed.workspaceId, type: "agent", status: "active", revision: savedRoles[name].revision, role: "engineer", competencies: ["javascript"], authorityScope: [name === "verifier" ? "task_verification" : "release_authorization"], principal: { kind: "agent", id: savedRoles[name].id }, membership: null };
+        sealPacket(roleFixture.packet);
+        if (submissions < 3) {
+          assert.throws(() => validateExecutionPacket(roleFixture.packet, roleFixture.claimed, roleFixture.taskContext, roleFixture.applicationContext));
+          rolePacket.status = "needs_context"; rolePacket.reason = "submission_incomplete";
+          return route.fulfill({ status: 409, json: { error: "task_execution_contract_invalid", errorDetails: { details: { issues: [{ field: `contract.taskRoles.${badRole}`, reason: "independence_required" }] } } } });
+        }
+        validateExecutionPacket(roleFixture.packet, roleFixture.claimed, roleFixture.taskContext, roleFixture.applicationContext);
+        rolePacket.editor.accepted.contract = input.contract; rolePacket.status = "ready"; delete rolePacket.changedSources;
+        return route.fulfill({ json: { data: { readiness: rolePacket } } });
+      }
+      assert.equal(route.request().method(), "GET");
+      return route.fulfill({ json: { data: url.includes("/v1/tasks?") ? [{ ...rolePacket.editor.task, priority: "normal" }] : { departments: [] } } });
+    });
+    await rolePage.goto(`http://127.0.0.1:${server.address().port}`);
+    await rolePage.locator("button:visible").filter({ hasText: locale === "pl" ? "Przygotuj wykonanie" : "Prepare execution" }).first().click();
+    await rolePage.getByRole("button", { name: locale === "pl" ? "Potwierdź bieżące odwołanie" : "Confirm current reference", exact: true }).click();
+    const verifier = rolePage.getByLabel(locale === "pl" ? /^Niezależny weryfikator/ : /^Independent verifier/), releaser = rolePage.getByLabel(locale === "pl" ? /^Zatwierdzający wydanie/ : /^Release authorizer/);
+    await verifier.selectOption(savedRoles.executor.id); await releaser.selectOption(savedRoles.releaser.id);
+    await rolePage.getByText(locale === "pl" ? /^Ta tożsamość jest autorem/ : /^This identity authored/).waitFor();
+    for (const width of [390, 834, 1440]) {
+      await rolePage.setViewportSize({ width, height: 960 }); await verifier.scrollIntoViewIfNeeded();
+      await rolePage.screenshot({ path: path.join(output, `${locale}-role-conflict-${width}.png`), fullPage: true });
+      assert.equal(await rolePage.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+    }
+    const submit = rolePage.getByRole("button", { name: locale === "pl" ? "Przekaż do wykonania" : "Submit for execution", exact: true });
+    await submit.click(); await rolePage.getByText(locale === "pl" ? /^Sprawdź wszystkie pięć ról/ : /^Review all five roles/).waitFor();
+    await verifier.selectOption(savedRoles.verifier.id); await releaser.selectOption(savedRoles.executor.id);
+    await submit.click(); await rolePage.getByText(locale === "pl" ? /^Sprawdź wszystkie pięć ról/ : /^Review all five roles/).waitFor();
+    await releaser.selectOption(savedRoles.releaser.id); await submit.click();
+    await rolePage.getByText(locale === "pl" ? "Bieżący kontrakt został sprawdzony i zaakceptowany." : "The current contract was validated and accepted.", { exact: true }).waitFor();
+    assert.equal(submissions, 3); await rolePage.getByText("Review Worker", { exact: true }).waitFor();
+    await rolePage.screenshot({ path: path.join(output, `${locale}-roles-accepted.png`), fullPage: true });
+    await rolePage.close(); checked++;
   }
   console.log(JSON.stringify({ checked, output }));
 } finally { await browser.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }

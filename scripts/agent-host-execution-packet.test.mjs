@@ -1,3 +1,5 @@
+import { syntheticHostWorkspace } from "./fixtures/host-workspace.mjs";
+const hostWorkspace = process.platform === "win32" ? await syntheticHostWorkspace() : undefined;
 import { compatibleHostFixture } from "./fixtures/host-protocol.mjs";
 import { strict as assert } from "node:assert";
 import { spawn } from "node:child_process";
@@ -101,10 +103,16 @@ test("diagnostics never echo values, unknown keys, source contents or lease secr
   });
 });
 
-for (const scenario of ["valid", "missingAcceptance", "missingModel", "olderModel", "unsupportedEffort"]) test(`real host model admission: ${scenario}`, { skip: process.platform !== "win32", timeout: 20000 }, async () => {
+for (const scenario of ["valid", "missingAcceptance", "missingModel", "olderModel", "unsupportedEffort", "missingRoles", "selfReview", "selfRelease"]) test(`real host model admission: ${scenario}`, { skip: process.platform !== "win32", timeout: 20000 }, async () => {
   const valid = scenario === "valid";
   const f = validPacketFixture();
-  const diagnosticField = scenario === "missingAcceptance" ? "contract.acceptance" : "contract.modelSelection";
+  const diagnosticField = ["missingRoles", "selfReview", "selfRelease"].includes(scenario) ? "contract.taskRoles" : scenario === "missingAcceptance" ? "contract.acceptance" : "contract.modelSelection";
+  if (scenario === "missingRoles") delete f.packet.contract.taskRoles;
+  if (scenario === "selfReview" || scenario === "selfRelease") {
+    const name = scenario === "selfReview" ? "verifier" : "releaser";
+    f.packet.contract.taskRoles[name] = f.packet.contract.taskRoles.executor;
+    f.packet.roleAuthorities[name] = f.packet.roleAuthorities.executor;
+  }
   if (scenario === "missingAcceptance") delete f.packet.contract.acceptance;
   if (scenario === "missingModel") delete f.packet.contract.modelSelection;
   if (scenario === "olderModel") f.packet.contract.modelSelection.model = "gpt-5.5";
@@ -132,7 +140,7 @@ for (const scenario of ["valid", "missingAcceptance", "missingModel", "olderMode
   const directory = await mkdtemp(path.join(process.cwd(), "scripts", ".packet-test-"));
   const configPath = path.join(directory, "config.json"); let host;
   try {
-    await writeFile(configPath, JSON.stringify({ workspaceRoot: "C:\\Workspaces", codexCommand: "packet-test-codex", repositories: { demoapp: { directory: "DemoApp", originUrl: "https://github.com/example-org/DemoApp.git" } } }));
+    await writeFile(configPath, JSON.stringify({ workspaceRoot: hostWorkspace, codexCommand: "packet-test-codex", repositories: { demoapp: { directory: "DemoApp", originUrl: "https://github.com/example-org/DemoApp.git" } } }));
     const fakeCodex = `let input=''; process.stdin.on('data', c=>input+=c); process.stdin.on('end',()=>{ if(!input.includes('roost-execution-packet-v1')) process.exit(2); console.log(JSON.stringify({type:'item.completed',item:{type:'agent_message',text:'Synthetic packet execution complete'}})); });`;
     const script = `import cp from 'node:child_process'; import {syncBuiltinESMExports} from 'node:module'; const original=cp.spawn; cp.spawn=(command,args,options)=>{ process.stdout.write('SPAWN:'+command+'\\n'); if(command==='packet-test-codex' && JSON.stringify(args)!==${JSON.stringify(JSON.stringify(["exec", "--ephemeral", "--json", "--sandbox", "workspace-write", "--model", "gpt-5.6-sol", "--config", 'model_provider="openai"', "--config", 'model_reasoning_effort="medium"', "-"]))}) throw new Error('unexpected_codex_model_arguments'); return command==='packet-test-codex' ? original(process.execPath,['-e',${JSON.stringify(fakeCodex)}],options) : original(command,args,options); }; syncBuiltinESMExports(); const {runHost}=await import('./scripts/roost-codex-agent-host.mjs'); const {acquireWriterLock}=await import('./scripts/lib/agent-host-writer-lock.mjs'); await runHost({readTaskBranch:async()=>${JSON.stringify(f.packet.contract.singleTask.branch)},createOutputBudget: (await import('./scripts/lib/agent-host-output-budget.mjs')).createObservedOutputBudget, acquireLock:()=>acquireWriterLock(${JSON.stringify(directory)})});`;
     host = spawn(process.execPath, ["--input-type=module", "-e", script], { windowsHide: true, stdio: ["ignore", "pipe", "pipe"], env: { ...process.env, ROOST_BASE_URL: `http://127.0.0.1:${server.address().port}`, ROOST_AGENT_API_KEY: "synthetic-only", ROOST_AGENT_HOST_CONFIG: configPath } });

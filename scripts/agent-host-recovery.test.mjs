@@ -1,3 +1,5 @@
+import { syntheticHostWorkspace } from "./fixtures/host-workspace.mjs";
+const hostWorkspace = process.platform === "win32" ? await syntheticHostWorkspace() : undefined;
 import { compatibleHostFixture } from "./fixtures/host-protocol.mjs";
 import { strict as assert } from "node:assert";
 import { spawn, execFile } from "node:child_process";
@@ -35,7 +37,7 @@ async function harness(t, stopStage) {
   const reports = [], modes = [], childPids = [];
   const directory = await mkdtemp(path.join(os.tmpdir(), "roost-recovery-test-"));
   const configPath = path.join(directory, "config.json");
-  const config = { workspaceRoot: "C:\\Workspaces", codexCommand: "recovery-test-codex", repositories: { demoapp: { directory: "DemoApp", originUrl: "https://github.com/example-org/DemoApp.git" } } };
+  const config = { workspaceRoot: hostWorkspace, codexCommand: "recovery-test-codex", repositories: { demoapp: { directory: "DemoApp", originUrl: "https://github.com/example-org/DemoApp.git" } } };
   await writeFile(configPath, JSON.stringify(config));
   const server = createServer(async (req, res) => {
     let body = ""; for await (const chunk of req) body += chunk;

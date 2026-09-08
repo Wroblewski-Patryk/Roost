@@ -2676,6 +2676,7 @@ model Task {
   assignedWorkforceEntityId String?               @map("assigned_workforce_entity_id") @db.Uuid
   assignedWorkforceEntity   WorkforceEntity?      @relation("TaskAssignedWorkforce", fields: [assignedWorkforceEntityId], references: [id], onDelete: SetNull)
   executionReadiness         Json                  @default("{\"status\":\"draft\"}") @map("execution_readiness")
+  executionRoleProvenance    Json?                 @map("execution_role_provenance")
   readySourceWatches         TaskReadySourceWatch[]
   reviewerUserId            String?               @map("reviewer_user_id") @db.Uuid
   reviewerUser              User?                 @relation("TaskReviewerUser", fields: [reviewerUserId], references: [id], onDelete: SetNull)

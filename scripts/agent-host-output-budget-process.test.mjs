@@ -1,3 +1,5 @@
+import { syntheticHostWorkspace } from "./fixtures/host-workspace.mjs";
+const hostWorkspace = process.platform === "win32" ? await syntheticHostWorkspace() : undefined;
 import assert from "node:assert/strict";
 import test from "node:test";
 import { spawn, execFile } from "node:child_process";
@@ -70,7 +72,7 @@ for (const scenario of scenarios) test(`output budget process containment: ${sce
   }
   try {
     // Deliberately bogus configuration cannot opt the production guard out.
-    await writeFile(configPath, JSON.stringify({ workspaceRoot: "C:\\Workspaces", codexCommand: "output-budget-fixture", allowUnbounded: true, outputTokenBudgetEnforcement: "supported",
+    await writeFile(configPath, JSON.stringify({ workspaceRoot: hostWorkspace, codexCommand: "output-budget-fixture", allowUnbounded: true, outputTokenBudgetEnforcement: "supported",
       repositories: { demoapp: { directory: "DemoApp", originUrl: "https://github.com/example-org/DemoApp.git" } } }));
     const recovering = scenario.startsWith("recover");
     let identity, start, attempt;

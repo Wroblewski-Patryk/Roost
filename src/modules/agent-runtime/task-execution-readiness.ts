@@ -43,14 +43,14 @@ export async function lockReadyTask(db: Prisma.TransactionClient, workspaceId: s
   return db.task.findFirst({ where: { id: taskId, workspaceId } });
 }
 
-async function resolved(db: Prisma.TransactionClient, workspaceId: string, taskId: string, input: Record<string, any>, execution?: AgentExecution) {
+async function resolved(db: Prisma.TransactionClient, workspaceId: string, taskId: string, input: Record<string, any>, execution?: AgentExecution, submission?: import("./task-role-context").RoleSubmission) {
   const watched = watchReadySources(db);
   db = watched.db;
   const application = await db.application.findFirst({ where: { id: input.applicationId, workspaceId, slug: { not: "roost" } }, include: { repositories: true } });
   if (!application) throw new Error("application_not_found");
   // A validation envelope has no execution record and cannot claim or run work.
   const envelope = execution ?? { id: taskId, taskId, workspaceId, applicationId: application.id, attempt: 1, metadata: { executionContract: input.contract }, prompt: input.prompt ?? null, baseBranch: input.baseBranch ?? null } as unknown as AgentExecution;
-  const taskContext = wire(await loadTaskAgentContext(workspaceId, taskId, envelope, db));
+  const taskContext = wire(await loadTaskAgentContext(workspaceId, taskId, envelope, db, submission));
   if (!taskContext) throw new Error("task_not_found");
   const applicationContext = wire(await loadApplicationAgentContext(workspaceId, application.id, true, readyContextQuery(taskContext.task, input.prompt), db));
   const claimed = { ...envelope, attempt: Math.max(1, envelope.attempt), application };
@@ -83,7 +83,7 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
     return result;
   }
   let context;
-  try { context = await resolved(db, workspaceId, taskId, input); }
+  try { context = await resolved(db, workspaceId, taskId, input, undefined, { authorId: actor.requestedById, requestId: input.requestId }); }
   catch (error) {
     const issues = object(error).details?.issues ?? [];
     const status = issues.length > 0 && issues.every((issue: any) => /^(contract|taskContext)\.decisions(\.|$)/.test(issue.field)) ? "needs_decision" : "needs_context";
@@ -96,13 +96,13 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
   }
   await context.watched.persist(taskId);
   const pin = { schemaVersion: "roost-ready-context-v1", sourceWatchVersion: "1", submissionId: input.requestId, status: "ready", pinId: randomUUID(), revision: context.revision,
-    applicationId: input.applicationId, contract: input.contract, prompt: input.prompt ?? null, baseBranch: input.baseBranch ?? null,
+    applicationId: input.applicationId, contract: input.contract, roleProvenance: context.taskContext.executionPacket.roleAuthorities.provenance, prompt: input.prompt ?? null, baseBranch: input.baseBranch ?? null,
     validatedAt: new Date().toISOString(), validation: { validator: "execution-packet-v1", revision: context.revision }, ...actor };
   const result = { readiness: { status: "ready", pinId: pin.pinId, revision: pin.revision, validationRevision: pin.validation.revision } };
   await receipt(result, pin);
-  await db.task.update({ where: { id: task.id }, data: { executionReadiness: pin } });
+  await db.task.update({ where: { id: task.id }, data: { executionReadiness: pin, executionRoleProvenance: pin.roleProvenance } });
   await db.event.create({ data: { workspaceId, taskId, type: "task_execution_ready", source: "roost", resourceType: "task", resourceId: taskId,
-    payload: { pinId: pin.pinId, revision: pin.revision, validation: pin.validation, validatedAt: pin.validatedAt, singleTask: input.contract.singleTask, outcome: input.contract.objective.outcome, ...actor } } });
+    payload: { pinId: pin.pinId, revision: pin.revision, validation: pin.validation, validatedAt: pin.validatedAt, singleTask: input.contract.singleTask, taskRoles: input.contract.taskRoles, roleProvenance: pin.roleProvenance, outcome: input.contract.objective.outcome, ...actor } } });
   return result;
 }
 
@@ -115,7 +115,7 @@ export async function inspectReady(db: Prisma.TransactionClient, workspaceId: st
   if (pin.schemaVersion !== "roost-ready-context-v1" || !pin.pinId || !/^[a-f0-9]{64}$/.test(pin.revision) || pin.validation?.validator !== "execution-packet-v1" || pin.validation?.revision !== pin.revision) {
     return { error: "task_ready_pin_required", readiness: { status: "not_ready", reason: "ready_pin_required" } };
   }
-  let reason = pin.status !== "ready" ? (["context_changed", "context_invalid", "source_watch_required", "submission_required", "single_task_scope_required"].includes(pin.reason) ? pin.reason : "revalidation_required") : !pin.submissionId ? "submission_required" : pin.sourceWatchVersion !== "1" ? "source_watch_required" : null;
+  let reason = pin.status !== "ready" ? (["context_changed", "context_invalid", "source_watch_required", "submission_required", "single_task_scope_required", "task_roles_required"].includes(pin.reason) ? pin.reason : "revalidation_required") : !pin.submissionId ? "submission_required" : pin.sourceWatchVersion !== "1" ? "source_watch_required" : null;
   let context;
   if (!reason) {
     try {
@@ -140,7 +140,7 @@ export async function inspectReady(db: Prisma.TransactionClient, workspaceId: st
 
 // Human editor projection: labels and revision references, never resolved source
 // bodies, agent metadata, credentials or client-authorable acceptance evidence.
-export async function readyEditorData(db: Prisma.TransactionClient, workspaceId: string, taskId: string, applicationId?: string) {
+export async function readyEditorData(db: Prisma.TransactionClient, workspaceId: string, taskId: string, applicationId?: string, userId?: string) {
   const context = await loadTaskAgentContext(workspaceId, taskId, null, db);
   if (!context) return null;
   const task = context.task, pin = object(task.executionReadiness);
@@ -153,16 +153,31 @@ export async function readyEditorData(db: Prisma.TransactionClient, workspaceId:
   const modelShape = modelSchema.innerType().shape;
   const author = pin.requestedByType === "user" && typeof pin.requestedById === "string" ? await db.workspaceMembership.findFirst({ where: { workspaceId, userId: pin.requestedById }, select: { user: { select: { name: true } } } }) : null;
   const active = await db.agentExecution.count({ where: { workspaceId, taskId, status: { in: ["queued", "claimed", "running", "waiting_for_approval"] } } });
-  const [projects, goals, agents, managers, components] = await Promise.all([
+  const [projects, goals, agents, managers, components, members, roleWorkers] = await Promise.all([
     db.project.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, name: true }, orderBy: { name: "asc" }, take: 500 }),
     db.goal.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, title: true }, orderBy: { title: "asc" }, take: 500 }),
     db.workforceEntity.findMany({ where: { workspaceId, status: "active", type: "agent" }, select: { id: true, name: true }, orderBy: { name: "asc" }, take: 500 }),
     db.workforceEntity.findMany({ where: { workspaceId, status: "active" }, select: { id: true, name: true, updatedAt: true }, orderBy: { name: "asc" }, take: 500 }),
-    db.applicationArchitectureComponent.findMany({ where: { applicationId: selected ?? "00000000-0000-0000-0000-000000000000", application: { workspaceId }, status: "active" }, select: { id: true, name: true, updatedAt: true }, orderBy: { name: "asc" }, take: 500 })
+    db.applicationArchitectureComponent.findMany({ where: { applicationId: selected ?? "00000000-0000-0000-0000-000000000000", application: { workspaceId }, status: "active" }, select: { id: true, name: true, updatedAt: true }, orderBy: { name: "asc" }, take: 500 }),
+    db.workspaceMembership.findMany({ where: { workspaceId }, select: { userId: true, role: true, updatedAt: true, user: { select: { name: true } } } }),
+    db.workforceEntity.findMany({ where: { workspaceId, status: "active" }, select: { id: true, name: true, type: true, role: true, source: true, externalId: true, authorityScope: true, skillIndex: true, updatedAt: true }, orderBy: { name: "asc" }, take: 501 })
   ]);
   const agent = task.assignedWorkforceEntity;
   const strings = (value: unknown) => Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+  const provenance = object(task.executionRoleProvenance), requesterId = provenance.requesterUserId ?? userId;
+  const requester = members.find(item => item.userId === requesterId);
+  const roleCatalog = roleWorkers.slice(0, 500).map(item => {
+    const membership = item.type === "human" && item.source === "user" ? members.find(m => m.userId === item.externalId) : null;
+    return { id: item.id, label: item.name, revision: item.updatedAt.toISOString(), type: item.type, role: item.role, competencies: strings(item.skillIndex),
+      mandates: strings(item.authorityScope).filter(value => ["task_accountability", "task_verification", "release_authorization"].includes(value)),
+      principalKey: item.type === "agent" && item.source !== "user" ? `agent:${item.id}` : membership ? `user:${membership.userId}` : null,
+      eligible: Boolean(item.role?.trim() && (item.type === "agent" && item.source !== "user" || membership && ["owner", "admin", "member"].includes(membership.role))) };
+  });
   return {
+    roleCatalog, roleCatalogTruncated: roleWorkers.length > 500,
+    requester: requester ? { id: requester.userId, label: requester.user.name ?? "—", revision: requester.updatedAt.toISOString() } : null,
+    roleOrigin: { established: Boolean(provenance.requesterUserId), submissionId: provenance.originatingSubmissionId ?? null },
+    excludedRolePrincipals: [...new Set([...(Array.isArray(provenance.authors) ? provenance.authors.map((p: any) => `${p.kind}:${p.id}`) : []), ...(userId ? [`user:${userId}`] : []), ...(agent ? [`agent:${agent.id}`] : [])])],
     submissionVersion: await submissionVersion(db, workspaceId, taskId, selected, context),
     taskIdentity: { contractId: `roost-task:${taskId}`, branch: `codex/task-${taskId}` },
     managers: managers.map(item => ({ id: item.id, label: item.name, revision: item.updatedAt.toISOString() })),

@@ -1,3 +1,5 @@
+import { syntheticHostWorkspace } from "./fixtures/host-workspace.mjs";
+const hostWorkspace = process.platform === "win32" ? await syntheticHostWorkspace() : undefined;
 import { compatibleHostFixture } from "./fixtures/host-protocol.mjs";
 import { strict as assert } from "node:assert";
 import { spawn } from "node:child_process";
@@ -138,7 +140,7 @@ test(sandboxBlocked ? "the real host rejects unrestricted sandbox before claimin
   const configPath = path.join(directory, "config.json");
   let host;
   try {
-    await writeFile(configPath, JSON.stringify({ workspaceRoot: "C:\\Workspaces", sandbox: sandboxBlocked ? "danger-full-access" : "workspace-write", codexCommand: "must-never-spawn.exe", repositories: { demoapp: { directory: "DemoApp", originUrl: "https://github.com/example-org/DemoApp.git" } } }));
+    await writeFile(configPath, JSON.stringify({ workspaceRoot: hostWorkspace, sandbox: sandboxBlocked ? "danger-full-access" : "workspace-write", codexCommand: "must-never-spawn.exe", repositories: { demoapp: { directory: "DemoApp", originUrl: "https://github.com/example-org/DemoApp.git" } } }));
     const startHost = `import { runHost } from './scripts/roost-codex-agent-host.mjs'; import { acquireWriterLock } from './scripts/lib/agent-host-writer-lock.mjs'; await runHost({ acquireLock: () => acquireWriterLock(${JSON.stringify(directory)}) });`;
     host = spawn(process.execPath, ["--input-type=module", "-e", startHost], { windowsHide: true,
       env: { ...process.env, ROOST_BASE_URL: `http://127.0.0.1:${server.address().port}`, ROOST_AGENT_API_KEY: "test-only", ROOST_AGENT_HOST_CONFIG: configPath },

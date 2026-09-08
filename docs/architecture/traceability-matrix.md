@@ -32,46 +32,40 @@ for later changes to these same canonical files.
 
 ## Atomic P0 selection
 
-The retained baseline includes pinned Ready context, source watches and active
-context stopping, plus model/duration/protocol and fail-closed output admission.
-The current bounded P0 slice is **RF-CTX-009: one task scope in the existing
-Submit for execution contract**. The RF-CTX-008 command boundary remains in place.
+The retained baseline includes pinned Ready context, source watches, active
+context stopping, explicit versioned Submit and one measured task scope.
+The current bounded P0 slice is **RF-CTX-010: explicit task role admission**.
 
-The existing command and owner contract editor now require a reviewed context
-version and an idempotency request ID. One authoritative transaction validates
-completeness and commits the source watches, accepted pin, command receipt and
-event. Draft, Needs context and Needs decision are durable nonexecuting states.
-Create/assign/free status edits and import writes cannot launch work. A database
-guard rejects alternate Ready mutations, including old API writes and reuse of
-an old receipt; receipt mutation is rejected. Earlier acceptance is invalidated
-on migration and never upgraded silently. Current human role checks apply to
-submission and replay. Queueing remains a separate explicit guarded action.
+The existing contract now requires one workspace-scoped requester, accountable
+manager, assigned executor, independent verifier and release authorizer. Current
+membership/profile revisions, declared skills and explicit role mandates are
+resolved transactionally. The first accepted Submit binds the human requester;
+later accepted authors and executors append to immutable origin history. Human
+aliases and replacement assignments cannot erase prior authorship or authorize
+self-review/self-release. Missing or conflicting evidence yields Needs context.
+The pin, receipt, provenance and event commit together with existing version and
+idempotency controls. Ordinary source edits invalidate Ready; alternate admission
+writes remain rejected. Legacy Ready is invalidated without inventing roles or
+reconstructing historical authors. PL/EN editing and accepted-role summaries use
+the existing workbench. The host requires task_role_separation_v1 before spawn.
 
-The additive scope requires one current application/component, accountable
-manager, executor, measured outcome and deterministic task branch. Two or three
-symptoms require explicit per-symptom links, an inseparability explanation and
-current technical evidence. Independent structured outcomes/components and
-bounded PL/EN compound-intent signals produce Needs context with split advice.
-Historical Ready is invalidated; stable task identity survives resubmission.
-Manager/component changes invalidate acceptance, and host branch mismatches stop
-before preparation or spawn. The accepted common-cause explanation is visible
-in the owner editor and recorded in the acceptance event.
+Verification: **81/81 API/database tests**, **324/324 host regression cases**,
+**74 Ready browser checks**, **18/18 active-stop UI checks**, **2/2 form-model
+tests**, an existing-data migration upgrade fixture, the installation-preservation
+bootstrap regression and npm run validate.
+Coverage includes API/DB self-review/self-release, membership removal, stale and
+foreign references, idempotency, preserved origin, ordinary assignment changes,
+claim refusal and synthetic process admission. PL/EN mobile/tablet/desktop role
+views were visually reviewed. Process fixtures create temporary fictional Git
+repositories and never call providers. Existing asset/chunk warnings remain;
+full-web strict typechecking and observer fault tests were not rerun. Production
+identity and recovery evidence are reported in the completed handoff.
 
-Verification: **64/64 API/database tests**, **300 host regression cases** (the
-affected packet process suite was corrected for the new branch fixture and rerun
-**65/65**), **72 Ready browser checks**, **18/18 active-stop UI checks**,
-**2/2 form-model tests**, and `npm run validate`. This covers ordinary alternate
-writes, idempotency/concurrency, legacy editing, source invalidation, claim and
-synthetic process admission. Mobile/tablet/desktop PL/EN views were visually
-reviewed. Existing asset/chunk warnings remain; full-web strict typechecking and
-observer fault tests were not rerun. Production identity is recorded in the
-completed handoff.
-
-RF-CTX-009 remains **częściowo działa**: structural/textual checks do not prove
-arbitrary semantic completeness or independent acceptance. There are no automatic interviews, live
-provider proof or activation. RF-CTX-006 and RF-HOST-010 retain their documented
-limits. Production stays execution disabled; the canonical host stays observe.
-No next requirement, automatic interview or DemoApp work was started. Registry and
+RF-CTX-010 remains **częściowo działa**: role admission does not implement review
+execution/return, actual release, HR certification, per-agent credential binding,
+broker/merge/push or activation. Earlier RF-CTX-009 semantic completeness limits
+remain. Production stays execution disabled and the canonical host stays observe.
+No second requirement or managed-application work was started. The registry and
 matrix retain 162 requirements.
 
 ## Matrix
@@ -107,7 +101,7 @@ matrix retain 162 requirements.
 | [RF-CTX-007](../product/interview-foundation-v2.md#rf-ctx-007) | P1 | brak | [CTX](#e-ctx) | No runtime context expansion protocol. |
 | [RF-CTX-008](../product/interview-foundation-v2.md#rf-ctx-008) | P0 | działa | [SUBMIT](#e-submit) | Within the supervised runtime, only the explicit versioned/idempotent Submit command grants Ready after validation. Draft/Needs context/Needs decision are durable; create/assign/edit/import and alternate database writes cannot admit work. Automatic interviews and semantic completeness belong to separate requirements. |
 | [RF-CTX-009](../product/interview-foundation-v2.md#rf-ctx-009) | P0 | częściowo działa | [TASK](#e-task), [single-task contract](execution-packet-contract.md#single-task-scope-rf-ctx-009), `scripts/agent-host-single-task.test.mjs`, `src/tests/api.test.ts`, `scripts/task-readiness-ui.test.mjs` | Submit requires one resolved app/component, manager, executor, measured result and deterministic branch; bounded shared-cause exception is visible/auditable. API/DB/host gates, legacy invalidation and source revision checks prevent ordinary bypass. Structural and PL/EN ambiguity checks do not prove arbitrary prose semantics; independent acceptance/role separation remains RF-CTX-010. |
-| [RF-CTX-010](../product/interview-foundation-v2.md#rf-ctx-010) | P0 | częściowo działa | [TASK](#e-task) | Assignment exists; role separation gates absent. |
+| [RF-CTX-010](../product/interview-foundation-v2.md#rf-ctx-010) | P0 | częściowo działa | [role contract](execution-packet-contract.md#explicit-task-roles-rf-ctx-010), `scripts/lib/agent-host-task-roles.mjs`, `src/modules/agent-runtime/task-role-context.ts`, `src/tests/api.test.ts`, `scripts/agent-host-task-roles.test.mjs`, `scripts/task-roles-migration.test.mjs`, `scripts/task-readiness-ui.test.mjs` | Submit resolves five current roles, immutable human origin and accepted author history; API/DB/host reject self-review/self-release and stale authority. Membership/profile edits invalidate Ready. Declared mandates/skills do not certify qualifications or bind runtime credentials; review/return and release execution remain absent. |
 | [RF-CTX-011](../product/interview-foundation-v2.md#rf-ctx-011) | P1 | częściowo działa | [PROC](#e-proc) | Registry primitives exist; task-type execution contract incomplete. |
 | [RF-CTX-012](../product/interview-foundation-v2.md#rf-ctx-012) | P0 | częściowo działa | [PROC](#e-proc) | Procedure refs validated; composition and exception authority absent. |
 | [RF-CTX-013](../product/interview-foundation-v2.md#rf-ctx-013) | P0 | częściowo działa | [PACKET](#e-packet) | Text recovery fields exist; typed recipient acceptance absent. |

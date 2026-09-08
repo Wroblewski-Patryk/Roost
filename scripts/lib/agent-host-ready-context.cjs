@@ -10,7 +10,7 @@ function normalize(value, taskId) {
   }
   if (value && typeof value === "object") {
     if (value instanceof Date) return value.toISOString();
-    return Object.fromEntries(Object.keys(value).sort().filter(key => key !== "executionReadiness" && !(value.id === taskId && key === "updatedAt"))
+    return Object.fromEntries(Object.keys(value).sort().filter(key => !["executionReadiness", "executionRoleProvenance"].includes(key) && !(value.id === taskId && key === "updatedAt"))
       .map(key => [key, value.id === taskId && key === "status" && ["todo", "in_progress"].includes(value[key]) ? "todo" : normalize(value[key], taskId)]));
   }
   return value;
@@ -25,6 +25,7 @@ function readyContextRevision(taskContext, applicationContext, input = {}) {
   const { generatedAt: _appTime, ...application } = applicationContext;
   const body = normalize({ schemaVersion: "roost-ready-context-v1", task, application,
     contract: executionPacket.contract, sources: executionPacket.sources, scopeAuthorities: executionPacket.scopeAuthorities,
+    roleAuthorities: executionPacket.roleAuthorities,
     prompt: input.prompt ?? null, baseBranch: input.baseBranch ?? null }, taskContext.task.id);
   return createHash("sha256").update(JSON.stringify(body)).digest("hex");
 }

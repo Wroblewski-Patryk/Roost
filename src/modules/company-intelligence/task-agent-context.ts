@@ -3,7 +3,7 @@ import { prisma } from "../../db/prisma";
 import { contextualEntityIds, organizationalContextsForEntities } from "../organizational-context/organizational-context.service";
 import { prepareExecutionPacket } from "../agent-runtime/execution-packet";
 
-export async function loadTaskAgentContext(workspaceId: string, taskId: string, execution: AgentExecution | null = null, db: Prisma.TransactionClient = prisma) {
+export async function loadTaskAgentContext(workspaceId: string, taskId: string, execution: AgentExecution | null = null, db: Prisma.TransactionClient = prisma, submission?: import("../agent-runtime/task-role-context").RoleSubmission) {
   const task = await db.task.findFirst({ where: { id: taskId, workspaceId }, include: { project: true, goal: true, target: true, taskList: true, assignedWorkforceEntity: true, reviewerUser: { select: { id: true, name: true } } } });
   if (!task) return null; const [contexts, dependencies, policies, procedures] = await Promise.all([
     organizationalContextsForEntities(workspaceId, "task", [task.id], db), db.dependency.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ fromEntityType: "task", fromEntityId: task.id }, { toEntityType: "task", toEntityId: task.id }] } }),
@@ -26,7 +26,7 @@ export async function loadTaskAgentContext(workspaceId: string, taskId: string, 
   const evidence = await db.evidenceRecord.findMany({ where: { workspaceId, OR: [{ entityType: "task", entityId: task.id }, { entityId: { in: records.map((record) => record.id) } }] }, orderBy: { observedAt: "desc" } });
   return {
     schemaVersion: "task-agent-execution-context-v1", generatedAt: new Date().toISOString(), task, organizationalContext: contexts.get(task.id),
-    ...(execution ? { executionPacket: await prepareExecutionPacket(execution, task, db) } : {}),
+    ...(execution ? { executionPacket: await prepareExecutionPacket(execution, task, db, submission) } : {}),
     intent: { objective: task.goal, target: task.target, project: task.project, businessContext: records.map((record) => ({ id: record.id, type: record.recordType, purpose: record.businessPurpose, rationale: record.rationale })) },
     requirements: records.filter((record) => record.recordType === "requirement"), relatedRecords: records, features, applications,
     affectedComponents: applications.flatMap((application) => application.architecture), dependencies, resources, procedures, policies, decisions, evidence,

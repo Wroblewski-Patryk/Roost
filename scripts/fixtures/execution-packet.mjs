@@ -19,6 +19,7 @@ export function validPacketFixture() {
     applicationId: category === "company" ? null : applicationId, recordType: "requirement", title: category,
     description: `Synthetic ${category} context`, businessPurpose: null, desiredState: null, expectedBehavior: null, revision }));
   const contract = {
+    taskRoles: { schemaVersion: "roost-task-roles-v1", requester: { id: uuid(22), revision }, accountableManager: { id: uuid(21), revision }, executor: { id: agentId, revision }, verifier: { id: uuid(23), revision }, releaser: { id: uuid(24), revision } },
     version: "1", objective: { outcome: "Repair the synthetic fixture", goalId },
     singleTask: { schemaVersion: "roost-single-task-v1", ...singleTaskIdentity(taskId), applicationId,
       component: { id: uuid(20), revision }, accountableManager: { id: uuid(21), revision },
@@ -36,7 +37,12 @@ export function validPacketFixture() {
     acceptance: { criteria: ["Fixture passes"], tests: ["node --test fixture.test.mjs"], evidence: ["Test result and changed paths"] },
     recovery: { handoff: "Leave changes for owner review", failure: "Report failed checks", escalation: "Ask owner when intent is ambiguous", rollback: { mode: "restore_task_changes", instructions: "Restore only this execution's changes; preserve unrelated work" } }
   };
-  const packet = sealPacket({ schemaVersion: "roost-execution-packet-v1", identity: { executionId: claimed.id, workspaceId, taskId, applicationId, agentId }, taskRevision: revision, contract, sources,
+  const membership = { id: uuid(25), userId: uuid(22), workspaceId, role: "member", revision };
+  const roleWorker = (id, authorityScope) => ({ id, workspaceId, type: "agent", status: "active", revision, role: "engineer", competencies: ["javascript"], authorityScope, principal: { kind: "agent", id }, membership: null });
+  const roleAuthorities = { requester: membership, authorMembership: membership, authorUserId: uuid(22),
+    accountableManager: roleWorker(uuid(21), ["task_accountability"]), executor: roleWorker(agentId, contract.access.permissions), verifier: roleWorker(uuid(23), ["task_verification"]), releaser: roleWorker(uuid(24), ["release_authorization"]),
+    provenance: { schemaVersion: "roost-role-provenance-v1", requesterUserId: uuid(22), originatingSubmissionId: uuid(26), authors: [{ kind: "agent", id: agentId }, { kind: "user", id: uuid(22) }] } };
+  const packet = sealPacket({ schemaVersion: "roost-execution-packet-v1", identity: { executionId: claimed.id, workspaceId, taskId, applicationId, agentId }, taskRevision: revision, contract, sources, roleAuthorities,
     scopeAuthorities: { component: { id: uuid(20), applicationId, status: "active", revision }, manager: { id: uuid(21), workspaceId, status: "active", revision } } });
   const taskContext = { schemaVersion: "task-agent-execution-context-v1", executionPacket: packet,
     task: { id: taskId, workspaceId, projectId, goalId, goal: { id: goalId, workspaceId }, assignedWorkforceEntityId: agentId, status: "in_progress", updatedAt: revision,
