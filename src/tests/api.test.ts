@@ -125,7 +125,7 @@ function assertSafeTestDatabase() {
 
 async function resetDatabase() {
   assertSafeTestDatabase();
-  await prisma.$executeRawUnsafe("TRUNCATE task_review_actions, task_review_decisions");
+  await prisma.$executeRawUnsafe("TRUNCATE task_review_actions, task_review_decisions, agent_credential_operations, api_keys CASCADE");
   await prisma.agentExecutionEvent.deleteMany();
   await prisma.agentExecution.deleteMany();
   await prisma.agentHost.deleteMany();
@@ -1412,7 +1412,7 @@ test("explicit task roles enforce identity, provenance and independent admission
 
 test("native review records decisions and manager returns without implementation side effects", async t => {
   let sequence = 0;
-  async function fixture() {
+  async function fixture(agentMode = false) {
     const suffix = `${Date.now()}-${sequence++}`;
     const owner = await registerOwner(`review-${suffix}@example.test`, "Review fixture"), workspaceId = owner.workspace.id;
     const auth = { Authorization: `Bearer ${owner.token}` };
@@ -1422,16 +1422,25 @@ test("native review records decisions and manager returns without implementation
     const task = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: "Repair fixture parser" } });
     const f = await prepareReadyFixture(workspaceId, task.id, app.id, auth, false);
     const manager = await prisma.workforceEntity.findFirstOrThrow({ where: { workspaceId, type: "human", source: "user", externalId: f.input.contract.taskRoles.requester.id } });
-    const managerProfile = await prisma.workforceEntity.update({ where: { id: manager.id }, data: { role: "accountable manager", authorityScope: ["task_accountability"] } });
+    const managerProfile = agentMode ? f.manager : await prisma.workforceEntity.update({ where: { id: manager.id }, data: { role: "accountable manager", authorityScope: ["task_accountability"] } });
     const user = await prisma.user.create({ data: { email: `verifier-${suffix}@example.test`, name: "Independent reviewer", passwordHash: "synthetic-not-a-login" } });
     await prisma.workspaceMembership.create({ data: { workspaceId, userId: user.id, role: "member" } });
-    const verifier = await prisma.workforceEntity.create({ data: { workspaceId, name: "Independent reviewer", slug: `verifier-${suffix}`, type: "human", source: "user", externalId: user.id, role: "reviewer", skillIndex: ["javascript"], authorityScope: ["task_verification"] } });
+    const verifier = agentMode ? f.verifier : await prisma.workforceEntity.create({ data: { workspaceId, name: "Independent reviewer", slug: `verifier-${suffix}`, type: "human", source: "user", externalId: user.id, role: "reviewer", skillIndex: ["javascript"], authorityScope: ["task_verification"] } });
     const { createAuthToken } = await import("../auth/token");
-    const reviewerAuth = { Authorization: `Bearer ${createAuthToken({ userId: user.id, workspaceId })}` };
+    let reviewerAuth: Record<string,string> = { Authorization: `Bearer ${createAuthToken({ userId: user.id, workspaceId })}` };
     const ref = (w: any) => ({ id: w.id, revision: w.updatedAt.toISOString() });
     f.input.contract.singleTask.accountableManager = ref(managerProfile); f.input.contract.taskRoles.accountableManager = ref(managerProfile); f.input.contract.taskRoles.verifier = ref(verifier);
+    const issue = async (agentId: string, name = "Fixture credential") => {
+      const body = { requestId: randomUUID(), agentId, name, expiresAt: new Date(Date.now()+86400000).toISOString() };
+      const response = await request("/v1/api-keys/agent-credentials", { method: "POST", headers: auth, body: JSON.stringify(body) });
+      assert.equal(response.status, 201, JSON.stringify(response.body));
+      return { ...(response.body as any).data, body };
+    };
+    const verifierKey = agentMode ? await issue(verifier.id) : null;
+    const managerKey = agentMode ? await issue(managerProfile.id) : null;
+    if (agentMode) reviewerAuth = { "X-API-Key": verifierKey.key };
     const root = `/v1/agent-runtime/tasks/${task.id}`;
-    const post = (url: string, body: any, headers = auth) => request(url, { method: "POST", headers, body: JSON.stringify(body) });
+    const post = (url: string, body: any, headers: Record<string,string> = auth) => request(url, { method: "POST", headers, body: JSON.stringify(body) });
     const submitRoute = `${root}/actions/submit-for-execution`;
     const accepted = await post(submitRoute, await submissionInput(submitRoute, f.input, auth)); assert.equal(accepted.status, 200, JSON.stringify(accepted.body));
     const pin = (await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness as any;
@@ -1440,8 +1449,124 @@ test("native review records decisions and manager returns without implementation
     const rejection = async () => { const s = (await view()).data; return { requestId: randomUUID(), expectedVersion: s.expectedVersion, executionId: execution.id, materialVersion: s.materialVersion, decision: "reject", summary: "Empty input throws", reproduction: ["Run the empty parser fixture"], expected: "A validation message", observed: "An exception is thrown", evidence: [{ kind: "test", reference: "npm test -- parser", result: "Empty input fails" }], correction: { scope: ["Handle empty parser input"], excluded: ["Do not change other parser behavior"], outcome: "Empty input returns a validation message", competencies: ["javascript"] } }; };
     const reject = async () => { const body = await rejection(); const r = await post(`${root}/actions/review`, body, reviewerAuth); assert.equal(r.status, 200, JSON.stringify(r.body)); return body; };
     const action = async (kind = "return_to_executor") => { const s = (await view(auth)).data; return { requestId: randomUUID(), expectedVersion: s.expectedVersion, reviewId: s.decision.id, action: kind, scope: ["Handle empty parser input"] }; };
-    return { ...f, auth, workspaceId, task, app, execution, root, post, view, rejection, reject, action, reviewerAuth, verifier, user, submitRoute };
+    return { ...f, issue, verifierKey, managerKey, auth, workspaceId, task, app, execution, root, post, view, rejection, reject, action, reviewerAuth, verifier, user, submitRoute };
   }
+
+  await t.test("agent credential binds exact verifier and manager; decisions audit agent without owner attribution", async () => {
+    const f = await fixture(true), rejection = await f.rejection();
+    assert.equal((await f.view()).data.canReview, true);
+    const discovery=(await request("/v1/connection",{headers:f.reviewerAuth})).body as any;
+    assert.deepEqual(discovery.data.auth.principal,{kind:"agent",id:f.verifier.id});
+    assert.equal(discovery.data.auth.userId,undefined);assert.equal(discovery.data.auth.credentialPrefix,f.verifierKey.keyPrefix);
+    const managerAuth = { "X-API-Key": f.managerKey.key };
+    assert.equal((await f.post(f.root+"/actions/review", rejection, managerAuth)).status, 403);
+    assert.equal((await f.post(f.root+"/actions/review", rejection)).status, 403);
+    for (const field of ["actorId","agentId","ownerId","actorUserId"]) assert.equal((await f.post(f.root+"/actions/review", { ...rejection, [field]: f.verifier.id }, f.reviewerAuth)).status, 400);
+    const r = await f.post(f.root+"/actions/review", rejection, { ...f.reviewerAuth, "X-Agent-Id": f.manager.id, "X-Owner-Id": f.user.id });
+    assert.equal(r.status, 200, JSON.stringify(r.body));
+    const review = (r.body as any).data.decision;
+    assert.equal(review.actorUserId, null); assert.equal(review.actorAgentId, f.verifier.id); assert.equal(review.actorCredentialId, f.verifierKey.id);
+    const ev = await prisma.event.findFirstOrThrow({ where: { resourceId: review.id } });
+    assert.equal(ev.actorType, "agent"); assert.equal(ev.actorId, f.verifier.id); assert.ok(!JSON.stringify(ev).includes(f.verifierKey.key));
+    const action = await f.action();
+    assert.equal((await f.post(f.root+"/actions/review-return", action, f.reviewerAuth)).status, 403);
+    const acted = await f.post(f.root+"/actions/review-return", action, managerAuth); assert.equal(acted.status, 200, JSON.stringify(acted.body));
+    assert.equal((acted.body as any).data.action.actorUserId, null); assert.equal((acted.body as any).data.action.actorAgentId, f.manager.id);
+    const {execFile}=await import("node:child_process"),{promisify}=await import("node:util");
+    const code = "const {createApp}=require('./dist/app');const server=createApp().listen(0,'127.0.0.1',async()=>{const x=JSON.parse(process.env.FIXTURE_REQUEST);const r=await fetch('http://127.0.0.1:'+server.address().port+x.path,{method:'POST',headers:{'Content-Type':'application/json',...x.auth},body:JSON.stringify(x.body)});const data=await r.json();console.log(JSON.stringify({status:r.status,replayed:data.data?.replayed}));server.close(()=>process.exit());});";
+    const restarted=await promisify(execFile)(process.execPath,["-e",code],{env:{...process.env,FIXTURE_REQUEST:JSON.stringify({path:f.root+"/actions/review-return",auth:managerAuth,body:action})}});
+    assert.deepEqual(JSON.parse(restarted.stdout.trim()),{status:200,replayed:true});
+    const log = await prisma.taskReviewAction.findUniqueOrThrow({where:{id:(acted.body as any).data.action.id}});
+    assert.equal(log.actorCredentialPrefix,f.managerKey.keyPrefix);
+  });
+  await t.test("credential create retry, rotation, revoke and immutable audit survive restart without revealing old secrets", async () => {
+    const f = await fixture(true), key=f.verifierKey, rejection=await f.rejection();
+    const replay=await f.post("/v1/api-keys/agent-credentials",key.body);assert.equal(replay.status,200);assert.equal((replay.body as any).data.key,null);
+    assert.equal((await f.post("/v1/api-keys/agent-credentials",{...key.body,name:"Changed input"})).status,409);
+    const rotation={requestId:randomUUID(),expectedVersion:key.version,expiresAt:new Date(Date.now()+86400000).toISOString()};
+    const result=await f.post("/v1/api-keys/"+key.id+"/actions/rotate",rotation);assert.equal(result.status,200,JSON.stringify(result.body));
+    const next=(result.body as any).data;assert.notEqual(next.key,key.key);assert.equal(next.agentId,f.verifier.id);
+    assert.equal((await request(f.root+"/review",{headers:f.reviewerAuth})).status,403);
+    const auth={"X-API-Key":next.key};assert.equal((await request(f.root+"/review",{headers:auth})).status,200);
+    const {execFile}=await import("node:child_process"),{promisify}=await import("node:util");
+    const restartCode="const {agentCredentialCommand}=require('./dist/modules/api-keys/agent-credential.service');const {prisma}=require('./dist/db/prisma');(async()=>{const p=JSON.parse(process.env.FIXTURE_CREDENTIAL);const r=await agentCredentialCommand(p.workspaceId,p.actorUserId,'rotate',p.keyId,p.input);console.log(JSON.stringify({replayed:r.replayed,secretAbsent:r.key===null,id:r.id}));await prisma.$disconnect()})()";
+    const fresh=await promisify(execFile)(process.execPath,["-e",restartCode],{env:{...process.env,FIXTURE_CREDENTIAL:JSON.stringify({workspaceId:f.workspaceId,actorUserId:f.input.contract.taskRoles.requester.id,keyId:key.id,input:rotation})}});
+    assert.deepEqual(JSON.parse(fresh.stdout.trim()),{replayed:true,secretAbsent:true,id:next.id});
+    const replayRotation=await f.post("/v1/api-keys/"+key.id+"/actions/rotate",rotation);assert.equal((replayRotation.body as any).data.id,next.id);assert.equal((replayRotation.body as any).data.key,null);
+    assert.equal((await request("/v1/api-keys/"+key.id,{method:"PATCH",headers:f.auth,body:JSON.stringify({active:true})})).status,403);
+    const revoke={requestId:randomUUID(),expectedVersion:next.version};assert.equal((await f.post("/v1/api-keys/"+next.id+"/actions/revoke",revoke)).status,200);
+    assert.equal((await f.post(f.root+"/actions/review",rejection,auth)).status,403);
+    assert.equal((await f.post("/v1/api-keys/"+next.id+"/actions/revoke",revoke)).status,200);
+    const catalog=(await request("/v1/api-keys/agent-credentials",{headers:f.auth})).body;
+    assert.ok(!JSON.stringify(catalog).includes(key.key));assert.ok(!JSON.stringify(catalog).includes(next.key));assert.ok(!JSON.stringify(catalog).includes("keyHash"));
+    assert.ok((await prisma.apiKey.findUniqueOrThrow({where:{id:next.id}})).lastUsedAt);
+    const audit=await prisma.agentCredentialOperation.findFirstOrThrow({where:{keyId:next.id,action:"rotate"}});
+    await assert.rejects(prisma.agentCredentialOperation.delete({where:{id:audit.id}}),/credential_audit_append_only/);
+    await assert.rejects(prisma.apiKey.update({where:{id:next.id},data:{active:true}}),/credential_agent_inactive|credential_revoked/);
+    await assert.rejects(prisma.apiKey.delete({where:{id:next.id}}),/credential_history_retained/);
+  });
+  await t.test("inactive identities and identity rebindings revoke credentials without resurrecting their authority", async () => {
+    for(const change of [{status:"inactive" as const},{runtimeExternalId:"replacement-runtime"},{source:"alternate-source"},{externalId:randomUUID()}]){
+      const f=await fixture(true);
+      await prisma.workforceEntity.update({where:{id:f.verifier.id},data:change});
+      assert.equal((await request(f.root+"/review",{headers:f.reviewerAuth})).status,403);
+      await prisma.workforceEntity.update({where:{id:f.verifier.id},data:{status:"active"}});
+      assert.equal((await request(f.root+"/review",{headers:f.reviewerAuth})).status,403);
+      const key=await prisma.apiKey.findUniqueOrThrow({where:{id:f.verifierKey.id}});assert.equal(key.active,false);assert.ok(key.revokedAt);
+      assert.equal(await prisma.event.count({where:{resourceId:key.id,type:"api_key.agent_invalidated"}}),1);
+    }
+  });
+  await t.test("foreign agents, human aliases, legacy broad keys and privileged route spoofing fail closed", async () => {
+    const f=await fixture(true),foreign=await fixture(true);
+    assert.equal((await f.post("/v1/api-keys/agent-credentials",{...f.verifierKey.body,requestId:randomUUID(),agentId:foreign.verifier.id})).status,409);
+    assert.equal((await f.post("/v1/api-keys/agent-credentials",{...f.verifierKey.body,requestId:randomUUID(),agentId:f.input.contract.taskRoles.requester.id})).status,409);
+    assert.equal((await f.post(foreign.root+"/actions/review",await foreign.rejection(),f.reviewerAuth)).status,404);
+    assert.equal((await f.post("/v1/api-keys/"+foreign.verifierKey.id+"/actions/revoke",{requestId:randomUUID(),expectedVersion:1})).status,404);
+    const legacy=await f.post("/v1/api-keys",{name:"Legacy fixture",fullAccessConfirmed:true});
+    assert.equal((await f.post(f.root+"/actions/review",await f.rejection(),{"X-API-Key":(legacy.body as any).data.key})).status,403);
+    for(const route of ["/v1/api-keys","/v1/agent-runtime/executions",f.root+"/actions/submit-for-execution","/v1/notes"]) assert.equal((await f.post(route,{ownerId:f.user.id,actorId:f.verifier.id},f.reviewerAuth)).status,403);
+    await assert.rejects(prisma.apiKey.update({where:{id:f.verifierKey.id},data:{boundAgentId:f.manager.id}}),/credential_binding_immutable/);
+    await assert.rejects(prisma.workforceEntity.update({where:{id:f.verifier.id},data:{workspaceId:foreign.workspaceId}}),/credential_agent_identity_immutable/);
+    const w=await prisma.workforceEntity.create({data:{workspaceId:f.workspaceId,type:"agent",name:"Key workspace fixture",slug:"key-workspace-fixture"}});
+    await assert.rejects(prisma.apiKey.create({data:{workspaceId:foreign.workspaceId,boundAgentId:w.id,name:"Invalid foreign key",keyHash:"synthetic-digest",keyPrefix:"synthetic",expiresAt:new Date(Date.now()+86400000),scopes:f.verifierKey.scopes}}),/credential_workspace_mismatch/);
+  });
+  await t.test("credential expiry and role or mandate changes are checked on every command", async () => {
+    const f=await fixture(true);
+    // A pre-expired synthetic credential can exist in imported history but never authenticate.
+    const worker=await prisma.workforceEntity.create({data:{workspaceId:f.workspaceId,type:"agent",name:"Expired fixture",slug:"expired-fixture"}});
+    const {generateApiKey,hashApiKey,apiKeyPrefix}=await import("../auth/api-key");const raw=generateApiKey();
+    await prisma.apiKey.create({data:{workspaceId:f.workspaceId,boundAgentId:worker.id,name:"Expired key",keyHash:hashApiKey(raw),keyPrefix:apiKeyPrefix(raw),expiresAt:new Date(Date.now()-1000),scopes:f.verifierKey.scopes}});
+    assert.equal((await request(f.root+"/review",{headers:{"X-API-Key":raw}})).status,403);
+    const rejection=await f.rejection();
+    await prisma.workforceEntity.update({where:{id:f.verifier.id},data:{authorityScope:[]}});
+    const response=await f.post(f.root+"/actions/review",rejection,f.reviewerAuth);assert.ok([403,409].includes(response.status));
+    assert.equal(await prisma.taskReviewDecision.count({where:{taskId:f.task.id}}),0);
+  });
+  await t.test("competing provisioning and rotations have at most one winner and no orphan active key", async () => {
+    const f=await fixture(true);
+    const worker=await prisma.workforceEntity.create({data:{workspaceId:f.workspaceId,type:"agent",name:"Race fixture",slug:"race-fixture"}});
+    const input={...f.verifierKey.body,agentId:worker.id,requestId:randomUUID()};
+    const created=await Promise.all([f.post("/v1/api-keys/agent-credentials",input),f.post("/v1/api-keys/agent-credentials",{...input,requestId:randomUUID()})]);
+    assert.deepEqual(created.map(r=>r.status).sort(),[201,409]);
+    const rotation={requestId:randomUUID(),expectedVersion:f.verifierKey.version,expiresAt:new Date(Date.now()+86400000).toISOString()};
+    const rotated=await Promise.all([f.post("/v1/api-keys/"+f.verifierKey.id+"/actions/rotate",rotation),f.post("/v1/api-keys/"+f.verifierKey.id+"/actions/rotate",{...rotation,requestId:randomUUID()})]);
+    assert.deepEqual(rotated.map(r=>r.status).sort(),[200,409]);
+    assert.equal(await prisma.apiKey.count({where:{boundAgentId:f.verifier.id,active:true}}),1);
+  });
+
+  await t.test("revocation races fail closed and the database rejects a different credential principal", async () => {
+    const f=await fixture(true), input=await f.rejection(), view=(await f.view()).data;
+    await assert.rejects(prisma.taskReviewDecision.create({data:{workspaceId:f.workspaceId,taskId:f.task.id,executionId:f.execution.id,requestId:randomUUID(),requestHash:"a".repeat(64),materialVersion:view.materialVersion,actorAgentId:f.verifier.id,actorCredentialId:f.managerKey.id,actorCredentialPrefix:f.managerKey.keyPrefix,verifierId:f.verifier.id,managerId:f.manager.id,decision:"reject",evidence:input,snapshot:{result:view.result}}}),/task_review_role_required/);
+    const results=await Promise.all([f.post(f.root+"/actions/review",input,f.reviewerAuth),f.post("/v1/api-keys/"+f.verifierKey.id+"/actions/revoke",{requestId:randomUUID(),expectedVersion:f.verifierKey.version})]);
+    assert.ok([200,403,409].includes(results[0]!.status));assert.ok([200,409].includes(results[1]!.status));
+    if(results[1]!.status===409)assert.equal((await f.post("/v1/api-keys/"+f.verifierKey.id+"/actions/revoke",{requestId:randomUUID(),expectedVersion:f.verifierKey.version})).status,200);
+    assert.equal((await f.post(f.root+"/actions/review",input,f.reviewerAuth)).status,403);
+    const {readyTransaction}=await import("../modules/agent-runtime/task-execution-readiness");
+    const {recordTaskReview}=await import("../modules/agent-runtime/task-review");
+    const staleAuth={workspaceId:f.workspaceId,authType:"api_key" as const,agentId:f.verifier.id,apiKeyId:f.verifierKey.id,credentialVersion:f.verifierKey.version};
+    const stale=await readyTransaction(tx=>recordTaskReview(tx,f.workspaceId,f.task.id,staleAuth,input));
+    assert.equal("error" in stale && stale.error,"task_review_forbidden");
+  });
   await t.test("approve is immutable, idempotent and does not mark delivery or change assignment", async () => {
     const f = await fixture(), before = await prisma.task.findUniqueOrThrow({ where: { id: f.task.id } });
     const { reproduction, expected, observed, correction, ...input } = await f.rejection(); const body = { ...input, decision: "approve" };

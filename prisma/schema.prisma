@@ -1950,7 +1950,11 @@ model TaskReviewDecision {
   requestId       String @map("request_id") @db.Uuid
   requestHash     String @map("request_hash")
   materialVersion String @map("material_version")
-  actorUserId     String @map("actor_user_id") @db.Uuid
+  actorUserId     String? @map("actor_user_id") @db.Uuid
+  actorAgentId    String? @map("actor_agent_id") @db.Uuid
+  actorCredentialId String? @map("actor_credential_id") @db.Uuid
+  actorCredentialPrefix String? @map("actor_credential_prefix")
+  actorCredential ApiKey? @relation(fields: [actorCredentialId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   verifierId      String @map("verifier_id") @db.Uuid
   managerId       String @map("manager_id") @db.Uuid
   decision        String
@@ -1972,7 +1976,11 @@ model TaskReviewAction {
   review          TaskReviewDecision @relation(fields: [reviewId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   requestId       String @map("request_id") @db.Uuid
   requestHash     String @map("request_hash")
-  actorUserId     String @map("actor_user_id") @db.Uuid
+  actorUserId     String? @map("actor_user_id") @db.Uuid
+  actorAgentId    String? @map("actor_agent_id") @db.Uuid
+  actorCredentialId String? @map("actor_credential_id") @db.Uuid
+  actorCredentialPrefix String? @map("actor_credential_prefix")
+  actorCredential ApiKey? @relation(fields: [actorCredentialId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   managerId       String @map("manager_id") @db.Uuid
   action          String
   childTaskId     String? @unique @map("child_task_id") @db.Uuid
@@ -2946,6 +2954,7 @@ model WorkforceEntity {
   id                     String                      @id @default(uuid()) @db.Uuid
   workspaceId            String                      @map("workspace_id") @db.Uuid
   workspace              Workspace                   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  credentials            ApiKey[]
   assignedTasks          Task[]                      @relation("TaskAssignedWorkforce")
   type                   WorkforceEntityType
   status                 WorkforceEntityStatus       @default(active)
@@ -3041,6 +3050,14 @@ model ApiKey {
   lastUsedAt                     DateTime?                       @map("last_used_at")
   createdAt                      DateTime                        @default(now()) @map("created_at")
   updatedAt                      DateTime                        @updatedAt @map("updated_at")
+  boundAgentId                   String? @map("bound_agent_id") @db.Uuid
+  boundAgent                     WorkforceEntity? @relation(fields: [boundAgentId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  expiresAt                      DateTime? @map("expires_at")
+  revokedAt                      DateTime? @map("revoked_at")
+  credentialVersion              Int @default(1) @map("credential_version")
+  credentialOperations           AgentCredentialOperation[]
+  reviewDecisions TaskReviewDecision[]
+  reviewActions TaskReviewAction[]
   productMapProjectionAdmissions ProductMapProjectionAdmission[]
 
   @@map("api_keys")
@@ -3061,4 +3078,20 @@ model IntegrationSetting {
   @@unique([workspaceId, provider])
   @@index([provider])
   @@map("integration_settings")
+}
+
+
+model AgentCredentialOperation {
+  id String @id @default(uuid()) @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  requestId String @map("request_id") @db.Uuid
+  requestHash String @map("request_hash")
+  keyId String @map("key_id") @db.Uuid
+  key ApiKey @relation(fields: [keyId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  actorUserId String @map("actor_user_id") @db.Uuid
+  action String
+  snapshot Json
+  createdAt DateTime @default(now()) @map("created_at")
+  @@unique([workspaceId, requestId])
+  @@map("agent_credential_operations")
 }

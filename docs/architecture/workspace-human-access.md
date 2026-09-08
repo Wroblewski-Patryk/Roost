@@ -60,6 +60,11 @@ workspace-scoped API keys with explicit capability profiles. Raw keys are shown
 once; administrators can inspect safe prefixes/scopes, last use, and revoke or
 enable a credential. Agent credentials never create human sessions.
 
+Native review agents use [immutable credential/principal bindings](agent-credential-principal.md)
+to exact workforce IDs. Their current task roles and mandates are checked separately.
+Unbound integration keys cannot act as those principals; no credentials are
+automatically assigned or converted on deployment.
+
 The workforce editor may assign several governed company roles and several
 departments to one human or agent. The first selected role and department are
 the primary working role and accountable department retained in the legacy

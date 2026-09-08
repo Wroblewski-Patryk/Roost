@@ -1,3 +1,4 @@
+import { agentCredentialCatalog, agentCredentialCommand } from "./agent-credential.service";
 import { Router } from "express";
 import type { Request, Response } from "express";
 import { z } from "zod";
@@ -56,7 +57,7 @@ apiKeysRouter.get("/", asyncHandler(async (req, res) => {
   }
 
   const records = await prisma.apiKey.findMany({
-    where: { workspaceId: req.auth!.workspaceId },
+    where: { workspaceId: req.auth!.workspaceId, boundAgentId: null },
     orderBy: { createdAt: "desc" }
   });
 
@@ -131,10 +132,30 @@ apiKeysRouter.patch("/:id", asyncHandler(async (req, res) => {
     return sendApiError(res, 404, "not_found");
   }
 
+  if (existing.boundAgentId) return sendApiError(res, 403, "credential_lifecycle_required");
   const record = await setAuditedApiKeyActive({
     workspaceId: req.auth!.workspaceId, id: existing.id, active: input.active,
     actorType: req.auth!.authType === "user" ? "user" : "agent", actorId: req.auth!.userId ?? req.auth!.apiKeyId,
     source: "roost_api"
   });
   res.json({ data: safeApiKey(record) });
+}));
+
+
+apiKeysRouter.get("/agent-credentials", asyncHandler(async (req, res) => {
+  if (!requireOwner(req, res)) return;
+  res.json({ data: await agentCredentialCatalog(req.auth!.workspaceId) });
+}));
+apiKeysRouter.post("/agent-credentials", asyncHandler(async (req, res) => {
+  if (!requireOwner(req, res)) return;
+  const result = await agentCredentialCommand(req.auth!.workspaceId, req.auth!.userId!, "create", null, req.body);
+  if ("error" in result) return sendApiError(res, result.error === "credential_forbidden" ? 403 : 409, result.error!);
+  res.status(result.replayed ? 200 : 201).json({ data: result });
+}));
+for (const action of ["rotate", "revoke"] as const) apiKeysRouter.post(`/:id/actions/${action}`, asyncHandler(async (req, res) => {
+  if (!requireOwner(req, res)) return;
+  const id = z.string().uuid().parse(req.params.id);
+  const result = await agentCredentialCommand(req.auth!.workspaceId, req.auth!.userId!, action, id, req.body);
+  if ("error" in result) return sendApiError(res, result.error === "credential_forbidden" ? 403 : result.error === "credential_not_found" ? 404 : 409, result.error!);
+  res.json({ data: result });
 }));

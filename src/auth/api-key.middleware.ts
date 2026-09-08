@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { prisma } from "../db/prisma";
+import { agentPrincipalRoute } from "./agent-principal";
 import { hashApiKey } from "./api-key";
 import { capabilityForRequest, hasCapability } from "./capabilities";
 import { verifyAuthToken } from "./token";
@@ -11,6 +12,9 @@ export type AuthContext = {
   workspaceId: string;
   authType: "user" | "api_key";
   apiKeyId?: string;
+  agentId?: string;
+  credentialVersion?: number;
+  credentialPrefix?: string;
   scopes?: string[];
   workspaceRole?: WorkspaceRole;
 };
@@ -70,6 +74,7 @@ export async function requireAuthContext(req: Request, res: Response, next: Next
 
   const apiKeyHash = hashApiKey(apiKey);
   const record = await prisma.apiKey.findFirst({
+    include: { boundAgent: true },
     where: {
       OR: [
         { keyHash: apiKeyHash },
@@ -81,7 +86,7 @@ export async function requireAuthContext(req: Request, res: Response, next: Next
     }
   });
 
-  if (!record?.active) {
+  if (!record?.active || record.revokedAt || record.expiresAt && record.expiresAt <= new Date()) {
     return sendApiError(res, 403, "invalid_api_key");
   }
 
@@ -89,6 +94,9 @@ export async function requireAuthContext(req: Request, res: Response, next: Next
     return sendApiError(res, 422, "workspace_required");
   }
 
+  if (record.boundAgentId && (record.boundAgent?.workspaceId !== record.workspaceId || record.boundAgent?.type !== "agent" || record.boundAgent?.status !== "active" || record.boundAgent?.source === "user" || !record.expiresAt || !agentPrincipalRoute(req.method, req.path))) {
+    return sendApiError(res, 403, "agent_principal_forbidden");
+  }
   const scopes = Array.isArray(record.scopes)
     ? record.scopes.filter((scope): scope is string => typeof scope === "string")
     : [];
@@ -99,13 +107,14 @@ export async function requireAuthContext(req: Request, res: Response, next: Next
 
   await prisma.apiKey.update({
     where: { id: record.id },
-    data: { lastUsedAt: new Date() }
+    data: { lastUsedAt: new Date(), updatedAt: record.updatedAt }
   });
 
   req.auth = {
     workspaceId: record.workspaceId,
     authType: "api_key",
     apiKeyId: record.id,
+    ...(record.boundAgentId ? { agentId: record.boundAgentId, credentialVersion: record.credentialVersion, credentialPrefix: record.keyPrefix ?? undefined } : {}),
     scopes
   };
 

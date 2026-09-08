@@ -68,6 +68,12 @@ API key management endpoints require an owner or administrator human session.
 Workspace service API keys must not be allowed to create additional keys. This prevents a leaked adapter
 key from minting persistent replacement credentials.
 
+Workforce-bound review credentials use a separate [atomic rotation and permanent
+revocation contract](../architecture/agent-credential-principal.md). They cannot
+change agent identity in place. Every supported agent command rechecks current
+credential and task role authority; an older backend must never receive an active
+bound credential during rollback.
+
 ## Elevated Risk Areas
 
 - AI-assisted flows

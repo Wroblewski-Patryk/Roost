@@ -137,21 +137,21 @@ export const agentRuntimeRouter = Router();
 
 agentRuntimeRouter.get("/tasks/:id/review", asyncHandler(async (req, res) => {
   const taskId = z.string().uuid().parse(req.params.id), cursor = z.string().uuid().optional().parse(req.query.cursor);
-  const result = await readyTransaction(tx => taskReviewView(tx, req.auth!.workspaceId, taskId, req.auth!.authType === "user" ? req.auth!.userId! : undefined, cursor));
+  const result = await readyTransaction(tx => taskReviewView(tx, req.auth!.workspaceId, taskId, req.auth!, cursor));
   if ("error" in result) return sendApiError(res, result.error === "task_not_found" ? 404 : 409, result.error!);
   res.json({ data: result });
 }));
 agentRuntimeRouter.post("/tasks/:id/actions/review", asyncHandler(async (req, res) => {
-  if (req.auth!.authType !== "user" || !roleAtLeast(req.auth!.workspaceRole, "member")) return sendApiError(res, 403, "task_review_forbidden");
+  if (req.auth!.authType === "user" ? !roleAtLeast(req.auth!.workspaceRole, "member") : !req.auth!.agentId) return sendApiError(res, 403, "task_review_forbidden");
   const taskId = z.string().uuid().parse(req.params.id);
-  const result = await readyTransaction(tx => recordTaskReview(tx, req.auth!.workspaceId, taskId, req.auth!.userId!, req.body));
+  const result = await readyTransaction(tx => recordTaskReview(tx, req.auth!.workspaceId, taskId, req.auth!, req.body));
   if ("error" in result) return sendApiError(res, result.error === "task_not_found" ? 404 : result.error === "task_review_forbidden" ? 403 : 409, result.error!);
   res.json({ data: result });
 }));
 agentRuntimeRouter.post("/tasks/:id/actions/review-return", asyncHandler(async (req, res) => {
-  if (req.auth!.authType !== "user" || !roleAtLeast(req.auth!.workspaceRole, "member")) return sendApiError(res, 403, "task_review_forbidden");
+  if (req.auth!.authType === "user" ? !roleAtLeast(req.auth!.workspaceRole, "member") : !req.auth!.agentId) return sendApiError(res, 403, "task_review_forbidden");
   const taskId = z.string().uuid().parse(req.params.id);
-  const result = await readyTransaction(tx => actOnTaskReview(tx, req.auth!.workspaceId, taskId, req.auth!.userId!, req.body));
+  const result = await readyTransaction(tx => actOnTaskReview(tx, req.auth!.workspaceId, taskId, req.auth!, req.body));
   if ("error" in result) return sendApiError(res, result.error === "task_not_found" ? 404 : result.error === "task_review_forbidden" ? 403 : 409, result.error!);
   res.json({ data: result });
 }));

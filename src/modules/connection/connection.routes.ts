@@ -23,6 +23,17 @@ connectionRouter.get("/", asyncHandler(async (req, res) => {
     return res.status(422).json({ error: "workspace_required" });
   }
 
+  // Principal discovery is read-only and cannot bootstrap organizational records.
+  if (req.auth!.agentId) return res.json({ data: {
+    service: "companycore", apiVersion: "v1", status: "ok",
+    workspace: { id: workspace.id, name: workspace.name },
+    auth: { type: "api_key", workspaceId: workspace.id, principal: { kind: "agent", id: req.auth!.agentId },
+      apiKeyId: req.auth!.apiKeyId, credentialPrefix: req.auth!.credentialPrefix },
+    capabilities: req.auth!.scopes, scopeMode: "scoped", commandBoundary: "task_review",
+    routes: ["GET /v1/connection", "GET /v1/tasks", "GET /v1/tasks/:id", "GET /v1/workforce",
+      "GET /v1/agent-runtime/tasks/:id/review", "POST /v1/agent-runtime/tasks/:id/actions/review", "POST /v1/agent-runtime/tasks/:id/actions/review-return"]
+  } });
+
   await ensureOperatingModelForWorkspace(prisma, workspace.id);
 
   const clickUp = await prisma.integrationSetting.findUnique({

@@ -21,15 +21,13 @@ tree or physical artifact. Reported tests and review evidence remain claims to
 be assessed by the verifier; recording them does not run those tests.
 
 Current RF-CTX-010 role identities, profile revisions, membership, declared
-skills and mandates must still resolve. Only the accepted verifier's linked
-human principal can decide, and only the accountable manager's linked human
-principal can dispose of a rejection. Both require a current owner/admin/member
-membership. Workspace ownership alone is insufficient. Accepted author history
-excludes the requester, previous authors and executors from independent review,
-including human profile aliases. Agent API keys cannot impersonate those human
-principals: agent review/manager commands require the separate per-agent identity
-binding gate and are unavailable in this slice. No generic key or request field
-selects an acting workforce identity.
+skills and mandates must still resolve. The exact linked human principal or
+[credential-bound agent principal](agent-credential-principal.md) can decide as
+the accepted verifier or accountable manager. Human sessions require a current
+owner/admin/member membership; ownership alone is insufficient. Agent credentials
+require the exact current worker, unexpired/nonrevoked key, explicit command scope
+and task mandate. Accepted authors/executors cannot independently review, including
+human aliases. Generic keys and request fields never select the acting identity.
 
 ## Commands
 
@@ -38,8 +36,8 @@ All routes are under `/v1/agent-runtime/tasks/:id`:
 | Route | Contract |
 | --- | --- |
 | `GET /review` | Current material, opaque expectedVersion, materialVersion, role eligibility, current decision, bounded history and specialist catalog. Optional scoped UUID cursor pages history (50 decisions per page); specialist catalog is capped at 500 and signals truncation. |
-| `POST /actions/review` | requestId, expectedVersion, executionId, materialVersion and approve/reject evidence. Requires a human verifier and agent-runtime:write. |
-| `POST /actions/review-return` | requestId, expectedVersion, reviewId and return_to_executor/create_specialist_task; scoped correction selection and current specialist reference when applicable. Requires the human manager and agent-runtime:write. |
+| `POST /actions/review` | requestId, expectedVersion, executionId, materialVersion and approve/reject evidence. Requires the assigned human or bound agent verifier and agent-runtime:write. |
+| `POST /actions/review-return` | requestId, expectedVersion, reviewId and return_to_executor/create_specialist_task; scoped correction selection and current specialist reference when applicable. Requires the assigned human or bound agent manager and agent-runtime:write. |
 
 Approve requires an assessment and at least one evidence/test reference with an
 observed result. Reject additionally requires reproduction steps, expected and
@@ -112,7 +110,7 @@ no invented review, approval or manager decision. Empty-database API tests and a
 separate existing-data upgrade fixture cover both migration paths.
 
 RF-CTX-014 remains partially implemented at the full agent-company level:
-the native human command workflow is implemented, while agent credential
-binding, automatic reviewer invocation, independent artifact/Git attestation,
+the native human and credential-bound agent command workflow is implemented,
+while automatic reviewer invocation, independent artifact/Git attestation,
 HR certification, hierarchical routing and broker/release execution remain
 separate gates. Execution stays disabled and the host stays observe.

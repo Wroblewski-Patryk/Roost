@@ -1,3 +1,4 @@
+import { AgentCredentialPanel } from "./agent-credential-panel";
 import { FormEvent, useMemo, useState } from "react";
 import { api } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
@@ -158,6 +159,7 @@ export function WorkspaceAccessSection({ workspaceId, currentUserId, currentRole
       <div className="roost-settings-actions"><CcButton iconLeft="ph-key" onClick={() => { setKeyProfileId(profiles.data?.[0]?.id || ""); setKeyOpen(true); }} variant="outline">{t("workspaceAccess.createKey")}</CcButton></div>
       <div className="roost-access-list">{(apiKeys.data || []).map((key) => { const profile = profileForKey(key); return <div className="roost-access-row" key={key.id}><div className="roost-access-identity"><i className="ph-bold ph-key" aria-hidden="true"></i><span><strong>{key.name}</strong><small>{key.keyPrefix || t("workspaceAccess.legacyKey")} · {profile?.label || `${key.scopes.length} scopes`}</small></span></div><div className="roost-access-controls"><span className={`badge badge-outline ${key.active ? "badge-success" : ""}`}>{t(key.active ? "workspaceAccess.active" : "workspaceAccess.revoked")}</span><CcButton disabled={busy} onClick={() => void toggleKey(key)} size="sm" variant="ghost">{t(key.active ? "workspaceAccess.revoke" : "workspaceAccess.enable")}</CcButton></div></div>; })}</div>
       {!activeKeys.length && apiKeys.status === "ready" ? <CcNotice tone="info" title={t("workspaceAccess.noActiveKeys")} /> : null}
+      <AgentCredentialPanel />
     </section> : null}
     {error ? <CcNotice detail={error} live title={t("workspaceAccess.actionError")} tone="error" /> : null}
     {success ? <CcToast detail={success} dismissLabel={t("common.dismiss")} onDismiss={() => setSuccess(null)} title={t("workspaceAccess.saved")} tone="success" /> : null}

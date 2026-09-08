@@ -34,43 +34,38 @@ for later changes to these same canonical files.
 
 The retained baseline includes versioned Submit, single-task scope, pinned Ready
 context, explicit roles, source invalidation and active context stopping.
-The current bounded P0 slice is **RF-CTX-014: native review and manager return**.
+The current bounded P0 slice is **RF-GOV-014: credential-bound agent principals**.
 
-A current independent human verifier can approve/reject a completed execution's
-versioned reported material. Rejection requires reproducible evidence and bounded
-correction scope. A separate current accountable human manager can return the
-same task to its original executor or create one dependent specialist draft.
-Neither action grants Ready; corrections require an explicit, fully validated
-Submit, and a specialist dependency keeps its parent blocked until independent
-approval of the specialist's current result. Review cannot repair files, change
-assignment/branch, close delivery or authorize release. Agent principals remain
-blocked pending credential identity binding.
+Native review and manager commands now accept the exact current agent identified
+by an immutable workspace-scoped ApiKey/workforce binding. Current task roles,
+mandates, competencies and independent authorship remain separate admission gates.
+Bodies, alias names and owner claims cannot select an acting agent. Human review
+and legacy integration behavior are preserved, while unbound keys remain denied
+for agent-principal commands.
 
-Append-only decision/action records retain material versions, actors, role and
-result snapshots, evidence, scope and parent/child links. DB guards preserve
-reviewed material and dependency identity. Serializable commands enforce current
-roles, workspace isolation, version conflicts and durable idempotency, including
-restart replay. Existing tasks/results receive no invented historical reviews.
-The PL/EN Operations preview opens review without writing the task; the existing
-Ready editor also exposes the workflow.
+The owner/admin lifecycle creates one active credential slot per agent, rotates
+atomically, expires access and permanently revokes keys. Identity deactivation or
+rebinding revokes associated credentials. Append-only lifecycle receipts and
+review history retain agent ID, credential ID/prefix and human versus agent
+attribution without secrets. The existing PL/EN settings access panel exposes
+binding, status, expiry, last use and one-time secret delivery.
 
-Verification: **91/91 API/database tests**, **88/88 affected packet/role host
-checks**, **64 review UI checks**, **75 Ready/workbench browser checks**,
-**18 active-stop UI checks**, **14 contract/form-model tests**, an existing-data
-migration upgrade fixture and npm run validate. Coverage includes approve,
-reject, missing evidence, human-author aliases, stale material, foreign scope,
-unauthorized roles, both manager dispositions, correction resubmission, immutable
-history/dependencies, concurrency and restart. UI checks include PL/EN phone,
-tablet and desktop plus safe retry after a failed request. Existing asset/chunk
-warnings remain. Full-web strict typechecking, full host regression and observer
-fault/reboot tests were not rerun; no provider or real execution was invoked.
+Verification: 98/98 API/database checks, focused credential schema/route tests and
+a separate existing-data migration fixture preserve legacy credentials and human
+review history. Coverage includes exact and wrong agents, spoofed fields/headers,
+workspace isolation, role changes, inactive/expired keys, rotation/revocation,
+database guards, competing commands and restart replay. 62 credential UI checks and 70 review UI checks cover PL/EN phone, tablet and
+desktop, safe secret delivery/replay and agent audit fallback. npm run validate
+is the release check. Existing-data upgrade covers both new migrations. Full host
+regression, full-web strict typechecking and observer fault/reboot checks were
+not rerun; no provider or real agent execution was invoked.
 
-RF-CTX-014 remains **częściowo działa** at the full agent-company level: agent
-identity binding, automatic reviewer invocation, artifact/Git attestation,
-certification, hierarchical routing and release/broker execution remain separate.
-Production stays execution disabled and the canonical host stays observe. No
-second requirement or managed-application work was started. The registry and
-matrix retain 162 requirements. Production identity is in the completed handoff.
+RF-GOV-014 remains **częściowo działa** for the full company: this command class covers
+native review, not migration of all legacy host/integration commands or a
+short-lived per-operation capability broker. Automatic reviewer invocation,
+artifact/Git attestation, HR/certification, routing and release remain separate.
+No credential is provisioned on deployment. Production execution stays disabled
+and the canonical host stays observe.
 
 ## Matrix
 
@@ -89,7 +84,7 @@ matrix retain 162 requirements. Production identity is in the completed handoff.
 | [RF-GOV-011](../product/interview-foundation-v2.md#rf-gov-011) | P1 | częściowo działa | [ORG](#e-org) | Role data does not enforce separation. |
 | [RF-GOV-012](../product/interview-foundation-v2.md#rf-gov-012) | P1 | częściowo działa | [ORG](#e-org) | Profile configuration and allocation unverified. |
 | [RF-GOV-013](../product/interview-foundation-v2.md#rf-gov-013) | P1 | brak | [SCHED](#e-sched) | No governed subagent scheduler. |
-| [RF-GOV-014](../product/interview-foundation-v2.md#rf-gov-014) | P0 | częściowo działa | [AUTH](#e-auth) | Scoped keys exist; per-agent runtime binding incomplete. |
+| [RF-GOV-014](../product/interview-foundation-v2.md#rf-gov-014) | P0 | częściowo działa | [AUTH](#e-auth) | Immutable workforce-bound keys and current DB principal checks govern native review/manager commands, with expiry, atomic rotation, revocation and agent/credential audit. Other legacy command classes and per-operation capability brokering remain outside this slice. |
 | [RF-GOV-015](../product/interview-foundation-v2.md#rf-gov-015) | P0 | działa | [GOV](#e-gov) | Boundary is governing policy; no DemoApp change authorized. |
 | [RF-GOV-016](../product/interview-foundation-v2.md#rf-gov-016) | P0 | działa | [GOV](#e-gov) | Closed-batch contract governs this delivery. |
 | [RF-GOV-017](../product/interview-foundation-v2.md#rf-gov-017) | P0 | działa | [DOC](#e-doc) | 162 stable requirements, decision status and supersession links; all 162 mapped to inspected evidence and limitations in this V2 registry. |
@@ -109,7 +104,7 @@ matrix retain 162 requirements. Production identity is in the completed handoff.
 | [RF-CTX-011](../product/interview-foundation-v2.md#rf-ctx-011) | P1 | częściowo działa | [PROC](#e-proc) | Registry primitives exist; task-type execution contract incomplete. |
 | [RF-CTX-012](../product/interview-foundation-v2.md#rf-ctx-012) | P0 | częściowo działa | [PROC](#e-proc) | Procedure refs validated; composition and exception authority absent. |
 | [RF-CTX-013](../product/interview-foundation-v2.md#rf-ctx-013) | P0 | częściowo działa | [PACKET](#e-packet) | Text recovery fields exist; typed recipient acceptance absent. |
-| [RF-CTX-014](../product/interview-foundation-v2.md#rf-ctx-014) | P0 | częściowo działa | [native review contract](task-review-workflow.md), `src/modules/agent-runtime/task-review.ts`, `src/tests/api.test.ts`, `scripts/task-review-ui.test.mjs`, `scripts/task-review-migration.test.mjs` | Current human verifier records versioned approve/reject; manager returns scoped work or creates one dependent specialist draft. Append-only history, role/DB guards, correction Submit, stale/concurrent/restart and UI paths verified. Agent credential binding, automated reviewer invocation and artifact/Git attestation remain separate. |
+| [RF-CTX-014](../product/interview-foundation-v2.md#rf-ctx-014) | P0 | częściowo działa | [native review contract](task-review-workflow.md), `src/modules/agent-runtime/task-review.ts`, `src/tests/api.test.ts`, `scripts/task-review-ui.test.mjs`, `scripts/task-review-migration.test.mjs` | Current human or credential-bound agent verifier records versioned approve/reject; manager returns scoped work or creates one dependent specialist draft. Append-only history, role/DB guards, correction Submit, stale/concurrent/restart and UI paths verified. Automated reviewer invocation and artifact/Git attestation remain separate. |
 | [RF-CTX-015](../product/interview-foundation-v2.md#rf-ctx-015) | P1 | częściowo działa | [TASK](#e-task) | Notes and task links exist; typed governed communication incomplete. |
 | [RF-CTX-016](../product/interview-foundation-v2.md#rf-ctx-016) | P1 | częściowo działa | [DEC](#e-dec) | Structured Decision CRUD exists; adaptive interview orchestration absent. |
 | [RF-CTX-017](../product/interview-foundation-v2.md#rf-ctx-017) | P0 | częściowo działa | [DEC](#e-dec) | Supersession fields exist; impact/revalidation/event-based reopening absent. |
@@ -411,7 +406,7 @@ performed, and no VPS release is required for this local launcher change.
 [scripts/lib/agent-host-model-policy.mjs](../../scripts/lib/agent-host-model-policy.mjs), [scripts/roost-codex-agent-host.mjs](../../scripts/roost-codex-agent-host.mjs), [scripts/agent-host-model-policy.test.mjs](../../scripts/agent-host-model-policy.test.mjs), [scripts/agent-host-execution-packet.test.mjs](../../scripts/agent-host-execution-packet.test.mjs), [docs/architecture/execution-packet-contract.md](../../docs/architecture/execution-packet-contract.md).
 
 <a id="e-auth"></a>
-**AUTH** — Capability profiles, scoped keys and human workspace roles; not full per-task mandates.
+**AUTH** — Capability profiles, scoped integration keys, human workspace roles and [credential-bound agent principals](agent-credential-principal.md) for native review; not a universal task capability broker.
 
 [src/auth/agent-key-profiles.ts](../../src/auth/agent-key-profiles.ts), [src/modules/api-keys/api-key.service.ts](../../src/modules/api-keys/api-key.service.ts), [src/modules/workspaces/workspace-access.routes.ts](../../src/modules/workspaces/workspace-access.routes.ts), [src/tests/api.test.ts](../../src/tests/api.test.ts).
 

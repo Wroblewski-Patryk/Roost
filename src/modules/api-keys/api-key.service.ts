@@ -25,6 +25,7 @@ export async function createAuditedApiKey(input: KeyActor & { workspaceId: strin
 export async function setAuditedApiKeyActive(input: KeyActor & { workspaceId: string; id: string; active: boolean }) {
   return prisma.$transaction(async (tx) => {
     const existing = await tx.apiKey.findFirstOrThrow({ where: { id: input.id, workspaceId: input.workspaceId } });
+    if (existing.boundAgentId) throw new Error("credential_lifecycle_required");
     const updated = await tx.apiKey.update({ where: { id: existing.id }, data: { active: input.active } });
     await tx.event.create({ data: {
       workspaceId: input.workspaceId, type: input.active ? "api_key.activated" : "api_key.revoked", source: input.source,

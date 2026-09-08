@@ -285,6 +285,14 @@ include password hashes, raw API keys, integration tokens, or secret material.
 Integration settings such as ClickUp credentials must belong to the active
 workspace and must not be returned in API responses.
 
+## Agent credential principals
+
+[Agent principal binding](architecture/agent-credential-principal.md) defines the
+separate immutable workforce-bound credential class, owner/admin lifecycle
+endpoints, one-time secret delivery, current database checks and native
+review/manager command authority. Legacy integration keys below remain unbound
+and cannot impersonate a review agent.
+
 ## Service API Keys
 
 `X-API-Key` remains the service-client auth mechanism for Codex Agent Host, Jarvis,

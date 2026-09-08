@@ -17,6 +17,10 @@ returns workspace-scoped runtime readiness in register/heartbeat responses.
 Both host listings and readiness project an expired heartbeat as offline after
 60 seconds. See the [Windows observer runbook](../operations/local-codex-agent-host.md#observer-login-autostart).
 
+Native review commands support [per-agent credential bindings](agent-credential-principal.md).
+These keys do not authorize the host protocol or activate executions. The host
+credential below retains its separate integration role.
+
 The canonical login launcher uses a dedicated `mcp_codex_worker` credential in
 Windows Credential Manager for the current user. Key creation and activation/
 revocation commit a secret-free event atomically with the key mutation. Raw key
