@@ -42,6 +42,14 @@ function assertReadyContext(taskContext, applicationContext, execution) {
   if (admission?.status !== "ready" || !pin?.pinId || admission.pinId !== pin.pinId || admission.revision !== pin.revision || admission.validationRevision !== pin.revision || revision !== pin.revision) {
     throw readyAdmissionError();
   }
+  assertRiskAdmission(taskContext, execution);
 }
 
-module.exports = { readyContextRevision, readyContextQuery, assertReadyContext, readyAdmissionError };
+function assertRiskAdmission(taskContext, execution, actualCommit) {
+  const gate=taskContext?.readyAdmission?.riskAdmission, pin=execution?.metadata?.readyContextPin;
+  if (gate?.policy!=="roost-native-risk-admission-v1" || !/^[a-f0-9]{64}$/.test(gate?.seal??"") || gate.seal!==pin?.riskAdmissionSeal ||
+      !/^[a-f0-9]{40}$/.test(gate?.commit??"") || gate.commit!==pin?.riskAdmissionCommit ||
+      !Number.isFinite(Date.parse(gate?.expiresAt)) || Date.parse(gate.expiresAt)<=Date.now()+5000 || actualCommit!==undefined && actualCommit!==gate.commit) throw readyAdmissionError();
+}
+
+module.exports = { readyContextRevision, readyContextQuery, assertReadyContext, assertRiskAdmission, readyAdmissionError };

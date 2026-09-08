@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { readyTransaction } from "./task-execution-readiness";
 import { suspensionBlocks } from "./capability-suspension";
 import { riskAdmission } from "./task-risk";
+import { riskLevelAdmission } from "./task-risk-admission";
 type Db = Prisma.TransactionClient;
 export async function reviewTransaction<T>(work: (db: Db) => Promise<T>) {
   try {
@@ -29,6 +30,7 @@ export async function grantState(db: Db, id: string) {
 export async function admitCapability(db: Db, workspaceId: string, taskId: string, principal: any, operation: string, grantId?: string, prior?: any) {
   const execution = await db.agentExecution.findFirst({where:{workspaceId,taskId},orderBy:[{createdAt:"desc"},{id:"desc"}]});
   if(execution && await suspensionBlocks(db,workspaceId,taskId,execution.applicationId,operation,principal.kind==="agent"?principal.id:null,principal.credentialId)) return {error:"native_capability_suspended"};
+  if (!prior && (await riskLevelAdmission(db,taskId,operation)).error) return {error:"risk_admission_required"};
   if (principal.kind !== "agent") return grantId ? { error: "capability_agent_only" } : { grant: null };
   if (!prior) {
     const risk = await riskAdmission(db,taskId);

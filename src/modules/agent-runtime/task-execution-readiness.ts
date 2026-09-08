@@ -10,6 +10,7 @@ import { watchReadySources } from "./ready-source-watch";
 import { reviewAdmissionError } from "./task-review-admission";
 import { suspensionBlocks } from "./capability-suspension";
 import { riskAdmission, riskContextVersion } from "./task-risk";
+import { admissionVersion, riskLevelAdmission } from "./task-risk-admission";
 
 const { readyContextRevision, readyContextQuery } = require("../../../scripts/lib/agent-host-ready-context.cjs") as {
   readyContextRevision: (task: any, application: any, input: any) => string;
@@ -29,7 +30,7 @@ export async function submissionVersion(db: Prisma.TransactionClient, workspaceI
   if (!context) return null;
   const application = applicationId ? await loadApplicationAgentContext(workspaceId, applicationId, true, readyContextQuery(context.task, null), db) : {};
   const revision = readyContextRevision({ ...wire(context), executionPacket: { contract: null, sources: [] } }, wire(application ?? {}), {});
-  return digest({ revision, applicationId: applicationId ?? null, updatedAt: context.task.updatedAt, readiness: context.task.executionReadiness, riskVersion:await riskContextVersion(db,taskId) });
+  return digest({ revision, applicationId: applicationId ?? null, updatedAt: context.task.updatedAt, readiness: context.task.executionReadiness, riskVersion:await riskContextVersion(db,taskId), admissionVersion:await admissionVersion(db,taskId) });
 }
 export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T | { error: string }> {
   try { return await prisma.$transaction(work, { isolationLevel: "Serializable", maxWait: 5000, timeout: 20000 }); }
@@ -39,6 +40,8 @@ export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) =
     if (suspensionError) return {error:suspensionError};
     const riskError = nativeDiagnostic.match(/\btask_risk_[a-z_]+\b/)?.[0];
     if (riskError) return {error:riskError};
+    const admissionError = nativeDiagnostic.match(/\brisk_admission_[a-z_]+\b/)?.[0];
+    if (admissionError) return {error:admissionError};
     if (error instanceof Prisma.PrismaClientKnownRequestError && (["P2034", "P2028"].includes(error.code) ||
       error.code === "P2010" && ["40001", "40P01"].includes(String(error.meta?.code)))) return { error: "task_ready_context_conflict" };
     throw error;
@@ -115,8 +118,15 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
     await db.task.update({where:{id:taskId},data:{executionReadiness:{...object(task.executionReadiness),...readiness}}});
     return receipt({error:risk.error,readiness});
   }
+  const admission = await riskLevelAdmission(db,taskId);
+  if (admission.error) {
+    const readiness={status:"needs_decision",reason:admission.error};
+    await db.task.update({where:{id:taskId},data:{executionReadiness:{...object(task.executionReadiness),...readiness}}});
+    return receipt({error:admission.error,readiness});
+  }
   const pin = { schemaVersion: "roost-ready-context-v1", sourceWatchVersion: "1", submissionId: input.requestId, status: "ready", pinId: randomUUID(), revision: context.revision,
     riskAssessmentId: risk.id,
+    riskAdmissionSeal: admission.seal, riskAdmissionCommit: admission.commit,
     applicationId: input.applicationId, contract: input.contract, roleProvenance: context.taskContext.executionPacket.roleAuthorities.provenance, prompt: input.prompt ?? null, baseBranch: input.baseBranch ?? null,
     validatedAt: new Date().toISOString(), validation: { validator: "execution-packet-v1", revision: context.revision }, ...actor };
   const result = { readiness: { status: "ready", pinId: pin.pinId, revision: pin.revision, validationRevision: pin.validation.revision } };
@@ -140,12 +150,14 @@ export async function inspectReady(db: Prisma.TransactionClient, workspaceId: st
   if (pin.schemaVersion !== "roost-ready-context-v1" || !pin.pinId || !/^[a-f0-9]{64}$/.test(pin.revision) || pin.validation?.validator !== "execution-packet-v1" || pin.validation?.revision !== pin.revision) {
     return { error: "task_ready_pin_required", readiness: { status: "not_ready", reason: "ready_pin_required" } };
   }
-  let reason = pin.status !== "ready" ? (["context_changed", "context_invalid", "source_watch_required", "submission_required", "single_task_scope_required", "task_roles_required", "risk_context_changed"].includes(pin.reason) ? pin.reason : "revalidation_required") : !pin.submissionId ? "submission_required" : pin.sourceWatchVersion !== "1" ? "source_watch_required" : null;
+  let reason = pin.status !== "ready" ? (["context_changed", "context_invalid", "source_watch_required", "submission_required", "single_task_scope_required", "task_roles_required", "risk_context_changed", "risk_admission_changed"].includes(pin.reason) ? pin.reason : "revalidation_required") : !pin.submissionId ? "submission_required" : pin.sourceWatchVersion !== "1" ? "source_watch_required" : null;
   let context;
   if (!reason) {
     const risk = await riskAdmission(db,taskId,pin);
     if ("error" in risk || risk.id !== pin.riskAssessmentId) reason = "risk_context_changed";
   }
+  const admission = await riskLevelAdmission(db,taskId);
+  if (!reason && (admission.error || admission.seal !== pin.riskAdmissionSeal)) reason = "risk_admission_changed";
   if (!reason) {
     try {
       context = await resolved(db, workspaceId, taskId, pin, execution);
@@ -163,7 +175,7 @@ export async function inspectReady(db: Prisma.TransactionClient, workspaceId: st
     }
     return { error: "task_ready_revalidation_required", readiness: { status: "needs_revalidation", reason, changedSources: pin.changedSources ?? [], ...proof } };
   }
-  const readiness = { status: "ready", ...proof };
+  const readiness = { status: "ready", ...proof, riskAdmission: {policy:admission.policy,seal:admission.seal,commit:admission.commit,expiresAt:admission.expiresAt} };
   return { readiness, pin, taskContext: { ...context!.taskContext, readyAdmission: readiness }, applicationContext: context!.applicationContext };
 }
 

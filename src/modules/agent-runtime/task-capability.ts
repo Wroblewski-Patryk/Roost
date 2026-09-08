@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { suspensionBlocks, suspensionList } from "./capability-suspension";
 import { riskAdmission } from "./task-risk";
+import { riskLevelAdmission } from "./task-risk-admission";
 import { reviewState } from "./task-review";
 import { capabilityWindow, issueCapabilitySchema, revokeCapabilitySchema } from "./task-capability-contract";
 import { grantOperations, grantScope, grantState } from "./task-capability-admission";
@@ -17,6 +18,7 @@ async function choices(db: Db, workspaceId: string, s: any) {
   if (!s.current || s.roleIssues.length || !["todo", "in_progress"].includes(s.task.status) || s.execution.cancelRequestedAt) return [];
   const options = [];
   for (const operation of grantOperations) {
+    if ((await riskLevelAdmission(db,s.task.id,operation)).error) continue;
     if (operation === "review_decision" ? Boolean(s.decision) : s.decision?.decision !== "reject" || Boolean(s.decision.action)) continue;
     const role = operation === "review_decision" ? s.authorities.verifier : s.authorities.accountableManager;
     if (role?.principal?.kind !== "agent") continue;

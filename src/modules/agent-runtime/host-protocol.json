@@ -9,7 +9,8 @@
     "active_context_stop_v1",
     "single_task_scope_v1",
     "task_role_separation_v1",
-    "native_runtime_redaction_v1"
+    "native_runtime_redaction_v1",
+    "native_risk_admission_v1"
   ],
   "requiredHostCapabilities": [
     "codex_exec_json",
@@ -29,6 +30,7 @@
     "active_context_stop_v1",
     "single_task_scope_v1",
     "task_role_separation_v1",
-    "native_runtime_redaction_v1"
+    "native_runtime_redaction_v1",
+    "native_risk_admission_v1"
   ]
 }

@@ -13,10 +13,11 @@ import { validPacketFixture, sealPacket, pinReadyFixture } from "./fixtures/exec
 import { writerLockFilename } from "./lib/agent-host-writer-lock.mjs";
 import { terminateWindowsProcessTree } from "./lib/agent-host-execution-lease.mjs";
 
-for (const scenario of ["redactionInitial", "redactionFinal", "redactionOutput", "branchBeforePreparation", "branchBeforeSpawn", "unchanged", "readyMissing", "readyLegacy", "readyChanged", "readyApiPrepare", "readyApiFinal", "taskChanged", "goalChanged", "applicationChanged", "sourceChanged", "accessRevoked", "lateTaskChange", "taskUnavailable", "applicationUnavailable", "authorityRejected", "reportUnavailable", "protocolChanged", "protocolUnavailable"]) {
+for (const scenario of ["riskCommitMismatch", "riskExpiredFinal", "redactionInitial", "redactionFinal", "redactionOutput", "branchBeforePreparation", "branchBeforeSpawn", "unchanged", "readyMissing", "readyLegacy", "readyChanged", "readyApiPrepare", "readyApiFinal", "taskChanged", "goalChanged", "applicationChanged", "sourceChanged", "accessRevoked", "lateTaskChange", "taskUnavailable", "applicationUnavailable", "authorityRejected", "reportUnavailable", "protocolChanged", "protocolUnavailable"]) {
   test(`real host fresh-context admission: ${scenario}`, { skip: process.platform !== "win32", timeout: 20000 }, async () => {
     const f = validPacketFixture(); f.taskContext.task.title = "Authoritative fixture title";
     pinReadyFixture(f);
+    if(scenario==="riskExpiredFinal") f.taskContext.readyAdmission.riskAdmission.expiresAt=new Date(Date.now()+8000).toISOString();
     const readyFailure = scenario.startsWith("ready") && scenario !== "readyApiFinal";
     if (scenario === "readyMissing") delete f.taskContext.readyAdmission;
     if (scenario === "readyLegacy") delete f.claimed.metadata.readyContextPin;
@@ -48,6 +49,7 @@ for (const scenario of ["redactionInitial", "redactionFinal", "redactionOutput",
       if (req.url.includes("company-intelligence")) {
         taskReads++;
         if (scenario === "redactionInitial" || scenario === "redactionFinal" && taskReads === 2) return send({ ...f.taskContext, unsafe: { password: "synthetic-redaction-sensitive" } });
+        if (taskReads === 2 && scenario === "riskExpiredFinal") await new Promise(resolve=>setTimeout(resolve,4000));
         if (taskReads === 2 && scenario === "readyApiFinal") return send("task_ready_revalidation_required", 409);
         if (taskReads === 2 && ["taskUnavailable", "authorityRejected"].includes(scenario)) return send("SYNTHETIC_SECRET_TRANSPORT", scenario === "authorityRejected" ? 403 : 503);
         return send({ ...f.taskContext, generatedAt: taskReads === 1 ? "2026-09-06T00:00:00Z" : "2026-09-06T00:00:01Z" });
@@ -81,7 +83,7 @@ for (const scenario of ["redactionInitial", "redactionFinal", "redactionOutput",
     try {
       await writeFile(configPath, JSON.stringify({ workspaceRoot: hostWorkspace, codexCommand: "context-test-codex", repositories: { demoapp: { directory: "DemoApp", originUrl: "https://github.com/example-org/DemoApp.git" } } }));
       const fake = `let input='';process.stdin.on('data',c=>input+=c);process.stdin.on('end',()=>{if(!input.includes('2026-09-06T00:00:01Z')||!input.includes('Task: Authoritative fixture title'))process.exit(7);console.log(JSON.stringify({type:'item.completed',item:{type:'agent_message',text:${JSON.stringify(scenario === "redactionOutput" ? "password=synthetic-redaction-sensitive" : "Fresh context confirmed")}}}));});`;
-      const launch = `import cp from 'node:child_process';import {syncBuiltinESMExports} from 'node:module';const original=cp.spawn;cp.spawn=(command,args,options)=>{if(command!=='context-test-codex')return original(command,args,options);process.stdout.write('MODEL_SPAWN\\n');return original(process.execPath,['-e',${JSON.stringify(fake)}],options);};syncBuiltinESMExports();const {runHost}=await import('./scripts/roost-codex-agent-host.mjs');const {acquireWriterLock}=await import('./scripts/lib/agent-host-writer-lock.mjs');await runHost({readTaskBranch:(()=>{let checks=0;return async()=>++checks===({branchBeforePreparation:1,branchBeforeSpawn:2}[${JSON.stringify(scenario)}])?"main":${JSON.stringify(f.packet.contract.singleTask.branch)};})(),createOutputBudget: (await import('./scripts/lib/agent-host-output-budget.mjs')).createObservedOutputBudget, acquireLock:()=>acquireWriterLock(${JSON.stringify(directory)})});`;
+      const launch = `import cp from 'node:child_process';import {syncBuiltinESMExports} from 'node:module';const original=cp.spawn;cp.spawn=(command,args,options)=>{if(command!=='context-test-codex')return original(command,args,options);process.stdout.write('MODEL_SPAWN\\n');return original(process.execPath,['-e',${JSON.stringify(fake)}],options);};syncBuiltinESMExports();const {runHost}=await import('./scripts/roost-codex-agent-host.mjs');const {acquireWriterLock}=await import('./scripts/lib/agent-host-writer-lock.mjs');await runHost({readTaskCommit:async()=>${JSON.stringify(scenario==="riskCommitMismatch"?"b":"a")}.repeat(40),readTaskBranch:(()=>{let checks=0;return async()=>++checks===({branchBeforePreparation:1,branchBeforeSpawn:2}[${JSON.stringify(scenario)}])?"main":${JSON.stringify(f.packet.contract.singleTask.branch)};})(),createOutputBudget: (await import('./scripts/lib/agent-host-output-budget.mjs')).createObservedOutputBudget, acquireLock:()=>acquireWriterLock(${JSON.stringify(directory)})});`;
       host = spawn(process.execPath, ["--input-type=module", "-e", launch], { windowsHide: true, stdio: ["ignore", "pipe", "pipe"], env: { ...process.env, ROOST_BASE_URL: `http://127.0.0.1:${server.address().port}`, ROOST_AGENT_API_KEY: "synthetic-context-key", ROOST_AGENT_HOST_CONFIG: configPath } });
       host.stdout.on("data", (c) => { output += c; }); host.stderr.on("data", (c) => { errors += c; });
       assert.equal((await once(host, "close"))[0], scenario.startsWith("protocol") ? 1 : 0, errors);
@@ -123,7 +125,7 @@ for (const scenario of ["redactionInitial", "redactionFinal", "redactionOutput",
           assert.match(lock.checkpoint.contextRevision, /^[a-f0-9]{64}$/);
           assert.equal(lock.checkpoint.contextRevision, requests.find((r) => r.input.checkpoint?.stage === "prepared").input.checkpoint.contextRevision);
         }
-        if (readyFailure || scenario === "readyApiFinal") {
+        if (readyFailure || scenario === "readyApiFinal" || scenario.startsWith("risk")) {
           if (readyFailure) assert.equal(started, -1);
           if (readyFailure && scenario !== "readyApiPrepare") assert.equal(requests.some(r => r.input.checkpoint?.stage === "prepared"), false);
           assert.equal(failure.input.code, "agent_ready_context_revalidation_required"); assert.equal(failure.input.retryable, false);

@@ -3,8 +3,8 @@
 Native task preparation now requires a current, server-computed assessment.
 The assessment covers the prepared task's native execution, result review and
 manager correction operations. It grants no role, credential, capability,
-execution, tool, Git, provider or release authority. RF-SEC-002 level-specific
-admission requirements remain unimplemented; production stays disabled/observe.
+execution, tool, Git, provider or release authority. [RF-SEC-002 native admission](native-risk-admission.md) supplies level-specific
+evidence gates; production stays disabled/observe.
 
 ## Versioned assessment
 

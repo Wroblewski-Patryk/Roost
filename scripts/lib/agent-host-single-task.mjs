@@ -13,6 +13,10 @@ export const readCurrentTaskBranch = directory => new Promise((resolve, reject) 
     (error, output) => error ? reject(branchAdmissionError()) : resolve(output.trim()));
 });
 export function assertTaskBranch(actual, expected) { if (actual !== expected) throw branchAdmissionError(); }
+export const readCurrentTaskCommit = directory => new Promise((resolve,reject) => {
+  execFile("git",["rev-parse","HEAD"],{cwd:directory,windowsHide:true,timeout:5000,maxBuffer:4096},
+    (error,output)=>error?reject(branchAdmissionError()):resolve(output.trim()));
+});
 export const singleTaskSchema = z.object({
   schemaVersion: z.literal("roost-single-task-v1"), contractId: text, applicationId: id,
   component: ref, accountableManager: ref, branch: text,

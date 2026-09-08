@@ -7,6 +7,8 @@ import { CcRecordEditorModal } from "../../components/cc-record-editor";
 import { CcSelect } from "../../components/cc-select";
 import { useLanguage } from "../../i18n/i18n";
 
+import { TaskRiskAdmissionModal } from "./task-risk-admission";
+
 const dimensions=["money","data","security","availability","legal","reversibility","users"];
 const levels=["low","medium","high","critical"];
 const messages={
@@ -14,6 +16,7 @@ const messages={
  pl:{staleProof:"Dowód się zmienił. Sprawdź jego aktualną wersję przed zastąpieniem odwołania.",refreshProof:"Użyj aktualnej wersji dowodu",component:"Ten sam komponent aplikacji",objective:"Wspólny cel",release_set:"Jawny wspólny zestaw zmian",lineage:"Powiązanie korekty",title:"Ocena ryzyka zadania",boundary:"Oceń przygotowane zadanie oraz jego wykonanie, weryfikację i korekty w Roost. Serwer oblicza wynik; ocena nie nadaje uprawnień do wykonania ani wydania.",close:"Zamknij",prepare:"Przygotuj aktualny zakres",save:"Zapisz wspólną ocenę",refresh:"Odśwież kontekst",choose:"Wybierz",evidence:"Dowód",rationale:"Wpływ i uzasadnienie",uncertainty:"Niepewność",reasons:"Przyczyny niepewności",contradictions:"Sprzeczności (po jednej w wierszu)",joint:"Łączny wpływ i uzasadnienie podziału",release:"Wspólne wydanie / zestaw zmian",noneRelease:"Brak jawnego zestawu zmian",related:"Powiązane zadania",missing:"Przygotuj każde powiązane zadanie przed wspólną oceną.",blocked:"Wymaga kontekstu lub decyzji",valid:"Aktualna obliczona ocena",old:"Ocena historyczna — nie pozwala przyjąć Ready",history:"Historia ocen",empty:"Nie zapisano oceny",readOnly:"Tylko odczyt",dirty:"Są niezapisane zmiany.",discard:"Odrzucić niezapisaną ocenę ryzyka?",stay:"Kontynuuj edycję",leave:"Odrzuć i zamknij",error:"Nie udało się zapisać oceny. Odśwież kontekst i sprawdź przygotowany zakres oraz dowody.",saved:"Ocena zapisana. Wróć do zadania i przekaż sprawdzony kontrakt do wykonania.",money:"Pieniądze",data:"Dane",security:"Bezpieczeństwo",availability:"Dostępność",legal:"Prawo",reversibility:"Odwracalność",users:"Użytkownicy",low:"Niskie",medium:"Średnie",high:"Wysokie",critical:"Krytyczne",none:"Brak, potwierdzony dowodami",bounded:"Ograniczona — podnosi ryzyko o poziom",unverifiable:"Nieweryfikowalna — wymaga decyzji",cumulative:"Powiązane zmiany zwiększają łączny wpływ",escalation:"Niepewność podnosi wynik",group_limit:"Ponad 50 powiązanych zadań: zawęź lub uzgodnij zestaw zmian.",scope_missing:"Część powiązanych zadań nie ma przygotowanego zakresu.",assessment_missing_or_stale:"Wymagana jest kompletna aktualna wspólna ocena.",contradictory_evidence:"Sprzeczne dowody wymagają decyzji.",uncertainty_unverifiable:"Nieweryfikowalna niepewność wymaga decyzji.",noScope:"Przygotuj zakres zadania, aby ocenić jego wpływ.",loading:"Wczytywanie oceny…",limited:"Katalog dowodów ograniczono do 500 rekordów.",proof:"Dowód musi opisywać ten wpływ i odpowiadać aktualnej wersji rekordu."}
 };
 export function TaskRiskModal({taskId,input,onClose,onSaved}:{taskId:string;input?:any;onClose:()=>void;onSaved?:()=>void}) {
+ const [admissionOpen,setAdmissionOpen]=useState(false);
  const {locale}=useLanguage(), c:any=messages[locale==="pl"?"pl":"en"];
  const [data,setData]=useState<any>(null),[entries,setEntries]=useState<any[]>([]),[joint,setJoint]=useState(""),[release,setRelease]=useState("");
  const [busy,setBusy]=useState(false),[error,setError]=useState(false),[saved,setSaved]=useState(false),[dirty,setDirty]=useState(false),[leave,setLeave]=useState(false);
@@ -50,11 +53,12 @@ export function TaskRiskModal({taskId,input,onClose,onSaved}:{taskId:string;inpu
   return <div className="grid gap-2"><CcField label={c.evidence} hint={c.proof} error={stale?c.staleProof:undefined} required>{({id})=><CcSelect id={id} required value={value[0]?.id??""} onChange={e=>{const ref=data.evidence.find((r:any)=>r.id===e.target.value);onChange(ref?[{id:ref.id,revision:ref.revision}]:[]);}}><option value="">{c.choose}</option>{data.evidence.filter((r:any)=>!r.applicationId||r.applicationId===applicationId).map((r:any)=><option key={r.id} value={r.id}>{r.label}</option>)}</CcSelect>}</CcField>{stale&&current&&data.canAssess?<CcButton variant="outline" size="sm" onClick={()=>onChange([{id:current.id,revision:current.revision}])}>{c.refreshProof}</CcButton>:null}</div>;
  }
 
+ if(admissionOpen)return <TaskRiskAdmissionModal taskId={taskId} onClose={()=>setAdmissionOpen(false)}/>;
  if(leave)return <CcRecordEditorModal titleId="risk-discard" title={c.discard} onClose={()=>setLeave(false)} closeLabel={c.stay} onSubmit={e=>{e.preventDefault();onClose();}} actions={<><CcButton onClick={()=>setLeave(false)}>{c.stay}</CcButton><CcButton type="submit" variant="warning">{c.leave}</CcButton></>}>{c.dirty}</CcRecordEditorModal>;
  const current=data?.history.find((h:any)=>h.id===data.currentId),shown=current??data?.history[0],complete=data&&data.members.length<=50&&data.members.every((m:any)=>m.scopeId);
  return <CcRecordEditorModal titleId="risk-title" title={c.title} eyebrow={data?.task.title} description={c.boundary} closeLabel={c.close} onClose={close} onSubmit={submit} maxWidthClassName="max-w-5xl" actions={<><CcButton disabled={busy} onClick={close} variant="ghost">{c.close}</CcButton>{data?.canAssess&&complete?<CcButton disabled={busy} type="submit" variant="primary">{c.save}</CcButton>:null}</>}>
   {busy?<p role="status">{c.loading}</p>:null}{error?<CcNotice live tone="error" title={c.error}/>:null}{saved?<CcNotice live tone={data?.currentId?"success":"warning"} title={data?.currentId?c.saved:c.blocked}/>:null}
-  <CcButton disabled={busy} onClick={()=>void load(dirty)} variant="outline">{c.refresh}</CcButton>
+  <div className="flex flex-wrap gap-2"><CcButton disabled={busy} onClick={()=>void load(dirty)} variant="outline">{c.refresh}</CcButton><CcButton disabled={busy||dirty} onClick={()=>setAdmissionOpen(true)} variant="outline">{locale==="pl"?"Warunki dopuszczenia":"Admission requirements"}</CcButton></div>
   {data?<>
    {!data.canAssess?<CcNotice tone="info" title={c.readOnly}/>:null}
    <section className="grid gap-3 border-b border-base-300 pb-4" aria-label={c.valid}>

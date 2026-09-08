@@ -2,7 +2,7 @@
 
 [Native task risk assessment](native-task-risk.md) binds the prepared scope and joint
 impact to Ready, execution admission and task capability grants. Classification
-does not implement RF-SEC-002 level-specific authority or activate execution.
+is followed by [level-specific native admission](native-risk-admission.md); neither activates execution.
 
 Required packet/model content also passes the shared
 [native runtime redaction gate](native-runtime-redaction.md). Sensitive or

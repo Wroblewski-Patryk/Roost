@@ -10,6 +10,12 @@ for (const [name, change] of Object.entries({
   legacy: f => delete f.claimed.metadata.readyContextPin,
   differentPin: f => f.claimed.metadata.readyContextPin.pinId = "another-acceptance",
   missingProof: f => delete f.taskContext.readyAdmission.validationRevision,
+  missingRiskGate: f => delete f.taskContext.readyAdmission.riskAdmission,
+  staleRiskGate: f => f.taskContext.readyAdmission.riskAdmission.expiresAt=new Date(Date.now()-1).toISOString(),
+  expiringRiskGate: f => f.taskContext.readyAdmission.riskAdmission.expiresAt=new Date(Date.now()+2000).toISOString(),
+  alteredRiskSeal: f => f.taskContext.readyAdmission.riskAdmission.seal="b".repeat(64),
+  alteredRiskCommit: f => f.taskContext.readyAdmission.riskAdmission.commit="b".repeat(40),
+  malformedExpiry: f => f.taskContext.readyAdmission.riskAdmission.expiresAt="unknown",
   differentProof: f => f.taskContext.readyAdmission.validationRevision = "0".repeat(64),
   invalidated: f => f.taskContext.readyAdmission.status = "needs_revalidation",
   task: f => f.taskContext.task.description = "SYNTHETIC_SECRET_CHANGED_INTENT",
@@ -51,4 +57,9 @@ test("transport, claim bookkeeping and unordered entity collections preserve Rea
 test("other entity revisions remain material even when their content is unchanged", () => {
   const f = validPacketFixture(); f.taskContext.task.goal.updatedAt = "new canonical revision";
   assert.throws(() => check(f));
+});
+test("pre-spawn risk approval cannot authorize another checkout commit",()=>{
+ const f=validPacketFixture();
+ ready.assertRiskAdmission(f.taskContext,f.claimed,"a".repeat(40));
+ assert.throws(()=>ready.assertRiskAdmission(f.taskContext,f.claimed,"b".repeat(40)),/agent_ready_context_revalidation_required/);
 });

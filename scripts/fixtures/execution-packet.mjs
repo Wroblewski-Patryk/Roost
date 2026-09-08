@@ -57,7 +57,8 @@ export function validPacketFixture() {
 export function pinReadyFixture(f) {
   const revision = readyContext.readyContextRevision(f.taskContext, f.applicationContext, f.claimed);
   const pinId = "00000000-0000-4000-8000-000000000090";
-  f.claimed.metadata = { ...f.claimed.metadata, readyContextPin: { pinId, revision } };
-  f.taskContext.readyAdmission = { status: "ready", pinId, revision, validationRevision: revision };
+  const riskAdmission={policy:"roost-native-risk-admission-v1",seal:"a".repeat(64),commit:"a".repeat(40),expiresAt:new Date(Date.now()+3600000).toISOString()};
+  f.claimed.metadata = { ...f.claimed.metadata, readyContextPin: { pinId, revision, riskAdmissionSeal:riskAdmission.seal,riskAdmissionCommit:riskAdmission.commit } };
+  f.taskContext.readyAdmission = { status: "ready", pinId, revision, validationRevision: revision,riskAdmission };
   return f;
 }

@@ -445,6 +445,8 @@ enum FunctionalState {
 }
 
 model User {
+  admissionScopes TaskAdmissionScope[]
+  admissionEvidence TaskAdmissionEvidence[]
   riskScopes TaskRiskScope[]
   riskAssessments TaskRiskAssessment[]
 
@@ -469,6 +471,8 @@ model User {
 }
 
 model Workspace {
+  admissionScopes TaskAdmissionScope[]
+  admissionEvidence TaskAdmissionEvidence[]
   riskScopes TaskRiskScope[]
   riskAssessments TaskRiskAssessment[]
 
@@ -720,6 +724,9 @@ model DepartmentViewAvailability {
 }
 
 model CompanyRecord {
+  admissionTargets TaskAdmissionScope[] @relation("AdmissionTarget")
+  admissionReleases TaskAdmissionScope[] @relation("AdmissionRelease")
+  admissionEvidence TaskAdmissionEvidence[]
   riskScopes TaskRiskScope[]
 
   nativeSuspensions NativeCapabilitySuspension[]
@@ -951,6 +958,7 @@ model Pipeline {
 }
 
 model Procedure {
+  admissionScopes TaskAdmissionScope[]
   id                  String                 @id @default(uuid()) @db.Uuid
   familyId            String                 @default(uuid()) @map("family_id") @db.Uuid
   workspaceId         String                 @map("workspace_id") @db.Uuid
@@ -2175,6 +2183,7 @@ model Project {
 }
 
 model Application {
+  admissionScopes TaskAdmissionScope[]
   riskScopes TaskRiskScope[]
 
   nativeSuspensions NativeCapabilitySuspension[]
@@ -2746,6 +2755,9 @@ model TaskList {
 }
 
 model Task {
+  admissionScopes TaskAdmissionScope[]
+  admissionEvidence TaskAdmissionEvidence[]
+  admissionHead TaskAdmissionHead?
   riskScopes TaskRiskScope[]
   riskAssessments TaskRiskAssessment[]
   riskHead TaskRiskHead?
@@ -3312,4 +3324,66 @@ model TaskRiskAssessment {
   @@unique([workspaceId,requestId])
   @@index([workspaceId,createdAt],map:"task_risk_assessments_workspace_created_idx")
   @@map("task_risk_assessments")
+}
+
+model TaskAdmissionHead {
+  taskId String @id @map("task_id") @db.Uuid
+  task Task @relation(fields:[taskId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  revision BigInt @default(0)
+  @@map("task_admission_heads")
+}
+model TaskAdmissionScope {
+  id String @id @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  workspace Workspace @relation(fields:[workspaceId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  taskId String @map("task_id") @db.Uuid
+  task Task @relation(fields:[taskId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  version Int
+  applicationId String @map("application_id") @db.Uuid
+  application Application @relation(fields:[applicationId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  procedureId String @map("procedure_id") @db.Uuid
+  procedure Procedure @relation(fields:[procedureId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  targetId String @map("target_id") @db.Uuid
+  target CompanyRecord @relation("AdmissionTarget",fields:[targetId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  releaseId String @map("release_id") @db.Uuid
+  release CompanyRecord @relation("AdmissionRelease",fields:[releaseId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  input Json
+  actorUserId String @map("actor_user_id") @db.Uuid
+  actor User @relation(fields:[actorUserId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  requestId String @map("request_id") @db.Uuid
+  requestHash String @map("request_hash")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  evidence TaskAdmissionEvidence[]
+  @@unique([taskId,version])
+  @@unique([workspaceId,requestId])
+  @@index([workspaceId,taskId],map:"task_admission_scope_workspace")
+  @@map("task_admission_scopes")
+}
+model TaskAdmissionEvidence {
+  id String @id @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  workspace Workspace @relation(fields:[workspaceId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  taskId String @map("task_id") @db.Uuid
+  task Task @relation(fields:[taskId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  scopeId String @map("scope_id") @db.Uuid
+  scope TaskAdmissionScope @relation(fields:[scopeId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  operation String
+  gate String
+  version Int
+  sourceVersion String @map("source_version")
+  dependencyVersion String @map("dependency_version")
+  evidenceId String @map("evidence_id") @db.Uuid
+  evidence CompanyRecord @relation(fields:[evidenceId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  evidenceRevision DateTime @map("evidence_revision") @db.Timestamptz(6)
+  verdict String
+  detail Json
+  actorUserId String @map("actor_user_id") @db.Uuid
+  actor User @relation(fields:[actorUserId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  requestId String @map("request_id") @db.Uuid
+  requestHash String @map("request_hash")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  @@unique([taskId,operation,gate,version])
+  @@unique([workspaceId,requestId])
+  @@index([scopeId,operation,gate,version(sort:Desc)],map:"task_admission_evidence_scope")
+  @@map("task_admission_evidence")
 }

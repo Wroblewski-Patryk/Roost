@@ -32,6 +32,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
   function update(next: Draft) { setDraft(next); setDirty(true); setSuccess(null); }
   function errorCopy(caught: unknown) {
     if (!(caught instanceof AppApiError)) return "error.failed";
+    if (caught.code.startsWith("risk_admission_")) return "admissionRequired";
     if (caught.code.startsWith("task_risk_")) return "riskRequired";
     if (["forbidden", "workspace_read_only"].includes(caught.code)) return "error.forbidden";
     if (caught.code === "task_agent_execution_active") return "active";
@@ -65,7 +66,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
       submission.current = null; setDirty(false); setExpanded(false); await load(); setSuccess("accepted"); onSaved?.();
     } catch (caught) {
       if (!mounted.current) return;
-      if (caught instanceof AppApiError && (caught.code === "task_execution_contract_invalid" || caught.code.startsWith("task_risk_"))) await load(packet.editor.applicationId ?? undefined, true);
+      if (caught instanceof AppApiError && (caught.code === "task_execution_contract_invalid" || (caught.code.startsWith("task_risk_") || caught.code.startsWith("risk_admission_")))) await load(packet.editor.applicationId ?? undefined, true);
       setError(errorCopy(caught)); setIssues(caught instanceof AppApiError && caught.code === "task_execution_contract_invalid" ? validationSections(caught.details) : []);
       setExpanded(true); requestAnimationFrame(() => errorRef.current?.focus());
     } finally { if (mounted.current) setBusy(null); }

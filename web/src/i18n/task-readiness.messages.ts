@@ -1,4 +1,5 @@
 const copy = {
+  admissionRequired: ["Open Risk assessment → Admission requirements. Pin the exact operation and record each required current verification.", "Otwórz Ocenę ryzyka → Warunki dopuszczenia. Przypnij dokładny zakres operacji i uzupełnij aktualną weryfikację każdego warunku."],
   riskRequired: ["A complete current risk assessment is required. Open Risk assessment, prepare the current scope and assess all related changes.", "Wymagana jest kompletna aktualna ocena ryzyka. Otwórz Ocenę ryzyka, przygotuj aktualny zakres i oceń wszystkie powiązane zmiany."],
   title: ["Execution readiness", "Gotowość do wykonania"],
   open: ["Prepare execution", "Przygotuj wykonanie"],
