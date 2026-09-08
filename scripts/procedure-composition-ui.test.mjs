@@ -32,7 +32,7 @@ try {
   const published=mode.startsWith("publish"),readonly=mode.includes("readonly");
   const composition={algorithm:"roost-procedure-composition-v1",status:mode==="exception"?"blocked":"composed",seal:"c".repeat(64),missing:mode==="exception"?["extension"]:[],conflicts:[],gates:["procedure","extended_review","mandate","backup","restore_plan","owner_approval"],refs:{base:id(3),extension:id(4)},versions:{base:2,extension:1},fields:{inputs:[{value:"Exact source",source:"base",versionId:id(3)}],outputs:[],evidence:[],completion:[],roles:[],tools:["repository_read"]},steps:contract.steps.map(s=>({...s,source:"base",versionId:id(3)})),exceptions:[],expiresAt:null};
   let data=published?{procedure:{id:id(3),name:"Synthetic shared procedure"},expectedVersion:"a".repeat(64),versions:[{id:id(5),version:1,body:contract,rationale:"Synthetic published version",issuerId:id(8),createdAt:"2026-09-08T00:00:00Z",valid:true}],applications:[],procedures:[],permissions:{canPublish:!readonly,canWithdraw:!readonly}}:{task:{id:id(1),title:"Synthetic exact component change"},expectedVersion:"a".repeat(64),operations:Object.fromEntries(["runtime_execute","review_decision","return_to_executor","create_specialist_task"].map(op=>[op,{...composition,operation:op}])),selections:[{operation:"runtime_execute",baseProcedureId:id(3),extensionProcedureId:mode==="exception"?null:id(4),rationale:"Synthetic narrow scope"}],pinned:composition,procedures:[{id:id(3),name:"Shared verification",version:1},{id:id(4),name:"Component extension",version:1}],permissions:{canWrite:!readonly,canApprove:mode==="exception"}};
-  if(published){data.catalogRedacted=true;data.catalogTruncated=true;}
+  if(published){data.catalogRedacted=true;data.catalogTruncated=true;data.applications=[{id:id(20),name:"[REDACTED]",architecture:[]}];}
   await page.route("**/v1/**",async route=>{
    if(route.request().method()==="POST"){
     const input=route.request().postDataJSON();posts.push(input);assert.ok(input.requestId);assert.equal(input.actorUserId,undefined);assert.equal(input.seal,undefined);
@@ -52,6 +52,7 @@ try {
   if(!readonly){await dialog.getByText(locale==="pl"?"Zapisano. Sprawdź dowody ryzyka i jawnie przekaż zadanie do wykonania.":"Saved. Check risk evidence and explicitly submit the task.",{exact:true}).waitFor();assert.ok(posts.length);}
   if(readonly)assert.equal(await dialog.locator('button[type="submit"]').count(),0);
   if(mode==="conflict"){assert.equal(posts.length,2);assert.notEqual(posts[0].requestId,posts[1].requestId);assert.equal(posts[1].expectedVersion,"b".repeat(64));}
+  if(published&&!readonly){await dialog.getByLabel(locale==="pl"?"Warstwa":"Layer",{exact:true}).selectOption("extension");assert.equal(await dialog.getByRole("option",{name:`[REDACTED] · ${id(20)}`,exact:true}).count(),1);}
   assert.deepEqual(errors,[]);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   await page.keyboard.press("Tab");assert.equal(await page.evaluate(()=>document.activeElement!==document.body),true);
   await page.screenshot({path:path.join(output,`${locale}-${mode}-${width}.png`),fullPage:true});checked++;await page.close();
