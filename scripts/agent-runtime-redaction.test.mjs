@@ -44,7 +44,9 @@ test("split JSON and encoded values are bounded and stable on repeated sanitizat
   const start = performance.now(); const hostile = { text: "a".repeat(120000) + "!" }; policy.sanitize(hostile, { secrets: [known] }); assert.ok(performance.now() - start < 1000);
 });
 test("known environment values stay in memory and overflow does not silently omit them", () => {
-  assert.deepEqual(policy.knownRuntimeSecrets({ API_KEY: known, DATABASE_URL: "postgresql://fixture:synthetic-password@localhost/test", NORMAL_ID: "safe-id" }).sort(), [known, "synthetic-password"].sort());
+  assert.deepEqual(policy.knownRuntimeSecrets({ PWD: "/app", OLDPWD: "/", INTEGRATION_SECRET_KEY: known, API_KEY: known, DATABASE_URL: "postgresql://fixture:synthetic-password@localhost/test", NORMAL_ID: "safe-id" }).sort(), [known, "synthetic-password"].sort());
+  assert.equal(policy.sanitize({ data: [] }, { secrets: policy.knownRuntimeSecrets({ PWD: "/app", OLDPWD: "/" }) }).blocked, false);
+  assert.equal(policy.sanitize({ pwd: "synthetic-password" }).redacted, true);
   assert.equal(policy.sanitize("normal", { secrets: Array(129).fill(known) }).blocked, true);
 });
 test("resanitized required input, nested encodings and interleaved stream fragments stay blocked", () => {

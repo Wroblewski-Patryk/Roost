@@ -36,6 +36,9 @@ configuration, credential environment names, database URL passwords and current
 request/host credentials. They are never persisted. A nonempty known credential
 outside 8–8192 characters, more than 128 values or 32768 total credential
 characters makes sanitation fail closed; values are not silently omitted.
+Shell `PWD`/`OLDPWD` describe directories and are excluded from environment
+credential discovery. JSON `pwd` remains a protected password field. Existing
+host heartbeat findings use the verified host record ID for durable deduplication.
 
 Detection covers password/secret/API-key/token/authorization/cookie/private-key
 fields, credential assignments, common provider prefixes, JWT, Bearer/Basic,

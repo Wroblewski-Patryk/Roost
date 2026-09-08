@@ -388,6 +388,7 @@ test("native runtime redaction gates persistence, model input, legacy reads and 
   const root = `/v1/agent-runtime/executions/${execution.id}`;
   const post = (url: string, body: any, headers: Record<string, string> = auth) => request(url, { method: "POST", headers, body: JSON.stringify(body) });
   const marker = "SYNTHETIC_private_runtime_9pT4jQ2vL7zR";
+  const previousPwd = process.env.PWD; process.env.PWD = "/app";
   process.env.ROOST_REDACTION_TEST_SECRET = marker;
   try {
     const cases = [{ text: marker }, { headers: { cookie: "synthetic-session-value" } }, { email: "synthetic-person@example.test" }, { text: Buffer.from("api_key=synthetic-encoded-value").toString("base64") }];
@@ -404,6 +405,10 @@ test("native runtime redaction gates persistence, model input, legacy reads and 
     // Fresh middleware/ALS state on every request reuses durable dedup identity.
     assert.equal((await post(root + "/events", { leaseToken, type: "progress", message: "Synthetic progress", payload: cases[0] })).status, 201);
     assert.equal(await prisma.companyRecord.count({ where: { workspaceId, source: "runtime_redaction_v1" } }), count);
+    const host = await prisma.agentHost.create({ data: { workspaceId, name: "Synthetic redaction host", slug: "synthetic-redaction-host", platform: "fixture" } });
+    const hostIncidentCount = await prisma.companyRecord.count({ where: { workspaceId, source: "runtime_redaction_v1" } });
+    for (let retry = 0; retry < 3; retry++) assert.equal((await post(`/v1/agent-runtime/hosts/${host.id}/heartbeat`, { metadata: { secret: marker } })).status, 200);
+    assert.equal(await prisma.companyRecord.count({ where: { workspaceId, source: "runtime_redaction_v1" } }), hostIncidentCount + 1);
     for (const [url, body] of [["/v1/agent-runtime/executions", { taskId: task.id, prompt: marker }], [root + "/checkpoint", { leaseToken, checkpoint: { secret: marker } }]] as const) {
       const blocked = await post(url, body); assert.equal(blocked.status, 409); assert.equal(JSON.stringify(blocked.body).includes(marker), false);
     }
@@ -459,7 +464,7 @@ test("native runtime redaction gates persistence, model input, legacy reads and 
     const logs: unknown[] = [], original = console.error; console.error = (...args) => { logs.push(args); };
     try { await request(`/v1/agent-runtime/executions/${marker}`, { headers: auth }); } finally { console.error = original; }
     assert.equal(JSON.stringify(logs).includes(marker), false);
-  } finally { delete process.env.ROOST_REDACTION_TEST_SECRET; }
+  } finally { delete process.env.ROOST_REDACTION_TEST_SECRET; if (previousPwd === undefined) delete process.env.PWD; else process.env.PWD = previousPwd; }
 });
 
 test("production environment validation fails closed when required secrets are missing", async () => {

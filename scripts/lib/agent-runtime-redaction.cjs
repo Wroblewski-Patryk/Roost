@@ -24,6 +24,9 @@ function normalize(value) {
 function knownRuntimeSecrets(environment = process.env, extra = []) {
   const values = [...extra];
   for (const [key, value] of Object.entries(environment)) {
+    // Shell working-directory variables are not password fields. In JSON, pwd
+    // remains a protected credential field; environment semantics differ.
+    if (key === "PWD" || key === "OLDPWD") continue;
     if (typeof value !== "string" || !value) continue;
     if (secretField.test(keyName(key)) || /(?:TOKEN|PASSWORD|SECRET|SECRET_KEY|PRIVATE_KEY|ENCRYPTION_KEY|API_KEY|COOKIE|AUTHORIZATION)$/i.test(key)) values.push(value);
     if (/DATABASE_URL|REDIS_URL/i.test(key)) { try { values.push(decodeURIComponent(new URL(value).password)); } catch { /* no diagnostics */ } }

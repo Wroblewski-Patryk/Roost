@@ -80,6 +80,8 @@ export function runtimeRedactionBoundary(req: Request, res: Response, next: Next
       return res;
     }) as Response["json"];
     void (async () => {
+      const hostId = safeRuntimeId(parts[parts.indexOf("hosts") + 1]);
+      if (hostId && await prisma.agentHost.findFirst({ where: { id: hostId, workspaceId: state.scope.workspaceId }, select: { id: true } })) state.scope.recordId = hostId;
       if (native && req.get("X-Roost-Redaction-Notice") === "1") state.notices.push({ scope: { ...state.scope, surface: "host.transport" }, findings: [{ category: "host_redaction", location: "$" }] });
       if (native && Number(req.get("Content-Length") ?? 0) > 0 && !req.is("application/json")) {
         state.notices.push({ scope: { ...state.scope, surface: "input.http" }, findings: [{ category: "unsupported_format", location: "$" }] });
