@@ -1,4 +1,5 @@
 import { TaskCapabilityModal } from "./task-capability";
+import { CapabilitySuspensionModal, SuspensionNotice } from "./capability-suspension";
 import { capabilityMessages } from "./task-capability-messages";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { api } from "../../api/client";
@@ -15,6 +16,7 @@ const initial = { summary: "", reference: "", testResult: "", reproduction: "", 
 export function TaskReviewModal({ taskId, onClose, onSaved }: { taskId: string; onClose: () => void; onSaved?: () => void }) {
   const { locale } = useLanguage(), c = reviewMessages[locale === "pl" ? "pl" : "en"];
   const [showGrants, setShowGrants] = useState(false);
+  const [showSuspensions, setShowSuspensions] = useState(false);
   const credentialLabel = locale === "pl" ? "Poświadczenie agenta" : "Agent credential";
   const [data, setData] = useState<any>(null), [busy, setBusy] = useState(true), [error, setError] = useState(false), [saved, setSaved] = useState(false);
   const [draft, setDraft] = useState(initial), [decision, setDecision] = useState("reject"), [disposition, setDisposition] = useState("return_to_executor"), [specialist, setSpecialist] = useState("");
@@ -31,7 +33,7 @@ export function TaskReviewModal({ taskId, onClose, onSaved }: { taskId: string; 
   function close() { if (busy) return; if (dirty) setLeave(true); else onClose(); }
   function edit(key: keyof typeof initial, value: string) { setDraft(d=>({...d,[key]:value})); setDirty(true); setSaved(false); }
   async function submit(event: FormEvent) {
-    event.preventDefault(); if (!data || busy || !data.canReview && !data.canManage) return;
+    event.preventDefault(); if (!data || busy || !data.canReview && !data.canManage || data.canManage && data.blockedOperations?.[disposition]) return;
     const worker = data.specialists.find((w:any)=>w.id===specialist);
     const input = data.canReview ? { expectedVersion: data.expectedVersion, executionId: data.result.executionId, materialVersion: data.materialVersion, decision, summary: draft.summary,
       evidence: [{ kind: "test", reference: draft.reference, result: draft.testResult }], ...(decision === "reject" ? { reproduction: lines(draft.reproduction), expected: draft.expected, observed: draft.observed, correction: { scope: lines(draft.scope), excluded: lines(draft.excluded), outcome: draft.outcome, competencies: lines(draft.competencies) } } : {}) } :
@@ -44,11 +46,14 @@ export function TaskReviewModal({ taskId, onClose, onSaved }: { taskId: string; 
   }
   const field = (key: keyof typeof initial, multiline = false) => <CcField key={key} label={c[key]} required>{({id,describedBy})=>multiline ? <textarea id={id} aria-describedby={describedBy} className="textarea textarea-bordered min-h-24 w-full" required minLength={3} maxLength={2000} value={draft[key]} onChange={e=>edit(key,e.target.value)}/> : <input id={id} aria-describedby={describedBy} className="input input-bordered w-full" required minLength={3} maxLength={2000} value={draft[key]} onChange={e=>edit(key,e.target.value)}/>}</CcField>;
   if(showGrants)return <TaskCapabilityModal taskId={taskId} onClose={()=>{setShowGrants(false);void load();}}/>;
+  if(showSuspensions)return <CapabilitySuspensionModal taskId={taskId} onClose={()=>{setShowSuspensions(false);void load();}}/>;
   if(leave)return <CcRecordEditorModal titleId="review-discard" title={c.discard} eyebrow={c.title} closeLabel={c.stay} onClose={()=>setLeave(false)} onSubmit={e=>{e.preventDefault();onClose();}} actions={<><CcButton variant="ghost" onClick={()=>setLeave(false)}>{c.stay}</CcButton><CcButton type="submit" variant="warning">{c.leave}</CcButton></>}>{c.boundary}</CcRecordEditorModal>;
   return <CcRecordEditorModal titleId="review-title" title={data?.task.title ?? c.title} eyebrow={c.title} description={c.boundary} closeLabel={c.close} onClose={close} onSubmit={submit} maxWidthClassName="max-w-5xl" actions={<><CcButton variant="ghost" disabled={busy} onClick={close}>{c.close}</CcButton>{data?.canReview || data?.canManage ? <CcButton variant="primary" type="submit" disabled={busy || data.canManage && (!scope.length || disposition === "create_specialist_task" && !specialist)}>{data.canReview ? c.recordReview : c.recordAction}</CcButton> : null}</>}>
     <div className="grid min-w-0 gap-5">
       <div ref={notice} tabIndex={-1}>{error ? <CcNotice tone="error" title={c.error} live/> : saved ? <CcNotice tone="success" title={c.saved} live/> : null}</div>
+      <SuspensionNotice items={data?.suspensions??[]} onOpen={()=>setShowSuspensions(true)}/>
       {busy && !data ? <CcNotice tone="loading" title={c.loading}/> : null}
+      <CcButton variant="outline" size="sm" disabled={busy||dirty} onClick={()=>setShowSuspensions(true)}>{locale==="pl"?"Zawieszenie uprawnień":"Capability suspension"}</CcButton>
       <div className="flex flex-wrap items-center justify-between gap-3">{data?.reason ? <p className="text-sm" role="status">{c[data.reason as keyof typeof c] ?? c.roles_need_context}</p> : <span/>}{data?.canManageGrants ? <CcButton size="sm" variant="outline" disabled={busy || dirty} onClick={()=>setShowGrants(true)}>{capabilityMessages[locale === "pl" ? "pl" : "en"].title}</CcButton> : null}<CcButton size="sm" variant="outline" disabled={busy} onClick={()=>void load()}>{c.refresh}</CcButton></div>
       {data?.result ? <section className="grid min-w-0 gap-3 border-b border-base-300 pb-5"><h3 className="font-bold">{c.material}</h3><p>{data.result.summary}</p>
         <dl className="grid gap-3 text-sm sm:grid-cols-2"><div><dt className="text-company-muted">{c.version}</dt><dd className="break-all font-mono" title={data.materialVersion}>{data.materialVersion?.slice(0,16)}</dd></div><div><dt className="text-company-muted">{c.attempt}</dt><dd>{data.result.attempt} · {new Date(data.result.completedAt).toLocaleString(locale)}</dd></div><div><dt className="text-company-muted">{c.verifier}</dt><dd>{data.labels?.verifier ?? "—"}</dd></div><div><dt className="text-company-muted">{c.manager}</dt><dd>{data.labels?.manager ?? "—"}</dd></div></dl>
@@ -59,7 +64,7 @@ export function TaskReviewModal({ taskId, onClose, onSaved }: { taskId: string; 
       </section> : null}
       {data?.canManage ? <section className="grid gap-4"><h3 className="font-bold">{c.disposition}</h3><p>{data.decision.evidence.summary}</p><p className="text-sm text-company-muted">{c.selection}</p>
         <fieldset className="grid gap-2"><legend className="mb-2 font-semibold">{c.scope}</legend>{data.decision.evidence.correction.scope.map((item:string)=><label key={item} className="flex items-start gap-3 py-1"><input type="checkbox" className="checkbox" checked={scope.includes(item)} onChange={e=>{setScope(old=>e.target.checked?[...old,item]:old.filter(x=>x!==item));setDirty(true);}}/><span>{item}</span></label>)}</fieldset>
-        <CcField label={c.disposition}>{({id})=><CcSelect id={id} value={disposition} onChange={e=>{setDisposition(e.target.value);setDirty(true);}}><option value="return_to_executor">{c.return_to_executor}</option><option value="create_specialist_task">{c.create_specialist_task}</option></CcSelect>}</CcField>
+        <CcField label={c.disposition}>{({id})=><CcSelect id={id} value={disposition} onChange={e=>{setDisposition(e.target.value);setDirty(true);}}><option disabled={data.blockedOperations?.return_to_executor} value="return_to_executor">{c.return_to_executor}</option><option disabled={data.blockedOperations?.create_specialist_task} value="create_specialist_task">{c.create_specialist_task}</option></CcSelect>}</CcField>
         {disposition === "create_specialist_task" ? <CcField label={c.specialist} required>{({id})=><CcSelect id={id} required value={specialist} onChange={e=>{setSpecialist(e.target.value);setDirty(true);}}><option value="">{c.choose}</option>{data.specialists.filter((w:any)=>w.role && data.decision.evidence.correction.competencies.every((skill:string)=>Array.isArray(w.competencies) && w.competencies.includes(skill)) && w.id!==data.result.contract.assignment.agentId).map((w:any)=><option key={w.id} value={w.id}>{w.label}</option>)}</CcSelect>}</CcField> : null}
         <p className="text-sm text-company-muted">{c.draft}</p>{data.specialistsTruncated?<p>{c.limited}</p>:null}
       </section> : null}

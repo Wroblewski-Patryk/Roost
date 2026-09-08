@@ -1,4 +1,5 @@
 import { reviewTransaction } from "./task-capability-admission";
+import { capabilitySuspensionRouter, suspensionBlocks } from "./capability-suspension";
 import { taskCapabilityView, issueTaskCapability, revokeTaskCapability } from "./task-capability";
 import { isDeepStrictEqual } from "node:util";
 import { taskReviewView, recordTaskReview, actOnTaskReview } from "./task-review";
@@ -136,6 +137,7 @@ async function applicationForTask(workspaceId: string, taskId: string, requested
 }
 
 export const agentRuntimeRouter = Router();
+agentRuntimeRouter.use("/capability-suspensions", capabilitySuspensionRouter);
 
 agentRuntimeRouter.get("/tasks/:id/capability-grants", asyncHandler(async (req, res) => {
   if (!requireWorkspaceRole(req, res, "admin")) return;
@@ -408,6 +410,7 @@ agentRuntimeRouter.post("/executions/claim", asyncHandler(async (req, res) => {
     const admitted = await readyTransaction(async tx => {
       const ready = await inspectReady(tx, workspaceId, candidate.taskId, candidate);
       if (ready.error) return { error: ready.error };
+      if (await suspensionBlocks(tx, workspaceId, candidate.taskId, candidate.applicationId, "runtime_execute", ready.taskContext?.task?.assignedWorkforceEntityId, null, host.id)) return { error: "native_capability_suspended" };
     const changed = await tx.agentExecution.updateMany({ where: { id: candidate.id, workspaceId, status: "queued", attempt: 0 }, data: { status: "claimed", agentHostId: host.id, leaseToken, leaseExpiresAt: new Date(Date.now() + 90_000), lastHeartbeatAt: now, startedAt: candidate.startedAt ?? now, attempt: { increment: 1 }, checkpoint: json(checkpoint), checkpointVersion: 1 } });
       return { count: changed.count };
     });

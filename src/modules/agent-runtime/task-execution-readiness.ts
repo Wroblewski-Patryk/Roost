@@ -8,6 +8,7 @@ import { loadTaskAgentContext } from "../company-intelligence/task-agent-context
 import { loadApplicationAgentContext } from "../product-engineering/application-agent-context";
 import { watchReadySources } from "./ready-source-watch";
 import { reviewAdmissionError } from "./task-review-admission";
+import { suspensionBlocks } from "./capability-suspension";
 
 const { readyContextRevision, readyContextQuery } = require("../../../scripts/lib/agent-host-ready-context.cjs") as {
   readyContextRevision: (task: any, application: any, input: any) => string;
@@ -32,6 +33,9 @@ export async function submissionVersion(db: Prisma.TransactionClient, workspaceI
 export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T | { error: string }> {
   try { return await prisma.$transaction(work, { isolationLevel: "Serializable", maxWait: 5000, timeout: 20000 }); }
   catch (error) {
+    const nativeDiagnostic = error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2010" ? String(error.meta?.message ?? "") : error instanceof Prisma.PrismaClientUnknownRequestError ? error.message : "";
+    const suspensionError = nativeDiagnostic.match(/\bnative_(?:suspension_[a-z_]+|capability_suspended)\b/)?.[0];
+    if (suspensionError) return {error:suspensionError};
     if (error instanceof Prisma.PrismaClientKnownRequestError && (["P2034", "P2028"].includes(error.code) ||
       error.code === "P2010" && ["40001", "40P01"].includes(String(error.meta?.code)))) return { error: "task_ready_context_conflict" };
     throw error;
@@ -65,6 +69,7 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
   const task = await lockReadyTask(db, workspaceId, taskId);
   if (!task) return { error: "task_not_found" };
   if (actor.requestedByType !== "user" || !actor.requestedById || !await db.workspaceMembership.findFirst({ where: { workspaceId, userId: actor.requestedById, role: { in: ["owner", "admin", "member"] } } })) return { error: "forbidden" };
+  if (await suspensionBlocks(db,workspaceId,taskId,input.applicationId,"runtime_execute",task.assignedWorkforceEntityId)) return {error:"native_capability_suspended"};
   const reviewError = await reviewAdmissionError(db, workspaceId, taskId, input.contract);
   if (reviewError) return { error: reviewError };
   if (!/^[a-f0-9]{64}$/.test(input.expectedVersion ?? "") || !/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(input.requestId ?? "")) return { error: "task_submission_precondition_required" };
@@ -116,6 +121,8 @@ export async function inspectReady(db: Prisma.TransactionClient, workspaceId: st
   const task = await lockReadyTask(db, workspaceId, taskId);
   if (!task) return { error: "task_not_found", readiness: { status: "not_ready" } };
   const pin = object(task.executionReadiness);
+  if (execution?.contextInvalidatedAt) return {error:"agent_execution_context_invalidated",readiness:{status:"needs_revalidation",reason:"context_changed"}};
+  if (pin.applicationId && await suspensionBlocks(db,workspaceId,taskId,pin.applicationId,"runtime_execute",task.assignedWorkforceEntityId,null,execution?.agentHostId)) return {error:"native_capability_suspended",readiness:{status:"needs_decision",reason:"native_capability_suspended"}};
   const reviewError = await reviewAdmissionError(db, workspaceId, taskId, pin.contract);
   if (reviewError) return { error: reviewError, readiness: { status: "needs_decision", reason: reviewError } };
   if (["draft", "needs_context", "needs_decision"].includes(pin.status)) return { error: "task_ready_pin_required", readiness: { status: pin.status, reason: pin.reason ?? "ready_pin_required", issues: pin.issues ?? [] } };

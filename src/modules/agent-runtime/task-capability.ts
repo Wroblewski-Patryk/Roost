@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { suspensionBlocks, suspensionList } from "./capability-suspension";
 import { reviewState } from "./task-review";
 import { capabilityWindow, issueCapabilitySchema, revokeCapabilitySchema } from "./task-capability-contract";
 import { grantOperations, grantScope, grantState } from "./task-capability-admission";
@@ -19,6 +20,7 @@ async function choices(db: Db, workspaceId: string, s: any) {
     if (role?.principal?.kind !== "agent") continue;
     const key = await db.apiKey.findFirst({ where: { workspaceId, boundAgentId: role.id, active: true, revokedAt: null, expiresAt: { gt: new Date() } } });
     if (!key) continue;
+    if (await suspensionBlocks(db, workspaceId, s.task.id, s.execution.applicationId, operation, role.id, key.id)) continue;
     options.push({ operation, agentId: role.id, agentLabel: operation === "review_decision" ? s.labels.verifier : s.labels.manager, credentialId: key.id, credentialPrefix: key.keyPrefix,
       credentialVersion: key.credentialVersion, credentialExpiresAt: key.expiresAt, role });
   }
@@ -36,7 +38,7 @@ export async function taskCapabilityView(db: Db, workspaceId: string, taskId: st
   for (const option of options) if (await grantScope(db, taskId, option.credentialId, userId!)) available.push(option);
   const application = s.execution ? await db.application.findUnique({ where: { id: s.execution.applicationId }, select: { name: true } }) : null;
   return { task: { id: taskId, title: s.task.title }, applicationLabel: application?.name ?? null, applicationId: s.execution?.applicationId ?? null, expectedVersion: s.expectedVersion, canAdminister, options: available,
-    grants: await Promise.all(rows.slice(0, 50).map(g => safeGrant(db, g))), nextCursor: rows.length > 50 ? rows[49]!.id : null };
+    ...await suspensionList(db, workspaceId, taskId), grants: await Promise.all(rows.slice(0, 50).map(g => safeGrant(db, g))), nextCursor: rows.length > 50 ? rows[49]!.id : null };
 }
 export async function issueTaskCapability(db: Db, workspaceId: string, taskId: string, userId: string, body: unknown) {
   const input = issueCapabilitySchema.parse(body), s = await reviewState(db, workspaceId, taskId, userId);

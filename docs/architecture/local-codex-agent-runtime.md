@@ -1,5 +1,9 @@
 # Local Codex Agent Runtime
 
+[Native serious-incident suspension](native-capability-suspension.md) fences exact
+capabilities and reuses the context-stop/recovery boundary. Owner intervention
+requires reread/replan and never undoes external changes.
+
 ## Current Supervised Runtime
 
 The [native content redaction gate](native-runtime-redaction.md) applies before

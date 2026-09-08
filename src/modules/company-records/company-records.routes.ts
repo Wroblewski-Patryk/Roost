@@ -48,7 +48,8 @@ async function serialize(workspaceId: string, records: Array<Record<string, any>
   const ids = records.map((record) => record.id); const contexts = await organizationalContextsForEntities(workspaceId, "company_record", ids);
   const counts = await prisma.evidenceRecord.groupBy({ by: ["entityId"], where: { workspaceId, entityType: { in: ["company_record", "requirement"] }, entityId: { in: ids } }, _count: true });
   const countMap = new Map(counts.map((entry) => [entry.entityId, entry._count]));
-  return records.map((record) => ({ ...record, evidenceCount: countMap.get(record.id) ?? 0, organizationalContext: contexts.get(record.id) }));
+  const suspensionCounts=ids.length?await prisma.$queryRaw<Array<{incident_id:string;count:number}>>`SELECT incident_id,count(*)::int AS count FROM native_capability_suspensions s WHERE workspace_id=${workspaceId}::uuid AND incident_id::text IN (SELECT jsonb_array_elements_text(${JSON.stringify(ids)}::jsonb)) AND native_suspension_active(s.id) GROUP BY incident_id`:[];
+  return records.map((record) => ({ ...record, activeSuspensionCount:suspensionCounts.find(s=>s.incident_id===record.id)?.count??0, evidenceCount: countMap.get(record.id) ?? 0, organizationalContext: contexts.get(record.id) }));
 }
 
 companyRecordsRouter.get("/", asyncHandler(async (req, res) => {

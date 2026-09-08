@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { readyTransaction } from "./task-execution-readiness";
+import { suspensionBlocks } from "./capability-suspension";
 type Db = Prisma.TransactionClient;
 export async function reviewTransaction<T>(work: (db: Db) => Promise<T>) {
   try {
@@ -25,6 +26,8 @@ export async function grantState(db: Db, id: string) {
   return (await db.$queryRaw<Array<{ status: string; base: string }>>`SELECT task_capability_status(g) AS status,task_capability_base(g) AS base FROM task_capability_grants g WHERE id=${id}::uuid`)[0]!;
 }
 export async function admitCapability(db: Db, workspaceId: string, taskId: string, principal: any, operation: string, grantId?: string, prior?: any) {
+  const execution = await db.agentExecution.findFirst({where:{workspaceId,taskId},orderBy:[{createdAt:"desc"},{id:"desc"}]});
+  if(execution && await suspensionBlocks(db,workspaceId,taskId,execution.applicationId,operation,principal.kind==="agent"?principal.id:null,principal.credentialId)) return {error:"native_capability_suspended"};
   if (principal.kind !== "agent") return grantId ? { error: "capability_agent_only" } : { grant: null };
   if (!grantId) return { error: "capability_grant_required" };
   await db.$queryRaw`SELECT id FROM task_capability_grants WHERE id=${grantId}::uuid AND workspace_id=${workspaceId}::uuid FOR UPDATE`;

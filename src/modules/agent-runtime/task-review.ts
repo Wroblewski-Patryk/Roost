@@ -1,4 +1,5 @@
 import { admitCapability, recordCapabilityUse, agentGrantAccess } from "./task-capability-admission";
+import { suspensionBlocks, suspensionList } from "./capability-suspension";
 import { resolveReviewPrincipal, type ReviewActor } from "../../auth/agent-principal";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
@@ -47,10 +48,13 @@ export async function taskReviewView(db: Db, workspaceId: string, taskId: string
   const history = await db.taskReviewDecision.findMany({ where: { workspaceId, taskId }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 51, ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}), include: { action: true } });
   const specialists = await db.workforceEntity.findMany({ where: { workspaceId, type: "agent", status: "active", source: { not: "user" } }, select: { id: true, name: true, role: true, skillIndex: true, updatedAt: true }, orderBy: { name: "asc" }, take: 501 });
   const grantAccess = await agentGrantAccess(db, workspaceId, taskId, s.principal);
-  const canReview = s.canReview && (!grantAccess || grantAccess.review_decision.status === "active");
-  const canManage = s.canManage && (!grantAccess || grantAccess.return_to_executor.status === "active" || grantAccess.create_specialist_task.status === "active");
+  const blocked = async(operation:string)=>Boolean(s.execution && await suspensionBlocks(db,workspaceId,taskId,s.execution.applicationId,operation,s.principal?.kind==="agent"?s.principal.id:null,s.principal?.credentialId));
+  const reviewBlocked=await blocked("review_decision"), returnBlocked=await blocked("return_to_executor"), specialistBlocked=await blocked("create_specialist_task");
+  const canReview = s.canReview && !reviewBlocked && (!grantAccess || grantAccess.review_decision.status === "active");
+  const canManage = s.canManage && ((!returnBlocked&&(!grantAccess||grantAccess.return_to_executor.status==="active")) || (!specialistBlocked&&(!grantAccess||grantAccess.create_specialist_task.status==="active")));
   const canManageGrants = s.principal?.kind === "user" && Boolean(await db.workspaceMembership.findFirst({ where: { workspaceId, userId: s.principal.id, role: { in: ["owner", "admin"] } } }));
   return { task: { id: taskId, title: s.task.title }, expectedVersion: s.expectedVersion, materialVersion: s.materialVersion,
+    ...await suspensionList(db,workspaceId,taskId), blockedOperations:{review_decision:reviewBlocked,return_to_executor:returnBlocked,create_specialist_task:specialistBlocked},
     result: s.result, labels: s.labels, decision: decisionView(s.decision), canReview: Boolean(canReview), canManage: Boolean(canManage), grantAccess, canManageGrants,
     reason: grantAccess && (s.canReview && !canReview || s.canManage && !canManage) ? "capability_grant_required" : !s.execution ? "no_result" : !s.current ? "stale_result" : s.roleIssues.length ? "roles_need_context" : s.canReview || s.canManage ? null : s.decision ? s.decision.action ? "action_recorded" : s.decision.decision === "approve" ? "approved" : "manager_required" : "verifier_required",
     history: history.slice(0, 50).map(decisionView), nextCursor: history.length > 50 ? history[49]!.id : null,

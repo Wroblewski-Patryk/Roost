@@ -1,5 +1,9 @@
 # Agent Host Recovery v1
 
+[Serious-incident containment](native-capability-suspension.md) retains the same
+context fence after restoration. Old attempts never regain recovery authority;
+new Ready acceptance and execution are explicit.
+
 Checkpoint metadata is required input to the shared
 [native redaction policy](native-runtime-redaction.md), checked before local
 writer-state and API persistence. Blocked content cannot resume or spawn. This

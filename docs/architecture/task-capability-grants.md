@@ -1,5 +1,8 @@
 # Task capability grants (RF-SEC-003)
 
+[Serious-incident suspension](native-capability-suspension.md) independently denies
+affected native operations and prevents old grants from reviving after restore.
+
 Native agent review commands require an explicit, durable, single-use grant in
 addition to the verified [agent principal](agent-credential-principal.md), current
 RF-CTX-010 roles and the [review contract](task-review-workflow.md). Human review

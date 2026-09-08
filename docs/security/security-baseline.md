@@ -1,5 +1,9 @@
 # Security Baseline
 
+[Native serious-incident suspension](../architecture/native-capability-suspension.md)
+adds exact capability containment and independently verified, owner-authorized
+restoration. A sanitizer incident alone never suspends a workspace.
+
 Native execution content follows the shared [runtime redaction contract](../architecture/native-runtime-redaction.md)
 before persistence, projection and model dispatch. Sensitive required content
 blocks; diagnostics may be redacted with a value-free technical incident. Other

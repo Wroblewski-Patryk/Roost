@@ -445,6 +445,8 @@ enum FunctionalState {
 }
 
 model User {
+  suspensionJournal NativeSuspensionJournal[]
+  nativeSuspensions NativeCapabilitySuspension[]
   id                String                @id @default(uuid()) @db.Uuid
   email             String                @unique
   name              String?
@@ -464,6 +466,8 @@ model User {
 }
 
 model Workspace {
+  suspensionJournal NativeSuspensionJournal[]
+  nativeSuspensions NativeCapabilitySuspension[]
   id                                String                             @id @default(uuid()) @db.Uuid
   name                              String
   logo                              String?
@@ -710,6 +714,7 @@ model DepartmentViewAvailability {
 }
 
 model CompanyRecord {
+  nativeSuspensions NativeCapabilitySuspension[]
   id                     String             @id @default(uuid()) @db.Uuid
   workspaceId            String             @map("workspace_id") @db.Uuid
   workspace              Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -1873,6 +1878,7 @@ model AgentEventOutbox {
 }
 
 model AgentHost {
+  nativeSuspensions NativeCapabilitySuspension[]
   id               String           @id @default(uuid()) @db.Uuid
   workspaceId      String           @map("workspace_id") @db.Uuid
   workspace        Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -2161,6 +2167,7 @@ model Project {
 }
 
 model Application {
+  nativeSuspensions NativeCapabilitySuspension[]
   capabilityGrants TaskCapabilityGrant[]
   id               String                             @id @default(uuid()) @db.Uuid
   workspaceId      String                             @map("workspace_id") @db.Uuid
@@ -2727,6 +2734,7 @@ model TaskList {
 }
 
 model Task {
+  nativeSuspensions NativeCapabilitySuspension[]
   capabilityGrants TaskCapabilityGrant[]
   reviewDecisions           TaskReviewDecision[]
   reviewActions             TaskReviewAction[] @relation("ReviewParent")
@@ -2962,6 +2970,7 @@ model Agent {
 }
 
 model WorkforceEntity {
+  nativeSuspensions NativeCapabilitySuspension[]
   id                     String                      @id @default(uuid()) @db.Uuid
   workspaceId            String                      @map("workspace_id") @db.Uuid
   workspace              Workspace                   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -3049,6 +3058,7 @@ model Event {
 }
 
 model ApiKey {
+  nativeSuspensions NativeCapabilitySuspension[]
   capabilityGrants TaskCapabilityGrant[]
   id                             String                          @id @default(uuid()) @db.Uuid
   workspaceId                    String?                         @map("workspace_id") @db.Uuid
@@ -3168,4 +3178,57 @@ model TaskCapabilityUse {
   createdAt DateTime @default(now()) @map("created_at")
   @@unique([workspaceId, requestId])
   @@map("task_capability_uses")
+}
+
+
+model NativeCapabilitySuspension {
+  id String @id @default(uuid()) @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  workspace Workspace @relation(fields:[workspaceId], references:[id], onDelete:Restrict,onUpdate:NoAction)
+  incidentId String @map("incident_id") @db.Uuid
+  incident CompanyRecord @relation(fields:[incidentId], references:[id], onDelete:Restrict,onUpdate:NoAction)
+  taskId String @map("task_id") @db.Uuid
+  task Task @relation(fields:[taskId], references:[id], onDelete:Restrict,onUpdate:NoAction)
+  applicationId String @map("application_id") @db.Uuid
+  application Application @relation(fields:[applicationId], references:[id], onDelete:Restrict,onUpdate:NoAction)
+  operation String
+  agentId String? @map("agent_id") @db.Uuid
+  agent WorkforceEntity? @relation(fields:[agentId], references:[id], onDelete:Restrict,onUpdate:NoAction)
+  credentialId String? @map("credential_id") @db.Uuid
+  credential ApiKey? @relation(fields:[credentialId], references:[id], onDelete:Restrict,onUpdate:NoAction)
+  hostId String? @map("host_id") @db.Uuid
+  host AgentHost? @relation(fields:[hostId], references:[id], onDelete:Restrict,onUpdate:NoAction)
+  issuerUserId String @map("issuer_user_id") @db.Uuid
+  issuer User @relation(fields:[issuerUserId], references:[id], onDelete:Restrict,onUpdate:NoAction)
+  reason String
+  scopeProof String @map("scope_proof")
+  broaderReason String? @map("broader_reason")
+  requestId String @map("request_id") @db.Uuid
+  requestHash String @map("request_hash")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(3)
+  journal NativeSuspensionJournal[]
+  @@unique([workspaceId,requestId])
+  @@index([workspaceId,taskId,operation], map:"native_suspension_scope")
+  @@map("native_capability_suspensions")
+}
+model NativeSuspensionJournal {
+  id String @id @default(uuid()) @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  workspace Workspace @relation(fields:[workspaceId], references:[id], onDelete:Restrict,onUpdate:NoAction)
+  suspensionId String @map("suspension_id") @db.Uuid
+  suspension NativeCapabilitySuspension @relation(fields:[suspensionId], references:[id], onDelete:Restrict,onUpdate:NoAction)
+  version Int
+  action String
+  actorUserId String @map("actor_user_id") @db.Uuid
+  actor User @relation(fields:[actorUserId], references:[id], onDelete:Restrict,onUpdate:NoAction)
+  evidenceId String? @map("evidence_id") @db.Uuid
+  evidence NativeSuspensionJournal? @relation("SuspensionEvidence",fields:[evidenceId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  references NativeSuspensionJournal[] @relation("SuspensionEvidence")
+  payload Json
+  requestId String @map("request_id") @db.Uuid
+  requestHash String @map("request_hash")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(3)
+  @@unique([suspensionId,version])
+  @@unique([workspaceId,requestId])
+  @@map("native_suspension_journal")
 }

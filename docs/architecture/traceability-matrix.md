@@ -34,34 +34,25 @@ for later changes to these same canonical files.
 
 The retained baseline includes versioned Submit, single-task scope, pinned Ready
 context, explicit roles, source invalidation and active context stopping.
-The current bounded P0 slice is **RF-SEC-004: native runtime redaction**.
+The current bounded P0 slice is **RF-SEC-012: native serious-incident suspension**.
 
-The API and local host share one fail-closed content policy before native writes,
-read projections and model dispatch. Required sensitive content blocks. Bounded
-text/JSON diagnostics may be redacted with a safe technical incident; unsupported
-content is withheld. Known credentials remain in memory. Incident fingerprints
-are random and dedup keys depend only on classification and technical scope.
-Legacy reads sanitize on demand without rewriting stored history. Source-change
-triggers use fixed labels rather than copying source content.
+The [suspension contract](native-capability-suspension.md) adds exact task,
+application, operation and principal/credential/host containment, with durable
+deny at native grant/review/runtime admission. Independent versioned remediation
+proof and a current owner decision are required for restoration. Old grants and
+stopped attempts cannot regain authority. Owner intervention requires reread and
+replan, without automatic undo.
 
-Verification is covered by `src/tests/api.test.ts`,
-`scripts/agent-runtime-redaction.test.mjs`, `scripts/agent-host-context-process.test.mjs`,
-`scripts/agent-runtime-redaction-migration.test.mjs` and
-`scripts/agent-runtime-redaction-ui.test.mjs`. Synthetic coverage includes DB/API
-absence checks, legacy preservation, concurrent/repeated incident dedup, model
-spawn denial, host transport/log capture, migration preservation and PL/EN UI.
-Verified: 105 API/DB checks, 340 host/policy checks, 8 PL/EN UI variants and
-one historical-data migration check. The fixed-port observer CLI test is
-excluded while the canonical observer owns that port; isolated observer lock
-checks pass. `npm run validate` passes. No real provider/model execution or
-production history scan forms part of this verification.
-
-RF-SEC-004 remains **częściowo działa** for the full company. The
-[policy contract](native-runtime-redaction.md) defines exact fields, encodings,
-limits and supported surfaces; this is not whole-Roost DLP or a history cleanup.
-Production execution stays disabled and the canonical host stays observe.
-The retained [RF-SEC-003 grants](task-capability-grants.md) remain required for
-native agent review commands; general tool/secrets brokering remains absent.
+Verification: `src/tests/api.test.ts`,
+`scripts/capability-suspension-migration.test.mjs` (preserves 71 synthetic
+historical sanitizer incidents), `scripts/capability-suspension-ui.test.mjs`
+(PL/EN, phone/tablet/desktop), and existing context-stop/recovery host suites.
+These synthetic checks do not activate agents or scan production history.
+The retained [redaction policy](native-runtime-redaction.md) and
+[exact task grants](task-capability-grants.md) remain required. RF-SEC-012 is
+partial in the full company: external broker containment, automatic risk
+classification and remediation are outside this scope. Production execution
+stays disabled and the canonical host stays observe.
 
 ## Matrix
 
@@ -143,7 +134,7 @@ native agent review commands; general tool/secrets brokering remains absent.
 | [RF-SEC-009](../product/interview-foundation-v2.md#rf-sec-009) | P1 | częściowo działa | [AUTH](#e-auth) | Membership/invitation role checks exist; finer project/decision mandates incomplete. |
 | [RF-SEC-010](../product/interview-foundation-v2.md#rf-sec-010) | P0 | brak | [HEALTH](#e-health) | No generic application-health contract runner. |
 | [RF-SEC-011](../product/interview-foundation-v2.md#rf-sec-011) | P0 | częściowo działa | [IDEMP](#e-idemp) | Some provider inbox/execution CAS dedup exists; universal operation receipts absent. |
-| [RF-SEC-012](../product/interview-foundation-v2.md#rf-sec-012) | P0 | brak | [INCIDENT](#e-incident) | Incident records exist; capability suspension/reconciliation absent. |
+| [RF-SEC-012](../product/interview-foundation-v2.md#rf-sec-012) | P0 | częściowo działa | [INCIDENT](#e-incident) | Exact native capability suspension, independent versioned remediation verification, explicit owner restore and manual-intervention reread/replan are enforced. General risk classification and external broker containment remain absent. |
 | [RF-RES-001](../product/interview-foundation-v2.md#rf-res-001) | P0 | częściowo działa | [RESOURCE](#e-resource) | Host repo allowlist exists; full runtime resource manifest absent. |
 | [RF-RES-002](../product/interview-foundation-v2.md#rf-res-002) | P0 | brak | [RESOURCE](#e-resource) | No ownership-aware service lifecycle. |
 | [RF-RES-003](../product/interview-foundation-v2.md#rf-res-003) | P0 | brak | [BACKUP](#e-backup) | No governed volume-operation gate. |
@@ -464,7 +455,7 @@ native diagnostics and on-demand legacy projections; value-free incidents.
 [migration checks](../../scripts/agent-runtime-redaction-migration.test.mjs).
 
 <a id="e-incident"></a>
-**INCIDENT** — Canonical records include safe native redaction incidents; no general automated containment/recertification workflow.
+**INCIDENT** — [Native capability suspension](native-capability-suspension.md), `src/modules/agent-runtime/capability-suspension.ts`, the forward `20260908090000_native_capability_suspension` migration, API/DB tests and PL/EN suspension UI. Safe redaction incidents remain separate; no automatic bulk reclassification or general external containment.
 
 [src/modules/company-records/company-records.routes.ts](../../src/modules/company-records/company-records.routes.ts).
 

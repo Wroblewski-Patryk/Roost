@@ -1,3 +1,4 @@
+import { CapabilitySuspensionModal } from "./capability-suspension";
 import { FormEvent, useMemo, useState } from "react";
 import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
@@ -18,7 +19,7 @@ import { RuntimeRedactionNotice, type RedactionIncident } from "./runtime-redact
 
 type Department = { id: string; key: CoreAreaKey; name: string; status: string };
 type CompanyRecord = {
-  source?: string; metadata?: RedactionIncident;
+  activeSuspensionCount?: number; source?: string; metadata?: RedactionIncident;
   id: string; recordType: string; key: string; title: string; description?: string | null; businessPurpose?: string | null;
   currentState?: string | null; desiredState?: string | null; expectedBehavior?: string | null; rationale?: string | null;
   acceptanceCriteria?: Array<string | Record<string, unknown>>; priority: string; status: string; functionalState: string; verificationState: string;
@@ -51,6 +52,7 @@ function draftFor(record: CompanyRecord | null, departmentKey: CoreAreaKey): Dra
 
 function RecordEditor({ record, recordType, departmentKey, departments, onClose, onSaved }: { record: CompanyRecord | null; recordType: string; departmentKey: CoreAreaKey; departments: Department[]; onClose: () => void; onSaved: () => void }) {
   const { locale, t } = useLanguage(); const polish = locale === "pl"; const recordName = localizedRecordType(recordType, polish); const [draft, setDraft] = useState(() => draftFor(record, departmentKey)); const [busy, setBusy] = useState(false); const [error, setError] = useState<string | null>(null);
+  const [showSuspensions,setShowSuspensions]=useState(false);
   const options = departments.map((department) => ({ value: department.key, label: departmentLabel(department.key, t) }));
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy(true); setError(null);
@@ -66,12 +68,16 @@ function RecordEditor({ record, recordType, departmentKey, departments, onClose,
       }) }); onSaved();
     } catch (caught) { setError(caught instanceof AppApiError ? caught.code : "request_failed"); } finally { setBusy(false); }
   }
+  if(showSuspensions&&record)return <CapabilitySuspensionModal incidentId={record.id} onClose={()=>setShowSuspensions(false)}/>;
+  const suspensionButton=record&&recordType==="technical_incident"?<CcButton variant="outline" disabled={busy||JSON.stringify(draft)!==JSON.stringify(draftFor(record,departmentKey))} onClick={()=>setShowSuspensions(true)}>{polish?"Zawieszenie uprawnień":"Capability suspension"}</CcButton>:null;
   if (record?.source === "runtime_redaction_v1") return <CcRecordEditorModal actions={<><CcButton onClick={onClose} variant="ghost">{t("common.cancel")}</CcButton><CcButton loading={busy} type="submit" variant="primary">{t("common.save")}</CcButton></>} eyebrow={recordName} onClose={onClose} onSubmit={submit} title={polish ? "Incydent ochrony treści" : "Content protection incident"} titleId="company-record-editor-title">
     {error ? <CcNotice tone="error" title={humanizeBusinessValue(error)} /> : null}
+    {suspensionButton}
     <RuntimeRedactionNotice incidents={[record.metadata || {}]} />
     <CcField label="Status">{({ id }) => <CcSelect id={id} value={draft.status} onChange={event => setDraft({ ...draft, status: event.target.value })}>{["active", "blocked", "completed"].map(value => <option key={value} value={value}>{humanizeBusinessValue(value, undefined, locale)}</option>)}</CcSelect>}</CcField>
   </CcRecordEditorModal>;
   return <CcRecordEditorModal actions={<><CcButton onClick={onClose} variant="ghost">{t("common.cancel")}</CcButton><CcButton loading={busy} type="submit" variant="primary">{t("common.save")}</CcButton></>} description={polish ? "Jeden wspólny rekord firmy, dostępny w każdym właściwym kontekście działowym." : "One shared company record, available in every relevant department context."} eyebrow={recordName} onClose={onClose} onSubmit={submit} title={`${record ? polish ? "Edytuj" : "Edit" : polish ? "Utwórz" : "Create"} ${recordName.toLowerCase()}`} titleId="company-record-editor-title">
+    {suspensionButton}
     {error ? <CcNotice live tone="error" title={humanizeBusinessValue(error)} /> : null}
     {record?.source === "runtime_redaction_v1" ? <RuntimeRedactionNotice incidents={[record.metadata || {}]} /> : null}
     <CcRecordEditorSection title={polish ? "Definicja" : "Definition"}><div className="grid gap-4 md:grid-cols-2">
@@ -102,12 +108,12 @@ export function CompanyRecordsWorkbench({ departmentKey, recordType, title }: { 
   const packet = useOwnerPacket<CompanyRecord[]>(`/v1/company-records?recordType=${encodeURIComponent(recordType)}&departmentKey=${departmentKey}&includeCompanyWide=true&refresh=${refreshKey}`, true, t);
   const departmentPacket = useOwnerPacket<{ departments: Department[] }>(`/v1/departments?refresh=${refreshKey}`, true, t); const rows = packet.data || []; const tableLabels = useTranslatedTableLabels();
   const columns = useMemo<Array<CcTableColumn<CompanyRecord>>>(() => [
-    { key: "record", header: recordName, sortable: true, searchValue: (row) => `${row.title} ${row.description || ""} ${row.businessPurpose || ""}`, cell: (row) => <button className="grid text-left" onClick={() => setEditing(row)} type="button"><strong>{row.title}</strong><span className="text-xs text-company-muted">{row.businessPurpose || row.description || row.key}</span></button> },
+    { key: "record", header: recordName, sortable: true, searchValue: (row) => `${row.title} ${row.description || ""} ${row.businessPurpose || ""}`, cell: (row) => <button className="grid text-left" onClick={() => setEditing(row)} type="button"><strong>{row.title}</strong>{Boolean(row.activeSuspensionCount)?<span className="text-sm text-warning">{polish?"Uprawnienie zablokowane":"Capability blocked"}</span>:null}<span className="text-xs text-company-muted">{row.businessPurpose || row.description || row.key}</span></button> },
     { key: "owner", header: polish ? "Właściciel" : "Owner", filterable: true, filterValue: (row) => row.organizationalContext?.ownerDepartment?.key || "unassigned", cell: (row) => <span className="text-sm text-company-muted">{row.organizationalContext?.ownerDepartment ? departmentLabel(row.organizationalContext.ownerDepartment.key, t) : polish ? "Nieprzypisane" : "Unassigned"}</span> },
     { key: "state", header: polish ? "Stan funkcjonalny" : "Functional state", filterable: true, filterValue: (row) => row.functionalState, cell: (row) => <span className="badge badge-outline">{humanizeBusinessValue(row.functionalState, undefined, locale)}</span> },
     { key: "coverage", header: polish ? "Pokrycie" : "Coverage", sortValue: (row) => row.implementationCoverage ?? -1, cell: (row) => <span className="text-sm text-company-muted">{row.implementationCoverage == null ? "—" : `${row.implementationCoverage}%`}</span> },
     { key: "evidence", header: polish ? "Dowody" : "Evidence", sortValue: (row) => row.evidenceCount, cell: (row) => <span className="text-sm text-company-muted">{row.evidenceCount}</span> },
-    { key: "status", header: t("table.status"), filterable: true, filterValue: (row) => row.status, cell: (row) => <span className="badge badge-outline">{label(row.status)}</span> },
+    { key: "status", header: t("table.status"), filterable: true, filterValue: (row) => row.status, cell: (row) => <span className="badge badge-outline">{row.activeSuspensionCount?(polish?"Uprawnienie zablokowane":"Capability blocked"):label(row.status)}</span> },
     { key: "actions", header: t("table.actions"), cell: (row) => <div className="flex justify-end gap-1"><CcButton ariaLabel="Edit" iconLeft="ph-pencil-simple" onClick={() => setEditing(row)} size="xs" variant="ghost"><span className="sr-only">Edit</span></CcButton>{row.status !== "archived" ? <CcButton ariaLabel="Archive" iconLeft="ph-archive" onClick={() => setArchiveRecord(row)} size="xs" variant="ghost"><span className="sr-only">Archive</span></CcButton> : null}</div> }
   ], [locale, polish, recordName, t]);
   function refresh() { setEditing(undefined); setRefreshKey((value) => value + 1); }

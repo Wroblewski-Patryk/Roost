@@ -51,6 +51,7 @@ const protectedMounts = new Map([
   ["agent-logs.routes.ts", "/agent-logs"],
   ["agent-events.routes.ts", "/agent-events"],
   ["agent-runtime.routes.ts", "/agent-runtime"],
+  ["capability-suspension.ts", "/agent-runtime/capability-suspensions"],
   ["events.routes.ts", "/events"],
   ["integration-settings.routes.ts", "/integration-settings"],
   ["google-drive.routes.ts", "/google-drive"],
@@ -102,7 +103,7 @@ for (const route of manifestRoutes) {
   manifestByMethod.set(route.method, routes);
 }
 
-const routeFiles = walk(path.join(root, "src/modules")).filter((file) => file.endsWith(".routes.ts"));
+const routeFiles = walk(path.join(root, "src/modules")).filter((file) => file.endsWith(".routes.ts") || file.endsWith("/capability-suspension.ts") || file.endsWith("\\capability-suspension.ts"));
 const missing = [];
 
 for (const file of routeFiles) {
