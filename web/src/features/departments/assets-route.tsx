@@ -852,7 +852,7 @@ function FilePreviewPanel({
         </div>
       </header>
 
-      <div className="roost-file-preview min-h-0 overflow-y-auto rounded-company p-3">
+      <div className={`roost-file-preview min-h-0 overflow-auto rounded-company p-3 ${googleContent ? "max-h-[65vh]" : ""}`} role="region" aria-label={resource.name} tabIndex={0}>
         {googleContent ? <DriveContentPanel key={resource.sourceId} fileId={resource.sourceId} /> : kind === "folder" ? (
           <div className="grid h-full place-items-center text-center">
             <div>

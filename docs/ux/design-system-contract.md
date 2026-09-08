@@ -2,9 +2,9 @@
 
 ## Google Drive file content
 
-The Resources Files view identifies native Google Docs and Sheets separately from ordinary Markdown/CSV files. Opening supported content performs a fresh provider read and shows loading, read failure, refresh, and confirmed-save states. Docs provide readable text and an explicit replace-all text operation; Sheets provide worksheet selection, values/formulas, and individual-cell editing. The grid displays up to 100 rows and 30 columns with an explicit limit notice. Ordinary text editing starts from a complete fresh read, never the truncated resource preview.
+The Resources Files view identifies native Google Docs and Sheets separately from ordinary Markdown/CSV files. Opening supported content performs a fresh provider read and shows loading, read failure, and refresh states. The UI is read-only: Docs and ordinary text files show readable content; Sheets provide worksheet selection and values/formulas. The grid displays up to 100 rows and 30 columns with an explicit limit notice. One bounded, keyboard-focusable preview region owns scrolling; text and tables have no nested scroll containers.
 
-Every Google-backed file has an external action labeled for Google Docs, Google Sheets, or Google Drive. Full formatting and spreadsheet editing use the native Google editor. No publishing or sharing changes are made to enable embedding. Conflicts preserve the draft and explain that the user must compare against refreshed content before retrying. Cached search content is never presented as an independently editable original.
+Every Google-backed file has an external action labeled for Google Docs, Google Sheets, or Google Drive. Human content editing uses that native Google editor. API/MCP editing for agents retains revision validation and original-file writes. No publishing or sharing changes are made to enable embedding. Cached search content is never presented as an independently editable original.
 
 This document defines how agents should treat the visual layer of the
 application.
