@@ -215,7 +215,9 @@ dashboardRouter.get("/command", asyncHandler(async (req, res) => {
   ].slice(0, 12);
 
   const interviewCount=(await prisma.$queryRaw<any[]>`SELECT count(*)::int AS count FROM task_interview_cases c WHERE workspace_id=${workspaceId}::uuid AND task_interview_status(c.id) IN ('pending','proposed') AND NOT EXISTS(SELECT 1 FROM task_interview_cases n WHERE n.supersedes_id=c.id)`)[0].count;
+  const decisionCount=(await prisma.$queryRaw<any[]>`SELECT count(*)::int AS count FROM decision_revisions WHERE workspace_id=${workspaceId}::uuid AND decision_state(decision_id)='pending'`)[0].count;
   const nextActions = [
+    decisionCount>0?{key:"review_decision_impact",label:"Review decision impact",target:"/areas?area=01-strategia&view=decisions",count:decisionCount,priority:"high"}:null,
     interviewCount>0?{key:"resolve_material_questions",label:"Resolve material decision questions",target:"/areas?area=01-strategia&view=decisions",count:interviewCount,priority:"high"}:null,
     pendingApprovals > 0 ? {
       key: "review_approvals",

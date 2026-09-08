@@ -125,7 +125,7 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
     checkRefs("procedures", list(taskContext?.procedures), "version", (item) => item.status === "active");
     for (const skill of c.skills.items) if (!list(agent?.skillIndex).includes(`${skill.name}@${skill.version}`)) add("contract.skills", "unavailable");
     checkRefs("dependencies", list(taskContext?.dependencies), "updatedAt", (item) => item.status !== "blocked", true);
-    checkRefs("decisions", list(taskContext?.decisions), "updatedAt", (item) => item.status === "approved", true);
+    checkRefs("decisions", list(taskContext?.decisions), "updatedAt", (item) => item.status === "approved" || item.status === "accepted" && item.source === "roost_decision", true);
     const requiredProcedures = [...list(applicationContext?.operatingModel?.applicationProcedures), ...list(applicationContext?.operatingModel?.capabilityProcedures)];
     if (requiredProcedures.some((link) => !c.procedures.items.some((item) => item.id === link?.procedureId))) add("contract.procedures", "missing");
   }

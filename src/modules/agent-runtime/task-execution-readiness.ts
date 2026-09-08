@@ -39,6 +39,8 @@ export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) =
   catch (error) {
     const nativeDiagnostic = error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2010" ? String(error.meta?.message ?? "") : error instanceof Prisma.PrismaClientUnknownRequestError ? error.message : "";
     const suspensionError = nativeDiagnostic.match(/\bnative_(?:suspension_[a-z_]+|capability_suspended)\b/)?.[0];
+    const decisionError=nativeDiagnostic.match(/\bdecision_(?:impact_too_large|scope_invalid|scope_expansion|history_immutable|forbidden|proposal_invalid|conflict_invalid|task_required|stale|risk_admission_required|transition_invalid|event_invalid|event_not_due|governed_command_required)\b/)?.[0];
+    if(decisionError)return {error:decisionError};
     if (suspensionError) return {error:suspensionError};
     const riskError = nativeDiagnostic.match(/\btask_risk_[a-z_]+\b/)?.[0];
     if (riskError) return {error:riskError};
@@ -252,7 +254,7 @@ export async function readyEditorData(db: Prisma.TransactionClient, workspaceId:
     sources: records.slice(0, 500).map(item => ({ id: item.id, label: item.title, revision: item.updatedAt.toISOString(), applicationId: item.applicationId })),
     procedures: context.procedures.map(item => ({ id: item.id, label: item.name, revision: String(item.version), eligible: item.status === "active" })),
     dependencies: context.dependencies.map(item => ({ id: item.id, label: item.dependencyType, revision: item.updatedAt.toISOString(), eligible: item.status !== "blocked" })),
-    decisions: context.decisions.map(item => ({ id: item.id, label: item.title, revision: item.updatedAt.toISOString(), eligible: item.status === "approved" })),
+    decisions: context.decisions.map(item => ({ id: item.id, label: item.title, revision: item.updatedAt.toISOString(), eligible: item.status === "approved" || item.status === "accepted" && item.source === "roost_decision" })),
     accepted: accepted.success ? { contract: accepted.data, applicationId: pin.applicationId, prompt: pin.prompt, baseBranch: pin.baseBranch } : null,
     acceptance: typeof pin.validatedAt === "string" && Number.isFinite(Date.parse(pin.validatedAt)) ? { validatedAt: new Date(pin.validatedAt).toISOString(), authorName: author?.user.name ?? null, authorType: pin.requestedByType === "user" ? "user" : "agent" } : null
   };

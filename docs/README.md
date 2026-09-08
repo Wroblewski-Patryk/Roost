@@ -21,7 +21,8 @@ only transient process state outside the repository.
   `architecture/workspace-human-access.md`
   `architecture/typed-work-handoff.md`,
   `architecture/governed-task-clarification.md`,
-  `architecture/material-unknown-interviews.md`
+  `architecture/material-unknown-interviews.md`,
+  `architecture/decision-supersession-impact.md`
   `architecture/autonomy-activation-contract.md` (accepted target and staged gates;
   not current execution authority)
 - Engineering: `engineering/local-development.md`, `engineering/testing.md`

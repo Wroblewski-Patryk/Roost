@@ -414,6 +414,12 @@ export const adapterManifest = {
       { method: "DELETE", path: "/v1/notes/:id", capability: "notes:write" }
     ],
     decisions: [
+      { method: "GET", path: "/v1/decisions/governance", capability: "decisions:read" },
+      { method: "GET", path: "/v1/decisions/:id/governance", capability: "decisions:read" },
+      { method: "POST", path: "/v1/decisions/governance/proposals", capability: "decisions:write" },
+      { method: "POST", path: "/v1/decisions/:id/governance/actions", capability: "decisions:write" },
+      { method: "POST", path: "/v1/decisions/deferrals", capability: "decisions:write" },
+      { method: "POST", path: "/v1/decisions/reopening-events", capability: "decisions:write" },
       { method: "GET", path: "/v1/decisions", capability: "decisions:read" },
       { method: "GET", path: "/v1/decisions/:id", capability: "decisions:read" },
       { method: "POST", path: "/v1/decisions", capability: "decisions:write" },

@@ -2951,6 +2951,17 @@ model Note {
   @@map("notes")
 }
 
+model TaskDecisionEffect {
+  id String @id @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  taskId String @map("task_id") @db.Uuid
+  decisionId String @map("decision_id") @db.Uuid
+  supersedesId String? @map("supersedes_id") @db.Uuid
+  acceptanceId String @map("acceptance_id") @db.Uuid
+  @@unique([taskId, decisionId])
+  @@map("task_decision_effects")
+}
+
 model Decision {
   id           String     @id @default(uuid()) @db.Uuid
   workspaceId  String?    @map("workspace_id") @db.Uuid

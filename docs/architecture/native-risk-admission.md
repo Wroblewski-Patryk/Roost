@@ -54,6 +54,11 @@ explicit accountable declarations; this bounded system does not inspect arbitrar
 SQL, discover undeclared effects or authorize execution of migrations outside the
 native host. Such execution remains outside its command surface.
 
+[Decision supersession](decision-supersession-impact.md) adds `decision_supersede`
+with the same level-specific gates, current applicable procedure and expiry rules.
+Its evidence additionally binds the pending proposal and exact impact preview;
+acceptance invalidates only the affected tasks' admission and capability authority.
+
 ## Evidence and independence
 
 Every attestation references a substantive current company record and carries a

@@ -1928,7 +1928,7 @@ async function prepareHandoffResultFixture(execution:any,pin:any){
  await prisma.agentExecution.update({where:{id:execution.id},data:{checkpointVersion:5,checkpoint:{schemaVersion:"roost-recovery-v1",stage:"effect_possible",sessionId:randomUUID(),packetRevision:"b".repeat(64),workspaceDigest:"c".repeat(64),contextRevision:pin.revision},metadata:{...execution.metadata,resultRevision:{schemaVersion:"roost-result-revision-v1",id:randomUUID(),executionId:execution.id,attempt:execution.attempt,hostId:execution.agentHostId,checkpointVersion:5,observedAt:new Date().toISOString(),commit:"d".repeat(40),branch:pin.contract.singleTask.branch,workingTree:"dirty"}}}});
 }
 let reviewFixtureSequence=0;
-  async function prepareReviewFixture(agentMode = false, autoGrants = true, handoff = false, clarification = false, interview = false) {
+  async function prepareReviewFixture(agentMode = false, autoGrants = true, handoff = false, clarification = false, interview = false, decisionNeighbor = false) {
     const suffix = `${Date.now()}-${reviewFixtureSequence++}`;
     const owner = await registerOwner(`review-${suffix}@example.test`, "Review fixture"), workspaceId = owner.workspace.id;
     const auth = { Authorization: `Bearer ${owner.token}` };
@@ -1936,6 +1936,7 @@ let reviewFixtureSequence=0;
     const project = await prisma.project.create({ data: { workspaceId, name: "Review fixture project" } });
     await prisma.applicationProject.create({ data: { applicationId: app.id, projectId: project.id } });
     const task = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: "Repair fixture parser" } });
+    if(decisionNeighbor)await prisma.task.create({data:{workspaceId,projectId:project.id,title:"Unrelated same-project research"}});
     const f = await prepareReadyFixture(workspaceId, task.id, app.id, auth, false);
     const manager = await prisma.workforceEntity.findFirstOrThrow({ where: { workspaceId, type: "human", source: "user", externalId: f.input.contract.taskRoles.requester.id } });
     const managerProfile = agentMode ? f.manager : await prisma.workforceEntity.update({ where: { id: manager.id }, data: { role: "accountable manager", authorityScope: ["task_accountability"] } });
@@ -13764,7 +13765,9 @@ test("material interview exact agent grant and immutable replay",async()=>{
  assert.equal((await f.post(url,input,headers)).status,200);
  const {execFile}=await import("node:child_process"),{promisify}=await import("node:util");
  const code="const {createApp}=require('./dist/app');const server=createApp().listen(0,'127.0.0.1',async()=>{const x=JSON.parse(process.env.FIXTURE_REQUEST);const r=await fetch('http://127.0.0.1:'+server.address().port+x.path,{method:'POST',headers:{'Content-Type':'application/json',...x.auth},body:JSON.stringify(x.body)});const data=await r.json();console.log(JSON.stringify({status:r.status,replayed:data.data?.replayed}));server.close(()=>process.exit());});";
- const restarted=await promisify(execFile)(process.execPath,["-e",code],{windowsHide:true,timeout:15000,env:{...process.env,FIXTURE_REQUEST:JSON.stringify({path:url,auth:headers,body:input})}});assert.deepEqual(JSON.parse(restarted.stdout.trim()),{status:200,replayed:true});
+ // Include process startup and the existing 20-second API transaction budget.
+ // The replay must still return 200 with the same immutable receipt.
+ const restarted=await promisify(execFile)(process.execPath,["-e",code],{windowsHide:true,timeout:30000,env:{...process.env,FIXTURE_REQUEST:JSON.stringify({path:url,auth:headers,body:input})}});assert.deepEqual(JSON.parse(restarted.stdout.trim()),{status:200,replayed:true});
 
  const c=(created.body as any).data.record;
  assert.equal(await prisma.taskCapabilityUse.count({where:{grantId,interviewCaseId:c.id}}),1);
@@ -13778,4 +13781,180 @@ test("material interview exact agent grant and immutable replay",async()=>{
  assert.equal((await human("answer")).status,201);assert.equal((await human("accept")).status,201);
  assert.equal((await prisma.$queryRaw<any[]>`SELECT task_capability_status(g) AS status FROM task_capability_grants g WHERE id=${oldReviewId}::uuid`)[0].status,"invalidated");
 
+});
+
+async function decisionFixtureProof(f:any){
+ const root=f.root+"/risk-admission",resources=await admissionFixtureResources(f.app.id);
+ const source=await prisma.companyRecord.findUniqueOrThrow({where:{id:f.input.contract.context.company[0].id}});
+ const {createAuthToken}=await import("../auth/token");
+ const independent={Authorization:`Bearer ${createAuthToken({workspaceId:f.workspaceId,userId:resources!.verifier.id})}`};
+ const get=async()=>((await request(root,{headers:f.auth})).body as any).data;
+ for(const gate of (await get()).operations.decision_supersede.gates){
+  const v=await get(),r=await f.post(root+"/evidence",{requestId:randomUUID(),expectedVersion:v.expectedVersion,operation:"decision_supersede",gate:gate.gate,verdict:"passed",evidence:{id:source.id,revision:source.updatedAt.toISOString()},rationale:"Verified this exact decision impact",...admissionFixtureDetail(gate.gate)},["extended_review","backup"].includes(gate.gate)?independent:f.auth);
+  assert.equal(r.status,200,JSON.stringify(r.body));
+ }
+ assert.ok((await get()).operations.decision_supersede.seal);
+}
+async function decisionFixtureProposal(f:any,extra:any={}){
+ const read=await request("/v1/decisions/governance",{headers:f.auth});assert.equal(read.status,200,JSON.stringify(read.body));
+ const body={requestId:randomUUID(),expectedVersion:(read.body as any).data.expectedVersion,title:"Parser delivery decision",context:"Current parser delivery evidence",decision:"Deliver the narrow parser behavior",rationale:"The focused behavior satisfies the objective",consequences:"Only the declared parser task changes",scopeReason:"The parser task is the narrowest dependent scope",scope:[{type:"task",id:f.task.id}],supersedesId:null,conflicts:[],...extra};
+ const response=await f.post("/v1/decisions/governance/proposals",body);return {body,response,id:(response.body as any).data?.record?.id};
+}
+test("decision governance preserves nonconflicting history and fences exact impact at acceptance",async t=>{
+ for(const active of [false,true])await t.test(active?"active execution isolation":"live grant isolation",async()=>{
+ const independent=await prepareReviewFixture(true,false);
+ const independentGrant=await independent.grant();assert.equal(independentGrant.response.status,201,JSON.stringify(independentGrant.response.body));
+ const independentHost=await prisma.agentHost.create({data:{workspaceId:independent.workspaceId,name:"Independent decision host",slug:"independent-decision-host",platform:"fixture"}});
+ const independentRun=active?await prisma.agentExecution.create({data:{workspaceId:independent.workspaceId,taskId:independent.task.id,applicationId:independent.app.id,status:"running",requestedByType:"user",agentHostId:independentHost.id,attempt:1,leaseToken:randomUUID(),leaseExpiresAt:new Date(Date.now()+60000),metadata:independent.execution.metadata as any}}):null;
+ const independentBefore=await prisma.task.findUniqueOrThrow({where:{id:independent.task.id}});
+ const f=await prepareReviewFixture(true,false,false,false,false,true),other=await prisma.task.findFirstOrThrow({where:{workspaceId:f.workspaceId,title:"Unrelated same-project research"}});
+ const beforeOther=await prisma.task.findUniqueOrThrow({where:{id:other.id}});
+ const grant=await f.grant();assert.equal(grant.response.status,201,JSON.stringify(grant.response.body));const grantId=(grant.response.body as any).data.grant.id;
+ const host=await prisma.agentHost.create({data:{workspaceId:f.workspaceId,name:"Decision fixture host",slug:"decision-fixture-host",platform:"fixture"}});
+ const running=active?await prisma.agentExecution.create({data:{workspaceId:f.workspaceId,taskId:f.task.id,applicationId:f.app.id,status:"running",requestedByType:"user",agentHostId:host.id,attempt:1,leaseToken:randomUUID(),leaseExpiresAt:new Date(Date.now()+60000),metadata:f.execution.metadata as any}}):null;
+ if(!active)assert.equal((await prisma.$queryRaw<any[]>`SELECT task_capability_status(g) AS status FROM task_capability_grants g WHERE id=${grantId}::uuid`)[0].status,"active");
+ const p=await decisionFixtureProposal(f);assert.equal(p.response.status,201,JSON.stringify(p.response.body));
+ const proposalReplay=await f.post("/v1/decisions/governance/proposals",p.body);assert.equal(proposalReplay.status,200);assert.equal((proposalReplay.body as any).data.record.id,p.id);
+ assert.equal((await f.post("/v1/decisions/governance/proposals",{...p.body,title:"Changed replay"})).status,409);
+ const get=async()=>{const r=await request(`/v1/decisions/${p.id}/governance`,{headers:f.auth});assert.equal(r.status,200,JSON.stringify(r.body));return (r.body as any).data;};
+ let v=await get();assert.equal(v.selected.state,"pending");assert.deepEqual(v.impact.taskIds,[f.task.id]);
+ assert.ok(v.impact.contexts.some((n:any)=>n.id===f.app.id));assert.ok(v.impact.grants.some((g:any)=>g.id===grantId));
+ assert.equal((await prisma.task.findUniqueOrThrow({where:{id:f.task.id}})).executionReadiness&&(await prisma.task.findUniqueOrThrow({where:{id:f.task.id}})).executionReadiness as any?((await prisma.task.findUniqueOrThrow({where:{id:f.task.id}})).executionReadiness as any).status:null,"ready");
+ let accept={requestId:randomUUID(),expectedVersion:v.expectedVersion,action:"accept",previewId:v.previews[0].id};
+ assert.equal((await f.post(`/v1/decisions/${p.id}/governance/actions`,accept)).status,409);
+ await decisionFixtureProof(f);v=await get();accept={...accept,requestId:randomUUID(),expectedVersion:v.expectedVersion};
+ const result=await f.post(`/v1/decisions/${p.id}/governance/actions`,accept);assert.equal(result.status,201,JSON.stringify(result.body));
+ assert.equal((await f.post(`/v1/decisions/${p.id}/governance/actions`,accept)).status,200);
+ assert.equal((await get()).selected.state,"accepted");
+ assert.equal(((await prisma.task.findUniqueOrThrow({where:{id:f.task.id}})).executionReadiness as any).status,"needs_revalidation");
+ if(running)assert.ok((await prisma.agentExecution.findUniqueOrThrow({where:{id:running.id}})).contextInvalidatedAt);
+ assert.deepEqual(await prisma.task.findUniqueOrThrow({where:{id:other.id}}),beforeOther);
+ assert.deepEqual(await prisma.task.findUniqueOrThrow({where:{id:independent.task.id}}),independentBefore);
+ if(independentRun)assert.deepEqual(await prisma.agentExecution.findUniqueOrThrow({where:{id:independentRun.id}}),independentRun);
+ const independentGrantId=(independentGrant.response.body as any).data.grant.id;
+ assert.equal((await prisma.$queryRaw<any[]>`SELECT task_capability_status(g) AS status FROM task_capability_grants g WHERE id=${independentGrantId}::uuid`)[0].status,active?"invalidated":"active");
+
+ assert.equal((await prisma.$queryRaw<any[]>`SELECT task_capability_status(g) AS status FROM task_capability_grants g WHERE id=${grantId}::uuid`)[0].status,"invalidated");
+ await assert.rejects(prisma.decision.update({where:{id:p.id},data:{decision:"Overwrite history"}}),/decision_history_immutable/);
+ await assert.rejects(prisma.$executeRaw`DELETE FROM decision_acceptances WHERE decision_id=${p.id}::uuid`,/decision_history_immutable/);
+ const unrelatedProposal=await decisionFixtureProposal(f,{supersedesId:p.id,scope:[{type:"task",id:other.id}],conflicts:[{kind:"replaces",oldProvision:p.body.decision,newProvision:p.body.decision,explanation:"Attempt a wider scope"}]});assert.equal(unrelatedProposal.response.status,409);assert.equal((unrelatedProposal.response.body as any).error,"decision_scope_expansion");
+ const next=await decisionFixtureProposal(f,{supersedesId:p.id,decision:"Deliver only validated parser behavior",conflicts:[{kind:"narrows",oldProvision:p.body.decision,newProvision:"Deliver only validated parser behavior",explanation:"Narrow the acceptance boundary"}]});
+ assert.equal(next.response.status,201,JSON.stringify(next.response.body));
+ assert.equal((await prisma.decision.findUniqueOrThrow({where:{id:next.id}})).supersedesId,p.id);
+ assert.equal((await prisma.decision.findUniqueOrThrow({where:{id:p.id}})).decision,p.body.decision);
+ const rootNext=`/v1/decisions/${next.id}/governance`;
+ await decisionFixtureProof(f);
+ const nextView=((await request(rootNext,{headers:f.auth})).body as any).data;
+ const acceptedNext=await f.post(rootNext+"/actions",{requestId:randomUUID(),expectedVersion:nextView.expectedVersion,action:"accept",previewId:nextView.previews[0].id});assert.equal(acceptedNext.status,201,JSON.stringify(acceptedNext.body));
+ const {loadTaskAgentContext}=await import("../modules/company-intelligence/task-agent-context");
+ const effective=await loadTaskAgentContext(f.workspaceId,f.task.id);assert.ok(effective?.decisions.some(d=>d.id===next.id));assert.ok(!effective?.decisions.some(d=>d.id===p.id));
+ assert.ok((await get()).supersededBy.some((d:any)=>d.id===next.id));
+ assert.equal((await prisma.decision.findUniqueOrThrow({where:{id:p.id}})).decision,p.body.decision);
+
+ });
+});
+
+test("decision governance reopens typed deferrals only on authoritative scoped events",async()=>{
+ const owner=await registerOwner("decision-events@example.test","Decision event fixture"),workspaceId=owner.workspace.id,auth={Authorization:`Bearer ${owner.token}`};
+ const app=await prisma.application.create({data:{workspaceId,name:"Event fixture app",slug:"event-fixture"}}),project=await prisma.project.create({data:{workspaceId,name:"Event fixture project"}});
+ await prisma.applicationProject.create({data:{applicationId:app.id,projectId:project.id}});
+ const task=await prisma.task.create({data:{workspaceId,projectId:project.id,title:"Wait for an explicit resource"}});
+ const post=(url:string,body:any,headers:Record<string,string>=auth)=>request(url,{method:"POST",headers,body:JSON.stringify(body)});
+ const f={workspaceId,task,app,auth,post},p=await decisionFixtureProposal(f);assert.equal(p.response.status,201,JSON.stringify(p.response.body));
+ const resource=await prisma.resource.create({data:{workspaceId,name:"Fixture capacity",type:"infrastructure",metadata:{available:false,capacity:0}}});
+ const config=await prisma.companyRecord.create({data:{workspaceId,applicationId:app.id,recordType:"configuration",key:"fixture-configuration",title:"Fixture configuration",metadata:{configuration:{mode:"limited"}}}});
+ for(const [type,id] of [["resource",resource.id],["company_record",config.id]])await prisma.dependency.create({data:{workspaceId,dependencyType:"requires",fromEntityType:"task",fromEntityId:task.id,toEntityType:type,toEntityId:id}});
+ const get=async()=>{const r=await request("/v1/decisions/governance",{headers:auth});assert.equal(r.status,200,JSON.stringify(r.body));return (r.body as any).data;};
+ const foreign=await registerOwner("decision-events-foreign@example.test","Foreign event fixture");
+ for(const type of ["owner_signal","resource_available","configuration_changed","deadline"]){
+  let v=await get();const dueAt=new Date(Date.now()+1800).toISOString();
+  const body={requestId:randomUUID(),expectedVersion:v.expectedVersion,targetType:"decision",targetId:p.id,reason:type==="resource_available"?"budget":"infrastructure",explanation:"Wait for the explicitly scoped fixture condition",condition:{type,...(type==="resource_available"?{referenceId:resource.id}:type==="configuration_changed"?{referenceId:config.id}:type==="deadline"?{dueAt}:{})}};
+  const deferred=await post("/v1/decisions/deferrals",body);assert.equal(deferred.status,201,JSON.stringify(deferred.body));const id=(deferred.body as any).data.record.id;
+  assert.equal((await post("/v1/decisions/deferrals",body)).status,200);
+  v=await get();assert.equal(v.revisions.find((r:any)=>r.id===p.id).state,"deferred");
+  const before=await prisma.event.count({where:{workspaceId,type:"decision_governance_attention"}});
+  await get();await get();assert.equal(await prisma.event.count({where:{workspaceId,type:"decision_governance_attention"}}),before);
+  let signal={requestId:randomUUID(),expectedVersion:v.expectedVersion,deferralId:id,type,explanation:"Owner confirms the actual fixture event",...(v.deferrals.find((d:any)=>d.id===id).referenceRevision?{referenceRevision:v.deferrals.find((d:any)=>d.id===id).referenceRevision}:{})};
+  assert.equal((await post("/v1/decisions/reopening-events",{...signal,authoritative:true})).status,400);
+  assert.equal((await post("/v1/decisions/reopening-events",signal,{Authorization:`Bearer ${foreign.token}`})).status,409);
+  assert.equal((await post("/v1/decisions/reopening-events",{...signal,type:type==="owner_signal"?"deadline":"owner_signal"})).status,409);
+  if(type!=="owner_signal")assert.equal((await post("/v1/decisions/reopening-events",signal)).status,409);
+  if(type==="resource_available")await prisma.resource.update({where:{id:resource.id},data:{metadata:{available:true,capacity:2}}});
+  if(type==="configuration_changed"){
+   await prisma.companyRecord.update({where:{id:config.id},data:{title:"Renamed configuration"}});v=await get();const unchanged={...signal,requestId:randomUUID(),expectedVersion:v.expectedVersion,referenceRevision:v.deferrals.find((d:any)=>d.id===id).referenceRevision};assert.equal((await post("/v1/decisions/reopening-events",unchanged)).status,409);
+   await prisma.companyRecord.update({where:{id:config.id},data:{metadata:{configuration:{mode:"available"}}}});
+  }
+  if(type==="deadline")await new Promise(resolve=>setTimeout(resolve,1900));
+  v=await get();signal={...signal,expectedVersion:v.expectedVersion,...(v.deferrals.find((d:any)=>d.id===id).referenceRevision?{referenceRevision:v.deferrals.find((d:any)=>d.id===id).referenceRevision}:{})};
+  const result=await post("/v1/decisions/reopening-events",signal);assert.equal(result.status,201,JSON.stringify(result.body));
+  assert.equal((await post("/v1/decisions/reopening-events",signal)).status,200);
+  assert.equal(await prisma.event.count({where:{workspaceId,type:"decision_governance_attention"}}),before+1);
+  assert.equal((await get()).revisions.find((r:any)=>r.id===p.id).state,"pending");
+  assert.equal((await prisma.decision.findUniqueOrThrow({where:{id:p.id}})).status,"proposed");
+ }
+
+ const unsafe=await decisionFixtureProposal(f,{context:"password=synthetic-decision-secret"});assert.equal(unsafe.response.status,409);assert.ok(!JSON.stringify(unsafe.response.body).includes("synthetic-decision-secret"));
+ const interviewRoot=`/v1/agent-runtime/tasks/${task.id}/interviews`;
+ const interviewGet=async()=>((await request(interviewRoot,{headers:auth})).body as any).data;
+ const iv=await interviewGet(),principal=await prisma.workspaceMembership.findFirstOrThrow({where:{workspaceId,role:"owner"}});
+ const block={topic:"Confirm fixture capacity",unknownKey:"fixture_capacity",missing:"Capacity choice remains open",impact:"Delivery waits for this choice",material:true,decisionClass:"task_scope",principalId:principal.userId,context:"Recorded configuration provides two choices",recommendation:"Use available capacity",consequences:"Waiting keeps delivery blocked",scope:"Only this fixture task",deferralEffect:"Keep delivery blocked",dependencies:[{taskId:task.id,blockedPart:"Fixture delivery"}],gathering:{status:"completed",checkedSources:[{id:iv.sources[0].id,revision:iv.sources[0].revision,findings:"A human choice is still needed"}],remainingHumanDecision:"Confirm capacity choice"},questions:[{field:"capacity",type:"decision",question:"Which capacity should be used?",requiresHuman:true,options:["Existing","Additional"]}]};
+ const published=await post(interviewRoot,{requestId:randomUUID(),expectedVersion:iv.expectedVersion,block});assert.equal(published.status,201,JSON.stringify(published.body));const caseId=(published.body as any).data.record.id;
+ let current=await get();const deferredInterview=await post("/v1/decisions/deferrals",{requestId:randomUUID(),expectedVersion:current.expectedVersion,targetType:"interview",targetId:caseId,reason:"budget",explanation:"Wait for an explicit owner signal",condition:{type:"owner_signal"}});assert.equal(deferredInterview.status,201,JSON.stringify(deferredInterview.body));
+ assert.equal((await interviewGet()).cases.find((c:any)=>c.id===caseId).status,"deferred");
+ const bypass=await post(interviewRoot+"/actions/respond",{requestId:randomUUID(),expectedVersion:(await interviewGet()).expectedVersion,caseId,action:"answer",reason:"Attempt to bypass a typed condition",answers:[{field:"capacity",value:"Existing"}]});assert.equal(bypass.status,409,JSON.stringify(bypass.body));
+
+ current=await get();const deferralId=(deferredInterview.body as any).data.record.id,signal={requestId:randomUUID(),expectedVersion:current.expectedVersion,deferralId,type:"owner_signal",explanation:"Owner confirmed the capacity event"};
+ const race=await Promise.all([post("/v1/decisions/reopening-events",signal),post("/v1/decisions/reopening-events",{...signal,requestId:randomUUID()})]);assert.deepEqual(race.map(r=>r.status).sort(),[201,409]);
+ assert.equal((await interviewGet()).cases.find((c:any)=>c.id===caseId).status,"pending");assert.equal((await interviewGet()).blocking,true);
+ assert.equal(await prisma.event.count({where:{workspaceId,type:"decision_governance_attention",payload:{path:["deferralId"],equals:deferralId}}}),1);
+ await assert.rejects(prisma.event.deleteMany({where:{workspaceId,type:"decision_governance_attention",payload:{path:["deferralId"],equals:deferralId}}}),/decision_history_immutable/);
+
+ assert.equal((await prisma.$queryRaw<any[]>`SELECT count(*)::int AS n FROM task_interview_entries WHERE case_id=${caseId}::uuid AND action='accept'`)[0].n,0);
+ const {execFile}=await import("node:child_process"),{promisify}=await import("node:util");
+ const code="const {createApp}=require('./dist/app');const server=createApp().listen(0,'127.0.0.1',async()=>{const x=JSON.parse(process.env.FIXTURE_REQUEST);const r=await fetch('http://127.0.0.1:'+server.address().port+x.path,{headers:x.auth});const b=await r.json();console.log(JSON.stringify({status:r.status,state:b.data?.selected?.state}));server.close(()=>process.exit());});";
+ const restarted=await promisify(execFile)(process.execPath,["-e",code],{windowsHide:true,timeout:15000,env:{...process.env,FIXTURE_REQUEST:JSON.stringify({path:`/v1/decisions/${p.id}/governance`,auth})}});assert.deepEqual(JSON.parse(restarted.stdout.trim()),{status:200,state:"pending"});
+ await assert.rejects(prisma.$executeRaw`DELETE FROM decision_reopening_events WHERE workspace_id=${workspaceId}::uuid`,/decision_history_immutable/);
+});
+
+test("decision governance retains high and critical gates and rejects stale concurrent acceptance",async t=>{
+ for(const level of ["high","critical"])await t.test(level,async()=>{
+  const f=await prepareReviewFixture();
+  const riskRoot=f.root+"/risk",rv=((await request(riskRoot,{headers:f.auth})).body as any).data,entries=structuredClone(rv.history[0].entries);
+  entries[0].dimensions.money.level=level;
+  const classified=await f.post(riskRoot+"/assessments",{requestId:randomUUID(),expectedVersion:rv.expectedVersion,entries,jointRationale:"Explicit fixture decision risk"});assert.equal(classified.status,200,JSON.stringify(classified.body));
+  const p=await decisionFixtureProposal(f);assert.equal(p.response.status,201,JSON.stringify(p.response.body));
+  const get=async()=>((await request(`/v1/decisions/${p.id}/governance`,{headers:f.auth})).body as any).data;
+  let v=await get();assert.equal(v.gates[0].gates.length,level==="high"?3:6);
+  const action=(body:any,headers:Record<string,string>=f.auth)=>f.post(`/v1/decisions/${p.id}/governance/actions`,body,headers);
+  let body={requestId:randomUUID(),expectedVersion:v.expectedVersion,action:"accept",previewId:v.previews[0].id};
+  assert.equal((await action(body)).status,409);assert.equal((await action(body,f.reviewerAuth)).status,403);
+  await decisionFixtureProof(f);v=await get();body={...body,requestId:randomUUID(),expectedVersion:v.expectedVersion};
+  const original=await prisma.task.findUniqueOrThrow({where:{id:f.task.id}});
+  await prisma.task.update({where:{id:f.task.id},data:{title:"Changed fixture source"}});await prisma.task.update({where:{id:f.task.id},data:{title:original.title}});
+  assert.equal((await action(body)).status,409);v=await get();assert.equal(v.current,false);
+  const currentRisk=((await request(riskRoot,{headers:f.auth})).body as any).data;
+  assert.equal((await f.post(riskRoot+"/assessments",{requestId:randomUUID(),expectedVersion:currentRisk.expectedVersion,entries,jointRationale:"Revalidated exact reverted fixture scope"})).status,200);
+  v=await get();assert.equal((await action({requestId:randomUUID(),expectedVersion:v.expectedVersion,action:"review_impact"})).status,201);
+  await decisionFixtureProof(f);v=await get();body={requestId:randomUUID(),expectedVersion:v.expectedVersion,action:"accept",previewId:v.previews[0].id};
+  const race=await Promise.all([action(body),action({...body,requestId:randomUUID()})]);assert.deepEqual(race.map(r=>r.status).sort(),[201,409]);
+  assert.equal((await get()).selected.state,"accepted");
+  assert.equal((await prisma.$queryRaw<any[]>`SELECT count(*)::int AS n FROM decision_acceptances WHERE decision_id=${p.id}::uuid`)[0].n,1);
+ });
+});
+
+
+test("decision governance follows directional dependencies without sibling expansion",async()=>{
+ const owner=await registerOwner("decision-direction@example.test","Directional decision fixture"),workspaceId=owner.workspace.id,auth={Authorization:`Bearer ${owner.token}`};
+ const project=await prisma.project.create({data:{workspaceId,name:"Directional project"}}),app=await prisma.application.create({data:{workspaceId,name:"Directional app",slug:"directional-fixture"}});
+ await prisma.applicationProject.create({data:{applicationId:app.id,projectId:project.id}});
+ const tasks=await Promise.all(["Root","Upstream","Dependent","Blocked","Sibling"].map(title=>prisma.task.create({data:{workspaceId,projectId:project.id,title}})));
+ for(const [from,to,type] of [[0,1,"requires"],[2,0,"depends_on"],[0,3,"blocks"]] as const)await prisma.dependency.create({data:{workspaceId,fromEntityType:"task",fromEntityId:tasks[from].id,toEntityType:"task",toEntityId:tasks[to].id,dependencyType:type}});
+ const post=(url:string,body:any)=>request(url,{method:"POST",headers:auth,body:JSON.stringify(body)}),f={task:tasks[0],app,auth,post};
+ const p=await decisionFixtureProposal(f);assert.equal(p.response.status,201,JSON.stringify(p.response.body));
+ const view=((await request(`/v1/decisions/${p.id}/governance`,{headers:auth})).body as any).data;
+ assert.deepEqual(view.impact.taskIds.sort(),[tasks[0].id,tasks[2].id,tasks[3].id].sort());
+ assert.ok(!view.impact.nodes.some((n:any)=>[tasks[1].id,tasks[4].id].includes(n.id)));
+ const source=await prisma.task.create({data:{workspaceId,projectId:project.id,title:"Temporary pending source"}}),pending=await decisionFixtureProposal({...f,task:source});assert.equal(pending.response.status,201,JSON.stringify(pending.response.body));
+ await prisma.task.delete({where:{id:source.id}});
+ const historical=await request(`/v1/decisions/${pending.id}/governance`,{headers:auth});assert.equal(historical.status,200,JSON.stringify(historical.body));assert.equal((historical.body as any).data.impact,null);assert.equal((historical.body as any).data.current,false);assert.equal((historical.body as any).data.selected.body.title,pending.body.title);
 });

@@ -255,3 +255,15 @@ It covers archive/restore/null mapping, pagination, missing-task repair preservi
 IDs, actual List statuses, Drive scope and page cursors, replay deduplication,
 failed-content recovery and concurrent webhook processing. Run the API suite too
 to verify HTTP authorization and compatibility.
+
+## Decision supersession and event reopening
+
+The API suite covers immutable lineage, declared conflict, scoped acceptance and
+active stop, independent work preservation, all four typed deferral events, native
+interview reopening, replay/concurrency/restart, redaction and high/critical gates.
+Run `node scripts/decision-governance-ui.test.mjs` after the web build for PL/EN
+proposal, separate acceptance, stale/read-only/deferral states and responsive QA.
+Run the relevant existing interview, admission, grant, handoff, clarification and
+readiness UI suites too. `scripts/capability-suspension-migration.test.mjs` applies
+all subsequent migrations to its populated historical fixture and verifies that
+business/authentication history is preserved and governance tables start empty.

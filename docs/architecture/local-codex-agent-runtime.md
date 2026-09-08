@@ -364,3 +364,11 @@ before claiming automatic reconciliation or resource hygiene guarantees.
 A commit and push may trigger Coolify deployment, but the Agent Host must not
 perform either action unless the governing Roost task explicitly grants that
 authority. Repository work and release authority remain separate contracts.
+
+## Governed decision changes
+
+[Decision supersession and reopening](decision-supersession-impact.md) binds explicit
+owner acceptance to a versioned downstream impact preview and native risk gates.
+Accepted changes fence only affected Ready and active work, retain predecessor
+history and require fresh admission. Typed event delivery reopens pending questions
+without acceptance, scheduling, new grants or agent activation.

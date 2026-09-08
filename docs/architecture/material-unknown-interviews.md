@@ -38,6 +38,10 @@ A separate explicit acceptance by the current named owner accepts that proposal.
 Generic Decision PATCH/DELETE cannot change these governed records. Deferral
 records a reason, removes the immediate dashboard action and keeps dependent
 execution blocked. An explicit later answer reopens the decision path.
+[Typed budget/infrastructure deferral](decision-supersession-impact.md) additionally
+binds a specific resource/configuration change, owner signal or owner-selected
+deadline. Verified delivery returns the current defer entry to pending with one
+attention item; it never supplies an answer or approval.
 
 Corrections publish another immutable case revision linked to its predecessor.
 Only the current owner may revise a case; a revision requires a reason and fresh

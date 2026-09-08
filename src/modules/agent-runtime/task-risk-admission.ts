@@ -8,7 +8,7 @@ type Db = Prisma.TransactionClient;
 
 export async function admissionVersion(db: Db, taskId: string) {
   return (await db.$queryRaw<any[]>`SELECT encode(sha256(convert_to(COALESCE(task_admission_source(${taskId}::uuid),'missing')||task_risk_version(${taskId}::uuid)||
-    COALESCE(task_risk_current(${taskId}::uuid)::text,'missing')||COALESCE((SELECT jsonb_agg(id ORDER BY operation,gate,version)::text FROM task_admission_evidence WHERE task_id=${taskId}::uuid),'[]'),'UTF8')),'hex') AS version`)[0].version as string;
+    COALESCE(task_risk_current(${taskId}::uuid)::text,'missing')||decision_pending_version(${taskId}::uuid)||COALESCE((SELECT jsonb_agg(id ORDER BY operation,gate,version)::text FROM task_admission_evidence WHERE task_id=${taskId}::uuid),'[]'),'UTF8')),'hex') AS version`)[0].version as string;
 }
 export async function riskLevelAdmission(db: Db, taskId: string, operation = "runtime_execute") {
   const result = (await db.$queryRaw<any[]>`SELECT task_admission_view(${taskId}::uuid,${operation}) AS value`)[0].value;

@@ -23,6 +23,10 @@ export async function loadTaskAgentContext(workspaceId: string, taskId: string, 
     db.risk.findMany({ where: { workspaceId, status: { not: "archived" }, id: { in: [...ids("risk"), ...contextualRiskIds] } }, include: { controls: true } }),
     db.companyRecord.findMany({ where: { workspaceId, status: { not: "archived" }, recordType: { in: ["operational_issue", "technical_incident", "escalation"] }, OR: [{ id: { in: [...ids("company_record"), ...ids("requirement")] } }, ...(task.projectId ? [{ projectId: task.projectId }] : [])] } })
   ]);
+  const governed=await db.taskDecisionEffect.findMany({where:{workspaceId,taskId}});
+  const replaced=new Set(governed.map(r=>r.supersedesId).filter(Boolean));
+  const effective=await db.decision.findMany({where:{workspaceId,id:{in:governed.map(r=>r.decisionId).filter(id=>!replaced.has(id))}}});
+  decisions.splice(0,decisions.length,...decisions.filter(d=>!replaced.has(d.id)&&!effective.some(n=>n.id===d.id)),...effective);
   const evidence = await db.evidenceRecord.findMany({ where: { workspaceId, OR: [{ entityType: "task", entityId: task.id }, { entityId: { in: records.map((record) => record.id) } }] }, orderBy: { observedAt: "desc" } });
   return {
     schemaVersion: "task-agent-execution-context-v1", generatedAt: new Date().toISOString(), task, organizationalContext: contexts.get(task.id),
