@@ -17,6 +17,8 @@ import { departmentLabel } from "./department-labels";
 import { DepartmentScopeControl } from "./department-scope-control";
 import { ProceduresWorkbench } from "./procedures-workbench";
 import { TaskReadinessModal } from "./task-readiness";
+import { TaskReviewModal } from "./task-review";
+import { reviewMessages } from "./task-review-messages";
 
 type OperationsView = "tasks" | "calendar" | "procedures";
 type CalendarMode = "day" | "week" | "month";
@@ -444,7 +446,8 @@ export function TaskPreviewModal({
   onSaved: () => void;
   onReady: (taskId: string) => void;
 }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const [reviewOpen, setReviewOpen] = useState(false), [edited, setEdited] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "error">("idle");
   const [error, setError] = useState("");
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -492,9 +495,10 @@ export function TaskPreviewModal({
     }
   }
 
+  if (reviewOpen) return <TaskReviewModal taskId={item.id} onClose={()=>setReviewOpen(false)} onSaved={onSaved}/>;
   return (
     <CcRecordEditorModal
-      actions={<><CcButton name="action" value="prepare" disabled={saveState === "saving"} type="submit" variant="outline">{t("ready.saveAndPrepare")}</CcButton><CcButton onClick={onClose} variant="ghost">{t("operations.cancel")}</CcButton><CcButton loading={saveState === "saving"} type="submit" variant="primary">{t("operations.saveTask")}</CcButton></>}
+      actions={<><CcButton disabled={edited || saveState === "saving"} onClick={()=>setReviewOpen(true)} variant="outline">{reviewMessages[locale === "pl" ? "pl" : "en"].open}</CcButton><CcButton name="action" value="prepare" disabled={saveState === "saving"} type="submit" variant="outline">{t("ready.saveAndPrepare")}</CcButton><CcButton onClick={onClose} variant="ghost">{t("operations.cancel")}</CcButton><CcButton loading={saveState === "saving"} type="submit" variant="primary">{t("operations.saveTask")}</CcButton></>}
       description={item.hierarchy?.taskList?.name || t("operations.unassigned")}
       eyebrow="04 Operations · Task"
       maxWidthClassName="max-w-5xl"
@@ -504,7 +508,7 @@ export function TaskPreviewModal({
       title={item.task.title || t("operations.taskPreview")}
       titleId="operations-task-modal-title"
     >
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_18rem]" onChangeCapture={()=>setEdited(true)}>
           <section className="grid gap-4">
             <TaskFields assignmentOptions={assignmentOptions} item={item} mode="edit" statuses={statuses} taskLists={taskLists} />
             {error ? <CcNotice tone="error" title={error} live /> : null}
@@ -1321,7 +1325,7 @@ export function OperationsRoute() {
   const [selectedListIds, setSelectedListIds] = useState<string[]>([]);
   const [listSelectionInitialized, setListSelectionInitialized] = useState(false);
   const [selectedTask, setSelectedTask] = useState<OperationsWorkItem | null>(null);
-  const [readinessTask, setReadinessTask] = useState<string | null>(null);
+  const [readinessTask, setReadinessTask] = useState<string | null>(() => { const id = new URLSearchParams(window.location.search).get("taskId"); return id && /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id) ? id : null; });
   const [selectedList, setSelectedList] = useState<OperationsTaskList | null>(null);
   const [createTaskListId, setCreateTaskListId] = useState<string | null>(null);
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);

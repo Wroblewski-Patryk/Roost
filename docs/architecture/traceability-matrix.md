@@ -32,41 +32,45 @@ for later changes to these same canonical files.
 
 ## Atomic P0 selection
 
-The retained baseline includes pinned Ready context, source watches, active
-context stopping, explicit versioned Submit and one measured task scope.
-The current bounded P0 slice is **RF-CTX-010: explicit task role admission**.
+The retained baseline includes versioned Submit, single-task scope, pinned Ready
+context, explicit roles, source invalidation and active context stopping.
+The current bounded P0 slice is **RF-CTX-014: native review and manager return**.
 
-The existing contract now requires one workspace-scoped requester, accountable
-manager, assigned executor, independent verifier and release authorizer. Current
-membership/profile revisions, declared skills and explicit role mandates are
-resolved transactionally. The first accepted Submit binds the human requester;
-later accepted authors and executors append to immutable origin history. Human
-aliases and replacement assignments cannot erase prior authorship or authorize
-self-review/self-release. Missing or conflicting evidence yields Needs context.
-The pin, receipt, provenance and event commit together with existing version and
-idempotency controls. Ordinary source edits invalidate Ready; alternate admission
-writes remain rejected. Legacy Ready is invalidated without inventing roles or
-reconstructing historical authors. PL/EN editing and accepted-role summaries use
-the existing workbench. The host requires task_role_separation_v1 before spawn.
+A current independent human verifier can approve/reject a completed execution's
+versioned reported material. Rejection requires reproducible evidence and bounded
+correction scope. A separate current accountable human manager can return the
+same task to its original executor or create one dependent specialist draft.
+Neither action grants Ready; corrections require an explicit, fully validated
+Submit, and a specialist dependency keeps its parent blocked until independent
+approval of the specialist's current result. Review cannot repair files, change
+assignment/branch, close delivery or authorize release. Agent principals remain
+blocked pending credential identity binding.
 
-Verification: **81/81 API/database tests**, **324/324 host regression cases**,
-**74 Ready browser checks**, **18/18 active-stop UI checks**, **2/2 form-model
-tests**, an existing-data migration upgrade fixture, the installation-preservation
-bootstrap regression and npm run validate.
-Coverage includes API/DB self-review/self-release, membership removal, stale and
-foreign references, idempotency, preserved origin, ordinary assignment changes,
-claim refusal and synthetic process admission. PL/EN mobile/tablet/desktop role
-views were visually reviewed. Process fixtures create temporary fictional Git
-repositories and never call providers. Existing asset/chunk warnings remain;
-full-web strict typechecking and observer fault tests were not rerun. Production
-identity and recovery evidence are reported in the completed handoff.
+Append-only decision/action records retain material versions, actors, role and
+result snapshots, evidence, scope and parent/child links. DB guards preserve
+reviewed material and dependency identity. Serializable commands enforce current
+roles, workspace isolation, version conflicts and durable idempotency, including
+restart replay. Existing tasks/results receive no invented historical reviews.
+The PL/EN Operations preview opens review without writing the task; the existing
+Ready editor also exposes the workflow.
 
-RF-CTX-010 remains **częściowo działa**: role admission does not implement review
-execution/return, actual release, HR certification, per-agent credential binding,
-broker/merge/push or activation. Earlier RF-CTX-009 semantic completeness limits
-remain. Production stays execution disabled and the canonical host stays observe.
-No second requirement or managed-application work was started. The registry and
-matrix retain 162 requirements.
+Verification: **91/91 API/database tests**, **88/88 affected packet/role host
+checks**, **64 review UI checks**, **75 Ready/workbench browser checks**,
+**18 active-stop UI checks**, **14 contract/form-model tests**, an existing-data
+migration upgrade fixture and npm run validate. Coverage includes approve,
+reject, missing evidence, human-author aliases, stale material, foreign scope,
+unauthorized roles, both manager dispositions, correction resubmission, immutable
+history/dependencies, concurrency and restart. UI checks include PL/EN phone,
+tablet and desktop plus safe retry after a failed request. Existing asset/chunk
+warnings remain. Full-web strict typechecking, full host regression and observer
+fault/reboot tests were not rerun; no provider or real execution was invoked.
+
+RF-CTX-014 remains **częściowo działa** at the full agent-company level: agent
+identity binding, automatic reviewer invocation, artifact/Git attestation,
+certification, hierarchical routing and release/broker execution remain separate.
+Production stays execution disabled and the canonical host stays observe. No
+second requirement or managed-application work was started. The registry and
+matrix retain 162 requirements. Production identity is in the completed handoff.
 
 ## Matrix
 
@@ -105,7 +109,7 @@ matrix retain 162 requirements.
 | [RF-CTX-011](../product/interview-foundation-v2.md#rf-ctx-011) | P1 | częściowo działa | [PROC](#e-proc) | Registry primitives exist; task-type execution contract incomplete. |
 | [RF-CTX-012](../product/interview-foundation-v2.md#rf-ctx-012) | P0 | częściowo działa | [PROC](#e-proc) | Procedure refs validated; composition and exception authority absent. |
 | [RF-CTX-013](../product/interview-foundation-v2.md#rf-ctx-013) | P0 | częściowo działa | [PACKET](#e-packet) | Text recovery fields exist; typed recipient acceptance absent. |
-| [RF-CTX-014](../product/interview-foundation-v2.md#rf-ctx-014) | P0 | brak | [REVIEW](#e-review) | No native review return workflow. |
+| [RF-CTX-014](../product/interview-foundation-v2.md#rf-ctx-014) | P0 | częściowo działa | [native review contract](task-review-workflow.md), `src/modules/agent-runtime/task-review.ts`, `src/tests/api.test.ts`, `scripts/task-review-ui.test.mjs`, `scripts/task-review-migration.test.mjs` | Current human verifier records versioned approve/reject; manager returns scoped work or creates one dependent specialist draft. Append-only history, role/DB guards, correction Submit, stale/concurrent/restart and UI paths verified. Agent credential binding, automated reviewer invocation and artifact/Git attestation remain separate. |
 | [RF-CTX-015](../product/interview-foundation-v2.md#rf-ctx-015) | P1 | częściowo działa | [TASK](#e-task) | Notes and task links exist; typed governed communication incomplete. |
 | [RF-CTX-016](../product/interview-foundation-v2.md#rf-ctx-016) | P1 | częściowo działa | [DEC](#e-dec) | Structured Decision CRUD exists; adaptive interview orchestration absent. |
 | [RF-CTX-017](../product/interview-foundation-v2.md#rf-ctx-017) | P0 | częściowo działa | [DEC](#e-dec) | Supersession fields exist; impact/revalidation/event-based reopening absent. |
@@ -422,7 +426,7 @@ performed, and no VPS release is required for this local launcher change.
 [src/modules/company-objects/company-objects.routes.ts](../../src/modules/company-objects/company-objects.routes.ts), [prisma/schema.prisma](../../prisma/schema.prisma).
 
 <a id="e-review"></a>
-**REVIEW** — Approval/review storage exists; no independent agent routing or exact-commit authorization.
+**REVIEW** — Native human result review and manager correction return are governed by [RF-CTX-014](task-review-workflow.md). Independent agent routing and exact-commit release authorization remain absent.
 
 [src/modules/company-os/company-os.routes.ts](../../src/modules/company-os/company-os.routes.ts), [prisma/schema.prisma](../../prisma/schema.prisma).
 

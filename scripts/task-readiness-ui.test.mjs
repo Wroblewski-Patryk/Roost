@@ -142,6 +142,18 @@ try {
   assert.equal(savedTitle, "Saved before Ready");
   assert.equal(await preview.evaluate(() => window.readyOpened), packet.editor.task.id);
   await preview.close(); checked++;
+  const reviewPreview = await browser.newPage({ viewport: { width: 390, height: 960 } });
+  await reviewPreview.addInitScript(task => { localStorage.setItem("companycoreLocale", "en"); window.readyPreview = { id: task.id, task: { ...task, description: "Original description", priority: "normal" } }; }, packet.editor.task);
+  const reviewRequests = [];
+  await reviewPreview.route("**/v1/**", async route => {
+    reviewRequests.push(route.request().method()); assert.equal(route.request().method(), "GET"); assert.ok(route.request().url().endsWith("/review"));
+    return route.fulfill({ json: { data: { task: packet.editor.task, result: null, expectedVersion: "a".repeat(64), materialVersion: null, canReview: false, canManage: false, reason: "no_result", history: [], specialists: [], labels: {} } } });
+  });
+  await reviewPreview.goto(`http://127.0.0.1:${server.address().port}`);
+  await reviewPreview.getByRole("button", { name: "Review result", exact: true }).click();
+  await reviewPreview.getByText("No completed result is available for review.", { exact: true }).waitFor();
+  assert.deepEqual(reviewRequests, ["GET"]);
+  await reviewPreview.close(); checked++;
   for (const locale of ["en", "pl"]) {
     const retryPage = await browser.newPage({ viewport: { width: 834, height: 960 } });
     await retryPage.addInitScript(value => localStorage.setItem("companycoreLocale", value), locale);

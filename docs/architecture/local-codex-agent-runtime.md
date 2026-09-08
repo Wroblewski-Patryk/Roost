@@ -141,7 +141,9 @@ visible.
    [active stop contract](execution-packet-contract.md#active-work-after-accepted-context-changes-rf-ctx-006).
 7. The host reports the final response, changed paths, verification commands,
    usage, or a structured failure. Roost stores completion evidence linked to
-   the task. The task remains open for owner review.
+   the task. The task remains open for [native result review and manager correction
+   return](task-review-workflow.md). A review decision binds a reported material
+   version and never grants delivery or release authority.
 
 ## Security Boundaries
 

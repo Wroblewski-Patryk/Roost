@@ -11,6 +11,8 @@ import { humanizeBusinessValue } from "./shared";
 import { ChangedContextSources } from "./changed-context-sources";
 import { SingleTaskFields } from "./single-task-fields";
 import { TaskRoleFields, TaskRoleSummary } from "./task-role-fields";
+import { TaskReviewModal } from "./task-review";
+import { reviewMessages } from "./task-review-messages";
 import { catalogFor, contractInput, draftFrom, fields, groups, selectReferences, validationSections, type Draft, type FieldName, type ReadyPacket, type RefGroup } from "./task-readiness-model";
 
 export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: string; onClose: () => void; onSaved?: () => void }) {
@@ -20,6 +22,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
   const [busy, setBusy] = useState<string | null>("loading"), [error, setError] = useState<string | null>(null);
   const [issues, setIssues] = useState<string[]>([]), [success, setSuccess] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false), [leave, setLeave] = useState(false), [expanded, setExpanded] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
   const [links, setLinks] = useState({ projectId: "", goalId: "", assignedWorkforceEntityId: "" });
   const mounted = useRef(true), errorRef = useRef<HTMLDivElement>(null);
   const submission = useRef<{ body: string; requestId: string } | null>(null);
@@ -109,7 +112,9 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
       {group === "dependencies" ? selected.map(item => <CcField key={item.id} label={`${tr("dependencyEvidence")}: ${humanizeBusinessValue(catalog.find(row => row.id === item.id)?.label || "dependency", undefined, locale)}`} required>{({ id }) => <textarea id={id} className="textarea textarea-bordered w-full" required maxLength={2000} value={item.evidence ?? ""} onChange={event => update({ ...draft!, refs: { ...draft!.refs, dependencies: selected.map(row => row.id === item.id ? { ...row, evidence: event.target.value } : row) } })} />}</CcField>) : null}
     </section>;
   }
+  if (reviewOpen) return <TaskReviewModal taskId={taskId} onClose={() => { setReviewOpen(false); void load(); }} onSaved={onSaved}/>;
   return <CcRecordEditorModal titleId="task-readiness-title" eyebrow={tr("title")} title={e?.task.title || tr("title")} description={tr("description")} closeLabel={tr("close")} onClose={close} onSubmit={submit} maxWidthClassName="max-w-5xl" actions={<>
+    <CcButton variant="outline" disabled={Boolean(busy) || dirty} onClick={()=>setReviewOpen(true)}>{reviewMessages[locale === "pl" ? "pl" : "en"].open}</CcButton>
     <CcButton className="min-h-11" onClick={close} variant="ghost" disabled={Boolean(busy && busy !== "loading")}>{tr("close")}</CcButton>
     {packet && writable ? showForm ? <CcButton key="submit" className="min-h-11" variant="primary" type="submit" loading={busy === "submitting"} disabled={Boolean(busy) || !linksValid}>{packet.revision ? tr("resubmit") : tr("submit")}</CcButton> : <CcButton key="review" className="min-h-11" variant="primary" onClick={event => { event.preventDefault(); setExpanded(true); }}>{tr("edit")}</CcButton> : null}
   </>}>

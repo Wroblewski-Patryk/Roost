@@ -6,6 +6,7 @@ import { prisma } from "../../db/prisma";
 import { loadTaskAgentContext } from "../company-intelligence/task-agent-context";
 import { loadApplicationAgentContext } from "../product-engineering/application-agent-context";
 import { watchReadySources } from "./ready-source-watch";
+import { reviewAdmissionError } from "./task-review-admission";
 
 const { readyContextRevision, readyContextQuery } = require("../../../scripts/lib/agent-host-ready-context.cjs") as {
   readyContextRevision: (task: any, application: any, input: any) => string;
@@ -62,6 +63,8 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
   const task = await lockReadyTask(db, workspaceId, taskId);
   if (!task) return { error: "task_not_found" };
   if (actor.requestedByType !== "user" || !actor.requestedById || !await db.workspaceMembership.findFirst({ where: { workspaceId, userId: actor.requestedById, role: { in: ["owner", "admin", "member"] } } })) return { error: "forbidden" };
+  const reviewError = await reviewAdmissionError(db, workspaceId, taskId, input.contract);
+  if (reviewError) return { error: reviewError };
   if (!/^[a-f0-9]{64}$/.test(input.expectedVersion ?? "") || !/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(input.requestId ?? "")) return { error: "task_submission_precondition_required" };
   const requestHash = digest({ ...input, ...actor });
   const receipts = await db.$queryRaw<Array<{ request_hash: string; result: any }>>`SELECT request_hash, result FROM task_execution_submissions WHERE task_id = ${taskId}::uuid AND request_id = ${input.requestId}::uuid`;
@@ -110,6 +113,8 @@ export async function inspectReady(db: Prisma.TransactionClient, workspaceId: st
   const task = await lockReadyTask(db, workspaceId, taskId);
   if (!task) return { error: "task_not_found", readiness: { status: "not_ready" } };
   const pin = object(task.executionReadiness);
+  const reviewError = await reviewAdmissionError(db, workspaceId, taskId, pin.contract);
+  if (reviewError) return { error: reviewError, readiness: { status: "needs_decision", reason: reviewError } };
   if (["draft", "needs_context", "needs_decision"].includes(pin.status)) return { error: "task_ready_pin_required", readiness: { status: pin.status, reason: pin.reason ?? "ready_pin_required", issues: pin.issues ?? [] } };
   const proof = { pinId: pin.pinId, revision: pin.revision, validationRevision: pin.validation?.revision };
   if (pin.schemaVersion !== "roost-ready-context-v1" || !pin.pinId || !/^[a-f0-9]{64}$/.test(pin.revision) || pin.validation?.validator !== "execution-packet-v1" || pin.validation?.revision !== pin.revision) {

@@ -1529,6 +1529,7 @@ model Artifact {
 }
 
 model Dependency {
+  reviewActions TaskReviewAction[]
   id             String           @id @default(uuid()) @db.Uuid
   workspaceId    String           @map("workspace_id") @db.Uuid
   workspace      Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -1893,6 +1894,7 @@ model AgentHost {
 }
 
 model AgentExecution {
+  reviewDecision    TaskReviewDecision?
   id                String                @id @default(uuid()) @db.Uuid
   workspaceId       String                @map("workspace_id") @db.Uuid
   workspace         Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -1936,6 +1938,53 @@ model AgentExecution {
   @@index([workspaceId, applicationId, createdAt])
   @@index([agentHostId, status])
   @@map("agent_executions")
+}
+
+model TaskReviewDecision {
+  id              String @id @default(uuid()) @db.Uuid
+  workspaceId     String @map("workspace_id") @db.Uuid
+  taskId          String @map("task_id") @db.Uuid
+  task            Task @relation(fields: [taskId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  executionId     String @unique @map("execution_id") @db.Uuid
+  execution       AgentExecution @relation(fields: [executionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  requestId       String @map("request_id") @db.Uuid
+  requestHash     String @map("request_hash")
+  materialVersion String @map("material_version")
+  actorUserId     String @map("actor_user_id") @db.Uuid
+  verifierId      String @map("verifier_id") @db.Uuid
+  managerId       String @map("manager_id") @db.Uuid
+  decision        String
+  evidence        Json
+  snapshot        Json
+  createdAt       DateTime @default(now()) @map("created_at")
+  action          TaskReviewAction?
+  @@unique([workspaceId, requestId])
+  @@index([workspaceId, taskId, createdAt])
+  @@map("task_review_decisions")
+}
+
+model TaskReviewAction {
+  id              String @id @default(uuid()) @db.Uuid
+  workspaceId     String @map("workspace_id") @db.Uuid
+  taskId          String @map("task_id") @db.Uuid
+  task            Task @relation("ReviewParent", fields: [taskId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  reviewId        String @unique @map("review_id") @db.Uuid
+  review          TaskReviewDecision @relation(fields: [reviewId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  requestId       String @map("request_id") @db.Uuid
+  requestHash     String @map("request_hash")
+  actorUserId     String @map("actor_user_id") @db.Uuid
+  managerId       String @map("manager_id") @db.Uuid
+  action          String
+  childTaskId     String? @unique @map("child_task_id") @db.Uuid
+  childTask       Task? @relation("ReviewChild", fields: [childTaskId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  dependencyId    String? @map("dependency_id") @db.Uuid
+  dependency      Dependency? @relation(fields: [dependencyId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  correction      Json
+  snapshot        Json
+  createdAt       DateTime @default(now()) @map("created_at")
+  @@unique([workspaceId, requestId])
+  @@index([workspaceId, taskId, createdAt])
+  @@map("task_review_actions")
 }
 
 model AgentExecutionEvent {
@@ -2660,6 +2709,9 @@ model TaskList {
 }
 
 model Task {
+  reviewDecisions           TaskReviewDecision[]
+  reviewActions             TaskReviewAction[] @relation("ReviewParent")
+  specialistReviewActions   TaskReviewAction[] @relation("ReviewChild")
   id                        String                @id @default(uuid()) @db.Uuid
   workspaceId               String?               @map("workspace_id") @db.Uuid
   workspace                 Workspace?            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)

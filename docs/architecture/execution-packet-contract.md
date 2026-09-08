@@ -66,6 +66,10 @@ broker/merge/push and activation are outside this role-admission slice.
 
 ## Preparation And Authority
 
+An unresolved native review rejection blocks new admission. Manager returns and
+specialist drafts require another explicit Submit with the agreed correction
+scope and a reviewed measurement. See [RF-CTX-014](task-review-workflow.md).
+
 First submit the explicit contract through
 `POST /v1/agent-runtime/tasks/:id/actions/submit-for-execution` with
 `{requestId, expectedVersion, applicationId, contract, prompt?, baseBranch?}`. This requires

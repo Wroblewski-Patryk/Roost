@@ -35,7 +35,10 @@ export const executionContractSchema = z.object({
 }).strict();
 
 // Editor migration may retain validated legacy fields, but admission never uses this schema.
-export const executionEditorContractSchema = executionContractSchema.partial({ singleTask: true, taskRoles: true });
+export const executionEditorContractSchema = executionContractSchema.extend({
+  singleTask: singleTaskSchema.extend({ measurement: singleTaskSchema.shape.measurement.extend({ metric: z.string().max(2000), unit: z.string().max(2000), method: z.string().max(2000) }) }).optional(),
+  taskRoles: taskRolesSchema.optional()
+});
 
 const packetSchema = z.object({
   schemaVersion: z.literal("roost-execution-packet-v1"), revision: z.string().regex(/^[a-f0-9]{64}$/),
