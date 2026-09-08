@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { lockReadyTask } from "./task-execution-readiness";
-import { requireRuntimeContent } from "./runtime-redaction-policy";
+import { inspectRuntime, redactionPolicy, requireRuntimeContent } from "./runtime-redaction-policy";
 import { reviewDigest } from "./task-review-contract";
 import { compositionExceptionSchema, compositionSelectionSchema, publishContractSchema, withdrawContractSchema } from "./procedure-composition-contract";
 import { admissionOperations } from "./task-risk-admission-contract";
@@ -57,11 +57,20 @@ export async function procedureContractsView(db:Db,workspaceId:string,procedureI
  const membership=await db.workspaceMembership.findFirst({where:{workspaceId,userId}});
  const expectedVersion=reviewDigest({source,versions});
  const [applications,procedures]=await Promise.all([
-  db.application.findMany({where:{workspaceId},select:{id:true,name:true,architecture:{where:{status:"active"},select:{id:true,name:true}}},take:100,orderBy:{name:"asc"}}),
-  db.procedure.findMany({where:{workspaceId,status:"active",id:{not:procedureId}},select:{id:true,name:true},take:100,orderBy:{name:"asc"}})
+  db.application.findMany({where:{workspaceId},select:{id:true,name:true},take:101,orderBy:{name:"asc"}}),
+  db.procedure.findMany({where:{workspaceId,status:"active",id:{not:procedureId}},select:{id:true,name:true},take:101,orderBy:{name:"asc"}})
  ]);
- const result={procedure:p,expectedVersion,versions:versions.slice(0,50),historyTruncated:versions.length>50,applications,procedures,permissions:{canPublish:membership?.role==="owner"&&p.status==="active",canWithdraw:membership?.role==="owner"}};
- requireRuntimeContent(result,"procedure_contract.view",{workspaceId});return result;
+ const components=await db.applicationArchitectureComponent.findMany({where:{applicationId:{in:applications.slice(0,100).map(a=>a.id)},status:"active"},select:{id:true,name:true,applicationId:true},take:501,orderBy:{name:"asc"}});
+ // Catalogue labels are display metadata, not executable contract content.
+ // Mask each label, then check their aggregate to catch split sensitive values.
+ let catalogRedacted=false;
+ const label=(name:string)=>{const safe=inspectRuntime(name,"procedure_contract.catalog_label","diagnostic",{workspaceId});catalogRedacted ||= safe.redacted || name===redactionPolicy.MARKER;return typeof safe.value==="string"?safe.value:redactionPolicy.MARKER;};
+ const catalog={procedure:{...p,name:label(p.name)},applications:applications.slice(0,100).map(a=>({...a,name:label(a.name),architecture:components.slice(0,500).filter(c=>c.applicationId===a.id).map(c=>({id:c.id,name:label(c.name)}))})),procedures:procedures.slice(0,100).map(p=>({...p,name:label(p.name)}))};
+ const aggregate=inspectRuntime(catalog,"procedure_contract.catalog","diagnostic",{workspaceId});
+ if(aggregate.blocked){catalogRedacted=true;catalog.procedure.name=redactionPolicy.MARKER;for(const a of catalog.applications){a.name=redactionPolicy.MARKER;for(const c of a.architecture)c.name=redactionPolicy.MARKER;}for(const p of catalog.procedures)p.name=redactionPolicy.MARKER;}
+ const authority={expectedVersion,versions:versions.slice(0,50),historyTruncated:versions.length>50,permissions:{canPublish:membership?.role==="owner"&&p.status==="active",canWithdraw:membership?.role==="owner"}};
+ requireRuntimeContent(authority,"procedure_contract.view",{workspaceId});
+ return {...catalog,...authority,catalogRedacted,catalogTruncated:applications.length>100||procedures.length>100||components.length>500};
 }
 export async function procedureContractCommand(db:Db,workspaceId:string,procedureId:string,userId:string,kind:"publish"|"withdraw",body:unknown) {
  const input=kind==="publish"?publishContractSchema.parse(body):withdrawContractSchema.parse(body);

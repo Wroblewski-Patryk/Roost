@@ -132,6 +132,14 @@ risk requirements, exceptions and final seal. Forms retain drafts on errors,
 support explicit refresh and guard unsaved exit. No generated company procedures
 or authority are used to fill an empty installation.
 
+The publication catalogue returns at most 100 applications, 500 active components
+and 100 base procedure choices, with visible truncation. Display labels are masked
+through the existing redaction policy, including an aggregate check for split
+sensitive values; unselected labels cannot block every procedure editor. A PL/EN
+notice explains masking, and existing selections outside the bounded catalogue
+retain their exact ID. Stored catalogue records are not rewritten. Contract bodies,
+rationales, publication commands and execution context retain strict blocking.
+
 ## Migration, verification and limits
 
 `20260908120000_procedure_composition` adds empty history tables and admission/source

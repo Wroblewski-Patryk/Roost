@@ -1557,6 +1557,15 @@ test("versioned procedure composition preserves exact contracts and fails closed
   assert.equal((await contracts()).versions.find((v:any)=>v.id===nextPin.procedureComposition.refs.extension).valid,false);
   assert.equal(((await prisma.task.findUniqueOrThrow({where:{id:task.id}})).executionReadiness as any).status,"needs_revalidation");
  });
+ await t.test("unselected sensitive catalogue labels are masked without weakening contract validation",async()=>{
+  const sentinel="Bearer synthetic-catalog-only-value";
+  const unrelated=await prisma.application.create({data:{workspaceId,name:"Synthetic unrelated catalogue",slug:"unrelated-composition-catalog",architecture:{create:{type:"other",name:sentinel}}},include:{architecture:true}});
+  const response=await request(contractRoute,{headers:auth});assert.equal(response.status,200,JSON.stringify(response.body));
+  const v=(response.body as any).data;assert.equal(v.catalogRedacted,true);assert.equal(v.applications.find((a:any)=>a.id===unrelated.id).architecture[0].name,"[REDACTED]");assert.equal(JSON.stringify(response.body).includes(sentinel),false);
+  assert.equal((await prisma.applicationArchitectureComponent.findUniqueOrThrow({where:{id:unrelated.architecture[0]!.id}})).name,sentinel);
+  const denied=await post(contractRoute+"/publish",{requestId:randomUUID(),expectedVersion:v.expectedVersion,contract:{...clean,completion:[sentinel]},rationale:"Reject sensitive executable content"});assert.equal(denied.status,409);assert.equal((denied.body as any).error,"agent_runtime_content_blocked");
+  assert.equal((await contracts()).versions.length,v.versions.length);
+ });
 });
 
 test("native risk level admission binds independent evidence to exact operations",async t=>{
