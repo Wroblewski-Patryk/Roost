@@ -18,7 +18,7 @@ research already performed; it does not independently prove that every possible
 source was searched or semantically detect repeated questions under different keys.
 
 The supported classes are product direction, money, legal, critical risk, mandate
-change and task scope. This slice uses a current workspace owner as the exact
+change and task scope. Reserved and legacy classes use the primary workspace owner as the exact
 recipient for each class. It does not infer delegation from a free-text job title
 or create a company hierarchy or new mandate. Current members may prepare a block.
 Credential-bound current task agents additionally need an exact single-use
@@ -34,7 +34,7 @@ accepts a human decision, even with preparation authority.
 Publication creates one attention event. Silence leaves the case pending; there
 is no timeout decision or recurring notification job. A human response creates
 an append-only answer and a **proposed** record in the existing Decision register.
-A separate explicit acceptance by the current named owner accepts that proposal.
+A separate explicit acceptance by the current named authorized human accepts that proposal.
 Generic Decision PATCH/DELETE cannot change these governed records. Deferral
 records a reason, removes the immediate dashboard action and keeps dependent
 execution blocked. An explicit later answer reopens the decision path.
@@ -87,5 +87,13 @@ and prefer a forward fix; never down-migrate or reset production to roll back.
 Focused API tests are in `src/tests/api.test.ts`; responsive UI checks are in
 `scripts/task-interview-ui.test.mjs`. The existing migration preservation fixture
 also applies this migration. RF-CTX-016 remains partial at company scope: semantic
-unknown detection, model-generated interviews, delegated hierarchy routing,
+unknown detection, model-generated interviews,
 external notifications and autonomous execution are separate work.
+
+RF-CTX-018 adds `ordinary_domain` and `mandate_change` through the
+[delegated authority contract](delegated-decision-authority.md). The owner may
+publish an ordinary block for the exact human selected by the shortest canonical
+workforce route and one current mandate covering both answer and acceptance.
+Questions remain human-required. High/critical acceptance retains independent
+risk gates; changed or expired authority blocks only dependent work and preserves
+the originally recorded case authority.

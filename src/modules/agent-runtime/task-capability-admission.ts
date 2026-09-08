@@ -21,7 +21,8 @@ export async function reviewTransaction<T>(work: (db: Db) => Promise<T>) {
   }
 }
 export const grantOperations = ["review_decision", "return_to_executor", "create_specialist_task"] as const;
-export async function grantScope(db: Db, taskId: string, credentialId: string, issuerUserId: string, clarification?:any,interview?:any) {
+export async function grantScope(db: Db, taskId: string, credentialId: string, issuerUserId: string, clarification?:any,interview?:any,decision?:any) {
+  if(decision)return (await db.$queryRaw<any[]>`SELECT decision_capability_scope(${taskId}::uuid,${credentialId}::uuid,${issuerUserId}::uuid,${JSON.stringify(decision)}::jsonb) AS hash`)[0].hash;
   if(interview)return (await db.$queryRaw<any[]>`SELECT task_interview_grant_scope(${taskId}::uuid,${credentialId}::uuid,${issuerUserId}::uuid,${JSON.stringify(interview)}::jsonb) AS hash`)[0].hash;
   if(clarification)return (await db.$queryRaw<any[]>`SELECT task_clarification_scope(${taskId}::uuid,${credentialId}::uuid,${issuerUserId}::uuid,${JSON.stringify(clarification)}::jsonb) AS hash`)[0].hash;
   return (await db.$queryRaw<Array<{ hash: string | null }>>`SELECT task_capability_scope(${taskId}::uuid,${credentialId}::uuid,${issuerUserId}::uuid) AS hash`)[0]!.hash;
@@ -51,12 +52,12 @@ export async function admitCapability(db: Db, workspaceId: string, taskId: strin
   } else if (state.status !== "active") return { error: `capability_grant_${state.status}` };
   return { grant };
 }
-export async function recordCapabilityUse(db: Db, grant: any, requestId: string, kind: "decision" | "action" | "handoff" | "handoffDecision" | "clarification" | "interview", businessId: string) {
+export async function recordCapabilityUse(db: Db, grant: any, requestId: string, kind: "decision" | "action" | "handoff" | "handoffDecision" | "clarification" | "interview" | "governedDecision", businessId: string) {
   if (!grant) return;
-  const postScopeHash = await grantScope(db, grant.taskId, grant.credentialId, grant.issuerUserId,(grant.snapshot as any).clarification,(grant.snapshot as any).interview);
+  const postScopeHash = await grantScope(db, grant.taskId, grant.credentialId, grant.issuerUserId,(grant.snapshot as any).clarification,(grant.snapshot as any).interview,(grant.snapshot as any).decision);
   if (!postScopeHash) throw new Error("capability_scope_invalid");
   await db.taskCapabilityUse.create({ data: { workspaceId: grant.workspaceId, grantId: grant.id, requestId,
-    ...({ decision: { decisionId: businessId }, action: { actionId: businessId }, handoff: { handoffId: businessId }, handoffDecision: { handoffDecisionId: businessId }, clarification:{clarificationEntryId:businessId},interview:{interviewCaseId:businessId} }[kind]), postScopeHash,
+    ...({ decision: { decisionId: businessId }, action: { actionId: businessId }, handoff: { handoffId: businessId }, handoffDecision: { handoffDecisionId: businessId }, clarification:{clarificationEntryId:businessId},interview:{interviewCaseId:businessId},governedDecision:{governedDecisionAcceptanceId:businessId} }[kind]), postScopeHash,
     snapshot: { agentId: grant.agentId, credentialId: grant.credentialId, credentialClass: grant.credentialClass, operation: grant.operation, applicationId: grant.applicationId, taskId: grant.taskId } } });
   await db.event.create({ data: { workspaceId: grant.workspaceId, taskId: grant.taskId, type: "task_capability.used", source: "roost", actorType: "agent", actorId: grant.agentId,
     resourceType: "task_capability_grant", resourceId: grant.id, payload: { grantId: grant.id, operation: grant.operation, credentialId: grant.credentialId, requestId, businessId } } });

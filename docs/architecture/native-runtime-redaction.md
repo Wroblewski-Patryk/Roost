@@ -49,10 +49,15 @@ contact, person, customer or owner is personal. Email syntax and defined persona
 assignments are detected in text. Arbitrary prose names are not classified.
 
 Checks include NFKC, zero-width formatting, bounded URI/Unicode/hex unescaping,
-up to three base64/hex decoding rounds, ordinary joined-string splits and
+up to three base64/hex decoding rounds for valid UTF-8 text, ordinary joined-string splits and
 same-purpose text chunks. Selected high-diversity 16-character known-secret
 fragments are checked without treating common UUID substrings as credentials.
 This does not detect arbitrary covert encodings or steganography.
+Decoded non-UTF-8 bytes are not recursively interpreted as personal prose: a
+binary digest must not become a fictitious email through replacement decoding
+and control-character removal. Known secrets and credential syntax are still
+checked in those bytes. Direct binary objects and unsupported attachments remain
+blocked. The fixed binary-digest regression is covered by the shared policy test.
 
 Limits per value: 512 KiB cumulative bytes, 128 KiB strings, 20000 nodes, depth 32,
 32 findings. Cycles, accessors, unsupported objects, non-finite numbers and

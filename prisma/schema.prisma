@@ -3203,6 +3203,7 @@ model TaskCapabilityRevocation {
   @@map("task_capability_revocations")
 }
 model TaskCapabilityUse {
+  governedDecisionAcceptanceId String? @map("governed_decision_acceptance_id") @db.Uuid
   interviewCaseId String? @unique @map("interview_case_id") @db.Uuid
   clarificationEntryId String? @unique @map("clarification_entry_id") @db.Uuid
   handoffId String? @unique @map("handoff_id") @db.Uuid

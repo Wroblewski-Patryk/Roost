@@ -1,3 +1,4 @@
+import { TaskDecisionAuthorityHistory } from "./decision-authority";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
@@ -135,6 +136,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
       <section aria-label={tr("title")} className="grid gap-4 border-b border-base-300 pb-4">
         <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-3"><span className={`badge ${packet.status === "ready" ? "badge-success" : "badge-warning"}`}>{tr(["ready", "draft", "needs_context", "needs_decision", "not_ready", "needs_revalidation"].includes(packet.status) ? packet.status : "needs_revalidation")}</span><span className="text-sm text-company-muted">{tr("taskStatus")}: {humanizeBusinessValue(e.task.status, undefined, locale)}</span></div><CcButton variant="outline" disabled={Boolean(busy) || !e} onClick={()=>setRiskOpen(true)}>{locale==="pl"?"Ocena ryzyka":"Risk assessment"}</CcButton><CcButton size="sm" variant="outline" disabled={Boolean(busy)} onClick={() => void load(e.applicationId ?? undefined, dirty)}>{tr("refresh")}</CcButton></div>
         {packet.status !== "ready" ? <p className="text-sm">{tr(`reason.${reason}`)}</p> : null}
+        <TaskDecisionAuthorityHistory records={packet.editor.decisionAuthorities}/>
         <ChangedContextSources sources={packet.changedSources} />
         {packet.reason?.startsWith("procedure_composition_")?<CcNotice tone="warning" title={tr("compositionRequired")}/>:null}
         {packet.reason?.startsWith("task_risk_") || packet.reason==="risk_context_changed" ? <CcNotice tone="warning" title={tr("riskRequired")}/> : null}

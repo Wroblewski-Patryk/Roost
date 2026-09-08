@@ -36,7 +36,10 @@ refresh the preview and repeat stale verification; preview refresh is not approv
 
 ## Separate acceptance and revalidation
 
-Acceptance is a separate owner command bound to the current preview. It requires
+Acceptance is a separate command bound to the current preview. RF-CTX-018
+[authority rules](delegated-decision-authority.md) reserve five domains and critical
+risk for the primary owner, and admit ordinary decisions only under an exact
+versioned mandate. Acceptance requires
 `decision_supersede` evidence for every affected task under RF-SEC-002: applicable
 procedure verification, high-risk independent review and owner mandate, and all
 critical backup, restore and fresh owner-approval gates. Evidence binds the

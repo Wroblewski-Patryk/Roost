@@ -1,3 +1,4 @@
+import { TaskDecisionAuthorityHistory } from "./decision-authority";
 import { TaskInterviewModal } from "./task-interview";
 import { TaskClarificationModal } from "./task-clarification";
 import { TaskHandoffModal } from "./task-handoff";
@@ -63,6 +64,7 @@ export function TaskReviewModal({ taskId, onClose, onSaved }: { taskId: string; 
       <CcButton disabled={busy||dirty} variant="outline" onClick={()=>setShowInterview(true)}>{locale==="pl"?"Pytania do decyzji":"Decision questions"}</CcButton>
       <CcButton disabled={busy||dirty} variant="outline" onClick={()=>setShowClarification(true)}>{locale==="pl"?"Doprecyzowanie zadania":"Task clarification"}</CcButton>
       <CcButton disabled={busy||dirty} variant="outline" onClick={()=>setShowHandoff(true)}>{locale==="pl"?"Przekazanie pracy":"Work handoff"}</CcButton>
+      <TaskDecisionAuthorityHistory records={data?.decisionAuthorities}/>
       <SuspensionNotice items={data?.suspensions??[]} onOpen={()=>setShowSuspensions(true)}/>
       {busy && !data ? <CcNotice tone="loading" title={c.loading}/> : null}
       <CcButton variant="outline" size="sm" disabled={busy||dirty} onClick={()=>setShowSuspensions(true)}>{locale==="pl"?"Zawieszenie uprawnień":"Capability suspension"}</CcButton>

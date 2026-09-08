@@ -222,6 +222,11 @@ The approved v1 direction is:
 
 ## Implementation Contract
 
+Native owner-reserved and ordinary delegated Decisions use the existing Decision,
+workforce and department relations under the
+[RF-CTX-018 contract](delegated-decision-authority.md). There is no parallel company
+hierarchy, semantic classifier or authority inferred from job-title prose.
+
 Before architecture-impacting work is marked complete, confirm:
 
 - the task still fits the approved architecture

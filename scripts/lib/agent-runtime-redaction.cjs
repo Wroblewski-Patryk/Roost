@@ -1,4 +1,5 @@
 "use strict";
+const { isUtf8 } = require("node:buffer");
 // One policy for API and host. Never return a match, input-derived fingerprint,
 // arbitrary field name or exception text in findings.
 const POLICY = "roost-runtime-redaction-v1";
@@ -64,8 +65,16 @@ function sanitize(input, { secrets = [], mode = "diagnostic" } = {}) {
         if (tokens.length > 2048) return "limit";
         for (const token of tokens) {
           if (token.length > LIMITS.string) return "limit";
-          const decoded = /^[a-f0-9]{32,}$/i.test(token) && token.length % 2 === 0 ? Buffer.from(token, "hex").toString("utf8") : Buffer.from(token, "base64url").toString("utf8");
-          if (decoded !== text && category(decoded, decode - 1)) return "encoded_sensitive";
+          const bytes = /^[a-f0-9]{32,}$/i.test(token) && token.length % 2 === 0 ? Buffer.from(token, "hex") : Buffer.from(token, "base64url");
+          const decoded = bytes.toString("utf8");
+          if (decoded !== text) {
+            // Digest bytes are not encoded prose. Replacement decoding followed
+            // by control removal can invent an email that never existed. Only
+            // valid UTF-8 participates in recursive text/PII interpretation;
+            // known secrets and credential syntax remain protected in any bytes.
+            if (isUtf8(bytes)) { if (category(decoded, decode - 1)) return "encoded_sensitive"; }
+            else { const normalized = normalize(decoded); if (exact.some(secret => normalized.includes(secret)) || containsFragment(normalized) || credentialPattern.test(normalized)) return "encoded_sensitive"; }
+          }
         }
       }
       return null;

@@ -1,4 +1,5 @@
 import { admitCapability, recordCapabilityUse, agentGrantAccess } from "./task-capability-admission";
+import { taskDecisionAuthorities } from "../decisions/decision-authority";
 import { suspensionBlocks, suspensionList } from "./capability-suspension";
 import { resolveReviewPrincipal, type ReviewActor } from "../../auth/agent-principal";
 import { randomUUID } from "node:crypto";
@@ -53,7 +54,7 @@ export async function taskReviewView(db: Db, workspaceId: string, taskId: string
   const canReview = s.canReview && !reviewBlocked && (!grantAccess || grantAccess.review_decision.status === "active");
   const canManage = s.canManage && ((!returnBlocked&&(!grantAccess||grantAccess.return_to_executor.status==="active")) || (!specialistBlocked&&(!grantAccess||grantAccess.create_specialist_task.status==="active")));
   const canManageGrants = s.principal?.kind === "user" && Boolean(await db.workspaceMembership.findFirst({ where: { workspaceId, userId: s.principal.id, role: { in: ["owner", "admin"] } } }));
-  return { task: { id: taskId, title: s.task.title }, expectedVersion: s.expectedVersion, materialVersion: s.materialVersion,
+  return { task: { id: taskId, title: s.task.title }, decisionAuthorities:await taskDecisionAuthorities(db,workspaceId,taskId),expectedVersion: s.expectedVersion, materialVersion: s.materialVersion,
     ...await suspensionList(db,workspaceId,taskId), blockedOperations:{review_decision:reviewBlocked,return_to_executor:returnBlocked,create_specialist_task:specialistBlocked},
     result: s.result, labels: s.labels, decision: decisionView(s.decision), canReview: Boolean(canReview), canManage: Boolean(canManage), grantAccess, canManageGrants,
     reason: grantAccess && (s.canReview && !canReview || s.canManage && !canManage) ? "capability_grant_required" : !s.execution ? "no_result" : !s.current ? "stale_result" : s.roleIssues.length ? "roles_need_context" : s.canReview || s.canManage ? null : s.decision ? s.decision.action ? "action_recorded" : s.decision.decision === "approve" ? "approved" : "manager_required" : "verifier_required",

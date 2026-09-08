@@ -114,5 +114,13 @@ RF-GOV-014 remains partial for the full agent company: this supplies a governed
 principal for native review commands, not per-agent migration of every legacy
 integration/host command or a general capability broker beyond the native task review grants. No agents
 are provisioned or activated on deployment. Provider calls, automatic reviewers,
-hierarchical routing, HR/certification, merge/push/release and other applications
+HR/certification, merge/push/release and other applications
 remain outside this change. Production execution remains disabled; host observe.
+
+RF-CTX-018 additionally allows bound agents to read a selected governed Decision
+and submit its acceptance command. The [authority contract](delegated-decision-authority.md)
+requires a current exact ordinary-domain mandate, deterministic workforce route,
+independent risk admission and one consumed preview-bound grant per affected task.
+Other governance commands, mandate administration and reserved decisions remain
+primary-owner operations. Existing host or integration keys cannot impersonate
+this bound-agent principal.

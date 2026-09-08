@@ -372,3 +372,9 @@ owner acceptance to a versioned downstream impact preview and native risk gates.
 Accepted changes fence only affected Ready and active work, retain predecessor
 history and require fresh admission. Typed event delivery reopens pending questions
 without acceptance, scheduling, new grants or agent activation.
+
+[Delegated decision authority](delegated-decision-authority.md) adds current-owner
+reservations and exact versioned ordinary-decision mandates on canonical workforce
+routes. Accepted authority enters task context and the Ready/review view. Expiry
+caps native admission lifetime; hierarchy, owner or mandate changes use the same
+active-stop fence. The host protocol is unchanged and remains in observe mode.

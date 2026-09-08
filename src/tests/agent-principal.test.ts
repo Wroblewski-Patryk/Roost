@@ -8,6 +8,10 @@ test("bound credentials admit only known review reads and commands including com
     assert.ok(agentPrincipalRoute("POST", `${prefix}/agent-runtime/tasks/${id}/actions/review`));
     assert.ok(agentPrincipalRoute("POST", `${prefix}/agent-runtime/tasks/${id}/actions/review-return`));
     assert.ok(agentPrincipalRoute("GET", `${prefix}/agent-runtime/tasks/${id}/review`));
+    assert.ok(agentPrincipalRoute("GET", `${prefix}/decisions/${id}/governance`));
+    assert.ok(agentPrincipalRoute("POST", `${prefix}/decisions/${id}/governance/actions`));
+    for (const route of ["/decisions/mandates", "/decisions/governance/proposals", "/decisions/deferrals", "/decisions/reopening-events"]) assert.equal(agentPrincipalRoute("POST",prefix+route),false);
+    assert.equal(agentPrincipalRoute("GET",prefix+"/decisions/mandates"),false);
     for (const route of ["/api-keys", "/agent-runtime/executions", `/tasks/${id}`, "/workforce", "/mcp", `/agent-runtime/tasks/${id}/actions/submit-for-execution`]) assert.equal(agentPrincipalRoute("POST", prefix + route), false);
   }
 });

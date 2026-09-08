@@ -13688,15 +13688,17 @@ test("CompanyCore v1 protected API flow", async () => {
 
 // Isolated test DB only: represent an attempt that predates RF-SEC-001. All
 // subsequent requests run with every trigger enabled and cannot start new work.
-async function historicalRiskExecution(args: Prisma.AgentExecutionCreateArgs) {
+async function historicalRiskExecution(args: Prisma.AgentExecutionCreateArgs, beforeInterviews = false) {
   return prisma.$transaction(async tx=>{
     await tx.$executeRaw`ALTER TABLE agent_executions DISABLE TRIGGER task_risk_admission_guard`;
     await tx.$executeRaw`ALTER TABLE agent_executions DISABLE TRIGGER task_admission_guard`;
     await tx.$executeRaw`ALTER TABLE agent_executions DISABLE TRIGGER zz_composition_guard`;
+    if(beforeInterviews)await tx.$executeRaw`ALTER TABLE agent_executions DISABLE TRIGGER task_interview_ready_guard`;
     const execution=await tx.agentExecution.create(args);
     await tx.$executeRaw`ALTER TABLE agent_executions ENABLE TRIGGER task_risk_admission_guard`;
     await tx.$executeRaw`ALTER TABLE agent_executions ENABLE TRIGGER task_admission_guard`;
     await tx.$executeRaw`ALTER TABLE agent_executions ENABLE TRIGGER zz_composition_guard`;
+    if(beforeInterviews)await tx.$executeRaw`ALTER TABLE agent_executions ENABLE TRIGGER task_interview_ready_guard`;
     return execution;
   });
 }
@@ -13796,10 +13798,113 @@ async function decisionFixtureProof(f:any){
  assert.ok((await get()).operations.decision_supersede.seal);
 }
 async function decisionFixtureProposal(f:any,extra:any={}){
- const read=await request("/v1/decisions/governance",{headers:f.auth});assert.equal(read.status,200,JSON.stringify(read.body));
+ const read=await request("/v1/decisions/governance",{headers:f.auth});
+ const diagnostics=read.status===200?[]:(await prisma.companyRecord.findMany({where:{workspaceId:f.workspaceId,source:"runtime_redaction_v1"},select:{metadata:true}})).map(r=>({surface:(r.metadata as any)?.surface,findings:(r.metadata as any)?.findings}));
+ assert.equal(read.status,200,JSON.stringify({response:read.body,diagnostics}));
  const body={requestId:randomUUID(),expectedVersion:(read.body as any).data.expectedVersion,title:"Parser delivery decision",context:"Current parser delivery evidence",decision:"Deliver the narrow parser behavior",rationale:"The focused behavior satisfies the objective",consequences:"Only the declared parser task changes",scopeReason:"The parser task is the narrowest dependent scope",scope:[{type:"task",id:f.task.id}],supersedesId:null,conflicts:[],...extra};
  const response=await f.post("/v1/decisions/governance/proposals",body);return {body,response,id:(response.body as any).data?.record?.id};
 }
+test("decision authority issues owner-backed mandates and preserves delegated acceptance history",async()=>{
+ const f=await prepareReviewFixture(false,false),w=f.workspaceId;
+ const {ensureDefaultDepartments}=await import("../modules/departments/departments.routes");await ensureDefaultDepartments(w);
+ const {createAuthToken}=await import("../auth/token");
+ const human=await prisma.user.create({data:{email:`delegate-${randomUUID()}@example.test`,name:"Technology decision maker",passwordHash:"synthetic-not-a-login"}});
+ await prisma.workspaceMembership.create({data:{workspaceId:w,userId:human.id,role:"member"}});
+ const auth={Authorization:`Bearer ${createAuthToken({workspaceId:w,userId:human.id})}`};
+ async function worker(name:string,key:string,managerId?:string,humanId?:string){
+  const row=await prisma.workforceEntity.create({data:{workspaceId:w,name,slug:randomUUID(),type:humanId?"human":"agent",source:humanId?"user":"companycore",externalId:humanId,managerId,hierarchyLevel:managerId?"specialist":"department_director",department:key}});
+  const department=await prisma.workspaceDepartment.findUniqueOrThrow({where:{workspaceId_key:{workspaceId:w,key}}});
+  await prisma.organizationalDepartmentRelation.create({data:{workspaceId:w,entityType:"workforce",entityId:row.id,departmentId:department.id,relationshipRole:"owner"}});return row;
+ }
+ const innovation=await worker("Innovation director","11-innowacje"),technology=await worker("Technology director","09-technologia",undefined,human.id);
+ const pm=await worker("Application PM","11-innowacje",innovation.id),developer=await worker("Frontend developer","09-technologia",technology.id);
+ const authority={domain:"mandate_change",departmentKey:"09-technologia",requesterId:pm.id,recipientId:developer.id,entities:[{type:"task",id:f.task.id}]};
+ async function read(id:string,headers=f.auth){const r=await request(`/v1/decisions/${id}/governance`,{headers});assert.equal(r.status,200,JSON.stringify(r.body));return (r.body as any).data;}
+ async function accept(id:string,headers=f.auth){const v=await read(id,headers);const input={requestId:randomUUID(),expectedVersion:v.expectedVersion,action:"accept",previewId:v.previews[0].id};const response=await f.post(`/v1/decisions/${id}/governance/actions`,input,headers);
+  return response;}
+ async function source(domain="mandate_change"){await refreshCompositionRisk(f.task.id,f.auth);const p=await decisionFixtureProposal(f,{authority:{...authority,domain}});assert.equal(p.response.status,201,JSON.stringify(p.response.body));await decisionFixtureProof(f);
+  let v=await read(p.id);if(!v.current||JSON.stringify(v.authority)!==JSON.stringify(v.previews[0].authority)){const refresh=await f.post(`/v1/decisions/${p.id}/governance/actions`,{requestId:randomUUID(),expectedVersion:v.expectedVersion,action:"review_impact"});assert.equal(refresh.status,201,JSON.stringify(refresh.body));await decisionFixtureProof(f);}
+  assert.equal((await accept(p.id,auth)).status,403);const accepted=await accept(p.id);assert.equal(accepted.status,201,JSON.stringify(accepted.body));return p.id;}
+ const reservedIds=[];for(const domain of ["product_direction","money","legal","critical_risk"])reservedIds.push(await source(domain));
+ const sourceId=await source();
+ async function mandateView(){const r=await request('/v1/decisions/mandates',{headers:f.auth});assert.equal(r.status,200,JSON.stringify(r.body));return (r.body as any).data;}
+ const body={holder:{kind:"user",id:human.id},departmentKey:"09-technologia",entities:authority.entities,decisionDomains:["ordinary_domain"],operations:["accept_decision","answer_interview","accept_interview"],exclusions:[],exclusionReason:"No additional exclusions",maxRisk:"medium",startsAt:new Date(Date.now()-1000).toISOString(),endsAt:new Date(Date.now()+3600000).toISOString(),status:"active",sourceDecisionId:sourceId,reason:"Decide this exact parser task"};
+ const command={requestId:randomUUID(),expectedVersion:(await mandateView()).expectedVersion,mandateId:null,body};
+ assert.equal((await f.post('/v1/decisions/mandates',command,auth)).status,403);
+ const issued=await f.post('/v1/decisions/mandates',command);assert.equal(issued.status,201,JSON.stringify(issued.body));const mandateId=(issued.body as any).data.record.id;
+ assert.equal((await f.post('/v1/decisions/mandates',command)).status,200);
+ for(const invalid of [{holder:{kind:"user",id:f.input.contract.taskRoles.requester.id}},{sourceDecisionId:randomUUID()},{entities:[{type:"task",id:randomUUID()}]},{decisionDomains:["money"]},{maxRisk:"critical"}]){
+  const denied=await f.post('/v1/decisions/mandates',{...command,requestId:randomUUID(),expectedVersion:(await mandateView()).expectedVersion,body:{...body,...invalid}});
+  assert.ok([400,403,409].includes(denied.status),JSON.stringify(denied.body));
+ }
+ const p=await decisionFixtureProposal(f,{authority:{...authority,domain:"ordinary_domain"}});assert.equal(p.response.status,201,JSON.stringify(p.response.body));
+ const current=await read(p.id);assert.equal(current.authority.status,"delegated",JSON.stringify(current.authority));assert.equal(current.authority.principal.id,human.id);assert.deepEqual(current.authority.path,[pm.id,innovation.id,technology.id,developer.id]);
+ await prisma.workspaceMembership.updateMany({where:{workspaceId:w,userId:human.id},data:{role:"viewer"}});
+ assert.equal((await read(p.id)).authority.status,"blocked");
+ await prisma.workspaceMembership.updateMany({where:{workspaceId:w,userId:human.id},data:{role:"member"}});
+ const restored=await read(p.id);assert.equal(restored.current,false,"Membership edit/revert must not resurrect a preview");
+ assert.equal((await accept(p.id,auth)).status,409);
+ assert.equal((await f.post(`/v1/decisions/${p.id}/governance/actions`,{requestId:randomUUID(),expectedVersion:restored.expectedVersion,action:"review_impact"})).status,201);
+ await decisionFixtureProof(f);const raceView=await read(p.id,auth);const competing=await Promise.all([0,1].map(()=>f.post(`/v1/decisions/${p.id}/governance/actions`,{requestId:randomUUID(),expectedVersion:raceView.expectedVersion,action:"accept",previewId:raceView.previews[0].id},auth)));assert.deepEqual(competing.map(r=>r.status).sort(),[201,409],JSON.stringify(competing.map(r=>r.body)));
+ const history=(await read(p.id)).acceptance;assert.equal(history.authority.mandate.id,mandateId);assert.equal(history.authority.mandate.version,1);
+ await prepareAdmissionFixture(f.root+'/risk-admission',f.input,f.auth);
+ const authorityAdmission=(await prisma.$queryRaw<any[]>`SELECT task_admission_view(${f.task.id}::uuid,'runtime_execute') AS value,task_admission_seal(${f.task.id}::uuid,'runtime_execute') AS seal`)[0];
+ assert.ok(authorityAdmission.seal);assert.equal(authorityAdmission.seal,authorityAdmission.value.seal);
+ assert.ok(Date.parse(authorityAdmission.value.expiresAt)<=Date.parse(body.endsAt));
+ const interviewUrl=f.root+'/interviews';
+ const interviewRead=async(headers=f.auth)=>{const response=await request(interviewUrl,{headers});assert.equal(response.status,200,JSON.stringify(response.body));return (response.body as any).data;};
+ const interviewInitial=await interviewRead();
+ const interviewBlock={topic:"Parser delivery choice",unknownKey:"delegated_parser_scope",missing:"Choose the focused parser output",impact:"The choice blocks parser implementation",material:true,decisionClass:"ordinary_domain",principalId:human.id,authority:{...authority,domain:"ordinary_domain"},context:"Two parser outputs are possible",recommendation:"Prefer the smaller parser output",consequences:"The larger output requires extra work",scope:"Only the declared parser task",deferralEffect:"Parser work remains blocked",dependencies:[{taskId:f.task.id,blockedPart:"Parser output implementation"}],gathering:{status:"completed",checkedSources:[{id:interviewInitial.sources[0].id,revision:interviewInitial.sources[0].revision,findings:"Both options are supported by evidence"}],remainingHumanDecision:"Select the parser output"},questions:[{field:"parser_output",type:"choice",question:"Which parser output is required?",requiresHuman:true,options:["Small","Large"]}]};
+ const interview=await f.post(interviewUrl,{requestId:randomUUID(),expectedVersion:interviewInitial.expectedVersion,block:interviewBlock});assert.equal(interview.status,201,JSON.stringify(interview.body));const interviewId=(interview.body as any).data.record.id;
+ const respond=async(action:string,headers=auth)=>f.post(interviewUrl+'/actions/respond',{requestId:randomUUID(),expectedVersion:(await interviewRead(headers)).expectedVersion,caseId:interviewId,action,reason:"Choose the evidenced parser output",...(action==="answer"?{answers:[{field:"parser_output",value:"Small"}]}:{})},headers);
+ assert.equal((await respond("answer",f.auth)).status,403);
+ const answered=await respond("answer");assert.equal(answered.status,201,JSON.stringify(answered.body));
+ const interviewAccepted=await respond("accept");assert.equal(interviewAccepted.status,201,JSON.stringify(interviewAccepted.body));
+ assert.equal((await interviewRead(auth)).cases[0].recordedAuthority.mandate.version,1);
+ const source2=await source();
+ const independent=await prisma.task.create({data:{workspaceId:w,projectId:f.task.projectId,title:"Unrelated same-project authority fixture"}});
+ const host=await prisma.agentHost.create({data:{workspaceId:w,name:"Authority fixture host",slug:randomUUID(),platform:"fixture"}});
+ const run=await historicalRiskExecution({data:{workspaceId:w,taskId:f.task.id,applicationId:f.app.id,status:"running",requestedByType:"user",agentHostId:host.id,attempt:1,leaseToken:randomUUID(),leaseExpiresAt:new Date(Date.now()+60000),metadata:f.execution.metadata as any}},true);
+ const revoked=await f.post('/v1/decisions/mandates',{requestId:randomUUID(),expectedVersion:(await mandateView()).expectedVersion,mandateId,body:{...body,status:"revoked",sourceDecisionId:source2,reason:"The owner revoked this authority"}});assert.equal(revoked.status,201,JSON.stringify(revoked.body));
+ assert.ok((await prisma.agentExecution.findUniqueOrThrow({where:{id:run.id}})).contextInvalidatedAt,"A dependent active execution must stop");
+ assert.deepEqual(await prisma.task.findUniqueOrThrow({where:{id:independent.id}}),independent);
+ await prisma.agentExecution.update({where:{id:run.id},data:{status:"waiting_for_approval",contextStoppedAt:new Date(),cancelRequestedAt:new Date()}});
+ await prisma.agentExecution.update({where:{id:run.id},data:{status:"cancelled",completedAt:new Date(),leaseToken:null,leaseExpiresAt:null}});
+ assert.deepEqual((await read(p.id)).acceptance,history);
+ const next=await decisionFixtureProposal(f,{authority:{...authority,domain:"ordinary_domain"}});assert.equal(next.response.status,201,JSON.stringify(next.response.body));assert.equal((await read(next.id)).authority.status,"blocked");assert.equal((await accept(next.id,auth)).status,403);
+ await assert.rejects(prisma.$executeRaw`DELETE FROM workforce_mandate_versions WHERE mandate_id=${mandateId}::uuid`,/decision_authority_history_immutable/);
+ const agentSource=await source(),agentKey=await f.issue(innovation.id,"Delegated decision credential"),agentAuth={"X-API-Key":agentKey.key};
+ for(const reservedId of [...reservedIds,sourceId])assert.equal((await accept(reservedId,agentAuth as any)).status,403);
+ const agentIssued=await f.post('/v1/decisions/mandates',{requestId:randomUUID(),expectedVersion:(await mandateView()).expectedVersion,mandateId:null,body:{...body,holder:{kind:"agent",id:innovation.id},departmentKey:"11-innowacje",sourceDecisionId:agentSource}});assert.equal(agentIssued.status,201,JSON.stringify(agentIssued.body));
+ const agentProposal=await decisionFixtureProposal(f,{authority:{...authority,domain:"ordinary_domain",departmentKey:"11-innowacje"}});assert.equal(agentProposal.response.status,201,JSON.stringify(agentProposal.response.body));
+ await decisionFixtureProof(f);const agentView=await read(agentProposal.id,agentAuth as any);assert.equal(agentView.canAccept,true);
+ const agentInput={requestId:randomUUID(),expectedVersion:agentView.expectedVersion,action:"accept",previewId:agentView.previews[0].id};
+ const noGrant=await f.post(`/v1/decisions/${agentProposal.id}/governance/actions`,agentInput,agentAuth);assert.equal(noGrant.status,409);
+ const catalog=(await request(f.root+'/capability-grants',{headers:f.auth})).body as any;
+ assert.ok(catalog.data.options.some((o:any)=>o.operation==="decision_supersede"&&o.decision.decisionId===agentProposal.id));
+ const grant=await f.post(f.root+'/capability-grants',{requestId:randomUUID(),expectedVersion:catalog.data.expectedVersion,credentialId:agentKey.id,operation:"decision_supersede",decision:{decisionId:agentProposal.id,previewId:agentView.previews[0].id},validFrom:new Date().toISOString(),validUntil:new Date(Date.now()+600000).toISOString(),reason:"Accept this exact decision preview"});assert.equal(grant.status,201,JSON.stringify(grant.body));
+ const inputWithGrant={...agentInput,expectedVersion:(await read(agentProposal.id,agentAuth as any)).expectedVersion,grantIds:[{taskId:f.task.id,grantId:(grant.body as any).data.grant.id}]};
+ const agentAccepted=await f.post(`/v1/decisions/${agentProposal.id}/governance/actions`,inputWithGrant,agentAuth);
+ assert.equal(agentAccepted.status,201,JSON.stringify(agentAccepted.body));
+ assert.equal((await f.post(`/v1/decisions/${agentProposal.id}/governance/actions`,inputWithGrant,agentAuth)).status,200);
+ const agentHistory=(await read(agentProposal.id)).acceptance;assert.equal(agentHistory.actorAgentId,innovation.id);assert.equal(agentHistory.actorUserId,null);assert.equal(agentHistory.authority.mandate.version,1);
+ assert.equal((await f.post(f.root+'/capability-grants/'+(grant.body as any).data.grant.id+'/actions/revoke',{requestId:randomUUID(),reason:"Revoke permission for replay"})).status,200);
+ assert.equal((await f.post(`/v1/decisions/${agentProposal.id}/governance/actions`,inputWithGrant,agentAuth)).status,409);
+ const expirySource=await source();
+ const expiring=await f.post('/v1/decisions/mandates',{requestId:randomUUID(),expectedVersion:(await mandateView()).expectedVersion,mandateId:(agentIssued.body as any).data.record.id,body:{...body,holder:{kind:"agent",id:innovation.id},departmentKey:"11-innowacje",sourceDecisionId:expirySource,endsAt:new Date(Date.now()+3500).toISOString()}});
+ assert.equal(expiring.status,201,JSON.stringify(expiring.body));
+ const expiryProposal=await decisionFixtureProposal(f,{authority:{...authority,domain:"ordinary_domain",departmentKey:"11-innowacje"}});assert.equal(expiryProposal.response.status,201,JSON.stringify(expiryProposal.response.body));
+ const expiryView=await read(expiryProposal.id);assert.equal(expiryView.authority.status,"delegated");
+ await new Promise(resolve=>setTimeout(resolve,3600));
+ const expired=await read(expiryProposal.id);assert.equal(expired.authority.status,"blocked");assert.equal(expired.current,false);
+ assert.equal((await prisma.$queryRaw<any[]>`SELECT task_admission_seal(${f.task.id}::uuid,'runtime_execute') AS seal`)[0].seal,null);
+ assert.deepEqual((await read(agentProposal.id)).acceptance,agentHistory);
+ assert.notEqual((await f.post(`/v1/decisions/${agentProposal.id}/governance/actions`,inputWithGrant,agentAuth)).status,200);
+ const closingSource=await source();await prisma.workforceEntity.update({where:{id:innovation.id},data:{status:"inactive"}});
+ const closed=await f.post('/v1/decisions/mandates',{requestId:randomUUID(),expectedVersion:(await mandateView()).expectedVersion,mandateId:(agentIssued.body as any).data.record.id,body:{...body,holder:{kind:"agent",id:innovation.id},departmentKey:"11-innowacje",sourceDecisionId:closingSource,status:"revoked"}});
+ assert.equal(closed.status,201,JSON.stringify(closed.body));
+});
+
 test("decision governance preserves nonconflicting history and fences exact impact at acceptance",async t=>{
  for(const active of [false,true])await t.test(active?"active execution isolation":"live grant isolation",async()=>{
  const independent=await prepareReviewFixture(true,false);

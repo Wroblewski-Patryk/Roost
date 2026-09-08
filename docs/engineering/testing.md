@@ -62,6 +62,18 @@ Migration files must be UTF-8 without BOM. A fresh `prisma migrate deploy`
 test is required because TypeScript build does not prove migration SQL can be
 applied.
 
+Decision authority (RF-CTX-018) uses
+`npx tsx --test src/tests/decision-authority-policy.test.ts`, the `decision authority`
+API fixture and existing Decision/interview/Ready/risk/review regressions. Browser
+coverage is `node scripts/decision-authority-ui.test.mjs` plus the existing
+`decision-governance`, `task-interview`, `task-capability`, `task-risk-admission`,
+`task-readiness` and `task-review` UI scripts. Run after the web build. The mandate
+fixture covers PL/EN at 390, 834 and 1440 px, write/read-only/error/loading states,
+exact scope, versioning and unsaved exit. Artifacts stay in the OS temp directory.
+The forward migration preservation test also asserts empty authority ledgers and
+unchanged historical company records and credentials. Host packet, ready-context,
+context-process and active-stop tests cover the unchanged admission/stop protocol.
+
 ## Installation bootstrap regression
 
 `npm run test:bootstrap` requires `BOOTSTRAP_TEST_DATABASE_URL` pointing to a

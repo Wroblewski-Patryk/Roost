@@ -76,3 +76,10 @@ This is current editor behavior. The accepted
 department and one direct supervisor per worker. Additional department relevance
 must not imply multiple reporting lines. Existing multi-department records are
 preserved; reconciliation requires a scoped contract, not automatic data removal.
+
+RF-CTX-018 [decision authority](delegated-decision-authority.md) now enforces that
+single-department/single-manager rule when resolving native delegated decisions.
+It preserves ambiguous existing records and blocks their authority routes. Only
+the primary workspace owner can issue or version a mandate; an additional owner
+membership does not confer that reserved power. Ordinary human acceptance needs
+the exact current delegated principal, independently of console role visibility.

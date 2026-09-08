@@ -24,12 +24,15 @@ export async function loadTaskAgentContext(workspaceId: string, taskId: string, 
     db.companyRecord.findMany({ where: { workspaceId, status: { not: "archived" }, recordType: { in: ["operational_issue", "technical_incident", "escalation"] }, OR: [{ id: { in: [...ids("company_record"), ...ids("requirement")] } }, ...(task.projectId ? [{ projectId: task.projectId }] : [])] } })
   ]);
   const governed=await db.taskDecisionEffect.findMany({where:{workspaceId,taskId}});
+  const decisionAuthorities=governed.length?await db.$queryRaw<any[]>`SELECT a.decision_id AS "decisionId",a.authority AS "acceptedAuthority",CASE WHEN p.authority->>'status'='delegated' THEN p.authority->>'epoch' IS NOT DISTINCT FROM decision_authority_epoch(a.workspace_id,p.authority) ELSE true END AS current
+    FROM decision_acceptances a JOIN decision_impact_previews p ON p.id=a.preview_id WHERE a.workspace_id=${workspaceId}::uuid AND a.decision_id=ANY(${governed.map(effect=>effect.decisionId)}::uuid[]) AND a.authority IS NOT NULL
+    AND NOT EXISTS(SELECT 1 FROM task_decision_effects e WHERE e.task_id=${taskId}::uuid AND e.supersedes_id=a.decision_id) ORDER BY a.decision_id`:[];
   const replaced=new Set(governed.map(r=>r.supersedesId).filter(Boolean));
   const effective=await db.decision.findMany({where:{workspaceId,id:{in:governed.map(r=>r.decisionId).filter(id=>!replaced.has(id))}}});
   decisions.splice(0,decisions.length,...decisions.filter(d=>!replaced.has(d.id)&&!effective.some(n=>n.id===d.id)),...effective);
   const evidence = await db.evidenceRecord.findMany({ where: { workspaceId, OR: [{ entityType: "task", entityId: task.id }, { entityId: { in: records.map((record) => record.id) } }] }, orderBy: { observedAt: "desc" } });
   return {
-    schemaVersion: "task-agent-execution-context-v1", generatedAt: new Date().toISOString(), task, organizationalContext: contexts.get(task.id),
+    schemaVersion: "task-agent-execution-context-v1", generatedAt: new Date().toISOString(), task, organizationalContext: contexts.get(task.id),...(decisionAuthorities.length?{decisionAuthorities}:{}),
     ...(execution ? { executionPacket: await prepareExecutionPacket(execution, task, db, submission) } : {}),
     intent: { objective: task.goal, target: task.target, project: task.project, businessContext: records.map((record) => ({ id: record.id, type: record.recordType, purpose: record.businessPurpose, rationale: record.rationale })) },
     requirements: records.filter((record) => record.recordType === "requirement"), relatedRecords: records, features, applications,

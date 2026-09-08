@@ -2,6 +2,7 @@ export type Reference = { id: string; revision: string; evidence?: string };
 export type CatalogEntry = { id: string; label: string; revision: string; eligible?: boolean; applicationId?: string | null };
 export type RoleCatalogEntry = CatalogEntry & { principalKey: string | null; type: string; role: string | null; competencies: string[]; mandates: string[] };
 export type ReadyEditor = {
+  decisionAuthorities?: { decisionId: string; title?: string; current: boolean; acceptedAuthority: unknown }[];
   submissionVersion: string;
   taskIdentity: { contractId: string; branch: string };
   components: CatalogEntry[]; managers: CatalogEntry[];

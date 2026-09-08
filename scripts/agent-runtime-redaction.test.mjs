@@ -28,6 +28,21 @@ test("technical IDs and declared harmless fields retain exact semantics", () => 
   assert.deepEqual(policy.sanitize(input).value, input); assert.equal(policy.sanitize(input).redacted, false);
   assert.equal(policy.sanitize({ reviewerUser: { name: "Fictional Person", id: input.taskId } }).value.reviewerUser.name, policy.MARKER);
 });
+
+test("binary digests do not invent PII while encoded text and binary credentials remain protected", () => {
+  const revision = "874f63412f8201fc6e4013372e7a02768b21f228fcc485c5ae29c79c8c6c16e7";
+  assert.equal(policy.sanitize({ revision }, { mode: "required" }).blocked, false);
+  assert.deepEqual(policy.sanitize({ revision }).value, { revision });
+  for (const encoding of ["hex", "base64"]) {
+    for (const value of ["person@example.test", "per\u0000son@example.test", "api_\u0000key=fictional-value", known]) {
+      assert.equal(policy.sanitize({ text: Buffer.from(value).toString(encoding) }, { mode: "required", secrets: [known] }).blocked, true);
+    }
+    for (const value of [known, "api_\u0000key=fictional-value"]) {
+      const bytes = Buffer.concat([Buffer.from([0xff]), Buffer.from(value)]);
+      assert.equal(policy.sanitize({ text: bytes.toString(encoding) }, { mode: "required", secrets: [known] }).blocked, true);
+    }
+  }
+});
 test("binary, unsupported attachments, getters, cycles and resource limits fail closed", () => {
   const cyclic = {}; cyclic.self = cyclic;
   let deep = {}; for (let i = 0; i < 50; i++) deep = { deep };

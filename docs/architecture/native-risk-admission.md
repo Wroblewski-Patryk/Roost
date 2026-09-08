@@ -59,6 +59,14 @@ with the same level-specific gates, current applicable procedure and expiry rule
 Its evidence additionally binds the pending proposal and exact impact preview;
 acceptance invalidates only the affected tasks' admission and capability authority.
 
+[RF-CTX-018 authority](delegated-decision-authority.md) preserves these gates for
+delegated decisions and high/critical interview acceptance. An explicitly critical
+Decision or interview requires all six gates even at a lower computed task level.
+Evidence includes pending interview versions and excludes proposal/answer authors
+and the declared decision maker from independent verification. A business mandate
+cannot replace any admission proof. Effective mandate expiry limits the admission
+deadline used by the existing host.
+
 ## Evidence and independence
 
 Every attestation references a substantive current company record and carries a

@@ -1,6 +1,7 @@
 import { requireRuntimeContent } from "../agent-runtime/runtime-redaction-policy";
 import { readyTransaction } from "../agent-runtime/task-execution-readiness";
 import { decisionGovernanceView,decisionGovernanceCommand } from "./decision-governance";
+import { issueMandate, mandateView } from "./decision-authority";
 import { Router } from "express";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
@@ -37,13 +38,15 @@ const updateDecisionSchema = createDecisionSchema.partial().omit({
 });
 
 export const decisionsRouter = Router();
+decisionsRouter.get('/mandates',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>mandateView(db,req.auth!.workspaceId,req.auth)))));
+decisionsRouter.post('/mandates',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>issueMandate(db,req.auth!.workspaceId,req.auth,req.body)))));
 function governanceResponse(res:any,result:any){if(result.error)return res.status(result.error.endsWith('not_found')?404:result.error.endsWith('forbidden')?403:409).json(result);return res.status(result.record&&!result.replayed?201:200).json({data:result});}
-decisionsRouter.get('/governance',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceView(db,req.auth!.workspaceId,req.auth!.userId??null)))));
-decisionsRouter.get('/:id/governance',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceView(db,req.auth!.workspaceId,req.auth!.userId??null,String(req.params.id))))));
-decisionsRouter.post('/governance/proposals',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceCommand(db,req.auth!.workspaceId,req.auth!.userId??null,'proposal',req.body)))));
-decisionsRouter.post('/:id/governance/actions',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceCommand(db,req.auth!.workspaceId,req.auth!.userId??null,'action',req.body,String(req.params.id))))));
-decisionsRouter.post('/deferrals',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceCommand(db,req.auth!.workspaceId,req.auth!.userId??null,'defer',req.body)))));
-decisionsRouter.post('/reopening-events',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceCommand(db,req.auth!.workspaceId,req.auth!.userId??null,'reopen',req.body)))));
+decisionsRouter.get('/governance',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceView(db,req.auth!.workspaceId,req.auth)))));
+decisionsRouter.get('/:id/governance',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceView(db,req.auth!.workspaceId,req.auth,String(req.params.id))))));
+decisionsRouter.post('/governance/proposals',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceCommand(db,req.auth!.workspaceId,req.auth,'proposal',req.body)))));
+decisionsRouter.post('/:id/governance/actions',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceCommand(db,req.auth!.workspaceId,req.auth,'action',req.body,String(req.params.id))))));
+decisionsRouter.post('/deferrals',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceCommand(db,req.auth!.workspaceId,req.auth,'defer',req.body)))));
+decisionsRouter.post('/reopening-events',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceCommand(db,req.auth!.workspaceId,req.auth,'reopen',req.body)))));
 async function serializeDecisions(workspaceId: string, rows: Array<Record<string, any>>) { const contexts = await organizationalContextsForEntities(workspaceId, "decision", rows.map((row) => row.id)); return rows.map((row) => ({ ...row, organizationalContext: contexts.get(row.id) })); }
 
 async function projectIsVisible(workspaceId: string, projectId?: string) {
@@ -86,6 +89,8 @@ decisionsRouter.get("/:id", asyncHandler(async (req, res) => {
 
 decisionsRouter.post("/", asyncHandler(async (req, res) => {
   const input = createDecisionSchema.parse(req.body);
+  if(input.status && !["draft","proposed"].includes(input.status))return res.status(409).json({error:"decision_governed_command_required"});
+  input.status="proposed";
   if(input.source==="roost_interview")return res.status(403).json({error:"interview_proposal_required"});
   if(input.source==="roost_decision"||input.supersedesId)return res.status(409).json({error:"decision_governed_command_required"});
   const { organizationalContext, alternatives, ...decisionInput } = input;
@@ -130,6 +135,8 @@ decisionsRouter.patch("/:id", asyncHandler(async (req, res) => {
     return res.status(404).json({ error: "not_found" });
   }
 
+  if(!["draft","proposed"].includes(existing.status)||input.status&&!['draft','proposed'].includes(input.status))return res.status(409).json({error:"decision_governed_command_required"});
+  if(["active","accepted"].includes(existing.status))return res.status(409).json({error:"decision_governed_command_required"});
   if(existing.source==="roost_interview")return res.status(409).json({error:"interview_decision_immutable"});
   if(existing.source==="roost_decision"||input.supersedesId||await prisma.decision.count({where:{workspaceId:req.auth!.workspaceId,source:"roost_decision",supersedesId:existing.id}}))return res.status(409).json({error:"decision_governed_command_required"});
   if (input.supersedesId === existing.id) return res.status(400).json({ error: "self_supersession_not_allowed" });
@@ -157,6 +164,7 @@ decisionsRouter.delete("/:id", asyncHandler(async (req, res) => {
     return res.status(404).json({ error: "not_found" });
   }
 
+  if(["active","accepted"].includes(existing.status))return res.status(409).json({error:"decision_governed_command_required"});
   if(existing.source==="roost_interview")return res.status(409).json({error:"interview_decision_immutable"});
   if(existing.source==="roost_decision"||await prisma.decision.count({where:{workspaceId:req.auth!.workspaceId,source:"roost_decision",supersedesId:existing.id}}))return res.status(409).json({error:"decision_governed_command_required"});
   const decision = await prisma.decision.update({

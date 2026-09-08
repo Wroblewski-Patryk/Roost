@@ -37,6 +37,7 @@ test("capability suspension migration preserves 71 historical sanitizer incident
     sql(migrations.filter(x => x >= "20260908090000").map(source).join("\n"));
     assert.equal(snapshot(), before);
     assert.equal(sql("SELECT count(*) FROM company_records WHERE source='runtime_redaction_v1'; SELECT count(*) FROM native_capability_suspensions; SELECT count(*) FROM native_suspension_journal;").trim(), "71\n0\n0");
+    assert.equal(sql("SELECT count(*) FROM workforce_mandate_versions; SELECT count(*) FROM decision_authority_invalidations;").trim(), "0\n0");
     const sourceFunction = sql("SELECT pg_get_functiondef('ready_source_invalidate()'::regprocedure);");
     const stopFunction = sql("SELECT pg_get_functiondef('active_context_stop()'::regprocedure);");
     assert.ok(sourceFunction.includes("'label', 'Source changed'"));
