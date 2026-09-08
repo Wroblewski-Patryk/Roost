@@ -1,3 +1,4 @@
+import { DriveContentPanel } from "./drive-content-panel";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { api } from "../../api/client";
 import { ownerToken } from "../../api/auth-token";
@@ -18,12 +19,14 @@ import { DepartmentScopeControl } from "./department-scope-control";
 
 type AssetsView = "overview" | "files";
 type AssetKindFilter = "all" | "folders" | "files";
-type AssetTypeFilter = "all" | "folder" | "markdown" | "csv" | "json" | "image" | "pdf" | "text" | "unsupported";
+type AssetTypeFilter = "all" | "folder" | "document" | "spreadsheet" | "markdown" | "csv" | "json" | "image" | "pdf" | "text" | "unsupported";
 type AssetSort = "name" | "modified" | "type" | "source";
 
 const assetTypeFilters: Array<{ id: AssetTypeFilter; icon: string }> = [
   { id: "all", icon: "ph-squares-four" },
   { id: "folder", icon: "ph-folder" },
+  { id: "document", icon: "ph-file-text" },
+  { id: "spreadsheet", icon: "ph-table" },
   { id: "markdown", icon: "ph-file-md" },
   { id: "csv", icon: "ph-table" },
   { id: "json", icon: "ph-brackets-curly" },
@@ -48,6 +51,13 @@ function sourceProvider(resource: AssetResource) {
 }
 
 function sourceLink(resource: AssetResource) {
+  const source = sourceRecord(resource);
+  if (resource.sourceModel === "GoogleDriveFile" && source?.externalId) {
+    const id = encodeURIComponent(source.externalId);
+    if (source.mimeType === "application/vnd.google-apps.document") return `https://docs.google.com/document/d/${id}/edit`;
+    if (source.mimeType === "application/vnd.google-apps.spreadsheet") return `https://docs.google.com/spreadsheets/d/${id}/edit`;
+    return source.isFolder ? `https://drive.google.com/drive/folders/${id}` : `https://drive.google.com/file/d/${id}/view`;
+  }
   return sourceRecord(resource)?.webViewLink || resource.webViewLink || null;
 }
 
@@ -124,6 +134,7 @@ function resourceIconTone(resource: AssetResource) {
 function resourceKindLabel(resource: AssetResource, t: Translate) {
   const kind = previewKind(resource);
   if (kind === "folder") return t("assets.folder");
+  if (kind === "document" || kind === "spreadsheet") return t(`assets.typeFilter.${kind}`);
   if (kind === "markdown") return t("assets.preview.markdown");
   if (kind === "csv") return t("assets.preview.csv");
   if (kind === "json") return t("assets.preview.json");
@@ -155,6 +166,8 @@ function previewKind(resource: AssetResource) {
   const name = resource.name.toLowerCase();
 
   if (isFolder(resource)) return "folder";
+  if (mimeType === "application/vnd.google-apps.document" || contentKind === "google_doc") return "document";
+  if (mimeType === "application/vnd.google-apps.spreadsheet" || contentKind === "google_sheet") return "spreadsheet";
   if (type === "image" || mimeType.startsWith("image/") || /\.(png|jpe?g|gif|webp|svg)$/i.test(name)) return "image";
   if (type === "pdf" || mimeType.includes("pdf") || name.endsWith(".pdf")) return "pdf";
   if (type === "csv" || type === "spreadsheet" || contentKind === "csv" || contentKind === "google_sheet") return "csv";
@@ -172,14 +185,6 @@ function assetTypeCounts(resources: AssetResource[]) {
     counts.set(kind, (counts.get(kind) || 0) + 1);
   });
   return counts;
-}
-
-function isEditableTextResource(resource: AssetResource) {
-  const kind = previewKind(resource);
-  const mimeType = sourceRecord(resource)?.mimeType || "";
-  return Boolean(resource.sourceId)
-    && ["markdown", "csv", "json", "text"].includes(kind)
-    && !mimeType.startsWith("application/vnd.google-apps.");
 }
 
 function csvRowsFromResource(resource: AssetResource) {
@@ -798,81 +803,14 @@ function AuthenticatedImage({
   return <img alt={alt} className={className} onError={() => setFailed(true)} src={imageSrc} />;
 }
 
-function FileContentEditor({
-  resource,
-  onClose,
-  onSaved
-}: {
-  resource: AssetResource;
-  onClose: () => void;
-  onSaved: () => void;
-}) {
-  const { t } = useLanguage();
-  const [content, setContent] = useState(resource.aiCompatibility?.contentSnapshot?.previewText || "");
-  const [saveState, setSaveState] = useState<"idle" | "saving" | "error">("idle");
-  const [error, setError] = useState("");
-
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!resource.sourceId) return;
-    setSaveState("saving");
-    setError("");
-    try {
-      await api(`/v1/google-drive/files/${resource.sourceId}/text-content`, {
-        method: "PATCH",
-        body: JSON.stringify({ content })
-      });
-      onSaved();
-      onClose();
-    } catch (saveError) {
-      setSaveState("error");
-      setError(userErrorMessage(saveError, t));
-    } finally {
-      setSaveState((current) => current === "saving" ? "idle" : current);
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-40 grid place-items-center bg-neutral/55 p-4" role="dialog" aria-modal="true" aria-labelledby="assets-content-editor-title">
-      <form className="roost-work-surface grid max-h-[92vh] w-full max-w-5xl gap-4 overflow-y-auto rounded-company p-5 shadow-2xl" onSubmit={submit}>
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-black uppercase text-primary">{t("assets.contentEditor")}</p>
-            <h2 className="mt-1 text-2xl font-black text-company-ink" id="assets-content-editor-title">{resource.name}</h2>
-            <p className="mt-1 text-sm text-company-muted">{t("assets.contentEditorHint")}</p>
-          </div>
-          <button className="btn btn-ghost btn-sm btn-circle" aria-label={t("operations.cancel")} onClick={onClose} type="button">
-            <i className="ph-bold ph-x" aria-hidden="true"></i>
-          </button>
-        </div>
-
-        {error ? <CcNotice tone="error" title={error} live /> : null}
-
-        <textarea
-          className="textarea textarea-bordered min-h-[55vh] w-full font-mono text-sm leading-6"
-          onChange={(event) => setContent(event.target.value)}
-          value={content}
-        ></textarea>
-
-        <div className="flex flex-wrap justify-end gap-2 border-t border-base-300 pt-4">
-          <CcButton onClick={onClose} type="button" variant="ghost">{t("operations.cancel")}</CcButton>
-          <CcButton loading={saveState === "saving"} type="submit" variant="primary">{t("assets.saveContent")}</CcButton>
-        </div>
-      </form>
-    </div>
-  );
-}
-
 function FilePreviewPanel({
   resource,
   folderByExternalId,
-  onEditFolder,
-  onEditContent
+  onEditFolder
 }: {
   resource: AssetResource | null;
   folderByExternalId: Map<string, AssetResource>;
   onEditFolder: (folder: AssetResource) => void;
-  onEditContent: (resource: AssetResource) => void;
 }) {
   const { t } = useLanguage();
   if (!resource) {
@@ -884,12 +822,13 @@ function FilePreviewPanel({
   const imageUrl = sourceContentLink(resource);
   const openUrl = sourceLink(resource);
   const rows = csvRowsFromResource(resource);
-  const canEditContent = isEditableTextResource(resource);
+  const googleContent = resource.sourceModel === "GoogleDriveFile" && ["document", "spreadsheet", "markdown", "csv", "text", "json"].includes(kind);
+  const googleApp = kind === "document" ? "Google Docs" : kind === "spreadsheet" ? "Google Sheets" : "Google Drive";
   const pathParts = resourcePath(resource, folderByExternalId);
 
   return (
     <aside className="roost-work-surface grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-company p-4 xl:col-span-2 2xl:col-span-1">
-      <header className="flex items-start justify-between gap-3">
+      <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-company border border-base-300 bg-base-200/80">
             <i className={`ph-bold ${resourceIcon(resource)} ${resourceIconTone(resource)}`} aria-hidden="true"></i>
@@ -909,13 +848,12 @@ function FilePreviewPanel({
         </div>
         <div className="flex shrink-0 flex-wrap justify-end gap-2">
           <CcButton href={`/areas?area=00-ogolny&view=entity&type=${resource.sourceModel === "GoogleDriveFile" ? "file" : "resource"}&id=${encodeURIComponent(resource.sourceId)}`} iconLeft="ph-share-network" size="sm" variant="outline">Company context</CcButton>
-          {canEditContent ? <CcButton iconLeft="ph-pencil-simple" onClick={() => onEditContent(resource)} size="sm" variant="outline">{t("assets.editContent")}</CcButton> : null}
-          {openUrl ? <CcButton href={openUrl} iconLeft="ph-arrow-square-out" rel="noreferrer" size="sm" target="_blank" variant="primary">{t("assets.open")}</CcButton> : null}
+          {openUrl ? <CcButton href={openUrl} iconLeft="ph-arrow-square-out" rel="noreferrer" size="sm" target="_blank" variant="primary">{resource.sourceModel === "GoogleDriveFile" ? `${t("assets.editInGoogle")} ${googleApp}` : t("assets.open")}</CcButton> : null}
         </div>
       </header>
 
       <div className="roost-file-preview min-h-0 overflow-y-auto rounded-company p-3">
-        {kind === "folder" ? (
+        {googleContent ? <DriveContentPanel key={resource.sourceId} fileId={resource.sourceId} /> : kind === "folder" ? (
           <div className="grid h-full place-items-center text-center">
             <div>
               <i className="ph-bold ph-folder-open text-4xl text-primary" aria-hidden="true"></i>
@@ -969,7 +907,7 @@ function FilePreviewPanel({
       </div>
 
       <footer className="grid gap-3 border-t border-base-300 pt-3">
-        {resource.aiCompatibility?.contentSnapshot?.isTextTruncated ? <p className="text-xs text-company-muted">{t("assets.previewTruncated")}</p> : null}
+        {!googleContent && resource.aiCompatibility?.contentSnapshot?.isTextTruncated ? <p className="text-xs text-company-muted">{t("assets.previewTruncated")}</p> : null}
         <div className="grid gap-2 text-xs text-company-muted sm:grid-cols-2">
           <span>{t("assets.source")}: {sourceProvider(resource)}</span>
           <span>{t("table.status")}: {resource.organization?.status || resource.freshness?.syncStatus || "-"}</span>
@@ -998,7 +936,6 @@ function AssetsFilesView({ packet, onRefresh }: { packet: AssetsPacket; onRefres
   const [selectedResourceId, setSelectedResourceId] = useState(resources[0]?.id || "");
   const [expandedFolderIds, setExpandedFolderIds] = useState<Set<string>>(() => new Set(rootIds));
   const [editingFolder, setEditingFolder] = useState<AssetResource | null>(null);
-  const [editingContent, setEditingContent] = useState<AssetResource | null>(null);
 
   useEffect(() => {
     setSelectedRootIds((current) => current.length ? current.filter((id) => rootIds.includes(id)) : rootIds);
@@ -1147,14 +1084,12 @@ function AssetsFilesView({ packet, onRefresh }: { packet: AssetsPacket; onRefres
 
         <FilePreviewPanel
           folderByExternalId={folderByExternalId}
-          onEditContent={setEditingContent}
           onEditFolder={setEditingFolder}
           resource={selectedResource}
         />
 
       </div>
       {editingFolder ? <FolderEditModal allFolders={allFolders} folder={editingFolder} folderNodes={folderNodes} onClose={() => setEditingFolder(null)} onSaved={onRefresh} /> : null}
-      {editingContent ? <FileContentEditor resource={editingContent} onClose={() => setEditingContent(null)} onSaved={onRefresh} /> : null}
     </section>
   );
 }

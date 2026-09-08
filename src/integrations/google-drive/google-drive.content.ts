@@ -1,3 +1,4 @@
+import { withIntegrationLock } from "../sync-lock";
 import { resolveDriveScope, driveScopeFields } from "./google-drive.scope";
 import { createHash } from "crypto";
 import { Prisma, type GoogleDriveFile } from "@prisma/client";
@@ -18,13 +19,14 @@ const editableTextMimeTypes = new Set([
   "application/json"
 ]);
 
-export async function listGoogleDriveFiles(workspaceId: string) {
+export async function listGoogleDriveFiles(workspaceId: string, filter: { parentId?: string; q?: string } = {}) {
   return prisma.googleDriveFile.findMany({
-    where: { workspaceId, trashed: false, syncStatus: { notIn: ["removed", "out_of_scope", "trashed", "unavailable"] } },
+    where: { workspaceId, ...(filter.parentId ? { parentExternalId: filter.parentId } : {}), ...(filter.q ? { name: { contains: filter.q, mode: "insensitive" } } : {}), trashed: false, syncStatus: { notIn: ["removed", "out_of_scope", "trashed", "unavailable"] } },
     include: {
       contentSnapshots: {
         orderBy: { updatedAt: "desc" },
-        take: 1
+        take: 1,
+        select: { sourceRevisionId: true, contentKind: true, metadata: true, scanStatus: true, updatedAt: true }
       }
     },
     orderBy: [
@@ -87,6 +89,7 @@ export async function updateGoogleDoc(input: {
   fileId: string;
   requests: unknown[];
   writeControl?: Record<string, unknown>;
+  expectedRevision?: string;
 }) {
   const file = await getWorkspaceDriveFile(input.workspaceId, input.fileId);
   if (file.mimeType !== googleDocMimeType) {
@@ -94,8 +97,11 @@ export async function updateGoogleDoc(input: {
   }
 
   const client = await getWorkspaceGoogleDriveClient(input.workspaceId);
-  const currentDocument = input.writeControl ? null : await client.getDocument(file.externalId);
-  const writeControl = input.writeControl ?? (currentDocument?.revisionId ? { requiredRevisionId: currentDocument.revisionId } : undefined);
+  const expected = input.expectedRevision ?? input.writeControl?.requiredRevisionId;
+  if (typeof expected !== "string" || !expected) throw new IntegrationError("revision_required", 428, "Read the original before editing and supply its sourceRevisionId.");
+  const currentDocument = await client.getDocument(file.externalId);
+  if (currentDocument.revisionId !== expected) throw new IntegrationError("source_changed", 409, "The Google document changed; read it again before editing.");
+  const writeControl = { requiredRevisionId: expected };
   await client.updateDocument(file.externalId, input.requests, writeControl);
   const metadata = await client.getFile(file.externalId);
   const refreshedFile = await upsertGoogleDriveFileFromMetadata(input.workspaceId, metadata);
@@ -145,11 +151,13 @@ export async function createGoogleSheet(input: {
   return { file, snapshot };
 }
 
-export async function updateGoogleSheetValues(input: {
+async function updateGoogleSheetValuesUnlocked(input: {
   workspaceId: string;
   fileId: string;
   range: string;
   values: unknown[][];
+  expectedRevision?: string;
+  valueInputOption?: "RAW" | "USER_ENTERED";
 }) {
   const file = await getWorkspaceDriveFile(input.workspaceId, input.fileId);
   if (file.mimeType !== googleSheetMimeType) {
@@ -157,11 +165,12 @@ export async function updateGoogleSheetValues(input: {
   }
 
   const client = await getWorkspaceGoogleDriveClient(input.workspaceId);
+  await requireCurrentRevision(input.expectedRevision, file, client);
   await client.updateSheetValues(file.externalId, input.range, {
     range: input.range,
     majorDimension: "ROWS",
     values: input.values
-  });
+  }, input.valueInputOption ?? "RAW");
   const metadata = await client.getFile(file.externalId);
   const refreshedFile = await upsertGoogleDriveFileFromMetadata(input.workspaceId, metadata);
   const snapshot = await refreshGoogleDriveFileContent({
@@ -173,10 +182,11 @@ export async function updateGoogleSheetValues(input: {
   return { file: refreshedFile, snapshot };
 }
 
-export async function updateGoogleDriveTextFileContent(input: {
+async function updateGoogleDriveTextFileContentUnlocked(input: {
   workspaceId: string;
   fileId: string;
   content: string;
+  expectedRevision?: string;
 }) {
   const file = await getWorkspaceDriveFile(input.workspaceId, input.fileId);
   if (!isGoogleDriveTextFile(file)) {
@@ -184,6 +194,7 @@ export async function updateGoogleDriveTextFileContent(input: {
   }
 
   const client = await getWorkspaceGoogleDriveClient(input.workspaceId);
+  await requireCurrentRevision(input.expectedRevision, file, client);
   await client.updateFileMedia(file.externalId, input.content, normalizedTextMimeType(file));
   const metadata = await client.getFile(file.externalId);
   const refreshedFile = await upsertGoogleDriveFileFromMetadata(input.workspaceId, metadata);
@@ -196,6 +207,18 @@ export async function updateGoogleDriveTextFileContent(input: {
     contentKind: snapshot.contentKind
   });
   return { file: refreshedFile, snapshot };
+}
+
+export async function updateGoogleSheetValues(input: Parameters<typeof updateGoogleSheetValuesUnlocked>[0]) {
+  return withIntegrationLock(`drive-content:${input.workspaceId}:${input.fileId}`, () => updateGoogleSheetValuesUnlocked(input));
+}
+export async function updateGoogleDriveTextFileContent(input: Parameters<typeof updateGoogleDriveTextFileContentUnlocked>[0]) {
+  return withIntegrationLock(`drive-content:${input.workspaceId}:${input.fileId}`, () => updateGoogleDriveTextFileContentUnlocked(input));
+}
+async function requireCurrentRevision(expected: string | undefined, file: GoogleDriveFile, client: GoogleDriveClient) {
+  if (!expected) throw new IntegrationError("revision_required", 428, "Read the full original before editing and supply its sourceRevisionId.");
+  const current = await extractSnapshot({ file, client });
+  if (current.sourceRevisionId !== expected) throw new IntegrationError("source_changed", 409, "The Google file changed; read it again before editing.");
 }
 
 async function getWorkspaceGoogleDriveClient(workspaceId: string) {
@@ -224,7 +247,7 @@ export async function refreshGoogleDriveFileContent(input: {
   range?: string;
 }) {
   const extracted = await extractSnapshot(input);
-  const snapshotInput = { ...extracted, metadata: toJsonInput({ ...(extracted.metadata as Record<string, unknown>), snapshotSchemaVersion: 2 }) };
+  const snapshotInput = { ...extracted, metadata: toJsonInput({ ...(extracted.metadata as Record<string, unknown>), snapshotSchemaVersion: 3, sourceOfTruth: "google_drive", cachedFor: "search_and_preview", readAt: new Date().toISOString() }) };
   const snapshot = await prisma.googleDriveContentSnapshot.upsert({
     where: {
       googleDriveFileId_sourceRevisionId: {
@@ -278,13 +301,14 @@ async function extractSnapshot(input: {
   }
 
   if (input.file.mimeType === googleSheetMimeType) {
-    const ranges = input.range ? [input.range] : await spreadsheetRanges(input.client, input.file.externalId);
+    const spreadsheet = await input.client.getSpreadsheet(input.file.externalId);
+    const ranges = input.range ? [input.range] : spreadsheetRanges(spreadsheet);
     const blocks = [];
-    for (const range of ranges) blocks.push({ range, values: await input.client.getSheetValues(input.file.externalId, range) });
+    for (const range of ranges) blocks.push({ range, values: await input.client.getSheetValues(input.file.externalId, range), formulas: await input.client.getSheetValues(input.file.externalId, range, "FORMULA") });
     const text = blocks.map(block => `${block.range}\n${extractSheetText(block.values)}`).join("\n\n");
     return {
-      sourceRevisionId: createHash("sha256").update(JSON.stringify(blocks)).digest("hex"),
-      contentKind: "google_sheet", extractedText: text, structuredPreview: toJsonInput({ ranges: blocks }),
+      sourceRevisionId: createHash("sha256").update(JSON.stringify({ partial: Boolean(input.range), blocks, sheets: spreadsheet.sheets })).digest("hex"),
+      contentKind: "google_sheet", extractedText: text, structuredPreview: toJsonInput({ ranges: blocks, sheets: spreadsheet.sheets, properties: spreadsheet.properties }),
       summary: summarizeText(input.file.name, text), scanStatus: "completed", errorCode: null,
       metadata: toJsonInput({ spreadsheetId: input.file.externalId, ranges, partial: Boolean(input.range) })
     };
@@ -294,7 +318,7 @@ async function extractSnapshot(input: {
     const text = await input.client.downloadFileText(input.file.externalId);
     const contentKind = contentKindForTextFile(input.file);
     return {
-      sourceRevisionId: input.file.headRevisionId ?? `text:${input.file.externalId}`,
+      sourceRevisionId: createHash("sha256").update(text).digest("hex"),
       contentKind,
       extractedText: text,
       structuredPreview: structuredPreviewForTextFile(contentKind, text) as Prisma.InputJsonValue,
@@ -475,8 +499,7 @@ async function emitFileEvent(workspaceId: string, type: string, file: GoogleDriv
   });
 }
 
-async function spreadsheetRanges(client: GoogleDriveClient, id: string): Promise<string[]> {
-  const sheet = await client.getSpreadsheet(id);
+function spreadsheetRanges(sheet: Record<string, unknown>): string[] {
   const tabs = sheet.sheets as Array<{ properties?: { title?: string } }> | undefined;
   if (!tabs?.length) throw new IntegrationError("sync_failed", 502, "Google Sheets did not return its worksheets.");
   return tabs.map(tab => "'" + String(tab.properties?.title ?? "").replace(/'/g, "''") + "'");

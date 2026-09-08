@@ -1,5 +1,11 @@
 # Design System Contract
 
+## Google Drive file content
+
+The Resources Files view identifies native Google Docs and Sheets separately from ordinary Markdown/CSV files. Opening supported content performs a fresh provider read and shows loading, read failure, refresh, and confirmed-save states. Docs provide readable text and an explicit replace-all text operation; Sheets provide worksheet selection, values/formulas, and individual-cell editing. The grid displays up to 100 rows and 30 columns with an explicit limit notice. Ordinary text editing starts from a complete fresh read, never the truncated resource preview.
+
+Every Google-backed file has an external action labeled for Google Docs, Google Sheets, or Google Drive. Full formatting and spreadsheet editing use the native Google editor. No publishing or sharing changes are made to enable embedding. Conflicts preserve the draft and explain that the user must compare against refreshed content before retrying. Cached search content is never presented as an independently editable original.
+
 This document defines how agents should treat the visual layer of the
 application.
 

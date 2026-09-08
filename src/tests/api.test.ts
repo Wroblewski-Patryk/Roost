@@ -10197,6 +10197,7 @@ test("CompanyCore v1 protected API flow", async () => {
 
     if (url.pathname === "/v1/documents/created-doc-1") {
       return new Response(JSON.stringify({
+        revisionId: "docs-native-revision-1",
         body: {
           content: [{
             paragraph: {
@@ -10278,7 +10279,7 @@ test("CompanyCore v1 protected API flow", async () => {
       })
     });
     assert.equal(createdDoc.status, 201);
-    const createdDocBody = createdDoc.body as { data: { file: { id: string; externalId: string }; snapshot: { summary: string } } };
+    const createdDocBody = createdDoc.body as { data: { file: { id: string; externalId: string }; snapshot: { summary: string; sourceRevisionId: string } } };
     createdDocId = createdDocBody.data.file.id;
     assert.equal(createdDocBody.data.file.externalId, "created-doc-1");
     assert.ok(createdDocBody.data.snapshot.summary.includes("Jarvis can read"));
@@ -10293,6 +10294,7 @@ test("CompanyCore v1 protected API flow", async () => {
       method: "PATCH",
       headers: authA,
       body: JSON.stringify({
+        expectedRevision: createdDocBody.data.snapshot.sourceRevisionId,
         requests: [{ insertText: { location: { index: 1 }, text: "Updated " } }]
       })
     });
@@ -10309,7 +10311,7 @@ test("CompanyCore v1 protected API flow", async () => {
       })
     });
     assert.equal(createdSheet.status, 201);
-    const createdSheetBody = createdSheet.body as { data: { file: { id: string; externalId: string }; snapshot: { extractedText: string } } };
+    const createdSheetBody = createdSheet.body as { data: { file: { id: string; externalId: string }; snapshot: { extractedText: string; sourceRevisionId: string } } };
     createdSheetId = createdSheetBody.data.file.id;
     assert.equal(createdSheetBody.data.file.externalId, "created-sheet-1");
     assert.ok(createdSheetBody.data.snapshot.extractedText.includes("Jarvis | ready"));
@@ -10318,6 +10320,7 @@ test("CompanyCore v1 protected API flow", async () => {
       method: "PUT",
       headers: authA,
       body: JSON.stringify({
+        expectedRevision: createdSheetBody.data.snapshot.sourceRevisionId,
         range: "A1:B2",
         values: [["Name", "Value"], ["Jarvis", "updated"]]
       })

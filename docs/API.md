@@ -1,5 +1,15 @@
 # API
 
+## Google Drive content and agent edits
+
+`GET /v1/google-drive/files` returns catalog metadata and snapshot descriptors, without cached full content. Optional `parentId` filters by Google's external folder ID; `q` filters names. Content routes use the Roost file ID from this catalog.
+
+`GET /v1/google-drive/files/:fileId/content` refreshes content from Google. Native Docs expose all tabs and structure; Sheets expose worksheet metadata and `structuredPreview.ranges` blocks containing both formatted `values` and `formulas`. `sourceRevisionId` identifies the content read. A range query creates a partial snapshot; read without a range before a write.
+
+`PATCH /v1/google-drive/docs/:fileId` accepts native `requests` and requires `expectedRevision` (or legacy `writeControl.requiredRevisionId`); omission returns 428. `PUT /v1/google-drive/sheets/:fileId/values` requires `range`, `values`, and `expectedRevision`; `valueInputOption` is `RAW` by default or explicitly `USER_ENTERED`. `PATCH /v1/google-drive/files/:fileId/text-content` requires full `content` and `expectedRevision`. Never send a truncated search/preview extract as replacement content. Revision mismatch returns 409 `source_changed`; read, compare, and reapply the intended change instead of blindly retrying.
+
+All writes affect the original Google file and refresh the derived cache. Docs revision checks are enforced by Google. Sheets/text checks serialize Roost writes and detect prior changes, but cannot exclude an external change between the last read and provider write. Agent tool descriptions and schemas expose these requirements.
+
 `PATCH /v1/google-drive/files/:id/metadata` accepts optional `name`, `parentId`
 and `trashed`, using workspace-scoped `google-drive:files:write` authorization.
 The provider is updated first and local metadata refreshed afterward. Destinations

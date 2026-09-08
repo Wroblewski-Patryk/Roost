@@ -22,7 +22,8 @@ const createDocSchema = z.object({
 }).strict();
 
 const updateDocSchema = z.object({
-  requests: z.array(z.unknown()),
+  requests: z.array(z.unknown()).min(1),
+  expectedRevision: z.string().min(1).optional(),
   writeControl: z.record(z.unknown()).optional()
 }).strict();
 
@@ -34,6 +35,8 @@ const createSheetSchema = z.object({
 }).strict();
 
 const updateSheetValuesSchema = z.object({
+  expectedRevision: z.string().min(1),
+  valueInputOption: z.enum(["RAW", "USER_ENTERED"]).default("RAW"),
   range: z.string().min(1),
   values: z.array(z.array(z.unknown()))
 }).strict();
@@ -50,13 +53,14 @@ const updateDriveDescriptionSchema = z.object({
 }).strict();
 
 const updateDriveTextContentSchema = z.object({
+  expectedRevision: z.string().min(1),
   content: z.string().max(500_000)
 }).strict();
 
 export const googleDriveRouter = Router();
 
 googleDriveRouter.get("/files", asyncHandler(async (req, res) => {
-  const files = await listGoogleDriveFiles(req.auth!.workspaceId);
+  const files = await listGoogleDriveFiles(req.auth!.workspaceId, { parentId: typeof req.query.parentId === "string" ? req.query.parentId : undefined, q: typeof req.query.q === "string" ? req.query.q : undefined });
   res.json({ data: files });
 }));
 
@@ -227,7 +231,8 @@ googleDriveRouter.patch("/files/:id/text-content", asyncHandler(async (req, res)
     const result = await updateGoogleDriveTextFileContent({
       workspaceId: req.auth!.workspaceId,
       fileId: String(req.params.id),
-      content: input.content
+      content: input.content,
+      expectedRevision: input.expectedRevision
     });
     res.json({ data: result });
   } catch (error) {

@@ -132,7 +132,7 @@ export class GoogleDriveClient {
   }
 
   async getDocument(documentId: string) {
-    return this.request<Record<string, unknown>>(`${docsBaseUrl}/documents/${encodeURIComponent(documentId)}`);
+    return this.request<Record<string, unknown>>(`${docsBaseUrl}/documents/${encodeURIComponent(documentId)}?includeTabsContent=true`);
   }
 
   async downloadFileText(fileId: string) {
@@ -188,12 +188,12 @@ export class GoogleDriveClient {
     return this.request<Record<string, unknown>>(`${sheetsBaseUrl}/spreadsheets/${encodeURIComponent(spreadsheetId)}`);
   }
 
-  async getSheetValues(spreadsheetId: string, range: string) {
-    return this.request<Record<string, unknown>>(`${sheetsBaseUrl}/spreadsheets/${encodeURIComponent(spreadsheetId)}/values/${encodeURIComponent(range)}`);
+  async getSheetValues(spreadsheetId: string, range: string, render: "FORMATTED_VALUE" | "FORMULA" = "FORMATTED_VALUE") {
+    return this.request<Record<string, unknown>>(`${sheetsBaseUrl}/spreadsheets/${encodeURIComponent(spreadsheetId)}/values/${encodeURIComponent(range)}?valueRenderOption=${render}`);
   }
 
-  async updateSheetValues(spreadsheetId: string, range: string, input: Record<string, unknown>) {
-    return this.request<Record<string, unknown>>(`${sheetsBaseUrl}/spreadsheets/${encodeURIComponent(spreadsheetId)}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`, {
+  async updateSheetValues(spreadsheetId: string, range: string, input: Record<string, unknown>, valueInputOption: "RAW" | "USER_ENTERED" = "USER_ENTERED") {
+    return this.request<Record<string, unknown>>(`${sheetsBaseUrl}/spreadsheets/${encodeURIComponent(spreadsheetId)}/values/${encodeURIComponent(range)}?valueInputOption=${valueInputOption}`, {
       method: "PUT",
       body: JSON.stringify(input)
     });
@@ -221,6 +221,10 @@ export class GoogleDriveClient {
     });
 
     if (!response.ok) {
+      if (response.status === 400 && url.hostname === "docs.googleapis.com" && url.pathname.endsWith(":batchUpdate")) {
+        const detail = await response.clone().json().catch(() => ({})) as { error?: { message?: string } };
+        if (/revision/i.test(detail.error?.message ?? "")) throw new IntegrationError("source_changed", 409, "The Google document revision changed; read it again before editing.");
+      }
       if (response.status === 404) throw new IntegrationError("not_found", 404, "Google Drive resource is unavailable or no longer accessible.");
       if (response.status === 401 || response.status === 403) {
         throw new IntegrationError(

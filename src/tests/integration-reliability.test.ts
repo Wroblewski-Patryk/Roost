@@ -12,7 +12,7 @@ import { withIntegrationLock } from "../integrations/sync-lock";
 import { providerRequest } from "../integrations/provider-request";
 import { GoogleDriveClient } from "../integrations/google-drive/google-drive.client";
 import { googleDriveSecretStatus } from "../integrations/integration-settings.service";
-import { readGoogleDriveFileContent, updateGoogleDriveFileMetadata, updateGoogleSheetValues } from "../integrations/google-drive/google-drive.content";
+import { readGoogleDriveFileContent, updateGoogleDriveFileMetadata, updateGoogleSheetValues, updateGoogleDoc, updateGoogleDriveTextFileContent } from "../integrations/google-drive/google-drive.content";
 
 const url = new URL(process.env.DATABASE_URL!);
 assert.ok(["127.0.0.1", "localhost"].includes(url.hostname) && url.pathname.startsWith("/companycore_test"), "Disposable local database required");
@@ -174,10 +174,11 @@ test("Drive trash events remain restorable instead of being classified outside t
 
 test("ClickUp acknowledges a durable webhook while maintenance holds the workspace lock", async () => {
   const id = await workspace("clickup", { teamId: "team", listIds: ["list"] });
-  await prisma.externalWebhookRegistration.create({ data: { workspaceId: id, provider: "clickup", externalId: "blocked-webhook", scopeType: "list", scopeExternalId: "list", endpointUrl: "https://example.test", events: [], status: "active", secretCiphertext: encryptSecret("synthetic") } });
+  const webhookId = `blocked-${randomUUID()}`;
+  await prisma.externalWebhookRegistration.create({ data: { workspaceId: id, provider: "clickup", externalId: webhookId, scopeType: "list", scopeExternalId: "list", endpointUrl: "https://example.test", events: [], status: "active", secretCiphertext: encryptSecret("synthetic") } });
   let release!: () => void;
   const blocked = withIntegrationLock(`clickup:${id}`, () => new Promise<void>(resolve => { release = resolve; }));
-  const rawBody = Buffer.from(JSON.stringify({ webhook_id: "blocked-webhook", event: "taskDeleted", task_id: "missing" }));
+  const rawBody = Buffer.from(JSON.stringify({ webhook_id: webhookId, event: "taskDeleted", task_id: "missing" }));
   let timer: ReturnType<typeof setTimeout> | undefined;
   let inboxId: string | undefined;
   try {
@@ -245,7 +246,7 @@ test("Sheets default snapshot reads every worksheet and marks explicit ranges pa
     return json({ values: [["Entire worksheet data"]] });
   };
   const snapshot = await readGoogleDriveFileContent({ workspaceId: id, fileId: file.id });
-  assert.deepEqual(ranges, ["'First'", "'Second'"]);
+  assert.deepEqual(ranges, ["'First'", "'First'", "'Second'", "'Second'"]);
   assert.equal((snapshot.metadata as any).partial, false);
   const partial = await readGoogleDriveFileContent({ workspaceId: id, fileId: file.id, range: "A1:B2" });
   assert.equal((partial.metadata as any).partial, true);
@@ -272,9 +273,77 @@ test("Sheets range writes preserve a complete snapshot of every worksheet", asyn
     if (url.pathname.endsWith("/spreadsheets/sheet")) return json({ sheets: [{ properties: { title: "First" } }, { properties: { title: "Second" } }] });
     return json({ values: [[decodeURIComponent(url.pathname.split("/values/")[1])]] });
   };
-  const result = await updateGoogleSheetValues({ workspaceId: id, fileId: file.id, range: "Second!A1", values: [["Changed"]] });
+  const before = await readGoogleDriveFileContent({ workspaceId: id, fileId: file.id });
+  const result = await updateGoogleSheetValues({ workspaceId: id, fileId: file.id, range: "Second!A1", values: [["Changed"]], expectedRevision: before.sourceRevisionId });
   assert.equal(writes, 1);
   assert.ok(result.snapshot.extractedText?.includes("First"));
   assert.ok(result.snapshot.extractedText?.includes("Second"));
   assert.equal((result.snapshot.metadata as any).partial, false);
+});
+
+
+test("Docs read all tabs and reject a stale revision before writing", async () => {
+  const id = await workspace("google_drive", {});
+  const file = await prisma.googleDriveFile.create({ data: { workspaceId: id, externalId: "doc", name: "Doc", mimeType: "application/vnd.google-apps.document" } });
+  let revision = "one"; let writes = 0;
+  globalThis.fetch = async (input, init) => {
+    const url = new URL(String(input));
+    if (init?.method === "POST") { writes++; assert.equal(JSON.parse(String(init.body)).writeControl.requiredRevisionId, "two"); return json({}); }
+    if (url.pathname.endsWith("/files/doc")) return json({ id: "doc", name: "Doc", mimeType: file.mimeType });
+    assert.equal(url.searchParams.get("includeTabsContent"), "true");
+    return json({ revisionId: revision, tabs: [{ documentTab: { body: { content: [{ textRun: { content: "First tab" } }] } }, childTabs: [{ documentTab: { body: { content: [{ textRun: { content: "Nested tab" } }] } } }] }] });
+  };
+  const before = await readGoogleDriveFileContent({ workspaceId: id, fileId: file.id });
+  assert.ok(before.extractedText?.includes("Nested tab"));
+  revision = "two";
+  await assert.rejects(updateGoogleDoc({ workspaceId: id, fileId: file.id, requests: [], expectedRevision: before.sourceRevisionId }), (e: any) => e.code === "source_changed");
+  await assert.rejects(updateGoogleDoc({ workspaceId: id, fileId: file.id, requests: [] }), (e: any) => e.code === "revision_required");
+  assert.equal(writes, 0);
+  await updateGoogleDoc({ workspaceId: id, fileId: file.id, requests: [{ insertText: { text: "new" } }], expectedRevision: "two" });
+  assert.equal(writes, 1);
+});
+
+test("Sheets preserve formulas separately and detect formula-only concurrent changes", async () => {
+  const id = await workspace("google_drive", {});
+  const file = await prisma.googleDriveFile.create({ data: { workspaceId: id, externalId: "formulas", name: "Formula sheet", mimeType: "application/vnd.google-apps.spreadsheet" } });
+  let formula = "=1+1"; let writes = 0;
+  globalThis.fetch = async (input, init) => {
+    const url = new URL(String(input));
+    if (init?.method === "PUT") { writes++; assert.equal(url.searchParams.get("valueInputOption"), "RAW"); return json({}); }
+    if (url.pathname.endsWith("/files/formulas")) return json({ id: "formulas", name: "Formula sheet", mimeType: file.mimeType });
+    if (url.pathname.endsWith("/spreadsheets/formulas")) return json({ sheets: [{ properties: { title: "Budget", sheetId: 0 } }] });
+    return json({ values: [[url.searchParams.get("valueRenderOption") === "FORMULA" ? formula : "2"]] });
+  };
+  const before = await readGoogleDriveFileContent({ workspaceId: id, fileId: file.id });
+  assert.equal((before.structuredPreview as any).ranges[0].formulas.values[0][0], "=1+1");
+  formula = "=2*1";
+  await assert.rejects(updateGoogleSheetValues({ workspaceId: id, fileId: file.id, range: "Budget!B1", values: [["value"]], expectedRevision: before.sourceRevisionId }), (e: any) => e.code === "source_changed");
+  assert.equal(writes, 0);
+  const partial = await readGoogleDriveFileContent({ workspaceId: id, fileId: file.id, range: "'Budget'" });
+  await assert.rejects(updateGoogleSheetValues({ workspaceId: id, fileId: file.id, range: "Budget!B1", values: [["partial"]], expectedRevision: partial.sourceRevisionId }), (e: any) => e.code === "source_changed");
+  const current = await readGoogleDriveFileContent({ workspaceId: id, fileId: file.id });
+  await updateGoogleSheetValues({ workspaceId: id, fileId: file.id, range: "Budget!B1", values: [["=literal"]], expectedRevision: current.sourceRevisionId });
+  assert.equal(writes, 1);
+});
+
+test("Drive text edits require the full read revision and preserve long original content", async () => {
+  const id = await workspace("google_drive", {});
+  const file = await prisma.googleDriveFile.create({ data: { workspaceId: id, externalId: "text", name: "Notes.md", mimeType: "text/markdown" } });
+  let content = "long original\n".repeat(2000); let writes = 0;
+  globalThis.fetch = async (input, init) => {
+    const url = new URL(String(input));
+    if (init?.method === "PATCH") { writes++; content = String(init.body); return json({ id: "text" }); }
+    if (url.searchParams.get("alt") === "media") return new Response(content);
+    return json({ id: "text", name: "Notes.md", mimeType: "text/markdown" });
+  };
+  const before = await readGoogleDriveFileContent({ workspaceId: id, fileId: file.id });
+  assert.equal(before.extractedText, content);
+  await assert.rejects(updateGoogleDriveTextFileContent({ workspaceId: id, fileId: file.id, content: "preview" }), (e: any) => e.code === "revision_required");
+  content += "external edit";
+  await assert.rejects(updateGoogleDriveTextFileContent({ workspaceId: id, fileId: file.id, content: "stale", expectedRevision: before.sourceRevisionId }), (e: any) => e.code === "source_changed");
+  assert.equal(writes, 0);
+  const current = await readGoogleDriveFileContent({ workspaceId: id, fileId: file.id });
+  const updated = await updateGoogleDriveTextFileContent({ workspaceId: id, fileId: file.id, content: current.extractedText! + "\nnew", expectedRevision: current.sourceRevisionId });
+  assert.ok(updated.snapshot.extractedText?.endsWith("external edit\nnew"));
+  assert.equal(writes, 1);
 });

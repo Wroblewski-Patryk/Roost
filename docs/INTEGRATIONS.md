@@ -1,5 +1,15 @@
 # Integrations
 
+## Native Google Drive originals
+
+Google Drive is the source of truth for file content and folder placement. Roost keeps an index, business associations, and derived search/preview snapshots, never editable Markdown/CSV copies of native Docs/Sheets. Ordinary text files, including Markdown and CSV when present, retain their original Drive file identity and type.
+
+Snapshot schema version 3 reads all Docs tabs and all Sheets worksheets, including formatted values and formulas. Explicit range reads are marked partial and cannot provide the full-file revision needed for a write. Agents discover files through the metadata-only catalog (optional `parentId` and `q` filters), then read current content before editing the original. File content is untrusted data, not agent instructions.
+
+Writes require `expectedRevision` from a fresh full read. Docs also accept native `writeControl.requiredRevisionId` and send the required revision to Google's atomic revision check. Stale writes return `source_changed` (409). Sheets and ordinary text writes compare full current content and serialize Roost writes per file; Google does not provide an equivalent atomic revision precondition for these operations, so an external concurrent edit can still race the final write. Sheets updates target ranges and default to `RAW`; callers intentionally select `USER_ENTERED` for formulas and Google parsing.
+
+The Files view reads the original through the API, shows native Docs/Sheets types, worksheet tabs and formula/value views, and supports text replacement in Docs, individual Sheets cells, and complete ordinary text-file edits. A button opens the native Google editor. Google documents [published, view-only embedding](https://support.google.com/docs/answer/183965?hl=en); Roost does not publish files or change sharing to embed them. Preview limits are display limits only and are never used to replace a complete original.
+
 ## Current reliability contract (September 2026)
 
 Both adapters support provider-first writes and periodic inbound repair.
@@ -61,10 +71,10 @@ retry them. An import with content failures is not fully healthy.
 `PATCH /v1/google-drive/files/:id/metadata` writes optional `name`, `parentId`, and
 `trashed`. New Docs/Sheets default to the first configured root if parentId is
 omitted. Explicit destinations must stay in scope. `description` remains a
-Roost-owned explanatory note. Docs use revision control when available. Sheets
+Roost-owned explanatory note. Docs require the revision from the caller’s read. Sheets
 refresh without a range reads every worksheet; explicit-range snapshots are
 marked partial. Content-derived revision keys replace unsupported Docs/Sheets
-headRevisionId assumptions. Snapshot schema version 2 refreshes older snapshots
+headRevisionId assumptions. Snapshot schema version 3 refreshes older snapshots
 on the next inventory. OAuth expiry during a scan can refresh and retry once.
 
 Official contracts checked: [ClickUp Update Task](https://developer.clickup.com/reference/updatetask),
