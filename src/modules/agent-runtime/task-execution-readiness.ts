@@ -9,6 +9,7 @@ import { loadApplicationAgentContext } from "../product-engineering/application-
 import { watchReadySources } from "./ready-source-watch";
 import { reviewAdmissionError } from "./task-review-admission";
 import { suspensionBlocks } from "./capability-suspension";
+import { riskAdmission, riskContextVersion } from "./task-risk";
 
 const { readyContextRevision, readyContextQuery } = require("../../../scripts/lib/agent-host-ready-context.cjs") as {
   readyContextRevision: (task: any, application: any, input: any) => string;
@@ -28,7 +29,7 @@ export async function submissionVersion(db: Prisma.TransactionClient, workspaceI
   if (!context) return null;
   const application = applicationId ? await loadApplicationAgentContext(workspaceId, applicationId, true, readyContextQuery(context.task, null), db) : {};
   const revision = readyContextRevision({ ...wire(context), executionPacket: { contract: null, sources: [] } }, wire(application ?? {}), {});
-  return digest({ revision, applicationId: applicationId ?? null, updatedAt: context.task.updatedAt, readiness: context.task.executionReadiness });
+  return digest({ revision, applicationId: applicationId ?? null, updatedAt: context.task.updatedAt, readiness: context.task.executionReadiness, riskVersion:await riskContextVersion(db,taskId) });
 }
 export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T | { error: string }> {
   try { return await prisma.$transaction(work, { isolationLevel: "Serializable", maxWait: 5000, timeout: 20000 }); }
@@ -36,6 +37,8 @@ export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) =
     const nativeDiagnostic = error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2010" ? String(error.meta?.message ?? "") : error instanceof Prisma.PrismaClientUnknownRequestError ? error.message : "";
     const suspensionError = nativeDiagnostic.match(/\bnative_(?:suspension_[a-z_]+|capability_suspended)\b/)?.[0];
     if (suspensionError) return {error:suspensionError};
+    const riskError = nativeDiagnostic.match(/\btask_risk_[a-z_]+\b/)?.[0];
+    if (riskError) return {error:riskError};
     if (error instanceof Prisma.PrismaClientKnownRequestError && (["P2034", "P2028"].includes(error.code) ||
       error.code === "P2010" && ["40001", "40P01"].includes(String(error.meta?.code)))) return { error: "task_ready_context_conflict" };
     throw error;
@@ -106,7 +109,14 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
     return result;
   }
   await context.watched.persist(taskId);
+  const risk = await riskAdmission(db, taskId, input);
+  if ("error" in risk) {
+    const readiness = {status:"needs_context",reason:risk.error};
+    await db.task.update({where:{id:taskId},data:{executionReadiness:{...object(task.executionReadiness),...readiness}}});
+    return receipt({error:risk.error,readiness});
+  }
   const pin = { schemaVersion: "roost-ready-context-v1", sourceWatchVersion: "1", submissionId: input.requestId, status: "ready", pinId: randomUUID(), revision: context.revision,
+    riskAssessmentId: risk.id,
     applicationId: input.applicationId, contract: input.contract, roleProvenance: context.taskContext.executionPacket.roleAuthorities.provenance, prompt: input.prompt ?? null, baseBranch: input.baseBranch ?? null,
     validatedAt: new Date().toISOString(), validation: { validator: "execution-packet-v1", revision: context.revision }, ...actor };
   const result = { readiness: { status: "ready", pinId: pin.pinId, revision: pin.revision, validationRevision: pin.validation.revision } };
@@ -130,8 +140,12 @@ export async function inspectReady(db: Prisma.TransactionClient, workspaceId: st
   if (pin.schemaVersion !== "roost-ready-context-v1" || !pin.pinId || !/^[a-f0-9]{64}$/.test(pin.revision) || pin.validation?.validator !== "execution-packet-v1" || pin.validation?.revision !== pin.revision) {
     return { error: "task_ready_pin_required", readiness: { status: "not_ready", reason: "ready_pin_required" } };
   }
-  let reason = pin.status !== "ready" ? (["context_changed", "context_invalid", "source_watch_required", "submission_required", "single_task_scope_required", "task_roles_required"].includes(pin.reason) ? pin.reason : "revalidation_required") : !pin.submissionId ? "submission_required" : pin.sourceWatchVersion !== "1" ? "source_watch_required" : null;
+  let reason = pin.status !== "ready" ? (["context_changed", "context_invalid", "source_watch_required", "submission_required", "single_task_scope_required", "task_roles_required", "risk_context_changed"].includes(pin.reason) ? pin.reason : "revalidation_required") : !pin.submissionId ? "submission_required" : pin.sourceWatchVersion !== "1" ? "source_watch_required" : null;
   let context;
+  if (!reason) {
+    const risk = await riskAdmission(db,taskId,pin);
+    if ("error" in risk || risk.id !== pin.riskAssessmentId) reason = "risk_context_changed";
+  }
   if (!reason) {
     try {
       context = await resolved(db, workspaceId, taskId, pin, execution);

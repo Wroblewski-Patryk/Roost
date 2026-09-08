@@ -77,14 +77,16 @@ export function watchReadySources(db: Prisma.TransactionClient) {
       };
     } });
   } }) as Prisma.TransactionClient;
-  return { db: client, async persist(taskId: string) {
+  return { db: client, async persist(taskId: string, risk = false) {
     const installed = await db.$queryRaw<Array<{ table_name: string }>>`SELECT c.relname AS table_name FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid WHERE t.tgname IN ('ready_source_changed', 'ready_source_fence') AND t.tgenabled = 'O' GROUP BY c.relname HAVING count(DISTINCT t.tgname) = 2`;
     const protectedTables = new Set(installed.map(row => row.table_name));
     if ([...watches.keys()].some(table => !protectedTables.has(table))) throw new Error("ready_source_trigger_missing");
-    await db.$executeRaw`DELETE FROM task_ready_source_watches WHERE task_id = ${taskId}::uuid`;
+    if (risk) await db.$executeRaw`DELETE FROM task_risk_source_watches WHERE task_id = ${taskId}::uuid`;
+    else await db.$executeRaw`DELETE FROM task_ready_source_watches WHERE task_id = ${taskId}::uuid`;
     for (const [table, predicates] of watches) {
       const filter = JSON.stringify({ op: "or", args: [...predicates.values()] });
-      await db.$executeRaw`INSERT INTO task_ready_source_watches (task_id, source_table, predicate) VALUES (${taskId}::uuid, ${table}, ${filter}::jsonb)`;
+      if (risk) await db.$executeRaw`INSERT INTO task_risk_source_watches (task_id, source_table, predicate) VALUES (${taskId}::uuid, ${table}, ${filter}::jsonb)`;
+      else await db.$executeRaw`INSERT INTO task_ready_source_watches (task_id, source_table, predicate) VALUES (${taskId}::uuid, ${table}, ${filter}::jsonb)`;
     }
   } };
 }

@@ -1,5 +1,9 @@
 # Local Codex Agent Runtime
 
+[Native task risk assessment](native-task-risk.md) binds the prepared scope and joint
+impact to Ready, execution admission and task capability grants. Classification
+does not implement RF-SEC-002 level-specific authority or activate execution.
+
 [Native serious-incident suspension](native-capability-suspension.md) fences exact
 capabilities and reuses the context-stop/recovery boundary. Owner intervention
 requires reread/replan and never undoes external changes.

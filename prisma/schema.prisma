@@ -445,6 +445,9 @@ enum FunctionalState {
 }
 
 model User {
+  riskScopes TaskRiskScope[]
+  riskAssessments TaskRiskAssessment[]
+
   suspensionJournal NativeSuspensionJournal[]
   nativeSuspensions NativeCapabilitySuspension[]
   id                String                @id @default(uuid()) @db.Uuid
@@ -466,6 +469,9 @@ model User {
 }
 
 model Workspace {
+  riskScopes TaskRiskScope[]
+  riskAssessments TaskRiskAssessment[]
+
   suspensionJournal NativeSuspensionJournal[]
   nativeSuspensions NativeCapabilitySuspension[]
   id                                String                             @id @default(uuid()) @db.Uuid
@@ -714,6 +720,8 @@ model DepartmentViewAvailability {
 }
 
 model CompanyRecord {
+  riskScopes TaskRiskScope[]
+
   nativeSuspensions NativeCapabilitySuspension[]
   id                     String             @id @default(uuid()) @db.Uuid
   workspaceId            String             @map("workspace_id") @db.Uuid
@@ -2167,6 +2175,8 @@ model Project {
 }
 
 model Application {
+  riskScopes TaskRiskScope[]
+
   nativeSuspensions NativeCapabilitySuspension[]
   capabilityGrants TaskCapabilityGrant[]
   id               String                             @id @default(uuid()) @db.Uuid
@@ -2548,6 +2558,8 @@ model ApplicationTechnology {
 }
 
 model ApplicationArchitectureComponent {
+  riskScopes TaskRiskScope[]
+
   id                     String                    @id @default(uuid()) @db.Uuid
   applicationId          String                    @map("application_id") @db.Uuid
   application            Application               @relation(fields: [applicationId], references: [id], onDelete: Cascade)
@@ -2734,6 +2746,10 @@ model TaskList {
 }
 
 model Task {
+  riskScopes TaskRiskScope[]
+  riskAssessments TaskRiskAssessment[]
+  riskHead TaskRiskHead?
+
   nativeSuspensions NativeCapabilitySuspension[]
   capabilityGrants TaskCapabilityGrant[]
   reviewDecisions           TaskReviewDecision[]
@@ -3231,4 +3247,69 @@ model NativeSuspensionJournal {
   @@unique([suspensionId,version])
   @@unique([workspaceId,requestId])
   @@map("native_suspension_journal")
+}
+
+model TaskRiskHead {
+  taskId String @id @map("task_id") @db.Uuid
+  task Task @relation(fields:[taskId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  sourceRevision BigInt @default(0) @map("source_revision")
+  watches TaskRiskSourceWatch[]
+  @@map("task_risk_heads")
+}
+model TaskRiskSourceWatch {
+  taskId String @map("task_id") @db.Uuid
+  head TaskRiskHead @relation(fields:[taskId],references:[taskId],onDelete:Restrict,onUpdate:NoAction)
+  sourceTable String @map("source_table")
+  predicate Json
+  @@id([taskId,sourceTable])
+  @@index([sourceTable])
+  @@map("task_risk_source_watches")
+}
+model TaskRiskScope {
+  id String @id @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  workspace Workspace @relation(fields:[workspaceId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  taskId String @map("task_id") @db.Uuid
+  task Task @relation(fields:[taskId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  version Int
+  applicationId String @map("application_id") @db.Uuid
+  application Application @relation(fields:[applicationId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  componentId String @map("component_id") @db.Uuid
+  component ApplicationArchitectureComponent @relation(fields:[componentId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  releaseSetId String? @map("release_set_id") @db.Uuid
+  releaseSet CompanyRecord? @relation(fields:[releaseSetId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  input Json
+  inputHash String @map("input_hash")
+  actorUserId String @map("actor_user_id") @db.Uuid
+  actor User @relation(fields:[actorUserId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  requestId String @map("request_id") @db.Uuid
+  requestHash String @map("request_hash")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(3)
+  @@unique([taskId,version])
+  @@unique([workspaceId,requestId])
+  @@map("task_risk_scopes")
+}
+model TaskRiskAssessment {
+  id String @id @db.Uuid
+  sequence BigInt @unique @default(autoincrement())
+  workspaceId String @map("workspace_id") @db.Uuid
+  workspace Workspace @relation(fields:[workspaceId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  taskId String @map("task_id") @db.Uuid
+  task Task @relation(fields:[taskId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  version Int
+  sourceVersion String @map("source_version")
+  sources Json
+  entries Json
+  result Json
+  jointRationale String @map("joint_rationale")
+  algorithm String
+  actorUserId String @map("actor_user_id") @db.Uuid
+  actor User @relation(fields:[actorUserId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  requestId String @map("request_id") @db.Uuid
+  requestHash String @map("request_hash")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(3)
+  @@unique([taskId,version])
+  @@unique([workspaceId,requestId])
+  @@index([workspaceId,createdAt],map:"task_risk_assessments_workspace_created_idx")
+  @@map("task_risk_assessments")
 }

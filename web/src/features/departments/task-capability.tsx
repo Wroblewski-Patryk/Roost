@@ -1,3 +1,4 @@
+import { TaskRiskModal } from "./task-risk";
 import { CapabilitySuspensionModal, SuspensionNotice } from "./capability-suspension";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { api } from "../../api/client";
@@ -13,6 +14,7 @@ const localTime = (date: Date) => new Date(+date - date.getTimezoneOffset() * 60
 export function TaskCapabilityModal({ taskId, onClose }: { taskId: string; onClose: () => void }) {
   const { locale } = useLanguage(), c = capabilityMessages[locale === "pl" ? "pl" : "en"];
   const [showSuspensions,setShowSuspensions]=useState(false);
+  const [showRisk,setShowRisk]=useState(false);
   const [data, setData] = useState<any>(null), [busy, setBusy] = useState(true), [error, setError] = useState(false), [saved, setSaved] = useState(false);
   const [selected, setSelected] = useState(""), [reason, setReason] = useState(""), [from, setFrom] = useState(() => localTime(new Date())), [until, setUntil] = useState(() => localTime(new Date(Date.now() + 1800000)));
   const [revoking, setRevoking] = useState<any>(null), [dirty, setDirty] = useState(false), [leave, setLeave] = useState(false);
@@ -49,11 +51,13 @@ export function TaskCapabilityModal({ taskId, onClose }: { taskId: string; onClo
     finally { if (mounted.current) setBusy(false); }
   }
   if(showSuspensions)return <CapabilitySuspensionModal taskId={taskId} onClose={()=>{setShowSuspensions(false);void load();}}/>;
+  if(showRisk)return <TaskRiskModal taskId={taskId} onClose={()=>{setShowRisk(false);void load();}}/>;
   if (leave) return <CcRecordEditorModal titleId="grant-discard" title={c.discard} closeLabel={c.stay} onClose={() => setLeave(false)} onSubmit={e => { e.preventDefault(); onClose(); }} actions={<><CcButton onClick={() => setLeave(false)}>{c.stay}</CcButton><CcButton type="submit" variant="warning">{c.leave}</CcButton></>}>{c.boundary}</CcRecordEditorModal>;
   return <CcRecordEditorModal titleId="grant-title" title={c.title} eyebrow={data?.task.title} description={c.boundary} closeLabel={c.close} onClose={close} onSubmit={submit} maxWidthClassName="max-w-4xl" actions={<><CcButton variant="ghost" disabled={busy} onClick={close}>{c.close}</CcButton>{revoking ? <CcButton variant="warning" type="submit" disabled={busy || reason.trim().length < 3}>{c.confirm}</CcButton> : data?.options.length ? <CcButton variant="primary" type="submit" disabled={busy || !option || !validWindow && !isRetry || reason.trim().length < 3}>{c.issue}</CcButton> : null}</>}>
     <div className="grid min-w-0 gap-5 [overflow-wrap:anywhere]">
       <div ref={notice} tabIndex={-1}>{error ? <CcNotice tone="error" title={c.error} live /> : saved ? <CcNotice tone="success" title={c.saved} live /> : null}</div>
-      <SuspensionNotice items={data?.suspensions??[]} onOpen={()=>setShowSuspensions(true)}/>
+      <CcButton disabled={busy||dirty} onClick={()=>setShowRisk(true)} variant="outline">{locale==="pl"?"Ocena ryzyka":"Risk assessment"}</CcButton>
+    <SuspensionNotice items={data?.suspensions??[]} onOpen={()=>setShowSuspensions(true)}/>
       {busy && !data ? <CcNotice tone="loading" title={c.loading} /> : null}
       <div className="flex flex-wrap justify-end gap-2"><CcButton variant="outline" size="sm" disabled={busy} onClick={() => void load()}>{c.refresh}</CcButton></div>
       {revoking ? <section className="grid gap-3"><h3 className="font-bold">{c.revoke} · {label(revoking.operation)}</h3><p>{revoking.snapshot.agentLabel} · {revoking.snapshot.credentialPrefix}</p><p>{c.revokedHint}</p><CcButton variant="ghost" disabled={busy} onClick={() => { setRevoking(null); setReason(""); setDirty(false); }}>{c.cancel}</CcButton></section> : data?.options.length ? <section className="grid gap-4">

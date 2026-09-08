@@ -1,5 +1,9 @@
 # Task capability grants (RF-SEC-003)
 
+[Native task risk assessment](native-task-risk.md) binds the prepared scope and joint
+impact to Ready, execution admission and task capability grants. Classification
+does not implement RF-SEC-002 level-specific authority or activate execution.
+
 [Serious-incident suspension](native-capability-suspension.md) independently denies
 affected native operations and prevents old grants from reviving after restore.
 

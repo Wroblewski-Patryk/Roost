@@ -123,7 +123,7 @@ stays disabled and the canonical host stays observe.
 | [RF-HOST-018](../product/interview-foundation-v2.md#rf-host-018) | P1 | częściowo działa | [MODEL](#e-model) | No model/effort execution evidence. |
 | [RF-HOST-019](../product/interview-foundation-v2.md#rf-host-019) | P0 | częściowo działa | [PACKET](#e-packet) | Prompt marks context untrusted; no comprehensive quarantine/reporting. |
 | [RF-HOST-020](../product/interview-foundation-v2.md#rf-host-020) | P0 | częściowo działa | [WORKSPACE](#e-workspace) | Workspace-write sandbox is not read isolation; browser/session broker absent. |
-| [RF-SEC-001](../product/interview-foundation-v2.md#rf-sec-001) | P0 | częściowo działa | [RISK](#e-risk) | Risk records exist; computed classification absent. |
+| [RF-SEC-001](../product/interview-foundation-v2.md#rf-sec-001) | P0 | częściowo działa | [RISK](#e-risk) | [Bounded native assessment](native-task-risk.md) computes seven-dimension maximum, uncertainty and cumulative canonical task groups; binds Ready/execution/grants. Company-wide automated risk discovery remains absent. |
 | [RF-SEC-002](../product/interview-foundation-v2.md#rf-sec-002) | P0 | brak | [RISK](#e-risk) | No complete risk admission gate. |
 | [RF-SEC-003](../product/interview-foundation-v2.md#rf-sec-003) | P0 | częściowo działa | [BROKER](#e-broker) | Durable exact task/agent/credential/application/operation/time grants govern the three native review commands, with human issue/revoke, atomic use receipts and context invalidation. General sensitive-tool/secrets brokering, risk and automatic issuance remain absent. |
 | [RF-SEC-004](../product/interview-foundation-v2.md#rf-sec-004) | P0 | częściowo działa | [REDACTION](#e-redaction) | Shared native runtime policy gates required model/checkpoint input and sanitizes diagnostics/projections with safe deduplicated incidents. Whole-Roost DLP, arbitrary encodings/files and historical cleanup remain outside this slice. |
@@ -403,7 +403,12 @@ performed, and no VPS release is required for this local launcher change.
 [src/integrations/secrets.ts](../../src/integrations/secrets.ts), [src/auth/capabilities.ts](../../src/auth/capabilities.ts), [src/operations/provision-agent-host-key.ts](../../src/operations/provision-agent-host-key.ts), [scripts/roost-agent-host-windows.ps1](../../scripts/roost-agent-host-windows.ps1).
 
 <a id="e-risk"></a>
-**RISK** — Risk/Control/Policy data exist without automatic maximum-impact classifier.
+**RISK** — [Bounded native task assessment](native-task-risk.md) computes the
+maximum of seven impact dimensions, escalates uncertainty and canonical related
+changes, and binds immutable assessment versions to Ready/execution/grants.
+`task-risk-contract.ts`, `task-risk.ts` and the forward native-task-risk migration
+own this boundary; API/DB, classifier and PL/EN browser tests cover it. Broader
+company risk discovery and RF-SEC-002 level-specific admission remain absent.
 
 [src/modules/company-objects/company-objects.routes.ts](../../src/modules/company-objects/company-objects.routes.ts), [prisma/schema.prisma](../../prisma/schema.prisma).
 

@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { suspensionBlocks, suspensionList } from "./capability-suspension";
+import { riskAdmission } from "./task-risk";
 import { reviewState } from "./task-review";
 import { capabilityWindow, issueCapabilitySchema, revokeCapabilitySchema } from "./task-capability-contract";
 import { grantOperations, grantScope, grantState } from "./task-capability-admission";
@@ -12,6 +13,7 @@ async function safeGrant(db: Db, g: any) {
   return { ...g, status: (await grantState(db, g.id)).status };
 }
 async function choices(db: Db, workspaceId: string, s: any) {
+  if ("error" in await riskAdmission(db,s.task.id)) return [];
   if (!s.current || s.roleIssues.length || !["todo", "in_progress"].includes(s.task.status) || s.execution.cancelRequestedAt) return [];
   const options = [];
   for (const operation of grantOperations) {
@@ -52,6 +54,8 @@ export async function issueTaskCapability(db: Db, workspaceId: string, taskId: s
   if (!option) return { error: "capability_role_or_credential_invalid" };
   const scopeHash = await grantScope(db, taskId, option.credentialId, userId);
   if (!scopeHash) return { error: "capability_application_invalid" };
+  const risk = await riskAdmission(db,taskId);
+  if ("error" in risk) return {error:risk.error!};
   const validFrom = new Date(input.validFrom), validUntil = new Date(input.validUntil);
   if (!capabilityWindow(validFrom, validUntil, option.credentialExpiresAt!)) return { error: "capability_window_invalid" };
   const issuer = await db.user.findUniqueOrThrow({ where: { id: userId }, select: { name: true } });
@@ -59,7 +63,7 @@ export async function issueTaskCapability(db: Db, workspaceId: string, taskId: s
   const grant = await db.taskCapabilityGrant.create({ data: { workspaceId, taskId, applicationId: s.execution!.applicationId, executionId: s.execution!.id, agentId: option.agentId,
     credentialId: option.credentialId, credentialVersion: option.credentialVersion, operation: input.operation, validFrom, validUntil, issuerUserId: userId,
     reason: input.reason, requestId: input.requestId, requestHash, scopeHash, snapshot: wire({ agentLabel: option.agentLabel, issuerLabel: issuer.name ?? "Workspace administrator", applicationLabel: application.name,
-      taskLabel: s.task.title, credentialPrefix: option.credentialPrefix, role: option.role, materialVersion: s.materialVersion }) } });
+      taskLabel: s.task.title, credentialPrefix: option.credentialPrefix, role: option.role, materialVersion: s.materialVersion, riskAssessmentId:risk.id }) } });
   await db.event.create({ data: { workspaceId, taskId, type: "task_capability.issued", source: "roost", actorType: "user", actorId: userId, resourceType: "task_capability_grant", resourceId: grant.id,
     payload: { grantId: grant.id, agentId: grant.agentId, credentialId: grant.credentialId, operation: grant.operation, applicationId: grant.applicationId } } });
   return { grant: await safeGrant(db, grant), replayed: false };

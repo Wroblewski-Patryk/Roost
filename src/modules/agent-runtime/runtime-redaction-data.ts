@@ -8,6 +8,7 @@ const fields: Record<string, string[]> = {
   TaskReviewDecision: ["evidence", "snapshot"], TaskReviewAction: ["correction", "snapshot"],
   TaskCapabilityGrant: ["reason", "snapshot"], TaskCapabilityRevocation: ["reason"],
   NativeCapabilitySuspension: ["reason", "scopeProof", "broaderReason"], NativeSuspensionJournal: ["payload"],
+  TaskRiskScope:["input"], TaskRiskAssessment:["sources","entries","result","jointRationale"],
 };
 export function installRuntimeRedaction(client: PrismaClient) {
   client.$use(async (params, next) => {
@@ -29,7 +30,7 @@ export function installRuntimeRedaction(client: PrismaClient) {
         }
         // Prisma middleware does not run for nested relation writers. Native
         // producers use the explicit guarded delegates; disallow this bypass.
-        for (const relation of ["nativeSuspensions", "suspensionJournal", ...(params.model === "NativeCapabilitySuspension" ? ["journal"] : []), ...(params.model === "NativeSuspensionJournal" ? ["references","evidence"] : []), "agentExecutions", "agentExecutionEvents", "evidenceRecords", "agentLogs", "capabilityGrants", "reviewDecisions", ...(params.model === "AgentHost" ? ["executions"] : []), ...(params.model === "AgentExecution" ? ["events"] : [])]) {
+        for (const relation of ["riskScopes","riskAssessments","nativeSuspensions", "suspensionJournal", ...(params.model === "NativeCapabilitySuspension" ? ["journal"] : []), ...(params.model === "NativeSuspensionJournal" ? ["references","evidence"] : []), "agentExecutions", "agentExecutionEvents", "evidenceRecords", "agentLogs", "capabilityGrants", "reviewDecisions", ...(params.model === "AgentHost" ? ["executions"] : []), ...(params.model === "AgentExecution" ? ["events"] : [])]) {
           if (data[relation] && Object.keys(data[relation]).some(key => /^(create|createMany|update|updateMany|upsert|connectOrCreate)$/.test(key))) throw new Error("agent_runtime_content_blocked");
         }
         let names = fields[params.model ?? ""] ?? [];

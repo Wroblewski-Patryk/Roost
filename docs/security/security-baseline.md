@@ -1,5 +1,9 @@
 # Security Baseline
 
+[Native task risk assessment](../architecture/native-task-risk.md) binds the prepared scope and joint
+impact to Ready, execution admission and task capability grants. Classification
+does not implement RF-SEC-002 level-specific authority or activate execution.
+
 [Native serious-incident suspension](../architecture/native-capability-suspension.md)
 adds exact capability containment and independently verified, owner-authorized
 restoration. A sanitizer incident alone never suspends a workspace.

@@ -12,6 +12,7 @@ import { ChangedContextSources } from "./changed-context-sources";
 import { SingleTaskFields } from "./single-task-fields";
 import { TaskRoleFields, TaskRoleSummary } from "./task-role-fields";
 import { TaskReviewModal } from "./task-review";
+import { TaskRiskModal } from "./task-risk";
 import { reviewMessages } from "./task-review-messages";
 import { catalogFor, contractInput, draftFrom, fields, groups, selectReferences, validationSections, type Draft, type FieldName, type ReadyPacket, type RefGroup } from "./task-readiness-model";
 
@@ -23,6 +24,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
   const [issues, setIssues] = useState<string[]>([]), [success, setSuccess] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false), [leave, setLeave] = useState(false), [expanded, setExpanded] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [riskOpen, setRiskOpen] = useState(false);
   const [links, setLinks] = useState({ projectId: "", goalId: "", assignedWorkforceEntityId: "" });
   const mounted = useRef(true), errorRef = useRef<HTMLDivElement>(null);
   const submission = useRef<{ body: string; requestId: string } | null>(null);
@@ -30,6 +32,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
   function update(next: Draft) { setDraft(next); setDirty(true); setSuccess(null); }
   function errorCopy(caught: unknown) {
     if (!(caught instanceof AppApiError)) return "error.failed";
+    if (caught.code.startsWith("task_risk_")) return "riskRequired";
     if (["forbidden", "workspace_read_only"].includes(caught.code)) return "error.forbidden";
     if (caught.code === "task_agent_execution_active") return "active";
     if (caught.code === "agent_execution_disabled") return "disabled";
@@ -62,7 +65,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
       submission.current = null; setDirty(false); setExpanded(false); await load(); setSuccess("accepted"); onSaved?.();
     } catch (caught) {
       if (!mounted.current) return;
-      if (caught instanceof AppApiError && caught.code === "task_execution_contract_invalid") await load(packet.editor.applicationId ?? undefined, true);
+      if (caught instanceof AppApiError && (caught.code === "task_execution_contract_invalid" || caught.code.startsWith("task_risk_"))) await load(packet.editor.applicationId ?? undefined, true);
       setError(errorCopy(caught)); setIssues(caught instanceof AppApiError && caught.code === "task_execution_contract_invalid" ? validationSections(caught.details) : []);
       setExpanded(true); requestAnimationFrame(() => errorRef.current?.focus());
     } finally { if (mounted.current) setBusy(null); }
@@ -113,6 +116,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
     </section>;
   }
   if (reviewOpen) return <TaskReviewModal taskId={taskId} onClose={() => { setReviewOpen(false); void load(); }} onSaved={onSaved}/>;
+  if (riskOpen) return <TaskRiskModal taskId={taskId} input={e && draft ? contractInput(e,draft) : undefined} onClose={()=>{setRiskOpen(false);void load(e?.applicationId??undefined,true);}} onSaved={onSaved}/>;
   return <CcRecordEditorModal titleId="task-readiness-title" eyebrow={tr("title")} title={e?.task.title || tr("title")} description={tr("description")} closeLabel={tr("close")} onClose={close} onSubmit={submit} maxWidthClassName="max-w-5xl" actions={<>
     <CcButton variant="outline" disabled={Boolean(busy) || dirty} onClick={()=>setReviewOpen(true)}>{reviewMessages[locale === "pl" ? "pl" : "en"].open}</CcButton>
     <CcButton className="min-h-11" onClick={close} variant="ghost" disabled={Boolean(busy && busy !== "loading")}>{tr("close")}</CcButton>
@@ -123,9 +127,10 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
     {success ? <CcNotice live tone="success" title={tr(success)} /> : null}
     {packet && e && draft ? <>
       <section aria-label={tr("title")} className="grid gap-4 border-b border-base-300 pb-4">
-        <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-3"><span className={`badge ${packet.status === "ready" ? "badge-success" : "badge-warning"}`}>{tr(["ready", "draft", "needs_context", "needs_decision", "not_ready", "needs_revalidation"].includes(packet.status) ? packet.status : "needs_revalidation")}</span><span className="text-sm text-company-muted">{tr("taskStatus")}: {humanizeBusinessValue(e.task.status, undefined, locale)}</span></div><CcButton size="sm" variant="outline" disabled={Boolean(busy)} onClick={() => void load(e.applicationId ?? undefined, dirty)}>{tr("refresh")}</CcButton></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-3"><span className={`badge ${packet.status === "ready" ? "badge-success" : "badge-warning"}`}>{tr(["ready", "draft", "needs_context", "needs_decision", "not_ready", "needs_revalidation"].includes(packet.status) ? packet.status : "needs_revalidation")}</span><span className="text-sm text-company-muted">{tr("taskStatus")}: {humanizeBusinessValue(e.task.status, undefined, locale)}</span></div><CcButton variant="outline" disabled={Boolean(busy) || !e} onClick={()=>setRiskOpen(true)}>{locale==="pl"?"Ocena ryzyka":"Risk assessment"}</CcButton><CcButton size="sm" variant="outline" disabled={Boolean(busy)} onClick={() => void load(e.applicationId ?? undefined, dirty)}>{tr("refresh")}</CcButton></div>
         {packet.status !== "ready" ? <p className="text-sm">{tr(`reason.${reason}`)}</p> : null}
         <ChangedContextSources sources={packet.changedSources} />
+        {packet.reason?.startsWith("task_risk_") || packet.reason==="risk_context_changed" ? <CcNotice tone="warning" title={tr("riskRequired")}/> : null}
         <TaskRoleSummary editor={e} tr={tr} />
         {e.accepted?.contract.singleTask ? <section className="grid gap-2 text-sm"><h3 className="font-bold">{tr("single.title")}</h3><p>{e.components?.find(item => item.id === e.accepted?.contract.singleTask.component.id)?.label ?? tr("staleRefs")} · {e.managers?.find(item => item.id === e.accepted?.contract.singleTask.accountableManager.id)?.label ?? tr("staleRefs")}</p><p className="break-all font-mono text-xs">{e.accepted.contract.singleTask.branch}</p>{e.accepted.contract.singleTask.commonCause ? <details><summary className="cursor-pointer py-2 font-bold text-warning">{tr("single.exception")}</summary><p>{e.accepted.contract.singleTask.commonCause.mechanism}</p><p className="mt-2">{e.accepted.contract.singleTask.commonCause.inseparability}</p><ul className="mt-2 list-disc pl-5">{e.accepted.contract.singleTask.problems.map((problem: { statement: string; causalLink: string }, index: number) => <li key={index}>{problem.statement}: {problem.causalLink}</li>)}</ul></details> : null}</section> : null}
         {packet.revision ? <dl className="grid gap-3 text-sm sm:grid-cols-3"><div><dt className="text-company-muted">{tr("fingerprint")}</dt><dd className="font-mono break-all">{packet.revision.slice(0, 12)}…{packet.revision.slice(-8)}</dd><dd className="mt-1 text-xs text-company-muted">{packet.validationRevision === packet.revision ? tr("proof") : tr("reason.revalidation_required")}</dd></div><div><dt className="text-company-muted">{tr("author")}</dt><dd>{e.acceptance?.authorName || tr(e.acceptance?.authorType === "agent" ? "agentAuthor" : "unknownAuthor")}</dd></div><div><dt className="text-company-muted">{tr("date")}</dt><dd>{e.acceptance?.validatedAt ? new Date(e.acceptance.validatedAt).toLocaleString(locale) : "—"}</dd></div></dl> : null}

@@ -1,4 +1,5 @@
 const copy = {
+  riskRequired: ["A complete current risk assessment is required. Open Risk assessment, prepare the current scope and assess all related changes.", "Wymagana jest kompletna aktualna ocena ryzyka. Otwórz Ocenę ryzyka, przygotuj aktualny zakres i oceń wszystkie powiązane zmiany."],
   title: ["Execution readiness", "Gotowość do wykonania"],
   open: ["Prepare execution", "Przygotuj wykonanie"],
   saveAndPrepare: ["Save and prepare execution", "Zapisz i przygotuj wykonanie"],

@@ -4,6 +4,7 @@ import { taskCapabilityView, issueTaskCapability, revokeTaskCapability } from ".
 import { isDeepStrictEqual } from "node:util";
 import { taskReviewView, recordTaskReview, actOnTaskReview } from "./task-review";
 import { inspectReady, lockReadyTask, readyTransaction, submitReady, readyEditorData } from "./task-execution-readiness";
+import { taskRiskView, prepareRiskScope, recordRiskAssessment } from "./task-risk";
 import { acknowledgeContextStop, contextStopCode, guardExecutionContext } from "./execution-context-stop";
 import { requireWorkspaceRole, roleAtLeast } from "../../auth/workspace-access";
 import { randomUUID } from "node:crypto";
@@ -187,6 +188,28 @@ function executionReportMetadata(existing: Prisma.JsonValue, reported: Record<st
   // Reports add runtime observations; only Ready/queue author the accepted contract and pin.
   return json({ ...prior, ...details });
 }
+
+agentRuntimeRouter.get("/tasks/:id/risk", asyncHandler(async (req,res) => {
+  if (!requireWorkspaceRole(req,res,"viewer")) return;
+  const taskId=z.string().uuid().parse(req.params.id);
+  const result=await readyTransaction(db=>taskRiskView(db,req.auth!.workspaceId,taskId,req.auth!.userId!));
+  if ("error" in result) return sendApiError(res,result.error==="task_not_found"?404:409,result.error!);
+  res.json({data:result});
+}));
+agentRuntimeRouter.post("/tasks/:id/risk/scope", asyncHandler(async (req,res) => {
+  if (!requireWorkspaceRole(req,res,"member")) return;
+  const taskId=z.string().uuid().parse(req.params.id);
+  const result=await readyTransaction(db=>prepareRiskScope(db,req.auth!.workspaceId,taskId,req.auth!.userId!,req.body));
+  if ("error" in result) return sendApiError(res,result.error==="task_not_found"?404:result.error==="task_risk_forbidden"?403:409,result.error!);
+  res.json({data:result});
+}));
+agentRuntimeRouter.post("/tasks/:id/risk/assessments", asyncHandler(async (req,res) => {
+  if (!requireWorkspaceRole(req,res,"member")) return;
+  const taskId=z.string().uuid().parse(req.params.id);
+  const result=await readyTransaction(db=>recordRiskAssessment(db,req.auth!.workspaceId,taskId,req.auth!.userId!,req.body));
+  if ("error" in result) return sendApiError(res,result.error==="task_not_found"?404:result.error==="task_risk_forbidden"?403:409,result.error!);
+  res.json({data:result});
+}));
 
 agentRuntimeRouter.post("/tasks/:id/actions/submit-for-execution", asyncHandler(async (req, res) => {
   if (!requireWorkspaceRole(req, res, "member")) return;
