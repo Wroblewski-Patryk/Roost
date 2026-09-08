@@ -189,6 +189,20 @@ function executionReportMetadata(existing: Prisma.JsonValue, reported: Record<st
   return json({ ...prior, ...details });
 }
 
+agentRuntimeRouter.get("/tasks/:id/procedure-composition", asyncHandler(async(req,res)=>{
+ if(!requireWorkspaceRole(req,res,"viewer"))return;
+ const {compositionView}=await import("./procedure-composition");
+ const result=await readyTransaction(db=>compositionView(db,req.auth!.workspaceId,z.string().uuid().parse(req.params.id),req.auth!.userId!));
+ if("error" in result)return sendApiError(res,result.error==="task_not_found"?404:409,result.error!);
+ res.json({data:result});
+}));
+for(const kind of ["selection","exception"] as const) agentRuntimeRouter.post(`/tasks/:id/procedure-composition/${kind}`,asyncHandler(async(req,res)=>{
+ if(!requireWorkspaceRole(req,res,kind==="exception"?"owner":"member"))return;
+ const {compositionCommand}=await import("./procedure-composition");
+ const result=await readyTransaction(db=>compositionCommand(db,req.auth!.workspaceId,z.string().uuid().parse(req.params.id),req.auth!.userId!,kind,req.body));
+ if("error" in result)return sendApiError(res,result.error==="task_not_found"?404:409,result.error!);
+ res.json({data:result});
+}));
 agentRuntimeRouter.get("/tasks/:id/risk-admission", asyncHandler(async (req,res) => {
   if (!requireWorkspaceRole(req,res,"viewer")) return;
   const {admissionView}=await import("./task-risk-admission");
@@ -417,7 +431,7 @@ agentRuntimeRouter.post("/executions", asyncHandler(async (req, res) => {
     const pin = ready.pin!;
     if (resolved.application!.id !== pin.applicationId || (input.prompt !== undefined && input.prompt !== pin.prompt) || (input.baseBranch !== undefined && input.baseBranch !== pin.baseBranch) || (input.metadata.executionContract !== undefined && !isDeepStrictEqual(input.metadata.executionContract, pin.contract))) return { error: "task_ready_contract_mismatch" };
     const execution = await tx.agentExecution.create({ data: { workspaceId: req.auth!.workspaceId, taskId: input.taskId, applicationId: pin.applicationId,
-      prompt: pin.prompt, baseBranch: pin.baseBranch, metadata: json({ ...input.metadata, executionContract: pin.contract, readyContextPin: { pinId: pin.pinId, revision: pin.revision, riskAdmissionSeal:pin.riskAdmissionSeal, riskAdmissionCommit:pin.riskAdmissionCommit } }), ...actor(req) }, include: executionInclude });
+      prompt: pin.prompt, baseBranch: pin.baseBranch, metadata: json({ ...input.metadata, executionContract: pin.contract, readyContextPin: { pinId: pin.pinId, revision: pin.revision, riskAdmissionSeal:pin.riskAdmissionSeal, riskAdmissionCommit:pin.riskAdmissionCommit, compositionSeal:pin.procedureComposition.seal } }), ...actor(req) }, include: executionInclude });
     return { execution };
   });
   if ("error" in result && result.error) return sendApiError(res, 409, result.error, { details: "readiness" in result ? result.readiness : undefined });

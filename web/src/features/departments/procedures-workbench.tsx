@@ -1,3 +1,4 @@
+import { ProcedureContractsModal } from "./procedure-composition";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
@@ -279,6 +280,7 @@ export function ProceduresWorkbench({ departmentKey = "04-operacje", canonical =
   const [toolAdapters, setToolAdapters] = useState<ToolAdapter[]>([]);
   const [integrationCapabilities, setIntegrationCapabilities] = useState<IntegrationCapability[]>([]);
   const [permissionCatalog, setPermissionCatalog] = useState<string[]>([]);
+  const [contractId,setContractId]=useState<string|null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editing, setEditing] = useState<Procedure | null | undefined>(undefined);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -376,6 +378,7 @@ export function ProceduresWorkbench({ departmentKey = "04-operacje", canonical =
     { key: "updated", header: t("procedures.updated"), sortable: true, sortValue: (procedure) => new Date(procedure.updatedAt), className: "w-36 min-w-36", cell: (procedure) => <span className="text-sm text-company-muted">{updatedLabel(procedure.updatedAt)}</span> }
   ], [locale, t]);
   const rowActions = useMemo<Array<CcTableRowAction<Procedure>>>(() => [
+    { key:"contracts",label:locale==="pl"?"Kontrakty wykonania":"Execution contracts",icon:"ph-list-checks",tone:"outline",onClick:procedure=>setContractId(procedure.id)},
     { key: "preview", label: t("procedures.open"), icon: "ph-eye", tone: "outline", onClick: (procedure) => setSelectedId(procedure.id) },
     { key: "edit", label: t("procedures.edit"), icon: "ph-pencil-simple", tone: "ghost", onClick: (procedure) => setEditing(procedure) }
   ], [t]);
@@ -388,6 +391,7 @@ export function ProceduresWorkbench({ departmentKey = "04-operacje", canonical =
         {status === "error" ? <CcNotice tone="error" title={error || t("procedures.loadError")} /> : null}
         {status === "ready" ? <CcDataTable columns={columns} density="compact" emptyDetail={t("procedures.emptyDetail")} emptyTitle={t("procedures.empty")} enableColumnVisibility={false} enablePagination={false} enableSelection={false} getRowLabel={(procedure) => procedure.name} initialQuickFilter="current" initialSort={{ key: "name", direction: "asc" }} labels={tableLabels} mobileMode="cards" quickFilters={[{ key: "current", label: t("procedures.current"), predicate: (procedure) => !["archived", "retired"].includes(procedure.status) }, { key: "all", label: t("procedures.all"), predicate: () => true }]} rowActionItems={rowActions} rows={procedures} searchPlaceholder={t("procedures.search")} tableMinWidthClassName="min-w-[920px]" /> : null}
       </div>
+      {contractId?<ProcedureContractsModal procedureId={contractId} onClose={()=>setContractId(null)}/>:null}
       {selected ? <ProcedureDetail busy={busy} onActivate={() => void activate()} onArchive={() => setConfirmArchive(true)} onClose={() => setSelectedId(null)} onEdit={() => { setSelectedId(null); setError(null); setEditing(selected); }} procedure={selected} /> : null}
       {selected && confirmArchive ? <CcConfirmDialog busy={busy} confirmIcon="ph-archive" confirmLabel="Archive" confirmTone="warning" description="This keeps the procedure and its version history, but removes it from current operational use." detail={<><strong className="text-company-ink">{departmentScopes(selected.process).join(" · ")}</strong><span className="mx-2 text-company-muted">/</span><span>Version {selected.version}</span></>} eyebrow="Archive procedure" onCancel={() => setConfirmArchive(false)} onConfirm={() => void archive()} title={selected.name} /> : null}
       {editing !== undefined ? <ProcedureEditor error={error} onClose={() => { setEditing(undefined); setError(null); }} onSubmit={(event) => void submit(event)} permissionOptions={permissionOptions} procedure={editing} processes={processes} saving={busy} toolOptions={toolOptions} /> : null}

@@ -55,10 +55,13 @@ export function validPacketFixture() {
 }
 
 export function pinReadyFixture(f) {
+  if(!f.packet.procedureComposition)f.packet.procedureComposition={algorithm:"roost-procedure-composition-v1",status:"composed",seal:"c".repeat(64),operation:"runtime_execute",applicationId:f.claimed.applicationId,missing:[],conflicts:[],steps:[],gates:["procedure"],expiresAt:null,fields:{tools:f.packet.contract.access.tools}};
+  sealPacket(f.packet);
   const revision = readyContext.readyContextRevision(f.taskContext, f.applicationContext, f.claimed);
   const pinId = "00000000-0000-4000-8000-000000000090";
   const riskAdmission={policy:"roost-native-risk-admission-v1",seal:"a".repeat(64),commit:"a".repeat(40),expiresAt:new Date(Date.now()+3600000).toISOString()};
   f.claimed.metadata = { ...f.claimed.metadata, readyContextPin: { pinId, revision, riskAdmissionSeal:riskAdmission.seal,riskAdmissionCommit:riskAdmission.commit } };
-  f.taskContext.readyAdmission = { status: "ready", pinId, revision, validationRevision: revision,riskAdmission };
+  f.claimed.metadata.readyContextPin.compositionSeal=f.packet.procedureComposition.seal;
+  f.taskContext.readyAdmission = { status: "ready", pinId, revision, validationRevision: revision,riskAdmission,compositionSeal:f.packet.procedureComposition.seal };
   return f;
 }

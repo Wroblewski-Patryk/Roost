@@ -1,4 +1,6 @@
 const copy = {
+  compositionRequired: ["Open Procedure composition. Complete the base, application extension and risk requirements, then reassess risk and record current evidence.", "Otwórz Skład procedury. Uzupełnij bazę, rozszerzenie aplikacji i wymagania ryzyka, a następnie ponów ocenę ryzyka i zapisz aktualne dowody."],
+  "reason.procedure_composition_changed": ["The pinned procedure composition is no longer valid. Review its sources and explicitly submit again.", "Przypięty skład procedury utracił ważność. Sprawdź źródła i jawnie przekaż zadanie ponownie."],
   admissionRequired: ["Open Risk assessment → Admission requirements. Pin the exact operation and record each required current verification.", "Otwórz Ocenę ryzyka → Warunki dopuszczenia. Przypnij dokładny zakres operacji i uzupełnij aktualną weryfikację każdego warunku."],
   riskRequired: ["A complete current risk assessment is required. Open Risk assessment, prepare the current scope and assess all related changes.", "Wymagana jest kompletna aktualna ocena ryzyka. Otwórz Ocenę ryzyka, przygotuj aktualny zakres i oceń wszystkie powiązane zmiany."],
   title: ["Execution readiness", "Gotowość do wykonania"],

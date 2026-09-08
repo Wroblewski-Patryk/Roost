@@ -1,4 +1,7 @@
 import { Router } from "express";
+import { requireWorkspaceRole } from "../../auth/workspace-access";
+import { readyTransaction } from "../agent-runtime/task-execution-readiness";
+import { procedureContractsView, procedureContractCommand } from "../agent-runtime/procedure-composition";
 import { ActorType, OperatingStatus, Prisma, ProcedureStepType } from "@prisma/client";
 import { z } from "zod";
 import { adapterManifest } from "../../auth/capabilities";
@@ -100,6 +103,19 @@ const targetCoverage: CoverageRow[] = [
 ];
 
 export const processCoreRouter = Router();
+
+processCoreRouter.get("/procedures/:id/contracts",asyncHandler(async(req,res)=>{
+ if(!requireWorkspaceRole(req,res,"viewer"))return;
+ const result=await readyTransaction(db=>procedureContractsView(db,req.auth!.workspaceId,z.string().uuid().parse(req.params.id),req.auth!.userId!));
+ if("error" in result)return sendApiError(res,result.error==="procedure_not_found"?404:409,result.error!);
+ res.json({data:result});
+}));
+for(const kind of ["publish","withdraw"] as const) processCoreRouter.post(`/procedures/:id/contracts/${kind}`,asyncHandler(async(req,res)=>{
+ if(!requireWorkspaceRole(req,res,"owner"))return;
+ const result=await readyTransaction(db=>procedureContractCommand(db,req.auth!.workspaceId,z.string().uuid().parse(req.params.id),req.auth!.userId!,kind,req.body));
+ if("error" in result)return sendApiError(res,result.error==="procedure_not_found"?404:409,result.error!);
+ res.json({data:result});
+}));
 
 const optionalText = z.string().trim().min(1).optional().nullable();
 const organizationalContextSchema = z.object({ ownerDepartmentKey: z.string().nullable().optional(), relatedDepartmentKeys: z.array(z.string()).default([]), applicableDepartmentKeys: z.array(z.string()).default([]), scopes: z.array(z.object({ type: z.enum(organizationalScopeTypes), entityId: z.string().trim().min(1).nullable().optional(), label: z.string().trim().max(160).nullable().optional() })).default([]) }).strict();

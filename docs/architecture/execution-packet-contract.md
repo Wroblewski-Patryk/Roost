@@ -1,5 +1,8 @@
 # Supervised Execution Packet v1
 
+[Versioned procedure composition](versioned-procedure-composition.md) binds the base,
+application extension and risk requirements to the same Ready/execution seal.
+
 [Native task risk assessment](native-task-risk.md) binds the prepared scope and joint
 impact to Ready, execution admission and task capability grants. Classification
 is followed by [level-specific native admission](native-risk-admission.md); neither activates execution.

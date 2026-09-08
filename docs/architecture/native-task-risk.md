@@ -60,6 +60,11 @@ unspecified components cannot be inferred by this bounded detector.
 
 ## Sources, concurrency and admission
 
+The [procedure composition](versioned-procedure-composition.md) references are also
+part of the current risk source. Selecting different published contracts requires
+a new assessment before evidence can admit the operation. Active accepted work
+retains its pinned versions; publication alone does not upgrade it.
+
 Prepared scopes and assessments are immutable versioned records. Assessment
 history includes actor user ID, timestamp, algorithm, source version, each
 member's scope version/ID, source revision and lineage IDs. Only a current human

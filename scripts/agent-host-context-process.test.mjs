@@ -13,11 +13,12 @@ import { validPacketFixture, sealPacket, pinReadyFixture } from "./fixtures/exec
 import { writerLockFilename } from "./lib/agent-host-writer-lock.mjs";
 import { terminateWindowsProcessTree } from "./lib/agent-host-execution-lease.mjs";
 
-for (const scenario of ["riskCommitMismatch", "riskExpiredFinal", "redactionInitial", "redactionFinal", "redactionOutput", "branchBeforePreparation", "branchBeforeSpawn", "unchanged", "readyMissing", "readyLegacy", "readyChanged", "readyApiPrepare", "readyApiFinal", "taskChanged", "goalChanged", "applicationChanged", "sourceChanged", "accessRevoked", "lateTaskChange", "taskUnavailable", "applicationUnavailable", "authorityRejected", "reportUnavailable", "protocolChanged", "protocolUnavailable"]) {
+for (const scenario of ["compositionExpiredFinal", "riskCommitMismatch", "riskExpiredFinal", "redactionInitial", "redactionFinal", "redactionOutput", "branchBeforePreparation", "branchBeforeSpawn", "unchanged", "readyMissing", "readyLegacy", "readyChanged", "readyApiPrepare", "readyApiFinal", "taskChanged", "goalChanged", "applicationChanged", "sourceChanged", "accessRevoked", "lateTaskChange", "taskUnavailable", "applicationUnavailable", "authorityRejected", "reportUnavailable", "protocolChanged", "protocolUnavailable"]) {
   test(`real host fresh-context admission: ${scenario}`, { skip: process.platform !== "win32", timeout: 20000 }, async () => {
     const f = validPacketFixture(); f.taskContext.task.title = "Authoritative fixture title";
     pinReadyFixture(f);
     if(scenario==="riskExpiredFinal") f.taskContext.readyAdmission.riskAdmission.expiresAt=new Date(Date.now()+8000).toISOString();
+    if(scenario==="compositionExpiredFinal"){f.packet.procedureComposition.expiresAt=new Date(Date.now()+8000).toISOString();pinReadyFixture(f);}
     const readyFailure = scenario.startsWith("ready") && scenario !== "readyApiFinal";
     if (scenario === "readyMissing") delete f.taskContext.readyAdmission;
     if (scenario === "readyLegacy") delete f.claimed.metadata.readyContextPin;
@@ -49,7 +50,7 @@ for (const scenario of ["riskCommitMismatch", "riskExpiredFinal", "redactionInit
       if (req.url.includes("company-intelligence")) {
         taskReads++;
         if (scenario === "redactionInitial" || scenario === "redactionFinal" && taskReads === 2) return send({ ...f.taskContext, unsafe: { password: "synthetic-redaction-sensitive" } });
-        if (taskReads === 2 && scenario === "riskExpiredFinal") await new Promise(resolve=>setTimeout(resolve,4000));
+        if (taskReads === 2 && ["riskExpiredFinal","compositionExpiredFinal"].includes(scenario)) await new Promise(resolve=>setTimeout(resolve,4000));
         if (taskReads === 2 && scenario === "readyApiFinal") return send("task_ready_revalidation_required", 409);
         if (taskReads === 2 && ["taskUnavailable", "authorityRejected"].includes(scenario)) return send("SYNTHETIC_SECRET_TRANSPORT", scenario === "authorityRejected" ? 403 : 503);
         return send({ ...f.taskContext, generatedAt: taskReads === 1 ? "2026-09-06T00:00:00Z" : "2026-09-06T00:00:01Z" });
@@ -125,7 +126,7 @@ for (const scenario of ["riskCommitMismatch", "riskExpiredFinal", "redactionInit
           assert.match(lock.checkpoint.contextRevision, /^[a-f0-9]{64}$/);
           assert.equal(lock.checkpoint.contextRevision, requests.find((r) => r.input.checkpoint?.stage === "prepared").input.checkpoint.contextRevision);
         }
-        if (readyFailure || scenario === "readyApiFinal" || scenario.startsWith("risk")) {
+        if (readyFailure || scenario === "readyApiFinal" || (scenario.startsWith("risk")||scenario.startsWith("composition"))) {
           if (readyFailure) assert.equal(started, -1);
           if (readyFailure && scenario !== "readyApiPrepare") assert.equal(requests.some(r => r.input.checkpoint?.stage === "prepared"), false);
           assert.equal(failure.input.code, "agent_ready_context_revalidation_required"); assert.equal(failure.input.retryable, false);

@@ -44,6 +44,7 @@ const packetSchema = z.object({
   schemaVersion: z.literal("roost-execution-packet-v1"), revision: z.string().regex(/^[a-f0-9]{64}$/),
   identity: z.object({ executionId: id, workspaceId: id, taskId: id, applicationId: id, agentId: id }).strict(),
   taskRevision: text, contract: executionContractSchema,
+  procedureComposition: z.record(z.unknown()),
   roleAuthorities: roleAuthoritiesSchema,
   scopeAuthorities: z.object({
     component: z.object({ id, applicationId: id, status: text, revision: text }).strict().nullable(),
@@ -54,7 +55,7 @@ const packetSchema = z.object({
 }).strict();
 
 const list = (value) => Array.isArray(value) ? value : [];
-export function validateExecutionPacket(packet, claimed, taskContext, applicationContext) {
+export function validateExecutionPacket(packet, claimed, taskContext, applicationContext, options = {}) {
   const issues = [];
   const add = (field, reason) => issues.push({ field, reason });
   const parsed = packetSchema.safeParse(packet);
@@ -63,6 +64,9 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
     for (const issue of parsed.error.issues) add(issue.path.join(".") || "packet", issue.code === "invalid_type" && issue.received === "undefined" ? "missing" : "invalid");
   } else {
     const p = parsed.data, c = p.contract, task = taskContext?.task, agent = task?.assignedWorkforceEntity;
+    const composition=p.procedureComposition;
+    if(!options.allowUncomposed && (composition.algorithm!=="roost-procedure-composition-v1" || composition.status!=="composed" || !/^[a-f0-9]{64}$/.test(composition.seal??"") || composition.operation!=="runtime_execute" || composition.applicationId!==claimed?.applicationId || !Array.isArray(composition.missing) || composition.missing.length || !Array.isArray(composition.conflicts) || composition.conflicts.length)) add("procedureComposition","missing_or_conflicting");
+    if((!options.allowUncomposed || composition.status==="composed") && c.access.tools.some(tool=>!composition.fields?.tools?.includes(tool)))add("procedureComposition.tools","outside_composed_authority");
     issues.push(...singleTaskIssues(c, p, claimed));
     issues.push(...taskRoleIssues(c, p, claimed));
     const { revision, ...body } = packet;

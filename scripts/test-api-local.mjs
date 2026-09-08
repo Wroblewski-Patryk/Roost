@@ -250,7 +250,7 @@ try {
     await cleanupDatabase(wasRunning);
     process.exit(seedResult.code ?? 1);
   }
-  const result = await run("node", ["--test", "dist/tests/api.test.js"], {
+  const result = await run("node", ["--test", ...(process.env.COMPANYCORE_TEST_NAME_PATTERN ? ["--test-name-pattern", process.env.COMPANYCORE_TEST_NAME_PATTERN] : []), "dist/tests/api.test.js"], {
     env: testProcessEnvironment,
     replaceEnv: true,
     unsetEnv: isolatedApplicationVariables,

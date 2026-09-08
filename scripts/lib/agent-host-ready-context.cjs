@@ -26,6 +26,7 @@ function readyContextRevision(taskContext, applicationContext, input = {}) {
   const body = normalize({ schemaVersion: "roost-ready-context-v1", task, application,
     contract: executionPacket.contract, sources: executionPacket.sources, scopeAuthorities: executionPacket.scopeAuthorities,
     roleAuthorities: executionPacket.roleAuthorities,
+    procedureComposition: executionPacket.procedureComposition,
     prompt: input.prompt ?? null, baseBranch: input.baseBranch ?? null }, taskContext.task.id);
   return createHash("sha256").update(JSON.stringify(body)).digest("hex");
 }
@@ -43,13 +44,24 @@ function assertReadyContext(taskContext, applicationContext, execution) {
     throw readyAdmissionError();
   }
   assertRiskAdmission(taskContext, execution);
+  assertProcedureComposition(taskContext,execution);
+}
+
+function assertProcedureComposition(taskContext,execution) {
+ const c=taskContext?.executionPacket?.procedureComposition,pin=execution?.metadata?.readyContextPin;
+ if(c?.algorithm!=="roost-procedure-composition-v1" || c?.status!=="composed" || !/^[a-f0-9]{64}$/.test(c?.seal??"") ||
+  c.seal!==pin?.compositionSeal || c.seal!==taskContext?.readyAdmission?.compositionSeal || c.operation!=="runtime_execute" ||
+  c.applicationId!==execution.applicationId || c.missing?.length!==0 || c.conflicts?.length!==0 ||
+  !Array.isArray(c.steps) || c.steps.length>50 || !Array.isArray(c.gates) || !c.gates.includes("procedure") ||
+  c.expiresAt!==null && (!Number.isFinite(Date.parse(c.expiresAt)) || Date.parse(c.expiresAt)<=Date.now()+5000))throw readyAdmissionError();
 }
 
 function assertRiskAdmission(taskContext, execution, actualCommit) {
+  assertProcedureComposition(taskContext,execution);
   const gate=taskContext?.readyAdmission?.riskAdmission, pin=execution?.metadata?.readyContextPin;
   if (gate?.policy!=="roost-native-risk-admission-v1" || !/^[a-f0-9]{64}$/.test(gate?.seal??"") || gate.seal!==pin?.riskAdmissionSeal ||
       !/^[a-f0-9]{40}$/.test(gate?.commit??"") || gate.commit!==pin?.riskAdmissionCommit ||
       !Number.isFinite(Date.parse(gate?.expiresAt)) || Date.parse(gate.expiresAt)<=Date.now()+5000 || actualCommit!==undefined && actualCommit!==gate.commit) throw readyAdmissionError();
 }
 
-module.exports = { readyContextRevision, readyContextQuery, assertReadyContext, assertRiskAdmission, readyAdmissionError };
+module.exports = { readyContextRevision, readyContextQuery, assertReadyContext, assertRiskAdmission, assertProcedureComposition, readyAdmissionError };

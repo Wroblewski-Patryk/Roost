@@ -1,5 +1,8 @@
 # Native risk admission (RF-SEC-002)
 
+[Versioned procedure composition](versioned-procedure-composition.md) binds the base,
+application extension and risk requirements to the same Ready/execution seal.
+
 `roost-native-risk-admission-v1` adds evidence gates to the existing
 [computed task risk](native-task-risk.md). It admits only the supported native
 task execution, result review and manager correction commands. It does not run

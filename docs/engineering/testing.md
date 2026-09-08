@@ -45,6 +45,13 @@ Preferred local integration test:
 npm run test:api:local
 ```
 
+For a focused API check, set `COMPANYCORE_TEST_NAME_PATTERN` to a Node test-name
+pattern for that invocation. The same disposable database, migration and cleanup
+rules apply. Omit it for the full regression suite; a focused pass is not a full
+suite result. Procedure composition also has schema tests in
+`src/tests/procedure-composition-contract.test.ts` and PL/EN responsive checks in
+`scripts/procedure-composition-ui.test.mjs` (run after the web build).
+
 Migration files must be UTF-8 without BOM. A fresh `prisma migrate deploy`
 test is required because TypeScript build does not prove migration SQL can be
 applied.

@@ -33,6 +33,15 @@ active root version and deprecate the previous one without overwriting runtime
 evidence. Pipeline stages and procedure steps remain child definitions copied
 or replaced as part of the parent activation command.
 
+## Native execution contract composition
+
+The [versioned procedure composition contract](versioned-procedure-composition.md)
+adds owner-published immutable execution contracts to existing Procedure IDs.
+Publishing an execution contract does not activate or edit a workflow definition.
+Its source must already be active; source changes and explicit withdrawal
+invalidate dependent task admission through the existing stop fence. Procedures
+and task readiness expose the same contract history, not a parallel registry.
+
 ## Command Surface
 
 Future workflow definition editing must use this command family:
