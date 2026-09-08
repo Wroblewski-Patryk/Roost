@@ -1412,7 +1412,7 @@ test("explicit task roles enforce identity, provenance and independent admission
 
 test("native review records decisions and manager returns without implementation side effects", async t => {
   let sequence = 0;
-  async function fixture(agentMode = false) {
+  async function fixture(agentMode = false, autoGrants = true) {
     const suffix = `${Date.now()}-${sequence++}`;
     const owner = await registerOwner(`review-${suffix}@example.test`, "Review fixture"), workspaceId = owner.workspace.id;
     const auth = { Authorization: `Bearer ${owner.token}` };
@@ -1446,10 +1446,22 @@ test("native review records decisions and manager returns without implementation
     const pin = (await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness as any;
     const execution = await prisma.agentExecution.create({ data: { workspaceId, taskId: task.id, applicationId: app.id, status: "completed", requestedByType: "user", requestedById: manager.externalId, attempt: 1, startedAt: new Date(Date.now()-1000), completedAt: new Date(), summary: "Parser result", finalResponse: "Changed empty-input handling", changedFiles: ["src/parser.ts"], verification: { command: "npm test -- parser", result: "fixture completed" }, metadata: { executionContract: f.input.contract, readyContextPin: { pinId: pin.pinId, revision: pin.revision } } } });
     const view = async (headers = reviewerAuth) => (await request(`${root}/review`, { headers })).body as any;
-    const rejection = async () => { const s = (await view()).data; return { requestId: randomUUID(), expectedVersion: s.expectedVersion, executionId: execution.id, materialVersion: s.materialVersion, decision: "reject", summary: "Empty input throws", reproduction: ["Run the empty parser fixture"], expected: "A validation message", observed: "An exception is thrown", evidence: [{ kind: "test", reference: "npm test -- parser", result: "Empty input fails" }], correction: { scope: ["Handle empty parser input"], excluded: ["Do not change other parser behavior"], outcome: "Empty input returns a validation message", competencies: ["javascript"] } }; };
+    const grants: Record<string,string> = {};
+    const grant = async (operation = "review_decision", overrides: any = {}) => {
+      const catalog = await request(root+"/capability-grants",{headers:auth}); assert.equal(catalog.status,200,JSON.stringify(catalog.body));
+      const data=(catalog.body as any).data, option=data.options.find((o:any)=>o.operation===operation);
+      const body={requestId:randomUUID(),expectedVersion:data.expectedVersion,credentialId:option?.credentialId,operation,validFrom:new Date().toISOString(),validUntil:new Date(Date.now()+1800000).toISOString(),reason:"Review this exact result",...overrides};
+      const response=await post(root+"/capability-grants",body); return {response,body};
+    };
+    const grantFor = async (operation: string) => {
+      if (!agentMode || !autoGrants) return {};
+      if (!grants[operation]) { const r=await grant(operation);assert.equal(r.response.status,201,JSON.stringify(r.response.body));grants[operation]=(r.response.body as any).data.grant.id; }
+      return {grantId:grants[operation]};
+    };
+    const rejection = async () => { const capability=await grantFor("review_decision"), s = (await view()).data; return {...capability, requestId: randomUUID(), expectedVersion: s.expectedVersion, executionId: execution.id, materialVersion: s.materialVersion, decision: "reject", summary: "Empty input throws", reproduction: ["Run the empty parser fixture"], expected: "A validation message", observed: "An exception is thrown", evidence: [{ kind: "test", reference: "npm test -- parser", result: "Empty input fails" }], correction: { scope: ["Handle empty parser input"], excluded: ["Do not change other parser behavior"], outcome: "Empty input returns a validation message", competencies: ["javascript"] } }; };
     const reject = async () => { const body = await rejection(); const r = await post(`${root}/actions/review`, body, reviewerAuth); assert.equal(r.status, 200, JSON.stringify(r.body)); return body; };
-    const action = async (kind = "return_to_executor") => { const s = (await view(auth)).data; return { requestId: randomUUID(), expectedVersion: s.expectedVersion, reviewId: s.decision.id, action: kind, scope: ["Handle empty parser input"] }; };
-    return { ...f, issue, verifierKey, managerKey, auth, workspaceId, task, app, execution, root, post, view, rejection, reject, action, reviewerAuth, verifier, user, submitRoute };
+    const action = async (kind = "return_to_executor") => { const capability=await grantFor(kind), s = (await view(auth)).data; return {...capability, requestId: randomUUID(), expectedVersion: s.expectedVersion, reviewId: s.decision.id, action: kind, scope: ["Handle empty parser input"] }; };
+    return { ...f, grant, issue, verifierKey, managerKey, auth, workspaceId, task, app, execution, root, post, view, rejection, reject, action, reviewerAuth, verifier, user, submitRoute };
   }
 
   await t.test("agent credential binds exact verifier and manager; decisions audit agent without owner attribution", async () => {
@@ -1479,6 +1491,125 @@ test("native review records decisions and manager returns without implementation
     const log = await prisma.taskReviewAction.findUniqueOrThrow({where:{id:(acted.body as any).data.action.id}});
     assert.equal(log.actorCredentialPrefix,f.managerKey.keyPrefix);
   });
+  await t.test("task grants require explicit human issuance and exact bounded scope", async () => {
+    const f=await fixture(true,false), input=await f.rejection();
+    assert.equal((await f.view()).data.canReview,false);
+    assert.equal((await f.post(f.root+"/actions/review",input,f.reviewerAuth)).status,409);
+    const issued=await f.grant();assert.equal(issued.response.status,201,JSON.stringify(issued.response.body));
+    const g=(issued.response.body as any).data.grant;
+    assert.equal(g.agentId,f.verifier.id);assert.equal(g.applicationId,f.app.id);assert.equal(g.taskId,f.task.id);
+    assert.equal((await f.post(f.root+"/capability-grants",issued.body)).status,200);
+    assert.equal((await f.post(f.root+"/capability-grants",{...issued.body,reason:"Changed mandate"})).status,409);
+    assert.equal((await f.post(f.root+"/capability-grants",issued.body,f.reviewerAuth)).status,403);
+    assert.equal((await request(f.root+"/capability-grants",{headers:f.reviewerAuth})).status,403);
+    const {createAuthToken}=await import("../auth/token");const member={Authorization:`Bearer ${createAuthToken({userId:f.user.id,workspaceId:f.workspaceId})}`};
+    assert.equal((await f.post(f.root+"/capability-grants",issued.body,member)).status,403);
+    for(const extra of [{operation:"*"},{taskId:"*"},{agentId:f.manager.id},{credentialId:"*"},{applicationId:f.app.id},{reason:f.verifierKey.key}]) assert.equal((await f.post(f.root+"/capability-grants",{...issued.body,requestId:randomUUID(),...extra})).status,400);
+    assert.equal((await f.grant("return_to_executor")).response.status,400);
+    assert.equal((await f.grant("review_decision",{credentialId:f.managerKey.id})).response.status,409);
+    assert.equal((await f.grant("review_decision",{validUntil:new Date(Date.now()+7200000).toISOString()})).response.status,409);
+    const foreign=await fixture(true,false), other=await foreign.grant();
+    assert.equal((await f.post(f.root+"/actions/review",{...input,grantId:(other.response.body as any).data.grant.id},f.reviewerAuth)).status,409);
+    assert.equal((await foreign.post(foreign.root+"/capability-grants/"+g.id+"/actions/revoke",{requestId:randomUUID(),reason:"Not in this workspace"})).status,404);
+    assert.equal(await prisma.taskCapabilityUse.count({where:{workspaceId:f.workspaceId}}),0);
+    assert.ok(!JSON.stringify(issued.response.body).includes(f.verifierKey.key));
+  });
+  await t.test("task grants expire, wait for activation and revoke without changing history", async () => {
+    for(const mode of ["pending","expired","revoked"]){
+      const f=await fixture(true,false), input=await f.rejection();
+      const r=await f.grant("review_decision",mode==="pending"?{validFrom:new Date(Date.now()+60000).toISOString()}:mode==="expired"?{validUntil:new Date(Date.now()+600).toISOString()}:{});
+      assert.equal(r.response.status,201,JSON.stringify(r.response.body));const g=(r.response.body as any).data.grant;
+      if(mode==="expired")await new Promise(resolve=>setTimeout(resolve,700));
+      if(mode==="revoked"){
+        const body={requestId:randomUUID(),reason:"Withdraw authorization"}, route=f.root+"/capability-grants/"+g.id+"/actions/revoke";
+        assert.equal((await f.post(route,body)).status,200);assert.equal((await f.post(route,body)).status,200);
+        assert.equal((await f.post(route,{...body,reason:"Different request"})).status,409);
+        const rev=await prisma.taskCapabilityRevocation.findUniqueOrThrow({where:{grantId:g.id}});
+        await assert.rejects(prisma.taskCapabilityRevocation.delete({where:{id:rev.id}}),/capability_history_immutable/);
+      }
+      const denied=await f.post(f.root+"/actions/review",{...input,grantId:g.id},f.reviewerAuth);assert.equal(denied.status,409,JSON.stringify(denied.body));
+      const catalog=(await request(f.root+"/capability-grants",{headers:f.auth})).body as any;
+      assert.equal(catalog.data.grants[0].status,mode);
+      assert.equal(await prisma.taskReviewDecision.count({where:{taskId:f.task.id}}),0);
+      await assert.rejects(prisma.taskCapabilityGrant.update({where:{id:g.id},data:{validUntil:new Date(Date.now()+300000)}}),/capability_history_immutable/);
+    }
+  });
+  await t.test("approval uses a grant once and activation, revocation races and stale replay remain bounded", async () => {
+    const f=await fixture(true,false), reject=await f.rejection();
+    const grant=await f.grant("review_decision",{validFrom:new Date(Date.now()+500).toISOString()});assert.equal(grant.response.status,201);
+    const g=(grant.response.body as any).data.grant;
+    const {reproduction,expected,observed,correction,...evidence}=reject, body={...evidence,decision:"approve",grantId:g.id};
+    assert.equal((await f.post(f.root+"/actions/review",body,f.reviewerAuth)).status,409);
+    await new Promise(resolve=>setTimeout(resolve,600));
+    assert.equal((await f.post(f.root+"/actions/review",body,f.reviewerAuth)).status,200);
+    assert.equal((await f.post(f.root+"/actions/review",body,f.reviewerAuth)).status,200);
+    await prisma.task.update({where:{id:f.task.id},data:{description:"Later task context"}});
+    assert.equal((await f.post(f.root+"/actions/review",body,f.reviewerAuth)).status,409);
+    assert.equal(await prisma.taskCapabilityUse.count({where:{workspaceId:f.workspaceId}}),1);
+    const race=await fixture(true), input=await race.rejection(), revoke={requestId:randomUUID(),reason:"Stop pending decision"}, route=race.root+"/capability-grants/"+input.grantId+"/actions/revoke";
+    const results=await Promise.all([race.post(race.root+"/actions/review",input,race.reviewerAuth),race.post(route,revoke)]);
+    assert.ok(results.every(r=>[200,409].includes(r.status)));assert.equal((await race.post(route,revoke)).status,200);
+    assert.equal((await race.post(race.root+"/actions/review",input,race.reviewerAuth)).status,409);
+    assert.equal(await prisma.taskCapabilityUse.count({where:{workspaceId:race.workspaceId}}),await prisma.taskReviewDecision.count({where:{taskId:race.task.id}}));
+  });
+  await t.test("context changes invalidate grants even when a task is reopened", async () => {
+    for(const change of ["done","blocked","archived","scope","application","link","material","issuer","credential","role"]){
+      const f=await fixture(true), input=await f.rejection();
+      if(["done","blocked","archived"].includes(change)){
+        await prisma.task.update({where:{id:f.task.id},data:{status:change as any}});
+        assert.equal((await f.post(f.root+"/actions/review",input,f.reviewerAuth)).status,409);
+        await prisma.task.update({where:{id:f.task.id},data:{status:"todo"}});
+      } else if(change==="scope")await prisma.task.update({where:{id:f.task.id},data:{description:"Revised correction boundary"}});
+      else if(change==="application")await prisma.application.update({where:{id:f.app.id},data:{description:"Revised application context"}});
+      else if(change==="link")await prisma.applicationProject.deleteMany({where:{applicationId:f.app.id}});
+      else if(change==="material")await prisma.agentExecution.update({where:{id:f.execution.id},data:{summary:"Changed material"}});
+      else if(change==="issuer")await prisma.workspaceMembership.update({where:{workspaceId_userId:{workspaceId:f.workspaceId,userId:f.input.contract.taskRoles.requester.id}},data:{role:"member"}});
+      else if(change==="credential")await f.post("/v1/api-keys/"+f.verifierKey.id+"/actions/rotate",{requestId:randomUUID(),expectedVersion:1,expiresAt:new Date(Date.now()+86400000).toISOString()});
+      else await prisma.workforceEntity.update({where:{id:f.verifier.id},data:{role:"Changed verification role"}});
+      const response=await f.post(f.root+"/actions/review",input,f.reviewerAuth);assert.ok([403,409].includes(response.status),change+JSON.stringify(response.body));
+      assert.equal(await prisma.taskCapabilityUse.count({where:{workspaceId:f.workspaceId}}),0);
+      assert.equal(await prisma.taskReviewDecision.count({where:{taskId:f.task.id}}),0);
+    }
+  });
+  await t.test("use receipts are atomic, immutable and required by direct database writes", async () => {
+    const f=await fixture(true), input=await f.rejection(), view=(await f.view()).data;
+    const direct:any={workspaceId:f.workspaceId,taskId:f.task.id,executionId:f.execution.id,requestId:randomUUID(),requestHash:"a".repeat(64),materialVersion:view.materialVersion,actorAgentId:f.verifier.id,actorCredentialId:f.verifierKey.id,actorCredentialPrefix:f.verifierKey.keyPrefix,verifierId:f.verifier.id,managerId:f.manager.id,decision:"reject",evidence:input,snapshot:{result:view.result}};
+    await assert.rejects(prisma.taskReviewDecision.create({data:direct}),/capability_grant_required/);
+    await assert.rejects(prisma.taskReviewDecision.create({data:{...direct,capabilityGrantId:input.grantId}}),/capability_receipt_required/);
+    const {readyTransaction}=await import("../modules/agent-runtime/task-execution-readiness"),{recordTaskReview}=await import("../modules/agent-runtime/task-review");
+    const auth={workspaceId:f.workspaceId,authType:"api_key" as const,agentId:f.verifier.id,apiKeyId:f.verifierKey.id,credentialVersion:1};
+    await assert.rejects(readyTransaction(async tx=>{const result=await recordTaskReview(tx,f.workspaceId,f.task.id,auth,input);assert.ok(!("error" in result));throw new Error("fixture rollback");}),/fixture rollback/);
+    assert.equal(await prisma.taskReviewDecision.count({where:{taskId:f.task.id}}),0);assert.equal(await prisma.taskCapabilityUse.count({where:{workspaceId:f.workspaceId}}),0);
+    const {reviewTransaction}=await import("../modules/agent-runtime/task-capability-admission");
+    const conflict=await reviewTransaction(async tx=>{const result=await recordTaskReview(tx,f.workspaceId,f.task.id,auth,input);assert.ok(!("error" in result));await tx.task.update({where:{id:f.task.id},data:{status:"done"}});});assert.deepEqual(conflict,{error:"capability_context_changed"});
+    assert.equal(await prisma.taskCapabilityUse.count({where:{workspaceId:f.workspaceId}}),0);assert.equal(await prisma.taskReviewDecision.count({where:{taskId:f.task.id}}),0);
+    assert.notEqual((await prisma.task.findUniqueOrThrow({where:{id:f.task.id}})).status,"done");
+    const results=await Promise.all([f.post(f.root+"/actions/review",input,f.reviewerAuth),f.post(f.root+"/actions/review",input,f.reviewerAuth)]);
+    assert.ok(results.some(r=>r.status===200));assert.ok(results.every(r=>[200,409].includes(r.status)));
+    assert.equal((await f.post(f.root+"/actions/review",input,f.reviewerAuth)).status,200);
+    assert.equal(await prisma.taskCapabilityUse.count({where:{workspaceId:f.workspaceId}}),1);
+    const used=await prisma.taskCapabilityUse.findFirstOrThrow({where:{workspaceId:f.workspaceId}});
+    await assert.rejects(prisma.taskCapabilityUse.delete({where:{id:used.id}}),/capability_history_immutable/);
+    assert.equal((await f.post(f.root+"/actions/review",{...input,requestId:randomUUID()},f.reviewerAuth)).status,409);
+    await f.post(f.root+"/capability-grants/"+input.grantId+"/actions/revoke",{requestId:randomUUID(),reason:"End replay authority"});
+    assert.equal((await f.post(f.root+"/actions/review",input,f.reviewerAuth)).status,409);
+  });
+  await t.test("manager operation grants cannot substitute and specialist creation consumes one receipt", async () => {
+    const f=await fixture(true);await f.reject();
+    const returnBody=await f.action(), createBody=await f.action("create_specialist_task");
+    const specialist=await prisma.workforceEntity.create({data:{workspaceId:f.workspaceId,name:"Grant specialist",slug:"grant-specialist",type:"agent",role:"developer",skillIndex:["javascript"]}});
+    const body={...createBody,specialist:{id:specialist.id,revision:specialist.updatedAt.toISOString()}}, auth={"X-API-Key":f.managerKey.key};
+    assert.equal((await f.post(f.root+"/actions/review-return",{...body,grantId:returnBody.grantId},auth)).status,409);
+    const results=await Promise.all([f.post(f.root+"/actions/review-return",body,auth),f.post(f.root+"/actions/review-return",body,auth)]);
+    assert.ok(results.some(r=>r.status===200));assert.ok(results.every(r=>[200,409].includes(r.status)));
+    const accepted=results.find(r=>r.status===200)!; const replay=await f.post(f.root+"/actions/review-return",body,auth);assert.equal(replay.status,200,JSON.stringify(replay.body));
+    assert.equal((accepted.body as any).data.action.childTaskId,(replay.body as any).data.action.childTaskId);
+    assert.equal(await prisma.taskCapabilityUse.count({where:{workspaceId:f.workspaceId}}),2);
+    assert.equal(await prisma.taskReviewAction.count({where:{taskId:f.task.id}}),1);
+    const changed={...returnBody,requestId:randomUUID(),expectedVersion:(await f.view()).data.expectedVersion};
+    assert.equal((await f.post(f.root+"/actions/review-return",changed,auth)).status,409);
+  });
+
   await t.test("credential create retry, rotation, revoke and immutable audit survive restart without revealing old secrets", async () => {
     const f = await fixture(true), key=f.verifierKey, rejection=await f.rejection();
     const replay=await f.post("/v1/api-keys/agent-credentials",key.body);assert.equal(replay.status,200);assert.equal((replay.body as any).data.key,null);
@@ -1556,7 +1687,7 @@ test("native review records decisions and manager returns without implementation
 
   await t.test("revocation races fail closed and the database rejects a different credential principal", async () => {
     const f=await fixture(true), input=await f.rejection(), view=(await f.view()).data;
-    await assert.rejects(prisma.taskReviewDecision.create({data:{workspaceId:f.workspaceId,taskId:f.task.id,executionId:f.execution.id,requestId:randomUUID(),requestHash:"a".repeat(64),materialVersion:view.materialVersion,actorAgentId:f.verifier.id,actorCredentialId:f.managerKey.id,actorCredentialPrefix:f.managerKey.keyPrefix,verifierId:f.verifier.id,managerId:f.manager.id,decision:"reject",evidence:input,snapshot:{result:view.result}}}),/task_review_role_required/);
+    await assert.rejects(prisma.taskReviewDecision.create({data:{workspaceId:f.workspaceId,taskId:f.task.id,executionId:f.execution.id,requestId:randomUUID(),requestHash:"a".repeat(64),materialVersion:view.materialVersion,actorAgentId:f.verifier.id,actorCredentialId:f.managerKey.id,actorCredentialPrefix:f.managerKey.keyPrefix,verifierId:f.verifier.id,managerId:f.manager.id,decision:"reject",evidence:input,snapshot:{result:view.result}}}),/task_review_role_required|capability_grant_required/);
     const results=await Promise.all([f.post(f.root+"/actions/review",input,f.reviewerAuth),f.post("/v1/api-keys/"+f.verifierKey.id+"/actions/revoke",{requestId:randomUUID(),expectedVersion:f.verifierKey.version})]);
     assert.ok([200,403,409].includes(results[0]!.status));assert.ok([200,409].includes(results[1]!.status));
     if(results[1]!.status===409)assert.equal((await f.post("/v1/api-keys/"+f.verifierKey.id+"/actions/revoke",{requestId:randomUUID(),expectedVersion:f.verifierKey.version})).status,200);

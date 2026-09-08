@@ -17,7 +17,9 @@ returns workspace-scoped runtime readiness in register/heartbeat responses.
 Both host listings and readiness project an expired heartbeat as offline after
 60 seconds. See the [Windows observer runbook](../operations/local-codex-agent-host.md#observer-login-autostart).
 
-Native review commands support [per-agent credential bindings](agent-credential-principal.md).
+Native review commands support [per-agent credential bindings](agent-credential-principal.md)
+and require [exact task capability grants](task-capability-grants.md) for agent writes.
+Grants authorize only the three native review/manager operations and never activate execution.
 These keys do not authorize the host protocol or activate executions. The host
 credential below retains its separate integration role.
 

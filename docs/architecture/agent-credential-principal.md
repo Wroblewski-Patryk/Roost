@@ -23,7 +23,8 @@ closed. The review transaction rechecks credential identity, revision, expiry,
 active worker and scopes under the existing source fence and key row lock. It
 then resolves the exact accepted role, current profile revision, mandate,
 competencies and independent authorship using RF-CTX-010. The key is identity,
-not sufficient task authority. Humans retain the existing current membership and
+not sufficient task authority. Native agent writes also require the exact
+[RF-SEC-003 task capability grant](task-capability-grants.md). Humans retain the existing current membership and
 exact linked role checks. Workspace ownership alone still cannot review.
 
 ## Lifecycle and retry
@@ -110,7 +111,7 @@ rotation, revocation, secret delivery/replay, keyboard closure and responsive UI
 
 RF-GOV-014 remains partial for the full agent company: this supplies a governed
 principal for native review commands, not per-agent migration of every legacy
-integration/host command or a short-lived operation capability broker. No agents
+integration/host command or a general capability broker beyond the native task review grants. No agents
 are provisioned or activated on deployment. Provider calls, automatic reviewers,
 hierarchical routing, HR/certification, merge/push/release and other applications
 remain outside this change. Production execution remains disabled; host observe.

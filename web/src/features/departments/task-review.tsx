@@ -1,3 +1,5 @@
+import { TaskCapabilityModal } from "./task-capability";
+import { capabilityMessages } from "./task-capability-messages";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { api } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
@@ -12,6 +14,7 @@ const lines = (value: string) => value.split("\n").map(v=>v.trim()).filter(Boole
 const initial = { summary: "", reference: "", testResult: "", reproduction: "", expected: "", observed: "", scope: "", excluded: "", outcome: "", competencies: "" };
 export function TaskReviewModal({ taskId, onClose, onSaved }: { taskId: string; onClose: () => void; onSaved?: () => void }) {
   const { locale } = useLanguage(), c = reviewMessages[locale === "pl" ? "pl" : "en"];
+  const [showGrants, setShowGrants] = useState(false);
   const credentialLabel = locale === "pl" ? "Poświadczenie agenta" : "Agent credential";
   const [data, setData] = useState<any>(null), [busy, setBusy] = useState(true), [error, setError] = useState(false), [saved, setSaved] = useState(false);
   const [draft, setDraft] = useState(initial), [decision, setDecision] = useState("reject"), [disposition, setDisposition] = useState("return_to_executor"), [specialist, setSpecialist] = useState("");
@@ -40,12 +43,13 @@ export function TaskReviewModal({ taskId, onClose, onSaved }: { taskId: string; 
     } catch { if(mounted.current){setError(true);requestAnimationFrame(()=>notice.current?.focus());} } finally {if(mounted.current)setBusy(false);}
   }
   const field = (key: keyof typeof initial, multiline = false) => <CcField key={key} label={c[key]} required>{({id,describedBy})=>multiline ? <textarea id={id} aria-describedby={describedBy} className="textarea textarea-bordered min-h-24 w-full" required minLength={3} maxLength={2000} value={draft[key]} onChange={e=>edit(key,e.target.value)}/> : <input id={id} aria-describedby={describedBy} className="input input-bordered w-full" required minLength={3} maxLength={2000} value={draft[key]} onChange={e=>edit(key,e.target.value)}/>}</CcField>;
+  if(showGrants)return <TaskCapabilityModal taskId={taskId} onClose={()=>{setShowGrants(false);void load();}}/>;
   if(leave)return <CcRecordEditorModal titleId="review-discard" title={c.discard} eyebrow={c.title} closeLabel={c.stay} onClose={()=>setLeave(false)} onSubmit={e=>{e.preventDefault();onClose();}} actions={<><CcButton variant="ghost" onClick={()=>setLeave(false)}>{c.stay}</CcButton><CcButton type="submit" variant="warning">{c.leave}</CcButton></>}>{c.boundary}</CcRecordEditorModal>;
   return <CcRecordEditorModal titleId="review-title" title={data?.task.title ?? c.title} eyebrow={c.title} description={c.boundary} closeLabel={c.close} onClose={close} onSubmit={submit} maxWidthClassName="max-w-5xl" actions={<><CcButton variant="ghost" disabled={busy} onClick={close}>{c.close}</CcButton>{data?.canReview || data?.canManage ? <CcButton variant="primary" type="submit" disabled={busy || data.canManage && (!scope.length || disposition === "create_specialist_task" && !specialist)}>{data.canReview ? c.recordReview : c.recordAction}</CcButton> : null}</>}>
     <div className="grid min-w-0 gap-5">
       <div ref={notice} tabIndex={-1}>{error ? <CcNotice tone="error" title={c.error} live/> : saved ? <CcNotice tone="success" title={c.saved} live/> : null}</div>
       {busy && !data ? <CcNotice tone="loading" title={c.loading}/> : null}
-      <div className="flex flex-wrap items-center justify-between gap-3">{data?.reason ? <p className="text-sm" role="status">{c[data.reason as keyof typeof c] ?? c.roles_need_context}</p> : <span/>}<CcButton size="sm" variant="outline" disabled={busy} onClick={()=>void load()}>{c.refresh}</CcButton></div>
+      <div className="flex flex-wrap items-center justify-between gap-3">{data?.reason ? <p className="text-sm" role="status">{c[data.reason as keyof typeof c] ?? c.roles_need_context}</p> : <span/>}{data?.canManageGrants ? <CcButton size="sm" variant="outline" disabled={busy || dirty} onClick={()=>setShowGrants(true)}>{capabilityMessages[locale === "pl" ? "pl" : "en"].title}</CcButton> : null}<CcButton size="sm" variant="outline" disabled={busy} onClick={()=>void load()}>{c.refresh}</CcButton></div>
       {data?.result ? <section className="grid min-w-0 gap-3 border-b border-base-300 pb-5"><h3 className="font-bold">{c.material}</h3><p>{data.result.summary}</p>
         <dl className="grid gap-3 text-sm sm:grid-cols-2"><div><dt className="text-company-muted">{c.version}</dt><dd className="break-all font-mono" title={data.materialVersion}>{data.materialVersion?.slice(0,16)}</dd></div><div><dt className="text-company-muted">{c.attempt}</dt><dd>{data.result.attempt} · {new Date(data.result.completedAt).toLocaleString(locale)}</dd></div><div><dt className="text-company-muted">{c.verifier}</dt><dd>{data.labels?.verifier ?? "—"}</dd></div><div><dt className="text-company-muted">{c.manager}</dt><dd>{data.labels?.manager ?? "—"}</dd></div></dl>
         <details><summary className="cursor-pointer py-2 font-semibold">{c.details}</summary><pre className="whitespace-pre-wrap break-words text-sm">{data.result.finalResponse}{"\n"}{JSON.stringify(data.result.verification,null,2)}</pre><ul className="text-sm">{(data.result.changedFiles??[]).map((file:string)=><li className="break-all" key={file}>{file}</li>)}</ul></details></section> : null}

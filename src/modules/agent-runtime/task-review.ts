@@ -1,3 +1,4 @@
+import { admitCapability, recordCapabilityUse, agentGrantAccess } from "./task-capability-admission";
 import { resolveReviewPrincipal, type ReviewActor } from "../../auth/agent-principal";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
@@ -10,10 +11,10 @@ import { correctionDraft, object, reviewActionSchema, reviewDecisionSchema, revi
 const loadESM = new Function("specifier", "return import(specifier)") as (specifier: string) => Promise<any>;
 const roleValidator = loadESM(pathToFileURL(path.resolve(__dirname, "../../../scripts/lib/agent-host-task-roles.mjs")).href);
 type Db = Prisma.TransactionClient;
-const decisionView = (d: any) => d ? { id: d.id, executionId: d.executionId, materialVersion: d.materialVersion, decision: d.decision, evidence: d.evidence, verifierId: d.verifierId, verifierLabel: object(d.snapshot).labels?.verifier, actorUserId: d.actorUserId, actorAgentId: d.actorAgentId, actorCredentialId: d.actorCredentialId, actorCredentialPrefix: d.actorCredentialPrefix, createdAt: d.createdAt, action: d.action ? actionView(d.action) : null } : null;
-const actionView = (a: any) => ({ id: a.id, action: a.action, actorUserId: a.actorUserId, actorAgentId: a.actorAgentId, actorCredentialId: a.actorCredentialId, actorCredentialPrefix: a.actorCredentialPrefix, managerId: a.managerId, managerLabel: object(a.snapshot).managerLabel, childTaskId: a.childTaskId, correction: a.correction, createdAt: a.createdAt });
+const decisionView = (d: any) => d ? { id: d.id, executionId: d.executionId, materialVersion: d.materialVersion, decision: d.decision, evidence: d.evidence, verifierId: d.verifierId, verifierLabel: object(d.snapshot).labels?.verifier, actorUserId: d.actorUserId, actorAgentId: d.actorAgentId, actorCredentialId: d.actorCredentialId, actorCredentialPrefix: d.actorCredentialPrefix, capabilityGrantId: d.capabilityGrantId, createdAt: d.createdAt, action: d.action ? actionView(d.action) : null } : null;
+const actionView = (a: any) => ({ id: a.id, action: a.action, actorUserId: a.actorUserId, actorAgentId: a.actorAgentId, actorCredentialId: a.actorCredentialId, actorCredentialPrefix: a.actorCredentialPrefix, capabilityGrantId: a.capabilityGrantId, managerId: a.managerId, managerLabel: object(a.snapshot).managerLabel, childTaskId: a.childTaskId, correction: a.correction, createdAt: a.createdAt });
 
-async function state(db: Db, workspaceId: string, taskId: string, actor: ReviewActor) {
+export async function reviewState(db: Db, workspaceId: string, taskId: string, actor: ReviewActor) {
   const task = await lockReadyTask(db, workspaceId, taskId);
   if (!task) return { error: "task_not_found" } as const;
   const execution = await db.agentExecution.findFirst({ where: { workspaceId, taskId }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] });
@@ -40,20 +41,24 @@ async function state(db: Db, workspaceId: string, taskId: string, actor: ReviewA
 }
 
 export async function taskReviewView(db: Db, workspaceId: string, taskId: string, actor: ReviewActor, cursor?: string) {
-  const s = await state(db, workspaceId, taskId, actor);
+  const s = await reviewState(db, workspaceId, taskId, actor);
   if ("error" in s) return s;
   if (cursor && !await db.taskReviewDecision.findFirst({ where: { id: cursor, workspaceId, taskId } })) return { error: "task_review_cursor_invalid" };
   const history = await db.taskReviewDecision.findMany({ where: { workspaceId, taskId }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 51, ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}), include: { action: true } });
   const specialists = await db.workforceEntity.findMany({ where: { workspaceId, type: "agent", status: "active", source: { not: "user" } }, select: { id: true, name: true, role: true, skillIndex: true, updatedAt: true }, orderBy: { name: "asc" }, take: 501 });
+  const grantAccess = await agentGrantAccess(db, workspaceId, taskId, s.principal);
+  const canReview = s.canReview && (!grantAccess || grantAccess.review_decision.status === "active");
+  const canManage = s.canManage && (!grantAccess || grantAccess.return_to_executor.status === "active" || grantAccess.create_specialist_task.status === "active");
+  const canManageGrants = s.principal?.kind === "user" && Boolean(await db.workspaceMembership.findFirst({ where: { workspaceId, userId: s.principal.id, role: { in: ["owner", "admin"] } } }));
   return { task: { id: taskId, title: s.task.title }, expectedVersion: s.expectedVersion, materialVersion: s.materialVersion,
-    result: s.result, labels: s.labels, decision: decisionView(s.decision), canReview: Boolean(s.canReview), canManage: Boolean(s.canManage),
-    reason: !s.execution ? "no_result" : !s.current ? "stale_result" : s.roleIssues.length ? "roles_need_context" : s.canReview || s.canManage ? null : s.decision ? s.decision.action ? "action_recorded" : s.decision.decision === "approve" ? "approved" : "manager_required" : "verifier_required",
+    result: s.result, labels: s.labels, decision: decisionView(s.decision), canReview: Boolean(canReview), canManage: Boolean(canManage), grantAccess, canManageGrants,
+    reason: grantAccess && (s.canReview && !canReview || s.canManage && !canManage) ? "capability_grant_required" : !s.execution ? "no_result" : !s.current ? "stale_result" : s.roleIssues.length ? "roles_need_context" : s.canReview || s.canManage ? null : s.decision ? s.decision.action ? "action_recorded" : s.decision.decision === "approve" ? "approved" : "manager_required" : "verifier_required",
     history: history.slice(0, 50).map(decisionView), nextCursor: history.length > 50 ? history[49]!.id : null,
     specialists: specialists.slice(0, 500).map(w => ({ id: w.id, label: w.name, revision: w.updatedAt.toISOString(), competencies: w.skillIndex, role: w.role })), specialistsTruncated: specialists.length > 500 };
 }
 
 export async function recordTaskReview(db: Db, workspaceId: string, taskId: string, actor: ReviewActor, body: unknown) {
-  const input = reviewDecisionSchema.parse(body), s = await state(db, workspaceId, taskId, actor);
+  const input = reviewDecisionSchema.parse(body), s = await reviewState(db, workspaceId, taskId, actor);
   if ("error" in s) return s;
   const principal = s.principal;
   const actorUserId = principal?.kind === "user" ? principal.id : null;
@@ -64,20 +69,23 @@ export async function recordTaskReview(db: Db, workspaceId: string, taskId: stri
   const prior = await db.taskReviewDecision.findUnique({ where: { workspaceId_requestId: { workspaceId, requestId: input.requestId } }, include: { action: true } });
   if (principal && !prior && !s.current) return { error: "task_review_stale" };
   if (!principal || !s.roleMatches(s.authorities.verifier) || s.roleIssues.length) return { error: "task_review_forbidden" };
+  const capability = await admitCapability(db, workspaceId, taskId, principal, "review_decision", input.grantId, prior);
+  if ("error" in capability) return capability;
   if (prior) return prior.requestHash === requestHash ? { decision: decisionView(prior), replayed: true } : { error: "task_review_key_conflict" };
   if (!s.current || input.executionId !== s.execution?.id || input.materialVersion !== s.materialVersion || input.expectedVersion !== s.expectedVersion) return { error: "task_review_stale" };
   if (!s.canReview) return { error: "task_review_already_decided" };
-  const { requestId, expectedVersion: _version, executionId, materialVersion, decision, ...evidence } = input;
-  const saved = await db.taskReviewDecision.create({ data: { workspaceId, taskId, executionId, requestId, requestHash, materialVersion, ...actorEvidence,
+  const { grantId: _grantId, requestId, expectedVersion: _version, executionId, materialVersion, decision, ...evidence } = input;
+  const saved = await db.taskReviewDecision.create({ data: { workspaceId, taskId, executionId, requestId, requestHash, materialVersion, ...actorEvidence, capabilityGrantId: capability.grant?.id,
     verifierId: s.contract.taskRoles.verifier.id, managerId: s.contract.taskRoles.accountableManager.id, decision, evidence: wire(evidence), snapshot: wire({ result: s.result, authorities: s.authorities, labels: s.labels, reviewedVersion: s.expectedVersion }) } });
   // Review changes admission only; it never edits assignment, task branch or files.
   if (decision === "reject") await db.task.update({ where: { id: taskId }, data: { executionReadiness: { ...object(s.task.executionReadiness), status: "needs_revalidation", reason: "review_rejected" } } });
+  await recordCapabilityUse(db, capability.grant, requestId, "decision", saved.id);
   await db.event.create({ data: { workspaceId, taskId, actorType: principal.kind, actorId: principal.id, type: "task_review_decided", source: "roost", resourceType: "task_review", resourceId: saved.id, payload: { reviewId: saved.id, executionId, materialVersion, decision, ...actorEvidence } } });
   return { decision: decisionView(saved), replayed: false };
 }
 
 export async function actOnTaskReview(db: Db, workspaceId: string, taskId: string, actor: ReviewActor, body: unknown) {
-  const input = reviewActionSchema.parse(body), s = await state(db, workspaceId, taskId, actor);
+  const input = reviewActionSchema.parse(body), s = await reviewState(db, workspaceId, taskId, actor);
   if ("error" in s) return s;
   const principal = s.principal;
   const actorUserId = principal?.kind === "user" ? principal.id : null;
@@ -88,6 +96,8 @@ export async function actOnTaskReview(db: Db, workspaceId: string, taskId: strin
   const prior = await db.taskReviewAction.findUnique({ where: { workspaceId_requestId: { workspaceId, requestId: input.requestId } } });
   const manager = s.authorities.accountableManager;
   if (!principal || !s.roleMatches(manager) || s.roleIssues.length) return { error: "task_review_forbidden" };
+  const capability = await admitCapability(db, workspaceId, taskId, principal, input.action, input.grantId, prior);
+  if ("error" in capability) return capability;
   if (prior) return prior.requestHash === requestHash ? { action: actionView(prior), replayed: true } : { error: "task_review_key_conflict" };
   if (!s.current || s.expectedVersion !== input.expectedVersion || s.decision?.id !== input.reviewId) return { error: "task_review_stale" };
   if (!s.canManage) return { error: "task_review_manager_action_required" };
@@ -99,15 +109,15 @@ export async function actOnTaskReview(db: Db, workspaceId: string, taskId: strin
   const childTaskId = input.action === "create_specialist_task" ? randomUUID() : null;
   const targetId = childTaskId ?? taskId, draft = correctionDraft(s.contract, targetId, executor, correction);
   const readiness = { status: "draft", reason: "review_correction", applicationId: s.result.applicationId, contract: draft };
-  let dependencyId: string | null = null;
+  const dependencyId = childTaskId ? randomUUID() : null;
+  const action = await db.taskReviewAction.create({ data: { workspaceId, taskId, reviewId: input.reviewId, requestId: input.requestId, requestHash, ...actorEvidence, capabilityGrantId: capability.grant?.id, managerId: manager!.id, action: input.action, childTaskId, dependencyId, correction,
+    snapshot: wire({ reviewedVersion: s.expectedVersion, manager, managerLabel: s.labels.manager, executor: { id: executor.id, revision: executor.updatedAt.toISOString() }, contract: draft }) } });
   if (childTaskId) {
     await db.task.create({ data: { id: childTaskId, workspaceId, projectId: s.task.projectId, goalId: s.task.goalId, title: correction.outcome, description: correction.scope.join("\n"), assignedWorkforceEntityId: executor.id, source: "roost", executionReadiness: readiness } });
-    const dependency = await db.dependency.create({ data: { workspaceId, dependencyType: "review_correction", fromEntityType: "task", fromEntityId: taskId, toEntityType: "task", toEntityId: childTaskId, metadata: { reviewId: input.reviewId } } });
-    dependencyId = dependency.id;
+    await db.dependency.create({ data: { id: dependencyId!, workspaceId, dependencyType: "review_correction", fromEntityType: "task", fromEntityId: taskId, toEntityType: "task", toEntityId: childTaskId, metadata: { reviewId: input.reviewId } } });
   }
-  const action = await db.taskReviewAction.create({ data: { workspaceId, taskId, reviewId: input.reviewId, requestId: input.requestId, requestHash, ...actorEvidence, managerId: manager!.id, action: input.action, childTaskId, dependencyId, correction,
-    snapshot: wire({ reviewedVersion: s.expectedVersion, manager, managerLabel: s.labels.manager, executor: { id: executor.id, revision: executor.updatedAt.toISOString() }, contract: draft }) } });
   await db.task.update({ where: { id: taskId }, data: childTaskId ? { executionReadiness: { ...object(s.task.executionReadiness), status: "needs_decision", reason: "review_specialist_pending" } } : { executionReadiness: { ...object(s.task.executionReadiness), ...readiness } } });
+  await recordCapabilityUse(db, capability.grant, input.requestId, "action", action.id);
   await db.event.create({ data: { workspaceId, taskId, actorType: principal.kind, actorId: principal.id, type: "task_review_manager_action", source: "roost", resourceType: "task_review_action", resourceId: action.id, payload: { actionId: action.id, reviewId: input.reviewId, action: input.action, ...actorEvidence, childTaskId, dependencyId } } });
   return { action: actionView(action), replayed: false };
 }

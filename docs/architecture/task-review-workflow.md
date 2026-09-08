@@ -5,6 +5,11 @@ AgentExecution. It does not execute a reviewer, edit files or grant release
 authority. PostgreSQL remains the source of truth; human clients use the scoped
 runtime API and the existing Operations workbench.
 
+Agent writes additionally require a current, exact single-use
+[task capability grant](task-capability-grants.md). `grantId` is mandatory for an
+agent decision or manager action and must match that operation; it is omitted for
+human commands. Current grant status and IDs are discoverable in the review view.
+
 ## Material and authority
 
 The current material is the newest execution by creation time and ID, which must

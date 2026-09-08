@@ -1894,6 +1894,7 @@ model AgentHost {
 }
 
 model AgentExecution {
+  capabilityGrants TaskCapabilityGrant[]
   reviewDecision    TaskReviewDecision?
   id                String                @id @default(uuid()) @db.Uuid
   workspaceId       String                @map("workspace_id") @db.Uuid
@@ -1941,6 +1942,10 @@ model AgentExecution {
 }
 
 model TaskReviewDecision {
+  capabilityGrantId String? @unique @map("capability_grant_id") @db.Uuid
+  capabilityGrant TaskCapabilityGrant? @relation(fields: [capabilityGrantId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  capabilityUse TaskCapabilityUse?
+
   id              String @id @default(uuid()) @db.Uuid
   workspaceId     String @map("workspace_id") @db.Uuid
   taskId          String @map("task_id") @db.Uuid
@@ -1968,6 +1973,10 @@ model TaskReviewDecision {
 }
 
 model TaskReviewAction {
+  capabilityGrantId String? @unique @map("capability_grant_id") @db.Uuid
+  capabilityGrant TaskCapabilityGrant? @relation(fields: [capabilityGrantId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  capabilityUse TaskCapabilityUse?
+
   id              String @id @default(uuid()) @db.Uuid
   workspaceId     String @map("workspace_id") @db.Uuid
   taskId          String @map("task_id") @db.Uuid
@@ -2152,6 +2161,7 @@ model Project {
 }
 
 model Application {
+  capabilityGrants TaskCapabilityGrant[]
   id               String                             @id @default(uuid()) @db.Uuid
   workspaceId      String                             @map("workspace_id") @db.Uuid
   workspace        Workspace                          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -2717,6 +2727,7 @@ model TaskList {
 }
 
 model Task {
+  capabilityGrants TaskCapabilityGrant[]
   reviewDecisions           TaskReviewDecision[]
   reviewActions             TaskReviewAction[] @relation("ReviewParent")
   specialistReviewActions   TaskReviewAction[] @relation("ReviewChild")
@@ -3038,6 +3049,7 @@ model Event {
 }
 
 model ApiKey {
+  capabilityGrants TaskCapabilityGrant[]
   id                             String                          @id @default(uuid()) @db.Uuid
   workspaceId                    String?                         @map("workspace_id") @db.Uuid
   workspace                      Workspace?                      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -3094,4 +3106,66 @@ model AgentCredentialOperation {
   createdAt DateTime @default(now()) @map("created_at")
   @@unique([workspaceId, requestId])
   @@map("agent_credential_operations")
+}
+
+model TaskCapabilityGrant {
+  id String @id @default(uuid()) @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  agentId String @map("agent_id") @db.Uuid
+  credentialId String @map("credential_id") @db.Uuid
+  credential ApiKey @relation(fields: [credentialId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  credentialVersion Int @map("credential_version")
+  credentialClass String @default("agent_review_v1") @map("credential_class")
+  taskId String @map("task_id") @db.Uuid
+  task Task @relation(fields: [taskId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  applicationId String @map("application_id") @db.Uuid
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  executionId String @map("execution_id") @db.Uuid
+  execution AgentExecution @relation(fields: [executionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  operation String
+  validFrom DateTime @map("valid_from")
+  validUntil DateTime @map("valid_until")
+  issuerUserId String @map("issuer_user_id") @db.Uuid
+  reason String
+  requestId String @map("request_id") @db.Uuid
+  requestHash String @map("request_hash")
+  scopeHash String @map("scope_hash")
+  snapshot Json
+  createdAt DateTime @default(now()) @map("created_at")
+  revocation TaskCapabilityRevocation?
+  usage TaskCapabilityUse?
+  decisions TaskReviewDecision[]
+  actions TaskReviewAction[]
+  @@unique([workspaceId, requestId])
+  @@index([workspaceId, taskId, createdAt])
+  @@map("task_capability_grants")
+}
+model TaskCapabilityRevocation {
+  id String @id @default(uuid()) @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  grantId String @unique @map("grant_id") @db.Uuid
+  grant TaskCapabilityGrant @relation(fields: [grantId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  requestId String @map("request_id") @db.Uuid
+  requestHash String @map("request_hash")
+  actorUserId String @map("actor_user_id") @db.Uuid
+  reason String
+  createdAt DateTime @default(now()) @map("created_at")
+  @@unique([workspaceId, requestId])
+  @@map("task_capability_revocations")
+}
+model TaskCapabilityUse {
+  id String @id @default(uuid()) @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  grantId String @unique @map("grant_id") @db.Uuid
+  grant TaskCapabilityGrant @relation(fields: [grantId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  requestId String @map("request_id") @db.Uuid
+  decisionId String? @unique @map("decision_id") @db.Uuid
+  decision TaskReviewDecision? @relation(fields: [decisionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  actionId String? @unique @map("action_id") @db.Uuid
+  action TaskReviewAction? @relation(fields: [actionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  postScopeHash String @map("post_scope_hash")
+  snapshot Json
+  createdAt DateTime @default(now()) @map("created_at")
+  @@unique([workspaceId, requestId])
+  @@map("task_capability_uses")
 }

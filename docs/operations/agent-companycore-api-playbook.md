@@ -253,3 +253,15 @@ Expected result:
 - Run `GET /v1/connection` at startup and after credential rotation.
 - Keep provider retries bounded and idempotent.
 - Do not treat archived records as deleted history.
+
+## Native review task grants
+
+A bound review credential identifies an agent but cannot itself authorize a write.
+Read `/v1/agent-runtime/tasks/:id/review` and use the operation-specific `grantAccess`
+entry. A current human owner/admin must explicitly issue a
+[task grant](../architecture/task-capability-grants.md); agents cannot issue their
+own grants. Include its `grantId` with the review or exact manager operation and
+retain requestId on transport/serialization retry. Missing, expired, revoked,
+consumed-for-another-command or changed-scope grants fail closed. Do not substitute
+an owner identity or integration key. This HTTP command class does not authorize
+host execution, tools, release or credential retrieval.

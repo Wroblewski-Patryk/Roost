@@ -96,3 +96,13 @@ bound credential during rollback.
 AI systems must be tested against prompt injection, data leakage, and unauthorized access before deployment. Use `AI_TESTING_PROTOCOL.md` and assign reproducible red-team work through the Codex Agent Host security lane.
 
 AI, auth-sensitive, money-impacting, and cross-user data flows must fail closed when authorization, ownership, tool access, model memory, or policy validation is ambiguous.
+
+## Task-scoped agent capabilities
+
+Native agent review writes require an explicit human-admin-issued
+[RF-SEC-003 grant](../architecture/task-capability-grants.md) bound to the exact
+workspace, agent, credential, task, application, operation and time. Current roles
+remain mandatory. Grant use, business effects and audit commit atomically;
+expiry, revocation and context changes deny further authority. No raw secret is
+returned by this boundary. This does not implement a general sensitive-tool or
+risk broker and does not activate agents.

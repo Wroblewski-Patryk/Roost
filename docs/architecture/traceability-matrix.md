@@ -34,38 +34,34 @@ for later changes to these same canonical files.
 
 The retained baseline includes versioned Submit, single-task scope, pinned Ready
 context, explicit roles, source invalidation and active context stopping.
-The current bounded P0 slice is **RF-GOV-014: credential-bound agent principals**.
+The current bounded P0 slice is **RF-SEC-003: task-scoped capability grants**.
 
-Native review and manager commands now accept the exact current agent identified
-by an immutable workspace-scoped ApiKey/workforce binding. Current task roles,
-mandates, competencies and independent authorship remain separate admission gates.
-Bodies, alias names and owner claims cannot select an acting agent. Human review
-and legacy integration behavior are preserved, while unbound keys remain denied
-for agent-principal commands.
+The verified agent principal now also needs an explicit, single-use grant for
+review decision, return to executor or specialist correction creation. Only a
+current human owner/admin may issue or revoke. Exact workspace/agent/credential/
+task/application/operation/time scope, current roles and a context hash are
+checked at use and replay. Missing, expired, revoked or changed authority is denied.
 
-The owner/admin lifecycle creates one active credential slot per agent, rotates
-atomically, expires access and permanently revokes keys. Identity deactivation or
-rebinding revokes associated credentials. Append-only lifecycle receipts and
-review history retain agent ID, credential ID/prefix and human versus agent
-attribution without secrets. The existing PL/EN settings access panel exposes
-binding, status, expiry, last use and one-time secret delivery.
+Append-only grants, revocations and use receipts bind the command and business
+effect in one serializable transaction. Database guards require the exact grant
+and a receipt at commit. Concurrent requests have at most one effect; exact retries
+and process restarts use durable receipts. The PL/EN review panel provides issue,
+status/history and explicit revocation without exposing credentials.
 
-Verification: 98/98 API/database checks, focused credential schema/route tests and
-a separate existing-data migration fixture preserve legacy credentials and human
-review history. Coverage includes exact and wrong agents, spoofed fields/headers,
-workspace isolation, role changes, inactive/expired keys, rotation/revocation,
-database guards, competing commands and restart replay. 62 credential UI checks and 70 review UI checks cover PL/EN phone, tablet and
-desktop, safe secret delivery/replay and agent audit fallback. npm run validate
-is the release check. Existing-data upgrade covers both new migrations. Full host
-regression, full-web strict typechecking and observer fault/reboot checks were
-not rerun; no provider or real agent execution was invoked.
+Verification is recorded through `src/tests/task-capability-contract.test.ts`,
+`src/tests/api.test.ts`, `scripts/task-capability-migration.test.mjs`,
+`scripts/task-capability-ui.test.mjs` and the existing review/credential regressions.
+Verified: 104 API/DB checks, 4 focused unit checks, 78 grant UI checks,
+74 review UI checks and 2 existing-data migration checks. The migration fixtures
+preserve existing business data, credential columns and human/agent review attribution. `npm run validate` is the release check. Full host regression,
+full-web strict typechecking and observer fault/reboot checks were not rerun;
+no provider or real agent execution was invoked.
 
-RF-GOV-014 remains **częściowo działa** for the full company: this command class covers
-native review, not migration of all legacy host/integration commands or a
-short-lived per-operation capability broker. Automatic reviewer invocation,
-artifact/Git attestation, HR/certification, routing and release remain separate.
-No credential is provisioned on deployment. Production execution stays disabled
-and the canonical host stays observe.
+RF-SEC-003 remains **częściowo działa** for the full company: this is the native
+review command boundary, not a provider/OS/Git/network/tool or secrets broker,
+risk engine, automatic issuer, routing or release authority. No grant or credential
+is provisioned on deployment. Production execution stays disabled and the canonical
+host stays observe. See the [grant contract](task-capability-grants.md).
 
 ## Matrix
 
@@ -84,7 +80,7 @@ and the canonical host stays observe.
 | [RF-GOV-011](../product/interview-foundation-v2.md#rf-gov-011) | P1 | częściowo działa | [ORG](#e-org) | Role data does not enforce separation. |
 | [RF-GOV-012](../product/interview-foundation-v2.md#rf-gov-012) | P1 | częściowo działa | [ORG](#e-org) | Profile configuration and allocation unverified. |
 | [RF-GOV-013](../product/interview-foundation-v2.md#rf-gov-013) | P1 | brak | [SCHED](#e-sched) | No governed subagent scheduler. |
-| [RF-GOV-014](../product/interview-foundation-v2.md#rf-gov-014) | P0 | częściowo działa | [AUTH](#e-auth) | Immutable workforce-bound keys and current DB principal checks govern native review/manager commands, with expiry, atomic rotation, revocation and agent/credential audit. Other legacy command classes and per-operation capability brokering remain outside this slice. |
+| [RF-GOV-014](../product/interview-foundation-v2.md#rf-gov-014) | P0 | częściowo działa | [AUTH](#e-auth) | Immutable workforce-bound keys and current DB principal checks govern native review/manager commands, with expiry, atomic rotation, revocation and agent/credential audit. Other legacy command classes remain outside this slice; native review writes also require RF-SEC-003 task grants. |
 | [RF-GOV-015](../product/interview-foundation-v2.md#rf-gov-015) | P0 | działa | [GOV](#e-gov) | Boundary is governing policy; no DemoApp change authorized. |
 | [RF-GOV-016](../product/interview-foundation-v2.md#rf-gov-016) | P0 | działa | [GOV](#e-gov) | Closed-batch contract governs this delivery. |
 | [RF-GOV-017](../product/interview-foundation-v2.md#rf-gov-017) | P0 | działa | [DOC](#e-doc) | 162 stable requirements, decision status and supersession links; all 162 mapped to inspected evidence and limitations in this V2 registry. |
@@ -138,7 +134,7 @@ and the canonical host stays observe.
 | [RF-HOST-020](../product/interview-foundation-v2.md#rf-host-020) | P0 | częściowo działa | [WORKSPACE](#e-workspace) | Workspace-write sandbox is not read isolation; browser/session broker absent. |
 | [RF-SEC-001](../product/interview-foundation-v2.md#rf-sec-001) | P0 | częściowo działa | [RISK](#e-risk) | Risk records exist; computed classification absent. |
 | [RF-SEC-002](../product/interview-foundation-v2.md#rf-sec-002) | P0 | brak | [RISK](#e-risk) | No complete risk admission gate. |
-| [RF-SEC-003](../product/interview-foundation-v2.md#rf-sec-003) | P0 | częściowo działa | [BROKER](#e-broker) | Static scoped API keys and secret storage exist; task capability broker absent. |
+| [RF-SEC-003](../product/interview-foundation-v2.md#rf-sec-003) | P0 | częściowo działa | [BROKER](#e-broker) | Durable exact task/agent/credential/application/operation/time grants govern the three native review commands, with human issue/revoke, atomic use receipts and context invalidation. General sensitive-tool/secrets brokering, risk and automatic issuance remain absent. |
 | [RF-SEC-004](../product/interview-foundation-v2.md#rf-sec-004) | P0 | częściowo działa | [BROKER](#e-broker) | Partial credential exclusions; arbitrary execution events/results remain unredacted. |
 | [RF-SEC-005](../product/interview-foundation-v2.md#rf-sec-005) | P0 | brak | [BROKER](#e-broker) | No tool/network/install broker. |
 | [RF-SEC-006](../product/interview-foundation-v2.md#rf-sec-006) | P0 | częściowo działa | [BROKER](#e-broker) | Workspace scoping exists, not field-level diagnostic access. |
@@ -411,7 +407,7 @@ performed, and no VPS release is required for this local launcher change.
 [src/auth/agent-key-profiles.ts](../../src/auth/agent-key-profiles.ts), [src/modules/api-keys/api-key.service.ts](../../src/modules/api-keys/api-key.service.ts), [src/modules/workspaces/workspace-access.routes.ts](../../src/modules/workspaces/workspace-access.routes.ts), [src/tests/api.test.ts](../../src/tests/api.test.ts).
 
 <a id="e-broker"></a>
-**BROKER** — Encrypted integration secrets and scoped credential service; no general task capability broker.
+**BROKER** — Encrypted integration secrets, scoped credentials and [native task capability grants](task-capability-grants.md); no general tool/secrets/risk broker.
 
 [src/integrations/secrets.ts](../../src/integrations/secrets.ts), [src/auth/capabilities.ts](../../src/auth/capabilities.ts), [src/operations/provision-agent-host-key.ts](../../src/operations/provision-agent-host-key.ts), [scripts/roost-agent-host-windows.ps1](../../scripts/roost-agent-host-windows.ps1).
 
