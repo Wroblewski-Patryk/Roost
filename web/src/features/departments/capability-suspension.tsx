@@ -51,7 +51,7 @@ export function CapabilitySuspensionModal({taskId,incidentId,onClose}:{taskId?:s
     {select("incidentId",incidentId?[{id:incidentId,label:catalog.incidents.find((i:any)=>i.id===incidentId)?.title??incidentId}]:catalog.incidents,true)}
     {select("taskId",catalog.tasks.filter((t:any)=>!taskId||t.id===taskId).map((t:any)=>({id:`${t.id}:${t.applicationId}`,label:`${t.title} · ${t.applicationLabel}`})),true)}
     {select("operation",["review_decision","return_to_executor","create_specialist_task","runtime_execute"].map(id=>({id,label:label(id)})),true)}
-    {select("agentId",catalog.agents)}{draft.operation==="runtime_execute"?select("hostId",catalog.hosts):select("credentialId",catalog.credentials.filter((k:any)=>k.boundAgentId===draft.agentId).map((k:any)=>({id:k.id,label:k.keyPrefix})))}
+    {select("agentId",catalog.agents)}{draft.operation==="runtime_execute"?select("hostId",catalog.hosts):select("credentialId",catalog.credentialChoices.filter((k:any)=>k.boundAgentId===draft.agentId).map((k:any)=>({id:k.id,label:k.keyPrefix})))}
     {field("reason")}{field("scopeProof")}{!draft.agentId&&!(draft.operation==="runtime_execute"&&draft.hostId)?<div className="grid gap-3 sm:col-span-2"><p>{c.broad}</p>{catalog.canBroaden?field("broaderReason"):<CcNotice tone="warning" title={c.broad}/>}</div>:null}
    </section>:null}
    {detail?<>

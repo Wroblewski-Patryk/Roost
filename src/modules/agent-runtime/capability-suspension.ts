@@ -104,7 +104,7 @@ capabilitySuspensionRouter.get("/catalog",asyncHandler(async(req,res)=>{
   const credentials=await prisma.apiKey.findMany({where:{workspaceId,boundAgentId:{not:null}},select:{id:true,boundAgentId:true,keyPrefix:true},take:201});
   const hosts=await prisma.agentHost.findMany({where:{workspaceId},select:{id:true,name:true},take:201});
   const incidents=await prisma.companyRecord.findMany({where:{workspaceId,recordType:"technical_incident"},select:{id:true,title:true},orderBy:{createdAt:"desc"},take:201});
-  res.json({data:{tasks:tasks.slice(0,200).flatMap(t=>links.filter(l=>l.projectId===t.projectId&&l.application.workspaceId===workspaceId).map(l=>({id:t.id,title:t.title,applicationId:l.application.id,applicationLabel:l.application.name}))),agents:agents.slice(0,200),credentials:credentials.slice(0,200),hosts:hosts.slice(0,200),incidents:incidents.slice(0,200),canBroaden:req.auth!.workspaceRole==="owner",truncated:[tasks,agents,credentials,hosts,incidents].some(x=>x.length>200)}});
+  res.json({data:{tasks:tasks.slice(0,200).flatMap(t=>links.filter(l=>l.projectId===t.projectId&&l.application.workspaceId===workspaceId).map(l=>({id:t.id,title:t.title,applicationId:l.application.id,applicationLabel:l.application.name}))),agents:agents.slice(0,200),credentialChoices:credentials.slice(0,200),hosts:hosts.slice(0,200),incidents:incidents.slice(0,200),canBroaden:req.auth!.workspaceRole==="owner",truncated:[tasks,agents,credentials,hosts,incidents].some(x=>x.length>200)}});
 }));
 capabilitySuspensionRouter.get("/:id",asyncHandler(async(req,res)=>{
   if(!requireWorkspaceRole(req,res,"viewer")) return;

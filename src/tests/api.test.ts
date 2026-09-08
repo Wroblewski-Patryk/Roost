@@ -1557,6 +1557,11 @@ test("native review records decisions and manager returns without implementation
     const f=await fixture(true,false), original=await f.grant(), grant=(original.response.body as any).data.grant;
     const incident=await prisma.companyRecord.create({data:{workspaceId:f.workspaceId,recordType:"technical_incident",key:"synthetic-serious",title:"Synthetic serious incident"}});
     const root="/v1/agent-runtime/capability-suspensions";
+    const catalogRead=await request(root+"/catalog?taskId="+f.task.id,{headers:f.auth});assert.equal(catalogRead.status,200,JSON.stringify(catalogRead.body));
+    const choices=(catalogRead.body as any).data.credentialChoices;assert.ok(Array.isArray(choices));assert.ok(choices.some((k:any)=>k.id===f.verifierKey.id));
+    assert.equal(JSON.stringify(catalogRead.body).includes(f.verifierKey.key),false);
+    assert.equal(await prisma.companyRecord.count({where:{workspaceId:f.workspaceId,source:"runtime_redaction_v1"}}),0);
+
     const input={requestId:randomUUID(),incidentId:incident.id,taskId:f.task.id,applicationId:f.app.id,operation:"review_decision",agentId:f.verifier.id,credentialId:f.verifierKey.id,reason:"Incorrect review authority detected",scopeProof:"Synthetic audit proves one reviewer credential on this task"};
     assert.equal((await f.post(root,input,f.reviewerAuth)).status,403);
     assert.equal((await f.post(root,{...input,operation:"*"})).status,400);

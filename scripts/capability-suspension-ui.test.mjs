@@ -36,7 +36,7 @@ try{
     else{assert.equal(input.action,"restore");assert.equal(input.evidenceId,id(10));assert.equal(input.expectedVersion,3);suspension={...suspension,active:false,version:4};history=[{id:id(11),version:4,action:"restore",actorUserId:id(7),payload:{reason:input.reason},createdAt:"2026-09-08T08:03:00Z"},...history];}
     return route.fulfill({json:{data:detail()}});
    }
-   if(url.pathname.endsWith("/catalog"))return route.fulfill({json:{data:{tasks:[{id:id(3),title:"Synthetic parser task",applicationId:id(4),applicationLabel:"Fixture application"}],agents:[{id:id(5),name:"Fixture review agent"}],credentials:[{id:id(6),boundAgentId:id(5),keyPrefix:"fixture-prefix"}],hosts:[],incidents:[{id:id(1),title:"Synthetic serious incident"}],canBroaden:true}}});
+   if(url.pathname.endsWith("/catalog"))return route.fulfill({json:{data:{tasks:[{id:id(3),title:"Synthetic parser task",applicationId:id(4),applicationLabel:"Fixture application"}],agents:[{id:id(5),name:"Fixture review agent"}],credentialChoices:[{id:id(6),boundAgentId:id(5),keyPrefix:"fixture-prefix"}],hosts:[],incidents:[{id:id(1),title:"Synthetic serious incident"}],canBroaden:true}}});
    if(url.pathname.endsWith(id(2)))return route.fulfill({json:{data:detail()}});
    return route.fulfill({json:{data:{suspensions:mode==="create"?[]:[suspension],canCreate:true}}});
   });

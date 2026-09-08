@@ -108,6 +108,11 @@ history are visible. Forms preserve request IDs on uncertain transport, require
 explicit decision confirmation and protect unsaved evidence. Read-only, missing,
 loading, failure, stale and truncated states grant no authority.
 
+The catalog's `credentialChoices` contains only credential IDs, bound principal
+IDs and safe prefixes. It is not a secret-bearing `credentials` container; the
+shared redaction policy continues to withhold such containers. API regression
+checks the complete projected catalog, not only its HTTP status.
+
 ## Migration, verification and release
 
 `20260908090000_native_capability_suspension` adds empty history tables and forward
