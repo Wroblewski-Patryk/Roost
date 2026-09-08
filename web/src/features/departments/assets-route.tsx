@@ -846,7 +846,7 @@ function FilePreviewPanel({
             </nav>
           </div>
         </div>
-        <div className="flex shrink-0 flex-wrap justify-end gap-2">
+        <div className="flex w-full min-w-0 flex-wrap gap-2">
           <CcButton href={`/areas?area=00-ogolny&view=entity&type=${resource.sourceModel === "GoogleDriveFile" ? "file" : "resource"}&id=${encodeURIComponent(resource.sourceId)}`} iconLeft="ph-share-network" size="sm" variant="outline">Company context</CcButton>
           {openUrl ? <CcButton href={openUrl} iconLeft="ph-arrow-square-out" rel="noreferrer" size="sm" target="_blank" variant="primary">{resource.sourceModel === "GoogleDriveFile" ? `${t("assets.editInGoogle")} ${googleApp}` : t("assets.open")}</CcButton> : null}
         </div>
