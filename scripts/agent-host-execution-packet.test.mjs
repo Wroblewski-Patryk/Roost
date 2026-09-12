@@ -103,8 +103,10 @@ test("diagnostics never echo values, unknown keys, source contents or lease secr
   });
 });
 
-for (const scenario of ["valid", "missingAcceptance", "missingModel", "olderModel", "unsupportedEffort", "missingRoles", "selfReview", "selfRelease"]) test(`real host model admission: ${scenario}`, { skip: process.platform !== "win32", timeout: 20000 }, async () => {
-  const valid = scenario === "valid";
+for (const scenario of ["valid", "transportRecovered", "transportFailed", "incomplete", "secondTurn", "processFailed", "missingAcceptance", "missingModel", "olderModel", "unsupportedEffort", "missingRoles", "selfReview", "selfRelease"]) test(`real host model admission: ${scenario}`, { skip: process.platform !== "win32", timeout: 20000 }, async () => {
+  const valid = ["valid", "transportRecovered"].includes(scenario);
+  const providerFailure = ["transportFailed", "incomplete", "secondTurn", "processFailed"].includes(scenario);
+  const admitted = valid || providerFailure;
   const f = validPacketFixture();
   const diagnosticField = ["missingRoles", "selfReview", "selfRelease"].includes(scenario) ? "contract.taskRoles" : scenario === "missingAcceptance" ? "contract.acceptance" : "contract.modelSelection";
   if (scenario === "missingRoles") delete f.packet.contract.taskRoles;
@@ -141,13 +143,14 @@ for (const scenario of ["valid", "missingAcceptance", "missingModel", "olderMode
   const configPath = path.join(directory, "config.json"); let host;
   try {
     await writeFile(configPath, JSON.stringify({ workspaceRoot: hostWorkspace, codexCommand: "packet-test-codex", repositories: { demoapp: { directory: "DemoApp", originUrl: "https://github.com/example-org/DemoApp.git" } } }));
-    const fakeCodex = `let input=''; process.stdin.on('data', c=>input+=c); process.stdin.on('end',()=>{ const envelope=JSON.parse(input); if(envelope.schemaVersion!=='roost-provider-input-v1'||envelope.startupTools.length!==0||!envelope.revisions.packet) process.exit(2); console.log(JSON.stringify({type:'item.completed',item:{type:'agent_message',text:'Synthetic packet execution complete'}})); });`;
+    const fakeCodex = `let input=''; process.stdin.on('data', c=>input+=c); process.stdin.on('end',()=>{ const envelope=JSON.parse(input),before=input; if(envelope.schemaVersion!=='roost-provider-input-v1'||envelope.startupTools.length!==0||!envelope.revisions.packet) process.exit(2); const emit=e=>console.log(JSON.stringify(e)); emit({type:'turn.started'}); ${scenario.startsWith("transport") ? "emit({type:'error',message:'Synthetic bounded HTTP reconnect'});emit({type:'error',message:'Synthetic bounded SSE reconnect'});" : ""} if(input!==before||envelope.identity.attempt!==1)process.exit(3); ${scenario === "transportFailed" ? "emit({type:'turn.failed',error:{message:'Synthetic terminal transport failure'}});setInterval(()=>{},1000);return;" : scenario === "secondTurn" ? "emit({type:'turn.started'});setInterval(()=>{},1000);return;" : scenario === "processFailed" ? "process.exit(1);" : ""} emit({type:'item.completed',item:{type:'agent_message',text:'Synthetic packet execution complete'}}); ${scenario === "incomplete" ? "" : "emit({type:'turn.completed',usage:{input_tokens:10,output_tokens:5}});"} });`;
     const script = `import cp from 'node:child_process'; import {syncBuiltinESMExports} from 'node:module'; const original=cp.spawn; cp.spawn=(command,args,options)=>{ process.stdout.write('SPAWN:'+command+'\\n'); if(command==='packet-test-codex' && JSON.stringify(args)!==${JSON.stringify(JSON.stringify(["exec", "--ephemeral", "--json", "--sandbox", "workspace-write", "--model", "gpt-5.6-sol", "--config", 'model_provider="openai"', "--config", 'model_reasoning_effort="medium"', "-"]))}) throw new Error('unexpected_codex_model_arguments'); return command==='packet-test-codex' ? original(process.execPath,['-e',${JSON.stringify(fakeCodex)}],options) : original(command,args,options); }; syncBuiltinESMExports(); const {runHost}=await import('./scripts/roost-codex-agent-host.mjs'); const {acquireWriterLock}=await import('./scripts/lib/agent-host-writer-lock.mjs'); await runHost({readTaskCommit:async()=>"a".repeat(40),readTaskBranch:async()=>${JSON.stringify(f.packet.contract.singleTask.branch)},createOutputBudget: (await import('./scripts/lib/agent-host-output-budget.mjs')).createObservedOutputBudget, acquireLock:()=>acquireWriterLock(${JSON.stringify(directory)})});`;
     host = spawn(process.execPath, ["--input-type=module", "-e", script], { windowsHide: true, stdio: ["ignore", "pipe", "pipe"], env: { ...process.env, ROOST_BASE_URL: `http://127.0.0.1:${server.address().port}`, ROOST_AGENT_API_KEY: "synthetic-only", ROOST_AGENT_HOST_CONFIG: configPath } });
     let output = "", errors = ""; host.stdout.on("data", (chunk) => { output += chunk; }); host.stderr.on("data", (chunk) => { errors += chunk; });
     assert.equal((await once(host, "close"))[0], 0, errors);
     const afterClaim = output.slice(output.indexOf("Execution claimed."));
-    assert.equal(afterClaim.includes("SPAWN:"), valid);
+    assert.equal(afterClaim.includes("SPAWN:"), admitted);
+    assert.equal((afterClaim.match(/SPAWN:packet-test-codex/g) || []).length, admitted ? 1 : 0);
     const terminal = requests.find((request) => /actions\/(fail|complete)$/.test(request.url));
     assert.ok(terminal);
     assert.ok(requests.findIndex((request) => request.url.endsWith("/heartbeat")) < requests.indexOf(terminal));
@@ -157,6 +160,18 @@ for (const scenario of ["valid", "missingAcceptance", "missingModel", "olderMode
       assert.deepEqual(started.body.payload.requestedModelSelection, f.packet.contract.modelSelection);
       assert.equal(started.body.payload.providerInput.schemaVersion, "roost-provider-input-v1");
       assert.match(started.body.payload.providerInput.seal, /^[a-f0-9]{64}$/);
+      assert.equal(terminal.body.metadata.transportAccounting.transportRetryCount, null);
+      assert.equal(terminal.body.metadata.transportAccounting.partialUsageAccounting, "unknown");
+    }
+    else if (providerFailure) {
+      assert.ok(terminal.url.endsWith("/fail")); assert.equal(terminal.body.retryable, false);
+      assert.match(terminal.body.code, /^codex_(turn_invalid|turn_failed|process_failed)$/);
+      assert.equal(terminal.body.details.transportRetryCount, null);
+      assert.equal(requests.filter(request => request.url.endsWith("/claim")).length, 1);
+      assert.equal(requests.some(request => request.url.endsWith("/complete")), false);
+      const checkpoints = requests.filter(request => request.url.endsWith("/checkpoint")).map(request => request.body.checkpoint).filter(checkpoint => checkpoint.packetRevision);
+      assert.ok(checkpoints.every(checkpoint => checkpoint.packetRevision === f.packet.revision));
+      assert.equal(new Set(checkpoints.map(checkpoint => checkpoint.contextRevision)).size, 1);
     }
     else { assert.equal(terminal.body.code, "execution_packet_invalid"); assert.equal(terminal.body.retryable, false); assert.ok(terminal.body.details.issues.some((issue) => issue.field.startsWith(diagnosticField))); assert.equal(requests.some((request) => request.url.endsWith("/events")), false); }
   } finally {

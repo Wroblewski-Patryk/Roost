@@ -212,6 +212,40 @@ visible.
 
 ## Failure And Recovery
 
+### Transport retry versus execution retry (RF-HOST-010/011)
+
+The built-in `openai` provider may perform its bounded internal HTTP/SSE retries.
+Worker does not override the reserved `model_providers.openai` configuration.
+Those transport operations remain inside the same CLI process, logical turn,
+Roost execution/attempt and immutable `roost-provider-input-v1` envelope. They
+do not consume another envelope or reset its revisions, deadline, lease or budget.
+All transport waiting counts against the original duration; only the existing
+Roost heartbeat can confirm still-current lease/context authority, never a
+provider response or reconnection message.
+
+One invocation supplies stdin once. A terminal `turn.failed`, nonzero exit,
+second logical turn/completion, or missing final turn/result fails the attempt
+as non-retryable and stops this host execution path after process-tree cleanup.
+Worker neither restarts CLI, selects another provider nor increases the budget.
+A nonterminal CLI diagnostic is not a new turn and grants no authority. Explicit
+future work remains governed by the existing queue and independent budget review.
+
+The current exec JSONL stream does not expose an authoritative transport retry
+counter. Completion/failure accounting therefore reports `transportRetryCount:
+null`, never inferred zero. Final reported usage belongs to this one attempt;
+`usageAccounting: reported_final_only` does not establish the cost of partial or
+undelivered responses (`partialUsageAccounting: unknown`). No exporter, OTel or
+external telemetry is enabled. RF-HOST-010 hard output/cost enforcement and the
+general RF-HOST-011 loop breaker remain open. A narrowly approved synthetic live
+proof cannot relax production's output-budget admission.
+
+This clarifies transport ownership and tightens local Worker terminal-result
+validation. It does not change API/DB commands, packet/registry contract v4,
+host protocol v1 or `worker_provider_input_v1`; the existing metadata/details
+maps carry optional accounting. No new retry engine or shared admission version
+is needed. Regression evidence: `test:agent-transport`, existing duration, lease,
+recovery and process-context suites.
+
 The [recovery contract](agent-host-recovery.md) supports the same execution/attempt
 only from matching durable `claimed`/`prepared` checkpoints with valid authority.
 Later stages, expired leases and ambiguous state stop with owner-visible

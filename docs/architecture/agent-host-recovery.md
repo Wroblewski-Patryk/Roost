@@ -59,6 +59,14 @@ Codex conversation, reconciling partially executed commands, renewing authority
 after expiry and resuming after release/migration/external writes are future
 stages. They are not inferred from a thread ID or an apparently clean Git tree.
 
+Provider-internal HTTP/SSE retries are transport operations within that same
+process/turn, not recovery or permission to replay `spawn_intent`. They retain
+the original input seal, attempt, deadline and lease/context fences. Terminal
+failure or incomplete output is non-retryable and stops the host path; there is
+no automatic CLI restart, fallback or fresh budget. See the
+[transport retry contract](local-codex-agent-runtime.md#transport-retry-versus-execution-retry-rf-host-010011)
+for unknown retry counts and partial-usage accounting.
+
 ## Ownership And Durable Evidence
 
 Roost stores `AgentExecution.checkpoint` and its integer `checkpointVersion`.

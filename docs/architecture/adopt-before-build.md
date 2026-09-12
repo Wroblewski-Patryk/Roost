@@ -51,6 +51,22 @@ Deployment and normal observer restart must preserve execution disabled and the
 existing Hermes policy. Rollback uses the previous image/Worker source; never
 downgrade an active attempt or replay a consumed input.
 
+On 2026-09-12 an explicitly approved, isolated Direct proof used the real builder,
+seal, one consume, production model-argument factory and terminal-turn validator.
+One `gpt-5.6-luna` / `low` CLI turn returned a strict synthetic JSON result from
+both projections with no tools, no instruction-source catalog, no private paths
+in the model input and no changed envelope. The read-only ephemeral workspace
+remained empty and process-tree cleanup was confirmed. A fake-provider request
+inspection passed before that single real invocation. This proves the bounded
+bootstrap-response path, not tool execution, general live transport reliability,
+Hermes compatibility, production admission, or RF-HOST-010/020 readiness.
+
+The [transport ownership contract](local-codex-agent-runtime.md#transport-retry-versus-execution-retry-rf-host-010011)
+permits built-in bounded HTTP/SSE retries within the one existing deadline.
+Retry count is unavailable in current exec JSONL; partial/undelivered accounting
+remains unknown. Registry v4 is unchanged: the evidence scope is updated without
+adding shared admission fields or changing wire semantics.
+
 Prefer maintained complementary upstream components over a new Roost subsystem.
 Evaluate capability fit, license, pinned identity, security, resource overhead,
 failure and rollback before adoption. Do not fork, vendor or copy their source

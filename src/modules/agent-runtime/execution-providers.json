@@ -5,7 +5,7 @@
     "owner": "worker",
     "maxBytes": 131072,
     "startupTools": [],
-    "proofScope": "Synthetic sealed input and spawn admission only; no live inference or Hermes transport compatibility proof."
+    "proofScope": "Synthetic sealed input/admission tests and one isolated Direct bootstrap-response turn verified with zero tools. No general live transport/tool reliability, Hermes compatibility or production admission proof."
   },
   "requiredPilotProvider": "hermes_codex",
   "pilotReady": false,

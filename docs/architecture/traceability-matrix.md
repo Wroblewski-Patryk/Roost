@@ -113,7 +113,7 @@ stays disabled and the canonical host stays observe.
 | [RF-HOST-008](../product/interview-foundation-v2.md#rf-host-008) | P1 | brak | [HOST](#e-host) | No signed update protocol. |
 | [RF-HOST-009](../product/interview-foundation-v2.md#rf-host-009) | P0 | częściowo działa | [SCHED](#e-sched) | Existing claim is FIFO, not readiness/priority scheduler. |
 | [RF-HOST-010](../product/interview-foundation-v2.md#rf-host-010) | P0 | częściowo działa | [BUDGET](#e-budget) | Attempts/duration validated and contained; output tokens fail closed before Codex spawn because an execution-wide enforcing interface is unproven. Synthetic exhaustion/recovery fencing tested. Usable provider hard cap, cost enforcement and independent new-budget approval remain missing. |
-| [RF-HOST-011](../product/interview-foundation-v2.md#rf-host-011) | P1 | częściowo działa | [BUDGET](#e-budget) | Observer/integration retries exist; general execution loop breaker absent. |
+| [RF-HOST-011](../product/interview-foundation-v2.md#rf-host-011) | P1 | częściowo działa | [BUDGET](#e-budget) | Bounded provider transport retry is distinguished from task retry. One CLI/turn retains input/attempt/deadline; terminal or incomplete output is non-retryable. Retry counts and partial usage remain unknown when unexposed. General execution loop breaker absent. |
 | [RF-HOST-012](../product/interview-foundation-v2.md#rf-host-012) | P1 | częściowo działa | [BUDGET](#e-budget) | Usage stored per execution; attribution and quality-constrained optimization absent. |
 | [RF-HOST-013](../product/interview-foundation-v2.md#rf-host-013) | P0 | brak | [RESOURCE](#e-resource) | No resource-aware host/service-operation broker. |
 | [RF-HOST-014](../product/interview-foundation-v2.md#rf-host-014) | P0 | częściowo działa | [PROTOCOL](#e-protocol) | Host/API admission before recovery/claim/spawn implemented; coordinated backend/UI/schema drain/update/rollback remains missing. |
@@ -398,8 +398,10 @@ bootstrap tool obligation. `scripts/lib/agent-host-provider-input.mjs`,
 `scripts/agent-host-provider-input.test.mjs` and the existing context-process
 suite prove synthetic adapter equality and fail-closed spawn admission. Registry
 v4 and `worker_provider_input_v1` exclude older hosts. Broker/attestation tests
-remain separate. Live Direct/Hermes transport, RF-HOST-010/020 and Stage 2 are
-unproved; observer/disabled execution and pilot readiness remain unchanged.
+remain separate. One isolated Direct bootstrap-response turn passed on
+2026-09-12 with synthetic facts, zero tools and stable input seal. General live
+transport/tool reliability, Hermes compatibility, RF-HOST-010/020 and Stage 2
+remain unproved; observer/disabled execution and pilot readiness are unchanged.
 
 [scripts/lib/agent-host-model-policy.mjs](../../scripts/lib/agent-host-model-policy.mjs), [scripts/roost-codex-agent-host.mjs](../../scripts/roost-codex-agent-host.mjs), [scripts/agent-host-model-policy.test.mjs](../../scripts/agent-host-model-policy.test.mjs), [scripts/agent-host-execution-packet.test.mjs](../../scripts/agent-host-execution-packet.test.mjs), [docs/architecture/execution-packet-contract.md](../../docs/architecture/execution-packet-contract.md).
 

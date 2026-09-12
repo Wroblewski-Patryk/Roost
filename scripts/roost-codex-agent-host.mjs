@@ -13,6 +13,7 @@ import { assertRecoverySnapshot, classifyRecovery, recoveryError, workspaceDiges
 import { runObserver } from "./lib/agent-host-observer.mjs";
 import { codexExecutionArgs } from "./lib/agent-host-model-policy.mjs";
 import { prepareProviderInput, consumeProviderInput } from "./lib/agent-host-provider-input.mjs";
+import { createDirectTurnGuard } from "./lib/agent-host-direct-turn.mjs";
 import { createExecutionDuration } from "./lib/agent-host-execution-duration.mjs";
 import { createCodexOutputBudget } from "./lib/agent-host-output-budget.mjs";
 import { fetchExecutionContext, executionContextRevision, assertFreshExecutionContext } from "./lib/agent-host-execution-context.mjs";
@@ -265,9 +266,10 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       assertAuthority: assertProviderAuthority, secrets: [apiKey] });
     const args = codexExecutionArgs(transport.modelSelection, sandbox);
     assertProviderAuthority();
+    const turnGuard = createDirectTurnGuard();
     child = spawn(codexCommand, args, { cwd: repositoryPath, env: safeChildEnvironment(), shell: false, windowsHide: true, stdio: ["pipe", "pipe", "pipe"] });
     const exitPromise = new Promise((resolve, reject) => {
-      child.once("error", reject);
+      child.once("error", () => { try { turnGuard.complete(-1, false); } catch (failure) { reject(failure); } });
       child.once("close", resolve);
     });
     // Attach a rejection handler immediately; stdout may finish after a spawn error.
@@ -293,6 +295,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       if (line.length > 131072) throw Object.assign(new Error("agent_runtime_content_blocked"), { redaction: true });
       try { event = JSON.parse(line); } catch { continue; }
       runnerEvents.push(event);
+      turnGuard.observe(event);
       // Observable runner boundaries plus the periodic heartbeat cover quiet
       // work. They do not establish atomicity inside a Codex tool/OS operation.
       if (["item.started", "item.completed", "turn.completed"].includes(event.type)) {
@@ -323,7 +326,8 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       return;
     }
     lease.assertValid();
-    if (exitCode !== 0) throw Object.assign(new Error("codex_process_failed"), { details: { exitCode, stderrCaptured: Boolean(stderrTail.length) } });
+    const transportAccounting = turnGuard.complete(exitCode, runnerEvents.some(event =>
+      event.type === "item.completed" && event.item?.type === "agent_message" && typeof event.item.text === "string" && event.item.text.trim()));
 
     const afterStatus = await duration.wait(gitStatus(repositoryPath));
     const resultBranch=await duration.wait(readTaskBranch(repositoryPath));
@@ -332,7 +336,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     const committedPaths=await duration.wait(readTaskPaths(repositoryPath,currentCommit,resultCommit));
     const changedFiles = [...new Set([...committedPaths,...afterStatus.map(statusPath)])];
     const resultRevision={commit:resultCommit,branch:resultBranch,workingTree:afterStatus.length?"dirty":"clean"};
-    const summary = finalResponse.trim() || `Codex completed execution ${claimed.id}.`;
+    const summary = finalResponse.trim();
     await duration.wait(lease.refresh());
     lease.assertValid();
     duration.assertWithinBudget();
@@ -342,7 +346,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     duration.stop();
     await api(`/v1/agent-runtime/executions/${claimed.id}/actions/complete`, {
       method: "POST",
-      body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: summary.slice(0, 10000), finalResponse, codexThreadId, changedFiles, verification, usage, resultRevision, metadata: { repositoryPathLabel: path.basename(repositoryPath), preExistingDirtyFiles: beforeStatus.map(statusPath) } })
+      body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: summary.slice(0, 10000), finalResponse, codexThreadId, changedFiles, verification, usage, resultRevision, metadata: { repositoryPathLabel: path.basename(repositoryPath), preExistingDirtyFiles: beforeStatus.map(statusPath), transportAccounting } })
     });
   } catch (error) {
     if (error.contextStop || lease.failure?.contextStop) {
@@ -468,6 +472,7 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
         }
       } catch (error) {
         if (error.protocolAdmission) { protocolHalted = true; stopping = true; retainWriterLock = true; }
+        if (error.providerFailure) stopping = true;
         if (error.readyAdmission || error.redaction) { stopping = true; if (execution) retainWriterLock = true; }
         process.stderr.write("Agent Host operation failed; inspect safe execution diagnostics.\n");
         if (error.recoveryReason || error.leaseLost) {
