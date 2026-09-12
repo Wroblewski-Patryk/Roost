@@ -87,6 +87,61 @@ broader startup/config/auth paths. They are deliberately not run: their read-onl
 behavior cannot be established for this pin. No profile/config/token is created
 to make these diagnostics pass.
 
+## Offline transport examination: adapter blocked
+
+The pinned installation's public `CodexAppServerClient` was examined offline
+with `scripts/hermes-transport-boundary.test.mjs`. Set the test-only
+`ROOST_HERMES_BOUNDARY_CONFIG` to an existing private host config and run
+`node --test scripts/hermes-transport-boundary.test.mjs`. Without an explicit
+config or on a non-Windows host, this installation diagnostic is skipped.
+It is not part of ordinary CI and never resolves or starts a Codex executable.
+
+The test performs fresh full installation attestation before input preparation
+and again before spawning isolated venv Python. It imports the official
+`agent.transports.codex_app_server.CodexAppServerClient`; no source is copied,
+patched or replaced. The only App Server is a fixed Python fixture in a unique
+system-temp directory. Its wire records one thread/start and one turn/start,
+the exact Worker-issued input SHA/seal/model/effort, empty dynamic tools and no
+inherited Roost/provider/MCP/Python-hook secrets. Worker consumes the envelope
+once; a second consume is rejected. There is no inference, provider admission,
+MCP broker, AIAgent, session runner, authentication or external network request.
+
+The successful negative test observed two concrete blockers at this pin:
+
+- The public notification queue accepted a **32,769-byte payload**, and the
+  stderr buffer retained a **32,769-byte line**. A 500-line retention policy is
+  not a 32-KiB byte cap. Polling `stderr_tail()` after capture cannot impose one.
+- `close()` terminated the immediate fake App Server but left its deliberately
+  short-lived sleeping child alive. The fixture confirmed that child's eventual
+  exit. This is evidence about the upstream client, not a successful Worker
+  cancellation, crash/recovery or escaped-child containment proof.
+
+The outer test has its own 32-KiB capture and process timeout; it does not pretend
+that these bound the client's internal pipes. Its home/profile/temp/Codex-home
+paths are ephemeral and its environment is allowlisted. The fixture workspace
+is writable solely for the fake server and sanitized wire summary: **no empty
+read-only production workspace or native filesystem isolation is proven**.
+The temporary tree is removed after the child exits; cleanup failure fails the
+test. No existing private PoC directory is read or cleaned. Raw prompts, responses,
+tracebacks and private installation paths are not retained as evidence artifacts.
+
+The public constructor controls the executable, arguments, home and environment,
+but offers no public pipe factory, byte-budget hook or process-tree owner. Its
+[pinned source](https://github.com/NousResearch/hermes-agent/blob/939e45c91d751fadd94dcd1b873ac3cb44846213/agent/transports/codex_app_server.py)
+uses unbounded line reads/queues and direct-child termination. A wrapper that
+only invokes these methods cannot establish the requested containment contract.
+No production adapter is shipped by this examination. Existing admission remains
+closed; declaring settings, overriding private internals or marking synthetic
+tests as native compatibility is not an acceptable substitute.
+
+A subsequent bounded design must either provide Worker-owned pipe/process
+containment before the upstream client can read or spawn, or adopt an explicitly
+reviewed upstream version with suitable public hooks and repeat attestation.
+The first retains the dependency pin but needs a tested integration boundary;
+the second avoids private-API coupling but requires a pin/dependency review.
+Neither option is implemented or activated here. RF-HOST-010/020, strict result
+validation, live compatibility and full stop/recovery acceptance remain open.
+
 ## Rollout and rollback
 
 Preserve the existing private Worker config before adding the provider manifest;

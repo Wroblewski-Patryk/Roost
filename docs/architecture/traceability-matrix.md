@@ -403,6 +403,13 @@ remain separate. One isolated Direct bootstrap-response turn passed on
 transport/tool reliability, Hermes compatibility, RF-HOST-010/020 and Stage 2
 remain unproved; observer/disabled execution and pilot readiness are unchanged.
 
+`scripts/hermes-transport-boundary.test.mjs` additionally exercises the attested
+official Hermes client against a real, offline fake App Server. It verifies
+one sealed-input dispatch, then reproduces capture above 32 KiB and a descendant
+surviving client close. This is negative containment evidence, not delivery of
+the production Hermes adapter or completion of RF-HOST-010/020/stop-recovery;
+see [the bounded examination](../operations/hermes-windows-attestation.md#offline-transport-examination-adapter-blocked).
+
 [scripts/lib/agent-host-model-policy.mjs](../../scripts/lib/agent-host-model-policy.mjs), [scripts/roost-codex-agent-host.mjs](../../scripts/roost-codex-agent-host.mjs), [scripts/agent-host-model-policy.test.mjs](../../scripts/agent-host-model-policy.test.mjs), [scripts/agent-host-execution-packet.test.mjs](../../scripts/agent-host-execution-packet.test.mjs), [docs/architecture/execution-packet-contract.md](../../docs/architecture/execution-packet-contract.md).
 
 <a id="e-auth"></a>

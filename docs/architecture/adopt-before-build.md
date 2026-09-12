@@ -171,6 +171,14 @@ Hermes installation is expected not-ready state: no incident or install loop.
 
 ## Admission and failure semantics
 
+The offline [pinned public transport examination](../operations/hermes-windows-attestation.md#offline-transport-examination-adapter-blocked)
+found unbounded byte capture and direct-child-only cleanup in Hermes' public
+App Server client. A real Python/fake App Server wire reproduced both gaps;
+no model or Codex binary ran. The production adapter is **blocked, not delivered**.
+No registry/protocol bump is needed: wire semantics and admission are unchanged.
+Worker-owned pipe/tree containment or a reviewed upstream public-hook change
+must precede implementation acceptance. Configuration assertions are not proof.
+
 Both API request admission (claim/recovery) and Worker admission independently
 reject Hermes with `hermes_compatibility_unproven`, regardless of configuration,
 host-reported readiness or the API execution flag. The Worker keeps heartbeat

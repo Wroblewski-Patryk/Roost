@@ -5,6 +5,10 @@ official pinned Hermes compatibility before any local agent pilot. Direct Codex
 remains the reference/fallback. Hermes is disabled and unproven; neither host
 metadata nor the execution environment flag proves or grants pilot admission.
 
+An [offline examination of the pinned Hermes transport](../operations/hermes-windows-attestation.md#offline-transport-examination-adapter-blocked)
+reproduced missing byte and process-tree fences with a fake App Server. It does
+not deliver a production adapter or alter this host's spawn/recovery path.
+
 [Material unknown interviews](material-unknown-interviews.md) bind short question blocks to exact human decisions, immutable proposals and dependency-specific Ready fences. Resolution requires fresh Submit and never revives old dependent-operation grants.
 
 [Governed task clarification](governed-task-clarification.md) provides typed specialist conversation and deterministic receipt summaries without changing task authority.

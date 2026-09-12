@@ -7,6 +7,10 @@ only. No host entrypoint starts it in this release; observer does not import or
 open it. Both API and Worker still refuse Hermes claim/recovery/model spawn.
 There is no live Hermes/Codex compatibility proof or pilot admission.
 
+The separate [offline Hermes transport examination](../operations/hermes-windows-attestation.md#offline-transport-examination-adapter-blocked)
+found capture/tree blockers before adapter acceptance. It opens no broker and
+does not change the broker's synthetic proof or authorize runtime reads.
+
 ## Ownership and data boundary
 
 Provider contract v4 separates mandatory bootstrap context from this optional

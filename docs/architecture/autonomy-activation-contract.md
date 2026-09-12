@@ -8,6 +8,10 @@ remain open. Execution stays false, observer stays observe, Hermes stays disable
 and `pilotReadiness.ready` stays false. Runtime reads require separate authority
 and cannot replace a sealed active context outside RF-CTX-006 reconciliation.
 
+The [offline pinned Hermes transport test](../operations/hermes-windows-attestation.md#offline-transport-examination-adapter-blocked)
+reproduces byte-capture and descendant-cleanup gaps. The requested production
+adapter remains blocked; this negative evidence does not satisfy activation.
+
 [Adopt-before-build and provider contract v4](adopt-before-build.md) requires
 official pinned Hermes compatibility before any local agent pilot. Direct Codex
 remains the reference/fallback. Hermes is disabled and unproven; neither host
