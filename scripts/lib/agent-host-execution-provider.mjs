@@ -5,7 +5,7 @@ import { attestHermes } from "./agent-host-hermes-attestation.mjs";
 
 export const { registry, providerAdmissionReason } = contract;
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-export async function inspectExecutionProvider(config, { platform = process.platform } = {}) {
+export async function inspectExecutionProvider(config, { platform = process.platform, freshAttestation = false } = {}) {
   const input = config.executionProvider;
   if (contract.providerKind(input) !== "hermes_codex") return contract.projectProvider(input);
   const entry = registry.providers.find(provider => provider.kind === "hermes_codex"), blockers = [];
@@ -30,7 +30,7 @@ export async function inspectExecutionProvider(config, { platform = process.plat
   if (mcpKeys.some(key => !same(policy[key], expected[key])) || Object.keys(policy).some(key => !(key in expected))) blockers.push("hermes_mcp_policy_invalid");
   if (Object.keys(expected).filter(key => !mcpKeys.includes(key)).some(key => policy[key] !== expected[key])
     || Object.keys(input).some(key => !["kind", "enabled", "officialSource", "version", "commit", "executablePath", "policy", "attestation"].includes(key))) blockers.push("hermes_authority_policy_invalid");
-  const evidence = blockers.every(code => code === "hermes_disabled") ? await attestHermes(input) : {};
+  const evidence = blockers.every(code => code === "hermes_disabled") ? await attestHermes(input, { useCache: !freshAttestation }) : {};
   // Installation evidence never overrides runtime compatibility or execution admission.
   return contract.projectProvider({ kind: "hermes_codex", ...evidence, blockers: [...blockers, ...(evidence.blockers ?? [])] });
 }

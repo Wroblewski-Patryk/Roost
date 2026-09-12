@@ -71,6 +71,7 @@ export function createExecutionLease({ renew, onLost, now = () => performance.no
     refresh,
     reject,
     assertValid,
+    get remainingMs() { assertValid(); return Math.max(0, deadline - now()); },
     get failure() { return failure; },
     stop() { disposed = true; clearTimer(expiryTimer); clearTimer(renewalTimer); }
   };

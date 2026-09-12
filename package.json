@@ -28,6 +28,7 @@
     "agent:codex-host": "node scripts/roost-codex-agent-host.mjs",
     "agent:provider:check": "node scripts/validate-roost-execution-provider.mjs",
     "test:agent-provider": "node --test scripts/agent-host-execution-provider.test.mjs scripts/agent-host-hermes-attestation.test.mjs && tsx --test src/tests/execution-provider.test.ts",
+    "test:agent-broker": "node --test scripts/agent-host-mcp-broker.test.mjs",
     "agent:codex-host:check": "node scripts/validate-roost-agent-host-config.mjs",
     "test:agent-host-guard": "node --test scripts/agent-host-workspace-guard.test.mjs",
     "test:agent-host-lease": "node --test scripts/agent-host-execution-lease.test.mjs",

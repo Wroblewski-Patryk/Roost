@@ -29,14 +29,17 @@ export function contextAdmissionError(reason, details = {}) {
   });
 }
 
-export async function fetchExecutionContext(api, claimed) {
+export async function fetchExecutionContext(api, claimed, { signal, secrets = [] } = {}) {
   try {
-    const fresh = { cache: "no-store", headers: { "Cache-Control": "no-cache" } };
+    signal?.throwIfAborted();
+    const fresh = { cache: "no-store", ...(signal ? { signal } : {}), headers: { "Cache-Control": "no-cache" } };
     const taskContext = await api(`/v1/company-intelligence/tasks/${claimed.taskId}/agent-context?executionId=${encodeURIComponent(claimed.id)}`, fresh);
-    guardHostContent({ taskContext, prompt: claimed.prompt }, "required", [claimed.leaseToken]);
+    guardHostContent({ taskContext, prompt: claimed.prompt }, "required", [claimed.leaseToken, ...secrets]);
+    signal?.throwIfAborted();
     const query = readyContext.readyContextQuery(taskContext?.task ?? taskContext, claimed.prompt);
     const applicationContext = await api(`/v1/product-engineering/applications/${claimed.applicationId}/agent-context?profile=execution`,
       { ...fresh, headers: { ...fresh.headers, "X-Roost-Agent-Context-Query": query } });
+    signal?.throwIfAborted();
     return { taskContext, applicationContext };
   } catch (error) {
     if (error.readyAdmission || error.redaction) throw error;

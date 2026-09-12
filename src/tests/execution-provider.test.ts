@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { hostCompatibility, requestCompatibility, protocol } from "../modules/agent-runtime/host-protocol";
 import { projectProvider, sanitizeProviderMetadata, executionProviderRegistry } from "../modules/agent-runtime/execution-provider";
-import { createMcpManifest } from "../mcp/manifest";
 
 const host = (executionProvider?: unknown) => ({ capabilities: protocol.requiredHostCapabilities,
   metadata: { protocolVersion: protocol.version, executionMode: "supervised", ...(executionProvider === undefined ? {} : { executionProvider }) } });
@@ -17,12 +16,15 @@ test("API preserves legacy direct protocol and rejects Hermes/unknown declaratio
 test("API provider projection contains only fixed public diagnostics", () => {
   const input = { runnerVersion: "fixture", executionProviderConfig: { token: "SENTINEL" }, executionProvider: {
     kind: "hermes_codex", officialSource: "SENTINEL", executablePath: "SENTINEL", version: "SENTINEL", installedVersion: "SENTINEL",
-    ready: true, compatibility: "confirmed", blockers: ["SENTINEL", "hermes_pin_invalid"] } };
+    ready: true, brokerBootstrap: { token: "SENTINEL", endpoint: "SENTINEL" }, compatibility: "confirmed", blockers: ["SENTINEL", "hermes_pin_invalid"] } };
   const metadata = sanitizeProviderMetadata(input);
   assert.equal(JSON.stringify(metadata).includes("SENTINEL"), false);
-  assert.deepEqual(projectProvider(metadata.executionProvider).blockers, ["hermes_pin_invalid", "hermes_compatibility_unproven"]);
+  assert.ok(projectProvider(metadata.executionProvider).blockers.includes("hermes_pin_invalid"));
+  assert.ok(projectProvider(metadata.executionProvider).blockers.includes("hermes_compatibility_unproven"));
   assert.deepEqual(sanitizeProviderMetadata(metadata), metadata);
   assert.equal(executionProviderRegistry.pilotReady, false);
+  assert.equal(projectProvider({ kind: "hermes_codex", brokerContractVerified: false }).brokerContractVerified, true);
+  assert.equal(projectProvider({ kind: "direct_codex", brokerContractVerified: true }).brokerContractVerified, false);
 });
 
 test("Worker installation evidence is diagnostic and cannot grant API admission", () => {
@@ -40,10 +42,9 @@ test("Worker installation evidence is diagnostic and cannot grant API admission"
 });
 
 
-test("Hermes minimum tools are exact existing read-only Roost routes", () => {
-  const tools = createMcpManifest(["connection:read", "company-graph:read"]).tools;
-  for (const name of executionProviderRegistry.hermesPolicy.minimumTools) {
-    const tool = tools.find(tool => tool.name === name);
-    assert.ok(tool, name); assert.equal(tool.method, "GET"); assert.equal(tool.riskLevel, "read");
-  }
+test("Hermes broker policy is exact and proof never implies live compatibility", () => {
+  assert.deepEqual(executionProviderRegistry.hermesPolicy.minimumTools, ["roost_get_execution_packet", "roost_get_application_context"]);
+  assert.equal(executionProviderRegistry.brokerContract.verified, true);
+  assert.equal(executionProviderRegistry.brokerContract.liveCompatibility, "unproven");
+  assert.equal(executionProviderRegistry.brokerContract.nativeToolsIsolation, "unproven");
 });

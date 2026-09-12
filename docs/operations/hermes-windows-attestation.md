@@ -2,8 +2,9 @@
 
 This is installation evidence only. Keep production execution disabled and the
 Worker in `observe`. Do not configure models, login, MCP, memory, sessions,
-kanban, gateways or autostart. The Worker-owned MCP broker and read-only model
-comparison remain a separately authorized, unstarted stage.
+kanban, gateways or autostart. The [Worker-owned MCP broker contract](../architecture/worker-readonly-mcp-broker.md)
+has synthetic proof only; native integration and the read-only model comparison
+remain a separately authorized, unstarted stage.
 
 ## Installation and provenance
 

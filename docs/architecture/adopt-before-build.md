@@ -1,6 +1,7 @@
 # Adopt-before-build and execution providers
 
-Contract version: **2**. Status: private Windows installation attestation implemented,
+Contract version: **3**. Status: private Windows installation attestation and a
+synthetically verified Worker-owned read-only MCP broker implemented,
 execution disabled; Hermes compatibility **unproven**. This contract does not authorize installation,
 model calls, application work or activation. The machine-readable
 [registry](../../src/modules/agent-runtime/execution-providers.json) pins the
@@ -55,17 +56,19 @@ For Hermes its accepted fields are:
 | `attestation` | Private canonical `manifestPath` and SHA-256 of the sealed installation manifest; exact two fields |
 | `policy` | Exact keys/values of registry `hermesPolicy`; unknown fields rejected |
 
-The policy permits only the `roost` MCP server and the two exact read tools in
-`minimumTools`: connection and the bounded task-context packet. No wildcard or
+The policy permits only the `roost` MCP server and the two exact local broker
+tools in `minimumTools`: pinned execution packet and Ready-approved application
+context. These are not general API proxies or global MCP catalog additions. No wildcard or
 extra tool, parallel tool calls, prompts, resources or sampling is permitted.
 No direct PostgreSQL, arbitrary filesystem, extra MCP server, or Roost key
-inheritance into Hermes/model processes is permitted. A future Worker-owned
-broker must keep credentials outside the provider environment and enforce the
-same task, workspace and tool restrictions on every request and rediscovery.
+inheritance into Hermes/model processes is permitted. The [Worker-owned broker](worker-readonly-mcp-broker.md)
+keeps credentials outside the client and enforces exact attempt, task, workspace,
+application, context revisions and tool restrictions on requests/rediscovery.
 Hermes memory, kanban, schedules, delegation and sessions have no independent
 authority. Configuration declarations are requirements, not proof that upstream
-will enforce them. Broker isolation and these restrictions are **unsatisfied**
-until demonstrated in the next-stage PoC; no broker is implemented here.
+will enforce them. Broker transport/data/lifetime tests are satisfied without a
+model; native Hermes containment and live compatibility remain **unproven**.
+Observer never starts the broker, and its default provider gate refuses startup.
 
 `npm run agent:provider:check` reads private configuration, checks an explicitly
 configured sealed installation and can execute only `hermes.exe --version` after
@@ -102,7 +105,9 @@ not continuous tamper monitoring. Any future execution admission requires fresh
 integrity/containment proof and cannot reuse this diagnostic cache.
 
 `/v1/agent-runtime/readiness` exposes the public registry and a separate
-`pilotReadiness` with `ready:false`. Host runtime diagnostics and owner
+`pilotReadiness` with `ready:false`. `brokerContractVerified` is derived from the
+versioned registry's synthetic proof and cannot be forged into admission by host
+metadata. It does not mean a broker is listening. Host runtime diagnostics and owner
 connections show fixed provider/version/blocker information in PL/EN. A missing
 Hermes installation is expected not-ready state: no incident or install loop.
 
@@ -120,13 +125,13 @@ Future provider admission must preserve protocol/capability checks, Ready and
 context seals, current Decisions and risk, branch/path/origin allowlists, one
 writer, lease fencing, redaction, duration and output budgets, process-tree stop,
 context invalidation and checkpoint reconciliation. Metadata cannot attest any
-of these guarantees or expand task authority. Contract v2 always fails closed
+of these guarantees or expand task authority. Contract v3 always fails closed
 for Hermes; changing that requires code, evidence and separate activation
 authority, not a local `ready` switch.
 
 ## Next stage only: private Windows compatibility PoC
 
-Do not start this stage as a side effect of shipping installation attestation. Its
+Do not start this stage as a side effect of shipping the no-model broker contract. Its
 bounded input is a verified private installation of the exact registry source
 commit, with dependency/build provenance and executable/environment digests.
 Preserve the previous environment/config and a rollback path. No

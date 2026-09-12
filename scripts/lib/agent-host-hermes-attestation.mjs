@@ -90,7 +90,7 @@ export async function runVersionProbe(executable, options, { spawnProcess = spaw
 // Dependencies are code-only test seams, never selectable by private configuration.
 export async function attestHermes(input, { runVersion = runVersionProbe, verifyProbe = readonlyProbe, now = Date.now, useCache = true, expectedPin = pin } = {}) {
   const pin = expectedPin;
-  if (useCache && stopUncertain) return { blockers: ["hermes_probe_stop_failed"] };
+  if (stopUncertain) return { blockers: ["hermes_probe_stop_failed"] };
   if (!input.attestation) return { blockers: ["hermes_attestation_missing"] };
   const attestation = input.attestation;
   let key;
@@ -145,7 +145,7 @@ export async function attestHermes(input, { runVersion = runVersionProbe, verify
     await verifyProbe(manifest.probeDirectory);
     const result = await runVersion(input.executablePath, { cwd: checkout.path, env: versionProbeEnvironment(manifest.probeDirectory) });
     if (result.code) {
-      if (useCache && result.code === "hermes_probe_stop_failed") stopUncertain = true;
+      if (result.code === "hermes_probe_stop_failed") stopUncertain = true;
       fail(CODES.includes(result.code) ? result.code : "hermes_version_failed");
     }
     const versions = [...result.output.matchAll(/^Hermes Agent v(\d+\.\d+\.\d+) \([^\r\n]+\)\s*$/gm)];

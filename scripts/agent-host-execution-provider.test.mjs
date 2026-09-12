@@ -3,6 +3,7 @@ import test from "node:test";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { createServer } from "node:http";
+import net from "node:net";
 import { mkdtemp, writeFile, readFile, unlink, rmdir } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -53,7 +54,8 @@ test("correct declarations and spoofed readiness cannot prove compatibility", as
   assert.equal(report.executionSupported, false);
   const forged = contract.projectProvider({ kind: "hermes_codex", ready: true, compatibility: "confirmed", installedVersion: "secret", blockers: [], executablePath: "private" });
   assert.equal(forged.compatibility, "unproven"); assert.equal(forged.installedVersion, null);
-  assert.deepEqual(forged.blockers, ["hermes_compatibility_unproven"]);
+  assert.ok(forged.blockers.includes("hermes_compatibility_unproven"));
+  assert.ok(forged.blockers.includes("hermes_native_tools_isolation_unproven"));
   assert.equal(JSON.stringify(forged).includes("private"), false);
   for (const value of [null, "direct_codex", {}, { kind: "secret" }]) assert.equal(contract.providerAdmissionReason(value), "execution_provider_unknown");
 });
@@ -64,7 +66,8 @@ test("Hermes explicit executable existence is inspected without starting it", { 
     await writeFile(executable, "not an executable; inspection only");
     const config = configured(); config.executablePath = executable;
     const report = await inspectExecutionProvider({ executionProvider: config });
-    assert.deepEqual(report.blockers, ["hermes_attestation_missing", "hermes_compatibility_unproven"]);
+    assert.ok(report.blockers.includes("hermes_attestation_missing"));
+    assert.ok(report.blockers.includes("hermes_compatibility_unproven"));
     await unlink(executable);
     assert.ok((await inspectExecutionProvider({ executionProvider: config })).blockers.includes("hermes_executable_missing"));
   } finally { await rmdir(directory); }
@@ -83,7 +86,7 @@ for (const kind of ["hermes_codex", "unknown"]) test(`${kind} cannot recover, lo
   await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
   try {
     await writeFile(configPath, JSON.stringify({ executionMode: "supervised", repositories: {}, executionProvider: { ...configured(), kind, executablePath: "PRIVATE_PATH_SENTINEL", secret: "PRIVATE_SECRET_SENTINEL" } }));
-    const script = `import cp from 'node:child_process';import{syncBuiltinESMExports}from'node:module';cp.spawn=()=>{console.log('FORBIDDEN_SPAWN');throw Error('spawn_forbidden')};syncBuiltinESMExports();const{runHost}=await import('./scripts/roost-codex-agent-host.mjs');await runHost({acquireLock:()=>{console.log('FORBIDDEN_LOCK');throw Error('lock_forbidden')}});`;
+    const script = `import cp from 'node:child_process';import net from 'node:net';import{syncBuiltinESMExports}from'node:module';net.Server.prototype.listen=()=>{console.log('FORBIDDEN_BROKER');throw Error('listen_forbidden')};cp.spawn=()=>{console.log('FORBIDDEN_SPAWN');throw Error('spawn_forbidden')};syncBuiltinESMExports();const{runHost}=await import('./scripts/roost-codex-agent-host.mjs');await runHost({acquireLock:()=>{console.log('FORBIDDEN_LOCK');throw Error('lock_forbidden')}});`;
     child = spawn(process.execPath, ["--input-type=module", "-e", script], { windowsHide: true, env: { ...process.env, ROOST_BASE_URL: `http://127.0.0.1:${server.address().port}`, ROOST_AGENT_API_KEY: "SYNTHETIC_WORKER_KEY", ROOST_AGENT_HOST_CONFIG: configPath }, stdio: ["ignore", "pipe", "pipe"] });
     let output = ""; child.stdout.on("data", c => output += c); child.stderr.on("data", c => output += c);
     await once(child, "close");
@@ -101,6 +104,8 @@ test("Hermes absence leaves observer online without claims or incidents", async 
   const directory = await mkdtemp(path.join(os.tmpdir(), "roost-provider-observe-"));
   const example = JSON.parse(await readFile(new URL("../config/roost-agent-host.example.json", import.meta.url), "utf8"));
   let count = 0; const bodies = [];
+  const listen = net.Server.prototype.listen;
+  net.Server.prototype.listen = () => { throw new Error("observer_broker_forbidden"); };
   try {
     await runObserver({ config: { ...example, executionMode: "observe", executionProvider: { kind: "hermes_codex" } }, stateDirectory: directory,
       acquireLock: async () => async () => {}, interval: 1, stopped: () => count >= 2,
@@ -109,7 +114,7 @@ test("Hermes absence leaves observer online without claims or incidents", async 
     assert.ok(bodies.every(body => !JSON.stringify(body).includes(example.workspaceRoot)));
     const saved = JSON.parse(await readFile(path.join(directory, "status.json"), "utf8"));
     assert.deepEqual(saved.executionUnavailableReasons, ["observer_mode", "runtime_disabled"]);
-  } finally { await unlink(path.join(directory, "status.json")); await rmdir(directory); }
+  } finally { net.Server.prototype.listen = listen; await unlink(path.join(directory, "status.json")); await rmdir(directory); }
 });
 
 test("configuration checker never echoes malformed input or private paths", async () => {

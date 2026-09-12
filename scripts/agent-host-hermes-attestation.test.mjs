@@ -99,3 +99,11 @@ for (const [kind, expected] of [["timeout", "hermes_version_timeout"], ["overflo
     assert.deepEqual(result, { code: expected, output: "" }); assert.equal(stopped, 1);
   });
 }
+
+test("fresh attestation cannot bypass an uncertain diagnostic process stop", { skip: process.platform !== "win32" }, () => fixture(async f => {
+  let probes = 0;
+  const dependencies = { ...f.deps, runVersion: async () => { probes++; return { code: "hermes_probe_stop_failed", output: "" }; } };
+  assert.deepEqual(await attestHermes(f.input, dependencies), { blockers: ["hermes_probe_stop_failed"] });
+  assert.deepEqual(await attestHermes(f.input, { ...dependencies, useCache: false }), { blockers: ["hermes_probe_stop_failed"] });
+  assert.equal(probes, 1);
+}));

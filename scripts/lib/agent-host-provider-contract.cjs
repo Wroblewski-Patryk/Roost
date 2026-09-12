@@ -6,7 +6,8 @@ const blockerCodes = Object.freeze([
   "hermes_windows_required", "hermes_executable_invalid", "hermes_executable_missing",
   "hermes_mcp_policy_invalid", "hermes_authority_policy_invalid", "hermes_compatibility_unproven",
   "hermes_attestation_missing", "hermes_attestation_invalid", "hermes_integrity_mismatch", "hermes_probe_unsafe",
-  "hermes_version_failed", "hermes_version_mismatch", "hermes_version_timeout", "hermes_probe_stop_failed"
+  "hermes_version_failed", "hermes_version_mismatch", "hermes_version_timeout", "hermes_probe_stop_failed",
+  "hermes_native_tools_isolation_unproven", "hermes_output_cost_budget_unproven", "hermes_stop_recovery_unproven"
 ]);
 const record = value => value && typeof value === "object" && !Array.isArray(value) ? value : {};
 function providerKind(value) {
@@ -23,6 +24,7 @@ function projectProvider(value) {
   const blockers = Array.isArray(input.blockers) ? input.blockers.filter(code => blockerCodes.includes(code)) : [];
   const admission = providerAdmissionReason(value);
   if (admission) blockers.push(admission);
+  if (kind === "hermes_codex") blockers.push("hermes_native_tools_isolation_unproven", "hermes_output_cost_budget_unproven", "hermes_stop_recovery_unproven");
   const evidence = record(input.installation);
   const verified = kind === "hermes_codex" && evidence.status === "verified" && evidence.version === entry.version
     && typeof evidence.fingerprint === "string" && /^[a-f0-9]{12}$/.test(evidence.fingerprint) && evidence.signature === "unsigned"
@@ -32,6 +34,7 @@ function projectProvider(value) {
     checkedAt: evidence.checkedAt, signature: "unsigned" } : { status: "unverified", version: null, fingerprint: null, checkedAt: null, signature: null };
   return { contractVersion: registry.contractVersion, kind, pinnedVersion: entry?.version ?? null,
     installedVersion: verified ? entry.version : null, installation, compatibility: kind === "direct_codex" ? "reference" : "unproven",
+    brokerContractVerified: kind === "hermes_codex" && registry.brokerContract.verified === true,
     executionSupported: kind === "direct_codex", blockers: [...new Set(blockers)] };
 }
 function sanitizeProviderMetadata(value) {

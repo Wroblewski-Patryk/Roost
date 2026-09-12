@@ -44,6 +44,8 @@ try {
       if (state === "verified") {
         await panel.getByText(locale === "pl" ? "0.21.2 · zweryfikowana przez Worker" : "0.21.2 · verified by Worker", { exact: true }).waitFor();
         await panel.getByText("123456abcdef", { exact: true }).waitFor();
+        await panel.getByText(locale === "pl" ? "kontrakt przetestowany bez modelu" : "contract tested without a model", { exact: true }).waitFor();
+        await panel.getByText("hermes_native_tools_isolation_unproven", { exact: true }).waitFor();
       }
       if (state === "timeout") await panel.getByText("hermes_version_timeout", { exact: true }).waitFor();
     } else await page.getByText(locale === "pl" ? "Nie udało się odczytać stanu hosta" : "Host status could not be loaded", { exact: true }).waitFor();

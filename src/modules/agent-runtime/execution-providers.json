@@ -1,7 +1,17 @@
 {
-  "contractVersion": 2,
+  "contractVersion": 3,
   "requiredPilotProvider": "hermes_codex",
   "pilotReady": false,
+  "brokerContract": {
+    "version": "roost-worker-mcp-broker-v1",
+    "verified": true,
+    "proofScope": "Synthetic contract/transport/lifecycle tests only; no live Hermes or model compatibility proof.",
+    "transport": "loopback_http",
+    "protocolVersion": "2025-11-25",
+    "credentialOwner": "worker",
+    "nativeToolsIsolation": "unproven",
+    "liveCompatibility": "unproven"
+  },
   "providers": [
     {
       "kind": "direct_codex",
@@ -38,14 +48,14 @@
       "capability": "Future Codex-backed inference through Hermes and bounded Roost MCP/API",
       "boundary": "No independent task, memory, kanban, schedule, delegation or session authority. No Roost credentials in provider/model environment; no direct database or arbitrary filesystem access.",
       "updateRollback": "No automatic install/update. Private pinned environment, retained prior environment/config, license/dependency review and repeated compatibility PoC for every pin change.",
-      "healthReadiness": "Contract v2 supports private Windows installation attestation. MCP isolation, model compatibility and budget/stop/recovery remain unproven. Hermes task execution always blocked.",
+      "healthReadiness": "Contract v3 adds a synthetically verified Worker-owned read-only MCP broker. Native Hermes tool isolation, live model compatibility and budget/stop/recovery remain unproven. Hermes task execution always blocked; observer never starts a broker.",
       "resourceCost": "Python >=3.11,<3.14 plus dependencies, local provider process and model usage. Disk, memory, latency and token overhead unmeasured; measure in read-only PoC before any pilot.",
       "failureMode": "Expected not-ready state without incidents, installation, claim or automatic fallback. Only an explicitly configured, integrity-checked version probe can start. Worker/API task admission fails closed."
     }
   ],
   "hermesPolicy": {
     "mcpServer": "roost",
-    "minimumTools": ["companycore_get_connection", "companycore_get_company_intelligence_tasks_by_id_agent_context"],
+    "minimumTools": ["roost_get_execution_packet", "roost_get_application_context"],
     "supportsParallelToolCalls": false,
     "prompts": false,
     "resources": false,

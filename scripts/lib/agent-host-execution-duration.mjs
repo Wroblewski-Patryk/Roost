@@ -42,6 +42,7 @@ export function createExecutionDuration({ startedAt, maxDurationSeconds, onExpir
 
   return {
     assertWithinBudget,
+    get remainingMs() { assertWithinBudget(); return Math.max(0, limitMs - elapsed); },
     async wait(operation) {
       // Observe rejection even when admission has already failed.
       const result = Promise.resolve(operation);

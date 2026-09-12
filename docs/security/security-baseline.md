@@ -112,6 +112,12 @@ AI, auth-sensitive, money-impacting, and cross-user data flows must fail closed 
 
 ## Task-scoped agent capabilities
 
+The [Worker-owned read-only MCP broker](../architecture/worker-readonly-mcp-broker.md)
+has synthetic transport/data/lifetime proof with an ephemeral attempt capability;
+the long-lived Roost key remains in Worker. It is not a generic proxy, does not
+start in observe mode, and does not prove native Hermes tool containment or grant
+Hermes execution admission.
+
 Native agent review writes require an explicit human-admin-issued
 [RF-SEC-003 grant](../architecture/task-capability-grants.md) bound to the exact
 workspace, agent, credential, task, application, operation and time. Current roles
