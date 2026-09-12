@@ -415,6 +415,9 @@ was BLOCKED at the user-WSL-2 prerequisite. [RF-HOST-031/032](../operations/agen
 installed a dedicated non-root-default Ubuntu distribution and verified native
 Docker client/server access plus existing-workload continuity. Final scoped-stop
 verification passed; setup is READY-FOR-OPENSHELL-PREFLIGHT.
+The later [RF-HOST-033 installation preflight](../operations/openshell-installation-preflight.md)
+is BLOCKED by a missing native Docker socket after cold start; immutable artifact
+identification does not admit installation or resolve containment/resource gates.
 Filesystem isolation is UNPROVEN. No sandbox/containment claim or new
 activation authority follows from its read-only preflight. This is separate
 feasibility evidence, not completion of RF-HOST-010/020 or the frozen baseline.

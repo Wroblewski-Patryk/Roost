@@ -1,6 +1,10 @@
 # RF-HOST-031/032: dedicated Ubuntu WSL environment
 
-## Current result
+Current follow-up: [RF-HOST-033](openshell-installation-preflight.md) is BLOCKED:
+the native Docker socket was absent on the next cold start. The successful
+RF-HOST-032 observations below are retained; they do not establish persistence.
+
+## RF-HOST-032 result
 
 **READY-FOR-OPENSHELL-PREFLIGHT**, verified 2026-09-13. The dedicated Ubuntu
 24.04 LTS distribution has working native Docker Desktop integration under WSL 2, with a non-root

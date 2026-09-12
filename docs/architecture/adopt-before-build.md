@@ -178,6 +178,9 @@ distribution. [RF-HOST-031/032](../operations/agent-wsl-environment.md) installe
 and verified native Docker integration with existing-workload continuity after
 one Apply/restart. Final scoped-stop verification passed, making the environment
 READY-FOR-OPENSHELL-PREFLIGHT; filesystem isolation remains UNPROVEN.
+[RF-HOST-033](../operations/openshell-installation-preflight.md) subsequently
+pinned the installation candidate but blocks installation because the native
+Docker socket is absent after a cold start. No automatic repair is admitted.
 OpenShell v0.0.116 is a candidate pin, not an installed/adopted
 provider or proof of containment. No execution or deployment gate changes.
 

@@ -2,7 +2,9 @@
 
 Follow-up: [RF-HOST-031/032](agent-wsl-environment.md) installed the dedicated user
 distribution and verified native Docker integration and workload continuity.
-The final stopped-state check passed; setup is READY-FOR-OPENSHELL-PREFLIGHT.
+The final stopped-state check passed in RF-HOST-032. Subsequent
+[RF-HOST-033](openshell-installation-preflight.md) pinned installation artifacts
+but is BLOCKED by native Docker socket absence after a cold start.
 The historical prerequisite result below is preserved. OpenShell isolation
 still has no experimental proof.
 
