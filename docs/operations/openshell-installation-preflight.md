@@ -1,5 +1,10 @@
 # RF-HOST-033: pinned OpenShell installation/security preflight
 
+Follow-up: [RF-HOST-034](agent-wsl-environment.md#rf-host-034-durability-diagnosis)
+confirmed a persisted toggle and failed distribution proxy. Its one authorized
+Docker Desktop restart failed at the ingest listener; host daemon recovery and
+workload continuity now block further integration/installation checks.
+
 ## Verdict and authority
 
 **BLOCKED**, checked 2026-09-13. Release artifacts and the Docker deployment

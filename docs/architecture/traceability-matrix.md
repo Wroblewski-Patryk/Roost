@@ -418,6 +418,9 @@ verification passed; setup is READY-FOR-OPENSHELL-PREFLIGHT.
 The later [RF-HOST-033 installation preflight](../operations/openshell-installation-preflight.md)
 is BLOCKED by a missing native Docker socket after cold start; immutable artifact
 identification does not admit installation or resolve containment/resource gates.
+[RF-HOST-034](../operations/agent-wsl-environment.md#rf-host-034-durability-diagnosis)
+also remains BLOCKED: the one authorized Desktop restart failed, so daemon
+recovery, workload continuity and both durability cycles could not pass.
 Filesystem isolation is UNPROVEN. No sandbox/containment claim or new
 activation authority follows from its read-only preflight. This is separate
 feasibility evidence, not completion of RF-HOST-010/020 or the frozen baseline.

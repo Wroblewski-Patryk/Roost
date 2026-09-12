@@ -181,6 +181,10 @@ READY-FOR-OPENSHELL-PREFLIGHT; filesystem isolation remains UNPROVEN.
 [RF-HOST-033](../operations/openshell-installation-preflight.md) subsequently
 pinned the installation candidate but blocks installation because the native
 Docker socket is absent after a cold start. No automatic repair is admitted.
+[RF-HOST-034](../operations/agent-wsl-environment.md#rf-host-034-durability-diagnosis)
+confirmed the proxy failure, then stopped after one authorized Desktop restart
+failed at its ingest listener. Daemon/workload recovery and two automatic cold
+cycles remain unverified; installation stays blocked.
 OpenShell v0.0.116 is a candidate pin, not an installed/adopted
 provider or proof of containment. No execution or deployment gate changes.
 

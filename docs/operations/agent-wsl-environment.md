@@ -1,8 +1,11 @@
-# RF-HOST-031/032: dedicated Ubuntu WSL environment
+# RF-HOST-031/032/034: dedicated Ubuntu WSL environment
 
-Current follow-up: [RF-HOST-033](openshell-installation-preflight.md) is BLOCKED:
-the native Docker socket was absent on the next cold start. The successful
-RF-HOST-032 observations below are retained; they do not establish persistence.
+Current result: [RF-HOST-034](#rf-host-034-durability-diagnosis) is **BLOCKED**.
+The persisted integration toggle is enabled, but the distribution proxy failed.
+One authorized Docker Desktop restart then failed during ingest-listener startup.
+Both WSL distributions are stopped; the host daemon is unavailable and baseline
+workload recovery is unverified. No further repair was attempted. Successful
+RF-HOST-032 observations below are historical, not current health.
 
 ## RF-HOST-032 result
 
@@ -182,3 +185,102 @@ platform and kernel/security requirements and defining its installation/resource
 plan. Native Docker access alone does not prove whole-process containment.
 Any installation or sandbox/container trial requires its own explicit scope;
 no model execution or agent activation follows automatically.
+
+## RF-HOST-034 durability diagnosis
+
+Verified 2026-09-13. The task authorized only the dedicated distribution and at
+most one supported Docker Desktop Apply/restart. Before mutation, the host daemon
+answered as 29.7.2, two existing containers were Running with `always` restart
+policy, and exactly one dedicated user distribution was Stopped under WSL 2.
+Names/status/policies and machine observations were recorded privately; no
+workload payload, environment, mounts or secrets were inspected.
+
+### Initial cold-start observation
+
+The default non-root account started successfully with Linux-only PATH.
+`/usr/bin/docker` resolved to Docker Desktop's shared Linux CLI; ELF magic and
+CLI 29.7.2 were confirmed. A foreground shell kept the distribution active while
+checking every 15 seconds, at target elapsed times 0 through 120 seconds. All
+nine samples reported `/var/run/docker.sock` absent; total time **120,611 ms**,
+exit 2. This excludes a provisioning delay within that observation window, not
+every possible race.
+
+The supported **Settings > Resources > WSL Integration** UI showed the dedicated
+toggle enabled, default-distribution integration off and Apply disabled. A
+separate Docker Desktop dialog reported that integration unexpectedly stopped:
+its distribution proxy exited with `DockerDesktop/Wsl/ExecError`, status 1. It
+offered **Restart the WSL integration**.
+
+| Candidate explanation | Evidence |
+| --- | --- |
+| Short startup race | No socket appeared through the 120-second window. |
+| Toggle not persisted | Not supported: the UI retained enabled with no pending Apply. |
+| Integration provisioning/proxy failure | Supported by the explicit proxy-exit dialog; underlying cause not established. |
+| User socket permission problem | Socket absent, not permission-denied access to an existing socket. Separate from the later Windows listener-file error. |
+| Unsupported `systemd=false` | Not established. Docker does not document guest systemd as an integration prerequisite; Microsoft documents WSL init and opt-in systemd. No speculative configuration change. |
+
+Sources: [Docker WSL integration](https://docs.docker.com/desktop/features/wsl/),
+[supported settings](https://docs.docker.com/desktop/settings-and-maintenance/settings/),
+[Microsoft WSL systemd](https://learn.microsoft.com/en-us/windows/wsl/systemd).
+These describe the supported mechanism, not the cause of this installation's
+proxy crash.
+
+### One recovery attempt and stopping condition
+
+Input protection rejected the narrower UI restart click because another Docker
+window covered its point. One documented window refresh/retry was also rejected.
+**Neither click executed a restart.** No toggle changed. The fallback used
+Docker's [supported CLI](https://docs.docker.com/reference/cli/docker/desktop/restart/):
+`docker desktop restart --timeout 120`, exactly once, with an outer 125-second
+process deadline. It reached that deadline at **125,026 ms** without successful
+completion.
+
+Docker Desktop displayed a startup failure while initializing its Ingest server:
+it could not rename `sailor-ingest.sock` to `sailor-ingest.sock.stale` because the
+system could not access the file, and the listener failed. Only the sanitized
+UI diagnosis is retained here. This second failure is in the host backend; it
+does not prove the cause of the earlier distribution proxy exit.
+
+The daemon did not recover, so the two baseline workloads' return to Running
+could not be verified. The task stopped rather than issuing another restart,
+deleting socket files, changing permissions, reinstalling, factory-resetting or
+manually manipulating containers.
+
+| Required durability stage | Result |
+| --- | --- |
+| Initial diagnostic cold start | FAIL: native client present, socket absent in nine samples through 120 seconds. |
+| Post-recovery cold cycle 1 | NOT RUN: daemon recovery/continuity gate failed first. |
+| Post-recovery cold cycle 2 | NOT RUN for the same stopping condition; no fabricated timing or success. |
+
+**DURABLE-INTEGRATION-READY is not established.** Two passing cold cycles without
+an intervening Desktop restart remain mandatory after host recovery.
+
+### Final state, resources and verification
+
+One `wsl --terminate <dedicated-distribution>` returned 0. Inventory confirmed
+that distribution Stopped/WSL 2 and the internal Docker distribution also
+Stopped/WSL 2. The latter was never entered or directly terminated. The required
+final Docker-running/workload-continuity state was **not achieved**. No global
+WSL shutdown, Windows restart or second Docker restart was performed.
+
+No manual socket/symlink/mount, package, service, scheduled task, startup helper,
+temporary distribution or Docker resource was introduced. No container lifecycle
+or image/network/volume mutation command ran. The only retained task artifact
+outside documentation is its private receipt; bounded foreground probes completed
+or hit their process deadline. No temporary file cleanup was needed.
+
+Filesystem isolation remains **UNPROVEN**. Runtime stays observe, provider
+disabled, executionSupported=false, pilotReady=false and Hermes disabled; the
+local host status snapshot is online. No production access or admission/API/DB/
+protocol/application runtime change occurred.
+
+The seven existing preflight tests and documentation diff checks pass. The
+inventory-only preflight still reports further_checks_required and cannot certify
+daemon readiness. Full application/API/DB/UI suites were not run for docs-only
+changes. RF-HOST-030 through RF-HOST-034 remain local commits; no push/deploy.
+
+Recommended next atomic task, **not started**: owner-authorized recovery of
+Docker Desktop's ingest-listener startup failure using supported vendor
+troubleshooting/support, preserving the private baseline for continuity checks.
+Do not assume permission to delete the socket or reset resources. Restore daemon/
+workload health before resuming the two-cycle proof; no OpenShell installation.

@@ -5,6 +5,9 @@ distribution and verified native Docker integration and workload continuity.
 The final stopped-state check passed in RF-HOST-032. Subsequent
 [RF-HOST-033](openshell-installation-preflight.md) pinned installation artifacts
 but is BLOCKED by native Docker socket absence after a cold start.
+[RF-HOST-034](agent-wsl-environment.md#rf-host-034-durability-diagnosis) subsequently
+failed host daemon recovery during its single authorized restart; no durable
+integration or installation readiness follows.
 The historical prerequisite result below is preserved. OpenShell isolation
 still has no experimental proof.
 
