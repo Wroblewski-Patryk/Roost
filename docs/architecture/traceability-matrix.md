@@ -411,9 +411,11 @@ the production Hermes adapter or completion of RF-HOST-010/020/stop-recovery;
 see [the bounded examination](../operations/hermes-windows-attestation.md#offline-transport-examination-adapter-blocked).
 
 [RF-HOST-030: OpenShell feasibility](../operations/openshell-wsl-feasibility.md)
-was BLOCKED at the user-WSL-2 prerequisite. [RF-HOST-031](../operations/agent-wsl-environment.md)
-installed a dedicated non-root-default Ubuntu distribution but remains PARTIAL
-because Docker integration is unavailable. No sandbox/containment claim or new
+was BLOCKED at the user-WSL-2 prerequisite. [RF-HOST-031/032](../operations/agent-wsl-environment.md)
+installed a dedicated non-root-default Ubuntu distribution and verified native
+Docker client/server access plus existing-workload continuity. Final scoped-stop
+verification passed; setup is READY-FOR-OPENSHELL-PREFLIGHT.
+Filesystem isolation is UNPROVEN. No sandbox/containment claim or new
 activation authority follows from its read-only preflight. This is separate
 feasibility evidence, not completion of RF-HOST-010/020 or the frozen baseline.
 

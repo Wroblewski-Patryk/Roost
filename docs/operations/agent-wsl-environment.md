@@ -1,17 +1,26 @@
-# RF-HOST-031: dedicated Ubuntu WSL environment
+# RF-HOST-031/032: dedicated Ubuntu WSL environment
 
 ## Current result
 
-**PARTIAL**, verified 2026-09-13. One dedicated Ubuntu 24.04 LTS user
-distribution is installed, healthy, WSL 2 and non-root by default. Docker
-integration is unavailable from its Linux environment, so this is **not**
-READY-FOR-OPENSHELL-PREFLIGHT. OpenShell, Hermes and Codex were neither installed
-nor executed. There was no model inference, push or deployment.
+**READY-FOR-OPENSHELL-PREFLIGHT**, verified 2026-09-13. The dedicated Ubuntu
+24.04 LTS distribution has working native Docker Desktop integration under WSL 2, with a non-root
+default user. RF-HOST-032 passed client/server and existing-workload continuity
+checks after one supported Apply/restart. Scoped termination returned success;
+two early inventories still reported Running, but the final inventory confirmed
+Stopped without another termination, Docker restart or settings workaround.
+
+This establishes environment prerequisites only, not execution admission.
+OpenShell, Hermes and Codex were neither installed nor executed in this
+environment. There was no model inference, push or deployment.
 
 This resolves only the missing-user-distribution prerequisite from
 [RF-HOST-030](openshell-wsl-feasibility.md). Whole-process isolation, capture,
 filesystem restrictions, network policy and sandbox cleanup remain unproven.
 The existing provider/Worker admission contract does not change.
+
+The installation sections below retain RF-HOST-031 evidence. The
+[RF-HOST-032 integration result](#rf-host-032-integration-and-lifecycle-result)
+supersedes its missing-Docker observation and recommended integration task.
 
 ## Installation and account boundary
 
@@ -65,7 +74,7 @@ The dynamically growing filesystem reports a roughly 1-TiB capacity; that is
 not disk space consumed. No fixed-size disk, resize, compaction or extra image
 copy was created. No reboot or global `wsl --shutdown` was required or run.
 
-## Docker and mount observations
+## RF-HOST-031 Docker and mount observations
 
 `/mnt/c` is mounted by WSL defaults. Windows paths are inherited in the default
 PATH. No `[automount]` or `[interop]` expansion was configured and no repository,
@@ -86,7 +95,7 @@ locate the setting under **Settings > Resources > WSL Integration**, followed by
 Apply. Enabling the new distribution requires a Docker Desktop settings change,
 which is outside RF-HOST-031. No toggle, restart or backend change was attempted.
 
-## Cleanup, gates and next task
+## RF-HOST-031 cleanup and gates
 
 Retained: exactly one dedicated distribution/VHDX, its operational account and
 minimal config, and one private installation receipt. The downloaded archive,
@@ -105,8 +114,67 @@ Keep `executionSupported:false`, `pilotReady:false`, Hermes disabled and workers
 in `observe`. The previous RF-HOST-030 commit and this task's commit remain local;
 neither may be pushed as an implicit follow-up.
 
-Recommended next atomic task, **not started**: authorize enabling Docker Desktop
-WSL integration only for the dedicated distribution, including any required
-Apply/restart in an owner-approved window. Verify native client/socket/server
-access without pulling images or starting containers, then stop that distribution.
-Do not combine that task with installing OpenShell or executing any model.
+RF-HOST-031 recommended a separately authorized Docker integration task. Its
+subsequent result follows; the original installation itself did not change Docker.
+
+## RF-HOST-032 integration and lifecycle result
+
+The owner authorized integration only for the dedicated distribution and at
+most one Apply/restart. Docker Desktop 4.89.0.238018 exposed the documented
+**Settings > Resources > WSL Integration** setting. Only the dedicated
+distribution's toggle was enabled; integration with the default WSL distribution
+remained off. The UI required **Apply & restart**, invoked exactly once. Its
+status changed from Engine stopping to Engine running, with Apply then disabled.
+No undocumented settings file was patched and no Docker/WSL update was performed.
+
+Before mutation, a private receipt recorded daemon availability and the names,
+running states and restart policies of the two running containers. Both used
+`always`. After restart, both were Running with unchanged policies and the same
+running-name set; they were still Running after the scoped WSL termination.
+This verifies running-state continuity only, not application health or data
+contents. No application payload, logs, environment, mounts or secrets were
+inspected. Machine/account/container identifiers remain outside the repository.
+
+| Bounded check | Result |
+| --- | --- |
+| Host `docker version --format <client/server-version-fields>` | Client and server 29.7.2 before and after; each call bounded to 10 seconds. Post-Apply daemon check succeeded without retry. |
+| Host Docker context/endpoint fields | Local Docker Desktop Linux engine over a Windows named pipe; no remote daemon was used. |
+| `wsl.exe --distribution <distribution> --cd / --exec /usr/bin/env -i PATH=<standard-Linux-directories> HOME=<Linux-home> USER=<operational-user> /bin/sh -s` | Exit 0 within a 30-second bound, with no `--user` override; expected non-root identity and harmless command passed. |
+| `command -v docker`, `readlink -f`, first four executable bytes | `/usr/bin/docker` resolves to Docker Desktop's shared Linux CLI under `/mnt/wsl/docker-desktop/cli-tools/`; ELF magic confirmed. No Windows PATH wrapper. |
+| `test -S /var/run/docker.sock`; selected context endpoint | Unix socket, resolved `/run/docker.sock`; context `default`, endpoint `unix:///var/run/docker.sock`. |
+| Linux `docker version --format <selected-fields>` | Client 29.7.2 Linux/amd64 and server 29.7.2 Linux/amd64. |
+| Linux `docker info --format <selected-fields>` | Docker Desktop, Linux/x86_64; builtin seccomp and cgroup namespace reported. These fields do not prove sandbox policy enforcement or Landlock support. |
+| `wsl.exe --terminate <distribution>` | Exit 0 once; two early inventories reported Running, then the final inventory confirmed Stopped under WSL 2. No further distribution entry, termination loop or restart followed. |
+| Final host daemon/workload checks | Docker Desktop remains available; both prior running workloads remain Running with unchanged restart policies. The global WSL default is unchanged. |
+
+No stale-socket/listener failure appeared in the bounded daemon check or UI.
+No files were removed to repair Docker. There was no global WSL shutdown,
+container start/recreate/build/pull/remove or image/network/volume mutation.
+The Docker settings workflow supplied the integration CLI/socket; no separate
+Linux Docker package, daemon, OpenShell, Hermes, Codex or model was installed.
+
+Retained resources are the existing dedicated distribution/VHDX, its enabled
+Docker integration and one additional private verification receipt. No temporary
+scripts or downloaded files were created. VHDX file length remains 1,488,977,920
+bytes; guest filesystem use was 1,333,399,552 bytes (163,840 bytes above RF-HOST-031).
+Physical NTFS allocation and per-distribution RAM were not measured. The
+distribution is Stopped at handoff; Docker Desktop remains Running.
+
+Filesystem isolation remains **UNPROVEN**: `/mnt/c` and inherited Windows paths
+were not hardened, and daemon connectivity is not containment evidence. The
+local host remains online in `observe`, provider disabled and
+`executionSupported:false`; registry `pilotReady:false` and Hermes disabled
+remain unchanged. No API/DB/protocol or execution-admission contract changed.
+
+The seven existing preflight unit tests and `git diff --check` pass. The reusable
+preflight remains deliberately limited to prerequisite inventory and reports
+`further_checks_required`; it cannot certify this integration or grant execution.
+Application/API/DB/UI suites were not run for this documentation-only change.
+All three RF-HOST-030/031/032 commits remain local and must not be implicitly pushed.
+
+Next atomic task, **not started**: a bounded OpenShell-specific prerequisite
+preflight against this Linux environment, checking the candidate's supported
+platform and kernel/security requirements and defining its installation/resource
+plan. Native Docker access alone does not prove whole-process containment.
+Any installation or sandbox/container trial requires its own explicit scope;
+no model execution or agent activation follows automatically.
