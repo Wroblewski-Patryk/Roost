@@ -54,6 +54,11 @@ create API rejects its reserved slug, and the Agent Host rejects Roost mappings.
 
 ## Domain model
 
+Versioned observations, independent verification and task/Decision conversion
+follow [Governed findings and triage](governed-findings.md). The existing Evidence
+view hosts this workflow; observation history never implicitly changes product
+target or capability maturity.
+
 ```mermaid
 erDiagram
   WORKSPACE ||--o{ APPLICATION : owns

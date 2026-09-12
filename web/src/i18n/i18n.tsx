@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { defaultLocale, localeStorageKey, supportedLocales, type Locale } from "./locales";
 import { MessageKey, messages } from "./messages";
+import { api } from "../api/client";
+import { ownerToken } from "../api/auth-token";
 
 type TranslateParams = Record<string, string | number>;
 type Translate = (key: MessageKey, params?: TranslateParams) => string;
@@ -30,6 +32,14 @@ function interpolate(template: string, params?: TranslateParams) {
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(readInitialLocale);
+  useEffect(() => {
+    if (!ownerToken()) return;
+    let active=true;
+    void api<{data:{user?:{preferredLanguage?:string}}}>("/v1/auth/me").then(({data})=>{
+      if(active&&data.user?.preferredLanguage&&isLocale(data.user.preferredLanguage))setLocaleState(data.user.preferredLanguage);
+    }).catch(()=>{});
+    return ()=>{active=false;};
+  }, []);
 
   useEffect(() => {
     window.localStorage.setItem(localeStorageKey, locale);
@@ -45,7 +55,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
     return {
       locale,
-      setLocale: setLocaleState,
+      setLocale: (next:Locale)=>{
+        setLocaleState(next);
+        if(ownerToken())void api("/v1/auth/me",{method:"PATCH",body:JSON.stringify({preferredLanguage:next})}).catch(()=>{});
+      },
       t
     };
   }, [locale]);

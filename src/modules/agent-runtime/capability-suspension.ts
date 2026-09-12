@@ -10,7 +10,7 @@ import { reviewDigest } from "./task-review-contract";
 import { requireRuntimeContent } from "./runtime-redaction-policy";
 type Db = Prisma.TransactionClient;
 const text = z.string().trim().min(3).max(2000), uuid = z.string().uuid();
-export const suspensionOperations = ["review_decision", "return_to_executor", "create_specialist_task", "runtime_execute" , "handoff_create", "handoff_accept", "handoff_reject","clarification_send","clarification_reply"] as const;
+export const suspensionOperations = ["review_decision", "return_to_executor", "create_specialist_task", "runtime_execute" , "handoff_create", "handoff_accept", "handoff_reject","clarification_send","clarification_reply","finding_verify","finding_triage"] as const;
 export const suspensionSchema = z.object({ requestId: uuid, incidentId: uuid, taskId: uuid, applicationId: uuid,
   operation: z.enum(suspensionOperations), agentId: uuid.optional(), credentialId: uuid.optional(), hostId: uuid.optional(), reason: text, scopeProof: text, broaderReason: text.optional() }).strict()
   .refine(v => Boolean(v.agentId || v.credentialId || v.hostId || v.broaderReason), "scope_required")

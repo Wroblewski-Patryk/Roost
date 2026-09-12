@@ -24,6 +24,7 @@ only transient process state outside the repository.
   `architecture/material-unknown-interviews.md`,
   `architecture/decision-supersession-impact.md`
   `architecture/delegated-decision-authority.md`
+  `architecture/governed-findings.md`
   `architecture/autonomy-activation-contract.md` (accepted target and staged gates;
   not current execution authority)
 - Engineering: `engineering/local-development.md`, `engineering/testing.md`

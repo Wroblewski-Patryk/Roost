@@ -21,6 +21,9 @@ import { consumeProjectionAdmission, expectedIdempotencyKey, packetDigest, produ
 import { canonicalLifecycleStages, lifecycleOperatingContractSource } from "../modules/company-os/lifecycle-procedure-definition";
 import { calculateApplicationReadiness } from "../modules/product-engineering/readiness";
 import { env } from "../config/env";
+import { registerFindingTests } from "./finding-api";
+
+registerFindingTests({request,registerOwner,prepareReviewFixture,decisionFixtureProposal,decisionFixtureProof,refreshCompositionRisk,submissionInput});
 
 const realFetch = globalThis.fetch.bind(globalThis);
 let baseUrl = "";

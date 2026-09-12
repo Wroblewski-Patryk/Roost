@@ -445,6 +445,7 @@ enum FunctionalState {
 }
 
 model User {
+  preferredLanguage String? @map("preferred_language")
   admissionScopes TaskAdmissionScope[]
   admissionEvidence TaskAdmissionEvidence[]
   riskScopes TaskRiskScope[]
@@ -471,6 +472,7 @@ model User {
 }
 
 model Workspace {
+  canonicalLanguage String? @map("canonical_language")
   admissionScopes TaskAdmissionScope[]
   admissionEvidence TaskAdmissionEvidence[]
   riskScopes TaskRiskScope[]
@@ -3160,9 +3162,10 @@ model AgentCredentialOperation {
 model TaskCapabilityGrant {
   id String @id @default(uuid()) @db.Uuid
   workspaceId String @map("workspace_id") @db.Uuid
-  agentId String @map("agent_id") @db.Uuid
-  credentialId String @map("credential_id") @db.Uuid
-  credential ApiKey @relation(fields: [credentialId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  agentId String? @map("agent_id") @db.Uuid
+  granteeUserId String? @map("grantee_user_id") @db.Uuid
+  credentialId String? @map("credential_id") @db.Uuid
+  credential ApiKey? @relation(fields: [credentialId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   credentialVersion Int @map("credential_version")
   credentialClass String @default("agent_review_v1") @map("credential_class")
   taskId String @map("task_id") @db.Uuid
@@ -3203,6 +3206,7 @@ model TaskCapabilityRevocation {
   @@map("task_capability_revocations")
 }
 model TaskCapabilityUse {
+  findingJournalId String? @unique @map("finding_journal_id") @db.Uuid
   governedDecisionAcceptanceId String? @map("governed_decision_acceptance_id") @db.Uuid
   interviewCaseId String? @unique @map("interview_case_id") @db.Uuid
   clarificationEntryId String? @unique @map("clarification_entry_id") @db.Uuid

@@ -32,11 +32,12 @@ const identityValueSchema = z.string().max(900_000).refine((value) => (
 ), "invalid_identity_value");
 
 const updateProfileSchema = z.object({
+  preferredLanguage: z.enum(["pl","en"]).optional(),
   name: z.string().trim().min(1).max(120).optional(),
   email: z.string().email().transform((value) => value.toLowerCase()).optional(),
   avatar: identityValueSchema.nullable().optional(),
   currentPassword: z.string().min(1).optional()
-}).strict().refine((input) => input.name !== undefined || input.email !== undefined || input.avatar !== undefined, {
+}).strict().refine((input) => input.name !== undefined || input.email !== undefined || input.avatar !== undefined || input.preferredLanguage !== undefined, {
   message: "profile_field_required"
 });
 
@@ -268,7 +269,7 @@ authRouter.get("/me", requireAuthContext, asyncHandler(async (req, res) => {
   });
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: req.auth!.userId },
-    select: { email: true, name: true, avatar: true, updatedAt: true }
+    select: { email: true, name: true, avatar: true, preferredLanguage: true, updatedAt: true }
   });
 
   res.json({
@@ -301,10 +302,10 @@ authRouter.patch("/me", requireAuthContext, asyncHandler(async (req, res) => {
     const user = await prisma.$transaction(async (tx) => {
       const updated = await tx.user.update({
         where: { id: req.auth!.userId },
-        data: { name: input.name, email: input.email, avatar: input.avatar },
-        select: { id: true, email: true, name: true, avatar: true, updatedAt: true }
+        data: { name: input.name, email: input.email, avatar: input.avatar, preferredLanguage: input.preferredLanguage },
+        select: { id: true, email: true, name: true, avatar: true, preferredLanguage: true, updatedAt: true }
       });
-      await tx.workforceEntity.updateMany({
+      if(input.name!==undefined||input.email!==undefined||input.avatar!==undefined)await tx.workforceEntity.updateMany({
         where: { source: "user", externalId: updated.id },
         data: { name: updated.name || updated.email, ...(input.avatar !== undefined ? { avatar: input.avatar } : {}) }
       });

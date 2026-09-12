@@ -21,6 +21,7 @@ const workspaceSchema = z.object({
 }).strict();
 
 const updateWorkspaceSchema = z.object({
+  canonicalLanguage: z.enum(["pl","en"]).optional(),
   name: z.string().trim().min(1).max(120).optional(),
   logo: identityValueSchema.nullable().optional(),
   accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().optional()
@@ -30,6 +31,7 @@ export const workspacesRouter = Router();
 workspacesRouter.use("/:id/access", workspaceAccessRouter);
 
 function safeWorkspace(workspace: {
+  canonicalLanguage?: string | null;
   id: string;
   name: string;
   logo: string | null;
@@ -39,6 +41,7 @@ function safeWorkspace(workspace: {
   updatedAt: Date;
 }) {
   return {
+    canonicalLanguage: workspace.canonicalLanguage??null,
     id: workspace.id,
     name: workspace.name,
     logo: workspace.logo,

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { canonicalDepartmentKeys } from "../../operating-model/department-registry";
 
 export const decisionDomains = ["product_direction", "money", "legal", "critical_risk", "mandate_change", "ordinary_domain"] as const;
-export const decisionOperations = ["accept_decision", "supersede_decision", "answer_interview", "accept_interview"] as const;
+export const decisionOperations = ["accept_decision", "supersede_decision", "answer_interview", "accept_interview", "verify_finding", "triage_finding"] as const;
 export const mandateRisks = ["low", "medium", "high"] as const;
 const id = z.string().uuid();
 const text = z.string().trim().min(3).max(2000);
@@ -18,7 +18,7 @@ export const mandateBody = z.object({
   holder: authorityPrincipal, departmentKey: authorityDepartment,
   entities: z.array(authorityEntity).min(1).max(32),
   decisionDomains: z.array(z.literal("ordinary_domain")).length(1),
-  operations: z.array(z.enum(decisionOperations)).min(1).max(4),
+  operations: z.array(z.enum(decisionOperations)).min(1).max(6),
   exclusions: z.array(authorityEntity).max(32), exclusionReason: text,
   maxRisk: z.enum(mandateRisks), startsAt: z.string().datetime(), endsAt: z.string().datetime().nullable(),
   status: z.enum(["active", "suspended", "revoked"]), sourceDecisionId: id, reason: text

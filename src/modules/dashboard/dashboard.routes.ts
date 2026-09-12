@@ -246,7 +246,8 @@ dashboardRouter.get("/command", asyncHandler(async (req, res) => {
       target: "/areas?area=00-ogolny&view=overview",
       count: routingBacklog,
       priority: "medium"
-    } : null
+    } : null,
+    ...(await prisma.$queryRaw<any[]>`SELECT v.observation_id AS id,v.application_id AS "applicationId",v.body->>'title' AS title FROM finding_versions v WHERE v.workspace_id=${workspaceId}::uuid AND v.id=(finding_latest(v.observation_id)).id AND ((finding_head(v.observation_id)).state IN ('observed','deduplication_pending','verification_pending','verified','inconclusive','triage_pending') OR (finding_head(v.observation_id)).state='converted_to_task' AND EXISTS(SELECT 1 FROM finding_outputs o WHERE o.observation_id=v.observation_id AND NOT finding_task_current(o.task_id))) AND NOT EXISTS(SELECT 1 FROM finding_outputs o WHERE o.observation_id=v.observation_id AND (o.decision_id IS NOT NULL AND decision_state(o.decision_id)='pending' OR o.interview_id IS NOT NULL AND task_interview_status(o.interview_id) IN ('pending','proposed'))) ORDER BY v.created_at,v.id LIMIT 12`).map(f=>({key:`finding_attention:${f.id}`,label:f.title,target:`/areas?area=11-innowacje&view=portfolio&applicationId=${f.applicationId}&cockpit=evidence&findingId=${f.id}`,count:1,priority:"normal"}))
   ].filter(Boolean);
 
   res.json({

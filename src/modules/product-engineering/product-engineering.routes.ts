@@ -32,6 +32,8 @@ import { createEvent } from "../events/event.service";
 import { buildPortfolioGraph } from "./application-graph";
 import { capabilityInclude, gapsFor, loadApplicationGraphPacket, loadCapabilities, procedureInclude, projectInclude, readinessInput } from "./application-graph-projection.service";
 import { calculateApplicationReadiness } from "./readiness";
+import { reviewTransaction } from "../agent-runtime/task-capability-admission";
+import { findingCatalog, findingList, findingView, recordFinding, reviseFinding, recordOccurrence, commandFinding, issueFindingGrant } from "./finding-service";
 
 const optionalText = z.string().trim().min(1).optional().nullable();
 const keySchema = z.string().trim().min(1).max(100).regex(/^[a-z0-9]+(?:[._-][a-z0-9]+)*$/);
@@ -327,6 +329,25 @@ async function capabilityForWorkspace(workspaceId: string, id: string) {
 }
 
 export const productEngineeringRouter = Router();
+
+function findingResponse(res: import("express").Response,result:any) {
+  if(result.error)return res.status(result.error.endsWith("not_found")?404:result.error.endsWith("forbidden")?403:409).json(result);
+  return res.status(result.record&&!result.replayed?201:200).json({data:result});
+}
+async function findingTransaction(work:Parameters<typeof reviewTransaction>[0]) {
+  try{return await reviewTransaction(work);}catch(error){
+    if(error instanceof Prisma.PrismaClientKnownRequestError||error instanceof Prisma.PrismaClientUnknownRequestError)return {error:"finding_context_invalid"};
+    throw error;
+  }
+}
+productEngineeringRouter.get("/applications/:id/findings",asyncHandler(async(req,res)=>findingResponse(res,await findingTransaction(db=>findingList(db,req.auth!.workspaceId,idSchema.parse(req.params.id))))));
+productEngineeringRouter.get("/applications/:id/findings/catalog",asyncHandler(async(req,res)=>findingResponse(res,await findingTransaction(db=>findingCatalog(db,req.auth!.workspaceId,idSchema.parse(req.params.id))))));
+productEngineeringRouter.post("/applications/:id/findings",asyncHandler(async(req,res)=>findingResponse(res,await findingTransaction(db=>recordFinding(db,req.auth!.workspaceId,idSchema.parse(req.params.id),req.auth,req.body)))));
+productEngineeringRouter.get("/findings/:id",asyncHandler(async(req,res)=>findingResponse(res,await findingTransaction(db=>findingView(db,req.auth!.workspaceId,idSchema.parse(req.params.id),req.auth)))));
+productEngineeringRouter.post("/findings/:id/versions",asyncHandler(async(req,res)=>findingResponse(res,await findingTransaction(db=>reviseFinding(db,req.auth!.workspaceId,idSchema.parse(req.params.id),req.auth,req.body)))));
+productEngineeringRouter.post("/findings/:id/occurrences",asyncHandler(async(req,res)=>findingResponse(res,await findingTransaction(db=>recordOccurrence(db,req.auth!.workspaceId,idSchema.parse(req.params.id),req.auth,req.body)))));
+productEngineeringRouter.post("/findings/:id/actions",asyncHandler(async(req,res)=>findingResponse(res,await findingTransaction(db=>commandFinding(db,req.auth!.workspaceId,idSchema.parse(req.params.id),req.auth,req.body)))));
+productEngineeringRouter.post("/findings/:id/grants",asyncHandler(async(req,res)=>findingResponse(res,await findingTransaction(db=>issueFindingGrant(db,req.auth!.workspaceId,idSchema.parse(req.params.id),req.auth,req.body)))));
 
 productEngineeringRouter.get("/graph", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;

@@ -38,8 +38,10 @@ export async function submissionVersion(db: Prisma.TransactionClient, workspaceI
 export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T | { error: string }> {
   try { return await prisma.$transaction(work, { isolationLevel: "Serializable", maxWait: 5000, timeout: 20000 }); }
   catch (error) {
+    if(error instanceof Error && /^finding_[a-z_]+$/.test(error.message))return {error:error.message};
     const nativeDiagnostic = error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2010" ? String(error.meta?.message ?? "") : error instanceof Prisma.PrismaClientUnknownRequestError ? error.message : "";
     const suspensionError = nativeDiagnostic.match(/\bnative_(?:suspension_[a-z_]+|capability_suspended)\b/)?.[0];
+    const findingError=nativeDiagnostic.match(/ERROR:\s+(finding_[a-z_]+)\b/)?.[1];if(findingError)return {error:findingError};
     const authorityError = nativeDiagnostic.match(/\bdecision_authority_[a-z_]+\b/)?.[0];
     if (authorityError) return { error: authorityError };
     const decisionError=nativeDiagnostic.match(/\bdecision_(?:impact_too_large|scope_invalid|scope_expansion|history_immutable|forbidden|proposal_invalid|conflict_invalid|task_required|stale|risk_admission_required|transition_invalid|event_invalid|event_not_due|governed_command_required)\b/)?.[0];
@@ -164,6 +166,10 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
 export async function inspectReady(db: Prisma.TransactionClient, workspaceId: string, taskId: string, execution?: AgentExecution) {
   const task = await lockReadyTask(db, workspaceId, taskId);
   if (!task) return { error: "task_not_found", readiness: { status: "not_ready" } };
+  if(execution&&!(await db.$queryRaw<any[]>`SELECT finding_task_current(${taskId}::uuid) AS value`)[0].value){
+    await db.$executeRaw`SELECT finding_invalidate(${workspaceId}::uuid)`;
+    return {error:"agent_execution_context_invalidated",readiness:{status:"needs_revalidation",reason:"finding_context_changed"}};
+  }
   const pin = object(task.executionReadiness);
   const interview=(await db.$queryRaw<any[]>`SELECT task_interview_pending(${taskId}::uuid) AS pending,task_interview_version(${taskId}::uuid) AS version,EXISTS(SELECT 1 FROM task_interview_cases c WHERE c.body->'dependencies' @> jsonb_build_array(jsonb_build_object('taskId',${taskId}::text))) AS present`)[0];
   if(interview.pending||interview.present&&pin.interviewVersion!==interview.version)return {error:"interview_ready_required",readiness:{status:interview.pending?"needs_decision":"needs_revalidation",reason:"material_unknown",interviewVersion:interview.version}};

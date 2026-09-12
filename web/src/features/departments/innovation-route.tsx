@@ -9,6 +9,7 @@ import { CcRecordEditorModal, CcRecordEditorSection } from "../../components/cc-
 import { CcSelect } from "../../components/cc-select";
 import { CcTextInput } from "../../components/cc-text-input";
 import { useLanguage } from "../../i18n/i18n";
+import { FindingWorkbench } from "./finding-workbench";
 import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
 import {
   ApplicationCapability,
@@ -1155,6 +1156,12 @@ export function InnovationRoute() {
   useEffect(() => {
     void loadBase();
   }, [loadBase]);
+  useEffect(()=>{
+    const query=new URLSearchParams(window.location.search),applicationId=query.get("applicationId");
+    if(applicationId&&/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(applicationId)&&query.get("cockpit")==="evidence"){
+      setView("evidence");void loadCockpit(applicationId).catch(()=>setSelected(null));
+    }
+  },[loadCockpit]);
   const refreshAll = useCallback(async () => {
     await loadBase();
     if (selected) await loadCockpit(selected.id);
@@ -1556,7 +1563,8 @@ export function InnovationRoute() {
             />
           ) : null}
           {view === "evidence" ? (
-            <section className="rounded-company border border-base-300 bg-base-100 p-5">
+            <section className="grid gap-6 rounded-company border border-base-300 bg-base-100 p-5">
+              <FindingWorkbench applicationId={selected.id}/>
               <h3 className="text-xl font-black">
                 Application evidence ledger
               </h3>

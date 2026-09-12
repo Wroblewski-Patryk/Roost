@@ -5,6 +5,7 @@ const uuid=z.string().uuid(), text=z.string().trim().min(3).max(2000), hash=z.st
 export const decisionNodeTypes=["task","application","project","procedure","company_record","resource","decision"] as const;
 export const decisionNode=z.object({type:z.enum(decisionNodeTypes),id:uuid}).strict();
 export const decisionProposal=z.object({requestId:uuid,expectedVersion:hash,title:text,context:text,decision:text,rationale:text,consequences:text,
+  findingAdjudication:z.object({versionId:uuid,principal:z.object({kind:z.enum(["user","agent"]),id:uuid}).strict()}).strict().optional(),
   authority:decisionAuthorityDeclaration.optional(),
   scopeReason:text,scope:z.array(decisionNode).min(1).max(8),supersedesId:uuid.nullable(),
   conflicts:z.array(z.object({kind:z.enum(["contradicts","narrows","replaces"]),oldProvision:text,newProvision:text,explanation:text}).strict()).max(12)
