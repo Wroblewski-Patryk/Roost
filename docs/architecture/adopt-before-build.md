@@ -171,6 +171,12 @@ Hermes installation is expected not-ready state: no incident or install loop.
 
 ## Admission and failure semantics
 
+[RF-HOST-030 OpenShell feasibility](../operations/openshell-wsl-feasibility.md)
+evaluates an official whole-process isolation dependency separately from Hermes.
+Its current Windows preflight is BLOCKED by the absence of a user WSL 2 Linux
+distribution. OpenShell v0.0.116 is a candidate pin, not an installed/adopted
+provider or proof of containment. No execution or deployment gate changes.
+
 The offline [pinned public transport examination](../operations/hermes-windows-attestation.md#offline-transport-examination-adapter-blocked)
 found unbounded byte capture and direct-child-only cleanup in Hermes' public
 App Server client. A real Python/fake App Server wire reproduced both gaps;

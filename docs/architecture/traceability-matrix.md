@@ -410,6 +410,11 @@ surviving client close. This is negative containment evidence, not delivery of
 the production Hermes adapter or completion of RF-HOST-010/020/stop-recovery;
 see [the bounded examination](../operations/hermes-windows-attestation.md#offline-transport-examination-adapter-blocked).
 
+[RF-HOST-030: OpenShell feasibility](../operations/openshell-wsl-feasibility.md)
+is BLOCKED at the user-WSL-2 prerequisite. No sandbox/containment claim or new
+activation authority follows from its read-only preflight. This is separate
+feasibility evidence, not completion of RF-HOST-010/020 or the frozen baseline.
+
 [scripts/lib/agent-host-model-policy.mjs](../../scripts/lib/agent-host-model-policy.mjs), [scripts/roost-codex-agent-host.mjs](../../scripts/roost-codex-agent-host.mjs), [scripts/agent-host-model-policy.test.mjs](../../scripts/agent-host-model-policy.test.mjs), [scripts/agent-host-execution-packet.test.mjs](../../scripts/agent-host-execution-packet.test.mjs), [docs/architecture/execution-packet-contract.md](../../docs/architecture/execution-packet-contract.md).
 
 <a id="e-auth"></a>
