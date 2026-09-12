@@ -1,6 +1,7 @@
 import path from "node:path";
 import { lstat, realpath } from "node:fs/promises";
 import contract from "./agent-host-provider-contract.cjs";
+import { attestHermes } from "./agent-host-hermes-attestation.mjs";
 
 export const { registry, providerAdmissionReason } = contract;
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -28,7 +29,8 @@ export async function inspectExecutionProvider(config, { platform = process.plat
   const mcpKeys = ["mcpServer", "minimumTools", "supportsParallelToolCalls", "prompts", "resources", "sampling"];
   if (mcpKeys.some(key => !same(policy[key], expected[key])) || Object.keys(policy).some(key => !(key in expected))) blockers.push("hermes_mcp_policy_invalid");
   if (Object.keys(expected).filter(key => !mcpKeys.includes(key)).some(key => policy[key] !== expected[key])
-    || Object.keys(input).some(key => !["kind", "enabled", "officialSource", "version", "commit", "executablePath", "policy"].includes(key))) blockers.push("hermes_authority_policy_invalid");
-  // Configuration assertions are not runtime evidence. v1 contains no Hermes launcher or compatibility override.
-  return contract.projectProvider({ kind: "hermes_codex", blockers });
+    || Object.keys(input).some(key => !["kind", "enabled", "officialSource", "version", "commit", "executablePath", "policy", "attestation"].includes(key))) blockers.push("hermes_authority_policy_invalid");
+  const evidence = blockers.every(code => code === "hermes_disabled") ? await attestHermes(input) : {};
+  // Installation evidence never overrides runtime compatibility or execution admission.
+  return contract.projectProvider({ kind: "hermes_codex", ...evidence, blockers: [...blockers, ...(evidence.blockers ?? [])] });
 }

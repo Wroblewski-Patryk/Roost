@@ -1,7 +1,9 @@
 export type ExecutionProviderKind = "direct_codex" | "hermes_codex";
 export type ProviderReport = {
   contractVersion: number; kind: ExecutionProviderKind | "unknown"; pinnedVersion: string | null;
-  installedVersion: null; compatibility: "reference" | "unproven"; executionSupported: boolean; blockers: string[];
+  installedVersion: string | null;
+  installation: { status: "verified" | "unverified"; version: string | null; fingerprint: string | null; checkedAt: string | null; signature: "unsigned" | null };
+  compatibility: "reference" | "unproven"; executionSupported: boolean; blockers: string[];
 };
 const contract = require("../../../scripts/lib/agent-host-provider-contract.cjs") as {
   projectProvider: (value: unknown) => ProviderReport;

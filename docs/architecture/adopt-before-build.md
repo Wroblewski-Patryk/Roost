@@ -1,7 +1,7 @@
 # Adopt-before-build and execution providers
 
-Contract version: **1**. Status: implemented foundation, execution disabled;
-Hermes compatibility **unproven**. This contract does not authorize installation,
+Contract version: **2**. Status: private Windows installation attestation implemented,
+execution disabled; Hermes compatibility **unproven**. This contract does not authorize installation,
 model calls, application work or activation. The machine-readable
 [registry](../../src/modules/agent-runtime/execution-providers.json) pins the
 adopted reference and intended runtime; it is versioned with this contract.
@@ -28,8 +28,9 @@ existing gates. Its hard output-token enforcement remains unavailable.
 `hermes_codex` means the official Nous Research Hermes runtime using Codex,
 launched only by Local Worker and accessing Roost through bounded MCP/API.
 It is the required target before a local agent pilot; Direct Codex alone cannot
-satisfy that prerequisite. This stage installs nothing and implements no Hermes
-launcher. The registry covers source, exact version/commit where established,
+satisfy that prerequisite. An explicitly authorized private installation can now
+be checked by Worker; the only implemented Hermes command is a guarded version
+probe. There is no task/inference launcher. The registry covers source, exact version/commit where established,
 license, owner, capability, boundaries, update/rollback, readiness, costs and
 failure behavior. Missing evidence is explicit, including the reference binary
 digest and Hermes resource measurements.
@@ -51,6 +52,7 @@ For Hermes its accepted fields are:
 | `enabled` | Defaults false; true does not override compatibility gates |
 | `officialSource`, `version`, `commit` | Exact official source and pin from the registry |
 | `executablePath` | Explicit normalized Windows drive-absolute `.exe`, private only; no PATH lookup, shell, UNC, traversal or symlink alias |
+| `attestation` | Private canonical `manifestPath` and SHA-256 of the sealed installation manifest; exact two fields |
 | `policy` | Exact keys/values of registry `hermesPolicy`; unknown fields rejected |
 
 The policy permits only the `roost` MCP server and the two exact read tools in
@@ -65,9 +67,11 @@ authority. Configuration declarations are requirements, not proof that upstream
 will enforce them. Broker isolation and these restrictions are **unsatisfied**
 until demonstrated in the next-stage PoC; no broker is implemented here.
 
-`npm run agent:provider:check` reads private configuration without executing a
-provider or downloading dependencies. It returns only provider kind, registry
-version, unverified installed version and fixed blocker codes. Exit 0 means
+`npm run agent:provider:check` reads private configuration, checks an explicitly
+configured sealed installation and can execute only `hermes.exe --version` after
+integrity and read-only-directory checks. It never installs or downloads anything.
+It returns provider kind, pinned/installed version, a fixed installation projection
+and fixed blocker codes. Exit 0 means
 the reference provider path is supported, not execution or pilot readiness;
 2 means provider blocked, 1 means unreadable configuration. Filesystem errors
 and configuration contents are never emitted. The ordinary workspace checker
@@ -78,6 +82,24 @@ and reads normalize the projection; `executionProviderConfig` is discarded.
 Private provider paths, credentials, arbitrary version strings and error text
 have no provider wire representation. The observer no longer reports its
 private workspace root. Existing unrelated metadata contracts are unchanged.
+
+The installation projection contains `status`, exact registry `version`, a
+12-hex manifest fingerprint, ISO `checkedAt`, and `signature:unsigned`; missing
+or malformed evidence becomes `unverified` with null values. This is a
+Worker-reported diagnostic snapshot under the private operator's trust boundary,
+not remote cryptographic attestation or proof against an administrator who can
+replace both config and manifest. API normalization never treats it as authority.
+The manifest covers the complete checkout (including Git metadata and venv) and
+base Python installation, rejects missing/extra/changed/linked files, checks the
+four public source hashes, detached HEAD, venv isolation and the launcher's exact
+canonical Python binding. A generated console launcher is not an upstream signed
+native binary. Full checks and probe are bounded diagnostics; private installation
+and rollback requirements are described in [Windows Hermes attestation](../operations/hermes-windows-attestation.md).
+The result is a startup/config-change snapshot, reused for heartbeats with its
+original timestamp. Restarting Worker or running the standalone checker obtains
+fresh evidence. This avoids repeatedly scanning Python on every heartbeat; it is
+not continuous tamper monitoring. Any future execution admission requires fresh
+integrity/containment proof and cannot reuse this diagnostic cache.
 
 `/v1/agent-runtime/readiness` exposes the public registry and a separate
 `pilotReadiness` with `ready:false`. Host runtime diagnostics and owner
@@ -98,16 +120,16 @@ Future provider admission must preserve protocol/capability checks, Ready and
 context seals, current Decisions and risk, branch/path/origin allowlists, one
 writer, lease fencing, redaction, duration and output budgets, process-tree stop,
 context invalidation and checkpoint reconciliation. Metadata cannot attest any
-of these guarantees or expand task authority. Contract v1 always fails closed
+of these guarantees or expand task authority. Contract v2 always fails closed
 for Hermes; changing that requires code, evidence and separate activation
 authority, not a local `ready` switch.
 
 ## Next stage only: private Windows compatibility PoC
 
-Do not start this stage as a side effect of shipping the foundation. Its bounded
-input is an explicitly authorized private installation of the exact registry
-source commit, with a reviewed dependency lock/license inventory and executable
-digest. Preserve the previous environment/config and a rollback path. No
+Do not start this stage as a side effect of shipping installation attestation. Its
+bounded input is a verified private installation of the exact registry source
+commit, with dependency/build provenance and executable/environment digests.
+Preserve the previous environment/config and a rollback path. No
 unattended installer, floating download, credentials or private paths in Git.
 
 Use an isolated synthetic fixture and the same pinned packet, model/reasoning

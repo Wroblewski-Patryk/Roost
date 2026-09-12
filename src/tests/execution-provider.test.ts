@@ -25,6 +25,20 @@ test("API provider projection contains only fixed public diagnostics", () => {
   assert.equal(executionProviderRegistry.pilotReady, false);
 });
 
+test("Worker installation evidence is diagnostic and cannot grant API admission", () => {
+  const report = projectProvider({ kind: "hermes_codex", executionSupported: true, installation: {
+    status: "verified", version: "0.21.2", fingerprint: "abcdef123456", checkedAt: "2026-09-12T12:00:00.000Z", signature: "unsigned", privatePath: "SENTINEL" } });
+  assert.equal(report.installedVersion, "0.21.2"); assert.equal(report.executionSupported, false);
+  assert.equal(hostCompatibility(host(report)).compatible, false);
+  assert.equal(requestCompatibility(host(report), String(protocol.version), protocol.requiredHostCapabilities.join(",")).compatible, false);
+  assert.equal(JSON.stringify(report).includes("SENTINEL"), false);
+  assert.deepEqual(projectProvider(report), report);
+  for (const field of ["fingerprint", "checkedAt", "version", "signature"]) {
+    const invalid = projectProvider({ ...report, installation: { ...report.installation, [field]: "SENTINEL" } });
+    assert.equal(invalid.installedVersion, null); assert.equal(JSON.stringify(invalid).includes("SENTINEL"), false);
+  }
+});
+
 
 test("Hermes minimum tools are exact existing read-only Roost routes", () => {
   const tools = createMcpManifest(["connection:read", "company-graph:read"]).tools;

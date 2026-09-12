@@ -4,7 +4,9 @@ const registry = require("../../src/modules/agent-runtime/execution-providers.js
 const blockerCodes = Object.freeze([
   "execution_provider_unknown", "hermes_disabled", "hermes_identity_invalid", "hermes_pin_invalid",
   "hermes_windows_required", "hermes_executable_invalid", "hermes_executable_missing",
-  "hermes_mcp_policy_invalid", "hermes_authority_policy_invalid", "hermes_compatibility_unproven"
+  "hermes_mcp_policy_invalid", "hermes_authority_policy_invalid", "hermes_compatibility_unproven",
+  "hermes_attestation_missing", "hermes_attestation_invalid", "hermes_integrity_mismatch", "hermes_probe_unsafe",
+  "hermes_version_failed", "hermes_version_mismatch", "hermes_version_timeout", "hermes_probe_stop_failed"
 ]);
 const record = value => value && typeof value === "object" && !Array.isArray(value) ? value : {};
 function providerKind(value) {
@@ -21,8 +23,15 @@ function projectProvider(value) {
   const blockers = Array.isArray(input.blockers) ? input.blockers.filter(code => blockerCodes.includes(code)) : [];
   const admission = providerAdmissionReason(value);
   if (admission) blockers.push(admission);
+  const evidence = record(input.installation);
+  const verified = kind === "hermes_codex" && evidence.status === "verified" && evidence.version === entry.version
+    && typeof evidence.fingerprint === "string" && /^[a-f0-9]{12}$/.test(evidence.fingerprint) && evidence.signature === "unsigned"
+    && typeof evidence.checkedAt === "string" && /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(evidence.checkedAt)
+    && Number.isFinite(Date.parse(evidence.checkedAt));
+  const installation = verified ? { status: "verified", version: entry.version, fingerprint: evidence.fingerprint,
+    checkedAt: evidence.checkedAt, signature: "unsigned" } : { status: "unverified", version: null, fingerprint: null, checkedAt: null, signature: null };
   return { contractVersion: registry.contractVersion, kind, pinnedVersion: entry?.version ?? null,
-    installedVersion: null, compatibility: kind === "direct_codex" ? "reference" : "unproven",
+    installedVersion: verified ? entry.version : null, installation, compatibility: kind === "direct_codex" ? "reference" : "unproven",
     executionSupported: kind === "direct_codex", blockers: [...new Set(blockers)] };
 }
 function sanitizeProviderMetadata(value) {

@@ -1,5 +1,5 @@
 {
-  "contractVersion": 1,
+  "contractVersion": 2,
   "requiredPilotProvider": "hermes_codex",
   "pilotReady": false,
   "providers": [
@@ -27,14 +27,20 @@
       "commit": "939e45c91d751fadd94dcd1b873ac3cb44846213",
       "license": "MIT",
       "status": "disabled",
-      "pinScope": "Official source commit and package version; no installed binary or environment attestation yet.",
+      "pinScope": "Official source commit, package version and source hashes. Private sealed installation inventory and a guarded version probe attest local bytes; upstream commit/tag are unsigned. No runtime compatibility proof.",
+      "sourceHashes": {
+        "scripts/install.ps1": "53a077364aa28bbd6e8d987cdec11a4552e22ff2c5137845725a1c99770f392f",
+        "pyproject.toml": "c71aa5bc9e437bac3b662fd04a4a7e121735ebc898373019a366d91e217e58a8",
+        "uv.lock": "69b130365c9077ac9880c167daa64e39afc5611bb563a79a2fb3c612949beae9",
+        "setup.py": "d476dd1c28d707acd72f1d0551d7178123832ae18b6e201ca1ac48cd040653ae"
+      },
       "owner": "Local Worker",
       "capability": "Future Codex-backed inference through Hermes and bounded Roost MCP/API",
       "boundary": "No independent task, memory, kanban, schedule, delegation or session authority. No Roost credentials in provider/model environment; no direct database or arbitrary filesystem access.",
       "updateRollback": "No automatic install/update. Private pinned environment, retained prior environment/config, license/dependency review and repeated compatibility PoC for every pin change.",
-      "healthReadiness": "Native Windows support is an upstream claim. Identity, installation, MCP isolation, provider model compatibility and budget/stop/recovery behavior require private proof. Always blocked in contract v1.",
+      "healthReadiness": "Contract v2 supports private Windows installation attestation. MCP isolation, model compatibility and budget/stop/recovery remain unproven. Hermes task execution always blocked.",
       "resourceCost": "Python >=3.11,<3.14 plus dependencies, local provider process and model usage. Disk, memory, latency and token overhead unmeasured; measure in read-only PoC before any pilot.",
-      "failureMode": "Expected not-ready state without incidents, installation, claim, process start or automatic fallback. Worker/API fail closed."
+      "failureMode": "Expected not-ready state without incidents, installation, claim or automatic fallback. Only an explicitly configured, integrity-checked version probe can start. Worker/API task admission fails closed."
     }
   ],
   "hermesPolicy": {

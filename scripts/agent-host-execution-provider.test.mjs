@@ -64,7 +64,7 @@ test("Hermes explicit executable existence is inspected without starting it", { 
     await writeFile(executable, "not an executable; inspection only");
     const config = configured(); config.executablePath = executable;
     const report = await inspectExecutionProvider({ executionProvider: config });
-    assert.deepEqual(report.blockers, ["hermes_compatibility_unproven"]);
+    assert.deepEqual(report.blockers, ["hermes_attestation_missing", "hermes_compatibility_unproven"]);
     await unlink(executable);
     assert.ok((await inspectExecutionProvider({ executionProvider: config })).blockers.includes("hermes_executable_missing"));
   } finally { await rmdir(directory); }
