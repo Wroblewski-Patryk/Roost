@@ -1,6 +1,7 @@
 {
   "version": 1,
   "apiCapabilities": [
+    "worker_provider_input_v1",
     "scoped_execution_v1",
     "recovery_context_pin_v1",
     "host_admission_v1",
@@ -15,6 +16,7 @@
     "typed_result_revision_v1"
   ],
   "requiredHostCapabilities": [
+    "worker_provider_input_v1",
     "codex_exec_json",
     "workspace_write",
     "git_status",

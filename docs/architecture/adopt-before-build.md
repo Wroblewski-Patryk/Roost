@@ -1,6 +1,6 @@
 # Adopt-before-build and execution providers
 
-Contract version: **3**. Status: private Windows installation attestation and a
+Contract version: **4**. Status: Worker-sealed bootstrap input, private Windows installation attestation and a
 synthetically verified Worker-owned read-only MCP broker implemented,
 execution disabled; Hermes compatibility **unproven**. This contract does not authorize installation,
 model calls, application work or activation. The machine-readable
@@ -8,6 +8,48 @@ model calls, application work or activation. The machine-readable
 adopted reference and intended runtime; it is versioned with this contract.
 
 ## Adoption rule and authority
+
+### Worker-owned bootstrap context
+
+Before provider creation, Worker fetches the existing execution packet and
+Ready-approved execution-profile application compiler output. It validates them
+with the existing packet/Ready/risk/procedure/role validators, then creates
+`roost-provider-input-v1`, limited to 128 KiB. The strict schema binds exact
+execution/attempt/workspace/task/application, packet/context/Ready/risk/composition
+revisions, approved objective, acceptance, prohibitions, model/effort and required
+evidence projections. Each projection identifies its origin. Documents, procedure
+content and owner text remain untrusted evidence; they cannot grant authority.
+Generation timestamps, raw claim/lease/config, private paths and undeclared
+packet sources are excluded or rejected. No Roost key, broker capability or API
+proxy belongs in the envelope.
+
+The canonical serialized envelope has a stable SHA-256 seal and a deeply frozen
+Worker-owned object identity. Adapter input cannot replace or augment it. One
+consumption at the existing durable `spawn_intent` boundary requires identical
+fresh context, current Ready/risk, lease/duration/output budget and stop guards.
+Local path/origin/branch/commit are rechecked before the final authoritative
+reads. A failed consumption cannot be replayed. RF-CTX-006 still stops material
+changes; no active-session refresh silently replaces the envelope. This extends
+the existing checkpoint and one-writer system, without a second context store.
+The existing runner-start audit event records only the input version and seal,
+alongside its existing requested model fields; it does not persist raw input.
+
+Direct and Hermes transport preparation return the same semantic input and exact
+model selection. Only the existing Direct launcher consumes it; Hermes launch
+and native transport compatibility remain unimplemented and blocked. Bootstrap
+has `startupTools:[]`: the model never has to fetch its own mandatory context.
+The separate broker policy below is reserved for future controlled runtime
+reads. Its minimum tool set does not impose a model bootstrap sequence.
+
+Registry v4 changes this bootstrap contract; wire protocol remains v1 with the
+new required `worker_provider_input_v1` capability on API and supervised host.
+Older hosts/APIs fail closed before claim. `npm run test:agent-input` and the
+existing synthetic host process suites prove input and admission only, not live
+inference, native tool containment, budget enforcement or Stage 2 readiness.
+There is no database migration or provider installation/configuration update.
+Deployment and normal observer restart must preserve execution disabled and the
+existing Hermes policy. Rollback uses the previous image/Worker source; never
+downgrade an active attempt or replay a consumed input.
 
 Prefer maintained complementary upstream components over a new Roost subsystem.
 Evaluate capability fit, license, pinned identity, security, resource overhead,
@@ -125,7 +167,7 @@ Future provider admission must preserve protocol/capability checks, Ready and
 context seals, current Decisions and risk, branch/path/origin allowlists, one
 writer, lease fencing, redaction, duration and output budgets, process-tree stop,
 context invalidation and checkpoint reconciliation. Metadata cannot attest any
-of these guarantees or expand task authority. Contract v3 always fails closed
+of these guarantees or expand task authority. Contract v4 always fails closed
 for Hermes; changing that requires code, evidence and separate activation
 authority, not a local `ready` switch.
 
@@ -138,7 +180,7 @@ Preserve the previous environment/config and a rollback path. No
 unattended installer, floating download, credentials or private paths in Git.
 
 Use an isolated synthetic fixture and the same pinned packet, model/reasoning
-settings and read-only Roost MCP tools for Direct Codex and Hermes. Keep real
+settings and Worker-sealed bootstrap input for Direct Codex and Hermes. Keep real
 execution false and the production host in observe mode. No application file,
 business record, task queue, Decision or production permission writes. The
 Worker-owned broker must scope context to the synthetic task; the provider must

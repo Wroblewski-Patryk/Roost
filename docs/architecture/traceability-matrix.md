@@ -392,6 +392,15 @@ performed, and no VPS release is required for this local launcher change.
 <a id="e-model"></a>
 **MODEL** — RF-HOST-016 now admits explicit supported model/effort, dispatches exact CLI arguments and records requested pair. Current synthetic verification passed.
 
+Worker bootstrap input now seals the existing packet/compiler projections before
+provider start, with exact scope, provenance, immutable context hash and no model
+bootstrap tool obligation. `scripts/lib/agent-host-provider-input.mjs`,
+`scripts/agent-host-provider-input.test.mjs` and the existing context-process
+suite prove synthetic adapter equality and fail-closed spawn admission. Registry
+v4 and `worker_provider_input_v1` exclude older hosts. Broker/attestation tests
+remain separate. Live Direct/Hermes transport, RF-HOST-010/020 and Stage 2 are
+unproved; observer/disabled execution and pilot readiness remain unchanged.
+
 [scripts/lib/agent-host-model-policy.mjs](../../scripts/lib/agent-host-model-policy.mjs), [scripts/roost-codex-agent-host.mjs](../../scripts/roost-codex-agent-host.mjs), [scripts/agent-host-model-policy.test.mjs](../../scripts/agent-host-model-policy.test.mjs), [scripts/agent-host-execution-packet.test.mjs](../../scripts/agent-host-execution-packet.test.mjs), [docs/architecture/execution-packet-contract.md](../../docs/architecture/execution-packet-contract.md).
 
 <a id="e-auth"></a>

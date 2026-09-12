@@ -43,6 +43,11 @@ test("Worker installation evidence is diagnostic and cannot grant API admission"
 
 
 test("Hermes broker policy is exact and proof never implies live compatibility", () => {
+  assert.equal(executionProviderRegistry.contractVersion, 4);
+  assert.equal(executionProviderRegistry.bootstrapContext.version, "roost-provider-input-v1");
+  assert.equal(executionProviderRegistry.bootstrapContext.owner, "worker");
+  assert.deepEqual(executionProviderRegistry.bootstrapContext.startupTools, []);
+  assert.ok(protocol.requiredHostCapabilities.includes("worker_provider_input_v1"));
   assert.deepEqual(executionProviderRegistry.hermesPolicy.minimumTools, ["roost_get_execution_packet", "roost_get_application_context"]);
   assert.equal(executionProviderRegistry.brokerContract.verified, true);
   assert.equal(executionProviderRegistry.brokerContract.liveCompatibility, "unproven");

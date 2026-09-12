@@ -83,8 +83,8 @@ for (const scenario of ["resultCommit", "branchAfterWork", "compositionExpiredFi
     server.listen(0, "127.0.0.1"); await once(server, "listening");
     try {
       await writeFile(configPath, JSON.stringify({ workspaceRoot: hostWorkspace, codexCommand: "context-test-codex", repositories: { demoapp: { directory: "DemoApp", originUrl: "https://github.com/example-org/DemoApp.git" } } }));
-      const fake = `let input='';process.stdin.on('data',c=>input+=c);process.stdin.on('end',()=>{if(!input.includes('2026-09-06T00:00:01Z')||!input.includes('Task: Authoritative fixture title'))process.exit(7);console.log(JSON.stringify({type:'item.completed',item:{type:'agent_message',text:${JSON.stringify(scenario === "redactionOutput" ? "password=synthetic-redaction-sensitive" : "Fresh context confirmed")}}}));});`;
-      const launch = `import cp from 'node:child_process';import {syncBuiltinESMExports} from 'node:module';const original=cp.spawn;cp.spawn=(command,args,options)=>{if(command!=='context-test-codex')return original(command,args,options);process.stdout.write('MODEL_SPAWN\\n');return original(process.execPath,['-e',${JSON.stringify(fake)}],options);};syncBuiltinESMExports();const {runHost}=await import('./scripts/roost-codex-agent-host.mjs');const {acquireWriterLock}=await import('./scripts/lib/agent-host-writer-lock.mjs');await runHost({readTaskPaths:async()=>["src/committed-fixture.ts"],readTaskCommit:(()=>{let reads=0;return async()=> (++reads===2 && ${JSON.stringify(scenario)}==="resultCommit"?"d":${JSON.stringify(scenario==="riskCommitMismatch"?"b":"a")}).repeat(40);})(),readTaskBranch:(()=>{let checks=0;return async()=>++checks===({branchBeforePreparation:1,branchBeforeSpawn:2,branchAfterWork:3}[${JSON.stringify(scenario)}])?"main":${JSON.stringify(f.packet.contract.singleTask.branch)};})(),createOutputBudget: (await import('./scripts/lib/agent-host-output-budget.mjs')).createObservedOutputBudget, acquireLock:()=>acquireWriterLock(${JSON.stringify(directory)})});`;
+      const fake = `let input='';process.stdin.on('data',c=>input+=c);process.stdin.on('end',()=>{const envelope=JSON.parse(input);if(envelope.schemaVersion!=='roost-provider-input-v1'||envelope.contract.objective.outcome!=='Repair the synthetic fixture'||envelope.startupTools.length!==0||!envelope.seal)process.exit(7);console.log(JSON.stringify({type:'item.completed',item:{type:'agent_message',text:${JSON.stringify(scenario === "redactionOutput" ? "password=synthetic-redaction-sensitive" : "Fresh context confirmed")}}}));});`;
+      const launch = `import cp from 'node:child_process';import {syncBuiltinESMExports} from 'node:module';const original=cp.spawn;cp.spawn=(command,args,options)=>{if(command!=='context-test-codex')return original(command,args,options);process.stdout.write('MODEL_SPAWN\\n');return original(process.execPath,['-e',${JSON.stringify(fake)}],options);};syncBuiltinESMExports();const {runHost}=await import('./scripts/roost-codex-agent-host.mjs');const {acquireWriterLock}=await import('./scripts/lib/agent-host-writer-lock.mjs');await runHost({readTaskPaths:async()=>["src/committed-fixture.ts"],readTaskCommit:(()=>{let reads=0;return async()=> (++reads===3 && ${JSON.stringify(scenario)}==="resultCommit"?"d":${JSON.stringify(scenario==="riskCommitMismatch"?"b":"a")}).repeat(40);})(),readTaskBranch:(()=>{let checks=0;return async()=>++checks===({branchBeforePreparation:1,branchBeforeSpawn:2,branchAfterWork:3}[${JSON.stringify(scenario)}])?"main":${JSON.stringify(f.packet.contract.singleTask.branch)};})(),createOutputBudget: (await import('./scripts/lib/agent-host-output-budget.mjs')).createObservedOutputBudget, acquireLock:()=>acquireWriterLock(${JSON.stringify(directory)})});`;
       host = spawn(process.execPath, ["--input-type=module", "-e", launch], { windowsHide: true, stdio: ["ignore", "pipe", "pipe"], env: { ...process.env, ROOST_BASE_URL: `http://127.0.0.1:${server.address().port}`, ROOST_AGENT_API_KEY: "synthetic-context-key", ROOST_AGENT_HOST_CONFIG: configPath } });
       host.stdout.on("data", (c) => { output += c; }); host.stderr.on("data", (c) => { errors += c; });
       assert.equal((await once(host, "close"))[0], scenario.startsWith("protocol") ? 1 : 0, errors);
@@ -110,9 +110,9 @@ for (const scenario of ["resultCommit", "branchAfterWork", "compositionExpiredFi
         assert.equal(lock.checkpoint.stage, scenario === "branchBeforePreparation" ? "claimed" : scenario==="branchAfterWork"?"running":"spawn_intent");
         return;
       }
-      assert.equal(taskReads, scenario.startsWith("protocol") || readyFailure ? 1 : 2);
+      assert.equal(taskReads, scenario.startsWith("protocol") || readyFailure || scenario === "riskCommitMismatch" ? 1 : 2);
       const started = requests.findIndex((r) => r.input.type === "runner_started");
-      if (!scenario.startsWith("protocol") && !readyFailure) assert.ok(requests.findLastIndex((r) => r.url.includes("company-intelligence")) > started);
+      if (!scenario.startsWith("protocol") && !readyFailure && scenario !== "riskCommitMismatch") assert.ok(requests.findLastIndex((r) => r.url.includes("company-intelligence")) > started);
       assert.equal(output.includes("MODEL_SPAWN"), ["unchanged","resultCommit"].includes(scenario));
       const complete = requests.find((r) => r.url.endsWith("/complete")), failure = requests.find((r) => r.url.endsWith("/fail"));
       if (["unchanged","resultCommit"].includes(scenario)) {
@@ -122,8 +122,8 @@ for (const scenario of ["resultCommit", "branchAfterWork", "compositionExpiredFi
         assert.equal(complete, undefined);
         assert.equal(requests.filter((r) => r.url.endsWith("/claim")).length, 1);
         const lock = JSON.parse(await readFile(path.join(directory, writerLockFilename), "utf8"));
-        assert.equal(lock.checkpoint.stage, scenario === "readyApiPrepare" ? "prepared" : readyFailure ? "claimed" : "spawn_intent");
-        if (!readyFailure) {
+        assert.equal(lock.checkpoint.stage, scenario === "readyApiPrepare" ? "prepared" : readyFailure || scenario === "riskCommitMismatch" ? "claimed" : "spawn_intent");
+        if (!readyFailure && scenario !== "riskCommitMismatch") {
           assert.match(lock.checkpoint.contextRevision, /^[a-f0-9]{64}$/);
           assert.equal(lock.checkpoint.contextRevision, requests.find((r) => r.input.checkpoint?.stage === "prepared").input.checkpoint.contextRevision);
         }

@@ -9,6 +9,16 @@ There is no live Hermes/Codex compatibility proof or pilot admission.
 
 ## Ownership and data boundary
 
+Provider contract v4 separates mandatory bootstrap context from this optional
+future runtime-read capability. Worker now fetches, validates and seals startup
+context itself using the existing API/compiler and Ready validators; see
+[Worker-owned bootstrap input](adopt-before-build.md#worker-owned-bootstrap-context).
+No model tool dispatch is required for startup context proof. The envelope has
+no MCP tools, endpoint or capability. This broker's exact two-tool policy and all
+security/lifetime tests remain unchanged, reserved for separately authorized
+runtime reads. Such reads must never silently replace an active sealed context
+or bypass RF-CTX-006. This release does not connect the broker to a live provider.
+
 The broker runs inside the Worker process, using its existing authenticated API
 closure. The long-lived Roost key remains in that closure and the Worker's
 redaction secrets. It is never passed to a child, broker-started subprocess,

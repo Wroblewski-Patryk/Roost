@@ -1,6 +1,6 @@
 # Local Codex Agent Runtime
 
-[Adopt-before-build and provider contract v1](adopt-before-build.md) requires
+[Adopt-before-build and provider contract v4](adopt-before-build.md) requires
 official pinned Hermes compatibility before any local agent pilot. Direct Codex
 remains the reference/fallback. Hermes is disabled and unproven; neither host
 metadata nor the execution environment flag proves or grants pilot admission.
@@ -161,9 +161,16 @@ visible.
    [versioned packet](execution-packet-contract.md), confirms its lease and
    validates completeness and consistency before execution-specific processes.
    It pins both resolved contexts in the existing checkpoint, checks the local
-   repository, then fetches and validates both contexts again immediately before
+   repository and seals the bounded `roost-provider-input-v1` envelope. Both
+   adapters receive the same canonical input, with provenance, exact model/effort
+   and no mandatory startup tools. The existing Direct launcher consumes this
+   envelope once; Hermes launch remains blocked. Worker rechecks path/origin,
+   branch/commit, then fetches and validates both contexts again immediately before
    `codex exec --json --sandbox workspace-write -`. Changed context prevents
    spawn and requires reconciliation/replanning; recovery compares the same pin.
+   A final lease refresh observes the active stop fence; synchronous Ready/risk,
+   lease/duration/output/protocol checks guard envelope consumption and spawn.
+   Changed or substituted input cannot silently refresh the active session.
    Missing contracts fail with
    owner-visible field diagnostics; they do not start Codex.
 6. Heartbeats renew the lease. Structured Codex progress becomes execution
@@ -259,7 +266,7 @@ Existing `metadata.protocolVersion` advertises numeric version `1`,
 existing `capabilities` advertises implemented controls. Protocol metadata uses
 the existing host table without a separate version registry.
 
-Both capability lists include `ready_context_pin_v1`,
+Both capability lists include `worker_provider_input_v1`, `ready_context_pin_v1`,
 `output_budget_fail_closed_v1`, `active_context_stop_v1`, `single_task_scope_v1`
 `task_role_separation_v1`, `native_runtime_redaction_v1`,
 `native_risk_admission_v1`, `procedure_composition_v1` and

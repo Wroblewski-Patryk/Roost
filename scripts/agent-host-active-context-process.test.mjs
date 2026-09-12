@@ -13,13 +13,13 @@ import { validPacketFixture, pinReadyFixture } from "./fixtures/execution-packet
 import { writerLockFilename } from "./lib/agent-host-writer-lock.mjs";
 import { terminateWindowsProcessTree } from "./lib/agent-host-execution-lease.mjs";
 
-for (const scenario of ["unrelated", "beforeCheckpoint", "afterCheckpoint", "heartbeat", "duplicateSignal", "lateComplete", "ackLost"]) {
+for (const scenario of ["beforeSpawn", "unrelated", "beforeCheckpoint", "afterCheckpoint", "heartbeat", "duplicateSignal", "lateComplete", "ackLost"]) {
   test(`active context process stop: ${scenario}`, { skip: process.platform !== "win32", timeout: 20000 }, async () => {
     const f = validPacketFixture(); pinReadyFixture(f);
     const directory = await mkdtemp(path.join(os.tmpdir(), "roost-active-context-"));
     const configPath = path.join(directory, "config.json"), requests = [], processes = [], pids = [];
     let active, fenced = false, workerReady = false, acknowledged = false, unsafeAck = false, totalStops = 0;
-    const longWorker = !["unrelated", "lateComplete"].includes(scenario);
+    const longWorker = !["beforeSpawn", "unrelated", "lateComplete"].includes(scenario);
     const alive = pid => { try { process.kill(pid, 0); return true; } catch { return false; } };
     const invalidate = () => { fenced = true; active.contextInvalidatedAt = new Date().toISOString(); };
     const server = createServer(async (req, res) => {
@@ -35,7 +35,10 @@ for (const scenario of ["unrelated", "beforeCheckpoint", "afterCheckpoint", "hea
         return send(active);
       }
       if (req.url.includes("company-intelligence")) return send(f.taskContext);
-      if (req.url.includes("product-engineering")) return send(f.applicationContext);
+      if (req.url.includes("product-engineering")) {
+        if (scenario === "beforeSpawn" && active.checkpoint.stage === "spawn_intent") invalidate();
+        return send(f.applicationContext);
+      }
       if (req.url.endsWith("/heartbeat")) return fenced ? send("agent_execution_context_invalidated", 409) : send({ leaseExpiresAt: new Date(Date.now() + 90000).toISOString() });
       if (req.url.endsWith("/checkpoint")) {
         if (input.checkpoint.stage === "running" && longWorker) {
@@ -82,6 +85,7 @@ for (const scenario of ["unrelated", "beforeCheckpoint", "afterCheckpoint", "hea
       await writeFile(configPath, JSON.stringify({ workspaceRoot: hostWorkspace, codexCommand: "active-context-fixture",
         repositories: { demoapp: { directory: "DemoApp", originUrl: "https://github.com/example-org/DemoApp.git" } } }));
       const result = await run(); assert.equal(result.code, 0, result.stderr);
+      if (scenario === "beforeSpawn") { assert.equal(pids.length, 0); assert.equal(active.checkpoint.stage, "spawn_intent"); }
       assert.equal(totalStops, longWorker ? 1 : 0, "one termination for a live tree, none after natural exit");
       assert.equal(unsafeAck, false, "stop must be confirmed before acknowledgement");
       for (const pid of pids) assert.equal(alive(pid), false);

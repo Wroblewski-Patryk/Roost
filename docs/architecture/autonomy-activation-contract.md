@@ -1,6 +1,14 @@
 # Agent Delivery Foundations And Activation Contract
 
-[Adopt-before-build and provider contract v1](adopt-before-build.md) requires
+Worker-sealed bootstrap input is implemented under provider contract v4. It
+proves synthetic context preparation and final spawn admission, not Stage 2:
+model tool calls are no longer required to obtain mandatory initial context.
+Live Direct/Hermes compatibility, native containment and hard output/cost budgets
+remain open. Execution stays false, observer stays observe, Hermes stays disabled
+and `pilotReadiness.ready` stays false. Runtime reads require separate authority
+and cannot replace a sealed active context outside RF-CTX-006 reconciliation.
+
+[Adopt-before-build and provider contract v4](adopt-before-build.md) requires
 official pinned Hermes compatibility before any local agent pilot. Direct Codex
 remains the reference/fallback. Hermes is disabled and unproven; neither host
 metadata nor the execution environment flag proves or grants pilot admission.
