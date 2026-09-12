@@ -1,3 +1,4 @@
+import { providerAdmissionReason } from "./execution-provider";
 import protocol from "./host-protocol.json";
 
 export { protocol };
@@ -12,7 +13,7 @@ export function hostCompatibility(host: HostDeclaration) {
     : metadata.protocolVersion !== protocol.version ? "host_protocol_mismatch"
     : metadata.executionMode === "observe" ? "observer_mode"
     : metadata.executionMode !== "supervised" ? "host_mode_missing"
-    : missingCapabilities.length ? "host_capabilities_missing" : null;
+    : missingCapabilities.length ? "host_capabilities_missing" : providerAdmissionReason(metadata.executionProvider);
   return { compatible: reason === null, reason, missingCapabilities };
 }
 

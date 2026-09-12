@@ -6,6 +6,7 @@ import { CcToast } from "../../components/cc-toast";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
 import type { ConnectionPacket } from "../../types";
+import { ExecutionProviderStatus, type ProviderReport, type ProviderRegistry } from "./execution-provider-status";
 
 type AgentHost = {
   id: string;
@@ -16,13 +17,14 @@ type AgentHost = {
   applicationSlugs: string[];
   workspaceId: string;
   metadata?: { runnerVersion?: string; executionMode?: string };
-  runtime?: { compatibility?: { compatible: boolean; reason: string | null }; executionUnavailableReasons?: string[] };
+  runtime?: { executionProvider?: ProviderReport; compatibility?: { compatible: boolean; reason: string | null }; executionUnavailableReasons?: string[] };
 };
 
 type RuntimeReadiness = {
   executionEnabled: boolean;
   mode: string;
   applications: Array<{ readyForHost: boolean }>;
+  executionProviders?: ProviderRegistry;
 };
 
 function tomlString(value: string) {
@@ -130,6 +132,7 @@ export function AgentConnectionsSection({ connection }: { connection: Connection
           <div><dt>Workspace</dt><dd>{connection?.workspace?.name || latestHost.workspaceId}</dd></div>
           <div><dt>{polish ? "Zadeklarowane aplikacje" : "Declared applications"}</dt><dd>{latestHost.applicationSlugs.join(", ") || "—"}</dd></div>
         </dl> : null}
+        <ExecutionProviderStatus report={latestHost?.runtime?.executionProvider} registry={readiness.data?.executionProviders} />
         <div className="roost-agent-connection-row">
           <span className="roost-agent-connection-icon"><i className="ph-bold ph-shield-check" aria-hidden="true"></i></span>
           <div><strong>{polish ? "Tryb wykonywania" : "Execution mode"}</strong><small>{polish ? `${readyApplications}/${readiness.data?.applications.length || 0} aplikacji ma gotową strukturę lokalną` : `${readyApplications}/${readiness.data?.applications.length || 0} applications have a ready local structure`}</small></div>

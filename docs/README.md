@@ -17,6 +17,7 @@ only transient process state outside the repository.
 - Architecture: `architecture/architecture-source-of-truth.md`,
   `architecture/system-architecture.md`, `architecture/tech-stack.md`,
   `architecture/innovation-product-engineering.md`,
+  `architecture/adopt-before-build.md` (versioned runtime-provider boundary),
   `architecture/local-codex-agent-runtime.md`
   `architecture/workspace-human-access.md`
   `architecture/typed-work-handoff.md`,

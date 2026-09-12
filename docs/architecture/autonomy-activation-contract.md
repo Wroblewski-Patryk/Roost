@@ -1,5 +1,10 @@
 # Agent Delivery Foundations And Activation Contract
 
+[Adopt-before-build and provider contract v1](adopt-before-build.md) requires
+official pinned Hermes compatibility before any local agent pilot. Direct Codex
+remains the reference/fallback. Hermes is disabled and unproven; neither host
+metadata nor the execution environment flag proves or grants pilot admission.
+
 Status: accepted target; not an assertion of implemented autonomy.
 
 The frozen [Foundation V2 registry](../product/interview-foundation-v2.md) is the

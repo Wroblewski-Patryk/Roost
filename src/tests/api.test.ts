@@ -3594,6 +3594,8 @@ test("host protocol admission fails closed while incompatible hosts remain onlin
   const host = (response.body as { data: { id: string } }).data;
   const pending = await historicalRiskExecution({ data: { workspaceId: owner.workspace.id, taskId: task.id, applicationId: application.id, agentHostId: host.id, requestedByType: "user", status: "claimed", attempt: 1, leaseToken: "00000000-0000-4000-8000-000000000001", leaseExpiresAt: new Date(Date.now() + 90000), checkpointVersion: 1, checkpoint: { schemaVersion: "roost-recovery-v1", stage: "claimed", sessionId: "00000000-0000-4000-8000-000000000001", packetRevision: null, workspaceDigest: null } } });
   const scenarios: Array<[string, unknown, Record<string, string>]> = [
+    ["hermes_compatibility_unproven", { ...declaration, metadata: { ...validHostMetadata, executionProviderConfig: { secret: "PRIVATE_PROVIDER_SENTINEL" }, executionProvider: { kind: "hermes_codex", ready: true, executionSupported: true, executablePath: "PRIVATE_PROVIDER_SENTINEL", installedVersion: "PRIVATE_PROVIDER_SENTINEL", blockers: [] } } }, headers],
+    ["execution_provider_unknown", { ...declaration, metadata: { ...validHostMetadata, executionProvider: { kind: "PRIVATE_PROVIDER_SENTINEL" } } }, headers],
     ["host_protocol_missing", { ...declaration, metadata: {} }, headers],
     ...[0, 2, "1", null].map(version => ["host_protocol_mismatch", { ...declaration, metadata: { ...validHostMetadata, protocolVersion: version } }, headers] as [string, unknown, Record<string, string>]),
     ["host_capabilities_missing", { ...declaration, capabilities: ["heartbeat"] }, headers],
@@ -3612,6 +3614,9 @@ test("host protocol admission fails closed while incompatible hosts remain onlin
       const registered = await register(value);
       assert.equal(registered.status, 200);
       assert.equal((registered.body as { data: { status: string } }).data.status, "online");
+      assert.equal(JSON.stringify(registered.body).includes("PRIVATE_PROVIDER_SENTINEL"), false);
+      assert.equal(JSON.stringify((await prisma.agentHost.findUniqueOrThrow({ where: { id: host.id } })).metadata).includes("PRIVATE_PROVIDER_SENTINEL"), false);
+
       assert.equal((await request(`/v1/agent-runtime/hosts/${host.id}/heartbeat`, { method: "POST", headers, body: "{}" })).status, 200);
       for (const [route, body] of [
         ["/v1/agent-runtime/executions/claim", { hostSlug: declaration.slug }],
@@ -3625,6 +3630,13 @@ test("host protocol admission fails closed while incompatible hosts remain onlin
       const unchanged = await prisma.agentExecution.findUniqueOrThrow({ where: { id: pending.id } });
       assert.equal(unchanged.attempt, 1); assert.equal(unchanged.checkpointVersion, 1); assert.equal(unchanged.leaseToken, pending.leaseToken);
     }
+    const heartbeat = await request(`/v1/agent-runtime/hosts/${host.id}/heartbeat`, { method: "POST", headers, body: JSON.stringify({ metadata: { ...validHostMetadata, executionProvider: { kind: "hermes_codex", executablePath: "PRIVATE_PROVIDER_SENTINEL", ready: true, blockers: ["PRIVATE_PROVIDER_SENTINEL"] } } }) });
+    assert.equal(heartbeat.status, 200); assert.equal(JSON.stringify(heartbeat.body).includes("PRIVATE_PROVIDER_SENTINEL"), false);
+    const readiness = await request("/v1/agent-runtime/readiness", { headers });
+    assert.equal(readiness.status, 200);
+    assert.equal((readiness.body as { data: { pilotReadiness: { ready: boolean } } }).data.pilotReadiness.ready, false);
+    assert.equal(JSON.stringify(readiness.body).includes("PRIVATE_PROVIDER_SENTINEL"), false);
+    assert.equal(JSON.stringify((await request("/v1/agent-runtime/hosts", { headers })).body).includes("PRIVATE_PROVIDER_SENTINEL"), false);
     await register(declaration);
     assert.equal((await request(`/v1/agent-runtime/recovery?hostSlug=${declaration.slug}`, { headers })).status, 200);
     const visible = await request("/v1/agent-runtime/hosts", { headers: auth });

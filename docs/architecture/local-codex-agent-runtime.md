@@ -1,5 +1,10 @@
 # Local Codex Agent Runtime
 
+[Adopt-before-build and provider contract v1](adopt-before-build.md) requires
+official pinned Hermes compatibility before any local agent pilot. Direct Codex
+remains the reference/fallback. Hermes is disabled and unproven; neither host
+metadata nor the execution environment flag proves or grants pilot admission.
+
 [Material unknown interviews](material-unknown-interviews.md) bind short question blocks to exact human decisions, immutable proposals and dependency-specific Ready fences. Resolution requires fresh Submit and never revives old dependent-operation grants.
 
 [Governed task clarification](governed-task-clarification.md) provides typed specialist conversation and deterministic receipt summaries without changing task authority.

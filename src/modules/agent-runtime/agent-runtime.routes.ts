@@ -1,3 +1,4 @@
+import { executionProviderRegistry, projectProvider, sanitizeProviderMetadata } from "./execution-provider";
 import { interviewView,interviewCommand } from "./task-interview";
 import { clarificationView,clarificationCommand } from "./task-clarification";
 import { taskHandoffView, handoffCommand } from "./task-handoff";
@@ -94,12 +95,12 @@ function hostRuntime(host: { workspaceId: string; metadata: unknown; capabilitie
   const compatibility = hostCompatibility(host);
   const metadata = host.metadata && typeof host.metadata === "object" && !Array.isArray(host.metadata) ? host.metadata as Record<string, unknown> : {};
   const clientReasons = Array.isArray(metadata.executionUnavailableReasons) ? metadata.executionUnavailableReasons.filter((value): value is string => typeof value === "string" && ["api_protocol_missing", "api_protocol_mismatch", "api_capabilities_missing", "api_contract_invalid", "api_unavailable", "execution_reconciliation_required"].includes(value)) : [];
-  return { workspaceId: host.workspaceId, executionEnabled: executionEnabled(), mode: executionEnabled() ? "supervised_execution" : "foundation_only", protocol, compatibility,
+  return { workspaceId: host.workspaceId, executionEnabled: executionEnabled(), mode: executionEnabled() ? "supervised_execution" : "foundation_only", protocol, compatibility, executionProvider: projectProvider(metadata.executionProvider),
     executionUnavailableReasons: [...new Set([...(compatibility.reason ? [compatibility.reason] : []), ...clientReasons, ...(metadata.executionMode === "supervised" && metadata.outputTokenBudgetEnforcement === "unavailable" ? ["output_token_limit_unsupported"] : []), ...(!executionEnabled() ? ["runtime_disabled"] : [])])] };
 }
 
 function visibleHost<T extends { status: string; lastSeenAt: Date | null; workspaceId: string; metadata: unknown; capabilities: unknown }>(host: T) {
-  return { ...host, runtime: hostRuntime(host), status: host.status === "online" && (!host.lastSeenAt || host.lastSeenAt.getTime() < Date.now() - 60_000) ? "offline" : host.status };
+  return { ...host, metadata: sanitizeProviderMetadata(host.metadata), runtime: hostRuntime(host), status: host.status === "online" && (!host.lastSeenAt || host.lastSeenAt.getTime() < Date.now() - 60_000) ? "offline" : host.status };
 }
 
 function protocolBlocked(req: Request, res: Response, host: { metadata: unknown; capabilities: unknown }) {
@@ -418,11 +419,13 @@ agentRuntimeRouter.get("/readiness", asyncHandler(async (req, res) => {
       executionEnabled: executionEnabled(),
       mode: executionEnabled() ? "supervised_execution" : "foundation_only",
       protocol,
+      executionProviders: executionProviderRegistry,
+      pilotReadiness: { ready: false, requiredProvider: "hermes_codex", blockers: ["hermes_compatibility_unproven"] },
       applications: records,
       hosts: hosts.map(visibleHost),
       triggerPolicy: triggerRule,
       executionCounts: Object.fromEntries(executionCounts.map((item) => [item.status, item._count._all])),
-      activationRequirements: ["review_application_context", "validate_local_allowlist", "create_scoped_worker_key", "start_windows_host", "run_non_critical_trial", "explicitly_enable_runtime"]
+      activationRequirements: ["review_application_context", "validate_local_allowlist", "create_scoped_worker_key", "start_windows_host", "prove_hermes_read_only_compatibility", "run_non_critical_trial", "explicitly_enable_runtime"]
     }
   });
 }));
@@ -439,8 +442,8 @@ agentRuntimeRouter.post("/hosts/register", asyncHandler(async (req, res) => {
   if (disabled?.status === "disabled") return sendApiError(res, 409, "agent_host_disabled");
   const host = await prisma.agentHost.upsert({
     where: { workspaceId_slug: { workspaceId: req.auth!.workspaceId, slug: input.slug } },
-    create: { ...input, capabilities: json(input.capabilities), applicationSlugs: json(input.applicationSlugs), metadata: json(input.metadata), workspaceId: req.auth!.workspaceId, status: "online", lastSeenAt: now },
-    update: { name: input.name, platform: input.platform, capabilities: json(input.capabilities), applicationSlugs: json(input.applicationSlugs), metadata: json(input.metadata), status: "online", lastSeenAt: now }
+    create: { ...input, capabilities: json(input.capabilities), applicationSlugs: json(input.applicationSlugs), metadata: json(sanitizeProviderMetadata(input.metadata)), workspaceId: req.auth!.workspaceId, status: "online", lastSeenAt: now },
+    update: { name: input.name, platform: input.platform, capabilities: json(input.capabilities), applicationSlugs: json(input.applicationSlugs), metadata: json(sanitizeProviderMetadata(input.metadata)), status: "online", lastSeenAt: now }
   });
   res.json({ data: visibleHost(host) });
 }));
@@ -449,7 +452,7 @@ agentRuntimeRouter.post("/hosts/:id/heartbeat", asyncHandler(async (req, res) =>
   const input = hostSchema.partial().pick({ capabilities: true, applicationSlugs: true, metadata: true }).parse(req.body ?? {});
   const existing = await prisma.agentHost.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, status: { not: "disabled" } } });
   if (!existing) return sendApiError(res, 404, "agent_host_not_found");
-  const host = await prisma.agentHost.update({ where: { id: existing.id }, data: { status: "online", lastSeenAt: new Date(), ...(input.capabilities ? { capabilities: json(input.capabilities) } : {}), ...(input.applicationSlugs ? { applicationSlugs: json(input.applicationSlugs) } : {}), ...(input.metadata ? { metadata: json(input.metadata) } : {}) } });
+  const host = await prisma.agentHost.update({ where: { id: existing.id }, data: { status: "online", lastSeenAt: new Date(), ...(input.capabilities ? { capabilities: json(input.capabilities) } : {}), ...(input.applicationSlugs ? { applicationSlugs: json(input.applicationSlugs) } : {}), ...(input.metadata ? { metadata: json(sanitizeProviderMetadata(input.metadata)) } : {}) } });
   res.json({ data: visibleHost(host) });
 }));
 

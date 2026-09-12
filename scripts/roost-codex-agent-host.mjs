@@ -1,3 +1,4 @@
+import { inspectExecutionProvider, providerAdmissionReason } from "./lib/agent-host-execution-provider.mjs";
 import { spawn } from "node:child_process";
 import { guardHostContent, hostTransport, boundedRunnerLines, readHostResponse } from "./lib/agent-host-redaction.mjs";
 import { readFile } from "node:fs/promises";
@@ -37,6 +38,7 @@ const host = {
   applicationSlugs: Object.keys(config.repositories || {}),
   metadata: {
     runnerVersion: "roost-codex-agent-host-v1",
+    executionProvider: await inspectExecutionProvider(config),
     protocolVersion: protocol.version,
     executionMode: "supervised",
     outputTokenBudgetEnforcement: "unavailable",
@@ -82,9 +84,10 @@ async function api(route, options = {}) {
 }
 
 async function refreshAdmission() {
+  host.metadata.executionProvider = await inspectExecutionProvider(config);
   registeredHost = await api(registeredHost ? `/v1/agent-runtime/hosts/${registeredHost.id}/heartbeat` : "/v1/agent-runtime/hosts/register",
     { method: "POST", body: JSON.stringify(registeredHost ? { metadata: host.metadata, applicationSlugs: host.applicationSlugs, capabilities: host.capabilities } : host) });
-  const reason = apiCompatibility(registeredHost?.runtime, host.capabilities);
+  const reason = providerAdmissionReason(host.metadata.executionProvider) || apiCompatibility(registeredHost?.runtime, host.capabilities);
   host.metadata.executionUnavailableReasons = reason ? [reason] : [];
   return reason;
 }
@@ -270,7 +273,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     guardHostContent(prompt, "required", [apiKey, claimed.leaseToken]);
     const currentCommit = await duration.wait(readTaskCommit(repositoryPath));
     // No awaited RPC/work remains between this admission check and spawn.
-    const protocolReason = apiCompatibility(registeredHost?.runtime, host.capabilities);
+    const protocolReason = providerAdmissionReason(host.metadata.executionProvider) || apiCompatibility(registeredHost?.runtime, host.capabilities);
     if (protocolReason) throw protocolAdmissionError(protocolReason);
     lease.assertValid();
     duration.assertWithinBudget();

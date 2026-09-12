@@ -98,7 +98,7 @@ stays disabled and the canonical host stays observe.
 | [RF-CTX-018](../product/interview-foundation-v2.md#rf-ctx-018) | P0 | częściowo działa | [DEC](#e-dec) | Native typed owner reservations, versioned exact mandates, shortest workforce routes, expiry/revocation fences and Decision/interview/Ready/review integration: [contract](delegated-decision-authority.md). Semantic inference and company-wide delegation remain outside this bounded implementation. |
 | [RF-CTX-019](../product/interview-foundation-v2.md#rf-ctx-019) | P1 | częściowo działa | [TASK](#e-task) | Records/relations exist; execution enforcement incomplete. |
 | [RF-CTX-020](../product/interview-foundation-v2.md#rf-ctx-020) | P1 | częściowo działa | [LEARN](#e-learn) | Knowledge/standard records exist; promotion/eval loop absent. |
-| [RF-CTX-021](../product/interview-foundation-v2.md#rf-ctx-021) | P0 | częściowo działa | [FIND](#e-find) | Capability observations exist; governed triage-to-task pipeline incomplete. |
+| [RF-CTX-021](../product/interview-foundation-v2.md#rf-ctx-021) | P0 | działa | [FIND](#e-find) | Versioned Finding verification, independent adjudication and idempotent native-task triage implemented; no autonomy activation. |
 | [RF-CTX-022](../product/interview-foundation-v2.md#rf-ctx-022) | P1 | brak | [FIND](#e-find) | No complete prioritization rule engine. |
 | [RF-CTX-023](../product/interview-foundation-v2.md#rf-ctx-023) | P1 | brak | [FIND](#e-find) | DemoApp audit not executed. |
 | [RF-CTX-024](../product/interview-foundation-v2.md#rf-ctx-024) | P1 | brak | [CTX](#e-ctx) | No automated provenance/license release gate. |
@@ -318,7 +318,9 @@ Draft/Needs context/Needs decision remain nonexecuting. No automatic queue/claim
 [src/modules/company-records/company-records.routes.ts](../../src/modules/company-records/company-records.routes.ts), [prisma/schema.prisma](../../prisma/schema.prisma).
 
 <a id="e-find"></a>
-**FIND** — Readiness/observations and evidence primitives; not governed independent triage.
+**FIND** — Governed Findings shipped at `db0227e667bebe2adc429b2619f63af2f2a30377`: versioned evidence, independent verification/adjudication, idempotent native-task triage and event-bound reopening. RF-CTX-022 prioritization and RF-CTX-023 application audit remain separate missing requirements.
+
+[Contract](governed-findings.md), [service](../../src/modules/product-engineering/finding-service.ts), [API acceptance](../../src/tests/finding-api.ts), [UI](../../web/src/features/departments/finding-workbench.tsx), [migration](../../prisma/migrations/20260909100000_governed_findings/migration.sql). Human/agent acceptance and migration/UI checks cover this delivered scope.
 
 [src/modules/product-engineering/readiness.ts](../../src/modules/product-engineering/readiness.ts), [src/modules/evidence/evidence.routes.ts](../../src/modules/evidence/evidence.routes.ts), [prisma/schema.prisma](../../prisma/schema.prisma).
 

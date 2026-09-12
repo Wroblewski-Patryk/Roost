@@ -1,3 +1,4 @@
+import { inspectExecutionProvider } from "./agent-host-execution-provider.mjs";
 import net from "node:net";
 import os from "node:os";
 import path from "node:path";
@@ -24,7 +25,7 @@ export async function runObserver({ config, api, stopped = () => false, acquireL
   const release = await acquireLock();
   let host;
   let stopReason;
-  const metadata = { runnerVersion: "roost-agent-host-observer-v1", protocolVersion: protocol.version, executionMode: "observe", workspaceRoot: config.workspaceRoot, executionUnavailableReasons: ["observer_mode"], mappingStatus: "declared_only" };
+  const metadata = { runnerVersion: "roost-agent-host-observer-v1", protocolVersion: protocol.version, executionMode: "observe", executionProvider: await inspectExecutionProvider(config), executionUnavailableReasons: ["observer_mode"], mappingStatus: "declared_only" };
   const registration = { ...config.host, platform: `${process.platform}-${process.arch}`, capabilities: ["heartbeat", "observer"], applicationSlugs: Object.keys(repositories), metadata };
   const stopPath = path.join(stateDirectory, "stop.request");
   const statusPath = path.join(stateDirectory, "status.json");
@@ -35,6 +36,7 @@ export async function runObserver({ config, api, stopped = () => false, acquireL
   try {
     while (!await stopRequested()) {
       try {
+        metadata.executionProvider = await inspectExecutionProvider(config);
         host = await api(host ? `/v1/agent-runtime/hosts/${host.id}/heartbeat` : "/v1/agent-runtime/hosts/register", { method: "POST", body: JSON.stringify(host ? { metadata, capabilities: registration.capabilities, applicationSlugs: registration.applicationSlugs } : registration) });
         // Runtime information is returned only for the authenticated workspace.
         const incompatibility = apiProtocolReason(host.runtime);

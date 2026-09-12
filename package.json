@@ -26,6 +26,8 @@
     "adapter:smoke": "node scripts/adapter-smoke.mjs",
     "agent:training-smoke": "node scripts/agent-training-smoke.mjs",
     "agent:codex-host": "node scripts/roost-codex-agent-host.mjs",
+    "agent:provider:check": "node scripts/validate-roost-execution-provider.mjs",
+    "test:agent-provider": "node --test scripts/agent-host-execution-provider.test.mjs && tsx --test src/tests/execution-provider.test.ts",
     "agent:codex-host:check": "node scripts/validate-roost-agent-host-config.mjs",
     "test:agent-host-guard": "node --test scripts/agent-host-workspace-guard.test.mjs",
     "test:agent-host-lease": "node --test scripts/agent-host-execution-lease.test.mjs",

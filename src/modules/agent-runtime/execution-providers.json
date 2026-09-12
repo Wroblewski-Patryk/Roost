@@ -1,0 +1,56 @@
+{
+  "contractVersion": 1,
+  "requiredPilotProvider": "hermes_codex",
+  "pilotReady": false,
+  "providers": [
+    {
+      "kind": "direct_codex",
+      "officialSource": "https://github.com/openai/codex",
+      "version": "0.154.0-alpha.6.2",
+      "commit": null,
+      "license": "Apache-2.0",
+      "status": "reference",
+      "pinScope": "Observed reference CLI version; installation provenance and binary digest remain unverified. Not an enforced legacy admission pin.",
+      "owner": "Local Worker",
+      "capability": "Existing supervised Codex CLI execution and comparison fallback",
+      "boundary": "Roost owns task, authority, queue and audit. Worker owns lease, process and repository guards. Provider owns transient inference only.",
+      "updateRollback": "Explicit private installation update; retain previous binary/config; rerun compatibility and Worker regressions before adoption.",
+      "healthReadiness": "Existing protocol and execution gates remain required. Reference availability does not establish Hermes or pilot readiness.",
+      "resourceCost": "One local CLI process plus model usage; duration enforced by Worker. Hard output-token enforcement remains unavailable.",
+      "failureMode": "Existing stop/reconciliation path; no automatic alternate provider or retry outside the Roost queue."
+    },
+    {
+      "kind": "hermes_codex",
+      "officialSource": "https://github.com/NousResearch/hermes-agent",
+      "version": "0.21.2",
+      "release": "v2026.9.11",
+      "commit": "939e45c91d751fadd94dcd1b873ac3cb44846213",
+      "license": "MIT",
+      "status": "disabled",
+      "pinScope": "Official source commit and package version; no installed binary or environment attestation yet.",
+      "owner": "Local Worker",
+      "capability": "Future Codex-backed inference through Hermes and bounded Roost MCP/API",
+      "boundary": "No independent task, memory, kanban, schedule, delegation or session authority. No Roost credentials in provider/model environment; no direct database or arbitrary filesystem access.",
+      "updateRollback": "No automatic install/update. Private pinned environment, retained prior environment/config, license/dependency review and repeated compatibility PoC for every pin change.",
+      "healthReadiness": "Native Windows support is an upstream claim. Identity, installation, MCP isolation, provider model compatibility and budget/stop/recovery behavior require private proof. Always blocked in contract v1.",
+      "resourceCost": "Python >=3.11,<3.14 plus dependencies, local provider process and model usage. Disk, memory, latency and token overhead unmeasured; measure in read-only PoC before any pilot.",
+      "failureMode": "Expected not-ready state without incidents, installation, claim, process start or automatic fallback. Worker/API fail closed."
+    }
+  ],
+  "hermesPolicy": {
+    "mcpServer": "roost",
+    "minimumTools": ["companycore_get_connection", "companycore_get_company_intelligence_tasks_by_id_agent_context"],
+    "supportsParallelToolCalls": false,
+    "prompts": false,
+    "resources": false,
+    "sampling": false,
+    "credentialOwner": "worker_broker",
+    "filesystem": "worker_approved_task_only",
+    "database": "none",
+    "memoryAuthority": "none",
+    "kanbanAuthority": "none",
+    "scheduleAuthority": "none",
+    "delegationAuthority": "none",
+    "sessionAuthority": "none"
+  }
+}
