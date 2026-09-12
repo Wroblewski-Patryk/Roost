@@ -173,8 +173,10 @@ Hermes installation is expected not-ready state: no incident or install loop.
 
 [RF-HOST-030 OpenShell feasibility](../operations/openshell-wsl-feasibility.md)
 evaluates an official whole-process isolation dependency separately from Hermes.
-Its current Windows preflight is BLOCKED by the absence of a user WSL 2 Linux
-distribution. OpenShell v0.0.116 is a candidate pin, not an installed/adopted
+Its initial Windows preflight was BLOCKED by the absence of a user WSL 2 Linux
+distribution. [RF-HOST-031](../operations/agent-wsl-environment.md) installed one;
+Docker integration is still unavailable and that setup result is PARTIAL.
+OpenShell v0.0.116 is a candidate pin, not an installed/adopted
 provider or proof of containment. No execution or deployment gate changes.
 
 The offline [pinned public transport examination](../operations/hermes-windows-attestation.md#offline-transport-examination-adapter-blocked)

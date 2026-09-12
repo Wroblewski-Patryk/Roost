@@ -1,5 +1,9 @@
 # RF-HOST-030: OpenShell whole-process isolation feasibility
 
+Follow-up: [RF-HOST-031](agent-wsl-environment.md) installed the dedicated user
+distribution; Docker integration remains unavailable. The historical prerequisite
+result below is preserved. OpenShell isolation still has no experimental proof.
+
 ## Verdict and scope
 
 **BLOCKED at prerequisites**, observed 2026-09-12. This is a local feasibility
