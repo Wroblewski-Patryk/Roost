@@ -1,5 +1,12 @@
 # Adopt-before-build and execution providers
 
+RF-HOST-045: the [owner decision packet](../operations/openshell-upstream-owner-decision.md)
+is READY as local decision material only. Three options are complete; A, one
+feature-request issue after fresh checks and exact owner approval, is recommended.
+The public draft/appendix cover 16 requirements in seven concerns. RF044 is
+historical-only; no network, publication, contribution or runtime is authorized.
+The only next action is to present the options to the owner.
+
 RF-HOST-044: [official release inspection](../operations/openshell-official-release-inspection.md)
 at 2026-09-13T02:07:56Z found no stable newer than v0.0.116. Prereleases and the
 unpublished v0.1.0-pre.1 tag are informational only. The dated manifest expires

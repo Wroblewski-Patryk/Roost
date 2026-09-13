@@ -1,0 +1,307 @@
+{
+  "schemaVersion": 1,
+  "packetId": "openshell.upstream-owner-decision.v1",
+  "task": "RF-HOST-045",
+  "verdict": "OWNER-UPSTREAM-DECISION-PACKET-READY",
+  "ownerDecision": "pending",
+  "selectedOption": null,
+  "recommendedOption": "A",
+  "upstreamCommit": "d1155aa70042d3e2ee49dbfa15346b108b7c1d92",
+  "title": "Add an opt-in Docker profile for immutable, nonwriting stdio workloads",
+  "documents": [
+    {
+      "role": "issue",
+      "path": "docs/operations/openshell-upstream-nonwriting-issue-draft.md",
+      "normalization": "ascii-lf",
+      "bytes": 4318,
+      "sha256": "eb277cfe963a493b8f9986de38f83582352137c459ff460de345b6c9f5da57f0"
+    },
+    {
+      "role": "appendix",
+      "path": "docs/operations/openshell-nonwriting-public-appendix.md",
+      "normalization": "ascii-lf",
+      "bytes": 5745,
+      "sha256": "4893e4e267dd5b648bff395793d23109f51b2df011b582fe4319c818d1172674"
+    },
+    {
+      "role": "owner",
+      "path": "docs/operations/openshell-upstream-owner-decision.md",
+      "normalization": "ascii-lf",
+      "bytes": 9769,
+      "sha256": "a3585fe522fc2854a77611362c01e5b18053d51caf2083ace051f57401b253eb"
+    }
+  ],
+  "options": [
+    {
+      "id": "A",
+      "recommended": true,
+      "decision": "Publish one feature-request issue only after separate owner approval and all prepublication checks; no code contribution.",
+      "agentHookupTiming": "No immediate hookup. Execution remains blocked until an official qualifying release and independent admission; maintainer timing is unknown.",
+      "tokenAndMaintenanceCost": "Low initial drafting and review cost; bounded follow-up discussion may need a separate task. No downstream code maintenance commitment.",
+      "securityRisk": "Public text cannot be fully recalled; privacy review is required. No runtime exposure is added and no enforcement requirement is relaxed.",
+      "maintainerDependence": "High: acceptance, scheduling, implementation and release remain upstream decisions; filing promises none of them.",
+      "reversibility": "The decision can be declined before posting. A posted issue may be closed later, but public copies/history may persist."
+    },
+    {
+      "id": "B",
+      "recommended": false,
+      "decision": "Do not publish now; periodically inspect official stable releases in separately authorized checks while execution stays blocked.",
+      "agentHookupTiming": "Deferred until official support is discovered and qualified; no date is promised.",
+      "tokenAndMaintenanceCost": "Repeated bounded release reviews consume tokens/time; no fork maintenance. No monitor or recurring automation is created by this packet.",
+      "securityRisk": "No new public disclosure or runtime exposure; avoid treating old snapshots as current or relaxing admission while waiting.",
+      "maintainerDependence": "Very high and passive: upstream must independently prioritize the capability.",
+      "reversibility": "Easy to reconsider later; time spent waiting cannot be recovered."
+    },
+    {
+      "id": "C",
+      "recommended": false,
+      "decision": "Separately approve preparation of an upstream contribution, conditional on contribution rights and current upstream rules; no permanent downstream fork.",
+      "agentHookupTiming": "Uncertain and likely longest: accepted scope, contributor eligibility, design, implementation, qualification and official release precede hookup.",
+      "tokenAndMaintenanceCost": "Highest: investigation, design, tests, review iterations and temporary branch maintenance need a separately bounded budget; no permanent patch support.",
+      "securityRisk": "Future low-level containment changes carry implementation and regression risk. This option authorizes no code, install or runtime now; exact scope requires separate approval.",
+      "maintainerDependence": "High: maintainers control acceptance and release. First-time PR eligibility requires a human-written vouch request unless exempt; no request is prepared or sent here.",
+      "reversibility": "Preparation can be stopped with sunk effort. Future public submissions are persistent; no maintained private fork is a fallback."
+    }
+  ],
+  "actions": {
+    "networkAuthorized": false,
+    "publicationAuthorized": false,
+    "externalWriteAuthorized": false,
+    "contributionAuthorized": false,
+    "forkAuthorized": false,
+    "installAuthorized": false,
+    "runtimeAuthorized": false,
+    "automationAuthorized": false,
+    "implementationVerified": false,
+    "executionSupported": false,
+    "pilotReady": false,
+    "liveAdmissionAllowed": false
+  },
+  "runtimeEffectivePolicySha256": null,
+  "historicalEvidence": {
+    "manifestSha256": "2caaa40ec9a8a141f3b134bff441e2360ffd0acf63c29415321a3d8a69d3816a",
+    "checkedAt": "2026-09-13T02:07:56Z",
+    "expiresAt": "2026-09-13T03:07:56Z",
+    "recordedVerdict": "OFFICIAL-RELEASE-NO-QUALIFIED-CANDIDATE",
+    "reason": "NO-NEWER-STABLE-RELEASE",
+    "use": "historical-only",
+    "freshnessClaim": false,
+    "refreshRequiredBeforePublication": true,
+    "requirements": {
+      "PASS": 0,
+      "BLOCKED": 11,
+      "UNPROVEN": 5
+    },
+    "negativeCases": {
+      "UNPROVEN": 35,
+      "executed": false
+    }
+  },
+  "proposalBindings": {
+    "nonwriting-stdio.proposal.json": "d0ebbdfc737fda1b9e6ab312641b0205c408295be9d773bac2ee54db57815c8e",
+    "nonwriting-stdio.acceptance.json": "670b1930cd9db96647f808a544cb3710ba3878dbbc364f5ebda3e8e49527e659",
+    "nonwriting-stdio.receipt.schema.json": "5165a152d6c3d06e1355bf13cd5d6fba693404e5dcddee7858edc0a4d81b6cf0"
+  },
+  "concerns": [
+    {
+      "id": 1,
+      "heading": "Negotiation and fail-closed compatibility",
+      "requirements": [
+        "negotiation",
+        "compatibility"
+      ],
+      "negativeCases": [
+        "profile_missing",
+        "profile_unknown",
+        "unsupported_host"
+      ]
+    },
+    {
+      "id": 2,
+      "heading": "Read-only child root and complete mount boundary",
+      "requirements": [
+        "root",
+        "mounts"
+      ],
+      "negativeCases": [
+        "root_unset",
+        "root_false",
+        "child_root_rw",
+        "implicit_rw_mount",
+        "image_volume",
+        "user_mount",
+        "tmp_writable",
+        "sandbox_writable"
+      ]
+    },
+    {
+      "id": 3,
+      "heading": "Workspace none, exact cwd and argv",
+      "requirements": [
+        "workspace",
+        "command"
+      ],
+      "negativeCases": [
+        "cwd_fallback",
+        "workspace_probe",
+        "shell_entrypoint",
+        "secondary_exec"
+      ]
+    },
+    {
+      "id": 4,
+      "heading": "Immutable image-baked executable",
+      "requirements": [
+        "artifact"
+      ],
+      "negativeCases": [
+        "mutable_tag",
+        "digest_platform_mismatch",
+        "fixture_absent",
+        "fixture_hash_drift",
+        "fixture_symlink",
+        "fixture_hardlink",
+        "fixture_device"
+      ]
+    },
+    {
+      "id": 5,
+      "heading": "Control, descriptor, network and GPU isolation",
+      "requirements": [
+        "isolation",
+        "network",
+        "descriptors",
+        "supervisor-state"
+      ],
+      "negativeCases": [
+        "gpu_device",
+        "network_grant",
+        "inherited_socket",
+        "inherited_token",
+        "inherited_fd",
+        "supervisor_state_visible",
+        "control_escape"
+      ]
+    },
+    {
+      "id": 6,
+      "heading": "Machine-verifiable evidence before exec",
+      "requirements": [
+        "policy",
+        "receipt",
+        "evidence"
+      ],
+      "negativeCases": [
+        "policy_merge",
+        "policy_fallback",
+        "forged_receipt",
+        "post_seal_change"
+      ]
+    },
+    {
+      "id": 7,
+      "heading": "Single-use lifecycle and finite resources",
+      "requirements": [
+        "lifecycle",
+        "limits"
+      ],
+      "negativeCases": [
+        "retained_restart",
+        "unbounded_resources"
+      ]
+    }
+  ],
+  "governance": {
+    "sourceFiles": [
+      {
+        "path": "CONTRIBUTING.md",
+        "bytes": 31045,
+        "sha256": "185399e2f03112e6a61f54b5d5d296f0176d69496b6abd8f27d8463f39edf153",
+        "gitBlob": "8b33c58fae80e8a8186ba3a001dfd816212a958f"
+      },
+      {
+        "path": "SECURITY.md",
+        "bytes": 1908,
+        "sha256": "2a6ea261981a2b5041ae70fdb5421d184323cc48bbc994e80e04a43fe54bb05b",
+        "gitBlob": "76ba2ce72d79f59ccc3cad027c7d1f30397b41ed"
+      },
+      {
+        "path": ".github/ISSUE_TEMPLATE/feature_request.yml",
+        "bytes": 3937,
+        "sha256": "1608bd2b088628e1d8befbd9b762f5ccd24ee1db58c5f6f0af15151b3ac1d956",
+        "gitBlob": "10ae9cbe50df1a553e5fbc86b1b50467e2b366a0"
+      },
+      {
+        "path": ".github/ISSUE_TEMPLATE/config.yml",
+        "bytes": 1023,
+        "sha256": "08d7c22eb35094d10d8baf560f3339ea20995deddf000641d6ed37acfe37ef85",
+        "gitBlob": "28e6b201b59f071d6d0b5509d645ea7d5926b12f"
+      },
+      {
+        "path": ".github/ISSUE_TEMPLATE/bug_report.yml",
+        "bytes": 3302,
+        "sha256": "fdc2d35e1fbb9d0e13112754b10b43a7c90fbb85e2a4379ee6c4b0ebcc5f30f2",
+        "gitBlob": "dd774e25c8bdf8a8529a0d1f1a43ffc32a9e6da3"
+      },
+      {
+        "path": "docs/CONTRIBUTING.mdx",
+        "bytes": 8003,
+        "sha256": "49c20bfa2d87532276dc8622700ee306ba1d6b88247bfa3427cad543f1dd00ea",
+        "gitBlob": "9a69c4b4450dcb250d44c749fedb8d59f353109b"
+      },
+      {
+        "path": "LICENSE",
+        "bytes": 10788,
+        "sha256": "b967d1c87b93b7d61ebcf4f8737e6ad79e5433e743e49dff395a36fb3c327047",
+        "gitBlob": "f76e7a1eb75b21354f10e48a5f4eedb3bb5de40d"
+      }
+    ],
+    "codeOfConductInRetainedTree": false,
+    "currentOnlinePolicyVerified": false,
+    "channel": "feature-request-conditional-on-current-review",
+    "securityChannel": "private-disclosure-if-reclassified",
+    "licenseObserved": "Apache-2.0",
+    "contributionRightsApproved": false,
+    "vouchEligibilityVerified": false
+  },
+  "prepublicationChecklist": [
+    {
+      "id": "fresh-release-evidence",
+      "status": "pending",
+      "instruction": "Obtain newly authorized fresh official release evidence; this historical snapshot cannot satisfy publication preflight."
+    },
+    {
+      "id": "current-channel-template",
+      "status": "pending",
+      "instruction": "Online, confirm current CONTRIBUTING, SECURITY, feature template, architecture guidance and account eligibility. Use Feature Request only if this remains a capability gap; suspected vulnerability follows the current private channel."
+    },
+    {
+      "id": "duplicates",
+      "status": "pending",
+      "instruction": "Search open and closed upstream issues for this need. Stop for owner review if a duplicate or supported solution exists; do not post a comment instead."
+    },
+    {
+      "id": "privacy",
+      "status": "pending",
+      "instruction": "Review exact title/body/appendix for secrets, personal/company/deployment identifiers, private paths and unsupported security claims."
+    },
+    {
+      "id": "owner-exact-text",
+      "status": "pending",
+      "instruction": "Present the final title/body/inline appendix and their updated hashes for explicit owner approval after preflight; approve destination and exactly one issue creation. Resolve the unchecked template declaration truthfully. Any text change requires a new reviewed revision."
+    },
+    {
+      "id": "single-external-write",
+      "status": "pending",
+      "instruction": "Only after all preceding checks and explicit approval, create exactly one issue with the appendix inline. No gist, attachment upload, comment, PR or other write is included; an ambiguous response requires read-only reconciliation, not an automatic retry."
+    }
+  ],
+  "futureExternalWrite": {
+    "maximum": 1,
+    "kind": "issue-create-only",
+    "appendix": "inline-in-same-issue",
+    "authorized": false,
+    "automaticRetry": false
+  },
+  "nextAction": "present-options-to-owner-only"
+}

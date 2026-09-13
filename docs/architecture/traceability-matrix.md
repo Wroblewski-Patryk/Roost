@@ -1,5 +1,11 @@
 # Foundation requirements traceability
 
+RF-HOST-045: [owner decision packet](../operations/openshell-upstream-owner-decision.md)
+binds exact issue/appendix/owner texts, three options with one recommendation,
+all 16 requirements and 35 negative cases in seven groups, retained upstream
+governance and historical RF043/RF044 identities. Offline integrity validation
+grants no external action or execution. Owner decision remains pending.
+
 RF-HOST-044: [dated official release inspection](../operations/openshell-official-release-inspection.md)
 finds NO-NEWER-STABLE-RELEASE at 2026-09-13T02:07:56Z. All 16 requirements and
 35 negative cases retain explicit nonqualifying dispositions; an offline validator

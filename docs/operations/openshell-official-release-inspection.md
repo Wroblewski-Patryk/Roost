@@ -1,5 +1,9 @@
 # Official OpenShell release inspection (RF-HOST-044)
 
+The subsequent [RF045 owner packet](openshell-upstream-owner-decision.md) uses
+this snapshot as historical evidence only, never as current publication
+preflight. Its final public draft does not claim current release freshness.
+
 **OFFICIAL-RELEASE-NO-QUALIFIED-CANDIDATE**, checked
 **2026-09-13T02:07:56Z**, reason **NO-NEWER-STABLE-RELEASE**. Official public
 release and tag inventories still identify **v0.0.116** as the latest stable.

@@ -1,81 +1,80 @@
-# Local draft: opt-in nonwriting stdio profile for the Docker driver
+# Add an opt-in Docker profile for immutable, nonwriting stdio workloads
 
-**Draft only; not submitted.** Based on the official release inspection at
-2026-09-13T02:07:56Z and pinned OpenShell v0.0.116 commit
-`d1155aa70042d3e2ee49dbfa15346b108b7c1d92`. No newer public stable was found.
-This draft does not claim that prereleases or unpublished work lack a solution.
-It contains no implementation, external communication or permission to submit.
+## User Story
 
-## Proposed issue text
+As an operator running small protocol probes, I want to run one image-baked
+static executable through bounded stdio, without filesystem writes or network
+access, so that the probe receives only the authority its job needs.
 
-**Title:** Add an opt-in Docker profile for immutable, nonwriting stdio workloads
+## Problem Statement
 
-Some workloads need one image-baked static ELF, explicit argv/cwd, bounded stdio,
-and no filesystem writes or network access. An example is an inert protocol probe
-at `/opt/example/bin/stdio-probe`, with cwd `/`. It needs no writable workspace,
-home, cache, tmp directory, provider credentials or shell.
+In the reviewed OpenShell v0.0.116 Docker path, container creation leaves
+`readonly_rootfs` unset. An empty or root image workdir resolves to `/sandbox`,
+and workspace preparation requires a writable directory. There is no negotiated
+profile combining a read-only child filesystem, workspace none, exact cwd/argv
+and verifiable isolation before workload execution.
 
-In the examined release, Docker container creation leaves readonly_rootfs unset.
-Root/empty OCI workdir becomes `/sandbox`; managed workspace preparation or a
-custom workdir write probe requires a writable directory. Explicit argv already
-works, but immutable image-ID selection is not an exact executable identity gate.
-The public capability/status paths do not provide a complete observed pre-exec
-receipt binding child mount/FD/policy state to that argv and attempt.
-See the [pinned Docker create path](https://github.com/NVIDIA/OpenShell/blob/d1155aa70042d3e2ee49dbfa15346b108b7c1d92/crates/openshell-driver-docker/src/lib.rs#L2944),
+This is a request for a stricter optional capability. Static review has not
+demonstrated an exploit or a violation of an existing security guarantee.
+
+## Impact / Why This Matters
+
+The probe needs no home, cache, temporary files, credentials or shell. Its
+admission stays blocked when the selected runtime requires writable workspace
+backing or cannot establish the complete child boundary. Image packaging and
+filesystem policy alone do not establish that boundary.
+
+## Proposed Design
+
+The caller explicitly requests a versioned nonwriting profile, an immutable
+platform image, exact executable identity, argv, cwd and finite resource/stdio
+limits. For example, `/opt/example/bin/stdio-probe` runs with cwd `/` as a
+nonroot identity; no workspace is prepared or probed for writes.
+
+Before workload exec, the caller can verify the prepared child state and bind
+its one-time start acknowledgement to that unchanged state. Missing, unknown,
+partial or unsupported profile support rejects the request with a useful reason.
+The feature is disabled by default and preserves ordinary users' behavior.
+Names, wire format and internal architecture are open to upstream design.
+
+## Acceptance Criteria
+
+- The child has a read-only root and no writable or control mounts, network,
+  proxy, GPU, credentials or descriptors beyond dedicated bounded stdio.
+- Workspace none preserves exact cwd/argv without shell defaults, probes or
+  uploads. The image-baked executable's final identity is checked before exec.
+- Necessary supervisor state is bounded and inaccessible to the child.
+  Observed effective policy cannot silently gain grants or use a fallback.
+- Machine-verifiable pre-exec evidence binds the selected builds, image, child
+  state and limits to one fresh attempt; drift or replay denies execution.
+  A receipt is one possible design, not a required schema or signing protocol.
+- Finite resource/output/deadline limits are enforced. Failed or completed
+  attempts cannot restart with retained state. Unsupported platforms fail closed.
+- Release-bound tests cover negative cases, prepared-state inspection before
+  workload exec and separately controlled adversarial execution. Configuration
+  assertions alone are insufficient evidence of enforcement.
+
+## Alternatives Considered
+
+- An immutable custom image can deliver the probe but does not remove mandatory
+  workspace writes or seal the child root/mount state.
+- A filesystem deny policy constrains handled operations; it does not prove
+  read-only backing or exclude inherited control descriptors.
+- Writable scratch or broader grants change the requested boundary. Keeping
+  execution blocked while waiting for official support preserves it.
+
+## Agent Investigation
+
+Offline review used v0.0.116 commit
+`d1155aa70042d3e2ee49dbfa15346b108b7c1d92`:
+[Docker create path](https://github.com/NVIDIA/OpenShell/blob/d1155aa70042d3e2ee49dbfa15346b108b7c1d92/crates/openshell-driver-docker/src/lib.rs#L2944),
 [workspace resolver](https://github.com/NVIDIA/OpenShell/blob/d1155aa70042d3e2ee49dbfa15346b108b7c1d92/crates/openshell-core/src/driver_mounts.rs#L108),
-[workspace preparation](https://github.com/NVIDIA/OpenShell/blob/d1155aa70042d3e2ee49dbfa15346b108b7c1d92/crates/openshell-supervisor-process/src/process.rs#L1802)
-and [public capability schema](https://github.com/NVIDIA/OpenShell/blob/d1155aa70042d3e2ee49dbfa15346b108b7c1d92/proto/openshell.proto#L785).
+[workspace preparation](https://github.com/NVIDIA/OpenShell/blob/d1155aa70042d3e2ee49dbfa15346b108b7c1d92/crates/openshell-supervisor-process/src/process.rs#L1802).
+Explicit argv and privilege restrictions provide useful foundations. No runtime
+experiment was performed. This pinned review makes no claim about current
+releases, prereleases or unpublished work.
 
-Propose a versioned, disabled-by-default nonwriting stdio profile, negotiated
-through existing capability messages by gateway, Docker driver and supervisor.
-Equivalent official semantics and upstream naming are welcome; the profile must
-be portable, not tied to a particular orchestrator or example executable path.
+## Checklist
 
-The minimal coherent feature would jointly provide:
-
-- Explicit Docker read-only root and a separately sealed child mount namespace
-  with no writable or control resources, including implicit mounts.
-- Workspace none without write probes/create/copy/upload/sync, exact immutable
-  cwd, explicit argv/nonroot identity and no shell or fallback defaults.
-- Platform-digest image verification and pre-start exact file type/mode/owner/
-  size/hash/link checks, bound to the unchanged final executable object.
-- No child network/proxy/DNS/inference/GPU, host/admin paths, credentials or
-  inherited descriptors beyond three dedicated bounded stdio pipes.
-- Necessary supervisor state only in bounded private tmpfs, inaccessible to
-  the child through mount propagation, proc, namespaces, IPC or descriptors.
-- Exact observed effective policy without enrichment/merge/fallback, enforced
-  finite resources/output/deadlines and single-use attempt/recovery semantics.
-- An authenticated, build-bound, fresh pre-exec evidence receipt, complete
-  mount/FD enumeration and exact request/receipt acknowledgement before exec.
-
-This does not require the trusted rootful supervisor itself to initialize without
-writes. It requires a proven boundary between its state/privilege and the child.
-No existing user should be silently migrated or have ordinary Docker behavior
-changed. Unsupported, missing, partial or unknown required profiles must reject
-the workload rather than select normal mode.
-
-Acceptance should combine official unit/property tests, fake-daemon HostConfig
-snapshots, prepared-container inspection with workload exec held closed, and a
-separately authorized adversarial suite on an exact supported-platform matrix.
-Each negative case must deny the rejected operation without a success receipt;
-runtime resource/output breaches must terminate without success. Source/config
-presence or a signed self-assertion alone does not establish enforcement.
-
-## Proposed contribution boundary for review
-
-Reuse existing config/CLI/public and driver schemas, capability translation,
-Docker create/image paths, workspace/process preparation, namespace/FD hardening,
-policy/OPA/Landlock loading, lifecycle and tests. Add the profile as one coherent
-upstream capability. Do not provide a downstream fork, general arbitrary mount
-configuration, writable scratch workaround or weakened policy.
-
-The local [RF043 acceptance contract](../../config/openshell/nonwriting-stdio.acceptance.json)
-contains all 16 requirements and 35 denial cases; its
-[source map and receipt schema](openshell-nonwriting-stdio-proposal.md) make the
-scope reviewable. These are proposed acceptance artifacts, not existing upstream
-APIs or evidence that the feature is implemented.
-
-Before any submission, obtain a separate decision on the final public issue
-text and contribution scope, and recheck official release state if the dated
-inspection expired. No issue/PR creation, maintainer contact or implementation
-has occurred. This draft adds no follow-up automation or execution authority.
+- [ ] I've reviewed existing issues and the architecture docs
+- [x] This is a design proposal, not a "please build this" request
