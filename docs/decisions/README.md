@@ -18,6 +18,7 @@ an owning canonical doc linked from here.
 | `ADR-000-template.md` | Template for architecture decision records. |
 | [ADR-001](ADR-001-direct-codex-app-server-pilot.md) | Accepted v1: direct Worker–Codex App Server pilot target; Hermes optional, execution remains blocked. |
 | [ADR-002](ADR-002-codex-qualification-owner-decisions.md) | Accepted I01 owner decisions: technical task sizing, official local Codex account policy and later bounded evidence work; technical gates stay closed. |
+| [ADR-003](ADR-003-native-windows-codex-pilot.md) | Accepted native Windows pilot platform; WSL2 deferred without automatic fallback. Narrow platform successor to I01-C; no execution activation. |
 
 ## Status Vocabulary
 

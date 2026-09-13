@@ -1,5 +1,15 @@
 # Foundation requirements traceability
 
+RF-CODEX-015: accepted [ADR-003 native platform decision](../decisions/ADR-003-native-windows-codex-pilot.md)
+selects Windows for the pilot, WSL2 deferred without automatic fallback.
+[Exact native preflight](direct-codex-native-artifact-preflight-v1.md) remains
+NATIVE-WINDOWS-ARTIFACT-PREFLIGHT-BLOCKED. Offline Windows verification accepted
+the PE and five signed-catalog member bindings; full package binding, launch
+closure/principal/race protection and build/wire mapping remain unproven.
+RF009–013 remain deferred Linux evidence, not npm/Sigstore prerequisites for
+Windows. All gates and registry v5 remain unchanged. Next: RF-CODEX-016 bounded
+native no-model schema-probe contract/prerequisites; not started.
+
 RF-CODEX-014: [platform comparison and decision candidate](direct-codex-platform-selection-v1.md)
 returns NATIVE-WINDOWS-CODEX-PREFERRED: native Windows for pilot qualification,
 WSL2 deferred without automatic fallback. Fresh Appx/PE/ACL/signing metadata and

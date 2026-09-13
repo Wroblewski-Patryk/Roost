@@ -1,6 +1,10 @@
 # Direct Codex platform selection v1
 
 RF-CODEX-014, 2026-09-13. Decision candidate version **1**.
+Follow-up: [ADR-003](../decisions/ADR-003-native-windows-codex-pilot.md) records
+owner acceptance in RF-CODEX-015; its [native preflight](direct-codex-native-artifact-preflight-v1.md)
+owns current artifact findings and the next task. The proposal/status and RF015
+recommendation below are preserved as RF014 history.
 Verdict: **NATIVE-WINDOWS-CODEX-PREFERRED** for further pilot qualification.
 This is a comparative recommendation, not an accepted platform revision or
 execution qualification. All gates remain false.

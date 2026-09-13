@@ -1,5 +1,12 @@
 # Architecture Source Of Truth
 
+[ADR-003](../decisions/ADR-003-native-windows-codex-pilot.md), accepted in
+RF-CODEX-015, selects native Windows Codex App Server for the pilot. WSL2 is a
+later separately qualified profile with no automatic fallback. The
+[native preflight](direct-codex-native-artifact-preflight-v1.md) remains BLOCKED;
+artifact, protocol and containment qualification do not follow from platform
+acceptance. Direct Worker ownership and all false runtime gates remain intact.
+
 The [RF-HERMES-005 adapter specification v1](direct-codex-app-server-contract-v1.md)
 defines the ADR-001 target and its closed test/evidence criteria. It is a future
 contract with unresolved qualification decisions, not implemented runtime or

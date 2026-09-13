@@ -18,10 +18,19 @@ REPORT=BASE/'direct-codex-provenance-review-v1.md'
 REVIEW_SEAL='ef34cae38b6a1fe40cf484fb6106cf3a37f05437e389af6a7d71a1fdcb8bb3ad'
 ENTRY='f42307b65d30a8fce7257ff43d1466c2cd38f264'
 INTEGRATION={
+ # RF015 updates current architecture; review remains bound to exact entry bytes.
+ 'docs/architecture/architecture-source-of-truth.md',
+ 'docs/architecture/local-codex-agent-runtime.md',
  'docs/architecture/direct-codex-artifact-delivery-v1.md',
  'docs/architecture/direct-codex-artifact-delivery-acceptance-v1.md',
  'docs/architecture/direct-codex-official-source-research-v1.md',
  'docs/architecture/direct-codex-qualification-decisions-v1.md',
+}
+# Exact reviewed mixed-EOL bytes were reconstructed before recording these two
+# LF Git-blob equivalents in RF015. Neither reviewer hash/record is rewritten.
+MIXED_EOL_SNAPSHOTS={
+ 'b25e704f0e8370eb2852a126ead7291dd5252518ee9b5c3e9e9244e0272e586b':'c905689ab1592a13b0c2c667edeca90cf3f7f5f31ca8eeff82f8c36c9fc92cf6',
+ '46fa8dfda10e1d200d3dc67d5caa70090107c1eaeaec5f6c6f7cd85fd3da0b0a':'0475ce595976c2f3b07e2791081d9040c5eb7714b690acfca761a7b300dc69dc',
 }
 def digest(data):
     return hashlib.sha256(data).hexdigest()
@@ -59,7 +68,7 @@ def validate_bindings(value):
         need(name in INTEGRATION,'reviewed_bytes_drift')
         entry=subprocess.check_output(['git','show',ENTRY+':'+name],cwd=ROOT)
         # Git stores LF; reconstruct either exact entry workspace representation.
-        need(expected in (digest(entry),digest(entry.replace(b'\r\n',b'\n').replace(b'\n',b'\r\n'))),'entry_snapshot_drift')
+        need(expected in (digest(entry),digest(entry.replace(b'\r\n',b'\n').replace(b'\n',b'\r\n'))) or MIXED_EOL_SNAPSHOTS.get(expected)==digest(entry),'entry_snapshot_drift')
     contract=ROOT/'docs/architecture/direct-codex-artifact-delivery-v1.md'
     old=subprocess.check_output(['git','show',ENTRY+':'+contract.relative_to(ROOT).as_posix()],cwd=ROOT).decode().replace('\r\n','\n')
     new=contract.read_text(encoding='utf-8')

@@ -181,7 +181,7 @@ def validate_documents():
     need(len(packet.encode()) <= 131072, 'packet_size')
     statuses = re.findall(r'^## (D0[1-7]) .* — (BLOCKED|DECIDED)$', packet, re.M)
     need(dict(statuses) == profile['decisionStatus'] and len(statuses) == 7, 'packet_status')
-    need(set(re.findall(r'^\| (E(?:0[1-9]|10)) \|', packet, re.M)) == {f'E{i:02}' for i in range(1,11)}, 'source_catalog')
+    need(set(re.findall(r'^\| (E(?:0[1-9]|1[01])) \|', packet, re.M)) == {f'E{i:02}' for i in range(1,12)}, 'source_catalog')
     need(set(re.findall(r'^\| (B0[1-9]) \|', packet, re.M)) == set(profile['blockers']), 'blocker_catalog')
     mappings = re.findall(r'^\| (D0[1-7]) \| (CAS-R[^|]+) \| (CAS-T[^|]+) \|$', packet, re.M)
     need(len(mappings) == 7 and len({row[0] for row in mappings}) == 7, 'cas_mapping_count')
@@ -189,7 +189,12 @@ def validate_documents():
         r, t = re.findall(r'CAS-R(\d{2})', requirements), re.findall(r'CAS-T(\d{2})', tests)
         need(r == t and len(r) == len(set(r)) and all(1 <= int(n) <= 30 for n in r), 'cas_mapping')
     need(packet.count('## Consolidated interview packet I01 — RESOLVED') == 1, 'interview_packet_resolved')
-    need(packet.count('Exactly one recommended next atomic task:') == 1 and '**RF-CODEX-015' in packet, 'next_task')
+    need(packet.count('Exactly one recommended next atomic task:') == 1 and '**RF-CODEX-016' in packet, 'next_task')
+    platform = (ROOT / 'docs/decisions/ADR-003-native-windows-codex-pilot.md').read_text(encoding='utf-8')
+    need('Status: accepted' in platform and 'owner-interview.rf-codex-015.windows-pilot.v1' in platform, 'native_owner_decision')
+    native = (BASE / 'direct-codex-native-artifact-preflight-v1.md').read_text(encoding='utf-8')
+    need('NATIVE-WINDOWS-ARTIFACT-PREFLIGHT-BLOCKED' in native and 'direct-codex-windows-native-candidate' in native, 'native_documentary_target')
+    need(all(key + '=false' in native for key in profile['gates']), 'native_gates')
     owners = OWNER_DECISIONS.read_text(encoding='utf-8')
     need(re.findall(r'^## (I01-[ABC]) — APPROVED:', owners, re.M) == ['I01-A','I01-B','I01-C'], 'owner_decision_status')
     need('Status: accepted' in owners and 'Date: 2026-09-13' in owners and 'I01 RESOLVED' in owners, 'owner_record')
@@ -216,7 +221,7 @@ def validate_documents():
             links += 1
     registry = load(ROOT / 'src/modules/agent-runtime/execution-providers.json')
     need(registry['contractVersion'] == 5 and registry['requiredPilotProvider'] == 'hermes_codex' and registry['pilotReady'] is False, 'registry_changed')
-    return {'result':'PASS','scope':'documentation_schema_only','profileRevision':3,'interviewStatus':'RESOLVED','ownerDecisionsApproved':3,'technicalNullsPreserved':53,'settings':75,'researchValues':7,'decided':['D07'],'blocked':[f'D{i:02}' for i in range(1,7)],'blockers':9,'casDecisionMappings':7,'localLinks':links,'profileSha256':seal(profile),'schemaSha256':seal(schema),'runtimeQualified':False}
+    return {'result':'PASS','scope':'documentation_schema_only','profileRevision':3,'profileRole':'deferred_wsl_document','currentPilotPlatform':'native_windows','nativeMachineProfileQualified':False,'interviewStatus':'RESOLVED','ownerDecisionsApproved':3,'nativePlatformOwnerApproved':True,'technicalNullsPreserved':53,'settings':75,'researchValues':7,'decided':['D07'],'blocked':[f'D{i:02}' for i in range(1,7)],'blockers':9,'casDecisionMappings':7,'localLinks':links,'profileSha256':seal(profile),'schemaSha256':seal(schema),'runtimeQualified':False}
 
 
 if __name__ == '__main__':

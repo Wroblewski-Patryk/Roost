@@ -1,5 +1,13 @@
 # Local Codex Agent Runtime
 
+[RF-CODEX-015 / ADR-003](../decisions/ADR-003-native-windows-codex-pilot.md)
+records owner acceptance of Windows Worker → native Windows x64 Codex App Server
+for the pilot. WSL2 is deferred as a separate profile without automatic fallback.
+The [native artifact preflight](direct-codex-native-artifact-preflight-v1.md)
+adds offline Windows signature/catalog evidence but leaves launch closure,
+build/wire, auth, sandbox and whole-tree stop unqualified. The older WSL profile
+below is historical; no runtime/registry change or activation occurred.
+
 [RF-HERMES-007 / ADR-002](../decisions/ADR-002-codex-qualification-owner-decisions.md)
 resolves I01 owner policy: technical systems choose measured task limits;
 Codex access uses only the official local logged-in account through a proven
@@ -9,7 +17,7 @@ authorized here; all technical blockers and false admission gates remain.
 
 [RF-HERMES-006](direct-codex-qualification-decisions-v1.md) closes only the profile/
 receipt document schema (D07); D01–D06 and independent qualification remain blocked.
-One Windows/WSL2 candidate is described without installation or execution. Long
+The historical Windows/WSL2 candidate was described without installation or execution. Long
 tasks require explicit finite budgets within the existing range; RF002 timing
 limits and external account-usage rules are not production Worker defaults.
 

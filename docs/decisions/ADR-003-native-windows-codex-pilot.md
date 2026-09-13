@@ -1,0 +1,81 @@
+# ADR-003: Native Windows Codex App Server pilot profile
+
+Date: 2026-09-13
+Status: accepted
+Owner: Roost architecture owner
+Decision version: 1
+Scope: RF-CODEX-015; platform direction and static qualification only
+Source reference: `owner-interview.rf-codex-015.windows-pilot.v1`
+
+## Context
+
+[ADR-001](ADR-001-direct-codex-app-server-pilot.md) accepted the direct
+Worker → Codex App Server architecture. The initial qualification candidate
+used Windows Worker → WSL2 Linux. [RF-CODEX-014](../architecture/direct-codex-platform-selection-v1.md)
+recommended native Windows to remove the cross-OS bridge and separate Linux
+artifact acquisition from the pilot path.
+
+The owner explicitly accepted that recommendation in the governing RF-CODEX-015
+handoff. This document records the supplied decision; it does not claim that a
+production Decision/API record, impact graph or Ready transition was created.
+
+## Decision
+
+The pilot target is **Roost control plane/API → Windows Local Worker → native
+Windows x64 Codex App Server**, using a separately qualified exact artifact from
+the existing official desktop application package.
+
+WSL2 is a later optional, separately qualified profile. There is **no automatic
+Windows↔WSL fallback**, simultaneous second server or independent second writer.
+Failure or drift denies/stops the selected attempt and preserves reconciliation.
+It does not choose a different platform, artifact, sandbox mode or fresh budget.
+
+This replaces only the WSL-first platform selection in D01/D04 and the platform
+scope of ADR-002 I01-C for future pilot evidence work. ADR-001's direct ownership
+and optional Hermes/OpenShell boundaries remain accepted. ADR-002 I01-A's sizing
+and I01-B's official local-account policy remain unchanged. Every future probe
+still needs its exact bounded task; this decision authorizes no probe, model,
+setup, installation, account inspection or runtime change.
+
+An inspection candidate may be identified by exact Appx identity/version plus
+native file SHA-256 without inventing an internal Codex version. That identifies
+observed bytes only. Unknown build/wire mapping, dependency closure and effective
+controls continue to deny an admitted CAS invocation.
+
+## Alternatives Considered
+
+| Option | Consequence | Disposition |
+| --- | --- | --- |
+| WSL2 first | Adds bridge, cross-OS ownership/mount qualification and the separately researched Linux delivery route. | Deferred for a demonstrated Linux requirement; historical RF009–013 evidence retained. |
+| Native Windows only permanently | Simplifies the first path but excludes future Linux tooling needs prematurely. | Not selected as a permanent restriction. |
+| Native pilot; optional WSL2 later | One current platform, existing checkout/package, retained future choice. Native trust, sandbox, auth and whole-tree stop still need proof. | Accepted, with no automatic fallback. |
+
+## Consequences
+
+The [RF-CODEX-015 preflight](../architecture/direct-codex-native-artifact-preflight-v1.md)
+owns artifact findings and the documentary native target profile. Preserve the
+old WSL profile/schema as historical, NOT_ADMITTED evidence; do not relabel it.
+There is no new executable profile/schema/adapter in this decision.
+
+CAS-R/T01..30 remain mandatory. implementationReady=false,
+executionSupported=false, pilotReady=false and liveAdmissionAllowed=false.
+Job Object, sandbox/firewall, official account isolation and stop within five
+seconds are not established by choosing Windows. The implemented provider
+registry v5 remains unchanged; a separately reviewed versioned reconciliation
+comes only after qualification. No activation, fallback or replay on rollback.
+
+## Evidence
+
+- Governing RF-CODEX-015 handoff records the explicit owner acceptance above.
+- [Platform comparison](../architecture/direct-codex-platform-selection-v1.md).
+- [Qualification packet](../architecture/direct-codex-qualification-decisions-v1.md)
+  and [CAS contract](../architecture/direct-codex-app-server-contract-v1.md).
+- [ADR-002](ADR-002-codex-qualification-owner-decisions.md), retained I01-A/B and
+  exact-task prerequisite from I01-C.
+
+## Supersession
+
+This is the narrow platform successor to ADR-002 I01-C and the initial WSL
+qualification selection. ADR-001 and ADR-002 remain accepted for their other
+provisions; their original text remains dated evidence. This decision's current
+platform scope takes precedence. No database decision history was rewritten.

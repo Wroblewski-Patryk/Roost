@@ -1,13 +1,17 @@
 # Direct Codex qualification decision packet v1
 
 RF-HERMES-006, 2026-09-13. Decision-packet version: **1**.
-Packet revision: **9**, RF-CODEX-014, 2026-09-13. Profile revision remains **3**.
+Packet revision: **10**, RF-CODEX-015, 2026-09-13.
+Current pilot: **native Windows**, accepted by the owner in
+[ADR-003](../decisions/ADR-003-native-windows-codex-pilot.md). WSL2 remains a later
+optional, separately qualified profile, with no automatic Windows↔WSL fallback.
+The [native preflight and documentary target profile](direct-codex-native-artifact-preflight-v1.md)
+remain BLOCKED. The old WSL JSON profile revision **3** is preserved as historical
+NOT_ADMITTED evidence; it is not the current Windows machine profile.
 
-[RF-CODEX-014 platform comparison](direct-codex-platform-selection-v1.md)
-recommends native Windows for pilot qualification, with WSL2 deferred and no
-automatic fallback. This is a decision candidate awaiting owner acceptance;
-the WSL profile and all technical blockers below are preserved. It supersedes
-the proposed RF-HERMES-014 Sigstore/Node next step without installing anything.
+RF009–013 below are dated findings for the deferred Linux acquisition candidate.
+Their npm/Sigstore/TUF prerequisites do not become Windows pilot blockers. Native
+Windows has its own remaining trust, launch, wire and containment evidence gaps.
 **I01 RESOLVED** by
 [ADR-002 owner decisions](../decisions/ADR-002-codex-qualification-owner-decisions.md).
 RF007 recorded owner policy/limited future authority. The
@@ -27,15 +31,16 @@ Author-separated agent review does not close B09 or grant CAS runtime acceptance
 The [RF013 standard-policy review](direct-codex-standard-provenance-policy-v1.md)
 recommends sigstore-js client as the sole maintained candidate; complete toolchain,
 trust/cache/network/failure configuration and exact input support remain unqualified.
-Scope: one candidate profile for the existing Windows Worker plus WSL2 execution
-boundary, under [ADR-001](../decisions/ADR-001-direct-codex-app-server-pilot.md).
+Scope: one native Windows pilot target under ADR-003 and the direct ownership
+boundary in [ADR-001](../decisions/ADR-001-direct-codex-app-server-pilot.md).
 **D01–D06 BLOCKED; D07 DECIDED for document/schema design only.**
 No adapter implementation, installed runtime or pilot is qualified.
 
-The [normalized profile](direct-codex-qualification-profile-v1.json) is a
-**non-executable decision document**. Its [closed schema](direct-codex-qualification-schema-v1.json)
-also defines a future capability/effective-control receipt. Both are outside
-runtime configuration; no existing launcher or API consumes them. The
+The historical WSL [normalized profile](direct-codex-qualification-profile-v1.json)
+and [closed schema](direct-codex-qualification-schema-v1.json) remain
+**non-executable decision documents**. They are not a native Windows profile;
+no existing launcher or API consumes them. The native documentary profile reuses
+shared normative controls while leaving platform-specific evidence unresolved. The
 [CAS contract](direct-codex-app-server-contract-v1.md) and
 [30-family acceptance matrix](direct-codex-app-server-acceptance-v1.md) remain
 normative. Every gate stays false: executionSupported=false,
@@ -55,8 +60,9 @@ implementationReady=false, pilotReady=false, liveAdmissionAllowed=false.
 | E08 | Governing RF-HERMES-006 request: integrations belong to their responsible user's account; a reported long redeploy can take about 900 seconds; external implementation dispatch has an 80% account-usage rule. These are task requirements/observations, not credential access, measured capacity or runtime approval. |
 | E09 | [ADR-002](../decisions/ADR-002-codex-qualification-owner-decisions.md), owner interview following RF006, conveyed by RF007 on 2026-09-13; references owner-i01-a-v1, owner-i01-b-v1, owner-i01-c-v1. I01 is RESOLVED; policy/identity and later bounded evidence authority only. |
 | E10 | [RF008 artifact preflight](direct-codex-artifact-preflight-v1.md) and [sanitized observation](direct-codex-artifact-preflight-v1.json), 2026-09-13: one observed Desktop-bundled Linux ELF; execute access denied, exact Codex version/provenance, inventory closure and wire bundle unproven. LOCAL_OBSERVATION_ONLY, not a qualified pin or permission to run. |
+| E11 | [ADR-003](../decisions/ADR-003-native-windows-codex-pilot.md), explicit owner platform acceptance conveyed by RF-CODEX-015; [native preflight](direct-codex-native-artifact-preflight-v1.md): exact Windows candidate and offline Windows signature/catalog evidence, with package/launch/wire gaps and all gates false. |
 
-The profile classifies **every setting and research value**:
+The historical WSL profile classifies **every setting and research value**:
 
 - OWNER_APPROVED: an explicit governing requirement, with source. It grants no
   broader action or access than stated.
@@ -72,6 +78,15 @@ these nulls is legal in required invocation controls. Schema validity does not
 make a profile runnable. Test pinning, policy approval and proof are separate.
 
 ## D01 — Pin, OS, inventory and wire — BLOCKED
+
+**Current native preflight (E11).** One registered Appx candidate is identified by
+package identity/version and exact native SHA-256. Offline WinVerifyTrust accepts
+the main PE and five signed-catalog member bindings. Full Appx content binding,
+closed helper/loader inventory, private-principal access and verification-to-spawn
+protection remain missing. Package identity plus digest identifies observed bytes;
+internal Codex version and exact build/wire mapping remain unknown. No Codex code
+ran. This narrows B01, not admission. The following RF008–013 paragraphs preserve
+the deferred Linux candidate's evidence and are not native acquisition requirements.
 
 **RF008 observation.** One ELF x86_64 candidate was found within the bounded
 installation scope, referenced as desktop-package-01. Windows and Linux reads
@@ -119,31 +134,28 @@ remain missing. The RF012 custom mathematical checker is unchanged and has no
 admission authority. The proposed finite streaming cap and A/B split are
 non-operative; all operative CDL requirements and profile nulls remain intact.
 
-**Decision/recommendation.** Define one installation-local qualification pin:
-Windows Worker ownership, one selected WSL2 distribution and Linux x86_64 Codex
-App Server connected over owned stdio. This is the candidate to qualify, not an
-approved change to the existing Windows CLI execution path. Native Windows
-Codex is an alternative requiring a different profile/review, not automatic
-fallback. No Codex version/hash is invented from the observed CLI references.
+**Decision.** The owner selected Windows Worker → native Windows x64 Codex App
+Server. The proposed private installationRef resolves one exact registered
+package and physical `app/resources/codex.exe`, with `argv=["app-server"]`, pipes,
+no shell/PATH/alias/copy and the admitted repository cwd. It can name the candidate,
+but incomplete controls cannot become an admitted descriptor. WSL2 is a later
+optional profile, never a fallback or a second runtime/writer.
 
-The private pin receipt must bind installationRef, Windows build, WSL kernel,
-distribution/runtime/toolchain identity, exact native executable version and
-SHA-256, inventory manifest, schema bundle and capability receipt. Distributed
-documents contain opaque IDs and digests only. Private inventory records contain
-canonical paths, file type/size/hash and ACL/owner constraints, reject extra or
-changed files/links, and seal all executable dependencies. Verify open-handle or
-equivalent identity through launch to close replacement races. No PATH resolution,
-shell launcher, floating tag or implicit version probe during task admission.
+The future native pin receipt binds Appx identity/version, Windows platform,
+actual native build when established, executable and inventory hashes, standard
+Windows trust evidence, private principal/ACL/loader policy, schema and capability
+receipt. No WSL kernel/distribution is required by this target. Unknown build/wire,
+dependency or race evidence stays blocked even when package/digest identity is known.
+Use an approved handle/ACL-equivalent launch identity; no task-admission version
+probe or automatic pin refresh. The native profile is documentary only in E11;
+this task creates no replacement executable schema or provider configuration.
 
-**Basis:** E03/E04/E05/E10. The historical Linux examination pins Hermes/Python;
-RF008 observes a Codex artifact but does not qualify a direct executable pin.
-Official docs specify a per-version
-schema generator; docs metadata alone cannot replace those exact artifacts.
-**Alternatives:** native Windows-only pin avoids the cross-OS bridge but needs
-its own complete containment proof; floating installed CLI is rejected for drift.
-**Risk:** wrong ABI/protocol, changed dependencies or alias/TOCTOU can bypass
-otherwise valid field checks. **Unblock:** B01/B02, independently checked exact
-artifact and source-derived wire mapping, then authorized compatibility probes.
+**Basis:** E01/E03/E05/E09/E11. **Alternatives:** RF008–013 Linux artifacts remain
+separately researched; their acquisition gaps do not require installing
+Node/Sigstore for Windows. **Risk:** wrong protocol, unverified package binding,
+uncontrolled loader/helper discovery and update races. **Unblock:** independently
+qualified native launch identity/closure, exact wire evidence and a separately
+bounded compatibility task. A package signature alone is insufficient.
 **CAS impact:** R/T02–04, 09–12, 26–29.
 
 Test pin is immutable and scoped to its profile revision. Upgrade/rotation is a
@@ -246,32 +258,28 @@ proof of the official channel, connection reference/state mapping and isolated
 refresh. I01-B is not permission to inspect real secrets.
 **CAS impact:** R/T05, 07, 14, 17, 23, 27–29.
 
-## D04 — Windows/WSL ownership and isolation — BLOCKED
+## D04 — Native Windows ownership and isolation — BLOCKED
 
-**Decision/recommendation.** One Windows Worker owns the existing machine-wide
-writer and one task session. Its WSL2 bridge must be pinned and unable to become
-a second writer. A Windows process job without breakaway can be a candidate
-boundary for native bridge descendants; it is **not assumed to own Linux
-descendants**. The Linux side needs a delegated task-only containment unit
-(candidate cgroup plus PID/mount/network/user isolation) with a supervisor that
-the model cannot disable. Support, delegation and privileges are unproven on
-the existing installation. No ordinary process group is substituted for it.
+**Decision.** One Windows Worker owns the existing machine-wide writer and one
+native task session. A Windows Job Object without breakaway, or a qualified
+equivalent, is the target containment unit. Ownership must precede the first
+candidate instruction and cover all descendants, alternate-user sandbox helpers,
+inherited handles, crashes and PID reuse. Neither a successful signature check
+nor closing a parent process proves whole-tree stop. The exact procedure,
+protected supervisor and resource limits remain unqualified.
 
-The same physical application checkout must be mapped once, without copying;
-Windows ACL, WSL mount and Linux permissions must jointly deny sibling projects,
-excluded user files, Git control metadata, host homes, auth/scratch and host-control
-endpoints. Agent writable roots remain exactly one application root. Server-only
-scratch is a separate capability, inaccessible to tools; provider egress and
-tool network must be separated. If any cross-OS boundary cannot be enforced,
-block instead of broadening paths or mounting host sockets.
+Use the same physical Windows application checkout without copying. Effective
+ACL/sandbox/approval/network policy must deny sibling projects, excluded user
+files, Git control metadata, homes/auth, server-only scratch and all Docker/WSL
+host-control endpoints. Separate provider egress from tool networking. Vendor
+sandbox setup/admin/firewall/user requirements are unproven for the future
+principal; no setup or permission change is implicit. No weaker-mode fallback.
 
 Require finite cpuMillisPerSecond, ramBytes, processCount, handleCount and
-scratchBytes plus diskReserveBytes and a hostCapacityReceiptRef. Current values are
-null. CPU must be ≤1,000×approved CPU capacity; all byte/count caps must fit a
-reviewed host reserve and the finite parser/queue budget. Windows limits must
-cover the bridge; Linux limits must cover all task descendants, never all WSL
-workloads. Never use distro-wide termination, Windows job closure alone, global
-Docker cleanup or an expired lease as Linux tree-stop evidence.
+scratchBytes plus diskReserveBytes and a hostCapacityReceiptRef. Current values
+remain unresolved; all limits must fit a reviewed host reserve and parser budget.
+Windows controls must cover only owned task resources and preserve existing
+workloads. No distro-wide termination, Docker lifecycle action or global cleanup.
 
 For **abnormal stop**, select the restrictive reversible technical default:
 0 ms waiting for protocol interrupt, 0 ms optional graceful wait, all 5,000 ms
@@ -290,13 +298,13 @@ so its result is neither a universal impossibility proof nor a usable isolation
 guarantee. A configuration label or healthy Docker is insufficient. Do not
 install, execute, patch or change OpenShell as part of this decision packet.
 
-**Basis:** E01/E03/E05/E06. **Alternatives:** native Windows-only qualification
-could avoid cross-OS ownership but needs its own profile; optional isolation
-components can be reconsidered only with exact enforcement evidence. Killing
-the distribution is rejected. **Risk:** escaped descendants, host interruption,
-unbounded resources and scratch/credential exposure. **Unblock:** B05 with
-supported-platform source/design evidence, then authorized native deny/escape/
-resource/stop tests and unchanged unrelated workloads. **CAS impact:** R/T03,
+**Basis:** E01/E03/E05/E06/E11. **Deferred alternative:** WSL2 would additionally
+require a pinned bridge, task-only Linux containment and cross-OS ownership/stop;
+a Windows Job alone does not own Linux descendants. Those are requirements of
+that future profile, not prerequisites for the native pilot. **Risk:** helper
+escape, host interruption or unconfirmed stop. B05 remains until supported-platform
+negative and stop evidence is independently established.
+**CAS impact:** R/T03,
 05–08, 12–16, 19, 23–24, 27–29.
 
 ## D05 — Hard generation, money and retry bounds — BLOCKED
@@ -381,12 +389,14 @@ No new runtime state machine, provider protocol or executable registry is added.
 | `roost-codex-capability-receipt-v1` | Private qualification receipt, schema in `$defs.capabilityReceipt`; profile/profile-schema/inventory/wire/platform hashes, current execution/attempt/input/lease/checkpoint binding, timestamp, qualification-only verdict/reasons, 14 exact effective-control results, test evidence, reviewer reference and tree-stop result. No secret/raw-path fields. |
 | `urn:roost:codex-qualification-document:v1` | Local schema identity; its standard JSON Schema declaration is descriptive and must never cause network retrieval during validation. All schema references are local. |
 
-Every profile binding has exactly classification, value and sourceRefs. Active
+The historical WSL v1 binding has exactly classification, value and sourceRefs. Its
 settings may not use RESEARCH_ONLY; research observations remain in their own
 closed object. UNRESOLVED/BLOCKED means value=null and a linked blocker. All
 other classifications require a concrete typed value and valid E01–E10 source.
-No classification is an assertion of tested runtime enforcement. The selected
+No classification is an assertion of tested runtime enforcement. The historical
 profile has 75 settings and seven research observations; it remains NOT_ADMITTED.
+E11 defines the current native documentary target. A versioned native machine
+profile/receipt remains unqualified; v1 schema validity cannot certify it.
 
 Use UTF-8 JSON with recursively sorted ASCII keys, preserved array order, no
 whitespace, duplicate keys, non-finite numbers, floats or values outside safe
@@ -459,15 +469,15 @@ matrix. This table is the complete decision-to-test mapping for this packet.
 
 | Blocker | Decisions | Exact missing condition and owner |
 | --- | --- | --- |
-| B01 | D01 | RF008 observes one Linux ELF but its execute access is false; exact Codex version/authenticated provenance, private executable placement and closed immutable launch/platform inventory remain missing. Package labels/local hashes are not a qualified pin; compatibility reviewer. |
-| B02 | D01 | RF008 identifies no version-bound wire bundle; outer filename inspection is not proof of absence inside archives. Exact wire/source schemas and effective-field/initialization/ephemeral compatibility evidence remain missing; compatibility reviewer. |
+| B01 | D01 | RF015 identifies exact native Windows package/digest and accepted offline PE/catalog-member trust. Full package binding, supported bundled-CLI use, future-principal access, closed loader/helper inventory and protected launch identity remain missing; compatibility/security reviewer. Linux execute/size/Sigstore gaps are deferred, not native prerequisites. |
+| B02 | D01 | RF015 identifies no exact-build native wire bundle in bounded package/asar indexes; name searches do not prove absence of protocol code. Internal build/version, wire/source schemas and effective-field/initialization/ephemeral mapping remain unproven; separate bounded no-model schema route and compatibility reviewer. |
 | B03 | D02,D05 | Narrowed after I01-A: responsible technical system/agent must derive and prove concrete phase/buffer/parser/rate/resource/task/model/effort values from plan/measurements within approved bounds. Numeric monetary sizing/enforcement remains unresolved; no repeated owner tuning of technical numbers. |
 | B04 | D03 | I01-B resolves identity: official laptop Codex account; external integrations retain their responsible user's account. Official isolated channel, connection reference/state mapping, no-copy/no-leak evidence and bounded refresh still missing; security/compatibility reviewer. |
-| B05 | D04 | Supported Windows/WSL cross-boundary ownership, whole-tree/FS/network/scratch/resource enforcement and ≤5s stop proof; platform/security reviewer. |
+| B05 | D04 | Native Windows principal/Job/helper ownership, whole-tree/FS/network/scratch/resource enforcement, host-control denial and ≤5s stop proof; platform/security reviewer. WSL cross-boundary proof is deferred to its separate profile. |
 | B06 | D05 | Enforceable total generation/cost/retry bound with known partial accounting/overshoot; budget/compatibility reviewer. |
 | B07 | D06 | Actual native policy/approval and shell/Git/network/excluded-file bypass denial; security/authority reviewer. |
 | B08 | D02 | Numeric storage/retention/capacity proposal and measurement remain missing. I01-A preserves no raw logs and forbids automatic deletion of unresolved work/sole evidence; responsible technical system and privacy reviewer. |
-| B09 | D01,D02,D03,D04,D05,D06,D07 | Independent exact-profile/CAS design/evidence review and exact later task contract remain required. I01-C permits bounded future evidence work in principle, not probes in RF007 or proof of readiness. |
+| B09 | D01,D02,D03,D04,D05,D06,D07 | Independent exact-profile/CAS design/evidence review and exact later task contract remain required. ADR-003 selects native Windows for future pilot evidence; I01-C retains the exact bounded-task prerequisite, not present probe authority or readiness. |
 
 ## Consolidated interview packet I01 — RESOLVED
 
@@ -480,7 +490,7 @@ account identifier or credential is included. There is no pending I01 question.
 | --- | --- | --- |
 | I01-A | APPROVED; owner-i01-a-v1 | Technical system/agent selects explicit task-specific time/token/resource values using plan, measurements and host capability within existing bounds; overall 60–3,600s, no deadline reset, full long-operation headroom. Smaller tasks where useful. Numeric technical/retention/capacity values and monetary enforcement remain unproven; sole evidence of unresolved work is preserved. |
 | I01-B | APPROVED; owner-i01-b-v1 | Official authentication of the laptop's logged-in Codex account only; Roost stores connection reference/state, no tokens/passwords/login copies. External integrations use their responsible Roost user's account. An unproved official isolated channel blocks launch; no current secret inspection or copying/fallback permission. |
-| I01-C | APPROVED; owner-i01-c-v1 | Later separate bounded no-model/no-task-agent compatibility/evidence work for one Windows/WSL2 candidate, with exact contract and fail-closed result when guarantees cannot be confirmed. No application/production/config changes; no present probe/install/network/auth/model/tool/external-write authority. |
+| I01-C | APPROVED; owner-i01-c-v1 | Original later bounded evidence scope named Windows/WSL2. ADR-003 replaces that pilot-platform scope with native Windows; WSL2 is deferred. The exact-task prerequisite, fail-closed unknowns and no implicit probe/install/auth/model/config/production authority remain. |
 
 ## Verification and next task
 
@@ -513,14 +523,13 @@ records a conditional, non-operative package/native inspection phase proposal.
 RF013 selected one maintained library family for further qualification, with a
 separate independent policy review and no installation or verifier execution.
 
-RF-CODEX-014 supersedes RF013's proposed Sigstore/Node follow-up with the native
-Windows platform recommendation. Historical Linux evidence and contracts remain
-valid for that deferred candidate; platform preference grants no execution.
+RF-CODEX-015 records the accepted native platform in ADR-003 and narrows native
+artifact trust with offline Windows checks. Deferred Linux evidence and false
+gates remain intact; the preflight is NATIVE-WINDOWS-ARTIFACT-PREFLIGHT-BLOCKED.
 
-Exactly one recommended next atomic task: **RF-CODEX-015 — bounded static
-preflight of the existing native Windows Codex candidate.** After owner acceptance
-of the platform direction, assess standard Windows trust/build/loader/helper
-identity, private no-shell pin/update protection and containment prerequisites
-for a separately authorized no-model schema probe. No installation, custom
-verifier, sandbox setup, auth, Codex/model execution or WSL/Docker lifecycle.
-RF-CODEX-015 was not started; the platform report owns its exact proposed scope.
+Exactly one recommended next atomic task: **RF-CODEX-016 — define and qualify
+the bounded native no-model schema-probe contract.** Specify the generator and
+finite limits, exact Windows launch/closure and pre-initialization no-auth,
+no-discovery, no-network and owned-stop prerequisites. Missing prerequisites
+deny Codex execution; no implicit installation, setup, auth, model or probe.
+RF-CODEX-016 was not started; the native preflight owns the proposed scope.
