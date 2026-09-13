@@ -1,5 +1,12 @@
 # Foundation requirements traceability
 
+RF-HOST-046: [prepublication approval](../operations/openshell-prepublication-approval.md)
+checks 76 fresh public responses, 16 source/guidance files and 24 issue/PR/discussion
+queries with 49 individually classified candidates. No full-profile duplicate or
+newer stable was found within the recorded inspection. Exact text hashes, current
+template fields, expiry and all-false external authority are validated offline.
+Owner selection A authorizes inspection only; final publication decision is pending.
+
 RF-HOST-045: [owner decision packet](../operations/openshell-upstream-owner-decision.md)
 binds exact issue/appendix/owner texts, three options with one recommendation,
 all 16 requirements and 35 negative cases in seven groups, retained upstream

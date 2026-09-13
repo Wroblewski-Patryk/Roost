@@ -1,5 +1,12 @@
 # Adopt-before-build and execution providers
 
+RF-HOST-046: the owner selected A for read-only prepublication inspection.
+The [final approval packet](../operations/openshell-prepublication-approval.md)
+binds current release, main-branch guidance, duplicate searches and exact public
+title/body with inline appendix. READY is time-bounded approval material;
+publishAuthorized remains false. A separate explicit owner decision is required
+for one exact issue creation; no contribution or runtime follows from selection A.
+
 RF-HOST-045: the [owner decision packet](../operations/openshell-upstream-owner-decision.md)
 is READY as local decision material only. Three options are complete; A, one
 feature-request issue after fresh checks and exact owner approval, is recommended.
