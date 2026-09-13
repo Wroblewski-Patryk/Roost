@@ -1,0 +1,63 @@
+{
+  "schemaId": "roost-codex-official-source-research-v1",
+  "taskId": "RF-HERMES-010",
+  "observedDate": "2026-09-13",
+  "verdict": "OFFICIAL-CODEX-SOURCE-BLOCKED",
+  "reason": "metadata_receipt_capture_failed",
+  "researchComplete": false,
+  "candidate": null,
+  "sourceEvidenceRetained": false,
+  "publisherEvidenceAbsent": null,
+  "network": {
+    "budget": {
+      "maxRequests": 32,
+      "maxResponseBytes": 524288,
+      "maxTotalBytes": 6291456,
+      "requestTimeoutSeconds": 20
+    },
+    "initialRequestCount": 3,
+    "actualRequestCount": null,
+    "actualResponseBytes": null,
+    "redirectCount": null,
+    "budgetComplianceVerified": false,
+    "redirectBodiesMetered": false,
+    "requestsAfterCaptureFailure": 0,
+    "budgetReset": false,
+    "attemptedUrls": [
+      "https://learn.chatgpt.com/docs/app-server.md",
+      "https://api.github.com/repos/openai/codex/readme",
+      "https://api.github.com/repos/openai/codex/releases/latest"
+    ]
+  },
+  "acquisitionProposal": null,
+  "schemaRoute": null,
+  "desktopComparison": {
+    "platformFamily": "wsl2-linux-x86_64",
+    "size": 262804768,
+    "sha256": "6970ad6a5b7615d2f5838879e19c1369e5527cb1544f1515f76900267740a403",
+    "codexVersion": null,
+    "releaseCandidateMatches": null
+  },
+  "gates": {
+    "acquisitionReady": false,
+    "implementationReady": false,
+    "executionSupported": false,
+    "pilotReady": false,
+    "liveAdmissionAllowed": false
+  },
+  "actions": {
+    "payloadDownloads": 0,
+    "candidateExecutions": 0,
+    "authReads": 0,
+    "componentChanges": 0,
+    "privateReceiptsWritten": 0
+  },
+  "docker": {
+    "containers": 4,
+    "networks": 5,
+    "volumes": 107,
+    "images": 16,
+    "unchanged": true
+  },
+  "nextTask": "RF-HERMES-011"
+}

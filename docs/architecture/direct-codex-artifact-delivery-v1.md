@@ -7,6 +7,10 @@ and [ADR-002](../decisions/ADR-002-codex-qualification-owner-decisions.md).
 The [acceptance matrix](direct-codex-artifact-delivery-acceptance-v1.md) maps
 CDL-R01..16 to CDL-T01..16, D01/B01/B02 and the existing CAS requirements/tests.
 This contract specifies future delivery; it grants no acquisition or execution.
+Follow-up [RF010 source research](direct-codex-official-source-research-v1.md)
+is incomplete because metadata/accounting capture failed. It selects no source
+and leaves this contract intact. Its report and the qualification packet own
+the current next-task recommendation; the RF009 recommendation below is historical.
 
 ## CDL-R01 — Scope and present disposition
 

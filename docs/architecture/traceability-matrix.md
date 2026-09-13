@@ -1,5 +1,13 @@
 # Foundation requirements traceability
 
+RF-HERMES-010: [official source research](direct-codex-official-source-research-v1.md)
+returns OFFICIAL-CODEX-SOURCE-BLOCKED because metadata/accounting capture failed.
+The research is incomplete, not evidence that publisher support is absent.
+No candidate/source fields or actual network totals were retained; no further
+network request followed the failure. Profile revision 3, all nulls, blockers
+and gates remain unchanged. The single next task is RF011 research with auditable
+capture and a fresh explicit budget; no acquisition or trust waiver is proposed.
+
 RF-HERMES-009: [delivery contract v1](direct-codex-artifact-delivery-v1.md) and
 [acceptance matrix](direct-codex-artifact-delivery-acceptance-v1.md) specify
 16 CDL requirement/test pairs, mapped to D01/B01/B02 and CAS-R/T. Exact official
@@ -7,7 +15,7 @@ provenance, protected private placement, closed inventory, replacement protectio
 bounded acquisition/retention and separate publisher-bundle or pinned-generator
 schema routes are required. Source selection remains unresolved; B01/B02 and
 all other blockers/gates remain unchanged. Profile revision 3 is unchanged.
-RF010 official source/provenance research is the single next task, not started.
+Its RF010 official source/provenance research follow-up is recorded above.
 
 RF-HERMES-008: [exact-artifact preflight](direct-codex-artifact-preflight-v1.md)
 returns EXACT-CODEX-ARTIFACT-PREFLIGHT-BLOCKED. One Desktop-bundled ELF x86_64

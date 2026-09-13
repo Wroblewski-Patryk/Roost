@@ -1,7 +1,7 @@
 # Direct Codex qualification decision packet v1
 
 RF-HERMES-006, 2026-09-13. Decision-packet version: **1**.
-Packet revision: **4**, RF-HERMES-009, 2026-09-13. Profile revision remains **3**.
+Packet revision: **5**, RF-HERMES-010, 2026-09-13. Profile revision remains **3**.
 **I01 RESOLVED** by
 [ADR-002 owner decisions](../decisions/ADR-002-codex-qualification-owner-decisions.md).
 RF007 recorded owner policy/limited future authority. The
@@ -10,6 +10,9 @@ bounded local observations only; its verdict is BLOCKED, with no runtime proof.
 The [RF009 delivery contract](direct-codex-artifact-delivery-v1.md) specifies
 source/provenance, placement/inventory and separate schema-probe acceptance;
 it adds no source selection, pin value, acquisition or execution authority.
+[RF010 source research](direct-codex-official-source-research-v1.md) stopped after
+metadata/accounting capture failed. No exact release or source evidence was
+retained; no claim of missing publisher support or budget compliance is made.
 Scope: one candidate profile for the existing Windows Worker plus WSL2 execution
 boundary, under [ADR-001](../decisions/ADR-001-direct-codex-app-server-pilot.md).
 **D01–D06 BLOCKED; D07 DECIDED for document/schema design only.**
@@ -74,6 +77,13 @@ BINARY_VERIFIED_SCHEMA_PENDING state; this refines the generic RF008 probe
 prerequisite only for obtaining wire artifacts, never for compatibility or model
 execution. PUBLISHER_BUNDLE remains the other accepted schema route. B01/B02
 remain blocked and every profile value/null is preserved.
+
+**RF010 research.** OFFICIAL-CODEX-SOURCE-BLOCKED is an incomplete-research
+disposition, not proof that an official release or provenance route is absent.
+The first metadata result was truncated before its receipt was retained; actual
+network totals and content are unknown. Automatic redirect-body byte accounting
+was also incomplete. Further network use stopped. Source/version/build/digest,
+schema route and acquisition proposal remain unresolved; B01/B02 do not close.
 
 **Decision/recommendation.** Define one installation-local qualification pin:
 Windows Worker ownership, one selected WSL2 distribution and Linux x86_64 Codex
@@ -455,10 +465,13 @@ RF009 now specifies delivery contract v1 and its 16-family acceptance matrix.
 It leaves source/release/version/build/digest/trust/placement/schema/acquisition
 selection unresolved and adds no technical evidence or profile revision.
 
-Exactly one recommended next atomic task: **RF-HERMES-010 — bounded official
-source-selection and provenance research for one Linux x86_64 Codex candidate.**
-Establish one exact official channel/version/build, publisher manifest and trust
-evidence, and the feasible schema route, or return precise BLOCKED reasons.
-Research may propose acquisition endpoints/limits but cannot download payloads,
-install, copy, change permissions or run code. Metadata network access needs the
-separate research task's explicit scope. RF010 was not started by RF009.
+RF010 attempted the source research but retained no valid source/accounting
+receipt. Its failure does not authorize extra requests or weaker provenance.
+
+Exactly one recommended next atomic task: **RF-HERMES-011 — repeat bounded
+official source/provenance research with auditable metadata capture.** Require
+a fresh explicit task budget, manual bounded redirect accounting and a small
+ledger retained before any larger result projection. Resolve one exact official
+candidate and schema route or precise source blockers; no payload download,
+installation, permission change, code execution or trust waiver. RF011 was not
+started by RF010.
