@@ -1,5 +1,14 @@
 # Foundation requirements traceability
 
+RF-HERMES-009: [delivery contract v1](direct-codex-artifact-delivery-v1.md) and
+[acceptance matrix](direct-codex-artifact-delivery-acceptance-v1.md) specify
+16 CDL requirement/test pairs, mapped to D01/B01/B02 and CAS-R/T. Exact official
+provenance, protected private placement, closed inventory, replacement protection,
+bounded acquisition/retention and separate publisher-bundle or pinned-generator
+schema routes are required. Source selection remains unresolved; B01/B02 and
+all other blockers/gates remain unchanged. Profile revision 3 is unchanged.
+RF010 official source/provenance research is the single next task, not started.
+
 RF-HERMES-008: [exact-artifact preflight](direct-codex-artifact-preflight-v1.md)
 returns EXACT-CODEX-ARTIFACT-PREFLIGHT-BLOCKED. One Desktop-bundled ELF x86_64
 candidate is readable from WSL but has no execute access. Package metadata and
@@ -8,7 +17,7 @@ inventory closure and version-bound wire artifacts remain missing. Profile
 revision 3 adds E10 sources only, preserving 75 values, 53 technical nulls,
 D01–D06 BLOCKED, D07 document-design DECIDED, nine blockers and all false gates.
 Only static file/metadata reads occurred; no Codex execution or private receipt
-was written. The next delivery-contract decision is RF-HERMES-009, not started.
+was written. Its RF-HERMES-009 delivery-contract follow-up is recorded above.
 
 RF-HERMES-007: [ADR-002 owner decisions](../decisions/ADR-002-codex-qualification-owner-decisions.md)
 records owner-i01-a-v1, owner-i01-b-v1 and owner-i01-c-v1 on 2026-09-13;

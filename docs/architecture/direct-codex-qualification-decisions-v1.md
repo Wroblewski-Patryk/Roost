@@ -1,11 +1,15 @@
 # Direct Codex qualification decision packet v1
 
 RF-HERMES-006, 2026-09-13. Decision-packet version: **1**.
-Revision: **3**, RF-HERMES-008, 2026-09-13. **I01 RESOLVED** by
+Packet revision: **4**, RF-HERMES-009, 2026-09-13. Profile revision remains **3**.
+**I01 RESOLVED** by
 [ADR-002 owner decisions](../decisions/ADR-002-codex-qualification-owner-decisions.md).
 RF007 recorded owner policy/limited future authority. The
 [RF008 static artifact preflight](direct-codex-artifact-preflight-v1.md) now adds
 bounded local observations only; its verdict is BLOCKED, with no runtime proof.
+The [RF009 delivery contract](direct-codex-artifact-delivery-v1.md) specifies
+source/provenance, placement/inventory and separate schema-probe acceptance;
+it adds no source selection, pin value, acquisition or execution authority.
 Scope: one candidate profile for the existing Windows Worker plus WSL2 execution
 boundary, under [ADR-001](../decisions/ADR-001-direct-codex-app-server-pilot.md).
 **D01–D06 BLOCKED; D07 DECIDED for document/schema design only.**
@@ -26,7 +30,7 @@ implementationReady=false, pilotReady=false, liveAdmissionAllowed=false.
 | --- | --- |
 | E01 | [ADR-001](../decisions/ADR-001-direct-codex-app-server-pilot.md): direct App Server target, optional Hermes/OpenShell, no admission and ≤5s stop requirement. |
 | E02 | [Execution packet](execution-packet-contract.md) and [Foundation V2](../product/interview-foundation-v2.md): approved model/effort, bounded time/output/attempts, authority and resource invariants. The current packet permits repository read/write/local tests and externalWrites=false. |
-| E03 | [RF005 contract](direct-codex-app-server-contract-v1.md) and [matrix](direct-codex-app-server-acceptance-v1.md): exact required controls and unproven mappings. |
+| E03 | [RF005 contract](direct-codex-app-server-contract-v1.md) and [matrix](direct-codex-app-server-acceptance-v1.md): exact required controls and unproven mappings. [RF009 delivery contract](direct-codex-artifact-delivery-v1.md) and [delivery matrix](direct-codex-artifact-delivery-acceptance-v1.md) add normative artifact-delivery criteria, no qualification evidence or selected source. |
 | E04 | [RF001](hermes-codex-isolation-assessment.md), unchanged [source manifest](../../config/hermes/source-assessment.json), [RF002](../operations/hermes-linux-synthetic-transport.md) and [RF003](hermes-clean-transport-api.md): dated source facts and bounded research only. Official App Server snapshot `openai-1` is hash-bound there; no exact direct adapter binary/schema is qualified. |
 | E05 | [Recovery](agent-host-recovery.md), [host lifecycle safety](../operations/host-lifecycle-safety.md) and [WSL environment](../operations/agent-wsl-environment.md): existing Windows ownership and Linux prerequisites, not whole-tree/FS/network proof. |
 | E06 | [Pinned stock Docker-driver assessment](../operations/openshell-docker-v3-delivery.md): missing read-only-root configuration, mandatory writable workspace backing and missing fixture-membership proof. |
@@ -60,6 +64,16 @@ authenticated provenance. Inventory exclusions/hardlinks and unknown auxiliary
 dependencies prevent closure; no exact-version wire bundle was identified.
 See E10 for the bounded facts and limits. All exact-pin fields remain null;
 no candidate code ran and no installation or permissions were changed.
+
+**RF009 contract.** CDL-R01..16 specify exact official source/publisher evidence,
+closed private placement/inventory, handle-equivalent identity protection,
+bounded acquisition authority and separate schema/compatibility gates. RF008
+does not suffice for source selection. A separately authorized schema-only
+generator may follow verified binary/inventory/protection in the explicit
+BINARY_VERIFIED_SCHEMA_PENDING state; this refines the generic RF008 probe
+prerequisite only for obtaining wire artifacts, never for compatibility or model
+execution. PUBLISHER_BUNDLE remains the other accepted schema route. B01/B02
+remain blocked and every profile value/null is preserved.
 
 **Decision/recommendation.** Define one installation-local qualification pin:
 Windows Worker ownership, one selected WSL2 distribution and Linux x86_64 Codex
@@ -437,11 +451,14 @@ EXACT-CODEX-ARTIFACT-PREFLIGHT-BLOCKED. Its governing task permitted static read
 in an already running WSL2 distribution and prohibited persisting private receipts.
 Only sanitized findings are retained; all 75 setting values and 53 nulls remain.
 
-Exactly one recommended next atomic task: **RF-HERMES-009 — specify and obtain
-approval for delivery of one verifiable Linux Codex artifact and matching wire
-bundle for this profile.** The RF008 report defines its acceptance boundary:
-official build-to-digest provenance, private executable placement/access and
-closed immutable launch inventory for B01/B02. This is a delivery-contract
-decision, not installation, download, permission mutation or a runtime probe.
-An artifact/version change needs explicit review; no automatic fallback.
-Any later acquisition needs its own bounded authority. RF009 was not started.
+RF009 now specifies delivery contract v1 and its 16-family acceptance matrix.
+It leaves source/release/version/build/digest/trust/placement/schema/acquisition
+selection unresolved and adds no technical evidence or profile revision.
+
+Exactly one recommended next atomic task: **RF-HERMES-010 — bounded official
+source-selection and provenance research for one Linux x86_64 Codex candidate.**
+Establish one exact official channel/version/build, publisher manifest and trust
+evidence, and the feasible schema route, or return precise BLOCKED reasons.
+Research may propose acquisition endpoints/limits but cannot download payloads,
+install, copy, change permissions or run code. Metadata network access needs the
+separate research task's explicit scope. RF010 was not started by RF009.
