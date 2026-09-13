@@ -1,7 +1,7 @@
 {
   "schemaId": "roost-codex-qualification-profile-v1",
   "profileId": "direct-codex-windows-wsl2-candidate",
-  "revision": 1,
+  "revision": 2,
   "contractVersion": 1,
   "admission": "NOT_ADMITTED",
   "decisionStatus": {
@@ -138,14 +138,16 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E04"
+        "E04",
+        "E09"
       ]
     },
     "credentialOwnerRule": {
       "classification": "OWNER_APPROVED",
       "value": "responsible-integration-user",
       "sourceRefs": [
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "secretValuePersistence": {
@@ -153,7 +155,8 @@
       "value": false,
       "sourceRefs": [
         "E01",
-        "E03"
+        "E03",
+        "E09"
       ]
     },
     "environmentRecipeRef": {
@@ -246,7 +249,8 @@
       "value": null,
       "sourceRefs": [
         "E02",
-        "E03"
+        "E03",
+        "E09"
       ]
     },
     "reasoningEffort": {
@@ -254,7 +258,8 @@
       "value": null,
       "sourceRefs": [
         "E02",
-        "E03"
+        "E03",
+        "E09"
       ]
     },
     "inputBytesMax": {
@@ -272,7 +277,8 @@
         "max": 3600
       },
       "sourceRefs": [
-        "E02"
+        "E02",
+        "E09"
       ]
     },
     "outputTokensRange": {
@@ -282,7 +288,8 @@
         "max": 100000
       },
       "sourceRefs": [
-        "E02"
+        "E02",
+        "E09"
       ]
     },
     "attemptsRange": {
@@ -300,7 +307,8 @@
       "value": null,
       "sourceRefs": [
         "E02",
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "stopMs": {
@@ -342,7 +350,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "turnMs": {
@@ -350,7 +359,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "lineBytes": {
@@ -358,7 +368,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "aggregateBytes": {
@@ -366,7 +377,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "pendingBytes": {
@@ -374,7 +386,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "descriptorBytes": {
@@ -382,7 +395,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "parserDepth": {
@@ -390,7 +404,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "parserStringBytes": {
@@ -398,7 +413,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "parserArrayItems": {
@@ -406,7 +422,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "maxItems": {
@@ -414,7 +431,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "maxCallbacks": {
@@ -422,7 +440,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "eventRatePerSecond": {
@@ -430,7 +449,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "callbackRatePerSecond": {
@@ -438,7 +458,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "reportTimeoutMs": {
@@ -446,7 +467,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "evidenceRetentionSeconds": {
@@ -454,7 +476,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "evidenceBytesMax": {
@@ -462,14 +485,16 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "rawLogRetentionBytes": {
       "classification": "EXISTING_CONTRACT",
       "value": 0,
       "sourceRefs": [
-        "E03"
+        "E03",
+        "E09"
       ]
     },
     "adapterReplayCount": {
@@ -494,7 +519,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E05"
+        "E05",
+        "E09"
       ]
     },
     "ramBytes": {
@@ -502,7 +528,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E05"
+        "E05",
+        "E09"
       ]
     },
     "processCount": {
@@ -510,7 +537,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E05"
+        "E05",
+        "E09"
       ]
     },
     "handleCount": {
@@ -518,7 +546,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E05"
+        "E05",
+        "E09"
       ]
     },
     "scratchBytes": {
@@ -526,7 +555,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E05"
+        "E05",
+        "E09"
       ]
     },
     "maxOutputTokens": {
@@ -534,7 +564,8 @@
       "value": null,
       "sourceRefs": [
         "E02",
-        "E03"
+        "E03",
+        "E09"
       ]
     },
     "maxCostMicros": {
@@ -542,7 +573,8 @@
       "value": null,
       "sourceRefs": [
         "E02",
-        "E03"
+        "E03",
+        "E09"
       ]
     },
     "tokenOvershootReserve": {
@@ -583,7 +615,8 @@
       "sourceRefs": [
         "E02",
         "E03",
-        "E04"
+        "E04",
+        "E09"
       ]
     },
     "evidenceRetentionPolicyRef": {
@@ -591,7 +624,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "hashEncoding": {
@@ -606,7 +640,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "hostCapacityReceiptRef": {
@@ -614,7 +649,8 @@
       "value": null,
       "sourceRefs": [
         "E05",
-        "E08"
+        "E08",
+        "E09"
       ]
     },
     "diskReserveBytes": {
@@ -622,7 +658,8 @@
       "value": null,
       "sourceRefs": [
         "E05",
-        "E08"
+        "E08",
+        "E09"
       ]
     }
   },

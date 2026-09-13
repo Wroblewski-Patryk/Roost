@@ -1,5 +1,12 @@
 # Local Codex Agent Runtime
 
+[RF-HERMES-007 / ADR-002](../decisions/ADR-002-codex-qualification-owner-decisions.md)
+resolves I01 owner policy: technical systems choose measured task limits;
+Codex access uses only the official local logged-in account through a proven
+isolated channel, with reference/state-only storage in Roost. Later bounded
+no-model evidence work needs its exact task contract. No probe or execution is
+authorized here; all technical blockers and false admission gates remain.
+
 [RF-HERMES-006](direct-codex-qualification-decisions-v1.md) closes only the profile/
 receipt document schema (D07); D01–D06 and independent qualification remain blocked.
 One Windows/WSL2 candidate is described without installation or execution. Long

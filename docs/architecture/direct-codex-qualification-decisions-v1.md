@@ -1,6 +1,9 @@
 # Direct Codex qualification decision packet v1
 
 RF-HERMES-006, 2026-09-13. Decision-packet version: **1**.
+Revision: **2**, RF-HERMES-007, 2026-09-13. **I01 RESOLVED** by
+[ADR-002 owner decisions](../decisions/ADR-002-codex-qualification-owner-decisions.md).
+Owner policy/limited future authority is recorded; no technical evidence is added.
 Scope: one candidate profile for the existing Windows Worker plus WSL2 execution
 boundary, under [ADR-001](../decisions/ADR-001-direct-codex-app-server-pilot.md).
 **D01–D06 BLOCKED; D07 DECIDED for document/schema design only.**
@@ -27,6 +30,7 @@ implementationReady=false, pilotReady=false, liveAdmissionAllowed=false.
 | E06 | [Pinned stock Docker-driver assessment](../operations/openshell-docker-v3-delivery.md): missing read-only-root configuration, mandatory writable workspace backing and missing fixture-membership proof. |
 | E07 | Existing [provider-input serializer](../../scripts/lib/agent-host-provider-input.mjs): recursively sorted object keys, array order preserved, JSON UTF-8 SHA-256 seal; existing input limit 131,072 bytes. |
 | E08 | Governing RF-HERMES-006 request: integrations belong to their responsible user's account; a reported long redeploy can take about 900 seconds; external implementation dispatch has an 80% account-usage rule. These are task requirements/observations, not credential access, measured capacity or runtime approval. |
+| E09 | [ADR-002](../decisions/ADR-002-codex-qualification-owner-decisions.md), owner interview following RF006, conveyed by RF007 on 2026-09-13; references owner-i01-a-v1, owner-i01-b-v1, owner-i01-c-v1. I01 is RESOLVED; policy/identity and later bounded evidence authority only. |
 
 The profile classifies **every setting and research value**:
 
@@ -85,9 +89,11 @@ Old receipts never qualify a new executable; rollback never replays old work.
 
 ## D02 — Finite task budgets and buffers — BLOCKED
 
-**Decision/recommendation.** Retain approved API bounds, require explicit task
-values and a reviewed installation resource profile, and keep production defaults
-unset. Never copy the RF002 fixture caps into that profile. This is one bounded
+**Decision.** I01-A approves explicit task-specific sizing by the responsible
+technical system/agent using plan, measurements and host capability within existing
+bounds. The owner does not manually select parser/buffer values. A technically
+qualified installation resource profile and proven values remain required; keep
+production defaults unset. Never copy the RF002 fixture caps into that profile. This is one bounded
 configuration mechanism, not an unbounded long-running mode.
 
 | Quantity | Fixed basis or required bounded configuration |
@@ -99,7 +105,7 @@ configuration mechanism, not an unbounded long-running mode.
 | Line/aggregate/queue | Positive integer caps; line ≤aggregate, pending ≤aggregate; count both pipes before parsing and include already delivered/discarded bytes. Current production values null. |
 | Parser/item/callback/rate | Explicit positive depth/string/array/item/callback and per-second event/callback bounds, bounded decoded memory, at most one outstanding approval. Values null; no wildcard/default unlimited. |
 | Report | Positive reportTimeoutMs null; only idempotent terminal reporting after confirmed stop, no renewed model/tool time or new budget. |
-| Retention | Raw log retention zero. Redacted evidence age/bytes/policy and storage capacity null until owner/resource decision; no raw fallback or automatic deletion of unresolved work. |
+| Retention | Raw log retention zero. Numeric redacted evidence age/bytes/policy and storage capacity stay null pending a safe technical proposal/measurement; never automatically remove unresolved work or its only evidence. |
 
 For a future separately authorized long operation, require
 `expectedOperationMs + preparationMs + verificationMs + normalExitMs + stopMs`
@@ -111,26 +117,39 @@ production sizing. No concrete preparation/verification headroom was measured,
 so no 15/20/30-minute production default is selected here. If the plan cannot fit,
 block and seek an independently reviewed plan; never reset the timer or split
 effects into retries to evade the cap.
+Divide tasks into smaller well-scoped units when that improves control and
+competence assignment, as approved in I01-A; each still needs its own plan,
+limits, acceptance and reconciliation of prior effects.
 
 Current local-change access has externalWrites=false. This timing design does
 not authorize redeploys or extend CAS v1 to release work. A future release task
 also needs independent authority and a qualified release boundary.
 
-**Basis:** E02/E03/E04/E08. **Alternatives:** fixed RF002 caps are too restrictive
+**Basis:** E02/E03/E04/E08/E09. **Alternatives:** fixed RF002 caps are too restrictive
 and unapproved; automatic growth is rejected; individually approved finite task
 values are recommended. **Risk:** guessed small caps interrupt legitimate work;
-guessed large caps consume host resources. **Unblock:** B03/B08 via owner sizing
-and capacity/evidence review. **CAS impact:** R/T02, 13–16, 19–23, 27–29.
+guessed large caps consume host resources. **Unblock:** B03/B08 via safe technical
+sizing, measurements and capacity/evidence qualification under approved I01-A.
+No repeated manual owner selection of technical numbers is required.
+**CAS impact:** R/T02, 13–16, 19–23, 27–29.
 
 ## D03 — Responsible-user credential references — BLOCKED
 
-**Decision/recommendation.** Keep the responsible integration user's account as
-the credential owner. Worker identity and integration account ownership are
-distinct; a company task or another user's agent cannot borrow that ownership.
-Private credential binding resolves integrationRef, responsibleUserRef, provider,
-audience/scope, local secret-store reference, expiry and current grant. Only
-opaque references enter Roost or the descriptor. A change/revocation of owner,
-grant, audience or scope invalidates admission and refresh.
+**Decision.** I01-B selects only official authentication of the Codex account
+logged in on the laptop for Local Worker. For that connection Roost stores only
+identifier/reference and state, never tokens/passwords/copied login files.
+An official, isolated, evidenced access channel is still missing; the approved
+identity does not make credentialChannel non-null. Synthetic HOME/CODEX_HOME and
+tool isolation remain requirements; pointing at a user's full auth/profile
+directory is not an approved shortcut.
+
+External integrations separately retain the account of their responsible Roost
+user. Worker/Codex identity does not transfer that ownership. Private bindings
+must scope connection/integration/principal/audience/grant without persisting
+secret values in Roost, prompts, checkpoints, logs or repositories. Changes or
+revocation invalidate admission and refresh.
+The profile's credentialOwnerRule refers to external integration ownership;
+credentialChannel stays null, with E09 binding the local Codex identity policy.
 
 Worker may resolve a reference only after current authority checks in a future
 qualified auth implementation. Never read existing Codex profiles, export user
@@ -147,12 +166,13 @@ variable or custom authentication protocol is accepted. Any future supported
 channel must keep values in bounded private memory, bind refresh to the same
 attempt/audience/owner/lease, count its retries/cost and fail before use on expiry.
 
-**Basis:** E03/E04/E08. **Alternatives:** a separately reviewed official channel
-on the responsible user's account may qualify; a dedicated service account needs
-an explicit owner change and still requires the same channel proof; copied
-desktop auth is rejected. **Risk:** cross-user authority, persistence/leakage or
-unbudgeted refresh. **Unblock:** B04: owner identifies only references/ownership;
-technical review proves an official allowed channel and isolated refresh.
+**Basis:** E03/E04/E08/E09. **Alternatives:** wait for a supported isolated channel
+for the selected local Codex account; service-account substitution or copied
+desktop auth is not the chosen policy. The experimental external-token description
+is research, not an approved transfer mechanism. **Risk:** cross-user authority,
+persistence/leakage or unbudgeted refresh. **Unblock:** B04 requires technical
+proof of the official channel, connection reference/state mapping and isolated
+refresh. I01-B is not permission to inspect real secrets.
 **CAS impact:** R/T05, 07, 14, 17, 23, 27–29.
 
 ## D04 — Windows/WSL ownership and isolation — BLOCKED
@@ -293,7 +313,7 @@ No new runtime state machine, provider protocol or executable registry is added.
 Every profile binding has exactly classification, value and sourceRefs. Active
 settings may not use RESEARCH_ONLY; research observations remain in their own
 closed object. UNRESOLVED/BLOCKED means value=null and a linked blocker. All
-other classifications require a concrete typed value and valid E01–E08 source.
+other classifications require a concrete typed value and valid E01–E09 source.
 No classification is an assertion of tested runtime enforcement. The selected
 profile has 75 settings and seven research observations; it remains NOT_ADMITTED.
 
@@ -370,26 +390,26 @@ matrix. This table is the complete decision-to-test mapping for this packet.
 | --- | --- | --- |
 | B01 | D01 | Exact privately pinned Codex/version/inventory/platform artifact evidence; compatibility reviewer. |
 | B02 | D01 | Version-bound wire schemas and effective-field/initialization/ephemeral compatibility evidence; compatibility reviewer. |
-| B03 | D02,D05 | Approved concrete phase/buffer/parser/rate/resource-budget values and independently accepted task plan/model/effort/money sizing; owner and resource/budget reviewer. |
-| B04 | D03 | Responsible-user credential references and a permitted official channel with no persistence/tool leakage and bounded refresh; owner plus security/compatibility reviewer. |
+| B03 | D02,D05 | Narrowed after I01-A: responsible technical system/agent must derive and prove concrete phase/buffer/parser/rate/resource/task/model/effort values from plan/measurements within approved bounds. Numeric monetary sizing/enforcement remains unresolved; no repeated owner tuning of technical numbers. |
+| B04 | D03 | I01-B resolves identity: official laptop Codex account; external integrations retain their responsible user's account. Official isolated channel, connection reference/state mapping, no-copy/no-leak evidence and bounded refresh still missing; security/compatibility reviewer. |
 | B05 | D04 | Supported Windows/WSL cross-boundary ownership, whole-tree/FS/network/scratch/resource enforcement and ≤5s stop proof; platform/security reviewer. |
 | B06 | D05 | Enforceable total generation/cost/retry bound with known partial accounting/overshoot; budget/compatibility reviewer. |
 | B07 | D06 | Actual native policy/approval and shell/Git/network/excluded-file bypass denial; security/authority reviewer. |
-| B08 | D02 | Approved bounded private evidence storage/retention capacity and preservation/reconciliation policy; owner/privacy reviewer. |
-| B09 | D01,D02,D03,D04,D05,D06,D07 | Independent exact-profile/CAS design and later evidence review plus separately scoped authority; original author cannot qualify itself. |
+| B08 | D02 | Numeric storage/retention/capacity proposal and measurement remain missing. I01-A preserves no raw logs and forbids automatic deletion of unresolved work/sole evidence; responsible technical system and privacy reviewer. |
+| B09 | D01,D02,D03,D04,D05,D06,D07 | Independent exact-profile/CAS design/evidence review and exact later task contract remain required. I01-C permits bounded future evidence work in principle, not probes in RF007 or proof of readiness. |
 
-## Consolidated interview packet I01 — prepared, not sent
+## Consolidated interview packet I01 — RESOLVED
 
-This is one pending packet for the interview coordinator, not questions sent to
-the user or permission to inspect credentials. Answers record only references,
-choices and numeric bounds; never passwords/tokens/private account data. Owner
-decisions cannot waive B01/B02/B05/B06/B07 or manufacture technical evidence.
+Resolved on 2026-09-13 by the owner interview following RF006, recorded through
+the governing RF007 handoff in [ADR-002](../decisions/ADR-002-codex-qualification-owner-decisions.md).
+Source reference: owner-interview.rf-hermes-007.i01.v1. No private transcript,
+account identifier or credential is included. There is no pending I01 question.
 
-| Item | Decision requested | Recommendation, alternative and consequence |
+| Item | Status/reference | Approved scope and retained limit |
 | --- | --- | --- |
-| I01-A | Approve a finite task/resource/retention sizing policy and supply phase/buffer/parser/rate/resource/report/evidence caps, currency/pricing basis and per-task monetary/output budgets; include a plan for long operations. | Recommend explicit per-task values within existing 60–3,600s bounds and installation caps, with measured pre/post/stop headroom and no inherited duration/model default. Alternative: retain blocked status until capacity evidence exists. Arbitrary large caps or the RF002 caps as production policy are not offered. |
-| I01-B | Identify the responsible integration principal and permitted private credential-store reference/source; confirm that official external token handling may be evaluated if available. | Recommend the existing responsible user's supported official route, references only. Alternative: defer authenticated qualification; any service-account ownership change needs a separate decision. No answer authorizes copying desktop auth or proves the channel safe. |
-| I01-C | Select whether to authorize a later bounded, non-model compatibility/evidence task for the single Windows/WSL candidate after exact artifacts can be inspected, or keep qualification paused. | Recommend artifact/schema/containment design review first; separately request any needed probe execution, installation or real-model authority with exact scope. Alternative: pause. This packet itself authorizes none of those actions. |
+| I01-A | APPROVED; owner-i01-a-v1 | Technical system/agent selects explicit task-specific time/token/resource values using plan, measurements and host capability within existing bounds; overall 60–3,600s, no deadline reset, full long-operation headroom. Smaller tasks where useful. Numeric technical/retention/capacity values and monetary enforcement remain unproven; sole evidence of unresolved work is preserved. |
+| I01-B | APPROVED; owner-i01-b-v1 | Official authentication of the laptop's logged-in Codex account only; Roost stores connection reference/state, no tokens/passwords/login copies. External integrations use their responsible Roost user's account. An unproved official isolated channel blocks launch; no current secret inspection or copying/fallback permission. |
+| I01-C | APPROVED; owner-i01-c-v1 | Later separate bounded no-model/no-task-agent compatibility/evidence work for one Windows/WSL2 candidate, with exact contract and fail-closed result when guarantees cannot be confirmed. No application/production/config changes; no present probe/install/network/auth/model/tool/external-write authority. |
 
 ## Verification and next task
 
@@ -399,7 +419,15 @@ coverage, privacy and links. It checks only documentation and synthetic receipt
 objects; it never starts a process, opens a network connection or reads auth.
 Its own schema/negative tests do not qualify runtime or act as independent review.
 
-Exactly one recommended next atomic task: **RF-HERMES-007 — resolve consolidated
-interview packet I01 through the interview coordinator and record the resulting
-owner decisions/references, preserving every technical blocker requiring separate
-evidence.** Do not implement, probe, activate or start that task here.
+Exactly one recommended next atomic task: **RF-HERMES-008 — offline read-only
+preflight of the exact Codex candidate artifacts, version metadata and integrity/
+inventory references for B01, without launching candidate binaries or probes.**
+Use only explicitly scoped trusted installation/artifact references; keep paths
+private, reject aliases/unknown provenance and inspect no auth/profile contents.
+Do not install/download, use a network, start Codex/WSL/runtime, generate schemas,
+or infer a complete pin from CLI labels. If the required artifact/reference is
+absent, report the precise blocker; do not search credential directories or
+silently choose another platform/version. Output is a bounded private pin/inventory
+receipt or BLOCKED, followed by a proposed exact compatibility-task scope.
+Current version/executable/inventory/wire pins are null, so this is narrower than
+a runtime probe. No RF008 preflight or compatibility task is started in RF007.

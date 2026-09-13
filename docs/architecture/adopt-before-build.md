@@ -1,5 +1,11 @@
 # Adopt-before-build and execution providers
 
+RF-HERMES-007: [ADR-002](../decisions/ADR-002-codex-qualification-owner-decisions.md)
+records I01 RESOLVED: technical task-specific sizing, official local Codex account
+identity and a later separately contracted no-model evidence task. No technical
+null or runtime gate is changed; the next bounded step is artifact pin/inventory
+preflight, not a runtime probe.
+
 RF-HERMES-006: [one qualification decision packet/profile v1](direct-codex-qualification-decisions-v1.md)
 records D01–D06 BLOCKED and D07 DECIDED for document/schema design. Existing
 budget ranges are retained; long-operation sizing, credentials, pin, containment

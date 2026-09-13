@@ -1,5 +1,6 @@
 """Static RF-HERMES-006 document/schema checks; no runtime, network or auth I/O."""
 import datetime
+import csv
 import hashlib
 import json
 import pathlib
@@ -12,6 +13,7 @@ BASE = ROOT / 'docs/architecture'
 PACKET = BASE / 'direct-codex-qualification-decisions-v1.md'
 PROFILE = BASE / 'direct-codex-qualification-profile-v1.json'
 SCHEMA = BASE / 'direct-codex-qualification-schema-v1.json'
+OWNER_DECISIONS = ROOT / 'docs/decisions/ADR-002-codex-qualification-owner-decisions.md'
 
 
 def need(condition, code):
@@ -120,6 +122,7 @@ def validate_profile(profile, schema):
     machine_strings(profile)
     expected = {f'D{i:02}': 'DECIDED' if i == 7 else 'BLOCKED' for i in range(1, 8)}
     need(profile['decisionStatus'] == expected, 'current_decision_status')
+    need(profile['revision'] == 2, 'owner_revision')
     need(profile['blockers'] == [f'B{i:02}' for i in range(1, 10)], 'current_blockers')
     need(len(profile['settings']) == 75 and len(profile['research']) == 7, 'binding_count')
     for cell in profile['settings'].values():
@@ -131,6 +134,9 @@ def validate_profile(profile, schema):
     need(values['defaultDurationSeconds'] is None and values['turnMs'] is None, 'unapproved_long_operation_default')
     need(values['credentialChannel'] is None and values['budgetEnforcementRef'] is None, 'unproven_mechanism')
     need(values['model'] is None and values['reasoningEffort'] is None, 'unapproved_model_default')
+    need(sum(v is None for v in values.values()) == 53, 'technical_nulls_preserved')
+    for key in ('durationSecondsRange','credentialChannel','credentialOwnerRule','secretValuePersistence','rawLogRetentionBytes','budgetEnforcementRef'):
+        need('E09' in profile['settings'][key]['sourceRefs'], 'owner_provenance')
     return values
 
 
@@ -173,29 +179,42 @@ def validate_documents():
     need(len(packet.encode()) <= 131072, 'packet_size')
     statuses = re.findall(r'^## (D0[1-7]) .* — (BLOCKED|DECIDED)$', packet, re.M)
     need(dict(statuses) == profile['decisionStatus'] and len(statuses) == 7, 'packet_status')
-    need(set(re.findall(r'^\| (E0[1-8]) \|', packet, re.M)) == {f'E{i:02}' for i in range(1,9)}, 'source_catalog')
+    need(set(re.findall(r'^\| (E0[1-9]) \|', packet, re.M)) == {f'E{i:02}' for i in range(1,10)}, 'source_catalog')
     need(set(re.findall(r'^\| (B0[1-9]) \|', packet, re.M)) == set(profile['blockers']), 'blocker_catalog')
     mappings = re.findall(r'^\| (D0[1-7]) \| (CAS-R[^|]+) \| (CAS-T[^|]+) \|$', packet, re.M)
     need(len(mappings) == 7 and len({row[0] for row in mappings}) == 7, 'cas_mapping_count')
     for _, requirements, tests in mappings:
         r, t = re.findall(r'CAS-R(\d{2})', requirements), re.findall(r'CAS-T(\d{2})', tests)
         need(r == t and len(r) == len(set(r)) and all(1 <= int(n) <= 30 for n in r), 'cas_mapping')
-    need(packet.count('## Consolidated interview packet I01') == 1, 'interview_packet_count')
-    need(packet.count('Exactly one recommended next atomic task:') == 1 and 'RF-HERMES-007' in packet, 'next_task')
+    need(packet.count('## Consolidated interview packet I01 — RESOLVED') == 1, 'interview_packet_resolved')
+    need(packet.count('Exactly one recommended next atomic task:') == 1 and 'RF-HERMES-008' in packet, 'next_task')
+    owners = OWNER_DECISIONS.read_text(encoding='utf-8')
+    need(re.findall(r'^## (I01-[ABC]) — APPROVED:', owners, re.M) == ['I01-A','I01-B','I01-C'], 'owner_decision_status')
+    need('Status: accepted' in owners and 'Date: 2026-09-13' in owners and 'I01 RESOLVED' in owners, 'owner_record')
+    need('owner-interview.rf-hermes-007.i01.v1' in owners, 'owner_source')
+    for letter in 'abc':
+        need('owner-i01-' + letter + '-v1' in owners and 'owner-i01-' + letter + '-v1' in packet, 'owner_reference')
+    with (ROOT / 'docs/decisions/decision-register.csv').open(encoding='utf-8', newline='') as stream:
+        decisions = list(csv.DictReader(stream))
+    records = [r for r in decisions if r['ID'] == 'ADR-002']
+    need(len(records) == 1 and records[0]['Status'] == 'accepted' and records[0]['Accepted date'] == '2026-09-13', 'owner_register')
+    need(records[0]['Decision file'] == OWNER_DECISIONS.relative_to(ROOT).as_posix(), 'owner_register_path')
     for key in profile['gates']:
         need(key + '=false' in packet, 'gate_documentation')
     need(not re.search(r'(?i)(\b[a-z]:[\\/]|/home/|/mnt/[a-z]/|BEGIN .*PRIVATE KEY)', packet), 'packet_privacy')
     links = 0
-    for target in re.findall(r'\[[^\]]+\]\(([^)]+)\)', packet):
-        need('://' not in target, 'new_remote_link')
-        filename, _, fragment = unquote(target).partition('#')
-        dest = (PACKET.parent / filename).resolve()
-        need(dest.name != 'design-qa.md' and dest.is_relative_to(ROOT), 'link_scope')
-        need(dest.is_file() and not fragment, 'local_link')
-        links += 1
+    for document, content in ((PACKET,packet),(OWNER_DECISIONS,owners)):
+        need(not re.search(r'(?i)(\b[a-z]:[\\/]|/home/|/mnt/[a-z]/|BEGIN .*PRIVATE KEY)', content), 'owner_or_packet_privacy')
+        for target in re.findall(r'\[[^\]]+\]\(([^)]+)\)', content):
+            need('://' not in target, 'new_remote_link')
+            filename, _, fragment = unquote(target).partition('#')
+            dest = (document.parent / filename).resolve()
+            need(dest.name != 'design-qa.md' and dest.is_relative_to(ROOT), 'link_scope')
+            need(dest.is_file() and not fragment, 'local_link')
+            links += 1
     registry = load(ROOT / 'src/modules/agent-runtime/execution-providers.json')
     need(registry['contractVersion'] == 5 and registry['requiredPilotProvider'] == 'hermes_codex' and registry['pilotReady'] is False, 'registry_changed')
-    return {'result':'PASS','scope':'documentation_schema_only','settings':75,'researchValues':7,'decided':['D07'],'blocked':[f'D{i:02}' for i in range(1,7)],'blockers':9,'casDecisionMappings':7,'localLinks':links,'profileSha256':seal(profile),'schemaSha256':seal(schema),'runtimeQualified':False}
+    return {'result':'PASS','scope':'documentation_schema_only','profileRevision':2,'interviewStatus':'RESOLVED','ownerDecisionsApproved':3,'technicalNullsPreserved':53,'settings':75,'researchValues':7,'decided':['D07'],'blocked':[f'D{i:02}' for i in range(1,7)],'blockers':9,'casDecisionMappings':7,'localLinks':links,'profileSha256':seal(profile),'schemaSha256':seal(schema),'runtimeQualified':False}
 
 
 if __name__ == '__main__':

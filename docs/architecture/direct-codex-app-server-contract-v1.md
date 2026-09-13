@@ -121,6 +121,12 @@ context and cannot change permissions. Unknown effective config blocks.
 
 ## CAS-R05 — Replacement environment and secret delivery
 
+[ADR-002 / I01-B](../decisions/ADR-002-codex-qualification-owner-decisions.md)
+selects official authentication of the laptop's logged-in Codex account only.
+Roost stores its connection reference/state, never copied credentials. The
+external-token mechanism discussed below is research, not an approved channel
+or permission to inspect auth. Existing isolation and fail-closed gates remain.
+
 Build child env from zero. Fixed minimal names: `CODEX_HOME`, `HOME`, `TEMP`,
 `TMP`, `TMPDIR`, `XDG_CONFIG_HOME`, `XDG_DATA_HOME`, `XDG_CACHE_HOME`,
 `XDG_STATE_HOME`, `PATH`; POSIX locale names `LANG`/`LC_ALL` only in a qualified
@@ -132,12 +138,14 @@ Home/temp/XDG resolve to distinct approved scratch subdirectories. No parent
 env copy: reject extra provider, Roost, cloud, SSH/Git, Docker, WSL, proxy,
 loader-injection, Node/Python, telemetry and credential variables.
 
-`credentialRef` resolves in Worker from the existing private credential store
-after fresh grant/lease checks, scoped to provider, attempt, expiry and audience.
-Pass values only over a qualified official in-memory authentication channel;
+`credentialRef` denotes the authorized official local-account connection, whose
+isolated resolution remains to be demonstrated by D03 after fresh grant/lease
+checks, scoped to provider, attempt, expiry and audience. No private credential
+store or token-export path is assumed to supply that connection.
+Any secret transfer must use a qualified official in-memory authentication channel;
 never through argv, prompt, inherited env, files, API records or logs. Candidate
 S01 `account/login/start` with `chatgptAuthTokens` and its refresh callback is
-experimental (F), not a selected/authorized account or qualified mechanism (U,
+experimental (F), not a selected/authorized transfer mechanism (U,
 D03). Do not extract a user's existing Codex login/session. No browser/device
 login or implicit token refresh is in v1. Before real use D03 must establish
 lawful preexisting credential access, no persistence/tool-child leakage, exact
@@ -566,8 +574,8 @@ The following is the closed decision list for v1; no implicit defaults:
 | ID | Required resolution | Current state / responsible authority |
 | --- | --- | --- |
 | D01 | One exact Codex executable/version/inventory and supported OS; sealed official wire schemas and effective control mappings, including ephemeral/temporary-root behavior. | BLOCKED in RF006; exact installation pin/wire evidence still missing. |
-| D02 | Production startup/turn, line/aggregate/queue/descriptor/JSON depth/string/array caps; item/callback/rate/report/retention limits and cross-limit relations. | BLOCKED in RF006; explicit task/profile sizing remains required. RF002 values stay research only. |
-| D03 | Approved credential reference source and official secret delivery/auth-refresh channel with no persistence or tool leakage. | BLOCKED in RF006; responsible-user references and official isolated channel evidence needed. |
+| D02 | Production startup/turn, line/aggregate/queue/descriptor/JSON depth/string/array caps; item/callback/rate/report/retention limits and cross-limit relations. | BLOCKED technically; RF007/I01-A approves selection by the responsible technical system/agent within existing bounds, not manual owner tuning. Numeric values/evidence remain missing. |
+| D03 | Approved credential reference source and official secret delivery/auth-refresh channel with no persistence or tool leakage. | BLOCKED technically; RF007/I01-B selects official local logged-in Codex authentication and reference/state-only Roost storage; channel isolation remains unproven. |
 | D04 | Supported OS whole-process/FS/network containment, scratch separation, CPU/RAM/process/handle/disk limits and ≤5s stop phase split. | BLOCKED in RF006; abnormal-stop allocation selected, cross-OS enforcement remains unproven. |
 | D05 | Enforceable generation/retry/accounting mechanism, exact retry maximum, cost currency/price revision and independently approved monetary budget; overshoot reservation if any. | BLOCKED in RF006; no demonstrated total token/cost/retry bound. |
 | D06 | Effective native policy/approval behavior and mediation of user exclusions, commands, Git metadata and prohibited external actions; exact callback schema. | BLOCKED in RF006; restrictive never baseline selected, native enforcement remains unproven. |

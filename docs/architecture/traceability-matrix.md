@@ -1,14 +1,22 @@
 # Foundation requirements traceability
 
+RF-HERMES-007: [ADR-002 owner decisions](../decisions/ADR-002-codex-qualification-owner-decisions.md)
+records owner-i01-a-v1, owner-i01-b-v1 and owner-i01-c-v1 on 2026-09-13;
+I01 is RESOLVED. Profile revision 2 adds decision provenance only, preserving
+all setting values/technical nulls, D01–D06 BLOCKED, D07 document-design DECIDED
+and every false readiness gate. B03 is narrowed to responsible technical sizing
+and qualification; B04/B08/B09 retain channel/retention/evidence gaps after policy
+approval. All nine blockers remain open. Exactly one next task is RF-HERMES-008,
+offline read-only candidate artifact/version/inventory preflight; no probe runs.
+
 RF-HERMES-006: [qualification decisions v1](direct-codex-qualification-decisions-v1.md)
 records D01–D06 BLOCKED, D07 DECIDED for document/schema design, nine explicit
 blockers and seven decision-to-CAS mappings. One normalized profile classifies
 75 settings and seven research observations; all four gates remain false.
 Existing ranges allow properly budgeted long tasks without adopting RF002 caps.
 The responsible-user credential rule and separate external 80% dispatch rule
-grant no Worker access/budget. One consolidated interview packet I01 is prepared
-locally, not sent; exactly one next task is RF-HERMES-007, recording its owner
-decisions through the interview coordinator while preserving technical blockers.
+grant no Worker access/budget. Its original consolidated packet I01 is now
+resolved by RF-HERMES-007 above; technical blockers are preserved.
 
 RF-HERMES-005: [direct App Server contract v1](direct-codex-app-server-contract-v1.md)
 defines CAS-R01..CAS-R30, mapped one-to-one to positive/negative families
