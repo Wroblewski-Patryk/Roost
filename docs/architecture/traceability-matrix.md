@@ -1,5 +1,13 @@
 # Foundation requirements traceability
 
+RF-HERMES-003: [clean public transport API assessment](hermes-clean-transport-api.md)
+audits exact pinned exports, import graph, CLI alternatives and ten Worker fields.
+Fifteen controlled final probes distinguish five clean helpers, six dirty
+client/session probes and four successful denial controls. Six portable tests
+cover guard/privacy behavior. Verdict HERMES-CLEAN-TRANSPORT-API-BLOCKED; direct
+bounded execution without mandatory Hermes is a recommendation awaiting an
+explicit architecture decision, not a change to existing admission or authority.
+
 RF-HERMES-002: [private Linux installation and synthetic transport](../operations/hermes-linux-synthetic-transport.md)
 verifies pinned Hermes 0.21.2 and passes 29 independent Worker boundary cases.
 The public Hermes session import triggers configuration/plugin discovery and two

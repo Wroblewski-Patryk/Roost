@@ -1,5 +1,13 @@
 # Adopt-before-build and execution providers
 
+RF-HERMES-003: [the pinned public API audit](hermes-clean-transport-api.md) is
+HERMES-CLEAN-TRANSPORT-API-BLOCKED. Clean helper imports do not provide an App
+Server connection; public client/session imports initialize configuration and
+provider discovery and attempt mkdir even with isolated HERMES_HOME. The session
+omits required model/effort/policy/ephemeral fields. Direct bounded App Server in
+Worker is recommended for a separate explicit architecture decision, not adopted
+by this audit. Provider contract v5 and disabled admission remain unchanged.
+
 RF-HERMES-002: [the private Linux transport examination](../operations/hermes-linux-synthetic-transport.md)
 is HERMES-TRANSPORT-SYNTHETIC-BLOCKED. Installation integrity and 29 independent
 Worker fake-server cases pass. Public session import attempts filesystem mutation

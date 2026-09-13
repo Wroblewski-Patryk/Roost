@@ -1,5 +1,11 @@
 # Local Codex Agent Runtime
 
+[RF-HERMES-003](hermes-clean-transport-api.md) finds no complete clean public
+transport API in the pinned Hermes release. Five helper imports are clean; the
+connection/session imports still trigger configuration/provider discovery and
+denied mkdir. The architecture recommendation to keep Hermes outside execution
+is pending a separate decision; no Worker/provider/admission behavior changes.
+
 [RF-HERMES-002](../operations/hermes-linux-synthetic-transport.md) verifies a pinned
 private Linux installation and an independent bounded Worker transport. Hermes
 integration remains blocked by public-session import side effects; no session
