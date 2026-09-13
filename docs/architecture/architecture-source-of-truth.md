@@ -1,5 +1,10 @@
 # Architecture Source Of Truth
 
+The [RF-HERMES-005 adapter specification v1](direct-codex-app-server-contract-v1.md)
+defines the ADR-001 target and its closed test/evidence criteria. It is a future
+contract with unresolved qualification decisions, not implemented runtime or
+permission to replace registry v5.
+
 [ADR-001 v1](../decisions/ADR-001-direct-codex-app-server-pilot.md), accepted in
 RF-HERMES-004, sets the pilot target to Roost control plane/API → Local Worker →
 directly Codex App Server. Hermes is optional outside enforcement; OpenShell is

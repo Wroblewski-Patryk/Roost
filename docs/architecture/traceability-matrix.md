@@ -1,13 +1,23 @@
 # Foundation requirements traceability
 
+RF-HERMES-005: [direct App Server contract v1](direct-codex-app-server-contract-v1.md)
+defines CAS-R01..CAS-R30, mapped one-to-one to positive/negative families
+CAS-T01..CAS-T30 in the [acceptance matrix](direct-codex-app-server-acceptance-v1.md).
+Source facts are separated from required behavior and unproven pin mappings.
+Existing budget/model/recovery rules are retained; RF002 limits remain research
+only. D01..D07 are unresolved, so implementationReady=false; all execution,
+pilot and live-admission gates remain false. No runtime or v5 registry change.
+Exactly one next task is RF-HERMES-006: a bounded decision packet for one concrete
+qualification profile, without implementation or activation.
+
 RF-HERMES-004: [accepted ADR-001 v1](../decisions/ADR-001-direct-codex-app-server-pilot.md)
 records Roost control plane/API → Local Worker → directly Codex App Server as
 the pilot target, with Hermes optional outside enforcement and OpenShell optional
 for isolation. A/B/C dispositions, component ownership and measurable Hermes
 readmission criteria are explicit. This docs-only decision preserves registry v5,
 executionSupported=false, pilotReady=false and liveAdmissionAllowed=false.
-Exactly one next task is RF-HERMES-005: direct adapter contract specification and
-testable criteria only, without implementation. RF-HERMES-001..003 evidence and
+Its RF-HERMES-005 specification follow-up is recorded above, without implementation.
+RF-HERMES-001..003 evidence and
 all existing activation gates remain valid; no production adapter is approved.
 
 RF-HERMES-003: [clean public transport API assessment](hermes-clean-transport-api.md)

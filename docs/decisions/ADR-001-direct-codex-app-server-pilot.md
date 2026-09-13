@@ -140,6 +140,11 @@ Hermes or place it in the execution path.
 
 ## Follow-up work
 
+Follow-up status: the [RF-HERMES-005 specification](../architecture/direct-codex-app-server-contract-v1.md)
+and [acceptance matrix](../architecture/direct-codex-app-server-acceptance-v1.md)
+now fulfill the specification task below. They do not alter this decision or
+qualify implementation; unresolved profile decisions and all activation gates remain.
+
 Exactly one next atomic task: **RF-HERMES-005 — specify the direct Local Worker–
 Codex App Server adapter contract and testable acceptance criteria, without
 implementation.** Define mapping to the official protocol, sealed inputs and

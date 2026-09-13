@@ -1,12 +1,18 @@
 # Adopt-before-build and execution providers
 
+RF-HERMES-005: the [direct App Server adapter contract v1](direct-codex-app-server-contract-v1.md)
+and [30-row acceptance matrix](direct-codex-app-server-acceptance-v1.md) specify
+the ADR-001 target. D01–D07 require explicit qualification-profile decisions;
+implementationReady=false. No runtime or registry v5 change, installation or
+live qualification follows from the specification; all admission guards stay false.
+
 RF-HERMES-004: [ADR-001 v1](../decisions/ADR-001-direct-codex-app-server-pilot.md)
 accepts Roost control plane/API → Local Worker → directly Codex App Server as
 the pilot target. Hermes is optional outside enforcement, with measurable
 readmission criteria; OpenShell is optional isolation. This docs-only decision
 leaves registry v5 and executionSupported=false, pilotReady=false and
-liveAdmissionAllowed=false unchanged. The next task is the direct adapter
-contract specification only, not implementation or activation.
+liveAdmissionAllowed=false unchanged. Its requested direct adapter specification
+is now recorded in RF-HERMES-005; implementation and activation remain blocked.
 
 RF-HERMES-003: [the pinned public API audit](hermes-clean-transport-api.md) is
 HERMES-CLEAN-TRANSPORT-API-BLOCKED. Clean helper imports do not provide an App

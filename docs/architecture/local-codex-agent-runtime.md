@@ -1,5 +1,12 @@
 # Local Codex Agent Runtime
 
+[RF-HERMES-005 contract v1](direct-codex-app-server-contract-v1.md) specifies the
+future direct App Server adapter with a [closed acceptance matrix](direct-codex-app-server-acceptance-v1.md).
+It preserves ephemeral one-turn execution and pre-spawn-only automatic recovery;
+it does not implement persistent Codex session resume after laptop shutdown.
+Seven unresolved profile decisions block implementation admission; all production
+gates and the implemented supervised CLI baseline below remain unchanged.
+
 [RF-HERMES-004 / ADR-001 v1](../decisions/ADR-001-direct-codex-app-server-pilot.md)
 accepts the pilot target Roost control plane/API → Local Worker → directly Codex
 App Server. Hermes is optional outside authority/policy/budget/admission/stop
