@@ -1,0 +1,1997 @@
+{
+  "schemaVersion": 1,
+  "inspectionId": "openshell.official-release-inspection.v1",
+  "task": "RF-HOST-044",
+  "checkedAt": "2026-09-13T02:07:56Z",
+  "observedFrom": "2026-09-13T02:06:26Z",
+  "expiresAt": "2026-09-13T03:07:56Z",
+  "freshnessSeconds": 3600,
+  "verdict": "OFFICIAL-RELEASE-NO-QUALIFIED-CANDIDATE",
+  "reason": "NO-NEWER-STABLE-RELEASE",
+  "repository": "NVIDIA/OpenShell",
+  "repositoryId": 1166129534,
+  "baseline": {
+    "tag": "v0.0.116",
+    "commit": "d1155aa70042d3e2ee49dbfa15346b108b7c1d92"
+  },
+  "latestStable": "v0.0.116",
+  "newerStableReleases": [],
+  "newerVersionedPublishedReleases": [],
+  "releaseInventory": {
+    "completePublicPages": true,
+    "pageSize": 30,
+    "pages": [
+      "releases-1",
+      "releases-2",
+      "releases-3",
+      "releases-4"
+    ],
+    "totalPublicReleases": 97,
+    "stableCount": 94,
+    "prereleaseCount": 3,
+    "draftsVisible": false,
+    "privateDraftsInspected": false,
+    "tagRefCount": 119,
+    "tagRefsPaginated": false,
+    "scope": "public-unauthenticated-GitHub-API-snapshot"
+  },
+  "releases": [
+    {
+      "id": 378370756,
+      "tag": "v0.0.116",
+      "draft": false,
+      "prerelease": false,
+      "publishedAt": "2026-08-28T09:10:23Z",
+      "updatedAt": "2026-08-28T09:10:23Z",
+      "releaseUrl": "https://github.com/NVIDIA/OpenShell/releases/tag/v0.0.116",
+      "releaseApi": "https://api.github.com/repos/NVIDIA/OpenShell/releases/378370756",
+      "tagObjectType": "commit",
+      "tagObjectSha": "d1155aa70042d3e2ee49dbfa15346b108b7c1d92",
+      "commit": "d1155aa70042d3e2ee49dbfa15346b108b7c1d92",
+      "assets": [
+        {
+          "id": 533546386,
+          "name": "openshell-0.0.116-1.fc44.aarch64.rpm",
+          "state": "uploaded",
+          "size": 5616019,
+          "content_type": "application/x-redhat-package-manager",
+          "digest": "sha256:e0adc0fd3d87f4b298fd31badc7ebd5b3f088a03582f283aeeeed03a1f16b210",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:19Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546386",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-0.0.116-1.fc44.aarch64.rpm"
+        },
+        {
+          "id": 533546391,
+          "name": "openshell-0.0.116-1.fc44.x86_64.rpm",
+          "state": "uploaded",
+          "size": 5988657,
+          "content_type": "application/x-redhat-package-manager",
+          "digest": "sha256:22f09b73cbf757983ca74b26dcf928375a190fdb379bddaaa168e532962423c4",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:19Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546391",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-0.0.116-1.fc44.x86_64.rpm"
+        },
+        {
+          "id": 533546371,
+          "name": "openshell-0.0.116-py3-none-any.whl",
+          "state": "uploaded",
+          "size": 110131,
+          "content_type": "application/octet-stream",
+          "digest": "sha256:5a31eb4e38d7b5d746956404145b7335557f9060ac7a987c65ea5af4d708b3fc",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:18Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546371",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-0.0.116-py3-none-any.whl"
+        },
+        {
+          "id": 533546390,
+          "name": "openshell-aarch64-apple-darwin.tar.gz",
+          "state": "uploaded",
+          "size": 8167469,
+          "content_type": "application/gzip",
+          "digest": "sha256:e582f2374053bebac8e6aaeb4a369931b7d4bb97bd55055e2c02e85502627e22",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:19Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546390",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-aarch64-apple-darwin.tar.gz"
+        },
+        {
+          "id": 533546383,
+          "name": "openshell-aarch64-unknown-linux-musl.tar.gz",
+          "state": "uploaded",
+          "size": 8274359,
+          "content_type": "application/gzip",
+          "digest": "sha256:7a949c48d1e000cd280869eea1e203e24816b9cfefc575b68a8b72b939cb3f43",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:19Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546383",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-aarch64-unknown-linux-musl.tar.gz"
+        },
+        {
+          "id": 533546377,
+          "name": "openshell-checksums-sha256.txt",
+          "state": "uploaded",
+          "size": 1393,
+          "content_type": "text/plain",
+          "digest": "sha256:f8b6ec65366f9d256737b884ba4d9f184b4dbbbb9540711ed9e4934d772eba7e",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:18Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546377",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-checksums-sha256.txt"
+        },
+        {
+          "id": 533546392,
+          "name": "openshell-driver-vm-aarch64-apple-darwin.tar.gz",
+          "state": "uploaded",
+          "size": 33060422,
+          "content_type": "application/gzip",
+          "digest": "sha256:8024b8443cfee668b74dce3d348e308d3f576e624ef36af3bc20f79451e96cff",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:21Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546392",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-driver-vm-aarch64-apple-darwin.tar.gz"
+        },
+        {
+          "id": 533546384,
+          "name": "openshell-driver-vm-aarch64-unknown-linux-gnu.tar.gz",
+          "state": "uploaded",
+          "size": 28825587,
+          "content_type": "application/gzip",
+          "digest": "sha256:eab45f2e8c29f4891a85111a9433797004058f442382a3c4e55b7ae02a681564",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:21Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546384",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-driver-vm-aarch64-unknown-linux-gnu.tar.gz"
+        },
+        {
+          "id": 533546378,
+          "name": "openshell-driver-vm-x86_64-unknown-linux-gnu.tar.gz",
+          "state": "uploaded",
+          "size": 30793536,
+          "content_type": "application/gzip",
+          "digest": "sha256:926eb67e5f35028f84610d24a35f0333dfa2f0d6e5b264b82732d6aaf4f97339",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:21Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546378",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-driver-vm-x86_64-unknown-linux-gnu.tar.gz"
+        },
+        {
+          "id": 533546374,
+          "name": "openshell-gateway-0.0.116-1.fc44.aarch64.rpm",
+          "state": "uploaded",
+          "size": 25386505,
+          "content_type": "application/x-redhat-package-manager",
+          "digest": "sha256:ce3f675a98dba130e26581361b334bbbdc9b19968dcefea372fa234fd78a11dc",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:21Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546374",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-gateway-0.0.116-1.fc44.aarch64.rpm"
+        },
+        {
+          "id": 533546394,
+          "name": "openshell-gateway-0.0.116-1.fc44.x86_64.rpm",
+          "state": "uploaded",
+          "size": 26453837,
+          "content_type": "application/x-redhat-package-manager",
+          "digest": "sha256:e24674c8f43d6e425d48562580e793bac1683024212a3df5dcfff13a42fc1df1",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:21Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546394",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-gateway-0.0.116-1.fc44.x86_64.rpm"
+        },
+        {
+          "id": 533546385,
+          "name": "openshell-gateway-aarch64-apple-darwin.tar.gz",
+          "state": "uploaded",
+          "size": 28832458,
+          "content_type": "application/gzip",
+          "digest": "sha256:f192d3d737c125264e13ef73458541df2ca6a9eb2fa599736a7f2587d5d2ce8d",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:22Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546385",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-gateway-aarch64-apple-darwin.tar.gz"
+        },
+        {
+          "id": 533546393,
+          "name": "openshell-gateway-aarch64-unknown-linux-gnu.tar.gz",
+          "state": "uploaded",
+          "size": 35481529,
+          "content_type": "application/gzip",
+          "digest": "sha256:292c379193a339220234ffea585350901468bb8f4076e2076bc074e8ed18974b",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:21Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546393",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-gateway-aarch64-unknown-linux-gnu.tar.gz"
+        },
+        {
+          "id": 533546376,
+          "name": "openshell-gateway-checksums-sha256.txt",
+          "state": "uploaded",
+          "size": 345,
+          "content_type": "text/plain",
+          "digest": "sha256:572d80ded99fab0c2cf75f8108c62ab3e8455356b3c3b38de1be98806a2440e9",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:18Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546376",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-gateway-checksums-sha256.txt"
+        },
+        {
+          "id": 533546382,
+          "name": "openshell-gateway-x86_64-unknown-linux-gnu.tar.gz",
+          "state": "uploaded",
+          "size": 36940645,
+          "content_type": "application/gzip",
+          "digest": "sha256:59c6da724eae7a00c28826f9191efbdf4fbaa5c768afdc8dea6a80a949ebcc89",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:22Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546382",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-gateway-x86_64-unknown-linux-gnu.tar.gz"
+        },
+        {
+          "id": 533546380,
+          "name": "openshell-sandbox-aarch64-unknown-linux-musl.tar.gz",
+          "state": "uploaded",
+          "size": 10186680,
+          "content_type": "application/gzip",
+          "digest": "sha256:959d9a88270e0336f04342560df750591da603424d0a9bfb481ee29670342557",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:19Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546380",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-sandbox-aarch64-unknown-linux-musl.tar.gz"
+        },
+        {
+          "id": 533546372,
+          "name": "openshell-sandbox-checksums-sha256.txt",
+          "state": "uploaded",
+          "size": 235,
+          "content_type": "text/plain",
+          "digest": "sha256:0cb63b3b4436214224872c1ba245bda0d92d904822aa4f28015081269f398f93",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:18Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546372",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-sandbox-checksums-sha256.txt"
+        },
+        {
+          "id": 533546387,
+          "name": "openshell-sandbox-x86_64-unknown-linux-musl.tar.gz",
+          "state": "uploaded",
+          "size": 11859341,
+          "content_type": "application/gzip",
+          "digest": "sha256:0bb160f73e5007338b94e3c868f66f50c71cd65c27c932ed9a4fa67c49e6d423",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:20Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546387",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-sandbox-x86_64-unknown-linux-musl.tar.gz"
+        },
+        {
+          "id": 533546389,
+          "name": "openshell-x86_64-unknown-linux-musl.tar.gz",
+          "state": "uploaded",
+          "size": 8921130,
+          "content_type": "application/gzip",
+          "digest": "sha256:4fb4476d80a1875a0b83547ec3aba999cf0a2e2d75f95f2f709b622e2103520e",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:19Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546389",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-x86_64-unknown-linux-musl.tar.gz"
+        },
+        {
+          "id": 533546381,
+          "name": "openshell.rb",
+          "state": "uploaded",
+          "size": 5749,
+          "content_type": "application/octet-stream",
+          "digest": "sha256:cf00a9441589702ffe006720fd6a9dffc0f0745b337036aad26dc53eb94c1558",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:18Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546381",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell.rb"
+        },
+        {
+          "id": 533546370,
+          "name": "openshell_0.0.116-1_amd64.deb",
+          "state": "uploaded",
+          "size": 60591314,
+          "content_type": "application/x-debian-package",
+          "digest": "sha256:883b5223399dd30a2b33b7f76817fd81295d610ce6f2d04a0266fc7cfbf87575",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:22Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546370",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell_0.0.116-1_amd64.deb"
+        },
+        {
+          "id": 533546379,
+          "name": "openshell_0.0.116-1_arm64.deb",
+          "state": "uploaded",
+          "size": 57618414,
+          "content_type": "application/x-debian-package",
+          "digest": "sha256:d39e93477e8a160012fc199ae1d08ddea15a2e76ba700dcf7c485593a9bd6e1b",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:22Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546379",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell_0.0.116-1_arm64.deb"
+        },
+        {
+          "id": 533546388,
+          "name": "openshell_0.0.116_amd64.snap",
+          "state": "uploaded",
+          "size": 48189440,
+          "content_type": "application/octet-stream",
+          "digest": "sha256:11d031749f2805850ad5101aaaa503e7cc41722eaa28178890dc3b449f12e634",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:22Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546388",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell_0.0.116_amd64.snap"
+        },
+        {
+          "id": 533546375,
+          "name": "openshell_0.0.116_arm64.snap",
+          "state": "uploaded",
+          "size": 42192896,
+          "content_type": "application/octet-stream",
+          "digest": "sha256:819df16837d0309416eaabac1424cbf0a8cc07b2675a64ee078bb8327fb4775b",
+          "created_at": "2026-08-28T09:10:18Z",
+          "updated_at": "2026-08-28T09:10:22Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/533546375",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell_0.0.116_arm64.snap"
+        }
+      ],
+      "qualified": false,
+      "classification": "latest-stable-baseline"
+    },
+    {
+      "id": 298682544,
+      "tag": "dev",
+      "draft": false,
+      "prerelease": true,
+      "publishedAt": "2026-03-18T21:11:50Z",
+      "updatedAt": "2026-09-12T00:55:26Z",
+      "releaseUrl": "https://github.com/NVIDIA/OpenShell/releases/tag/dev",
+      "releaseApi": "https://api.github.com/repos/NVIDIA/OpenShell/releases/298682544",
+      "tagObjectType": "tag",
+      "tagObjectSha": "c19cbcc0d12f2964e15170a8bee8fbc0de079a6a",
+      "commit": "5b9daab9351b1e053f9a5e0ce4c899f5d3f674b0",
+      "assets": [
+        {
+          "id": 558335037,
+          "name": "openshell-0.0.117.dev137+g5b9daab93-py3-none-any.whl",
+          "state": "uploaded",
+          "size": 136498,
+          "content_type": "application/octet-stream",
+          "digest": "sha256:77c334fb24652a8767409f79b990af4bdde9f5c65e15b03ee4b599909d5749b3",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:22Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335037",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-0.0.117.dev137%2Bg5b9daab93-py3-none-any.whl"
+        },
+        {
+          "id": 558335026,
+          "name": "openshell-aarch64-apple-darwin.tar.gz",
+          "state": "uploaded",
+          "size": 9030613,
+          "content_type": "application/gzip",
+          "digest": "sha256:f84c74d9fb8ceac760ee82e4948d8d1ae3b79ad8c9633fda42c54d73e97e3805",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:23Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335026",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-aarch64-apple-darwin.tar.gz"
+        },
+        {
+          "id": 558335027,
+          "name": "openshell-aarch64-unknown-linux-musl.tar.gz",
+          "state": "uploaded",
+          "size": 9136546,
+          "content_type": "application/gzip",
+          "digest": "sha256:dfc94e86e718de494f59ccc5e5541e97ac0006d3014f4299b8bc400d144e2145",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:22Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335027",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-aarch64-unknown-linux-musl.tar.gz"
+        },
+        {
+          "id": 558335022,
+          "name": "openshell-checksums-sha256.txt",
+          "state": "uploaded",
+          "size": 1355,
+          "content_type": "text/plain",
+          "digest": "sha256:814607f94e975b1533f6b65e2321051255f3289aa67d3dff71d66ba914ee14ed",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:22Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335022",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-checksums-sha256.txt"
+        },
+        {
+          "id": 558335032,
+          "name": "openshell-dev-aarch64.rpm",
+          "state": "uploaded",
+          "size": 6120607,
+          "content_type": "application/x-redhat-package-manager",
+          "digest": "sha256:add3af07d5b58fe2e1dda99453a53ab0f1406033fdbf168baf6a83e1a44415b7",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:22Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335032",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-dev-aarch64.rpm"
+        },
+        {
+          "id": 558335021,
+          "name": "openshell-dev-amd64.deb",
+          "state": "uploaded",
+          "size": 60936214,
+          "content_type": "application/x-debian-package",
+          "digest": "sha256:e6b4af4438ff412c03db089824c69171d809fd1f5a35462aa9e4b8f1fe488d71",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:25Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335021",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-dev-amd64.deb"
+        },
+        {
+          "id": 558335036,
+          "name": "openshell-dev-arm64.deb",
+          "state": "uploaded",
+          "size": 58310524,
+          "content_type": "application/x-debian-package",
+          "digest": "sha256:8c3a84b347033070ca982a65297f8ddb350ab1ec7beac777a2e8555b29feda02",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:26Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335036",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-dev-arm64.deb"
+        },
+        {
+          "id": 558335035,
+          "name": "openshell-dev-x86_64.rpm",
+          "state": "uploaded",
+          "size": 6553067,
+          "content_type": "application/x-redhat-package-manager",
+          "digest": "sha256:8473a7dcb413e3d39f401bb72cd089c4fbf751ff7a565cf243d85d15679d4269",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:22Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335035",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-dev-x86_64.rpm"
+        },
+        {
+          "id": 558335040,
+          "name": "openshell-driver-vm-aarch64-apple-darwin.tar.gz",
+          "state": "uploaded",
+          "size": 33729283,
+          "content_type": "application/gzip",
+          "digest": "sha256:cc905c26219ae9dcc50d37886025b8e20aeb2e033d96bad8adabed7b30d2e158",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:24Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335040",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-driver-vm-aarch64-apple-darwin.tar.gz"
+        },
+        {
+          "id": 558335042,
+          "name": "openshell-driver-vm-aarch64-unknown-linux-gnu.tar.gz",
+          "state": "uploaded",
+          "size": 29500257,
+          "content_type": "application/gzip",
+          "digest": "sha256:5f71eac553b3259eed066c90444440ef8638832bbc14c762358d14fda2dd84f7",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:24Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335042",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-driver-vm-aarch64-unknown-linux-gnu.tar.gz"
+        },
+        {
+          "id": 558335028,
+          "name": "openshell-driver-vm-x86_64-unknown-linux-gnu.tar.gz",
+          "state": "uploaded",
+          "size": 31053845,
+          "content_type": "application/gzip",
+          "digest": "sha256:7ca1ddcb5242b10fb754b847be5e6ee012f66a803639d1aaae007fe1d6f5805f",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:24Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335028",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-driver-vm-x86_64-unknown-linux-gnu.tar.gz"
+        },
+        {
+          "id": 558335025,
+          "name": "openshell-gateway-aarch64-apple-darwin.tar.gz",
+          "state": "uploaded",
+          "size": 29035886,
+          "content_type": "application/gzip",
+          "digest": "sha256:5885335979172f1a655e132000ac0258f4a2603f17ed3aeddf8075f583b64140",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:24Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335025",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-gateway-aarch64-apple-darwin.tar.gz"
+        },
+        {
+          "id": 558335020,
+          "name": "openshell-gateway-aarch64-unknown-linux-gnu.tar.gz",
+          "state": "uploaded",
+          "size": 35623210,
+          "content_type": "application/gzip",
+          "digest": "sha256:7da1150d3a44b6053f23144328fc77afde8c2efff60f46c525f69d157548fa5e",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:24Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335020",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-gateway-aarch64-unknown-linux-gnu.tar.gz"
+        },
+        {
+          "id": 558335029,
+          "name": "openshell-gateway-checksums-sha256.txt",
+          "state": "uploaded",
+          "size": 345,
+          "content_type": "text/plain",
+          "digest": "sha256:ef0ae41d56a44d317cdcf1cb7b94fcc1f1126dbf3944e0321449ca2a64a70696",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:22Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335029",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-gateway-checksums-sha256.txt"
+        },
+        {
+          "id": 558335019,
+          "name": "openshell-gateway-dev-aarch64.rpm",
+          "state": "uploaded",
+          "size": 25347258,
+          "content_type": "application/x-redhat-package-manager",
+          "digest": "sha256:ed75116742ec2506afb2ac50d3b1607127536aa973b3ccd8bee31f973be96f94",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:23Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335019",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-gateway-dev-aarch64.rpm"
+        },
+        {
+          "id": 558335034,
+          "name": "openshell-gateway-dev-x86_64.rpm",
+          "state": "uploaded",
+          "size": 26156378,
+          "content_type": "application/x-redhat-package-manager",
+          "digest": "sha256:eb6a3446e3d5852cb59ba6c1ccfdd7c466d63c06e8e73e4cc1c28020810406a4",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:24Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335034",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-gateway-dev-x86_64.rpm"
+        },
+        {
+          "id": 558335041,
+          "name": "openshell-gateway-x86_64-unknown-linux-gnu.tar.gz",
+          "state": "uploaded",
+          "size": 36877719,
+          "content_type": "application/gzip",
+          "digest": "sha256:26531d6677e5ff74d9fc39840ee0b16792fc301ba52f382d5cbfa74e5b138635",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:24Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335041",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-gateway-x86_64-unknown-linux-gnu.tar.gz"
+        },
+        {
+          "id": 558335031,
+          "name": "openshell-sandbox-aarch64-unknown-linux-musl.tar.gz",
+          "state": "uploaded",
+          "size": 10867625,
+          "content_type": "application/gzip",
+          "digest": "sha256:20d14069f1b1d8e0bc241f9f4d4c3495a2e58cfd085ffb7d0b1bd66eac333e3f",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:23Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335031",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-sandbox-aarch64-unknown-linux-musl.tar.gz"
+        },
+        {
+          "id": 558335033,
+          "name": "openshell-sandbox-checksums-sha256.txt",
+          "state": "uploaded",
+          "size": 235,
+          "content_type": "text/plain",
+          "digest": "sha256:3656b53743254fca308dc5d9b939a3599200625b0aa8c5d60fa19799295778cd",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:22Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335033",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-sandbox-checksums-sha256.txt"
+        },
+        {
+          "id": 558335038,
+          "name": "openshell-sandbox-x86_64-unknown-linux-musl.tar.gz",
+          "state": "uploaded",
+          "size": 11768204,
+          "content_type": "application/gzip",
+          "digest": "sha256:cda6a03f722ed749b340c60d0265835adbf50c8fe45daeba1048abe5474dc728",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:23Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335038",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-sandbox-x86_64-unknown-linux-musl.tar.gz"
+        },
+        {
+          "id": 558335030,
+          "name": "openshell-x86_64-unknown-linux-musl.tar.gz",
+          "state": "uploaded",
+          "size": 9923132,
+          "content_type": "application/gzip",
+          "digest": "sha256:25155756569d4f2b0360283bd8cacd9f638916a1308f12c0ede58ca9e0ffc31d",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:23Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335030",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell-x86_64-unknown-linux-musl.tar.gz"
+        },
+        {
+          "id": 558335043,
+          "name": "openshell.rb",
+          "state": "uploaded",
+          "size": 6006,
+          "content_type": "application/octet-stream",
+          "digest": "sha256:075628960a29d1727c1b548ef496e3dfb5d6d95d6178b4828c28ac18ec83dc20",
+          "created_at": "2026-09-12T00:55:22Z",
+          "updated_at": "2026-09-12T00:55:22Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335043",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell.rb"
+        },
+        {
+          "id": 558335024,
+          "name": "openshell_0.0.117-dev.137-g5b9daab93_amd64.snap",
+          "state": "uploaded",
+          "size": 48721920,
+          "content_type": "application/octet-stream",
+          "digest": "sha256:dc1454b63aee3b80d1e955054f017a9c473af2b30198684eb940ef4e6143b08d",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:24Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335024",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell_0.0.117-dev.137-g5b9daab93_amd64.snap"
+        },
+        {
+          "id": 558335039,
+          "name": "openshell_0.0.117-dev.137-g5b9daab93_arm64.snap",
+          "state": "uploaded",
+          "size": 43417600,
+          "content_type": "application/octet-stream",
+          "digest": "sha256:7b194d36b0c470ddaa25d5972ed21c82d9c1d5d9233629c738890e3316b70724",
+          "created_at": "2026-09-12T00:55:21Z",
+          "updated_at": "2026-09-12T00:55:24Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/558335039",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/dev/openshell_0.0.117-dev.137-g5b9daab93_arm64.snap"
+        }
+      ],
+      "qualified": false,
+      "classification": "rolling-prerelease-updated-after-baseline"
+    },
+    {
+      "id": 383343003,
+      "tag": "vm-runtime-capability-free",
+      "draft": false,
+      "prerelease": true,
+      "publishedAt": "2026-09-05T18:55:59Z",
+      "updatedAt": "2026-09-05T18:56:03Z",
+      "releaseUrl": "https://github.com/NVIDIA/OpenShell/releases/tag/vm-runtime-capability-free",
+      "releaseApi": "https://api.github.com/repos/NVIDIA/OpenShell/releases/383343003",
+      "tagObjectType": "tag",
+      "tagObjectSha": "c43498657ab91950f7147d7dd01da09d91171087",
+      "commit": "c7b7c2609b3081b2346537d7b79356c17902abac",
+      "assets": [
+        {
+          "id": 546184347,
+          "name": "vm-runtime-darwin-aarch64.tar.zst",
+          "state": "uploaded",
+          "size": 17580100,
+          "content_type": "application/octet-stream",
+          "digest": "sha256:a2baf5e99b822d0e5bd94c20d4dba86e32cca66c598da1b099bfa2fd06794d93",
+          "created_at": "2026-09-05T18:56:02Z",
+          "updated_at": "2026-09-05T18:56:02Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/546184347",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/vm-runtime-capability-free/vm-runtime-darwin-aarch64.tar.zst"
+        },
+        {
+          "id": 546184350,
+          "name": "vm-runtime-linux-aarch64.tar.zst",
+          "state": "uploaded",
+          "size": 17549808,
+          "content_type": "application/octet-stream",
+          "digest": "sha256:56faa79800a57a1714d4889fa19b1de17ad223a3761e5bb576c90db8f431304e",
+          "created_at": "2026-09-05T18:56:02Z",
+          "updated_at": "2026-09-05T18:56:03Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/546184350",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/vm-runtime-capability-free/vm-runtime-linux-aarch64.tar.zst"
+        },
+        {
+          "id": 546184348,
+          "name": "vm-runtime-linux-x86_64.tar.zst",
+          "state": "uploaded",
+          "size": 16764716,
+          "content_type": "application/octet-stream",
+          "digest": "sha256:7496ae427bf82fead3d34deb25f14f6eb24db10c285a95fad57dc694192e2288",
+          "created_at": "2026-09-05T18:56:02Z",
+          "updated_at": "2026-09-05T18:56:02Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/546184348",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/vm-runtime-capability-free/vm-runtime-linux-x86_64.tar.zst"
+        }
+      ],
+      "qualified": false,
+      "classification": "prerelease-published-after-baseline"
+    },
+    {
+      "id": 318196993,
+      "tag": "vm-runtime",
+      "draft": false,
+      "prerelease": true,
+      "publishedAt": "2026-05-06T05:44:03Z",
+      "updatedAt": "2026-08-27T00:25:33Z",
+      "releaseUrl": "https://github.com/NVIDIA/OpenShell/releases/tag/vm-runtime",
+      "releaseApi": "https://api.github.com/repos/NVIDIA/OpenShell/releases/318196993",
+      "tagObjectType": "tag",
+      "tagObjectSha": "39a69c6c58fc63186c37a58867941bfd427da16b",
+      "commit": "56088d0811f35d01e5af8f975335c9d0e30524be",
+      "assets": [
+        {
+          "id": 531518504,
+          "name": "vm-runtime-darwin-aarch64.tar.zst",
+          "state": "uploaded",
+          "size": 26136810,
+          "content_type": "application/octet-stream",
+          "digest": "sha256:04349e6395c60e8cda059cc74e24105fdd23cec49ceac84966ce7377396e757d",
+          "created_at": "2026-08-27T00:25:32Z",
+          "updated_at": "2026-08-27T00:25:33Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/531518504",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/vm-runtime/vm-runtime-darwin-aarch64.tar.zst"
+        },
+        {
+          "id": 531518505,
+          "name": "vm-runtime-linux-aarch64.tar.zst",
+          "state": "uploaded",
+          "size": 21839441,
+          "content_type": "application/octet-stream",
+          "digest": "sha256:6890ee0dbec0b2e1fd47e0325c0fc923113d7c9999e643f42e4860e85d0eb790",
+          "created_at": "2026-08-27T00:25:32Z",
+          "updated_at": "2026-08-27T00:25:33Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/531518505",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/vm-runtime/vm-runtime-linux-aarch64.tar.zst"
+        },
+        {
+          "id": 531518506,
+          "name": "vm-runtime-linux-x86_64.tar.zst",
+          "state": "uploaded",
+          "size": 21455185,
+          "content_type": "application/octet-stream",
+          "digest": "sha256:770dcb73b21aa42c8d784ee3e9d9e581dfdbf1873dd7fec83a2dd724e47220b4",
+          "created_at": "2026-08-27T00:25:32Z",
+          "updated_at": "2026-08-27T00:25:33Z",
+          "url": "https://api.github.com/repos/NVIDIA/OpenShell/releases/assets/531518506",
+          "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/vm-runtime/vm-runtime-linux-x86_64.tar.zst"
+        }
+      ],
+      "qualified": false,
+      "classification": "older-prerelease-informational"
+    }
+  ],
+  "unreleasedVersionedTags": [
+    {
+      "tag": "v0.1.0-pre.1",
+      "releasePresent": false,
+      "draft": null,
+      "prerelease": null,
+      "semanticPrerelease": true,
+      "tagObjectSha": "0ba004e79fb3923133e0c1e288b08ced075a29be",
+      "commit": "f54a7a617760295cc101d6ec7f31df1dba50fc23",
+      "taggedAt": "2026-09-01T17:10:52Z",
+      "publishTime": null,
+      "assets": [],
+      "qualificationAllowed": false
+    }
+  ],
+  "apiEvidence": [
+    {
+      "name": "baseline-commit",
+      "file": "baseline-commit.json",
+      "endpoint": "https://api.github.com/repos/NVIDIA/OpenShell/git/commits/d1155aa70042d3e2ee49dbfa15346b108b7c1d92",
+      "checkedAt": "2026-09-13T02:07:33Z",
+      "status": 200,
+      "bytes": 2399,
+      "sha256": "087d172447263c393bea2d803ff53e8c81a3c449cb824fc1e686916e8bc70be9",
+      "link": null,
+      "metadataFile": "baseline-commit.meta.json",
+      "metadataBytes": 425,
+      "metadataSha256": "8308fc94d9dcfd018e3122224fd9526d7aa27d7d117e87464498d3aed445a6e4"
+    },
+    {
+      "name": "baseline-ref",
+      "file": "baseline-ref.json",
+      "endpoint": "https://api.github.com/repos/NVIDIA/OpenShell/git/ref/tags/v0.0.116",
+      "checkedAt": "2026-09-13T02:06:48Z",
+      "status": 200,
+      "bytes": 340,
+      "sha256": "312ee5fe8c6ed0dc840f4940c09549f323a132212f0c9b84efa1e9ab0d178586",
+      "link": null,
+      "metadataFile": "baseline-ref.meta.json",
+      "metadataBytes": 393,
+      "metadataSha256": "38b66ba5d84c4ae1cc60ee888f6361d2e95a2a50793b13ccd6a065fb31d4fe84"
+    },
+    {
+      "name": "dev-ref",
+      "file": "dev-ref.json",
+      "endpoint": "https://api.github.com/repos/NVIDIA/OpenShell/git/ref/tags/dev",
+      "checkedAt": "2026-09-13T02:07:33Z",
+      "status": 200,
+      "bytes": 317,
+      "sha256": "36f2d1c7eefc2833e48a03caac9b42bd44a022faa20c80bc7878ba9af613c2b9",
+      "link": null,
+      "metadataFile": "dev-ref.meta.json",
+      "metadataBytes": 388,
+      "metadataSha256": "8249321028e71ea879377a190f1ca1224850379cf8f39f3fbdc29bc42c131fa5"
+    },
+    {
+      "name": "dev-tag",
+      "file": "dev-tag.json",
+      "endpoint": "https://api.github.com/repos/NVIDIA/OpenShell/git/tags/c19cbcc0d12f2964e15170a8bee8fbc0de079a6a",
+      "checkedAt": "2026-09-13T02:07:55Z",
+      "status": 200,
+      "bytes": 687,
+      "sha256": "59d979eb3e13c7397d9bb30bded109ccedfb7bd10d2a5b5ac7010890fece6434",
+      "link": null,
+      "metadataFile": "dev-tag.meta.json",
+      "metadataBytes": 421,
+      "metadataSha256": "5cb85a6be4cf5ea7cea420c09076192e80c181a7c35ec8d059d8be50cf957d40"
+    },
+    {
+      "name": "latest",
+      "file": "latest.json",
+      "endpoint": "https://api.github.com/repos/NVIDIA/OpenShell/releases/latest",
+      "checkedAt": "2026-09-13T02:06:26Z",
+      "status": 200,
+      "bytes": 43128,
+      "sha256": "5db8f0778cea512cf95a417ec365db9e9c31f3b5ad48be761580fee5b99f9a67",
+      "link": null,
+      "metadataFile": "latest.meta.json",
+      "metadataBytes": 389,
+      "metadataSha256": "0b9f2f42ff6298f5d87020237018978498f013383fe50b476cb04577190c5b9f"
+    },
+    {
+      "name": "pre-tag",
+      "file": "pre-tag.json",
+      "endpoint": "https://api.github.com/repos/NVIDIA/OpenShell/git/tags/0ba004e79fb3923133e0c1e288b08ced075a29be",
+      "checkedAt": "2026-09-13T02:07:56Z",
+      "status": 200,
+      "bytes": 692,
+      "sha256": "ebe2f700da6413b552d91067260fd1c79bac7f0f9bcc43f27542d08efbf1b573",
+      "link": null,
+      "metadataFile": "pre-tag.meta.json",
+      "metadataBytes": 421,
+      "metadataSha256": "95297689961f88fd7cffe577dc73c7d0bfd320ba02aa36c5148bba489caec35e"
+    },
+    {
+      "name": "releases-1",
+      "file": "releases-1.json",
+      "endpoint": "https://api.github.com/repos/NVIDIA/OpenShell/releases?per_page=30&page=1",
+      "checkedAt": "2026-09-13T02:06:47Z",
+      "status": 200,
+      "bytes": 1319105,
+      "sha256": "42cc179fc2202ee6a05e48a5496adfec44a0a26d894e2e858b5f10fc6440c74a",
+      "link": "<https://api.github.com/repositories/1166129534/releases?per_page=30&page=2>; rel=\"next\", <https://api.github.com/repositories/1166129534/releases?per_page=30&page=4>; rel=\"last\"",
+      "metadataFile": "releases-1.meta.json",
+      "metadataBytes": 583,
+      "metadataSha256": "6df92da7df402b1c861e70b4751e02a2c0cf583a4eb828eea759652af051a2c1"
+    },
+    {
+      "name": "releases-2",
+      "file": "releases-2.json",
+      "endpoint": "https://api.github.com/repos/NVIDIA/OpenShell/releases?per_page=30&page=2",
+      "checkedAt": "2026-09-13T02:07:06Z",
+      "status": 200,
+      "bytes": 1390192,
+      "sha256": "0dab1a0d16b3e55765a001b932a8e90071f7c62a3ea8db0f2751aa693102df4f",
+      "link": "<https://api.github.com/repositories/1166129534/releases?per_page=30&page=1>; rel=\"prev\", <https://api.github.com/repositories/1166129534/releases?per_page=30&page=3>; rel=\"next\", <https://api.github.com/repositories/1166129534/releases?per_page=30&page=4>; rel=\"last\", <https://api.github.com/repositories/1166129534/releases?per_page=30&page=1>; rel=\"first\"",
+      "metadataFile": "releases-2.meta.json",
+      "metadataBytes": 768,
+      "metadataSha256": "e3bdbd50179bfa15ac166098190a211f38527c60fc5f8cdfc42495ecebd1efdd"
+    },
+    {
+      "name": "releases-3",
+      "file": "releases-3.json",
+      "endpoint": "https://api.github.com/repos/NVIDIA/OpenShell/releases?per_page=30&page=3",
+      "checkedAt": "2026-09-13T02:07:07Z",
+      "status": 200,
+      "bytes": 788769,
+      "sha256": "14e5729511689569c75bbcac3b4b7cbf983e64fbceb66e15a36fff3fac269a09",
+      "link": "<https://api.github.com/repositories/1166129534/releases?per_page=30&page=2>; rel=\"prev\", <https://api.github.com/repositories/1166129534/releases?per_page=30&page=4>; rel=\"next\", <https://api.github.com/repositories/1166129534/releases?per_page=30&page=4>; rel=\"last\", <https://api.github.com/repositories/1166129534/releases?per_page=30&page=1>; rel=\"first\"",
+      "metadataFile": "releases-3.meta.json",
+      "metadataBytes": 767,
+      "metadataSha256": "5fe586fe97e31a39272fb4165ce39983f5f4baca245e8e78e59c10f8755fc217"
+    },
+    {
+      "name": "releases-4",
+      "file": "releases-4.json",
+      "endpoint": "https://api.github.com/repos/NVIDIA/OpenShell/releases?per_page=30&page=4",
+      "checkedAt": "2026-09-13T02:07:07Z",
+      "status": 200,
+      "bytes": 109901,
+      "sha256": "7bf76bb95eaec3fe8635af75ed9d5340302cb3a58195f2ad58b99b62a243e88f",
+      "link": "<https://api.github.com/repositories/1166129534/releases?per_page=30&page=3>; rel=\"prev\", <https://api.github.com/repositories/1166129534/releases?per_page=30&page=1>; rel=\"first\"",
+      "metadataFile": "releases-4.meta.json",
+      "metadataBytes": 583,
+      "metadataSha256": "2236efd7c2c166c3260a1dbcfdc4e7729bb3150028d6b00bb15ead1b683d3aff"
+    },
+    {
+      "name": "tag-refs",
+      "file": "tag-refs.json",
+      "endpoint": "https://api.github.com/repos/NVIDIA/OpenShell/git/matching-refs/tags/",
+      "checkedAt": "2026-09-13T02:06:48Z",
+      "status": 200,
+      "bytes": 40290,
+      "sha256": "54d1cf30f4e2f14d13d3d3b661698d0871f9b9e5c0d8d8a3ebed39015d319246",
+      "link": null,
+      "metadataFile": "tag-refs.meta.json",
+      "metadataBytes": 397,
+      "metadataSha256": "436f1a722d7fe871fc4f1e3911ac84fbdce26b484b006fb54b53f49b4fe83e31"
+    },
+    {
+      "name": "vm-cap-ref",
+      "file": "vm-cap-ref.json",
+      "endpoint": "https://api.github.com/repos/NVIDIA/OpenShell/git/ref/tags/vm-runtime-capability-free",
+      "checkedAt": "2026-09-13T02:07:33Z",
+      "status": 200,
+      "bytes": 397,
+      "sha256": "e856176cd6037f0925b21f2b643bdce994eba5aa425b1a6836826fd0e35cd062",
+      "link": null,
+      "metadataFile": "vm-cap-ref.meta.json",
+      "metadataBytes": 411,
+      "metadataSha256": "ca4d767f2293d0d333cd39393fcf83c59928a201212552b136ef61edc38ff035"
+    },
+    {
+      "name": "vm-cap-tag",
+      "file": "vm-cap-tag.json",
+      "endpoint": "https://api.github.com/repos/NVIDIA/OpenShell/git/tags/c43498657ab91950f7147d7dd01da09d91171087",
+      "checkedAt": "2026-09-13T02:07:55Z",
+      "status": 200,
+      "bytes": 728,
+      "sha256": "13a1e4f948dec680ae587e2a07e0eac645cdf56acf508210bb44fca6aa4a50c6",
+      "link": null,
+      "metadataFile": "vm-cap-tag.meta.json",
+      "metadataBytes": 421,
+      "metadataSha256": "faab506580744f35584b6ee1d7099240911edf5ae357758dde1f21093dcf4397"
+    },
+    {
+      "name": "vm-ref",
+      "file": "vm-ref.json",
+      "endpoint": "https://api.github.com/repos/NVIDIA/OpenShell/git/ref/tags/vm-runtime",
+      "checkedAt": "2026-09-13T02:07:33Z",
+      "status": 200,
+      "bytes": 341,
+      "sha256": "62c17c33473273474800bf84a9d261a74216e892b1a32ec6caf5680dfde9f1bf",
+      "link": null,
+      "metadataFile": "vm-ref.meta.json",
+      "metadataBytes": 395,
+      "metadataSha256": "87a4295f89dbc4e506b30183f92725d412248c92da5ba7b903abfa16f587bf53"
+    },
+    {
+      "name": "vm-tag",
+      "file": "vm-tag.json",
+      "endpoint": "https://api.github.com/repos/NVIDIA/OpenShell/git/tags/39a69c6c58fc63186c37a58867941bfd427da16b",
+      "checkedAt": "2026-09-13T02:07:55Z",
+      "status": 200,
+      "bytes": 712,
+      "sha256": "570dcbc77dd7ecbcc54c7c1e0608ad1ef3b5ed9b6376cf6ad89fb37cece11c44",
+      "link": null,
+      "metadataFile": "vm-tag.meta.json",
+      "metadataBytes": 421,
+      "metadataSha256": "5c8ccab69554b616d407988b7f5146d6c68467cf41298a3df8309c7592a34011"
+    }
+  ],
+  "gitObjects": [
+    {
+      "name": "dev-tag",
+      "kind": "tag",
+      "bytes": 171,
+      "sha256": "1d36dc2ce888f66d61600d3f8b93bd4e88c12acb53f1846d1ad7f850a637bcfc",
+      "gitObject": "c19cbcc0d12f2964e15170a8bee8fbc0de079a6a",
+      "file": "dev-tag.git-object"
+    },
+    {
+      "name": "vm-cap-tag",
+      "kind": "tag",
+      "bytes": 212,
+      "sha256": "ce854722095e5d02f62cd0a4f7b9125aba0e2787a45e0b582bac4a200dd77e82",
+      "gitObject": "c43498657ab91950f7147d7dd01da09d91171087",
+      "file": "vm-cap-tag.git-object"
+    },
+    {
+      "name": "vm-tag",
+      "kind": "tag",
+      "bytes": 196,
+      "sha256": "36ce143eadadb85bcb9bec9773360a415f7408895b85db077d6f529e21a65e83",
+      "gitObject": "39a69c6c58fc63186c37a58867941bfd427da16b",
+      "file": "vm-tag.git-object"
+    },
+    {
+      "name": "pre-tag",
+      "kind": "tag",
+      "bytes": 176,
+      "sha256": "e51ecccb4c4f10d3691ecf4d13afb87b7b2be0000835e3f47c017ac901281681",
+      "gitObject": "0ba004e79fb3923133e0c1e288b08ced075a29be",
+      "file": "pre-tag.git-object"
+    },
+    {
+      "name": "baseline-commit",
+      "kind": "commit",
+      "bytes": 1176,
+      "sha256": "e597c9bbef02c57339cfa2472bcbf6542c5e28fe19f94fffefe7038d78c78181",
+      "gitObject": "d1155aa70042d3e2ee49dbfa15346b108b7c1d92",
+      "file": "baseline-commit.git-object"
+    }
+  ],
+  "sourceEvidence": {
+    "origin": "retained-RF043-source-blobs-no-source-download",
+    "upstreamCommit": "d1155aa70042d3e2ee49dbfa15346b108b7c1d92",
+    "proposalFile": "config/openshell/nonwriting-stdio.proposal.json",
+    "proposalSha256": "d0ebbdfc737fda1b9e6ab312641b0205c408295be9d773bac2ee54db57815c8e",
+    "contractFile": "config/openshell/nonwriting-stdio.acceptance.json",
+    "contractSha256": "670b1930cd9db96647f808a544cb3710ba3878dbbc364f5ebda3e8e49527e659",
+    "receiptSchemaFile": "config/openshell/nonwriting-stdio.receipt.schema.json",
+    "receiptSchemaSha256": "5165a152d6c3d06e1355bf13cd5d6fba693404e5dcddee7858edc0a4d81b6cf0",
+    "sourceFileCount": 37,
+    "sourceBytes": 3310685,
+    "newSourceDownloads": 0
+  },
+  "requirementAssessment": [
+    {
+      "id": "negotiation",
+      "status": "BLOCKED",
+      "reason": "Public and driver capability messages expose names/versions, not the required three-role nonwriting profile acknowledgement. Driver version is daemon version.",
+      "sourceReferences": [
+        {
+          "symbol": "GetCapabilitiesResponse",
+          "path": "proto/compute_driver.proto",
+          "line": 68
+        },
+        {
+          "symbol": "ComputeDriverCapabilities",
+          "path": "proto/openshell.proto",
+          "line": 785
+        },
+        {
+          "symbol": "get_gateway_info",
+          "path": "crates/openshell-server/src/grpc/mod.rs",
+          "line": 244
+        },
+        {
+          "symbol": "ComputeDriverInfoSnapshot",
+          "path": "crates/openshell-server/src/compute/mod.rs",
+          "line": 278
+        },
+        {
+          "symbol": "fn capabilities",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 632
+        }
+      ],
+      "scope": "nearest-stable-v0.0.116-not-new-release",
+      "enforcementTestsRun": false
+    },
+    {
+      "id": "root",
+      "status": "BLOCKED",
+      "reason": "Docker create body leaves readonly_rootfs unset; internal RO binds do not configure a read-only child root.",
+      "sourceReferences": [
+        {
+          "symbol": "DockerComputeConfig",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 116
+        },
+        {
+          "symbol": "DockerSandboxDriverConfig",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 345
+        },
+        {
+          "symbol": "build_container_create_body_for_image",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 2944
+        }
+      ],
+      "scope": "nearest-stable-v0.0.116-not-new-release",
+      "enforcementTestsRun": false
+    },
+    {
+      "id": "mounts",
+      "status": "BLOCKED",
+      "reason": "Driver accepts typed user mounts and image volume metadata; no complete child mount sealing/attestation path is provided.",
+      "sourceReferences": [
+        {
+          "symbol": "build_binds",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 2608
+        },
+        {
+          "symbol": "resolve_oci_workspace_root",
+          "path": "crates/openshell-core/src/driver_mounts.rs",
+          "line": 108
+        }
+      ],
+      "scope": "nearest-stable-v0.0.116-not-new-release",
+      "enforcementTestsRun": false
+    },
+    {
+      "id": "workspace",
+      "status": "BLOCKED",
+      "reason": "Empty or root image workdir maps to /sandbox; managed preparation or custom write probe requires writable workspace. No workspace none mode.",
+      "sourceReferences": [
+        {
+          "symbol": "SandboxSpec",
+          "path": "proto/openshell.proto",
+          "line": 815
+        },
+        {
+          "symbol": "DriverSandboxSpec",
+          "path": "proto/compute_driver.proto",
+          "line": 132
+        },
+        {
+          "symbol": "SandboxCreateConfig",
+          "path": "crates/openshell-cli/src/run.rs",
+          "line": 368
+        },
+        {
+          "symbol": "sandbox_create",
+          "path": "crates/openshell-cli/src/run.rs",
+          "line": 419
+        },
+        {
+          "symbol": "GatewayFileSection",
+          "path": "crates/openshell-server/src/config_file.rs",
+          "line": 89
+        },
+        {
+          "symbol": "resolve_oci_workspace_root",
+          "path": "crates/openshell-core/src/driver_mounts.rs",
+          "line": 108
+        },
+        {
+          "symbol": "ResolvedWorkspace",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 104
+        },
+        {
+          "symbol": "prepare_oci_workspace_with",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 1802
+        },
+        {
+          "symbol": "validate_effective_workspace_write",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 1749
+        },
+        {
+          "symbol": "prepare_filesystem_with_identity",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 2029
+        }
+      ],
+      "scope": "nearest-stable-v0.0.116-not-new-release",
+      "enforcementTestsRun": false
+    },
+    {
+      "id": "command",
+      "status": "UNPROVEN",
+      "reason": "Explicit argv is carried directly, but missing command falls back to bash; exact immutable executable and secondary-exec exclusion are not proven jointly.",
+      "sourceReferences": [
+        {
+          "symbol": "MainProcessConfig",
+          "path": "crates/openshell-core/src/sandbox_env.rs",
+          "line": 39
+        },
+        {
+          "symbol": "spawn_impl",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 739
+        }
+      ],
+      "scope": "nearest-stable-v0.0.116-not-new-release",
+      "enforcementTestsRun": false
+    },
+    {
+      "id": "artifact",
+      "status": "BLOCKED",
+      "reason": "Image ID selection exists, but ImageMetadata/provisioning has no requested exact fixture path/type/mode/owner/size/hash verification gate. Actual fixture membership remains unproven.",
+      "sourceReferences": [
+        {
+          "symbol": "prepare_image",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 943
+        },
+        {
+          "symbol": "ImageMetadata",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 330
+        },
+        {
+          "symbol": "resolve_supervisor_bin_source",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 3686
+        },
+        {
+          "symbol": "supervisor_cache_path",
+          "path": "crates/openshell-core/src/driver_utils.rs",
+          "line": 565
+        }
+      ],
+      "scope": "nearest-stable-v0.0.116-not-new-release",
+      "enforcementTestsRun": false
+    },
+    {
+      "id": "isolation",
+      "status": "UNPROVEN",
+      "reason": "Privilege drop, hardening and Landlock exist; complete child mount/PID/IPC/control isolation is not attested by source-only evidence.",
+      "sourceReferences": [
+        {
+          "symbol": "SupervisorIdentityMountNamespace",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 403
+        },
+        {
+          "symbol": "start_supervisor_identity_spawn_worker",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 509
+        },
+        {
+          "symbol": "drop_privileges_with_identity",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 2184
+        },
+        {
+          "symbol": "spawn_impl",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 739
+        }
+      ],
+      "scope": "nearest-stable-v0.0.116-not-new-release",
+      "enforcementTestsRun": false
+    },
+    {
+      "id": "network",
+      "status": "BLOCKED",
+      "reason": "Empty authored groups still convert to Proxy mode and combined supervisor networking; this is not the explicit no-network/no-GPU profile.",
+      "sourceReferences": [
+        {
+          "symbol": "effective_driver_gpu_count",
+          "path": "crates/openshell-core/src/gpu.rs",
+          "line": 40
+        },
+        {
+          "symbol": "create_netns_for_proxy",
+          "path": "crates/openshell-supervisor-process/src/netns/mod.rs",
+          "line": 602
+        }
+      ],
+      "scope": "nearest-stable-v0.0.116-not-new-release",
+      "enforcementTestsRun": false
+    },
+    {
+      "id": "descriptors",
+      "status": "UNPROVEN",
+      "reason": "Stdio pipes and pre_exec exist; an independently observed closed final FD allowlist with no inherited control resource is unproven.",
+      "sourceReferences": [
+        {
+          "symbol": "spawn_impl",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 739
+        },
+        {
+          "symbol": "spawn_command_with_supervisor_identity_namespace",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 453
+        }
+      ],
+      "scope": "nearest-stable-v0.0.116-not-new-release",
+      "enforcementTestsRun": false
+    },
+    {
+      "id": "supervisor-state",
+      "status": "BLOCKED",
+      "reason": "Combined supervisor creates log/control/proxy/workspace state in the common container topology; optional SPIFFE masking is not complete child namespace state separation.",
+      "sourceReferences": [
+        {
+          "symbol": "write_ca_files",
+          "path": "crates/openshell-supervisor-network/src/run.rs",
+          "line": 35
+        },
+        {
+          "symbol": "NetworkNamespace",
+          "path": "crates/openshell-supervisor-process/src/netns/mod.rs",
+          "line": 41
+        }
+      ],
+      "scope": "nearest-stable-v0.0.116-not-new-release",
+      "enforcementTestsRun": false
+    },
+    {
+      "id": "policy",
+      "status": "BLOCKED",
+      "reason": "Only conditional grant preservation is proven. Loader fallback/enrichment/global/provider/update routes remain available, without required sealed profile post-loader acknowledgement.",
+      "sourceReferences": [
+        {
+          "symbol": "load_policy",
+          "path": "crates/openshell-sandbox/src/lib.rs",
+          "line": 2242
+        },
+        {
+          "symbol": "enrich_proto_baseline_paths",
+          "path": "crates/openshell-sandbox/src/lib.rs",
+          "line": 1778
+        },
+        {
+          "symbol": "SandboxPolicy",
+          "path": "crates/openshell-core/src/policy.rs",
+          "line": 15
+        },
+        {
+          "symbol": "GetSandboxConfigResponse",
+          "path": "proto/sandbox.proto",
+          "line": 363
+        },
+        {
+          "symbol": "from_proto",
+          "path": "crates/openshell-supervisor-network/src/opa.rs",
+          "line": 392
+        },
+        {
+          "symbol": "proto_to_opa_data_json",
+          "path": "crates/openshell-supervisor-network/src/opa.rs",
+          "line": 1857
+        }
+      ],
+      "scope": "nearest-stable-v0.0.116-not-new-release",
+      "enforcementTestsRun": false
+    },
+    {
+      "id": "limits",
+      "status": "BLOCKED",
+      "reason": "CPU/RAM/PIDs alone do not supply profile-wide finite capture/state/deadline evidence; driver leaves log/shm/swap controls unspecified and supervisor file retention is not a byte cap.",
+      "sourceReferences": [
+        {
+          "symbol": "build_container_create_body_for_image",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 2944
+        },
+        {
+          "symbol": "run_process",
+          "path": "crates/openshell-supervisor-process/src/run.rs",
+          "line": 60
+        }
+      ],
+      "scope": "nearest-stable-v0.0.116-not-new-release",
+      "enforcementTestsRun": false
+    },
+    {
+      "id": "lifecycle",
+      "status": "BLOCKED",
+      "reason": "Stop/start retains container state; gateway starts persisted sandboxes. No single-use receipt and fresh-state-only recovery contract.",
+      "sourceReferences": [
+        {
+          "symbol": "start_persisted_sandboxes",
+          "path": "crates/openshell-server/src/compute/mod.rs",
+          "line": 2208
+        },
+        {
+          "symbol": "cleanup_on_shutdown",
+          "path": "crates/openshell-server/src/compute/mod.rs",
+          "line": 2084
+        },
+        {
+          "symbol": "stop_sandbox",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 1788
+        },
+        {
+          "symbol": "start_sandbox",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 1199
+        },
+        {
+          "symbol": "delete_sandbox",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 1812
+        }
+      ],
+      "scope": "nearest-stable-v0.0.116-not-new-release",
+      "enforcementTestsRun": false
+    },
+    {
+      "id": "receipt",
+      "status": "BLOCKED",
+      "reason": "Public/driver/supervisor schema lacks complete trusted pre-exec profile receipt and exact hash acknowledgement. Requested configuration is not observed state.",
+      "sourceReferences": [
+        {
+          "symbol": "SandboxStatus",
+          "path": "proto/openshell.proto",
+          "line": 891
+        },
+        {
+          "symbol": "DriverSandboxStatus",
+          "path": "proto/compute_driver.proto",
+          "line": 218
+        },
+        {
+          "symbol": "GetSandboxConfigResponse",
+          "path": "proto/sandbox.proto",
+          "line": 363
+        },
+        {
+          "symbol": "load_policy",
+          "path": "crates/openshell-sandbox/src/lib.rs",
+          "line": 2242
+        },
+        {
+          "symbol": "spawn_impl",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 739
+        }
+      ],
+      "scope": "nearest-stable-v0.0.116-not-new-release",
+      "enforcementTestsRun": false
+    },
+    {
+      "id": "compatibility",
+      "status": "UNPROVEN",
+      "reason": "Ordinary additive API behavior exists, but profile-specific fail-closed negotiation and backward-compatibility tests cannot be established for an absent profile.",
+      "sourceReferences": [
+        {
+          "symbol": "GetCapabilitiesResponse",
+          "path": "proto/compute_driver.proto",
+          "line": 68
+        },
+        {
+          "symbol": "SandboxSpec",
+          "path": "proto/openshell.proto",
+          "line": 815
+        }
+      ],
+      "scope": "nearest-stable-v0.0.116-not-new-release",
+      "enforcementTestsRun": false
+    },
+    {
+      "id": "evidence",
+      "status": "UNPROVEN",
+      "reason": "No newer stable candidate exists. The four cumulative profile-specific qualification levels are not established by retained source review or generic tests.",
+      "sourceReferences": [
+        {
+          "symbol": "DockerComputeConfig",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 116
+        }
+      ],
+      "scope": "nearest-stable-v0.0.116-not-new-release",
+      "enforcementTestsRun": false
+    }
+  ],
+  "negativeAssessment": [
+    {
+      "id": "profile_missing",
+      "requirement": "negotiation",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "profile_unknown",
+      "requirement": "negotiation",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "root_unset",
+      "requirement": "root",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "root_false",
+      "requirement": "root",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "child_root_rw",
+      "requirement": "root",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "implicit_rw_mount",
+      "requirement": "mounts",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "image_volume",
+      "requirement": "mounts",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "user_mount",
+      "requirement": "mounts",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "tmp_writable",
+      "requirement": "mounts",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "sandbox_writable",
+      "requirement": "workspace",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "cwd_fallback",
+      "requirement": "workspace",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "workspace_probe",
+      "requirement": "workspace",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "mutable_tag",
+      "requirement": "artifact",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "digest_platform_mismatch",
+      "requirement": "artifact",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "fixture_absent",
+      "requirement": "artifact",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "fixture_hash_drift",
+      "requirement": "artifact",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "fixture_symlink",
+      "requirement": "artifact",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "fixture_hardlink",
+      "requirement": "artifact",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "fixture_device",
+      "requirement": "artifact",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "shell_entrypoint",
+      "requirement": "command",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "UNPROVEN"
+    },
+    {
+      "id": "gpu_device",
+      "requirement": "network",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "network_grant",
+      "requirement": "network",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "inherited_socket",
+      "requirement": "descriptors",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "UNPROVEN"
+    },
+    {
+      "id": "inherited_token",
+      "requirement": "isolation",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "UNPROVEN"
+    },
+    {
+      "id": "inherited_fd",
+      "requirement": "descriptors",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "UNPROVEN"
+    },
+    {
+      "id": "supervisor_state_visible",
+      "requirement": "supervisor-state",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "policy_merge",
+      "requirement": "policy",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "policy_fallback",
+      "requirement": "policy",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "retained_restart",
+      "requirement": "lifecycle",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "unsupported_host",
+      "requirement": "evidence",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "UNPROVEN"
+    },
+    {
+      "id": "forged_receipt",
+      "requirement": "receipt",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "unbounded_resources",
+      "requirement": "limits",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "post_seal_change",
+      "requirement": "receipt",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "BLOCKED"
+    },
+    {
+      "id": "secondary_exec",
+      "requirement": "command",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "UNPROVEN"
+    },
+    {
+      "id": "control_escape",
+      "requirement": "isolation",
+      "status": "UNPROVEN",
+      "expectedOutcome": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      },
+      "executed": false,
+      "evidence": "no-qualified-stable-profile-or-executed-acceptance-evidence",
+      "sourceRequirementStatus": "UNPROVEN"
+    }
+  ],
+  "receiptAssessment": {
+    "status": "BLOCKED",
+    "profileNegotiation": "BLOCKED",
+    "schemaAnchorSha256": "5165a152d6c3d06e1355bf13cd5d6fba693404e5dcddee7858edc0a4d81b6cf0",
+    "reason": "no-versioned-three-role-acknowledgement-or-sealed-pre-exec-receipt-in-nearest-stable"
+  },
+  "gapDelta": {
+    "nearestOfficialState": "v0.0.116",
+    "nearestCommit": "d1155aa70042d3e2ee49dbfa15346b108b7c1d92",
+    "stableCodeDelta": "none-newer-stable-not-published",
+    "satisfiedRequirements": [],
+    "blockedRequirements": [
+      "negotiation",
+      "root",
+      "mounts",
+      "workspace",
+      "artifact",
+      "network",
+      "supervisor-state",
+      "policy",
+      "limits",
+      "lifecycle",
+      "receipt"
+    ],
+    "unprovenRequirements": [
+      "command",
+      "isolation",
+      "descriptors",
+      "compatibility",
+      "evidence"
+    ],
+    "prereleaseSemanticsAssessed": false,
+    "defaultBranchInspected": false,
+    "nextScope": "local-upstream-issue-contribution-draft-review-only"
+  },
+  "bounds": {
+    "maximumApiResponseBytes": 2097152,
+    "maximumTagResponseBytes": 262144,
+    "maximumAggregateApiBytes": 12582912,
+    "maximumPages": 10,
+    "redirectsAllowed": false,
+    "authenticationUsed": false,
+    "releaseAssetsDownloaded": false,
+    "ociObjectsDownloaded": false,
+    "socketTimeoutSeconds": 20
+  },
+  "implementationVerified": false,
+  "executionSupported": false,
+  "pilotReady": false,
+  "liveAdmissionAllowed": false,
+  "runtimeEffectivePolicySha256": null
+}

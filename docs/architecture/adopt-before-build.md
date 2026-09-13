@@ -1,5 +1,11 @@
 # Adopt-before-build and execution providers
 
+RF-HOST-044: [official release inspection](../operations/openshell-official-release-inspection.md)
+at 2026-09-13T02:07:56Z found no stable newer than v0.0.116. Prereleases and the
+unpublished v0.1.0-pre.1 tag are informational only. The dated manifest expires
+after one hour; no pin or admission changed. An upstream issue scope is drafted
+locally for separate review, not submitted or implemented.
+
 RF-HOST-043: the [upstream nonwriting stdio proposal](../operations/openshell-nonwriting-stdio-proposal.md)
 is ready as a local specification only. Its required profile handshake, sealed
 pre-exec receipt and four evidence levels do not qualify an implementation.

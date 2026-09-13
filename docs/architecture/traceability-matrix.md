@@ -1,5 +1,11 @@
 # Foundation requirements traceability
 
+RF-HOST-044: [dated official release inspection](../operations/openshell-official-release-inspection.md)
+finds NO-NEWER-STABLE-RELEASE at 2026-09-13T02:07:56Z. All 16 requirements and
+35 negative cases retain explicit nonqualifying dispositions; an offline validator
+binds official release/tag/object evidence, source anchors and expiry. Existing
+runtime pins and disabled admission remain unchanged.
+
 RF-HOST-043: [nonwriting stdio upstream proposal](../operations/openshell-nonwriting-stdio-proposal.md)
 binds 16 requirements, 35 denial cases, a provider-neutral receipt schema and
 37 source blobs to a local acceptance contract. Specification validation is

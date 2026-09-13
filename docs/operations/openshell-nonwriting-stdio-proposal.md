@@ -1,5 +1,9 @@
 # Proposed upstream Docker nonwriting stdio profile (RF-HOST-043)
 
+Subsequent [RF-HOST-044 official inspection](openshell-official-release-inspection.md)
+found no stable newer than v0.0.116 at 2026-09-13T02:07:56Z. Its dated negative
+assessment and local issue draft leave this proposal and its contracts unchanged.
+
 **UPSTREAM-NONWRITING-PROFILE-PROPOSAL-READY**, 2026-09-13, means a complete
 local proposal and acceptance specification. It does **not** mean that OpenShell
 implements the profile. [RF042's pinned driver remains BLOCKED](openshell-docker-v3-delivery.md).
