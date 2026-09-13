@@ -6,6 +6,7 @@ import tempfile
 import unittest
 
 from codex_metadata_capture import BUDGET, Capture
+from codex_provenance_capture import ReviewCapture, PAYLOAD, PLAN
 
 URL = 'https://learn.chatgpt.com/docs/fixture.md'
 
@@ -140,6 +141,20 @@ class CaptureTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'budget_closed'):
             restored.request(URL)
         self.assertEqual(self.calls, 0)
+
+    def test_review_has_separate_identity_and_head_only_payload_scope(self):
+        review = ReviewCapture(self.path, transport=lambda *args: self.fail('no network'))
+        self.assertEqual(review.ledger['taskId'], 'RF-HERMES-012')
+        for url, method in ((PAYLOAD, 'GET'), (PLAN[0][1], 'HEAD'), ('https://untrusted.example.invalid/x', 'GET')):
+            with self.subTest(url=url, method=method), self.assertRaises(ValueError):
+                review.request(url, method)
+        self.assertEqual(review.ledger['requests'], [])
+        review.save()
+        with self.assertRaisesRegex(ValueError, 'ledger_identity'):
+            Capture(self.path)
+        review.ledger['requests'].append({'url': PLAN[0][1], 'method': 'GET'})
+        with self.assertRaisesRegex(ValueError, 'repeated_endpoint_no_retry'):
+            review.request(PLAN[0][1])
 
 
 if __name__ == '__main__':

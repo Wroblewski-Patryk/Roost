@@ -1,0 +1,209 @@
+{
+  "schemaId": "roost-codex-detached-provenance-security-review-v1",
+  "taskId": "RF-HERMES-012",
+  "revision": 2,
+  "reviewerRef": "codex-separate-agent.rf012_security_review",
+  "reviewedDate": "2026-09-13",
+  "verdict": "DETACHED-PROVENANCE-BLOCKED",
+  "supersession": "Reviewer-authored replacement of revision 1 after independent review of two capture replay guards; verdict and operative contract decision unchanged.",
+  "attribution": {
+    "mechanism": "separate_attributable_subagent",
+    "taskIdentity": "rf012_security_review",
+    "authoredRf011OrReviewedImplementation": false,
+    "independentAssessmentPerformed": true,
+    "sufficientForThisAuthorSeparatedReview": true,
+    "cryptographicReviewerSignature": false,
+    "differentOrganizationOrModelOrHumanAttestation": false,
+    "runtimeCasAcceptance": false,
+    "limitations": "Shared workspace and supplied evidence; no independent network capture. Author separation suffices for this bounded documentary review, not B09 closure or all CAS-A evidence. Main agent cannot change this verdict."
+  },
+  "snapshot": {
+    "entryCommit": "f42307b65d30a8fce7257ff43d1466c2cd38f264",
+    "hashMeaning": "SHA256 of exact canonical file bytes, without JSON or newline normalization.",
+    "scope": "Fresh bounded default context; relevant delivery, qualification and CAS boundaries; source evidence; RF012 capture and partial crypto verifier.",
+    "integrationBoundary": "Existing documentation hashes identify entry working bytes. Later follow-up links are outside that snapshot. RF012 evidence and script hashes identify reviewed new bytes.",
+    "rereview": "Capture entrypoint rejects a ledger containing any prior request; request method rejects repeated endpoint/method before transport. Both guards reviewed independently. Ten fake-transport tests and one additional mocked entrypoint rejection check pass."
+  },
+  "reviewedSha256": {
+    "AGENTS.md": "86dccfa5364f9f01fe2a69782d9f6024295fd60dc7adbf6eb57d694bff75774c",
+    "docs/documentation-contract.json": "cd04e892a19d8a2fe9d2a77b4b13ebbf0fd8a27b231b875c3ed53849b62f3cb7",
+    "docs/README.md": "13e34fdfba0390d59b288105c468e7548b352a2cfe16f5f5cd73fd4e62f2c015",
+    "docs/product/product.md": "eecd83ee96c962630d9e8fb9469e4046c41300f22365ef9eabe2661b8ba0ece1",
+    "docs/architecture/architecture-source-of-truth.md": "b25e704f0e8370eb2852a126ead7291dd5252518ee9b5c3e9e9244e0272e586b",
+    "docs/architecture/local-codex-agent-runtime.md": "46fa8dfda10e1d200d3dc67d5caa70090107c1eaeaec5f6c6f7cd85fd3da0b0a",
+    "docs/architecture/workspace-human-access.md": "e739131df5ac7a77ddc405858d00be015019156ff24c9e2d519aa48b383720df",
+    "docs/architecture/direct-codex-artifact-delivery-v1.md": "4d63b3f80b448290ff1ace7228967dadbebc9ae84cd6f6a8000883a069229ab9",
+    "docs/architecture/direct-codex-artifact-delivery-acceptance-v1.md": "04467de0c04d95767e4e9c8e3708f0e2f844aabe1cb60e8df6bd82afd00143c4",
+    "docs/architecture/direct-codex-official-source-research-v1.md": "5b52f765c5cbd2c09ae72c874ddc8f266109016dce66bf7715b5c7426c5ca447",
+    "docs/architecture/direct-codex-official-source-research-v1.json": "6cbd86d33b5b3e222824b72ce2ab91fb4fc91fcaf9a0757899f1b840a9682c50",
+    "docs/architecture/codex-source-metadata-ledger-v1.json": "71fac38f431d37b06d555fec363e5bfd780762cb43fa3ca4ecfae17f458d8a10",
+    "docs/architecture/direct-codex-qualification-decisions-v1.md": "4dbee8988cdbd90c43329320cde20cfad7455aaa37fd6d23504306412477fe3a",
+    "docs/architecture/direct-codex-qualification-profile-v1.json": "2464778df07190446b44032dade39bb231fa1b8787398bd905c3d62d1425c2cf",
+    "docs/architecture/direct-codex-qualification-schema-v1.json": "0164f4bd1c346d80d7c174ff64ec706b14cd40e71bc44ee250858d7a334520fd",
+    "docs/architecture/direct-codex-app-server-contract-v1.md": "2755cec0614fcf4e06b5be41b7ee3a7c378c7b82136e5ab0445db350f741a3c6",
+    "docs/architecture/direct-codex-app-server-acceptance-v1.md": "e9098d8e222777dad2132fa00d5e961841bc68b98f6efe44e9e78cd66e9d1202",
+    "docs/architecture/codex-provenance-verification-inputs-v1.json": "6d89fa15a396f24d673dc8a1326c2a2a0ffb504eb29e2c02c7ef7db1744b5004",
+    "docs/architecture/codex-provenance-crypto-observation-v1.json": "dbc71ef266b8f1734ef304349a541afed406fc2620d2396c1d83f12d3ea24b1c",
+    "docs/architecture/codex-provenance-metadata-ledger-v1.json": "fe7e187084e38a0a22cf3c3908d547497717a83b29778a871a7a64254cb68b10",
+    "scripts/verify_codex_provenance.mjs": "eab8c6d57e79539701c5bf8be5c84bfb9843b03403a41b3c86310d22a3b8e37d",
+    "scripts/test_codex_provenance.mjs": "e1451bb871ad5dc235cd2bacead6a45312f4fdeb204ea717e195b5717a5239c3",
+    "scripts/codex_provenance_capture.py": "ef82f8041013866f730730febbe9027e8da8e5eb82097c32f4390c86419750a8",
+    "scripts/codex_metadata_capture.py": "6ebbfee7c0beb996bae6132482b9ff54e1fe47094115a2823f7f1a1b7261c8a2",
+    "scripts/test_codex_metadata_capture.py": "a7758e65b8c1f10663987b47489c735a72d109e1f3dcb44f5d1698082298735b"
+  },
+  "independentChecks": {
+    "registrySignatureMathPassed": 4,
+    "dsseSignatureMathPassed": 2,
+    "statementHashesAndSubjectsMatch": true,
+    "merklePathsPassed": 2,
+    "merkleMethod": "Separately written recursive reconstruction using proof-local indices; every sibling consumed.",
+    "certificateSha256": "02ccf522c3d144a663e0c20d162e5cf1f1d0bf5c9455db4a064cc3ce85b6df76",
+    "certificateSanAndCodeSigningEkuRechecked": true,
+    "claimedLogTimeWithinLeafValidity": true,
+    "claimedLogTimeAuthenticated": false,
+    "savedCryptoObservationReproducedExactly": true,
+    "nodeTestsPassed": 6,
+    "pythonFakeTransportTestsPassed": 10,
+    "additionalMockedRestartGuardCheckPassed": true,
+    "testsFailed": 0,
+    "fullSigstoreVerificationPerformed": false
+  },
+  "networkReview": {
+    "owner": "main_agent",
+    "closed": true,
+    "maxRequests": 12,
+    "maxTotalBodyBytes": 1048576,
+    "maxResponseBodyBytes": 131072,
+    "requestTimeoutSeconds": 20,
+    "maxRetries": 0,
+    "recordedRequests": 8,
+    "recordedBodyBytes": 23241,
+    "http200": 7,
+    "http404": 1,
+    "redirects": 0,
+    "retries": 0,
+    "transportOrLimitFailures": 0,
+    "recordedDurationsWithinLimit": true,
+    "archiveHeadBodyBytes": 0,
+    "archiveHeadContentLength": null,
+    "reviewerNetworkRequests": 0,
+    "qualificationLimit": "Recorded accounting and fake-transport tests do not establish production timeout or acquisition enforcement."
+  },
+  "policyChecks": [
+    {
+      "id": "Q01",
+      "question": "Is independence sufficient?",
+      "status": "PASS_WITH_SCOPE_LIMIT",
+      "finding": "Separate attributable agent, fresh review and own verdict; author separation only. No external organization, different-model, human or runtime CAS attestation."
+    },
+    {
+      "id": "Q02",
+      "question": "Does exact selection overcome an unsigned tag?",
+      "status": "PARTIAL",
+      "finding": "Exact npm package, archive SHA-512, tag object and commit agree. Unsigned tag remains discovery only; authenticated authorized workflow/source/commit-to-digest provenance is still required."
+    },
+    {
+      "id": "Q03",
+      "question": "What do valid signatures prove?",
+      "status": "MATH_PASS_TRUST_BLOCKED",
+      "finding": "Four registry and two DSSE signatures verify; signed subjects match. Registry-observed key and embedded leaf cannot authenticate their own trust anchors. Registry signing alone does not prove authorized publisher build provenance."
+    },
+    {
+      "id": "Q04",
+      "question": "Are issuer, chain and signing time trusted?",
+      "status": "BLOCKED",
+      "finding": "Expected GitHub issuer/workflow/repository/ref/commit claims and code-signing EKU are present. Chain, SCT, issuer authentication and authenticated time remain unverified. Trust-target 404 proves only failure of that endpoint lookup."
+    },
+    {
+      "id": "Q05",
+      "question": "Are replay and equivocation addressed?",
+      "status": "BLOCKED",
+      "finding": "Merkle roots and checkpoint text agree mathematically. SET/checkpoint signatures, time, freshness, consistency or witness policy and outer-index shard binding remain unverified. Matching mutable metadata and isolated inclusion math cannot exclude replay, rollback or split-view equivocation."
+    },
+    {
+      "id": "Q06",
+      "question": "Are npm-account and workflow compromise covered?",
+      "status": "BLOCKED",
+      "finding": "Require publisher-authorized build identity independently of registry-account possession and reject package/source/workflow/commit substitution. Even authenticated provenance would not prove uncompromised source, actions, compiler or build environment; residual build trust must be explicit."
+    },
+    {
+      "id": "Q07",
+      "question": "Can missing publisher member/size metadata move to phase B?",
+      "status": "CONDITIONAL_NOT_ADMITTED",
+      "finding": "An independently authenticated archive digest binds its member bytes transitively, permitting later derived measurements under an explicit revised contract. Current published-size/member prerequisites cannot be silently replaced or local observations relabeled as publisher claims."
+    },
+    {
+      "id": "Q08",
+      "question": "Are acquisition budgets and replay controls complete?",
+      "status": "METADATA_PASS_ACQUISITION_BLOCKED",
+      "finding": "Closed ledger accounts for 8 requests and 23241 body bytes within recorded limits. Repeated endpoint/method and nonempty-ledger restart now reject before transport. Complete finite acquisition authority, protected quarantine, disk reserve and archive/parser limits remain missing."
+    },
+    {
+      "id": "Q09",
+      "question": "Are hooks and dependency resolution excluded?",
+      "status": "DENIALS_RETAINED",
+      "finding": "No npm installer, lifecycle hooks, Node launcher, PATH fallback or dependency resolution. Absent registry dependency fields do not prove native closure. Later bounded inspection must reject unsafe paths, collisions, links, special files, unexpected members and permission metadata; helper/discovery/platform inventory remains unproven."
+    },
+    {
+      "id": "Q10",
+      "question": "Does review establish schema or runtime admission?",
+      "status": "BLOCKED_SEPARATE_GATES",
+      "finding": "PINNED_GENERATOR remains a candidate. Verified binary, protected inventory/placement and separately authorized no-auth/no-network containment precede generation. Exact schema/CAS proof remains missing; D01-D06 blocked, B01-B09 open, D07 documentary only."
+    }
+  ],
+  "contractDecision": {
+    "decision": "RETAIN_OPERATIVE_REQUIREMENTS",
+    "operativeChangePermittedNow": false,
+    "unchangedFromPriorReview": true,
+    "retain": [
+      "CDL-R03",
+      "CDL-T03",
+      "CDL-R08",
+      "CDL-T08",
+      "CDL-R09",
+      "CDL-T09",
+      "CDL-R11",
+      "CDL-T11"
+    ],
+    "permissibleChange": "Document the two-phase design as a non-operative proposal and link this blocked review; no weaker prerequisite or advanced gate.",
+    "phaseA": "Before payload request: independently authenticate exact package/version, strong archive digest and authorized publisher workflow/source/commit under accepted trust/time policy. Bind fresh task authority, exact endpoint/method, protected inert quarantine, finite cumulative bytes/time/disk/parser bounds, reserve, retention and cleanup. Unknown means zero payload.",
+    "phaseB": "Bounded inert download; verify complete archive hash before any parser or decompressor. Then bounded nonexecuting streaming inspection measures compressed size, native size/SHA-256 and safe inventory before materialized unpacking or placement. Preserve verified identity against replacement. Measurements are local derived evidence, not publisher member claims.",
+    "sequenceLimit": "Native hashes cannot be derived from compressed archives without decompression. The defensible boundary is package-hash verification before decompression and bounded inspection before filesystem extraction. Requiring native identity before all decompression still requires a publisher member manifest.",
+    "futureRevision": "Any operative split requires explicit independent review of all coupled manifest, acquisition, download, ordered-stage and acceptance clauses, preserving fail-closed negatives. Placement and execution remain separately gated."
+  },
+  "residualBlockers": [
+    "independent_trust_anchor_and_key_policy_missing",
+    "certificate_chain_sct_and_issuer_authentication_unverified",
+    "transparency_set_checkpoint_time_and_shard_binding_unverified",
+    "freshness_replay_and_equivocation_policy_missing",
+    "publisher_workflow_and_build_risk_policy_unaccepted",
+    "published_compressed_size_and_native_member_manifest_missing_under_current_contract",
+    "complete_finite_acquisition_authority_and_protected_quarantine_missing",
+    "native_inventory_placement_identity_protection_and_schema_unproven"
+  ],
+  "gates": {
+    "acquisitionReady": false,
+    "schemaProbeReady": false,
+    "compatibilityProbeReady": false,
+    "implementationReady": false,
+    "executionSupported": false,
+    "pilotReady": false,
+    "liveAdmissionAllowed": false
+  },
+  "reviewerActions": {
+    "repositoryWrites": 0,
+    "networkRequests": 0,
+    "payloadDownloadsOrUnpacks": 0,
+    "candidateExecutions": 0,
+    "authOrSecretReads": 0,
+    "dockerOrWslActions": 0,
+    "prohibitedDesignQaReadsOrChanges": 0,
+    "offlineChecksOnly": true
+  },
+  "nextTask": {
+    "taskId": "RF-HERMES-013",
+    "title": "Independently anchor and verify the exact candidate's detached trust policy",
+    "scope": "One separately authorized finite metadata-only task establishing independently accepted trust bootstrap and explicit publisher, certificate, transparency, signing-time, freshness and replay policy; reproduce verification for the unchanged exact package digest or retain precise BLOCKED conditions.",
+    "limits": "No payload, unpacking, installation, permission change, generator, App Server, auth access, model or automatic continuation. Network requires its own exact endpoint and cumulative budget authority."
+  }
+}

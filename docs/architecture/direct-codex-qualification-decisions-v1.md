@@ -1,7 +1,7 @@
 # Direct Codex qualification decision packet v1
 
 RF-HERMES-006, 2026-09-13. Decision-packet version: **1**.
-Packet revision: **6**, RF-HERMES-011, 2026-09-13. Profile revision remains **3**.
+Packet revision: **7**, RF-HERMES-012, 2026-09-13. Profile revision remains **3**.
 **I01 RESOLVED** by
 [ADR-002 owner decisions](../decisions/ADR-002-codex-qualification-owner-decisions.md).
 RF007 recorded owner policy/limited future authority. The
@@ -14,6 +14,10 @@ it adds no source selection, pin value, acquisition or execution authority.
 retains an exact npm candidate and published provenance metadata. Research is
 complete; native member identity/size, compressed size and independent trust
 verification remain missing, so acquisition and qualification stay blocked.
+The [RF012 independent review](direct-codex-provenance-review-v1.md) confirms
+signature mathematics but retains DETACHED-PROVENANCE-BLOCKED: trusted roots,
+authenticated transparency/time and a complete acquisition authority are missing.
+Author-separated agent review does not close B09 or grant CAS runtime acceptance.
 Scope: one candidate profile for the existing Windows Worker plus WSL2 execution
 boundary, under [ADR-001](../decisions/ADR-001-direct-codex-app-server-pilot.md).
 **D01–D06 BLOCKED; D07 DECIDED for document/schema design only.**
@@ -88,6 +92,14 @@ remain unestablished. Official docs supply a PINNED_GENERATOR_CANDIDATE route,
 not exact-build proof. OFFICIAL-CODEX-SOURCE-BLOCKED remains the acquisition
 disposition; no B01/B02 closure or profile pin follows. RF010's failed capture
 remains historical and its lost counts were not recovered.
+
+**RF012 independent review.** A separate read-only agent reproduced npm/DSSE
+signature and Merkle mathematics from hash-bound public inputs. Certificate
+claims match the expected workflow/source, but chain/SCT, log signatures, trusted
+time/checkpoint and accepted issuer/key policy remain unverified. HEAD obtained
+no compressed size. A two-phase package/native inspection policy is recorded as
+a non-operative proposal; CDL-R03/T03/R08/R09/R11 remain intact. No pin, schema,
+inventory, acquisition or execution gate is resolved.
 
 **Decision/recommendation.** Define one installation-local qualification pin:
 Windows Worker ownership, one selected WSL2 distribution and Linux x86_64 Codex
@@ -476,10 +488,14 @@ RF011 completed research under its fresh explicit budget with a durable request
 ledger. It supplies source observations and provisional acquisition ceilings,
 not a qualified executable or complete acquisition authority.
 
-Exactly one recommended next atomic task: **RF-HERMES-012 — independent security
-review of the exact npm candidate's detached provenance and publisher-manifest
-gaps before acquisition.** Decide independently anchored verification and a
-compliant way to establish compressed size and native member size/digest under
-CDL-R03. Retain BLOCKED if these cannot be established. A later metadata scope
-must be separately bounded; no payload, installation, schema execution or trust
-waiver is authorized here. RF012 was not started by RF011.
+RF012 completed an attributable author-separated review with
+DETACHED-PROVENANCE-BLOCKED. It preserves operative delivery requirements and
+records a conditional, non-operative package/native inspection phase proposal.
+
+Exactly one recommended next atomic task: **RF-HERMES-013 — independently anchor
+the candidate's trust and transparency verification policy under a fresh bounded
+metadata-only task.** Establish accepted Sigstore/TUF bootstrap, npm key policy,
+certificate/log/checkpoint/time authentication and exact publisher/workflow/source
+semantics, or retain precise BLOCKED reasons. No payload download, verifier
+installation, generator or App Server execution is implicit. RF013 was not
+started by RF012.

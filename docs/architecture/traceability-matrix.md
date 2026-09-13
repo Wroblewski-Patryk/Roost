@@ -1,5 +1,16 @@
 # Foundation requirements traceability
 
+RF-HERMES-012: [independent provenance review](direct-codex-provenance-review-v1.md)
+returns DETACHED-PROVENANCE-BLOCKED. A separate read-only agent independently
+reproduced signature and Merkle mathematics; trusted roots, chain/SCT, authenticated
+checkpoint/time/shard semantics and complete acquisition authority remain missing.
+Fresh capture: 8 requests, 23,241 body bytes, zero redirects/retries/transport or
+limit failures; one trust-target 404. Exact tarball HEAD read zero body bytes and
+supplied no size. A package/native phase split is non-operative; CDL-R03/T03 and
+coupled requirements, profile 3/75 values/53 nulls and every gate stay unchanged.
+Exactly one follow-up is RF013 bounded independent trust/transparency policy
+work, not started here. No acquisition, installation or execution occurred.
+
 RF-HERMES-011: [official source research](direct-codex-official-source-research-v1.md)
 is complete with [durable request accounting](codex-source-metadata-ledger-v1.json):
 11 requests, 190,283 body bytes, one redirect, two HTTP 404s, zero retries or

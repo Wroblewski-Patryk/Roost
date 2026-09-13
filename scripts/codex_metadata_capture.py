@@ -88,16 +88,17 @@ class HttpResponse:
 
 
 class Capture:
-    def __init__(self, path=LEDGER, transport=HttpResponse):
+    def __init__(self, path=LEDGER, transport=HttpResponse, task_id='RF-HERMES-011', url_policy=allowed):
         self.path, self.transport = pathlib.Path(path), transport
+        self.task_id, self.url_policy = task_id, url_policy
         if self.path.exists():
             self.ledger = json.loads(self.path.read_text(encoding='utf-8'))
-            if self.ledger['taskId'] != 'RF-HERMES-011' or self.ledger['budget'] != BUDGET:
+            if self.ledger['taskId'] != task_id or self.ledger['budget'] != BUDGET:
                 raise ValueError('ledger_identity')
             if any(r['outcome'] in ('started','reading') or r['readInFlightMax'] for r in self.ledger['requests']):
                 raise ValueError('unfinished_request_no_retry')
         else:
-            self.ledger = {'schemaId':'roost-codex-source-metadata-ledger-v1','taskId':'RF-HERMES-011','budget':dict(BUDGET),'requests':[],'halted':False}
+            self.ledger = {'schemaId':'roost-codex-source-metadata-ledger-v1','taskId':task_id,'budget':dict(BUDGET),'requests':[],'halted':False}
 
     def save(self):
         data = json.dumps(self.ledger, indent=2) + '\n'
@@ -111,7 +112,7 @@ class Capture:
         os.replace(temporary, self.path)
 
     def request(self, url, method='GET', category='metadata'):
-        if not allowed(url) or method not in ('GET','HEAD') or category not in ('documentation','discovery','metadata','manifest','schema-listing'):
+        if not self.url_policy(url) or method not in ('GET','HEAD') or category not in ('documentation','discovery','metadata','manifest','schema-listing'):
             raise ValueError('request_scope')
         used = sum(r['bytesRead'] for r in self.ledger['requests'])
         if self.ledger['halted'] or self.ledger.get('closed',False) or len(self.ledger['requests']) >= BUDGET['maxRequests'] or used >= BUDGET['maxTotalBytes']:
@@ -137,7 +138,7 @@ class Capture:
             if redirect:
                 row['redirectCount'] = 1
                 target = response.getheader('Location')
-                row['redirectTargetAllowed'] = bool(target and allowed(target))
+                row['redirectTargetAllowed'] = bool(target and self.url_policy(target))
                 row['redirectTo'] = target if row['redirectTargetAllowed'] else None
             row['outcome'] = 'reading'
             self.save()  # Status and declared length are durable before reading.

@@ -3,6 +3,10 @@
 RF-HERMES-010 record, revision **2**, completed by **RF-HERMES-011** on 2026-09-13.
 Verdict: **OFFICIAL-CODEX-SOURCE-BLOCKED**; researchComplete=true.
 The research now identifies one exact candidate and retained provenance metadata.
+Follow-up [RF012 independent review](direct-codex-provenance-review-v1.md) reproduces
+signature/inclusion mathematics but leaves accepted trust and acquisition blocked.
+RF011 facts and its ledger remain dated evidence; the review owns the current
+next-task recommendation, while the RF011 recommendation below is historical.
 Acquisition remains blocked by missing native-member identity/published compressed
 size and unverified detached trust, wire and placement evidence. This is not a
 claim that OpenAI lacks signatures or a supported App Server.

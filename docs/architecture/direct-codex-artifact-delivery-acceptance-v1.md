@@ -38,3 +38,8 @@ document mutations, unchanged qualification profile/registry and read-only Docke
 continuity. No acquisition, archive extraction, permission change, schema
 generation, Codex/Worker/Hermes/OpenShell execution, model or C/O probe ran.
 Passing this matrix's linter does not mark any row qualified or resolve B01/B02.
+
+Follow-up [RF012 independent provenance review](direct-codex-provenance-review-v1.md)
+retains DETACHED-PROVENANCE-BLOCKED and all operative acceptance rows unchanged.
+Package/native inspection phase separation is a non-operative proposal; it
+cannot bypass T03/T08/T09/T11 or supply C/O qualification evidence.

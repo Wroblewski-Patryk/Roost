@@ -10,8 +10,11 @@ This contract specifies future delivery; it grants no acquisition or execution.
 Follow-up [source research completed by RF011](direct-codex-official-source-research-v1.md)
 identifies one exact npm candidate and published provenance metadata. Acquisition
 remains blocked by missing native identity/size and unverified trust; this contract
-is intact. Its report and the qualification packet own
-the current next-task recommendation; the RF009 recommendation below is historical.
+is intact. The subsequent [RF012 independent review](direct-codex-provenance-review-v1.md)
+returns DETACHED-PROVENANCE-BLOCKED. Signature mathematics does not establish
+accepted publisher/log trust. Its two-phase proposal is non-operative: R03/T03
+and the coupled R08/R09/R11 requirements remain unchanged. The review and
+qualification packet own the current next-task recommendation; RF009's is historical.
 
 ## CDL-R01 — Scope and present disposition
 

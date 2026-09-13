@@ -1,0 +1,126 @@
+{
+  "schemaId": "roost-codex-provenance-crypto-observation-v1",
+  "taskId": "RF-HERMES-012",
+  "verifierScope": "PARTIAL_MATHEMATICAL_CHECKS_NOT_SIGSTORE_ADMISSION",
+  "registry": {
+    "rootPackage": [
+      {
+        "keyId": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "keyFingerprintMatches": true,
+        "signatureMathVerified": true,
+        "operatorKeyExpires": null,
+        "operatorKeyTrustPolicyAccepted": false
+      },
+      {
+        "keyId": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "keyFingerprintMatches": true,
+        "signatureMathVerified": true,
+        "operatorKeyExpires": null,
+        "operatorKeyTrustPolicyAccepted": false
+      }
+    ],
+    "platformPackage": [
+      {
+        "keyId": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "keyFingerprintMatches": true,
+        "signatureMathVerified": true,
+        "operatorKeyExpires": null,
+        "operatorKeyTrustPolicyAccepted": false
+      },
+      {
+        "keyId": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "keyFingerprintMatches": true,
+        "signatureMathVerified": true,
+        "operatorKeyExpires": null,
+        "operatorKeyTrustPolicyAccepted": false
+      }
+    ]
+  },
+  "attestations": [
+    {
+      "predicateType": "https://github.com/npm/attestation/tree/main/specs/publish/v0.1",
+      "statementSha256": "9aea1394cf1bb3c3c6a643489c9f3ea073d6a7a3855ca6b7d17d1e23c0d25fb1",
+      "statementHashMatchesCapture": true,
+      "dsseSignatureMathVerified": true,
+      "subjectMatchesExactPackage": true,
+      "declaredWorkflowMatches": null,
+      "declaredCommitMatches": null,
+      "declaredBuilderMatches": null,
+      "certificate": null,
+      "logs": [
+        {
+          "logId": "c0d23d6ad406973f9559f3ba2d1ca01f84147d8ffc5b8445c224f98b9591801d",
+          "outerLogIndex": "2774076666",
+          "proofLogIndex": "2652172404",
+          "treeSize": "2652172447",
+          "merkleInclusionMathVerified": true,
+          "checkpointRootAndSizeConsistent": true,
+          "payloadHashMatches": true,
+          "loggedSignatureMatches": true,
+          "loggedPublicKeyMatches": true,
+          "leafWithinCertificateValidityAtClaimedLogTime": null,
+          "integratedTime": "1788993706",
+          "integratedTimeAuthenticated": false,
+          "signedEntryTimestampVerified": false,
+          "checkpointSignatureVerified": false,
+          "outerIndexShardBindingVerified": false,
+          "transparencyTrustAccepted": false
+        }
+      ],
+      "semanticPolicyAccepted": false
+    },
+    {
+      "predicateType": "https://slsa.dev/provenance/v1",
+      "statementSha256": "575c0f1640330bcca139d937f9479b60027681f5608112791215ab3084e193b8",
+      "statementHashMatchesCapture": true,
+      "dsseSignatureMathVerified": true,
+      "subjectMatchesExactPackage": true,
+      "declaredWorkflowMatches": true,
+      "declaredCommitMatches": true,
+      "declaredBuilderMatches": true,
+      "certificate": {
+        "sha256": "02ccf522c3d144a663e0c20d162e5cf1f1d0bf5c9455db4a064cc3ce85b6df76",
+        "sanMatchesExpectedWorkflow": true,
+        "issuerClaim": "https://token.actions.githubusercontent.com",
+        "codeSigningEkuPresent": true,
+        "sourceRepositoryClaim": "https://github.com/openai/codex",
+        "sourceCommitClaim": "6b9826e3aa83b1a5947db50f4332cb9c65f1b340",
+        "sourceRefClaim": "refs/tags/rust-v0.154.0",
+        "validFrom": "Sep  9 22:36:05 2026 GMT",
+        "validTo": "Sep  9 22:46:05 2026 GMT",
+        "chainVerified": false,
+        "sctVerified": false,
+        "issuerIdentityAuthenticated": false
+      },
+      "logs": [
+        {
+          "logId": "c0d23d6ad406973f9559f3ba2d1ca01f84147d8ffc5b8445c224f98b9591801d",
+          "outerLogIndex": "2774000123",
+          "proofLogIndex": "2652095861",
+          "treeSize": "2652095898",
+          "merkleInclusionMathVerified": true,
+          "checkpointRootAndSizeConsistent": true,
+          "payloadHashMatches": true,
+          "loggedSignatureMatches": true,
+          "loggedPublicKeyMatches": true,
+          "leafWithinCertificateValidityAtClaimedLogTime": true,
+          "integratedTime": "1788993366",
+          "integratedTimeAuthenticated": false,
+          "signedEntryTimestampVerified": false,
+          "checkpointSignatureVerified": false,
+          "outerIndexShardBindingVerified": false,
+          "transparencyTrustAccepted": false
+        }
+      ],
+      "semanticPolicyAccepted": false
+    }
+  ],
+  "trustRootBootstrap": "BLOCKED_NO_TRUSTED_ROOT",
+  "provenanceAuthenticated": false,
+  "acquisitionReady": false,
+  "compressedSize": null,
+  "archiveBodyBytesRead": 0,
+  "nativeSize": null,
+  "nativeSha256": null,
+  "inputsSha256": "6d89fa15a396f24d673dc8a1326c2a2a0ffb504eb29e2c02c7ef7db1744b5004"
+}
