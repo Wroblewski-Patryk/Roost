@@ -1,96 +1,198 @@
 # Official Codex source research v1
 
-RF-HERMES-010, 2026-09-13.
-Verdict: **OFFICIAL-CODEX-SOURCE-BLOCKED**.
-Reason: **metadata_receipt_capture_failed**. The research is incomplete because
-the first batch's result was truncated before its structured receipt could be
-retained. This is an evidence-capture failure, **not a finding that OpenAI lacks
-a suitable release, provenance or schema mechanism**. No candidate is selected.
+RF-HERMES-010 record, revision **2**, completed by **RF-HERMES-011** on 2026-09-13.
+Verdict: **OFFICIAL-CODEX-SOURCE-BLOCKED**; researchComplete=true.
+The research now identifies one exact candidate and retained provenance metadata.
+Acquisition remains blocked by missing native-member identity/published compressed
+size and unverified detached trust, wire and placement evidence. This is not a
+claim that OpenAI lacks signatures or a supported App Server.
 
+The [normalized findings](direct-codex-official-source-research-v1.json) and
+[per-request ledger](codex-source-metadata-ledger-v1.json) supersede RF010's
+incomplete capture disposition. RF010's lost counts remain unknown; they were
+not recovered, estimated or included in this newly authorized budget.
 The [delivery contract](direct-codex-artifact-delivery-v1.md) and
-[acceptance matrix](direct-codex-artifact-delivery-acceptance-v1.md) remain in
-force. The [normalized research disposition](direct-codex-official-source-research-v1.json)
-records unknowns explicitly; it contains no guessed release fields or qualified
-pin. No new technical claim about an official release is made from lost output.
+[acceptance matrix](direct-codex-artifact-delivery-acceptance-v1.md) retain all gates.
 
-## Network scope and failed receipt
+## Capture and network accounting
 
-Before the first request, the declared budget was 32 HTTP requests, 6,291,456
-response bytes in aggregate and 524,288 bytes per response, with a 20-second
-per-request timeout. The initial batch contained three metadata/document requests.
-It used no authentication, cookie jar, local account configuration or proxy
-discovery; payload/installer/archive download routes were denied.
+Before network use, eight offline synthetic tests exercised receipt persistence
+before projection, manual redirects and their bodies, payload/foreign-host denial,
+per-response and aggregate caps, HEAD, exact-cap reads and transport failure.
+The [capture helper](../../scripts/codex_metadata_capture.py) reserves each request
+in a small ledger before transport, saves status before reading, and saves actual
+bytes/digest after every delivered read before parsing. In-flight reads remain
+visible if interrupted. No automatic redirect, retry, cookie jar or proxy lookup
+is used. A watchdog closes owned network sockets at the request deadline.
+Bodies stay in bounded memory; only ledger fields and selected facts are retained.
+Final offline validation passes nine capture tests, including a later test that
+a closed ledger prevents any further transport, and four research test methods
+with negative fixtures. Delivery (16 families), CAS (30 families), qualification
+(75 values/53 nulls) and prior artifact-preflight validators also pass. These
+checks validate accounting and document consistency, not publisher signatures.
 
-These are the exact attempted discovery endpoints on 2026-09-13. They are
-listed for scope accounting, **not cited as retained evidence of their content**:
+The fresh limit was 12 requests, 1,048,576 body bytes total, 131,072 per response,
+20 seconds per request and zero retry after transport/limit failure.
+Actual result: **11 requests, 190,283 body bytes, 1 redirect response, 2 HTTP 404
+responses, 0 transport errors, 0 over-limit responses and 0 retries**. The largest
+body was 99,470 bytes. All reads are accounted for; no in-flight read remains.
+The ledger is closed with one unused request. Response-body accounting does not
+purport to count TLS/HTTP framing bytes.
 
-| Attempt | Endpoint | Disposition |
-| --- | --- | --- |
-| SR01 | [Official App Server documentation](https://learn.chatgpt.com/docs/app-server.md) | Response status/content receipt unavailable after capture failure. |
-| SR02 | [Official repository README metadata](https://api.github.com/repos/openai/codex/readme) | Response status/content receipt unavailable after capture failure. |
-| SR03 | [Release discovery metadata](https://api.github.com/repos/openai/codex/releases/latest) | Discovery only; no final release/tag/ID/digest was retained. The latest route is not a pin. |
+The redirect was a HEAD discovery response: its zero body bytes and status were
+recorded, and it was not automatically followed. Two different documentation
+path lookups returned 404 and each contributed 14 bytes: the first used an
+unresolved short revision, the second the actual tag commit. Neither supports
+any content claim or proves App Server/schema absence. They are retained as
+failed lookups, not hidden, treated as success or used as exact-build evidence.
 
-The process produced a structured batch result, but its selected metadata output
-exceeded the command tool's output allowance. The tool returned a truncation
-warning instead of a parseable complete JSON document. The orchestrator rejected
-that document before retaining the ledger or source fields. No surviving source
-receipt establishes exact statuses, response hashes, byte counts or redirect
-counts. The aggregate actual request and byte totals are therefore **unknown**,
-not zero and not estimated from the number of initial URLs.
+## Official channel and exact candidate
 
-An additional review of the transient retrieval logic found that automatic
-redirect handling did not meter redirect response bodies through the same byte
-counter. Thus the requested aggregate byte bound cannot be certified from that
-implementation even if the final-response ledger were recovered. No claim of
-an observed overrun is made; proof of budget compliance is missing.
+The official repository README names npm installation of `@openai/codex`,
+documents GitHub release binaries for Linux x86_64, and describes a publisher
+download service. The selected research channel is the **official npm platform
+package**, reached through that documented package; the installer and its
+automatic fallback behavior were not used. [Official README](https://raw.githubusercontent.com/openai/codex/main/README.md),
+read 2026-09-13 (ledger request 1, hash-bound snapshot).
 
-No further network request was made after the failure. The declared budget was
-not reset or extended, and lost counters were not replaced with guessed values.
-No raw response, private receipt, header, cookie, token or account identifier
-was written to the repository or to a private artifact file. Only this sanitized
-failure disposition is retained. Payloads, packages, archives and binaries were
-not fetched; Codex and schema generators were not run.
+HEAD release discovery resolved `rust-v0.154.0`. The tag API resolves it to
+annotated tag object `36eab01061df3cde5f95ec20a526777b430091ba`, which resolves to
+commit `6b9826e3aa83b1a5947db50f4332cb9c65f1b340`. GitHub reports that tag unsigned.
+The fixed object/commit and package digest define the candidate; a moving tag or
+latest route alone never does. A numeric GitHub release ID was not retrieved and
+is not the selected registry release identity. [Tag reference](https://api.github.com/repos/openai/codex/git/ref/tags/rust-v0.154.0),
+[exact tag object](https://api.github.com/repos/openai/codex/git/tags/36eab01061df3cde5f95ec20a526777b430091ba),
+read 2026-09-13, requests 4 and 6.
 
-## Required findings and unresolved state
-
-| Required finding | Current result and retained blocker |
+| Candidate field | Retained publisher/registry metadata |
 | --- | --- |
-| Official ownership and distribution mechanism | Not established by a retained RF010 source receipt. The requested official endpoints alone do not verify their content. |
-| Exact immutable release/version/build and Linux asset | Unresolved. No tag, release ID, asset name, size or digest is promoted from unavailable output. |
-| Published checksum, signature, attestation, SBOM or package integrity | Unresolved, not claimed absent. HTTPS, a GitHub digest, npm integrity or a tag would still need the distinctions in CDL-R03. No registry metadata request followed the failed batch. |
-| Exact App Server/schema generation or publisher-bundle route | Unresolved. No current or version-bound documentation claim is inferred; RF001 general docs remain historical, not a bundle for an identified binary. |
-| CDL-R/T01..16 and D01/B01/B02/CAS linkage | The 16-family delivery matrix remains normative, all rows SPECIFIED, NOT QUALIFIED. No source/pin/provenance/schema requirement receives new passing evidence. |
-| Future acquisition endpoints and limits | Cannot propose exact asset endpoints, download or unpacked bounds without retained asset sizes/identities. The research budget is not an acquisition budget. |
-| Comparison with RF008 Desktop observation | RF008 reports Linux x86_64, 262,804,768 bytes and digest 6970ad6a5b7615d2f5838879e19c1369e5527cb1544f1515f76900267740a403; exact Codex version is null. RF010 has no retained release candidate to compare. Equality/difference is unknown; no Desktop copying or permission change is justified. |
-| Acquisition versus owner/security decision | Neither acquisition nor a weaker trust-policy decision is justified. Recover auditable source research before choosing either. |
-| Lifecycle scripts/mutable dependencies | Not established for any selected package. The existing prohibition on package hooks, implicit dependencies and installer execution remains mandatory. |
+| Package identity | `@openai/codex@0.154.0-linux-x64`; Codex release 0.154.0. |
+| Exact package asset | `codex-0.154.0-linux-x64.tgz`; proposed only, never fetched. |
+| Declared platform | os=linux, cpu=x64. No independent ELF inspection of this package occurred. |
+| Registry unpacked size / file count | 339,130,586 bytes / 8 files reported; member types uninspected. |
+| Compressed asset size | Not established by retained metadata; not inferred from unpacked size. |
+| Package integrity | SHA-512 `6b8148dc0f2c1adc06aceaa5b6b3dbad2da16a3ac7406e7dd44c2645f891a0b31bd74571741b54196e20bba20955810d898180ee4dcfe239511c4a02654fecf5`. |
+| Legacy registry shasum | SHA-1 `9e93bbf0906338c2d1ebbeb9de3b0a4ef7123e55`; recorded diagnostically, not an accepted security digest. |
+| Native executable member size / SHA-256 | Not established. Archive integrity does not supply these values. |
+| Local artifact/inventory qualification | None; no payload was read or installed. |
 
-The [qualification packet](direct-codex-qualification-decisions-v1.md) retains
-D01–D06 BLOCKED, D07 DECIDED for document/schema design, all B01–B09 and profile
-revision 3 unchanged. All 75 values and 53 technical nulls remain. Delivery
-source/authority selection stays null and acquisitionReady=false.
-implementationReady=false, executionSupported=false, pilotReady=false and
-liveAdmissionAllowed=false. No runtime, API, DB, migration, registry v5,
-production configuration, WSL or installed artifact was changed.
+The root `0.154.0` package explicitly maps its Linux x64 optional dependency to
+`npm:@openai/codex@0.154.0-linux-x64`. Thus the platform variant is source-derived,
+not a guessed asset name. [Root version manifest](https://registry.npmjs.org/@openai/codex/0.154.0),
+[exact platform version manifest](https://registry.npmjs.org/@openai/codex/0.154.0-linux-x64),
+read 2026-09-13, requests 5 and 7.
 
-## Verification and next task
+## Trust evidence and its limits
 
-The static validator checks that missing accounting/content cannot become a
-source selection, a compliance claim or admission. Negative document fixtures
-reject invented byte counts, candidate/payload fields, private URLs, claimed
-source evidence and activation. Existing delivery, qualification, CAS and RF008
-validators remain applicable. No executable compatibility tests were run.
-Docker continuity is checked read-only before/after; its normalized result is
-recorded in the research disposition, without resource names or identifiers.
+The registry metadata advertises two signatures with the same key ID and an
+attestation endpoint. The bounded attestation response contains one publish
+statement and one SLSA provenance statement. Both subjects match the platform
+package's SHA-512 integrity exactly. The provenance declares the same commit
+and tag as the GitHub metadata and the release workflow path
+`.github/workflows/rust-release.yml`. These are parsed, internally consistent
+claims; cryptographic authentication of them remains unperformed.
+[Package attestations](https://registry.npmjs.org/-/npm/v1/attestations/@openai%2fcodex@0.154.0-linux-x64),
+read 2026-09-13, request 10, 14,643 bytes.
 
-Exactly one recommended next atomic task: **RF-HERMES-011 — repeat bounded
-official source/provenance research with auditable metadata capture.** A fresh
-explicit task budget is required because RF010 accounting was not retained.
-Before its first request, statically verify manual redirect handling that counts
-every request and bounds every read; reject payload routes; separate a tiny
-aggregate ledger from a strictly capped normalized field projection; preserve
-that ledger before parsing/displaying larger results. Use only the same official
-source classes and then resolve an exact immutable candidate or precise source
-blockers. No payload download, installation, permission change or code execution
-belongs to that retry. It is one research task, not an acquisition or trust waiver.
-RF011 was not started by RF010.
+| Evidence class | Present / missing / unverified |
+| --- | --- |
+| Publisher/registry assertions | Exact package version, declared OS/CPU, unpacked size and package integrity are present. No payload verification was performed. |
+| Registry signatures | Two advertised signatures, one key ID; not verified against an independently accepted key policy. |
+| Publish attestation | One signature with public-key, transparency and timestamp verification material is present; not independently verified. |
+| SLSA build provenance | One signature with certificate, transparency and timestamp material is present; source commit and subject digest match the other metadata. Signer identity/chain, log/checkpoint and trust anchors remain unverified. |
+| Source tag | Exact Git object linkage established; GitHub verification says unsigned. It is not publisher signature proof. |
+| GitHub asset SHA-256/checksum | Not investigated for a GitHub payload; this is the npm candidate. No GitHub digest is substituted for npm/native-member verification. |
+| Native member manifest / SBOM | Not established in this bounded research. Not claimed globally absent. The published file count is not a member inventory or SBOM. |
+
+The tag-version release workflow contains Linux signature-bundle packaging
+steps, but workflow text alone is not evidence of a completed signed build or
+the identity of a particular binary. [Versioned release workflow](https://raw.githubusercontent.com/openai/codex/rust-v0.154.0/.github/workflows/rust-release.yml),
+read 2026-09-13, request 3. No signature bundle was downloaded as a release asset.
+
+HTTPS transports, tag names, registry integrity and matching provenance fields
+cannot replace detached cryptographic verification. Embedded certificates/keys
+cannot establish their own independent trust. Only minimal statement hashes,
+subject digest and selected provenance fields were retained, not full bundles,
+certificates, signatures or nested response bodies.
+
+## App Server and schema route
+
+Official OpenAI documentation describes `codex app-server` with default stdio
+and documents `generate-json-schema` and `generate-ts` with an explicit output
+directory. Those commands were only read as documentation. The selected route
+is therefore **PINNED_GENERATOR_CANDIDATE**, not a qualified generator invocation.
+[Official App Server documentation](https://learn.chatgpt.com/docs/app-server.md),
+read 2026-09-13, request 11.
+
+No publisher wire bundle bound to this exact package/native executable was
+established. General documentation is not version-specific binary evidence;
+the unsuccessful repository documentation lookups add no such evidence.
+After verified binary/inventory/placement and explicit bounded authority, a
+schema-only no-model probe may determine the exact build's supported generator
+and seal its output under CDL-R04/12. No schema, binding, thread, turn or model
+was generated or started here.
+
+The root npm manifest declares a Node entrypoint and optional platform resolution.
+The platform manifest does not declare bin, scripts, dependencies or optional
+dependencies in the captured fields. This does not prove that payload contents
+have no discovery behavior. Future delivery must treat an approved archive as
+inert data; no npm install, lifecycle hooks, global linking, Node wrapper, ambient
+PATH resolution or mutable dependency installation is admitted.
+
+## Comparison and bounded acquisition proposal
+
+RF008's Desktop ELF is Linux x86_64, 262,804,768 bytes, SHA-256
+`6970ad6a5b7615d2f5838879e19c1369e5527cb1544f1515f76900267740a403`, with unknown
+exact Codex version. The new metadata describes an eight-file package and an
+archive SHA-512, not its native member. The sizes/digests are different kinds of
+objects and do not establish equality or inequality of the executables.
+No Desktop path was read, copied or changed in RF011.
+
+For a later separately authorized acquisition, the smallest proposed payload
+host allowlist is `registry.npmjs.org`, with exactly
+`/@openai/codex/-/codex-0.154.0-linux-x64.tgz`. Manifest and attestation endpoints
+are the exact metadata URLs cited above. No redirect destination, mirror or
+GitHub fallback is implicitly allowed. This is an endpoint proposal, not an
+authorized request; the capture helper rejects that payload route.
+
+Provisional resource ceilings derived from published/observed sizes are:
+maxDownloadBytes=339130586, maxUnpackedBytes=339130586, maxRegularFiles=8,
+maxMetadataBytes=65536, maxRetries=0. The download ceiling conservatively uses
+the declared unpacked size as a resource limit; it is **not a claim about exact
+compressed size**. A task must still establish that exact size under CDL-R03.
+The 65,536-byte metadata proposal accommodates the observed 14,643-byte
+attestations and 3,372-byte platform manifest with bounded verification metadata;
+anything larger must block under its later contract, not grow the cap.
+
+Peak candidate storage is provisionally 678,326,708 bytes: one download ceiling
+plus one unpacked ceiling plus metadata, assuming same-filesystem atomic
+placement and no extra copy. Existing retained pins and the host reserve are
+additional. maxDurationSeconds, archive depth/complete membership, private root,
+free-space reserve and schema-output needs are not measured or approved here.
+These incomplete constraints **do not form a runnable acquisition contract**.
+
+## Qualification impact and next task
+
+All 16 CDL-R/T families and their existing CAS-R/T mappings remain normative.
+RF011 supplies source-level observations for CDL-R02/03/04 and acquisition sizing
+input for CDL-R08/09/13. It supplies no C/O enforcement or independent acceptance.
+D01/B01 remain blocked by native member identity, exact compressed size,
+unverified detached trust and missing closed protected placement/inventory.
+B02 remains blocked by the absent established exact-build wire bundle/generator
+proof. D02–D06 and B03–B09 are unchanged; D07 remains documentary DECIDED.
+Profile revision 3, 75 values and 53 technical nulls remain untouched.
+
+implementationReady=false, executionSupported=false, pilotReady=false,
+liveAdmissionAllowed=false and acquisitionReady=false. No runtime/API/DB/registry,
+production configuration, installed component, permission or WSL lifecycle change
+occurred. Docker read-only continuity is recorded in the normalized findings.
+
+Exactly one recommended next atomic task: **RF-HERMES-012 — independent security
+review of the exact npm candidate's detached provenance and publisher-manifest
+gaps before acquisition.** Decide the acceptable independently anchored
+verification procedure and identify a compliant way to establish the missing
+compressed size/native member size and digest under CDL-R03. If those conditions
+cannot be met, retain BLOCKED rather than waive them implicitly. The review may
+define a separately bounded metadata-verification scope; it grants no payload
+download, installation, schema execution or weaker trust policy by itself.
+RF012 was not started here.

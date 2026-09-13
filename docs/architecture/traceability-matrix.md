@@ -1,12 +1,20 @@
 # Foundation requirements traceability
 
-RF-HERMES-010: [official source research](direct-codex-official-source-research-v1.md)
-returns OFFICIAL-CODEX-SOURCE-BLOCKED because metadata/accounting capture failed.
-The research is incomplete, not evidence that publisher support is absent.
-No candidate/source fields or actual network totals were retained; no further
-network request followed the failure. Profile revision 3, all nulls, blockers
-and gates remain unchanged. The single next task is RF011 research with auditable
-capture and a fresh explicit budget; no acquisition or trust waiver is proposed.
+RF-HERMES-011: [official source research](direct-codex-official-source-research-v1.md)
+is complete with [durable request accounting](codex-source-metadata-ledger-v1.json):
+11 requests, 190,283 body bytes, one redirect, two HTTP 404s, zero retries or
+transport/limit failures. Candidate @openai/codex@0.154.0-linux-x64 has published
+provenance claims consistent with its package digest and release commit; signatures
+remain unverified, and native member identity/size and compressed size are missing.
+OFFICIAL-CODEX-SOURCE-BLOCKED is retained. PINNED_GENERATOR_CANDIDATE is documented,
+not exact-build proof. Profile revision 3, all 75 values/53 nulls and gates remain
+unchanged. The single next task is RF012 independent provenance/manifest security
+review before acquisition; it was not started here.
+
+RF-HERMES-010: the initial source research stopped after metadata/accounting
+capture failed. Its lost counts remain unknown, not evidence of absent publisher
+support. The separately authorized RF011 follow-up above completes the research
+without recovering or reusing the failed attempt's budget.
 
 RF-HERMES-009: [delivery contract v1](direct-codex-artifact-delivery-v1.md) and
 [acceptance matrix](direct-codex-artifact-delivery-acceptance-v1.md) specify
