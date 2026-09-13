@@ -1,7 +1,13 @@
 # Direct Codex qualification decision packet v1
 
 RF-HERMES-006, 2026-09-13. Decision-packet version: **1**.
-Packet revision: **8**, RF-HERMES-013, 2026-09-13. Profile revision remains **3**.
+Packet revision: **9**, RF-CODEX-014, 2026-09-13. Profile revision remains **3**.
+
+[RF-CODEX-014 platform comparison](direct-codex-platform-selection-v1.md)
+recommends native Windows for pilot qualification, with WSL2 deferred and no
+automatic fallback. This is a decision candidate awaiting owner acceptance;
+the WSL profile and all technical blockers below are preserved. It supersedes
+the proposed RF-HERMES-014 Sigstore/Node next step without installing anything.
 **I01 RESOLVED** by
 [ADR-002 owner decisions](../decisions/ADR-002-codex-qualification-owner-decisions.md).
 RF007 recorded owner policy/limited future authority. The
@@ -507,10 +513,14 @@ records a conditional, non-operative package/native inspection phase proposal.
 RF013 selected one maintained library family for further qualification, with a
 separate independent policy review and no installation or verifier execution.
 
-Exactly one recommended next atomic task: **RF-HERMES-014 — qualify one closed
-standard verifier toolchain and configuration under separate bounded authority.**
-Establish authenticated runtime/dependency/bootstrap pins, complete compatible
-bundles, accepted npm key mapping, standard verification/network/cache/failure
-behavior and a typed receipt. Any tool acquisition or installation needs that
-task's explicit authority. No candidate payload, custom crypto, generator,
-App Server or auth access is implicit. RF014 was not started by RF013.
+RF-CODEX-014 supersedes RF013's proposed Sigstore/Node follow-up with the native
+Windows platform recommendation. Historical Linux evidence and contracts remain
+valid for that deferred candidate; platform preference grants no execution.
+
+Exactly one recommended next atomic task: **RF-CODEX-015 — bounded static
+preflight of the existing native Windows Codex candidate.** After owner acceptance
+of the platform direction, assess standard Windows trust/build/loader/helper
+identity, private no-shell pin/update protection and containment prerequisites
+for a separately authorized no-model schema probe. No installation, custom
+verifier, sandbox setup, auth, Codex/model execution or WSL/Docker lifecycle.
+RF-CODEX-015 was not started; the platform report owns its exact proposed scope.

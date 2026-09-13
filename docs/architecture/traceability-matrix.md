@@ -1,5 +1,14 @@
 # Foundation requirements traceability
 
+RF-CODEX-014: [platform comparison and decision candidate](direct-codex-platform-selection-v1.md)
+returns NATIVE-WINDOWS-CODEX-PREFERRED: native Windows for pilot qualification,
+WSL2 deferred without automatic fallback. Fresh Appx/PE/ACL/signing metadata and
+official platform documentation support the simpler launch path, not runtime
+qualification. Exact Codex version, accepted trust, schema, auth, containment and
+budget proofs remain blocked; all gates, registry v5 and the WSL profile stay
+unchanged. It supersedes RF013's Sigstore/Node follow-up. One next task is
+RF-CODEX-015 native static preflight after platform acceptance; not started.
+
 RF-HERMES-013: [standard provenance policy](direct-codex-standard-provenance-policy-v1.md)
 and a fresh separate review retain STANDARD-PROVENANCE-POLICY-BLOCKED. Native npm,
 pacote and Sigstore APIs were compared; sigstore@5.0.0 is the sole recommended
