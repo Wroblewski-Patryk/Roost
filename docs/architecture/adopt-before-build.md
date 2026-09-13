@@ -1,5 +1,10 @@
 # Adopt-before-build and execution providers
 
+RF-HOST-037: the [static base-image audit](../operations/openshell-static-base-audit.md)
+documents the pinned filesystem and permissive bundled policy without executing
+image contents. Static READY is inventory completeness only; host-control,
+resource and live provider admission gates remain unchanged.
+
 RF-HOST-036: the separately authorized
 [pinned artifact installation](../operations/openshell-installation-preflight.md#rf-host-036-installed-artifacts-and-proof-limits)
 verified OpenShell CLI v0.0.116 and exactly three linux/amd64 image digests.

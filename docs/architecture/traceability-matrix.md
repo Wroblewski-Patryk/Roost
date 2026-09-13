@@ -1,5 +1,10 @@
 # Foundation requirements traceability
 
+RF-HOST-037: [static base audit](../operations/openshell-static-base-audit.md)
+binds the final path inventory to the local pinned manifest/config/layer hashes.
+Synthetic parser tests cover whiteouts, opaque paths, links and limits. Bundled
+agents/system tools and permissive policy are documented; execution remains off.
+
 RF-HOST-036: [pinned OpenShell artifacts](../operations/openshell-installation-preflight.md#rf-host-036-installed-artifacts-and-proof-limits)
 are installed and hash/digest/platform verified under separate owner authority.
 Only the CLI version was invoked; no image contents, gateway or agent ran.

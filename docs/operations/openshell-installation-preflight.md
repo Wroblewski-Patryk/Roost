@@ -1,5 +1,11 @@
 # RF-HOST-033: pinned OpenShell installation/security preflight
 
+RF-HOST-037 [static base audit](openshell-static-base-audit.md) subsequently
+verified all 13 local base-image layers and documented the final filesystem.
+Named Docker/control clients are absent within the audit's stated scope;
+system control tools and bundled agents are present. The bundled policy is too
+permissive for the planned test. Static READY grants no runtime admission.
+
 Current result: **RF-HOST-036 installed and verified the pinned CLI and exactly
 three OCI images on 2026-09-13, without activating a runtime.** The owner gave
 separate artifact-installation authority after the
@@ -75,8 +81,9 @@ local image/CLI integrity checks passed. No runtime code or repository tests
 were added; full build, API/DB tests and container builds were not run for this
 documentation-only repository change.
 
-**Still unproven:** image executable/content inventory (including Docker CLI
-absence), signatures/attestations, dependency/vulnerability suitability, gateway
+**At RF-HOST-036, still unproven:** image executable/content inventory (the
+subsequent RF-HOST-037 audit above narrows this gap), signatures/attestations,
+dependency/vulnerability suitability, gateway
 configuration and mTLS, callback/bind resolution, child/admin separation,
 Landlock/seccomp/network enforcement, process-tree cleanup, CPU/RAM/PID limits,
 hard bounds on every writable/log path, whole-path 32-KiB output capture and
@@ -86,9 +93,8 @@ script, image build, alternate image, model, Hermes or Codex invocation occurred
 Worker remains online/observe, provider disabled, `executionSupported=false`,
 `pilotReady=false` and Hermes disabled. Installation does not relax admission.
 
-Next atomic task, **not started**: offline inventory of the pinned base image's
-executables and bundled sandbox policy, without executing its contents or
-starting a gateway/sandbox. The later live gates below remain mandatory.
+The then-recommended offline inventory was completed by RF-HOST-037 above.
+Its next task is recorded in that audit; the later live gates below remain mandatory.
 
 ## Historical RF-HOST-033 verdict and authority
 
