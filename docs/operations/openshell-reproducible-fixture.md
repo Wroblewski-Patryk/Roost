@@ -1,5 +1,10 @@
 # Reproducible synthetic fixture (RF-HOST-039)
 
+Subsequent [RF-HOST-040](openshell-official-policy-validation.md) validates v2
+with the official parser offline but blocks runtime-policy equality: the
+supervisor injects filesystem paths outside v2. Artifact readiness below remains
+distinct from that failed gate; v2 bytes and execution flags are unchanged.
+
 **REPRODUCIBLE-FIXTURE-READY**, verified 2026-09-13. Two independent builds
 produced identical bytes; static inspection passed. This verdict covers only
 materialization and artifact identity. **The fixture was never executed.**
@@ -176,6 +181,6 @@ inspected. Engine stayed **29.7.2 linux/amd64**. All four existing containers
 (two Up), five networks and 107 volumes matched after both build IDs were
 confirmed absent. No application-health or uninterrupted-uptime claim is made.
 
-Exactly one recommended next atomic task, **not started**: establish a pinned,
-offline official OpenShell parser/effective-policy validation route for v2,
-without executing the fixture or starting a gateway/sandbox.
+The then-recommended parser task was completed separately by
+[RF-HOST-040](openshell-official-policy-validation.md), with a working offline
+source parser and a BLOCKED runtime-policy result. Its next task is separate.

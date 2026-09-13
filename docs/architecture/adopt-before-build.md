@@ -1,5 +1,10 @@
 # Adopt-before-build and execution providers
 
+RF-HOST-040: [official offline parser](../operations/openshell-official-policy-validation.md)
+accepts v2 source policy, but overall validation is BLOCKED: the selected
+supervisor adds filesystem grants outside v2. Pinned parser/merge evidence
+does not grant runtime admission; the existing policy and flags are unchanged.
+
 RF-HOST-039: [reproducible fixture](../operations/openshell-reproducible-fixture.md)
 pins two identical static builds to source/recipe/toolchain and separate v2
 policy/contract hashes. Default offline validation requires exact ELF bytes.

@@ -1,5 +1,9 @@
 # Minimal synthetic isolation policy (RF-HOST-038)
 
+[RF-HOST-040](openshell-official-policy-validation.md) later executed the
+official parser for v2 but found supervisor-injected filesystem grants. Its
+overall BLOCKED result does not change the historical source-only evidence here.
+
 Historical v1 template: [RF-HOST-039](openshell-reproducible-fixture.md) adds a
 separate materialized v2 revision. v1 bytes/hashes remain unchanged and v1 is
 never live-ready. The default CLI now validates v2 with explicit fixture bytes;

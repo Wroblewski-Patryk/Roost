@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "identity": "roost.official-openshell-parser.v1",
+  "upstream": {
+    "release": "v0.0.116",
+    "commit": "d1155aa70042d3e2ee49dbfa15346b108b7c1d92",
+    "repository": "https://github.com/NVIDIA/OpenShell",
+    "archiveSha256": "83a62839104354d7af2bb0d4eca3e037ea36dfa68cb02f38d363a9e0f9ef6326",
+    "gitTreeResponseSha256": "85fca1398e86d53ef4dd11d27214761077bf670058bc19bbe14562df36737a3b",
+    "verifiedGitBlobs": 1517,
+    "package": "openshell-policy",
+    "packageVersion": "0.0.0",
+    "defaultFeatures": false,
+    "features": [],
+    "cargoLockSha256": "4ae60cda3aaaa83e578bf786eb245a8c3f6b1e663c14ce0007b2bf8241bd8e46",
+    "rustToolchainSha256": "f7969f2aef5faff3a786f980b53b1aeecb92179613531fa0fd74406abf92e1ed",
+    "semanticSourceSha256": {
+      "crates/openshell-policy/src/lib.rs": "1875dbb56c1f5886e52fe388243ab7301d2250ab15b58c595cba30df069ec7de",
+      "crates/openshell-policy/src/merge.rs": "0e7abf539a1d8d23ac4658d63c1ee1276eccb8c64cd9e6eb4d36c5b8c8c4e343",
+      "crates/openshell-policy/src/compose.rs": "762f231811fbad294b37d3cb70553d16424ceea21dfb8a491b3fe971389ab52b",
+      "crates/openshell-cli/src/main.rs": "89723e0702cedb834e9381c9cd5ea7aca6a462ddb9df707023db7ae9eb3f1512",
+      "crates/openshell-cli/src/policy_update.rs": "3ac6e7ff3698ada653a372b885ddaf0b615fc6fd57b5a7a945ba11c92bc8ebcb",
+      "crates/openshell-sandbox/src/lib.rs": "b63c3be478964318f1066b0781649c1d9fb5dbc385fdf2de9a2d925732289bcd",
+      "crates/openshell-core/src/policy.rs": "021a8f64ee3de85012c61d3272354d8fe251c435a3bef6bdb1c50b27aa2342d1",
+      "crates/openshell-server/src/grpc/policy.rs": "3dffe79872252df6b55af9ff5a9efcc088574c3bd9741424cae5f69b7b04cddb",
+      "crates/openshell-driver-docker/src/lib.rs": "0fe429da6b198e43625d6189b9a0a844d684052e7f61351aa099c8d1afb5dcd8"
+    }
+  },
+  "toolchain": {
+    "rust": "1.95.0",
+    "rustCommit": "59807616e1fa2540724bfbac14d7976d7e4a3860",
+    "cargo": "1.95.0",
+    "builderImage": "docker.io/library/rust@sha256:4c2fd73ef19c5ef9d54bee03b06b2839a392604fbfcd578ed948b71b37c1d7fb",
+    "target": "x86_64-unknown-linux-gnu",
+    "rustflags": "-C target-feature=+crt-static --remap-path-prefix=/build=/source -C link-arg=-Wl,--build-id=none",
+    "offline": true,
+    "locked": true
+  },
+  "harness": {
+    "sourceSha256": "2894f94cf248374d3ec036937d8a54fa7289bfc658957c40de7b191d017d8971",
+    "manifestSha256": "07f9f5e5422c5b3eebc6a5f703b25d62ab15420334d6a045907aa077aeb5584c",
+    "cargoLockSha256": "f682b22d9098a5b34b2dd861fb3f3133ee60c793257bb2c2be003bf47bd172c9",
+    "parserSha256": "1547f375cdf3748c6e754fb84c2d728c149b7ea80268a51e884d75b2fb5d8a13",
+    "parserBytes": 3502288,
+    "runnerSha256": "de1dac54247f60470f272a0de75b64792de8cc8178f463a470c7a3d1b6f558f9",
+    "registryPackages": 235,
+    "registry": "https://github.com/rust-lang/crates.io-index"
+  },
+  "inputs": {
+    "policySha256": "79082418e3e24beb7c3ba22b8d01fc8c3e0408f4def7e68ca1974d3b98b4372e",
+    "contractSha256": "7f3e0061e305e6ed5a672a451ad4881d2d76e083990c863d6b0ae495241031f8",
+    "fixtureSha256": "c4c7bbc5d9d73629c4ebb88ffc1dfa48cb58e85e5477f69ec1128aaab156c85d"
+  },
+  "result": {
+    "verdict": "OFFICIAL-OFFLINE-POLICY-VALIDATION-BLOCKED",
+    "upstreamParseValidation": "passed",
+    "sourceProjectionSha256": "96c5765649280436b3a0a6394f877f2a044e9bd54c4c350bb2c8971ffeb5233c",
+    "sourceProjectionBytes": 555,
+    "effectivePolicySha256": null,
+    "runtimePolicyEvaluated": false,
+    "blocker": "supervisor_baseline_enrichment_violates_v2",
+    "provenAdditionalReadOnlyPath": "/usr",
+    "officialCases": 10,
+    "offlineRuns": 2,
+    "networkProbeErrno": 101,
+    "executionSupported": false,
+    "pilotReady": false,
+    "liveAdmissionAllowed": false
+  }
+}

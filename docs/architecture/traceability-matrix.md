@@ -1,5 +1,10 @@
 # Foundation requirements traceability
 
+RF-HOST-040: [official policy validation](../operations/openshell-official-policy-validation.md)
+adds an unchanged-upstream Rust adapter, lockfile, byte-pinned runner and tests.
+Two offline parser runs pass; supervisor baseline enrichment violates v2's
+filesystem contract, so the aggregate verdict remains BLOCKED without activation.
+
 RF-HOST-039: [reproducible fixture](../operations/openshell-reproducible-fixture.md),
 source/build recipe, v2 byte validator and synthetic tests materialize one
 private static ELF from two identical builds. Exact identities fail closed;
