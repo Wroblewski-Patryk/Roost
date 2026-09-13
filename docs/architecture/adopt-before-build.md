@@ -1,8 +1,14 @@
 # Adopt-before-build and execution providers
 
+RF-HERMES-006: [one qualification decision packet/profile v1](direct-codex-qualification-decisions-v1.md)
+records D01–D06 BLOCKED and D07 DECIDED for document/schema design. Existing
+budget ranges are retained; long-operation sizing, credentials, pin, containment
+and effective hard caps still need evidence. No runtime or registry change;
+implementationReady/executionSupported/pilotReady/liveAdmissionAllowed remain false.
+
 RF-HERMES-005: the [direct App Server adapter contract v1](direct-codex-app-server-contract-v1.md)
 and [30-row acceptance matrix](direct-codex-app-server-acceptance-v1.md) specify
-the ADR-001 target. D01–D07 require explicit qualification-profile decisions;
+the ADR-001 target. RF-HERMES-006 records the current qualification decisions;
 implementationReady=false. No runtime or registry v5 change, installation or
 live qualification follows from the specification; all admission guards stay false.
 

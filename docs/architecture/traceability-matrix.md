@@ -1,14 +1,23 @@
 # Foundation requirements traceability
 
+RF-HERMES-006: [qualification decisions v1](direct-codex-qualification-decisions-v1.md)
+records D01–D06 BLOCKED, D07 DECIDED for document/schema design, nine explicit
+blockers and seven decision-to-CAS mappings. One normalized profile classifies
+75 settings and seven research observations; all four gates remain false.
+Existing ranges allow properly budgeted long tasks without adopting RF002 caps.
+The responsible-user credential rule and separate external 80% dispatch rule
+grant no Worker access/budget. One consolidated interview packet I01 is prepared
+locally, not sent; exactly one next task is RF-HERMES-007, recording its owner
+decisions through the interview coordinator while preserving technical blockers.
+
 RF-HERMES-005: [direct App Server contract v1](direct-codex-app-server-contract-v1.md)
 defines CAS-R01..CAS-R30, mapped one-to-one to positive/negative families
 CAS-T01..CAS-T30 in the [acceptance matrix](direct-codex-app-server-acceptance-v1.md).
 Source facts are separated from required behavior and unproven pin mappings.
 Existing budget/model/recovery rules are retained; RF002 limits remain research
-only. D01..D07 are unresolved, so implementationReady=false; all execution,
+only. RF-HERMES-006 records the current decision statuses; implementationReady=false, and all execution,
 pilot and live-admission gates remain false. No runtime or v5 registry change.
-Exactly one next task is RF-HERMES-006: a bounded decision packet for one concrete
-qualification profile, without implementation or activation.
+Its RF-HERMES-006 follow-up is recorded above without implementation or activation.
 
 RF-HERMES-004: [accepted ADR-001 v1](../decisions/ADR-001-direct-codex-app-server-pilot.md)
 records Roost control plane/API → Local Worker → directly Codex App Server as

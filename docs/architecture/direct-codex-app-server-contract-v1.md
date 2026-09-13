@@ -1,7 +1,10 @@
 # Direct Worker–Codex App Server adapter contract v1
 
 RF-HERMES-005, 2026-09-13. Specification version: **1**.
-Status: **specified; implementation admission blocked by D01–D07**.
+Status: **specified; implementation admission blocked**.
+Current [RF-HERMES-006 decision packet](direct-codex-qualification-decisions-v1.md):
+D01–D06 BLOCKED; D07 DECIDED for document/schema design only. Its profile is
+NOT_ADMITTED and all four readiness gates remain false.
 Architecture authority: [ADR-001 v1](../decisions/ADR-001-direct-codex-app-server-pilot.md).
 This is a normative target contract, not implemented behavior or activation.
 Its closed acceptance matrix is [the v1 matrix](direct-codex-app-server-acceptance-v1.md).
@@ -562,13 +565,13 @@ The following is the closed decision list for v1; no implicit defaults:
 
 | ID | Required resolution | Current state / responsible authority |
 | --- | --- | --- |
-| D01 | One exact Codex executable/version/inventory and supported OS; sealed official wire schemas and effective control mappings, including ephemeral/temporary-root behavior. | UNRESOLVED; architecture/compatibility review. Recorded CLI observations are not a pin. |
-| D02 | Production startup/turn, line/aggregate/queue/descriptor/JSON depth/string/array caps; item/callback/rate/report/retention limits and cross-limit relations. | UNRESOLVED; owner budget/resource decision. RF002 values are research only. |
-| D03 | Approved credential reference source and official secret delivery/auth-refresh channel with no persistence or tool leakage. | UNRESOLVED; owner credential authority plus security review. Base profile has no auth. |
-| D04 | Supported OS whole-process/FS/network containment, scratch separation, CPU/RAM/process/handle/disk limits and ≤5s stop phase split. | UNRESOLVED; security/resource review. Group-only synthetic proof is insufficient. |
-| D05 | Enforceable generation/retry/accounting mechanism, exact retry maximum, cost currency/price revision and independently approved monetary budget; overshoot reservation if any. | UNRESOLVED; independent budget/implementation review. No usable hard cap shown. |
-| D06 | Effective native policy/approval behavior and mediation of user exclusions, commands, Git metadata and prohibited external actions; exact callback schema. | UNRESOLVED; authority/risk/security review. |
-| D07 | Closed profile/receipt schemas, reason enums, private evidence retention and versioned API/Worker receipt/protocol integration mapping. | UNRESOLVED; architecture/privacy review, without modifying v5 now. |
+| D01 | One exact Codex executable/version/inventory and supported OS; sealed official wire schemas and effective control mappings, including ephemeral/temporary-root behavior. | BLOCKED in RF006; exact installation pin/wire evidence still missing. |
+| D02 | Production startup/turn, line/aggregate/queue/descriptor/JSON depth/string/array caps; item/callback/rate/report/retention limits and cross-limit relations. | BLOCKED in RF006; explicit task/profile sizing remains required. RF002 values stay research only. |
+| D03 | Approved credential reference source and official secret delivery/auth-refresh channel with no persistence or tool leakage. | BLOCKED in RF006; responsible-user references and official isolated channel evidence needed. |
+| D04 | Supported OS whole-process/FS/network containment, scratch separation, CPU/RAM/process/handle/disk limits and ≤5s stop phase split. | BLOCKED in RF006; abnormal-stop allocation selected, cross-OS enforcement remains unproven. |
+| D05 | Enforceable generation/retry/accounting mechanism, exact retry maximum, cost currency/price revision and independently approved monetary budget; overshoot reservation if any. | BLOCKED in RF006; no demonstrated total token/cost/retry bound. |
+| D06 | Effective native policy/approval behavior and mediation of user exclusions, commands, Git metadata and prohibited external actions; exact callback schema. | BLOCKED in RF006; restrictive never baseline selected, native enforcement remains unproven. |
+| D07 | Closed profile/receipt schemas, reason enums, private evidence retention and versioned API/Worker receipt/protocol integration mapping. | DECIDED for document design in RF006; numeric retention remains D02, independent review and all runtime proof still required. |
 
 Decision resolution supplies concrete values/design evidence, not runtime proof.
 Unavailable upstream controls may close a decision as unsupported; then the
@@ -583,7 +586,8 @@ design and official protocol mapping; test fixtures/evidence expectations and
 versioned integration/rollback scope are independently reviewed; the owner/source
 task explicitly authorizes one bounded implementation task. These conditions
 authorize construction only, never agent execution or a production rollout.
-Current result: **implementationReady=false**, because D01..D07 are unresolved.
+Current result: **implementationReady=false**, because D01..D06 remain blocked
+and independent qualification review is still required.
 Writing this specification or passing its linter cannot satisfy those decisions.
 
 ## CAS-R29 — Ready for pilot
@@ -611,9 +615,9 @@ Run `python -B scripts/validate_direct_codex_contract.py` for the
 [offline structural validator](../../scripts/validate_direct_codex_contract.py).
 It checks IDs/mapping, local links/anchors, index references, required descriptor
 fields, retained gates, source/privacy structure and default-context size only.
-It does not execute matrix cases or resolve D01–D07.
+It does not execute matrix cases or supply missing decision evidence.
 
-Exactly one recommended next atomic task: **RF-HERMES-006 — prepare the bounded
-decision packet resolving D01–D07 into one concrete qualification profile for
-this adapter, without implementing or activating runtime.** Unsupported choices
-must remain explicit blockers. Do not start that task as part of RF-HERMES-005.
+The original RF-HERMES-005 follow-up, RF-HERMES-006, is now recorded in the
+[qualification decision packet](direct-codex-qualification-decisions-v1.md).
+That packet owns current decision status and exactly one recommended next task;
+unsupported choices remain blockers. This specification grants no next-task authority.

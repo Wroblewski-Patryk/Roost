@@ -66,8 +66,10 @@ def validate():
     require("SPECIFIED, NOT QUALIFIED" in matrix, "evidence_status")
     for flag in ("executionSupported=false", "pilotReady=false", "liveAdmissionAllowed=false", "implementationReady=false"):
         require(flag in spec, "retained_gate")
-    require(spec.count("Exactly one recommended next atomic task:") == 1 and "RF-HERMES-006" in spec, "next_task")
-    require("research" in spec and "UNRESOLVED" in spec and "RF002" in spec, "limit_provenance")
+    require("direct-codex-qualification-decisions-v1.md" in spec and "RF-HERMES-006" in spec, "decision_owner")
+    require("research" in spec and "BLOCKED" in spec and "RF002" in spec, "limit_provenance")
+    status_rows = re.findall(r"^\| (D\d{2}) \|[^\n]+\| (BLOCKED|DECIDED)\b", spec, re.M)
+    require(dict(status_rows) == {f"D{i:02}": "DECIDED" if i == 7 else "BLOCKED" for i in range(1, 8)}, "decision_status")
 
     # Structural completeness only: no claim that prose proves enforcement.
     sections = re.split(r"^## CAS-R\d{2} — .*\n", spec, flags=re.M)[1:]
@@ -100,7 +102,7 @@ def validate():
     contract = json.loads(read("docs/documentation-contract.json"))
     default_bytes = sum((ROOT / p).stat().st_size for p in contract["defaultAgentContext"])
     require(default_bytes <= contract["budgets"]["maxDefaultContextBytes"], "default_context_budget")
-    return {"result": "PASS", "scope": "documentation_structure_only", "requirements": 30, "testFamilies": 30, "unresolvedDecisions": 7, "localLinksAndAnchors": links, "defaultContextBytes": default_bytes, "runtimeQualified": False}
+    return {"result": "PASS", "scope": "documentation_structure_only", "requirements": 30, "testFamilies": 30, "blockedDecisions": 6, "decidedDocumentSchemas": 1, "localLinksAndAnchors": links, "defaultContextBytes": default_bytes, "runtimeQualified": False}
 
 
 if __name__ == "__main__":

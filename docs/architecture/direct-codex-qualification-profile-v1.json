@@ -1,0 +1,691 @@
+{
+  "schemaId": "roost-codex-qualification-profile-v1",
+  "profileId": "direct-codex-windows-wsl2-candidate",
+  "revision": 1,
+  "contractVersion": 1,
+  "admission": "NOT_ADMITTED",
+  "decisionStatus": {
+    "D01": "BLOCKED",
+    "D02": "BLOCKED",
+    "D03": "BLOCKED",
+    "D04": "BLOCKED",
+    "D05": "BLOCKED",
+    "D06": "BLOCKED",
+    "D07": "DECIDED"
+  },
+  "gates": {
+    "executionSupported": false,
+    "implementationReady": false,
+    "pilotReady": false,
+    "liveAdmissionAllowed": false
+  },
+  "settings": {
+    "installationRef": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E04"
+      ]
+    },
+    "windowsBuildRef": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E04"
+      ]
+    },
+    "wslKernelRef": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E04"
+      ]
+    },
+    "distributionRef": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E04"
+      ]
+    },
+    "codexVersion": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E04"
+      ]
+    },
+    "executableRef": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E04"
+      ]
+    },
+    "toolchainRef": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E04"
+      ]
+    },
+    "executableSha256": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E04"
+      ]
+    },
+    "inventorySha256": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E04"
+      ]
+    },
+    "wireSchemaSha256": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E04"
+      ]
+    },
+    "capabilityReceiptSha256": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E04"
+      ]
+    },
+    "targetArchitecture": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E04",
+        "E05"
+      ]
+    },
+    "argv": {
+      "classification": "EXISTING_CONTRACT",
+      "value": [
+        "app-server"
+      ],
+      "sourceRefs": [
+        "E03"
+      ]
+    },
+    "environmentMode": {
+      "classification": "EXISTING_CONTRACT",
+      "value": "replace",
+      "sourceRefs": [
+        "E03",
+        "E04"
+      ]
+    },
+    "credentialChannel": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E04"
+      ]
+    },
+    "credentialOwnerRule": {
+      "classification": "OWNER_APPROVED",
+      "value": "responsible-integration-user",
+      "sourceRefs": [
+        "E08"
+      ]
+    },
+    "secretValuePersistence": {
+      "classification": "EXISTING_CONTRACT",
+      "value": false,
+      "sourceRefs": [
+        "E01",
+        "E03"
+      ]
+    },
+    "environmentRecipeRef": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03"
+      ]
+    },
+    "singleWriterCount": {
+      "classification": "EXISTING_CONTRACT",
+      "value": 1,
+      "sourceRefs": [
+        "E02",
+        "E05"
+      ]
+    },
+    "applicationRuntimeCount": {
+      "classification": "EXISTING_CONTRACT",
+      "value": 1,
+      "sourceRefs": [
+        "E02",
+        "E05"
+      ]
+    },
+    "modelWritableRootCount": {
+      "classification": "EXISTING_CONTRACT",
+      "value": 1,
+      "sourceRefs": [
+        "E03"
+      ]
+    },
+    "canonicalRepositoryRef": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E02",
+        "E03"
+      ]
+    },
+    "scratchPolicyRef": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E05"
+      ]
+    },
+    "containmentProfileRef": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E05",
+        "E06"
+      ]
+    },
+    "ephemeral": {
+      "classification": "EXISTING_CONTRACT",
+      "value": true,
+      "sourceRefs": [
+        "E03",
+        "E05"
+      ]
+    },
+    "approvalPolicy": {
+      "classification": "SAFE_TECHNICAL_DEFAULT",
+      "value": "never",
+      "sourceRefs": [
+        "E03"
+      ]
+    },
+    "sandboxPolicy": {
+      "classification": "EXISTING_CONTRACT",
+      "value": "workspaceWrite",
+      "sourceRefs": [
+        "E02",
+        "E03"
+      ]
+    },
+    "externalWrites": {
+      "classification": "EXISTING_CONTRACT",
+      "value": false,
+      "sourceRefs": [
+        "E02"
+      ]
+    },
+    "model": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E02",
+        "E03"
+      ]
+    },
+    "reasoningEffort": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E02",
+        "E03"
+      ]
+    },
+    "inputBytesMax": {
+      "classification": "EXISTING_CONTRACT",
+      "value": 131072,
+      "sourceRefs": [
+        "E03",
+        "E07"
+      ]
+    },
+    "durationSecondsRange": {
+      "classification": "EXISTING_CONTRACT",
+      "value": {
+        "min": 60,
+        "max": 3600
+      },
+      "sourceRefs": [
+        "E02"
+      ]
+    },
+    "outputTokensRange": {
+      "classification": "EXISTING_CONTRACT",
+      "value": {
+        "min": 128,
+        "max": 100000
+      },
+      "sourceRefs": [
+        "E02"
+      ]
+    },
+    "attemptsRange": {
+      "classification": "EXISTING_CONTRACT",
+      "value": {
+        "min": 1,
+        "max": 5
+      },
+      "sourceRefs": [
+        "E02"
+      ]
+    },
+    "defaultDurationSeconds": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E02",
+        "E08"
+      ]
+    },
+    "stopMs": {
+      "classification": "EXISTING_CONTRACT",
+      "value": 5000,
+      "sourceRefs": [
+        "E01",
+        "E03",
+        "E05"
+      ]
+    },
+    "stopInterruptMs": {
+      "classification": "SAFE_TECHNICAL_DEFAULT",
+      "value": 0,
+      "sourceRefs": [
+        "E03",
+        "E05"
+      ]
+    },
+    "stopGraceMs": {
+      "classification": "SAFE_TECHNICAL_DEFAULT",
+      "value": 0,
+      "sourceRefs": [
+        "E03",
+        "E05"
+      ]
+    },
+    "stopForceAndConfirmMs": {
+      "classification": "SAFE_TECHNICAL_DEFAULT",
+      "value": 5000,
+      "sourceRefs": [
+        "E01",
+        "E03",
+        "E05"
+      ]
+    },
+    "startupMs": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E08"
+      ]
+    },
+    "turnMs": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E08"
+      ]
+    },
+    "lineBytes": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E08"
+      ]
+    },
+    "aggregateBytes": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E08"
+      ]
+    },
+    "pendingBytes": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E08"
+      ]
+    },
+    "descriptorBytes": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E08"
+      ]
+    },
+    "parserDepth": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E08"
+      ]
+    },
+    "parserStringBytes": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E08"
+      ]
+    },
+    "parserArrayItems": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E08"
+      ]
+    },
+    "maxItems": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E08"
+      ]
+    },
+    "maxCallbacks": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E08"
+      ]
+    },
+    "eventRatePerSecond": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E08"
+      ]
+    },
+    "callbackRatePerSecond": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E08"
+      ]
+    },
+    "reportTimeoutMs": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E08"
+      ]
+    },
+    "evidenceRetentionSeconds": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E08"
+      ]
+    },
+    "evidenceBytesMax": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E08"
+      ]
+    },
+    "rawLogRetentionBytes": {
+      "classification": "EXISTING_CONTRACT",
+      "value": 0,
+      "sourceRefs": [
+        "E03"
+      ]
+    },
+    "adapterReplayCount": {
+      "classification": "EXISTING_CONTRACT",
+      "value": 0,
+      "sourceRefs": [
+        "E03",
+        "E05"
+      ]
+    },
+    "providerRetryMax": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E02",
+        "E03",
+        "E05"
+      ]
+    },
+    "cpuMillisPerSecond": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E05"
+      ]
+    },
+    "ramBytes": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E05"
+      ]
+    },
+    "processCount": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E05"
+      ]
+    },
+    "handleCount": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E05"
+      ]
+    },
+    "scratchBytes": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E05"
+      ]
+    },
+    "maxOutputTokens": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E02",
+        "E03"
+      ]
+    },
+    "maxCostMicros": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E02",
+        "E03"
+      ]
+    },
+    "tokenOvershootReserve": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E02",
+        "E03"
+      ]
+    },
+    "costOvershootReserveMicros": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E02",
+        "E03"
+      ]
+    },
+    "currency": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E02",
+        "E03"
+      ]
+    },
+    "pricingRevision": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E02",
+        "E03"
+      ]
+    },
+    "budgetEnforcementRef": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E02",
+        "E03",
+        "E04"
+      ]
+    },
+    "evidenceRetentionPolicyRef": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E08"
+      ]
+    },
+    "hashEncoding": {
+      "classification": "SAFE_TECHNICAL_DEFAULT",
+      "value": "sorted-ascii-json-utf8-sha256",
+      "sourceRefs": [
+        "E07"
+      ]
+    },
+    "normalExitMs": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E03",
+        "E08"
+      ]
+    },
+    "hostCapacityReceiptRef": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E05",
+        "E08"
+      ]
+    },
+    "diskReserveBytes": {
+      "classification": "UNRESOLVED/BLOCKED",
+      "value": null,
+      "sourceRefs": [
+        "E05",
+        "E08"
+      ]
+    }
+  },
+  "research": {
+    "rf002StartupMs": {
+      "classification": "RESEARCH_ONLY",
+      "value": 15000,
+      "sourceRefs": [
+        "E04"
+      ]
+    },
+    "rf002TurnMs": {
+      "classification": "RESEARCH_ONLY",
+      "value": 20000,
+      "sourceRefs": [
+        "E04"
+      ]
+    },
+    "rf002OverallMs": {
+      "classification": "RESEARCH_ONLY",
+      "value": 60000,
+      "sourceRefs": [
+        "E04"
+      ]
+    },
+    "rf002LineBytes": {
+      "classification": "RESEARCH_ONLY",
+      "value": 8192,
+      "sourceRefs": [
+        "E04"
+      ]
+    },
+    "rf002AggregateBytes": {
+      "classification": "RESEARCH_ONLY",
+      "value": 32768,
+      "sourceRefs": [
+        "E04"
+      ]
+    },
+    "rf002ProviderRetries": {
+      "classification": "RESEARCH_ONLY",
+      "value": 0,
+      "sourceRefs": [
+        "E04"
+      ]
+    },
+    "reportedLongOperationSeconds": {
+      "classification": "RESEARCH_ONLY",
+      "value": 900,
+      "sourceRefs": [
+        "E08"
+      ]
+    }
+  },
+  "blockers": [
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "B05",
+    "B06",
+    "B07",
+    "B08",
+    "B09"
+  ]
+}
