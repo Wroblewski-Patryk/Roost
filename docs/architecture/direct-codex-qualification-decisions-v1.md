@@ -1,9 +1,11 @@
 # Direct Codex qualification decision packet v1
 
 RF-HERMES-006, 2026-09-13. Decision-packet version: **1**.
-Revision: **2**, RF-HERMES-007, 2026-09-13. **I01 RESOLVED** by
+Revision: **3**, RF-HERMES-008, 2026-09-13. **I01 RESOLVED** by
 [ADR-002 owner decisions](../decisions/ADR-002-codex-qualification-owner-decisions.md).
-Owner policy/limited future authority is recorded; no technical evidence is added.
+RF007 recorded owner policy/limited future authority. The
+[RF008 static artifact preflight](direct-codex-artifact-preflight-v1.md) now adds
+bounded local observations only; its verdict is BLOCKED, with no runtime proof.
 Scope: one candidate profile for the existing Windows Worker plus WSL2 execution
 boundary, under [ADR-001](../decisions/ADR-001-direct-codex-app-server-pilot.md).
 **D01–D06 BLOCKED; D07 DECIDED for document/schema design only.**
@@ -31,6 +33,7 @@ implementationReady=false, pilotReady=false, liveAdmissionAllowed=false.
 | E07 | Existing [provider-input serializer](../../scripts/lib/agent-host-provider-input.mjs): recursively sorted object keys, array order preserved, JSON UTF-8 SHA-256 seal; existing input limit 131,072 bytes. |
 | E08 | Governing RF-HERMES-006 request: integrations belong to their responsible user's account; a reported long redeploy can take about 900 seconds; external implementation dispatch has an 80% account-usage rule. These are task requirements/observations, not credential access, measured capacity or runtime approval. |
 | E09 | [ADR-002](../decisions/ADR-002-codex-qualification-owner-decisions.md), owner interview following RF006, conveyed by RF007 on 2026-09-13; references owner-i01-a-v1, owner-i01-b-v1, owner-i01-c-v1. I01 is RESOLVED; policy/identity and later bounded evidence authority only. |
+| E10 | [RF008 artifact preflight](direct-codex-artifact-preflight-v1.md) and [sanitized observation](direct-codex-artifact-preflight-v1.json), 2026-09-13: one observed Desktop-bundled Linux ELF; execute access denied, exact Codex version/provenance, inventory closure and wire bundle unproven. LOCAL_OBSERVATION_ONLY, not a qualified pin or permission to run. |
 
 The profile classifies **every setting and research value**:
 
@@ -49,6 +52,15 @@ make a profile runnable. Test pinning, policy approval and proof are separate.
 
 ## D01 — Pin, OS, inventory and wire — BLOCKED
 
+**RF008 observation.** One ELF x86_64 candidate was found within the bounded
+installation scope, referenced as desktop-package-01. Windows and Linux reads
+agree on its SHA-256, but Linux mode is 0444 and execute-access query is false.
+Package versions are not Codex binary versions; local blockmap matches are not
+authenticated provenance. Inventory exclusions/hardlinks and unknown auxiliary
+dependencies prevent closure; no exact-version wire bundle was identified.
+See E10 for the bounded facts and limits. All exact-pin fields remain null;
+no candidate code ran and no installation or permissions were changed.
+
 **Decision/recommendation.** Define one installation-local qualification pin:
 Windows Worker ownership, one selected WSL2 distribution and Linux x86_64 Codex
 App Server connected over owned stdio. This is the candidate to qualify, not an
@@ -65,8 +77,9 @@ changed files/links, and seal all executable dependencies. Verify open-handle or
 equivalent identity through launch to close replacement races. No PATH resolution,
 shell launcher, floating tag or implicit version probe during task admission.
 
-**Basis:** E03/E04/E05. The existing Linux examination pins Hermes/Python and
-does not pin a direct Codex executable. Official docs specify a per-version
+**Basis:** E03/E04/E05/E10. The historical Linux examination pins Hermes/Python;
+RF008 observes a Codex artifact but does not qualify a direct executable pin.
+Official docs specify a per-version
 schema generator; docs metadata alone cannot replace those exact artifacts.
 **Alternatives:** native Windows-only pin avoids the cross-OS bridge but needs
 its own complete containment proof; floating installed CLI is rejected for drift.
@@ -313,7 +326,7 @@ No new runtime state machine, provider protocol or executable registry is added.
 Every profile binding has exactly classification, value and sourceRefs. Active
 settings may not use RESEARCH_ONLY; research observations remain in their own
 closed object. UNRESOLVED/BLOCKED means value=null and a linked blocker. All
-other classifications require a concrete typed value and valid E01–E09 source.
+other classifications require a concrete typed value and valid E01–E10 source.
 No classification is an assertion of tested runtime enforcement. The selected
 profile has 75 settings and seven research observations; it remains NOT_ADMITTED.
 
@@ -388,8 +401,8 @@ matrix. This table is the complete decision-to-test mapping for this packet.
 
 | Blocker | Decisions | Exact missing condition and owner |
 | --- | --- | --- |
-| B01 | D01 | Exact privately pinned Codex/version/inventory/platform artifact evidence; compatibility reviewer. |
-| B02 | D01 | Version-bound wire schemas and effective-field/initialization/ephemeral compatibility evidence; compatibility reviewer. |
+| B01 | D01 | RF008 observes one Linux ELF but its execute access is false; exact Codex version/authenticated provenance, private executable placement and closed immutable launch/platform inventory remain missing. Package labels/local hashes are not a qualified pin; compatibility reviewer. |
+| B02 | D01 | RF008 identifies no version-bound wire bundle; outer filename inspection is not proof of absence inside archives. Exact wire/source schemas and effective-field/initialization/ephemeral compatibility evidence remain missing; compatibility reviewer. |
 | B03 | D02,D05 | Narrowed after I01-A: responsible technical system/agent must derive and prove concrete phase/buffer/parser/rate/resource/task/model/effort values from plan/measurements within approved bounds. Numeric monetary sizing/enforcement remains unresolved; no repeated owner tuning of technical numbers. |
 | B04 | D03 | I01-B resolves identity: official laptop Codex account; external integrations retain their responsible user's account. Official isolated channel, connection reference/state mapping, no-copy/no-leak evidence and bounded refresh still missing; security/compatibility reviewer. |
 | B05 | D04 | Supported Windows/WSL cross-boundary ownership, whole-tree/FS/network/scratch/resource enforcement and ≤5s stop proof; platform/security reviewer. |
@@ -419,15 +432,16 @@ coverage, privacy and links. It checks only documentation and synthetic receipt
 objects; it never starts a process, opens a network connection or reads auth.
 Its own schema/negative tests do not qualify runtime or act as independent review.
 
-Exactly one recommended next atomic task: **RF-HERMES-008 — offline read-only
-preflight of the exact Codex candidate artifacts, version metadata and integrity/
-inventory references for B01, without launching candidate binaries or probes.**
-Use only explicitly scoped trusted installation/artifact references; keep paths
-private, reject aliases/unknown provenance and inspect no auth/profile contents.
-Do not install/download, use a network, start Codex/WSL/runtime, generate schemas,
-or infer a complete pin from CLI labels. If the required artifact/reference is
-absent, report the precise blocker; do not search credential directories or
-silently choose another platform/version. Output is a bounded private pin/inventory
-receipt or BLOCKED, followed by a proposed exact compatibility-task scope.
-Current version/executable/inventory/wire pins are null, so this is narrower than
-a runtime probe. No RF008 preflight or compatibility task is started in RF007.
+RF008 completed the offline preflight with verdict
+EXACT-CODEX-ARTIFACT-PREFLIGHT-BLOCKED. Its governing task permitted static reads
+in an already running WSL2 distribution and prohibited persisting private receipts.
+Only sanitized findings are retained; all 75 setting values and 53 nulls remain.
+
+Exactly one recommended next atomic task: **RF-HERMES-009 — specify and obtain
+approval for delivery of one verifiable Linux Codex artifact and matching wire
+bundle for this profile.** The RF008 report defines its acceptance boundary:
+official build-to-digest provenance, private executable placement/access and
+closed immutable launch inventory for B01/B02. This is a delivery-contract
+decision, not installation, download, permission mutation or a runtime probe.
+An artifact/version change needs explicit review; no automatic fallback.
+Any later acquisition needs its own bounded authority. RF009 was not started.

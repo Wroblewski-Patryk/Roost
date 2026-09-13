@@ -1,7 +1,7 @@
 {
   "schemaId": "roost-codex-qualification-profile-v1",
   "profileId": "direct-codex-windows-wsl2-candidate",
-  "revision": 2,
+  "revision": 3,
   "contractVersion": 1,
   "admission": "NOT_ADMITTED",
   "decisionStatus": {
@@ -25,7 +25,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E04"
+        "E04",
+        "E10"
       ]
     },
     "windowsBuildRef": {
@@ -33,7 +34,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E04"
+        "E04",
+        "E10"
       ]
     },
     "wslKernelRef": {
@@ -41,7 +43,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E04"
+        "E04",
+        "E10"
       ]
     },
     "distributionRef": {
@@ -49,7 +52,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E04"
+        "E04",
+        "E10"
       ]
     },
     "codexVersion": {
@@ -57,7 +61,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E04"
+        "E04",
+        "E10"
       ]
     },
     "executableRef": {
@@ -65,7 +70,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E04"
+        "E04",
+        "E10"
       ]
     },
     "toolchainRef": {
@@ -73,7 +79,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E04"
+        "E04",
+        "E10"
       ]
     },
     "executableSha256": {
@@ -81,7 +88,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E04"
+        "E04",
+        "E10"
       ]
     },
     "inventorySha256": {
@@ -89,7 +97,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E04"
+        "E04",
+        "E10"
       ]
     },
     "wireSchemaSha256": {
@@ -97,7 +106,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E04"
+        "E04",
+        "E10"
       ]
     },
     "capabilityReceiptSha256": {
@@ -105,7 +115,8 @@
       "value": null,
       "sourceRefs": [
         "E03",
-        "E04"
+        "E04",
+        "E10"
       ]
     },
     "targetArchitecture": {
@@ -113,7 +124,8 @@
       "value": null,
       "sourceRefs": [
         "E04",
-        "E05"
+        "E05",
+        "E10"
       ]
     },
     "argv": {

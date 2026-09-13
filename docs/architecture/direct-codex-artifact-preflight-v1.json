@@ -1,0 +1,210 @@
+{
+  "schemaId": "roost-codex-artifact-preflight-v1",
+  "taskId": "RF-HERMES-008",
+  "observedDate": "2026-09-13",
+  "verdict": "EXACT-CODEX-ARTIFACT-PREFLIGHT-BLOCKED",
+  "scope": "offline-static-artifact-observation",
+  "candidate": {
+    "installationRef": "desktop-package-01",
+    "relativePath": "app/resources/codex",
+    "platformFamily": "wsl2-linux-x86_64",
+    "candidatesInBoundedScope": 1,
+    "hostWideUniquenessProven": false,
+    "packageVersion": "26.908.4834.0",
+    "desktopApplicationVersion": "26.908.40834",
+    "codexVersion": null,
+    "format": "ELF64-little",
+    "machine": 62,
+    "elfType": 3,
+    "size": 262804768,
+    "sha256": "6970ad6a5b7615d2f5838879e19c1369e5527cb1544f1515f76900267740a403",
+    "interpreter": null,
+    "neededLibraries": [],
+    "linuxViewHashMatched": true,
+    "linuxMode": "0444",
+    "linuxExecuteAccess": false,
+    "supportedLaunchProven": false
+  },
+  "artifactObservations": [
+    {
+      "relativePath": "app/resources/codex",
+      "type": "regular",
+      "size": 262804768,
+      "sha256": "6970ad6a5b7615d2f5838879e19c1369e5527cb1544f1515f76900267740a403",
+      "hardlinkCount": 1,
+      "format": "ELF64-little",
+      "machine": 62,
+      "elfType": 3,
+      "interpreter": null,
+      "neededLibraries": []
+    },
+    {
+      "relativePath": "app/resources/codex.exe",
+      "type": "regular",
+      "size": 297858352,
+      "sha256": "081e4de4be8e38fac6ed4d95e3b1a0b9f6d31c090ddc36e1696b349fe406f575",
+      "hardlinkCount": 1,
+      "format": "PE",
+      "machine": 34404
+    },
+    {
+      "relativePath": "app/resources/codex-code-mode-host",
+      "type": "regular",
+      "size": 69398592,
+      "sha256": "6f39ebe2c695d21062d15b8047e9ff2914267d40e91f073c8652d2cbbbbf5c44",
+      "hardlinkCount": 1,
+      "format": "ELF64-little",
+      "machine": 62,
+      "elfType": 3,
+      "interpreter": null,
+      "neededLibraries": []
+    },
+    {
+      "relativePath": "app/resources/rg",
+      "type": "regular",
+      "size": 5408904,
+      "sha256": "e62198eb19b136b88c330af83647b5a962cb99b6b1f066758568f12de1974849",
+      "hardlinkCount": 1,
+      "format": "ELF64-little",
+      "machine": 62,
+      "elfType": 3,
+      "interpreter": null,
+      "neededLibraries": []
+    }
+  ],
+  "metadataObservations": [
+    {
+      "relativePath": "AppxManifest.xml",
+      "size": 6246,
+      "sha256": "aca43873f91174a1dda5b58e2cbb816f41b3e0d01a0aabe6c249fafed8f0a226"
+    },
+    {
+      "relativePath": "AppxBlockMap.xml",
+      "size": 3238925,
+      "sha256": "f7ece161c63f5bf6d300481f2e3fde111bbe2a86070b3712489fe38a07405065"
+    },
+    {
+      "relativePath": "AppxSignature.p7x",
+      "size": 12212,
+      "sha256": "9e78891a529a57f39dda2c50109d4ce0ba30398e69f32de5a26aa88f56fa095c"
+    },
+    {
+      "relativePath": "app/resources/owl-electron-app.json",
+      "size": 215,
+      "sha256": "c3c5b943010e4db8a160f0a12aee934f61c87d59a1eafc90312492ad3d4e400c"
+    }
+  ],
+  "provenance": {
+    "registrationSignatureKind": "Store",
+    "manifestIdentityMatched": true,
+    "blockmapComparisons": [
+      {
+        "relativePath": "app/resources/codex",
+        "status": "MATCH",
+        "blocks": 4011
+      },
+      {
+        "relativePath": "app/resources/codex.exe",
+        "status": "MATCH",
+        "blocks": 4545
+      },
+      {
+        "relativePath": "app/resources/codex-code-mode-host",
+        "status": "MATCH",
+        "blocks": 1059
+      },
+      {
+        "relativePath": "app/resources/rg",
+        "status": "MATCH",
+        "blocks": 83
+      }
+    ],
+    "signaturePresent": true,
+    "signatureTrustVerified": false,
+    "exactCodexVersionBound": false,
+    "status": "LOCAL_OBSERVATION_ONLY"
+  },
+  "inventory": {
+    "manifestBuiltInMemoryOnly": true,
+    "manifestPersisted": false,
+    "entryCount": 6548,
+    "fileCount": 5510,
+    "directoryCount": 1037,
+    "excludedEntryCount": 1,
+    "totalFileBytes": 1906910011,
+    "observedManifestSha256": "cc9a2379df8afe6241dad68e4cf222006dad87803739dff39d8040cdf9758280",
+    "closed": false,
+    "launchClosureProven": false,
+    "blockmapListedFiles": 5511,
+    "blockmapMissingFileCount": 4,
+    "additionalFileCount": 3,
+    "recognizedAdditionalFiles": [
+      "AppxBlockMap.xml",
+      "AppxMetadata/CodeIntegrity.cat",
+      "AppxSignature.p7x"
+    ],
+    "unknownAdditionalFileCount": 0,
+    "linkCount": 0,
+    "hardlinkedFileCount": 2129,
+    "aclReadEntries": 6547,
+    "broadWriteAllowEntryCount": 0,
+    "immutabilityProven": false,
+    "limits": {
+      "maxEntries": 8000,
+      "maxBytes": 2200000000,
+      "maxSeconds": 120
+    },
+    "stopReasons": [
+      "POLICY_EXCLUSION"
+    ]
+  },
+  "discovery": {
+    "linuxConventionalTargets": 7,
+    "linuxTargetsPresent": 0,
+    "windowsNpmRoots": 2,
+    "windowsNpmPackagesPresent": 0,
+    "desktopPackages": 1,
+    "outerWireNamedArtifacts": 0,
+    "versionBoundWireBundleFound": false,
+    "privateProfileSearched": false,
+    "pathSearchPerformed": false
+  },
+  "blockers": [
+    "linux_execute_access_missing",
+    "exact_codex_version_unbound",
+    "signature_trust_unverified",
+    "inventory_not_closed",
+    "launch_dependency_closure_unproven",
+    "version_bound_wire_bundle_missing"
+  ],
+  "gates": {
+    "implementationReady": false,
+    "executionSupported": false,
+    "pilotReady": false,
+    "liveAdmissionAllowed": false
+  },
+  "actions": {
+    "candidateExecutions": 0,
+    "modelCalls": 0,
+    "networkRequests": 0,
+    "authReads": 0,
+    "componentChanges": 0,
+    "privateReceiptsWritten": 0
+  },
+  "docker": {
+    "before": {
+      "containers": 4,
+      "networks": 5,
+      "volumes": 107,
+      "images": 16
+    },
+    "after": {
+      "containers": 4,
+      "networks": 5,
+      "volumes": 107,
+      "images": 16
+    },
+    "unchanged": true
+  },
+  "nextTask": "RF-HERMES-009"
+}

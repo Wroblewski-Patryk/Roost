@@ -122,7 +122,7 @@ def validate_profile(profile, schema):
     machine_strings(profile)
     expected = {f'D{i:02}': 'DECIDED' if i == 7 else 'BLOCKED' for i in range(1, 8)}
     need(profile['decisionStatus'] == expected, 'current_decision_status')
-    need(profile['revision'] == 2, 'owner_revision')
+    need(profile['revision'] == 3, 'preflight_revision')
     need(profile['blockers'] == [f'B{i:02}' for i in range(1, 10)], 'current_blockers')
     need(len(profile['settings']) == 75 and len(profile['research']) == 7, 'binding_count')
     for cell in profile['settings'].values():
@@ -137,6 +137,8 @@ def validate_profile(profile, schema):
     need(sum(v is None for v in values.values()) == 53, 'technical_nulls_preserved')
     for key in ('durationSecondsRange','credentialChannel','credentialOwnerRule','secretValuePersistence','rawLogRetentionBytes','budgetEnforcementRef'):
         need('E09' in profile['settings'][key]['sourceRefs'], 'owner_provenance')
+    for key in ('installationRef','codexVersion','executableRef','executableSha256','inventorySha256','wireSchemaSha256','targetArchitecture'):
+        need(values[key] is None and 'E10' in profile['settings'][key]['sourceRefs'], 'unqualified_artifact_pin')
     return values
 
 
@@ -179,7 +181,7 @@ def validate_documents():
     need(len(packet.encode()) <= 131072, 'packet_size')
     statuses = re.findall(r'^## (D0[1-7]) .* — (BLOCKED|DECIDED)$', packet, re.M)
     need(dict(statuses) == profile['decisionStatus'] and len(statuses) == 7, 'packet_status')
-    need(set(re.findall(r'^\| (E0[1-9]) \|', packet, re.M)) == {f'E{i:02}' for i in range(1,10)}, 'source_catalog')
+    need(set(re.findall(r'^\| (E(?:0[1-9]|10)) \|', packet, re.M)) == {f'E{i:02}' for i in range(1,11)}, 'source_catalog')
     need(set(re.findall(r'^\| (B0[1-9]) \|', packet, re.M)) == set(profile['blockers']), 'blocker_catalog')
     mappings = re.findall(r'^\| (D0[1-7]) \| (CAS-R[^|]+) \| (CAS-T[^|]+) \|$', packet, re.M)
     need(len(mappings) == 7 and len({row[0] for row in mappings}) == 7, 'cas_mapping_count')
@@ -187,7 +189,7 @@ def validate_documents():
         r, t = re.findall(r'CAS-R(\d{2})', requirements), re.findall(r'CAS-T(\d{2})', tests)
         need(r == t and len(r) == len(set(r)) and all(1 <= int(n) <= 30 for n in r), 'cas_mapping')
     need(packet.count('## Consolidated interview packet I01 — RESOLVED') == 1, 'interview_packet_resolved')
-    need(packet.count('Exactly one recommended next atomic task:') == 1 and 'RF-HERMES-008' in packet, 'next_task')
+    need(packet.count('Exactly one recommended next atomic task:') == 1 and 'RF-HERMES-009' in packet, 'next_task')
     owners = OWNER_DECISIONS.read_text(encoding='utf-8')
     need(re.findall(r'^## (I01-[ABC]) — APPROVED:', owners, re.M) == ['I01-A','I01-B','I01-C'], 'owner_decision_status')
     need('Status: accepted' in owners and 'Date: 2026-09-13' in owners and 'I01 RESOLVED' in owners, 'owner_record')
@@ -214,7 +216,7 @@ def validate_documents():
             links += 1
     registry = load(ROOT / 'src/modules/agent-runtime/execution-providers.json')
     need(registry['contractVersion'] == 5 and registry['requiredPilotProvider'] == 'hermes_codex' and registry['pilotReady'] is False, 'registry_changed')
-    return {'result':'PASS','scope':'documentation_schema_only','profileRevision':2,'interviewStatus':'RESOLVED','ownerDecisionsApproved':3,'technicalNullsPreserved':53,'settings':75,'researchValues':7,'decided':['D07'],'blocked':[f'D{i:02}' for i in range(1,7)],'blockers':9,'casDecisionMappings':7,'localLinks':links,'profileSha256':seal(profile),'schemaSha256':seal(schema),'runtimeQualified':False}
+    return {'result':'PASS','scope':'documentation_schema_only','profileRevision':3,'interviewStatus':'RESOLVED','ownerDecisionsApproved':3,'technicalNullsPreserved':53,'settings':75,'researchValues':7,'decided':['D07'],'blocked':[f'D{i:02}' for i in range(1,7)],'blockers':9,'casDecisionMappings':7,'localLinks':links,'profileSha256':seal(profile),'schemaSha256':seal(schema),'runtimeQualified':False}
 
 
 if __name__ == '__main__':

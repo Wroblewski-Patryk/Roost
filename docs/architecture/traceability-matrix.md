@@ -1,13 +1,23 @@
 # Foundation requirements traceability
 
+RF-HERMES-008: [exact-artifact preflight](direct-codex-artifact-preflight-v1.md)
+returns EXACT-CODEX-ARTIFACT-PREFLIGHT-BLOCKED. One Desktop-bundled ELF x86_64
+candidate is readable from WSL but has no execute access. Package metadata and
+blockmap matches are local observations, not exact Codex-version provenance;
+inventory closure and version-bound wire artifacts remain missing. Profile
+revision 3 adds E10 sources only, preserving 75 values, 53 technical nulls,
+D01–D06 BLOCKED, D07 document-design DECIDED, nine blockers and all false gates.
+Only static file/metadata reads occurred; no Codex execution or private receipt
+was written. The next delivery-contract decision is RF-HERMES-009, not started.
+
 RF-HERMES-007: [ADR-002 owner decisions](../decisions/ADR-002-codex-qualification-owner-decisions.md)
 records owner-i01-a-v1, owner-i01-b-v1 and owner-i01-c-v1 on 2026-09-13;
 I01 is RESOLVED. Profile revision 2 adds decision provenance only, preserving
 all setting values/technical nulls, D01–D06 BLOCKED, D07 document-design DECIDED
 and every false readiness gate. B03 is narrowed to responsible technical sizing
 and qualification; B04/B08/B09 retain channel/retention/evidence gaps after policy
-approval. All nine blockers remain open. Exactly one next task is RF-HERMES-008,
-offline read-only candidate artifact/version/inventory preflight; no probe runs.
+approval. All nine blockers remain open. Its RF-HERMES-008 follow-up is recorded
+above; no compatibility probe runs.
 
 RF-HERMES-006: [qualification decisions v1](direct-codex-qualification-decisions-v1.md)
 records D01–D06 BLOCKED, D07 DECIDED for document/schema design, nine explicit
