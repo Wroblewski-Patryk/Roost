@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "policyId": "roost.synthetic-isolation.v1",
+  "policyVersion": 1,
+  "policySha256": "f975cd82cf69b06813f3f7086cc7d0215b3affd57efef75ce7a1001b0012a512",
+  "canonicalization": "roost-ascii-json-sorted-compact-v1",
+  "upstream": {
+    "version": "0.0.116",
+    "commit": "d1155aa70042d3e2ee49dbfa15346b108b7c1d92",
+    "sourceSha256": {
+      "docs/reference/policy-schema.mdx": "58ee1d2e91e918e4ace589a72f209d7c99dd584546ee553f5b1528f5bbebeda2",
+      "crates/openshell-core/src/policy.rs": "021a8f64ee3de85012c61d3272354d8fe251c435a3bef6bdb1c50b27aa2342d1",
+      "crates/openshell-policy/src/lib.rs": "1875dbb56c1f5886e52fe388243ab7301d2250ab15b58c595cba30df069ec7de",
+      "crates/openshell-cli/src/policy_update.rs": "3ac6e7ff3698ada653a372b885ddaf0b615fc6fd57b5a7a945ba11c92bc8ebcb",
+      "crates/openshell-supervisor-network/data/sandbox-policy.rego": "dc68daf035e520ef21fc8dcbe3ef3fb18273eec02c136b989264524b75cd3e95",
+      "crates/openshell-supervisor-process/src/sandbox/linux/landlock.rs": "a5952b797996b83231f646c1ebc0d3aa085018ec16c22e5a17b68acfe754a6c2",
+      "proto/sandbox.proto": "b2f05ac1a74790a335541b810ae17eb6cbe2372e78188954bb630d29b266d4ec",
+      "crates/openshell-cli/src/main.rs": "89723e0702cedb834e9381c9cd5ea7aca6a462ddb9df707023db7ae9eb3f1512",
+      "crates/openshell-policy/src/l7_validate.rs": "abfe157c99c76b9e8537dac1ecf512f9f0ae0bc3651d4700176daf35355e2843"
+    }
+  },
+  "replacement": "full-explicit-no-inheritance",
+  "networkDefault": "deny",
+  "fixture": {
+    "path": "/opt/roost-fixture/bin/fake-app-server",
+    "sha256": "UNMATERIALIZED_FIXTURE_SHA256",
+    "materialized": false,
+    "format": "static-linux-amd64-elf",
+    "maximumBytes": 4194304,
+    "dynamicLibraries": [],
+    "argv": [
+      "/opt/roost-fixture/bin/fake-app-server"
+    ],
+    "workingDirectory": "/sandbox/roost-fixture/scratch",
+    "immutable": true,
+    "execOtherBinaries": false
+  },
+  "scratch": {
+    "path": "/sandbox/roost-fixture/scratch",
+    "maximumBytes": 1048576,
+    "mountFlags": [
+      "nodev",
+      "noexec",
+      "nosuid"
+    ],
+    "rootFilesystemReadOnly": true
+  },
+  "deniedResources": [
+    "host_filesystems",
+    "host_repositories",
+    "operator_homes",
+    "real_codex_home",
+    "real_xdg",
+    "daemon_sockets_and_apis",
+    "gateway_admin_identity_and_material",
+    "provider_credentials",
+    "user_bind_mounts",
+    "user_volumes",
+    "global_or_provider_policy_composition"
+  ],
+  "requiredRuntimeEvidence": [
+    "materialized_fixture_sha256_and_new_approved_contract_identity",
+    "official_parser_and_effective_policy_equality",
+    "single_controlled_endpoint_binding_without_external_dns_or_redirects",
+    "no_inference_route_or_other_implicit_egress",
+    "binary_identity_required_and_no_ancestor_or_exec_bypass",
+    "hard_landlock_no_skipped_paths_and_nonroot_capability_drop",
+    "read_only_fixture_no_dynamic_libraries_no_shell",
+    "bounded_scratch_noexec_nosuid_nodev_and_all_writable_log_output_bounds",
+    "no_control_fds_mounts_sockets_or_admin_identity_in_child",
+    "process_tree_stop_and_resource_limits"
+  ],
+  "executionSupported": false,
+  "pilotReady": false
+}

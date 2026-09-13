@@ -1,5 +1,10 @@
 # Adopt-before-build and execution providers
 
+RF-HOST-038: [minimal policy template](../operations/openshell-minimal-policy.md)
+pins a strict one-endpoint/one-fixture static contract. Its explicit template
+review grants no execution; the unmaterialized fixture, official runtime parser
+and all containment/resource proofs remain gated. Provider contract v5 is unchanged.
+
 RF-HOST-037: the [static base-image audit](../operations/openshell-static-base-audit.md)
 documents the pinned filesystem and permissive bundled policy without executing
 image contents. Static READY is inventory completeness only; host-control,

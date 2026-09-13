@@ -1,5 +1,9 @@
 # Static OpenShell base image audit (RF-HOST-037)
 
+Subsequent [RF-HOST-038](openshell-minimal-policy.md) prepares a pinned minimal
+policy template and offline Roost linter. Its fixture is unmaterialized and
+official runtime parsing/enforcement remain unproven; no runtime was activated.
+
 **STATIC-BASE-AUDIT-READY**, verified 2026-09-13. This verdict means the pinned
 image has a documented static inventory. It grants no execution admission.
 The [RF-HOST-035 host lifecycle denial](host-lifecycle-safety.md), observe mode,
@@ -188,6 +192,5 @@ separation, network/filesystem enforcement, host mount/API denial, process-tree
 stop, CPU/RAM/PID limits, hard bounds on every writable/log path, whole-path
 32-KiB capture and live provider compatibility. Static READY clears none of them.
 
-Exactly one recommended next atomic task, **not started**: prepare and statically
-validate the minimal experiment policy (`hard_requirement`, default deny, one
-synthetic endpoint/binary), without starting a gateway or sandbox.
+The then-recommended minimal policy task was completed by RF-HOST-038 above.
+Its separate next task and remaining admission gates are recorded there.

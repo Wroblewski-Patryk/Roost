@@ -1,5 +1,10 @@
 # Foundation requirements traceability
 
+RF-HOST-038: [minimal policy](../operations/openshell-minimal-policy.md) and its
+separate immutable identity reject scope expansion through an offline linter
+and synthetic tests. Static template READY is distinct from materialization,
+official runtime validation and execution admission; all activation stays off.
+
 RF-HOST-037: [static base audit](../operations/openshell-static-base-audit.md)
 binds the final path inventory to the local pinned manifest/config/layer hashes.
 Synthetic parser tests cover whiteouts, opaque paths, links and limits. Bundled
