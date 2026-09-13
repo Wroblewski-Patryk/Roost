@@ -1,5 +1,13 @@
 # Foundation requirements traceability
 
+RF-HERMES-001: [Hermes/Codex isolation assessment](hermes-codex-isolation-assessment.md)
+pins official NousResearch stable identity, both Codex modes, primary OpenAI
+documentation and 14 requirement rows. Reconstructed Git objects/trees and 29
+selected blobs are bound by a deterministic offline validator. No lineage to the
+alternative Hermes repository is established. OpenShell is optional/evaluated;
+workspace-write coding remains a candidate with concrete adapter blockers and
+no installation, model, runtime, pilot or release admission.
+
 RF-HOST-047: [publication outcome](../operations/openshell-upstream-issue-publication.md)
 records exact-text owner approval, fresh unchanged guidance/release checks and
 bounded duplicate searches. One create attempt returned HTTP 403; successful

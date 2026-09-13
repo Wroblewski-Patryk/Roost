@@ -1,5 +1,10 @@
 # Local Codex Agent Runtime
 
+[RF-HERMES-001](hermes-codex-isolation-assessment.md) distinguishes the Hermes
+model provider from its optional Codex App Server runtime. Native Codex command
+sandboxing is a candidate boundary; OpenShell is not an established prerequisite.
+This static assessment leaves provider, output and host-lifecycle admission closed.
+
 [Adopt-before-build and provider contract v5](adopt-before-build.md) requires
 official pinned Hermes compatibility before any local agent pilot. Direct Codex
 remains a reference only; task admission is blocked. Hermes is disabled and unproven; neither host
@@ -141,8 +146,10 @@ visible.
   database synchronization.
 - The local Agent Host owns only temporary polling/process state and the mapping
   from an application slug to a local repository path.
-- Codex owns the interactive coding session and changes files only inside the
-  selected local repository under `workspace-write` sandboxing.
+- Codex owns the interactive coding session. The configured `workspace-write`
+  mode targets command writes to the selected repository; extra/temporary roots,
+  outside reads, provider state and external tools need independent qualification.
+  This is not proof that the whole process accesses only that repository.
 - Git remains the source of truth for source-code transfer. The Agent Host does
   not commit, push, deploy, or publish.
 

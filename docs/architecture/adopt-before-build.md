@@ -1,5 +1,15 @@
 # Adopt-before-build and execution providers
 
+RF-HERMES-001: [the static Hermes/Codex assessment](hermes-codex-isolation-assessment.md)
+finds OPENSHELL-NOT-REQUIRED-FOR-CODEX-RUNTIME-CANDIDATE. The model-only provider
+and optional App Server runtime have different tool ownership. Official Codex
+command sandboxing offers a candidate path; the shipped Hermes session still
+lacks sealed policy/model/context, bounded capture and complete process cleanup.
+OpenShell is an evaluated optional containment candidate, not a prerequisite
+established by the nonwriting fixture. All existing admission denials remain.
+The historical OpenShell work below is preserved and does not constrain normal
+coding to zero writes. Release/integration authority remains separate.
+
 RF-HOST-047: the [publication outcome](../operations/openshell-upstream-issue-publication.md)
 is UPSTREAM-ISSUE-AUTH-BLOCKED. After exact-text owner approval and fresh checks,
 the existing integration rejected the single create attempt with HTTP 403.

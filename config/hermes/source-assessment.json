@@ -1,0 +1,1002 @@
+{
+  "schemaVersion": 1,
+  "assessmentId": "hermes.source-assessment.v1",
+  "verdict": "OPENSHELL-NOT-REQUIRED-FOR-CODEX-RUNTIME-CANDIDATE",
+  "scope": "static-only-no-runtime-proof",
+  "observedFrom": "2026-09-13T11:19:40Z",
+  "checkedAt": "2026-09-13T11:23:38Z",
+  "identity": {
+    "repository": "NousResearch/hermes-agent",
+    "repositoryId": 1024554267,
+    "excludedRepository": "hermes-agent-org/hermes",
+    "excludedRepositoryId": 1210503219,
+    "lineage": "no-transfer-or-successor-established",
+    "release": "v2026.9.11",
+    "packageVersion": "0.21.2",
+    "publishedAt": "2026-09-11T19:20:31Z",
+    "commit": "939e45c91d751fadd94dcd1b873ac3cb44846213",
+    "tagObject": "2160b2d59c87316e82f749d77c1f25969bea1533",
+    "tree": "87733a9376625ca99972ef5d9b238024633aaea0",
+    "license": "MIT",
+    "signature": "unsigned",
+    "python": ">=3.11,<3.14",
+    "platformsDeclared": [
+      "Linux",
+      "macOS",
+      "WSL2",
+      "Termux",
+      "Windows-native"
+    ]
+  },
+  "codex": {
+    "minimumDeclaredVersion": "0.130.0",
+    "package": {
+      "version": "0.154.0",
+      "integrity": "sha512-FV/x1OHXYv/ifjf3mXj9ThTTAWcUZN6cGIRQRhRxkKNOPuImu1WW0c8ev1vUkE9XGH90dEnYG1tBjIkxRikg0w==",
+      "tarball": "https://registry.npmjs.org/@openai/codex/-/codex-0.154.0.tgz",
+      "binaryVerified": false
+    },
+    "windowsPackage": {
+      "version": "0.154.0-win32-x64",
+      "integrity": "sha512-Stg2KEJPIKVqPPR1wCverGOR4ey3RR3cvakR07w7FNKQUMzmHaOZomRsP2bR1qOT/67yHsks9rB+MCMfIWXcRA==",
+      "tarball": "https://registry.npmjs.org/@openai/codex/-/codex-0.154.0-win32-x64.tgz",
+      "binaryVerified": false
+    },
+    "compatibility": "unproven",
+    "documentation": "current-mutable-snapshot-not-a-version-specific-binary-proof",
+    "minimumCodeVersion": "0.125.0"
+  },
+  "authority": {
+    "installAuthorized": false,
+    "executionSupported": false,
+    "pilotReady": false,
+    "liveAdmissionAllowed": false,
+    "externalWriteAuthorized": false,
+    "nextTaskStarted": false
+  },
+  "responses": [
+    {
+      "id": "codex-package",
+      "url": "https://registry.npmjs.org/@openai%2Fcodex/latest",
+      "status": 200,
+      "bytes": 3521,
+      "sha256": "785849486d93ebba5bda538f0ebd29cd9b659e2b7ec78518a529c8eaf439bb87",
+      "checkedAt": "2026-09-13T11:22:58Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "codex-windows-package",
+      "url": "https://registry.npmjs.org/@openai%2Fcodex/0.154.0-win32-x64",
+      "status": 200,
+      "bytes": 3372,
+      "sha256": "b5def08ad8b9e41e7d8a1a65c825d17e7018b34d23640916b72371a596b554b9",
+      "checkedAt": "2026-09-13T11:23:37Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "hermes-head",
+      "url": "https://api.github.com/repos/NousResearch/hermes-agent/git/ref/heads/main",
+      "status": 200,
+      "bytes": 348,
+      "sha256": "ff13e384c8ef87853270105b565c1a112939574789b8979c6e08f1ae61f5e7ac",
+      "checkedAt": "2026-09-13T11:19:54Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "hermes-head-final",
+      "url": "https://api.github.com/repos/NousResearch/hermes-agent/git/ref/heads/main",
+      "status": 200,
+      "bytes": 348,
+      "sha256": "ff13e384c8ef87853270105b565c1a112939574789b8979c6e08f1ae61f5e7ac",
+      "checkedAt": "2026-09-13T11:23:38Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "hermes-latest",
+      "url": "https://api.github.com/repos/NousResearch/hermes-agent/releases/latest",
+      "status": 200,
+      "bytes": 16945,
+      "sha256": "f9fe7127ac9f632e657b60d5376ff5ff2fcca0a4cd897e5553797b7e9dff8c8b",
+      "checkedAt": "2026-09-13T11:19:53Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "hermes-latest-final",
+      "url": "https://api.github.com/repos/NousResearch/hermes-agent/releases/latest",
+      "status": 200,
+      "bytes": 16945,
+      "sha256": "f9fe7127ac9f632e657b60d5376ff5ff2fcca0a4cd897e5553797b7e9dff8c8b",
+      "checkedAt": "2026-09-13T11:23:37Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "hermes-tags",
+      "url": "https://api.github.com/repos/NousResearch/hermes-agent/git/matching-refs/tags/",
+      "status": 200,
+      "bytes": 14366,
+      "sha256": "328c32e243fa6b072a4cc2bd308cb3e1cb026309d1e5c8bbc3c58e77533267ca",
+      "checkedAt": "2026-09-13T11:19:54Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "latest",
+      "url": "https://api.github.com/repos/hermes-agent-org/hermes/releases/latest",
+      "status": 200,
+      "bytes": 2690,
+      "sha256": "eb1f97c87653b673ec225c4d5aa8daa668b4b17495fd09eb1cc6c77751b42efa",
+      "checkedAt": "2026-09-13T11:19:41Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "main-commit",
+      "url": "https://api.github.com/repos/NousResearch/hermes-agent/git/commits/b6b53c69a6ed49cb099cf1bfe76b5e6edd718e5a",
+      "status": 200,
+      "bytes": 1232,
+      "sha256": "61dba57ca9130e0e8dcbf26de381ec285e4c21e9498d042aa30ffb774a9a5678",
+      "checkedAt": "2026-09-13T11:21:53Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "main-tree",
+      "url": "https://api.github.com/repos/NousResearch/hermes-agent/git/trees/8643dbbc1441801ae74c71189bda1f600012b3e9?recursive=1",
+      "status": 200,
+      "bytes": 3641840,
+      "sha256": "5f3163a0969b93ae31bab3e125a378475ab9e64a697e8b2a8635e4bb8ac32fa0",
+      "checkedAt": "2026-09-13T11:21:55Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "official-home",
+      "url": "https://hermes-agent.nousresearch.com/",
+      "status": 200,
+      "bytes": 208271,
+      "sha256": "568d15c7896592960a75a39cbec71aa1b35df5d8ecff806e12d3a43ae5bdfa5f",
+      "checkedAt": "2026-09-13T11:22:58Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "old-repo",
+      "url": "https://api.github.com/repos/NousResearch/hermes-agent",
+      "status": 200,
+      "bytes": 6747,
+      "sha256": "1f01536b6afbcbb7187c3e8f2112b9ab92596cace368755bf84a37cef1626db5",
+      "checkedAt": "2026-09-13T11:19:40Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "openai-0",
+      "url": "https://learn.chatgpt.com/docs/sandboxing.md",
+      "status": 200,
+      "bytes": 11146,
+      "sha256": "5ad1df07686ee8be1bbf27178d3c41ba004323dc23549bda7b147e1e3023af9b",
+      "checkedAt": "2026-09-13T11:21:07Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "openai-1",
+      "url": "https://learn.chatgpt.com/docs/app-server.md",
+      "status": 200,
+      "bytes": 99470,
+      "sha256": "a72a5c88ab05ab9737ec28b432708f2776f696be48eae09ee39c02dd2f9480e0",
+      "checkedAt": "2026-09-13T11:21:07Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "openai-2",
+      "url": "https://learn.chatgpt.com/docs/windows/windows-sandbox.md",
+      "status": 200,
+      "bytes": 11206,
+      "sha256": "294f0c8de1d2201ba562ccb88367a21bce2f2472f65f4dc8486b7c0b2e3f3efc",
+      "checkedAt": "2026-09-13T11:21:07Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "openai-3",
+      "url": "https://learn.chatgpt.com/docs/sandboxing/network-access.md",
+      "status": 404,
+      "bytes": 9,
+      "sha256": "e3ebaa16dd9d9b9fc107c42183fb6cf9d22927e1af03dbbdfa0ccc38e4e4ac31",
+      "checkedAt": "2026-09-13T11:21:07Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "openai-4",
+      "url": "https://learn.chatgpt.com/docs/agent-approvals-security.md",
+      "status": 200,
+      "bytes": 34366,
+      "sha256": "ebf01378a4ea6fd7bec516ecb99b472e35112e958f1b3995498f8541b4d45e05",
+      "checkedAt": "2026-09-13T11:21:08Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "openai-5",
+      "url": "https://learn.chatgpt.com/docs/config-file/config-reference.md",
+      "status": 200,
+      "bytes": 112471,
+      "sha256": "60f5567c787e50f805e7d8b30ae153a1712ae20625c3624372f4b566c88284cb",
+      "checkedAt": "2026-09-13T11:21:08Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "openai-6",
+      "url": "https://learn.chatgpt.com/docs/config-file/config-basic.md",
+      "status": 200,
+      "bytes": 11673,
+      "sha256": "7fc85ae0b8f8ae1483fca0cf8972ccc6ee6b923c9e156b0c2965c52ecb5941e0",
+      "checkedAt": "2026-09-13T11:21:08Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "openai-7",
+      "url": "https://learn.chatgpt.com/docs/permissions.md",
+      "status": 200,
+      "bytes": 36813,
+      "sha256": "a4ef92666fcff0fceb7ab5332588585d3b4958909263e5576bf54dd14acf022e",
+      "checkedAt": "2026-09-13T11:21:09Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "repo",
+      "url": "https://api.github.com/repos/hermes-agent-org/hermes",
+      "status": 200,
+      "bytes": 6548,
+      "sha256": "d52b500a219e34bd2258632f05e5c812bc8c88b9a02bb6c089b66a9b35df2123",
+      "checkedAt": "2026-09-13T11:19:40Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-0",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/README.md",
+      "status": 200,
+      "bytes": 17688,
+      "sha256": "1d733df90c2836c1b9cd8d7307d2d222023456b7b55b5036c2fbb54fd8bcfdf4",
+      "checkedAt": "2026-09-13T11:20:18Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-1",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/LICENSE",
+      "status": 200,
+      "bytes": 1070,
+      "sha256": "821556e6336796450ab852d375117b48a4887e71d255794fd6318d99982a5ab6",
+      "checkedAt": "2026-09-13T11:20:19Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-10",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/hermes_cli/codex_runtime_switch.py",
+      "status": 200,
+      "bytes": 8438,
+      "sha256": "f2f97df9618eac281b32eeaa389a24c8ca150f7a19ef42cf66a5c41c5c687508",
+      "checkedAt": "2026-09-13T11:20:24Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-11",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/website/docs/user-guide/features/codex-app-server-runtime.md",
+      "status": 200,
+      "bytes": 31250,
+      "sha256": "385808a6caabc31fff9cb05f879aecbd2b03f3c25411505f29d7c13af15a25ac",
+      "checkedAt": "2026-09-13T11:20:24Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-12",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/website/docs/developer-guide/provider-runtime.md",
+      "status": 200,
+      "bytes": 10072,
+      "sha256": "db72c62f3b879f26565de07534cb01ed5beb2ac9d554a7cd800ee1c93ac9bc9c",
+      "checkedAt": "2026-09-13T11:20:24Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-13",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/website/docs/developer-guide/tools-runtime.md",
+      "status": 200,
+      "bytes": 12079,
+      "sha256": "eff476b64dfb2a9279e7bcb4e51efdd89711d866c1cfcc03d3b42301f322e80e",
+      "checkedAt": "2026-09-13T11:20:25Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-14",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/tools/terminal_tool.py",
+      "status": 200,
+      "bytes": 65775,
+      "sha256": "5ca8d06f9cc42f8f8672d76bca5efcc4c523a24244a345529a76e2b3c5c4cbb7",
+      "checkedAt": "2026-09-13T11:20:25Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-15",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/tools/file_tools.py",
+      "status": 200,
+      "bytes": 64779,
+      "sha256": "17796def099601f2f786c5dcc49c743005a3a277f6c09c6e662afd2e1b2712e5",
+      "checkedAt": "2026-09-13T11:20:25Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-16",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/tools/environments/local.py",
+      "status": 200,
+      "bytes": 39415,
+      "sha256": "96e51d2e528bb413486931a7bbe59d09ba5ac5749f0838b9b1f63038f0ea9c32",
+      "checkedAt": "2026-09-13T11:20:26Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-17",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/run_agent.py",
+      "status": 200,
+      "bytes": 86581,
+      "sha256": "11cc45fad98fd6e345f1895c54a8ff2277b46f89ea10a5c95a47a221d117b3d6",
+      "checkedAt": "2026-09-13T11:20:26Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-18",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/hermes_cli/config.py",
+      "status": 200,
+      "bytes": 175265,
+      "sha256": "0eaacf639fa3f6e4bbc5a2ad4ec9d9ce63f4a9b299ec41856b7c9fd6b38dffac",
+      "checkedAt": "2026-09-13T11:20:26Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-19",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/hermes_cli/runtime_provider.py",
+      "status": 200,
+      "bytes": 55675,
+      "sha256": "bf33804552b535712649223d1e8c16215677017277c00e9200a6333d8274bd48",
+      "checkedAt": "2026-09-13T11:20:28Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-2",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/pyproject.toml",
+      "status": 200,
+      "bytes": 33790,
+      "sha256": "c71aa5bc9e437bac3b662fd04a4a7e121735ebc898373019a366d91e217e58a8",
+      "checkedAt": "2026-09-13T11:20:19Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-20",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/agent/runtime_cwd.py",
+      "status": 200,
+      "bytes": 3614,
+      "sha256": "4b72f7680b76f965325dd3555bbfc5ef328d99f312d19c057ec9cd1cc15ab71e",
+      "checkedAt": "2026-09-13T11:20:28Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-21",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/agent/agent_init.py",
+      "status": 200,
+      "bytes": 119357,
+      "sha256": "67f9aef648bafc50a01c7974daf5d618f2fa53d1255c96b9973e4b185ea4cbb4",
+      "checkedAt": "2026-09-13T11:21:49Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-22",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/agent/conversation_loop.py",
+      "status": 200,
+      "bytes": 84760,
+      "sha256": "2086d4d084a7cba728a5862f2f27d172860908af967e2b83a43d22fe757548c2",
+      "checkedAt": "2026-09-13T11:21:50Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-23",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/agent/tool_dispatch_helpers.py",
+      "status": 200,
+      "bytes": 23754,
+      "sha256": "773765ad340b7d707c2159b81076461db1aa3e3dab24bc60e0ccdac0d7b7ad9b",
+      "checkedAt": "2026-09-13T11:21:50Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-24",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/agent/transports/hermes_tools_mcp_server.py",
+      "status": 200,
+      "bytes": 6676,
+      "sha256": "f643189a1f4ba4cdc159cc9cb2f8421e963f3c6d0f9b175c18e4790ad6f0da15",
+      "checkedAt": "2026-09-13T11:21:50Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-25",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/hermes_cli/auth.py",
+      "status": 200,
+      "bytes": 117398,
+      "sha256": "8988b8a8f005696d806216875a458ca1359f4df788d9affa6d59f8a1ffce2ffc",
+      "checkedAt": "2026-09-13T11:21:51Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-26",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/hermes_cli/auth_constants.py",
+      "status": 200,
+      "bytes": 8286,
+      "sha256": "938e987e0f117c6060d8f80c8171c0f09b522ded6507c1c87a865fe713d08302",
+      "checkedAt": "2026-09-13T11:21:51Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-27",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/agent/delegation_context.py",
+      "status": 200,
+      "bytes": 4858,
+      "sha256": "df04c7cd8dc3ff392efd2f092fda312fdfe078548cdfc660f8efb2d2e033cc7b",
+      "checkedAt": "2026-09-13T11:21:52Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-28",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/model_tools.py",
+      "status": 200,
+      "bytes": 49067,
+      "sha256": "699ddf9dbf9fc0397c8f93316616499d152e9ae841e7c81e7109265f0d4d71c7",
+      "checkedAt": "2026-09-13T11:21:53Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-3",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/setup.py",
+      "status": 200,
+      "bytes": 4077,
+      "sha256": "d476dd1c28d707acd72f1d0551d7178123832ae18b6e201ca1ac48cd040653ae",
+      "checkedAt": "2026-09-13T11:20:19Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-4",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/agent/codex_runtime.py",
+      "status": 200,
+      "bytes": 61497,
+      "sha256": "c9867df36eedc3fafd40e5ce5a88a3ef31b959f2304758e42840bdb5771ec742",
+      "checkedAt": "2026-09-13T11:20:20Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-5",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/agent/transports/codex_app_server.py",
+      "status": 200,
+      "bytes": 13853,
+      "sha256": "264e1ebf1f99ae623f5da11e1a28d215ae51f31a130f5a77246612285dd4cd4a",
+      "checkedAt": "2026-09-13T11:20:20Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-6",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/agent/transports/codex_app_server_session.py",
+      "status": 200,
+      "bytes": 34812,
+      "sha256": "18e25a83416ee1b7df427accdb45f1f8e41748283b28911068b0787f49eb4197",
+      "checkedAt": "2026-09-13T11:20:21Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-7",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/agent/transports/codex.py",
+      "status": 200,
+      "bytes": 39317,
+      "sha256": "1b4d48515c0ddac7db53b3446e69da92dcdc773a5e59dd80b2bec17d49c65103",
+      "checkedAt": "2026-09-13T11:20:22Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-8",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/hermes_cli/auth_codex.py",
+      "status": 200,
+      "bytes": 42180,
+      "sha256": "c8d217b5a63e7bc0328323c6efc2b876c2adf60d8176b515226f52f82b5ed8b0",
+      "checkedAt": "2026-09-13T11:20:23Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "source-9",
+      "url": "https://raw.githubusercontent.com/NousResearch/hermes-agent/939e45c91d751fadd94dcd1b873ac3cb44846213/hermes_cli/codex_runtime_plugin_migration.py",
+      "status": 200,
+      "bytes": 22590,
+      "sha256": "1ab2b9eb480b03cacda21deee9cfdc677e6b156cb3bd3a028dd6f75f9c240482",
+      "checkedAt": "2026-09-13T11:20:23Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "stable-commit",
+      "url": "https://api.github.com/repos/NousResearch/hermes-agent/git/commits/939e45c91d751fadd94dcd1b873ac3cb44846213",
+      "status": 200,
+      "bytes": 1190,
+      "sha256": "8a5de36fe4c7f89d10fd9a97a7dcbf8d8594d224f117a5b3c1b3f065c891c645",
+      "checkedAt": "2026-09-13T11:20:06Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "stable-object",
+      "url": "https://api.github.com/repos/NousResearch/hermes-agent/git/tags/2160b2d59c87316e82f749d77c1f25969bea1533",
+      "status": 200,
+      "bytes": 753,
+      "sha256": "62a8bdba593c6152e9a40dbbe420d20e81111992bb04136898bcabca27c6516e",
+      "checkedAt": "2026-09-13T11:20:06Z",
+      "location": null,
+      "link": null
+    },
+    {
+      "id": "stable-tree",
+      "url": "https://api.github.com/repos/NousResearch/hermes-agent/git/trees/87733a9376625ca99972ef5d9b238024633aaea0?recursive=1",
+      "status": 200,
+      "bytes": 3598709,
+      "sha256": "6fb591c727275e4bbf135378bc7d0949db632354ba4a221600f4603d2e0bf05a",
+      "checkedAt": "2026-09-13T11:20:08Z",
+      "location": null,
+      "link": null
+    }
+  ],
+  "sources": [
+    {
+      "id": "source-0",
+      "path": "README.md",
+      "gitBlob": "c05112266746ff99a3326a62c38c33fbc08ecd23",
+      "sha256": "1d733df90c2836c1b9cd8d7307d2d222023456b7b55b5036c2fbb54fd8bcfdf4",
+      "bytes": 17688
+    },
+    {
+      "id": "source-1",
+      "path": "LICENSE",
+      "gitBlob": "75410e73319c72cd3e991a501c5455eb78f38375",
+      "sha256": "821556e6336796450ab852d375117b48a4887e71d255794fd6318d99982a5ab6",
+      "bytes": 1070
+    },
+    {
+      "id": "source-2",
+      "path": "pyproject.toml",
+      "gitBlob": "41b21a82eef471bbb9b330801ecea77e0ff4ab17",
+      "sha256": "c71aa5bc9e437bac3b662fd04a4a7e121735ebc898373019a366d91e217e58a8",
+      "bytes": 33790
+    },
+    {
+      "id": "source-3",
+      "path": "setup.py",
+      "gitBlob": "328d53678adf5a2093fc730c2ea6344da7cad4bf",
+      "sha256": "d476dd1c28d707acd72f1d0551d7178123832ae18b6e201ca1ac48cd040653ae",
+      "bytes": 4077
+    },
+    {
+      "id": "source-4",
+      "path": "agent/codex_runtime.py",
+      "gitBlob": "48a6c1a6732e818606c7c2b95898340db886a030",
+      "sha256": "c9867df36eedc3fafd40e5ce5a88a3ef31b959f2304758e42840bdb5771ec742",
+      "bytes": 61497
+    },
+    {
+      "id": "source-5",
+      "path": "agent/transports/codex_app_server.py",
+      "gitBlob": "54d5ec4b17a9fe6beba7243c7135fdfc8869aa17",
+      "sha256": "264e1ebf1f99ae623f5da11e1a28d215ae51f31a130f5a77246612285dd4cd4a",
+      "bytes": 13853
+    },
+    {
+      "id": "source-6",
+      "path": "agent/transports/codex_app_server_session.py",
+      "gitBlob": "effc28e69d4e24aa45c5cb3c8f2b1c97b95d3004",
+      "sha256": "18e25a83416ee1b7df427accdb45f1f8e41748283b28911068b0787f49eb4197",
+      "bytes": 34812
+    },
+    {
+      "id": "source-7",
+      "path": "agent/transports/codex.py",
+      "gitBlob": "a7c1bd0ab4b88693ddac345c62e77a44d1c0661c",
+      "sha256": "1b4d48515c0ddac7db53b3446e69da92dcdc773a5e59dd80b2bec17d49c65103",
+      "bytes": 39317
+    },
+    {
+      "id": "source-8",
+      "path": "hermes_cli/auth_codex.py",
+      "gitBlob": "fa0e6f8a2130a9b8e16f26d0e2685835428399ef",
+      "sha256": "c8d217b5a63e7bc0328323c6efc2b876c2adf60d8176b515226f52f82b5ed8b0",
+      "bytes": 42180
+    },
+    {
+      "id": "source-9",
+      "path": "hermes_cli/codex_runtime_plugin_migration.py",
+      "gitBlob": "0b379b043c71978740864a1ea2d30db21260e608",
+      "sha256": "1ab2b9eb480b03cacda21deee9cfdc677e6b156cb3bd3a028dd6f75f9c240482",
+      "bytes": 22590
+    },
+    {
+      "id": "source-10",
+      "path": "hermes_cli/codex_runtime_switch.py",
+      "gitBlob": "c474017d8fe87027056631e6715497b83ff8382b",
+      "sha256": "f2f97df9618eac281b32eeaa389a24c8ca150f7a19ef42cf66a5c41c5c687508",
+      "bytes": 8438
+    },
+    {
+      "id": "source-11",
+      "path": "website/docs/user-guide/features/codex-app-server-runtime.md",
+      "gitBlob": "51821278d77b9610ff08acf05cef07d26bb2d924",
+      "sha256": "385808a6caabc31fff9cb05f879aecbd2b03f3c25411505f29d7c13af15a25ac",
+      "bytes": 31250
+    },
+    {
+      "id": "source-12",
+      "path": "website/docs/developer-guide/provider-runtime.md",
+      "gitBlob": "5cb620a6d1eb4964f737b2007dcc66305d81ac62",
+      "sha256": "db72c62f3b879f26565de07534cb01ed5beb2ac9d554a7cd800ee1c93ac9bc9c",
+      "bytes": 10072
+    },
+    {
+      "id": "source-13",
+      "path": "website/docs/developer-guide/tools-runtime.md",
+      "gitBlob": "52a2cc330a575289a79137c6171554548d869abe",
+      "sha256": "eff476b64dfb2a9279e7bcb4e51efdd89711d866c1cfcc03d3b42301f322e80e",
+      "bytes": 12079
+    },
+    {
+      "id": "source-14",
+      "path": "tools/terminal_tool.py",
+      "gitBlob": "736e8e2ba0efe8b402ac7f7015aa3e2aa993772d",
+      "sha256": "5ca8d06f9cc42f8f8672d76bca5efcc4c523a24244a345529a76e2b3c5c4cbb7",
+      "bytes": 65775
+    },
+    {
+      "id": "source-15",
+      "path": "tools/file_tools.py",
+      "gitBlob": "75e8663c50a9899f59146b8335dbb1ac0e341f1b",
+      "sha256": "17796def099601f2f786c5dcc49c743005a3a277f6c09c6e662afd2e1b2712e5",
+      "bytes": 64779
+    },
+    {
+      "id": "source-16",
+      "path": "tools/environments/local.py",
+      "gitBlob": "ecc9d6f3ba6b30f665263aaa350c8d99690c52c1",
+      "sha256": "96e51d2e528bb413486931a7bbe59d09ba5ac5749f0838b9b1f63038f0ea9c32",
+      "bytes": 39415
+    },
+    {
+      "id": "source-17",
+      "path": "run_agent.py",
+      "gitBlob": "1498cddb438370ba1393aad77ea5d188d97a6d79",
+      "sha256": "11cc45fad98fd6e345f1895c54a8ff2277b46f89ea10a5c95a47a221d117b3d6",
+      "bytes": 86581
+    },
+    {
+      "id": "source-18",
+      "path": "hermes_cli/config.py",
+      "gitBlob": "6f9a67a62aca79e9e438ab7313f333cd6a179360",
+      "sha256": "0eaacf639fa3f6e4bbc5a2ad4ec9d9ce63f4a9b299ec41856b7c9fd6b38dffac",
+      "bytes": 175265
+    },
+    {
+      "id": "source-19",
+      "path": "hermes_cli/runtime_provider.py",
+      "gitBlob": "37dc514bcfa03ee660604f9340d92a8309b647c4",
+      "sha256": "bf33804552b535712649223d1e8c16215677017277c00e9200a6333d8274bd48",
+      "bytes": 55675
+    },
+    {
+      "id": "source-20",
+      "path": "agent/runtime_cwd.py",
+      "gitBlob": "b70f084c978c71f1286a6b30d7fc7058bd110864",
+      "sha256": "4b72f7680b76f965325dd3555bbfc5ef328d99f312d19c057ec9cd1cc15ab71e",
+      "bytes": 3614
+    },
+    {
+      "id": "source-21",
+      "path": "agent/agent_init.py",
+      "gitBlob": "755086471a256131c242631a2d967a434f885295",
+      "sha256": "67f9aef648bafc50a01c7974daf5d618f2fa53d1255c96b9973e4b185ea4cbb4",
+      "bytes": 119357
+    },
+    {
+      "id": "source-22",
+      "path": "agent/conversation_loop.py",
+      "gitBlob": "6739c096e40ed3a34d370b74ba8c709785838913",
+      "sha256": "2086d4d084a7cba728a5862f2f27d172860908af967e2b83a43d22fe757548c2",
+      "bytes": 84760
+    },
+    {
+      "id": "source-23",
+      "path": "agent/tool_dispatch_helpers.py",
+      "gitBlob": "2ec46728d28876e9bfde4303469119f57c597af2",
+      "sha256": "773765ad340b7d707c2159b81076461db1aa3e3dab24bc60e0ccdac0d7b7ad9b",
+      "bytes": 23754
+    },
+    {
+      "id": "source-24",
+      "path": "agent/transports/hermes_tools_mcp_server.py",
+      "gitBlob": "48909a026c142ba9c7ae829fbd2c4307d26a1e64",
+      "sha256": "f643189a1f4ba4cdc159cc9cb2f8421e963f3c6d0f9b175c18e4790ad6f0da15",
+      "bytes": 6676
+    },
+    {
+      "id": "source-25",
+      "path": "hermes_cli/auth.py",
+      "gitBlob": "8bbcc5b795b824101c007f06fb63f286ccfbca25",
+      "sha256": "8988b8a8f005696d806216875a458ca1359f4df788d9affa6d59f8a1ffce2ffc",
+      "bytes": 117398
+    },
+    {
+      "id": "source-26",
+      "path": "hermes_cli/auth_constants.py",
+      "gitBlob": "73ce99b9617346cc24fbae090d3281e6625e2efd",
+      "sha256": "938e987e0f117c6060d8f80c8171c0f09b522ded6507c1c87a865fe713d08302",
+      "bytes": 8286
+    },
+    {
+      "id": "source-27",
+      "path": "agent/delegation_context.py",
+      "gitBlob": "959c9df85bb6f5d595f8d6812ad0db7058958410",
+      "sha256": "df04c7cd8dc3ff392efd2f092fda312fdfe078548cdfc660f8efb2d2e033cc7b",
+      "bytes": 4858
+    },
+    {
+      "id": "source-28",
+      "path": "model_tools.py",
+      "gitBlob": "bec779925a657945f962c7c5a58987302c60c9b7",
+      "sha256": "699ddf9dbf9fc0397c8f93316616499d152e9ae841e7c81e7109265f0d4d71c7",
+      "bytes": 49067
+    }
+  ],
+  "objects": [
+    {
+      "id": "stable-object",
+      "type": "tag",
+      "sha1": "2160b2d59c87316e82f749d77c1f25969bea1533",
+      "sha256": "222e15de0ae35801e31bd90bccec0132bf1a169b72539f566fa5fc0f08cd70fa",
+      "bytes": 219
+    },
+    {
+      "id": "stable-commit",
+      "type": "commit",
+      "sha1": "939e45c91d751fadd94dcd1b873ac3cb44846213",
+      "sha256": "5bffe7df6eaa58d7ddf9a034c3a4ad029e24312a685739dbcd721ec16904f3f6",
+      "bytes": 289
+    },
+    {
+      "id": "main-commit",
+      "type": "commit",
+      "sha1": "b6b53c69a6ed49cb099cf1bfe76b5e6edd718e5a",
+      "sha256": "7a8e71a5747c23d4999c77e1d97f37354801e7ccafd9e9119bcf7d984c134912",
+      "bytes": 331
+    }
+  ],
+  "localBindings": [
+    {
+      "path": "src/modules/agent-runtime/execution-providers.json",
+      "sha256": "8290ba214caf06607e9e0ea9c782b044643226490d443e3964f9435c44b8b49f"
+    },
+    {
+      "path": "scripts/lib/agent-host-provider-input.mjs",
+      "sha256": "63ecaab0eebbd419d26d40ac3d4d796567a85099b462bb1cb56cd2b5e8f60789"
+    },
+    {
+      "path": "scripts/lib/agent-host-lifecycle.cjs",
+      "sha256": "d880b6813460cf86ded277a389dd48b47516f03bc00677af57f05f917fd2b0b7"
+    },
+    {
+      "path": "scripts/lib/agent-host-execution-provider.mjs",
+      "sha256": "cf523dda89465dc408c989509436f1b866d4b3adac101546c562557a38a41cd2"
+    }
+  ],
+  "report": {
+    "path": "docs/architecture/hermes-codex-isolation-assessment.md",
+    "sha256": "41152315b9f2d298d7395f400282014f1fc86ef93b003a6c93118007136541e3"
+  },
+  "requirements": [
+    {
+      "id": "repository",
+      "provider": "BLOCKED",
+      "appServer": "BLOCKED",
+      "evidence": [
+        "source-20",
+        "source-6"
+      ],
+      "reason": "Standard cwd selection is not a trusted repository allowlist or a sealed Worker context."
+    },
+    {
+      "id": "filesystem",
+      "provider": "BLOCKED",
+      "appServer": "BLOCKED",
+      "evidence": [
+        "source-14",
+        "source-6",
+        "openai-4"
+      ],
+      "reason": "Local backend or ambient Codex config does not prove one writable root with no outside temp grants."
+    },
+    {
+      "id": "network",
+      "provider": "BLOCKED",
+      "appServer": "BLOCKED",
+      "evidence": [
+        "source-24",
+        "openai-4"
+      ],
+      "reason": "Hermes callbacks and service connections are separate from the command network sandbox."
+    },
+    {
+      "id": "host-lifecycle",
+      "provider": "UNPROVEN",
+      "appServer": "UNPROVEN",
+      "evidence": [
+        "openai-2",
+        "openai-7"
+      ],
+      "reason": "No live evidence denies Docker named pipes, sockets and WSL or host control APIs."
+    },
+    {
+      "id": "credentials",
+      "provider": "BLOCKED",
+      "appServer": "BLOCKED",
+      "evidence": [
+        "source-8",
+        "source-25",
+        "source-16"
+      ],
+      "reason": "Credential import, global-profile fallback and inherited environment are not a closed secret boundary."
+    },
+    {
+      "id": "mcp-plugins",
+      "provider": "BLOCKED",
+      "appServer": "BLOCKED",
+      "evidence": [
+        "source-9",
+        "source-24"
+      ],
+      "reason": "Enable migration discovers plugins and registers broad Hermes callback tools."
+    },
+    {
+      "id": "process-tree",
+      "provider": "UNPROVEN",
+      "appServer": "BLOCKED",
+      "evidence": [
+        "source-5"
+      ],
+      "reason": "App Server client terminates only its direct child; complete descendant ownership is absent."
+    },
+    {
+      "id": "budgets",
+      "provider": "BLOCKED",
+      "appServer": "BLOCKED",
+      "evidence": [
+        "source-5",
+        "source-6",
+        "source-4"
+      ],
+      "reason": "Unbounded pipe lines and queues plus auxiliary work lack complete output, cost and time fences."
+    },
+    {
+      "id": "retries",
+      "provider": "UNPROVEN",
+      "appServer": "BLOCKED",
+      "evidence": [
+        "source-4",
+        "source-6"
+      ],
+      "reason": "Transport retries and later-turn session recreation do not enforce the single Worker attempt."
+    },
+    {
+      "id": "session",
+      "provider": "BLOCKED",
+      "appServer": "BLOCKED",
+      "evidence": [
+        "source-4",
+        "source-6"
+      ],
+      "reason": "Standard session persists and reuses history without ephemeral or sealed resume admission."
+    },
+    {
+      "id": "context",
+      "provider": "BLOCKED",
+      "appServer": "BLOCKED",
+      "evidence": [
+        "source-6",
+        "source-22"
+      ],
+      "reason": "No Worker input seal, exact model/reasoning, lease or policy identity is passed by the standard session."
+    },
+    {
+      "id": "windows",
+      "provider": "UNPROVEN",
+      "appServer": "UNPROVEN",
+      "evidence": [
+        "source-0",
+        "openai-2"
+      ],
+      "reason": "Official platform support does not attest the installed pair or this hosts effective sandbox."
+    },
+    {
+      "id": "audit",
+      "provider": "PASS",
+      "appServer": "PASS",
+      "evidence": [
+        "stable-object",
+        "stable-commit",
+        "stable-tree"
+      ],
+      "reason": "The static assessment has pinned source, release and primary documentation evidence only."
+    },
+    {
+      "id": "release-authority",
+      "provider": "BLOCKED",
+      "appServer": "BLOCKED",
+      "evidence": [
+        "source-24",
+        "openai-4"
+      ],
+      "reason": "Provider tools do not replace Roost release mandates or a separate credentialed delivery stage."
+    }
+  ],
+  "mainComparison": {
+    "head": "b6b53c69a6ed49cb099cf1bfe76b5e6edd718e5a",
+    "tree": "8643dbbc1441801ae74c71189bda1f600012b3e9",
+    "changedSelectedPaths": [
+      "pyproject.toml",
+      "hermes_cli/auth_codex.py",
+      "tools/terminal_tool.py",
+      "tools/file_tools.py",
+      "tools/environments/local.py",
+      "run_agent.py",
+      "hermes_cli/config.py",
+      "hermes_cli/runtime_provider.py",
+      "agent/agent_init.py",
+      "hermes_cli/auth.py",
+      "hermes_cli/auth_constants.py",
+      "model_tools.py"
+    ]
+  }
+}
