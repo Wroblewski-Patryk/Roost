@@ -1,10 +1,16 @@
 # Local Codex Agent Runtime
 
+[RF-HERMES-004 / ADR-001 v1](../decisions/ADR-001-direct-codex-app-server-pilot.md)
+accepts the pilot target Roost control plane/API → Local Worker → directly Codex
+App Server. Hermes is optional outside authority/policy/budget/admission/stop
+enforcement; OpenShell is optional isolation. executionSupported=false,
+pilotReady=false and liveAdmissionAllowed=false remain unchanged.
+
 [RF-HERMES-003](hermes-clean-transport-api.md) finds no complete clean public
 transport API in the pinned Hermes release. Five helper imports are clean; the
 connection/session imports still trigger configuration/provider discovery and
-denied mkdir. The architecture recommendation to keep Hermes outside execution
-is pending a separate decision; no Worker/provider/admission behavior changes.
+denied mkdir. Its recommendation is resolved by ADR-001; the audit remains dated
+evidence and does not qualify a production adapter or change admission behavior.
 
 [RF-HERMES-002](../operations/hermes-linux-synthetic-transport.md) verifies a pinned
 private Linux installation and an independent bounded Worker transport. Hermes
@@ -17,10 +23,12 @@ model provider from its optional Codex App Server runtime. Native Codex command
 sandboxing is a candidate boundary; OpenShell is not an established prerequisite.
 This static assessment leaves provider, output and host-lifecycle admission closed.
 
-[Adopt-before-build and provider contract v5](adopt-before-build.md) requires
-official pinned Hermes compatibility before any local agent pilot. Direct Codex
-remains a reference only; task admission is blocked. Hermes is disabled and unproven; neither host
-metadata nor the execution environment flag proves or grants pilot admission.
+[Adopt-before-build and implemented provider contract v5](adopt-before-build.md)
+still describe the existing CLI reference and blocked Hermes diagnostics. The
+new direct App Server adapter is not implemented, and the RF-HERMES-002 wrapper
+is not approved for production. Hermes compatibility is no longer a pilot
+prerequisite under ADR-001; all existing task admission denials remain active.
+Neither host metadata nor the execution environment flag grants pilot admission.
 
 An [offline examination of the pinned Hermes transport](../operations/hermes-windows-attestation.md#offline-transport-examination-adapter-blocked)
 reproduced missing byte and process-tree fences with a fake App Server. It does

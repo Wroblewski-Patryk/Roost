@@ -1,5 +1,10 @@
 # Hermes clean transport API assessment
 
+Subsequent decision: [ADR-001 v1](../decisions/ADR-001-direct-codex-app-server-pilot.md)
+accepts option C in RF-HERMES-004. The recommendation and next task below record
+the RF-HERMES-003 assessment date; that decision is now resolved. Findings,
+receipts and proof limits remain historical evidence, with admission still closed.
+
 RF-HERMES-003, 2026-09-13. **HERMES-CLEAN-TRANSPORT-API-BLOCKED**.
 In the exact official Hermes `v2026.9.11` / package `0.21.2` source at commit
 `939e45c91d751fadd94dcd1b873ac3cb44846213`, no supported public interface was

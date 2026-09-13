@@ -1,5 +1,11 @@
 # Architecture Source Of Truth
 
+[ADR-001 v1](../decisions/ADR-001-direct-codex-app-server-pilot.md), accepted in
+RF-HERMES-004, sets the pilot target to Roost control plane/API → Local Worker →
+directly Codex App Server. Hermes is optional outside enforcement; OpenShell is
+optional isolation. This decision changes the target architecture only: the
+implemented provider registry v5 and all disabled admission gates remain intact.
+
 [Governed task clarification](governed-task-clarification.md) provides typed specialist conversation and deterministic receipt summaries without changing task authority.
 
 Native completed-result handoff is governed by [typed work handoff](typed-work-handoff.md):

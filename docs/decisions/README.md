@@ -1,6 +1,6 @@
 # Decisions
 
-Last updated: YYYY-MM-DD
+Last updated: 2026-09-13
 
 ## Purpose
 
@@ -16,6 +16,7 @@ an owning canonical doc linked from here.
 | --- | --- |
 | `decision-register.csv` | Index of decisions and current status. |
 | `ADR-000-template.md` | Template for architecture decision records. |
+| [ADR-001](ADR-001-direct-codex-app-server-pilot.md) | Accepted v1: direct Worker–Codex App Server pilot target; Hermes optional, execution remains blocked. |
 
 ## Status Vocabulary
 

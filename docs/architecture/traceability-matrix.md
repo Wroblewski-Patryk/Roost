@@ -1,12 +1,23 @@
 # Foundation requirements traceability
 
+RF-HERMES-004: [accepted ADR-001 v1](../decisions/ADR-001-direct-codex-app-server-pilot.md)
+records Roost control plane/API → Local Worker → directly Codex App Server as
+the pilot target, with Hermes optional outside enforcement and OpenShell optional
+for isolation. A/B/C dispositions, component ownership and measurable Hermes
+readmission criteria are explicit. This docs-only decision preserves registry v5,
+executionSupported=false, pilotReady=false and liveAdmissionAllowed=false.
+Exactly one next task is RF-HERMES-005: direct adapter contract specification and
+testable criteria only, without implementation. RF-HERMES-001..003 evidence and
+all existing activation gates remain valid; no production adapter is approved.
+
 RF-HERMES-003: [clean public transport API assessment](hermes-clean-transport-api.md)
 audits exact pinned exports, import graph, CLI alternatives and ten Worker fields.
 Fifteen controlled final probes distinguish five clean helpers, six dirty
 client/session probes and four successful denial controls. Six portable tests
 cover guard/privacy behavior. Verdict HERMES-CLEAN-TRANSPORT-API-BLOCKED; direct
-bounded execution without mandatory Hermes is a recommendation awaiting an
-explicit architecture decision, not a change to existing admission or authority.
+bounded execution without mandatory Hermes was recommended and subsequently
+accepted as the architectural target by ADR-001. This does not change existing
+admission or authority, or qualify a production implementation.
 
 RF-HERMES-002: [private Linux installation and synthetic transport](../operations/hermes-linux-synthetic-transport.md)
 verifies pinned Hermes 0.21.2 and passes 29 independent Worker boundary cases.

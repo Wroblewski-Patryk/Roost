@@ -3,7 +3,7 @@
 Worker-sealed bootstrap input is implemented under provider contract v4. It
 proves synthetic context preparation and final spawn admission, not Stage 2:
 model tool calls are no longer required to obtain mandatory initial context.
-Live Direct/Hermes compatibility, native containment and hard output/cost budgets
+Live direct App Server compatibility, native containment and hard output/cost budgets
 remain open. Execution stays false, observer stays observe, Hermes stays disabled
 and `pilotReadiness.ready` stays false. Runtime reads require separate authority
 and cannot replace a sealed active context outside RF-CTX-006 reconciliation.
@@ -12,10 +12,15 @@ The [offline pinned Hermes transport test](../operations/hermes-windows-attestat
 reproduces byte-capture and descendant-cleanup gaps. The requested production
 adapter remains blocked; this negative evidence does not satisfy activation.
 
-[Adopt-before-build and provider contract v4](adopt-before-build.md) requires
-official pinned Hermes compatibility before any local agent pilot. Direct Codex
-remains the reference/fallback. Hermes is disabled and unproven; neither host
-metadata nor the execution environment flag proves or grants pilot admission.
+[ADR-001 v1 / RF-HERMES-004](../decisions/ADR-001-direct-codex-app-server-pilot.md)
+accepts Roost control plane/API → Local Worker → directly Codex App Server as
+the pilot target. Hermes is optional outside enforcement and no longer a pilot
+prerequisite. OpenShell is optional isolation; required containment remains a
+gate. The [implemented provider contract v5](adopt-before-build.md) is unchanged,
+with executionSupported=false, pilotReady=false and liveAdmissionAllowed=false.
+The existing CLI reference and synthetic wrapper do not implement or qualify the
+new adapter. Neither host metadata nor an environment flag grants admission;
+there is no automatic fallback or provider substitution.
 
 Status: accepted target; not an assertion of implemented autonomy.
 

@@ -1,12 +1,21 @@
 # Adopt-before-build and execution providers
 
+RF-HERMES-004: [ADR-001 v1](../decisions/ADR-001-direct-codex-app-server-pilot.md)
+accepts Roost control plane/API → Local Worker → directly Codex App Server as
+the pilot target. Hermes is optional outside enforcement, with measurable
+readmission criteria; OpenShell is optional isolation. This docs-only decision
+leaves registry v5 and executionSupported=false, pilotReady=false and
+liveAdmissionAllowed=false unchanged. The next task is the direct adapter
+contract specification only, not implementation or activation.
+
 RF-HERMES-003: [the pinned public API audit](hermes-clean-transport-api.md) is
 HERMES-CLEAN-TRANSPORT-API-BLOCKED. Clean helper imports do not provide an App
 Server connection; public client/session imports initialize configuration and
 provider discovery and attempt mkdir even with isolated HERMES_HOME. The session
 omits required model/effort/policy/ephemeral fields. Direct bounded App Server in
-Worker is recommended for a separate explicit architecture decision, not adopted
-by this audit. Provider contract v5 and disabled admission remain unchanged.
+Worker was recommended by this audit and is now the accepted architectural target
+under ADR-001. The audit did not qualify an adapter. Provider contract v5 and
+disabled admission remain unchanged.
 
 RF-HERMES-002: [the private Linux transport examination](../operations/hermes-linux-synthetic-transport.md)
 is HERMES-TRANSPORT-SYNTHETIC-BLOCKED. Installation integrity and 29 independent
@@ -101,12 +110,15 @@ Two natural-use cycles passed after owner recovery; healthy Running is allowed.
 The separate pinned-install prerequisite verdict does not activate execution.
 
 
-Contract version: **5**. Status: host lifecycle admission denial, Worker-sealed bootstrap input, private Windows installation attestation and a
+Implemented provider contract version: **5**. Status: host lifecycle admission denial, Worker-sealed bootstrap input, private Windows installation attestation and a
 synthetically verified Worker-owned read-only MCP broker implemented,
 execution disabled; Hermes compatibility **unproven**. This contract does not authorize installation,
 model calls, application work or activation. The machine-readable
 [registry](../../src/modules/agent-runtime/execution-providers.json) pins the
-adopted reference and intended runtime; it is versioned with this contract.
+adopted reference and previous intended Hermes runtime; it is versioned with this
+implemented contract. ADR-001 supersedes the mandatory-Hermes architecture
+prerequisite, not executable registry semantics. Registry reconciliation requires
+a separately specified versioned change preserving all admission denials.
 
 ## Adoption rule and authority
 
@@ -189,8 +201,12 @@ enforcement also remains unavailable.
 
 `hermes_codex` means the official Nous Research Hermes runtime using Codex,
 launched only by Local Worker and accessing Roost through bounded MCP/API.
-It is the required target before a local agent pilot; Direct Codex alone cannot
-satisfy that prerequisite. An explicitly authorized private installation can now
+It remains blocked in the implemented v5 registry, whose legacy
+`requiredPilotProvider` value is unchanged by this documentation decision.
+ADR-001 selects direct Codex App Server through Worker for the pilot; that future
+adapter is distinct from the existing `direct_codex` CLI reference. Hermes
+compatibility is no longer an architectural pilot prerequisite. An explicitly
+authorized private installation can now
 be checked by Worker; the only implemented Hermes command is a guarded version
 probe. There is no task/inference launcher. The registry covers source, exact version/commit where established,
 license, owner, capability, boundaries, update/rollback, readiness, costs and
@@ -202,6 +218,10 @@ not dependencies or installed integrations in this stage. Each needs a separate
 bounded adoption decision and complete registry entry before use.
 
 ## Private configuration and safe diagnostics
+
+This section describes implemented registry v5 diagnostics, not admission of the
+new pilot target. Missing Hermes installation does not require installation to
+proceed with the direct adapter specification; no diagnostic can activate work.
 
 The optional `executionProvider` object belongs only in the private host JSON
 selected by `ROOST_AGENT_HOST_CONFIG`, outside source repositories. Omission
@@ -311,13 +331,16 @@ Future provider admission must preserve protocol/capability checks, Ready and
 context seals, current Decisions and risk, branch/path/origin allowlists, one
 writer, lease fencing, redaction, duration and output budgets, process-tree stop,
 context invalidation and checkpoint reconciliation. Metadata cannot attest any
-of these guarantees or expand task authority. Contract v4 always fails closed
+of these guarantees or expand task authority. Implemented contract v5 always fails closed
 for Hermes; changing that requires code, evidence and separate activation
 authority, not a local `ready` switch.
 
-## Next stage only: private Windows compatibility PoC
+## Historical deferred Hermes compatibility PoC
 
-Do not start this stage as a side effect of shipping the no-model broker contract. Its
+The following scope is retained for historical compatibility work. It is not
+the next task or a pilot prerequisite. Any future Hermes evaluation needs its
+own bounded authority and must collect the evidence required by ADR-001 before
+readmission. Do not start it as a side effect of this decision. Its
 bounded input is a verified private installation of the exact registry source
 commit, with dependency/build provenance and executable/environment digests.
 Preserve the previous environment/config and a rollback path. No
