@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { config as loadDotenv } from "dotenv";
 import { randomBytes } from "node:crypto";
+import lifecycle from "./lib/agent-host-lifecycle.cjs";
 
 const composeEnvironment = {};
 loadDotenv({ path: resolve(process.cwd(), ".env"), processEnv: composeEnvironment, quiet: true });
@@ -16,6 +17,7 @@ const testPassword = randomBytes(32).toString("hex");
 const externalDatabaseUrl = process.env.DATABASE_URL;
 const databaseUrl = externalDatabaseUrl || `postgresql://${testRole}:${testPassword}@127.0.0.1:${port}/companycore_test?schema=public`;
 let testRoleCreated = false;
+let databaseSetupAttempted = false;
 async function manageTestRole(create) {
   const { PrismaClient } = await import("@prisma/client");
   const admin = new PrismaClient({ datasources: { db: { url: `postgresql://companycore:${encodeURIComponent(postgresPassword)}@127.0.0.1:${port}/postgres` } } });
@@ -25,8 +27,6 @@ async function manageTestRole(create) {
   } catch { throw new Error("Local test role setup or cleanup failed."); }
   finally { await admin.$disconnect(); }
 }
-const dockerDesktopPath = process.env.COMPANYCORE_DOCKER_DESKTOP_PATH || "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe";
-const allowDockerDesktopLaunch = process.env.COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP !== "0";
 const isolatedDotenvPath = resolve(process.cwd(), ".env.test-isolated-does-not-exist");
 
 if (existsSync(isolatedDotenvPath)) {
@@ -113,13 +113,23 @@ function run(command, args, options = {}) {
     }
     let stdout = "";
     let stderr = "";
+    let capturedBytes = 0;
+    function capture(chunk, stream) {
+      if (settled) return;
+      capturedBytes += chunk.length;
+      if (options.maxOutputBytes && capturedBytes > options.maxOutputBytes) {
+        settled = true;
+        if (timeout) clearTimeout(timeout);
+        child.kill();
+        resolve({ code: 125, stdout: "", stderr: "" });
+        return;
+      }
+      if (stream === "stdout") stdout += chunk.toString();
+      else stderr += chunk.toString();
+    }
     if (options.capture) {
-      child.stdout.on("data", (chunk) => {
-        stdout += chunk.toString();
-      });
-      child.stderr.on("data", (chunk) => {
-        stderr += chunk.toString();
-      });
+      child.stdout.on("data", (chunk) => capture(chunk, "stdout"));
+      child.stderr.on("data", (chunk) => capture(chunk, "stderr"));
     }
     const timeout = options.timeoutMs
       ? setTimeout(() => {
@@ -156,28 +166,7 @@ function run(command, args, options = {}) {
 }
 
 async function ensureDocker() {
-  const result = await run("docker", ["info", "--format", "{{.ServerVersion}}"], { capture: true, timeoutMs: 20000 });
-  if (result.code === 0) {
-    return;
-  }
-
-  const firstError = result.stderr || result.stdout;
-  if (process.platform === "win32" && allowDockerDesktopLaunch && existsSync(dockerDesktopPath)) {
-    const launched = await run(dockerDesktopPath, [], { detached: true, shell: false, waitForExit: false });
-    if (launched.code !== 0 && launched.code !== null) {
-      throw new Error(`Docker is not available for local API tests, and Docker Desktop could not be launched.\n${launched.stderr || launched.stdout || firstError}`.trim());
-    }
-
-    for (let attempt = 0; attempt < 90; attempt += 1) {
-      const ready = await run("docker", ["info", "--format", "{{.ServerVersion}}"], { capture: true, timeoutMs: 10000 });
-      if (ready.code === 0) {
-        return;
-      }
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-    }
-  }
-
-  throw new Error(`Docker is not available for local API tests.\n${firstError}`.trim());
+  await lifecycle.requireEngine(run);
 }
 
 async function containerRunning() {
@@ -186,7 +175,7 @@ async function containerRunning() {
 }
 
 async function startDatabase() {
-  await ensureDocker();
+  databaseSetupAttempted = true;
   const started = await run("docker", ["compose", "up", "-d", "postgres"], { capture: true, timeoutMs: 60000 });
   if (started.code !== 0) {
     throw new Error(`Could not start the Roost PostgreSQL service.\n${started.stderr || started.stdout}`.trim());
@@ -212,6 +201,9 @@ async function startDatabase() {
 }
 
 async function cleanupDatabase(wasRunning) {
+  // Failed host admission (or an externally supplied database) owns no Compose
+  // resources. Do not turn a failed prerequisite into drop/stop side effects.
+  if (!databaseSetupAttempted || externalDatabaseUrl) return;
   if (!externalDatabaseUrl) {
     await run("docker", ["compose", "exec", "-T", "postgres", "dropdb", "-U", "companycore", "--if-exists", "companycore_test"], { capture: true, timeoutMs: 30000 });
     if (testRoleCreated) await manageTestRole(false);

@@ -1,5 +1,12 @@
 # Agent Host Recovery v1
 
+[Host lifecycle safety](../operations/host-lifecycle-safety.md) is an independent
+admission gate. Current providers cannot enter automatic recovery. A structured
+host-maintenance failure preserves the last checkpoint and writer ownership;
+healthy Docker or an owner maintenance decision cannot resume the agent.
+No host restart, distribution termination or socket repair belongs to recovery.
+
+
 [Serious-incident containment](native-capability-suspension.md) retains the same
 context fence after restoration. Old attempts never regain recovery authority;
 new Ready acceptance and execution are explicit.

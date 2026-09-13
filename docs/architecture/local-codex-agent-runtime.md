@@ -1,8 +1,8 @@
 # Local Codex Agent Runtime
 
-[Adopt-before-build and provider contract v4](adopt-before-build.md) requires
+[Adopt-before-build and provider contract v5](adopt-before-build.md) requires
 official pinned Hermes compatibility before any local agent pilot. Direct Codex
-remains the reference/fallback. Hermes is disabled and unproven; neither host
+remains a reference only; task admission is blocked. Hermes is disabled and unproven; neither host
 metadata nor the execution environment flag proves or grants pilot admission.
 
 An [offline examination of the pinned Hermes transport](../operations/hermes-windows-attestation.md#offline-transport-examination-adapter-blocked)
@@ -28,6 +28,13 @@ capabilities and reuses the context-stop/recovery boundary. Owner intervention
 requires reread/replan and never undoes external changes.
 
 ## Current Supervised Runtime
+
+[RF-HOST-035 host lifecycle safety](../operations/host-lifecycle-safety.md)
+adds an independent Worker/API denial before recovery, lock, claim and spawn:
+current providers lack enforced isolation from Docker/WSL host control. Health
+and owner maintenance decisions cannot override it. Non-retryable maintenance
+failures retain checkpoints and the writer lock; there is no automatic repair.
+
 
 The [native content redaction gate](native-runtime-redaction.md) applies before
 model dispatch, diagnostics and checkpoint persistence in the API and host.

@@ -29,15 +29,19 @@ PostgreSQL container. The underlying API test script builds
 TypeScript, applies migrations with `prisma migrate deploy`, and runs Node's
 built-in test runner against the compiled API integration tests.
 
-On Windows, if `docker` is installed but Docker Desktop's Linux engine is not
-running, `npm run test:api:local` attempts to launch Docker Desktop from
-`C:\Program Files\Docker\Docker\Docker Desktop.exe`, waits for `docker info`,
-then starts the Roost PostgreSQL Compose service. Set
-`COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0` to disable this recovery path, or
-set `COMPANYCORE_DOCKER_DESKTOP_PATH` if Docker Desktop is installed in a
-different location. The runner still requires a safe local `companycore_test`
-database URL. If the Roost PostgreSQL service was stopped before the test, the
-runner stops it again after cleanup.
+The local API runner requires an already available Docker Engine. RF-HOST-035
+removed implicit Docker Desktop launch and its recovery polling loop. An
+unavailable Engine yields non-retryable `host_maintenance_required`; host
+maintenance requires a separate owner decision. Former launch environment
+variables have no effect. The runner still requires a safe disposable local
+database and retains its scoped test-database cleanup behavior.
+
+Provider lifecycle checks: `node --test scripts/agent-host-lifecycle.test.mjs`
+and the `hostMaintenance` scenario in
+`scripts/agent-host-output-budget-process.test.mjs`. Existing process/API
+fixtures use test-only dependency substitution to exercise later gates with
+synthetic work. Production admission and explicit denial fixtures never use it.
+RF-HOST-035 does not authorize Docker/WSL or database mutations for testing.
 
 Preferred local integration test:
 

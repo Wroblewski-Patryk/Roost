@@ -49,7 +49,7 @@ for (const [label, mutate, expected] of cases) {
     await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
     try {
       await writeFile(config, JSON.stringify({ repositories: {}, pollIntervalMs: 2000 }));
-      const script = `import cp from 'node:child_process';import {syncBuiltinESMExports} from 'node:module';cp.spawn=()=>{console.log('FORBIDDEN_SPAWN');throw Error('spawn_forbidden')};syncBuiltinESMExports();const {runHost}=await import('./scripts/roost-codex-agent-host.mjs');await runHost({acquireLock:()=>{console.log('LOCK_REACHED');throw Error('fixture_finished')}});`;
+      const script = `import cp from 'node:child_process';import {syncBuiltinESMExports} from 'node:module';cp.spawn=()=>{console.log('FORBIDDEN_SPAWN');throw Error('spawn_forbidden')};syncBuiltinESMExports();const {runHost}=await import('./scripts/roost-codex-agent-host.mjs');await runHost({providerAdmissionForTest:()=>null,acquireLock:()=>{console.log('LOCK_REACHED');throw Error('fixture_finished')}});`;
       child = spawn(process.execPath, ["--input-type=module", "-e", script], { windowsHide: true, env: { ...process.env, ROOST_BASE_URL: `http://127.0.0.1:${server.address().port}`, ROOST_AGENT_API_KEY: "synthetic-only", ROOST_AGENT_HOST_CONFIG: config }, stdio: ["ignore", "pipe", "pipe"] });
       let output = "", errors = ""; child.stdout.on("data", c => output += c); child.stderr.on("data", c => errors += c);
       await once(child, "close");

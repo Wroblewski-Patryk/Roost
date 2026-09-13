@@ -1,11 +1,13 @@
 # RF-HOST-033: pinned OpenShell installation/security preflight
 
-Follow-up: [RF-HOST-034](agent-wsl-environment.md#rf-host-034-durability-diagnosis)
-confirmed a persisted toggle and failed distribution proxy. Its one authorized
-Docker Desktop restart failed at the ingest listener; host daemon recovery and
-workload continuity now block further integration/installation checks.
+Current follow-up: [RF-HOST-035](host-lifecycle-safety.md) supersedes the
+historical Docker-down blocker after owner recovery and two passing natural-use
+cycles. **READY-FOR-PINNED-OPENSHELL-INSTALL** is a prerequisite verdict only;
+no installation or execution is authorized by it. The pins and bounded plan
+below remain unchanged. Hard resource/capture and sandbox enforcement gates
+remain open for later work. Never force an integrated distribution to stop.
 
-## Verdict and authority
+## Historical RF-HOST-033 verdict and authority
 
 **BLOCKED**, checked 2026-09-13. Release artifacts and the Docker deployment
 candidate are identified, but the prepared user distribution no longer exposes
@@ -190,7 +192,8 @@ No provider credentials, inference route, OIDC login or cloud account is needed.
    fixture files. Remove an image only if introduced by this installation and
    unreferenced by pre-existing resources. Never global prune, wildcard deletion,
    shared-volume deletion or workload recreation. Verify the earlier workload
-   baseline, then terminate only the dedicated WSL distribution.
+   baseline, then let the dedicated WSL distribution idle naturally. Healthy
+   Running with its integration proxy is acceptable; never force termination.
 
 Source SHA-256 values before private adaptations:
 Compose `856b994c1e1ec7af3954de03d768f2dc8ec28e751c1bdc0235f54206f79df184`;
@@ -230,7 +233,7 @@ also unproven. Installation readiness must never be mistaken for these proofs.
 | Network | Replace the bundled permissive policy completely: default deny and exactly one explicit synthetic endpoint/binary. No provider/inference setup, broad globs or inherited API allowlists. Denied DNS/IP/direct connections and gateway admin methods must fail. |
 | Docker boundary | No socket, Docker CLI or reachable host container API in the agent sandbox; no administrator mTLS identity/token. Merely hiding the CLI is insufficient. |
 | CPU/RAM/PIDs/disk | Effective limits match the proposed ceilings before stress. Every writable path and all log/output storage must have a demonstrated bound. Quota exhaustion stays inside the experiment; absent hard disk/log controls fail. |
-| Cleanup/continuity | Deterministic teardown removes every newly recorded runtime resource, leaves existing workload identities/states and policies unchanged, and ends with only the dedicated distribution stopped. Any unrelated effect fails; do not auto-repair it. |
+| Cleanup/continuity | Deterministic teardown removes every newly recorded runtime resource, leaves existing workload identities/states and policies unchanged, and allows the dedicated distribution to idle naturally; healthy Running with its integration proxy is acceptable. Never force termination. Any unrelated effect fails; do not auto-repair it. |
 
 ## Verification and next task
 

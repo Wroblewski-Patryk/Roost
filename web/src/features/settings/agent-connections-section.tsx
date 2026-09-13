@@ -39,6 +39,7 @@ function formatHeartbeat(value: string | null | undefined, locale: string) {
 function admissionLabel(host: AgentHost, polish: boolean) {
   const admission = host.runtime?.compatibility;
   const reasons = host.runtime?.executionUnavailableReasons || [];
+  if (reasons.includes("host_lifecycle_isolation_unproven")) return polish ? "Wykonywanie zadań zablokowane: izolacja hosta niepotwierdzona." : "Task execution blocked: host isolation is unproven.";
   if (reasons.includes("execution_reconciliation_required")) return polish ? "Wykonanie zatrzymane. Uzgodnij jego stan przed ponownym startem hosta." : "Execution stopped. Reconcile it before restarting the host.";
   if (reasons.some(reason => reason.startsWith("api_"))) return polish ? "Host nie potwierdza zgodności API — praca zablokowana. Sprawdź wersje i połączenie." : "The host cannot confirm API compatibility — work is blocked. Check versions and connectivity.";
   if (admission?.compatible) return polish ? "Zgodność potwierdzona" : "Compatibility confirmed";

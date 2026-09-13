@@ -48,6 +48,10 @@ try {
         await panel.getByText("hermes_native_tools_isolation_unproven", { exact: true }).waitFor();
       }
       if (state === "timeout") await panel.getByText("hermes_version_timeout", { exact: true }).waitFor();
+      if (["direct_codex", "hermes_codex", "verified", "timeout"].includes(state)) {
+        await panel.getByText("host_lifecycle_isolation_unproven", { exact: true }).waitFor();
+        await panel.getByText(locale === "pl" ? /Worker nie uruchamia automatycznej naprawy/ : /Worker does not perform automatic recovery/).waitFor();
+      }
     } else await page.getByText(locale === "pl" ? "Nie udało się odczytać stanu hosta" : "Host status could not be loaded", { exact: true }).waitFor();
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     assert.deepEqual(errors, []); assert.deepEqual(writes, []);

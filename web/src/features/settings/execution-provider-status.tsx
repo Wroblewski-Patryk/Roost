@@ -8,6 +8,8 @@ export type ProviderReport = {
 };
 export type ProviderRegistry = { providers: Array<{ kind: string; version: string }> };
 const labels: Record<string, [string, string]> = {
+  host_lifecycle_isolation_unproven: ["Brak potwierdzonej izolacji agenta od sterowania Dockerem i WSL", "Agent isolation from Docker and WSL control is unproven"],
+  host_maintenance_required: ["Wymagana osobna decyzja właściciela o konserwacji hosta", "A separate owner decision on host maintenance is required"],
   execution_provider_unknown: ["Nieznany provider", "Unknown provider"],
   hermes_disabled: ["Hermes wyłączony w konfiguracji", "Hermes disabled in configuration"],
   hermes_identity_invalid: ["Niepotwierdzone oficjalne źródło", "Official source not confirmed"],
@@ -43,7 +45,7 @@ export function ExecutionProviderStatus({ report, registry }: { report?: Provide
       {report?.kind === "hermes_codex" ? <div><dt>{pl ? "Broker odczytu MCP" : "Read-only MCP broker"}</dt><dd>{report.brokerContractVerified ? (pl ? "kontrakt przetestowany bez modelu" : "contract tested without a model") : (pl ? "kontrakt niezweryfikowany" : "contract unverified")}</dd></div> : null}
       <div><dt>{pl ? "Wymagany przed pilotażem" : "Required before pilot"}</dt><dd>Hermes → Codex{hermes ? ` · ${hermes.version}` : ""} · {pl ? "jeszcze niegotowy" : "not ready yet"}</dd></div>
     </dl>
-    <p className="text-sm mt-2">{pl ? "Następny krok: budżetowany test zgodności Direct Codex i Hermes z modelem na tym samym syntetycznym pakiecie, tylko do odczytu. Uruchamianie zadań wymaga osobnego dopuszczenia." : "Next: a budgeted read-only model compatibility test of Direct Codex and Hermes on the same synthetic packet. Task execution requires separate admission."}</p>
+    <p className="text-sm mt-2">{pl ? "Wykonywanie zadań jest zablokowane do potwierdzenia izolacji hosta. Awaria Dockera lub integracji WSL wymaga zachowania stanu pracy i osobnej decyzji właściciela o konserwacji. Worker nie uruchamia automatycznej naprawy." : "Task execution is blocked until host isolation is verified. Docker or WSL integration failure requires preserving work state and a separate owner maintenance decision. Worker does not perform automatic recovery."}</p>
     {blockers.length ? <details className="mt-2 text-sm"><summary className="cursor-pointer focus-visible:outline focus-visible:outline-2">{pl ? "Szczegóły gotowości providera" : "Provider readiness details"}</summary>
       {verified ? <p className="mt-2 text-sm">{pl ? "Odcisk instalacji" : "Installation fingerprint"}: <code>{report.installation?.fingerprint}</code>. {report.installation?.checkedAt ? <><time dateTime={report.installation.checkedAt}>{new Date(report.installation.checkedAt).toLocaleString(pl ? "pl-PL" : "en-GB")}</time>. </> : null}{pl ? "Stan z ostatniej weryfikacji Workera. Źródło bez podpisu. Weryfikacja plików nie potwierdza zgodności z Roost." : "Snapshot from the last Worker check. Unsigned source. File verification does not establish Roost compatibility."}</p> : null}
       <ul className="mt-2 space-y-2">{blockers.map(code => <li key={code}>{labels[code]![pl ? 0 : 1]} <code className="block text-xs break-all">{code}</code></li>)}</ul>

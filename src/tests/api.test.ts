@@ -8,7 +8,16 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import type { AddressInfo } from "net";
-import test, { after, before } from "node:test";
+import test, { after, before, mock } from "node:test";
+import * as providerContract from "../modules/agent-runtime/execution-provider";
+// Older API fixtures exercise gates after provider admission with synthetic work.
+// Override only in this test process; production has no flag/config to admit it.
+const realProviderAdmission = providerContract.providerAdmissionReason;
+const syntheticProviderAdmission = (value: unknown) => {
+  const reason = realProviderAdmission(value);
+  return reason === "host_lifecycle_isolation_unproven" ? null : reason;
+};
+const providerAdmissionMock = mock.method(providerContract, "providerAdmissionReason", syntheticProviderAdmission);
 import { createApp } from "../app";
 import { prisma } from "../db/prisma";
 import { signClickUpWebhookBody, verifyClickUpWebhookSignature } from "../integrations/clickup/webhook-signature";
@@ -3580,6 +3589,38 @@ test("owner-authorized host provisioning fixes scope, rejects duplicate credenti
   await provisionHostKey({ ...input, action: "revoke", keyId: record.id });
   assert.equal((await request("/v1/connection", { headers: workerAuth })).status, 403);
   assert.ok(await prisma.event.findFirst({ where: { resourceId: record.id, type: "api_key.revoked" } }));
+});
+
+test("host lifecycle admission rejects forged healthy maintenance authority before claims or recovery", async () => {
+  providerAdmissionMock.mock.mockImplementation(realProviderAdmission);
+  const enabled = process.env.ROOST_CODEX_EXECUTION_ENABLED;
+  process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
+  try {
+    const owner = await registerOwner("lifecycle-owner@example.com", "Lifecycle fixture");
+    const headers = { Authorization: `Bearer ${owner.token}`, ...hostProtocolHeaders };
+    for (const executionProvider of [undefined, { kind: "direct_codex", executionSupported: true,
+      hostLifecycle: { engine: "available", openshell: "ready", decision: { ownerApproved: true } },
+      command: "docker desktop restart", taskType: "maintenance" }]) {
+      const registered = await request("/v1/agent-runtime/hosts/register", { method: "POST", headers,
+        body: JSON.stringify({ name: "Lifecycle fixture", slug: "lifecycle-fixture", platform: "win32",
+          applicationSlugs: [], capabilities: protocol.requiredHostCapabilities,
+          metadata: { ...validHostMetadata, ...(executionProvider ? { executionProvider } : {}) } }) });
+      assert.equal(registered.status, 200);
+      for (const [route, body] of [["/v1/agent-runtime/executions/claim", { hostSlug: "lifecycle-fixture" }],
+        ["/v1/agent-runtime/recovery?hostSlug=lifecycle-fixture", null]] as const) {
+        const rejected = await request(route, { method: body ? "POST" : "GET", headers,
+          ...(body ? { body: JSON.stringify(body) } : {}) });
+        assert.equal(rejected.status, 409, JSON.stringify(rejected.body));
+        assert.equal((rejected.body as { errorDetails: { details: { reason: string } } }).errorDetails.details.reason,
+          "host_lifecycle_isolation_unproven");
+      }
+    }
+    assert.equal(await prisma.agentExecution.count({ where: { workspaceId: owner.workspace.id } }), 0);
+  } finally {
+    if (enabled === undefined) delete process.env.ROOST_CODEX_EXECUTION_ENABLED;
+    else process.env.ROOST_CODEX_EXECUTION_ENABLED = enabled;
+    providerAdmissionMock.mock.mockImplementation(syntheticProviderAdmission);
+  }
 });
 
 test("host protocol admission fails closed while incompatible hosts remain online", async () => {

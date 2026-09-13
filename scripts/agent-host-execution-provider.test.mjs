@@ -16,11 +16,11 @@ const hermes = registry.providers.find(provider => provider.kind === "hermes_cod
 const configured = () => ({ kind: "hermes_codex", enabled: true, officialSource: hermes.officialSource,
   version: hermes.version, commit: hermes.commit, executablePath: "C:\\Fictional\\uninstalled\\hermes.exe", policy: structuredClone(registry.hermesPolicy) });
 
-test("legacy and explicit direct provider preserve admission independent of Hermes", async () => {
+test("legacy and explicit direct providers fail closed without host containment", async () => {
   for (const config of [{}, { executionProvider: { kind: "direct_codex" } }]) {
     const report = await inspectExecutionProvider(config);
-    assert.equal(report.kind, "direct_codex"); assert.equal(report.executionSupported, true);
-    assert.equal(contract.providerAdmissionReason(report), null); assert.deepEqual(report.blockers, []);
+    assert.equal(report.kind, "direct_codex"); assert.equal(report.executionSupported, false);
+    assert.equal(contract.providerAdmissionReason(report), "host_lifecycle_isolation_unproven"); assert.ok(report.blockers.includes("host_lifecycle_isolation_unproven"));
     assert.equal(report.installedVersion, null);
   }
 });
@@ -73,7 +73,7 @@ test("Hermes explicit executable existence is inspected without starting it", { 
   } finally { await rmdir(directory); }
 });
 
-for (const kind of ["hermes_codex", "unknown"]) test(`${kind} cannot recover, lock, claim or spawn even if API claims compatibility`, { timeout: 12000 }, async () => {
+for (const kind of ["direct_codex", "hermes_codex", "unknown"]) test(`${kind} cannot recover, lock, claim or spawn even if API claims compatibility`, { timeout: 12000 }, async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "roost-provider-")), configPath = path.join(directory, "config.json");
   const requests = [], bodies = []; let heartbeats = 0, child;
   const server = createServer(async (req, res) => {

@@ -1,6 +1,13 @@
 # Adopt-before-build and execution providers
 
-Contract version: **4**. Status: Worker-sealed bootstrap input, private Windows installation attestation and a
+RF-HOST-035: [host lifecycle safety](../operations/host-lifecycle-safety.md)
+advances provider contract to v5. API/Worker deny both uncontained providers,
+retain checkpoints on host-maintenance failures and grant no host-control tools.
+Two natural-use cycles passed after owner recovery; healthy Running is allowed.
+The separate pinned-install prerequisite verdict does not activate execution.
+
+
+Contract version: **5**. Status: host lifecycle admission denial, Worker-sealed bootstrap input, private Windows installation attestation and a
 synthetically verified Worker-owned read-only MCP broker implemented,
 execution disabled; Hermes compatibility **unproven**. This contract does not authorize installation,
 model calls, application work or activation. The machine-readable
@@ -64,8 +71,9 @@ Hermes compatibility, production admission, or RF-HOST-010/020 readiness.
 The [transport ownership contract](local-codex-agent-runtime.md#transport-retry-versus-execution-retry-rf-host-010011)
 permits built-in bounded HTTP/SSE retries within the one existing deadline.
 Retry count is unavailable in current exec JSONL; partial/undelivered accounting
-remains unknown. Registry v4 is unchanged: the evidence scope is updated without
-adding shared admission fields or changing wire semantics.
+remains unknown. That historical transport evidence did not change registry v4.
+RF-HOST-035 now advances the registry to v5 with an independent host lifecycle
+denial; wire protocol remains v1.
 
 Prefer maintained complementary upstream components over a new Roost subsystem.
 Evaluate capability fit, license, pinned identity, security, resource overhead,
@@ -79,10 +87,11 @@ owns security admission, execution lease, one writer, canonical repository,
 process lifetime, stop and recovery. A provider supplies transient inference
 and tool interaction inside that boundary; it is not a workflow engine.
 
-`direct_codex` is the existing CLI reference/fallback. The recorded CLI version
+`direct_codex` is the existing CLI reference, with task execution blocked. The recorded CLI version
 is an observed comparison reference, not a new forced update or proof of binary
-provenance. Legacy hosts without a provider declaration retain this path and all
-existing gates. Its hard output-token enforcement remains unavailable.
+provenance. Legacy hosts without a provider declaration retain this identity,
+but now fail host lifecycle admission before claim. Hard output-token
+enforcement also remains unavailable.
 
 `hermes_codex` means the official Nous Research Hermes runtime using Codex,
 launched only by Local Worker and accessing Roost through bounded MCP/API.
@@ -102,7 +111,7 @@ bounded adoption decision and complete registry entry before use.
 
 The optional `executionProvider` object belongs only in the private host JSON
 selected by `ROOST_AGENT_HOST_CONFIG`, outside source repositories. Omission
-selects `direct_codex`; an explicit malformed/unknown declaration blocks work.
+selects `direct_codex`; neither omission nor an explicit declaration admits work.
 For Hermes its accepted fields are:
 
 | Field | Contract |

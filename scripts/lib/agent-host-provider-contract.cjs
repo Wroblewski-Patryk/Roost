@@ -1,7 +1,9 @@
 "use strict";
 // Shared public contract. Never serialize private configuration or arbitrary input.
 const registry = require("../../src/modules/agent-runtime/execution-providers.json");
+const lifecycle = require("./agent-host-lifecycle.cjs");
 const blockerCodes = Object.freeze([
+  lifecycle.admissionReason,
   "execution_provider_unknown", "hermes_disabled", "hermes_identity_invalid", "hermes_pin_invalid",
   "hermes_windows_required", "hermes_executable_invalid", "hermes_executable_missing",
   "hermes_mcp_policy_invalid", "hermes_authority_policy_invalid", "hermes_compatibility_unproven",
@@ -15,8 +17,11 @@ function providerKind(value) {
   return ["direct_codex", "hermes_codex"].includes(record(value).kind) ? value.kind : "unknown";
 }
 function providerAdmissionReason(value) {
+  // No current provider has an admitted host-isolation adapter. Whole-provider
+  // denial precedes execution, so scripts/encoded commands and maintenance prose
+  // cannot bypass it. New admission requires code and independent enforcement proof.
   const kind = providerKind(value);
-  return kind === "direct_codex" ? null : kind === "hermes_codex" ? "hermes_compatibility_unproven" : "execution_provider_unknown";
+  return kind === "direct_codex" ? lifecycle.admissionReason : kind === "hermes_codex" ? "hermes_compatibility_unproven" : "execution_provider_unknown";
 }
 function projectProvider(value) {
   const input = record(value), kind = providerKind(value);
@@ -24,6 +29,7 @@ function projectProvider(value) {
   const blockers = Array.isArray(input.blockers) ? input.blockers.filter(code => blockerCodes.includes(code)) : [];
   const admission = providerAdmissionReason(value);
   if (admission) blockers.push(admission);
+  if (kind === "hermes_codex") blockers.push(lifecycle.admissionReason);
   if (kind === "hermes_codex") blockers.push("hermes_native_tools_isolation_unproven", "hermes_output_cost_budget_unproven", "hermes_stop_recovery_unproven");
   const evidence = record(input.installation);
   const verified = kind === "hermes_codex" && evidence.status === "verified" && evidence.version === entry.version
@@ -35,7 +41,8 @@ function projectProvider(value) {
   return { contractVersion: registry.contractVersion, kind, pinnedVersion: entry?.version ?? null,
     installedVersion: verified ? entry.version : null, installation, compatibility: kind === "direct_codex" ? "reference" : "unproven",
     brokerContractVerified: kind === "hermes_codex" && registry.brokerContract.verified === true,
-    executionSupported: kind === "direct_codex", blockers: [...new Set(blockers)] };
+    hostLifecycle: lifecycle.lifecycleState(),
+    executionSupported: false, blockers: [...new Set(blockers)] };
 }
 function sanitizeProviderMetadata(value) {
   const metadata = { ...record(value) };

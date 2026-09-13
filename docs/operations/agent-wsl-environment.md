@@ -1,13 +1,14 @@
-# RF-HOST-031/032/034: dedicated Ubuntu WSL environment
+# RF-HOST-031/032/034/035: dedicated Ubuntu WSL environment
 
-Current result: [RF-HOST-034](#rf-host-034-durability-diagnosis) is **BLOCKED**.
-The persisted integration toggle is enabled, but the distribution proxy failed.
-One authorized Docker Desktop restart then failed during ingest-listener startup.
-Both WSL distributions are stopped; the host daemon is unavailable and baseline
-workload recovery is unverified. No further repair was attempted. Successful
-RF-HOST-032 observations below are historical, not current health.
+Current result: [RF-HOST-035](host-lifecycle-safety.md) confirms two harmless
+natural-use cycles with healthy native Docker access, Windows Engine 29.7.2
+and continuity of two running workloads. The distribution remained Running
+with its integration process; no forced stop or cold-start proof is claimed.
+Owner maintenance restored the historical RF-HOST-034 outage. Its failure
+record below remains intact; forced-termination tests are invalidated as
+natural lifecycle evidence. Do not repeat their termination/repair steps.
 
-## RF-HOST-032 result
+## RF-HOST-032 result (historical)
 
 **READY-FOR-OPENSHELL-PREFLIGHT**, verified 2026-09-13. The dedicated Ubuntu
 24.04 LTS distribution has working native Docker Desktop integration under WSL 2, with a non-root

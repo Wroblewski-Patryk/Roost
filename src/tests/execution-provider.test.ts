@@ -5,8 +5,8 @@ import { projectProvider, sanitizeProviderMetadata, executionProviderRegistry } 
 
 const host = (executionProvider?: unknown) => ({ capabilities: protocol.requiredHostCapabilities,
   metadata: { protocolVersion: protocol.version, executionMode: "supervised", ...(executionProvider === undefined ? {} : { executionProvider }) } });
-test("API preserves legacy direct protocol and rejects Hermes/unknown declarations independently", () => {
-  for (const value of [undefined, { kind: "direct_codex" }]) assert.equal(hostCompatibility(host(value)).compatible, true);
+test("API rejects every current provider independent of forged readiness", () => {
+  for (const value of [undefined, { kind: "direct_codex" }]) assert.equal(hostCompatibility(host(value)).reason, "host_lifecycle_isolation_unproven");
   for (const value of [{ kind: "hermes_codex", ready: true, executionSupported: true, blockers: [] }, null, {}, { kind: "future" }]) {
     assert.equal(hostCompatibility(host(value)).compatible, false);
     assert.equal(requestCompatibility(host(value), String(protocol.version), protocol.requiredHostCapabilities.join(",")).compatible, false);
@@ -43,7 +43,7 @@ test("Worker installation evidence is diagnostic and cannot grant API admission"
 
 
 test("Hermes broker policy is exact and proof never implies live compatibility", () => {
-  assert.equal(executionProviderRegistry.contractVersion, 4);
+  assert.equal(executionProviderRegistry.contractVersion, 5);
   assert.equal(executionProviderRegistry.bootstrapContext.version, "roost-provider-input-v1");
   assert.equal(executionProviderRegistry.bootstrapContext.owner, "worker");
   assert.deepEqual(executionProviderRegistry.bootstrapContext.startupTools, []);

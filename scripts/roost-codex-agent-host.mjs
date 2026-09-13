@@ -1,4 +1,5 @@
 import { inspectExecutionProvider, providerAdmissionReason } from "./lib/agent-host-execution-provider.mjs";
+import lifecycle from "./lib/agent-host-lifecycle.cjs";
 import { spawn } from "node:child_process";
 import { guardHostContent, hostTransport, boundedRunnerLines, readHostResponse } from "./lib/agent-host-redaction.mjs";
 import { readFile } from "node:fs/promises";
@@ -57,6 +58,7 @@ let shutdownRequested = false;
 let protocolHalted = false;
 let retainWriterLock = false;
 let registeredHost = null;
+let providerAdmission = providerAdmissionReason;
 
 function delay(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -89,7 +91,7 @@ async function refreshAdmission() {
   host.metadata.executionProvider = await inspectExecutionProvider(config);
   registeredHost = await api(registeredHost ? `/v1/agent-runtime/hosts/${registeredHost.id}/heartbeat` : "/v1/agent-runtime/hosts/register",
     { method: "POST", body: JSON.stringify(registeredHost ? { metadata: host.metadata, applicationSlugs: host.applicationSlugs, capabilities: host.capabilities } : host) });
-  const reason = providerAdmissionReason(host.metadata.executionProvider) || apiCompatibility(registeredHost?.runtime, host.capabilities);
+  const reason = providerAdmission(host.metadata.executionProvider) || apiCompatibility(registeredHost?.runtime, host.capabilities);
   host.metadata.executionUnavailableReasons = reason ? [reason] : [];
   return reason;
 }
@@ -118,6 +120,7 @@ async function assertAdmission() {
   try { reason = await refreshAdmission(); }
   catch (error) { reason = "api_unavailable"; status = error.status; }
   if (reason) {
+    if (reason === lifecycle.admissionReason) throw lifecycle.lifecycleError();
     const failure = protocolAdmissionError(reason);
     if ([401, 403].includes(status)) failure.status = status;
     throw failure;
@@ -236,7 +239,8 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     const digest = await duration.wait(workspaceDigest(repositoryPath));
     const preparedCommit = await duration.wait(readTaskCommit(repositoryPath));
     const assertProviderAuthority = () => {
-      const reason = providerAdmissionReason(host.metadata.executionProvider) || apiCompatibility(registeredHost?.runtime, host.capabilities);
+      const reason = providerAdmission(host.metadata.executionProvider) || apiCompatibility(registeredHost?.runtime, host.capabilities);
+      if (reason === lifecycle.admissionReason) throw lifecycle.lifecycleError();
       if (reason) throw protocolAdmissionError(reason);
       if (stopRequested || stopping) throw contextStopError();
       lease.assertValid(); duration.assertWithinBudget(); outputBudget.assertWithinBudget();
@@ -349,6 +353,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: summary.slice(0, 10000), finalResponse, codexThreadId, changedFiles, verification, usage, resultRevision, metadata: { repositoryPathLabel: path.basename(repositoryPath), preExistingDirtyFiles: beforeStatus.map(statusPath), transportAccounting } })
     });
   } catch (error) {
+    if (error.hostLifecycle) { stopWorker(); lease.stop(); await stopPromise; throw error; }
     if (error.contextStop || lease.failure?.contextStop) {
       stopWorker();
       lease.stop();
@@ -428,7 +433,10 @@ process.on("SIGTERM", () => { stopping = true; shutdownRequested = true; });
 // Process tests inject a private lock, branch reader and synthetic post-turn budget guard.
 // The CLI always uses the fixed lock, Git branch reader and fail-closed Codex guard. No
 // dependency can be selected by configuration, environment or an API packet.
-export async function runHost({ acquireLock = (options) => acquireWriterLock(undefined, options), onCheckpoint, createOutputBudget = createCodexOutputBudget, readTaskBranch = readCurrentTaskBranch, readTaskCommit = readCurrentTaskCommit, readTaskPaths = readCommittedTaskPaths } = {}) {
+export async function runHost({ acquireLock = (options) => acquireWriterLock(undefined, options), onCheckpoint, createOutputBudget = createCodexOutputBudget, readTaskBranch = readCurrentTaskBranch, readTaskCommit = readCurrentTaskCommit, readTaskPaths = readCommittedTaskPaths, providerAdmissionForTest = providerAdmissionReason } = {}) {
+  // Synthetic process tests can exercise later fences. CLI/config/env/packets
+  // cannot select this dependency; production always uses the shared denial.
+  providerAdmission = providerAdmissionForTest;
   // Observe never enters recovery, writer locking, claim, or execution code.
   if (config.executionMode === "observe") return runObserver({ config, api, stopped: () => stopping });
   if (!await waitForAdmission()) return;
@@ -471,6 +479,7 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
           await execute(execution, writerLock, { onCheckpoint, createOutputBudget, readTaskBranch, readTaskCommit, readTaskPaths });
         }
       } catch (error) {
+        if (error.hostLifecycle) { stopping = true; retainWriterLock = true; }
         if (error.protocolAdmission) { protocolHalted = true; stopping = true; retainWriterLock = true; }
         if (error.providerFailure) stopping = true;
         if (error.readyAdmission || error.redaction) { stopping = true; if (execution) retainWriterLock = true; }
@@ -485,10 +494,11 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
       if (!stopping) await delay(execution ? 1_000 : pollIntervalMs);
     }
   } catch (error) {
+    if (error.hostLifecycle) { stopping = true; retainWriterLock = true; }
     if (error.protocolAdmission) { protocolHalted = true; stopping = true; retainWriterLock = true; }
     if (pending[0]) {
       retainWriterLock = true;
-      if ((error.outputLimit || error.durationLimit || error.contextAdmission || error.protocolAdmission || error.readyAdmission) && resumedExecution) await reportFailure(resumedExecution, error, writerLock);
+      if ((error.hostLifecycle || error.outputLimit || error.durationLimit || error.contextAdmission || error.protocolAdmission || error.readyAdmission) && resumedExecution) await reportFailure(resumedExecution, error, writerLock);
       else await reportRecovery(pending[0], recoveryReason(error));
     }
     throw error;

@@ -1,5 +1,5 @@
 {
-  "contractVersion": 4,
+  "contractVersion": 5,
   "bootstrapContext": {
     "version": "roost-provider-input-v1",
     "owner": "worker",
@@ -29,10 +29,10 @@
       "status": "reference",
       "pinScope": "Observed reference CLI version; installation provenance and binary digest remain unverified. Not an enforced legacy admission pin.",
       "owner": "Local Worker",
-      "capability": "Existing supervised Codex CLI execution and comparison fallback",
+      "capability": "Reference CLI only; task execution blocked until host isolation is enforced",
       "boundary": "Roost owns task, authority, queue and audit. Worker owns lease, process and repository guards. Provider owns transient inference only.",
       "updateRollback": "Explicit private installation update; retain previous binary/config; rerun compatibility and Worker regressions before adoption.",
-      "healthReadiness": "Existing protocol and execution gates remain required. Reference availability does not establish Hermes or pilot readiness.",
+      "healthReadiness": "Host lifecycle isolation and output-token enforcement remain unproven. API and Worker deny task execution before lock, claim, recovery or spawn.",
       "resourceCost": "One local CLI process plus model usage; duration enforced by Worker. Hard output-token enforcement remains unavailable.",
       "failureMode": "Existing stop/reconciliation path; no automatic alternate provider or retry outside the Roost queue."
     },
@@ -55,14 +55,17 @@
       "capability": "Future Codex-backed inference through Hermes and bounded Roost MCP/API",
       "boundary": "No independent task, memory, kanban, schedule, delegation or session authority. No Roost credentials in provider/model environment; no direct database or arbitrary filesystem access.",
       "updateRollback": "No automatic install/update. Private pinned environment, retained prior environment/config, license/dependency review and repeated compatibility PoC for every pin change.",
-      "healthReadiness": "Contract v4 adds Worker-sealed startup input with no model bootstrap tools. The separately verified read-only broker is reserved for future runtime reads. Native Hermes isolation, live compatibility and budget/stop/recovery remain unproven. Hermes task execution stays blocked; observer never starts a broker.",
+      "healthReadiness": "Contract v5 adds Worker-sealed startup input with no model bootstrap tools. The separately verified read-only broker is reserved for future runtime reads. Native Hermes isolation, live compatibility and budget/stop/recovery remain unproven. Hermes task execution stays blocked; observer never starts a broker.",
       "resourceCost": "Python >=3.11,<3.14 plus dependencies, local provider process and model usage. Disk, memory, latency and token overhead unmeasured; measure in read-only PoC before any pilot.",
       "failureMode": "Expected not-ready state without incidents, installation, claim or automatic fallback. Only an explicitly configured, integrity-checked version probe can start. Worker/API task admission fails closed."
     }
   ],
   "hermesPolicy": {
     "mcpServer": "roost",
-    "minimumTools": ["roost_get_execution_packet", "roost_get_application_context"],
+    "minimumTools": [
+      "roost_get_execution_packet",
+      "roost_get_application_context"
+    ],
     "supportsParallelToolCalls": false,
     "prompts": false,
     "resources": false,
@@ -75,5 +78,13 @@
     "scheduleAuthority": "none",
     "delegationAuthority": "none",
     "sessionAuthority": "none"
+  },
+  "hostLifecycle": {
+    "version": "roost-host-lifecycle-v1",
+    "authority": "worker",
+    "agentHostControl": "none",
+    "automaticRecovery": false,
+    "executionSupported": false,
+    "proofScope": "Pre-execution denial of current uncontained providers. Docker health and owner maintenance decisions cannot admit agent execution."
   }
 }

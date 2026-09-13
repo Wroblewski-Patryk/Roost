@@ -1,5 +1,12 @@
 # Foundation requirements traceability
 
+RF-HOST-035: [host lifecycle safety](../operations/host-lifecycle-safety.md)
+advances provider contract to v5. API/Worker deny both uncontained providers,
+retain checkpoints on host-maintenance failures and grant no host-control tools.
+Two natural-use cycles passed after owner recovery; healthy Running is allowed.
+The separate pinned-install prerequisite verdict does not activate execution.
+
+
 Version: ROOST-INTERVIEW-FOUNDATION-V2. Audit baseline: `36be71bcef2dced598f41f6377724741f4eb2107`.
 Decision authority and cutoff: [frozen requirements registry](../product/interview-foundation-v2.md).
 One row per stable requirement; repeated interview approvals share acceptance clauses.

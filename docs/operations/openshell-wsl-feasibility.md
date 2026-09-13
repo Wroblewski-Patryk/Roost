@@ -1,5 +1,10 @@
 # RF-HOST-030: OpenShell whole-process isolation feasibility
 
+Current follow-up: [RF-HOST-035 host lifecycle safety](host-lifecycle-safety.md)
+supersedes the historical RF-HOST-034 outage after owner recovery. Two natural
+use cycles passed; forced termination is prohibited and is not durability proof.
+
+
 Follow-up: [RF-HOST-031/032](agent-wsl-environment.md) installed the dedicated user
 distribution and verified native Docker integration and workload continuity.
 The final stopped-state check passed in RF-HOST-032. Subsequent
