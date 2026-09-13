@@ -1,0 +1,1339 @@
+{
+  "schemaId": "roost-codex-standard-policy-sources-v1",
+  "taskId": "RF-HERMES-013",
+  "sources": {
+    "npmPackage": {
+      "requestOrdinal": 1,
+      "url": "https://registry.npmjs.org/npm/latest",
+      "responseSha256": "67da15c69ae934e5267c801208428a1fe8f79fb488d6cbb562081416f55f24bb",
+      "bodyBytes": 66824,
+      "status": 200,
+      "outcome": "complete",
+      "package": {
+        "name": "npm",
+        "version": "12.0.2",
+        "gitHead": "332350fd21e8bd040ce68a8f618c16ccfd23dba7",
+        "repository": {
+          "url": "git+https://github.com/npm/cli.git",
+          "type": "git"
+        },
+        "engines": {
+          "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+        },
+        "os": null,
+        "cpu": null,
+        "bin": {
+          "npm": "bin/npm-cli.js",
+          "npx": "bin/npx-cli.js"
+        },
+        "scripts": {
+          "lint": "node . run eslint",
+          "snap": "tap",
+          "test": "tap",
+          "eslint": "eslint \"**/*.{js,cjs,ts,mjs,jsx,tsx}\"",
+          "lintfix": "node . run eslint -- --fix",
+          "prepack": "node . run build -w docs",
+          "dumpconf": "env | grep npm | sort | uniq",
+          "licenses": "npx licensee --production --errors-only",
+          "lint-all": "node . run lint --workspaces --include-workspace-root --if-present",
+          "postlint": "template-oss-check",
+          "posttest": "node . run lint",
+          "test-all": "node . run test --workspaces --include-workspace-root --if-present",
+          "resetdeps": "node scripts/resetdeps.js",
+          "dependencies": "node scripts/bundle-and-gitignore-deps.js && node scripts/dependency-graph.js",
+          "test:nocolor": "CI=true tap -Rclassic",
+          "rp-pull-request": "node scripts/update-authors.js",
+          "template-oss-apply": "template-oss-apply --force"
+        },
+        "dependencies": {
+          "ms": "^2.1.2",
+          "ini": "^7.0.0",
+          "tar": "^7.5.19",
+          "diff": "^8.0.2",
+          "glob": "^13.0.6",
+          "nopt": "^10.0.1",
+          "read": "^6.0.0",
+          "ssri": "^14.0.0",
+          "archy": "~1.0.0",
+          "chalk": "^5.6.2",
+          "p-map": "^7.0.4",
+          "which": "^7.0.0",
+          "abbrev": "^5.0.0",
+          "pacote": "^22.0.0",
+          "semver": "^7.8.5",
+          "cacache": "^21.0.1",
+          "ci-info": "^4.4.0",
+          "is-cidr": "^7.0.0",
+          "minipass": "^7.1.3",
+          "node-gyp": "^13.0.0",
+          "proc-log": "^7.0.0",
+          "bin-links": "^7.0.0",
+          "libnpmorg": "^9.0.0",
+          "minimatch": "^10.2.5",
+          "treeverse": "^3.0.0",
+          "@npmcli/fs": "^6.0.0",
+          "libnpmdiff": "^9.0.2",
+          "libnpmexec": "^11.0.2",
+          "libnpmfund": "^8.0.2",
+          "libnpmpack": "^10.0.2",
+          "libnpmteam": "^9.0.0",
+          "text-table": "~0.2.0",
+          "@npmcli/git": "^8.0.0",
+          "fs-minipass": "^3.0.3",
+          "graceful-fs": "^4.2.11",
+          "npm-profile": "^13.0.1",
+          "libnpmaccess": "^11.0.0",
+          "libnpmsearch": "^10.0.0",
+          "@sigstore/tuf": "^5.0.0",
+          "libnpmpublish": "^12.0.0",
+          "libnpmversion": "^9.0.0",
+          "@npmcli/config": "^11.0.1",
+          "@npmcli/redact": "^5.0.0",
+          "supports-color": "^10.2.2",
+          "hosted-git-info": "^10.1.1",
+          "npm-package-arg": "^14.0.0",
+          "qrcode-terminal": "^0.12.0",
+          "@npmcli/arborist": "^10.0.2",
+          "npm-audit-report": "^8.0.0",
+          "init-package-json": "^9.0.0",
+          "make-fetch-happen": "^16.0.1",
+          "minipass-pipeline": "^1.2.4",
+          "npm-pick-manifest": "^12.0.0",
+          "npm-user-validate": "^5.0.0",
+          "@npmcli/run-script": "^11.0.0",
+          "npm-install-checks": "^9.0.0",
+          "npm-registry-fetch": "^20.0.1",
+          "tiny-relative-date": "^2.0.2",
+          "fastest-levenshtein": "^1.0.16",
+          "parse-conflict-json": "^6.0.0",
+          "@npmcli/package-json": "^8.0.0",
+          "@npmcli/promise-spawn": "^10.0.0",
+          "spdx-expression-parse": "^4.0.0",
+          "@npmcli/map-workspaces": "^6.0.0",
+          "validate-npm-package-name": "^8.0.0",
+          "@npmcli/metavuln-calculator": "^10.0.0",
+          "@isaacs/string-locale-compare": "^1.1.0",
+          "json-parse-even-better-errors": "^6.0.0"
+        },
+        "optionalDependencies": null,
+        "dist": {
+          "integrity": "sha512-uIXokLlBj6FpNUTQX1PmT5pz7BlIN9QlixX+zdaSNHsd0qUXsbDLr50xzY6Sw7cJVr0uzHKDOle0swmPW/p5Qw==",
+          "tarball": "https://registry.npmjs.org/npm/-/npm-12.0.2.tgz",
+          "unpackedSize": 12362712,
+          "fileCount": 1942,
+          "signatures": [
+            {
+              "sig": "MEQCIEav1hmljeGnXWG4WI3mYm365EXMOXIdc+eMAUyz72dTAiARxq8J55EqL76yd5E5tOh+CNPp8h2DmKoGpjkPt98kcw==",
+              "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+            },
+            {
+              "sig": "MEYCIQD8yupekil82a8urYKZgb12V91coNpOlmsbcgJkgKkHNgIhAJlNUURWNPpfAQh7u0ZIYub7zNpYOTfziksBemnZOO0D",
+              "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+            }
+          ]
+        }
+      }
+    },
+    "sigstorePackage": {
+      "requestOrdinal": 2,
+      "url": "https://registry.npmjs.org/sigstore/latest",
+      "responseSha256": "d15360adff505187b0b96107fd82fd4154d09d229d3a16a5623fcfe03bf2f62e",
+      "bodyBytes": 2113,
+      "status": 200,
+      "outcome": "complete",
+      "package": {
+        "name": "sigstore",
+        "version": "5.0.0",
+        "gitHead": "7d2900eca1c22b3f87c13987c8d4b7c9a29b733a",
+        "repository": {
+          "url": "git+https://github.com/sigstore/sigstore-js.git",
+          "type": "git"
+        },
+        "engines": {
+          "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+        },
+        "os": null,
+        "cpu": null,
+        "bin": null,
+        "scripts": {
+          "test": "jest",
+          "build": "tsc --build",
+          "clean": "shx rm -rf dist *.tsbuildinfo"
+        },
+        "dependencies": {
+          "@sigstore/tuf": "^5.0.0",
+          "@sigstore/core": "^4.0.0",
+          "@sigstore/sign": "^5.0.0",
+          "@sigstore/bundle": "^5.0.0",
+          "@sigstore/verify": "^4.0.0",
+          "@sigstore/protobuf-specs": "^0.5.0"
+        },
+        "optionalDependencies": null,
+        "dist": {
+          "integrity": "sha512-hJqJfoG/e4qFQaauQL00c6J6FrHLBGKtkFvW3JbTSIEFOhLrSjdSM/gWd/yUOfYo/gsERehTXGC1VZWX+9X4Dg==",
+          "tarball": "https://registry.npmjs.org/sigstore/-/sigstore-5.0.0.tgz",
+          "unpackedSize": 37893,
+          "fileCount": 9,
+          "signatures": [
+            {
+              "sig": "MEUCIGIJh+4RKmp1wBB1Oh2HPPl+OFV2V3T/51C2IV3Wuaa4AiEA+vjXhMpx2l/O73LLM4XpGwvCgNiBTlNAHzry/lPSAhU=",
+              "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+            }
+          ]
+        }
+      }
+    },
+    "pacotePackage": {
+      "requestOrdinal": 3,
+      "url": "https://registry.npmjs.org/pacote/latest",
+      "responseSha256": "70c0f83c2152ab2eb2c42387d4682b0e8b1c6d6b2d91310ccf9c628326eb51ef",
+      "bodyBytes": 2978,
+      "status": 200,
+      "outcome": "complete",
+      "package": {
+        "name": "pacote",
+        "version": "22.0.0",
+        "gitHead": "e4e44c5428c840d853b5ef8641e169b5b79328ab",
+        "repository": {
+          "url": "git+https://github.com/npm/pacote.git",
+          "type": "git"
+        },
+        "engines": {
+          "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+        },
+        "os": null,
+        "cpu": null,
+        "bin": {
+          "pacote": "bin/index.js"
+        },
+        "scripts": {
+          "lint": "npm run eslint",
+          "snap": "tap",
+          "test": "tap",
+          "eslint": "eslint \"**/*.{js,cjs,ts,mjs,jsx,tsx}\"",
+          "lintfix": "npm run eslint -- --fix",
+          "postlint": "template-oss-check",
+          "posttest": "npm run lint",
+          "template-oss-apply": "template-oss-apply --force"
+        },
+        "dependencies": {
+          "tar": "^7.4.3",
+          "ssri": "^14.0.0",
+          "cacache": "^21.0.1",
+          "minipass": "^7.0.2",
+          "proc-log": "^7.0.0",
+          "sigstore": "^5.0.0",
+          "@npmcli/git": "^8.0.0",
+          "fs-minipass": "^3.0.0",
+          "npm-packlist": "^11.2.0",
+          "npm-package-arg": "^14.0.0",
+          "npm-pick-manifest": "^12.0.0",
+          "@gar/promise-retry": "^1.0.0",
+          "@npmcli/run-script": "^11.0.0",
+          "npm-registry-fetch": "^20.0.1",
+          "@npmcli/package-json": "^8.0.0",
+          "@npmcli/promise-spawn": "^10.0.0",
+          "@npmcli/installed-package-contents": "^5.0.0"
+        },
+        "optionalDependencies": null,
+        "dist": {
+          "integrity": "sha512-++VqeOZeL03uGM2MFLk96jGCSt1owBGkyFKoPr+trwNlZhCpjN2RrvwYxt8nTbs1wNMqSFYurq0TafVWkAIHig==",
+          "tarball": "https://registry.npmjs.org/pacote/-/pacote-22.0.0.tgz",
+          "unpackedSize": 80176,
+          "fileCount": 18,
+          "signatures": [
+            {
+              "sig": "MEUCIH1kqnyxPH+mN06GUa3G3qAWl1gHwe7QCms6UQt30f7hAiEAwKe356mEw8ETq+aGNsd2pbKL1L1XqgsNlynL2/oA1hI=",
+              "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+            }
+          ]
+        }
+      }
+    },
+    "sigstoreReadme": {
+      "requestOrdinal": 4,
+      "url": "https://raw.githubusercontent.com/sigstore/sigstore-js/7d2900eca1c22b3f87c13987c8d4b7c9a29b733a/packages/sigstore/README.md",
+      "responseSha256": "d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed",
+      "bodyBytes": 14,
+      "status": 404,
+      "outcome": "http_error"
+    },
+    "verifyReadme": {
+      "requestOrdinal": 5,
+      "url": "https://raw.githubusercontent.com/sigstore/sigstore-js/7d2900eca1c22b3f87c13987c8d4b7c9a29b733a/packages/verify/README.md",
+      "responseSha256": "51caa3d0c8e20bb8cf4aab167d52b8c128635e6fc39951ea87db8e0fe3bbab6e",
+      "bodyBytes": 621,
+      "status": 200,
+      "outcome": "complete",
+      "selectedLines": [
+        {
+          "line": 3,
+          "text": "A library for verifying [Sigstore][1] signatures."
+        },
+        {
+          "line": 4,
+          "text": ""
+        },
+        {
+          "line": 5,
+          "text": "## Prerequisites"
+        },
+        {
+          "line": 6,
+          "text": ""
+        },
+        {
+          "line": 7,
+          "text": "- Node.js version ^22.22.2 || ^24.15.0 || >=26.0.0"
+        },
+        {
+          "line": 8,
+          "text": ""
+        },
+        {
+          "line": 9,
+          "text": "[1]: https://www.sigstore.dev"
+        }
+      ],
+      "completeDocumentRetained": false
+    },
+    "tufReadme": {
+      "requestOrdinal": 6,
+      "url": "https://raw.githubusercontent.com/sigstore/sigstore-js/7d2900eca1c22b3f87c13987c8d4b7c9a29b733a/packages/tuf/README.md",
+      "responseSha256": "e58b6190db936bd32c0afbd531a051a375c4bc28cf1864dbcc754d604dd82399",
+      "bodyBytes": 3682,
+      "status": 200,
+      "outcome": "complete",
+      "selectedLines": [
+        {
+          "line": 3,
+          "text": "A JavaScript library for securely retrieving targets from the Sigstore [TUF][1]"
+        },
+        {
+          "line": 4,
+          "text": "repository."
+        },
+        {
+          "line": 5,
+          "text": ""
+        },
+        {
+          "line": 6,
+          "text": "## Features"
+        },
+        {
+          "line": 7,
+          "text": ""
+        },
+        {
+          "line": 8,
+          "text": "- Embeds the trutsted root metadata file necessary to bootstrap interaction"
+        },
+        {
+          "line": 9,
+          "text": "  with the Sigstore TUF repository."
+        },
+        {
+          "line": 10,
+          "text": "- Automatically initializes the local TUF cache for storing metadata and"
+        },
+        {
+          "line": 11,
+          "text": "  target files."
+        },
+        {
+          "line": 12,
+          "text": ""
+        },
+        {
+          "line": 13,
+          "text": "## Prerequisites"
+        },
+        {
+          "line": 14,
+          "text": ""
+        },
+        {
+          "line": 15,
+          "text": "- Node.js version ^22.22.2 || ^24.15.0 || >=26.0.0"
+        },
+        {
+          "line": 16,
+          "text": ""
+        },
+        {
+          "line": 17,
+          "text": "## Installation"
+        },
+        {
+          "line": 18,
+          "text": ""
+        },
+        {
+          "line": 19,
+          "text": "```"
+        },
+        {
+          "line": 20,
+          "text": "npm install @sigstore/tuf"
+        },
+        {
+          "line": 21,
+          "text": "```"
+        },
+        {
+          "line": 22,
+          "text": ""
+        },
+        {
+          "line": 23,
+          "text": "## Usage"
+        },
+        {
+          "line": 25,
+          "text": "```javascript"
+        },
+        {
+          "line": 26,
+          "text": "const { initTUF } = require('@sigstore/tuf');"
+        },
+        {
+          "line": 27,
+          "text": "```"
+        },
+        {
+          "line": 28,
+          "text": ""
+        },
+        {
+          "line": 29,
+          "text": "```javascript"
+        },
+        {
+          "line": 30,
+          "text": "import { initTUF } from '@sigstore/tuf';"
+        },
+        {
+          "line": 31,
+          "text": "```"
+        },
+        {
+          "line": 32,
+          "text": ""
+        },
+        {
+          "line": 33,
+          "text": "### initTUF([options])"
+        },
+        {
+          "line": 34,
+          "text": ""
+        },
+        {
+          "line": 35,
+          "text": "Returns a TUF client which can be used to retrieve any target from the Sigstore"
+        },
+        {
+          "line": 36,
+          "text": "TUF repository. The local TUF cache will be initialized and the TUF metadata"
+        },
+        {
+          "line": 37,
+          "text": "files downloaded from the [remote repository][2] as part of the initialization"
+        },
+        {
+          "line": 38,
+          "text": "process."
+        },
+        {
+          "line": 39,
+          "text": ""
+        },
+        {
+          "line": 40,
+          "text": "- `options` `<Object>`"
+        },
+        {
+          "line": 41,
+          "text": "  - `mirrorURL` `<string>`: Base URL for the Sigstore TUF repository. Defaults to `'https://tuf-repo-cdn.sigstore.dev'`"
+        },
+        {
+          "line": 42,
+          "text": "  - `cachePath` `<string>`: Absolute path to the directory to be used for caching downloaded TUF metadata and targets. Defaults to a directory named \"sigstore-js\" within the platform-specific application data directory."
+        },
+        {
+          "line": 43,
+          "text": "  - `rootPath` `<string>`: Path to the initial trust root for the TUF repository. Defaults to the [embedded root](./store/public-good-instance-root.json)."
+        },
+        {
+          "line": 44,
+          "text": "  - `forceInit` `boolean`: Force re-initialization of the TUF cache even if it already exists. Defaults to `false`."
+        },
+        {
+          "line": 45,
+          "text": "  - `forceCache` `boolean`: Prevents any downloads from the remote TUF repository as long as all cached metadata files are un-expired. Defaults to `false`."
+        },
+        {
+          "line": 46,
+          "text": "  - `force` `boolean`: Same as `forceInit` (deprecated)."
+        },
+        {
+          "line": 47,
+          "text": ""
+        },
+        {
+          "line": 48,
+          "text": "The `TUF` client object returned from `initTUF` has a single `getTarget`"
+        },
+        {
+          "line": 49,
+          "text": "function which takes the name of a target in the Sigstore TUF repository"
+        },
+        {
+          "line": 50,
+          "text": "and returns the content of that target."
+        },
+        {
+          "line": 51,
+          "text": ""
+        },
+        {
+          "line": 52,
+          "text": "### getTrustedRoot([options])"
+        },
+        {
+          "line": 53,
+          "text": ""
+        },
+        {
+          "line": 54,
+          "text": "Retrieves the most recent version of the \"trusted_root.json\" target from the"
+        },
+        {
+          "line": 55,
+          "text": "Sigstore TUF repository. The format of \"trusted_root.json\" file is described"
+        },
+        {
+          "line": 56,
+          "text": "by the [TrustedRoot][3] protobuf and contains the complete set of trusted"
+        },
+        {
+          "line": 57,
+          "text": "verification materials for the Sigstore public-good instance."
+        },
+        {
+          "line": 58,
+          "text": ""
+        },
+        {
+          "line": 59,
+          "text": "- `options` `<Object>`"
+        },
+        {
+          "line": 60,
+          "text": "  - `mirrorURL` `<string>`: Base URL for the Sigstore TUF repository. Defaults to `'https://tuf-repo-cdn.sigstore.dev'`"
+        },
+        {
+          "line": 61,
+          "text": "  - `cachePath` `<string>`: Absolute path to the directory to be used for caching downloaded TUF metadata and targets. Defaults to a directory named \"sigstore-js\" within the platform-specific application data directory."
+        },
+        {
+          "line": 62,
+          "text": "  - `rootPath` `<string>`: Path to the initial trust root for the TUF repository. Defaults to the [embedded root](./store/public-good-instance-root.json)."
+        },
+        {
+          "line": 63,
+          "text": "  - `forceInit` `boolean`: Force re-initialization of the TUF cache even if it already exists. Defaults to `false`."
+        },
+        {
+          "line": 64,
+          "text": "  - `forceCache` `boolean`: Prevents any downloads from the remote TUF repository as long as all cached metadata files are un-expired. Defaults to `false`."
+        },
+        {
+          "line": 65,
+          "text": "  - `force` `boolean`: Same as `forceInit` (deprecated)."
+        }
+      ],
+      "completeDocumentRetained": false
+    },
+    "sigstoreRootReadme": {
+      "requestOrdinal": 7,
+      "url": "https://raw.githubusercontent.com/sigstore/sigstore-js/7d2900eca1c22b3f87c13987c8d4b7c9a29b733a/README.md",
+      "responseSha256": "ff537afd5996cb67a319d6b0d3e65a330480068398a90bd81ea823a0566512c8",
+      "bodyBytes": 2813,
+      "status": 200,
+      "outcome": "complete",
+      "selectedLines": [
+        {
+          "line": 3,
+          "text": "JavaScript libraries for interacting with [Sigstore][6] services."
+        },
+        {
+          "line": 4,
+          "text": ""
+        },
+        {
+          "line": 6,
+          "text": ""
+        },
+        {
+          "line": 7,
+          "text": "* [`sigstore`](./packages/client) - Client library implementing Sigstore signing/verification workflows."
+        },
+        {
+          "line": 8,
+          "text": "* [`@sigstore/bundle`](./packages/bundle) - TypeScript types and utility functions for working with Sigstore bundles."
+        },
+        {
+          "line": 9,
+          "text": "* [`@sigstore/cli`](./packages/cli) - Command line interface for signing/verifying artifacts with Sigstore."
+        },
+        {
+          "line": 10,
+          "text": "* [`@sigstore/sign`](./packages/sign) - Library for generating Sigstore signatures."
+        },
+        {
+          "line": 11,
+          "text": "* [`@sigstore/tuf`](./packages/tuf) - Library for interacting with the Sigstore TUF repository."
+        },
+        {
+          "line": 12,
+          "text": "* [`@sigstore/rekor-types`](./packages/rekor-types) - TypeScript types for the Sigstore Rekor REST API."
+        },
+        {
+          "line": 13,
+          "text": "* [`@sigstore/mock`](./packages/mock) - Mocking library for Sigstore services."
+        }
+      ],
+      "completeDocumentRetained": false
+    },
+    "npmAuditDocs": {
+      "requestOrdinal": 8,
+      "url": "https://raw.githubusercontent.com/npm/cli/332350fd21e8bd040ce68a8f618c16ccfd23dba7/docs/lib/content/commands/npm-audit.md",
+      "responseSha256": "7d56d8b897729b83245e3b6a3b628fb7e2b18d87508a945b1995f14ddc19cb83",
+      "bodyBytes": 9496,
+      "status": 200,
+      "outcome": "complete",
+      "selectedLines": [
+        {
+          "line": 31,
+          "text": "### Audit Signatures"
+        },
+        {
+          "line": 32,
+          "text": ""
+        },
+        {
+          "line": 33,
+          "text": "To ensure the integrity of packages you download from the public npm registry, or any registry that supports signatures, you can verify the registry signatures of downloaded packages using the npm CLI."
+        },
+        {
+          "line": 34,
+          "text": ""
+        },
+        {
+          "line": 35,
+          "text": "Registry signatures can be verified using the following `audit` command:"
+        },
+        {
+          "line": 36,
+          "text": ""
+        },
+        {
+          "line": 37,
+          "text": "```bash"
+        },
+        {
+          "line": 38,
+          "text": "$ npm audit signatures"
+        },
+        {
+          "line": 39,
+          "text": "```"
+        },
+        {
+          "line": 40,
+          "text": ""
+        },
+        {
+          "line": 41,
+          "text": "The `audit signatures` command will also verify the provenance attestations of downloaded packages."
+        },
+        {
+          "line": 42,
+          "text": "Because provenance attestations are such a new feature, security features may be added to (or changed in) the attestation format over time."
+        },
+        {
+          "line": 43,
+          "text": "To ensure that you're always able to verify attestation signatures check that you're running the latest version of the npm CLI. Please note this often means updating npm beyond the version that ships with Node.js."
+        },
+        {
+          "line": 44,
+          "text": ""
+        },
+        {
+          "line": 45,
+          "text": "To include the full sigstore attestation bundles in JSON output, use:"
+        },
+        {
+          "line": 46,
+          "text": ""
+        },
+        {
+          "line": 47,
+          "text": "```bash"
+        },
+        {
+          "line": 48,
+          "text": "$ npm audit signatures --json --include-attestations"
+        },
+        {
+          "line": 49,
+          "text": "```"
+        },
+        {
+          "line": 50,
+          "text": ""
+        },
+        {
+          "line": 51,
+          "text": "This adds a `verified` array to the JSON output containing the attestation"
+        },
+        {
+          "line": 52,
+          "text": "bundles (DSSE envelopes, verification material, and transparency log entries)"
+        },
+        {
+          "line": 53,
+          "text": "for each verified package."
+        },
+        {
+          "line": 54,
+          "text": ""
+        },
+        {
+          "line": 55,
+          "text": "The npm CLI supports registry signatures and signing keys provided by any registry if the following conventions are followed:"
+        },
+        {
+          "line": 56,
+          "text": ""
+        },
+        {
+          "line": 57,
+          "text": "1. Signatures are provided in the package's `packument` in each published version within the `dist` object:"
+        },
+        {
+          "line": 58,
+          "text": ""
+        },
+        {
+          "line": 59,
+          "text": "```json"
+        },
+        {
+          "line": 60,
+          "text": "\"dist\":{"
+        },
+        {
+          "line": 61,
+          "text": "  \"..omitted..\": \"..omitted..\","
+        },
+        {
+          "line": 62,
+          "text": "  \"signatures\": [{"
+        },
+        {
+          "line": 63,
+          "text": "    \"keyid\": \"SHA256:{{SHA256_PUBLIC_KEY}}\","
+        },
+        {
+          "line": 64,
+          "text": "    \"sig\": \"a312b9c3cb4a1b693e8ebac5ee1ca9cc01f2661c14391917dcb111517f72370809...\""
+        },
+        {
+          "line": 65,
+          "text": "  }]"
+        },
+        {
+          "line": 66,
+          "text": "}"
+        },
+        {
+          "line": 68,
+          "text": ""
+        },
+        {
+          "line": 69,
+          "text": "See this [example](https://registry.npmjs.org/light-cycle/1.4.3) of a signed package from the public npm registry."
+        },
+        {
+          "line": 70,
+          "text": ""
+        },
+        {
+          "line": 71,
+          "text": "The `sig` is generated using the following template: `${package.name}@${package.version}:${package.dist.integrity}` and the `keyid` has to match one of the public signing keys below."
+        },
+        {
+          "line": 72,
+          "text": ""
+        },
+        {
+          "line": 73,
+          "text": "2. Public signing keys are provided at `registry-host.tld/-/npm/v1/keys` in the following format:"
+        },
+        {
+          "line": 74,
+          "text": ""
+        },
+        {
+          "line": 78,
+          "text": "    \"expires\": null,"
+        },
+        {
+          "line": 79,
+          "text": "    \"keyid\": \"SHA256:{{SHA256_PUBLIC_KEY}}\","
+        },
+        {
+          "line": 80,
+          "text": "    \"keytype\": \"ecdsa-sha2-nistp256\","
+        },
+        {
+          "line": 81,
+          "text": "    \"scheme\": \"ecdsa-sha2-nistp256\","
+        },
+        {
+          "line": 82,
+          "text": "    \"key\": \"{{B64_PUBLIC_KEY}}\""
+        },
+        {
+          "line": 88,
+          "text": ""
+        },
+        {
+          "line": 89,
+          "text": "- `expires`: null or a simplified extended [ISO 8601 format](https://en.wikipedia.org/wiki/ISO_8601): `YYYY-MM-DDTHH:mm:ss.sssZ`"
+        },
+        {
+          "line": 90,
+          "text": "- `keyid`: sha256 fingerprint of the public key"
+        },
+        {
+          "line": 91,
+          "text": "- `keytype`: only `ecdsa-sha2-nistp256` is currently supported by the npm CLI"
+        },
+        {
+          "line": 92,
+          "text": "- `scheme`: only `ecdsa-sha2-nistp256` is currently supported by the npm CLI"
+        },
+        {
+          "line": 93,
+          "text": "- `key`: base64 encoded public key"
+        },
+        {
+          "line": 94,
+          "text": ""
+        },
+        {
+          "line": 95,
+          "text": "See this [example key's response from the public npm registry](https://registry.npmjs.org/-/npm/v1/keys)."
+        }
+      ],
+      "completeDocumentRetained": false
+    },
+    "pacoteReadme": {
+      "requestOrdinal": 9,
+      "url": "https://raw.githubusercontent.com/npm/pacote/e4e44c5428c840d853b5ef8641e169b5b79328ab/README.md",
+      "responseSha256": "5b7e8647509c87e4fae8e95cddf130e971349825bad12dbdf08b444593d4f375",
+      "bodyBytes": 12984,
+      "status": 200,
+      "outcome": "complete",
+      "selectedLines": [
+        {
+          "line": 71,
+          "text": "## API"
+        },
+        {
+          "line": 79,
+          "text": "* `pacote.extract(spec, dest, opts)` Extract a package's tarball into a destination folder."
+        },
+        {
+          "line": 80,
+          "text": "  Returns a promise that resolves to the `{from,resolved,integrity}` of the extracted package."
+        },
+        {
+          "line": 81,
+          "text": ""
+        },
+        {
+          "line": 82,
+          "text": "* `pacote.manifest(spec, opts)` Fetch (or simulate) a package's manifest (basically, the `package.json` file, plus a bit of metadata)."
+        },
+        {
+          "line": 83,
+          "text": "  See below for more on manifests and packuments."
+        },
+        {
+          "line": 84,
+          "text": "  Returns a Promise that resolves to the manifest object."
+        },
+        {
+          "line": 85,
+          "text": ""
+        },
+        {
+          "line": 86,
+          "text": "* `pacote.packument(spec, opts)` Fetch (or simulate) a package's packument (basically, the top-level package document listing all the manifests that the registry returns)."
+        },
+        {
+          "line": 87,
+          "text": "  See below for more on manifests and packuments."
+        },
+        {
+          "line": 88,
+          "text": "  Returns a Promise that resolves to the packument object."
+        },
+        {
+          "line": 89,
+          "text": ""
+        },
+        {
+          "line": 90,
+          "text": "* `pacote.tarball(spec, opts)`  Get a package tarball data as a buffer in"
+        },
+        {
+          "line": 91,
+          "text": "  memory."
+        },
+        {
+          "line": 92,
+          "text": "  Returns a Promise that resolves to the tarball data Buffer, with `from`, `resolved`, and `integrity` fields attached."
+        },
+        {
+          "line": 93,
+          "text": ""
+        },
+        {
+          "line": 94,
+          "text": "* `pacote.tarball.file(spec, dest, opts)`  Save a package tarball data to a file on disk."
+        },
+        {
+          "line": 95,
+          "text": "  Returns a Promise that resolves to `{from,integrity,resolved}` of the fetched tarball."
+        },
+        {
+          "line": 96,
+          "text": ""
+        },
+        {
+          "line": 97,
+          "text": "* `pacote.tarball.stream(spec, streamHandler, opts)`  Fetch a tarball and make the stream available to the `streamHandler` function."
+        },
+        {
+          "line": 98,
+          "text": ""
+        },
+        {
+          "line": 100,
+          "text": ""
+        },
+        {
+          "line": 101,
+          "text": "    The `streamHandler` function MUST return a Promise that resolves when the stream (and all associated work) is ended, or rejects if the stream"
+        },
+        {
+          "line": 102,
+          "text": "    has an error."
+        },
+        {
+          "line": 103,
+          "text": ""
+        },
+        {
+          "line": 104,
+          "text": "    The `streamHandler` function MAY be called multiple times, as Pacote retries requests in some scenarios, such as cache corruption or retriable network failures."
+        },
+        {
+          "line": 105,
+          "text": ""
+        },
+        {
+          "line": 106,
+          "text": "### Options"
+        },
+        {
+          "line": 107,
+          "text": ""
+        },
+        {
+          "line": 108,
+          "text": "Options are passed to"
+        },
+        {
+          "line": 109,
+          "text": "[`npm-registry-fetch`](http://npm.im/npm-registry-fetch) and [`cacache`](http://npm.im/cacache), so in addition to these, anything for those modules can be given to pacote as well."
+        },
+        {
+          "line": 110,
+          "text": ""
+        },
+        {
+          "line": 111,
+          "text": "Options object is cloned, and mutated along the way to add integrity, resolved, and other properties, as they are determined."
+        },
+        {
+          "line": 112,
+          "text": ""
+        },
+        {
+          "line": 113,
+          "text": "* `cache` Where to store cache entries and temp files."
+        },
+        {
+          "line": 114,
+          "text": "  Passed to [`cacache`](http://npm.im/cacache)."
+        },
+        {
+          "line": 115,
+          "text": "  Defaults to the same cache directory that npm will use by default, based on platform and environment."
+        },
+        {
+          "line": 116,
+          "text": "* `where` Base folder for resolving relative `file:` dependencies."
+        },
+        {
+          "line": 117,
+          "text": "* `resolved` Shortcut for looking up resolved values.  Should be specified if known."
+        },
+        {
+          "line": 118,
+          "text": "* `integrity` Expected integrity of fetched package tarball."
+        },
+        {
+          "line": 119,
+          "text": "  If specified, tarballs with mismatched integrity values will raise an `EINTEGRITY` error."
+        },
+        {
+          "line": 120,
+          "text": "* `umask` Permission mode mask for extracted files and directories."
+        },
+        {
+          "line": 121,
+          "text": "  Defaults to `0o22`."
+        },
+        {
+          "line": 122,
+          "text": "  See \"Extracted File Modes\" below."
+        },
+        {
+          "line": 128,
+          "text": "  See \"Extracted File Modes\" below."
+        },
+        {
+          "line": 129,
+          "text": "* `preferOnline` Prefer to revalidate cache entries, even when it would not be strictly necessary."
+        },
+        {
+          "line": 130,
+          "text": "  Defaults to `false`."
+        },
+        {
+          "line": 131,
+          "text": "* `before` When picking a manifest from a packument, only consider packages published before the specified date."
+        },
+        {
+          "line": 132,
+          "text": "  Defaults to `null`."
+        },
+        {
+          "line": 135,
+          "text": "* `registry` The npm registry to use by default."
+        },
+        {
+          "line": 136,
+          "text": "  Defaults to `https://registry.npmjs.org/`."
+        },
+        {
+          "line": 137,
+          "text": "* `fullMetadata` Fetch the full metadata from the registry for packuments, including information not strictly required for installation (author, description, etc.)."
+        },
+        {
+          "line": 138,
+          "text": "  Defaults to `true` when `before` is set, since the version publish time is part of the extended packument metadata."
+        },
+        {
+          "line": 139,
+          "text": "  Otherwise defaults to `false`."
+        },
+        {
+          "line": 141,
+          "text": "  Defaults to `false`."
+        },
+        {
+          "line": 142,
+          "text": "* `packumentCache` For registry packuments only, you may provide a `Map` object which will be used to cache packument requests between pacote calls."
+        },
+        {
+          "line": 143,
+          "text": "  This allows you to easily avoid hitting the registry multiple times (even just to validate the cache) for a given packument, since it is unlikely to change in the span of a single command."
+        },
+        {
+          "line": 144,
+          "text": "* `verifySignatures` A boolean that will make pacote verify the integrity signature of a manifest, if present."
+        },
+        {
+          "line": 145,
+          "text": "  There must be a configured `_keys` entry in the config that is scoped to the registry the manifest is being fetched from."
+        },
+        {
+          "line": 146,
+          "text": "* `verifyAttestations` A boolean that will make pacote verify Sigstore attestations, if present."
+        },
+        {
+          "line": 147,
+          "text": "  There must be a configured `_keys` entry in the config that is scoped to the registry the manifest is being fetched from."
+        },
+        {
+          "line": 148,
+          "text": "* `tufCache` Where to store metadata/target files when retrieving the package attestation key material via TUF."
+        },
+        {
+          "line": 149,
+          "text": "  Defaults to the same cache directory that npm will use by default, based on platform and environment."
+        },
+        {
+          "line": 150,
+          "text": "* `allowGit` Whether or not to allow data to be fetched from a git spec."
+        },
+        {
+          "line": 151,
+          "text": "  Possible values are `all`, `none`, or `root`."
+        },
+        {
+          "line": 152,
+          "text": "  Defaults to `all`."
+        },
+        {
+          "line": 153,
+          "text": "  `all` means git is allowed"
+        },
+        {
+          "line": 154,
+          "text": "  `none` means git is not allowed"
+        },
+        {
+          "line": 155,
+          "text": "  `root` means that git is only allowed if fetching from a root context."
+        },
+        {
+          "line": 156,
+          "text": "  Context for whether or not the package being fetched is `root` is set via the `_isRoot` option."
+        },
+        {
+          "line": 157,
+          "text": "* `allowRemote` Whether or not to allow data to be fetched from remote specs."
+        },
+        {
+          "line": 158,
+          "text": "  Possible values and defaults are the same as `allowGit`"
+        },
+        {
+          "line": 159,
+          "text": "* `allowFile` Whether or not to allow data to be fetched from file specs."
+        },
+        {
+          "line": 163,
+          "text": "* `allowRegistry` Whether or not to allow data to be fetched from registry specs.  This includes `version`, `range`, `tag`, and `alias`."
+        },
+        {
+          "line": 164,
+          "text": "* `_isRoot` Whether or not the package being fetched is in a root context."
+        },
+        {
+          "line": 165,
+          "text": "  Defaults to `false`,"
+        },
+        {
+          "line": 166,
+          "text": "  For `npm` itself this means a package that is defined in the local project or workspace package.json, or a package that is being fetched for another command like `npm view`.  This informs the `allowX` options to let them know the context of the current request."
+        },
+        {
+          "line": 167,
+          "text": ""
+        }
+      ],
+      "completeDocumentRetained": false
+    },
+    "sigstoreClientReadme": {
+      "requestOrdinal": 10,
+      "url": "https://raw.githubusercontent.com/sigstore/sigstore-js/7d2900eca1c22b3f87c13987c8d4b7c9a29b733a/packages/client/README.md",
+      "responseSha256": "48fd6e97218c8ee8de125a01eda8b3f53f4f23c0043425d987e2f2cbbb8a16dd",
+      "bodyBytes": 11094,
+      "status": 200,
+      "outcome": "complete",
+      "selectedLines": [
+        {
+          "line": 183,
+          "text": "### verify(bundle[, payload][, options])"
+        },
+        {
+          "line": 184,
+          "text": ""
+        },
+        {
+          "line": 185,
+          "text": "Verifies the signature in the supplied bundle. Returns a `Signer` object containing the public key and identity information from the verification."
+        },
+        {
+          "line": 186,
+          "text": ""
+        },
+        {
+          "line": 187,
+          "text": "- `bundle` `<Bundle>`: The Sigstore bundle containing the signature to be verified and the verification material necessary to verify the signature."
+        },
+        {
+          "line": 188,
+          "text": "- `payload` `<Buffer>`: The bytes of the artifact over which the signature was created. Only necessary when the `sign` function was used to generate the signature since the Bundle does not contain any information about the artifact which was signed. Not required when the `attest` function was used to generate the Bundle."
+        },
+        {
+          "line": 189,
+          "text": "- `options` `<Object>`"
+        },
+        {
+          "line": 190,
+          "text": "  - `ctLogThreshold` `<number>`: The number of certificate transparency logs on which the signing certificate must appear. Defaults to `1`."
+        },
+        {
+          "line": 191,
+          "text": "  - `tlogThreshold` `<number>`: The number of transparency logs on which the signature must appear. Defaults to `1`."
+        },
+        {
+          "line": 192,
+          "text": "  - `certificateIssuer` `<string>`: Value that must appear in the signing certificate's issuer extension (OID 1.3.6.1.4.1.57264.1.1). Not verified if no value is supplied."
+        },
+        {
+          "line": 193,
+          "text": "  - `certificateIdentityEmail` `<string>`: Email address expected in the signing certificate's Subject Alternative Name (SAN) extension. The value is matched as a regular expression against the SAN; for exact matching, use an anchored pattern (e.g. `^user@example\\\\.com$`). Must be specified in conjunction with the `certificateIssuer` option. Takes precedence over the `certificateIdentityURI` option. Not verified if no value is supplied."
+        },
+        {
+          "line": 194,
+          "text": "  - `certificateIdentityURI` `<string>`: URI expected in the signing certificate's Subject Alternative Name (SAN) extension. The value is matched as a regular expression against the SAN; for exact matching, use an anchored pattern (e.g. `^https://github\\\\.com/owner/repo$`). Must be specified in conjunction with the `certificateIssuer` option. Ignored if the `certificateIdentityEmail` option is set. Not verified if no value is supplied."
+        },
+        {
+          "line": 195,
+          "text": "  - `certificateOIDs` `<Object>`: A collection of OID/value pairs which must be present in the certificate's extension list. Not verified if no value is supplied."
+        },
+        {
+          "line": 196,
+          "text": "  - `keySelector` `<Function>`: Callback invoked to retrieve the public key (as either `string` or `Buffer`) necessary to verify the bundle signature. Not used when the signature was generated from a Fulcio-issued signing certificate."
+        },
+        {
+          "line": 197,
+          "text": "    - `hint` `<String>`: The hint from the bundle used to identify the the signing key."
+        },
+        {
+          "line": 198,
+          "text": ""
+        }
+      ],
+      "completeDocumentRetained": false
+    },
+    "verifyPackage": {
+      "requestOrdinal": 11,
+      "url": "https://registry.npmjs.org/@sigstore/verify/latest",
+      "responseSha256": "45de3b73a7a1956a800aa7fa8586f9d90e7f242166e02429b779c3716900fa30",
+      "bodyBytes": 2068,
+      "status": 200,
+      "outcome": "complete",
+      "package": {
+        "name": "@sigstore/verify",
+        "version": "4.1.2",
+        "gitHead": "769a53d8713248a8bf49edfc2a5d1955b0dcc24d",
+        "repository": {
+          "url": "git+https://github.com/sigstore/sigstore-js.git",
+          "type": "git"
+        },
+        "engines": {
+          "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+        },
+        "os": null,
+        "cpu": null,
+        "bin": null,
+        "scripts": {
+          "test": "jest",
+          "build": "tsc --build",
+          "clean": "shx rm -rf dist *.tsbuildinfo"
+        },
+        "dependencies": {
+          "@sigstore/core": "^4.0.1",
+          "@sigstore/bundle": "^5.0.0",
+          "@sigstore/protobuf-specs": "^0.5.0"
+        },
+        "optionalDependencies": null,
+        "dist": {
+          "integrity": "sha512-BfD9eLrz3A/DG58aSgfgZYmIR6V9Yw96QVN/frtu2bEH7ctSTk2TDvHU12un3JsDPBTqTNkqkIkucjxljpOFqQ==",
+          "tarball": "https://registry.npmjs.org/@sigstore/verify/-/verify-4.1.2.tgz",
+          "unpackedSize": 83998,
+          "fileCount": 48,
+          "signatures": [
+            {
+              "sig": "MEQCIHPKZxkmPPxWJSo9ZBC1LZSytUb4b4w4rBsyVsDMbaqmAiB0KaHX0WskQlSwZD/vXGdlRAysEvSLkRzbWeL32N1yww==",
+              "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+            },
+            {
+              "sig": "MEQCIFBUr6SrdlGoI3Of3gauQpOaBtFxJMF+O+GQVeg1X8t9AiBy2Si9EhZ3fLhSZGe6y9nlq5elbSx4rmWHJf+76d3nkQ==",
+              "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+            }
+          ]
+        }
+      }
+    },
+    "tufPackage": {
+      "requestOrdinal": 12,
+      "url": "https://registry.npmjs.org/@sigstore/tuf/latest",
+      "responseSha256": "5312a34c58864b88f7bf13996d290d6669081d9dbd1f82ec76e509aa3273b40a",
+      "bodyBytes": 1957,
+      "status": 200,
+      "outcome": "complete",
+      "package": {
+        "name": "@sigstore/tuf",
+        "version": "5.0.0",
+        "gitHead": "7d2900eca1c22b3f87c13987c8d4b7c9a29b733a",
+        "repository": {
+          "url": "git+https://github.com/sigstore/sigstore-js.git",
+          "type": "git"
+        },
+        "engines": {
+          "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+        },
+        "os": null,
+        "cpu": null,
+        "bin": null,
+        "scripts": {
+          "test": "jest",
+          "build": "tsc --build",
+          "clean": "shx rm -rf dist *.tsbuildinfo"
+        },
+        "dependencies": {
+          "tuf-js": "^6.0.0",
+          "@sigstore/protobuf-specs": "^0.5.0"
+        },
+        "optionalDependencies": null,
+        "dist": {
+          "integrity": "sha512-Zyqg9tcHps3uRAlKHLNmsW4ohsUZAjb9G+31r7lg0ICh/JOcadzmJsIRdjKljlRHpaR0K4aJ2kXXIdywdcdMlA==",
+          "tarball": "https://registry.npmjs.org/@sigstore/tuf/-/tuf-5.0.0.tgz",
+          "unpackedSize": 49026,
+          "fileCount": 14,
+          "signatures": [
+            {
+              "sig": "MEUCIQCAwva5KqkdKxWX/cOZ5Gkp3i9tDzPDM7sm9rtmKHr8GQIgBSNc/YRazIS2VZD/oxH13KvsCQz2RpPTV8l951dvnJE=",
+              "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

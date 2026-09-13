@@ -1,5 +1,17 @@
 # Foundation requirements traceability
 
+RF-HERMES-013: [standard provenance policy](direct-codex-standard-provenance-policy-v1.md)
+and a fresh separate review retain STANDARD-PROVENANCE-POLICY-BLOCKED. Native npm,
+pacote and Sigstore APIs were compared; sigstore@5.0.0 is the sole recommended
+candidate, with proposed maintained verify/TUF dependencies and exact observed
+source/SRI pins. Closed authenticated tool/runtime/root pins and standard
+failure/network/time/input support remain unqualified. Capture closed at
+12 requests/116,644 body bytes, one404, no redirects/retries/transport/limit errors.
+No verifier/custom crypto was executed or extended. The streaming cap and A/B
+proposal are non-operative; profile/gates and CDL clauses stay unchanged.
+Exactly one next step is RF014 bounded standard toolchain/configuration
+qualification under separate authority; not started here.
+
 RF-HERMES-012: [independent provenance review](direct-codex-provenance-review-v1.md)
 returns DETACHED-PROVENANCE-BLOCKED. A separate read-only agent independently
 reproduced signature and Merkle mathematics; trusted roots, chain/SCT, authenticated

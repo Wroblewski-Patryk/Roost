@@ -1,0 +1,372 @@
+{
+  "schemaId": "roost-codex-standard-provenance-policy-v1",
+  "policyVersion": 1,
+  "taskId": "RF-HERMES-013",
+  "observedDate": "2026-09-13",
+  "status": "CANDIDATE_NOT_ADMITTED",
+  "proposedVerdict": "STANDARD-PROVENANCE-POLICY-BLOCKED",
+  "reviewRef": "direct-codex-standard-provenance-review-v1.json",
+  "recommendedOption": "sigstore-js-client",
+  "recommendationCount": 1,
+  "options": [
+    {
+      "id": "npm-native",
+      "officialBasis": "npm-cli-repository-and-version-metadata",
+      "pin": {
+        "name": "npm",
+        "version": "12.0.2",
+        "gitHead": "332350fd21e8bd040ce68a8f618c16ccfd23dba7",
+        "engines": {
+          "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+        },
+        "integrity": "sha512-uIXokLlBj6FpNUTQX1PmT5pz7BlIN9QlixX+zdaSNHsd0qUXsbDLr50xzY6Sw7cJVr0uzHKDOle0swmPW/p5Qw==",
+        "payloadFetched": false,
+        "artifactAuthenticated": false
+      },
+      "platform": "Node engine required; no OS/CPU restriction in manifest; WSL2 capability unmeasured",
+      "api": "npm audit signatures --json --include-attestations",
+      "scope": "Registry signatures and provenance of downloaded packages; installed tree/lock workflow not proven safe for detached-only use",
+      "output": "Documented verified array includes bundles when requested",
+      "failure": "Signature-specific nonzero/error contract not established; generic audit vulnerability exits are not substituted",
+      "network": "Registry keys, package metadata and attestations; exact bounded verification endpoint set not qualified",
+      "trust": "Maintained npm mechanism, not a custom root; exact bootstrap/cache/rotation configuration not established",
+      "hooks": "No audit fix/install or existing project-tree invocation authorized",
+      "selected": false
+    },
+    {
+      "id": "pacote",
+      "officialBasis": "npm-pacote-repository-and-version-metadata",
+      "pin": {
+        "name": "pacote",
+        "version": "22.0.0",
+        "gitHead": "e4e44c5428c840d853b5ef8641e169b5b79328ab",
+        "engines": {
+          "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+        },
+        "integrity": "sha512-++VqeOZeL03uGM2MFLk96jGCSt1owBGkyFKoPr+trwNlZhCpjN2RrvwYxt8nTbs1wNMqSFYurq0TafVWkAIHig==",
+        "payloadFetched": false,
+        "artifactAuthenticated": false
+      },
+      "platform": "Same Node requirement; WSL2 unqualified",
+      "api": "pacote.manifest with verifySignatures and verifyAttestations",
+      "scope": "Manifest verification is documented if signatures/attestations are present; presence must separately be mandatory",
+      "output": "Promise resolves manifest; integrity mismatch on tarball documented EINTEGRITY",
+      "failure": "Complete signature/provenance rejection code mapping not established",
+      "network": "Registry-scoped _keys and tufCache documented; tarball streams may retry; no payload method authorized",
+      "trust": "Uses sigstore dependency; registry-scoped trusted keys required; complete trust policy not specified by README",
+      "hooks": "No extract/tarball/git/file/remote fallback or lifecycle path selected",
+      "selected": false
+    },
+    {
+      "id": "sigstore-js-client",
+      "officialBasis": "sigstore-maintained-sigstore-js-project",
+      "pin": {
+        "name": "sigstore",
+        "version": "5.0.0",
+        "gitHead": "7d2900eca1c22b3f87c13987c8d4b7c9a29b733a",
+        "engines": {
+          "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+        },
+        "integrity": "sha512-hJqJfoG/e4qFQaauQL00c6J6FrHLBGKtkFvW3JbTSIEFOhLrSjdSM/gWd/yUOfYo/gsERehTXGC1VZWX+9X4Dg==",
+        "payloadFetched": false,
+        "artifactAuthenticated": false
+      },
+      "platform": "Same Node requirement; pure-library manifest has no OS/CPU/bin restriction; no WSL proof",
+      "api": "verify(bundle[, payload][, options])",
+      "scope": "Detached DSSE attestation verification documented without external artifact payload",
+      "output": "Documented Signer with public key and identity; retain redacted result only",
+      "failure": "Any rejection/throw/timeout/unsupported result denies; exact version-specific failure/network semantics still to qualify",
+      "network": "Standard TUF client/cache/root mechanism; no signing endpoints or environment identity discovery permitted",
+      "trust": "Use maintained certificate/log/TUF implementation and embedded bootstrap, never RF012 checker",
+      "hooks": "Only verification API may be considered later; sign/attest and all installers forbidden now",
+      "selected": true
+    }
+  ],
+  "toolchain": {
+    "client": {
+      "name": "sigstore",
+      "version": "5.0.0",
+      "gitHead": "7d2900eca1c22b3f87c13987c8d4b7c9a29b733a",
+      "engines": {
+        "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+      },
+      "integrity": "sha512-hJqJfoG/e4qFQaauQL00c6J6FrHLBGKtkFvW3JbTSIEFOhLrSjdSM/gWd/yUOfYo/gsERehTXGC1VZWX+9X4Dg==",
+      "payloadFetched": false,
+      "artifactAuthenticated": false
+    },
+    "verifyDependencyCandidate": {
+      "name": "@sigstore/verify",
+      "version": "4.1.2",
+      "gitHead": "769a53d8713248a8bf49edfc2a5d1955b0dcc24d",
+      "engines": {
+        "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+      },
+      "integrity": "sha512-BfD9eLrz3A/DG58aSgfgZYmIR6V9Yw96QVN/frtu2bEH7ctSTk2TDvHU12un3JsDPBTqTNkqkIkucjxljpOFqQ==",
+      "payloadFetched": false,
+      "artifactAuthenticated": false
+    },
+    "tufDependencyCandidate": {
+      "name": "@sigstore/tuf",
+      "version": "5.0.0",
+      "gitHead": "7d2900eca1c22b3f87c13987c8d4b7c9a29b733a",
+      "engines": {
+        "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+      },
+      "integrity": "sha512-Zyqg9tcHps3uRAlKHLNmsW4ohsUZAjb9G+31r7lg0ICh/JOcadzmJsIRdjKljlRHpaR0K4aJ2kXXIdywdcdMlA==",
+      "payloadFetched": false,
+      "artifactAuthenticated": false
+    },
+    "transitiveDependenciesFullyPinned": false,
+    "lockSha256": null,
+    "nodeRuntimePin": null,
+    "embeddedBootstrapSha256": null,
+    "trustedTargetSha256": null,
+    "installed": false,
+    "executed": false,
+    "sourceVersionGap": "verify README was read at client gitHead; latest verify 4.1.2 has a different gitHead; exact dependency behavior unestablished",
+    "pinRule": "Exact package versions/SRI plus closed transitive lock, authenticated tool/runtime origins and pinned embedded bootstrap must be established in separate authority; no ranges at qualification"
+  },
+  "semantics": {
+    "packageName": "@openai/codex",
+    "packageVersion": "0.154.0-linux-x64",
+    "registry": "https://registry.npmjs.org",
+    "packageIntegrity": "sha512-a4FI3A8sGtwGrOqltrPbrS2hajrHQG591EwmRfiRoLMb10VxdBtUGW4gu6IJVYENiYGA7k3P4jlRHEoCZU/s9Q==",
+    "subjectName": "pkg:npm/%40openai/codex@0.154.0-linux-x64",
+    "subjectSha512": "6b8148dc0f2c1adc06aceaa5b6b3dbad2da16a3ac7406e7dd44c2645f891a0b31bd74571741b54196e20bba20955810d898180ee4dcfe239511c4a02654fecf5",
+    "repository": "https://github.com/openai/codex",
+    "tag": "rust-v0.154.0",
+    "tagObjectSha": "36eab01061df3cde5f95ec20a526777b430091ba",
+    "sourceCommit": "6b9826e3aa83b1a5947db50f4332cb9c65f1b340",
+    "workflowPath": ".github/workflows/rust-release.yml",
+    "workflowRef": "refs/tags/rust-v0.154.0",
+    "builder": "https://github.com/actions/runner/github-hosted",
+    "issuer": "https://token.actions.githubusercontent.com",
+    "expectedCertificateIdentityURI": "https://github.com/openai/codex/.github/workflows/rust-release.yml@refs/tags/rust-v0.154.0",
+    "identityMatch": "Escape regex metacharacters and anchor both ends; URI option only; email option forbidden because it overrides URI",
+    "requiredPredicates": [
+      "https://github.com/npm/attestation/tree/main/specs/publish/v0.1",
+      "https://slsa.dev/provenance/v1"
+    ],
+    "sameExactSubjectRequired": true,
+    "publishPredicate": "Require exact name/version/registry; it identifies a registry publish assertion, not a particular npm account",
+    "repositoryId": "965415649",
+    "repositoryOwnerId": "14957082",
+    "event": "push",
+    "invocationId": "https://github.com/openai/codex/actions/runs/34408513029/attempts/1",
+    "ctLogThreshold": 1,
+    "tlogThreshold": 1,
+    "certificateIssuerRequired": true,
+    "codeSigningEkuRequired": true,
+    "certificateSourceOidEquality": {
+      "1.3.6.1.4.1.57264.1.12": "https://github.com/openai/codex",
+      "1.3.6.1.4.1.57264.1.13": "6b9826e3aa83b1a5947db50f4332cb9c65f1b340",
+      "1.3.6.1.4.1.57264.1.14": "refs/tags/rust-v0.154.0"
+    },
+    "standardVerifierMustOwn": [
+      "certificate-chain-and-SCT",
+      "signature-and-DSSE",
+      "trusted-log-checkpoint-inclusion-and-shard-semantics",
+      "authenticated-signing-time-and-validity",
+      "TUF-root-rotation-expiry-rollback-protection"
+    ],
+    "freshnessReplayPolicy": "Fresh independent grant and exact immutable candidate; standard authenticated metadata expiry/rollback/time policy; unsupported consistency/witness guarantees stay blocked, never custom-implemented",
+    "unsignedFallback": false,
+    "customCryptoFallback": false,
+    "presenceRequired": true,
+    "semanticChecksOnlyAfterStandardCrypto": true,
+    "expectedSubjectCount": 1,
+    "expectedStatementCountByPredicate": {
+      "https://github.com/npm/attestation/tree/main/specs/publish/v0.1": 1,
+      "https://slsa.dev/provenance/v1": 1
+    },
+    "statementTypesByPredicate": {
+      "https://github.com/npm/attestation/tree/main/specs/publish/v0.1": "https://in-toto.io/Statement/v0.1",
+      "https://slsa.dev/provenance/v1": "https://in-toto.io/Statement/v1"
+    },
+    "slsaBuildType": "https://slsa-framework.github.io/github-actions-buildtypes/workflow/v1",
+    "resolvedDependencyUri": "git+https://github.com/openai/codex@refs/tags/rust-v0.154.0",
+    "inputParsing": "Reject duplicate JSON keys, unknown security-critical fields, malformed types and ambiguous extra subjects/statements; no coercion or ignored ambiguity"
+  },
+  "trust": {
+    "bootstrapSource": "Embedded public-good-instance-root.json supplied by authenticated pinned @sigstore/tuf; no one-off self-trusted HTTP root",
+    "updateMechanism": "Maintained @sigstore/tuf via tuf-js, standard signed root/metadata/target validation; do not implement TUF",
+    "qualificationPin": "Pin toolchain, embedded initial root, validated root/targets versions and digests per receipt; do not accept mutable latest at qualification",
+    "mirror": "https://tuf-repo-cdn.sigstore.dev",
+    "target": "trusted_root.json",
+    "privateCacheRequired": true,
+    "ambientCacheAllowed": false,
+    "forceInitAllowed": false,
+    "forceCacheIsNetworkIsolation": false,
+    "offlineBoundary": "Only previously validated, unexpired pinned cache plus externally enforced no-network; expired/missing cache fails without automatic online fallback",
+    "onlineBoundary": "Separate bounded refresh authority before verification; derived root/metadata/target paths and redirects must be enumerated and counted; exact complete set unestablished",
+    "onlineTransparencyLookup": "Not implicitly required or authorized from bundle URLs; use standard verifier capabilities with approved exact endpoints or fail closed",
+    "npmKeySourceCandidate": "https://registry.npmjs.org/-/npm/v1/keys",
+    "npmKeyId": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+    "npmKeySelectorPolicy": "Untrusted hint may select only the exact independently accepted registry key in a prevalidated pinned map; no arbitrary fetch or trusting key shipped only with bundle",
+    "npmKeyTrustProviderQualified": false,
+    "rootTargetVerified": false,
+    "checkpointPolicyQualified": false,
+    "networkAndRetryControlsQualified": false
+  },
+  "bundleInput": {
+    "detachedApiDocumented": true,
+    "exactCandidateVerifiedByStandardTool": false,
+    "rf012ProjectionDirectlyUsable": false,
+    "gap": "RF012 retained DSSE and selected verification material, not complete mediaType/timestamp bundle fields; do not invent missing fields or reconstruct an admission bundle",
+    "futureInput": "Fresh exact complete public attestation bundles within bounded metadata scope; preserve signed bytes and validate supported bundle/Rekor combinations with pinned standard version",
+    "compatibilityTableValuesRetained": false
+  },
+  "manifestClassification": {
+    "basis": "RF012 captured root/platform manifests; no new candidate package requests",
+    "rootBin": "bin/codex.js",
+    "rootOptionalPlatformAlias": "npm:@openai/codex@0.154.0-linux-x64",
+    "platformOs": [
+      "linux"
+    ],
+    "platformCpu": [
+      "x64"
+    ],
+    "platformBin": null,
+    "platformFiles": null,
+    "platformScripts": null,
+    "platformDependencies": null,
+    "platformOptionalDependencies": null,
+    "nullMeaning": "RF012 projection records null and normalizes missing and explicit-null fields identically; raw presence was not retained, so absence and payload/hook/helper/native closure are not proven",
+    "npmInstallAllowed": false,
+    "lifecycleAllowed": false,
+    "rawPresenceDistinctionPreserved": false
+  },
+  "futureQuarantinePolicy": {
+    "operative": false,
+    "splitApprovedForUse": false,
+    "downloadAuthorized": false,
+    "payloadUrl": "https://registry.npmjs.org/@openai/codex/-/codex-0.154.0-linux-x64.tgz",
+    "actualCompressedSize": null,
+    "proposedMaxDownloadBytes": 536870912,
+    "capBasis": "512 MiB administrative staging ceiling, not estimated compressed size or unpackedSize; separate grant must prove disk/reserve/time capacity and may reduce it",
+    "maxRetries": 0,
+    "overflowAction": "Stop before exceeding cumulative cap; no retry, growth or reset; owned failure handling only",
+    "hashBeforeParser": true,
+    "standardProvenanceBeforePlacement": true,
+    "nativeSize": null,
+    "nativeSha256": null,
+    "nativeIdentityStage": "Derived bounded static inspection only after whole-archive integrity verification, before materialized extraction/placement",
+    "forbiddenArchiveEntries": [
+      "absolute-or-traversal",
+      "case-collisions",
+      "symlinks",
+      "hardlinks",
+      "devices-or-special-files",
+      "unapproved-permissions"
+    ],
+    "requiresSeparateAuthority": [
+      "toolchain-acquisition-and-any-installation",
+      "runtime-pin",
+      "exact-private-quarantine-and-evidence-roots",
+      "finite-time-disk-reserve-files-depth-decompression-budgets",
+      "owned-cleanup-and-retention",
+      "independent-A-B-contract-review"
+    ],
+    "schemaExecutionAuthorized": false,
+    "standardProvenanceBeforeDownload": true
+  },
+  "receiptContract": {
+    "schemaId": "roost-codex-standard-trust-policy-receipt-v1",
+    "version": 1,
+    "unknownFields": "reject",
+    "unresolvedRequiredField": "reject admission",
+    "requiredFields": [
+      "receiptVersion",
+      "policyId",
+      "policyVersion",
+      "policySha256",
+      "taskRef",
+      "authorityRef",
+      "reviewerRef",
+      "issuedAt",
+      "expiresAt",
+      "toolchainLockSha256",
+      "nodeRuntimeSha256",
+      "verifierVersion",
+      "verifierIntegrity",
+      "verifierDependencyInventorySha256",
+      "bootstrapRootSha256",
+      "validatedRootVersionsAndHashes",
+      "targetsSnapshotTimestampVersionsHashesExpiry",
+      "trustedRootTargetSha256",
+      "registryKeyIdAndFingerprint",
+      "registryKeyTrustSourceRef",
+      "packageIdentity",
+      "packageIntegrity",
+      "sourceCommit",
+      "bundleHashesAndVersions",
+      "standardVerificationResult",
+      "certificateIssuerIdentityAndValidity",
+      "authenticatedSigningTime",
+      "logIdsCheckpointHashesAndInclusionResults",
+      "freshnessReplayPolicyRef",
+      "semanticEqualityResults",
+      "networkLedgerSha256",
+      "cacheRefAndDigest",
+      "quarantineAuthorityRef",
+      "decision",
+      "reasonCodes"
+    ],
+    "privacy": "Complete roots/bundles/tool receipts/cache paths stay private in bounded task evidence; public projection only references, exact public pins, hashes, fixed outcomes and counters",
+    "admissionRule": "All required standard crypto/trust/policy/equality checks pass under fresh authority; library return alone and the RF012 checker never grant acquisition or execution",
+    "fieldTypingAndExecutableSchemaQualified": false
+  },
+  "mappings": {
+    "delivery": [
+      "CDL-R03",
+      "CDL-T03",
+      "CDL-R08",
+      "CDL-T08",
+      "CDL-R09",
+      "CDL-T09",
+      "CDL-R11",
+      "CDL-T11"
+    ],
+    "decisions": [
+      "D01"
+    ],
+    "blockers": [
+      "B01",
+      "B02"
+    ],
+    "cas": [
+      "CAS-R03",
+      "CAS-R07",
+      "CAS-R13",
+      "CAS-R23",
+      "CAS-R27",
+      "CAS-R28",
+      "CAS-R29"
+    ]
+  },
+  "blockers": [
+    "closed_authenticated_standard_toolchain_and_Node_pin_missing",
+    "npm_publish_key_trust_provider_and_standard_root_snapshot_unqualified",
+    "exact_bundle_version_and_full_input_compatibility_unproven",
+    "standard_failure_network_retry_time_shard_freshness_guarantees_unestablished",
+    "A_B_contract_revision_and_complete_quarantine_authority_missing"
+  ],
+  "gates": {
+    "policyReady": false,
+    "acquisitionReady": false,
+    "schemaProbeReady": false,
+    "implementationReady": false,
+    "executionSupported": false,
+    "pilotReady": false,
+    "liveAdmissionAllowed": false
+  },
+  "actions": {
+    "payloadDownloads": 0,
+    "installs": 0,
+    "standardVerifierExecutions": 0,
+    "customCryptoChanges": 0,
+    "candidateExecutions": 0,
+    "authReads": 0
+  },
+  "nextTask": "RF-HERMES-014"
+}

@@ -189,7 +189,7 @@ def validate_documents():
         r, t = re.findall(r'CAS-R(\d{2})', requirements), re.findall(r'CAS-T(\d{2})', tests)
         need(r == t and len(r) == len(set(r)) and all(1 <= int(n) <= 30 for n in r), 'cas_mapping')
     need(packet.count('## Consolidated interview packet I01 — RESOLVED') == 1, 'interview_packet_resolved')
-    need(packet.count('Exactly one recommended next atomic task:') == 1 and '**RF-HERMES-013' in packet, 'next_task')
+    need(packet.count('Exactly one recommended next atomic task:') == 1 and '**RF-HERMES-014' in packet, 'next_task')
     owners = OWNER_DECISIONS.read_text(encoding='utf-8')
     need(re.findall(r'^## (I01-[ABC]) — APPROVED:', owners, re.M) == ['I01-A','I01-B','I01-C'], 'owner_decision_status')
     need('Status: accepted' in owners and 'Date: 2026-09-13' in owners and 'I01 RESOLVED' in owners, 'owner_record')

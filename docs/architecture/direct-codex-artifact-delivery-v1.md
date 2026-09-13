@@ -15,6 +15,10 @@ returns DETACHED-PROVENANCE-BLOCKED. Signature mathematics does not establish
 accepted publisher/log trust. Its two-phase proposal is non-operative: R03/T03
 and the coupled R08/R09/R11 requirements remain unchanged. The review and
 qualification packet own the current next-task recommendation; RF009's is historical.
+The [RF013 standard-policy review](direct-codex-standard-provenance-policy-v1.md)
+selects the maintained Sigstore JS client as a candidate and retains
+STANDARD-PROVENANCE-POLICY-BLOCKED. Its policy/receipt and the qualification packet
+now own the current recommendation. No operative CDL clause changes.
 
 ## CDL-R01 — Scope and present disposition
 

@@ -6,6 +6,12 @@ owns this verdict. Signature mathematics passes for the retained metadata, but
 independently accepted trust, complete transparency verification, compressed size
 and a complete acquisition authority do not. No package body was downloaded.
 
+Follow-up [RF013 standard policy](direct-codex-standard-provenance-policy-v1.md)
+recommends the maintained Sigstore JS family for qualification and remains
+STANDARD-PROVENANCE-POLICY-BLOCKED. It neither extends this partial checker nor
+changes RF012's evidence/verdict; the new policy owns the current next-task
+recommendation and the RF012 recommendation below is historical.
+
 ## Independence and evidence
 
 Reviewer reference: `codex-separate-agent.rf012_security_review`. A separate

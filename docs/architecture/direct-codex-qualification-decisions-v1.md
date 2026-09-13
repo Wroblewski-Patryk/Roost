@@ -1,7 +1,7 @@
 # Direct Codex qualification decision packet v1
 
 RF-HERMES-006, 2026-09-13. Decision-packet version: **1**.
-Packet revision: **7**, RF-HERMES-012, 2026-09-13. Profile revision remains **3**.
+Packet revision: **8**, RF-HERMES-013, 2026-09-13. Profile revision remains **3**.
 **I01 RESOLVED** by
 [ADR-002 owner decisions](../decisions/ADR-002-codex-qualification-owner-decisions.md).
 RF007 recorded owner policy/limited future authority. The
@@ -18,6 +18,9 @@ The [RF012 independent review](direct-codex-provenance-review-v1.md) confirms
 signature mathematics but retains DETACHED-PROVENANCE-BLOCKED: trusted roots,
 authenticated transparency/time and a complete acquisition authority are missing.
 Author-separated agent review does not close B09 or grant CAS runtime acceptance.
+The [RF013 standard-policy review](direct-codex-standard-provenance-policy-v1.md)
+recommends sigstore-js client as the sole maintained candidate; complete toolchain,
+trust/cache/network/failure configuration and exact input support remain unqualified.
 Scope: one candidate profile for the existing Windows Worker plus WSL2 execution
 boundary, under [ADR-001](../decisions/ADR-001-direct-codex-app-server-pilot.md).
 **D01–D06 BLOCKED; D07 DECIDED for document/schema design only.**
@@ -100,6 +103,15 @@ time/checkpoint and accepted issuer/key policy remain unverified. HEAD obtained
 no compressed size. A two-phase package/native inspection policy is recorded as
 a non-operative proposal; CDL-R03/T03/R08/R09/R11 remain intact. No pin, schema,
 inventory, acquisition or execution gate is resolved.
+
+**RF013 standard mechanism.** A new independent reviewer retains
+STANDARD-PROVENANCE-POLICY-BLOCKED. Exact observed client/dependency pins and
+semantic identity requirements are documented, including standard provenance
+before download and package integrity before parsing. Node/platform capability,
+closed authenticated tool/root/dependency pins and the complete standard policy
+remain missing. The RF012 custom mathematical checker is unchanged and has no
+admission authority. The proposed finite streaming cap and A/B split are
+non-operative; all operative CDL requirements and profile nulls remain intact.
 
 **Decision/recommendation.** Define one installation-local qualification pin:
 Windows Worker ownership, one selected WSL2 distribution and Linux x86_64 Codex
@@ -492,10 +504,13 @@ RF012 completed an attributable author-separated review with
 DETACHED-PROVENANCE-BLOCKED. It preserves operative delivery requirements and
 records a conditional, non-operative package/native inspection phase proposal.
 
-Exactly one recommended next atomic task: **RF-HERMES-013 — independently anchor
-the candidate's trust and transparency verification policy under a fresh bounded
-metadata-only task.** Establish accepted Sigstore/TUF bootstrap, npm key policy,
-certificate/log/checkpoint/time authentication and exact publisher/workflow/source
-semantics, or retain precise BLOCKED reasons. No payload download, verifier
-installation, generator or App Server execution is implicit. RF013 was not
-started by RF012.
+RF013 selected one maintained library family for further qualification, with a
+separate independent policy review and no installation or verifier execution.
+
+Exactly one recommended next atomic task: **RF-HERMES-014 — qualify one closed
+standard verifier toolchain and configuration under separate bounded authority.**
+Establish authenticated runtime/dependency/bootstrap pins, complete compatible
+bundles, accepted npm key mapping, standard verification/network/cache/failure
+behavior and a typed receipt. Any tool acquisition or installation needs that
+task's explicit authority. No candidate payload, custom crypto, generator,
+App Server or auth access is implicit. RF014 was not started by RF013.

@@ -1,0 +1,163 @@
+{
+  "schemaId": "roost-codex-standard-provenance-review-v1",
+  "taskId": "RF-HERMES-013",
+  "revision": 1,
+  "reviewerRef": "codex-separate-agent.rf013_standard_policy_review",
+  "reviewedDate": "2026-09-13",
+  "verdict": "STANDARD-PROVENANCE-POLICY-BLOCKED",
+  "independence": {
+    "mechanism": "separate_attributable_subagent",
+    "authoredRf012": false,
+    "authoredReviewedPolicyOrCapture": false,
+    "freshIndependentAssessment": true,
+    "independentReviewAvailable": true,
+    "cryptographicReviewerSignature": false,
+    "runtimeCasAcceptance": false,
+    "limitations": "Shared workspace and agent environment; supplied network capture rather than independent acquisition. Author separation is sufficient for this documentary review, not a different organization/model, human endorsement, principal isolation or B09 closure. Main executor cannot alter this verdict."
+  },
+  "snapshot": {
+    "hashMeaning": "SHA256 of exact file bytes without JSON or newline normalization.",
+    "scope": "Fresh AGENTS.md, documentation contract and bounded default context; relevant RF009-RF012 delivery, source, provenance, qualification and CAS records; frozen RF013 policy, source projection, ledger and capture helper.",
+    "boundary": "Baseline hashes identify reviewed entry bytes. RF013 hashes identify final frozen evidence after requested ordering and semantic clarifications. Subsequent integration prose is outside this snapshot."
+  },
+  "reviewedSha256": {
+    "AGENTS.md": "86dccfa5364f9f01fe2a69782d9f6024295fd60dc7adbf6eb57d694bff75774c",
+    "docs/documentation-contract.json": "cd04e892a19d8a2fe9d2a77b4b13ebbf0fd8a27b231b875c3ed53849b62f3cb7",
+    "docs/README.md": "13e34fdfba0390d59b288105c468e7548b352a2cfe16f5f5cd73fd4e62f2c015",
+    "docs/product/product.md": "eecd83ee96c962630d9e8fb9469e4046c41300f22365ef9eabe2661b8ba0ece1",
+    "docs/architecture/architecture-source-of-truth.md": "b25e704f0e8370eb2852a126ead7291dd5252518ee9b5c3e9e9244e0272e586b",
+    "docs/architecture/local-codex-agent-runtime.md": "46fa8dfda10e1d200d3dc67d5caa70090107c1eaeaec5f6c6f7cd85fd3da0b0a",
+    "docs/architecture/workspace-human-access.md": "e739131df5ac7a77ddc405858d00be015019156ff24c9e2d519aa48b383720df",
+    "docs/architecture/direct-codex-artifact-delivery-v1.md": "41fab15b79111d2599eb45f3f3c386d50d462eba88ff942f21d3c81e5b12a636",
+    "docs/architecture/direct-codex-artifact-delivery-acceptance-v1.md": "235e0ffc7783c0388764b6d55e733c8ed29608ba58ebbcb5c08109ced778579d",
+    "docs/architecture/direct-codex-official-source-research-v1.json": "6cbd86d33b5b3e222824b72ce2ab91fb4fc91fcaf9a0757899f1b840a9682c50",
+    "docs/architecture/codex-source-metadata-ledger-v1.json": "71fac38f431d37b06d555fec363e5bfd780762cb43fa3ca4ecfae17f458d8a10",
+    "docs/architecture/direct-codex-provenance-review-v1.json": "c70fd0feed09659bde455194e4e3cc37770adf657a5a7e07df240e9938a6867f",
+    "docs/architecture/codex-provenance-metadata-ledger-v1.json": "fe7e187084e38a0a22cf3c3908d547497717a83b29778a871a7a64254cb68b10",
+    "docs/architecture/codex-provenance-verification-inputs-v1.json": "6d89fa15a396f24d673dc8a1326c2a2a0ffb504eb29e2c02c7ef7db1744b5004",
+    "docs/architecture/codex-provenance-crypto-observation-v1.json": "dbc71ef266b8f1734ef304349a541afed406fc2620d2396c1d83f12d3ea24b1c",
+    "docs/architecture/direct-codex-qualification-decisions-v1.md": "ecdb9cc6d8ff4562c91dabebb410af7072fccfb63b062bcf0b2bae112870c679",
+    "docs/architecture/direct-codex-app-server-contract-v1.md": "2755cec0614fcf4e06b5be41b7ee3a7c378c7b82136e5ab0445db350f741a3c6",
+    "docs/architecture/direct-codex-app-server-acceptance-v1.md": "e9098d8e222777dad2132fa00d5e961841bc68b98f6efe44e9e78cd66e9d1202",
+    "docs/architecture/direct-codex-standard-provenance-policy-v1.json": "3add9923737e6ce02e7e8472f5d9b94387e33d0e452aea98e5fdb02ca1de7d34",
+    "docs/architecture/codex-standard-policy-sources-v1.json": "d745501f1d714909999e3de38b0179da574b178039f6649bff9d8e1e31e9844c",
+    "docs/architecture/codex-standard-policy-metadata-ledger-v1.json": "04e4ec92ca3854c4c466f505b2f872d22f6ffce6daab985b9bb50e3cdb7a01a8",
+    "scripts/codex_standard_policy_capture.py": "20baa51240ba5b9dbccabd3c52dc8c2e295b951a795d5b5a11fddd1979b31c5c"
+  },
+  "optionEvaluation": {
+    "recommendedOption": "sigstore-js-client",
+    "recommendationCount": 1,
+    "candidate": "sigstore@5.0.0 with proposed @sigstore/verify@4.1.2 and @sigstore/tuf@5.0.0 dependencies; exact SRI and gitHead values are bound in the reviewed policy.",
+    "npmNative": "npm@12.0.2 documents audit signatures for downloaded packages and a verified JSON array. Detached-only invocation, complete signature failure semantics and bounded endpoint behavior are not established. Not selected.",
+    "pacote": "pacote@22.0.0 documents manifest verification but verifies signatures and attestations only if present. Registry-scoped keys and TUF cache are required; tarball stream callbacks may repeat through retries. Not selected.",
+    "sigstore": "Official maintained library documents detached DSSE verification without artifact bytes, issuer/URI/OID checks, log thresholds and public-key selection. Its API fits this bounded purpose best, but the exact closed configuration remains unqualified.",
+    "sigstoreCli": "Official project identifies @sigstore/cli separately. Its exact version, integrity and interface were not established; the selected library is not a silently substituted CLI.",
+    "pinGap": "Observed top-level versions/SRI are candidate identifiers, not authenticated installed artifacts. No closed transitive lock, authenticated Node pin, bootstrap-root digest or validated target snapshot exists. Dependency ranges cannot qualify the stack.",
+    "platformGap": "Selected manifests require Node ^22.22.2 || ^24.15.0 || >=26.0.0. Previously observed Windows Node 22.13.0 is insufficient. WSL Node availability and supported execution environment were not inspected or proven."
+  },
+  "questions": [
+    {
+      "id": "Q01",
+      "question": "Can standard verification precede the candidate download?",
+      "finding": "Yes in principle: documented verify accepts an attestation bundle without external artifact bytes. RF012 retained only a projection, omitting complete bundle fields. Supported bundle/Rekor combinations and exact complete input remain unproven; missing fields must not be fabricated."
+    },
+    {
+      "id": "Q02",
+      "question": "Is trust bootstrap and refresh sufficiently specified?",
+      "finding": "No. The embedded @sigstore/tuf bootstrap is a coherent route only after authenticating its toolchain and exact bytes. Required root/metadata/target versions, hashes, expiry and npm publish-key authority are missing. A bundle hint cannot authorize its own key. forceCache permits downloads when cache metadata expires and cannot enforce offline operation."
+    },
+    {
+      "id": "Q03",
+      "question": "Are exact identity and publisher semantics defined?",
+      "finding": "The revised candidate policy adequately states exact package/SHA512, one subject and one required statement of each type, repository/workflow/ref/commit, issuer, numeric repository/owner IDs, push event, builder, invocation and resolved dependency. URI matching must escape regex characters and anchor both ends; email override is forbidden. The npm publish assertion does not identify an npm user. These are required checks, not authenticated results."
+    },
+    {
+      "id": "Q04",
+      "question": "Are certificate, transparency and historical-time guarantees established?",
+      "finding": "No. Chain/EKU/SCT, checkpoint/inclusion/shard semantics, authenticated signing time, historical validity, root/key validity and replay/freshness policy must be enforced by the maintained verifier. README thresholds alone do not prove those exact guarantees. Consistency/witness acceptance, finite receipt expiry and exact failure handling remain unresolved. No custom cryptographic fallback is permissible."
+    },
+    {
+      "id": "Q05",
+      "question": "Are source-version and input compatibility claims sufficiently evidenced?",
+      "finding": "No. The verify README was captured at the client gitHead while proposed verify@4.1.2 declares a different gitHead. The compatibility table values were not retained. Exact configuration/source checks are needed before asserting support for the candidate bundles."
+    },
+    {
+      "id": "Q06",
+      "question": "Are network, cache, failure and hooks controlled?",
+      "finding": "Only as candidate requirements. Separate online refresh with exact enumerated paths and cumulative limits, private cache, enforced offline verification, zero retries and failure normalization require qualification. Documented keySelector is a hook for accepted pinned keys, not arbitrary retrieval. No sign/attest, installer, lifecycle, ambient cache or payload-fetch fallback is admitted."
+    },
+    {
+      "id": "Q07",
+      "question": "Does the proposed quarantine cap establish acquisition readiness?",
+      "finding": "No. 536870912 bytes is an administrative ceiling, not measured compressed size or authenticated publisher size. Capacity, reserve, duration, owned staging and parser bounds are absent. Standard provenance must pass before download; whole-archive integrity must pass before parsing. Native hashes require bounded decompression and remain derived evidence."
+    },
+    {
+      "id": "Q08",
+      "question": "Is the receipt an implemented admission schema?",
+      "finding": "No. It lists required fields and denial intent; executable field typing, exact accepted result shapes and configuration qualification remain open. Neither a library return value nor RF012 partial mathematics grants admission."
+    }
+  ],
+  "networkReview": {
+    "owner": "main_agent",
+    "closed": true,
+    "requests": 12,
+    "bodyBytes": 116644,
+    "maxResponseBodyBytesObserved": 66824,
+    "maxElapsedMillisRecorded": 523,
+    "http200": 11,
+    "http404": 1,
+    "redirects": 0,
+    "retries": 0,
+    "duplicateMethodUrlGroups": 0,
+    "sourceLedgerMismatches": 0,
+    "withinRecordedBudget": true,
+    "limitation": "Offline arithmetic and projection-to-ledger agreement establish recorded accounting only; full response retention and production transport enforcement were not independently verified."
+  },
+  "contractDecision": {
+    "decision": "RETAIN_OPERATIVE_REQUIREMENTS",
+    "operativeChangePermittedNow": false,
+    "unchangedRequirements": [
+      "CDL-R03",
+      "CDL-T03",
+      "CDL-R08",
+      "CDL-T08",
+      "CDL-R09",
+      "CDL-T09",
+      "CDL-R11",
+      "CDL-T11"
+    ],
+    "phaseA": "Non-operative proposal: authenticate exact package digest and authorized publisher/build identity through the qualified standard mechanism, then bind separate finite acquisition authority.",
+    "phaseB": "Non-operative proposal: bounded inert download, complete archive digest verification before any parser, then bounded static inspection and derived native inventory before extraction or placement.",
+    "splitCondition": "Any operative split must independently revise all coupled manifest, authority, download, stage and acceptance clauses. Unknown published compressed size and member identity cannot be silently waived.",
+    "qualification": "D01-D06 remain blocked; B01-B09 remain open. This review does not qualify a package, binary, WSL environment, schema, containment or runtime."
+  },
+  "gates": {
+    "policyReady": false,
+    "acquisitionReady": false,
+    "schemaProbeReady": false,
+    "compatibilityProbeReady": false,
+    "implementationReady": false,
+    "executionSupported": false,
+    "pilotReady": false,
+    "liveAdmissionAllowed": false
+  },
+  "reviewerActions": {
+    "repositoryWrites": 0,
+    "networkRequests": 0,
+    "payloadDownloadsOrUnpacks": 0,
+    "installations": 0,
+    "standardVerifierExecutions": 0,
+    "customCryptoExecutionsOrChanges": 0,
+    "candidateExecutions": 0,
+    "authOrSecretReads": 0,
+    "dockerOrWslActions": 0,
+    "prohibitedDesignQaReadsOrChanges": 0,
+    "offlineStaticChecksOnly": true
+  },
+  "nextTask": {
+    "taskId": "RF-HERMES-014",
+    "title": "Qualify one closed standard verifier toolchain and configuration",
+    "scope": "Under separate finite authority, establish authenticated exact tool/runtime/dependency/bootstrap pins, complete compatible public bundles, accepted npm key mapping, standard trust/time/transparency semantics, bounded refresh and offline behavior, and a typed failure/receipt contract for the selected Sigstore stack.",
+    "limits": "Any tool/runtime acquisition or installation requires separately explicit authority. No Codex candidate payload, unpacking, placement, permission changes, schema generator, App Server, auth access, model use or automatic continuation. Retain BLOCKED if the maintained mechanism cannot satisfy the policy; do not build custom crypto."
+  }
+}
