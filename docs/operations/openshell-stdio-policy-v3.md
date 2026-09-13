@@ -1,5 +1,9 @@
 # Static stdio-only policy v3 (RF-HOST-041)
 
+Subsequent [RF-HOST-042](openshell-docker-v3-delivery.md) finds the pinned Docker
+delivery route BLOCKED by rootfs/workspace incompatibility and incomplete fixture
+membership evidence. The conditional static grant result below is unchanged.
+
 **STATIC-STDIO-POLICY-V3-READY**, verified 2026-09-13. This verdict covers
 official source parsing and **conditional preservation of filesystem grants**
 through the pinned Docker combined-supervisor loader. It does not attest a

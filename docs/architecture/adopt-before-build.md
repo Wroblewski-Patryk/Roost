@@ -1,5 +1,10 @@
 # Adopt-before-build and execution providers
 
+RF-HOST-042: [pinned Docker v3 delivery](../operations/openshell-docker-v3-delivery.md)
+is BLOCKED: rootfs read-only is not configured and a writable image workspace is
+mandatory. Exact fixture image membership/delivery remains unproven. Source/blob
+validation preserves this finding without changing v3 or starting a runtime.
+
 RF-HOST-041: [stdio-only v3](../operations/openshell-stdio-policy-v3.md) passes
 official source parsing and conditional source proof of exact filesystem grants.
 Default static validation requires pinned v3 artifact/evidence; the runtime hash

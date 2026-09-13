@@ -1,5 +1,10 @@
 # Foundation requirements traceability
 
+RF-HOST-042: [Docker v3 delivery analysis](../operations/openshell-docker-v3-delivery.md)
+separates container rootfs, workspace and Landlock guarantees. Thirty source blobs,
+a fail-closed validator and synthetic drift tests bind the BLOCKED conclusion;
+RF037's retained selected findings cannot certify fixture path membership.
+
 RF-HOST-041: [stdio-only v3](../operations/openshell-stdio-policy-v3.md) removes
 unused network/scratch grants, excludes GPU enrichment and pins official/source
 receipts. Conditional static READY, default v3 linter and rejection tests do not
