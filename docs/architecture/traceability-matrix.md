@@ -1,5 +1,12 @@
 # Foundation requirements traceability
 
+RF-HERMES-002: [private Linux installation and synthetic transport](../operations/hermes-linux-synthetic-transport.md)
+verifies pinned Hermes 0.21.2 and passes 29 independent Worker boundary cases.
+The public Hermes session import triggers configuration/plugin discovery and two
+denied filesystem mutation attempts before fake-server launch. Verdict is
+HERMES-TRANSPORT-SYNTHETIC-BLOCKED; no Hermes turn, model or admission is proven.
+The reusable byte/time/process-group boundary remains an unwired candidate.
+
 RF-HERMES-001: [Hermes/Codex isolation assessment](hermes-codex-isolation-assessment.md)
 pins official NousResearch stable identity, both Codex modes, primary OpenAI
 documentation and 14 requirement rows. Reconstructed Git objects/trees and 29

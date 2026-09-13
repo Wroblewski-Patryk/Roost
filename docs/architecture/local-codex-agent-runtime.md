@@ -1,5 +1,11 @@
 # Local Codex Agent Runtime
 
+[RF-HERMES-002](../operations/hermes-linux-synthetic-transport.md) verifies a pinned
+private Linux installation and an independent bounded Worker transport. Hermes
+integration remains blocked by public-session import side effects; no session
+turn, model or production runner was enabled. Synthetic process-group proof is
+not filesystem/network isolation, real App Server compatibility or pilot admission.
+
 [RF-HERMES-001](hermes-codex-isolation-assessment.md) distinguishes the Hermes
 model provider from its optional Codex App Server runtime. Native Codex command
 sandboxing is a candidate boundary; OpenShell is not an established prerequisite.

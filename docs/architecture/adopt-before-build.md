@@ -1,5 +1,12 @@
 # Adopt-before-build and execution providers
 
+RF-HERMES-002: [the private Linux transport examination](../operations/hermes-linux-synthetic-transport.md)
+is HERMES-TRANSPORT-SYNTHETIC-BLOCKED. Installation integrity and 29 independent
+Worker fake-server cases pass. Public session import attempts filesystem mutation
+and reaches configuration/plugin discovery; no Hermes session turn was started.
+The new Worker stdio/process-group boundary is not wired into production and
+does not satisfy Hermes compatibility or any pilot admission gate.
+
 RF-HERMES-001: [the static Hermes/Codex assessment](hermes-codex-isolation-assessment.md)
 finds OPENSHELL-NOT-REQUIRED-FOR-CODEX-RUNTIME-CANDIDATE. The model-only provider
 and optional App Server runtime have different tool ownership. Official Codex
