@@ -1,0 +1,1170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Proposed provider-neutral nonwriting stdio pre-exec receipt v1",
+  "description": "Schema syntax alone grants no implementation qualification or execution authority. Cross-field and trusted-provenance rules in the acceptance contract are mandatory. This schema URI is an identifier; local validation performs no network access.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "payload",
+    "payloadSha256",
+    "seals"
+  ],
+  "properties": {
+    "payload": {
+      "$ref": "#/$defs/payload"
+    },
+    "payloadSha256": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "seals": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "$ref": "#/$defs/seal"
+      }
+    }
+  },
+  "$defs": {
+    "build": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "release",
+        "sourceCommit",
+        "binarySha256",
+        "artifactDigest"
+      ],
+      "properties": {
+        "release": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "sourceCommit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "binarySha256": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "artifactDigest": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "fd": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "number",
+        "kind",
+        "access",
+        "nonblocking",
+        "dedicated",
+        "controlResource"
+      ],
+      "properties": {
+        "number": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "kind": {
+          "const": "anonymous-pipe"
+        },
+        "access": {
+          "enum": [
+            "read",
+            "write"
+          ]
+        },
+        "nonblocking": {
+          "const": true
+        },
+        "dedicated": {
+          "const": true
+        },
+        "controlResource": {
+          "const": false
+        }
+      }
+    },
+    "mount": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "namespace",
+        "namespaceGeneration",
+        "mountId",
+        "parentId",
+        "mountRoot",
+        "target",
+        "filesystemType",
+        "sourceClass",
+        "sourceIdentitySha256",
+        "mountReadOnly",
+        "superblockReadOnly",
+        "flags",
+        "propagation",
+        "visibleToChild",
+        "controlResourceReachableThroughChildFdOrProc",
+        "ownerUid",
+        "ownerGid",
+        "maximumBytes",
+        "maximumInodes"
+      ],
+      "properties": {
+        "namespace": {
+          "enum": [
+            "child",
+            "supervisor"
+          ]
+        },
+        "namespaceGeneration": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "mountId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "parentId": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "mountRoot": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "pattern": "^/"
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "pattern": "^/"
+        },
+        "filesystemType": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "sourceClass": {
+          "enum": [
+            "immutable-image",
+            "runtime-pseudo",
+            "private-tmpfs",
+            "supervisor-control"
+          ]
+        },
+        "sourceIdentitySha256": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "mountReadOnly": {
+          "type": "boolean"
+        },
+        "superblockReadOnly": {
+          "type": "boolean"
+        },
+        "flags": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 32,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        },
+        "propagation": {
+          "const": "private"
+        },
+        "visibleToChild": {
+          "type": "boolean"
+        },
+        "ownerUid": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "ownerGid": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "maximumBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1073741824
+        },
+        "maximumInodes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1048576
+        },
+        "controlResourceReachableThroughChildFdOrProc": {
+          "const": false
+        }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "state",
+        "profile",
+        "builds",
+        "componentAcknowledgements",
+        "qualificationEvidenceSha256",
+        "attemptId",
+        "instanceGeneration",
+        "requestSha256",
+        "nonce",
+        "preparedAtUnixMs",
+        "expiresAtUnixMs",
+        "platform",
+        "image",
+        "child",
+        "root",
+        "mounts",
+        "fixture",
+        "network",
+        "gpu",
+        "fileDescriptors",
+        "supervisorState",
+        "policy",
+        "limits",
+        "lifecycle"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "kind": {
+          "const": "nonwriting-stdio-pre-exec"
+        },
+        "state": {
+          "const": "SEALED_NOT_EXECUTED"
+        },
+        "profile": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "version",
+            "contractSha256"
+          ],
+          "properties": {
+            "id": {
+              "const": "docker_nonwriting_stdio"
+            },
+            "version": {
+              "const": 1
+            },
+            "contractSha256": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "builds": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "gateway",
+            "driver",
+            "supervisor"
+          ],
+          "properties": {
+            "gateway": {
+              "$ref": "#/$defs/build"
+            },
+            "driver": {
+              "$ref": "#/$defs/build"
+            },
+            "supervisor": {
+              "$ref": "#/$defs/build"
+            }
+          }
+        },
+        "componentAcknowledgements": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "gateway",
+            "driver",
+            "supervisor"
+          ],
+          "properties": {
+            "gateway": {
+              "const": true
+            },
+            "driver": {
+              "const": true
+            },
+            "supervisor": {
+              "const": true
+            }
+          }
+        },
+        "qualificationEvidenceSha256": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "attemptId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "instanceGeneration": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "requestSha256": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "nonce": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "preparedAtUnixMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9999999999999
+        },
+        "expiresAtUnixMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9999999999999
+        },
+        "platform": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "os",
+            "architecture",
+            "variant",
+            "engineVersion",
+            "engineApiVersion",
+            "kernelRelease",
+            "cgroupVersion",
+            "hostClass",
+            "wslVersion",
+            "desktopVersion",
+            "qualifiedPlatformSha256"
+          ],
+          "properties": {
+            "os": {
+              "const": "linux"
+            },
+            "architecture": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32
+            },
+            "variant": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32
+            },
+            "engineVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "engineApiVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32
+            },
+            "kernelRelease": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "cgroupVersion": {
+              "const": 2
+            },
+            "hostClass": {
+              "enum": [
+                "native-linux",
+                "wsl2-docker-desktop"
+              ]
+            },
+            "wslVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "desktopVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "qualifiedPlatformSha256": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "image": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "reference",
+            "platformManifestSha256",
+            "configSha256",
+            "verifiedLayerClosureSha256",
+            "declaredVolumes",
+            "immutable"
+          ],
+          "properties": {
+            "reference": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024,
+              "pattern": "^[^@\\s]+@sha256:[0-9a-f]{64}$"
+            },
+            "platformManifestSha256": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "configSha256": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "verifiedLayerClosureSha256": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "declaredVolumes": {
+              "type": "array",
+              "maxItems": 0
+            },
+            "immutable": {
+              "const": true
+            }
+          }
+        },
+        "child": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "argv",
+            "cwd",
+            "uid",
+            "gid",
+            "supplementaryGroups",
+            "workspaceMode",
+            "home",
+            "xdg",
+            "environment",
+            "tty",
+            "capabilities",
+            "noNewPrivileges",
+            "pidIsolation",
+            "ipcIsolation",
+            "controlProcessesReachable",
+            "secondaryExecAllowed"
+          ],
+          "properties": {
+            "argv": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 64,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              }
+            },
+            "cwd": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096,
+              "pattern": "^/"
+            },
+            "uid": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647
+            },
+            "gid": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647
+            },
+            "supplementaryGroups": {
+              "type": "array",
+              "maxItems": 0
+            },
+            "workspaceMode": {
+              "const": "none"
+            },
+            "home": {
+              "const": null
+            },
+            "xdg": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [],
+              "properties": {}
+            },
+            "environment": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [],
+              "properties": {}
+            },
+            "tty": {
+              "const": false
+            },
+            "capabilities": {
+              "type": "array",
+              "maxItems": 0
+            },
+            "noNewPrivileges": {
+              "const": true
+            },
+            "pidIsolation": {
+              "const": true
+            },
+            "ipcIsolation": {
+              "const": true
+            },
+            "controlProcessesReachable": {
+              "const": false
+            },
+            "secondaryExecAllowed": {
+              "const": false
+            }
+          }
+        },
+        "root": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "hostConfigReadonlyRootfs",
+            "observedContainerRootReadOnly",
+            "observedChildRootReadOnly",
+            "observedBeforeExec",
+            "backingImmutable",
+            "mountNamespaceGeneration",
+            "stateFrozenUntilExec"
+          ],
+          "properties": {
+            "hostConfigReadonlyRootfs": {
+              "const": true
+            },
+            "observedContainerRootReadOnly": {
+              "const": true
+            },
+            "observedChildRootReadOnly": {
+              "const": true
+            },
+            "observedBeforeExec": {
+              "const": true
+            },
+            "backingImmutable": {
+              "const": true
+            },
+            "mountNamespaceGeneration": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "stateFrozenUntilExec": {
+              "const": true
+            }
+          }
+        },
+        "mounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "complete",
+            "truncated",
+            "tablesSha256",
+            "rows",
+            "childWritableCount",
+            "userMountCount",
+            "hiddenMountCount"
+          ],
+          "properties": {
+            "complete": {
+              "const": true
+            },
+            "truncated": {
+              "const": false
+            },
+            "tablesSha256": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "rows": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 256,
+              "items": {
+                "$ref": "#/$defs/mount"
+              }
+            },
+            "childWritableCount": {
+              "const": 0
+            },
+            "userMountCount": {
+              "const": 0
+            },
+            "hiddenMountCount": {
+              "const": 0
+            }
+          }
+        },
+        "fixture": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "type",
+            "format",
+            "modeOctal",
+            "ownerUid",
+            "ownerGid",
+            "bytes",
+            "sha256",
+            "nlink",
+            "symlinkAncestors",
+            "fileCapabilities",
+            "setid",
+            "dynamicDependencies",
+            "imageMembershipProofSha256",
+            "finalNamespaceObjectSha256",
+            "verifiedWithoutExecution"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096,
+              "pattern": "^/"
+            },
+            "type": {
+              "const": "regular"
+            },
+            "format": {
+              "const": "static-elf"
+            },
+            "modeOctal": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4,
+              "pattern": "^0[0-7]{3}$"
+            },
+            "ownerUid": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            "ownerGid": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 4194304
+            },
+            "sha256": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "nlink": {
+              "const": 1
+            },
+            "symlinkAncestors": {
+              "const": false
+            },
+            "fileCapabilities": {
+              "type": "array",
+              "maxItems": 0
+            },
+            "setid": {
+              "const": false
+            },
+            "dynamicDependencies": {
+              "type": "array",
+              "maxItems": 0
+            },
+            "imageMembershipProofSha256": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "finalNamespaceObjectSha256": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "verifiedWithoutExecution": {
+              "const": true
+            }
+          }
+        },
+        "network": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "authoredRules",
+            "effectiveRules",
+            "dns",
+            "proxy",
+            "inference",
+            "middleware",
+            "reachableControlEndpoints",
+            "namespaceEvidenceSha256"
+          ],
+          "properties": {
+            "mode": {
+              "const": "none"
+            },
+            "authoredRules": {
+              "type": "array",
+              "maxItems": 0
+            },
+            "effectiveRules": {
+              "type": "array",
+              "maxItems": 0
+            },
+            "dns": {
+              "const": false
+            },
+            "proxy": {
+              "const": false
+            },
+            "inference": {
+              "const": false
+            },
+            "middleware": {
+              "type": "array",
+              "maxItems": 0
+            },
+            "reachableControlEndpoints": {
+              "type": "array",
+              "maxItems": 0
+            },
+            "namespaceEvidenceSha256": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "gpu": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "enabled",
+            "devices",
+            "requests",
+            "environment",
+            "probePathsAbsent"
+          ],
+          "properties": {
+            "enabled": {
+              "const": false
+            },
+            "devices": {
+              "type": "array",
+              "maxItems": 0
+            },
+            "requests": {
+              "type": "array",
+              "maxItems": 0
+            },
+            "environment": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [],
+              "properties": {}
+            },
+            "probePathsAbsent": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^/"
+              }
+            }
+          }
+        },
+        "fileDescriptors": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "execAllowlist",
+            "complete",
+            "closedSetupDescriptors",
+            "closedControlDescriptors",
+            "independentObservationSha256"
+          ],
+          "properties": {
+            "execAllowlist": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "$ref": "#/$defs/fd"
+              }
+            },
+            "complete": {
+              "const": true
+            },
+            "closedSetupDescriptors": {
+              "const": true
+            },
+            "closedControlDescriptors": {
+              "const": true
+            },
+            "independentObservationSha256": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "supervisorState": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "separateMountNamespace",
+            "childVisibility",
+            "mountRowsSha256",
+            "bounded"
+          ],
+          "properties": {
+            "separateMountNamespace": {
+              "const": true
+            },
+            "childVisibility": {
+              "const": false
+            },
+            "mountRowsSha256": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "bounded": {
+              "const": true
+            }
+          }
+        },
+        "policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sourceSha256",
+            "postLoaderSnapshotSha256",
+            "semanticProjectionSha256",
+            "installedRulesSha256",
+            "filesystemReadOnly",
+            "filesystemReadWrite",
+            "includeWorkdir",
+            "landlockCompatibility",
+            "landlockAbi",
+            "landlockEnforced",
+            "seccompEnforced",
+            "opaFallback",
+            "mergeOrEnrichment",
+            "providerLayers",
+            "updatesEnabled"
+          ],
+          "properties": {
+            "sourceSha256": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "postLoaderSnapshotSha256": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "semanticProjectionSha256": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "installedRulesSha256": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "filesystemReadOnly": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^/"
+              }
+            },
+            "filesystemReadWrite": {
+              "type": "array",
+              "maxItems": 0
+            },
+            "includeWorkdir": {
+              "const": false
+            },
+            "landlockCompatibility": {
+              "const": "hard_requirement"
+            },
+            "landlockAbi": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 255
+            },
+            "landlockEnforced": {
+              "const": true
+            },
+            "seccompEnforced": {
+              "const": true
+            },
+            "opaFallback": {
+              "const": false
+            },
+            "mergeOrEnrichment": {
+              "const": false
+            },
+            "providerLayers": {
+              "type": "array",
+              "maxItems": 0
+            },
+            "updatesEnabled": {
+              "const": false
+            }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "cpuMillis",
+            "memoryBytes",
+            "memorySwapBytes",
+            "pids",
+            "setupTimeoutMs",
+            "workloadTimeoutMs",
+            "terminationTimeoutMs",
+            "inputBytes",
+            "stdoutBytes",
+            "stderrBytes",
+            "totalCaptureBytes",
+            "supervisorStateBytes",
+            "supervisorStateInodes",
+            "logDriver",
+            "observedEnforced"
+          ],
+          "properties": {
+            "cpuMillis": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 64000
+            },
+            "memoryBytes": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 68719476736
+            },
+            "memorySwapBytes": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 68719476736
+            },
+            "pids": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 4096
+            },
+            "setupTimeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60000
+            },
+            "workloadTimeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60000
+            },
+            "terminationTimeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            },
+            "inputBytes": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1048576
+            },
+            "stdoutBytes": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "stderrBytes": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "totalCaptureBytes": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1048576
+            },
+            "supervisorStateBytes": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1073741824
+            },
+            "supervisorStateInodes": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "logDriver": {
+              "const": "none"
+            },
+            "observedEnforced": {
+              "const": true
+            }
+          }
+        },
+        "lifecycle": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "restart",
+            "recovery",
+            "singleUse",
+            "ownedCleanupContractSha256",
+            "retainedMutableState"
+          ],
+          "properties": {
+            "restart": {
+              "const": "no"
+            },
+            "recovery": {
+              "const": "new-attempt-only"
+            },
+            "singleUse": {
+              "const": true
+            },
+            "ownedCleanupContractSha256": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "retainedMutableState": {
+              "const": false
+            }
+          }
+        }
+      }
+    },
+    "seal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "keyId",
+        "algorithm",
+        "signature"
+      ],
+      "properties": {
+        "role": {
+          "enum": [
+            "gateway",
+            "driver",
+            "supervisor"
+          ]
+        },
+        "keyId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "algorithm": {
+          "const": "Ed25519"
+        },
+        "signature": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 88,
+          "pattern": "^[A-Za-z0-9+/]{86}==$"
+        }
+      }
+    }
+  }
+}

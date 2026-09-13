@@ -1,5 +1,9 @@
 # Pinned Docker v3 delivery compatibility (RF-HOST-042)
 
+Subsequent [RF-HOST-043](openshell-nonwriting-stdio-proposal.md) defines a local
+upstream capability proposal and acceptance contract. It implements no runtime
+feature and does not change this pinned Docker BLOCKED result.
+
 **PINNED-DOCKER-V3-DELIVERY-BLOCKED**, verified 2026-09-13. The pinned stock
 Docker driver/combined supervisor cannot satisfy the complete
 [v3 contract](openshell-stdio-policy-v3.md). This is a static compatibility

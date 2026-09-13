@@ -1,0 +1,580 @@
+{
+  "schemaVersion": 1,
+  "contractId": "openshell.docker-nonwriting-stdio.acceptance.v1",
+  "proposalSha256": "d0ebbdfc737fda1b9e6ab312641b0205c408295be9d773bac2ee54db57815c8e",
+  "receiptSchemaFile": "nonwriting-stdio.receipt.schema.json",
+  "receiptSchemaSha256": "5165a152d6c3d06e1355bf13cd5d6fba693404e5dcddee7858edc0a4d81b6cf0",
+  "profile": {
+    "id": "docker_nonwriting_stdio",
+    "version": 1,
+    "defaultEnabled": false,
+    "requiredParticipants": [
+      "gateway",
+      "driver",
+      "supervisor"
+    ],
+    "requiredAcknowledgement": "exact-profile-version-contract-hash",
+    "downgradeAllowed": false,
+    "upstreamNameReserved": false
+  },
+  "v3Binding": {
+    "policyFile": "config/openshell/synthetic-isolation-v3.policy.json",
+    "policySha256": "0d7ac3b0eccde457d5a77e6662a4bfb6a2f1de3e3c4147d2d49633fce6058e5b",
+    "contractFile": "config/openshell/synthetic-isolation-v3.contract.json",
+    "contractSha256": "f01133f5a240c2eb60bf2d21d121649373e6e1259f22debfe62222abba888f98",
+    "deliveryProofFile": "config/openshell/docker-v3-delivery-proof.json",
+    "deliveryProofSha256": "84010b83f421468c0244fb08f2339a518e48d87d28b193a9eccc020b9651e645",
+    "fixture": {
+      "identity": "roost.synthetic-stdio.v2",
+      "path": "/opt/roost-fixture/bin/fake-app-server",
+      "sha256": "c4c7bbc5d9d73629c4ebb88ffc1dfa48cb58e85e5477f69ec1128aaab156c85d",
+      "bytes": 8656,
+      "argv": [
+        "/opt/roost-fixture/bin/fake-app-server"
+      ],
+      "workingDirectory": "/",
+      "format": "static-linux-amd64-elf",
+      "requiredModeOctal": "0555",
+      "requiredOwnerUid": 0,
+      "requiredOwnerGid": 0,
+      "nlink": 1
+    },
+    "childIdentity": {
+      "user": "sandbox",
+      "group": "sandbox",
+      "numericIds": "resolve-from-verified-image-and-seal-nonroot",
+      "supplementaryGroups": []
+    },
+    "qualifiedFixtureImageDigest": null,
+    "runtimeEffectivePolicySha256": null
+  },
+  "negativeCases": [
+    {
+      "id": "profile_missing",
+      "requirement": "negotiation",
+      "inject": "Absent/false required profile or one participant acknowledgement missing",
+      "minimumLevel": "unit-property",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "profile_unknown",
+      "requirement": "negotiation",
+      "inject": "Unknown profile version, contract hash or partial implementation",
+      "minimumLevel": "unit-property",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "root_unset",
+      "requirement": "root",
+      "inject": "ReadonlyRootfs unset",
+      "minimumLevel": "fake-daemon",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "root_false",
+      "requirement": "root",
+      "inject": "ReadonlyRootfs false",
+      "minimumLevel": "fake-daemon",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "child_root_rw",
+      "requirement": "root",
+      "inject": "Container says RO but child root namespace writable",
+      "minimumLevel": "prepared-integration",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "implicit_rw_mount",
+      "requirement": "mounts",
+      "inject": "Hidden/stacked/bind/implicit RW mount or incomplete mount enumeration",
+      "minimumLevel": "prepared-integration",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "image_volume",
+      "requirement": "mounts",
+      "inject": "OCI image declares any VOLUME even if unused",
+      "minimumLevel": "unit-property",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "user_mount",
+      "requirement": "mounts",
+      "inject": "User bind, named or anonymous volume, tmpfs or arbitrary device request",
+      "minimumLevel": "fake-daemon",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "tmp_writable",
+      "requirement": "mounts",
+      "inject": "Child can reach writable /tmp backing",
+      "minimumLevel": "prepared-integration",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "sandbox_writable",
+      "requirement": "workspace",
+      "inject": "Child can reach writable /sandbox backing",
+      "minimumLevel": "prepared-integration",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "cwd_fallback",
+      "requirement": "workspace",
+      "inject": "Empty/missing cwd or image WORKDIR silently maps to /sandbox",
+      "minimumLevel": "unit-property",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "workspace_probe",
+      "requirement": "workspace",
+      "inject": "Workspace none calls write probe/create/chown/upload/copy/sync",
+      "minimumLevel": "unit-property",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "mutable_tag",
+      "requirement": "artifact",
+      "inject": "Image given by mutable tag only",
+      "minimumLevel": "unit-property",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "digest_platform_mismatch",
+      "requirement": "artifact",
+      "inject": "Manifest/config/layer digest or OS/architecture differs",
+      "minimumLevel": "unit-property",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "fixture_absent",
+      "requirement": "artifact",
+      "inject": "Exact fixture final path absent or membership evidence omitted",
+      "minimumLevel": "unit-property",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "fixture_hash_drift",
+      "requirement": "artifact",
+      "inject": "Fixture hash/size/mode/owner changes including prepare-to-exec race",
+      "minimumLevel": "prepared-integration",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "fixture_symlink",
+      "requirement": "artifact",
+      "inject": "Fixture or ancestor symlink",
+      "minimumLevel": "unit-property",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "fixture_hardlink",
+      "requirement": "artifact",
+      "inject": "Fixture hardlink or nlink greater than one",
+      "minimumLevel": "unit-property",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "fixture_device",
+      "requirement": "artifact",
+      "inject": "Fixture is device/FIFO/socket/directory or has setid/capability metadata",
+      "minimumLevel": "unit-property",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "shell_entrypoint",
+      "requirement": "command",
+      "inject": "Effective argv selects shell/login shell/default image ENTRYPOINT/CMD/interpreter",
+      "minimumLevel": "unit-property",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "gpu_device",
+      "requirement": "network",
+      "inject": "GPU request, device, environment, nvidiactl or dxg visible",
+      "minimumLevel": "prepared-integration",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "network_grant",
+      "requirement": "network",
+      "inject": "Network rule, DNS/inference route, middleware or proxy baseline exists",
+      "minimumLevel": "prepared-integration",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "inherited_socket",
+      "requirement": "descriptors",
+      "inject": "Non-CLOEXEC socket inherited from trusted supervisor",
+      "minimumLevel": "prepared-integration",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "inherited_token",
+      "requirement": "isolation",
+      "inject": "Control credential exposed through env/file/proc or inherited description",
+      "minimumLevel": "prepared-integration",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "inherited_fd",
+      "requirement": "descriptors",
+      "inject": "Extra FD or stdio alias to file/device/socket rather than dedicated pipe",
+      "minimumLevel": "prepared-integration",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "supervisor_state_visible",
+      "requirement": "supervisor-state",
+      "inject": "Private tmpfs/control mount reachable via path/proc-root/FD/propagation",
+      "minimumLevel": "prepared-integration",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "policy_merge",
+      "requirement": "policy",
+      "inject": "Global/provider/image policy merged or enriched after source validation",
+      "minimumLevel": "unit-property",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "policy_fallback",
+      "requirement": "policy",
+      "inject": "Missing hard Landlock/OPA failure triggers skip/fallback/default",
+      "minimumLevel": "prepared-integration",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "retained_restart",
+      "requirement": "lifecycle",
+      "inject": "Gateway/daemon restart or recovery tries old receipt/mutable state",
+      "minimumLevel": "prepared-integration",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "unsupported_host",
+      "requirement": "evidence",
+      "inject": "Docker/WSL/kernel combination absent from qualified matrix or feature probe fails",
+      "minimumLevel": "prepared-integration",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "forged_receipt",
+      "requirement": "receipt",
+      "inject": "Caller self-asserted report, invalid role seal, wrong nonce/request/attempt or expired/replayed receipt",
+      "minimumLevel": "unit-property",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "unbounded_resources",
+      "requirement": "limits",
+      "inject": "Missing/exceeded RAM/PID/state/input/output/deadline limit or logger bypass",
+      "minimumLevel": "prepared-integration",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "post_seal_change",
+      "requirement": "receipt",
+      "inject": "Mount/policy/FD/image/build/resource changes after sealing",
+      "minimumLevel": "prepared-integration",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "secondary_exec",
+      "requirement": "command",
+      "inject": "Attempt to exec other binary, loader or writable/memfd program",
+      "minimumLevel": "live-adversarial",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    },
+    {
+      "id": "control_escape",
+      "requirement": "isolation",
+      "inject": "Attempt host API, setns, ptrace, supervisor proc-root or privilege recovery",
+      "minimumLevel": "live-adversarial",
+      "expected": {
+        "workloadExec": false,
+        "successReceipt": false,
+        "outcome": "DENIED",
+        "reusePreparedAttempt": false
+      }
+    }
+  ],
+  "evidenceLevels": [
+    {
+      "id": "unit-property",
+      "requires": [],
+      "proof": "Official release-bound tests of parsing, negotiation, immutable identity, policy invariants and generated negative permutations. No implementation inferred from local proposal tests."
+    },
+    {
+      "id": "fake-daemon",
+      "requires": [
+        "unit-property"
+      ],
+      "proof": "Official Docker fake-daemon snapshots assert the exact HostConfig/mount/resource/lifecycle request and reject daemon response drift. No real runtime proof."
+    },
+    {
+      "id": "prepared-integration",
+      "requires": [
+        "unit-property",
+        "fake-daemon"
+      ],
+      "proof": "Separately authorized real official supervisor setup and independent trusted inspection of a prepared child context with exec latch closed. No model or fixture ELF execution. Observe mounts, identity, FDs, kernel enforcement and reject injected defects before workload exec."
+    },
+    {
+      "id": "live-adversarial",
+      "requires": [
+        "unit-property",
+        "fake-daemon",
+        "prepared-integration"
+      ],
+      "proof": "Separately authorized adversarial test binary/behavior revision on exact qualified host. Demonstrate denied writes/network/admin/secondary exec, enforced output and descendant stop, crash/replay failures. Existing stdio fixture cannot claim these behaviors."
+    }
+  ],
+  "qualification": {
+    "allLevelsRequired": [
+      "unit-property",
+      "fake-daemon",
+      "prepared-integration",
+      "live-adversarial"
+    ],
+    "sourceReviewSufficient": false,
+    "advertisedCapabilitySufficient": false,
+    "localValidatorQualifiesImplementation": false,
+    "everyNegativeMustPass": true,
+    "platformMatrix": "exact-release-build-digests-engine-api-kernel-landlock-seccomp-cgroup-os-architecture-wsl-desktop-if-applicable",
+    "noAutomaticHostRepair": true
+  },
+  "receiptProtocol": {
+    "canonicalization": "ascii-json-sorted-compact-v1",
+    "maxBytes": 65536,
+    "maxMountRows": 256,
+    "maxAgeSeconds": 30,
+    "nonceBytes": 32,
+    "sealAlgorithm": "Ed25519",
+    "requiredSealers": [
+      "gateway",
+      "driver",
+      "supervisor"
+    ],
+    "trustedKeys": "operator-pinned-out-of-band-build-and-role-bound",
+    "stages": [
+      "REQUESTED",
+      "PREPARING",
+      "SEALED_NOT_EXECUTED",
+      "ACKNOWLEDGED",
+      "EXECUTED_OR_DENIED"
+    ],
+    "acknowledgement": "caller-pins-exact-payload-sha256-and-nonce-to-execution-request",
+    "singleUse": true,
+    "stateChangeInvalidates": true,
+    "timeoutOutcome": "DENIED",
+    "callerAssertionsTrusted": false,
+    "controlFdAtWorkloadExec": false,
+    "signatureDomain": "openshell/nonwriting-stdio/receipt/v1:",
+    "maxClockSkewMs": 1000
+  },
+  "executionSupported": false,
+  "pilotReady": false,
+  "liveAdmissionAllowed": false,
+  "implementationVerified": false,
+  "receiptCrossFieldRules": [
+    "Canonical JSON rejects duplicates, floats, non-ASCII, unknown/missing fields; payload hash excludes envelope hash and seals. Verify all three unique role signatures over domain string plus payload hash, using out-of-band pinned role/build keys; input never supplies trust.",
+    "Nonce/request/attempt/generation match the prepared request, fresh within 30 seconds with bounded clock error; unknown clock denies. Each role acknowledges the same profile contract and builds bound to official release qualification. A daemon version is not driver binary identity.",
+    "Exact image reference suffix equals platform manifest digest, config/layer closure and observed OS/architecture match the qualified request. Native Linux WSL/Desktop values are literal not-applicable; WSL requires exact qualified versions. Unknown platform denies.",
+    "Fixture matches approved path/type/mode/owner/size/hash/nlink and immutable image membership and final namespace object. argv[0] equals fixture.path; argv/cwd/uid/gid equal request and verified image identity. No symlink/hardlink race or post-seal mutation.",
+    "All child mount rows are read-only, visibleToChild true and private propagation; supervisor-only rows are not visible or reachable by child. Enumerate both complete mount namespaces, including stacked and automatic mounts. Derive counts and table hashes, never trust declared zero.",
+    "Every writable supervisor row is private-tmpfs with positive byte/inode ceilings within aggregate limits; every child-visible backing is immutable and contains no control material. Mount RO alone does not exclude writable device semantics; block writable devices and proc-root escape.",
+    "Exact FD numbers are 0 read, 1 write, 2 write, unique dedicated nonblocking anonymous pipes; no other descriptor exists at workload exec. Trusted setup/barrier descriptors must be consumed and closed, with independent final observation tied to the sealed instance.",
+    "Policy post-loader snapshot and installed rules must be supplied through authenticated evidence and hash-verified; semantic projection equals the approved policy including empty RW/network/provider groups. Never substitute authored policy hash or RF041 source projection for observed runtime hash.",
+    "Enforced memorySwapBytes equals memoryBytes; all requested finite limits match observation. Total capture bounds all child/control diagnostic streams without payload leakage, stderr budget zero for v3; any unknown enforcement denies.",
+    "Payload and all evidence are sealed against mutation until single-use acknowledgement and exec; receipt expiry, cancellation, crash, update or failed cleanup invalidates generation. No cached receipt, partial success or retry into retained mutable state.",
+    "Mount rows are sorted by namespace, namespaceGeneration and mountId; FD rows by number; seals by role. Duplicate IDs, unknown flag semantics, overmount gaps or truncated evidence deny. Mount table hash covers canonical rows, policy hashes identify exact canonical authenticated evidence bytes."
+  ],
+  "v3TestLimits": {
+    "cpuMillis": 1000,
+    "memoryBytes": 536870912,
+    "memorySwapBytes": 536870912,
+    "pids": 64,
+    "setupTimeoutMs": 30000,
+    "workloadTimeoutMs": 3000,
+    "terminationTimeoutMs": 5000,
+    "inputBytes": 128,
+    "stdoutBytes": 61,
+    "stderrBytes": 0,
+    "totalCaptureBytes": 32768,
+    "supervisorStateBytes": 16777216,
+    "supervisorStateInodes": 1024,
+    "logDriver": "none"
+  }
+}

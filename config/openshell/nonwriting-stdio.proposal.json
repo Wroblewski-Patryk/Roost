@@ -1,0 +1,1093 @@
+{
+  "schemaVersion": 1,
+  "proposalId": "openshell.docker-nonwriting-stdio.proposal.v1",
+  "status": "local-proposal-only",
+  "profile": {
+    "id": "docker_nonwriting_stdio",
+    "version": 1,
+    "defaultEnabled": false,
+    "requiredParticipants": [
+      "gateway",
+      "driver",
+      "supervisor"
+    ],
+    "requiredAcknowledgement": "exact-profile-version-contract-hash",
+    "downgradeAllowed": false,
+    "upstreamNameReserved": false
+  },
+  "upstreamCommit": "d1155aa70042d3e2ee49dbfa15346b108b7c1d92",
+  "requirements": [
+    {
+      "id": "negotiation",
+      "must": "Explicit opt-in profile id/version and contract hash must be acknowledged by gateway, selected driver and actual supervisor build. Missing, false, unknown version, partial support or ignored required fields denies preparation and exec.",
+      "failure": "DENY_WORKLOAD_EXEC"
+    },
+    {
+      "id": "root",
+      "must": "Docker HostConfig.ReadonlyRootfs must be true. Independently observe the child root and complete mount namespace read-only before workload exec; no later remount or mount propagation may widen it.",
+      "failure": "DENY_WORKLOAD_EXEC"
+    },
+    {
+      "id": "mounts",
+      "must": "No user bind, named/anonymous volume, image VOLUME or child-visible writable mount, device, socket or writable file backing. Include implicit proc/sys/dev/shm, hosts/resolver, tmp/home/cache/log/state paths. Unknown, hidden or truncated enumeration denies.",
+      "failure": "DENY_WORKLOAD_EXEC"
+    },
+    {
+      "id": "workspace",
+      "must": "workspaceMode none bypasses creation, chown/chmod, write probes, extraction, upload, copy and sync. Explicit canonical absolute cwd must exist as an immutable directory; no image WORKDIR, empty-path or /sandbox fallback and no implicit HOME/XDG.",
+      "failure": "DENY_WORKLOAD_EXEC"
+    },
+    {
+      "id": "command",
+      "must": "Require explicit nonempty argv and tty false; argv[0] is the approved image-baked static ELF. No shell, image ENTRYPOINT/CMD, login-shell default, interpreter, dynamic loader, secondary exec or writable/memfd executable.",
+      "failure": "DENY_WORKLOAD_EXEC"
+    },
+    {
+      "id": "artifact",
+      "must": "Require OCI platform-manifest digest and exact platform, verified layer/config closure and final file membership before start. Fixture is a regular ELF with exact path/mode/uid/gid/size/SHA256, nlink 1, no symlink ancestors, hardlink, device, file capabilities or setid. Recheck same immutable object in final namespace; no execution to identify it.",
+      "failure": "DENY_WORKLOAD_EXEC"
+    },
+    {
+      "id": "isolation",
+      "must": "Child is nonroot with explicit numeric UID/GID, no supplementary groups or capabilities, no_new_privs and mandatory confinement. It cannot reach control-plane processes, namespaces, sockets, credentials, host paths or APIs through proc, shared memory, ptrace, signal, IPC or inherited resources.",
+      "failure": "DENY_WORKLOAD_EXEC"
+    },
+    {
+      "id": "network",
+      "must": "Child network is disabled, with zero authored/effective rules, inference, DNS, middleware, proxy baseline/routes and host gateway access. No GPU requests/devices/environment, including nvidiactl and dxg; absence must be observed.",
+      "failure": "DENY_WORKLOAD_EXEC"
+    },
+    {
+      "id": "descriptors",
+      "must": "At exec only dedicated anonymous stdio pipes 0/1/2 remain, with exact access modes and bounded capture. No socket, token, directory, namespace, device, executable or control FD survives. Setup/barrier/error descriptors close before exec; CLOEXEC assertion alone is insufficient evidence.",
+      "failure": "DENY_WORKLOAD_EXEC"
+    },
+    {
+      "id": "supervisor-state",
+      "must": "Trusted supervisor may keep necessary bounded private tmpfs/state in its separate namespace, with no propagation or path/FD/proc-root route into child. Report every control mount and its byte/inode limits, owner and visibility. Gateway daemon privilege is never child authority.",
+      "failure": "DENY_WORKLOAD_EXEC"
+    },
+    {
+      "id": "policy",
+      "must": "Require one explicit full policy snapshot, hard Landlock and exact post-loader semantics; no merge, enrichment, global/provider layers, disk defaults, OPA fallback, updates or workdir grants. Observe installed enforcement and hash the post-loader snapshot; input policy presence is insufficient.",
+      "failure": "DENY_WORKLOAD_EXEC"
+    },
+    {
+      "id": "limits",
+      "must": "Require finite enforced CPU, RAM, no-extra-swap, PID, setup/wall/termination deadlines, supervisor-state byte/inode and aggregate stdout/stderr/input bounds. Exceeding or unavailable enforcement aborts preparation or terminates the attempt without success; no unbounded logger/telemetry queue.",
+      "failure": "DENY_WORKLOAD_EXEC"
+    },
+    {
+      "id": "lifecycle",
+      "must": "Single-use prepare receipt and explicit start acknowledgement; no automatic restart/resume/recovery into retained mutable state. Stop/crash cancels receipt. Retry requires a new attempt, fresh private state and full proof. Cleanup touches only owned resources; unknown cleanup blocks reuse without host repair.",
+      "failure": "DENY_WORKLOAD_EXEC"
+    },
+    {
+      "id": "receipt",
+      "must": "Trusted observers seal actual prepared state before workload spawn/exec. Return a bounded provider-neutral receipt bound to caller nonce, request hash, attempt and instance generation. Verify authenticated provenance, build identities, evidence qualification and exact receipt hash acknowledgement; never accept caller self-assertion.",
+      "failure": "DENY_WORKLOAD_EXEC"
+    },
+    {
+      "id": "compatibility",
+      "must": "Profile is disabled by default. Existing additive protobuf compatibility remains for ordinary mode; explicit required profile cannot be ignored or downgraded. Old behavior is preserved but ineligible. No automatic data migration or change to existing sandboxes.",
+      "failure": "DENY_WORKLOAD_EXEC"
+    },
+    {
+      "id": "evidence",
+      "must": "Source/config review and capability advertisement never qualify implementation. Require official release-bound unit/property, fake-daemon, prepared-container integration and separately authorized adversarial evidence on the exact supported platform; unsupported Docker/WSL or missing level denies qualification.",
+      "failure": "DENY_WORKLOAD_EXEC"
+    }
+  ],
+  "sourceMap": [
+    {
+      "requirement": "negotiation",
+      "paths": [
+        "proto/compute_driver.proto",
+        "proto/openshell.proto",
+        "crates/openshell-server/src/grpc/mod.rs",
+        "crates/openshell-server/src/compute/mod.rs",
+        "crates/openshell-driver-docker/src/lib.rs"
+      ],
+      "symbols": [
+        "GetCapabilitiesResponse",
+        "ComputeDriverCapabilities",
+        "get_gateway_info",
+        "ComputeDriverInfoSnapshot",
+        "fn capabilities"
+      ],
+      "actions": [
+        "add",
+        "change",
+        "test"
+      ],
+      "proposal": "Add required versioned profile request and per-component support/qualification reports; change gateway translation and driver startup snapshot, test old peers/partial support.",
+      "symbolReferences": [
+        {
+          "symbol": "GetCapabilitiesResponse",
+          "path": "proto/compute_driver.proto",
+          "line": 68
+        },
+        {
+          "symbol": "ComputeDriverCapabilities",
+          "path": "proto/openshell.proto",
+          "line": 785
+        },
+        {
+          "symbol": "get_gateway_info",
+          "path": "crates/openshell-server/src/grpc/mod.rs",
+          "line": 244
+        },
+        {
+          "symbol": "ComputeDriverInfoSnapshot",
+          "path": "crates/openshell-server/src/compute/mod.rs",
+          "line": 278
+        },
+        {
+          "symbol": "fn capabilities",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 632
+        }
+      ],
+      "existingFields": [
+        "GetCapabilitiesResponse.driver_name",
+        "GetCapabilitiesResponse.driver_version",
+        "GetCapabilitiesResponse.gateway_manages_lifecycle",
+        "ComputeDriverCapabilities.driver_name",
+        "ComputeDriverCapabilities.driver_version"
+      ]
+    },
+    {
+      "requirement": "workspace",
+      "paths": [
+        "proto/openshell.proto",
+        "proto/compute_driver.proto",
+        "crates/openshell-cli/src/main.rs",
+        "crates/openshell-cli/src/run.rs",
+        "crates/openshell-server/src/config_file.rs"
+      ],
+      "symbols": [
+        "SandboxSpec",
+        "DriverSandboxSpec",
+        "SandboxCreateConfig",
+        "sandbox_create",
+        "GatewayFileSection"
+      ],
+      "actions": [
+        "add",
+        "change",
+        "test"
+      ],
+      "proposal": "Add typed profile/cwd/workspace-none input and disabled gateway policy; change CLI validation, prohibit upload/editor/provider/default paths, test unknown/missing fields.",
+      "symbolReferences": [
+        {
+          "symbol": "SandboxSpec",
+          "path": "proto/openshell.proto",
+          "line": 815
+        },
+        {
+          "symbol": "DriverSandboxSpec",
+          "path": "proto/compute_driver.proto",
+          "line": 132
+        },
+        {
+          "symbol": "SandboxCreateConfig",
+          "path": "crates/openshell-cli/src/run.rs",
+          "line": 368
+        },
+        {
+          "symbol": "sandbox_create",
+          "path": "crates/openshell-cli/src/run.rs",
+          "line": 419
+        },
+        {
+          "symbol": "GatewayFileSection",
+          "path": "crates/openshell-server/src/config_file.rs",
+          "line": 89
+        }
+      ],
+      "existingFields": [
+        "SandboxSpec.command",
+        "SandboxSpec.tty",
+        "SandboxTemplate.driver_config",
+        "DriverSandboxSpec.command",
+        "DriverSandboxSpec.tty",
+        "GatewayFileSection"
+      ]
+    },
+    {
+      "requirement": "root",
+      "paths": [
+        "crates/openshell-driver-docker/src/lib.rs"
+      ],
+      "symbols": [
+        "DockerComputeConfig",
+        "DockerSandboxDriverConfig",
+        "build_container_create_body_for_image"
+      ],
+      "actions": [
+        "add",
+        "change",
+        "test"
+      ],
+      "proposal": "Change profile HostConfig to explicit readonly_rootfs true and complete bounded resources; add observed-state comparison and fake-daemon tests.",
+      "symbolReferences": [
+        {
+          "symbol": "DockerComputeConfig",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 116
+        },
+        {
+          "symbol": "DockerSandboxDriverConfig",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 345
+        },
+        {
+          "symbol": "build_container_create_body_for_image",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 2944
+        }
+      ],
+      "existingFields": [
+        "HostConfig.readonly_rootfs (currently unset)",
+        "DockerSandboxDriverConfig.cdi_devices",
+        "DockerSandboxDriverConfig.mounts"
+      ]
+    },
+    {
+      "requirement": "mounts",
+      "paths": [
+        "crates/openshell-driver-docker/src/lib.rs",
+        "crates/openshell-core/src/driver_mounts.rs"
+      ],
+      "symbols": [
+        "build_binds",
+        "resolve_oci_workspace_root"
+      ],
+      "actions": [
+        "add",
+        "change",
+        "test"
+      ],
+      "proposal": "Reject every user mount/image volume for profile; add recursive child-visible mount inventory/sealing tests including Docker defaults and stacked mounts.",
+      "symbolReferences": [
+        {
+          "symbol": "build_binds",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 2608
+        },
+        {
+          "symbol": "resolve_oci_workspace_root",
+          "path": "crates/openshell-core/src/driver_mounts.rs",
+          "line": 108
+        }
+      ]
+    },
+    {
+      "requirement": "workspace",
+      "paths": [
+        "crates/openshell-core/src/driver_mounts.rs",
+        "crates/openshell-supervisor-process/src/process.rs",
+        "crates/openshell-supervisor-process/src/run.rs"
+      ],
+      "symbols": [
+        "resolve_oci_workspace_root",
+        "ResolvedWorkspace",
+        "prepare_oci_workspace_with",
+        "validate_effective_workspace_write",
+        "prepare_filesystem_with_identity"
+      ],
+      "actions": [
+        "add",
+        "change",
+        "test"
+      ],
+      "proposal": "Add workspace None representation, change preparation dispatch to bypass all writes and probes, require exact immutable cwd, test absence of helper calls.",
+      "symbolReferences": [
+        {
+          "symbol": "resolve_oci_workspace_root",
+          "path": "crates/openshell-core/src/driver_mounts.rs",
+          "line": 108
+        },
+        {
+          "symbol": "ResolvedWorkspace",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 104
+        },
+        {
+          "symbol": "prepare_oci_workspace_with",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 1802
+        },
+        {
+          "symbol": "validate_effective_workspace_write",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 1749
+        },
+        {
+          "symbol": "prepare_filesystem_with_identity",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 2029
+        }
+      ]
+    },
+    {
+      "requirement": "command",
+      "paths": [
+        "crates/openshell-core/src/sandbox_env.rs",
+        "crates/openshell-sandbox/src/main.rs",
+        "crates/openshell-supervisor-process/src/process.rs",
+        "crates/openshell-server/src/grpc/sandbox.rs"
+      ],
+      "symbols": [
+        "MainProcessConfig",
+        "spawn_impl"
+      ],
+      "actions": [
+        "add",
+        "change",
+        "test"
+      ],
+      "proposal": "Carry exact argv/cwd/identity through transport, disallow default shell and image entrypoint on profile, add final pre-exec barrier and vector-boundary tests.",
+      "symbolReferences": [
+        {
+          "symbol": "MainProcessConfig",
+          "path": "crates/openshell-core/src/sandbox_env.rs",
+          "line": 39
+        },
+        {
+          "symbol": "spawn_impl",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 739
+        }
+      ]
+    },
+    {
+      "requirement": "artifact",
+      "paths": [
+        "crates/openshell-driver-docker/src/lib.rs",
+        "crates/openshell-core/src/driver_utils.rs"
+      ],
+      "symbols": [
+        "prepare_image",
+        "ImageMetadata",
+        "resolve_supervisor_bin_source",
+        "supervisor_cache_path"
+      ],
+      "actions": [
+        "add",
+        "change",
+        "test"
+      ],
+      "proposal": "Add platform-digest/config/layer/final-file verification and final namespace object binding; reject fixture cache/upload delivery. Pin actual supervisor bytes too; ELF magic is insufficient. Test image and TOCTOU drift.",
+      "symbolReferences": [
+        {
+          "symbol": "prepare_image",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 943
+        },
+        {
+          "symbol": "ImageMetadata",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 330
+        },
+        {
+          "symbol": "resolve_supervisor_bin_source",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 3686
+        },
+        {
+          "symbol": "supervisor_cache_path",
+          "path": "crates/openshell-core/src/driver_utils.rs",
+          "line": 565
+        }
+      ]
+    },
+    {
+      "requirement": "isolation",
+      "paths": [
+        "crates/openshell-supervisor-process/src/process.rs"
+      ],
+      "symbols": [
+        "SupervisorIdentityMountNamespace",
+        "start_supervisor_identity_spawn_worker",
+        "drop_privileges_with_identity",
+        "spawn_impl"
+      ],
+      "actions": [
+        "add",
+        "change",
+        "test"
+      ],
+      "proposal": "Add profile child mount/PID/IPC isolation and immutable root sealing before hardening/exec; change identity setup, test proc-root/namespace/ptrace routes.",
+      "symbolReferences": [
+        {
+          "symbol": "SupervisorIdentityMountNamespace",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 403
+        },
+        {
+          "symbol": "start_supervisor_identity_spawn_worker",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 509
+        },
+        {
+          "symbol": "drop_privileges_with_identity",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 2184
+        },
+        {
+          "symbol": "spawn_impl",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 739
+        }
+      ]
+    },
+    {
+      "requirement": "descriptors",
+      "paths": [
+        "crates/openshell-supervisor-process/src/process.rs"
+      ],
+      "symbols": [
+        "spawn_impl",
+        "spawn_command_with_supervisor_identity_namespace"
+      ],
+      "actions": [
+        "add",
+        "change",
+        "test"
+      ],
+      "proposal": "Add complete FD enumeration, explicit stdio allowlist and close/observe barrier; no claim that current pre_exec supplies it. Test CLOEXEC-off sockets/control/directory FDs.",
+      "symbolReferences": [
+        {
+          "symbol": "spawn_impl",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 739
+        },
+        {
+          "symbol": "spawn_command_with_supervisor_identity_namespace",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 453
+        }
+      ]
+    },
+    {
+      "requirement": "supervisor-state",
+      "paths": [
+        "crates/openshell-sandbox/src/main.rs",
+        "crates/openshell-supervisor-process/src/ssh.rs",
+        "crates/openshell-supervisor-network/src/run.rs",
+        "crates/openshell-supervisor-process/src/netns/mod.rs",
+        "crates/openshell-core/src/container_paths.rs"
+      ],
+      "symbols": [
+        "write_ca_files",
+        "NetworkNamespace"
+      ],
+      "actions": [
+        "add",
+        "change",
+        "test"
+      ],
+      "proposal": "Change control logs/CA/socket/netns state to bounded supervisor-only storage; add visibility and cleanup proof, disable unnecessary branches. Do not demand a nonwriting rootful supervisor.",
+      "symbolReferences": [
+        {
+          "symbol": "write_ca_files",
+          "path": "crates/openshell-supervisor-network/src/run.rs",
+          "line": 35
+        },
+        {
+          "symbol": "NetworkNamespace",
+          "path": "crates/openshell-supervisor-process/src/netns/mod.rs",
+          "line": 41
+        }
+      ]
+    },
+    {
+      "requirement": "policy",
+      "paths": [
+        "crates/openshell-sandbox/src/lib.rs",
+        "crates/openshell-server/src/grpc/policy.rs",
+        "proto/sandbox.proto",
+        "crates/openshell-core/src/policy.rs",
+        "crates/openshell-supervisor-process/src/sandbox/linux/landlock.rs",
+        "crates/openshell-supervisor-network/src/opa.rs"
+      ],
+      "symbols": [
+        "load_policy",
+        "enrich_proto_baseline_paths",
+        "SandboxPolicy",
+        "GetSandboxConfigResponse",
+        "from_proto",
+        "proto_to_opa_data_json"
+      ],
+      "actions": [
+        "add",
+        "change",
+        "test"
+      ],
+      "proposal": "Add profile no-composition/fallback path, acknowledged post-loader snapshot and installed-rule digest; change pre-exec failure handling; test every widening and unavailable hard enforcement.",
+      "symbolReferences": [
+        {
+          "symbol": "load_policy",
+          "path": "crates/openshell-sandbox/src/lib.rs",
+          "line": 2242
+        },
+        {
+          "symbol": "enrich_proto_baseline_paths",
+          "path": "crates/openshell-sandbox/src/lib.rs",
+          "line": 1778
+        },
+        {
+          "symbol": "SandboxPolicy",
+          "path": "crates/openshell-core/src/policy.rs",
+          "line": 15
+        },
+        {
+          "symbol": "GetSandboxConfigResponse",
+          "path": "proto/sandbox.proto",
+          "line": 363
+        },
+        {
+          "symbol": "from_proto",
+          "path": "crates/openshell-supervisor-network/src/opa.rs",
+          "line": 392
+        },
+        {
+          "symbol": "proto_to_opa_data_json",
+          "path": "crates/openshell-supervisor-network/src/opa.rs",
+          "line": 1857
+        }
+      ]
+    },
+    {
+      "requirement": "network",
+      "paths": [
+        "crates/openshell-core/src/gpu.rs",
+        "crates/openshell-core/src/policy.rs",
+        "crates/openshell-supervisor-process/src/netns/mod.rs",
+        "crates/openshell-sandbox/src/lib.rs"
+      ],
+      "symbols": [
+        "effective_driver_gpu_count",
+        "create_netns_for_proxy"
+      ],
+      "actions": [
+        "add",
+        "change",
+        "test"
+      ],
+      "proposal": "Add explicit no-network/no-GPU profile branch instead of implicit Proxy; test actual absent devices, routes, DNS, inferred grants and endpoint reachability.",
+      "symbolReferences": [
+        {
+          "symbol": "effective_driver_gpu_count",
+          "path": "crates/openshell-core/src/gpu.rs",
+          "line": 40
+        },
+        {
+          "symbol": "create_netns_for_proxy",
+          "path": "crates/openshell-supervisor-process/src/netns/mod.rs",
+          "line": 602
+        }
+      ]
+    },
+    {
+      "requirement": "limits",
+      "paths": [
+        "crates/openshell-driver-docker/src/lib.rs",
+        "crates/openshell-supervisor-process/src/run.rs",
+        "crates/openshell-sandbox/src/main.rs"
+      ],
+      "symbols": [
+        "build_container_create_body_for_image",
+        "run_process"
+      ],
+      "actions": [
+        "add",
+        "change",
+        "test"
+      ],
+      "proposal": "Change profile resource/log/output limits to explicit enforced finite values, add bounded all-stream capture and deadline/termination evidence tests.",
+      "symbolReferences": [
+        {
+          "symbol": "build_container_create_body_for_image",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 2944
+        },
+        {
+          "symbol": "run_process",
+          "path": "crates/openshell-supervisor-process/src/run.rs",
+          "line": 60
+        }
+      ]
+    },
+    {
+      "requirement": "lifecycle",
+      "paths": [
+        "crates/openshell-server/src/compute/mod.rs",
+        "crates/openshell-driver-docker/src/lib.rs",
+        "crates/openshell-supervisor-process/src/run.rs",
+        "crates/openshell-supervisor-process/src/netns/mod.rs"
+      ],
+      "symbols": [
+        "start_persisted_sandboxes",
+        "cleanup_on_shutdown",
+        "stop_sandbox",
+        "start_sandbox",
+        "delete_sandbox"
+      ],
+      "actions": [
+        "add",
+        "change",
+        "test"
+      ],
+      "proposal": "Change profile lifecycle to single-use attempts, deny retained-state automatic start, add owned-state cleanup receipt and cancellation/replay/crash tests.",
+      "symbolReferences": [
+        {
+          "symbol": "start_persisted_sandboxes",
+          "path": "crates/openshell-server/src/compute/mod.rs",
+          "line": 2208
+        },
+        {
+          "symbol": "cleanup_on_shutdown",
+          "path": "crates/openshell-server/src/compute/mod.rs",
+          "line": 2084
+        },
+        {
+          "symbol": "stop_sandbox",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 1788
+        },
+        {
+          "symbol": "start_sandbox",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 1199
+        },
+        {
+          "symbol": "delete_sandbox",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 1812
+        }
+      ]
+    },
+    {
+      "requirement": "receipt",
+      "paths": [
+        "proto/openshell.proto",
+        "proto/compute_driver.proto",
+        "proto/sandbox.proto",
+        "crates/openshell-server/src/grpc/mod.rs",
+        "crates/openshell-sandbox/src/lib.rs",
+        "crates/openshell-supervisor-process/src/process.rs"
+      ],
+      "symbols": [
+        "SandboxStatus",
+        "DriverSandboxStatus",
+        "GetSandboxConfigResponse",
+        "load_policy",
+        "spawn_impl"
+      ],
+      "actions": [
+        "add",
+        "change",
+        "test"
+      ],
+      "proposal": "Add prepared-not-executing observation and start hash acknowledgement, trusted role seals, freshness and frozen-state binding; test forged/replayed/incomplete receipts.",
+      "symbolReferences": [
+        {
+          "symbol": "SandboxStatus",
+          "path": "proto/openshell.proto",
+          "line": 891
+        },
+        {
+          "symbol": "DriverSandboxStatus",
+          "path": "proto/compute_driver.proto",
+          "line": 218
+        },
+        {
+          "symbol": "GetSandboxConfigResponse",
+          "path": "proto/sandbox.proto",
+          "line": 363
+        },
+        {
+          "symbol": "load_policy",
+          "path": "crates/openshell-sandbox/src/lib.rs",
+          "line": 2242
+        },
+        {
+          "symbol": "spawn_impl",
+          "path": "crates/openshell-supervisor-process/src/process.rs",
+          "line": 739
+        }
+      ]
+    },
+    {
+      "requirement": "compatibility",
+      "paths": [
+        "proto/compute_driver.proto",
+        "proto/openshell.proto",
+        "deploy/docker/gateway.toml"
+      ],
+      "symbols": [
+        "GetCapabilitiesResponse",
+        "SandboxSpec"
+      ],
+      "actions": [
+        "add",
+        "change",
+        "test"
+      ],
+      "proposal": "Add profile negotiation without changing ordinary additive fields or existing sandboxes; test old client/new server and new client/old server refusal for required profile.",
+      "symbolReferences": [
+        {
+          "symbol": "GetCapabilitiesResponse",
+          "path": "proto/compute_driver.proto",
+          "line": 68
+        },
+        {
+          "symbol": "SandboxSpec",
+          "path": "proto/openshell.proto",
+          "line": 815
+        }
+      ]
+    },
+    {
+      "requirement": "evidence",
+      "paths": [
+        "crates/openshell-driver-docker/README.md",
+        "deploy/docker/docker-compose.yml",
+        "crates/openshell-driver-docker/src/lib.rs"
+      ],
+      "symbols": [
+        "DockerComputeConfig"
+      ],
+      "actions": [
+        "add",
+        "change",
+        "test"
+      ],
+      "proposal": "Add release-specific qualified host matrix and evidence manifest; test unavailable daemon features, Linux confinement and unsupported Windows/WSL combinations.",
+      "symbolReferences": [
+        {
+          "symbol": "DockerComputeConfig",
+          "path": "crates/openshell-driver-docker/src/lib.rs",
+          "line": 116
+        }
+      ]
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "deploy/docker/gateway.toml",
+      "bytes": 2376,
+      "sha256": "e8e0600fc3e0700f19e70e9ff5e755b3c30fcb72043ec7d13aaf40b338b5ac84",
+      "gitBlob": "4fe84d633af919cab64bcfa884bd7fc22a2aa88d",
+      "role": "gateway defaults",
+      "lines": "24-51"
+    },
+    {
+      "path": "deploy/docker/docker-compose.yml",
+      "bytes": 6360,
+      "sha256": "856b994c1e1ec7af3954de03d768f2dc8ec28e751c1bdc0235f54206f79df184",
+      "gitBlob": "4d829641899e545a1ffeb5ce9e4fa5623517a682",
+      "role": "gateway mounts and identity",
+      "lines": "60-133"
+    },
+    {
+      "path": "deploy/docker/Dockerfile.supervisor",
+      "bytes": 748,
+      "sha256": "ec8b25f0a674c0c7ae123c978f6857436af987faea43051e67d3a8d4b52831cd",
+      "gitBlob": "d515fd70b11e2ba9ff981d5a392ae6768c37cda4",
+      "role": "supervisor image payload",
+      "lines": "11-21"
+    },
+    {
+      "path": "crates/openshell-driver-docker/src/lib.rs",
+      "bytes": 142685,
+      "sha256": "0fe429da6b198e43625d6189b9a0a844d684052e7f61351aa099c8d1afb5dcd8",
+      "gitBlob": "b1859f54cc1a5505d18af5ff86c70569d288fe73",
+      "role": "config; provision; HostConfig; mounts; cleanup; cache",
+      "lines": "116-219; 330-352; 924-1076; 1078-1261; 1594-1670; 2345-2575; 2608-2849; 2944-3079; 3686-3944"
+    },
+    {
+      "path": "crates/openshell-driver-docker/README.md",
+      "bytes": 10816,
+      "sha256": "cbe2e6a476b695a1004efa8770ccfab38f4332ac29a4bf14bce19c20fafe5e95",
+      "gitBlob": "bbd7e69b88a757f638a4d433c82974ccf3d333e0",
+      "role": "stock lifecycle workspace mounts and resolution contract",
+      "lines": "30-202"
+    },
+    {
+      "path": "crates/openshell-core/src/config.rs",
+      "bytes": 87078,
+      "sha256": "194797425f30cfadf81565b8485ff97cdb00133a8a6be2c0342009721f0489ef",
+      "gitBlob": "e04e056033b4265bfae69f4820ab40e8ec569dbf",
+      "role": "default_supervisor_image",
+      "lines": "82-115"
+    },
+    {
+      "path": "crates/openshell-core/src/image.rs",
+      "bytes": 4864,
+      "sha256": "ca4082df8a4ab0763c662cca029a9d413f627dccba8047628fd356bfee36a4da",
+      "gitBlob": "e804afd60f981140ad5ff540def89a8e8e887c87",
+      "role": "default_sandbox_image; resolve_community_image",
+      "lines": "14-53"
+    },
+    {
+      "path": "crates/openshell-core/src/driver_utils.rs",
+      "bytes": 35603,
+      "sha256": "b9503d3e095e1f0caaf73d7589d68ed34d5c3d20b0b12aeebaa74b37434e7945",
+      "gitBlob": "b37b5b682113eb12641d914e9b099497720e8b40",
+      "role": "sandbox_token_path; write_cache_binary_atomic; supervisor_cache_path",
+      "lines": "422-434; 526-608"
+    },
+    {
+      "path": "crates/openshell-core/src/driver_mounts.rs",
+      "bytes": 15339,
+      "sha256": "7a9cd8eeca0f52c6d2046a1b8ad3459422bc12d5cd48239f7ef9cbf1a3f9f610",
+      "gitBlob": "b1a304988286d118383e62b333a0bfa1b3bce016",
+      "role": "resolve_oci_workspace_root; mount exclusions",
+      "lines": "98-216"
+    },
+    {
+      "path": "crates/openshell-core/src/container_paths.rs",
+      "bytes": 5612,
+      "sha256": "70effea9326211d9ccb932327526602b48835f1fe047ae45fa4c05358d6e1f85",
+      "gitBlob": "c63e4bcdd860820ea9fbaf7f0904e56f8bd4b3ba",
+      "role": "control and runtime roots",
+      "lines": "11-76"
+    },
+    {
+      "path": "crates/openshell-core/src/sandbox_env.rs",
+      "bytes": 11914,
+      "sha256": "c9100ec54101011a4ba53674e1cb9a14e999b134cb9d7d516f6bd3f2c6eb7050",
+      "gitBlob": "40a7f0a72fd88ad93982327e903478c93111fcc2",
+      "role": "MainProcessConfig; supervisor-only env",
+      "lines": "35-110; 113-228"
+    },
+    {
+      "path": "crates/openshell-core/src/policy.rs",
+      "bytes": 4558,
+      "sha256": "021a8f64ee3de85012c61d3272354d8fe251c435a3bef6bdb1c50b27aa2342d1",
+      "gitBlob": "1645b9da444115ba8f22e66c916dfa653994e6c9",
+      "role": "TryFrom proto; FS conversion",
+      "lines": "99-148"
+    },
+    {
+      "path": "crates/openshell-core/src/gpu.rs",
+      "bytes": 21053,
+      "sha256": "7327ae0b8c5d3368a6f5344072810a690b1a7e445cebce73a8a992a7806bb785",
+      "gitBlob": "f5ff67cd3564413a2916628489aa864316dccf3b",
+      "role": "effective_driver_gpu_count",
+      "lines": "34-59"
+    },
+    {
+      "path": "crates/openshell-sandbox/src/main.rs",
+      "bytes": 31963,
+      "sha256": "3cc4dd668e21a5fb2020003728dc363b2145a1b88870c94fd30804cdbc3ff158",
+      "gitBlob": "6d244fb6bcf69366086d5a30392572f5fdaad9b1",
+      "role": "Args; logging; canonical argv",
+      "lines": "112-128; 555-568; 609-624; 658-709"
+    },
+    {
+      "path": "crates/openshell-sandbox/src/lib.rs",
+      "bytes": 240162,
+      "sha256": "b63c3be478964318f1066b0781649c1d9fb5dbc385fdf2de9a2d925732289bcd",
+      "gitBlob": "b1c226cebd4f24903cca48788ce4e8e9ae3bfb0b",
+      "role": "identity; networking; load_policy; process clone",
+      "lines": "175-232; 390-475; 819-943; 1153-1160; 1414-1428; 1627-1819; 2242-2546"
+    },
+    {
+      "path": "crates/openshell-supervisor-process/src/process.rs",
+      "bytes": 140889,
+      "sha256": "a3ff4c565b5c34cbd82929967372e63bf3f690477d9999d57764c1a29c001c0b",
+      "gitBlob": "52557493cd109998194dd5f6217db1bfb63f2f69",
+      "role": "workspace; child environment; namespace; identity; Landlock",
+      "lines": "102-164; 198-245; 509-651; 746-911; 1552-1616; 1640-1794; 1802-1879; 2029-2100"
+    },
+    {
+      "path": "crates/openshell-supervisor-process/src/run.rs",
+      "bytes": 26734,
+      "sha256": "59a45310a3c6a63fa22a7b7e5ec0bdacd0dd09174f0c61b5ab05eedf57502a92",
+      "gitBlob": "f0e792306d58e45be460155f177461c040b7e249",
+      "role": "setup; canonical process; exit",
+      "lines": "87-133; 145-466"
+    },
+    {
+      "path": "crates/openshell-supervisor-process/src/identity.rs",
+      "bytes": 28487,
+      "sha256": "f5836c669b8c1f9c2c8479f08ebf1203aee79e6d765f7c9c0ca9c3e07ce4f550",
+      "gitBlob": "df79a4137d941d433d101bcb11dd5f1f6769aaed",
+      "role": "driver identity and explicit policy precedence",
+      "lines": "69-214"
+    },
+    {
+      "path": "crates/openshell-supervisor-process/src/sandbox/linux/landlock.rs",
+      "bytes": 27677,
+      "sha256": "a5952b797996b83231f646c1ebc0d3aa085018ec16c22e5a17b68acfe754a6c2",
+      "gitBlob": "bf42faede81af3491475a4df347cc0983dcf4557",
+      "role": "ABI V2 grants and hard enforcement",
+      "lines": "129-365; 367-451"
+    },
+    {
+      "path": "crates/openshell-supervisor-process/src/sandbox/linux/mod.rs",
+      "bytes": 6935,
+      "sha256": "45820443c9deb90bd8d47ae72109d36007e40064480da5a1f092629c34d1e0b2",
+      "gitBlob": "107a50e3700992b2713d428afc07653a445eaa2f",
+      "role": "prepare and enforce",
+      "lines": "25-57"
+    },
+    {
+      "path": "crates/openshell-supervisor-process/src/sandbox/linux/seccomp.rs",
+      "bytes": 32104,
+      "sha256": "c03a84e1c86494f384609881d34fb41efff9e4e16919886564b04bac36cbb040",
+      "gitBlob": "a9c67af95a6d0c0b41ef976d85b5462f073c7512",
+      "role": "child syscall layer",
+      "lines": "1-340"
+    },
+    {
+      "path": "crates/openshell-supervisor-process/src/netns/mod.rs",
+      "bytes": 44427,
+      "sha256": "3a0a09599ea0bf1ec07552202ccd7e568e9d5506bef0e4770856a2edeb4a084f",
+      "gitBlob": "2b4ea554edf715d8c357ac98c1223113753d4009",
+      "role": "network namespace creation and cleanup",
+      "lines": "56-179; 551-580"
+    },
+    {
+      "path": "crates/openshell-supervisor-process/src/ssh.rs",
+      "bytes": 93271,
+      "sha256": "c68bd1d1bd33c3d2e5d96a873fa2b560963b41dd17248aaf71abec3599b3688e",
+      "gitBlob": "893967b2ac7d3cc60855b445f60288c0f240de80",
+      "role": "control socket creation",
+      "lines": "48-109"
+    },
+    {
+      "path": "crates/openshell-supervisor-network/src/run.rs",
+      "bytes": 22095,
+      "sha256": "b29ad13723985d0b2ac1eae2a0101029a154ac83e66573d48b22c00541320bd4",
+      "gitBlob": "2a71702b4b9c43179576cb3fb9cd4a019fb4a955",
+      "role": "policy DNS state and proxy CA files",
+      "lines": "49-140; 316-389"
+    },
+    {
+      "path": "crates/openshell-supervisor-network/src/l7/tls.rs",
+      "bytes": 19864,
+      "sha256": "dd2d234e2d4ec45cffaf227baf2a4bf87b3bbf464423b3c304dedf15a8cb7974",
+      "gitBlob": "2275a60d3468a9f2a708e95385c263cb2bdc81a1",
+      "role": "write_ca_files",
+      "lines": "281-312"
+    },
+    {
+      "path": "crates/openshell-server/src/grpc/sandbox.rs",
+      "bytes": 162171,
+      "sha256": "1dd8de871d3d3f3f0b42ed49a0988d98a8550b780c1053094cd963f80b772024",
+      "gitBlob": "89f8c942ea434296ffe24ed90c18125ff00a1ea5",
+      "role": "explicit command and resolved image",
+      "lines": "220-290"
+    },
+    {
+      "path": "crates/openshell-server/src/grpc/policy.rs",
+      "bytes": 690515,
+      "sha256": "3dffe79872252df6b55af9ff5a9efcc088574c3bd9741424cae5f69b7b04cddb",
+      "gitBlob": "0bda93a15f0c2688f4e50477c8fd14957370999b",
+      "role": "policy snapshots and composition",
+      "lines": "2300-2488"
+    },
+    {
+      "path": "crates/openshell-server/src/config_file.rs",
+      "bytes": 42281,
+      "sha256": "271699413c85e9e3f5deb402ca7969ce20077ebc5f8b95efda649947c639cf32",
+      "gitBlob": "74b6aad01b73de2ac99bb6e76f917455e9212d77",
+      "role": "gateway driver settings merge",
+      "lines": "417-500"
+    },
+    {
+      "path": "crates/openshell-cli/src/run.rs",
+      "bytes": 293579,
+      "sha256": "a4963a90604216b67bf5372a126bede39460bc59b850b146d250512d274456bc",
+      "gitBlob": "0a0b21a7f437e84143d1cf42ba02365e66083ba1",
+      "role": "source resolution; upload; image build",
+      "lines": "454-500; 854-919; 1028-1187; 5733-5790"
+    },
+    {
+      "path": "docs/sandboxes/manage-sandboxes.mdx",
+      "bytes": 22489,
+      "sha256": "fec5c2516d2a91fac81be09b1bd3abbc93bf380c928ca12a5eebc59b45417a3b",
+      "gitBlob": "e5a27879f3de4d8cefa061b13c262430e5cf2cdc",
+      "role": "supported delivery mechanisms",
+      "lines": "17-35; 130-153; 426-473"
+    },
+    {
+      "path": "crates/openshell-cli/src/main.rs",
+      "bytes": 203293,
+      "sha256": "89723e0702cedb834e9381c9cd5ea7aca6a462ddb9df707023db7ae9eb3f1512",
+      "gitBlob": "aaabf266258608b55107ecdde084dbfe3164c100",
+      "role": "profile negotiation/schema extension point",
+      "lines": "complete file; exact symbols in sourceMap"
+    },
+    {
+      "path": "crates/openshell-server/src/compute/mod.rs",
+      "bytes": 356015,
+      "sha256": "47f34a3b8888f624408e8c833e396815f35b650088ca9960a86349fe262297d7",
+      "gitBlob": "b85641c986aa3a960936d832fac198d41ab0a294",
+      "role": "profile negotiation/schema extension point",
+      "lines": "complete file; exact symbols in sourceMap"
+    },
+    {
+      "path": "crates/openshell-server/src/grpc/mod.rs",
+      "bytes": 33535,
+      "sha256": "8080a7ba073cd882def2dbf42b45995582219f1e65540a37b31dbb55bc15bc6c",
+      "gitBlob": "f502369bcf234eb05a4f279b0d2b91f021ef42b6",
+      "role": "profile negotiation/schema extension point",
+      "lines": "complete file; exact symbols in sourceMap"
+    },
+    {
+      "path": "proto/compute_driver.proto",
+      "bytes": 13546,
+      "sha256": "c9c009e9cd2353cf4ba412b1034f40442589457f69597e47407b9f454e8e8bf9",
+      "gitBlob": "afa93f1b18eb6907a5b94f31333eb7e7a4d7a70e",
+      "role": "profile negotiation/schema extension point",
+      "lines": "complete file; exact symbols in sourceMap"
+    },
+    {
+      "path": "proto/openshell.proto",
+      "bytes": 97725,
+      "sha256": "e710636253b7313a27bb287931b332cd7263edf216d5b0829c0409be4390515d",
+      "gitBlob": "246fe0626fd5a7ee85cbc8abbad35365afc402e0",
+      "role": "profile negotiation/schema extension point",
+      "lines": "complete file; exact symbols in sourceMap"
+    },
+    {
+      "path": "proto/sandbox.proto",
+      "bytes": 18686,
+      "sha256": "b2f05ac1a74790a335541b810ae17eb6cbe2372e78188954bb630d29b266d4ec",
+      "gitBlob": "51139ba461fa11e95e153f66e58267ddd509c158",
+      "role": "profile negotiation/schema extension point",
+      "lines": "complete file; exact symbols in sourceMap"
+    },
+    {
+      "path": "crates/openshell-supervisor-network/src/opa.rs",
+      "bytes": 313236,
+      "sha256": "ef1512cc047799087e4f39bcde5495fc92468c5d34817a43fdc577f29adb19f3",
+      "gitBlob": "63aa2c2c70fc8ab6f2f138a425a45821816f107d",
+      "role": "OPA conversion and runtime data",
+      "lines": "392-482; 1857-1893"
+    }
+  ],
+  "compatibility": {
+    "ordinaryMode": "unchanged-ineligible",
+    "requiredProfileUnknown": "DENY_WORKLOAD_EXEC",
+    "unknownOrdinaryFields": "preserve-upstream-additive-convention",
+    "existingSandboxes": "no-migration-or-reconfiguration",
+    "newProfileFields": "proposed-not-existing-upstream-API"
+  },
+  "decision": {
+    "next": "review-newer-official-release-for-profile-semantics",
+    "ifAbsent": "separately-authorized-upstream-issue-or-contribution",
+    "forkAllowed": false,
+    "permanentPatchAllowed": false
+  },
+  "implementationVerified": false,
+  "executionSupported": false,
+  "pilotReady": false,
+  "liveAdmissionAllowed": false
+}

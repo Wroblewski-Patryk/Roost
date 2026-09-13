@@ -1,5 +1,11 @@
 # Adopt-before-build and execution providers
 
+RF-HOST-043: the [upstream nonwriting stdio proposal](../operations/openshell-nonwriting-stdio-proposal.md)
+is ready as a local specification only. Its required profile handshake, sealed
+pre-exec receipt and four evidence levels do not qualify an implementation.
+Next evaluate a newer official release; any upstream submission needs separate
+authority. No fork, permanent patch or runtime admission is introduced.
+
 RF-HOST-042: [pinned Docker v3 delivery](../operations/openshell-docker-v3-delivery.md)
 is BLOCKED: rootfs read-only is not configured and a writable image workspace is
 mandatory. Exact fixture image membership/delivery remains unproven. Source/blob

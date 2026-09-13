@@ -1,5 +1,11 @@
 # Foundation requirements traceability
 
+RF-HOST-043: [nonwriting stdio upstream proposal](../operations/openshell-nonwriting-stdio-proposal.md)
+binds 16 requirements, 35 denial cases, a provider-neutral receipt schema and
+37 source blobs to a local acceptance contract. Specification validation is
+READY; upstream implementation, runtime containment and live admission remain
+unproven and disabled.
+
 RF-HOST-042: [Docker v3 delivery analysis](../operations/openshell-docker-v3-delivery.md)
 separates container rootfs, workspace and Landlock guarantees. Thirty source blobs,
 a fail-closed validator and synthetic drift tests bind the BLOCKED conclusion;
