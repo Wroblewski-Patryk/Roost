@@ -1,5 +1,11 @@
 # Adopt-before-build and execution providers
 
+RF-HOST-036: the separately authorized
+[pinned artifact installation](../operations/openshell-installation-preflight.md#rf-host-036-installed-artifacts-and-proof-limits)
+verified OpenShell CLI v0.0.116 and exactly three linux/amd64 image digests.
+Nothing was activated; provider contract v5, host isolation denial and all
+live sandbox/provider proof gates remain unchanged.
+
 RF-HOST-035: [host lifecycle safety](../operations/host-lifecycle-safety.md)
 advances provider contract to v5. API/Worker deny both uncontained providers,
 retain checkpoints on host-maintenance failures and grant no host-control tools.

@@ -1,11 +1,94 @@
 # RF-HOST-033: pinned OpenShell installation/security preflight
 
-Current follow-up: [RF-HOST-035](host-lifecycle-safety.md) supersedes the
-historical Docker-down blocker after owner recovery and two passing natural-use
-cycles. **READY-FOR-PINNED-OPENSHELL-INSTALL** is a prerequisite verdict only;
-no installation or execution is authorized by it. The pins and bounded plan
-below remain unchanged. Hard resource/capture and sandbox enforcement gates
-remain open for later work. Never force an integrated distribution to stop.
+Current result: **RF-HOST-036 installed and verified the pinned CLI and exactly
+three OCI images on 2026-09-13, without activating a runtime.** The owner gave
+separate artifact-installation authority after the
+[RF-HOST-035 prerequisites](host-lifecycle-safety.md) passed. The immutable pins
+below are unchanged. No gateway, supervisor, sandbox or agent was started.
+
+## RF-HOST-036 installed artifacts and proof limits
+
+Fresh pre-mutation checks passed: Windows Engine and native Linux client/server
+**29.7.2**, Linux/amd64, default non-root WSL identity, native ELF Docker CLI
+and Unix socket. Windows build 26200 and Running/Auto LanmanServer were
+confirmed. Both Windows and guest had no listeners on 8080/8081. The guest was
+x86_64 with kernel 6.6.87.2-microsoft-standard-WSL2, 15,347,876 KiB available
+memory, Landlock ABI 3 and a successful read-only seccomp action-availability
+probe. These are host-interface checks, not applied sandbox restrictions.
+
+Physical host storage had **23,133,343,744 bytes** free before installation,
+clearing the planned 10 GiB installation reserve plus 10 GiB headroom. Guest
+filesystem capacity was checked separately and was not substituted for physical
+free space. All three approved image references and the new versioned Linux
+installation root were absent at baseline.
+
+The two official release downloads matched both their pinned byte lengths and
+SHA-256 values in the artifact table below. The checksum-list entry also matched
+the archive. SHA verification preceded extraction. Seven synthetic negative
+path/type checks passed; the actual archive contained exactly one regular file,
+with no links/devices, duplicate paths or escaping entries. Extraction used
+exclusive file creation, ignored archive ownership/privilege bits and remained
+inside the new private installation root.
+
+| Installed CLI evidence | Result |
+| --- | --- |
+| Release | `v0.0.116`, unchanged pinned source commit below |
+| Executable bytes | **22,271,920** |
+| Executable SHA-256 | `24e85062073d512d1951c76cd3890b7bce1ab01cc36a08f88b3b43c067a402da` |
+| ELF metadata | 64-bit, little-endian, x86_64 |
+| Only invocation | `--version` returned `openshell 0.0.116`, exit 0 |
+| Permissions/environment | Private directories 0700, binary 0500; private HOME and XDG config/state/data/cache; no global PATH change or real Codex home |
+
+The following were pulled sequentially using full `@sha256` references and
+`--platform linux/amd64`, never discovery tags. Each exact `RepoDigests` entry
+matched its approved reference; `Os=linux` and `Architecture=amd64`. On this
+Engine's image store, local `Id` equals the platform-manifest digest shown here,
+not the separate image-config digest. All three were inspected again afterward.
+
+| Image | Verified local Id (SHA-256) | Reported image Size | Pull duration |
+| --- | --- | ---: | ---: |
+| Gateway | `06bbd3eb7b3a1e88fc85d4914221f9a8b345e67cc1a9bab164814c2cfa0f80d9` | 48,574,109 B | 14.371 s |
+| Supervisor | `1f02f37ee9e16c3b1245b80899a954fc8198099494d4fe0cd1e891fc63adf127` | 17,373,381 B | 7.348 s |
+| Community base | `c2a43bb0d765774e2790b3babfb20997bb2eac7b4bf4c6d7d8661e99817bf904` | 1,399,652,505 B | 222.809 s |
+
+Reported image Size is not a measurement of exclusive physical disk allocation.
+Afterward the host had **20,390,486,016 bytes** free, still above the required
+10 GiB headroom. Windows Engine remained 29.7.2; the same two baseline workload
+names remained Up. Only names/status were read, without container payloads,
+logs, environment, mounts or restart policies. Both WSL distributions remained
+Running and were left to their natural lifecycle.
+
+The private Linux receipt inventories the version root, created directories,
+archive, checksum list, executable hashes and the three image references/IDs.
+Final inventory found exactly these three artifact files plus the receipt, with
+zero unexpected files. Private Windows evidence records host checks and the
+Linux receipt hash. Paths and workload identifiers are intentionally absent here.
+The selective rollback plan requires a separate owner decision, unchanged owned
+paths/hashes and no container use of an image reference. Remove only recorded
+unused references and owned files/empty directories inside this version root;
+preserve ancestors, other workloads and all Docker/WSL settings and socket,
+stale or recovery directories. No rollback or broad cleanup was executed.
+
+Validation: seven inventory-preflight tests, seven negative archive checks,
+two pinned download hashes, all three canonical image references and repeated
+local image/CLI integrity checks passed. No runtime code or repository tests
+were added; full build, API/DB tests and container builds were not run for this
+documentation-only repository change.
+
+**Still unproven:** image executable/content inventory (including Docker CLI
+absence), signatures/attestations, dependency/vulnerability suitability, gateway
+configuration and mTLS, callback/bind resolution, child/admin separation,
+Landlock/seccomp/network enforcement, process-tree cleanup, CPU/RAM/PID limits,
+hard bounds on every writable/log path, whole-path 32-KiB output capture and
+live provider compatibility. No container/network/volume, certificate, gateway
+configuration, service or autostart was created. No package manager, installer
+script, image build, alternate image, model, Hermes or Codex invocation occurred.
+Worker remains online/observe, provider disabled, `executionSupported=false`,
+`pilotReady=false` and Hermes disabled. Installation does not relax admission.
+
+Next atomic task, **not started**: offline inventory of the pinned base image's
+executables and bundled sandbox policy, without executing its contents or
+starting a gateway/sandbox. The later live gates below remain mandatory.
 
 ## Historical RF-HOST-033 verdict and authority
 
@@ -64,9 +147,9 @@ use OCI digest references, never a floating installer or tag.
 | [CLI Linux x86_64 musl archive](https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-x86_64-unknown-linux-musl.tar.gz) | 8,921,130 | `4fb4476d80a1875a0b83547ec3aba999cf0a2e2d75f95f2f709b622e2103520e` |
 | [CLI checksum list](https://github.com/NVIDIA/OpenShell/releases/download/v0.0.116/openshell-checksums-sha256.txt) | 1,393 | `f8b6ec65366f9d256737b884ba4d9f184b4dbbbb9540711ed9e4934d772eba7e` |
 
-The checksum list was hashed in memory and its CLI entry matched the release
-asset digest. The archive itself was not downloaded, so executable-byte
-verification remains an installation step. No host gateway, supervisor, VM,
+At RF-HOST-033 preflight, the checksum list was hashed in memory and its CLI
+entry matched the release asset digest. RF-HOST-036 subsequently verified the
+downloaded archive and executable bytes as recorded above. No host gateway, supervisor, VM,
 Debian/RPM/Snap package, Python SDK or installer script is required by this route.
 
 The following three **linux/amd64 platform digests** are the installation
@@ -85,9 +168,10 @@ The human-readable tag records discovery only.
 | Supervisor | `c8c42aef16c200063e32cbf72e553e4ead027085427b555efafd95063ecead42` | `34e0ba2b07008d9707321e3522277c4ca380af1b539534a2ab56dfce943532f7` |
 | Base | `aeef1c63f00e2913ea002ccb3aaf925f338b5c5d70e63576f0d95c16a138044e` | `04dd51f785ae52557ac53d4b12b3a0611a7347e5b8738e6278203465e6fb726e` |
 
-Evidence is the official GHCR v2 index/platform-manifest response for each
+RF-HOST-033 metadata evidence is the official GHCR v2 index/platform-manifest response for each
 repository/tag. Every response-body SHA-256 matched its digest; amd64 children
-also matched their index descriptors. No layer or config blob was downloaded.
+also matched their index descriptors. No layer or config blob was downloaded
+during that preflight; RF-HOST-036 later pulled the three approved references.
 The private receipt retains manifests, descriptor/config sizes and sums.
 Attestation descriptors were observed, but attestations/signatures and image
 contents were not verified. Digest integrity is not a vulnerability assessment.
@@ -104,7 +188,7 @@ unexpected executables requires later content verification. Bundled real Codex
 and other agent CLIs must not be invoked by the fake-server experiment.
 Python 3.14 is not acceptance of the separately pinned Hermes dependency range.
 
-## Read-only prerequisite results
+## Historical RF-HOST-033 read-only prerequisite results
 
 | Check | Result and limit |
 | --- | --- |
@@ -159,11 +243,16 @@ tokens are sandbox-scoped and must not be exposed to agent children. Verify that
 the agent cannot access gateway administrative methods, even through callbacks.
 No provider credentials, inference route, OIDC login or cloud account is needed.
 
-## Future installation and rollback proposal — not executed
+## Staged installation and rollback plan
 
-1. Restore and recheck native Docker access in a separately authorized task;
-   confirm it survives cold start. Recheck free storage/ports and private
-   existing-workload baseline before any later installation.
+RF-HOST-036 completed only the artifact installation/pulls in steps 1–3.
+Content/security admission and steps 4–7 remain unexecuted and require their
+own authority; this plan does not authorize starting a runtime.
+
+1. RF-HOST-035 established the permitted natural-use prerequisite; healthy
+   Running with the integration proxy is acceptable and forced termination is
+   prohibited. Recheck native Docker, free storage/ports and the private
+   existing-workload baseline before a separately authorized installation.
 2. Under a new private Linux installation root, download only the CLI archive
    above, verify SHA-256 before extraction, reject escaping archive entries,
    and keep the binary versioned. Use private XDG config/state/data directories;
@@ -235,7 +324,7 @@ also unproven. Installation readiness must never be mistaken for these proofs.
 | CPU/RAM/PIDs/disk | Effective limits match the proposed ceilings before stress. Every writable path and all log/output storage must have a demonstrated bound. Quota exhaustion stays inside the experiment; absent hard disk/log controls fail. |
 | Cleanup/continuity | Deterministic teardown removes every newly recorded runtime resource, leaves existing workload identities/states and policies unchanged, and allows the dedicated distribution to idle naturally; healthy Running with its integration proxy is acceptable. Never force termination. Any unrelated effect fails; do not auto-repair it. |
 
-## Verification and next task
+## Historical RF-HOST-033 verification and next task (superseded)
 
 The reusable RF-HOST-030 inventory preflight remains deliberately unchanged:
 `further_checks_required` is not live Docker or installation readiness. Its

@@ -1,5 +1,10 @@
 # Foundation requirements traceability
 
+RF-HOST-036: [pinned OpenShell artifacts](../operations/openshell-installation-preflight.md#rf-host-036-installed-artifacts-and-proof-limits)
+are installed and hash/digest/platform verified under separate owner authority.
+Only the CLI version was invoked; no image contents, gateway or agent ran.
+Existing-workload continuity passed; execution admission remains disabled.
+
 RF-HOST-035: [host lifecycle safety](../operations/host-lifecycle-safety.md)
 advances provider contract to v5. API/Worker deny both uncontained providers,
 retain checkpoints on host-maintenance failures and grant no host-control tools.

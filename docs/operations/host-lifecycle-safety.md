@@ -140,5 +140,7 @@ disk/log/output bounds, containment and live sandbox behavior remain unproven;
 installation readiness grants no execution, installation or model authority.
 
 Keep observe mode, `executionSupported=false`, `pilotReady=false` and Hermes
-disabled. Next atomic task, not started: owner-authorized installation of the
-pinned CLI and three image digests, without starting a gateway, sandbox or model.
+disabled. The subsequent separately authorized
+[RF-HOST-036 artifact installation](openshell-installation-preflight.md#rf-host-036-installed-artifacts-and-proof-limits)
+installed the pinned CLI and three image digests without starting a gateway,
+sandbox or model. Host lifecycle admission remains unchanged.

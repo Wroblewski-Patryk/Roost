@@ -1,5 +1,10 @@
 # RF-HOST-031/032/034/035: dedicated Ubuntu WSL environment
 
+Subsequent [RF-HOST-036 installation](openshell-installation-preflight.md#rf-host-036-installed-artifacts-and-proof-limits)
+verified the pinned CLI and three image digests without runtime activation.
+Fresh native/Windows Docker checks and baseline workload continuity passed.
+No distribution termination or Docker/settings recovery was performed.
+
 Current result: [RF-HOST-035](host-lifecycle-safety.md) confirms two harmless
 natural-use cycles with healthy native Docker access, Windows Engine 29.7.2
 and continuity of two running workloads. The distribution remained Running
