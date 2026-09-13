@@ -1,5 +1,10 @@
 # Foundation requirements traceability
 
+RF-HOST-041: [stdio-only v3](../operations/openshell-stdio-policy-v3.md) removes
+unused network/scratch grants, excludes GPU enrichment and pins official/source
+receipts. Conditional static READY, default v3 linter and rejection tests do not
+establish runtime compatibility, confinement or execution admission.
+
 RF-HOST-040: [official policy validation](../operations/openshell-official-policy-validation.md)
 adds an unchanged-upstream Rust adapter, lockfile, byte-pinned runner and tests.
 Two offline parser runs pass; supervisor baseline enrichment violates v2's

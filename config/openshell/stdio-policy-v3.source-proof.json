@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "task": "RF-HOST-041",
+  "upstreamCommit": "d1155aa70042d3e2ee49dbfa15346b108b7c1d92",
+  "kind": "conditional-source-bound-filesystem-grant-proof",
+  "postLoaderPublicApiAvailable": false,
+  "postLoaderCodeExecuted": false,
+  "runtimeEffectivePolicySha256": null,
+  "premises": [
+    "exact_v3_snapshot_present",
+    "no_global_provider_or_incremental_merge",
+    "no_local_override_discovery_fallback_or_updates",
+    "combined_supervisor_full_enforcement",
+    "network_policies_empty",
+    "gpu_probe_paths_absent_no_gpu_injection",
+    "include_workdir_false",
+    "immutable_regular_fixture_inode_at_exact_path",
+    "hard_landlock_success_or_no_child"
+  ],
+  "conclusion": {
+    "readOnly": [
+      "/opt/roost-fixture/bin/fake-app-server"
+    ],
+    "readWrite": [],
+    "workdirAdded": false,
+    "proxyEnrichment": false,
+    "gpuEnrichment": false
+  },
+  "sources": [
+    {
+      "path": "crates/openshell-policy/src/lib.rs",
+      "sha256": "1875dbb56c1f5886e52fe388243ab7301d2250ab15b58c595cba30df069ec7de",
+      "gitBlob": "5be8173e3e2b2da049e9e75b49d66045e4ac3245",
+      "functions": "parse_sandbox_policy; to_proto; validate_sandbox_policy; sandbox_policy_to_json_value",
+      "lines": "707-831; 1026-1068; 1416-1560"
+    },
+    {
+      "path": "crates/openshell-policy/src/compose.rs",
+      "sha256": "762f231811fbad294b37d3cb70553d16424ceea21dfb8a491b3fe971389ab52b",
+      "gitBlob": "7ca8584d9d476d69ff87057c2a8264f37c246aa8",
+      "functions": "compose_effective_policy",
+      "lines": "59-75"
+    },
+    {
+      "path": "crates/openshell-policy/src/merge.rs",
+      "sha256": "0e7abf539a1d8d23ac4658d63c1ee1276eccb8c64cd9e6eb4d36c5b8c8c4e343",
+      "gitBlob": "12026bbea3fc8fd7c985818d8c67136430d16929",
+      "functions": "merge_policy",
+      "lines": "775-860"
+    },
+    {
+      "path": "crates/openshell-server/src/grpc/policy.rs",
+      "sha256": "3dffe79872252df6b55af9ff5a9efcc088574c3bd9741424cae5f69b7b04cddb",
+      "gitBlob": "0bda93a15f0c2688f4e50477c8fd14957370999b",
+      "functions": "get_sandbox_config policy source and composition",
+      "lines": "2300-2488"
+    },
+    {
+      "path": "crates/openshell-driver-docker/src/lib.rs",
+      "sha256": "0fe429da6b198e43625d6189b9a0a844d684052e7f61351aa099c8d1afb5dcd8",
+      "gitBlob": "b1859f54cc1a5505d18af5ff86c70569d288fe73",
+      "functions": "resolve_gpu_cdi_devices; build_container_create_body_for_image",
+      "lines": "782-809; 2940-3065"
+    },
+    {
+      "path": "crates/openshell-sandbox/src/lib.rs",
+      "sha256": "b63c3be478964318f1066b0781649c1d9fb5dbc385fdf2de9a2d925732289bcd",
+      "gitBlob": "b1c226cebd4f24903cca48788ce4e8e9ae3bfb0b",
+      "functions": "run_sandbox; process_enforcement_mode; load_policy; enrich_proto_baseline_paths; process_policy_for_topology",
+      "lines": "175-232; 922-960; 1153-1160; 1627-1819; 2242-2546; 819; 1414-1428"
+    },
+    {
+      "path": "crates/openshell-core/src/policy.rs",
+      "sha256": "021a8f64ee3de85012c61d3272354d8fe251c435a3bef6bdb1c50b27aa2342d1",
+      "gitBlob": "1645b9da444115ba8f22e66c916dfa653994e6c9",
+      "functions": "TryFrom<ProtoSandboxPolicy>; From<ProtoFilesystemPolicy>",
+      "lines": "99-148"
+    },
+    {
+      "path": "crates/openshell-core/src/paths.rs",
+      "sha256": "50e480369f733dc946251596d0144a16bc22fcee78489df891378445a2501ed3",
+      "gitBlob": "25019582704da7367a420849de9c3c8920211a2e",
+      "functions": "normalize_path",
+      "lines": "150-182"
+    },
+    {
+      "path": "crates/openshell-supervisor-network/src/opa.rs",
+      "sha256": "ef1512cc047799087e4f39bcde5495fc92468c5d34817a43fdc577f29adb19f3",
+      "gitBlob": "63aa2c2c70fc8ab6f2f138a425a45821816f107d",
+      "functions": "from_proto; inject_runtime_policy_data; proto_to_opa_data_json",
+      "lines": "104-114; 392-482; 1857-1893"
+    },
+    {
+      "path": "crates/openshell-supervisor-network/data/sandbox-policy.rego",
+      "sha256": "dc68daf035e520ef21fc8dcbe3ef3fb18273eec02c136b989264524b75cd3e95",
+      "gitBlob": "e3fa6d36b46f057b5f61a755ce54dedc1c5b811b",
+      "functions": "filesystem_policy; network defaults",
+      "lines": "1-120"
+    },
+    {
+      "path": "crates/openshell-supervisor-process/src/identity.rs",
+      "sha256": "f5836c669b8c1f9c2c8479f08ebf1203aee79e6d765f7c9c0ca9c3e07ce4f550",
+      "gitBlob": "df79a4137d941d433d101bcb11dd5f1f6769aaed",
+      "functions": "resolve_process_identity; OCI identity completion",
+      "lines": "69-214"
+    },
+    {
+      "path": "crates/openshell-supervisor-process/src/run.rs",
+      "sha256": "59a45310a3c6a63fa22a7b7e5ec0bdacd0dd09174f0c61b5ab05eedf57502a92",
+      "gitBlob": "f0e792306d58e45be460155f177461c040b7e249",
+      "functions": "run_process",
+      "lines": "87-133"
+    },
+    {
+      "path": "crates/openshell-supervisor-process/src/process.rs",
+      "sha256": "a3ff4c565b5c34cbd82929967372e63bf3f690477d9999d57764c1a29c001c0b",
+      "gitBlob": "52557493cd109998194dd5f6217db1bfb63f2f69",
+      "functions": "prepare_child_sandbox; spawn; prepare_filesystem_with_identity",
+      "lines": "143-164; 831-911; 2029-2100"
+    },
+    {
+      "path": "crates/openshell-supervisor-process/src/sandbox/linux/mod.rs",
+      "sha256": "45820443c9deb90bd8d47ae72109d36007e40064480da5a1f092629c34d1e0b2",
+      "gitBlob": "107a50e3700992b2713d428afc07653a445eaa2f",
+      "functions": "prepare; enforce",
+      "lines": "25-57"
+    },
+    {
+      "path": "crates/openshell-supervisor-process/src/sandbox/linux/landlock.rs",
+      "sha256": "a5952b797996b83231f646c1ebc0d3aa085018ec16c22e5a17b68acfe754a6c2",
+      "gitBlob": "bf42faede81af3491475a4df347cc0983dcf4557",
+      "functions": "prepare_with_path_open_mode; enforce; access_for_path_fd; try_open_path",
+      "lines": "129-295; 306-365; 367-451"
+    },
+    {
+      "path": "crates/openshell-core/src/gpu.rs",
+      "sha256": "7327ae0b8c5d3368a6f5344072810a690b1a7e445cebce73a8a992a7806bb785",
+      "gitBlob": "f5ff67cd3564413a2916628489aa864316dccf3b",
+      "functions": "effective_driver_gpu_count",
+      "lines": "40-68"
+    }
+  ],
+  "executionSupported": false,
+  "pilotReady": false,
+  "liveAdmissionAllowed": false
+}

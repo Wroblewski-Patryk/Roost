@@ -1,5 +1,10 @@
 # Adopt-before-build and execution providers
 
+RF-HOST-041: [stdio-only v3](../operations/openshell-stdio-policy-v3.md) passes
+official source parsing and conditional source proof of exact filesystem grants.
+Default static validation requires pinned v3 artifact/evidence; the runtime hash
+is null. Read-only-root/workspace compatibility and all live gates remain open.
+
 RF-HOST-040: [official offline parser](../operations/openshell-official-policy-validation.md)
 accepts v2 source policy, but overall validation is BLOCKED: the selected
 supervisor adds filesystem grants outside v2. Pinned parser/merge evidence

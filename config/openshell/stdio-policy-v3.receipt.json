@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "task": "RF-HOST-041",
+  "verdict": "STATIC-STDIO-POLICY-V3-READY",
+  "scope": "conditional-static-filesystem-grants-only",
+  "policyId": "roost.synthetic-isolation.v3",
+  "policySha256": "0d7ac3b0eccde457d5a77e6662a4bfb6a2f1de3e3c4147d2d49633fce6058e5b",
+  "contractSha256": "f01133f5a240c2eb60bf2d21d121649373e6e1259f22debfe62222abba888f98",
+  "sourceProofSha256": "44a0b755f9680cdbcd4c439da72eb61725ba026447c8051c2b34795f7b0551c1",
+  "fixtureSha256": "c4c7bbc5d9d73629c4ebb88ffc1dfa48cb58e85e5477f69ec1128aaab156c85d",
+  "fixtureBytes": 8656,
+  "official": {
+    "executionSupported": false,
+    "fixtureExecuted": false,
+    "liveAdmissionAllowed": false,
+    "operation": "replace",
+    "parserSha256": "1547f375cdf3748c6e754fb84c2d728c149b7ea80268a51e884d75b2fb5d8a13",
+    "pilotReady": false,
+    "postLoaderCodeExecuted": false,
+    "runtimeEffectivePolicySha256": null,
+    "runtimePolicyEvaluated": false,
+    "scope": "source-policy-composition-only",
+    "sourceProjection": {
+      "filesystem_policy": {
+        "include_workdir": false,
+        "read_only": [
+          "/opt/roost-fixture/bin/fake-app-server"
+        ]
+      },
+      "landlock": {
+        "compatibility": "hard_requirement"
+      },
+      "process": {
+        "run_as_group": "sandbox",
+        "run_as_user": "sandbox"
+      },
+      "version": 1
+    },
+    "sourceProjectionBytes": 223,
+    "sourceProjectionSha256": "c25bcaf702aa54c5f9af2377c21fd2e96fa9280b837e59cc415e93f0eecc6682",
+    "upstreamCasesPassed": 6,
+    "upstreamCommit": "d1155aa70042d3e2ee49dbfa15346b108b7c1d92",
+    "upstreamParseValidation": "passed"
+  },
+  "identicalRuns": 2,
+  "container": {
+    "image": "ghcr.io/nvidia/openshell-community/sandboxes/base@sha256:c2a43bb0d765774e2790b3babfb20997bb2eac7b4bf4c6d7d8661e99817bf904",
+    "network": "none",
+    "rootFilesystemReadOnly": true,
+    "uid": 1000,
+    "gid": 1000,
+    "gpuProbePathsAbsent": true,
+    "userBindMounts": false,
+    "userVolumes": false,
+    "removed": true
+  },
+  "continuity": {
+    "engine": "29.7.2-linux-amd64",
+    "containers": 4,
+    "running": 2,
+    "networks": 5,
+    "volumes": 107,
+    "imageRows": 16,
+    "unchanged": true,
+    "newFinalResources": 0
+  },
+  "executionSupported": false,
+  "pilotReady": false,
+  "liveAdmissionAllowed": false
+}

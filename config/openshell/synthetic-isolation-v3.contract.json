@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 3,
+  "policyId": "roost.synthetic-isolation.v3",
+  "policyVersion": 3,
+  "policySha256": "0d7ac3b0eccde457d5a77e6662a4bfb6a2f1de3e3c4147d2d49633fce6058e5b",
+  "canonicalization": "roost-ascii-json-sorted-compact-v1",
+  "upstream": {
+    "version": "0.0.116",
+    "commit": "d1155aa70042d3e2ee49dbfa15346b108b7c1d92",
+    "sourceSha256": {
+      "docs/reference/policy-schema.mdx": "58ee1d2e91e918e4ace589a72f209d7c99dd584546ee553f5b1528f5bbebeda2",
+      "crates/openshell-core/src/policy.rs": "021a8f64ee3de85012c61d3272354d8fe251c435a3bef6bdb1c50b27aa2342d1",
+      "crates/openshell-policy/src/lib.rs": "1875dbb56c1f5886e52fe388243ab7301d2250ab15b58c595cba30df069ec7de",
+      "crates/openshell-cli/src/policy_update.rs": "3ac6e7ff3698ada653a372b885ddaf0b615fc6fd57b5a7a945ba11c92bc8ebcb",
+      "crates/openshell-supervisor-network/data/sandbox-policy.rego": "dc68daf035e520ef21fc8dcbe3ef3fb18273eec02c136b989264524b75cd3e95",
+      "crates/openshell-supervisor-process/src/sandbox/linux/landlock.rs": "a5952b797996b83231f646c1ebc0d3aa085018ec16c22e5a17b68acfe754a6c2",
+      "proto/sandbox.proto": "b2f05ac1a74790a335541b810ae17eb6cbe2372e78188954bb630d29b266d4ec",
+      "crates/openshell-cli/src/main.rs": "89723e0702cedb834e9381c9cd5ea7aca6a462ddb9df707023db7ae9eb3f1512",
+      "crates/openshell-policy/src/l7_validate.rs": "abfe157c99c76b9e8537dac1ecf512f9f0ae0bc3651d4700176daf35355e2843"
+    }
+  },
+  "replacement": "full-explicit-no-inheritance",
+  "networkDefault": "no-authored-network-grants-runtime-denial-unproven",
+  "fixture": {
+    "path": "/opt/roost-fixture/bin/fake-app-server",
+    "sha256": "c4c7bbc5d9d73629c4ebb88ffc1dfa48cb58e85e5477f69ec1128aaab156c85d",
+    "materialized": true,
+    "format": "static-linux-amd64-elf",
+    "maximumBytes": 4194304,
+    "dynamicLibraries": [],
+    "argv": [
+      "/opt/roost-fixture/bin/fake-app-server"
+    ],
+    "workingDirectory": "/",
+    "immutable": true,
+    "execOtherBinaries": false,
+    "bytes": 8656,
+    "identity": "roost.synthetic-stdio.v2"
+  },
+  "deniedResources": [
+    "host_filesystems",
+    "host_repositories",
+    "operator_homes",
+    "real_codex_home",
+    "real_xdg",
+    "daemon_sockets_and_apis",
+    "gateway_admin_identity_and_material",
+    "provider_credentials",
+    "user_bind_mounts",
+    "user_volumes",
+    "global_or_provider_policy_composition"
+  ],
+  "requiredRuntimeEvidence": [
+    "fresh_artifact_source_recipe_toolchain_policy_receipt_and_source_proof_recheck",
+    "exact_acknowledged_snapshot_no_fallback_merge_updates_or_composition",
+    "gpu_probe_paths_absent_and_no_devices_requests_or_environment",
+    "official_postloader_snapshot_and_exact_landlock_rules",
+    "hard_landlock_no_skipped_paths_and_nonroot_capability_drop",
+    "immutable_regular_fixture_file_no_symlinks_libraries_or_shell",
+    "read_only_rootfs_no_scratch_or_user_mounts",
+    "no_inference_route_implicit_egress_or_dns",
+    "no_control_fds_mounts_sockets_or_admin_identity_in_child",
+    "process_tree_stop_resource_output_bounds_and_external_deadline",
+    "dedicated_nonblocking_stdio_pipes",
+    "docker_workspace_preparation_compatible_with_no_writable_paths"
+  ],
+  "executionSupported": false,
+  "pilotReady": false,
+  "liveAdmissionAllowed": false,
+  "build": {
+    "sourceSha256": "6c99e3fa3651ca2109e26a2e2fe1e818dbd4c882dbc1f34b781ddaad42afa052",
+    "recipeSha256": "6cf8f0766bf2407d8293c50e28c28329ab7ccd1fb4e05eb677137823f8d7a472",
+    "sourceEncoding": "ascii-lf",
+    "toolchainImage": "ghcr.io/nvidia/openshell-community/sandboxes/base@sha256:c2a43bb0d765774e2790b3babfb20997bb2eac7b4bf4c6d7d8661e99817bf904",
+    "compiler": "GCC 13.3.0",
+    "linker": "GNU ld 2.42",
+    "sourceDateEpoch": 0,
+    "locale": "C",
+    "timezone": "UTC",
+    "buildId": false,
+    "reproducibleBuilds": 2,
+    "container": {
+      "network": "none",
+      "readOnly": true,
+      "user": "sandbox",
+      "capDrop": [
+        "ALL"
+      ],
+      "noNewPrivileges": true,
+      "cpu": 1,
+      "memoryBytes": 536870912,
+      "memorySwapBytes": 536870912,
+      "pids": 64,
+      "restart": "no",
+      "tmpfsBytes": 16777216,
+      "shmBytes": 1048576,
+      "tmpfsFlags": [
+        "noexec",
+        "nosuid",
+        "nodev"
+      ],
+      "logDriver": "none",
+      "bindMounts": false,
+      "namedVolumes": false
+    },
+    "behavior": {
+      "protocol": "one-exact-initialize-line-v2",
+      "inputMaximumBytes": 128,
+      "outputMaximumBytes": 61,
+      "stderrMaximumBytes": 0,
+      "pollBudget": 100,
+      "pollTimeoutMs": 20,
+      "filesystemAccess": false,
+      "networkAccess": false,
+      "childProcesses": false,
+      "syscalls": [
+        "read",
+        "write",
+        "poll",
+        "fcntl",
+        "exit"
+      ]
+    }
+  },
+  "runtimeContract": {
+    "topology": "docker-combined-supervisor",
+    "policySource": "new-explicit-snapshot",
+    "processEnforcement": "full",
+    "localPolicyOverrides": false,
+    "diskDiscovery": false,
+    "fallbackPolicy": false,
+    "incrementalMerge": false,
+    "globalPolicy": false,
+    "providerLayers": [],
+    "policyUpdates": false,
+    "gpuEnabled": false,
+    "gpuDevices": [],
+    "deviceRequests": [],
+    "gpuEnvironment": {},
+    "gpuProbePathsAbsent": [
+      "/dev/nvidiactl",
+      "/dev/dxg"
+    ],
+    "userBindMounts": false,
+    "userVolumes": false,
+    "imageDeclaredVolumes": false,
+    "rootFilesystemReadOnly": true,
+    "scratch": false,
+    "writablePaths": [],
+    "workdirGrant": false,
+    "shellAdmission": false,
+    "agentAdmission": false,
+    "inferenceConfigured": false,
+    "providerEnvironment": {},
+    "middlewareServices": [],
+    "stdin": "dedicated-nonblocking-pipe",
+    "stdout": "dedicated-nonblocking-pipe",
+    "stderrMaximumBytes": 0,
+    "inheritedControlDescriptors": false,
+    "artifactRegularFileWithoutSymlinks": true,
+    "runtimeEffectivePolicySha256": null
+  }
+}

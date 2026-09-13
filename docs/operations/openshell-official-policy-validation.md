@@ -1,5 +1,9 @@
 # Official offline policy validation (RF-HOST-040)
 
+The separately authorized [RF-HOST-041 stdio-only v3](openshell-stdio-policy-v3.md)
+has now completed conditional static validation. This RF-HOST-040 report and
+its v2 BLOCKED result remain historical evidence; no runtime is admitted.
+
 **OFFICIAL-OFFLINE-POLICY-VALIDATION-BLOCKED**, verified 2026-09-13.
 The official parser accepts v2, and the pinned offline adapter works. The
 selected Docker supervisor loading path subsequently adds filesystem grants

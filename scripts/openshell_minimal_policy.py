@@ -217,6 +217,7 @@ if __name__ == '__main__':
     import sys
     if '--template' in sys.argv[1:]:
         raise SystemExit(main())
-    # v1 remains an explicit historical template review; default is v2 bytes.
-    from openshell_fixture import main as materialized_main
-    raise SystemExit(materialized_main())
+    # Historical template review is explicit; default requires pinned v3 bytes
+    # and official/source receipts. Neither route grants runtime admission.
+    from openshell_stdio_policy import main as stdio_main
+    raise SystemExit(stdio_main())
