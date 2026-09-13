@@ -1,5 +1,12 @@
 # Foundation requirements traceability
 
+RF-HOST-047: [publication outcome](../operations/openshell-upstream-issue-publication.md)
+records exact-text owner approval, fresh unchanged guidance/release checks and
+bounded duplicate searches. One create attempt returned HTTP 403; successful
+external writes are zero and read-only reconciliation found no matching issue.
+No public URL or readback hash exists. The one-attempt boundary is consumed;
+historical packets and runtime admission remain unchanged.
+
 RF-HOST-046: [prepublication approval](../operations/openshell-prepublication-approval.md)
 checks 76 fresh public responses, 16 source/guidance files and 24 issue/PR/discussion
 queries with 49 individually classified candidates. No full-profile duplicate or

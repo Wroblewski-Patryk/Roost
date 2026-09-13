@@ -1,5 +1,12 @@
 # Adopt-before-build and execution providers
 
+RF-HOST-047: the [publication outcome](../operations/openshell-upstream-issue-publication.md)
+is UPSTREAM-ISSUE-AUTH-BLOCKED. After exact-text owner approval and fresh checks,
+the existing integration rejected the single create attempt with HTTP 403.
+Zero successful external writes; read-only reconciliation found no issue.
+No retry or authentication change followed. This supersedes the historical
+publication-pending status below and grants no runtime or follow-up authority.
+
 RF-HOST-046: the owner selected A for read-only prepublication inspection.
 The [final approval packet](../operations/openshell-prepublication-approval.md)
 binds current release, main-branch guidance, duplicate searches and exact public
