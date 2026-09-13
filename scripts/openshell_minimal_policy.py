@@ -214,4 +214,9 @@ def main():
 
 
 if __name__ == '__main__':
-    raise SystemExit(main())
+    import sys
+    if '--template' in sys.argv[1:]:
+        raise SystemExit(main())
+    # v1 remains an explicit historical template review; default is v2 bytes.
+    from openshell_fixture import main as materialized_main
+    raise SystemExit(materialized_main())

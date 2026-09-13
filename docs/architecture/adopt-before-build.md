@@ -1,5 +1,10 @@
 # Adopt-before-build and execution providers
 
+RF-HOST-039: [reproducible fixture](../operations/openshell-reproducible-fixture.md)
+pins two identical static builds to source/recipe/toolchain and separate v2
+policy/contract hashes. Default offline validation requires exact ELF bytes.
+The artifact was never executed; official parsing and live gates remain unproven.
+
 RF-HOST-038: [minimal policy template](../operations/openshell-minimal-policy.md)
 pins a strict one-endpoint/one-fixture static contract. Its explicit template
 review grants no execution; the unmaterialized fixture, official runtime parser

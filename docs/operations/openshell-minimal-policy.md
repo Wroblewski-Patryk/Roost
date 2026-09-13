@@ -1,7 +1,12 @@
 # Minimal synthetic isolation policy (RF-HOST-038)
 
+Historical v1 template: [RF-HOST-039](openshell-reproducible-fixture.md) adds a
+separate materialized v2 revision. v1 bytes/hashes remain unchanged and v1 is
+never live-ready. The default CLI now validates v2 with explicit fixture bytes;
+`--template` retains the historical v1 review described below.
+
 **STATIC-MINIMAL-POLICY-READY**, verified 2026-09-13, for the **unmaterialized
-template contract only**. Execution remains blocked. The fixture does not exist;
+template contract only**. Execution remains blocked. No fixture existed at RF-HOST-038;
 no fixture, OpenShell CLI, gateway, supervisor, sandbox, agent or model ran.
 The [host lifecycle guards](host-lifecycle-safety.md), observe mode, disabled
 providers/Hermes, `executionSupported=false` and `pilotReady=false` are unchanged.
@@ -146,8 +151,8 @@ None of this control-plane setup was created or tested here.
 Run `python -B scripts/openshell_minimal_policy.py --template` for explicit
 template review: exit **0**, `STATIC-MINIMAL-POLICY-READY`, with
 `fixtureMaterialized=false`, `officialRuntimeParserExecuted=false` and
-`liveAdmissionAllowed=false`. Running without `--template` fails with exit **2**,
-`STATIC-MINIMAL-POLICY-BLOCKED`, `fixture_unmaterialized`. This release accepts
+`liveAdmissionAllowed=false`. At RF-HOST-038, running without `--template` failed with exit **2**,
+`STATIC-MINIMAL-POLICY-BLOCKED`, `fixture_unmaterialized`. The v1 validator accepts
 no materialized execution bundle, even if an arbitrary 64-digit hash is supplied.
 
 The linter bounds policy/contract input to **8/16 KiB**, **512 nodes**, **12 levels**
@@ -185,6 +190,6 @@ mount or environment inspection. No image save/pull/run/create, WSL entry,
 Docker/WSL restart/termination, integration toggle, prune, socket/recovery
 operation, provider/Worker activation, push or deployment is performed.
 
-Exactly one recommended next atomic task, **not started**: materialize the small
-synthetic static fixture with a reproducible build and byte hash under a new
-approved contract revision, without running it or starting gateway/sandbox.
+The then-recommended materialization task was completed separately by
+[RF-HOST-039](openshell-reproducible-fixture.md). Its v2 result and remaining
+gates do not alter this historical v1 template or grant execution.

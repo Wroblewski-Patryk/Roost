@@ -1,5 +1,10 @@
 # Foundation requirements traceability
 
+RF-HOST-039: [reproducible fixture](../operations/openshell-reproducible-fixture.md),
+source/build recipe, v2 byte validator and synthetic tests materialize one
+private static ELF from two identical builds. Exact identities fail closed;
+no fixture/runtime execution or activation is established.
+
 RF-HOST-038: [minimal policy](../operations/openshell-minimal-policy.md) and its
 separate immutable identity reject scope expansion through an offline linter
 and synthetic tests. Static template READY is distinct from materialization,

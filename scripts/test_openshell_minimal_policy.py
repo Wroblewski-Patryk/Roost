@@ -204,7 +204,7 @@ class MinimalPolicyTests(unittest.TestCase):
 
     def test_real_cli_default_blocks_and_explicit_template_reviews(self):
         # Only the trusted local Python linter runs; no OpenShell/fixture commands.
-        for args, code, verdict in (([], 2, 'STATIC-MINIMAL-POLICY-BLOCKED'), (['--template'], 0, 'STATIC-MINIMAL-POLICY-READY')):
+        for args, code, verdict in (([], 2, 'REPRODUCIBLE-FIXTURE-BLOCKED'), (['--template'], 0, 'STATIC-MINIMAL-POLICY-READY')):
             result = subprocess.run([sys.executable, '-B', str(ROOT / 'scripts/openshell_minimal_policy.py'), *args], capture_output=True, timeout=10)
             self.assertEqual(result.returncode, code)
             self.assertEqual(result.stderr, b'')
