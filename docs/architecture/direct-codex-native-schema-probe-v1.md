@@ -12,7 +12,9 @@ finds configuration work before the wrapper's child boundary and leaves all
 launch gates closed. Its RF-CODEX-019 proposal investigates version-bound official
 JSON data. [RF019 precomputed-schema research](direct-codex-precomputed-schema-v1.md)
 records a complete 305-file source inventory, but no exact PE/schema binding.
-The current RF020 proposal addresses publisher metadata; no NSP requirement,
+[RF021 setup admission](direct-codex-native-setup-admission-v1.md) retains BLOCKED:
+the private runner and shared setup delta are not an admitted outer boundary.
+Its RF022 proposal requires an owner architecture decision. No NSP requirement,
 256-file limit or entry gate is relaxed.
 No Codex instruction, generator, App Server, model, authentication or network
 operation ran in RF016. The [acceptance matrix](direct-codex-native-schema-probe-acceptance-v1.md)

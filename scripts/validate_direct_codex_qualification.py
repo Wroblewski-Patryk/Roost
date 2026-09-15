@@ -232,7 +232,7 @@ def validate_documents():
         r, t = re.findall(r'CAS-R(\d{2})', requirements), re.findall(r'CAS-T(\d{2})', tests)
         need(r == t and len(r) == len(set(r)) and all(1 <= int(n) <= 30 for n in r), 'cas_mapping')
     need(packet.count('## Consolidated interview packet I01 — RESOLVED') == 1, 'interview_packet_resolved')
-    need(packet.count('Exactly one recommended next atomic task:') == 1 and '**RF-CODEX-021' in packet, 'next_task')
+    need(packet.count('Exactly one recommended next atomic task:') == 1 and '**RF-CODEX-022' in packet, 'next_task')
     platform = (ROOT / 'docs/decisions/ADR-003-native-windows-codex-pilot.md').read_text(encoding='utf-8')
     need('Status: accepted' in platform and 'owner-interview.rf-codex-015.windows-pilot.v1' in platform, 'native_owner_decision')
     native = (BASE / 'direct-codex-native-artifact-preflight-v1.md').read_text(encoding='utf-8')

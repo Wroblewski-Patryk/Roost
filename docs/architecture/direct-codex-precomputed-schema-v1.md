@@ -8,6 +8,8 @@ completed the final publisher-metadata round and closed that route for the curre
 Appx as BLOCKED. The release PE differs from the local candidate. RF021's proposed
 minimal outer-isolation admission for an exact-PE probe is the practical next step;
 the RF020 recommendation below is this report's historical handoff.
+[RF021 setup admission](direct-codex-native-setup-admission-v1.md) is now complete
+with BLOCKED; its proposed RF022 owner architecture decision is not started.
 
 Official precomputed bundles and a complete source JSON tree exist at the
 inspected immutable commit. Their relationship to the exact installed native PE

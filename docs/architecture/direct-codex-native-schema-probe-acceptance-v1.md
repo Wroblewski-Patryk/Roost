@@ -19,6 +19,10 @@ than complete CLI startup proof; no C/O/A evidence or gate promotion follows.
 source-tree metadata only. Git object IDs are not accepted raw-file SHA-256
 digests or exact PE binding; no C/O/A evidence or limit change follows.
 
+[RF021 setup admission](direct-codex-native-setup-admission-v1.md) records the
+private runner's creation-time Job candidate, pre-child side effects and normal
+descendant-preservation path. Setup delta/rollback and all C/O/A gates stay blocked.
+
 Evidence: D=static contract/source review; S=own harmless system fixture;
 C=separately authorized exact Codex generator; O=complete native enforcement;
 A=independent acceptance. A primitive PASS-S is not an entry-gate PASS or C/O/A.

@@ -1,7 +1,7 @@
 # Direct Codex qualification decision packet v1
 
 RF-HERMES-006, 2026-09-13. Decision-packet version: **1**.
-Packet revision: **15**, RF-CODEX-020, 2026-09-15.
+Packet revision: **16**, RF-CODEX-021, 2026-09-15.
 Current pilot: **native Windows**, accepted by the owner in
 [ADR-003](../decisions/ADR-003-native-windows-codex-pilot.md). WSL2 remains a later
 optional, separately qualified profile, with no automatic Windows↔WSL fallback.
@@ -40,6 +40,13 @@ for the current Appx. The release Windows EXE has a different size and SHA-256;
 package metadata and the exact-digest attestation query establish no source/schema
 binding. A separately admitted exact-local-PE probe is the remaining practical
 route, after the minimal setup/outer-isolation prerequisites. No gate is promoted.
+
+[RF021 setup admission](direct-codex-native-setup-admission-v1.md) retains
+NATIVE-SCHEMA-SETUP-ADMISSION-BLOCKED. The private runner derives a restricted
+child token, but its host interface, whole-tree lifecycle and shared setup delta/
+rollback are not admitted. The next proposal is an owner architecture decision
+for a disposable Windows boundary and versioned schema-probe contract; no current
+NSP requirement, setup or runtime gate is relaxed.
 
 RF009–013 below are dated findings for the deferred Linux acquisition candidate.
 Their npm/Sigstore/TUF prerequisites do not become Windows pilot blockers. Native
@@ -578,10 +585,12 @@ does not prove absence of a supported binding route.
 RF-CODEX-020 closes the final publisher-metadata round with no exact local
 PE/source/schema mapping. Further general metadata research is not proposed.
 
-Exactly one recommended next atomic task: **RF-CODEX-021 — establish the minimal
-official setup/outer-isolation admission for one bounded exact-local-PE JSON
-schema probe.** Resolve the first-instruction boundary, build-qualified argv,
-finite timeout/whole-tree stop, output limits and any setup delta/rollback, then
-obtain independent admission evidence and the separate exact probe grant.
-The RF020 report owns this scope; no execution is implicit.
-RF-CODEX-021 was not started.
+RF-CODEX-021 finds no admitted private-runner host contract or complete setup
+delta/rollback. A UAC approval cannot replace missing effect/ownership evidence.
+
+Exactly one recommended next atomic task: **RF-CODEX-022 — owner architecture
+decision for a disposable Windows boundary and versioned schema-probe contract.**
+Record acceptance/rejection and ADR-003/NSP impact, including exact artifact
+placement and the build-bound argv prerequisite. The RF021 report owns the scope.
+No additional general metadata research, private-runner integration, provisioning
+or probe execution is implicit. RF-CODEX-022 was not started.

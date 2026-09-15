@@ -6,7 +6,9 @@ Follow-up: [RF018 outer-launch qualification](direct-codex-native-outer-launch-v
 finds an official source command wrapper with configuration before its child
 boundary and no supplied Windows timeout. First-process protection and installed
 build binding remain BLOCKED. The RF018 handoff below is historical; the current
-RF019 proposal is owned by that follow-up report.
+RF019 proposal is historical. [RF021 setup admission](direct-codex-native-setup-admission-v1.md)
+retains BLOCKED for the private runner and shared-state setup/rollback delta;
+the proposed RF022 architecture decision grants no setup or probe authority.
 The preferred dependency for further qualification is the official Codex native
 `elevated` command sandbox. No supported, build-bound way to use it as the outer
 boundary of the schema generator has yet been established. Neither an admitted

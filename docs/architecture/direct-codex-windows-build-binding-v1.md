@@ -3,6 +3,11 @@
 RF-CODEX-020, 2026-09-15.
 Verdict: **OFFICIAL-WINDOWS-PE-SCHEMA-BINDING-BLOCKED**.
 
+Follow-up [RF021 setup admission](direct-codex-native-setup-admission-v1.md)
+retains BLOCKED: no admitted external runner contract or bounded shared setup
+delta/rollback. Its RF022 proposal is an owner architecture decision; the RF021
+handoff below is historical. The metadata route remains closed.
+
 The official Windows release binary does not match the selected local PE.
 No inspected publisher metadata binds the Appx member to the source/schema
 inventory. This final metadata round closes that route for the current Appx;

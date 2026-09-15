@@ -1,5 +1,16 @@
 # Foundation requirements traceability
 
+RF-CODEX-021: [native setup/outer-isolation admission](direct-codex-native-setup-admission-v1.md)
+returns NATIVE-SCHEMA-SETUP-ADMISSION-BLOCKED. Private IPC v6 and restricted-token
+child creation are source evidence, not a supported installed-helper contract.
+Setup has unbounded waits/shared mutations; runner has pre-child side effects and
+normal descendant preservation. Both vendor accounts and 16 selected rule summaries
+match prior observations, not effective containment or an approved no-op delta.
+Closed source ledger: 8 requests / 185,705 body bytes, all 200, no retries/redirects.
+All gates/NSP/profile/schema/registry v5 remain unchanged. Next RF-CODEX-022: owner
+architecture decision for a disposable Windows boundary and versioned schema-probe
+contract; not started. No further general metadata research or live setup grant.
+
 RF-CODEX-020: [Windows PE/source/schema binding](direct-codex-windows-build-binding-v1.md)
 returns OFFICIAL-WINDOWS-PE-SCHEMA-BINDING-BLOCKED. The pinned release's native
 Windows EXE has a different digest/size from the installed Appx child. Tag/workflow

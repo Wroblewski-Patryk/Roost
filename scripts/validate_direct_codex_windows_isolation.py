@@ -1,4 +1,5 @@
-"""Static RF017 source-ledger and decision checks; no network, setup or process launch."""
+"""Static RF017/RF021 checks; no network, setup or process launch."""
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -9,6 +10,9 @@ ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT / 'docs/architecture'
 REPORT = BASE / 'direct-codex-windows-standard-isolation-v1.md'
 LEDGER = BASE / 'codex-windows-isolation-source-ledger-v1.json'
+ADMISSION = BASE / 'direct-codex-native-setup-admission-v1.md'
+ADMISSION_LEDGER = BASE / 'codex-native-setup-admission-source-ledger-v1.json'
+ADMISSION_SEAL = 'af196a02623f036a7a00fabb68b3d4045e8b73f405735037c24b0f0fa75d4302'
 BUDGET = {'maxRequests': 8, 'maxTotalBytes': 786432, 'maxResponseBytes': 131072,
           'requestTimeoutSeconds': 20, 'maxRetries': 0}
 PINS = (
@@ -89,13 +93,66 @@ def validate_report(content):
         need(url in content and digest in content, 'report_source_digest')
 
 
+def validate_setup_admission(ledger, content):
+    need(ledger['taskId'] == 'RF-CODEX-021' and ledger['closed'] is True and
+         ledger['halted'] is False and ledger['closureReason'] ==
+         'source_round_complete_no_more_requests', 'admission_closed')
+    need(ledger['budget'] == {'maxRequests': 8, 'maxTotalBytes': 1048576,
+         'maxResponseBytes': 163840, 'requestTimeoutSeconds': 20, 'maxRetries': 0}, 'admission_budget')
+    rows = ledger['requests']
+    need(len(rows) == len({r['url'] for r in rows}) == 8 and
+         sum(r['bytesRead'] for r in rows) == 185705, 'admission_accounting')
+    for i, row in enumerate(rows, 1):
+        need(row['ordinal'] == i and row['status'] == 200 and row['complete'] is True and
+             row['outcome'] == 'complete' and row['limitResult'] == 'within_limit' and
+             row['readInFlightMax'] == 0 and row['redirectCount'] == 0 and
+             0 < row['bytesRead'] <= 163840 and 0 <= row['elapsedMillis'] < 20000,
+             'admission_response')
+        need(row['url'] in content and row['sha256'] in content, 'admission_source')
+    digest = hashlib.sha256(json.dumps(ledger, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+    need(digest == ADMISSION_SEAL, 'admission_ledger_drift')
+    need(re.findall(r'^## NSA-(\d{2}) ', content, re.M) == [f'{i:02}' for i in range(1, 7)], 'admission_sections')
+    need(tuple(re.findall(r'^\| ([a-z_]+) \|', content, re.M)) ==
+         ('argv', 'artifact', 'trust', 'closure', 'principal', 'environment', 'discovery',
+          'filesystem', 'network', 'process_tree', 'budgets', 'output', 'host', 'authority', 'review'),
+         'admission_gates')
+    need('Verdict: **NATIVE-SCHEMA-SETUP-ADMISSION-BLOCKED**.' in content, 'admission_verdict')
+    for key in ('setupContractReady', 'setupAuthorized', 'setupStarted', 'outerLaunchReady',
+                'actualProbeAuthorized', 'actualProbeStarted', 'implementationReady',
+                'executionSupported', 'pilotReady', 'liveAdmissionAllowed'):
+        need(key + '=false' in content and key + '=true' not in content, 'admission_promotion')
+    for key in ('setupArgv', 'setupRevision', 'generatorArgv', 'runnerArgv', 'sourceBuildBinding',
+                'mutationManifest', 'rollbackPlan', 'setupMaxDurationSeconds'):
+        need(key + '=null' in content, 'admission_unknown')
+    need(content.count('Exactly one recommended next atomic task:') == 1 and
+         '**RF-CODEX-022' in content and 'RF-CODEX-022 was not started.' in content and
+         content.count('draft architecture question') == 1, 'admission_next_decision')
+    need(all(term in content for term in ('preserve_descendants', 'lpApplicationName',
+         'IPC_PROTOCOL_VERSION=6', 'INFINITE', 'blocked delta worksheet',
+         'Independent review has not run', 'All fifteen NSP entry gates remain closed')),
+         'admission_limits')
+    need(len(content.encode()) <= 32768 and not re.search(
+         r'(?i)(\b[a-z]:[\\/]|/home/|/mnt/[a-z]/|BEGIN .*PRIVATE KEY)', content), 'admission_public_scope')
+    urls = {r['url'] for r in rows}
+    for target in re.findall(r'\[[^\]]+\]\(([^)]+)\)', content):
+        if '://' in target:
+            need(target in urls, 'admission_unrecorded_source')
+        else:
+            path = (BASE / unquote(target)).resolve()
+            need(path.is_relative_to(ROOT) and path.name != 'design-qa.md' and path.is_file(), 'admission_link')
+
+
 def main():
     raw = LEDGER.read_bytes()
     need(len(raw) <= 32768, 'ledger_size')
     validate_ledger(json.loads(raw))
     validate_report(REPORT.read_text(encoding='utf-8'))
+    need(ADMISSION_LEDGER.stat().st_size <= 32768, 'admission_ledger_size')
+    validate_setup_admission(json.loads(ADMISSION_LEDGER.read_text(encoding='utf-8')),
+                             ADMISSION.read_text(encoding='utf-8'))
     return {'result': 'PASS', 'scope': 'static_isolation_research_only',
             'requests': 8, 'bodyBytes': 166058, 'alternatives': 4, 'acceptanceCases': 5,
+            'setupAdmissionRequests': 8, 'setupAdmissionBodyBytes': 185705,
             'setupReady': False, 'effectiveIsolationQualified': False,
             'codexExecuted': False}
 

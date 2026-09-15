@@ -7,6 +7,8 @@ Follow-up [RF019 precomputed-schema research](direct-codex-precomputed-schema-v1
 confirms a complete source JSON inventory, but retains BLOCKED for exact
 PE/schema binding. Its RF020 proposal concerns publisher metadata only.
 The RF019 recommendation below records this report's historical handoff.
+[RF021 setup admission](direct-codex-native-setup-admission-v1.md) inspects the
+private runner/setup paths and retains all launch gaps and closed gates.
 
 An official source-level Windows command wrapper exists outside model turns.
 The inspected path loads configuration before requesting the sandboxed child,
