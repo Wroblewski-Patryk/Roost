@@ -1,5 +1,13 @@
 # Adopt-before-build and execution providers
 
+RF-RUNTIME-002 / [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md) accepts
+native Hermes with Codex OAuth as the first agent behind Windows Local Worker;
+direct CLI remains an alternative. This supersedes the direct App Server ordering
+below. [Hermes CLI launch v1](hermes-cli-launch-v1.md) uses documented public flags,
+the existing sealed input and fixed capability denials. No private imports or
+new state engine. Registry v5's Hermes preference now matches the target; its
+historical pin is not newly qualified. All runtime gates remain false.
+
 RF-HERMES-007: [ADR-002](../decisions/ADR-002-codex-qualification-owner-decisions.md)
 records I01 RESOLVED: technical task-specific sizing, official local Codex account
 identity and a later separately contracted no-model evidence task. No technical

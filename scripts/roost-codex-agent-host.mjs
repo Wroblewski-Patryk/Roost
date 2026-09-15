@@ -12,8 +12,8 @@ import { acquireWriterLock } from "./lib/agent-host-writer-lock.mjs";
 import { validateExecutionPacket } from "./lib/agent-host-execution-packet.mjs";
 import { assertRecoverySnapshot, classifyRecovery, recoveryError, workspaceDigest } from "./lib/agent-host-recovery.mjs";
 import { runObserver } from "./lib/agent-host-observer.mjs";
-import { codexExecutionArgs } from "./lib/agent-host-model-policy.mjs";
-import { prepareProviderInput, consumeProviderInput } from "./lib/agent-host-provider-input.mjs";
+import { prepareProviderLaunch } from "./lib/agent-host-provider-launch.mjs";
+import { prepareProviderInput } from "./lib/agent-host-provider-input.mjs";
 import { createDirectTurnGuard } from "./lib/agent-host-direct-turn.mjs";
 import { createExecutionDuration } from "./lib/agent-host-execution-duration.mjs";
 import { createCodexOutputBudget } from "./lib/agent-host-output-budget.mjs";
@@ -266,12 +266,12 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     // Last remote authority read observes the active stop fence after context reads.
     await duration.wait(lease.refresh());
     // No awaited RPC/work remains between this admission check and spawn.
-    const transport = consumeProviderInput(providerInput, { fresh, claimed, currentCommit,
+    const launch = prepareProviderLaunch({ provider: config.executionProvider, envelope: providerInput,
+      repositoryPath, codexCommand, sandbox, secrets: [apiKey, claimed.leaseToken] }, { fresh, claimed, currentCommit,
       assertAuthority: assertProviderAuthority, secrets: [apiKey] });
-    const args = codexExecutionArgs(transport.modelSelection, sandbox);
     assertProviderAuthority();
     const turnGuard = createDirectTurnGuard();
-    child = spawn(codexCommand, args, { cwd: repositoryPath, env: safeChildEnvironment(), shell: false, windowsHide: true, stdio: ["pipe", "pipe", "pipe"] });
+    child = spawn(launch.command, launch.args, { cwd: launch.cwd, env: safeChildEnvironment(), shell: false, windowsHide: true, stdio: ["pipe", "pipe", "pipe"] });
     const exitPromise = new Promise((resolve, reject) => {
       child.once("error", () => { try { turnGuard.complete(-1, false); } catch (failure) { reject(failure); } });
       child.once("close", resolve);
@@ -279,7 +279,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     // Attach a rejection handler immediately; stdout may finish after a spawn error.
     void exitPromise.catch(() => undefined);
     child.stdin.on("error", () => undefined);
-    child.stdin.end(transport.input);
+    child.stdin.end(launch.input);
 
     child.stderr.on("data", (chunk) => {
       stderrBytes += chunk.length;

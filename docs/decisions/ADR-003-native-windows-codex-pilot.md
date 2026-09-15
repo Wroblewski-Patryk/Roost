@@ -1,5 +1,11 @@
 # ADR-003: Native Windows Codex App Server pilot profile
 
+Scope successor: [ADR-004](ADR-004-native-hermes-codex-pilot.md), 2026-09-15.
+Native Windows remains selected, now with Hermes/Codex OAuth first. The disposable
+qualification route below is deferred and rejected as a pilot prerequisite;
+authority, workspace and cleanup requirements remain. Dated acceptance below is
+preserved as history, not current provider ordering or environment authority.
+
 Date: 2026-09-13
 Status: accepted
 Owner: Roost architecture owner

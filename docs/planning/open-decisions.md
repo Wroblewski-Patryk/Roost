@@ -1,26 +1,20 @@
 # Open decisions
 
-Ordinary product development can continue. First-agent runtime admission has
-one pending owner decision; no execution is enabled by this planning record.
+The first-provider choice is resolved by RF-RUNTIME-002 /
+[ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md): native Hermes using
+Codex OAuth behind Windows Local Worker; direct CLI alternative and Herdr optional.
+Workspace, one-writer, cleanup, secrets, Ready/review and release guards remain.
+No VM/Windows Sandbox/Hyper-V prerequisite. No runtime activation follows.
 
-## First supervised agent runtime — pending
+## Private Hermes installation/configuration admission — pending
 
-[RF-RUNTIME-001 packet v1](../architecture/first-agent-runtime-decision-v1.md)
-recommends the existing Local Worker → native Codex CLI path for one supervised,
-non-critical, uncommitted local change. Hermes remains a possible additional
-agent through Roost MCP; Herdr is optional terminal/status UX. Roost and Worker
-retain authority. This recommendation is not an accepted architecture change.
-
-The owner must decide whether to add this limited CLI milestone alongside the
-accepted App Server target and permit a separately reviewed, expiring exception
-proposal for explicitly unproved pilot guarantees. Existing provider isolation
-and hard output-token admission remain closed; ordinary task consent is not an
-exception. Alternatively retain App Server-only qualification or defer.
-
-The next atomic task is **RF-RUNTIME-002**, the owner decision and downstream
-contract impact described in the packet. It grants no install, rollout or live
-run. All execution/pilot/live gates remain false. RF023's additional disposable
-environment blocker is not a blocker for all Roost development.
+[Launch contract v1](../architecture/hermes-cli-launch-v1.md) implements blocked
+public CLI projection and synthetic JSONL validation. Exact installed compatibility,
+sealed config, credential/native-tool isolation, hard budgets and full process
+closure remain unqualified. The next atomic task is **RF-RUNTIME-003**: a bounded,
+reviewable private installation/configuration admission packet, including existing
+installation handling, official pins, effects and rollback. It does not authorize
+installing, OAuth or a model run. All execution/pilot/live gates remain false.
 
 ## Accepted foundations
 

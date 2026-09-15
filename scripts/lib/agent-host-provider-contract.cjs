@@ -2,7 +2,9 @@
 // Shared public contract. Never serialize private configuration or arbitrary input.
 const registry = require("../../src/modules/agent-runtime/execution-providers.json");
 const lifecycle = require("./agent-host-lifecycle.cjs");
+const hermesLaunch = require("./agent-host-hermes-launch-contract.cjs");
 const blockerCodes = Object.freeze([
+  ...hermesLaunch.blockers,
   lifecycle.admissionReason,
   "execution_provider_unknown", "hermes_disabled", "hermes_identity_invalid", "hermes_pin_invalid",
   "hermes_windows_required", "hermes_executable_invalid", "hermes_executable_missing",
@@ -31,6 +33,7 @@ function projectProvider(value) {
   if (admission) blockers.push(admission);
   if (kind === "hermes_codex") blockers.push(lifecycle.admissionReason);
   if (kind === "hermes_codex") blockers.push("hermes_native_tools_isolation_unproven", "hermes_output_cost_budget_unproven", "hermes_stop_recovery_unproven");
+  if (kind === "hermes_codex") blockers.push(...hermesLaunch.blockers);
   const evidence = record(input.installation);
   const verified = kind === "hermes_codex" && evidence.status === "verified" && evidence.version === entry.version
     && typeof evidence.fingerprint === "string" && /^[a-f0-9]{12}$/.test(evidence.fingerprint) && evidence.signature === "unsigned"

@@ -1,5 +1,11 @@
 # Disposable Windows qualification environment contract v1
 
+Current route status: **DEFERRED** by RF-RUNTIME-002 /
+[ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md). Windows Sandbox,
+Hyper-V and disposable VM are rejected as pilot/ordinary-task prerequisites due
+to disproportionate complexity. The dated contract and negative evidence below
+are preserved; their next-task recommendation is not current activation ordering.
+
 RF-CODEX-022, 2026-09-15. Contract version **1**.
 Owner decision: **ACCEPTED** in the governing RF-CODEX-022 handoff.
 Environment admission: **DISPOSABLE-WINDOWS-ENVIRONMENT-BLOCKED**.

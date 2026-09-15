@@ -5,16 +5,14 @@ development. No Codex Agent Host issue queue is stored in the repository.
 
 ## Recommended order
 
-First-agent runtime work follows the proposed
-[RF-RUNTIME-001 decision packet](../architecture/first-agent-runtime-decision-v1.md).
-Its next atomic task is **RF-RUNTIME-002: owner decision**, not a pilot launch.
-If accepted, the bounded dependency order is provider/readiness reconciliation,
-exact native CLI envelope evidence, scoped admission/lifecycle implementation,
-uncommitted-result binding, synthetic verification with independent review, then
-a separately granted single live attempt. Each step has the packet's exit gates;
-none is automatically authorized. Do not require RF023's additional VM/Sandbox
-qualification for this proposed CLI route or silently disable existing guards.
-Keep execution/pilot/live gates false pending their exact future admission.
+First-agent direction is accepted in
+[ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md). Next atomic task:
+**RF-RUNTIME-003 — private Windows Hermes installation/configuration admission
+packet**, under [launch contract v1](../architecture/hermes-cli-launch-v1.md).
+Prepare exact official pins, bounded effects/config/OAuth ownership and rollback
+for later approval; do not install or run implicitly. Native Hermes is first,
+direct CLI alternative, Herdr optional. Disposable VM/Windows Sandbox/Hyper-V is
+not a prerequisite. All existing execution/pilot/live gates remain false.
 
 Other product work remains available independently of that runtime decision:
 

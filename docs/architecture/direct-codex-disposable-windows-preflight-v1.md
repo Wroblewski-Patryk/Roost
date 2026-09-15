@@ -1,5 +1,10 @@
 # Disposable Windows availability and resource preflight v1
 
+Route deferred by [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md) /
+RF-RUNTIME-002; the owner rejected disposable VM/Windows Sandbox/Hyper-V as
+prerequisites due to disproportionate complexity. Findings below remain historical;
+their other-host follow-up is not a prerequisite for the accepted Hermes pilot.
+
 RF-CODEX-023, 2026-09-15. Read-only qualification result:
 **DISPOSABLE-WINDOWS-PREFLIGHT-BLOCKED**.
 

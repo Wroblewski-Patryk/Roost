@@ -1,5 +1,10 @@
 # ADR-001: Direct Codex App Server pilot execution
 
+Provider-ordering successor: [ADR-004](ADR-004-native-hermes-codex-pilot.md),
+2026-09-15. Native Hermes with Codex OAuth is now first; direct CLI is an
+alternative. The accepted ownership/safety clauses remain, while the original
+App Server first-provider selection below is historical.
+
 Date: 2026-09-13
 Status: accepted
 Owner: Roost architecture owner

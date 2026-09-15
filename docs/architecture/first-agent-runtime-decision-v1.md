@@ -1,5 +1,10 @@
 # First supervised agent runtime decision packet v1
 
+Resolved by RF-RUNTIME-002 / [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md):
+the owner selected native Hermes with Codex OAuth as the first runtime and direct
+CLI as an alternative. The v1 proposal and its pending decision wording below
+are historical. No safeguard exception or live admission follows from the choice.
+
 RF-RUNTIME-001, 2026-09-15. Packet version: **1**.
 Status: **PROPOSED — OWNER DECISION REQUIRED**.
 Verdict: **DIRECT-CLI-PILOT-RECOMMENDED; EXECUTION-NOT-ADMITTED**.

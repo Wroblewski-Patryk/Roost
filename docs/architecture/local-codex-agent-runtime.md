@@ -1,5 +1,16 @@
 # Local Codex Agent Runtime
 
+Current direction: [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md)
+accepts Windows Local Worker → native Hermes → Codex OAuth/model as the first
+runtime; direct Codex CLI is an alternative, Herdr optional UX. One canonical
+folder, Ready, lease, one writer, secret isolation and cleanup/review/release
+gates remain. No VM/Windows Sandbox/Hyper-V prerequisite; their route is deferred.
+[Launch contract v1](hermes-cli-launch-v1.md) adds shared provider dispatch,
+Hermes candidate validation and a synthetic public JSONL decoder. Hermes launch
+fails closed before spawn; direct CLI behavior and existing admission guards are
+preserved. No private instance, OAuth or pilot was started. Earlier provider
+ordering below records superseded decisions; retained runtime controls still apply.
+
 [RF-CODEX-015 / ADR-003](../decisions/ADR-003-native-windows-codex-pilot.md)
 records owner acceptance of Windows Worker → native Windows x64 Codex App Server
 for the pilot. WSL2 is deferred as a separate profile without automatic fallback.

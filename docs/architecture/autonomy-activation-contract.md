@@ -1,5 +1,14 @@
 # Agent Delivery Foundations And Activation Contract
 
+RF-RUNTIME-002 / [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md)
+supersedes the first-provider ordering below with native Hermes using Codex OAuth
+behind Windows Local Worker. Direct CLI remains an alternative; Herdr is optional.
+Disposable VM/Windows Sandbox/Hyper-V qualification is deferred, not an activation
+prerequisite. Workspace, one-writer, Ready, secret isolation, process cleanup,
+budgets and independent review/release gates are unchanged. The
+[Hermes CLI adapter](hermes-cli-launch-v1.md) explicitly denies unqualified launch;
+implementationReady/executionSupported/pilotReady/liveAdmissionAllowed remain false.
+
 Worker-sealed bootstrap input is implemented under provider contract v4. It
 proves synthetic context preparation and final spawn admission, not Stage 2:
 model tool calls are no longer required to obtain mandatory initial context.

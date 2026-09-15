@@ -1,5 +1,19 @@
 # Foundation requirements traceability
 
+RF-RUNTIME-002: [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md) accepts
+Roost → Windows Local Worker → native Hermes → Codex OAuth/model, with direct CLI
+alternative and optional Herdr UX. Disposable VM/Windows Sandbox/Hyper-V is
+rejected as a prerequisite and deferred as a qualification route. Retained
+RF-HOST-010/RF-SEC-007/RF-ACT-002 controls are not waived. The
+[Hermes CLI launch adapter v1](hermes-cli-launch-v1.md) separates provider dispatch,
+validates a blocked public one-shot/JSONL candidate and rejects unqualified launch
+before spawn; its synthetic parser proves bounded protocol handling only. No
+installed-pin, native containment, private auth, hard budget or process cleanup
+capability is promoted. Direct CLI argv/input and existing guards are preserved.
+All execution/pilot/live gates remain false. RF-RUNTIME-003 exact private Windows
+Hermes installation/configuration admission packet is the sole next task, not
+started. Earlier recommendations below are historical and superseded in ordering.
+
 RF-RUNTIME-001: [first-agent runtime decision packet v1](first-agent-runtime-decision-v1.md)
 proposes an owner-approved supervised CLI milestone, with Roost as operational
 truth and Local Worker as sole managed canonical-clone executor. Native Codex CLI

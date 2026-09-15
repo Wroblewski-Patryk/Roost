@@ -1,5 +1,16 @@
 # Architecture Source Of Truth
 
+[ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md), accepted in
+RF-RUNTIME-002, sets the current first-agent target: Roost → Windows Local Worker
+→ native Hermes Agent → Codex model via Codex OAuth/subscription, one canonical
+application folder. Direct CLI is an alternative; Herdr is optional observability.
+Roost/Worker retain all authority, workspace, one-writer, cleanup, secrets and
+review/release boundaries. [Hermes CLI adapter v1](hermes-cli-launch-v1.md) is
+implemented fail-closed; all execution/pilot/live gates remain false.
+Windows Sandbox/Hyper-V/disposable VM prerequisites are rejected as disproportionate;
+that qualification route is deferred. The ADR-001/003 material below is historical
+for provider ordering and qualification, not the current pilot dependency chain.
+
 [ADR-003](../decisions/ADR-003-native-windows-codex-pilot.md), accepted in
 RF-CODEX-015, selects native Windows Codex App Server for the pilot. WSL2 is a
 later separately qualified profile with no automatic fallback. The
