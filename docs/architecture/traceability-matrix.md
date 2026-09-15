@@ -1,5 +1,17 @@
 # Foundation requirements traceability
 
+RF-CODEX-018: [official native outer-launch qualification](direct-codex-native-outer-launch-v1.md)
+returns OFFICIAL-NATIVE-SANDBOX-OUTER-LAUNCH-BLOCKED. The inspected CLI sandbox
+implementation loads config before requesting a Windows child, can bootstrap
+auth/cloud config, and supplies timeout_ms=None. Precomputed JSON export has a
+small data-writing implementation; complete CLI dispatch and installed build
+binding remain unproven. Static PE debug/string observations do not attest a
+source version. Closed capture: 8 requests / 185,643 body bytes, one oversized
+declaration rejected with zero body bytes, one 404, zero retries/redirects.
+No setup, Codex or Docker action; all gates/profile/schema/registry v5 unchanged.
+Next: RF-CODEX-019 read-only official precomputed JSON bundle/build qualification;
+not started.
+
 RF-CODEX-017: [Windows standard isolation qualification](direct-codex-windows-standard-isolation-v1.md)
 returns WINDOWS-STANDARD-ISOLATION-BLOCKED. Official elevated command sandboxing
 is the sole preferred dependency; a supported outer launch of the schema generator

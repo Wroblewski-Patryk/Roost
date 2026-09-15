@@ -2,6 +2,11 @@
 
 RF-CODEX-017, 2026-09-15. Decision candidate version **1**.
 Verdict: **WINDOWS-STANDARD-ISOLATION-BLOCKED**.
+Follow-up: [RF018 outer-launch qualification](direct-codex-native-outer-launch-v1.md)
+finds an official source command wrapper with configuration before its child
+boundary and no supplied Windows timeout. First-process protection and installed
+build binding remain BLOCKED. The RF018 handoff below is historical; the current
+RF019 proposal is owned by that follow-up report.
 The preferred dependency for further qualification is the official Codex native
 `elevated` command sandbox. No supported, build-bound way to use it as the outer
 boundary of the schema generator has yet been established. Neither an admitted

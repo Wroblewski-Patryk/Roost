@@ -10,6 +10,11 @@ command sandboxing is the preferred dependency; its supported outer-generator
 launch, effective access, exact setup changes and rollback remain unqualified.
 Every existing matrix result below retains its stated evidence limit.
 
+[RF018 outer-launch research](direct-codex-native-outer-launch-v1.md) identifies
+an official source command wrapper, but configuration precedes its child request
+and the Windows request has no timeout. Generator export bodies are narrower
+than complete CLI startup proof; no C/O/A evidence or gate promotion follows.
+
 Evidence: D=static contract/source review; S=own harmless system fixture;
 C=separately authorized exact Codex generator; O=complete native enforcement;
 A=independent acceptance. A primitive PASS-S is not an entry-gate PASS or C/O/A.

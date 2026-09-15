@@ -1,7 +1,7 @@
 # Direct Codex qualification decision packet v1
 
 RF-HERMES-006, 2026-09-13. Decision-packet version: **1**.
-Packet revision: **12**, RF-CODEX-017, 2026-09-15.
+Packet revision: **13**, RF-CODEX-018, 2026-09-15.
 Current pilot: **native Windows**, accepted by the owner in
 [ADR-003](../decisions/ADR-003-native-windows-codex-pilot.md). WSL2 remains a later
 optional, separately qualified profile, with no automatic Windows↔WSL fallback.
@@ -21,6 +21,12 @@ prefers the official elevated sandbox as a dependency for further qualification.
 WINDOWS-STANDARD-ISOLATION-BLOCKED remains: existing vendor accounts and selected
 rules do not prove no-setup readiness, a supported outer-generator launch or a
 complete mutation/rollback contract. No setup or new runtime profile is admitted.
+
+[RF018 outer-launch qualification](direct-codex-native-outer-launch-v1.md) retains
+OFFICIAL-NATIVE-SANDBOX-OUTER-LAUNCH-BLOCKED. Source command wrapping exists but
+loads configuration before the target boundary and supplies no Windows timeout.
+Exact PE/source binding and full CLI dispatch remain unqualified. A version-bound
+official precomputed JSON bundle is a simpler candidate, not an admitted artifact.
 
 RF009–013 below are dated findings for the deferred Linux acquisition candidate.
 Their npm/Sigstore/TUF prerequisites do not become Windows pilot blockers. Native
@@ -548,9 +554,13 @@ RF-CODEX-017 records official source and selected host evidence without setup.
 It retains the outer-launch/build binding, effective access, shared-state impact
 and rollback gaps; no activation or admission gate closes.
 
-Exactly one recommended next atomic task: **RF-CODEX-018 — read-only qualification
-of the official native sandbox's supported outer-launch interface for the exact
-schema generator.** Establish official build/source binding and whether the
-maintained interface can apply identity, strict reads and zero network before
-initialization. No custom sandbox, setup or Codex execution. The RF017 isolation
-report owns the proposed scope. RF-CODEX-018 was not started.
+RF-CODEX-018 narrows the source wrapper/export paths and records the missing
+first-process boundary. Static PE debug/string metadata does not establish a
+signed source/build binding. No setup, generator or runtime probe occurred.
+
+Exactly one recommended next atomic task: **RF-CODEX-019 — read-only qualification
+of an official precomputed App Server JSON Schema bundle and its binding to the
+exact installed native build.** Establish publisher manifest/version provenance
+for the existing CAS/CDL data route without running the generator. No payload
+acquisition, extraction, setup or execution is implicit. The RF018 report owns
+the proposed scope. RF-CODEX-019 was not started.
