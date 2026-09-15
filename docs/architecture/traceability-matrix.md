@@ -1,5 +1,11 @@
 # Foundation requirements traceability
 
+RF-RUNTIME-003 [Windows installation preflight](hermes-windows-installation-preflight-v1.md)
+confirms the exact Hermes pin lacks launch v1's --format flag. Existing private
+installation retained; no install/config/runtime action followed. Public admission
+now reports hermes_cli_pin_incompatible despite asserted readiness. All gates
+remain false; RF-RUNTIME-004 exact compatible official pin is the current next task.
+
 RF-RUNTIME-002: [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md) accepts
 Roost → Windows Local Worker → native Hermes → Codex OAuth/model, with direct CLI
 alternative and optional Herdr UX. Disposable VM/Windows Sandbox/Hyper-V is

@@ -2,7 +2,7 @@
 // Local adapter version, not a claim about the installed Hermes CLI version.
 const blockers = Object.freeze([
   "hermes_public_launch_contract_unqualified",
-  "hermes_cli_pin_compatibility_unproven",
+  "hermes_cli_pin_incompatible",
   "hermes_sealed_config_enforcement_unproven",
   "hermes_auth_boundary_unproven",
   "hermes_native_tools_isolation_unproven",

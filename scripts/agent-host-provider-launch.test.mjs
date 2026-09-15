@@ -9,6 +9,18 @@ const pin = contract.registry.providers.find(p => p.kind === "hermes_codex");
 const provider = () => ({ kind: "hermes_codex", enabled: true, officialSource: pin.officialSource,
   version: pin.version, commit: pin.commit, executablePath: "C:\\Fictional\\Runtime\\hermes.exe",
   policy: structuredClone(contract.registry.hermesPolicy) });
+
+test("known incompatible pin stays blocked despite caller-supplied compatibility and installation evidence", () => {
+  assert.equal(pin.cliLaunchQualification.contractVersion, hermesContract.version);
+  assert.equal(pin.cliLaunchQualification.status, "incompatible");
+  for (const installation of [undefined, { status: "verified", version: pin.version,
+    fingerprint: "a".repeat(12), signature: "unsigned", checkedAt: "2026-09-15T00:00:00.000Z" }]) {
+    const report = contract.projectProvider({ kind: "hermes_codex", installation,
+      compatibility: "confirmed", cliLaunchQualification: { status: "compatible" }, blockers: [] });
+    assert.ok(report.blockers.includes("hermes_cli_pin_incompatible"));
+    assert.equal(report.executionSupported, false);
+  }
+});
 function fixture(change = () => {}) {
   const f = validPacketFixture(); change(f); pinReadyFixture(f);
   const consumption = { fresh: { taskContext: f.taskContext, applicationContext: f.applicationContext },

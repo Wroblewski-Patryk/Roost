@@ -44,7 +44,17 @@
       "commit": "939e45c91d751fadd94dcd1b873ac3cb44846213",
       "license": "MIT",
       "status": "disabled",
-      "pinScope": "Official source commit, package version and source hashes. Private sealed installation inventory and a guarded version probe attest local bytes; upstream commit/tag are unsigned. No runtime compatibility proof.",
+      "pinScope": "Official source commit, package version and source hashes; upstream commit/tag are unsigned. Earlier private inventory/version evidence is historical, not a current installation attestation. RF-RUNTIME-003 confirms the pinned chat parser lacks the structured-output argument required by launch v1.",
+      "cliLaunchQualification": {
+        "contractVersion": "roost-hermes-cli-launch-v1",
+        "status": "incompatible",
+        "reason": "hermes_cli_pin_incompatible",
+        "sourceFile": "hermes_cli/_parser.py",
+        "sourceSha256": "8f6573f8bc211208ae884e9ca21987240abd28bc3312c7189f323286dfc29a21",
+        "missingArguments": ["--format"],
+        "checkedAt": "2026-09-15",
+        "proofScope": "Pinned official source and identical local parser bytes only; no runtime, configuration or full installation verification."
+      },
       "sourceHashes": {
         "scripts/install.ps1": "53a077364aa28bbd6e8d987cdec11a4552e22ff2c5137845725a1c99770f392f",
         "pyproject.toml": "c71aa5bc9e437bac3b662fd04a4a7e121735ebc898373019a366d91e217e58a8",

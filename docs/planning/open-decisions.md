@@ -6,15 +6,15 @@ Codex OAuth behind Windows Local Worker; direct CLI alternative and Herdr option
 Workspace, one-writer, cleanup, secrets, Ready/review and release guards remain.
 No VM/Windows Sandbox/Hyper-V prerequisite. No runtime activation follows.
 
-## Private Hermes installation/configuration admission — pending
+## Compatible official Hermes pin — pending
 
-[Launch contract v1](../architecture/hermes-cli-launch-v1.md) implements blocked
-public CLI projection and synthetic JSONL validation. Exact installed compatibility,
-sealed config, credential/native-tool isolation, hard budgets and full process
-closure remain unqualified. The next atomic task is **RF-RUNTIME-003**: a bounded,
-reviewable private installation/configuration admission packet, including existing
-installation handling, official pins, effects and rollback. It does not authorize
-installing, OAuth or a model run. All execution/pilot/live gates remain false.
+[RF-RUNTIME-003 preflight](../architecture/hermes-windows-installation-preflight-v1.md)
+found an existing private installation, but its exact official pin lacks --format
+required by launch v1. Installation/configuration stopped before mutation. Next
+atomic task: **RF-RUNTIME-004**, an exact compatible official release-pin proposal
+before installation. Configuration, isolation, budgets and process closure remain
+unqualified; OAuth/MCP connection is premature. All execution/pilot/live gates
+remain false.
 
 ## Accepted foundations
 

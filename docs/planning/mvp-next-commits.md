@@ -7,10 +7,11 @@ development. No Codex Agent Host issue queue is stored in the repository.
 
 First-agent direction is accepted in
 [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md). Next atomic task:
-**RF-RUNTIME-003 — private Windows Hermes installation/configuration admission
-packet**, under [launch contract v1](../architecture/hermes-cli-launch-v1.md).
-Prepare exact official pins, bounded effects/config/OAuth ownership and rollback
-for later approval; do not install or run implicitly. Native Hermes is first,
+**RF-RUNTIME-004 — qualify an exact compatible official Hermes release pin**,
+following the [RF003 preflight](../architecture/hermes-windows-installation-preflight-v1.md).
+The existing pin lacks --format required by launch v1; installation stopped without
+mutation. Propose exact source/CLI/config compatibility before resuming installation;
+do not begin OAuth or model/MCP runs. Native Hermes is first,
 direct CLI alternative, Herdr optional. Disposable VM/Windows Sandbox/Hyper-V is
 not a prerequisite. All existing execution/pilot/live gates remain false.
 

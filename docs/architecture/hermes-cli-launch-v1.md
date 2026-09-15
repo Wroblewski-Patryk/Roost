@@ -4,6 +4,12 @@ RF-RUNTIME-002, 2026-09-15. Adapter: `roost-hermes-cli-launch-v1`.
 Decision: [ADR-004 accepted](../decisions/ADR-004-native-hermes-codex-pilot.md).
 Verdict: **PUBLIC-CLI-TRANSPORT-SPECIFIED; HERMES-LAUNCH-BLOCKED**.
 
+[RF-RUNTIME-003 installation preflight](hermes-windows-installation-preflight-v1.md)
+now proves the registry pin's chat parser lacks --format. Its compatibility
+blocker is known, not merely untested; installation stopped before mutation.
+The candidate below specifies the target public interface, not argv supported
+by the current pin. The RF002 research and validation below remain dated evidence.
+
 ## Official interface and limits
 
 Primary sources opened on **2026-09-15**; current documentation is not a binding
@@ -76,7 +82,7 @@ Hermes import/API is introduced.
 | Fixed reason | Exact missing evidence |
 | --- | --- |
 | hermes_public_launch_contract_unqualified | A complete admitted combination of public CLI, pinned private config, tools/auth boundaries and Worker lifecycle, not absence of a one-shot CLI. |
-| hermes_cli_pin_compatibility_unproven | Exact approved Windows executable/dependencies and pinned version support stdin, oneshot and stream-json with the documented event/exit semantics. |
+| hermes_cli_pin_incompatible | RF-RUNTIME-003 confirms the pinned chat parser has no --format argument. An exact compatible official release is required before installation can proceed. |
 | hermes_sealed_config_enforcement_unproven | Effective exact reasoning, no fallback/model rotation, no extra retry/turn, no independent delegation/cron/company-memory mutation; controlled startup hooks/plugins/config and only the Worker MCP allowlist. |
 | hermes_auth_boundary_unproven | Native OAuth access isolated from model tools and other credentials, with known startup/refresh/storage effects; no credentials in prompt/repository. |
 | hermes_native_tools_isolation_unproven | Canonical workspace boundary for all native/tool/OS paths; shell escapes and host control cannot be qualified by a tool-name list or write_file prefix. |
@@ -109,7 +115,9 @@ liveAdmissionAllowed=false; pilotExecutionAuthorized=false;
 pilotExecutionStarted=false. This is useful blocked adapter code, not a ready
 Hermes installation, admitted runtime or successful agent pilot.
 
-Exactly one recommended next atomic task: **RF-RUNTIME-003 — exact private
+The following RF002 recommendation was attempted and stopped by RF003's known
+pin mismatch; the current next task is RF-RUNTIME-004 in the linked preflight.
+Historical next atomic task: **RF-RUNTIME-003 — exact private
 Windows Hermes installation/configuration admission packet.** Select an official
 version matching the documented CLI, specify its private dependency/identity
 manifest, finite installation resources, isolated config and OAuth ownership,
@@ -117,4 +125,4 @@ allowlisted MCP and no-fallback/no-memory/tool restrictions, removal/rollback an
 bounded compatibility checks. Inspect only explicitly scoped non-secret evidence;
 account for any existing private installation rather than overwriting it. Produce
 an exact reviewable installation/configuration grant proposal. No general research
-loop, install, OAuth or model run follows implicitly. RF-RUNTIME-003 was not started.
+loop, install, OAuth or model run follows implicitly.
