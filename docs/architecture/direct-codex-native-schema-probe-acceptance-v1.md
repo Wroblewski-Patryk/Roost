@@ -15,6 +15,10 @@ an official source command wrapper, but configuration precedes its child request
 and the Windows request has no timeout. Generator export bodies are narrower
 than complete CLI startup proof; no C/O/A evidence or gate promotion follows.
 
+[RF019 precomputed-schema research](direct-codex-precomputed-schema-v1.md) adds
+source-tree metadata only. Git object IDs are not accepted raw-file SHA-256
+digests or exact PE binding; no C/O/A evidence or limit change follows.
+
 Evidence: D=static contract/source review; S=own harmless system fixture;
 C=separately authorized exact Codex generator; O=complete native enforcement;
 A=independent acceptance. A primitive PASS-S is not an entry-gate PASS or C/O/A.

@@ -1,7 +1,7 @@
 # Direct Codex qualification decision packet v1
 
 RF-HERMES-006, 2026-09-13. Decision-packet version: **1**.
-Packet revision: **13**, RF-CODEX-018, 2026-09-15.
+Packet revision: **14**, RF-CODEX-019, 2026-09-15.
 Current pilot: **native Windows**, accepted by the owner in
 [ADR-003](../decisions/ADR-003-native-windows-codex-pilot.md). WSL2 remains a later
 optional, separately qualified profile, with no automatic Windows↔WSL fallback.
@@ -27,6 +27,12 @@ OFFICIAL-NATIVE-SANDBOX-OUTER-LAUNCH-BLOCKED. Source command wrapping exists but
 loads configuration before the target boundary and supplies no Windows timeout.
 Exact PE/source binding and full CLI dispatch remain unqualified. A version-bound
 official precomputed JSON bundle is a simpler candidate, not an admitted artifact.
+
+[RF019 precomputed-schema qualification](direct-codex-precomputed-schema-v1.md)
+retains PRECOMPUTED-APP-SERVER-SCHEMA-BLOCKED. The complete source inventory has
+305 files and Git object IDs; schema bodies, raw-file SHA-256 and exact native
+PE binding remain unverified. The release response reached its byte ceiling and
+was rejected without parsing. No acquisition or execution gate is promoted.
 
 RF009–013 below are dated findings for the deferred Linux acquisition candidate.
 Their npm/Sigstore/TUF prerequisites do not become Windows pilot blockers. Native
@@ -558,9 +564,13 @@ RF-CODEX-018 narrows the source wrapper/export paths and records the missing
 first-process boundary. Static PE debug/string metadata does not establish a
 signed source/build binding. No setup, generator or runtime probe occurred.
 
-Exactly one recommended next atomic task: **RF-CODEX-019 — read-only qualification
-of an official precomputed App Server JSON Schema bundle and its binding to the
-exact installed native build.** Establish publisher manifest/version provenance
-for the existing CAS/CDL data route without running the generator. No payload
-acquisition, extraction, setup or execution is implicit. The RF018 report owns
-the proposed scope. RF-CODEX-019 was not started.
+RF-CODEX-019 records a complete source JSON inventory and closed metadata ledger,
+not a publisher-attested binary/schema manifest. The incomplete release response
+does not prove absence of a supported binding route.
+
+Exactly one recommended next atomic task: **RF-CODEX-020 — bounded read-only
+qualification of official native Windows release metadata for the exact
+PE/source/schema binding.** Use fresh explicitly sufficient metadata bounds and
+complete accounting. No payload acquisition, artifact/platform switch, setup or
+execution is implicit. The RF019 report owns the proposed scope.
+RF-CODEX-020 was not started.

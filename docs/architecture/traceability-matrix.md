@@ -1,5 +1,16 @@
 # Foundation requirements traceability
 
+RF-CODEX-019: [precomputed App Server schema qualification](direct-codex-precomputed-schema-v1.md)
+returns PRECOMPUTED-APP-SERVER-SCHEMA-BLOCKED. Closed source inventory: 305 JSON
+files / 3,492,670 declared bytes, with Git blob IDs only. Exact native PE/source
+binding and raw-file SHA-256 remain unqualified. Full delivery exceeds NSP's
+256-file limit; no limit changed. Closed/halted capture: 7 requests / 257,953
+body bytes, including an unparsed 163,840-byte incomplete release response;
+zero retries/redirects. No schema payload, generator, setup or Docker action.
+All admission gates/profile/schema/registry v5 remain unchanged.
+Next: RF-CODEX-020 bounded official native release metadata qualification;
+not started. Earlier next-task entries below are historical handoffs.
+
 RF-CODEX-018: [official native outer-launch qualification](direct-codex-native-outer-launch-v1.md)
 returns OFFICIAL-NATIVE-SANDBOX-OUTER-LAUNCH-BLOCKED. The inspected CLI sandbox
 implementation loads config before requesting a Windows child, can bootstrap

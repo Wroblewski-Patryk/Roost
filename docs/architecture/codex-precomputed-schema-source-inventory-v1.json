@@ -1,0 +1,1556 @@
+{
+  "schemaId": "roost-precomputed-schema-source-inventory-v1",
+  "taskId": "RF-CODEX-019",
+  "sourceCommit": "6b9826e3aa83b1a5947db50f4332cb9c65f1b340",
+  "sourcePath": "codex-rs/app-server-protocol/schema/json",
+  "rootGitTreeSha1": "2bf7fdb554d0636e30cf9edbcb809bf86411ea92",
+  "treeEvidence": [
+    {
+      "path": "",
+      "requestOrdinal": 3,
+      "gitTreeSha1": "2bf7fdb554d0636e30cf9edbcb809bf86411ea92"
+    },
+    {
+      "path": "v1",
+      "requestOrdinal": 5,
+      "gitTreeSha1": "6fb6f46cad3cf6ca7a5e33203fd8f758961970a3"
+    },
+    {
+      "path": "v2",
+      "requestOrdinal": 4,
+      "gitTreeSha1": "93468666086f32bf41fcf113c1b4f9b95933a753"
+    }
+  ],
+  "completeGitTreeInventory": true,
+  "allTreesUntruncated": true,
+  "fileContentsRead": false,
+  "fileSha256Verified": false,
+  "exactPEBound": false,
+  "files": [
+    {
+      "path": "ApplyPatchApprovalParams.json",
+      "bytes": 2657,
+      "gitBlobSha1": "d1174a05b0d3fa4829e4c5b7d288efa3e480aeb5"
+    },
+    {
+      "path": "ApplyPatchApprovalResponse.json",
+      "bytes": 4278,
+      "gitBlobSha1": "6ad421473be6446d966bf104d7489cb0aef785b9"
+    },
+    {
+      "path": "AttestationGenerateParams.json",
+      "bytes": 118,
+      "gitBlobSha1": "310552bb7d6bfcf783760247b609093cd706deef"
+    },
+    {
+      "path": "AttestationGenerateResponse.json",
+      "bytes": 277,
+      "gitBlobSha1": "e6bd59ec250cea56222ad92f4f6238c7b6249ddb"
+    },
+    {
+      "path": "ChatgptAuthTokensRefreshParams.json",
+      "bytes": 971,
+      "gitBlobSha1": "8b320fd673d8bdc88e18334c77027518f1b0c31b"
+    },
+    {
+      "path": "ChatgptAuthTokensRefreshResponse.json",
+      "bytes": 406,
+      "gitBlobSha1": "6d88e784c539abd315ec3baeb7cafd62dd33feec"
+    },
+    {
+      "path": "ClientNotification.json",
+      "bytes": 431,
+      "gitBlobSha1": "dde0b31fbd67a09f6ea0b2b133e17d7f00cfc26a"
+    },
+    {
+      "path": "ClientRequest.json",
+      "bytes": 199152,
+      "gitBlobSha1": "89ed9d8b13a69d7805669d0901eb4c79a4fb6b38"
+    },
+    {
+      "path": "CommandExecutionRequestApprovalParams.json",
+      "bytes": 15559,
+      "gitBlobSha1": "4240a7b972c4c268a5171c06a66f9e40b02a82b3"
+    },
+    {
+      "path": "CommandExecutionRequestApprovalResponse.json",
+      "bytes": 3202,
+      "gitBlobSha1": "0b7986fba92365c35553aa19c5b8dc24926ba02f"
+    },
+    {
+      "path": "DynamicToolCallParams.json",
+      "bytes": 519,
+      "gitBlobSha1": "991733da668fcf969d8338de5752552d8b1d9713"
+    },
+    {
+      "path": "DynamicToolCallResponse.json",
+      "bytes": 2010,
+      "gitBlobSha1": "47de6cb30e9d403533d10a0329e6fca8e8030aec"
+    },
+    {
+      "path": "ExecCommandApprovalParams.json",
+      "bytes": 3768,
+      "gitBlobSha1": "43f85d21ae89620e8036b1f7db8c7d15fc174e8d"
+    },
+    {
+      "path": "ExecCommandApprovalResponse.json",
+      "bytes": 4279,
+      "gitBlobSha1": "22f37f3a1a7261028d5c106e8115bd880fda4f18"
+    },
+    {
+      "path": "FileChangeRequestApprovalParams.json",
+      "bytes": 968,
+      "gitBlobSha1": "f17388aa53a4b63d802c4475780246560f850196"
+    },
+    {
+      "path": "FileChangeRequestApprovalResponse.json",
+      "bytes": 1158,
+      "gitBlobSha1": "f20035e3d7a668c894323583272cb661e8ff254c"
+    },
+    {
+      "path": "FuzzyFileSearchParams.json",
+      "bytes": 413,
+      "gitBlobSha1": "3a72939de4351da9e9e811b956f40d5edef3e7bc"
+    },
+    {
+      "path": "FuzzyFileSearchResponse.json",
+      "bytes": 1332,
+      "gitBlobSha1": "3c91a79c69754256e51f76b302b587424b11b346"
+    },
+    {
+      "path": "FuzzyFileSearchSessionCompletedNotification.json",
+      "bytes": 244,
+      "gitBlobSha1": "c8924e77caf0b5bec6819b6d0437504195a358f1"
+    },
+    {
+      "path": "FuzzyFileSearchSessionUpdatedNotification.json",
+      "bytes": 1474,
+      "gitBlobSha1": "b69ad9b288f6746c65b34108029f8ee879807d64"
+    },
+    {
+      "path": "JSONRPCError.json",
+      "bytes": 893,
+      "gitBlobSha1": "6db5d1a7fa557a813332561218b00224209ec553"
+    },
+    {
+      "path": "JSONRPCErrorError.json",
+      "bytes": 314,
+      "gitBlobSha1": "932ef33c9a7bd762b90d0153b791f7cbdfaf3c70"
+    },
+    {
+      "path": "JSONRPCMessage.json",
+      "bytes": 2888,
+      "gitBlobSha1": "27b78b90c9293a83fa747b370152cf9539132b97"
+    },
+    {
+      "path": "JSONRPCNotification.json",
+      "bytes": 303,
+      "gitBlobSha1": "2ddd61a8ca7b59008f9bb94b53094ae37179e26e"
+    },
+    {
+      "path": "JSONRPCRequest.json",
+      "bytes": 1093,
+      "gitBlobSha1": "e4ea7c206b070b5d2bead96a4a9ee5430dc17567"
+    },
+    {
+      "path": "JSONRPCResponse.json",
+      "bytes": 520,
+      "gitBlobSha1": "9f1ec2954852de4787547f1c96ebb532a911a149"
+    },
+    {
+      "path": "McpServerElicitationRequestParams.json",
+      "bytes": 13636,
+      "gitBlobSha1": "7fbc7e988a5645d08217127a48fdb1e7cd003274"
+    },
+    {
+      "path": "McpServerElicitationRequestResponse.json",
+      "bytes": 741,
+      "gitBlobSha1": "13390a06cfcf5987f366fe38bb63543179fb769e"
+    },
+    {
+      "path": "PermissionsRequestApprovalParams.json",
+      "bytes": 7286,
+      "gitBlobSha1": "8d5298d096ae2d48f584902a0923d726a7eb9970"
+    },
+    {
+      "path": "PermissionsRequestApprovalResponse.json",
+      "bytes": 7068,
+      "gitBlobSha1": "a21e00a19aab4340f6175e4711d94e3e1975585d"
+    },
+    {
+      "path": "RequestId.json",
+      "bytes": 197,
+      "gitBlobSha1": "d0fa43db8245f5a609abeec93d309a6e9bd9ff2f"
+    },
+    {
+      "path": "ServerNotification.json",
+      "bytes": 201413,
+      "gitBlobSha1": "c99f2e9476b3b1808e5aa651d41c56a52524d158"
+    },
+    {
+      "path": "ServerRequest.json",
+      "bytes": 49887,
+      "gitBlobSha1": "3b849cabaaf2a4addd868afa106ff8ce5c34a99c"
+    },
+    {
+      "path": "ToolRequestUserInputParams.json",
+      "bytes": 2143,
+      "gitBlobSha1": "04ee2de63581a6a1fc0655f32da9779cfb6c9998"
+    },
+    {
+      "path": "ToolRequestUserInputResponse.json",
+      "bytes": 793,
+      "gitBlobSha1": "3fd6fbc3354a6c01f3769e3dfbb2876d6f84b9e7"
+    },
+    {
+      "path": "codex_app_server_protocol.schemas.json",
+      "bytes": 688845,
+      "gitBlobSha1": "7de4646ea2657038e164609d9473c76c1be7c843"
+    },
+    {
+      "path": "codex_app_server_protocol.v2.schemas.json",
+      "bytes": 589065,
+      "gitBlobSha1": "1c2e7d2edfa82a05c8fee9d4dfa01d33675b5f9c"
+    },
+    {
+      "path": "v1/InitializeParams.json",
+      "bytes": 2143,
+      "gitBlobSha1": "7acc76386c6cdeb534160fc9854e79495f199841"
+    },
+    {
+      "path": "v1/InitializeResponse.json",
+      "bytes": 1286,
+      "gitBlobSha1": "1de65f82f4df9fa810fbda3ff199eca49430a29f"
+    },
+    {
+      "path": "v2/AccountLoginCompletedNotification.json",
+      "bytes": 720,
+      "gitBlobSha1": "2543d929d2dc717b121fb7f0d3048e7b9bda6bb2"
+    },
+    {
+      "path": "v2/AccountRateLimitsUpdatedNotification.json",
+      "bytes": 4754,
+      "gitBlobSha1": "1f5c3ccabd3647e4598afa97763da0ac30d41aeb"
+    },
+    {
+      "path": "v2/AccountUpdatedNotification.json",
+      "bytes": 2745,
+      "gitBlobSha1": "c4d6bc9e09874d3c03e60f7a2c39909c3bf45bf0"
+    },
+    {
+      "path": "v2/AgentMessageDeltaNotification.json",
+      "bytes": 406,
+      "gitBlobSha1": "09510d95cf52e6421b383b3591a7d9ce311ad189"
+    },
+    {
+      "path": "v2/AppListUpdatedNotification.json",
+      "bytes": 5703,
+      "gitBlobSha1": "46ca0f64d3a67c149993d5b39799fd8f2bc33e27"
+    },
+    {
+      "path": "v2/AppsInstalledParams.json",
+      "bytes": 570,
+      "gitBlobSha1": "b5c53055bdb6b8db1b638fcdcc84925bd35ab14d"
+    },
+    {
+      "path": "v2/AppsInstalledResponse.json",
+      "bytes": 1343,
+      "gitBlobSha1": "b8c0855c741754cab9a577d822f44c53aadc4b09"
+    },
+    {
+      "path": "v2/AppsListParams.json",
+      "bytes": 904,
+      "gitBlobSha1": "385e5ba2985a42fe8f77924a2f089fd9ab4a8d51"
+    },
+    {
+      "path": "v2/AppsListResponse.json",
+      "bytes": 5888,
+      "gitBlobSha1": "a6f220830c99e0dbcb3e1a47b4698adeabfb0b7e"
+    },
+    {
+      "path": "v2/AppsReadParams.json",
+      "bytes": 823,
+      "gitBlobSha1": "95467a745b77897b33295470e15b981fabef7a1f"
+    },
+    {
+      "path": "v2/AppsReadResponse.json",
+      "bytes": 2443,
+      "gitBlobSha1": "ef59c38899e95c1a9119165b05583677a837460d"
+    },
+    {
+      "path": "v2/AuthRecoveryNotification.json",
+      "bytes": 409,
+      "gitBlobSha1": "c27e4a8a09be52d336db8e5f7a20cf84984c187f"
+    },
+    {
+      "path": "v2/CancelLoginAccountParams.json",
+      "bytes": 221,
+      "gitBlobSha1": "22c9a2ac3cec329595e3a4b4418e9515ebc2018d"
+    },
+    {
+      "path": "v2/CancelLoginAccountResponse.json",
+      "bytes": 404,
+      "gitBlobSha1": "23df186da4ff28f196da17c5d29813559d8fe6d0"
+    },
+    {
+      "path": "v2/CommandExecOutputDeltaNotification.json",
+      "bytes": 1585,
+      "gitBlobSha1": "fff7e57d50dce64d657d9657b4819016d2119240"
+    },
+    {
+      "path": "v2/CommandExecParams.json",
+      "bytes": 7397,
+      "gitBlobSha1": "d00a0b60e50ac363239a2193594d95839406b977"
+    },
+    {
+      "path": "v2/CommandExecResizeParams.json",
+      "bytes": 1216,
+      "gitBlobSha1": "57d3b6a30c6082a2cfd8ab5bcacfc1d64cef7fdf"
+    },
+    {
+      "path": "v2/CommandExecResizeResponse.json",
+      "bytes": 188,
+      "gitBlobSha1": "def86b66d09fa7eeabd29b56d993c559508039ff"
+    },
+    {
+      "path": "v2/CommandExecResponse.json",
+      "bytes": 699,
+      "gitBlobSha1": "1bbc51923802128c64c428582341d8a62a30c4c8"
+    },
+    {
+      "path": "v2/CommandExecTerminateParams.json",
+      "bytes": 404,
+      "gitBlobSha1": "1f848770517df40d96dddb515282ec3729a4a1c2"
+    },
+    {
+      "path": "v2/CommandExecTerminateResponse.json",
+      "bytes": 194,
+      "gitBlobSha1": "59bdb0cb3041a426c2a86d59d2b5bbc29a6905ea"
+    },
+    {
+      "path": "v2/CommandExecWriteParams.json",
+      "bytes": 716,
+      "gitBlobSha1": "440f2410bf1bcd2ea6a93cdc0b9f81e668453e89"
+    },
+    {
+      "path": "v2/CommandExecWriteResponse.json",
+      "bytes": 186,
+      "gitBlobSha1": "dff8301ebbdb02d41f9e5a47d81d0205601d8411"
+    },
+    {
+      "path": "v2/CommandExecutionOutputDeltaNotification.json",
+      "bytes": 416,
+      "gitBlobSha1": "e4cb64a9dde2ad33d0ebbc3659c0999c7901d923"
+    },
+    {
+      "path": "v2/ConfigBatchWriteParams.json",
+      "bytes": 1325,
+      "gitBlobSha1": "e85803e4eabfe68a21a74c48f4d656bf8153b02f"
+    },
+    {
+      "path": "v2/ConfigReadParams.json",
+      "bytes": 495,
+      "gitBlobSha1": "db38089a5d2d1927b0dc0ea580ee009964ff45a1"
+    },
+    {
+      "path": "v2/ConfigReadResponse.json",
+      "bytes": 27473,
+      "gitBlobSha1": "0a8930db246d981541e91c91f67444aecb71b275"
+    },
+    {
+      "path": "v2/ConfigRequirementsReadResponse.json",
+      "bytes": 24477,
+      "gitBlobSha1": "26a4862f52dc632daee0ee57d2848351d0a16687"
+    },
+    {
+      "path": "v2/ConfigValueWriteParams.json",
+      "bytes": 763,
+      "gitBlobSha1": "000c55a830d2b7341d60dcc778ea3ac672c75490"
+    },
+    {
+      "path": "v2/ConfigWarningNotification.json",
+      "bytes": 1640,
+      "gitBlobSha1": "c89e42a2b45d90dd2de64baf3274ec001f9e0a0e"
+    },
+    {
+      "path": "v2/ConfigWriteResponse.json",
+      "bytes": 8685,
+      "gitBlobSha1": "3ea3a5f8180c877ca37ee7dc9943e62f55fab588"
+    },
+    {
+      "path": "v2/ConsumeAccountRateLimitResetCreditParams.json",
+      "bytes": 594,
+      "gitBlobSha1": "3d9d2c1e98170434fefd7182b4d1107827434fb4"
+    },
+    {
+      "path": "v2/ConsumeAccountRateLimitResetCreditResponse.json",
+      "bytes": 1177,
+      "gitBlobSha1": "e9f6e43708f5fb602fd2e35d6be3caabbf973a88"
+    },
+    {
+      "path": "v2/ContextCompactedNotification.json",
+      "bytes": 362,
+      "gitBlobSha1": "8d2d4b126194d92467e3a165ceced661244f01a3"
+    },
+    {
+      "path": "v2/DeprecationNoticeNotification.json",
+      "bytes": 457,
+      "gitBlobSha1": "7e6c73b9c7b84713816840afd5e9cf1fe24f74a4"
+    },
+    {
+      "path": "v2/EnvironmentConnectionNotification.json",
+      "bytes": 306,
+      "gitBlobSha1": "3da031b6212d31ace58b1fceeb0c9a38d47b4fbe"
+    },
+    {
+      "path": "v2/ErrorNotification.json",
+      "bytes": 6895,
+      "gitBlobSha1": "69187dd539dfa5f676397444b3e36a426884b81d"
+    },
+    {
+      "path": "v2/ExperimentalFeatureEnablementSetParams.json",
+      "bytes": 509,
+      "gitBlobSha1": "9d6bcec932e68f2224ff9be6f0152198038613ec"
+    },
+    {
+      "path": "v2/ExperimentalFeatureEnablementSetResponse.json",
+      "bytes": 386,
+      "gitBlobSha1": "9cdbf0691f0ba6e703cbab7982b8b4010a27d510"
+    },
+    {
+      "path": "v2/ExperimentalFeatureListParams.json",
+      "bytes": 827,
+      "gitBlobSha1": "13fa2efb985c2c6c18827460dac9496e4a98abb1"
+    },
+    {
+      "path": "v2/ExperimentalFeatureListResponse.json",
+      "bytes": 3066,
+      "gitBlobSha1": "25398fc0eac4766d4d19d8f2880717caf0e3020b"
+    },
+    {
+      "path": "v2/ExternalAgentConfigDetectParams.json",
+      "bytes": 1414,
+      "gitBlobSha1": "f226823eada89fa5f59442203efa5db8d992313a"
+    },
+    {
+      "path": "v2/ExternalAgentConfigDetectResponse.json",
+      "bytes": 5240,
+      "gitBlobSha1": "b328531e97c7031b9536b40c628c14fef36a890d"
+    },
+    {
+      "path": "v2/ExternalAgentConfigImportCompletedNotification.json",
+      "bytes": 3025,
+      "gitBlobSha1": "ee6902e391e08de3f0b4b6f97462cbd0d6104132"
+    },
+    {
+      "path": "v2/ExternalAgentConfigImportHistoriesReadResponse.json",
+      "bytes": 3890,
+      "gitBlobSha1": "16353fd7169a665ef015a3f8ea1636bf05ca459c"
+    },
+    {
+      "path": "v2/ExternalAgentConfigImportHistoryRecordParams.json",
+      "bytes": 3237,
+      "gitBlobSha1": "7b8166464a7771f3b4c8630ce796a72811237747"
+    },
+    {
+      "path": "v2/ExternalAgentConfigImportHistoryRecordResponse.json",
+      "bytes": 245,
+      "gitBlobSha1": "8a52fe3c0c4f43bf5d77cfac4dabbbc24d58f3af"
+    },
+    {
+      "path": "v2/ExternalAgentConfigImportParams.json",
+      "bytes": 5152,
+      "gitBlobSha1": "41c0d4214824b5b7e227864f4459cb0272fcd5c3"
+    },
+    {
+      "path": "v2/ExternalAgentConfigImportProgressNotification.json",
+      "bytes": 3024,
+      "gitBlobSha1": "35e7bd43d97aa31a56d9108e556ec5e84f8d1486"
+    },
+    {
+      "path": "v2/ExternalAgentConfigImportResponse.json",
+      "bytes": 232,
+      "gitBlobSha1": "b1bed198a35bd04de155c9e2ad43edcd2c27ddf8"
+    },
+    {
+      "path": "v2/FeedbackUploadParams.json",
+      "bytes": 726,
+      "gitBlobSha1": "3bf0c62194590e057a860e0aa27b43bc5c63dda2"
+    },
+    {
+      "path": "v2/FeedbackUploadResponse.json",
+      "bytes": 221,
+      "gitBlobSha1": "647b613f0b10f2ce3f9836483b52659bb483081f"
+    },
+    {
+      "path": "v2/FileChangeOutputDeltaNotification.json",
+      "bytes": 544,
+      "gitBlobSha1": "97d617ea4c4ded3b757410a3c2c40521178bcaf0"
+    },
+    {
+      "path": "v2/FileChangePatchUpdatedNotification.json",
+      "bytes": 2159,
+      "gitBlobSha1": "0ae44aa9612560c1c94e9df3e7f31a822e983891"
+    },
+    {
+      "path": "v2/FsChangedNotification.json",
+      "bytes": 1061,
+      "gitBlobSha1": "cfb9f4e5ba4040894ecc324d21e3de45b6a8497d"
+    },
+    {
+      "path": "v2/FsCopyParams.json",
+      "bytes": 1198,
+      "gitBlobSha1": "2994fcac812e05e6e274f28c6b80c310cd56b67d"
+    },
+    {
+      "path": "v2/FsCopyResponse.json",
+      "bytes": 162,
+      "gitBlobSha1": "b1088b3a31bfc514087129817566bff0d07ce6b4"
+    },
+    {
+      "path": "v2/FsCreateDirectoryParams.json",
+      "bytes": 1047,
+      "gitBlobSha1": "a1ac4a8dc515489a59de78050798469c98634d93"
+    },
+    {
+      "path": "v2/FsCreateDirectoryResponse.json",
+      "bytes": 184,
+      "gitBlobSha1": "d07e118954cb9cb39821f794fe48bc73a9dbedce"
+    },
+    {
+      "path": "v2/FsGetMetadataParams.json",
+      "bytes": 851,
+      "gitBlobSha1": "c70287493c1298c224a55fd0240c7e9927fa92a0"
+    },
+    {
+      "path": "v2/FsGetMetadataResponse.json",
+      "bytes": 1005,
+      "gitBlobSha1": "82481f579eb8033bc2134cbd80831d50991432dc"
+    },
+    {
+      "path": "v2/FsReadDirectoryParams.json",
+      "bytes": 862,
+      "gitBlobSha1": "e531fe9f0307709773056178b17e74d248dce75a"
+    },
+    {
+      "path": "v2/FsReadDirectoryResponse.json",
+      "bytes": 1139,
+      "gitBlobSha1": "61f7a3e6475321da12f9784613307cc3302670e3"
+    },
+    {
+      "path": "v2/FsReadFileParams.json",
+      "bytes": 844,
+      "gitBlobSha1": "e1df6018c15be5277fe913aabaf662555cb5bb0d"
+    },
+    {
+      "path": "v2/FsReadFileResponse.json",
+      "bytes": 354,
+      "gitBlobSha1": "c746cf9357c81310e07128d10a0a531487e8b82f"
+    },
+    {
+      "path": "v2/FsRemoveParams.json",
+      "bytes": 1199,
+      "gitBlobSha1": "d6289d46d0886acf1f6dee2a5110cd87f575ce0c"
+    },
+    {
+      "path": "v2/FsRemoveResponse.json",
+      "bytes": 166,
+      "gitBlobSha1": "d1ec5d11bd05bb8131a9ca7218ecdbf2749be9ae"
+    },
+    {
+      "path": "v2/FsUnwatchParams.json",
+      "bytes": 368,
+      "gitBlobSha1": "f46800e997596c5e263f736b5f7d441b15f1f80c"
+    },
+    {
+      "path": "v2/FsUnwatchResponse.json",
+      "bytes": 168,
+      "gitBlobSha1": "daa80ad656f01888e0af549a2a155e84bd243c0a"
+    },
+    {
+      "path": "v2/FsWatchParams.json",
+      "bytes": 1042,
+      "gitBlobSha1": "29a1ceea148f5a5d12d5a5c436c767443b585d80"
+    },
+    {
+      "path": "v2/FsWatchResponse.json",
+      "bytes": 864,
+      "gitBlobSha1": "abc7d466bb6fd30df0ed7ced97ab8539f1519aad"
+    },
+    {
+      "path": "v2/FsWriteFileParams.json",
+      "bytes": 970,
+      "gitBlobSha1": "e1b5eabd98b72446b9ab3560ac889c0cbcdcd1c4"
+    },
+    {
+      "path": "v2/FsWriteFileResponse.json",
+      "bytes": 172,
+      "gitBlobSha1": "07ba35cdf97256d7ffb23670433a4db7c89c4d87"
+    },
+    {
+      "path": "v2/GetAccountParams.json",
+      "bytes": 485,
+      "gitBlobSha1": "445e90c101fc1290c615cc2795a03b3e3317e656"
+    },
+    {
+      "path": "v2/GetAccountRateLimitsResponse.json",
+      "bytes": 8186,
+      "gitBlobSha1": "b949ebc32d27a86a6e0334ef1b3aaa421b48f62f"
+    },
+    {
+      "path": "v2/GetAccountResponse.json",
+      "bytes": 2399,
+      "gitBlobSha1": "e5537a3e4f58f954328fe17a51ef1ad2701062e8"
+    },
+    {
+      "path": "v2/GetAccountTokenUsageResponse.json",
+      "bytes": 3838,
+      "gitBlobSha1": "a7e85aa8b46b973f035f7967d06bbb214b7d9fad"
+    },
+    {
+      "path": "v2/GetWorkspaceMessagesResponse.json",
+      "bytes": 1565,
+      "gitBlobSha1": "4d1246a1b2172646c4d5fe59bc4a25c52783eb11"
+    },
+    {
+      "path": "v2/GuardianWarningNotification.json",
+      "bytes": 423,
+      "gitBlobSha1": "5a4ef82f0a45bacb35669b22f44246dfc96c8d36"
+    },
+    {
+      "path": "v2/HookCompletedNotification.json",
+      "bytes": 4287,
+      "gitBlobSha1": "ad1681a6e552ec88b34597ee735d07126081a1f6"
+    },
+    {
+      "path": "v2/HookStartedNotification.json",
+      "bytes": 4285,
+      "gitBlobSha1": "0f11b12c0c611d06917034f87d2f2e00bf184af0"
+    },
+    {
+      "path": "v2/HooksListParams.json",
+      "bytes": 311,
+      "gitBlobSha1": "858d415f4f169699236bb4b621e4fd6af7e29970"
+    },
+    {
+      "path": "v2/HooksListResponse.json",
+      "bytes": 5850,
+      "gitBlobSha1": "837e0b2660d42ca782a045fbf96846923eddce05"
+    },
+    {
+      "path": "v2/ItemCompletedNotification.json",
+      "bytes": 45968,
+      "gitBlobSha1": "f3caf84e969836edf66925346fadca3cd3754e03"
+    },
+    {
+      "path": "v2/ItemGuardianApprovalReviewCompletedNotification.json",
+      "bytes": 16915,
+      "gitBlobSha1": "f5d82d12bae1485d25643af402d19112bbc168f0"
+    },
+    {
+      "path": "v2/ItemGuardianApprovalReviewStartedNotification.json",
+      "bytes": 16417,
+      "gitBlobSha1": "869c6c899a09b63c51bf04b982b99239408928df"
+    },
+    {
+      "path": "v2/ItemStartedNotification.json",
+      "bytes": 45960,
+      "gitBlobSha1": "8432eb54378b7b74be629ccf347cebd5011c18c9"
+    },
+    {
+      "path": "v2/ListMcpServerStatusParams.json",
+      "bytes": 1030,
+      "gitBlobSha1": "19dad86adf5300e33332569f46ed7d3bff09c2a6"
+    },
+    {
+      "path": "v2/ListMcpServerStatusResponse.json",
+      "bytes": 5844,
+      "gitBlobSha1": "919cd571d83455d72a88cc08e252a194478ae774"
+    },
+    {
+      "path": "v2/LoginAccountParams.json",
+      "bytes": 4353,
+      "gitBlobSha1": "80164cc562e969592ecac30e616354412a11d12e"
+    },
+    {
+      "path": "v2/LoginAccountResponse.json",
+      "bytes": 2521,
+      "gitBlobSha1": "802440d637bf5b46c8678d3dfc7f02185cfd30f5"
+    },
+    {
+      "path": "v2/LogoutAccountResponse.json",
+      "bytes": 114,
+      "gitBlobSha1": "56415a031138059dede8fdedda57603913b12333"
+    },
+    {
+      "path": "v2/MarketplaceAddParams.json",
+      "bytes": 431,
+      "gitBlobSha1": "704e5bbc2a7ae87ad494ae69baee69f536056f51"
+    },
+    {
+      "path": "v2/MarketplaceAddResponse.json",
+      "bytes": 865,
+      "gitBlobSha1": "d00db0d6be2a72f4572986e7435a3f2ce597a2eb"
+    },
+    {
+      "path": "v2/MarketplaceRemoveParams.json",
+      "bytes": 236,
+      "gitBlobSha1": "2c145686cdb3dfc856c268ec09e0233454d1d1f7"
+    },
+    {
+      "path": "v2/MarketplaceRemoveResponse.json",
+      "bytes": 869,
+      "gitBlobSha1": "ae4945078a94ae83d27b26b9ee48dad2008bccd4"
+    },
+    {
+      "path": "v2/MarketplaceUpgradeParams.json",
+      "bytes": 228,
+      "gitBlobSha1": "684d134cb67540082c5edb9ed2b3adaeaafc40f2"
+    },
+    {
+      "path": "v2/MarketplaceUpgradeResponse.json",
+      "bytes": 1348,
+      "gitBlobSha1": "678824163229998b1f9389b1804e6a40ac73534d"
+    },
+    {
+      "path": "v2/McpResourceReadParams.json",
+      "bytes": 608,
+      "gitBlobSha1": "ed20238ab41a29eec78210f17a4107907a1f935c"
+    },
+    {
+      "path": "v2/McpResourceReadResponse.json",
+      "bytes": 1664,
+      "gitBlobSha1": "99060ef873cd2dde91ebbb16b3abb9169d1ea30b"
+    },
+    {
+      "path": "v2/McpServerEventStreamNotification.json",
+      "bytes": 614,
+      "gitBlobSha1": "2b65bda01c5185c56ae1182296bc22fb8595aac4"
+    },
+    {
+      "path": "v2/McpServerOauthLoginCompletedNotification.json",
+      "bytes": 455,
+      "gitBlobSha1": "6204ff672b0ee49bc7b7b5c2bb907370a6ad46c7"
+    },
+    {
+      "path": "v2/McpServerOauthLoginParams.json",
+      "bytes": 1003,
+      "gitBlobSha1": "387636e7d0d92a2a1a2239a93b967e7f1107e45f"
+    },
+    {
+      "path": "v2/McpServerOauthLoginResponse.json",
+      "bytes": 242,
+      "gitBlobSha1": "efeb612dd3983e4d19604f59ad83064ef1e7f45a"
+    },
+    {
+      "path": "v2/McpServerRefreshResponse.json",
+      "bytes": 117,
+      "gitBlobSha1": "779192e779e17e59cb7e56cd8a8a27e95e5b0a73"
+    },
+    {
+      "path": "v2/McpServerStatusUpdatedNotification.json",
+      "bytes": 973,
+      "gitBlobSha1": "8efb36bdad7c31de41c9b7615cd66db9cb1fa1b6"
+    },
+    {
+      "path": "v2/McpServerToolCallParams.json",
+      "bytes": 380,
+      "gitBlobSha1": "3465e60c83b0da59e1174e55abcd1a6521cb297f"
+    },
+    {
+      "path": "v2/McpServerToolCallResponse.json",
+      "bytes": 374,
+      "gitBlobSha1": "0e5ecdf78de0d777f16e02708dfe23844c107cdc"
+    },
+    {
+      "path": "v2/McpToolCallProgressNotification.json",
+      "bytes": 412,
+      "gitBlobSha1": "419cab74a3be173210b034776e77171b44e3fd66"
+    },
+    {
+      "path": "v2/ModelListParams.json",
+      "bytes": 688,
+      "gitBlobSha1": "11a3476240ca9dc59a3478a2a87530764d903878"
+    },
+    {
+      "path": "v2/ModelListResponse.json",
+      "bytes": 6002,
+      "gitBlobSha1": "657a433f88ae548aa81fb1c2ee44ba4fc5a781f8"
+    },
+    {
+      "path": "v2/ModelProviderCapabilitiesReadParams.json",
+      "bytes": 128,
+      "gitBlobSha1": "2996bca0f611107af70c8a07d9aef3344abb0d29"
+    },
+    {
+      "path": "v2/ModelProviderCapabilitiesReadResponse.json",
+      "bytes": 395,
+      "gitBlobSha1": "08e4c2ada0f46e35c9bdf65b89e96f4023863f52"
+    },
+    {
+      "path": "v2/ModelReroutedNotification.json",
+      "bytes": 636,
+      "gitBlobSha1": "b9bcc491b015b95e8899adb4b1e7ba204db90acc"
+    },
+    {
+      "path": "v2/ModelSafetyBufferingUpdatedNotification.json",
+      "bytes": 746,
+      "gitBlobSha1": "ab542b63995821377a3fe4b45ae3e6689c4c0546"
+    },
+    {
+      "path": "v2/ModelVerificationNotification.json",
+      "bytes": 574,
+      "gitBlobSha1": "aea6b628eb3784ee84c15d5287866e4de64b1535"
+    },
+    {
+      "path": "v2/NullableGetAccountRateLimitsParams.json",
+      "bytes": 1002,
+      "gitBlobSha1": "a163934d642a5ae6fb95ecfc9c03eb29d1e330c1"
+    },
+    {
+      "path": "v2/NullableGetAccountTokenUsageParams.json",
+      "bytes": 573,
+      "gitBlobSha1": "b06af5fe52dfe6f4f3a073681f9d9d9ca3d1bbaa"
+    },
+    {
+      "path": "v2/PermissionProfileListParams.json",
+      "bytes": 667,
+      "gitBlobSha1": "402dab622168c1b2451745e0dfd3483716545127"
+    },
+    {
+      "path": "v2/PermissionProfileListResponse.json",
+      "bytes": 1174,
+      "gitBlobSha1": "1027b9c5a0d3720480dcaf1563c0f1e48a587f54"
+    },
+    {
+      "path": "v2/PlanDeltaNotification.json",
+      "bytes": 565,
+      "gitBlobSha1": "6446392626da7db1577824313656f8da160b1303"
+    },
+    {
+      "path": "v2/PluginInstallParams.json",
+      "bytes": 1136,
+      "gitBlobSha1": "9dae6eb1db3233bd6bfb9c819d007db64eb3022b"
+    },
+    {
+      "path": "v2/PluginInstallResponse.json",
+      "bytes": 1190,
+      "gitBlobSha1": "c9b4f6caf038b041e72a8bff5caa0d40568ab674"
+    },
+    {
+      "path": "v2/PluginInstalledParams.json",
+      "bytes": 1174,
+      "gitBlobSha1": "f3ec95a5dac092b2eb0113aeb76f1b8e6b301c52"
+    },
+    {
+      "path": "v2/PluginInstalledResponse.json",
+      "bytes": 15679,
+      "gitBlobSha1": "e258544028213b3a65b2b7521edd3f10ba452e6b"
+    },
+    {
+      "path": "v2/PluginListParams.json",
+      "bytes": 1629,
+      "gitBlobSha1": "0c47b9ac65544e2afab9d398f5091a49ded1d246"
+    },
+    {
+      "path": "v2/PluginListResponse.json",
+      "bytes": 15802,
+      "gitBlobSha1": "38207ac28542e7518db1f31575371c6029af1460"
+    },
+    {
+      "path": "v2/PluginReadParams.json",
+      "bytes": 947,
+      "gitBlobSha1": "5cc3e5cab5f7a7e02240f518a96cd5a98c630c7d"
+    },
+    {
+      "path": "v2/PluginReadResponse.json",
+      "bytes": 23636,
+      "gitBlobSha1": "71d810b7072020b5723a7b1ce81f7f55d6b8501d"
+    },
+    {
+      "path": "v2/PluginReconcileParams.json",
+      "bytes": 314,
+      "gitBlobSha1": "2c1048c2864716d83ff388fb132019c44ba8c790"
+    },
+    {
+      "path": "v2/PluginReconcileResponse.json",
+      "bytes": 2424,
+      "gitBlobSha1": "f0d069670740c523b5db1b47e09b141aa05bd9ed"
+    },
+    {
+      "path": "v2/PluginShareCheckoutParams.json",
+      "bytes": 236,
+      "gitBlobSha1": "dc7e2bdfe684967e2927eb63f2d653703cb19bd1"
+    },
+    {
+      "path": "v2/PluginShareCheckoutResponse.json",
+      "bytes": 1187,
+      "gitBlobSha1": "ace02c59eab97192d35528ffc5f55ffdcc59508d"
+    },
+    {
+      "path": "v2/PluginShareDeleteParams.json",
+      "bytes": 234,
+      "gitBlobSha1": "2dbdab8ee66109a56ab62045f09271bdb633196c"
+    },
+    {
+      "path": "v2/PluginShareDeleteResponse.json",
+      "bytes": 118,
+      "gitBlobSha1": "95068869aa9a2f47a78fac78c8d4d4c10eb3132d"
+    },
+    {
+      "path": "v2/PluginShareListParams.json",
+      "bytes": 114,
+      "gitBlobSha1": "101136d9053d559593fdae05fec3b6e2633d90ba"
+    },
+    {
+      "path": "v2/PluginShareListResponse.json",
+      "bytes": 14477,
+      "gitBlobSha1": "bcae24d57c8bae4f97e66299ffc77039044bcbb9"
+    },
+    {
+      "path": "v2/PluginShareSaveParams.json",
+      "bytes": 1974,
+      "gitBlobSha1": "7ff4ac18ef3d2abccb9bfeeaa7da74016d38990f"
+    },
+    {
+      "path": "v2/PluginShareSaveResponse.json",
+      "bytes": 417,
+      "gitBlobSha1": "86a755fbbbd1598bc0b239c106ef810b75c06e00"
+    },
+    {
+      "path": "v2/PluginShareUpdateTargetsParams.json",
+      "bytes": 1369,
+      "gitBlobSha1": "1a5da52281fd1438d6eb96e48ce1fc57d3a521d8"
+    },
+    {
+      "path": "v2/PluginShareUpdateTargetsResponse.json",
+      "bytes": 1380,
+      "gitBlobSha1": "4923be498a2adbbbfa9cd60b97f91c8cd4b3f040"
+    },
+    {
+      "path": "v2/PluginSkillReadParams.json",
+      "bytes": 388,
+      "gitBlobSha1": "12d2d3781bb5c77d4dde485592acfe056e303860"
+    },
+    {
+      "path": "v2/PluginSkillReadResponse.json",
+      "bytes": 220,
+      "gitBlobSha1": "a1d53bc8e8506bf72d0a44d63ff7692b80e52cec"
+    },
+    {
+      "path": "v2/PluginUninstallParams.json",
+      "bytes": 220,
+      "gitBlobSha1": "5b7e0a592f08502ff3e7c97cb0d85a042909a0df"
+    },
+    {
+      "path": "v2/PluginUninstallResponse.json",
+      "bytes": 116,
+      "gitBlobSha1": "5c0e37bd9da5eb4c9572ebaadcf1369042045c8b"
+    },
+    {
+      "path": "v2/ProcessExitedNotification.json",
+      "bytes": 1419,
+      "gitBlobSha1": "3a0a81d316e02e52a632bb3a7f3757cf1efbc71d"
+    },
+    {
+      "path": "v2/ProcessOutputDeltaNotification.json",
+      "bytes": 1436,
+      "gitBlobSha1": "1800833f2e08baed8e19de46d80482b11a7f3e16"
+    },
+    {
+      "path": "v2/ProjectChangedNotification.json",
+      "bytes": 481,
+      "gitBlobSha1": "27dbc800d0fef49cca863b45d038e5c305f46bcc"
+    },
+    {
+      "path": "v2/RawResponseCompletedNotification.json",
+      "bytes": 1998,
+      "gitBlobSha1": "5b65b9dfc2107632909b6a3e05b7ba7ec97143d8"
+    },
+    {
+      "path": "v2/RawResponseItemCompletedNotification.json",
+      "bytes": 32472,
+      "gitBlobSha1": "c6d8c66fe1b8fb9d8b0a8bd26b06402dea8254f3"
+    },
+    {
+      "path": "v2/ReasoningSummaryPartAddedNotification.json",
+      "bytes": 454,
+      "gitBlobSha1": "33debf2a2e4b3a83c88cc9cf3a7cbe7496e2b7f7"
+    },
+    {
+      "path": "v2/ReasoningSummaryTextDeltaNotification.json",
+      "bytes": 512,
+      "gitBlobSha1": "6f50a8403a3451b71268413eb91a08dfcffd5741"
+    },
+    {
+      "path": "v2/ReasoningTextDeltaNotification.json",
+      "bytes": 505,
+      "gitBlobSha1": "ebfd5dc8543adf349d70f909364442a91ba2db9a"
+    },
+    {
+      "path": "v2/RemoteControlStatusChangedNotification.json",
+      "bytes": 800,
+      "gitBlobSha1": "2f305c7d781f761cd1b1404701eed81b2657bee1"
+    },
+    {
+      "path": "v2/ReviewStartParams.json",
+      "bytes": 3341,
+      "gitBlobSha1": "5dcb0e184af181ee829a55a73c3289ea6ca29bb2"
+    },
+    {
+      "path": "v2/ReviewStartResponse.json",
+      "bytes": 54982,
+      "gitBlobSha1": "7da4ff34d8ae1dcbc5ed04e8093f01a7ac893938"
+    },
+    {
+      "path": "v2/SendAddCreditsNudgeEmailParams.json",
+      "bytes": 420,
+      "gitBlobSha1": "c3c63edef09aa2c415ada030ee1a072b955a7557"
+    },
+    {
+      "path": "v2/SendAddCreditsNudgeEmailResponse.json",
+      "bytes": 417,
+      "gitBlobSha1": "bfeba322b2b3bbad195e846274394540df28a646"
+    },
+    {
+      "path": "v2/ServerRequestResolvedNotification.json",
+      "bytes": 514,
+      "gitBlobSha1": "18a5e76079891ded39b0ae5e171ea246c07a0bc4"
+    },
+    {
+      "path": "v2/SkillsChangedNotification.json",
+      "bytes": 341,
+      "gitBlobSha1": "cb67d8160203ed44bd54253fc9293ee277353e25"
+    },
+    {
+      "path": "v2/SkillsConfigWriteParams.json",
+      "bytes": 1011,
+      "gitBlobSha1": "696226a50c66b6eb0b9c2c4a1696b528a7ab66f8"
+    },
+    {
+      "path": "v2/SkillsConfigWriteResponse.json",
+      "bytes": 241,
+      "gitBlobSha1": "09d73b44c3257860459c8a633afeeb372b6d88cb"
+    },
+    {
+      "path": "v2/SkillsExtraRootsSetParams.json",
+      "bytes": 761,
+      "gitBlobSha1": "9992cdf8b4a5fe6c10d1bcaa9168d6b8bfe5cb6d"
+    },
+    {
+      "path": "v2/SkillsExtraRootsSetResponse.json",
+      "bytes": 120,
+      "gitBlobSha1": "cf0792c748da01b024a12c151930b85134626bec"
+    },
+    {
+      "path": "v2/SkillsListParams.json",
+      "bytes": 453,
+      "gitBlobSha1": "a9a8a9ef8d4de8ce2356ab6dd97ef773606356c4"
+    },
+    {
+      "path": "v2/SkillsListResponse.json",
+      "bytes": 5295,
+      "gitBlobSha1": "9344eec0ca159a73ed8535e995cd0890f3c78770"
+    },
+    {
+      "path": "v2/StrictReviewRequiredNotification.json",
+      "bytes": 470,
+      "gitBlobSha1": "4099f8ac06863b36e929a2ebde5366bce45e86c5"
+    },
+    {
+      "path": "v2/TerminalInteractionNotification.json",
+      "bytes": 474,
+      "gitBlobSha1": "ca2648a313d9c6909cc1fcb7aa7902f300107fe1"
+    },
+    {
+      "path": "v2/ThreadApproveGuardianDeniedActionParams.json",
+      "bytes": 360,
+      "gitBlobSha1": "3938815ecd371bdb63d49f75964793807ac99f86"
+    },
+    {
+      "path": "v2/ThreadApproveGuardianDeniedActionResponse.json",
+      "bytes": 134,
+      "gitBlobSha1": "b173819cc30fb79e5bea58c4703df01a33fad81c"
+    },
+    {
+      "path": "v2/ThreadArchiveParams.json",
+      "bytes": 218,
+      "gitBlobSha1": "49322b60a45ff90c43cf6119ec3a0346985e9ea1"
+    },
+    {
+      "path": "v2/ThreadArchiveResponse.json",
+      "bytes": 114,
+      "gitBlobSha1": "bfd853e59e1bbea19463c4baf423df9f1d72c663"
+    },
+    {
+      "path": "v2/ThreadArchivedNotification.json",
+      "bytes": 225,
+      "gitBlobSha1": "cd24f957d478428fa5d93ea61c493a900b325a7d"
+    },
+    {
+      "path": "v2/ThreadClosedNotification.json",
+      "bytes": 223,
+      "gitBlobSha1": "13e7f577487dd3dbd5bff12d7e10651059277755"
+    },
+    {
+      "path": "v2/ThreadCompactStartParams.json",
+      "bytes": 223,
+      "gitBlobSha1": "a174ff95d9dff6b831e6a53e033aaa7ad0615156"
+    },
+    {
+      "path": "v2/ThreadCompactStartResponse.json",
+      "bytes": 119,
+      "gitBlobSha1": "bb372b6ddd702c8fcc1bcb3589a859065fb7aa2f"
+    },
+    {
+      "path": "v2/ThreadDeleteParams.json",
+      "bytes": 217,
+      "gitBlobSha1": "1711e11a2f3ba6e0b68520873b69099b340dce0a"
+    },
+    {
+      "path": "v2/ThreadDeleteResponse.json",
+      "bytes": 113,
+      "gitBlobSha1": "ff9f485338d51640535cd06f1cccea2c35195b39"
+    },
+    {
+      "path": "v2/ThreadDeletedNotification.json",
+      "bytes": 224,
+      "gitBlobSha1": "53011ea014567cf1766060fc7b22acaecf720d1a"
+    },
+    {
+      "path": "v2/ThreadForkParams.json",
+      "bytes": 5385,
+      "gitBlobSha1": "6908b54cb8a969cf73cceb0b4ca48f338816141c"
+    },
+    {
+      "path": "v2/ThreadForkResponse.json",
+      "bytes": 75706,
+      "gitBlobSha1": "d5b3c56db3eb6e26313add32cd30ca7d8bc4cb60"
+    },
+    {
+      "path": "v2/ThreadGoalClearParams.json",
+      "bytes": 220,
+      "gitBlobSha1": "99b32a7316b19d671195094038c6cca2b8b8b08b"
+    },
+    {
+      "path": "v2/ThreadGoalClearResponse.json",
+      "bytes": 221,
+      "gitBlobSha1": "42c3a50ac188daa368c8845fc5915df8337df820"
+    },
+    {
+      "path": "v2/ThreadGoalClearedNotification.json",
+      "bytes": 228,
+      "gitBlobSha1": "c1fe94b91015da3b52a49f6ebb425b239b920e7b"
+    },
+    {
+      "path": "v2/ThreadGoalGetParams.json",
+      "bytes": 218,
+      "gitBlobSha1": "631e06a99060adcaf48b36da45c76392c70e8fa1"
+    },
+    {
+      "path": "v2/ThreadGoalGetResponse.json",
+      "bytes": 1491,
+      "gitBlobSha1": "7627276e1149f0e2f01d5034cd76e6d589a62745"
+    },
+    {
+      "path": "v2/ThreadGoalSetParams.json",
+      "bytes": 804,
+      "gitBlobSha1": "0087827c21387f425fe61dcb6f38c29d52a3d023"
+    },
+    {
+      "path": "v2/ThreadGoalSetResponse.json",
+      "bytes": 1428,
+      "gitBlobSha1": "a0d17a84a2fa25c10656d269e0dba235348d9ffc"
+    },
+    {
+      "path": "v2/ThreadGoalUpdatedNotification.json",
+      "bytes": 1580,
+      "gitBlobSha1": "cbb04eaab2a095e59b2b4381779b16a69752fce8"
+    },
+    {
+      "path": "v2/ThreadInjectItemsParams.json",
+      "bytes": 397,
+      "gitBlobSha1": "d117f3ae0e680228eac2a7f3206c086ebbc5ed3c"
+    },
+    {
+      "path": "v2/ThreadInjectItemsResponse.json",
+      "bytes": 118,
+      "gitBlobSha1": "2ba62b221495845e43fdf801e80187956e2b31fb"
+    },
+    {
+      "path": "v2/ThreadItemsListParams.json",
+      "bytes": 1138,
+      "gitBlobSha1": "4a21804479326cf86aed00a818d4907d63ee60df"
+    },
+    {
+      "path": "v2/ThreadItemsListResponse.json",
+      "bytes": 46506,
+      "gitBlobSha1": "d11f47942a69fb8ca4c447ea8cf961123e5dfa8c"
+    },
+    {
+      "path": "v2/ThreadListParams.json",
+      "bytes": 3991,
+      "gitBlobSha1": "83d8171483f4c92d0cc602abf6eb60c7474bccf9"
+    },
+    {
+      "path": "v2/ThreadListResponse.json",
+      "bytes": 69306,
+      "gitBlobSha1": "58a0e80aaee45d2dd73c93991086aa15eb4a3b2e"
+    },
+    {
+      "path": "v2/ThreadLoadedListParams.json",
+      "bytes": 489,
+      "gitBlobSha1": "d10ee7ed96cbb8d2ec55843c51fa724571b6ec39"
+    },
+    {
+      "path": "v2/ThreadLoadedListResponse.json",
+      "bytes": 565,
+      "gitBlobSha1": "cfd90fb813fbd93246ab7bf68870b05baadcc498"
+    },
+    {
+      "path": "v2/ThreadMetadataUpdateParams.json",
+      "bytes": 1465,
+      "gitBlobSha1": "c6679568ea5eb3003d7cd8cbff9e6afb9e235d26"
+    },
+    {
+      "path": "v2/ThreadMetadataUpdateResponse.json",
+      "bytes": 68652,
+      "gitBlobSha1": "1975d98e2650b3368d8bb724fee995f163807f71"
+    },
+    {
+      "path": "v2/ThreadNameUpdatedNotification.json",
+      "bytes": 312,
+      "gitBlobSha1": "8c3b2095f5ff7032cee262df3726be71a5ad0c8d"
+    },
+    {
+      "path": "v2/ThreadProjectUpdatedNotification.json",
+      "bytes": 331,
+      "gitBlobSha1": "b88e6fd0477c874def7fdadf081dfff5717741ba"
+    },
+    {
+      "path": "v2/ThreadQueueChangedNotification.json",
+      "bytes": 229,
+      "gitBlobSha1": "25bcdfeb536cb6a785670ad1e0b824f194d17350"
+    },
+    {
+      "path": "v2/ThreadReadParams.json",
+      "bytes": 502,
+      "gitBlobSha1": "920e6c346d6b6fca1773e7ea4b68c69dee46dec1"
+    },
+    {
+      "path": "v2/ThreadReadResponse.json",
+      "bytes": 68642,
+      "gitBlobSha1": "b3e3ca9ba3ebbc22b0ea31c82aa851b937346534"
+    },
+    {
+      "path": "v2/ThreadRealtimeClosedNotification.json",
+      "bytes": 393,
+      "gitBlobSha1": "edfba83b7bc510d9131e6cedeb959687081a4728"
+    },
+    {
+      "path": "v2/ThreadRealtimeErrorNotification.json",
+      "bytes": 377,
+      "gitBlobSha1": "e7ec760302d869bab5a00b4ce09fb24b4834bc22"
+    },
+    {
+      "path": "v2/ThreadRealtimeItemAddedNotification.json",
+      "bytes": 358,
+      "gitBlobSha1": "06de7e00e72faa53d18237b5a607ea0b261b0d5d"
+    },
+    {
+      "path": "v2/ThreadRealtimeItemCompletedNotification.json",
+      "bytes": 5063,
+      "gitBlobSha1": "b24e3169ef87f5c4ba01fe62245d0dfe04da2826"
+    },
+    {
+      "path": "v2/ThreadRealtimeItemStartedNotification.json",
+      "bytes": 5063,
+      "gitBlobSha1": "74971aa9323830a50db8d0a2674a6e01af06adf8"
+    },
+    {
+      "path": "v2/ThreadRealtimeItemTranscriptDeltaNotification.json",
+      "bytes": 450,
+      "gitBlobSha1": "0354fcd408339f58e86e35210d6342ab82c1f3da"
+    },
+    {
+      "path": "v2/ThreadRealtimeOutputAudioDeltaNotification.json",
+      "bytes": 1261,
+      "gitBlobSha1": "6c75f67553970c04ae565fc1dfc8242e0ef4283e"
+    },
+    {
+      "path": "v2/ThreadRealtimeSdpNotification.json",
+      "bytes": 376,
+      "gitBlobSha1": "907dc8568f40fc54997463b1a2599f918557ec58"
+    },
+    {
+      "path": "v2/ThreadRealtimeStartedNotification.json",
+      "bytes": 661,
+      "gitBlobSha1": "f61aa612d3514d261bf13f894d1daf1f726d85ef"
+    },
+    {
+      "path": "v2/ThreadRealtimeTranscriptDeltaNotification.json",
+      "bytes": 533,
+      "gitBlobSha1": "22ad778eb2ad93ee59c726de847217f939716111"
+    },
+    {
+      "path": "v2/ThreadRealtimeTranscriptDoneNotification.json",
+      "bytes": 528,
+      "gitBlobSha1": "2f4199fdb9eb27ea7ed3c42eead26abfc1172b86"
+    },
+    {
+      "path": "v2/ThreadResumeParams.json",
+      "bytes": 39131,
+      "gitBlobSha1": "5c35287d0e49ac63c1b29b8d10e762bd03a3f027"
+    },
+    {
+      "path": "v2/ThreadResumeResponse.json",
+      "bytes": 76852,
+      "gitBlobSha1": "efdcfc5d9b3556d7df59c7288b21f0e7e1580f29"
+    },
+    {
+      "path": "v2/ThreadRevertParams.json",
+      "bytes": 579,
+      "gitBlobSha1": "7109d046a16301cfe0493a4d841d14995fc6f912"
+    },
+    {
+      "path": "v2/ThreadRevertResponse.json",
+      "bytes": 69452,
+      "gitBlobSha1": "72928d2f2a44e184817bb22918c474a925a1ffc4"
+    },
+    {
+      "path": "v2/ThreadRevertedNotification.json",
+      "bytes": 225,
+      "gitBlobSha1": "f76865996077645d0eb18d1f43327ed1e89f3481"
+    },
+    {
+      "path": "v2/ThreadRollbackParams.json",
+      "bytes": 667,
+      "gitBlobSha1": "aa52fbd598e9b41e80a178c8ab1cd9c17bf9c051"
+    },
+    {
+      "path": "v2/ThreadRollbackResponse.json",
+      "bytes": 68973,
+      "gitBlobSha1": "33396542a518c6671fa3b5915c2bb4395c27e466"
+    },
+    {
+      "path": "v2/ThreadSectionCreateParams.json",
+      "bytes": 969,
+      "gitBlobSha1": "eb3626b4a34a3f34b00346a69305b3defbddb1a0"
+    },
+    {
+      "path": "v2/ThreadSectionCreateResponse.json",
+      "bytes": 1548,
+      "gitBlobSha1": "4d2a1df4924fdb9839e00076cfe79280a2b810d4"
+    },
+    {
+      "path": "v2/ThreadSectionDeleteParams.json",
+      "bytes": 401,
+      "gitBlobSha1": "89c75bf40cd19a56f2df07a1dcdde2fb13088d31"
+    },
+    {
+      "path": "v2/ThreadSectionDeleteResponse.json",
+      "bytes": 201,
+      "gitBlobSha1": "fc2187df9a279ad97486b048bd404928f1f4cc55"
+    },
+    {
+      "path": "v2/ThreadSectionListParams.json",
+      "bytes": 570,
+      "gitBlobSha1": "790aeacd450d37811fdf2140278dd57054f39e8c"
+    },
+    {
+      "path": "v2/ThreadSectionListResponse.json",
+      "bytes": 1760,
+      "gitBlobSha1": "6b203241fefc0a87b8ec417fdc8a43272e623fca"
+    },
+    {
+      "path": "v2/ThreadSectionMoveParams.json",
+      "bytes": 768,
+      "gitBlobSha1": "3d8a3ca0ad881230bb97a7cae3e278468c1aa2d7"
+    },
+    {
+      "path": "v2/ThreadSectionMoveResponse.json",
+      "bytes": 118,
+      "gitBlobSha1": "f6982622c80637d4ec8131280bf8c84be0b3dbd7"
+    },
+    {
+      "path": "v2/ThreadSectionUpdateParams.json",
+      "bytes": 1211,
+      "gitBlobSha1": "ced77f317a5f8bdc2fb2c3d2c15effae85ff0d63"
+    },
+    {
+      "path": "v2/ThreadSectionUpdateResponse.json",
+      "bytes": 1552,
+      "gitBlobSha1": "9e843e61242d490791f42bfba9bf07a8e39077dc"
+    },
+    {
+      "path": "v2/ThreadSetNameParams.json",
+      "bytes": 274,
+      "gitBlobSha1": "9381c7cb127e9638d7f57b106ee7dd7ff7f94b3a"
+    },
+    {
+      "path": "v2/ThreadSetNameResponse.json",
+      "bytes": 114,
+      "gitBlobSha1": "3d25712ff0574feea5266c86e24ed7e7cb096bd9"
+    },
+    {
+      "path": "v2/ThreadSettingsUpdatedNotification.json",
+      "bytes": 10318,
+      "gitBlobSha1": "f3296fa376ac9f8f2eefeed1694d898df484a694"
+    },
+    {
+      "path": "v2/ThreadShellCommandParams.json",
+      "bytes": 917,
+      "gitBlobSha1": "e733a1b709ad680a783d07ed0e18d36472f68d49"
+    },
+    {
+      "path": "v2/ThreadShellCommandResponse.json",
+      "bytes": 119,
+      "gitBlobSha1": "06e9d81a3a7aa20634b7886c21c3a6082e209881"
+    },
+    {
+      "path": "v2/ThreadStartParams.json",
+      "bytes": 10180,
+      "gitBlobSha1": "8bf5ae8bef72a0769bc1b9f66f7ce4cc0148dcb7"
+    },
+    {
+      "path": "v2/ThreadStartResponse.json",
+      "bytes": 75707,
+      "gitBlobSha1": "0a9cc8b2aba949e38402a197cb8d5b8d9c4d7c98"
+    },
+    {
+      "path": "v2/ThreadStartedNotification.json",
+      "bytes": 68649,
+      "gitBlobSha1": "bcfd63f923449d5ce84da311168a4a507cef6582"
+    },
+    {
+      "path": "v2/ThreadStatusChangedNotification.json",
+      "bytes": 2207,
+      "gitBlobSha1": "bd6585042ff33c8fe9077371f457edf81f8c9996"
+    },
+    {
+      "path": "v2/ThreadTokenUsageUpdatedNotification.json",
+      "bytes": 1727,
+      "gitBlobSha1": "ff2cac5899a37af1ea2a2c1b5b2c798d922fd50b"
+    },
+    {
+      "path": "v2/ThreadTurnsListParams.json",
+      "bytes": 1889,
+      "gitBlobSha1": "924b8a9a8104ec7e579093ab983ca14f623a865b"
+    },
+    {
+      "path": "v2/ThreadTurnsListResponse.json",
+      "bytes": 55347,
+      "gitBlobSha1": "c8d1dd03548cad35ad9abbca850c87198615e621"
+    },
+    {
+      "path": "v2/ThreadUnarchiveParams.json",
+      "bytes": 220,
+      "gitBlobSha1": "fd62a96cc3a86743ba4688dd56bdc14a2e7703ba"
+    },
+    {
+      "path": "v2/ThreadUnarchiveResponse.json",
+      "bytes": 68647,
+      "gitBlobSha1": "2ed8f65ebe060cd765d88ada3a83c76bcb1217b2"
+    },
+    {
+      "path": "v2/ThreadUnarchivedNotification.json",
+      "bytes": 227,
+      "gitBlobSha1": "7e4bcd566e41369e025166db795708717dee9949"
+    },
+    {
+      "path": "v2/ThreadUnsubscribeParams.json",
+      "bytes": 222,
+      "gitBlobSha1": "dec3670cc206b35edbf39428e3718eea9ecfb0c5"
+    },
+    {
+      "path": "v2/ThreadUnsubscribeResponse.json",
+      "bytes": 431,
+      "gitBlobSha1": "2e545dbf9f86094e94dc303d04e2e972f6be86b7"
+    },
+    {
+      "path": "v2/TurnCompletedNotification.json",
+      "bytes": 54789,
+      "gitBlobSha1": "7db8c18c82325feee77876ed7172dae8125a4cd5"
+    },
+    {
+      "path": "v2/TurnDiffUpdatedNotification.json",
+      "bytes": 494,
+      "gitBlobSha1": "b694ce254ce4e47ad04579aefe7e6527142689a5"
+    },
+    {
+      "path": "v2/TurnInterruptParams.json",
+      "bytes": 278,
+      "gitBlobSha1": "9181428a10e17186272d2cdd74fc2c4f07c76504"
+    },
+    {
+      "path": "v2/TurnInterruptResponse.json",
+      "bytes": 114,
+      "gitBlobSha1": "5d8a0f9ce22e0387218fd390c362de6a61247b8c"
+    },
+    {
+      "path": "v2/TurnModerationMetadataNotification.json",
+      "bytes": 331,
+      "gitBlobSha1": "273bd41061964f5079bc4ab064811df68af6f68a"
+    },
+    {
+      "path": "v2/TurnPlanUpdatedNotification.json",
+      "bytes": 948,
+      "gitBlobSha1": "5a28ffbf17d185238a2c7a9187e5a5ccafd89968"
+    },
+    {
+      "path": "v2/TurnStartParams.json",
+      "bytes": 20847,
+      "gitBlobSha1": "2ba2e1f4830ad3639715e678e70df9640b7ff405"
+    },
+    {
+      "path": "v2/TurnStartResponse.json",
+      "bytes": 54717,
+      "gitBlobSha1": "95523694804b1aff90a733ed896475645ef517cb"
+    },
+    {
+      "path": "v2/TurnStartedNotification.json",
+      "bytes": 54787,
+      "gitBlobSha1": "57052afd9f767b3e62a5057550cc61ed558717cf"
+    },
+    {
+      "path": "v2/TurnSteerParams.json",
+      "bytes": 6385,
+      "gitBlobSha1": "2a3627cbd0f7cfd9a906c2e534b02aa21f7f8eb0"
+    },
+    {
+      "path": "v2/TurnSteerResponse.json",
+      "bytes": 212,
+      "gitBlobSha1": "d801a3613c6c5521fe07213ca958ddf37962c5d2"
+    },
+    {
+      "path": "v2/WarningNotification.json",
+      "bytes": 454,
+      "gitBlobSha1": "460486896df43454af67120ea606898864008352"
+    },
+    {
+      "path": "v2/WindowsSandboxReadinessResponse.json",
+      "bytes": 435,
+      "gitBlobSha1": "de5ee264cb864a7dbfbaa6c686e7b571f6e2d1a3"
+    },
+    {
+      "path": "v2/WindowsSandboxSetupCompletedNotification.json",
+      "bytes": 556,
+      "gitBlobSha1": "9ed9632fd30beb0a7746395a448ea44b455959f6"
+    },
+    {
+      "path": "v2/WindowsSandboxSetupStartParams.json",
+      "bytes": 1002,
+      "gitBlobSha1": "ed93913cb399337bb34ae6dd8fe920d78b95eb5e"
+    },
+    {
+      "path": "v2/WindowsSandboxSetupStartResponse.json",
+      "bytes": 230,
+      "gitBlobSha1": "ce35665bca4aca46c1584760b6c86b2d66827f34"
+    },
+    {
+      "path": "v2/WindowsWorldWritableWarningNotification.json",
+      "bytes": 478,
+      "gitBlobSha1": "893dbbaf107b23bb186e8fa51d582f504de851d6"
+    }
+  ]
+}

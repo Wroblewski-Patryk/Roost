@@ -3,6 +3,11 @@
 RF-CODEX-018, 2026-09-15. Decision candidate version **1**.
 Verdict: **OFFICIAL-NATIVE-SANDBOX-OUTER-LAUNCH-BLOCKED**.
 
+Follow-up [RF019 precomputed-schema research](direct-codex-precomputed-schema-v1.md)
+confirms a complete source JSON inventory, but retains BLOCKED for exact
+PE/schema binding. Its RF020 proposal concerns publisher metadata only.
+The RF019 recommendation below records this report's historical handoff.
+
 An official source-level Windows command wrapper exists outside model turns.
 The inspected path loads configuration before requesting the sandboxed child,
 and conditionally bootstraps authentication/cloud configuration. Its Windows
