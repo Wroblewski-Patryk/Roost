@@ -4,6 +4,12 @@ RF-CODEX-016, 2026-09-15. Matrix version **1**.
 Normative owner: [contract v1](direct-codex-native-schema-probe-v1.md).
 Verdict: **NATIVE-SCHEMA-PROBE-CONTRACT-BLOCKED**; no actual probe authority.
 
+[RF017 standard isolation research](direct-codex-windows-standard-isolation-v1.md)
+adds source and selected host observations, not C/O/A evidence. Official elevated
+command sandboxing is the preferred dependency; its supported outer-generator
+launch, effective access, exact setup changes and rollback remain unqualified.
+Every existing matrix result below retains its stated evidence limit.
+
 Evidence: D=static contract/source review; S=own harmless system fixture;
 C=separately authorized exact Codex generator; O=complete native enforcement;
 A=independent acceptance. A primitive PASS-S is not an entry-gate PASS or C/O/A.

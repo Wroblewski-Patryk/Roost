@@ -1,5 +1,16 @@
 # Foundation requirements traceability
 
+RF-CODEX-017: [Windows standard isolation qualification](direct-codex-windows-standard-isolation-v1.md)
+returns WINDOWS-STANDARD-ISOLATION-BLOCKED. Official elevated command sandboxing
+is the sole preferred dependency; a supported outer launch of the schema generator
+before initialization remains unproven. Existing vendor principals and selected
+firewall rules were observed, not modified or accepted as effective containment.
+Closed official-source ledger: 8 requests, 166,058 body bytes, six 200s, one 404,
+one unfollowed 301, zero retries. Exact shared-state mutation/rollback and effective
+access remain gaps. No setup, Codex, network fixture or Docker operation occurred;
+all gates/profile/schema/registry v5 remain unchanged. Next: RF-CODEX-018 read-only
+official outer-launch interface qualification; not started.
+
 RF-CODEX-016: [native schema-probe contract](direct-codex-native-schema-probe-v1.md)
 and [acceptance matrix](direct-codex-native-schema-probe-acceptance-v1.md) retain
 NATIVE-SCHEMA-PROBE-CONTRACT-BLOCKED. Seven own system fixture families passed,

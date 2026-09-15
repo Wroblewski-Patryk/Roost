@@ -4,6 +4,11 @@ RF-CODEX-016, 2026-09-15. Contract version **1**.
 Verdict: **NATIVE-SCHEMA-PROBE-CONTRACT-BLOCKED**.
 This specifies a future single generator invocation, not a runnable launcher or
 permission to execute. `generatorArgv=null`, `sourceBuildBinding=null`.
+Follow-up: [RF017 Windows standard isolation](direct-codex-windows-standard-isolation-v1.md)
+prefers the official elevated sandbox dependency but retains BLOCKED: existing
+accounts/rules do not prove a supported pre-initialization generator boundary.
+The RF017 recommendation below is historical; RF017's report owns the current
+RF-CODEX-018 proposal. No NSP requirement or entry gate is relaxed.
 No Codex instruction, generator, App Server, model, authentication or network
 operation ran in RF016. The [acceptance matrix](direct-codex-native-schema-probe-acceptance-v1.md)
 owns evidence classifications and current prerequisite gaps.

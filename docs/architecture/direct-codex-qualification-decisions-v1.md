@@ -1,7 +1,7 @@
 # Direct Codex qualification decision packet v1
 
 RF-HERMES-006, 2026-09-13. Decision-packet version: **1**.
-Packet revision: **11**, RF-CODEX-016, 2026-09-15.
+Packet revision: **12**, RF-CODEX-017, 2026-09-15.
 Current pilot: **native Windows**, accepted by the owner in
 [ADR-003](../decisions/ADR-003-native-windows-codex-pilot.md). WSL2 remains a later
 optional, separately qualified profile, with no automatic Windows↔WSL fallback.
@@ -15,6 +15,12 @@ retain NATIVE-SCHEMA-PROBE-CONTRACT-BLOCKED. Own system fixtures give narrow
 environment, collector, file-guard and Job evidence only. Exact build-bound argv,
 filesystem/network/principal enforcement and complete resource/closure evidence
 remain missing. No Codex probe ran or is currently admitted.
+
+[RF017 Windows standard isolation](direct-codex-windows-standard-isolation-v1.md)
+prefers the official elevated sandbox as a dependency for further qualification.
+WINDOWS-STANDARD-ISOLATION-BLOCKED remains: existing vendor accounts and selected
+rules do not prove no-setup readiness, a supported outer-generator launch or a
+complete mutation/rollback contract. No setup or new runtime profile is admitted.
 
 RF009–013 below are dated findings for the deferred Linux acquisition candidate.
 Their npm/Sigstore/TUF prerequisites do not become Windows pilot blockers. Native
@@ -538,10 +544,13 @@ RF-CODEX-016 defines the schema-only contract and records seven narrow system
 fixture families. It grants no actual generator execution and closes no runtime
 admission gate. Current Docker continuity could not be verified.
 
-Exactly one recommended next atomic task: **RF-CODEX-017 — bounded read-only
-qualification of a standard Windows filesystem/network isolation mechanism for
-the schema-only profile.** Determine whether existing mechanisms can enforce
-pre-initialization denials without persistent setup; otherwise specify the exact
-minimal setup impact for separate approval. No implicit network/Codex execution,
-installation or account/firewall/ACL/service/registry change. The schema-probe
-contract owns the proposed scope. RF-CODEX-017 was not started.
+RF-CODEX-017 records official source and selected host evidence without setup.
+It retains the outer-launch/build binding, effective access, shared-state impact
+and rollback gaps; no activation or admission gate closes.
+
+Exactly one recommended next atomic task: **RF-CODEX-018 — read-only qualification
+of the official native sandbox's supported outer-launch interface for the exact
+schema generator.** Establish official build/source binding and whether the
+maintained interface can apply identity, strict reads and zero network before
+initialization. No custom sandbox, setup or Codex execution. The RF017 isolation
+report owns the proposed scope. RF-CODEX-018 was not started.
