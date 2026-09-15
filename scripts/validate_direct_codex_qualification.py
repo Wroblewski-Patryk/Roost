@@ -1,5 +1,6 @@
 """Static RF-HERMES-006 document/schema checks; no runtime, network or auth I/O."""
 import datetime
+import ast
 import csv
 import hashlib
 import json
@@ -174,7 +175,49 @@ def validate_receipt(receipt, profile, schema, expected):
         need('qualification_pass' not in receipt['reasonCodes'], 'false_pass_reason')
 
 
+def validate_native_schema_probe():
+    contract_path = BASE / 'direct-codex-native-schema-probe-v1.md'
+    matrix_path = BASE / 'direct-codex-native-schema-probe-acceptance-v1.md'
+    contract = contract_path.read_text(encoding='utf-8')
+    matrix = matrix_path.read_text(encoding='utf-8')
+    need(re.findall(r'^## NSP-R(\d{2}) ', contract, re.M) ==
+         [f'{i:02}' for i in range(1, 18)], 'native_schema_requirements')
+    need(re.findall(r'^\| NSP-T(\d{2}) \| NSP-R(\d{2}) \|', matrix, re.M) ==
+         [(f'{i:02}', f'{i:02}') for i in range(1, 18)], 'native_schema_matrix')
+    need('generatorArgv=null' in contract and 'sourceBuildBinding=null' in contract,
+         'native_schema_unknown_binding')
+    for key in ('implementationReady', 'executionSupported', 'pilotReady',
+                'liveAdmissionAllowed', 'actualProbeAuthorized', 'actualProbeStarted'):
+        need(key + '=false' in contract and key + '=true' not in contract,
+             'native_schema_closed_gate')
+    need(contract.count('Exactly one recommended next atomic task:') == 1 and
+         '**RF-CODEX-017' in contract, 'native_schema_next_task')
+    gates = ('argv', 'artifact', 'trust', 'closure', 'principal', 'environment',
+             'discovery', 'filesystem', 'network', 'process_tree', 'budgets',
+             'output', 'host', 'authority', 'review')
+    section = contract.split('## NSP-R15 ', 1)[1].split('## NSP-R16 ', 1)[0]
+    need(tuple(re.findall(r'`([a-z_]+)`', section)) == gates, 'native_schema_gate_names')
+    # Parse only: a documentation validator must never launch the system fixture.
+    tree = ast.parse((ROOT / 'scripts/test_native_codex_schema_probe.py').read_text(encoding='utf-8'))
+    assignments = [node for node in tree.body if isinstance(node, ast.Assign)
+                   and any(isinstance(t, ast.Name) and t.id == 'GATES' for t in node.targets)]
+    need(len(assignments) == 1 and ast.literal_eval(assignments[0].value) == gates,
+         'native_schema_fixture_gates')
+    for path, content in ((contract_path, contract), (matrix_path, matrix)):
+        need(len(content.encode()) <= 32768 and
+             'NATIVE-SCHEMA-PROBE-CONTRACT-BLOCKED' in content, 'native_schema_scope')
+        need(not re.search(r'(?i)(\b[a-z]:[\\/]|/home/|/mnt/[a-z]/|BEGIN .*PRIVATE KEY)', content),
+             'native_schema_privacy')
+        for target in re.findall(r'\[[^\]]+\]\(([^)]+)\)', content):
+            need('://' not in target, 'native_schema_remote_link')
+            filename, _, fragment = unquote(target).partition('#')
+            dest = (path.parent / filename).resolve()
+            need(dest.name != 'design-qa.md' and dest.is_relative_to(ROOT) and
+                 dest.is_file() and not fragment, 'native_schema_local_link')
+
+
 def validate_documents():
+    validate_native_schema_probe()
     profile, schema = load(PROFILE), load(SCHEMA)
     validate_profile(profile, schema)
     packet = PACKET.read_text(encoding='utf-8')
@@ -189,7 +232,7 @@ def validate_documents():
         r, t = re.findall(r'CAS-R(\d{2})', requirements), re.findall(r'CAS-T(\d{2})', tests)
         need(r == t and len(r) == len(set(r)) and all(1 <= int(n) <= 30 for n in r), 'cas_mapping')
     need(packet.count('## Consolidated interview packet I01 — RESOLVED') == 1, 'interview_packet_resolved')
-    need(packet.count('Exactly one recommended next atomic task:') == 1 and '**RF-CODEX-016' in packet, 'next_task')
+    need(packet.count('Exactly one recommended next atomic task:') == 1 and '**RF-CODEX-017' in packet, 'next_task')
     platform = (ROOT / 'docs/decisions/ADR-003-native-windows-codex-pilot.md').read_text(encoding='utf-8')
     need('Status: accepted' in platform and 'owner-interview.rf-codex-015.windows-pilot.v1' in platform, 'native_owner_decision')
     native = (BASE / 'direct-codex-native-artifact-preflight-v1.md').read_text(encoding='utf-8')

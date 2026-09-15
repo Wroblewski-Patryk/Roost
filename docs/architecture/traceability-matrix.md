@@ -1,5 +1,16 @@
 # Foundation requirements traceability
 
+RF-CODEX-016: [native schema-probe contract](direct-codex-native-schema-probe-v1.md)
+and [acceptance matrix](direct-codex-native-schema-probe-acceptance-v1.md) retain
+NATIVE-SCHEMA-PROBE-CONTRACT-BLOCKED. Seven own system fixture families passed,
+including 62 gate denials and one Job parent/descendant stop measured at 2 ms.
+These do not qualify filesystem/network isolation, exact raw-byte accounting,
+full resource enforcement, package closure or a build-matched generator argv.
+No Codex/model/network probe or host setup occurred; all activation gates and
+registry v5 remain unchanged. Docker reads were unavailable, so current workload
+continuity is unknown. Next: RF-CODEX-017 bounded read-only qualification of a
+standard Windows filesystem/network isolation mechanism; not started.
+
 RF-CODEX-015: accepted [ADR-003 native platform decision](../decisions/ADR-003-native-windows-codex-pilot.md)
 selects Windows for the pilot, WSL2 deferred without automatic fallback.
 [Exact native preflight](direct-codex-native-artifact-preflight-v1.md) remains

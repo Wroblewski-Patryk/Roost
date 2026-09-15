@@ -1,13 +1,20 @@
 # Direct Codex qualification decision packet v1
 
 RF-HERMES-006, 2026-09-13. Decision-packet version: **1**.
-Packet revision: **10**, RF-CODEX-015, 2026-09-13.
+Packet revision: **11**, RF-CODEX-016, 2026-09-15.
 Current pilot: **native Windows**, accepted by the owner in
 [ADR-003](../decisions/ADR-003-native-windows-codex-pilot.md). WSL2 remains a later
 optional, separately qualified profile, with no automatic Windows↔WSL fallback.
 The [native preflight and documentary target profile](direct-codex-native-artifact-preflight-v1.md)
 remain BLOCKED. The old WSL JSON profile revision **3** is preserved as historical
 NOT_ADMITTED evidence; it is not the current Windows machine profile.
+
+The [native schema-probe contract](direct-codex-native-schema-probe-v1.md) and
+[17-row acceptance matrix](direct-codex-native-schema-probe-acceptance-v1.md)
+retain NATIVE-SCHEMA-PROBE-CONTRACT-BLOCKED. Own system fixtures give narrow
+environment, collector, file-guard and Job evidence only. Exact build-bound argv,
+filesystem/network/principal enforcement and complete resource/closure evidence
+remain missing. No Codex probe ran or is currently admitted.
 
 RF009–013 below are dated findings for the deferred Linux acquisition candidate.
 Their npm/Sigstore/TUF prerequisites do not become Windows pilot blockers. Native
@@ -527,9 +534,14 @@ RF-CODEX-015 records the accepted native platform in ADR-003 and narrows native
 artifact trust with offline Windows checks. Deferred Linux evidence and false
 gates remain intact; the preflight is NATIVE-WINDOWS-ARTIFACT-PREFLIGHT-BLOCKED.
 
-Exactly one recommended next atomic task: **RF-CODEX-016 — define and qualify
-the bounded native no-model schema-probe contract.** Specify the generator and
-finite limits, exact Windows launch/closure and pre-initialization no-auth,
-no-discovery, no-network and owned-stop prerequisites. Missing prerequisites
-deny Codex execution; no implicit installation, setup, auth, model or probe.
-RF-CODEX-016 was not started; the native preflight owns the proposed scope.
+RF-CODEX-016 defines the schema-only contract and records seven narrow system
+fixture families. It grants no actual generator execution and closes no runtime
+admission gate. Current Docker continuity could not be verified.
+
+Exactly one recommended next atomic task: **RF-CODEX-017 — bounded read-only
+qualification of a standard Windows filesystem/network isolation mechanism for
+the schema-only profile.** Determine whether existing mechanisms can enforce
+pre-initialization denials without persistent setup; otherwise specify the exact
+minimal setup impact for separate approval. No implicit network/Codex execution,
+installation or account/firewall/ACL/service/registry change. The schema-probe
+contract owns the proposed scope. RF-CODEX-017 was not started.

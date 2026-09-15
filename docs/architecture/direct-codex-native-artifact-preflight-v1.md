@@ -1,6 +1,11 @@
 # Native Windows Codex exact-artifact preflight v1
 
 RF-CODEX-015, 2026-09-13. **NATIVE-WINDOWS-ARTIFACT-PREFLIGHT-BLOCKED**.
+
+Follow-up: [RF-CODEX-016 schema-probe contract](direct-codex-native-schema-probe-v1.md)
+now records the bounded contract and narrow system fixtures, still BLOCKED.
+The RF-CODEX-016 recommendation below is the historical RF015 handoff; the
+current proposed next task is RF-CODEX-017 in that contract.
 The owner-approved pilot platform is native Windows under
 [ADR-003](../decisions/ADR-003-native-windows-codex-pilot.md). Static Windows
 signature checks now establish offline trust for the selected PE and its five
