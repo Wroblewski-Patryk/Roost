@@ -8,6 +8,12 @@ adds offline Windows signature/catalog evidence but leaves launch closure,
 build/wire, auth, sandbox and whole-tree stop unqualified. The older WSL profile
 below is historical; no runtime/registry change or activation occurred.
 
+RF-CODEX-022 / ADR-003 version 2 accepts a
+[one-off isolated Windows environment](direct-codex-disposable-windows-environment-v1.md)
+for infrastructure/schema qualification only, not every agent task. All resources
+must be owned, bounded and removed with before/after proof; shared host state is
+untouchable. Technology, setup and probe admission remain unresolved/disabled.
+
 [RF-HERMES-007 / ADR-002](../decisions/ADR-002-codex-qualification-owner-decisions.md)
 resolves I01 owner policy: technical systems choose measured task limits;
 Codex access uses only the official local logged-in account through a proven

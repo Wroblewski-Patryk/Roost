@@ -1,7 +1,7 @@
 # Direct Codex qualification decision packet v1
 
 RF-HERMES-006, 2026-09-13. Decision-packet version: **1**.
-Packet revision: **16**, RF-CODEX-021, 2026-09-15.
+Packet revision: **17**, RF-CODEX-022, 2026-09-15.
 Current pilot: **native Windows**, accepted by the owner in
 [ADR-003](../decisions/ADR-003-native-windows-codex-pilot.md). WSL2 remains a later
 optional, separately qualified profile, with no automatic Windows↔WSL fallback.
@@ -44,9 +44,15 @@ route, after the minimal setup/outer-isolation prerequisites. No gate is promote
 [RF021 setup admission](direct-codex-native-setup-admission-v1.md) retains
 NATIVE-SCHEMA-SETUP-ADMISSION-BLOCKED. The private runner derives a restricted
 child token, but its host interface, whole-tree lifecycle and shared setup delta/
-rollback are not admitted. The next proposal is an owner architecture decision
-for a disposable Windows boundary and versioned schema-probe contract; no current
-NSP requirement, setup or runtime gate is relaxed.
+rollback are not admitted. Its owner architecture proposal was resolved by RF022
+below; no current NSP requirement, setup or runtime gate is relaxed.
+
+[RF022 environment contract](direct-codex-disposable-windows-environment-v1.md)
+and ADR-003 version 2 record the owner's accepted one-off Windows qualification
+boundary. This is not a requirement for every agent task. Technology/resource
+costs are unqualified; setup/probe remain unauthorized. Task-owned resources,
+strict before/after cleanup and no changes to shared host state are mandatory;
+unconfirmed cleanup is INCIDENT + BLOCKED. No technical admission gate closes.
 
 RF009–013 below are dated findings for the deferred Linux acquisition candidate.
 Their npm/Sigstore/TUF prerequisites do not become Windows pilot blockers. Native
@@ -588,9 +594,12 @@ PE/source/schema mapping. Further general metadata research is not proposed.
 RF-CODEX-021 finds no admitted private-runner host contract or complete setup
 delta/rollback. A UAC approval cannot replace missing effect/ownership evidence.
 
-Exactly one recommended next atomic task: **RF-CODEX-022 — owner architecture
-decision for a disposable Windows boundary and versioned schema-probe contract.**
-Record acceptance/rejection and ADR-003/NSP impact, including exact artifact
-placement and the build-bound argv prerequisite. The RF021 report owns the scope.
-No additional general metadata research, private-runner integration, provisioning
-or probe execution is implicit. RF-CODEX-022 was not started.
+RF-CODEX-022 records owner approval and the versioned environment/cleanup contract.
+It does not select a technology, qualify costs or authorize creation/execution.
+
+Exactly one recommended next atomic task: **RF-CODEX-023 — read-only preflight of
+standard disposable Windows boundary availability and resource cost.** Compare
+Windows Sandbox and disposable VM/Hyper-V against the RF022 contract, including
+finite resource/lifetime limits and cleanup observability. No feature installation,
+UAC, reboot, environment creation, setup/probe, Codex or Docker/WSL action.
+RF-CODEX-023 was not started.

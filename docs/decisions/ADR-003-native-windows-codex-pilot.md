@@ -3,8 +3,9 @@
 Date: 2026-09-13
 Status: accepted
 Owner: Roost architecture owner
-Decision version: 1
-Scope: RF-CODEX-015; platform direction and static qualification only
+Decision version: 2
+Amended: 2026-09-15, RF-CODEX-022 owner-approved qualification boundary
+Scope: RF-CODEX-015 platform direction; RF-CODEX-022 one-off qualification only
 Source reference: `owner-interview.rf-codex-015.windows-pilot.v1`
 
 ## Context
@@ -41,6 +42,32 @@ An inspection candidate may be identified by exact Appx identity/version plus
 native file SHA-256 without inventing an internal Codex version. That identifies
 observed bytes only. Unknown build/wire mapping, dependency closure and effective
 controls continue to deny an admitted CAS invocation.
+
+## RF-CODEX-022 accepted amendment
+
+The governing RF-CODEX-022 handoff conveys the owner's approval of a separate,
+one-off Windows environment for infrastructure/schema qualification. It is not
+a required machine for every future agent task. The
+[environment contract v1](../architecture/direct-codex-disposable-windows-environment-v1.md)
+owns the resource manifest, finite lifetime/budgets, before/after snapshots,
+cleanup, incident and sanitized-evidence requirements.
+
+Every created resource must be task-owned and inventoried before creation.
+Existing shared sandbox accounts, rules, ACLs, services, registry/tasks,
+Docker/WSL state and user data must never be adopted, changed or removed.
+Success and failure both require exact owned-resource cleanup and baseline
+comparison; unconfirmed cleanup is INCIDENT + BLOCKED, never success.
+Only bounded sanitized evidence may remain; no guest disks/checkpoints, payload
+or package copies, temporary resources, processes or handles may survive.
+
+Prefer a standard Microsoft boundary, but Windows Sandbox versus disposable
+VM/Hyper-V remains unselected pending read-only availability, resource-cost and
+cleanup evidence. Protect normal laptop work and all privately named workloads.
+Require one instance, no network and only exact artifact/minimal scratch/evidence
+inputs. Setup and probe remain separate future approvals with no automatic step.
+RF022 authorizes documentation only, not feature installation, UAC, host changes,
+environment creation, copying or execution. No production decision record is
+claimed. NSP's build-bound argv and all other admission requirements remain open.
 
 ## Alternatives Considered
 
@@ -79,3 +106,5 @@ This is the narrow platform successor to ADR-002 I01-C and the initial WSL
 qualification selection. ADR-001 and ADR-002 remain accepted for their other
 provisions; their original text remains dated evidence. This decision's current
 platform scope takes precedence. No database decision history was rewritten.
+Version 2 adds only the owner-approved one-off qualification environment above;
+it does not change normal agent deployment or select an isolation technology.

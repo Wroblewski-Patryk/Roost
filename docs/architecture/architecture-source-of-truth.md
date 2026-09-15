@@ -7,6 +7,11 @@ later separately qualified profile with no automatic fallback. The
 artifact, protocol and containment qualification do not follow from platform
 acceptance. Direct Worker ownership and all false runtime gates remain intact.
 
+ADR-003 version 2, approved in RF-CODEX-022, permits a
+[one-off Windows qualification environment](direct-codex-disposable-windows-environment-v1.md).
+Technology is unselected; setup/probe remain unauthorized. This is not a VM
+requirement for ordinary agent tasks, and never grants changes to shared host state.
+
 The [RF-HERMES-005 adapter specification v1](direct-codex-app-server-contract-v1.md)
 defines the ADR-001 target and its closed test/evidence criteria. It is a future
 contract with unresolved qualification decisions, not implemented runtime or

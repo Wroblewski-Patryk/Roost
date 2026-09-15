@@ -9,6 +9,9 @@ build binding remain BLOCKED. The RF018 handoff below is historical; the current
 RF019 proposal is historical. [RF021 setup admission](direct-codex-native-setup-admission-v1.md)
 retains BLOCKED for the private runner and shared-state setup/rollback delta;
 the proposed RF022 architecture decision grants no setup or probe authority.
+[RF022 environment contract](direct-codex-disposable-windows-environment-v1.md)
+now records that accepted qualification-only decision. It leaves shared-host
+setup blocked and defers technology selection to read-only preflight.
 The preferred dependency for further qualification is the official Codex native
 `elevated` command sandbox. No supported, build-bound way to use it as the outer
 boundary of the schema generator has yet been established. Neither an admitted

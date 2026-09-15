@@ -3,6 +3,11 @@
 RF-CODEX-021, 2026-09-15.
 Verdict: **NATIVE-SCHEMA-SETUP-ADMISSION-BLOCKED**.
 
+Follow-up [RF022 environment contract](direct-codex-disposable-windows-environment-v1.md)
+records the owner's accepted one-off qualification boundary with strict cleanup.
+The question and RF022 handoff below are historical; technology/setup/probe remain
+unselected or unauthorized. The next proposal is RF023 read-only preflight.
+
 The official runner can derive a restricted child token from its sandbox-user
 process, but no supported, build-bound external launch contract or complete
 bounded setup/rollback delta is established for this Appx. Starting an

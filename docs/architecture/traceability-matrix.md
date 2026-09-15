@@ -1,5 +1,16 @@
 # Foundation requirements traceability
 
+RF-CODEX-022: owner-approved ADR-003 version 2 and
+[disposable Windows environment contract v1](direct-codex-disposable-windows-environment-v1.md)
+permit one-off infrastructure/schema qualification, not a VM per agent task.
+Technology remains unselected; every created resource must be planned, owned,
+bounded and removed after success/failure with before/after metadata proof.
+Existing shared accounts/rules/ACLs/services/registry/tasks/Docker/WSL/user data
+remain untouchable. Any residual or unconfirmed cleanup is INCIDENT + BLOCKED;
+only small sanitized evidence may remain. All admission/activation gates and
+registry v5 are unchanged. RF023 read-only availability/resource-cost preflight
+is the sole next task, not started. No host or environment action in RF022.
+
 RF-CODEX-021: [native setup/outer-isolation admission](direct-codex-native-setup-admission-v1.md)
 returns NATIVE-SCHEMA-SETUP-ADMISSION-BLOCKED. Private IPC v6 and restricted-token
 child creation are source evidence, not a supported installed-helper contract.

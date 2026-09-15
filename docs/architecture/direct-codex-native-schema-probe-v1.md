@@ -16,6 +16,9 @@ records a complete 305-file source inventory, but no exact PE/schema binding.
 the private runner and shared setup delta are not an admitted outer boundary.
 Its RF022 proposal requires an owner architecture decision. No NSP requirement,
 256-file limit or entry gate is relaxed.
+[RF022 environment contract](direct-codex-disposable-windows-environment-v1.md)
+records owner approval of one-off isolated qualification only. Technology is
+unselected; no setup/probe or change to the operative NSP requirements is admitted.
 No Codex instruction, generator, App Server, model, authentication or network
 operation ran in RF016. The [acceptance matrix](direct-codex-native-schema-probe-acceptance-v1.md)
 owns evidence classifications and current prerequisite gaps.

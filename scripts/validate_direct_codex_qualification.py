@@ -216,8 +216,36 @@ def validate_native_schema_probe():
                  dest.is_file() and not fragment, 'native_schema_local_link')
 
 
+def validate_disposable_environment():
+    path = BASE / 'direct-codex-disposable-windows-environment-v1.md'
+    content = path.read_text(encoding='utf-8')
+    need(re.findall(r'^## DWE-R(\d{2}) ', content, re.M) ==
+         [f'{i:02}' for i in range(1, 13)], 'environment_requirements')
+    need('Owner decision: **ACCEPTED**' in content and
+         'DISPOSABLE-WINDOWS-ENVIRONMENT-BLOCKED' in content, 'environment_decision')
+    for key in ('environmentReady', 'environmentCreated', 'setupAuthorized', 'setupStarted',
+                'actualProbeAuthorized', 'actualProbeStarted', 'implementationReady',
+                'executionSupported', 'pilotReady', 'liveAdmissionAllowed', 'networkEnabled'):
+        need(key + '=false' in content and key + '=true' not in content, 'environment_gates')
+    need(all(term in content for term in ('technology=null', 'environmentBudget=null',
+         'environmentDeadline=null', 'maxInstances=1', 'maxAttempts=1', 'maxRetries=0',
+         'INCIDENT + BLOCKED', 'VHD/VHDX', 'before/after', '65,536',
+         'not a mandatory machine for every future agent task')), 'environment_limits')
+    need(content.count('Exactly one recommended next atomic task:') == 1 and
+         '**RF-CODEX-023' in content and 'RF-CODEX-023 was not started.' in content,
+         'environment_next_task')
+    need(len(content.encode()) <= 32768 and not re.search(
+         r'(?i)(\b[a-z]:[\\/]|/home/|/mnt/[a-z]/|BEGIN .*PRIVATE KEY)', content), 'environment_privacy')
+    for target in re.findall(r'\[[^\]]+\]\(([^)]+)\)', content):
+        need('://' not in target, 'environment_link_scope')
+        destination = (BASE / unquote(target)).resolve()
+        need(destination.is_relative_to(ROOT) and destination.name != 'design-qa.md' and
+             destination.is_file(), 'environment_link')
+
+
 def validate_documents():
     validate_native_schema_probe()
+    validate_disposable_environment()
     profile, schema = load(PROFILE), load(SCHEMA)
     validate_profile(profile, schema)
     packet = PACKET.read_text(encoding='utf-8')
@@ -232,9 +260,11 @@ def validate_documents():
         r, t = re.findall(r'CAS-R(\d{2})', requirements), re.findall(r'CAS-T(\d{2})', tests)
         need(r == t and len(r) == len(set(r)) and all(1 <= int(n) <= 30 for n in r), 'cas_mapping')
     need(packet.count('## Consolidated interview packet I01 — RESOLVED') == 1, 'interview_packet_resolved')
-    need(packet.count('Exactly one recommended next atomic task:') == 1 and '**RF-CODEX-022' in packet, 'next_task')
+    need(packet.count('Exactly one recommended next atomic task:') == 1 and '**RF-CODEX-023' in packet, 'next_task')
     platform = (ROOT / 'docs/decisions/ADR-003-native-windows-codex-pilot.md').read_text(encoding='utf-8')
     need('Status: accepted' in platform and 'owner-interview.rf-codex-015.windows-pilot.v1' in platform, 'native_owner_decision')
+    need('Decision version: 2' in platform and 'RF-CODEX-022 accepted amendment' in platform and
+         'direct-codex-disposable-windows-environment-v1.md' in platform, 'environment_owner_amendment')
     native = (BASE / 'direct-codex-native-artifact-preflight-v1.md').read_text(encoding='utf-8')
     need('NATIVE-WINDOWS-ARTIFACT-PREFLIGHT-BLOCKED' in native and 'direct-codex-windows-native-candidate' in native, 'native_documentary_target')
     need(all(key + '=false' in native for key in profile['gates']), 'native_gates')
