@@ -72,6 +72,29 @@ class PrecomputedMetadataTests(unittest.TestCase):
     def test_positive_metadata(self):
         self.assertEqual(v.main()['result'], 'PASS')
 
+    def test_windows_round_reopened(self):
+        ledger = json.loads(v.WINDOWS_LEDGER.read_text(encoding='utf-8'))
+        content = v.WINDOWS_REPORT.read_text(encoding='utf-8')
+        self.rejected(ledger, lambda x: x.update(closed=False),
+                      lambda x: v.validate_windows_binding(x, content), 'windows_closed')
+
+    def test_windows_error_promoted(self):
+        ledger = json.loads(v.WINDOWS_LEDGER.read_text(encoding='utf-8'))
+        content = v.WINDOWS_REPORT.read_text(encoding='utf-8')
+        self.rejected(ledger, lambda x: x['requests'][-1].update(status=200),
+                      lambda x: v.validate_windows_binding(x, content), 'windows_response')
+
+    def test_windows_binding_or_readiness_promoted(self):
+        ledger = json.loads(v.WINDOWS_LEDGER.read_text(encoding='utf-8'))
+        content = v.WINDOWS_REPORT.read_text(encoding='utf-8')
+        for old, new, reason in (
+            ('sourceBuildBinding=null', 'sourceBuildBinding=verified', 'windows_binding_unproven'),
+            ('acquisitionReady=false', 'acquisitionReady=true', 'windows_readiness'),
+            ('publisherMetadataRouteClosed=true', 'publisherMetadataRouteClosed=false', 'windows_verdict'),
+        ):
+            with self.subTest(field=old), self.assertRaisesRegex(ValueError, '^' + reason + '$'):
+                v.validate_windows_binding(ledger, content.replace(old, new))
+
 
 if __name__ == '__main__':
     unittest.main()

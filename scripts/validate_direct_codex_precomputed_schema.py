@@ -1,4 +1,4 @@
-"""RF019 static metadata checks only; no payload acquisition or candidate execution."""
+"""RF019/RF020 static metadata checks; no payload acquisition or candidate execution."""
 import hashlib
 import json
 from pathlib import Path, PurePosixPath
@@ -13,6 +13,9 @@ LEDGER = BASE / 'codex-precomputed-schema-source-ledger-v1.json'
 INVENTORY = BASE / 'codex-precomputed-schema-source-inventory-v1.json'
 LEDGER_SEAL = 'c6285635e897e8557c5413b17518dfb8c713f52457b66e3ca79d06d76ab3436e'
 INVENTORY_SEAL = 'e7d7e4e4c2ccde48eef460cbccf6b4c9f94a3ad166c503a8dbb3233978d31161'
+WINDOWS_REPORT = BASE / 'direct-codex-windows-build-binding-v1.md'
+WINDOWS_LEDGER = BASE / 'codex-windows-build-binding-source-ledger-v1.json'
+WINDOWS_LEDGER_SEAL = 'c78cd322750eb01b62b29e0637ed775b782e90964be124083db05056e43bdbff'
 
 
 def need(condition, reason):
@@ -113,14 +116,67 @@ def validate_report(content, ledger):
                  path.is_file() and not fragment, 'local_link')
 
 
+def validate_windows_binding(ledger, content):
+    need(ledger['taskId'] == 'RF-CODEX-020' and ledger['closed'] is True and
+         ledger['halted'] is False and
+         ledger['closureReason'] == 'final_metadata_round_complete_no_more_requests', 'windows_closed')
+    need(ledger['budget'] == {'maxRequests': 10, 'maxTotalBytes': 2097152,
+         'maxResponseBytes': 524288, 'requestTimeoutSeconds': 20, 'maxRetries': 0}, 'windows_budget')
+    rows = ledger['requests']
+    need(len(rows) == len({r['url'] for r in rows}) == 8 and
+         sum(r['bytesRead'] for r in rows) == 409408, 'windows_accounting')
+    for i, row in enumerate(rows, 1):
+        need(row['ordinal'] == i and row['complete'] is True and
+             row['status'] == (404 if i == 8 else 200) and
+             row['outcome'] == ('http_error' if i == 8 else 'complete') and
+             row['limitResult'] == 'within_limit' and row['readInFlightMax'] == 0 and
+             row['redirectCount'] == 0 and 0 < row['bytesRead'] <= 524288 and
+             0 <= row['elapsedMillis'] < 20000, 'windows_response')
+        need(row['url'] in content and row['sha256'] in content, 'windows_source')
+    need(seal(ledger) == WINDOWS_LEDGER_SEAL, 'windows_ledger_drift')
+    need('Verdict: **OFFICIAL-WINDOWS-PE-SCHEMA-BINDING-BLOCKED**.' in content and
+         'publisherMetadataRouteClosed=true' in content and
+         'publisherMetadataRouteClosed=false' not in content, 'windows_verdict')
+    for key in ('implementationReady', 'executionSupported', 'pilotReady', 'liveAdmissionAllowed',
+                'actualProbeAuthorized', 'actualProbeStarted', 'acquisitionAuthorized', 'acquisitionReady'):
+        need(key + '=false' in content and key + '=true' not in content, 'windows_readiness')
+    for key in ('sourceBuildBinding', 'installedCodexVersion',
+                'publisherBinarySchemaManifest', 'acceptedSchemaSha256'):
+        need(key + '=null' in content, 'windows_binding_unproven')
+    need(content.count('Exactly one recommended next atomic task:') == 1 and
+         '**RF-CODEX-021' in content and 'RF-CODEX-021 was not started.' in content and
+         'before its first instruction' in content, 'windows_next_task')
+    need(re.findall(r'^## WPB-(\d{2}) ', content, re.M) ==
+         [f'{i:02}' for i in range(1, 6)], 'windows_sections')
+    need(all(term in content for term in ('cryptographically', 'publisher asserted',
+         'locally observed', 'unproven', '297,858,352', '298,169,136',
+         'be96b992178b1e467c225800da0d65f2c86d5eba1ef0b14632f65db381cbdfde',
+         'All fifteen NSP entry gates remain closed')), 'windows_evidence_limits')
+    need(len(content.encode()) <= 20000 and not re.search(
+         r'(?i)(\b[a-z]:[\\/]|/home/|/mnt/[a-z]/|BEGIN .*PRIVATE KEY)', content), 'windows_public_scope')
+    urls = {r['url'] for r in rows}
+    for target in re.findall(r'\[[^\]]+\]\(([^)]+)\)', content):
+        if '://' in target:
+            need(target in urls, 'windows_unrecorded_source')
+        else:
+            path = (BASE / unquote(target)).resolve()
+            need(path.is_relative_to(ROOT) and path.name != 'design-qa.md' and
+                 path.is_file(), 'windows_local_link')
+
+
 def main():
     need(LEDGER.stat().st_size <= 32768 and INVENTORY.stat().st_size <= 65536, 'metadata_size')
     ledger = json.loads(LEDGER.read_text(encoding='utf-8'))
     validate_ledger(ledger)
     validate_inventory(json.loads(INVENTORY.read_text(encoding='utf-8')))
     validate_report(REPORT.read_text(encoding='utf-8'), ledger)
+    need(WINDOWS_LEDGER.stat().st_size <= 32768, 'windows_ledger_size')
+    validate_windows_binding(json.loads(WINDOWS_LEDGER.read_text(encoding='utf-8')),
+                             WINDOWS_REPORT.read_text(encoding='utf-8'))
     return {'result': 'PASS', 'scope': 'static_precomputed_metadata_only', 'requests': 7,
             'bodyBytes': 257953, 'sourceFiles': 305, 'schemaContentsRead': False,
+            'windowsBindingRequests': 8, 'windowsBindingBodyBytes': 409408,
+            'publisherMetadataRouteClosed': True,
             'exactPEBound': False, 'acquisitionReady': False, 'candidateExecuted': False}
 
 

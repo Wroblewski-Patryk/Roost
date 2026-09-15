@@ -1,5 +1,15 @@
 # Foundation requirements traceability
 
+RF-CODEX-020: [Windows PE/source/schema binding](direct-codex-windows-build-binding-v1.md)
+returns OFFICIAL-WINDOWS-PE-SCHEMA-BINDING-BLOCKED. The pinned release's native
+Windows EXE has a different digest/size from the installed Appx child. Tag/workflow
+and small package metadata do not bind that child to the source schema inventory;
+an exact-digest attestation query returned 404. Final metadata round closed:
+8 requests / 409,408 body bytes, seven 200s, one 404, zero retries/redirects.
+Publisher-metadata route closed for this Appx; all gates/profile/schema/registry v5
+unchanged. Next: RF-CODEX-021 minimal setup/outer-isolation admission for one bounded
+exact-local-PE schema probe, not another metadata round. Not started.
+
 RF-CODEX-019: [precomputed App Server schema qualification](direct-codex-precomputed-schema-v1.md)
 returns PRECOMPUTED-APP-SERVER-SCHEMA-BLOCKED. Closed source inventory: 305 JSON
 files / 3,492,670 declared bytes, with Git blob IDs only. Exact native PE/source

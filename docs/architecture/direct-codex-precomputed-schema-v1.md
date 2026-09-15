@@ -3,6 +3,12 @@
 RF-CODEX-019, 2026-09-15. Decision candidate version **1**.
 Verdict: **PRECOMPUTED-APP-SERVER-SCHEMA-BLOCKED**.
 
+Follow-up [RF020 Windows build binding](direct-codex-windows-build-binding-v1.md)
+completed the final publisher-metadata round and closed that route for the current
+Appx as BLOCKED. The release PE differs from the local candidate. RF021's proposed
+minimal outer-isolation admission for an exact-PE probe is the practical next step;
+the RF020 recommendation below is this report's historical handoff.
+
 Official precomputed bundles and a complete source JSON tree exist at the
 inspected immutable commit. Their relationship to the exact installed native PE
 is unproved. A closed Git-object inventory is available, but it is not a

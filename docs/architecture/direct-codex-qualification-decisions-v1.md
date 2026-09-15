@@ -1,7 +1,7 @@
 # Direct Codex qualification decision packet v1
 
 RF-HERMES-006, 2026-09-13. Decision-packet version: **1**.
-Packet revision: **14**, RF-CODEX-019, 2026-09-15.
+Packet revision: **15**, RF-CODEX-020, 2026-09-15.
 Current pilot: **native Windows**, accepted by the owner in
 [ADR-003](../decisions/ADR-003-native-windows-codex-pilot.md). WSL2 remains a later
 optional, separately qualified profile, with no automatic Windows↔WSL fallback.
@@ -33,6 +33,13 @@ retains PRECOMPUTED-APP-SERVER-SCHEMA-BLOCKED. The complete source inventory has
 305 files and Git object IDs; schema bodies, raw-file SHA-256 and exact native
 PE binding remain unverified. The release response reached its byte ceiling and
 was rejected without parsing. No acquisition or execution gate is promoted.
+
+[RF020 Windows build binding](direct-codex-windows-build-binding-v1.md) retains
+OFFICIAL-WINDOWS-PE-SCHEMA-BINDING-BLOCKED and closes the publisher-metadata route
+for the current Appx. The release Windows EXE has a different size and SHA-256;
+package metadata and the exact-digest attestation query establish no source/schema
+binding. A separately admitted exact-local-PE probe is the remaining practical
+route, after the minimal setup/outer-isolation prerequisites. No gate is promoted.
 
 RF009–013 below are dated findings for the deferred Linux acquisition candidate.
 Their npm/Sigstore/TUF prerequisites do not become Windows pilot blockers. Native
@@ -568,9 +575,13 @@ RF-CODEX-019 records a complete source JSON inventory and closed metadata ledger
 not a publisher-attested binary/schema manifest. The incomplete release response
 does not prove absence of a supported binding route.
 
-Exactly one recommended next atomic task: **RF-CODEX-020 — bounded read-only
-qualification of official native Windows release metadata for the exact
-PE/source/schema binding.** Use fresh explicitly sufficient metadata bounds and
-complete accounting. No payload acquisition, artifact/platform switch, setup or
-execution is implicit. The RF019 report owns the proposed scope.
-RF-CODEX-020 was not started.
+RF-CODEX-020 closes the final publisher-metadata round with no exact local
+PE/source/schema mapping. Further general metadata research is not proposed.
+
+Exactly one recommended next atomic task: **RF-CODEX-021 — establish the minimal
+official setup/outer-isolation admission for one bounded exact-local-PE JSON
+schema probe.** Resolve the first-instruction boundary, build-qualified argv,
+finite timeout/whole-tree stop, output limits and any setup delta/rollback, then
+obtain independent admission evidence and the separate exact probe grant.
+The RF020 report owns this scope; no execution is implicit.
+RF-CODEX-021 was not started.
