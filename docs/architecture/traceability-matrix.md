@@ -1,5 +1,21 @@
 # Foundation requirements traceability
 
+RF-RUNTIME-001: [first-agent runtime decision packet v1](first-agent-runtime-decision-v1.md)
+proposes an owner-approved supervised CLI milestone, with Roost as operational
+truth and Local Worker as sole managed canonical-clone executor. Native Codex CLI
+is the recommended first provider; Hermes MCP and Herdr terminal/status UX are
+complementary optional roles. ADR-001/003 still target App Server; registry and
+API readiness still name Hermes. Provider denial and hard output-token rejection
+are independent deliberate guards, not flags to remove. The packet maps these
+and environment/process/dirty-result gaps to an exact conditional sequence.
+RF-HOST-010, RF-SEC-007 and RF-ACT-002 retain budget, exception-review and synthetic
+readiness obligations; no autonomy or release criterion is weakened. RF023 blocks
+only its disposable qualification route. Current upstream primary sources were
+opened on 2026-09-15; no runtime compatibility is inferred. RF-RUNTIME-002 owner
+decision is the sole next task in this correction, not started. All execution,
+pilot and live gates remain false; accepted ADRs and executable registry unchanged.
+The RF-CODEX entries below retain their dated route-specific next steps.
+
 RF-CODEX-023: [disposable Windows read-only preflight](direct-codex-disposable-windows-preflight-v1.md)
 returns DISPOSABLE-WINDOWS-PREFLIGHT-BLOCKED. Windows 11 Home build 26200 reports
 9.61 GiB free RAM and 29.11 GiB free system-volume space at the observation time;
