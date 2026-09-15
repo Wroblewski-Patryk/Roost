@@ -1,5 +1,17 @@
 # Foundation requirements traceability
 
+RF-CODEX-023: [disposable Windows read-only preflight](direct-codex-disposable-windows-preflight-v1.md)
+returns DISPOSABLE-WINDOWS-PREFLIGHT-BLOCKED. Windows 11 Home build 26200 reports
+9.61 GiB free RAM and 29.11 GiB free system-volume space at the observation time;
+standard Sandbox entrypoint and discoverable Hyper-V module are absent, seven
+exact feature queries return no rows. Hypervisor presence is not usable-boundary
+proof. DWE-R02/R05/R07/R09 availability, budgets, baseline and cleanup remain
+unqualified; technology/budget/deadline are null. No NSP/CAS gate, profile/schema
+seal or registry v5 changed. No environment or Docker/WSL action occurred.
+RF024 owner selection of an already provisioned qualification host and bounded
+read-only evidence scope is the sole next task, not started. RF022 below is dated
+contract history, not the current preflight status.
+
 RF-CODEX-022: owner-approved ADR-003 version 2 and
 [disposable Windows environment contract v1](direct-codex-disposable-windows-environment-v1.md)
 permit one-off infrastructure/schema qualification, not a VM per agent task.

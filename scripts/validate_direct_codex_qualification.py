@@ -243,9 +243,33 @@ def validate_disposable_environment():
              destination.is_file(), 'environment_link')
 
 
+def validate_disposable_preflight():
+    path = BASE / 'direct-codex-disposable-windows-preflight-v1.md'
+    content = path.read_text(encoding='utf-8')
+    need('DISPOSABLE-WINDOWS-PREFLIGHT-BLOCKED' in content and
+         all(term in content for term in ('technology=null', 'environmentBudget=null',
+         'environmentDeadline=null', 'maxInstances=1', 'maxAttempts=1', 'maxRetries=0',
+         'NO_ROW', 'UNKNOWN', 'INCIDENT + BLOCKED')), 'preflight_unknowns')
+    for key in ('environmentReady', 'environmentCreated', 'setupAuthorized', 'setupStarted',
+                'actualProbeAuthorized', 'actualProbeStarted', 'implementationReady',
+                'executionSupported', 'pilotReady', 'liveAdmissionAllowed', 'networkEnabled'):
+        need(key + '=false' in content and key + '=true' not in content, 'preflight_gates')
+    need(content.count('Exactly one recommended next atomic task:') == 1 and
+         '**RF-CODEX-024' in content and 'RF-CODEX-024 was not started.' in content,
+         'preflight_next_task')
+    need(len(content.encode()) <= 32768 and not re.search(
+         r'(?i)(\b[a-z]:[\\/]|/home/|/mnt/[a-z]/|BEGIN .*PRIVATE KEY)', content), 'preflight_privacy')
+    for target in re.findall(r'\[[^\]]+\]\(([^)]+)\)', content):
+        need('://' not in target, 'preflight_link_scope')
+        destination = (BASE / unquote(target)).resolve()
+        need(destination.is_relative_to(ROOT) and destination.name != 'design-qa.md' and
+             destination.is_file(), 'preflight_link')
+
+
 def validate_documents():
     validate_native_schema_probe()
     validate_disposable_environment()
+    validate_disposable_preflight()
     profile, schema = load(PROFILE), load(SCHEMA)
     validate_profile(profile, schema)
     packet = PACKET.read_text(encoding='utf-8')
@@ -260,7 +284,7 @@ def validate_documents():
         r, t = re.findall(r'CAS-R(\d{2})', requirements), re.findall(r'CAS-T(\d{2})', tests)
         need(r == t and len(r) == len(set(r)) and all(1 <= int(n) <= 30 for n in r), 'cas_mapping')
     need(packet.count('## Consolidated interview packet I01 — RESOLVED') == 1, 'interview_packet_resolved')
-    need(packet.count('Exactly one recommended next atomic task:') == 1 and '**RF-CODEX-023' in packet, 'next_task')
+    need(packet.count('Exactly one recommended next atomic task:') == 1 and '**RF-CODEX-024' in packet, 'next_task')
     platform = (ROOT / 'docs/decisions/ADR-003-native-windows-codex-pilot.md').read_text(encoding='utf-8')
     need('Status: accepted' in platform and 'owner-interview.rf-codex-015.windows-pilot.v1' in platform, 'native_owner_decision')
     need('Decision version: 2' in platform and 'RF-CODEX-022 accepted amendment' in platform and

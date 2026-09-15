@@ -10,6 +10,12 @@ only. It is not a mandatory machine for every future agent task.
 This is a target contract, not an implemented environment or permission to create
 one. technology=null; environmentReady=false; environmentCreated=false.
 
+Follow-up: [RF023 read-only preflight](direct-codex-disposable-windows-preflight-v1.md)
+completed with DISPOSABLE-WINDOWS-PREFLIGHT-BLOCKED. Local entrypoint/management
+availability, finite resource reserves and cleanup proof do not support a
+technology selection. This contract and its dated RF022 disposition below are
+unchanged; the follow-up report records the current next task.
+
 ## DWE-R01 — Scope and unchanged boundaries
 
 The native Windows pilot direction and direct Worker ownership remain intact.

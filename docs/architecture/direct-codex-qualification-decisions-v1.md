@@ -1,7 +1,7 @@
 # Direct Codex qualification decision packet v1
 
 RF-HERMES-006, 2026-09-13. Decision-packet version: **1**.
-Packet revision: **17**, RF-CODEX-022, 2026-09-15.
+Packet revision: **18**, RF-CODEX-023, 2026-09-15.
 Current pilot: **native Windows**, accepted by the owner in
 [ADR-003](../decisions/ADR-003-native-windows-codex-pilot.md). WSL2 remains a later
 optional, separately qualified profile, with no automatic Windows↔WSL fallback.
@@ -53,6 +53,13 @@ boundary. This is not a requirement for every agent task. Technology/resource
 costs are unqualified; setup/probe remain unauthorized. Task-owned resources,
 strict before/after cleanup and no changes to shared host state are mandatory;
 unconfirmed cleanup is INCIDENT + BLOCKED. No technical admission gate closes.
+
+[RF023 read-only environment preflight](direct-codex-disposable-windows-preflight-v1.md)
+is complete with DISPOSABLE-WINDOWS-PREFLIGHT-BLOCKED. The standard Sandbox
+entrypoint and discoverable Hyper-V management module are absent; optional-feature
+queries return no rows. A hypervisor flag and point-in-time free RAM/disk do not
+establish a supported boundary, finite budget or observable cleanup. Technology
+remains null; no host feature, environment or runtime was activated.
 
 RF009–013 below are dated findings for the deferred Linux acquisition candidate.
 Their npm/Sigstore/TUF prerequisites do not become Windows pilot blockers. Native
@@ -597,9 +604,13 @@ delta/rollback. A UAC approval cannot replace missing effect/ownership evidence.
 RF-CODEX-022 records owner approval and the versioned environment/cleanup contract.
 It does not select a technology, qualify costs or authorize creation/execution.
 
-Exactly one recommended next atomic task: **RF-CODEX-023 — read-only preflight of
-standard disposable Windows boundary availability and resource cost.** Compare
-Windows Sandbox and disposable VM/Hyper-V against the RF022 contract, including
-finite resource/lifetime limits and cleanup observability. No feature installation,
-UAC, reboot, environment creation, setup/probe, Codex or Docker/WSL action.
-RF-CODEX-023 was not started.
+RF-CODEX-023 completes bounded local availability/resource observations. Supported
+boundary access, hard limits, workload reserves and complete cleanup remain
+unproven; no environment is selected or admitted.
+
+Exactly one recommended next atomic task: **RF-CODEX-024 — owner selection of an
+already provisioned Windows qualification host and bounded read-only evidence
+scope.** Obtain a private host reference with an already available supported
+Microsoft boundary and authority for DWE-v1 availability/limits/cleanup inspection.
+If none is available, retain BLOCKED. No installation, host change, technology
+selection, environment creation or probe is implied. RF-CODEX-024 was not started.
