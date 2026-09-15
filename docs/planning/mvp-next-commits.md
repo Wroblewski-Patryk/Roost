@@ -7,10 +7,10 @@ development. No Codex Agent Host issue queue is stored in the repository.
 
 First-agent direction is accepted in
 [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md). Next atomic task:
-**RF-RUNTIME-004 — qualify an exact compatible official Hermes release pin**,
-following the [RF003 preflight](../architecture/hermes-windows-installation-preflight-v1.md).
-The existing pin lacks --format required by launch v1; installation stopped without
-mutation. Propose exact source/CLI/config compatibility before resuming installation;
+**RF-RUNTIME-005 — resolve the stable upstream structured-CLI/single-turn gap**,
+following the [RF004 proposal](../architecture/hermes-replacement-pin-proposal-v1.md).
+Newest stable 0.21.3 is rejected: missing --format stream-json and unqualified
+strict one-turn behavior. No compatible stable replacement is ready to install;
 do not begin OAuth or model/MCP runs. Native Hermes is first,
 direct CLI alternative, Herdr optional. Disposable VM/Windows Sandbox/Hyper-V is
 not a prerequisite. All existing execution/pilot/live gates remain false.

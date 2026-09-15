@@ -1,5 +1,12 @@
 # Foundation requirements traceability
 
+RF-RUNTIME-004 [replacement-pin proposal v1](hermes-replacement-pin-proposal-v1.md)
+rejects newest stable 0.21.3 / 345cd2b: the chat parser is identical to 0.21.2 and
+lacks launch v1 JSONL output. Static review also finds quiet background follow-up
+turns, auth/MCP deltas and installer unlocked-resolution fallback. Candidate
+metadata is non-active; active pin/admission unchanged, no install or invocation.
+RF005 stable upstream protocol gap is next; all execution/pilot/live gates false.
+
 RF-RUNTIME-003 [Windows installation preflight](hermes-windows-installation-preflight-v1.md)
 confirms the exact Hermes pin lacks launch v1's --format flag. Existing private
 installation retained; no install/config/runtime action followed. Public admission

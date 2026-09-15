@@ -9,6 +9,9 @@ now proves the registry pin's chat parser lacks --format. Its compatibility
 blocker is known, not merely untested; installation stopped before mutation.
 The candidate below specifies the target public interface, not argv supported
 by the current pin. The RF002 research and validation below remain dated evidence.
+The [RF004 replacement proposal](hermes-replacement-pin-proposal-v1.md) also rejects
+stable 0.21.3: identical parser, no compatible JSONL emitter. Active pin and adapter
+remain unchanged; the next task is RF005's stable upstream protocol gap.
 
 ## Official interface and limits
 
@@ -116,7 +119,8 @@ pilotExecutionStarted=false. This is useful blocked adapter code, not a ready
 Hermes installation, admitted runtime or successful agent pilot.
 
 The following RF002 recommendation was attempted and stopped by RF003's known
-pin mismatch; the current next task is RF-RUNTIME-004 in the linked preflight.
+pin mismatch; RF004 also found no qualified replacement. See the proposal above
+for the current RF-RUNTIME-005 upstream gap.
 Historical next atomic task: **RF-RUNTIME-003 — exact private
 Windows Hermes installation/configuration admission packet.** Select an official
 version matching the documented CLI, specify its private dependency/identity

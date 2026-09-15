@@ -6,15 +6,17 @@ Codex OAuth behind Windows Local Worker; direct CLI alternative and Herdr option
 Workspace, one-writer, cleanup, secrets, Ready/review and release guards remain.
 No VM/Windows Sandbox/Hyper-V prerequisite. No runtime activation follows.
 
-## Compatible official Hermes pin — pending
+## Stable upstream CLI protocol gap — pending
 
-[RF-RUNTIME-003 preflight](../architecture/hermes-windows-installation-preflight-v1.md)
-found an existing private installation, but its exact official pin lacks --format
-required by launch v1. Installation/configuration stopped before mutation. Next
-atomic task: **RF-RUNTIME-004**, an exact compatible official release-pin proposal
-before installation. Configuration, isolation, budgets and process closure remain
-unqualified; OAuth/MCP connection is premature. All execution/pilot/live gates
-remain false.
+[RF-RUNTIME-004 proposal](../architecture/hermes-replacement-pin-proposal-v1.md)
+rejects newest stable 0.21.3: like active 0.21.2, its parser lacks --format required
+by launch v1. Quiet output also permits background follow-up turns. No compatible
+stable replacement is qualified. Next atomic task: **RF-RUNTIME-005**, resolve
+the stable upstream structured-CLI/strict-single-turn gap before replacement.
+The structured-output feature landed after the stable tag in 1657a1ce; a stable
+release containing it is required before qualification can resume.
+No installation, fork/private wrapper, OAuth or model/MCP operation follows.
+All execution/pilot/live gates remain false.
 
 ## Accepted foundations
 

@@ -1,6 +1,8 @@
 # Native Hermes installation preflight v1
 
 RF-RUNTIME-003, 2026-09-15. Verdict: **PIN-CLI-INCOMPATIBLE; INSTALLATION-STOPPED**.
+The later [RF004 replacement proposal](hermes-replacement-pin-proposal-v1.md)
+also rejects newest stable 0.21.3; RF005's upstream protocol gap is now next.
 This follows [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md) and the
 [launch contract](hermes-cli-launch-v1.md). The task granted one private native
 installation and secret-free configuration, without OAuth, inference or a pilot.
@@ -86,9 +88,9 @@ Final results: 242 Worker/adapter regressions, 20 synthetic attestation tests an
 historical seals unchanged; new local links, closed gates, registry metadata and
 git diff whitespace checks passed. Database/live integration tests were not run.
 
-Exactly one next atomic task: **RF-RUNTIME-004 — qualify an exact official Hermes
+Historical next atomic task: **RF-RUNTIME-004 — qualify an exact official Hermes
 release pin implementing launch v1 before installation**. Establish source/version
 integrity and the public structured CLI plus documented configuration controls;
 produce a bounded replacement-pin proposal accounting for the existing private
 installation. Do not begin OAuth/MCP connection while this pin blocker remains.
-RF-RUNTIME-004 was not started.
+RF-RUNTIME-004 subsequently completed with no qualified replacement; see above.

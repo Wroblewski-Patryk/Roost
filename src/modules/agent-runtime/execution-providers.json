@@ -55,6 +55,20 @@
         "checkedAt": "2026-09-15",
         "proofScope": "Pinned official source and identical local parser bytes only; no runtime, configuration or full installation verification."
       },
+      "replacementCandidate": {
+        "proposalVersion": "roost-hermes-replacement-v1",
+        "version": "0.21.3",
+        "release": "v2026.9.14",
+        "commit": "345cd2b057a452236de401d3534b8502a7465e8d",
+        "tagObject": "7a963716b81be13ba513d4f127633b7da493aff2",
+        "status": "rejected",
+        "active": false,
+        "qualified": false,
+        "reason": "hermes_cli_pin_incompatible",
+        "checkedAt": "2026-09-15",
+        "unreleasedFeatureCommit": "1657a1ce2ddccdc2d3e6884bc4d0415484a2e16c",
+        "proofScope": "Static review of newest stable release; identical chat parser lacks --format stream-json. Feature was added after this stable tag; unreleased commit is not a candidate. No installation or admission change."
+      },
       "sourceHashes": {
         "scripts/install.ps1": "53a077364aa28bbd6e8d987cdec11a4552e22ff2c5137845725a1c99770f392f",
         "pyproject.toml": "c71aa5bc9e437bac3b662fd04a4a7e121735ebc898373019a366d91e217e58a8",
