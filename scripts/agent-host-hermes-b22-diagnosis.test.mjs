@@ -16,14 +16,15 @@ import { qualifyNativeReconciliation } from "./lib/agent-host-native-reconciliat
 
 const binding = { schemaVersion: hermesNativeProfileVersion, profilePath: path.resolve("synthetic-profile/config.yaml") };
 const repository = path.resolve("synthetic-repository");
-const environment = source => hermesStartupEnvironment(binding, source, repository);
+const environment = source => hermesStartupEnvironment(binding, Object.defineProperties(
+  process.env.SystemRoot ? { SYSTEMROOT: process.env.SystemRoot } : {}, Object.getOwnPropertyDescriptors(source)), repository);
 const cache = "%SystemDrive%/ProgramData/Microsoft/Windows/Caches";
 
-test("B22 current Worker drops SystemDrive even when the parent supplies it", () => {
-  const env = environment({ SystemDrive: "D:", SYSTEMROOT: "D:\\Windows", TEMP: "D:\\SyntheticTemp" });
-  assert.equal(env.SYSTEMROOT, "D:\\Windows");
+test("B22 relative-token reproduction remains; B23 repairs the Worker SystemDrive omission", () => {
+  const drive = process.platform === "win32" ? process.env.SystemRoot.slice(0, 2).toUpperCase() : undefined;
+  const env = environment({ ...(drive ? { SystemDrive: drive } : {}), TEMP: "D:\\SyntheticTemp" });
   assert.equal(env.TEMP, "D:\\SyntheticTemp");
-  assert.equal(Object.keys(env).some(k => k.toUpperCase() === "SYSTEMDRIVE"), false);
+  assert.equal(env.SYSTEMDRIVE, drive);
   // An unresolved percent token is a relative Windows path; this does not prove
   // which native component expanded it or wrote the real B21 files.
   assert.equal(path.win32.isAbsolute(cache), false);
@@ -49,7 +50,7 @@ test("B22 state routing and feature guards are distinct from OS environment comp
 
 test("B22 environment selector still rejects ambiguous plumbing and excludes secret values", () => {
   assert.throws(() => environment({ HOME: "synthetic", home: "duplicate" }), /environment_invalid/);
-  const source = { SYSTEMROOT: "D:\\Windows" };
+  const source = { SYSTEMROOT: process.env.SystemRoot ?? "D:\\Windows" };
   Object.defineProperty(source, "SYNTHETIC_TOKEN", { enumerable: true, get() { throw Error("secret value read"); } });
   assert.equal(environment(source).SYNTHETIC_TOKEN, undefined);
 });

@@ -80,7 +80,7 @@ test("RECORD supports native Windows separators while rejecting tampering and tr
 });
 test("startup strips ambient target without reading its value and rejects missing/overridden denial", { skip: process.platform !== "win32" }, async t => {
   const x = await nativeFixture(t);
-  const source = {}; Object.defineProperty(source, "HERMES_LAZY_INSTALL_TARGET", { enumerable: true, get() { throw new Error("must not read"); } });
+  const source = { SYSTEMROOT: process.env.SystemRoot }; Object.defineProperty(source, "HERMES_LAZY_INSTALL_TARGET", { enumerable: true, get() { throw new Error("must not read"); } });
   const environment = hermesStartupEnvironment(x.options.provider.profile, source, x.options.repositoryPath);
   assert.equal(environment.HERMES_DISABLE_LAZY_INSTALLS, "1"); assert.equal(Object.hasOwn(environment, "HERMES_LAZY_INSTALL_TARGET"), false);
   for (const mutate of [e => delete e.HERMES_DISABLE_LAZY_INSTALLS, e => { e.HERMES_DISABLE_LAZY_INSTALLS = "0"; }, e => { e.HERMES_LAZY_INSTALL_TARGET = "override"; }]) {

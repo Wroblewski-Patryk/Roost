@@ -1,5 +1,14 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+B23 implementation note: [Windows environment contract](../architecture/windows-startup-environment-v1.md)
+fixes the missing SystemDrive with verified derivation, token refusal and
+per-attempt startup policy/receipt v2. This changes no private profile,
+attestation, registry or activation authority. ADR execution version remains 13,
+native-risk remains v7 and all six public flags remain false. B21 evidence and
+artifacts are retained; historical attribution and recovery are still blocked.
+The single proposed successor is B24 recovery-evidence contract work and synthetic
+verification, without a cleanup or provider grant. No automatic run follows.
+
 B22 read-only diagnosis: **BLOCKED attribution, eight unknown entries**. The
 [independent diagnosis](../architecture/hermes-b22-footprint-diagnosis-v1.md)
 identifies the exact unchanged cache-shaped entries and confirms the arithmetic

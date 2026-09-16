@@ -8,9 +8,10 @@ import { modelSelectionSchema } from "./agent-host-model-policy.mjs";
 import { hermesStartupProfileVersion, hermesStartupProfileDigest, hermesBudgetProfileVersion, hermesBudgetProfileDigest, hermesNativeProfileVersion, hermesNativeProfileDigest, inspectHermesProfile, sealHermesProfile, assertHermesProfile } from "./agent-host-hermes-profile.mjs";
 
 import { hermesBudgetArgs } from "./agent-host-hermes-budget.mjs";
+import { windowsEnvironmentPolicy, assertWindowsStartupPaths, inspectWindowsSystemEnvironment } from "./agent-host-windows-environment.mjs";
 
-export const hermesStartupVersion = "roost-hermes-startup-receipt-v1";
-export const hermesStartupPolicy = "roost-hermes-standard-startup-v1";
+export const hermesStartupVersion = "roost-hermes-startup-receipt-v2";
+export const hermesStartupPolicy = "roost-hermes-standard-startup-v2";
 export const hermesStartupMaxAgeMs = 60000;
 export const acceptedHermesStartupEffects = Object.freeze({ bundledSkillsLocalSync: true, localBannerPrefetch: true, networkUpdateCheck: false });
 const pin = contract.registry.providers.find(p => p.kind === "hermes_codex");
@@ -38,6 +39,9 @@ export function hermesStartupEnvironment(binding, source = process.env, reposito
       env[key] = value;
     }
   }
+  const windows = inspectWindowsSystemEnvironment(source);
+  Object.assign(env, windows.environment);
+  assertWindowsStartupPaths([...Object.values(env), binding.profilePath, repositoryPath]);
   if (binding.schemaVersion === hermesNativeProfileVersion && (!repositoryPath || !path.isAbsolute(repositoryPath) || /[;\r\n]/.test(repositoryPath))) fail("hermes_write_root_invalid");
   return { ...env, ...(binding.schemaVersion === hermesNativeProfileVersion ? { HERMES_WRITE_SAFE_ROOT: repositoryPath } : {}), HERMES_HOME: osPath(binding.profilePath).dirname(binding.profilePath), HERMES_SAFE_MODE: "1",
     HERMES_DISABLE_LAZY_INSTALLS: "1", PYTHONNOUSERSITE: "1", PYTHONDONTWRITEBYTECODE: "1", PYTHONUTF8: "1",
@@ -93,20 +97,30 @@ function validate({ provider, envelope, repositoryPath, candidate, budget }) {
       || Object.keys(provider).some(k => !["kind", "enabled", "version", "commit", "officialSource", "executablePath", "profile", "policy", "attestation"].includes(k))) fail("hermes_startup_profile_required");
   if (provider.profile.schemaVersion === hermesNativeProfileVersion) assertCodingAuthority(envelope);
   const env = candidate?.environment;
-  if (!env || Object.keys(env).some(k => ![...plumbing, "HERMES_HOME", "HERMES_SAFE_MODE", "HERMES_DISABLE_LAZY_INSTALLS", "HERMES_WRITE_SAFE_ROOT", "PYTHONNOUSERSITE", "PYTHONDONTWRITEBYTECODE", "PYTHONUTF8", "GIT_TERMINAL_PROMPT", "GIT_OPTIONAL_LOCKS"].includes(k))) fail("hermes_startup_environment_invalid");
+  if (!env || Object.keys(env).some(k => ![...plumbing, ...(process.platform === "win32" ? ["SYSTEMDRIVE"] : []), "HERMES_HOME", "HERMES_SAFE_MODE", "HERMES_DISABLE_LAZY_INSTALLS", "HERMES_WRITE_SAFE_ROOT", "PYTHONNOUSERSITE", "PYTHONDONTWRITEBYTECODE", "PYTHONUTF8", "GIT_TERMINAL_PROMPT", "GIT_OPTIONAL_LOCKS"].includes(k))) fail("hermes_startup_environment_invalid");
+  assertWindowsStartupPaths([...Object.values(env), candidate.command, candidate.cwd, repositoryPath,
+    provider.profile.profilePath]);
   const expectedEnvironment = hermesStartupEnvironment(provider.profile, env, repositoryPath);
+  // Candidate/API/task values cannot select a different system directory. Read
+  // only the two named live Worker environment values, then verify physical root.
+  const host = inspectWindowsSystemEnvironment();
+  if (process.platform === "win32" && (env.SYSTEMROOT?.toLowerCase() !== host.environment.SYSTEMROOT.toLowerCase()
+      || env.SYSTEMDRIVE !== host.environment.SYSTEMDRIVE)) fail("hermes_windows_host_environment_changed");
   const expected = createHermesStartupCandidate({ provider, envelope, repositoryPath, environment: expectedEnvironment, budget });
   if (serialize(expected) !== serialize(candidate)) fail("hermes_startup_candidate_invalid");
   const profile = inspectHermesProfile(provider.profile, repositoryPath);
   assertNoStartupOverlays(provider, candidate);
-  return profile;
+  const windowsEnvironment = process.platform === "win32"
+    ? { policy: windowsEnvironmentPolicy, category: "derived_verified_systemroot", systemDriveDigest: digest(env.SYSTEMDRIVE), rootIdentityDigest: host.rootIdentity }
+    : { policy: windowsEnvironmentPolicy, category: "non_windows_omitted" };
+  return { profile, windowsEnvironment };
 }
 export function sealHermesStartup(options) {
-  validate(options);
+  const { windowsEnvironment } = validate(options);
   const seal = Object.freeze({});
   seals.set(seal, { envelope: options.envelope, ready: options.envelope.revisions.ready, input: options.envelope.seal,
     profile: sealHermesProfile(options.provider.profile, { repositoryPath: options.repositoryPath, readyRevision: options.envelope.revisions.ready }),
-    provider: digest(options.provider), candidate: digest(options.candidate), at: Date.now(), monotonic: performance.now() });
+    provider: digest(options.provider), candidate: digest(options.candidate), windowsEnvironment: digest(windowsEnvironment), at: Date.now(), monotonic: performance.now() });
   return seal;
 }
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -119,6 +133,10 @@ export const hermesStartupReceiptSchema = z.object({
   categories: z.array(z.enum(["repository_read", "repository_write", "local_test"])).min(2).max(3),
   fallbackProvidersEmpty: z.literal(true), legacyFallbackEmpty: z.literal(true), worktree: z.literal(false), safeMode: z.literal(true), updateCheck: z.literal(false),
   acceptedSideEffects: z.object({ bundledSkillsLocalSync: z.literal(true), localBannerPrefetch: z.literal(true), networkUpdateCheck: z.literal(false) }).strict(),
+  windowsEnvironment: z.discriminatedUnion("category", [
+    z.object({ policy: z.literal(windowsEnvironmentPolicy), category: z.literal("derived_verified_systemroot"), systemDriveDigest: hash, rootIdentityDigest: hash }).strict(),
+    z.object({ policy: z.literal(windowsEnvironmentPolicy), category: z.literal("non_windows_omitted") }).strict()
+  ]),
   argvDigest: hash, environmentDigest: hash, policyDigest: hash, issuedAt: z.string().datetime(), expiresAt: z.string().datetime(), digest: hash
 }).strict();
 
@@ -129,15 +147,16 @@ export function assertHermesStartup(seal, options) {
   const age = performance.now() - saved.monotonic;
   if (now < saved.at || now - saved.at >= hermesStartupMaxAgeMs || age < 0 || age >= hermesStartupMaxAgeMs) fail("hermes_startup_receipt_expired");
   assertHermesProfile(saved.profile, options.provider.profile, { repositoryPath: options.repositoryPath, readyRevision: options.envelope.revisions.ready });
-  const profile = validate(options), toolsets = hermesTaskToolsets(options.envelope);
+  const { profile, windowsEnvironment } = validate(options), toolsets = hermesTaskToolsets(options.envelope);
+  if (saved.windowsEnvironment !== digest(windowsEnvironment)) fail("hermes_windows_host_environment_changed");
   const body = { schemaVersion: hermesStartupVersion, policyVersion: hermesStartupPolicy, qualification: "source_backed_synthetic_startup_policy",
     hermesVersion: pin.version, hermesCommit: pin.commit, profileVersion: profile.profileVersion, configDigest: profile.configDigest,
     authAttestationId: profile.auth.attestationId, authAttestationDigest: profile.auth.attestationDigest, authPolicyVersion: profile.auth.policyVersion,
     readyRevision: saved.ready, inputSeal: saved.input, provider: "openai-codex", modelSelection: { ...options.envelope.contract.modelSelection },
     toolsets, expandedTools: toolsets.flatMap(t => expansion[t]), categories: ["repository_read", "repository_write", ...(toolsets.includes("terminal") ? ["local_test"] : [])],
     fallbackProvidersEmpty: true, legacyFallbackEmpty: true, worktree: false, safeMode: true, updateCheck: false,
-    acceptedSideEffects: { ...acceptedHermesStartupEffects }, argvDigest: digest(options.candidate.args), environmentDigest: digest(options.candidate.environment),
-    policyDigest: digest([hermesStartupPolicy, acceptedHermesStartupEffects, expansion, profile.configDigest]),
+    acceptedSideEffects: { ...acceptedHermesStartupEffects }, windowsEnvironment, argvDigest: digest(options.candidate.args), environmentDigest: digest(options.candidate.environment),
+    policyDigest: digest([hermesStartupPolicy, windowsEnvironmentPolicy, acceptedHermesStartupEffects, expansion, profile.configDigest]),
     issuedAt: new Date(saved.at).toISOString(), expiresAt: new Date(saved.at + hermesStartupMaxAgeMs).toISOString() };
   const receipt = freeze(hermesStartupReceiptSchema.parse({ ...body, digest: digest(body) }));
   receipts.set(receipt, { seal, options });

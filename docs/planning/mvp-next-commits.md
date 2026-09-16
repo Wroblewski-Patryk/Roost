@@ -1,5 +1,18 @@
 # Next development work
 
+RF-RUNTIME-005B23 [Windows startup
+environment](../architecture/windows-startup-environment-v1.md) derives SystemDrive from
+the verified local SYSTEMROOT, checks parent agreement, rejects unresolved configured
+path tokens and binds the value/physical root into startup receipt and policy v2. Every
+pre-spawn proof rechecks live Worker identity; task/API candidates cannot override it.
+Profile/registry v5, owner attestation, native-risk v7 and ADR-004 execution authority
+v13 stay unchanged. B21 evidence, fixture, Writer/lease/spent remain retained; its
+eight-entry attribution and recovery blockers are unchanged. No provider, cleanup,
+barrier or new grant is authorized. One next proposed atom is B24: a versioned
+append-only recovery-evidence contract with synthetic tests, without actual B21 cleanup
+or activation. All six public flags remain false. Earlier outcomes and successor
+statements below are historical.
+
 RF-RUNTIME-005B22 [preserved-footprint
 diagnosis](../architecture/hermes-b22-footprint-diagnosis-v1.md) is complete with
 **BLOCKED attribution (8 unknown entries)**. All eight additions are unchanged: five

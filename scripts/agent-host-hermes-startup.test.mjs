@@ -29,7 +29,7 @@ function fixture(t, packetChange = () => {}) {
   const provider = { kind: "hermes_codex", enabled: true, version: pin.version, commit: pin.commit, officialSource: pin.officialSource,
     executablePath: path.join(install, "venv", "Scripts", "hermes.exe"), profile, policy: structuredClone(contract.registry.hermesPolicy) };
   const f = validPacketFixture(); packetChange(f); pinReadyFixture(f);
-  const startupEnvironment = hermesStartupEnvironment(profile, { SYSTEMROOT: "C:\\Windows", PATH: "C:\\Windows\\System32" });
+  const startupEnvironment = hermesStartupEnvironment(profile, { SYSTEMROOT: process.env.SystemRoot ?? "C:\\Windows", PATH: "C:\\Windows\\System32" });
   const consumption = { fresh: { taskContext: f.taskContext, applicationContext: f.applicationContext }, claimed: f.claimed,
     currentCommit: "a".repeat(40), assertAuthority() {}, provider, repositoryPath, startupEnvironment };
   const envelope = prepareProviderInput(consumption);
@@ -150,7 +150,7 @@ test("environment values and source-sidecar appearance after Ready are blocked w
   }
 });
 test("environment construction never reads credential or dispatcher values", () => {
-  const source = { Path: "C:\\Windows\\System32" };
+  const source = { SYSTEMROOT: process.env.SystemRoot ?? "C:\\Windows", Path: "C:\\Windows\\System32" };
   for (const key of ["CODEX_HOME", "OPENAI_API_KEY", "HERMES_KANBAN_GOAL_MODE", "PYTHONPATH", "HTTP_PROXY"])
     Object.defineProperty(source, key, { enumerable: true, get() { throw Error("must not read"); } });
   const env = hermesStartupEnvironment({ profilePath: "C:\\Fictional\\profile\\config.yaml" }, source);

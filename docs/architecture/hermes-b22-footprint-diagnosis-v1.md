@@ -1,5 +1,11 @@
 # Hermes B22 preserved-footprint diagnosis v1
 
+B23 follow-up: the [Windows environment contract](windows-startup-environment-v1.md)
+now fixes the demonstrated SystemDrive omission and rejects unresolved startup
+path tokens. The historical findings below retain their B22 timing: attribution
+of all eight B21 entries is still unknown, and recovery remains blocked. No
+B21 evidence or original terminal result was changed by this implementation.
+
 RF-RUNTIME-005B22, 2026-09-16. **BLOCKED; unknown attribution count: 8.**
 The authorized read-only diagnosis is complete. All eight extra entries are
 identified and unchanged, but their creating process/component is not proven.
