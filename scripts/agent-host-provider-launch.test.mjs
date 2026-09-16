@@ -44,6 +44,9 @@ test("documented Hermes projection carries one sealed stdin and exact model/effo
   assert.equal(plan.shell, false); assert.equal(plan.limits.maxQueries, 1);
   assert.equal(plan.cwd, options.repositoryPath); assert.ok(Object.isFrozen(plan));
   assert.ok(plan.blockers.includes("hermes_public_launch_contract_unqualified"));
+  const forged = projectProviderLaunch({ ...options, ownedTreeReceipt: { version: "roost-windows-job-v1",
+    cleanup: true, activeProcesses: 0, assignedBeforeResume: true, killOnClose: true } });
+  assert.ok(forged.blockers.includes("hermes_stop_recovery_unproven"));
   assert.throws(() => { plan.candidateArgs.push("--yolo"); }, TypeError);
 });
 for (const [name, change] of Object.entries({

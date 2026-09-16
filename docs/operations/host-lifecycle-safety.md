@@ -1,5 +1,10 @@
 # Windows Docker/WSL lifecycle safety (RF-HOST-035)
 
+RF-RUNTIME-005C [Windows owned-job backend](../architecture/windows-owned-process-job-v1.md)
+qualifies process lifetime/cleanup with native fixtures. It is not a filesystem,
+credential or host-lifecycle security sandbox and does not remove this independent
+admission gate. No Docker, WSL, scheduler or shared host state was changed.
+
 Provider contract v5 enforces **no agent authority over host lifecycle** at the
 existing Worker/API admission boundary. Ordinary application work, including
 `maintenance` and `local_test`, cannot authorize host maintenance. There is no

@@ -1,6 +1,45 @@
 import { guardHostContent } from "./agent-host-redaction.mjs";
 import { terminateWindowsProcessTree } from "./agent-host-execution-lease.mjs";
 import contract from "./agent-host-hermes-launch-contract.cjs";
+import { startWindowsJob, temporaryWindowsJobLauncher, isWindowsJobReceipt } from "./agent-host-windows-job.mjs";
+
+// Real native backend; no receipt or cleanup callback can be injected by config.
+// Build happens before any target process, rechecking authority afterward.
+export async function runHermesOwnedProcess({ executable, argv, cwd, environment, input, attempt,
+  remainingMs, secrets = [], assertAuthority, signal, shutdownRequested = () => false }) {
+  return temporaryWindowsJobLauncher(async artifact => {
+    let problem, handle;
+    const guard = createHermesQuietGuard({ secrets });
+    const check = () => {
+      try {
+        if (signal?.aborted) throw failure("hermes_quiet_cancelled");
+        if (shutdownRequested()) throw failure("hermes_quiet_controller_shutdown");
+        assertAuthority();
+      } catch (error) {
+        problem ??= error;
+        handle?.stop(error.contextStop ? "context_stop" : error.leaseLost ? "lease_lost" :
+          signal?.aborted ? "cancel" : shutdownRequested() ? "controller_shutdown" : "preparation_failed");
+      }
+    };
+    check(); if (problem) throw problem;
+    handle = await startWindowsJob(artifact, { executable, argv, cwd, environment, input, attempt,
+      durationMs: Math.floor(remainingMs()), onData: (channel, bytes) => guard.write(channel, bytes) });
+    const timer = setInterval(check, 25), abort = () => check();
+    signal?.addEventListener("abort", abort, { once: true });
+    try {
+      check();
+      const receipt = await handle.completion;
+      if (!isWindowsJobReceipt(receipt)) throw Object.assign(failure("hermes_stop_recovery_unproven"), { leaseLost: true });
+      if (problem) throw problem;
+      check(); if (problem) throw problem;
+      if (receipt.terminationReason !== "root_exit") throw failure(`hermes_quiet_${receipt.terminationReason}`);
+      return Object.freeze({ ...guard.complete(receipt.rootExit), ownedTreeReceipt: receipt });
+    } finally {
+      clearInterval(timer); signal?.removeEventListener("abort", abort);
+      handle.stop("preparation_failed"); await handle.completion;
+    }
+  });
+}
 
 const usedChildren = new WeakSet();
 const failure = code => Object.assign(new Error(code), { providerFailure: true, retryable: false });
@@ -48,8 +87,8 @@ export async function stopUnqualifiedHermesTree(child, { terminate = terminateWi
 }
 
 // Worker-internal seams below are only for synthetic tests, not provider config.
-// A native owned-tree backend is NOT supplied by this implementation. All live
-// admission stays closed; even root exit 0 reaches the no-proof stop above.
+// This legacy raw-child collector has no job ownership. Production Hermes uses
+// runHermesOwnedProcess; arbitrary spawned children still get no stop proof.
 export async function collectHermesQuietProcess(child, { input, remainingMs, secrets = [],
   assertAuthority = () => {}, signal, shutdownRequested = () => false,
   stopOwnedTree = stopUnqualifiedHermesTree, pollMs = 50, stopTimeoutMs = 4000 } = {}) {

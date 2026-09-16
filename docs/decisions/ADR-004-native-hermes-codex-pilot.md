@@ -1,5 +1,11 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+Implementation update RF-RUNTIME-005C: [native owned-job v1](../architecture/windows-owned-process-job-v1.md)
+now has actual fixture proof for process cleanup, including controller loss. This
+implements the retained boundary without changing the first-provider decision or
+requiring a VM. Native job evidence does not qualify model/auth/tool containment;
+all six runtime flags remain false.
+
 RF-RUNTIME-005A / BATCH-RUNTIME-005A accepts a narrow amendment:
 the first supervised pilot uses stable Hermes 0.21.2's public
 [quiet adapter](../architecture/hermes-supervised-quiet-v1.md).

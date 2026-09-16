@@ -13,7 +13,10 @@
     {
       "kind": "ollama_local",
       "status": "planned_disabled",
-      "modelFamilies": ["OpenAI gpt-oss", "Mistral/Devstral"],
+      "modelFamilies": [
+        "OpenAI gpt-oss",
+        "Mistral/Devstral"
+      ],
       "installationAllowed": false,
       "executionSupported": false,
       "prerequisite": "Owner confirmation of disk expansion and a separate resource/quality qualification.",
@@ -70,7 +73,9 @@
         "reason": "hermes_cli_pin_incompatible",
         "sourceFile": "hermes_cli/_parser.py",
         "sourceSha256": "8f6573f8bc211208ae884e9ca21987240abd28bc3312c7189f323286dfc29a21",
-        "missingArguments": ["--format"],
+        "missingArguments": [
+          "--format"
+        ],
         "checkedAt": "2026-09-15",
         "proofScope": "Pinned official source and identical local parser bytes only; no runtime, configuration or full installation verification."
       },
@@ -100,7 +105,13 @@
       "updateRollback": "No automatic install/update. Private pinned environment, retained prior environment/config, license/dependency review and repeated compatibility PoC for every pin change.",
       "healthReadiness": "Contract v5 adds Worker-sealed startup input with no model bootstrap tools. The separately verified read-only broker is reserved for future runtime reads. Native Hermes isolation, live compatibility and budget/stop/recovery remain unproven. Hermes task execution stays blocked; observer never starts a broker.",
       "resourceCost": "Python >=3.11,<3.14 plus dependencies, local provider process and model usage. Disk, memory, latency and token overhead unmeasured; measure in read-only PoC before any pilot.",
-      "failureMode": "Expected not-ready state without incidents, installation, claim or automatic fallback. Only an explicitly configured, integrity-checked version probe can start. Worker/API task admission fails closed."
+      "failureMode": "Expected not-ready state without incidents, installation, claim or automatic fallback. Only an explicitly configured, integrity-checked version probe can start. Worker/API task admission fails closed.",
+      "ownedTreeQualification": {
+        "version": "roost-windows-job-v1",
+        "status": "native_fixtures_verified",
+        "checkedAt": "2026-09-16",
+        "scope": "Windows x64 Job Object launcher, atomic job-list assignment before resume, owned-tree accounting and controller-loss fixture proof only. Fresh in-process native receipt is required; registry metadata does not remove runtime blockers or grant execution."
+      }
     }
   ],
   "hermesPolicy": {

@@ -15,7 +15,7 @@ import { runObserver } from "./lib/agent-host-observer.mjs";
 import { prepareProviderLaunch } from "./lib/agent-host-provider-launch.mjs";
 import { prepareProviderInput } from "./lib/agent-host-provider-input.mjs";
 import { createDirectTurnGuard } from "./lib/agent-host-direct-turn.mjs";
-import { collectHermesQuietProcess } from "./lib/agent-host-hermes-quiet.mjs";
+import { runHermesOwnedProcess } from "./lib/agent-host-hermes-quiet.mjs";
 import { collectWorkspaceEvidence } from "./lib/agent-host-workspace-evidence.mjs";
 import { createExecutionDuration } from "./lib/agent-host-execution-duration.mjs";
 import { createCodexOutputBudget } from "./lib/agent-host-output-budget.mjs";
@@ -284,11 +284,11 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     assertProviderAuthority();
     let transportAccounting;
     if (launch.kind === "hermes_codex") {
-      // Unreachable until native containment/configuration admission is proven.
+      // Unreachable until the remaining containment/configuration gates qualify.
       // One stdin write; no JSON/tool-event interpretation or provider fallback.
-      child = spawn(launch.command, launch.args, { cwd: launch.cwd, env: safeChildEnvironment(), shell: false, windowsHide: true, stdio: ["pipe", "pipe", "pipe"] });
       hermesAbort = new AbortController();
-      const pending = hermesCollection = collectHermesQuietProcess(child, { input: launch.input, remainingMs: duration.remainingMs,
+      const pending = hermesCollection = runHermesOwnedProcess({ executable: launch.command, argv: launch.args,
+        cwd: launch.cwd, environment: safeChildEnvironment(), attempt: claimed.id, input: launch.input, remainingMs: () => duration.remainingMs,
         signal: hermesAbort.signal,
         secrets: [apiKey, claimed.leaseToken], assertAuthority: assertProviderAuthority,
         shutdownRequested: () => shutdownRequested || stopping });
@@ -296,6 +296,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       await duration.wait(checkpoint("running", taskContext.executionPacket.revision, digest));
       const receipt = await duration.wait(pending);
       finalResponse = receipt.finalResponse;
+      verification.ownedTreeReceipt = receipt.ownedTreeReceipt;
       transportAccounting = { interface: "quiet", usageAccounting: "unavailable", internalTurnCount: null,
         transportRetryCount: null, toolEventsAvailable: false, reviewRequired: true };
     } else {

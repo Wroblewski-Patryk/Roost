@@ -1,5 +1,12 @@
 # Hermes supervised quiet adapter v1
 
+RF-RUNTIME-005C amendment: the production Worker branch now uses
+[native owned-job v1](windows-owned-process-job-v1.md), qualified with real local
+fixture processes. It replaces the raw-child collector's missing ownership proof.
+Only its fresh native receipt removes the local candidate stop blocker; all other
+blockers and all six false flags remain. The RF005A statement below that no native
+backend exists records the original implementation, not the current backend.
+
 RF-RUNTIME-005A, 2026-09-16. Contract: `roost-hermes-supervised-quiet-v1`.
 Status: **SYNTHETIC ADAPTER IMPLEMENTED; NATIVE EXECUTION BLOCKED**.
 Authority: owner handoff BATCH-RUNTIME-005A and

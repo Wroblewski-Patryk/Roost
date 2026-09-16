@@ -1,5 +1,14 @@
 # Local Codex Agent Runtime
 
+RF-RUNTIME-005C adds [native Windows owned-job v1](windows-owned-process-job-v1.md):
+atomic job assignment before resume, KILL_ON_JOB_CLOSE and zero-active-process
+accounting, verified with native fixture trees, nested jobs and controller crashes.
+Only a fresh in-process native receipt removes the local candidate's stop blocker;
+API/config declarations do not. Hermes now targets that backend, Direct is unchanged,
+and all six execution/pilot/live flags remain false. Earlier raw-process stop-gap
+statements below are historical for this backend. Configuration/auth/tool/turn/
+budget/lifecycle gates remain; RF-RUNTIME-005B owner-present setup is next.
+
 RF-RUNTIME-005A replaces the first supervised pilot's stream-only candidate with
 [quiet v1](hermes-supervised-quiet-v1.md): stable 0.21.2, explicit approved
 model/reasoning, one sealed stdin input and no Worker retry/fallback. Quiet output

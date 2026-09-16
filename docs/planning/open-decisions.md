@@ -1,5 +1,12 @@
 # Open decisions
 
+RF-RUNTIME-005C [native owned-job qualification](../architecture/windows-owned-process-job-v1.md)
+is complete for local fixture process lifetime/cleanup. Native receipt validation
+is required per attempt; missing proof remains fail-closed. The next single atom is
+still **RF-RUNTIME-005B — owner-present Codex OAuth plus minimal Blank Slate config**,
+not started here. Auth/config/tool/turn/budget/lifecycle blockers and all six false
+runtime flags remain; no automatic model run or rollout follows.
+
 The first-provider choice is resolved by RF-RUNTIME-002 /
 [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md): native Hermes using
 Codex OAuth behind Windows Local Worker; direct CLI alternative and Herdr optional.
@@ -13,7 +20,7 @@ quiet/oneshot on existing stable 0.21.2 for the first supervised pilot. Waiting
 for unreleased stream-json is no longer required; older rejection evidence remains
 historical. Next atomic task: **RF-RUNTIME-005B — owner-present Codex OAuth plus
 minimal Blank Slate configuration**, separately delegated. No OAuth or model
-operation occurred in RF005A. Native owned-tree stop, effective config, auth/tool
+operation occurred in RF005A. Fresh owned-tree receipts remain mandatory; effective config, auth/tool
 boundaries, internal turns and hard budgets remain unqualified; all six runtime
 flags stay false. Config completion must not be reported as pilot readiness.
 

@@ -1,5 +1,11 @@
 # Agent Host Recovery v1
 
+RF-RUNTIME-005C [owned-job v1](windows-owned-process-job-v1.md) adds native cleanup
+for the future Hermes branch. A lost/malformed/late cleanup receipt still retains
+writer ownership; controller crash does not prove durable acknowledgement or make
+spawn_intent replayable. No PID/age-based reclamation, Direct migration or recovery
+activation follows. Existing admission and reconciliation rules below remain.
+
 [Host lifecycle safety](../operations/host-lifecycle-safety.md) is an independent
 admission gate. Current providers cannot enter automatic recovery. A structured
 host-maintenance failure preserves the last checkpoint and writer ownership;

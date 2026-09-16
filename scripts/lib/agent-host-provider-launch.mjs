@@ -5,6 +5,7 @@ import hermesContract from "./agent-host-hermes-launch-contract.cjs";
 import { modelSelectionSchema, codexExecutionArgs } from "./agent-host-model-policy.mjs";
 import { providerInputTransport, consumeProviderInput } from "./agent-host-provider-input.mjs";
 import { guardHostContent } from "./agent-host-redaction.mjs";
+import { hermesOwnedTreeBlockers } from "./agent-host-windows-job.mjs";
 
 export { hermesContract };
 const hermes = contract.registry.providers.find(p => p.kind === "hermes_codex");
@@ -36,7 +37,7 @@ function windowsPath(value, executable = false) {
 // physical-directory checks, never from provider config or model input. This
 // pure function neither reads files nor proves executable identity on disk.
 export function projectProviderLaunch({ provider, envelope, repositoryPath, codexCommand, sandbox,
-  secrets = [], platform = process.platform }) {
+  secrets = [], platform = process.platform, ownedTreeReceipt }) {
   const kind = contract.providerKind(provider);
   if (kind === "unknown") fail("execution_provider_unknown");
   const transport = providerInputTransport(kind, envelope);
@@ -53,6 +54,7 @@ export function projectProviderLaunch({ provider, envelope, repositoryPath, code
   if (!windowsPath(repositoryPath) || sandbox !== "workspace-write") fail("hermes_workspace_invalid");
   if (!same(provider.policy, contract.registry.hermesPolicy)) fail("hermes_launch_policy_invalid");
   if (envelope.identity.attempt !== 1 || envelope.contract.budgets.maxAttempts !== 1) fail("hermes_single_attempt_required");
+  const blockers = hermesOwnedTreeBlockers(hermesContract.blockers, ownedTreeReceipt);
   // Only documented flags. No invented --reasoning-effort/--ephemeral/--no-*
   // switches. This is a blocked candidate, NEVER a runnable descriptor.
   return freeze({ version: hermesContract.version, kind, command: null, args: null,
@@ -63,8 +65,8 @@ export function projectProviderLaunch({ provider, envelope, repositoryPath, code
     cwd: repositoryPath, input: transport.input, modelSelection: selection.data,
     requiredConfig: { reasoningEffortKey: "agent.reasoning_effort", reasoningEffort: selection.data.reasoningEffort,
       workerOwnedMcpOnly: true, configReceipt: null, environmentReceipt: null },
-    limits: { ...envelope.contract.budgets, ...hermesContract }, shell: false, windowsHide: true,
-    blockers: hermesContract.blockers });
+    limits: { ...envelope.contract.budgets, ...hermesContract, blockers }, shell: false, windowsHide: true,
+    blockers });
 }
 
 // The same one-use seal and final authority/context checks serve both providers.
