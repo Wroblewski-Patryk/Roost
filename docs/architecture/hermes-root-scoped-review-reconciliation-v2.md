@@ -1,5 +1,12 @@
 # Hermes root-scoped review and reconciliation v2
 
+Current B28 amendment: [original ownership before resume](fixture-ownership-before-resume.md).
+Native coding uses gated Windows Job v2 with durable Ready/origin/actual-Job
+bindings before acknowledgment and ResumeThread. Ordinary reconciliation can
+restore cleanup authority only. Generic low-level v1 remains for qualification,
+not a native-coding fallback. All six flags remain false; no provider run is
+authorized. Earlier observations and successor proposals below are historical.
+
 Later B26 update: [exact adopted recovery](hermes-b26-adopted-recovery-v1.md)
 records the separately authorized consumption/cleanup and terminal resource state.
 Original review, supplement, adoption and spent are preserved; recovery does not

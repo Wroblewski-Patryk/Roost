@@ -174,9 +174,12 @@ for (const reason of ["cancel", "timeout", "controller_shutdown"]) test(`qualifi
   await withHermesLaunchFixture(async fixture => {
     const x = await setup(t, fixture, f => { f.claimed.prompt = "owned budget tree fixture"; }), controller = new AbortController();
     let stopped = false;
-    const timer = setTimeout(() => { stopped = true; controller.abort(); }, 1400);
+    // Exercise stopping an assigned Job. Preparation now includes the durable
+    // Ready proof; a wall timer started before it can cancel without any Job.
+    let timer;
     try {
       await assert.rejects(runQualifiedHermesFixture({ receipt: x.receipt, options: x.projection, consumption: consume(x), activation: fixture.activation,
+        onAssigned: () => { if (reason !== "timeout") timer = setTimeout(() => { stopped = true; controller.abort(); }, 1400); },
         signal: reason === "cancel" ? controller.signal : undefined,
         remainingMs: reason === "timeout" ? () => 3400 : () => 15000,
         shutdownRequested: reason === "controller_shutdown" ? () => stopped : undefined }), error => {

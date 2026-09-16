@@ -1,5 +1,12 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+Current B28 amendment: [original ownership before resume](../architecture/fixture-ownership-before-resume.md).
+Native coding uses gated Windows Job v2 with durable Ready/origin/actual-Job
+bindings before acknowledgment and ResumeThread. Ordinary reconciliation can
+restore cleanup authority only. Generic low-level v1 remains for qualification,
+not a native-coding fallback. All six flags remain false; no provider run is
+authorized. Earlier observations and successor proposals below are historical.
+
 RF-RUNTIME-005B26 [adopted recovery](../architecture/hermes-b26-adopted-recovery-v1.md) defines the separately owner-authorized
 one-use cleanup of the exact B25-adopted B21 fixture, then its lease and Writer.
 A signed append-only consumption/intent chain, exclusive controller and recovery
@@ -289,7 +296,7 @@ The original RF-RUNTIME-002 decision and its dated authority follow below.
 Date: 2026-09-15
 Status: accepted
 Owner: Roost architecture owner
-Decision version: 13 (RF-RUNTIME-005B21 one new coding smoke spent; acceptance BLOCKED, 2026-09-16)
+Decision version: 14 (RF-RUNTIME-005B28 source/synthetic lifecycle amendment, 2026-09-17). Historical execution authority v13 remains spent; no new execution grant.
 Scope: RF-RUNTIME-002 owner handoff; architecture and blocked adapter implementation
 Source reference: `owner-handoff.rf-runtime-002.hermes-first.v1`
 

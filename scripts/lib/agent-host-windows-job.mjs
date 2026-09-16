@@ -26,10 +26,20 @@ const eventSchema = z.discriminatedUnion("type", [
     terminationReason: z.enum(["root_exit", "timeout", "cancel", "lease_lost", "context_stop", "controller_shutdown", "controller_closed",
       "preparation_failed", "request_invalid", "startup_timeout", "protocol_error", "stdin_error", "pipe_error", "output_limit"]) }).strict()
 ]);
+const gatedEventSchema = z.discriminatedUnion("type", eventSchema.options.map(schema => schema.extend({
+  version: z.literal("roost-windows-job-v2"), ...(schema.shape.type.value === "assigned" ? { challenge: uuid } : {}),
+  ...(schema.shape.type.value === "receipt" ? { resumeReceipt: z.string().regex(/^[a-f0-9]{64}$/).nullable() } : {})
+})));
 
 // Only this process's observed, hash-bound native receipts count. Persisted JSON,
 // API metadata and configuration cannot restore qualification after a restart.
 export function isWindowsJobReceipt(receipt) {
+  const proof = receipts.get(receipt);
+  return !!proof && receipt.resumed === true && isWindowsJobCleanupReceipt(receipt);
+}
+// A genuinely observed unresumed v2 Job proves stopped resources only. It never
+// removes launch blockers or supplies evidence that provider code ran.
+export function isWindowsJobCleanupReceipt(receipt) {
   const proof = receipts.get(receipt);
   return !!proof && performance.now() - proof.at >= 0 && performance.now() - proof.at < 60000 && receipt.cleanup === true && receipt.activeProcesses === 0;
 }
@@ -84,22 +94,24 @@ export async function startWindowsJob(artifact, options) {
   const build = builds.get(artifact);
   try { if (!build || digest(await readFile(artifact.executable)) !== artifact.sha256) throw fail(); }
   catch { throw fail(); }
-  const { executable, argv, cwd, environment, input, durationMs, attempt = randomUUID(), onData = () => {}, onAssigned = () => {}, fault = "" } = options;
+  const { executable, argv, cwd, environment, input, durationMs, attempt = randomUUID(), onData = () => {}, onAssigned = () => {}, confirmResume, fault = "" } = options;
+  const version = confirmResume === undefined ? windowsJobVersion : "roost-windows-job-v2";
+  if (confirmResume !== undefined && typeof confirmResume !== "function") throw fail();
   let executableDigest = null;
   try { executableDigest = digest(readFileSync(executable)); }
   catch (error) { if (error.code !== "ENOENT") throw fail(); }
-  const request = { version: windowsJobVersion, attempt, executable, argv, cwd, environment,
+  const request = { version, attempt, executable, argv, cwd, environment,
     input: Buffer.from(input).toString("base64"), durationMs, stopMs: 3000, ...(build.testFaults ? { fault } : {}) };
   const encoded = JSON.stringify(request) + "\n";
   if (Buffer.byteLength(encoded) > 262144 || !uuid.safeParse(attempt).success || !Number.isInteger(durationMs) || durationMs < 1 || durationMs > 3600000) throw fail();
   const child = spawn(artifact.executable, [], { windowsHide: true, shell: false, stdio: ["pipe", "pipe", "pipe"] });
-  let assigned, receipt, problem, pending = Buffer.alloc(0), bytes = 0, wireEvents = 0, stopped = false;
+  let assigned, receipt, authorizedDigest, problem, pending = Buffer.alloc(0), bytes = 0, wireEvents = 0, stopped = false;
   let stdoutBytes = 0, stderrBytes = 0, stopTimer;
   const timers = [];
   const stop = (reason = "cancel") => {
     if (stopped || child.exitCode !== null) return;
     stopped = true;
-    child.stdin.end(JSON.stringify({ version: windowsJobVersion, attempt, stop: reason }) + "\n");
+    child.stdin.end(JSON.stringify({ version, attempt, stop: reason }) + "\n");
     // Kill only our launcher handle; kernel KILL_ON_JOB_CLOSE owns all descendants.
     // Missing native accounting still fails closed and retains the writer lock.
     stopTimer = setTimeout(() => { problem ??= fail(); child.kill(); }, 4000);
@@ -110,17 +122,23 @@ export async function startWindowsJob(artifact, options) {
     child.stderr.on("data", rejectProtocol); child.stderr.on("error", rejectProtocol);
     child.stdout.on("error", rejectProtocol);
     child.stdout.on("data", chunk => {
-      if (problem) return;
+      if (problem && (!assigned || version !== "roost-windows-job-v2")) return;
       try {
         bytes += chunk.length; if (bytes > 350000) throw fail();
         pending = Buffer.concat([pending, chunk]);
         for (let n; (n = pending.indexOf(10)) >= 0;) {
           if (n > 8192 || ++wireEvents > 4096) throw fail();
           const raw = pending.subarray(0, n); pending = pending.subarray(n + 1);
-          const event = eventSchema.parse(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(raw)));
+          const event = (confirmResume ? gatedEventSchema : eventSchema).parse(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(raw)));
           if (event.attempt !== attempt || receipt) throw fail();
           if (event.type === "assigned") {
             if (assigned || !executableDigest || !event.assignedBeforeResume || !event.rootCreationTime || event.launcherPid !== child.pid) throw fail(); assigned = event; onAssigned(event);
+            if (confirmResume) {
+              const receiptDigest = confirmResume(Object.freeze({ ...event, executableDigest, launcherSha256: artifact.sha256, sourceSha256: artifact.sourceSha256 }));
+              if (stopped || !/^[a-f0-9]{64}$/.test(receiptDigest ?? "")) throw fail();
+              authorizedDigest = receiptDigest;
+              child.stdin.write(JSON.stringify({ version, attempt, job: event.job, challenge: event.challenge, receipt: receiptDigest, resume: true }) + "\n");
+            }
           } else if (event.type === "data") {
             if (!assigned || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(event.data)) throw fail();
             const data = Buffer.from(event.data, "base64");
@@ -128,6 +146,7 @@ export async function startWindowsJob(artifact, options) {
             if (stdoutBytes > 131072 || stderrBytes > 32768) throw fail();
             onData(event.channel, data);
           } else {
+            if (confirmResume && event.resumed && event.resumeReceipt !== authorizedDigest) throw fail();
             if (assigned && (event.job !== assigned.job || !event.assignedBeforeResume || !event.killOnClose)) throw fail();
             if (assigned && ["rootPid", "rootCreationTime", "launcherPid", "launcherCreationTime"].some(k => event[k] !== assigned[k])) throw fail();
             if (event.stdoutBytes !== stdoutBytes || event.stderrBytes !== stderrBytes) throw fail();
@@ -139,10 +158,11 @@ export async function startWindowsJob(artifact, options) {
     });
     child.on("close", code => {
       for (const t of timers) clearTimeout(t); clearTimeout(stopTimer);
-      if (problem || code !== 0 || pending.length || !receipt?.cleanup || !receipt.jobClosed || receipt.activeProcesses !== 0 || receipt.cleanupMs > 3000) { reject(fail()); return; }
+      if (code !== 0 || pending.length || !receipt?.cleanup || !receipt.jobClosed || receipt.activeProcesses !== 0 || receipt.cleanupMs > 3000) { reject(fail()); return; }
       const result = Object.freeze({ ...receipt, launcherSha256: artifact.sha256, sourceSha256: artifact.sourceSha256,
         executableDigest });
-      if (assigned && receipt.resumed && !build.testFaults) receipts.set(result, { at: performance.now() });
+      if (assigned && (receipt.resumed || version === "roost-windows-job-v2") && !build.testFaults) receipts.set(result, { at: performance.now() });
+      if (problem) { const error = fail(); if (!receipt.resumed && version === "roost-windows-job-v2") error.details = { ownedTreeReceipt: result }; reject(error); return; }
       resolve(result);
     });
     child.stdin.write(encoded);

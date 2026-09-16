@@ -1,8 +1,9 @@
-import { consumeNativeToolBoundary, completeNativeToolBoundary } from "./agent-host-hermes-native-boundary.mjs";
+import { consumeNativeToolBoundary, completeNativeToolBoundary, prepareNativeBoundaryResume, authorizeNativeBoundaryResume } from "./agent-host-hermes-native-boundary.mjs";
+import { fixtureRuntimeBinding } from "./agent-host-fixture-ownership.mjs";
 import { guardHostContent } from "./agent-host-redaction.mjs";
 import { terminateWindowsProcessTree } from "./agent-host-execution-lease.mjs";
 import contract from "./agent-host-hermes-launch-contract.cjs";
-import { startWindowsJob, temporaryWindowsJobLauncher, isWindowsJobReceipt, assertWindowsJobCapability } from "./agent-host-windows-job.mjs";
+import { startWindowsJob, temporaryWindowsJobLauncher, isWindowsJobReceipt, isWindowsJobCleanupReceipt, assertWindowsJobCapability } from "./agent-host-windows-job.mjs";
 
 import { consumeHermesBudgetReceipt, assertHermesBudgetProcess, completeHermesBudgetReceipt, classifyHermesOutcome, hermesBudgetRequiresNativeBoundary } from "./agent-host-hermes-budget.mjs";
 
@@ -46,14 +47,23 @@ export async function runHermesOwnedProcess({ executable, argv, cwd, environment
     // so its time cannot extend the original native cleanup deadline.
     const nativeDuration = Math.floor(remaining()) - (budgetReceipt ? 3000 : 0);
     if (nativeDuration < 1) throw failure("hermes_quiet_timeout");
+    const runtimeBinding = () => ({ executable: fixtureRuntimeBinding(executable), launcher: fixtureRuntimeBinding(artifact.executable), node: fixtureRuntimeBinding(process.execPath) });
+    if (nativeProof) prepareNativeBoundaryResume(nativeProof, runtimeBinding());
     handle = await startWindowsJob(artifact, { executable, argv, cwd, environment, input, attempt,
+      ...(nativeProof ? { confirmResume: assignment => {
+        check(); if (problem) throw problem;
+        const receipt = authorizeNativeBoundaryResume(nativeProof, assignment, runtimeBinding());
+        check(); if (problem) throw problem; return receipt;
+      } } : {}),
       durationMs: nativeDuration, onAssigned, onData: (channel, bytes) => guard.write(channel, bytes) });
     const deadlineTimer = setTimeout(() => { problem ??= failure("hermes_quiet_timeout"); handle.stop("timeout"); }, nativeDuration + (budgetReceipt ? 3000 : 0));
     const timer = setInterval(check, 25), abort = () => check();
     signal?.addEventListener("abort", abort, { once: true });
     try {
       check();
-      const receipt = observedJob = await handle.completion;
+      let receipt;
+      try { receipt = observedJob = await handle.completion; }
+      catch (error) { if (isWindowsJobCleanupReceipt(error.details?.ownedTreeReceipt)) observedJob = error.details.ownedTreeReceipt; throw error; }
       observedExit = receipt.rootExit;
       if (!isWindowsJobReceipt(receipt)) throw Object.assign(failure("hermes_stop_recovery_unproven"), { leaseLost: true });
       if (nativeProof) {

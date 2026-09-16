@@ -7,6 +7,7 @@ import { readFileSync, writeFileSync, realpathSync, existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { validPacketFixture, pinReadyFixture } from "./execution-packet.mjs";
 import { createNativeOwnedRepositoryTemp, inspectNativeOwnedTemp, cleanupNativeOwnedTemp, physicalIdentity } from "../lib/agent-host-native-footprint.mjs";
+import { createDurableNativeFixture, inspectDurableNativeFixture, cleanupDurableNativeFixture } from "../lib/agent-host-fixture-ownership.mjs";
 const initial = "function add(a, b) {\n  return a - b;\n}\nmodule.exports = { add };\n";
 const expected = initial.replace("a - b", "a + b");
 const tests = "const test = require('node:test');\nconst assert = require('node:assert/strict');\nconst { add } = require('./add.cjs');\ntest('addition', () => {\n  assert.equal(add(2, 3), 5);\n  assert.equal(add(-4, 7), 3);\n  assert.equal(add(0, 9), 9);\n});\n";
@@ -25,7 +26,7 @@ function nodeTest(repository) {
   return { exit, outputDigest: sha(output), passed: exit === 0 && /# pass 1\b/.test(output) && /# fail 0\b/.test(output),
     failed: exit === 1 && /# fail 1\b/.test(output) };
 }
-function createFixture(scope) {
+function createFixture(scope, durable) {
   // Regenerate every synthetic identity consistently; no existing application is adopted.
   let encoded = JSON.stringify(validPacketFixture());
   for (const id of new Set(encoded.match(/00000000-0000-4000-8000-\d{12}/g))) encoded = encoded.replaceAll(id, randomUUID());
@@ -44,9 +45,12 @@ function createFixture(scope) {
   c.modelSelection = { model: "gpt-5.6-sol", reasoningEffort: "medium" };
   c.budgets.maxDurationSeconds = 300; c.budgets.maxAttempts = 1;
   c.nativeBoundary = { profile: "coding-local", writePaths: ["add.cjs"], runtime: { required: false, ports: [] } };
-  const ownership = createNativeOwnedRepositoryTemp(realpathSync.native(os.tmpdir()), f.claimed.id);
-  const root = inspectNativeOwnedTemp(ownership, f.claimed.id).root, repository = path.join(root, "repository");
-  const scopeMarker = scope ? JSON.stringify({ schemaVersion: 1, scope, attemptDigest: sha(f.claimed.id) }) + "\n" : null;
+  const fixtureOwnership = durable && createDurableNativeFixture(realpathSync.native(os.tmpdir()), { ...durable,
+    identity: { executionId: f.claimed.id, workspaceId: f.claimed.workspaceId, taskId: f.claimed.taskId, applicationId: f.claimed.applicationId, attempt: f.claimed.attempt } });
+  const ownership = fixtureOwnership ? null : createNativeOwnedRepositoryTemp(realpathSync.native(os.tmpdir()), f.claimed.id);
+  const root = fixtureOwnership ? inspectDurableNativeFixture(fixtureOwnership).root : inspectNativeOwnedTemp(ownership, f.claimed.id).root, repository = path.join(root, "repository");
+  const cleanup = () => fixtureOwnership ? cleanupDurableNativeFixture(fixtureOwnership) : cleanupNativeOwnedTemp(ownership, f.claimed.id);
+  const scopeMarker = scope || durable ? JSON.stringify({ schemaVersion: 1, scope: scope ?? "managed_native_fixture_v1", attemptDigest: sha(f.claimed.id) }) + "\n" : null;
   const git = (...args) => execFileSync("git", ["--literal-pathspecs", "-c", "core.hooksPath=", "-c", "core.fsmonitor=false", "-c", "commit.gpgsign=false", ...args],
     { cwd: repository, env: environment(), windowsHide: true, timeout: 10000, maxBuffer: 65536, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
   try {
@@ -74,12 +78,12 @@ function createFixture(scope) {
         return { before, after, changedFiles: fixed ? ["add.cjs"] : [], minimalChange: fixed, testUnchanged: true, baselineCommitUnchanged: true,
           implementationDigest: sha(implementation), testDigest: sha(tests), diffDigest: sha(git("diff", "--no-ext-diff", "--no-textconv", "--", "add.cjs")) };
     };
-    return { root, repository, ownership, attempt: f.claimed.id, f, before, head, git, prepare,
+    return { root, repository, ownership, fixtureOwnership, attempt: f.claimed.id, f, before, head, git, prepare,
       verify: () => observe(true), observeUnfixed: () => observe(false),
-      cleanup() { const receipt = cleanupNativeOwnedTemp(ownership, f.claimed.id); if (existsSync(root)) deny("smoke_cleanup_incomplete"); return receipt; }
+      cleanup() { const receipt = cleanup(); if (existsSync(root)) deny("smoke_cleanup_incomplete"); return receipt; }
     };
-  } catch (error) { cleanupNativeOwnedTemp(ownership, f.claimed.id); throw error; }
+  } catch (error) { cleanup(); throw error; }
 }
-export const createHermesCodingFixture = () => createFixture(null);
-export const createHermesB17CodingFixture = () => createFixture("one_real_hermes_coding_smoke_b17_only");
-export const createHermesB21CodingFixture = () => createFixture("one_real_hermes_coding_smoke_b21_only");
+export const createHermesCodingFixture = durable => createFixture(null, durable);
+export const createHermesB17CodingFixture = durable => createFixture("one_real_hermes_coding_smoke_b17_only", durable);
+export const createHermesB21CodingFixture = durable => createFixture("one_real_hermes_coding_smoke_b21_only", durable);

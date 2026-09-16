@@ -50,13 +50,13 @@ function assertFixture(grant, executablePath, allowUsed = false) {
       || realpathSync.native(executablePath) !== executablePath || hash(readFileSync(executablePath)) !== saved.hash
       || hash(sourceBytes()) !== saved.sourceHash) denied();
 }
-export async function runQualifiedHermesFixture({ receipt, options, consumption, activation, signal, remainingMs = () => 15000, shutdownRequested }) {
+export async function runQualifiedHermesFixture({ receipt, options, consumption, activation, signal, remainingMs = () => 15000, shutdownRequested, onAssigned }) {
   assertFixture(activation, options.provider.executablePath);
   const handoff = consumeHermesLaunchAdmission(receipt, options, consumption);
   grants.get(activation).used = true;
   const result = await runHermesOwnedProcess({ executable: handoff.candidate.command, argv: handoff.candidate.args,
     cwd: handoff.candidate.cwd, environment: handoff.candidate.environment, input: handoff.input,
-    attempt: options.envelope.identity.executionId, remainingMs, signal, shutdownRequested,
+    attempt: options.envelope.identity.executionId, remainingMs, signal, shutdownRequested, onAssigned,
     assertAuthority() { consumption.assertAuthority(); assertFixture(activation, handoff.candidate.command, true); },
     budgetReceipt: handoff.budgetReceipt, nativeToolReceipt: handoff.nativeToolReceipt, jobArtifact: handoff.jobArtifact });
   return { ...result, admission: Object.freeze({ policyQualified: true, activationAuthorized: true, spawnStarted: true,

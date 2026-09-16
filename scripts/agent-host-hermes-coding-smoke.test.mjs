@@ -109,17 +109,15 @@ test("marked repository starts with deterministic FAIL, accepts only minimal fix
   fixture.cleanup(); removed = true; assert.equal(existsSync(fixture.root), false);
 });
 
-test("smoke task template passes the real sealed Worker input/Ready/native pipeline without a provider process", windows, async t => {
+test("legacy smoke fixture without original durable ownership cannot enter the native pipeline", windows, async t => {
   const fixture = createHermesCodingFixture(); let envelope, writer;
   t.after(async () => { if (envelope) abandonProviderNativeBoundary(envelope); if (writer) await writer.release(); fixture.cleanup(); });
   const synthetic = await nativeFixture(t);
   const state = path.join(fixture.root, "state"); mkdirSync(state); writer = await acquireWriterLock(state);
   const f = fixture.prepare(), provider = synthetic.provider;
   const env = hermesStartupEnvironment(provider.profile, { SYSTEMROOT: process.env.SystemRoot }, fixture.repository);
-  envelope = prepareProviderInput({ provider, repositoryPath: fixture.repository, startupEnvironment: env,
+  assert.throws(() => prepareProviderInput({ provider, repositoryPath: fixture.repository, startupEnvironment: env,
     fresh: { taskContext: f.taskContext, applicationContext: f.applicationContext }, claimed: f.claimed, currentCommit: fixture.head,
     assertAuthority() {}, nativeBoundaryOptions: { writerLock: writer, expected: { head: fixture.head, branch: f.packet.contract.singleTask.branch,
-      origin: f.claimed.application.repositories[0].url } } });
-  assert.equal(envelope.contract.budgets.maxDurationSeconds, 300);
-  assert.equal(envelope.identity.executionId, fixture.attempt);
+      origin: f.claimed.application.repositories[0].url } } }), /native_fixture_original_required/);
 });

@@ -8,8 +8,11 @@ import { acquireApplicationLease, assertApplicationLease, releaseApplicationLeas
 import { assertWriterLock } from "./agent-host-writer-lock.mjs";
 import { isHermesStartupReceipt, hermesStartupNativeRootMatches } from "./agent-host-hermes-startup.mjs";
 import { assertHermesBudgetReceipt, hermesBudgetReceiptMatches } from "./agent-host-hermes-budget.mjs";
-import { isWindowsJobReceipt } from "./agent-host-windows-job.mjs";
-import { createNativeReview, captureNativeReview, completeNativeReview, assertNativeReviewCleanupRecord, recordNativeReviewCleanup, nativeReviewLocation } from "./agent-host-native-review.mjs";
+import { isWindowsJobCleanupReceipt } from "./agent-host-windows-job.mjs";
+import { createNativeReview, prepareNativeReviewResume, authorizeNativeReviewResume, captureNativeReview, completeNativeReview, assertNativeReviewCleanupRecord, recordNativeReviewCleanup, nativeReviewLocation } from "./agent-host-native-review.mjs";
+import { inspectDurableNativeFixture, fixtureTaskDigest, fixtureInstallationBinding, fixtureFileBinding } from "./agent-host-fixture-ownership.mjs";
+import { assertHermesSmokeInstallationFresh } from "./agent-host-hermes-smoke-installation.mjs";
+import { b26Exists } from "./agent-host-b26-inventory.mjs";
 
 export const nativeToolBlocker = "hermes_native_tools_isolation_unproven";
 const proofs = new WeakMap(), receipts = new WeakMap();
@@ -54,7 +57,7 @@ function assertAutoPrunedCachesEmpty(provider) {
   }
 }
 export function sealNativeToolBoundary({ envelope, provider, repositoryPath, expected, writerLock, startupReceipt, budgetReceipt,
-  applicationObserver, ownedTemps = [] }) {
+  applicationObserver, ownedTemps = [], fixtureOwnership, installationReceipt, fixtureInstallation }) {
   const scope = assertCodingAuthority(envelope);
   scope.writePaths.forEach(nativeRelative);
   if (provider.profile.nativeToolsRisk?.decisionReference !== nativeRiskReference || provider.profile.nativeToolsRisk?.policyVersion !== nativeToolPolicy)
@@ -63,6 +66,12 @@ export function sealNativeToolBoundary({ envelope, provider, repositoryPath, exp
       || !hermesBudgetReceiptMatches(budgetReceipt, envelope, startupReceipt)) throw nativeBoundaryError("native_startup_unproven");
   assertHermesBudgetReceipt(budgetReceipt);
   const writer = assertWriterLock(writerLock);
+  if (!fixtureOwnership && b26Exists(path.join(path.dirname(repositoryPath), ".roost-attempt-owner"))) throw nativeBoundaryError("native_fixture_original_required");
+  if (fixtureOwnership) {
+    const fixture = inspectDurableNativeFixture(fixtureOwnership);
+    if (path.join(fixture.root, "repository") !== repositoryPath || fixtureTaskDigest(fixture.identity) !== fixtureTaskDigest(envelope.identity)) throw nativeBoundaryError("native_fixture_binding_mismatch");
+    assertHermesSmokeInstallationFresh(installationReceipt, provider.executablePath);
+  }
   const repositories = envelope.evidence.application.value.application.repositories;
   const primary = repositories.filter(r => r.isPrimary);
   const origin = primary.length === 1 ? primary[0].url : repositories.length === 1 ? repositories[0].url : null;
@@ -78,7 +87,8 @@ export function sealNativeToolBoundary({ envelope, provider, repositoryPath, exp
     runtime: scope.runtime, observer: applicationObserver });
   const proof = Object.freeze({});
   proofs.set(proof, { envelope, provider, repositoryPath, expected: structuredClone(expected), writerLock, app, before, scope,
-    startupReceipt, budgetReceipt, writer, tempRoots, ownedTemps: [...ownedTemps], siblingDigest, done: false, began: false });
+    startupReceipt, budgetReceipt, writer, tempRoots, ownedTemps: [...ownedTemps], fixtureOwnership, installationReceipt, fixtureInstallation,
+    installationBinding: fixtureOwnership ? fixtureInstallationBinding(fixtureInstallation) : null, siblingDigest, done: false, began: false });
   return proof;
 }
 function body(saved, classification, extras = {}) {
@@ -125,7 +135,7 @@ export function consumeNativeToolBoundary(receipt, processOptions) {
       || processOptions.budgetReceipt.digest !== proof.budgetReceipt.digest)
     throw nativeBoundaryError("native_process_scope_changed");
   proof.review = createNativeReview({ writerLock: proof.writerLock, applicationLease: proof.app, envelope: proof.envelope,
-    rootIdentity: proof.before.rootIdentity, preFootprintDigest: proof.before.digest, spentPath: proof.spentPath,
+    rootIdentity: proof.before.rootIdentity, preFootprintDigest: proof.before.digest, spentPath: proof.spentPath, fixtureOwnership: proof.fixtureOwnership,
     assertWorkspaceStable() {
       if (!proof.postDigest || captureNativeFootprint(proof.repositoryPath, proof.expected).digest !== proof.postDigest
           || siblings(proof.repositoryPath) !== proof.siblingDigest) throw nativeBoundaryError("native_post_verification_footprint_changed");
@@ -133,6 +143,28 @@ export function consumeNativeToolBoundary(receipt, processOptions) {
     } });
   proof.began = true;
   return saved.proof;
+}
+function resumeContext(proof, runtime) {
+  const s = proofs.get(proof);
+  if (!s || !s.began || s.done || s.resumeAuthorized) throw nativeBoundaryError("native_resume_binding_unproven");
+  assertWriterLock(s.writerLock); assertApplicationLease(s.app); assertHermesBudgetReceipt(s.budgetReceipt);
+  if (s.fixtureOwnership) assertHermesSmokeInstallationFresh(s.installationReceipt, s.provider.executablePath);
+  if (s.fixtureOwnership && nativeDigest(fixtureInstallationBinding(s.fixtureInstallation)) !== nativeDigest(s.installationBinding)) throw nativeBoundaryError("native_fixture_runtime_changed");
+  const authorityDigest = s.fixtureOwnership ? inspectDurableNativeFixture(s.fixtureOwnership).authorityDigest : nativeDigest(s.envelope.evidence.risk.value);
+  return { s, context: { authorityDigest, fixtureOwnership: s.fixtureOwnership,
+    runtime: { ...runtime, startupDigest: s.startupReceipt.digest, budgetDigest: s.budgetReceipt.digest,
+      deadline: s.budgetReceipt.acceptedDeadline,
+      installationDigest: s.installationReceipt ? nativeDigest(s.installationReceipt) : null,
+      installation: s.installationBinding, scopeMarker: s.fixtureOwnership ? fixtureFileBinding(path.join(inspectDurableNativeFixture(s.fixtureOwnership).root, ".roost-smoke-scope")) : null } } };
+}
+export function prepareNativeBoundaryResume(proof, runtime) {
+  const { s, context } = resumeContext(proof, runtime);
+  return prepareNativeReviewResume(s.review, context);
+}
+export function authorizeNativeBoundaryResume(proof, assignment, runtime) {
+  const { s, context } = resumeContext(proof, runtime);
+  const receipt = authorizeNativeReviewResume(s.review, { ...context, assignment });
+  s.resumeAuthorized = true; return receipt;
 }
 export function completeNativeToolBoundary(proof, { ownedTreeReceipt, error } = {}) {
   const saved = proofs.get(proof);
@@ -147,7 +179,7 @@ export function completeNativeToolBoundary(proof, { ownedTreeReceipt, error } = 
   } catch (error) { captureFailure = error.message; violations.push("footprint_unavailable"); }
   try { assertApplicationLease(saved.app); } catch { violations.push("application_instance_or_lease_changed"); }
   try { assertAutoPrunedCachesEmpty(saved.provider); } catch { violations.push("cleanup_unproven"); }
-  const job = isWindowsJobReceipt(ownedTreeReceipt) && ownedTreeReceipt.attempt === saved.envelope.identity.executionId ? ownedTreeReceipt : null;
+  const job = isWindowsJobCleanupReceipt(ownedTreeReceipt) && ownedTreeReceipt.attempt === saved.envelope.identity.executionId ? ownedTreeReceipt : null;
   if (!job) violations.push("owned_job_unproven");
   // Persist BEFORE independent verification; no fixture/temp/lease is released
   // at process exit. Only the terminal review capability can permit cleanup.

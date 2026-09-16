@@ -13,7 +13,7 @@ using System.Web.Script.Serialization;
 // credential lookup, shell, elevated operation or persistent machine resource.
 internal static class RoostWindowsJob
 {
-    const string Version = "roost-windows-job-v1";
+    static string Version = "roost-windows-job-v1";
     const uint KillOnClose = 0x2000;
     static readonly object Gate = new object();
     static readonly JavaScriptSerializer Json = new JavaScriptSerializer { MaxJsonLength = 262144, RecursionLimit = 12 };
@@ -22,7 +22,7 @@ internal static class RoostWindowsJob
     static readonly Stopwatch Clock = Stopwatch.StartNew();
     static volatile string reason;
     static long killDeadline = 3500;
-    static string attempt, identity = Guid.NewGuid().ToString();
+    static string attempt, identity = Guid.NewGuid().ToString(), challenge, resumeDigest;
     static IntPtr job, process, thread;
     static volatile bool resumed;
     static bool assigned, inheritedJob, controllerJob, limitsConfigured;
@@ -32,7 +32,7 @@ internal static class RoostWindowsJob
     static readonly string launcherCreationTime = Process.GetCurrentProcess().StartTime.ToFileTimeUtc().ToString();
     static int stdoutBytes, stderrBytes;
     static void Need(bool ok) { if (!ok) throw new InvalidOperationException(); }
-    static void Stop(string why) { Interlocked.CompareExchange(ref reason, why, null); }
+    static void Stop(string why) { lock (Gate) { Interlocked.CompareExchange(ref reason, why, null); } }
     static string Reason { get { return reason; } }
     static bool Emit(object message)
     {
@@ -108,6 +108,8 @@ internal static class RoostWindowsJob
         try {
             while (Volatile.Read(ref request) == null && Reason == null) Thread.Sleep(5);
             Need(request != null && Reason == null);
+            Version = Str(request, "version");
+            Need(Version == "roost-windows-job-v1" || Version == "roost-windows-job-v2");
             var keys = new List<string>(new[] { "version", "attempt", "executable", "argv", "cwd", "environment", "input", "durationMs", "stopMs" });
 #if TEST_FAULTS
             keys.Add("fault");
@@ -165,14 +167,38 @@ internal static class RoostWindowsJob
             inheritedJob = controllerJob; // no breakaway creation flag; nested restrictions are enforced by CreateProcess
 bool member; Need(IsProcessInJob(process, job, out member) && member && Active() == 1); assigned = true;
             foreach (IntPtr h in new[] { pin[0], pout[1], perr[1] }) { CloseHandle(h); pipes.Remove(h); }
-            // Signal an assignment receipt BEFORE user code can run.
-            Need(Emit(new { version = Version, type = "assigned", attempt = attempt, job = identity, rootPid = rootId,
-                rootCreationTime = rootCreationTime, launcherPid = launcherId, launcherCreationTime = launcherCreationTime,
-                assignedBeforeResume = true, killOnClose = true, breakaway = false, controllerInJob = controllerJob, inheritedJob = inheritedJob }));
+            // v2 keeps the actual kernel thread suspended until the controller
+            // has durably bound this unpredictable assignment to its receipt.
+            challenge = Guid.NewGuid().ToString();
+            var assignment = new Dictionary<string, object> { { "version", Version }, { "type", "assigned" }, { "attempt", attempt }, { "job", identity }, { "rootPid", rootId },
+                { "rootCreationTime", rootCreationTime }, { "launcherPid", launcherId }, { "launcherCreationTime", launcherCreationTime },
+                { "assignedBeforeResume", true }, { "killOnClose", true }, { "breakaway", false }, { "controllerInJob", controllerJob }, { "inheritedJob", inheritedJob } };
+            if (Version == "roost-windows-job-v2") assignment.Add("challenge", challenge);
+            Need(Emit(assignment));
+            if (Version == "roost-windows-job-v2") {
+                Dictionary<string, object> acknowledgement = null;
+                Background(delegate {
+                    try { var line = Line(1024); if (line == null) { Stop("controller_closed"); return; }
+                        var value = new JavaScriptSerializer { MaxJsonLength = 1024, RecursionLimit = 4 }.Deserialize<Dictionary<string, object>>(line);
+                        Exact(value, new[] { "version", "attempt", "job", "challenge", "receipt", "resume" });
+                        Need(Str(value, "version") == Version && Str(value, "attempt") == attempt && Str(value, "job") == identity && Str(value, "challenge") == challenge);
+                        Need(value["resume"] is bool && (bool)value["resume"]);
+                        string receipt = Str(value, "receipt"); Need(System.Text.RegularExpressions.Regex.IsMatch(receipt, "\\A[a-f0-9]{64}\\z"));
+                        Volatile.Write(ref acknowledgement, value);
+                    } catch { Stop("protocol_error"); }
+                });
+                while (Volatile.Read(ref acknowledgement) == null && Reason == null) Thread.Sleep(2);
+                Need(acknowledgement != null && Reason == null);
+                resumeDigest = Str(acknowledgement, "receipt");
+            }
 #if TEST_FAULTS
             if (Str(request, "fault") == "resume") Close(ref thread); // force actual ResumeThread failure
 #endif
-            Need(Reason == null && ResumeThread(thread) == 1); resumed = true; Interlocked.Exchange(ref killDeadline, Clock.ElapsedMilliseconds + duration + stopMs + 500); Close(ref thread);
+            lock (Gate) {
+                Need(Reason == null && Clock.ElapsedMilliseconds < 3000);
+                Need(ResumeThread(thread) == 1); resumed = true;
+                Interlocked.Exchange(ref killDeadline, Clock.ElapsedMilliseconds + duration + stopMs + 500); Close(ref thread);
+            }
             pipes.Remove(pout[0]); pipes.Remove(perr[0]);
             outPump = Background(delegate { Pump(pout[0], "stdout"); }); errPump = Background(delegate { Pump(perr[0], "stderr"); });
             pipes.Remove(pin[1]); Background(delegate {
@@ -219,11 +245,15 @@ bool member; Need(IsProcessInJob(process, job, out member) && member && Active()
             if (handles != IntPtr.Zero) Marshal.FreeHGlobal(handles);
             if (jobList != IntPtr.Zero) Marshal.FreeHGlobal(jobList);
             if (environment != IntPtr.Zero) Marshal.FreeHGlobal(environment);
-            Emit(new { version = Version, type = "receipt", attempt = attempt, job = identity, assignedBeforeResume = assigned,
+            var finalReceipt = new { version = Version, type = "receipt", attempt = attempt, job = identity, assignedBeforeResume = assigned,
                 rootPid = rootId, rootCreationTime = rootCreationTime, launcherPid = launcherId, launcherCreationTime = launcherCreationTime,
                 resumed = resumed, killOnClose = limitsConfigured, breakaway = false, controllerInJob = controllerJob, inheritedJob = inheritedJob,
                 rootExit = rootId == 0 ? (uint?)null : rootExit, activeProcesses = active, jobClosed = jobClosed, terminationReason = Reason, cleanup = clean,
-                cleanupMs = stopClock.ElapsedMilliseconds, stdoutBytes = stdoutBytes, stderrBytes = stderrBytes });
+                cleanupMs = stopClock.ElapsedMilliseconds, stdoutBytes = stdoutBytes, stderrBytes = stderrBytes };
+            if (Version == "roost-windows-job-v2") {
+                var record = Json.Deserialize<Dictionary<string, object>>(Json.Serialize(finalReceipt));
+                record.Add("resumeReceipt", resumeDigest); Emit(record);
+            } else Emit(finalReceipt);
         }
         return clean ? 0 : 3;
     }

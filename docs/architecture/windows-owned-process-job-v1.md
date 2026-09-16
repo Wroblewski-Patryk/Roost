@@ -1,5 +1,12 @@
 # Windows owned-process job v1
 
+Current B28 amendment: [original ownership before resume](fixture-ownership-before-resume.md).
+Native coding uses gated Windows Job v2 with durable Ready/origin/actual-Job
+bindings before acknowledgment and ResumeThread. Ordinary reconciliation can
+restore cleanup authority only. Generic low-level v1 remains for qualification,
+not a native-coding fallback. All six flags remain false; no provider run is
+authorized. Earlier observations and successor proposals below are historical.
+
 Current policy/evidence ordering: [B19 root-scoped review v2](hermes-root-scoped-review-reconciliation-v2.md).
 It supersedes exact-path classification and adds durable review/process identity
 bindings for future attempts. Historical observations below remain unchanged;

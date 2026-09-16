@@ -6,7 +6,9 @@ import { mkdirSync, writeFileSync, readFileSync, lstatSync, openSync, closeSync,
 import { assertWriterLock, writerRecoveryEvidence } from "./agent-host-writer-lock.mjs";
 import { applicationRecoveryEvidence } from "./agent-host-application-lease.mjs";
 import { nativeDigest, nativeRelative, nativeFootprintPolicy, physicalIdentity } from "./agent-host-native-footprint.mjs";
-import { isWindowsJobReceipt } from "./agent-host-windows-job.mjs";
+import { isWindowsJobCleanupReceipt } from "./agent-host-windows-job.mjs";
+import { inspectDurableNativeFixture, readOriginalFixture, readFixtureEvidence, writeFixtureEvidence, fixtureTaskDigest } from "./agent-host-fixture-ownership.mjs";
+import { b26Inventory } from "./agent-host-b26-inventory.mjs";
 const sessions = new WeakMap(), completions = new WeakMap();
 const hash = value => createHash("sha256").update(value).digest("hex");
 const encode = value => Buffer.from(JSON.stringify(value) + "\n");
@@ -43,10 +45,14 @@ function persist(s) {
   atomic(path.join(s.directory, "review.json"), encode({ payload, signature }));
   s.digest = nativeArtifactSnapshot(path.join(s.directory, "review.json")).digest;
 }
-export function createNativeReview({ writerLock, applicationLease, envelope, rootIdentity, preFootprintDigest, spentPath, assertWorkspaceStable = () => {} }) {
+export function createNativeReview({ writerLock, applicationLease, envelope, rootIdentity, preFootprintDigest, spentPath, fixtureOwnership, assertWorkspaceStable = () => {} }) {
   const writer = writerRecoveryEvidence(writerLock), stateIdentity = physicalIdentity(writer.directory);
   const lease = applicationRecoveryEvidence(applicationLease), directory = path.join(writer.directory, `native-review-${envelope.identity.executionId}`);
-  mkdirSync(directory); const key = randomBytes(32); writeFileSync(path.join(directory, "integrity.key"), key, { flag: "wx", mode: 0o600 });
+  const original = fixtureOwnership && inspectDurableNativeFixture(fixtureOwnership);
+  if (original && (original.directory !== directory || fixtureTaskDigest(original.identity) !== fixtureTaskDigest(envelope.identity)
+      || physicalIdentity(path.join(original.root, "repository")) !== rootIdentity)) refuse("native_fixture_binding_mismatch");
+  if (!original) { mkdirSync(directory); writeFileSync(path.join(directory, "integrity.key"), randomBytes(32), { flag: "wx", mode: 0o600 }); }
+  const key = readFileSync(path.join(directory, "integrity.key"));
   const { directory: unused, ...writerArtifact } = writer;
   let spent = null;
   if (spentPath) {
@@ -57,12 +63,52 @@ export function createNativeReview({ writerLock, applicationLease, envelope, roo
       scope: /^[a-z][a-z0-9_]{1,100}$/.test(spent.record.scope ?? "") ? spent.record.scope : null };
   }
   const keyIdentity = physicalIdentity(path.join(directory, "integrity.key"), false);
-  const s = { writerLock, directory, key, keyIdentity, stateIdentity, assertWorkspaceStable, directoryIdentity: physicalIdentity(directory), job: null,
+  const s = { writerLock, directory, key, keyIdentity, stateIdentity, assertWorkspaceStable, fixtureOwnership, directoryIdentity: physicalIdentity(directory), job: null,
     payload: { version: "roost-native-review-v2", policy: nativeFootprintPolicy, stage: "prepared",
       integrityKeyIdentity: keyIdentity,
       binding: { identity: Object.fromEntries(["executionId", "workspaceId", "taskId", "applicationId", "attempt"].map(k => [k, envelope.identity[k]])), ready: envelope.revisions.ready, rootIdentity, preFootprintDigest,
-        writer: writerArtifact, lease, spent }, privateChanges: [], public: null, verification: null, installation: null, job: null } };
+        writer: writerArtifact, lease, spent, ...(original ? { fixture: original.birth, authorityDigest: original.authorityDigest } : {}) },
+      privateChanges: [], public: null, verification: null, installation: null, job: null } };
   persist(s); const handle = Object.freeze({}); sessions.set(handle, s); return handle;
+}
+export function prepareNativeReviewResume(handle, { runtime, authorityDigest, fixtureOwnership }) {
+  const s = session(handle), b = s.payload.binding;
+  if (s.payload.stage !== "prepared" || s.payload.readyResume || !/^[a-f0-9]{64}$/.test(authorityDigest ?? "")
+      || !Number.isFinite(Date.parse(runtime?.deadline)) || Date.now() >= Date.parse(runtime.deadline)) refuse("native_resume_binding_unproven");
+  if (b.fixture) {
+    const f = inspectDurableNativeFixture(fixtureOwnership);
+    if (f.directory !== s.directory || nativeDigest(f.birth) !== nativeDigest(b.fixture) || f.authorityDigest !== authorityDigest) refuse("native_fixture_binding_mismatch");
+  }
+  const r = writeFixtureEvidence(s.directory, "fixture-ready.json", { version: "roost-native-ready-origin-v1", at: new Date().toISOString(),
+    bindingDigest: nativeDigest(b), runtime, authorityDigest, executionRestorable: false });
+  s.payload.readyResume = { identity: r.identity, digest: r.digest }; persist(s);
+  return r.digest;
+}
+export function authorizeNativeReviewResume(handle, { assignment, runtime, authorityDigest, fixtureOwnership }) {
+  const s = session(handle), b = s.payload.binding;
+  if (s.payload.stage !== "prepared" || !s.payload.readyResume || s.payload.resume || assignment.version !== "roost-windows-job-v2"
+      || assignment.attempt !== b.identity.executionId || !/^[a-f0-9-]{36}$/.test(assignment.challenge ?? "")
+      || !/^[a-f0-9]{64}$/.test(authorityDigest ?? "")) refuse("native_resume_binding_unproven");
+  const ready = readFixtureEvidence(s.directory, "fixture-ready.json");
+  if (ready.digest !== s.payload.readyResume.digest || ready.identity !== s.payload.readyResume.identity
+      || ready.payload.bindingDigest !== nativeDigest(b) || ready.payload.authorityDigest !== authorityDigest
+      || nativeDigest(ready.payload.runtime) !== nativeDigest(runtime) || Date.now() < Date.parse(ready.payload.at)
+      || Date.now() >= Date.parse(runtime.deadline)) refuse("native_resume_binding_unproven");
+  if (runtime?.executable?.digest !== assignment.executableDigest || runtime?.launcher?.digest !== assignment.launcherSha256
+      || ![runtime?.node?.digest, runtime?.node?.identity, runtime?.executable?.identity, runtime?.launcher?.identity].every(v => /^[a-f0-9]{64}$/.test(v ?? ""))) refuse("native_resume_runtime_unproven");
+  if (b.fixture) {
+    const f = inspectDurableNativeFixture(fixtureOwnership);
+    if (f.directory !== s.directory || nativeDigest(f.birth) !== nativeDigest(b.fixture) || f.authorityDigest !== authorityDigest) refuse("native_fixture_binding_mismatch");
+    readOriginalFixture(s.directory, f.root);
+    if (!runtime.installation || !Number.isInteger(runtime.installation.files) || runtime.installation.files < 1
+        || !/^[a-f0-9]{64}$/.test(runtime.installation.physicalDigest ?? "") || !/^[a-f0-9]{64}$/.test(runtime.installationDigest ?? "")
+        || !runtime.scopeMarker) refuse("native_resume_runtime_unproven");
+  }
+  const r = writeFixtureEvidence(s.directory, "resume-authorized.json", { version: "roost-native-resume-v1", at: new Date().toISOString(),
+    bindingDigest: nativeDigest(b), readyDigest: ready.digest, authorityDigest, assignment, runtime, executionRestorable: false });
+  s.payload.resume = { identity: r.identity, digest: r.digest }; persist(s);
+  if (readFixtureEvidence(s.directory, "resume-authorized.json").digest !== r.digest) refuse("native_resume_binding_unproven");
+  return r.digest;
 }
 function privateChanges(comparison) {
   if ((comparison?.changes?.length ?? 0) > 8192) refuse("native_review_record_limit");
@@ -84,9 +130,25 @@ function privateChanges(comparison) {
 }
 export function captureNativeReview(handle, { ownedTreeReceipt, comparison, postFootprintDigest, violations, captureFailure = null }) {
   const s = session(handle); if (s.payload.stage !== "prepared") refuse("native_review_phase_invalid");
-  const validJob = isWindowsJobReceipt(ownedTreeReceipt) && ownedTreeReceipt.attempt === s.payload.binding.identity.executionId;
+  const validJob = isWindowsJobCleanupReceipt(ownedTreeReceipt) && ownedTreeReceipt.attempt === s.payload.binding.identity.executionId;
+  if (validJob && s.payload.readyResume) {
+    const ready = readFixtureEvidence(s.directory, "fixture-ready.json");
+    if (ready.digest !== s.payload.readyResume.digest || ready.identity !== s.payload.readyResume.identity
+        || ready.payload.runtime.executable.digest !== ownedTreeReceipt.executableDigest
+        || ready.payload.runtime.launcher.digest !== ownedTreeReceipt.launcherSha256
+        || ownedTreeReceipt.resumed && !s.payload.resume) refuse("native_resume_job_mismatch");
+  }
+  if (validJob && s.payload.resume) {
+    const r = readFixtureEvidence(s.directory, "resume-authorized.json");
+    if (r.identity !== s.payload.resume.identity || r.digest !== s.payload.resume.digest || ownedTreeReceipt.resumed && ownedTreeReceipt.resumeReceipt !== r.digest
+        || ["job", "rootPid", "rootCreationTime", "launcherPid", "launcherCreationTime", "executableDigest", "launcherSha256", "sourceSha256"].some(k => r.payload.assignment[k] !== ownedTreeReceipt[k])) refuse("native_resume_job_mismatch");
+  }
   s.job = validJob ? ownedTreeReceipt : null;
   s.payload.job = validJob ? structuredClone(ownedTreeReceipt) : null;
+  if (s.fixtureOwnership) {
+    const fixture = inspectDurableNativeFixture(s.fixtureOwnership), inventory = b26Inventory(fixture.root);
+    s.payload.fixturePlan = inventory.plan; s.payload.fixturePlanDigest = nativeDigest(inventory.plan);
+  }
   s.payload.privateChanges = privateChanges(comparison);
   s.payload.postFootprintDigest = postFootprintDigest;
   s.payload.public = { version: "roost-native-review-public-v2", policy: nativeFootprintPolicy,
@@ -144,6 +206,7 @@ function checkCleanup(capability, attempt, checkWorkspace) {
   const s = session(proof.handle);
   if (s.payload.stage !== "final" || nativeArtifactSnapshot(path.join(s.directory, "review.json")).digest !== s.digest) refuse("native_review_record_changed");
   if (checkWorkspace) s.assertWorkspaceStable();
+  if (checkWorkspace && s.fixtureOwnership && nativeDigest(b26Inventory(inspectDurableNativeFixture(s.fixtureOwnership).root).plan) !== s.payload.fixturePlanDigest) refuse("native_fixture_changed_after_review");
   return true;
 }
 export function recordNativeReviewCleanup(capability, attempt) {

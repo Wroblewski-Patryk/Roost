@@ -70,7 +70,8 @@ export const runOwnerAuthorizedHermesCodingSmoke = options => runSmoke(options, 
 export const runOwnerAuthorizedHermesB14CodingSmoke = options => runSmoke(options, b14);
 export const runOwnerAuthorizedHermesB17CodingSmoke = options => runSmoke(options, b17);
 export const runOwnerAuthorizedHermesB21CodingSmoke = options => runSmoke(options, b21);
-async function runSmoke({ provider, installation, assertOwnerAuthority, onProgress = () => {} }, policy) {
+async function runSmoke({ provider, installation, authorityDigest, assertOwnerAuthority, onProgress = () => {} }, policy) {
+  if (!/^[a-f0-9]{64}$/.test(authorityDigest ?? "")) throw Error("native_fixture_authority_required");
   if (invoked.has(policy.scope) || typeof assertOwnerAuthority !== "function") throw new Error("hermes_smoke_owner_authority_required");
   invoked.add(policy.scope); assertOwnerAuthority();
   // Fixed, secret-free notifications only; observers never receive prompt/output
@@ -96,7 +97,9 @@ async function runSmoke({ provider, installation, assertOwnerAuthority, onProgre
       if (policy.split && fixture) inspectHermesProfile(provider.profile, fixture.repository);
       if (report.installation && !report.spawnStarted) assertHermesSmokeInstallationFresh(report.installation, provider.executablePath);
     };
-    fixture = (policy.fixture ?? createHermesCodingFixture)(); report.baseline = fixture.before;
+    keepWriter = true; // Partial original publication must retain its Writer.
+    fixture = (policy.fixture ?? createHermesCodingFixture)({ writerLock: writer, authorityDigest, expiresAt: new Date(Date.now() + 3600000).toISOString() });
+    keepWriter = false; report.baseline = fixture.before;
     if (policy.split) report.preInstallation = reconcileHermesGeneratedReceipt({ installation, writer, assertOwnerAuthority });
     report.installation = await verifyHermesSmokeInstallation(installation);
     progress("installation_verified");
@@ -111,7 +114,8 @@ async function runSmoke({ provider, installation, assertOwnerAuthority, onProgre
     const consumption = { fresh: { taskContext: f.taskContext, applicationContext: f.applicationContext }, claimed: f.claimed,
       currentCommit: fixture.head, assertAuthority: authority };
     envelope = prepareProviderInput({ ...options, ...consumption,
-      nativeBoundaryOptions: { writerLock: writer, expected: { head: fixture.head, branch: f.packet.contract.singleTask.branch, origin: f.claimed.application.repositories[0].url } } });
+      nativeBoundaryOptions: { writerLock: writer, fixtureOwnership: fixture.fixtureOwnership, installationReceipt: report.installation, fixtureInstallation: installation,
+        expected: { head: fixture.head, branch: f.packet.contract.singleTask.branch, origin: f.claimed.application.repositories[0].url } } });
     options.envelope = envelope;
     const receipt = qualifyHermesLaunch(options, collectHermesLaunchProofs(options, artifact));
     report.policyQualified = true; report.qualificationDigest = receipt.digest;
@@ -157,7 +161,7 @@ async function runSmoke({ provider, installation, assertOwnerAuthority, onProgre
       report.status = "BLOCKED"; report.reason = "hermes_smoke_authentication_required_reported";
     }
     report.outcome = error.outcome ?? "policy_blocked"; report.exitCode = job?.rootExit ?? null;
-    keepWriter = error.leaseLost === true;
+    keepWriter = keepWriter || error.leaseLost === true;
     if (error.details?.nativeToolReceipt) report.nativeReceiptDigest = error.details.nativeToolReceipt.digest;
     report.nativeEvidence = nativeEvidence(error.details?.nativeToolReceipt);
     if (error.details?.attemptBudgetReceipt) report.budgetReceiptDigest = error.details.attemptBudgetReceipt.digest;

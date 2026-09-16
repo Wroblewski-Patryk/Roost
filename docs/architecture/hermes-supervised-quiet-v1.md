@@ -1,5 +1,12 @@
 # Hermes supervised quiet adapter v1
 
+Current B28 amendment: [original ownership before resume](fixture-ownership-before-resume.md).
+Native coding uses gated Windows Job v2 with durable Ready/origin/actual-Job
+bindings before acknowledgment and ResumeThread. Ordinary reconciliation can
+restore cleanup authority only. Generic low-level v1 remains for qualification,
+not a native-coding fallback. All six flags remain false; no provider run is
+authorized. Earlier observations and successor proposals below are historical.
+
 RF-RUNTIME-005B26 [adopted recovery](hermes-b26-adopted-recovery-v1.md) defines the separately owner-authorized
 one-use cleanup of the exact B25-adopted B21 fixture, then its lease and Writer.
 A signed append-only consumption/intent chain, exclusive controller and recovery
