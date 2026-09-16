@@ -54,6 +54,11 @@ Eighteen targeted negative-schema/admission tests pass. Profile/owner-attestatio
 
 B1/B2 historical findings and B4's authoritative single-owner attestation/residual account-switch and unreported-session-loss risks remain unchanged. No separate token store, VM or Restricted Token/ACL guard was introduced.
 
-Exactly one recommended next atom: **RF-RUNTIME-005B6 — source-only selection of an upstream-supported minimal startup path and resolution of the remaining tool/rotation controls**. It must resolve these evidence gaps before another runtime probe; it is not started here. No pin change or requirement waiver follows automatically.
+The B5 handoff recommended B6 source-only startup/tool/rotation analysis. Subsequent
+[RF-RUNTIME-005B6](hermes-minimal-startup-contract-v1.md) is complete with
+NOT_SUPPORTED for strict minimal startup on the unchanged public CLI. B5's negative
+receipt remains diagnostic only. The sole next recommendation is B7's narrow owner
+decision on enumerated startup side effects; no probe, pin change or requirement
+waiver follows automatically.
 
 `implementationReady=false`; `executionSupported=false`; `pilotReady=false`; `liveAdmissionAllowed=false`; `pilotExecutionAuthorized=false`; `pilotExecutionStarted=false`.

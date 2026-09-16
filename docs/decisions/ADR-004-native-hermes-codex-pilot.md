@@ -1,5 +1,11 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+Source evidence RF-RUNTIME-005B6: [public minimal startup contract](../architecture/hermes-minimal-startup-contract-v1.md)
+is NOT_SUPPORTED for strict minimal startup on this pin. Standard chat retains
+automatic skills/banner startup work despite its quiet single-query interface.
+This records a concrete source limitation, not a version 4 amendment, new
+credential-isolation requirement or execution grant. B4 residual risks remain.
+
 Implementation evidence RF-RUNTIME-005B5: [effective-config qualification](../architecture/hermes-effective-config-qualification-v1.md)
 is BLOCKED after a partial exact-pin loader observation in synthetic storage.
 Startup/tool/rotation consumers remain unqualified; the negative diagnostic receipt

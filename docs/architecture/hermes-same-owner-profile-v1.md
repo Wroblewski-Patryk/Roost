@@ -66,7 +66,11 @@ B4 tests cover confirmed current attestation with synthetic logged-in status; th
 Subsequent [RF-RUNTIME-005B5 effective-config qualification](hermes-effective-config-qualification-v1.md)
 returned BLOCKED. An exact-pin loader observed the synthetic copy's explicit values,
 but intercepted reads/imports and unqualified startup/tool/rotation consumers prevent
-full qualification. The B4 auth decision remains valid. The sole next recommendation
-is B6 source-only minimal startup/tool/rotation contract selection; not started.
+full qualification. The B4 auth decision remains valid. Subsequent
+[B6 source analysis](hermes-minimal-startup-contract-v1.md) is complete with
+NOT_SUPPORTED for strict minimal startup on the pinned public CLI. It distinguishes
+same-owner refresh/recovery from multi-account rotation without reinstating an
+identity-fingerprint requirement. The sole next recommendation is B7's narrow owner
+decision on enumerated startup side effects; not started.
 
 `implementationReady=false`; `executionSupported=false`; `pilotReady=false`; `liveAdmissionAllowed=false`; `pilotExecutionAuthorized=false`; `pilotExecutionStarted=false`.

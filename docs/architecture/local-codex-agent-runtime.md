@@ -1,5 +1,11 @@
 # Local Codex Agent Runtime
 
+RF-RUNTIME-005B6 [public minimal startup contract](hermes-minimal-startup-contract-v1.md)
+is NOT_SUPPORTED for strict minimal startup on the unchanged pin: public safe-mode
+environment and explicit toolsets narrow customization, but chat still schedules
+skills synchronization/banner prefetch. This source-only result adds no admission
+authority; B4 attestation/residual risks and all six false gates remain intact.
+
 RF-RUNTIME-005B5 [effective-config qualification](hermes-effective-config-qualification-v1.md)
 is BLOCKED: exact-pin official loader observed all explicit overrides in an identical
 synthetic profile, but intercepted import/read attempts, startup initialization and
