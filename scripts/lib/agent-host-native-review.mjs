@@ -123,8 +123,8 @@ export async function completeNativeReview(handle, { verify, installation = () =
   } catch (e) { s.payload.installation = { status: "BLOCKED", reason: reason(e) }; }
   const p = s.payload.public, v = s.payload.verification;
   p.verdict = p.violations.length ? "boundary_violation" : !s.job || s.job.rootExit !== 0 || s.job.terminationReason !== "root_exit" ? "process_failed"
-    : s.payload.installation.status !== "PASS" || v.status === "REFUSED" ? "verification_blocked"
-      : p.scopeReviewRequired || v.status !== "PASS" ? "acceptance_failed" : "verified_candidate";
+    : s.payload.installation.status !== "PASS" ? "verification_blocked" : p.scopeReviewRequired ? "acceptance_failed"
+      : v.status === "REFUSED" ? "verification_blocked" : v.status !== "PASS" ? "acceptance_failed" : "verified_candidate";
   p.verification = v.status; p.installation = s.payload.installation.status;
   s.payload.stage = "final"; persist(s);
   const capability = Object.freeze({});

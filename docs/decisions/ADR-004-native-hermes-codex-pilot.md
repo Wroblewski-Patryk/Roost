@@ -1,5 +1,23 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+B21 execution outcome: **BLOCKED**, one provider start, exit 0, durable
+acceptance_failed with nine content changes and no protected violation. The
+independent test refused the expanded diff; exact implementation/test byte
+comparison is not PASS. Signed evidence, owned fixture, Writer and application
+lease remain retained; B21 is spent. Installation/Job checks passed. One next
+owner action is a B22 read-only diagnosis and recovery plan, without deletion or
+new model execution. All six flags remain false.
+
+RF-RUNTIME-005B21 owner amendment (version 13), 2026-09-16: authorize exactly
+one NEW [coding smoke under B19 durable review](../architecture/hermes-b21-coding-smoke-v1.md)
+after the completed B20 legacy recovery. Use only the existing exact Hermes pin,
+openai-codex, gpt-5.6-sol/medium and the bounded arithmetic fixture. Preserve all
+old spent records and B20 terminal evidence; use fresh B21 identities and its own
+one-use grant/audit record. Apply existing B16 generated-only maintenance and
+B19 protected-root/durable-review/cleanup gates. No whole-task retry, fallback,
+login, independent scope, public dispatch or release is authorized. All six
+public flags remain false. Earlier successor/version statements are historical.
+
 RF-RUNTIME-005B20 owner amendment (version 12), 2026-09-16: authorize one
 [exact legacy B17 recovery exception](../architecture/hermes-b20-legacy-recovery-v1.md),
 accepting only this pair's explicitly unavailable historical identity chain.
@@ -226,7 +244,7 @@ The original RF-RUNTIME-002 decision and its dated authority follow below.
 Date: 2026-09-15
 Status: accepted
 Owner: Roost architecture owner
-Decision version: 12 (RF-RUNTIME-005B20 exact legacy recovery exception completed; no new execution, 2026-09-16)
+Decision version: 13 (RF-RUNTIME-005B21 one new coding smoke spent; acceptance BLOCKED, 2026-09-16)
 Scope: RF-RUNTIME-002 owner handoff; architecture and blocked adapter implementation
 Source reference: `owner-handoff.rf-runtime-002.hermes-first.v1`
 

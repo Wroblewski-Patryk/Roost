@@ -3,7 +3,7 @@
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { existsSync, writeFileSync } from "node:fs";
-import { createHermesCodingFixture, createHermesB17CodingFixture } from "../fixtures/hermes-coding-smoke.mjs";
+import { createHermesCodingFixture, createHermesB17CodingFixture, createHermesB21CodingFixture } from "../fixtures/hermes-coding-smoke.mjs";
 import { acquireWriterLock, assertWriterLock, writerStateDirectory } from "./agent-host-writer-lock.mjs";
 import { inspectHermesProfile } from "./agent-host-hermes-profile.mjs";
 import { prepareProviderInput, abandonProviderNativeBoundary } from "./agent-host-provider-input.mjs";
@@ -13,9 +13,11 @@ import { collectHermesLaunchProofs, qualifyHermesLaunch } from "./agent-host-her
 import { verifyHermesSmokeInstallation, assertHermesSmokeInstallation, assertHermesSmokeInstallationFresh } from "./agent-host-hermes-smoke-installation.mjs";
 import { issueHermesSmokeActivation, consumeHermesSmokeActivation, revokeHermesSmokeActivation, hermesSmokeScope,
   issueHermesB14SmokeActivation, consumeHermesB14SmokeActivation, hermesB14SmokeScope,
-  issueHermesB17SmokeActivation, consumeHermesB17SmokeActivation, hermesB17SmokeScope } from "./agent-host-hermes-smoke-activation.mjs";
+  issueHermesB17SmokeActivation, consumeHermesB17SmokeActivation, hermesB17SmokeScope,
+  issueHermesB21SmokeActivation, consumeHermesB21SmokeActivation, hermesB21SmokeScope } from "./agent-host-hermes-smoke-activation.mjs";
 import { prepareHermesB14Audit, assertHermesB14Audit, reserveHermesB14Audit, closeBlockedHermesB14Audit,
-  prepareHermesB17Audit, assertHermesB17Audit, reserveHermesB17Audit, closeBlockedHermesB17Audit } from "./agent-host-hermes-b14-audit.mjs";
+  prepareHermesB17Audit, assertHermesB17Audit, reserveHermesB17Audit, closeBlockedHermesB17Audit,
+  prepareHermesB21Audit, assertHermesB21Audit, reserveHermesB21Audit, closeBlockedHermesB21Audit } from "./agent-host-hermes-b14-audit.mjs";
 import { reconcileHermesGeneratedReceipt } from "./agent-host-hermes-generated-maintenance.mjs";
 import { watchHermesInstallation } from "./agent-host-hermes-installation-watch.mjs";
 import { bindNativeSpentRecord, verifyCompletedNativeBoundary, releaseReviewedNativeBoundary } from "./agent-host-hermes-native-boundary.mjs";
@@ -27,7 +29,11 @@ const b13 = Object.freeze({ scope: hermesSmokeScope, issue: issueHermesSmokeActi
 const b14 = Object.freeze({ scope: hermesB14SmokeScope, issue: issueHermesB14SmokeActivation, consume: consumeHermesB14SmokeActivation,
   prepare: prepareHermesB14Audit, inspect: assertHermesB14Audit, reserve: reserveHermesB14Audit, blocked: closeBlockedHermesB14Audit });
 const b17 = Object.freeze({ scope: hermesB17SmokeScope, issue: issueHermesB17SmokeActivation, consume: consumeHermesB17SmokeActivation,
-  prepare: prepareHermesB17Audit, inspect: assertHermesB17Audit, reserve: reserveHermesB17Audit, blocked: closeBlockedHermesB17Audit });
+  prepare: prepareHermesB17Audit, inspect: assertHermesB17Audit, reserve: reserveHermesB17Audit, blocked: closeBlockedHermesB17Audit,
+  fixture: createHermesB17CodingFixture, split: true, spentName: "hermes-b17-smoke-consumed.json" });
+const b21 = Object.freeze({ scope: hermesB21SmokeScope, issue: issueHermesB21SmokeActivation, consume: consumeHermesB21SmokeActivation,
+  prepare: prepareHermesB21Audit, inspect: assertHermesB21Audit, reserve: reserveHermesB21Audit, blocked: closeBlockedHermesB21Audit,
+  fixture: createHermesB21CodingFixture, split: true, spentName: "hermes-b21-smoke-consumed.json" });
 function nativeEvidence(receipt) {
   if (!receipt) return null;
   return { digest: receipt.digest, classification: receipt.classification, violations: receipt.violations,
@@ -63,6 +69,7 @@ export async function cleanupHermesSmokeAttempt({ envelope, spawnStarted, job, k
 export const runOwnerAuthorizedHermesCodingSmoke = options => runSmoke(options, b13);
 export const runOwnerAuthorizedHermesB14CodingSmoke = options => runSmoke(options, b14);
 export const runOwnerAuthorizedHermesB17CodingSmoke = options => runSmoke(options, b17);
+export const runOwnerAuthorizedHermesB21CodingSmoke = options => runSmoke(options, b21);
 async function runSmoke({ provider, installation, assertOwnerAuthority, onProgress = () => {} }, policy) {
   if (invoked.has(policy.scope) || typeof assertOwnerAuthority !== "function") throw new Error("hermes_smoke_owner_authority_required");
   invoked.add(policy.scope); assertOwnerAuthority();
@@ -86,17 +93,17 @@ async function runSmoke({ provider, installation, assertOwnerAuthority, onProgre
       assertOwnerAuthority(); assertWriterLock(writer);
       if (audit) policy.inspect(audit);
       installationWatch?.assertUnchanged();
-      if (policy === b17 && fixture) inspectHermesProfile(provider.profile, fixture.repository);
+      if (policy.split && fixture) inspectHermesProfile(provider.profile, fixture.repository);
       if (report.installation && !report.spawnStarted) assertHermesSmokeInstallationFresh(report.installation, provider.executablePath);
     };
-    fixture = policy === b17 ? createHermesB17CodingFixture() : createHermesCodingFixture(); report.baseline = fixture.before;
-    if (policy === b17) report.preInstallation = reconcileHermesGeneratedReceipt({ installation, writer, assertOwnerAuthority });
+    fixture = (policy.fixture ?? createHermesCodingFixture)(); report.baseline = fixture.before;
+    if (policy.split) report.preInstallation = reconcileHermesGeneratedReceipt({ installation, writer, assertOwnerAuthority });
     report.installation = await verifyHermesSmokeInstallation(installation);
     progress("installation_verified");
     // Compile the Job capability AFTER the potentially long file-only inventory;
     // its 60-second freshness window must cover admission, not disk scanning.
     const artifact = await buildWindowsJobLauncher(fixture.root);
-    if (policy === b17) installationWatch = watchHermesInstallation({ installation, writer });
+    if (policy.split) installationWatch = watchHermesInstallation({ installation, writer });
     inspectHermesProfile(provider.profile, fixture.repository);
     const f = fixture.prepare();
     const options = { provider, repositoryPath: fixture.repository, startupEnvironment: hermesStartupEnvironment(provider.profile, process.env, fixture.repository),
@@ -119,7 +126,7 @@ async function runSmoke({ provider, installation, assertOwnerAuthority, onProgre
     reserved = true;
     assertHermesSmokeInstallation(report.installation, provider.executablePath);
     const handoff = policy.consume(grant, options, consumption);
-    bindNativeSpentRecord(handoff.nativeToolReceipt, path.join(writerStateDirectory, policy === b17 ? "hermes-b17-smoke-consumed.json" : policy === b14 ? "hermes-b14-smoke-consumed.json" : "hermes-b13-smoke-consumed.json"));
+    bindNativeSpentRecord(handoff.nativeToolReceipt, path.join(writerStateDirectory, policy.spentName ?? (policy === b14 ? "hermes-b14-smoke-consumed.json" : "hermes-b13-smoke-consumed.json")));
     report.activationAuthorized = true; report.activationWasAuthorized = true;
     report.deadline = handoff.budgetReceipt.acceptedDeadline;
     report.startedAt = new Date().toISOString();
@@ -170,7 +177,7 @@ async function runSmoke({ provider, installation, assertOwnerAuthority, onProgre
             if (report.installationWatch?.observedViolation) throw Error("hermes_smoke_installation_boundary_violation");
             // Installation verification happens while the fixture and Writer
             // still exist. No cleanup authority is inferred from exit status.
-            if (policy === b17) report.postInstallation = reconcileHermesGeneratedReceipt({ installation, writer, assertOwnerAuthority });
+            if (policy.split) report.postInstallation = reconcileHermesGeneratedReceipt({ installation, writer, assertOwnerAuthority });
             const post = await verifyHermesSmokeInstallation(installation);
             report.postInstallation = { ...report.postInstallation, status: "PASS", manifestDigest: post.manifestDigest, executableDigest: post.executableDigest };
             return report.postInstallation;
@@ -185,6 +192,7 @@ async function runSmoke({ provider, installation, assertOwnerAuthority, onProgre
         if (cleanup.cleanup?.remaining === 0) {
           releaseReviewedNativeBoundary(nativeResult, reviewed.capability);
           await writer.release(); report.writerReleased = true;
+          if (policy === b21 && report.status === "CANDIDATE") report.status = "DONE"; // Smoke qualification only, never API task/release authority.
         } else report.writerReconciliationRequired = true;
       } catch (error) {
         report.status = "BLOCKED"; report.reason = /^[a-z][a-z0-9_]+$/.test(error.message) ? error.message : "hermes_smoke_review_unproven";

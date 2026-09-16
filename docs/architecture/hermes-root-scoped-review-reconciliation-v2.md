@@ -1,5 +1,10 @@
 # Hermes root-scoped review and reconciliation v2
 
+[B21 real validation](hermes-b21-coding-smoke-v1.md) records acceptance_failed
+for safe extra paths with independent verification REFUSED. Evidence and fixture
+remain intact; scope failure does not become a security violation or authorize
+cleanup. The normal reconciliation gate remains strict.
+
 The separately owner-approved [B20 legacy exception](hermes-b20-legacy-recovery-v1.md)
 completed exact B17 lease/Writer removal and preserved all spent records. The
 exception is terminally spent/disabled; B19 strict recovery remains unchanged.

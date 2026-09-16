@@ -60,7 +60,7 @@ test("B19 durable capture, independent test, receipt then cleanup; public eviden
 test("B19 unknown safe file is scope review, never security violation; exact acceptance refusal retains fixture", windows, async t => {
   const x = await reviewFixture(t, { extra: true }); assert.deepEqual(x.comparison.violations, []); assert.equal(x.projection.scopeReviewRequired, true);
   const result = await completeNativeReview(x.review, { verify: () => x.f.verify() });
-  assert.equal(result.publicReceipt.verdict, "verification_blocked"); assert.equal(result.verification.reason, "smoke_unexpected_diff");
+  assert.equal(result.publicReceipt.verdict, "acceptance_failed"); assert.equal(result.verification.reason, "smoke_unexpected_diff");
   assert.equal(existsSync(x.f.repository), true); assert.throws(() => x.cleanup(result.capability));
   assert.equal(readDurableNativeReview(x.directory).payload.privateChanges.length, 2);
 });

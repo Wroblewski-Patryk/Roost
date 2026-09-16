@@ -1,5 +1,10 @@
 # Hermes B20 exact legacy recovery exception
 
+The separately authorized [B21 attempt](hermes-b21-coding-smoke-v1.md) is now
+spent and acceptance-blocked, with its own new retained fixture/Writer/lease.
+B20 recovery remains complete and its exception permanently disabled; these are
+new B21 artifacts, not a return of the removed B17 pair.
+
 RF-RUNTIME-005B20, 2026-09-16. The owner authorized one narrowly bound recovery
 exception for the retained legacy B17 application lease and global Writer lock.
 This is ADR-004 v12, not another provider attempt. No B13/B14/B17 authorization

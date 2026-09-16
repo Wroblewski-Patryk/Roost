@@ -1,5 +1,18 @@
 # Architecture Source Of Truth
 
+RF-RUNTIME-005B21 [one new coding smoke](hermes-b21-coding-smoke-v1.md) is **BLOCKED** after
+one authorized start under ADR-004 v13. Exit 0 is only a candidate: durable
+review records acceptance_failed, nine content changes, scope review required
+and zero protected violations. Independent test discovery refused the expanded
+diff; read-only exact-byte comparison confirms the repair and unchanged test,
+not post-test PASS. Installation and Job cleanup passed; the signed final review,
+owned fixture, Writer and edit-only application lease are retained. B21 is spent;
+B13/B14/B17 records and B20 terminal recovery remain intact. One next owner
+action is B22 read-only diagnosis of the eight extra entries and a concrete
+recovery plan; no deletion or new model run follows. All six public flags remain
+false; profile/registry v5 and native-risk v7 are unchanged. Earlier next-step and
+recovery-state statements below are historical.
+
 RF-RUNTIME-005B20 [exact legacy B17 recovery](hermes-b20-legacy-recovery-v1.md) is **DONE**
 under the explicit ADR-004 v12 owner exception. Exact application lease then
 Writer were removed, each absence read back; B13/B14/B17 spent records retain

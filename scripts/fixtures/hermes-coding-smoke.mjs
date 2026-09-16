@@ -82,3 +82,4 @@ function createFixture(scope) {
 }
 export const createHermesCodingFixture = () => createFixture(null);
 export const createHermesB17CodingFixture = () => createFixture("one_real_hermes_coding_smoke_b17_only");
+export const createHermesB21CodingFixture = () => createFixture("one_real_hermes_coding_smoke_b21_only");

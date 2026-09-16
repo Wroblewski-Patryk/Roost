@@ -5,6 +5,7 @@ const grants = new WeakMap();
 export const hermesSmokeScope = "one_real_hermes_coding_smoke_only";
 export const hermesB14SmokeScope = "one_real_hermes_coding_smoke_b14_only";
 export const hermesB17SmokeScope = "one_real_hermes_coding_smoke_b17_only";
+export const hermesB21SmokeScope = "one_real_hermes_coding_smoke_b21_only";
 const hash = v => createHash("sha256").update(JSON.stringify(v)).digest("hex");
 const deny = () => { throw Object.assign(new Error("hermes_smoke_activation_blocked"), { protocolAdmission: true, retryable: false }); };
 function binding(options, receipt) {
@@ -45,4 +46,6 @@ export const issueHermesB14SmokeActivation = (options, receipt, authority) => is
 export const consumeHermesB14SmokeActivation = (grant, options, consumption) => consume(grant, options, consumption, hermesB14SmokeScope);
 export const issueHermesB17SmokeActivation = (options, receipt, authority) => issue(options, receipt, authority, hermesB17SmokeScope);
 export const consumeHermesB17SmokeActivation = (grant, options, consumption) => consume(grant, options, consumption, hermesB17SmokeScope);
+export const issueHermesB21SmokeActivation = (options, receipt, authority) => issue(options, receipt, authority, hermesB21SmokeScope);
+export const consumeHermesB21SmokeActivation = (grant, options, consumption) => consume(grant, options, consumption, hermesB21SmokeScope);
 export function revokeHermesSmokeActivation(grant) { grants.delete(grant); }
