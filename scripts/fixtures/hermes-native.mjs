@@ -11,7 +11,7 @@ import { acquireWriterLock } from "../lib/agent-host-writer-lock.mjs";
 import { prepareProviderInput, assertProviderStartup, assertProviderNativeBoundary, abandonProviderNativeBoundary } from "../lib/agent-host-provider-input.mjs";
 import contract from "../lib/agent-host-provider-contract.cjs";
 const pin = contract.registry.providers.find(p => p.kind === "hermes_codex");
-export async function nativeFixture(t, { edit = () => {}, dirty = false, runtime = false, observer = () => [], prepare = true } = {}) {
+export async function nativeFixture(t, { edit = () => {}, dirty = false, runtime = false, observer = () => [], prepare = true, executablePath } = {}) {
   const root = mkdtempSync(path.join(realpathSync(os.tmpdir()), "roost-native-boundary-test-"));
   let writerLock, envelope;
   t.after(async () => {
@@ -42,7 +42,7 @@ export async function nativeFixture(t, { edit = () => {}, dirty = false, runtime
   const owner = createOwnerAttestation(profile); profile.ownerAttestation = owner.binding;
   writeFileSync(path.join(home, "owner-attestation.json"), owner.bytes);
   const provider = { kind: "hermes_codex", enabled: true, version: pin.version, commit: pin.commit, officialSource: pin.officialSource,
-    executablePath: path.join(install, "venv", "Scripts", "hermes.exe"), profile, policy: structuredClone(contract.registry.hermesPolicy) };
+    executablePath: executablePath ?? path.join(install, "venv", "Scripts", "hermes.exe"), profile, policy: structuredClone(contract.registry.hermesPolicy) };
   writerLock = await acquireWriterLock(state);
   const environment = hermesStartupEnvironment(profile, { SYSTEMROOT: process.env.SystemRoot ?? "C:\\Windows" }, repositoryPath);
   const options = { fresh: { taskContext: f.taskContext, applicationContext: f.applicationContext }, claimed: f.claimed,

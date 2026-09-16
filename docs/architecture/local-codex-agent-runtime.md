@@ -1,5 +1,16 @@
 # Local Codex Agent Runtime
 
+RF-RUNTIME-005B12 [local launch admission](hermes-local-launch-admission-v1.md)
+is source/synthetic qualified. One process-local aggregate binds the existing
+profile/auth/startup/budget/native/Job proofs to the same sealed attempt. Local
+policyQualified may be true; activationAuthorized and spawnStarted remain false.
+Only a separately branded harmless fixture can exercise activation in tests.
+All six public flags remain false; installed integrity/session availability and
+separate owner activation still precede any real launch. Exactly one successor
+is proposed: B13 supervised bounded coding smoke, not started. B11 cleanup was
+closed by owner removal and coordinator verification. Earlier next-step and
+pending-acceptance statements below are historical.
+
 RF-RUNTIME-005B11 [native tool boundary](hermes-native-tool-boundary-v1.md) is
 implemented under ADR-004 v7's explicit same-owner residual-risk acceptance.
 Profile v4, typed coding authority, canonical workspace/Writer/application leases,

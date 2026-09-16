@@ -2,21 +2,22 @@ import { consumeNativeToolBoundary, completeNativeToolBoundary } from "./agent-h
 import { guardHostContent } from "./agent-host-redaction.mjs";
 import { terminateWindowsProcessTree } from "./agent-host-execution-lease.mjs";
 import contract from "./agent-host-hermes-launch-contract.cjs";
-import { startWindowsJob, temporaryWindowsJobLauncher, isWindowsJobReceipt } from "./agent-host-windows-job.mjs";
+import { startWindowsJob, temporaryWindowsJobLauncher, isWindowsJobReceipt, assertWindowsJobCapability } from "./agent-host-windows-job.mjs";
 
 import { consumeHermesBudgetReceipt, assertHermesBudgetProcess, completeHermesBudgetReceipt, classifyHermesOutcome, hermesBudgetRequiresNativeBoundary } from "./agent-host-hermes-budget.mjs";
 
 // Real native backend; no receipt or cleanup callback can be injected by config.
 // Build happens before any target process, rechecking authority afterward.
 export async function runHermesOwnedProcess({ executable, argv, cwd, environment, input, attempt,
-  remainingMs, secrets = [], assertAuthority, signal, shutdownRequested = () => false, stopReason = () => undefined, budgetReceipt, nativeToolReceipt }) {
+  remainingMs, secrets = [], assertAuthority, signal, shutdownRequested = () => false, stopReason = () => undefined, budgetReceipt, nativeToolReceipt, jobArtifact }) {
   const began = performance.now();
   let observedJob, observedExit, nativeProof, nativeResult;
   if (hermesBudgetRequiresNativeBoundary(budgetReceipt) && !nativeToolReceipt)
     throw Object.assign(failure("hermes_native_boundary_required"), { protocolAdmission: true, outcome: "policy_blocked" });
   const budgetRemaining = budgetReceipt ? consumeHermesBudgetReceipt(budgetReceipt, { attempt, input, executable, argv, cwd, environment }) : null;
   const remaining = () => Math.min(remainingMs(), budgetRemaining ? budgetRemaining() : Infinity);
-  try { return await temporaryWindowsJobLauncher(async artifact => {
+  const withJob = jobArtifact ? async run => { assertWindowsJobCapability(jobArtifact); return run(jobArtifact); } : temporaryWindowsJobLauncher;
+  try { return await withJob(async artifact => {
     let problem, handle;
     const guard = createHermesQuietGuard({ secrets });
     const check = () => {
@@ -36,6 +37,10 @@ export async function runHermesOwnedProcess({ executable, argv, cwd, environment
     if (budgetReceipt) assertHermesBudgetProcess(budgetReceipt, { executable, argv, cwd, environment });
     if (nativeToolReceipt) nativeProof = consumeNativeToolBoundary(nativeToolReceipt, { cwd, environment, attempt, budgetReceipt });
     check(); if (problem) throw problem;
+    // Footprint work can take time: recheck startup/profile expiry after it,
+    // even though the budget/native one-use proofs have already been consumed.
+    if (budgetReceipt) assertHermesBudgetProcess(budgetReceipt, { executable, argv, cwd, environment });
+    if (jobArtifact) assertWindowsJobCapability(jobArtifact);
     // Reserve the existing 3-second launcher assignment window too. The Worker
     // timer includes that window; compute AFTER the bounded footprint recheck
     // so its time cannot extend the original native cleanup deadline.

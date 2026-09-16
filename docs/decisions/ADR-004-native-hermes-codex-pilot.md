@@ -1,5 +1,13 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+RF-RUNTIME-005B12 implementation evidence: [local launch admission](../architecture/hermes-local-launch-admission-v1.md)
+aggregates the already accepted B4/B7/B9/B11 policies without a new waiver.
+Decision version remains 7. Source/synthetic policy qualification is separate
+from activation; no real launch is authorized and all six flags remain false.
+B11 temporary cleanup is closed following owner removal and coordinator readback.
+Only B13 supervised bounded coding smoke is proposed, requiring installed
+readback, session confirmation and explicit owner activation first.
+
 RF-RUNTIME-005B11 owner amendment (version 7), accepted 2026-09-16: accept the
 B10 disclosed native file/terminal same-owner residual risk for the small supervised
 coding-local pilot. This is not permission to exceed the canonical workspace,

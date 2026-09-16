@@ -4,7 +4,12 @@ using System.IO;
 using System.Threading;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Security.Cryptography;
+using System.Collections.Generic;
 internal static class OwnedTreeFixture {
+    static string Digest(string value) {
+        using(var sha=SHA256.Create()) {return BitConverter.ToString(sha.ComputeHash(Encoding.UTF8.GetBytes(value))).Replace("-", "").ToLowerInvariant();}
+    }
     static Process Child(string mode) {
         var child = new Process { StartInfo = new ProcessStartInfo { FileName=Process.GetCurrentProcess().MainModule.FileName,
             Arguments=mode, UseShellExecute=false, CreateNoWindow=true, RedirectStandardOutput=true, RedirectStandardError=true } };
@@ -19,7 +24,14 @@ internal static class OwnedTreeFixture {
         Console.WriteLine("PID:"+Process.GetCurrentProcess().Id);Console.Out.Flush();
         // B9 standard-argv fixture: drain sealed stdin without executing tools.
         if(mode=="chat") {
+            Console.InputEncoding=new UTF8Encoding(false, true);
             string input=Console.In.ReadToEnd();
+            if(input.Contains("owned admission echo fixture")) {
+                var env=new List<string>();
+                foreach(System.Collections.DictionaryEntry entry in Environment.GetEnvironmentVariables()) env.Add(entry.Key+"="+entry.Value);
+                env.Sort(StringComparer.Ordinal);
+                Console.WriteLine("DELIVERY:"+Digest(input)+":"+Digest(string.Join("\0",args))+":"+Digest(Directory.GetCurrentDirectory())+":"+Digest(string.Join("\0",env.ToArray())));
+            }
             if(input.Contains("owned budget tree fixture")) mode="tree";
             else if(input.Contains("owned budget failure fixture")) return 2;
             else {Console.WriteLine("Untrusted candidate fixture result.");return 0;}

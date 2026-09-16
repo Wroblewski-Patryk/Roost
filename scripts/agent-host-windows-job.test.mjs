@@ -7,7 +7,7 @@ import path from "node:path";
 import os from "node:os";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { buildWindowsJobLauncher, startWindowsJob, isWindowsJobReceipt, hermesOwnedTreeBlockers } from "./lib/agent-host-windows-job.mjs";
+import { buildWindowsJobLauncher, startWindowsJob, isWindowsJobReceipt, hermesOwnedTreeBlockers, assertWindowsJobCapability } from "./lib/agent-host-windows-job.mjs";
 import { classifyHermesOutcome } from "./lib/agent-host-hermes-budget.mjs";
 import { runHermesOwnedProcess } from "./lib/agent-host-hermes-quiet.mjs";
 import { validPacketFixture, pinReadyFixture } from "./fixtures/execution-packet.mjs";
@@ -31,6 +31,9 @@ test("native Windows Job qualification (serial, owned fixtures only)", {skip:pro
  try {
   await exec(path.join(process.env.SystemRoot,"Microsoft.NET","Framework64","v4.0.30319","csc.exe"),["/nologo","/target:exe","/platform:x64",`/out:${fixture}`,fixtureSource],{windowsHide:true,timeout:30000});
   const artifact=await buildWindowsJobLauncher(directory),faulty=await buildWindowsJobLauncher(directory,{testFaults:true});
+  assert.equal(assertWindowsJobCapability(artifact).launcherDigest, artifact.sha256);
+  assert.throws(()=>assertWindowsJobCapability(faulty));
+  assert.throws(()=>assertWindowsJobCapability({...artifact}));
   async function run(mode,changes={},act) {
    let output="",assignment;
    current=await startWindowsJob(changes.fault?faulty:artifact,{executable:fixture,argv:[mode],cwd:directory,environment:env,input:"",durationMs:5000,

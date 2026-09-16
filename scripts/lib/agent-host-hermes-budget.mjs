@@ -92,6 +92,10 @@ export function hermesBudgetReceiptMatches(receipt, envelope, startup) {
   const proof = receipts.get(receipt);
   return Boolean(proof && proof.envelope === envelope && (!startup || proof.startup === startup));
 }
+export function assertHermesBudgetUnused(receipt) {
+  assertHermesBudgetReceipt(receipt);
+  if (seals.get(receipts.get(receipt).seal).used) fail("hermes_attempt_budget_reuse_or_input_changed");
+}
 export function hermesBudgetRequiresNativeBoundary(receipt) {
   return receipts.get(receipt)?.startup.profileVersion === "roost-hermes-profile-v4";
 }

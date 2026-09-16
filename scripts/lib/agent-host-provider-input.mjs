@@ -158,6 +158,10 @@ export function providerInputTransport(kind, envelope) {
   return freeze({ input: serialize(envelope), modelSelection: { ...envelope.contract.modelSelection }, startupTools: [] });
 }
 
+export function assertProviderInputAvailable(envelope) {
+  if (!issued.has(envelope) || issued.get(envelope).consumed) throw blocked();
+}
+
 export function consumeProviderInput(envelope, { fresh, claimed, currentCommit, assertAuthority, secrets = [] }) {
   try {
     const state = issued.get(envelope);

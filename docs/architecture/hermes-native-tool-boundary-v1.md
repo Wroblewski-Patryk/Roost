@@ -106,6 +106,12 @@ of the remaining public launch admission contract, with no model/pilot activatio
 
 ## B11 qualification and private readback
 
+B12 follow-up: the owner manually removed the previously reported temporary
+fixture leftover and the coordinator verified its absence. B11 cleanup is
+closed by that owner action; no private location is included here.
+The [local launch aggregate](hermes-local-launch-admission-v1.md) preserves
+this native proof and all residual-risk limits.
+
 The three private profile/binding/owner-attestation files were migrated to v4 and
 read back successfully. Original attestation identity, confirmation time and
 expiry were preserved; no credential store or CODEX_HOME was read. One backup

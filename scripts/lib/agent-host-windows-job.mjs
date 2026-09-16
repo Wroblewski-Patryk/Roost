@@ -1,6 +1,7 @@
 import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { readFile, mkdtemp, rm, realpath } from "node:fs/promises";
+import { readFileSync, lstatSync, realpathSync } from "node:fs";
 import { createHash, randomUUID } from "node:crypto";
 import path from "node:path";
 import os from "node:os";
@@ -46,8 +47,23 @@ export async function buildWindowsJobLauncher(directory, { testFaults = false } 
     args.push(source);
     await exec(compiler, args, { windowsHide: true, timeout: 30000, maxBuffer: 65536 });
     const artifact = Object.freeze({ executable, sha256: digest(await readFile(executable)), sourceSha256: digest(await readFile(source)) });
-    builds.set(artifact, { testFaults }); return artifact;
+    builds.set(artifact, { testFaults, at: Date.now(), monotonic: performance.now(),
+      identity: String(lstatSync(executable, { bigint: true }).ino), physicalPath: realpathSync.native(executable) }); return artifact;
   } catch { throw Object.assign(new Error("windows_job_build_failed"), { retryable: false }); }
+}
+
+// Pre-spawn capability, NOT a receipt for the cleanup of a future process.
+// JSON, fault-injected builds, stale or replaced binaries cannot qualify.
+export function assertWindowsJobCapability(artifact) {
+  try {
+    const saved = builds.get(artifact), age = saved && performance.now() - saved.monotonic;
+    if (!saved || saved.testFaults || age < 0 || age >= 60000 || Date.now() < saved.at || Date.now() - saved.at >= 60000) throw fail();
+    const stat = lstatSync(artifact.executable, { bigint: true });
+    if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1n || String(stat.ino) !== saved.identity
+        || realpathSync.native(artifact.executable) !== saved.physicalPath
+        || digest(readFileSync(artifact.executable)) !== artifact.sha256 || digest(readFileSync(source)) !== artifact.sourceSha256) throw fail();
+    return Object.freeze({ launcherDigest: artifact.sha256, sourceDigest: artifact.sourceSha256 });
+  } catch { throw fail(); }
 }
 
 export async function temporaryWindowsJobLauncher(run) {

@@ -1,10 +1,10 @@
-import { nativeToolBlockers } from "./agent-host-hermes-native-boundary.mjs";
+import { projectHermesLaunchPolicy, consumeHermesLaunchAdmission, acceptedHermesResidualBlockers } from "./agent-host-hermes-launch-admission.mjs";
 import path from "node:path";
 import { z } from "zod";
 import contract from "./agent-host-provider-contract.cjs";
 import hermesContract from "./agent-host-hermes-launch-contract.cjs";
 import { modelSelectionSchema, codexExecutionArgs } from "./agent-host-model-policy.mjs";
-import { providerInputTransport, consumeProviderInput, assertProviderProfile, assertProviderStartup, assertProviderNativeBoundary } from "./agent-host-provider-input.mjs";
+import { providerInputTransport, consumeProviderInput, assertProviderProfile, assertProviderStartup } from "./agent-host-provider-input.mjs";
 import { hermesProfileBindingSchema, hermesProfileAuthBlockers, hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion } from "./agent-host-hermes-profile.mjs";
 import { hermesStartupArgs, hermesStartupBlockers } from "./agent-host-hermes-startup.mjs";
 import { guardHostContent } from "./agent-host-redaction.mjs";
@@ -43,7 +43,7 @@ function windowsPath(value, executable = false) {
 // legacy projection reads no files. A v2 startup or opaque owner-auth receipt
 // requires fresh private-file checks; neither proves executable identity.
 export function projectProviderLaunch({ provider, envelope, repositoryPath, codexCommand, sandbox,
-  secrets = [], platform = process.platform, ownedTreeReceipt, ownerAuthReceipt, startupEnvironment, startupCandidate }) {
+  secrets = [], platform = process.platform, ownedTreeReceipt, ownerAuthReceipt, startupEnvironment, startupCandidate, jobArtifact }) {
   const kind = contract.providerKind(provider);
   if (kind === "unknown") fail("execution_provider_unknown");
   const transport = providerInputTransport(kind, envelope);
@@ -60,19 +60,21 @@ export function projectProviderLaunch({ provider, envelope, repositoryPath, code
   if (!windowsPath(repositoryPath) || sandbox !== "workspace-write") fail("hermes_workspace_invalid");
   if (!same(provider.policy, contract.registry.hermesPolicy)) fail("hermes_launch_policy_invalid");
   if (envelope.identity.attempt !== 1 || envelope.contract.budgets.maxAttempts !== 1) fail("hermes_single_attempt_required");
-  let blockers = hermesProfileAuthBlockers(hermesOwnedTreeBlockers(hermesContract.blockers, ownedTreeReceipt),
+  const local = provider.profile?.schemaVersion === hermesNativeProfileVersion
+    ? projectHermesLaunchPolicy({ provider, envelope, repositoryPath, sandbox, platform, startupEnvironment, startupCandidate }, jobArtifact) : null;
+  let blockers = local ? local.blockers : hermesProfileAuthBlockers(hermesOwnedTreeBlockers(hermesContract.blockers, ownedTreeReceipt),
     ownerAuthReceipt, provider.profile, { repositoryPath, readyRevision: envelope.revisions.ready });
-  const startup = [hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion].includes(provider.profile?.schemaVersion)
+  const startup = local ? { candidate: local.candidate, receipt: local.proofs.startup, budgetReceipt: local.proofs.budget }
+    : [hermesStartupProfileVersion, hermesBudgetProfileVersion].includes(provider.profile?.schemaVersion)
     ? assertProviderStartup({ envelope, provider, repositoryPath, startupEnvironment, startupCandidate }) : undefined;
-  if (startup) blockers = hermesStartupBlockers(blockers, startup.receipt, startup.options);
-  const acceptedResidualBlockers = startup?.budgetReceipt ? ["hermes_single_turn_enforcement_unproven", "hermes_output_cost_budget_unproven"] : [];
-  if (startup?.budgetReceipt) {
+  if (startup && !local) blockers = hermesStartupBlockers(blockers, startup.receipt, startup.options);
+  const acceptedResidualBlockers = startup?.budgetReceipt ? [...acceptedHermesResidualBlockers] : [];
+  if (startup?.budgetReceipt && !local) {
     // B9 owner policy supersedes these two historical requirements locally;
     // it does not prove physical call/token/cost caps or change global gates.
     blockers = hermesBudgetBlockers([...blockers.filter(code => !acceptedResidualBlockers.includes(code)), hermesBudgetBlocker], startup.budgetReceipt);
   }
-  const nativeReceipt = provider.profile?.schemaVersion === hermesNativeProfileVersion ? assertProviderNativeBoundary(envelope) : null;
-  if (nativeReceipt) blockers = nativeToolBlockers(blockers, nativeReceipt, envelope);
+  const nativeReceipt = local?.proofs.native ?? null;
   // Only documented flags. No invented --reasoning-effort/--ephemeral/--no-*
   // switches. This is a blocked candidate, NEVER a runnable descriptor.
   return freeze({ version: hermesContract.version, kind, command: null, args: null,
@@ -83,6 +85,7 @@ export function projectProviderLaunch({ provider, envelope, repositoryPath, code
     requiredConfig: { reasoningEffortKey: "agent.reasoning_effort", reasoningEffort: selection.data.reasoningEffort,
       workerOwnedMcpOnly: true, configReceipt: startup?.receipt ?? null, environmentReceipt: startup?.receipt.environmentDigest ?? null },
     budgetReceipt: startup?.budgetReceipt ?? null, nativeToolReceipt: nativeReceipt, acceptedResidualBlockers,
+    localAdmissionReceipt: local?.receipt ?? null, policyQualified: !!local?.receipt, activationAuthorized: false, spawnStarted: false,
     limits: { ...envelope.contract.budgets, ...hermesContract, blockers }, shell: false, windowsHide: true,
     blockers });
 }
@@ -92,6 +95,10 @@ export function projectProviderLaunch({ provider, envelope, repositoryPath, code
 // spawn or fall through to Codex. Failed admission burns the local envelope.
 export function prepareProviderLaunch(options, consumption) {
   const plan = projectProviderLaunch(options);
+  if (plan.kind === "hermes_codex" && (options.launchAdmission || plan.localAdmissionReceipt)) {
+    consumeHermesLaunchAdmission(options.launchAdmission ?? plan.localAdmissionReceipt, options, consumption);
+    fail("hermes_public_launch_contract_unqualified");
+  }
   consumeProviderInput(options.envelope, consumption);
   if (plan.kind === "hermes_codex") {
     // Production reads the owner-confirmed private attestation again. No caller

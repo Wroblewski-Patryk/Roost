@@ -34,9 +34,15 @@ risk decision; authority, v4 startup, leases, manifests and owned cleanup have
 synthetic qualification. Native tool isolation remains technically incomplete;
 violations block review/release and unobserved/transient effects remain accepted
 risk. Only fresh opaque proof removes the local native-tool blocker. All six
-flags remain false. Exactly one next proposed atom: **RF-RUNTIME-005B12 —
-source/synthetic qualification of remaining public launch admission**, without
-real Hermes/model/pilot or release activation. Not started.
+flags remain false. [RF-RUNTIME-005B12 local launch admission](../architecture/hermes-local-launch-admission-v1.md)
+is source/synthetic qualified with a single opaque, expiring, one-use proof set.
+Local policyQualified can be true while activationAuthorized=false and
+spawnStarted=false. B11 cleanup is closed by verified owner removal.
+Exactly one next proposed atom: **RF-RUNTIME-005B13 — one supervised bounded
+coding smoke**, not started. Installed executable/pin/config readback, explicit
+same-account session-availability confirmation and separate owner activation
+are prerequisites; no credential reads or inferred global/pilot activation.
+MCP, E2E and release remain separate.
 
 The repository cleanup established a stable baseline for continued product
 development. No Codex Agent Host issue queue is stored in the repository.
