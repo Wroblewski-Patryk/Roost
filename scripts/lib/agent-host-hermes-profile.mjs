@@ -3,6 +3,8 @@ import { lstatSync, realpathSync, openSync, fstatSync, readFileSync, closeSync }
 import path from "node:path";
 import { z } from "zod";
 import contract from "./agent-host-provider-contract.cjs";
+import { ownerAttestationBindingSchema, inspectOwnerAttestation } from "./agent-host-hermes-owner-auth.mjs";
+export { observeHermesSameOwner } from "./agent-host-hermes-owner-auth.mjs";
 
 export const hermesProfileVersion = "roost-hermes-profile-v1";
 export const hermesAuthSourceClass = "same-owner-codex-cli";
@@ -10,7 +12,7 @@ const pin = contract.registry.providers.find(p => p.kind === "hermes_codex");
 export const hermesAuthSourceVersion = pin.authSourcePolicy.contractVersion;
 const sha = bytes => createHash("sha256").update(bytes).digest("hex");
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
-const snapshots = new WeakMap(), observations = new WeakMap();
+const snapshots = new WeakMap(), admitted = new WeakMap();
 // JSON is a YAML subset. These are public 0.21.2 keys, not invented no-* flags.
 // No default model/provider: only the Worker packet may select them.
 const config = {
@@ -31,7 +33,8 @@ export const renderHermesProfile = () => profileBytes;
 export const hermesProfileBindingSchema = z.object({
   schemaVersion: z.literal(hermesProfileVersion), hermesVersion: z.literal(pin.version),
   hermesCommit: z.literal(pin.commit), profilePath: z.string().min(1).max(1024),
-  configDigest: z.literal(hermesProfileDigest), authSourceClass: z.literal(hermesAuthSourceClass)
+  configDigest: z.literal(hermesProfileDigest), authSourceClass: z.literal(hermesAuthSourceClass),
+  ownerAttestation: ownerAttestationBindingSchema.optional()
 }).strict();
 const failure = reason => Object.assign(new Error(reason), { protocolAdmission: true, retryable: false,
   publicMessage: "Hermes profile/auth admission is blocked. No model was started.", details: { reason } });
@@ -39,7 +42,7 @@ const fail = reason => { throw failure(reason); };
 const within = (parent, child) => { const relative = path.relative(parent, child); return relative === "" || (!relative.startsWith(".." + path.sep) && relative !== ".." && !path.isAbsolute(relative)); };
 function bindingKey(binding) {
   return JSON.stringify([binding.schemaVersion, binding.hermesVersion, binding.hermesCommit,
-    binding.profilePath, binding.configDigest, binding.authSourceClass]);
+    binding.profilePath, binding.configDigest, binding.authSourceClass, binding.ownerAttestation ?? null]);
 }
 export function hermesProfileBinding(profilePath) {
   return { schemaVersion: hermesProfileVersion, hermesVersion: pin.version, hermesCommit: pin.commit,
@@ -80,36 +83,10 @@ function readProfile(input, repositoryPath) {
   } finally { if (fd !== undefined) closeSync(fd); }
 }
 
-// A future trusted Worker identity adapter may supply NONSECRET metadata only.
-// There is intentionally no credential-store reader, JWT decoder or login here.
-// This factory is not wired to config/API/model data. JSON copies cannot qualify.
-const identitySchema = z.object({ sourceClass: z.literal(hermesAuthSourceClass), provider: z.literal("openai-codex"),
-  provenance: z.literal("nonsecret_identity_metadata"), identityFingerprint: hash, approvedIdentityFingerprint: hash,
-  accountCount: z.literal(1), interactionRequired: z.literal(false), accountChanged: z.literal(false),
-  rotationRequested: z.literal(false), fallbackRequested: z.literal(false)
-}).strict();
-export function observeHermesSameOwner(readNonsecretMetadata) {
-  let identity;
-  if (readNonsecretMetadata !== undefined) {
-    try { identity = identitySchema.safeParse(readNonsecretMetadata()); }
-    catch { fail("hermes_auth_observation_invalid"); }
-    if (!identity.success || identity.data.identityFingerprint !== identity.data.approvedIdentityFingerprint) fail("hermes_auth_policy_denied");
-  }
-  const receipt = Object.freeze({});
-  observations.set(receipt, { identityFingerprint: identity?.data.identityFingerprint ?? null,
-    ownerInteractionRequired: !identity, observedAt: performance.now() });
-  return receipt;
-}
-function authAudit(receipt) {
-  if (receipt === undefined) return { identityFingerprint: null, ownerInteractionRequired: true };
-  const observation = observations.get(receipt);
-  if (!observation || performance.now() - observation.observedAt > 60000) fail("hermes_auth_observation_invalid");
-  return { identityFingerprint: observation.identityFingerprint, ownerInteractionRequired: observation.ownerInteractionRequired };
-}
 function audit(binding, authReceipt) {
-  return Object.freeze({ authPolicyVersion: hermesAuthSourceVersion, profileVersion: binding.schemaVersion, hermesVersion: binding.hermesVersion,
+  return Object.freeze({ profileVersion: binding.schemaVersion, hermesVersion: binding.hermesVersion,
     hermesCommit: binding.hermesCommit, configDigest: binding.configDigest,
-    authSourceClass: binding.authSourceClass, ...authAudit(authReceipt) });
+    auth: inspectOwnerAttestation(binding, authReceipt) });
 }
 export function inspectHermesProfile(binding, repositoryPath) {
   return audit(readProfile(binding, repositoryPath));
@@ -119,10 +96,10 @@ export function sealHermesProfile(binding, { repositoryPath, readyRevision, auth
   const checked = readProfile(binding, repositoryPath), receipt = Object.freeze({});
   const stat = lstatSync(checked.profilePath, { bigint: true });
   snapshots.set(receipt, { binding: bindingKey(checked), repositoryPath, readyRevision,
-    fileIdentity: `${stat.dev}:${stat.ino}`, identityFingerprint: authAudit(authReceipt).identityFingerprint });
+    fileIdentity: `${stat.dev}:${stat.ino}`, auth: JSON.stringify(inspectOwnerAttestation(checked, authReceipt)) });
   return receipt;
 }
-export function assertHermesProfile(snapshot, binding, { repositoryPath, readyRevision, authReceipt, requireAuth = true }) {
+export function assertHermesProfile(snapshot, binding, { repositoryPath, readyRevision, authReceipt }) {
   const original = snapshots.get(snapshot);
   if (!original || original.repositoryPath !== repositoryPath || original.readyRevision !== readyRevision) fail("hermes_profile_ready_changed");
   const checked = readProfile(binding, repositoryPath);
@@ -130,7 +107,20 @@ export function assertHermesProfile(snapshot, binding, { repositoryPath, readyRe
   const stat = lstatSync(checked.profilePath, { bigint: true });
   if (`${stat.dev}:${stat.ino}` !== original.fileIdentity) fail("hermes_profile_changed");
   const result = audit(checked, authReceipt);
-  if (result.identityFingerprint !== original.identityFingerprint) fail("hermes_auth_identity_changed");
-  if (requireAuth && result.ownerInteractionRequired) fail("hermes_owner_interaction_required");
+  if (JSON.stringify(result.auth) !== original.auth) fail("hermes_auth_attestation_changed");
+  admitted.set(result, { snapshot, binding: structuredClone(checked), repositoryPath, readyRevision, authReceipt, at: performance.now() });
   return result;
+}
+
+// Only a locally observed, Ready-bound receipt can discharge the auth blocker.
+// Re-read on use: revocation/expiry/change cannot borrow a cached qualification.
+export function hermesProfileAuthBlockers(blockers, receipt, binding, { repositoryPath, readyRevision }) {
+  const proof = admitted.get(receipt), age = proof && performance.now() - proof.at;
+  if (!proof || age < 0 || age >= 60000 || proof.repositoryPath !== repositoryPath
+      || proof.readyRevision !== readyRevision || !hermesProfileBindingSchema.safeParse(binding).success
+      || bindingKey(proof.binding) !== bindingKey(binding)) return [...blockers];
+  try {
+    assertHermesProfile(proof.snapshot, binding, proof);
+    return blockers.filter(code => code !== "hermes_owner_attestation_required");
+  } catch { return [...blockers]; }
 }

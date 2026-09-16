@@ -58,7 +58,7 @@ test("native Windows Job qualification (serial, owned fixtures only)", {skip:pro
     repositoryPath:"C:\\Fictional\\App",sandbox:"workspace-write",ownedTreeReceipt:r.receipt});
    assert.equal(candidate.blockers.includes("hermes_stop_recovery_unproven"),false);
    assert.deepEqual(candidate.limits.blockers,candidate.blockers);
-   assert.ok(candidate.blockers.includes("hermes_same_owner_identity_unverified"));assert.equal(candidate.command,null);
+   assert.ok(candidate.blockers.includes("hermes_owner_attestation_required"));assert.equal(candidate.command,null);
   });
   await t.test("Hermes quiet runner uses native backend with a harmless fixture",async()=>{
    const result=await runHermesOwnedProcess({executable:fixture,argv:["echo"],cwd:directory,environment:env,input:"synthetic quiet input",

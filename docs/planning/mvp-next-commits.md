@@ -3,15 +3,16 @@
 RF-RUNTIME-005C [native owned-job qualification](../architecture/windows-owned-process-job-v1.md)
 is complete for local fixture process lifetime/cleanup. Native receipt validation
 is required per attempt; missing proof remains fail-closed.
-[RF-RUNTIME-005B3 same-owner profile](../architecture/hermes-same-owner-profile-v1.md)
-implements the accepted reuse of the owner's Codex CLI auth source. The owner
-rejected a separate token store and external Restricted Token/ACL credential guard.
-Profile creation/readback and synthetic Ready-bound admission are complete; live
-identity remains BLOCKED / owner-interaction-required. Exactly one recommended
-next atom: **RF-RUNTIME-005B4 — owner-present qualification of nonsecret same-owner
-identity evidence**. It is not started. The owner must confirm the intended account
-in a visible interface without sharing secrets; this alone grants no model run.
-The 0.21.2 pin, native Job lifecycle and all six false runtime gates are unchanged.
+[RF-RUNTIME-005B4 same-owner qualification](../architecture/hermes-same-owner-profile-v1.md)
+is complete using explicit private owner attestation. A stable account ID is not
+required. Installed CLI help does not establish secret-free status output; no
+status command was run and availability is not claimed. Attestation is checked
+at sealing/pre-spawn, expires within 90 days, and requires explicit renewal on
+expiry/revocation or reported account/session/config changes. Silent account
+switches and unreported session loss remain residual risks. Exactly one next atom:
+**RF-RUNTIME-005B5 — qualify pinned Hermes effective startup configuration and
+disabled tool/background surfaces without inference**. Not started. The 0.21.2 pin,
+native Job lifecycle and all six false runtime gates remain unchanged.
 
 The repository cleanup established a stable baseline for continued product
 development. No Codex Agent Host issue queue is stored in the repository.
@@ -19,12 +20,13 @@ development. No Codex Agent Host issue queue is stored in the repository.
 ## Recommended order
 
 First-agent direction remains native Hermes behind Windows Worker under
-[ADR-004 version 3](../decisions/ADR-004-native-hermes-codex-pilot.md).
+[ADR-004 version 4](../decisions/ADR-004-native-hermes-codex-pilot.md).
 [RF-RUNTIME-005A quiet v1](../architecture/hermes-supervised-quiet-v1.md) retains
 stable 0.21.2 and removes stream-json waiting from the supervised pilot scope.
 RF-RUNTIME-005B3 prepares a private profile and synthetic admission binding under
-the accepted same-owner auth policy. Nonsecret identity qualification remains
-pending; no model run, upgrade or automatic pilot authority follows.
+the accepted same-owner auth policy. B4 qualifies private owner attestation, with
+unobserved CLI status and residual account-switch risk; no model run, upgrade or
+automatic pilot authority follows.
 Native whole-tree recovery now has fixture evidence; remaining
 configuration/auth/tool/turn/budget blockers still require proof. All six runtime
 flags remain false. Direct CLI is an alternative, Herdr optional, VM/Sandbox is

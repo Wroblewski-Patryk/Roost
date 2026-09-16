@@ -11,8 +11,12 @@ budget/lifecycle gates remain. RF-RUNTIME-005B3
 [same-owner profile v1](hermes-same-owner-profile-v1.md) accepts the owner's existing
 Codex CLI auth and supersedes the B2 external credential-guard recommendation.
 A private secret-free profile and Ready-bound byte admission checks are prepared;
-production identity remains owner-interaction-required. No credential store was
-accessed. Separate token storage or Restricted Token/ACL sandboxing is not required.
+B4 now qualifies auth using the owner's explicit private attestation, bound to
+profile/Ready and rechecked for drift/revocation/expiry. Installed CLI help does
+not prove secret-free status output, so no status command was run. No stable
+account ID is required; silent account switches and unreported session loss remain
+residual risks. No credential store was accessed. Separate token storage or
+Restricted Token/ACL sandboxing is not required; all six gates remain false.
 
 RF-RUNTIME-005A replaces the first supervised pilot's stream-only candidate with
 [quiet v1](hermes-supervised-quiet-v1.md): stable 0.21.2, explicit approved

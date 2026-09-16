@@ -21,8 +21,16 @@ external-guard recommendation, rejected by the owner as disproportionate. B1/B2
 remain evidence about full profile-only isolation, which is no longer a pilot
 requirement. Account/provider/model changes, rotation/fallback, hidden interactive
 reauthorization and secrets in Roost/evidence remain forbidden. A secret-free
-private profile and synthetic admission binding are prepared; real nonsecret
-identity qualification remains blocked. Hermes stays unmodified at 0.21.2.
+private profile and synthetic admission binding are prepared. RF-RUNTIME-005B4
+accepts the owner's confirmation of the currently signed-in local Codex account
+as authoritative for this single-owner pilot. No stable account ID or token-derived
+fingerprint is required. A private versioned attestation expires within 90 days
+and is rechecked for revocation/change at Ready sealing and pre-spawn. Renewal is
+explicit after expiry, withdrawal or reported account/session/config changes.
+Installed CLI help does not guarantee secret-free status output, so no status
+command was run. Owner-attestation-only qualification is explicitly allowed;
+silent account switches and unreported session loss may remain undetected.
+Hermes stays unmodified at 0.21.2; no global execution gate changes.
 Future local Ollama (gpt-oss or Mistral/Devstral) stays planned/disabled until
 confirmed disk expansion and separate resource/quality qualification.
 The original RF-RUNTIME-002 decision and its dated authority follow below.
@@ -30,7 +38,7 @@ The original RF-RUNTIME-002 decision and its dated authority follow below.
 Date: 2026-09-15
 Status: accepted
 Owner: Roost architecture owner
-Decision version: 3 (RF-RUNTIME-005B3 same-owner auth amendment, 2026-09-16)
+Decision version: 4 (RF-RUNTIME-005B4 owner-attestation amendment, 2026-09-16)
 Scope: RF-RUNTIME-002 owner handoff; architecture and blocked adapter implementation
 Source reference: `owner-handoff.rf-runtime-002.hermes-first.v1`
 

@@ -3,15 +3,16 @@
 RF-RUNTIME-005C [native owned-job qualification](../architecture/windows-owned-process-job-v1.md)
 is complete for local fixture process lifetime/cleanup. Native receipt validation
 is required per attempt; missing proof remains fail-closed.
-[RF-RUNTIME-005B3 same-owner profile](../architecture/hermes-same-owner-profile-v1.md)
-implements the accepted reuse of the owner's Codex CLI auth source. The owner
-rejected a separate token store and external Restricted Token/ACL credential guard.
-Profile creation/readback and synthetic Ready-bound admission are complete; live
-identity remains BLOCKED / owner-interaction-required. Exactly one recommended
-next atom: **RF-RUNTIME-005B4 — owner-present qualification of nonsecret same-owner
-identity evidence**. It is not started. The owner must confirm the intended account
-in a visible interface without sharing secrets; this alone grants no model run.
-The 0.21.2 pin, native Job lifecycle and all six false runtime gates are unchanged.
+[RF-RUNTIME-005B4 same-owner qualification](../architecture/hermes-same-owner-profile-v1.md)
+is complete using explicit private owner attestation. A stable account ID is not
+required. Installed CLI help does not establish secret-free status output; no
+status command was run and availability is not claimed. Attestation is checked
+at sealing/pre-spawn, expires within 90 days, and requires explicit renewal on
+expiry/revocation or reported account/session/config changes. Silent account
+switches and unreported session loss remain residual risks. Exactly one next atom:
+**RF-RUNTIME-005B5 — qualify pinned Hermes effective startup configuration and
+disabled tool/background surfaces without inference**. Not started. The 0.21.2 pin,
+native Job lifecycle and all six false runtime gates remain unchanged.
 
 The first-provider choice is resolved by RF-RUNTIME-002 /
 [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md): native Hermes using
@@ -19,14 +20,15 @@ Codex OAuth behind Windows Local Worker; direct CLI alternative and Herdr option
 Workspace, one-writer, cleanup, secrets, Ready/review and release guards remain.
 No VM/Windows Sandbox/Hyper-V prerequisite. No runtime activation follows.
 
-## Same-owner authentication — identity evidence pending
+## Same-owner authentication — attestation qualified, runtime still blocked
 
 [RF-RUNTIME-005A](../architecture/hermes-supervised-quiet-v1.md) accepts public
 quiet/oneshot on existing stable 0.21.2 for the first supervised pilot. Waiting
 for unreleased stream-json is no longer required; older rejection evidence remains
 historical. B1/B2 profile-only isolation findings remain historical after the B3
-owner amendment. The private profile is sealed synthetically; real nonsecret
-identity evidence remains pending. No OAuth or model operation occurred in B3. Fresh owned-tree receipts remain mandatory;
+owner amendment. B4 accepts the explicit owner attestation as authoritative for this single-owner
+pilot; technical account identity is not required. No OAuth or model operation
+occurred in B3/B4. Fresh owned-tree receipts remain mandatory;
 effective config, auth/tool
 boundaries, internal turns and hard budgets remain unqualified; all six runtime
 flags stay false. Config completion must not be reported as pilot readiness.

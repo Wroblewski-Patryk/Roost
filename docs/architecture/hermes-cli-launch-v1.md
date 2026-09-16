@@ -4,7 +4,9 @@
 now supplies private config byte/readback and Ready binding. It does not qualify
 effective Hermes configuration. Existing same-owner Codex CLI auth is accepted;
 separate token storage/Restricted Token/ACL credential isolation is not required.
-Production nonsecret identity remains unverified and prevents launch. Historical
+B4 now accepts a private Ready-bound owner attestation without a stable account
+ID; CLI status is unobserved and residual risks are explicit. Other blockers
+still prevent launch. Historical
 no-config-generated and isolated-auth statements below describe RF002, not B3.
 
 **Historical stream-only qualification.** RF-RUNTIME-005A (2026-09-16)
@@ -101,7 +103,7 @@ Hermes import/API is introduced.
 | hermes_public_launch_contract_unqualified | A complete admitted combination of public CLI, pinned private config, tools/auth boundaries and Worker lifecycle, not absence of a one-shot CLI. |
 | hermes_cli_pin_incompatible | RF-RUNTIME-003 confirms the pinned chat parser has no --format argument. An exact compatible official release is required before installation can proceed. |
 | hermes_sealed_config_enforcement_unproven | Effective exact reasoning, no fallback/model rotation, no extra retry/turn, no independent delegation/cron/company-memory mutation; controlled startup hooks/plugins/config and only the Worker MCP allowlist. |
-| hermes_same_owner_identity_unverified | Nonsecret evidence for the approved same-owner Codex identity; no account/provider/model switch, rotation/fallback, hidden reauthorization or credentials in Roost/evidence. Full profile-only credential isolation is not required. |
+| hermes_owner_attestation_required | Fresh private owner attestation bound to profile/Ready, checked for revocation/expiry/drift. B4 qualifies this local boundary without stable account ID or a safe CLI status probe; silent account switches/session loss may remain undetected. Other launch gates remain false. |
 | hermes_native_tools_isolation_unproven | Canonical workspace boundary for all native/tool/OS paths; shell escapes and host control cannot be qualified by a tool-name list or write_file prefix. |
 | hermes_output_cost_budget_unproven | Execution-wide hard token/cost controls; final result usage is accounting only. |
 | hermes_stop_recovery_unproven | Complete owned-tree stop on success, cancellation, timeout and controller failure, including descendants after root exit; no retry or automatic resume. |

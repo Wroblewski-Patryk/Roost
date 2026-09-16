@@ -11,8 +11,12 @@ budget/lifecycle gates remain. RF-RUNTIME-005B3
 [same-owner profile v1](hermes-same-owner-profile-v1.md) accepts the owner's existing
 Codex CLI auth and supersedes the B2 external credential-guard recommendation.
 A private secret-free profile and Ready-bound byte admission checks are prepared;
-production identity remains owner-interaction-required. No credential store was
-accessed. Separate token storage or Restricted Token/ACL sandboxing is not required.
+B4 now qualifies auth using the owner's explicit private attestation, bound to
+profile/Ready and rechecked for drift/revocation/expiry. Installed CLI help does
+not prove secret-free status output, so no status command was run. No stable
+account ID is required; silent account switches and unreported session loss remain
+residual risks. No credential store was accessed. Separate token storage or
+Restricted Token/ACL sandboxing is not required; all six gates remain false.
 
 RF-RUNTIME-005A [supervised quiet v1](hermes-supervised-quiet-v1.md) supersedes
 waiting for stable stream-json for the first supervised pilot. Existing 0.21.2
@@ -21,8 +25,9 @@ attempt and exact Git-visible dirty-byte review evidence have synthetic tests.
 Native owned-tree stop, sealed effective config, auth, internal turns, tool
 isolation and hard cost/token limits remain blocked. No readiness flag is raised.
 B1/B2 retain historical profile-only isolation findings; that requirement is
-superseded by the B3 owner decision. The sole next recommendation is B4 nonsecret
-same-owner identity qualification, not started. No model execution is admitted.
+superseded by the B3 owner decision. The sole next recommendation is B5 effective
+startup/tool configuration qualification without inference, not started. No model
+execution is admitted.
 The RF003/RF004 incompatibility and next-task statements below are dated history.
 
 RF-RUNTIME-004 [replacement-pin proposal v1](hermes-replacement-pin-proposal-v1.md)

@@ -113,7 +113,7 @@
         "scope": "Windows x64 Job Object launcher, atomic job-list assignment before resume, owned-tree accounting and controller-loss fixture proof only. Fresh in-process native receipt is required; registry metadata does not remove runtime blockers or grant execution."
       },
       "authSourcePolicy": {
-        "contractVersion": "roost-hermes-same-owner-auth-v1",
+        "contractVersion": "roost-hermes-same-owner-auth-v2",
         "sourceClass": "same-owner-codex-cli",
         "status": "owner_approved",
         "profileOnlyIsolationRequired": false,
@@ -122,9 +122,15 @@
         "providerFallbackAllowed": false,
         "modelFallbackAllowed": false,
         "interactiveReauthorizationAllowed": false,
-        "identityEvidence": "nonsecret_metadata_only",
+        "identityEvidence": "owner_attestation_authoritative_single_owner_pilot",
         "productionIdentityAdapterQualified": false,
-        "ownerInteractionRequired": true
+        "ownerInteractionRequired": true,
+        "ownerAttestationQualified": true,
+        "stableAccountIdRequired": false,
+        "statusProbeQualified": false,
+        "attestationMaxAgeDays": 90,
+        "renewal": "Explicit owner renewal on expiry, revocation, reported account/session change or profile/source/policy drift; never automatic.",
+        "proofScope": "Private owner attestation bound to profile and Ready, rechecked before spawn. No technical account identity or login-status proof; same-owner account switch may be undetectable."
       }
     }
   ],
