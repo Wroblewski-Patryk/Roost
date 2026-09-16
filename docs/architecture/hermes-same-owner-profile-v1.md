@@ -63,6 +63,10 @@ Under the explicit B4 fallback, absent a qualified safe status command, owner at
 
 B4 tests cover confirmed current attestation with synthetic logged-in status; the attestation-only route with no account ID; missing/revoked/expired/drifting/renewed records; expiry after Ready; raw/secret-like output rejection; profile/version/source changes; and conditional discharge of only the auth blocker. Validation passed: 48 profile/attestation tests, 23 lifecycle tests, provider/input/launch/quiet/execution-provider and native Windows Job regressions, 4 API tests, typecheck, lint, build, both documentation validators, 496 changed-document local links, privacy and diff checks. The Windows reparse fixture uses a directory junction because file-symlink creation needs unavailable privileges; the corrected fixture passed. Build retains static-asset and large-chunk warnings. Actual private readback succeeds without a status command; native Job implementation/lifecycle is unchanged. No task fixture directories or native fixture processes remain.
 
-Exactly one recommended next atom: **RF-RUNTIME-005B5 — qualify the pinned Hermes effective startup configuration and disabled tool/background surfaces without inference**. It is not started. This must resolve the retained effective-configuration gap without inventing knobs or adding credential sandbox prerequisites. No model execution, new installation or release authority follows from B4.
+Subsequent [RF-RUNTIME-005B5 effective-config qualification](hermes-effective-config-qualification-v1.md)
+returned BLOCKED. An exact-pin loader observed the synthetic copy's explicit values,
+but intercepted reads/imports and unqualified startup/tool/rotation consumers prevent
+full qualification. The B4 auth decision remains valid. The sole next recommendation
+is B6 source-only minimal startup/tool/rotation contract selection; not started.
 
 `implementationReady=false`; `executionSupported=false`; `pilotReady=false`; `liveAdmissionAllowed=false`; `pilotExecutionAuthorized=false`; `pilotExecutionStarted=false`.

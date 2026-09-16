@@ -1,5 +1,11 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+Implementation evidence RF-RUNTIME-005B5: [effective-config qualification](../architecture/hermes-effective-config-qualification-v1.md)
+is BLOCKED after a partial exact-pin loader observation in synthetic storage.
+Startup/tool/rotation consumers remain unqualified; the negative diagnostic receipt
+is not Ready authority. This does not amend version 4's owner-attestation decision
+or residual risks, change the pin, or activate any execution gate.
+
 Implementation update RF-RUNTIME-005C: [native owned-job v1](../architecture/windows-owned-process-job-v1.md)
 now has actual fixture proof for process cleanup, including controller loss. This
 implements the retained boundary without changing the first-provider decision or

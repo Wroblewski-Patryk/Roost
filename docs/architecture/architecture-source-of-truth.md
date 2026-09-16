@@ -1,5 +1,11 @@
 # Architecture Source Of Truth
 
+RF-RUNTIME-005B5 [effective-config qualification](hermes-effective-config-qualification-v1.md)
+is BLOCKED: exact-pin official loader observed all explicit overrides in an identical
+synthetic profile, but intercepted import/read attempts, startup initialization and
+unqualified tool/rotation consumers prevent full qualification. The private negative
+receipt cannot discharge the pre-spawn config blocker; all six gates remain false.
+
 RF-RUNTIME-005C adds [native Windows owned-job v1](windows-owned-process-job-v1.md):
 atomic job assignment before resume, KILL_ON_JOB_CLOSE and zero-active-process
 accounting, verified with native fixture trees, nested jobs and controller crashes.

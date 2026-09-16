@@ -9,10 +9,14 @@ required. Installed CLI help does not establish secret-free status output; no
 status command was run and availability is not claimed. Attestation is checked
 at sealing/pre-spawn, expires within 90 days, and requires explicit renewal on
 expiry/revocation or reported account/session/config changes. Silent account
-switches and unreported session loss remain residual risks. Exactly one next atom:
-**RF-RUNTIME-005B5 — qualify pinned Hermes effective startup configuration and
-disabled tool/background surfaces without inference**. Not started. The 0.21.2 pin,
-native Job lifecycle and all six false runtime gates remain unchanged.
+switches and unreported session loss remain residual risks.
+[RF-RUNTIME-005B5 effective-config qualification](../architecture/hermes-effective-config-qualification-v1.md)
+is BLOCKED: exact-pin loader data is partial, with intercepted read/import attempts
+and unqualified startup/tool/rotation consumers. Its private negative receipt grants
+no Ready/admission authority. Exactly one next atom: **RF-RUNTIME-005B6 — source-only
+selection of an upstream-supported minimal startup path and resolution of remaining
+tool/rotation controls**. Not started. The 0.21.2 pin, native Job lifecycle and all
+six false runtime gates remain unchanged.
 
 The repository cleanup established a stable baseline for continued product
 development. No Codex Agent Host issue queue is stored in the repository.

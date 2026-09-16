@@ -1,5 +1,11 @@
 # Foundation requirements traceability
 
+RF-RUNTIME-005B5 [effective-config qualification](hermes-effective-config-qualification-v1.md)
+is BLOCKED: exact-pin official loader observed all explicit overrides in an identical
+synthetic profile, but intercepted import/read attempts, startup initialization and
+unqualified tool/rotation consumers prevent full qualification. The private negative
+receipt cannot discharge the pre-spawn config blocker; all six gates remain false.
+
 RF-RUNTIME-005C adds [native Windows owned-job v1](windows-owned-process-job-v1.md):
 atomic job assignment before resume, KILL_ON_JOB_CLOSE and zero-active-process
 accounting, verified with native fixture trees, nested jobs and controller crashes.
@@ -25,8 +31,8 @@ attempt and exact Git-visible dirty-byte review evidence have synthetic tests.
 Native owned-tree stop, sealed effective config, auth, internal turns, tool
 isolation and hard cost/token limits remain blocked. No readiness flag is raised.
 B1/B2 retain historical profile-only isolation findings; that requirement is
-superseded by the B3 owner decision. The sole next recommendation is B5 effective
-startup/tool configuration qualification without inference, not started. No model
+superseded by the B3 owner decision. B5 is now blocked as described above. The sole next recommendation is B6
+source-only minimal startup/tool/rotation contract selection, not started. No model
 execution is admitted.
 The RF003/RF004 incompatibility and next-task statements below are dated history.
 
