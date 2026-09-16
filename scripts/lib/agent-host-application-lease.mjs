@@ -2,12 +2,18 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { writeFileSync, readFileSync, unlinkSync, lstatSync } from "node:fs";
 import { randomUUID } from "node:crypto";
+import { createHash } from "node:crypto";
 import { z } from "zod";
 import { assertWriterLock } from "./agent-host-writer-lock.mjs";
 import { nativeDigest, physicalIdentity } from "./agent-host-native-footprint.mjs";
 import { nativeBoundaryError } from "./agent-host-native-authority.mjs";
 
 const leases = new WeakMap();
+export function applicationRecoveryEvidence(handle) {
+  assertApplicationLease(handle);
+  const saved = leases.get(handle), bytes = readFileSync(saved.file), s = lstatSync(saved.file, { bigint: true });
+  return { name: path.basename(saved.file), identity: `${s.dev}:${s.ino}`, digest: createHash("sha256").update(bytes).digest("hex"), record: JSON.parse(bytes) };
+}
 const observationSchema = z.array(z.object({ port: z.number().int().min(1).max(65535),
   pid: z.number().int().positive(), createdAt: z.string().datetime() }).strict()).max(32);
 // Read only declared listening ports and the identity of their owners; no whole

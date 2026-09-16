@@ -1,5 +1,16 @@
 # Next development work
 
+RF-RUNTIME-005B19 [root-scoped review and reconciliation v2](../architecture/hermes-root-scoped-review-reconciliation-v2.md) is implemented and synthetically qualified. Ordinary safe coding paths are
+acceptance scope, while protected paths remain blocked. Durable private evidence
+precedes verification, terminal receipt, owned cleanup and lease/Writer release.
+Future recovery requires a complete identity chain and separate explicit owner
+authority. The real B17 legacy dry run refuses seven missing evidence requirements;
+its Writer, application lease and all spent records remain unchanged. The sole
+next owner action is a decision on a separately scoped legacy-only recovery
+exception; no bypass or new run follows. ADR-004 is v11 for this policy amendment,
+profile/registry stay v5, native-risk binding stays v7 and all six public flags
+remain false. Earlier successor/version statements below are historical.
+
 RF-RUNTIME-005B18 [source/synthetic diagnosis](../architecture/hermes-b18-footprint-diagnosis-v1.md) is complete,
 but real B17 root-cause attribution and lock-recovery proof remain **BLOCKED**.
 Minimal repair/test and completed atomic replacement pass the unchanged footprint;

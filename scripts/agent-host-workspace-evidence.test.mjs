@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtemp, writeFile, rm, realpath, mkdir, rename, unlink } from "node:fs/promises";
+import { mkdtemp, writeFile, rm, realpath, mkdir, rename, unlink, link } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import os from "node:os";
@@ -60,4 +60,14 @@ test("credential-shaped dirty paths and filesystem errors disclose no private ma
   await writeFile(path.join(f.root, ".env.local"), "synthetic only\n");
   await assert.rejects(f.collect(), e => e.message === "hermes_workspace_evidence_blocked" && !e.message.includes(f.root));
   await assert.rejects(f.collect({ repositoryPath: path.join(f.root, "missing") }), e => e.message === "hermes_workspace_evidence_blocked");
+}));
+
+test("safe configuration templates are content while hardlinked files stay blocked", () => fixture(async f => {
+  await writeFile(path.join(f.root, ".env.example"), "EXAMPLE=value\n");
+  await writeFile(path.join(f.root, "credentials.json.template"), "{}\n");
+  const evidence = await f.collect();
+  assert.ok(evidence.manifest.some(row => row.path === ".env.example"));
+  assert.ok(evidence.manifest.some(row => row.path === "credentials.json.template"));
+  await link(path.join(f.root, "tracked.txt"), path.join(f.root, "linked.txt"));
+  await assert.rejects(f.collect(), /evidence_blocked/);
 }));

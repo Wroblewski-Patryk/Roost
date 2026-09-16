@@ -1,5 +1,10 @@
 # Windows owned-process job v1
 
+Current policy/evidence ordering: [B19 root-scoped review v2](hermes-root-scoped-review-reconciliation-v2.md).
+It supersedes exact-path classification and adds durable review/process identity
+bindings for future attempts. Historical observations below remain unchanged;
+legacy B17 recovery is still blocked and no new execution is authorized.
+
 RF-RUNTIME-005C, 2026-09-16. Protocol: `roost-windows-job-v1`.
 Status: **NATIVE FIXTURE QUALIFIED; PROVIDER EXECUTION STILL DISABLED**.
 This removes the raw-process stop-proof gap for the new backend only. It does not

@@ -16,7 +16,8 @@ const fail = () => Object.assign(new Error("hermes_stop_recovery_unproven"), { l
 const uuid = z.string().uuid(), integer = z.number().int().nonnegative();
 const base = { version: z.literal(windowsJobVersion), attempt: uuid };
 const ownership = { job: uuid, assignedBeforeResume: z.boolean(), killOnClose: z.literal(true), breakaway: z.literal(false),
-  controllerInJob: z.boolean(), inheritedJob: z.boolean() };
+  controllerInJob: z.boolean(), inheritedJob: z.boolean(), rootPid: integer,
+  rootCreationTime: z.string().regex(/^\d{16,20}$/).nullable(), launcherPid: integer.positive(), launcherCreationTime: z.string().regex(/^\d{16,20}$/) };
 const eventSchema = z.discriminatedUnion("type", [
   z.object({ ...base, ...ownership, type: z.literal("assigned"), rootPid: integer.positive() }).strict(),
   z.object({ ...base, type: z.literal("data"), channel: z.enum(["stdout", "stderr"]), data: z.string().max(5464) }).strict(),
@@ -84,6 +85,9 @@ export async function startWindowsJob(artifact, options) {
   try { if (!build || digest(await readFile(artifact.executable)) !== artifact.sha256) throw fail(); }
   catch { throw fail(); }
   const { executable, argv, cwd, environment, input, durationMs, attempt = randomUUID(), onData = () => {}, onAssigned = () => {}, fault = "" } = options;
+  let executableDigest = null;
+  try { executableDigest = digest(readFileSync(executable)); }
+  catch (error) { if (error.code !== "ENOENT") throw fail(); }
   const request = { version: windowsJobVersion, attempt, executable, argv, cwd, environment,
     input: Buffer.from(input).toString("base64"), durationMs, stopMs: 3000, ...(build.testFaults ? { fault } : {}) };
   const encoded = JSON.stringify(request) + "\n";
@@ -116,7 +120,7 @@ export async function startWindowsJob(artifact, options) {
           const event = eventSchema.parse(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(raw)));
           if (event.attempt !== attempt || receipt) throw fail();
           if (event.type === "assigned") {
-            if (assigned || !event.assignedBeforeResume) throw fail(); assigned = event; onAssigned(event);
+            if (assigned || !executableDigest || !event.assignedBeforeResume || !event.rootCreationTime || event.launcherPid !== child.pid) throw fail(); assigned = event; onAssigned(event);
           } else if (event.type === "data") {
             if (!assigned || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(event.data)) throw fail();
             const data = Buffer.from(event.data, "base64");
@@ -125,6 +129,7 @@ export async function startWindowsJob(artifact, options) {
             onData(event.channel, data);
           } else {
             if (assigned && (event.job !== assigned.job || !event.assignedBeforeResume || !event.killOnClose)) throw fail();
+            if (assigned && ["rootPid", "rootCreationTime", "launcherPid", "launcherCreationTime"].some(k => event[k] !== assigned[k])) throw fail();
             if (event.stdoutBytes !== stdoutBytes || event.stderrBytes !== stderrBytes) throw fail();
             receipt = event;
           }
@@ -135,7 +140,8 @@ export async function startWindowsJob(artifact, options) {
     child.on("close", code => {
       for (const t of timers) clearTimeout(t); clearTimeout(stopTimer);
       if (problem || code !== 0 || pending.length || !receipt?.cleanup || !receipt.jobClosed || receipt.activeProcesses !== 0 || receipt.cleanupMs > 3000) { reject(fail()); return; }
-      const result = Object.freeze({ ...receipt, launcherSha256: artifact.sha256, sourceSha256: artifact.sourceSha256 });
+      const result = Object.freeze({ ...receipt, launcherSha256: artifact.sha256, sourceSha256: artifact.sourceSha256,
+        executableDigest });
       if (assigned && receipt.resumed && !build.testFaults) receipts.set(result, { at: performance.now() });
       resolve(result);
     });

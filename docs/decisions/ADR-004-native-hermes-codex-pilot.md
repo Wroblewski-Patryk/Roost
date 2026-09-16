@@ -1,5 +1,18 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+RF-RUNTIME-005B19 owner policy amendment (version 11), 2026-09-16:
+accept [root-scoped coding and durable review v2](../architecture/hermes-root-scoped-review-reconciliation-v2.md).
+Ordinary repository edits need not predeclare every filename; optional expected
+paths are acceptance scope. Protected-path, pre-existing-dirty, one-Writer,
+process ownership and independent review boundaries remain mandatory. Implement
+durable evidence before cleanup and a strictly owner-authorized future recovery
+path. No legacy identity backfill, artifact deletion, installed runtime mutation
+or new provider/model execution is authorized. Real B17 reconciliation stays
+BLOCKED by missing evidence, with both artifacts and all spent records preserved.
+Profile/registry v5, native-risk reference v7 and all six false public flags are
+unchanged. This amendment grants no new execution attempt. Earlier version and
+successor statements below are historical.
+
 RF-RUNTIME-005B18 [source/synthetic diagnosis](../architecture/hermes-b18-footprint-diagnosis-v1.md)
 confirms comparison/evidence-ordering gaps but cannot attribute B17's real changed
 paths or prove ownership-safe recovery from its legacy records. This is evidence
@@ -201,7 +214,7 @@ The original RF-RUNTIME-002 decision and its dated authority follow below.
 Date: 2026-09-15
 Status: accepted
 Owner: Roost architecture owner
-Decision version: 10 (RF-RUNTIME-005B17 new one-attempt authorization; native review BLOCKED, 2026-09-16)
+Decision version: 11 (RF-RUNTIME-005B19 root-scoped review policy; no new execution, 2026-09-16)
 Scope: RF-RUNTIME-002 owner handoff; architecture and blocked adapter implementation
 Source reference: `owner-handoff.rf-runtime-002.hermes-first.v1`
 

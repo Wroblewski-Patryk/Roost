@@ -3,6 +3,7 @@ import { execFile } from "node:child_process";
 import { lstat, open, realpath } from "node:fs/promises";
 import path from "node:path";
 import { guardHostContent } from "./agent-host-redaction.mjs";
+import { nativeRelative } from "./agent-host-native-footprint.mjs";
 
 const limits = Object.freeze({ files: 128, fileBytes: 8 * 1024 * 1024, totalBytes: 32 * 1024 * 1024, gitBytes: 8 * 1024 * 1024 });
 const hash = bytes => createHash("sha256").update(bytes).digest("hex");
@@ -18,7 +19,7 @@ function git(cwd, args) {
 function safeRelative(value) {
   if (!value || value.length > 512 || /[\x00-\x1f\x7f\\:]/.test(value) || path.posix.isAbsolute(value)
       || value.split("/").some(p => !p || [".", "..", ".git"].includes(p.toLowerCase()))) fail();
-  return value;
+  try { return nativeRelative(value); } catch { fail(); }
 }
 
 async function snapshot(directory, expectedHead, expectedBranch, secrets) {
@@ -34,12 +35,11 @@ async function snapshot(directory, expectedHead, expectedBranch, secrets) {
   for (const row of rows) {
     if (row.length < 4 || row[2] !== " " || !/^[ MADRCU?!]{2}$/.test(row.slice(0, 2))) fail();
     const relative = safeRelative(row.slice(3)), filename = path.resolve(root, relative);
-    if (relative.split("/").some(p => /^(?:\.env(?:\..*)?|auth\.json|credentials\.json)$/i.test(p))) fail();
     if (!filename.startsWith(root + path.sep)) fail();
     let working = null;
     try {
       const stat = await lstat(filename, { bigint: true });
-      if (!stat.isFile() || stat.isSymbolicLink() || stat.size > limits.fileBytes
+      if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1n || stat.size > limits.fileBytes
           || (await realpath(filename)) !== filename) fail();
       const handle = await open(filename, "r");
       try {

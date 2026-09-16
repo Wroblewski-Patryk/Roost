@@ -1,14 +1,27 @@
-import { randomUUID } from "node:crypto";
+import { randomUUID, createHash } from "node:crypto";
+import { currentNativeProcessIdentity } from "./agent-host-process-identity.mjs";
 import { guardHostContent } from "./agent-host-redaction.mjs";
 import { lstat, mkdir, open, readFile, unlink } from "node:fs/promises";
 import path from "node:path";
-import { readFileSync, lstatSync } from "node:fs";
+import { readFileSync, lstatSync, existsSync } from "node:fs";
 
 const liveWriters = new WeakMap();
+export function writerRecoveryEvidence(lock) {
+  const checked = assertWriterLock(lock), saved = liveWriters.get(lock), bytes = readFileSync(saved.file);
+  const s = lstatSync(saved.file, { bigint: true });
+  const raw = JSON.parse(bytes), process = raw.ownerProcess;
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(raw.createdAt ?? "")
+      || process && (process.pid !== raw.ownerPid || !/^\d{16,20}$/.test(process.creationTime ?? "")
+        || !/^[a-f0-9]{64}$/.test(process.executablePathDigest ?? "") || !/^[a-f0-9]{64}$/.test(process.executableDigest ?? ""))) throw Error("agent_host_writer_identity_unproven");
+  const record = { ownerPid: raw.ownerPid, ownerNonce: raw.ownerNonce, createdAt: raw.createdAt,
+    ownerProcess: process ? { pid: process.pid, creationTime: process.creationTime, executablePathDigest: process.executablePathDigest, executableDigest: process.executableDigest } : null };
+  return { directory: checked.directory, name: writerLockFilename, identity: `${s.dev}:${s.ino}`, digest: createHash("sha256").update(bytes).digest("hex"), record };
+}
 export function assertWriterLock(lock) {
   const saved = liveWriters.get(lock);
   try {
     if (!saved || saved.released) throw new Error();
+    if (existsSync(path.join(path.dirname(saved.file), recoveryLockFilename))) throw new Error("agent_host_writer_reconciliation_pending");
     const stat = lstatSync(saved.file);
     if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1 || stat.size > 65536) throw new Error();
     const current = JSON.parse(readFileSync(saved.file, "utf8"));
@@ -72,11 +85,22 @@ export async function acquireWriterLock(directory = writerStateDirectory, { reco
     throw error;
   }
   const record = { ownerPid: process.pid, ownerNonce, createdAt: new Date().toISOString() };
+  // Older records deliberately remain unreadable as full recovery chains.
+  // Obtain identity before publishing this NEW lock; never backfill a legacy lock.
+  try { if (process.platform === "win32") record.ownerProcess = currentNativeProcessIdentity(); }
+  catch (error) { await file.close(); await unlink(lockPath); throw error; }
   try {
     await file.writeFile(JSON.stringify(record) + "\n");
     await file.sync();
   } finally {
     await file.close();
+  }
+  // Close the race with a recovery barrier established while this lock was
+  // being created. A reconciler also rechecks the exact lock under its barrier.
+  if (await lstat(path.join(directory, recoveryLockFilename)).catch(e => { if (e.code !== "ENOENT") throw e; return null; })) {
+    const current = JSON.parse(await readFile(lockPath, "utf8"));
+    if (current.ownerNonce === ownerNonce) await unlink(lockPath);
+    throw new Error("agent_host_writer_locked");
   }
   // Never reclaim by PID/age: an orphaned Codex process may still be writing.
   let released = false;

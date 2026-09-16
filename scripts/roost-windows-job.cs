@@ -27,6 +27,9 @@ internal static class RoostWindowsJob
     static volatile bool resumed;
     static bool assigned, inheritedJob, controllerJob, limitsConfigured;
     static uint rootId, rootExit = 259;
+    static string rootCreationTime;
+    static readonly int launcherId = Process.GetCurrentProcess().Id;
+    static readonly string launcherCreationTime = Process.GetCurrentProcess().StartTime.ToFileTimeUtc().ToString();
     static int stdoutBytes, stderrBytes;
     static void Need(bool ok) { if (!ok) throw new InvalidOperationException(); }
     static void Stop(string why) { Interlocked.CompareExchange(ref reason, why, null); }
@@ -155,12 +158,16 @@ internal static class RoostWindowsJob
             ProcessInfo pi;
             Need(CreateProcess(exe, command, IntPtr.Zero, IntPtr.Zero, true, 0x08080404, environment, cwd, ref start, out pi));
             process = pi.process; thread = pi.thread; rootId = pi.processId;
+            long created, exited, kernel, user;
+            Need(GetProcessTimes(process, out created, out exited, out kernel, out user));
+            rootCreationTime = created.ToString();
             // CREATE_SUSPENDED | CREATE_NO_WINDOW | EXTENDED_STARTUPINFO_PRESENT | CREATE_UNICODE_ENVIRONMENT
             inheritedJob = controllerJob; // no breakaway creation flag; nested restrictions are enforced by CreateProcess
 bool member; Need(IsProcessInJob(process, job, out member) && member && Active() == 1); assigned = true;
             foreach (IntPtr h in new[] { pin[0], pout[1], perr[1] }) { CloseHandle(h); pipes.Remove(h); }
             // Signal an assignment receipt BEFORE user code can run.
             Need(Emit(new { version = Version, type = "assigned", attempt = attempt, job = identity, rootPid = rootId,
+                rootCreationTime = rootCreationTime, launcherPid = launcherId, launcherCreationTime = launcherCreationTime,
                 assignedBeforeResume = true, killOnClose = true, breakaway = false, controllerInJob = controllerJob, inheritedJob = inheritedJob }));
 #if TEST_FAULTS
             if (Str(request, "fault") == "resume") Close(ref thread); // force actual ResumeThread failure
@@ -213,6 +220,7 @@ bool member; Need(IsProcessInJob(process, job, out member) && member && Active()
             if (jobList != IntPtr.Zero) Marshal.FreeHGlobal(jobList);
             if (environment != IntPtr.Zero) Marshal.FreeHGlobal(environment);
             Emit(new { version = Version, type = "receipt", attempt = attempt, job = identity, assignedBeforeResume = assigned,
+                rootPid = rootId, rootCreationTime = rootCreationTime, launcherPid = launcherId, launcherCreationTime = launcherCreationTime,
                 resumed = resumed, killOnClose = limitsConfigured, breakaway = false, controllerInJob = controllerJob, inheritedJob = inheritedJob,
                 rootExit = rootId == 0 ? (uint?)null : rootExit, activeProcesses = active, jobClosed = jobClosed, terminationReason = Reason, cleanup = clean,
                 cleanupMs = stopClock.ElapsedMilliseconds, stdoutBytes = stdoutBytes, stderrBytes = stderrBytes });
@@ -228,6 +236,7 @@ bool member; Need(IsProcessInJob(process, job, out member) && member && Active()
     [StructLayout(LayoutKind.Sequential)] struct ExtendedLimits { public BasicLimits Basic; public IoCounters io; public UIntPtr processMemory,jobMemory,peakProcess,peakJob; }
     [StructLayout(LayoutKind.Sequential)] struct Accounting { public long a,b,c,d; public uint faults,total,ActiveProcesses,terminated; }
     [DllImport("kernel32.dll", SetLastError=true)] static extern IntPtr CreateJobObject(IntPtr security, string name);
+    [DllImport("kernel32.dll", SetLastError=true)] static extern bool GetProcessTimes(IntPtr process, out long creation, out long exit, out long kernel, out long user);
     [DllImport("kernel32.dll", SetLastError=true)] static extern bool SetInformationJobObject(IntPtr h,int kind,ref ExtendedLimits info,int size);
     [DllImport("kernel32.dll", SetLastError=true)] static extern bool QueryInformationJobObject(IntPtr h,int kind,out ExtendedLimits info,int size,IntPtr returned);
     [DllImport("kernel32.dll", SetLastError=true)] static extern bool QueryInformationJobObject(IntPtr h,int kind,out Accounting info,int size,IntPtr returned);

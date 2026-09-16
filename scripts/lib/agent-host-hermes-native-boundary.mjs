@@ -9,9 +9,11 @@ import { assertWriterLock } from "./agent-host-writer-lock.mjs";
 import { isHermesStartupReceipt, hermesStartupNativeRootMatches } from "./agent-host-hermes-startup.mjs";
 import { assertHermesBudgetReceipt, hermesBudgetReceiptMatches } from "./agent-host-hermes-budget.mjs";
 import { isWindowsJobReceipt } from "./agent-host-windows-job.mjs";
+import { createNativeReview, captureNativeReview, completeNativeReview, assertNativeReviewCleanupRecord, recordNativeReviewCleanup, nativeReviewLocation } from "./agent-host-native-review.mjs";
 
 export const nativeToolBlocker = "hermes_native_tools_isolation_unproven";
 const proofs = new WeakMap(), receipts = new WeakMap();
+const completed = new WeakMap();
 const frozen = v => { if (v && typeof v === "object") { Object.values(v).forEach(frozen); Object.freeze(v); } return v; };
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 export const nativeToolReceiptSchema = z.object({
@@ -27,7 +29,10 @@ export const nativeToolReceiptSchema = z.object({
   processCoverage: z.enum(["declared_listening_ports_only", "not_observed"]),
   outsideRootAndTransientEffects: z.literal("not_proven_accepted_residual_risk"),
   classification: z.enum(["policy_checked", "review_required", "boundary_violation", "policy_blocked"]),
-  violations: z.array(z.enum(["repository_metadata_or_identity_drift", "preexisting_dirty_changed", "unexpected_changed_path", "footprint_unavailable", "application_instance_or_lease_changed", "cleanup_unproven", "owned_job_unproven"])),
+  scopeReviewRequired: z.boolean().default(false),
+  categoryCounts: z.object({ content: z.number().int().nonnegative(), protected: z.number().int().nonnegative() }).strict().default({ content: 0, protected: 0 }),
+  footprintPolicy: z.literal("roost-root-scoped-coding-v2").default("roost-root-scoped-coding-v2"),
+  violations: z.array(z.enum(["repository_metadata_or_identity_drift", "preexisting_dirty_changed", "protected_path_changed", "unexpected_changed_path", "footprint_unavailable", "application_instance_or_lease_changed", "cleanup_unproven", "owned_job_unproven"])),
   releaseAllowed: z.literal(false), reviewRequired: z.literal(true), digest: hash
 }).strict();
 function siblings(root) {
@@ -87,7 +92,8 @@ function body(saved, classification, extras = {}) {
     postFootprintDigest: null, changedPathDigests: [], preExistingDirtyCount: saved.before.dirty.length,
     tempRootDigests: saved.tempRoots.map(t => t.identity), cleanupDigest: null, jobReceiptDigest: null,
     coverage: saved.before.coverage, processCoverage: lease.processCoverage, outsideRootAndTransientEffects: "not_proven_accepted_residual_risk",
-    classification, violations: [], releaseAllowed: false, reviewRequired: true };
+    classification, violations: [], scopeReviewRequired: false, categoryCounts: { content: 0, protected: 0 }, footprintPolicy: "roost-root-scoped-coding-v2",
+    releaseAllowed: false, reviewRequired: true };
 }
 export function assertNativeToolBoundary(proof, envelope) {
   const saved = proofs.get(proof);
@@ -118,6 +124,13 @@ export function consumeNativeToolBoundary(receipt, processOptions) {
       || !hermesBudgetReceiptMatches(processOptions.budgetReceipt, saved.envelope)
       || processOptions.budgetReceipt.digest !== proof.budgetReceipt.digest)
     throw nativeBoundaryError("native_process_scope_changed");
+  proof.review = createNativeReview({ writerLock: proof.writerLock, applicationLease: proof.app, envelope: proof.envelope,
+    rootIdentity: proof.before.rootIdentity, preFootprintDigest: proof.before.digest, spentPath: proof.spentPath,
+    assertWorkspaceStable() {
+      if (!proof.postDigest || captureNativeFootprint(proof.repositoryPath, proof.expected).digest !== proof.postDigest
+          || siblings(proof.repositoryPath) !== proof.siblingDigest) throw nativeBoundaryError("native_post_verification_footprint_changed");
+      assertApplicationLease(proof.app);
+    } });
   proof.began = true;
   return saved.proof;
 }
@@ -125,25 +138,51 @@ export function completeNativeToolBoundary(proof, { ownedTreeReceipt, error } = 
   const saved = proofs.get(proof);
   if (!saved || saved.done || !saved.began) throw nativeBoundaryError("native_boundary_proof_unavailable");
   saved.done = true;
-  const last = saved.lastReceipt, violations = []; let post = null, change = [], clean = [];
+  const last = saved.lastReceipt, violations = []; let post = null, comparison = null, captureFailure = null;
   try {
     post = captureNativeFootprint(saved.repositoryPath, saved.expected);
-    const compared = compareNativeFootprint(saved.before, post, saved.scope.writePaths);
-    violations.push(...compared.violations); change = compared.changedDigests;
+    const compared = comparison = compareNativeFootprint(saved.before, post, saved.scope.writePaths);
+    violations.push(...compared.violations);
     if (siblings(saved.repositoryPath) !== saved.siblingDigest) violations.push("unexpected_changed_path");
-  } catch { violations.push("footprint_unavailable"); }
+  } catch (error) { captureFailure = error.message; violations.push("footprint_unavailable"); }
   try { assertApplicationLease(saved.app); } catch { violations.push("application_instance_or_lease_changed"); }
   try { assertAutoPrunedCachesEmpty(saved.provider); } catch { violations.push("cleanup_unproven"); }
   const job = isWindowsJobReceipt(ownedTreeReceipt) && ownedTreeReceipt.attempt === saved.envelope.identity.executionId ? ownedTreeReceipt : null;
   if (!job) violations.push("owned_job_unproven");
-  // Never delete while the owned process tree may still be alive.
-  if (job) for (const t of saved.ownedTemps) { try { clean.push(cleanupNativeOwnedTemp(t, saved.envelope.identity.executionId)); } catch { violations.push("cleanup_unproven"); } }
-  if (job && !violations.length) releaseApplicationLease(saved.app);
+  // Persist BEFORE independent verification; no fixture/temp/lease is released
+  // at process exit. Only the terminal review capability can permit cleanup.
+  const review = captureNativeReview(saved.review, { ownedTreeReceipt: job, comparison, postFootprintDigest: post?.digest ?? null, violations, captureFailure });
+  saved.postDigest = post?.digest ?? null;
   const payload = { ...body(saved, "review_required", { lease: { reference: last.applicationLeaseReference, processCoverage: last.processCoverage } }),
-    postFootprintDigest: post?.digest ?? null, changedPathDigests: change, cleanupDigest: job ? nativeDigest(clean) : null,
+    postFootprintDigest: post?.digest ?? null, changedPathDigests: review.changedPathIds, cleanupDigest: null,
+    scopeReviewRequired: review.scopeReviewRequired, categoryCounts: review.categoryCounts, footprintPolicy: "roost-root-scoped-coding-v2",
     jobReceiptDigest: job ? nativeDigest(job) : null, violations: [...new Set(violations)],
     classification: violations.length ? "boundary_violation" : error || job?.terminationReason !== "root_exit" || job?.rootExit !== 0 ? "policy_blocked" : "review_required" };
-  return frozen(nativeToolReceiptSchema.parse({ ...payload, digest: nativeDigest(payload) }));
+  const result = frozen(nativeToolReceiptSchema.parse({ ...payload, digest: nativeDigest(payload) }));
+  completed.set(result, saved); return result;
+}
+export function bindNativeSpentRecord(receipt, spentPath) {
+  const r = receipts.get(receipt), saved = r && proofs.get(r.proof);
+  if (!saved || saved.began || saved.done || saved.spentPath) throw nativeBoundaryError("native_boundary_proof_unavailable");
+  saved.spentPath = spentPath;
+}
+export async function verifyCompletedNativeBoundary(receipt, options) {
+  const saved = completed.get(receipt); if (!saved) throw nativeBoundaryError("native_boundary_proof_unavailable");
+  return completeNativeReview(saved.review, options);
+}
+export function completedNativeReviewLocation(receipt) {
+  const saved = completed.get(receipt); if (!saved) throw nativeBoundaryError("native_boundary_proof_unavailable");
+  return nativeReviewLocation(saved.review);
+}
+export function releaseReviewedNativeBoundary(receipt, capability) {
+  const saved = completed.get(receipt); if (!saved) throw nativeBoundaryError("native_boundary_proof_unavailable");
+  // The controller checked the capability immediately before fixture cleanup.
+  // Recording cleanup below checks the signed review again without reading a
+  // workspace that has already been removed.
+  assertNativeReviewCleanupRecord(capability, saved.envelope.identity.executionId);
+  for (const temp of saved.ownedTemps) cleanupNativeOwnedTemp(temp, saved.envelope.identity.executionId);
+  recordNativeReviewCleanup(capability, saved.envelope.identity.executionId);
+  releaseApplicationLease(saved.app);
 }
 export function abandonNativeToolBoundary(proof) {
   const saved = proofs.get(proof);

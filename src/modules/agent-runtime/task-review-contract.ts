@@ -18,10 +18,17 @@ export const object = (value: unknown): Record<string, any> => value && typeof v
 // Negative evidence must never be laundered through completion or approval.
 // This is a conservative result guard, not authority from serialized receipts.
 export function nativeBoundaryResultBlocked(verification: unknown, contract?: unknown): boolean {
-  const v = object(verification), receipt = object(v.nativeToolReceipt);
-  if (["boundary_violation", "policy_blocked"].includes(v.outcome)) return true;
+  const v = object(verification), receipt = object(v.nativeToolReceipt), review = object(v.nativeReviewReceipt);
+  if (["boundary_violation", "policy_blocked", "acceptance_failed", "verification_blocked", "process_failed"].includes(v.outcome)) return true;
   if (!object(contract).nativeBoundary && v.nativeToolReceipt === undefined) return false;
-  return receipt.policyVersion !== "roost-hermes-native-audited-coding-v1"
+  return review.version !== "roost-native-review-public-v2" || review.policy !== "roost-root-scoped-coding-v2"
+    || review.verdict !== "verified_candidate" || review.verification !== "PASS" || review.installation !== "PASS"
+    || review.reviewRequired !== true || review.releaseAllowed !== false || review.scopeReviewRequired !== false
+    || !Array.isArray(review.violations) || review.violations.length !== 0
+    || !/^[a-f0-9]{64}$/.test(v.nativeReviewReceiptDigest ?? "")
+    || review.postFootprintDigest !== receipt.postFootprintDigest || review.jobDigest !== receipt.jobReceiptDigest
+    || receipt.footprintPolicy !== "roost-root-scoped-coding-v2" || receipt.scopeReviewRequired !== false
+    || receipt.policyVersion !== "roost-hermes-native-audited-coding-v1"
     || receipt.ownerRiskReference !== "ADR-004-v7-native-tools" || receipt.authorityProfile !== "coding-local"
     || JSON.stringify(receipt.authorities) !== JSON.stringify(["repository_read", "repository_write", "local_test"])
     || JSON.stringify(receipt.toolsets) !== JSON.stringify(["file", "terminal"])

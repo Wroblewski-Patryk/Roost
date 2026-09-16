@@ -1,5 +1,10 @@
 # Hermes native tool boundary v1
 
+Current policy/evidence ordering: [B19 root-scoped review v2](hermes-root-scoped-review-reconciliation-v2.md).
+It supersedes exact-path classification and adds durable review/process identity
+bindings for future attempts. Historical observations below remain unchanged;
+legacy B17 recovery is still blocked and no new execution is authorized.
+
 RF-RUNTIME-005B11, 2026-09-16. **Implemented with synthetic/native harmless
 fixtures; real Hermes/model execution remains denied.** The owner accepted the
 B10 native same-owner residual risk under [ADR-004 v7](../decisions/ADR-004-native-hermes-codex-pilot.md).

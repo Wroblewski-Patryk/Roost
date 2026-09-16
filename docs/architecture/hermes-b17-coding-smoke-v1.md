@@ -1,5 +1,10 @@
 # Hermes B17 one-shot coding smoke v1
 
+Current policy/evidence ordering: [B19 root-scoped review v2](hermes-root-scoped-review-reconciliation-v2.md).
+It supersedes exact-path classification and adds durable review/process identity
+bindings for future attempts. Historical observations below remain unchanged;
+legacy B17 recovery is still blocked and no new execution is authorized.
+
 Subsequent [B18 diagnosis](hermes-b18-footprint-diagnosis-v1.md) completed source/synthetic work but left real-cause attribution and recovery proof BLOCKED. The B18 successor proposal below is historical; B17 remains spent.
 
 RF-RUNTIME-005B17, 2026-09-16: **BLOCKED after one real provider start**.

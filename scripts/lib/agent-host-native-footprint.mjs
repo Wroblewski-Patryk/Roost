@@ -9,7 +9,8 @@ export const nativeDigest = value => createHash("sha256").update(JSON.stringify(
 const fail = code => { throw nativeBoundaryError(code); };
 const samePath = (a, b) => process.platform === "win32" ? a.toLowerCase() === b.toLowerCase() : a === b;
 const privateTemps = new WeakMap();
-const secretName = name => /^(?:\.env(?:\..*)?|auth\.json|credentials(?:\.json)?|id_(?:rsa|ed25519)|.*\.(?:key|pem|pfx))$/i.test(name);
+export const nativeSecretName = name => !/\.(?:example|sample|template)$/i.test(name)
+  && /^(?:\.env(?:\..*)?|\.op\.env|\.codex|\.ssh|\.aws|auth\.json|credentials?(?:\.(?:json|yaml|yml))?|cookies?(?:\.(?:json|sqlite|txt))?|id_(?:rsa|ed25519)|.*\.(?:key|pem|pfx))$/i.test(name);
 export function physicalIdentity(file, directory = true) {
   try {
     if (!path.isAbsolute(file) || path.normalize(file) !== file || file === path.parse(file).root || /[\x00-\x1f]/.test(file)
@@ -25,7 +26,8 @@ export function physicalIdentity(file, directory = true) {
 }
 export function nativeRelative(value) {
   if (typeof value !== "string" || !value || value.length > 512 || /[\\:\x00-\x1f\x7f]/.test(value) || value.startsWith("/")
-      || value.split("/").some(p => !p || p === "." || p === ".." || /[. ]$/.test(p) || p.toLowerCase() === ".git" || secretName(p))) fail("native_scope_invalid");
+      || value.split("/").some(p => !p || p === "." || p === ".." || /[. ]$/.test(p) || /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(p)
+        || p.toLowerCase() === ".git" || nativeSecretName(p))) fail("native_scope_invalid");
   return value;
 }
 function git(root, args) {
@@ -69,6 +71,7 @@ function tree(root, { metadata = false, allowGitRoot = false, ownedRepository = 
       const rel = relative ? `${relative}/${name}` : name, file = path.join(dir, name);
       const s = lstatSync(file, { bigint: true });
       if (s.isSymbolicLink() || (!s.isDirectory() && !s.isFile())) fail("native_reparse_denied");
+      if (s.isFile() && s.nlink !== 1n) fail("native_hardlink_denied");
       if (name.toLowerCase() === ".git") {
         if (ownedRepository && relative === ownedRepository && name === ".git" && s.isDirectory()) {
           // Only a repository created inside a freshly marked fixture root.
@@ -87,7 +90,7 @@ function tree(root, { metadata = false, allowGitRoot = false, ownedRepository = 
           // A bare clone has HEAD/objects/refs without a .git directory.
           if (!(ownedRepository && rel === `${ownedRepository}/.git`) && ["HEAD", "objects", "refs"].every(n => existsSync(path.join(file, n)))) fail("native_extra_repository");
         }
-        if ((!metadata && ["node_modules", ".venv", "venv"].includes(name.toLowerCase())) || (metadata && ["objects", "logs"].includes(name.toLowerCase()))) {
+        if (!metadata && ["node_modules", ".venv", "venv"].includes(name.toLowerCase())) {
           skipped.push(rel); row.directoryTime = String(s.mtimeNs);
         } else walk(file, rel, depth + 1);
       }
@@ -136,7 +139,8 @@ export function captureNativeFootprint(root, expected) {
     return { ...value, digest: nativeDigest(value) };
   } catch (e) { if (e.protocolAdmission) throw e; fail("native_footprint_unavailable"); }
 }
-export function compareNativeFootprint(before, after, writePaths) {
+export const nativeFootprintPolicy = "roost-root-scoped-coding-v2";
+export function compareNativeFootprint(before, after, writePaths = []) {
   const violations = [];
   for (const key of ["rootIdentity", "gitIdentity", "head", "branch", "originDigest", "worktreesDigest", "metadataDigest"])
     if (before[key] !== after[key]) violations.push("repository_metadata_or_identity_drift");
@@ -145,10 +149,21 @@ export function compareNativeFootprint(before, after, writePaths) {
   }
   const old = new Map(before.inventory.rows.map(r => [r.path, r])), next = new Map(after.inventory.rows.map(r => [r.path, r]));
   const changed = [...new Set([...old.keys(), ...next.keys()])].filter(p => JSON.stringify(old.get(p)) !== JSON.stringify(next.get(p)));
-  for (const rel of changed) {
-    if (!writePaths.some(p => rel === p || rel.startsWith(p + "/") || (next.get(rel)?.kind === "directory" && p.startsWith(rel + "/")))) violations.push("unexpected_changed_path");
-  }
-  return { violations: [...new Set(violations)], changedDigests: changed.sort().map(nativeDigest) };
+  if (before.dirty.some(d => changed.includes(d.path))) violations.push("preexisting_dirty_changed");
+  const changes = changed.sort().map(rel => {
+    // Git-ignored secrets still have metadata, but their contents are never read.
+    if (rel.split("/").some(nativeSecretName)) violations.push("protected_path_changed");
+    const a = old.get(rel), b = next.get(rel), category = rel.split("/").some(nativeSecretName) ? "protected" : "content";
+    const expected = !writePaths.length || writePaths.some(p => rel === p || rel.startsWith(p + "/") || (b?.kind === "directory" && p.startsWith(rel + "/")));
+    return { path: category === "protected" ? null : rel, pathDigest: nativeDigest(rel), category,
+      change: !a ? "added" : !b ? "deleted" : "modified", expected,
+      gitStatusBefore: before.dirty.find(d => d.path === rel)?.status ?? null,
+      gitStatusAfter: after.dirty.find(d => d.path === rel)?.status ?? null,
+      before: a ? { kind: a.kind, identity: a.identity, bytes: a.bytes ?? null, time: a.time ?? null, digest: before.dirty.find(d => d.path === rel)?.digest ?? null } : null,
+      after: b ? { kind: b.kind, identity: b.identity, bytes: b.bytes ?? null, time: b.time ?? null, digest: after.dirty.find(d => d.path === rel)?.digest ?? null } : null };
+  });
+  return { violations: [...new Set(violations)], changedDigests: changed.sort().map(nativeDigest), changes,
+    scopeReviewRequired: changes.some(c => !c.expected), categoryCounts: { content: changes.filter(c => c.category === "content").length, protected: changes.filter(c => c.category === "protected").length } };
 }
 function createOwnedTemp(parent, attempt, repository = null) {
   const parentIdentity = physicalIdentity(parent), token = randomBytes(32), name = `attempt-${randomBytes(16).toString("hex")}`;

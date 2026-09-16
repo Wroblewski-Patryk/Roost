@@ -18,6 +18,8 @@ import { prepareHermesB14Audit, assertHermesB14Audit, reserveHermesB14Audit, clo
   prepareHermesB17Audit, assertHermesB17Audit, reserveHermesB17Audit, closeBlockedHermesB17Audit } from "./agent-host-hermes-b14-audit.mjs";
 import { reconcileHermesGeneratedReceipt } from "./agent-host-hermes-generated-maintenance.mjs";
 import { watchHermesInstallation } from "./agent-host-hermes-installation-watch.mjs";
+import { bindNativeSpentRecord, verifyCompletedNativeBoundary, releaseReviewedNativeBoundary } from "./agent-host-hermes-native-boundary.mjs";
+import { assertNativeReviewCleanup } from "./agent-host-native-review.mjs";
 import { runHermesOwnedProcess } from "./agent-host-hermes-quiet.mjs";
 const sha = v => createHash("sha256").update(JSON.stringify(v)).digest("hex");
 const invoked = new Set();
@@ -40,14 +42,15 @@ export function finishHermesSmokeBoundary({ envelope, spawnStarted, job, keepWri
   return false;
 }
 // Shared post-attempt cleanup uses the original opaque objects, never PID/JSON.
-export async function cleanupHermesSmokeAttempt({ envelope, spawnStarted, job, keepWriter, fixture, writer }) {
+export async function cleanupHermesSmokeAttempt({ envelope, spawnStarted, job, keepWriter, fixture, writer, reviewCapability }) {
   keepWriter = finishHermesSmokeBoundary({ envelope, spawnStarted, job, keepWriter });
-  const cleanupProven = !spawnStarted && !keepWriter || isWindowsJobReceipt(job) && job.attempt === fixture?.attempt;
+  let cleanupProven = !spawnStarted && !keepWriter;
+  if (spawnStarted) try { cleanupProven = assertNativeReviewCleanup(reviewCapability, fixture?.attempt); } catch { cleanupProven = false; keepWriter = true; }
   const result = {};
   try {
     if (fixture && cleanupProven) result.cleanup = fixture.cleanup();
     else if (fixture) { result.status = "BLOCKED"; result.cleanupRequiredAt = fixture.root; }
-    if (writer && !keepWriter) { await writer.release(); result.writerReleased = true; }
+    if (writer && !keepWriter && !spawnStarted) { await writer.release(); result.writerReleased = true; }
     else if (writer) { result.status = "BLOCKED"; result.writerReconciliationRequired = true; }
   } catch {
     result.status = "BLOCKED"; result.reason = "hermes_smoke_cleanup_unproven";
@@ -69,7 +72,7 @@ async function runSmoke({ provider, installation, assertOwnerAuthority, onProgre
   const consumedFile = path.join(writerStateDirectory, "hermes-b13-smoke-consumed.json");
   const audit = policy.prepare?.(writerStateDirectory) ?? null;
   if (!audit && existsSync(consumedFile)) throw new Error("hermes_smoke_already_reserved_no_retry");
-  let fixture, writer, envelope, grant, job, installationWatch, keepWriter = false, reserved = false;
+  let fixture, writer, envelope, grant, job, nativeResult, installationWatch, keepWriter = false, reserved = false;
   const began = performance.now();
   const report = { schemaVersion: "roost-hermes-real-coding-smoke-v1", status: "BLOCKED", scope: policy.scope,
     policyQualified: false, activationAuthorized: false, activationWasAuthorized: false, spawnStarted: false, activationReusable: false,
@@ -116,6 +119,7 @@ async function runSmoke({ provider, installation, assertOwnerAuthority, onProgre
     reserved = true;
     assertHermesSmokeInstallation(report.installation, provider.executablePath);
     const handoff = policy.consume(grant, options, consumption);
+    bindNativeSpentRecord(handoff.nativeToolReceipt, path.join(writerStateDirectory, policy === b17 ? "hermes-b17-smoke-consumed.json" : policy === b14 ? "hermes-b14-smoke-consumed.json" : "hermes-b13-smoke-consumed.json"));
     report.activationAuthorized = true; report.activationWasAuthorized = true;
     report.deadline = handoff.budgetReceipt.acceptedDeadline;
     report.startedAt = new Date().toISOString();
@@ -125,18 +129,17 @@ async function runSmoke({ provider, installation, assertOwnerAuthority, onProgre
       nativeToolReceipt: handoff.nativeToolReceipt, jobArtifact: handoff.jobArtifact,
       remainingMs: () => Date.parse(report.deadline) - Date.now() - 5000, assertAuthority: authority,
       onAssigned() { report.spawnStarted = true; progress("provider_assigned_once"); } });
-    job = result.ownedTreeReceipt;
+    job = result.ownedTreeReceipt; nativeResult = result.nativeToolReceipt;
     report.providerWallTimeMs = Math.ceil(performance.now() - processBegan);
     progress("provider_completed");
     report.exitCode = result.exitCode; report.outcome = result.outcome;
     report.budgetReceiptDigest = result.attemptBudgetReceipt.digest; report.nativeReceiptDigest = result.nativeToolReceipt.digest;
     report.nativeEvidence = nativeEvidence(result.nativeToolReceipt);
-    if (result.nativeToolReceipt.classification !== "review_required" || result.nativeToolReceipt.violations.length
-        || !isWindowsJobReceipt(job) || job.attempt !== fixture.attempt) throw new Error("hermes_smoke_native_review_blocked");
-    report.verification = fixture.verify(); report.status = "DONE";
+    // Process exit is only a candidate; durable independent review follows below.
   } catch (error) {
     progress("attempt_stopped");
     job = error.details?.attemptBudgetReceipt?.ownedTreeReceipt ?? job;
+    nativeResult = error.details?.nativeToolReceipt ?? nativeResult;
     report.status = report.spawnStarted ? "FAILED" : "BLOCKED";
     report.reason = /^[a-z][a-z0-9_]{2,100}$/.test(error.message) ? error.message : "hermes_smoke_failed";
     if (audit && !reserved && fixture) try {
@@ -156,36 +159,39 @@ async function runSmoke({ provider, installation, assertOwnerAuthority, onProgre
     report.activationAuthorized = false;
     if (report.startedAt && report.providerWallTimeMs === undefined) report.providerWallTimeMs = Date.now() - Date.parse(report.startedAt);
     if (installationWatch) report.installationWatch = installationWatch.close();
-    // A completed native proof already reconciled its application lease. Calling
-    // the pre-spawn abandon operation again incorrectly retains the Writer.
+    // Post-spawn leases stay held until durable review and owned cleanup finish.
     if (job) report.job = { cleanup: job.cleanup, activeProcesses: job.activeProcesses, assignedBeforeResume: job.assignedBeforeResume,
       terminationReason: job.terminationReason, rootExit: job.rootExit, digest: sha(job) };
-    if (policy === b17 && report.spawnStarted) {
-      if (!report.verification && fixture && isWindowsJobReceipt(job) && job.attempt === fixture.attempt) {
-        try { report.verification = fixture.observeUnfixed(); }
-        catch { report.verification = { status: "BLOCKED", reason: "hermes_smoke_independent_verification_unavailable" }; }
+    if (report.spawnStarted) {
+      try {
+        const reviewed = await verifyCompletedNativeBoundary(nativeResult, {
+          verify: () => fixture.observeUnfixed(),
+          installation: async () => {
+            if (report.installationWatch?.observedViolation) throw Error("hermes_smoke_installation_boundary_violation");
+            // Installation verification happens while the fixture and Writer
+            // still exist. No cleanup authority is inferred from exit status.
+            if (policy === b17) report.postInstallation = reconcileHermesGeneratedReceipt({ installation, writer, assertOwnerAuthority });
+            const post = await verifyHermesSmokeInstallation(installation);
+            report.postInstallation = { ...report.postInstallation, status: "PASS", manifestDigest: post.manifestDigest, executableDigest: post.executableDigest };
+            return report.postInstallation;
+          }
+        });
+        report.nativeReviewReceipt = reviewed.publicReceipt; report.nativeReviewReceiptDigest = reviewed.receiptDigest;
+        report.verification = reviewed.verification;
+        report.status = reviewed.publicReceipt.verdict === "verified_candidate" ? "CANDIDATE" : "BLOCKED";
+        report.reviewRequired = true; report.taskCompletionAllowed = false;
+        const cleanup = await cleanupHermesSmokeAttempt({ envelope, spawnStarted: true, job, keepWriter, fixture, reviewCapability: reviewed.capability });
+        Object.assign(report, cleanup);
+        if (cleanup.cleanup?.remaining === 0) {
+          releaseReviewedNativeBoundary(nativeResult, reviewed.capability);
+          await writer.release(); report.writerReleased = true;
+        } else report.writerReconciliationRequired = true;
+      } catch (error) {
+        report.status = "BLOCKED"; report.reason = /^[a-z][a-z0-9_]+$/.test(error.message) ? error.message : "hermes_smoke_review_unproven";
+        report.writerReconciliationRequired = true;
+        if (fixture && existsSync(fixture.root)) report.cleanupRequiredAt = fixture.root;
       }
-      // Validate genuine Job cleanup and delete its owned fixture while that
-      // receipt is fresh. The same genuine Writer remains held during the longer
-      // file-only installation audit; no serialized cleanup proof is consumed.
-      const cleanup = await cleanupHermesSmokeAttempt({ envelope, spawnStarted: true, job, keepWriter, fixture });
-      Object.assign(report, cleanup);
-      const cleanupProven = cleanup.cleanup?.remaining === 0 && isWindowsJobReceipt(job) && job.attempt === fixture?.attempt && !keepWriter;
-      if (cleanupProven) {
-        try {
-          report.postInstallation = reconcileHermesGeneratedReceipt({ installation, writer, assertOwnerAuthority });
-          const post = await verifyHermesSmokeInstallation(installation);
-          report.postInstallation = { ...report.postInstallation, manifestDigest: post.manifestDigest, executableDigest: post.executableDigest };
-          if (report.installationWatch.observedViolation) throw Object.assign(new Error("hermes_smoke_installation_boundary_violation"), { boundaryViolation: true });
-        } catch (error) {
-          report.status = "BLOCKED"; report.postInstallation = { status: "BLOCKED", reason: /^[a-z][a-z0-9_]+$/.test(error.message) ? error.message : "hermes_smoke_installation_unverified" };
-          report.reason = report.postInstallation.reason; report.outcome = error.boundaryViolation ? "boundary_violation" : "policy_blocked";
-          if (error.message === "hermes_generated_reconciliation_required") keepWriter = true;
-        }
-        if (!keepWriter) { await writer.release(); report.writerReleased = true; }
-        else report.writerReconciliationRequired = true;
-      } else { report.status = "BLOCKED"; report.writerReconciliationRequired = true; }
-    } else Object.assign(report, await cleanupHermesSmokeAttempt({ envelope, spawnStarted: report.spawnStarted, job, keepWriter, fixture, writer }));
+    } else Object.assign(report, await cleanupHermesSmokeAttempt({ envelope, spawnStarted: false, job, keepWriter, fixture, writer }));
     if (audit) try { report.audit = policy.inspect(audit); }
     catch { report.status = "BLOCKED"; report.reason = "hermes_smoke_spent_state_unproven"; }
     report.wallTimeMs = Math.ceil(performance.now() - began); report.finishedAt = new Date().toISOString();

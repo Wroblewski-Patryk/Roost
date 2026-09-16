@@ -1,3 +1,4 @@
+import { verifyCompletedNativeBoundary, releaseReviewedNativeBoundary } from "./lib/agent-host-hermes-native-boundary.mjs";
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
@@ -90,20 +91,26 @@ for (const fail of [false, true]) test(`same-attempt genuine ${fail ? "failed" :
   await withHermesLaunchFixture(async fixture => {
     const x = await nativeFixture(t, { executablePath: fixture.executablePath, edit(f) { if (fail) f.claimed.prompt = "owned budget failure fixture"; } });
     const receipt = qualifyHermesLaunch(x.projection, collectHermesLaunchProofs(x.projection, fixture.jobArtifact));
-    let job;
+    let job, nativeResult;
     try {
       const result = await runQualifiedHermesFixture({ receipt, options: x.projection, consumption: consumption(x), activation: fixture.activation });
-      assert.equal(fail, false); job = result.ownedTreeReceipt;
+      assert.equal(fail, false); job = result.ownedTreeReceipt; nativeResult = result.nativeToolReceipt;
     } catch (error) {
       assert.equal(fail, true); assert.equal(error.message, "hermes_quiet_process_failed");
-      assert.equal(error.details.nativeToolReceipt.violations.length, 0); job = error.details.attemptBudgetReceipt.ownedTreeReceipt;
+      assert.equal(error.details.nativeToolReceipt.violations.length, 0); job = error.details.attemptBudgetReceipt.ownedTreeReceipt; nativeResult = error.details.nativeToolReceipt;
     }
     assert.equal(job.rootExit, fail ? 2 : 0);
     const temp = owned(t, x.envelope.identity.executionId);
     const blocked = await cleanupHermesSmokeAttempt({ envelope: x.envelope, spawnStarted: true, job: { ...job }, keepWriter: false, fixture: temp, writer: x.writerLock });
     assert.equal(blocked.status, "BLOCKED"); assert.equal(blocked.writerReconciliationRequired, true); assert.equal(existsSync(temp.root), true);
-    const done = await cleanupHermesSmokeAttempt({ envelope: x.envelope, spawnStarted: true, job, keepWriter: false, fixture: temp, writer: x.writerLock });
-    assert.equal(done.writerReleased, true); assert.equal(done.cleanup.remaining, 0); assert.equal(existsSync(temp.root), false);
+    const unreviewed = await cleanupHermesSmokeAttempt({ envelope: x.envelope, spawnStarted: true, job, keepWriter: false, fixture: temp });
+    assert.equal(unreviewed.status, "BLOCKED");
+    const reviewed = await verifyCompletedNativeBoundary(nativeResult, { verify() {
+      assert.equal(readFileSync(path.join(x.repositoryPath, "editable.txt"), "utf8"), "base\n");
+      return { after: { passed: !fail, exit: fail ? 2 : 0 }, testUnchanged: true, baselineCommitUnchanged: true };
+    } });
+    const done = await cleanupHermesSmokeAttempt({ envelope: x.envelope, spawnStarted: true, job, keepWriter: false, fixture: temp, reviewCapability: reviewed.capability });
+    releaseReviewedNativeBoundary(nativeResult, reviewed.capability); await x.writerLock.release(); assert.equal(done.cleanup.remaining, 0); assert.equal(existsSync(temp.root), false);
     assert.equal(existsSync(path.join(x.state, "agent-host-writer.lock")), false);
     assert.equal(readdirSync(x.state).filter(n => n.endsWith(".lease")).length, 0);
   });

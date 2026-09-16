@@ -70,7 +70,8 @@ test("post footprint accepts scoped edits but detects ignored paths and preserve
   mkdirSync(path.join(f.repositoryPath, "unexpected-output"));
   writeFileSync(path.join(f.repositoryPath, "unexpected-output", "artifact"), "data");
   after = captureNativeFootprint(f.repositoryPath, f.options.nativeBoundaryOptions.expected);
-  assert.ok(compareNativeFootprint(before, after, ["editable.txt"]).violations.includes("unexpected_changed_path"));
+  assert.deepEqual(compareNativeFootprint(before, after, ["editable.txt"]).violations, []);
+  assert.equal(compareNativeFootprint(before, after, ["editable.txt"]).scopeReviewRequired, true);
   assert.equal(readFileSync(path.join(f.repositoryPath, "unrelated.txt"), "utf8"), "pre-existing dirty\n");
 });
 test("root aliases, ADS and escaping path forms cannot qualify", async t => {
@@ -130,7 +131,7 @@ for (const kind of ["cancel", "timeout", "violation"]) test(`native policy ${kin
     ["/nologo", "/target:exe", "/platform:x64", `/out:${c.command}`, fileURLToPath(new URL("./fixtures/windows-job-tree.cs", import.meta.url))], { windowsHide: true });
   const abort = new AbortController();
   const timer = kind !== "timeout" ? setTimeout(() => {
-    if (kind === "violation") writeFileSync(path.join(f.repositoryPath, "unexpected.txt"), "preserve evidence");
+    if (kind === "violation") writeFileSync(path.join(f.repositoryPath, ".git", "description"), "preserve evidence");
     abort.abort();
   }, 1800) : null;
   try {
@@ -144,7 +145,7 @@ for (const kind of ["cancel", "timeout", "violation"]) test(`native policy ${kin
         assert.equal(error.details.nativeToolReceipt.releaseAllowed, false);
         return true;
       });
-    if (kind === "violation") assert.equal(readFileSync(path.join(f.repositoryPath, "unexpected.txt"), "utf8"), "preserve evidence");
+    if (kind === "violation") assert.equal(readFileSync(path.join(f.repositoryPath, ".git", "description"), "utf8"), "preserve evidence");
   } finally { clearTimeout(timer); }
 });
 

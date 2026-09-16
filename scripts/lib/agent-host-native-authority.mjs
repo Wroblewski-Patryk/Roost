@@ -7,7 +7,9 @@ export const typedOperationSchema = z.enum(typedOperations);
 export const codingAuthorities = Object.freeze(typedOperations.slice(0, 3));
 export const nativeBoundaryContractSchema = z.object({
   profile: z.literal("coding-local"),
-  writePaths: z.array(z.string().min(1).max(512)).min(1).max(128),
+  // Expected outputs for acceptance review, not the security boundary. The
+  // physical canonical root and protected structures remain mandatory.
+  writePaths: z.array(z.string().min(1).max(512)).max(128).default([]),
   runtime: z.object({ required: z.boolean(), ports: z.array(z.number().int().min(1).max(65535)).max(16) }).strict()
 }).strict();
 export function nativeBoundaryError(reason = "native_boundary_policy_blocked") {

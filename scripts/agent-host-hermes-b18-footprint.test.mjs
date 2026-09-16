@@ -54,22 +54,22 @@ test("B18 in-place replace and completed atomic replacement stay inside the decl
   const result = f.compare(); assert.deepEqual(result.violations, []); assert.equal(result.changedDigests.length, 1);
   report(t, "completed_atomic_replace", { violations: result.violations, changed: 1 });
 });
-test("B18 a surviving atomic temporary file is unexpected under the exact-file policy", windows, t => {
+test("B18 surviving atomic temporary output needs scope review under the B19 policy", windows, t => {
   const f = fixture(t); f.repair(); writeFileSync(f.file + ".b18-tmp", "synthetic\n");
-  const result = f.compare(); assert.deepEqual(result.violations, ["unexpected_changed_path"]); assert.equal(result.changedDigests.length, 2);
+  const result = f.compare(); assert.deepEqual(result.violations, []); assert.equal(result.scopeReviewRequired, true); assert.equal(result.changedDigests.length, 2);
   report(t, "retained_atomic_temp", { violations: result.violations, changed: 2 });
 });
 test("B18 terminal test and read-only git status introduce no footprint changes", windows, t => {
   const f = fixture(t); assert.throws(() => f.run(process.execPath, ["--test"]), e => e.status === 1);
   f.git("status", "--porcelain=v1", "--untracked-files=all");
-  assert.deepEqual(f.compare(), { violations: [], changedDigests: [] });
+  assert.deepEqual(f.compare().violations, []); assert.deepEqual(f.compare().changedDigests, []);
   report(t, "terminal_test_and_status_optional_locks_off", { violations: [], changed: 0 });
 });
-test("B18 normal new source fails an exact-file scope but passes an explicitly declared directory", windows, t => {
+test("B18 normal new source needs exact-file acceptance review but is not a security violation", windows, t => {
   const f = fixture(t, { esm: true }); writeFileSync(path.join(f.repository, "src/helper.mjs"), "export const value = 1;\n");
-  assert.deepEqual(f.compare().violations, ["unexpected_changed_path"]);
+  assert.deepEqual(f.compare().violations, []); assert.equal(f.compare().scopeReviewRequired, true);
   assert.deepEqual(f.compare(["src"]).violations, []);
-  report(t, "new_source", { exactFile: ["unexpected_changed_path"], declaredDirectory: [] });
+  report(t, "new_source", { exactFile: "scope_review_required", declaredDirectory: [] });
 });
 test("B18 protected Git configuration change is metadata drift, not an ordinary write-path violation", windows, t => {
   const f = fixture(t); f.git("config", "b18.synthetic", "true");
@@ -103,7 +103,7 @@ test("B18 outside-root content is not proven by the repository footprint", windo
   // Still inside this test's own marked root; never touch foreign host content.
   writeFileSync(external, "before\n"); const identity = physicalIdentity(external, false), before = f.capture();
   writeFileSync(external, "after\n"); assert.equal(physicalIdentity(external, false), identity);
-  assert.deepEqual(compareNativeFootprint(before, f.capture(), [f.relative]), { violations: [], changedDigests: [] });
+  assert.deepEqual(compareNativeFootprint(before, f.capture(), [f.relative]).violations, []); assert.deepEqual(compareNativeFootprint(before, f.capture(), [f.relative]).changedDigests, []);
   report(t, "existing_owned_outside_root_sentinel", { violations: [], coverage: "outside_root_not_observed" });
 });
 test("B18 secret-named synthetic file is rejected before content hashing", windows, t => {
@@ -111,10 +111,10 @@ test("B18 secret-named synthetic file is rejected before content hashing", windo
   assert.throws(f.capture, /native_scope_invalid/);
   report(t, "secret_named_synthetic_file", { captureError: "native_scope_invalid", completionMapping: "footprint_unavailable" });
 });
-test("B18 byte-preserving rewrite of an undeclared test can cause unexpected_changed_path", windows, t => {
+test("B18 byte-preserving undeclared rewrite needs review under B19 (historically a B18 violation)", windows, t => {
   const f = fixture(t), file = path.join(f.repository, "add.test.cjs"), temporary = file + ".b18-tmp";
   writeFileSync(temporary, readFileSync(file)); renameSync(temporary, file);
   assert.equal(f.git("status", "--porcelain=v1"), "");
-  assert.deepEqual(f.compare().violations, ["unexpected_changed_path"]);
-  report(t, "undeclared_byte_identical_atomic_rewrite", { gitDirty: false, violations: ["unexpected_changed_path"] });
+  assert.deepEqual(f.compare().violations, []); assert.equal(f.compare().scopeReviewRequired, true);
+  report(t, "undeclared_byte_identical_atomic_rewrite", { gitDirty: false, scopeReviewRequired: true, violations: [] });
 });
