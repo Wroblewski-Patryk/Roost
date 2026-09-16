@@ -42,6 +42,9 @@ function projectProvider(value) {
   const installation = verified ? { status: "verified", version: entry.version, fingerprint: evidence.fingerprint,
     checkedAt: evidence.checkedAt, signature: "unsigned" } : { status: "unverified", version: null, fingerprint: null, checkedAt: null, signature: null };
   return { contractVersion: registry.contractVersion, kind, pinnedVersion: entry?.version ?? null,
+    authSource: kind === "hermes_codex" ? { contractVersion: entry.authSourcePolicy.contractVersion,
+      authSourceClass: entry.authSourcePolicy.sourceClass, identityFingerprint: null,
+      ownerInteractionRequired: true } : null,
     installedVersion: verified ? entry.version : null, installation, compatibility: kind === "direct_codex" ? "reference" : "unproven",
     brokerContractVerified: kind === "hermes_codex" && registry.brokerContract.verified === true,
     hostLifecycle: lifecycle.lifecycleState(),

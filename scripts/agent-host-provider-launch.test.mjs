@@ -98,7 +98,7 @@ test("known prompt secrets and substituted sealed model/effort are denied", () =
 });
 test("new public CLI remains denied even with synthetic outer admission; seal cannot be reused", () => {
   const { options, consumption } = fixture(); let launches = 0;
-  assert.throws(() => { prepareProviderLaunch(options, consumption); launches++; }, /hermes_public_launch_contract_unqualified/);
+  assert.throws(() => { prepareProviderLaunch(options, consumption); launches++; }, /hermes_profile_ready_changed/);
   assert.throws(() => prepareProviderLaunch(options, consumption), /agent_provider_input_blocked/);
   assert.equal(launches, 0);
   const report = contract.projectProvider({ kind: "hermes_codex", ready: true });

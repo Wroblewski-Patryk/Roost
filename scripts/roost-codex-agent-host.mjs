@@ -255,7 +255,8 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       lease.assertValid(); duration.assertWithinBudget(); outputBudget.assertWithinBudget();
     };
     const providerInput = prepareProviderInput({ fresh: { taskContext, applicationContext }, claimed,
-      currentCommit: preparedCommit, assertAuthority: assertProviderAuthority, secrets: [apiKey] });
+      currentCommit: preparedCommit, assertAuthority: assertProviderAuthority, secrets: [apiKey],
+      provider: config.executionProvider, repositoryPath });
     if (config.executionProvider?.kind === "hermes_codex") hermesBaseline = await duration.wait(collectWorkspaceEvidence({
       repositoryPath, expectedHead: preparedCommit, expectedBranch: taskContext.executionPacket.contract.singleTask.branch,
       inputSeal: providerInput.seal, secrets: [apiKey, claimed.leaseToken] }));

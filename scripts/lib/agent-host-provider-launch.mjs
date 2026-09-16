@@ -3,7 +3,8 @@ import { z } from "zod";
 import contract from "./agent-host-provider-contract.cjs";
 import hermesContract from "./agent-host-hermes-launch-contract.cjs";
 import { modelSelectionSchema, codexExecutionArgs } from "./agent-host-model-policy.mjs";
-import { providerInputTransport, consumeProviderInput } from "./agent-host-provider-input.mjs";
+import { providerInputTransport, consumeProviderInput, assertProviderProfile } from "./agent-host-provider-input.mjs";
+import { hermesProfileBindingSchema } from "./agent-host-hermes-profile.mjs";
 import { guardHostContent } from "./agent-host-redaction.mjs";
 import { hermesOwnedTreeBlockers } from "./agent-host-windows-job.mjs";
 
@@ -14,7 +15,7 @@ const configSchema = z.object({
   officialSource: z.literal(hermes.officialSource), version: z.literal(hermes.version),
   commit: z.literal(hermes.commit), executablePath: z.string().min(1).max(1024),
   policy: z.object(Object.fromEntries(Object.keys(contract.registry.hermesPolicy).map(k => [k, z.unknown()]))).strict(),
-  attestation: z.unknown().optional()
+  attestation: z.unknown().optional(), profile: hermesProfileBindingSchema.optional()
 }).strict();
 const canonical = value => Array.isArray(value) ? value.map(canonical) : value && typeof value === "object"
   ? Object.fromEntries(Object.keys(value).sort().map(k => [k, canonical(value[k])])) : value;
@@ -75,6 +76,11 @@ export function projectProviderLaunch({ provider, envelope, repositoryPath, code
 export function prepareProviderLaunch(options, consumption) {
   const plan = projectProviderLaunch(options);
   consumeProviderInput(options.envelope, consumption);
-  if (plan.kind === "hermes_codex") fail("hermes_public_launch_contract_unqualified");
+  if (plan.kind === "hermes_codex") {
+    // No real nonsecret identity adapter has been qualified yet. Production does
+    // not accept an auth receipt from API/config; undefined demands owner action.
+    assertProviderProfile(options.envelope, options.provider, options.repositoryPath);
+    fail("hermes_public_launch_contract_unqualified");
+  }
   return plan;
 }

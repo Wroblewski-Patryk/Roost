@@ -1,5 +1,7 @@
 # Hermes credential-source qualification v1
 
+**Current owner amendment, RF-RUNTIME-005B3 (2026-09-16):** [same-owner profile v1](hermes-same-owner-profile-v1.md) accepts existing same-owner Codex CLI authentication. Full profile-only isolation and a separate token store are not pilot requirements. The external Restricted Token/ACL credential guard proposed below was rejected by the owner and is superseded, not awaiting approval. The original NOT_QUALIFIED/BLOCKED findings remain dated technical evidence. A private profile and synthetic admission binding now exist; live identity remains `owner-interaction-required`, all six gates false. The sole next recommendation is B4 nonsecret same-owner identity qualification; it is not started.
+
 RF-RUNTIME-005B2, 2026-09-16. Verdict: **NOT_QUALIFIED**.
 This completes the source-research atom following the
 [RF-RUNTIME-005B1 preflight](hermes-private-profile-preflight-v1.md). Neither the

@@ -14,11 +14,15 @@ remain false; native tree ownership, effective private configuration and remaini
 budgets/auth/tool boundaries are still unqualified. One Worker attempt, sealed
 stdin, untrusted bounded output and independent review of exact dirty-byte evidence
 are mandatory. No agent commit/push/deploy or hidden fallback is allowed.
-RF-RUNTIME-005B2 [credential-source qualification](../architecture/hermes-credential-source-qualification-v1.md)
-finds stable 0.21.3 and the inspected upstream snapshot NOT_QUALIFIED. An external
-Worker credential-access guard is proposed for RF-RUNTIME-005B3, subject to owner
-acceptance; it is not implemented or accepted by this ADR. Hermes remains an
-unmodified dependency at 0.21.2. Profile/OAuth and all live execution stay blocked.
+RF-RUNTIME-005B3 accepts [same-owner profile v1](../architecture/hermes-same-owner-profile-v1.md):
+Hermes may reuse the same owner's Codex CLI auth. No separate token store or
+Restricted Token/ACL credential sandbox is required. This supersedes the B2
+external-guard recommendation, rejected by the owner as disproportionate. B1/B2
+remain evidence about full profile-only isolation, which is no longer a pilot
+requirement. Account/provider/model changes, rotation/fallback, hidden interactive
+reauthorization and secrets in Roost/evidence remain forbidden. A secret-free
+private profile and synthetic admission binding are prepared; real nonsecret
+identity qualification remains blocked. Hermes stays unmodified at 0.21.2.
 Future local Ollama (gpt-oss or Mistral/Devstral) stays planned/disabled until
 confirmed disk expansion and separate resource/quality qualification.
 The original RF-RUNTIME-002 decision and its dated authority follow below.
@@ -26,7 +30,7 @@ The original RF-RUNTIME-002 decision and its dated authority follow below.
 Date: 2026-09-15
 Status: accepted
 Owner: Roost architecture owner
-Decision version: 2 (RF-RUNTIME-005A amendment, 2026-09-16)
+Decision version: 3 (RF-RUNTIME-005B3 same-owner auth amendment, 2026-09-16)
 Scope: RF-RUNTIME-002 owner handoff; architecture and blocked adapter implementation
 Source reference: `owner-handoff.rf-runtime-002.hermes-first.v1`
 
@@ -44,7 +48,7 @@ canonical clone, one writer, lease, input sealing, scope, process ownership and
 cleanup. Hermes supplies inference/tools inside the separately proven boundary;
 it has no independent company memory, tasks, schedule, delegation or scope rights.
 Only the Worker-owned allowlisted Roost MCP configuration may be attached.
-Model authentication stays in the approved private instance, never prompts or
+Model authentication uses the approved same-owner local source, never prompts or
 repository files; OAuth support is not proof of account entitlement or quota.
 
 Windows Sandbox, Hyper-V and disposable VMs are **rejected as pilot prerequisites**

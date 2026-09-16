@@ -4,6 +4,7 @@ import { executionContractSchema, validateExecutionPacket } from "./agent-host-e
 import { executionContextRevision, assertFreshExecutionContext } from "./agent-host-execution-context.mjs";
 import { guardHostContent } from "./agent-host-redaction.mjs";
 import ready from "./agent-host-ready-context.cjs";
+import { sealHermesProfile, assertHermesProfile } from "./agent-host-hermes-profile.mjs";
 
 export const providerInputVersion = "roost-provider-input-v1";
 export const providerInputMaxBytes = 131072;
@@ -105,14 +106,24 @@ function seal(fresh, claimed, secrets) {
 // Only Worker calls these factories. No config/env/network argument can provide
 // the authority callback. Existing lease/writer/Ready/checkpoint own authority.
 /** @returns {ProviderInput} */
-export function prepareProviderInput({ fresh, claimed, currentCommit, assertAuthority, secrets = [] }) {
+export function prepareProviderInput({ fresh, claimed, currentCommit, assertAuthority, secrets = [], provider, repositoryPath, hermesAuthReceipt }) {
   try {
     assertAuthority(); validate(fresh, claimed, currentCommit, secrets);
     const envelope = seal(fresh, claimed, secrets);
     assertAuthority();
-    issued.set(envelope, { consumed: false });
+    const profile = provider?.kind === "hermes_codex" ? sealHermesProfile(provider.profile,
+      { repositoryPath, readyRevision: envelope.revisions.ready, authReceipt: hermesAuthReceipt }) : undefined;
+    assertAuthority();
+    issued.set(envelope, { consumed: false, profile });
     return envelope;
   } catch (error) { if (error.redaction || error.readyAdmission || error.leaseLost || error.durationLimit || error.outputLimit || error.contextStop || error.protocolAdmission) throw error; throw blocked(); }
+}
+
+// Local profile authority is tied to the same validated Ready/input object, not
+// serialized into model context. Missing/forged snapshots never authorize launch.
+export function assertProviderProfile(envelope, provider, repositoryPath, authReceipt) {
+  return assertHermesProfile(issued.get(envelope)?.profile, provider?.profile,
+    { repositoryPath, readyRevision: envelope.revisions.ready, authReceipt });
 }
 
 // Pure transport preparation is available for both adapters; it cannot launch
