@@ -10,14 +10,16 @@ const provider = () => ({ kind: "hermes_codex", enabled: true, officialSource: p
   version: pin.version, commit: pin.commit, executablePath: "C:\\Fictional\\Runtime\\hermes.exe",
   policy: structuredClone(contract.registry.hermesPolicy) });
 
-test("known incompatible pin stays blocked despite caller-supplied compatibility and installation evidence", () => {
-  assert.equal(pin.cliLaunchQualification.contractVersion, hermesContract.version);
-  assert.equal(pin.cliLaunchQualification.status, "incompatible");
+test("quiet pin compatibility never removes config, single-turn or process ownership gates", () => {
+  assert.equal(pin.supervisedQuietQualification.contractVersion, hermesContract.version);
+  assert.equal(pin.supervisedQuietQualification.status, "public_argv_verified");
   for (const installation of [undefined, { status: "verified", version: pin.version,
     fingerprint: "a".repeat(12), signature: "unsigned", checkedAt: "2026-09-15T00:00:00.000Z" }]) {
     const report = contract.projectProvider({ kind: "hermes_codex", installation,
       compatibility: "confirmed", cliLaunchQualification: { status: "compatible" }, blockers: [] });
-    assert.ok(report.blockers.includes("hermes_cli_pin_incompatible"));
+    assert.equal(report.blockers.includes("hermes_cli_pin_incompatible"), false);
+    assert.ok(report.blockers.includes("hermes_single_turn_enforcement_unproven"));
+    assert.ok(report.blockers.includes("hermes_stop_recovery_unproven"));
     assert.equal(report.executionSupported, false);
   }
 });
@@ -32,9 +34,9 @@ function fixture(change = () => {}) {
 }
 test("documented Hermes projection carries one sealed stdin and exact model/effort, never a runnable plan", () => {
   const { options } = fixture(); const plan = projectProviderLaunch(options);
-  assert.equal(plan.version, "roost-hermes-cli-launch-v1");
-  assert.deepEqual(plan.candidateArgs, ["chat", "--oneshot", "--query-file", "-", "--format", "stream-json",
-    "--provider", "openai-codex", "--model", "gpt-5.6-sol"]);
+  assert.equal(plan.version, "roost-hermes-supervised-quiet-v1");
+  assert.deepEqual(plan.candidateArgs, ["chat", "--oneshot", "--quiet", "--query-file", "-",
+    "--provider", "openai-codex", "--model", "gpt-5.6-sol", "--reasoning", "medium"]);
   assert.equal(JSON.parse(plan.input).seal, options.envelope.seal);
   assert.equal(plan.requiredConfig.reasoningEffort, "medium");
   assert.equal(plan.requiredConfig.configReceipt, null);

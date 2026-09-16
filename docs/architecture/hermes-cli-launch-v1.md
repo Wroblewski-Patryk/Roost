@@ -1,5 +1,12 @@
 # Native Hermes CLI launch contract v1
 
+**Historical stream-only qualification.** RF-RUNTIME-005A (2026-09-16)
+[supervised quiet v1](hermes-supervised-quiet-v1.md) supersedes the requirement to
+wait for compatible stream-json for the first supervised pilot only. Active stable
+0.21.2 is retained; newer-pin rejection remains historical evidence. Current
+native/configuration blockers and all false runtime gates remain. The next-task
+and unchanged-adapter statements below describe this document's original task.
+
 RF-RUNTIME-002, 2026-09-15. Adapter: `roost-hermes-cli-launch-v1`.
 Decision: [ADR-004 accepted](../decisions/ADR-004-native-hermes-codex-pilot.md).
 Verdict: **PUBLIC-CLI-TRANSPORT-SPECIFIED; HERMES-LAUNCH-BLOCKED**.

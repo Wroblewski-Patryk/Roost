@@ -1,9 +1,23 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+RF-RUNTIME-005A / BATCH-RUNTIME-005A accepts a narrow amendment:
+the first supervised pilot uses stable Hermes 0.21.2's public
+[quiet adapter](../architecture/hermes-supervised-quiet-v1.md).
+Unreleased stream-json is no longer a pilot prerequisite. The six runtime gates
+remain false; native tree ownership, effective private configuration and remaining
+budgets/auth/tool boundaries are still unqualified. One Worker attempt, sealed
+stdin, untrusted bounded output and independent review of exact dirty-byte evidence
+are mandatory. No agent commit/push/deploy or hidden fallback is allowed.
+The sole next atom is owner-present Codex OAuth plus minimal Blank Slate config
+(RF-RUNTIME-005B), separately delegated; no live execution is authorized here.
+Future local Ollama (gpt-oss or Mistral/Devstral) stays planned/disabled until
+confirmed disk expansion and separate resource/quality qualification.
+The original RF-RUNTIME-002 decision and its dated authority follow below.
+
 Date: 2026-09-15
 Status: accepted
 Owner: Roost architecture owner
-Decision version: 1
+Decision version: 2 (RF-RUNTIME-005A amendment, 2026-09-16)
 Scope: RF-RUNTIME-002 owner handoff; architecture and blocked adapter implementation
 Source reference: `owner-handoff.rf-runtime-002.hermes-first.v1`
 

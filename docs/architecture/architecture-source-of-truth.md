@@ -1,5 +1,12 @@
 # Architecture Source Of Truth
 
+Current transport amendment (RF-RUNTIME-005A):
+[supervised quiet v1](hermes-supervised-quiet-v1.md) retains stable Hermes 0.21.2
+and removes waiting for unreleased stream-json from the first pilot prerequisites.
+Sealed stdin, bounded untrusted text and dirty-byte review evidence are implemented
+synthetically. Native whole-tree stop/configuration remain blocked; all six
+execution/pilot/live flags remain false. Earlier stream-only evidence is historical.
+
 [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md), accepted in
 RF-RUNTIME-002, sets the current first-agent target: Roost → Windows Local Worker
 → native Hermes Agent → Codex model via Codex OAuth/subscription, one canonical

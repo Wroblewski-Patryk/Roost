@@ -15,6 +15,8 @@ import { runObserver } from "./lib/agent-host-observer.mjs";
 import { prepareProviderLaunch } from "./lib/agent-host-provider-launch.mjs";
 import { prepareProviderInput } from "./lib/agent-host-provider-input.mjs";
 import { createDirectTurnGuard } from "./lib/agent-host-direct-turn.mjs";
+import { collectHermesQuietProcess } from "./lib/agent-host-hermes-quiet.mjs";
+import { collectWorkspaceEvidence } from "./lib/agent-host-workspace-evidence.mjs";
 import { createExecutionDuration } from "./lib/agent-host-execution-duration.mjs";
 import { createCodexOutputBudget } from "./lib/agent-host-output-budget.mjs";
 import { fetchExecutionContext, executionContextRevision, assertFreshExecutionContext } from "./lib/agent-host-execution-context.mjs";
@@ -187,11 +189,18 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
   let stopRequested = false;
   let duration;
   let outputBudget;
+  let hermesBaseline;
+  let hermesCollection, hermesAbort;
   function stopWorker() {
     stopping = true;
     retainWriterLock = true;
     if (stopRequested) return;
     stopRequested = true;
+    if (hermesCollection) {
+      hermesAbort.abort();
+      stopPromise = hermesCollection.then(() => {}, error => { if (error.leaseLost) stopError = error; });
+      return;
+    }
     stopPromise = terminateWindowsProcessTree(child).catch((error) => {
       stopError = error;
       process.stderr.write("Agent Host stopped: process-tree termination could not be confirmed; manual reconciliation required.\n");
@@ -247,6 +256,9 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     };
     const providerInput = prepareProviderInput({ fresh: { taskContext, applicationContext }, claimed,
       currentCommit: preparedCommit, assertAuthority: assertProviderAuthority, secrets: [apiKey] });
+    if (config.executionProvider?.kind === "hermes_codex") hermesBaseline = await duration.wait(collectWorkspaceEvidence({
+      repositoryPath, expectedHead: preparedCommit, expectedBranch: taskContext.executionPacket.contract.singleTask.branch,
+      inputSeal: providerInput.seal, secrets: [apiKey, claimed.leaseToken] }));
     if (resumeCheckpoint) assertRecoverySnapshot(resumeCheckpoint, taskContext.executionPacket.revision, digest, contextRevision);
     if (claimed.checkpoint?.stage === "claimed") await duration.wait(checkpoint("prepared", taskContext.executionPacket.revision, digest));
     else if (claimed.checkpoint?.stage !== "prepared") throw recoveryError("checkpoint_mismatch");
@@ -270,6 +282,23 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       repositoryPath, codexCommand, sandbox, secrets: [apiKey, claimed.leaseToken] }, { fresh, claimed, currentCommit,
       assertAuthority: assertProviderAuthority, secrets: [apiKey] });
     assertProviderAuthority();
+    let transportAccounting;
+    if (launch.kind === "hermes_codex") {
+      // Unreachable until native containment/configuration admission is proven.
+      // One stdin write; no JSON/tool-event interpretation or provider fallback.
+      child = spawn(launch.command, launch.args, { cwd: launch.cwd, env: safeChildEnvironment(), shell: false, windowsHide: true, stdio: ["pipe", "pipe", "pipe"] });
+      hermesAbort = new AbortController();
+      const pending = hermesCollection = collectHermesQuietProcess(child, { input: launch.input, remainingMs: duration.remainingMs,
+        signal: hermesAbort.signal,
+        secrets: [apiKey, claimed.leaseToken], assertAuthority: assertProviderAuthority,
+        shutdownRequested: () => shutdownRequested || stopping });
+      void pending.catch(() => undefined);
+      await duration.wait(checkpoint("running", taskContext.executionPacket.revision, digest));
+      const receipt = await duration.wait(pending);
+      finalResponse = receipt.finalResponse;
+      transportAccounting = { interface: "quiet", usageAccounting: "unavailable", internalTurnCount: null,
+        transportRetryCount: null, toolEventsAvailable: false, reviewRequired: true };
+    } else {
     const turnGuard = createDirectTurnGuard();
     child = spawn(launch.command, launch.args, { cwd: launch.cwd, env: safeChildEnvironment(), shell: false, windowsHide: true, stdio: ["pipe", "pipe", "pipe"] });
     const exitPromise = new Promise((resolve, reject) => {
@@ -330,13 +359,21 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       return;
     }
     lease.assertValid();
-    const transportAccounting = turnGuard.complete(exitCode, runnerEvents.some(event =>
+    transportAccounting = turnGuard.complete(exitCode, runnerEvents.some(event =>
       event.type === "item.completed" && event.item?.type === "agent_message" && typeof event.item.text === "string" && event.item.text.trim()));
+    }
 
     const afterStatus = await duration.wait(gitStatus(repositoryPath));
     const resultBranch=await duration.wait(readTaskBranch(repositoryPath));
     assertTaskBranch(resultBranch,taskContext.executionPacket.contract.singleTask.branch);
     const resultCommit=await duration.wait(readTaskCommit(repositoryPath));
+    if (launch.kind === "hermes_codex") {
+      // The supervised implementer may not commit. Review binds the exact dirty
+      // bytes through verification, already part of Roost's review fingerprint.
+      verification.workspaceEvidence = await duration.wait(collectWorkspaceEvidence({ repositoryPath,
+        expectedHead: preparedCommit, expectedBranch: taskContext.executionPacket.contract.singleTask.branch,
+        inputSeal: providerInput.seal, baselineSeal: hermesBaseline.seal, secrets: [apiKey, claimed.leaseToken] }));
+    }
     const committedPaths=await duration.wait(readTaskPaths(repositoryPath,currentCommit,resultCommit));
     const changedFiles = [...new Set([...committedPaths,...afterStatus.map(statusPath)])];
     const resultRevision={commit:resultCommit,branch:resultBranch,workingTree:afterStatus.length?"dirty":"clean"};
@@ -378,15 +415,23 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
   } finally {
     duration?.stop();
     lease.stop();
+    let hermesCleanupError;
+    if (hermesCollection) {
+      hermesAbort.abort();
+      await hermesCollection.catch(error => {
+        if (error.leaseLost) { retainWriterLock = true; stopping = true; hermesCleanupError = error; }
+      });
+    }
     await stopPromise;
     // taskkill may finish before Node delivers the child's exit event. Do not
     // race a successful stop with a second taskkill against the same PID.
-    if (!stopRequested && child && child.exitCode === null && child.signalCode === null) {
+    if (!hermesCollection && !stopRequested && child && child.exitCode === null && child.signalCode === null) {
       stopping = true;
       await terminateWindowsProcessTree(child).catch((error) => { retainWriterLock = true; throw error; });
     }
     child?.stdout?.destroy();
     child?.stderr?.destroy();
+    if (hermesCleanupError) throw hermesCleanupError;
     if (stopError) throw Object.assign(new Error("agent_process_tree_stop_failed"), { leaseLost: true });
   }
 }

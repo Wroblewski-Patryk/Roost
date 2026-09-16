@@ -5,15 +5,17 @@ development. No Codex Agent Host issue queue is stored in the repository.
 
 ## Recommended order
 
-First-agent direction is accepted in
-[ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md). Next atomic task:
-**RF-RUNTIME-005 — resolve the stable upstream structured-CLI/single-turn gap**,
-following the [RF004 proposal](../architecture/hermes-replacement-pin-proposal-v1.md).
-Newest stable 0.21.3 is rejected: missing --format stream-json and unqualified
-strict one-turn behavior. No compatible stable replacement is ready to install;
-do not begin OAuth or model/MCP runs. Native Hermes is first,
-direct CLI alternative, Herdr optional. Disposable VM/Windows Sandbox/Hyper-V is
-not a prerequisite. All existing execution/pilot/live gates remain false.
+First-agent direction remains native Hermes behind Windows Worker under
+[ADR-004 version 2](../decisions/ADR-004-native-hermes-codex-pilot.md).
+[RF-RUNTIME-005A quiet v1](../architecture/hermes-supervised-quiet-v1.md) retains
+stable 0.21.2 and removes stream-json waiting from the supervised pilot scope.
+Next atomic task: **RF-RUNTIME-005B — owner-present Codex OAuth plus minimal Blank
+Slate configuration**, separately delegated. It is not a model run, installation
+upgrade or automatic pilot authorization. Native whole-tree recovery and remaining
+configuration/auth/tool/turn/budget blockers still require proof. All six runtime
+flags remain false. Direct CLI is an alternative, Herdr optional, VM/Sandbox is
+not a prerequisite. Future local Ollama stays planned/disabled until confirmed
+disk expansion and separate qualification; routing never hides a fallback.
 
 Other product work remains available independently of that runtime decision:
 

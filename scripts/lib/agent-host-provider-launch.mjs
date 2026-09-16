@@ -57,8 +57,9 @@ export function projectProviderLaunch({ provider, envelope, repositoryPath, code
   // switches. This is a blocked candidate, NEVER a runnable descriptor.
   return freeze({ version: hermesContract.version, kind, command: null, args: null,
     candidateExecutable: provider.executablePath,
-    candidateArgs: ["chat", "--oneshot", "--query-file", "-", "--format", "stream-json",
-      "--provider", "openai-codex", "--model", selection.data.model],
+    candidateArgs: ["chat", "--oneshot", "--quiet", "--query-file", "-",
+      "--provider", "openai-codex", "--model", selection.data.model,
+      "--reasoning", selection.data.reasoningEffort],
     cwd: repositoryPath, input: transport.input, modelSelection: selection.data,
     requiredConfig: { reasoningEffortKey: "agent.reasoning_effort", reasoningEffort: selection.data.reasoningEffort,
       workerOwnedMcpOnly: true, configReceipt: null, environmentReceipt: null },

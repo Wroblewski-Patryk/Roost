@@ -2,6 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { reviewDecisionSchema, reviewActionSchema, correctionDraft, reviewDigest } from "../modules/agent-runtime/task-review-contract";
 const id="00000000-0000-4000-8000-000000000001";
+test("uncommitted byte evidence changes invalidate the review material digest",()=>{
+  const result={commit:"a".repeat(40),verification:{workspaceEvidence:{seal:"b".repeat(64),manifest:[{path:"source.ts",working:{sha256:"c".repeat(64)}}]}}};
+  const changed=structuredClone(result);changed.verification.workspaceEvidence.manifest[0].working.sha256="d".repeat(64);
+  assert.notEqual(reviewDigest(result),reviewDigest(changed));
+});
 const reject = { requestId:id, executionId:id, expectedVersion:"a".repeat(64), materialVersion:"b".repeat(64), decision:"reject", summary:"Invalid empty input", reproduction:["Submit an empty fixture"], expected:"A validation message", observed:"An exception is thrown", evidence:[{kind:"test",reference:"npm test -- parser",result:"Empty-input case fails"}], correction:{scope:["Handle empty parser input"],excluded:["No other parser behavior"],outcome:"Empty input returns a validation message",competencies:["javascript"]} };
 test("complete rejection and approval are accepted",()=>{
   assert.ok(reviewDecisionSchema.safeParse(reject).success);

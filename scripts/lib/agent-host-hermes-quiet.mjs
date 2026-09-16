@@ -1,0 +1,109 @@
+import { guardHostContent } from "./agent-host-redaction.mjs";
+import { terminateWindowsProcessTree } from "./agent-host-execution-lease.mjs";
+import contract from "./agent-host-hermes-launch-contract.cjs";
+
+const usedChildren = new WeakSet();
+const failure = code => Object.assign(new Error(code), { providerFailure: true, retryable: false });
+
+// No event/turn/usage inference from plain text. Completion means process exit,
+// never correctness, one internal turn, tool absence, or a review decision.
+export function createHermesQuietGuard({ secrets = [] } = {}) {
+  const channels = Object.fromEntries(["stdout", "stderr"].map(k => [k,
+    { bytes: 0, text: "", decoder: new TextDecoder("utf-8", { fatal: true }) }]));
+  let closed = false, failed;
+  const fail = code => { failed ??= failure(code); throw failed; };
+  return Object.freeze({
+    write(channel, chunk) {
+      if (failed) throw failed;
+      if (closed) fail("hermes_quiet_closed");
+      const c = Object.hasOwn(channels, channel) ? channels[channel] : null;
+      if (!c || !Buffer.isBuffer(chunk)) fail("hermes_quiet_invalid");
+      c.bytes += chunk.length;
+      if (c.bytes > contract[`${channel}Bytes`]) fail("hermes_quiet_limit");
+      try { c.text += c.decoder.decode(chunk, { stream: true }); }
+      catch { fail("hermes_quiet_utf8_invalid"); }
+    },
+    complete(exitCode) {
+      if (failed) throw failed;
+      if (closed) fail("hermes_quiet_closed");
+      closed = true;
+      try { for (const c of Object.values(channels)) c.text += c.decoder.decode(); }
+      catch { fail("hermes_quiet_utf8_invalid"); }
+      try { guardHostContent({ stdout: channels.stdout.text, stderr: channels.stderr.text }, "required", secrets); }
+      catch { fail("hermes_quiet_sensitive"); }
+      if (exitCode === 130) fail("hermes_quiet_interrupted");
+      if (exitCode !== 0) fail("hermes_quiet_process_failed");
+      return Object.freeze({ finalResponse: channels.stdout.text, exitCode: 0,
+        trust: "untrusted_process_output", reviewRequired: true, usage: null,
+        toolEventsAvailable: false, internalTurnCount: null, transportRetryCount: null });
+    }
+  });
+}
+
+// The existing native taskkill path cannot attest descendants after root exit,
+// atomic ownership or kill-on-controller-death. Never promote its success.
+export async function stopUnqualifiedHermesTree(child, { terminate = terminateWindowsProcessTree } = {}) {
+  try { await terminate(child); } catch { /* keep the fixed no-proof diagnosis */ }
+  throw Object.assign(failure("hermes_stop_recovery_unproven"), { leaseLost: true });
+}
+
+// Worker-internal seams below are only for synthetic tests, not provider config.
+// A native owned-tree backend is NOT supplied by this implementation. All live
+// admission stays closed; even root exit 0 reaches the no-proof stop above.
+export async function collectHermesQuietProcess(child, { input, remainingMs, secrets = [],
+  assertAuthority = () => {}, signal, shutdownRequested = () => false,
+  stopOwnedTree = stopUnqualifiedHermesTree, pollMs = 50, stopTimeoutMs = 4000 } = {}) {
+  if (usedChildren.has(child)) throw failure("hermes_quiet_reuse");
+  usedChildren.add(child);
+  const invalid = typeof input !== "string" || Buffer.byteLength(input) > 131072
+      || !Number.isFinite(remainingMs) || remainingMs <= 0 || remainingMs > 3600000;
+  const guard = createHermesQuietGuard({ secrets });
+  let result, problem, timer, polling, settled = false;
+  const listeners = [];
+  const on = (emitter, event, fn) => { emitter.on(event, fn); listeners.push(() => emitter.off(event, fn)); };
+  try {
+    await new Promise(resolve => {
+      const finish = error => { if (settled) return; settled = true; problem = error; resolve(); };
+      const check = () => {
+        try {
+          if (invalid) throw failure("hermes_quiet_input_invalid");
+          if (signal?.aborted) throw failure("hermes_quiet_cancelled");
+          if (shutdownRequested()) throw failure("hermes_quiet_controller_shutdown");
+          assertAuthority();
+        } catch (error) { finish(error); }
+      };
+      for (const channel of ["stdout", "stderr"]) on(child[channel], "data", chunk => {
+        if (settled) return;
+        try { check(); if (!settled) guard.write(channel, chunk); } catch (error) { finish(error); }
+      });
+      on(child, "error", () => finish(failure("hermes_quiet_process_failed")));
+      for (const channel of ["stdout", "stderr"]) on(child[channel], "error", () => finish(failure("hermes_quiet_stream_failed")));
+      on(child.stdin, "error", () => finish(failure("hermes_quiet_stdin_failed")));
+      on(child, "close", code => {
+        if (settled) return;
+        check(); if (settled) return;
+        try { result = guard.complete(code); finish(); } catch (error) { finish(error); }
+      });
+      const abort = () => finish(failure("hermes_quiet_cancelled"));
+      signal?.addEventListener("abort", abort, { once: true });
+      listeners.push(() => signal?.removeEventListener("abort", abort));
+      timer = setTimeout(() => finish(failure("hermes_quiet_timeout")), invalid ? 1 : remainingMs);
+      polling = setInterval(check, pollMs);
+      check();
+      if (!settled) { try { child.stdin.end(input); } catch { finish(failure("hermes_quiet_stdin_failed")); } }
+    });
+  } finally {
+    clearTimeout(timer); clearInterval(polling);
+    // Keep error listeners while terminating so late pipe errors cannot escape.
+    let stopTimer;
+    try {
+      const receipt = await Promise.race([Promise.resolve().then(() => stopOwnedTree(child)),
+        new Promise((_, reject) => { stopTimer = setTimeout(() => reject(failure("hermes_stop_recovery_unproven")), stopTimeoutMs); })]);
+      if (receipt?.scope !== "whole_owned_tree" || receipt?.remaining !== 0 || receipt?.enforced !== true)
+        throw failure("hermes_stop_recovery_unproven");
+    } catch { problem = Object.assign(failure("hermes_stop_recovery_unproven"), { leaseLost: true }); }
+    finally { clearTimeout(stopTimer); listeners.forEach(remove => remove()); }
+  }
+  if (problem) throw problem;
+  return result;
+}

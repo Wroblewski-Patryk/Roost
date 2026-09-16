@@ -1,5 +1,13 @@
 # Local Codex Agent Runtime
 
+RF-RUNTIME-005A replaces the first supervised pilot's stream-only candidate with
+[quiet v1](hermes-supervised-quiet-v1.md): stable 0.21.2, explicit approved
+model/reasoning, one sealed stdin input and no Worker retry/fallback. Quiet output
+is untrusted text with no tool/usage telemetry; independent review binds captured
+dirty bytes. Native taskkill is not owned-tree proof and always blocks this
+collector. No private configuration/model was used; all six runtime flags remain
+false. The JSONL adapter history below is superseded only for this supervised scope.
+
 Current direction: [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md)
 accepts Windows Local Worker → native Hermes → Codex OAuth/model as the first
 runtime; direct Codex CLI is an alternative, Herdr optional UX. One canonical

@@ -6,17 +6,21 @@ Codex OAuth behind Windows Local Worker; direct CLI alternative and Herdr option
 Workspace, one-writer, cleanup, secrets, Ready/review and release guards remain.
 No VM/Windows Sandbox/Hyper-V prerequisite. No runtime activation follows.
 
-## Stable upstream CLI protocol gap — pending
+## Owner-present private configuration — pending
 
-[RF-RUNTIME-004 proposal](../architecture/hermes-replacement-pin-proposal-v1.md)
-rejects newest stable 0.21.3: like active 0.21.2, its parser lacks --format required
-by launch v1. Quiet output also permits background follow-up turns. No compatible
-stable replacement is qualified. Next atomic task: **RF-RUNTIME-005**, resolve
-the stable upstream structured-CLI/strict-single-turn gap before replacement.
-The structured-output feature landed after the stable tag in 1657a1ce; a stable
-release containing it is required before qualification can resume.
-No installation, fork/private wrapper, OAuth or model/MCP operation follows.
-All execution/pilot/live gates remain false.
+[RF-RUNTIME-005A](../architecture/hermes-supervised-quiet-v1.md) accepts public
+quiet/oneshot on existing stable 0.21.2 for the first supervised pilot. Waiting
+for unreleased stream-json is no longer required; older rejection evidence remains
+historical. Next atomic task: **RF-RUNTIME-005B — owner-present Codex OAuth plus
+minimal Blank Slate configuration**, separately delegated. No OAuth or model
+operation occurred in RF005A. Native owned-tree stop, effective config, auth/tool
+boundaries, internal turns and hard budgets remain unqualified; all six runtime
+flags stay false. Config completion must not be reported as pilot readiness.
+
+Local Ollama with OpenAI gpt-oss or Mistral/Devstral is **PLANNED/DISABLED**.
+Installation waits for confirmed disk expansion and resource/quality qualification.
+Later routing is explicit by competencies, risk, quality, cost, resources and
+privacy, with visible escalation and no automatic fallback.
 
 ## Accepted foundations
 

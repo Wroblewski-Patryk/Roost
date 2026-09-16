@@ -9,6 +9,17 @@
   },
   "requiredPilotProvider": "hermes_codex",
   "pilotReady": false,
+  "plannedProviders": [
+    {
+      "kind": "ollama_local",
+      "status": "planned_disabled",
+      "modelFamilies": ["OpenAI gpt-oss", "Mistral/Devstral"],
+      "installationAllowed": false,
+      "executionSupported": false,
+      "prerequisite": "Owner confirmation of disk expansion and a separate resource/quality qualification.",
+      "routing": "Future explicit selection by competencies, risk, quality, cost, available resources and privacy; escalation is visible and never automatic fallback."
+    }
+  ],
   "brokerContract": {
     "version": "roost-worker-mcp-broker-v1",
     "verified": true,
@@ -44,7 +55,15 @@
       "commit": "939e45c91d751fadd94dcd1b873ac3cb44846213",
       "license": "MIT",
       "status": "disabled",
-      "pinScope": "Official source commit, package version and source hashes; upstream commit/tag are unsigned. Earlier private inventory/version evidence is historical, not a current installation attestation. RF-RUNTIME-003 confirms the pinned chat parser lacks the structured-output argument required by launch v1.",
+      "pinScope": "Official source commit, package version and source hashes; unsigned. Historical installation evidence is not a fresh attestation. RF005A accepts public quiet argv for the first supervised pilot; lack of stream-json is historical and no longer its admission prerequisite. Configuration and owned-tree proof remain missing.",
+      "supervisedQuietQualification": {
+        "contractVersion": "roost-hermes-supervised-quiet-v1",
+        "status": "public_argv_verified",
+        "sourceFile": "hermes_cli/_parser.py",
+        "sourceSha256": "8f6573f8bc211208ae884e9ca21987240abd28bc3312c7189f323286dfc29a21",
+        "checkedAt": "2026-09-16",
+        "proofScope": "Pinned public quiet/oneshot/query-file/provider/model/reasoning flags and synthetic Worker checks only; no effective config, internal-turn count, native containment or live compatibility proof."
+      },
       "cliLaunchQualification": {
         "contractVersion": "roost-hermes-cli-launch-v1",
         "status": "incompatible",

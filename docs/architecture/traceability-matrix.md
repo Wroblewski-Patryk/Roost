@@ -1,5 +1,14 @@
 # Foundation requirements traceability
 
+RF-RUNTIME-005A [supervised quiet v1](hermes-supervised-quiet-v1.md) supersedes
+waiting for stable stream-json for the first supervised pilot. Existing 0.21.2
+public argv is accepted; sealed input, bounded UTF-8 stdout/stderr, one Worker
+attempt and exact Git-visible dirty-byte review evidence have synthetic tests.
+Native owned-tree stop, sealed effective config, auth, internal turns, tool
+isolation and hard cost/token limits remain blocked. No readiness flag is raised.
+Only RF-RUNTIME-005B owner-present Codex OAuth + minimal Blank Slate config is next.
+The RF003/RF004 incompatibility and next-task statements below are dated history.
+
 RF-RUNTIME-004 [replacement-pin proposal v1](hermes-replacement-pin-proposal-v1.md)
 rejects newest stable 0.21.3 / 345cd2b: the chat parser is identical to 0.21.2 and
 lacks launch v1 JSONL output. Static review also finds quiet background follow-up

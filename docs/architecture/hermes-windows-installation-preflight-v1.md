@@ -1,5 +1,12 @@
 # Native Hermes installation preflight v1
 
+**Historical stream-only qualification.** RF-RUNTIME-005A (2026-09-16)
+[supervised quiet v1](hermes-supervised-quiet-v1.md) supersedes the requirement to
+wait for compatible stream-json for the first supervised pilot only. Active stable
+0.21.2 is retained; newer-pin rejection remains historical evidence. Current
+native/configuration blockers and all false runtime gates remain. The next-task
+and unchanged-adapter statements below describe this document's original task.
+
 RF-RUNTIME-003, 2026-09-15. Verdict: **PIN-CLI-INCOMPATIBLE; INSTALLATION-STOPPED**.
 The later [RF004 replacement proposal](hermes-replacement-pin-proposal-v1.md)
 also rejects newest stable 0.21.3; RF005's upstream protocol gap is now next.
