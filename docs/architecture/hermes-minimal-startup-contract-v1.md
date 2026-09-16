@@ -1,5 +1,103 @@
 # Hermes public minimal startup contract v1
 
+RF-RUNTIME-005B7, 2026-09-16. **Standard startup policy implemented and synthetically verified.**
+The owner explicitly accepts local bundled-skills synchronization and local banner
+prefetch (repository/tag/skill-index reads and short local git processes). Network
+update checks remain disabled; neither accepted effect authorizes transmission of
+task content, application code, private paths or company data.
+
+This resolves B6's strict no-prefetch requirement by an explicit scope amendment.
+The source finding below remains correct history; no upstream behavior changed.
+Only an opaque Ready/input-bound B7 receipt can remove
+`hermes_sealed_config_enforcement_unproven` from the local candidate. This is
+source-backed startup-policy qualification, not a live effective-runtime observation.
+The public launch, native-tool, internal-turn and cost/cleanup gates remain; all six
+runtime flags remain false.
+
+## B7 implemented boundary
+
+[Worker startup policy](../../scripts/lib/agent-host-hermes-startup.mjs) builds only
+the selected public CLI below. The existing packet model enum is authoritative;
+aliases, auto, MoA, custom routes, base URLs, extra arguments and invalid reasoning
+are rejected before spawn. No private upstream API or entrypoint is used.
+
+Task toolsets derive from the packet's validated operations, including composed
+role authority. `file` requires both repository_read and repository_write in tools
+and permissions; a read-only task is denied because this built-in also exposes
+writes. `terminal` additionally requires explicit local_test in both lists. A
+coding task without local_test receives file only. No browser/web/skills/memory/
+plugin/MCP/delegation/cron/Kanban/composite/wildcard toolset can enter the candidate.
+Terminal still exposes process_manage; tool selection does not prove command or
+filesystem confinement. The native-tool blocker remains.
+
+Profile v2 retains B3's disabled consumers and adds explicit empty legacy
+fallback_model, custom_providers and model_aliases, plus worktree=false. Both
+fallback chains are empty. The B3 v1 bytes/digest and B5 negative schema remain
+unchanged for historical validation. v2 digest:
+`5178c8743ced9fac00489fc7748b5ad0bf6838f33072890d33767125687ae046`.
+
+The environment is constructed from a small OS/user-path allowlist, then fixed
+HERMES_HOME and HERMES_SAFE_MODE=1. No credential, CODEX_HOME, dispatcher, proxy,
+provider override or Python hook variable is read/copied from the parent.
+The existing attested checkout/venv/Scripts launcher layout is required. Metadata
+checks reject a profile .env/.op.env, checkout .env or system managed-scope
+directory, without opening their contents. This closes the reviewed dotenv/managed
+override paths for this candidate and is rechecked before admission. The
+[managed overlay resolver](https://github.com/NousResearch/hermes-agent/blob/939e45c91d751fadd94dcd1b873ac3cb44846213/hermes_cli/managed_scope.py#L38-L53)
+and [dotenv ordering](https://github.com/NousResearch/hermes-agent/blob/939e45c91d751fadd94dcd1b873ac3cb44846213/hermes_cli/env_loader.py#L356-L409)
+are the pinned basis; no credential file content is inspected. Absence checks do
+not introduce an OS sandbox or qualify installation integrity.
+
+[Provider input](../../scripts/lib/agent-host-provider-input.mjs) seals the exact
+private profile/file identity/auth attestation, provider, candidate arguments,
+environment and accepted side-effect policy beside the existing sealed input.
+[Launch admission](../../scripts/lib/agent-host-provider-launch.mjs) rechecks them
+against that same input/Ready object. A changed path, executable, profile byte,
+attestation, argument, environment, overlay presence or side-effect policy blocks.
+The Worker uses the checked environment, not an unrestricted inherited environment.
+
+The strict nonsensitive receipt contains schema/policy/pin/profile/config/auth
+references; Ready/input seals; exact canonical model/provider/reasoning; toolsets,
+expanded names and operation categories; empty-fallback/worktree/safe-mode/update
+booleans; accepted effects
+`bundledSkillsLocalSync=true, localBannerPrefetch=true, networkUpdateCheck=false`;
+digests and a non-renewing 60-second Ready-time expiry. It contains no prompt,
+private paths, code, PII, credentials or raw config/output. Only the in-process
+issuer object is authority; a JSON copy, forged digest, stale receipt or B5
+diagnostic cannot remove the blocker. A persisted diagnostic is never a Ready
+grant. Profile/auth/overlay checks recur on use; installation and native Job
+qualification remain independent.
+
+A valid local receipt removes only the startup/config blocker named above.
+The static API/provider projection remains conservative because it has no such
+local proof. `prepareProviderLaunch` still unconditionally refuses real Hermes
+launch, even after the exact approved candidate validates. No inference, native
+tool or end-to-end readiness is claimed.
+
+## B7 private migration and verification
+
+The private config, worker profile binding and owner-attestation binding were
+updated and read back. The owner attestation preserves its ID, original confirmedAt
+and expiresAt; rebinding does not renew the 90-day authority. One bounded backup per
+changed resource was removed after successful byte/semantic readback. B5's private
+negative diagnostic is unchanged. No startup receipt was persisted as if it were
+bound to a real task: receipts are issued per validated Ready/input attempt.
+
+All 58 targeted startup tests and existing profile/auth, B5 negative-schema, sealed input,
+provider launch/quiet, provider, lifecycle and native Windows Job regressions pass.
+Typecheck, lint and build pass; build retains static-asset and large-chunk warnings.
+No test invokes real Hermes/model/network. Both documentation validators, 512 local
+links, five additional exact-pin source comparisons, privacy and diff checks pass.
+Four API projection tests confirm that private proof cannot activate public gates.
+Remaining task fixture directories/native fixture processes: zero.
+
+**Exactly one next atom: RF-RUNTIME-005B8 — source-only qualification of the
+internal conversation/transport-retry and hard-budget boundary.** No execution or
+next atom starts automatically. B4's same-owner attestation and accepted silent
+account-switch/unreported-session-loss risks remain unchanged.
+
+## B6 historical source qualification
+
 RF-RUNTIME-005B6, 2026-09-16. **NOT_SUPPORTED for the strict minimal-startup contract on the inspected pin.** Source analysis is complete; implementation and execution are not authorized by this result. The selected public interface remains the standard `chat --oneshot --quiet --query-file -` CLI. It supports sealed stdin and explicit model/provider/reasoning/toolsets, but still schedules bundled-skills synchronization and banner prefetch before the quiet execution branch. No reviewed public switch suppresses that startup bundle while retaining this command and the sealed profile.
 
 This is a specific limitation, not a claim that Hermes cannot run coding tasks. Plugin/MCP/hook suppression has a public control; empty toolsets and provider fallback now have a more precise contract below. The [B5 negative qualification](hermes-effective-config-qualification-v1.md) remains negative, `hermes_sealed_config_enforcement_unproven` remains mandatory, and all six gates remain false. [B4 owner attestation](hermes-same-owner-profile-v1.md), including its accepted residual risks, is unchanged.

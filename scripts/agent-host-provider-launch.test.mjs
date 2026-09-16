@@ -35,8 +35,8 @@ function fixture(change = () => {}) {
 test("documented Hermes projection carries one sealed stdin and exact model/effort, never a runnable plan", () => {
   const { options } = fixture(); const plan = projectProviderLaunch(options);
   assert.equal(plan.version, "roost-hermes-supervised-quiet-v1");
-  assert.deepEqual(plan.candidateArgs, ["chat", "--oneshot", "--quiet", "--query-file", "-",
-    "--provider", "openai-codex", "--model", "gpt-5.6-sol", "--reasoning", "medium"]);
+  assert.deepEqual(plan.candidateArgs, ["chat", "--cli", "--oneshot", "--quiet", "--query-file", "-",
+    "--provider", "openai-codex", "--model", "gpt-5.6-sol", "--reasoning", "medium", "--toolsets", "file,terminal"]);
   assert.equal(JSON.parse(plan.input).seal, options.envelope.seal);
   assert.equal(plan.requiredConfig.reasoningEffort, "medium");
   assert.equal(plan.requiredConfig.configReceipt, null);

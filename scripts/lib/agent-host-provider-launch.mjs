@@ -3,8 +3,9 @@ import { z } from "zod";
 import contract from "./agent-host-provider-contract.cjs";
 import hermesContract from "./agent-host-hermes-launch-contract.cjs";
 import { modelSelectionSchema, codexExecutionArgs } from "./agent-host-model-policy.mjs";
-import { providerInputTransport, consumeProviderInput, assertProviderProfile } from "./agent-host-provider-input.mjs";
-import { hermesProfileBindingSchema, hermesProfileAuthBlockers } from "./agent-host-hermes-profile.mjs";
+import { providerInputTransport, consumeProviderInput, assertProviderProfile, assertProviderStartup } from "./agent-host-provider-input.mjs";
+import { hermesProfileBindingSchema, hermesProfileAuthBlockers, hermesStartupProfileVersion } from "./agent-host-hermes-profile.mjs";
+import { hermesStartupArgs, hermesStartupBlockers } from "./agent-host-hermes-startup.mjs";
 import { guardHostContent } from "./agent-host-redaction.mjs";
 import { hermesOwnedTreeBlockers } from "./agent-host-windows-job.mjs";
 
@@ -36,10 +37,10 @@ function windowsPath(value, executable = false) {
 
 // Worker-only projection. repositoryPath comes AFTER existing mapping/origin/
 // physical-directory checks, never from provider config or model input. This
-// default projection reads no files. An opaque owner-auth receipt requires a
-// fresh private-file check; this still does not prove executable identity.
+// legacy projection reads no files. A v2 startup or opaque owner-auth receipt
+// requires fresh private-file checks; neither proves executable identity.
 export function projectProviderLaunch({ provider, envelope, repositoryPath, codexCommand, sandbox,
-  secrets = [], platform = process.platform, ownedTreeReceipt, ownerAuthReceipt }) {
+  secrets = [], platform = process.platform, ownedTreeReceipt, ownerAuthReceipt, startupEnvironment, startupCandidate }) {
   const kind = contract.providerKind(provider);
   if (kind === "unknown") fail("execution_provider_unknown");
   const transport = providerInputTransport(kind, envelope);
@@ -56,18 +57,20 @@ export function projectProviderLaunch({ provider, envelope, repositoryPath, code
   if (!windowsPath(repositoryPath) || sandbox !== "workspace-write") fail("hermes_workspace_invalid");
   if (!same(provider.policy, contract.registry.hermesPolicy)) fail("hermes_launch_policy_invalid");
   if (envelope.identity.attempt !== 1 || envelope.contract.budgets.maxAttempts !== 1) fail("hermes_single_attempt_required");
-  const blockers = hermesProfileAuthBlockers(hermesOwnedTreeBlockers(hermesContract.blockers, ownedTreeReceipt),
+  let blockers = hermesProfileAuthBlockers(hermesOwnedTreeBlockers(hermesContract.blockers, ownedTreeReceipt),
     ownerAuthReceipt, provider.profile, { repositoryPath, readyRevision: envelope.revisions.ready });
+  const startup = provider.profile?.schemaVersion === hermesStartupProfileVersion
+    ? assertProviderStartup({ envelope, provider, repositoryPath, startupEnvironment, startupCandidate }) : undefined;
+  if (startup) blockers = hermesStartupBlockers(blockers, startup.receipt, startup.options);
   // Only documented flags. No invented --reasoning-effort/--ephemeral/--no-*
   // switches. This is a blocked candidate, NEVER a runnable descriptor.
   return freeze({ version: hermesContract.version, kind, command: null, args: null,
     candidateExecutable: provider.executablePath,
-    candidateArgs: ["chat", "--oneshot", "--quiet", "--query-file", "-",
-      "--provider", "openai-codex", "--model", selection.data.model,
-      "--reasoning", selection.data.reasoningEffort],
+    candidateArgs: startup?.candidate.args ?? hermesStartupArgs(envelope),
+    candidateEnvironment: startup?.candidate.environment ?? null,
     cwd: repositoryPath, input: transport.input, modelSelection: selection.data,
     requiredConfig: { reasoningEffortKey: "agent.reasoning_effort", reasoningEffort: selection.data.reasoningEffort,
-      workerOwnedMcpOnly: true, configReceipt: null, environmentReceipt: null },
+      workerOwnedMcpOnly: true, configReceipt: startup?.receipt ?? null, environmentReceipt: startup?.receipt.environmentDigest ?? null },
     limits: { ...envelope.contract.budgets, ...hermesContract, blockers }, shell: false, windowsHide: true,
     blockers });
 }
@@ -82,6 +85,7 @@ export function prepareProviderLaunch(options, consumption) {
     // Production reads the owner-confirmed private attestation again. No caller
     // auth/status override is accepted; all other admission blockers remain.
     assertProviderProfile(options.envelope, options.provider, options.repositoryPath);
+    if (options.provider.profile?.schemaVersion === hermesStartupProfileVersion) assertProviderStartup(options);
     fail("hermes_public_launch_contract_unqualified");
   }
   return plan;

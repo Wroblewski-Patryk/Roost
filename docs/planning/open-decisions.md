@@ -14,13 +14,14 @@ switches and unreported session loss remain residual risks.
 is BLOCKED: exact-pin loader data is partial, with intercepted read/import attempts
 and unqualified startup/tool/rotation consumers. Its private negative receipt grants
 no Ready/admission authority. [RF-RUNTIME-005B6 source analysis](../architecture/hermes-minimal-startup-contract-v1.md)
-is complete with NOT_SUPPORTED for strict minimal startup: the standard sealed-stdin
-CLI still schedules bundled-skills synchronization and banner prefetch. Public
-safe-mode environment and explicit task toolsets resolve narrower controls, not
-the complete startup boundary. Exactly one next atom: **RF-RUNTIME-005B7 — owner
-decision on the enumerated standard-CLI startup side effects**. Not started; no
-implicit waiver or runtime probe. The 0.21.2 pin, native Job lifecycle, B4 accepted
-residual risks and all six false runtime gates remain unchanged.
+recorded NOT_SUPPORTED for strict minimal startup. B7 resolves that requirement
+through explicit owner acceptance of local skills sync/banner prefetch, with
+network updates off. Exact Worker startup policy and Ready/input-bound receipt are
+implemented and synthetically tested; only the local config blocker is removed
+with fresh proof. Real Hermes launch remains denied. Exactly one next atom:
+**RF-RUNTIME-005B8 — source-only qualification of internal conversation/transport
+retry and hard-budget boundaries**. Not started. The 0.21.2 pin, native Job
+lifecycle, B4 residual risks and all six false runtime gates remain unchanged.
 
 The first-provider choice is resolved by RF-RUNTIME-002 /
 [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md): native Hermes using

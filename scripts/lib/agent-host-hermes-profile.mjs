@@ -30,12 +30,19 @@ const config = {
 const profileBytes = JSON.stringify(config, null, 2) + "\n";
 export const hermesProfileDigest = sha(profileBytes);
 export const renderHermesProfile = () => profileBytes;
-export const hermesProfileBindingSchema = z.object({
+// B3/B5 bytes remain immutable historical evidence. B7 is a new exact profile.
+export const hermesStartupProfileVersion = "roost-hermes-profile-v2";
+const startupProfileBytes = JSON.stringify({ ...config, fallback_model: [], custom_providers: [], model_aliases: {}, worktree: false }, null, 2) + "\n";
+export const hermesStartupProfileDigest = sha(startupProfileBytes);
+export const renderHermesStartupProfile = () => startupProfileBytes;
+const legacyBindingSchema = z.object({
   schemaVersion: z.literal(hermesProfileVersion), hermesVersion: z.literal(pin.version),
   hermesCommit: z.literal(pin.commit), profilePath: z.string().min(1).max(1024),
   configDigest: z.literal(hermesProfileDigest), authSourceClass: z.literal(hermesAuthSourceClass),
   ownerAttestation: ownerAttestationBindingSchema.optional()
 }).strict();
+export const hermesProfileBindingSchema = z.discriminatedUnion("schemaVersion", [legacyBindingSchema,
+  legacyBindingSchema.extend({ schemaVersion: z.literal(hermesStartupProfileVersion), configDigest: z.literal(hermesStartupProfileDigest) }).strict()]);
 const failure = reason => Object.assign(new Error(reason), { protocolAdmission: true, retryable: false,
   publicMessage: "Hermes profile/auth admission is blocked. No model was started.", details: { reason } });
 const fail = reason => { throw failure(reason); };
@@ -48,10 +55,14 @@ export function hermesProfileBinding(profilePath) {
   return { schemaVersion: hermesProfileVersion, hermesVersion: pin.version, hermesCommit: pin.commit,
     profilePath, configDigest: hermesProfileDigest, authSourceClass: hermesAuthSourceClass };
 }
+export function hermesStartupProfileBinding(profilePath) {
+  return { ...hermesProfileBinding(profilePath), schemaVersion: hermesStartupProfileVersion, configDigest: hermesStartupProfileDigest };
+}
 function readProfile(input, repositoryPath) {
   const parsed = hermesProfileBindingSchema.safeParse(input);
   if (!parsed.success) fail("hermes_profile_binding_invalid");
   const binding = parsed.data, file = binding.profilePath;
+  const expectedBytes = binding.schemaVersion === hermesStartupProfileVersion ? startupProfileBytes : profileBytes;
   if (!path.isAbsolute(file) || path.normalize(file) !== file || path.basename(file) !== "config.yaml"
       || /[\x00-\x1f]/.test(file) || (process.platform === "win32" && (!/^[a-z]:\\/i.test(file)
         || file.slice(2).includes(":") || file.split("\\").some(part => /[. ]$/.test(part))))) fail("hermes_profile_path_invalid");
@@ -65,7 +76,7 @@ function readProfile(input, repositoryPath) {
     }
     if (realpathSync.native(file).toLowerCase() !== file.toLowerCase()) fail("hermes_profile_path_invalid");
     const before = lstatSync(file, { bigint: true });
-    if (!before.isFile() || before.nlink !== 1n || before.size !== BigInt(Buffer.byteLength(profileBytes))) fail("hermes_profile_config_invalid");
+    if (!before.isFile() || before.nlink !== 1n || before.size !== BigInt(Buffer.byteLength(expectedBytes))) fail("hermes_profile_config_invalid");
     fd = openSync(file, "r");
     const opened = fstatSync(fd, { bigint: true });
     // Windows lstat reports dev=0 while fstat reports the volume serial; compare
@@ -75,7 +86,7 @@ function readProfile(input, repositoryPath) {
     if (after.ino !== opened.ino || after.dev !== before.dev || after.size !== opened.size
         || after.mtimeNs !== opened.mtimeNs || after.isSymbolicLink()) fail("hermes_profile_changed");
     // Exact reviewed bytes also reject duplicate keys, extra keys and YAML tags.
-    if (!bytes.equals(Buffer.from(profileBytes)) || sha(bytes) !== binding.configDigest) fail("hermes_profile_config_invalid");
+    if (!bytes.equals(Buffer.from(expectedBytes)) || sha(bytes) !== binding.configDigest) fail("hermes_profile_config_invalid");
     return binding;
   } catch (error) {
     if (error.protocolAdmission) throw error;

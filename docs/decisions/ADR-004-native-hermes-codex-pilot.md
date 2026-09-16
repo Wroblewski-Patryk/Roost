@@ -1,5 +1,17 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+RF-RUNTIME-005B7 owner amendment: accept local bundled-skills synchronization into
+the private Hermes profile and local banner repository/tag/skill-index reads,
+including short local git processes. Network update checks remain disabled;
+neither effect authorizes sending task/code/private-path/company data. Standard
+public CLI, exact packet-derived route/reasoning/task tools, safe-mode environment,
+empty modern/legacy fallback and no worktree are implemented in the
+[startup contract](../architecture/hermes-minimal-startup-contract-v1.md).
+Only a fresh private Ready/input-bound startup receipt removes the local config
+blocker; it is synthetic/source-backed evidence, not a live-runtime or execution
+grant. No fork/private entrypoint/VM/new isolation system is introduced. B4's
+attestation authority and accepted residual risks remain. All six gates are false.
+
 Source evidence RF-RUNTIME-005B6: [public minimal startup contract](../architecture/hermes-minimal-startup-contract-v1.md)
 is NOT_SUPPORTED for strict minimal startup on this pin. Standard chat retains
 automatic skills/banner startup work despite its quiet single-query interface.
@@ -50,7 +62,7 @@ The original RF-RUNTIME-002 decision and its dated authority follow below.
 Date: 2026-09-15
 Status: accepted
 Owner: Roost architecture owner
-Decision version: 4 (RF-RUNTIME-005B4 owner-attestation amendment, 2026-09-16)
+Decision version: 5 (RF-RUNTIME-005B7 standard startup amendment, 2026-09-16)
 Scope: RF-RUNTIME-002 owner handoff; architecture and blocked adapter implementation
 Source reference: `owner-handoff.rf-runtime-002.hermes-first.v1`
 

@@ -70,7 +70,10 @@ full qualification. The B4 auth decision remains valid. Subsequent
 [B6 source analysis](hermes-minimal-startup-contract-v1.md) is complete with
 NOT_SUPPORTED for strict minimal startup on the pinned public CLI. It distinguishes
 same-owner refresh/recovery from multi-account rotation without reinstating an
-identity-fingerprint requirement. The sole next recommendation is B7's narrow owner
-decision on enumerated startup side effects; not started.
+identity-fingerprint requirement. B7 subsequently accepts those enumerated local
+startup effects and implements the source-backed startup receipt. Private profile
+v2 and the attestation binding were migrated without changing the attestation ID,
+original confirmation or expiry. B3 bytes/B5 negative evidence remain historical;
+the sole next recommendation is B8's internal-loop/budget source qualification.
 
 `implementationReady=false`; `executionSupported=false`; `pilotReady=false`; `liveAdmissionAllowed=false`; `pilotExecutionAuthorized=false`; `pilotExecutionStarted=false`.

@@ -14,6 +14,7 @@ import { assertRecoverySnapshot, classifyRecovery, recoveryError, workspaceDiges
 import { runObserver } from "./lib/agent-host-observer.mjs";
 import { prepareProviderLaunch } from "./lib/agent-host-provider-launch.mjs";
 import { prepareProviderInput } from "./lib/agent-host-provider-input.mjs";
+import { hermesStartupEnvironment } from "./lib/agent-host-hermes-startup.mjs";
 import { createDirectTurnGuard } from "./lib/agent-host-direct-turn.mjs";
 import { runHermesOwnedProcess } from "./lib/agent-host-hermes-quiet.mjs";
 import { collectWorkspaceEvidence } from "./lib/agent-host-workspace-evidence.mjs";
@@ -256,7 +257,9 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     };
     const providerInput = prepareProviderInput({ fresh: { taskContext, applicationContext }, claimed,
       currentCommit: preparedCommit, assertAuthority: assertProviderAuthority, secrets: [apiKey],
-      provider: config.executionProvider, repositoryPath });
+      provider: config.executionProvider, repositoryPath,
+      startupEnvironment: config.executionProvider?.kind === "hermes_codex" && config.executionProvider.profile
+        ? hermesStartupEnvironment(config.executionProvider.profile) : undefined });
     if (config.executionProvider?.kind === "hermes_codex") hermesBaseline = await duration.wait(collectWorkspaceEvidence({
       repositoryPath, expectedHead: preparedCommit, expectedBranch: taskContext.executionPacket.contract.singleTask.branch,
       inputSeal: providerInput.seal, secrets: [apiKey, claimed.leaseToken] }));
@@ -280,7 +283,9 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     await duration.wait(lease.refresh());
     // No awaited RPC/work remains between this admission check and spawn.
     const launch = prepareProviderLaunch({ provider: config.executionProvider, envelope: providerInput,
-      repositoryPath, codexCommand, sandbox, secrets: [apiKey, claimed.leaseToken] }, { fresh, claimed, currentCommit,
+      repositoryPath, codexCommand, sandbox, secrets: [apiKey, claimed.leaseToken],
+      startupEnvironment: config.executionProvider?.kind === "hermes_codex" && config.executionProvider.profile
+        ? hermesStartupEnvironment(config.executionProvider.profile) : undefined }, { fresh, claimed, currentCommit,
       assertAuthority: assertProviderAuthority, secrets: [apiKey] });
     assertProviderAuthority();
     let transportAccounting;
@@ -289,7 +294,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       // One stdin write; no JSON/tool-event interpretation or provider fallback.
       hermesAbort = new AbortController();
       const pending = hermesCollection = runHermesOwnedProcess({ executable: launch.command, argv: launch.args,
-        cwd: launch.cwd, environment: safeChildEnvironment(), attempt: claimed.id, input: launch.input, remainingMs: () => duration.remainingMs,
+        cwd: launch.cwd, environment: launch.candidateEnvironment, attempt: claimed.id, input: launch.input, remainingMs: () => duration.remainingMs,
         signal: hermesAbort.signal,
         secrets: [apiKey, claimed.leaseToken], assertAuthority: assertProviderAuthority,
         shutdownRequested: () => shutdownRequested || stopping });

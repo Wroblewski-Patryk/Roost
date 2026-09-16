@@ -66,6 +66,18 @@ function readAttestation(binding) {
   } finally { if (fd !== undefined) closeSync(fd); }
 }
 
+// Explicit owner-authorized profile migration only. Preserve identity, confirmation
+// and expiry; changing profile bytes must never silently renew the 90-day grant.
+export function rebindOwnerAttestation(previousBinding, nextBinding) {
+  const record = readAttestation(previousBinding);
+  if (previousBinding.profilePath !== nextBinding.profilePath
+      || previousBinding.hermesVersion !== nextBinding.hermesVersion
+      || previousBinding.hermesCommit !== nextBinding.hermesCommit
+      || previousBinding.authSourceClass !== nextBinding.authSourceClass) fail("hermes_owner_attestation_changed");
+  const bytes = JSON.stringify({ ...record, profileBindingDigest: ownerProfileDigest(nextBinding) }, null, 2) + "\n";
+  return { bytes, binding: { id: record.id, digest: sha(bytes) } };
+}
+
 // Trusted in-process seam for a FUTURE qualified status source. No CLI runner is
 // enabled: installed help establishes no secret-free output contract. In
 // particular, undefined is the explicit B4 owner-attestation-only route, not an

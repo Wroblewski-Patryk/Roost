@@ -57,8 +57,10 @@ B1/B2 historical findings and B4's authoritative single-owner attestation/residu
 The B5 handoff recommended B6 source-only startup/tool/rotation analysis. Subsequent
 [RF-RUNTIME-005B6](hermes-minimal-startup-contract-v1.md) is complete with
 NOT_SUPPORTED for strict minimal startup on the unchanged public CLI. B5's negative
-receipt remains diagnostic only. The sole next recommendation is B7's narrow owner
-decision on enumerated startup side effects; no probe, pin change or requirement
-waiver follows automatically.
+receipt remains diagnostic only. B7 subsequently accepts the enumerated local
+startup effects and adds a separate source-backed startup-policy issuer, not a
+PASS conversion of this negative loader observation. v1 bytes/schema and this
+private diagnostic stay unchanged. The sole next recommendation is B8's
+internal-loop/budget source qualification; no runtime probe starts automatically.
 
 `implementationReady=false`; `executionSupported=false`; `pilotReady=false`; `liveAdmissionAllowed=false`; `pilotExecutionAuthorized=false`; `pilotExecutionStarted=false`.
