@@ -7,6 +7,7 @@ import { nativeArtifactSnapshot, readDurableNativeReview } from "./agent-host-na
 import { nativeDigest, physicalIdentity, nativeFootprintPolicy } from "./agent-host-native-footprint.mjs";
 import { observeWindowsProcessIdentity } from "./agent-host-process-identity.mjs";
 import { writerLockFilename, recoveryLockFilename } from "./agent-host-writer-lock.mjs";
+import { bridgeRecoveryIdentity, legacyInputIdentityVersion } from "./agent-host-recovery-identity.mjs";
 const grants = new WeakMap(), hash = /^[a-f0-9]{64}$/, uuid = /^[a-f0-9-]{36}$/i;
 const fail = reason => { throw Error(reason); };
 const bytes = value => Buffer.from(JSON.stringify(value) + "\n");
@@ -43,7 +44,9 @@ function qualify(directory) {
   if (p.policy !== nativeFootprintPolicy || !["final", "cleaned"].includes(p.stage)) fail("native_recovery_terminal_evidence_missing");
   if (!b || !hash.test(b.rootIdentity) || !hash.test(b.ready) || !hash.test(b.preFootprintDigest) || !hash.test(p.postFootprintDigest ?? "")) fail("native_recovery_root_ready_chain_missing");
   if (!b.identity || !["executionId", "workspaceId", "taskId", "applicationId"].every(k => uuid.test(b.identity[k] ?? "")) || b.identity.attempt !== 1) fail("native_recovery_attempt_identity_missing");
-  if (!b.spent || b.spent.record?.attemptDigest !== nativeDigest(b.identity) || b.spent.record.state !== "dispatch_reserved") fail("native_recovery_spent_chain_missing");
+  if (!b.spent || b.spent.record?.state !== "dispatch_reserved") fail("native_recovery_spent_chain_missing");
+  bridgeRecoveryIdentity(b.identity, b.spent.record.attemptDigest,
+    b.spent.record.scope === "one_real_hermes_coding_smoke_b21_only" ? legacyInputIdentityVersion : undefined);
   if (b.writer?.name !== writerLockFilename || b.lease?.name !== `application-${nativeDigest(b.identity.applicationId)}.lease`
       || b.lease.record.attempt !== b.identity.executionId || b.lease.record.application !== nativeDigest(b.identity.applicationId)
       || b.lease.record.writer !== b.writer.record.ownerNonce) fail("native_recovery_lease_writer_chain_missing");

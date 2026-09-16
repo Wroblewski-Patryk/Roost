@@ -1,5 +1,12 @@
 # Windows startup environment v1
 
+Later B24 update: [recovery supplement v1](hermes-b24-recovery-supplement-v1.md)
+bridges the legacy identity ordering and records later verification separately.
+Original B21 REFUSED/acceptance_failed/spent remain unchanged; missing historical
+fixture ownership keeps recovery BLOCKED. No cleanup or execution grant follows.
+The outcomes and successor proposals below retain their historical scope.
+
+
 RF-RUNTIME-005B23 is **DONE**: it implements the minimal SystemDrive correction identified in
 [B22](hermes-b22-footprint-diagnosis-v1.md). It is an implementation/synthetic
 atom with no provider activation, installation change or B21 cleanup authority.

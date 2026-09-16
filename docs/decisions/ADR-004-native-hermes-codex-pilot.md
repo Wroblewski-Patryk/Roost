@@ -1,5 +1,15 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+RF-RUNTIME-005B24 [recovery evidence supplement](../architecture/hermes-b24-recovery-supplement-v1.md) implements versioned
+identity bridging and append-only later verification without rewriting the original
+B21 REFUSED review or spent authorization. Recovery remains **BLOCKED** on missing
+historical parent-fixture ownership; a present marker cannot recreate that proof.
+No cleanup, barrier, grant or provider activation is authorized. One proposed owner
+decision is an exact-identity recovery/adoption contract addressing that gap.
+ADR-004 execution v13, native-risk v7, profile/registry v5, startup v2 and all six
+false public flags remain unchanged. Earlier successor statements are historical.
+
+
 B23 implementation note: [Windows environment contract](../architecture/windows-startup-environment-v1.md)
 fixes the missing SystemDrive with verified derivation, token refusal and
 per-attempt startup policy/receipt v2. This changes no private profile,

@@ -105,7 +105,7 @@ function syntheticReview(t, { originalSerialization = true, badSignature = false
 }
 
 for (const [label, options, reason] of [
-  ["original serialization", {}, "native_recovery_spent_chain_missing"],
+  ["original serialization bridged by B24 still leaves refused verification", {}, "native_recovery_review_not_eligible"],
   ["matching serialization still leaves refused verification", { originalSerialization: false }, "native_recovery_review_not_eligible"],
   ["tampered signature", { badSignature: true }, "native_review_integrity_unproven"]
 ]) test("B22 recovery refuses " + label + " without changing evidence", t => {

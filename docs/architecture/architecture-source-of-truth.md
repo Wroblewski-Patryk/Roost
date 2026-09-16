@@ -1,5 +1,15 @@
 # Architecture Source Of Truth
 
+RF-RUNTIME-005B24 [recovery evidence supplement](hermes-b24-recovery-supplement-v1.md) implements versioned
+identity bridging and append-only later verification without rewriting the original
+B21 REFUSED review or spent authorization. Recovery remains **BLOCKED** on missing
+historical parent-fixture ownership; a present marker cannot recreate that proof.
+No cleanup, barrier, grant or provider activation is authorized. One proposed owner
+decision is an exact-identity recovery/adoption contract addressing that gap.
+ADR-004 execution v13, native-risk v7, profile/registry v5, startup v2 and all six
+false public flags remain unchanged. Earlier successor statements are historical.
+
+
 RF-RUNTIME-005B23 [Windows startup environment](windows-startup-environment-v1.md)
 derives SystemDrive from the verified local SYSTEMROOT, checks parent agreement, rejects
 unresolved configured path tokens and binds the value/physical root into startup receipt

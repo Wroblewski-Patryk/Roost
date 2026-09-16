@@ -1,5 +1,12 @@
 # Hermes root-scoped review and reconciliation v2
 
+Later B24 update: [recovery supplement v1](hermes-b24-recovery-supplement-v1.md)
+bridges the legacy identity ordering and records later verification separately.
+Original B21 REFUSED/acceptance_failed/spent remain unchanged; missing historical
+fixture ownership keeps recovery BLOCKED. No cleanup or execution grant follows.
+The outcomes and successor proposals below retain their historical scope.
+
+
 [B21 real validation](hermes-b21-coding-smoke-v1.md) records acceptance_failed
 for safe extra paths with independent verification REFUSED. Evidence and fixture
 remain intact; scope failure does not become a security violation or authorize

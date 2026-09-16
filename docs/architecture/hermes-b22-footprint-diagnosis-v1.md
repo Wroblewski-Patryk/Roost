@@ -1,5 +1,12 @@
 # Hermes B22 preserved-footprint diagnosis v1
 
+Later B24 update: [recovery supplement v1](hermes-b24-recovery-supplement-v1.md)
+bridges the legacy identity ordering and records later verification separately.
+Original B21 REFUSED/acceptance_failed/spent remain unchanged; missing historical
+fixture ownership keeps recovery BLOCKED. No cleanup or execution grant follows.
+The outcomes and successor proposals below retain their historical scope.
+
+
 B23 follow-up: the [Windows environment contract](windows-startup-environment-v1.md)
 now fixes the demonstrated SystemDrive omission and rejects unresolved startup
 path tokens. The historical findings below retain their B22 timing: attribution
