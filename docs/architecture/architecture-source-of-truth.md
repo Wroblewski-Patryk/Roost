@@ -7,9 +7,10 @@ Only a fresh in-process native receipt removes the local candidate's stop blocke
 API/config declarations do not. Hermes now targets that backend, Direct is unchanged,
 and all six execution/pilot/live flags remain false. Earlier raw-process stop-gap
 statements below are historical for this backend. Configuration/auth/tool/turn/
-budget/lifecycle gates remain. RF-RUNTIME-005B1
-[private-profile preflight](hermes-private-profile-preflight-v1.md) is BLOCKED on
-the public profile-only credential-source contract; OAuth remains unstarted.
+budget/lifecycle gates remain. RF-RUNTIME-005B2
+[credential-source qualification](hermes-credential-source-qualification-v1.md) is
+NOT_QUALIFIED for stable 0.21.3 and the inspected upstream snapshot. An external
+Worker guard is proposed, pending owner decision; profile/OAuth remain unstarted.
 
 Current transport amendment (RF-RUNTIME-005A):
 [supervised quiet v1](hermes-supervised-quiet-v1.md) retains stable Hermes 0.21.2

@@ -3,12 +3,13 @@
 RF-RUNTIME-005C [native owned-job qualification](../architecture/windows-owned-process-job-v1.md)
 is complete for local fixture process lifetime/cleanup. Native receipt validation
 is required per attempt; missing proof remains fail-closed.
-[RF-RUNTIME-005B1 private-profile preflight](../architecture/hermes-private-profile-preflight-v1.md)
-is **BLOCKED before profile creation**: the pin can import Codex CLI credentials
-on selected auth errors without a profile-config opt-out. The next single atom is
-**RF-RUNTIME-005B2 — resolve and qualify the public profile-only Codex credential-source
-contract**. OAuth remains unstarted. Auth/config/tool/turn/budget/lifecycle blockers
-and all six false runtime flags remain; no automatic model run or rollout follows.
+[RF-RUNTIME-005B2 credential-source qualification](../architecture/hermes-credential-source-qualification-v1.md)
+is **NOT_QUALIFIED** for current stable 0.21.3 and the inspected immutable upstream
+snapshot; public provider/middleware/secret-source extensions do not establish the
+complete auth boundary. Exactly one proposed next atom: **RF-RUNTIME-005B3 — specify
+and qualify an external native Worker credential-access guard with synthetic data**.
+Owner acceptance is required first; B3 is not started. The existing 0.21.2 pin, all
+six false gates and the pending profile/OAuth setup remain unchanged.
 
 The repository cleanup established a stable baseline for continued product
 development. No Codex Agent Host issue queue is stored in the repository.

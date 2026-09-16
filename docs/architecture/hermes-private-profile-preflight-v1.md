@@ -1,5 +1,9 @@
 # Hermes private profile preflight v1
 
+Subsequent RF-RUNTIME-005B2 [credential-source qualification](hermes-credential-source-qualification-v1.md)
+also returns NOT_QUALIFIED for current stable/upstream and records the next proposed
+external guard. The B1 stop and next-atom statement below are its dated result.
+
 RF-RUNTIME-005B1, 2026-09-16. Verdict: **BLOCKED before profile creation**.
 The accepted task required an enforceable private Blank Slate configuration and
 an OAuth preflight, with no credential-store reads, login or model invocation.

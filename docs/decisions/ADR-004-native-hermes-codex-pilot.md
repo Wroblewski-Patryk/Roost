@@ -14,10 +14,11 @@ remain false; native tree ownership, effective private configuration and remaini
 budgets/auth/tool boundaries are still unqualified. One Worker attempt, sealed
 stdin, untrusted bounded output and independent review of exact dirty-byte evidence
 are mandatory. No agent commit/push/deploy or hidden fallback is allowed.
-RF-RUNTIME-005B1 [private-profile preflight](../architecture/hermes-private-profile-preflight-v1.md)
-is BLOCKED before configuration/OAuth: no qualified public profile-only credential
-source policy. RF-RUNTIME-005B2 must resolve that contract first; no live execution
-or change to this provider decision is authorized here.
+RF-RUNTIME-005B2 [credential-source qualification](../architecture/hermes-credential-source-qualification-v1.md)
+finds stable 0.21.3 and the inspected upstream snapshot NOT_QUALIFIED. An external
+Worker credential-access guard is proposed for RF-RUNTIME-005B3, subject to owner
+acceptance; it is not implemented or accepted by this ADR. Hermes remains an
+unmodified dependency at 0.21.2. Profile/OAuth and all live execution stay blocked.
 Future local Ollama (gpt-oss or Mistral/Devstral) stays planned/disabled until
 confirmed disk expansion and separate resource/quality qualification.
 The original RF-RUNTIME-002 decision and its dated authority follow below.
