@@ -14,8 +14,10 @@ remain false; native tree ownership, effective private configuration and remaini
 budgets/auth/tool boundaries are still unqualified. One Worker attempt, sealed
 stdin, untrusted bounded output and independent review of exact dirty-byte evidence
 are mandatory. No agent commit/push/deploy or hidden fallback is allowed.
-The sole next atom is owner-present Codex OAuth plus minimal Blank Slate config
-(RF-RUNTIME-005B), separately delegated; no live execution is authorized here.
+RF-RUNTIME-005B1 [private-profile preflight](../architecture/hermes-private-profile-preflight-v1.md)
+is BLOCKED before configuration/OAuth: no qualified public profile-only credential
+source policy. RF-RUNTIME-005B2 must resolve that contract first; no live execution
+or change to this provider decision is authorized here.
 Future local Ollama (gpt-oss or Mistral/Devstral) stays planned/disabled until
 confirmed disk expansion and separate resource/quality qualification.
 The original RF-RUNTIME-002 decision and its dated authority follow below.

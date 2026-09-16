@@ -7,7 +7,9 @@ Only a fresh in-process native receipt removes the local candidate's stop blocke
 API/config declarations do not. Hermes now targets that backend, Direct is unchanged,
 and all six execution/pilot/live flags remain false. Earlier raw-process stop-gap
 statements below are historical for this backend. Configuration/auth/tool/turn/
-budget/lifecycle gates remain; RF-RUNTIME-005B owner-present setup is next.
+budget/lifecycle gates remain. RF-RUNTIME-005B1
+[private-profile preflight](hermes-private-profile-preflight-v1.md) is BLOCKED on
+the public profile-only credential-source contract; OAuth remains unstarted.
 
 RF-RUNTIME-005A [supervised quiet v1](hermes-supervised-quiet-v1.md) supersedes
 waiting for stable stream-json for the first supervised pilot. Existing 0.21.2
@@ -15,7 +17,8 @@ public argv is accepted; sealed input, bounded UTF-8 stdout/stderr, one Worker
 attempt and exact Git-visible dirty-byte review evidence have synthetic tests.
 Native owned-tree stop, sealed effective config, auth, internal turns, tool
 isolation and hard cost/token limits remain blocked. No readiness flag is raised.
-Only RF-RUNTIME-005B owner-present Codex OAuth + minimal Blank Slate config is next.
+RF-RUNTIME-005B1 stopped before profile creation; credential-source qualification
+(RF-RUNTIME-005B2) now precedes profile sealing and owner-present OAuth.
 The RF003/RF004 incompatibility and next-task statements below are dated history.
 
 RF-RUNTIME-004 [replacement-pin proposal v1](hermes-replacement-pin-proposal-v1.md)
