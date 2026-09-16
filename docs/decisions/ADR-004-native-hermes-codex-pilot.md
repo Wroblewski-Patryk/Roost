@@ -1,5 +1,12 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+RF-RUNTIME-005B10 source evidence: [native tool boundary](../architecture/hermes-native-tool-boundary-v1.md)
+selects roost-hermes-native-audited-coding-v1. Source qualification is complete;
+implementation is **BLOCKED on one owner decision** accepting the stated native
+file/shell residual risk. This is a proposal, not an accepted waiver or version 7.
+Version 6, current runtime/private configuration and all six false flags remain.
+The only proposed successor is B11 implementation after that explicit acceptance.
+
 RF-RUNTIME-005B9 owner amendment (version 6): accept the pinned public CLI's
 unavailable physical model/tool/retry counters and hard token/cost caps as residual
 pilot risk. Use small coding tasks, 24 logical turns, api_max_retries 2, an original

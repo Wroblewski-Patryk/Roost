@@ -1,5 +1,13 @@
 # Architecture Source Of Truth
 
+RF-RUNTIME-005B10 [native tool qualification](hermes-native-tool-boundary-v1.md)
+is source-only complete. Recommended roost-hermes-native-audited-coding-v1 is
+**BLOCKED on one owner decision**: acceptance of the disclosed same-owner native
+file/shell residual risk. Public write-root checks cover guarded file writes;
+reads, shell/helpers, network effects and Windows path races are not contained.
+B11 implementation is proposed only after that acceptance. ADR-004 remains v6;
+no runtime/private changes, real launch or activation; all six flags stay false.
+
 RF-RUNTIME-005B9 [practical attempt policy](hermes-practical-attempt-budget-v1.md)
 is implemented under ADR-004 v6: the owner accepts unavailable physical counters
 and hard token/cost enforcement for the supervised pilot. coding-small-v1 uses
