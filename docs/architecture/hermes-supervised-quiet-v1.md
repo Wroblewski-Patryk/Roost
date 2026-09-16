@@ -1,5 +1,13 @@
 # Hermes supervised quiet adapter v1
 
+RF-RUNTIME-005B8 [attempt/budget qualification](hermes-attempt-budget-contract-v1.md)
+is source-only complete and **BLOCKED** for a coding pilot. One Roost attempt may
+contain multiple controlled model/tool exchanges. Public max-turns is not a
+physical-call cap; run-budget is advisory and quiet hides internal counters and
+partial/exhaustion details. Selected coding-small-v1 requires a Worker pre-dispatch
+budget boundary which this CLI does not expose. No runtime/private changes or
+activation; all six flags remain false. B9 is proposed qualification only.
+
 RF-RUNTIME-005C amendment: the production Worker branch now uses
 [native owned-job v1](windows-owned-process-job-v1.md), qualified with real local
 fixture processes. It replaces the raw-child collector's missing ownership proof.

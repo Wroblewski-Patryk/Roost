@@ -1,5 +1,13 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+RF-RUNTIME-005B8 source evidence: [attempt/budget qualification](../architecture/hermes-attempt-budget-contract-v1.md)
+selects a finite coding-small-v1 candidate but is **BLOCKED** by the absence of a
+supported Worker pre-dispatch budget boundary on the selected quiet CLI. One
+attempt may contain multiple model/tool exchanges; public max-turns/run-budget do
+not prove hard call/token caps. This is qualification evidence, not a new owner
+risk waiver or ADR version. Version 5, same-owner attestation, all six false gates
+and the real-launch denial remain unchanged. B9 is proposed source-only work.
+
 RF-RUNTIME-005B7 owner amendment: accept local bundled-skills synchronization into
 the private Hermes profile and local banner repository/tag/skill-index reads,
 including short local git processes. Network update checks remain disabled;

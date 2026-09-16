@@ -18,10 +18,15 @@ recorded NOT_SUPPORTED for strict minimal startup. B7 resolves that requirement
 through explicit owner acceptance of local skills sync/banner prefetch, with
 network updates off. Exact Worker startup policy and Ready/input-bound receipt are
 implemented and synthetically tested; only the local config blocker is removed
-with fresh proof. Real Hermes launch remains denied. Exactly one next atom:
-**RF-RUNTIME-005B8 — source-only qualification of internal conversation/transport
-retry and hard-budget boundaries**. Not started. The 0.21.2 pin, native Job
-lifecycle, B4 residual risks and all six false runtime gates remain unchanged.
+with fresh proof. Real Hermes launch remains denied.
+[RF-RUNTIME-005B8 attempt/budget qualification](../architecture/hermes-attempt-budget-contract-v1.md)
+is source-only complete: **BLOCKED** by the missing Worker pre-dispatch enforcement
+boundary for physical model/tool calls and output reservations. Selected
+coding-small-v1 is a proposed bounded coding contract; no runtime implementation
+or live authority follows. Exactly one next atom: **RF-RUNTIME-005B9 — source-only
+qualification of a supported Worker pre-dispatch enforcement point**. Not started.
+The 0.21.2 pin, native Job lifecycle, B4 residual risks and all six false runtime
+gates remain unchanged.
 
 The first-provider choice is resolved by RF-RUNTIME-002 /
 [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md): native Hermes using

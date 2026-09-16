@@ -91,9 +91,11 @@ links, five additional exact-pin source comparisons, privacy and diff checks pas
 Four API projection tests confirm that private proof cannot activate public gates.
 Remaining task fixture directories/native fixture processes: zero.
 
-**Exactly one next atom: RF-RUNTIME-005B8 — source-only qualification of the
-internal conversation/transport-retry and hard-budget boundary.** No execution or
-next atom starts automatically. B4's same-owner attestation and accepted silent
+Subsequent [RF-RUNTIME-005B8 attempt/budget qualification](hermes-attempt-budget-contract-v1.md)
+is source-only complete and BLOCKED on the Worker pre-dispatch enforcement boundary.
+Its selected coding-small-v1 contract does not change B7 runtime/profile bytes or
+authorize execution. Exactly one next atom is the proposed B9 source-only
+qualification of that boundary. B4's same-owner attestation and accepted silent
 account-switch/unreported-session-loss risks remain unchanged.
 
 ## B6 historical source qualification
