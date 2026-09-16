@@ -1,5 +1,12 @@
 # Open decisions
 
+Trwała własność fixture po restarcie pozostaje **BLOCKED**. [Diagnoza i tabela gotowości](../architecture/agent-delivery-readiness.md)
+(RF-RUNTIME-005B27) wskazują jedną potrzebną zmianę kontraktu: pierwotny zapis
+przy utworzeniu i obowiązkowe potwierdzenie pełnego dowodu przed wznowieniem Job.
+To wynik analizy, bez poprawki runtime, launchu lub zmiany sześciu flag.
+B21–B26 pozostają zamkniętą historią; wcześniejsze propozycje następnego etapu
+należy czytać razem z tą obecną diagnozą.
+
 RF-RUNTIME-005B26 [adopted recovery](../architecture/hermes-b26-adopted-recovery-v1.md) defines the separately owner-authorized
 one-use cleanup of the exact B25-adopted B21 fixture, then its lease and Writer.
 A signed append-only consumption/intent chain, exclusive controller and recovery
