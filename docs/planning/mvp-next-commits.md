@@ -1,11 +1,12 @@
 # Next development work
 
-RF-RUNTIME-005B28 wdraża zatwierdzony [kontrakt własności przed resume](../architecture/fixture-ownership-before-resume.md): pierwotny trwały zapis, pełne powiązanie
-Ready/runtime/rzeczywistego zawieszonego Job i potwierdzenie przed ResumeThread.
-Zwykła rekoncyliacja odzyskuje tylko cleanup. Zakres: kod i testy syntetyczne;
-bez providera i zmiany sześciu flag. [Tabela gotowości](../architecture/agent-delivery-readiness.md)
-wskazuje jeden kolejny dowód: syntetyczne zadanie Roost → Worker → wynik/review.
-Diagnoza B27 oraz dalsze propozycje B21–B26 opisują stan historyczny.
+Syntetyczny dowód Roost → Worker → handshake → wynik/review pozostaje
+**BLOCKED** (RF-RUNTIME-005B29). [Diagnoza i tabela gotowości](../architecture/agent-delivery-readiness.md)
+wskazują odmowę przed claim i publicznym launch oraz brak połączenia własności
+fixture z zadaniem Workera. B28 kwalifikuje składniki, nie cały przepływ.
+Potrzebny jest jeden ograniczony kontrakt syntetycznego dopuszczenia przez
+istniejące granice; osobny helper nie stanowi dowodu end-to-end. Bez zmian kodu,
+kontraktów lub sześciu flag. Dalsze propozycje B21–B28 są historyczne.
 
 RF-RUNTIME-005B26 [adopted recovery](../architecture/hermes-b26-adopted-recovery-v1.md) defines the separately owner-authorized
 one-use cleanup of the exact B25-adopted B21 fixture, then its lease and Writer.
