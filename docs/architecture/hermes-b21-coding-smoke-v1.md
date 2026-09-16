@@ -1,5 +1,10 @@
 # Hermes B21 coding smoke v1
 
+Follow-up: [B22 read-only diagnosis](hermes-b22-footprint-diagnosis-v1.md)
+now records an independent test PASS, unchanged extras and two recovery blockers.
+B21 remains acceptance_failed/spent; the original REFUSED result and historical
+next-step statements below are preserved, not replaced by the later test.
+
 RF-RUNTIME-005B21, 2026-09-16. ADR-004 v13 authorizes exactly one new isolated
 coding smoke after B20 recovery, with no whole-task retry, resume or fallback.
 This does not replay B13/B14/B17 or reactivate B20's spent recovery exception.

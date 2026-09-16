@@ -1,12 +1,16 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
-B21 execution outcome: **BLOCKED**, one provider start, exit 0, durable
-acceptance_failed with nine content changes and no protected violation. The
-independent test refused the expanded diff; exact implementation/test byte
-comparison is not PASS. Signed evidence, owned fixture, Writer and application
-lease remain retained; B21 is spent. Installation/Job checks passed. One next
-owner action is a B22 read-only diagnosis and recovery plan, without deletion or
-new model execution. All six flags remain false.
+B22 read-only diagnosis: **BLOCKED attribution, eight unknown entries**. The
+[independent diagnosis](../architecture/hermes-b22-footprint-diagnosis-v1.md)
+identifies the exact unchanged cache-shaped entries and confirms the arithmetic
+test PASS. B21 remains acceptance_failed/spent. Missing SystemDrive is a proven
+Worker environment omission, not a proven writer attribution. Recovery still
+refuses due to identity serialization order and signed REFUSED verification.
+No cleanup or new grant occurred. Proposed B23 is a bounded SystemDrive contract
+correction with synthetic tests; it needs separate owner authorization and does
+not authorize a provider run or recovery. This diagnostic note does not amend
+execution authority: ADR version 13, native-risk v7 and all six false flags remain.
+Earlier execution outcomes below retain their original scope and timing.
 
 RF-RUNTIME-005B21 owner amendment (version 13), 2026-09-16: authorize exactly
 one NEW [coding smoke under B19 durable review](../architecture/hermes-b21-coding-smoke-v1.md)

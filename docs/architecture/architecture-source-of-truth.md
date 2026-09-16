@@ -1,17 +1,17 @@
 # Architecture Source Of Truth
 
-RF-RUNTIME-005B21 [one new coding smoke](hermes-b21-coding-smoke-v1.md) is **BLOCKED** after
-one authorized start under ADR-004 v13. Exit 0 is only a candidate: durable
-review records acceptance_failed, nine content changes, scope review required
-and zero protected violations. Independent test discovery refused the expanded
-diff; read-only exact-byte comparison confirms the repair and unchanged test,
-not post-test PASS. Installation and Job cleanup passed; the signed final review,
-owned fixture, Writer and edit-only application lease are retained. B21 is spent;
-B13/B14/B17 records and B20 terminal recovery remain intact. One next owner
-action is B22 read-only diagnosis of the eight extra entries and a concrete
-recovery plan; no deletion or new model run follows. All six public flags remain
-false; profile/registry v5 and native-risk v7 are unchanged. Earlier next-step and
-recovery-state statements below are historical.
+RF-RUNTIME-005B22 [preserved-footprint diagnosis](hermes-b22-footprint-diagnosis-v1.md)
+is complete with **BLOCKED attribution (8 unknown entries)**. All eight additions are
+unchanged: five directories and three cache-shaped binaries under a literal unresolved
+SystemDrive path. The Worker drops SystemDrive, but the creating process is unproven.
+Independent system Node now passes the unchanged arithmetic test; the exact repair and
+baseline are verified. B21 remains acceptance_failed and spent. Ordinary recovery is
+blocked by identity serialization order and the original signed REFUSED verification; no
+B21 evidence, fixture, lease or Writer was changed. One proposed owner action is B23: a
+validated SystemDrive environment correction with synthetic tests, without provider
+execution or cleanup. See the diagnosis for the separate recovery evidence requirements.
+ADR-004 v13, profile/registry v5, native-risk v7 and all six false public flags remain
+unchanged. Earlier outcomes and next-step statements below are historical.
 
 RF-RUNTIME-005B20 [exact legacy B17 recovery](hermes-b20-legacy-recovery-v1.md) is **DONE**
 under the explicit ADR-004 v12 owner exception. Exact application lease then
