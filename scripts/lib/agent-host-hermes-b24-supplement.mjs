@@ -220,6 +220,44 @@ export function readPreservedB21AdoptionEvidence(handle, directory) {
     processChainDigest: nativeDigest([s.review.payload.binding.writer.record.ownerProcess, s.review.payload.job]),
     processObservation: "original_processes_absent" });
 }
+// B26 continuation checks deliberately omit only the resources its separately
+// signed deletion journal accounts for. This read-only helper grants no authority.
+export function inspectB21RetainedEvidence(options, frozen) {
+  const reportProof = fileProof(options.reportPath), report = JSON.parse(reportProof.bytes);
+  const installed = installation(options.installation, report.installation);
+  const assertRetained = ({ leaseAbsent = false, writerAbsent = false } = {}) => {
+    const r = readDurableNativeReview(options.reviewDirectory), p = r.payload, b = p.binding;
+    if (nativeDigest(artifact(r)) !== nativeDigest(frozen.binding.originalReview)
+        || r.directoryIdentity !== frozen.binding.originalReviewDirectory || r.keyIdentity !== frozen.binding.originalKeyIdentity
+        || nativeDigest(p) !== frozen.binding.originalPayloadDigest || nativeDigest(b) !== frozen.binding.originalBindingDigest)
+      fail("native_b26_original_evidence_changed");
+    const controls = [b.writer, b.lease, b.spent].map((old, index) => {
+      if (!/^[a-zA-Z0-9_.-]+$/.test(old.name) || [".", ".."].includes(old.name)) fail("native_b26_artifact_invalid");
+      const file = path.join(path.dirname(options.reviewDirectory), old.name);
+      const absent = index === 0 ? writerAbsent : index === 1 ? leaseAbsent : false;
+      let exists = true; try { lstatSync(file); } catch (e) { if (e.code !== "ENOENT") throw e; exists = false; }
+      if (absent ? exists : !exists) fail("native_b26_control_presence_changed");
+      if (exists) { const now = nativeArtifactSnapshot(file); if (now.identity !== old.identity || now.digest !== old.digest) fail("native_b26_control_changed"); }
+      return artifact(old);
+    });
+    const nowReport = fileProof(options.reportPath);
+    if (nativeDigest([controls, { identityDigest: nowReport.identityDigest, digest: nowReport.digest }]) !== frozen.observation.originalArtifactsDigest)
+      fail("native_b26_report_changed");
+    const paths = { state: path.dirname(options.reviewDirectory), fixture: report.cleanupRequiredAt, repository: path.join(report.cleanupRequiredAt, "repository"),
+      marker: path.join(report.cleanupRequiredAt, ".roost-attempt-owner"), scopeMarker: path.join(report.cleanupRequiredAt, ".roost-smoke-scope"),
+      originalReview: options.reviewDirectory, originalReport: options.reportPath, manifest: options.installation.manifestPath,
+      installation: options.installation.attestationPath, supplement: options.supplementDirectory };
+    if (nativeDigest(Object.fromEntries(Object.entries(paths).map(([k, file]) => [k, nativeDigest(file)]))) !== nativeDigest(frozen.pathDigests)) fail("native_b26_path_changed");
+    installed.assertFresh();
+    if (installed.digest !== frozen.observation.installationSnapshotDigest || installed.physicalFilesDigest() !== frozen.runtime.installationFilesIdentityDigest
+        || report.installation.executableDigest !== frozen.runtime.providerExecutableDigest
+        || sha(readFileSync(process.execPath)) !== frozen.runtime.nodeExecutableDigest || physicalIdentity(process.execPath, false) !== frozen.runtime.nodeExecutableIdentity
+        || nativeDigest([pin.officialSource, pin.version, pin.commit]) !== frozen.runtime.approvedPinDigest) fail("native_b26_runtime_changed");
+    const missing = processMissing(p); if (missing.length) fail(missing[0]);
+    return { root: report.cleanupRequiredAt, binding: b };
+  };
+  return Object.freeze({ assertRetained });
+}
 export function createB21RecoverySupplement(options) {
   if (typeof options.assertOwnerAuthority !== "function") fail("native_supplement_owner_authority_required");
   options.assertOwnerAuthority();

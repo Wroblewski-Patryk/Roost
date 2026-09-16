@@ -1,5 +1,12 @@
 # B25 exact B21 legacy fixture adoption
 
+Later B26 update: [exact adopted recovery](hermes-b26-adopted-recovery-v1.md)
+records the separately authorized consumption/cleanup and terminal resource state.
+Original review, supplement, adoption and spent are preserved; recovery does not
+rewrite historical acceptance or grant another execution. Earlier ownership,
+retention and successor statements below describe their original observation.
+
+
 RF-RUNTIME-005B25 is **DONE**. It implements the owner's explicitly approved adoption of the
 exact preserved synthetic B21 fixture. The sole exception is the historical
 absence of its original opaque parent-fixture ownership receipt. Adoption records

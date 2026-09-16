@@ -2,7 +2,7 @@
 import path from 'node:path';
 import os from 'node:os';
 import { randomUUID, randomBytes, createHash, createHmac } from 'node:crypto';
-import { realpathSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import { realpathSync, mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { createHermesB21CodingFixture } from './hermes-coding-smoke.mjs';
 import { createNativeOwnedTemp, inspectNativeOwnedTemp, cleanupNativeOwnedTemp, nativeDigest, physicalIdentity, captureNativeFootprint, compareNativeFootprint, nativeFootprintPolicy } from '../lib/agent-host-native-footprint.mjs';
 import { nativeArtifactSnapshot } from '../lib/agent-host-native-review.mjs';
@@ -10,8 +10,8 @@ import { legacyRecoveryIdentityDigest, legacyInputIdentityVersion } from '../lib
 import { recoverySupplementDirectory } from '../lib/agent-host-recovery-supplement.mjs';
 import contract from '../lib/agent-host-provider-contract.cjs';
 const sha = b => createHash('sha256').update(b).digest('hex'), h = 'a'.repeat(64);
-export function syntheticRecoveryFixture(t, ownership = false) {
-  const f = createHermesB21CodingFixture(); t.after(() => f.cleanup());
+export function syntheticRecoveryFixture(t, ownership = false, { allowRemovedFixture = false } = {}) {
+  const f = createHermesB21CodingFixture(); t.after(() => { if (!allowRemovedFixture || existsSync(f.root)) f.cleanup(); });
   const attempt = randomUUID(), proof = createNativeOwnedTemp(realpathSync.native(os.tmpdir()), attempt), state = inspectNativeOwnedTemp(proof, attempt).root;
   t.after(() => cleanupNativeOwnedTemp(proof, attempt));
   const pin = contract.registry.providers.find(p => p.kind === "hermes_codex");

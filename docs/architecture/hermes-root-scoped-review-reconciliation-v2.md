@@ -1,5 +1,12 @@
 # Hermes root-scoped review and reconciliation v2
 
+Later B26 update: [exact adopted recovery](hermes-b26-adopted-recovery-v1.md)
+records the separately authorized consumption/cleanup and terminal resource state.
+Original review, supplement, adoption and spent are preserved; recovery does not
+rewrite historical acceptance or grant another execution. Earlier ownership,
+retention and successor statements below describe their original observation.
+
+
 Later B25 update: [exact owner legacy adoption](hermes-b25-legacy-adoption-v1.md)
 records explicit acceptance of the missing historical ownership receipt without
 backfilling it or altering B21/B24. It grants no cleanup or execution authority;

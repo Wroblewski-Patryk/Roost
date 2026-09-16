@@ -1,5 +1,16 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+RF-RUNTIME-005B26 [adopted recovery](../architecture/hermes-b26-adopted-recovery-v1.md) defines the separately owner-authorized
+one-use cleanup of the exact B25-adopted B21 fixture, then its lease and Writer.
+A signed append-only consumption/intent chain, exclusive controller and recovery
+barrier fence each identity-checked deletion and deterministic resume. Original
+B21/B24/B25 evidence and spent records remain historical truth; successful recovery
+is not task acceptance. All six flags stay false, with no provider/API/configuration
+authority or production autonomy. The proposed next atom is B27 durable original
+fixture-ownership evidence at creation, source/synthetic only. See the contract for
+the verified terminal state; earlier successor statements below are historical.
+
+
 RF-RUNTIME-005B25 [exact legacy fixture adoption](../architecture/hermes-b25-legacy-adoption-v1.md) implements the owner's
 one-shot acceptance of B21's missing historical parent-fixture ownership proof.
 It freezes canonical paths, physical objects and all B21/B24/control/runtime
