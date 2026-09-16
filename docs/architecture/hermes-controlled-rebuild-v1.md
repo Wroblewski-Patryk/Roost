@@ -1,5 +1,7 @@
 # Hermes controlled rebuild and split attestation v1
 
+Subsequent [B17 execution](hermes-b17-coding-smoke-v1.md) was separately authorized under ADR-004 v10 and is BLOCKED; the no-execution statements here describe B16 only.
+
 RF-RUNTIME-005B16, 2026-09-16: **DONE — canonical rebuild and file-only admission
 verified, with no provider/model execution.** Owner-authorized maintenance of the existing
 Hermes 0.21.2 installation at `939e45c91d751fadd94dcd1b873ac3cb44846213`.

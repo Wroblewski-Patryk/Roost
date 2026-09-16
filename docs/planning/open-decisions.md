@@ -1,5 +1,16 @@
 # Open decisions
 
+RF-RUNTIME-005B17 [one-shot coding smoke](../architecture/hermes-b17-coding-smoke-v1.md) is **BLOCKED** after
+one authorized provider start under ADR-004 v10. Root exit 0 was rejected by
+native review (unexpected_changed_path); exact repair and independent test PASS
+were not established. Genuine Job cleanup and owned fixture removal passed.
+Separate post-result full installation readback passed without receipt changes.
+Writer and one application lease remain held for reconciliation; all B13/B14/B17
+authorizations are spent. All six public flags remain false. Exactly one proposed
+successor is B18 source-only footprint diagnosis and reconciliation-plan
+qualification, with no runtime/private mutation or new execution. Earlier
+B16/no-launch/version-9 and successor statements below are historical.
+
 RF-RUNTIME-005C [native owned-job qualification](../architecture/windows-owned-process-job-v1.md)
 is complete for local fixture process lifetime/cleanup. Native receipt validation
 is required per attempt; missing proof remains fail-closed.

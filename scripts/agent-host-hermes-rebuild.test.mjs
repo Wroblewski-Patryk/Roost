@@ -4,7 +4,7 @@ import path from "node:path";
 import os from "node:os";
 import { randomUUID, createHash } from "node:crypto";
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync, lstatSync, realpathSync } from "node:fs";
-import { verifyHermesSplitInventory, installationInventory } from "./lib/agent-host-hermes-installation-split.mjs";
+import { verifyHermesSplitInventory, installationInventory, assertHermesSplitFreshness } from "./lib/agent-host-hermes-installation-split.mjs";
 import { swapHermesEnvironment } from "./lib/agent-host-hermes-rebuild-transaction.mjs";
 import { acquireWriterLock } from "./lib/agent-host-writer-lock.mjs";
 import { renderHermesNativeProfile, hermesNativeProfileVersion, hermesLegacyNativeProfileDigest } from "./lib/agent-host-hermes-profile.mjs";
@@ -41,6 +41,15 @@ test("inventory admits package code names but never opens credential data", t =>
   const root = temp(t); writeFileSync(path.join(root, "cookies.py"), "# synthetic source"); writeFileSync(path.join(root, "credentials.py"), "# synthetic source");
   assert.equal(installationInventory(root).length, 2);
   writeFileSync(path.join(root, "auth.json"), "private fixture"); assert.throws(() => installationInventory(root), /inventory_unsafe/);
+});
+test("full SHA observation freshness rejects copies, changed bytes, additions, missing files and regenerated caches", t => {
+  const x = split(t), proof = x.verify(); assertHermesSplitFreshness(proof);
+  assert.throws(() => assertHermesSplitFreshness(structuredClone(proof)), /observation_unproven/);
+  writeFileSync(path.join(x.checkout, "module.py"), "x = 2\n"); assert.throws(() => assertHermesSplitFreshness(proof), /inventory_changed/);
+  writeFileSync(path.join(x.checkout, "module.py"), "x = 1\n"); assert.throws(() => assertHermesSplitFreshness(proof), /inventory_changed/);
+  const y = split(t), fresh = y.verify(); writeFileSync(path.join(y.checkout, "extra.py"), "extra"); assert.throws(() => assertHermesSplitFreshness(fresh), /inventory_changed/);
+  rmSync(path.join(y.checkout, "extra.py")); rmSync(y.cachePath); assert.throws(() => assertHermesSplitFreshness(fresh), /inventory_changed/);
+  writeFileSync(y.cachePath, y.cache); assert.throws(() => assertHermesSplitFreshness(fresh), /inventory_changed/);
 });
 test("generated receipt refresh changes only generated evidence; unexplained body/header/source/orphan fail", t => {
   const x = split(t), immutableBefore = sha(x.bytes); x.verify();

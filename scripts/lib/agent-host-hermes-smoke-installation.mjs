@@ -3,10 +3,10 @@
 // evidence; exact registry/source hashes and a fresh complete inventory bind it.
 import path from "node:path";
 import { createHash } from "node:crypto";
-import { createReadStream, readFileSync, readdirSync, lstatSync, realpathSync } from "node:fs";
+import { createReadStream, readFileSync, readdirSync, lstatSync, realpathSync, existsSync } from "node:fs";
 import contract from "./agent-host-provider-contract.cjs";
 import { physicalIdentity } from "./agent-host-native-footprint.mjs";
-import { verifyHermesSplitInventory } from "./agent-host-hermes-installation-split.mjs";
+import { verifyHermesSplitInventory, assertHermesSplitFreshness } from "./agent-host-hermes-installation-split.mjs";
 import { inspectHermesProfile, hermesNativeProfileVersion } from "./agent-host-hermes-profile.mjs";
 const pin = contract.registry.providers.find(p => p.kind === "hermes_codex");
 const proofs = new WeakMap();
@@ -58,7 +58,10 @@ export async function verifyHermesSmokeInstallation({ attestationPath, manifestP
         || manifest.executable !== path.join(checkout.path, "venv", "Scripts", "hermes.exe")) denied("hermes_smoke_layout_invalid");
     const timeout = AbortSignal.timeout(60000); let count = 0, split, assertSplit;
     if (manifest.schemaVersion === 2) {
-      const verify = () => {
+      const verify = (freshnessOnly = false) => {
+        for (const name of ["boto3", "botocore", "jmespath", "s3transfer"])
+          if (existsSync(path.join(checkout.path, "venv", "Lib", "site-packages", name))) denied("hermes_smoke_optional_aws_present");
+        if (existsSync(path.join(checkout.path, "venv", "Scripts", "jp.py"))) denied("hermes_smoke_optional_aws_present");
         if (!readJson(attestationPath, 262144).bytes.equals(recordBytes)) denied("hermes_split_attestation_changed");
         if (sha(readJson(manifestPath, 12 * 1024 * 1024).bytes) !== sha(bytes)) denied("hermes_split_attestation_changed");
         const generated = readJson(record.generatedReceiptPath, 12 * 1024 * 1024);
@@ -72,7 +75,7 @@ export async function verifyHermesSmokeInstallation({ attestationPath, manifestP
         const binding = readJson(manifest.maintenance.profileBinding.path, 4096).value;
         if (binding.schemaVersion !== hermesNativeProfileVersion) denied("hermes_split_lazy_denial_required");
         inspectHermesProfile(binding, checkout.path);
-        return verifyHermesSplitInventory(manifest, bytes, generated.value, record);
+        return freshnessOnly ? assertHermesSplitFreshness(split) : verifyHermesSplitInventory(manifest, bytes, generated.value, record);
       };
       split = verify(); count = split.inventoryFiles; assertSplit = verify;
     }
@@ -117,7 +120,7 @@ export async function verifyHermesSmokeInstallation({ attestationPath, manifestP
     denied(e.protocolAdmission ? e.message : "hermes_smoke_installation_unverified");
   }
 }
-export function assertHermesSmokeInstallation(receipt, executable) {
+function assertInstallation(receipt, executable, freshnessOnly) {
   const saved = proofs.get(receipt);
   if (!saved || saved.executable !== executable || performance.now() < saved.monotonic || performance.now() - saved.monotonic >= 60000
       || Date.now() < saved.at || Date.now() - saved.at >= 60000) denied("hermes_smoke_installation_unverified");
@@ -125,7 +128,9 @@ export function assertHermesSmokeInstallation(receipt, executable) {
       || sha(readFileSync(executable)) !== receipt.executableDigest) denied("hermes_smoke_integrity_changed");
   for (const [file, digest] of Object.entries(saved.sources))
     if (sha(readFileSync(path.join(saved.checkout, file))) !== digest) denied("hermes_smoke_source_changed");
-  saved.assertSplit?.();
+  saved.assertSplit?.(freshnessOnly);
   if (performance.now() - saved.monotonic >= 60000 || Date.now() - saved.at >= 60000) denied("hermes_smoke_installation_unverified");
   return receipt;
 }
+export const assertHermesSmokeInstallation = (receipt, executable) => assertInstallation(receipt, executable, false);
+export const assertHermesSmokeInstallationFresh = (receipt, executable) => assertInstallation(receipt, executable, true);

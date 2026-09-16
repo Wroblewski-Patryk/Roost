@@ -19,6 +19,8 @@ export const hermesGeneratedReceiptSchema = z.object({
 export const hermesImmutableRootsSchema = z.array(z.object({ kind: z.enum(["checkout", "pythonBase"]),
   path: z.string().min(1), files: z.array(file).min(1).max(60000) }).strict()).length(2);
 const deny = reason => { throw Object.assign(new Error(reason), { protocolAdmission: true, retryable: false }); };
+const observations = new WeakMap();
+const stamp = s => [s.dev, s.ino, s.size, s.mtimeNs, s.ctimeNs, s.birthtimeNs, s.mode, s.nlink].map(String).join(":");
 export function installationGeneratedPath(name) { return name.endsWith(".pyc") || name === ".bytecode-fingerprint"; }
 export function installationInventory(root, relative = "", files = [], excludedRootChild) {
   for (const entry of readdirSync(path.join(root, relative), { withFileTypes: true })) {
@@ -31,9 +33,12 @@ export function installationInventory(root, relative = "", files = [], excludedR
   }
   return files.sort();
 }
-function physical(file) {
+function physical(file, checked = new Set()) {
+  if (checked.has(file)) return;
   for (let current = file;; current = path.dirname(current)) {
+    if (checked.has(current)) break;
     if (lstatSync(current).isSymbolicLink()) deny("hermes_split_inventory_unsafe");
+    checked.add(current);
     if (current === path.dirname(current)) break;
   }
   if (realpathSync.native(file).toLowerCase() !== file.toLowerCase()) deny("hermes_split_inventory_unsafe");
@@ -63,7 +68,7 @@ export function verifyHermesSplitInventory(manifest, manifestBytes, generatedRec
       || roots[0].kind !== "checkout" || roots[1].kind !== "pythonBase"
       || cache.roots[0].kind !== "checkout" || cache.roots[1].kind !== "pythonBase"
       || cache.interpreterDigest !== roots[1].files.find(f => f.path === "python.exe")?.sha256) deny("hermes_split_binding_invalid");
-  let count = 0;
+  let count = 0; const observed = [];
   let excluded;
   if (maintenance) {
     assertWriterLock(maintenance.writer);
@@ -74,25 +79,50 @@ export function verifyHermesSplitInventory(manifest, manifestBytes, generatedRec
     excluded = path.basename(maintenance.rollback);
   }
   for (let index = 0; index < roots.length; index++) {
-    const root = roots[index]; physical(root.path);
+    const root = roots[index], directories = new Set(); physical(root.path, directories);
     const immutable = new Map(root.files.map(f => [f.path, f])), derived = new Map(cache.roots[index].files.map(f => [f.path, f]));
     if (immutable.size !== root.files.length || derived.size !== cache.roots[index].files.length
         || root.files.some(f => installationGeneratedPath(f.path)) || [...derived.keys()].some(n => !installationGeneratedPath(n))) deny("hermes_split_partition_invalid");
-    const names = installationInventory(root.path, "", [], index === 0 ? excluded : undefined);
+    const names = installationInventory(root.path, "", [], index === 0 ? excluded : undefined), stamps = [];
     if (names.length !== immutable.size + derived.size || names.some(n => !immutable.has(n) && !derived.has(n))) deny("hermes_split_inventory_changed");
     for (const name of names) {
-      const target = path.join(root.path, name); physical(target);
+      // Inventory checks every directory entry again after hashing. Validate
+      // each physical parent once per complete pass, not once per child. Every
+      // file still receives its own lstat + full SHA-256 + stable identity check.
+      const target = path.join(root.path, name); physical(path.dirname(target), directories);
       const expected = immutable.get(name), before = lstatSync(target, { bigint: true });
       if (!before.isFile()) deny("hermes_split_inventory_unsafe");
       if (expected) {
         if (before.size !== BigInt(expected.size) || sha(readFileSync(target)) !== expected.sha256) deny("hermes_split_immutable_changed");
       } else verifyGeneratedFile(root.path, derived.get(name), immutable, manifest.commit);
       const after = lstatSync(target, { bigint: true });
-      if (before.ino !== after.ino || before.mtimeNs !== after.mtimeNs || before.size !== after.size) deny("hermes_split_inventory_changed");
+      if (stamp(before) !== stamp(after)) deny("hermes_split_inventory_changed");
+      stamps.push(stamp(after));
       count++;
     }
     if (JSON.stringify(installationInventory(root.path, "", [], index === 0 ? excluded : undefined)) !== JSON.stringify(names)) deny("hermes_split_inventory_changed");
+    observed.push({ root: root.path, rootIdentity: String(lstatSync(root.path, { bigint: true }).ino), names, stamps });
   }
-  return { inventoryFiles: count, immutableFiles: roots.reduce((n, r) => n + r.files.length, 0),
-    generatedFiles: cache.roots.reduce((n, r) => n + r.files.length, 0), generation: cache.generation };
+  const result = Object.freeze({ inventoryFiles: count, immutableFiles: roots.reduce((n, r) => n + r.files.length, 0),
+    generatedFiles: cache.roots.reduce((n, r) => n + r.files.length, 0), generation: cache.generation });
+  if (!maintenance) observations.set(result, observed);
+  return result;
+}
+
+// A short-lived installation receipt may reuse its already completed SHA pass
+// for repeated synchronous authority callbacks. Recheck the COMPLETE path set,
+// file IDs, change/write times, size, mode and links. This is never a substitute
+// for full preflight, the final pre-spawn SHA pass or post-run SHA verification.
+export function assertHermesSplitFreshness(proof) {
+  const saved = observations.get(proof); if (!saved) deny("hermes_split_observation_unproven");
+  for (const root of saved) {
+    physical(root.root);
+    if (String(lstatSync(root.root, { bigint: true }).ino) !== root.rootIdentity
+        || JSON.stringify(installationInventory(root.root)) !== JSON.stringify(root.names)) deny("hermes_split_inventory_changed");
+    for (const [index, name] of root.names.entries()) {
+      const stat = lstatSync(path.join(root.root, name), { bigint: true });
+      if (!stat.isFile() || stamp(stat) !== root.stamps[index]) deny("hermes_split_inventory_changed");
+    }
+  }
+  return proof;
 }

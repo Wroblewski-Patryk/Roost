@@ -1,5 +1,23 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+RF-RUNTIME-005B17 owner amendment (version 10), 2026-09-16: authorize exactly
+one NEW coding smoke after the verified B16 rebuild, using the unchanged exact
+Hermes pin, openai-codex, gpt-5.6-sol/medium and the existing bounded arithmetic
+task. Permit only source/interpreter/header/body-verified generated-cache
+reconciliation under a genuine Writer before/after that attempt; immutable drift
+remains blocked. Preserve B13/B14 spent evidence and use a separate B17 one-use
+grant/record. No public activation, restart, account operation or fallback follows.
+The v7 native-risk reference and other accepted residual risks remain unchanged.
+
+[The B17 attempt](../architecture/hermes-b17-coding-smoke-v1.md) is **BLOCKED**:
+one provider start, root exit 0, native unexpected_changed_path, independent
+repair/test verification unavailable. Job/owned fixture cleanup passed and a
+separate full file-only installation readback passed without metadata changes.
+Writer and one application lease remain for reconciliation. B17 is spent and all
+six public flags remain false. Only B18 source-only footprint diagnosis and a
+reconciliation plan are proposed; neither recovery mutation nor another real
+execution is authorized. Earlier v9/no-launch/successor statements are historical.
+
 RF-RUNTIME-005B16 owner-authorized maintenance is [DONE](../architecture/hermes-controlled-rebuild-v1.md):
 replace the managed venv from the unchanged exact pin and frozen core+mcp lock,
 add official lazy-install denial in profile v5/minimal Worker environment, and
@@ -172,7 +190,7 @@ The original RF-RUNTIME-002 decision and its dated authority follow below.
 Date: 2026-09-15
 Status: accepted
 Owner: Roost architecture owner
-Decision version: 9 (RF-RUNTIME-005B14 new one-attempt authorization; preflight BLOCKED, 2026-09-16)
+Decision version: 10 (RF-RUNTIME-005B17 new one-attempt authorization; native review BLOCKED, 2026-09-16)
 Scope: RF-RUNTIME-002 owner handoff; architecture and blocked adapter implementation
 Source reference: `owner-handoff.rf-runtime-002.hermes-first.v1`
 

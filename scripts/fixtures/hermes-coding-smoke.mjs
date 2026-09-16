@@ -25,7 +25,7 @@ function nodeTest(repository) {
   return { exit, outputDigest: sha(output), passed: exit === 0 && /# pass 1\b/.test(output) && /# fail 0\b/.test(output),
     failed: exit === 1 && /# fail 1\b/.test(output) };
 }
-export function createHermesCodingFixture() {
+function createFixture(scope) {
   // Regenerate every synthetic identity consistently; no existing application is adopted.
   let encoded = JSON.stringify(validPacketFixture());
   for (const id of new Set(encoded.match(/00000000-0000-4000-8000-\d{12}/g))) encoded = encoded.replaceAll(id, randomUUID());
@@ -46,9 +46,11 @@ export function createHermesCodingFixture() {
   c.nativeBoundary = { profile: "coding-local", writePaths: ["add.cjs"], runtime: { required: false, ports: [] } };
   const ownership = createNativeOwnedRepositoryTemp(realpathSync.native(os.tmpdir()), f.claimed.id);
   const root = inspectNativeOwnedTemp(ownership, f.claimed.id).root, repository = path.join(root, "repository");
+  const scopeMarker = scope ? JSON.stringify({ schemaVersion: 1, scope, attemptDigest: sha(f.claimed.id) }) + "\n" : null;
   const git = (...args) => execFileSync("git", ["--literal-pathspecs", "-c", "core.hooksPath=", "-c", "core.fsmonitor=false", "-c", "commit.gpgsign=false", ...args],
     { cwd: repository, env: environment(), windowsHide: true, timeout: 10000, maxBuffer: 65536, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
   try {
+    if (scopeMarker) writeFileSync(path.join(root, ".roost-smoke-scope"), scopeMarker, { flag: "wx", mode: 0o600 });
     git("init"); git("config", "user.name", "Fixture"); git("config", "user.email", "fixture@example.invalid"); git("config", "core.autocrlf", "false");
     writeFileSync(path.join(repository, "add.cjs"), initial); writeFileSync(path.join(repository, "add.test.cjs"), tests);
     const before = nodeTest(repository); if (!before.failed) deny("smoke_baseline_not_failed");
@@ -60,18 +62,23 @@ export function createHermesCodingFixture() {
       f.taskContext.readyAdmission.riskAdmission.commit = head; f.claimed.metadata.readyContextPin.riskAdmissionCommit = head;
       return f;
     };
-    return { root, repository, ownership, attempt: f.claimed.id, f, before, head, git, prepare,
-      verify() {
+    const observe = (requireFix = true) => {
+        if (scopeMarker && readFileSync(path.join(root, ".roost-smoke-scope"), "utf8") !== scopeMarker) deny("smoke_scope_marker_changed");
         if (physicalIdentity(repository) !== identity || git("rev-parse", "HEAD") !== head || git("rev-list", "--count", "HEAD") !== "1") deny("smoke_repository_changed");
         for (const name of ["add.cjs", "add.test.cjs"]) physicalIdentity(path.join(repository, name), false);
-        if (readFileSync(path.join(repository, "add.cjs"), "utf8") !== expected || readFileSync(path.join(repository, "add.test.cjs"), "utf8") !== tests
-            || git("status", "--porcelain=v1", "--untracked-files=all") !== "M add.cjs") deny("smoke_unexpected_diff");
+        const implementation = readFileSync(path.join(repository, "add.cjs"), "utf8"), fixed = implementation === expected;
+        if ((!fixed && (requireFix || implementation !== initial)) || readFileSync(path.join(repository, "add.test.cjs"), "utf8") !== tests
+            || git("status", "--porcelain=v1", "--untracked-files=all") !== (fixed ? "M add.cjs" : "")) deny("smoke_unexpected_diff");
         // Execute only after exact byte validation, never arbitrary agent-modified tests.
-        const after = nodeTest(repository); if (!after.passed) deny("smoke_independent_test_failed");
-        return { before, after, changedFiles: ["add.cjs"], minimalChange: true, testUnchanged: true, baselineCommitUnchanged: true,
-          implementationDigest: sha(expected), testDigest: sha(tests), diffDigest: sha(git("diff", "--no-ext-diff", "--no-textconv", "--", "add.cjs")) };
-      },
+        const after = nodeTest(repository); if (requireFix && !after.passed) deny("smoke_independent_test_failed");
+        return { before, after, changedFiles: fixed ? ["add.cjs"] : [], minimalChange: fixed, testUnchanged: true, baselineCommitUnchanged: true,
+          implementationDigest: sha(implementation), testDigest: sha(tests), diffDigest: sha(git("diff", "--no-ext-diff", "--no-textconv", "--", "add.cjs")) };
+    };
+    return { root, repository, ownership, attempt: f.claimed.id, f, before, head, git, prepare,
+      verify: () => observe(true), observeUnfixed: () => observe(false),
       cleanup() { const receipt = cleanupNativeOwnedTemp(ownership, f.claimed.id); if (existsSync(root)) deny("smoke_cleanup_incomplete"); return receipt; }
     };
   } catch (error) { cleanupNativeOwnedTemp(ownership, f.claimed.id); throw error; }
 }
+export const createHermesCodingFixture = () => createFixture(null);
+export const createHermesB17CodingFixture = () => createFixture("one_real_hermes_coding_smoke_b17_only");

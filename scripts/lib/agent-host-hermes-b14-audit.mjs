@@ -1,13 +1,15 @@
-// Spent records are audit evidence, never activation authority. B14 cannot
-// overwrite, delete, deserialize or otherwise reuse the B13 authorization.
+// Fixed B14/B17 policies share mechanics but preserve all earlier spent records.
+// Audit evidence never grants activation or authorizes restart/replay.
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, lstatSync, writeFileSync } from "node:fs";
 import { physicalIdentity } from "./agent-host-native-footprint.mjs";
-import { hermesB14SmokeScope } from "./agent-host-hermes-smoke-activation.mjs";
+import { hermesB14SmokeScope, hermesB17SmokeScope } from "./agent-host-hermes-smoke-activation.mjs";
 const proofs = new WeakMap();
 const sha = bytes => createHash("sha256").update(bytes).digest("hex");
-const deny = () => { throw new Error("hermes_b14_spent_state_unproven"); };
+const deny = () => { throw new Error("hermes_smoke_spent_state_unproven"); };
+const b14 = Object.freeze({ name: "b14", prior: ["b13"], scope: hermesB14SmokeScope });
+const b17 = Object.freeze({ name: "b17", prior: ["b13", "b14"], scope: hermesB17SmokeScope });
 function snapshot(file) {
   const identity = physicalIdentity(file, false), stat = lstatSync(file, { bigint: true });
   if (stat.size > 4096n) deny();
@@ -15,32 +17,41 @@ function snapshot(file) {
   if (physicalIdentity(file, false) !== identity || after.size !== stat.size || after.mtimeNs !== stat.mtimeNs) deny();
   return JSON.stringify([identity, digest, String(stat.size), String(stat.mtimeNs)]);
 }
-export function prepareHermesB14Audit(directory) {
-  const parent = physicalIdentity(directory), prior = path.join(directory, "hermes-b13-smoke-consumed.json"),
-    file = path.join(directory, "hermes-b14-smoke-consumed.json");
+function prepare(directory, policy) {
+  const parent = physicalIdentity(directory), prior = policy.prior.map(name => path.join(directory, `hermes-${name}-smoke-consumed.json`)),
+    file = path.join(directory, `hermes-${policy.name}-smoke-consumed.json`);
   if (existsSync(path.join(directory, "agent-host-writer.lock")) || existsSync(file)) deny();
-  const original = snapshot(prior), proof = Object.freeze({});
-  proofs.set(proof, { directory, parent, prior, original, file, used: false, reserved: false });
+  const original = prior.map(snapshot), proof = Object.freeze({});
+  proofs.set(proof, { directory, parent, prior, original, file, policy, used: false, reserved: false });
   return proof;
 }
-export function assertHermesB14Audit(proof) {
+function inspect(proof, policy) {
   const saved = proofs.get(proof);
-  if (!saved || physicalIdentity(saved.directory) !== saved.parent || snapshot(saved.prior) !== saved.original) deny();
+  if (!saved || saved.policy !== policy || physicalIdentity(saved.directory) !== saved.parent
+      || saved.prior.some((file, index) => snapshot(file) !== saved.original[index])) deny();
   if (saved.reserved ? snapshot(saved.file) !== saved.current : existsSync(saved.file)) deny();
-  return Object.freeze({ b13RecordPreserved: true, b14SpentRecordRetained: saved.reserved });
+  return Object.freeze(policy === b14 ? { b13RecordPreserved: true, b14SpentRecordRetained: saved.reserved }
+    : { b13RecordPreserved: true, b14RecordPreserved: true, b17SpentRecordRetained: saved.reserved });
 }
-function record(proof, identity, state, reason) {
+function record(proof, identity, state, reason, policy) {
   const saved = proofs.get(proof);
-  if (!saved || saved.used) deny();
+  if (!saved || saved.used || saved.policy !== policy) deny();
   saved.used = true;
-  assertHermesB14Audit(proof);
-  writeFileSync(saved.file, JSON.stringify({ schemaVersion: 1, scope: hermesB14SmokeScope, state,
+  inspect(proof, policy);
+  writeFileSync(saved.file, JSON.stringify({ schemaVersion: 1, scope: policy.scope, state,
     attemptDigest: sha(JSON.stringify(identity)), at: new Date().toISOString(), ...(reason ? { reason } : {}) }) + "\n", { flag: "wx", mode: 0o600 });
   saved.current = snapshot(saved.file); saved.reserved = true;
-  return assertHermesB14Audit(proof);
+  return inspect(proof, policy);
 }
-export const reserveHermesB14Audit = (proof, identity) => record(proof, identity, "dispatch_reserved");
-export function closeBlockedHermesB14Audit(proof, identity, reason) {
+function blocked(proof, identity, reason, policy) {
   if (!/^[a-z][a-z0-9_]{2,100}$/.test(reason)) deny();
-  return record(proof, identity, "preflight_blocked", reason);
+  return record(proof, identity, "preflight_blocked", reason, policy);
 }
+export const prepareHermesB14Audit = directory => prepare(directory, b14);
+export const assertHermesB14Audit = proof => inspect(proof, b14);
+export const reserveHermesB14Audit = (proof, identity) => record(proof, identity, "dispatch_reserved", undefined, b14);
+export const closeBlockedHermesB14Audit = (proof, identity, reason) => blocked(proof, identity, reason, b14);
+export const prepareHermesB17Audit = directory => prepare(directory, b17);
+export const assertHermesB17Audit = proof => inspect(proof, b17);
+export const reserveHermesB17Audit = (proof, identity) => record(proof, identity, "dispatch_reserved", undefined, b17);
+export const closeBlockedHermesB17Audit = (proof, identity, reason) => blocked(proof, identity, reason, b17);
