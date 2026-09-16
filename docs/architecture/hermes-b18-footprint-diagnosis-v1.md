@@ -1,5 +1,11 @@
 # Hermes B18 footprint diagnosis and reconciliation plan v1
 
+The separately owner-approved [B20 legacy exception](hermes-b20-legacy-recovery-v1.md)
+completed exact B17 lease/Writer removal and preserved all spent records. The
+exception is terminally spent/disabled; B19 strict recovery remains unchanged.
+Earlier recovery-pending statements below are historical. B17 repair/test
+acceptance remains unproven; no new execution is authorized.
+
 Current policy/evidence ordering: [B19 root-scoped review v2](hermes-root-scoped-review-reconciliation-v2.md).
 It supersedes exact-path classification and adds durable review/process identity
 bindings for future attempts. Historical observations below remain unchanged;

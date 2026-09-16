@@ -1,5 +1,11 @@
 # Hermes root-scoped review and reconciliation v2
 
+The separately owner-approved [B20 legacy exception](hermes-b20-legacy-recovery-v1.md)
+completed exact B17 lease/Writer removal and preserved all spent records. The
+exception is terminally spent/disabled; B19 strict recovery remains unchanged.
+Earlier recovery-pending statements below are historical. B17 repair/test
+acceptance remains unproven; no new execution is authorized.
+
 RF-RUNTIME-005B19, 2026-09-16. Source implementation and synthetic qualification
 are complete. Legacy B17 recovery is **BLOCKED**, with a read-only refusal.
 No installed provider/interpreter, model, account operation or new activation was

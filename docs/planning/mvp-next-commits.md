@@ -1,5 +1,17 @@
 # Next development work
 
+RF-RUNTIME-005B20 [exact legacy B17 recovery](../architecture/hermes-b20-legacy-recovery-v1.md) is **DONE**
+under the explicit ADR-004 v12 owner exception. Exact application lease then
+Writer were removed, each absence read back; B13/B14/B17 spent records retain
+original bytes and physical identities. The private journal is complete, the
+exception spent/disabled and the recovery barrier released. Seven bounded process
+checks found no matching live process; missing historical identity proof remains
+explicitly unavailable. Strict B19 recovery remains the default. B17 repair/test
+acceptance stays BLOCKED. One proposed successor is a separately owner-authorized
+B21 single new coding smoke; no activation follows automatically. Profile/registry
+v5, native-risk reference v7 and all six false public flags remain unchanged.
+Earlier pending-recovery and successor statements below are historical.
+
 RF-RUNTIME-005B19 [root-scoped review and reconciliation v2](../architecture/hermes-root-scoped-review-reconciliation-v2.md) is implemented and synthetically qualified. Ordinary safe coding paths are
 acceptance scope, while protected paths remain blocked. Durable private evidence
 precedes verification, terminal receipt, owned cleanup and lease/Writer release.

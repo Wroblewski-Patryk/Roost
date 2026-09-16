@@ -1,5 +1,17 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+RF-RUNTIME-005B20 owner amendment (version 12), 2026-09-16: authorize one
+[exact legacy B17 recovery exception](../architecture/hermes-b20-legacy-recovery-v1.md),
+accepting only this pair's explicitly unavailable historical identity chain.
+Delete the bound application lease first, then the bound Writer, behind the
+existing recovery barrier with fresh bounded checks and a consumed opaque grant.
+Preserve B13/B14/B17 spent records and all unrelated state. The operation is DONE:
+private journal complete, pair absent, spent unchanged, barrier released and
+exception terminally spent/disabled. Strict B19 gates for future attempts are
+unchanged. No new provider/model attempt, installation/profile/auth mutation or
+public activation is authorized. All six public flags remain false. Earlier
+recovery-pending and successor statements below are historical.
+
 RF-RUNTIME-005B19 owner policy amendment (version 11), 2026-09-16:
 accept [root-scoped coding and durable review v2](../architecture/hermes-root-scoped-review-reconciliation-v2.md).
 Ordinary repository edits need not predeclare every filename; optional expected
@@ -214,7 +226,7 @@ The original RF-RUNTIME-002 decision and its dated authority follow below.
 Date: 2026-09-15
 Status: accepted
 Owner: Roost architecture owner
-Decision version: 11 (RF-RUNTIME-005B19 root-scoped review policy; no new execution, 2026-09-16)
+Decision version: 12 (RF-RUNTIME-005B20 exact legacy recovery exception completed; no new execution, 2026-09-16)
 Scope: RF-RUNTIME-002 owner handoff; architecture and blocked adapter implementation
 Source reference: `owner-handoff.rf-runtime-002.hermes-first.v1`
 
