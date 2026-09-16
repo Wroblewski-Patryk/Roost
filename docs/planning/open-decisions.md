@@ -38,18 +38,19 @@ flags remain false. [RF-RUNTIME-005B12 local launch admission](../architecture/h
 is source/synthetic qualified with a single opaque, expiring, one-use proof set.
 Local policyQualified can be true while activationAuthorized=false and
 spawnStarted=false. B11 cleanup is closed by verified owner removal.
-[RF-RUNTIME-005B14 — new coding smoke](../architecture/hermes-b14-coding-smoke-v1.md)
-is **BLOCKED before provider spawn**. One separately authorized B14 controller
-attempt stopped on installed inventory drift: 6,315 additional files, including
-package sources as well as bytecode. No Hermes/model start, fallback or manifest
-rewrite occurred. Fresh baseline FAIL and owned fixture/Writer cleanup passed.
-The old B13 Writer lock is closed by verified owner removal; its spent record is
-unchanged. B14's separate preflight_blocked record prevents replay. All six public
-flags remain false; ADR-004 v9 grants no general pilot activation.
-Exactly one proposed next atom: **RF-RUNTIME-005B15 — source-only inventory
-provenance qualification and controlled reconciliation proposal**, with no
-installation mutation, credential reads, provider/model run or new activation.
-Earlier no-launch and pending-action statements describe historical scope.
+[RF-RUNTIME-005B15 — installation provenance](../architecture/hermes-installation-reconciliation-v1.md)
+is **VERIFIED_RECONCILABLE through recommendation B**, a controlled clean rebuild.
+All original immutable hashes match; one original .pyc changed. The added AWS
+packages have coherent RECORDs but two transitive versions are off-lock. Source
+shows a reachable startup lazy-install path, which must be disabled through the
+official policy gates before another admitted run. Current installation remains
+BLOCKED. B15 did not mutate installation/profile/auth/cache/manifest or execute
+Hermes/Python/package managers. B13 and B14 spent records remain preserved.
+Exactly one proposed next atom: **RF-RUNTIME-005B16 — owner-approved frozen
+rebuild, lazy-install denial and split installation attestation**. Explicit owner
+approval is required for managed installation and private binding changes before
+that work begins. No model/login/new activation follows. ADR-004 v9 and six false
+public flags remain unchanged; no cleanup action is pending.
 
 The first-provider choice is resolved by RF-RUNTIME-002 /
 [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md): native Hermes using

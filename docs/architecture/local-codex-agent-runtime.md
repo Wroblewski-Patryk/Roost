@@ -1,16 +1,18 @@
 # Local Codex Agent Runtime
 
-RF-RUNTIME-005B14 [new coding smoke](hermes-b14-coding-smoke-v1.md) is
-**BLOCKED before provider spawn**. After owner-confirmed OAuth and separate
-one-attempt authorization, the unchanged verifier found 6,315 installed files
-absent from the B13 manifest, including package sources and bytecode. No model
-was started and no integrity exception was applied. Fresh fixture baseline FAIL
-and owned cleanup passed; Writer is released. B13's manually removed lock is
-closed, its spent record is preserved, and B14 has a separate terminal record.
-ADR-004 v9 records this narrow authority; all six public flags remain false.
-Exactly one proposed successor is B15 source-only inventory/provenance
-qualification and a controlled reconciliation proposal, without mutation or
-model execution. Earlier next-step/lock/launch statements below are historical.
+RF-RUNTIME-005B15 [installation provenance and reconciliation](hermes-installation-reconciliation-v1.md)
+is **VERIFIED_RECONCILABLE through a controlled rebuild proposal**; current
+installation admission remains BLOCKED. All 23,656 original immutable entries
+match; only one original bytecode file changed. The 6,315 additions comprise
+4,239 generated files and 2,076 package-owned files. RECORDs are consistent, but
+botocore and s3transfer differ from the pinned lock. Exact-pin startup can invoke
+a lazy boto3 installer during auto-provider inventory; attribution to B13 is an
+inference from source and timestamps, not a recorded process trace.
+Exactly one proposed successor: B16 owner-approved frozen rebuild, official
+lazy-install denial and split immutable/generated attestation. Approval is
+required before mutation; B15 changed documentation only. ADR-004 remains v9,
+all six public flags remain false, and both prior spent records remain closed.
+Earlier next-step/lock/launch statements below are historical.
 
 RF-RUNTIME-005B11 [native tool boundary](hermes-native-tool-boundary-v1.md) is
 implemented under ADR-004 v7's explicit same-owner residual-risk acceptance.

@@ -1,6 +1,6 @@
 # Hermes local launch admission v1
 
-Current successor: [B14](hermes-b14-coding-smoke-v1.md) is blocked before spawn
+Historical successor: [B14](hermes-b14-coding-smoke-v1.md) is blocked before spawn
 by installed inventory drift; no real process ran. B13 lock cleanup is closed.
 All six public flags remain false.
 

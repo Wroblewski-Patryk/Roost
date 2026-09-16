@@ -1,5 +1,12 @@
 # Hermes B14 coding smoke v1
 
+B15 follow-up: [installation provenance and reconciliation](hermes-installation-reconciliation-v1.md)
+is complete. All original immutable hashes match; one original bytecode changed.
+Added wheel RECORDs are consistent, but two transitive versions differ from the
+lock. Recommendation B requires owner-approved rebuild plus lazy-install denial
+and split attestation; no mutation occurred. B14 remains terminally blocked.
+The proposed B15 successor at the end of this document is historical.
+
 RF-RUNTIME-005B14, 2026-09-16: **BLOCKED before provider spawn** by
 `hermes_smoke_inventory_changed`. The separately authorized new attempt reached
 the fixture baseline and installation preflight, then stopped. No installed

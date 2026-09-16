@@ -1,5 +1,11 @@
 # Hermes real coding smoke v1
 
+B15 follow-up: [read-only installation qualification](hermes-installation-reconciliation-v1.md)
+found added package timestamps inside the B13 process window and a reachable
+startup lazy-install path. This supports a side-effect hypothesis, not proven
+process attribution. B13's auth failure and evidence limits remain unchanged;
+all original immutable files match, while two added transitives are off-lock.
+
 B14 update: the owner manually removed B13's stale Writer lock; absence was
 verified before the [separate B14 attempt](hermes-b14-coding-smoke-v1.md). That
 cleanup action is closed and B13's spent record remains unchanged. B14 stopped

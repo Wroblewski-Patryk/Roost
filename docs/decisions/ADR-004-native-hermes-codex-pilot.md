@@ -1,5 +1,18 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+RF-RUNTIME-005B15 source evidence: [installation provenance and reconciliation](../architecture/hermes-installation-reconciliation-v1.md)
+is VERIFIED_RECONCILABLE via recommendation B: controlled clean rebuild from the
+exact pin/frozen core+mcp lock and recorded build wheels, official lazy-install
+denial and split immutable/generated receipts. All 23,656 original immutable
+entries match; two added transitive versions differ from the lock. RECORD
+consistency is not independent installation provenance. The reachable startup
+installer path is verified statically; historical actor attribution is inferred.
+This is a proposal, not a new owner amendment: decision version stays 9. Explicit
+owner approval is required before the proposed B16 mutates installation/profile
+bindings. No mutation or provider/model run occurred in B15. All six flags remain
+false and neither B13 nor B14 may be replayed. Earlier proposed-successor
+statements below are historical.
+
 RF-RUNTIME-005B14 owner amendment (version 9), 2026-09-16: after owner-reported
 successful owner-present OAuth in the Worker profile, authorize exactly one NEW
 B14 coding smoke under the same exact provider/model/reasoning and B13 task
