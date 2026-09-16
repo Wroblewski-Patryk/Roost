@@ -1,5 +1,11 @@
 # Hermes real coding smoke v1
 
+B14 update: the owner manually removed B13's stale Writer lock; absence was
+verified before the [separate B14 attempt](hermes-b14-coding-smoke-v1.md). That
+cleanup action is closed and B13's spent record remains unchanged. B14 stopped
+on installed inventory drift before provider spawn and cleaned its own Writer
+and fixture. The B13 observations and pending-action text below are historical.
+
 RF-RUNTIME-005B13, 2026-09-16: **BLOCKED**. The owner authorized exactly one
 real supervised coding attempt. That authorization is spent. One installed
 Hermes process started and reported an authentication requirement, exiting 1.

@@ -1,6 +1,10 @@
 # Hermes local launch admission v1
 
-B13 update: [the separately owner-authorized real coding smoke](hermes-real-coding-smoke-v1.md)
+Current successor: [B14](hermes-b14-coding-smoke-v1.md) is blocked before spawn
+by installed inventory drift; no real process ran. B13 lock cleanup is closed.
+All six public flags remain false.
+
+Historical B13 update: [the separately owner-authorized real coding smoke](hermes-real-coding-smoke-v1.md)
 is BLOCKED after one launch reporting authentication required. That narrow grant
 is spent; no retry is authorized. Job and repository cleanup passed; one manual
 owner action remains for the stale Writer lock. All six public flags stay false.

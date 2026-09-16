@@ -1,17 +1,16 @@
 # Architecture Source Of Truth
 
-RF-RUNTIME-005B13 [one real coding smoke](hermes-real-coding-smoke-v1.md)
-is **BLOCKED** after the owner's single authorized attempt. Installed Hermes
-started with exact gpt-5.6-sol/medium and exited 1 with a reported authentication
-requirement. No repair, independent post-agent PASS or accepted diff was proven.
-Genuine Job cleanup and owned repository removal passed; a controller defect
-retained the stale Writer lock. Its correction passed a harmless fixture test;
-the real attempt was not repeated. One owner action remains: manually remove
-the stale Writer lock identified privately, preserving the spent record.
-ADR-004 v8 records this now-spent authority; all six public flags remain false.
-B12's opaque aggregate remains the prerequisite policy layer, not activation.
-Earlier no-launch/proposed-successor statements below describe historical scope;
-ordinary public dispatch remains denied. B11 cleanup remains closed.
+RF-RUNTIME-005B14 [new coding smoke](hermes-b14-coding-smoke-v1.md) is
+**BLOCKED before provider spawn**. After owner-confirmed OAuth and separate
+one-attempt authorization, the unchanged verifier found 6,315 installed files
+absent from the B13 manifest, including package sources and bytecode. No model
+was started and no integrity exception was applied. Fresh fixture baseline FAIL
+and owned cleanup passed; Writer is released. B13's manually removed lock is
+closed, its spent record is preserved, and B14 has a separate terminal record.
+ADR-004 v9 records this narrow authority; all six public flags remain false.
+Exactly one proposed successor is B15 source-only inventory/provenance
+qualification and a controlled reconciliation proposal, without mutation or
+model execution. Earlier next-step/lock/launch statements below are historical.
 
 RF-RUNTIME-005B11 [native tool boundary](hermes-native-tool-boundary-v1.md) is
 implemented under ADR-004 v7's explicit same-owner residual-risk acceptance.

@@ -1,5 +1,23 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+RF-RUNTIME-005B14 owner amendment (version 9), 2026-09-16: after owner-reported
+successful owner-present OAuth in the Worker profile, authorize exactly one NEW
+B14 coding smoke under the same exact provider/model/reasoning and B13 task
+boundary. B13 is not retried. Preserve its spent record; use fresh identities,
+proofs and a separate one-use B14 grant/audit record. No installation-integrity
+waiver, account fallback or general API/pilot activation is granted. Existing
+B4/B7/B9/B11 risks and v4 profile/native-risk reference remain unchanged.
+
+[The B14 controller attempt](../architecture/hermes-b14-coding-smoke-v1.md)
+is **BLOCKED before provider spawn**: unchanged inventory verification found
+6,315 added files including package sources and bytecode. No real Hermes/model
+was started. Fresh baseline FAIL and owned fixture/Writer cleanup passed. B13's
+manual lock-removal action is verified closed and its record preserved; B14 has
+a separate terminal preflight_blocked record. All six public flags remain false.
+Only B15 source-only inventory/provenance qualification and a controlled
+reconciliation proposal is suggested; no mutation or execution authority follows.
+Earlier pending lock-removal and next-atom statements below are historical.
+
 RF-RUNTIME-005B13 owner amendment (version 8), 2026-09-16: explicitly authorize
 exactly one real supervised coding smoke with installed Hermes 0.21.2 at the
 existing pin, exact gpt-5.6-sol/medium, one owned disposable repository, one
@@ -132,7 +150,7 @@ The original RF-RUNTIME-002 decision and its dated authority follow below.
 Date: 2026-09-15
 Status: accepted
 Owner: Roost architecture owner
-Decision version: 8 (RF-RUNTIME-005B13 one-attempt owner authorization; spent and BLOCKED, 2026-09-16)
+Decision version: 9 (RF-RUNTIME-005B14 new one-attempt authorization; preflight BLOCKED, 2026-09-16)
 Scope: RF-RUNTIME-002 owner handoff; architecture and blocked adapter implementation
 Source reference: `owner-handoff.rf-runtime-002.hermes-first.v1`
 

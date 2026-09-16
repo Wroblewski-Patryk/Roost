@@ -38,17 +38,18 @@ flags remain false. [RF-RUNTIME-005B12 local launch admission](../architecture/h
 is source/synthetic qualified with a single opaque, expiring, one-use proof set.
 Local policyQualified can be true while activationAuthorized=false and
 spawnStarted=false. B11 cleanup is closed by verified owner removal.
-[RF-RUNTIME-005B13 — one real coding smoke](../architecture/hermes-real-coding-smoke-v1.md)
-is **BLOCKED**. Owner-authorized exact gpt-5.6-sol/medium launch occurred once;
-Hermes reported an authentication requirement and exited 1. No repair or
-independent post-agent PASS was proven. Job and owned repository cleanup passed,
-but a controller defect retained the stale Writer lock. The defect is corrected
-and tested with a harmless fixture; there was no second real attempt.
-Exactly one next owner action: manually remove that stale Writer lock, identified
-in the private handoff, while preserving the separate spent record. No retry,
-login, general pilot activation, MCP, E2E or release is authorized. ADR-004 v8
-records the spent one-attempt permission; all six public flags remain false.
-Earlier no-launch statements above describe the corresponding historical scope.
+[RF-RUNTIME-005B14 — new coding smoke](../architecture/hermes-b14-coding-smoke-v1.md)
+is **BLOCKED before provider spawn**. One separately authorized B14 controller
+attempt stopped on installed inventory drift: 6,315 additional files, including
+package sources as well as bytecode. No Hermes/model start, fallback or manifest
+rewrite occurred. Fresh baseline FAIL and owned fixture/Writer cleanup passed.
+The old B13 Writer lock is closed by verified owner removal; its spent record is
+unchanged. B14's separate preflight_blocked record prevents replay. All six public
+flags remain false; ADR-004 v9 grants no general pilot activation.
+Exactly one proposed next atom: **RF-RUNTIME-005B15 — source-only inventory
+provenance qualification and controlled reconciliation proposal**, with no
+installation mutation, credential reads, provider/model run or new activation.
+Earlier no-launch and pending-action statements describe historical scope.
 
 The first-provider choice is resolved by RF-RUNTIME-002 /
 [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md): native Hermes using

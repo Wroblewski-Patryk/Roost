@@ -3,6 +3,7 @@ import { assertHermesLaunchAdmission, consumeHermesLaunchAdmission } from "./age
 import { assertCodingAuthority } from "./agent-host-native-authority.mjs";
 const grants = new WeakMap();
 export const hermesSmokeScope = "one_real_hermes_coding_smoke_only";
+export const hermesB14SmokeScope = "one_real_hermes_coding_smoke_b14_only";
 const hash = v => createHash("sha256").update(JSON.stringify(v)).digest("hex");
 const deny = () => { throw Object.assign(new Error("hermes_smoke_activation_blocked"), { protocolAdmission: true, retryable: false }); };
 function binding(options, receipt) {
@@ -17,23 +18,28 @@ function binding(options, receipt) {
 }
 // Trusted local Worker call only, after explicit owner authorization. A function
 // authority is never deserialized from API/config. This factory does not spawn.
-export function issueHermesSmokeActivation(options, receipt, assertOwnerAuthority) {
+function issue(options, receipt, assertOwnerAuthority, scope) {
   if (typeof assertOwnerAuthority !== "function") deny();
   assertOwnerAuthority();
   const seal = binding(options, receipt), grant = Object.freeze({});
-  grants.set(grant, { envelope: options.envelope, receipt, seal, at: Date.now(), monotonic: performance.now(), used: false, assertOwnerAuthority });
+  grants.set(grant, { scope, envelope: options.envelope, receipt, seal, at: Date.now(), monotonic: performance.now(), used: false, assertOwnerAuthority });
   return grant;
 }
-export function consumeHermesSmokeActivation(grant, options, consumption) {
+function consume(grant, options, consumption, scope) {
   const saved = grants.get(grant);
   if (!saved || saved.used) deny();
   saved.used = true; // Every consumption attempt, including mismatch, burns it.
   const age = performance.now() - saved.monotonic;
-  if (age < 0 || age >= 60000 || Date.now() < saved.at || Date.now() - saved.at >= 60000
+  if (saved.scope !== scope || age < 0 || age >= 60000 || Date.now() < saved.at || Date.now() - saved.at >= 60000
       || saved.envelope !== options.envelope || binding(options, saved.receipt) !== saved.seal) deny();
   saved.assertOwnerAuthority();
   const handoff = consumeHermesLaunchAdmission(saved.receipt, options, consumption);
-  return Object.freeze({ ...handoff, activation: Object.freeze({ scope: hermesSmokeScope, policyQualified: true,
+  return Object.freeze({ ...handoff, activation: Object.freeze({ scope, policyQualified: true,
     activationAuthorized: true, spawnStarted: false, qualificationDigest: saved.receipt.digest }) });
 }
+// Fixed entrypoints: callers cannot select arbitrary scopes or promote B13 grants.
+export const issueHermesSmokeActivation = (options, receipt, authority) => issue(options, receipt, authority, hermesSmokeScope);
+export const consumeHermesSmokeActivation = (grant, options, consumption) => consume(grant, options, consumption, hermesSmokeScope);
+export const issueHermesB14SmokeActivation = (options, receipt, authority) => issue(options, receipt, authority, hermesB14SmokeScope);
+export const consumeHermesB14SmokeActivation = (grant, options, consumption) => consume(grant, options, consumption, hermesB14SmokeScope);
 export function revokeHermesSmokeActivation(grant) { grants.delete(grant); }
