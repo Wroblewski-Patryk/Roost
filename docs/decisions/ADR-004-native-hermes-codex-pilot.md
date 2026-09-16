@@ -1,5 +1,19 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+RF-RUNTIME-005B11 owner amendment (version 7), accepted 2026-09-16: accept the
+B10 disclosed native file/terminal same-owner residual risk for the small supervised
+coding-local pilot. This is not permission to exceed the canonical workspace,
+create extra clone/worktree/application copies or destroy foreign data. Seal those
+prohibitions into instructions; violations fail review and block release pending
+owned-only recovery. No VM/Sandbox/Restricted Token/ACL/fork/proxy/tool framework
+is required. [Native audited coding v1](../architecture/hermes-native-tool-boundary-v1.md)
+implements exact public v4 configuration, separate typed authorities, leases,
+bounded manifests and opaque privacy-preserving receipts. Shell/network/path races
+and transient/unobserved effects remain accepted limitations, not technically
+prevented effects. Existing B4/B7/B9 risk decisions remain; no real execution,
+model, commit/push/deploy or pilot is authorized. All six flags remain false.
+The B10 pending owner decision below is resolved by this amendment.
+
 RF-RUNTIME-005B10 source evidence: [native tool boundary](../architecture/hermes-native-tool-boundary-v1.md)
 selects roost-hermes-native-audited-coding-v1. Source qualification is complete;
 implementation is **BLOCKED on one owner decision** accepting the stated native
@@ -90,7 +104,7 @@ The original RF-RUNTIME-002 decision and its dated authority follow below.
 Date: 2026-09-15
 Status: accepted
 Owner: Roost architecture owner
-Decision version: 6 (RF-RUNTIME-005B9 practical attempt-budget amendment, 2026-09-16)
+Decision version: 7 (RF-RUNTIME-005B11 native-tool risk and authority amendment, 2026-09-16)
 Scope: RF-RUNTIME-002 owner handoff; architecture and blocked adapter implementation
 Source reference: `owner-handoff.rf-runtime-002.hermes-first.v1`
 

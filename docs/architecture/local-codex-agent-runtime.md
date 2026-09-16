@@ -1,5 +1,14 @@
 # Local Codex Agent Runtime
 
+RF-RUNTIME-005B11 [native tool boundary](hermes-native-tool-boundary-v1.md) is
+implemented under ADR-004 v7's explicit same-owner residual-risk acceptance.
+Profile v4, typed coding authority, canonical workspace/Writer/application leases,
+bounded footprint receipts and owned-only cleanup are qualified synthetically.
+Detected violations block review/release; partial observation is not isolation.
+Only fresh opaque local proof removes the native-tool blocker. All six flags
+remain false and real launch remains denied; B12 is source/synthetic launch
+qualification only. Earlier B10 pending-acceptance text below is historical.
+
 RF-RUNTIME-005B10 [native tool qualification](hermes-native-tool-boundary-v1.md)
 is source-only complete. Recommended roost-hermes-native-audited-coding-v1 is
 **BLOCKED on one owner decision**: acceptance of the disclosed same-owner native

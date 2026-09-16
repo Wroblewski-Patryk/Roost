@@ -1,5 +1,135 @@
 # Hermes native tool boundary v1
 
+RF-RUNTIME-005B11, 2026-09-16. **Implemented with synthetic/native harmless
+fixtures; real Hermes/model execution remains denied.** The owner accepted the
+B10 native same-owner residual risk under [ADR-004 v7](../decisions/ADR-004-native-hermes-codex-pilot.md).
+Acceptance does not authorize out-of-scope actions: a detected boundary violation
+fails review, blocks release and requires owned-only reconciliation.
+
+## Implemented B11 contract
+
+[Typed authority](../../scripts/lib/agent-host-native-authority.mjs) separates
+repository_read, repository_write, local_test, local_commit, remote_push and
+deployment. The existing shared packet validator/API uses the six explicit
+values without inferring one from another. Native coding-local requires exactly
+the first three in both tools and permissions, and exactly file,terminal. A
+separate nativeBoundary task field binds coding-local, allowed relative write
+paths, runtime requirement and declared ports to Ready/input. Inspect-only, absent
+local_test, extra commit/push/deployment grants and unknown profiles cannot obtain
+this coding proof. The current execution stage rejects all three finalization/release authorities.
+No commit/release executor was added; a future commit stage
+needs explicit authority plus tests/review and push/deploy remain separate gates.
+
+[Profile v4](../../scripts/lib/agent-host-hermes-profile.mjs) preserves v1-v3 bytes
+and B7/B9 controls. It fixes public lsp.enabled=false, lsp.install_strategy=off,
+terminal.auto_source_bashrc=false, terminal.shell_init_files=[], manual approvals,
+single_query/unattended/cron deny, empty command_allowlist and defense-in-depth
+deny patterns. Public-key consumers are pinned: [LSP installer L108-L123](https://github.com/NousResearch/hermes-agent/blob/939e45c91d751fadd94dcd1b873ac3cb44846213/agent/lsp/install.py#L108-L123),
+[LSP manager L135-L167](https://github.com/NousResearch/hermes-agent/blob/939e45c91d751fadd94dcd1b873ac3cb44846213/agent/lsp/manager.py#L135-L167)
+and the B10 approval/shell sources below. Memory/profile learning remains disabled;
+no memory/skill-management toolset is selected. There is no invented switch to
+remove B7's accepted bundled-skills startup synchronization. Shell access could
+still mutate files despite instructions; that remains accepted residual risk.
+
+[Startup](../../scripts/lib/agent-host-hermes-startup.mjs) derives exactly one
+HERMES_WRITE_SAFE_ROOT from the validated canonical repository, never from the
+parent environment or model. Safe mode remains mandatory. The native root must
+match the same opaque startup proof, budget, Ready, application record origin and
+task branch/head. Empty, multiple or changed roots/config/authority fail closed.
+Sealed non-waivable instructions prohibit out-of-root work, clone/worktree/init,
+extra application copies/instances, destructive Git cleanup, secret access,
+installation, skill/memory mutation and unapproved network/release operations.
+These are instructions plus detection, not an OS command interceptor.
+
+[Application lease](../../scripts/lib/agent-host-application-lease.mjs) is created
+exclusively in existing private Writer state and binds application/attempt/writer.
+Its genuine Writer handle is rechecked. Runtime-required tasks need declared
+ports and a successful scoped Windows listener/PID/start-time observation; occupied
+or unknown ports block. No existing instance is killed or silently reused. Edit
+only tasks reserve the application slot without process/port observation. Port
+observation covers declared listeners, not every process on the laptop, UDP,
+unbound processes or transient additional instances. Only the owned Windows Job
+terminates execution descendants; lease release never kills an arbitrary PID.
+
+[Footprint](../../scripts/lib/agent-host-native-footprint.mjs) binds physical
+root/Git identities, expected HEAD/branch/origin, one worktree registration,
+Git authority metadata, bounded dirty-path digests and metadata within the root.
+It checks at most 8192 entries/depth 24, 128 dirty files, 8 MiB per hashed file,
+32 MiB dirty bytes and 2 MiB per Git command; overflow fails closed. Dependency
+subtrees node_modules/venv/.venv and Git objects/logs have only directory metadata
+coverage, explicitly partial. The bounded immediate workspace-parent inventory
+records sibling entry identity changes without traversing other applications.
+No whole-home scan, credential-store read or global clone inventory is performed.
+
+Pre-existing dirty bytes/status must remain identical; post changes must fit the
+sealed relative write paths. Root replacement, links/junctions observed by the
+native checks, changed repository authority/worktree state, nested .git, new
+siblings, unexpected paths and observed extra listeners fail qualification. A
+consistent pre-run snapshot is rechecked before process consumption. Quiet output
+or a successful exit cannot override violations. Dependencies, content changes
+that evade metadata observation, unobserved paths, races and transient actions
+remain coverage gaps, never a claim of full containment.
+
+[Native policy proof](../../scripts/lib/agent-host-hermes-native-boundary.mjs)
+issues a strict receipt bound to the same opaque input/startup/budget, owner-risk
+reference, owner attestation, Writer/application lease and pre/post footprints.
+Receipts expose counts and digests, not filenames, paths, code, diff content,
+prompt, identity data or raw shell output. Serialized/copy/widened receipts are
+not authority. v4 process collection requires this proof in addition to B9.
+A successful observed run produces review_required, never release authority.
+API completion and review approval also reject negative or missing native result
+evidence for a native task; serialized diagnostic checks never grant execution.
+Boundary violation takes precedence over cancellation/timeout in classification.
+Missing Job proof retains ownership and blocks cleanup/release.
+
+Temporary-root handles are locally minted with an unpredictable HMAC marker and
+physical parent/root identities. Post-run cleanup requires the genuine same
+attempt handle, intact marker, bounded non-linked inventory and owned Job cleanup.
+No marker or ambiguous identity means preserve and escalate. No recursive user
+cache deletion or automatic rollback exists. The public terminal/blocked-script
+cache paths are inspected only as metadata and must be absent/empty before start;
+unowned remaining entries block reconciliation rather than being auto-deleted.
+Accepted B7 startup/session effects outside these observed roots remain disclosed.
+
+This is practical prevention (authority/seals/leases), detection (bounded manifests)
+and recovery (owned Job/temp only). It does not stop arbitrary same-owner shell
+file/network effects or provide Windows handle-relative TOCTOU isolation. No
+VM, fork, proxy, new tool framework, Restricted Token or ACL system was added.
+
+Only a fresh local opaque native proof discharges
+hermes_native_tools_isolation_unproven **under the accepted risk contract**, not
+as evidence of complete isolation. The global registry/API blocker list and all
+six flags remain false. Final real launch stays unconditionally denied; public
+launch, per-attempt cleanup/auth, runtime/inference/E2E/pilot/release gates remain.
+The sole proposed next atom is RF-RUNTIME-005B12: source/synthetic qualification
+of the remaining public launch admission contract, with no model/pilot activation.
+
+## B11 qualification and private readback
+
+The three private profile/binding/owner-attestation files were migrated to v4 and
+read back successfully. Original attestation identity, confirmation time and
+expiry were preserved; no credential store or CODEX_HOME was read. One backup
+per changed file was removed after readback. Exact public profile digest:
+`b0f5d12b36e48654ae269cde01140be7bc06cae157cfb70c6393d5127dc0c8c7`.
+The write root is derived per attempt; no installation path is distributed.
+
+Qualification uses temporary Git repositories and compiled harmless process-tree
+fixtures, never installed Hermes/upstream code or a model. Tests cover clean and
+dirty roots, scope/metadata/worktree/bare-clone drift, junctions/aliases, missing
+and elevated authority, application lease contention/unknown observations,
+marked-only cleanup, receipt privacy/forgery, cancellation/timeout and violation
+precedence. Existing B3-B9/provider/input/launch/lifecycle/Windows Job regressions
+include controller-loss and foreign-process preservation. API result guards have
+pure tests; no database-backed API/E2E, live application observer, Hermes loader,
+MCP/OAuth or production run was performed. Typecheck, lint, server/web build,
+documentation validators and source/link/privacy/diff checks are the release
+checks for this atom; build retains existing unresolved-asset/large-chunk warnings.
+
+## Historical B10 source qualification
+
+The following B10 decision request and implementation proposal are retained as
+source history; B11/v7 above supersedes their pending-acceptance/B11-next status.
+
 RF-RUNTIME-005B10, 2026-09-16. Source-only qualification is complete.
 **BLOCKED on one owner decision:** acceptance of the residual native-tool risk
 specified below. Recommended contract: **roost-hermes-native-audited-coding-v1**.

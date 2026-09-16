@@ -28,16 +28,15 @@ native cleanup; no resume or whole-task restart; unavailable accounting null;
 exit 0 only candidate_result for independent review. Private v3 profile is read
 back with owner identity/confirmation/expiry preserved. This is synthetic/native
 fixture qualification, not real Hermes execution. All six flags remain false.
-[RF-RUNTIME-005B10 native tool qualification](../architecture/hermes-native-tool-boundary-v1.md)
-is source-only complete. Recommended roost-hermes-native-audited-coding-v1 is
-**BLOCKED on one owner decision**: explicit acceptance of same-owner native
-file/shell residual risk, including effects outside the repository/network and
-incomplete detection/recovery. Public write-root checks are partial; cwd, prompts
-and bounded post-run inventories are not confinement. ADR-004 remains v6.
-Exactly one next proposed atom, conditional on that acceptance:
-**RF-RUNTIME-005B11 — implement and synthetically qualify the selected native-tool
-policy and coverage-aware footprint receipts**. No real Hermes/model run is
-included. Remaining runtime/inference/E2E/pilot/release gates remain intact.
+[RF-RUNTIME-005B11 native audited coding](../architecture/hermes-native-tool-boundary-v1.md)
+is implemented under ADR-004 v7. Owner acceptance resolves B10's one pending
+risk decision; authority, v4 startup, leases, manifests and owned cleanup have
+synthetic qualification. Native tool isolation remains technically incomplete;
+violations block review/release and unobserved/transient effects remain accepted
+risk. Only fresh opaque proof removes the local native-tool blocker. All six
+flags remain false. Exactly one next proposed atom: **RF-RUNTIME-005B12 —
+source/synthetic qualification of remaining public launch admission**, without
+real Hermes/model/pilot or release activation. Not started.
 
 The first-provider choice is resolved by RF-RUNTIME-002 /
 [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md): native Hermes using

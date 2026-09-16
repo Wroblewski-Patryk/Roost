@@ -1,10 +1,11 @@
+import { nativeToolBlockers } from "./agent-host-hermes-native-boundary.mjs";
 import path from "node:path";
 import { z } from "zod";
 import contract from "./agent-host-provider-contract.cjs";
 import hermesContract from "./agent-host-hermes-launch-contract.cjs";
 import { modelSelectionSchema, codexExecutionArgs } from "./agent-host-model-policy.mjs";
-import { providerInputTransport, consumeProviderInput, assertProviderProfile, assertProviderStartup } from "./agent-host-provider-input.mjs";
-import { hermesProfileBindingSchema, hermesProfileAuthBlockers, hermesStartupProfileVersion, hermesBudgetProfileVersion } from "./agent-host-hermes-profile.mjs";
+import { providerInputTransport, consumeProviderInput, assertProviderProfile, assertProviderStartup, assertProviderNativeBoundary } from "./agent-host-provider-input.mjs";
+import { hermesProfileBindingSchema, hermesProfileAuthBlockers, hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion } from "./agent-host-hermes-profile.mjs";
 import { hermesStartupArgs, hermesStartupBlockers } from "./agent-host-hermes-startup.mjs";
 import { guardHostContent } from "./agent-host-redaction.mjs";
 import { hermesOwnedTreeBlockers } from "./agent-host-windows-job.mjs";
@@ -61,7 +62,7 @@ export function projectProviderLaunch({ provider, envelope, repositoryPath, code
   if (envelope.identity.attempt !== 1 || envelope.contract.budgets.maxAttempts !== 1) fail("hermes_single_attempt_required");
   let blockers = hermesProfileAuthBlockers(hermesOwnedTreeBlockers(hermesContract.blockers, ownedTreeReceipt),
     ownerAuthReceipt, provider.profile, { repositoryPath, readyRevision: envelope.revisions.ready });
-  const startup = [hermesStartupProfileVersion, hermesBudgetProfileVersion].includes(provider.profile?.schemaVersion)
+  const startup = [hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion].includes(provider.profile?.schemaVersion)
     ? assertProviderStartup({ envelope, provider, repositoryPath, startupEnvironment, startupCandidate }) : undefined;
   if (startup) blockers = hermesStartupBlockers(blockers, startup.receipt, startup.options);
   const acceptedResidualBlockers = startup?.budgetReceipt ? ["hermes_single_turn_enforcement_unproven", "hermes_output_cost_budget_unproven"] : [];
@@ -70,6 +71,8 @@ export function projectProviderLaunch({ provider, envelope, repositoryPath, code
     // it does not prove physical call/token/cost caps or change global gates.
     blockers = hermesBudgetBlockers([...blockers.filter(code => !acceptedResidualBlockers.includes(code)), hermesBudgetBlocker], startup.budgetReceipt);
   }
+  const nativeReceipt = provider.profile?.schemaVersion === hermesNativeProfileVersion ? assertProviderNativeBoundary(envelope) : null;
+  if (nativeReceipt) blockers = nativeToolBlockers(blockers, nativeReceipt, envelope);
   // Only documented flags. No invented --reasoning-effort/--ephemeral/--no-*
   // switches. This is a blocked candidate, NEVER a runnable descriptor.
   return freeze({ version: hermesContract.version, kind, command: null, args: null,
@@ -79,7 +82,7 @@ export function projectProviderLaunch({ provider, envelope, repositoryPath, code
     cwd: repositoryPath, input: transport.input, modelSelection: selection.data,
     requiredConfig: { reasoningEffortKey: "agent.reasoning_effort", reasoningEffort: selection.data.reasoningEffort,
       workerOwnedMcpOnly: true, configReceipt: startup?.receipt ?? null, environmentReceipt: startup?.receipt.environmentDigest ?? null },
-    budgetReceipt: startup?.budgetReceipt ?? null, acceptedResidualBlockers,
+    budgetReceipt: startup?.budgetReceipt ?? null, nativeToolReceipt: nativeReceipt, acceptedResidualBlockers,
     limits: { ...envelope.contract.budgets, ...hermesContract, blockers }, shell: false, windowsHide: true,
     blockers });
 }
@@ -94,7 +97,7 @@ export function prepareProviderLaunch(options, consumption) {
     // Production reads the owner-confirmed private attestation again. No caller
     // auth/status override is accepted; all other admission blockers remain.
     assertProviderProfile(options.envelope, options.provider, options.repositoryPath);
-    if ([hermesStartupProfileVersion, hermesBudgetProfileVersion].includes(options.provider.profile?.schemaVersion)) assertProviderStartup(options);
+    if ([hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion].includes(options.provider.profile?.schemaVersion)) assertProviderStartup(options);
     fail("hermes_public_launch_contract_unqualified");
   }
   return plan;

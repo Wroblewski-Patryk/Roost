@@ -1,3 +1,4 @@
+import { abandonProviderNativeBoundary } from "./lib/agent-host-provider-input.mjs";
 import { inspectExecutionProvider, providerAdmissionReason } from "./lib/agent-host-execution-provider.mjs";
 import lifecycle from "./lib/agent-host-lifecycle.cjs";
 import { spawn } from "node:child_process";
@@ -17,7 +18,7 @@ import { prepareProviderInput } from "./lib/agent-host-provider-input.mjs";
 import { hermesStartupEnvironment } from "./lib/agent-host-hermes-startup.mjs";
 import { createDirectTurnGuard } from "./lib/agent-host-direct-turn.mjs";
 import { createHermesOutputIntent } from "./lib/agent-host-hermes-budget.mjs";
-import { hermesBudgetProfileVersion } from "./lib/agent-host-hermes-profile.mjs";
+import { hermesBudgetProfileVersion, hermesNativeProfileVersion } from "./lib/agent-host-hermes-profile.mjs";
 import { runHermesOwnedProcess } from "./lib/agent-host-hermes-quiet.mjs";
 import { collectWorkspaceEvidence } from "./lib/agent-host-workspace-evidence.mjs";
 import { createExecutionDuration } from "./lib/agent-host-execution-duration.mjs";
@@ -192,7 +193,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
   let stopRequested = false;
   let duration;
   let outputBudget;
-  let hermesBaseline;
+  let hermesBaseline, nativeInput;
   let hermesCollection, hermesAbort;
   function stopWorker() {
     stopping = true;
@@ -239,7 +240,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     validateExecutionPacket(taskContext?.executionPacket, claimed, taskContext, applicationContext);
     readyContext.assertReadyContext(taskContext, applicationContext, claimed);
     const practicalHermes = config.executionProvider?.kind === "hermes_codex"
-      && config.executionProvider.profile?.schemaVersion === hermesBudgetProfileVersion;
+      && [hermesBudgetProfileVersion, hermesNativeProfileVersion].includes(config.executionProvider.profile?.schemaVersion);
     if (config.executionProvider?.kind === "hermes_codex" && (resumeCheckpoint || claimed.codexThreadId)) throw protocolAdmissionError("hermes_attempt_resume_forbidden");
     outputBudget = (practicalHermes ? createHermesOutputIntent : createOutputBudget)({ maxOutputTokens: taskContext.executionPacket.contract.budgets.maxOutputTokens, onStopped: stopWorker });
     outputBudget.assertWithinBudget();
@@ -263,8 +264,10 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     const providerInput = prepareProviderInput({ fresh: { taskContext, applicationContext }, claimed,
       currentCommit: preparedCommit, assertAuthority: assertProviderAuthority, secrets: [apiKey],
       provider: config.executionProvider, repositoryPath,
+      nativeBoundaryOptions: { writerLock, expected: { head: preparedCommit, branch: taskContext.executionPacket.contract.singleTask.branch, origin: repository.originUrl } },
       startupEnvironment: config.executionProvider?.kind === "hermes_codex" && config.executionProvider.profile
-        ? hermesStartupEnvironment(config.executionProvider.profile) : undefined });
+        ? hermesStartupEnvironment(config.executionProvider.profile, process.env, repositoryPath) : undefined });
+    nativeInput = providerInput;
     if (config.executionProvider?.kind === "hermes_codex") hermesBaseline = await duration.wait(collectWorkspaceEvidence({
       repositoryPath, expectedHead: preparedCommit, expectedBranch: taskContext.executionPacket.contract.singleTask.branch,
       inputSeal: providerInput.seal, secrets: [apiKey, claimed.leaseToken] }));
@@ -290,7 +293,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     const launch = prepareProviderLaunch({ provider: config.executionProvider, envelope: providerInput,
       repositoryPath, codexCommand, sandbox, secrets: [apiKey, claimed.leaseToken],
       startupEnvironment: config.executionProvider?.kind === "hermes_codex" && config.executionProvider.profile
-        ? hermesStartupEnvironment(config.executionProvider.profile) : undefined }, { fresh, claimed, currentCommit,
+        ? hermesStartupEnvironment(config.executionProvider.profile, process.env, repositoryPath) : undefined }, { fresh, claimed, currentCommit,
       assertAuthority: assertProviderAuthority, secrets: [apiKey] });
     assertProviderAuthority();
     let transportAccounting;
@@ -300,7 +303,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       hermesAbort = new AbortController();
       const pending = hermesCollection = runHermesOwnedProcess({ executable: launch.command, argv: launch.args,
         cwd: launch.cwd, environment: launch.candidateEnvironment, attempt: claimed.id, input: launch.input, remainingMs: () => duration.remainingMs,
-        signal: hermesAbort.signal, budgetReceipt: launch.budgetReceipt,
+        signal: hermesAbort.signal, budgetReceipt: launch.budgetReceipt, nativeToolReceipt: launch.nativeToolReceipt,
         stopReason: () => duration.failure ?? lease.failure,
         secrets: [apiKey, claimed.leaseToken], assertAuthority: assertProviderAuthority,
         shutdownRequested: () => shutdownRequested || stopping });
@@ -311,6 +314,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       usage = { inputTokens: null, outputTokens: null, cost: null, physicalModelCalls: null, toolCalls: null, transportRetries: null };
       verification.ownedTreeReceipt = receipt.ownedTreeReceipt;
       verification.attemptBudgetReceipt = receipt.attemptBudgetReceipt;
+      verification.nativeToolReceipt = receipt.nativeToolReceipt;
       verification.outcome = "candidate_result";
       verification.reviewRequired = true;
       transportAccounting = { interface: "quiet", outcome: "candidate_result", usageAccounting: "unavailable", internalTurnCount: null,
@@ -440,6 +444,9 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     duration?.stop();
     lease.stop();
     let hermesCleanupError;
+    if (nativeInput && !hermesCollection) {
+      try { abandonProviderNativeBoundary(nativeInput); } catch { retainWriterLock = true; }
+    }
     if (hermesCollection) {
       hermesAbort.abort();
       await hermesCollection.catch(error => {

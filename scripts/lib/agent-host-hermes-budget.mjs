@@ -88,6 +88,13 @@ export function assertHermesBudgetReceipt(receipt) {
   if (!proof || !isHermesStartupReceipt(proof.startup, proof.envelope, proof.seal)) fail("hermes_attempt_budget_unproven");
   return assertHermesBudget(proof.seal, proof.envelope);
 }
+export function hermesBudgetReceiptMatches(receipt, envelope, startup) {
+  const proof = receipts.get(receipt);
+  return Boolean(proof && proof.envelope === envelope && (!startup || proof.startup === startup));
+}
+export function hermesBudgetRequiresNativeBoundary(receipt) {
+  return receipts.get(receipt)?.startup.profileVersion === "roost-hermes-profile-v4";
+}
 export function hermesBudgetBlockers(blockers, receipt) {
   try { assertHermesBudgetReceipt(receipt); return blockers.filter(code => code !== hermesBudgetBlocker); }
   catch { return [...blockers]; }
@@ -107,6 +114,7 @@ export function consumeHermesBudgetReceipt(receipt, { attempt, input, ...process
   return () => assertHermesBudget(proof.seal, proof.envelope).remainingMs;
 }
 export function classifyHermesOutcome({ error, ownedTreeReceipt, exitCode }) {
+  if (error?.boundaryViolation) return "boundary_violation";
   if (error?.leaseLost) return "policy_blocked";
   const job = isWindowsJobReceipt(ownedTreeReceipt) ? ownedTreeReceipt : null;
   if (error?.durationLimit || ["hermes_quiet_timeout", "hermes_attempt_budget_expired"].includes(error?.message) || job?.terminationReason === "timeout") return "timed_out";

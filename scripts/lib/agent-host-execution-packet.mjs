@@ -1,3 +1,4 @@
+import { typedOperationSchema, nativeBoundaryContractSchema } from "./agent-host-native-authority.mjs";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import { normalizeGitRemote } from "./agent-host-workspace-guard.mjs";
@@ -12,9 +13,10 @@ const ref = z.object({ id, revision: text }).strict();
 const refs = z.array(ref).min(1).max(10);
 const optionalSet = (item) => z.object({ items: z.array(item).max(30), noneReason: text.nullable() }).strict()
   .refine((value) => value.items.length ? value.noneReason === null : Boolean(value.noneReason));
-const operations = z.enum(["repository_read", "repository_write", "local_test"]);
+const operations = typedOperationSchema;
 export const executionContractSchema = z.object({
   version: text,
+  nativeBoundary: nativeBoundaryContractSchema.optional(),
   singleTask: singleTaskSchema,
   taskRoles: taskRolesSchema,
   objective: z.object({ outcome: text, goalId: id }).strict(),
@@ -24,7 +26,7 @@ export const executionContractSchema = z.object({
   context: z.object({ company: refs, product: refs, technical: refs }).strict(),
   procedures: optionalSet(ref),
   skills: optionalSet(z.object({ name: text, version: text }).strict()),
-  access: z.object({ tools: z.array(operations).min(1).max(3), permissions: z.array(operations).min(1).max(3),
+  access: z.object({ tools: z.array(operations).min(1).max(6), permissions: z.array(operations).min(1).max(6),
     sandbox: z.literal("workspace-write"), externalWrites: z.literal(false), restrictions: texts }).strict(),
   dependencies: optionalSet(ref.extend({ resolution: z.literal("satisfied"), evidence: text })),
   decisions: optionalSet(ref),
@@ -64,6 +66,8 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
     for (const issue of parsed.error.issues) add(issue.path.join(".") || "packet", issue.code === "invalid_type" && issue.received === "undefined" ? "missing" : "invalid");
   } else {
     const p = parsed.data, c = p.contract, task = taskContext?.task, agent = task?.assignedWorkforceEntity;
+    if ([...c.access.tools, ...c.access.permissions].some(op => ["local_commit", "remote_push", "deployment"].includes(op)))
+      add("contract.access", "separate_finalization_or_release_stage_required");
     const composition=p.procedureComposition;
     if(!options.allowUncomposed && (composition.algorithm!=="roost-procedure-composition-v1" || composition.status!=="composed" || !/^[a-f0-9]{64}$/.test(composition.seal??"") || composition.operation!=="runtime_execute" || composition.applicationId!==claimed?.applicationId || !Array.isArray(composition.missing) || composition.missing.length || !Array.isArray(composition.conflicts) || composition.conflicts.length)) add("procedureComposition","missing_or_conflicting");
     if((!options.allowUncomposed || composition.status==="composed") && c.access.tools.some(tool=>!composition.fields?.tools?.includes(tool)))add("procedureComposition.tools","outside_composed_authority");

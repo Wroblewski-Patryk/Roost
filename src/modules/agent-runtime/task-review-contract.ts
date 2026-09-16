@@ -15,6 +15,20 @@ export const reviewActionSchema = z.discriminatedUnion("action", [
   z.object({ grantId: precondition.grantId, requestId: precondition.requestId, expectedVersion: precondition.expectedVersion, reviewId: z.string().uuid(), action: z.literal("create_specialist_task"), scope: lines, specialist: z.object({ id: z.string().uuid(), revision: z.string().min(1).max(100) }).strict() }).strict()
 ]);
 export const object = (value: unknown): Record<string, any> => value && typeof value === "object" && !Array.isArray(value) ? value : {};
+// Negative evidence must never be laundered through completion or approval.
+// This is a conservative result guard, not authority from serialized receipts.
+export function nativeBoundaryResultBlocked(verification: unknown, contract?: unknown): boolean {
+  const v = object(verification), receipt = object(v.nativeToolReceipt);
+  if (["boundary_violation", "policy_blocked"].includes(v.outcome)) return true;
+  if (!object(contract).nativeBoundary && v.nativeToolReceipt === undefined) return false;
+  return receipt.policyVersion !== "roost-hermes-native-audited-coding-v1"
+    || receipt.ownerRiskReference !== "ADR-004-v7-native-tools" || receipt.authorityProfile !== "coding-local"
+    || JSON.stringify(receipt.authorities) !== JSON.stringify(["repository_read", "repository_write", "local_test"])
+    || JSON.stringify(receipt.toolsets) !== JSON.stringify(["file", "terminal"])
+    || receipt.classification !== "review_required" || receipt.releaseAllowed !== false || receipt.reviewRequired !== true
+    || !Array.isArray(receipt.violations) || receipt.violations.length !== 0
+    || !/^[a-f0-9]{64}$/.test(receipt.postFootprintDigest ?? "") || !/^[a-f0-9]{64}$/.test(receipt.jobReceiptDigest ?? "");
+}
 export const wire = (value: unknown): any => JSON.parse(JSON.stringify(value));
 const canonical = (value: any): any => Array.isArray(value) ? value.map(canonical) : value && typeof value === "object" ? Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])])) : value;
 export const reviewDigest = (value: unknown) => createHash("sha256").update(JSON.stringify(canonical(wire(value)))).digest("hex");

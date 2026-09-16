@@ -1,3 +1,4 @@
+import { nativeBoundaryResultBlocked } from "./task-review-contract";
 import { executionProviderRegistry, projectProvider, sanitizeProviderMetadata } from "./execution-provider";
 import { interviewView,interviewCommand } from "./task-interview";
 import { clarificationView,clarificationCommand } from "./task-clarification";
@@ -564,6 +565,7 @@ agentRuntimeRouter.post("/executions/:id/actions/complete", asyncHandler(async (
     if (context.error) return context;
     const current = await tx.agentExecution.findUniqueOrThrow({where:{id:existing.id}});
     const metadata=executionReportMetadata(current.metadata,input.metadata??{}) as Record<string,any>;
+    if(nativeBoundaryResultBlocked(input.verification, metadata.executionContract)) return {error:"native_boundary_reconciliation_required"};
     if(input.resultRevision && input.resultRevision.branch!==(metadata.executionContract as any)?.singleTask?.branch)return {error:"agent_execution_result_revision_invalid"};
     const resultRevision=input.resultRevision?{schemaVersion:"roost-result-revision-v1",id:randomUUID(),executionId:current.id,attempt:current.attempt,hostId:current.agentHostId,checkpointVersion:current.checkpointVersion,observedAt:new Date().toISOString(),...input.resultRevision}:null;
     const completed = await tx.agentExecution.updateMany({ where: { id: existing.id, contextInvalidatedAt: null, leaseToken: input.leaseToken, leaseExpiresAt: { gt: new Date() }, cancelRequestedAt: null, status: { in: ["claimed", "running", "waiting_for_approval"] } }, data: { status: "completed", summary: input.summary, finalResponse: input.finalResponse, codexThreadId: input.codexThreadId === undefined ? existing.codexThreadId : input.codexThreadId, changedFiles: json(input.changedFiles), verification: json(input.verification), usage: json(input.usage), metadata:json({...metadata,resultRevision}), errorState: Prisma.DbNull, completedAt: new Date(), leaseExpiresAt: null, leaseToken: null } });

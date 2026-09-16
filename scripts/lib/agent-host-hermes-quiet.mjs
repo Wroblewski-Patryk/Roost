@@ -1,16 +1,19 @@
+import { consumeNativeToolBoundary, completeNativeToolBoundary } from "./agent-host-hermes-native-boundary.mjs";
 import { guardHostContent } from "./agent-host-redaction.mjs";
 import { terminateWindowsProcessTree } from "./agent-host-execution-lease.mjs";
 import contract from "./agent-host-hermes-launch-contract.cjs";
 import { startWindowsJob, temporaryWindowsJobLauncher, isWindowsJobReceipt } from "./agent-host-windows-job.mjs";
 
-import { consumeHermesBudgetReceipt, assertHermesBudgetProcess, completeHermesBudgetReceipt, classifyHermesOutcome } from "./agent-host-hermes-budget.mjs";
+import { consumeHermesBudgetReceipt, assertHermesBudgetProcess, completeHermesBudgetReceipt, classifyHermesOutcome, hermesBudgetRequiresNativeBoundary } from "./agent-host-hermes-budget.mjs";
 
 // Real native backend; no receipt or cleanup callback can be injected by config.
 // Build happens before any target process, rechecking authority afterward.
 export async function runHermesOwnedProcess({ executable, argv, cwd, environment, input, attempt,
-  remainingMs, secrets = [], assertAuthority, signal, shutdownRequested = () => false, stopReason = () => undefined, budgetReceipt }) {
+  remainingMs, secrets = [], assertAuthority, signal, shutdownRequested = () => false, stopReason = () => undefined, budgetReceipt, nativeToolReceipt }) {
   const began = performance.now();
-  let observedJob, observedExit;
+  let observedJob, observedExit, nativeProof, nativeResult;
+  if (hermesBudgetRequiresNativeBoundary(budgetReceipt) && !nativeToolReceipt)
+    throw Object.assign(failure("hermes_native_boundary_required"), { protocolAdmission: true, outcome: "policy_blocked" });
   const budgetRemaining = budgetReceipt ? consumeHermesBudgetReceipt(budgetReceipt, { attempt, input, executable, argv, cwd, environment }) : null;
   const remaining = () => Math.min(remainingMs(), budgetRemaining ? budgetRemaining() : Infinity);
   try { return await temporaryWindowsJobLauncher(async artifact => {
@@ -31,8 +34,11 @@ export async function runHermesOwnedProcess({ executable, argv, cwd, environment
     };
     check(); if (problem) throw problem;
     if (budgetReceipt) assertHermesBudgetProcess(budgetReceipt, { executable, argv, cwd, environment });
+    if (nativeToolReceipt) nativeProof = consumeNativeToolBoundary(nativeToolReceipt, { cwd, environment, attempt, budgetReceipt });
+    check(); if (problem) throw problem;
     // Reserve the existing 3-second launcher assignment window too. The Worker
-    // timer includes that window; native duration starts when the root resumes.
+    // timer includes that window; compute AFTER the bounded footprint recheck
+    // so its time cannot extend the original native cleanup deadline.
     const nativeDuration = Math.floor(remaining()) - (budgetReceipt ? 3000 : 0);
     if (nativeDuration < 1) throw failure("hermes_quiet_timeout");
     handle = await startWindowsJob(artifact, { executable, argv, cwd, environment, input, attempt,
@@ -45,16 +51,25 @@ export async function runHermesOwnedProcess({ executable, argv, cwd, environment
       const receipt = observedJob = await handle.completion;
       observedExit = receipt.rootExit;
       if (!isWindowsJobReceipt(receipt)) throw Object.assign(failure("hermes_stop_recovery_unproven"), { leaseLost: true });
+      if (nativeProof) {
+        nativeResult = completeNativeToolBoundary(nativeProof, { ownedTreeReceipt: receipt, error: problem });
+        if (nativeResult.classification === "boundary_violation") throw Object.assign(failure("hermes_native_boundary_violation"), { boundaryViolation: true, protocolAdmission: true });
+      }
       if (problem) throw problem;
       check(); if (problem) throw problem;
       if (receipt.terminationReason !== "root_exit") throw failure(`hermes_quiet_${receipt.terminationReason}`);
-      return Object.freeze({ ...guard.complete(receipt.rootExit), ownedTreeReceipt: receipt,
+      return Object.freeze({ ...guard.complete(receipt.rootExit), ownedTreeReceipt: receipt, nativeToolReceipt: nativeResult,
         ...(budgetReceipt ? { attemptBudgetReceipt: completeHermesBudgetReceipt(budgetReceipt, { ownedTreeReceipt: receipt, exitCode: receipt.rootExit, wallTimeMs: performance.now() - began }) } : {}) });
     } finally {
       clearTimeout(deadlineTimer); clearInterval(timer); signal?.removeEventListener("abort", abort);
       handle.stop("preparation_failed"); await handle.completion;
     }
   }); } catch (error) {
+    if (nativeProof && !nativeResult) nativeResult = completeNativeToolBoundary(nativeProof, { ownedTreeReceipt: observedJob, error });
+    if (nativeResult) {
+      error.details = { ...error.details, nativeToolReceipt: nativeResult };
+      if (nativeResult.classification === "boundary_violation") { error.boundaryViolation = true; error.protocolAdmission = true; error.leaseLost = true; }
+    }
     error.outcome = classifyHermesOutcome({ error, ownedTreeReceipt: observedJob, exitCode: observedExit });
     if (budgetReceipt) error.details = { ...error.details, attemptBudgetReceipt: completeHermesBudgetReceipt(budgetReceipt,
       { error, ownedTreeReceipt: observedJob, exitCode: observedExit, wallTimeMs: performance.now() - began }) };

@@ -1,10 +1,11 @@
+import { assertCodingAuthority } from "./agent-host-native-authority.mjs";
 import path from "node:path";
 import { lstatSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import contract from "./agent-host-provider-contract.cjs";
 import { modelSelectionSchema } from "./agent-host-model-policy.mjs";
-import { hermesStartupProfileVersion, hermesStartupProfileDigest, hermesBudgetProfileVersion, hermesBudgetProfileDigest, inspectHermesProfile, sealHermesProfile, assertHermesProfile } from "./agent-host-hermes-profile.mjs";
+import { hermesStartupProfileVersion, hermesStartupProfileDigest, hermesBudgetProfileVersion, hermesBudgetProfileDigest, hermesNativeProfileVersion, hermesNativeProfileDigest, inspectHermesProfile, sealHermesProfile, assertHermesProfile } from "./agent-host-hermes-profile.mjs";
 
 import { hermesBudgetArgs } from "./agent-host-hermes-budget.mjs";
 
@@ -26,7 +27,7 @@ const osPath = value => /^[a-z]:\\/i.test(value) ? path.win32 : path;
 
 // Select names before reading values. No CODEX_HOME, token, proxy, Python hook,
 // dispatcher or provider variable is read/copied from the parent environment.
-export function hermesStartupEnvironment(binding, source = process.env) {
+export function hermesStartupEnvironment(binding, source = process.env, repositoryPath) {
   const env = {};
   for (const key of plumbing) {
     const names = Object.keys(source).filter(n => n.toUpperCase() === key);
@@ -37,7 +38,8 @@ export function hermesStartupEnvironment(binding, source = process.env) {
       env[key] = value;
     }
   }
-  return { ...env, HERMES_HOME: osPath(binding.profilePath).dirname(binding.profilePath), HERMES_SAFE_MODE: "1",
+  if (binding.schemaVersion === hermesNativeProfileVersion && (!repositoryPath || !path.isAbsolute(repositoryPath) || /[;\r\n]/.test(repositoryPath))) fail("hermes_write_root_invalid");
+  return { ...env, ...(binding.schemaVersion === hermesNativeProfileVersion ? { HERMES_WRITE_SAFE_ROOT: repositoryPath } : {}), HERMES_HOME: osPath(binding.profilePath).dirname(binding.profilePath), HERMES_SAFE_MODE: "1",
     PYTHONNOUSERSITE: "1", PYTHONDONTWRITEBYTECODE: "1", PYTHONUTF8: "1",
     GIT_TERMINAL_PROMPT: "0", GIT_OPTIONAL_LOCKS: "0" };
 }
@@ -46,6 +48,7 @@ export function hermesStartupEnvironment(binding, source = process.env) {
 // File exposes writes: do not grant it to a repository-read-only task. Terminal
 // is enabled only for an explicit local_test grant in BOTH packet lists.
 export function hermesTaskToolsets(envelope) {
+  if (envelope.contract.nativeBoundary) { assertCodingAuthority(envelope); return ["file", "terminal"]; }
   const access = envelope.contract.access;
   const allowed = op => access.tools.includes(op) && access.permissions.includes(op);
   if (!allowed("repository_read") || !allowed("repository_write")) fail("hermes_startup_tools_not_authorized");
@@ -60,8 +63,8 @@ export function hermesStartupArgs(envelope) {
     "--toolsets", hermesTaskToolsets(envelope).join(",")];
 }
 export function createHermesStartupCandidate({ provider, envelope, repositoryPath, environment, budget }) {
-  return freeze({ command: provider.executablePath, args: [...hermesStartupArgs(envelope), ...(provider.profile?.schemaVersion === hermesBudgetProfileVersion ? hermesBudgetArgs(budget, envelope) : [])], cwd: repositoryPath,
-    environment: structuredClone(environment ?? hermesStartupEnvironment(provider.profile)),
+  return freeze({ command: provider.executablePath, args: [...hermesStartupArgs(envelope), ...([hermesBudgetProfileVersion, hermesNativeProfileVersion].includes(provider.profile?.schemaVersion) ? hermesBudgetArgs(budget, envelope) : [])], cwd: repositoryPath,
+    environment: structuredClone(environment ?? hermesStartupEnvironment(provider.profile, process.env, repositoryPath)),
     acceptedSideEffects: { ...acceptedHermesStartupEffects }, shell: false, windowsHide: true });
 }
 
@@ -84,13 +87,14 @@ function assertNoStartupOverlays(provider, candidate) {
 }
 function validate({ provider, envelope, repositoryPath, candidate, budget }) {
   if (provider.kind !== "hermes_codex" || !provider.enabled || provider.version !== pin.version || provider.commit !== pin.commit
-      || provider.officialSource !== pin.officialSource || ![hermesStartupProfileVersion, hermesBudgetProfileVersion].includes(provider.profile?.schemaVersion)
-      || provider.profile.configDigest !== (provider.profile.schemaVersion === hermesBudgetProfileVersion ? hermesBudgetProfileDigest : hermesStartupProfileDigest)
+      || provider.officialSource !== pin.officialSource || ![hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion].includes(provider.profile?.schemaVersion)
+      || provider.profile.configDigest !== (provider.profile.schemaVersion === hermesNativeProfileVersion ? hermesNativeProfileDigest : provider.profile.schemaVersion === hermesBudgetProfileVersion ? hermesBudgetProfileDigest : hermesStartupProfileDigest)
       || serialize(provider.policy) !== serialize(contract.registry.hermesPolicy)
       || Object.keys(provider).some(k => !["kind", "enabled", "version", "commit", "officialSource", "executablePath", "profile", "policy", "attestation"].includes(k))) fail("hermes_startup_profile_required");
+  if (provider.profile.schemaVersion === hermesNativeProfileVersion) assertCodingAuthority(envelope);
   const env = candidate?.environment;
-  if (!env || Object.keys(env).some(k => ![...plumbing, "HERMES_HOME", "HERMES_SAFE_MODE", "PYTHONNOUSERSITE", "PYTHONDONTWRITEBYTECODE", "PYTHONUTF8", "GIT_TERMINAL_PROMPT", "GIT_OPTIONAL_LOCKS"].includes(k))) fail("hermes_startup_environment_invalid");
-  const expectedEnvironment = hermesStartupEnvironment(provider.profile, env);
+  if (!env || Object.keys(env).some(k => ![...plumbing, "HERMES_HOME", "HERMES_SAFE_MODE", "HERMES_WRITE_SAFE_ROOT", "PYTHONNOUSERSITE", "PYTHONDONTWRITEBYTECODE", "PYTHONUTF8", "GIT_TERMINAL_PROMPT", "GIT_OPTIONAL_LOCKS"].includes(k))) fail("hermes_startup_environment_invalid");
+  const expectedEnvironment = hermesStartupEnvironment(provider.profile, env, repositoryPath);
   const expected = createHermesStartupCandidate({ provider, envelope, repositoryPath, environment: expectedEnvironment, budget });
   if (serialize(expected) !== serialize(candidate)) fail("hermes_startup_candidate_invalid");
   const profile = inspectHermesProfile(provider.profile, repositoryPath);
@@ -108,7 +112,7 @@ export function sealHermesStartup(options) {
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 export const hermesStartupReceiptSchema = z.object({
   schemaVersion: z.literal(hermesStartupVersion), policyVersion: z.literal(hermesStartupPolicy), qualification: z.literal("source_backed_synthetic_startup_policy"),
-  hermesVersion: z.literal(pin.version), hermesCommit: z.literal(pin.commit), profileVersion: z.enum([hermesStartupProfileVersion, hermesBudgetProfileVersion]), configDigest: z.enum([hermesStartupProfileDigest, hermesBudgetProfileDigest]),
+  hermesVersion: z.literal(pin.version), hermesCommit: z.literal(pin.commit), profileVersion: z.enum([hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion]), configDigest: z.enum([hermesStartupProfileDigest, hermesBudgetProfileDigest, hermesNativeProfileDigest]),
   authAttestationId: z.string().uuid(), authAttestationDigest: hash, authPolicyVersion: z.literal("roost-hermes-same-owner-auth-v2"),
   readyRevision: hash, inputSeal: hash, provider: z.literal("openai-codex"), modelSelection: modelSelectionSchema,
   toolsets: z.array(z.enum(["file", "terminal"])).min(1).max(2), expandedTools: z.array(z.enum(Object.values(expansion).flat())).min(1).max(6),
@@ -164,4 +168,9 @@ export function hermesStartupProcessMatches(receipt, envelope, processOptions) {
   const candidate = proof.options.candidate;
   return serialize([candidate.command, candidate.args, candidate.cwd, candidate.environment])
     === serialize([processOptions.executable, processOptions.argv, processOptions.cwd, processOptions.environment]);
+}
+export function hermesStartupNativeRootMatches(receipt, envelope, root) {
+  const proof = receipts.get(receipt);
+  return Boolean(isHermesStartupReceipt(receipt, envelope) && receipt.profileVersion === hermesNativeProfileVersion
+    && proof.options.candidate.cwd === root && proof.options.candidate.environment.HERMES_WRITE_SAFE_ROOT === root);
 }

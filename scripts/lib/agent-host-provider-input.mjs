@@ -1,10 +1,12 @@
+import { nativeBoundaryRules } from "./agent-host-native-authority.mjs";
+import { sealNativeToolBoundary, assertNativeToolBoundary, abandonNativeToolBoundary } from "./agent-host-hermes-native-boundary.mjs";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import { executionContractSchema, validateExecutionPacket } from "./agent-host-execution-packet.mjs";
 import { executionContextRevision, assertFreshExecutionContext } from "./agent-host-execution-context.mjs";
 import { guardHostContent } from "./agent-host-redaction.mjs";
 import ready from "./agent-host-ready-context.cjs";
-import { sealHermesProfile, assertHermesProfile, hermesStartupProfileVersion, hermesBudgetProfileVersion } from "./agent-host-hermes-profile.mjs";
+import { sealHermesProfile, assertHermesProfile, hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion } from "./agent-host-hermes-profile.mjs";
 import { createHermesStartupCandidate, sealHermesStartup, assertHermesStartup } from "./agent-host-hermes-startup.mjs";
 
 import { sealHermesBudget, assertHermesBudget, createHermesBudgetReceipt } from "./agent-host-hermes-budget.mjs";
@@ -68,6 +70,7 @@ function projection(fresh, claimed) {
       risk: task.readyAdmission.riskAdmission.seal, composition: packet.procedureComposition.seal },
     provenance: { identity: "worker.claimed_attempt", revisions: "worker.validated_ready_context", contract: "executionPacket.contract", rules: "worker.provider_input_v1" },
     rules: [
+      ...(packet.contract.nativeBoundary ? nativeBoundaryRules : []),
       "Execute only the contract objective and acceptance criteria in the current approved repository; leave results for owner review.",
       "Follow applicable repository instructions and documentation. Preserve unrelated changes; create no checkout, worktree or sibling project.",
       "No commit, push, deployment, publication, external write or authority beyond the contract access restrictions.",
@@ -109,20 +112,25 @@ function seal(fresh, claimed, secrets) {
 // Only Worker calls these factories. No config/env/network argument can provide
 // the authority callback. Existing lease/writer/Ready/checkpoint own authority.
 /** @returns {ProviderInput} */
-export function prepareProviderInput({ fresh, claimed, currentCommit, assertAuthority, secrets = [], provider, repositoryPath, hermesAuthReceipt, startupEnvironment, startupCandidate }) {
+export function prepareProviderInput({ fresh, claimed, currentCommit, assertAuthority, secrets = [], provider, repositoryPath, hermesAuthReceipt, startupEnvironment, startupCandidate, nativeBoundaryOptions }) {
   try {
     assertAuthority(); validate(fresh, claimed, currentCommit, secrets);
     const envelope = seal(fresh, claimed, secrets);
     assertAuthority();
     const profile = provider?.kind === "hermes_codex" ? sealHermesProfile(provider.profile,
       { repositoryPath, readyRevision: envelope.revisions.ready, authReceipt: hermesAuthReceipt }) : undefined;
-    const budget = provider?.kind === "hermes_codex" && provider.profile?.schemaVersion === hermesBudgetProfileVersion
+    const budget = provider?.kind === "hermes_codex" && [hermesBudgetProfileVersion, hermesNativeProfileVersion].includes(provider.profile?.schemaVersion)
       ? sealHermesBudget({ envelope, claimed, inputBytes: Buffer.byteLength(serialize(envelope)) }) : undefined;
-    const startup = provider?.kind === "hermes_codex" && [hermesStartupProfileVersion, hermesBudgetProfileVersion].includes(provider.profile?.schemaVersion)
+    const startup = provider?.kind === "hermes_codex" && [hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion].includes(provider.profile?.schemaVersion)
       ? sealHermesStartup({ provider, envelope, repositoryPath, budget, candidate: startupCandidate ?? createHermesStartupCandidate({
         provider, envelope, repositoryPath, budget, environment: startupEnvironment }) }) : undefined;
     assertAuthority();
     issued.set(envelope, { consumed: false, profile, startup, budget });
+    if (provider?.kind === "hermes_codex" && provider.profile?.schemaVersion === hermesNativeProfileVersion) {
+      const checked = assertProviderStartup({ envelope, provider, repositoryPath, startupEnvironment, startupCandidate });
+      issued.get(envelope).native = sealNativeToolBoundary({ ...nativeBoundaryOptions, envelope, provider, repositoryPath,
+        startupReceipt: checked.receipt, budgetReceipt: checked.budgetReceipt });
+    }
     return envelope;
   } catch (error) { if (error.redaction || error.readyAdmission || error.leaseLost || error.durationLimit || error.outputLimit || error.contextStop || error.protocolAdmission) throw error; throw blocked(); }
 }
@@ -165,4 +173,12 @@ export function consumeProviderInput(envelope, { fresh, claimed, currentCommit, 
     assertAuthority();
     return providerInputTransport("direct_codex", envelope);
   } catch (error) { if (error.redaction || error.readyAdmission || error.leaseLost || error.durationLimit || error.outputLimit || error.contextStop || error.protocolAdmission) throw error; throw blocked(); }
+}
+
+export function assertProviderNativeBoundary(envelope) {
+  return assertNativeToolBoundary(issued.get(envelope)?.native, envelope);
+}
+export function abandonProviderNativeBoundary(envelope) {
+  const proof = issued.get(envelope)?.native;
+  if (proof) abandonNativeToolBoundary(proof);
 }

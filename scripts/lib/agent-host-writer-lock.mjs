@@ -2,6 +2,22 @@ import { randomUUID } from "node:crypto";
 import { guardHostContent } from "./agent-host-redaction.mjs";
 import { lstat, mkdir, open, readFile, unlink } from "node:fs/promises";
 import path from "node:path";
+import { readFileSync, lstatSync } from "node:fs";
+
+const liveWriters = new WeakMap();
+export function assertWriterLock(lock) {
+  const saved = liveWriters.get(lock);
+  try {
+    if (!saved || saved.released) throw new Error();
+    const stat = lstatSync(saved.file);
+    if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1 || stat.size > 65536) throw new Error();
+    const current = JSON.parse(readFileSync(saved.file, "utf8"));
+    if (current.ownerNonce !== saved.nonce || current.ownerPid !== process.pid) throw new Error("agent_host_writer_lock_owner_changed");
+    return { reference: saved.nonce, directory: path.dirname(saved.file) };
+  } catch (e) {
+    throw new Error(e.message === "agent_host_writer_lock_owner_changed" ? e.message : "agent_host_writer_lock_unproven");
+  }
+}
 
 // Shared by every normal host process on the approved laptop, not by application or key.
 export const writerStateDirectory = "C:\\ProgramData\\Roost";
@@ -64,7 +80,8 @@ export async function acquireWriterLock(directory = writerStateDirectory, { reco
   }
   // Never reclaim by PID/age: an orphaned Codex process may still be writing.
   let released = false;
-  return {
+  const proof = { file: lockPath, nonce: ownerNonce, released: false };
+  const lock = {
     sessionId: ownerNonce,
     async checkpoint(execution) {
       const current = JSON.parse(await readFile(lockPath, "utf8"));
@@ -84,6 +101,9 @@ export async function acquireWriterLock(directory = writerStateDirectory, { reco
       if (current.ownerNonce !== ownerNonce) throw new Error("agent_host_writer_lock_owner_changed");
       await unlink(lockPath);
       released = true;
+      proof.released = true;
     }
   };
+  liveWriters.set(lock, proof);
+  return lock;
 }

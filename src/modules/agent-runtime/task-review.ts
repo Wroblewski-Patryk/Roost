@@ -8,7 +8,7 @@ import { pathToFileURL } from "node:url";
 import type { Prisma } from "@prisma/client";
 import { lockReadyTask } from "./task-execution-readiness";
 import { resolveTaskRoleContext } from "./task-role-context";
-import { correctionDraft, object, reviewActionSchema, reviewDecisionSchema, reviewDigest, wire } from "./task-review-contract";
+import { nativeBoundaryResultBlocked, correctionDraft, object, reviewActionSchema, reviewDecisionSchema, reviewDigest, wire } from "./task-review-contract";
 
 const loadESM = new Function("specifier", "return import(specifier)") as (specifier: string) => Promise<any>;
 const roleValidator = loadESM(pathToFileURL(path.resolve(__dirname, "../../../scripts/lib/agent-host-task-roles.mjs")).href);
@@ -65,6 +65,7 @@ export async function taskReviewView(db: Db, workspaceId: string, taskId: string
 export async function recordTaskReview(db: Db, workspaceId: string, taskId: string, actor: ReviewActor, body: unknown) {
   const input = reviewDecisionSchema.parse(body), s = await reviewState(db, workspaceId, taskId, actor);
   if ("error" in s) return s;
+  if (input.decision === "approve" && nativeBoundaryResultBlocked(s.execution?.verification, s.contract)) return { error: "native_boundary_reconciliation_required" };
   const principal = s.principal;
   const actorUserId = principal?.kind === "user" ? principal.id : null;
   const actorAgentId = principal?.kind === "agent" ? principal.id : null;
