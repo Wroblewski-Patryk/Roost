@@ -1,5 +1,16 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+RF-RUNTIME-005B18 [source/synthetic diagnosis](../architecture/hermes-b18-footprint-diagnosis-v1.md)
+confirms comparison/evidence-ordering gaps but cannot attribute B17's real changed
+paths or prove ownership-safe recovery from its legacy records. This is evidence
+and one B19 implementation proposal, not a new owner amendment. Decision version
+remains 10. B17 Writer/application lease and all spent records remain untouched.
+The proposed root-scoped protected-path policy separates security checks from
+acceptance review; it does not retroactively widen B17 or authorize a new run.
+Deletion requires separate explicit owner approval AND exact artifact, attempt
+and process-tree proof; approval cannot replace missing evidence. All six public
+flags remain false. Earlier successor statements below are historical.
+
 RF-RUNTIME-005B17 owner amendment (version 10), 2026-09-16: authorize exactly
 one NEW coding smoke after the verified B16 rebuild, using the unchanged exact
 Hermes pin, openai-codex, gpt-5.6-sol/medium and the existing bounded arithmetic

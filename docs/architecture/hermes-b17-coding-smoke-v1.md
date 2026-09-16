@@ -1,5 +1,7 @@
 # Hermes B17 one-shot coding smoke v1
 
+Subsequent [B18 diagnosis](hermes-b18-footprint-diagnosis-v1.md) completed source/synthetic work but left real-cause attribution and recovery proof BLOCKED. The B18 successor proposal below is historical; B17 remains spent.
+
 RF-RUNTIME-005B17, 2026-09-16: **BLOCKED after one real provider start**.
 The root process exited 0, but native review reported
 `hermes_native_boundary_violation` / `unexpected_changed_path`. Independent

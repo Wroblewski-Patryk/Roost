@@ -1,5 +1,17 @@
 # Foundation requirements traceability
 
+RF-RUNTIME-005B18 [source/synthetic diagnosis](hermes-b18-footprint-diagnosis-v1.md) is complete,
+but real B17 root-cause attribution and lock-recovery proof remain **BLOCKED**.
+Minimal repair/test and completed atomic replacement pass the unchanged footprint;
+undeclared paths or byte-identical undeclared rewrites can trigger violations.
+Loss of diagnostic evidence before fixture deletion is confirmed. The retained
+Writer/lease match each other but lack the complete spent/process identity chain.
+Both artifacts remain untouched. Only B19 root-scoped protected-path policy,
+durable evidence ordering and guarded reconciliation are proposed; deletion needs
+separate owner approval plus currently missing proof. ADR-004 stays v10, all six
+public flags stay false, and no provider started in B18. Earlier next-atom
+statements below are historical.
+
 RF-RUNTIME-005B17 [one-shot coding smoke](hermes-b17-coding-smoke-v1.md) is **BLOCKED** after
 one authorized provider start under ADR-004 v10. Root exit 0 was rejected by
 native review (unexpected_changed_path); exact repair and independent test PASS
