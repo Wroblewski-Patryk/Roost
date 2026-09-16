@@ -35,6 +35,11 @@ export const hermesStartupProfileVersion = "roost-hermes-profile-v2";
 const startupProfileBytes = JSON.stringify({ ...config, fallback_model: [], custom_providers: [], model_aliases: {}, worktree: false }, null, 2) + "\n";
 export const hermesStartupProfileDigest = sha(startupProfileBytes);
 export const renderHermesStartupProfile = () => startupProfileBytes;
+export const hermesBudgetProfileVersion = "roost-hermes-profile-v3";
+const budgetProfileBytes = JSON.stringify({ ...JSON.parse(startupProfileBytes), agent: { max_turns: 24, api_max_retries: 2 } }, null, 2) + "\n";
+export const hermesBudgetProfileDigest = sha(budgetProfileBytes);
+export const renderHermesBudgetProfile = () => budgetProfileBytes;
+export const hermesBudgetProfileBinding = profilePath => ({ ...hermesStartupProfileBinding(profilePath), schemaVersion: hermesBudgetProfileVersion, configDigest: hermesBudgetProfileDigest });
 const legacyBindingSchema = z.object({
   schemaVersion: z.literal(hermesProfileVersion), hermesVersion: z.literal(pin.version),
   hermesCommit: z.literal(pin.commit), profilePath: z.string().min(1).max(1024),
@@ -42,7 +47,8 @@ const legacyBindingSchema = z.object({
   ownerAttestation: ownerAttestationBindingSchema.optional()
 }).strict();
 export const hermesProfileBindingSchema = z.discriminatedUnion("schemaVersion", [legacyBindingSchema,
-  legacyBindingSchema.extend({ schemaVersion: z.literal(hermesStartupProfileVersion), configDigest: z.literal(hermesStartupProfileDigest) }).strict()]);
+  legacyBindingSchema.extend({ schemaVersion: z.literal(hermesStartupProfileVersion), configDigest: z.literal(hermesStartupProfileDigest) }).strict(),
+  legacyBindingSchema.extend({ schemaVersion: z.literal(hermesBudgetProfileVersion), configDigest: z.literal(hermesBudgetProfileDigest) }).strict()]);
 const failure = reason => Object.assign(new Error(reason), { protocolAdmission: true, retryable: false,
   publicMessage: "Hermes profile/auth admission is blocked. No model was started.", details: { reason } });
 const fail = reason => { throw failure(reason); };
@@ -62,7 +68,7 @@ function readProfile(input, repositoryPath) {
   const parsed = hermesProfileBindingSchema.safeParse(input);
   if (!parsed.success) fail("hermes_profile_binding_invalid");
   const binding = parsed.data, file = binding.profilePath;
-  const expectedBytes = binding.schemaVersion === hermesStartupProfileVersion ? startupProfileBytes : profileBytes;
+  const expectedBytes = binding.schemaVersion === hermesBudgetProfileVersion ? budgetProfileBytes : binding.schemaVersion === hermesStartupProfileVersion ? startupProfileBytes : profileBytes;
   if (!path.isAbsolute(file) || path.normalize(file) !== file || path.basename(file) !== "config.yaml"
       || /[\x00-\x1f]/.test(file) || (process.platform === "win32" && (!/^[a-z]:\\/i.test(file)
         || file.slice(2).includes(":") || file.split("\\").some(part => /[. ]$/.test(part))))) fail("hermes_profile_path_invalid");

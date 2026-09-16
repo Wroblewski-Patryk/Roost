@@ -17,6 +17,13 @@ internal static class OwnedTreeFixture {
         // Self-expiry is an extra fixture safety bound, never ownership evidence.
         var safety=new Thread(delegate() {Thread.Sleep(15000);Environment.Exit(4);});safety.IsBackground=true;safety.Start();
         Console.WriteLine("PID:"+Process.GetCurrentProcess().Id);Console.Out.Flush();
+        // B9 standard-argv fixture: drain sealed stdin without executing tools.
+        if(mode=="chat") {
+            string input=Console.In.ReadToEnd();
+            if(input.Contains("owned budget tree fixture")) mode="tree";
+            else if(input.Contains("owned budget failure fixture")) return 2;
+            else {Console.WriteLine("Untrusted candidate fixture result.");return 0;}
+        }
         if(mode=="foreign"||mode=="grandchild") {Thread.Sleep(10000);return 0;}
         if(mode=="child") {using(var c=Child("grandchild")) {Thread.Sleep(10000);}return 0;}
         if(mode=="tree"||mode=="survivor") {using(var c=Child("child")){Thread.Sleep(mode=="tree"?10000:700);}return 0;}

@@ -4,8 +4,10 @@ import { executionContractSchema, validateExecutionPacket } from "./agent-host-e
 import { executionContextRevision, assertFreshExecutionContext } from "./agent-host-execution-context.mjs";
 import { guardHostContent } from "./agent-host-redaction.mjs";
 import ready from "./agent-host-ready-context.cjs";
-import { sealHermesProfile, assertHermesProfile, hermesStartupProfileVersion } from "./agent-host-hermes-profile.mjs";
+import { sealHermesProfile, assertHermesProfile, hermesStartupProfileVersion, hermesBudgetProfileVersion } from "./agent-host-hermes-profile.mjs";
 import { createHermesStartupCandidate, sealHermesStartup, assertHermesStartup } from "./agent-host-hermes-startup.mjs";
+
+import { sealHermesBudget, assertHermesBudget, createHermesBudgetReceipt } from "./agent-host-hermes-budget.mjs";
 
 export const providerInputVersion = "roost-provider-input-v1";
 export const providerInputMaxBytes = 131072;
@@ -114,11 +116,13 @@ export function prepareProviderInput({ fresh, claimed, currentCommit, assertAuth
     assertAuthority();
     const profile = provider?.kind === "hermes_codex" ? sealHermesProfile(provider.profile,
       { repositoryPath, readyRevision: envelope.revisions.ready, authReceipt: hermesAuthReceipt }) : undefined;
-    const startup = provider?.kind === "hermes_codex" && provider.profile?.schemaVersion === hermesStartupProfileVersion
-      ? sealHermesStartup({ provider, envelope, repositoryPath, candidate: startupCandidate ?? createHermesStartupCandidate({
-        provider, envelope, repositoryPath, environment: startupEnvironment }) }) : undefined;
+    const budget = provider?.kind === "hermes_codex" && provider.profile?.schemaVersion === hermesBudgetProfileVersion
+      ? sealHermesBudget({ envelope, claimed, inputBytes: Buffer.byteLength(serialize(envelope)) }) : undefined;
+    const startup = provider?.kind === "hermes_codex" && [hermesStartupProfileVersion, hermesBudgetProfileVersion].includes(provider.profile?.schemaVersion)
+      ? sealHermesStartup({ provider, envelope, repositoryPath, budget, candidate: startupCandidate ?? createHermesStartupCandidate({
+        provider, envelope, repositoryPath, budget, environment: startupEnvironment }) }) : undefined;
     assertAuthority();
-    issued.set(envelope, { consumed: false, profile, startup });
+    issued.set(envelope, { consumed: false, profile, startup, budget });
     return envelope;
   } catch (error) { if (error.redaction || error.readyAdmission || error.leaseLost || error.durationLimit || error.outputLimit || error.contextStop || error.protocolAdmission) throw error; throw blocked(); }
 }
@@ -132,9 +136,11 @@ export function assertProviderProfile(envelope, provider, repositoryPath, authRe
 
 export function assertProviderStartup({ envelope, provider, repositoryPath, startupEnvironment, startupCandidate }) {
   assertProviderProfile(envelope, provider, repositoryPath);
-  const candidate = startupCandidate ?? createHermesStartupCandidate({ provider, envelope, repositoryPath, environment: startupEnvironment });
-  const options = { envelope, provider, repositoryPath, candidate };
-  return { candidate, receipt: assertHermesStartup(issued.get(envelope)?.startup, options), options };
+  const budget = issued.get(envelope)?.budget;
+  const candidate = startupCandidate ?? createHermesStartupCandidate({ provider, envelope, repositoryPath, budget, environment: startupEnvironment });
+  const options = { envelope, provider, repositoryPath, candidate, budget };
+  const receipt = assertHermesStartup(issued.get(envelope)?.startup, options);
+  return { candidate, receipt, options, budgetReceipt: budget ? createHermesBudgetReceipt(budget, envelope, receipt) : undefined };
 }
 
 // Pure transport preparation is available for both adapters; it cannot launch
@@ -152,6 +158,7 @@ export function consumeProviderInput(envelope, { fresh, claimed, currentCommit, 
     // Failed admission burns this local envelope; durable recovery still owns
     // attempt reuse. This is not a second retry/session registry.
     state.consumed = true;
+    if (state.budget) assertHermesBudget(state.budget, envelope, claimed);
     assertAuthority(); validate(fresh, claimed, currentCommit, secrets);
     assertFreshExecutionContext(envelope.revisions.context, fresh, claimed);
     if (seal(fresh, claimed, secrets).seal !== envelope.seal) throw blocked();

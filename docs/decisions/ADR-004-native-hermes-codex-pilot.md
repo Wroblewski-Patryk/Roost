@@ -1,5 +1,18 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+RF-RUNTIME-005B9 owner amendment (version 6): accept the pinned public CLI's
+unavailable physical model/tool/retry counters and hard token/cost caps as residual
+pilot risk. Use small coding tasks, 24 logical turns, api_max_retries 2, an original
+Worker deadline at most 900 seconds with native Job cleanup and no automatic
+whole-task restart. Unknown accounting stays null; maxOutputTokens is intent,
+exit 0 only a review candidate. This supersedes B8's mandatory pre-dispatch budget
+boundary and its proposed source-only B9 without changing B8's source findings.
+The [implemented practical policy](../architecture/hermes-practical-attempt-budget-v1.md)
+adds Ready-bound private v3 profile/receipts. No fork/private entrypoint/proxy/new
+framework or isolation system is introduced. No real launch, model, tool or pilot
+activation is authorized; B4/B7 risks and all six false gates remain. Historical
+B8 evidence follows below.
+
 RF-RUNTIME-005B8 source evidence: [attempt/budget qualification](../architecture/hermes-attempt-budget-contract-v1.md)
 selects a finite coding-small-v1 candidate but is **BLOCKED** by the absence of a
 supported Worker pre-dispatch budget boundary on the selected quiet CLI. One
@@ -70,7 +83,7 @@ The original RF-RUNTIME-002 decision and its dated authority follow below.
 Date: 2026-09-15
 Status: accepted
 Owner: Roost architecture owner
-Decision version: 5 (RF-RUNTIME-005B7 standard startup amendment, 2026-09-16)
+Decision version: 6 (RF-RUNTIME-005B9 practical attempt-budget amendment, 2026-09-16)
 Scope: RF-RUNTIME-002 owner handoff; architecture and blocked adapter implementation
 Source reference: `owner-handoff.rf-runtime-002.hermes-first.v1`
 

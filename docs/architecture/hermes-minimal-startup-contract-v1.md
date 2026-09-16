@@ -1,5 +1,14 @@
 # Hermes public minimal startup contract v1
 
+RF-RUNTIME-005B9 [practical attempt policy](hermes-practical-attempt-budget-v1.md)
+is implemented under ADR-004 v6: the owner accepts unavailable physical counters
+and hard token/cost enforcement for the supervised pilot. coding-small-v1 uses
+24 logical turns, retry setting 2, an original deadline of at most 900 seconds,
+Windows Job cleanup and no automatic restart. Receipts keep unknowns null and
+exit 0 is only a candidate for independent review. This supersedes B8's required
+pre-dispatch budget boundary and proposed source-only B9; its source findings
+below remain historical evidence. Real launch and all six flags stay false.
+
 RF-RUNTIME-005B7, 2026-09-16. **Standard startup policy implemented and synthetically verified.**
 The owner explicitly accepts local bundled-skills synchronization and local banner
 prefetch (repository/tag/skill-index reads and short local git processes). Network

@@ -1,5 +1,14 @@
 # Hermes attempt and budget qualification v1
 
+RF-RUNTIME-005B9 [practical attempt policy](hermes-practical-attempt-budget-v1.md)
+is implemented under ADR-004 v6: the owner accepts unavailable physical counters
+and hard token/cost enforcement for the supervised pilot. coding-small-v1 uses
+24 logical turns, retry setting 2, an original deadline of at most 900 seconds,
+Windows Job cleanup and no automatic restart. Receipts keep unknowns null and
+exit 0 is only a candidate for independent review. This supersedes B8's required
+pre-dispatch budget boundary and proposed source-only B9; its source findings
+below remain historical evidence. Real launch and all six flags stay false.
+
 RF-RUNTIME-005B8, 2026-09-16. **BLOCKED** for an enforceable coding pilot.
 Source-only qualification of Hermes **0.21.2**, commit
 `939e45c91d751fadd94dcd1b873ac3cb44846213`. No upstream module or test was executed.

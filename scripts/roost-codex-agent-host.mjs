@@ -16,6 +16,8 @@ import { prepareProviderLaunch } from "./lib/agent-host-provider-launch.mjs";
 import { prepareProviderInput } from "./lib/agent-host-provider-input.mjs";
 import { hermesStartupEnvironment } from "./lib/agent-host-hermes-startup.mjs";
 import { createDirectTurnGuard } from "./lib/agent-host-direct-turn.mjs";
+import { createHermesOutputIntent } from "./lib/agent-host-hermes-budget.mjs";
+import { hermesBudgetProfileVersion } from "./lib/agent-host-hermes-profile.mjs";
 import { runHermesOwnedProcess } from "./lib/agent-host-hermes-quiet.mjs";
 import { collectWorkspaceEvidence } from "./lib/agent-host-workspace-evidence.mjs";
 import { createExecutionDuration } from "./lib/agent-host-execution-duration.mjs";
@@ -236,7 +238,10 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     lease.assertValid();
     validateExecutionPacket(taskContext?.executionPacket, claimed, taskContext, applicationContext);
     readyContext.assertReadyContext(taskContext, applicationContext, claimed);
-    outputBudget = createOutputBudget({ maxOutputTokens: taskContext.executionPacket.contract.budgets.maxOutputTokens, onStopped: stopWorker });
+    const practicalHermes = config.executionProvider?.kind === "hermes_codex"
+      && config.executionProvider.profile?.schemaVersion === hermesBudgetProfileVersion;
+    if (config.executionProvider?.kind === "hermes_codex" && (resumeCheckpoint || claimed.codexThreadId)) throw protocolAdmissionError("hermes_attempt_resume_forbidden");
+    outputBudget = (practicalHermes ? createHermesOutputIntent : createOutputBudget)({ maxOutputTokens: taskContext.executionPacket.contract.budgets.maxOutputTokens, onStopped: stopWorker });
     outputBudget.assertWithinBudget();
     contextRevision = executionContextRevision(taskContext, applicationContext);
     duration = createExecutionDuration({ startedAt: claimed.startedAt,
@@ -295,15 +300,20 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       hermesAbort = new AbortController();
       const pending = hermesCollection = runHermesOwnedProcess({ executable: launch.command, argv: launch.args,
         cwd: launch.cwd, environment: launch.candidateEnvironment, attempt: claimed.id, input: launch.input, remainingMs: () => duration.remainingMs,
-        signal: hermesAbort.signal,
+        signal: hermesAbort.signal, budgetReceipt: launch.budgetReceipt,
+        stopReason: () => duration.failure ?? lease.failure,
         secrets: [apiKey, claimed.leaseToken], assertAuthority: assertProviderAuthority,
         shutdownRequested: () => shutdownRequested || stopping });
       void pending.catch(() => undefined);
       await duration.wait(checkpoint("running", taskContext.executionPacket.revision, digest));
       const receipt = await duration.wait(pending);
       finalResponse = receipt.finalResponse;
+      usage = { inputTokens: null, outputTokens: null, cost: null, physicalModelCalls: null, toolCalls: null, transportRetries: null };
       verification.ownedTreeReceipt = receipt.ownedTreeReceipt;
-      transportAccounting = { interface: "quiet", usageAccounting: "unavailable", internalTurnCount: null,
+      verification.attemptBudgetReceipt = receipt.attemptBudgetReceipt;
+      verification.outcome = "candidate_result";
+      verification.reviewRequired = true;
+      transportAccounting = { interface: "quiet", outcome: "candidate_result", usageAccounting: "unavailable", internalTurnCount: null,
         transportRetryCount: null, toolEventsAvailable: false, reviewRequired: true };
     } else {
     const turnGuard = createDirectTurnGuard();
@@ -397,6 +407,13 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: summary.slice(0, 10000), finalResponse, codexThreadId, changedFiles, verification, usage, resultRevision, metadata: { repositoryPathLabel: path.basename(repositoryPath), preExistingDirtyFiles: beforeStatus.map(statusPath), transportAccounting } })
     });
   } catch (error) {
+    if (hermesCollection) {
+      hermesAbort.abort();
+      await hermesCollection.catch(stopped => {
+        if (stopped.details?.attemptBudgetReceipt) for (const cause of [error, duration?.failure, lease.failure].filter(Boolean))
+          cause.details = { ...cause.details, attemptBudgetReceipt: stopped.details.attemptBudgetReceipt };
+      });
+    }
     if (error.hostLifecycle) { stopWorker(); lease.stop(); await stopPromise; throw error; }
     if (error.contextStop || lease.failure?.contextStop) {
       stopWorker();

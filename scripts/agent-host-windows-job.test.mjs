@@ -8,6 +8,7 @@ import os from "node:os";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { buildWindowsJobLauncher, startWindowsJob, isWindowsJobReceipt, hermesOwnedTreeBlockers } from "./lib/agent-host-windows-job.mjs";
+import { classifyHermesOutcome } from "./lib/agent-host-hermes-budget.mjs";
 import { runHermesOwnedProcess } from "./lib/agent-host-hermes-quiet.mjs";
 import { validPacketFixture, pinReadyFixture } from "./fixtures/execution-packet.mjs";
 import { prepareProviderInput } from "./lib/agent-host-provider-input.mjs";
@@ -70,9 +71,9 @@ test("native Windows Job qualification (serial, owned fixtures only)", {skip:pro
    const r=await run("survivor");assert.equal(r.pids.length,4);assert.equal(r.receipt.terminationReason,"root_exit");assert.equal(r.receipt.rootExit,0);
   });
   for(const reason of ["cancel","lease_lost","context_stop","controller_shutdown","preparation_failed"])
-   await t.test(reason+" owns entire tree",async()=>{const r=await run("tree",{},async(h,o)=>{await treeReady(h,o);h.stop(reason);});assert.equal(r.receipt.terminationReason,reason);});
-  await t.test("deadline expires and stops silent descendants",async()=>{const r=await run("tree",{durationMs:650});assert.equal(r.receipt.terminationReason,"timeout");});
-  await t.test("controller EOF stops owned tree",async()=>{const r=await run("tree",{},async(h,o)=>{await treeReady(h,o);h.closeController();});assert.equal(r.receipt.terminationReason,"controller_closed");});
+   await t.test(reason+" owns entire tree",async()=>{const r=await run("tree",{},async(h,o)=>{await treeReady(h,o);h.stop(reason);});assert.equal(r.receipt.terminationReason,reason);assert.equal(classifyHermesOutcome({ownedTreeReceipt:r.receipt}),["cancel","context_stop","controller_shutdown"].includes(reason)?"cancelled":"policy_blocked");});
+  await t.test("deadline expires and stops silent descendants",async()=>{const r=await run("tree",{durationMs:650});assert.equal(r.receipt.terminationReason,"timeout");assert.equal(classifyHermesOutcome({ownedTreeReceipt:r.receipt}),"timed_out");});
+  await t.test("controller EOF stops owned tree",async()=>{const r=await run("tree",{},async(h,o)=>{await treeReady(h,o);h.closeController();});assert.equal(r.receipt.terminationReason,"controller_closed");assert.equal(classifyHermesOutcome({ownedTreeReceipt:r.receipt}),"cancelled");});
   await t.test("launcher crash closes the sole job handle; no completion proof is invented",async()=>{
    let output="";current=await startWindowsJob(artifact,{executable:fixture,argv:["tree"],cwd:directory,environment:env,input:"",durationMs:5000,onData:(c,b)=>{if(c==="stdout")output+=b;}});
    await treeReady(current,()=>output);current.launcher.kill();await assert.rejects(current.completion,/stop_recovery_unproven/);

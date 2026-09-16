@@ -4,7 +4,9 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 import contract from "./agent-host-provider-contract.cjs";
 import { modelSelectionSchema } from "./agent-host-model-policy.mjs";
-import { hermesStartupProfileVersion, hermesStartupProfileDigest, inspectHermesProfile, sealHermesProfile, assertHermesProfile } from "./agent-host-hermes-profile.mjs";
+import { hermesStartupProfileVersion, hermesStartupProfileDigest, hermesBudgetProfileVersion, hermesBudgetProfileDigest, inspectHermesProfile, sealHermesProfile, assertHermesProfile } from "./agent-host-hermes-profile.mjs";
+
+import { hermesBudgetArgs } from "./agent-host-hermes-budget.mjs";
 
 export const hermesStartupVersion = "roost-hermes-startup-receipt-v1";
 export const hermesStartupPolicy = "roost-hermes-standard-startup-v1";
@@ -57,8 +59,8 @@ export function hermesStartupArgs(envelope) {
     "--model", selection.data.model, "--reasoning", selection.data.reasoningEffort,
     "--toolsets", hermesTaskToolsets(envelope).join(",")];
 }
-export function createHermesStartupCandidate({ provider, envelope, repositoryPath, environment }) {
-  return freeze({ command: provider.executablePath, args: hermesStartupArgs(envelope), cwd: repositoryPath,
+export function createHermesStartupCandidate({ provider, envelope, repositoryPath, environment, budget }) {
+  return freeze({ command: provider.executablePath, args: [...hermesStartupArgs(envelope), ...(provider.profile?.schemaVersion === hermesBudgetProfileVersion ? hermesBudgetArgs(budget, envelope) : [])], cwd: repositoryPath,
     environment: structuredClone(environment ?? hermesStartupEnvironment(provider.profile)),
     acceptedSideEffects: { ...acceptedHermesStartupEffects }, shell: false, windowsHide: true });
 }
@@ -80,16 +82,16 @@ function assertNoStartupOverlays(provider, candidate) {
     fail("hermes_startup_overlay_present");
   }
 }
-function validate({ provider, envelope, repositoryPath, candidate }) {
+function validate({ provider, envelope, repositoryPath, candidate, budget }) {
   if (provider.kind !== "hermes_codex" || !provider.enabled || provider.version !== pin.version || provider.commit !== pin.commit
-      || provider.officialSource !== pin.officialSource || provider.profile?.schemaVersion !== hermesStartupProfileVersion
-      || provider.profile.configDigest !== hermesStartupProfileDigest
+      || provider.officialSource !== pin.officialSource || ![hermesStartupProfileVersion, hermesBudgetProfileVersion].includes(provider.profile?.schemaVersion)
+      || provider.profile.configDigest !== (provider.profile.schemaVersion === hermesBudgetProfileVersion ? hermesBudgetProfileDigest : hermesStartupProfileDigest)
       || serialize(provider.policy) !== serialize(contract.registry.hermesPolicy)
       || Object.keys(provider).some(k => !["kind", "enabled", "version", "commit", "officialSource", "executablePath", "profile", "policy", "attestation"].includes(k))) fail("hermes_startup_profile_required");
   const env = candidate?.environment;
   if (!env || Object.keys(env).some(k => ![...plumbing, "HERMES_HOME", "HERMES_SAFE_MODE", "PYTHONNOUSERSITE", "PYTHONDONTWRITEBYTECODE", "PYTHONUTF8", "GIT_TERMINAL_PROMPT", "GIT_OPTIONAL_LOCKS"].includes(k))) fail("hermes_startup_environment_invalid");
   const expectedEnvironment = hermesStartupEnvironment(provider.profile, env);
-  const expected = createHermesStartupCandidate({ provider, envelope, repositoryPath, environment: expectedEnvironment });
+  const expected = createHermesStartupCandidate({ provider, envelope, repositoryPath, environment: expectedEnvironment, budget });
   if (serialize(expected) !== serialize(candidate)) fail("hermes_startup_candidate_invalid");
   const profile = inspectHermesProfile(provider.profile, repositoryPath);
   assertNoStartupOverlays(provider, candidate);
@@ -106,7 +108,7 @@ export function sealHermesStartup(options) {
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 export const hermesStartupReceiptSchema = z.object({
   schemaVersion: z.literal(hermesStartupVersion), policyVersion: z.literal(hermesStartupPolicy), qualification: z.literal("source_backed_synthetic_startup_policy"),
-  hermesVersion: z.literal(pin.version), hermesCommit: z.literal(pin.commit), profileVersion: z.literal(hermesStartupProfileVersion), configDigest: z.literal(hermesStartupProfileDigest),
+  hermesVersion: z.literal(pin.version), hermesCommit: z.literal(pin.commit), profileVersion: z.enum([hermesStartupProfileVersion, hermesBudgetProfileVersion]), configDigest: z.enum([hermesStartupProfileDigest, hermesBudgetProfileDigest]),
   authAttestationId: z.string().uuid(), authAttestationDigest: hash, authPolicyVersion: z.literal("roost-hermes-same-owner-auth-v2"),
   readyRevision: hash, inputSeal: hash, provider: z.literal("openai-codex"), modelSelection: modelSelectionSchema,
   toolsets: z.array(z.enum(["file", "terminal"])).min(1).max(2), expandedTools: z.array(z.enum(Object.values(expansion).flat())).min(1).max(6),
@@ -131,7 +133,7 @@ export function assertHermesStartup(seal, options) {
     toolsets, expandedTools: toolsets.flatMap(t => expansion[t]), categories: ["repository_read", "repository_write", ...(toolsets.includes("terminal") ? ["local_test"] : [])],
     fallbackProvidersEmpty: true, legacyFallbackEmpty: true, worktree: false, safeMode: true, updateCheck: false,
     acceptedSideEffects: { ...acceptedHermesStartupEffects }, argvDigest: digest(options.candidate.args), environmentDigest: digest(options.candidate.environment),
-    policyDigest: digest([hermesStartupPolicy, acceptedHermesStartupEffects, expansion, hermesStartupProfileDigest]),
+    policyDigest: digest([hermesStartupPolicy, acceptedHermesStartupEffects, expansion, profile.configDigest]),
     issuedAt: new Date(saved.at).toISOString(), expiresAt: new Date(saved.at + hermesStartupMaxAgeMs).toISOString() };
   const receipt = freeze(hermesStartupReceiptSchema.parse({ ...body, digest: digest(body) }));
   receipts.set(receipt, { seal, options });
@@ -147,4 +149,19 @@ export function hermesStartupBlockers(blockers, receipt, options) {
     if (serialize(assertHermesStartup(proof.seal, options)) !== serialize(receipt)) return [...blockers];
     return blockers.filter(code => code !== "hermes_sealed_config_enforcement_unproven");
   } catch { return [...blockers]; }
+}
+
+export function isHermesStartupReceipt(receipt, envelope, budget) {
+  const proof = receipts.get(receipt);
+  if (!proof || proof.options.envelope !== envelope || (budget && proof.options.budget !== budget)) return false;
+  try { return serialize(assertHermesStartup(proof.seal, proof.options)) === serialize(receipt); }
+  catch { return false; }
+}
+
+export function hermesStartupProcessMatches(receipt, envelope, processOptions) {
+  const proof = receipts.get(receipt);
+  if (!isHermesStartupReceipt(receipt, envelope)) return false;
+  const candidate = proof.options.candidate;
+  return serialize([candidate.command, candidate.args, candidate.cwd, candidate.environment])
+    === serialize([processOptions.executable, processOptions.argv, processOptions.cwd, processOptions.environment]);
 }

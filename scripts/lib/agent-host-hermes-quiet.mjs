@@ -3,42 +3,63 @@ import { terminateWindowsProcessTree } from "./agent-host-execution-lease.mjs";
 import contract from "./agent-host-hermes-launch-contract.cjs";
 import { startWindowsJob, temporaryWindowsJobLauncher, isWindowsJobReceipt } from "./agent-host-windows-job.mjs";
 
+import { consumeHermesBudgetReceipt, assertHermesBudgetProcess, completeHermesBudgetReceipt, classifyHermesOutcome } from "./agent-host-hermes-budget.mjs";
+
 // Real native backend; no receipt or cleanup callback can be injected by config.
 // Build happens before any target process, rechecking authority afterward.
 export async function runHermesOwnedProcess({ executable, argv, cwd, environment, input, attempt,
-  remainingMs, secrets = [], assertAuthority, signal, shutdownRequested = () => false }) {
-  return temporaryWindowsJobLauncher(async artifact => {
+  remainingMs, secrets = [], assertAuthority, signal, shutdownRequested = () => false, stopReason = () => undefined, budgetReceipt }) {
+  const began = performance.now();
+  let observedJob, observedExit;
+  const budgetRemaining = budgetReceipt ? consumeHermesBudgetReceipt(budgetReceipt, { attempt, input, executable, argv, cwd, environment }) : null;
+  const remaining = () => Math.min(remainingMs(), budgetRemaining ? budgetRemaining() : Infinity);
+  try { return await temporaryWindowsJobLauncher(async artifact => {
     let problem, handle;
     const guard = createHermesQuietGuard({ secrets });
     const check = () => {
       try {
+        const reason = stopReason(); if (reason) throw reason;
         if (signal?.aborted) throw failure("hermes_quiet_cancelled");
         if (shutdownRequested()) throw failure("hermes_quiet_controller_shutdown");
         assertAuthority();
+        if (remaining() <= 0) throw failure("hermes_quiet_timeout");
       } catch (error) {
         problem ??= error;
-        handle?.stop(error.contextStop ? "context_stop" : error.leaseLost ? "lease_lost" :
+        handle?.stop(error.durationLimit || error.message === "hermes_quiet_timeout" || error.message === "hermes_attempt_budget_expired" ? "timeout" : error.contextStop ? "context_stop" : error.leaseLost ? "lease_lost" :
           signal?.aborted ? "cancel" : shutdownRequested() ? "controller_shutdown" : "preparation_failed");
       }
     };
     check(); if (problem) throw problem;
+    if (budgetReceipt) assertHermesBudgetProcess(budgetReceipt, { executable, argv, cwd, environment });
+    // Reserve the existing 3-second launcher assignment window too. The Worker
+    // timer includes that window; native duration starts when the root resumes.
+    const nativeDuration = Math.floor(remaining()) - (budgetReceipt ? 3000 : 0);
+    if (nativeDuration < 1) throw failure("hermes_quiet_timeout");
     handle = await startWindowsJob(artifact, { executable, argv, cwd, environment, input, attempt,
-      durationMs: Math.floor(remainingMs()), onData: (channel, bytes) => guard.write(channel, bytes) });
+      durationMs: nativeDuration, onData: (channel, bytes) => guard.write(channel, bytes) });
+    const deadlineTimer = setTimeout(() => { problem ??= failure("hermes_quiet_timeout"); handle.stop("timeout"); }, nativeDuration + (budgetReceipt ? 3000 : 0));
     const timer = setInterval(check, 25), abort = () => check();
     signal?.addEventListener("abort", abort, { once: true });
     try {
       check();
-      const receipt = await handle.completion;
+      const receipt = observedJob = await handle.completion;
+      observedExit = receipt.rootExit;
       if (!isWindowsJobReceipt(receipt)) throw Object.assign(failure("hermes_stop_recovery_unproven"), { leaseLost: true });
       if (problem) throw problem;
       check(); if (problem) throw problem;
       if (receipt.terminationReason !== "root_exit") throw failure(`hermes_quiet_${receipt.terminationReason}`);
-      return Object.freeze({ ...guard.complete(receipt.rootExit), ownedTreeReceipt: receipt });
+      return Object.freeze({ ...guard.complete(receipt.rootExit), ownedTreeReceipt: receipt,
+        ...(budgetReceipt ? { attemptBudgetReceipt: completeHermesBudgetReceipt(budgetReceipt, { ownedTreeReceipt: receipt, exitCode: receipt.rootExit, wallTimeMs: performance.now() - began }) } : {}) });
     } finally {
-      clearInterval(timer); signal?.removeEventListener("abort", abort);
+      clearTimeout(deadlineTimer); clearInterval(timer); signal?.removeEventListener("abort", abort);
       handle.stop("preparation_failed"); await handle.completion;
     }
-  });
+  }); } catch (error) {
+    error.outcome = classifyHermesOutcome({ error, ownedTreeReceipt: observedJob, exitCode: observedExit });
+    if (budgetReceipt) error.details = { ...error.details, attemptBudgetReceipt: completeHermesBudgetReceipt(budgetReceipt,
+      { error, ownedTreeReceipt: observedJob, exitCode: observedExit, wallTimeMs: performance.now() - began }) };
+    throw error;
+  }
 }
 
 const usedChildren = new WeakSet();
@@ -73,7 +94,7 @@ export function createHermesQuietGuard({ secrets = [] } = {}) {
       if (exitCode === 130) fail("hermes_quiet_interrupted");
       if (exitCode !== 0) fail("hermes_quiet_process_failed");
       return Object.freeze({ finalResponse: channels.stdout.text, exitCode: 0,
-        trust: "untrusted_process_output", reviewRequired: true, usage: null,
+        trust: "untrusted_process_output", outcome: "candidate_result", reviewRequired: true, usage: null,
         toolEventsAvailable: false, internalTurnCount: null, transportRetryCount: null });
     }
   });

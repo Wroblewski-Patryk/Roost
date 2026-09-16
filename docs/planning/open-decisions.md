@@ -20,13 +20,17 @@ network updates off. Exact Worker startup policy and Ready/input-bound receipt a
 implemented and synthetically tested; only the local config blocker is removed
 with fresh proof. Real Hermes launch remains denied.
 [RF-RUNTIME-005B8 attempt/budget qualification](../architecture/hermes-attempt-budget-contract-v1.md)
-is source-only complete: **BLOCKED** by the missing Worker pre-dispatch enforcement
-boundary for physical model/tool calls and output reservations. Selected
-coding-small-v1 is a proposed bounded coding contract; no runtime implementation
-or live authority follows. Exactly one next atom: **RF-RUNTIME-005B9 — source-only
-qualification of a supported Worker pre-dispatch enforcement point**. Not started.
-The 0.21.2 pin, native Job lifecycle, B4 residual risks and all six false runtime
-gates remain unchanged.
+remains historical evidence of missing physical dispatch/token boundaries.
+RF-RUNTIME-005B9 owner amendment supersedes those pilot requirements with the
+[implemented practical attempt policy](../architecture/hermes-practical-attempt-budget-v1.md):
+24 logical turns; retry setting 2; original deadline at most 900 seconds;
+native cleanup; no resume or whole-task restart; unavailable accounting null;
+exit 0 only candidate_result for independent review. Private v3 profile is read
+back with owner identity/confirmation/expiry preserved. This is synthetic/native
+fixture qualification, not real Hermes execution. All six flags remain false.
+Exactly one next proposed atom: **RF-RUNTIME-005B10 — source-only qualification
+of the accepted native file/terminal tool boundary on the pinned public CLI**.
+Not started. Remaining runtime/inference/E2E/pilot/release gates remain intact.
 
 The first-provider choice is resolved by RF-RUNTIME-002 /
 [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md): native Hermes using

@@ -1,5 +1,14 @@
 # Hermes supervised quiet adapter v1
 
+RF-RUNTIME-005B9 [practical attempt policy](hermes-practical-attempt-budget-v1.md)
+is implemented under ADR-004 v6: the owner accepts unavailable physical counters
+and hard token/cost enforcement for the supervised pilot. coding-small-v1 uses
+24 logical turns, retry setting 2, an original deadline of at most 900 seconds,
+Windows Job cleanup and no automatic restart. Receipts keep unknowns null and
+exit 0 is only a candidate for independent review. This supersedes B8's required
+pre-dispatch budget boundary and proposed source-only B9; its source findings
+below remain historical evidence. Real launch and all six flags stay false.
+
 RF-RUNTIME-005B8 [attempt/budget qualification](hermes-attempt-budget-contract-v1.md)
 is source-only complete and **BLOCKED** for a coding pilot. One Roost attempt may
 contain multiple controlled model/tool exchanges. Public max-turns is not a
