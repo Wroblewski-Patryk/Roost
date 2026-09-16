@@ -1,5 +1,11 @@
 # Hermes B14 coding smoke v1
 
+B16 maintenance update: [controlled rebuild and split attestation](hermes-controlled-rebuild-v1.md)
+is DONE after owner approval, with profile v5, exact dependency closure and
+verified canonical readback. No provider/model run or new activation occurred.
+B13/B14 remain spent. The B15 proposal and earlier next-step text below are
+historical evidence, not the current maintenance status.
+
 B15 follow-up: [installation provenance and reconciliation](hermes-installation-reconciliation-v1.md)
 is complete. All original immutable hashes match; one original bytecode changed.
 Added wheel RECORDs are consistent, but two transitive versions differ from the

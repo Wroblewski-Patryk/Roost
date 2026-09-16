@@ -38,19 +38,15 @@ flags remain false. [RF-RUNTIME-005B12 local launch admission](../architecture/h
 is source/synthetic qualified with a single opaque, expiring, one-use proof set.
 Local policyQualified can be true while activationAuthorized=false and
 spawnStarted=false. B11 cleanup is closed by verified owner removal.
-[RF-RUNTIME-005B15 — installation provenance](../architecture/hermes-installation-reconciliation-v1.md)
-is **VERIFIED_RECONCILABLE through recommendation B**, a controlled clean rebuild.
-All original immutable hashes match; one original .pyc changed. The added AWS
-packages have coherent RECORDs but two transitive versions are off-lock. Source
-shows a reachable startup lazy-install path, which must be disabled through the
-official policy gates before another admitted run. Current installation remains
-BLOCKED. B15 did not mutate installation/profile/auth/cache/manifest or execute
-Hermes/Python/package managers. B13 and B14 spent records remain preserved.
-Exactly one proposed next atom: **RF-RUNTIME-005B16 — owner-approved frozen
-rebuild, lazy-install denial and split installation attestation**. Explicit owner
-approval is required for managed installation and private binding changes before
-that work begins. No model/login/new activation follows. ADR-004 v9 and six false
-public flags remain unchanged; no cleanup action is pending.
+RF-RUNTIME-005B16 [controlled rebuild and split attestation](../architecture/hermes-controlled-rebuild-v1.md)
+is **DONE**. The unchanged exact source pin now has a verified canonical venv
+with 83 original distributions, no optional AWS closure, 23,653 immutable files
+and 826 separately verified generated files. Profile v5 and the sealed Worker
+environment deny lazy installation. Owner identity/confirmation/expiry, private
+data and B13/B14 spent records are preserved. Staging/rollback cleanup and fresh
+file-only admission passed. No Hermes/model run or new activation occurred.
+ADR-004 execution decision remains v9 and all six public flags remain false.
+Earlier next-step/lock/launch statements below are historical.
 
 The repository cleanup established a stable baseline for continued product
 development. No Codex Agent Host issue queue is stored in the repository.

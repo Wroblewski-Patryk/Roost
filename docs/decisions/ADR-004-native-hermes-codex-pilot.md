@@ -1,5 +1,14 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+RF-RUNTIME-005B16 owner-authorized maintenance is [DONE](../architecture/hermes-controlled-rebuild-v1.md):
+replace the managed venv from the unchanged exact pin and frozen core+mcp lock,
+add official lazy-install denial in profile v5/minimal Worker environment, and
+split immutable/generated evidence. Canonical readback and owned cleanup passed.
+Preserve the existing owner ID/confirmation/expiry, native-risk reference, private
+auth/session state and both spent records. This maintenance approval grants no
+Hermes/model run, login or new activation; execution decision version remains 9
+and all six public flags remain false. B15 approval-pending text below is historical.
+
 RF-RUNTIME-005B15 source evidence: [installation provenance and reconciliation](../architecture/hermes-installation-reconciliation-v1.md)
 is VERIFIED_RECONCILABLE via recommendation B: controlled clean rebuild from the
 exact pin/frozen core+mcp lock and recorded build wheels, official lazy-install

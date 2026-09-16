@@ -1,17 +1,13 @@
 # Foundation requirements traceability
 
-RF-RUNTIME-005B15 [installation provenance and reconciliation](hermes-installation-reconciliation-v1.md)
-is **VERIFIED_RECONCILABLE through a controlled rebuild proposal**; current
-installation admission remains BLOCKED. All 23,656 original immutable entries
-match; only one original bytecode file changed. The 6,315 additions comprise
-4,239 generated files and 2,076 package-owned files. RECORDs are consistent, but
-botocore and s3transfer differ from the pinned lock. Exact-pin startup can invoke
-a lazy boto3 installer during auto-provider inventory; attribution to B13 is an
-inference from source and timestamps, not a recorded process trace.
-Exactly one proposed successor: B16 owner-approved frozen rebuild, official
-lazy-install denial and split immutable/generated attestation. Approval is
-required before mutation; B15 changed documentation only. ADR-004 remains v9,
-all six public flags remain false, and both prior spent records remain closed.
+RF-RUNTIME-005B16 [controlled rebuild and split attestation](hermes-controlled-rebuild-v1.md)
+is **DONE**. The unchanged exact source pin now has a verified canonical venv
+with 83 original distributions, no optional AWS closure, 23,653 immutable files
+and 826 separately verified generated files. Profile v5 and the sealed Worker
+environment deny lazy installation. Owner identity/confirmation/expiry, private
+data and B13/B14 spent records are preserved. Staging/rollback cleanup and fresh
+file-only admission passed. No Hermes/model run or new activation occurred.
+ADR-004 execution decision remains v9 and all six public flags remain false.
 Earlier next-step/lock/launch statements below are historical.
 
 RF-RUNTIME-005B11 [native tool boundary](hermes-native-tool-boundary-v1.md) is

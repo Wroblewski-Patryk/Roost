@@ -40,7 +40,7 @@ export function hermesStartupEnvironment(binding, source = process.env, reposito
   }
   if (binding.schemaVersion === hermesNativeProfileVersion && (!repositoryPath || !path.isAbsolute(repositoryPath) || /[;\r\n]/.test(repositoryPath))) fail("hermes_write_root_invalid");
   return { ...env, ...(binding.schemaVersion === hermesNativeProfileVersion ? { HERMES_WRITE_SAFE_ROOT: repositoryPath } : {}), HERMES_HOME: osPath(binding.profilePath).dirname(binding.profilePath), HERMES_SAFE_MODE: "1",
-    PYTHONNOUSERSITE: "1", PYTHONDONTWRITEBYTECODE: "1", PYTHONUTF8: "1",
+    HERMES_DISABLE_LAZY_INSTALLS: "1", PYTHONNOUSERSITE: "1", PYTHONDONTWRITEBYTECODE: "1", PYTHONUTF8: "1",
     GIT_TERMINAL_PROMPT: "0", GIT_OPTIONAL_LOCKS: "0" };
 }
 
@@ -93,7 +93,7 @@ function validate({ provider, envelope, repositoryPath, candidate, budget }) {
       || Object.keys(provider).some(k => !["kind", "enabled", "version", "commit", "officialSource", "executablePath", "profile", "policy", "attestation"].includes(k))) fail("hermes_startup_profile_required");
   if (provider.profile.schemaVersion === hermesNativeProfileVersion) assertCodingAuthority(envelope);
   const env = candidate?.environment;
-  if (!env || Object.keys(env).some(k => ![...plumbing, "HERMES_HOME", "HERMES_SAFE_MODE", "HERMES_WRITE_SAFE_ROOT", "PYTHONNOUSERSITE", "PYTHONDONTWRITEBYTECODE", "PYTHONUTF8", "GIT_TERMINAL_PROMPT", "GIT_OPTIONAL_LOCKS"].includes(k))) fail("hermes_startup_environment_invalid");
+  if (!env || Object.keys(env).some(k => ![...plumbing, "HERMES_HOME", "HERMES_SAFE_MODE", "HERMES_DISABLE_LAZY_INSTALLS", "HERMES_WRITE_SAFE_ROOT", "PYTHONNOUSERSITE", "PYTHONDONTWRITEBYTECODE", "PYTHONUTF8", "GIT_TERMINAL_PROMPT", "GIT_OPTIONAL_LOCKS"].includes(k))) fail("hermes_startup_environment_invalid");
   const expectedEnvironment = hermesStartupEnvironment(provider.profile, env, repositoryPath);
   const expected = createHermesStartupCandidate({ provider, envelope, repositoryPath, environment: expectedEnvironment, budget });
   if (serialize(expected) !== serialize(candidate)) fail("hermes_startup_candidate_invalid");

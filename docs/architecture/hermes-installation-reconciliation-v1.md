@@ -1,5 +1,11 @@
 # Hermes installation provenance and reconciliation v1
 
+B16 maintenance update: [controlled rebuild and split attestation](hermes-controlled-rebuild-v1.md)
+is DONE after owner approval, with profile v5, exact dependency closure and
+verified canonical readback. No provider/model run or new activation occurred.
+B13/B14 remain spent. The B15 proposal and earlier next-step text below are
+historical evidence, not the current maintenance status.
+
 RF-RUNTIME-005B15, 2026-09-16. **VERIFIED_RECONCILABLE through recommendation B:
 controlled clean rebuild from the exact pinned lock and recorded build inputs.**
 This qualifies a repair proposal, not the current installation or a future model

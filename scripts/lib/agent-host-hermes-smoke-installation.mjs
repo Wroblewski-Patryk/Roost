@@ -6,6 +6,8 @@ import { createHash } from "node:crypto";
 import { createReadStream, readFileSync, readdirSync, lstatSync, realpathSync } from "node:fs";
 import contract from "./agent-host-provider-contract.cjs";
 import { physicalIdentity } from "./agent-host-native-footprint.mjs";
+import { verifyHermesSplitInventory } from "./agent-host-hermes-installation-split.mjs";
+import { inspectHermesProfile, hermesNativeProfileVersion } from "./agent-host-hermes-profile.mjs";
 const pin = contract.registry.providers.find(p => p.kind === "hermes_codex");
 const proofs = new WeakMap();
 const sha = bytes => createHash("sha256").update(bytes).digest("hex");
@@ -46,16 +48,35 @@ function installationFile(file) {
 }
 export async function verifyHermesSmokeInstallation({ attestationPath, manifestPath }) {
   try {
-    const record = readJson(attestationPath, 262144).value, { value: manifest, bytes } = readJson(manifestPath, 12 * 1024 * 1024);
+    const { value: record, bytes: recordBytes } = readJson(attestationPath, 262144), { value: manifest, bytes } = readJson(manifestPath, 12 * 1024 * 1024);
     if (sha(bytes) !== record.manifestSha256 || record.manifestPath !== manifestPath
-        || manifest.schemaVersion !== 1 || manifest.version !== pin.version || manifest.commit !== pin.commit
+        || ![1, 2].includes(manifest.schemaVersion) || manifest.version !== pin.version || manifest.commit !== pin.commit
         || manifest.source !== pin.officialSource || manifest.release !== pin.release || manifest.signature !== "unsigned"
         || manifest.roots?.length !== 2) denied("hermes_smoke_manifest_invalid");
     const [checkout, python] = manifest.roots;
     if (checkout.kind !== "checkout" || python.kind !== "pythonBase"
         || manifest.executable !== path.join(checkout.path, "venv", "Scripts", "hermes.exe")) denied("hermes_smoke_layout_invalid");
-    const timeout = AbortSignal.timeout(60000); let count = 0;
-    for (const root of manifest.roots) {
+    const timeout = AbortSignal.timeout(60000); let count = 0, split, assertSplit;
+    if (manifest.schemaVersion === 2) {
+      const verify = () => {
+        if (!readJson(attestationPath, 262144).bytes.equals(recordBytes)) denied("hermes_split_attestation_changed");
+        if (sha(readJson(manifestPath, 12 * 1024 * 1024).bytes) !== sha(bytes)) denied("hermes_split_attestation_changed");
+        const generated = readJson(record.generatedReceiptPath, 12 * 1024 * 1024);
+        if (sha(generated.bytes) !== record.generatedReceiptSha256) denied("hermes_generated_receipt_changed");
+        if (manifest.maintenance?.policy !== "roost-hermes-rebuild-v1" || manifest.maintenance.lazyInstalls !== "denied") denied("hermes_split_policy_invalid");
+        for (const key of ["packageTool", "buildReport", "dependencies", "profileBinding"]) {
+          const item = manifest.maintenance[key];
+          physicalIdentity(item.path, false);
+          if (sha(readFileSync(item.path)) !== item.sha256) denied("hermes_split_evidence_changed");
+        }
+        const binding = readJson(manifest.maintenance.profileBinding.path, 4096).value;
+        if (binding.schemaVersion !== hermesNativeProfileVersion) denied("hermes_split_lazy_denial_required");
+        inspectHermesProfile(binding, checkout.path);
+        return verifyHermesSplitInventory(manifest, bytes, generated.value, record);
+      };
+      split = verify(); count = split.inventoryFiles; assertSplit = verify;
+    }
+    for (const root of manifest.schemaVersion === 1 ? manifest.roots : []) {
       physicalIdentity(root.path);
       const names = inventory(root.path).sort(), expected = new Map(root.files.map(f => [f.path, f.sha256]));
       if (!names.length || names.length !== root.files.length || names.length !== expected.size
@@ -82,12 +103,15 @@ export async function verifyHermesSmokeInstallation({ attestationPath, manifestP
         || !cfg.split(/\r?\n/).some(l => l.toLowerCase() === `home = ${python.path}`.toLowerCase())) denied("hermes_smoke_python_changed");
     const executable = manifest.executable, launcher = readFileSync(executable);
     const bindings = [...launcher.toString("latin1").matchAll(/#!([^\r\n]+)/g)];
-    if (bindings.length !== 1 || bindings[0][1].replace(/^"|"$/g, "").toLowerCase() !== path.join(checkout.path, "venv", "Scripts", "python.exe").toLowerCase()) denied("hermes_smoke_launcher_changed");
+    const expectedLauncher = path.join(checkout.path, "venv", "Scripts", "python.exe").toLowerCase();
+    const launcherBinding = bindings[0]?.[1].replace(/^"|"$/g, "").toLowerCase();
+    if (bindings.length !== 1 || (launcherBinding !== expectedLauncher
+        && !(manifest.schemaVersion === 2 && /^relocatable = true\s*$/m.test(cfg) && launcherBinding === "python.exe"))) denied("hermes_smoke_launcher_changed");
     const receipt = Object.freeze({ schemaVersion: "roost-hermes-smoke-installation-v1", version: pin.version, commit: pin.commit,
       signature: "unsigned", inventoryFiles: count, manifestDigest: sha(bytes), executableDigest: sha(launcher),
-      model: "gpt-5.6-sol", reasoning: "medium", modelAlias: false, reasoningClamped: false });
+      ...(split ? { split } : {}), model: "gpt-5.6-sol", reasoning: "medium", modelAlias: false, reasoningClamped: false });
     proofs.set(receipt, { executable, checkout: checkout.path, identity: physicalIdentity(executable, false), sources,
-      at: Date.now(), monotonic: performance.now() });
+      assertSplit, at: Date.now(), monotonic: performance.now() });
     return receipt;
   } catch (e) {
     denied(e.protocolAdmission ? e.message : "hermes_smoke_installation_unverified");
@@ -101,5 +125,7 @@ export function assertHermesSmokeInstallation(receipt, executable) {
       || sha(readFileSync(executable)) !== receipt.executableDigest) denied("hermes_smoke_integrity_changed");
   for (const [file, digest] of Object.entries(saved.sources))
     if (sha(readFileSync(path.join(saved.checkout, file))) !== digest) denied("hermes_smoke_source_changed");
+  saved.assertSplit?.();
+  if (performance.now() - saved.monotonic >= 60000 || Date.now() - saved.at >= 60000) denied("hermes_smoke_installation_unverified");
   return receipt;
 }

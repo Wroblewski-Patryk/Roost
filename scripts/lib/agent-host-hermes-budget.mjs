@@ -97,7 +97,7 @@ export function assertHermesBudgetUnused(receipt) {
   if (seals.get(receipts.get(receipt).seal).used) fail("hermes_attempt_budget_reuse_or_input_changed");
 }
 export function hermesBudgetRequiresNativeBoundary(receipt) {
-  return receipts.get(receipt)?.startup.profileVersion === "roost-hermes-profile-v4";
+  return receipts.get(receipt)?.startup.profileVersion === "roost-hermes-profile-v5";
 }
 export function hermesBudgetBlockers(blockers, receipt) {
   try { assertHermesBudgetReceipt(receipt); return blockers.filter(code => code !== hermesBudgetBlocker); }

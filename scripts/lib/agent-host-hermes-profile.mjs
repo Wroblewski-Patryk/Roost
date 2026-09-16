@@ -41,13 +41,16 @@ const budgetProfileBytes = JSON.stringify({ ...JSON.parse(startupProfileBytes), 
 export const hermesBudgetProfileDigest = sha(budgetProfileBytes);
 export const renderHermesBudgetProfile = () => budgetProfileBytes;
 export const hermesBudgetProfileBinding = profilePath => ({ ...hermesStartupProfileBinding(profilePath), schemaVersion: hermesBudgetProfileVersion, configDigest: hermesBudgetProfileDigest });
-export const hermesNativeProfileVersion = "roost-hermes-profile-v4";
-const nativeProfileBytes = JSON.stringify({ ...JSON.parse(budgetProfileBytes),
+export const hermesLegacyNativeProfileVersion = "roost-hermes-profile-v4";
+const legacyNativeProfileBytes = JSON.stringify({ ...JSON.parse(budgetProfileBytes),
   lsp: { enabled: false, install_strategy: "off" },
   terminal: { auto_source_bashrc: false, shell_init_files: [] },
   approvals: { mode: "manual", single_query_mode: "deny", unattended_mode: "deny", cron_mode: "deny",
     deny: ["git clone*", "git worktree*", "git init*", "git reset*", "git clean*", "git checkout*", "git restore*", "git commit*", "git push*", "docker*", "podman*"] },
   command_allowlist: [] }, null, 2) + "\n";
+export const hermesLegacyNativeProfileDigest = sha(legacyNativeProfileBytes);
+export const hermesNativeProfileVersion = "roost-hermes-profile-v5";
+const nativeProfileBytes = JSON.stringify({ ...JSON.parse(legacyNativeProfileBytes), security: { allow_lazy_installs: false } }, null, 2) + "\n";
 export const hermesNativeProfileDigest = sha(nativeProfileBytes);
 export const renderHermesNativeProfile = () => nativeProfileBytes;
 export const hermesNativeProfileBinding = profilePath => ({ ...hermesBudgetProfileBinding(profilePath),
@@ -62,6 +65,8 @@ const legacyBindingSchema = z.object({
 export const hermesProfileBindingSchema = z.discriminatedUnion("schemaVersion", [legacyBindingSchema,
   legacyBindingSchema.extend({ schemaVersion: z.literal(hermesStartupProfileVersion), configDigest: z.literal(hermesStartupProfileDigest) }).strict(),
   legacyBindingSchema.extend({ schemaVersion: z.literal(hermesBudgetProfileVersion), configDigest: z.literal(hermesBudgetProfileDigest) }).strict(),
+  legacyBindingSchema.extend({ schemaVersion: z.literal(hermesLegacyNativeProfileVersion), configDigest: z.literal(hermesLegacyNativeProfileDigest),
+    nativeToolsRisk: z.object({ policyVersion: z.literal(nativeToolPolicy), decisionReference: z.literal(nativeRiskReference) }).strict() }).strict(),
   legacyBindingSchema.extend({ schemaVersion: z.literal(hermesNativeProfileVersion), configDigest: z.literal(hermesNativeProfileDigest),
     nativeToolsRisk: z.object({ policyVersion: z.literal(nativeToolPolicy), decisionReference: z.literal(nativeRiskReference) }).strict() }).strict()]);
 const failure = reason => Object.assign(new Error(reason), { protocolAdmission: true, retryable: false,
@@ -83,7 +88,7 @@ function readProfile(input, repositoryPath) {
   const parsed = hermesProfileBindingSchema.safeParse(input);
   if (!parsed.success) fail("hermes_profile_binding_invalid");
   const binding = parsed.data, file = binding.profilePath;
-  const expectedBytes = binding.schemaVersion === hermesNativeProfileVersion ? nativeProfileBytes : binding.schemaVersion === hermesBudgetProfileVersion ? budgetProfileBytes : binding.schemaVersion === hermesStartupProfileVersion ? startupProfileBytes : profileBytes;
+  const expectedBytes = binding.schemaVersion === hermesNativeProfileVersion ? nativeProfileBytes : binding.schemaVersion === hermesLegacyNativeProfileVersion ? legacyNativeProfileBytes : binding.schemaVersion === hermesBudgetProfileVersion ? budgetProfileBytes : binding.schemaVersion === hermesStartupProfileVersion ? startupProfileBytes : profileBytes;
   if (!path.isAbsolute(file) || path.normalize(file) !== file || path.basename(file) !== "config.yaml"
       || /[\x00-\x1f]/.test(file) || (process.platform === "win32" && (!/^[a-z]:\\/i.test(file)
         || file.slice(2).includes(":") || file.split("\\").some(part => /[. ]$/.test(part))))) fail("hermes_profile_path_invalid");
