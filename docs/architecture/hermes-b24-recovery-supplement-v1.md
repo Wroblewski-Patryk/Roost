@@ -1,5 +1,12 @@
 # B24 preserved-attempt recovery evidence
 
+Later B25 update: [exact owner legacy adoption](hermes-b25-legacy-adoption-v1.md)
+records explicit acceptance of the missing historical ownership receipt without
+backfilling it or altering B21/B24. It grants no cleanup or execution authority;
+B26 requires a separate owner decision and fresh checks before expiry. The
+outcomes and requirements below retain their original historical scope.
+
+
 RF-RUNTIME-005B24 implements canonical identity bridging and a separate,
 append-only later-verification record. It does not grant cleanup or execution.
 The original B21 review, rejected acceptance and spent authorization remain

@@ -1,5 +1,16 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+RF-RUNTIME-005B25 [exact legacy fixture adoption](../architecture/hermes-b25-legacy-adoption-v1.md) implements the owner's
+one-shot acceptance of B21's missing historical parent-fixture ownership proof.
+It freezes canonical paths, physical objects and all B21/B24/control/runtime
+evidence in a separate append-only record; original history is never backfilled.
+Adoption expires after 24 hours and grants no cleanup, execution, API or config
+authority. Only B26 preparation may qualify, subject to fresh checks and a new
+explicit owner decision for that separate recovery atom. All six flags remain
+false; production autonomy is not ready. Execution ADR v13 and runtime policies
+remain unchanged. Earlier status and successor statements below are historical.
+
+
 RF-RUNTIME-005B24 [recovery evidence supplement](../architecture/hermes-b24-recovery-supplement-v1.md) implements versioned
 identity bridging and append-only later verification without rewriting the original
 B21 REFUSED review or spent authorization. Recovery remains **BLOCKED** on missing

@@ -2,7 +2,7 @@
 // No CLI/API, provider execution, cleanup, activation or recovery grant.
 import path from "node:path";
 import { createHash } from "node:crypto";
-import { readFileSync, lstatSync, readdirSync, existsSync } from "node:fs";
+import { readFileSync, lstatSync, readdirSync, existsSync, realpathSync } from "node:fs";
 import { execFileSync, spawnSync } from "node:child_process";
 import { nativeDigest, physicalIdentity, captureNativeFootprint, nativeFootprintPolicy } from "./agent-host-native-footprint.mjs";
 import { nativeArtifactSnapshot, readDurableNativeReview } from "./agent-host-native-review.mjs";
@@ -46,6 +46,17 @@ function installation(options, original) {
   const digest = nativeDigest([refs, proof, manifest.roots.map(r => physicalIdentity(r.path))]);
   return { proof, digest, manifestDigest: m.digest, generatedReceiptDigest: g.digest,
     immutableFiles: proof.immutableFiles, generatedFiles: proof.generatedFiles,
+    physicalFilesDigest() {
+      // B25 additionally freezes every current runtime file ID across controller
+      // restarts. B24's historical counts/content/root digest is not backfilled.
+      assertHermesSplitFreshness(proof);
+      const rows = manifest.roots.flatMap((root, index) => [...root.files, ...generated.roots[index].files]
+        .map(entry => {
+          const stat = lstatSync(path.join(root.path, entry.path), { bigint: true });
+          return [root.kind, nativeDigest(entry.path), ...[stat.dev, stat.ino, stat.size, stat.mtimeNs, stat.ctimeNs, stat.birthtimeNs, stat.mode, stat.nlink].map(String)];
+        }));
+      assertHermesSplitFreshness(proof); return nativeDigest(rows);
+    },
     assertFresh() {
       assertHermesSplitFreshness(proof);
       const current = [options.attestationPath, options.manifestPath, record.generatedReceiptPath].map(f => {
@@ -181,6 +192,33 @@ export function qualifySupplementedB21Recovery(handle, directory) {
       ownerApprovalRequired: true, missingEvidence: [...new Set(missing)], supplementDigest: record.digest, originalOutcome: "acceptance_failed" };
   } catch (e) { return { eligible: false, deletionAuthorized: false, executionAuthorized: false,
     missingEvidence: [/^native_[a-z0-9_]+$/.test(e.message) ? e.message : "native_b24_evidence_unproven"] }; }
+}
+// Read-only evidence for a separately owner-approved B25 legacy adoption.
+// This does not repair the original missing ownership proof or mint a capability.
+export function readPreservedB21AdoptionEvidence(handle, directory) {
+  const s = observations.get(handle); if (!s) fail("native_b25_observation_unproven");
+  const q = qualifySupplementedB21Recovery(handle, directory);
+  if (q.eligible || nativeDigest(q.missingEvidence) !== nativeDigest(["native_recovery_original_fixture_ownership_missing"])
+      || s.before.originalFixtureOwnershipPresent) fail(q.missingEvidence.find(reason => reason !== "native_recovery_original_fixture_ownership_missing") ?? "native_b25_legacy_gap_not_exclusive");
+  const supplement = readRecoverySupplement(directory), p = supplement.payload;
+  const paths = { state: s.state, fixture: s.root, repository: s.repository,
+    marker: path.join(s.root, ".roost-attempt-owner"), scopeMarker: path.join(s.root, ".roost-smoke-scope"),
+    originalReview: s.options.reviewDirectory, originalReport: s.options.reportPath,
+    manifest: s.options.installation.manifestPath, installation: s.options.installation.attestationPath, supplement: directory };
+  const pathDigests = Object.fromEntries(Object.entries(paths).map(([key, file]) => {
+    if (realpathSync.native(file) !== file) fail("native_b25_canonical_path_required");
+    return [key, nativeDigest(file)];
+  }));
+  const nodeDigest = sha(readFileSync(process.execPath));
+  if (nodeDigest !== p.verification.nodeExecutableDigest) fail("native_b25_verifier_runtime_changed");
+  return structuredClone({ binding: s.binding, observation: s.before, pathDigests,
+    supplement: { digest: supplement.digest, directoryIdentity: supplement.directoryIdentity, keyIdentity: supplement.keyIdentity,
+      eventsDigest: nativeDigest(supplement.events.map(e => [e.digest, e.identity])), verificationDigest: nativeDigest(p.verification) },
+    runtime: { providerExecutableDigest: s.report.installation.executableDigest, nodeExecutableDigest: nodeDigest,
+      nodeExecutableIdentity: physicalIdentity(process.execPath, false), installationFilesIdentityDigest: s.installation.physicalFilesDigest(),
+      approvedPinDigest: nativeDigest([pin.officialSource, pin.version, pin.commit]) },
+    processChainDigest: nativeDigest([s.review.payload.binding.writer.record.ownerProcess, s.review.payload.job]),
+    processObservation: "original_processes_absent" });
 }
 export function createB21RecoverySupplement(options) {
   if (typeof options.assertOwnerAuthority !== "function") fail("native_supplement_owner_authority_required");

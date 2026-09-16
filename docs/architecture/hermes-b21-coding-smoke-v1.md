@@ -1,5 +1,12 @@
 # Hermes B21 coding smoke v1
 
+Later B25 update: [exact owner legacy adoption](hermes-b25-legacy-adoption-v1.md)
+records explicit acceptance of the missing historical ownership receipt without
+backfilling it or altering B21/B24. It grants no cleanup or execution authority;
+B26 requires a separate owner decision and fresh checks before expiry. The
+outcomes and requirements below retain their original historical scope.
+
+
 Later B24 update: [recovery supplement v1](hermes-b24-recovery-supplement-v1.md)
 bridges the legacy identity ordering and records later verification separately.
 Original B21 REFUSED/acceptance_failed/spent remain unchanged; missing historical
