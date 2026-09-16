@@ -38,11 +38,17 @@ flags remain false. [RF-RUNTIME-005B12 local launch admission](../architecture/h
 is source/synthetic qualified with a single opaque, expiring, one-use proof set.
 Local policyQualified can be true while activationAuthorized=false and
 spawnStarted=false. B11 cleanup is closed by verified owner removal.
-Exactly one next proposed atom: **RF-RUNTIME-005B13 — one supervised bounded
-coding smoke**, not started. Installed executable/pin/config readback, explicit
-same-account session-availability confirmation and separate owner activation
-are prerequisites; no credential reads or inferred global/pilot activation.
-MCP, E2E and release remain separate.
+[RF-RUNTIME-005B13 — one real coding smoke](../architecture/hermes-real-coding-smoke-v1.md)
+is **BLOCKED**. Owner-authorized exact gpt-5.6-sol/medium launch occurred once;
+Hermes reported an authentication requirement and exited 1. No repair or
+independent post-agent PASS was proven. Job and owned repository cleanup passed,
+but a controller defect retained the stale Writer lock. The defect is corrected
+and tested with a harmless fixture; there was no second real attempt.
+Exactly one next owner action: manually remove that stale Writer lock, identified
+in the private handoff, while preserving the separate spent record. No retry,
+login, general pilot activation, MCP, E2E or release is authorized. ADR-004 v8
+records the spent one-attempt permission; all six public flags remain false.
+Earlier no-launch statements above describe the corresponding historical scope.
 
 The first-provider choice is resolved by RF-RUNTIME-002 /
 [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md): native Hermes using

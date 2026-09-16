@@ -1,5 +1,25 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+RF-RUNTIME-005B13 owner amendment (version 8), 2026-09-16: explicitly authorize
+exactly one real supervised coding smoke with installed Hermes 0.21.2 at the
+existing pin, exact gpt-5.6-sol/medium, one owned disposable repository, one
+attempt of at most 300 seconds and existing v4 file/terminal coding authority.
+The owner confirmed the approved account was signed in. No alias, reasoning
+clamp, fallback, login, restart replay or agent commit/push/deploy is authorized.
+B4/B7/B9/B11 residual-risk acceptances remain unchanged, including the v7 native
+risk reference. A scoped local controller/opaque grant is permitted for this
+attempt only; public dispatch and all six flags remain false.
+
+[The attempt](../architecture/hermes-real-coding-smoke-v1.md) is **BLOCKED**:
+one installed process started, reported an authentication requirement and exited
+1; no repair or independent post-agent PASS was established. Authorization is
+spent. Genuine Job cleanup and owned repository removal passed, but a controller
+post-completion defect retained the stale Writer lock. The corrected behavior
+has harmless fixture evidence only. Exactly one owner action remains: manually
+remove the privately identified stale Writer lock and preserve the spent record.
+No second attempt is authorized. Earlier launch-denial/proposal statements below
+are historical scope statements, not a denial that this one attempt occurred.
+
 RF-RUNTIME-005B12 implementation evidence: [local launch admission](../architecture/hermes-local-launch-admission-v1.md)
 aggregates the already accepted B4/B7/B9/B11 policies without a new waiver.
 Decision version remains 7. Source/synthetic policy qualification is separate
@@ -112,7 +132,7 @@ The original RF-RUNTIME-002 decision and its dated authority follow below.
 Date: 2026-09-15
 Status: accepted
 Owner: Roost architecture owner
-Decision version: 7 (RF-RUNTIME-005B11 native-tool risk and authority amendment, 2026-09-16)
+Decision version: 8 (RF-RUNTIME-005B13 one-attempt owner authorization; spent and BLOCKED, 2026-09-16)
 Scope: RF-RUNTIME-002 owner handoff; architecture and blocked adapter implementation
 Source reference: `owner-handoff.rf-runtime-002.hermes-first.v1`
 

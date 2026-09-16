@@ -58,7 +58,7 @@ function boundedFileDigest(file) {
 }
 // Metadata only for the bounded tree. Content hashes are taken only for dirty
 // non-secret Git paths. Dependencies are explicitly an observation gap.
-function tree(root, { metadata = false, allowGitRoot = false } = {}) {
+function tree(root, { metadata = false, allowGitRoot = false, ownedRepository = null } = {}) {
   const rows = [], skipped = []; let count = 0;
   function walk(dir, relative, depth) {
     if (depth > 24) fail("native_inventory_limit");
@@ -70,9 +70,14 @@ function tree(root, { metadata = false, allowGitRoot = false } = {}) {
       const s = lstatSync(file, { bigint: true });
       if (s.isSymbolicLink() || (!s.isDirectory() && !s.isFile())) fail("native_reparse_denied");
       if (name.toLowerCase() === ".git") {
-        if (relative || metadata || !allowGitRoot) fail("native_extra_repository");
-        if (!s.isDirectory()) fail("native_worktree_denied");
-        continue;
+        if (ownedRepository && relative === ownedRepository && name === ".git" && s.isDirectory()) {
+          // Only a repository created inside a freshly marked fixture root.
+          // Traverse all its objects/logs for cleanup; never adopt a checkout.
+        } else {
+          if (relative || metadata || !allowGitRoot) fail("native_extra_repository");
+          if (!s.isDirectory()) fail("native_worktree_denied");
+          continue;
+        }
       }
       const row = { path: rel, kind: s.isDirectory() ? "directory" : "file", identity: `${s.dev}:${s.ino}` };
       if (s.isFile()) Object.assign(row, { bytes: String(s.size), time: String(s.mtimeNs), links: String(s.nlink) });
@@ -80,7 +85,7 @@ function tree(root, { metadata = false, allowGitRoot = false } = {}) {
       if (s.isDirectory()) {
         if (!metadata) {
           // A bare clone has HEAD/objects/refs without a .git directory.
-          if (["HEAD", "objects", "refs"].every(n => existsSync(path.join(file, n)))) fail("native_extra_repository");
+          if (!(ownedRepository && rel === `${ownedRepository}/.git`) && ["HEAD", "objects", "refs"].every(n => existsSync(path.join(file, n)))) fail("native_extra_repository");
         }
         if ((!metadata && ["node_modules", ".venv", "venv"].includes(name.toLowerCase())) || (metadata && ["objects", "logs"].includes(name.toLowerCase()))) {
           skipped.push(rel); row.directoryTime = String(s.mtimeNs);
@@ -145,23 +150,27 @@ export function compareNativeFootprint(before, after, writePaths) {
   }
   return { violations: [...new Set(violations)], changedDigests: changed.sort().map(nativeDigest) };
 }
-export function createNativeOwnedTemp(parent, attempt) {
+function createOwnedTemp(parent, attempt, repository = null) {
   const parentIdentity = physicalIdentity(parent), token = randomBytes(32), name = `attempt-${randomBytes(16).toString("hex")}`;
   const root = path.join(parent, name);
   mkdirSync(root);
   const identity = physicalIdentity(root), marker = createHmac("sha256", token).update(JSON.stringify([attempt, identity, parentIdentity])).digest("hex");
   writeFileSync(path.join(root, ".roost-attempt-owner"), marker, { flag: "wx", mode: 0o600 });
   const proof = Object.freeze({});
-  privateTemps.set(proof, { root, parent, parentIdentity, identity, marker, attempt, done: false });
+  if (repository) mkdirSync(path.join(root, repository));
+  privateTemps.set(proof, { root, parent, parentIdentity, identity, marker, attempt, repository, done: false });
   return proof;
 }
+export const createNativeOwnedTemp = (parent, attempt) => createOwnedTemp(parent, attempt);
+// This allocates a NEW empty repository directory. There is no adopt-path API.
+export const createNativeOwnedRepositoryTemp = (parent, attempt) => createOwnedTemp(parent, attempt, "repository");
 export function inspectNativeOwnedTemp(proof, attempt) {
   const saved = privateTemps.get(proof);
   if (!saved || saved.done || saved.attempt !== attempt || physicalIdentity(saved.parent) !== saved.parentIdentity || physicalIdentity(saved.root) !== saved.identity) fail("native_temp_ownership_unproven");
   const markerFile = path.join(saved.root, ".roost-attempt-owner");
   physicalIdentity(markerFile, false);
   if (lstatSync(markerFile).size !== 64 || readFileSync(markerFile, "utf8") !== saved.marker) fail("native_temp_ownership_unproven");
-  const inventory = tree(saved.root);
+  const inventory = tree(saved.root, { ownedRepository: saved.repository });
   if (inventory.skipped.length || inventory.rows.some(r => r.kind === "file" && r.links !== "1")) fail("native_temp_ownership_unproven");
   return { root: saved.root, identity: saved.identity, digest: nativeDigest(inventory), inventory };
 }

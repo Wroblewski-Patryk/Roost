@@ -1,5 +1,11 @@
 # Hermes local launch admission v1
 
+B13 update: [the separately owner-authorized real coding smoke](hermes-real-coding-smoke-v1.md)
+is BLOCKED after one launch reporting authentication required. That narrow grant
+is spent; no retry is authorized. Job and repository cleanup passed; one manual
+owner action remains for the stale Writer lock. All six public flags stay false.
+The B12-only activation-denial statements below retain their historical scope.
+
 RF-RUNTIME-005B12, 2026-09-16. **Local source/synthetic policy qualified;
 real activation denied.** Hermes remains pinned to 0.21.2 /
 `939e45c91d751fadd94dcd1b873ac3cb44846213`. No installed Hermes command,
@@ -18,7 +24,7 @@ ADR-004 stays version 7; no additional risk acceptance is inferred.
 | Native authority | Genuine B11 proof binds exactly read/write/local-test authority, root/Git identity/branch/head/origin, Writer/application lease, declared ports where required, dirty bytes, bounded footprint, marked owned temps and same startup/budget. Partial observation is not filesystem/network isolation. |
 | Task/stdin | Worker-issued opaque frozen input, task/execution/workspace/application/attempt identities and packet/context/Ready/risk/composition revisions. Final input consumption rechecks live authority and fresh context and burns the seal. |
 | Windows Job | Fresh process-local, non-fault-injected compiled launcher capability with source/binary hashes and physical file identity. It qualifies the available backend only. Actual same-attempt cleanup requires a new genuine post-run native receipt. A previous run's cleanup cannot qualify this launch. |
-| Activation/pilot | No real activation issuer exists. Public dispatch still denies unconditionally, including after successful local qualification. Owner activation, installed readback and live prerequisites remain outstanding. |
+| Activation/pilot | B12 issues no real activation. B13 adds a separate scoped local owner grant; its sole real attempt is spent and BLOCKED. Public dispatch still denies unconditionally, including after successful local qualification. |
 
 ## One aggregate, separate authority
 
@@ -70,8 +76,9 @@ compiles only the existing repository-owned process-tree C# fixture into a fresh
 owned temporary directory from a fixed-digest source snapshot. Its opaque, expiring, single-use activation grant is
 bound to that exact binary/source/file identity. It accepts no executable or
 source override and cannot authorize installed Hermes. A boolean, JSON clone or
-grant for a different executable is denied. Only this test adapter may report
+grant for a different executable is denied. Within B12 only this test adapter may report
 activationAuthorized=true and spawnStarted=true, with scope=harmless_fixture_only.
+B13 records the distinct real-attempt scope and its spent activation.
 
 [Admission tests](../../scripts/agent-host-hermes-launch-admission.test.mjs)
 check complete qualification without spawn, every omitted/serialized proof,
@@ -106,7 +113,7 @@ diff checks passed. Build retains the existing unresolved icon stylesheet and
 ambient-image warnings and the existing large web chunk warning. These checks
 do not qualify installed-provider execution, database E2E, MCP or release.
 
-## Exactly one proposed next atom
+## Historical B12 proposal, superseded by the B13 result
 
 **RF-RUNTIME-005B13: one supervised, bounded coding smoke**, only after separate
 explicit owner activation. It is proposed, not started or authorized by B12.

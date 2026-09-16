@@ -9,7 +9,7 @@ import { consumeHermesBudgetReceipt, assertHermesBudgetProcess, completeHermesBu
 // Real native backend; no receipt or cleanup callback can be injected by config.
 // Build happens before any target process, rechecking authority afterward.
 export async function runHermesOwnedProcess({ executable, argv, cwd, environment, input, attempt,
-  remainingMs, secrets = [], assertAuthority, signal, shutdownRequested = () => false, stopReason = () => undefined, budgetReceipt, nativeToolReceipt, jobArtifact }) {
+  remainingMs, secrets = [], assertAuthority, signal, shutdownRequested = () => false, stopReason = () => undefined, budgetReceipt, nativeToolReceipt, jobArtifact, onAssigned = () => {} }) {
   const began = performance.now();
   let observedJob, observedExit, nativeProof, nativeResult;
   if (hermesBudgetRequiresNativeBoundary(budgetReceipt) && !nativeToolReceipt)
@@ -47,7 +47,7 @@ export async function runHermesOwnedProcess({ executable, argv, cwd, environment
     const nativeDuration = Math.floor(remaining()) - (budgetReceipt ? 3000 : 0);
     if (nativeDuration < 1) throw failure("hermes_quiet_timeout");
     handle = await startWindowsJob(artifact, { executable, argv, cwd, environment, input, attempt,
-      durationMs: nativeDuration, onData: (channel, bytes) => guard.write(channel, bytes) });
+      durationMs: nativeDuration, onAssigned, onData: (channel, bytes) => guard.write(channel, bytes) });
     const deadlineTimer = setTimeout(() => { problem ??= failure("hermes_quiet_timeout"); handle.stop("timeout"); }, nativeDuration + (budgetReceipt ? 3000 : 0));
     const timer = setInterval(check, 25), abort = () => check();
     signal?.addEventListener("abort", abort, { once: true });
@@ -112,7 +112,13 @@ export function createHermesQuietGuard({ secrets = [] } = {}) {
       try { guardHostContent({ stdout: channels.stdout.text, stderr: channels.stderr.text }, "required", secrets); }
       catch { fail("hermes_quiet_sensitive"); }
       if (exitCode === 130) fail("hermes_quiet_interrupted");
-      if (exitCode !== 0) fail("hermes_quiet_process_failed");
+      if (exitCode !== 0) {
+        const text = channels.stdout.text + "\n" + channels.stderr.text;
+        const hint = /not authenticated|not logged in|credentials? (?:failed|missing|unavailable)|(?:login|log in|relogin|reauthentication) (?:required|again)|hermes (?:auth|login)|AuthError/i.test(text)
+          ? "authentication_required_reported" : "unknown";
+        failed = Object.assign(failure("hermes_quiet_process_failed"), { details: { providerDiagnostic: hint } });
+        throw failed;
+      }
       return Object.freeze({ finalResponse: channels.stdout.text, exitCode: 0,
         trust: "untrusted_process_output", outcome: "candidate_result", reviewRequired: true, usage: null,
         toolEventsAvailable: false, internalTurnCount: null, transportRetryCount: null });
