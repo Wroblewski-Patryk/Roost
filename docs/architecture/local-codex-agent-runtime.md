@@ -1,12 +1,12 @@
 # Local Codex Agent Runtime
 
-Syntetyczny dowód Roost → Worker → handshake → wynik/review pozostaje
-**BLOCKED** (RF-RUNTIME-005B29). [Diagnoza i tabela gotowości](agent-delivery-readiness.md)
-wskazują odmowę przed claim i publicznym launch oraz brak połączenia własności
-fixture z zadaniem Workera. B28 kwalifikuje składniki, nie cały przepływ.
-Potrzebny jest jeden ograniczony kontrakt syntetycznego dopuszczenia przez
-istniejące granice; osobny helper nie stanowi dowodu end-to-end. Bez zmian kodu,
-kontraktów lub sześciu flag. Dalsze propozycje B21–B28 są historyczne.
+Dopuszczenie stałego programu syntetycznego (RF-RUNTIME-005B30) pozostaje
+**BLOCKED** na wymaganym teście publicznego API: Docker Engine dla zatwierdzonej
+istniejącej bazy jest niedostępny. [Tabela gotowości](agent-delivery-readiness.md)
+rozróżnia zaakceptowaną zamkniętą semantykę od niezaimplementowanego dopuszczenia.
+Nie jest wymagany sandbox dla tej klasy; realni providerzy nadal są zablokowani.
+Bez zmian kodu i sześciu flag. Następny krok to dostęp do istniejącej kanonicznej
+bazy testowej i wznowienie tego samego E2E; dalsze propozycje są historyczne.
 
 RF-RUNTIME-005B26 [adopted recovery](hermes-b26-adopted-recovery-v1.md) defines the separately owner-authorized
 one-use cleanup of the exact B25-adopted B21 fixture, then its lease and Writer.

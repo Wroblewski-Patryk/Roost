@@ -10,6 +10,42 @@ existing Worker/API admission boundary. Ordinary application work, including
 `maintenance` and `local_test`, cannot authorize host maintenance. There is no
 additional manager, maintenance executor, socket repair or directory mover.
 
+## Fixed synthetic program decision
+
+RF-RUNTIME-005B30: the owner accepts closed semantics for one new fixed synthetic
+program class. This is an authorized implementation target, not a currently
+admitted provider or a successful end-to-end qualification.
+
+The program must have small auditable repository-owned source, exact verified
+source/build/content identity and a check immediately before spawn. It accepts
+no caller-selected command, executable, path, arguments or input. Its sole
+supplied effect handle is one inherited handle for predetermined bounded output in
+its exact owned fixture. Its code contains no network operation, arbitrary
+path read, shell/subprocess, explicit dynamic load or host-lifecycle control.
+One-shot authority binds task/attempt/Ready, canonical repository and fixture,
+claim, Writer/application lease, original B28 ownership, approved runtime and
+installation, actual Job, deadline/budget and terminal review/cleanup. After
+terminal consumption or restart only the original cleanup chain may recover.
+
+This is a proof about the exact closed program, not removal of Windows token
+permissions. It runs under the same user/token with explicitly accepted residual
+risk. No filesystem/network sandbox, separate environment or protection from
+same-owner tampering is claimed. Source/build/content drift must refuse execution;
+a hash alone does not prove semantics.
+
+Hermes, Direct, arbitrary executables, command text and caller-supplied readiness
+remain unconditionally denied by their existing gates. Closed synthetic semantics
+cannot be used as their isolation evidence, inherited activation or a generic
+test/config/environment bypass. Current code is unchanged and grants no synthetic
+activation either. Qualification must use the ordinary API/Worker boundaries.
+
+The required API/PostgreSQL qualification is currently blocked on unavailable
+Docker Engine under the narrowly authorized existing-container test-DB route.
+No Docker/WSL restart, database access or mutation occurred. See the
+[readiness table](../architecture/agent-delivery-readiness.md) for evidence and
+the single next prerequisite. The remaining sections describe the unchanged
+real-provider and host-maintenance policy.
+
 ## Enforcement and scope
 
 The Direct CLI exposes command events after execution. A prompt instruction,
