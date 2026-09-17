@@ -94,7 +94,7 @@ internal static class RoostWindowsJob
     static int Main()
     {
         IntPtr attributes = IntPtr.Zero, handles = IntPtr.Zero, jobList = IntPtr.Zero, environment = IntPtr.Zero;
-        var pipes = new List<IntPtr>(); Thread outPump = null, errPump = null;
+        var pipes = new List<IntPtr>(); Thread outPump = null, errPump = null; FileStream fixedFile = null;
         int stopMs = 3000, duration = 0; bool clean = false; uint active = 0;
         // A blocked request/read/output channel cannot indefinitely retain a job.
         Background(delegate { while (Clock.ElapsedMilliseconds < Interlocked.Read(ref killDeadline)) Thread.Sleep(10); Environment.Exit(3); });
@@ -114,6 +114,8 @@ internal static class RoostWindowsJob
 #if TEST_FAULTS
             keys.Add("fault");
 #endif
+            bool fixedEffect = request.ContainsKey("fixedEffect");
+            if (fixedEffect) { keys.Add("fixedEffect"); Need(Version == "roost-windows-job-v2" && request["fixedEffect"] is bool && (bool)request["fixedEffect"]); }
             Exact(request, keys.ToArray()); Need(Str(request, "version") == Version);
             Guid parsed; attempt = Str(request, "attempt"); Need(Guid.TryParseExact(attempt, "D", out parsed));
             string exe = Str(request, "executable"), cwd = Str(request, "cwd");
@@ -125,6 +127,7 @@ internal static class RoostWindowsJob
             Need(command.Length < 30000);
             duration = Number(request, "durationMs", 1, 3600000); stopMs = Number(request, "stopMs", 100, 3000);
             byte[] input = Convert.FromBase64String(Str(request, "input")); Need(input.Length <= 131072);
+            if (fixedEffect) Need(args.Count == 0 && input.Length == 0 && Path.GetFileName(exe) == "roost-fixed-effect.exe");
             var env = request["environment"] as Dictionary<string, object>; Need(env != null && env.Count <= 128);
             var sorted = new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var pair in env) { var v = pair.Value as string;
@@ -145,9 +148,18 @@ internal static class RoostWindowsJob
             IntPtr[] perr = Pipe(true); pipes.AddRange(perr);
             IntPtr size = IntPtr.Zero; InitializeProcThreadAttributeList(IntPtr.Zero, 2, 0, ref size);
             attributes = Marshal.AllocHGlobal(size); Need(InitializeProcThreadAttributeList(attributes, 2, 0, ref size));
-            handles = Marshal.AllocHGlobal(IntPtr.Size * 3);
-            Marshal.Copy(new[] { pin[0], pout[1], perr[1] }, 0, handles, 3);
-            Need(UpdateProcThreadAttribute(attributes, 0, (IntPtr)0x20002, handles, (IntPtr)(IntPtr.Size * 3), IntPtr.Zero, IntPtr.Zero));
+            IntPtr[] inherited = new[] { pin[0], pout[1], perr[1] };
+            if (fixedEffect) {
+                string effect = Path.Combine(cwd, "synthetic-effect.bin");
+                Need((File.GetAttributes(effect) & FileAttributes.ReparsePoint) == 0);
+                fixedFile = new FileStream(effect, FileMode.Open, FileAccess.Write, FileShare.Read);
+                Need(fixedFile.Length == 0);
+                IntPtr handle = fixedFile.SafeFileHandle.DangerousGetHandle();
+                Need(SetHandleInformation(handle, 1, 1)); inherited = new[] { handle };
+            }
+            handles = Marshal.AllocHGlobal(IntPtr.Size * inherited.Length);
+            Marshal.Copy(inherited, 0, handles, inherited.Length);
+            Need(UpdateProcThreadAttribute(attributes, 0, (IntPtr)0x20002, handles, (IntPtr)(IntPtr.Size * inherited.Length), IntPtr.Zero, IntPtr.Zero));
             jobList = Marshal.AllocHGlobal(IntPtr.Size); Marshal.WriteIntPtr(jobList, job);
 #if TEST_FAULTS
             if (Str(request, "fault") == "assign") Marshal.WriteIntPtr(jobList, new IntPtr(-1));
@@ -156,10 +168,11 @@ internal static class RoostWindowsJob
             // between process creation and userspace verification. No suspended orphan.
             Need(UpdateProcThreadAttribute(attributes, 0, (IntPtr)0x2000D, jobList, (IntPtr)IntPtr.Size, IntPtr.Zero, IntPtr.Zero));
             var start = new StartupEx(); start.Startup.cb = Marshal.SizeOf(typeof(StartupEx)); start.Startup.flags = 0x100;
-            start.Startup.input = pin[0]; start.Startup.output = pout[1]; start.Startup.error = perr[1]; start.attributes = attributes;
+            start.Startup.input = fixedEffect ? IntPtr.Zero : pin[0]; start.Startup.output = fixedEffect ? inherited[0] : pout[1]; start.Startup.error = fixedEffect ? IntPtr.Zero : perr[1]; start.attributes = attributes;
             ProcessInfo pi;
             Need(CreateProcess(exe, command, IntPtr.Zero, IntPtr.Zero, true, 0x08080404, environment, cwd, ref start, out pi));
             process = pi.process; thread = pi.thread; rootId = pi.processId;
+            if (fixedFile != null) { fixedFile.Dispose(); fixedFile = null; }
             long created, exited, kernel, user;
             Need(GetProcessTimes(process, out created, out exited, out kernel, out user));
             rootCreationTime = created.ToString();
@@ -201,7 +214,7 @@ bool member; Need(IsProcessInJob(process, job, out member) && member && Active()
             }
             pipes.Remove(pout[0]); pipes.Remove(perr[0]);
             outPump = Background(delegate { Pump(pout[0], "stdout"); }); errPump = Background(delegate { Pump(perr[0], "stderr"); });
-            pipes.Remove(pin[1]); Background(delegate {
+            pipes.Remove(pin[1]); if (fixedEffect) CloseHandle(pin[1]); else Background(delegate {
                 try { using (var s = new FileStream(new SafeFileHandle(pin[1], true), FileAccess.Write)) { s.Write(input, 0, input.Length); } }
                 catch { Stop("stdin_error"); }
             });
@@ -221,6 +234,7 @@ bool member; Need(IsProcessInJob(process, job, out member) && member && Active()
             }
         } catch { Stop("preparation_failed"); }
         finally {
+            if (fixedFile != null) fixedFile.Dispose();
             var stopClock = Stopwatch.StartNew();
             // A stuck parent output pipe must still close the last job handle.
             Interlocked.Exchange(ref killDeadline, Clock.ElapsedMilliseconds + stopMs + 500);

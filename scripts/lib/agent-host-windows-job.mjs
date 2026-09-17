@@ -94,14 +94,14 @@ export async function startWindowsJob(artifact, options) {
   const build = builds.get(artifact);
   try { if (!build || digest(await readFile(artifact.executable)) !== artifact.sha256) throw fail(); }
   catch { throw fail(); }
-  const { executable, argv, cwd, environment, input, durationMs, attempt = randomUUID(), onData = () => {}, onAssigned = () => {}, confirmResume, fault = "" } = options;
+  const { executable, argv, cwd, environment, input, durationMs, attempt = randomUUID(), onData = () => {}, onAssigned = () => {}, confirmResume, fixedEffect = false, fault = "" } = options;
   const version = confirmResume === undefined ? windowsJobVersion : "roost-windows-job-v2";
   if (confirmResume !== undefined && typeof confirmResume !== "function") throw fail();
   let executableDigest = null;
   try { executableDigest = digest(readFileSync(executable)); }
   catch (error) { if (error.code !== "ENOENT") throw fail(); }
   const request = { version, attempt, executable, argv, cwd, environment,
-    input: Buffer.from(input).toString("base64"), durationMs, stopMs: 3000, ...(build.testFaults ? { fault } : {}) };
+    input: Buffer.from(input).toString("base64"), durationMs, stopMs: 3000, ...(fixedEffect ? { fixedEffect: true } : {}), ...(build.testFaults ? { fault } : {}) };
   const encoded = JSON.stringify(request) + "\n";
   if (Buffer.byteLength(encoded) > 262144 || !uuid.safeParse(attempt).success || !Number.isInteger(durationMs) || durationMs < 1 || durationMs > 3600000) throw fail();
   const child = spawn(artifact.executable, [], { windowsHide: true, shell: false, stdio: ["pipe", "pipe", "pipe"] });

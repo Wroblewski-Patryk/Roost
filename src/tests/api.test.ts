@@ -31,8 +31,10 @@ import { canonicalLifecycleStages, lifecycleOperatingContractSource } from "../m
 import { calculateApplicationReadiness } from "../modules/product-engineering/readiness";
 import { env } from "../config/env";
 import { registerFindingTests } from "./finding-api";
+import { registerFixedPublicTests, fixedAdmissionCommits } from "./fixed-public-api";
 
 registerFindingTests({request,registerOwner,prepareReviewFixture,decisionFixtureProposal,decisionFixtureProof,refreshCompositionRisk,submissionInput});
+registerFixedPublicTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, getBaseUrl: () => baseUrl, restoreAdmission: () => providerAdmissionMock.mock.mockImplementation(realProviderAdmission), restoreLegacyAdmission: () => providerAdmissionMock.mock.mockImplementation(syntheticProviderAdmission) });
 
 const realFetch = globalThis.fetch.bind(globalThis);
 let baseUrl = "";
@@ -1398,7 +1400,7 @@ async function prepareAdmissionFixture(route:string,input:any,auth:Record<string
  const post=(kind:string,body:any,headers:Record<string,string>=auth)=>request(`${route}/${kind}`,{method:"POST",headers,body:JSON.stringify(body)});
  if(!v.scope){
   const target=v.records.find((r:any)=>r.applicationId===input.applicationId);if(!target)return;
-  const r=await post("scope",{requestId:randomUUID(),expectedVersion:v.expectedVersion,procedureId:resources.procedure.id,targetId:target.id,releaseId:target.id,taskType:"code_change",environment:"development",destructive:false,commit:"a".repeat(40),rationale:"Synthetic bounded admission scope"});
+  const r=await post("scope",{requestId:randomUUID(),expectedVersion:v.expectedVersion,procedureId:resources.procedure.id,targetId:target.id,releaseId:target.id,taskType:"code_change",environment:"development",destructive:false,commit:fixedAdmissionCommits.get(input)??"a".repeat(40),rationale:"Synthetic bounded admission scope"});
   assert.equal(r.status,200,JSON.stringify(r.body));v=(r.body as any).data;
  }
  const {createAuthToken}=await import("../auth/token"),workspace=await prisma.workspace.findUniqueOrThrow({where:{id:resources.workspaceId}});

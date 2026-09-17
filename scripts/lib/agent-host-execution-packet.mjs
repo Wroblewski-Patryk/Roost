@@ -15,6 +15,7 @@ const optionalSet = (item) => z.object({ items: z.array(item).max(30), noneReaso
   .refine((value) => value.items.length ? value.noneReason === null : Boolean(value.noneReason));
 const operations = typedOperationSchema;
 export const executionContractSchema = z.object({
+  executionClass: z.literal("roost-fixed-effect-v1").optional(),
   version: text,
   nativeBoundary: nativeBoundaryContractSchema.optional(),
   singleTask: singleTaskSchema,

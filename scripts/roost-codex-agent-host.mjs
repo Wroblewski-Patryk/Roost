@@ -20,6 +20,8 @@ import { createDirectTurnGuard } from "./lib/agent-host-direct-turn.mjs";
 import { createHermesOutputIntent } from "./lib/agent-host-hermes-budget.mjs";
 import { hermesBudgetProfileVersion, hermesNativeProfileVersion } from "./lib/agent-host-hermes-profile.mjs";
 import { runHermesOwnedProcess } from "./lib/agent-host-hermes-quiet.mjs";
+import fixed from "./lib/agent-host-fixed-program.cjs";
+import { prepareFixedExecution, runFixedExecution, createFixedOutputBudget, assertFixedTask, abandonFixedExecution } from "./lib/agent-host-fixed-execution.mjs";
 import { collectWorkspaceEvidence } from "./lib/agent-host-workspace-evidence.mjs";
 import { createExecutionDuration } from "./lib/agent-host-execution-duration.mjs";
 import { createCodexOutputBudget } from "./lib/agent-host-output-budget.mjs";
@@ -193,7 +195,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
   let stopRequested = false;
   let duration;
   let outputBudget;
-  let hermesBaseline, nativeInput;
+  let hermesBaseline, nativeInput, fixedGrant;
   let hermesCollection, hermesAbort;
   function stopWorker() {
     stopping = true;
@@ -242,7 +244,8 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     const practicalHermes = config.executionProvider?.kind === "hermes_codex"
       && [hermesBudgetProfileVersion, hermesNativeProfileVersion].includes(config.executionProvider.profile?.schemaVersion);
     if (config.executionProvider?.kind === "hermes_codex" && (resumeCheckpoint || claimed.codexThreadId)) throw protocolAdmissionError("hermes_attempt_resume_forbidden");
-    outputBudget = (practicalHermes ? createHermesOutputIntent : createOutputBudget)({ maxOutputTokens: taskContext.executionPacket.contract.budgets.maxOutputTokens, onStopped: stopWorker });
+    if (config.executionProvider?.kind === fixed.kind && resumeCheckpoint) throw protocolAdmissionError("synthetic_execution_resume_forbidden");
+    outputBudget = (config.executionProvider?.kind === fixed.kind ? createFixedOutputBudget : practicalHermes ? createHermesOutputIntent : createOutputBudget)({ maxOutputTokens: taskContext.executionPacket.contract.budgets.maxOutputTokens, onStopped: stopWorker });
     outputBudget.assertWithinBudget();
     contextRevision = executionContextRevision(taskContext, applicationContext);
     duration = createExecutionDuration({ startedAt: claimed.startedAt,
@@ -275,8 +278,15 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     if (claimed.checkpoint?.stage === "claimed") await duration.wait(checkpoint("prepared", taskContext.executionPacket.revision, digest));
     else if (claimed.checkpoint?.stage !== "prepared") throw recoveryError("checkpoint_mismatch");
     await duration.wait(checkpoint("spawn_intent", taskContext.executionPacket.revision, digest));
+    if (config.executionProvider?.kind === fixed.kind) {
+      // Finish mutable Worker checkpoints before original ownership freezes the
+      // Writer bytes. API recovery for this one-shot class is always denied.
+      assertFixedTask(providerInput);
+      fixedGrant = await duration.wait(prepareFixedExecution({ envelope: providerInput, writerLock, repositoryPath, claimed, assertAuthority: assertProviderAuthority,
+        deadline: new Date(Date.now() + duration.remainingMs).toISOString() }));
+    }
     lease.assertValid();
-    await api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, type: "runner_started", message: `Starting Codex in ${claimed.application.slug}.`, payload: { sandbox, providerInput: { schemaVersion: providerInput.schemaVersion, seal: providerInput.seal }, requestedModelSelection: taskContext.executionPacket.contract.modelSelection, baseBranch: repository.baseBranch || claimed.baseBranch || null, preExistingDirtyFiles: beforeStatus.map(statusPath) } }) }).catch((error) => { lease.reject(error); throw lease.failure ?? error; });
+    await api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, type: "runner_started", message: config.executionProvider?.kind === fixed.kind ? "Starting the fixed synthetic program." : `Starting Codex in ${claimed.application.slug}.`, payload: { sandbox, providerInput: { schemaVersion: providerInput.schemaVersion, seal: providerInput.seal }, requestedModelSelection: config.executionProvider?.kind === fixed.kind ? null : taskContext.executionPacket.contract.modelSelection, baseBranch: repository.baseBranch || claimed.baseBranch || null, preExistingDirtyFiles: beforeStatus.map(statusPath) } }) }).catch((error) => { lease.reject(error); throw lease.failure ?? error; });
     lease.assertValid();
     await duration.wait(assertAdmission());
     await duration.wait(validateAgentHostWorkspace(config));
@@ -290,14 +300,23 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     // Last remote authority read observes the active stop fence after context reads.
     await duration.wait(lease.refresh());
     // No awaited RPC/work remains between this admission check and spawn.
-    const launch = prepareProviderLaunch({ provider: config.executionProvider, envelope: providerInput,
+    const launch = prepareProviderLaunch({ provider: config.executionProvider, envelope: providerInput, fixedGrant,
       repositoryPath, codexCommand, sandbox, secrets: [apiKey, claimed.leaseToken],
       startupEnvironment: config.executionProvider?.kind === "hermes_codex" && config.executionProvider.profile
         ? hermesStartupEnvironment(config.executionProvider.profile, process.env, repositoryPath) : undefined }, { fresh, claimed, currentCommit,
       assertAuthority: assertProviderAuthority, secrets: [apiKey] });
     assertProviderAuthority();
     let transportAccounting;
-    if (launch.kind === "hermes_codex") {
+    if (launch.kind === fixed.kind) {
+      hermesAbort = new AbortController();
+      const pending = hermesCollection = runFixedExecution(launch.grant, { signal: hermesAbort.signal, remainingMs: () => duration.remainingMs });
+      void pending.catch(() => undefined);
+      const result = await duration.wait(pending);
+      finalResponse = result.finalResponse; verification.synthetic = result.verification;
+      verification.reviewRequired = true; verification.outcome = "candidate_result";
+      usage = { inputTokens: 0, outputTokens: 0, cost: 0, physicalModelCalls: 0 };
+      transportAccounting = { interface: fixed.program, outcome: "candidate_result", modelInvoked: false };
+    } else if (launch.kind === "hermes_codex") {
       // Unreachable until the remaining containment/configuration gates qualify.
       // One stdin write; no JSON/tool-event interpretation or provider fallback.
       hermesAbort = new AbortController();
@@ -444,6 +463,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     duration?.stop();
     lease.stop();
     let hermesCleanupError;
+    if (fixedGrant && !hermesCollection) { try { abandonFixedExecution(fixedGrant); } catch { retainWriterLock = true; } }
     if (nativeInput && !hermesCollection) {
       try { abandonProviderNativeBoundary(nativeInput); } catch { retainWriterLock = true; }
     }

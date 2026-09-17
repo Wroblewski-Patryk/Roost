@@ -2,6 +2,7 @@
 // Shared public contract. Never serialize private configuration or arbitrary input.
 const registry = require("../../src/modules/agent-runtime/execution-providers.json");
 const lifecycle = require("./agent-host-lifecycle.cjs");
+const fixed = require("./agent-host-fixed-program.cjs");
 const hermesLaunch = require("./agent-host-hermes-launch-contract.cjs");
 const blockerCodes = Object.freeze([
   ...hermesLaunch.blockers,
@@ -16,17 +17,19 @@ const blockerCodes = Object.freeze([
 const record = value => value && typeof value === "object" && !Array.isArray(value) ? value : {};
 function providerKind(value) {
   if (value === undefined) return "direct_codex"; // Existing installations retain their reference provider.
-  return ["direct_codex", "hermes_codex"].includes(record(value).kind) ? value.kind : "unknown";
+  return ["direct_codex", "hermes_codex", fixed.kind].includes(record(value).kind) ? value.kind : "unknown";
 }
 function providerAdmissionReason(value) {
   // No current provider has an admitted host-isolation adapter. Whole-provider
   // denial precedes execution, so scripts/encoded commands and maintenance prose
   // cannot bypass it. New admission requires code and independent enforcement proof.
   const kind = providerKind(value);
+  if (kind === fixed.kind) return fixed.matches(value) ? null : "synthetic_identity_unproven";
   return kind === "direct_codex" ? lifecycle.admissionReason : kind === "hermes_codex" ? "hermes_compatibility_unproven" : "execution_provider_unknown";
 }
 function projectProvider(value) {
   const input = record(value), kind = providerKind(value);
+  if (kind === fixed.kind) return { ...fixed.declaration, sourceDigest: fixed.matches(value) ? fixed.sourceDigest : null, contractVersion: registry.contractVersion, pinnedVersion: fixed.program, installedVersion: null, brokerContractVerified: false, installation: { status: "unverified", version: null, fingerprint: null, checkedAt: null, signature: null }, compatibility: "unproven", executionSupported: false, blockers: fixed.matches(value) ? [] : ["synthetic_identity_unproven"], hostLifecycle: { ...lifecycle.lifecycleState(), closedSemantics: fixed.matches(value), systemIsolation: false } };
   const entry = registry.providers.find(provider => provider.kind === kind);
   const blockers = Array.isArray(input.blockers) ? input.blockers.filter(code => blockerCodes.includes(code)) : [];
   const admission = providerAdmissionReason(value);

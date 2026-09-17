@@ -1,12 +1,14 @@
 # Next development work
 
-Dopuszczenie stałego programu syntetycznego (RF-RUNTIME-005B30) pozostaje
-**BLOCKED** na wymaganym teście publicznego API: Docker Engine dla zatwierdzonej
-istniejącej bazy jest niedostępny. [Tabela gotowości](../architecture/agent-delivery-readiness.md)
-rozróżnia zaakceptowaną zamkniętą semantykę od niezaimplementowanego dopuszczenia.
-Nie jest wymagany sandbox dla tej klasy; realni providerzy nadal są zablokowani.
-Bez zmian kodu i sześciu flag. Następny krok to dostęp do istniejącej kanonicznej
-bazy testowej i wznowienie tego samego E2E; dalsze propozycje są historyczne.
+RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
+publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,
+trwały resume receipt/ack, dokładnie 22 bajty wyniku, niezależne review i cleanup.
+[Tabela gotowości](../architecture/agent-delivery-readiness.md) opisuje dodatni E2E oraz odmowę
+bez resume receipt. Dowód dotyczy zamkniętej semantyki tego programu, bez sandboxa.
+Hermes, Direct i sześć flag pozostają zablokowane/false. Jedyna następna luka:
+RF-HOST-035 — dopuszczenie ochrony host lifecycle dla rzeczywistego providera.
+Nie ma zgody na model trial ani automatyczną kontynuację; propozycje poniżej
+są historyczne.
 
 RF-RUNTIME-005B26 [adopted recovery](../architecture/hermes-b26-adopted-recovery-v1.md) defines the separately owner-authorized
 one-use cleanup of the exact B25-adopted B21 fixture, then its lease and Writer.

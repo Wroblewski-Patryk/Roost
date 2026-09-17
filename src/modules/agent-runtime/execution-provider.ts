@@ -1,4 +1,4 @@
-export type ExecutionProviderKind = "direct_codex" | "hermes_codex";
+export type ExecutionProviderKind = "direct_codex" | "hermes_codex" | "synthetic_fixed";
 export type ProviderReport = {
   contractVersion: number; kind: ExecutionProviderKind | "unknown"; pinnedVersion: string | null;
   installedVersion: string | null;

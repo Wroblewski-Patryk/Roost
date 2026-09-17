@@ -8,6 +8,7 @@ export const { registry, providerAdmissionReason } = contract;
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 export async function inspectExecutionProvider(config, { platform = process.platform, freshAttestation = false } = {}) {
   const input = config.executionProvider;
+  if (input?.kind === "synthetic_fixed") { const fixed = (await import("./agent-host-fixed-program.cjs")).default; return fixed.configuration(input) ? contract.projectProvider(input) : contract.projectProvider({ kind: fixed.kind }); }
   if (contract.providerKind(input) !== "hermes_codex") return contract.projectProvider(input);
   const entry = registry.providers.find(provider => provider.kind === "hermes_codex"), blockers = [];
   if (input.enabled !== true) blockers.push("hermes_disabled");

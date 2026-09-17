@@ -1,5 +1,7 @@
 import { projectHermesLaunchPolicy, consumeHermesLaunchAdmission, acceptedHermesResidualBlockers } from "./agent-host-hermes-launch-admission.mjs";
 import path from "node:path";
+import fixed from "./agent-host-fixed-program.cjs";
+import { assertFixedTask, consumeFixedExecution } from "./agent-host-fixed-execution.mjs";
 import { z } from "zod";
 import contract from "./agent-host-provider-contract.cjs";
 import hermesContract from "./agent-host-hermes-launch-contract.cjs";
@@ -46,6 +48,11 @@ export function projectProviderLaunch({ provider, envelope, repositoryPath, code
   secrets = [], platform = process.platform, ownedTreeReceipt, ownerAuthReceipt, startupEnvironment, startupCandidate, jobArtifact }) {
   const kind = contract.providerKind(provider);
   if (kind === "unknown") fail("execution_provider_unknown");
+  if (kind === fixed.kind) {
+    if (!fixed.configuration(provider) || platform !== "win32") fail("synthetic_identity_unproven");
+    assertFixedTask(envelope);
+    return Object.freeze({ kind, version: fixed.program, command: null, args: null, modelSelection: null, input: null });
+  }
   const transport = providerInputTransport(kind, envelope);
   guardHostContent(envelope, "required", secrets);
   const selection = modelSelectionSchema.safeParse(transport.modelSelection);
@@ -95,6 +102,11 @@ export function projectProviderLaunch({ provider, envelope, repositoryPath, code
 // spawn or fall through to Codex. Failed admission burns the local envelope.
 export function prepareProviderLaunch(options, consumption) {
   const plan = projectProviderLaunch(options);
+  if (plan.kind === fixed.kind) {
+    const grant = consumeFixedExecution(options.fixedGrant, options.envelope, consumption.claimed);
+    consumeProviderInput(options.envelope, consumption);
+    return Object.freeze({ ...plan, grant });
+  }
   if (plan.kind === "hermes_codex" && (options.launchAdmission || plan.localAdmissionReceipt)) {
     consumeHermesLaunchAdmission(options.launchAdmission ?? plan.localAdmissionReceipt, options, consumption);
     fail("hermes_public_launch_contract_unqualified");

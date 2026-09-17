@@ -349,6 +349,7 @@ agentRuntimeRouter.post("/executions/:id/actions/recover", asyncHandler(async (r
   const input = z.object({ hostSlug: z.string().min(1).max(120), sessionId: z.string().uuid(), expectedVersion: z.number().int().min(1) }).strict().parse(req.body);
   const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, agentHost: { slug: input.hostSlug, status: { not: "disabled" } }, status: { in: ["claimed", "running"] }, cancelRequestedAt: null } });
   if (!existing) return sendApiError(res, 409, "agent_recovery_conflict");
+  if ((existing.metadata as any)?.executionContract?.executionClass === "roost-fixed-effect-v1") return sendApiError(res, 409, "synthetic_execution_resume_forbidden");
   if (existing.contextInvalidatedAt) return sendApiError(res, 409, contextStopCode);
   const host = await prisma.agentHost.findUniqueOrThrow({ where: { id: existing.agentHostId! } });
   if (protocolBlocked(req, res, host)) return;
@@ -482,6 +483,7 @@ agentRuntimeRouter.post("/executions", asyncHandler(async (req, res) => {
     const ready = await inspectReady(tx, req.auth!.workspaceId, input.taskId);
     if (ready.error) return ready;
     const pin = ready.pin!;
+    if ((pin.contract as any).executionClass === "roost-fixed-effect-v1" && await tx.agentExecution.count({ where: { workspaceId: req.auth!.workspaceId, taskId: input.taskId } })) return { error: "synthetic_task_already_spent" };
     if (resolved.application!.id !== pin.applicationId || (input.prompt !== undefined && input.prompt !== pin.prompt) || (input.baseBranch !== undefined && input.baseBranch !== pin.baseBranch) || (input.metadata.executionContract !== undefined && !isDeepStrictEqual(input.metadata.executionContract, pin.contract))) return { error: "task_ready_contract_mismatch" };
     const execution = await tx.agentExecution.create({ data: { workspaceId: req.auth!.workspaceId, taskId: input.taskId, applicationId: pin.applicationId,
       prompt: pin.prompt, baseBranch: pin.baseBranch, metadata: json({ ...input.metadata, executionContract: pin.contract, readyContextPin: { pinId: pin.pinId, revision: pin.revision, riskAdmissionSeal:pin.riskAdmissionSeal, riskAdmissionCommit:pin.riskAdmissionCommit, compositionSeal:pin.procedureComposition.seal } }), ...actor(req) }, include: executionInclude });
@@ -507,7 +509,7 @@ agentRuntimeRouter.post("/executions/claim", asyncHandler(async (req, res) => {
   if (await prisma.agentExecution.count({ where: { workspaceId, agentHostId: host.id, status: { in: ["claimed", "running", "waiting_for_approval"] } } })) return sendApiError(res, 409, "agent_host_recovery_required");
   if (!applicationSlugs.length) return res.status(204).send();
   for (let attempt = 0; attempt < 5; attempt += 1) {
-    const candidate = await prisma.agentExecution.findFirst({ where: { workspaceId, status: "queued", attempt: 0, cancelRequestedAt: null, ...(applicationSlugs.length ? { application: { slug: { in: applicationSlugs } } } : {}) }, orderBy: { createdAt: "asc" } });
+    const candidate = await prisma.agentExecution.findFirst({ where: { workspaceId, status: "queued", attempt: 0, cancelRequestedAt: null, ...(String((host.metadata as any)?.executionProvider?.kind) === "synthetic_fixed" ? { metadata: { path: ["executionContract", "executionClass"], equals: "roost-fixed-effect-v1" } } : {}), ...(applicationSlugs.length ? { application: { slug: { in: applicationSlugs } } } : {}) }, orderBy: { createdAt: "asc" } });
     if (!candidate) return res.status(204).send();
     const leaseToken = randomUUID();
     const checkpoint = { schemaVersion: "roost-recovery-v1", stage: "claimed", sessionId: input.sessionId ?? randomUUID(), packetRevision: null, workspaceDigest: null };
@@ -631,6 +633,7 @@ agentRuntimeRouter.post("/executions/:id/actions/retry", asyncHandler(async (req
   if (!executionEnabled()) return sendApiError(res, 409, "agent_execution_disabled");
   const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, status: { in: ["failed", "cancelled"] } } });
   if (!existing) return sendApiError(res, 409, "agent_execution_not_retryable");
+  if ((existing.metadata as any)?.executionContract?.executionClass === "roost-fixed-effect-v1") return sendApiError(res, 409, "synthetic_task_already_spent");
   const errorState = existing.errorState as { retryable?: boolean } | null;
   if (errorState?.retryable === false) return sendApiError(res, 409, "agent_execution_requires_correction");
   const result = await readyTransaction(async tx => {

@@ -13,8 +13,8 @@ additional manager, maintenance executor, socket repair or directory mover.
 ## Fixed synthetic program decision
 
 RF-RUNTIME-005B30: the owner accepts closed semantics for one new fixed synthetic
-program class. This is an authorized implementation target, not a currently
-admitted provider or a successful end-to-end qualification.
+program class, implemented as `synthetic_fixed` / `roost-fixed-effect-v1`.
+Real API/Ready/claim/Worker E2E now qualifies this class only.
 
 The program must have small auditable repository-owned source, exact verified
 source/build/content identity and a check immediately before spawn. It accepts
@@ -36,15 +36,17 @@ a hash alone does not prove semantics.
 Hermes, Direct, arbitrary executables, command text and caller-supplied readiness
 remain unconditionally denied by their existing gates. Closed synthetic semantics
 cannot be used as their isolation evidence, inherited activation or a generic
-test/config/environment bypass. Current code is unchanged and grants no synthetic
-activation either. Qualification must use the ordinary API/Worker boundaries.
+test/config/environment bypass. Admission requires the exact fixed declaration;
+the Worker derives source/build paths privately and checks content immediately
+before launch. The task contract must explicitly select this execution class.
 
-The required API/PostgreSQL qualification is currently blocked on unavailable
-Docker Engine under the narrowly authorized existing-container test-DB route.
-No Docker/WSL restart, database access or mutation occurred. See the
-[readiness table](../architecture/agent-delivery-readiness.md) for evidence and
-the single next prerequisite. The remaining sections describe the unchanged
-real-provider and host-maintenance policy.
+The API/PostgreSQL qualification uses a unique temporary database inside the
+existing canonical instance, with real admission and no mocked claim or Ready.
+Positive execution includes independent public review; failed resume publication
+produces zero effect and terminal cleanup. Signed B28 recovery after an interrupted
+cleanup retains spent authority and cannot run the program again. See the
+[readiness table](../architecture/agent-delivery-readiness.md) for evidence.
+The remaining sections describe the unchanged real-provider policy.
 
 ## Enforcement and scope
 
