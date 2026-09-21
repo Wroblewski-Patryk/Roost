@@ -1,5 +1,10 @@
 # Gotowość połączenia Roost z agentami
 
+Audyt tylko do odczytu z 2026-09-21:
+[Hermes Desktop, dwa profile i Ollama](hermes-desktop-ollama-profile-contract.md).
+Opisuje wykryte instalacje i proponowany kontrakt; nie zmienia poniższych bramek
+ani nie dopuszcza uruchomienia providera.
+
 ## Stały program syntetyczny — RF-RUNTIME-005B30
 
 **PASS dla zamkniętej klasy syntetycznej**, 2026-09-17. Publiczne API i Worker

@@ -1,5 +1,9 @@
 # Foundation requirements traceability
 
+[Desktop/profile/Ollama inventory](hermes-desktop-ollama-profile-contract.md)
+(2026-09-21) records read-only installation evidence and a proposed isolation and
+routing contract. Documentation only: no provider admission or RF-HOST-035 closure.
+
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,
 trwały resume receipt/ack, dokładnie 22 bajty wyniku, niezależne review i cleanup.
