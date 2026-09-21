@@ -1,6 +1,6 @@
 # Hermes Desktop, profile isolation and local model routing
 
-Status: **read-only inventory and proposed contract**, 2026-09-21. No runtime
+Status: **inventory complete; Desktop/backend qualification BLOCKED**, 2026-09-21. No runtime
 admission, installation, configuration or model evaluation was performed.
 The [delivery gate](agent-delivery-readiness.md) remains RF-HOST-035; all six
 readiness/authority flags remain false. Manual Desktop use is a separate concern
@@ -120,6 +120,99 @@ adherence, failure handling, tokens/context, peak resources and latency against
 predeclared acceptance criteria. Neither installation nor a successful response
 constitutes a coding/provider-admission result.
 
+## Desktop 0.17.6 / CLI 0.21.2 qualification
+
+**BLOCKED — no approved launch configuration.** The follow-up examined installed
+code and packaging only. A proposed isolated package-import probe was rejected
+before process creation by the execution policy (`blocked by policy`, no further
+reason supplied). It was not retried through another mechanism. No interpreter,
+CLI, Desktop UI, gateway, model or provider was started, and no temporary probe
+home was created. Effective live import/version is therefore **not measured**.
+
+### Import and duplicate distribution evidence
+
+The source `hermes_cli/__init__.py` declares `0.21.2`; `pyvenv.cfg` declares
+CPython `3.13.1`. These are static declarations, not interpreter output. Both
+distribution directories contain editable-install metadata with installer `uv`.
+Their `direct_url.json` and editable finder mappings name the two previously
+observed aliases of the source root. Each has its own `.pth` and finder, while
+both console-entrypoint declarations resolve `hermes` to `hermes_cli.main:main`.
+Both RECORD files claim the same `venv/Scripts/hermes.exe`; its current hash
+matches the `0.21.2` RECORD, not the `0.21.3` RECORD.
+
+Thus the evidence establishes overlapping editable registrations, **not two
+independent imported code versions**. The `0.21.3` metadata does not prove the
+code imported is `0.21.3`. The exact installation sequence and reason older
+metadata remained cannot be recovered from these files alone; private logs were
+not inspected. Normal site startup can execute both finders, and distribution
+metadata lookup is not a reliable substitute for module-origin evidence. The
+explicit Desktop backend prepends the selected root and venv site-packages to
+`PYTHONPATH`, retaining inherited entries; actual resolution still needs a
+qualified startup/import probe. Neither distribution was removed.
+
+### Verified packaged launch behavior
+
+| Boundary | Static result from the installed bundle |
+| --- | --- |
+| Root/interpreter selection | A valid `HERMES_DESKTOP_HERMES_ROOT` reaches `createPythonBackend`; `HERMES_DESKTOP_PYTHON` is accepted when its file exists. Missing overrides do not cause a hard denial: `.venv`, `venv`, system Python and other backend paths can be tried. Existence checks do not verify hash or version. |
+| Interpreter normalization | `createPythonBackend` derives the venv from the selected interpreter when it is inside the root, otherwise falls back to `root/venv`; an existing venv `python.exe` becomes the command. An arbitrary explicit Python path is therefore not necessarily the final command. |
+| Entrypoint | The Python descriptor uses `-m hermes_cli.main`; normal Desktop startup requests `serve --host 127.0.0.1 --port 0` with an optional active profile. Capability detection can run `serve --help` if static detection fails, and can substitute dashboard arguments. Pinning the root alone does not pin the complete command. |
+| Spawn environment | Primary spawn uses `spawnOwnedBackend`, explicit `HERMES_HOME`, backend environment and `HERMES_DESKTOP=1`; `shell` is false for the Python descriptor. Parent environment and inherited Python paths remain present. The primary CWD comes from `resolveHermesCwd()`, not necessarily the pinned source root. No end-to-end subprocess isolation is established. |
+| Manual state | `HERMES_DESKTOP_USER_DATA_DIR` selects and creates the Electron user-data directory. Process `HERMES_HOME` takes precedence over that directory's default home and the Windows user-environment fallback. `profiles/<name>` normalization still applies. Independent roots are possible in code, but absence of managed-home access has not been proven for the full startup/attach/profile flow. |
+| Bootstrap | A valid explicit source descriptor has `bootstrap: false`, and `runEnsureRuntime` returns that descriptor. Other paths can run bootstrap/install, then resolve the backend again. This is conditional behavior, not an installation-wide denial switch. |
+| Updates | `resolveUpdateRoot` includes the explicit root. Local update IPC and connection-update routes reach `applyUpdates`, which can launch a detached updater/script with an install root and inherited environment. No verified setting disables all update/repair/bootstrap entrypoints. This does not assert updates apply automatically on every launch. |
+
+Importing `hermes_cli.main` itself invokes `_early_recovery.recover_if_needed()`
+before the main dependency graph. With a recovery marker and broken dependencies
+it can run ensurepip/force-reinstall subprocesses. Neither `.update-incomplete`
+nor `.lazy-refresh-incomplete` existed at inspection, but their absence is not a
+durable no-mutation guarantee. A temporary `HERMES_HOME`, bytecode suppression,
+offline package-manager settings or the pytest-specific recovery guard cannot
+establish isolation of the whole runtime. No full entrypoint probe was attempted.
+
+### Required fail-closed binding, not an implemented launcher
+
+The only currently qualified fail-closed action is **deny launch**. Environment
+variables alone do not provide the requested guarantees. Before configuring a
+manual profile, a separately authorized solution must satisfy all of these:
+
+1. Bind the Desktop executable, actual ASAR/unpacked bundle, canonical physical
+   source root, base interpreter, venv interpreter, imported module origins and
+   dependency manifest to exact identities and hashes. Reject missing files,
+   aliases with different physical identity, changed hashes and version mismatch;
+   do not search PATH or choose another interpreter. Keep actual machine paths
+   in private per-installation evidence, outside distributed documentation.
+2. Bind exact child executable, argv, CWD, import search path and a minimal
+   process environment. Explicitly select separate `MANUAL_HOME` and
+   `MANUAL_DESKTOP_STATE`; exclude inherited provider credentials, Python-path
+   overrides, remote/attach selections and managed-profile selectors. Prove the
+   entire startup/subprocess path cannot read or write `MANAGED_HOME`.
+3. Enforce denial of update, repair, bootstrap, lazy installation, alternate
+   backend selection and capability/argv fallback before process creation, with
+   continuing protection against writes to the shared code/interpreter tree.
+   Preflight hashes or disabling a visible menu alone do not enforce this. Such
+   enforcement was not found or added to the installed Desktop in this atom.
+4. Qualify the pinned Desktop/backend protocol and import behavior under those
+   controls using non-model fixtures. Any unknown or mismatch stops launch;
+   never repair, install, downgrade, switch backend or reuse a spent Roost grant.
+
+Selected SHA-256 identity evidence (paths relative to the existing source root;
+these values alone are not a complete admission manifest):
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `venv/Scripts/python.exe` | `cd15f17b5382c676fe857fd9e7effe0b787f95611538f4193c60a65f2637dd79` |
+| `hermes_cli/__init__.py` | `90dae281ccb75b9419879cb824cae644bfd49c1d2ad5baf5ba0dd8a33bf56c11` |
+| `hermes_cli/main.py` | `dc7a6eda3caebab994e8dd2c05a4a8c8b2331f4472313c675efc9e7305b5d6aa` |
+| `apps/desktop/release/win-unpacked/resources/app.asar` | `73568d0ee0da245f9578b16bac831c533623fc4be4aabb9a6c091a56d7c142b8` |
+| `apps/desktop/release/win-unpacked/resources/app.asar.unpacked/dist/electron-main.mjs` | `38edf1f8fd31020bcc536ded5cd8b4af366163c2e874a8dc2c7d8eb38ef1aaa4` |
+
+Before/after SHA-256, size and modification time matched for 27 sampled installed
+code, executable and packaging/venv metadata files. This is bounded evidence,
+not a full installation or private-profile content audit. No installation,
+profile, PATH, registry or startup setting was written; the rejected probe
+created no cleanup obligation. Checks are limited to docs, privacy and diff.
+
 ## Closure and next bounded step
 
 This docs atom is complete with metadata/static inspection, local Markdown link,
@@ -128,8 +221,9 @@ privacy, documentation-budget and scoped diff checks. No runtime tests or full
 No application/model launch, download, login, private configuration mutation,
 autostart change, push or deployment was performed.
 
-The next manual-Desktop blocker is a separately authorized qualification of
-**packaged Desktop 0.17.6 with pinned CLI 0.21.2**, covering dependency provenance,
-profile/subprocess isolation and update/bootstrap isolation before configuration.
-Do not begin it automatically. The next Roost execution gate remains
+The inventory docs atom is complete; follow-up qualification is **BLOCKED** on
+effective import/protocol proof and enforcement that denies update/bootstrap,
+fallback and managed-profile access. Point 2 (manual-profile configuration)
+cannot begin from this evidence. No manual profile was created, and no subsequent
+model work began. Do not continue automatically. The next Roost execution gate remains
 **RF-HOST-035**; this inventory supplies no evidence that closes that gate.

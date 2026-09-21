@@ -3,6 +3,8 @@
 [Desktop/profile/Ollama inventory](hermes-desktop-ollama-profile-contract.md)
 (2026-09-21) records read-only installation evidence and a proposed isolation and
 routing contract. Documentation only: no provider admission or RF-HOST-035 closure.
+Desktop/backend qualification is **BLOCKED** on effective import/protocol proof
+and enforced update/bootstrap/fallback/profile isolation; no manual profile was created.
 
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,
