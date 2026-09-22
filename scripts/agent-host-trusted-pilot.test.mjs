@@ -1,84 +1,20 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import cp from "node:child_process";
 import { syncBuiltinESMExports } from "node:module";
-import { createHash, generateKeyPairSync, sign, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import fixed from "./lib/agent-host-fixed-program.cjs";
 import contract from "./lib/agent-host-provider-contract.cjs";
-import { validPacketFixture, pinReadyFixture } from "./fixtures/execution-packet.mjs";
-import { acquireWriterLock, writerRecoveryEvidence } from "./lib/agent-host-writer-lock.mjs";
-import { prepareProviderInput, assertProviderInputAvailable } from "./lib/agent-host-provider-input.mjs";
+import { assertProviderInputAvailable } from "./lib/agent-host-provider-input.mjs";
 import { prepareProviderLaunch } from "./lib/agent-host-provider-launch.mjs";
-import { prepareFixedExecution, inspectFixedContainment, abandonFixedExecution, runFixedExecution } from "./lib/agent-host-fixed-execution.mjs";
+import { runFixedExecution } from "./lib/agent-host-fixed-execution.mjs";
 import { prepareTrustedProviderPilot, prepareFixedHostContainment, assertHostContainmentAttempt } from "./lib/agent-host-containment.mjs";
-import { trustedPilotVersion, trustedPilotAcknowledgement, trustedPilotBytes } from "./lib/agent-host-trusted-pilot.mjs";
-import { nativeDigest, physicalIdentity } from "./lib/agent-host-native-footprint.mjs";
+import { trustedPilotBytes } from "./lib/agent-host-trusted-pilot.mjs";
+import { createTrustedPilotFixture as setup } from "./fixtures/trusted-pilot.mjs";
 
 const windows = { skip: process.platform !== "win32", timeout: 60000 };
-const sha = b => createHash("sha256").update(b).digest("hex");
-async function setup(t, kind = "direct_codex") {
-  const parent = fs.realpathSync.native(os.tmpdir()), root = fs.mkdtempSync(path.join(parent, "roost-trusted-pilot-"));
-  const state = path.join(root, "state"), repositoryPath = path.join(root, "repository"), privateRoot = path.join(state, "trusted-provider-pilot");
-  fs.mkdirSync(repositoryPath); fs.mkdirSync(state); fs.mkdirSync(privateRoot);
-  const writerLock = await acquireWriterLock(state), f = validPacketFixture();
-  f.packet.contract.executionClass = fixed.program;
-  if (kind === "hermes_local") f.packet.contract.modelSelection = { provider: kind, model: "gpt-oss:20b", modelFamily: "gpt-oss",
-    modelDigest: "sha256:" + "b".repeat(64), reasoningEffort: "low" };
-  pinReadyFixture(f);
-  const authority = { fresh: { taskContext: f.taskContext, applicationContext: f.applicationContext }, claimed: f.claimed,
-    currentCommit: "a".repeat(40), assertAuthority() {} };
-  const envelope = prepareProviderInput(authority);
-  const grant = await prepareFixedExecution({ envelope, writerLock, repositoryPath, claimed: f.claimed,
-    assertAuthority() {}, deadline: new Date(Date.now() + 55000).toISOString() });
-  f.claimed.checkpoint = { stage: "spawn_intent", packetRevision: envelope.revisions.packet, contextRevision: envelope.revisions.context };
-  const source = inspectFixedContainment(grant), writerDigest = nativeDigest(writerRecoveryEvidence(writerLock));
-  const configurationPath = path.join(privateRoot, "installation.json"), profilePath = path.join(privateRoot, "trusted-provider-profile.json"),
-    decisionPath = path.join(privateRoot, "trusted-provider-pilot.json");
-  fs.writeFileSync(configurationPath, "{}\n", { flag: "wx" });
-  const version = contract.registry.providers.find(p => p.kind === (kind === "hermes_local" ? "hermes_codex" : kind)).version;
-  const profile = { schemaVersion: trustedPilotVersion, purpose: "managed-agent", providerKind: kind, version,
-    backend: kind === "hermes_local" ? "ollama_loopback" : "openai", fallback: "none", modelSelection: envelope.contract.modelSelection,
-    qualification: "closed_fixture_only" };
-  fs.writeFileSync(profilePath, trustedPilotBytes(profile), { flag: "wx" });
-  const provider = { kind, version, runtimeDigest: nativeDigest(source.runtime), launcherDigest: nativeDigest(source.runtime.launcher),
-    profile: { identity: physicalIdentity(profilePath, false), digest: sha(fs.readFileSync(profilePath)) },
-    configurationDigest: nativeDigest(source.configuration), modelSelection: envelope.contract.modelSelection };
-  const installationId = randomUUID(), decisionId = randomUUID(), { publicKey, privateKey } = generateKeyPairSync("ed25519");
-  const payload = { schemaVersion: trustedPilotVersion, decisionId, revision: 1, state: "accepted", decidedAt: new Date().toISOString(),
-    expiresAt: new Date(Date.now() + 3600000).toISOString(), installationId, configurationIdentity: physicalIdentity(configurationPath, false),
-    installationIdentity: physicalIdentity(privateRoot), provider,
-    scope: { workspaceId: envelope.identity.workspaceId, applicationId: envelope.identity.applicationId, taskId: envelope.identity.taskId,
-      executionId: envelope.identity.executionId, checkoutIdentity: physicalIdentity(repositoryPath), inputSeal: envelope.seal,
-      accessDigest: nativeDigest(envelope.contract.access), singleTaskDigest: nativeDigest(envelope.contract.singleTask),
-      filesystemDigest: nativeDigest(source.filesystemScope), writerDigest },
-    mode: "trusted_provider_pilot", residualRiskAccepted: true, systemIsolation: false, arbitraryProviderAdmission: false, fullAutonomy: false,
-    acknowledgement: trustedPilotAcknowledgement, qualification: "closed_fixture_only" };
-  const anchor = { schemaVersion: trustedPilotVersion, installationId, workspaceId: envelope.identity.workspaceId,
-    authorityPublicKey: publicKey.export({ type: "spki", format: "pem" }), decisionFile: "trusted-provider-pilot.json",
-    profileFile: "trusted-provider-profile.json", decisionId, revision: 1, decisionDigest: "0".repeat(64) };
-  function publish() {
-    const record = { payload, signature: sign(null, trustedPilotBytes(payload), privateKey).toString("hex") };
-    fs.writeFileSync(decisionPath, trustedPilotBytes(record)); anchor.decisionDigest = sha(fs.readFileSync(decisionPath));
-    fs.writeFileSync(configurationPath, trustedPilotBytes(anchor));
-  }
-  publish();
-  const options = { provider: fixed.declaration, fixedGrant: grant, writerLock, envelope, repositoryPath, sandbox: "workspace-write",
-    trustedPilot: { configurationPath, provider: structuredClone(provider) } };
-  const directory = path.join(state, "native-review-" + f.claimed.id), location = JSON.parse(fs.readFileSync(path.join(directory, "fixed-location.json")));
-  t.after(async () => {
-    if (fs.existsSync(location.root)) abandonFixedExecution(grant);
-    await writerLock.release(); assert.equal(fs.realpathSync.native(root), root); assert.equal(path.dirname(root), parent); fs.rmSync(root, { recursive: true });
-  });
-  function publishProfile() {
-    fs.writeFileSync(profilePath, trustedPilotBytes(profile));
-    const pin = { identity: physicalIdentity(profilePath, false), digest: sha(fs.readFileSync(profilePath)) };
-    payload.provider.profile = pin; options.trustedPilot.provider.profile = structuredClone(pin); publish();
-  }
-  return { root, privateRoot, state, f, authority, options, grant, location, directory, payload, anchor, profile, profilePath, decisionPath, configurationPath, publish, publishProfile };
-}
 function admit(x) { return x.options.containmentReceipt = prepareTrustedProviderPilot(x.options, x.authority); }
 function noEffects(x) {
   assert.equal(fs.statSync(path.join(x.location.root, "repository", "synthetic-effect.bin")).size, 0);
@@ -92,7 +28,7 @@ function withoutProcesses(run) {
   finally { for (const [method, original] of originals) cp[method] = original; syncBuiltinESMExports(); }
 }
 
-for (const kind of ["direct_codex", "hermes_local"]) test(`pinned ${kind} pilot policy reaches only owned fixed fixture and cleanup`, windows, async t => {
+for (const kind of ["hermes_local"]) test(`pinned ${kind} pilot policy reaches only owned fixed fixture and cleanup`, windows, async t => {
   const x = await setup(t, kind), receipt = admit(x);
   assert.equal(receipt.mode, "trusted_provider_pilot"); assert.equal(receipt.residualRiskAccepted, true);
   for (const k of ["systemIsolation", "realProviderAdmitted", "arbitraryProviderAdmission", "fullAutonomy"]) assert.equal(receipt[k], false);
@@ -106,6 +42,16 @@ for (const kind of ["direct_codex", "hermes_local"]) test(`pinned ${kind} pilot 
   assert.equal(result.verification.containment.mode, "trusted_provider_pilot");
   assert.equal(result.verification.containment.fullAutonomy, false);
   assert.equal(contract.projectProvider({ kind: kind === "hermes_local" ? "hermes_codex" : kind, executionSupported: true }).executionSupported, false);
+});
+
+for (const evidence of ["signed", "staticPin", "diagnostic", "fallback"]) test(`direct Codex ${evidence} cannot obtain pilot authority`, windows, async t => {
+  const x = await setup(t, "direct_codex");
+  if (evidence === "staticPin") x.payload.provider.codexPin = { schemaVersion: "roost-codex-static-pin-v1", installationDigest: "a".repeat(64) };
+  if (evidence === "diagnostic") x.payload.provider.diagnostic = true;
+  if (evidence === "fallback") x.profile.fallback = "direct_codex";
+  x.publishProfile();
+  withoutProcesses(() => assert.throws(() => admit(x)));
+  noEffects(x);
 });
 
 const denials = {

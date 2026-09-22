@@ -1,5 +1,15 @@
 # Local Codex Agent Runtime
 
+Owner amendment v15, 2026-09-23: managed Hermes is the only task orchestration
+layer after Windows Local Worker. Its explicit target backends are Codex
+OAuth/Responses (allowlisted model >=5.6 plus reasoning) and local Ollama
+(exact model/digest, separate managed profile). Direct CLI is disabled
+diagnostic/emergency reference only, without pilot authority or fallback.
+[Static CLI inventory and source evidence](codex-static-inventory-v1.md) do not
+qualify or gate the selected Hermes transport. Signed direct decisions and
+final direct dispatch deny; no routing or real launch was added. Six flags
+remain false. This is the current authority over historical ordering below.
+
 RF-HOST-035 owner amendment v14 (2026-09-23):
 [trusted provider pilot](trusted-provider-pilot-v1.md) replaces full OS isolation
 as a prerequisite for exactly pinned Codex/managed local Hermes with explicit

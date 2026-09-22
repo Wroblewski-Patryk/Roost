@@ -115,6 +115,12 @@ export function prepareProviderLaunch(options, consumption) {
       throw error;
     }
   }
+  if (plan.kind === "direct_codex") {
+    // Owner amendment v15: retain read-only diagnostic projection, never a
+    // task launch or an automatic escape from managed Hermes admission.
+    consumeProviderInput(options.envelope, consumption);
+    fail("direct_codex_diagnostic_only");
+  }
   if (plan.kind === "hermes_codex" && (options.launchAdmission || plan.localAdmissionReceipt)) {
     consumeHermesLaunchAdmission(options.launchAdmission ?? plan.localAdmissionReceipt, options, consumption);
     consumeHostContainment(options.containmentReceipt, options, consumption);

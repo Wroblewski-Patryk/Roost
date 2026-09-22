@@ -1,5 +1,13 @@
 # Agent Delivery Foundations And Activation Contract
 
+Owner amendment v15, 2026-09-23:
+[managed Hermes is the sole agent layer](codex-static-inventory-v1.md) after
+Windows Local Worker, with explicit Codex OAuth/Responses or local Ollama
+backends. Direct CLI is disabled diagnostic/emergency reference only and has
+no pilot authority or fallback role. Its static inventory does not authorize
+Hermes launch. All six flags and independent activation gates remain false/
+required. Earlier statements calling direct CLI an alternative are historical.
+
 RF-RUNTIME-002 / [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md)
 supersedes the first-provider ordering below with native Hermes using Codex OAuth
 behind Windows Local Worker. Direct CLI remains an alternative; Herdr is optional.

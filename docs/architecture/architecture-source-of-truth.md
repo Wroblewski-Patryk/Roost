@@ -1,5 +1,17 @@
 # Architecture Source Of Truth
 
+Owner amendment v15, 2026-09-23: **Roost -> Windows Local Worker -> managed
+Hermes -> selected backend/model** is the sole target task flow. Codex
+OAuth/Responses with explicit allowed model >=5.6 and reasoning, and local
+Ollama with exact model/digest, are Hermes backends. Direct Codex is disabled
+diagnostic/emergency reference only: no pilot authority or silent fallback.
+[Static CLI inventory](codex-static-inventory-v1.md) is DONE but is not a
+dependency/admission proof for the selected Hermes transport; the original
+pin-binding atom is PARTIAL / architecture mismatch. Signed direct pilot
+decisions and direct task dispatch now deny. Real execution and all six flags
+remain false; v14's accepted account risk and independent gates remain.
+This amendment supersedes the provider ordering/next steps below.
+
 RF-HOST-035 owner amendment v14 (2026-09-23):
 [trusted provider pilot](trusted-provider-pilot-v1.md) accepts account-level
 residual risk for exactly pinned Codex and managed local Hermes; full OS

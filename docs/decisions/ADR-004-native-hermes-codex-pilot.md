@@ -1,5 +1,21 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+Owner amendment v15, 2026-09-23: the owner confirms **Roost -> Windows Local
+Worker -> managed Hermes Agent -> selected backend/model**. Hermes is the sole
+agent/orchestration layer. Target backends are Codex OAuth/subscription with
+explicit allowlisted model >=5.6 and reasoning, and local Ollama with exact
+model/digest (current direction: gpt-oss:20b), using a separate managed profile.
+Cost/quality/risk/resource routing must be explicit, without silent fallback.
+Direct Codex is disabled diagnostic/emergency reference only, with no pilot
+authority. This supersedes v14's equal-provider treatment and its direct-pilot
+next step while retaining accepted account risk and all independent gates.
+The [static CLI inventory](../architecture/codex-static-inventory-v1.md) is
+inactive evidence: the selected Hermes Responses path does not require the
+CLI App Server. Direct signed-policy admission and task dispatch now deny.
+The original pin-binding atom is PARTIAL / architecture mismatch; six flags
+remain false. No routing implementation, managed profile, key provisioning
+or real invocation is authorized. Earlier decisions remain historical.
+
 Owner amendment v14, 2026-09-23: the
 [trusted provider pilot](../architecture/trusted-provider-pilot-v1.md) accepts
 Windows-account residual risk for exactly pinned Codex and managed local Hermes.

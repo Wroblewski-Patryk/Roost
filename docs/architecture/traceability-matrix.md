@@ -1,5 +1,17 @@
 # Foundation requirements traceability
 
+RF-HOST-035 owner amendment v15, 2026-09-23:
+[Codex static inventory](codex-static-inventory-v1.md) **DONE**, original
+pin-to-pilot binding **PARTIAL / architecture mismatch**, real launch **BLOCKED**.
+Managed Hermes is the sole agent layer; explicit Codex Responses and local
+Ollama are target backends. Static CLI evidence is inactive and not attached
+to Hermes admission. Tests cover signed direct-policy refusal, final direct
+dispatch denial and inventory drift without provider execution. Existing
+Job/Ready/Writer/budget/review/recovery gates and all six false flags remain.
+Safe private anchor provisioning remains unqualified. Exactly one proposed
+next atom: source-only backend-aware managed-Hermes admission contract.
+This supersedes the provider ordering and next-atom statements below.
+
 RF-HOST-035 [trusted provider pilot v1](trusted-provider-pilot-v1.md), 2026-09-23:
 **real pilot PARTIAL; signed decision and fixture policy qualification DONE**.
 Owner amendment v14 accepts Windows-account residual risk for exactly pinned

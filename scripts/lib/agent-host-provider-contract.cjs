@@ -16,7 +16,7 @@ const blockerCodes = Object.freeze([
 ]);
 const record = value => value && typeof value === "object" && !Array.isArray(value) ? value : {};
 function providerKind(value) {
-  if (value === undefined) return "direct_codex"; // Existing installations retain their reference provider.
+  if (value === undefined) return "direct_codex"; // Legacy diagnostic reference only; never default task authority.
   return ["direct_codex", "hermes_codex", fixed.kind].includes(record(value).kind) ? value.kind : "unknown";
 }
 function providerAdmissionReason(value) {

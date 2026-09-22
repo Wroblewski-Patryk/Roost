@@ -105,14 +105,14 @@ test("new public CLI remains denied even with synthetic outer admission; seal ca
   assert.equal(report.executionSupported, false);
   for (const blocker of hermesContract.blockers) assert.ok(report.blockers.includes(blocker));
 });
-test("direct projection preserves argv/stdin but dispatch requires genuine containment", () => {
+test("direct diagnostic projection preserves argv/stdin but cannot dispatch a task", () => {
   const { options, consumption } = fixture(); options.provider = undefined;
   const plan = projectProviderLaunch(options);
   assert.equal(plan.command, "synthetic-codex");
   assert.deepEqual(plan.args, ["exec", "--ephemeral", "--json", "--sandbox", "workspace-write", "--model", "gpt-5.6-sol",
     "--config", 'model_provider="openai"', "--config", 'model_reasoning_effort="medium"', "-"]);
   assert.equal(JSON.parse(plan.input).seal, options.envelope.seal);
-  assert.throws(() => prepareProviderLaunch(options, consumption), /host_containment_admission_blocked/);
+  assert.throws(() => prepareProviderLaunch(options, consumption), /direct_codex_diagnostic_only/);
   assert.throws(() => prepareProviderLaunch(options, consumption), /agent_provider_input_blocked/);
 });
 test("cancellation and expiry at final authority read cannot yield a launch", () => {

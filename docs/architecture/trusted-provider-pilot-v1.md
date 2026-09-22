@@ -1,5 +1,14 @@
 # Trusted provider pilot v1
 
+Current owner amendment v15, 2026-09-23:
+[Hermes-only target flow](codex-static-inventory-v1.md) supersedes this document's
+original equal-provider policy and next atom. Direct Codex has no pilot authority;
+even a validly signed old direct decision is rejected. Only managed-local intent
+currently has fixture policy qualification; Hermes-Codex backend admission needs
+a separately qualified contract. Codex CLI inventory is inactive evidence and
+is not bound to Hermes admission. The original v14 findings below remain history.
+Accepted account risk and all independent gates remain; no real activation.
+
 2026-09-23, RF-HOST-035 owner decision: **accepted**. Full OS isolation or LPAC
 is no longer a prerequisite for a narrowly scoped pilot of exactly pinned
 Codex and managed local Hermes. This supersedes the LPAC/broker investigation

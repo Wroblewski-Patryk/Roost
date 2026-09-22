@@ -20,7 +20,9 @@ const fail = () => { throw Object.assign(Error("trusted_provider_pilot_blocked")
   details: { reason: "trusted_provider_pilot_blocked", schemaVersion: trustedPilotVersion } }); };
 const filePin = z.object({ identity: h, digest: h }).strict();
 const selectionSchema = z.union([modelSelectionSchema, localHermesModelSelectionSchema]);
-const providerSchema = z.object({ kind: z.enum(["direct_codex", "hermes_local"]), version: z.string().min(1).max(80),
+// Owner amendment v15: direct Codex is diagnostic only, never pilot authority.
+// Hermes-Codex backend admission still needs its own qualified contract.
+const providerSchema = z.object({ kind: z.literal("hermes_local"), version: z.string().min(1).max(80),
   runtimeDigest: h, launcherDigest: h, profile: filePin, configurationDigest: h, modelSelection: selectionSchema }).strict();
 const scopeSchema = z.object({ workspaceId: uuid, applicationId: uuid, taskId: uuid, executionId: uuid,
   checkoutIdentity: h, inputSeal: h, accessDigest: h, singleTaskDigest: h, filesystemDigest: h, writerDigest: h }).strict();
@@ -37,7 +39,7 @@ const anchorSchema = z.object({ schemaVersion: z.literal(trustedPilotVersion), i
   authorityPublicKey: z.string().min(32).max(2048), decisionFile: z.literal("trusted-provider-pilot.json"),
   profileFile: z.literal("trusted-provider-profile.json"), decisionId: uuid, revision: z.number().int().positive(), decisionDigest: h }).strict();
 const profileSchema = z.object({ schemaVersion: z.literal(trustedPilotVersion), purpose: z.literal("managed-agent"),
-  providerKind: z.enum(["direct_codex", "hermes_local"]), version: z.string().min(1).max(80),
+  providerKind: z.literal("hermes_local"), version: z.string().min(1).max(80),
   backend: z.enum(["openai", "ollama_loopback"]), fallback: z.literal("none"),
   modelSelection: selectionSchema, qualification: z.literal("closed_fixture_only") }).strict();
 

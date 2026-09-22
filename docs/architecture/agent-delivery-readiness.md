@@ -1,5 +1,17 @@
 # Gotowość połączenia Roost z agentami
 
+Aktualizacja właściciela v15, 2026-09-23: **inwentaryzacja Codex DONE;
+pierwotny atom powiązania pinu PARTIAL / architecture mismatch; real launch BLOCKED**.
+[Dowód i bieżący kontrakt](codex-static-inventory-v1.md): zadania przechodzą
+wyłącznie przez Windows Local Worker i managed Hermes. Codex OAuth/Responses
+oraz local Ollama są backendami Hermesa, bez silent fallbacku. Lokalny pin CLI
+nie jest wymaganą zależnością wybranego transportu. Direct Codex nie ma pilot
+authority; podpisane decyzje direct i finalny dispatch są odrzucane.
+Brak bezpiecznie zakwalifikowanego provisioning klucza/anchora pozostaje jawny.
+Sześć flag nadal false. Jeden następny proponowany atom: źródłowy kontrakt
+managed-Hermes admission rozróżniający oba backendy, bez routingu i real launch.
+Poniższe wcześniejsze kolejności i następne kroki są historyczne.
+
 Aktualizacja właściciela, 2026-09-23: **trusted-provider pilot — PARTIAL**.
 [Akceptacja ryzyka i kontrakt](trusted-provider-pilot-v1.md) obejmują dokładnie
 przypiętego Codexa oraz managed Hermes local bez wymogu pełnej izolacji OS.

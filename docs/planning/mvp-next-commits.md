@@ -1,5 +1,18 @@
 # Next development work
 
+Current owner amendment v15, 2026-09-23:
+[Hermes-only flow and static Codex inventory](../architecture/codex-static-inventory-v1.md).
+Static inventory is DONE; the original direct-pin pilot binding is
+PARTIAL / architecture mismatch. Codex OAuth/Responses and local Ollama are
+explicit backends behind managed Hermes, not competing Roost agent paths.
+Direct Codex has no pilot authority, and no pin is attached to Hermes launch.
+**Exactly one proposed next atom:** qualify the source-only backend-aware
+managed-Hermes admission contract, mapping model/profile/authority/budget/Job
+requirements and denials for both backends. Do not implement routing, provision
+keys/profiles or launch a provider. Secure anchor provisioning remains a blocker.
+All six flags remain false. Stop after this slice; previous next steps below
+are historical, including the now-superseded direct pin/Job proposal.
+
 RF-HOST-035 trusted pilot, 2026-09-23: **PARTIAL for real execution**.
 The [accepted owner contract](../architecture/trusted-provider-pilot-v1.md)
 removes full OS isolation as a prerequisite for exactly pinned trusted Codex and
