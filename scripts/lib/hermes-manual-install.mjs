@@ -18,12 +18,18 @@ export function assertNewRoot(root, denied) {
     if (p === path.dirname(p)) break;
   }
 }
-export function inventory(root, { hashes=true, maxBytes=12*1024**3 }={}) {
+export function inventory(root, { hashes=true, maxBytes=12*1024**3, allowInternalLinks=false }={}) {
   const rows=[]; let bytes=0; const deadline=Date.now()+60000;
   function walk(dir) { for (const name of fs.readdirSync(dir).sort()) {
     if (Date.now()>deadline || rows.length>200000) throw Error('inventory_budget');
     const f=path.join(dir,name), s=fs.lstatSync(f,{bigint:true});
-    if (s.isSymbolicLink()) throw Error('tree_link');
+    if (s.isSymbolicLink()) {
+      if(!allowInternalLinks)throw Error('tree_link');
+      const target=fs.realpathSync.native(f);
+      if(!within(root,target))throw Error('tree_link_escape');
+      rows.push({path:path.relative(root,f).replaceAll('\\','/'),fileId:`${s.dev}:${s.ino}`,kind:'link',target:path.relative(root,target).replaceAll('\\','/')});
+      continue;
+    }
     const row={path:path.relative(root,f).replaceAll('\\','/'),fileId:`${s.dev}:${s.ino}`,kind:s.isDirectory()?'directory':'file'};
     if(s.isDirectory()){ rows.push(row);walk(f); }
     else if(s.isFile()) {

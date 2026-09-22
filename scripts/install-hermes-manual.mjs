@@ -10,7 +10,8 @@ import {sourcePin,installerHash,sha256,assertNewRoot,inventory,assertNoOverlap,a
 import {sourceTree,summarizeLog,stagePostcondition,runDirectSequence} from './lib/hermes-manual-direct.mjs';
 import {analyzeSource,qualifiedEnvironment,probeToolchain,verifyExecutable,assertToolchainNoOverlap} from './lib/hermes-manual-toolchain.mjs';
 import {manualNormalToolchain,readEffectivePath,sameEffectivePath,normalWindowsFolders} from './lib/hermes-manual-normal-path.mjs';
-import {retainLatestFailure} from './lib/hermes-manual-diagnostic.mjs';
+import {retainLatestFailure,readFailureReceipt,retireFailure} from './lib/hermes-manual-diagnostic.mjs';
+import {inspectLiveOwned} from './lib/hermes-manual-live-monitor.mjs';
 
 const scriptDir=path.dirname(fileURLToPath(import.meta.url));
 const powershell=path.join(process.env.SystemRoot,'System32/WindowsPowerShell/v1.0/powershell.exe');
@@ -18,6 +19,8 @@ const modulePath=path.join(path.dirname(powershell),'Modules');
 const root=path.resolve(process.argv[2]??'');
 const report={result:'BLOCKED',stages:[],fallbacks:[],attemptStarted:false,cleanup:false,managedUnchanged:false,profileUnchanged:false,machineStateUnchanged:false};
 let rootId,before,machineBefore,child,receipt,phase='preflight',watchers=[],monitor,monitorFailure,lastLogs;
+const diagnosticRoot=path.join(fs.realpathSync.native(process.env.USERPROFILE),'.hermes-manual-diagnostic-v1');
+let previousDiagnostic,diagnosticRetired=false;
 const machineState=()=>execFileSync(powershell,['-NoProfile','-File',path.join(scriptDir,'hermes_manual_machine_state.ps1')],{windowsHide:true,encoding:'utf8',timeout:20000,env:{...process.env,PSModulePath:modulePath},stdio:['ignore','pipe','pipe']}).trim();
 const manifest=JSON.parse(fs.readFileSync(path.join(process.env.LOCALAPPDATA,'hermes/roost-worker-manifest.json'),'utf8'));
 const protectedRoots={managed:fs.realpathSync.native(manifest.roots[0].path),profile:fs.realpathSync.native(path.join(process.env.LOCALAPPDATA,'Roost/hermes-pilot'))};
@@ -28,6 +31,7 @@ try {
   const packageCache=path.join(process.env.LOCALAPPDATA,'Packages');
   assertNewRoot(root,[process.cwd(),...Object.values(protectedRoots),sourceRoot,packageCache,fs.realpathSync.native(os.tmpdir())]);
   const disk=fs.statfsSync(path.dirname(root));if(disk.bavail*disk.bsize<20*1024**3)throw Error('disk_reserve');
+  previousDiagnostic=readFailureReceipt(diagnosticRoot);
   const installerBytes=fs.readFileSync(originalInstaller);
   const blob=execFileSync('git',['-C',sourceRoot,'show',sourcePin+':scripts/install.ps1'],{windowsHide:true,maxBuffer:1024*1024});
   if(sha256(installerBytes)!==installerHash||!installerBytes.subarray(3).equals(blob))throw Error('installer_identity');
@@ -62,11 +66,14 @@ try {
   report.toolchain.tools=probe.tools.map(({name,version,sha256})=>({name,version,sha256}));
   if(probe.result!=='PASS'||!probe.gitConfig)throw Error('toolchain_probe_failed');
   const stop=reason=>{monitorFailure??=reason;child?.stop('preparation_failed');};
+  const protectedIds=new Set(Object.values(before).flatMap(i=>i.rows.map(r=>r.fileId)));
+  const liveScope={root,identity:rootId,allowedRoots:[code,home,cache,tools],protectedIds};
+  report.writeBoundary='observed_containment_protected_readback_not_sandbox';
   for(const dir of Object.values(protectedRoots)) {
     const watcher=fs.watch(dir,{recursive:true},()=>stop('protected_tree_event'));watcher.on('error',()=>stop('protected_watch_failed'));watchers.push(watcher);
   }
-  phase='installation';report.attemptStarted=true;
-  monitor=setInterval(()=>{try{inventory(root,{hashes:false});const d=fs.statfsSync(root);if(d.bavail*d.bsize<8*1024**3)stop('disk_reserve');}
+  phase='installation';
+  monitor=setInterval(()=>{try{report.liveObservation=inspectLiveOwned(liveScope);const d=fs.statfsSync(root);if(d.bavail*d.bsize<8*1024**3)stop('disk_reserve');}
     catch(error){report.monitorDetail=/^[a-zA-Z_]{1,80}$/.test(error.code??error.message)?(error.code??error.message):'unclassified_monitor_error';stop('manual_tree_boundary');}},5000);
   const installationDeadline=Date.now()+1200000;
   await runDirectSequence({deadline:installationDeadline,
@@ -82,10 +89,16 @@ try {
       console.log(JSON.stringify({type:'stage_start',stage}));receipt=null;
       try {
         durationMs=installationDeadline-Date.now();if(durationMs<=0)throw Error('installation_deadline');
+        report.attemptStarted=true;
         child=await startWindowsJob(launcher,{executable:powershell,
           argv:['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',installer,'-Stage',stage,'-NonInteractive','-InstallDir',code,'-HermesHome',home,'-Commit',sourcePin,'-Branch','main'],
-          cwd:home,environment:env,input:'',durationMs,onData(channel,data){fs.writeSync(fds[channel],data);}});
+          cwd:home,environment:env,input:'',durationMs,onData(channel,data){
+            fs.writeSync(fds[channel],data);
+            // Actual child output proves the new official process has started.
+            if(!diagnosticRetired){report.previousDiagnosticRemoved=retireFailure(diagnosticRoot,previousDiagnostic,{started:true});diagnosticRetired=true;}
+          }});
         receipt=await child.completion;
+        if(receipt.resumed&&!diagnosticRetired){report.previousDiagnosticRemoved=retireFailure(diagnosticRoot,previousDiagnostic,{started:true});diagnosticRetired=true;}
       } finally {for(const fd of Object.values(fds))fs.closeSync(fd);}
       return {exitCode:receipt.rootExit,terminationReason:receipt.terminationReason,cleanup:receipt.cleanup&&receipt.activeProcesses===0,
         logs:Object.fromEntries(Object.entries(logPaths).map(([k,v])=>[k,summarizeLog(fs.readFileSync(v))]))};
@@ -100,7 +113,7 @@ try {
   report.managedUnchanged=before.managed.digest===after.managed.digest;report.profileUnchanged=before.profile.digest===after.profile.digest;
   report.machineStateUnchanged=machineBefore===machineState();
   if(!report.managedUnchanged||!report.profileUnchanged||!report.machineStateUnchanged)throw Error('protected_state_changed');
-  const full=inventory(root);assertNoOverlap(full,Object.values(before));
+  const full=inventory(root,{allowInternalLinks:true});assertNoOverlap(full,Object.values(before));
   report.installerPassed=true;
   const initBytes=execFileSync('git',['-C',sourceRoot,'show',sourcePin+':hermes_cli/__init__.py'],{windowsHide:true,maxBuffer:65536});
   if(!fs.readFileSync(path.join(code,'hermes_cli/__init__.py')).equals(initBytes))throw Error('initializer_drift');
@@ -127,16 +140,16 @@ try {
   report.records={packages:records.packages.length,recordEntries:records.recordEntries,unhashedEntries:records.unhashedEntries};
   // These are exclusively created children of our owned root. Recheck links
   // and ownership before deleting the one-off tool/download/temp directories.
-  assertOwned(root,rootId);inventory(root,{hashes:false});
+  assertOwned(root,rootId);inventory(root,{hashes:false,allowInternalLinks:true});
   await fsp.rm(cache,{recursive:true});await fsp.rm(tools,{recursive:true});
-  const finalInventory=inventory(code);assertNoOverlap(finalInventory,Object.values(before));
+  const finalInventory=inventory(code,{allowInternalLinks:true});assertNoOverlap(finalInventory,Object.values(before));
   const attestation={schemaVersion:'hermes-manual-install-v1',sourcePin,version:'0.21.3',installerSha256:installerHash,
     root:code,interpreter:path.join(code,'venv/Scripts/python.exe'),executable:path.join(code,'venv/Scripts/hermes.exe'),
     sourceClass:'official_desktop_direct_stages',manualPolicy:'normal_windows_path_trusted_installer',sourceTree,identity,records,stages:report.stages,
     inventoryDigest:finalInventory.digest,inventory:finalInventory.rows,profileCreated:false,launcherCreated:false};
   const receiptPath=path.join(root,'installation-receipt.json'),pendingReceipt=path.join(root,'installation-receipt.pending');
   fs.writeFileSync(pendingReceipt,JSON.stringify(attestation,null,2)+'\n',{flag:'wx'});fs.renameSync(pendingReceipt,receiptPath);
-  validateReceipt(JSON.parse(fs.readFileSync(receiptPath,'utf8')),inventory(code));
+  validateReceipt(JSON.parse(fs.readFileSync(receiptPath,'utf8')),inventory(code,{allowInternalLinks:true}));
   report.result='DONE';report.receipt='installation-receipt.json';report.cleanup=true;report.runtimeBytes=finalInventory.bytes;report.runtimeFiles=finalInventory.files;report.noOverlap=true;
 } catch(error) {report.reason=monitorFailure??(/^[a-z_]{1,80}$/.test(error.message)?error.message:'operation_failed_closed');report.phase=phase;}
 finally {
@@ -144,8 +157,9 @@ finally {
   if(before){try{const after=Object.fromEntries(Object.entries(protectedRoots).map(([k,v])=>[k,inventory(v)]));report.managedUnchanged=before.managed.digest===after.managed.digest;report.profileUnchanged=before.profile.digest===after.profile.digest;report.protectedCounts=Object.fromEntries(Object.entries(after).map(([k,v])=>[k,{files:v.files,bytes:v.bytes}]));report.machineStateUnchanged=machineBefore===machineState();if(!report.managedUnchanged||!report.profileUnchanged||!report.machineStateUnchanged){report.result='BLOCKED';report.reason='protected_state_changed';}}catch{report.result='BLOCKED';report.reason='protected_readback_failed';}}
   if(rootId&&report.result!=='DONE'){
     if(lastLogs){
-      try{report.diagnostic=retainLatestFailure(path.join(fs.realpathSync.native(process.env.USERPROFILE),'.hermes-manual-diagnostic-v1'),
-        {stage:lastLogs.stage,exitCode:receipt?.rootExit??null,stdout:fs.readFileSync(lastLogs.stdout),stderr:fs.readFileSync(lastLogs.stderr)},
+      try{report.diagnostic=retainLatestFailure(diagnosticRoot,
+        {stage:lastLogs.stage,exitCode:receipt?.rootExit??null,stdout:fs.readFileSync(lastLogs.stdout),stderr:fs.readFileSync(lastLogs.stderr),
+          controllerReason:report.reason??null,monitorDetail:report.monitorDetail??null},
         [process.cwd(),root,...Object.values(protectedRoots)]);}
       catch(error){
         report.diagnostic={retained:false,reason:/^[a-z_]+$/.test(error.message)?error.message:'diagnostic_failed'};
@@ -156,7 +170,7 @@ finally {
         }
       }
     }
-    try{if(report.attemptStarted&&!receipt?.cleanup)throw Error('cleanup_unproven');assertOwned(root,rootId);assertNoOverlap(inventory(root,{hashes:false}),Object.values(before));await fsp.rm(root,{recursive:true});report.cleanup=!fs.existsSync(root);}catch{report.cleanup=false;report.reason='rollback_preserved_unproven_ownership_or_cleanup';}
+    try{if(report.attemptStarted&&!receipt?.cleanup)throw Error('cleanup_unproven');assertOwned(root,rootId);assertNoOverlap(inventory(root,{hashes:false,allowInternalLinks:true}),Object.values(before));await fsp.rm(root,{recursive:true});report.cleanup=!fs.existsSync(root);}catch{report.cleanup=false;report.reason='rollback_preserved_unproven_ownership_or_cleanup';}
   }
   report.finalRootExists=fs.existsSync(root);report.freeBytes=fs.statfsSync(path.dirname(root)).bavail*fs.statfsSync(path.dirname(root)).bsize;
   console.log(JSON.stringify(report));

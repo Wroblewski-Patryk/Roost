@@ -10,15 +10,16 @@ zmienia poniższych bramek. Punkt 2: **BLOCKED przed utworzeniem profilu** — �
 preflight potwierdził cztery wspólne pliki fizyczne oraz brak kwalifikowanej
 izolacji updater/bootstrap/fallback. Nie utworzono profilu ani launchera; punkt 3
 pozostaje niedopuszczony.
-Punkt 2A: **BLOCKED po jednej próbie z normalnym Windows PATH i rollbacku**.
-Właściciel dopuścił User+Machine PATH i narzędzia tworzone przez oficjalny installer
-wyłącznie dla manualnego Desktop. Preflight PASS. `repository` ruszył; po odmowie
-SSH (host key verification) upstream przeszedł na HTTPS. Lokalny monitor zgłosił
-`manual_tree_boundary` i przerwał etap (zachowany exit 130). Dokładny wyjątek monitora
-nie został zapisany; nie potwierdzono rzeczywistego naruszenia granicy. Dalsze etapy
-nie ruszyły. Runtime usunięty, jedna mała prywatna para log/receipt zachowana.
-Managed/profil i wybrane ustawienia bez zmian. Brak gotowego runtime/profilu;
-punkt 2B niegotowy. Polityka managed Roost pozostaje bez zmian.
+Punkt 2A: **BLOCKED po naprawie monitora i jednej nowej próbie**. `repository`
+i `python` zakończyły się exit 0 oraz PASS postcondition. Przy przejściu do `venv`
+monitor odrzucił wewnętrzny alias uv (`live_link`); natywnego wyniku/cleanup receipt
+dla venv nie zachowano. `dependencies` nie ruszyło. Po kontroli tożsamości root,
+celu aliasu, braku overlap i pasujących procesów domknięto lokalny rollback;
+nie odtworzono brakującego natywnego dowodu. Managed/profil pozostały niezmienione.
+Jedna mała prywatna diagnostyka została zachowana. Końcowy kod dopuszcza aliasy
+wewnętrzne i zmiany plików podczas pracy, bez drugiej próby. To obserwacja ścieżek
+i chroniony readback, nie sandbox wszystkich zapisów. Brak runtime/profilu;
+punkt 2B niegotowy. Managed Roost admission bez zmian.
 
 ## Stały program syntetyczny — RF-RUNTIME-005B30
 

@@ -31,9 +31,11 @@ manual path. Official stage exit codes plus filesystem postconditions and full
 postflight are authoritative; the old wrapper history below is retained as evidence.
 The strict toolchain qualification below is historical. The owner subsequently
 accepted upstream normal User+Machine PATH and generated Python/build tools for
-manual Desktop only. The latest attempt passed that preflight and started
-repository, but the local tree monitor interrupted its HTTPS fallback. Rollback
-completed; one private diagnostic pair remains. Point 2A is BLOCKED and 2B is not ready.
+manual Desktop only. The latest monitor-repair attempt passed repository and
+Python, then stopped at venv transition because the monitor rejected an internal
+uv alias. Follow-up local rollback is complete, with missing native venv cleanup
+proof still explicitly unavailable. One diagnostic pair remains; 2A is BLOCKED
+and 2B is not ready. No second install followed the alias correction.
 
 This does **not** establish physical isolation of the current Windows views.
 Some descendants overlap while others differ. Manual Desktop launch stays
@@ -769,6 +771,81 @@ main/serve/chat/gateway, model, Ollama, provider or login was started. Four norm
 PATH/environment tests, five direct-stage, four diagnostic and seven manual
 regression tests passed.
 Point **2A BLOCKED; 2B not ready**. No second actual installation attempt followed.
+
+### Mutable owned-tree observation and the private uv alias
+
+The next owner-authorized atom replaces live immutable inventory checks with
+[bounded containment observation](../../scripts/lib/hermes-manual-live-monitor.mjs).
+Only stopped trees use stable size/mtime/hash inventories. Live sampling checks
+the owned root identity, explicit runtime/home/cache/temp/tools scope, canonical
+targets and known protected file IDs; it does not require files to persist between
+reads. Concurrent create/write/rename/delete is expected. Descendant I/O errors
+are recorded as skipped observations, never as proof of safety. Windows tests
+also observed delete-pending handles resolving into the volume's NTFS deleted
+metadata area: those samples are skipped, not added to the write allowlist.
+
+The final sampler is bounded to 250 ms per poll so it does not monopolize the Job
+controller. Observed byte limits and the free-space reserve remain. It is not an
+OS write sandbox and cannot see every write outside the allowed roots or exclude
+path races. The accepted manual boundary consists of the private environment,
+owned Windows Job, best-effort protected-tree events, canonical scope checks and
+complete protected fingerprints/selected machine-state before and after. Repo
+edits and tests are scoped controller work, not installer write authority.
+
+Old diagnostic ownership/hash is checked during preflight. It is removed only
+after actual child output (or a resumed native result) proves the new attempt
+started. Replacement retains at most one private failure log/receipt pair.
+Controller reason and bounded monitor code can now accompany empty child streams.
+
+Observed single fresh attempt on 2026-09-22:
+
+| Stage | Outcome |
+| --- | --- |
+| repository | Exit 0, native cleanup true, exact commit/tree postcondition PASS; official SSH-to-HTTPS fallback accepted |
+| python | Exit 0, native cleanup true, private managed Python postcondition PASS |
+| venv | Dispatch announced, then controller `manual_tree_boundary` / `live_link`; no qualified native exit/cleanup result or filesystem PASS |
+| dependencies | Not started |
+
+The initial live sampler still rejected every link. Read-only inspection after
+the stop identified one link, entirely inside the newly created runtime:
+`.hermes-runtime/python/cpython-3.11-windows-x86_64-none` points to
+`.hermes-runtime/python/cpython-3.11.16-windows-x86_64-none`. This is the observed
+private uv version alias, not an escape to managed Hermes. The final sampler
+checks alias target containment and avoids duplicate traversal. Stopped manual
+inventories accept internal aliases only through explicit `allowInternalLinks`;
+their default still rejects links. External targets and known protected hardlink
+overlap remain rejected. These alias corrections were tested but not used for a
+second installation attempt in this atom.
+
+Automatic rollback initially preserved the tree because the venv cleanup result
+was unavailable and strict inventory rejected the alias. A separate bounded
+local cleanup checked the observed root object/creation time, exact internal
+alias target, full non-overlap inventory and candidate-process absence before
+removing only that owned root. The cleanup removed 18,714 files / 1,057,526,336
+bytes plus directories and the one internal alias. Root absence and zero matching
+candidate processes were read back. This does **not** recreate a native venv
+cleanup receipt or prove more than the scoped process inspection.
+
+Driver readback matched all 19,246 managed files / 376,658,620 bytes, 349 profile
+files / 3,351,013 bytes and selected machine-state. Full managed/profile hashes
+were compared again around local cleanup and remained unchanged. Free space
+after cleanup was 25,459,867,648 bytes. No completed runtime, installation receipt,
+profile, launcher or point-2B resource remains.
+
+The newest retained private diagnostic is the venv/controller failure: both child
+streams are empty, native exit is null, controller reason is `manual_tree_boundary`
+and monitor code is `live_link`. The 15-byte stream-delimited log has SHA-256
+`3cadabec897fd961a14ae0f164fbcc2d872da835fd7c259079ac6fab44594c72`;
+the bounded receipt is 476 bytes. Adding the observed controller diagnosis did
+not invent a missing process result. Raw bytes and machine paths are not public.
+Successful repository/Python log hashes were emitted in the sanitized stage
+results; their temporary files were removed with the owned root.
+
+Four live-monitor tests cover concurrent mutation, out-of-scope targets/protected
+hardlinks, internal aliases and sampling/resource bounds. Six diagnostic tests,
+five direct-stage, four normal-Windows and seven manual regression tests pass.
+No UI/main/serve/chat/gateway/Ollama/model/provider/login ran. **2A BLOCKED; 2B not
+ready.** Managed Roost admission remains unchanged.
 
 ## Disk/resources and one model store
 

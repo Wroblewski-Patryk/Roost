@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import {failureSummary,retainLatestFailure} from './lib/hermes-manual-diagnostic.mjs';
+import {failureSummary,retainLatestFailure,readFailureReceipt,retireFailure} from './lib/hermes-manual-diagnostic.mjs';
 const entry=(name='git')=>({stdout:Buffer.from(`The term '${name}' is not recognized as the name of a cmdlet.`),stderr:Buffer.alloc(0),stage:'repository',exitCode:1});
 function fixture(fn){
  const dir=fs.mkdtempSync(path.join(fs.realpathSync.native(os.tmpdir()),'diagnostic-test-'));
@@ -36,4 +36,16 @@ test('diagnostic location, unknown files, modified receipt/log and links fail cl
  fs.appendFileSync(path.join(diag,'failure.log'),'changed');assert.throws(()=>retainLatestFailure(diag,entry(),[]),/diagnostic_readback/);
  fs.linkSync(path.join(diag,'failure.log'),path.join(root,'linked.log'));
  assert.throws(()=>retainLatestFailure(diag,entry(),[]),/diagnostic_store_link/);
+}));
+test('previous diagnostics retire only after new start and verified ownership/hash',()=>fixture(root=>{
+ const diag=path.join(root,'diagnostic');retainLatestFailure(diag,entry(),[]);const previous=readFailureReceipt(diag);
+ assert.throws(()=>retireFailure(diag,previous),/diagnostic_attempt_not_started/);assert.ok(fs.existsSync(diag));
+ assert.equal(retireFailure(diag,previous,{started:true}),true);assert.equal(fs.existsSync(diag),false);
+ retainLatestFailure(diag,entry('uv'),[]);assert.throws(()=>retireFailure(diag,previous,{started:true}),/diagnostic_changed/);
+}));
+test('controller failure survives empty child streams without raw exception text',()=>fixture(root=>{
+ const dir=path.join(root,'diagnostic');
+ retainLatestFailure(dir,{stdout:Buffer.alloc(0),stderr:Buffer.alloc(0),stage:'venv',exitCode:null,controllerReason:'manual_tree_boundary',monitorDetail:'live_link'},[]);
+ const receipt=readFailureReceipt(dir);assert.equal(receipt.controllerReason,'manual_tree_boundary');assert.equal(receipt.monitorDetail,'live_link');assert.equal(receipt.exitCode,null);
+ assert.throws(()=>retainLatestFailure(dir,{...entry(),monitorDetail:'a private path'},[]),/diagnostic_reason/);
 }));

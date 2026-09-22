@@ -25,7 +25,18 @@ function existingStore(directory) {
   if(sha256(fs.readFileSync(path.join(directory,'failure.log')))!==receipt.logSha256)throw Error('diagnostic_readback');
   return receipt;
 }
-export function retainLatestFailure(directory,{stdout,stderr,stage,exitCode},deniedRoots) {
+export function readFailureReceipt(directory) { return existingStore(directory); }
+export function retireFailure(directory,expected,{started=false}={}) {
+  if(!started)throw Error('diagnostic_attempt_not_started');
+  const current=existingStore(directory);
+  if(!current)return false;
+  if(!expected||current.directoryIdentity!==expected.directoryIdentity||current.logSha256!==expected.logSha256)throw Error('diagnostic_changed');
+  assertOwned(directory,current.directoryIdentity);
+  fs.rmSync(directory,{recursive:true});
+  return true;
+}
+export function retainLatestFailure(directory,{stdout,stderr,stage,exitCode,controllerReason=null,monitorDetail=null},deniedRoots) {
+  for(const value of [controllerReason,monitorDetail])if(value!==null&&!/^[a-zA-Z_]{1,80}$/.test(value))throw Error('diagnostic_reason');
   if(!path.isAbsolute(directory)||deniedRoots.some(r=>within(r,directory)||within(directory,r)))throw Error('diagnostic_location');
   const parent=path.dirname(directory);
   if(fs.realpathSync.native(parent)!==parent)throw Error('diagnostic_parent');
@@ -40,7 +51,8 @@ export function retainLatestFailure(directory,{stdout,stderr,stage,exitCode},den
   const directoryIdentity=String(fs.statSync(directory,{bigint:true}).ino);
   assertOwned(directory,directoryIdentity);
   const bytes=Buffer.concat([Buffer.from('STDOUT\n'),stdout,Buffer.from('\nSTDERR\n'),stderr]);
-  const receipt={schema,directoryIdentity,stage,exitCode,...summary,logSha256:sha256(bytes)};
+  const receipt={schema,directoryIdentity,stage,exitCode,...summary,logSha256:sha256(bytes),
+    ...(controllerReason?{controllerReason}:{}),...(monitorDetail?{monitorDetail}:{})};
   // Atomic per-file replacement; an interrupted mismatched pair fails closed on readback.
   for(const [name,content] of [['failure.log',bytes],['receipt.json',JSON.stringify(receipt)+'\n']]){
     const pending=path.join(directory,name+'.pending');fs.writeFileSync(pending,content,{flag:'wx'});

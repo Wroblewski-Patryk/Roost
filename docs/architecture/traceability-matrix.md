@@ -8,14 +8,14 @@ remain unqualified. No manual profile, provider admission or RF-HOST-035 closure
 Point-2 preflight is **BLOCKED before private creation**: four candidate mutable
 files resolve to managed files and updater/bootstrap/fallback confinement is
 unqualified. No manual profile, launcher or point-3 work was created/started.
-Point 2A is **BLOCKED after one normal-Windows-PATH attempt and rollback**.
-The owner accepts upstream User+Machine PATH and generated tools for manual Desktop
-only. Preflight passed; repository reached SSH host-key failure then HTTPS fallback.
-The local tree monitor stopped it with `manual_tree_boundary` (retained exit 130);
-the underlying monitor exception was not retained, so an actual boundary violation
-is unproven. Other stages did not start. Root cleanup and protected managed/profile/
-selected machine-state readback passed. One small private diagnostic pair remains;
-no qualified runtime/profile or point 2B. Managed admission is unchanged.
+Point 2A is **BLOCKED after the monitor repair and one fresh attempt**. Repository
+and Python passed exit/filesystem checks. At venv transition, the monitor rejected
+uv's internal version alias (`live_link`); the native venv result/cleanup receipt
+was not retained. Dependencies did not start. Follow-up identity/containment/
+non-overlap/process checks completed local root rollback without reconstructing
+the missing native proof. Managed/profile readback was unchanged. Internal aliases
+are now accepted explicitly; no further install was run. One private diagnostic
+pair remains; no ready runtime/profile or point 2B. Managed admission is unchanged.
 
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,
