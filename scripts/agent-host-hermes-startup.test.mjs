@@ -56,7 +56,7 @@ test("qualified policy is Ready/input bound, secret-free, and reaches only the p
     const plan = projectProviderLaunch(f.options);
     assert.equal(plan.command, null); assert.equal(plan.args, null);
     assert.equal(plan.requiredConfig.configReceipt.digest, receipt.digest);
-    assert.throws(() => prepareProviderLaunch(f.options, f.consumption), /hermes_public_launch_contract_unqualified/);
+    assert.throws(() => prepareProviderLaunch(f.options, f.consumption), /host_containment_admission_blocked/);
     assert.throws(() => prepareProviderLaunch(f.options, f.consumption), /agent_provider_input_blocked/);
   }
   for (const gate of ["implementationReady", "executionSupported", "pilotReady", "liveAdmissionAllowed", "pilotExecutionAuthorized", "pilotExecutionStarted"])

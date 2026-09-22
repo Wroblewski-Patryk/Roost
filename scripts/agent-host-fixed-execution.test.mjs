@@ -13,6 +13,7 @@ import { inspectExecutionProvider } from "./lib/agent-host-execution-provider.mj
 import { validPacketFixture, pinReadyFixture } from "./fixtures/execution-packet.mjs";
 import { prepareProviderInput } from "./lib/agent-host-provider-input.mjs";
 import { prepareProviderLaunch, projectProviderLaunch } from "./lib/agent-host-provider-launch.mjs";
+import { prepareFixedHostContainment } from "./lib/agent-host-containment.mjs";
 import { acquireWriterLock } from "./lib/agent-host-writer-lock.mjs";
 import { prepareFixedExecution, runFixedExecution, fixedProgramSource, abandonFixedExecution } from "./lib/agent-host-fixed-execution.mjs";
 
@@ -27,6 +28,8 @@ async function setup(t) {
   const envelope = prepareProviderInput(consumption), options = { provider: fixed.declaration, envelope, repositoryPath, sandbox: "workspace-write" };
   const grant = await prepareFixedExecution({ envelope, writerLock, repositoryPath, claimed: f.claimed, assertAuthority() {}, deadline: new Date(Date.now() + 55000).toISOString() });
   f.claimed.checkpoint = { stage: "spawn_intent", packetRevision: envelope.revisions.packet, contextRevision: envelope.revisions.context };
+  Object.assign(options, { fixedGrant: grant, writerLock });
+  options.containmentReceipt = prepareFixedHostContainment(options, consumption);
   return { root, state, writerLock, f, consumption, envelope, options, grant, directory: path.join(state, "native-review-" + f.claimed.id) };
 }
 test("closed declaration never admits model providers, arbitrary paths, args or forged hashes", async () => {
@@ -40,22 +43,19 @@ test("closed declaration never admits model providers, arbitrary paths, args or 
 });
 test("public launch consumes exact opaque authority and runs only the fixed disk effect after durable ack", windows, async t => {
   const x = await setup(t);
-  assert.throws(() => prepareProviderLaunch({ ...x.options, fixedGrant: structuredClone(x.grant) }, x.consumption));
   assert.equal(projectProviderLaunch(x.options).command, null);
-  for (const change of [{ leaseToken: "forged-claim" }, { attempt: 2 }, { id: "00000000-0000-4000-8000-000000000099" }]) {
-    assert.throws(() => prepareProviderLaunch({ ...x.options, fixedGrant: x.grant }, { ...x.consumption, claimed: { ...x.f.claimed, ...change } }));
-  }
-  assert.throws(() => prepareProviderLaunch({ ...x.options, envelope: structuredClone(x.envelope), fixedGrant: x.grant }, x.consumption));
   const launch = prepareProviderLaunch({ ...x.options, fixedGrant: x.grant }, x.consumption);
-  assert.throws(() => prepareProviderLaunch({ ...x.options, fixedGrant: x.grant }, x.consumption));
   const result = await runFixedExecution(launch.grant, { remainingMs: () => 30000 });
   assert.equal(result.finalResponse, fixed.output.trim());
   assert.equal(result.verification.resumed, true); assert.equal(result.verification.effectBytes, Buffer.byteLength(fixed.output));
+  assert.equal(result.verification.containment.bindingDigest, x.options.containmentReceipt.bindingDigest);
+  assert.equal(result.verification.containment.realProviderAdmitted, false);
   assert.equal(result.verification.review.verdict, "verified_candidate"); assert.equal(result.verification.cleanup.fixtureAbsent, true);
   assert.equal(result.verification.cleanup.applicationLeaseReleased, true); assert.equal(result.verification.job.activeProcesses, 0);
   const resume = JSON.parse(fs.readFileSync(path.join(x.directory, "resume-authorized.json"))).payload;
   assert.equal(result.verification.job.resumeReceipt, (await import("./lib/agent-host-fixture-ownership.mjs")).readFixtureEvidence(x.directory, "resume-authorized.json").digest);
   assert.equal(resume.runtime.suppliedHandles, 1);
+  assert.throws(() => prepareProviderLaunch({ ...x.options, fixedGrant: x.grant }, x.consumption));
   await assert.rejects(runFixedExecution(launch.grant, { remainingMs: () => 30000 }));
 });
 test("expired preparation cannot spawn or renew its authority", windows, async t => {

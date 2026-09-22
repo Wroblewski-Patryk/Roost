@@ -41,7 +41,7 @@ test("coding-small-v1 is Ready-bound, private, honest about unknowns, and stops 
     for (const code of ["hermes_public_launch_contract_unqualified", "hermes_native_tools_isolation_unproven", "hermes_stop_recovery_unproven"])
       assert.ok(plan.blockers.includes(code));
     assert.deepEqual(plan.acceptedResidualBlockers, ["hermes_single_turn_enforcement_unproven", "hermes_output_cost_budget_unproven"]);
-    assert.throws(() => prepareProviderLaunch(f.options, f.consumption), /hermes_public_launch_contract_unqualified/);
+    assert.throws(() => prepareProviderLaunch(f.options, f.consumption), /host_containment_admission_blocked/);
   }
   for (const flag of ["implementationReady", "executionSupported", "pilotReady", "liveAdmissionAllowed", "pilotExecutionAuthorized", "pilotExecutionStarted"])
     assert.equal(hermesContract[flag], false);

@@ -98,20 +98,21 @@ test("known prompt secrets and substituted sealed model/effort are denied", () =
 });
 test("new public CLI remains denied even with synthetic outer admission; seal cannot be reused", () => {
   const { options, consumption } = fixture(); let launches = 0;
-  assert.throws(() => { prepareProviderLaunch(options, consumption); launches++; }, /hermes_profile_ready_changed/);
+  assert.throws(() => { prepareProviderLaunch(options, consumption); launches++; }, /host_containment_admission_blocked/);
   assert.throws(() => prepareProviderLaunch(options, consumption), /agent_provider_input_blocked/);
   assert.equal(launches, 0);
   const report = contract.projectProvider({ kind: "hermes_codex", ready: true });
   assert.equal(report.executionSupported, false);
   for (const blocker of hermesContract.blockers) assert.ok(report.blockers.includes(blocker));
 });
-test("direct dispatch preserves argv/stdin and consumes exactly once", () => {
+test("direct projection preserves argv/stdin but dispatch requires genuine containment", () => {
   const { options, consumption } = fixture(); options.provider = undefined;
-  const plan = prepareProviderLaunch(options, consumption);
+  const plan = projectProviderLaunch(options);
   assert.equal(plan.command, "synthetic-codex");
   assert.deepEqual(plan.args, ["exec", "--ephemeral", "--json", "--sandbox", "workspace-write", "--model", "gpt-5.6-sol",
     "--config", 'model_provider="openai"', "--config", 'model_reasoning_effort="medium"', "-"]);
   assert.equal(JSON.parse(plan.input).seal, options.envelope.seal);
+  assert.throws(() => prepareProviderLaunch(options, consumption), /host_containment_admission_blocked/);
   assert.throws(() => prepareProviderLaunch(options, consumption), /agent_provider_input_blocked/);
 });
 test("cancellation and expiry at final authority read cannot yield a launch", () => {

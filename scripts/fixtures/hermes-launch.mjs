@@ -12,7 +12,7 @@ import { runHermesOwnedProcess } from "../lib/agent-host-hermes-quiet.mjs";
 const grants = new WeakMap();
 const source = fileURLToPath(new URL("windows-job-tree.cs", import.meta.url));
 const hash = bytes => createHash("sha256").update(bytes).digest("hex");
-const sourceDigest = "27f637fa875130cbb940a4481c65c562567cfbc87320ffbe6063670f53de8721";
+const sourceDigest = "e7ed6d39d933d5cb0ea67334bb8e337fa51eea53d62a62cf09570512d2af12c8";
 const sourceBytes = () => readFileSync(source, "utf8").replace(/\r\n/g, "\n");
 const denied = () => { throw new Error("harmless_fixture_activation_denied"); };
 

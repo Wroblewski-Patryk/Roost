@@ -172,7 +172,7 @@ test("Worker binds actual private owner attestation to Ready and retains uncondi
     assert.equal(projection.blockers.includes("hermes_public_launch_contract_unqualified"), true);
     assert.equal(projection.command, null);
     assert.throws(() => prepareProviderLaunch({ provider, envelope, repositoryPath: f.repositoryPath,
-      sandbox: "workspace-write", platform: "win32", authReceipt: {} }, consumption), /hermes_public_launch_contract_unqualified/);
+      sandbox: "workspace-write", platform: "win32", authReceipt: {} }, consumption), /host_containment_admission_blocked/);
     assert.throws(() => prepareProviderLaunch({ provider, envelope, repositoryPath: f.repositoryPath,
       sandbox: "workspace-write", platform: "win32" }, consumption), /agent_provider_input_blocked/);
   }

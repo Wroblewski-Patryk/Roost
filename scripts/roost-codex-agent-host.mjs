@@ -14,6 +14,7 @@ import { validateExecutionPacket } from "./lib/agent-host-execution-packet.mjs";
 import { assertRecoverySnapshot, classifyRecovery, recoveryError, workspaceDigest } from "./lib/agent-host-recovery.mjs";
 import { runObserver } from "./lib/agent-host-observer.mjs";
 import { prepareProviderLaunch } from "./lib/agent-host-provider-launch.mjs";
+import { prepareFixedHostContainment } from "./lib/agent-host-containment.mjs";
 import { prepareProviderInput } from "./lib/agent-host-provider-input.mjs";
 import { hermesStartupEnvironment } from "./lib/agent-host-hermes-startup.mjs";
 import { createDirectTurnGuard } from "./lib/agent-host-direct-turn.mjs";
@@ -300,11 +301,14 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     // Last remote authority read observes the active stop fence after context reads.
     await duration.wait(lease.refresh());
     // No awaited RPC/work remains between this admission check and spawn.
-    const launch = prepareProviderLaunch({ provider: config.executionProvider, envelope: providerInput, fixedGrant,
+    const launchOptions = { provider: config.executionProvider, envelope: providerInput, fixedGrant, writerLock,
       repositoryPath, codexCommand, sandbox, secrets: [apiKey, claimed.leaseToken],
       startupEnvironment: config.executionProvider?.kind === "hermes_codex" && config.executionProvider.profile
-        ? hermesStartupEnvironment(config.executionProvider.profile, process.env, repositoryPath) : undefined }, { fresh, claimed, currentCommit,
-      assertAuthority: assertProviderAuthority, secrets: [apiKey] });
+        ? hermesStartupEnvironment(config.executionProvider.profile, process.env, repositoryPath) : undefined };
+    const launchAuthority = { fresh, claimed, currentCommit, assertAuthority: assertProviderAuthority, secrets: [apiKey] };
+    if (config.executionProvider?.kind === fixed.kind)
+      launchOptions.containmentReceipt = prepareFixedHostContainment(launchOptions, launchAuthority);
+    const launch = prepareProviderLaunch(launchOptions, launchAuthority);
     assertProviderAuthority();
     let transportAccounting;
     if (launch.kind === fixed.kind) {

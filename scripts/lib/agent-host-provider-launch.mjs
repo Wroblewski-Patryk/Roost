@@ -13,6 +13,7 @@ import { guardHostContent } from "./agent-host-redaction.mjs";
 import { hermesOwnedTreeBlockers } from "./agent-host-windows-job.mjs";
 
 import { hermesBudgetBlocker, hermesBudgetBlockers } from "./agent-host-hermes-budget.mjs";
+import { consumeHostContainment, revokeHostContainment } from "./agent-host-containment.mjs";
 
 export { hermesContract };
 const hermes = contract.registry.providers.find(p => p.kind === "hermes_codex");
@@ -103,15 +104,24 @@ export function projectProviderLaunch({ provider, envelope, repositoryPath, code
 export function prepareProviderLaunch(options, consumption) {
   const plan = projectProviderLaunch(options);
   if (plan.kind === fixed.kind) {
-    const grant = consumeFixedExecution(options.fixedGrant, options.envelope, consumption.claimed);
-    consumeProviderInput(options.envelope, consumption);
-    return Object.freeze({ ...plan, grant });
+    try {
+      const containment = consumeHostContainment(options.containmentReceipt, options, consumption);
+      const grant = consumeFixedExecution(options.fixedGrant, options.envelope, consumption.claimed, containment);
+      consumeProviderInput(options.envelope, consumption);
+      return Object.freeze({ ...plan, grant });
+    } catch (error) {
+      revokeHostContainment(options.containmentReceipt);
+      try { consumeProviderInput(options.envelope, consumption); } catch { /* keep original fixed denial */ }
+      throw error;
+    }
   }
   if (plan.kind === "hermes_codex" && (options.launchAdmission || plan.localAdmissionReceipt)) {
     consumeHermesLaunchAdmission(options.launchAdmission ?? plan.localAdmissionReceipt, options, consumption);
+    consumeHostContainment(options.containmentReceipt, options, consumption);
     fail("hermes_public_launch_contract_unqualified");
   }
   consumeProviderInput(options.envelope, consumption);
+  consumeHostContainment(options.containmentReceipt, options, consumption);
   if (plan.kind === "hermes_codex") {
     // Production reads the owner-confirmed private attestation again. No caller
     // auth/status override is accepted; all other admission blockers remain.

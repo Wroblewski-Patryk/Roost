@@ -33,7 +33,7 @@ test("clean and existing dirty workspace, exact tools, private opaque receipt an
       const plan = projectProviderLaunch(f.projection);
       assert.ok(!plan.blockers.includes(nativeToolBlocker)); assert.ok(plan.blockers.includes("hermes_public_launch_contract_unqualified"));
       f.f.claimed.checkpoint = { stage: "spawn_intent", packetRevision: f.envelope.revisions.packet, contextRevision: f.envelope.revisions.context };
-      assert.throws(() => prepareProviderLaunch(f.projection, f.options), /hermes_public_launch_contract_unqualified/);
+      assert.throws(() => prepareProviderLaunch(f.projection, f.options), /host_containment_admission_blocked/);
     }
     assert.equal(readFileSync(path.join(f.repositoryPath, "unrelated.txt"), "utf8"), dirty ? "pre-existing dirty\n" : "original\n");
   }

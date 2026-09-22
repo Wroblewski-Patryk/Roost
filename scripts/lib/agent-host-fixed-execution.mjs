@@ -13,6 +13,7 @@ import { physicalIdentity, nativeDigest } from "./agent-host-native-footprint.mj
 import { createDurableNativeFixture, inspectDurableNativeFixture, cleanupDurableNativeFixture, fixtureRuntimeBinding, fixtureFileBinding, fixtureInstallationBinding } from "./agent-host-fixture-ownership.mjs";
 import { buildWindowsJobLauncher, assertWindowsJobCapability, startWindowsJob, isWindowsJobCleanupReceipt } from "./agent-host-windows-job.mjs";
 import { createNativeReview, prepareNativeReviewResume, authorizeNativeReviewResume, captureNativeReview, completeNativeReview, assertNativeReviewCleanup, recordNativeReviewCleanup } from "./agent-host-native-review.mjs";
+import { assertHostContainmentAttempt } from "./agent-host-containment.mjs";
 
 const grants = new WeakMap(), exec = promisify(execFile);
 const source = fileURLToPath(new URL("../roost-fixed-effect.cs", import.meta.url));
@@ -107,23 +108,43 @@ export async function prepareFixedExecution({ envelope, writerLock, repositoryPa
     throw error;
   }
 }
-export function consumeFixedExecution(grant, envelope, claimed) {
+// Private source for the containment boundary: only a genuine existing grant
+// can expose a freshly checked binding. No caller-selected executable or policy.
+export function inspectFixedContainment(grant) {
+  const s = grants.get(grant);
+  if (!s || !["prepared", "spent", "running"].includes(s.phase)) fail();
+  check(s);
+  return { grant, envelope: s.envelope, claimed: s.claimed, writerLock: s.writerLock,
+    repositoryPath: s.repositoryPath, runtime: structuredClone(s.runtime), expiresAt: s.deadline,
+    configuration: { argv: [], input: "", environment: { SYSTEMROOT: process.env.SystemRoot }, suppliedHandles: 1 },
+    filesystemScope: { repositoryIdentity: s.repositoryIdentity, cwdIdentity: physicalIdentity(s.cwd),
+      outputHandleIdentity: s.effectIdentity, suppliedHandles: 1 } };
+}
+export function consumeFixedExecution(grant, envelope, claimed, containmentReceipt) {
   const s = grants.get(grant); if (!s || s.phase !== "prepared" || s.envelope !== envelope || claimDigest(claimed) !== s.claimDigest) fail();
-  check(s); s.phase = "spent"; return grant;
+  assertHostContainmentAttempt(containmentReceipt, grant);
+  check(s); s.containmentReceipt = containmentReceipt; s.phase = "spent"; return grant;
 }
 export function abandonFixedExecution(grant) {
-  const s = grants.get(grant); if (!s || !["prepared", "spent"].includes(s.phase)) fail();
+  const s = grants.get(grant); if (!s || !["prepared", "spent", "refused"].includes(s.phase)) fail();
   s.phase = "abandoned"; cleanupDurableNativeFixture(s.ownership); releaseApplicationLease(s.lease);
 }
 export async function runFixedExecution(grant, { signal, remainingMs }) {
-  const s = grants.get(grant); if (!s || s.phase !== "spent") fail(); s.phase = "running";
+  const s = grants.get(grant); if (!s || s.phase !== "spent") fail();
+  // A refused pre-create check still owns a provably unstarted fixture; retain
+  // the existing explicit abandonment path, not process-recovery authority.
+  try { assertHostContainmentAttempt(s.containmentReceipt, grant); check(s); }
+  catch (error) { s.phase = "refused"; throw error; }
+  s.phase = "running";
   let job, handle, timer, error;
   try {
+    assertHostContainmentAttempt(s.containmentReceipt, grant);
     check(s); if (signal?.aborted) fail();
     const durationMs = Math.floor(Math.min(5000, remainingMs() - 3000, Date.parse(s.deadline) - Date.now() - 3000)); if (durationMs < 1) fail();
     handle = await startWindowsJob(s.artifact, { executable: s.executable, argv: [], cwd: s.cwd, environment: { SYSTEMROOT: process.env.SystemRoot }, input: "",
       fixedEffect: true, attempt: s.envelope.identity.executionId, durationMs,
       confirmResume(assignment) {
+        assertHostContainmentAttempt(s.containmentReceipt, grant);
         check(s); s.stable(); if (signal?.aborted || fs.statSync(s.effect).size !== 0) fail();
         const digest = authorizeNativeReviewResume(s.review, { assignment, runtime: s.runtime, authorityDigest: s.authorityDigest, fixtureOwnership: s.ownership });
         check(s); if (signal?.aborted || fs.statSync(s.effect).size !== 0) fail(); return digest;
@@ -149,6 +170,8 @@ export async function runFixedExecution(grant, { signal, remainingMs }) {
   assertNativeReviewCleanup(reviewed.capability, s.envelope.identity.executionId);
   cleanupDurableNativeFixture(s.ownership); recordNativeReviewCleanup(reviewed.capability, s.envelope.identity.executionId); releaseApplicationLease(s.lease);
   const evidence = { program: fixed.program, sourceDigest: fixed.sourceDigest, inputSeal: s.envelope.seal, authoritySpent: true, resumed: job.resumed,
+    containment: { schemaVersion: s.containmentReceipt.schemaVersion, evidenceClass: s.containmentReceipt.evidenceClass,
+      bindingDigest: s.containmentReceipt.bindingDigest, systemIsolation: false, realProviderAdmitted: false },
     effectBytes: bytes.length, effectDigest: sha(bytes), expectedEffectDigest: sha(fixed.output), job, review: reviewed.publicReceipt,
     reviewDigest: reviewed.receiptDigest, cleanup: { fixtureAbsent: !fs.existsSync(s.root), applicationLeaseReleased: true, activeProcesses: job.activeProcesses }, systemIsolation: false };
   if (!passed) throw Object.assign(Error("synthetic_attempt_failed"), { retryable: false, details: { syntheticEvidence: evidence } });

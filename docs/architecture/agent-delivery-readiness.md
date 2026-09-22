@@ -1,12 +1,13 @@
 # Gotowość połączenia Roost z agentami
 
-RF-HOST-035, 2026-09-23: **PARTIAL; zachowanie dowodu zakończenia po odrzuceniu
-wyjścia — DONE**. Istniejący Windows Job i supervisor przekazują teraz oryginalny
-błąd oraz autentyczny receipt/exit/cleanup do dowodów nieudanej próby. Brak proof
-nadal zachowuje własność do reconciliation; błąd nie staje się sukcesem ani retry.
-[Zakres i następny atom](../operations/host-lifecycle-safety.md#terminal-evidence-after-output-rejection):
-powiązanie wersjonowanego dowodu izolacji hosta z istniejącym pre-spawn admission,
-testowane syntetycznie. Realny provider, izolacja hosta i sześć flag nadal
+RF-HOST-035, 2026-09-23: **PARTIAL; powiązanie dowodu przed startem — DONE**.
+Granica pre-spawn wymaga jednorazowego dowodu powiązanego z runtime/profile/config,
+workspace/task, Ready/claim/Writer i zakresem plików. Dodatni dowód dotyczy tylko
+stałego programu syntetycznego; Windows Job nie dowodzi izolacji API hosta.
+Kopie, drift, wygaśnięcie i rozszerzenie uprawnień powodują odmowę.
+[Zakres i następny atom](../operations/host-lifecycle-safety.md#host-containment-admission-binding):
+kwalifikacja read-only jednego mechanizmu izolacji Windows wobec wymaganych granic,
+przed instalacją lub próbą providera. Realny provider, izolacja hosta i sześć flag nadal
 niezakwalifikowane/false. Manualny profil Hermes pozostaje osobną, niezmienioną ścieżką.
 
 Decyzja kwalifikacyjna z 2026-09-22:

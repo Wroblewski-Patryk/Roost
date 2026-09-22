@@ -5,6 +5,7 @@ import fixed from "../lib/agent-host-fixed-program.cjs";
 import { validPacketFixture, pinReadyFixture } from "./execution-packet.mjs";
 import { prepareProviderInput } from "../lib/agent-host-provider-input.mjs";
 import { prepareProviderLaunch } from "../lib/agent-host-provider-launch.mjs";
+import { prepareFixedHostContainment } from "../lib/agent-host-containment.mjs";
 import { acquireWriterLock } from "../lib/agent-host-writer-lock.mjs";
 import { prepareFixedExecution, runFixedExecution } from "../lib/agent-host-fixed-execution.mjs";
 
@@ -13,7 +14,9 @@ const writerLock=await acquireWriterLock(state),f=validPacketFixture();f.packet.
 const input={fresh:{taskContext:f.taskContext,applicationContext:f.applicationContext},claimed:f.claimed,currentCommit:"a".repeat(40),assertAuthority(){}};
 const envelope=prepareProviderInput(input),grant=await prepareFixedExecution({envelope,writerLock,repositoryPath,claimed:f.claimed,assertAuthority(){},deadline:new Date(Date.now()+55000).toISOString()});
 f.claimed.checkpoint={stage:"spawn_intent",packetRevision:envelope.revisions.packet,contextRevision:envelope.revisions.context};
-prepareProviderLaunch({provider:fixed.declaration,envelope,repositoryPath,sandbox:"workspace-write",fixedGrant:grant},input);
+const options={provider:fixed.declaration,envelope,repositoryPath,sandbox:"workspace-write",fixedGrant:grant,writerLock};
+options.containmentReceipt=prepareFixedHostContainment(options,input);
+prepareProviderLaunch(options,input);
 const unlink=fs.unlinkSync;fs.unlinkSync=(file,...args)=>{if(path.basename(String(file))==="synthetic-effect.bin")process.exit(41);return unlink(file,...args);};syncBuiltinESMExports();
 await runFixedExecution(grant,{remainingMs:()=>30000});
 throw Error("cleanup interruption did not occur");

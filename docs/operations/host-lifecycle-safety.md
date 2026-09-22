@@ -50,6 +50,84 @@ The remaining sections describe the unchanged real-provider policy.
 
 ## Enforcement and scope
 
+### Host-containment admission binding
+
+2026-09-23: **binding/denial slice DONE; RF-HOST-035 PARTIAL**. Existing
+`prepareProviderLaunch` requires genuine one-attempt evidence before returning
+a runnable plan. There is **no real-provider proof issuer**: Hermes and Direct
+remain blocked even if an outer admission were weakened. Six flags stay false.
+
+[`roost-host-containment-admission-v1`](../../scripts/lib/agent-host-containment.mjs)
+authenticates an immutable receipt through a private process-local WeakMap.
+The digest identifies a binding, not a signature/bearer token. Copied JSON,
+caller signatures, changed versions and lifecycle receipts cannot confer
+authority; nothing is loaded from task/API/config/environment proof data.
+
+| Binding | Source and rule |
+| --- | --- |
+| Provider/runtime | Exact fixed declaration/source, verified executable content/physical identity, compiler, launcher and installation binding. No caller-selected executable. |
+| Profile/config | Digests of the fixed execution profile and exact argv, stdin, environment and supplied-handle configuration. |
+| Workspace/task | Canonical application/fixture/output-handle identities, execution/workspace/task/application IDs, attempt, input seal and context revisions. |
+| Ready/claim | Exact Ready pin, claim-token digest, start/checkpoint identity and fresh Ready/risk/context/authority checks. No raw lease token in evidence. |
+| Writer/filesystem | Genuine Writer object and current ownership/physical record digest; exact workspace, fixture and one predetermined output handle. Expansion denied. |
+| Host controls | Explicit empty allowlist for the closed program. Credential, process, network, lifecycle and unknown capability requests denied. |
+| Lifetime | Existing preparation deadline, at most 60 seconds, wall-clock plus monotonic expiry; one receipt per genuine grant. Failed genuine consumption is spent; no renewal/reconstruction after restart. |
+
+Only the existing B30 `synthetic_fixed` grant issues evidence, labelled
+`closed_fixture_only`, `systemIsolation=false`, `realProviderAdmitted=false`.
+This qualifies the exact program writing 22 fixed bytes through its inherited
+handle. It does **not** remove Windows permissions or show that arbitrary code
+lacks filesystem, credential, process, network or Docker/WSL APIs. A genuine
+completed Job cleanup receipt also fails admission. No OS adapter is invented.
+
+The Worker issues fixture evidence after its last remote authority refresh.
+The shared pre-spawn boundary consumes it before existing grant/input handoff;
+the fixed runner rechecks before process creation and suspended-process resume.
+Missing proof burns the local input; a later input/authority failure revokes
+the partially consumed proof, so a failed handoff cannot reach the runner.
+A pre-create refusal consumes the run opportunity and keeps explicit owned
+fixture abandonment available. Once creation may have happened, native cleanup,
+durable resume/review and reconciliation remain authoritative. Terminal fixture
+evidence includes the version/class/binding digest. No retry, supervisor or
+parallel recovery system was added; durable B28 recovery remains cleanup-only.
+
+Synthetic denials cover missing/stale/consumed evidence, clock rollback, wrong
+runtime/profile/config/workspace/task/attempt/claim, Ready/Writer drift, scope
+expansion, credential/process/network/lifecycle/unknown capabilities, malformed
+requests, copied/rehashed/tampered receipts, signatures and genuine Job-only
+proof. Denials check zero target-process creation, zero output and no resume
+authorization. Valid evidence reaches only the fixed fixture and owned cleanup.
+
+Legacy transport/context tests replace only fake transport through an explicit
+test-directory loader, retaining their authority/input checks. Production has
+no new bypass parameter. These tests do not qualify containment. The harmless
+Hermes fixture's stale source pin was refreshed for the already committed
+bounded invalid-output/flood modes; fixture source itself was not changed.
+
+Verification: **87/87** focused containment/fixed-launch/provider tests passed,
+including failed-handoff revocation and preserved crash/recovery cleanup. The
+Hermes admission/profile/startup/budget/native-boundary, input and lifecycle
+regressions passed after correcting the stale fixture pin. All six legacy
+Worker process suites (context, active stop, packet, duration, recovery, output
+budget) passed. `npm run validate` passed lint, TypeScript and server/web builds;
+existing unresolved-asset/chunk-size warnings remain. JavaScript syntax, scoped
+privacy/diff checks, 631 local links and documentation budgets passed (107,341
+default-context bytes; three planning files, largest 26,485 bytes).
+
+Full fingerprints for managed runtime/pilot, manual runtime/profile and model
+store still match the preceding audit; no real provider/model or private state
+was changed. The eight unrelated dirty documents received concurrent edits
+outside this slice and are excluded intact from its commit; no global
+before/after equality is claimed for those documents. `design-qa.md` was neither
+read nor staged. Database/API integration, production/VPS, container/service
+changes and real OS containment trials were not run.
+
+**Exactly one next atom:** read-only qualification of one candidate Windows OS
+containment mechanism against filesystem/credential/process/network/host-control
+requirements, returning supported/BLOCKED evidence before installation or a
+real-provider trial. Current Job evidence alone is insufficient. No model,
+private-profile, provider or production activation follows from this slice.
+
 ### Terminal evidence after output rejection
 
 2026-09-23: **this process-supervision slice is DONE; RF-HOST-035 remains PARTIAL**.
@@ -102,11 +180,9 @@ ran. Database/API integration, container builds and live provider trials were
 not run; no production/VPS, Docker/WSL service or private provider configuration
 was changed. All six readiness/authority flags remain false.
 
-**Next single atom:** define and test the fail-closed pre-spawn binding for one
-versioned host-containment admission receipt, tied to exact runtime/profile/
-config and task/Ready/Writer identity through the existing launch boundary.
-Use synthetic denial cases; a process-lifetime Job receipt must not substitute
-for proof that host-control APIs are inaccessible. No live provider is authorized.
+The subsequent [binding slice](#host-containment-admission-binding) completes
+this proposed pre-spawn evidence boundary synthetically. Its next atom is current;
+this historical supervision slice grants no real-provider execution.
 
 The Direct CLI exposes command events after execution. A prompt instruction,
 command blacklist, clean PATH or hidden Docker CLI cannot contain scripts,

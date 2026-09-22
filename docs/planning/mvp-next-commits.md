@@ -1,15 +1,15 @@
 # Next development work
 
 RF-HOST-035: **PARTIAL**, 2026-09-23. The
-[terminal-evidence slice](../operations/host-lifecycle-safety.md#terminal-evidence-after-output-rejection)
-is DONE: output-consumer rejection now preserves genuine owned-Job cleanup and
-the original fixed failure in the existing supervisor/budget evidence. It remains
-a failed, consumed attempt; no new supervisor or real-provider authority.
-**Next single atom:** bind one versioned host-containment admission receipt to
-exact runtime/profile/config and task/Ready/Writer identity at the existing
-pre-spawn boundary, with synthetic denial tests. Windows Job lifetime proof
-cannot substitute for OS host-control isolation. Stop after this slice; no
-real provider, model, Soar task, production connection, push or deployment.
+[host-containment binding slice](../operations/host-lifecycle-safety.md#host-containment-admission-binding)
+is DONE: the existing pre-spawn boundary consumes opaque, versioned proof bound
+to runtime/profile/config, task/Ready/Writer and filesystem scope. Only the
+closed synthetic program issues fixture-only evidence; no real-provider issuer
+exists. Job cleanup does not prove OS isolation; six flags remain false.
+**Exactly one next atom:** read-only qualification of one Windows OS containment
+candidate against filesystem/credential/process/network/host-control requirements,
+returning supported/BLOCKED before installation or a provider trial. Stop after
+this slice; no model, Soar task, production connection, push or deployment.
 
 Manual Hermes owner tooling: **points 2A/2B/3 DONE**, 2026-09-23. The separately
 authorized [final manual smoke](../architecture/hermes-desktop-ollama-profile-contract.md#final-manual-smoke-and-exact-model-admission)

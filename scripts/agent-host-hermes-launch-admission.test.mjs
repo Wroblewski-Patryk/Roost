@@ -42,7 +42,7 @@ test("genuine same-attempt policy qualifies without activation or spawn; public 
     assert.deepEqual(Object.keys(r).sort(), ["schemaVersion", "policyQualified", "activationAuthorized", "spawnStarted", "scope", "identityDigest",
       "readyRevision", "inputSeal", "stdinDigest", "startupDigest", "ownerAttestationDigest", "budgetDigest", "nativeBoundaryDigest", "launcherDigest",
       "launcherSourceDigest", "installedExecutableVerified", "authSessionObserved", "futureCleanupProven", "residualRiskPolicy", "digest"].sort());
-    assert.throws(() => prepareProviderLaunch({ ...x.projection, launchAdmission: r, activationAuthorized: true }, consume(x)), /hermes_public_launch_contract_unqualified/);
+    assert.throws(() => prepareProviderLaunch({ ...x.projection, launchAdmission: r, activationAuthorized: true }, consume(x)), /host_containment_admission_blocked/);
     assert.throws(() => assertHermesLaunchAdmission(r, x.projection));
     assert.throws(() => assertProviderInputAvailable(x.envelope));
     assert.throws(() => qualifyHermesLaunch(x.projection, x.proofs));

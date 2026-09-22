@@ -1,14 +1,14 @@
 # Foundation requirements traceability
 
-RF-HOST-035 [terminal-evidence retention](../operations/host-lifecycle-safety.md#terminal-evidence-after-output-rejection)
-(2026-09-23): **slice DONE; overall PARTIAL**. The existing native transport and
-quiet supervisor retain correlated cleanup/exit evidence after output-consumer
-rejection, without preserving raw output or granting retry/success. Missing
-native proof remains fail-closed. Synthetic process coverage includes both Job
-versions, crash, timeout/silent tree, cancel, flood and descendant cleanup.
-Host-containment admission for real providers remains unqualified; all six flags
-stay false. The next atom is its exact pre-spawn receipt binding and synthetic
-denial tests, not real execution or a routing/model registry.
+RF-HOST-035 [host-containment binding](../operations/host-lifecycle-safety.md#host-containment-admission-binding)
+(2026-09-23): **slice DONE; overall PARTIAL**. Versioned opaque one-attempt
+evidence binds runtime/profile/config, workspace/task, Ready/claim/Writer,
+filesystem scope and a host-capability allowlist at the existing pre-spawn boundary.
+Only the existing fixed program issues `closed_fixture_only` evidence; Job cleanup,
+copied/tampered/expired proof and scope expansion never admit a real provider.
+Prior terminal evidence and B28 recovery remain intact; six flags stay false.
+Exactly one next atom: read-only qualification of one Windows OS containment
+candidate against the missing guarantees, before installation/live trial.
 
 [Desktop/profile/Ollama inventory](hermes-desktop-ollama-profile-contract.md)
 (2026-09-22) adopts **separate existing runtimes**, rejecting shared-runtime admission.
