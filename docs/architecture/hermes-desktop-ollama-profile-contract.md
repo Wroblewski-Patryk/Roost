@@ -8,6 +8,11 @@ Desktop-delivered runtime as separate ownership domains. Do not install, copy,
 merge venv/dist-info, repair or create profiles. Keep one future Ollama server
 and model-weight store outside both profiles.
 
+The subsequent point-2A authority conditionally permits **one additional,
+physically independent private Desktop backend installation** after all its
+source/build/isolation gates pass. It does not authorize a second model-weight
+copy. The preflight below stopped before exercising that installation authority.
+
 This does **not** establish physical isolation of the current Windows views.
 Some descendants overlap while others differ. Manual Desktop launch stays
 denied until the point-2 boundaries below are proven. Roost's
@@ -181,6 +186,76 @@ Any shared base interpreter needs an explicit immutable ownership/update boundar
 it does not make a shared venv safe. Roles, hierarchy, delegation, task context
 and review remain in Roost. Do not create a Hermes profile per agent. Profile
 separation is not an OS sandbox.
+
+## Point 2A: exact source identified, provisioning BLOCKED
+
+Source-only preflight on 2026-09-22 established a more precise fresh-install
+target than the earlier runtime inventory:
+
+- Packaged `install-stamp.json` names commit
+  `a3d7f9ae257d5db6bb9759a10c437d786eec1610`. In the installed main bundle,
+  `installRefForStamp()` selects that exact commit; `buildPinArgs()` supplies
+  `-Commit` when `pinCommit` is true. `runBootstrap()` sets `pinCommit` for a
+  fresh destination without an existing Git checkout. Existing checkouts take
+  a different, unpinned path, which is not an acceptable provisioning shortcut.
+- That commit is present in the local object database. Recomputing its Git
+  commit-object SHA-1 matches the stamp. Its tree is
+  `971ce7f3edcdbb0ebed9a1a433493eda2e51d3d7`: 14,718 regular source entries,
+  183,879,887 logical bytes, no symlink/submodule entries. Nothing was extracted.
+- At this exact commit, both the package initializer and project metadata
+  declare **Hermes 0.21.3**. The console entrypoint is `hermes_cli.main:main`;
+  `hermes_cli/subcommands/dashboard.py` declares `serve`, `--host`, `--port 0`
+  and the headless JSON-RPC/WebSocket backend used by Desktop. This identifies
+  the upstream-selected source and minimum static interface, not a live
+  protocol/behavior qualification. Installer stage protocol `1` is not a
+  substitute for a Desktop/backend wire-protocol proof.
+
+The deterministic build gate fails **before staging**. At that commit,
+`[build-system].requires` is `["setuptools==83.0.0", "wheel"]`. `uv.lock` contains
+setuptools `83.0.0`, but no `wheel` package/version/artifact hash; no wheel build
+constraint was found. The source explicitly requires wheel for its isolated
+build. An unconstrained resolver or an arbitrary cached wheel is not evidence
+of the requested exact locked build closure. No package-manager/install command
+or network download was attempted; the upstream installer also contains unlocked
+fallback tiers and was not executed.
+
+Exact source evidence (SHA-256 of Git blob bytes):
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `pyproject.toml` | `1cc8f282c7b77cd3f9ea7ea45be3eb58baa391f06dc8faff106682fb8d803744` |
+| `uv.lock` | `6caed1dea1418a3e244adf9c47f4f10bea4f221f8f72e65b926aa9f3ef71713b` |
+| `hermes_cli/subcommands/dashboard.py` | `cf78789c16e5b2e2183671711944cc230bda241726ca3420a4c0b519f7fc4193` |
+
+Free system-disk space was approximately 35.6 GiB. The unextracted source alone
+is about 175.4 MiB; a complete interpreter/venv/dependency size is not established.
+No final/private root, staging tree, venv, installation receipt, profile or
+launcher was created, so no rollback deletion was necessary. Destination ancestry,
+cross-launch-context visibility, dependency RECORD/license inventory and physical
+non-overlap of a new runtime were not qualified because that runtime does not exist.
+
+Hash-only profile readback still matches the preceding point-2 baseline for all
+349 regular files (3,351,013 bytes), including file identities/content hashes.
+The 45 comparable installation samples retain their physical identities, sizes
+and hashes from point 1; the eight absent entries remain absent. This is sampled
+installation evidence, not a full-file installation audit. No managed mutation
+or auth/log/session interpretation was performed.
+
+Before provisioning can resume, supply a reviewed exact build constraint and
+verified artifact provenance/hash for `wheel` (and close the full build/runtime
+dependency set), retaining the stamped source pin rather than choosing latest.
+The later isolated diagnostic must explicitly admit the manual `0.21.3` source
+identity; the existing managed-only `0.21.2` diagnostic is not its qualification.
+Only after a complete isolated build, file/import/RECORD/license/size/overlap
+checks, atomic publication and read-back receipt PASS is **point 2B** eligible
+for separate authorization. No 2B or model work starts from this refusal.
+
+Verification: all five backend-qualification Node tests passed, including three
+synthetic Python guard cases. The 443 local Markdown links, documentation budgets,
+added-text privacy scan and scoped whitespace check passed. All eight unrelated
+modified tracked files retained their baseline hashes; the unrelated untracked
+design artifact was not opened or staged. Full application validation and live
+runtime/UI/model tests were not run for this documentation-only result.
 
 ## Disk/resources and one model store
 

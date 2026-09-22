@@ -8,6 +8,9 @@ remain unqualified. No manual profile, provider admission or RF-HOST-035 closure
 Point-2 preflight is **BLOCKED before private creation**: four candidate mutable
 files resolve to managed files and updater/bootstrap/fallback confinement is
 unqualified. No manual profile, launcher or point-3 work was created/started.
+Point 2A identifies the packaged fresh-install backend pin (Hermes 0.21.3) but
+is **BLOCKED before staging** on the unpinned/unlocked `wheel` build requirement.
+No additional installation or receipt exists; point 2B remains ineligible.
 
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,

@@ -10,6 +10,9 @@ zmienia poniższych bramek. Punkt 2: **BLOCKED przed utworzeniem profilu** — �
 preflight potwierdził cztery wspólne pliki fizyczne oraz brak kwalifikowanej
 izolacji updater/bootstrap/fallback. Nie utworzono profilu ani launchera; punkt 3
 pozostaje niedopuszczony.
+Punkt 2A: **BLOCKED przed stagingiem**. Pakiet Desktop wskazuje dokładny commit
+backendu 0.21.3, lecz build wymaga nieprzypiętego `wheel`, którego brak w `uv.lock`.
+Nie utworzono dodatkowej instalacji; punkt 2B nie jest gotowy.
 
 ## Stały program syntetyczny — RF-RUNTIME-005B30
 
