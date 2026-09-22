@@ -1,5 +1,20 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+Owner amendment v14, 2026-09-23: the
+[trusted provider pilot](../architecture/trusted-provider-pilot-v1.md) accepts
+Windows-account residual risk for exactly pinned Codex and managed local Hermes.
+Full OS isolation/LPAC is not a pilot prerequisite for these two trusted classes.
+Arbitrary provider admission, full isolation and full autonomy remain false.
+Exact private acceptance, runtime/profile/model pins, task/Ready/Writer, Job,
+checkpoints, review/recovery and separate release authority remain mandatory.
+Local Hermes requires separate managed Ollama/model admission; owner manual
+profiles and remote fallback are excluded. This supersedes the mandatory LPAC
+investigation and historical Hermes-first ordering for this narrow pilot only.
+It authorizes source/synthetic implementation, not a real-provider invocation.
+The decision reader and fixture policy are implemented; real launch integration
+remains PARTIAL and all six public flags remain false. Earlier amendments below
+retain their exact scope; none supplies a reusable execution grant.
+
 Current B28 amendment: [original ownership before resume](../architecture/fixture-ownership-before-resume.md).
 Native coding uses gated Windows Job v2 with durable Ready/origin/actual-Job
 bindings before acknowledgment and ResumeThread. Ordinary reconciliation can

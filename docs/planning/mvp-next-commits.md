@@ -1,5 +1,17 @@
 # Next development work
 
+RF-HOST-035 trusted pilot, 2026-09-23: **PARTIAL for real execution**.
+The [accepted owner contract](../architecture/trusted-provider-pilot-v1.md)
+removes full OS isolation as a prerequisite for exactly pinned trusted Codex and
+managed local Hermes. Private signed acceptance, drift/revocation checks and
+both fixture-only positive paths are implemented at the existing containment
+boundary. Real Codex pin/Job integration and managed Hermes model admission are
+not complete; independent budget/recovery/release gates and six false flags remain.
+**Exactly one next atom:** bind one genuine Codex runtime pin to this decision
+and existing Windows Job v2 with synthetic launch/denial checks. No provider run,
+new supervisor, automatic fallback or relaxation of budget/authority gates.
+Stop after the current slice. The prior LPAC/broker proposal below is superseded.
+
 RF-HOST-035: **PARTIAL; LPAC candidate BLOCKED**, 2026-09-23. The
 [read-only qualification](../operations/host-lifecycle-safety.md#lpac-read-only-qualification)
 evaluates eight dimensions using local OS/API/DACL/firewall evidence and Microsoft
@@ -9,7 +21,7 @@ provider. It could use one checkout, but requires explicit runtime/scratch
 exceptions and a qualified resource policy. No host settings or private profiles
 changed; no provider ran. The prior containment binding is DONE, fixture-only;
 no real-provider issuer exists and six flags remain false.
-**Exactly one next atom (proposal):** source-only feasibility of a credential-free,
+**Superseded proposal:** source-only feasibility of a credential-free,
 raw-network-disabled LPAC tool executor with the existing trusted Worker mediating
 narrowly authorized inference/network operations. Assess current provider protocol
 compatibility and one-checkout resource exceptions; do not implement a broker,

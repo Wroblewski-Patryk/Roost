@@ -21,7 +21,7 @@ const { readyContextRevision, readyContextQuery } = require("../../../scripts/li
 };
 // Preserve native ESM loading in this CommonJS build. The specifier is a fixed
 // repository module, never request data; the host and API use one validator.
-const loadESM = new Function("specifier", "return import(specifier)") as (specifier: string) => Promise<{ validateExecutionPacket: (...args: any[]) => unknown; executionContractSchema: { shape: any; safeParse: (value: unknown) => { success: boolean; data?: any } }; executionEditorContractSchema: { safeParse: (value: unknown) => { success: boolean; data?: any } } }>;
+const loadESM = new Function("specifier", "return import(specifier)") as (specifier: string) => Promise<{ validateExecutionPacket: (...args: any[]) => unknown; codexEditorModels: ReadonlyArray<{ id: string; efforts: readonly string[] }>; executionContractSchema: { shape: any; safeParse: (value: unknown) => { success: boolean; data?: any } }; executionEditorContractSchema: { safeParse: (value: unknown) => { success: boolean; data?: any } } }>;
 const validation = loadESM(pathToFileURL(path.resolve(__dirname, "../../../scripts/lib/agent-host-execution-packet.mjs")).href);
 const object = (value: unknown): Record<string, any> => value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, any> : {};
 const wire = (value: unknown) => JSON.parse(JSON.stringify(value));
@@ -224,8 +224,7 @@ export async function readyEditorData(db: Prisma.TransactionClient, workspaceId:
   if (selected && !applications.some(app => app.id === selected)) return { error: "application_not_found" };
   const records = await db.companyRecord.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ applicationId: null }, ...(selected ? [{ applicationId: selected }] : [])] }, select: { id: true, title: true, applicationId: true, updatedAt: true }, orderBy: { updatedAt: "desc" }, take: 501 });
   const accepted = (await validation).executionEditorContractSchema.safeParse(pin.contract);
-  const modelSchema = (await validation).executionContractSchema.shape.modelSelection;
-  const modelShape = modelSchema.innerType().shape;
+  const models = (await validation).codexEditorModels;
   const author = pin.requestedByType === "user" && typeof pin.requestedById === "string" ? await db.workspaceMembership.findFirst({ where: { workspaceId, userId: pin.requestedById }, select: { user: { select: { name: true } } } }) : null;
   const active = await db.agentExecution.count({ where: { workspaceId, taskId, status: { in: ["queued", "claimed", "running", "waiting_for_approval"] } } });
   const [projects, goals, agents, managers, components, members, roleWorkers] = await Promise.all([
@@ -260,7 +259,7 @@ export async function readyEditorData(db: Prisma.TransactionClient, workspaceId:
     task: { id: task.id, title: task.title, status: task.status, project: task.project ? { id: task.project.id, name: task.project.name } : null, goal: task.goal ? { id: task.goal.id, title: task.goal.title } : null },
     agent: agent ? { id: agent.id, name: agent.name, role: agent.role, eligible: agent.type === "agent" && agent.status === "active", competencies: strings(agent.skillIndex), tools: strings(agent.toolIndex).filter(item => ["repository_read", "repository_write", "local_test", "local_commit", "remote_push", "deployment"].includes(item)), permissions: strings(agent.authorityScope).filter(item => ["repository_read", "repository_write", "local_test", "local_commit", "remote_push", "deployment"].includes(item)) } : null,
     applications, projects, goals, agents, applicationId: selected, activeExecution: active > 0, catalogTruncated: records.length > 500,
-    models: modelShape.model.options.map((id: string) => ({ id, efforts: modelShape.reasoningEffort.options.filter((reasoningEffort: string) => modelSchema.safeParse({ model: id, reasoningEffort }).success) })),
+    models,
     sources: records.slice(0, 500).map(item => ({ id: item.id, label: item.title, revision: item.updatedAt.toISOString(), applicationId: item.applicationId })),
     procedures: context.procedures.map(item => ({ id: item.id, label: item.name, revision: String(item.version), eligible: item.status === "active" })),
     dependencies: context.dependencies.map(item => ({ id: item.id, label: item.dependencyType, revision: item.updatedAt.toISOString(), eligible: item.status !== "blocked" })),

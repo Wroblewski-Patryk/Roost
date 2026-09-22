@@ -1,5 +1,14 @@
 # Architecture Source Of Truth
 
+RF-HOST-035 owner amendment v14 (2026-09-23):
+[trusted provider pilot](trusted-provider-pilot-v1.md) accepts account-level
+residual risk for exactly pinned Codex and managed local Hermes; full OS
+isolation is not their pilot prerequisite. Signed private acceptance and its
+fixture-only admission are implemented; real runtime/model integration remains
+PARTIAL. Task/Ready/Writer, Job, budget, recovery and release gates stay required;
+all six flags and arbitrary-provider/full-isolation/full-autonomy admission stay
+false. This is the current next-step authority over the historical notes below.
+
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,
 trwały resume receipt/ack, dokładnie 22 bajty wyniku, niezależne review i cleanup.

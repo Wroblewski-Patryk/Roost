@@ -171,7 +171,10 @@ export async function runFixedExecution(grant, { signal, remainingMs }) {
   cleanupDurableNativeFixture(s.ownership); recordNativeReviewCleanup(reviewed.capability, s.envelope.identity.executionId); releaseApplicationLease(s.lease);
   const evidence = { program: fixed.program, sourceDigest: fixed.sourceDigest, inputSeal: s.envelope.seal, authoritySpent: true, resumed: job.resumed,
     containment: { schemaVersion: s.containmentReceipt.schemaVersion, evidenceClass: s.containmentReceipt.evidenceClass,
-      bindingDigest: s.containmentReceipt.bindingDigest, systemIsolation: false, realProviderAdmitted: false },
+      bindingDigest: s.containmentReceipt.bindingDigest, systemIsolation: false, realProviderAdmitted: false,
+      ...(s.containmentReceipt.mode ? { mode: s.containmentReceipt.mode, residualRiskAccepted: true,
+        arbitraryProviderAdmission: false, fullAutonomy: false, decisionId: s.containmentReceipt.binding.trustedPilot.decisionId,
+        decisionRevision: s.containmentReceipt.binding.trustedPilot.revision } : {}) },
     effectBytes: bytes.length, effectDigest: sha(bytes), expectedEffectDigest: sha(fixed.output), job, review: reviewed.publicReceipt,
     reviewDigest: reviewed.receiptDigest, cleanup: { fixtureAbsent: !fs.existsSync(s.root), applicationLeaseReleased: true, activeProcesses: job.activeProcesses }, systemIsolation: false };
   if (!passed) throw Object.assign(Error("synthetic_attempt_failed"), { retryable: false, details: { syntheticEvidence: evidence } });

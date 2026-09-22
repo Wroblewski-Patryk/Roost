@@ -62,6 +62,17 @@ and `ROOST_API_TOKEN`. It does not run on startup or deployment.
 Company-specific one-off direct-database importers are not shipped publicly.
 Their removal from Git does not remove any previously imported database records.
 
+## Trusted provider pilot
+
+The [trusted-provider pilot contract](../architecture/trusted-provider-pilot-v1.md)
+uses a private signed risk decision and public-key anchor in the existing Writer
+state directory. It contains installation/workspace IDs and exact scoped pins,
+never distributed owner data. Provisioning/signing is explicit operator work;
+startup never creates or renews acceptance. The current implementation qualifies
+only synthetic fixtures, not real provider activation. Revocation and any binding
+change invalidate prepared attempts; account-level tampering remains acknowledged
+residual risk. No signing key belongs in the checkout or provider environment.
+
 ## Public history
 
 Cleaning the current files does not remove prior Git commits, cached assets,

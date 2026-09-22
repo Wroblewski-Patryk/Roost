@@ -1,5 +1,14 @@
 # Local Codex Agent Runtime
 
+RF-HOST-035 owner amendment v14 (2026-09-23):
+[trusted provider pilot](trusted-provider-pilot-v1.md) replaces full OS isolation
+as a prerequisite for exactly pinned Codex/managed local Hermes with explicit
+private acceptance of Windows-account residual risk. Fixture policy admission
+is implemented in the existing containment boundary; real providers remain
+blocked by missing genuine runtime/model/launch authority and independent gates.
+One Writer, Job, Ready, budget, checkpoint, recovery/review and release rules
+remain. No provider was started and all six public flags remain false.
+
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,
 trwały resume receipt/ack, dokładnie 22 bajty wyniku, niezależne review i cleanup.
@@ -297,8 +306,10 @@ requires reread/replan and never undoes external changes.
 
 [RF-HOST-035 host lifecycle safety](../operations/host-lifecycle-safety.md)
 adds an independent Worker/API denial before recovery, lock, claim and spawn:
-current providers lack enforced isolation from Docker/WSL host control. Health
-and owner maintenance decisions cannot override it. Non-retryable maintenance
+current providers lack a complete admitted launch chain. The
+[trusted pilot amendment](trusted-provider-pilot-v1.md) accepts OS residual risk
+for two exact trusted classes but does not qualify their missing runtime/model
+and launch evidence. Health and maintenance decisions cannot override admission. Non-retryable maintenance
 failures retain checkpoints and the writer lock; there is no automatic repair.
 
 

@@ -1,5 +1,17 @@
 # Foundation requirements traceability
 
+RF-HOST-035 [trusted provider pilot v1](trusted-provider-pilot-v1.md), 2026-09-23:
+**real pilot PARTIAL; signed decision and fixture policy qualification DONE**.
+Owner amendment v14 accepts Windows-account residual risk for exactly pinned
+Codex and managed local Hermes, superseding full OS isolation as their pilot
+prerequisite. Private signed decision/physical anchor and runtime/profile/model/
+task scope are rechecked in the existing one-attempt containment registry;
+revocation/drift and copied JSON deny. Both positive paths execute only the fixed
+fixture with existing Job/review/cleanup. No real runtime/model admission issuer
+or public activation was added; all six flags remain false. Next atom: one genuine
+Codex pin bound to this decision and existing Job v2, synthetic checks and all
+independent gates retained. LPAC/broker proposals below are historical.
+
 RF-HOST-035 [LPAC read-only qualification](../operations/host-lifecycle-safety.md#lpac-read-only-qualification)
 (2026-09-23): **candidate BLOCKED; overall PARTIAL**. Eight required dimensions
 are mapped to Microsoft primary sources and bounded local OS/API/DACL/firewall
@@ -8,7 +20,7 @@ credential-free provider authentication or endpoint-specific network policy.
 One checkout is conceptually compatible, with explicit runtime/scratch exceptions;
 no host changes or provider trials were made. Existing opaque pre-spawn binding
 remains DONE and fixture-only; no real-provider issuer exists. Terminal evidence,
-B28 recovery and all six false flags remain unchanged. Exactly one next atom:
+B28 recovery and all six false flags remain unchanged. Superseded next proposal:
 source-only feasibility of a credential-free, raw-network-disabled LPAC tool
 executor with the existing Worker mediating narrowly authorized inference/network
 operations. This is an architecture proposal to evaluate, not an adopted adapter.

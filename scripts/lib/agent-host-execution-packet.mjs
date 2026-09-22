@@ -2,7 +2,8 @@ import { typedOperationSchema, nativeBoundaryContractSchema } from "./agent-host
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import { normalizeGitRemote } from "./agent-host-workspace-guard.mjs";
-import { modelSelectionSchema } from "./agent-host-model-policy.mjs";
+import { taskModelSelectionSchema } from "./agent-host-model-policy.mjs";
+export { codexEditorModels } from "./agent-host-model-policy.mjs";
 import { singleTaskSchema, singleTaskIssues } from "./agent-host-single-task.mjs";
 import { taskRolesSchema, roleAuthoritiesSchema, taskRoleIssues } from "./agent-host-task-roles.mjs";
 
@@ -23,7 +24,7 @@ export const executionContractSchema = z.object({
   objective: z.object({ outcome: text, goalId: id }).strict(),
   scope: z.object({ allowed: texts, forbidden: texts }).strict(),
   assignment: z.object({ agentId: id, role: text, competencies: texts }).strict(),
-  modelSelection: modelSelectionSchema,
+  modelSelection: taskModelSelectionSchema,
   context: z.object({ company: refs, product: refs, technical: refs }).strict(),
   procedures: optionalSet(ref),
   skills: optionalSet(z.object({ name: text, version: text }).strict()),
@@ -64,7 +65,11 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
   const parsed = packetSchema.safeParse(packet);
   if (!parsed.success) {
     // Never forward Zod messages, input values, unknown property names or raw payloads.
-    for (const issue of parsed.error.issues) add(issue.path.join(".") || "packet", issue.code === "invalid_type" && issue.received === "undefined" ? "missing" : "invalid");
+    for (const issue of parsed.error.issues) {
+      const missing = issue.code === "invalid_type" && issue.received === "undefined"
+        || issue.code === "invalid_union" && issue.path.reduce((value, key) => value?.[key], packet) === undefined;
+      add(issue.path.join(".") || "packet", missing ? "missing" : "invalid");
+    }
   } else {
     const p = parsed.data, c = p.contract, task = taskContext?.task, agent = task?.assignedWorkforceEntity;
     if ([...c.access.tools, ...c.access.permissions].some(op => ["local_commit", "remote_push", "deployment"].includes(op)))

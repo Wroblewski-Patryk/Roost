@@ -1,5 +1,16 @@
 # Gotowość połączenia Roost z agentami
 
+Aktualizacja właściciela, 2026-09-23: **trusted-provider pilot — PARTIAL**.
+[Akceptacja ryzyka i kontrakt](trusted-provider-pilot-v1.md) obejmują dokładnie
+przypiętego Codexa oraz managed Hermes local bez wymogu pełnej izolacji OS.
+Walidacja podpisanej prywatnej decyzji i dodatnie testy obu klas na stałym
+programie syntetycznym są DONE. Realny start nadal jest zablokowany: Codex nie
+ma kompletnego genuine pin/Job handoff, a Hermes local — managed model admission.
+Nie zmienia to bramki budżetu, Ready/Writer, recovery i release. Sześć flag nadal
+false; nie uruchomiono providera. Następny atom: powiązać jeden rzeczywisty pin
+Codexa z istniejącą decyzją i Windows Job v2, z testami syntetycznymi i zachowaniem
+pozostałych bramek. Dawna propozycja LPAC/brokera poniżej jest zastąpiona tą decyzją.
+
 RF-HOST-035, 2026-09-23: **PARTIAL; kandydat LPAC — BLOCKED**.
 [Kwalifikacja read-only](../operations/host-lifecycle-safety.md#lpac-read-only-qualification)
 objęła osiem granic, Windows 11 Home 25H2, statyczny odczyt eksportów API,
@@ -9,7 +20,7 @@ endpointów. Nie ma zakwalifikowanych uprawnień zasobów, kompatybilnego startu
 providera ani wystawcy dowodu. Jeden checkout jest możliwy koncepcyjnie;
 potrzebne byłyby jawne wyjątki dla runtime i ograniczony stan prywatny.
 Powiązanie pre-spawn pozostaje DONE, z dowodem tylko dla stałego programu
-syntetycznego. Sześć flag pozostaje false. Dokładnie jeden następny atom to
+syntetycznego. Sześć flag pozostaje false. Historyczna propozycja następnego atomu to
 analiza źródłowa wykonalności podziału: executor narzędzi LPAC bez poświadczeń
 i surowej sieci, istniejący Worker pośredniczący w ściśle dopuszczonych operacjach.
 To propozycja do oceny, bez wdrożenia. Nie uruchomiono providera ani nie zmieniono

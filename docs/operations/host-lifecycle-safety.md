@@ -1,5 +1,15 @@
 # Windows Docker/WSL lifecycle safety (RF-HOST-035)
 
+Current owner amendment, 2026-09-23:
+[trusted provider pilot v1](../architecture/trusted-provider-pilot-v1.md).
+Exactly pinned Codex and managed local Hermes may use explicitly accepted
+Windows-account residual risk instead of full OS isolation. The private signed
+decision and fixture policy qualification are DONE; real pilot integration is
+PARTIAL. Existing Job, task/Ready/Writer, scope, budget, checkpoint, recovery and
+release gates remain; no real provider or arbitrary code class is admitted.
+The prior LPAC qualification below is historical and is no longer the next pilot
+prerequisite. Its broker proposal is superseded, not implemented.
+
 RF-RUNTIME-005C [Windows owned-job backend](../architecture/windows-owned-process-job-v1.md)
 qualifies process lifetime/cleanup with native fixtures. It is not a filesystem,
 credential or host-lifecycle security sandbox and does not remove this independent
@@ -94,7 +104,7 @@ are substantive gaps, not merely the absence of permission to run a test today.
 Low integrity, restricted tokens and Job receipts do not fill them. All six
 readiness/authority flags remain false; no real-provider admission follows.
 
-**Exactly one next atom (proposal only):** source-only feasibility of a
+**Historical next atom (superseded by the trusted pilot amendment):** source-only feasibility of a
 credential-free, raw-network-disabled LPAC tool executor, with the existing
 trusted Worker mediating narrowly authorized inference/network operations.
 Determine whether the current provider protocols permit that split, one physical
