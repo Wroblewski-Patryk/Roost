@@ -58,6 +58,16 @@ runtime i stan `manual-smoke-blocked` pozostały niezmienione; cleanup potwierdz
 Kontroler zachowuje ograniczone logi i przeszedł trzy testy syntetyczne. Nie
 powtórzono smoke Hermes. Punkt 3 i wszystkie flagi Roost nadal zablokowane.
 
+Końcowy, osobno autoryzowany [manual smoke](hermes-desktop-ollama-profile-contract.md#final-manual-smoke-and-exact-model-admission):
+**punkt 3 DONE, profil `manual-ready`** (2026-09-23). Preflight: 15,143 GiB RAM,
+36,216 GiB zapasu commit i 11,097 GiB dysku. Jedno lokalne zapytanie Hermes
+zwróciło poprawne krótkie potwierdzenie po 36,469 s; zero narzędzi/fallbacków,
+context 2048, reasoning low, 25 output tokens. Dokładny digest został dopuszczony
+wyłącznie do profilu ręcznego. Oba natywne Jobs: exit 0, cleanup i zero procesów;
+model/runtime/protected roots bez zmian, końcowy launcher check PASS. Wcześniejsze
+blokady są historią. To nie dopuszcza providera Roost: sześć flag nadal false,
+Electron Desktop i integracja pozostają nieuruchomione.
+
 ## Stały program syntetyczny — RF-RUNTIME-005B30
 
 **PASS dla zamkniętej klasy syntetycznej**, 2026-09-17. Publiczne API i Worker

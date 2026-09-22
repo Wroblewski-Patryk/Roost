@@ -54,6 +54,16 @@ tests; the real load was not repeated. Native cleanup passed, model/profile/
 runtime/state remained unchanged, and no Hermes smoke or Roost admission occurred.
 Point 3 stays blocked pending a separately authorized smoke with resource margins.
 
+The separately authorized [final manual smoke](hermes-desktop-ollama-profile-contract.md#final-manual-smoke-and-exact-model-admission)
+completed **manual point 3 DONE** on 2026-09-23. One guarded local Hermes request
+returned the expected short acknowledgement in 36.469 s, with context 2048,
+reasoning low, 25 output tokens and no tools/remote fallback. Resource thresholds
+passed immediately before inference. Exact model digest admission is limited to
+the private `manual-ready` profile; both native Jobs exited 0 with cleanup and no
+remaining processes. Full protected/runtime/model fingerprints and launcher
+check passed. The historical cause remains inconclusive. No managed Roost
+admission, six-flag change, Electron Desktop or automatic continuation follows.
+
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,
 trwały resume receipt/ack, dokładnie 22 bajty wyniku, niezależne review i cleanup.

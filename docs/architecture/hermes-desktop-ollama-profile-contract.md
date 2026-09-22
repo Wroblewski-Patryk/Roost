@@ -1,5 +1,11 @@
 # Hermes Desktop, profile isolation and local model routing
 
+**Current manual status, 2026-09-23: points 2A/2B/3 DONE.** The separately
+authorized [final manual smoke](#final-manual-smoke-and-exact-model-admission)
+passed; private state is `manual-ready`, with exact-digest admission for the
+manual no-tool profile only. Earlier blocked attempts below are historical.
+Managed Roost admission, all six readiness flags and Electron Desktop are unchanged.
+
 ## Decision: two existing runtimes
 
 **Decision complete, 2026-09-22: reject sharing the managed Hermes runtime with
@@ -1330,6 +1336,97 @@ budgets (103,208 default-context bytes; three active planning files, largest
 `design-qa.md` was neither read nor staged. Full application validation and
 managed-provider trials were not run because this atom changes only the manual
 diagnostic controller and its documentation.
+
+## Final manual smoke and exact-model admission
+
+**2026-09-23 — DONE for manual point 3.** A new explicit authority permitted one
+final Hermes smoke after the owner freed resources, with no download and no
+repeat of the load-only diagnostic. The
+[final controller](../../scripts/final-hermes-manual-smoke.mjs) verified the
+blocked private state, pinned runtime/profile and previous receipt hashes, then
+verified all five installed model blobs. Manifest and local API digest matched
+`sha256:17052f91a42e97930aa6e28a6c6c06a983e6a58dbb00434885a0cf5313e376f7`.
+The existing single store contains 13,793,441,244 model bytes; no second copy.
+
+| Preflight immediately before inference | Required minimum | Observed |
+| --- | --- | --- |
+| Available physical RAM | 12 GiB | 15.143 GiB |
+| Windows commit headroom | 18 GiB | 36.216 GiB |
+| Free disk | 6 GiB | 11.097 GiB |
+
+There was no existing Ollama process/listener. A fresh owned local server used
+loopback only, cloud disabled, one parallel request, context 2048 and a 30-minute
+load-stall limit. The pinned launcher `--check` passed before the turn. The
+Hermes Python controller used process-only 30-minute API/read/stale limits,
+a 35-minute smoke Job and a 45-minute server Job. The fixed Polish prompt
+contained no company data and required a one-word acknowledgement; its semantic
+verdict was **correct**. No full conversation or raw log is stored in this repo.
+
+Exactly **one actual local `/v1/chat/completions` request** returned HTTP 200.
+Hermes completed in **36.469 seconds**, reporting 1,184 input and 25 output
+tokens, within the 256-output-token cap and `reasoning_effort=low`.
+Context remained 2048; tool count was zero. Request and socket guards admitted
+only the loopback endpoint, with no remote fallback or denied network/write
+attempt. Four startup subprocess attempts were blocked before spawn. The
+synthetic fixture traced these to Windows/Python environment probes, not agent
+tools. Denied attempts do not count as executed child processes; the deny-all
+process guard remained active throughout.
+
+| During the real smoke | Observed |
+| --- | --- |
+| Minimum sampled available RAM | 6,289,690,624 bytes (5.86 GiB) |
+| Minimum sampled commit headroom | 24,125,136,896 bytes (22.47 GiB) |
+| Maximum sampled committed memory | 35,673,792,512 bytes; 59.66% of limit |
+| Maximum sampled pagefile use / allocation | 612 / 24,576 MiB |
+| Model runner peak sampled working set / private bytes | 10,708,254,720 / 15,369,580,544 |
+| Hermes Python peak sampled working set | 150,241,280 bytes |
+| Model residency / GPU residency | 14,048,884,160 / 4,251,325,562 bytes |
+| Final available RAM / commit headroom / disk | 15.741 / 36.831 / 11.084 GiB |
+
+Ten resource samples included the owned server, model runner, Hermes Python and
+their descendants. Residency was mixed CPU/GPU and the resident digest matched.
+The server stayed healthy until the controller explicitly stopped it. The server
+child recorded `exitCode=null`, `signal=SIGTERM`, `controllerStopRequested=true`;
+both native Jobs recorded exit 0, `root_exit`, cleanup true and zero active
+processes. The final process sample was empty. Raw server output was 1,915
+stdout / 29,678 stderr bytes, continuously drained without an output-driven stop.
+
+Full managed/hermes-pilot/manual-runtime fingerprints, profile contents and
+physical separation passed postflight. All model blobs were hashed again; the
+seven-file store and exact manifest were unchanged. New temporary profile
+artifacts and the native controller were removed after proven process cleanup.
+Only after these checks did the private state become `manual-ready`, with
+`model.status=admitted`, `admitted=true` and scope
+`manual-no-tools-local-exact-digest`. Its launcher hash binding was refreshed;
+the copied launcher passed a final offline `--check` with the admitted state.
+The private help text was updated to the ready status and read back; historical
+receipts remain intact.
+
+Private evidence identities:
+
+- Final smoke receipt SHA-256: `92894f15b2028f39d85b145ffd20dc12fbff244b708511e5dd775a697f846a43`.
+- Admitted state SHA-256: `326318898a19855cf5a76d4d779b954596d1ac26e9fa6c32898d6e8705d4dbbe`.
+- One bounded raw log, outside the repository: 32,629 bytes, SHA-256 `de308d11681a720d707a3ac6086aec929a02865760d391cb7921fa19bddd625a`.
+
+Three native/controller synthetic tests, six Python request-boundary tests and
+the full-runtime in-memory fixture passed. The fixture's initially stricter
+verdict incorrectly treated blocked environment probes as successful subprocess
+execution; the verdict was corrected while retaining the same deny-all guard,
+then verified before the sole real inference. No real retry was performed.
+Full application validation and managed-provider trials were not run; those
+surfaces were not changed. No global configuration, model weights, runtime,
+managed admission or six readiness flags changed. No Electron Desktop,
+interactive agent, Roost integration, push or deployment was started.
+
+**Next step:** the owner may decide on manual use of this qualified profile.
+The test restored the initially stopped server state; no service was left
+running. Any Roost connection or Electron Desktop work remains a separate task.
+This successful smoke does not establish the historical failure's cause.
+
+Final scoped checks passed: JavaScript syntax, whitespace/privacy, 509 local
+documentation links and documentation budgets (103,208 default-context bytes;
+three planning files, largest 23,699 bytes). The eight unrelated dirty-file
+hashes were preserved and `design-qa.md` was neither read nor staged.
 
 ## Disk/resources and one model store
 

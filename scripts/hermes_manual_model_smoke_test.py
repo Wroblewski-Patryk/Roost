@@ -43,6 +43,11 @@ class RequestBoundary(unittest.TestCase):
             with self.subTest(changes=changes), self.assertRaises(PermissionError):
                 self.call({**self.payload, **changes})
 
+    def test_reasoning_must_remain_low(self):
+        for value in [None, 'medium', 'high']:
+            with self.subTest(value=value), self.assertRaises(PermissionError):
+                self.call({**self.payload, 'reasoning_effort': value})
+
     def test_fixture_advertises_large_model_window(self):
         status, metadata = smoke.fixture_metadata('/api/show')
         self.assertEqual(status, 200)

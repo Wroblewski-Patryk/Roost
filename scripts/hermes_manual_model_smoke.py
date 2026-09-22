@@ -32,6 +32,8 @@ def request_facts(method, url, content, inference_used):
         context = payload.get('num_ctx', (payload.get('options') or {}).get('num_ctx', 2048))
         if not isinstance(context, int) or not 1 <= context <= 2048:
             raise PermissionError('context_budget')
+        if payload.get('reasoning_effort') != 'low':
+            raise PermissionError('reasoning_budget')
         row.update(model=payload['model'], toolCount=0, stream=bool(payload.get('stream')),
                    outputLimit=output, reasoningEffort=payload.get('reasoning_effort'), contextLimit=context)
     elif not (method == 'GET' and parsed.path in {'/v1/models', '/api/tags', '/api/v1/models',
@@ -81,6 +83,10 @@ def run(args):
             raise PermissionError('datagrams_disabled')
         if event.startswith('subprocess.') or event in {'os.system', 'os.posix_spawn', 'os.exec', 'os.spawn'}:
             metrics['deniedProcesses'] += 1
+            if fixture:
+                metrics.setdefault('fixtureDeniedProcessFrames', []).append([
+                    {'file': Path(f.filename).name, 'function': f.name}
+                    for f in traceback.extract_stack()[-7:-1]])
             raise PermissionError('no_child_processes')
         targets = []
         if event == 'open':
@@ -123,6 +129,10 @@ def run(args):
 
     def send(client, request, **kwargs):
         row = inspect(request.method, request.url, request.content)
+        if 'model' in row:
+            # Process-local smoke patience, including SDK connect/read timeouts.
+            request.extensions['timeout'] = dict(connect=1800.0, read=1800.0, write=1800.0, pool=1800.0)
+            row['minimumTimeoutSeconds'] = 1800
         if fixture:
             if row['route'] == '/v1/chat/completions':
                 if row['stream']:
@@ -157,6 +167,10 @@ def run(args):
     httpx.AsyncClient.send = async_send
     requests.Session.send = requests_send
     logging.disable(logging.CRITICAL)
+    for name in ('HERMES_API_TIMEOUT', 'HERMES_API_CALL_STALE_TIMEOUT',
+                 'HERMES_STREAM_STALE_TIMEOUT', 'HERMES_LOCAL_STREAM_STALE_TIMEOUT',
+                 'HERMES_STREAM_READ_TIMEOUT'):
+        os.environ[name] = '1800'
     from hermes_cli.config import load_config
     from hermes_cli.fallback_config import get_fallback_chain
     from hermes_cli.runtime_provider import resolve_runtime_provider
@@ -174,7 +188,8 @@ def run(args):
         quiet_mode=True, save_trajectories=False, verbose_logging=False,
         skip_context_files=True, skip_memory=True, skip_background_review=True,
         session_db=None, fallback_model=None, checkpoints_enabled=False, platform='cli',
-        cwd=os.getcwd(), run_budget_seconds=540)
+        cwd=os.getcwd(), run_budget_seconds=2100)
+    agent.client.max_retries = 0
     # Upstream's helper-agent persistence switch: keep this synthetic turn out of history.
     agent._persist_disabled = True
     agent._skip_mcp_refresh = True
@@ -198,7 +213,7 @@ def run(args):
         responseCharacters=len(answer), durationSeconds=round(time.monotonic()-start, 3),
         inferenceRequests=inference, tools=0, provider='custom', model='gpt-oss:20b',
         inputTokens=result.get('input_tokens'), outputTokens=result.get('output_tokens'),
-        apiCalls=result.get('api_calls'), roostAuthority=False)
+        apiCalls=result.get('api_calls'), childProcessPolicy='deny-all-before-spawn', roostAuthority=False)
     return metrics
 
 
