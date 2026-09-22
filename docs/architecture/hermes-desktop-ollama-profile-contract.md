@@ -25,7 +25,10 @@ Python-version and dependency-tier fallbacks within one 20-minute stage-driver
 attempt. Only an external rerun remains disallowed for that atom. That attempt
 was started and rolled back as recorded below; it produced no qualified runtime.
 A separately authorized real retry using the corrected driver repeated the
-output-protocol failure and was also rolled back. No third attempt was made.
+output-protocol failure and was also rolled back. No third wrapper attempt was made.
+The subsequent direct-stage decision removes `wrapper_protocol` from the active
+manual path. Official stage exit codes plus filesystem postconditions and full
+postflight are authoritative; the old wrapper history below is retained as evidence.
 
 This does **not** establish physical isolation of the current Windows views.
 Some descendants overlap while others differ. Manual Desktop launch stays
@@ -516,6 +519,87 @@ readback matched 19,246 managed files (376,658,620 bytes), 349 profile files
 identity and final-runtime isolation were not qualified by the failed capture.
 The targeted real preflight/cleanup/readback is the evidence for this retry;
 unchanged synthetic suites were not needlessly rerun. Point 2B remains ineligible.
+
+### Direct official stages: repository exit 1, rollback complete
+
+The next authorization permits one logical installation with at most four
+sequential direct installer processes, in the same fixed stage order. The active
+[driver](../../scripts/install-hermes-manual.mjs) now invokes the verified official
+`install.ps1` directly using Windows PowerShell `-NoProfile -NonInteractive`,
+explicit `-Stage`, `-InstallDir`, `-HermesHome`, `-Commit` and `-Branch main`.
+It no longer invokes the repo-owned PowerShell stage wrapper or `validateFrames`.
+No raw-output line is required to be JSON. The previous wrapper and tests remain
+historical/inactive for this manual path; provider/managed rules are unchanged.
+
+The [direct-stage validator](../../scripts/lib/hermes-manual-direct.mjs) uses a
+shared 20-minute deadline, one invocation per stage and no external retry.
+Each process is owned by the existing native Windows Job. Captured stdout/stderr
+bytes are streamed into separate `wx`-created files under the owned private cache;
+existing native stream limits (128 KiB stdout, 32 KiB stderr per process) remain
+fail-closed. Output-limit/timeout/nonzero exit stops the sequence. Only byte
+counts, SHA-256, fixed error classifications and mentions of allowlisted official
+hosts leave those files. Host mentions are not a network connection audit.
+
+Stage admission requires native exit 0, clean process-tree termination and the
+matching filesystem condition: repository commit/tree and source presence;
+private compatible managed-Python executable; private venv/interpreter binding;
+then one Hermes distribution/version/entrypoint shim. Filesystem PASS is never
+inferred from a JSON frame. A nonzero stage does not run the later stages or try
+to repair upstream. Protected-tree and machine-setting readback, size limits,
+private clean environment and rollback ownership checks are retained.
+
+For a future successful four-stage run, the [RECORD/license inventory checker](../../scripts/hermes_manual_records.py)
+reads installed metadata without importing packages, validates RECORD target
+boundaries, existence, sizes and supplied hashes, rejects duplicate package
+names, and inventories license files. Unhashed RECORD entries are counted rather
+than described as cryptographically verified. Alongside minimal effective source
+import, exact source commit/tree/working-tree checks, physical non-overlap and
+full readback, the result goes into a private receipt published by same-directory
+rename and read back. No successful receipt was reached in this run.
+
+Observed direct-run outcome on 2026-09-22:
+
+| Stage | Native exit / filesystem qualification |
+| --- | --- |
+| `repository` | **1**; filesystem PASS not evaluated after nonzero exit |
+| `python` | Not started |
+| `venv` | Not started |
+| `dependencies` | Not started |
+
+Preflight found the known root absent and no previous owned process. Free space
+was 28,485,054,464 bytes (about 26.5 GiB), above 20 GiB. The official installer
+bytes/source pin and full protected baselines were refreshed before spawn.
+`repository` ended normally with exit 1 (`terminationReason=root_exit`), so the
+direct runner obtained a real installer result without a log-protocol refusal.
+The only safe failure classification is **`command_unavailable`**. The exact
+command name was not retained by the fixed-class summary and is not established.
+A later read-only check found Git and uv candidates on registered PATH; that
+does not identify which command the installer could not resolve.
+
+| Private stream | Bytes | SHA-256 |
+| --- | --- | --- |
+| stdout | 410 | `b90f701a9cd63d7e748966f71038bf454fabebaa8e5e2e74e5ebc19c93251ab2` |
+| stderr | 82 | `e64a9e3e713b676fb98a310e899b5631ec37f0fd79d7a9a2c09df53409e1e893` |
+
+Raw output was not published. Neither stream's safe summary contained an official
+host URL; no fallback or download is attested, and zero network requests are not
+proven. Owned Job cleanup passed, followed by exact owned root/home/cache/temp/
+tool/log removal. `finalRootExists=false`, no remaining manual resources or
+installation receipt. Final free space was 28,462,182,400 bytes (about 26.5 GiB).
+Full readback again matched all 19,246 managed files (376,658,620 bytes), 349
+profile files (3,351,013 bytes) and the selected machine-state hash. These scoped
+checks do not assert a complete system-wide filesystem/registry audit.
+
+Five [direct-runner tests](../../scripts/hermes-manual-direct.test.mjs) passed:
+ordered single attempts/shared deadline; stop on exit/timeout/postcondition failure;
+filesystem/duplicate-distribution checks; safe log classification; and actual
+owned PowerShell transport of non-JSON stdout/stderr into private files. Two
+[synthetic RECORD tests](../../scripts/test_hermes_manual_records.py) verify hashes,
+license inventory, tampering and path escapes. The actual failed stage,
+process/root cleanup and full protected readback are the real evidence. Effective
+manual identity, completed dependency inventory, final-runtime no-overlap and
+successful receipt remain unqualified. No upstream repair, repeated stage or
+point-2B/model/provider work followed this failure.
 
 ## Disk/resources and one model store
 

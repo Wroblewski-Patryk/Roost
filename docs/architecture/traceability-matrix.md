@@ -8,13 +8,12 @@ remain unqualified. No manual profile, provider admission or RF-HOST-035 closure
 Point-2 preflight is **BLOCKED before private creation**: four candidate mutable
 files resolve to managed files and updater/bootstrap/fallback confinement is
 unqualified. No manual profile, launcher or point-3 work was created/started.
-Point 2A accepts official internal fallbacks for one bounded manual install.
-It is **BLOCKED after the separately authorized retry and rollback**: the corrected
-driver again reported `wrapper_protocol`, now with invalid-frame length/hash;
-no stage PASS was confirmed. Owned Job cleanup and root
-removal passed; full managed/profile readback and selected machine-state hashes
-were unchanged. No additional runtime/receipt remains; point 2B is ineligible.
-Managed Roost admission is unchanged.
+Point 2A uses direct official stages with exit/filesystem postconditions;
+`wrapper_protocol` is no longer an active requirement. It is **BLOCKED**:
+`repository` exited 1, with sanitized classification `command_unavailable`.
+The remaining three stages did not start. Owned Job cleanup/root removal passed;
+full managed/profile and selected machine-state hashes were unchanged. No manual
+runtime/receipt remains; point 2B is ineligible. Managed admission is unchanged.
 
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,
