@@ -257,6 +257,60 @@ modified tracked files retained their baseline hashes; the unrelated untracked
 design artifact was not opened or staged. Full application validation and live
 runtime/UI/model tests were not run for this documentation-only result.
 
+### Resumed 2A: necessary build archives absent
+
+The follow-up dependency preflight retains the exact source/tree/blob pins above.
+Both existing runtime views declare `wheel 0.48.0`, `setuptools 83.0.0` and
+`packaging 26.0` in installed metadata. Wheel declares Python `>=3.9` and
+`packaging>=24.0`; setuptools declares Python `>=3.10`, packaging `>=3.8`.
+These declared ranges accept Python 3.13.1. They do not prove artifact provenance,
+an effective build, dynamic build-hook requirements or backend compatibility.
+Wheel 0.48.0 is an explicit candidate based on the existing installation, not a
+latest-version selection or an admitted build constraint.
+
+Read-only inspection of the local uv and pip caches found 322 original-archive
+candidates (`.whl` or pip HTTP `.body`), including a wheel 0.46.3 archive and
+packaging 26.1/26.2 archives. None supplies the required original wheel 0.48.0,
+setuptools 83.0.0 or packaging 26.0 bytes. Unpacked uv cache entries and installed
+dist-info are not original wheel artifacts and cannot establish their ZIP hashes.
+This result covers the named caches, not every location on the machine.
+
+The [manual build-input manifest](../../config/hermes/manual-desktop-build-inputs.json)
+records the necessary locked inputs, target and unqualified wheel candidate.
+Its [offline preflight](../../scripts/hermes_desktop_build_preflight.py) verifies
+the local commit/tree and pyproject/lock blob hashes before selecting exact
+official-PyPI artifacts from that lock. It scans only original archive candidates,
+matches byte size and SHA-256, verifies matching ZIP metadata without extraction,
+and emits no private paths. No package manager, network, installed Hermes import,
+source build, staging or installation operation is implemented by this checker.
+It runs under base Python with `-I -S -B`, an explicit source root and explicit
+cache roots; exit code `2` and `BLOCKED` are the expected refusal, not a crash.
+
+| Necessary artifact | Locked SHA-256 | Cache result |
+| --- | --- | --- |
+| `setuptools-83.0.0-py3-none-any.whl` | `29b23c360f22f414dc7336bb39178cc7bcbf6021ed2733cde173f09dba19abb3` | Missing exact bytes |
+| `packaging-26.0-py3-none-any.whl` | `b36f1fef9334a5588b4166f8bcd26a14e521f2b55e6b9de3aaa80d3ff7a37529` | Missing exact bytes |
+| `wheel 0.48.0` candidate | Not qualified | Missing qualified original artifact |
+
+The current network allowance permits only wheel metadata and one wheel artifact.
+Downloading it cannot fill the other already-established gaps. Therefore **zero
+metadata requests and zero artifact downloads** were made, and work stopped before
+staging under the incomplete-closure rule. This manifest is deliberately a
+necessary-input preflight, not a full build/runtime lock or installation receipt.
+The upstream lock has 259 package entries across environments/extras; that count
+is not a resolved Windows runtime set. Runtime marker/extras selection, all
+transitive artifacts and dynamic build hooks remain unqualified. Even finding
+both locked archives cannot make this checker authorize installation.
+
+Six [synthetic tests](../../scripts/test_hermes_desktop_build_preflight.py) cover
+official provenance/hash selection, ambiguous artifacts, opaque-cache byte matches,
+corrupt bytes, incorrect distribution identity, installed-metadata substitution,
+source drift and refusal with partial inputs. The live file-only check returned
+both locked archives absent. Transactional staging/rollback, new-runtime overlap,
+dual-distribution, effective-import and receipt checks were not run: no new
+runtime or provisioning implementation was created. Existing managed admission
+and provider pins remain unchanged. Point 2B remains ineligible.
+
 ## Disk/resources and one model store
 
 Metadata-only totals on 2026-09-22: managed venv view **122.6 MiB**, Desktop venv

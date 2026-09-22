@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "purpose": "manual_desktop_build_preflight_only",
+  "source": {
+    "commit": "a3d7f9ae257d5db6bb9759a10c437d786eec1610",
+    "tree": "971ce7f3edcdbb0ebed9a1a433493eda2e51d3d7",
+    "pyprojectSha256": "1cc8f282c7b77cd3f9ea7ea45be3eb58baa391f06dc8faff106682fb8d803744",
+    "lockSha256": "6caed1dea1418a3e244adf9c47f4f10bea4f221f8f72e65b926aa9f3ef71713b"
+  },
+  "target": { "python": "3.13.1", "platform": "win_amd64", "hermes": "0.21.3" },
+  "lockedBuildInputs": [
+    { "name": "setuptools", "version": "83.0.0", "filename": "setuptools-83.0.0-py3-none-any.whl", "sha256": "29b23c360f22f414dc7336bb39178cc7bcbf6021ed2733cde173f09dba19abb3" },
+    { "name": "packaging", "version": "26.0", "filename": "packaging-26.0-py3-none-any.whl", "sha256": "b36f1fef9334a5588b4166f8bcd26a14e521f2b55e6b9de3aaa80d3ff7a37529" }
+  ],
+  "wheelCandidate": {
+    "version": "0.48.0",
+    "basis": "existing_installed_metadata_only",
+    "requiresPython": ">=3.9",
+    "requiresDist": ["packaging>=24.0"],
+    "artifactQualified": false
+  },
+  "runtimeClosureQualified": false,
+  "buildHooksQualified": false,
+  "installationAuthorizedByThisManifest": false
+}
