@@ -1,5 +1,13 @@
 # Next development work
 
+Manual Hermes owner tooling: **points 2A and 2B DONE**. The independent runtime,
+`hermes-manual` profile and pinned manual-CLI launcher passed offline checks;
+`gpt-oss:20b` remains pending/not admitted. See the
+[profile contract](../architecture/hermes-desktop-ollama-profile-contract.md#point-2b-private-manual-profile-and-launcher).
+Stop before separately authorized point 3: one model store/download, explicit
+model admission and manual smoke. No model download or interactive launch is
+implied by this plan; Roost provider admission and all six false flags remain.
+
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,
 trwały resume receipt/ack, dokładnie 22 bajty wyniku, niezależne review i cleanup.

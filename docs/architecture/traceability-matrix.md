@@ -19,6 +19,15 @@ point 2B is ready; no profile/launcher/Desktop launch was performed. This postfl
 audit is not an OS write sandbox. Managed admission remains unchanged; earlier
 refusals remain historical evidence in the linked contract.
 
+Point 2B is **DONE**: a separate owned `hermes-manual` home, Desktop-state directory,
+versioned private receipt and pinned manual-CLI launcher exist. Configuration has
+zero toolsets/fallbacks, disables external-login adoption and targets only local
+Ollama `gpt-oss:20b`. Model state is **pending / not admitted**; launch refuses
+before endpoint queries or execution until a separate point-3 admission. Offline
+parser/default-merge validation, `--version` and launcher `--check` passed. The
+accepted runtime and protected managed/profile fingerprints are unchanged. Point
+3 prerequisites are ready; no model download, interactive launch or Roost activation.
+
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,
 trwały resume receipt/ack, dokładnie 22 bajty wyniku, niezależne review i cleanup.

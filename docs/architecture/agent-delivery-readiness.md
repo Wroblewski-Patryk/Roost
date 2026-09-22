@@ -21,6 +21,15 @@ wszystkich zapisów. Runtime jest gotowy jako wejście do osobnego punktu 2B;
 profilu/launchera nie utworzono i Desktopu nie uruchomiono. Managed Roost admission
 bez zmian. Wcześniejsze odmowy pozostają historią w powiązanym kontrakcie.
 
+Punkt 2B: **DONE — prywatny profil `hermes-manual` i launcher manualnego CLI**.
+Launcher jest związany z dokładnym runtime/receipt z 2A; profil ma pusty zestaw
+narzędzi, brak fallbacków i zewnętrznych loginów oraz lokalny endpoint Ollama.
+`gpt-oss:20b` ma stan **pending / not admitted**. Parser konfiguracji, `--version`
+i offline `--check` przeszły bez zapytań do Ollamy i bez startu providera/czatu.
+Runtime, managed i hermes-pilot pozostały niezmienione. Profil jest gotowy do
+osobnego punktu 3; model nie został pobrany, a launcher interaktywny ani Desktop
+nie zostały uruchomione. Żadna flaga gotowości agenta Roost nie zmienia wartości.
+
 ## Stały program syntetyczny — RF-RUNTIME-005B30
 
 **PASS dla zamkniętej klasy syntetycznej**, 2026-09-17. Publiczne API i Worker

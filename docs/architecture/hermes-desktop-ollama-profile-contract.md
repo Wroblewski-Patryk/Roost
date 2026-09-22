@@ -38,6 +38,13 @@ checks passed. **2A DONE; the runtime prerequisite for separate 2B is ready.**
 An installation receipt remains; previous diagnostics and temporary logs/cache/
 tools were removed. No profile, launcher, Desktop UI or agent was started.
 
+The subsequent separately authorized **2B is DONE**: an independent `hermes-manual`
+home/state and pinned manual-CLI launcher have been created and checked offline.
+`gpt-oss:20b` remains **model pending / not admitted**; the launcher refuses before
+contacting Ollama until separate point-3 admission. No model download or interactive
+launch occurred. This manual-CLI route does not qualify Electron Desktop bootstrap
+or updater behavior; historical Desktop-view overlap findings still stand.
+
 This does **not** establish physical isolation of the current Windows views.
 Some descendants overlap while others differ. Manual Desktop launch stays
 denied until the point-2 boundaries below are proven. Roost's
@@ -928,6 +935,97 @@ installer-only change. Eight pre-existing tracked edits retain their hashes;
 no external retry. **The runtime prerequisite for point 2B is ready; stop here
 without creating its profile or launcher.** Managed admission and all six flags
 remain unchanged.
+
+## Point 2B: private manual profile and launcher
+
+The owner-authorized point 2B uses exactly the installation accepted by commit
+`e7b8f52f35d702abfede48ca1404d077d066c0b1`, source Hermes 0.21.3 and Python 3.11.16.
+The [profile creator](../../scripts/create-hermes-manual-profile.mjs) verifies the
+2A receipt SHA-256 and full runtime inventory before creating a new, disjoint root.
+The [profile contract helpers](../../scripts/lib/hermes-manual-profile.mjs) bind
+canonical root identities, configuration bytes, the exact Node executable and
+private launcher bundle, runtime receipt and protected profile roots.
+
+Private resources created on 2026-09-22:
+
+| Resource under the private per-installation root | Purpose |
+| --- | --- |
+| `hermes-manual/` | Independent `HERMES_HOME`, config and standard Hermes home skeleton |
+| `desktop-state/` | Independent reserved `HERMES_DESKTOP_USER_DATA_DIR`; no Electron launch |
+| `workspace/`, `local/`, `roaming/`, `temp/` | Private CWD and per-process user/cache/temp locations |
+| `control/` and `empty.gitconfig` | Pinned copied launcher/helpers and empty private Git config |
+| `MANUAL_DESKTOP_STATE.json` | Versioned `hermes-manual-profile-v1` receipt with runtime/profile identities and pending model state |
+| `Launch Hermes Manual.cmd`, `README.txt` | Owner entrypoint and local instructions |
+
+The profile targets `model.provider: custom`, `model.default: gpt-oss:20b`,
+`model.base_url: http://127.0.0.1:11434/v1` and `api_mode: chat_completions`.
+This is the pinned Hermes local OpenAI-compatible endpoint contract; it does not
+select OpenAI's hosted service. No API key/token is configured or invented. Hermes
+itself supplies its SDK-required no-auth placeholder for local custom endpoints.
+Fallback chains are empty, no auxiliary provider/model is configured, external
+login adoption is false, and compression, title generation/model upgrade and
+background review are disabled. CLI/TUI/Desktop toolset lists are empty; coding
+context, project-skill discovery, checkpoints, plugins, MCP definitions, hooks and
+repository scanning have no enabled owner authority. The CLI also receives
+`--ignore-rules`. These defaults are not an OS sandbox and do not remove the human
+owner's ability to deliberately change their computer or bypass this launcher.
+
+The [launcher](../../scripts/hermes-manual-launcher.mjs) selects the exact private
+Hermes executable, never another Hermes from PATH. Its environment is constructed
+without inherited credentials, proxies, Roost grants, Python/Node import overrides
+or parent repository CWD. It verifies the state hash, Node/control-file identities,
+exact config, runtime receipt/full inventory, root containment and physical
+non-overlap. Empty upstream-created `hooks`/`plugins` directories are permitted;
+populated ones, auth/.env inputs or alternate profile selectors are refused.
+The pending state refuses before any Ollama request, download or child execution.
+A separately admitted future state must also supply an exact model digest and
+match the local `/api/tags` inventory before manual CLI execution. There is no
+pull, auto-start, provider fallback, argument pass-through, service or Roost API.
+No `OLLAMA_MODELS` or global Ollama settings are changed; profiles contain no weights.
+
+For the owner: open the private root indicated by the local receipt and use
+`Launch Hermes Manual.cmd` after point 3 has explicitly admitted the model. Today
+it explains that point 3 is required and refuses. `README.txt` has the same local
+instruction. This entrypoint is the manual CLI; do not substitute the existing
+Electron Desktop shortcut, whose bootstrap/update behavior remains unqualified.
+Distributed instructions intentionally use relative labels, not private paths.
+
+Observed validation: **2B DONE; ready for separate point 3**.
+
+- The [offline Python probe](../../scripts/hermes_manual_profile_probe.py) parses
+  the exact config with PyYAML and executes the pinned upstream structure-validation
+  functions and default merge, extracted from source without importing config's
+  Windows startup layer. The final probe made zero network/process/write attempts
+  and initialized no provider. It verified zero fallback entries/toolsets and
+  disabled external login/automatic auxiliary tasks.
+- Initial full-module validation imports were refused by the audit guard when
+  terminal/platform discovery attempted a subprocess. The final source-function
+  probe avoids that startup path; it does not widen process/network permission.
+  Temporary partial provisioning was removed after owned-process/containment
+  checks. Final provisioning normalized private paths and allowed only empty
+  upstream-created hook directories. No runtime reinstall was performed.
+- Exact entrypoint `--version` passed in an owned Windows Job: exit 0, zero stderr,
+  155 stdout bytes, SHA-256
+  `4cba4fff559d93d9070083ae4733878185c28377083b9c0afcc7605081077091`,
+  cleanup true and zero active descendants. No interactive command was run.
+- The real copied launcher `--check` passed offline in its own Windows Job:
+  pending state, model presence `not_queried`, zero requests, no provider/interactive
+  start, no Roost authority, exit 0 and zero descendants after cleanup.
+- Full 2A runtime fingerprint remained identical. Managed readback matched all
+  19,246 files / 376,658,620 bytes; hermes-pilot matched 349 files / 3,351,013 bytes.
+  Profile/runtime/protected physical-overlap checks passed. No credentials or
+  model copies were added. Ten small private files remain, including upstream's
+  default home metadata; validation tools and output logs were not retained.
+- State receipt SHA-256:
+  `16fa26ae8b3365f4527bf58813cd2d7383c580954d19a8900b598653b66c4c35`.
+  Three focused Node tests cover pending/missing/changed models, inherited authority
+  exclusion, offline launch checks and refusal on runtime/config/auth/physical drift.
+
+No interactive launcher, Hermes Desktop, chat/UI/serve/gateway, Ollama query/server,
+model download or inference was run. Six Roost readiness flags and managed policy
+are unchanged. Point 3 is a separate owner-authorized operation, not automatic
+continuation from this receipt. Full application/provider test suites are outside
+this private manual-profile atom.
 
 ## Disk/resources and one model store
 
