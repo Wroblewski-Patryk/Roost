@@ -45,12 +45,14 @@ contacting Ollama until separate point-3 admission. No model download or interac
 launch occurred. This manual-CLI route does not qualify Electron Desktop bootstrap
 or updater behavior; historical Desktop-view overlap findings still stand.
 
-The separately authorized **point 3 is BLOCKED after one pull**: disk/store
-preflight passed, but CLI progress exceeded the native controller output budget.
-Only partial data remain in the sole Ollama store. No installed model, model
-admission or inference smoke is claimed. The manual profile stays pending; all
-owned processes were closed. The corrected progress worker was tested only with
-synthetic output, without a second pull.
+The subsequent authorized **resume completed the model download**, but point 3
+remains **BLOCKED on the manual smoke**. The sole local store now contains the
+verified `gpt-oss:20b` manifest/digest and 13,793,441,244 model bytes. The private
+state was admitted only for one manual smoke, and its offline launcher check
+passed. During that attempt the owned Ollama server ended; no successful local
+answer has been established. See the [resume evidence](#point-3-explicitly-authorized-partial-resume-and-one-manual-smoke).
+The earlier progress-output failure and retained partials below are historical.
+Interactive/managed admission and all Roost readiness flags remain unchanged.
 
 This does **not** establish physical isolation of the current Windows views.
 Some descendants overlap while others differ. Manual Desktop launch stays
@@ -1113,6 +1115,122 @@ the exact partial store and available resources, using filtered progress, then
 one local no-tool smoke if download succeeds. Do not start it automatically.
 Manual launcher remains gated on point 3; Electron Desktop, agents and all six
 Roost readiness flags remain unchanged.
+
+## Point 3: explicitly authorized partial resume and one manual smoke
+
+The owner subsequently authorized one resume of the retained partials and one
+local no-tool Polish-response smoke after completion. This supersedes the
+empty-store precondition for this exact prior attempt only. It does not authorize
+another model, duplicate store, arbitrary retry, hosted fallback, login, Roost
+admission or Electron Desktop startup.
+
+The [partial admission](../../scripts/lib/hermes-manual-model-resume.mjs) binds
+the previous failure receipt and fresh registry manifest, requires exactly the
+17 expected regular non-shared files, validates all 16 contiguous ranges, sizes,
+completed-byte totals and modification times preceding the receipt, and hashes
+the current files with stable physical identities. The old receipt contained
+aggregate evidence, **not historical per-file hashes**: the new inventory is a
+current baseline, not retrospective proof of historical byte identity. Final
+pull verification and the local manifest/digest establish completed-model identity.
+Unexpected files, manifests, links, changed metadata or insufficient reserve
+refuse before pulling. No retained partial is manually deleted or copied.
+
+The manual operation has its own
+[native Job protocol](../../scripts/hermes-manual-model-job.cs) and
+[receipt registry](../../scripts/lib/hermes-manual-model-job.mjs), capped at four
+hours. The existing managed one-hour policy and protocol are unchanged. Tests
+prove that the manual artifact/receipt cannot qualify managed execution. The
+fixed CLI worker filters progress at 30-second intervals; a healthy download may
+continue until completion within the explicit four-hour cap. No short wall-clock
+stall timer is used. Server binding, store override and resource limits remain
+process-local, with one model/request and a 2,048-token context.
+
+The [smoke admission](../../scripts/admit-hermes-manual-smoke.mjs) requires the
+completed pull receipt plus current local digest/size and exactly one installed
+model. It writes `admitted-for-manual-smoke`, `admitted=false`, and updates the
+private launcher's pinned state hash. This scope never satisfies the interactive
+launch gate. The copied launcher's offline `--check` remains separately required.
+
+The [smoke controller](../../scripts/smoke-hermes-manual-model.mjs) binds the exact
+private runtime/profile and consumes a one-use attempt marker. Its
+[Python harness](../../scripts/hermes_manual_model_smoke.py) uses the installed
+Hermes config/provider resolver and `AIAgent`; this is a manual Python API smoke,
+not an interactive CLI or Electron test. It configures zero tools, one iteration,
+256 output tokens, low reasoning, no context files, memory, background review,
+fallback, session database or saved trajectories. Upstream's helper-agent
+persistence switch suppresses conversation history. Its per-request Ollama
+context is explicitly pinned to 2,048: this Hermes version otherwise detects the
+GGUF maximum and can override the smaller server default. HTTP request validation and
+Python auditing permit only the fixed loopback endpoint, reject a second
+inference request, tools, other models/routes, child processes and writes outside
+the private profile. This guard is not a general-purpose OS sandbox.
+
+Before real inference, the same pinned Hermes path passed an in-memory HTTP
+fixture with one no-tool request and the expected one-word answer. No socket or
+model participated. Four upstream process-discovery attempts were refused;
+there were no denied network/writes and no actual child process. Regression
+tests reject foreign endpoints, model/tool substitutions, retries and excess
+context/output budgets. Only sanitized request facts and response verdict/hash
+are retained; startup output is discarded and new private logs/cache are removed
+after native cleanup, preserving pre-existing profile bytes and protected roots.
+
+The real resume completed once with exit 0, `root_exit`, native cleanup true and
+zero descendants. The filter consumed 3,514,891 raw progress bytes without
+retaining the text, and emitted no error classification. Local tags, manifest and
+blob sizes matched expected digest
+`sha256:17052f91a42e97930aa6e28a6c6c06a983e6a58dbb00434885a0cf5313e376f7`
+and **13,793,441,244 bytes**. Post-pull free space was 12,325,752,832 bytes
+(11.48 GiB), above the 6 GiB floor. There was no second resume, duplicate model
+or store. Local model metadata reports 20.9B parameters / MXFP4.
+
+The private state became `admitted-for-manual-smoke`, `admitted=false`, with the
+verified digest/size. Its copied launcher `--check` passed offline. One real
+smoke attempt began. The owned server then ended before a successful response
+was established; the pull controller reported `server_ended_before_smoke` and
+native server cleanup true / zero descendants. That label covers its entire
+post-pull handoff period, including a smoke already in progress. The controller
+did **not retain the server's root exit/reason/output counts in this attempt**;
+the exact cause is unproven. No application-crash or resource-exhaustion event
+matching Ollama was found in the contemporaneous Windows event check. That
+absence does not establish a cause. The source now retains those fixed native
+fields on both controller success and failure; it cannot reconstruct lost evidence.
+
+The live smoke attempted exactly one loopback inference request, with zero tools,
+256 output tokens, low reasoning and context 2,048. It did not receive a successful
+HTTP response or establish a correct model answer. The guard refused 20 subsequent
+request attempts; none became another inference request. Four process-discovery
+attempts were refused, and no out-of-profile write was attempted. The turn ended
+after 393.344 seconds with `completed=false`; native Python cleanup reported
+exit 1, `root_exit`, cleanup true and zero descendants. The subsequent backend
+query also failed because the server was gone, so the receipt records
+`smoke_operation_failed` and no measured CPU/GPU allocation. The upstream failure
+text was not retained, only its hash/length and the negative response verdict.
+
+Full protected managed/profile fingerprints and existing manual-home bytes were
+unchanged. New private smoke files, including its state/cache, were
+removed after native cleanup. Final closure revalidated the installation receipt
+and removed the owned temporary controller directory. The installed store now has
+five blobs, one manifest and one Ollama metadata file; there are no partials or
+duplicate model copies. The state is `manual-smoke-blocked`, with model scope still
+`admitted-for-manual-smoke` / `admitted=false` and a consumed one-use marker.
+There is no authorization for another smoke/pull in this atom. Point 3 must not
+be presented as DONE; future work starts from the installed model and needs a new
+explicit smoke authority with retained server diagnostics.
+
+Final free disk readback was 12,153,319,424 bytes (11.32 GiB). The private
+resume receipt SHA-256 is
+`f6bd0d08bfedd75e547c3d04c2d0eb1a58cc09fca3d2dea94857f8471aecddb1`;
+the smoke receipt is
+`012a861242a7822cb7267b7ab26562d9a19923ba07fda527b5d7d1612656e074`.
+Final private state hash is
+`a69d3a9597ec393fe3ac6ce741c282cd3dd45bc7b2e2bc89ae27d72a444afe66`.
+Eight focused Node tests and five Python boundary tests passed, as did the
+synthetic full-runtime fixture. The real smoke remains BLOCKED. Full application
+validation and managed-provider trials were not run; neither was changed here.
+The final copied launcher `--check`, JavaScript syntax, 500 local links, scoped
+privacy/diff checks and documentation budgets passed (103,208 default-context
+bytes). All eight unrelated tracked-file hashes were preserved;
+`design-qa.md` was neither read nor staged. No owned Ollama/Hermes process remained.
 
 ## Disk/resources and one model store
 

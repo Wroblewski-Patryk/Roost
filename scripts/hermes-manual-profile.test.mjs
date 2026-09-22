@@ -9,7 +9,9 @@ import {sourcePin,installerHash,inventory,sha256} from './lib/hermes-manual-inst
 import {schema,configBytes,config,endpoint,model,fileIdentity,manualEnvironment,validateManualState,requireModelAdmission,assertExpectedModel} from './lib/hermes-manual-profile.mjs';
 
 test('pending and incomplete admissions refuse; model inventory cannot substitute another model/digest',()=>{
-  for(const m of [{status:'pending',admitted:false},{status:'admitted',admitted:false},{status:'admitted',admitted:true}])assert.throws(()=>requireModelAdmission({model:m}),/model_pending/);
+  for(const m of [{status:'pending',admitted:false},{status:'admitted-for-manual-smoke',admitted:false},
+    {status:'admitted-for-manual-smoke',admitted:true,digest:'sha256:'+'a'.repeat(64)},
+    {status:'admitted',admitted:false},{status:'admitted',admitted:true}])assert.throws(()=>requireModelAdmission({model:m}),/model_pending/);
   const digest='sha256:'+'a'.repeat(64);requireModelAdmission({model:{status:'admitted',admitted:true,digest}});
   assertExpectedModel({models:[{name:model,digest}]},digest);
   assertExpectedModel({models:[{name:model,digest:digest.slice(7)}]},digest);

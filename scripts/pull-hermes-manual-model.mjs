@@ -3,11 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {setTimeout as delay} from 'node:timers/promises';
 import {fileURLToPath} from 'node:url';
-import {buildWindowsJobLauncher,startWindowsJob} from './lib/agent-host-windows-job.mjs';
+import {buildWindowsJobLauncher,startWindowsJob} from './lib/hermes-manual-model-job.mjs';
+import {admitPreviousPartial} from './lib/hermes-manual-model-resume.mjs';
 import {inventory,sha256,assertOwned} from './lib/hermes-manual-install.mjs';
 import {validateManualState,fileIdentity,checkFile} from './lib/hermes-manual-profile.mjs';
 
-const [stateArg,stateHash,ollamaArg]=process.argv.slice(2);
+const [stateArg,stateHash,ollamaArg,previousReceiptHash]=process.argv.slice(2);
 const statePath=path.resolve(stateArg),ollama=path.resolve(ollamaArg);
 const {state}=validateManualState(statePath,stateHash);
 const store=path.join(process.env.USERPROFILE,'.ollama/models');
@@ -27,26 +28,29 @@ async function local(route,options={}){
 }
 function files(dir){const rows=[];function walk(p){for(const d of fs.readdirSync(p,{withFileTypes:true})){const f=path.join(p,d.name);if(d.isSymbolicLink())throw Error('store_link');if(d.isDirectory())walk(f);else rows.push({path:path.relative(dir,f),size:fs.statSync(f).size});}}walk(dir);return rows;}
 try{
-  if(process.argv.length!==5||!fs.existsSync(store)||fs.realpathSync.native(store)!==store||fs.existsSync(control))throw Error('preflight_path');
+  if(process.argv.length!==6||!fs.existsSync(store)||fs.realpathSync.native(store)!==store||fs.existsSync(control))throw Error('preflight_path');
   if(process.env.OLLAMA_MODELS&&path.resolve(process.env.OLLAMA_MODELS)!==store)throw Error('unexpected_store');
   const existing=files(store);report.storeBefore={files:existing.length,bytes:existing.reduce((n,r)=>n+r.size,0)};
-  // This operation was authorized for the verified empty default store only.
-  if(existing.length)throw Error('store_changed_since_preflight');
   try{await local('/api/version');throw Error('server_started_since_preflight');}catch(error){if(error.message==='server_started_since_preflight')throw error;}
   const metadata=await fetch('https://registry.ollama.ai/v2/library/gpt-oss/manifests/20b',{
     headers:{Accept:'application/vnd.docker.distribution.manifest.v2+json'},redirect:'error',signal:AbortSignal.timeout(15000)});
   if(!metadata.ok)throw Error('registry_metadata');
   const manifestBytes=Buffer.from(await metadata.arrayBuffer()),manifest=JSON.parse(manifestBytes);
+  const admission=admitPreviousPartial({store,receiptPath:path.join(state.root.path,'MANUAL_MODEL_PULL_RECEIPT.json'),receiptHash:previousReceiptHash,manifestBytes});
+  report.partialAdmission={files:admission.files,completedBytes:admission.completedBytes,currentInventorySha256:sha256(JSON.stringify(admission.rows))};
   const required=[manifest.config,...manifest.layers].reduce((n,l)=>n+l.size,0);
   const disk=fs.statfsSync(store),free=disk.bavail*disk.bsize;
-  if(!Number.isSafeInteger(required)||required<=0||free-required<7*1024**3)throw Error('disk_reserve');
+  const remaining=required-admission.completedBytes;
+  if(!Number.isSafeInteger(required)||required<=0||free-remaining<7*1024**3)throw Error('disk_reserve');
   report.registryManifestSha256=sha256(manifestBytes);report.expectedDownloadBytes=required;report.freeBefore=free;
   report.ollama=fileIdentity(ollama);
   fs.mkdirSync(control);rootId=String(fs.statSync(control,{bigint:true}).ino);
   fs.writeFileSync(path.join(control,'ownership.json'),JSON.stringify({identity:rootId,profileIdentity:state.root.identity})+'\n',{flag:'wx'});
+  fs.writeFileSync(path.join(control,'partial-admission.json'),JSON.stringify(admission,null,2)+'\n',{flag:'wx'});
   const launcher=await buildWindowsJobLauncher(control);
   let serverBytes=0;const serverFacts=[];
-  server=await startWindowsJob(launcher,{executable:ollama,argv:['serve'],cwd:control,environment,input:'',durationMs:3600000,
+  const operationDeadline=Date.now()+14400000;
+  server=await startWindowsJob(launcher,{executable:ollama,argv:['serve'],cwd:control,environment,input:'',durationMs:14400000,
     onData(channel,data){serverBytes+=data.length;const text=data.toString('utf8');
       // Fixed numeric engine evidence only; no raw paths/env/logs retained.
       for(const match of text.matchAll(/offloaded (\d+)\/(\d+) layers to GPU/g))serverFacts.push({offloadedLayers:+match[1],totalLayers:+match[2]});
@@ -57,11 +61,11 @@ try{
   if(version?.version!=='0.34.2')throw Error('server_version');report.serverVersion=version.version;
   if((await local('/api/tags')).models.length)throw Error('unexpected_models');
   fs.writeFileSync(path.join(control,'preflight.json'),JSON.stringify(report)+'\n',{flag:'wx'});
-  console.log(JSON.stringify({type:'preflight_pass',serverVersion:version.version,expectedDownloadBytes:required,expectedFreeAfter:free-required}));
+  console.log(JSON.stringify({type:'preflight_pass',serverVersion:version.version,expectedDownloadBytes:required,resumeBytes:admission.completedBytes,expectedFreeAfter:free-remaining}));
   checkFile(report.ollama);report.pullAttempts=1;
   const node=fileIdentity(fs.realpathSync.native(process.execPath));checkFile(node);
   const worker=fileURLToPath(new URL('./hermes-ollama-pull-worker.mjs',import.meta.url));
-  pull=await startWindowsJob(launcher,{executable:node.path,argv:[worker,ollama],cwd:control,environment,input:'',durationMs:3500000,
+  pull=await startWindowsJob(launcher,{executable:node.path,argv:[worker,ollama],cwd:control,environment,input:'',durationMs:operationDeadline-Date.now()-5000,
     onData(channel,data){if(channel!=='stdout')throw Error('pull_worker_stderr');process.stdout.write(data);}});
   const pulled=await pull.completion;
   report.pull={exitCode:pulled.rootExit,cleanup:pulled.cleanup,activeProcesses:pulled.activeProcesses,terminationReason:pulled.terminationReason};
@@ -82,12 +86,13 @@ try{
   console.log(JSON.stringify({type:'pull_complete',model:report.model,freeBytes:report.freeAfterPull,serverHeldForSmoke:true}));
   // Same task will prepare/run one smoke, then explicitly signal completion.
   // The native Job remains owned by this live controller in the meantime.
-  const finish=path.join(control,'finish');const deadline=Date.now()+25*60*1000;
+  const finish=path.join(control,'finish');const deadline=operationDeadline;
   while(!fs.existsSync(finish)){if(serverResult)throw Error('server_ended_before_smoke');if(Date.now()>deadline)throw Error('smoke_handoff_timeout');await delay(1000);}
   report.result='PULL_AND_HANDOFF_COMPLETE';report.serverEngineFacts=serverFacts;report.serverLogBytes=serverBytes;
 }catch(error){report.result='BLOCKED';report.reason=/^[a-z_]+$/.test(error.message)?error.message:'model_operation_failed';}
 finally{
-  if(server){server.stop('cancel');try{serverResult=await server.completion;report.serverCleanup={cleanup:serverResult.cleanup,activeProcesses:serverResult.activeProcesses};}catch{report.serverCleanup={cleanup:false};}}
+  if(server){server.stop('cancel');try{serverResult=await server.completion;report.serverCleanup={cleanup:serverResult.cleanup,activeProcesses:serverResult.activeProcesses,
+    exitCode:serverResult.rootExit,terminationReason:serverResult.terminationReason,stdoutBytes:serverResult.stdoutBytes,stderrBytes:serverResult.stderrBytes};}catch{report.serverCleanup={cleanup:false};}}
   const after=state.protectedRoots.map(p=>inventory(p));report.protectedUnchanged=after.every((x,i)=>x.digest===protectedBefore[i].digest);
   report.storeAfter={files:files(store).length,bytes:files(store).reduce((n,r)=>n+r.size,0)};
   report.freeBytes=fs.statfsSync(store).bavail*fs.statfsSync(store).bsize;

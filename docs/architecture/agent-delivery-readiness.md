@@ -38,6 +38,17 @@ smoke ani kolejnego pull. Własny serwer i proces pobierania zamknięto; managed
 hermes-pilot i runtime manualny bez zmian. Poprawiony filtr postępu przeszedł
 test syntetyczny Windows Job; wznowienie wymaga osobnego atomu.
 
+Osobno zatwierdzone wznowienie: **pobranie DONE, punkt 3 nadal BLOCKED na smoke**.
+Dokładnie jedno wznowienie ukończyło `gpt-oss:20b` (13 793 441 244 B); lokalny
+digest/manifest i rozmiary są zgodne. Po pobraniu pozostało 11,48 GiB wolnego.
+Prywatny stan `admitted-for-manual-smoke` oraz offline launcher `--check` przeszły
+kontrolę. Podczas jednej próby testu własny serwer Ollama zakończył pracę;
+nie potwierdzono poprawnej odpowiedzi ani faktycznego podziału CPU/GPU. Dokładny
+powód zakończenia serwera nie został zachowany, więc nie przypisujemy przyczyny.
+Model pozostaje w jednym magazynie. Interaktywny launcher i managed admission
+pozostają zamknięte; wszystkie flagi Roost bez zmian. Szczegóły i końcowe
+potwierdzenie cleanup opisuje powiązany kontrakt.
+
 ## Stały program syntetyczny — RF-RUNTIME-005B30
 
 **PASS dla zamkniętej klasy syntetycznej**, 2026-09-17. Publiczne API i Worker

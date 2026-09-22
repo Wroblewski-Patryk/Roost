@@ -36,6 +36,15 @@ model check or inference smoke followed. Manual runtime and managed/profile
 fingerprints remain unchanged; 2B stays pending. A bounded progress worker now
 passes synthetic native-Job verification, not a second real download.
 
+The subsequently authorized single resume **completed the download**, verifying
+the sole local `gpt-oss:20b` manifest/digest and 13,793,441,244 bytes, with 11.48 GiB
+free afterwards. A smoke-only private admission and offline launcher check passed.
+Point 3 remains **BLOCKED**: the owned Ollama server ended during the one manual
+smoke attempt, without a verified response/backend. Its exact termination reason
+was not retained; no causal claim is made. The installed model is preserved and
+the attempt is consumed. No retry, interactive admission, Roost provider activation
+or readiness-flag change is implied. The linked contract records cleanup/readback.
+
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,
 trwały resume receipt/ack, dokładnie 22 bajty wyniku, niezależne review i cleanup.
