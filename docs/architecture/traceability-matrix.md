@@ -1,10 +1,10 @@
 # Foundation requirements traceability
 
 [Desktop/profile/Ollama inventory](hermes-desktop-ollama-profile-contract.md)
-(2026-09-21) records read-only installation evidence and a proposed isolation and
-routing contract. Documentation only: no provider admission or RF-HOST-035 closure.
-Desktop/backend qualification is **BLOCKED** on effective import/protocol proof
-and enforced update/bootstrap/fallback/profile isolation; no manual profile was created.
+(2026-09-22) adopts **separate existing runtimes**, rejecting shared-runtime admission.
+The repo-owned bounded probe failed closed; 45 comparable file samples were unchanged
+and 8 were missing before execution. Windows view overlap, manual launch and protocol
+remain unqualified. No manual profile, provider admission or RF-HOST-035 closure.
 
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,

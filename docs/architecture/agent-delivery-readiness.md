@@ -1,12 +1,12 @@
 # Gotowość połączenia Roost z agentami
 
-Audyt tylko do odczytu z 2026-09-21:
+Decyzja kwalifikacyjna z 2026-09-22:
 [Hermes Desktop, dwa profile i Ollama](hermes-desktop-ollama-profile-contract.md).
-Opisuje wykryte instalacje i proponowany kontrakt; nie zmienia poniższych bramek
-ani nie dopuszcza uruchomienia providera.
-Kwalifikacja Desktop 0.17.6 / CLI 0.21.2: **BLOCKED** — brak dowodu effective
-import oraz wymuszonej blokady updater/bootstrap/fallback i dostępu do profilu
-zarządzanego. Konfiguracja profilu ręcznego nie została rozpoczęta.
+**Dwa istniejące runtime'y; współdzielenie odrzucone.** Repozytoryjny probe zwrócił
+bezpieczną odmowę, a 45 porównywalnych plików pozostało bez zmian (8 pozycji
+nieobecnych przed próbą). Izolacja fizyczna częściowo nakładających się widoków
+Windows oraz bezpieczny start Desktopu pozostają nieudowodnione. Decyzja nie
+zmienia poniższych bramek. Konfiguracja profilu ręcznego nie została rozpoczęta.
 
 ## Stały program syntetyczny — RF-RUNTIME-005B30
 
