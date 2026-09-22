@@ -10,12 +10,12 @@ zmienia poniższych bramek. Punkt 2: **BLOCKED przed utworzeniem profilu** — �
 preflight potwierdził cztery wspólne pliki fizyczne oraz brak kwalifikowanej
 izolacji updater/bootstrap/fallback. Nie utworzono profilu ani launchera; punkt 3
 pozostaje niedopuszczony.
-Punkt 2A: **BLOCKED przed próbą instalacji**. Ręczny runtime może użyć oficjalnego
-instalatora bez pełnego artifact closure; reguły managed Roost pozostają bez zmian.
-Instalator ma poprawny jawny target i tryb etapowy, ale zawiera niewyłączalne
-flagą przejścia SSH/HTTPS/ZIP oraz fallback wersji Pythona, sprzeczne z zakazem
-ponawiania w tym atomie. Updater uruchamia zabroniony `hermes_cli.main`.
-Nie uruchomiono instalatora; punkt 2B nie jest gotowy.
+Punkt 2A: **BLOCKED po jednej próbie i rollbacku**. Oficjalne wewnętrzne fallbacki
+są dopuszczone dla manualnej instalacji. Sterownik przerwał próbę na niepoprawnym
+formacie wyjścia (`wrapper_protocol`); nie potwierdzono PASS żadnego etapu.
+Owned Job zakończony, nowy root usunięty; pełny managed/profile readback i kontrola
+wybranych ustawień systemowych bez zmian. Nie ma nowego runtime ani receipt;
+punkt 2B nie jest gotowy. Rygorystyczna polityka managed Roost pozostaje bez zmian.
 
 ## Stały program syntetyczny — RF-RUNTIME-005B30
 

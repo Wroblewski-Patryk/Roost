@@ -8,12 +8,12 @@ remain unqualified. No manual profile, provider admission or RF-HOST-035 closure
 Point-2 preflight is **BLOCKED before private creation**: four candidate mutable
 files resolve to managed files and updater/bootstrap/fallback confinement is
 unqualified. No manual profile, launcher or point-3 work was created/started.
-Point 2A permits the official Desktop installer for the manual runtime without
-full artifact closure; managed Roost admission is unchanged. It is **BLOCKED
-before the installation attempt**: the stage installer has no flag disabling
-its SSH/HTTPS/ZIP and Python-version fallback sequences under this atom's no-retry
-restriction. The updater invokes forbidden `hermes_cli.main`. No installer run,
-additional installation or receipt exists; point 2B remains ineligible.
+Point 2A accepts official internal fallbacks for one bounded manual install.
+It is **BLOCKED after one attempt and rollback**: the driver rejected output as
+`wrapper_protocol`, with no stage PASS confirmed. Owned Job cleanup and root
+removal passed; full managed/profile readback and selected machine-state hashes
+were unchanged. No additional runtime/receipt remains; point 2B is ineligible.
+Managed Roost admission is unchanged.
 
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,

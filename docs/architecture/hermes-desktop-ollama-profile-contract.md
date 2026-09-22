@@ -20,6 +20,10 @@ manual-install admission gate. Earlier artifact-closure refusals below are
 historical evidence, not current policy. Managed Roost runtime admission, source
 pins, provider gates and isolation requirements are unchanged. The optional
 artifact checker now reports inventory status and `manualInstallationGate=false`.
+The next decision also explicitly accepts the installer's internal repository,
+Python-version and dependency-tier fallbacks within one 20-minute stage-driver
+attempt. Only an external rerun remains disallowed for that atom. That attempt
+was started and rolled back as recorded below; it produced no qualified runtime.
 
 This does **not** establish physical isolation of the current Windows views.
 Some descendants overlap while others differ. Manual Desktop launch stays
@@ -319,7 +323,7 @@ dual-distribution, effective-import and receipt checks were not run: no new
 runtime or provisioning implementation was created. Existing managed admission
 and provider pins remain unchanged. Point 2B remains ineligible.
 
-### Operational 2A: official installer inspected, attempt not started
+### Initial operational 2A inspection, before fallback authorization
 
 The packaged bundle still selects source commit `a3d7f9ae...` for fresh installs.
 The observed Desktop executable SHA-256 is
@@ -397,6 +401,89 @@ tests (including three Python guard cases), and the actual installer's read-only
 PowerShell AST parameter/target check passed. No real installation postflight,
 write-set/rollback/receipt/new-runtime overlap test is claimed for an unstarted
 attempt.
+
+### One authorized stage-driver attempt: BLOCKED, rollback complete
+
+The [one-shot driver](../../scripts/install-hermes-manual.mjs),
+[stage wrapper](../../scripts/hermes_manual_install_stages.ps1) and
+[boundary helpers](../../scripts/lib/hermes-manual-install.mjs) implement only
+the explicit manual operation. They are not imported by Worker/provider startup.
+The sequence is `repository`, `python`, `venv`, `dependencies`, with explicit
+`-InstallDir`, `-HermesHome`, exact `-Commit`, `-Branch main`, `-NonInteractive`
+and `-Json`. It does not invoke full bootstrap, path/config/setup/gateway stages,
+Desktop UI or the separate updater. Existing venv presence before the venv stage
+is refused so this fresh-install driver cannot enter the installer's global
+gateway/process cleanup branch for a replacement venv.
+
+Preflight verifies an absent private root, exact nonlinked parent ancestry,
+installer bytes against the pinned local Git blob, disk reserve, full protected
+inventories and hashes of selected machine settings. The child receives a fresh
+allowlisted environment with private HOME/USERPROFILE/HERMES_HOME, Git config,
+uv cache and temp paths. `UV_LINK_MODE=copy` prevents cache hardlink reuse.
+The native Windows Job owns the PowerShell driver and descendants before resume,
+has a 20-minute timeout and bounded output, and terminates the tree on refusal.
+Protected-tree watchers and periodic manual-tree size/link/reserve checks are
+best-effort observations, not an OS filesystem/network sandbox. The existing Job
+proves process ownership and cleanup, not an enforced child-process-count cap.
+
+The [machine-state readback](../../scripts/hermes_manual_machine_state.ps1) hashes
+user/machine PATH, default HERMES_HOME, HERMES_GIT_BASH_PATH, Run registry values
+and Startup-folder files without emitting their values. This is a defined set
+of settings, not a claim to audit every registry key, scheduled task or system
+filesystem write. Ordinary system temp is permitted by the governing operation;
+the installation's own caches/temp are redirected inside its private root.
+
+Observed outcome on 2026-09-22:
+
+- An initial preflight encountered an inherited PowerShell module-path mismatch.
+  It reported `attemptStarted=false` and `finalRootExists=false`. Pinning the
+  system PowerShell module path fixed the read-only state probe; no installation
+  attempt had occurred at that point.
+- The subsequent **single installation attempt** started under the owned Job.
+  The driver's JSON parser rejected process output as `wrapper_protocol` and
+  stopped the Job. No stage PASS or fallback event was successfully recorded.
+  This is a driver/output-capture failure, not evidence that the upstream
+  installer or a package failed. The rejected raw line was not retained, so its
+  exact content and the last upstream operation cannot be reconstructed.
+- Native process cleanup was confirmed. The owned root and its one-off tool,
+  home/cache/temp children were removed after identity/link/overlap checks.
+  `cleanup=true`, `finalRootExists=false`; no final runtime, profile, launcher
+  or successful installation receipt remains. Free space was 28,922,404,864 bytes
+  (about 26.9 GiB) at that readback.
+- Full managed readback: **19,246 regular files, 376,658,620 bytes unchanged**.
+  Full profile readback: **349 regular files, 3,351,013 bytes unchanged**.
+  Selected machine-state hash also matched. No confirmed write outside the owned
+  area was observed in these scopes; a complete system write-set is not claimed.
+- Configured sources remain the verified upstream GitHub/Astral/PyPI paths.
+  No successful network operation or download is attested by the failed capture;
+  absence of captured events is not a network audit proving zero requests.
+
+After rollback, the wrapper was corrected to capture all PowerShell streams
+(`*>&1`, including informational `Write-Host` output) and set UTF-8 explicitly.
+The parser tolerates a leading BOM and retains only byte count/hash for a future
+invalid frame. These fixes passed synthetic tests; **the actual installation was
+not retried**. They do not retroactively establish the rejected line's cause.
+
+The [minimal identity probe](../../scripts/hermes_manual_identity.py) executes
+only attested initializer source under `-I -S -B` with an empty temporary home,
+one distribution and exact console entrypoint. It denies initializer effects
+and never imports main or site hooks. Its source-import result would not prove
+normal-site Desktop startup/protocol behavior. It was tested synthetically but
+was not reached against a new runtime. The private receipt contract binds the
+source, installer, identity and full runtime inventory; readback drift refuses
+qualification. No successful real receipt was produced in this attempt.
+
+Verification: seven [manual-driver tests](../../scripts/hermes-manual-install.test.mjs)
+cover ordered exit/frame parsing, target boundaries, hardlink overlap, inventory
+drift, rollback ownership, receipt pins, PowerShell child exit/output streams and
+synthetic frame transport through the actual owned native Job.
+Three [synthetic identity tests](../../scripts/test_hermes_manual_identity.py)
+cover minimal source import, duplicate distribution/wrong identity and denied
+writes. Five existing backend Node tests (including three Python guard cases)
+also passed. Real evidence is limited to the failed capture, owned-process/root
+cleanup and protected-state readback. No real effective import, completed stage
+set, final-runtime no-overlap or successful receipt PASS is claimed. Point 2B
+remains ineligible; there is no automatic retry or model/provider continuation.
 
 ## Disk/resources and one model store
 
