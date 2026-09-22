@@ -8,14 +8,16 @@ remain unqualified. No manual profile, provider admission or RF-HOST-035 closure
 Point-2 preflight is **BLOCKED before private creation**: four candidate mutable
 files resolve to managed files and updater/bootstrap/fallback confinement is
 unqualified. No manual profile, launcher or point-3 work was created/started.
-Point 2A is **BLOCKED after the monitor repair and one fresh attempt**. Repository
-and Python passed exit/filesystem checks. At venv transition, the monitor rejected
-uv's internal version alias (`live_link`); the native venv result/cleanup receipt
-was not retained. Dependencies did not start. Follow-up identity/containment/
-non-overlap/process checks completed local root rollback without reconstructing
-the missing native proof. Managed/profile readback was unchanged. Internal aliases
-are now accepted explicitly; no further install was run. One private diagnostic
-pair remains; no ready runtime/profile or point 2B. Managed admission is unchanged.
+Point 2A is **DONE after removing live filesystem observers and one fresh attempt**.
+All four official stages passed native exit/cleanup and filesystem postconditions.
+Private Hermes 0.21.3 / Python 3.11.16 passed the bounded `--version` smoke, exact
+commit/tree check, full containment/non-overlap audit and RECORD verification
+(105 packages, 7,521 entries). Protected managed/profile trees and selected machine
+state were unchanged. The installation receipt remains; prior failure diagnostics
+and temporary logs/cache/tools were removed. The runtime prerequisite for separate
+point 2B is ready; no profile/launcher/Desktop launch was performed. This postflight
+audit is not an OS write sandbox. Managed admission remains unchanged; earlier
+refusals remain historical evidence in the linked contract.
 
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,

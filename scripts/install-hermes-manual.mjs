@@ -11,14 +11,13 @@ import {sourceTree,summarizeLog,stagePostcondition,runDirectSequence} from './li
 import {analyzeSource,qualifiedEnvironment,probeToolchain,verifyExecutable,assertToolchainNoOverlap} from './lib/hermes-manual-toolchain.mjs';
 import {manualNormalToolchain,readEffectivePath,sameEffectivePath,normalWindowsFolders} from './lib/hermes-manual-normal-path.mjs';
 import {retainLatestFailure,readFailureReceipt,retireFailure} from './lib/hermes-manual-diagnostic.mjs';
-import {inspectLiveOwned} from './lib/hermes-manual-live-monitor.mjs';
 
 const scriptDir=path.dirname(fileURLToPath(import.meta.url));
 const powershell=path.join(process.env.SystemRoot,'System32/WindowsPowerShell/v1.0/powershell.exe');
 const modulePath=path.join(path.dirname(powershell),'Modules');
 const root=path.resolve(process.argv[2]??'');
 const report={result:'BLOCKED',stages:[],fallbacks:[],attemptStarted:false,cleanup:false,managedUnchanged:false,profileUnchanged:false,machineStateUnchanged:false};
-let rootId,before,machineBefore,child,receipt,phase='preflight',watchers=[],monitor,monitorFailure,lastLogs;
+let rootId,before,machineBefore,child,receipt,phase='preflight',lastLogs;
 const diagnosticRoot=path.join(fs.realpathSync.native(process.env.USERPROFILE),'.hermes-manual-diagnostic-v1');
 let previousDiagnostic,diagnosticRetired=false;
 const machineState=()=>execFileSync(powershell,['-NoProfile','-File',path.join(scriptDir,'hermes_manual_machine_state.ps1')],{windowsHide:true,encoding:'utf8',timeout:20000,env:{...process.env,PSModulePath:modulePath},stdio:['ignore','pipe','pipe']}).trim();
@@ -65,20 +64,12 @@ try {
   report.toolchain.probe=probe.result;
   report.toolchain.tools=probe.tools.map(({name,version,sha256})=>({name,version,sha256}));
   if(probe.result!=='PASS'||!probe.gitConfig)throw Error('toolchain_probe_failed');
-  const stop=reason=>{monitorFailure??=reason;child?.stop('preparation_failed');};
-  const protectedIds=new Set(Object.values(before).flatMap(i=>i.rows.map(r=>r.fileId)));
-  const liveScope={root,identity:rootId,allowedRoots:[code,home,cache,tools],protectedIds};
-  report.writeBoundary='observed_containment_protected_readback_not_sandbox';
-  for(const dir of Object.values(protectedRoots)) {
-    const watcher=fs.watch(dir,{recursive:true},()=>stop('protected_tree_event'));watcher.on('error',()=>stop('protected_watch_failed'));watchers.push(watcher);
-  }
+  // No live filesystem observers: audit complete, stopped trees after the Job.
+  report.writeBoundary='postflight_containment_protected_readback_not_sandbox';
   phase='installation';
-  monitor=setInterval(()=>{try{report.liveObservation=inspectLiveOwned(liveScope);const d=fs.statfsSync(root);if(d.bavail*d.bsize<8*1024**3)stop('disk_reserve');}
-    catch(error){report.monitorDetail=/^[a-zA-Z_]{1,80}$/.test(error.code??error.message)?(error.code??error.message):'unclassified_monitor_error';stop('manual_tree_boundary');}},5000);
   const installationDeadline=Date.now()+1200000;
   await runDirectSequence({deadline:installationDeadline,
     async run(stage,durationMs){
-      if(monitorFailure)throw Error(monitorFailure);
       for(const tool of toolchain)verifyExecutable(tool,Object.values(protectedRoots));
       const refreshed=readEffectivePath(powershell,env);
       if(!sameEffectivePath(refreshed,normal.effective))throw Error('effective_path_changed');
@@ -102,10 +93,8 @@ try {
       } finally {for(const fd of Object.values(fds))fs.closeSync(fd);}
       return {exitCode:receipt.rootExit,terminationReason:receipt.terminationReason,cleanup:receipt.cleanup&&receipt.activeProcesses===0,
         logs:Object.fromEntries(Object.entries(logPaths).map(([k,v])=>[k,summarizeLog(fs.readFileSync(v))]))};
-    },postcondition:stage=>!monitorFailure&&stagePostcondition(stage,code),onResult:result=>{report.stages.push(result);console.log(JSON.stringify({type:'stage_result',...result}));}});
-  clearInterval(monitor);
+    },postcondition:stage=>stagePostcondition(stage,code),onResult:result=>{report.stages.push(result);console.log(JSON.stringify({type:'stage_result',...result}));}});
   phase='postflight';
-  for(const w of watchers)w.close();watchers=[];
   if(execFileSync('git',['-C',code,'rev-parse','HEAD'],{encoding:'utf8',windowsHide:true}).trim()!==sourcePin)throw Error('source_drift');
   if(execFileSync('git',['-C',code,'rev-parse','HEAD^{tree}'],{encoding:'utf8',windowsHide:true}).trim()!==sourceTree)throw Error('source_tree_drift');
   execFileSync('git',['-C',code,'diff','--exit-code','HEAD','--'],{windowsHide:true,stdio:['ignore','pipe','pipe']});
@@ -129,6 +118,29 @@ try {
   const identity=JSON.parse(identityText);
   if(identity.version!=='0.21.3'||identity.distributions!==1||identity.mainImported!==false||identity.entrypoint!=='hermes_cli.main:main')throw Error('identity_result');
   report.identity=identity;
+  // The owner explicitly authorized a noninteractive entrypoint smoke. A fresh
+  // disposable home disables upstream's passive update check; no user profile.
+  for(const marker of ['.update-incomplete','.lazy-refresh-incomplete'])
+    if(fs.existsSync(path.join(code,marker)))throw Error('unexpected_recovery_marker');
+  fs.writeFileSync(path.join(probeHome,'config.yaml'),'updates:\n  check: false\n',{flag:'wx'});
+  const smokeLogs={stdout:path.join(cache,'version.stdout'),stderr:path.join(cache,'version.stderr')};
+  lastLogs={stage:'version',...smokeLogs};
+  const smokeFds=Object.fromEntries(Object.entries(smokeLogs).map(([k,v])=>[k,fs.openSync(v,'wx')]));
+  receipt=null;
+  try {
+    const versionChild=await startWindowsJob(launcher,{executable:path.join(code,'venv/Scripts/hermes.exe'),
+      argv:['--version'],cwd:probeHome,
+      environment:{...env,HOME:probeHome,USERPROFILE:probeHome,HERMES_HOME:probeHome,
+        LOCALAPPDATA:probeHome,APPDATA:probeHome,HERMES_TUI_NO_EARLY_DISABLE:'1'},
+      input:'',durationMs:30000,onData(channel,data){fs.writeSync(smokeFds[channel],data);}});
+    receipt=await versionChild.completion;
+  } finally {for(const fd of Object.values(smokeFds))fs.closeSync(fd);}
+  const versionOutput=fs.readFileSync(smokeLogs.stdout,'utf8');
+  if(receipt.rootExit!==0||receipt.terminationReason!=='root_exit'||!receipt.cleanup||receipt.activeProcesses!==0
+      ||!/^.*Hermes.*\bv?0\.21\.3\b/m.test(versionOutput)||!/^Python: 3\.(11|12|13)\./m.test(versionOutput))throw Error('entrypoint_version_smoke');
+  report.versionSmoke={argv:['--version'],exitCode:receipt.rootExit,cleanup:true,activeProcesses:receipt.activeProcesses,
+    logs:Object.fromEntries(Object.entries(smokeLogs).map(([k,v])=>[k,summarizeLog(fs.readFileSync(v))]))};
+  console.log(JSON.stringify({type:'version_smoke',...report.versionSmoke}));
   let recordsText='';receipt=null;
   const recordChild=await startWindowsJob(launcher,{executable:path.join(manifest.roots[1].path,'python.exe'),
     argv:['-I','-S','-B',path.join(scriptDir,'hermes_manual_records.py'),code],cwd:probeHome,
@@ -138,28 +150,28 @@ try {
   if(receipt.rootExit!==0||!receipt.cleanup)throw Error('records_validation');
   const records=JSON.parse(recordsText);if(records.result!=='PASS')throw Error('records_validation');
   report.records={packages:records.packages.length,recordEntries:records.recordEntries,unhashedEntries:records.unhashedEntries};
+  execFileSync('git',['-C',code,'diff','--exit-code','HEAD','--'],{windowsHide:true,stdio:['ignore','pipe','pipe']});
   // These are exclusively created children of our owned root. Recheck links
   // and ownership before deleting the one-off tool/download/temp directories.
-  assertOwned(root,rootId);inventory(root,{hashes:false,allowInternalLinks:true});
+  assertOwned(root,rootId);assertNoOverlap(inventory(root,{hashes:false,allowInternalLinks:true}),Object.values(before));
   await fsp.rm(cache,{recursive:true});await fsp.rm(tools,{recursive:true});
   const finalInventory=inventory(code,{allowInternalLinks:true});assertNoOverlap(finalInventory,Object.values(before));
   const attestation={schemaVersion:'hermes-manual-install-v1',sourcePin,version:'0.21.3',installerSha256:installerHash,
     root:code,interpreter:path.join(code,'venv/Scripts/python.exe'),executable:path.join(code,'venv/Scripts/hermes.exe'),
-    sourceClass:'official_desktop_direct_stages',manualPolicy:'normal_windows_path_trusted_installer',sourceTree,identity,records,stages:report.stages,
+    sourceClass:'official_desktop_direct_stages',manualPolicy:'normal_windows_path_trusted_installer',sourceTree,identity,versionSmoke:report.versionSmoke,records,stages:report.stages,
     inventoryDigest:finalInventory.digest,inventory:finalInventory.rows,profileCreated:false,launcherCreated:false};
   const receiptPath=path.join(root,'installation-receipt.json'),pendingReceipt=path.join(root,'installation-receipt.pending');
   fs.writeFileSync(pendingReceipt,JSON.stringify(attestation,null,2)+'\n',{flag:'wx'});fs.renameSync(pendingReceipt,receiptPath);
   validateReceipt(JSON.parse(fs.readFileSync(receiptPath,'utf8')),inventory(code,{allowInternalLinks:true}));
   report.result='DONE';report.receipt='installation-receipt.json';report.cleanup=true;report.runtimeBytes=finalInventory.bytes;report.runtimeFiles=finalInventory.files;report.noOverlap=true;
-} catch(error) {report.reason=monitorFailure??(/^[a-z_]{1,80}$/.test(error.message)?error.message:'operation_failed_closed');report.phase=phase;}
+} catch(error) {report.reason=/^[a-z_]{1,80}$/.test(error.message)?error.message:'operation_failed_closed';report.phase=phase;}
 finally {
-  clearInterval(monitor);for(const w of watchers)w.close();
   if(before){try{const after=Object.fromEntries(Object.entries(protectedRoots).map(([k,v])=>[k,inventory(v)]));report.managedUnchanged=before.managed.digest===after.managed.digest;report.profileUnchanged=before.profile.digest===after.profile.digest;report.protectedCounts=Object.fromEntries(Object.entries(after).map(([k,v])=>[k,{files:v.files,bytes:v.bytes}]));report.machineStateUnchanged=machineBefore===machineState();if(!report.managedUnchanged||!report.profileUnchanged||!report.machineStateUnchanged){report.result='BLOCKED';report.reason='protected_state_changed';}}catch{report.result='BLOCKED';report.reason='protected_readback_failed';}}
   if(rootId&&report.result!=='DONE'){
     if(lastLogs){
       try{report.diagnostic=retainLatestFailure(diagnosticRoot,
         {stage:lastLogs.stage,exitCode:receipt?.rootExit??null,stdout:fs.readFileSync(lastLogs.stdout),stderr:fs.readFileSync(lastLogs.stderr),
-          controllerReason:report.reason??null,monitorDetail:report.monitorDetail??null},
+          controllerReason:report.reason??null},
         [process.cwd(),root,...Object.values(protectedRoots)]);}
       catch(error){
         report.diagnostic={retained:false,reason:/^[a-z_]+$/.test(error.message)?error.message:'diagnostic_failed'};

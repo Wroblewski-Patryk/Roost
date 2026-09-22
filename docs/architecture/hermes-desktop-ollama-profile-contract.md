@@ -31,11 +31,12 @@ manual path. Official stage exit codes plus filesystem postconditions and full
 postflight are authoritative; the old wrapper history below is retained as evidence.
 The strict toolchain qualification below is historical. The owner subsequently
 accepted upstream normal User+Machine PATH and generated Python/build tools for
-manual Desktop only. The latest monitor-repair attempt passed repository and
-Python, then stopped at venv transition because the monitor rejected an internal
-uv alias. Follow-up local rollback is complete, with missing native venv cleanup
-proof still explicitly unavailable. One diagnostic pair remains; 2A is BLOCKED
-and 2B is not ready. No second install followed the alias correction.
+manual Desktop only. The monitor-repair attempt below is historical. The latest
+authorized atom removed all live filesystem observers and ran one fresh attempt:
+all four stages, `--version`, source identity, containment/non-overlap and RECORD
+checks passed. **2A DONE; the runtime prerequisite for separate 2B is ready.**
+An installation receipt remains; previous diagnostics and temporary logs/cache/
+tools were removed. No profile, launcher, Desktop UI or agent was started.
 
 This does **not** establish physical isolation of the current Windows views.
 Some descendants overlap while others differ. Manual Desktop launch stays
@@ -846,6 +847,87 @@ hardlinks, internal aliases and sampling/resource bounds. Six diagnostic tests,
 five direct-stage, four normal-Windows and seven manual regression tests pass.
 No UI/main/serve/chat/gateway/Ollama/model/provider/login ran. **2A BLOCKED; 2B not
 ready.** Managed Roost admission remains unchanged.
+
+### Manual installation without live filesystem observers
+
+The subsequent owner-authorized 2A atom removes all filesystem watchers and live
+tree sampling from the manual driver's critical path. The historical observer
+module is no longer imported or called by the driver. It is not replaced with
+another observer. This policy applies only to the owner's manual Desktop backend;
+managed provider admission remains unchanged.
+
+The fresh owned root, private home/cache/temp/tools, credential/proxy-free process
+environment, private Git configuration, pinned official installer and normal
+User+Machine PATH preflight remain. The four official stages run once in order
+under owned Windows Jobs with a shared 20-minute installation deadline. Native
+exit, descendant cleanup and stopped stage postconditions determine progress.
+The first failed stage stops the attempt without a driver retry.
+
+Complete managed/profile fingerprints and selected machine state are compared
+before/after. After the installer stops, the entire new root is audited for
+canonical containment and protected physical file overlap. Internal aliases are
+accepted only when their resolved targets remain inside that root; external
+targets and protected hardlinks fail. This is a postflight audit of a trusted
+installer, not an OS filesystem sandbox or a complete machine-write audit.
+
+Acceptance additionally requires exact source commit/tree, private Python/venv,
+the isolated metadata/source identity probe, package RECORD audit and a bounded
+noninteractive `hermes.exe --version` smoke in its own Windows Job. The smoke uses
+a disposable private home with upstream `updates.check: false`; recovery markers
+are refused. It does not start an agent, UI, chat, gateway, service, login or model.
+Temporary smoke configuration is deleted with the installation cache. Point 2B
+profile/launcher creation is outside this atom.
+
+Previous failure diagnostics are retired only after ownership/hash verification
+and proof that the new official process started. Failure retains at most one
+private bounded log/receipt pair; success removes temporary logs and records the
+installation receipt. No raw output or installation machine paths are published.
+
+Observed single fresh attempt on 2026-09-22: **2A DONE**.
+
+| Stage | Native exit | Cleanup / filesystem postcondition |
+| --- | --- | --- |
+| repository | 0 | PASS; official SSH-to-HTTPS fallback, exact pinned commit/tree |
+| python | 0 | PASS; private managed Python 3.11.16 |
+| venv | 0 | PASS; private base interpreter, system site-packages disabled |
+| dependencies | 0 | PASS; one Hermes Agent 0.21.3 distribution and installed console shim |
+
+The exact source commit is `a3d7f9ae257d5db6bb9759a10c437d786eec1610`, tree
+`971ce7f3edcdbb0ebed9a1a433493eda2e51d3d7`. Tracked source was unchanged after
+installation and smoke. The isolated identity probe confirmed Python 3.11.16,
+Hermes 0.21.3 and `hermes_cli.main:main`. The actual console shim's `--version`
+returned exit 0, 219 stdout bytes, zero stderr bytes and native cleanup with zero
+active descendants. Its stdout SHA-256 is
+`1e920f5876f34616612a12cc082e0183aded4d13ebc9346db89cf39f335a5c8f`.
+No `--help`, interactive main, UI, chat, gateway, service, provider, login,
+Ollama or model execution was needed.
+
+The RECORD audit passed for 105 packages and 7,521 entries, with 105 entries
+without a supplied hash counted explicitly. This checks installed metadata/hash
+consistency and inventories license files; it is not an independent supply-chain
+or license approval. The full stopped-root containment/physical-overlap audit
+passed, including the private uv 3.11-to-3.11.16 alias. The final runtime contains
+26,227 regular files / 1,316,265,979 bytes; its inventory digest is
+`3941bd3a1a4f60482804fe4705c7c883198dbb403ed890a8a9b25e3018947cb1`.
+
+Final protected readback matched 19,246 managed files / 376,658,620 bytes, 349
+profile files / 3,351,013 bytes and the selected machine-state hash. A separate
+post-run process readback found zero candidate-root processes. Previous diagnostic
+retirement succeeded after new process start; its directory is absent. Temporary
+tools, cache, smoke home/config and logs are absent. Only the installation home,
+runtime and private installation receipt remain under the new root. The receipt
+was read back against the runtime inventory; its SHA-256 is
+`a99a31cb672f8931e8bf1be2b98944ade9d5fe38319b93b3ce46e063f574e877`.
+Free space after completion was 24,085,868,544 bytes (about 22.4 GiB).
+
+Verification passed: 26 focused Node regressions, driver syntax, 466 local
+documentation links, scoped diff/privacy checks and context/planning budgets.
+Full application build/tests and provider execution were not run for this manual
+installer-only change. Eight pre-existing tracked edits retain their hashes;
+`design-qa.md` remains unread, unmodified and unstaged. One installation attempt,
+no external retry. **The runtime prerequisite for point 2B is ready; stop here
+without creating its profile or launcher.** Managed admission and all six flags
+remain unchanged.
 
 ## Disk/resources and one model store
 

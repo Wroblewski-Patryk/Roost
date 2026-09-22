@@ -10,16 +10,16 @@ zmienia poniższych bramek. Punkt 2: **BLOCKED przed utworzeniem profilu** — �
 preflight potwierdził cztery wspólne pliki fizyczne oraz brak kwalifikowanej
 izolacji updater/bootstrap/fallback. Nie utworzono profilu ani launchera; punkt 3
 pozostaje niedopuszczony.
-Punkt 2A: **BLOCKED po naprawie monitora i jednej nowej próbie**. `repository`
-i `python` zakończyły się exit 0 oraz PASS postcondition. Przy przejściu do `venv`
-monitor odrzucił wewnętrzny alias uv (`live_link`); natywnego wyniku/cleanup receipt
-dla venv nie zachowano. `dependencies` nie ruszyło. Po kontroli tożsamości root,
-celu aliasu, braku overlap i pasujących procesów domknięto lokalny rollback;
-nie odtworzono brakującego natywnego dowodu. Managed/profil pozostały niezmienione.
-Jedna mała prywatna diagnostyka została zachowana. Końcowy kod dopuszcza aliasy
-wewnętrzne i zmiany plików podczas pracy, bez drugiej próby. To obserwacja ścieżek
-i chroniony readback, nie sandbox wszystkich zapisów. Brak runtime/profilu;
-punkt 2B niegotowy. Managed Roost admission bez zmian.
+Punkt 2A: **DONE po usunięciu obserwatorów plików i jednej nowej próbie**.
+`repository`, `python`, `venv` i `dependencies`: exit 0, PASS postcondition oraz
+natywne potwierdzenie zamknięcia procesów. Prywatny Hermes 0.21.3 / Python 3.11.16
+przeszedł `--version`, kontrolę dokładnego commit/tree, pełny audyt izolacji oraz
+RECORD (105 pakietów, 7521 wpisów). Managed/profil i wybrane ustawienia systemowe
+pozostały niezmienione. Zapisano installation receipt; usunięto poprzednią
+diagnostykę i tymczasowe logi/cache/tools. To audyt po instalacji, nie sandbox
+wszystkich zapisów. Runtime jest gotowy jako wejście do osobnego punktu 2B;
+profilu/launchera nie utworzono i Desktopu nie uruchomiono. Managed Roost admission
+bez zmian. Wcześniejsze odmowy pozostają historią w powiązanym kontrakcie.
 
 ## Stały program syntetyczny — RF-RUNTIME-005B30
 
