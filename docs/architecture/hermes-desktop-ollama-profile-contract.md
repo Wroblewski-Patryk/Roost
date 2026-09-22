@@ -24,6 +24,8 @@ The next decision also explicitly accepts the installer's internal repository,
 Python-version and dependency-tier fallbacks within one 20-minute stage-driver
 attempt. Only an external rerun remains disallowed for that atom. That attempt
 was started and rolled back as recorded below; it produced no qualified runtime.
+A separately authorized real retry using the corrected driver repeated the
+output-protocol failure and was also rolled back. No third attempt was made.
 
 This does **not** establish physical isolation of the current Windows views.
 Some descendants overlap while others differ. Manual Desktop launch stays
@@ -484,6 +486,36 @@ also passed. Real evidence is limited to the failed capture, owned-process/root
 cleanup and protected-state readback. No real effective import, completed stage
 set, final-runtime no-overlap or successful receipt PASS is claimed. Point 2B
 remains ineligible; there is no automatic retry or model/provider continuation.
+
+### Authorized retry of the corrected driver: same refusal, clean rollback
+
+The next authorization permitted exactly one real retry of the unchanged driver
+from commit `bb607909322bae6ce0d65d2adf496500aeb9e655`. Read-only preflight found
+the known manual root, runtime, installation home, tool/cache/temp children all
+absent, and no previous owned process in the scoped process check. Free space
+was 29,338,017,792 bytes (about 27.3 GiB), above the required 20 GiB. Driver bytes
+matched that commit. The driver refreshed canonical ancestry, installer identity,
+full managed/profile inventories and selected system-state baseline before spawn.
+
+This **second real attempt** again returned `wrapper_protocol`, with no captured
+stage PASS or fallback event. The invalid-frame evidence is deliberately limited
+to **48 UTF-8 bytes**, SHA-256
+`f7b5d6c7e74ca099db21404a775ee2b8776b36dc4a96b7f04cd85673b82ce408`.
+No raw output was published or saved. The prior stream/encoding correction did
+not resolve the real failure; its precise cause and the last upstream operation
+remain unestablished. This is not an attested upstream installation failure or a
+successful network/install result. No installer, stage or architecture change
+was made during this retry, and there was no third attempt or upstream repair.
+
+Owned Job cleanup and rollback passed again: `attemptStarted=true`,
+`cleanup=true`, `finalRootExists=false`. All new owned runtime/home/cache/temp/tool
+resources were removed; no final manual installation or receipt remains. Full
+readback matched 19,246 managed files (376,658,620 bytes), 349 profile files
+(3,351,013 bytes) and the selected machine-state hash. Final free space was
+29,307,674,624 bytes (about 27.3 GiB). Network requests/downloads, effective manual
+identity and final-runtime isolation were not qualified by the failed capture.
+The targeted real preflight/cleanup/readback is the evidence for this retry;
+unchanged synthetic suites were not needlessly rerun. Point 2B remains ineligible.
 
 ## Disk/resources and one model store
 

@@ -9,8 +9,9 @@ Point-2 preflight is **BLOCKED before private creation**: four candidate mutable
 files resolve to managed files and updater/bootstrap/fallback confinement is
 unqualified. No manual profile, launcher or point-3 work was created/started.
 Point 2A accepts official internal fallbacks for one bounded manual install.
-It is **BLOCKED after one attempt and rollback**: the driver rejected output as
-`wrapper_protocol`, with no stage PASS confirmed. Owned Job cleanup and root
+It is **BLOCKED after the separately authorized retry and rollback**: the corrected
+driver again reported `wrapper_protocol`, now with invalid-frame length/hash;
+no stage PASS was confirmed. Owned Job cleanup and root
 removal passed; full managed/profile readback and selected machine-state hashes
 were unchanged. No additional runtime/receipt remains; point 2B is ineligible.
 Managed Roost admission is unchanged.

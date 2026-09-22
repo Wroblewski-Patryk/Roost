@@ -10,9 +10,10 @@ zmienia poniższych bramek. Punkt 2: **BLOCKED przed utworzeniem profilu** — �
 preflight potwierdził cztery wspólne pliki fizyczne oraz brak kwalifikowanej
 izolacji updater/bootstrap/fallback. Nie utworzono profilu ani launchera; punkt 3
 pozostaje niedopuszczony.
-Punkt 2A: **BLOCKED po jednej próbie i rollbacku**. Oficjalne wewnętrzne fallbacki
-są dopuszczone dla manualnej instalacji. Sterownik przerwał próbę na niepoprawnym
-formacie wyjścia (`wrapper_protocol`); nie potwierdzono PASS żadnego etapu.
+Punkt 2A: **BLOCKED po autoryzowanej ponownej próbie i rollbacku**. Oficjalne
+wewnętrzne fallbacki są dopuszczone dla manualnej instalacji. Poprawiony sterownik
+ponownie zgłosił `wrapper_protocol` (zapisano długość/hash odrzuconej ramki);
+nie potwierdzono PASS żadnego etapu. Poprawka strumieni nie rozwiązała realnego błędu.
 Owned Job zakończony, nowy root usunięty; pełny managed/profile readback i kontrola
 wybranych ustawień systemowych bez zmian. Nie ma nowego runtime ani receipt;
 punkt 2B nie jest gotowy. Rygorystyczna polityka managed Roost pozostaje bez zmian.
