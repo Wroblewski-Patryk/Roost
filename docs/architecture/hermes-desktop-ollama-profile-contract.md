@@ -29,6 +29,10 @@ output-protocol failure and was also rolled back. No third wrapper attempt was m
 The subsequent direct-stage decision removes `wrapper_protocol` from the active
 manual path. Official stage exit codes plus filesystem postconditions and full
 postflight are authoritative; the old wrapper history below is retained as evidence.
+The latest toolchain-qualified retry is **BLOCKED before installation**: the exact
+source overwrites the qualified child PATH from the registry, and the complete
+generated Python/dependency build-tool closure is not prequalified. A successful
+local tool-resolution probe alone does not admit an official stage.
 
 This does **not** establish physical isolation of the current Windows views.
 Some descendants overlap while others differ. Manual Desktop launch stays
@@ -600,6 +604,96 @@ process/root cleanup and full protected readback are the real evidence. Effectiv
 manual identity, completed dependency inventory, final-runtime no-overlap and
 successful receipt remain unqualified. No upstream repair, repeated stage or
 point-2B/model/provider work followed this failure.
+
+### Toolchain-qualified retry: source admission refused before installation
+
+The owner next required every external command to have an exact qualified path,
+version and hash, with a minimal child PATH, safe system PSModulePath and a
+read-only same-environment preflight before one possible direct installation.
+The [source analyzer](../../scripts/hermes_manual_source_commands.ps1) parses the
+exact hash-checked pinned installer using the PowerShell AST; it never dot-sources
+or executes upstream code. It follows the four selected stage functions, common
+dispatch/path helpers and their local call closure, recording literal commands,
+dynamic call heads, ProcessStartInfo filenames, SSH command strings and PATH writes.
+It conservatively records older-install branches too; the fresh-target contract
+excludes them rather than pretending those commands are absent from the source.
+
+Source-confirmed stage toolchain:
+
+| Stage/branch | Commands and qualification limits |
+| --- | --- |
+| Common dispatch | Windows PowerShell host and built-in Management, Utility and Core commands; `Invoke-Stage` calls `Sync-EnvPath` before the worker |
+| Repository SSH/HTTPS | `git`; SSH string is `ssh -o BatchMode=yes -o ConnectTimeout=5`; qualified Git package helpers are additional local candidate evidence |
+| Repository ZIP fallback | `Invoke-WebRequest`, `Expand-Archive` (Archive module), filesystem cmdlets, then Git init/fetch/checkout |
+| Python primary/fallback | uv python find/install for private managed Python; 3.11, then 3.12/3.13/3.10; dynamically resolved private interpreter `--version` |
+| Fresh venv | uv via ProcessStartInfo, bound to the private resolved Python; no interpreter download in this stage |
+| Dependencies and repairs | uv sync locked, editable pip tiers, entrypoint reinstall and web extra fallback; private Python metadata/import/compile probes |
+| Existing venv only, excluded | `schtasks`, `taskkill`, `Get-CimInstance`; driver refuses an existing venv before this stage |
+| Short-path normalization only | Add-Type/PInvoke and COM fallbacks are excluded by the actual long-path inputs; cmdlet availability is still checked |
+
+There is no direct curl, tar or cmd invocation in these selected source branches.
+`cmd.exe` is catalogued as the planned COMSPEC, not as an observed installer call.
+The audit base Python is a separate postflight tool, never a substitute for the
+new private installation interpreter. Scriptblock dispatch (`$Script` and
+`$StageDef.Worker`) is distinguished from native executable resolution. Dependency
+builds can execute further backend/tool code; the installer source alone does not
+enumerate or attest that full closure. No speculative compiler list is accepted.
+
+The [qualifier](../../scripts/qualify-hermes-manual-toolchain.mjs) resolves explicit
+local installation locations without registered PATH, rejects links/managed
+origins and checks physical overlap with protected inventories. The shared
+[environment builder and source gate](../../scripts/lib/hermes-manual-toolchain.mjs)
+set only qualified command directories and system directories, `.EXE` PATHEXT,
+system PSModulePath, private home/temp/cache, empty private gitconfig, no inherited
+credential/proxy/shim environment, disabled credential helpers/prompts and uv copy
+mode. A [native probe](../../scripts/hermes_manual_toolchain_probe.ps1) checks
+Get-Command application resolution, hashes, local versions, system command/module
+origin and effective Git configuration/helper directory in that same planned
+environment. This is process-environment qualification, not a host sandbox.
+
+Observed local candidate versions and SHA-256 (canonical machine paths stay local):
+
+| Candidate | Version | SHA-256 |
+| --- | --- | --- |
+| Git dispatcher | 2.49.0.windows.1 | `fec691d80fccc35fcc309fbc9f720536c1d795b8a562ec169f28c9923da9600f` |
+| uv | 0.11.8 | `c3f337907f233811954d96e0ecf2d46df094413250ebdcd10d40d9b5c48febd2` |
+| Git bundled SSH | OpenSSH 9.9p2 / OpenSSL 3.2.4 | `50f2ed2c4eacea177dc208bbb70679307f5d5fcace69c2c74703da41c1b92ad9` |
+| Git bundled sh | Bash 5.2.37 | `fc362aae1f217d34d02237d99527839dd6cf85b37c7a0277109400bfa0faa594` |
+| Git core | 2.49.0.windows.1 | `fe0e064c8283dc50b1ce11a8b90d2ec1b68b5dc714ff0b8a8534bb9c43d1d02e` |
+| Git HTTPS helper | 2.49.0.windows.1 | `88c65fdef1a1e6d61eb597c1d2efee3696739634f5029d1c17fccddfadd564d2` |
+| Windows PowerShell executable | File version 10.0.26100.8972 | `8bb6fa8c283b4d92120b1ef249a9b311b0f804d4cabbe9981159976c8be76a5e` |
+| COMSPEC candidate | File version 10.0.26100.1 | `97ac98b1a92c286054cce55239cfccdfc23a5517bd07fe693072c9ca96c7dabb` |
+| Separate audit Python | 3.13.1 | `03573716a7fcbd8b7fed8fe0163bbfbd3a852546920d6a666123f307c8dac7d9` |
+
+Core 3.0.0.0, Management/Utility 3.1.0.0 and Archive 1.0.1.0 module paths,
+versions and hashes were also resolved locally; 33 source cmdlets/functions and
+private Git configuration passed. This does not attest every transitive DLL or
+future build backend. CIM is not required in the admitted fresh-venv branch.
+
+The **overall preflight remains BLOCKED**. Source lines 967 and 1262 assign PATH
+from User + Machine registry values; `Invoke-Stage` calls the first assignment
+unconditionally at line 4952. The official script therefore discards the exact
+environment whose resolution was checked. Changing registered PATH, patching
+upstream or replacing official stage dispatch is outside this atom and was not
+done. The other explicit blockers are generated private Python without a current
+exact pre-install identity and the unqualified dependency-build closure. This is
+not a diagnosis of the previous deleted raw log: its missing command stays unknown.
+
+No installation stage was started, no runtime or installation receipt was created,
+and no model/profile/launcher/provider work followed. Private inspection scratch
+was removed. Full managed/profile readback and selected machine-state hashes
+matched their baselines (19,246 managed files / 376,658,620 bytes; 349 profile files /
+3,351,013 bytes). No actual failure log was retained because no stage ran.
+
+For a future admitted run, [failure retention](../../scripts/lib/hermes-manual-diagnostic.mjs)
+keeps at most one bounded private log/receipt pair outside repository/runtime,
+checks ownership and old-log hash before replacement, extracts only a simple
+missing-command name and rejects detected secret patterns. Raw bytes are never
+published. Pattern screening is not a proof that arbitrary output contains no
+secret. Retention/rollback/secret deletion are synthetic qualifications only in
+this atom; live failure retention was not exercised. Stage success still uses
+exit/filesystem evidence. Nine new tests plus five direct-stage and seven manual
+regression tests pass. Point 2B remains ineligible; STOP after the scoped commit.
 
 ## Disk/resources and one model store
 

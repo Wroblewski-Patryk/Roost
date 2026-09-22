@@ -8,12 +8,14 @@ remain unqualified. No manual profile, provider admission or RF-HOST-035 closure
 Point-2 preflight is **BLOCKED before private creation**: four candidate mutable
 files resolve to managed files and updater/bootstrap/fallback confinement is
 unqualified. No manual profile, launcher or point-3 work was created/started.
-Point 2A uses direct official stages with exit/filesystem postconditions;
-`wrapper_protocol` is no longer an active requirement. It is **BLOCKED**:
-`repository` exited 1, with sanitized classification `command_unavailable`.
-The remaining three stages did not start. Owned Job cleanup/root removal passed;
-full managed/profile and selected machine-state hashes were unchanged. No manual
-runtime/receipt remains; point 2B is ineligible. Managed admission is unchanged.
+Point 2A is **BLOCKED before a further install attempt** by toolchain qualification.
+Local exact-path/hash probes pass, but the pinned installer replaces qualified PATH
+with registered user/machine PATH before every stage. Generated private Python and
+dependency-build tools also lack complete pre-install identities. The driver denies
+before creating the runtime. The previous repository exit 1 / `command_unavailable`
+is historical, with the command still unidentified. Protected managed/profile and
+selected machine settings remain unchanged; no manual runtime/receipt or point 2B.
+`wrapper_protocol` remains inactive; managed admission is unchanged.
 
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,

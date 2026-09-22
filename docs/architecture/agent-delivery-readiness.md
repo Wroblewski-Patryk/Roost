@@ -10,13 +10,15 @@ zmienia poniższych bramek. Punkt 2: **BLOCKED przed utworzeniem profilu** — �
 preflight potwierdził cztery wspólne pliki fizyczne oraz brak kwalifikowanej
 izolacji updater/bootstrap/fallback. Nie utworzono profilu ani launchera; punkt 3
 pozostaje niedopuszczony.
-Punkt 2A: **BLOCKED po bezpośrednim etapie `repository` i rollbacku**. Manualna
-ścieżka używa kodu wyjścia i warunków plikowych, bez bramki `wrapper_protocol`.
-Oficjalny installer zakończył `repository` kodem 1; bezpieczna klasyfikacja logu:
-`command_unavailable` (dokładna nazwa polecenia nieustalona). Pozostałe etapy
-nieuruchomione. Owned Job zakończony, nowy root usunięty; pełny managed/profile
-readback i wybrane ustawienia systemowe bez zmian. Nie ma runtime ani receipt;
-punkt 2B niegotowy. Polityka managed Roost pozostaje bez zmian.
+Punkt 2A: **BLOCKED w kwalifikacji toolchainu, bez kolejnej próby instalacji**.
+Lokalne narzędzia przechodzą kontrolę dokładnej ścieżki/hash w planowanym czystym
+środowisku, lecz przypięty installer przed każdym etapem nadpisuje PATH wartościami
+z rejestru (`Sync-EnvPath`). Nie zachowuje wymaganej granicy kwalifikacji. Prywatny
+Python powstaje dopiero podczas instalacji, a pełny toolchain buildów zależności
+nie jest ustalony przed startem. Sterownik odmawia przed utworzeniem runtime.
+Wcześniejszy `repository` exit 1 / `command_unavailable` pozostaje faktem historycznym;
+nazwa tamtego polecenia nadal nieustalona. Chroniony managed/profil i wybrane
+ustawienia bez zmian; brak nowego runtime/receipt/profilu. Punkt 2B niegotowy.
 
 ## Stały program syntetyczny — RF-RUNTIME-005B30
 
