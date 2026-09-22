@@ -1,4 +1,4 @@
-"""Offline, read-only necessary-input check; never grants build/install authority.
+"""Optional offline artifact inventory; not a manual Desktop installation gate.
 
 Only stdlib, Git blob reads and original cached ZIP bytes are used. Extracted
 uv archives and installed dist-info cannot substitute for locked wheel bytes.
@@ -131,7 +131,8 @@ def inspect_caches(roots, artifacts):
 
 
 def report(artifacts, count, found):
-    return {'result': 'BLOCKED', 'scope': 'necessary_build_inputs_only',
+    return {'result': 'INCOMPLETE_ARTIFACT_INVENTORY', 'scope': 'necessary_build_inputs_only',
+            'manualInstallationGate': False,
             'cacheCandidates': count,
             'lockedBuildInputs': [{**a, 'cachedExactBytes': a['name'] in found} for a in artifacts],
             'blockers': ['missing_artifact:' + a['name'] for a in artifacts if a['name'] not in found] +
@@ -152,7 +153,8 @@ def main():
         return 2
     except Exception:
         # Private paths and upstream stderr never enter the public result.
-        print(json.dumps({'result': 'BLOCKED', 'reason': 'preflight_failed_closed', 'installationAuthorized': False}))
+        print(json.dumps({'result': 'INVENTORY_FAILED', 'reason': 'preflight_failed_closed',
+                          'manualInstallationGate': False, 'installationAuthorized': False}))
         return 2
 
 

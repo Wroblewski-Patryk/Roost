@@ -13,6 +13,14 @@ physically independent private Desktop backend installation** after all its
 source/build/isolation gates pass. It does not authorize a second model-weight
 copy. The preflight below stopped before exercising that installation authority.
 
+**Current manual-path policy:** the subsequent operational 2A decision accepts
+the official Desktop installer and its dependency installation for the owner's
+manual tool. Full independently mirrored/hash-closed dependencies are **not** a
+manual-install admission gate. Earlier artifact-closure refusals below are
+historical evidence, not current policy. Managed Roost runtime admission, source
+pins, provider gates and isolation requirements are unchanged. The optional
+artifact checker now reports inventory status and `manualInstallationGate=false`.
+
 This does **not** establish physical isolation of the current Windows views.
 Some descendants overlap while others differ. Manual Desktop launch stays
 denied until the point-2 boundaries below are proven. Roost's
@@ -310,6 +318,85 @@ both locked archives absent. Transactional staging/rollback, new-runtime overlap
 dual-distribution, effective-import and receipt checks were not run: no new
 runtime or provisioning implementation was created. Existing managed admission
 and provider pins remain unchanged. Point 2B remains ineligible.
+
+### Operational 2A: official installer inspected, attempt not started
+
+The packaged bundle still selects source commit `a3d7f9ae...` for fresh installs.
+The observed Desktop executable SHA-256 is
+`1d27ee17f1a23cb18373c324b1b34b6a05b79c14ce129624d7645269f9a7612a`;
+the main bundle retains the hash recorded above. Both the Desktop executable
+and cached PowerShell installer report Authenticode `NotSigned`. This is a
+reported identity limitation, not an invented requirement for a signed script.
+
+The cached `install-main.ps1` has SHA-256
+`226a342a3f409a0e3b6a716b3ba4d464f286adc1e7356d08edd3ff33d6b35e39`.
+Removing its three-byte UTF-8 BOM produces the exact pinned `scripts/install.ps1`
+Git blob (251,523 bytes), SHA-256
+`e57d49271c45205e8faae964e59453a2279481d85eadae7d8495df2e31f91ccd`.
+Thus the cached script's content was bound to the selected source rather than
+trusted because its filename says `main`.
+
+The verified installer accepts `-InstallDir` and `-HermesHome`, not `-InstallRoot`.
+Explicit values survive its path normalization. Its supported headless stage
+shape is `-Stage <name> -NonInteractive -Json -InstallDir <target> -HermesHome
+<private-install-home> -Commit <stamp-commit> -Branch main`; this is an inspected
+interface, **not an executed or admitted command**. `-ShowResolvedPaths` and
+`-Manifest` are read-only protocol modes. A stage returns JSON containing `stage`,
+`ok`, `skipped`, `reason` and `duration_ms`; the script exits 0 on stage success,
+1 on failure and 2 for an unknown stage. The native exit and stage frame both
+need validation. No stage result alone qualifies the finished runtime.
+
+Source inspection distinguishes two paths:
+
+- Full bootstrap runs `path` and `config-templates` even with `-NonInteractive`.
+  These persist user PATH/default `HERMES_HOME` and create configuration/state.
+  A stage driver can omit them, as well as desktop/node/SDK/setup/gateway stages;
+  full bootstrap is therefore outside this task's write/profile scope.
+- A selective backend sequence can use `repository`, `python`, `venv` and
+  `dependencies`, with a fresh explicit target. However, `repository` attempts
+  SSH, then HTTPS, then a ZIP fallback; `python` attempts 3.11, then fallback
+  minors 3.12/3.13/3.10; `dependencies` contains its documented resolver-tier
+  fallback. No installer parameter disables these sequences. This conflicts
+  with this operational atom's explicit no-retry restriction. No wrapper was
+  invented that pretends an asynchronous stop-on-log prevents the next attempt.
+
+The relevant configured upstream origins are GitHub's NousResearch repository/
+archives and Astral's managed-Python distribution through uv, plus PyPI dependency
+resolution. Other full-install stages can fetch Git for Windows, Node.js, npm,
+browser assets and a CUA driver; those stages were not admitted. No network
+request, redirect or package source was exercised by this inspection.
+
+`-InstallRoot` belongs to `scripts/desktop-update/windows.ps1`, which needs an
+existing installation and invokes `python -m hermes_cli.main update`, probes
+`main update --help`, may retry/rebuild and imports `hermes_cli.main` in validation.
+The pinned updater does have `-NoUi` and `-NoGateway`; these do not remove its
+prohibited main import/execution. The pinned updater blob SHA-256 is
+`e0c611d684e956c6d6231c69e757a0633ba83c8b311e3fecd6934105dfcf59b1`.
+The current checkout's updater differs from that blob and was not substituted.
+
+A private manual-root candidate outside the repository, managed/profile roots,
+package cache and temp was inspected but not created. Its existing parent
+ancestry resolved exactly without reported links; free disk space was about
+31.3 GiB. No new runtime/cache resources, installer process, profile, launcher or receipt
+were created, so there was no rollback target. Physical overlap and effective
+import of a new runtime cannot be qualified while it does not exist.
+
+The installer attempt allowance remains unused. Full artifact closure is no
+longer the blocker: the remaining conflict is between the available official
+install/update behavior and this atom's operational restrictions. Point 2B and
+model/provider work remain unstarted.
+
+Full hash-only baseline/readback of the inspected managed root covered 19,246
+regular files (376,658,620 bytes); the profile covered 349 regular files
+(3,351,013 bytes). Neither tree contained observed links. Relative entries, file
+identities, sizes, modification times and content hashes matched before/after the
+verification window. Private contents were hashed only, never interpreted or
+saved as evidence files. This full-tree check is distinct from earlier 45-file
+installation sampling. Six artifact-inventory tests, five backend regression
+tests (including three Python guard cases), and the actual installer's read-only
+PowerShell AST parameter/target check passed. No real installation postflight,
+write-set/rollback/receipt/new-runtime overlap test is claimed for an unstarted
+attempt.
 
 ## Disk/resources and one model store
 

@@ -1,6 +1,8 @@
 {
   "schemaVersion": 1,
-  "purpose": "manual_desktop_build_preflight_only",
+  "purpose": "optional_artifact_inventory",
+  "manualInstallationPolicy": "official_desktop_installer_with_operational_isolation",
+  "artifactClosureRequiredForManual": false,
   "source": {
     "commit": "a3d7f9ae257d5db6bb9759a10c437d786eec1610",
     "tree": "971ce7f3edcdbb0ebed9a1a433493eda2e51d3d7",

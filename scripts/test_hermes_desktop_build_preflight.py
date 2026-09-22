@@ -79,7 +79,8 @@ class BuildPreflightTests(unittest.TestCase):
     def test_partial_inputs_never_authorize_staging_or_install(self):
         for found in [set(), {'example'}]:
             result = probe.report([self.artifact], 1, found)
-            self.assertEqual(result['result'], 'BLOCKED')
+            self.assertEqual(result['result'], 'INCOMPLETE_ARTIFACT_INVENTORY')
+            self.assertFalse(result['manualInstallationGate'])
             self.assertFalse(result['installationAuthorized'])
             self.assertFalse(result['stagingCreated'])
             self.assertEqual(result['networkRequests'], 0)
