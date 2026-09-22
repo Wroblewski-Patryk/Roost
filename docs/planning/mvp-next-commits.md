@@ -9,7 +9,15 @@ real smoke attempt the owned Ollama server ended; no correct answer/backend was
 verified. Its exact termination reason was not retained. Preserve the installed
 model and consumed attempt; do not rerun or re-download automatically. Any next
 atom needs explicit authority and must retain server-exit evidence before a new
-smoke. See the [profile contract](../architecture/hermes-desktop-ollama-profile-contract.md#point-3-explicitly-authorized-partial-resume-and-one-manual-smoke).
+smoke. The subsequent [load-only diagnosis](../architecture/hermes-desktop-ollama-profile-contract.md#post-smoke-load-only-diagnosis)
+completed exactly one load (HTTP 200, 20.127 s), with clean owned shutdown and
+unchanged model/profile/runtime/state. **Historical cause INCONCLUSIVE**:
+447 MiB minimum sampled available RAM and 98.25% peak commit prove pressure in
+this load, not the previous cause. No Hermes retry occurred. The proposed next
+atom is one newly authorized Hermes smoke after owner-freed resources, using a
+fresh server with bounded capture and full descendant/exit telemetry. Suggested
+preflight margins: 12 GiB available RAM, 18 GiB commit headroom, 6 GiB disk reserve,
+context 2048; empirical margins, not guarantees. No automatic continuation.
 Interactive launch, Roost provider admission and all six false flags remain.
 
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,

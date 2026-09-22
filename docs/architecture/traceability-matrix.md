@@ -45,6 +45,15 @@ was not retained; no causal claim is made. The installed model is preserved and
 the attempt is consumed. No retry, interactive admission, Roost provider activation
 or readiness-flag change is implied. The linked contract records cleanup/readback.
 
+The separately authorized [load-only diagnosis](hermes-desktop-ollama-profile-contract.md#post-smoke-load-only-diagnosis)
+is **INCONCLUSIVE for the historical cause**. One model load passed in 20.127 s
+with no generated output; the server remained healthy until explicit shutdown.
+Available RAM fell to 447 MiB and commit reached 98.25%, without proof of prior
+OOM. Bounded server capture and descendant telemetry passed three synthetic
+tests; the real load was not repeated. Native cleanup passed, model/profile/
+runtime/state remained unchanged, and no Hermes smoke or Roost admission occurred.
+Point 3 stays blocked pending a separately authorized smoke with resource margins.
+
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,
 trwały resume receipt/ack, dokładnie 22 bajty wyniku, niezależne review i cleanup.

@@ -54,6 +54,11 @@ answer has been established. See the [resume evidence](#point-3-explicitly-autho
 The earlier progress-output failure and retained partials below are historical.
 Interactive/managed admission and all Roost readiness flags remain unchanged.
 
+The subsequent separately authorized [load-only diagnosis](#post-smoke-load-only-diagnosis)
+completed one model load successfully. **Historical cause INCONCLUSIVE; point 3
+still BLOCKED.** Memory pressure was observed, but the previous termination
+cannot be attributed to OOM, driver, Ollama or controller from retained evidence.
+
 This does **not** establish physical isolation of the current Windows views.
 Some descendants overlap while others differ. Manual Desktop launch stays
 denied until the point-2 boundaries below are proven. Roost's
@@ -1231,6 +1236,100 @@ The final copied launcher `--check`, JavaScript syntax, 500 local links, scoped
 privacy/diff checks and documentation budgets passed (103,208 default-context
 bytes). All eight unrelated tracked-file hashes were preserved;
 `design-qa.md` was neither read nor staged. No owned Ollama/Hermes process remained.
+
+## Post-smoke load-only diagnosis
+
+**2026-09-22 — DIAGNOSIS INCONCLUSIVE.** Read-only review of the previous
+receipts found no retained server exit/reason or raw incident log. Available
+Ollama logs predated the incident. Both enabled Windows Application/System logs
+returned zero events in the incident window; accessible WER/crash locations had
+no matching report. Absence of an event does not establish a cause or exclude OOM.
+
+The separately authorized reproduction made **exactly one load-only request**,
+without Hermes, download, inference output, tools or Roost activation. Official
+[Ollama 0.34.2 handler source](https://github.com/ollama/ollama/blob/v0.34.2/server/routes.go)
+returns `done_reason=load` after scheduling the model when the prompt is empty.
+The request used `/api/generate`, `gpt-oss:20b`, empty prompt, `stream=false`,
+`keep_alive=5m` and `num_ctx=2048`. Client timeout was 30 minutes and the native
+Job safety limit 40 minutes. Process-only `OLLAMA_LOAD_TIMEOUT=30m` replaced the
+[upstream five-minute stall default](https://github.com/ollama/ollama/blob/v0.34.2/envconfig/config.go);
+this is a controlled difference from the failed smoke, not a global setting.
+
+Ollama returned **HTTP 200 after 20,127 ms**, `done=true`, `done_reason=load`,
+zero generated characters and zero evaluation tokens. The server remained
+healthy until the controller explicitly requested shutdown. The worker recorded
+`exitCode=null`, `signal=SIGTERM`, `controllerStopRequested=true`; this is not a
+native crash code. The enclosing native Job returned exit 0, `root_exit`,
+cleanup true and zero active processes. Final sampling found no Ollama/runner
+processes; temporary native control files were removed.
+
+| Measurement | Observed value |
+| --- | --- |
+| Initial available physical memory | 9.72 GiB |
+| Minimum sampled available physical memory | 447.26 MiB |
+| Peak committed memory / commit limit | 58,749,935,616 / 59,798,929,408 bytes (98.25%) |
+| Minimum sampled commit headroom | 1,048,993,792 bytes (0.98 GiB) |
+| Allocated pagefile / maximum sampled use | 24,576 / 3,677 MiB |
+| Loaded model resident / GPU bytes from `/api/ps` | 14,048,884,160 / 4,251,325,562 |
+| GPU free at loaded sample / after cleanup | 979 / 5,171 MiB |
+| Available physical memory after cleanup | 10.61 GiB |
+| Disk free after cleanup | 11.33 GiB |
+
+This proves substantial memory pressure during this load, not a previous OOM.
+The pagefile was not full. The model used mixed CPU/GPU memory; layer-offload
+log counts do not mean the whole model fitted in GPU VRAM. High page activity
+during model loading also includes mapped-file reads and does not by itself
+prove swap thrashing. The failed smoke had no retained contemporaneous commit
+headroom measurement, so its cause cannot be reconstructed from free RAM alone.
+
+The new [server worker](../../scripts/hermes-ollama-server-worker.mjs) drains
+stdout/stderr continuously, retains a bounded 64 KiB tail per channel in one
+private log outside the repository, and sends only bounded progress/exit facts
+through the native Job. Log volume is evidence, never a server-stop condition.
+This load produced 735 stdout and 27,010 stderr bytes, below the old respective
+131,072/32,768-byte caps. Cumulative output from the previous pull plus smoke
+was not retained; this result neither proves nor rules out that older cap as
+the historical cause. No driver/CUDA error was observed in the successful load.
+
+Initial process telemetry captured the server working set but missed the
+separate model runner. Global RAM/commit/pagefile/GPU and API residency were
+captured. The [sampler](../../scripts/ollama-diagnostic-sample.ps1) now follows
+all owned descendants with a creation-time check against PID reuse. This repair
+was verified synthetically; **the real load was not repeated** to fill that gap.
+Three [synthetic tests](../../scripts/hermes-ollama-server-worker.test.mjs)
+cover bounded capture, a noisy owned server surviving the old output cap, and
+descendant telemetry with native cleanup. The
+[diagnostic driver](../../scripts/diagnose-hermes-ollama-load.mjs) records API,
+exit, resources and postflight evidence; it is not permission to rerun.
+
+All five model blobs passed full SHA-256 verification before the load. The sole
+store's seven-file inventory and model identities/sizes/timestamps were unchanged
+afterwards. Runtime validation, private profile, both protected roots and
+`MANUAL_DESKTOP_STATE` passed unchanged postflight; state remains
+`manual-smoke-blocked`, with the previous smoke consumed and no new admission.
+Evidence identities (raw contents retained privately, never committed):
+
+- Diagnostic receipt SHA-256: `3dd91b9d8ae5db305ecadc9bede535915776911714b8a1d2b5408ad65daa741e`.
+- One bounded private raw log: 28,679 bytes; SHA-256 `aa9b466597df171d14f189f57814699b9b8906e78bdf1ab53d99cbff5c26b53d`.
+- Unchanged manual-state SHA-256: `a69d3a9597ec393fe3ac6ce741c282cd3dd45bc7b2e2bc89ae27d72a444afe66`.
+
+**Proposed next atom, not started:** a newly authorized single manual Hermes
+smoke, after the owner frees resources, using a fresh server through the bounded
+worker and retaining all descendant working sets, exit facts and bounded tails.
+Suggested preflight margins are 12 GiB available physical memory, 18 GiB commit
+headroom and the existing 6 GiB disk reserve, with context 2048. These are
+empirical margins from this load, not guaranteed hardware requirements. No
+applications were closed, pagefile/global configuration changed, second load
+performed or Hermes smoke retried in this diagnosis. Preserve the installed
+model and blocked state pending that separate authority; no push or deployment.
+
+Final scoped verification passed: all three synthetic tests, JavaScript syntax,
+506 local documentation links, privacy and whitespace checks, and documentation
+budgets (103,208 default-context bytes; three active planning files, largest
+23,699 bytes). All eight unrelated tracked-file hashes were preserved;
+`design-qa.md` was neither read nor staged. Full application validation and
+managed-provider trials were not run because this atom changes only the manual
+diagnostic controller and its documentation.
 
 ## Disk/resources and one model store
 

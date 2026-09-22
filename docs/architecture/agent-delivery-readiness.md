@@ -49,6 +49,15 @@ Model pozostaje w jednym magazynie. Interaktywny launcher i managed admission
 pozostają zamknięte; wszystkie flagi Roost bez zmian. Szczegóły i końcowe
 potwierdzenie cleanup opisuje powiązany kontrakt.
 
+Osobna [diagnoza load-only](hermes-desktop-ollama-profile-contract.md#post-smoke-load-only-diagnosis):
+**przyczyna wcześniejszego zakończenia INCONCLUSIVE**. Jedno załadowanie modelu
+zwróciło HTTP 200 po 20,127 s; serwer działał do jawnego zamknięcia. Minimalny
+odczyt wolnego RAM wyniósł 447 MiB, a szczyt commit 98,25% limitu. To dowód
+presji pamięci w tej próbie, nie potwierdzenie wcześniejszego OOM. Profil, model,
+runtime i stan `manual-smoke-blocked` pozostały niezmienione; cleanup potwierdzony.
+Kontroler zachowuje ograniczone logi i przeszedł trzy testy syntetyczne. Nie
+powtórzono smoke Hermes. Punkt 3 i wszystkie flagi Roost nadal zablokowane.
+
 ## Stały program syntetyczny — RF-RUNTIME-005B30
 
 **PASS dla zamkniętej klasy syntetycznej**, 2026-09-17. Publiczne API i Worker
