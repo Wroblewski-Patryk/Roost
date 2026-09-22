@@ -16,8 +16,10 @@ readiness/authority flags remain false.
 
 ## Verified evidence and limits
 
-Locations below are logical labels, not machine paths. No auth, configuration
-contents, cookies, private logs, sessions or databases were read.
+Locations below are logical labels, not machine paths. The point-1 qualification
+did not read auth, configuration contents, cookies, private logs, sessions or
+databases. Point 2 permits hash-only profile verification, described below;
+no private contents are interpreted, displayed or persisted.
 
 | Component | Observation |
 | --- | --- |
@@ -98,10 +100,59 @@ Even a successful minimal import would leave protocol, enforced exact selection,
 update/bootstrap/fallback denial, profile isolation and inherited-environment
 control unproven. Sharing therefore fails independently of the negative probe.
 
-## Safe contract for future point 2
+## Point 2 preflight: BLOCKED before profile writes
 
-Point 2 is **not started**. These labels are private per-installation values,
-not a launch script. Satisfy the boundaries before launch:
+The separately authorized point-2 preflight on 2026-09-22 stopped before any
+private creation. Four Desktop-candidate descendants resolve to the **same
+canonical files, physical file identities and SHA-256 bytes** as managed files:
+`hermes_cli/main.py`, `venv/Scripts/python.exe`, `venv/Scripts/hermes.exe` and
+`venv/pyvenv.cfg`. This is a positive overlap finding in the inspecting process,
+not merely an unresolved comparison or proof about a separately launched
+Desktop process's entire filesystem view.
+
+The installed main bundle still has SHA-256
+`38edf1f8fd31020bcc536ded5cd8b4af366163c2e874a8dc2c7d8eb38ef1aaa4`.
+Static readback confirms that `resolveUpdateRoot()` can select the explicit
+source root and the Windows updater handoff receives that root as `-InstallRoot`.
+An independent home/user-data override does not isolate those mutable code/venv
+targets. `HERMES_DISABLE_LAZY_INSTALLS` is not referenced in that bundle; setting
+it alone is not evidence of Desktop update/bootstrap/repair/fallback denial.
+No qualified enforcement that confines every such path to Desktop-only files
+is available. The first positive overlap is sufficient to deny creation;
+an exhaustive inventory of every possible runtime write was not attempted.
+
+No `MANUAL_HOME`, Electron state, config/auth secret, pending Ollama configuration,
+launcher, backup or temporary runtime artifact was created. There is therefore
+no launcher dry-run acceptance and no rollback deletion to perform. The identity
+check is a rejected preflight, not a successful launch validation. No new
+generator/validator code is needed for this negative, documentation-only result.
+
+Hash-only verification of `hermes-pilot` covered all **349 regular files,
+3,351,013 bytes** in the resolved profile tree. Before/after inventories, file
+identities, modification times and SHA-256 digests matched. Bytes were streamed
+into hashes only; no config/auth/log/session content was interpreted or emitted,
+and no private paths or per-file digests were saved in the repository. This
+proves the compared files unchanged, not exclusive control over other processes.
+
+Five existing Node qualification tests passed, including the runner for three
+synthetic Python guard tests; none imports installed Hermes. Docs checks passed:
+443 local links, privacy, budgets (103,208-byte default context) and scoped diff.
+No new launcher was generated, so its dry-run/update/fallback behavior was not
+tested or declared safe. No `npm run validate`, installed-runtime probe or UI/
+backend/provider test was run for this documentation-only denial.
+
+Point 3 remains **not ready**. First prove disjoint mutable targets in the intended
+Desktop launch context and enforce update/bootstrap/repair/fallback confinement;
+then a separately authorized point 2 must create and read-back the isolated
+profile/launcher and pass its dry-run. Model download/provider trial still needs
+separate authority and storage/resource/quality qualification. No work proceeds
+automatically from this denial.
+
+## Contract for a future successful point 2
+
+Only preflight has run; profile/launcher creation is **not started**. These labels
+are private per-installation values, not a launch script. Satisfy the boundaries
+before creation and launch:
 
 | Boundary | Manual Desktop | Managed Roost |
 | --- | --- | --- |
@@ -190,4 +241,5 @@ files retained their hashes; `design-qa.md` was not read or staged.
 
 The decision atom is complete; manual launch and Roost execution remain
 unqualified. No profile/model download/Ollama launch/login/install mutation/push/
-deployment was performed. Stop here; do not begin point 2 automatically.
+deployment was performed. The subsequent point-2 preflight stopped before private
+writes; its refusal does not authorize installation changes or point 3.

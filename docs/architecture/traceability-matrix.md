@@ -5,6 +5,9 @@
 The repo-owned bounded probe failed closed; 45 comparable file samples were unchanged
 and 8 were missing before execution. Windows view overlap, manual launch and protocol
 remain unqualified. No manual profile, provider admission or RF-HOST-035 closure.
+Point-2 preflight is **BLOCKED before private creation**: four candidate mutable
+files resolve to managed files and updater/bootstrap/fallback confinement is
+unqualified. No manual profile, launcher or point-3 work was created/started.
 
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,

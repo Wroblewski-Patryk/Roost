@@ -6,7 +6,10 @@ Decyzja kwalifikacyjna z 2026-09-22:
 bezpieczną odmowę, a 45 porównywalnych plików pozostało bez zmian (8 pozycji
 nieobecnych przed próbą). Izolacja fizyczna częściowo nakładających się widoków
 Windows oraz bezpieczny start Desktopu pozostają nieudowodnione. Decyzja nie
-zmienia poniższych bramek. Konfiguracja profilu ręcznego nie została rozpoczęta.
+zmienia poniższych bramek. Punkt 2: **BLOCKED przed utworzeniem profilu** — świeży
+preflight potwierdził cztery wspólne pliki fizyczne oraz brak kwalifikowanej
+izolacji updater/bootstrap/fallback. Nie utworzono profilu ani launchera; punkt 3
+pozostaje niedopuszczony.
 
 ## Stały program syntetyczny — RF-RUNTIME-005B30
 
