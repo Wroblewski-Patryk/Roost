@@ -28,6 +28,14 @@ parser/default-merge validation, `--version` and launcher `--check` passed. The
 accepted runtime and protected managed/profile fingerprints are unchanged. Point
 3 prerequisites are ready; no model download, interactive launch or Roost activation.
 
+The subsequent point-3 attempt is **BLOCKED**. Disk/store preflight passed, but
+one real pull was stopped by native `output_limit` (exit 130) from unfiltered CLI
+terminal repaint output. Owned pull/server cleanup passed; partial data remain
+in the same store without an installed manifest or admission. No retry, launcher
+model check or inference smoke followed. Manual runtime and managed/profile
+fingerprints remain unchanged; 2B stays pending. A bounded progress worker now
+passes synthetic native-Job verification, not a second real download.
+
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,
 trwały resume receipt/ack, dokładnie 22 bajty wyniku, niezależne review i cleanup.

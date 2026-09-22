@@ -30,6 +30,14 @@ Runtime, managed i hermes-pilot pozostały niezmienione. Profil jest gotowy do
 osobnego punktu 3; model nie został pobrany, a launcher interaktywny ani Desktop
 nie zostały uruchomione. Żadna flaga gotowości agenta Roost nie zmienia wartości.
 
+Punkt 3: **BLOCKED po jednym pull**. Preflight miejsca/magazynu przeszedł, lecz
+częste komunikaty postępu Ollamy przekroczyły limit wyjścia kontrolera (exit 130,
+`output_limit`). Zachowano wyłącznie częściowe dane w jednym magazynie; brak
+zainstalowanego modelu i admission. Profil 2B pozostaje pending. Nie uruchomiono
+smoke ani kolejnego pull. Własny serwer i proces pobierania zamknięto; managed,
+hermes-pilot i runtime manualny bez zmian. Poprawiony filtr postępu przeszedł
+test syntetyczny Windows Job; wznowienie wymaga osobnego atomu.
+
 ## Stały program syntetyczny — RF-RUNTIME-005B30
 
 **PASS dla zamkniętej klasy syntetycznej**, 2026-09-17. Publiczne API i Worker

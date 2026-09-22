@@ -7,6 +7,11 @@ Manual Hermes owner tooling: **points 2A and 2B DONE**. The independent runtime,
 Stop before separately authorized point 3: one model store/download, explicit
 model admission and manual smoke. No model download or interactive launch is
 implied by this plan; Roost provider admission and all six false flags remain.
+The separately authorized first point-3 pull is now **BLOCKED on controller
+output_limit**, with resumable partial files retained in the sole shared store.
+No model is installed/admitted; no inference smoke ran. The progress filter is
+corrected and synthetically tested. Next manual atom must explicitly qualify the
+existing partial inventory and authorize one resume; do not retry automatically.
 
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,

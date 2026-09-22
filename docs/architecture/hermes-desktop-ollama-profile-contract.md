@@ -45,6 +45,13 @@ contacting Ollama until separate point-3 admission. No model download or interac
 launch occurred. This manual-CLI route does not qualify Electron Desktop bootstrap
 or updater behavior; historical Desktop-view overlap findings still stand.
 
+The separately authorized **point 3 is BLOCKED after one pull**: disk/store
+preflight passed, but CLI progress exceeded the native controller output budget.
+Only partial data remain in the sole Ollama store. No installed model, model
+admission or inference smoke is claimed. The manual profile stays pending; all
+owned processes were closed. The corrected progress worker was tested only with
+synthetic output, without a second pull.
+
 This does **not** establish physical isolation of the current Windows views.
 Some descendants overlap while others differ. Manual Desktop launch stays
 denied until the point-2 boundaries below are proven. Roost's
@@ -1026,6 +1033,86 @@ model download or inference was run. Six Roost readiness flags and managed polic
 are unchanged. Point 3 is a separate owner-authorized operation, not automatic
 continuation from this receipt. Full application/provider test suites are outside
 this private manual-profile atom.
+
+## Point 3: one pull blocked by controller output volume
+
+Read-only preflight on 2026-09-22 verified the 2A/2B receipts and full manual
+runtime inventory. Installed Ollama CLI was 0.34.2, executable SHA-256
+`ad41dcf55c5de96d4a0bff7c559a17285c3aa064a6f12d23db3ebf59ad8e4125`.
+There was no Ollama process/listening server. Process/User/Machine `OLLAMA_MODELS`
+and User/Machine `OLLAMA_HOST` overrides were absent. The existing canonical
+default store contained zero model manifests, blobs or partial files. No second
+store was created and no existing model was touched.
+
+The official registry's `library/gpt-oss:20b` manifest expected digest was
+`sha256:17052f91a42e97930aa6e28a6c6c06a983e6a58dbb00434885a0cf5313e376f7`.
+Its configuration and four layers total **13,793,441,244 bytes (12.85 GiB)**;
+the main model layer is 13,793,422,144 bytes. This is the remote expected identity,
+**not** a successfully installed local digest. The
+[official model listing](https://ollama.com/library/gpt-oss:20b) describes the
+20.9B MXFP4 model as 14 GB and supports a 16 GB memory configuration.
+
+Pre-pull free disk was 24,078,000,128 bytes; the declared layer sum left a projected
+10,284,558,884 bytes (9.58 GiB), exceeding the required 6 GiB reserve and the
+controller's additional 1 GiB headroom. Hardware readback: 33,231,568 KiB total
+RAM (31.7 GiB), 8,685,816 KiB available at preflight, 6,144 MiB GPU VRAM with
+5,156 MiB free, and an already allocated 24,576 MiB pagefile. This does not prove
+inference capacity or speed; the 6 GiB GPU cannot hold the full model. Actual
+CPU/GPU inference allocation was **not measured**, because no model ran.
+
+The [one-pull controller](../../scripts/pull-hermes-manual-model.mjs) started the
+existing Ollama executable as a hidden owned Windows Job. The local server's
+`/api/version` also returned 0.34.2 and `/api/tags` was empty. Overrides were
+process-local only: loopback binding, the same existing store, cloud disabled,
+one parallel request/model and a 2,048-token context. No registry/global Ollama
+configuration, service, startup entry or model-store setting was written.
+
+Exactly one `ollama pull gpt-oss:20b` began. Ollama's
+[progress renderer](https://github.com/ollama/ollama/blob/v0.34.2/progress/progress.go)
+repaints terminal progress at 100 ms intervals even with redirected output. The
+initial driver sent those raw repaints through the native bounded transport.
+It reached **`output_limit`, root exit 130**, before completing the model. This
+was a controller output-handling failure, not a storage/model incompatibility
+finding. Native pull cleanup was true with zero active descendants. The separately
+owned server was then stopped; its native cleanup also reported zero descendants.
+There was no retry and no healthy download left running after this result.
+
+The store retains 17 owned partial files: one sparse/preallocated main layer plus
+16 range metadata files. Logical lengths sum to 13,793,423,194 bytes, but Windows
+allocation readback is only **170,722,330 bytes**; range metadata records
+169,773,280 completed bytes. The logical length is not the amount downloaded.
+No installed manifest exists. No unproven partial-deletion method was used, so
+these files remain available for a separately authorized resume. No model bytes
+were copied into either Hermes profile/runtime.
+After controller cleanup, free disk readback was 23,903,981,568 bytes (22.26 GiB).
+
+The repaired [progress worker](../../scripts/hermes-ollama-pull-worker.mjs) owns
+the same fixed CLI pull as a descendant of the native Job, consumes repaint data
+with a bounded 4 KiB tail and emits only a sanitized progress item per 30 seconds
+plus final byte/classification counts. Native transport limits and managed policy
+are unchanged. Three tests passed, including an actual owned Job/descendant that
+emits more than 5 MiB of synthetic repaint output while the Job receives less
+than 1 KiB and closes with zero descendants. This correction was **not** exercised
+by another real pull. The current controller intentionally accepts only the
+original empty-store precondition; a future resume atom must explicitly qualify
+the retained partial inventory rather than bypass that check.
+
+Postconditions: full managed/profile readback unchanged (19,246 files /
+376,658,620 bytes and 349 files / 3,351,013 bytes), full manual runtime inventory
+still matches 2A, profile state hash still matches 2B, no admission change, no
+secrets/configuration copied, and no model/launcher/inference smoke attempted.
+Only a small private `MANUAL_MODEL_PULL_RECEIPT.json` records the sanitized result,
+resource snapshot, expected identity and cleanup. Temporary controller binary,
+preflight and ownership files were removed after identity/containment checks.
+The failed model pull is not a successful model receipt.
+The private failure receipt SHA-256 is
+`5ad526fbfc08f7c9485d5bbf71a97da80a7e6516bb16776ba632d3fe61971cd5`.
+
+**Point 3 BLOCKED.** Next step is a separately authorized resume after verifying
+the exact partial store and available resources, using filtered progress, then
+one local no-tool smoke if download succeeds. Do not start it automatically.
+Manual launcher remains gated on point 3; Electron Desktop, agents and all six
+Roost readiness flags remain unchanged.
 
 ## Disk/resources and one model store
 
