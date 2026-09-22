@@ -10,15 +10,15 @@ zmienia poniższych bramek. Punkt 2: **BLOCKED przed utworzeniem profilu** — �
 preflight potwierdził cztery wspólne pliki fizyczne oraz brak kwalifikowanej
 izolacji updater/bootstrap/fallback. Nie utworzono profilu ani launchera; punkt 3
 pozostaje niedopuszczony.
-Punkt 2A: **BLOCKED w kwalifikacji toolchainu, bez kolejnej próby instalacji**.
-Lokalne narzędzia przechodzą kontrolę dokładnej ścieżki/hash w planowanym czystym
-środowisku, lecz przypięty installer przed każdym etapem nadpisuje PATH wartościami
-z rejestru (`Sync-EnvPath`). Nie zachowuje wymaganej granicy kwalifikacji. Prywatny
-Python powstaje dopiero podczas instalacji, a pełny toolchain buildów zależności
-nie jest ustalony przed startem. Sterownik odmawia przed utworzeniem runtime.
-Wcześniejszy `repository` exit 1 / `command_unavailable` pozostaje faktem historycznym;
-nazwa tamtego polecenia nadal nieustalona. Chroniony managed/profil i wybrane
-ustawienia bez zmian; brak nowego runtime/receipt/profilu. Punkt 2B niegotowy.
+Punkt 2A: **BLOCKED po jednej próbie z normalnym Windows PATH i rollbacku**.
+Właściciel dopuścił User+Machine PATH i narzędzia tworzone przez oficjalny installer
+wyłącznie dla manualnego Desktop. Preflight PASS. `repository` ruszył; po odmowie
+SSH (host key verification) upstream przeszedł na HTTPS. Lokalny monitor zgłosił
+`manual_tree_boundary` i przerwał etap (zachowany exit 130). Dokładny wyjątek monitora
+nie został zapisany; nie potwierdzono rzeczywistego naruszenia granicy. Dalsze etapy
+nie ruszyły. Runtime usunięty, jedna mała prywatna para log/receipt zachowana.
+Managed/profil i wybrane ustawienia bez zmian. Brak gotowego runtime/profilu;
+punkt 2B niegotowy. Polityka managed Roost pozostaje bez zmian.
 
 ## Stały program syntetyczny — RF-RUNTIME-005B30
 

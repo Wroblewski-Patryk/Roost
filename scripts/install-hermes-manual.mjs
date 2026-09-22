@@ -8,7 +8,8 @@ import {fileURLToPath} from 'node:url';
 import {buildWindowsJobLauncher,startWindowsJob} from './lib/agent-host-windows-job.mjs';
 import {sourcePin,installerHash,sha256,assertNewRoot,inventory,assertNoOverlap,assertOwned,validateReceipt} from './lib/hermes-manual-install.mjs';
 import {sourceTree,summarizeLog,stagePostcondition,runDirectSequence} from './lib/hermes-manual-direct.mjs';
-import {analyzeSource,sourceAdmission,assertQualifiedSource,qualifiedEnvironment,localToolCandidates,probeToolchain,verifyExecutable,assertToolchainNoOverlap} from './lib/hermes-manual-toolchain.mjs';
+import {analyzeSource,qualifiedEnvironment,probeToolchain,verifyExecutable,assertToolchainNoOverlap} from './lib/hermes-manual-toolchain.mjs';
+import {manualNormalToolchain,readEffectivePath,sameEffectivePath,normalWindowsFolders} from './lib/hermes-manual-normal-path.mjs';
 import {retainLatestFailure} from './lib/hermes-manual-diagnostic.mjs';
 
 const scriptDir=path.dirname(fileURLToPath(import.meta.url));
@@ -32,19 +33,24 @@ try {
   if(sha256(installerBytes)!==installerHash||!installerBytes.subarray(3).equals(blob))throw Error('installer_identity');
   before=Object.fromEntries(Object.entries(protectedRoots).map(([k,v])=>[k,inventory(v)]));
   machineBefore=machineState();
-  // Static qualification precedes root creation and every possible stage spawn.
-  // The current pin overwrites PATH from the registry and is deliberately denied.
-  const toolchain=localToolCandidates({systemRoot:process.env.SystemRoot,programFiles:process.env.ProgramFiles,
-    userProfile:process.env.USERPROFILE,pythonBase:manifest.roots[1].path,denied:Object.values(protectedRoots)});
-  assertToolchainNoOverlap(toolchain,Object.values(before));
-  const plannedEnvironment=qualifiedEnvironment({systemRoot:process.env.SystemRoot,
-    home:path.join(root,'installation-home'),cache:path.join(root,'install-cache'),executables:toolchain});
-  const sourceAnalysis=analyzeSource(originalInstaller,powershell,plannedEnvironment);
-  report.toolchain=sourceAdmission(sourceAnalysis);assertQualifiedSource(sourceAnalysis);
+  // Windows PowerShell may initialize TEMP/USERPROFILE during even read-only
+  // probing. Own the fresh directories before starting any private-env process.
   assertNewRoot(root,[process.cwd(),...Object.values(protectedRoots),sourceRoot,packageCache,fs.realpathSync.native(os.tmpdir())]);
   fs.mkdirSync(root);rootId=String(fs.statSync(root,{bigint:true}).ino);
   const home=path.join(root,'installation-home'),cache=path.join(root,'install-cache'),tools=path.join(root,'install-tools'),code=path.join(root,'runtime');
   for(const dir of [home,cache,tools,path.join(cache,'temp'),path.join(home,'Local'),path.join(home,'Roaming')])fs.mkdirSync(dir,{recursive:true});
+  // Manual Desktop accepts upstream registry PATH and trusted generated tools.
+  // Only explicit entry tools are checked for unexpected/shadowed resolution.
+  const baseEnvironment=normalWindowsFolders(qualifiedEnvironment({systemRoot:process.env.SystemRoot,
+    home:path.join(root,'installation-home'),cache:path.join(root,'install-cache'),executables:[]}),
+    process.env.SystemRoot,process.env.ProgramData);
+  const normal=manualNormalToolchain({powershell,environment:baseEnvironment,systemRoot:process.env.SystemRoot,
+    programFiles:process.env.ProgramFiles,userProfile:process.env.USERPROFILE,localAppData:process.env.LOCALAPPDATA,
+    pythonBase:manifest.roots[1].path,denied:Object.values(protectedRoots)});
+  const toolchain=normal.executables,plannedEnvironment=normal.environment;
+  assertToolchainNoOverlap(toolchain,Object.values(before));
+  const sourceAnalysis=analyzeSource(originalInstaller,powershell,plannedEnvironment);
+  report.toolchain={policy:'manual_desktop_normal_windows',effectivePathSha256:sha256(normal.effective.path),probe:'pending'};
   const installer=path.join(tools,'install.ps1');fs.writeFileSync(installer,installerBytes,{flag:'wx'});
   const launcher=await buildWindowsJobLauncher(tools);
   const env=plannedEnvironment;
@@ -53,32 +59,37 @@ try {
     .filter(c=>!['git','schtasks','taskkill','Get-CimInstance'].includes(c));
   const probe=probeToolchain({powershell,env,cwd:home,executables:toolchain,commands});
   report.toolchain.probe=probe.result;
+  report.toolchain.tools=probe.tools.map(({name,version,sha256})=>({name,version,sha256}));
   if(probe.result!=='PASS'||!probe.gitConfig)throw Error('toolchain_probe_failed');
   const stop=reason=>{monitorFailure??=reason;child?.stop('preparation_failed');};
   for(const dir of Object.values(protectedRoots)) {
     const watcher=fs.watch(dir,{recursive:true},()=>stop('protected_tree_event'));watcher.on('error',()=>stop('protected_watch_failed'));watchers.push(watcher);
   }
   phase='installation';report.attemptStarted=true;
-  monitor=setInterval(()=>{try{inventory(root,{hashes:false});const d=fs.statfsSync(root);if(d.bavail*d.bsize<8*1024**3)stop('disk_reserve');}catch{stop('manual_tree_boundary');}},5000);
-  await runDirectSequence({deadline:Date.now()+1200000,
+  monitor=setInterval(()=>{try{inventory(root,{hashes:false});const d=fs.statfsSync(root);if(d.bavail*d.bsize<8*1024**3)stop('disk_reserve');}
+    catch(error){report.monitorDetail=/^[a-zA-Z_]{1,80}$/.test(error.code??error.message)?(error.code??error.message):'unclassified_monitor_error';stop('manual_tree_boundary');}},5000);
+  const installationDeadline=Date.now()+1200000;
+  await runDirectSequence({deadline:installationDeadline,
     async run(stage,durationMs){
       if(monitorFailure)throw Error(monitorFailure);
       for(const tool of toolchain)verifyExecutable(tool,Object.values(protectedRoots));
+      const refreshed=readEffectivePath(powershell,env);
+      if(!sameEffectivePath(refreshed,normal.effective))throw Error('effective_path_changed');
       if(stage==='venv'&&fs.existsSync(path.join(code,'venv')))throw Error('unexpected_existing_venv');
       const logPaths={stdout:path.join(cache,stage+'.stdout'),stderr:path.join(cache,stage+'.stderr')};
       lastLogs={stage,...logPaths};
       const fds=Object.fromEntries(Object.entries(logPaths).map(([k,v])=>[k,fs.openSync(v,'wx')]));
       console.log(JSON.stringify({type:'stage_start',stage}));receipt=null;
       try {
+        durationMs=installationDeadline-Date.now();if(durationMs<=0)throw Error('installation_deadline');
         child=await startWindowsJob(launcher,{executable:powershell,
           argv:['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',installer,'-Stage',stage,'-NonInteractive','-InstallDir',code,'-HermesHome',home,'-Commit',sourcePin,'-Branch','main'],
           cwd:home,environment:env,input:'',durationMs,onData(channel,data){fs.writeSync(fds[channel],data);}});
         receipt=await child.completion;
       } finally {for(const fd of Object.values(fds))fs.closeSync(fd);}
-      if(monitorFailure)throw Error(monitorFailure);
       return {exitCode:receipt.rootExit,terminationReason:receipt.terminationReason,cleanup:receipt.cleanup&&receipt.activeProcesses===0,
         logs:Object.fromEntries(Object.entries(logPaths).map(([k,v])=>[k,summarizeLog(fs.readFileSync(v))]))};
-    },postcondition:stage=>stagePostcondition(stage,code),onResult:result=>{report.stages.push(result);console.log(JSON.stringify({type:'stage_result',...result}));}});
+    },postcondition:stage=>!monitorFailure&&stagePostcondition(stage,code),onResult:result=>{report.stages.push(result);console.log(JSON.stringify({type:'stage_result',...result}));}});
   clearInterval(monitor);
   phase='postflight';
   for(const w of watchers)w.close();watchers=[];
@@ -121,13 +132,13 @@ try {
   const finalInventory=inventory(code);assertNoOverlap(finalInventory,Object.values(before));
   const attestation={schemaVersion:'hermes-manual-install-v1',sourcePin,version:'0.21.3',installerSha256:installerHash,
     root:code,interpreter:path.join(code,'venv/Scripts/python.exe'),executable:path.join(code,'venv/Scripts/hermes.exe'),
-    sourceClass:'official_desktop_direct_stages',sourceTree,identity,records,stages:report.stages,
+    sourceClass:'official_desktop_direct_stages',manualPolicy:'normal_windows_path_trusted_installer',sourceTree,identity,records,stages:report.stages,
     inventoryDigest:finalInventory.digest,inventory:finalInventory.rows,profileCreated:false,launcherCreated:false};
   const receiptPath=path.join(root,'installation-receipt.json'),pendingReceipt=path.join(root,'installation-receipt.pending');
   fs.writeFileSync(pendingReceipt,JSON.stringify(attestation,null,2)+'\n',{flag:'wx'});fs.renameSync(pendingReceipt,receiptPath);
   validateReceipt(JSON.parse(fs.readFileSync(receiptPath,'utf8')),inventory(code));
   report.result='DONE';report.receipt='installation-receipt.json';report.cleanup=true;report.runtimeBytes=finalInventory.bytes;report.runtimeFiles=finalInventory.files;report.noOverlap=true;
-} catch(error) {report.reason=/^[a-z_]{1,80}$/.test(error.message)?error.message:'operation_failed_closed';report.phase=phase;}
+} catch(error) {report.reason=monitorFailure??(/^[a-z_]{1,80}$/.test(error.message)?error.message:'operation_failed_closed');report.phase=phase;}
 finally {
   clearInterval(monitor);for(const w of watchers)w.close();
   if(before){try{const after=Object.fromEntries(Object.entries(protectedRoots).map(([k,v])=>[k,inventory(v)]));report.managedUnchanged=before.managed.digest===after.managed.digest;report.profileUnchanged=before.profile.digest===after.profile.digest;report.protectedCounts=Object.fromEntries(Object.entries(after).map(([k,v])=>[k,{files:v.files,bytes:v.bytes}]));report.machineStateUnchanged=machineBefore===machineState();if(!report.managedUnchanged||!report.profileUnchanged||!report.machineStateUnchanged){report.result='BLOCKED';report.reason='protected_state_changed';}}catch{report.result='BLOCKED';report.reason='protected_readback_failed';}}

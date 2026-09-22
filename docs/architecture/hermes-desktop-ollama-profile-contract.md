@@ -29,10 +29,11 @@ output-protocol failure and was also rolled back. No third wrapper attempt was m
 The subsequent direct-stage decision removes `wrapper_protocol` from the active
 manual path. Official stage exit codes plus filesystem postconditions and full
 postflight are authoritative; the old wrapper history below is retained as evidence.
-The latest toolchain-qualified retry is **BLOCKED before installation**: the exact
-source overwrites the qualified child PATH from the registry, and the complete
-generated Python/dependency build-tool closure is not prequalified. A successful
-local tool-resolution probe alone does not admit an official stage.
+The strict toolchain qualification below is historical. The owner subsequently
+accepted upstream normal User+Machine PATH and generated Python/build tools for
+manual Desktop only. The latest attempt passed that preflight and started
+repository, but the local tree monitor interrupted its HTTPS fallback. Rollback
+completed; one private diagnostic pair remains. Point 2A is BLOCKED and 2B is not ready.
 
 This does **not** establish physical isolation of the current Windows views.
 Some descendants overlap while others differ. Manual Desktop launch stays
@@ -694,6 +695,80 @@ secret. Retention/rollback/secret deletion are synthetic qualifications only in
 this atom; live failure retention was not exercised. Stage success still uses
 exit/filesystem evidence. Nine new tests plus five direct-stage and seven manual
 regression tests pass. Point 2B remains ineligible; STOP after the scoped commit.
+
+### Normal Windows manual policy: repository interrupted by local monitor
+
+The owner explicitly replaces the previous hermetic toolchain requirement for
+this manual Desktop installation. Upstream `Sync-EnvPath` may read normal User +
+Machine PATH. Officially downloaded/generated Python and build backends belong
+to the trusted installer process and do not need pre-install artifact hashes.
+This does not relax any managed Roost provider or autonomous-execution rule.
+Upstream bytes, commit/tree, fresh targets, private home/cache/temp/gitconfig,
+noninteractive execution, owned Job and the shared 20-minute deadline remain.
+
+The [effective-PATH reader](../../scripts/hermes_manual_effective_path.ps1) uses
+the exact upstream registry expression in the same private environment without
+writing registry values. The [manual policy helper](../../scripts/lib/hermes-manual-normal-path.mjs)
+checks Git, uv, SSH, cmd and PowerShell resolve as applications at explicit
+expected installation locations, not aliases or unexpected shadows. Entry-tool
+identities and effective PATH are rechecked before each stage. Other source
+cmdlets and the private Git configuration use the existing local probe. The
+strict analyzer remains available as historical/read-only evidence but is no
+longer an admission gate for this manual driver.
+
+Two preparatory checks did not start an installer stage. First, Windows
+PowerShell initialized one 1,972-byte startup cache under the new private home
+before the driver had reserved the root; the second fresh-root assertion refused.
+The exact ten-entry fresh footprint was checked for canonical location, creation
+window, links and inventory, then removed. The driver now owns/creates private
+directories before any private-environment PowerShell probe. Second, the system
+OpenSSH version probe exited 255 without output because PROGRAMDATA was absent.
+A read-only comparison confirmed that adding PROGRAMDATA (with SystemDrive)
+produces version exit 0. Only those standard system folder selectors were restored;
+credential/proxy/askpass variables remain excluded. These were preflight repairs,
+not repeated upstream installation stages.
+
+Final preflight passed with normal effective PATH hash
+`3fea684a392a423172aeb4c6468beaefa798397944ccbfebc4cc6d3a0bcc04d7`.
+Git resolved to the previously recorded 2.49.0 dispatcher. uv resolved to the
+Desktop-managed standalone binary 0.12.17, SHA-256
+`2019cdf564cb8f749262f5f021cedc75a99abb1c6081227ca340bbcda972611d`,
+rather than the older standalone 0.11.8 candidate from the strict probe. System
+OpenSSH was 9.5p2 / LibreSSL 3.8.2, SHA-256
+`786ff14be7cd652b2b9770a57e9b1aa5e03a052ce3a3d641fb4760c0ff3fde05`.
+Neither tool overlaps protected runtime/profile files. Other Git helpers,
+PowerShell, COMSPEC and audit Python identities matched the recorded candidates.
+
+Exactly one actual official process was started: **repository**. Its private
+diagnostic confirms target/configuration setup, SSH clone, host-key verification
+failure and the official HTTPS fallback. During that fallback the local periodic
+inventory monitor caught an exception and requested Job termination with
+`manual_tree_boundary`. The retained native root exit is **130**; repository did
+not pass its postcondition. Python, venv and dependencies never started. This is
+controller cancellation, not evidence that the HTTPS installer itself failed.
+The underlying inventory exception was discarded by the old generic catch;
+no particular filesystem violation or race is proven. Later code now retains a
+bounded exception code and the stage's native result on monitor cancellation.
+That diagnostic fix was not used to rerun this attempt or backfill its evidence.
+
+The single retained private log/receipt pair is outside repository and runtime.
+Raw output is not published. The log is 541 bytes including stream delimiters:
+
+| Evidence | Bytes | SHA-256 |
+| --- | --- | --- |
+| stdout | 165 | `a43f80a8eea8d03f164fd5218b6b2d72b35410f2b87a63c2b2dbfdbe2dfc2f03` |
+| stderr | 361 | `8611fd0e7910537803e978d8a5680b07dfe2207359cf04e44af749d8b1474fe4` |
+| Combined private log | 541 | `e45be55cf06b3193542adfd35d8bd145d6aad7f92d7d2e754aa7e93d18ff2c9a` |
+
+Owned Job cleanup and exact new-root removal passed. Full readback matched
+19,246 managed files / 376,658,620 bytes, 349 profile files / 3,351,013 bytes and
+the selected machine-state hash. Free space after rollback was 28,301,692,928
+bytes (about 26.4 GiB). No installation receipt, ready runtime, profile or launcher
+exists; the retained diagnostic receipt is not installation acceptance. No UI,
+main/serve/chat/gateway, model, Ollama, provider or login was started. Four normal
+PATH/environment tests, five direct-stage, four diagnostic and seven manual
+regression tests passed.
+Point **2A BLOCKED; 2B not ready**. No second actual installation attempt followed.
 
 ## Disk/resources and one model store
 
