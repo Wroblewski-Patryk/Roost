@@ -78,6 +78,15 @@ Hermes quiet decoding/redaction and the untrusted-output contract still apply.
 
 ## Stop and failure
 
+The 2026-09-23 [terminal-evidence slice](../operations/host-lifecycle-safety.md#terminal-evidence-after-output-rejection)
+separates a rejected output consumer from malformed native framing. Consumer
+rejection stops the Job and further payload delivery while bounded parsing
+continues until the correlated cleanup receipt. Completion still rejects;
+only genuine terminal proof is attached to the failure. Callback text is not
+retained. The quiet supervisor forwards the original fixed failure code, exit
+and receipt through existing error/budget evidence. Missing or corrupt native
+proof remains unqualified, with no new launch or replay authority.
+
 Normal root exit, cancellation, timeout, lease/context loss, controller shutdown,
 closed controller pipe and preparation/output errors terminate the owned job.
 Even normal root exit requires TerminateJobObject, root-handle wait, job accounting

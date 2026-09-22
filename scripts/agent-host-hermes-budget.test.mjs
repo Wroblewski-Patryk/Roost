@@ -6,6 +6,7 @@ import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { budgetFixture } from "./fixtures/hermes-budget.mjs";
+import { isWindowsJobCleanupReceipt } from "./lib/agent-host-windows-job.mjs";
 import { sealHermesBudget, assertHermesBudget, hermesBudgetReceiptSchema, hermesBudgetBlocker, hermesBudgetBlockers,
   assertHermesBudgetReceipt, consumeHermesBudgetReceipt, createHermesBudgetReceipt, classifyHermesOutcome } from "./lib/agent-host-hermes-budget.mjs";
 import { sealHermesStartup } from "./lib/agent-host-hermes-startup.mjs";
@@ -144,5 +145,33 @@ for (const outcome of ["timed_out", "cancelled", "process_failed"]) {
           return true;
         });
     } finally { clearTimeout(timer); }
+  });
+}
+
+for (const mode of ["invalid-output", "stdout flood", "stderr flood"]) {
+  test(`native budget ${mode} preserves terminal cleanup evidence without retry`, { skip: process.platform !== "win32", timeout: 30000 }, async t => {
+    const f = budgetFixture(t, f => { f.claimed.prompt = `owned budget ${mode} fixture`; }), opts = processOptions(f);
+    await promisify(execFile)(path.join(process.env.SystemRoot, "Microsoft.NET", "Framework64", "v4.0.30319", "csc.exe"),
+      ["/nologo", "/target:exe", "/platform:x64", `/out:${opts.executable}`, fileURLToPath(new URL("./fixtures/windows-job-tree.cs", import.meta.url))], { windowsHide: true });
+    const run = () => runHermesOwnedProcess({ ...opts, budgetReceipt: f.checked.budgetReceipt, remainingMs: () => 10000, assertAuthority() {} });
+    await assert.rejects(run(), error => {
+      assert.equal(error.retryable, false);
+      assert.notEqual(error.outcome, "candidate_result");
+      if (mode === "invalid-output") assert.equal(error.message, "hermes_quiet_utf8_invalid");
+      const r = error.details.attemptBudgetReceipt, job = r.ownedTreeReceipt;
+      assert.ok(isWindowsJobCleanupReceipt(job));
+      assert.equal(job.cleanup, true); assert.equal(job.activeProcesses, 0);
+      assert.equal(job.attempt, f.envelope.identity.executionId);
+      assert.equal(job.terminationReason, mode === "invalid-output" ? "preparation_failed" : "output_limit");
+      assert.equal(error.details.ownedTreeReceipt, job);
+      assert.equal(r.exitCode, job.rootExit);
+      assert.ok(job.stdoutBytes <= 131072 && job.stderrBytes <= 32768);
+      for (const pid of [job.rootPid, job.launcherPid]) assert.throws(() => process.kill(pid, 0));
+      const serialized = JSON.stringify(error.details);
+      for (const privateValue of [f.root, "PID:", "owned budget", "SYSTEMROOT"]) assert.ok(!serialized.includes(privateValue));
+      assert.equal(isWindowsJobCleanupReceipt(JSON.parse(JSON.stringify(job))), false);
+      return true;
+    });
+    await assert.rejects(run(), /reuse/);
   });
 }

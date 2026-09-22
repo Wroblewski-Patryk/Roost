@@ -1,5 +1,14 @@
 # Gotowość połączenia Roost z agentami
 
+RF-HOST-035, 2026-09-23: **PARTIAL; zachowanie dowodu zakończenia po odrzuceniu
+wyjścia — DONE**. Istniejący Windows Job i supervisor przekazują teraz oryginalny
+błąd oraz autentyczny receipt/exit/cleanup do dowodów nieudanej próby. Brak proof
+nadal zachowuje własność do reconciliation; błąd nie staje się sukcesem ani retry.
+[Zakres i następny atom](../operations/host-lifecycle-safety.md#terminal-evidence-after-output-rejection):
+powiązanie wersjonowanego dowodu izolacji hosta z istniejącym pre-spawn admission,
+testowane syntetycznie. Realny provider, izolacja hosta i sześć flag nadal
+niezakwalifikowane/false. Manualny profil Hermes pozostaje osobną, niezmienioną ścieżką.
+
 Decyzja kwalifikacyjna z 2026-09-22:
 [Hermes Desktop, dwa profile i Ollama](hermes-desktop-ollama-profile-contract.md).
 **Dwa istniejące runtime'y; współdzielenie odrzucone.** Repozytoryjny probe zwrócił

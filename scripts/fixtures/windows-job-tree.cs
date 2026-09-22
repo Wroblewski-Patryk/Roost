@@ -33,6 +33,11 @@ internal static class OwnedTreeFixture {
                 Console.WriteLine("DELIVERY:"+Digest(input)+":"+Digest(string.Join("\0",args))+":"+Digest(Directory.GetCurrentDirectory())+":"+Digest(string.Join("\0",env.ToArray())));
             }
             if(input.Contains("owned budget tree fixture")) mode="tree";
+            else if(input.Contains("owned budget invalid-output fixture")) {
+                using(var c=Child("child")) {Thread.Sleep(350);Console.OpenStandardOutput().WriteByte(255);Thread.Sleep(10000);}return 0;
+            }
+            else if(input.Contains("owned budget stdout flood fixture")) mode="stdout";
+            else if(input.Contains("owned budget stderr flood fixture")) mode="stderr";
             else if(input.Contains("owned budget failure fixture")) return 2;
             else {Console.WriteLine("Untrusted candidate fixture result.");return 0;}
         }

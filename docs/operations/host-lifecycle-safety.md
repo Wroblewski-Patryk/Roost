@@ -50,6 +50,64 @@ The remaining sections describe the unchanged real-provider policy.
 
 ## Enforcement and scope
 
+### Terminal evidence after output rejection
+
+2026-09-23: **this process-supervision slice is DONE; RF-HOST-035 remains PARTIAL**.
+Existing Windows Job v1/v2, one-use startup/budget proofs and B28 resume/cleanup
+remain the architecture. No new supervisor, provider admission or routing layer
+was introduced. The missing slice was retaining genuine terminal evidence when
+the Worker's output consumer rejected otherwise valid native transport.
+
+Previously, an invalid UTF-8 provider chunk was treated as corrupt native
+framing. The receiver stopped reading before the terminal receipt, and the
+quiet runner's second await could replace the decoder failure with
+`hermes_stop_recovery_unproven`. Cleanup could have succeeded without its proof
+reaching the existing attempt-budget/Worker failure evidence.
+
+The [native adapter](../../scripts/lib/agent-host-windows-job.mjs) now stops the
+owned Job on consumer rejection, stops delivering payload to that consumer, and
+continues bounded parsing/counting solely to verify the native terminal receipt.
+Version, attempt, actual Job/process identities, resume correlation, byte counts,
+launcher exit, job close and zero active processes must still match. It rejects
+the attempt with `windows_job_output_rejected`; arbitrary callback text is never
+retained. Malformed transport and missing terminal proof retain the original
+fail-closed behavior. Serialized receipt copies cannot confer authority.
+
+The [existing quiet supervisor](../../scripts/lib/agent-host-hermes-quiet.mjs)
+preserves its fixed decoder error and genuine cleanup receipt/exit in error
+details and the existing versioned attempt-budget completion. Its final await
+also observes cleanup on early cancellation, without replacing an already
+verified error with a second rejection. Missing cleanup proof still takes
+precedence and retains ownership for reconciliation. No error becomes a
+candidate result and consumed attempt authority cannot replay.
+
+Native fixtures cover clean exit, non-zero crash, a silent tree reaching its
+deadline, cancel, stdout/stderr flood, decoder rejection, surviving descendants
+and controller death. Consumer failure is checked on both v1 and gated v2.
+The existing deadline governs silence; this change does not invent a new idle
+timeout for a potentially healthy provider. Public production admission still
+refuses real providers before claim/spawn. These tests qualify transport and
+cleanup evidence, not an OS host/filesystem/credential sandbox or real-provider
+identity admission. Durable B28 recovery remains cleanup-only.
+
+Verification: the focused native/quiet/budget suite passed **76/76** tests;
+the final admission, ownership, native-boundary, lifecycle and recovery suite
+passed **198/198** (including repeated budget coverage). `npm run validate`
+passed lint, TypeScript and server/web builds. Existing Vite unresolved-asset
+and chunk-size warnings remain. Syntax, whitespace/privacy, 474 local links and
+documentation budgets passed; default context is 103,208 bytes. The eight
+unrelated tracked-file hashes and the private manual-state hash were unchanged;
+`design-qa.md` was neither read nor staged. Only temporary synthetic fixtures
+ran. Database/API integration, container builds and live provider trials were
+not run; no production/VPS, Docker/WSL service or private provider configuration
+was changed. All six readiness/authority flags remain false.
+
+**Next single atom:** define and test the fail-closed pre-spawn binding for one
+versioned host-containment admission receipt, tied to exact runtime/profile/
+config and task/Ready/Writer identity through the existing launch boundary.
+Use synthetic denial cases; a process-lifetime Job receipt must not substitute
+for proof that host-control APIs are inaccessible. No live provider is authorized.
+
 The Direct CLI exposes command events after execution. A prompt instruction,
 command blacklist, clean PATH or hidden Docker CLI cannot contain scripts,
 encoded commands or direct host APIs. Hermes also lacks an admitted containment

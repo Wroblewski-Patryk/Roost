@@ -106,7 +106,7 @@ export async function startWindowsJob(artifact, options) {
   if (Buffer.byteLength(encoded) > 262144 || !uuid.safeParse(attempt).success || !Number.isInteger(durationMs) || durationMs < 1 || durationMs > 3600000) throw fail();
   const child = spawn(artifact.executable, [], { windowsHide: true, shell: false, stdio: ["pipe", "pipe", "pipe"] });
   let assigned, receipt, authorizedDigest, problem, pending = Buffer.alloc(0), bytes = 0, wireEvents = 0, stopped = false;
-  let stdoutBytes = 0, stderrBytes = 0, stopTimer;
+  let stdoutBytes = 0, stderrBytes = 0, stopTimer, outputRejected = false;
   const timers = [];
   const stop = (reason = "cancel") => {
     if (stopped || child.exitCode !== null) return;
@@ -144,7 +144,13 @@ export async function startWindowsJob(artifact, options) {
             const data = Buffer.from(event.data, "base64");
             if (event.channel === "stdout") stdoutBytes += data.length; else stderrBytes += data.length;
             if (stdoutBytes > 131072 || stderrBytes > 32768) throw fail();
-            onData(event.channel, data);
+            // A consumer rejection is not corrupt native framing. Stop the Job,
+            // cease delivery, but keep validating/counting the private stream so
+            // its terminal cleanup proof can survive. Never retain callback text.
+            if (!outputRejected) {
+              try { onData(event.channel, data); }
+              catch { outputRejected = true; stop("preparation_failed"); }
+            }
           } else {
             if (confirmResume && event.resumed && event.resumeReceipt !== authorizedDigest) throw fail();
             if (assigned && (event.job !== assigned.job || !event.assignedBeforeResume || !event.killOnClose)) throw fail();
@@ -163,6 +169,10 @@ export async function startWindowsJob(artifact, options) {
         executableDigest });
       if (assigned && (receipt.resumed || version === "roost-windows-job-v2") && !build.testFaults) receipts.set(result, { at: performance.now() });
       if (problem) { const error = fail(); if (!receipt.resumed && version === "roost-windows-job-v2") error.details = { ownedTreeReceipt: result }; reject(error); return; }
+      if (outputRejected) {
+        reject(Object.assign(new Error("windows_job_output_rejected"), { providerFailure: true, retryable: false,
+          details: { ownedTreeReceipt: result } })); return;
+      }
       resolve(result);
     });
     child.stdin.write(encoded);

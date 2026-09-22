@@ -55,7 +55,10 @@ export async function runHermesOwnedProcess({ executable, argv, cwd, environment
         const receipt = authorizeNativeBoundaryResume(nativeProof, assignment, runtimeBinding());
         check(); if (problem) throw problem; return receipt;
       } } : {}),
-      durationMs: nativeDuration, onAssigned, onData: (channel, bytes) => guard.write(channel, bytes) });
+      durationMs: nativeDuration, onAssigned, onData: (channel, bytes) => {
+        try { guard.write(channel, bytes); }
+        catch (error) { problem ??= error; throw error; }
+      } });
     const deadlineTimer = setTimeout(() => { problem ??= failure("hermes_quiet_timeout"); handle.stop("timeout"); }, nativeDuration + (budgetReceipt ? 3000 : 0));
     const timer = setInterval(check, 25), abort = () => check();
     signal?.addEventListener("abort", abort, { once: true });
@@ -63,7 +66,14 @@ export async function runHermesOwnedProcess({ executable, argv, cwd, environment
       check();
       let receipt;
       try { receipt = observedJob = await handle.completion; }
-      catch (error) { if (isWindowsJobCleanupReceipt(error.details?.ownedTreeReceipt)) observedJob = error.details.ownedTreeReceipt; throw error; }
+      catch (error) {
+        if (isWindowsJobCleanupReceipt(error.details?.ownedTreeReceipt)) {
+          observedJob = error.details.ownedTreeReceipt; observedExit = observedJob.rootExit;
+          throw problem ?? error;
+        }
+        // Without genuine cleanup evidence, uncertainty outranks a decoder error.
+        throw error;
+      }
       observedExit = receipt.rootExit;
       if (!isWindowsJobReceipt(receipt)) throw Object.assign(failure("hermes_stop_recovery_unproven"), { leaseLost: true });
       if (nativeProof) {
@@ -77,7 +87,17 @@ export async function runHermesOwnedProcess({ executable, argv, cwd, environment
         ...(budgetReceipt ? { attemptBudgetReceipt: completeHermesBudgetReceipt(budgetReceipt, { ownedTreeReceipt: receipt, exitCode: receipt.rootExit, wallTimeMs: performance.now() - began }) } : {}) });
     } finally {
       clearTimeout(deadlineTimer); clearInterval(timer); signal?.removeEventListener("abort", abort);
-      handle.stop("preparation_failed"); await handle.completion;
+      // An early authority/cancel check may have skipped the normal await.
+      // Always observe cleanup, but never replace a known bounded failure with
+      // the same completion rejection. Missing proof still outranks that failure.
+      handle.stop("preparation_failed");
+      try { observedJob ??= await handle.completion; }
+      catch (cleanupError) {
+        if (!isWindowsJobCleanupReceipt(observedJob) && isWindowsJobCleanupReceipt(cleanupError.details?.ownedTreeReceipt))
+          observedJob = cleanupError.details.ownedTreeReceipt;
+        if (!isWindowsJobCleanupReceipt(observedJob)) throw cleanupError;
+      }
+      observedExit = observedJob?.rootExit;
     }
   }); } catch (error) {
     if (nativeProof && !nativeResult) nativeResult = completeNativeToolBoundary(nativeProof, { ownedTreeReceipt: observedJob, error });
@@ -86,6 +106,7 @@ export async function runHermesOwnedProcess({ executable, argv, cwd, environment
       if (nativeResult.classification === "boundary_violation") { error.boundaryViolation = true; error.protocolAdmission = true; error.leaseLost = true; }
     }
     error.outcome = classifyHermesOutcome({ error, ownedTreeReceipt: observedJob, exitCode: observedExit });
+    if (isWindowsJobCleanupReceipt(observedJob)) error.details = { ...error.details, ownedTreeReceipt: observedJob };
     if (budgetReceipt) error.details = { ...error.details, attemptBudgetReceipt: completeHermesBudgetReceipt(budgetReceipt,
       { error, ownedTreeReceipt: observedJob, exitCode: observedExit, wallTimeMs: performance.now() - began }) };
     throw error;

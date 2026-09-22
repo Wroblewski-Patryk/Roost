@@ -1,5 +1,15 @@
 # Foundation requirements traceability
 
+RF-HOST-035 [terminal-evidence retention](../operations/host-lifecycle-safety.md#terminal-evidence-after-output-rejection)
+(2026-09-23): **slice DONE; overall PARTIAL**. The existing native transport and
+quiet supervisor retain correlated cleanup/exit evidence after output-consumer
+rejection, without preserving raw output or granting retry/success. Missing
+native proof remains fail-closed. Synthetic process coverage includes both Job
+versions, crash, timeout/silent tree, cancel, flood and descendant cleanup.
+Host-containment admission for real providers remains unqualified; all six flags
+stay false. The next atom is its exact pre-spawn receipt binding and synthetic
+denial tests, not real execution or a routing/model registry.
+
 [Desktop/profile/Ollama inventory](hermes-desktop-ollama-profile-contract.md)
 (2026-09-22) adopts **separate existing runtimes**, rejecting shared-runtime admission.
 The repo-owned bounded probe failed closed; 45 comparable file samples were unchanged

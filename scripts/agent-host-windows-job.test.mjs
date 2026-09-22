@@ -7,7 +7,7 @@ import path from "node:path";
 import os from "node:os";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { buildWindowsJobLauncher, startWindowsJob, isWindowsJobReceipt, hermesOwnedTreeBlockers, assertWindowsJobCapability } from "./lib/agent-host-windows-job.mjs";
+import { buildWindowsJobLauncher, startWindowsJob, isWindowsJobReceipt, isWindowsJobCleanupReceipt, hermesOwnedTreeBlockers, assertWindowsJobCapability } from "./lib/agent-host-windows-job.mjs";
 import { classifyHermesOutcome } from "./lib/agent-host-hermes-budget.mjs";
 import { runHermesOwnedProcess } from "./lib/agent-host-hermes-quiet.mjs";
 import { validPacketFixture, pinReadyFixture } from "./fixtures/execution-packet.mjs";
@@ -72,6 +72,24 @@ test("native Windows Job qualification (serial, owned fixtures only)", {skip:pro
   });
   await t.test("surviving child/grandchild are terminated after normal root exit",async()=>{
    const r=await run("survivor");assert.equal(r.pids.length,4);assert.equal(r.receipt.terminationReason,"root_exit");assert.equal(r.receipt.rootExit,0);
+  });
+  for (const gated of [false, true]) await t.test(`consumer rejection retains genuine cleanup on v${gated ? 2 : 1}`, async () => {
+   let calls=0, assignment;
+   current=await startWindowsJob(artifact,{executable:fixture,argv:["tree"],cwd:directory,environment:env,input:"",durationMs:5000,
+    ...(gated ? {confirmResume:()=>"a".repeat(64)} : {}),onAssigned:a=>{assignment=a;},
+    onData(){calls++;throw Error("private callback text must not escape");}});
+   try {
+    await assert.rejects(current.completion,error=>{
+     assert.equal(error.message,"windows_job_output_rejected");assert.equal(error.retryable,false);
+     const receipt=error.details.ownedTreeReceipt;
+     assert.ok(isWindowsJobCleanupReceipt(receipt));assert.equal(receipt.resumed,true);
+     assert.equal(receipt.rootPid,assignment.rootPid);assert.equal(receipt.terminationReason,"preparation_failed");
+     assert.equal(receipt.activeProcesses,0);assert.equal(receipt.jobClosed,true);
+     assert.equal(isWindowsJobCleanupReceipt({...receipt}),false);
+     assert.ok(!JSON.stringify(error).includes("private callback text"));return true;
+    });
+    assert.equal(calls,1);await gone([assignment.rootPid,assignment.launcherPid]);
+   } finally {current.stop();await current.completion.catch(()=>{});current=null;}
   });
   for(const reason of ["cancel","lease_lost","context_stop","controller_shutdown","preparation_failed"])
    await t.test(reason+" owns entire tree",async()=>{const r=await run("tree",{},async(h,o)=>{await treeReady(h,o);h.stop(reason);});assert.equal(r.receipt.terminationReason,reason);assert.equal(classifyHermesOutcome({ownedTreeReceipt:r.receipt}),["cancel","context_stop","controller_shutdown"].includes(reason)?"cancelled":"policy_blocked");});

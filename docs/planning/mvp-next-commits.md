@@ -1,5 +1,16 @@
 # Next development work
 
+RF-HOST-035: **PARTIAL**, 2026-09-23. The
+[terminal-evidence slice](../operations/host-lifecycle-safety.md#terminal-evidence-after-output-rejection)
+is DONE: output-consumer rejection now preserves genuine owned-Job cleanup and
+the original fixed failure in the existing supervisor/budget evidence. It remains
+a failed, consumed attempt; no new supervisor or real-provider authority.
+**Next single atom:** bind one versioned host-containment admission receipt to
+exact runtime/profile/config and task/Ready/Writer identity at the existing
+pre-spawn boundary, with synthetic denial tests. Windows Job lifetime proof
+cannot substitute for OS host-control isolation. Stop after this slice; no
+real provider, model, Soar task, production connection, push or deployment.
+
 Manual Hermes owner tooling: **points 2A/2B/3 DONE**, 2026-09-23. The separately
 authorized [final manual smoke](../architecture/hermes-desktop-ollama-profile-contract.md#final-manual-smoke-and-exact-model-admission)
 made one local inference with the existing `gpt-oss:20b`; no download/load-only
