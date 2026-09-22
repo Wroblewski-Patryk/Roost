@@ -77,6 +77,16 @@ model/runtime/protected roots bez zmian, końcowy launcher check PASS. Wcześnie
 blokady są historią. To nie dopuszcza providera Roost: sześć flag nadal false,
 Electron Desktop i integracja pozostają nieuruchomione.
 
+Osobny [audyt podłączenia Desktop](hermes-desktop-ollama-profile-contract.md#desktop-hookup-audit),
+2026-09-23: **DESKTOP BLOCKED**. Wersja 0.17.6 obsługuje osobny home i dane
+Electron, ale wybór backendu dopuszcza inne instalacje/systemowy Python oraz
+bootstrap; wskazany runtime może też zostać celem aktualizatora. Nie potwierdzono
+trybu wymuszającego dokładny backend i wyłączającego te ścieżki. Profil CLI
+pozostaje `manual-ready`; nie utworzono skrótu GUI i niczego nie uruchomiono.
+Następny warunek: wspierany przez upstream ścisły tryb zewnętrznego backendu,
+z odmową przy drift i zachowaniem polityki bez narzędzi/fallbacków. Nie zmienia
+to RF-HOST-035 ani sześciu flag.
+
 ## Stały program syntetyczny — RF-RUNTIME-005B30
 
 **PASS dla zamkniętej klasy syntetycznej**, 2026-09-17. Publiczne API i Worker

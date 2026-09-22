@@ -21,10 +21,20 @@ remote fallback. Both owned Jobs exited 0 and cleanup left zero processes.
 The exact digest is now admitted only to the private `manual-ready` profile;
 the state/launcher binding and final offline check passed. Model, runtime and
 protected roots were unchanged. Historical failure cause remains INCONCLUSIVE.
-**Stop here.** The next owner decision is manual use of the qualified profile;
-no automated retry, Roost connection, Electron Desktop or agent activation.
+This qualified the manual CLI only; the subsequent GUI hookup audit is below.
+No automated retry, Roost connection, Electron Desktop or agent activation.
 The server was restored to its initially stopped state. Managed Roost provider
 admission and all six false readiness flags remain unchanged.
+
+The separately authorized [Desktop hookup audit](../architecture/hermes-desktop-ollama-profile-contract.md#desktop-hookup-audit)
+is complete: **DESKTOP BLOCKED**, 2026-09-23. Installed 0.17.6 can select separate
+home/Electron state, but no strict exact-backend mode was established that
+disables fallback, bootstrap, repair and updates. No GUI launcher or private
+state change was created. **Stop this manual atom.** The minimum next input is
+an upstream-supported strict external-backend contract preserving the manual
+no-tool/no-remote policy; then re-audit before creating a GUI launcher. The
+existing CLI remains `manual-ready`. This does not authorize upgrades, patches,
+a fork, UI/model launch or continuation of the separate RF-HOST-035 atom.
 
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,

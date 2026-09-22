@@ -74,6 +74,15 @@ remaining processes. Full protected/runtime/model fingerprints and launcher
 check passed. The historical cause remains inconclusive. No managed Roost
 admission, six-flag change, Electron Desktop or automatic continuation follows.
 
+[Desktop hookup audit](hermes-desktop-ollama-profile-contract.md#desktop-hookup-audit)
+(2026-09-23): **DESKTOP BLOCKED**. Exact installed 0.17.6 artifacts support home
+and Electron user-data overrides, but backend/interpreter fallback, bootstrap
+and updater paths do not establish strict external-runtime isolation. No GUI
+launcher or private mutation was made; the qualified CLI stays `manual-ready`.
+Next requirement: an upstream-supported strict external-backend mode with
+fail-closed identity and no install/repair/update/fallback, preserving the
+manual no-tool policy. No UI, model, Ollama or provider was started.
+
 RF-RUNTIME-005B30 kwalifikuje osobną klasę `synthetic_fixed`: stały program,
 publiczne API/Ready/claim i Worker, pierwotny ownership B28, zawieszony Job,
 trwały resume receipt/ack, dokładnie 22 bajty wyniku, niezależne review i cleanup.

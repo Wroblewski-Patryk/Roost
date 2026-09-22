@@ -4,7 +4,10 @@
 authorized [final manual smoke](#final-manual-smoke-and-exact-model-admission)
 passed; private state is `manual-ready`, with exact-digest admission for the
 manual no-tool profile only. Earlier blocked attempts below are historical.
-Managed Roost admission, all six readiness flags and Electron Desktop are unchanged.
+Managed Roost admission and all six readiness flags are unchanged.
+**Desktop hookup audit, 2026-09-23: DESKTOP BLOCKED.** The installed 0.17.6
+supports separate home/user-data locations but does not establish the required
+strict external-backend contract. See the [audit](#desktop-hookup-audit).
 
 ## Decision: two existing runtimes
 
@@ -1427,6 +1430,103 @@ Final scoped checks passed: JavaScript syntax, whitespace/privacy, 509 local
 documentation links and documentation budgets (103,208 default-context bytes;
 three planning files, largest 23,699 bytes). The eight unrelated dirty-file
 hashes were preserved and `design-qa.md` was neither read nor staged.
+
+## Desktop hookup audit
+
+**DESKTOP BLOCKED, 2026-09-23.** This separately authorized atom inspected the
+installed application statically. It did not execute Electron, Python/Hermes,
+Ollama, a model, an installer or an updater. Points 2A/2B/3 remain DONE and the
+existing manual CLI remains `manual-ready`; this refusal concerns GUI hookup.
+
+### Exact installed artifact
+
+The executable is `Hermes.exe` in the existing Desktop release's `win-unpacked`
+directory. The private installation location is deliberately omitted here.
+
+| Artifact | Verified identity |
+| --- | --- |
+| ASAR package | `hermes` 0.17.6; main `dist/electron-main.mjs` |
+| Install stamp | commit `a3d7f9ae257d5db6bb9759a10c437d786eec1610`, built `2026-09-21T16:49:27.690Z`, CI, clean |
+| Executable | PE/Electron 40.10.2; Authenticode `NotSigned`; SHA-256 `1d27ee17f1a23cb18373c324b1b34b6a05b79c14ce129624d7645269f9a7612a` |
+| `app.asar` | SHA-256 `73568d0ee0da245f9578b16bac831c533623fc4be4aabb9a6c091a56d7c142b8` |
+| Unpacked main bundle | SHA-256 `38edf1f8fd31020bcc536ded5cd8b4af366163c2e874a8dc2c7d8eb38ef1aaa4` |
+
+Package/PE/backend versions identify different components. The unsigned EXE is
+an identity observation, not an additional admission policy introduced here.
+
+### Supported separation and blocking behavior
+
+These references are one-based lines in the exact unpacked main bundle above;
+they are static evidence, not a claim of exercised GUI behavior.
+
+| Mechanism | Finding |
+| --- | --- |
+| `resolveHermesHome2`, line 39471 | Explicit `HERMES_HOME` takes precedence. The existing private manual home can be selected independently of `hermes-pilot`. |
+| Electron initialization, line 49175 | `HERMES_DESKTOP_USER_DATA_DIR` is resolved and passed to `app.setPath("userData", ...)`. The already reserved manual Desktop-state directory can hold separate Electron state. |
+| `createPythonBackend`, line 41797 | A valid `HERMES_DESKTOP_HERMES_ROOT` selects source with `-m hermes_cli.main`; the selected external backend has `bootstrap=false`. The accepted private 0.21.3 source is a candidate, not a measured Desktop protocol qualification. |
+| `findPythonForRoot`, line 40432 | `HERMES_DESKTOP_PYTHON` is preferred only if it exists; otherwise local venv candidates and system Python are searched. Windows backend creation can also substitute the venv interpreter. This is not exact-interpreter enforcement. |
+| `resolveHermesBackend`, line 41838 | Missing/invalid explicit source can fall through to active runtime, existing command, system-importable Hermes and ultimately `bootstrap-needed`. `HERMES_DESKTOP_IGNORE_EXISTING=1` skips only the existing-command branch. |
+| `runEnsureRuntime`, line 41941 | The external-backend success path skips bootstrap, but `bootstrap-needed` can hand off to Windows recovery or run the installer. There is no demonstrated strict refusal covering all selection/recovery paths. |
+| `resolveUpdateRoot`, line 40671; `applyUpdates`, line 41233 | The explicit source root is also an update candidate. Desktop update config reads its own `updates.json` branch; the inspected check/apply paths do not enforce the manual backend's `updates.check=false`. |
+| Repair/update IPC, lines 50001 and 50900 | Renderer-requested repair and update handlers remain registered. Their presence does not mean an update runs on every launch; it does prevent proving this hookup has disabled those paths. |
+
+Setting separate directories proves location selection only. No supported
+strict mode was established that pins this external runtime, refuses all
+fallbacks and disables bootstrap/repair/update for its entire lifetime. The
+existing CLI's no-tool configuration and exact model admission do not prove
+Desktop preserves those policies or avoids profile mutation. No dynamic GUI
+compatibility, configuration-preservation or no-tools claim is made.
+
+**Minimum next requirement:** an upstream-supported strict external-backend
+mode that binds the exact accepted interpreter/source, private home and Electron
+state, fails closed on drift/missing inputs, and disables installation, repair,
+updates and alternative backend/provider selection. Its documented behavior
+must also preserve the manual no-tool/no-remote policy. Re-audit that contract
+before creating a GUI launcher; no binary patch, fork or installation is
+authorized by this refusal.
+
+### Preserved state and owner instruction
+
+No GUI launcher, shortcut, new runtime, model copy or state binding was created.
+The existing **Launch Hermes Manual** launcher still opens the qualified CLI;
+it is not a Desktop shortcut. The ordinary Desktop launch is not qualified to
+select this private profile. The next owner-facing step is the supported strict
+mode above, followed by a separate hookup audit, not a trial launch.
+
+Read-only validation checked the existing installation receipt, private state,
+fixed configuration, launcher bundle and physical separation. The final smoke
+receipt still hashes to
+`92894f15b2028f39d85b145ffd20dc12fbff244b708511e5dd775a697f846a43`.
+The admitted model remains
+`sha256:17052f91a42e97930aa6e28a6c6c06a983e6a58dbb00434885a0cf5313e376f7`.
+All five blobs were streamed through SHA-256 and matched their names; the sole
+configured store contains seven files and no partials. No exhaustive search of
+unrelated disks is claimed. No second copy was created by this atom.
+
+The idle resource snapshot showed 13.991 GiB available RAM and 11.049 GiB free
+system disk, with zero processes named Hermes/Ollama. This is not a launch
+preflight or an inference capacity admission. The GUI path stopped before
+launcher creation, so no launcher fixture or dynamic compatibility test applies.
+Managed admission, six Roost flags and RF-HOST-035 remain unchanged.
+
+Full content/identity inventory digests matched before and after the read-only
+validation and documentation edit. Model files were hashed as streams to avoid
+loading the large weight blob into memory.
+
+| Protected tree | Files | Unchanged inventory SHA-256 |
+| --- | ---: | --- |
+| Managed runtime | 19,246 | `d621bc915869415f0d7a703213a71fc872567a48c0041a5f2037e7d3d8e58f03` |
+| Managed pilot | 349 | `6e9032072c9a2fcfdd4452b8d70e303aec970d11cb0acb24eccf1ba8495d1101` |
+| Private manual runtime | 26,227 | `3941bd3a1a4f60482804fe4705c7c883198dbb403ed890a8a9b25e3018947cb1` |
+| Private manual profile/state | 14 | `d40208e964d191d835ee2262849eb6d02951e984445c5935e0e7a4f0ca9fe70e` |
+| Configured model store | 7 | `2f9c93a131392e9a3a4e77886a09434650284601bb3a77ee89ad0c5383865f91` |
+
+Validation passed: private-state/installation/configuration and separation
+checks, model manifest/blob hashes, 674 local documentation links, scoped
+privacy/diff checks and documentation budgets (104,833 default-context bytes,
+three planning files, largest 24,596 bytes). Eight unrelated dirty files kept
+their hashes across this resumed audit; `design-qa.md` was not read or staged.
+No runtime code changed, so the full build/provider suite was not repeated.
 
 ## Disk/resources and one model store
 
