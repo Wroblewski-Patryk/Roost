@@ -1,14 +1,19 @@
 # Gotowość połączenia Roost z agentami
 
-RF-HOST-035, 2026-09-23: **PARTIAL; powiązanie dowodu przed startem — DONE**.
-Granica pre-spawn wymaga jednorazowego dowodu powiązanego z runtime/profile/config,
-workspace/task, Ready/claim/Writer i zakresem plików. Dodatni dowód dotyczy tylko
-stałego programu syntetycznego; Windows Job nie dowodzi izolacji API hosta.
-Kopie, drift, wygaśnięcie i rozszerzenie uprawnień powodują odmowę.
-[Zakres i następny atom](../operations/host-lifecycle-safety.md#host-containment-admission-binding):
-kwalifikacja read-only jednego mechanizmu izolacji Windows wobec wymaganych granic,
-przed instalacją lub próbą providera. Realny provider, izolacja hosta i sześć flag nadal
-niezakwalifikowane/false. Manualny profil Hermes pozostaje osobną, niezmienioną ścieżką.
+RF-HOST-035, 2026-09-23: **PARTIAL; kandydat LPAC — BLOCKED**.
+[Kwalifikacja read-only](../operations/host-lifecycle-safety.md#lpac-read-only-qualification)
+objęła osiem granic, Windows 11 Home 25H2, statyczny odczyt eksportów API,
+trzy próbki DACL i stan aktywnych profili zapory. LPAC nie daje sam z siebie
+zakresu jednego katalogu, bezpiecznego dostępu do OAuth ani listy dozwolonych
+endpointów. Nie ma zakwalifikowanych uprawnień zasobów, kompatybilnego startu
+providera ani wystawcy dowodu. Jeden checkout jest możliwy koncepcyjnie;
+potrzebne byłyby jawne wyjątki dla runtime i ograniczony stan prywatny.
+Powiązanie pre-spawn pozostaje DONE, z dowodem tylko dla stałego programu
+syntetycznego. Sześć flag pozostaje false. Dokładnie jeden następny atom to
+analiza źródłowa wykonalności podziału: executor narzędzi LPAC bez poświadczeń
+i surowej sieci, istniejący Worker pośredniczący w ściśle dopuszczonych operacjach.
+To propozycja do oceny, bez wdrożenia. Nie uruchomiono providera ani nie zmieniono
+systemu lub prywatnych profili; profil manualny Hermes pozostaje osobną ścieżką.
 
 Decyzja kwalifikacyjna z 2026-09-22:
 [Hermes Desktop, dwa profile i Ollama](hermes-desktop-ollama-profile-contract.md).

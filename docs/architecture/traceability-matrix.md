@@ -1,14 +1,17 @@
 # Foundation requirements traceability
 
-RF-HOST-035 [host-containment binding](../operations/host-lifecycle-safety.md#host-containment-admission-binding)
-(2026-09-23): **slice DONE; overall PARTIAL**. Versioned opaque one-attempt
-evidence binds runtime/profile/config, workspace/task, Ready/claim/Writer,
-filesystem scope and a host-capability allowlist at the existing pre-spawn boundary.
-Only the existing fixed program issues `closed_fixture_only` evidence; Job cleanup,
-copied/tampered/expired proof and scope expansion never admit a real provider.
-Prior terminal evidence and B28 recovery remain intact; six flags stay false.
-Exactly one next atom: read-only qualification of one Windows OS containment
-candidate against the missing guarantees, before installation/live trial.
+RF-HOST-035 [LPAC read-only qualification](../operations/host-lifecycle-safety.md#lpac-read-only-qualification)
+(2026-09-23): **candidate BLOCKED; overall PARTIAL**. Eight required dimensions
+are mapped to Microsoft primary sources and bounded local OS/API/DACL/firewall
+observations. LPAC alone does not establish an exact resource boundary,
+credential-free provider authentication or endpoint-specific network policy.
+One checkout is conceptually compatible, with explicit runtime/scratch exceptions;
+no host changes or provider trials were made. Existing opaque pre-spawn binding
+remains DONE and fixture-only; no real-provider issuer exists. Terminal evidence,
+B28 recovery and all six false flags remain unchanged. Exactly one next atom:
+source-only feasibility of a credential-free, raw-network-disabled LPAC tool
+executor with the existing Worker mediating narrowly authorized inference/network
+operations. This is an architecture proposal to evaluate, not an adopted adapter.
 
 [Desktop/profile/Ollama inventory](hermes-desktop-ollama-profile-contract.md)
 (2026-09-22) adopts **separate existing runtimes**, rejecting shared-runtime admission.

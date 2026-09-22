@@ -1,15 +1,20 @@
 # Next development work
 
-RF-HOST-035: **PARTIAL**, 2026-09-23. The
-[host-containment binding slice](../operations/host-lifecycle-safety.md#host-containment-admission-binding)
-is DONE: the existing pre-spawn boundary consumes opaque, versioned proof bound
-to runtime/profile/config, task/Ready/Writer and filesystem scope. Only the
-closed synthetic program issues fixture-only evidence; no real-provider issuer
-exists. Job cleanup does not prove OS isolation; six flags remain false.
-**Exactly one next atom:** read-only qualification of one Windows OS containment
-candidate against filesystem/credential/process/network/host-control requirements,
-returning supported/BLOCKED before installation or a provider trial. Stop after
-this slice; no model, Soar task, production connection, push or deployment.
+RF-HOST-035: **PARTIAL; LPAC candidate BLOCKED**, 2026-09-23. The
+[read-only qualification](../operations/host-lifecycle-safety.md#lpac-read-only-qualification)
+evaluates eight dimensions using local OS/API/DACL/firewall evidence and Microsoft
+primary sources. Standalone LPAC does not establish exact resource scope,
+credential-free authentication or endpoint-specific networking for the current
+provider. It could use one checkout, but requires explicit runtime/scratch
+exceptions and a qualified resource policy. No host settings or private profiles
+changed; no provider ran. The prior containment binding is DONE, fixture-only;
+no real-provider issuer exists and six flags remain false.
+**Exactly one next atom (proposal):** source-only feasibility of a credential-free,
+raw-network-disabled LPAC tool executor with the existing trusted Worker mediating
+narrowly authorized inference/network operations. Assess current provider protocol
+compatibility and one-checkout resource exceptions; do not implement a broker,
+adapter or host changes. Stop after this qualification; no model, Soar task,
+production connection, push or deployment.
 
 Manual Hermes owner tooling: **points 2A/2B/3 DONE**, 2026-09-23. The separately
 authorized [final manual smoke](../architecture/hermes-desktop-ollama-profile-contract.md#final-manual-smoke-and-exact-model-admission)

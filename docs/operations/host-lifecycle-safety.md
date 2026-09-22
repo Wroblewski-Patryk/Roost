@@ -50,6 +50,70 @@ The remaining sections describe the unchanged real-provider policy.
 
 ## Enforcement and scope
 
+### LPAC read-only qualification
+
+2026-09-23: **candidate BLOCKED; RF-HOST-035 PARTIAL**. The single candidate is
+a manually launched native Win32 **Less Privileged AppContainer (LPAC)**,
+with the existing Windows Job retained for lifetime/cleanup. It was selected
+because it can restrict a native process without a VM, another distribution or
+a checkout copy. This is a qualification of standalone LPAC for the current
+real-provider contract, not a claim that Windows lacks AppContainer support.
+The [Microsoft launch contract](https://learn.microsoft.com/en-us/windows/win32/secauthz/implementing-an-appcontainer)
+uses package/capability SIDs, resource DACLs and extended process attributes;
+LPAC additionally opts out of ordinary all-application-package access.
+
+Read-only local evidence, collected before any candidate installation:
+
+| Observation | Evidence and limit |
+| --- | --- |
+| Operating system | Windows 11 Home, Core, 25H2, x64, build **10.0.26200.9457**, from selected OS/version fields. Edition/build alone cannot attest enforcement. |
+| Native API surface | Static PE export reads found `CreateAppContainerProfile`, `DeriveAppContainerSidFromAppContainerName` and `GetAppContainerFolderPath` in `userenv.dll`; `CreateProcessW`, `InitializeProcThreadAttributeList` and `UpdateProcThreadAttribute` in `kernel32.dll`; token inspection/restriction exports in `advapi32.dll`/`kernelbase.dll`. No DLL was loaded by this check, API invoked, token created or candidate process spawned. Exports do not prove LPAC attributes will succeed. |
+| Selected resource DACLs | Checkout root: 18 ACEs; current PATH-resolved Node executable: 4 ACEs. Neither sample included Everyone, the two general package SIDs below, or a package-specific SID grant. System32 directory: 13 ACEs, including read/execute grants for `S-1-15-2-1` and `S-1-15-2-2`. Read through SID-form access rules to avoid localized-name resolution errors. These are three samples, not recursive coverage or effective access checks for a future token. |
+| Network baseline | BFE and Windows Firewall services running/automatic. ActiveStore Domain/Private/Public profiles enabled, default inbound block and outbound allow. No rule/exception inventory or effective AppContainer filter proof. Host outbound policy does not override or demonstrate LPAC capability enforcement. |
+| Roost boundary | The current issuer remains `prepareFixedHostContainment`, producing only `closed_fixture_only`, `systemIsolation=false`, `realProviderAdmitted=false`. No LPAC adapter or real-provider evidence issuer exists. |
+
+The qualification covers all eight required dimensions. Conditions below are
+missing evidence or architectural work, not approvals to make host changes.
+
+| Dimension | Documented mechanism, local finding and admission condition |
+| --- | --- |
+| Filesystem | Access depends on the intersection of user and package/capability permissions, not an exact-root filesystem namespace. The sampled checkout/runtime grants do not establish usable LPAC access; system read grants also exist. Require an explicit one-writable-checkout policy, narrowly listed read-only OS/runtime dependencies and private scratch, plus effective checks denying other user data, reparse/hardlink escapes and unauthorized inherited handles. Literal access to only one root is incompatible with external runtime dependencies. No ACL was changed. [Launch contract](https://learn.microsoft.com/en-us/windows/win32/secauthz/implementing-an-appcontainer). |
+| Credentials/secrets | AppContainer has a distinct combined user/application identity, but that does not remove secrets deliberately passed into the process. Credential Manager, SSH keys, Git credential helpers/config and unrelated profile files must remain inaccessible. Current same-owner OAuth reuse cannot both expose its source to arbitrary provider code and claim that source is denied. Require a credential-free execution contract or separately mediated authentication. Environment inheritance must be replaced with an explicit allowlist; `CreateProcessW` with a null environment inherits the caller's environment. No credentials or environment values were read. [Isolation](https://learn.microsoft.com/en-us/windows/win32/secauthz/appcontainer-isolation), [process creation](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessw). |
+| Process/host control | AppContainer restricts access to other processes/windows and protected resources; LPAC needs additional capabilities for registry/COM. This is not proof that every service, WMI, named pipe, broker, device or host API is unavailable on this installation. Require explicit capability/handle restrictions and denial evidence for host-lifecycle paths, including Docker/WSL control. No services, registry or policy were changed. [Isolation](https://learn.microsoft.com/en-us/windows/win32/secauthz/appcontainer-isolation), [LPAC capabilities](https://learn.microsoft.com/en-us/windows/win32/secauthz/implementing-an-appcontainer). |
+| Network | No network capability provides a deny baseline; granting Internet/intranet capabilities is not an endpoint allowlist. Local inference also needs a qualified path. No endpoint restrictions or loopback exceptions were proven here. Direct provider networking therefore cannot be admitted; any future mediation must authorize destinations/operations without supplying raw credentials or an arbitrary tunnel to the executor. [Network isolation](https://learn.microsoft.com/en-us/windows/win32/secauthz/appcontainer-isolation). |
+| Children and cleanup | Ordinary child creation typically retains AppContainer token properties. Job membership usually follows `CreateProcess`, but Microsoft explicitly excludes children created through `Win32_Process.Create`; breakaway settings also matter. Retain the existing Job, no breakaway and terminal zero-process evidence, while independently denying external creation/broker paths. No child/escape trial ran. [Legacy Win32](https://learn.microsoft.com/en-us/windows/win32/secauthz/appcontainer-for-legacy-applications-), [Job rules](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects). |
+| Same checkout/instance | Resource grants could address the existing physical checkout; no clone or additional application service is intrinsically required. The normal launch recipe still creates/uses private AppContainer state and scratch, so this is not zero additional state. Any future design must keep one Writer and one application instance and explicitly bound that state. No profile, copy or instance was created. [Legacy Win32](https://learn.microsoft.com/en-us/windows/win32/secauthz/appcontainer-for-legacy-applications-). |
+| Versioned proof | Token inspection exposes `TokenIsAppContainer`, `TokenIsLessPrivilegedAppContainer`, package SID, capabilities and integrity information. A future issuer would need measured policy/resource/runtime identities bound to the existing task/Ready/Writer attempt before creation, then actual suspended-token, handle, Job and network-policy verification before resume. No actual token exists to inspect here; OS version, export presence and serialized assertions cannot issue the existing opaque receipt. No provider instructions may execute to establish this proof. [Token information](https://learn.microsoft.com/en-us/windows/win32/api/winnt/ne-winnt-token_information_class). |
+| Codex/Hermes/Python/Node/Git | Unpackaged Win32 launch is supported in principle; that is not provider compatibility. DLL/runtime reads, temp/cache writes, subprocesses, Git helpers/hooks, authentication and network access need a bounded dependency contract. The Node DACL sample does not qualify Node, and no Python/Git/provider runtime was executed or audited. Exact binaries/configurations must qualify later without broad profile grants or a second checkout. [Legacy Win32](https://learn.microsoft.com/en-us/windows/win32/secauthz/appcontainer-for-legacy-applications-). |
+
+**Reason for BLOCKED:** standalone LPAC does not supply the required exact
+resource scope, credential-free provider authentication and endpoint-specific
+network policy by its name or launch flag. The current installation has no
+qualified resource policy, compatible provider launch or genuine issuer. These
+are substantive gaps, not merely the absence of permission to run a test today.
+Low integrity, restricted tokens and Job receipts do not fill them. All six
+readiness/authority flags remain false; no real-provider admission follows.
+
+**Exactly one next atom (proposal only):** source-only feasibility of a
+credential-free, raw-network-disabled LPAC tool executor, with the existing
+trusted Worker mediating narrowly authorized inference/network operations.
+Determine whether the current provider protocols permit that split, one physical
+checkout and explicit read-only runtime/scratch exceptions; reject it if they
+require credential exposure, generic host execution or an unrestricted tunnel.
+This is a minimal architecture-change proposal to evaluate, not an adopted
+broker, proxy, new supervisor or implementation authorization. No installation,
+ACL/firewall changes or provider trial is part of that proposed analysis.
+
+This slice changes documentation only. Local checks were read-only; no candidate
+profile, token or process was created, and no provider/model, private runtime,
+Desktop/manual profile, system setting, production or VPS was touched. Runtime
+tests/builds and adversarial containment trials were not run. Verification passed:
+632 local document links, documentation budgets (109,008 default-context bytes;
+three planning files, largest 27,975 bytes), scoped privacy and whitespace checks.
+All eight pre-existing dirty document hashes were unchanged across this edit;
+they are excluded. `design-qa.md` was neither read nor staged. Stop after this
+qualification.
+
 ### Host-containment admission binding
 
 2026-09-23: **binding/denial slice DONE; RF-HOST-035 PARTIAL**. Existing
@@ -122,10 +186,9 @@ before/after equality is claimed for those documents. `design-qa.md` was neither
 read nor staged. Database/API integration, production/VPS, container/service
 changes and real OS containment trials were not run.
 
-**Exactly one next atom:** read-only qualification of one candidate Windows OS
-containment mechanism against filesystem/credential/process/network/host-control
-requirements, returning supported/BLOCKED evidence before installation or a
-real-provider trial. Current Job evidence alone is insufficient. No model,
+The subsequent [LPAC qualification](#lpac-read-only-qualification) completes the
+read-only candidate analysis proposed by this binding slice and records the
+current next atom. Current Job evidence alone remains insufficient. No model,
 private-profile, provider or production activation follows from this slice.
 
 ### Terminal evidence after output rejection
