@@ -3,6 +3,7 @@ import type { AuthContext } from "../../auth/api-key.middleware";
 import type { OwnerTicketSigner } from "../agent-runtime/owner-ticket";
 import { reviewDigest } from "../agent-runtime/task-review-contract";
 import { freshWorkerOwner } from "./worker-credential.service";
+import { admissionSnapshot, handoffOperation, handoffPeerObservation, snapshotFromRecord } from "./worker-transport-snapshot";
 import { workerTransportCommand, transportAnchor, transportObservation, productionPeerAddress,
   type TransportCommand, type TransportIdentity, type TransportIntent } from "./worker-transport-contract";
 
@@ -101,15 +102,17 @@ export function createWorkerTransportService(store?:WorkerTransportStore,signer?
         return {ok:true,record:result,anchor:{identity:i.identity,revision:record.revision,recordDigest:reviewDigest(result),certificateEpoch:record.certificateEpoch,highWaterEpoch:high},...flags};
       });
     });},
-    inspect(record:SignedTransport<TransportRecord>,anchorInput:unknown,evidence:SignedTransport<unknown>){return guarded(async()=>{
-      if(!store)deny("unavailable");const now=clock().getTime(),anchor=transportAnchor.parse(anchorInput),observation=transportObservation.parse(evidence.payload);
+    inspect(record:SignedTransport<TransportRecord>,anchorInput:unknown,evidence?:SignedTransport<unknown>){return guarded(async()=>{
+      if(!store)deny("unavailable");const now=clock().getTime(),anchor=transportAnchor.parse(anchorInput),observation=evidence?transportObservation.parse(evidence.payload):null;
       return (store!.read ?? store!.transaction)(async tx=>{
         const c=await context(tx,anchor.identity),head=await tx.head(c.identity.workspaceId,c.identity.hostId);
         if(!head||!same(head,record)||!signed("record",record,c)||anchor.recordDigest!==reviewDigest(head)||anchor.revision!==head.payload.revision||
           anchor.certificateEpoch!==head.payload.certificateEpoch||anchor.highWaterEpoch!==head.payload.highWaterEpoch||!same(head.payload.identity,anchor.identity))deny("anchor_changed");
         const r=head!.payload;if(r.state!=="current"||Date.parse(r.expiresAt)<=now||Date.parse(r.approvedAt)>now)deny("admission_expired_or_revoked");
         if((await currentDecision(tx,r.decisionId,r.decisionRevision,r.ownerId,c,now)).intentDigest!==r.decisionIntentDigest)deny("decision_changed");
-        if(!signed("observation",evidence,c)||!same(observation.identity,r.identity)||observation.origin!==r.profile.origin||observation.serverName!==r.profile.serverName||observation.caDigest!==r.profile.trust.caDigest||
+        const snapshot=snapshotFromRecord(r,reviewDigest(head),now);
+        if(!observation)return {ok:true,admission:"synthetic_only",snapshot,receipt:{identity:r.identity,revision:r.revision,recordDigest:reviewDigest(head)},...flags};
+        if(!signed("observation",evidence!,c)||!same(observation.identity,r.identity)||observation.origin!==r.profile.origin||observation.serverName!==r.profile.serverName||observation.caDigest!==r.profile.trust.caDigest||
           Date.parse(observation.observedAt)>now||now-Date.parse(observation.observedAt)>30000||Date.parse(observation.expiresAt)<=now||Date.parse(observation.expiresAt)>Date.parse(observation.observedAt)+30000)deny("observation_invalid");
         if(!observation.addresses.every(productionPeerAddress)||!productionPeerAddress(observation.peerAddress)||!observation.addresses.includes(observation.peerAddress))deny("dns_denied");
         const s=r.staged;
@@ -118,7 +121,25 @@ export function createWorkerTransportService(store?:WorkerTransportStore,signer?
         const cert=next?s!.certificate:r.profile.certificate;
         if(s&&now>=Date.parse(s.cutoverAt)&&!next||observation.pin!==cert.fingerprint||!validCertificate(cert,now,now+1)||
           observation.certificateNotBefore!==cert.notBefore||observation.certificateNotAfter!==cert.notAfter)deny("pin_invalid");
-        return {ok:true,admission:"synthetic_only",receipt:{identity:r.identity,revision:r.revision,recordDigest:reviewDigest(head)},...flags};
+        return {ok:true,admission:"synthetic_only",snapshot,receipt:{identity:r.identity,revision:r.revision,recordDigest:reviewDigest(head)},...flags};
+      });
+    });},
+    completeVerified(snapshotInput:unknown,operationInput:unknown,evidence:SignedTransport<unknown>,phase:"before_send"|"complete"){return guarded(async()=>{
+      if(!store)deny("unavailable");
+      const snapshot=admissionSnapshot.parse(snapshotInput),operation=handoffOperation.parse(operationInput),observation=handoffPeerObservation.parse(evidence.payload);
+      if(operation.snapshotDigest!==reviewDigest(snapshot)||!same(observation.operation,operation)||observation.phase!==phase||observation.commitUncertain)deny("observation_invalid");
+      return (store!.read??store!.transaction)(async tx=>{
+        const c=await context(tx,snapshot.identity),head=await tx.head(snapshot.identity.workspaceId,snapshot.identity.hostId),now=clock().getTime();
+        if(!head||!signed("record",head,c)||head.payload.revision!==snapshot.revision||reviewDigest(head)!==snapshot.recordDigest||!same(head.payload.identity,snapshot.identity))deny("anchor_changed");
+        const current=snapshotFromRecord(head!.payload,reviewDigest(head),now);
+        const {allowedCertificates:originalPins,...originalFields}=snapshot,{allowedCertificates:currentPins,...currentFields}=current;
+        if(!same(originalFields,currentFields)||(await currentDecision(tx,current.decisionId,current.decisionRevision,c.ownerId,c,now)).intentDigest!==current.decisionIntentDigest)deny("decision_changed");
+        if(!signed("observation",evidence,c)||!same(observation.identity,current.identity)||observation.origin!==current.origin||observation.serverName!==current.serverName||observation.caDigest!==current.caDigest||
+          observation.resolverPolicy!==current.resolverPolicy||Date.parse(observation.observedAt)>now||now-Date.parse(observation.observedAt)>30000||Date.parse(observation.expiresAt)<=now||
+          Date.parse(observation.expiresAt)>Date.parse(observation.observedAt)+30000||!observation.addresses.every(productionPeerAddress)||!productionPeerAddress(observation.peerAddress)||!observation.addresses.includes(observation.peerAddress))deny("observation_invalid");
+        const matches=(p:typeof originalPins[number])=>p.epoch===observation.certificateEpoch&&p.certificate.fingerprint===observation.pin&&p.certificate.notBefore===observation.certificateNotBefore&&p.certificate.notAfter===observation.certificateNotAfter&&validCertificate(p.certificate,now,now+1);
+        if(!originalPins.some(matches)||!currentPins.some(matches))deny("pin_invalid");
+        return {ok:true,outcome:"synthetic_terminal",phase,...flags};
       });
     });},
     complete(receipt:{identity:TransportIdentity;revision:number;recordDigest:string}){return guarded(async()=>{

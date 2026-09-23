@@ -4,6 +4,9 @@ import { workerCredentialCommand } from "./worker-credential-contract";
 
 export const handoffPolicy = Object.freeze({ requestTtlMs: 120000, ackTtlMs: 60000, maxBadAttempts: 5, maxPolls: 30,
   pollIntervalMs: 1000, requestsPerMinute: 3, maximumCredentialTtlMs: 30 * 86400000 });
+export const handoffHttpsPaths = Object.freeze({ request:"/v1/api-keys/worker-credentials/handoff/request",
+  poll:"/v1/worker-credential-handoff/poll", ack:"/v1/worker-credential-handoff/ack", status:"/v1/worker-credential-handoff/status" });
+export type HandoffHttpsAction = keyof typeof handoffHttpsPaths;
 const id = z.string().uuid(), digest = z.string().regex(/^[a-f0-9]{64}$/);
 export const exactHttpsOrigin = z.string().min(9).max(512).refine(value => {
   try { const u = new URL(value); return u.protocol === "https:" && !u.username && !u.password && !u.search && !u.hash

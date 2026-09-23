@@ -4,8 +4,11 @@ import { isIP } from "node:net";
 import tls from "node:tls";
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import { handoffRequest, handoffDeviceProof, handoffAck, exactHttpsOrigin } from "./worker-handoff-contract";
+import { handoffRequest, handoffDeviceProof, handoffAck, exactHttpsOrigin, handoffHttpsPaths, type HandoffHttpsAction } from "./worker-handoff-contract";
+export { handoffHttpsPaths, type HandoffHttpsAction } from "./worker-handoff-contract";
 import { workerHandoffBinding } from "./worker-credential-contract";
+import { admissionSnapshot, handoffOperation, handoffPeerObservation, freezePublic, type AdmissionSnapshot, type HandoffOperation } from "./worker-transport-snapshot";
+import type { SignedTransport } from "./worker-transport.service";
 
 const digest = z.string().regex(/^[a-f0-9]{64}$/), id = z.string().uuid();
 const canonicalOrigin = exactHttpsOrigin.refine(v => new URL(v).origin === v && !isIP(new URL(v).hostname.replace(/^\[|\]$/g,"")));
@@ -30,18 +33,31 @@ const credential = z.object({ id, workspaceId:id, installationId:id, hostId:id, 
 const requested = state.extend({ userCode:z.string().regex(/^[A-F0-9]{8}$/), binding:workerHandoffBinding, expiresAt:z.string().datetime(), state:z.literal("requested"), deliverySpent:z.literal(false) }).strict();
 const delivered = state.extend({ state:z.literal("awaiting_ack"), deliverySpent:z.literal(true), credential, responseDigest:digest,
   ackDeadline:z.string().datetime(), key:z.string().min(32).max(256) }).strict();
-export const handoffHttpsPaths = Object.freeze({ request:"/v1/api-keys/worker-credentials/handoff/request",
-  poll:"/v1/worker-credential-handoff/poll", ack:"/v1/worker-credential-handoff/ack", status:"/v1/worker-credential-handoff/status" });
-export type HandoffHttpsAction = keyof typeof handoffHttpsPaths;
 type ErrorCode = "unavailable"|"request_invalid"|"tls_denied"|"connect_timeout"|"read_timeout"|"deadline"|"redirect_denied"|"response_invalid"|"connection_lost"|"remote_denied"|"replay_denied"|"delivery_unknown";
 type Failure = { ok:false; error:ErrorCode; deliveryUnknown:boolean; transportQualified:false; launchAuthority:false };
 export type HandoffHttpsResult = Failure | { ok:true; data:any; transportQualified:false; launchAuthority:false };
 const failure = (error:ErrorCode, deliveryUnknown=false):Failure => ({ok:false,error,deliveryUnknown,transportQualified:false,launchAuthority:false});
 const maxRequestBytes=8192, maxResponseBytes=8192, maxRequests=128;
 
+function responseData(action:HandoffHttpsAction,proof:any,origin:string,decoded:unknown){
+  const schema=action==="request"?requested:action==="poll"?z.union([state,delivered]):state;
+  const {data}=z.object({data:schema}).strict().parse(decoded);
+  if(data.requestId!==proof.requestId)throw Error("response_invalid");
+  if(action==="request"&&((data as any).binding.origin!==origin||(data as any).binding.certificateFingerprint!==proof.certificateFingerprint))throw Error("response_invalid");
+  if("key"in data&&(data.credential.workspaceId!==proof.workspaceId||data.credential.hostId!==proof.hostId||data.credential.installationId!==proof.installationId))throw Error("response_invalid");
+  if(action==="ack"&&data.state!=="acknowledged")throw Error("response_invalid");
+  return data;
+}
+export type AdmissionHttpsExchange={qualification:"synthetic_persisted_admission_v1";
+  exchange(input:{snapshot:AdmissionSnapshot;operation:HandoffOperation;body:Buffer;verifyPeer:(peer:SignedTransport<unknown>)=>Promise<boolean>}):Promise<{
+    statusCode:number;headers:Record<string,string>;body:Buffer;peer:SignedTransport<unknown>}>
+};
+export type AdmissionHttpsGate={beforeSend:(peer:SignedTransport<unknown>)=>Promise<boolean>;
+  complete:(peer:SignedTransport<unknown>,responseDigest:string)=>Promise<boolean>};
+
 // No production composition or generic URL/header/fetch capability. Only an
 // explicitly qualified loopback test state is accepted in this slice.
-export function createWorkerHandoffHttpsClient(input?: unknown) {
+export function createWorkerHandoffHttpsClient(input?: unknown,internal?:AdmissionHttpsExchange) {
   const parsed=configSchema.safeParse(input), config=parsed.success ? parsed.data : undefined;
   const phases=new Map<string,"open"|"pending"|"ack_inflight"|"acknowledged"|"unknown">();
   const bindings=new Map<string,string>();
@@ -114,12 +130,8 @@ export function createWorkerHandoffHttpsClient(input?: unknown) {
                 joined=Buffer.concat(chunks);
                 const decoded=JSON.parse(new TextDecoder("utf-8",{fatal:true}).decode(joined));
                 if(code!==200)return finish(failure(code>=500?"delivery_unknown":"remote_denied",code>=500&&sent));
-                const schema=action==="request"?requested:action==="poll"?z.union([state,delivered]):state;
-                const {data}=z.object({data:schema}).strict().parse(decoded);
-                if(data.requestId!==proof.requestId)return abort("response_invalid");
-                if(action==="request" && ((data as any).binding.origin!==config.origin || (data as any).binding.certificateFingerprint!==proof.certificateFingerprint))return abort("response_invalid");
+                const data=responseData(action,proof,config.origin,decoded);
                 if("key" in data) {
-                  if(data.credential.workspaceId!==proof.workspaceId || data.credential.hostId!==proof.hostId || data.credential.installationId!==proof.installationId)return abort("response_invalid");
                   phases.set(proof.requestId,"pending");
                 }
                 if(action==="ack") {if(data.state!=="acknowledged")return abort("response_invalid");phases.set(proof.requestId,"acknowledged");}
@@ -145,6 +157,57 @@ export function createWorkerHandoffHttpsClient(input?: unknown) {
       const value=args[1] && Object.getOwnPropertyDescriptor(args[1],field)?.value;if(Buffer.isBuffer(value))value.fill(0);
     }}
   }
-  return Object.freeze({send,close(){closed=true;for(const cancel of active)cancel();phases.clear();bindings.clear();},
+  // Source-only internal seam on the existing client, sharing its action/schema,
+  // replay and redaction boundary. It cannot construct a production socket: the
+  // only admitted exchange is explicitly injected synthetic evidence.
+  let admittedActive=0;
+  async function sendAdmitted(snapshotInput:unknown,operationInput:unknown,body:unknown,gate:AdmissionHttpsGate):Promise<HandoffHttpsResult>{
+    let payload:Buffer|undefined,response:Buffer|undefined,key:Buffer|undefined,proof:any,possibleCommit=false,retained=false,accepted=false;
+    let deadline:NodeJS.Timeout|undefined,expired=false;
+    try{
+      if(closed||!internal||internal.qualification!=="synthetic_persisted_admission_v1"||typeof internal.exchange!=="function"||typeof gate?.beforeSend!=="function"||typeof gate.complete!=="function"||admittedActive>=32)return failure("unavailable");
+      const snapshot=freezePublic(admissionSnapshot.parse(snapshotInput)),operation=freezePublic(handoffOperation.parse(operationInput)),action=operation.action;
+      proof=(action==="request"?handoffRequest:action==="ack"?handoffAck:handoffDeviceProof).parse(body);
+      if(proof.requestId!==operation.requestId||proof.workspaceId!==snapshot.identity.workspaceId||proof.hostId!==snapshot.identity.hostId||proof.installationId!==snapshot.identity.installationId||proof.hostFingerprint!==snapshot.identity.hostFingerprint||
+        action==="request"&&(proof.origin!==snapshot.origin||!snapshot.allowedCertificates.some(p=>p.certificate.fingerprint===proof.certificateFingerprint)))return failure("request_invalid");
+      const phase=phases.get(proof.requestId);
+      if(!phase&&phases.size>=maxRequests||action==="request"&&phase||action==="ack"&&phase!=="pending"||action==="poll"&&(phase==="unknown"||phase==="acknowledged"||phase==="pending"))return failure("replay_denied",phase==="unknown");
+      if(!phase)phases.set(proof.requestId,"open");if(action==="ack")phases.set(proof.requestId,"ack_inflight");
+      if(action==="request")bindings.set(proof.requestId,proof.certificateFingerprint);
+      admittedActive++;retained=true;
+      const wire=action==="request"?proof:{...proof,deviceSecret:proof.deviceSecret.toString("base64url"),challenge:proof.challenge.toString("base64url")};
+      payload=Buffer.from(JSON.stringify(wire));if(payload.length>maxRequestBytes)return failure("request_invalid");
+      let checked=false,verified=false,invalid=false;
+      const exchange=internal.exchange({snapshot,operation,body:payload,verifyPeer:async peer=>{
+        if(checked||closed||expired){invalid=true;return false;}checked=true;
+        const boundPin=bindings.get(proof.requestId),observation=handoffPeerObservation.safeParse(peer.payload);
+        if(!observation.success||boundPin&&observation.data.pin!==boundPin)return false;
+        const approved=await gate.beforeSend(peer);if(closed||expired){invalid=true;return false;}
+        verified=approved;if(verified)possibleCommit=true;return verified;
+      }}).then(reply=>{if(expired){if(Buffer.isBuffer(reply.body))reply.body.fill(0);throw Error("deadline");}return reply;});
+      const deadlineFailure=new Promise<never>((_resolve,reject)=>{deadline=setTimeout(()=>{expired=true;possibleCommit=true;reject(Error("deadline"));},10000);});
+      const reply=await Promise.race([exchange,deadlineFailure]);
+      response=reply.body;
+      // Missing handshake evidence is uncertain, never proof that no send occurred.
+      if(!checked||!verified||invalid||closed){possibleCommit=true;return failure("delivery_unknown",true);}
+      const h=reply.headers,length=Number(h["content-length"]);
+      if(reply.statusCode!==200||Buffer.byteLength(JSON.stringify(h))>4096||h["transfer-encoding"]||h["content-encoding"]||!/^application\/json(?:;\s*charset=utf-8)?$/i.test(h["content-type"]??"")||
+        !Buffer.isBuffer(response)||!Number.isSafeInteger(length)||length<2||length>maxResponseBytes||response.length!==length)return failure("delivery_unknown",true);
+      const data:any=responseData(action,proof,snapshot.origin,JSON.parse(new TextDecoder("utf-8",{fatal:true}).decode(response)));
+      if("key"in data){key=Buffer.from(data.key);data.key="";}
+      if(!await Promise.race([gate.complete(reply.peer,createHash("sha256").update(response).digest("hex")),deadlineFailure])||closed)return failure("delivery_unknown",true);
+      if(key){data.key=key;key=undefined;phases.set(proof.requestId,"pending");}
+      if(action==="ack")phases.set(proof.requestId,"acknowledged");
+      accepted=true;
+      return {ok:true,data,transportQualified:false,launchAuthority:false};
+    }catch{return failure(possibleCommit?"delivery_unknown":"tls_denied",possibleCommit);}
+    finally{
+      clearTimeout(deadline);if(retained)admittedActive--;payload?.fill(0);if(Buffer.isBuffer(response))response.fill(0);key?.fill(0);
+      // Conservative terminal state unless a complete verified result advanced it.
+      if(possibleCommit&&!accepted&&proof)phases.set(proof.requestId,"unknown");
+      for(const name of ["deviceSecret","challenge"]){const value=body&&Object.getOwnPropertyDescriptor(body,name)?.value;if(Buffer.isBuffer(value))value.fill(0);}
+    }
+  }
+  return Object.freeze({send,sendAdmitted,close(){closed=true;for(const cancel of active)cancel();phases.clear();bindings.clear();},
     qualification:"loopback_https_v1",transportQualified:false,launchAuthority:false});
 }

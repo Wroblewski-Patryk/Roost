@@ -1,5 +1,18 @@
 # Gotowość połączenia Roost z agentami
 
+Aktualizacja v30: [koordynator admission i HTTPS handoff](worker-handoff-coordinator-v1.md)
+— **DONE źródłowo: 11/11 wyników koordynatora, 57/57 testów źródłowych**.
+Niezmienny snapshot jest jedynym źródłem konfiguracji. Odczyt przed transportem,
+weryfikacja peera przed wysłaniem i podpisane completion odrzucają drift, stare
+piny, replay oraz spóźnione wyniki; odrzucone sekrety są czyszczone. Status nie
+zmienia persystencji. Bez zmian schematu/migracji, sieci, DB/Dockera i aktywacji;
+wszystkie flagi false. Rzeczywisty transport PARTIAL, produkcja BLOCKED.
+Ujawniona blokada: obecny admission wymaga już aktywnego poświadczenia, więc nie
+obsługuje pierwszego enrollmentu ani odzyskania dostępu po zmianie generacji.
+Jeden proponowany następny atom: źródłowy kontrakt bootstrap/recovery admission
+i syntetyczna walidacja rozwiązująca ten cykl z zachowaniem dokładnej autoryzacji
+właściciela, instalacji i hosta. Starsze propozycje poniżej są historyczne.
+
 Aktualizacja v29: [natywna persystencja transportu](worker-transport-admission-v1.md)
 — **DONE: 9/9 wyników PostgreSQL, 55/55 wybranych wyników łącznie**.
 Rzeczywiste transakcje, po 20 równoległych prób create/stage/cutover/revoke/readmit,

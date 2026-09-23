@@ -1,5 +1,18 @@
 # Architecture Source Of Truth
 
+Owner amendment v30: [persisted admission/HTTPS coordinator](worker-handoff-coordinator-v1.md)
+is **DONE for source-only integration: 11/11 results, 57/57 source regressions**.
+Immutable snapshots are the only configuration source; inspection, pre-body peer
+recheck and signed operation/response completion reject drift and stale pins.
+Concurrent/replayed completion, uncertainty, read-only status and buffer wiping
+are qualified with an injected synthetic exchange on the existing HTTPS client.
+No persistence/migration change, real network/DB/Docker or activation; flags false.
+Real exchange remains PARTIAL and production BLOCKED. Integration exposes an
+active-credential prerequisite that blocks first enrollment and rotation recovery.
+Exactly one proposed next atom: a source-only bootstrap/recovery admission contract
+and synthetic validation resolving that cycle without relaxing owner/host bindings.
+Earlier successor proposals below are historical.
+
 Owner amendment v29: [native transport persistence](worker-transport-admission-v1.md)
 is **DONE: 9/9 PostgreSQL results, 55/55 selected native/source results**.
 Real Prisma/Serializable concurrency (20 attempts per create/stage/cutover/revoke/
