@@ -1,5 +1,16 @@
 # Worker handoff loopback HTTPS adapter v1
 
+Owner amendment v28: [transport admission persistence](worker-transport-admission-v1.md)
+is DONE for the source Prisma adapter and synthetic transactions: **10/10 results,
+46/46 selected source regressions**. Four additive tables preserve identity
+generations, one workspace/host head, monotonic history and atomic Event/audit.
+Serializable writes use the existing fence and exact revision/digest; read snapshots
+perform no writes. Migration **UNAPPLIED**; native persistence qualification PARTIAL,
+production TLS/DNS/provisioning and execution BLOCKED. Default composition absent,
+all six flags plus `transportQualified` false. Exactly one proposed next atom:
+separately authorized native PostgreSQL qualification in a disposable synthetic
+database. Earlier successor proposals below are historical.
+
 Current successor v27: [production admission source contract](worker-transport-admission-v1.md)
 passes 9/9 synthetic results and 36/36 source tests; it adds no production
 transport composition. Exact owner authority, signed metadata, epochs and local

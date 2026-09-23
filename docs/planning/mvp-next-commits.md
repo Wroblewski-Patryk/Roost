@@ -1,5 +1,20 @@
 # Next development work
 
+Current owner amendment v28: [Prisma transport persistence](../architecture/worker-transport-admission-v1.md)
+is **DONE for source/synthetic qualification: 10/10 adapter results, 46/46 source
+regressions**. Immutable generations/history, one workspace/host head, revocation,
+high-water and atomic Event/audit are implemented; inspect/complete do not write.
+The additive migration is **UNAPPLIED** and the preceding 76 migrations unchanged.
+Native persistence remains PARTIAL; production transport/launch BLOCKED. No
+DB/Docker, endpoint/provisioning or Worker/provider/model activation in this atom.
+All six flags plus `transportQualified` false; default composition absent.
+**Exactly one proposed next atom:** separately authorized native PostgreSQL
+qualification of the adapter and unchanged migration chain, with a disposable
+synthetic database, real concurrency/constraints/rollback and verified cleanup.
+Do not treat this proposal as permission to run it. No production endpoint,
+provisioning or activation. Stop after the source persistence atom. Earlier
+successor proposals below are historical.
+
 Current owner amendment v27: [source transport admission](../architecture/worker-transport-admission-v1.md)
 is DONE for 9/9 synthetic results and 36/36 source tests. Exact owner/signed
 decision, origin/DNS/pin, epochs/rotation/revoke, anchors and rollback are qualified

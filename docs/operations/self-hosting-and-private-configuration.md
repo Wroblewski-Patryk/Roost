@@ -1,5 +1,16 @@
 # Self-hosting and private installation configuration
 
+Owner amendment v28: [transport admission persistence](../architecture/worker-transport-admission-v1.md)
+is DONE for the source Prisma adapter and synthetic transactions: **10/10 results,
+46/46 selected source regressions**. Four additive tables preserve identity
+generations, one workspace/host head, monotonic history and atomic Event/audit.
+Serializable writes use the existing fence and exact revision/digest; read snapshots
+perform no writes. Migration **UNAPPLIED**; native persistence qualification PARTIAL,
+production TLS/DNS/provisioning and execution BLOCKED. Default composition absent,
+all six flags plus `transportQualified` false. Exactly one proposed next atom:
+separately authorized native PostgreSQL qualification in a disposable synthetic
+database. Earlier successor proposals below are historical.
+
 Owner amendment v27: [source production transport admission](../architecture/worker-transport-admission-v1.md)
 qualifies only schema/authority/state transitions with synthetic signed metadata:
 9/9 results, 36/36 source tests. Public origin/certificate/CA digests and epochs

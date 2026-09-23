@@ -1,5 +1,13 @@
 # Production Worker transport admission v1 — source contract
 
+Owner amendment v28, 2026-09-23. **DONE: source-only Prisma adapter and
+synthetic transaction qualification (10/10 results; 46/46 selected source
+regressions). Migration UNAPPLIED. PARTIAL: native persistence qualification.
+BLOCKED: production transport and execution.** Default composition remains
+absent and all six admission flags plus `transportQualified` remain false.
+No database/Docker, endpoint, TLS/DNS provisioning or Worker/provider/model
+activation is part of this atom. Earlier successor proposals are historical.
+
 Owner amendment v27, 2026-09-23. **DONE for schema, authority and state-machine
 qualification: 9/9 results (eight scenarios plus parent), 36/36 selected source
 tests. PARTIAL: persistence. BLOCKED: production use.** This extends the existing
@@ -137,11 +145,80 @@ anchor substitution/copy and rollback after append/audit/precommit. Build, lint
 and source regressions pass. Real TLS/HTTP, native database, full API/web and
 production deployment suites are not run in this source-only atom.
 
-There is **no persistence adapter or migration for this record yet**. Existing
-applied migrations remain untouched. Native uniqueness, audit guards, locking,
-durable high-water/revocation storage and crash recovery remain unqualified.
+## Source persistence adapter (v28)
 
-**Exactly one proposed next atom:** implement a source-only Prisma persistence
-adapter and additive, unapplied migration for this admission ledger, with
-synthetic transaction/rollback tests. Keep real database qualification for a
-separately authorized later atom; no production endpoint, provisioning or activation.
+The explicitly injected [Prisma adapter](../../src/modules/api-keys/worker-transport-store.ts)
+implements the existing service interface. Writes use one Serializable transaction
+and the existing constant `ready_source_fence` update, shared with canonical
+owner/decision/credential writers. Expected revision and signed-record digest are
+checked again in a conditional head update; uniqueness/serialization conflicts
+return `revision_changed`, without retrying the callback. History, head, Event
+and audit reference commit together; a callback omitting audit cannot commit.
+
+The [new additive migration](../../prisma/migrations/20260923170000_worker_transport_admission/migration.sql)
+is **UNAPPLIED**. It only creates four tables and indexes, with no existing-row
+changes, seeding, resets or edits to the preceding 76 migrations:
+
+- `worker_transport_generations`: immutable identity/bindings and their digest.
+  Every create/re-admit gets a new generation UUID, including identical bindings.
+- `worker_transport_history`: immutable public signed admission record, indexed
+  pins, unique command/decision, owner/decision revision/intent digest, predecessor
+  revision/digest/high-water/state/generation and exact generation reference.
+- `worker_transport_heads`: one pointer per **workspace + host**, deliberately
+  stronger than workspace + installation + host. High-water survives an
+  installation replacement. A composite FK binds the pointer's revision, digest,
+  state and epochs to the same immutable history row.
+- `worker_transport_audit`: one append-only reference per history row to its Event.
+
+Checks cover bounded public JSON, positive/monotonic high-water, consecutive
+revisions and a new generation after terminal revoke. A predecessor composite FK
+prevents substituting invented previous state/epoch. Strict recursive Zod
+serialization rejects unknown fields before writes. Persisted data contains only
+public identity, origin/SNI/certificate/CA/resolver metadata, evidence digests and
+the **admission record** signature. No raw signed owner-decision/ticket payload,
+private key, certificate material, credential secret or credential hash is copied.
+The credential hash is selected only to derive its canonical public fingerprint.
+
+Authority uses bounded ORM lookups: current workspace owner/membership, exact
+host, latest bound credential, acknowledged handoff and trusted ticket-key digest.
+The host fingerprint comes from the existing credential handoff. Decisions come
+from existing canonical revision/acceptance tables and must be accepted, current,
+owner-reserved, undelegated and not superseded. An injected trusted issuer signs
+the public decision projection transiently; it is never stored. The projection
+expires at admission expiry, or the fresh command's `validUntil` for revoke so
+an expired admission can still be revoked. No new decision authority is introduced.
+
+`TransportDecisionRevisionSource`, `TransportDecisionAcceptanceSource` and
+`TransportHandoffSource` are bounded, read-only Prisma projections of **existing**
+migration-owned tables; omitted legacy columns are intentional. Do not use
+`prisma db push` or derive table changes from these projections. All DDL remains
+owned by reviewed migrations. The only raw query in this adapter is the constant
+write fence; head/history/audit and authority access use Prisma delegates.
+
+Inspect/complete use a RepeatableRead snapshot through a read capability whose
+append/audit methods deny. They perform no fence, expiry renewal, audit insertion,
+credential `lastUsedAt` or other persistent write. Each completion obtains a new
+snapshot; revocation/changed head then blocks completion. This is an application
+read capability, not a separately provisioned database read-only role.
+
+The [Prisma mock suite](../../src/tests/worker-transport-prisma.test.ts) exercises
+the actual adapter against a rollback-capable transaction client: full lifecycle,
+replacement identity, one winner among 20 stage/cutover/revoke attempts each,
+CAS/duplicate-head conflicts, read purity, replay/epoch/pin/authority/drift denials,
+strict serialization and rollback after generation/history/head/Event/audit and
+before commit. It checks migration statement scope, FKs, checks and indexes.
+Network, DNS, sockets and child processes are forbidden in the tests, with zero
+observed effects. Local Prisma validation/generation, server build and lint pass.
+
+Manual migration review finds no destructive DDL or existing data mutation. It
+does **not** establish PostgreSQL execution, native locking, database constraint
+behavior, crash recovery or performance. Append-only behavior is enforced by the
+adapter's normal API; privileged SQL writes/deletes and coordinated database
+rollback are not solved by these checks. Native database, full API/web, real
+TLS/HTTP and deployment suites were not run in this source-only atom.
+
+**Exactly one proposed next atom:** separately authorized native PostgreSQL
+qualification of this adapter and unchanged additive migration chain, using a
+disposable synthetic database to check real concurrency, constraints, transaction
+rollback and cleanup. Production endpoint contact, provisioning and activation
+remain outside that atom.

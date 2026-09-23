@@ -21,14 +21,17 @@ export interface WorkerTransportTx {
   append(record:SignedTransport<TransportRecord>):Promise<void>;
   audit(record:TransportRecord):Promise<void>;
 }
-export interface WorkerTransportStore { transaction<T>(work:(tx:WorkerTransportTx)=>Promise<T>):Promise<T> }
+export interface WorkerTransportStore {
+  transaction<T>(work:(tx:WorkerTransportTx)=>Promise<T>):Promise<T>;
+  read?<T>(work:(tx:WorkerTransportTx)=>Promise<T>):Promise<T>;
+}
 export function transportPublicKeyDigest(pem:string){
   const key=createPublicKey(pem);if(key.asymmetricKeyType!=="ed25519")throw new Error("transport_issuer_key_invalid");
   return createHash("sha256").update(key.export({type:"spki",format:"der"})).digest("hex");
 }
 export const transportSignedBytes=(kind:"record"|"decision"|"observation",value:unknown)=>Buffer.from(`roost-worker-transport-v1:${kind}:${reviewDigest(value)}`);
 const flags=Object.freeze({transportQualified:false,implementationReady:false,executionSupported:false,pilotReady:false,liveAdmissionAllowed:false,pilotExecutionAuthorized:false,pilotExecutionStarted:false});
-class TransportDenied extends Error {constructor(public code:string){super(code);}}
+export class TransportDenied extends Error {constructor(public code:string){super(code);}}
 const deny=(code:string):never=>{throw new TransportDenied(code);};
 const same=(a:unknown,b:unknown)=>reviewDigest(a)===reviewDigest(b);
 function signed(kind:"record"|"decision"|"observation",value:SignedTransport<any>,context:TransportContext){
@@ -100,7 +103,7 @@ export function createWorkerTransportService(store?:WorkerTransportStore,signer?
     });},
     inspect(record:SignedTransport<TransportRecord>,anchorInput:unknown,evidence:SignedTransport<unknown>){return guarded(async()=>{
       if(!store)deny("unavailable");const now=clock().getTime(),anchor=transportAnchor.parse(anchorInput),observation=transportObservation.parse(evidence.payload);
-      return store!.transaction(async tx=>{
+      return (store!.read ?? store!.transaction)(async tx=>{
         const c=await context(tx,anchor.identity),head=await tx.head(c.identity.workspaceId,c.identity.hostId);
         if(!head||!same(head,record)||!signed("record",record,c)||anchor.recordDigest!==reviewDigest(head)||anchor.revision!==head.payload.revision||
           anchor.certificateEpoch!==head.payload.certificateEpoch||anchor.highWaterEpoch!==head.payload.highWaterEpoch||!same(head.payload.identity,anchor.identity))deny("anchor_changed");
@@ -119,7 +122,7 @@ export function createWorkerTransportService(store?:WorkerTransportStore,signer?
       });
     });},
     complete(receipt:{identity:TransportIdentity;revision:number;recordDigest:string}){return guarded(async()=>{
-      if(!store)deny("unavailable");return store!.transaction(async tx=>{
+      if(!store)deny("unavailable");return (store!.read ?? store!.transaction)(async tx=>{
         const c=await context(tx,receipt.identity),head=await tx.head(c.identity.workspaceId,c.identity.hostId),now=clock().getTime();
         if(!head||!signed("record",head,c)||head.payload.state!=="current"||head.payload.revision!==receipt.revision||reviewDigest(head)!==receipt.recordDigest||Date.parse(head.payload.expiresAt)<=now)
           return {ok:false,error:"delivery_unknown",...flags};

@@ -2,6 +2,108 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Bounded read projections of existing, migration-owned governance/handoff
+// tables. These are not new authority tables and must never be used with db push.
+model TransportDecisionRevisionSource {
+  decisionId String @id @map("decision_id") @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  version Int
+  body Json
+  @@map("decision_revisions")
+}
+model TransportDecisionAcceptanceSource {
+  id String @id @db.Uuid
+  decisionId String @unique @map("decision_id") @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  actorUserId String? @map("actor_user_id") @db.Uuid
+  actorAgentId String? @map("actor_agent_id") @db.Uuid
+  actorCredentialId String? @map("actor_credential_id") @db.Uuid
+  authority Json?
+  createdAt DateTime @map("created_at") @db.Timestamptz(6)
+  @@map("decision_acceptances")
+}
+model TransportHandoffSource {
+  id String @id @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  installationId String @map("installation_id") @db.Uuid
+  hostId String @map("host_id") @db.Uuid
+  hostFingerprint String @map("host_fingerprint")
+  credentialId String? @unique @map("credential_id") @db.Uuid
+  state String
+  acknowledgedAt DateTime? @map("acknowledged_at") @db.Timestamp(3)
+  @@map("worker_credential_handoffs")
+}
+
+model WorkerTransportGeneration {
+  id String @id @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  hostId String @map("host_id") @db.Uuid
+  installationId String @map("installation_id") @db.Uuid
+  credentialId String @map("credential_id") @db.Uuid
+  identity Json
+  identityDigest String @map("identity_digest")
+  history WorkerTransportHistory[]
+  @@unique([id, workspaceId, hostId])
+  @@map("worker_transport_generations")
+}
+model WorkerTransportHistory {
+  id String @id @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  hostId String @map("host_id") @db.Uuid
+  generationId String @map("generation_id") @db.Uuid
+  generation WorkerTransportGeneration @relation(fields:[generationId, workspaceId, hostId],references:[id, workspaceId, hostId],onDelete:Restrict,onUpdate:NoAction)
+  revision Int
+  recordDigest String @map("record_digest")
+  previousRevision Int? @map("previous_revision")
+  previousDigest String? @map("previous_digest")
+  previousHighWater Int? @map("previous_high_water")
+  previousState String? @map("previous_state")
+  previousGenerationId String? @map("previous_generation_id") @db.Uuid
+  previous WorkerTransportHistory? @relation("TransportPredecessor",fields:[workspaceId, hostId, previousRevision, previousDigest, previousHighWater, previousState, previousGenerationId],references:[workspaceId, hostId, revision, recordDigest, highWaterEpoch, state, generationId],onDelete:Restrict,onUpdate:NoAction)
+  successors WorkerTransportHistory[] @relation("TransportPredecessor")
+  certificateEpoch Int @map("certificate_epoch")
+  highWaterEpoch Int @map("high_water_epoch")
+  state String
+  requestId String @unique @map("request_id") @db.Uuid
+  decisionId String @unique @map("decision_id") @db.Uuid
+  decisionRevision Int @map("decision_revision")
+  decisionIntentDigest String @map("decision_intent_digest")
+  ownerId String @map("owner_id") @db.Uuid
+  currentPin String @map("current_pin")
+  stagedPin String? @map("staged_pin")
+  record Json
+  signature String
+  head WorkerTransportHead?
+  audit WorkerTransportAudit?
+  @@unique([workspaceId, hostId, revision])
+  @@unique([workspaceId, hostId, revision, recordDigest, highWaterEpoch, state, generationId],map:"worker_transport_history_chain")
+  @@unique([id, workspaceId, hostId, revision, recordDigest, certificateEpoch, highWaterEpoch, state],map:"worker_transport_history_head")
+  @@index([workspaceId, hostId, currentPin])
+  @@index([workspaceId, hostId, stagedPin])
+  @@map("worker_transport_history")
+}
+model WorkerTransportHead {
+  workspaceId String @map("workspace_id") @db.Uuid
+  hostId String @map("host_id") @db.Uuid
+  historyId String @unique @map("history_id") @db.Uuid
+  revision Int
+  recordDigest String @map("record_digest")
+  certificateEpoch Int @map("certificate_epoch")
+  highWaterEpoch Int @map("high_water_epoch")
+  state String
+  history WorkerTransportHistory @relation(fields:[historyId, workspaceId, hostId, revision, recordDigest, certificateEpoch, highWaterEpoch, state],references:[id, workspaceId, hostId, revision, recordDigest, certificateEpoch, highWaterEpoch, state],onDelete:Restrict,onUpdate:NoAction)
+  @@id([workspaceId, hostId])
+  @@unique([historyId, workspaceId, hostId, revision, recordDigest, certificateEpoch, highWaterEpoch, state],map:"worker_transport_head_history")
+  @@map("worker_transport_heads")
+}
+model WorkerTransportAudit {
+  historyId String @id @map("history_id") @db.Uuid
+  history WorkerTransportHistory @relation(fields:[historyId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  eventId String @unique @map("event_id") @db.Uuid
+  recordDigest String @map("record_digest")
+  @@map("worker_transport_audit")
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")

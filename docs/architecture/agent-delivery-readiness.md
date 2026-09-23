@@ -1,5 +1,15 @@
 # Gotowość połączenia Roost z agentami
 
+Aktualizacja v28: [adapter persystencji transportu](worker-transport-admission-v1.md)
+— **DONE: 10/10 wyników adaptera, 46/46 wybranych testów źródłowych**.
+Transakcje Serializable, head/history/Event/audit, high-water i nowa generacja po
+revoke są sprawdzone na modelu transakcji w pamięci. Odczyt nie zapisuje niczego.
+Nowa migracja **UNAPPLIED**; kwalifikacja natywnej bazy PARTIAL. Produkcja
+TLS/DNS/provisioning i wykonanie BLOCKED, kompozycja pozostaje niepodłączona,
+sześć flag oraz `transportQualified` false. Jeden proponowany następny atom:
+oddzielnie autoryzowana kwalifikacja PostgreSQL na jednorazowej bazie syntetycznej.
+Starsze propozycje poniżej są historyczne.
+
 Aktualizacja v27: [źródłowe admission transportu](worker-transport-admission-v1.md)
 — DONE: **9/9 wyników, 36/36 testów bez sieci**. Primary-owner auth/decyzja,
 podpisany origin/DNS/certyfikat, epoki credential/ticket key, stage/cutover/revoke,
