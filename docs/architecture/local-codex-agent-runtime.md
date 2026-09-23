@@ -1,20 +1,17 @@
 # Local Codex Agent Runtime
 
-Owner amendment v42: [bootstrap channel schema/adapter proposal](bootstrap-channel-authority-v1.md)
-is DONE source-only: **15/15 new, 68/68 selected results**, build/lint and local
-Prisma validation/client generation PASS. Migration 81 is **UNAPPLIED**; the old
-80 files are unchanged. Explicit bootstrap purpose/owner grant/exact approved IP
-set extend the same transport generation/history/head. The owner-authorized
-nullable-field widening retains ordinary credential/FK/signed-record checks;
-ordinary active-credential admission is unchanged. Proposed 47 native guards,
-audit, single-use CAS/high-water and read-only verification fail closed on drift.
-Only verified canonical channel evidence can conditionally remove its blocker;
-ticket revocation and signed-current-decision blockers remain. Native qualification
-NOT RUN; RF-HOST-035 PARTIAL, production BLOCKED; six flags plus
-transportQualified/launchAuthority false. No DB/Docker/network, keys/signing,
-issuance/delivery or activation. One next recommendation: separately authorize
-native migration-81/writer/ordinary-compatibility qualification and exact cleanup.
-Not started; earlier next steps are historical.
+Owner amendment v43: [native bootstrap channel qualification](bootstrap-channel-authority-v1.md)
+passes **19/19 native, 68/68 source results**, build/lint. All 81 migrations applied
+only in one owned disposable database; SQL unchanged. Existing ordinary rows,
+credential/FK/shape rules, runtime/direct writers, same-head bootstrap grants,
+47 guard instances, concurrency, rollback and COMMIT uncertainty are covered.
+No production deployment or activation. RF-HOST-035 PARTIAL, production BLOCKED;
+six flags plus transportQualified/launchAuthority false. A verified native channel
+can remove only its blocker; ticket revocation and signed-current-decision remain.
+The qualification report distinguishes corrected test-fixture/runner bookkeeping
+from runtime evidence and records exact cleanup separately.
+One next recommendation: source-only bootstrap-ticket revocation inventory and
+fail-closed contract over the existing ledger. Not started.
 
 Owner amendment v26: [loopback HTTPS handoff adapter](worker-handoff-https-v1.md)
 passes 9/9 real HTTPS results and 189/189 selected tests. Its sole client surface

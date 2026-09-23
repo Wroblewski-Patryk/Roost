@@ -1,15 +1,12 @@
 # Canonical Worker bootstrap authority projection v1
 
-Current v42: [bootstrap channel schema/adapter proposal](bootstrap-channel-authority-v1.md)
-adds a source-only canonical reader over the same transport history/head and
-immutable owner grant. Migration 81 is UNAPPLIED; existing installations remain
-blocked. Only fresh audited, guard-verified, binding/purpose-matched evidence can
-remove the channel gap. Ticket-revocation and signed-current-decision blockers
-remain; context never returns usable authority. The qualified issuer/lifecycle
-facts are reused, not recreated. Adapter 15/15 and selected source 68/68 results
-pass; native migration-81 qualification is NOT RUN. RF-HOST-035 remains PARTIAL,
-production BLOCKED and all flags false. No deployment or activation.
-The inventory and qualification below are historical.
+Current v43: [native channel qualification](bootstrap-channel-authority-v1.md)
+passes 19/19 native and 68/68 source results on one owned disposable database.
+Only fresh audited, guard-verified, binding/purpose-matched channel evidence can
+remove its gap; installations without migration 81 remain blocked. Canonical
+context still rejects with ticket-revocation and signed-current-decision blockers.
+No deployment/issuance/delivery/activation; RF-HOST-035 PARTIAL, production BLOCKED,
+all flags false. The inventory and qualification below are historical.
 
 Owner amendment v34, 2026-09-23. **DONE for source-only canonical projection,
 ledger transaction binding and synthetic denial validation: 13/13 new results,
