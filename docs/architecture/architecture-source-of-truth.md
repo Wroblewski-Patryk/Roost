@@ -1,5 +1,13 @@
 # Architecture Source Of Truth
 
+Owner amendment v21: [native Worker ticket qualification](worker-owner-ticket-channel-v1.md)
+exercises the unchanged 74-migration chain, credential/binding guards, one-use
+owner/Worker races and read-only status through Prisma/auth/redaction. Qualification
+repairs only credential usage writes outside consume rollback and nested control
+proof handling, including nonpersistent status rejection. Real provisioning,
+transport and launch remain unqualified; all six flags remain false.
+Earlier amendment results below describe their historical verification state.
+
 Owner amendment v20: [Worker ticket channel](worker-owner-ticket-channel-v1.md)
 adds existing-credential host/installation binding, shared one-use owner/Worker
 consume, and strictly read-only nonrenewable status. Source/synthetic DONE:

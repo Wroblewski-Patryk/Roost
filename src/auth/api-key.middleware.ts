@@ -108,10 +108,11 @@ return async function requireAuthContext(req: Request, res: Response, next: Next
     return sendApiError(res, 403, "forbidden");
   }
 
-  // Ticket status is an observation, including at the authentication boundary.
-  // It must not refresh credential usage/expiry or produce audit writes.
-  const ticketStatusRead = req.method === "POST" && `${req.baseUrl}${req.path}`.replace(/\/+$/, "") === "/v1/agent-runtime/owner-tickets/status";
-  if (!ticketStatusRead) await db.apiKey.update({
+  // Ticket requests cannot leave credential writes outside their transaction.
+  // Status is strictly observational; consumption records its actor atomically
+  // in the ticket Event. Denied owner-only operations also leave no usage write.
+  const ticketRequest = req.method === "POST" && /^\/v1\/agent-runtime\/owner-tickets\/(?:issue|consume|status|revoke|rotate)$/.test(`${req.baseUrl}${req.path}`.replace(/\/+$/, ""));
+  if (!ticketRequest) await db.apiKey.update({
     where: { id: record.id },
     data: { lastUsedAt: new Date(), updatedAt: record.updatedAt }
   });

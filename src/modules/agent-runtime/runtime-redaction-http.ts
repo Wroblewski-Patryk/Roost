@@ -4,10 +4,14 @@ import { prisma } from "../../db/prisma";
 import { replaceOrganizationalContext } from "../organizational-context/organizational-context.service";
 import { ensureDefaultDepartments } from "../departments/departments.routes";
 import { inspectRuntime, redactionPolicy, redactionState, runtimeSecrets, safeRuntimeId, type RedactionState } from "./runtime-redaction-policy";
+import { workerTicketProofSchema } from "../../auth/worker-ticket-principal";
 
 export const nativePath = (path: string) => path.startsWith("/v1/agent-runtime/") || path.endsWith("/agent-context") || /^\/v1\/decisions\/(?:governance(?:\/|$)|[^/]+\/governance(?:\/|$)|mandates$|deferrals$|reopening-events$)/.test(path) || /^\/v1\/product-engineering\/(?:applications\/[^/]+\/findings(?:\/catalog)?|findings\/[^/]+(?:\/(?:versions|occurrences|actions|grants))?)$/.test(path);
 export async function flushRuntimeIncidents(state: RedactionState) {
   const pending = state.notices.splice(0); if (!pending.length) return;
+  // Status remains read-only even for malformed/blocked content. Classification
+  // still runs and rejects it, but never creates incidents or audit records.
+  if (state.observationOnly) return;
   state.flushing = true;
   try {
     for (const notice of pending) {
@@ -63,9 +67,13 @@ function project(body: any, all: boolean, state: RedactionState, allowLease: boo
 export function runtimeRedactionBoundary(req: Request, res: Response, next: NextFunction) {
   if (!req.auth?.workspaceId) return next();
   const path = req.path, native = nativePath(path), parts = path.split("/");
+  const ticketControl = req.method === "POST" && /^\/v1\/agent-runtime\/owner-tickets\/(?:consume|status)\/?$/.test(path);
   const executionId = safeRuntimeId(parts[parts.indexOf("executions") + 1]);
   const taskId = safeRuntimeId(parts[parts.indexOf("tasks") + 1] ?? req.body?.taskId);
   const state: RedactionState = { scope: { workspaceId: req.auth.workspaceId, taskId: taskId ?? safeRuntimeId(req.body?.taskId), executionId, applicationId: safeRuntimeId(req.body?.applicationId), correlationId: safeRuntimeId(req.body?.requestId) ?? safeRuntimeId(req.requestId) ?? randomUUID(), surface: "native_http" }, secrets: runtimeSecrets([req.get("X-API-Key") ?? "", req.get("Authorization")?.replace(/^Bearer /i, "") ?? "", req.body?.leaseToken ?? ""]), notices: [], incidentIds: [], flushing: false };
+  state.observationOnly = req.method === "POST" && /^\/v1\/agent-runtime\/owner-tickets\/status\/?$/.test(path);
+  const workerProof = ticketControl ? workerTicketProofSchema.safeParse(req.body?.worker) : null;
+  if (workerProof?.success) state.secrets = runtimeSecrets([...state.secrets, workerProof.data.leaseToken]);
   redactionState.run(state, () => {
     const send = res.json.bind(res); let sending = false;
     res.json = ((body: any) => {
@@ -92,11 +100,14 @@ export function runtimeRedactionBoundary(req: Request, res: Response, next: Next
         // These exact root fields are authenticated control-plane data, not
         // diagnostic content. They never enter prompts/evidence/incidents.
         const { leaseToken, ...content } = req.body;
+        // Only a strict, typed ticket control proof may carry the transient
+        // nested lease. Unknown fields/malformed proofs still face redaction.
+        if (workerProof?.success) content.worker = { hostId: workerProof.data.hostId, installationId: workerProof.data.installationId };
         const required = !/\/executions\/[^/]+\/(?:events|heartbeat|actions\/(?:complete|fail))$|\/hosts\/(?:register|[^/]+\/heartbeat)$/.test(path);
         const checked = inspectRuntime(content, required ? "input.required" : "input.diagnostic", required ? "required" : "diagnostic");
         await flushRuntimeIncidents(state);
         if (checked.blocked) { res.status(409).json({ error: "agent_runtime_content_blocked" }); return; }
-        req.body = { ...checked.value, ...(leaseToken !== undefined ? { leaseToken } : {}) };
+        req.body = { ...checked.value, ...(leaseToken !== undefined ? { leaseToken } : {}), ...(workerProof?.success ? { worker: workerProof.data } : {}) };
       }
       next();
     })().catch(() => { res.status(503).json({ error: "agent_runtime_redaction_unavailable" }); });

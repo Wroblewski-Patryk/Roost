@@ -8,7 +8,7 @@ export const redactionPolicy = require(path.resolve(__dirname, "../../../scripts
 };
 export type Finding = { category: string; location: string };
 export type RedactionScope = { workspaceId: string; taskId?: string; executionId?: string; applicationId?: string; recordId?: string; correlationId?: string; surface: string };
-export type RedactionState = { scope: RedactionScope; secrets: string[]; notices: Array<{ scope: RedactionScope; findings: Finding[] }>; incidentIds: string[]; flushing: boolean };
+export type RedactionState = { scope: RedactionScope; secrets: string[]; notices: Array<{ scope: RedactionScope; findings: Finding[] }>; incidentIds: string[]; flushing: boolean; observationOnly?: boolean };
 export const redactionState = new AsyncLocalStorage<RedactionState>();
 export const runtimeSecrets = (extra: string[] = []) => redactionPolicy.knownRuntimeSecrets(process.env, [env.authTokenSecret, env.apiKeyHashSecret, env.integrationSecretKey, ...extra]);
 export const safeRuntimeId = (id: unknown): string | undefined => typeof id === "string" && /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id) ? id : undefined;

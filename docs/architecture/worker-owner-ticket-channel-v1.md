@@ -1,11 +1,12 @@
 # Worker owner-ticket consume and status contract v1
 
-Owner amendment v20, 2026-09-23. **DONE: source contract and synthetic
-auth/binding/status qualification. PARTIAL: persistence/real integration.**
-The new additive migration has not been applied or tested on PostgreSQL in this
-atom. The v19 database result qualifies its earlier code/schema only. No Worker,
-provider, real signing key, credential provisioning or network qualification ran.
-All six readiness/activation flags remain false.
+Owner amendment v21, 2026-09-23. The v20 source contract is now exercised on
+native PostgreSQL with real Prisma transactions, authentication and HTTP
+redaction. **DONE for the bounded database qualification: 24/24 integration
+results (23 scenarios plus parent), 110/110 regressions, cleanup/preservation PASS.**
+Production integration remains unqualified. No Worker, provider,
+real signing key, credential provisioning or authenticated network qualification
+ran. All six readiness/activation flags remain false.
 
 ## Existing authority and endpoint composition
 
@@ -93,7 +94,13 @@ lease token, new expiry or fresh acknowledgement. Reasons are:
 
 Prisma uses a Serializable `SET TRANSACTION READ ONLY` transaction: no source
 fence update, row lock, Ready invalidation write, Event or transition. Middleware
-also skips credential usage writes for this route, including a trailing slash.
+also skips credential usage writes for all five ticket routes, including trailing
+slashes. Consume records the credential actor in its transactional Event; failed
+consume or denied owner-only calls leave no separate last-use update behind.
+The HTTP redaction boundary recognizes only the strict typed nested Worker
+proof as control-plane input and protects its transient lease token from echo.
+Malformed proofs and unrelated sensitive fields remain blocked. For status only,
+redaction classifies/rejects content without persisting incident records or Events.
 Repeated polls cannot extend any ticket, claim, Writer, decision or key deadline.
 Expiry can be observed while the stored ticket state remains unchanged; status
 never writes an `expired` transition. Consumed tickets stay consumed even when
@@ -120,18 +127,50 @@ agent/user confusion and direct/manual provider substitutions deny. Target proce
 APIs are forbidden in the positive scenario. TypeScript build, route lint and
 Prisma schema validation pass.
 
-These are **not** PostgreSQL concurrency, native trigger or TLS results. The new
-SQL was reviewed as additive/non-destructive; applied migration files were not
-edited. No database, container, real profile, model store or retained temporary
-root was touched in this atom. No full API/Worker suite, web build, migration
-deploy, push or production deploy ran. Default service composition and physical
-evidence reconstruction remain unavailable. Secure credential provisioning,
-HTTPS origin/bootstrap and authenticated transport/status-to-launch integration
-remain blockers; direct Codex and manual Hermes gain no authority.
+The above 102 tests remain synthetic regressions. The v21 native qualification
+uses the complete **74-migration forward SQL chain**, including the unchanged
+additive binding migration, in one uniquely owned disposable database. It uses
+real primary-owner JWTs, hashed synthetic Worker credentials, governed decisions,
+risk/procedure admission, Ready watches, immutable binding/journal triggers and
+Serializable Prisma transactions. The signer is ephemeral in-memory; provider
+admission and physical Writer/input/profile/Job evidence remain synthetic.
 
-**Exactly one proposed next atom:** qualify the new additive binding migration,
-native credential/host guards and read-only status semantics on an explicitly
-authorized owned disposable PostgreSQL database, including owner/Worker races
-and revocation races. Use only synthetic keys/evidence, fix only findings, verify
-cleanup/preservation, and stop. No real credential provisioning, TLS claim,
-provider launch or activation.
+Native coverage includes 20 concurrent owner/assigned-Worker consumes (one commit,
+19 replay denials), an assigned-Worker success with its distinct audit actor,
+consume/revoke and consume/key-rotation races, status concurrent with these writes
+and claim loss, wrong Worker and confused principals, credential versions/epochs,
+revocation/inactive/expiry and host/claim reassignment, immutable history and
+rollback after real insert/transition/attempt/Event writes. Forged binding
+snapshots roll back parent issuance. Full HTTP redaction is present, and status
+snapshots compare tickets, bindings, journal, credentials, Ready/task/execution
+data, Events, incidents and the source fence. Status cannot extend deadlines.
+
+Qualification found and repaired two HTTP-boundary defects: credential last-use
+writes escaped a failed consume transaction, and generic redaction rejected the
+legitimate nested Worker lease proof. Read-only status also suppresses incident
+persistence on blocked input while retaining classification and denial. No SQL
+migration or native guard was weakened or edited. Target-process APIs are forbidden
+in the native scenario; no Worker/provider process or launch receipt is produced.
+
+No full API/Worker suite, web build, migration deploy, push or production deploy
+runs in this qualification. Default service composition and physical evidence
+reconstruction remain unavailable. Secure credential provisioning, HTTPS
+origin/bootstrap and authenticated transport/status-to-launch integration remain
+blockers; direct Codex and manual Hermes gain no authority.
+
+Cleanup verified the owned database's exact name/OID/owner/comment and absence
+of active sessions before dropping it, then verified its absence. Both ephemeral
+HTTP servers/Prisma connections and the loopback relay closed; no relay process
+or child remained. Before/after fingerprints of all three existing databases
+(214 table/sequence entries), schema, sequence values, database catalog and role
+metadata matched. Docker containers/images/volumes/networks matched; only the
+existing database container was started and returned to exited. Unrelated running
+services and the stopped backend retained their states. Eight pre-existing dirty
+documents, the unread design artifact and 39 retained roots were preserved.
+No production data or private environment credentials were read into test output.
+
+**Exactly one proposed next atom:** specify and synthetically qualify the
+owner-controlled provisioning, rotation and revocation contract for an existing
+Worker credential bound to installation/host. No real credential issuance,
+secret storage, TLS qualification, provider launch, deployment or activation.
+Stop after that bounded contract.

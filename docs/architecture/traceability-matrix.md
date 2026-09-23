@@ -1,5 +1,17 @@
 # Foundation requirements traceability
 
+RF-HOST-035 owner amendment v21: [native Worker ticket qualification](worker-owner-ticket-channel-v1.md)
+is **DONE for this atom: 24/24 integration results, 110/110 regressions and
+cleanup/preservation PASS**. Qualification
+covers the 74-migration chain, credential/host/claim guards, owner/Worker races,
+real rollback and observational status through HTTP redaction. Two boundary
+findings are repaired: out-of-transaction credential usage and nested lease proof
+classification; status rejection creates no incident writes. Production
+provisioning/transport/launch stay unqualified; six flags false. Next single atom:
+source/synthetic owner-controlled credential provisioning/rotation/revocation
+contract, without issuing real credentials or launching a provider.
+Earlier amendment qualification statements below are historical.
+
 RF-HOST-035 owner amendment v20: [Worker consume/status](worker-owner-ticket-channel-v1.md)
 source/synthetic DONE (102 tests), native persistence PARTIAL. Immutable existing
 credential/host/installation/claim binding, owner-only issue/revoke/rotate and

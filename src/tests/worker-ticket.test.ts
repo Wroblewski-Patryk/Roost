@@ -180,6 +180,7 @@ test("real auth middleware derives Worker identity; HTTP output does not leak pr
   assert.equal((await post("status", f.ownerStatus(), ownerHeaders)).status, 200);
   for (const action of ["issue", "revoke", "rotate"]) assert.equal((await post(action, {})).status, 403);
   assert.equal((await post("consume", f.consume, ownerHeaders)).status, 403);
+  assert.equal(credentialWrites, 0); // Ticket success/denial has no out-of-transaction usage write.
   assert.equal((await post("uncomposed", f.consume)).status, 503);
   f.credential.active = false; assert.equal((await post("status", f.status)).status, 403);
 });

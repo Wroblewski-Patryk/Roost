@@ -1,5 +1,17 @@
 # Gotowość połączenia Roost z agentami
 
+Aktualizacja v21: [natywna kwalifikacja kanału Workera](worker-owner-ticket-channel-v1.md)
+— **DONE w tym zakresie: 24/24 wyniki integracyjne, 110/110 regresji,
+sprzątanie i zachowanie istniejących danych/kontenerów PASS.** Kwalifikacja
+obejmuje 74 migracje, rzeczywiste transakcje Prisma/auth/HTTP, powiązania
+poświadczeń, wyścigi owner/Worker i status bez zapisów. Poprawiono zapis użycia
+poświadczenia poza rollbackiem oraz obsługę dowodu Workera w filtrze treści.
+Signer i dowody fizyczne pozostają syntetyczne; żaden Worker/provider nie startuje.
+Realne provisioning/transport/launch nadal zablokowane, sześć flag false.
+Jeden następny atom: kontrakt i testy syntetyczne nadawania, rotacji oraz odwołania
+powiązanego poświadczenia Workera przez właściciela, bez prawdziwych kluczy.
+Starsze wyniki i propozycje poniżej są historyczne.
+
 Aktualizacja v20: [kanał consume/status Workera](worker-owner-ticket-channel-v1.md)
 — kontrakt i testy syntetyczne DONE, nowa persystencja PARTIAL. 102/102 testy PASS;
 wyścig owner/Worker: 1 z 20 consume, status bez odnowienia i zapisu. Credential

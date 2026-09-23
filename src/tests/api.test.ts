@@ -36,6 +36,7 @@ import { registerOwnerTicketDatabaseTests } from "./owner-ticket-api";
 
 registerFindingTests({request,registerOwner,prepareReviewFixture,decisionFixtureProposal,decisionFixtureProof,refreshCompositionRisk,submissionInput});
 registerOwnerTicketDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof });
+registerOwnerTicketDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof }, true);
 registerFixedPublicTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, getBaseUrl: () => baseUrl, restoreAdmission: () => providerAdmissionMock.mock.mockImplementation(realProviderAdmission), restoreLegacyAdmission: () => providerAdmissionMock.mock.mockImplementation(syntheticProviderAdmission) });
 
 const realFetch = globalThis.fetch.bind(globalThis);

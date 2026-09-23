@@ -1,5 +1,16 @@
 # Next development work
 
+Current owner amendment v21: [native Worker ticket qualification](../architecture/worker-owner-ticket-channel-v1.md)
+is **DONE: 24/24 integration results, 110/110 regressions and verified cleanup/
+preservation PASS**. Qualification
+covers PostgreSQL binding guards, owner/Worker races, rollback and read-only
+status through the existing authentication/redaction boundary. No activation.
+**Exactly one proposed next atom:** specify and synthetically qualify the
+owner-controlled provisioning, rotation and revocation contract for an existing
+Worker credential bound to installation/host. No real credential issuance,
+secret storage, TLS qualification, provider launch, deployment or activation.
+Stop after that contract; all earlier proposed next atoms below are historical.
+
 Current owner amendment v20: [Worker consume/status](../architecture/worker-owner-ticket-channel-v1.md)
 source/synthetic DONE (102 tests), native persistence PARTIAL; no activation.
 **Exactly one proposed next atom:** qualify the additive binding migration,

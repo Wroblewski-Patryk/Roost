@@ -1,5 +1,13 @@
 # Local Codex Agent Runtime
 
+Owner amendment v21: [Worker ticket database qualification](worker-owner-ticket-channel-v1.md)
+uses real PostgreSQL/Prisma/auth/HTTP redaction with inert claimed executions and
+synthetic credentials, signer and physical evidence. Assigned-Worker consumption
+shares the owner's one-use transaction; status is observational even on blocked
+input. No Worker/provider process, receipt or activation is introduced. Production
+composition and credential provisioning remain unavailable; six flags false.
+The earlier qualification results below are historical.
+
 Owner amendment v20: [Worker ticket channel](worker-owner-ticket-channel-v1.md)
 uses an existing API key only when explicitly bound to installation/host and the
 original ticket claim. Worker may consume/read status; owner-only operations

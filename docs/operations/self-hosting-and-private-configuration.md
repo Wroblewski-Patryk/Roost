@@ -1,5 +1,18 @@
 # Self-hosting and private installation configuration
 
+Owner amendment v21: [Worker binding qualification](../architecture/worker-owner-ticket-channel-v1.md)
+applies the full 74-migration chain in one owned disposable database, including
+the unchanged additive binding migration. No applied migration is edited, no
+existing credential is converted and no business data is seeded. Ticket requests
+do not independently update credential last-use metadata; successful consumption
+has its transactional actor Event. Status redaction rejects sensitive content
+without persisting an incident. Production provisioning and deployment stay out
+of scope. The v20 unexecuted-migration statement below is historical.
+The owned database was identity-checked and dropped with no sessions. Existing
+logical data/schema/sequences/catalog/roles and Docker inventory matched their
+baselines; the database container returned to exited, other services unchanged.
+Both local HTTP servers and the loopback relay closed, with no relay child left.
+
 Owner amendment v20: [Worker ticket binding](../architecture/worker-owner-ticket-channel-v1.md)
 adds nullable host/installation/epoch metadata to existing API keys and an
 immutable ticket-binding extension. Migration is additive and **unexecuted**;

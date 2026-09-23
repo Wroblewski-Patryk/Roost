@@ -1,14 +1,13 @@
 # Server-issued owner ticket and public verification contract v1
 
-## Current Worker channel: owner amendment v20
+## Current Worker channel: owner amendment v21
 
-[Worker consume/status contract](worker-owner-ticket-channel-v1.md): source and
-synthetic auth/binding/status qualification DONE; new native persistence remains
-PARTIAL. 102 tests pass. Consume accepts only the assigned existing credential
-with immutable host/installation/claim binding; issue/revoke/rotate remain owner-only.
-Status is read-only, nonrenewable and returns no launch authority. New additive
-binding migration is unexecuted; v19's database evidence does not cover it.
-Real provisioning, transport and launch stay blocked. Six flags false.
+[Worker consume/status contract](worker-owner-ticket-channel-v1.md) now includes
+native PostgreSQL/HTTP qualification of the 74-migration chain, assigned-Worker
+binding, races and read-only status. Authentication usage writes no longer escape
+consume rollback; redaction admits only the strict transient Worker proof and
+never persists status incidents. Real provisioning, transport and launch stay
+blocked. Six flags false. The v19 results below qualify the earlier owner slice.
 
 ## Database qualification: owner amendment v19
 
