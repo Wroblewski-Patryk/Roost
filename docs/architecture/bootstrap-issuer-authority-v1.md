@@ -162,7 +162,7 @@ Migration chain SHA-256 (80 files):
 Preserved preexisting-database fingerprint SHA-256:
 `e9e019524b6010b02b30b4635fff99133c4429ffac3f537b05ac860485a281f1`.
 
-**One recommended next atom:** a separately authorized source-only canonical
-bootstrap-channel authority contract and denial tests against the existing
-transport records, without migration, network, provisioning or activation.
-It has not been started.
+The successor [v41 channel inventory/proposal](bootstrap-channel-authority-v1.md)
+is complete as a source-only model; canonical channel authority remains blocked
+by representation and writer-fence gaps. Its single proposed successor is recorded
+there. No bootstrap admission or activation follows from the native issuer result.

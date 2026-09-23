@@ -1,22 +1,20 @@
 # Next development work
 
-Owner amendment v40: [canonical bootstrap issuer native qualification](../architecture/bootstrap-issuer-authority-v1.md)
-is DONE for the bounded database atom: **16/16 scenarios (17/17 runner results),
-229/229 source results**, build/lint PASS. All 80 migrations applied unchanged in
-one owned disposable database. Public-only Ed25519 history, lifecycle/overlap,
-20-writer CAS, existing task-ticket rotation/revocation, writer/guard denials and
-READ ONLY inspection pass. Deferred/late COMMIT false acknowledgement and real
-connection/response loss return non-retryable reconciliation_required, without
-replaying writes. Cleanup PASS: owned database/relay gone, existing data and Docker
-resources unchanged, selected PostgreSQL restored to its initial stopped state.
-Only issuer_public_key_unavailable and issuer_writer_fence_unproven are conditionally
-resolved; channel, bootstrap-ticket revocation and signed-decision authority remain
-blocked. RF-HOST-035/bootstrap admission stays PARTIAL, production BLOCKED; all six
-flags and transportQualified/launchAuthority remain false. No production migration,
-real issuance/delivery, default composition, provisioning or activation.
-One next recommendation: a source-only canonical bootstrap-channel authority
-contract and denial tests against existing transport records, with no migration,
-network, provisioning or activation. Not started; earlier next steps are historical.
+Owner amendment v41: [bootstrap channel authority proposal](../architecture/bootstrap-channel-authority-v1.md)
+is DONE for source-only inventory/denial modeling: **14/14 new, 53/53 selected
+results**, build/lint PASS. Canonical channel authority remains BLOCKED: existing
+transport records require a credential, cannot represent explicit bootstrap
+purpose/owner grant or an approved IP set, and lack all-writer native fencing.
+The separate immutable proposal binds owner/ticket, lifecycle/issuer, HTTPS/CA/pin,
+certificate high-water and resolver set. Synthetic first-enrollment/recovery pass;
+ordinary/legacy reuse, caller overrides and drift deny, uncertain send never retries.
+No existing ordinary admission or active-credential requirement is relaxed.
+All three channel/ticket-revocation/signed-decision blockers remain; RF-HOST-035
+is PARTIAL, production BLOCKED; six flags and transportQualified/launchAuthority
+false. No migration/DB/Docker/network, keys/signing, delivery or activation.
+One next recommendation: an additive, unapplied schema/adapter proposal extending
+existing transport authority with bootstrap purpose, owner grant, approved IP set
+and complete writer fence/audit. Not started; earlier next steps are historical.
 
 Owner amendment v32: [durable bootstrap ledger](../architecture/worker-bootstrap-ledger-v1.md)
 is **DONE source-only: 13/13 adapter results, 86/86 selected source results**.
