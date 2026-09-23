@@ -1,19 +1,19 @@
 # Next development work
 
-Owner amendment v38: [full native lifecycle qualification](../architecture/worker-identity-lifecycle-v1.md)
-passes **15/15 scenarios, 16/16 runner results**, with no skips or xfail.
-All 79 migrations apply unchanged; **117/117 source results**, build and lint pass.
-Normal writes require fresh read-only commit evidence. Deferred/late rejection,
-real connection loss before COMMIT and a cut response after confirmed PostgreSQL
-COMMIT fail closed without callback/write replay. Epochs, terminal revocation,
-20-writer concurrency, writer/guard fencing and read purity all pass.
-Bounded lifecycle persistence qualification DONE; overall RF-HOST-035 PARTIAL,
-production BLOCKED. Only four complete-generation lifecycle facts are evidenced;
-five bootstrap gaps remain, all six flags and transportQualified/launchAuthority
-false. Cleanup and preservation evidence is in the linked contract.
-One next recommendation: a source-only canonical issuer public-key authority
-contract and required writer-fence evidence using existing key records, without
-real key provisioning or activation. Earlier next steps are historical.
+Owner amendment v39: [canonical bootstrap issuer public authority](../architecture/bootstrap-issuer-authority-v1.md)
+is DONE source-only: **13/13 issuer, 229/229 selected source results**, build/lint PASS.
+The existing key anchor gains audited public generation history, bounded rotation
+overlap and terminal revoke/retire; all writers require the shared source fence.
+Exact public Ed25519 SPKI/digest, immutable binding, issue/ceremony time and reviewed
+guard-body fingerprints are mandatory. No private key generation/storage exists.
+Only issuer_public_key_unavailable and issuer_writer_fence_unproven are conditionally
+resolved; channel, ticket revocation and signed-decision authority remain blocked.
+The additive 80th migration is UNAPPLIED; prior 79 unchanged. Native qualification
+PARTIAL, production BLOCKED; all six flags and transportQualified/launchAuthority
+false. No DB/Docker/network, provisioning, delivery or activation in this atom.
+One next recommendation: separately authorize native qualification of the issuer
+adapter/guards and 80-migration chain with verified cleanup. Earlier next steps
+are historical.
 
 Owner amendment v32: [durable bootstrap ledger](../architecture/worker-bootstrap-ledger-v1.md)
 is **DONE source-only: 13/13 adapter results, 86/86 selected source results**.

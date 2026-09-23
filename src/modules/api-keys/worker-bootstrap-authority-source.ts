@@ -6,6 +6,8 @@ import { transportProfile } from "./worker-transport-contract";
 import type { BootstrapAuthoritySource } from "./worker-bootstrap-store";
 import { inspectCanonicalLifecycle } from "./worker-identity-lifecycle-store";
 import { lifecycleMissing } from "./worker-identity-lifecycle";
+import { inspectCanonicalIssuer } from "./bootstrap-issuer-store";
+import { issuerGaps } from "./bootstrap-issuer-contract";
 
 type Db=Prisma.TransactionClient;
 const id=z.string().uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),epoch=z.number().int().positive().safe();
@@ -17,7 +19,7 @@ export class CanonicalBootstrapBlocked extends Error{
   constructor(public readonly blockers:readonly string[]){super("canonical_bootstrap_authority_blocked");}
 }
 const blocked=(...codes:string[]):never=>{throw new CanonicalBootstrapBlocked(Object.freeze([...new Set(codes)].sort()));};
-const request=z.object({binding:bootstrapBinding,decisionId:id,purpose:z.enum(["first_enrollment","owner_recovery","ordinary"]),ticketId:id.optional()}).strict();
+const request=z.object({binding:bootstrapBinding,decisionId:id,purpose:z.enum(["first_enrollment","owner_recovery","ordinary"]),ticketId:id.optional(),issuedAt:z.string().datetime().optional()}).strict();
 const ownerRow=z.object({id,ownerId:id}).strict(),memberRow=z.object({userId:id}).strict();
 const hostRow=z.object({id,workspaceId:id,status:z.enum(["online","offline","disabled"])}).strict();
 const issuerRow=z.object({workspaceId:id,installationId:id,keyId:z.string().regex(/^[A-Za-z0-9_-]{1,64}$/),epoch,publicKeyDigest:hash}).strict();
@@ -29,7 +31,7 @@ const decisionRow=z.object({id,workspaceId:id,revision:epoch,state:z.string(),ac
 const channelRow=z.object({revision:epoch,recordDigest:hash,certificateEpoch:epoch,highWaterEpoch:epoch,state:z.enum(["current","revoked"]),expiresAt:time,
   installationId:id,hostId:id,hostFingerprint:hash,keyId:z.string(),keyEpoch:epoch,keyDigest:hash,credentialId:id,credentialEpoch:epoch,credentialVersion:epoch,credentialFingerprint:hash,
   profile:transportProfile,cutoverAt:time.nullable()}).strict();
-const ticketRow=z.object({id,workspaceId:id,hostId:id,ownerId:id,decisionId:id,requestId:id,bindingDigest:hash,ticketDigest:hash,expiresAt:time}).strict();
+const ticketRow=z.object({id,workspaceId:id,hostId:id,ownerId:id,decisionId:id,requestId:id,bindingDigest:hash,ticketDigest:hash,expiresAt:time,issuedAt:time.optional()}).strict();
 const flags={transportQualified:false,implementationReady:false,executionSupported:false,pilotReady:false,liveAdmissionAllowed:false,pilotExecutionAuthorized:false,pilotExecutionStarted:false,launchAuthority:false} as const;
 
 // Only projections of existing canonical records. No tables, seeds, signer,
@@ -51,7 +53,7 @@ export function createCanonicalBootstrapAuthoritySource(clock=()=>new Date()){
     const facts:{ownerId?:string;hostStatus?:string;issuer?:z.infer<typeof issuerRow>;credential?:{id:string;version:number;epoch:number;fingerprint:string|null;state:string;expiresAt:string|null};
       credentialHighWater?:number;credentialAbsent?:boolean;handoff?:{id:string;state:string;hostFingerprint:string};
       decision?:{id:string;revision:number;ownerId:string;intentDigest:string;expiresAt:string};channel?:{revision:number;certificateEpoch:number;highWaterEpoch:number;recordDigest:string;profileDigest:string;state:string;validUntil:string};
-      ticket?:{id:string;digest:string;expiresAt:string};fenceRevision?:string;lifecycle?:NonNullable<Awaited<ReturnType<typeof inspectCanonicalLifecycle>>['facts']>}={};
+      ticket?:{id:string;digest:string;expiresAt:string;issuedAt?:string};issuerPublic?:NonNullable<Awaited<ReturnType<typeof inspectCanonicalIssuer>>['facts']>;fenceRevision?:string;lifecycle?:NonNullable<Awaited<ReturnType<typeof inspectCanonicalLifecycle>>['facts']>}={};
     try{
       const scoped=await bound(db),q=request.parse(input),b=q.binding;facts.fenceRevision=scoped.fence;
       const lifecycle=await inspectCanonicalLifecycle(db,b);
@@ -130,12 +132,21 @@ export function createCanonicalBootstrapAuthoritySource(clock=()=>new Date()){
           !current||c.credentialId!==current.id||c.credentialEpoch!==current.epoch||c.credentialVersion!==current.version||c.credentialFingerprint!==current.fingerprint||
           d?.success&&(!same(c.profile,d.data.intent.channel.profile)||c.certificateEpoch!==d.data.intent.channel.certificateEpoch||c.highWaterEpoch!==d.data.intent.channel.highWaterEpoch||c.revision!==d.data.intent.channel.revision))blockers.push("normal_channel_binding_mismatch");
       }
-      if(q.ticketId){const tickets=await db.$queryRaw<any[]>`SELECT id,workspace_id AS "workspaceId",host_id AS "hostId",owner_id AS "ownerId",decision_id AS "decisionId",request_id AS "requestId",binding_digest AS "bindingDigest",ticket_digest AS "ticketDigest",expires_at AS "expiresAt" FROM worker_bootstrap_tickets WHERE id=${q.ticketId}::uuid LIMIT 2`;
+      if(q.ticketId){const tickets=await db.$queryRaw<any[]>`SELECT id,workspace_id AS "workspaceId",host_id AS "hostId",owner_id AS "ownerId",decision_id AS "decisionId",request_id AS "requestId",binding_digest AS "bindingDigest",ticket_digest AS "ticketDigest",expires_at AS "expiresAt",record->'signed'->'payload'->>'issuedAt' AS "issuedAt" FROM worker_bootstrap_tickets WHERE id=${q.ticketId}::uuid LIMIT 2`;
         const tk=tickets.length===1?ticketRow.safeParse(tickets[0]):null;
         if(!tk?.success)blockers.push("bootstrap_ticket_missing");
-        else{facts.ticket={id:tk.data.id,digest:tk.data.ticketDigest,expiresAt:tk.data.expiresAt};
+        else{facts.ticket={id:tk.data.id,digest:tk.data.ticketDigest,expiresAt:tk.data.expiresAt,issuedAt:tk.data.issuedAt};
           if(tk.data.id!==q.ticketId||tk.data.workspaceId!==b.workspaceId||tk.data.hostId!==b.hostId||tk.data.ownerId!==facts.ownerId||tk.data.decisionId!==q.decisionId||tk.data.bindingDigest!==reviewDigest(b))blockers.push("bootstrap_ticket_binding_mismatch");
           if(Date.parse(tk.data.expiresAt)<=clock().getTime())blockers.push("bootstrap_ticket_expired");}
+      }
+      const issueTime=q.ticketId?facts.ticket?.issuedAt:q.issuedAt??clock().toISOString();
+      if(issueTime){const issuer=await inspectCanonicalIssuer(db,b,clock(),issueTime);
+        if(issuer.facts){facts.issuerPublic=issuer.facts;
+          for(const gap of issuerGaps)blockers.splice(blockers.indexOf(gap),1);
+          // During bounded overlap the canonical head is the reserved high-water,
+          // while the audited selected generation may be its predecessor.
+          const mismatch=blockers.indexOf('issuer_binding_mismatch');if(mismatch>=0)blockers.splice(mismatch,1);
+        }
       }
       await bound(db); // A changed or rebound fence invalidates the entire projection.
     }catch(e){for(const key of Object.keys(facts))delete (facts as Record<string,unknown>)[key];blockers.push(...bootstrapAuthorityGaps,...(e instanceof CanonicalBootstrapBlocked?e.blockers:["canonical_source_invalid"]));}
@@ -145,9 +156,10 @@ export function createCanonicalBootstrapAuthoritySource(clock=()=>new Date()){
     async bindTransaction(db,mode){if(sessions.has(db))blocked("transaction_already_bound");const f=await fence(db);
       if(f.isolation!==(mode==="read"?"repeatable read":"serializable")||f.readonly!==(mode==="read"?"on":"off"))blocked("transaction_mode_invalid");
       const session={mode,fence:f.revision};sessions.set(db,session);return ()=>{if(sessions.get(db)===session)sessions.delete(db);};},
-    async context(db,binding){await bound(db);const lifecycle=await inspectCanonicalLifecycle(db,binding);await bound(db);
-      return blocked(...bootstrapAuthorityGaps.filter(code=>!lifecycleMissing.some(m=>m===code)),...lifecycle.blockers);},
-    async decision(db,id){await bound(db);if(!z.string().uuid().safeParse(id).success)blocked("decision_missing_or_invalid");return blocked("signed_current_decision_unavailable","issuer_public_key_unavailable");},
+    async context(db,binding,issuedAt){await bound(db);const lifecycle=await inspectCanonicalLifecycle(db,binding);
+      const issuer=issuedAt?await inspectCanonicalIssuer(db,binding,clock(),issuedAt):{blockers:[...issuerGaps]};await bound(db);
+      return blocked(...bootstrapAuthorityGaps.filter(code=>!lifecycleMissing.some(m=>m===code)&&!issuerGaps.some(m=>m===code)),...lifecycle.blockers,...issuer.blockers);},
+    async decision(db,id){await bound(db);if(!z.string().uuid().safeParse(id).success)blocked("decision_missing_or_invalid");return blocked("signed_current_decision_unavailable");},
     async ticketRevoked(db,id){await bound(db);if(!z.string().uuid().safeParse(id).success)blocked("bootstrap_ticket_missing");return blocked("bootstrap_ticket_revocation_unavailable");}
   };
   return Object.freeze({...source,inspect});

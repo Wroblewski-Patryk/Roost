@@ -30,7 +30,7 @@ export async function decisionAuthority(db: Db, workspaceId: string, body: any, 
   const state = loaded ?? await authorityState(db, workspaceId);
   if (!state.ownerUserId || !state.ownerActive || state.truncated) return { status: "blocked", reason: "authority_catalog_incomplete", path: [] };
   // Historical proposals stay owner-only; absence never turns into delegated authority.
-  if (!body.authority || body.workerCredential || body.workerTransport || body.workerBootstrap || body.workerIdentityLifecycle) return { status: "owner_reserved", reason: body.workerIdentityLifecycle ? "worker_identity_lifecycle" : body.workerBootstrap ? "worker_bootstrap_admission" : body.workerTransport ? "worker_transport_admission" : body.workerCredential ? "worker_credential_lifecycle" : "unclassified_owner", principal: { kind: "user", id: state.ownerUserId }, path: [], mandate: null };
+  if (!body.authority || body.workerCredential || body.workerTransport || body.workerBootstrap || body.workerIdentityLifecycle || body.workerBootstrapIssuer) return { status: "owner_reserved", reason: body.workerBootstrapIssuer ? "bootstrap_issuer" : body.workerIdentityLifecycle ? "worker_identity_lifecycle" : body.workerBootstrap ? "worker_bootstrap_admission" : body.workerTransport ? "worker_transport_admission" : body.workerCredential ? "worker_credential_lifecycle" : "unclassified_owner", principal: { kind: "user", id: state.ownerUserId }, path: [], mandate: null };
   const parsed = decisionAuthorityDeclaration.safeParse(body.authority);
   if (!parsed.success) return { status: "blocked", reason: "authority_declaration_invalid", path: [] };
   const taskIds: string[] = impact?.taskIds ?? [];

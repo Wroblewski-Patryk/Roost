@@ -23,7 +23,7 @@ const migration="prisma/migrations/20260923190000_worker_bootstrap_ledger/migrat
 function fixture(){
   const f=bootstrapFixture();let state={tickets:[] as any[],attempts:[] as any[],history:[] as any[],heads:[] as any[],audit:[] as any[],events:[] as any[],fence:0};
   let tail=Promise.resolve(),fault="",cas=false,contexts=0,credentialState:"revoked"|"expired"|undefined;
-  const hooks:{context?:()=>void;read?:()=>void;event?:(state:string)=>void}={},options:any[]=[],queries:string[]=[];
+  const hooks:{context?:()=>void;read?:()=>void;event?:(state:string)=>void}={},options:any[]=[],queries:string[]=[],issueTimes:(string|undefined)[]=[];
   const fail=(name:string)=>{if(fault===name){fault="";throw Error("sensitive native error must not escape");}};
   const client:any={$transaction:async(work:any,option:any)=>{
     options.push(option);const before=tail;let release!:()=>void;tail=new Promise<void>(r=>release=r);await before;
@@ -71,7 +71,7 @@ function fixture(){
       if(readOnly)assert.equal(JSON.stringify(draft),initial);state=draft;return result;}finally{release();}
   }};
   const source:BootstrapAuthoritySource={qualification:"synthetic_bootstrap_authority_v1",
-    context:async(db)=>{assert.ok(db.$queryRaw);contexts++;hooks.context?.();return {...clone(f.context),credentialHighWater:Math.max(f.context.credentialHighWater,f.context.credential?.epoch??0),
+    context:async(db,_binding,issuedAt)=>{assert.ok(db.$queryRaw);issueTimes.push(issuedAt);contexts++;hooks.context?.();return {...clone(f.context),credentialHighWater:Math.max(f.context.credentialHighWater,f.context.credential?.epoch??0),
       credentialState:f.context.credentialActive?"acknowledged":credentialState??(f.context.credential?"pending":"absent")};},
     decision:async(_db,id)=>clone(f.decisions.get(id)??null),ticketRevoked:async(_db,id)=>f.tickets.get(id)?.revoked??true};
   const store=createPrismaWorkerBootstrapStore(client,source,()=>new Date(f.iso())),service=createWorkerBootstrapService(store,f.exchange,()=>new Date(f.iso()));
@@ -81,7 +81,7 @@ function fixture(){
     f.context.prior={attemptId:h.attempt_id,state:reason==="revoked"?"revoked_credential":reason==="expired"?"expired":h.state,credential:clone(f.context.credential)};
     f.issue("owner_recovery");return register();
   };
-  return {...f,store,service,source,client,register,recovery,options,queries,hooks,contexts:()=>contexts,state:()=>clone(state),
+  return {...f,store,service,source,client,register,recovery,options,queries,hooks,issueTimes,contexts:()=>contexts,state:()=>clone(state),
     mutate:(work:(value:typeof state)=>void)=>work(state),fail:(s:string)=>fault=s,cas:()=>cas=true,exchangeHooks:f.hooks};
 }
 
@@ -98,6 +98,10 @@ test("durable bootstrap adapter uses only a transactional mock and has no extern
     assert.deepEqual(s.tickets[0],ticket);assert.equal(s.attempts.length,1);assert.deepEqual(s.history.map(h=>h.state),["consumed","dispatched","acknowledged"]);
     assert.equal(s.audit.length,4);assert.equal(s.events.length,4);assert.ok(s.history[1].record.peer.signature);assert.ok(s.history[2].record.completion.signature);
     assert.ok(f.options.some(o=>o.isolationLevel==="Serializable"));assert.ok(!JSON.stringify(s).includes("synthetic-bootstrap-wire-only"));
+  });
+  await t.test("issuer selection receives the selected ticket issue-time on every later ceremony check",async()=>{
+    const f=fixture(),issuedAt=f.ticket().issuedAt;await f.register();f.issueTimes.length=0;f.advance(1000);
+    ok(await f.service.consume(f.input()));assert.ok(f.issueTimes.length>1);assert.ok(f.issueTimes.every(at=>at===issuedAt));assert.notEqual(issuedAt,f.iso());
   });
   await t.test("recovery uses canonical terminal predecessor and fresh IDs without reactivating revoked infrastructure",async()=>{
     for(const reason of ["revoked","expired"] as const){const f=fixture();await f.register();ok(await f.service.consume(f.input()));const old=f.state();

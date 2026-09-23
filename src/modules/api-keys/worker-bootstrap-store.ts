@@ -16,7 +16,7 @@ export interface BootstrapAuthoritySource{
   // after this adapter has fenced writes / selected SQL READ ONLY for reads.
   bindTransaction?(db:Db,mode:"read"|"write"):Promise<()=>void>;
   inspect?(db:Db,input:unknown):Promise<unknown>;
-  context(db:Db,binding:BootstrapBinding):Promise<SourceContext|null>;
+  context(db:Db,binding:BootstrapBinding,issuedAt?:string):Promise<SourceContext|null>;
   decision(db:Db,id:string):Promise<SignedTransport<BootstrapDecision>|null>;
   ticketRevoked(db:Db,id:string):Promise<boolean>;
 }
@@ -105,7 +105,7 @@ function transaction(db:Db,source:BootstrapAuthoritySource,clock:()=>Date,readOn
     async decision(id){const value=await source.decision(db,id);return value?signedBootstrapDecision.parse(value):null;},
     async context(binding){
       if(!selected||!same(selected.payload.intent.binding,binding))deny();
-      const current=await source.context(db,binding);if(!current)return null;
+      const current=await source.context(db,binding,selected!.payload.issuedAt);if(!current)return null;
       const h=await head(binding),i=selected!.payload.intent;
       if(!Number.isSafeInteger(current.credentialHighWater)||current.credentialHighWater<0||
         (current.credential===null)!==(current.credentialState==="absent")||current.credentialActive!==(current.credentialState==="acknowledged")||

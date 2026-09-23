@@ -1,10 +1,12 @@
 # Canonical Worker bootstrap authority projection v1
 
-Current v35: [canonical lifecycle](worker-identity-lifecycle-v1.md) conditionally
-resolves the four host/installation gaps for evidenced generations. Legacy,
-missing schema/guards and all five other gaps remain blocked. The additive
-migration is UNAPPLIED; native qualification is PARTIAL. The v34 inventory and
-qualification below are historical; there is still no usable bootstrap authority.
+Current v39: [canonical issuer authority](bootstrap-issuer-authority-v1.md)
+conditionally resolves the public-key and issuer-fence gaps for a complete audited
+public generation, in addition to the four [lifecycle facts](worker-identity-lifecycle-v1.md).
+Exact ticket issue-time and current ceremony selection are mandatory. The three
+channel/revocation/signed-decision gaps remain blocked. Issuer migration 80 is
+UNAPPLIED, native qualification PARTIAL, production BLOCKED; all flags false.
+The inventory and qualification below are historical.
 
 Owner amendment v34, 2026-09-23. **DONE for source-only canonical projection,
 ledger transaction binding and synthetic denial validation: 13/13 new results,
