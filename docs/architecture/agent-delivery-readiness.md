@@ -1,5 +1,17 @@
 # Gotowość połączenia Roost z agentami
 
+Aktualizacja v31: [bootstrap/recovery admission](worker-bootstrap-admission-v1.md)
+— **DONE jako kontrakt i model źródłowy: 16/16 nowych wyników, 73/73 regresji**.
+Jednorazowy ticket bieżącego właściciela obejmuje pierwszy enrollment lub recovery
+po terminalnym wyniku. Zwykły admission nadal wymaga dokładnego aktywnego
+poświadczenia; host/instalacja po revoke nie odzyskują uprawnień przez bootstrap.
+Zweryfikowano współbieżność, replay, drift, cutover, terminalny wynik nieznany,
+status bez zapisu oraz czyszczenie buforów. Bez sieci, bazy, provisioning i aktywacji;
+wszystkie flagi false. Trwała integracja issuer/delivery PARTIAL, produkcja BLOCKED.
+Jeden proponowany następny atom: źródłowy adapter rejestru bootstrap i addytywny,
+niezastosowany schemat z testami transakcji na mockach. Starsze propozycje poniżej
+są historyczne.
+
 Aktualizacja v30: [koordynator admission i HTTPS handoff](worker-handoff-coordinator-v1.md)
 — **DONE źródłowo: 11/11 wyników koordynatora, 57/57 testów źródłowych**.
 Niezmienny snapshot jest jedynym źródłem konfiguracji. Odczyt przed transportem,

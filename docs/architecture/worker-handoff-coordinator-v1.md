@@ -1,5 +1,16 @@
 # Persisted admission and HTTPS handoff coordinator v1
 
+Owner amendment v31: [bootstrap/recovery admission](worker-bootstrap-admission-v1.md)
+is **DONE as a source-only contract/model: 16/16 results, 73/73 source regressions**.
+A separate current-owner ticket admits one first enrollment or terminal recovery;
+ordinary poll/ACK/status/rotation retain their existing credential requirements.
+Exact bindings, burned generations, replay, expiry/cutover and post-commit unknown
+are enforced synthetically. No native persistence, network, provisioning or default
+composition; all admission flags false. Durable issuer/delivery integration is
+PARTIAL and production BLOCKED. Exactly one proposed next atom: a source-only
+bootstrap ledger adapter and additive unapplied schema with mocked transaction
+validation. Earlier successor proposals below are historical.
+
 Owner amendment v30, 2026-09-23. **DONE for source-only coordination and synthetic
 qualification: 11/11 results, 57/57 selected source regressions.** Real exchange
 integration is PARTIAL; production/bootstrap/provisioning/execution remain BLOCKED.
