@@ -1,5 +1,18 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+Owner amendment v16, 2026-09-23: qualify the
+[managed-Hermes backend contract](../architecture/managed-hermes-backend-admission-v1.md)
+through source/synthetic work only. Codex Responses and local Ollama are strict,
+explicit alternatives behind one managed Hermes agent layer; no routing,
+App Server/direct/manual bypass or fallback. The existing signed decision and
+fixed Job admission bind selection, auth/model evidence and task lifecycle.
+Contract DONE, real issuer/launch BLOCKED; six flags stay false. Private signing/
+anchor provisioning and inherited Users write remain unresolved. Prior temp
+parent cleanup is BLOCKED on missing original ownership, with no deletion.
+Exactly one proposed next atom: source-only secure private-anchor provisioning/
+verification contract, without keys, ACL changes or execution. Earlier next-step
+statements below retain their historical scope.
+
 Owner amendment v15, 2026-09-23: the owner confirms **Roost -> Windows Local
 Worker -> managed Hermes Agent -> selected backend/model**. Hermes is the sole
 agent/orchestration layer. Target backends are Codex OAuth/subscription with

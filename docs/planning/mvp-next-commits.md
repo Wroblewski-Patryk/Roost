@@ -1,5 +1,16 @@
 # Next development work
 
+Current owner amendment v16, 2026-09-23:
+[managed-Hermes backend admission contract](../architecture/managed-hermes-backend-admission-v1.md)
+is source/synthetic DONE for explicit Codex Responses and local Ollama.
+Real issuer/launch remain BLOCKED; six flags false. No routing or provider run.
+Prior test-state cleanup is BLOCKED on missing original parent ownership.
+**Exactly one proposed next atom:** source-only qualification of secure private
+trust-anchor provisioning/verification within the existing Worker state model,
+including inherited Users write, operator/runtime trust and fail-closed tests.
+Do not create keys, change ACLs, install software or launch a provider.
+Stop after this contract; all earlier proposed next steps below are historical.
+
 Current owner amendment v15, 2026-09-23:
 [Hermes-only flow and static Codex inventory](../architecture/codex-static-inventory-v1.md).
 Static inventory is DONE; the original direct-pin pilot binding is

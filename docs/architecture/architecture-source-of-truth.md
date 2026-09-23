@@ -1,5 +1,15 @@
 # Architecture Source Of Truth
 
+Owner amendment v16, 2026-09-23:
+[backend-aware managed-Hermes admission](managed-hermes-backend-admission-v1.md)
+is source/synthetic DONE. Versioned explicit Codex Responses versus local Ollama
+selection is bound to the existing signed decision, task/Ready/Writer, scope,
+roles, risk, budgets, original fixed Job and review/recovery/release gates.
+Refusal spends the attempt; changing backend/model cannot renew it. Positive
+tests execute only the closed fixture. Real issuer/launch remain BLOCKED and
+six flags false; safe private anchor provisioning is unresolved. No routing,
+real profile or model-store change. This supersedes the prior proposed next atom.
+
 Owner amendment v15, 2026-09-23: **Roost -> Windows Local Worker -> managed
 Hermes -> selected backend/model** is the sole target task flow. Codex
 OAuth/Responses with explicit allowed model >=5.6 and reasoning, and local

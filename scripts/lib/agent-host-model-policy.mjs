@@ -17,7 +17,22 @@ export const localHermesModelSelectionSchema = z.object({
   modelFamily: z.enum(["gpt-oss", "devstral"]), modelDigest: z.string().regex(/^sha256:[a-f0-9]{64}$/),
   reasoningEffort: z.enum(["low", "medium", "high"])
 }).strict().refine(s => s.model.split(":")[0] === s.modelFamily, { message: "local_model_family_mismatch" });
-export const taskModelSelectionSchema = z.union([modelSelectionSchema, localHermesModelSelectionSchema]);
+export const managedBackendVersion = "roost-managed-hermes-backend-v1";
+const managedBase = {
+  schemaVersion: z.literal(managedBackendVersion), agent: z.literal("managed_hermes"),
+  riskClass: z.enum(["low", "medium", "high", "critical"]), fallback: z.literal("none"),
+  attemptPolicy: z.object({ maxTurns: z.number().int().min(1).max(24), apiMaxRetries: z.number().int().min(0).max(2),
+    unavailable: z.literal("stop_attempt"), restart: z.literal("never") }).strict()
+};
+// Explicit task input only: no availability discovery or routing algorithm.
+export const managedBackendSelectionSchema = z.discriminatedUnion("backend", [
+  z.object({ ...managedBase, backend: z.literal("codex_responses"), provider: z.literal("openai-codex"),
+    modelSelection: modelSelectionSchema, auth: z.literal("same_owner_subscription") }).strict(),
+  z.object({ ...managedBase, backend: z.literal("ollama_loopback"), provider: z.literal("ollama"),
+    endpoint: z.literal("http://127.0.0.1:11434"), modelSelection: localHermesModelSelectionSchema,
+    config: z.object({ reasoning: z.literal("explicit_model_effort"), remote: z.literal(false) }).strict() }).strict()
+]);
+export const taskModelSelectionSchema = z.union([modelSelectionSchema, localHermesModelSelectionSchema, managedBackendSelectionSchema]);
 
 // The current Ready editor exposes only qualified Codex choices. Do not infer
 // this catalogue by introspecting the broader task-selection union.

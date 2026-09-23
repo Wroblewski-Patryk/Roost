@@ -1,5 +1,17 @@
 # Gotowość połączenia Roost z agentami
 
+Aktualizacja v16, 2026-09-23:
+[kontrakt dwóch backendów managed Hermes](managed-hermes-backend-admission-v1.md)
+— **source/synthetic DONE; real issuer/launch BLOCKED**. Codex Responses wymaga
+jawnego modelu/reasoning i same-owner attestation; local Ollama wymaga dokładnego
+endpointu/modelu/digestu oraz odrębnego managed receipt. Oba dodatnie przypadki
+kończą się wyłącznie stałym fixture; drift, replay i niedostępność blokują próbę
+bez fallbacku. Sześć flag false. Cleanup 39 dawnych katalogów test-state BLOCKED:
+brak oryginalnego ownership rodziców, bez usuwania. Jeden następny proponowany
+atom: źródłowy kontrakt bezpiecznego private-anchor provisioning/verification,
+bez tworzenia kluczy, zmiany ACL ani real launch. Starsze propozycje poniżej
+są historyczne.
+
 Aktualizacja właściciela v15, 2026-09-23: **inwentaryzacja Codex DONE;
 pierwotny atom powiązania pinu PARTIAL / architecture mismatch; real launch BLOCKED**.
 [Dowód i bieżący kontrakt](codex-static-inventory-v1.md): zadania przechodzą

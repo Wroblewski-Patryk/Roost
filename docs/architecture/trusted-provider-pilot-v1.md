@@ -1,5 +1,14 @@
 # Trusted provider pilot v1
 
+Owner amendment v16:
+[backend-aware Hermes contract](managed-hermes-backend-admission-v1.md) now
+qualifies both explicit Codex Responses and local Ollama intent at the existing
+fixed-fixture boundary using the existing Hermes class. Direct Codex remains
+denied. The signed decision rechecks separate backend/auth/model evidence and
+original lifecycle gates; refusal spends the attempt without fallback.
+Source/synthetic contract DONE, real issuer BLOCKED, six flags false.
+Private anchor provisioning is unresolved. v15/v14 descriptions below are history.
+
 Current owner amendment v15, 2026-09-23:
 [Hermes-only target flow](codex-static-inventory-v1.md) supersedes this document's
 original equal-provider policy and next atom. Direct Codex has no pilot authority;

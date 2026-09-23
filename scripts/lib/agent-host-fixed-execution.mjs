@@ -117,6 +117,10 @@ export function inspectFixedContainment(grant) {
   return { grant, envelope: s.envelope, claimed: s.claimed, writerLock: s.writerLock,
     repositoryPath: s.repositoryPath, runtime: structuredClone(s.runtime), expiresAt: s.deadline,
     configuration: { argv: [], input: "", environment: { SYSTEMROOT: process.env.SystemRoot }, suppliedHandles: 1 },
+    gates: { jobVersion: "roost-windows-job-v2", launcher: assertWindowsJobCapability(s.artifact),
+      originalOwnership: true, durableResume: true, cleanup: "owned_job_zero_processes",
+      recovery: "original_b28_cleanup_only", outputBudget: "fixed_22_bytes_zero_model_tokens",
+      durationDeadline: s.deadline, release: "independent_review_no_release" },
     filesystemScope: { repositoryIdentity: s.repositoryIdentity, cwdIdentity: physicalIdentity(s.cwd),
       outputHandleIdentity: s.effectIdentity, suppliedHandles: 1 } };
 }

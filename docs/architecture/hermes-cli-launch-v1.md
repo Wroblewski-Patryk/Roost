@@ -1,5 +1,13 @@
 # Native Hermes CLI launch contract v1
 
+Owner amendment v16:
+[managed backend selection](managed-hermes-backend-admission-v1.md) is a
+source/synthetic extension of the existing input/admission contract. Explicit
+Codex Responses and loopback Ollama selection cannot project a real command;
+only the original fixed fixture qualifies. No CLI argument/configuration support
+for a new backend is inferred. Direct Codex/App Server/manual/fallback remain
+excluded, and real issuer/launch and all six flags remain blocked/false.
+
 RF-RUNTIME-005B12 [local launch admission](hermes-local-launch-admission-v1.md)
 is source/synthetic qualified. One process-local aggregate binds the existing
 profile/auth/startup/budget/native/Job proofs to the same sealed attempt. Local

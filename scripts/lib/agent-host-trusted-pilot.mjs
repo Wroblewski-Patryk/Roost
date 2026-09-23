@@ -4,7 +4,8 @@ import { createHash, createPublicKey, verify } from "node:crypto";
 import { z } from "zod";
 import contract from "./agent-host-provider-contract.cjs";
 import { physicalIdentity, nativeDigest } from "./agent-host-native-footprint.mjs";
-import { modelSelectionSchema, localHermesModelSelectionSchema } from "./agent-host-model-policy.mjs";
+import { taskModelSelectionSchema, localHermesModelSelectionSchema, managedBackendSelectionSchema } from "./agent-host-model-policy.mjs";
+import { managedBackendBindingSchema, inspectManagedBackend } from "./agent-host-managed-backend.mjs";
 import { assertWriterLock } from "./agent-host-writer-lock.mjs";
 
 export const trustedPilotVersion = "roost-trusted-provider-pilot-v1";
@@ -19,11 +20,12 @@ const fail = () => { throw Object.assign(Error("trusted_provider_pilot_blocked")
   publicMessage: "Trusted provider pilot acceptance is missing, revoked or does not match this attempt.",
   details: { reason: "trusted_provider_pilot_blocked", schemaVersion: trustedPilotVersion } }); };
 const filePin = z.object({ identity: h, digest: h }).strict();
-const selectionSchema = z.union([modelSelectionSchema, localHermesModelSelectionSchema]);
-// Owner amendment v15: direct Codex is diagnostic only, never pilot authority.
-// Hermes-Codex backend admission still needs its own qualified contract.
-const providerSchema = z.object({ kind: z.literal("hermes_local"), version: z.string().min(1).max(80),
-  runtimeDigest: h, launcherDigest: h, profile: filePin, configurationDigest: h, modelSelection: selectionSchema }).strict();
+const selectionSchema = taskModelSelectionSchema;
+// Both versioned backends use the existing Hermes class. Legacy local fixtures
+// remain bounded; direct Codex and App Server have no pilot authority.
+const providerSchema = z.object({ kind: z.enum(["hermes_local", "hermes_codex"]), version: z.string().min(1).max(80),
+  runtimeDigest: h, launcherDigest: h, profile: filePin, configurationDigest: h, modelSelection: selectionSchema,
+  managedBackend: managedBackendBindingSchema.optional() }).strict();
 const scopeSchema = z.object({ workspaceId: uuid, applicationId: uuid, taskId: uuid, executionId: uuid,
   checkoutIdentity: h, inputSeal: h, accessDigest: h, singleTaskDigest: h, filesystemDigest: h, writerDigest: h }).strict();
 export const trustedPilotDecisionSchema = z.object({ schemaVersion: z.literal(trustedPilotVersion), decisionId: uuid,
@@ -39,8 +41,8 @@ const anchorSchema = z.object({ schemaVersion: z.literal(trustedPilotVersion), i
   authorityPublicKey: z.string().min(32).max(2048), decisionFile: z.literal("trusted-provider-pilot.json"),
   profileFile: z.literal("trusted-provider-profile.json"), decisionId: uuid, revision: z.number().int().positive(), decisionDigest: h }).strict();
 const profileSchema = z.object({ schemaVersion: z.literal(trustedPilotVersion), purpose: z.literal("managed-agent"),
-  providerKind: z.literal("hermes_local"), version: z.string().min(1).max(80),
-  backend: z.enum(["openai", "ollama_loopback"]), fallback: z.literal("none"),
+  providerKind: z.enum(["hermes_local", "hermes_codex"]), version: z.string().min(1).max(80),
+  backend: z.enum(["codex_responses", "ollama_loopback"]), fallback: z.literal("none"),
   modelSelection: selectionSchema, qualification: z.literal("closed_fixture_only") }).strict();
 
 // Bound reads only: no provider imports, executable invocation, profile discovery,
@@ -88,16 +90,18 @@ export function inspectTrustedPilotDecision(configurationPath, source, writerDig
       || p.configurationIdentity !== config.identity || p.installationIdentity !== installationIdentity
       || p.installationId !== anchor.installationId || p.scope.workspaceId !== anchor.workspaceId) fail();
     const selected = profileSchema.parse(JSON.parse(profile.body)), provider = providerSchema.parse(candidate);
-    const kind = selected.providerKind, local = kind === "hermes_local";
-    const pinned = contract.registry.providers.find(x => x.kind === (local ? "hermes_codex" : "direct_codex"));
+    const kind = selected.providerKind, managed = kind === "hermes_codex";
+    const pinned = contract.registry.providers.find(x => x.kind === "hermes_codex");
+    const selection = (managed ? managedBackendSelectionSchema : localHermesModelSelectionSchema).parse(selected.modelSelection);
+    if (managed !== Boolean(provider.managedBackend)) fail();
     if (selected.version !== pinned.version || provider.version !== selected.version || provider.kind !== kind
-      || selected.backend !== (local ? "ollama_loopback" : "openai")
-      || !(local ? localHermesModelSelectionSchema : modelSelectionSchema).safeParse(selected.modelSelection).success
+      || selected.backend !== (managed ? selection.backend : "ollama_loopback")
       || !same(selected.modelSelection, source.envelope.contract.modelSelection)
       || !same(provider.modelSelection, selected.modelSelection)) fail();
     const actualProvider = { kind, version: selected.version, runtimeDigest: nativeDigest(source.runtime),
       launcherDigest: nativeDigest(source.runtime.launcher), profile: { identity: profile.identity, digest: profile.digest },
-      configurationDigest: nativeDigest(source.configuration), modelSelection: source.envelope.contract.modelSelection };
+      configurationDigest: nativeDigest(source.configuration), modelSelection: source.envelope.contract.modelSelection,
+      ...(managed ? { managedBackend: inspectManagedBackend({ source, writerDigest, profile, profilePath: profileFile, installationIdentity, read }) } : {}) };
     const e = source.envelope, scope = { workspaceId: e.identity.workspaceId, applicationId: e.identity.applicationId,
       taskId: e.identity.taskId, executionId: e.identity.executionId, checkoutIdentity: physicalIdentity(source.repositoryPath),
       inputSeal: e.seal, accessDigest: nativeDigest(e.contract.access), singleTaskDigest: nativeDigest(e.contract.singleTask),

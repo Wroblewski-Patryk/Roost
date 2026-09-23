@@ -5,7 +5,7 @@ import { assertFixedTask, consumeFixedExecution } from "./agent-host-fixed-execu
 import { z } from "zod";
 import contract from "./agent-host-provider-contract.cjs";
 import hermesContract from "./agent-host-hermes-launch-contract.cjs";
-import { modelSelectionSchema, codexExecutionArgs } from "./agent-host-model-policy.mjs";
+import { modelSelectionSchema, codexExecutionArgs, managedBackendVersion } from "./agent-host-model-policy.mjs";
 import { providerInputTransport, consumeProviderInput, assertProviderProfile, assertProviderStartup } from "./agent-host-provider-input.mjs";
 import { hermesProfileBindingSchema, hermesProfileAuthBlockers, hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion } from "./agent-host-hermes-profile.mjs";
 import { hermesStartupArgs, hermesStartupBlockers } from "./agent-host-hermes-startup.mjs";
@@ -56,6 +56,9 @@ export function projectProviderLaunch({ provider, envelope, repositoryPath, code
   }
   const transport = providerInputTransport(kind, envelope);
   guardHostContent(envelope, "required", secrets);
+  // Backend-aware qualification currently reaches only the genuine fixed
+  // fixture. Real Hermes command/profile/auth/model issuers remain unqualified.
+  if (transport.modelSelection.schemaVersion === managedBackendVersion) fail("managed_backend_real_launch_unqualified");
   const selection = modelSelectionSchema.safeParse(transport.modelSelection);
   if (!selection.success) fail("execution_model_policy_invalid");
   if (kind === "direct_codex") return freeze({ version: "roost-direct-cli-launch-v1", kind,

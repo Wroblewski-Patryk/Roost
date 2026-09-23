@@ -1,5 +1,14 @@
 # Local Codex Agent Runtime
 
+Owner amendment v16:
+[managed-Hermes backend contract](managed-hermes-backend-admission-v1.md) adds
+explicit source/synthetic Codex Responses and loopback Ollama selection to the
+existing input/pilot/launch contracts. No new provider, router or launcher.
+Auth/model/profile/task drift and unavailability stop the attempt without
+fallback; real command projection denies. Fixture validation is DONE; real
+issuer BLOCKED, six flags false. CLI inventory is not a dependency. Safe private
+anchor provisioning and managed-model evidence still need real qualification.
+
 Owner amendment v15, 2026-09-23: managed Hermes is the only task orchestration
 layer after Windows Local Worker. Its explicit target backends are Codex
 OAuth/Responses (allowlisted model >=5.6 plus reasoning) and local Ollama

@@ -1,5 +1,16 @@
 # Foundation requirements traceability
 
+RF-HOST-035 owner amendment v16:
+[managed backend admission v1](managed-hermes-backend-admission-v1.md) is
+**source/synthetic DONE; real issuer BLOCKED**. Both explicit Hermes backends
+bind task/model/auth or separate managed-model evidence through the existing
+signed pilot and fixed Job chain. Drift, manual/direct/App Server, fallback,
+unavailability and replay deny before target effect. Failed admission spends
+the attempt. Six flags remain false, and inherited Users write/private anchor
+provisioning remains unresolved. Cleanup of 39 prior test-state parents is
+BLOCKED by missing original parent ownership. Exactly one next proposed atom:
+source-only secure private-anchor provisioning and verification contract.
+
 RF-HOST-035 owner amendment v15, 2026-09-23:
 [Codex static inventory](codex-static-inventory-v1.md) **DONE**, original
 pin-to-pilot binding **PARTIAL / architecture mismatch**, real launch **BLOCKED**.

@@ -5,6 +5,7 @@ import { writerRecoveryEvidence } from "./agent-host-writer-lock.mjs";
 import { assertFreshExecutionContext } from "./agent-host-execution-context.mjs";
 import ready from "./agent-host-ready-context.cjs";
 import { inspectTrustedPilotDecision } from "./agent-host-trusted-pilot.mjs";
+import { consumeProviderInput } from "./agent-host-provider-input.mjs";
 
 export const hostContainmentVersion = "roost-host-containment-admission-v1";
 const receipts = new WeakMap(), attempts = new WeakSet();
@@ -82,6 +83,9 @@ export function prepareTrustedProviderPilot(options, consumption) {
 function prepareContainment(options, consumption, pilot) {
   try {
     if (attempts.has(options.fixedGrant)) deny();
+    // Reserve before availability/auth/model checks. A refused selection cannot
+    // be restored or switched into another backend within the same attempt.
+    attempts.add(options.fixedGrant);
     const current = snapshot(options.fixedGrant, pilot);
     checkRequest(options, consumption, current);
     const issuedAt = Date.now(), expiresAt = Math.min(Date.parse(current.binding.expiresAt),
@@ -91,12 +95,14 @@ function prepareContainment(options, consumption, pilot) {
     const receipt = freeze({ schemaVersion: hostContainmentVersion, evidenceClass: "closed_fixture_only",
       systemIsolation: false, realProviderAdmitted: false, issuedAt, expiresAt, binding, bindingDigest,
       ...(pilot ? { mode: "trusted_provider_pilot", residualRiskAccepted: true, arbitraryProviderAdmission: false, fullAutonomy: false } : {}) });
-    attempts.add(options.fixedGrant);
     receipts.set(receipt, { grant: options.fixedGrant, envelope: options.envelope, bindingDigest, issuedAt, expiresAt,
       pilot: pilot ? structuredClone(pilot) : null,
       lifetime: expiresAt - issuedAt, monotonic: performance.now(), phase: "prepared" });
     return receipt;
-  } catch { deny(); }
+  } catch {
+    if (pilot) { try { consumeProviderInput(options.envelope, consumption); } catch { /* retain the original refusal */ } }
+    deny();
+  }
 }
 
 // Spent before any handoff, including failed checks. A copied/tampered object
