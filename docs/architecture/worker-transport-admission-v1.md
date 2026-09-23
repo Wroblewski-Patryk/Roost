@@ -1,4 +1,74 @@
-# Production Worker transport admission v1 — source contract
+# Production Worker transport admission v1 — contract and persistence
+
+Owner amendment v29, 2026-09-23. **DONE: bounded native PostgreSQL persistence
+qualification, 9/9 results and 55/55 selected native/source results.** The 77-file
+migration chain was applied only in one owned disposable synthetic database.
+The new migration's first attempt failed and rolled back: PostgreSQL required
+parentheses around seven nested JSON projections before subtraction of allowed
+keys. Only this never-applied migration was corrected, then applied successfully;
+the preceding 76 migrations remain unchanged. No default composition or production
+database deployment; all six admission flags plus `transportQualified` stay false.
+The v28 UNAPPLIED status below is historical, not a claim that production was migrated.
+
+## Native persistence qualification (v29)
+
+The [native suite](../../src/tests/worker-transport-native.test.ts) runs the real
+Prisma adapter and production state machine on PostgreSQL. It verifies create,
+stage, cutover, revoke and fresh readmission, including a replacement installation
+and credential with one workspace/host head and preserved earlier generations.
+Five batches of **20 real transactions** each (create/stage/cutover/revoke/readmit)
+produce exactly one commit per expected head and bounded `revision_changed`
+conflicts for the others. No duplicate head/history revision is committed.
+
+Fault injection after generation/history/head create or update/Event/audit and
+immediately before commit leaves complete persistent snapshots identical. Native
+FK/unique/CHECK probes reject duplicate heads, mismatched digest/history/Event,
+invalid predecessor, terminal generation reuse, skipped/zero high-water and
+unknown secret-like JSON keys. Separate service tests deny replay, stale
+revision/digest, reused pins/epochs, revoked resurrection and authoritative source
+drift. Old history is unchanged during all normal transitions.
+
+Inspect/complete use real RepeatableRead transactions. The test harness additionally
+executes `SET TRANSACTION READ ONLY` and confirms `transaction_read_only=on`;
+operations succeed without touching heads/history/generations/audit/Event, the
+Ready fence or credential expiry/last-used fields. Expired inspection also leaves
+the snapshot unchanged. Completion after revoke returns `delivery_unknown`.
+
+Canonical source preconditions are synthetic fixtures, created only after exact
+database-name/owner/comment checks. Fixture preparation uses transaction-local
+`session_replication_role=replica` for existing owner/credential/handoff/decision
+rows; it never applies to adapter or tamper transactions, which assert `origin`.
+This deliberately does **not** requalify full governed-decision or credential
+handoff acceptance workflows. Their existing source rows are read through the
+real adapter and decision projections are signed with ephemeral in-memory keys.
+No application seed, backend, endpoint, TLS/DNS/provisioning or Worker/provider/
+model process is run. Only the database harness uses local PostgreSQL transport;
+all non-database network/socket/DNS/fetch/process effects are trapped at zero.
+
+Privileged SQL immutability and whole-database rollback remain outside this
+contract. A deliberate signature UPDATE succeeds inside an always-rolled-back
+probe, demonstrating that append-only history is an adapter guarantee, not a
+database-superuser security boundary. Production provisioning, independent
+freshness/monotonicity, secure issuer/key storage and execution remain BLOCKED.
+
+Cleanup **PASS**: Prisma and the owned database relay are closed, with no child
+connections. Exact owned database name/OID/owner/comment and zero sessions were
+verified before DROP; its absence was verified afterward. Baseline/after logical
+fingerprints match for all three pre-existing databases and 214 tables/sequences,
+including schema/function/constraint/index/catalog/role metadata. Container IDs,
+images, mounts, volumes and networks match. Only the existing Roost PostgreSQL
+container was started and is now exited; backend remained exited and Soar
+PostgreSQL/Redis remained running and unchanged. An interrupted final fingerprint
+was repeated to completion before the final stop; no database was recreated.
+No container/image/volume/role was created or removed. External harness evidence
+retains only local synthetic results and logical fingerprints; no private data is
+copied into repository evidence.
+
+**Exactly one proposed next atom:** a source-only adapter connecting persisted
+admission inspection/completion to the existing HTTPS handoff boundary, with
+synthetic fail-closed integration tests. Keep default composition absent and all
+flags false; no endpoint contact, provisioning or activation. Earlier proposed
+successors below are historical.
 
 Owner amendment v28, 2026-09-23. **DONE: source-only Prisma adapter and
 synthetic transaction qualification (10/10 results; 46/46 selected source

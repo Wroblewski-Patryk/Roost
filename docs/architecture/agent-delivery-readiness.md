@@ -1,5 +1,20 @@
 # Gotowość połączenia Roost z agentami
 
+Aktualizacja v29: [natywna persystencja transportu](worker-transport-admission-v1.md)
+— **DONE: 9/9 wyników PostgreSQL, 55/55 wybranych wyników łącznie**.
+Rzeczywiste transakcje, po 20 równoległych prób create/stage/cutover/revoke/readmit,
+ograniczenia SQL, rollback i odczyt z SQL READ ONLY przechodzą. Nowa, wcześniej
+niewykonana migracja wymagała poprawienia nawiasów operatorów JSON; następnie
+zastosowano pełny łańcuch 77 migracji tylko w bazie testowej. Poprzednie 76 bez zmian.
+Cleanup PASS: własna baza usunięta, odciski trzech istniejących baz zgodne,
+Roost PostgreSQL ponownie exited, backend i Soar bez zmian. Produkcja BLOCKED,
+wszystkie flagi false. Jeden proponowany następny atom: źródłowa integracja
+trwałego admission z granicą HTTPS handoff i syntetyczne testy odmów, bez endpointów,
+provisioningu, domyślnej kompozycji i aktywacji. Dane źródłowe autoryzacji były
+syntetycznymi fixtures; nie jest to ponowna kwalifikacja workflow decyzji/handoff.
+Ochrona przed privileged SQL i rollbackiem całej bazy pozostaje niekwalifikowana.
+Starsze propozycje poniżej są historyczne.
+
 Aktualizacja v28: [adapter persystencji transportu](worker-transport-admission-v1.md)
 — **DONE: 10/10 wyników adaptera, 46/46 wybranych testów źródłowych**.
 Transakcje Serializable, head/history/Event/audit, high-water i nowa generacja po

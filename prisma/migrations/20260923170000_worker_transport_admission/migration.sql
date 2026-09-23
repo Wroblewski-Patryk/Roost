@@ -53,15 +53,15 @@ CREATE TABLE worker_transport_history (
  CHECK(record->>'ownerId'=owner_id::text AND record->>'decisionId'=decision_id::text AND (record->>'decisionRevision')::int=decision_revision AND record->>'decisionIntentDigest'=decision_intent_digest AND record->>'requestId'=request_id::text),
  CHECK(record->'profile'->'certificate'->>'fingerprint'=current_pin AND (record->'staged'->'certificate'->>'fingerprint') IS NOT DISTINCT FROM staged_pin),
  CHECK(record->'profile' ?& ARRAY['origin','serverName','certificate','trust','resolver','proxy','redirect','downgrade','bootstrap']),
- CHECK(record->'profile'-ARRAY['origin','serverName','certificate','trust','resolver','proxy','redirect','downgrade','bootstrap']='{}'::jsonb),
+ CHECK((record->'profile')-ARRAY['origin','serverName','certificate','trust','resolver','proxy','redirect','downgrade','bootstrap']='{}'::jsonb),
  CHECK(record->'profile'->>'origin' ~ '^https://[a-z0-9.-]+:[1-9][0-9]{0,4}$' AND length(record->'profile'->>'origin')<=512 AND length(record->'profile'->>'serverName') BETWEEN 3 AND 253),
  CHECK(record->'profile'->'proxy'='false'::jsonb AND record->'profile'->'redirect'='false'::jsonb AND record->'profile'->'downgrade'='false'::jsonb),
- CHECK(record->'profile'->'trust'-ARRAY['mode','caDigest']='{}'::jsonb AND record->'profile'->'trust'->>'mode'='owner_approved_ca_digest' AND record->'profile'->'trust'->>'caDigest' ~ '^[a-f0-9]{64}$'),
+ CHECK((record->'profile'->'trust')-ARRAY['mode','caDigest']='{}'::jsonb AND record->'profile'->'trust'->>'mode'='owner_approved_ca_digest' AND record->'profile'->'trust'->>'caDigest' ~ '^[a-f0-9]{64}$'),
  CHECK(record->'profile'->'resolver'='{"policy":"public_ipv4_only_v1","evidenceType":"issuer_signed_peer_observation_v1"}'::jsonb),
- CHECK(record->'profile'->'certificate'-ARRAY['fingerprint','hostname','notBefore','notAfter']='{}'::jsonb),
- CHECK(record->'profile'->'bootstrap'-ARRAY['source','evidenceDigest','fingerprint']='{}'::jsonb AND record->'profile'->'bootstrap'->>'source'='owner_out_of_band' AND record->'profile'->'bootstrap'->>'evidenceDigest' ~ '^[a-f0-9]{64}$'),
- CHECK(record->'staged'='null'::jsonb OR (record->'staged'-ARRAY['epoch','certificate','bootstrap','overlapStartsAt','cutoverAt','expiresAt']='{}'::jsonb AND
-   record->'staged'->'certificate'-ARRAY['fingerprint','hostname','notBefore','notAfter']='{}'::jsonb AND record->'staged'->'bootstrap'-ARRAY['source','evidenceDigest','fingerprint']='{}'::jsonb AND
+ CHECK((record->'profile'->'certificate')-ARRAY['fingerprint','hostname','notBefore','notAfter']='{}'::jsonb),
+ CHECK((record->'profile'->'bootstrap')-ARRAY['source','evidenceDigest','fingerprint']='{}'::jsonb AND record->'profile'->'bootstrap'->>'source'='owner_out_of_band' AND record->'profile'->'bootstrap'->>'evidenceDigest' ~ '^[a-f0-9]{64}$'),
+ CHECK(record->'staged'='null'::jsonb OR ((record->'staged')-ARRAY['epoch','certificate','bootstrap','overlapStartsAt','cutoverAt','expiresAt']='{}'::jsonb AND
+   (record->'staged'->'certificate')-ARRAY['fingerprint','hostname','notBefore','notAfter']='{}'::jsonb AND (record->'staged'->'bootstrap')-ARRAY['source','evidenceDigest','fingerprint']='{}'::jsonb AND
    (record->'staged'->>'epoch')::int=high_water_epoch AND high_water_epoch=certificate_epoch+1))
 );
 CREATE INDEX worker_transport_current_pin ON worker_transport_history(workspace_id,host_id,current_pin);

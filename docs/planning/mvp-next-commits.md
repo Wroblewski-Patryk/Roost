@@ -1,5 +1,19 @@
 # Next development work
 
+Owner amendment v29: [native transport persistence](../architecture/worker-transport-admission-v1.md)
+is **DONE: 9/9 PostgreSQL results, 55/55 selected native/source results**.
+Real Prisma/Serializable concurrency (20 attempts per create/stage/cutover/revoke/
+readmit), FK/unique/CHECK constraints, atomic rollback and SQL read-only inspection
+pass. The previously unapplied migration needed a JSON-operator parenthesis fix;
+it then applied with the full 77-file chain. Earlier 76 migrations unchanged.
+Cleanup PASS: owned database absent, three existing database fingerprints equal,
+Roost PostgreSQL exited, backend/Soar unchanged. Production remains BLOCKED and
+all flags false. Exactly one proposed next atom: source-only integration of
+persisted admission with the HTTPS handoff boundary and synthetic denial tests;
+no endpoints, provisioning, default composition or activation. Earlier proposals
+below are historical; native evidence does not qualify governance fixture setup
+or privileged SQL/whole-database rollback protection.
+
 Current owner amendment v28: [Prisma transport persistence](../architecture/worker-transport-admission-v1.md)
 is **DONE for source/synthetic qualification: 10/10 adapter results, 46/46 source
 regressions**. Immutable generations/history, one workspace/host head, revocation,
