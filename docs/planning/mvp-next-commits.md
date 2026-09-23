@@ -1,5 +1,19 @@
 # Next development work
 
+Current owner amendment v23: [native Worker credential lifecycle](../architecture/worker-credential-lifecycle-v1.md)
+is **DONE for this database atom: 12/12 PostgreSQL/HTTP results, 173/173 regressions,
+cleanup and preservation PASS**. The 75-migration chain qualifies owner-decision/auth,
+generation races, ticket/claim invalidation and full post-write rollback. Two CASE
+comparisons in the previously unapplied last migration were fixed after native
+parsing failed and rolled back; earlier 74 migrations are unchanged. Production
+provisioning/delivery/TLS/launch remain BLOCKED; no activation, six flags false.
+**Exactly one proposed next atom:** specify and synthetically qualify secure
+one-time Worker credential handoff bound to an accepted primary-owner decision,
+exact HTTPS origin, installation and registered host, including lost-delivery
+recovery and replay denial. Keep default composition unavailable. No real keys,
+secret store, TLS deployment, Worker/provider launch or activation.
+Stop after that delivery contract qualification; older next-step proposals are historical.
+
 Current owner amendment v22: [Worker credential lifecycle](../architecture/worker-credential-lifecycle-v1.md)
 is **DONE for source/synthetic qualification: 173/173 tests (55 new + 118
 regressions)**. Existing ApiKey/host/governed-decision components now define

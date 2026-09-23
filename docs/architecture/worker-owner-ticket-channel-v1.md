@@ -1,5 +1,14 @@
 # Worker owner-ticket consume and status contract v1
 
+Current amendment v23: [native credential lifecycle](worker-credential-lifecycle-v1.md)
+qualifies the 75-migration chain, owner-decision/auth gates, concurrent generations
+and atomic ticket/claim invalidation with synthetic delivery. 12/12 native results,
+173/173 regressions and cleanup/preservation PASS. Two SQL CASE comparisons were
+fixed in the previously unapplied final migration; the prior 74 remain unchanged.
+Real provisioning/transport/launch stay blocked and six flags remain false.
+The single next atom is the source/synthetic secure one-time credential handoff
+contract, without real keys, TLS deployment or launch. Older states below are historical.
+
 Current amendment v22 adds the [owner-controlled credential lifecycle](worker-credential-lifecycle-v1.md).
 The source/synthetic result is 173/173 tests; the new 75th migration is unexecuted.
 Bound Worker credentials now permit exactly claim, consume and status, with a

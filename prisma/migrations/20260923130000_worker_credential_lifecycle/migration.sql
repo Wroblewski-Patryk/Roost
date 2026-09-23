@@ -73,7 +73,7 @@ BEGIN
  IF declaration IS NULL OR NOT decision_primary_owner(NEW.workspace_id,NEW.actor_user_id) OR accepted_by IS DISTINCT FROM NEW.actor_user_id
   OR accepted_agent IS NOT NULL OR authority->>'status' IS DISTINCT FROM 'owner_reserved' OR rev IS DISTINCT FROM (NEW.snapshot->>'decisionRevision')::int
   OR declaration IS DISTINCT FROM NEW.snapshot->'intent' OR (declaration->>'validUntil')::timestamptz<=clock_timestamp()
-  OR declaration->>'action' IS DISTINCT FROM CASE WHEN NEW.action='create' THEN 'enroll' ELSE NEW.action END
+  OR declaration->>'action' IS DISTINCT FROM (CASE WHEN NEW.action='create' THEN 'enroll' ELSE NEW.action END)
   OR declaration->>'installationId' IS DISTINCT FROM k.worker_installation_id::text OR declaration->>'hostId' IS DISTINCT FROM k.worker_host_id::text
   OR declaration->>'workspaceId' IS DISTINCT FROM k.workspace_id::text
   OR k.scopes IS DISTINCT FROM '["agent-runtime:claim"]'::jsonb
@@ -94,7 +94,7 @@ BEGIN
     THEN RAISE EXCEPTION 'worker_credential_audit_transition'; END IF;
   ELSIF old_key.active OR old_key.revoked_at IS NULL OR old_key.workspace_id IS DISTINCT FROM k.workspace_id OR old_key.worker_host_id IS DISTINCT FROM k.worker_host_id
    OR old_key.worker_installation_id IS DISTINCT FROM k.worker_installation_id OR old_key.worker_binding_epoch IS DISTINCT FROM (declaration->>'expectedEpoch')::int
-   OR old_key.credential_version IS DISTINCT FROM (declaration->>'expectedVersion')::int+CASE WHEN NEW.action='rotate' THEN 1 ELSE 0 END
+   OR old_key.credential_version IS DISTINCT FROM (declaration->>'expectedVersion')::int+(CASE WHEN NEW.action='rotate' THEN 1 ELSE 0 END)
    OR encode(sha256(convert_to('roost-worker-ticket-v1:'||old_key.key_hash,'UTF8')),'hex') IS DISTINCT FROM declaration->>'expectedFingerprint'
    THEN RAISE EXCEPTION 'worker_credential_audit_transition'; END IF;
  END IF;

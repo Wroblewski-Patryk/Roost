@@ -33,10 +33,12 @@ import { env } from "../config/env";
 import { registerFindingTests } from "./finding-api";
 import { registerFixedPublicTests, fixedAdmissionCommits } from "./fixed-public-api";
 import { registerOwnerTicketDatabaseTests } from "./owner-ticket-api";
+import { registerWorkerCredentialDatabaseTests } from "./worker-credential-api";
 
 registerFindingTests({request,registerOwner,prepareReviewFixture,decisionFixtureProposal,decisionFixtureProof,refreshCompositionRisk,submissionInput});
 registerOwnerTicketDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof });
 registerOwnerTicketDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof }, true);
+registerWorkerCredentialDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof, refreshCompositionRisk });
 registerFixedPublicTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, getBaseUrl: () => baseUrl, restoreAdmission: () => providerAdmissionMock.mock.mockImplementation(realProviderAdmission), restoreLegacyAdmission: () => providerAdmissionMock.mock.mockImplementation(syntheticProviderAdmission) });
 
 const realFetch = globalThis.fetch.bind(globalThis);
@@ -740,13 +742,14 @@ test("production recognizes installation-configured web and API domains", async 
 });
 
 before(async () => {
-  if (process.env.OWNER_TICKET_TEST_DATABASE) {
+  if (process.env.OWNER_TICKET_TEST_DATABASE || process.env.WORKER_CREDENTIAL_TEST_DATABASE) {
     assertSafeTestDatabase();
-    const name = process.env.OWNER_TICKET_TEST_DATABASE;
-    assert.match(name, /^companycore_test_owner_ticket_[a-f0-9]{32}$/);
+    const workerCredential = !!process.env.WORKER_CREDENTIAL_TEST_DATABASE;
+    const name = (workerCredential ? process.env.WORKER_CREDENTIAL_TEST_DATABASE : process.env.OWNER_TICKET_TEST_DATABASE)!;
+    assert.match(name, workerCredential ? /^companycore_test_worker_cred_[a-f0-9]{32}$/ : /^companycore_test_owner_ticket_[a-f0-9]{32}$/);
     assert.equal(new URL(process.env.DATABASE_URL!).pathname, "/" + name);
     const row = (await prisma.$queryRaw<any[]>`SELECT shobj_description(oid,'pg_database') AS marker FROM pg_database WHERE datname=${name}`)[0];
-    assert.equal(row?.marker, "owner-ticket-qualification:" + name.split("_").at(-1));
+    assert.equal(row?.marker, (workerCredential ? "worker-credential-qualification:" : "owner-ticket-qualification:") + name.split("_").at(-1));
     // An explicitly owned database supports repeated qualification without
     // deleting terminal ticket/decision history or resetting existing data.
   } else await resetDatabase();

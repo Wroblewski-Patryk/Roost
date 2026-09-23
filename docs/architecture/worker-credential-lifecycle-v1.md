@@ -1,11 +1,12 @@
 # Owner-controlled Worker credential lifecycle v1
 
-Owner amendment v22, 2026-09-23. **DONE: source contract and synthetic service,
-HTTP/auth and persistence-model qualification (55 new tests, 118 regressions).
-PARTIAL: native persistence. BLOCKED: real provisioning and secure delivery.**
-The additive migration is not applied. No database, Docker, production connection,
-Worker, provider or model is started. All six activation/readiness flags stay false.
-The v21 native result qualifies its earlier 74-migration code/schema only.
+Owner amendment v23, 2026-09-23. **DONE for bounded native qualification:
+12/12 PostgreSQL/HTTP results (11 scenarios plus parent), 173/173 synthetic
+regressions. BLOCKED: real provisioning, secure delivery/TLS and launch.**
+The 75-migration chain is qualified on one owned disposable database with
+synthetic keys/evidence. No production migration, Worker, provider or model runs.
+All six activation/readiness flags stay false. Default composition remains closed.
+The v22 source-only and v21 ticket-only results are historical.
 
 ## Existing components and closed default composition
 
@@ -99,9 +100,9 @@ No process is presumed stopped and no replacement is started automatically.
 
 The credential transition, invalidation, replacement and owner audit share one
 transaction. An error after any step rolls back all model state. The native
-adapter uses Serializable isolation and the existing Ready fence. Its SQL guards,
-real concurrency and interaction with native recovery still need PostgreSQL
-qualification; in-memory rollback is not evidence that the migration works.
+adapter uses Serializable isolation and the existing Ready fence. The v23 native
+tests exercise SQL guards, real concurrency and ticket/claim recovery state in
+PostgreSQL. In-memory rollback alone remains insufficient evidence.
 
 ## One-time synthetic response and disclosure limits
 
@@ -138,15 +139,63 @@ mutation, lost delivery, bounded errors, no raw material in persisted/audit stat
 and no target process effect. Target process APIs are forbidden in the positive
 scenario. TypeScript build, route lint and documentation checks pass.
 
-The [additive migration](../../prisma/migrations/20260923130000_worker_credential_lifecycle/migration.sql)
-is reviewed but **unexecuted**. Prior migration files and Prisma table layout are
-unchanged. No full API suite, database/Docker operation, TLS test, private profile,
-model store, retained root, push or deploy is touched. Eight pre-existing dirty
-documents and the unread design artifact are preserved.
+## Native PostgreSQL qualification
 
-**Exactly one proposed next atom:** qualify this forward migration and the native
-owner-decision/auth/credential lifecycle, atomic ticket/claim invalidation,
-concurrency and rollback on an explicitly authorized owned disposable PostgreSQL
-database, using only synthetic keys/evidence and full preservation/cleanup audits.
-No real provisioning, secure delivery/TLS claim, Worker/provider launch or activation.
-Stop after that database qualification.
+The [native suite](../../src/tests/worker-credential-api.ts) uses real Prisma,
+signed human tokens, API-key middleware, governed proposal/acceptance, the Ready
+fence and ticket service behind loopback HTTP. A claim probe runs the production
+credential guard inside a Ready transaction; it does not enable the full Worker
+loop or bypass its production activation gate. Signer, physical evidence and
+credential delivery stay synthetic and ephemeral. Target process APIs are blocked.
+
+The [forward migration](../../prisma/migrations/20260923130000_worker_credential_lifecycle/migration.sql)
+initially failed SQL parsing at two CASE comparisons. Its transaction rolled back
+completely. Parenthesizing those expressions repaired the **previously unapplied**
+75th migration; the prior 74 files were unchanged. It then applied in the same
+owned database, without reset, reseeding, disabling triggers or a second database.
+All 75 applied file hashes remained unchanged for the rest of qualification.
+No migration already applied before this atom was edited.
+
+Native evidence covers:
+
+- Twenty concurrent enrollments: one durable generation and one secret response;
+  other requests conflict or replay metadata. Twenty rotations: one new current
+  generation, with parallel old-key claim/status requests. Twenty rotate/revoke
+  requests likewise have one winning transition.
+- Concurrent real ticket consumption and revocation: a ticket becomes spent or
+  revoked exactly once; no resurrection. After the terminal credential commit,
+  old-key claim/consume/status all deny. Unused tickets revoke atomically and
+  prepared old proof cannot be used by the replacement key.
+- Rollback after actual revoke, invalidation, insertion, ledger/Event writes and
+  before commit restores the complete snapshot, including Ready fence, tickets,
+  journal, bindings and execution state. PostgreSQL also rejects tampered owner,
+  revision and intent at the final audit insert, rolling back earlier writes.
+- Primary-owner/fresh-auth/accepted-decision gates, generation drift, expiry,
+  host reassignment/disable/deletion, installation/workspace drift, terminal
+  history, duplicate commands and missing delivery dependencies fail closed.
+- All public tables are scanned for every generated raw synthetic key; none is
+  persisted in credentials, journal, Events or audit. Logs and serialized prepared
+  fixtures contain none; generated buffers are wiped. Delivery occurs once after
+  commit, while replay returns metadata. No launch receipt or target process.
+
+The full API/web suite, production migration, real secure delivery and network TLS
+qualification are not run. Native evidence does not authorize real credentials,
+provider execution or activation. Eight pre-existing dirty documents, the unread
+design artifact, private profiles/model storage and retained roots stay untouched.
+
+Cleanup/preservation **PASS**: both HTTP servers and Prisma connections closed.
+The owned loopback relay was identity-checked, had zero children and was stopped;
+no relay process remained. Before DROP, exact database name/OID/owner/comment and
+zero active sessions were verified, followed by verified absence. Before/after
+logical fingerprints of three existing databases (214 table/sequence entries),
+schema, catalog and role metadata match. Container/image/volume/network inventory
+matches; the existing database container is back to exited, unrelated services
+and the stopped backend retain their original states. No new container, image,
+volume, role or persistent database remains. No push or deploy.
+
+**Exactly one proposed next atom:** specify and synthetically qualify secure
+one-time Worker credential handoff, bound to the accepted primary-owner decision,
+exact HTTPS origin, installation and registered host, including lost-delivery
+recovery and replay denial. Keep default composition unavailable; no real keys,
+secret store, TLS deployment, Worker/provider launch or activation. Stop after
+that delivery contract qualification.

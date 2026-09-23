@@ -1,5 +1,18 @@
 # Foundation requirements traceability
 
+RF-HOST-035 owner amendment v23: [native Worker credential lifecycle](worker-credential-lifecycle-v1.md)
+is **DONE for bounded PostgreSQL/HTTP qualification: 12/12 results, 173/173
+regressions, cleanup/preservation PASS**. Real owner/decision/auth gates, 20-way
+enrollment/rotation/rotate-revoke races, concurrent old-key use, native audit denial,
+atomic ticket/claim invalidation and post-write rollback are exercised. All 75
+migrations apply after repairing two CASE comparisons in the previously unapplied
+last migration; prior 74 unchanged. Real provisioning/delivery/TLS/launch remain
+BLOCKED, default dependencies absent, six flags false. Exactly one next atom:
+source/synthetic secure one-time credential handoff bound to accepted primary-owner
+decision, HTTPS origin, installation and host, including lost-delivery/replay
+handling; no real keys, secret store, TLS deployment or launch. Earlier states below
+are historical.
+
 RF-HOST-035 owner amendment v22: [Worker credential lifecycle](worker-credential-lifecycle-v1.md)
 is **DONE for source/synthetic qualification: 173/173 tests (55 new + 118
 regressions)**. Fresh primary owner plus exact accepted decision controls existing

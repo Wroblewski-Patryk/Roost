@@ -1,5 +1,15 @@
 # Architecture Source Of Truth
 
+Owner amendment v23: [native Worker credential qualification](worker-credential-lifecycle-v1.md)
+is DONE for the bounded database atom: 12/12 PostgreSQL/HTTP results and 173/173
+synthetic regressions; cleanup/preservation PASS. The 75-migration chain runs in
+one owned disposable database. Native parsing found two CASE comparisons in the
+previously unapplied final migration; parentheses repair them after full rollback.
+Prior 74 migrations remain unchanged. Owner/decision gates, generation races,
+atomic ticket/claim invalidation and rollback are qualified with synthetic keys.
+Real provisioning/transport/launch stay blocked; default composition and six flags
+remain unchanged. The source-only and next-step statements below are historical.
+
 Owner amendment v22: [owner-controlled Worker credentials](worker-credential-lifecycle-v1.md)
 extends existing ApiKey, host and governed decisions with enrollment, rotation and
 terminal revocation. Fresh primary-owner authentication and an exact accepted

@@ -1,5 +1,20 @@
 # Self-hosting and private installation configuration
 
+Owner amendment v23: [native credential lifecycle qualification](../architecture/worker-credential-lifecycle-v1.md)
+applies the 75-migration chain only in one owned disposable database. The final
+migration's first attempt failed SQL parsing and rolled back completely; two
+CASE comparisons were parenthesized before its first successful application.
+No migration already applied before this atom was changed; the prior 74 files
+remain intact. No reset, business-data seeding, role, container, image or volume
+creation occurred. Native owner-decision/auth, invalidation, races and rollback
+pass. Default generator/hasher/delivery remain absent; no production provisioning.
+Cleanup verified database name/OID/owner/comment/zero sessions and its absence
+after DROP. Existing logical data, schema, sequences, catalog and roles match
+the baseline; Docker inventory matches. The database container is back to exited,
+unrelated services/backend unchanged, both HTTP servers and owned relay closed
+with no remaining child. No deployment, TLS qualification or activation.
+Earlier migration/qualification states below are historical.
+
 Owner amendment v22: [Worker credential lifecycle](../architecture/worker-credential-lifecycle-v1.md)
 adds a forward-only 75th migration for guards, atomic ticket/claim invalidation
 and the existing append-only credential ledger. It is **unexecuted** and must be

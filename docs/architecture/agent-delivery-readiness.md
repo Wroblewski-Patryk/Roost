@@ -1,5 +1,20 @@
 # Gotowość połączenia Roost z agentami
 
+Aktualizacja v23: [natywna kwalifikacja poświadczeń Workera](worker-credential-lifecycle-v1.md)
+— **DONE w tym zakresie: 12/12 wyników PostgreSQL/HTTP (11 scenariuszy + test
+nadrzędny), 173/173 regresje, sprzątanie i zachowanie środowiska PASS.**
+Łańcuch 75 migracji sprawdzono w jednej własnej bazie tymczasowej. Poprawiono
+dwa porównania CASE w niewykonanej wcześniej ostatniej migracji po pełnym rollbacku;
+74 wcześniejsze pozostały bez zmian. Rzeczywiste transakcje potwierdzają bramki
+owner/decision/auth, wyścigi generacji, odwołanie ticket/claim, rollback oraz brak
+surowych kluczy w persystencji i logach. Domyślne wydawanie kluczy nadal niedostępne.
+Realne provisioning, bezpieczne dostarczenie/TLS i launch są BLOCKED; sześć flag false.
+Jeden następny atom: źródłowy kontrakt i syntetyczna kwalifikacja bezpiecznego
+jednorazowego dostarczenia poświadczenia, z powiązaniem decyzji primary owner,
+dokładnego origin HTTPS, instalacji i hosta, odzyskaniem po utracie odpowiedzi oraz
+odmową replay. Bez realnych kluczy, magazynu sekretów, wdrożenia TLS, startu ani aktywacji.
+Potem STOP. Poniższe wyniki i propozycje są historyczne.
+
 Aktualizacja v22: [cykl poświadczeń Workera](worker-credential-lifecycle-v1.md)
 — **DONE: kontrakt i kwalifikacja syntetyczna, 173/173 testy (55 nowych + 118
 regresji). PARTIAL: natywna persystencja. BLOCKED: rzeczywiste wydawanie kluczy,

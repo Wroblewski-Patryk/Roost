@@ -11,7 +11,8 @@ original value. Legacy tokens without it require another login for this lifecycl
 Ordinary human access remains governed by the current membership below.
 The three lifecycle commands are unavailable by default because no synthetic or
 production generator, hasher or delivery is configured. Source/synthetic tests
-pass; native persistence and real provisioning are not qualified.
+and bounded native PostgreSQL/HTTP qualification pass (v23); real provisioning,
+secure delivery/TLS and launch are not qualified.
 
 ## Decision
 

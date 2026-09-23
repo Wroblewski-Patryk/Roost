@@ -1,5 +1,16 @@
 # Local Codex Agent Runtime
 
+Owner amendment v23: [native credential lifecycle qualification](worker-credential-lifecycle-v1.md)
+passes 12/12 PostgreSQL/HTTP results and 173/173 regressions. Bound claim checks
+run inside the Ready transaction; real consume/status race credential revocation.
+Rotations/revocations invalidate unused tickets and active claim context atomically,
+retain original attempt/checkpoint/lease identity and permit no automatic restart.
+Failure after actual writes or a rejected native audit restores all prior authority.
+The chain of 75 migrations is qualified after repairing syntax in the previously
+unapplied last migration; cleanup/preservation PASS. Real credential delivery,
+TLS and Worker/provider launch remain blocked; no process or activation, six flags
+false. Earlier qualification states and next-step proposals are historical.
+
 Owner amendment v22: [Worker credential lifecycle](worker-credential-lifecycle-v1.md)
 adds source-only primary-owner enrollment/rotation/revocation and a synthetic
 delivery seam, unavailable in application composition. Bound credentials permit
