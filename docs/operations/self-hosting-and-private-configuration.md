@@ -1,5 +1,16 @@
 # Self-hosting and private installation configuration
 
+Owner amendment v33: [native bootstrap ledger qualification](../architecture/worker-bootstrap-ledger-v1.md)
+is **DONE: 10/10 PostgreSQL results, 86/86 source regressions, 96/96 total**.
+The full 78-file migration chain applied only to one owned disposable database;
+no migration was edited. Real constraints, concurrency, fence locking, isolation,
+atomic rollback/audit and READ ONLY checks pass. Cleanup PASS: owned database and
+helpers absent, three existing DB fingerprints equal, PostgreSQL stopped again,
+backend/Soar unchanged. Production authority/delivery remain PARTIAL; production
+BLOCKED and all flags false. Exactly one next recommendation: source-only canonical
+BootstrapAuthoritySource integration and fail-closed tests, without inventing
+missing epochs/revocation facts or activating runtime. Earlier proposals are historical.
+
 Owner amendment v32: [durable bootstrap ledger](../architecture/worker-bootstrap-ledger-v1.md)
 is **DONE source-only: 13/13 adapter results, 86/86 selected source results**.
 Five additive tables are proposed in an UNAPPLIED migration; the prior 77 migrations

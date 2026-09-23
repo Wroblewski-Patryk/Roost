@@ -1,5 +1,16 @@
 # Gotowość połączenia Roost z agentami
 
+Aktualizacja v33: [natywna kwalifikacja rejestru bootstrap](worker-bootstrap-ledger-v1.md)
+— **DONE: 10/10 wyników PostgreSQL, 86/86 regresji źródłowych, 96/96 łącznie**.
+Pełne 78 migracji zastosowano tylko w jednej własnej bazie testowej; żadnej migracji
+nie poprawiano. Potwierdzono constraints, concurrency, blokady, izolację, rollback,
+atomowy audyt i odczyty bez zapisów. Cleanup PASS: baza i własne pliki usunięte,
+odciski trzech istniejących baz identyczne; PostgreSQL znów zatrzymany, backend
+oraz Soar bez zmian. Kanoniczne źródło autoryzacji i delivery nadal PARTIAL,
+produkcja BLOCKED, wszystkie flagi false. Jeden następny proponowany atom:
+źródłowa integracja kanonicznego BootstrapAuthoritySource z testami odmów; brakujące
+epoki/revocation pozostają blokadą. Bez aktywacji. Starsze propozycje są historyczne.
+
 Aktualizacja v32: [trwały rejestr bootstrap](worker-bootstrap-ledger-v1.md)
 — **DONE źródłowo: 13/13 wyników adaptera, 86/86 wyników łącznie**. Adapter
 rezerwuje generacje i zapisuje historię z audytem atomowo; odczyty nic nie zmieniają.
