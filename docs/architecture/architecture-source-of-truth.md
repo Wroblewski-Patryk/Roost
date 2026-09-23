@@ -1,5 +1,13 @@
 # Architecture Source Of Truth
 
+Owner amendment v18: [owner-ticket services and persistence](server-owner-ticket-v1.md)
+are implemented with an injected test signer and no runtime composition.
+Status PARTIAL: 50 synthetic service/HTTP/adapter tests and four provider tests pass;
+PostgreSQL migration/CAS/native Ready integration are unqualified (Engine absent).
+Four existing-runtime routes fail closed by default. No private key generation,
+Worker authority or launch receipt; six flags remain false. The additive SQL
+retains immutable ticket/attempt/decision tombstones and an atomic journal.
+
 Owner amendment v17: [external Roost owner tickets](server-owner-ticket-v1.md)
 replace local writable-key authority as the selected production design.
 Private signing capability stays on the existing server, with owner-only decision

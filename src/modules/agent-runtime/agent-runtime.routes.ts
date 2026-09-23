@@ -1,4 +1,5 @@
 import { nativeBoundaryResultBlocked } from "./task-review-contract";
+import { ownerTicketHandler } from "./owner-ticket-http";
 import { executionProviderRegistry, projectProvider, sanitizeProviderMetadata } from "./execution-provider";
 import { interviewView,interviewCommand } from "./task-interview";
 import { clarificationView,clarificationCommand } from "./task-clarification";
@@ -144,6 +145,11 @@ async function applicationForTask(workspaceId: string, taskId: string, requested
 }
 
 export const agentRuntimeRouter = Router();
+// Intentionally unavailable until server composition/transport is qualified.
+agentRuntimeRouter.post("/owner-tickets/issue", ownerTicketHandler("issue"));
+agentRuntimeRouter.post("/owner-tickets/consume", ownerTicketHandler("consume"));
+agentRuntimeRouter.post("/owner-tickets/revoke", ownerTicketHandler("revoke"));
+agentRuntimeRouter.post("/owner-tickets/rotate", ownerTicketHandler("rotate"));
 agentRuntimeRouter.use("/capability-suspensions", capabilitySuspensionRouter);
 
 agentRuntimeRouter.get("/tasks/:id/interviews",asyncHandler(async(req,res)=>{
@@ -362,6 +368,7 @@ agentRuntimeRouter.post("/executions/:id/actions/recover", asyncHandler(async (r
   const updated = await readyTransaction(async (tx) => {
     const ready = await inspectReady(tx, req.auth!.workspaceId, existing.taskId, existing);
     if (ready.error) return { error: ready.error };
+    if (await tx.trustedProviderTicket.count({ where: { executionId: existing.id, workspaceId: existing.workspaceId } })) return { error: "owner_ticket_recovery_requires_review" };
     const changed = await tx.agentExecution.updateMany({ where: { id: existing.id, checkpointVersion: input.expectedVersion, leaseToken: existing.leaseToken, leaseExpiresAt: { gt: new Date() }, cancelRequestedAt: null, status: { in: ["claimed", "running"] } }, data: { checkpoint: json(checkpoint), checkpointVersion: { increment: 1 }, leaseToken: token, leaseExpiresAt: new Date(Date.now() + 90_000), lastHeartbeatAt: new Date(), errorState: Prisma.DbNull } });
     if (!changed.count) return null;
     const mode = checkpoint.stage === "prepared" ? "resume_from_checkpoint" : "restart_same_attempt";
@@ -639,6 +646,7 @@ agentRuntimeRouter.post("/executions/:id/actions/retry", asyncHandler(async (req
   const result = await readyTransaction(async tx => {
     const ready = await inspectReady(tx, req.auth!.workspaceId, existing.taskId, existing);
     if (ready.error) return { error: ready.error };
+    if (await tx.trustedProviderTicket.count({ where: { executionId: existing.id, workspaceId: existing.workspaceId } })) return { error: "owner_ticket_recovery_requires_review" };
     if (await tx.agentExecution.count({ where: { workspaceId: req.auth!.workspaceId, taskId: existing.taskId, status: { in: ["queued", "claimed", "running", "waiting_for_approval"] } } })) return { error: "task_agent_execution_active" };
     return { execution: await tx.agentExecution.create({ data: { workspaceId: existing.workspaceId, taskId: existing.taskId, applicationId: existing.applicationId, prompt: existing.prompt, baseBranch: existing.baseBranch, metadata: existing.metadata as Prisma.InputJsonValue, ...actor(req) }, include: executionInclude }) };
   });

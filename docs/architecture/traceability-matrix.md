@@ -1,5 +1,14 @@
 # Foundation requirements traceability
 
+RF-HOST-035 owner amendment v18: [server owner-ticket implementation](server-owner-ticket-v1.md)
+is PARTIAL. DONE: source service/HTTP boundary, Prisma adapter, additive metadata
+ledger/journal migration and 50 synthetic tests (one of 20 consumes commits).
+BLOCKED: PostgreSQL migration/CAS and native owner/decision/Ready integration;
+Engine unavailable, DB test skipped. Four provider regressions pass. Missing
+signer/host evidence fails closed; consume is not a launch receipt. Six flags
+false, no real secret/provider/transport activation. Next atom is database and
+native-context qualification on an available disposable local test database.
+
 RF-HOST-035 owner amendment v17:
 [server owner-ticket v1](server-owner-ticket-v1.md) selects the existing Roost
 installation as issuer. Source validators bind the exact existing acceptance,

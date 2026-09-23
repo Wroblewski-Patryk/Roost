@@ -1,5 +1,13 @@
 # Local Codex Agent Runtime
 
+Owner amendment v18: [owner-ticket implementation](server-owner-ticket-v1.md)
+adds owner-only issue/consume/revoke/rotate service handlers and a Serializable
+Prisma adapter. The application supplies no signer/evidence composition, so all
+four routes remain unavailable. Consume cannot launch work or renew an attempt;
+recovery/retry explicitly reject ticket-bound executions. Synthetic tests pass;
+real database/native-context qualification remains BLOCKED by absent Docker.
+PARTIAL, six flags false; transport and Worker consumption are still future work.
+
 Owner amendment v17:
 [server owner-ticket contract](server-owner-ticket-v1.md) selects the existing
 Roost API as issuer, leaving Worker only public verification material and short

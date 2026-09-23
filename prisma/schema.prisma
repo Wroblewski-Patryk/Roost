@@ -445,6 +445,7 @@ enum FunctionalState {
 }
 
 model User {
+  ownerTickets TrustedProviderTicket[]
   preferredLanguage String? @map("preferred_language")
   admissionScopes TaskAdmissionScope[]
   admissionEvidence TaskAdmissionEvidence[]
@@ -472,6 +473,8 @@ model User {
 }
 
 model Workspace {
+  ownerTicketKey TrustedProviderTicketKey?
+  ownerTickets TrustedProviderTicket[]
   canonicalLanguage String? @map("canonical_language")
   admissionScopes TaskAdmissionScope[]
   admissionEvidence TaskAdmissionEvidence[]
@@ -1918,6 +1921,7 @@ model AgentHost {
 }
 
 model AgentExecution {
+  ownerTickets TrustedProviderTicket[]
   capabilityGrants TaskCapabilityGrant[]
   reviewDecision    TaskReviewDecision?
   id                String                @id @default(uuid()) @db.Uuid
@@ -2757,6 +2761,7 @@ model TaskList {
 }
 
 model Task {
+  ownerTickets TrustedProviderTicket[]
   admissionScopes TaskAdmissionScope[]
   admissionEvidence TaskAdmissionEvidence[]
   admissionHead TaskAdmissionHead?
@@ -2965,6 +2970,7 @@ model TaskDecisionEffect {
 }
 
 model Decision {
+  ownerTickets TrustedProviderTicket[]
   id           String     @id @default(uuid()) @db.Uuid
   workspaceId  String?    @map("workspace_id") @db.Uuid
   workspace    Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -3406,4 +3412,49 @@ model TaskAdmissionEvidence {
   @@unique([workspaceId,requestId])
   @@index([scopeId,operation,gate,version(sort:Desc)],map:"task_admission_evidence_scope")
   @@map("task_admission_evidence")
+}
+
+// Only public digests and lifecycle metadata; never signing material or payloads.
+model TrustedProviderTicketKey {
+  workspaceId String @id @map("workspace_id") @db.Uuid
+  workspace Workspace @relation(fields:[workspaceId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  installationId String @map("installation_id") @db.Uuid
+  keyId String @map("key_id")
+  epoch Int
+  publicKeyDigest String @map("public_key_digest")
+  @@map("trusted_provider_ticket_keys")
+}
+model TrustedProviderTicket {
+  id String @id @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  workspace Workspace @relation(fields:[workspaceId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  installationId String @map("installation_id") @db.Uuid
+  taskId String @map("task_id") @db.Uuid
+  task Task @relation(fields:[taskId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  executionId String @unique @map("execution_id") @db.Uuid
+  execution AgentExecution @relation(fields:[executionId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  attempt Int
+  decisionId String @map("decision_id") @db.Uuid
+  decision Decision @relation(fields:[decisionId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  decisionRevision Int @map("decision_revision")
+  ownerId String @map("owner_id") @db.Uuid
+  owner User @relation(fields:[ownerId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  keyId String @map("key_id")
+  keyEpoch Int @map("key_epoch")
+  digest String @unique
+  nonceDigest String @unique @map("nonce_digest")
+  acceptanceDigest String @map("acceptance_digest")
+  contextDigest String @map("context_digest")
+  claimDigest String @map("claim_digest")
+  challenge String
+  issuedAt DateTime @map("issued_at") @db.Timestamptz(6)
+  notBefore DateTime @map("not_before") @db.Timestamptz(6)
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(6)
+  state String
+  version Int
+  consumeId String? @unique @map("consume_id") @db.Uuid
+  consumedAt DateTime? @map("consumed_at") @db.Timestamptz(6)
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(6)
+  @@unique([workspaceId,decisionId,decisionRevision])
+  @@map("trusted_provider_tickets")
 }

@@ -1,5 +1,15 @@
 # Next development work
 
+Current owner amendment v18: [owner-only tickets](../architecture/server-owner-ticket-v1.md)
+are PARTIAL: service, HTTP, Prisma transaction and additive migration implemented;
+50 synthetic tests plus four provider regressions pass. Database test skipped:
+Docker Engine unavailable. The default API composition remains unavailable.
+**Exactly one proposed next atom:** qualify forward migration, real concurrent
+consume/rollback and native owner/decision/Ready integration on an available
+local disposable PostgreSQL database with the test signer; correct only findings.
+No provisioning, real keys, HTTPS qualification, provider launch or activation.
+Stop after this atom; all earlier next-step proposals below are historical.
+
 Current owner amendment v17:
 [server-issued owner ticket contract](../architecture/server-owner-ticket-v1.md)
 is source/validator DONE; production integration remains BLOCKED. Existing Roost

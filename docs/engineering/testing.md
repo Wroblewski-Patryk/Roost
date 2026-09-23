@@ -6,6 +6,18 @@ is not enough.
 
 ## Required Commands
 
+Owner-ticket service qualification: `node node_modules/tsx/dist/cli.mjs --test
+src/tests/owner-ticket.test.ts src/tests/owner-ticket-store.test.ts
+src/tests/execution-provider.test.ts` (one command). Signers are ephemeral and
+in memory; concurrency uses a rollback-capable test store. It is not PostgreSQL
+evidence. `node --test scripts/owner-ticket-persistence.test.mjs` uses only an
+already running local Compose PostgreSQL, an owned disposable database and the
+new migration. It skips when Docker is unavailable and never starts Docker.
+Its synthetic historical setup bypasses pre-existing governance triggers only;
+the ticket guards stay enabled throughout the persistence assertions. Native
+Ready/decision API integration needs separate qualification; neither this test
+nor a skip counts as that proof. No provider/model or production access is used.
+
 - Static public JS check: `npm run check:public-js`
 - Route/capability drift check: `npm run check:route-capabilities`
 - Typecheck: `npm run typecheck`

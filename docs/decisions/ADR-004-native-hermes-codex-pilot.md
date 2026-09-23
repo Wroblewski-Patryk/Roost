@@ -1,5 +1,14 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+Owner amendment v18: [server-ticket services](../architecture/server-owner-ticket-v1.md)
+remain inside the existing API/auth/decision/task boundary. Source implementation
+and synthetic service/HTTP tests are complete; PostgreSQL and native-context
+integration are unqualified because the Engine is unavailable. PARTIAL, with
+no signer/evidence installed in application composition and no Worker consume
+identity qualification. Six flags false. Exactly one next atom is qualification
+of the additive migration, real CAS/rollback and native gates on a disposable
+local database with a test signer; no secrets, transport or launch activation.
+
 Owner amendment v17, 2026-09-23: choose the existing Roost API/server as
 [external owner-ticket issuer](../architecture/server-owner-ticket-v1.md).
 A same-user Windows non-exportable key does not by itself separate issuer from

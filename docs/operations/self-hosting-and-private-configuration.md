@@ -1,5 +1,16 @@
 # Self-hosting and private installation configuration
 
+Owner amendment v18: [ticket persistence](../architecture/server-owner-ticket-v1.md)
+adds an unapplied, additive migration for public key metadata and immutable
+ticket/attempt/decision consumption history. No signing secret, environment
+switch, bootstrap key generation or recurring seed is added. API composition has
+no signer/evidence adapter and remains unavailable. PostgreSQL verification was
+blocked by unavailable Docker; do not infer release readiness from synthetic
+tests. Preserve existing credentials, volumes and records. A later rollback must
+disable ticket handling while retaining the ledger; never delete spent rows or
+restore an older ledger to regain authority. Full database rollback is outside
+the journal's anti-replay guarantee and requires separate reconciliation.
+
 Owner amendment v17:
 [server owner-ticket contract](../architecture/server-owner-ticket-v1.md) selects
 existing Roost server secret configuration for future private signing capability.

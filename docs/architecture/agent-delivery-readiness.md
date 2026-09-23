@@ -1,5 +1,14 @@
 # Gotowość połączenia Roost z agentami
 
+Aktualizacja v18, 2026-09-23: [bilety właściciela](server-owner-ticket-v1.md)
+— **PARTIAL**. Kod usług issue/consume/revoke/rotate, adapter Prisma i nowa
+migracja są gotowe; 50 testów syntetycznych oraz cztery regresje providerów PASS.
+Test bazy SKIPPED: Docker Engine niedostępny. Współbieżność udowodniono tylko
+w modelu pamięciowym (1 sukces na 20 prób), nie na PostgreSQL. Endpointy bez
+wstrzykniętego signera/adaptera pozostają niedostępne. Sześć flag false.
+Jeden następny atom: kwalifikacja migracji, CAS/rollback i natywnych bramek
+owner/decision/Ready na dostępnej, jednorazowej lokalnej bazie z testowym signerem.
+
 Aktualizacja v17, 2026-09-23:
 [kontrakt biletu właściciela](server-owner-ticket-v1.md) — **source/validator DONE;
 real issuer/transport/integration BLOCKED**. Wybrany wystawca to istniejący Roost

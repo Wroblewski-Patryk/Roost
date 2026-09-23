@@ -1,5 +1,126 @@
 # Server-issued owner ticket and public verification contract v1
 
+## Current implementation: owner amendment v18
+
+2026-09-23: **PARTIAL**. Source services, HTTP handlers, Prisma adapter and
+additive persistence migration are implemented. Synthetic service/HTTP tests
+pass; PostgreSQL migration/concurrency qualification is **BLOCKED** because the
+local Docker Engine is unavailable. It was not started or repaired. Production
+composition, host evidence, transport and launch admission remain unavailable.
+
+The existing agent-runtime router exposes POST `/owner-tickets/issue`,
+`/owner-tickets/consume`, `/owner-tickets/revoke` and `/owner-tickets/rotate`
+under `/v1/agent-runtime`. Its default composition supplies **no service/signer**:
+authenticated human owners get `503 owner_ticket_unavailable`; API keys, agents,
+Workers and other human roles get `403 owner_ticket_forbidden`. No environment
+switch, key generation, disk key read or request-provided dependency can enable
+these handlers. Tests inject the service and ephemeral in-memory signer directly.
+Even consume is owner-only in this slice. A Worker credential-to-host binding is
+not qualified; the target Worker consumption channel below is still future work.
+
+[Service](../../src/modules/agent-runtime/owner-ticket.ts),
+[HTTP boundary](../../src/modules/agent-runtime/owner-ticket-http.ts) and
+[Prisma adapter](../../src/modules/agent-runtime/owner-ticket-store.ts) remain
+inside existing runtime/auth/decision/task components. No new queue, issuer
+process or PKI is introduced. The adapter checks fresh membership and primary
+ownership, current accepted governed decision/revision and exact task scope,
+accepted-by-primary-owner provenance, supersession, live claim/host/attempt,
+Ready, risk, procedure, review and source revision gates. It requires an
+independent server-injected host-evidence adapter for physical Writer, sealed
+input, runtime/profile/Job evidence and challenge. That adapter is **absent**;
+task metadata, request JSON or a `signatureValidated` boolean cannot replace it.
+The claim digest preserves the existing fixed-program authority digest bytes;
+the additional context digest binds host/checkpoint, Ready and complete contract.
+
+Issue is a separate explicit owner confirmation of the exact acceptance and
+current-context digests, linked to the current governed decision. It cannot infer
+approval from a generic older decision. The immutable ticket row records this
+exact confirmation and actor; no full acceptance body or private material is
+stored. Only managed Hermes and the existing closed fixed-fixture class qualify
+synthetically. Existing model/backend, scope, risk, budgets and release gates
+remain mandatory. Ticket TTL is bounded by 60 seconds, acceptance expiry and the
+original fixture deadline. The signer result is cryptographically checked before
+any row is committed. Missing signer/evidence, drift and uncertainty fail closed.
+
+### Persistence and transaction boundary
+
+[Migration](../../prisma/migrations/20260923090000_trusted_provider_owner_tickets/migration.sql)
+adds `trusted_provider_ticket_keys`, `trusted_provider_tickets` and an append-only
+`trusted_provider_ticket_journal`. The key head contains only installation ID,
+key ID/epoch and public-key digest. Tickets contain public IDs/digests, owner,
+task/execution/attempt/decision/revision, challenge/claim binding, bounded times,
+state, CAS version and consume/revoke timestamps. No private key, lease token,
+raw signature, complete acceptance, secret or diagnostic log is persisted.
+
+Unique execution ID (stricter than per-attempt), decision/revision, ticket ID,
+digest and nonce digest prevent reissue under another ticket or nonce. Terminal
+rows cannot be reset/deleted; immutable binding fields cannot be edited. The
+journal is appended by a database trigger in the head transition transaction.
+The service also writes a minimal existing Event record. Prisma uses the existing
+Ready source fence and Serializable transactions, row lock plus `state=issued`
+and version CAS. Concurrent/unique conflicts deny deterministically as replay;
+there is no automatic transaction retry. Audit, transition and attempt spending
+commit together, and an acknowledgement is returned only after commit.
+
+Consume rechecks signature/digest, owner, key/epoch, current decision/context,
+claim/challenge, task/attempt, not-before/expiry and state. Its signed ack expires
+within five seconds and before ticket expiry. It is **not a launch receipt or
+task success**. The attempt receives a nonretryable reconciliation marker;
+existing recovery/retry commands explicitly refuse ticket-bound executions even
+if older execution JSON is restored. A lost reply after commit remains spent.
+Rollback before commit restores both state and journal, but the server does not
+automatically retry the operation. No provider process is created by either call.
+
+Owner revocation tombstones the unused ticket and its decision/revision binding;
+that same decision cannot issue another ticket. Native decision supersession is
+rechecked on consume. Public key rotation increments the epoch exactly once and
+revokes all unused old tickets in the same transaction, preserving terminal rows.
+Initial key-head insertion has no runtime route or seed in this atom. The SQL
+review found only new tables/functions/triggers, no edits to applied migrations,
+destructive DDL, data reset or recurring seed. It has **not been applied** here.
+These guards do not defend a malicious database superuser or a full database
+snapshot rollback; neither can be claimed solved by an in-database journal.
+
+### Evidence and remaining blockers
+
+50 new service/HTTP/adapter tests plus four existing provider-admission tests pass.
+Twenty concurrent synthetic consume calls yield exactly one commit and nineteen
+replay denials. Tests cover owner-only authority, missing/bad signer, current
+decision/Ready/Writer/input/claim/backend/model/reasoning/scope/risk/budget/release
+drift, expiry, not-before, revocation, rotation, forged digest/signature result,
+cross-workspace/task/attempt bindings, restored request JSON, and rollback at
+spend/audit/commit. The positive service test forbids child-process APIs.
+This uses a rollback-capable **in-memory model**, not real PostgreSQL concurrency.
+
+`npm run validate`, final TypeScript/server build, Prisma schema validation,
+route-capability lint and both existing direct-Codex documentation validators
+passed. 629 local documentation links passed; default context is 120536 bytes.
+The web build retained missing static-asset references and large-chunk warnings;
+no UI or asset changes were made. No migration deploy or full API suite ran.
+
+The dedicated [PostgreSQL persistence test](../../scripts/owner-ticket-persistence.test.mjs)
+is present but **SKIPPED** on the unavailable Engine. It is intended to check the
+forward migration, preservation, real CAS, rollback, old-row restoration denial
+and rotation in an owned disposable database. Its synthetic historical fixture
+bypasses old governance triggers during setup only; it does not qualify native
+Ready/decision HTTP integration. That full integration remains untested too.
+The production signer, current host-evidence reconstruction, public bootstrap,
+HTTPS transport and Worker identity/admission integration are still blocked.
+
+All six flags remain false: `implementationReady`, `executionSupported`,
+`pilotReady`, `liveAdmissionAllowed`, `pilotExecutionAuthorized`,
+`pilotExecutionStarted`. Service output also has `realIssuerQualified=false`,
+`transportQualified=false`, `launchAuthority=false`. Direct/manual Codex gains
+no authority. No real key provisioning, provider/model, VPS, production DB or
+retained temporary root was accessed. No push/deploy or activation was performed.
+
+**Exactly one proposed next atom:** qualify the new migration, real concurrent
+consume/rollback and native owner/decision/Ready integration on an available,
+disposable local PostgreSQL database with the injected test signer. Correct only
+failures found in that qualification. No real keys, transport or launch activation.
+
+## Historical v17 source-contract result
+
 2026-09-23, owner amendment v17. **Mechanism selected; source/schema/validator
 contract DONE. Production issuer, transport and admission integration BLOCKED.**
 Use the existing Roost API installation as the external issuer. The existing
