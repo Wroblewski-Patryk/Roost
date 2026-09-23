@@ -1,5 +1,15 @@
 # Gotowość połączenia Roost z agentami
 
+Aktualizacja v32: [trwały rejestr bootstrap](worker-bootstrap-ledger-v1.md)
+— **DONE źródłowo: 13/13 wyników adaptera, 86/86 wyników łącznie**. Adapter
+rezerwuje generacje i zapisuje historię z audytem atomowo; odczyty nic nie zmieniają.
+Nowa migracja dodaje pięć tabel i pozostaje NIEZASTOSOWANA, wcześniejsze 77 bez zmian.
+Testy wykorzystują tylko mocki; natywny PostgreSQL i produkcyjne źródło autoryzacji
+pozostają PARTIAL. Produkcja/wykonanie BLOCKED, wszystkie flagi false, zwykły admission
+bez zmian. Jeden proponowany następny atom: natywna kwalifikacja rejestru w osobno
+autoryzowanej, izolowanej bazie testowej z syntetyczną autoryzacją i potwierdzonym
+sprzątaniem. Starsze propozycje poniżej są historyczne.
+
 Aktualizacja v31: [bootstrap/recovery admission](worker-bootstrap-admission-v1.md)
 — **DONE jako kontrakt i model źródłowy: 16/16 nowych wyników, 73/73 regresji**.
 Jednorazowy ticket bieżącego właściciela obejmuje pierwszy enrollment lub recovery

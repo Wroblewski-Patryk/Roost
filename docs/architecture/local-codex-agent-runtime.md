@@ -1,5 +1,15 @@
 # Local Codex Agent Runtime
 
+Owner amendment v32: [durable bootstrap ledger](worker-bootstrap-ledger-v1.md)
+is **DONE source-only: 13/13 adapter results, 86/86 selected source results**.
+Five additive tables are proposed in an UNAPPLIED migration; the prior 77 migrations
+are unchanged. Transactional mocks qualify one-time generations, canonical recovery,
+CAS completion, atomic audit/rollback and read purity. Production authority sources
+and native SQL remain PARTIAL; production/execution BLOCKED, all flags false.
+Ordinary admission is unchanged. Exactly one recommended next atom: native ledger
+qualification in an explicitly authorized isolated disposable database with synthetic
+authority sources and cleanup evidence. Earlier successor proposals are historical.
+
 Owner amendment v31: [bootstrap/recovery admission](worker-bootstrap-admission-v1.md)
 is **DONE as a source-only contract/model: 16/16 results, 73/73 source regressions**.
 A separate current-owner ticket admits one first enrollment or terminal recovery;
