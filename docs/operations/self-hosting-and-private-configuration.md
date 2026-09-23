@@ -1,5 +1,15 @@
 # Self-hosting and private installation configuration
 
+Owner amendment v24: [synthetic Worker handoff](../architecture/worker-credential-lifecycle-v1.md)
+adds an unexecuted forward migration for device request state only. It stores
+hashes, fingerprints, bindings, expiry, bounded attempts and terminal outcome;
+never raw device secrets, raw credentials or response bodies. The source adapter
+has no production generator, secure delivery or TLS composition, and the public
+handoff routes remain unavailable. 7/7 synthetic tests pass for one-time delivery,
+ack activation, lost response, recovery, transport drift and lockout. No database,
+Docker, network or deployment action occurs in this atom. Native migration
+qualification is the single next atom; real provisioning and launch remain blocked.
+
 Owner amendment v23: [native credential lifecycle qualification](../architecture/worker-credential-lifecycle-v1.md)
 applies the 75-migration chain only in one owned disposable database. The final
 migration's first attempt failed SQL parsing and rolled back completely; two

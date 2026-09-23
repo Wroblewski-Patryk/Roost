@@ -1,5 +1,17 @@
 # Next development work
 
+Current owner amendment v24: [synthetic Worker credential handoff](../architecture/worker-credential-lifecycle-v1.md)
+is **DONE for source/synthetic qualification: 7/7 tests**. Device request,
+fresh owner approval, exact origin/certificate binding, one-time poll, possession
+ack and lost-response recovery are defined on the existing credential lifecycle.
+Raw values never persist; default handoff routes have no secure transport or
+delivery composition. The additive handoff migration is unexecuted.
+**Exactly one proposed next atom:** qualify that migration and native owner-
+decision/origin/certificate/poll/ack/recovery/concurrency/rollback boundaries on
+one explicitly authorized disposable PostgreSQL database, with synthetic evidence
+only. No real TLS, credentials, secret store, Worker/provider launch or activation.
+Stop after that database qualification; earlier proposals are historical.
+
 Current owner amendment v23: [native Worker credential lifecycle](../architecture/worker-credential-lifecycle-v1.md)
 is **DONE for this database atom: 12/12 PostgreSQL/HTTP results, 173/173 regressions,
 cleanup and preservation PASS**. The 75-migration chain qualifies owner-decision/auth,

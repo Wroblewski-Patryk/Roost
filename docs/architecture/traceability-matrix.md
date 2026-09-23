@@ -1,5 +1,16 @@
 # Foundation requirements traceability
 
+RF-HOST-035 owner amendment v24: [synthetic Worker handoff](worker-credential-lifecycle-v1.md)
+is **DONE for source/synthetic qualification: 7/7 tests**. The device request
+has no credential authority; fresh primary-owner approval binds exact decision,
+installation, host, HTTPS origin and certificate. One concurrent poll discloses
+one bounded synthetic value, ack alone activates the pending generation, and lost
+delivery is terminal with explicit recovery. Raw secrets are absent from state,
+audit and status. The additive handoff migration is unexecuted; native persistence,
+real TLS and launch remain BLOCKED. Exactly one next atom: qualify that migration
+and native poll/ack/recovery/concurrency/rollback on one authorized disposable
+PostgreSQL database using synthetic evidence only. Earlier states are historical.
+
 RF-HOST-035 owner amendment v23: [native Worker credential lifecycle](worker-credential-lifecycle-v1.md)
 is **DONE for bounded PostgreSQL/HTTP qualification: 12/12 results, 173/173
 regressions, cleanup/preservation PASS**. Real owner/decision/auth gates, 20-way

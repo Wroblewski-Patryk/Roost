@@ -13,6 +13,7 @@ import { agentEventsRouter } from "./modules/agent-events/agent-events.routes";
 import { agentRuntimeRouter } from "./modules/agent-runtime/agent-runtime.routes";
 import { agentsRouter } from "./modules/agents/agents.routes";
 import { apiKeysRouter } from "./modules/api-keys/api-keys.routes";
+import { workerHandoffUnavailable } from "./modules/api-keys/worker-handoff-http";
 import { assetsRouter } from "./modules/assets/assets.routes";
 import { authRouter } from "./modules/auth/auth.routes";
 import { clientsRouter } from "./modules/clients/clients.routes";
@@ -233,6 +234,10 @@ export function createApp() {
   app.use("/v1/auth", authRouter);
 
   app.use(apiRateLimiter);
+  // Future device proof uses its own high-entropy challenge, not an existing API
+  // key. These exact routes are hard-closed until a separately qualified adapter.
+  for (const action of ["poll", "ack", "status"] as const)
+    app.post(`/v1/worker-credential-handoff/${action}`, workerHandoffUnavailable);
   app.use(requireApiKey);
   app.use(runtimeRedactionBoundary);
   app.use(enforceHumanWorkspaceAccess);

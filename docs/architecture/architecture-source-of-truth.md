@@ -1,5 +1,16 @@
 # Architecture Source Of Truth
 
+Owner amendment v24: [synthetic Worker credential handoff](worker-credential-lifecycle-v1.md)
+adds a source-only device authorization flow on the existing ApiKey lifecycle.
+The unauthenticated device request stores only hashes and exact installation,
+host, HTTPS-origin and certificate evidence; a fresh primary owner approves the
+exact accepted decision. One serialized poll can disclose a bounded synthetic
+credential once, and only a possession ack activates it. Lost response becomes
+terminal `delivery_unknown`; recovery requires a new explicit decision. **7/7
+handoff tests PASS.** The additive handoff migration is unexecuted; native
+persistence and real TLS remain unqualified, default routes closed, six flags false.
+The v23 native result and earlier next-step statements below are historical.
+
 Owner amendment v23: [native Worker credential qualification](worker-credential-lifecycle-v1.md)
 is DONE for the bounded database atom: 12/12 PostgreSQL/HTTP results and 173/173
 synthetic regressions; cleanup/preservation PASS. The 75-migration chain runs in

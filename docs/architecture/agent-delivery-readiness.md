@@ -1,5 +1,20 @@
 # Gotowość połączenia Roost z agentami
 
+Aktualizacja v24: [syntetyczny handoff poświadczenia Workera](worker-credential-lifecycle-v1.md)
+— **DONE: kontrakt źródłowy i 7/7 testów syntetycznych. PARTIAL: przyszła
+persystencja. BLOCKED: prawdziwy HTTPS/TLS i provisioning.** Instalacja wysyła
+wyłącznie hashe sekretu urządzenia/challenge oraz dokładne wiązanie origin,
+certyfikatu, instalacji i hosta. Świeży primary owner zatwierdza dokładną decyzję;
+po jednym pollu tylko ack może aktywować nieaktywne poświadczenie. Utrata odpowiedzi
+kończy się `delivery_unknown`, bez retransmisji; recovery wymaga nowej jawnej decyzji.
+HTTP, redirect, proxy drift, obcy host/port i certyfikat odrzucane. Handoff nie daje
+task/ticket/claim/provider/launch authority. Nowa migracja jest niewykonana,
+domyślne trasy zamknięte, sześć flag false.
+Jeden następny atom: natywna kwalifikacja nowej migracji i granic owner-decision,
+origin/certificate, poll/ack, recovery, concurrency i rollback na osobnej bazie
+PostgreSQL z syntetycznymi dowodami; bez realnego TLS, kluczy, startu ani aktywacji.
+Potem STOP. Starsze wyniki są historyczne.
+
 Aktualizacja v23: [natywna kwalifikacja poświadczeń Workera](worker-credential-lifecycle-v1.md)
 — **DONE w tym zakresie: 12/12 wyników PostgreSQL/HTTP (11 scenariuszy + test
 nadrzędny), 173/173 regresje, sprzątanie i zachowanie środowiska PASS.**

@@ -1,5 +1,17 @@
 # Owner-controlled Worker credential lifecycle v1
 
+Owner amendment v24, 2026-09-23. **DONE for source-only handoff contract and
+synthetic qualification: 7/7 tests. PARTIAL: future persistence. BLOCKED: real
+HTTPS/TLS, provisioning and launch.** The local device request carries only
+hashes and exact installation/host/origin/certificate evidence; it has no owner
+or task authority. A fresh primary owner approves one exact governed decision.
+The Worker then polls the exact origin with the device secret/challenge and gets
+one bounded synthetic raw credential response. A delivery ack proves possession
+without repeating the secret; only that ack may activate the pending generation.
+The new additive handoff migration is unexecuted. No database, Docker, real
+network, secret store, Worker, provider or model is started; six flags remain false.
+The v23 native lifecycle result below is historical for the earlier migration.
+
 Owner amendment v23, 2026-09-23. **DONE for bounded native qualification:
 12/12 PostgreSQL/HTTP results (11 scenarios plus parent), 173/173 synthetic
 regressions. BLOCKED: real provisioning, secure delivery/TLS and launch.**
@@ -37,6 +49,46 @@ the original authentication time; it cannot turn an old session into fresh proof
 Legacy tokens without that field remain valid for ordinary existing routes but
 cannot operate this lifecycle until the user logs in again. Request JSON and
 headers cannot supply or replace the timestamp.
+
+## One-time device handoff
+
+The handoff uses a bounded device-authorization style flow on the existing
+credential lifecycle. A local installation creates a high-entropy device secret,
+challenge and host fingerprint, then sends only their hashes with its exact
+workspace/installation/registered-host binding. The request has a short TTL,
+bounded poll/approval attempts and an exact HTTPS origin plus certificate
+fingerprint. A user code is a short reference only; it is not credential
+authority. The default HTTP routes remain hard-closed because no secure transport
+adapter is composed.
+
+The current primary owner compares that binding and accepts a strict
+`workerCredential` decision whose `handoff` binding matches the request digest,
+origin, certificate and replacement request. Agents, Workers, API keys and
+non-primary humans cannot approve it. Approval alone creates no ApiKey, ticket,
+claim, task, provider or launch authority.
+
+After approval, the Worker must present the original device secret and challenge
+to the exact trusted origin. HTTP, redirect, proxy-origin drift, alternate host
+or port, certificate mismatch and unvalidated TLS fail closed. At most one
+serialized poll can create a pending hashed-only credential and disclose the raw
+synthetic value. The request becomes spent immediately; concurrent polls and all
+replays return terminal metadata without the value.
+
+The pending credential is inactive until the Worker sends an ack containing the
+credential fingerprint, response digest and an HMAC proof derived from its raw
+credential. The ack is atomic with activation and owner audit. It never carries
+the raw credential. If the response is lost or the ack deadline passes, the
+pending credential is revoked and the request becomes `delivery_unknown`.
+Recovery requires a new explicit owner decision and request; the old request and
+generation are terminal before a replacement may be delivered. There is no
+retransmission of the old value and no state with two current generations.
+
+Persisted handoff state is limited to hashes, fingerprints, binding metadata,
+attempt counters, expiry, state and terminal delivery outcome. Raw device secrets,
+challenges, raw credential responses and ack material never enter DB, Event,
+audit, status, error or log projections. Synthetic buffers are cleared after each
+operation. The source adapter uses a rollback-capable memory model only; it is not
+evidence for the [new handoff migration](../../prisma/migrations/20260923150000_worker_credential_handoff/migration.sql) or real TLS.
 
 Inside the Serializable transaction, the service rereads the current primary
 owner and owner membership. Additional owners, admins, members, delegated actors,
@@ -193,9 +245,9 @@ matches; the existing database container is back to exited, unrelated services
 and the stopped backend retain their original states. No new container, image,
 volume, role or persistent database remains. No push or deploy.
 
-**Exactly one proposed next atom:** specify and synthetically qualify secure
-one-time Worker credential handoff, bound to the accepted primary-owner decision,
-exact HTTPS origin, installation and registered host, including lost-delivery
-recovery and replay denial. Keep default composition unavailable; no real keys,
-secret store, TLS deployment, Worker/provider launch or activation. Stop after
-that delivery contract qualification.
+**Exactly one proposed next atom:** qualify the additive handoff migration and
+its native owner-decision, exact-origin/certificate, one-time poll/ack, recovery,
+concurrency and rollback boundaries on one explicitly authorized disposable
+PostgreSQL database using synthetic hashes/evidence only. Do not qualify real
+TLS, provisioning, secret storage, Worker/provider launch or activation. Stop
+after that database qualification.

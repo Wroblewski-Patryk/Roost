@@ -12,6 +12,7 @@ import { requireWorkspaceRole } from "../../auth/workspace-access";
 import { workerCredentialHandler } from "./worker-credential-http";
 import { createWorkerCredentialService } from "./worker-credential.service";
 import { createPrismaWorkerCredentialStore } from "./worker-credential-store";
+import { workerHandoffUnavailable } from "./worker-handoff-http";
 
 const createApiKeySchema = z.object({
   name: z.string().min(1),
@@ -29,6 +30,8 @@ export const apiKeysRouter = Router();
 const workerLifecycle = createWorkerCredentialService(createPrismaWorkerCredentialStore(prisma));
 for (const action of ["enroll", "rotate", "revoke"] as const)
   apiKeysRouter.post(`/worker-credentials/${action}`, workerCredentialHandler(action, workerLifecycle));
+for (const action of ["request", "approve"] as const)
+  apiKeysRouter.post(`/worker-credentials/handoff/${action}`, workerHandoffUnavailable);
 
 function requireOwner(req: Request, res: Response) {
   return requireWorkspaceRole(req, res, "admin");

@@ -40,6 +40,17 @@ export interface SyntheticWorkerDelivery {
   hash(secret: Buffer): Promise<string>;
   deliver(secret: Buffer): Promise<string>;
 }
+// Shared candidate shape for the existing lifecycle and owner-approved handoff.
+// A handoff inserts it inactive; only its acknowledged transaction may activate it.
+export function workerCredentialCandidate(intent: WorkerCredentialIntent, hash: string, at: Date, active: boolean): ApiKey {
+  return { id: randomUUID(), workspaceId: intent.workspaceId, name: "Bound Worker credential", key: null, keyHash: hash, keyPrefix: "worker-v1",
+    active, revokedAt: null, expiresAt: new Date(intent.expiresAt!), credentialVersion: 1, workerHostId: intent.hostId, workerInstallationId: intent.installationId,
+    workerBindingEpoch: intent.expectedEpoch + 1, scopes: workerCredentialScopes, boundAgentId: null, lastUsedAt: null, createdAt: at, updatedAt: at };
+}
+export function workerCredentialGenerationMatches(old: ApiKey | null, intent: WorkerCredentialIntent) {
+  return old ? old.id === intent.expectedCredentialId && old.credentialVersion === intent.expectedVersion && old.workerBindingEpoch === intent.expectedEpoch
+    && old.workerInstallationId === intent.installationId && workerTicketFingerprint(old.keyHash!) === intent.expectedFingerprint : intent.expectedCredentialId === null;
+}
 export function createWorkerCredentialService(store: WorkerCredentialStore, options: { delivery?: SyntheticWorkerDelivery; now?: () => Date } = {}) {
   const clock = options.now ?? (() => new Date());
   return async (auth: AuthContext, action: WorkerCredentialIntent["action"], body: unknown) => {
@@ -47,6 +58,7 @@ export function createWorkerCredentialService(store: WorkerCredentialStore, opti
     try {
       const input = workerCredentialCommand.parse(body), at = clock();
       if (!freshWorkerOwner(auth, at)) denyWorkerCredential("worker_credential_forbidden", 403);
+      if (input.intent.handoff) denyWorkerCredential("worker_handoff_required", 403);
       if (input.intent.action !== action || input.intent.workspaceId !== auth.workspaceId) denyWorkerCredential("worker_credential_binding_invalid");
       const requestHash = reviewDigest({ input, actorId: auth.userId });
       const result = await store.transaction(async tx => {
@@ -63,9 +75,7 @@ export function createWorkerCredentialService(store: WorkerCredentialStore, opti
         if (Date.parse(intent.validUntil) <= at.getTime()) denyWorkerCredential("worker_credential_decision_expired");
         if (!await tx.host(intent)) denyWorkerCredential("worker_credential_host_changed");
         const old = await tx.latest(auth.workspaceId, intent.hostId);
-        if (old ? old.id !== intent.expectedCredentialId || old.credentialVersion !== intent.expectedVersion || old.workerBindingEpoch !== intent.expectedEpoch
-          || old.workerInstallationId !== intent.installationId || workerTicketFingerprint(old.keyHash!) !== intent.expectedFingerprint
-          : intent.expectedCredentialId !== null) denyWorkerCredential();
+        if (!workerCredentialGenerationMatches(old, intent)) denyWorkerCredential();
         if (action === "enroll" && old && (old.active || !old.revokedAt)) denyWorkerCredential("worker_credential_already_bound");
         if (action === "rotate" && (!old?.active || old.revokedAt) || action === "revoke" && (!old || old.revokedAt)) denyWorkerCredential("worker_credential_revoked");
         const expires = intent.expiresAt && new Date(intent.expiresAt);
@@ -77,10 +87,7 @@ export function createWorkerCredentialService(store: WorkerCredentialStore, opti
           if (!Buffer.isBuffer(secret) || secret.length < 32 || secret.length > 128) denyWorkerCredential("worker_credential_unavailable", 503);
           const hash = await options.delivery!.hash(secret);
           if (!/^[a-f0-9]{64}$/.test(hash) || hash === secret.toString() || hash === old?.keyHash) denyWorkerCredential("worker_credential_unavailable", 503);
-          key = { id: randomUUID(), workspaceId: auth.workspaceId, name: "Bound Worker credential", key: null, keyHash: hash, keyPrefix: "worker-v1",
-            active: true, revokedAt: null, expiresAt: expires as Date, credentialVersion: 1, workerHostId: intent.hostId, workerInstallationId: intent.installationId,
-            workerBindingEpoch: (old?.workerBindingEpoch ?? 0) + 1, scopes: workerCredentialScopes, boundAgentId: null,
-            lastUsedAt: null, createdAt: at, updatedAt: at };
+          key = workerCredentialCandidate(intent, hash, at, true);
           await tx.insert(key);
         }
         await tx.record(input, auth.userId!, requestHash, key!, at);

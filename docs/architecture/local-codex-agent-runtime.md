@@ -1,5 +1,14 @@
 # Local Codex Agent Runtime
 
+Owner amendment v24: [synthetic Worker credential handoff](worker-credential-lifecycle-v1.md)
+qualifies a device request, exact owner approval, origin/certificate checks,
+one-time poll, possession ack, lost-response terminal state and concurrent
+recovery in 7/7 tests. Device requests and user codes have no task/provider
+authority; default handoff routes remain unavailable. Raw secrets are transient
+only, while pending credentials stay inactive until ack. The new additive
+migration, native persistence and real HTTPS/TLS remain unqualified; no Worker,
+provider, model or activation. The v23 database result below is historical.
+
 Owner amendment v23: [native credential lifecycle qualification](worker-credential-lifecycle-v1.md)
 passes 12/12 PostgreSQL/HTTP results and 173/173 regressions. Bound claim checks
 run inside the Ready transaction; real consume/status race credential revocation.
