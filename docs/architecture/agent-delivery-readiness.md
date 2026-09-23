@@ -1,5 +1,20 @@
 # Gotowość połączenia Roost z agentami
 
+Aktualizacja v22: [cykl poświadczeń Workera](worker-credential-lifecycle-v1.md)
+— **DONE: kontrakt i kwalifikacja syntetyczna, 173/173 testy (55 nowych + 118
+regresji). PARTIAL: natywna persystencja. BLOCKED: rzeczywiste wydawanie kluczy,
+bezpieczny transport i uruchomienie.** Nadanie, rotacja i odwołanie wymagają
+świeżego uwierzytelnienia głównego właściciela oraz dokładnej zaakceptowanej decyzji.
+Rotacja odwołuje poprzednią generację, bilety i uprawnienia aktywnych claimów;
+historia pozostaje, bez automatycznego restartu. Domyślna kompozycja nie zawiera
+generatora/hashera/dostarczenia, więc wszystkie trzy operacje są niedostępne.
+Nowa 75. migracja nie została wykonana; sześć flag nadal false.
+Jeden następny atom: natywna kwalifikacja tej migracji, owner-decision/auth,
+unieważniania ticket/claim, współbieżności i rollbacku na osobno autoryzowanej
+jednorazowej bazie PostgreSQL, z syntetycznymi kluczami i audytem zachowania/sprzątania.
+Bez rzeczywistych kluczy, TLS, startu Workera/providera ani aktywacji; potem STOP.
+Wyniki i propozycje poniżej są historyczne.
+
 Aktualizacja v21: [natywna kwalifikacja kanału Workera](worker-owner-ticket-channel-v1.md)
 — **DONE w tym zakresie: 24/24 wyniki integracyjne, 110/110 regresji,
 sprzątanie i zachowanie istniejących danych/kontenerów PASS.** Kwalifikacja

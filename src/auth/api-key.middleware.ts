@@ -6,7 +6,7 @@ import { capabilityForRequest, hasCapability } from "./capabilities";
 import { verifyAuthToken } from "./token";
 import { sendApiError } from "../middleware/api-error";
 import type { WorkspaceRole, PrismaClient } from "@prisma/client";
-import { workerTicketPrincipal, type WorkerTicketIdentity } from "./worker-ticket-principal";
+import { workerCredentialRoute, workerTicketPrincipal, type WorkerTicketIdentity } from "./worker-ticket-principal";
 
 export type AuthContext = {
   userId?: string;
@@ -18,6 +18,7 @@ export type AuthContext = {
   credentialPrefix?: string;
   scopes?: string[];
   workspaceRole?: WorkspaceRole;
+  authenticatedAt?: number;
   workerTicketIdentity?: WorkerTicketIdentity;
 };
 
@@ -64,7 +65,8 @@ return async function requireAuthContext(req: Request, res: Response, next: Next
       userId: payload.userId,
       workspaceId: payload.workspaceId,
       authType: "user",
-      workspaceRole: membership.role
+      workspaceRole: membership.role,
+      authenticatedAt: payload.authTime
     };
     return next();
   }
@@ -77,7 +79,7 @@ return async function requireAuthContext(req: Request, res: Response, next: Next
 
   const apiKeyHash = hashApiKey(apiKey);
   const record = await db.apiKey.findFirst({
-    include: { boundAgent: true },
+    include: { boundAgent: true, workerHost: true },
     where: {
       OR: [
         { keyHash: apiKeyHash },
@@ -100,6 +102,11 @@ return async function requireAuthContext(req: Request, res: Response, next: Next
   if (record.boundAgentId && (record.boundAgent?.workspaceId !== record.workspaceId || record.boundAgent?.type !== "agent" || record.boundAgent?.status !== "active" || record.boundAgent?.source === "user" || !record.expiresAt || !agentPrincipalRoute(req.method, req.path))) {
     return sendApiError(res, 403, "agent_principal_forbidden");
   }
+  const workerIdentity = workerTicketPrincipal(record);
+  if ((record.workerHostId || record.workerInstallationId || record.workerBindingEpoch) && (!workerIdentity
+    || !record.workerHost || record.workerHost.workspaceId !== record.workspaceId || record.workerHost.status === "disabled"
+    || !workerCredentialRoute(req.method, `${req.baseUrl}${req.path}`)))
+    return sendApiError(res, 403, "worker_credential_forbidden");
   const scopes = Array.isArray(record.scopes)
     ? record.scopes.filter((scope): scope is string => typeof scope === "string")
     : [];
@@ -112,12 +119,11 @@ return async function requireAuthContext(req: Request, res: Response, next: Next
   // Status is strictly observational; consumption records its actor atomically
   // in the ticket Event. Denied owner-only operations also leave no usage write.
   const ticketRequest = req.method === "POST" && /^\/v1\/agent-runtime\/owner-tickets\/(?:issue|consume|status|revoke|rotate)$/.test(`${req.baseUrl}${req.path}`.replace(/\/+$/, ""));
-  if (!ticketRequest) await db.apiKey.update({
+  if (!ticketRequest && !record.workerHostId) await db.apiKey.update({
     where: { id: record.id },
     data: { lastUsedAt: new Date(), updatedAt: record.updatedAt }
   });
 
-  const workerIdentity = workerTicketPrincipal(record);
   req.auth = {
     workspaceId: record.workspaceId,
     authType: "api_key",

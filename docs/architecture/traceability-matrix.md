@@ -1,5 +1,18 @@
 # Foundation requirements traceability
 
+RF-HOST-035 owner amendment v22: [Worker credential lifecycle](worker-credential-lifecycle-v1.md)
+is **DONE for source/synthetic qualification: 173/173 tests (55 new + 118
+regressions)**. Fresh primary owner plus exact accepted decision controls existing
+ApiKey enrollment, rotation and terminal revocation. Tests cover exact bindings,
+20-way generation races, atomic model rollback/invalidation, one-time synthetic
+delivery and bounded secret-free projections. Native persistence is PARTIAL:
+the additive 75th migration is unexecuted. Real provisioning/transport/launch
+remain BLOCKED, dependencies absent in default composition, all six flags false.
+Exactly one next atom: qualify the migration and native owner-decision/auth,
+ticket/claim invalidation, concurrency and rollback on an explicitly authorized
+owned disposable PostgreSQL database with synthetic evidence and preservation/
+cleanup audits, without provisioning or launch. Earlier results/proposals are historical.
+
 RF-HOST-035 owner amendment v21: [native Worker ticket qualification](worker-owner-ticket-channel-v1.md)
 is **DONE for this atom: 24/24 integration results, 110/110 regressions and
 cleanup/preservation PASS**. Qualification

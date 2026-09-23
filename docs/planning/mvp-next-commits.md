@@ -1,5 +1,19 @@
 # Next development work
 
+Current owner amendment v22: [Worker credential lifecycle](../architecture/worker-credential-lifecycle-v1.md)
+is **DONE for source/synthetic qualification: 173/173 tests (55 new + 118
+regressions)**. Existing ApiKey/host/governed-decision components now define
+fresh primary-owner enrollment, rotation and terminal revoke, exact bindings,
+atomic model invalidation/rollback, and one-time synthetic disclosure. Native
+persistence is PARTIAL; the additive 75th migration is unexecuted. Real
+provisioning/transport/launch remain BLOCKED, default dependencies absent, six flags false.
+**Exactly one proposed next atom:** qualify that forward migration and native
+owner-decision/auth/credential lifecycle, ticket/claim invalidation, concurrency
+and rollback on an explicitly authorized owned disposable PostgreSQL database.
+Use only synthetic keys/evidence with complete preservation and cleanup audits.
+No real provisioning, secure delivery/TLS claim, Worker/provider launch or activation.
+Stop after that database qualification; all earlier next-step proposals below are historical.
+
 Current owner amendment v21: [native Worker ticket qualification](../architecture/worker-owner-ticket-channel-v1.md)
 is **DONE: 24/24 integration results, 110/110 regressions and verified cleanup/
 preservation PASS**. Qualification

@@ -1,5 +1,16 @@
 # Local Codex Agent Runtime
 
+Owner amendment v22: [Worker credential lifecycle](worker-credential-lifecycle-v1.md)
+adds source-only primary-owner enrollment/rotation/revocation and a synthetic
+delivery seam, unavailable in application composition. Bound credentials permit
+only claim, ticket consume and ticket status; claim rereads the exact current
+generation and host inside the Ready transaction. Rotation/revocation fence old
+tickets and active claims while preserving attempt/checkpoint/lease identity for
+explicit reconciliation. No automatic restart or launch authority is introduced.
+173 synthetic tests pass; the new migration/native invalidation remain unqualified.
+Real provisioning/transport/launch stay blocked and all six flags stay false.
+The database evidence and proposed next steps below are historical.
+
 Owner amendment v21: [Worker ticket database qualification](worker-owner-ticket-channel-v1.md)
 uses real PostgreSQL/Prisma/auth/HTTP redaction with inert claimed executions and
 synthetic credentials, signer and physical evidence. Assigned-Worker consumption

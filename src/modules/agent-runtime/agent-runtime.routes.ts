@@ -1,5 +1,6 @@
 import { nativeBoundaryResultBlocked } from "./task-review-contract";
 import { ownerTicketHandler } from "./owner-ticket-http";
+import { workerClaimAllowed } from "../../auth/worker-ticket-principal";
 import { executionProviderRegistry, projectProvider, sanitizeProviderMetadata } from "./execution-provider";
 import { interviewView,interviewCommand } from "./task-interview";
 import { clarificationView,clarificationCommand } from "./task-clarification";
@@ -510,6 +511,7 @@ agentRuntimeRouter.post("/executions/claim", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
   const host = await prisma.agentHost.findFirst({ where: { workspaceId, slug: input.hostSlug, status: { not: "disabled" } } });
   if (!host) return sendApiError(res, 404, "agent_host_not_found");
+  if (req.auth!.workerTicketIdentity && !await workerClaimAllowed(prisma, req.auth!, host.id)) return sendApiError(res, 403, "worker_credential_forbidden");
   if (protocolBlocked(req, res, host)) return;
   const applicationSlugs = Array.isArray(host.applicationSlugs) ? host.applicationSlugs.filter((value): value is string => typeof value === "string" && value !== "roost") : [];
   const now = new Date();
@@ -522,6 +524,7 @@ agentRuntimeRouter.post("/executions/claim", asyncHandler(async (req, res) => {
     const leaseToken = randomUUID();
     const checkpoint = { schemaVersion: "roost-recovery-v1", stage: "claimed", sessionId: input.sessionId ?? randomUUID(), packetRevision: null, workspaceDigest: null };
     const admitted = await readyTransaction(async tx => {
+      if (req.auth!.workerTicketIdentity && !await workerClaimAllowed(tx, req.auth!, host.id)) return { error: "worker_credential_forbidden" };
       const ready = await inspectReady(tx, workspaceId, candidate.taskId, candidate);
       if (ready.error) return { error: ready.error };
       if (await suspensionBlocks(tx, workspaceId, candidate.taskId, candidate.applicationId, "runtime_execute", ready.taskContext?.task?.assignedWorkforceEntityId, null, host.id)) return { error: "native_capability_suspended" };

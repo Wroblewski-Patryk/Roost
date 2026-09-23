@@ -1,5 +1,14 @@
 # Architecture Source Of Truth
 
+Owner amendment v22: [owner-controlled Worker credentials](worker-credential-lifecycle-v1.md)
+extends existing ApiKey, host and governed decisions with enrollment, rotation and
+terminal revocation. Fresh primary-owner authentication and an exact accepted
+decision bind each change. Source/synthetic qualification DONE: 173/173 tests
+(55 new, 118 regressions). The additive 75th migration is unexecuted; native
+persistence is PARTIAL, real provisioning/transport/launch BLOCKED. Default
+composition has no generator, hasher or delivery; all six flags remain false.
+The v21 database result and earlier next-step proposals below are historical.
+
 Owner amendment v21: [native Worker ticket qualification](worker-owner-ticket-channel-v1.md)
 exercises the unchanged 74-migration chain, credential/binding guards, one-use
 owner/Worker races and read-only status through Prisma/auth/redaction. Qualification

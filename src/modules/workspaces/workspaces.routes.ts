@@ -114,7 +114,7 @@ workspacesRouter.post("/", asyncHandler(async (req, res) => {
   const token = createAuthToken({
     userId,
     workspaceId: workspace.id
-  });
+  }, req.auth!.authenticatedAt ?? null);
 
   res.status(201).json({
     data: {
@@ -169,7 +169,7 @@ workspacesRouter.post("/:id/actions/select", asyncHandler(async (req, res) => {
   const token = createAuthToken({
     userId,
     workspaceId
-  });
+  }, req.auth!.authenticatedAt ?? null);
 
   res.json({
     data: {

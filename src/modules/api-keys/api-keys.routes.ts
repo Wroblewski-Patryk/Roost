@@ -9,6 +9,9 @@ import { capabilities, scopesAreBroad } from "../../auth/capabilities";
 import { asyncHandler } from "../../middleware/async-handler";
 import { sendApiError } from "../../middleware/api-error";
 import { requireWorkspaceRole } from "../../auth/workspace-access";
+import { workerCredentialHandler } from "./worker-credential-http";
+import { createWorkerCredentialService } from "./worker-credential.service";
+import { createPrismaWorkerCredentialStore } from "./worker-credential-store";
 
 const createApiKeySchema = z.object({
   name: z.string().min(1),
@@ -22,6 +25,10 @@ const updateApiKeySchema = z.object({
 }).strict();
 
 export const apiKeysRouter = Router();
+// Deliberately no generator, hasher or delivery composition in the application.
+const workerLifecycle = createWorkerCredentialService(createPrismaWorkerCredentialStore(prisma));
+for (const action of ["enroll", "rotate", "revoke"] as const)
+  apiKeysRouter.post(`/worker-credentials/${action}`, workerCredentialHandler(action, workerLifecycle));
 
 function requireOwner(req: Request, res: Response) {
   return requireWorkspaceRole(req, res, "admin");
@@ -132,7 +139,7 @@ apiKeysRouter.patch("/:id", asyncHandler(async (req, res) => {
     return sendApiError(res, 404, "not_found");
   }
 
-  if (existing.boundAgentId) return sendApiError(res, 403, "credential_lifecycle_required");
+  if (existing.boundAgentId || existing.workerHostId) return sendApiError(res, 403, "credential_lifecycle_required");
   const record = await setAuditedApiKeyActive({
     workspaceId: req.auth!.workspaceId, id: existing.id, active: input.active,
     actorType: req.auth!.authType === "user" ? "user" : "agent", actorId: req.auth!.userId ?? req.auth!.apiKeyId,

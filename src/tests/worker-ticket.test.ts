@@ -158,7 +158,7 @@ test("real auth middleware derives Worker identity; HTTP output does not leak pr
   const f = await fixture();
   let credentialWrites = 0;
   const middleware = createAuthContextMiddleware({
-    apiKey: { findFirst: async (args: any) => args.where.OR[0].keyHash === f.credential.keyHash ? f.credential : null, update: async () => { credentialWrites++; return f.credential; } },
+    apiKey: { findFirst: async (args: any) => args.where.OR[0].keyHash === f.credential.keyHash ? { ...f.credential, workerHost: { workspaceId: f.auth.workspaceId, status: "online" } } : null, update: async () => { credentialWrites++; return f.credential; } },
     workspaceMembership: { findUnique: async () => ({ workspaceId: f.auth.workspaceId, userId: f.auth.userId, role: "owner" }) }
   } as any);
   const app = express(); app.use(express.json()); app.use(middleware);
@@ -181,7 +181,7 @@ test("real auth middleware derives Worker identity; HTTP output does not leak pr
   for (const action of ["issue", "revoke", "rotate"]) assert.equal((await post(action, {})).status, 403);
   assert.equal((await post("consume", f.consume, ownerHeaders)).status, 403);
   assert.equal(credentialWrites, 0); // Ticket success/denial has no out-of-transaction usage write.
-  assert.equal((await post("uncomposed", f.consume)).status, 503);
+  assert.equal((await post("uncomposed", f.consume)).status, 403); // Bound Workers cannot use an arbitrary route.
   f.credential.active = false; assert.equal((await post("status", f.status)).status, 403);
 });
 

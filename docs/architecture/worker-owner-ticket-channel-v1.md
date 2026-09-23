@@ -1,5 +1,13 @@
 # Worker owner-ticket consume and status contract v1
 
+Current amendment v22 adds the [owner-controlled credential lifecycle](worker-credential-lifecycle-v1.md).
+The source/synthetic result is 173/173 tests; the new 75th migration is unexecuted.
+Bound Worker credentials now permit exactly claim, consume and status, with a
+current registered-host check. Real provisioning/transport/launch remain blocked.
+The v21 native evidence and its proposed next step below are historical and do
+not qualify the v22 migration. The one current next atom is native qualification
+of that lifecycle migration and its owner-decision/invalidation/rollback boundaries.
+
 Owner amendment v21, 2026-09-23. The v20 source contract is now exercised on
 native PostgreSQL with real Prisma transactions, authentication and HTTP
 redaction. **DONE for the bounded database qualification: 24/24 integration

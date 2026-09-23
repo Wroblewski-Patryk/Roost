@@ -1,5 +1,18 @@
 # Self-hosting and private installation configuration
 
+Owner amendment v22: [Worker credential lifecycle](../architecture/worker-credential-lifecycle-v1.md)
+adds a forward-only 75th migration for guards, atomic ticket/claim invalidation
+and the existing append-only credential ledger. It is **unexecuted** and must be
+qualified separately before release; the v21 native evidence does not cover it.
+No applied migration or Prisma table layout is changed, no credential is seeded,
+and no database/Docker operation occurs in this source/synthetic atom. All three
+owner lifecycle routes have no generator, hasher or delivery in default composition.
+Do not turn the test-only synthetic delivery seam into production provisioning.
+Revoked generations/history remain retained; recovery requires explicit owner
+reconciliation and never a reset, secret replay or automatic restart. Production
+secret delivery, TLS and launch remain unqualified; no deployment or activation.
+The earlier migration and cleanup results below are historical.
+
 Owner amendment v21: [Worker binding qualification](../architecture/worker-owner-ticket-channel-v1.md)
 applies the full 74-migration chain in one owned disposable database, including
 the unchanged additive binding migration. No applied migration is edited, no

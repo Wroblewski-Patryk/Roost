@@ -1,5 +1,18 @@
 # Workspace Human Access
 
+## Worker credential authority
+
+The [Worker credential lifecycle](worker-credential-lifecycle-v1.md) is reserved
+to the current primary workspace owner, with current owner membership, a signed
+authentication time no more than five minutes old and an exact accepted governed
+decision. Additional owners, admins, members, agents and API keys cannot use it.
+Human tokens now carry `authTime`; workspace creation/selection preserves its
+original value. Legacy tokens without it require another login for this lifecycle.
+Ordinary human access remains governed by the current membership below.
+The three lifecycle commands are unavailable by default because no synthetic or
+production generator, hasher or delivery is configured. Source/synthetic tests
+pass; native persistence and real provisioning are not qualified.
+
 ## Decision
 
 Example Company production uses one canonical workspace. Humans join that

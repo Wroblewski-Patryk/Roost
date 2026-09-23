@@ -5,6 +5,7 @@ type AuthTokenPayload = {
   userId: string;
   workspaceId: string;
   exp: number;
+  authTime?: number;
 };
 
 const tokenVersion = "v1";
@@ -22,9 +23,10 @@ function sign(unsignedToken: string) {
   return createHmac("sha256", env.authTokenSecret).update(unsignedToken).digest("base64url");
 }
 
-export function createAuthToken(input: Omit<AuthTokenPayload, "exp">) {
+export function createAuthToken(input: Omit<AuthTokenPayload, "exp" | "authTime">, authenticatedAt: number | null = Math.floor(Date.now() / 1000)) {
   const payload: AuthTokenPayload = {
     ...input,
+    ...(authenticatedAt === null ? {} : { authTime: authenticatedAt }),
     exp: Math.floor(Date.now() / 1000) + defaultTtlSeconds
   };
   const encodedPayload = base64UrlEncode(JSON.stringify(payload));
