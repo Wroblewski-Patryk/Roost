@@ -1,5 +1,15 @@
 # Foundation requirements traceability
 
+RF-HOST-035 owner amendment v17:
+[server owner-ticket v1](server-owner-ticket-v1.md) selects the existing Roost
+installation as issuer. Source validators bind the exact existing acceptance,
+claim, key epoch, short lifetime and challenged one-use acknowledgement.
+Wrong/local/self-issued keys, offline/stale/replayed/revoked/rotated authority
+and attempt drift deny. Validator output cannot replace a containment receipt.
+Contract DONE; real issuance/transport/CAS/integration BLOCKED, six flags false.
+No private key or system provisioning; 39 retained roots untouched.
+Next proposed atom: owner-only API issuance and atomic consume with test signer.
+
 RF-HOST-035 owner amendment v16:
 [managed backend admission v1](managed-hermes-backend-admission-v1.md) is
 **source/synthetic DONE; real issuer BLOCKED**. Both explicit Hermes backends

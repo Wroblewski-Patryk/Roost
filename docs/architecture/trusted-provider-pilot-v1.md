@@ -1,5 +1,13 @@
 # Trusted provider pilot v1
 
+Owner amendment v17:
+[external Roost owner tickets](server-owner-ticket-v1.md) are the selected future
+production authority for this existing acceptance contract. The writable local
+anchor described below remains fixture-only historical implementation, not a
+safe production issuer. New schemas/validators verify bounded server tickets
+against fresh authenticated server state; real transport/CAS/integration is
+still BLOCKED. No key provisioning or activation; six flags false.
+
 Owner amendment v16:
 [backend-aware Hermes contract](managed-hermes-backend-admission-v1.md) now
 qualifies both explicit Codex Responses and local Ollama intent at the existing

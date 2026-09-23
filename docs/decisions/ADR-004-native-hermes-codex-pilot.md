@@ -1,5 +1,17 @@
 # ADR-004: Native Hermes with Codex OAuth for the first agent
 
+Owner amendment v17, 2026-09-23: choose the existing Roost API/server as
+[external owner-ticket issuer](../architecture/server-owner-ticket-v1.md).
+A same-user Windows non-exportable key does not by itself separate issuer from
+Worker signing use. The server retains the private key; Worker verifies bounded
+tickets against fresh authenticated public server material, never a writable
+local anchor. Source schemas/validators are DONE; owner-only routes, durable
+consume CAS, bootstrap/HTTPS and admission integration remain BLOCKED.
+No provisioning, ACL/certificate changes, deployment or real launch. Six flags
+false. Exactly one proposed next atom: existing-API owner-only issue/atomic
+consume implementation with injected test signer and synthetic transaction tests.
+This supersedes earlier next-step proposals without renewing any authority.
+
 Owner amendment v16, 2026-09-23: qualify the
 [managed-Hermes backend contract](../architecture/managed-hermes-backend-admission-v1.md)
 through source/synthetic work only. Codex Responses and local Ollama are strict,

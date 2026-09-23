@@ -1,5 +1,13 @@
 # Local Codex Agent Runtime
 
+Owner amendment v17:
+[server owner-ticket contract](server-owner-ticket-v1.md) selects the existing
+Roost API as issuer, leaving Worker only public verification material and short
+signed decisions. Local writable keys cannot become production trust roots.
+A validator-only source contract is implemented; origin/bootstrap, authenticated
+fresh state, server consume CAS and admission wiring remain BLOCKED. No issuer
+or provider was activated; all six flags remain false.
+
 Owner amendment v16:
 [managed-Hermes backend contract](managed-hermes-backend-admission-v1.md) adds
 explicit source/synthetic Codex Responses and loopback Ollama selection to the

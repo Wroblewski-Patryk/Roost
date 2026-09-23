@@ -1,5 +1,16 @@
 # Gotowość połączenia Roost z agentami
 
+Aktualizacja v17, 2026-09-23:
+[kontrakt biletu właściciela](server-owner-ticket-v1.md) — **source/validator DONE;
+real issuer/transport/integration BLOCKED**. Wybrany wystawca to istniejący Roost
+API/server; klucz prywatny ma pozostać wyłącznie tam. Lokalny plik publicznego
+klucza jest tylko cache porównywanym ze świeżym materiałem serwera. Bilet do 60 s,
+online consume/revocation do 5 s, bez offline fallbacku i odnowienia przez Workera.
+Testy nie zastępują trwałego CAS ani uwierzytelnienia HTTPS. Sześć flag false;
+39 retained roots nietkniętych. Jeden następny proponowany atom: implementacja
+owner-only issue/atomic consume w istniejącym API z testowym signerem, bez sekretu
+produkcyjnego, deployu i aktywacji.
+
 Aktualizacja v16, 2026-09-23:
 [kontrakt dwóch backendów managed Hermes](managed-hermes-backend-admission-v1.md)
 — **source/synthetic DONE; real issuer/launch BLOCKED**. Codex Responses wymaga

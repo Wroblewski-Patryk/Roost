@@ -1,5 +1,14 @@
 # Self-hosting and private installation configuration
 
+Owner amendment v17:
+[server owner-ticket contract](../architecture/server-owner-ticket-v1.md) selects
+existing Roost server secret configuration for future private signing capability.
+Worker receives public verification material only, from a qualified fresh HTTPS
+origin; writable local anchors are not production authority. No signing secret,
+new environment variable, bootstrap change, key rotation or provisioning is
+implemented here. Preserve all existing credentials, records and volumes.
+The prior local-anchor section below describes synthetic historical behavior.
+
 Roost is a reusable company operating system. Company records live in the
 installation's PostgreSQL database. Git distributes code, schema and fictional
 examples, not an operator's company data, credentials, domains or machine paths.

@@ -1,5 +1,16 @@
 # Next development work
 
+Current owner amendment v17:
+[server-issued owner ticket contract](../architecture/server-owner-ticket-v1.md)
+is source/validator DONE; production integration remains BLOCKED. Existing Roost
+API is the chosen issuer; no private key belongs on Worker. Six flags false.
+**Exactly one proposed next atom:** implement owner-only issuance and atomic
+one-use consumption within existing API/auth/decision/task components, with an
+injected synthetic signer, transaction/revocation tests and reviewed persistence
+contract. No real secret provisioning, deployment, Worker/provider activation.
+The 39 retained roots are out of scope and untouched. Stop after this contract;
+previous next-step proposals below are historical.
+
 Current owner amendment v16, 2026-09-23:
 [managed-Hermes backend admission contract](../architecture/managed-hermes-backend-admission-v1.md)
 is source/synthetic DONE for explicit Codex Responses and local Ollama.

@@ -1,5 +1,13 @@
 # Architecture Source Of Truth
 
+Owner amendment v17: [external Roost owner tickets](server-owner-ticket-v1.md)
+replace local writable-key authority as the selected production design.
+Private signing capability stays on the existing server, with owner-only decision
+issuance and fresh public verification plus atomic one-use consumption.
+Source contract/validator DONE; authenticated transport, server transactions and
+real integration BLOCKED. The stateless validator returns no launch authority.
+Same-user code is not sandboxed. Six flags false; no keys, ACLs or runtime changes.
+
 Owner amendment v16, 2026-09-23:
 [backend-aware managed-Hermes admission](managed-hermes-backend-admission-v1.md)
 is source/synthetic DONE. Versioned explicit Codex Responses versus local Ollama
