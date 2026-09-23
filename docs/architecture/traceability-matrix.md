@@ -1,5 +1,14 @@
 # Foundation requirements traceability
 
+RF-HOST-035 owner amendment v25: [native handoff](worker-credential-lifecycle-v1.md)
+is **DONE: 9/9 PostgreSQL/HTTP results, 180/180 selected regressions**. The unchanged
+76-migration chain qualifies one-time delivery/ACK, owner/device/decision gates,
+transport-evidence denials, concurrent recovery/rotation, rollback and redaction.
+Real TLS/provisioning/launch remain BLOCKED; default routes closed, six flags false.
+Exactly one next atom: loopback HTTPS adapter qualification with ephemeral test
+certificates and synthetic credentials, without production provisioning, secret
+store or activation. Earlier amendments and successor proposals are historical.
+
 RF-HOST-035 owner amendment v24: [synthetic Worker handoff](worker-credential-lifecycle-v1.md)
 is **DONE for source/synthetic qualification: 7/7 tests**. The device request
 has no credential authority; fresh primary-owner approval binds exact decision,

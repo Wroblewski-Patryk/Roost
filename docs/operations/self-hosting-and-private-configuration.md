@@ -1,5 +1,16 @@
 # Self-hosting and private installation configuration
 
+Owner amendment v25 — bounded native handoff evidence
+
+[Worker handoff qualification](../architecture/worker-credential-lifecycle-v1.md)
+applied the unchanged 76-migration chain to one owned disposable database only.
+9/9 native PostgreSQL/HTTP results and 180/180 selected regressions pass. Test HTTP
+is loopback; HTTPS origin/certificate evidence is synthetic. Default deployment
+composition remains unavailable; no automatic provisioning, business-data seed,
+secret-store integration or provider activation is introduced. Exactly one next
+atom: loopback HTTPS adapter qualification with ephemeral test certificates and
+synthetic credentials. Earlier next-atom proposals below are historical.
+
 Owner amendment v24: [synthetic Worker handoff](../architecture/worker-credential-lifecycle-v1.md)
 adds an unexecuted forward migration for device request state only. It stores
 hashes, fingerprints, bindings, expiry, bounded attempts and terminal outcome;

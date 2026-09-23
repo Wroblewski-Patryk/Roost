@@ -1,5 +1,17 @@
 # Local Codex Agent Runtime
 
+Owner amendment v25 — native Worker handoff qualification
+
+[Handoff qualification](worker-credential-lifecycle-v1.md) is **DONE** for the
+unchanged 76-migration chain and native Prisma/loopback HTTP boundary: 9/9 results,
+180/180 regressions. Twenty polls disclose once; twenty ACKs activate once.
+Lost-response recovery and complete rollback retain one current credential.
+No Worker/provider/model executes; six flags false and default routes closed.
+HTTPS origin/certificate evidence remains synthetic. Exactly one next atom:
+loopback HTTPS transport-adapter qualification with ephemeral test certificates
+and synthetic credentials; no real provisioning, secret store or activation.
+Earlier amendments and their successor proposals below are historical.
+
 Owner amendment v24: [synthetic Worker credential handoff](worker-credential-lifecycle-v1.md)
 qualifies a device request, exact owner approval, origin/certificate checks,
 one-time poll, possession ack, lost-response terminal state and concurrent

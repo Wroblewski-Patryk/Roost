@@ -21,7 +21,11 @@ export interface WorkerHandoffTx extends WorkerCredentialTx {
   activate(key: ApiKey, at: Date): Promise<ApiKey>;
   handoffAudit(row: WorkerHandoff, event: string): Promise<void>;
 }
-export interface WorkerHandoffStore { transaction<T>(work: (tx: WorkerHandoffTx) => Promise<T>): Promise<T> }
+export interface WorkerHandoffStore {
+  transaction<T>(work: (tx: WorkerHandoffTx) => Promise<T>): Promise<T>;
+  // Conflict fallback is a read only projection, never a command retry.
+  readHandoff?(id: string): Promise<WorkerHandoff | null>;
+}
 export type HandoffDependencies = { delivery: SyntheticWorkerDelivery;
   // Trusted adapter output, never JSON/header evidence supplied by the caller.
   transport(): Promise<SyntheticHandoffTransport> };
@@ -34,21 +38,30 @@ const ownerOf = (r: WorkerHandoff): AuthContext => ({ authType: "user", workspac
   workspaceRole: "owner", authenticatedAt: r.ownerAuthTime! });
 const binding = (r: WorkerHandoff) => ({ requestId: r.requestId, requestDigest: r.requestDigest, hostFingerprint: r.hostFingerprint,
   origin: r.origin, certificateFingerprint: r.certificateFingerprint, replacesRequestId: r.replacesRequestId });
+function proofMatches(proof: HandoffDeviceProof, row: WorkerHandoff) {
+  return proof.workspaceId === row.workspaceId && proof.installationId === row.installationId && proof.hostId === row.hostId && proof.hostFingerprint === row.hostFingerprint
+    && equalHandoffDigest(handoffHash("device", proof.deviceSecret), row.deviceSecretHash)
+    && equalHandoffDigest(handoffHash("challenge", proof.challenge), row.challengeHash);
+}
+function checkTransport(evidence: SyntheticHandoffTransport, origin: string, pin: string) {
+  if (!exactHttpsOrigin.safeParse(origin).success || evidence.qualification !== "synthetic_memory_only" || !evidence.tlsValidated || evidence.redirected
+    || evidence.requestedOrigin !== origin || evidence.connectedOrigin !== origin || evidence.certificateFingerprint !== pin
+    || evidence.proxyOrigin !== null && evidence.proxyOrigin !== origin) deny("transport_invalid", 403);
+}
 
 export function createWorkerHandoffService(store?: WorkerHandoffStore, dependencies?: HandoffDependencies, clock = () => new Date()) {
   return async (action: "request" | "approve" | "poll" | "ack" | "status", auth: AuthContext | undefined, body: unknown) => {
     let raw: Buffer | undefined;
+    let evidence: SyntheticHandoffTransport | undefined;
     const at = clock();
     try {
       if (action === "approve" && (!auth || !freshWorkerOwner(auth, at))) deny("forbidden", 403);
       const delivery = dependencies?.delivery;
       if (!store || !delivery || delivery.qualification !== "synthetic_memory_only" || !dependencies?.transport
         || ![delivery.generate, delivery.hash, delivery.deliver].every(f => typeof f === "function")) deny("unavailable", 503);
-      const evidence = await dependencies!.transport();
+      evidence = await dependencies!.transport();
       function transport(origin: string, pin: string) {
-        if (!exactHttpsOrigin.safeParse(origin).success || evidence.qualification !== "synthetic_memory_only" || !evidence.tlsValidated || evidence.redirected
-          || evidence.requestedOrigin !== origin || evidence.connectedOrigin !== origin || evidence.certificateFingerprint !== pin
-          || evidence.proxyOrigin !== null && evidence.proxyOrigin !== origin) deny("transport_invalid", 403);
+        checkTransport(evidence!, origin, pin);
       }
       const result: any = await store!.transaction(async tx => {
         async function retire(row: WorkerHandoff, state: HandoffState) {
@@ -118,9 +131,7 @@ export function createWorkerHandoffService(store?: WorkerHandoffStore, dependenc
         if (!row) return failed("not_found", 404);
         transport(row.origin, row.certificateFingerprint);
         await reconcile(row);
-        if (proof.workspaceId !== row.workspaceId || proof.installationId !== row.installationId || proof.hostId !== row.hostId || proof.hostFingerprint !== row.hostFingerprint
-          || !equalHandoffDigest(handoffHash("device", proof.deviceSecret), row.deviceSecretHash)
-          || !equalHandoffDigest(handoffHash("challenge", proof.challenge), row.challengeHash)) return badAttempt(row);
+        if (!proofMatches(proof, row)) return badAttempt(row);
         if (terminal(row)) return status(row);
         if (action === "status") return status(row);
         if (action === "ack") {
@@ -175,8 +186,18 @@ export function createWorkerHandoffService(store?: WorkerHandoffStore, dependenc
       }
       return result;
     } catch (e) {
+      if (e instanceof WorkerCredentialError && e.code === "worker_handoff_conflict" && (action === "poll" || action === "ack") && store?.readHandoff && evidence) {
+        try {
+          const proof = (action === "ack" ? handoffAck : handoffDeviceProof).parse(body);
+          const row = await store.readHandoff(proof.requestId);
+          if (row) {
+            checkTransport(evidence, row.origin, row.certificateFingerprint);
+            if (proofMatches(proof, row) && row.spentAt) return status(row);
+          }
+        } catch { /* Never expose database, proof or transport diagnostics. */ }
+      }
       if (e instanceof WorkerCredentialError && ["forbidden", "unavailable", "transport_invalid", "host_changed", "request_used", "rate_limited", "recovery_invalid",
-        "not_found", "approval_invalid", "approval_changed", "proof_invalid", "ack_invalid", "locked", "generation_changed", "expiry_invalid"]
+        "not_found", "approval_invalid", "approval_changed", "proof_invalid", "ack_invalid", "locked", "generation_changed", "expiry_invalid", "conflict"]
         .map(code => `worker_handoff_${code}`).includes(e.code)) throw e;
       if ((e as any)?.name === "ZodError") throw new WorkerCredentialError("validation_error", 400);
       throw new WorkerCredentialError("worker_handoff_unavailable", 503);

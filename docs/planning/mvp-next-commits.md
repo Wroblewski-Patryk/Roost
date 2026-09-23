@@ -1,5 +1,18 @@
 # Next development work
 
+Current owner amendment v25: [native handoff qualification](../architecture/worker-credential-lifecycle-v1.md)
+is **DONE: 9/9 PostgreSQL/HTTP results, 180/180 selected regressions**. The full
+unchanged 76-migration chain, exact owner/device binding, one-time delivery/ACK,
+concurrency, recovery, rollback and secret-free persistence are qualified using
+synthetic evidence in one disposable database. Real TLS/provisioning/launch remain
+BLOCKED; default routes closed and six flags false.
+Owned-database cleanup and existing database/Docker preservation: **PASS**.
+**Exactly one proposed next atom:** qualify an explicit HTTPS transport adapter
+on loopback with ephemeral test certificates and synthetic credentials, including
+origin/certificate pinning, redirect and proxy drift. No production provisioning,
+secret store, Worker/provider/model launch or activation. Stop after that atom.
+Earlier next-atom proposals below are historical.
+
 Current owner amendment v24: [synthetic Worker credential handoff](../architecture/worker-credential-lifecycle-v1.md)
 is **DONE for source/synthetic qualification: 7/7 tests**. Device request,
 fresh owner approval, exact origin/certificate binding, one-time poll, possession

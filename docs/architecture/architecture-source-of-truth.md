@@ -1,5 +1,18 @@
 # Architecture Source Of Truth
 
+Owner amendment v25 — native Worker handoff qualification
+
+[Native handoff evidence](worker-credential-lifecycle-v1.md): **DONE**, 9/9
+PostgreSQL/HTTP results and 180/180 selected regressions. All 76 migration files
+remain unchanged. Real Prisma transactions qualify one-time poll/ACK, exact
+owner/device binding, recovery, rollback and secret-free persistence; concurrent
+conflicts use proof-checked read-only spent metadata without command retries.
+Loopback HTTP uses synthetic HTTPS/certificate evidence, not real TLS. Default
+routes remain closed; six flags false. One next atom: loopback HTTPS adapter
+qualification with ephemeral test certificates and synthetic credentials, without
+production provisioning, secret storage, provider launch or activation. Earlier
+amendments and their next-atom proposals below are historical.
+
 Owner amendment v24: [synthetic Worker credential handoff](worker-credential-lifecycle-v1.md)
 adds a source-only device authorization flow on the existing ApiKey lifecycle.
 The unauthenticated device request stores only hashes and exact installation,

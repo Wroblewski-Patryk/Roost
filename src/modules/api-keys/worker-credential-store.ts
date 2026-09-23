@@ -8,7 +8,20 @@ export function createPrismaWorkerCredentialStore(client: PrismaClient): WorkerC
     try {
       return await client.$transaction(async db => {
         await db.$executeRaw`UPDATE ready_source_fence SET revision=revision+1 WHERE id=1`;
-        const tx: WorkerCredentialTx = {
+        return work(workerCredentialTransaction(db));
+      }, { isolationLevel: "Serializable", timeout: 20000, maxWait: 5000 });
+    } catch (error) {
+      if (error instanceof WorkerCredentialError) throw error;
+      if (error instanceof Prisma.PrismaClientKnownRequestError && (error.code === "P2034" || error.code === "P2002"
+        || error.code === "P2010" && ["40001", "40P01"].includes(String(error.meta?.code)))) denyWorkerCredential("worker_credential_conflict");
+      throw new WorkerCredentialError("worker_credential_unavailable", 503);
+    }
+  } };
+}
+
+// Shared operations remain inside the caller's single fenced transaction.
+export function workerCredentialTransaction(db: Prisma.TransactionClient): WorkerCredentialTx {
+        return {
           async primaryOwner(auth) {
             const w = await db.workspace.findUnique({ where: { id: auth.workspaceId } });
             return w?.ownerUserId === auth.userId && !!await db.workspaceMembership.findFirst({ where: { workspaceId: auth.workspaceId, userId: auth.userId, role: "owner" } });
@@ -53,13 +66,4 @@ export function createPrismaWorkerCredentialStore(client: PrismaClient): WorkerC
               actorType: "user", actorId: actorUserId, resourceType: "api_key", resourceId: key.id, payload: snapshot } });
           }
         };
-        return work(tx);
-      }, { isolationLevel: "Serializable", timeout: 20000, maxWait: 5000 });
-    } catch (error) {
-      if (error instanceof WorkerCredentialError) throw error;
-      if (error instanceof Prisma.PrismaClientKnownRequestError && (error.code === "P2034" || error.code === "P2002"
-        || error.code === "P2010" && ["40001", "40P01"].includes(String(error.meta?.code)))) denyWorkerCredential("worker_credential_conflict");
-      throw new WorkerCredentialError("worker_credential_unavailable", 503);
-    }
-  } };
 }

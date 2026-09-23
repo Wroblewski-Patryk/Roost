@@ -1,5 +1,18 @@
 # Gotowość połączenia Roost z agentami
 
+Aktualizacja v25: [natywny handoff Workera](worker-credential-lifecycle-v1.md)
+— **DONE: 9/9 wyników PostgreSQL/HTTP, 180/180 regresji**. Pełny łańcuch
+76 niezmienionych migracji sprawdzono na jednej własnej bazie tymczasowej.
+20 polli daje jeden sekret; 20 ACK-ów jedną aktywację. Pozostałe odpowiedzi to
+metadane bez sekretu, również po konflikcie Serializable, bez ponawiania komendy.
+Odmowy, recovery, rollback i brak sekretów w persystencji potwierdzone.
+Sprzątanie i zgodność baz oraz inwentarza Dockera ze stanem początkowym: PASS.
+Dowody HTTPS/certyfikatu są syntetyczne; realny TLS/provisioning/launch BLOCKED,
+domyślne trasy zamknięte i sześć flag false. Jeden następny atom: kwalifikacja
+adaptera HTTPS na loopback z efemerycznymi certyfikatami testowymi i syntetycznym
+poświadczeniem; bez produkcyjnego provisioningu, magazynu sekretów ani aktywacji.
+Starsze wyniki i propozycje kolejnych atomów poniżej są historyczne.
+
 Aktualizacja v24: [syntetyczny handoff poświadczenia Workera](worker-credential-lifecycle-v1.md)
 — **DONE: kontrakt źródłowy i 7/7 testów syntetycznych. PARTIAL: przyszła
 persystencja. BLOCKED: prawdziwy HTTPS/TLS i provisioning.** Instalacja wysyła

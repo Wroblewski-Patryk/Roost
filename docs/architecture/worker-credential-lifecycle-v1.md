@@ -1,5 +1,64 @@
 # Owner-controlled Worker credential lifecycle v1
 
+Owner amendment v25, 2026-09-23. **DONE for native handoff qualification:
+9/9 PostgreSQL/HTTP results (eight scenarios plus parent), 180/180 selected
+regressions. BLOCKED: real TLS, provisioning, secret storage and launch.**
+The complete unchanged 76-migration chain, including the handoff migration, was
+applied once to one uniquely owned disposable database. No applied migration was
+edited. Default application routes remain closed; all six admission flags stay
+false. Earlier v24/v23 results and proposed next atoms below are historical.
+
+The [native suite](../../src/tests/worker-handoff-api.ts) uses the actual handler,
+authentication middleware, service, shared credential operations and
+[Prisma adapter](../../src/modules/api-keys/worker-handoff-store.ts). Its HTTP
+server binds loopback only. HTTPS origin/certificate/redirect/proxy evidence is
+explicitly injected synthetic evidence, never a request header/body assertion;
+this is **not real TLS qualification**. Generator, hasher and HMAC proof use only
+ephemeral synthetic material. Controlled service time exercises deadline recovery.
+
+- Device request has no owner authority; a fresh primary owner accepts the exact
+  governed decision before delivery. Foreign/non-primary humans, agents, Workers,
+  stale authentication/decisions and binding/proof/transport drift are denied.
+- Twenty concurrent polls produce exactly one bounded raw-secret response and
+  one inactive candidate. Other responses contain spent-request metadata only.
+  Twenty concurrent ACKs produce one activation, one operation ledger entry and
+  one acknowledgement Event. Replay never retrieves the secret.
+- Serializable conflicts never retry a command or generator. A conflicting
+  poll/ACK may perform one read-only lookup, revalidate device proof and trusted
+  transport, and return spent-request metadata. Without that proof it denies.
+- Lost delivery becomes `delivery_unknown` after the deadline; its pending key
+  is revoked. New request plus new owner decision is required for recovery.
+  Concurrent rotation and pending recovery preserve one current generation.
+- Injected failures after request/approval writes, revoke/invalidation, candidate
+  insertion, ACK activation, ledger/Event writes and before commit restore the
+  complete snapshot including the Ready fence. Post-commit delivery failure
+  intentionally retains a spent request and inactive candidate until reconciliation.
+- PostgreSQL rejects direct activation before ACK, immutable-binding edits,
+  history deletion and an ACK missing its activation/audit commit. All public
+  tables, status and captured logs are checked for raw synthetic keys and device
+  proofs; none persists. Generated and decoded proof buffers are zeroed. This
+  does not claim erasure of JavaScript string copies or production secret storage.
+- No execution, claim, ticket, provider or launch receipt is created by handoff;
+  target process APIs are forbidden. Direct Codex, App Server and manual provider
+  admission remain denied and all six flags remain false.
+
+Cleanup and preservation **PASS**: both HTTP servers and Prisma connections
+closed. The owned loopback relay was identity-checked, had zero children and was
+stopped; its absence was verified. The unique database name/OID/owner/comment and
+zero sessions were verified before dropping only that database and confirming
+absence. Logical fingerprints of three existing databases (214 table/sequence
+entries), schema, catalog and role metadata match. Container/image/volume/network
+inventories match; the database container is back to exited. Soar and backend
+states are unchanged. Eight dirty documents, the unread design artifact and 39
+retained roots were not modified by this atom. No push or deploy.
+
+**Exactly one proposed next atom:** qualify an explicit HTTPS transport adapter
+on loopback using ephemeral test certificates and synthetic credentials, including
+origin/certificate pinning, redirects and proxy drift. No production provisioning,
+secret-store integration, Worker/provider/model launch or activation; stop after
+that transport qualification. Full API/web and production deployment tests were
+not run in this database atom.
+
 Owner amendment v24, 2026-09-23. **DONE for source-only handoff contract and
 synthetic qualification: 7/7 tests. PARTIAL: future persistence. BLOCKED: real
 HTTPS/TLS, provisioning and launch.** The local device request carries only
@@ -245,7 +304,7 @@ matches; the existing database container is back to exited, unrelated services
 and the stopped backend retain their original states. No new container, image,
 volume, role or persistent database remains. No push or deploy.
 
-**Exactly one proposed next atom:** qualify the additive handoff migration and
+**Historical v24 proposed next atom (completed by v25):** qualify the additive handoff migration and
 its native owner-decision, exact-origin/certificate, one-time poll/ack, recovery,
 concurrency and rollback boundaries on one explicitly authorized disposable
 PostgreSQL database using synthetic hashes/evidence only. Do not qualify real
