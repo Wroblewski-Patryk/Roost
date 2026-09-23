@@ -5,7 +5,8 @@ import { hashApiKey } from "./api-key";
 import { capabilityForRequest, hasCapability } from "./capabilities";
 import { verifyAuthToken } from "./token";
 import { sendApiError } from "../middleware/api-error";
-import type { WorkspaceRole } from "@prisma/client";
+import type { WorkspaceRole, PrismaClient } from "@prisma/client";
+import { workerTicketPrincipal, type WorkerTicketIdentity } from "./worker-ticket-principal";
 
 export type AuthContext = {
   userId?: string;
@@ -17,6 +18,7 @@ export type AuthContext = {
   credentialPrefix?: string;
   scopes?: string[];
   workspaceRole?: WorkspaceRole;
+  workerTicketIdentity?: WorkerTicketIdentity;
 };
 
 declare global {
@@ -35,7 +37,8 @@ function bearerToken(req: Request) {
   return authorization.slice("Bearer ".length).trim();
 }
 
-export async function requireAuthContext(req: Request, res: Response, next: NextFunction) {
+export function createAuthContextMiddleware(db: Pick<PrismaClient, "apiKey" | "workspaceMembership"> = prisma) {
+return async function requireAuthContext(req: Request, res: Response, next: NextFunction) {
   const token = bearerToken(req);
 
   if (token) {
@@ -44,7 +47,7 @@ export async function requireAuthContext(req: Request, res: Response, next: Next
       return sendApiError(res, 401, "invalid_auth_token");
     }
 
-    const membership = await prisma.workspaceMembership.findUnique({
+    const membership = await db.workspaceMembership.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId: payload.workspaceId,
@@ -73,7 +76,7 @@ export async function requireAuthContext(req: Request, res: Response, next: Next
   }
 
   const apiKeyHash = hashApiKey(apiKey);
-  const record = await prisma.apiKey.findFirst({
+  const record = await db.apiKey.findFirst({
     include: { boundAgent: true },
     where: {
       OR: [
@@ -105,20 +108,27 @@ export async function requireAuthContext(req: Request, res: Response, next: Next
     return sendApiError(res, 403, "forbidden");
   }
 
-  await prisma.apiKey.update({
+  // Ticket status is an observation, including at the authentication boundary.
+  // It must not refresh credential usage/expiry or produce audit writes.
+  const ticketStatusRead = req.method === "POST" && `${req.baseUrl}${req.path}`.replace(/\/+$/, "") === "/v1/agent-runtime/owner-tickets/status";
+  if (!ticketStatusRead) await db.apiKey.update({
     where: { id: record.id },
     data: { lastUsedAt: new Date(), updatedAt: record.updatedAt }
   });
 
+  const workerIdentity = workerTicketPrincipal(record);
   req.auth = {
     workspaceId: record.workspaceId,
     authType: "api_key",
     apiKeyId: record.id,
+    ...(workerIdentity ? { workerTicketIdentity: workerIdentity } : {}),
     ...(record.boundAgentId ? { agentId: record.boundAgentId, credentialVersion: record.credentialVersion, credentialPrefix: record.keyPrefix ?? undefined } : {}),
     scopes
   };
 
   return next();
+};
 }
 
+export const requireAuthContext = createAuthContextMiddleware();
 export const requireApiKey = requireAuthContext;

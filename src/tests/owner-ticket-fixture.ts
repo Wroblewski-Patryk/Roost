@@ -1,6 +1,6 @@
 import { generateKeyPairSync, sign, randomUUID, createHash } from "node:crypto";
 import { executionProviderRegistry } from "../modules/agent-runtime/execution-provider";
-import { createOwnerTicketService, ticketHash, ticketBlocked, type OwnerTicketTx, type OwnerTicketStore, type TicketRow, type TicketKey } from "../modules/agent-runtime/owner-ticket";
+import { createOwnerTicketService, ticketHash, ticketBlocked, type OwnerTicketTx, type OwnerTicketStore, type TicketRow, type TicketKey, type TicketContext } from "../modules/agent-runtime/owner-ticket";
 import type { AuthContext } from "../auth/api-key.middleware";
 
 export async function ownerTicketFixture() {
@@ -32,7 +32,7 @@ export async function ownerTicketFixture() {
     publicKeyDigest: createHash("sha256").update(publicKey.export({ type: "spki", format: "der" })).digest("hex") };
   const signer = { keyId: key.keyId, epoch: 1, publicKey: publicKey.export({ type: "spki", format: "pem" }).toString(),
     sign: async (bytes: Buffer) => sign(null, bytes, privateKey) };
-  const c = { acceptance, claimDigest: hash, challenge: "b".repeat(64), contextDigest: "c".repeat(64) };
+  const c: TicketContext = { acceptance, claimDigest: hash, challenge: "b".repeat(64), contextDigest: "c".repeat(64) };
   let state = { tickets: [] as TicketRow[], journal: [] as any[], audit: [] as any[], spent: [] as string[], key };
   let tail = Promise.resolve();
   const faults = { audit: false, spend: false, commit: false, current: false, member: true };

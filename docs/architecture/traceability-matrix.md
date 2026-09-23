@@ -1,5 +1,13 @@
 # Foundation requirements traceability
 
+RF-HOST-035 owner amendment v20: [Worker consume/status](worker-owner-ticket-channel-v1.md)
+source/synthetic DONE (102 tests), native persistence PARTIAL. Immutable existing
+credential/host/installation/claim binding, owner-only issue/revoke/rotate and
+read-only nonrenewable status; one synthetic owner/Worker consume commit out of 20.
+New migration unexecuted; v19 native evidence is historical. Provisioning,
+transport and launch unqualified, six flags false. Next: native binding migration,
+guard/race/read-only-status qualification on an explicitly authorized disposable DB.
+
 RF-HOST-035 owner amendment v19: [native database qualification](server-owner-ticket-v1.md)
 is DONE for the bounded atom: 15/15 integration results, 54/54 regressions,
 one commit from twenty concurrent consumes, rollback and cleanup/preservation PASS.

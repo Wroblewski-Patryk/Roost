@@ -1,5 +1,15 @@
 # Server-issued owner ticket and public verification contract v1
 
+## Current Worker channel: owner amendment v20
+
+[Worker consume/status contract](worker-owner-ticket-channel-v1.md): source and
+synthetic auth/binding/status qualification DONE; new native persistence remains
+PARTIAL. 102 tests pass. Consume accepts only the assigned existing credential
+with immutable host/installation/claim binding; issue/revoke/rotate remain owner-only.
+Status is read-only, nonrenewable and returns no launch authority. New additive
+binding migration is unexecuted; v19's database evidence does not cover it.
+Real provisioning, transport and launch stay blocked. Six flags false.
+
 ## Database qualification: owner amendment v19
 
 2026-09-23: **DONE for this database qualification atom**; production remains

@@ -167,11 +167,11 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
   return result;
 }
 
-export async function inspectReady(db: Prisma.TransactionClient, workspaceId: string, taskId: string, execution?: AgentExecution) {
-  const task = await lockReadyTask(db, workspaceId, taskId);
+export async function inspectReady(db: Prisma.TransactionClient, workspaceId: string, taskId: string, execution?: AgentExecution, readOnly = false) {
+  const task = readOnly ? await db.task.findFirst({ where: { id: taskId, workspaceId } }) : await lockReadyTask(db, workspaceId, taskId);
   if (!task) return { error: "task_not_found", readiness: { status: "not_ready" } };
   if(execution&&!(await db.$queryRaw<any[]>`SELECT finding_task_current(${taskId}::uuid) AS value`)[0].value){
-    await db.$executeRaw`SELECT finding_invalidate(${workspaceId}::uuid)`;
+    if (!readOnly) await db.$executeRaw`SELECT finding_invalidate(${workspaceId}::uuid)`;
     return {error:"agent_execution_context_invalidated",readiness:{status:"needs_revalidation",reason:"finding_context_changed"}};
   }
   const pin = object(task.executionReadiness);
@@ -207,7 +207,7 @@ export async function inspectReady(db: Prisma.TransactionClient, workspaceId: st
     if (bound.pinId !== pin.pinId || bound.revision !== pin.revision || execution.applicationId !== pin.applicationId) reason = "execution_pin_mismatch";
   }
   if (reason) {
-    if (pin.status === "ready" && reason !== "execution_pin_mismatch") {
+    if (!readOnly && pin.status === "ready" && reason !== "execution_pin_mismatch") {
       await db.task.update({ where: { id: taskId }, data: { executionReadiness: { ...pin, status: "needs_revalidation", reason, invalidatedAt: new Date().toISOString() } } });
       await db.event.create({ data: { workspaceId, taskId, type: "task_execution_ready_invalidated", source: "roost", resourceType: "task", resourceId: taskId, payload: { ...proof, reason } } });
     }

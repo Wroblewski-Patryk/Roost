@@ -1,5 +1,14 @@
 # Gotowość połączenia Roost z agentami
 
+Aktualizacja v20: [kanał consume/status Workera](worker-owner-ticket-channel-v1.md)
+— kontrakt i testy syntetyczne DONE, nowa persystencja PARTIAL. 102/102 testy PASS;
+wyścig owner/Worker: 1 z 20 consume, status bez odnowienia i zapisu. Credential
+wiąże workspace/instalację/host/próbę; Worker nie wystawia ani nie odwołuje biletu.
+Nowa migracja nie została wykonana na PostgreSQL; wynik v19 jej nie kwalifikuje.
+Realne poświadczenia, transport i uruchomienie pozostają zablokowane. Sześć flag false.
+Następny pojedynczy atom: natywne testy migracji/powiązań/read-only status na
+osobno autoryzowanej jednorazowej bazie, ze sprawdzonym sprzątaniem.
+
 Aktualizacja v19, 2026-09-23: [kwalifikacja PostgreSQL](server-owner-ticket-v1.md)
 — **DONE w zakresie testów bazy**: 15/15 wyników integracyjnych, 54/54 regresji.
 Dokładnie 1 z 20 równoległych consume zatwierdzony; rollback PASS.

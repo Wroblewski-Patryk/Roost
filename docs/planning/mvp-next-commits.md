@@ -1,5 +1,14 @@
 # Next development work
 
+Current owner amendment v20: [Worker consume/status](../architecture/worker-owner-ticket-channel-v1.md)
+source/synthetic DONE (102 tests), native persistence PARTIAL; no activation.
+**Exactly one proposed next atom:** qualify the additive binding migration,
+native credential/host guards, owner/Worker and revocation races, and read-only
+status on an explicitly authorized owned disposable PostgreSQL database. Use
+synthetic keys/evidence only, fix findings and verify cleanup/preservation.
+No real provisioning, transport qualification, provider launch or deployment.
+Stop after that atom; earlier proposals below are historical.
+
 Current owner amendment v19: [PostgreSQL qualification](../architecture/server-owner-ticket-v1.md)
 is DONE for this bounded atom: 73 migrations, 15/15 integration results and
 54/54 regressions pass; cleanup and existing-data/container comparison pass.

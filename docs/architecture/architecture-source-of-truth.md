@@ -1,5 +1,11 @@
 # Architecture Source Of Truth
 
+Owner amendment v20: [Worker ticket channel](worker-owner-ticket-channel-v1.md)
+adds existing-credential host/installation binding, shared one-use owner/Worker
+consume, and strictly read-only nonrenewable status. Source/synthetic DONE:
+102 tests pass. New additive migration/native guards are unqualified; no real
+credential is provisioned and no transport or launch is admitted. Six flags false.
+
 Owner amendment v19: [native owner-ticket database qualification](server-owner-ticket-v1.md)
 passes the 73-migration forward chain and 15 native PostgreSQL/HTTP checks,
 including one commit from twenty concurrent consumes and transactional rollback.

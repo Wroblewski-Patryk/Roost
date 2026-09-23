@@ -1,5 +1,14 @@
 # Self-hosting and private installation configuration
 
+Owner amendment v20: [Worker ticket binding](../architecture/worker-owner-ticket-channel-v1.md)
+adds nullable host/installation/epoch metadata to existing API keys and an
+immutable ticket-binding extension. Migration is additive and **unexecuted**;
+its native guards require separate database qualification before release. It
+creates no key, maps no existing credential automatically and provides no
+provisioning API. No secret enters the binding or status response. Status polls
+do not renew credentials or write ticket/Ready/audit state. Preserve binding
+history during rollback; never remove spent rows to recover authority.
+
 Owner amendment v19: the [ticket database qualification](../architecture/server-owner-ticket-v1.md)
 applied all 73 forward migrations in one uniquely owned disposable database in
 an existing local PostgreSQL instance. Identity-checked database removal and

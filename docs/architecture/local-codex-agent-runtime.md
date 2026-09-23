@@ -1,5 +1,12 @@
 # Local Codex Agent Runtime
 
+Owner amendment v20: [Worker ticket channel](worker-owner-ticket-channel-v1.md)
+uses an existing API key only when explicitly bound to installation/host and the
+original ticket claim. Worker may consume/read status; owner-only operations
+remain separate. Status never signs, renews or launches. 102 synthetic tests pass;
+new PostgreSQL persistence/guards and real transport remain unqualified. No Worker
+process ran, default composition stays unavailable, six flags false.
+
 Owner amendment v19: [PostgreSQL ticket qualification](server-owner-ticket-v1.md)
 passes native owner authentication, decision/Ready integration, concurrent
 one-use consume and rollback with a synthetic signer/evidence adapter.

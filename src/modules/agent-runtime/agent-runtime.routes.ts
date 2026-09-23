@@ -148,6 +148,7 @@ export const agentRuntimeRouter = Router();
 // Intentionally unavailable until server composition/transport is qualified.
 agentRuntimeRouter.post("/owner-tickets/issue", ownerTicketHandler("issue"));
 agentRuntimeRouter.post("/owner-tickets/consume", ownerTicketHandler("consume"));
+agentRuntimeRouter.post("/owner-tickets/status", ownerTicketHandler("status"));
 agentRuntimeRouter.post("/owner-tickets/revoke", ownerTicketHandler("revoke"));
 agentRuntimeRouter.post("/owner-tickets/rotate", ownerTicketHandler("rotate"));
 agentRuntimeRouter.use("/capability-suspensions", capabilitySuspensionRouter);
