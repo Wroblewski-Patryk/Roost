@@ -1,5 +1,14 @@
 # Self-hosting and private installation configuration
 
+Owner amendment v27: [source production transport admission](../architecture/worker-transport-admission-v1.md)
+qualifies only schema/authority/state transitions with synthetic signed metadata:
+9/9 results, 36/36 source tests. Public origin/certificate/CA digests and epochs
+may be installation configuration; private TLS keys and provisioning payloads are
+not accepted. No DNS/network/DB/Docker/system changes occur. Writable local anchors
+cannot independently prevent same-account rollback; production stays blocked.
+One next atom: source-only Prisma adapter and additive unapplied admission migration
+with synthetic transaction tests. Earlier successor proposals are historical.
+
 Owner amendment v26: [loopback HTTPS handoff](../architecture/worker-handoff-https-v1.md)
 passes 9/9 real HTTPS results and 189/189 selected tests with in-memory test CA,
 certificates and keys. No system trust, proxy, firewall, registry, database or

@@ -1,5 +1,13 @@
 # Worker handoff loopback HTTPS adapter v1
 
+Current successor v27: [production admission source contract](worker-transport-admission-v1.md)
+passes 9/9 synthetic results and 36/36 source tests; it adds no production
+transport composition. Exact owner authority, signed metadata, epochs and local
+anchor checks are qualified only in memory. Persistence remains absent and
+same-account rollback is not solved. The single next atom is a source-only Prisma
+adapter and additive unapplied migration with synthetic transaction tests.
+The v26 evidence below remains valid; its former next-atom proposal is historical.
+
 Owner amendment v26, 2026-09-23. **DONE for bounded loopback HTTPS adapter
 qualification: 9/9 results (eight scenarios plus parent).** Production TLS/DNS,
 certificate provisioning, secret storage and launch remain **BLOCKED**. This

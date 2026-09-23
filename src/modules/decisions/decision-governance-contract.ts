@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { decisionAuthorityDeclaration } from "./decision-authority-contract";
 import { workerCredentialIntent } from "../api-keys/worker-credential-contract";
+import { workerTransportIntent } from "../api-keys/worker-transport-contract";
 
 const uuid=z.string().uuid(), text=z.string().trim().min(3).max(2000), hash=z.string().regex(/^[a-f0-9]{64}$/);
 export const decisionNodeTypes=["task","application","project","procedure","company_record","resource","decision"] as const;
@@ -9,10 +10,12 @@ export const decisionProposal=z.object({requestId:uuid,expectedVersion:hash,titl
   findingAdjudication:z.object({versionId:uuid,principal:z.object({kind:z.enum(["user","agent"]),id:uuid}).strict()}).strict().optional(),
   authority:decisionAuthorityDeclaration.optional(),
   workerCredential:workerCredentialIntent.optional(),
+  workerTransport:workerTransportIntent.optional(),
   scopeReason:text,scope:z.array(decisionNode).min(1).max(8),supersedesId:uuid.nullable(),
   conflicts:z.array(z.object({kind:z.enum(["contradicts","narrows","replaces"]),oldProvision:text,newProvision:text,explanation:text}).strict()).max(12)
 }).strict().superRefine((v,c)=>{
   if(v.workerCredential&&v.authority)c.addIssue({code:"custom",message:"Worker credential decisions are reserved to the primary owner"});
+  if(v.workerTransport&&(v.authority||v.workerCredential))c.addIssue({code:"custom",message:"Transport admission requires its own primary-owner decision"});
   if(Boolean(v.supersedesId)!==Boolean(v.conflicts.length))c.addIssue({code:"custom",message:"A replacement requires exact conflicts"});
   if(new Set(v.scope.map(n=>n.type+":"+n.id)).size!==v.scope.length)c.addIssue({code:"custom",message:"Duplicate scope"});
   if(v.conflicts.some(x=>!v.decision.includes(x.newProvision)))c.addIssue({code:"custom",message:"New provision must be quoted exactly"});

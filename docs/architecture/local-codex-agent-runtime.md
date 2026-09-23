@@ -1,5 +1,15 @@
 # Local Codex Agent Runtime
 
+Owner amendment v27: [transport admission](worker-transport-admission-v1.md)
+passes 9/9 synthetic results and 36/36 selected source tests. Inspection requires
+exact owner-approved signed configuration, fresh authoritative head, local epoch
+anchor and signed peer metadata. DNS rebinding, old pins/configs, identity/key
+drift and copied anchors deny; revoke blocks new use without retry. Writable
+anchors do not solve coordinated same-account rollback. Persistence and production
+composition remain absent, six flags false. One next atom: source-only Prisma
+adapter and additive unapplied migration with synthetic transaction tests.
+Earlier amendments and successor proposals below are historical.
+
 Owner amendment v26: [loopback HTTPS handoff adapter](worker-handoff-https-v1.md)
 passes 9/9 real HTTPS results and 189/189 selected tests. Its sole client surface
 is request/poll/ACK/status with exact origin, normal TLS and certificate DER pin;

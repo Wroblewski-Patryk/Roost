@@ -1,5 +1,15 @@
 # Gotowość połączenia Roost z agentami
 
+Aktualizacja v27: [źródłowe admission transportu](worker-transport-admission-v1.md)
+— DONE: **9/9 wyników, 36/36 testów bez sieci**. Primary-owner auth/decyzja,
+podpisany origin/DNS/certyfikat, epoki credential/ticket key, stage/cutover/revoke,
+replay i rollback sprawdzone w pamięci. Persystencja PARTIAL: brak adaptera/migracji.
+Produkcja i odporność na skoordynowany rollback tego samego konta nadal BLOCKED;
+lokalny anchor nie jest security root, sześć flag false. Jeden następny atom:
+źródłowy adapter Prisma, addytywna niewykonana migracja i syntetyczne testy
+transakcji. Bez DB/Dockera, endpointów, provisioningu i aktywacji. Starsze wyniki
+i propozycje kolejnych atomów poniżej są historyczne.
+
 Aktualizacja v26: [adapter HTTPS handoffu na loopback](worker-handoff-https-v1.md)
 — **DONE: 9/9 wyników realnego lokalnego HTTPS, 189/189 wybranych testów**.
 TLS chain/hostname/time + dokładny pin certyfikatu, staged pin/cutover, brak

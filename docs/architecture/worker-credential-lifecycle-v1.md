@@ -1,5 +1,14 @@
 # Owner-controlled Worker credential lifecycle v1
 
+Owner amendment v27: [source transport admission](worker-transport-admission-v1.md)
+qualifies exact primary-owner authority, signed origin/DNS/certificate metadata,
+credential/ticket-key binding, monotonic epoch transitions and revoke in memory:
+9/9 results, 36/36 selected source tests. No durable adapter/migration yet; no
+real network, DB/Docker, provisioning or activation. Production admission remains
+BLOCKED, including independently trusted monotonicity/freshness; all six flags
+false. One next atom: source-only Prisma adapter and additive unapplied migration
+with synthetic ledger/rollback tests. Earlier next-atom proposals are historical.
+
 Owner amendment v26: [loopback HTTPS adapter qualification](worker-handoff-https-v1.md)
 is **DONE: 9/9 real loopback HTTPS results, 189/189 selected tests including prior
 regressions**. Normal TLS validation plus exact certificate DER SHA-256 pinning,

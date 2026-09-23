@@ -1,5 +1,15 @@
 # Architecture Source Of Truth
 
+Owner amendment v27: [production transport admission source contract](worker-transport-admission-v1.md)
+is DONE for schema/authority/state tests: 9/9 results, 36/36 source regressions.
+Exact primary-owner signed decisions bind origin/DNS/certificate and credential/
+ticket epochs; staged cutover, rollback/replay denial and terminal revoke are
+qualified in memory. Persistence is PARTIAL (no adapter/migration); production
+TLS/DNS/provisioning and same-account rollback protection remain BLOCKED. No
+network/DB/Docker or activation; six flags false. One next atom: source-only Prisma
+adapter plus additive unapplied admission migration and synthetic transaction
+tests. Earlier amendments and successor proposals below are historical.
+
 Owner amendment v26: [loopback HTTPS handoff adapter](worker-handoff-https-v1.md)
 is DONE: 9/9 real HTTPS results and 189/189 selected tests. It checks normal TLS
 plus certificate DER SHA-256 pinning, exact origin, staged epoch/cutover, no proxy

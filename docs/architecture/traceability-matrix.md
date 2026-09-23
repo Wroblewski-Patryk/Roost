@@ -1,5 +1,13 @@
 # Foundation requirements traceability
 
+RF-HOST-035 owner amendment v27: [transport admission contract](worker-transport-admission-v1.md)
+is DONE for source/synthetic qualification: 9/9 results, 36/36 source tests.
+Owner/decision/signature, exact identity/DNS/pin, epoch/replay/rotation/revoke,
+anchor and rollback checks pass in memory. Persistence PARTIAL (no adapter or
+migration); production and same-account rollback protection BLOCKED, six flags
+false. One next atom: source-only Prisma adapter, additive unapplied migration
+and synthetic transaction tests. Earlier successor proposals are historical.
+
 RF-HOST-035 owner amendment v26: [loopback HTTPS adapter](worker-handoff-https-v1.md)
 is DONE: 9/9 HTTPS results, 189/189 selected tests. Normal TLS plus exact certificate
 pin, bounded staged rotation, origin/proxy/redirect/timeout/JSON denials,

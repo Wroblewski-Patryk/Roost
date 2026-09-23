@@ -1,5 +1,17 @@
 # Next development work
 
+Current owner amendment v27: [source transport admission](../architecture/worker-transport-admission-v1.md)
+is DONE for 9/9 synthetic results and 36/36 source tests. Exact owner/signed
+decision, origin/DNS/pin, epochs/rotation/revoke, anchors and rollback are qualified
+in memory only. Persistence PARTIAL; production provisioning and independently
+trusted rollback resistance BLOCKED. No network/DB/Docker or activation; flags false.
+**Exactly one proposed next atom:** implement a source-only Prisma persistence
+adapter and additive unapplied migration for admission history, high-water epochs,
+revocation and audit, with synthetic transaction/rollback tests. Do not run a real
+database, contact endpoints or provision/activate anything. Stop after that atom;
+native database qualification requires a separate later authorization. Older
+proposals below are historical.
+
 Current owner amendment v26: [loopback HTTPS adapter](../architecture/worker-handoff-https-v1.md)
 is DONE: 9/9 real HTTPS results, 189/189 selected tests, cleanup PASS. Certificates
 are ephemeral/in-memory, TLS/pin/origin/proxy/redirect and resource boundaries
