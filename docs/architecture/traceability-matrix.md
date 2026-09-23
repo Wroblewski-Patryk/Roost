@@ -1,20 +1,19 @@
 # Foundation requirements traceability
 
-RF-HOST-035 owner amendment v37: [lifecycle COMMIT acknowledgement](worker-identity-lifecycle-v1.md)
-now requires one fresh read-only confirmation of the exact immutable record,
-matching native audit/digest and committed fence. Prisma 5.22's library engine
-returned an error object without `error_code`; its JS classifier accepted it.
-A raw-driver/wire probe reproduced this independently of the lifecycle wrapper.
-Unconfirmed outcomes return non-retryable `reconciliation_required`; no write
-or callback is replayed. **117/117 source results**, build and lint pass.
-The formerly red native deferred-COMMIT assertion now passes (2/2 results,
-including parent); 79 migrations remain unchanged. Full post-fix native
-qualification stays PARTIAL; production BLOCKED, five other gaps unresolved.
-All six flags and transportQualified/launchAuthority remain false. The current
-run creates no helper files; cleanup/preservation results are recorded in the
-linked contract. Earlier retained artifacts are outside this delegated scope.
-One next recommendation: separately authorize the full native lifecycle suite
-against the repaired adapter. No activation; earlier next steps are historical.
+RF-HOST-035 owner amendment v38: [full native lifecycle qualification](worker-identity-lifecycle-v1.md)
+passes **15/15 scenarios, 16/16 runner results**, with no skips or xfail.
+All 79 migrations apply unchanged; **117/117 source results**, build and lint pass.
+Normal writes require fresh read-only commit evidence. Deferred/late rejection,
+real connection loss before COMMIT and a cut response after confirmed PostgreSQL
+COMMIT fail closed without callback/write replay. Epochs, terminal revocation,
+20-writer concurrency, writer/guard fencing and read purity all pass.
+Bounded lifecycle persistence qualification DONE; overall RF-HOST-035 PARTIAL,
+production BLOCKED. Only four complete-generation lifecycle facts are evidenced;
+five bootstrap gaps remain, all six flags and transportQualified/launchAuthority
+false. Cleanup and preservation evidence is in the linked contract.
+One next recommendation: a source-only canonical issuer public-key authority
+contract and required writer-fence evidence using existing key records, without
+real key provisioning or activation. Earlier next steps are historical.
 
 RF-HOST-035 owner amendment v32: [durable bootstrap ledger](worker-bootstrap-ledger-v1.md)
 is **DONE source-only: 13/13 adapter results, 86/86 selected source results**.

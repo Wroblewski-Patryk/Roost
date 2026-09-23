@@ -8,7 +8,7 @@ import https from 'node:https';
 import dns from 'node:dns';
 import childProcess from 'node:child_process';
 import { Prisma,PrismaClient } from '@prisma/client';
-import { createPrismaWorkerIdentityLifecycleStore,inspectCanonicalLifecycle } from '../modules/api-keys/worker-identity-lifecycle-store';
+import { createPrismaWorkerIdentityLifecycleStore,inspectCanonicalLifecycle,LifecycleReconciliationRequired } from '../modules/api-keys/worker-identity-lifecycle-store';
 import { lifecycleMissing,type LifecycleIntent,type LifecycleRecord } from '../modules/api-keys/worker-identity-lifecycle';
 import { createCanonicalBootstrapAuthoritySource,bootstrapAuthorityGaps,CanonicalBootstrapBlocked } from '../modules/api-keys/worker-bootstrap-authority-source';
 import { reviewDigest } from '../modules/agent-runtime/task-review-contract';
@@ -18,6 +18,7 @@ type Db=Prisma.TransactionClient;
 test('Worker identity lifecycle native PostgreSQL qualification in one owned disposable database',{skip:!enabled,timeout:240000},async t=>{
   const commitOnly=process.env.WORKER_IDENTITY_NATIVE_SCENARIO==='commit';
   const scenario=(name:string,work:()=>Promise<void>)=>commitOnly&&!name.startsWith('real rollback')?Promise.resolve():t.test(name,work);
+  if(!commitOnly)assert.equal(process.env.WORKER_IDENTITY_NATIVE_FAULT_RELAY,'1','Full suite requires the owned in-memory fault relay');
   assert.match(enabled!,/^companycore_test_identity_[a-f0-9]{32}$/);
   const url=new URL(process.env.DATABASE_URL!);assert.equal(url.hostname,'127.0.0.1');assert.equal(url.pathname,'/'+enabled);
   const db=new PrismaClient();await db.$connect();t.after(()=>db.$disconnect());
@@ -38,6 +39,7 @@ test('Worker identity lifecycle native PostgreSQL qualification in one owned dis
   async function setup(legacy=true){
     const workspaceId=randomUUID(),ownerId=randomUUID(),hostId=randomUUID(),installationId=randomUUID(),installationGeneration=randomUUID(),slug=randomUUID();
     let before:((tx:Db)=>Promise<void>)|undefined,fault='';const modes:string[]=[];
+    const attempts={writes:0,appends:0,confirmations:0};
     async function host(tx:Db){return tx.agentHost.create({data:{id:hostId,workspaceId,name:'Synthetic lifecycle host',slug,platform:'synthetic',status:'online'}});}
     async function installation(tx:Db){await tx.trustedProviderTicketKey.create({data:{workspaceId,installationId,keyId:'fixture',epoch:1,publicKeyDigest:hash('d')}});}
     await prepare(async tx=>{
@@ -47,14 +49,27 @@ test('Worker identity lifecycle native PostgreSQL qualification in one owned dis
       if(legacy){await host(tx);await installation(tx);}
     });
     const wrapped=new Proxy(db,{get(target,key){if(key!=='$transaction')return Reflect.get(target,key);return (work:any,options:any)=>target.$transaction(async tx=>{
+      if(options.isolationLevel==='Serializable')attempts.writes++;
       assert.equal((await tx.$queryRaw<any[]>`SHOW session_replication_role`)[0].session_replication_role,'origin');
       if(before){const hook=before;before=undefined;await hook(tx);}
       const proxy=new Proxy(tx,{get(target,key){const value=Reflect.get(target,key);if(key==='$executeRaw')return async(...args:any[])=>{
+        if(args[0].join('?').startsWith('INSERT INTO worker_identity_lifecycle('))attempts.appends++;
         const result=await (value as any).apply(target,args),sql=args[0].join('?');
         if(sql==='SET TRANSACTION READ ONLY')modes.push((await tx.$queryRaw<any[]>`SHOW transaction_read_only`)[0].transaction_read_only);
         if(fault==='fence'&&sql.startsWith('UPDATE ready_source_fence')||fault==='append'&&sql.startsWith('INSERT INTO worker_identity_lifecycle('))throw Error('synthetic rollback');return result;
+      };if(key==='$queryRaw')return async(...args:any[])=>{
+        if(args[0].join('?').includes('WHERE l.id='))attempts.confirmations++;
+        return (value as any).apply(target,args);
       };return typeof value==='function'?value.bind(target):value;}});
-      const result=await work(proxy);if(fault==='precommit')throw Error('synthetic rollback');return result;
+      const result=await work(proxy);if(fault==='precommit')throw Error('synthetic rollback');
+      if(fault==='connection_before_commit'&&options.isolationLevel==='Serializable'){
+        const pid=(await tx.$queryRaw<any[]>`SELECT pg_backend_pid() AS pid`)[0].pid;
+        // Only this owned transaction, after its callback/writes, before COMMIT.
+        const terminated=await db.$queryRaw<any[]>`SELECT pg_terminate_backend(pid) AS terminated FROM pg_stat_activity
+          WHERE pid=${pid} AND datname=current_database() AND pid<>pg_backend_pid()`;
+        assert.deepEqual(terminated,[{terminated:true}]);
+      }
+      return result;
     },{...options,maxWait:15000,timeout:30000});}});
     const store=createPrismaWorkerIdentityLifecycleStore(wrapped);
     const intent=(kind:'host'|'installation',patch:Partial<LifecycleIntent>={}):LifecycleIntent=>({schemaVersion:'worker-identity-lifecycle-v1',workspaceId,kind,
@@ -72,13 +87,15 @@ test('Worker identity lifecycle native PostgreSQL qualification in one owned dis
     const apply=async(i:LifecycleIntent)=>store.apply(await command(i));
     const next=(r:LifecycleRecord,patch:Partial<LifecycleIntent>):LifecycleIntent=>({...r.intent,expected:{id:r.id,epoch:r.epoch,generation:r.intent.generation},adoptionEvidenceDigest:null,...patch});
     const binding=(h:LifecycleRecord,i:LifecycleRecord)=>({workspaceId,hostId,installationId,hostEpoch:h.epoch,installationEpoch:i.epoch,hostFingerprint:h.intent.hostFingerprint!,ticketKeyId:'fixture',ticketKeyEpoch:1,ticketPublicKeyDigest:hash('d')});
-    const pair=async()=>{const i=await apply(intent('installation')),h=await apply(intent('host'));return {i,h,b:binding(h,i)};};
+    const pair=async()=>{const previous={...attempts},i=await apply(intent('installation')),h=await apply(intent('host'));
+      assert.deepEqual(attempts,{writes:previous.writes+2,appends:previous.appends+2,confirmations:previous.confirmations+2});
+      return {i,h,b:binding(h,i)};};
     async function direct(c:Awaited<ReturnType<typeof command>>,old:LifecycleRecord|null,state='active'){
       const i=c.intent,r={id:c.operationId,intent:i,epoch:(old?.epoch??0)+1,state,ownerId,decisionId:c.decisionId,decisionRevision:1,previousId:old?.id??null};
       return db.$transaction(tx=>tx.$executeRaw`INSERT INTO worker_identity_lifecycle(id,workspace_id,kind,subject_id,epoch,generation,state,previous_id,decision_id,record,record_digest)
         VALUES(${r.id}::uuid,${workspaceId}::uuid,${i.kind},${i.subjectId}::uuid,${r.epoch},${i.generation}::uuid,${state},${r.previousId}::uuid,${c.decisionId}::uuid,${JSON.stringify(r)}::jsonb,${hash('0')})`,{isolationLevel:'Serializable'});
     }
-    return {workspaceId,ownerId,hostId,installationId,slug,store,intent,command,apply,next,binding,pair,direct,host,installation,modes,
+    return {workspaceId,ownerId,hostId,installationId,slug,store,intent,command,apply,next,binding,pair,direct,host,installation,modes,attempts,
       before:(hook:(tx:Db)=>Promise<void>)=>before=hook,fault:(value:string)=>fault=value};
   }
 
@@ -142,6 +159,32 @@ test('Worker identity lifecycle native PostgreSQL qualification in one owned dis
         assert.equal(outcome.reportedSuccess,false,'Adapter reported success although PostgreSQL rolled back COMMIT');
       }else{await assert.rejects(f.store.apply(c),fault);assert.deepEqual(await snapshot(),before,fault);}
     }
+  });
+  await scenario('late native COMMIT rejection remains atomic and does not replay the callback',async()=>{
+    await db.$executeRawUnsafe("CREATE FUNCTION native_lifecycle_late_fail() RETURNS TRIGGER LANGUAGE plpgsql AS $$ BEGIN PERFORM pg_sleep(0.1); RAISE EXCEPTION 'synthetic late rejection'; END $$");
+    const f=await setup(),{h}=await f.pair(),c=await f.command(f.next(h,{action:'revoke'})),before=await snapshot(),attempts={...f.attempts};
+    f.before(tx=>tx.$executeRawUnsafe('CREATE CONSTRAINT TRIGGER native_late_failure AFTER INSERT ON worker_identity_lifecycle DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION native_lifecycle_late_fail()').then(()=>{}));
+    await assert.rejects(f.store.apply(c),LifecycleReconciliationRequired);
+    assert.deepEqual(await snapshot(),before);
+    assert.equal(f.attempts.writes-attempts.writes,1);assert.equal(f.attempts.appends-attempts.appends,1);
+  });
+  await scenario('real connection loss before COMMIT rolls back and never retries an uncertain write',async()=>{
+    const f=await setup(),{h}=await f.pair(),c=await f.command(f.next(h,{action:'revoke'})),before=await snapshot(),attempts={...f.attempts};
+    f.fault('connection_before_commit');await assert.rejects(f.store.apply(c),LifecycleReconciliationRequired);
+    assert.deepEqual(await snapshot(),before);
+    assert.equal(f.attempts.writes-attempts.writes,1);assert.equal(f.attempts.appends-attempts.appends,1);
+  });
+  await scenario('lost real COMMIT response requires reconciliation without replay although the operation committed',async()=>{
+    const f=await setup(),{h}=await f.pair(),c=await f.command(f.next(h,{action:'revoke'})),attempts={...f.attempts};
+    f.before(tx=>tx.$queryRawUnsafe("SELECT 'native_drop_commit_response'").then(()=>{}));
+    const outcome=await f.store.apply(c).then(()=>({reportedSuccess:true,error:null}),error=>({reportedSuccess:false,error}));
+    const committed=await db.$queryRaw<any[]>`SELECT l.epoch,l.state,(a.record_digest=l.record_digest AND f.revision>=a.fence_revision) AS verified
+      FROM worker_identity_lifecycle l JOIN worker_identity_lifecycle_audit a ON a.operation_id=l.id JOIN ready_source_fence f ON f.id=1
+      WHERE l.id=${c.operationId}::uuid`;
+    assert.deepEqual(committed,[{epoch:2,state:'revoked',verified:true}]);
+    assert.equal(f.attempts.writes-attempts.writes,1);assert.equal(f.attempts.appends-attempts.appends,1);
+    assert.equal(outcome.reportedSuccess,false,'A lost native COMMIT response must not be reported as success');
+    assert.ok(outcome.error instanceof LifecycleReconciliationRequired);assert.equal(outcome.error.retryable,false);
   });
   await scenario('actual register/upsert, heartbeat/claim shapes fence writes and cannot mutate or delete adopted authority',async()=>{
     const f=await setup(),{h,i}=await f.pair(),before=(await db.$queryRaw<any[]>`SELECT revision::text AS n FROM ready_source_fence WHERE id=1`)[0].n;

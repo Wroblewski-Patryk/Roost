@@ -4,12 +4,13 @@ The caller explicitly selects an existing PostgreSQL container. No credentials,
 private dotenv, Docker configuration, files or existing databases are changed.
 Only the uniquely marked disposable database is written. Cleanup runs in finally.
 """
-import argparse, hashlib, json, os, pathlib, subprocess, threading, time, uuid
+import argparse, hashlib, json, os, pathlib, re, socket, subprocess, threading, time, uuid
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--container', required=True)
 parser.add_argument('--db-user', required=True)
 parser.add_argument('--pause-after-diagnosis', action='store_true')
+parser.add_argument('--scenario', choices=['commit','full'], default='commit')
 args = parser.parse_args()
 repo = pathlib.Path.cwd()
 hidden = subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
@@ -56,19 +57,26 @@ const net=require('node:net'),{spawn}=require('node:child_process'),peers=new Se
 const emit=v=>console.log(JSON.stringify(v));
 const server=net.createServer(socket=>{
  const child=spawn('docker',['exec','-i',process.env.PROBE_CONTAINER,'nc','127.0.0.1','5432'],{windowsHide:true,stdio:['pipe','pipe','ignore']});
- const peer={socket,child};peers.add(peer);let backend=Buffer.alloc(0),frontend=Buffer.alloc(0),startup=true;
- // Passive framing only: no message is edited, dropped or replayed. Never log
- // query text, row values, credentials or raw error messages.
+ const peer={socket,child};peers.add(peer);let backend=Buffer.alloc(0),frontend=Buffer.alloc(0),startup=true,dropCommit=false;
+ // Diagnostic traffic is passive. Only the explicit full-suite fault marker
+ // arms a one-connection cut after PostgreSQL's real COMMIT completion. Never
+ // log query text, row values, credentials or raw error messages; never replay.
  socket.on('data',data=>{frontend=Buffer.concat([frontend,data]);while(frontend.length>=5){
    if(startup){const n=frontend.readInt32BE(0);if(n<8||n>1048576||frontend.length<n)break;const ssl=n===8;frontend=frontend.subarray(n);if(!ssl)startup=false;continue;}
    const n=frontend.readInt32BE(1)+1;if(n<5||n>1048576||frontend.length<n)break;
+   if(process.env.PROBE_FAULTS==='1'&&(frontend[0]===81||frontend[0]===80)){
+     const start=frontend[0]===81?5:frontend.indexOf(0,5)+1,end=frontend.indexOf(0,start);
+     if(frontend.subarray(start,end).toString()==="SELECT 'native_drop_commit_response'"){dropCommit=true;emit({faultArmed:'drop_commit_response'});}
+   }
    if(frontend[0]===81){const query=frontend.subarray(5,n-1).toString().trim().toUpperCase();if(query==='COMMIT'||query==='ROLLBACK')emit({wireRequest:query});}
    frontend=frontend.subarray(n);
  }});
  child.stdout.on('data',data=>{backend=Buffer.concat([backend,data]);while(backend.length){
    if(backend.length<5)break;const n=backend.readInt32BE(1)+1;if(n<5||n>16777216||backend.length<n)break;
    if(backend[0]===69){const fields=backend.subarray(5,n).toString().split('\0'),code=fields.find(x=>x.startsWith('C'));emit({wireErrorCode:code?.slice(1)});}
-   if(backend[0]===67){const tag=backend.subarray(5,n-1).toString();if(tag==='COMMIT'||tag==='ROLLBACK')emit({wireCompletion:tag});}
+   if(backend[0]===67){const tag=backend.subarray(5,n-1).toString();if(tag==='COMMIT'||tag==='ROLLBACK')emit({wireCompletion:tag});
+     if(tag==='COMMIT'&&dropCommit){dropCommit=false;child.stdout.unpipe(socket);socket.destroy();emit({faultApplied:'drop_commit_response'});}
+   }
    backend=backend.subarray(n);
  }});
  socket.pipe(child.stdin);child.stdout.pipe(socket);
@@ -115,7 +123,7 @@ try:
         except Exception: time.sleep(.5)
     else: raise RuntimeError('PostgreSQL readiness timeout')
     baseline = fingerprint()
-    print(json.dumps({'baselineDatabases':len(baseline['databases']),'baselineCaptured':True}),flush=True)
+    print(json.dumps({'baselineDatabases':len(baseline['databases']),'baselineTablesSequences':sum(len(d['rows']) for d in baseline['databases'].values()),'baselineCaptured':True}),flush=True)
     assert name not in [d['datname'] for d in baseline['catalog']]
     docker('exec',args.container,'createdb','-U',args.db_user,name)
     owned = True
@@ -125,17 +133,18 @@ try:
     sql(name,"CREATE TABLE native_commit_probe(id INT); CREATE FUNCTION native_commit_probe_fail() RETURNS TRIGGER LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'synthetic deferred commit rejection'; END $$; CREATE CONSTRAINT TRIGGER native_commit_probe_failure AFTER INSERT ON native_commit_probe DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION native_commit_probe_fail();")
     env = {k:v for k,v in os.environ.items() if k.upper() in ['PATH','PATHEXT','SYSTEMROOT','TEMP','TMP','APPDATA','LOCALAPPDATA','COMSPEC']}
     env['PROBE_CONTAINER'] = args.container
+    env['PROBE_FAULTS'] = '1' if args.scenario=='full' else '0'
     bridge = subprocess.Popen(['node','-e',bridge_code],env=env,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True,creationflags=hidden)
     port = json.loads(bridge.stdout.readline())['port']
     def collect():
         for line in bridge.stdout: wire.append(json.loads(line))
     reader = threading.Thread(target=collect,daemon=True);reader.start()
-    env.update(DATABASE_URL=f'postgresql://{args.db_user}@127.0.0.1:{port}/{name}?schema=public&connection_limit=25&sslmode=disable',NODE_ENV='test',COMPANYCORE_SKIP_DOTENV='1',WORKER_IDENTITY_NATIVE_DATABASE=name,WORKER_IDENTITY_NATIVE_SCENARIO='commit')
+    env.update(DATABASE_URL=f'postgresql://{args.db_user}@127.0.0.1:{port}/{name}?schema=public&connection_limit=25&sslmode=disable',NODE_ENV='test',COMPANYCORE_SKIP_DOTENV='1',WORKER_IDENTITY_NATIVE_DATABASE=name,WORKER_IDENTITY_NATIVE_SCENARIO=args.scenario,WORKER_IDENTITY_NATIVE_FAULT_RELAY=env['PROBE_FAULTS'])
     result = subprocess.run(['node','-e',preamble+diagnosis],env=env,text=True,capture_output=True,timeout=60,creationflags=hidden)
     print(result.stdout,flush=True);assert result.returncode==0
     time.sleep(.1);print(json.dumps({'wireDiagnosis':wire}),flush=True)
     if args.pause_after_diagnosis:
-        print('READY: enter verify to apply the migration chain and run only the commit scenario; any other input cleans up.',flush=True)
+        print('READY: enter verify to apply the migration chain and run the selected suite; any other input cleans up.',flush=True)
         if input().strip()!='verify': raise RuntimeError('Verification not requested; cleaning up')
     chain = []
     for migration in sorted((repo/'prisma/migrations').glob('*/migration.sql')):
@@ -143,11 +152,23 @@ try:
     print(json.dumps({'migrationsApplied':len(chain),'chainDigest':hashlib.sha256(''.join(chain).encode()).hexdigest()}),flush=True)
     result = subprocess.run(['node','-e',preamble+"require('./dist/tests/worker-identity-lifecycle-native.test.js');"],env=env,text=True,capture_output=True,timeout=180,creationflags=hidden)
     print(result.stdout,flush=True)
-    if result.returncode: raise RuntimeError('Native commit regression failed')
+    time.sleep(.1)
+    print(json.dumps({'faultRelay':{'armed':sum(v.get('faultArmed')=='drop_commit_response' for v in wire),'applied':sum(v.get('faultApplied')=='drop_commit_response' for v in wire)}}),flush=True)
+    if result.returncode: raise RuntimeError('Native lifecycle qualification failed')
+    assert re.search(r'^# skipped 0$',result.stdout,re.M) and re.search(r'^# fail 0$',result.stdout,re.M)
+    if args.scenario=='full':
+        assert re.search(r'^# tests 16$',result.stdout,re.M),'Full suite count differs'
+        time.sleep(.1)
+        assert sum(v.get('faultArmed')=='drop_commit_response' for v in wire)==1
+        assert sum(v.get('faultApplied')=='drop_commit_response' for v in wire)==1
+        print(json.dumps({'lostCommitResponseCuts':1,'fullSuite':True,'skips':0}),flush=True)
 finally:
     if bridge is not None:
         bridge.stdin.write('close\n');bridge.stdin.flush();bridge.wait(timeout=15);reader.join(timeout=5)
         assert bridge.returncode==0,'Relay cleanup uncertain'
+        with socket.socket() as probe:
+            probe.settimeout(1)
+            assert probe.connect_ex(('127.0.0.1',port))!=0,'Relay listener remains'
     if owned:
         actual = json.loads(sql('postgres',"SELECT row_to_json(x) FROM (SELECT oid::text,pg_get_userbyid(datdba) owner,shobj_description(oid,'pg_database') marker FROM pg_database WHERE datname='"+name+"') x;"))
         assert actual=={'oid':oid,'owner':args.db_user,'marker':marker},'Owned database identity mismatch'

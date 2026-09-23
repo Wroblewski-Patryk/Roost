@@ -1,5 +1,71 @@
 # Canonical Worker host and installation lifecycle v1
 
+## Full native qualification v38 (2026-09-23)
+
+**15/15 native scenarios PASS, 16/16 runner results including the parent, no
+skips, cancellations or xfail.** All twelve original scenarios run against the
+v37 adapter, with three additional real failure scenarios. The complete chain
+of **79 unchanged migrations** applies in exactly one marked disposable database.
+Source regressions **117/117**, server build and lint pass. This atom changes
+only qualification tools/tests and documentation; runtime and migrations remain
+unchanged. Bounded lifecycle persistence qualification is **DONE**; overall
+RF-HOST-035 remains **PARTIAL**, production admission **BLOCKED**.
+
+- Normal host/installation adoption counts exactly one write callback, one append
+  and one separate read-only confirmation per operation. Same-transaction create,
+  explicit owner adoption, legacy denial, exact owner/decision/identity bindings,
+  independent generations, monotonic epochs, terminal revoke, replacement,
+  un-revoke/ABA/replay denial and twenty competing writers with one winner pass.
+- The original deferred-COMMIT rollback assertion remains intact. Fence, append,
+  history, automatic audit and pre-COMMIT faults restore exact snapshots. A new
+  deferred trigger sleeps before rejection and also restores the entire snapshot.
+- Terminating only the owned transaction's PostgreSQL backend after the write
+  callback, before COMMIT, yields non-retryable `reconciliation_required`, with
+  complete rollback and exactly one callback/append. This native wrapper's
+  30-second transaction timeout bounds the observed loss; no timing SLA is inferred.
+- The in-memory relay is passive except for one explicitly armed connection cut:
+  it observes PostgreSQL's real COMMIT completion, then disconnects before
+  delivering that response. Exactly one arm and one cut are verified. The
+  operation's epoch/state, matching audit and fence remain committed, while the
+  adapter returns non-retryable `reconciliation_required`. Callback and append
+  counts remain one. Neither ambiguous outcome replays a command.
+- Real anchor/key writers, existing credential invalidation, a visible shared
+  fence lock wait, missing/disabled/rebound trigger bindings, replica-mode denial,
+  incomplete history/audit and repeated SQL READ ONLY inspection all pass.
+  Guard evidence is not a claim of resistance to superuser function replacement.
+
+BootstrapAuthoritySource clears only `host_epoch_unavailable`,
+`host_revocation_history_unavailable`, `installation_epoch_unavailable` and
+`installation_revocation_unavailable` for the complete, committed exact generation.
+It still refuses authority with `issuer_public_key_unavailable`,
+`bootstrap_channel_authority_unavailable`, `bootstrap_ticket_revocation_unavailable`,
+`signed_current_decision_unavailable` and `issuer_writer_fence_unproven`.
+
+All six flags remain false: `implementationReady`, `executionSupported`,
+`pilotReady`, `liveAdmissionAllowed`, `pilotExecutionAuthorized`,
+`pilotExecutionStarted`; `transportQualified` and `launchAuthority` are false.
+No real credentials/issuer/delivery, HTTPS/DNS/provisioning, endpoints/default
+composition, target/model/profile or activation is introduced.
+
+Current-run cleanup/preservation **PASS**: the owned DB was checked by name,
+OID, owner and marker, had zero sessions, was dropped and verified absent. The
+relay process exited and its listener was verified closed; no external helper
+files/directories were created. PostgreSQL returned to its original exited state,
+backend stayed exited and both unrelated containers retained their running state.
+Container/image/volume/network inventory matches the baseline. The three existing
+connectable databases and 214 tables/sequences, schema/catalog/roles have identical
+logical fingerprints: SHA-256
+`e9e019524b6010b02b30b4635fff99133c4429ffac3f537b05ac860485a281f1`.
+The 79-file migration-chain digest is
+`c7b92ae558c802ffc96a6c91660961659f3bc3f732bed1074f0a9ff8ef591f13`.
+Historical retained roots and the excluded sandbox-only folder were not inspected
+or changed; this cleanup result makes no claim about those prior artifacts.
+
+**One next recommendation:** define the source-only canonical issuer public-key
+authority contract and required writer-fence evidence using existing key records,
+without real key provisioning or activation. This recommendation is not started.
+The v37/v36/v35 results and successor recommendations below are historical.
+
 ## COMMIT acknowledgement repair v37 (2026-09-23)
 
 The bounded acknowledgement defect is repaired. **117/117 source results**
