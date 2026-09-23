@@ -1,5 +1,89 @@
 # Canonical Worker host and installation lifecycle v1
 
+## Native qualification v36 (2026-09-23): BLOCKED on commit acknowledgement
+
+The full **79-migration chain applied successfully** in one ownership-checked
+disposable synthetic PostgreSQL database. No migration, including the new
+lifecycle migration, required modification. The
+[native suite](../../src/tests/worker-identity-lifecycle-native.test.ts) has
+**11/12 passing scenarios and one failure**; the runner counts 13 results,
+11 passed and two failed including the parent. The separate **114/114 source
+regressions**, build and lint pass. Native qualification remains **PARTIAL**;
+successful lifecycle-write acknowledgement and production admission are **BLOCKED**.
+
+The failure is reproducible: a deferred constraint trigger raises during COMMIT.
+PostgreSQL rolls back the lifecycle state/history, audit and shared fence, proven
+by exact before/after snapshots, but the current adapter returns its successful
+record. An awaited transaction result alone therefore does not prove that the
+record committed on this tested stack. The native test deliberately remains red;
+it is neither skipped nor weakened. This qualification atom adds evidence and
+does not change the runtime adapter or infer that a failed commit succeeded.
+
+Passing native evidence includes:
+
+- Unknown legacy remains blocked; explicit current-owner adoption and genuinely
+  same-transaction creation establish independent generations. Wrong/current
+  owner, ambiguous membership and expired intent fail in the adapter and SQL guard.
+- Monotonic epochs, terminal revoke, immutable history, fresh replacement and
+  installation/host binding reject un-revoke, stale identity, fingerprint reuse,
+  ABA and replay. Twenty concurrent native transactions have exactly one winner.
+- Failures after fence, append, history and audit writes and before commit roll
+  back atomically. PostgreSQL also rolls back the deferred commit failure, but
+  its adapter acknowledgement is the unresolved failed assertion above.
+- Real Prisma upsert/heartbeat/claim write shapes retain heartbeat reachability
+  and reject identity/authority mutations, disable toggles, deletion, reinsertion
+  and birth-stamp changes. Existing credential invalidation remains effective.
+  Key rotation preserves installation identity; it does not qualify issuer fencing.
+- A held shared fence visibly blocks a second host writer with a PostgreSQL lock
+  wait until release. All nine required guards are individually disabled in
+  rollback probes; each denies. Missing guard, rebound trigger/function binding
+  and replica mode also deny. This does not prove resistance to a superuser
+  replacing the trusted function bodies or the verifier itself.
+- Incomplete history/audit denies. Repeated inspection preserves exact snapshots,
+  uses SQL READ ONLY, and SQL rejects writes through that read transaction.
+- Canonical BootstrapAuthoritySource clears only the four evidenced lifecycle
+  facts and still throws the other five blockers; no authorization or delivery occurs.
+
+Governance reference fixtures are synthetic and prepared with transaction-local
+replica mode. Lifecycle/anchor operations and constraint tests explicitly run
+with origin triggers. This qualifies canonical-source predicates and persistence,
+not the independent owner-decision acceptance UI/API workflow. No new endpoint,
+real credential, issuer, delivery, HTTPS/DNS, model or target process is involved.
+
+The four lifecycle facts have native read/constraint evidence for successfully
+committed, exact generations. Legacy remains blocked, and the commit response
+failure prevents declaring lifecycle writes fully qualified. The five blockers
+listed below remain unchanged. All six flags, `transportQualified` and
+`launchAuthority` remain false; RF-HOST-035 remains open.
+
+### Cleanup evidence and remaining blocker
+
+The owned database name, OID, owner and ownership comment were checked against
+the initial catalog; zero sessions were required before dropping it, and its
+absence was confirmed. The owned relay process, children and listener are absent.
+Roost PostgreSQL returned to its original **exited** state; backend stayed exited
+and both Soar containers stayed running with unchanged lifecycle stamps. Container,
+image, volume and network inventory matches the baseline.
+
+All three existing connectable databases, 214 application tables/sequences,
+public schema definitions, catalog and roles have identical before/after logical
+fingerprints. Canonical audit-payload SHA-256:
+`e9e019524b6010b02b30b4635fff99133c4429ffac3f537b05ac860485a281f1`.
+The unchanged lifecycle migration SHA-256 is
+`4430f3dd8977277dae2b26ad8b4dffee000fce6c0a057f6d70db7d24be44bd00`.
+
+**Full cleanup BLOCKED:** 17 owned temporary helper/evidence files remain outside
+the repository. Automatic execution review rejected both checked allowlist cleanup
+and a single literal-path file deletion with only `blocked by policy`. No database,
+listener or helper process remains, but file cleanup is not claimed complete.
+No retained prior-run roots were modified.
+
+**One next recommendation:** finish removal of the explicitly inventoried owned
+temporary files after resolving that execution-review block, then verify their
+absence. Commit acknowledgement remains a separate unresolved defect; do not
+activate or continue native work before cleanup is complete. The v35 source-only
+record below is historical.
+
 Owner amendment v35, 2026-09-23. **DONE source-only for the lifecycle contract,
 Prisma adapter, proposed additive schema and mocked qualification: 15/15 new
 results, 114/114 selected source results.** Build and lint pass. Native SQL

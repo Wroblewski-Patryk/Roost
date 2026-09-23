@@ -1,16 +1,16 @@
 # Next development work
 
-Owner amendment v35: [host/installation lifecycle](../architecture/worker-identity-lifecycle-v1.md)
-is **DONE source-only: 15/15 new results, 114/114 selected source results**.
-One canonical lifecycle journal binds existing identities to independent monotonic
-epochs and terminal revocation. Legacy requires explicit prospective owner adoption;
-no default epoch/backfill. Writer guards and read-only projection are proposed in
-an UNAPPLIED additive migration. Four lifecycle gaps clear only for evidenced
-records; five other bootstrap gaps remain. Native qualification PARTIAL,
-production BLOCKED; all six flags plus transportQualified/launchAuthority false.
-One next proposal: separately authorized native lifecycle/guard qualification in
-a disposable synthetic database with verified cleanup. No activation.
-Earlier qualification and successor proposals below are historical.
+Owner amendment v36: [native lifecycle qualification](../architecture/worker-identity-lifecycle-v1.md)
+applied all 79 migrations unchanged. **11/12 scenarios pass; one fails:**
+PostgreSQL rolls back a deferred COMMIT failure, but the adapter reports success.
+The native regression remains red. Source regressions 114/114, build and lint pass.
+Lifecycle persistence qualification PARTIAL; commit acknowledgement and production
+BLOCKED. Four lifecycle facts have conditional native evidence; five other gaps
+remain. All six flags plus transportQualified/launchAuthority remain false.
+Database/relay cleanup and state restoration passed; 17 owned temporary files
+remain because execution review blocked deletion. Full cleanup BLOCKED.
+One next recommendation: finish that bounded file cleanup after resolving the
+review block and verify absence. No activation; earlier proposals are historical.
 
 Owner amendment v32: [durable bootstrap ledger](../architecture/worker-bootstrap-ledger-v1.md)
 is **DONE source-only: 13/13 adapter results, 86/86 selected source results**.
