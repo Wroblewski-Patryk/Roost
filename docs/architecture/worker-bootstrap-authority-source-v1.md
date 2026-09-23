@@ -1,5 +1,11 @@
 # Canonical Worker bootstrap authority projection v1
 
+Current v35: [canonical lifecycle](worker-identity-lifecycle-v1.md) conditionally
+resolves the four host/installation gaps for evidenced generations. Legacy,
+missing schema/guards and all five other gaps remain blocked. The additive
+migration is UNAPPLIED; native qualification is PARTIAL. The v34 inventory and
+qualification below are historical; there is still no usable bootstrap authority.
+
 Owner amendment v34, 2026-09-23. **DONE for source-only canonical projection,
 ledger transaction binding and synthetic denial validation: 13/13 new results,
 99/99 selected source results. Usable bootstrap authority remains BLOCKED.**

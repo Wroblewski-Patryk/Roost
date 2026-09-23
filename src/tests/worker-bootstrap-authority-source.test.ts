@@ -38,6 +38,8 @@ function fixture(){
       assert.equal(sql,"UPDATE ready_source_fence SET revision=revision+1 WHERE id=1");assert.equal(readonly,"off");localFence++;phases.push("fence_write");return 1;},
       $queryRaw:async(strings:TemplateStringsArray,...values:any[])=>{
         const sql=strings.join("?").replace(/\s+/g," ").trim();calls.push(sql);
+        if(sql.includes('worker_identity_lifecycle_guarded()'))return [{guarded:true}];
+        if(sql.includes('FROM worker_identity_lifecycle l'))return [];
         if(sql.includes("FROM ready_source_fence")){phases.push("fence_read");return [{revision:String(localFence),isolation,readonly:readonlyOverride??readonly}];}
         let kind:keyof typeof data|undefined;
         if(sql.includes("FROM workspaces "))kind="owner";

@@ -2001,6 +2001,7 @@ model AgentEventOutbox {
 }
 
 model AgentHost {
+  lifecycleBirthXid String? @map("lifecycle_birth_xid")
   workerCredentials ApiKey[] @relation("WorkerHostCredential")
   nativeSuspensions NativeCapabilitySuspension[]
   id               String           @id @default(uuid()) @db.Uuid
@@ -3523,6 +3524,7 @@ model TaskAdmissionEvidence {
 
 // Only public digests and lifecycle metadata; never signing material or payloads.
 model TrustedProviderTicketKey {
+  lifecycleBirthXid String? @map("lifecycle_birth_xid")
   workspaceId String @id @map("workspace_id") @db.Uuid
   workspace Workspace @relation(fields:[workspaceId],references:[id],onDelete:Restrict,onUpdate:NoAction)
   installationId String @map("installation_id") @db.Uuid

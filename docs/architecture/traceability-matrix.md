@@ -1,13 +1,16 @@
 # Foundation requirements traceability
 
-RF-HOST-035 owner amendment v34: [canonical bootstrap source projection](worker-bootstrap-authority-source-v1.md)
-is **DONE source-only: 13/13 new results, 99/99 source results**. Existing canonical
-records and the ledger transaction supply bounded diagnostics; nine missing
-structural facts keep usable bootstrap authority BLOCKED. No parallel registry,
-invented epoch, database/network operation or activation; all flags false.
-One next proposal: source-only host/installation lifecycle and writer-fence
-contract on existing entities, without initializing missing facts. Earlier
-qualification and successor proposals below are historical.
+RF-HOST-035 owner amendment v35: [host/installation lifecycle](worker-identity-lifecycle-v1.md)
+is **DONE source-only: 15/15 new results, 114/114 selected source results**.
+One canonical lifecycle journal binds existing identities to independent monotonic
+epochs and terminal revocation. Legacy requires explicit prospective owner adoption;
+no default epoch/backfill. Writer guards and read-only projection are proposed in
+an UNAPPLIED additive migration. Four lifecycle gaps clear only for evidenced
+records; five other bootstrap gaps remain. Native qualification PARTIAL,
+production BLOCKED; all six flags plus transportQualified/launchAuthority false.
+One next proposal: separately authorized native lifecycle/guard qualification in
+a disposable synthetic database with verified cleanup. No activation.
+Earlier qualification and successor proposals below are historical.
 
 RF-HOST-035 owner amendment v32: [durable bootstrap ledger](worker-bootstrap-ledger-v1.md)
 is **DONE source-only: 13/13 adapter results, 86/86 selected source results**.

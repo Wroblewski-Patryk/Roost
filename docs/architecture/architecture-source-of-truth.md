@@ -1,24 +1,16 @@
 # Architecture Source Of Truth
 
-Owner amendment v34: [canonical bootstrap source projection](worker-bootstrap-authority-source-v1.md)
-is **DONE source-only: 13/13 new results, 99/99 selected source results**.
-Existing owner/decision/host/issuer/credential/handoff/channel/ticket records are
-read through the ledger transaction; no parallel authority store or migration.
-Nine explicit structural gaps keep usable bootstrap authority **BLOCKED**, even
-with all available facts present. No epoch/revocation/signature is invented.
-All six flags, `transportQualified` and `launchAuthority` remain false.
-
-Prior source contracts and qualification are consolidated in
-[bootstrap admission](worker-bootstrap-admission-v1.md),
-[bootstrap ledger](worker-bootstrap-ledger-v1.md),
-[HTTPS coordination](worker-handoff-coordinator-v1.md) and
-[normal transport admission](worker-transport-admission-v1.md).
-Historical v33 ledger evidence: 10/10 native results, 78 migrations, cleanup PASS;
-not rerun for this source-only atom. Production delivery remains unqualified.
-One next proposal: a source-only lifecycle contract for missing host/installation
-epochs and irreversible revocation on existing entities, including writer-fence
-obligations and legacy handling without invented initial epochs. No activation.
-Earlier successor proposals below are historical.
+Owner amendment v35: [host/installation lifecycle](worker-identity-lifecycle-v1.md)
+is **DONE source-only: 15/15 new results, 114/114 selected source results**.
+One canonical lifecycle journal binds existing identities to independent monotonic
+epochs and terminal revocation. Legacy requires explicit prospective owner adoption;
+no default epoch/backfill. Writer guards and read-only projection are proposed in
+an UNAPPLIED additive migration. Four lifecycle gaps clear only for evidenced
+records; five other bootstrap gaps remain. Native qualification PARTIAL,
+production BLOCKED; all six flags plus transportQualified/launchAuthority false.
+One next proposal: separately authorized native lifecycle/guard qualification in
+a disposable synthetic database with verified cleanup. No activation.
+Earlier qualification and successor proposals below are historical.
 
 Owner amendment v26: [loopback HTTPS handoff adapter](worker-handoff-https-v1.md)
 is DONE: 9/9 real HTTPS results and 189/189 selected tests. It checks normal TLS

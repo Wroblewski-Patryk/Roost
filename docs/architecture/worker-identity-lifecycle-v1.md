@@ -1,0 +1,127 @@
+# Canonical Worker host and installation lifecycle v1
+
+Owner amendment v35, 2026-09-23. **DONE source-only for the lifecycle contract,
+Prisma adapter, proposed additive schema and mocked qualification: 15/15 new
+results, 114/114 selected source results.** Build and lint pass. Native SQL
+qualification is PARTIAL; migration is **UNAPPLIED**, production/admission BLOCKED.
+The four lifecycle gaps can be cleared only for an explicitly established,
+fully evidenced generation. Legacy and missing/disabled guards remain blocked.
+The five issuer/channel/ticket/decision gaps are unchanged.
+
+## Canonical model and writers
+
+Existing `agent_hosts.id` and `trusted_provider_ticket_keys.installation_id`
+remain the identity anchors. The key table has one workspace binding and its
+existing trigger forbids changing installation ID; its key epoch is not an
+installation lifecycle epoch. It cannot hold independent host/installation
+generation history without conflating key rotation with identity revocation.
+
+The proposed [migration](../../prisma/migrations/20260923210000_worker_identity_lifecycle/migration.sql)
+therefore adds one canonical `worker_identity_lifecycle` append-only journal for
+these previously absent facts, plus its transactionally mandatory audit table.
+There is no competing lifecycle field, mutable head or shadow registry. Latest
+epoch per workspace/kind/subject is current state; earlier rows remain history.
+The audit binds each operation's public record digest to the shared fence revision.
+Both existing anchors gain a nullable `lifecycle_birth_xid`, with no default or
+backfill. Insert triggers stamp new births; updates cannot change that stamp.
+This proves same-transaction creation and is **not an epoch or legacy adoption**.
+
+| Existing writer | Result under the proposed migration |
+| --- | --- |
+| `agent-runtime.routes.ts`: host register upsert | Shared fence; new anchor remains unadopted. Existing adopted identity/authority fields cannot change. |
+| Host heartbeat and execution claim updates | Shared fence; only reachability (`online`/`offline`), last-seen and update timestamps may change on an adopted anchor. These are not lifecycle authority. |
+| Direct SQL, fixtures, maintenance, cascade identity edits/deletes | Same triggers; host ID/workspace changes and deletion deny even for legacy, preventing delete/reinsert from manufacturing a new birth. Other adopted authority edits and TRUNCATE deny. Earlier applied maintenance migration is untouched. |
+| Existing `worker_host_credentials_guard` | Preserved; lifecycle guard precedes it. It cannot bypass immutable adopted identity. |
+| Installation binding insert/change/delete on ticket-key table | Shared fence, immutable birth stamp and denial of changes/deletion after lifecycle history exists. Existing key constraints remain. |
+| `owner-ticket-store.ts` key rotation | Installation identity unchanged; issuer/key writer qualification remains a separate blocker. No key policy is changed by this atom. |
+| New lifecycle append | Serializable plus shared `ready_source_fence`; exact canonical owner/decision, anchor and predecessor checks; atomic history/state/audit. No automatic retries. |
+
+The source inventory includes production modules, auth, scripts and migration
+writers. SQL guards cover paths outside the new adapter rather than relying on
+application callers to remember a fence. The reader verifies named guard/function
+bindings, enabled origin triggers, isolation and presence of the shared fence.
+Disabled/missing guards or replica mode deny. This is not protection against a
+database superuser rewriting functions, records and audits or restoring a whole
+database; such operation has no qualification here.
+
+## Transitions and explicit adoption
+
+Each host and installation has its own generation UUID and monotonically
+increasing epoch across all generations of that existing subject. Every accepted
+authority-digest update, revocation and replacement increments exactly once.
+Epoch overflow denies. Exact previous operation ID, epoch and generation provide
+CAS protection; decision IDs are single-use. A generation UUID cannot reappear.
+Host fingerprint reuse across replacement generations also denies.
+
+- `create`: only a provably new anchor born in this same transaction, explicit
+  accepted primary-owner intent and fresh generation. Epoch 1 starts that new
+  lifecycle; it says nothing about a prior identity. The standalone adapter does
+  not create anchors, so future creation orchestration must supply one canonical
+  transaction; no creation endpoint or provisioning is added here.
+- `adopt`: explicit owner decision names the legacy anchor, new prospective
+  generation, exact installation generation, public authority/fingerprint digests
+  and adoption-evidence digest. It acknowledges that prior epoch/revocation
+  history is unknown and cannot authorize old tickets. No source infers an old
+  epoch, and no read, deployment or migration initializes one. Disabled legacy
+  hosts cannot be adopted into active authority.
+- `update`: active generation only, same exact identities/binding/fingerprint,
+  changed owner-approved authority digest and next epoch. It does not edit host
+  metadata, capabilities or key policy; existing adopted anchor edits deny.
+- `revoke`: next epoch, same generation and binding, terminal revoked state.
+  It may close a host after its installation was revoked/replaced. It never
+  changes a revoked row back to active or grants delivery/ordinary runtime use.
+- `replace`: revoked predecessor only, fresh generation, next epoch, fresh host
+  fingerprint for a host and exact current active installation generation.
+  Installation replacement does not silently rebind hosts; they require their
+  own explicit revoke/replacement. Old IDs/epochs cannot pass fresh admission.
+
+The strict `workerIdentityLifecycle` decision intent cannot be combined with
+delegation, bootstrap, credential or transport intent. Both application policy
+and append-time canonical decision validation require the current primary owner,
+one unambiguous owner membership, current accepted unsuperseded revision, exact
+intent and unexpired authority. Adoption evidence is a public digest; private
+evidence and all secrets remain outside these records. Owner-authorized adoption
+is a contract, not a shipped owner workflow.
+
+## Bootstrap integration and evidence
+
+The [reader/adapter](../../src/modules/api-keys/worker-identity-lifecycle-store.ts)
+uses the same transaction client as the bootstrap ledger. Inspect uses Repeatable
+Read and SQL READ ONLY. It checks complete bounded history (at most 1,000 rows
+per subject), contiguous epochs/predecessors, atomic audit/digest and current
+generation binding. Overflow, corrupt/missing audit, unknown rows or missing
+schema deny; reads never repair data or advance expiry/fence/history.
+
+For qualified records, `host_epoch_unavailable`,
+`host_revocation_history_unavailable`, `installation_epoch_unavailable` and
+`installation_revocation_unavailable` are removed from the diagnostic blockers.
+Revoked records instead yield `host_revoked`/`installation_revoked`; mismatched or
+legacy records stay blocked. This is source-level conditional resolution, not
+native or production qualification.
+
+These five gaps remain: `issuer_public_key_unavailable`,
+`bootstrap_channel_authority_unavailable`, `bootstrap_ticket_revocation_unavailable`,
+`signed_current_decision_unavailable`, `issuer_writer_fence_unproven`.
+Bootstrap context therefore still refuses authorization. This atom does not
+qualify ordinary credential/transport consumers against lifecycle revocation.
+
+The [source suite](../../src/tests/worker-identity-lifecycle.test.ts) covers
+create/adopt, independent epochs, terminal revoke/replacement, stale and ABA
+bindings, exact host/installation, twenty concurrent writers with one winner,
+state/history/audit/fence/commit rollback, unknown legacy, unfenced writer,
+read purity, redaction and bootstrap retaining the five other gaps. Socket,
+HTTP/DNS/fetch and child-process effects are trapped. SQL behavior and locks are
+modeled; real trigger syntax/order, SQL constraints and isolation are not yet
+qualified. Existing 78 migration files remain unchanged; only a 79th is proposed.
+
+No DB/Docker/network/DNS, issuance/delivery, endpoint/UI/provisioning, profile,
+target/model or default composition is used. All six flags remain false:
+`implementationReady`, `executionSupported`, `pilotReady`, `liveAdmissionAllowed`,
+`pilotExecutionAuthorized`, `pilotExecutionStarted`; `transportQualified` and
+`launchAuthority` also remain false. RF-HOST-035 remains open.
+
+**Exactly one recommended next atom:** separately authorized native qualification
+of this lifecycle migration/adapter and writer guards in one disposable synthetic
+database, including legacy adoption, terminal generations, concurrency, rollback,
+read purity and verified cleanup. Do not solve the other five blockers or activate
+production as part of that qualification. This recommendation has not been started.

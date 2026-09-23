@@ -4,6 +4,8 @@ import { reviewDigest } from "../agent-runtime/task-review-contract";
 import { bootstrapBinding,workerBootstrapIntent } from "./worker-bootstrap-contract";
 import { transportProfile } from "./worker-transport-contract";
 import type { BootstrapAuthoritySource } from "./worker-bootstrap-store";
+import { inspectCanonicalLifecycle } from "./worker-identity-lifecycle-store";
+import { lifecycleMissing } from "./worker-identity-lifecycle";
 
 type Db=Prisma.TransactionClient;
 const id=z.string().uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),epoch=z.number().int().positive().safe();
@@ -49,9 +51,12 @@ export function createCanonicalBootstrapAuthoritySource(clock=()=>new Date()){
     const facts:{ownerId?:string;hostStatus?:string;issuer?:z.infer<typeof issuerRow>;credential?:{id:string;version:number;epoch:number;fingerprint:string|null;state:string;expiresAt:string|null};
       credentialHighWater?:number;credentialAbsent?:boolean;handoff?:{id:string;state:string;hostFingerprint:string};
       decision?:{id:string;revision:number;ownerId:string;intentDigest:string;expiresAt:string};channel?:{revision:number;certificateEpoch:number;highWaterEpoch:number;recordDigest:string;profileDigest:string;state:string;validUntil:string};
-      ticket?:{id:string;digest:string;expiresAt:string};fenceRevision?:string}={};
+      ticket?:{id:string;digest:string;expiresAt:string};fenceRevision?:string;lifecycle?:NonNullable<Awaited<ReturnType<typeof inspectCanonicalLifecycle>>['facts']>}={};
     try{
       const scoped=await bound(db),q=request.parse(input),b=q.binding;facts.fenceRevision=scoped.fence;
+      const lifecycle=await inspectCanonicalLifecycle(db,b);
+      for(const code of lifecycleMissing)if(!lifecycle.blockers.includes(code))blockers.splice(blockers.indexOf(code),1);
+      blockers.push(...lifecycle.blockers);if(lifecycle.facts)facts.lifecycle=lifecycle.facts;
       const owners=await db.$queryRaw<any[]>`SELECT id,owner_user_id AS "ownerId" FROM workspaces WHERE id=${b.workspaceId}::uuid LIMIT 2`;
       const members=await db.$queryRaw<any[]>`SELECT user_id AS "userId" FROM workspace_memberships WHERE workspace_id=${b.workspaceId}::uuid AND role::text='owner' LIMIT 2`;
       const o=owners.length===1?ownerRow.safeParse(owners[0]):null;
@@ -133,14 +138,15 @@ export function createCanonicalBootstrapAuthoritySource(clock=()=>new Date()){
           if(Date.parse(tk.data.expiresAt)<=clock().getTime())blockers.push("bootstrap_ticket_expired");}
       }
       await bound(db); // A changed or rebound fence invalidates the entire projection.
-    }catch(e){for(const key of Object.keys(facts))delete (facts as Record<string,unknown>)[key];blockers.push(...(e instanceof CanonicalBootstrapBlocked?e.blockers:["canonical_source_invalid"]));}
+    }catch(e){for(const key of Object.keys(facts))delete (facts as Record<string,unknown>)[key];blockers.push(...bootstrapAuthorityGaps,...(e instanceof CanonicalBootstrapBlocked?e.blockers:["canonical_source_invalid"]));}
     return {ok:false as const,qualification:"canonical_projection_only_v1" as const,blockers:[...new Set(blockers)].sort(),facts,...flags};
   }
   const source:BootstrapAuthoritySource={qualification:"canonical_bootstrap_projection_v1",
     async bindTransaction(db,mode){if(sessions.has(db))blocked("transaction_already_bound");const f=await fence(db);
       if(f.isolation!==(mode==="read"?"repeatable read":"serializable")||f.readonly!==(mode==="read"?"on":"off"))blocked("transaction_mode_invalid");
       const session={mode,fence:f.revision};sessions.set(db,session);return ()=>{if(sessions.get(db)===session)sessions.delete(db);};},
-    async context(db,binding){await bound(db);bootstrapBinding.parse(binding);return blocked(...bootstrapAuthorityGaps);},
+    async context(db,binding){await bound(db);const lifecycle=await inspectCanonicalLifecycle(db,binding);await bound(db);
+      return blocked(...bootstrapAuthorityGaps.filter(code=>!lifecycleMissing.some(m=>m===code)),...lifecycle.blockers);},
     async decision(db,id){await bound(db);if(!z.string().uuid().safeParse(id).success)blocked("decision_missing_or_invalid");return blocked("signed_current_decision_unavailable","issuer_public_key_unavailable");},
     async ticketRevoked(db,id){await bound(db);if(!z.string().uuid().safeParse(id).success)blocked("bootstrap_ticket_missing");return blocked("bootstrap_ticket_revocation_unavailable");}
   };
