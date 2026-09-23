@@ -1,5 +1,89 @@
 # Canonical Worker host and installation lifecycle v1
 
+## COMMIT acknowledgement repair v37 (2026-09-23)
+
+The bounded acknowledgement defect is repaired. **117/117 source results**
+(including 18 lifecycle results), server build and lint pass. The previously red
+native deferred-COMMIT scenario passes with its original rollback and no-success
+assertions intact: **2/2 runner results including the parent**. The other eleven
+native scenarios were not rerun after this repair, so full post-fix native
+qualification remains **PARTIAL**. Production admission remains **BLOCKED**.
+
+### Proven cause
+
+The [in-memory qualification runner](../../scripts/qualify-worker-identity-commit.py)
+uses raw Prisma without the lifecycle adapter or transaction wrapper. A passive
+loopback relay forwards bytes unchanged and records only COMMIT/ROLLBACK and
+SQLSTATE metadata. PostgreSQL rejects COMMIT with `P0001`; the wire has no COMMIT
+completion, then has ROLLBACK completion. The inserted probe row is absent.
+Prisma nevertheless resolves the successful callback result.
+
+On the installed Prisma **5.22.0**, library engine
+`605197351a3c8bdd595af2d2a9bc3025bca48ea2` returns a parsed object with keys
+`backtrace`, `is_panic`, `message`, and no `error_code`. The installed JS
+LibraryEngine transaction method classifies an engine result as an error only
+when `error_code` is present. Its `_transactionWithCallback` does await COMMIT,
+but this unclassified engine error is returned as success. The application and
+native test wrapper also await the transaction: neither omits that await. This
+locates the failure at the engine-result/JS error-classification boundary on the
+tested stack; it is not evidence about other Prisma versions. Dependency files
+are unchanged.
+
+### Result contract
+
+The adapter now awaits the write transaction and then performs exactly one fresh
+Repeatable Read, SQL READ ONLY transaction. It checks the native guard proof and
+the exact operation ID and complete immutable JSON record, matching automatic
+audit and SHA-256 digest, and a positive audit fence revision no greater than the
+committed shared fence. This proves visibility of the atomic state/history,
+audit and fence after commit; later writers may advance the shared fence. This
+lifecycle command emits no Event and adds none. The normal native installation
+and host adoption writes exercise successful confirmation before the fault case.
+
+A callback failure before completion remains `worker_identity_lifecycle_blocked`.
+A transaction rejection after callback completion, false successful COMMIT,
+connection loss/unknown commit, missing/mismatched evidence or failed confirmation
+returns `LifecycleReconciliationRequired` with `code=reconciliation_required`
+and `retryable=false`. It never infers rollback or reports successful delivery
+from an uncertain result. There is no callback replay, write retry, reconciliation
+write or automatic repair. The dedicated error is secret-free; inspect remains
+read-only. Existing epoch, terminal revocation, owner/decision and fence guards
+are preserved; all 79 migration files are unchanged.
+
+Mocked regressions cover immediate and delayed COMMIT rejection, rolled-back
+false acknowledgement, committed write with lost response, confirmation read
+failure/mismatch/transaction rejection, callback failure before COMMIT and normal
+success. They count append attempts to prove no write replay and distinguish
+rolled-back state from committed-but-unacknowledged state. Native selection runs
+only the old failing deferred constraint case, without moving the constraint to
+an earlier phase or weakening its assertion.
+
+The five issuer/channel/ticket/decision blockers listed below remain unresolved.
+All six flags (`implementationReady`, `executionSupported`, `pilotReady`,
+`liveAdmissionAllowed`, `pilotExecutionAuthorized`, `pilotExecutionStarted`),
+`transportQualified` and `launchAuthority` remain false. There is no issuance,
+delivery, HTTPS/DNS, provisioning, endpoint/default composition, provider/model
+run or activation.
+
+### Current-run cleanup
+
+The owned database was dropped only after matching its name, OID, owner and
+ownership marker, with zero remaining sessions; absence was verified. The
+in-memory relay exited successfully. No helper files or directories were
+created outside the controlled repository. PostgreSQL returned to its initial
+exited state; backend stayed exited and unrelated containers, images, volumes
+and networks retained their baseline state. The three existing connectable
+databases and their tables/sequences, schema, catalog and roles have identical
+logical fingerprints (SHA-256
+`e9e019524b6010b02b30b4635fff99133c4429ffac3f537b05ac860485a281f1`).
+Current-run cleanup and preservation **PASS**. Earlier retained artifacts were
+not inspected or modified and are not part of this cleanup result.
+
+**One next recommendation:** separately authorize the full native lifecycle
+suite against this repaired adapter, using the same bounded disposable database
+and verified cleanup. It has not been started. The v36/v35 evidence and successor
+proposals below are historical; earlier retained artifacts are outside v37 scope.
+
 ## Native qualification v36 (2026-09-23): BLOCKED on commit acknowledgement
 
 The full **79-migration chain applied successfully** in one ownership-checked

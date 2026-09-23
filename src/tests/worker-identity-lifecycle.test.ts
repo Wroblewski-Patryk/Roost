@@ -9,7 +9,7 @@ import https from 'node:https';
 import dns from 'node:dns';
 import childProcess from 'node:child_process';
 import { advanceLifecycle,lifecycleMissing,projectLifecycle,type LifecycleIntent,type LifecycleRecord } from '../modules/api-keys/worker-identity-lifecycle';
-import { createPrismaWorkerIdentityLifecycleStore } from '../modules/api-keys/worker-identity-lifecycle-store';
+import { createPrismaWorkerIdentityLifecycleStore,LifecycleReconciliationRequired } from '../modules/api-keys/worker-identity-lifecycle-store';
 import { createCanonicalBootstrapAuthoritySource,bootstrapAuthorityGaps,CanonicalBootstrapBlocked } from '../modules/api-keys/worker-bootstrap-authority-source';
 import { decisionAuthority } from '../modules/decisions/decision-authority';
 const copy=<T>(v:T):T=>structuredClone(v),hash=(s:string)=>s.repeat(64),now=new Date('2026-09-23T12:00:00Z');
@@ -35,6 +35,11 @@ function fixture(){
       audits.push(r.id);if(fault==='audit')throw Error('synthetic-private-error');return 1;
     },$queryRaw:async(strings:TemplateStringsArray,...values:any[])=>{
       const sql=strings.join('?').replace(/\s+/g,' ');calls.push(sql);
+      if(sql.includes('WHERE l.id=')){
+        if(fault==='confirmation_read')throw Error('synthetic-private-error');
+        const record=records.find(r=>r.id===values[1]);
+        return record?[{verified:fault!=='confirmation_mismatch'&&verified&&audits.includes(record.id)&&JSON.stringify(record)===values[0]}]:[];
+      }
       if(sql.includes('FROM ready_source_fence'))return [{revision:String(fence),isolation:option.isolationLevel==='Serializable'?'serializable':'repeatable read',readonly:readOnly?'on':'off'}];
       if(sql.includes('worker_identity_lifecycle_guarded()'))return [{guarded}];
       if(sql.includes('FROM worker_identity_lifecycle l'))return records.filter(r=>r.intent.workspaceId===values[0]&&r.intent.kind===values[1]&&r.intent.subjectId===values[2]).map(record=>({record:copy(record),verified:verified&&audits.includes(record.id)}));
@@ -44,8 +49,12 @@ function fixture(){
       assert.fail('unexpected query');
     }};
     options.push(option);
-    try{const value=await work(db);if(fault==='commit')throw Error('synthetic-private-error');return value;}
-    catch(e){records=saved.records;audits=saved.audits;fence=saved.fence;throw e;}finally{release();}
+    try{const value=await work(db);
+      if(!readOnly&&fault==='false_ack'){records=saved.records;audits=saved.audits;fence=saved.fence;return value;}
+      if(!readOnly&&fault==='late_commit')await new Promise<void>(resolve=>setImmediate(resolve));
+      if(!readOnly&&['commit','late_commit','connection_unknown'].includes(fault)||readOnly&&fault==='confirmation_commit')throw Error('synthetic-private-error');
+      return value;
+    }catch(e){if(fault!=='connection_unknown'){records=saved.records;audits=saved.audits;fence=saved.fence;}throw e;}finally{release();}
   }};
   const store=createPrismaWorkerIdentityLifecycleStore(client,()=>now);
   const intent=(kind:'host'|'installation',patch:Partial<LifecycleIntent>={}):LifecycleIntent=>({schemaVersion:'worker-identity-lifecycle-v1',workspaceId,kind,
@@ -116,8 +125,36 @@ test('canonical identity lifecycle is source-only, prospective and fail closed',
   await t.test('state, history, audit, fence and commit failures roll back the whole transaction',async()=>{
     for(const failure of ['fence','state','history','audit','commit']){
       const f=fixture(),{h}=await f.pair(),before=f.state();f.fault(failure);
-      await assert.rejects(f.apply(f.next(h,{action:'revoke'})),/worker_identity_lifecycle_blocked/);assert.deepEqual(f.state(),before,failure);
+      await assert.rejects(f.apply(f.next(h,{action:'revoke'})),failure==='commit'?/reconciliation_required/:/worker_identity_lifecycle_blocked/);assert.deepEqual(f.state(),before,failure);
     }
+  });
+  await t.test('COMMIT rejection, delayed rejection and false acknowledgement never succeed or replay writes',async()=>{
+    for(const failure of ['commit','late_commit','false_ack']){
+      const f=fixture(),{h}=await f.pair(),before=f.state(),start=f.calls.length;f.fault(failure);
+      await assert.rejects(f.apply(f.next(h,{action:'revoke'})),(e:any)=>e instanceof LifecycleReconciliationRequired&&e.code==='reconciliation_required'&&e.retryable===false);
+      assert.deepEqual(f.state(),before,failure);
+      assert.equal(f.calls.slice(start).filter(q=>q.startsWith('INSERT INTO worker_identity_lifecycle(')).length,1);
+      assert.equal(f.calls.slice(start).filter(q=>q.includes('WHERE l.id=')).length,failure==='false_ack'?1:0);
+    }
+  });
+  await t.test('lost commit response or unavailable/mismatched confirmation requires reconciliation even when the write committed',async()=>{
+    for(const failure of ['connection_unknown','confirmation_read','confirmation_mismatch','confirmation_commit']){
+      const f=fixture(),{h}=await f.pair(),start=f.calls.length;f.fault(failure);
+      await assert.rejects(f.apply(f.next(h,{action:'revoke'})),LifecycleReconciliationRequired);
+      assert.equal(f.records().at(-1)!.state,'revoked');assert.equal(f.records().at(-1)!.epoch,2);
+      assert.equal(f.calls.slice(start).filter(q=>q.startsWith('INSERT INTO worker_identity_lifecycle(')).length,1);
+      assert.equal(f.calls.slice(start).filter(q=>q.includes('WHERE l.id=')).length,failure==='connection_unknown'?0:1);
+    }
+  });
+  await t.test('callback failure has no confirmation; normal success requires one separate read-only confirmation',async()=>{
+    const f=fixture(),{h}=await f.pair();let start=f.calls.length;const before=f.state();f.fault('audit');
+    await assert.rejects(f.apply(f.next(h,{action:'revoke'})),/worker_identity_lifecycle_blocked/);
+    assert.deepEqual(f.state(),before);assert.equal(f.calls.slice(start).filter(q=>q.includes('WHERE l.id=')).length,0);
+    f.fault('');start=f.calls.length;const result=await f.apply(f.next(h,{action:'revoke'}));
+    assert.equal(result.state,'revoked');const calls=f.calls.slice(start),read=calls.indexOf('SET TRANSACTION READ ONLY');
+    assert.ok(read>calls.findIndex(q=>q.startsWith('INSERT INTO worker_identity_lifecycle(')));
+    assert.ok(calls.slice(read).every(q=>q.startsWith('SELECT')||q==='SET TRANSACTION READ ONLY'));
+    assert.equal(calls.filter(q=>q.includes('WHERE l.id=')).length,1);assert.equal(f.options.at(-1).isolationLevel,'RepeatableRead');
   });
   await t.test('unfenced writer, missing audit, unaccepted decision and expired authority deny',async()=>{
     const f=fixture(),{h,b}=await f.pair();f.guard(false);

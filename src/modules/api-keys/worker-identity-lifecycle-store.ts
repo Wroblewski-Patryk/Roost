@@ -7,6 +7,22 @@ const command=z.object({operationId:z.string().uuid(),decisionId:z.string().uuid
 const rows=z.array(z.object({record:lifecycleRecord,verified:z.literal(true)}).strict()).max(1000);
 const authority=z.object({ownerId:z.string().uuid(),decisionId:z.string().uuid(),decisionRevision:z.number().int().positive(),intent:lifecycleIntent,
   current:z.literal(true),anchorFresh:z.boolean(),hostEnabled:z.boolean()}).strict();
+export class LifecycleReconciliationRequired extends Error{
+  readonly code='reconciliation_required';readonly retryable=false;
+  constructor(){super('worker_identity_lifecycle_reconciliation_required');}
+}
+async function confirmLifecycleCommit(db:Db,record:LifecycleRecord){
+  if(!await guarded(db))throw new LifecycleReconciliationRequired();
+  // A fresh read transaction can see this exact immutable operation only after
+  // its state/history, native audit and fence have committed together. The
+  // command emits no Event. Later writers may advance the shared fence.
+  const result=await db.$queryRaw<any[]>`SELECT (l.record=${JSON.stringify(record)}::jsonb
+    AND a.record_digest=l.record_digest AND l.record_digest=encode(sha256(convert_to(l.record::text,'UTF8')),'hex')
+    AND a.fence_revision>0 AND f.revision>=a.fence_revision) AS verified
+    FROM worker_identity_lifecycle l JOIN worker_identity_lifecycle_audit a ON a.operation_id=l.id
+    JOIN ready_source_fence f ON f.id=1 WHERE l.id=${record.id}::uuid`;
+  if(result.length!==1||result[0].verified!==true)throw new LifecycleReconciliationRequired();
+}
 async function guarded(db:Db){const proof=await db.$queryRaw<any[]>`SELECT worker_identity_lifecycle_guarded() AS guarded`;return proof.length===1&&proof[0].guarded===true;}
 async function history(db:Db,workspace:string,kind:string,subject:string){
   const result=await db.$queryRaw<any[]>`SELECT l.record,(a.record_digest=l.record_digest AND l.record_digest=encode(sha256(convert_to(l.record::text,'UTF8')),'hex')) AS verified
@@ -27,12 +43,22 @@ export async function inspectCanonicalLifecycle(db:Db,binding:unknown){
 
 // Source-only factory: no endpoint, routes, issuance or default composition.
 export function createPrismaWorkerIdentityLifecycleStore(client:Pick<PrismaClient,'$transaction'>,clock=()=>new Date()){
-  async function run<T>(readOnly:boolean,work:(db:Db)=>Promise<T>){
-    try{return await client.$transaction(async db=>{
+  async function run<T>(readOnly:boolean,work:(db:Db)=>Promise<T>,confirm?:(db:Db,value:T)=>Promise<void>){
+    let callbackCompleted=false;
+    try{const value=await client.$transaction(async db=>{
       if(readOnly)await db.$executeRaw`SET TRANSACTION READ ONLY`;
       else if(await db.$executeRaw`UPDATE ready_source_fence SET revision=revision+1 WHERE id=1`!==1)denyLifecycle();
-      return work(db);
-    },{isolationLevel:readOnly?'RepeatableRead':'Serializable',timeout:10000,maxWait:2000});}catch{return denyLifecycle();}
+      const value=await work(db);callbackCompleted=true;return value;
+    },{isolationLevel:readOnly?'RepeatableRead':'Serializable',timeout:10000,maxWait:2000});
+      if(confirm)await client.$transaction(async db=>{
+        await db.$executeRaw`SET TRANSACTION READ ONLY`;await confirm(db,value);
+      },{isolationLevel:'RepeatableRead',timeout:10000,maxWait:2000});
+      return value;
+    }catch{
+      // Never replay a callback or infer rollback after a possible COMMIT.
+      if(!readOnly&&callbackCompleted)throw new LifecycleReconciliationRequired();
+      return denyLifecycle();
+    }
   }
   return {
     inspect:(binding:unknown)=>run(true,db=>inspectCanonicalLifecycle(db,binding)),
@@ -62,6 +88,6 @@ export function createPrismaWorkerIdentityLifecycleStore(client:Pick<PrismaClien
       if(await db.$executeRaw`INSERT INTO worker_identity_lifecycle(id,workspace_id,kind,subject_id,epoch,generation,state,previous_id,decision_id,record,record_digest)
         VALUES(${record.id}::uuid,${i.workspaceId}::uuid,${i.kind},${i.subjectId}::uuid,${record.epoch},${i.generation}::uuid,${record.state},${record.previousId}::uuid,${c.decisionId}::uuid,${JSON.stringify(record)}::jsonb,${'0'.repeat(64)})`!==1)denyLifecycle();
       return record;
-    })
+    },confirmLifecycleCommit)
   };
 }

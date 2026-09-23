@@ -16,6 +16,8 @@ import { reviewDigest } from '../modules/agent-runtime/task-review-contract';
 const enabled=process.env.WORKER_IDENTITY_NATIVE_DATABASE,hash=(s:string)=>s.repeat(64);
 type Db=Prisma.TransactionClient;
 test('Worker identity lifecycle native PostgreSQL qualification in one owned disposable database',{skip:!enabled,timeout:240000},async t=>{
+  const commitOnly=process.env.WORKER_IDENTITY_NATIVE_SCENARIO==='commit';
+  const scenario=(name:string,work:()=>Promise<void>)=>commitOnly&&!name.startsWith('real rollback')?Promise.resolve():t.test(name,work);
   assert.match(enabled!,/^companycore_test_identity_[a-f0-9]{32}$/);
   const url=new URL(process.env.DATABASE_URL!);assert.equal(url.hostname,'127.0.0.1');assert.equal(url.pathname,'/'+enabled);
   const db=new PrismaClient();await db.$connect();t.after(()=>db.$disconnect());
@@ -80,7 +82,7 @@ test('Worker identity lifecycle native PostgreSQL qualification in one owned dis
       before:(hook:(tx:Db)=>Promise<void>)=>before=hook,fault:(value:string)=>fault=value};
   }
 
-  await t.test('native legacy stays blocked, explicit owner adoption and same-transaction create establish independent epochs',async()=>{
+  await scenario('native legacy stays blocked, explicit owner adoption and same-transaction create establish independent epochs',async()=>{
     const legacy=await setup(),initial={workspaceId:legacy.workspaceId,hostId:legacy.hostId,installationId:legacy.installationId,hostEpoch:1,installationEpoch:1,hostFingerprint:hash('a'),ticketKeyId:'fixture',ticketKeyEpoch:1,ticketPublicKeyDigest:hash('d')};
     assert.deepEqual((await legacy.store.inspect(initial)).blockers,[...lifecycleMissing]);
     const fake=await legacy.command(legacy.intent('installation',{action:'create',adoptionEvidenceDigest:null}));await assert.rejects(legacy.store.apply(fake));await assert.rejects(legacy.direct(fake,null));
@@ -89,7 +91,7 @@ test('Worker identity lifecycle native PostgreSQL qualification in one owned dis
     const hc=await fresh.command(fresh.intent('host',{action:'create',adoptionEvidenceDigest:null}));fresh.before(async tx=>{await fresh.host(tx);});const ch=await fresh.store.apply(hc);
     assert.deepEqual((await fresh.store.inspect(fresh.binding(ch,ci))).blockers,[]);
   });
-  await t.test('real monotonic updates, immutable history, terminal revoke and fresh replacement reject ABA and un-revoke',async()=>{
+  await scenario('real monotonic updates, immutable history, terminal revoke and fresh replacement reject ABA and un-revoke',async()=>{
     const f=await setup(),{h,i,b}=await f.pair(),u=await f.apply(f.next(h,{action:'update',authorityDigest:hash('e')})),r=await f.apply(f.next(u,{action:'revoke'}));
     assert.equal(r.epoch,3);assert.ok((await f.store.inspect(f.binding(r,i))).blockers.includes('host_revoked'));
     const invalid=await f.command(f.next(r,{action:'update',authorityDigest:hash('f')}));await assert.rejects(f.store.apply(invalid));await assert.rejects(f.direct(invalid,r));
@@ -101,7 +103,7 @@ test('Worker identity lifecycle native PostgreSQL qualification in one owned dis
     const history=await db.$queryRaw<any[]>`SELECT epoch,state FROM worker_identity_lifecycle WHERE workspace_id=${f.workspaceId}::uuid AND kind='host' ORDER BY epoch`;
     assert.deepEqual(history.map(x=>x.epoch),[1,2,3,4,5]);assert.equal(history[2].state,'revoked');
   });
-  await t.test('native adoption guard rejects wrong/current owner, ambiguous membership and expired acceptance intent',async()=>{
+  await scenario('native adoption guard rejects wrong/current owner, ambiguous membership and expired acceptance intent',async()=>{
     for(const mode of ['actor','owner','ambiguous','expired']){
       const f=await setup(),other=randomUUID(),c=await f.command(f.intent('installation',mode==='expired'?{expiresAt:'2000-01-01T00:00:00.000Z'}:{}));
       if(mode!=='expired')await prepare(async tx=>{
@@ -113,7 +115,7 @@ test('Worker identity lifecycle native PostgreSQL qualification in one owned dis
       const before=await snapshot();await assert.rejects(f.store.apply(c));await assert.rejects(f.direct(c,null));assert.deepEqual(await snapshot(),before);
     }
   });
-  await t.test('installation revoke/replacement independently invalidates exact host binding and requires fresh host generation',async()=>{
+  await scenario('installation revoke/replacement independently invalidates exact host binding and requires fresh host generation',async()=>{
     const f=await setup(),{h,i}=await f.pair(),r=await f.apply(f.next(i,{action:'revoke'}));assert.ok((await f.store.inspect(f.binding(h,r))).blockers.includes('installation_revoked'));
     const generation=randomUUID(),replacement=await f.apply(f.next(r,{action:'replace',generation,installationGeneration:generation}));assert.equal(replacement.epoch,3);
     assert.ok((await f.store.inspect(f.binding(h,replacement))).blockers.includes('lifecycle_binding_mismatch'));
@@ -122,14 +124,14 @@ test('Worker identity lifecycle native PostgreSQL qualification in one owned dis
     assert.deepEqual((await f.store.inspect(f.binding(newHost,replacement))).blockers,[]);
     for(const patch of [{hostId:randomUUID()},{installationId:randomUUID()},{hostFingerprint:hash('f')},{hostEpoch:1}])assert.ok((await f.store.inspect({...f.binding(newHost,replacement),...patch})).blockers.length>0);
   });
-  await t.test('twenty native concurrent writers admit one exact predecessor and replay never advances the epoch',async()=>{
+  await scenario('twenty native concurrent writers admit one exact predecessor and replay never advances the epoch',async()=>{
     const f=await setup(),{h}=await f.pair(),commands=[];for(let n=0;n<20;n++)commands.push(await f.command(f.next(h,{action:'update',authorityDigest:reviewDigest(n)})));
     const results=await Promise.allSettled(commands.map(c=>f.store.apply(c)));assert.equal(results.filter(r=>r.status==='fulfilled').length,1);
     const before=await snapshot();await assert.rejects(f.store.apply(commands[results.findIndex(r=>r.status==='fulfilled')]));assert.deepEqual(await snapshot(),before);
   });
-  await t.test('real rollback covers fence, state/history, automatic audit and deferred commit failure',async()=>{
+  await scenario('real rollback covers fence, state/history, automatic audit and deferred commit failure',async()=>{
     await db.$executeRawUnsafe("CREATE OR REPLACE FUNCTION native_lifecycle_fail() RETURNS TRIGGER LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'synthetic rollback'; END $$");
-    for(const fault of ['fence','append','precommit','history','audit','commit']){
+    for(const fault of (commitOnly?['commit']:['fence','append','precommit','history','audit','commit'])){
       const f=await setup(),{h}=await f.pair(),c=await f.command(f.next(h,{action:'revoke'})),before=await snapshot();
       if(['fence','append','precommit'].includes(fault))f.fault(fault);
       else f.before(async tx=>{if(fault==='commit')await tx.$executeRawUnsafe('CREATE CONSTRAINT TRIGGER native_commit_failure AFTER INSERT ON worker_identity_lifecycle DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION native_lifecycle_fail()');
@@ -141,7 +143,7 @@ test('Worker identity lifecycle native PostgreSQL qualification in one owned dis
       }else{await assert.rejects(f.store.apply(c),fault);assert.deepEqual(await snapshot(),before,fault);}
     }
   });
-  await t.test('actual register/upsert, heartbeat/claim shapes fence writes and cannot mutate or delete adopted authority',async()=>{
+  await scenario('actual register/upsert, heartbeat/claim shapes fence writes and cannot mutate or delete adopted authority',async()=>{
     const f=await setup(),{h,i}=await f.pair(),before=(await db.$queryRaw<any[]>`SELECT revision::text AS n FROM ready_source_fence WHERE id=1`)[0].n;
     await db.agentHost.upsert({where:{workspaceId_slug:{workspaceId:f.workspaceId,slug:f.slug}},create:{workspaceId:f.workspaceId,slug:f.slug,name:'Synthetic lifecycle host',platform:'synthetic'},update:{name:'Synthetic lifecycle host',platform:'synthetic',status:'online',lastSeenAt:new Date()}});
     await db.agentHost.update({where:{id:f.hostId},data:{status:'offline',lastSeenAt:new Date()}});await db.agentHost.update({where:{id:f.hostId},data:{status:'online',lastSeenAt:new Date()}});
@@ -152,7 +154,7 @@ test('Worker identity lifecycle native PostgreSQL qualification in one owned dis
     assert.deepEqual((await f.store.inspect(f.binding(h,i))).blockers,[]);
     const legacy=await setup();await assert.rejects(db.agentHost.delete({where:{id:legacy.hostId}}));
   });
-  await t.test('installation/key guards preserve identity while the existing credential invalidation trigger remains effective',async()=>{
+  await scenario('installation/key guards preserve identity while the existing credential invalidation trigger remains effective',async()=>{
     const f=await setup(),{h,i}=await f.pair();
     await db.trustedProviderTicketKey.update({where:{workspaceId:f.workspaceId},data:{keyId:'rotated',epoch:2,publicKeyDigest:hash('e')}});
     await assert.rejects(db.trustedProviderTicketKey.update({where:{workspaceId:f.workspaceId},data:{installationId:randomUUID(),keyId:'other',epoch:3,publicKeyDigest:hash('f')}}));
@@ -160,14 +162,14 @@ test('Worker identity lifecycle native PostgreSQL qualification in one owned dis
     const legacy=await setup(),credential=randomUUID();await prepare(async tx=>{await tx.apiKey.create({data:{id:credential,workspaceId:legacy.workspaceId,name:'Inert synthetic credential reference',keyHash:reviewDigest(credential),keyPrefix:'synthetic',active:true,scopes:['agent-runtime:claim'],workerHostId:legacy.hostId,workerInstallationId:legacy.installationId,workerBindingEpoch:1,credentialVersion:1,expiresAt:new Date(Date.now()+600000)}});});
     await db.agentHost.update({where:{id:legacy.hostId},data:{status:'disabled'}});const row=await db.apiKey.findUniqueOrThrow({where:{id:credential},select:{active:true,revokedAt:true}});assert.equal(row.active,false);assert.ok(row.revokedAt);
   });
-  await t.test('shared native writer fence blocks a real host writer until the holder releases',async()=>{
+  await scenario('shared native writer fence blocks a real host writer until the holder releases',async()=>{
     const f=await setup();await f.pair();let release!:()=>void,locked!:()=>void;const gate=new Promise<void>(r=>release=r),held=new Promise<void>(r=>locked=r);
     const holder=db.$transaction(async tx=>{await tx.$executeRaw`UPDATE ready_source_fence SET revision=revision+1 WHERE id=1`;locked();await gate;},{timeout:30000});await held;
     let completed=false;const writer=db.agentHost.update({where:{id:f.hostId},data:{lastSeenAt:new Date()}}).then(()=>{completed=true;});
     try{let waiting=0;for(let n=0;n<20&&!waiting;n++){await new Promise(r=>setTimeout(r,25));waiting=(await db.$queryRaw<any[]>`SELECT count(*)::int AS n FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock'`)[0].n;}
       assert.ok(waiting>0);assert.equal(completed,false);}finally{release();await holder;await writer;}assert.equal(completed,true);
   });
-  await t.test('missing, disabled and rebound guard/function bindings and replica mode fail closed',async()=>{
+  await scenario('missing, disabled and rebound guard/function bindings and replica mode fail closed',async()=>{
     const f=await setup(),{b}=await f.pair();await db.$executeRawUnsafe('CREATE OR REPLACE FUNCTION native_lifecycle_noop() RETURNS TRIGGER LANGUAGE plpgsql AS $$ BEGIN RETURN NEW; END $$');
     const guards=[['worker_identity_lifecycle','lifecycle_append_guard'],['worker_identity_lifecycle','lifecycle_history_immutable'],['worker_identity_lifecycle','lifecycle_history_no_truncate'],['worker_identity_lifecycle','lifecycle_audit_append'],
       ['worker_identity_lifecycle_audit','lifecycle_audit_immutable'],['agent_hosts','lifecycle_host_anchor_guard'],['agent_hosts','lifecycle_host_no_truncate'],['trusted_provider_ticket_keys','lifecycle_installation_anchor_guard'],['trusted_provider_ticket_keys','lifecycle_installation_no_truncate']];
@@ -176,15 +178,15 @@ test('Worker identity lifecycle native PostgreSQL qualification in one owned dis
     await rollbackProbe(async tx=>{await tx.$executeRawUnsafe('DROP TRIGGER lifecycle_host_anchor_guard ON agent_hosts');await tx.$executeRawUnsafe('CREATE TRIGGER lifecycle_host_anchor_guard BEFORE INSERT OR UPDATE OR DELETE ON agent_hosts FOR EACH ROW EXECUTE FUNCTION native_lifecycle_noop()');assert.ok((await inspectCanonicalLifecycle(tx,b)).blockers.includes('lifecycle_writer_unfenced'));});
     assert.deepEqual((await f.store.inspect(b)).blockers,[]);
   });
-  await t.test('incomplete history/audit and SQL READ ONLY reject writes without silently repairing state',async()=>{
-    const f=await setup(),{h,b}=await f.pair(),before=await snapshot();for(let n=0;n<3;n++)assert.deepEqual((await f.store.inspect(b)).blockers,[]);
+  await scenario('incomplete history/audit and SQL READ ONLY reject writes without silently repairing state',async()=>{
+    const f=await setup(),{h,b}=await f.pair(),before=await snapshot();f.modes.length=0;for(let n=0;n<3;n++)assert.deepEqual((await f.store.inspect(b)).blockers,[]);
     assert.deepEqual(await snapshot(),before);assert.deepEqual(f.modes,['on','on','on']);
     await assert.rejects(db.$transaction(async tx=>{await tx.$executeRaw`SET TRANSACTION READ ONLY`;await tx.$executeRaw`UPDATE ready_source_fence SET revision=revision+1 WHERE id=1`;},{isolationLevel:'RepeatableRead'}));
     await rollbackProbe(async tx=>{await tx.$executeRaw`SET LOCAL session_replication_role=replica`;await tx.$executeRaw`DELETE FROM worker_identity_lifecycle_audit WHERE operation_id=${h.id}::uuid`;await tx.$executeRaw`SET LOCAL session_replication_role=origin`;await assert.rejects(inspectCanonicalLifecycle(tx,b));});
     await rollbackProbe(async tx=>{await tx.$executeRaw`SET LOCAL session_replication_role=replica`;await tx.$executeRaw`DELETE FROM worker_identity_lifecycle_audit WHERE operation_id=${h.id}::uuid`;await tx.$executeRaw`DELETE FROM worker_identity_lifecycle WHERE id=${h.id}::uuid`;await tx.$executeRaw`SET LOCAL session_replication_role=origin`;assert.deepEqual((await inspectCanonicalLifecycle(tx,b)).blockers,[...lifecycleMissing]);});
     assert.deepEqual(await snapshot(),before);
   });
-  await t.test('canonical BootstrapAuthoritySource clears only four evidenced facts and keeps all other authority blocked',async()=>{
+  await scenario('canonical BootstrapAuthoritySource clears only four evidenced facts and keeps all other authority blocked',async()=>{
     const f=await setup(),{b}=await f.pair(),source=createCanonicalBootstrapAuthoritySource();await db.$transaction(async tx=>{
       await tx.$executeRaw`SET TRANSACTION READ ONLY`;const release=await source.bindTransaction!(tx,'read');try{await assert.rejects(source.context(tx,b),(e:any)=>e instanceof CanonicalBootstrapBlocked&&JSON.stringify(e.blockers)===JSON.stringify(bootstrapAuthorityGaps.filter(g=>!lifecycleMissing.some(m=>m===g)).sort()));}finally{release();}
     },{isolationLevel:'RepeatableRead'});

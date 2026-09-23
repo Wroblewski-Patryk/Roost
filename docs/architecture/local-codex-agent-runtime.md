@@ -1,16 +1,20 @@
 # Local Codex Agent Runtime
 
-Owner amendment v36: [native lifecycle qualification](worker-identity-lifecycle-v1.md)
-applied all 79 migrations unchanged. **11/12 scenarios pass; one fails:**
-PostgreSQL rolls back a deferred COMMIT failure, but the adapter reports success.
-The native regression remains red. Source regressions 114/114, build and lint pass.
-Lifecycle persistence qualification PARTIAL; commit acknowledgement and production
-BLOCKED. Four lifecycle facts have conditional native evidence; five other gaps
-remain. All six flags plus transportQualified/launchAuthority remain false.
-Database/relay cleanup and state restoration passed; 17 owned temporary files
-remain because execution review blocked deletion. Full cleanup BLOCKED.
-One next recommendation: finish that bounded file cleanup after resolving the
-review block and verify absence. No activation; earlier proposals are historical.
+Owner amendment v37: [lifecycle COMMIT acknowledgement](worker-identity-lifecycle-v1.md)
+now requires one fresh read-only confirmation of the exact immutable record,
+matching native audit/digest and committed fence. Prisma 5.22's library engine
+returned an error object without `error_code`; its JS classifier accepted it.
+A raw-driver/wire probe reproduced this independently of the lifecycle wrapper.
+Unconfirmed outcomes return non-retryable `reconciliation_required`; no write
+or callback is replayed. **117/117 source results**, build and lint pass.
+The formerly red native deferred-COMMIT assertion now passes (2/2 results,
+including parent); 79 migrations remain unchanged. Full post-fix native
+qualification stays PARTIAL; production BLOCKED, five other gaps unresolved.
+All six flags and transportQualified/launchAuthority remain false. The current
+run creates no helper files; cleanup/preservation results are recorded in the
+linked contract. Earlier retained artifacts are outside this delegated scope.
+One next recommendation: separately authorize the full native lifecycle suite
+against the repaired adapter. No activation; earlier next steps are historical.
 
 Owner amendment v26: [loopback HTTPS handoff adapter](worker-handoff-https-v1.md)
 passes 9/9 real HTTPS results and 189/189 selected tests. Its sole client surface
