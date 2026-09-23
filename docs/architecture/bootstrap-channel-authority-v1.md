@@ -161,7 +161,7 @@ Migration chain SHA-256 (81 files):
 Prior 80 files remain byte-identical:
 `529efe0cb272dc64ecb092ee50f31466c02a44d3dccb729be127d8ac872cb20c`.
 
-**One recommended next atom:** source-only inventory and fail-closed contract for
-canonical bootstrap-ticket revocation, using the existing ticket/attempt ledger
-and an explicit writer/audit inventory. Do not start issuance, delivery, endpoint
-integration or activation. Not started.
+The successor [v44 ticket-revocation inventory/contract](bootstrap-ticket-revocation-v1.md)
+is complete source-only. It identifies five structural gaps and retains the
+revocation blocker, independent of this channel qualification. Its single next
+schema/adapter proposal is recorded there; no further atom is started.

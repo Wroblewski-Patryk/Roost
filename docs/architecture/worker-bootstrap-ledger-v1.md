@@ -1,13 +1,13 @@
 # Durable Worker bootstrap ledger v1
 
-Owner amendment v34: [canonical bootstrap source projection](worker-bootstrap-authority-source-v1.md)
-is **DONE source-only: 13/13 new results, 99/99 source results**. Existing canonical
-records and the ledger transaction supply bounded diagnostics; nine missing
-structural facts keep usable bootstrap authority BLOCKED. No parallel registry,
-invented epoch, database/network operation or activation; all flags false.
-One next proposal: source-only host/installation lifecycle and writer-fence
-contract on existing entities, without initializing missing facts. Earlier
-qualification and successor proposals below are historical.
+Owner amendment v44: [ticket-revocation inventory/contract](bootstrap-ticket-revocation-v1.md)
+is source-only. This ledger remains the canonical root, but lacks explicit
+notBefore, pre-consume revocation history, issue-time high-water and complete
+writer/audit coverage. The attempt-only predecessor cannot express recovery from
+a ticket revoked before consume. These are blockers, not defaultable fields.
+No schema changes or parallel registry. Ticket revocation and signed-current-
+decision remain BLOCKED; all flags false. Current next-step proposal is recorded
+in the linked contract; earlier qualifications/successors below are historical.
 
 ## Native qualification, owner amendment v33 (2026-09-23)
 

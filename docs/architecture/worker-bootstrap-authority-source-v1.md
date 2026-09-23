@@ -1,12 +1,13 @@
 # Canonical Worker bootstrap authority projection v1
 
-Current v43: [native channel qualification](bootstrap-channel-authority-v1.md)
-passes 19/19 native and 68/68 source results on one owned disposable database.
-Only fresh audited, guard-verified, binding/purpose-matched channel evidence can
-remove its gap; installations without migration 81 remain blocked. Canonical
-context still rejects with ticket-revocation and signed-current-decision blockers.
-No deployment/issuance/delivery/activation; RF-HOST-035 PARTIAL, production BLOCKED,
-all flags false. The inventory and qualification below are historical.
+Current v44: [ticket-revocation inventory/contract](bootstrap-ticket-revocation-v1.md)
+adds precise `ticketRevocationAuthority` diagnostics. The existing ledger cannot
+prove explicit notBefore, terminal pre-consume revocation, issue high-water,
+complete writer coverage or pre-consume recovery. `ticketRevoked` still throws
+`bootstrap_ticket_revocation_unavailable`; signed-current-decision is unchanged.
+The v43 channel qualification remains scoped to its native evidence. No schema
+change, database/network work or activation; RF-HOST-035 PARTIAL, production
+BLOCKED, all flags false. The inventory below is historical.
 
 Owner amendment v34, 2026-09-23. **DONE for source-only canonical projection,
 ledger transaction binding and synthetic denial validation: 13/13 new results,

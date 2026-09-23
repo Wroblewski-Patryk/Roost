@@ -1,17 +1,19 @@
 # Architecture Source Of Truth
 
-Owner amendment v43: [native bootstrap channel qualification](bootstrap-channel-authority-v1.md)
-passes **19/19 native, 68/68 source results**, build/lint. All 81 migrations applied
-only in one owned disposable database; SQL unchanged. Existing ordinary rows,
-credential/FK/shape rules, runtime/direct writers, same-head bootstrap grants,
-47 guard instances, concurrency, rollback and COMMIT uncertainty are covered.
-No production deployment or activation. RF-HOST-035 PARTIAL, production BLOCKED;
-six flags plus transportQualified/launchAuthority false. A verified native channel
-can remove only its blocker; ticket revocation and signed-current-decision remain.
-The qualification report distinguishes corrected test-fixture/runner bookkeeping
-from runtime evidence and records exact cleanup separately.
-One next recommendation: source-only bootstrap-ticket revocation inventory and
-fail-closed contract over the existing ledger. Not started.
+Owner amendment v44: [ticket-revocation inventory/contract](bootstrap-ticket-revocation-v1.md)
+passes **12/12 new, 80/80 source results**, build/lint. It uses the existing
+ticket/attempt/history/head/audit ledger. Revocation remains
+BLOCKED: no explicit notBefore, pre-consume revocation history or issue-time
+high-water reservation; incomplete native writer coverage and attempt-only
+recovery cannot be guessed away. A strict synthetic denial model covers terminal
+revocation/expiry, concurrent consume/revoke, uncertainty/no retry and read purity.
+It does not remove the canonical blocker. Signed-current-decision remains out of
+scope; RF-HOST-035 PARTIAL, production BLOCKED; six flags plus
+transportQualified/launchAuthority false. No schema change, DB/Docker/network,
+keys/signing, issuance/delivery or activation. One next recommendation: separately
+authorize an additive, unapplied schema/adapter proposal extending the existing
+ticket root with immutable lifecycle children/receipts and versioned validity/
+predecessor bindings. Not started; earlier next steps are historical.
 
 Owner amendment v26: [loopback HTTPS handoff adapter](worker-handoff-https-v1.md)
 is DONE: 9/9 real HTTPS results and 189/189 selected tests. It checks normal TLS
