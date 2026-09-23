@@ -1,5 +1,15 @@
 # Architecture Source Of Truth
 
+Owner amendment v26: [loopback HTTPS handoff adapter](worker-handoff-https-v1.md)
+is DONE: 9/9 real HTTPS results and 189/189 selected tests. It checks normal TLS
+plus certificate DER SHA-256 pinning, exact origin, staged epoch/cutover, no proxy
+or redirects, bounded JSON/timeouts and uncertain delivery without retries.
+Production TLS/DNS/provisioning remain BLOCKED; no default composition or flag
+changes. No DB/Docker or Worker/provider/model runs. One next atom: source-only
+production HTTPS/DNS/certificate admission contract and synthetic denial tests
+with exact installation/host/owner and epoch rollback boundaries. Earlier
+amendments and successor proposals below are historical.
+
 Owner amendment v25 — native Worker handoff qualification
 
 [Native handoff evidence](worker-credential-lifecycle-v1.md): **DONE**, 9/9

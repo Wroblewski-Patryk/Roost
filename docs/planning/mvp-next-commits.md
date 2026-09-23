@@ -1,5 +1,17 @@
 # Next development work
 
+Current owner amendment v26: [loopback HTTPS adapter](../architecture/worker-handoff-https-v1.md)
+is DONE: 9/9 real HTTPS results, 189/189 selected tests, cleanup PASS. Certificates
+are ephemeral/in-memory, TLS/pin/origin/proxy/redirect and resource boundaries
+qualified; production TLS/DNS/certificate provisioning and secret storage remain
+BLOCKED. No DB/Docker, target process or activation; all six flags false.
+**Exactly one proposed next atom:** define and synthetically qualify a source-only
+production HTTPS/DNS/certificate admission contract with exact installation,
+host and owner authority plus certificate epoch rollback denial. No production
+endpoint contact, real certificate/credential provisioning, secret store or
+Worker/provider/model activation. Stop after that admission atom. Older proposals
+below are historical.
+
 Current owner amendment v25: [native handoff qualification](../architecture/worker-credential-lifecycle-v1.md)
 is **DONE: 9/9 PostgreSQL/HTTP results, 180/180 selected regressions**. The full
 unchanged 76-migration chain, exact owner/device binding, one-time delivery/ACK,

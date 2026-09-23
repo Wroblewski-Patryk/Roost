@@ -1,5 +1,18 @@
 # Owner-controlled Worker credential lifecycle v1
 
+Owner amendment v26: [loopback HTTPS adapter qualification](worker-handoff-https-v1.md)
+is **DONE: 9/9 real loopback HTTPS results, 189/189 selected tests including prior
+regressions**. Normal TLS validation plus exact certificate DER SHA-256 pinning,
+bounded pin overlap/cutover, direct proxy-free connections, closed routes/schemas,
+timeouts, 20-way poll/ACK and lost-response recovery are qualified with ephemeral
+test certificates and synthetic credentials. Production TLS/DNS/certificate
+provisioning and secret storage remain BLOCKED; default composition and all six
+flags stay false. No DB/Docker or target process is used. Cleanup: no remaining
+server/socket/timer or certificate/key file. Exactly one next atom: source-only
+production HTTPS/DNS/certificate admission contract with synthetic denial tests,
+exact installation/host/owner binding and epoch rollback denial. Earlier results
+and next-atom proposals below are historical.
+
 Owner amendment v25, 2026-09-23. **DONE for native handoff qualification:
 9/9 PostgreSQL/HTTP results (eight scenarios plus parent), 180/180 selected
 regressions. BLOCKED: real TLS, provisioning, secret storage and launch.**

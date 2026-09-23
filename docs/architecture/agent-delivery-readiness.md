@@ -1,5 +1,16 @@
 # Gotowość połączenia Roost z agentami
 
+Aktualizacja v26: [adapter HTTPS handoffu na loopback](worker-handoff-https-v1.md)
+— **DONE: 9/9 wyników realnego lokalnego HTTPS, 189/189 wybranych testów**.
+TLS chain/hostname/time + dokładny pin certyfikatu, staged pin/cutover, brak
+proxy/redirect, limity JSON/czasu, 20 polli/ACK i recovery potwierdzone.
+Certyfikaty tylko w pamięci; cleanup PASS, bez DB/Dockera i startu procesów celu.
+Produkcyjny TLS/DNS/provisioning/secret store nadal BLOCKED; sześć flag false.
+Jeden następny atom: źródłowy kontrakt dopuszczenia produkcyjnego HTTPS/DNS/
+certyfikatów i syntetyczne odmowy, z dokładnym installation/host/owner oraz
+odmową cofnięcia epoki. Bez realnego provisioningu i aktywacji. Starsze wyniki
+i propozycje kolejnych atomów poniżej są historyczne.
+
 Aktualizacja v25: [natywny handoff Workera](worker-credential-lifecycle-v1.md)
 — **DONE: 9/9 wyników PostgreSQL/HTTP, 180/180 regresji**. Pełny łańcuch
 76 niezmienionych migracji sprawdzono na jednej własnej bazie tymczasowej.

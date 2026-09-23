@@ -1,5 +1,14 @@
 # Foundation requirements traceability
 
+RF-HOST-035 owner amendment v26: [loopback HTTPS adapter](worker-handoff-https-v1.md)
+is DONE: 9/9 HTTPS results, 189/189 selected tests. Normal TLS plus exact certificate
+pin, bounded staged rotation, origin/proxy/redirect/timeout/JSON denials,
+one-time concurrent delivery/ACK and loss recovery are qualified. Cleanup PASS.
+Production TLS/DNS/certificate provisioning and execution remain BLOCKED; six
+flags false. One next atom: source-only production HTTPS/DNS/certificate admission
+contract with synthetic denial tests for exact installation/host/owner and epoch
+rollback. Earlier amendments and successor proposals are historical.
+
 RF-HOST-035 owner amendment v25: [native handoff](worker-credential-lifecycle-v1.md)
 is **DONE: 9/9 PostgreSQL/HTTP results, 180/180 selected regressions**. The unchanged
 76-migration chain qualifies one-time delivery/ACK, owner/device/decision gates,

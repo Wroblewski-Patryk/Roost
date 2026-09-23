@@ -1,5 +1,15 @@
 # Self-hosting and private installation configuration
 
+Owner amendment v26: [loopback HTTPS handoff](../architecture/worker-handoff-https-v1.md)
+passes 9/9 real HTTPS results and 189/189 selected tests with in-memory test CA,
+certificates and keys. No system trust, proxy, firewall, registry, database or
+Docker changes occur. Default composition remains unavailable and loopback PASS
+does not qualify production TLS/DNS/certificate provisioning or secret storage.
+One next atom: source-only production HTTPS/DNS/certificate admission contract
+and synthetic denials for exact installation/host/owner binding and epoch rollback.
+No real endpoint contact, provisioning or activation. Earlier successor proposals
+below are historical.
+
 Owner amendment v25 — bounded native handoff evidence
 
 [Worker handoff qualification](../architecture/worker-credential-lifecycle-v1.md)

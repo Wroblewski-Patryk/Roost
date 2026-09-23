@@ -1,5 +1,16 @@
 # Local Codex Agent Runtime
 
+Owner amendment v26: [loopback HTTPS handoff adapter](worker-handoff-https-v1.md)
+passes 9/9 real HTTPS results and 189/189 selected tests. Its sole client surface
+is request/poll/ACK/status with exact origin, normal TLS and certificate DER pin;
+owner approval stays independent. Lost delivery never retries; recovery requires
+new enrollment and owner decision. Certificates are ephemeral/in-memory and
+cleanup leaves no sockets, servers or key files. Production TLS/DNS/certificate
+provisioning, secret storage and execution remain BLOCKED; six flags false.
+One next atom: source-only production HTTPS/DNS/certificate admission contract
+and synthetic denials, including exact installation/host/owner and epoch rollback.
+Earlier amendments and successor proposals below are historical.
+
 Owner amendment v25 — native Worker handoff qualification
 
 [Handoff qualification](worker-credential-lifecycle-v1.md) is **DONE** for the
