@@ -1,84 +1,24 @@
 # Local Codex Agent Runtime
 
-Owner amendment v33: [native bootstrap ledger qualification](worker-bootstrap-ledger-v1.md)
-is **DONE: 10/10 PostgreSQL results, 86/86 source regressions, 96/96 total**.
-The full 78-file migration chain applied only to one owned disposable database;
-no migration was edited. Real constraints, concurrency, fence locking, isolation,
-atomic rollback/audit and READ ONLY checks pass. Cleanup PASS: owned database and
-helpers absent, three existing DB fingerprints equal, PostgreSQL stopped again,
-backend/Soar unchanged. Production authority/delivery remain PARTIAL; production
-BLOCKED and all flags false. Exactly one next recommendation: source-only canonical
-BootstrapAuthoritySource integration and fail-closed tests, without inventing
-missing epochs/revocation facts or activating runtime. Earlier proposals are historical.
+Owner amendment v34: [canonical bootstrap source projection](worker-bootstrap-authority-source-v1.md)
+is **DONE source-only: 13/13 new results, 99/99 selected source results**.
+Existing owner/decision/host/issuer/credential/handoff/channel/ticket records are
+read through the ledger transaction; no parallel authority store or migration.
+Nine explicit structural gaps keep usable bootstrap authority **BLOCKED**, even
+with all available facts present. No epoch/revocation/signature is invented.
+All six flags, `transportQualified` and `launchAuthority` remain false.
 
-Owner amendment v32: [durable bootstrap ledger](worker-bootstrap-ledger-v1.md)
-is **DONE source-only: 13/13 adapter results, 86/86 selected source results**.
-Five additive tables are proposed in an UNAPPLIED migration; the prior 77 migrations
-are unchanged. Transactional mocks qualify one-time generations, canonical recovery,
-CAS completion, atomic audit/rollback and read purity. Production authority sources
-and native SQL remain PARTIAL; production/execution BLOCKED, all flags false.
-Ordinary admission is unchanged. Exactly one recommended next atom: native ledger
-qualification in an explicitly authorized isolated disposable database with synthetic
-authority sources and cleanup evidence. Earlier successor proposals are historical.
-
-Owner amendment v31: [bootstrap/recovery admission](worker-bootstrap-admission-v1.md)
-is **DONE as a source-only contract/model: 16/16 results, 73/73 source regressions**.
-A separate current-owner ticket admits one first enrollment or terminal recovery;
-ordinary poll/ACK/status/rotation retain their existing credential requirements.
-Exact bindings, burned generations, replay, expiry/cutover and post-commit unknown
-are enforced synthetically. No native persistence, network, provisioning or default
-composition; all admission flags false. Durable issuer/delivery integration is
-PARTIAL and production BLOCKED. Exactly one proposed next atom: a source-only
-bootstrap ledger adapter and additive unapplied schema with mocked transaction
-validation. Earlier successor proposals below are historical.
-
-Owner amendment v30: [persisted admission/HTTPS coordinator](worker-handoff-coordinator-v1.md)
-is **DONE for source-only integration: 11/11 results, 57/57 source regressions**.
-Immutable snapshots are the only configuration source; inspection, pre-body peer
-recheck and signed operation/response completion reject drift and stale pins.
-Concurrent/replayed completion, uncertainty, read-only status and buffer wiping
-are qualified with an injected synthetic exchange on the existing HTTPS client.
-No persistence/migration change, real network/DB/Docker or activation; flags false.
-Real exchange remains PARTIAL and production BLOCKED. Integration exposes an
-active-credential prerequisite that blocks first enrollment and rotation recovery.
-Exactly one proposed next atom: a source-only bootstrap/recovery admission contract
-and synthetic validation resolving that cycle without relaxing owner/host bindings.
+Prior source contracts and qualification are consolidated in
+[bootstrap admission](worker-bootstrap-admission-v1.md),
+[bootstrap ledger](worker-bootstrap-ledger-v1.md),
+[HTTPS coordination](worker-handoff-coordinator-v1.md) and
+[normal transport admission](worker-transport-admission-v1.md).
+Historical v33 ledger evidence: 10/10 native results, 78 migrations, cleanup PASS;
+not rerun for this source-only atom. Production delivery remains unqualified.
+One next proposal: a source-only lifecycle contract for missing host/installation
+epochs and irreversible revocation on existing entities, including writer-fence
+obligations and legacy handling without invented initial epochs. No activation.
 Earlier successor proposals below are historical.
-
-Owner amendment v29: [native transport persistence](worker-transport-admission-v1.md)
-is **DONE: 9/9 PostgreSQL results, 55/55 selected native/source results**.
-Real Prisma/Serializable concurrency (20 attempts per create/stage/cutover/revoke/
-readmit), FK/unique/CHECK constraints, atomic rollback and SQL read-only inspection
-pass. The previously unapplied migration needed a JSON-operator parenthesis fix;
-it then applied with the full 77-file chain. Earlier 76 migrations unchanged.
-Cleanup PASS: owned database absent, three existing database fingerprints equal,
-Roost PostgreSQL exited, backend/Soar unchanged. Production remains BLOCKED and
-all flags false. Exactly one proposed next atom: source-only integration of
-persisted admission with the HTTPS handoff boundary and synthetic denial tests;
-no endpoints, provisioning, default composition or activation. Earlier proposals
-below are historical; native evidence does not qualify governance fixture setup
-or privileged SQL/whole-database rollback protection.
-
-Owner amendment v28: [transport admission persistence](worker-transport-admission-v1.md)
-is DONE for the source Prisma adapter and synthetic transactions: **10/10 results,
-46/46 selected source regressions**. Four additive tables preserve identity
-generations, one workspace/host head, monotonic history and atomic Event/audit.
-Serializable writes use the existing fence and exact revision/digest; read snapshots
-perform no writes. Migration **UNAPPLIED**; native persistence qualification PARTIAL,
-production TLS/DNS/provisioning and execution BLOCKED. Default composition absent,
-all six flags plus `transportQualified` false. Exactly one proposed next atom:
-separately authorized native PostgreSQL qualification in a disposable synthetic
-database. Earlier successor proposals below are historical.
-
-Owner amendment v27: [transport admission](worker-transport-admission-v1.md)
-passes 9/9 synthetic results and 36/36 selected source tests. Inspection requires
-exact owner-approved signed configuration, fresh authoritative head, local epoch
-anchor and signed peer metadata. DNS rebinding, old pins/configs, identity/key
-drift and copied anchors deny; revoke blocks new use without retry. Writable
-anchors do not solve coordinated same-account rollback. Persistence and production
-composition remain absent, six flags false. One next atom: source-only Prisma
-adapter and additive unapplied migration with synthetic transaction tests.
-Earlier amendments and successor proposals below are historical.
 
 Owner amendment v26: [loopback HTTPS handoff adapter](worker-handoff-https-v1.md)
 passes 9/9 real HTTPS results and 189/189 selected tests. Its sole client surface

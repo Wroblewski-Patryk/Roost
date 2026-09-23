@@ -1,5 +1,14 @@
 # Durable Worker bootstrap ledger v1
 
+Owner amendment v34: [canonical bootstrap source projection](worker-bootstrap-authority-source-v1.md)
+is **DONE source-only: 13/13 new results, 99/99 source results**. Existing canonical
+records and the ledger transaction supply bounded diagnostics; nine missing
+structural facts keep usable bootstrap authority BLOCKED. No parallel registry,
+invented epoch, database/network operation or activation; all flags false.
+One next proposal: source-only host/installation lifecycle and writer-fence
+contract on existing entities, without initializing missing facts. Earlier
+qualification and successor proposals below are historical.
+
 ## Native qualification, owner amendment v33 (2026-09-23)
 
 **DONE: 10/10 native PostgreSQL results (nine subtests and their parent), plus

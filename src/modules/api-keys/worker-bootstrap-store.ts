@@ -11,7 +11,11 @@ type SourceContext=Omit<BootstrapContext,"enrollmentGeneration"|"prior">&{creden
 // Mandatory authority dependency, evaluated INSIDE the very same transaction.
 // No production implementation or default composition is provided in this atom.
 export interface BootstrapAuthoritySource{
-  qualification:"synthetic_bootstrap_authority_v1";
+  qualification:"synthetic_bootstrap_authority_v1"|"canonical_bootstrap_projection_v1";
+  // Canonical readers can require a transaction-scoped lifetime established only
+  // after this adapter has fenced writes / selected SQL READ ONLY for reads.
+  bindTransaction?(db:Db,mode:"read"|"write"):Promise<()=>void>;
+  inspect?(db:Db,input:unknown):Promise<unknown>;
   context(db:Db,binding:BootstrapBinding):Promise<SourceContext|null>;
   decision(db:Db,id:string):Promise<SignedTransport<BootstrapDecision>|null>;
   ticketRevoked(db:Db,id:string):Promise<boolean>;
@@ -23,18 +27,21 @@ const json=(v:unknown)=>JSON.stringify(boundedBootstrapRecord(v));
 
 export function createPrismaWorkerBootstrapStore(client:Pick<PrismaClient,"$transaction">,source:BootstrapAuthoritySource,clock=()=>new Date()):BootstrapStore&{
   register(ticket:SignedTransport<BootstrapTicket>):Promise<{ticketId:string;ticketDigest:string}>;
+  inspectAuthority(input:unknown):Promise<unknown>;
 }{
-  async function run<T>(readOnly:boolean,work:(tx:BootstrapTx,register:(ticket:SignedTransport<BootstrapTicket>)=>Promise<{ticketId:string;ticketDigest:string}>)=>Promise<T>){
-    if(!client?.$transaction||source?.qualification!=="synthetic_bootstrap_authority_v1"||
+  async function run<T>(readOnly:boolean,work:(tx:BootstrapTx,register:(ticket:SignedTransport<BootstrapTicket>)=>Promise<{ticketId:string;ticketDigest:string}>,db:Db)=>Promise<T>){
+    if(!client?.$transaction||!["synthetic_bootstrap_authority_v1","canonical_bootstrap_projection_v1"].includes(source?.qualification)||
       typeof source.context!=="function"||typeof source.decision!=="function"||typeof source.ticketRevoked!=="function")deny("unavailable");
     try{return await client.$transaction(async db=>{
       if(readOnly)await db.$executeRaw`SET TRANSACTION READ ONLY`;
       else if(await db.$executeRaw`UPDATE ready_source_fence SET revision=revision+1 WHERE id=1`!==1)deny();
-      const {api,register}=transaction(db,source,clock,readOnly);return work(api,register);
+      const release=await source.bindTransaction?.(db,readOnly?"read":"write");
+      try{const {api,register}=transaction(db,source,clock,readOnly);return await work(api,register,db);}finally{release?.();}
     },{isolationLevel:readOnly?"RepeatableRead":"Serializable",timeout:10000,maxWait:2000});
     }catch{return deny();} // No retry, raw SQL error or payload escapes this boundary.
   }
-  return {qualification:"synthetic_bootstrap_ledger_v1",transaction:work=>run(false,work),read:work=>run(true,work),register:ticket=>run(false,(_tx,register)=>register(ticket))};
+  return {qualification:"synthetic_bootstrap_ledger_v1",transaction:work=>run(false,work),read:work=>run(true,work),register:ticket=>run(false,(_tx,register)=>register(ticket)),
+    inspectAuthority:input=>run(true,(_tx,_register,db)=>{if(!source.inspect)return deny("unavailable");return source.inspect(db,input);})};
 }
 
 function transaction(db:Db,source:BootstrapAuthoritySource,clock:()=>Date,readOnly:boolean){
