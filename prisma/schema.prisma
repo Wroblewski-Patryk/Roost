@@ -39,7 +39,8 @@ model WorkerTransportGeneration {
   workspaceId String @map("workspace_id") @db.Uuid
   hostId String @map("host_id") @db.Uuid
   installationId String @map("installation_id") @db.Uuid
-  credentialId String @map("credential_id") @db.Uuid
+  credentialId String? @map("credential_id") @db.Uuid
+  purpose String?
   identity Json
   identityDigest String @map("identity_digest")
   history WorkerTransportHistory[]
@@ -65,14 +66,16 @@ model WorkerTransportHistory {
   highWaterEpoch Int @map("high_water_epoch")
   state String
   requestId String @unique @map("request_id") @db.Uuid
-  decisionId String @unique @map("decision_id") @db.Uuid
+  decisionId String? @unique @map("decision_id") @db.Uuid
   decisionRevision Int @map("decision_revision")
   decisionIntentDigest String @map("decision_intent_digest")
   ownerId String @map("owner_id") @db.Uuid
   currentPin String @map("current_pin")
   stagedPin String? @map("staged_pin")
   record Json
-  signature String
+  signature String?
+  purpose String?
+  writerXid String? @map("writer_xid")
   head WorkerTransportHead?
   audit WorkerTransportAudit?
   @@unique([workspaceId, hostId, revision])
@@ -91,6 +94,7 @@ model WorkerTransportHead {
   certificateEpoch Int @map("certificate_epoch")
   highWaterEpoch Int @map("high_water_epoch")
   state String
+  purpose String?
   history WorkerTransportHistory @relation(fields:[historyId, workspaceId, hostId, revision, recordDigest, certificateEpoch, highWaterEpoch, state],references:[id, workspaceId, hostId, revision, recordDigest, certificateEpoch, highWaterEpoch, state],onDelete:Restrict,onUpdate:NoAction)
   @@id([workspaceId, hostId])
   @@unique([historyId, workspaceId, hostId, revision, recordDigest, certificateEpoch, highWaterEpoch, state],map:"worker_transport_head_history")

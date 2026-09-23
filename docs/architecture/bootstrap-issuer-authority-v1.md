@@ -162,7 +162,8 @@ Migration chain SHA-256 (80 files):
 Preserved preexisting-database fingerprint SHA-256:
 `e9e019524b6010b02b30b4635fff99133c4429ffac3f537b05ac860485a281f1`.
 
-The successor [v41 channel inventory/proposal](bootstrap-channel-authority-v1.md)
-is complete as a source-only model; canonical channel authority remains blocked
-by representation and writer-fence gaps. Its single proposed successor is recorded
-there. No bootstrap admission or activation follows from the native issuer result.
+The successor [v42 channel schema/adapter proposal](bootstrap-channel-authority-v1.md)
+is complete source-only; migration 81 is UNAPPLIED and its native qualification
+is not started. The same transport history/head is extended with explicit
+bootstrap grants and proposed writer guards. Ticket-revocation and signed-current-
+decision blockers remain. No admission or activation follows from issuer results.

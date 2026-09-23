@@ -1,14 +1,14 @@
 # Canonical Worker bootstrap authority projection v1
 
-Current v41: [bootstrap channel inventory and proposal](bootstrap-channel-authority-v1.md)
-adds precise `channelAuthority` denial reasons without removing the channel gap.
-Existing transport requires a credential and lacks explicit bootstrap purpose,
-approved resolver IP set and complete writer protection. A synthetic snapshot/model
-is not canonical authority. The qualified [issuer](bootstrap-issuer-authority-v1.md)
-and [lifecycle](worker-identity-lifecycle-v1.md) facts remain available; channel,
-bootstrap-ticket revocation and signed-current-decision authority remain blocked.
-14/14 channel-model and 53/53 selected source results pass. Overall admission stays
-PARTIAL, production BLOCKED; all flags false. No migration or activation.
+Current v42: [bootstrap channel schema/adapter proposal](bootstrap-channel-authority-v1.md)
+adds a source-only canonical reader over the same transport history/head and
+immutable owner grant. Migration 81 is UNAPPLIED; existing installations remain
+blocked. Only fresh audited, guard-verified, binding/purpose-matched evidence can
+remove the channel gap. Ticket-revocation and signed-current-decision blockers
+remain; context never returns usable authority. The qualified issuer/lifecycle
+facts are reused, not recreated. Adapter 15/15 and selected source 68/68 results
+pass; native migration-81 qualification is NOT RUN. RF-HOST-035 remains PARTIAL,
+production BLOCKED and all flags false. No deployment or activation.
 The inventory and qualification below are historical.
 
 Owner amendment v34, 2026-09-23. **DONE for source-only canonical projection,

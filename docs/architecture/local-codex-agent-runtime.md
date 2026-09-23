@@ -1,20 +1,20 @@
 # Local Codex Agent Runtime
 
-Owner amendment v41: [bootstrap channel authority proposal](bootstrap-channel-authority-v1.md)
-is DONE for source-only inventory/denial modeling: **14/14 new, 53/53 selected
-results**, build/lint PASS. Canonical channel authority remains BLOCKED: existing
-transport records require a credential, cannot represent explicit bootstrap
-purpose/owner grant or an approved IP set, and lack all-writer native fencing.
-The separate immutable proposal binds owner/ticket, lifecycle/issuer, HTTPS/CA/pin,
-certificate high-water and resolver set. Synthetic first-enrollment/recovery pass;
-ordinary/legacy reuse, caller overrides and drift deny, uncertain send never retries.
-No existing ordinary admission or active-credential requirement is relaxed.
-All three channel/ticket-revocation/signed-decision blockers remain; RF-HOST-035
-is PARTIAL, production BLOCKED; six flags and transportQualified/launchAuthority
-false. No migration/DB/Docker/network, keys/signing, delivery or activation.
-One next recommendation: an additive, unapplied schema/adapter proposal extending
-existing transport authority with bootstrap purpose, owner grant, approved IP set
-and complete writer fence/audit. Not started; earlier next steps are historical.
+Owner amendment v42: [bootstrap channel schema/adapter proposal](bootstrap-channel-authority-v1.md)
+is DONE source-only: **15/15 new, 68/68 selected results**, build/lint and local
+Prisma validation/client generation PASS. Migration 81 is **UNAPPLIED**; the old
+80 files are unchanged. Explicit bootstrap purpose/owner grant/exact approved IP
+set extend the same transport generation/history/head. The owner-authorized
+nullable-field widening retains ordinary credential/FK/signed-record checks;
+ordinary active-credential admission is unchanged. Proposed 47 native guards,
+audit, single-use CAS/high-water and read-only verification fail closed on drift.
+Only verified canonical channel evidence can conditionally remove its blocker;
+ticket revocation and signed-current-decision blockers remain. Native qualification
+NOT RUN; RF-HOST-035 PARTIAL, production BLOCKED; six flags plus
+transportQualified/launchAuthority false. No DB/Docker/network, keys/signing,
+issuance/delivery or activation. One next recommendation: separately authorize
+native migration-81/writer/ordinary-compatibility qualification and exact cleanup.
+Not started; earlier next steps are historical.
 
 Owner amendment v26: [loopback HTTPS handoff adapter](worker-handoff-https-v1.md)
 passes 9/9 real HTTPS results and 189/189 selected tests. Its sole client surface

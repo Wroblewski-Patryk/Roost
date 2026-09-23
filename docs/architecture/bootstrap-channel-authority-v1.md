@@ -1,124 +1,131 @@
 # Canonical bootstrap channel authority v1
 
-Owner amendment v41, 2026-09-23. **DONE source-only inventory, proposal and denial
-model: 14/14 new results, 53/53 selected results; server build/lint PASS.**
-Canonical channel authority remains **BLOCKED**: the current schema cannot express
-the required purpose/authority without a migration. RF-HOST-035 remains **PARTIAL**.
-No migration, database, Docker, network/DNS, private key, signing, issuance,
-credential delivery, provisioning, endpoint/default composition or activation.
+Owner amendment v42, 2026-09-23. **DONE for the source-only schema/adapter
+proposal: 15/15 new results, 68/68 selected results; server build/lint PASS.**
+Migration `20260923230000_bootstrap_transport_authority` is **UNAPPLIED**.
+The previous 80 migration files are byte-identical. Native qualification is
+**NOT RUN**; RF-HOST-035 remains **PARTIAL**, production **BLOCKED**.
+No DB/Docker/network/DNS, private keys/signing, issuance/delivery, provisioning,
+endpoints/default composition, target/model/profile changes or activation.
 
-## One canonical source and its current limits
+## One canonical authority and the authorized schema widening
 
-The existing `worker_transport_generations`, `worker_transport_history`,
-`worker_transport_heads` and `worker_transport_audit` remain the transport source.
-There is no new registry, persistent cache or bootstrap-specific shadow head.
-The proposed snapshot is a read projection, never a second editable source.
+`worker_transport_generations`, `worker_transport_history`,
+`worker_transport_heads` and `worker_transport_audit` remain the only canonical
+transport generation/history/head/audit. Bootstrap transitions use that same
+revision chain and certificate high-water. Grants and native write receipts are
+immutable children, not another registry, root or shadow head.
 
-| Existing source | Proven source boundary / missing fact |
+The owner explicitly authorized a narrow exception to strictly additive DDL:
+add nullable `purpose`, remove the blanket credential/signature/decision-ID
+NOT NULL where bootstrap cannot satisfy it, and replace it with disjoint CHECKs.
+NULL purpose preserves ordinary/legacy meaning and the old ordinary JSON CHECK
+expressions verbatim. Ordinary credentials stay non-null with the existing ApiKey
+FK; ordinary signed records keep non-null signature and decision ID. Explicit
+`first_enrollment`/`owner_recovery` generations require a NULL credential and a
+separate exact identity. Bootstrap transitions have no ordinary signed identity.
+No default, backfill, dummy credential, reinterpretation, seed or data deletion.
+The migration first checks existing ordinary rows, then checks every retained
+ordinary CHECK expression before wrapping only the JSON-shape checks. Shared
+chain, FK, unique, revision, state and high-water constraints are retained.
+
+Existing ordinary service admission still requires an active credential and
+acknowledged handoff. Bootstrap is not an ordinary admission snapshot. An old
+ordinary head without the new native receipt is unavailable; an audited ordinary
+record can provide a spent high-water mark only after strict ordinary parsing.
+Automatic bootstrap-to-ordinary handoff is not implemented or qualified.
+
+## Immutable owner grant and single-use transitions
+
+`bootstrap-channel-persistence-contract.ts` and the explicit
+`createPrismaBootstrapChannelStore` factory bind the accepted primary-owner
+decision/revision/acceptance, ticket ID/digest and entire strict snapshot:
+
+- Exact workspace, host/install lifecycle epochs and generation IDs, host
+  fingerprint, issuer key tuple and public issuer-history revision/digest.
+- Purpose, transport generation/revision/digest, certificate epoch/high-water,
+  HTTPS origin/SNI, CA digest, leaf pin, certificate validity and evidence digest.
+- Exact sorted unique public IPv4 set, resolver policy and validity/cutover.
+  Proxy, redirect, downgrade and session reuse are false.
+
+The snapshot digest covers its fields except its own digest field. Native JSONB
+row digests and application review digests are distinct, explicitly checked
+representations. Raw credentials, signing keys and private material have no slot.
+The proposal accepts only ticket/decision IDs, expected revisions, operation IDs
+and permitted actions from callers; network/snapshot/CA/pin/IP/header overrides
+are rejected. Snapshot values come from the accepted owner decision.
+
+A grant starts on an absent or revoked canonical head, advances certificate
+high-water and forbids reusing any historical pin/generation. `grant -> consume`
+is one-time CAS; `revoke`, `unknown` and `close` are terminal. A consumed grant is
+unavailable to inspection. Close after changed source authority becomes unknown.
+Possible COMMIT loss or an unconfirmed write returns reconciliation-required,
+delivery-unknown and non-retryable; no second attempt is made. Reconciliation is
+not implemented here, and an uncertain write must not be automatically resumed.
+These records do not replace the bootstrap attempt ledger or authorize exchange.
+
+## Proposed native writer coverage
+
+| Writer/source | Proposed guard and qualification boundary |
 | --- | --- |
-| `worker-transport-contract.ts`, `worker-transport-store.ts` | Ordinary identity requires a credential ID, version, epoch and fingerprint. Store context uses the exact current credential and acknowledged handoff; service inspection requires an active credential. Removing the credential fails admission. |
-| Migration `20260923170000_worker_transport_admission` | Generation `credential_id` is NOT NULL with an ApiKey FK. Strict identity/record/profile shapes have no bootstrap purpose or owner grant. History/head preserve revision, certificate high-water, signed-record digest and chain references. These constraints do not prove a separate bootstrap authority. |
-| `transportProfile.bootstrap` | Owner out-of-band evidence for the certificate pin, **not** a first-enrollment/recovery purpose. A valid ordinary record is never reinterpreted as a bootstrap channel. |
-| `transportProfile.resolver`, transport observation | Persisted resolver policy is public IPv4 only. An observed public IP set belongs to transient signed peer evidence; no owner-approved exact set is persisted in the channel/intent. |
-| `worker-transport-snapshot.ts` | Existing admission snapshot carries ordinary identity, CA digest, permitted pins/epochs and no proxy/redirect/session reuse. It cannot parse the proposed bootstrap snapshot. |
-| `worker-handoff-https.ts`, `worker-handoff-coordinator.ts` | Normal handoff uses fresh persisted inspection, signed pre-body and completion evidence. Its injected admitted exchange remains synthetic; no production socket is constructed from the new proposal. Ordinary request/poll/ACK/status and rotation are unchanged. |
-| `worker_credential_handoffs` | Exact host/install/origin/pin, owner approval and ACK state; guarded writes. It supplies neither independent first-enrollment channel authority nor CA/resolver/certificate-history authority. |
-| Owner, decision, ticket, lifecycle and issuer | Existing workspaces/memberships, accepted decision revisions, bootstrap ticket/ledger, qualified lifecycle and public issuer history remain their respective sources. Existing bootstrap intent pins a channel profile/revision/epoch, but has no complete proposed grant or approved address set. Ticket-revocation and signed-current-decision authority still have independent blockers. |
+| Generation/history/head/ordinary audit/grant, including direct SQL and fixtures | Serializable origin-session writes acquire/increment the shared source fence. Immutable rows deny update/delete/truncate. History checks the current head/chain; deferred checks require same-transaction history/head/audit. |
+| Canonical bootstrap history | A trigger advances the same head and appends Event and audit atomically; no second head or caller-managed acknowledgement. |
+| Native write receipts | Automatic append records exact row digest, generation, transaction and fence. Direct insert/update/delete/truncate is denied. |
+| Owner/membership, decisions/revisions/acceptances, tickets, hosts, lifecycle/history audit, issuer/history audit/key anchor, ApiKeys | Statement guards acquire/increment the shared fence; truncate and non-origin writes deny. Existing lifecycle/issuer guards remain independently required. |
+| Guard catalog and snapshot helper | Reader checks all 47 expected trigger instances, exact table/function/event bindings, normalized body hashes, enabled/origin mode, deferral, language/security/configuration and source-fence presence; helper body/signature/settings are checked separately. |
 
-`createCanonicalBootstrapAuthoritySource.inspect` retains the same admission
-blockers and now exposes bounded `channelAuthority` diagnostics, with
-`available=false` and these reasons:
+The fence is deliberately conservative and global: any covered source mutation,
+even unrelated to this host, invalidates an unconsumed grant. Reverting source
+values does not restore its epoch, so ABA cannot revive approval. This imposes a
+throughput/availability cost; partitioned fencing is not part of this proposal.
+Time expiry and hard cutover are checked even without a source write. Missing,
+disabled, rebound or modified guard evidence fails closed. Catalog fingerprinting
+is not a claim of protection from a database superuser or restored database.
 
-- `bootstrap_channel_purpose_not_representable`
-- `bootstrap_channel_resolver_set_not_persisted`
-- `bootstrap_channel_all_writers_unfenced`
+Writes use a serializable transaction and a separate read-only post-COMMIT proof.
+Inspections use repeatable-read/read-only and never seed, repair or advance a
+fence. Grant reads recheck current sole primary owner/acceptance, exact ticket,
+qualified lifecycle and issuer, and the absence of active credentials (no credential
+history for first enrollment). The full
+bootstrap admission path still owns its stricter credential baseline, signed
+current-decision and ticket-revocation checks. Native SQL behavior, real isolation,
+rollback, concurrency and ordinary writer compatibility remain unqualified.
 
-No diagnostic value, missing credential, passed model test, caller boolean or
-caller-supplied digest removes `bootstrap_channel_authority_unavailable`.
+## Canonical projection and remaining blockers
 
-## Writer and fence inventory
+`worker-bootstrap-authority-source.ts` supplies the selected ticket ID to the
+channel reader. Only a fresh, strictly parsed, audited, guard-verified grant
+matching the requested binding/purpose can remove
+`bootstrap_channel_authority_unavailable`. Without migration 81 the reader stays
+blocked. No caller boolean or synthetic model result removes this blocker.
+The broad diagnostic projection can also retain ordinary/handoff diagnostics;
+it never returns usable admission authority.
 
-| Writer / mutator | Existing protection and qualification limit |
-| --- | --- |
-| Transport service commands and Prisma store | Serializable writes take `ready_source_fence`, exact current owner/decision, append generation/history, CAS head, Event and audit in one transaction. Ordinary credential authority is retained. |
-| Direct SQL/Prisma generation, history, head and audit writes; native test fixtures | The transport migration installs CHECK/FK/unique constraints but no writer-fence or immutable-history triggers. Adapter-only fence/audit checks cannot prove every writer. No DB/catalog qualification is claimed in this atom. |
-| Host/install anchor and lifecycle, public issuer/key writers | Existing lifecycle/issuer guards and journals supply independently qualified facts. The proposed channel binds exact generations, epochs and issuer-history revision/digest; it cannot substitute an online host or key digest for those facts. |
-| Ownership/membership and accepted decision writers | Existing owner/decision source locks are relevant. A future canonical grant reader must verify sole primary ownership, exact acceptance, no supersession, and current fence/guard evidence. |
-| Handoff and ApiKey lifecycle writers | Existing handoff/credential guards fence their mutations. Their purpose remains credential lifecycle; their evidence does not authorize bootstrap channel reuse. |
-| Bootstrap ticket/ledger writers | Existing ledger owns one-time attempts and terminal outcomes. Current revocation/signed-decision proof gaps are not repaired by this proposal. |
-| Certificate pin/CA, resolver policy/IP set, expiry and cutover | Pin/CA/profile changes belong to transport history and its writer gap. Approved IP-set/purpose/grant writers do not exist. Time boundaries also require fresh checks even if revision/fence did not change. |
+`bootstrap_ticket_revocation_unavailable` and `signed_current_decision_unavailable`
+remain unconditionally blocked. `implementationReady`, `executionSupported`,
+`pilotReady`, `liveAdmissionAllowed`, `pilotExecutionAuthorized`,
+`pilotExecutionStarted`, `transportQualified` and `launchAuthority` remain false.
+The v41 `createBootstrapChannelModel` remains a synthetic exchange/peer-denial
+model; it is not wired to production persistence, delivery or an HTTP endpoint.
 
-A future grant requires complete writer coverage, immutable/audited history,
-current guard definitions and one consistent source-fence snapshot. Merely
-checking trigger names or copying an ordinary transport record is insufficient.
+## Verification and next bounded step
 
-## Minimal immutable snapshot proposal
+Selected source results: adapter 15, channel model 14, issuer 13, lifecycle 18,
+decision policy 8; **68 PASS, zero failures/skips**. New mocks cover first/recovery,
+ordinary isolation, exact bindings/IP set, expiry/cutover/revoke, read purity,
+source ABA, malformed/legacy heads, 20 competing grants and 20 consumes, rollback
+at each write phase, false COMMIT acknowledgement/unknown with no retry, every
+guard missing/disabled/rebound/changed/deferred incorrectly, zero exchange before
+admission, post-consume drift and caller overrides. Mocks serialize transactions;
+these are not native concurrency results. Private-key/signing, network/DNS,
+process launch and logs are trapped in the new adapter suite.
 
-[`bootstrap-channel-contract.ts`](../../src/modules/api-keys/bootstrap-channel-contract.ts)
-defines a strict, recursively frozen proposal containing:
+Prisma schema validation and local client generation pass with private dotenv
+reads and network calls blocked. Server build uses the regenerated client.
+Lint checks 338 manifest routes/45 route files. Existing private-signing fixture
+suites and native SQL suites were not run. No migration was applied.
 
-- Exact workspace/install/host binding, lifecycle epochs and generation IDs,
-  host fingerprint, issuer key tuple plus issuer-history revision/digest.
-- Canonical channel generation, revision, record digest, current state and
-  purpose restricted to `first_enrollment` or `owner_recovery`.
-- Exact HTTPS origin with explicit port, SNI, CA digest, leaf DER pin,
-  certificate validity/evidence digest, certificate epoch and high-water.
-- Public-IPv4 resolver policy and canonical sorted unique approved address set;
-  proxy, redirects, downgrade and session reuse all false.
-- Valid-from, expiry and optional hard cutover deadline. At cutover a fresh,
-  explicitly authorized snapshot is required; inspection never rotates a pin.
-
-The separate proposed owner grant binds the entire snapshot digest, purpose,
-owner, exact decision/revision, ticket ID/digest and expiry. Model proof also
-matches the existing ticket intent's binding/channel/purpose, current owner
-decision, lifecycle/issuer state and complete fence/writer set. First enrollment
-requires absent credential history; recovery requires the existing terminal
-recovery intent. Credential absence alone supplies none of this authority.
-
-**The grant is a proposal, not an accepted new decision field or persisted
-record.** `acceptedGrantDigest` and the other proof values exist only in explicitly
-synthetic model fixtures. They model future verified acceptance/signature/guard
-evidence; they do not verify signatures or establish native authority. No adapter
-can presently construct this proof from the canonical tables. The normal strict
-record, decision and ticket formats remain unchanged.
-
-## Send/completion model and tests
-
-`createBootstrapChannelModel` accepts only a ticket ID and requires explicitly
-injected synthetic inspection/exchange. It returns `source_model_only`; its
-default is blocked. It accepts no URL, CA, pin, epoch, headers, resolver, snapshot
-or ordinary action from the operation caller.
-
-Two fresh inspections must agree before exchange. The peer gate re-inspects and
-matches the exact snapshot, request/ticket, origin/SNI/CA/pin/epoch and approved
-public IP set. Completion requires the same peer/response correlation and another
-fresh inspection. Pre-exchange drift produces zero exchanges. Once exchange may
-have sent a body, missing/mismatched proof, exception, changed authority or expired
-cutover is terminal `delivery_unknown`; no automatic retry occurs.
-
-The bounded process-local replay map is only a test model, not durable attempt
-authority. Real persistence, signatures, HTTP behavior, deadlines/cancellation,
-cross-process replay and native writer protection remain unqualified here. The
-existing bootstrap ledger continues to own any future durable terminal outcome.
-
-[`bootstrap-channel.test.ts`](../../src/tests/bootstrap-channel.test.ts) qualifies
-mocked positive first enrollment/recovery, valid ordinary/legacy rejection,
-credential absence, owner/ticket/decision/lifecycle/issuer mismatches, revoked or
-stale facts, expiry/cutover, origin/SNI/CA/pin/resolver/IP drift, missing writer
-proof, zero-exchange denial, unknown/no-retry, read purity and caller overrides.
-
-Selected verification: channel 14, issuer 13, lifecycle 18, decision policy 8,
-all passing with zero skips and private-key/signing APIs trapped before imports.
-Existing signing-fixture transport/bootstrap suites and native suites were not
-rerun in this atom; no native/network evidence is claimed. Build and lint pass.
-
-`bootstrap_channel_authority_unavailable`, `bootstrap_ticket_revocation_unavailable`
-and `signed_current_decision_unavailable` all remain. `implementationReady`,
-`executionSupported`, `pilotReady`, `liveAdmissionAllowed`,
-`pilotExecutionAuthorized`, `pilotExecutionStarted`, `transportQualified` and
-`launchAuthority` remain false.
-
-**One recommended next atom:** separately authorize an additive, unapplied
-schema/adapter proposal extending the existing transport authority with explicit
-bootstrap purpose, owner grant, approved IP set and complete writer fence/audit,
-while preserving mandatory active credentials for ordinary admission. Not started.
+**One recommended next atom:** separately authorize disposable-database native
+qualification of migration 81, direct/ordinary/bootstrap writers, all guard
+failures, concurrency, rollback/COMMIT uncertainty and exact cleanup evidence.
+Do not start issuance, delivery, production integration or activation. Not started.

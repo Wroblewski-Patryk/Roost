@@ -8,6 +8,7 @@ import { inspectCanonicalLifecycle } from "./worker-identity-lifecycle-store";
 import { lifecycleMissing } from "./worker-identity-lifecycle";
 import { inspectCanonicalIssuer } from "./bootstrap-issuer-store";
 import { issuerGaps } from "./bootstrap-issuer-contract";
+import { inspectCanonicalBootstrapChannel } from './bootstrap-channel-store';
 import { bootstrapChannelGap } from "./bootstrap-channel-contract";
 
 type Db=Prisma.TransactionClient;
@@ -50,6 +51,7 @@ export function createCanonicalBootstrapAuthoritySource(clock=()=>new Date()){
   }
   async function inspect(db:Db,input:unknown){
     const blockers:string[]=[...bootstrapAuthorityGaps];
+    let channelAuthority:{available:boolean;qualification:string;blocker?:string;reasons?:readonly string[];facts?:unknown}=bootstrapChannelGap;
     // Public, bounded diagnostics only; values are populated from parsed SELECTs.
     const facts:{ownerId?:string;hostStatus?:string;issuer?:z.infer<typeof issuerRow>;credential?:{id:string;version:number;epoch:number;fingerprint:string|null;state:string;expiresAt:string|null};
       credentialHighWater?:number;credentialAbsent?:boolean;handoff?:{id:string;state:string;hostFingerprint:string};
@@ -149,17 +151,23 @@ export function createCanonicalBootstrapAuthoritySource(clock=()=>new Date()){
           const mismatch=blockers.indexOf('issuer_binding_mismatch');if(mismatch>=0)blockers.splice(mismatch,1);
         }
       }
+      if(q.ticketId){const channel=await inspectCanonicalBootstrapChannel(db,q.ticketId,clock());
+        if(channel.facts&&same(channel.facts.snapshot.binding,b)&&channel.facts.snapshot.purpose===q.purpose){
+          blockers.splice(blockers.indexOf('bootstrap_channel_authority_unavailable'),1);channelAuthority={available:true,qualification:'canonical_bootstrap_channel_v1',facts:channel.facts};
+        }
+      }
       await bound(db); // A changed or rebound fence invalidates the entire projection.
-    }catch(e){for(const key of Object.keys(facts))delete (facts as Record<string,unknown>)[key];blockers.push(...bootstrapAuthorityGaps,...(e instanceof CanonicalBootstrapBlocked?e.blockers:["canonical_source_invalid"]));}
-    return {ok:false as const,qualification:"canonical_projection_only_v1" as const,blockers:[...new Set(blockers)].sort(),channelAuthority:bootstrapChannelGap,facts,...flags};
+    }catch(e){channelAuthority=bootstrapChannelGap;for(const key of Object.keys(facts))delete (facts as Record<string,unknown>)[key];blockers.push(...bootstrapAuthorityGaps,...(e instanceof CanonicalBootstrapBlocked?e.blockers:["canonical_source_invalid"]));}
+    return {ok:false as const,qualification:"canonical_projection_only_v1" as const,blockers:[...new Set(blockers)].sort(),channelAuthority,facts,...flags};
   }
   const source:BootstrapAuthoritySource={qualification:"canonical_bootstrap_projection_v1",
     async bindTransaction(db,mode){if(sessions.has(db))blocked("transaction_already_bound");const f=await fence(db);
       if(f.isolation!==(mode==="read"?"repeatable read":"serializable")||f.readonly!==(mode==="read"?"on":"off"))blocked("transaction_mode_invalid");
       const session={mode,fence:f.revision};sessions.set(db,session);return ()=>{if(sessions.get(db)===session)sessions.delete(db);};},
-    async context(db,binding,issuedAt){await bound(db);const lifecycle=await inspectCanonicalLifecycle(db,binding);
-      const issuer=issuedAt?await inspectCanonicalIssuer(db,binding,clock(),issuedAt):{blockers:[...issuerGaps]};await bound(db);
-      return blocked(...bootstrapAuthorityGaps.filter(code=>!lifecycleMissing.some(m=>m===code)&&!issuerGaps.some(m=>m===code)),...lifecycle.blockers,...issuer.blockers);},
+    async context(db,binding,issuedAt,ticketId){await bound(db);const lifecycle=await inspectCanonicalLifecycle(db,binding);
+      const issuer=issuedAt?await inspectCanonicalIssuer(db,binding,clock(),issuedAt):{blockers:[...issuerGaps]};
+      const channel=ticketId?await inspectCanonicalBootstrapChannel(db,ticketId,clock()):null;await bound(db);
+      return blocked(...bootstrapAuthorityGaps.filter(code=>!lifecycleMissing.some(m=>m===code)&&!issuerGaps.some(m=>m===code)&&!(code==='bootstrap_channel_authority_unavailable'&&channel?.facts&&same(channel.facts.snapshot.binding,binding))),...lifecycle.blockers,...issuer.blockers);},
     async decision(db,id){await bound(db);if(!z.string().uuid().safeParse(id).success)blocked("decision_missing_or_invalid");return blocked("signed_current_decision_unavailable");},
     async ticketRevoked(db,id){await bound(db);if(!z.string().uuid().safeParse(id).success)blocked("bootstrap_ticket_missing");return blocked("bootstrap_ticket_revocation_unavailable");}
   };
