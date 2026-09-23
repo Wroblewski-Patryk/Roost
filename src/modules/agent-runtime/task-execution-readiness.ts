@@ -70,13 +70,17 @@ export async function lockReadyTask(db: Prisma.TransactionClient, workspaceId: s
 
 async function resolved(db: Prisma.TransactionClient, workspaceId: string, taskId: string, input: Record<string, any>, execution?: AgentExecution, submission?: import("./task-role-context").RoleSubmission) {
   const composition=await composeProcedure(db,taskId,"runtime_execute",!!submission);
+  // Immutable acceptances and native authority epochs have their own fenced
+  // invalidation. Read them in this same transaction; keep raw SQL unavailable
+  // on the source-watching client. Task effects/decisions remain watched below.
+  const authorities = await taskDecisionAuthorities(db, workspaceId, taskId);
   const watched = watchReadySources(db);
   db = watched.db;
   const application = await db.application.findFirst({ where: { id: input.applicationId, workspaceId, slug: { not: "roost" } }, include: { repositories: true } });
   if (!application) throw new Error("application_not_found");
   // A validation envelope has no execution record and cannot claim or run work.
   const envelope = execution ?? { id: taskId, taskId, workspaceId, applicationId: application.id, attempt: 1, metadata: { executionContract: input.contract }, prompt: input.prompt ?? null, baseBranch: input.baseBranch ?? null } as unknown as AgentExecution;
-  const taskContext = wire(await loadTaskAgentContext(workspaceId, taskId, envelope, db, submission));
+  const taskContext = wire(await loadTaskAgentContext(workspaceId, taskId, envelope, db, submission, authorities));
   if (!taskContext) throw new Error("task_not_found");
   taskContext.executionPacket.procedureComposition=composition;
   const {revision:_packetRevision,...packetBody}=taskContext.executionPacket;

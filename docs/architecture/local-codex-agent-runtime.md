@@ -1,5 +1,13 @@
 # Local Codex Agent Runtime
 
+Owner amendment v19: [PostgreSQL ticket qualification](server-owner-ticket-v1.md)
+passes native owner authentication, decision/Ready integration, concurrent
+one-use consume and rollback with a synthetic signer/evidence adapter.
+No Worker or provider ran; the execution claim is an inert database fixture.
+All four production ticket routes remain uncomposed, recovery remains
+nonrenewable and six flags stay false. Cleanup/environment comparison PASS.
+Earlier amendment results below are historical.
+
 Owner amendment v18: [owner-ticket implementation](server-owner-ticket-v1.md)
 adds owner-only issue/consume/revoke/rotate service handlers and a Serializable
 Prisma adapter. The application supplies no signer/evidence composition, so all

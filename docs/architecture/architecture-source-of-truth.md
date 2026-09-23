@@ -1,5 +1,13 @@
 # Architecture Source Of Truth
 
+Owner amendment v19: [native owner-ticket database qualification](server-owner-ticket-v1.md)
+passes the 73-migration forward chain and 15 native PostgreSQL/HTTP checks,
+including one commit from twenty concurrent consumes and transactional rollback.
+The discovered Ready/risk authority-read defect is fixed without weakening source
+watches or native guards. Cleanup and environment/data comparison PASS. Production
+signer, host evidence, Worker transport and launch stay unqualified; six flags false.
+Earlier amendment results below describe their historical verification state.
+
 Owner amendment v18: [owner-ticket services and persistence](server-owner-ticket-v1.md)
 are implemented with an injected test signer and no runtime composition.
 Status PARTIAL: 50 synthetic service/HTTP/adapter tests and four provider tests pass;

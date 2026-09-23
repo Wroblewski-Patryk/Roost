@@ -1,5 +1,17 @@
 # Gotowość połączenia Roost z agentami
 
+Aktualizacja v19, 2026-09-23: [kwalifikacja PostgreSQL](server-owner-ticket-v1.md)
+— **DONE w zakresie testów bazy**: 15/15 wyników integracyjnych, 54/54 regresji.
+Dokładnie 1 z 20 równoległych consume zatwierdzony; rollback PASS.
+Sprzątanie i porównanie istniejących danych/kontenerów PASS. Łańcuch 73 migracji wykonano
+w jednej nowej bazie istniejącego kontenera. Test używa natywnego auth,
+decyzji właściciela, ryzyka, Ready i transakcji Prisma; signer i dowody fizyczne
+pozostają syntetyczne. Poprawiono odczyt uprawnień decyzji w Ready/risk,
+zachowując blokadę dowolnego SQL i unieważnianie kontekstu. Sześć flag false.
+Następny pojedynczy atom: kontrakt oraz syntetyczne testy kanału consume/status
+Workera z powiązaniem credential/host/claim, bez prawdziwych kluczy i aktywacji.
+Poniższe wyniki i propozycje poprzednich etapów są historyczne.
+
 Aktualizacja v18, 2026-09-23: [bilety właściciela](server-owner-ticket-v1.md)
 — **PARTIAL**. Kod usług issue/consume/revoke/rotate, adapter Prisma i nowa
 migracja są gotowe; 50 testów syntetycznych oraz cztery regresje providerów PASS.

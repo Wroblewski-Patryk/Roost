@@ -1,6 +1,82 @@
 # Server-issued owner ticket and public verification contract v1
 
-## Current implementation: owner amendment v18
+## Database qualification: owner amendment v19
+
+2026-09-23: **DONE for this database qualification atom**; production remains
+unqualified. **15/15 Node integration results (14 scenarios plus their parent)**
+and **54/54 existing service/HTTP/adapter/provider regressions** pass.
+The complete **73-migration forward SQL chain** applied to one empty, uniquely
+owned disposable database inside the already existing local PostgreSQL container.
+No applied migration was edited and no new migration was required. This is a
+fresh-database forward-chain test, not a production upgrade or deployment.
+
+The [native HTTP qualification](../../src/tests/owner-ticket-api.ts) uses real
+JWT/membership authentication, governed owner decision acceptance, risk evidence,
+procedure composition, Ready submission and the real Prisma Serializable store.
+All database guards remain enabled. The claimed execution is an inert test row;
+no Worker, provider or model runs. Only the signer and physical host evidence are
+injected synthetic dependencies; existing fixture provider admission is synthetic.
+Loopback HTTP does not qualify production HTTPS or Worker transport.
+
+Qualification exposed one runtime defect: accepted decision authority was read
+through raw SQL on the deliberately restricted Ready source-watching client.
+Ready/risk now obtain the existing typed decision-authority projection through
+the original transaction and pass it into the context loader. Generic raw SQL
+remains forbidden on the watched client. Task effects/decisions stay watched;
+immutable acceptance history and native authority-epoch invalidation remain
+authoritative. No permission, provider or activation gate was relaxed.
+
+The database test checks one successful commit and nineteen deterministic replay
+denials from twenty concurrent HTTP consumes, with exactly one consume Event,
+one terminal ticket transition and its journal entry. Injected failures after
+actual issue insertion/audit and consume transition/attempt/audit operations
+roll back all their writes. Coverage includes missing/stale decisions, primary
+owner and API-key boundaries, bad bindings, synthetic host-evidence drift,
+not-before, expiry, native source invalidation, accepted decision supersession,
+revocation, rotation and immutable history. Restored request/execution JSON
+cannot consume or reissue a spent attempt. The response is not a launch receipt.
+
+Cleanup and preservation **PASS**: the unique database name, catalog OID, owner
+and ownership comment matched before drop; it had no active sessions. Its absence
+was verified. Logical row/sequence and structural fingerprints for all three
+pre-existing connectable databases (214 table/sequence entries), database catalog
+and nonsensitive role metadata matched before/after. Existing container identities,
+images, volumes and networks matched. The authorized database container returned
+to exited; the unrelated running services and exited backend retained their
+original states. The owned loopback relay stopped after its children had exited.
+No retained temporary root was accessed or changed; unrelated dirty documents
+and the unread design artifact were preserved.
+
+Server TypeScript build, route-capability lint and both existing direct-Codex
+documentation validators passed. All 73 migration source checksums matched the
+pre-run inventory. The full API suite (which includes Worker execution), web
+build, production migrations and production transport were not run in this atom.
+
+The test requires an externally prepared owned database named
+`companycore_test_owner_ticket_<32 lowercase hex>` and a matching database comment
+`owner-ticket-qualification:<same suffix>`. Set `OWNER_TICKET_TEST_DATABASE` to
+that name and `DATABASE_URL` to its loopback connection, disable private dotenv,
+then run the server build and only the Node test named
+`owner ticket native PostgreSQL HTTP qualification` in `dist/tests/api.test.js`.
+The guard checks the exact database/comment and skips destructive test resets;
+repeated runs create independent fixtures without deleting terminal history.
+Database/container provisioning and identity-checked cleanup belong to the
+authorized external test harness. The older standalone persistence script was
+not run because it would create a second database and bypass historical guards.
+
+Production signer provisioning, authoritative physical evidence reconstruction,
+Worker credential/host binding, HTTPS/bootstrap/status refresh and launch
+integration remain unqualified. Default endpoints still fail closed and all six
+readiness/activation flags remain false. No real keys, provider launch,
+transport qualification, push, deployment or activation occurred.
+
+**Exactly one proposed next atom:** specify and synthetically qualify the
+authenticated Worker consume/status contract, binding its existing credential
+to the assigned host/claim and the original consume ID. Keep owner-only issuance,
+no renewable launch authority and fail-closed status refresh. No real keys,
+network qualification, provider execution or activation. Stop after that atom.
+
+## Historical implementation: owner amendment v18
 
 2026-09-23: **PARTIAL**. Source services, HTTP handlers, Prisma adapter and
 additive persistence migration are implemented. Synthetic service/HTTP tests

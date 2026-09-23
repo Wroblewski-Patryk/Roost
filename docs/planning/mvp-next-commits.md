@@ -1,5 +1,16 @@
 # Next development work
 
+Current owner amendment v19: [PostgreSQL qualification](../architecture/server-owner-ticket-v1.md)
+is DONE for this bounded atom: 73 migrations, 15/15 integration results and
+54/54 regressions pass; cleanup and existing-data/container comparison pass.
+Only the Ready/risk decision
+authority integration defect found by native qualification is changed.
+**Exactly one proposed next atom:** specify and synthetically qualify the
+authenticated Worker consume/status contract, binding credential, assigned
+host/claim and original consume ID. Preserve owner-only issue and fail-closed
+nonrenewable authority. No real keys, transport qualification, provider launch
+or activation. Stop after that atom; older proposals below are historical.
+
 Current owner amendment v18: [owner-only tickets](../architecture/server-owner-ticket-v1.md)
 are PARTIAL: service, HTTP, Prisma transaction and additive migration implemented;
 50 synthetic tests plus four provider regressions pass. Database test skipped:

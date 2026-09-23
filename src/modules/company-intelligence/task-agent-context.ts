@@ -2,8 +2,9 @@ import type { AgentExecution, Prisma } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { contextualEntityIds, organizationalContextsForEntities } from "../organizational-context/organizational-context.service";
 import { prepareExecutionPacket } from "../agent-runtime/execution-packet";
+import { taskDecisionAuthorities } from "../decisions/decision-authority";
 
-export async function loadTaskAgentContext(workspaceId: string, taskId: string, execution: AgentExecution | null = null, db: Prisma.TransactionClient = prisma, submission?: import("../agent-runtime/task-role-context").RoleSubmission) {
+export async function loadTaskAgentContext(workspaceId: string, taskId: string, execution: AgentExecution | null = null, db: Prisma.TransactionClient = prisma, submission?: import("../agent-runtime/task-role-context").RoleSubmission, authorities?: Awaited<ReturnType<typeof taskDecisionAuthorities>>) {
   const task = await db.task.findFirst({ where: { id: taskId, workspaceId }, include: { project: true, goal: true, target: true, taskList: true, assignedWorkforceEntity: true, reviewerUser: { select: { id: true } } } });
   if (!task) return null; const [contexts, dependencies, policies, procedures] = await Promise.all([
     organizationalContextsForEntities(workspaceId, "task", [task.id], db), db.dependency.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ fromEntityType: "task", fromEntityId: task.id }, { toEntityType: "task", toEntityId: task.id }] } }),
@@ -24,9 +25,7 @@ export async function loadTaskAgentContext(workspaceId: string, taskId: string, 
     db.companyRecord.findMany({ where: { workspaceId, status: { not: "archived" }, recordType: { in: ["operational_issue", "technical_incident", "escalation"] }, OR: [{ id: { in: [...ids("company_record"), ...ids("requirement")] } }, ...(task.projectId ? [{ projectId: task.projectId }] : [])] } })
   ]);
   const governed=await db.taskDecisionEffect.findMany({where:{workspaceId,taskId}});
-  const decisionAuthorities=governed.length?await db.$queryRaw<any[]>`SELECT a.decision_id AS "decisionId",a.authority AS "acceptedAuthority",CASE WHEN p.authority->>'status'='delegated' THEN p.authority->>'epoch' IS NOT DISTINCT FROM decision_authority_epoch(a.workspace_id,p.authority) ELSE true END AS current
-    FROM decision_acceptances a JOIN decision_impact_previews p ON p.id=a.preview_id WHERE a.workspace_id=${workspaceId}::uuid AND a.decision_id=ANY(${governed.map(effect=>effect.decisionId)}::uuid[]) AND a.authority IS NOT NULL
-    AND NOT EXISTS(SELECT 1 FROM task_decision_effects e WHERE e.task_id=${taskId}::uuid AND e.supersedes_id=a.decision_id) ORDER BY a.decision_id`:[];
+  const decisionAuthorities = authorities ?? await taskDecisionAuthorities(db, workspaceId, taskId);
   const replaced=new Set(governed.map(r=>r.supersedesId).filter(Boolean));
   const effective=await db.decision.findMany({where:{workspaceId,id:{in:governed.map(r=>r.decisionId).filter(id=>!replaced.has(id))}}});
   decisions.splice(0,decisions.length,...decisions.filter(d=>!replaced.has(d.id)&&!effective.some(n=>n.id===d.id)),...effective);

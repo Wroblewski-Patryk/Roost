@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { lockReadyTask } from "./task-execution-readiness";
 import { watchReadySources } from "./ready-source-watch";
 import { loadTaskAgentContext } from "../company-intelligence/task-agent-context";
+import { taskDecisionAuthorities } from "../decisions/decision-authority";
 import { loadApplicationAgentContext } from "../product-engineering/application-agent-context";
 import { reviewDigest } from "./task-review-contract";
 import { requireRuntimeContent } from "./runtime-redaction-policy";
@@ -66,7 +67,8 @@ export async function prepareRiskScope(db: Db, workspaceId: string, taskId: stri
   if (input.releaseSet && !await db.companyRecord.findFirst({ where: { id: input.releaseSet.id, workspaceId, applicationId: input.applicationId, status: { not:"archived" }, updatedAt:new Date(input.releaseSet.revision) } })) return { error:"task_risk_evidence_stale" };
   const watched = watchReadySources(db);
   const envelope = { id:taskId, taskId, workspaceId, applicationId:input.applicationId, attempt:1, metadata:{executionContract:input.contract}, prompt:input.prompt??null, baseBranch:input.baseBranch??null } as any;
-  const context = await loadTaskAgentContext(workspaceId,taskId,envelope,watched.db,{authorId:userId,requestId:input.requestId});
+  const authorities = await taskDecisionAuthorities(db, workspaceId, taskId);
+  const context = await loadTaskAgentContext(workspaceId,taskId,envelope,watched.db,{authorId:userId,requestId:input.requestId},authorities);
   const application = await loadApplicationAgentContext(workspaceId,input.applicationId,true,task.title,watched.db);
   requireRuntimeContent({context,application},"task_risk.context",{workspaceId,taskId});
   await db.$executeRaw`INSERT INTO task_risk_heads(task_id) VALUES(${taskId}::uuid) ON CONFLICT DO NOTHING`;

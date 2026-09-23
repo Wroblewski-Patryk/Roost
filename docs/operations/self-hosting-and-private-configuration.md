@@ -1,5 +1,17 @@
 # Self-hosting and private installation configuration
 
+Owner amendment v19: the [ticket database qualification](../architecture/server-owner-ticket-v1.md)
+applied all 73 forward migrations in one uniquely owned disposable database in
+an existing local PostgreSQL instance. Identity-checked database removal and
+before/after logical database, role and container inventory comparisons PASS.
+The authorized database container returned to exited; unrelated services retained
+their original states. The owned relay stopped with no remaining child processes.
+No new container, image, volume, role or database instance was created. No private
+environment or container credentials were read; only synthetic test data was
+written to the owned database. This is not a production migration or release.
+The default API still has no signer or physical-evidence adapter. Existing
+installation data, credentials and volumes must remain unchanged.
+
 Owner amendment v18: [ticket persistence](../architecture/server-owner-ticket-v1.md)
 adds an unapplied, additive migration for public key metadata and immutable
 ticket/attempt/decision consumption history. No signing secret, environment

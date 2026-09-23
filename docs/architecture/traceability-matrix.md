@@ -1,5 +1,16 @@
 # Foundation requirements traceability
 
+RF-HOST-035 owner amendment v19: [native database qualification](server-owner-ticket-v1.md)
+is DONE for the bounded atom: 15/15 integration results, 54/54 regressions,
+one commit from twenty concurrent consumes, rollback and cleanup/preservation PASS.
+The 73-migration forward chain and
+real Prisma/HTTP owner-decision-Ready path run in one owned disposable database.
+The qualification fixes the decision-authority read rejected by the Ready/risk
+source watcher without allowing generic raw queries or weakening native guards.
+Signer/physical evidence remain synthetic; Worker, transport and launch remain
+unqualified; six flags false. Next atom: authenticated Worker consume/status
+contract and synthetic credential/host/claim binding, without provisioning or launch.
+
 RF-HOST-035 owner amendment v18: [server owner-ticket implementation](server-owner-ticket-v1.md)
 is PARTIAL. DONE: source service/HTTP boundary, Prisma adapter, additive metadata
 ledger/journal migration and 50 synthetic tests (one of 20 consumes commits).
