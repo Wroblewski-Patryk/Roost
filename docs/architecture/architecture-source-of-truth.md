@@ -1,19 +1,22 @@
 # Architecture Source Of Truth
 
-Owner amendment v39: [canonical bootstrap issuer public authority](bootstrap-issuer-authority-v1.md)
-is DONE source-only: **13/13 issuer, 229/229 selected source results**, build/lint PASS.
-The existing key anchor gains audited public generation history, bounded rotation
-overlap and terminal revoke/retire; all writers require the shared source fence.
-Exact public Ed25519 SPKI/digest, immutable binding, issue/ceremony time and reviewed
-guard-body fingerprints are mandatory. No private key generation/storage exists.
+Owner amendment v40: [canonical bootstrap issuer native qualification](bootstrap-issuer-authority-v1.md)
+is DONE for the bounded database atom: **16/16 scenarios (17/17 runner results),
+229/229 source results**, build/lint PASS. All 80 migrations applied unchanged in
+one owned disposable database. Public-only Ed25519 history, lifecycle/overlap,
+20-writer CAS, existing task-ticket rotation/revocation, writer/guard denials and
+READ ONLY inspection pass. Deferred/late COMMIT false acknowledgement and real
+connection/response loss return non-retryable reconciliation_required, without
+replaying writes. Cleanup PASS: owned database/relay gone, existing data and Docker
+resources unchanged, selected PostgreSQL restored to its initial stopped state.
 Only issuer_public_key_unavailable and issuer_writer_fence_unproven are conditionally
-resolved; channel, ticket revocation and signed-decision authority remain blocked.
-The additive 80th migration is UNAPPLIED; prior 79 unchanged. Native qualification
-PARTIAL, production BLOCKED; all six flags and transportQualified/launchAuthority
-false. No DB/Docker/network, provisioning, delivery or activation in this atom.
-One next recommendation: separately authorize native qualification of the issuer
-adapter/guards and 80-migration chain with verified cleanup. Earlier next steps
-are historical.
+resolved; channel, bootstrap-ticket revocation and signed-decision authority remain
+blocked. RF-HOST-035/bootstrap admission stays PARTIAL, production BLOCKED; all six
+flags and transportQualified/launchAuthority remain false. No production migration,
+real issuance/delivery, default composition, provisioning or activation.
+One next recommendation: a source-only canonical bootstrap-channel authority
+contract and denial tests against existing transport records, with no migration,
+network, provisioning or activation. Not started; earlier next steps are historical.
 
 Owner amendment v26: [loopback HTTPS handoff adapter](worker-handoff-https-v1.md)
 is DONE: 9/9 real HTTPS results and 189/189 selected tests. It checks normal TLS

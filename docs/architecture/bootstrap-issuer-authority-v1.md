@@ -1,9 +1,10 @@
 # Canonical bootstrap issuer public authority v1
 
-Owner amendment v39, 2026-09-23. **DONE source-only: 13/13 issuer results,
-229/229 selected source results; server build and lint PASS.** The proposed
-80th migration is **UNAPPLIED**; all prior 79 migrations are unchanged. Native
-SQL/persistence qualification remains **PARTIAL**, production **BLOCKED**.
+Owner amendment v40, 2026-09-23. **DONE bounded native qualification: 16/16
+scenarios (17/17 runner results), no skips; 229/229 selected source results,
+server build and lint PASS.** All 80 unchanged migrations applied in one owned
+disposable PostgreSQL database. This is not a production migration or activation.
+Overall bootstrap admission / RF-HOST-035 remains **PARTIAL**, production **BLOCKED**.
 
 ## Canonical identity and writer inventory
 
@@ -17,10 +18,10 @@ the state, not a second independently editable head/cache.
 | Existing source/writer | Contract and boundary |
 | --- | --- |
 | `owner-ticket-store.ts` `rotate` | Existing primary-owner transaction already takes `ready_source_fence`; updates key ID/digest and increments epoch. Existing SQL guard revokes issued task-owner tickets atomically. This behavior remains for legacy rows; a managed row requires the new audited stage transition instead of direct rotation. |
-| Direct Prisma/SQL create/update | Found in source test fixtures and `owner-ticket-persistence.test.mjs`; no existing production key-creation endpoint or seeding was found. Proposed `bootstrap_issuer_key_fence` covers every insert/update/delete, including legacy writers. It does not adopt legacy rows. |
+| Direct Prisma/SQL create/update | Found in source test fixtures and `owner-ticket-persistence.test.mjs`; no existing production key-creation endpoint or seeding was found. Native `bootstrap_issuer_key_fence` covers every insert/update/delete, including legacy writers. It does not adopt legacy rows. |
 | Existing installation anchor guard | Preserves installation and transaction birth. Same-binding key rotation currently returns before its fence; the additional issuer guard closes that specific gap. |
 | Existing key update/delete and truncate guards | Preserve monotonic epoch+1, different key ID/digest and immutable anchor/history. They are retained and included in required source fingerprints; no historical function is replaced. |
-| New source-only issuer adapter | `create`, `adopt`, `stage`, `cutover`, `revoke`, `retire`, each reserved to the current primary owner and exact accepted, unsuperseded decision. No routes/default composition. |
+| Issuer adapter, not composed into routes | `create`, `adopt`, `stage`, `cutover`, `revoke`, `retire`, each reserved to the current primary owner and exact accepted, unsuperseded decision. No routes/default composition. |
 | Journal/audit writers | Append guard takes the same fence, checks exact public shape and canonical owner/decision. Stage updates the existing key anchor from the journal trigger; all changes and automatic audit share the transaction. Update/delete/truncate of history/audit deny. |
 
 Other canonical sources remain `workspaces`, owner memberships, accepted decision
@@ -40,7 +41,7 @@ issuer, installation and purpose remain immutable across the entire journal.
 
 No signer/private-key/seed/credential interface exists. Unknown fields, alternate
 encodings, mismatched digests and private-key-shaped inputs are rejected before
-write. The proposed native append guard also constrains every persisted record
+write. The native append guard also constrains every persisted record
 and nested material to the public-only shape. Tests contain only three public
 Ed25519 points, and trap signing/private-key/keypair generation, network/DNS and
 child-process effects. Logs remain empty. Public material is never inferred from
@@ -90,11 +91,12 @@ of trusted database/catalog/runtime infrastructure remains outside this proof.
 
 History requires contiguous revisions, unique operation/decision IDs, increasing
 audit fence revisions, matching native record digests, immutable binding and full
-state-machine replay. The proposed SQL guard handles writer admission, public
+state-machine replay. The SQL guard handles writer admission, public
 shape, identity/CAS and audit; the independent typed replay is mandatory before
 any public-key selection. Neither direct SQL rows nor a digest alone are authority.
-Native syntax, trigger ordering, isolation and compatibility remain unqualified
-until the separate native atom; mocked guard rows are not production evidence.
+Native syntax, trigger ordering, isolation and compatibility now pass the bounded
+qualification below. Privileged infrastructure and production composition remain
+outside that proof; mocked guard rows are not production evidence.
 
 Status/inspect perform only read transactions, with no repair, seeding, last-use
 or expiry writes. The bootstrap store passes the selected ticket's exact issuedAt
@@ -114,11 +116,53 @@ The factory still refuses a usable bootstrap context; no real signature, ticket,
 credential or delivery is created. `implementationReady`, `executionSupported`,
 `pilotReady`, `liveAdmissionAllowed`, `pilotExecutionAuthorized` and
 `pilotExecutionStarted` remain false, as do `transportQualified` and
-`launchAuthority`. No DB/Docker/network/DNS, provisioning, endpoint, target,
-model/profile or activation was used in this atom. Retained roots and the
-excluded historical sandbox folder were not inspected or modified.
+`launchAuthority`. The native atom used only the selected existing PostgreSQL
+container, one owned disposable database and an ephemeral loopback database relay.
+No HTTPS/DNS, real issuance, credential delivery, provisioning, endpoint/default
+composition, target/model/profile or activation was introduced. Retained roots and
+the excluded historical sandbox folder were not inspected or modified.
 
-**One recommended next atom:** separately authorized native qualification of the
-80-migration chain and issuer lifecycle adapter/guards in one owned disposable
-database, including existing rotation compatibility, fault acknowledgement and
-verified cleanup. It has not been started.
+## Native qualification and limits
+
+[`bootstrap-issuer-native.test.ts`](../../src/tests/bootstrap-issuer-native.test.ts)
+is selected by `scripts/qualify-worker-identity-commit.py --suite issuer --scenario full`.
+The runner requires an explicitly selected existing PostgreSQL container and user;
+it blocks private dotenv reads and creates no external helper files. Synthetic
+owner/decision prehistory uses transaction-local replica mode only for fixture
+setup. All issuer, key-anchor, rotation and ticket-journal operations under test
+use real origin-mode PostgreSQL/Prisma transactions. Boundary times use an injected
+clock; no private signing material or usable credentials are generated.
+
+| Native evidence | Result |
+| --- | --- |
+| Full migration chain | 80/80 applied without SQL edits; prior 79 and migration 80 remain byte-unchanged. |
+| Public shape and owner admission | Direct SQL rejects noncanonical SPKI/base64, digest/algorithm/private-field changes, wrong/ambiguous owner, expiry and binding mismatch. Legacy rows remain blocked until explicit prospective adoption. |
+| Lifecycle and monotonicity | Create/adopt/stage/cutover/revoke/retire, issue-time and overlap boundaries, terminal states, stale epochs, ABA/reused keys and operation/decision replay pass. Twenty concurrent stage writers produce exactly one winner. |
+| Existing rotation compatibility | Real `owner-ticket-store.rotate` increments epoch/fence, revokes an unsigned synthetic task-ticket row, appends its native revoked journal and emits the existing Event. Managed direct rotation is rejected with complete rollback; staging uses the audited issuer path. This does not prove bootstrap-ticket revocation authority. |
+| Fence and guard integrity | Direct anchor creation waits on the held shared fence. Managed direct updates/deletes and immutable history/audit edits deny. All eight guards deny inspection when missing, disabled, rebound, body-changed or configured differently; replica and missing audit deny. |
+| Atomicity | Failures at fence, anchor creation, history append, automatic audit and pre-COMMIT restore heads, history, audit, ticket journals, Events and fence. Deferred/late COMMIT failures roll back and report `reconciliation_required`. |
+| Lost acknowledgement | Real pre-COMMIT connection termination rolls back; one deliberate cut after the backend COMMIT completion leaves exactly one committed operation and audit. Both report non-retryable `reconciliation_required`, with one write callback/append and no replay. |
+| Read purity and projection | READ ONLY inspection changes no state/fence and does not repair absent audit. Qualified host/installation plus issuer clears exactly two issuer gaps, leaving exactly the three blockers listed above. Public persisted records/audit validate; signing, external network/DNS/process traps and logs remain empty. |
+
+The independent raw Prisma 5.22 probe reproduces the known deferred-COMMIT false
+acknowledgement (transaction promise resolves while PostgreSQL commits zero rows).
+The issuer's fresh post-COMMIT readback detects this; a callback return is not
+success evidence. The fault relay observed exactly one arm and one actual
+post-COMMIT response cut.
+
+Cleanup **PASS**: the uniquely marked database was rechecked by name/OID/owner
+and marker, had zero sessions, was dropped and confirmed absent. The ephemeral
+relay exited with its listener closed and no helper files. Before/after fingerprints
+match across three existing databases and 214 tables/sequences, including schema
+and roles. The selected PostgreSQL returned to its original stopped state; backend,
+other containers, mounts, images, volumes and networks were unchanged.
+
+Migration chain SHA-256 (80 files):
+`529efe0cb272dc64ecb092ee50f31466c02a44d3dccb729be127d8ac872cb20c`.
+Preserved preexisting-database fingerprint SHA-256:
+`e9e019524b6010b02b30b4635fff99133c4429ffac3f537b05ac860485a281f1`.
+
+**One recommended next atom:** a separately authorized source-only canonical
+bootstrap-channel authority contract and denial tests against the existing
+transport records, without migration, network, provisioning or activation.
+It has not been started.

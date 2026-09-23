@@ -1,11 +1,13 @@
 # Canonical Worker bootstrap authority projection v1
 
-Current v39: [canonical issuer authority](bootstrap-issuer-authority-v1.md)
+Current v40: [canonical issuer authority](bootstrap-issuer-authority-v1.md)
 conditionally resolves the public-key and issuer-fence gaps for a complete audited
 public generation, in addition to the four [lifecycle facts](worker-identity-lifecycle-v1.md).
 Exact ticket issue-time and current ceremony selection are mandatory. The three
-channel/revocation/signed-decision gaps remain blocked. Issuer migration 80 is
-UNAPPLIED, native qualification PARTIAL, production BLOCKED; all flags false.
+channel/revocation/signed-decision gaps remain blocked. Issuer native qualification
+passes 16/16 scenarios (17/17 runner results) on the unchanged 80-migration chain
+in one disposable database. Overall admission remains PARTIAL and production
+BLOCKED; all flags false. No production migration or activation is authorized.
 The inventory and qualification below are historical.
 
 Owner amendment v34, 2026-09-23. **DONE for source-only canonical projection,

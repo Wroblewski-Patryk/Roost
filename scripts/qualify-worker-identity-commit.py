@@ -11,6 +11,7 @@ parser.add_argument('--container', required=True)
 parser.add_argument('--db-user', required=True)
 parser.add_argument('--pause-after-diagnosis', action='store_true')
 parser.add_argument('--scenario', choices=['commit','full'], default='commit')
+parser.add_argument('--suite', choices=['lifecycle','issuer'], default='lifecycle')
 args = parser.parse_args()
 repo = pathlib.Path.cwd()
 hidden = subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
@@ -133,7 +134,7 @@ try:
     sql(name,"CREATE TABLE native_commit_probe(id INT); CREATE FUNCTION native_commit_probe_fail() RETURNS TRIGGER LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'synthetic deferred commit rejection'; END $$; CREATE CONSTRAINT TRIGGER native_commit_probe_failure AFTER INSERT ON native_commit_probe DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION native_commit_probe_fail();")
     env = {k:v for k,v in os.environ.items() if k.upper() in ['PATH','PATHEXT','SYSTEMROOT','TEMP','TMP','APPDATA','LOCALAPPDATA','COMSPEC']}
     env['PROBE_CONTAINER'] = args.container
-    env['PROBE_FAULTS'] = '1' if args.scenario=='full' else '0'
+    env['PROBE_FAULTS'] = '1' if args.scenario=='full' or args.suite=='issuer' else '0'
     bridge = subprocess.Popen(['node','-e',bridge_code],env=env,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True,creationflags=hidden)
     port = json.loads(bridge.stdout.readline())['port']
     def collect():
@@ -150,14 +151,16 @@ try:
     for migration in sorted((repo/'prisma/migrations').glob('*/migration.sql')):
         sql(name,migration.read_text(encoding='utf-8-sig'));chain.append(hashlib.sha256(migration.read_bytes()).hexdigest())
     print(json.dumps({'migrationsApplied':len(chain),'chainDigest':hashlib.sha256(''.join(chain).encode()).hexdigest()}),flush=True)
-    result = subprocess.run(['node','-e',preamble+"require('./dist/tests/worker-identity-lifecycle-native.test.js');"],env=env,text=True,capture_output=True,timeout=180,creationflags=hidden)
+    suite = 'bootstrap-issuer-native' if args.suite=='issuer' else 'worker-identity-lifecycle-native'
+    result = subprocess.run(['node','-e',preamble+"require('./dist/tests/"+suite+".test.js');"],env=env,text=True,capture_output=True,timeout=240,creationflags=hidden)
     print(result.stdout,flush=True)
     time.sleep(.1)
     print(json.dumps({'faultRelay':{'armed':sum(v.get('faultArmed')=='drop_commit_response' for v in wire),'applied':sum(v.get('faultApplied')=='drop_commit_response' for v in wire)}}),flush=True)
-    if result.returncode: raise RuntimeError('Native lifecycle qualification failed')
+    if result.returncode: raise RuntimeError('Native '+args.suite+' qualification failed')
     assert re.search(r'^# skipped 0$',result.stdout,re.M) and re.search(r'^# fail 0$',result.stdout,re.M)
-    if args.scenario=='full':
-        assert re.search(r'^# tests 16$',result.stdout,re.M),'Full suite count differs'
+    if args.scenario=='full' or args.suite=='issuer':
+        expected = 17 if args.suite=='issuer' else 16
+        assert re.search(r'^# tests '+str(expected)+'$',result.stdout,re.M),'Full suite count differs'
         time.sleep(.1)
         assert sum(v.get('faultArmed')=='drop_commit_response' for v in wire)==1
         assert sum(v.get('faultApplied')=='drop_commit_response' for v in wire)==1
