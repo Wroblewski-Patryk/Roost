@@ -51,7 +51,7 @@ async function root(db:Db,ticketId:string){
  if(rows.length!==1)deny();
  return lifecycleRegistration.parse({operationId:ticketId,identity:rows[0].identity,record:rows[0].record});
 }
-async function read(db:Db,ticketId:string,now:Date){
+export async function readCanonicalTicketLifecycle(db:Db,ticketId:string,now:Date){
  await guarded(db);const f=await fence(db),t=await root(db,ticketId),i=t.identity;
  if(i.ticketId!==ticketId)deny();
  // Verify every persisted writer's native receipt and its protected Event. A
@@ -107,7 +107,7 @@ async function read(db:Db,ticketId:string,now:Date){
  const authorityCurrent=current.length===1&&current[0].ticket_current===true&&h.fence===f&&scope[0].generation===i.generation&&scope[0].credential===i.credentialEpoch&&
   !h.record.revoked&&!h.record.expired&&!h.record.reconciled&&now.getTime()>=Date.parse(i.notBefore)&&now.getTime()<Date.parse(i.expiresAt);
  const usable=authorityCurrent&&['issued','reserved','consumed','dispatched'].includes(h.record.state);
- return {root:t,head:h.record,digest:h.digest,fence:f,usable,authorityCurrent};
+ return {root:t,head:h.record,digest:h.digest,fence:f,usable,authorityCurrent,generationHighWater:scope[0].generation as number,credentialHighWater:scope[0].credential as number};
 }
 async function append(db:Db,e:TicketLifecycleEvent){
  await db.$executeRaw`INSERT INTO worker_bootstrap_lifecycle_events(id,ticket_id,revision,previous_digest,record,record_digest,attempt_id,history_id,writer_xid)
@@ -121,7 +121,7 @@ export function createPrismaTicketLifecycleStore(client:Pick<PrismaClient,'$tran
  function dependencies(){if(deps?.channel?.qualification!=='unapplied_ticket_channel_binding_v2'||typeof deps.channel.bind!=='function'||typeof deps.channel.inspect!=='function'||
   deps.verifier?.qualification!=='worker_bootstrap_ticket_verifier_v2'||typeof deps.verifier.verify!=='function')deny();return deps!;}
  async function verified(db:Db,c:z.infer<typeof lifecycleRegistration>){const before=await fence(db);await verifyTicketV2(db,c,dependencies().verifier,clock());if(await fence(db)!==before)deny();}
- async function readVerified(db:Db,ticketId:string){const p=await read(db,ticketId,clock());await verified(db,p.root);
+ async function readVerified(db:Db,ticketId:string){const p=await readCanonicalTicketLifecycle(db,ticketId,clock());await verified(db,p.root);
   // Terminal status is readable without reopening admission. Every usable state
   // needs the concrete channel proof, never just a successful issue callback.
   const bound=await dependencies().channel.inspect(db,p.root,clock());

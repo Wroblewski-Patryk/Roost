@@ -5,6 +5,7 @@ import {readFileSync,readdirSync} from 'node:fs';
 import net from 'node:net';import tls from 'node:tls';import http from 'node:http';import https from 'node:https';import dns from 'node:dns';import childProcess from 'node:child_process';
 import {bootstrapChannelFixture} from './bootstrap-channel-fixture';
 import {createPrismaTicketLifecycleStore,TicketLifecycleUnknown,type TicketV2Dependencies} from '../modules/api-keys/bootstrap-ticket-lifecycle-store';
+import {createTicketRevocationReadProtocol,type TicketRevocationVerifier} from '../modules/api-keys/bootstrap-ticket-revocation-reader';
 import {createTicketLifecycleProtocol} from '../modules/api-keys/bootstrap-ticket-lifecycle-model';
 import {lifecycleRegistration,lifecycleFlags,lifecycleIdentity} from '../modules/api-keys/bootstrap-ticket-lifecycle-contract';
 import {ticketGuards,ticketOwnGuards,ticketHelpers,ticketChannelHelper} from '../modules/api-keys/bootstrap-ticket-lifecycle-guards';
@@ -100,6 +101,21 @@ function fixture(atomicBinding=false,integrated=false){
    }else assert.fail('Unexpected mutation');return 1;
   },$queryRaw:async(strings:TemplateStringsArray,...v:any[])=>{
    const sql=strings.join('?').replace(/\s+/g,' ').trim();calls.push(sql);
+   if(sql.includes("current_setting('transaction_read_only') AS readonly"))return [{revision:String(state.fence),isolation:option.isolationLevel==='Serializable'?'serializable':'repeatable read',readonly:readOnly?'on':'off'}];
+   if(sql.includes('AS revocation_anchors'))return [{revocation_anchors:current}];
+   if(sql.includes("AS snapshot")){
+    const g=state.transport.grants.find((g:any)=>g.intent.ticketId===v[0]),issue=state.events.find((e:any)=>e.ticketId===v[0]&&e.action==='issue');
+    const gen=state.transport.generations.find((r:any)=>r.id===g?.intent.snapshot.generation),h=state.transport.history.find((r:any)=>r.grantId===g?.id&&r.action==='grant');
+    const receipts=[['root',v[0]],['transport_generation',gen?.id],['transport_grant',g?.id],['transport_history',h?.id],['lifecycle',issue?.id]].map(([kind,id])=>state.receipts.find((r:any)=>r.kind===kind&&r.id===id));
+    const bound=verified&&!!g&&!!issue&&!!gen&&!!h&&receipts.every(Boolean)&&new Set(receipts.map((r:any)=>r?.xid)).size===1&&receipts[2].digest===reviewDigest(g)&&receipts[3].digest===reviewDigest(h);
+    return g?[{snapshot:copy(g.intent.snapshot),bound}]:[];
+   }
+   if(sql.startsWith('SELECT id,owner_user_id'))return [{id:b.workspaceId,ownerId:f.ticket.ownerId}];
+   if(sql.startsWith('SELECT user_id'))return [{userId:f.ticket.ownerId}];
+   if(sql.startsWith('SELECT id,workspace_id AS "workspaceId",status'))return [{id:b.hostId,workspaceId:b.workspaceId,status:'online'}];
+   if(sql.includes('FROM worker_credential_handoffs'))return [];
+   if(sql.startsWith('SELECT d.id,d.workspace_id'))return [];
+   if(sql.startsWith('SELECT id,workspace_id AS "workspaceId",host_id')){const t=state.tickets.find((r:any)=>r.identity.ticketId===v[0]);return t?[{id:v[0],workspaceId:b.workspaceId,hostId:b.hostId,ownerId:t.identity.ownerId,decisionId:t.identity.decisionId,requestId:t.record.signed.payload.intent.requestId,bindingDigest:reviewDigest(b),ticketDigest:t.identity.ticketDigest,expiresAt:t.identity.expiresAt,issuedAt:t.identity.issuedAt}]:[];}
    if(sql.includes('AS ticket_lifecycle_available'))return [{ticket_lifecycle_available:available}];
    if(sql.includes('FROM pg_trigger')){
     const list=(v[0].length===issuerGuards.length?issuerGuards:v[0].length===channelGuards.length?channelGuards:guards).map((g:any)=>({...g,enabled:g.enabled!==false&&origin&&['Serializable','RepeatableRead'].includes(option.isolationLevel)}));return copy(list);}
@@ -131,21 +147,22 @@ function fixture(atomicBinding=false,integrated=false){
    if(sql.includes('FROM bootstrap_issuer_history h'))return [{record:copy(issuer),fence:'1',verified}];
    if(sql.startsWith('SELECT revision,record_digest AS digest'))return [{revision:1,digest:hash('1')}];
    if(sql.includes('FROM trusted_provider_ticket_keys'))return [copy(key)];
-   if(sql.includes('FROM api_keys'))return [{total:0,active:0}];
+   if(sql.includes('FROM api_keys'))return sql.startsWith('SELECT count(*)')?[{total:0,active:0}]:[];
    if(sql.includes('AS ticket_fence'))return [{ticket_fence:String(state.fence)}];
    if(sql.startsWith('SELECT lifecycle_identity'))return copy(state.tickets.filter((t:any)=>t.identity.ticketId===v[0]));
    if(sql.startsWith('WITH objects')){
     const id=v[0],t=state.tickets.find((t:any)=>t.identity.ticketId===id);
     const valid=verified&&!!t&&state.receipts.some((r:any)=>r.kind==='root'&&r.id===id&&r.digest===reviewDigest(t))&&
      state.receipts.every((r:any)=>state.audit.some((a:any)=>a.id===r.eventId&&a.digest===r.digest))&&
-     state.history.every((h:any)=>state.receipts.some((r:any)=>r.kind==='history'&&r.id===h.id&&r.digest===reviewDigest(h)));
+     state.history.every((h:any)=>state.receipts.some((r:any)=>r.kind==='history'&&r.id===h.id&&r.digest===reviewDigest(h)))&&
+     state.events.filter((e:any)=>e.ticketId===id).every((e:any)=>!e.attemptId||state.attempts.some((a:any)=>a.id===e.attemptId&&a.ticketId===id)&&state.history.some((h:any)=>h.id===e.historyId&&h.attemptId===e.attemptId));
     return state.events.filter((e:any)=>e.ticketId===id).map((e:any)=>{const a=state.receipts.find((r:any)=>r.kind==='lifecycle'&&r.id===e.id);return {record:copy(e),digest:reviewDigest(e),fence:a?.fence,verified:valid&&!!a&&a.digest===reviewDigest(e)};});
    }
    if(sql.startsWith('SELECT max(generation)')){const ts=state.tickets.filter((t:any)=>t.identity.binding.workspaceId===v[0]&&t.identity.binding.hostId===v[1]);return [{generation:Math.max(...ts.map((t:any)=>t.identity.generation)),credential:Math.max(...ts.map((t:any)=>t.identity.credentialEpoch)),complete:ts.every((t:any)=>!!t.identity.notBefore)}];}
    if(sql.startsWith('SELECT t.ticket_digest')){const t=state.tickets.find((t:any)=>t.identity.ticketId===v[0]),e=last(v[0]);return t&&e?[{digest:t.identity.ticketDigest,history:reviewDigest(e),attempt:e.attemptId,state:e.state,generation:t.identity.generation,credential:t.identity.credentialEpoch}]:[];}
    if(sql.includes('AS ticket_ledger_verified')){const e=last(v[0]);return [{ticket_ledger_verified:state.attempts.filter((a:any)=>a.ticketId===v[0]).length===(e.attemptId?1:0)&&
     (!e.attemptId||v[4]||state.heads.some((h:any)=>h.attemptId===e.attemptId&&h.id===e.historyId))}];}
-   if(sql.includes('AS ticket_current'))return [{ticket_current:current&&state.channelCurrent&&!(readOnly&&fault==='post_commit_read')}];
+   if(sql.includes('AS ticket_current'))return [{ticket_current:current&&state.channelCurrent&&(!integrated||!!state.transport.head&&state.transport.head.state==='current')&&!(readOnly&&fault==='post_commit_read')}];
    if(sql.startsWith('SELECT fence_revision'))return state.receipts.filter((r:any)=>r.kind==='lifecycle'&&r.id===v[0]).map((r:any)=>({receipt_fence:r.fence}));
    if(sql.startsWith('SELECT record FROM worker_bootstrap_history')){const h=state.history.filter((h:any)=>h.attemptId===v[0]).at(-1);return h?[{record:copy(h)}]:[];}
    assert.fail('Unexpected query');
@@ -169,7 +186,12 @@ function fixture(atomicBinding=false,integrated=false){
   origin:f.profile.origin,serverName:f.profile.serverName,pin:f.profile.certificate.fingerprint,caDigest:f.profile.trust.caDigest,
   certificateNotBefore:f.iso(-60000),certificateNotAfter:f.iso(120000),addresses:['8.8.8.8'],peerAddress:'8.8.8.8',resolverPolicy:'public_ipv4_only_v1',source:'issuer_signed_peer_observation_v1',
   chainValid:true,hostnameValid:true,observedAt:clock().toISOString(),expiresAt:new Date(now+30000).toISOString(),redirect:false,proxy:false,downgrade:false},signature:'0'.repeat(128)};}
- return {f,store,client,deps,plans,decisions,lifecycle,key,issuer,verifications,signature:(v:boolean)=>signatureValid=v,registration,inspect,command,transition,clock,bootstrapPeer,guards,helpers,calls,options,state:()=>copy(state),mutate:(fn:(s:any)=>void)=>fn(state),
+ const readerProofs:any[]=[],readerDbs:any[]=[];
+ const readerVerifier:TicketRevocationVerifier={qualification:'synthetic_canonical_ticket_revocation_verifier_v1',verify:async(db,p)=>{readerProofs.push(copy(p));readerDbs.push(db);return signatureValid;}};
+ const source=createCanonicalBootstrapAuthoritySource(clock,readerVerifier);
+ async function boundRead<T>(work:(selectedSource:typeof source,db:any)=>Promise<T>,selected=source):Promise<T>{return client.$transaction(async(db:any)=>{await db.$executeRaw`SET TRANSACTION READ ONLY`;const release=await selected.bindTransaction!(db,'read');try{return await work(selected,db);}finally{release();}},{isolationLevel:'RepeatableRead'});}
+ const readerStatus=(ticketId:string)=>boundRead((source,db)=>source.inspectTicketRevocation(db,{ticketId}));
+ return {readerStatus,boundRead,source,readerVerifier,readerProofs,readerDbs,f,store,client,deps,plans,decisions,lifecycle,key,issuer,verifications,signature:(v:boolean)=>signatureValid=v,registration,inspect,command,transition,clock,bootstrapPeer,guards,helpers,calls,options,state:()=>copy(state),mutate:(fn:(s:any)=>void)=>fn(state),
   at:(ms:number)=>now=Date.parse(f.iso(ms)),fault:(s:string)=>fault=s,current:(v:boolean)=>current=v,origin:(v:boolean)=>origin=v,available:(v:boolean)=>available=v,verified:(v:boolean)=>verified=v,counts:()=>({writes,transactions})};
 }
 
@@ -353,6 +375,84 @@ test('unapplied bootstrap lifecycle schema and source-only adapter',async t=>{
    (f:any,c:any)=>f.plans.get(c.identity.ticketId).expiresAt=f.f.iso(500),(f:any)=>f.at(60000),(f:any)=>f.current(false)]){
    const f=fixture(false,true),c=f.registration(),before=f.state();change(f,c);await assert.rejects(f.store.register(c));assert.deepEqual(f.state(),before);
   }
+ });
+ await t.test('canonical revocation reader verifies exact public issuer and digests in its bound READ ONLY transaction',async()=>{
+  const f=fixture(false,true),c=f.registration();await f.store.register(c);const before=f.state(),n=f.counts();
+  await f.boundRead(async(source,db)=>{const p=await source.inspectTicketRevocation(db,{ticketId:c.identity.ticketId});assert.ok(p.ok);if(!p.ok)return;
+   assert.equal(p.state,'valid_not_revoked');assert.equal(p.admissible,true);assert.equal(p.contentDigest,ticketContentDigest(c.record.signed.payload));assert.equal(p.envelopeDigest,c.identity.ticketDigest);
+   assert.equal(f.readerDbs.at(-1),db);assert.equal(await source.ticketRevoked(db,c.identity.ticketId),false);
+   const proof=f.readerProofs.at(-1);assert.deepEqual(proof.signed,c.record.signed);assert.equal(proof.issuerRevision,c.identity.issuerRevision);assert.equal(proof.issuerHistoryDigest,c.identity.issuerHistoryDigest);
+   assert.equal(proof.issuer.material.publicKeyDigest,c.identity.binding.ticketPublicKeyDigest);assert.equal(proof.issuer.epoch,c.identity.binding.ticketKeyEpoch);
+  });assert.deepEqual(f.state(),before);assert.deepEqual(f.counts(),n);
+  await f.client.$transaction(async(db:any)=>{const release=await f.source.bindTransaction!(db,'write');try{const p=await f.source.inspectTicketRevocation(db,{ticketId:c.identity.ticketId});assert.ok(p.ok);assert.equal(f.readerDbs.at(-1),db);}finally{release();}},{isolationLevel:'Serializable'});
+  assert.deepEqual(f.state(),before);assert.equal(f.counts().writes,n.writes);
+ });
+ await t.test('reader distinguishes revoked expired consumed completed and terminal unknown without reopening admission',async()=>{
+  for(const state of ['revoked','expired','consumed','completed','delivery_unknown']){const f=fixture(false,true),c=f.registration();await f.store.register(c);
+   if(state==='revoked')await f.transition(c.identity.ticketId,'revoke');else if(state==='expired')f.at(60000);else{
+    await f.transition(c.identity.ticketId,'reserve');await f.transition(c.identity.ticketId,'consume');
+    if(state==='completed'||state==='delivery_unknown'){const p=await f.inspect(c.identity.ticketId),peer=f.bootstrapPeer(p);await f.transition(c.identity.ticketId,'dispatch',{peer});
+     if(state==='delivery_unknown')await f.transition(c.identity.ticketId,'unknown');else await f.transition(c.identity.ticketId,'complete',{completion:{payload:{version:'worker-bootstrap-completion-v1',attemptId:p.head.attemptId,ticketDigest:p.identity.ticketDigest,requestId:c.record.signed.payload.intent.requestId,state:'acknowledged',credential:c.record.signed.payload.intent.target,peer:peer.payload,responseDigest:hash('4'),committedAt:f.clock().toISOString()},signature:'0'.repeat(128)}});
+    }
+   }
+   const p=await f.readerStatus(c.identity.ticketId);assert.ok(p.ok,state);if(p.ok){assert.equal(p.state,({revoked:'terminal_revoked',delivery_unknown:'terminal_unknown'} as any)[state]??state);assert.equal(p.admissible,state==='consumed');assert.equal(p.reconciliationRequired,state==='delivery_unknown');}
+  }
+ });
+ await t.test('reader refuses missing root event receipt audit attempt history head and binding',async()=>{
+  const failures=[(s:any)=>s.tickets.splice(0),(s:any)=>s.events.pop(),(s:any)=>s.receipts.pop(),(s:any)=>s.audit.pop(),(s:any)=>s.attempts.splice(0),(s:any)=>s.history.splice(0),(s:any)=>s.heads.splice(0),(s:any)=>s.transport.grants.splice(0),(s:any)=>s.transport.head=null];
+  for(const damage of failures){const f=fixture(false,true),c=f.registration();await f.store.register(c);await f.transition(c.identity.ticketId,'reserve');await f.transition(c.identity.ticketId,'consume');f.mutate(damage);const before=f.state();
+   assert.equal((await f.readerStatus(c.identity.ticketId)).state,'invalid_incomplete');await assert.rejects(f.boundRead((source,db)=>source.ticketRevoked(db,c.identity.ticketId)),CanonicalBootstrapBlocked);assert.deepEqual(f.state(),before);
+  }
+ });
+ await t.test('reader denies stale generation issuer key epoch channel lifecycle owner and not-before boundaries',async()=>{
+  for(const fault of ['generation','key','epoch','channel','lifecycle','owner','not_before']){const f=fixture(false,true),c=f.registration();await f.store.register(c);
+   if(fault==='generation')f.mutate(s=>{s.tickets.push({...copy(s.tickets[0]),identity:{...copy(s.tickets[0].identity),ticketId:randomUUID(),generation:2,credentialEpoch:2}});});
+   if(fault==='key')f.key.publicKeyDigest=hash('0');if(fault==='epoch')f.key.epoch++;
+   if(fault==='channel')f.mutate(s=>s.transport.grants[0].intent.snapshot.caDigest=hash('0'));
+   if(fault==='lifecycle')f.lifecycle[0].intent.generation=randomUUID();if(fault==='owner')f.current(false);if(fault==='not_before')f.at(-2000);
+   assert.equal((await f.readerStatus(c.identity.ticketId)).ok,false,fault);
+  }
+ });
+ await t.test('missing rejecting or drifting verifier is fail closed and no default signature authority exists',async()=>{
+  const f=fixture(false,true),c=f.registration();await f.store.register(c);const absent=createCanonicalBootstrapAuthoritySource(f.clock);
+  assert.equal((await f.boundRead((source,db)=>source.inspectTicketRevocation(db,{ticketId:c.identity.ticketId}),absent)).ok,false);
+  f.signature(false);assert.equal((await f.readerStatus(c.identity.ticketId)).ok,false);f.signature(true);
+  const drift=createCanonicalBootstrapAuthoritySource(f.clock,{...f.readerVerifier,verify:async()=>{f.mutate(s=>s.fence++);return true;}});
+  await assert.rejects(f.boundRead((source,db)=>source.inspectTicketRevocation(db,{ticketId:c.identity.ticketId}),drift),CanonicalBootstrapBlocked);
+ });
+ await t.test('preconsume and consumed terminal predecessors keep exact nullable attempt bindings through recovery',async()=>{
+  for(const consumed of [false,true]){const f=fixture(false,true),c=f.registration();await f.store.register(c);if(consumed){await f.transition(c.identity.ticketId,'reserve');await f.transition(c.identity.ticketId,'consume');}
+   await createPrismaBootstrapChannelStore(f.client,f.clock).transition({ticketId:c.identity.ticketId,operationId:randomUUID(),expectedRevision:1,action:'revoke'});await f.transition(c.identity.ticketId,'revoke');
+   const previous=await f.inspect(c.identity.ticketId),next=f.registration(previous);await f.store.register(next);
+   const old=await f.readerStatus(c.identity.ticketId),fresh=await f.readerStatus(next.identity.ticketId);assert.ok(old.ok&&fresh.ok);if(old.ok&&fresh.ok){assert.equal(old.state,'terminal_revoked');assert.equal(fresh.state,'valid_not_revoked');assert.equal(fresh.identity.predecessor?.attemptId,previous.head.attemptId);assert.equal(!!previous.head.attemptId,consumed);}
+   assert.equal(f.state().attempts.length,consumed?1:0);
+  }
+ });
+ await t.test('twenty revoke/read interleavings cannot observe an unrevoked ticket after the serialized revocation',async()=>{
+  for(let cut=0;cut<20;cut++){const f=fixture(false,true),c=f.registration();await f.store.register(c);const revoke=await f.command(c.identity.ticketId,'revoke'),jobs:Promise<unknown>[]=[];
+   for(let n=0;n<20;n++){if(n===cut)jobs.push(f.store.transition(revoke));jobs.push(f.readerStatus(c.identity.ticketId).then(p=>{assert.ok(p.ok);if(p.ok)assert.equal(p.state,n<cut?'valid_not_revoked':'terminal_revoked');}));}await Promise.all(jobs);assert.equal(f.state().events.filter((e:any)=>e.action==='revoke').length,1);
+  }
+ });
+ await t.test('paired fresh canonical reads deny before exchange and report unknown after a possible commit without retry',async()=>{
+  for(const phase of ['success','before2','before4','exchange_revoke','exchange_drift','reply_loss','completion_loss']){const f=fixture(false,true),c=f.registration();await f.store.register(c);await f.transition(c.identity.ticketId,'reserve');await f.transition(c.identity.ticketId,'consume');let reads=0,sends=0,completes=0;
+   const protocol=createTicketRevocationReadProtocol({qualification:'synthetic_ticket_revocation_reader_protocol_v1',read:async value=>{reads++;if(phase===`before${reads}`)await f.transition(c.identity.ticketId,'revoke');return f.boundRead((source,db)=>source.inspectTicketRevocation(db,value));},
+    exchange:async()=>{sends++;if(phase==='exchange_revoke')await f.transition(c.identity.ticketId,'revoke');if(phase==='exchange_drift')f.mutate(s=>s.fence++);if(phase==='reply_loss')throw new TicketLifecycleUnknown();return 'synthetic_public_reply';},complete:async()=>{completes++;if(phase==='completion_loss')throw new TicketLifecycleUnknown();}});
+   const p=await protocol.run({ticketId:c.identity.ticketId});assert.equal(p.ok,phase==='success');assert.equal(sends,phase==='before2'?0:1);assert.equal(completes,['success','completion_loss'].includes(phase)?1:0);
+   if(!p.ok){assert.equal(p.error,phase==='before2'?'denied':'delivery_unknown');assert.equal(p.retryable,false);assert.equal(p.reconciliationRequired,phase!=='before2');}if(phase==='success')assert.equal(reads,4);
+  }
+ });
+ await t.test('bound source inspect conditionally resolves only revocation and context still denies signed decision authority',async()=>{
+  const f=fixture(false,true),c=f.registration();await f.store.register(c);
+  await f.boundRead(async(source,db)=>{const p=await source.inspect(db,{binding:c.identity.binding,decisionId:c.identity.decisionId,purpose:c.identity.purpose,ticketId:c.identity.ticketId});
+   assert.ok(!p.blockers.includes('bootstrap_ticket_revocation_unavailable'));assert.ok(p.blockers.includes('signed_current_decision_unavailable'));assert.equal(p.ok,false);
+   await assert.rejects(source.context(db,c.identity.binding,c.identity.issuedAt,c.identity.ticketId),(e:any)=>e instanceof CanonicalBootstrapBlocked&&e.blockers.length===1&&e.blockers[0]==='signed_current_decision_unavailable');
+  });
+ });
+ await t.test('reader rejects unbound released transactions and every caller authority override without writes',async()=>{
+  const f=fixture(false,true),c=f.registration();await f.store.register(c);const before=f.state();let leaked:any;
+  await f.boundRead(async(source,db)=>{leaked=db;for(const k of ['identity','revoked','current','force','retry','fence','signature','verifier'])assert.equal((await source.inspectTicketRevocation(db,{ticketId:c.identity.ticketId,[k]:true})).ok,false);});
+  await assert.rejects(f.source.inspectTicketRevocation(leaked,{ticketId:c.identity.ticketId}),CanonicalBootstrapBlocked);assert.deepEqual(f.state(),before);
+  assert.equal((await createTicketRevocationReadProtocol().run({ticketId:c.identity.ticketId})).ok,false);
  });
  await t.test('unapplied DDL keeps a single root/head and fingerprints every native guard/helper',()=>{
   const sql=readFileSync(migration,'utf8').replace(/\r/g,'');assert.match(sql,/SOURCE PROPOSAL \/ UNAPPLIED/);assert.match(sql,/ALTER TABLE worker_bootstrap_tickets ADD COLUMN lifecycle_identity JSONB/);

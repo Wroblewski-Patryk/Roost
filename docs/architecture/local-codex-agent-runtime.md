@@ -1,19 +1,19 @@
 # Local Codex Agent Runtime
 
-Owner amendment v47: [native v2 ticket/channel qualification](bootstrap-ticket-lifecycle-persistence-v1.md)
-passes 17/17 native and 103/103 source/mocked results. All 82 migrations ran in one
-owned disposable PostgreSQL DB; only three minimal migration-82 corrections were
-needed (CASE syntax, event clock and shared-trigger field access). Earlier 81 and
-Prisma schema are unchanged. Atomic root/channel/issue receipts, 20-way single
-winner, rollback, uncertain COMMIT/readback, 89 guards and seven helpers qualify
-persistence only. Owned DB/relay cleanup and existing-data/container fingerprints
-are verified. No migration on an existing installation, production deployment,
-keys/signing, issuance/delivery, default composition or activation. RF-HOST-035
-PARTIAL, production BLOCKED; bootstrap_ticket_revocation_unavailable and
-signed_current_decision_unavailable remain; six readiness flags plus
-transportQualified/launchAuthority stay false. One next atom: source-only canonical
-ticket-revocation reader integration with explicit synthetic verifier injection
-and fresh bound-transaction denial tests, retaining both blockers. Not started.
+Owner amendment v48: [canonical ticket-revocation reader](bootstrap-ticket-lifecycle-persistence-v1.md)
+reuses the qualified ticket/lifecycle/attempt ledger inside the authority source's
+bound transaction and fence. Explicit synthetic verification checks exact signed
+content/envelope and current public issuer evidence; no default verifier exists.
+States distinguish valid, consumed/completed, revoked, expired, unknown and invalid.
+Terminal recovery preserves the exact nullable attempt. Paired fresh reads gate
+synthetic exchange/completion; drift after possible commit is non-retryable unknown.
+126/126 selected source/mocked results pass. Ticket revocation is conditionally
+resolved source-only with complete evidence; default/production remain BLOCKED and
+signed_current_decision_unavailable remains. RF-HOST-035 PARTIAL; six readiness
+flags plus transportQualified/launchAuthority false. No schema/migration changes,
+DB/Docker/network, signing, delivery, default composition or activation. One next
+atom: separately authorized isolated native reader/authority qualification with a
+synthetic verifier, retaining production and decision gates. Not started.
 Prior next recommendations are historical.
 
 Owner amendment v26: [loopback HTTPS handoff adapter](worker-handoff-https-v1.md)
