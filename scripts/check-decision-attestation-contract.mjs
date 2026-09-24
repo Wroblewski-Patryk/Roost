@@ -6,7 +6,14 @@ const target='src/modules/api-keys/decision-attestation-guards.ts';
 const sql=readFileSync(migration,'utf8').replace(/\r/g,'');
 const functions=new Map([...sql.matchAll(/CREATE FUNCTION (\w+)\((.*?)\) RETURNS (\w+) LANGUAGE plpgsql (IMMUTABLE|STABLE|VOLATILE|) ?AS \$\$([\s\S]*?)\$\$;/g)].map(m=>[m[1],
  {name:m[1],args:m[2],result:m[3].toLowerCase(),volatility:({IMMUTABLE:'i',STABLE:'s',VOLATILE:'v','':'v'})[m[4]],hash:createHash('sha256').update(m[5]).digest('hex')}]));
-assert.equal(functions.size,14);
+assert.equal(functions.size,15);
+const prior=readFileSync('prisma/migrations/20260924010000_bootstrap_ticket_lifecycle/migration.sql','utf8').replace(/\r/g,'');
+const oldBody=prior.match(/CREATE FUNCTION bootstrap_lifecycle_write_guard\(\) RETURNS TRIGGER LANGUAGE plpgsql AS \$\$([\s\S]*?)\$\$;/)[1];
+const oldTest=sql.match(/old_test TEXT:='([^']+)'/)[1],newTest=sql.match(/new_test TEXT:='([^']+)'/)[1];
+assert.equal(createHash('sha256').update(oldBody).digest('hex'),'1000876fe64fa1808625f0e9b06db2a86f8b4d1aa26d7dd0f6cce07be045e048');
+assert.equal(oldBody.split(oldTest).length-1,2);
+assert.equal(newTest,`(${oldTest} AND NOT decision_attestation_lineage(t.id,f-1))`);
+const lifecycleHash=createHash('sha256').update(oldBody.replaceAll(oldTest,newTest)).digest('hex');
 const arrays=[...sql.matchAll(/FOREACH tbl IN ARRAY ARRAY\[(.*?)\] LOOP/g)].map(m=>[...m[1].matchAll(/'([^']+)'/g)].map(r=>r[1]));
 const rows=[],add=(table,name,fn,kind,deferred=false)=>rows.push({table,name,function:fn,kind,hash:functions.get(fn).hash,deferred});
 for(const table of arrays[0]){
@@ -21,14 +28,16 @@ for(const m of sql.matchAll(/^CREATE (CONSTRAINT )?TRIGGER (\w+) (BEFORE|AFTER) 
 }
 assert.equal(rows.length,111);
 const helpers=[...functions.values()].filter(f=>f.result!=='trigger').map(({name,hash,volatility,result,args})=>({name,hash,volatility,result,
- args:args.split(',').map(a=>({TEXT:'25',JSONB:'3802',UUID:'2950'})[a.trim().split(' ').at(-1)]).join(' ')}));
+ args:args.split(',').map(a=>({TEXT:'25',JSONB:'3802',UUID:'2950',BIGINT:'20'})[a.trim().split(' ').at(-1)]).join(' ')}));
 const output='// Reviewed LF-normalized migration 83 bodies; UNAPPLIED.\n'+
+ 'export const decisionAttestationLifecycleGuardHash='+JSON.stringify(lifecycleHash)+';\n'+
  'export const decisionAttestationSources='+JSON.stringify(arrays[0])+' as const;\n'+
  'export const decisionAttestationOwnGuards=[\n'+rows.map(r=>' '+JSON.stringify(r)).join(',\n')+'\n] as const;\n'+
  'export const decisionAttestationOwnHelpers=[\n'+helpers.map(r=>' '+JSON.stringify(r)).join(',\n')+'\n] as const;\n';
 if(process.argv.includes('--write-guards'))writeFileSync(target,output);
 else assert.equal(readFileSync(target,'utf8').replace(/\r/g,''),output,'Migration bodies/catalog bindings changed: review then regenerate pins');
-assert.doesNotMatch(sql,/\b(?:DROP|TRUNCATE TABLE|DELETE FROM|CREATE OR REPLACE|DISABLE TRIGGER)\b/i);
+assert.doesNotMatch(sql,/\b(?:DROP|TRUNCATE TABLE|DELETE FROM|DISABLE TRIGGER)\b/i);
+assert.equal([...sql.matchAll(/CREATE OR REPLACE FUNCTION (\w+)/g)].map(m=>m[1]).join(','),'bootstrap_lifecycle_write_guard');
 assert.doesNotMatch(sql,/UPDATE\s+(?:decisions|decision_revisions|decision_acceptances)\s/i);
 assert.deepEqual([...sql.matchAll(/CREATE TABLE (\w+)/g)].map(m=>m[1]),['decision_owner_auth_evidence','decision_attestation_key_history','decision_attestations','decision_authority_events','decision_attestation_write_receipts']);
-console.log(JSON.stringify({sourceOnly:true,unapplied:true,functions:functions.size,triggers:rows.length,helpers:helpers.length,additive:true}));
+console.log(JSON.stringify({sourceOnly:true,unapplied:true,functions:functions.size,triggers:rows.length,helpers:helpers.length,additiveTables:true,reviewedLifecycleUpgrade:lifecycleHash}));

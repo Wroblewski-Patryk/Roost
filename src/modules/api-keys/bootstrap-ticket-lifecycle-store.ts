@@ -5,6 +5,8 @@ import {reviewDigest} from '../agent-runtime/task-review-contract';
 import {freezePublic} from './worker-transport-snapshot';
 import {persistedBootstrapAttempt,persistedBootstrapHistory,signedBootstrapPeer,signedBootstrapCompletion} from './worker-bootstrap-persistence-contract';
 import {ticketGuards,ticketHelpers,ticketChannelHelper} from './bootstrap-ticket-lifecycle-guards';
+import {decisionAttestationLifecycleGuardHash} from './decision-attestation-guards';
+import {requireDecisionAttestationGuards} from './decision-attestation-adapter';
 import type {BootstrapV2ChannelBinding} from './bootstrap-channel-store';
 import {verifyTicketV2,type TicketV2SignatureVerifier} from './bootstrap-ticket-v2-verification';
 import {lifecycleId as id,lifecycleHash as hash,lifecycleIdentity,lifecycleRegistration,lifecycleEvent,lifecycleEqual as same,
@@ -30,8 +32,13 @@ async function guarded(db:Db){
   FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace
   JOIN pg_proc p ON p.oid=t.tgfoid JOIN pg_namespace pn ON pn.oid=p.pronamespace WHERE t.tgname=ANY(${ticketGuards.map(g=>g.name)}::text[])`;
  const catalog=new Map(rows.map(({enabled,...r})=>[`${r.table}:${r.name}`,{enabled,record:r}]));
+ const upgraded=rows.some(r=>r.function==='bootstrap_lifecycle_write_guard'&&r.hash===decisionAttestationLifecycleGuardHash);
+ // An upgraded body is accepted only with the complete pinned 83 catalog.
+ // Migration-82 installations still use their original exact hashes and path.
+ if(upgraded)await requireDecisionAttestationGuards(db);
  if(rows.length!==ticketGuards.length||catalog.size!==rows.length||!ticketGuards.every(g=>{
-  const actual=catalog.get(`${g.table}:${g.name}`);return actual?.enabled===true&&same(g,actual.record);
+  const actual=catalog.get(`${g.table}:${g.name}`),expected=upgraded&&g.function==='bootstrap_lifecycle_write_guard'?{...g,hash:decisionAttestationLifecycleGuardHash}:g;
+  return actual?.enabled===true&&same(expected,actual.record);
  }))deny();
  const expected=[...ticketHelpers,ticketChannelHelper];
  const helpers=await db.$queryRaw<any[]>`SELECT p.proname AS name,p.provolatile::text AS volatility,p.prorettype::regtype::text AS result,

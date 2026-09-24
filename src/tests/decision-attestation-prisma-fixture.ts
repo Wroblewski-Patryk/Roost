@@ -10,6 +10,7 @@ import {channelSnapshotDigest} from '../modules/api-keys/bootstrap-channel-persi
 import {decisionAttestationGuards,decisionAttestationHelpers} from '../modules/api-keys/decision-attestation-adapter';
 import {createPrismaDecisionAttestationPorts,type NativeAttestationDependencies} from '../modules/api-keys/decision-attestation-prisma-ports';
 import {AttestationCommitUnknown} from '../modules/api-keys/decision-attestation-persistence-model';
+import {lineageOracle,type EpochProof} from './decision-attestation-lineage-oracle';
 const clone=<T>(v:T):T=>structuredClone(v);
 type Row=Record<string,any>;type ObjectRow={table:string;rowId:string;row:Row;digest:string;receiptId:string;eventId:string;fence:string;writerXid:string;verified:boolean};
 export function nativeAttestationFixture(){
@@ -29,9 +30,12 @@ export function nativeAttestationFixture(){
  const q={decisionId:t.decisionId,ticketId:t.id},acceptanceId=randomUUID(),previewId=randomUUID(),impact={version:1,scope:'synthetic-public-fixture'};
  const policy={version:'owner-decision-attestation-policy-v1',revision:7,evidenceDigest:reviewDigest(impact),validFrom:identity.notBefore,expiresAt:identity.expiresAt};
  const body={workerBootstrap:t.intent,workerBootstrapLifecycle:metadata,ownerDecisionAttestation:policy};
- let objects:ObjectRow[]=[],operations=new Map<string,any>();
+ let objects:ObjectRow[]=[],operations=new Map<string,any>(),epochProofs:EpochProof[]=[];let faultHits=0;
  function put(table:string,row:Row){const rowId=String(row.id??row.decision_id??row.workspace_id)+(row.host_id?':'+row.host_id:'');
   const obj={table,rowId,row:clone(row),digest:reviewDigest(row),receiptId:randomUUID(),eventId:randomUUID(),fence:String(++fence),writerXid:String(xid),verified:true};
+  epochProofs.push({epoch:fence,id:obj.receiptId,ledger:'attestation',table,row:rowId,scope:q.ticketId,
+   phase:table==='decision_attestation_key_history'?'key':table==='decision_owner_auth_evidence'?'auth':table==='decision_attestations'?'attest':table==='decision_authority_events'?'authority':'start',
+   writer:String(xid),digest:obj.digest,actualDigest:obj.digest,event:true});
   const index=objects.findIndex(o=>o.table===table&&o.rowId===rowId);if(index>=0)objects[index]=obj;else objects.push(obj);return obj;}
  function event(action:string,source:ObjectRow,mutation:string|null=null,id=randomUUID()){
   const last=objects.filter(o=>o.table==='decision_authority_events').at(-1)?.row;
@@ -63,7 +67,7 @@ export function nativeAttestationFixture(){
   // This mock serializes writes only, like the shared database fence. Read
   // snapshots retain committed data; no state is persisted outside this test.
   let release=()=>{};if(mode==='write'){const wait=tail;tail=new Promise<void>(r=>release=r);await wait;}
-  const saved=clone(objects),oldFence=fence,oldOps=new Map(operations);let returned:any;
+  const saved=clone(objects),oldFence=fence,oldOps=new Map(operations),oldProofs=clone(epochProofs);let returned:any;
   const transactionXid=++xid;
   const db:any={$queryRaw:async(strings:any,...args:any[])=>{
    const sql=(Array.isArray(strings)?strings.join('?'):strings.sql).replace(/\s+/g,' ').trim(),v=Array.isArray(strings)?args:strings.values;calls.push({sql,values:clone(v),db,mode});
@@ -71,6 +75,11 @@ export function nativeAttestationFixture(){
    if(sql.includes('FROM pg_trigger'))return clone(guards);if(sql.includes('FROM pg_proc'))return clone(helpers);
    if(sql.includes('transaction_isolation')&&sql.includes('to_char(clock_timestamp()'))return [{fence:String(fence),isolation:mode==='read'?'repeatable read':'serializable',readOnly:mode==='read'?'on':'off',origin:origin?'origin':'replica',timezone:'UTC',at}];
    if(sql.endsWith('FROM ready_source_fence WHERE id=1 FOR UPDATE')){assert.equal(mode,'write');return [{fence:String(fence)}];}
+   if(sql.includes('AS "sealLineage"')){
+    const a=objects.find(o=>o.table==='decision_attestations'),h=objects.filter(o=>o.table==='decision_authority_events').at(-1),anchor=objects.find(o=>o.table==='worker_bootstrap_lifecycle_events');
+    return [{sealLineage:!!a&&!!h&&!!anchor&&lineageOracle({anchor:Number(anchor.fence),attest:Number(a.fence),tail:Number(h.fence),through:fence,
+     scope:q.ticketId,writer:String(transactionXid),optedIn:true,current:true,proofs:epochProofs})}];
+   }
    if(sql.includes('operationCount')){
     if(mode==='read'){reads++;if(fault==='readback')throw Error('readback unavailable');}
     const operationId=v.find((value:any)=>operations.has(value));const op=operationId?clone(operations.get(operationId)):undefined;
@@ -113,14 +122,14 @@ export function nativeAttestationFixture(){
     op.receipts=objects.filter(o=>o.writerXid===String(xid)).map(o=>({table:o.table,rowId:o.rowId,digest:o.digest,fence:o.fence,receiptId:o.receiptId,eventId:o.eventId,writerXid:o.writerXid,verified:o.verified}));
     op.authorityRevision=revision();op.fence=String(fence);op.recordedAt=at;
    }
-   if(fault==='write:'+writes||fault==='table:'+obj?.table||fault==='receipt')throw Error('synthetic rollback');return 1;
+   if(fault==='write:'+writes||fault==='table:'+obj?.table||fault==='receipt'){faultHits++;throw Error('synthetic rollback');}return 1;
   }};
   try{callbacks++;returned=await work(db);
    if(mode==='write'&&fault==='retry'){await work({} as any);}
-   if(mode==='write'&&fault==='false'){objects=saved;fence=oldFence;operations=oldOps;return returned;}
+   if(mode==='write'&&fault==='false'){objects=saved;fence=oldFence;operations=oldOps;epochProofs=oldProofs;return returned;}
    if(mode==='write'&&fault==='lost')throw new AttestationCommitUnknown();
    if(mode==='write'&&fault==='precommit')throw Error('lost acknowledgement');return returned;
-  }catch(e){if(!(e instanceof AttestationCommitUnknown)){objects=saved;fence=oldFence;operations=oldOps;}throw e;}finally{release();}
+  }catch(e){if(!(e instanceof AttestationCommitUnknown)){objects=saved;fence=oldFence;operations=oldOps;epochProofs=oldProofs;}throw e;}finally{release();}
  },ownerAuthentication:async()=>clone(auth),authorizePublicKey:async()=>true,
  signer:{keyId:material.keyId,sign:async()=>{signatures++;return 'a'.repeat(128);}},verifier:{verify:async()=>fault!=='signature'},ticketVerifier:{verify:async()=>fault!=='ticket'}};
  const ports=createPrismaDecisionAttestationPorts(deps);
@@ -130,5 +139,6 @@ export function nativeAttestationFixture(){
   execute:async(kind:string,extra:Row={})=>ports.execute(await command(kind,extra)),
   fault:(v:string)=>fault=v,origin:(v:boolean)=>origin=v,verified:(v:boolean)=>verified=v,at:(v:string)=>at=v,
   remove:(table:string)=>{objects=objects.filter(o=>o.table!==table);},
-  stats:()=>({reads,writes,signatures,callbacks}),state:()=>clone({objects,fence}),operations:()=>operations};
+  stats:()=>({reads,writes,signatures,callbacks,faultHits}),state:()=>clone({objects,fence,epochProofs}),operations:()=>operations,
+  lineageProofs:()=>epochProofs,drift:()=>{fence++;}};
 }

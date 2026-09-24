@@ -45,8 +45,8 @@ test('native decision attestation qualification',{skip:!process.env.WORKER_IDENT
   await assert.rejects(db.$executeRaw`UPDATE decisions SET authority_revision=1 WHERE id=${legacy.decision_id}::uuid`);assert.deepEqual(await snapshot(),before);
   assert.equal((await db.$queryRaw<any[]>`SELECT count(*)::int AS n FROM pg_constraint WHERE conrelid='worker_bootstrap_attempts'::regclass AND contype='u' AND pg_get_constraintdef(oid)='UNIQUE (ticket_id)'`)[0].n,1);
  });
- await t.test('111 trigger bindings, 14 function bodies, four helpers and native derived revision are exact',async()=>{
-  assert.equal(decisionAttestationOwnGuards.length,111);assert.equal(decisionAttestationOwnHelpers.length,4);
+ await t.test('111 own trigger bindings, 15 new functions, upgraded lifecycle guard and five helpers are exact',async()=>{
+  assert.equal(decisionAttestationOwnGuards.length,111);assert.equal(decisionAttestationOwnHelpers.length,5);
   await db.$transaction(async tx=>{await tx.$executeRaw`SET TRANSACTION READ ONLY`;await requireDecisionAttestationGuards(tx);},{isolationLevel:'RepeatableRead'});
   const g=await ready(),p=await g.projection();assert.ok(Number(p.version.authorityRevision)>1);assert.match(p.clock.at,/\.\d{6}Z$/);
   const rows=await db.$queryRaw<any[]>`SELECT revision::text AS revision,fence_revision::text AS fence FROM decision_authority_events WHERE decision_id=${g.q.decisionId}::uuid ORDER BY decision_authority_events.revision`;
@@ -101,7 +101,7 @@ test('native decision attestation qualification',{skip:!process.env.WORKER_IDENT
   for(const guard of decisionAttestationOwnGuards){await db.$executeRawUnsafe(`ALTER TABLE ${guard.table} DISABLE TRIGGER ${guard.name}`);
    try{assert.equal((await g.ports.inspect(g.q)).ok,false,guard.name);}finally{await db.$executeRawUnsafe(`ALTER TABLE ${guard.table} ENABLE TRIGGER ${guard.name}`);}}
   for(const helper of decisionAttestationOwnHelpers){const original=(await db.$queryRaw<any[]>`SELECT pg_get_functiondef(oid) AS body FROM pg_proc WHERE proname=${helper.name}`)[0].body;
-   const args=helper.args.split(' ').map(x=>({25:'text',3802:'jsonb',2950:'uuid'} as any)[x]).join(',');
+   const args=helper.args.split(' ').map(x=>({25:'text',3802:'jsonb',2950:'uuid',20:'bigint'} as any)[x]).join(',');
    await db.$executeRawUnsafe(`ALTER FUNCTION ${helper.name}(${args}) SET search_path=pg_catalog`);try{assert.equal((await g.ports.inspect(g.q)).ok,false);}finally{await db.$executeRawUnsafe(original);}}
   assert.equal((await g.ports.inspect(g.q)).ok,true);
  });

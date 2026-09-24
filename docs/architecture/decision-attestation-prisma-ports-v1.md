@@ -1,4 +1,116 @@
-# Decision attestation: Prisma ports and blocked native qualification
+# Decision attestation: Prisma ports and pending native requalification
+
+## Owner amendment v55: source fence compatibility repair
+
+The repair is **source/mocked qualified only; native requalification PENDING**.
+No database, Docker, network, private signing, default composition or activation
+ran in this atom. Only the never-production-applied migration **83** changes;
+migrations **1–82** and Prisma schema remain unchanged. This is not a claim that
+the v54 native failures have passed. The v54 run and recommendations below are
+historical evidence, not current completion or authorization.
+
+### Trigger order and preserved invariants
+
+Migration 81's `transport_bootstrap_source_fence` advances the shared fence at
+statement entry for source roots. Its transport row guard advances the same
+row again for a transport mutation; `a_transport_bootstrap_advance` runs before
+`z_transport_authority_audit`, which captures actual post-trigger state.
+Migration 82's lifecycle BEFORE ROW guard advances that same fence and requires
+the pre-row epoch `f - 1` to equal the latest automatic ticket receipt for
+reserve/consume and active attempt/history transitions. Its AFTER ROW audit
+creates the protected Event and receipt; root/history audits also insert the
+automatic bootstrap audit row, whose guard advances the fence. Deferred guards
+require complete lifecycle/attempt/history/head/audit bindings at COMMIT.
+
+The original migration 83 added `aa_decision_attestation_fence` before every
+covered statement, including rows already fenced by 81/82. Consequently the
+82 guard observed a new, unreceipted epoch before it even processed a row.
+Key/auth/attestation rows also legitimately advanced the shared fence between
+ticket issue and seal. Both effects violated the old equality even without ABA.
+
+The repair retains one serialized `ready_source_fence` row, all original trigger
+bindings, native audits/receipts, immutable accepted roots, owner and source
+checks, deferred COMMIT checks, exact post-COMMIT readback and no-retry policy.
+No counter is rewound, receipt rebased, trigger disabled or source row repaired.
+For six lifecycle tables and four covered transport tables, the 83 statement
+guard now locks the shared fence but lets the existing 81/82 row guard advance
+it. Other statement/source fences remain. Empty statements on those tables
+retain the old row-writer semantics; existing 81 source fences still run.
+
+For an illustrative issued ticket whose last receipt is F, one create/auth/
+attest/start sequence has this source-derived ordering (not native evidence):
+
+| Write | Epoch and automatic evidence |
+| --- | --- |
+| Public key | F+1, attestation receipt |
+| Owner auth | F+2 receipt; its authority event/receipt at F+3 |
+| Attest | F+4 receipt; its authority event/receipt at F+5 |
+| Reserve | F+6, both old and new receipts |
+| Attempt | F+7, seal guard proves the lineage through F+6 |
+| Consumed history | Old receipt at F+8; nested audit at F+9; new history receipt also at F+9 |
+| Head, consume | F+10 then F+11, automatic receipts |
+
+### Exact lineage and legacy preservation
+
+`decision_attestation_lineage(ticket, through_fence)` anchors at the exact
+protected issue/reserve receipt preceding the current attestation. It requires
+an opted-in decision, current owner/key/lifecycle, unexpired attestation and
+every integer epoch through the requested fence, with a conservative 4096-epoch
+bound. Proofs are exact native row/digest/Event joins over existing receipt
+tables, not a new journal. Key history belongs to this workspace/installation;
+auth and attestation evidence belong to this acceptance/decision/ticket.
+Their receipts must precede the attestation's authority-event tail. Afterwards,
+only this ticket's start rows with the **current transaction XID** are eligible.
+Both receipt families are checked because nested old audits can share a later
+epoch with the new outer receipt. Missing epochs, foreign rows, wrong digests,
+missing Events, duplicate row proofs, stale receipts and foreign XIDs deny.
+Key/source writes after attestation invalidate the start even when a caller
+refreshes its expected command fence. General owner/decision/lifecycle/issuer/
+channel writes remain conservatively invalidating. Auth's automatic authority
+event now targets its own acceptance's decision; it no longer generates
+unrelated decision events for the same evidence.
+
+Migration 83 verifies the LF-normalized hash of the entire original 82 writer
+body and exactly two occurrences of its gap predicate before upgrading it.
+Only those predicates change from `gap` to `gap AND NOT proven_lineage`; every
+other statement is identical. The original equality remains the first path.
+For legacy decisions the helper returns false, so every former gap still denies.
+The original hash is
+`1000876fe64fa1808625f0e9b06db2a86f8b4d1aa26d7dd0f6cce07be045e048`;
+the reviewed upgraded hash is
+`5a20ef2f1215d86cbaec27f129d83eb608b16e92afb074e1e18b0490fc328cf1`.
+The lifecycle store accepts that body only with the complete pinned 83 catalog;
+82-only installations retain their exact old catalog path and strict authority
+read semantics. There are 111 own trigger bindings, 15 new functions including
+five helpers, plus the narrowly upgraded existing lifecycle writer body.
+
+The Prisma seal port checks lineage under its existing SERIALIZABLE fence lock
+before its first write. The native seal guard checks it again through `f - 1`,
+after the original row guard but before any attempt receipt. Same-transaction
+dispatch still denies; prepared receipts remain distinct from COMMIT proof.
+The v54 millisecond lifecycle timestamp correction and its regression assertion
+are retained; six-digit timestamps remain for the new records. Key-stage timing
+stays a fixture concern and does not affect the runtime contract.
+
+### Source evidence and remaining gate
+
+**204/204 source/mocked results PASS**, no skips: standalone old/upgraded catalog
+paths, exact legacy fence drift denial, attest-to-seal, missing/foreign/stale/
+replayed proof denial before any seal write, 20-way attest/seal/terminal races,
+seal versus revoke in both lock orders, rollback with a demonstrably reached
+fault, unknown COMMIT/no retry, timestamp format and dispatch API denial.
+The final focused lineage/port rerun is **22/22 PASS**. Build, lint, generated
+migration pins and scoped diff checks pass. The test oracle is deliberately
+separate from SQL and cannot prove its runtime syntax, trigger ordering,
+isolation or actual COMMIT behavior. Native test expectations were updated to
+five helpers but no native test ran.
+
+RF-HOST-035 remains PARTIAL; `signed_current_decision_unavailable`, production
+and all eight flags below stay blocked/false. Exactly one next atom is
+recommended and **not started**: separately authorized full native
+requalification of the revised 83-migration chain and ports in an owned
+disposable database, including legacy operations, complete receipt lineage,
+20-way contention, reached rollback faults, COMMIT uncertainty and cleanup.
 
 ## Owner amendment v54: native evidence and remaining incompatibility
 

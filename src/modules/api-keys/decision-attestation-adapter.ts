@@ -1,6 +1,6 @@
 import {z} from 'zod';import type {Prisma} from '@prisma/client';import {randomUUID} from 'node:crypto';
 import {reviewDigest} from '../agent-runtime/task-review-contract';import {freezePublic} from './worker-transport-snapshot';
-import {decisionAttestationOwnGuards,decisionAttestationOwnHelpers} from './decision-attestation-guards';
+import {decisionAttestationOwnGuards,decisionAttestationOwnHelpers,decisionAttestationLifecycleGuardHash} from './decision-attestation-guards';
 import {ticketGuards,ticketHelpers,ticketChannelHelper} from './bootstrap-ticket-lifecycle-guards';
 import {attestationKeyMaterial} from './decision-attestation-key-model';
 import {createAttestationPersistenceModel,inspectAttestationState,attestationSourceVersion,recordAttestationKeyWrite,recordAttestationSourceWrite,
@@ -9,7 +9,7 @@ type Db=Prisma.TransactionClient;type State=AttestationModelState;
 const id=z.string().uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),count=z.number().int().nonnegative().safe();
 const expected=z.object({authorityRevision:count,fence:count.positive(),digest:hash}).strict();
 const scope=z.object({decisionId:id,ticketId:id}).strict();
-export const decisionAttestationGuards=[...decisionAttestationOwnGuards,...ticketGuards];
+export const decisionAttestationGuards=[...decisionAttestationOwnGuards,...ticketGuards.map(g=>g.function==='bootstrap_lifecycle_write_guard'?{...g,hash:decisionAttestationLifecycleGuardHash}:g)];
 export const decisionAttestationHelpers=[...decisionAttestationOwnHelpers,...[...ticketHelpers,ticketChannelHelper].map(h=>({...h,args:'3802'}))];
 const same=(a:unknown,b:unknown)=>reviewDigest(a)===reviewDigest(b);
 function deny():never{throw Error('decision_attestation_adapter_unavailable');}

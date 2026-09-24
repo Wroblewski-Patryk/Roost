@@ -1,5 +1,17 @@
 # Local Codex Agent Runtime
 
+Owner amendment v55: [fence compatibility repair](decision-attestation-prisma-ports-v1.md)
+is source/mocked qualified: 204/204 regressions and final focused 22/22 PASS;
+build/lint/pins pass. Migration 83 locks without double-counting existing 81/82
+row writers and adds exact per-epoch receipt lineage for the attested start.
+Two hash-checked predicates of the existing lifecycle writer are upgraded;
+legacy equality and every other statement remain intact. Migration files 1-82
+and Prisma schema are unchanged. No DB/Docker/network/default activation ran.
+Native requalification PENDING, RF-HOST-035 PARTIAL, production and
+signed_current_decision_unavailable BLOCKED; all eight flags false.
+Exactly one next atom, not started: separately authorized full native
+requalification. The v54 and earlier outcomes/recommendations below are historical.
+
 Owner amendment v54: [native attestation qualification](decision-attestation-prisma-ports-v1.md)
 remains **BLOCKED**: final native 14/19 PASS, 5 FAIL (four subtests plus parent),
 runner exit 1; cleanup independently PASS. One owned disposable database applied

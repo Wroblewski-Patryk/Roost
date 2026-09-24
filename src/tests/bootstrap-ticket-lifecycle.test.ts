@@ -18,8 +18,9 @@ import {issuerGuards} from '../modules/api-keys/bootstrap-issuer-guards';
 import {advanceIssuer} from '../modules/api-keys/bootstrap-issuer-contract';
 import {advanceLifecycle} from '../modules/api-keys/worker-identity-lifecycle';
 import {channelSnapshotDigest} from '../modules/api-keys/bootstrap-channel-persistence-contract';
+import {decisionAttestationOwnGuards,decisionAttestationOwnHelpers,decisionAttestationLifecycleGuardHash} from '../modules/api-keys/decision-attestation-guards';
 const copy=<T>(v:T):T=>structuredClone(v),hash=(s:string)=>s.repeat(64),migration='prisma/migrations/20260924010000_bootstrap_ticket_lifecycle/migration.sql';
-function fixture(atomicBinding=false,integrated=false){
+function fixture(atomicBinding=false,integrated=false,upgraded=false){
  const f=bootstrapChannelFixture();let now=f.now().getTime(),tail=Promise.resolve(),fault='',current=true,available=true,verified=true,origin=true,writes=0,transactions=0;
  let transactionId=0,activeTransaction=0,signatureValid=true;const verifications:any[]=[],plans=new Map<string,any>(),decisions=new Map<string,any>(),lifecycle:any[]=[];
  const b=f.snapshot.binding,der=Buffer.from('302a300506032b6570032100d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a','hex');
@@ -35,6 +36,8 @@ function fixture(atomicBinding=false,integrated=false){
   lifecycle.push(advanceLifecycle(i,[],{ownerId:f.ticket.ownerId,decisionId:randomUUID(),decisionRevision:1,intent:i,current:true,anchorFresh:false,hostEnabled:true,writerFenced:true,installation:lifecycle[0]??null},randomUUID(),f.now()));}
  f.snapshot.recordDigest=channelSnapshotDigest(f.snapshot);
  const guards:any[]=ticketGuards.map(g=>({...g,enabled:true})),helpers:any[]=[...ticketHelpers,ticketChannelHelper].map(h=>({...h,enabled:true}));
+ const upgradeGuards=decisionAttestationOwnGuards.map(g=>({...g,enabled:true}));
+ if(upgraded)for(const g of guards)if(g.function==='bootstrap_lifecycle_write_guard')g.hash=decisionAttestationLifecycleGuardHash;
  const state:any={tickets:[],attempts:[],history:[],heads:[],audit:[],events:[],receipts:[],fence:10,channelCurrent:!atomicBinding,
   transport:{generations:[],grants:[],history:[],head:null}},calls:string[]=[],options:any[]=[];
  const clock=()=>new Date(now),last=(id:string)=>state.events.filter((e:any)=>e.ticketId===id).at(-1);
@@ -117,8 +120,11 @@ function fixture(atomicBinding=false,integrated=false){
    if(sql.startsWith('SELECT d.id,d.workspace_id'))return [];
    if(sql.startsWith('SELECT id,workspace_id AS "workspaceId",host_id')){const t=state.tickets.find((r:any)=>r.identity.ticketId===v[0]);return t?[{id:v[0],workspaceId:b.workspaceId,hostId:b.hostId,ownerId:t.identity.ownerId,decisionId:t.identity.decisionId,requestId:t.record.signed.payload.intent.requestId,bindingDigest:reviewDigest(b),ticketDigest:t.identity.ticketDigest,expiresAt:t.identity.expiresAt,issuedAt:t.identity.issuedAt}]:[];}
    if(sql.includes('AS ticket_lifecycle_available'))return [{ticket_lifecycle_available:available}];
+   if(sql.includes('AS decision_attestation_available'))return [{decision_attestation_available:upgraded}];
    if(sql.includes('FROM pg_trigger')){
+    if(v[0].includes('aa_decision_attestation_fence'))return copy([...upgradeGuards,...guards]);
     const list=(v[0].length===issuerGuards.length?issuerGuards:v[0].length===channelGuards.length?channelGuards:guards).map((g:any)=>({...g,enabled:g.enabled!==false&&origin&&['Serializable','RepeatableRead'].includes(option.isolationLevel)}));return copy(list);}
+   if(sql.includes('FROM pg_proc')&&sql.includes('p.proargtypes::text AS args'))return copy([...decisionAttestationOwnHelpers.map(h=>({...h,enabled:true})),...helpers.map(h=>({...h,args:'3802'}))]);
    if(sql.includes('FROM pg_proc'))return sql.includes("p.proname='transport_bootstrap_shape'")?[{hash:channelShapeHash,enabled:true}]:copy(helpers);
    if(sql.includes('AS channel_available'))return [{channel_available:available}];
    if(sql.includes('to_regclass'))return [{available}];
@@ -191,7 +197,7 @@ function fixture(atomicBinding=false,integrated=false){
  const source=createCanonicalBootstrapAuthoritySource(clock,readerVerifier);
  async function boundRead<T>(work:(selectedSource:typeof source,db:any)=>Promise<T>,selected=source):Promise<T>{return client.$transaction(async(db:any)=>{await db.$executeRaw`SET TRANSACTION READ ONLY`;const release=await selected.bindTransaction!(db,'read');try{return await work(selected,db);}finally{release();}},{isolationLevel:'RepeatableRead'});}
  const readerStatus=(ticketId:string)=>boundRead((source,db)=>source.inspectTicketRevocation(db,{ticketId}));
- return {readerStatus,boundRead,source,readerVerifier,readerProofs,readerDbs,f,store,client,deps,plans,decisions,lifecycle,key,issuer,verifications,signature:(v:boolean)=>signatureValid=v,registration,inspect,command,transition,clock,bootstrapPeer,guards,helpers,calls,options,state:()=>copy(state),mutate:(fn:(s:any)=>void)=>fn(state),
+ return {readerStatus,boundRead,source,readerVerifier,readerProofs,readerDbs,f,store,client,deps,plans,decisions,lifecycle,key,issuer,verifications,signature:(v:boolean)=>signatureValid=v,registration,inspect,command,transition,clock,bootstrapPeer,guards,helpers,upgradeGuards,calls,options,state:()=>copy(state),mutate:(fn:(s:any)=>void)=>fn(state),
   at:(ms:number)=>now=Date.parse(f.iso(ms)),fault:(s:string)=>fault=s,current:(v:boolean)=>current=v,origin:(v:boolean)=>origin=v,available:(v:boolean)=>available=v,verified:(v:boolean)=>verified=v,counts:()=>({writes,transactions})};
 }
 
@@ -208,6 +214,20 @@ test('unapplied bootstrap lifecycle schema and source-only adapter',async t=>{
   await f.transition(c.identity.ticketId,'reserve');await f.transition(c.identity.ticketId,'consume');const s=f.state();
   assert.equal(s.tickets.length,1);assert.equal(s.attempts.length,1);assert.equal(s.history.length,1);assert.equal(s.heads[0].attemptId,s.attempts[0].id);assert.equal(s.events.at(-1).historyId,s.history[0].id);
   await assert.rejects(f.transition(c.identity.ticketId,'consume'));for(const k of Object.keys(lifecycleFlags))assert.equal((await f.inspect(c.identity.ticketId) as any)[k],false);
+ });
+ await t.test('legacy lifecycle preserves exact fence semantics on original and fully pinned upgraded catalogs',async()=>{
+  for(const upgraded of [false,true]){const f=fixture(false,false,upgraded),c=f.registration();await f.store.register(c);
+   await f.transition(c.identity.ticketId,'reserve');await f.transition(c.identity.ticketId,'consume');assert.equal(f.state().attempts.length,1);
+   const stale=await f.command(c.identity.ticketId,'revoke');f.mutate(s=>s.fence++);
+   await assert.rejects(f.store.transition(stale));assert.equal((await f.inspect(c.identity.ticketId)).usable,false);
+   assert.equal(f.state().attempts.length,1);
+   if(upgraded){f.upgradeGuards[0].enabled=false;assert.equal((await f.store.inspect({ticketId:c.identity.ticketId})).ok,false);}
+  }
+ });
+ await t.test('upgraded lifecycle body alone cannot authorize an incomplete migration 83 catalog',async()=>{
+  const f=fixture(),c=f.registration();await f.store.register(c);
+  for(const g of f.guards)if(g.function==='bootstrap_lifecycle_write_guard')g.hash=decisionAttestationLifecycleGuardHash;
+  assert.equal((await f.store.inspect({ticketId:c.identity.ticketId})).ok,false);
  });
  await t.test('terminal ticket before consume is a real recovery predecessor with no fabricated attempt',async()=>{
   for(const action of ['revoke','expire']){const f=fixture(),c=f.registration();await f.store.register(c);if(action==='expire')f.at(60000);await f.transition(c.identity.ticketId,action);

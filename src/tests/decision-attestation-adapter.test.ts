@@ -124,7 +124,8 @@ test('unapplied decision attestation persistence adapter contract',async t=>{
  });
  await t.test('migration is additive, contains only children, and private signing API is absent',()=>{
   const sql=readFileSync('prisma/migrations/20260925010000_decision_attestation/migration.sql','utf8');
-  assert.doesNotMatch(sql,/CREATE OR REPLACE|DROP\s|DELETE FROM|UPDATE\s+decisions|DISABLE TRIGGER/i);
+  assert.doesNotMatch(sql,/DROP\s|DELETE FROM|UPDATE\s+decisions|DISABLE TRIGGER/i);
+  assert.deepEqual([...sql.matchAll(/CREATE OR REPLACE FUNCTION (\w+)/g)].map(m=>m[1]),['bootstrap_lifecycle_write_guard']);
   assert.match(sql,/ADD COLUMN authority_revision BIGINT CHECK\(authority_revision=1\)/);assert.doesNotMatch(sql,/authority_revision BIGINT.*DEFAULT/);
   assert.deepEqual([...sql.matchAll(/CREATE TABLE (\w+)/g)].map(m=>m[1]),['decision_owner_auth_evidence','decision_attestation_key_history','decision_attestations','decision_authority_events','decision_attestation_write_receipts']);
   assert.match(sql,/ALTER TABLE worker_bootstrap_attempts ADD COLUMN attestation_seal/);assert.match(sql,/task_interview_entries/);assert.match(sql,/interval '120 seconds'/);

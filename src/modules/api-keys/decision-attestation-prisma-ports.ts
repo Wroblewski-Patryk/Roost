@@ -126,6 +126,8 @@ export function createPrismaDecisionAttestationPorts(deps:NativeAttestationDepen
     VALUES(${command.operationId}::uuid,${p.ceremony.binding.workspaceId}::uuid,${q.decisionId}::uuid,1,${command.action},'decisions',${q.decisionId},${root.digest},'',1,'',clock_timestamp(),${mutation})`;
   }else{
    if(p.attempts.length||!['issued','reserved'].includes(p.ticketHead.state))deny();const att=await currentAttestation(db,p);p=await unchanged(db,p);requireCurrent(p);
+   const lineage=one(await db.$queryRaw<any[]>`SELECT decision_attestation_lineage(${q.ticketId}::uuid,${p.version.fence}::bigint) AS "sealLineage"`);
+   if(lineage.sealLineage!==true)deny();await bound(db,'write');
    if(!p.keyProjection.usable.some(k=>k.material.keyId===att.record.payload.signingKeyId))deny();
    const c=await bound(db),i=p.registration.identity,t=p.registration.record.signed.payload,attemptId=command.operationId;
    const a=persistedBootstrapAttempt.parse({id:attemptId,ticketId:q.ticketId,ticketDigest:i.ticketDigest,decisionId:q.decisionId,requestId:t.intent.requestId,

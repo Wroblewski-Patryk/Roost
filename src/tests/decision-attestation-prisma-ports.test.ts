@@ -87,7 +87,7 @@ test('concrete unapplied Prisma decision attestation ports',async t=>{
  });
  await t.test('each start write phase rolls back all attempt/lifecycle changes',async()=>{
   for(const table of ['worker_bootstrap_lifecycle_events','worker_bootstrap_attempts','worker_bootstrap_history','worker_bootstrap_heads']){const f=nativeAttestationFixture();assert.equal((await f.execute('attest')).ok,true);
-   const c=await f.command('seal'),before=f.state();f.fault('table:'+table);assert.equal((await f.ports.execute(c)).ok,false);assert.deepEqual(f.state(),before);}
+   const c=await f.command('seal'),before=f.state();f.fault('table:'+table);assert.equal((await f.ports.execute(c)).ok,false);assert.deepEqual(f.state(),before);assert.equal(f.stats().faultHits,1,table);}
   for(const kind of ['attest','auth','terminal','key']){const f=nativeAttestationFixture();if(kind==='auth')f.remove('decision_owner_auth_evidence');
    const operationId=randomUUID(),extra=kind==='terminal'?{action:'reject'}:kind==='key'?{operation:{id:operationId,action:'revoke',keyId:f.material.keyId,material:null,overlapStartsAt:null,cutoverAt:null}}:{};
    const c=await f.command(kind,extra);if(kind==='key')c.operationId=operationId;const before=f.state();f.fault('receipt');assert.equal((await f.ports.execute(c)).ok,false);assert.deepEqual(f.state(),before);}
@@ -111,6 +111,7 @@ test('concrete unapplied Prisma decision attestation ports',async t=>{
  await t.test('rollback at the final consume write leaves no reserved ticket, attempt, history, head or audit',async()=>{
   const f=nativeAttestationFixture();assert.equal((await f.execute('attest')).ok,true);const c=await f.command('seal'),before=f.state();
   f.fault('write:'+(f.stats().writes+5));assert.equal((await f.ports.execute(c)).ok,false);assert.deepEqual(f.state(),before);
+  assert.equal(f.stats().faultHits,1);
  });
  await t.test('every value is bound; SQL identifiers are fixed; read ports never mutate or construct clients',async()=>{
   const f=nativeAttestationFixture();await f.execute('attest');await f.execute('seal');

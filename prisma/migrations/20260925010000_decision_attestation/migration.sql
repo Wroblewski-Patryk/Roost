@@ -78,6 +78,13 @@ END $$;
 CREATE FUNCTION decision_attestation_lock() RETURNS TRIGGER LANGUAGE plpgsql AS $$
 BEGIN
  IF current_setting('session_replication_role')<>'origin' THEN RAISE EXCEPTION 'decision_attestation_unfenced'; END IF;
+ -- These rows already advance the SAME fence in their pinned 81/82 writer.
+ -- Lock at statement entry but do not add a second epoch before that writer.
+ IF TG_TABLE_NAME IN ('worker_bootstrap_tickets','worker_bootstrap_attempts','worker_bootstrap_history','worker_bootstrap_heads','worker_bootstrap_audit','worker_bootstrap_lifecycle_events',
+  'worker_transport_generations','worker_transport_history','worker_transport_heads','worker_transport_bootstrap_grants') THEN
+  PERFORM revision FROM ready_source_fence WHERE id=1 FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'decision_attestation_unfenced'; END IF;RETURN NULL;
+ END IF;
  UPDATE ready_source_fence SET revision=revision+1 WHERE id=1;
  IF NOT FOUND THEN RAISE EXCEPTION 'decision_attestation_unfenced'; END IF;RETURN NULL;
 END $$;
@@ -188,6 +195,89 @@ DECLARE p JSONB;m JSONB;old decision_attestation_key_history;staged decision_att
  NEW.record_digest:=decision_attestation_digest('owner-decision-attestation-envelope-v1',NEW.record);RETURN NEW;
 END $$;
 
+-- A bridge is evidence of every actual epoch, never a synthetic ticket receipt.
+-- Only prospective opted-in tickets can bridge their immutable issue/reserve
+-- receipt through their own public key/auth/attestation rows, then this start's
+-- automatic lifecycle receipts. Unrelated, missing or replayed epochs deny.
+CREATE FUNCTION decision_attestation_lineage(ticket UUID,through_fence BIGINT) RETURNS BOOLEAN LANGUAGE plpgsql VOLATILE AS $$
+DECLARE t worker_bootstrap_tickets;a decision_attestations;anchor worker_bootstrap_write_receipts;
+ head worker_bootstrap_lifecycle_events;ae decision_authority_events;af BIGINT;valid BOOLEAN; BEGIN
+ SELECT * INTO t FROM worker_bootstrap_tickets WHERE id=ticket;
+ SELECT att.* INTO a FROM decision_attestations att JOIN decisions d ON d.id=att.decision_id
+  WHERE d.id=t.decision_id AND d.authority_revision=1 AND att.authority_revision=decision_attestation_revision(d.id);
+ IF a.id IS NULL OR a.record->'payload'->>'ticketId' IS DISTINCT FROM ticket::text
+  OR NOT decision_attestation_owner(a.decision_id,a.acceptance_id) OR NOT decision_attestation_key_current(a.key_event_id)
+  OR NOT bootstrap_lifecycle_current(t.lifecycle_identity) OR (a.record->'payload'->>'expiresAt')::timestamptz<=clock_timestamp()
+  OR current_setting('session_replication_role')<>'origin' OR through_fence IS NULL THEN RETURN false; END IF;
+ SELECT fence_revision INTO af FROM decision_attestation_write_receipts WHERE table_name='decision_attestations' AND row_id=a.id::text AND operation='INSERT';
+ SELECT * INTO ae FROM decision_authority_events WHERE decision_id=a.decision_id AND revision=a.authority_revision AND action='attest' AND source_row=a.id::text;
+ SELECT * INTO anchor FROM worker_bootstrap_write_receipts WHERE ticket_id=ticket AND fence_revision<af ORDER BY fence_revision DESC LIMIT 1;
+ SELECT * INTO head FROM worker_bootstrap_lifecycle_events WHERE id::text=anchor.row_id AND ticket_id=ticket;
+ IF af IS NULL OR ae.id IS NULL OR anchor.event_id IS NULL OR head.id IS NULL OR anchor.table_name<>'worker_bootstrap_lifecycle_events'
+  OR head.record->>'state' NOT IN ('issued','reserved') OR head.attempt_id IS NOT NULL
+  OR anchor.row_digest IS DISTINCT FROM encode(sha256(convert_to(to_jsonb(head)::text,'UTF8')),'hex')
+  OR anchor.writer_xid IS DISTINCT FROM head.writer_xid OR through_fence<ae.fence_revision
+  OR through_fence-anchor.fence_revision NOT BETWEEN 1 AND 4096
+  OR NOT EXISTS(SELECT 1 FROM events e WHERE e.id=anchor.event_id AND e.type='worker.bootstrap_lifecycle'
+   AND e.source='roost' AND e.actor_type::text='user' AND e.actor_id=t.owner_id::text
+   AND e.workspace_id=t.workspace_id AND e.resource_type=anchor.table_name AND e.resource_id=anchor.row_id
+   AND e.payload=jsonb_build_object('ticketId',ticket,'rowDigest',anchor.row_digest,'fence',anchor.fence_revision::text,'writerXid',anchor.writer_xid,'launchAuthority',false))
+  THEN RETURN false; END IF;
+ WITH eligible(tbl,rid,rid82,row,early) AS (
+  SELECT 'decision_attestation_key_history',k.id::text,k.id::text,to_jsonb(k),true FROM decision_attestation_key_history k
+   WHERE k.workspace_id=t.workspace_id AND k.installation_id=(t.lifecycle_identity->'binding'->>'installationId')::uuid
+  UNION ALL SELECT 'decision_owner_auth_evidence',x.id::text,x.id::text,to_jsonb(x),true FROM decision_owner_auth_evidence x WHERE x.id=a.auth_evidence_id
+  UNION ALL SELECT 'decision_attestations',a.id::text,a.id::text,to_jsonb(a),true
+  UNION ALL SELECT 'decision_authority_events',x.id::text,x.id::text,to_jsonb(x),true FROM decision_authority_events x WHERE x.decision_id=a.decision_id
+   AND ((x.action='source_change' AND x.source_table='decision_owner_auth_evidence' AND x.source_row=a.auth_evidence_id::text)
+    OR (x.id=ae.id AND x.source_table='decision_attestations'))
+  UNION ALL SELECT 'worker_bootstrap_lifecycle_events',x.id::text,x.id::text,to_jsonb(x),false FROM worker_bootstrap_lifecycle_events x WHERE x.ticket_id=ticket
+   AND x.writer_xid=pg_current_xact_id()::text AND ((x.record->>'action'='reserve' AND x.attempt_id IS NULL)
+    OR (x.record->>'action'='consume' AND EXISTS(SELECT 1 FROM worker_bootstrap_attempts b WHERE b.id=x.attempt_id AND b.attestation_id=a.id)))
+  UNION ALL SELECT 'worker_bootstrap_attempts',b.id::text||':'||b.host_id::text,b.id::text,to_jsonb(b),false FROM worker_bootstrap_attempts b WHERE b.ticket_id=ticket AND b.attestation_id=a.id
+  UNION ALL SELECT 'worker_bootstrap_history',h.id::text,h.id::text,to_jsonb(h),false FROM worker_bootstrap_history h JOIN worker_bootstrap_attempts b ON b.id=h.attempt_id
+   WHERE b.ticket_id=ticket AND b.attestation_id=a.id AND h.state='consumed' AND h.revision=1
+  UNION ALL SELECT 'worker_bootstrap_heads',h.workspace_id::text||':'||h.host_id::text,h.workspace_id::text||':'||h.host_id::text,to_jsonb(h),false
+   FROM worker_bootstrap_heads h JOIN worker_bootstrap_attempts b ON b.id=h.attempt_id WHERE b.ticket_id=ticket AND b.attestation_id=a.id AND h.state='consumed' AND h.revision=1
+  UNION ALL SELECT 'worker_bootstrap_audit',u.id::text,u.id::text,to_jsonb(u),false FROM worker_bootstrap_audit u JOIN worker_bootstrap_history h ON h.id=u.history_id
+   JOIN worker_bootstrap_attempts b ON b.id=h.attempt_id WHERE b.ticket_id=ticket AND b.attestation_id=a.id AND h.state='consumed' AND h.revision=1
+ ), proofs AS (
+  SELECT r.id,r.fence_revision,r.table_name,r.row_id,false AS legacy,
+   COALESCE(o.tbl IS NOT NULL AND r.workspace_id=t.workspace_id AND (r.operation='INSERT' OR r.operation='UPDATE' AND o.tbl='worker_bootstrap_heads')
+   AND r.row_digest=bootstrap_lifecycle_digest(o.row)
+    AND (NOT (o.row ? 'writer_xid') OR r.writer_xid=o.row->>'writer_xid')
+    AND (CASE WHEN o.early THEN r.fence_revision<=CASE WHEN o.tbl='decision_authority_events' THEN ae.fence_revision ELSE af END
+      ELSE r.fence_revision>ae.fence_revision AND r.writer_xid=pg_current_xact_id()::text END)
+    AND e.type='decision.attestation.write' AND e.source='roost' AND e.actor_type::text='system'
+    AND e.workspace_id=r.workspace_id AND e.resource_type=r.table_name AND e.resource_id=r.row_id
+    AND e.payload=jsonb_build_object('table',r.table_name,'rowId',r.row_id,'operation',r.operation,'rowDigest',r.row_digest,'fence',r.fence_revision::text,'writerXid',r.writer_xid,'launchAuthority',false),false) AS valid
+  FROM decision_attestation_write_receipts r LEFT JOIN eligible o ON o.tbl=r.table_name AND o.rid=r.row_id LEFT JOIN events e ON e.id=r.event_id
+   WHERE r.fence_revision>anchor.fence_revision AND r.fence_revision<=through_fence
+  UNION ALL SELECT r.event_id,r.fence_revision,r.table_name,r.row_id,true,
+   COALESCE(o.tbl IS NOT NULL AND NOT o.early AND r.ticket_id=ticket AND r.writer_xid=pg_current_xact_id()::text AND r.fence_revision>ae.fence_revision
+    AND r.row_digest=encode(sha256(convert_to(o.row::text,'UTF8')),'hex') AND e.type='worker.bootstrap_lifecycle'
+    AND e.source='roost' AND e.actor_type::text='user' AND e.actor_id=t.owner_id::text
+    AND e.workspace_id=t.workspace_id AND e.resource_type=r.table_name AND e.resource_id=r.row_id
+    AND e.payload=jsonb_build_object('ticketId',ticket,'rowDigest',r.row_digest,'fence',r.fence_revision::text,'writerXid',r.writer_xid,'launchAuthority',false),false)
+  FROM worker_bootstrap_write_receipts r LEFT JOIN eligible o ON o.tbl=r.table_name AND o.rid82=r.row_id LEFT JOIN events e ON e.id=r.event_id
+   WHERE r.fence_revision>anchor.fence_revision AND r.fence_revision<=through_fence
+ ) SELECT COALESCE(bool_and(proofs.valid),false) AND count(DISTINCT fence_revision)=through_fence-anchor.fence_revision
+   AND count(*)=count(DISTINCT (legacy,table_name,row_id)) INTO valid FROM proofs;
+ RETURN COALESCE(valid,false);
+EXCEPTION WHEN OTHERS THEN RETURN false;
+END $$;
+
+-- Upgrade ONLY the two exact gap predicates of the reviewed 82 function.
+-- Its original strict comparison is retained as the first branch; every other
+-- statement, trigger, receipt and deferred guard stays byte-for-byte identical.
+DO $compat$ DECLARE body TEXT;old_test TEXT:='f-1 IS DISTINCT FROM (SELECT max(fence_revision) FROM worker_bootstrap_write_receipts WHERE ticket_id=t.id)';
+ new_test TEXT:='(f-1 IS DISTINCT FROM (SELECT max(fence_revision) FROM worker_bootstrap_write_receipts WHERE ticket_id=t.id) AND NOT decision_attestation_lineage(t.id,f-1))'; BEGIN
+ SELECT replace(prosrc,chr(13),'') INTO body FROM pg_proc WHERE oid='bootstrap_lifecycle_write_guard()'::regprocedure;
+ IF encode(sha256(convert_to(body,'UTF8')),'hex')<>'1000876fe64fa1808625f0e9b06db2a86f8b4d1aa26d7dd0f6cce07be045e048'
+  OR (length(body)-length(replace(body,old_test,'')))/length(old_test)<>2 THEN RAISE EXCEPTION 'decision_lifecycle_upgrade_source_mismatch'; END IF;
+ EXECUTE 'CREATE OR REPLACE FUNCTION bootstrap_lifecycle_write_guard() RETURNS TRIGGER LANGUAGE plpgsql AS '||quote_literal(replace(body,old_test,new_test));
+END $compat$;
+
 CREATE FUNCTION decision_attestation_seal_guard() RETURNS TRIGGER LANGUAGE plpgsql AS $$
 DECLARE a decision_attestations;p JSONB;f BIGINT; BEGIN
  IF TG_OP<>'INSERT' THEN
@@ -204,6 +294,7 @@ DECLARE a decision_attestations;p JSONB;f BIGINT; BEGIN
  -- triggers may advance it; capture the actual insert fence, never predict it.
  NEW.attestation_seal:=jsonb_set(NEW.attestation_seal,'{sourceFence}',to_jsonb(f::text));
  IF a.id IS NULL OR a.workspace_id<>NEW.workspace_id OR (p->>'ticketId')::uuid<>NEW.ticket_id OR NOT decision_attestation_owner(a.decision_id,a.acceptance_id)
+  OR NOT decision_attestation_lineage(NEW.ticket_id,f-1)
   OR decision_attestation_revision(a.decision_id)<>a.authority_revision OR NOT decision_attestation_key_current(a.key_event_id)
   OR NEW.attestation_seal IS DISTINCT FROM jsonb_build_object('version','owner-decision-attempt-seal-v1','attemptId',NEW.id,'ticketId',NEW.ticket_id,
    'attestationId',a.id,'attestationDigest',a.record_digest,'authorityRevision',a.authority_revision,'sourceFence',f::text,'sourceDigest',NEW.attestation_seal->>'sourceDigest',
@@ -247,6 +338,11 @@ DECLARE public_row JSONB:=CASE WHEN TG_OP='DELETE' THEN to_jsonb(OLD) ELSE to_js
  IF TG_TABLE_NAME='decision_attestations' THEN
   INSERT INTO decision_authority_events(id,workspace_id,decision_id,revision,action,source_table,source_row,source_digest,record_digest,fence_revision,writer_xid,at)
   VALUES(gen_random_uuid(),w,(public_row->>'decision_id')::uuid,1,'attest',TG_TABLE_NAME,ident,rd,'',f,'',clock_timestamp());
+ ELSIF TG_TABLE_NAME='decision_owner_auth_evidence' THEN
+  -- Authentication evidence belongs to exactly one acceptance/decision. Its
+  -- automatic authority event must not be an unrelated decision's mutation.
+  INSERT INTO decision_authority_events(id,workspace_id,decision_id,revision,action,source_table,source_row,source_digest,record_digest,fence_revision,writer_xid,at)
+  VALUES(gen_random_uuid(),w,(public_row->>'decision_id')::uuid,1,'source_change',TG_TABLE_NAME,ident,rd,'',f,'',clock_timestamp());
  ELSIF TG_TABLE_NAME NOT IN ('decision_attestation_key_history','decision_authority_events','worker_bootstrap_attempts','worker_bootstrap_history','worker_bootstrap_heads','worker_bootstrap_audit','worker_bootstrap_lifecycle_events') THEN
   -- Conservative workspace-wide invalidation; no decision roots are rewritten.
   FOR d IN SELECT id FROM decisions WHERE workspace_id=w AND authority_revision=1 LOOP
