@@ -1,5 +1,8 @@
 # Bootstrap ticket revocation: inventory and fail-closed proposal
 
+Successor: [v45 unapplied lifecycle schema/adapter](bootstrap-ticket-lifecycle-persistence-v1.md).
+The v44 inventory below is historical; its next atom is now delivered as a source proposal.
+
 Owner amendment v44, 2026-09-23. **DONE source-only inventory/contract/model: 12/12 new, 80/80 selected
 results; server build/lint PASS.**
 Canonical `bootstrap_ticket_revocation_unavailable` remains **BLOCKED**: the
