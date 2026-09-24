@@ -11,7 +11,7 @@ parser.add_argument('--container', required=True)
 parser.add_argument('--db-user', required=True)
 parser.add_argument('--pause-after-diagnosis', action='store_true')
 parser.add_argument('--scenario', choices=['commit','full'], default='commit')
-parser.add_argument('--suite', choices=['lifecycle','issuer','channel','ticket'], default='lifecycle')
+parser.add_argument('--suite', choices=['lifecycle','issuer','channel','ticket','revocation'], default='lifecycle')
 args = parser.parse_args()
 repo = pathlib.Path.cwd()
 hidden = subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
@@ -19,7 +19,7 @@ hidden = subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
 def run(command, source=None):
     result = subprocess.run(command, input=source, text=True, encoding='utf-8', capture_output=True, timeout=90, creationflags=hidden)
     if result.returncode:
-        if args.suite in ('channel','ticket') and any(str(v).startswith('companycore_test_identity_') for v in command):
+        if args.suite in ('channel','ticket','revocation') and any(str(v).startswith('companycore_test_identity_') for v in command):
             print('Owned SQL diagnostic: '+result.stderr[:800],flush=True)
         raise RuntimeError('Command failed; private output suppressed: ' + command[0])
     return result.stdout.strip()
@@ -136,7 +136,7 @@ try:
     sql(name,"CREATE TABLE native_commit_probe(id INT); CREATE FUNCTION native_commit_probe_fail() RETURNS TRIGGER LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'synthetic deferred commit rejection'; END $$; CREATE CONSTRAINT TRIGGER native_commit_probe_failure AFTER INSERT ON native_commit_probe DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION native_commit_probe_fail();")
     env = {k:v for k,v in os.environ.items() if k.upper() in ['PATH','PATHEXT','SYSTEMROOT','TEMP','TMP','APPDATA','LOCALAPPDATA','COMSPEC']}
     env['PROBE_CONTAINER'] = args.container
-    env['PROBE_FAULTS'] = '1' if args.scenario=='full' or args.suite in ('issuer','channel','ticket') else '0'
+    env['PROBE_FAULTS'] = '1' if args.scenario=='full' or args.suite in ('issuer','channel','ticket','revocation') else '0'
     bridge = subprocess.Popen(['node','-e',bridge_code],env=env,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True,creationflags=hidden)
     port = json.loads(bridge.stdout.readline())['port']
     def collect():
@@ -167,26 +167,28 @@ try:
         chain.append(hashlib.sha256(migration.read_bytes()).hexdigest())
     print(json.dumps({'migrationsApplied':len(chain),'chainDigest':hashlib.sha256(''.join(chain).encode()).hexdigest()}),flush=True)
     native_runs = 1
-    suite = {'issuer':'bootstrap-issuer-native','channel':'bootstrap-channel-native','lifecycle':'worker-identity-lifecycle-native','ticket':'bootstrap-ticket-native'}[args.suite]
-    result = subprocess.run(['node','-e',preamble+"require('./dist/tests/"+suite+".test.js');"],env=env,text=True,capture_output=True,timeout=900 if args.suite in ('channel','ticket') else 240,creationflags=hidden)
+    cuts_before_last_run = 0
+    suite = {'issuer':'bootstrap-issuer-native','channel':'bootstrap-channel-native','lifecycle':'worker-identity-lifecycle-native','ticket':'bootstrap-ticket-native','revocation':'bootstrap-ticket-revocation-native'}[args.suite]
+    result = subprocess.run(['node','-e',preamble+"require('./dist/tests/"+suite+".test.js');"],env=env,text=True,capture_output=True,timeout=900 if args.suite in ('channel','ticket','revocation') else 240,creationflags=hidden)
     print(result.stdout,flush=True)
     time.sleep(.1)
     print(json.dumps({'faultRelay':{'armed':sum(v.get('faultArmed')=='drop_commit_response' for v in wire),'applied':sum(v.get('faultApplied')=='drop_commit_response' for v in wire)}}),flush=True)
-    if result.returncode and args.suite in ('channel','ticket'):
+    if result.returncode and args.suite in ('channel','ticket','revocation'):
         print('NATIVE_FAILED: owned DB retained in this run. Enter retry after a bounded fix or anything else for cleanup.',flush=True)
         while native_runs<3 and input().strip()=='retry':
             native_runs += 1
+            cuts_before_last_run = sum(v.get('faultApplied')=='drop_commit_response' for v in wire)
             result = subprocess.run(['node','-e',preamble+"require('./dist/tests/"+suite+".test.js');"],env=env,text=True,capture_output=True,timeout=900,creationflags=hidden)
             print(result.stdout,flush=True)
             if not result.returncode: break
             print('NATIVE_FAILED: retry or cleanup.',flush=True)
     if result.returncode: raise RuntimeError('Native '+args.suite+' qualification failed')
     assert re.search(r'^# skipped 0$',result.stdout,re.M) and re.search(r'^# fail 0$',result.stdout,re.M)
-    if args.scenario=='full' or args.suite in ('issuer','channel','ticket'):
-        expected = 17 if args.suite=='ticket' else 19 if args.suite=='channel' else 17 if args.suite=='issuer' else 16
+    if args.scenario=='full' or args.suite in ('issuer','channel','ticket','revocation'):
+        expected = 13 if args.suite=='revocation' else 17 if args.suite=='ticket' else 19 if args.suite=='channel' else 17 if args.suite=='issuer' else 16
         assert re.search(r'^# tests '+str(expected)+'$',result.stdout,re.M),'Full suite count differs'
         time.sleep(.1)
-        expected_cuts = native_runs if args.suite=='channel' else 1
+        expected_cuts = cuts_before_last_run+1 if args.suite=='revocation' else native_runs if args.suite=='channel' else 1
         assert sum(v.get('faultArmed')=='drop_commit_response' for v in wire)==expected_cuts
         assert sum(v.get('faultApplied')=='drop_commit_response' for v in wire)==expected_cuts
         print(json.dumps({'lostCommitResponseCuts':expected_cuts,'fullSuite':True,'skips':0}),flush=True)

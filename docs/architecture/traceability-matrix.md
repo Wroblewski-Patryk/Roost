@@ -1,20 +1,18 @@
 # Foundation requirements traceability
 
-Owner amendment v48: [canonical ticket-revocation reader](bootstrap-ticket-lifecycle-persistence-v1.md)
-reuses the qualified ticket/lifecycle/attempt ledger inside the authority source's
-bound transaction and fence. Explicit synthetic verification checks exact signed
-content/envelope and current public issuer evidence; no default verifier exists.
-States distinguish valid, consumed/completed, revoked, expired, unknown and invalid.
-Terminal recovery preserves the exact nullable attempt. Paired fresh reads gate
-synthetic exchange/completion; drift after possible commit is non-retryable unknown.
-126/126 selected source/mocked results pass. Ticket revocation is conditionally
-resolved source-only with complete evidence; default/production remain BLOCKED and
-signed_current_decision_unavailable remains. RF-HOST-035 PARTIAL; six readiness
-flags plus transportQualified/launchAuthority false. No schema/migration changes,
-DB/Docker/network, signing, delivery, default composition or activation. One next
-atom: separately authorized isolated native reader/authority qualification with a
-synthetic verifier, retaining production and decision gates. Not started.
-Prior next recommendations are historical.
+Owner amendment v49: [native canonical revocation reader qualification](bootstrap-ticket-lifecycle-persistence-v1.md)
+passes 13/13 native and 126/126 source/mocked results using the real authority
+source/ledger. All 82 unchanged migrations ran in one owned disposable DB.
+Terminal states/recovery, twenty concurrent snapshots on each side of revoke,
+paired fresh reads, read purity, stale/missing proof and uncertain acknowledgements
+qualify only complete v2 state with explicit synthetic verification. Cleanup and
+existing-data/container fingerprints were verified. Default verifier remains
+absent; signed_current_decision_unavailable stays BLOCKED. RF-HOST-035 PARTIAL,
+production BLOCKED; six readiness flags plus transportQualified/launchAuthority
+false. No production code, schema/migration, signing, delivery, default composition
+or activation changes. One next atom: source-only signed-current-decision inventory,
+contract and denial model over canonical decision revisions/acceptances, retaining
+its blocker and production gate. Not started. Prior recommendations are historical.
 
 RF-HOST-035 owner amendment v32: [durable bootstrap ledger](worker-bootstrap-ledger-v1.md)
 is **DONE source-only: 13/13 adapter results, 86/86 selected source results**.

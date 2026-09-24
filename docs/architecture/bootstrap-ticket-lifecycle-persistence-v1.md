@@ -1,14 +1,16 @@
 # Bootstrap ticket lifecycle persistence and qualification
 
-Owner amendment v48, 2026-09-25. One source-only canonical reader atom after
-`bee92320`, building on v47's isolated native qualification of all 82 migrations.
-No schema/migration changes, DB/Docker/network/DNS, private keys/signing,
-credentials, issuance/delivery, endpoints, default composition or activation.
-Migration 82 is not deployed to an existing installation.
+Owner amendment v49, 2026-09-25. One isolated native reader/authority
+qualification atom after `13cf3781`, using the unchanged 82-migration chain in one
+owned disposable PostgreSQL 16 database. No production code, schema or migration
+changes; no private keys/signing, credentials, issuance/delivery, HTTPS/DNS,
+endpoints, default composition, provisioning or activation. Migration 82 remains
+not deployed to an existing installation.
 
-`bootstrap_ticket_revocation_unavailable` is **conditionally resolved source-only**
+`bootstrap_ticket_revocation_unavailable` is **conditionally qualified with injected verification**
 only when the explicit synthetic verifier and complete signed canonical evidence
-succeed. Default/production composition stays **BLOCKED**;
+succeed. Native qualification covers this projection/persistence boundary, not
+real cryptography; the source-only qualification tag remains unchanged. Default/production composition stays **BLOCKED**;
 `signed_current_decision_unavailable` is unchanged. RF-HOST-035 **PARTIAL**,
 production **BLOCKED**. `implementationReady`, `executionSupported`, `pilotReady`,
 `liveAdmissionAllowed`, `pilotExecutionAuthorized`, `pilotExecutionStarted`,
@@ -158,30 +160,61 @@ no defaults; this does not enable real delivery or completion.
 
 ## Verification
 
-**v48: 33/33 lifecycle results, 126/126 selected source/mocked results, zero
-failures/skips.** Build, lint (338 routes / 45 route files) and scoped diff check
-pass. Ten reader subtests cover all states, missing root/event/receipt/audit/
-attempt/history/head/binding, stale generation/key/epoch/channel/lifecycle/owner,
-missing/rejecting/drifting verifier, both recovery forms, twenty revoke/read
-interleavings, paired fresh reads, unknown commit outcomes, read purity and caller
-overrides. Same-transaction verifier identity is checked for READ ONLY and
-Serializable bindings. No native test or database access was performed in v48.
+**v49: 13/13 native results (12 subtests plus parent), 126/126 source/mocked
+results; build, lint and scoped diff checks pass.** The suite uses the real
+`createCanonicalBootstrapAuthoritySource`, existing store and shared canonical
+ledger reader. No substitute reader or mutation of production implementation was
+used. Native states cover valid, consumed, completed, revoked, terminal unknown,
+invalid/incomplete and missing root. Expiry is exercised with an injected clock
+against the real persisted validity interval. Both pre-consume and consumed
+terminal recovery retain their exact nullable attempt binding.
 
-The prior v47 evidence remains scoped to persistence and atomic ingestion:
-**17/17 native and 103/103 source/mocked results**. All 82 migrations ran in one
-owned disposable PostgreSQL 16 DB. Three minimal migration-82 corrections were
-needed: commit-state CASE parentheses, event `clock_timestamp()` and shared-trigger
-`id` access. Final function fingerprints matched the source; earlier 81 migrations
-and Prisma schema were unchanged. Native tests proved one transaction ID and
-ordered receipt fences, 11 rollback phases, one winner among 20 concurrent
-admissions, deferred/late COMMIT rejection, real connection loss, post-COMMIT
-response loss and independent readback failure. Guards/helpers, legacy preservation
-and read purity passed. The owned DB and relay were removed, existing database
-fingerprints were unchanged and container inventory restored. That evidence does
-not qualify the new reader/authority composition or real signatures.
+Twenty concurrent READ ONLY snapshots during an uncommitted fenced revoke all
+observe the original revision/digest/fence; twenty fresh snapshots after commit
+all observe the terminal revision and newer fence. The reader never converts
+missing evidence into unrevoked. Paired fresh transactions before exchange and
+completion require equal projections. Before-send revoke gives zero exchanges;
+after-send revoke, reply loss or completion uncertainty gives non-retryable
+`delivery_unknown` and reconciliation, with no repeated callback.
 
-**One recommended next atom:** separately authorized isolated native qualification
-of the canonical revocation reader and bound authority projection using explicit
-synthetic verification, including terminal recovery, concurrent revocation and
-read-only/fence behavior. Keep default verifier absent, production blocked and
-signed-current-decision authority unavailable. Not started.
+Status under READ ONLY/RepeatableRead and a bound Serializable transaction uses
+the same Db object as its verifier and leaves table counts/digests unchanged.
+Missing root/lifecycle events/attempt/history/head/audit/receipts/lifecycle audit/
+issuer audit/channel evidence, stale owner/generation/lifecycle/issuer epoch/
+channel/fence, verifier refusal/absence and caller overrides deny. One disabled
+guard, one altered helper configuration and replica mode were checked and
+restored; the previous exhaustive guard suite was not repeated. A fence change
+inside a bound writer invalidates the proof and rolls back. Actual loss of a
+revoke COMMIT response and separate post-commit readback failure each report
+`reconciliation_required` once while independent reads find one committed result.
+
+One fixture correction was needed: changing the physical generation column was
+already rejected by a preserved SQL CHECK, so the reader-denial probe instead
+corrupts lifecycle metadata in privileged disposable-only preparation. The full
+suite was repeated in the same owned DB. The orchestration counter was corrected
+to count the final attempt's COMMIT-response cut in addition to prior test cuts;
+this never retries an admission/revoke callback. The running orchestrator retained
+its old expected-one counter and exited 1 on that obsolete assertion after the
+13/13 native pass; its `finally` cleanup independently reported PASS. The corrected
+counter passed three offline checks (including a previous full-run cut); no extra
+DB run was started. No migration or production correction occurred.
+
+All 82 unchanged migrations were applied, with source chain SHA-256
+`55595533bed30f24e40e724c1eb88be1ba27ad5323cc9f93f488acebd982ea4d`.
+The owned DB/relay were removed and the listener closed. Fingerprints for the
+three pre-existing connectable databases (214 tables/sequences) matched before
+and after; the original Roost PostgreSQL stopped state and container inventory
+were restored. Unrelated containers, images, volumes and networks were unchanged;
+no external helper files/directories remained.
+
+Earlier evidence remains scoped: v48 added ten reader source subtests (33/33
+lifecycle results, 126/126 selected); v47 qualified atomic ingestion (17/17 native,
+103/103 selected source), including eleven rollback phases, twenty concurrent
+admissions, deferred/late COMMIT rejection and native guard fingerprints. None of
+these results qualifies real signatures, delivery, production or launch authority.
+
+**One recommended next atom:** source-only inventory, contract and denial model
+for signed-current-decision authority over the existing decision revisions and
+acceptances, including exact signature/owner/intent/fence dependencies. Keep its
+blocker, absent default verifier and production gate until separate qualification.
+Not started.

@@ -18,30 +18,39 @@ export async function preflight(){const db=new PrismaClient();try{await db.$conn
  await db.$executeRawUnsafe("INSERT INTO native_ticket_preflight SELECT 'checks',jsonb_agg(jsonb_build_object('table',conrelid::regclass::text,'name',conname,'expr',pg_get_expr(conbin,conrelid))) FROM pg_constraint WHERE contype='c' AND conrelid IN ('worker_bootstrap_tickets'::regclass,'worker_bootstrap_attempts'::regclass)");
  console.log(JSON.stringify({legacyTicketPreflight:1,privateKeys:0,credentialStrings:0}));
  }finally{await db.$disconnect();}}
-export async function ticketFixture(db:PrismaClient){
- const f=await baseFixture(db),b=f.b;
+export async function ticketFixture(db:PrismaClient,prior?:{base:Awaited<ReturnType<typeof baseFixture>>;identity:any;head:any;digest:string}){
+ const f=prior?{...prior.base,snapshot:structuredClone(prior.base.snapshot),ticket:structuredClone(prior.base.ticket)}:await baseFixture(db),b=f.b;
+ if(!prior){
  await db.trustedProviderTicketKey.create({data:{workspaceId:b.workspaceId,installationId:b.installationId,keyId:material.keyId,epoch:1,publicKeyDigest:material.publicKeyDigest}});
  const ii:any={schemaVersion:'bootstrap-issuer-v1',binding:{workspaceId:b.workspaceId,issuerId:b.workspaceId,installationId:b.installationId,purpose:'worker-bootstrap-owner-ticket-v1'},action:'adopt',expectedRevision:0,targetEpoch:1,material,activatesAt:null,cutoverAt:null,adoptionEvidenceDigest:hash('a'),expiresAt:f.iso(600000)};
  await createPrismaBootstrapIssuerStore(db,()=>new Date(f.base-1000)).apply({operationId:randomUUID(),decisionId:(await f.accept({workerBootstrapIssuer:ii})).decisionId,decisionRevision:1,intent:ii});
  const lifecycle=createPrismaWorkerIdentityLifecycleStore(db,()=>new Date(f.base-1000));
  for(const kind of ['installation','host'] as const){const i={schemaVersion:'worker-identity-lifecycle-v1' as const,workspaceId:b.workspaceId,kind,subjectId:kind==='host'?b.hostId:b.installationId,action:'adopt' as const,expected:null,generation:kind==='host'?f.snapshot.hostGeneration:f.snapshot.installationGeneration,installationId:b.installationId,installationGeneration:f.snapshot.installationGeneration,hostFingerprint:kind==='host'?b.hostFingerprint:null,authorityDigest:hash('a'),adoptionEvidenceDigest:hash('b'),expiresAt:f.iso(600000)};
   const a=await f.accept({workerIdentityLifecycle:i});await lifecycle.apply({operationId:randomUUID(),decisionId:a.decisionId,decisionRevision:1,intent:i});}
+ }
  const s=f.snapshot,t=f.ticket;
+ if(prior){const h=(await db.$queryRaw<any[]>`SELECT revision,high_water_epoch AS epoch FROM worker_transport_heads WHERE workspace_id=${b.workspaceId}::uuid AND host_id=${b.hostId}::uuid`)[0];
+  s.generation=randomUUID();s.revision=h.revision+1;s.certificateEpoch=h.epoch+1;s.highWaterEpoch=s.certificateEpoch;s.leafPin=reviewDigest(randomUUID());s.purpose='owner_recovery';
+  t.id=randomUUID();t.intent.requestId=randomUUID();t.intent.target={...t.intent.target,id:randomUUID(),epoch:prior.identity.credentialEpoch+1};
+  t.intent.purpose='owner_recovery';t.intent.baseline={enrollmentGeneration:prior.identity.generation,credentialHighWater:prior.identity.credentialEpoch,credential:null};
+  t.intent.prior={ticketId:prior.identity.ticketId,ticketDigest:prior.identity.ticketDigest,attemptId:prior.head.attemptId,generation:prior.identity.generation,credentialEpoch:prior.identity.credentialEpoch,historyDigest:prior.digest,state:prior.head.state,workspaceId:b.workspaceId,hostId:b.hostId};
+  Object.assign(t.intent.channel,{revision:s.revision,certificateEpoch:s.certificateEpoch,highWaterEpoch:s.highWaterEpoch});t.intent.channel.profile.certificate.fingerprint=s.leafPin;t.intent.channel.profile.bootstrap.fingerprint=s.leafPin;
+ }
  s.validFrom=f.iso(-1000);s.expiresAt=f.iso(110000);s.certificateNotBefore=f.iso(-60000);s.certificateNotAfter=f.iso(3600000);
  Object.assign(t.intent.channel.profile.certificate,{notBefore:s.certificateNotBefore,notAfter:s.certificateNotAfter});
  t.intent.channel.validUntil=s.expiresAt;t.intent.expiresAt=f.iso(100000);t.issuedAt=f.iso();t.ownerAuthAt=f.iso(-1000);
  s.issuerHistoryDigest=(await db.$queryRaw<any[]>`SELECT record_digest AS digest FROM bootstrap_issuer_history WHERE workspace_id=${b.workspaceId}::uuid ORDER BY revision DESC LIMIT 1`)[0].digest;
  s.recordDigest=channelSnapshotDigest(s);
  t.decisionId=(await f.accept({})).decisionId;
- const identity:any={version:'bootstrap-ticket-revocation-proposal-v1',ticketId:t.id,ticketDigest:hash('0'),ownerId:t.ownerId,decisionId:t.decisionId,decisionRevision:1,purpose:'first_enrollment',binding:b,
-  generation:1,credentialEpoch:1,issuedAt:t.issuedAt,notBefore:t.issuedAt,expiresAt:t.intent.expiresAt,hostGeneration:s.hostGeneration,installationGeneration:s.installationGeneration,
-  issuerRevision:1,issuerHistoryDigest:s.issuerHistoryDigest,channelGeneration:s.generation,channelRevision:1,channelDigest:ticketChannelPlanDigest(s),predecessor:null};
+ const identity:any={version:'bootstrap-ticket-revocation-proposal-v1',ticketId:t.id,ticketDigest:hash('0'),ownerId:t.ownerId,decisionId:t.decisionId,decisionRevision:1,purpose:t.intent.purpose,binding:b,
+  generation:t.intent.baseline.enrollmentGeneration+1,credentialEpoch:t.intent.target.epoch,issuedAt:t.issuedAt,notBefore:t.issuedAt,expiresAt:t.intent.expiresAt,hostGeneration:s.hostGeneration,installationGeneration:s.installationGeneration,
+  issuerRevision:1,issuerHistoryDigest:s.issuerHistoryDigest,channelGeneration:s.generation,channelRevision:s.revision,channelDigest:ticketChannelPlanDigest(s),predecessor:t.intent.prior};
  const {ticketDigest,...metadata}=identity;t.version='worker-bootstrap-owner-ticket-v2';t.intent.schemaVersion='worker-bootstrap-admission-v2';t.lifecycle=metadata;t.decisionIntentDigest=reviewDigest(t.intent);
  const signed={payload:t,signature:'0'.repeat(128)};identity.ticketDigest=ticketEnvelopeDigest(signed);
  const record={signed,decision:{payload:{id:t.decisionId,revision:1,ownerId:t.ownerId,authority:'owner_reserved',state:'accepted',intentDigest:t.decisionIntentDigest,acceptedAt:f.iso(-2000),expiresAt:identity.expiresAt},signature:'0'.repeat(128)}};
  const registration=lifecycleRegistration.parse({operationId:randomUUID(),identity,record});
  await prepare(db,tx=>tx.$executeRaw`UPDATE decision_revisions SET body=${JSON.stringify({workerBootstrapLifecycle:metadata})}::jsonb WHERE decision_id=${t.decisionId}::uuid`);
- const intent={schemaVersion:'worker-bootstrap-channel-v1',ticketId:t.id,ticketDigest:identity.ticketDigest,expectedRevision:0,snapshot:s};
+ const intent={schemaVersion:'worker-bootstrap-channel-v1',ticketId:t.id,ticketDigest:identity.ticketDigest,expectedRevision:s.revision-1,snapshot:s};
  const accepted=await f.accept({workerBootstrapChannel:intent});
  let fault='',before:((tx:Db)=>Promise<void>)|undefined,afterQuery:((tx:Db,sql:string)=>Promise<void>)|undefined;
  const errors:string[]=[],modes:string[]=[],attempts={writes:0,roots:0,bindings:0,issues:0,reads:0};
