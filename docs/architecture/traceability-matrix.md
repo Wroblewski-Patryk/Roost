@@ -1,18 +1,18 @@
 # Foundation requirements traceability
 
-Owner amendment v49: [native canonical revocation reader qualification](bootstrap-ticket-lifecycle-persistence-v1.md)
-passes 13/13 native and 126/126 source/mocked results using the real authority
-source/ledger. All 82 unchanged migrations ran in one owned disposable DB.
-Terminal states/recovery, twenty concurrent snapshots on each side of revoke,
-paired fresh reads, read purity, stale/missing proof and uncertain acknowledgements
-qualify only complete v2 state with explicit synthetic verification. Cleanup and
-existing-data/container fingerprints were verified. Default verifier remains
-absent; signed_current_decision_unavailable stays BLOCKED. RF-HOST-035 PARTIAL,
-production BLOCKED; six readiness flags plus transportQualified/launchAuthority
-false. No production code, schema/migration, signing, delivery, default composition
-or activation changes. One next atom: source-only signed-current-decision inventory,
-contract and denial model over canonical decision revisions/acceptances, retaining
-its blocker and production gate. Not started. Prior recommendations are historical.
+Owner amendment v50: [signed-current-decision inventory and denial model](bootstrap-signed-current-decision-v1.md)
+are DONE source-only: 16/16 focused and 142/142 selected source/mocked results.
+Canonical acceptance is not a signature. Diagnostics expose missing signed
+binding, public-key provenance/history, terminal history, writer receipts and
+verifier. The explicit same-transaction verifier seam, paired fresh read-only
+projections and twenty shared readers across each revise/accept/revoke model
+interleaving preserve pre-send denial and post-send uncertainty without retry.
+No default verifier or migration is added. RF-HOST-035 PARTIAL; production BLOCKED
+by signed_current_decision_unavailable. Six readiness flags and
+transportQualified/launchAuthority remain false. One next atom: specify and
+source-test additive attestation/key-provenance/history persistence and all-writer
+receipts, resolving key trust before any migration. Not started. Earlier
+recommendations are historical.
 
 RF-HOST-035 owner amendment v32: [durable bootstrap ledger](worker-bootstrap-ledger-v1.md)
 is **DONE source-only: 13/13 adapter results, 86/86 selected source results**.

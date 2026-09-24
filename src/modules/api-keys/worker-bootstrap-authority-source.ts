@@ -12,6 +12,7 @@ import { inspectCanonicalBootstrapChannel } from './bootstrap-channel-store';
 import { bootstrapChannelGap } from "./bootstrap-channel-contract";
 import {readCanonicalTicketRevocation,invalidTicketRevocation,type TicketRevocationVerifier,type TicketRevocationRead} from './bootstrap-ticket-revocation-reader';
 import { bootstrapTicketRevocationGap } from './bootstrap-ticket-revocation-contract';
+import {signedDecisionGap} from './bootstrap-signed-decision-contract';
 
 type Db=Prisma.TransactionClient;
 const id=z.string().uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),epoch=z.number().int().positive().safe();
@@ -171,7 +172,7 @@ export function createCanonicalBootstrapAuthoritySource(clock=()=>new Date(),tic
       }
       await bound(db); // A changed or rebound fence invalidates the entire projection.
     }catch(e){ticketRevocationAuthority=bootstrapTicketRevocationGap;channelAuthority=bootstrapChannelGap;for(const key of Object.keys(facts))delete (facts as Record<string,unknown>)[key];blockers.push(...bootstrapAuthorityGaps,...(e instanceof CanonicalBootstrapBlocked?e.blockers:["canonical_source_invalid"]));}
-    return {ok:false as const,qualification:"canonical_projection_only_v1" as const,blockers:[...new Set(blockers)].sort(),channelAuthority,ticketRevocationAuthority,facts,...flags};
+    return {ok:false as const,qualification:"canonical_projection_only_v1" as const,blockers:[...new Set(blockers)].sort(),channelAuthority,ticketRevocationAuthority,decisionAuthority:signedDecisionGap,facts,...flags};
   }
   const source:BootstrapAuthoritySource={qualification:"canonical_bootstrap_projection_v1",
     async bindTransaction(db,mode){if(sessions.has(db))blocked("transaction_already_bound");const f=await fence(db);
