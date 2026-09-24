@@ -81,7 +81,7 @@ export function nativeAttestationFixture(){
     return [op];
    }
    if(sql.includes('FROM objects o CROSS JOIN ready_source_fence'))return clone(objects).sort((a,b)=>(a.table+':'+a.rowId).localeCompare(b.table+':'+b.rowId)).map(o=>({...o,verified:o.verified&&verified}));
-   if(sql.includes('decision_attestation_revision('))return [{revision:revision(),owner:true,current:fault!=='current',history:fault!=='history',generation:fault!=='generation',
+   if(sql.includes('decision_attestation_revision('))return [{revision:revision(),grant:fault!=='grant',owner:true,current:fault!=='current',history:fault!=='history',generation:fault!=='generation',
     policyCurrent:fault!=='policy',currentKeys:fault==='key'?[]:objects.filter(o=>o.table==='decision_attestation_key_history'&&o.row.record.material).map(o=>o.row.id)}];
    throw Error('unexpected SELECT '+sql.slice(0,100));
   },$executeRaw:async(strings:TemplateStringsArray,...v:any[])=>{

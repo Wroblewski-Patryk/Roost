@@ -50,7 +50,7 @@ export async function projectDecisionAttestation(db:Db,input:Scope){
   exactTime(a.created_at)!==exactTime(registration.record.decision.payload.acceptedAt)||Date.parse(policy.validFrom)<Date.parse(timestamp(a.created_at))||
   Date.parse(policy.validFrom)<Date.parse(i.notBefore)||Date.parse(policy.expiresAt)>Date.parse(i.expiresAt)||Date.parse(policy.validFrom)>=Date.parse(policy.expiresAt))deny();
  const g=single(objects,'worker_transport_bootstrap_grants'),grant=channelGrant.parse(g.record);
- if(grant.id!==g.id||grant.intent.ticketId!==q.ticketId||grant.intent.ticketDigest!==i.ticketDigest||g.record_digest!==reviewDigest(grant))deny();
+ if(grant.id!==g.id||grant.intent.ticketId!==q.ticketId||grant.intent.ticketDigest!==i.ticketDigest)deny();
  validateV2ChannelPlan(registration.record.signed.payload,grant.intent.snapshot,new Date(i.notBefore));
  const history=rows(objects,'decision_authority_events').map(v=>authorityEvent.parse(v)).sort((a,b)=>a.revision-b.revision);
  let previous:typeof history[number]|undefined;
@@ -119,6 +119,7 @@ export async function projectDecisionAttestation(db:Db,input:Scope){
   if(!exact(predecessor,{digest:i.predecessor.ticketDigest,history:i.predecessor.historyDigest,attempt:i.predecessor.attemptId,state:i.predecessor.state,
    generation:i.predecessor.generation,credential:i.predecessor.credentialEpoch}))deny();}
  const live=one(await db.$queryRaw<any[]>`SELECT decision_attestation_revision(${q.decisionId}::uuid)::text AS revision,
+ EXISTS(SELECT 1 FROM worker_transport_bootstrap_grants g WHERE g.id=${grant.id}::uuid AND g.record_digest=encode(sha256(convert_to(g.record::text,'UTF8')),'hex')) AS grant,
  decision_attestation_owner(${q.decisionId}::uuid,${a.id}::uuid) AS owner,
  bootstrap_lifecycle_current(${JSON.stringify(i)}::jsonb) AS current,
  NOT EXISTS(SELECT 1 FROM decision_authority_events e WHERE e.decision_id=${q.decisionId}::uuid AND NOT EXISTS(
@@ -129,7 +130,7 @@ export async function projectDecisionAttestation(db:Db,input:Scope){
  (SELECT max(generation)=(${i.generation})::int AND max(credential_epoch)=(${i.credentialEpoch})::int FROM worker_bootstrap_tickets
  WHERE workspace_id=${i.binding.workspaceId}::uuid AND host_id=${i.binding.hostId}::uuid) AS generation`);
  const terminal=history.find(e=>['supersede','revoke','expire','reject'].includes(e.action));
- if(live.revision!==String(previous!.revision)||live.history!==true||!terminal&&live.owner!==true||live.generation!==true)deny();
+ if(live.revision!==String(previous!.revision)||live.grant!==true||live.history!==true||!terminal&&live.owner!==true||live.generation!==true)deny();
  if((await attestationDbClock(db)).fence!==clock.fence)deny();
  const currentKeys=z.array(id).max(1000).parse(live.currentKeys);
  const eligibleKeys={...keyProjection,usable:keyProjection.usable.filter(k=>keys.some(e=>e.keyId===k.material.keyId&&e.material&&currentKeys.includes(e.id)))};

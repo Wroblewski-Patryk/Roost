@@ -1,5 +1,20 @@
 # Architecture Source Of Truth
 
+Owner amendment v54: [native attestation qualification](decision-attestation-prisma-ports-v1.md)
+remains **BLOCKED**: final native 14/19 PASS, 5 FAIL (four subtests plus parent),
+runner exit 1; cleanup independently PASS. One owned disposable database applied
+all 83 unchanged migrations, then was removed. Existing data fingerprints and
+container inventory match; Soar unchanged. Native attestation/terminal concurrency
+and COMMIT/readback cases passed, but attempt seal failed. Native JSONB grant
+hash validation is fixed; lifecycle timestamp correction has source evidence only.
+A shared-fence compatibility conflict with the existing lifecycle still requires
+repair. Final source tests 194/194, build/lint PASS. No production qualification,
+default composition, push/deploy or activation; RF-HOST-035 PARTIAL,
+signed_current_decision_unavailable unchanged and all eight flags false.
+Exactly one next recommendation, not started: separately authorize the bounded
+migration-83/lifecycle fence compatibility repair and a fresh complete native run.
+The v53 and earlier recommendations below are historical.
+
 Owner amendment v53: [concrete Prisma attestation ports](decision-attestation-prisma-ports-v1.md)
 pass 14/14 focused and 187/187 selected source/mocked tests; build/lint pass.
 Implemented on injected transaction clients: canonical rows,

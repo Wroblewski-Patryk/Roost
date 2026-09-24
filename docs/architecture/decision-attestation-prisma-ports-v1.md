@@ -1,4 +1,90 @@
-# Decision attestation: concrete Prisma ports (unapplied)
+# Decision attestation: Prisma ports and blocked native qualification
+
+## Owner amendment v54: native evidence and remaining incompatibility
+
+The bounded native qualification **did not pass**. The final executed suite
+reported **14/19 PASS, 5 FAIL, 0 skipped** (four failed subtests plus their
+parent); the runner exited **1**. Cleanup independently **PASS**. This does not
+qualify the complete attestation/attempt-seal contract or production authority.
+
+One explicitly owned disposable PostgreSQL database received the full **83
+migration chain**. All migration sources and Prisma schema remain unchanged;
+the raw migration-chain SHA-256 was
+`ee3af18849be5bd1ea882841c9c988cf5b73510a2c3a5753d96dd8079f386c45`.
+Migration 83 was exercised only there and remains unapplied to existing and
+production databases. Public synthetic fixtures used injected signer, verifier,
+ticket-verifier, authentication and public-key-authorizer doubles. No real
+private keys, credentials, signing, transport, provisioning or activation ran.
+Accepted-source preparation temporarily suspends older decision-policy guards
+for new synthetic rows and restores them before invoking the tested ports;
+all migration-83 guards remain active. This does not qualify an acceptance UI
+or endpoint, or production key provenance.
+
+Observed native passes include additive legacy preservation and null-seed
+denial; exact 111 trigger bindings, 14 function bodies and four helpers;
+derived authority revision; attestation and terminal CAS with one winner among
+20 commands each; revoke/supersede/reject and early-expire denial; deferred
+COMMIT rejection; false/unknown acknowledgement and pre-COMMIT connection loss
+with zero committed attestations; actual post-COMMIT response loss with one
+immutable attestation and no retry; missing/mismatched/unavailable READ ONLY
+readback; guard/helper tampering and restoration; origin/UTC/isolation/source
+drift denial; receipt-deletion denial and read purity. Injected-verifier inspect
+can observe a persisted attestation, but is **not** complete signed-decision
+qualification and is not connected to canonical runtime.
+
+Native execution exposed two port defects. Channel grant `record_digest` uses
+native PostgreSQL JSONB text hashing from migration 81; it must be checked in
+SQL, separately from the canonical attestation payload digest. That correction
+was exercised in the final native run. Existing lifecycle events accept only
+millisecond wire timestamps; the port incorrectly replaced these with six-digit
+DB timestamps. The port now preserves `advanceTicketLifecycle` output for
+reserve/consume. This second fix passed source tests but was **not rerun natively**.
+New attestation/history records retain the exact six-digit DB clock.
+
+The three seal-related subtests failed at `bootstrap_lifecycle_cas`: successful
+seal, 20-way seal contention, and dispatch-in-start rejection remain unqualified.
+Source inspection also identifies a second, unexecuted incompatibility:
+migration 83 adds a BEFORE STATEMENT shared-fence increment before migration
+82's existing BEFORE ROW increment, while migration 82 requires its `f - 1`
+to equal the latest ticket receipt fence. Attestation/key/auth writes also
+advance that shared fence without advancing the legacy ticket receipt. The
+timestamp correction does not resolve this contract conflict. No guard was
+weakened, no receipt was fabricated, and no earlier migration was edited.
+
+The other failed subtest was key staging with a 200 ms setup margin; timing
+under native load is a suspected fixture cause, not independently isolated.
+An earlier attempt passed the full key lifecycle, but the
+final run did not; repeatable qualification is not claimed. The fixture now
+allows 10 seconds before overlap and waits until cutover. Its ticket verifier
+compares signed record and identity rather than a transient operation ID;
+revision assertions sort numeric database revisions rather than text aliases.
+Rollback assertions now additionally require the injected failure to have
+actually fired: the previous native PASS could merely be an earlier seal
+denial. These final fixture hardenings were compiled, not rerun natively.
+Positive expiry and the complete seal rollback matrix remain unqualified.
+
+Cleanup removed the uniquely marked database, relay and helper processes;
+no helper files were created. The original stopped Roost PostgreSQL container
+was restored to stopped; unrelated containers, including Soar, were unchanged.
+Fingerprints of all three existing accessible databases and 214 table/sequence
+entries match before/after SHA-256
+`e9e019524b6010b02b30b4635fff99133c4429ffac3f537b05ac860485a281f1`.
+No second database or further native attempt was started after cleanup.
+
+Final source regression results: **194/194 PASS**, no skips, including 14 focused
+Prisma-port results and timestamp/native-grant denial regressions. Server build,
+lint, offline migration pins and scoped diff checks pass. Source tests cannot
+replace the missing native evidence. RF-HOST-035 remains **PARTIAL**, full native
+qualification and production **BLOCKED**, with `signed_current_decision_unavailable`
+unchanged and all eight readiness flags below false.
+
+Exactly one next recommendation, **not started**: explicitly authorize a bounded
+compatibility repair for migration 83's shared-fence interaction with the existing
+ticket lifecycle, preserving legacy anti-ABA checks and old migration sources,
+then repeat the complete native matrix with fresh disposable-database authority.
+This replaces the historical next-step recommendation below.
+
+## Historical v53 source qualification
 
 Owner amendment v53 adds concrete, parameterized SQL ports on an explicitly
 injected `Prisma.TransactionClient`. Migration 83 remains **UNAPPLIED**; all

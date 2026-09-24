@@ -30,6 +30,8 @@ test('concrete unapplied Prisma decision attestation ports',async t=>{
   const writes=f.calls.slice(before).filter(c=>c.sql.startsWith('INSERT'));
   assert.equal(new Set(writes.map(c=>c.db)).size,1);assert.equal(writes.length,5);
   assert.ok(writes[0].sql.includes('worker_bootstrap_lifecycle_events'));assert.ok(writes[1].sql.includes('worker_bootstrap_attempts'));
+  for(const write of writes.filter(w=>w.sql.includes('worker_bootstrap_lifecycle_events')))
+   assert.match(JSON.parse(String(write.values[4])).at,/\.\d{3}Z$/);
   const row=f.objects().find(o=>o.table==='worker_bootstrap_attempts')!.row;
   assert.equal(row.attestation_seal.state,'started');assert.equal(row.attestation_seal.attestationDigest,f.objects().find(o=>o.table==='decision_attestations')!.row.record_digest);
   assert.ok(BigInt(row.attestation_seal.sourceFence)<BigInt(s.receipt.fence));assert.match(row.attestation_committed_at,/123Z$/);
@@ -70,7 +72,7 @@ test('concrete unapplied Prisma decision attestation ports',async t=>{
    (f:ReturnType<typeof nativeAttestationFixture>)=>f.verified(false),
    (f:ReturnType<typeof nativeAttestationFixture>)=>f.origin(false)];
   for(const mutate of mutations){const f=nativeAttestationFixture(),c=await f.command('attest');mutate(f);assert.equal((await f.ports.execute(c)).ok,false);assert.equal(f.stats().writes,0);}
-  for(const fault of ['current','history','generation','ticket','signature','policy','key']){const f=nativeAttestationFixture(),c=await f.command('attest');f.fault(fault);assert.equal((await f.ports.execute(c)).ok,false);assert.equal(f.stats().writes,0);}
+  for(const fault of ['current','history','generation','ticket','signature','policy','key','grant']){const f=nativeAttestationFixture(),c=await f.command('attest');f.fault(fault);assert.equal((await f.ports.execute(c)).ok,false);assert.equal(f.stats().writes,0);}
  });
  await t.test('missing/rebound/altered/disabled guards and helpers deny before writes',async()=>{
   for(const target of ['guard','helper'])for(const kind of ['missing','disabled','hash','name']){const f=nativeAttestationFixture(),c=await f.command('attest'),rows=target==='guard'?f.guards:f.helpers;

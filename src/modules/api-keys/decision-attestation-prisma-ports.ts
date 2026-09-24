@@ -135,8 +135,10 @@ export function createPrismaDecisionAttestationPorts(deps:NativeAttestationDepen
    record=seal;table='worker_bootstrap_attempts';required=[table,'worker_bootstrap_history','worker_bootstrap_heads','worker_bootstrap_audit','worker_bootstrap_lifecycle_events'];
    const mutation=reviewDigest({domain:'owner-decision-sql-mutation-v1',command,record});
    let previous=p.ticketHead,previousDigest=p.ticketDigest;
+   // Preserve the existing millisecond lifecycle wire format. The exact DB
+   // clock remains the authority; six-digit timestamps belong to new rows only.
    if(previous.state==='issued'){const e=advanceTicketLifecycle(i,previous,previousDigest,{id:randomUUID(),action:'reserve',attemptId:null,historyId:null},new Date(c.at));
-    previous={...e,at:c.at};previousDigest=reviewDigest(previous);await insertLifecycle(db,previous);}
+    previous=e;previousDigest=reviewDigest(previous);await insertLifecycle(db,previous);}
    // Same bound Db as reservation, history, head and automatic audits. No nested
    // store.transaction or standalone attempt registry, no dispatch/send seam.
    await db.$executeRaw`INSERT INTO worker_bootstrap_attempts(id,ticket_id,workspace_id,host_id,generation,credential_epoch,predecessor_id,record,record_digest,lifecycle_version,
@@ -151,7 +153,7 @@ export function createPrismaDecisionAttestationPorts(deps:NativeAttestationDepen
     ON CONFLICT(workspace_id,host_id) DO UPDATE SET attempt_id=EXCLUDED.attempt_id,history_id=EXCLUDED.history_id,generation=EXCLUDED.generation,
     credential_epoch=EXCLUDED.credential_epoch,revision=EXCLUDED.revision,record_digest=EXCLUDED.record_digest,state=EXCLUDED.state`;
    const e=advanceTicketLifecycle(i,previous,previousDigest,{id:randomUUID(),action:'consume',attemptId,historyId:h.id},new Date(c.at));
-   await insertLifecycle(db,{...e,at:c.at});
+   await insertLifecycle(db,e);
   }
   await requireDecisionAttestationGuards(db);const after=await attestationDbClock(db);session.fence=after.fence;
   const persisted=await projectCanonical(db,q);if(persisted.version.authorityRevision!==String(revision))deny();
