@@ -1,19 +1,18 @@
 # Next development work
 
-Owner amendment v52: [unapplied attestation migration and adapter contract](../architecture/decision-attestation-adapter-v1.md)
-is DONE source-only: 31/31 focused and 173/173 selected tests; build/lint pass.
-Migration 83 adds five child relations and an existing-attempt
-seal; all earlier 82 migration sources are unchanged. Accepted Decision guards
-remain unchanged: nullable authority_revision is an immutable opt-in seed, and
-current authority revision derives from append-only events. Legacy stays blocked.
-The adapter validates guard fingerprints and demands separate exact post-COMMIT
-readback, with reconciliation_required/no retry. Concrete canonical Prisma ports
-remain absent; no migration apply, DB/Docker, signing, endpoint or composition.
-RF-HOST-035 PARTIAL; signed_current_decision_unavailable and production BLOCKED;
-six readiness flags plus transportQualified/launchAuthority false. One next atom:
-source-only concrete canonical projection/child-insert/readback ports and existing
-attempt integration, keeping migration 83 unapplied. Not started. Earlier
-recommendations and mutable-root-counter proposals are historical.
+Owner amendment v53: [concrete Prisma attestation ports](../architecture/decision-attestation-prisma-ports-v1.md)
+pass 14/14 focused and 187/187 selected source/mocked tests; build/lint pass.
+Implemented on injected transaction clients: canonical rows,
+constrained child inserts, atomic existing-attempt lifecycle seal and separate
+READ ONLY post-COMMIT exact receipt readback. The synthetic journal oracle is
+not substituted for database history. Policy/evidence must be explicit in the
+accepted revision; missing/legacy data denies. All 83 migrations and Prisma
+schema are unchanged; migration 83 remains UNAPPLIED. No DB/Docker, signing,
+endpoint, default composition, delivery or activation. RF-HOST-035 PARTIAL;
+signed_current_decision_unavailable and production BLOCKED, all eight flags false.
+Exactly one next atom: separately authorized native qualification in an owned
+throwaway PostgreSQL database with public synthetic records and signer doubles.
+Not started. Earlier next-atom recommendations are historical.
 
 Owner amendment v32: [durable bootstrap ledger](../architecture/worker-bootstrap-ledger-v1.md)
 is **DONE source-only: 13/13 adapter results, 86/86 selected source results**.

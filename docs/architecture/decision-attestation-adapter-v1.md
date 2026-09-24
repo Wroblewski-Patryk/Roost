@@ -1,5 +1,9 @@
 # Decision attestation: unapplied migration and adapter contract
 
+Historical v52 contract; concrete native-row ports are now documented in
+[owner amendment v53](decision-attestation-prisma-ports-v1.md). The synthetic
+model interface below is retained as an oracle, not fabricated database history.
+
 Owner amendment v52 implements one source-only follow-up to the
 [v51 persistence proposal](decision-attestation-persistence-v1.md).
 Migration `20260925010000_decision_attestation` is **UNAPPLIED**. There are now
