@@ -237,7 +237,7 @@ BEGIN
    OR action NOT IN ('issue','reserve','consume','revoke','expire','dispatch','complete','reconcile','unknown') OR action IS NULL
    OR jsonb_typeof(r->'revoked') IS DISTINCT FROM 'boolean' OR jsonb_typeof(r->'expired') IS DISTINCT FROM 'boolean' OR jsonb_typeof(r->'reconciled') IS DISTINCT FROM 'boolean'
    OR jsonb_typeof(r->'at') IS DISTINCT FROM 'string' OR (r->>'at') !~ '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d{1,3})?Z$'
-   OR (r->>'at')::timestamptz>CURRENT_TIMESTAMP OR (r->>'at')::timestamptz<(i->>'issuedAt')::timestamptz
+   OR (r->>'at')::timestamptz>clock_timestamp() OR (r->>'at')::timestamptz<(i->>'issuedAt')::timestamptz
    OR (p.id IS NOT NULL AND (r->>'at')::timestamptz<(p.record->>'at')::timestamptz)
    THEN RAISE EXCEPTION 'bootstrap_lifecycle_cas'; END IF;
   revoked:=coalesce((p.record->>'revoked')::boolean,false);expired:=coalesce((p.record->>'expired')::boolean,false);reconciled:=coalesce((p.record->>'reconciled')::boolean,false);
@@ -347,14 +347,14 @@ BEGIN
  THEN RAISE EXCEPTION 'bootstrap_atomic_channel_binding_required'; END IF;
  IF TG_TABLE_NAME='worker_bootstrap_tickets' AND NOT EXISTS(SELECT 1 FROM worker_bootstrap_lifecycle_events WHERE ticket_id=ticket AND revision=1 AND writer_xid=pg_current_xact_id()::text)
  THEN RAISE EXCEPTION 'bootstrap_atomic_issue_required'; END IF;
- IF TG_TABLE_NAME='worker_bootstrap_attempts' AND NOT EXISTS(SELECT 1 FROM worker_bootstrap_lifecycle_events WHERE ticket_id=ticket AND attempt_id=NEW.id AND record->>'action'='consume' AND writer_xid=pg_current_xact_id()::text)
+ IF TG_TABLE_NAME='worker_bootstrap_attempts' AND NOT EXISTS(SELECT 1 FROM worker_bootstrap_lifecycle_events WHERE ticket_id=ticket AND attempt_id=(to_jsonb(NEW)->>'id')::uuid AND record->>'action'='consume' AND writer_xid=pg_current_xact_id()::text)
  THEN RAISE EXCEPTION 'bootstrap_atomic_consume_required'; END IF;
- IF TG_TABLE_NAME='worker_bootstrap_history' AND NOT EXISTS(SELECT 1 FROM worker_bootstrap_lifecycle_events WHERE ticket_id=ticket AND history_id=NEW.id AND writer_xid=pg_current_xact_id()::text)
+ IF TG_TABLE_NAME='worker_bootstrap_history' AND NOT EXISTS(SELECT 1 FROM worker_bootstrap_lifecycle_events WHERE ticket_id=ticket AND history_id=(to_jsonb(NEW)->>'id')::uuid AND writer_xid=pg_current_xact_id()::text)
  THEN RAISE EXCEPTION 'bootstrap_atomic_attempt_history_required'; END IF;
  IF op.attempt_id IS NOT NULL THEN
   SELECT * INTO a FROM worker_bootstrap_attempts WHERE id=op.attempt_id;SELECT * INTO h FROM worker_bootstrap_history WHERE id=op.history_id;
   IF a.ticket_id IS DISTINCT FROM ticket OR h.attempt_id IS DISTINCT FROM a.id OR h.state IS DISTINCT FROM
-    CASE op.record->>'state' WHEN 'completed' THEN 'acknowledged' WHEN 'revoked' THEN 'blocked' WHEN 'expired' THEN 'blocked' ELSE op.record->>'state' END
+    (CASE op.record->>'state' WHEN 'completed' THEN 'acknowledged' WHEN 'revoked' THEN 'blocked' WHEN 'expired' THEN 'blocked' ELSE op.record->>'state' END)
    OR NOT EXISTS(SELECT 1 FROM worker_bootstrap_heads WHERE history_id=h.id AND attempt_id=a.id)
    OR NOT EXISTS(SELECT 1 FROM worker_bootstrap_audit WHERE history_id=h.id AND record_digest=h.record_digest)
   THEN RAISE EXCEPTION 'bootstrap_attempt_ledger_required'; END IF;

@@ -1,18 +1,19 @@
 # Architecture Source Of Truth
 
-Owner amendment v46: [atomic v2 ticket/channel ingestion](bootstrap-ticket-lifecycle-persistence-v1.md)
-uses the existing root and channel writer in one Serializable/fenced transaction:
-root reservation -> exact channel binding -> issue receipt/Event/audit -> separate
-READ ONLY commit readback. Domain-separated snapshot/content/envelope digests are
-acyclic. Verifier and binder are mandatory explicit dependencies, unavailable by
-default. Same-transaction receipts reject later binding; uncertainty never retries.
-103/103 selected source/mocked results pass. Migration 82 remains UNAPPLIED;
-prior 81 migrations and Prisma schema unchanged. RF-HOST-035 PARTIAL, production
-BLOCKED; bootstrap_ticket_revocation_unavailable and signed_current_decision_unavailable
-remain; six readiness flags plus transportQualified/launchAuthority stay false.
-No DB/Docker/native/network, signing, issuance/delivery or activation.
-One next atom: separately authorized isolated native qualification of migration 82
-and atomic v2 binding with a synthetic verifier, keeping both blockers. Not started.
+Owner amendment v47: [native v2 ticket/channel qualification](bootstrap-ticket-lifecycle-persistence-v1.md)
+passes 17/17 native and 103/103 source/mocked results. All 82 migrations ran in one
+owned disposable PostgreSQL DB; only three minimal migration-82 corrections were
+needed (CASE syntax, event clock and shared-trigger field access). Earlier 81 and
+Prisma schema are unchanged. Atomic root/channel/issue receipts, 20-way single
+winner, rollback, uncertain COMMIT/readback, 89 guards and seven helpers qualify
+persistence only. Owned DB/relay cleanup and existing-data/container fingerprints
+are verified. No migration on an existing installation, production deployment,
+keys/signing, issuance/delivery, default composition or activation. RF-HOST-035
+PARTIAL, production BLOCKED; bootstrap_ticket_revocation_unavailable and
+signed_current_decision_unavailable remain; six readiness flags plus
+transportQualified/launchAuthority stay false. One next atom: source-only canonical
+ticket-revocation reader integration with explicit synthetic verifier injection
+and fresh bound-transaction denial tests, retaining both blockers. Not started.
 Prior next recommendations are historical.
 
 Owner amendment v26: [loopback HTTPS handoff adapter](worker-handoff-https-v1.md)
