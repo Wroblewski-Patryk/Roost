@@ -1,18 +1,19 @@
 # Architecture Source Of Truth
 
-Owner amendment v50: [signed-current-decision inventory and denial model](bootstrap-signed-current-decision-v1.md)
-are DONE source-only: 16/16 focused and 142/142 selected source/mocked results.
-Canonical acceptance is not a signature. Diagnostics expose missing signed
-binding, public-key provenance/history, terminal history, writer receipts and
-verifier. The explicit same-transaction verifier seam, paired fresh read-only
-projections and twenty shared readers across each revise/accept/revoke model
-interleaving preserve pre-send denial and post-send uncertainty without retry.
-No default verifier or migration is added. RF-HOST-035 PARTIAL; production BLOCKED
-by signed_current_decision_unavailable. Six readiness flags and
-transportQualified/launchAuthority remain false. One next atom: specify and
-source-test additive attestation/key-provenance/history persistence and all-writer
-receipts, resolving key trust before any migration. Not started. Earlier
-recommendations are historical.
+Owner amendment v51: [server decision attestation persistence proposal](decision-attestation-persistence-v1.md)
+is DONE source-only: 18/18 focused and 160/160 selected tests pass; build/lint pass.
+Roost session authorization proves owner acceptance; a
+dedicated owner-decision-attestation-v1 server key attests it. Private material
+stays in installation secret storage; only public provenance/history is proposed
+for persistence. Synthetic models cover bounded key rotation, terminal decisions,
+atomic receipts/CAS, a committed one-attempt seal and the shared fence through
+send, with rollback and uncertain-commit denial. No migration or Prisma change,
+DB/Docker, real signing, default signer/verifier, endpoint or activation.
+RF-HOST-035 PARTIAL; signed_current_decision_unavailable and production BLOCKED.
+Six readiness flags plus transportQualified/launchAuthority remain false.
+One next atom: unapplied additive migration and source-only persistence adapter
+contract over existing decision/attempt anchors. Not started; earlier
+recommendations and the v50 hypothetical owner-key format are historical.
 
 Owner amendment v26: [loopback HTTPS handoff adapter](worker-handoff-https-v1.md)
 is DONE: 9/9 real HTTPS results and 189/189 selected tests. It checks normal TLS
