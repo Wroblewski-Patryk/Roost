@@ -125,6 +125,12 @@ export function createAttestationPersistenceModel(deps?:AttestationModelDependen
   return {db,version:attestationSourceVersion(s),attestationDigest:attestationRecordDigest(a),sealed:s.seals.some(x=>x.ticketId===q.ticketId)};});}
  async function pair(q:z.infer<typeof request>){const a=await projection(q),b=await projection(q);
   if(a.db===b.db||!same(a.version,b.version)||a.attestationDigest!==b.attestationDigest||a.sealed!==b.sealed)deny('attestation_fresh_read_changed');return b;}
+ async function start(q:z.infer<typeof request>){const p=await pair(q);if(p.sealed)deny('attestation_attempt_already_sealed');
+  return tx('write',async(db,s)=>{scope(s,q);cas(s,p.version);const a=await current(db,s);if(s.seals.some(x=>x.ticketId===q.ticketId)||attestationRecordDigest(a)!==p.attestationDigest)deny();
+   const attempt={id:randomUUID(),...q,acceptanceId:a.payload.acceptanceId,authorityRevision:p.version.authorityRevision,attestationDigest:p.attestationDigest,
+    sourceDigest:p.version.digest,startFence:s.fence+1,lastFence:s.fence+1,state:'started' as const};
+   s.seals.push(attempt);await deps!.save(db,append(s,'ceremony_start',clock()));return freezePublic(attempt);});
+ }
  return Object.freeze({
   async status(input:unknown){try{const p=await pair(request.parse(input));return {ok:true,qualification:'source_model_only',version:p.version,sealed:p.sealed,...flags};}
    catch{return {ok:false,blocker:signedDecisionGap.blocker,...flags};}},
@@ -142,11 +148,10 @@ export function createAttestationPersistenceModel(deps?:AttestationModelDependen
     s.attestations.push(row);await current(db,s);owner(s,clock(),true);await deps.save(db,append(s,'attest',clock()));
    });return {ok:true,qualification:'source_model_only',...flags};
   }catch(e){return {ok:false,error:e instanceof AttestationCommitUnknown?'reconciliation_required':'denied',retryable:false,...flags};}},
+  async start(input:unknown){try{return {ok:true,qualification:'source_model_only',seal:await start(request.parse(input)),...flags};}
+   catch(e){return {ok:false,error:e instanceof AttestationCommitUnknown?'reconciliation_required':'denied',retryable:false,...flags};}},
   async run(input:unknown){let possibleCommit=false;
-   try{const q=request.parse(input),p=await pair(q);if(p.sealed)deny('attestation_attempt_already_sealed');
-    await tx('write',async(db,s)=>{scope(s,q);cas(s,p.version);const a=await current(db,s);if(s.seals.some(x=>x.ticketId===q.ticketId)||attestationRecordDigest(a)!==p.attestationDigest)deny();
-     s.seals.push({id:randomUUID(),...q,acceptanceId:a.payload.acceptanceId,authorityRevision:p.version.authorityRevision,attestationDigest:p.attestationDigest,
-      sourceDigest:p.version.digest,startFence:s.fence+1,lastFence:s.fence+1,state:'started'});await deps!.save(db,append(s,'ceremony_start',clock()));});
+   try{const q=request.parse(input);await start(q);
     await tx('write',async(db,s)=>{scope(s,q);const a=await current(db,s),x=s.seals.find(x=>x.ticketId===q.ticketId);
      if(!x||x.state!=='started'||x.lastFence!==s.fence||x.authorityRevision!==s.canonical.authorityRevision||x.attestationDigest!==attestationRecordDigest(a))deny('attestation_dispatch_cas_changed');
      x.state='dispatched';x.lastFence=s.fence+1;await deps!.save(db,append(s,'dispatch',clock()));

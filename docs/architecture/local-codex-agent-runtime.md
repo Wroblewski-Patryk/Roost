@@ -1,19 +1,19 @@
 # Local Codex Agent Runtime
 
-Owner amendment v51: [server decision attestation persistence proposal](decision-attestation-persistence-v1.md)
-is DONE source-only: 18/18 focused and 160/160 selected tests pass; build/lint pass.
-Roost session authorization proves owner acceptance; a
-dedicated owner-decision-attestation-v1 server key attests it. Private material
-stays in installation secret storage; only public provenance/history is proposed
-for persistence. Synthetic models cover bounded key rotation, terminal decisions,
-atomic receipts/CAS, a committed one-attempt seal and the shared fence through
-send, with rollback and uncertain-commit denial. No migration or Prisma change,
-DB/Docker, real signing, default signer/verifier, endpoint or activation.
-RF-HOST-035 PARTIAL; signed_current_decision_unavailable and production BLOCKED.
-Six readiness flags plus transportQualified/launchAuthority remain false.
-One next atom: unapplied additive migration and source-only persistence adapter
-contract over existing decision/attempt anchors. Not started; earlier
-recommendations and the v50 hypothetical owner-key format are historical.
+Owner amendment v52: [unapplied attestation migration and adapter contract](decision-attestation-adapter-v1.md)
+is DONE source-only: 31/31 focused and 173/173 selected tests; build/lint pass.
+Migration 83 adds five child relations and an existing-attempt
+seal; all earlier 82 migration sources are unchanged. Accepted Decision guards
+remain unchanged: nullable authority_revision is an immutable opt-in seed, and
+current authority revision derives from append-only events. Legacy stays blocked.
+The adapter validates guard fingerprints and demands separate exact post-COMMIT
+readback, with reconciliation_required/no retry. Concrete canonical Prisma ports
+remain absent; no migration apply, DB/Docker, signing, endpoint or composition.
+RF-HOST-035 PARTIAL; signed_current_decision_unavailable and production BLOCKED;
+six readiness flags plus transportQualified/launchAuthority false. One next atom:
+source-only concrete canonical projection/child-insert/readback ports and existing
+attempt integration, keeping migration 83 unapplied. Not started. Earlier
+recommendations and mutable-root-counter proposals are historical.
 
 Owner amendment v26: [loopback HTTPS handoff adapter](worker-handoff-https-v1.md)
 passes 9/9 real HTTPS results and 189/189 selected tests. Its sole client surface

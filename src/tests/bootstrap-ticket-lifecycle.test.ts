@@ -462,7 +462,8 @@ test('unapplied bootstrap lifecycle schema and source-only adapter',async t=>{
   for(const spec of [...ticketOwnGuards.map(g=>({name:g.function,hash:g.hash})),...ticketHelpers]){
    const body=new RegExp('CREATE FUNCTION '+spec.name+'\\([^;]*?AS \\$\\$([\\s\\S]*?)\\$\\$;').exec(all)?.[1];assert.ok(body,spec.name);assert.equal(createHash('sha256').update(body!).digest('hex'),spec.hash,spec.name);
   }
-  assert.equal(readdirSync('prisma/migrations').filter(n=>/^\d/.test(n)).length,82);
+  // Later additive migrations do not change this contract's position in the chain.
+  assert.equal(readdirSync('prisma/migrations').filter(n=>/^\d/.test(n)).sort().indexOf('20260924010000_bootstrap_ticket_lifecycle'),81);
  });
  assert.equal(effects,0);assert.deepEqual(logs,[]);
 });
