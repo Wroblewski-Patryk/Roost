@@ -120,19 +120,46 @@ BEGIN
   AND NOT EXISTS(SELECT 1 FROM api_keys WHERE workspace_id=host.workspace_id AND worker_host_id=host.subject_id AND active AND revoked_at IS NULL),false);
 EXCEPTION WHEN OTHERS THEN RETURN false;
 END $$;
+CREATE FUNCTION bootstrap_lifecycle_channel_bound(i JSONB) RETURNS BOOLEAN LANGUAGE plpgsql STABLE AS $$
+BEGIN RETURN EXISTS(
+ SELECT 1 FROM worker_bootstrap_tickets t JOIN worker_transport_bootstrap_grants g ON g.ticket_id=t.id
+ JOIN worker_transport_generations gen ON gen.id=g.generation_id
+ JOIN worker_transport_history h ON h.generation_id=gen.id AND h.record->>'grantId'=g.id::text AND h.record->>'action'='grant'
+ JOIN worker_bootstrap_lifecycle_events issue ON issue.ticket_id=t.id AND issue.revision=1 AND issue.record->>'action'='issue'
+ JOIN worker_bootstrap_write_receipts root ON root.ticket_id=t.id AND root.table_name='worker_bootstrap_tickets' AND root.row_id=t.id::text
+ JOIN worker_bootstrap_write_receipts receipt ON receipt.table_name='worker_bootstrap_lifecycle_events' AND receipt.row_id=issue.id::text AND receipt.writer_xid=issue.writer_xid
+ JOIN worker_transport_write_audit gw ON gw.table_name='worker_transport_bootstrap_grants' AND gw.row_id=g.id::text
+ JOIN worker_transport_write_audit genw ON genw.table_name='worker_transport_generations' AND genw.row_id=gen.id::text
+ JOIN worker_transport_write_audit hw ON hw.table_name='worker_transport_history' AND hw.row_id=h.id::text AND hw.writer_xid=h.writer_xid
+ JOIN worker_transport_audit audit ON audit.history_id=h.id AND audit.record_digest=h.record_digest
+ JOIN events event ON event.id=receipt.event_id
+ WHERE t.id=(i->>'ticketId')::uuid AND t.lifecycle_identity=i AND t.ticket_digest=i->>'ticketDigest'
+  AND g.record->'intent'->>'ticketDigest'=t.ticket_digest AND gen.id::text=i->>'channelGeneration' AND h.revision::text=i->>'channelRevision'
+  AND g.record->'intent'->'snapshot'->>'revision'=i->>'channelRevision'
+  AND i->>'channelDigest'=bootstrap_lifecycle_digest(jsonb_build_object('domain','worker-bootstrap-channel-plan-v2','snapshot',g.record->'intent'->'snapshot'))
+  AND root.writer_xid=issue.writer_xid AND genw.writer_xid=issue.writer_xid AND gw.writer_xid=issue.writer_xid AND hw.writer_xid=issue.writer_xid
+  AND root.row_digest=encode(sha256(convert_to(to_jsonb(t)::text,'UTF8')),'hex')
+  AND genw.row_digest=encode(sha256(convert_to(to_jsonb(gen)::text,'UTF8')),'hex')
+  AND gw.row_digest=encode(sha256(convert_to(to_jsonb(g)::text,'UTF8')),'hex')
+  AND hw.row_digest=encode(sha256(convert_to(to_jsonb(h)::text,'UTF8')),'hex')
+  AND receipt.row_digest=encode(sha256(convert_to(to_jsonb(issue)::text,'UTF8')),'hex') AND event.payload->>'rowDigest'=receipt.row_digest
+  AND root.fence_revision<genw.fence_revision AND genw.fence_revision<gw.fence_revision AND gw.fence_revision<hw.fence_revision AND hw.fence_revision<receipt.fence_revision);
+EXCEPTION WHEN OTHERS THEN RETURN false;
+END $$;
 CREATE FUNCTION bootstrap_lifecycle_current(i JSONB) RETURNS BOOLEAN LANGUAGE plpgsql STABLE AS $$
 BEGIN RETURN bootstrap_lifecycle_anchors_current(i) AND EXISTS(
  SELECT 1 FROM worker_transport_history r JOIN worker_transport_heads h ON h.history_id=r.id
  JOIN worker_transport_bootstrap_grants g ON g.generation_id=r.generation_id JOIN worker_transport_audit a ON a.history_id=r.id
  WHERE h.workspace_id=(i->'binding'->>'workspaceId')::uuid AND h.host_id=(i->'binding'->>'hostId')::uuid
-  AND r.generation_id::text=i->>'channelGeneration' AND r.revision::text=i->>'channelRevision' AND r.record_digest=i->>'channelDigest'
+  AND r.generation_id::text=i->>'channelGeneration' AND r.revision::text=i->>'channelRevision'
+  AND i->>'channelDigest'=bootstrap_lifecycle_digest(jsonb_build_object('domain','worker-bootstrap-channel-plan-v2','snapshot',g.record->'intent'->'snapshot'))
   AND r.state='current' AND r.purpose=i->>'purpose' AND a.record_digest=r.record_digest
   AND g.ticket_id::text=i->>'ticketId' AND g.record->'intent'->>'ticketDigest'=i->>'ticketDigest'
   AND g.record->'intent'->'snapshot'->'binding'=i->'binding'
   AND g.record->'intent'->'snapshot'->>'hostGeneration'=i->>'hostGeneration'
   AND g.record->'intent'->'snapshot'->>'installationGeneration'=i->>'installationGeneration'
   AND (g.record->'intent'->'snapshot'->>'validFrom')::timestamptz<=clock_timestamp()
-  AND (g.record->'intent'->'snapshot'->>'expiresAt')::timestamptz>clock_timestamp());
+  AND (g.record->'intent'->'snapshot'->>'expiresAt')::timestamptz>clock_timestamp()) AND bootstrap_lifecycle_channel_bound(i);
 EXCEPTION WHEN OTHERS THEN RETURN false;
 END $$;
 CREATE FUNCTION bootstrap_lifecycle_write_guard() RETURNS TRIGGER LANGUAGE plpgsql AS $$
@@ -165,7 +192,8 @@ BEGIN
   OR i->>'decisionRevision' IS DISTINCT FROM r->>'decisionRevision' OR i->>'purpose' IS DISTINCT FROM r->'intent'->>'purpose'
   OR i->>'issuedAt' IS DISTINCT FROM r->>'issuedAt' OR i->>'expiresAt' IS DISTINCT FROM r->'intent'->>'expiresAt'
   OR (i->>'expiresAt')::timestamptz IS DISTINCT FROM NEW.expires_at OR r->'intent'->'binding' IS DISTINCT FROM b
-  OR NEW.binding_digest IS DISTINCT FROM bootstrap_lifecycle_digest(b) OR NEW.ticket_digest IS DISTINCT FROM bootstrap_lifecycle_digest(NEW.record->'signed')
+  OR NEW.binding_digest IS DISTINCT FROM bootstrap_lifecycle_digest(b)
+  OR NEW.ticket_digest IS DISTINCT FROM bootstrap_lifecycle_digest(jsonb_build_object('domain','worker-bootstrap-ticket-envelope-v2','signed',NEW.record->'signed'))
   OR NEW.record_digest IS DISTINCT FROM bootstrap_lifecycle_digest(NEW.record) OR i->>'generation' IS DISTINCT FROM NEW.generation::text
   OR NEW.record->'decision'->'payload'->>'id' IS DISTINCT FROM NEW.decision_id::text OR NEW.record->'decision'->'payload'->>'ownerId' IS DISTINCT FROM NEW.owner_id::text
   OR NEW.record->'decision'->'payload'->>'revision' IS DISTINCT FROM i->>'decisionRevision' OR NEW.record->'decision'->'payload'->>'state' IS DISTINCT FROM 'accepted'
@@ -315,6 +343,8 @@ BEGIN
  ELSE SELECT ticket_id INTO ticket FROM worker_bootstrap_attempts WHERE id=NEW.attempt_id; END IF;
  SELECT * INTO op FROM worker_bootstrap_lifecycle_events WHERE ticket_id=ticket AND writer_xid=pg_current_xact_id()::text ORDER BY revision DESC LIMIT 1;
  IF op.id IS NULL THEN RAISE EXCEPTION 'bootstrap_atomic_lifecycle_required'; END IF;
+ IF op.record->>'action'='issue' AND NOT bootstrap_lifecycle_current((SELECT lifecycle_identity FROM worker_bootstrap_tickets WHERE id=ticket))
+ THEN RAISE EXCEPTION 'bootstrap_atomic_channel_binding_required'; END IF;
  IF TG_TABLE_NAME='worker_bootstrap_tickets' AND NOT EXISTS(SELECT 1 FROM worker_bootstrap_lifecycle_events WHERE ticket_id=ticket AND revision=1 AND writer_xid=pg_current_xact_id()::text)
  THEN RAISE EXCEPTION 'bootstrap_atomic_issue_required'; END IF;
  IF TG_TABLE_NAME='worker_bootstrap_attempts' AND NOT EXISTS(SELECT 1 FROM worker_bootstrap_lifecycle_events WHERE ticket_id=ticket AND attempt_id=NEW.id AND record->>'action'='consume' AND writer_xid=pg_current_xact_id()::text)

@@ -5,6 +5,8 @@ import {reviewDigest} from '../agent-runtime/task-review-contract';
 import {freezePublic} from './worker-transport-snapshot';
 import {persistedBootstrapAttempt,persistedBootstrapHistory,signedBootstrapPeer,signedBootstrapCompletion} from './worker-bootstrap-persistence-contract';
 import {ticketGuards,ticketHelpers,ticketChannelHelper} from './bootstrap-ticket-lifecycle-guards';
+import type {BootstrapV2ChannelBinding} from './bootstrap-channel-store';
+import {verifyTicketV2,type TicketV2SignatureVerifier} from './bootstrap-ticket-v2-verification';
 import {lifecycleId as id,lifecycleHash as hash,lifecycleIdentity,lifecycleRegistration,lifecycleEvent,lifecycleEqual as same,
  advanceTicketLifecycle,denyLifecycle as deny,lifecycleFlags,lifecycleActions,type TicketLifecycleEvent} from './bootstrap-ticket-lifecycle-contract';
 type Db=Prisma.TransactionClient;
@@ -113,19 +115,27 @@ async function append(db:Db,e:TicketLifecycleEvent){
 }
 // Factory only: no Prisma client creation, default composition, route, signer,
 // credential issuance or exchange. PostgreSQL schema remains unapplied.
-type IssueChannelBinding={qualification:'unapplied_ticket_channel_binding_v1';
- bind:(db:Db,registration:z.infer<typeof lifecycleRegistration>)=>Promise<void>};
-export function createPrismaTicketLifecycleStore(client:Pick<PrismaClient,'$transaction'>,clock=()=>new Date(),channelBinding?:IssueChannelBinding){
+export type TicketV2Dependencies={verifier:TicketV2SignatureVerifier;channel:BootstrapV2ChannelBinding};
+export function createPrismaTicketLifecycleStore(client:Pick<PrismaClient,'$transaction'>,clock=()=>new Date(),deps?:TicketV2Dependencies){
  const options={timeout:10000,maxWait:2000};
+ function dependencies(){if(deps?.channel?.qualification!=='unapplied_ticket_channel_binding_v2'||typeof deps.channel.bind!=='function'||typeof deps.channel.inspect!=='function'||
+  deps.verifier?.qualification!=='worker_bootstrap_ticket_verifier_v2'||typeof deps.verifier.verify!=='function')deny();return deps!;}
+ async function verified(db:Db,c:z.infer<typeof lifecycleRegistration>){const before=await fence(db);await verifyTicketV2(db,c,dependencies().verifier,clock());if(await fence(db)!==before)deny();}
+ async function readVerified(db:Db,ticketId:string){const p=await read(db,ticketId,clock());await verified(db,p.root);
+  // Terminal status is readable without reopening admission. Every usable state
+  // needs the concrete channel proof, never just a successful issue callback.
+  const bound=await dependencies().channel.inspect(db,p.root,clock());
+  if(await fence(db)!==p.fence)deny();return {...p,usable:p.usable&&bound,authorityCurrent:p.authorityCurrent&&bound};
+ }
  const reading=<T>(work:(db:Db)=>Promise<T>)=>client.$transaction(async db=>{await db.$executeRaw`SET TRANSACTION READ ONLY`;return work(db);},{...options,isolationLevel:'RepeatableRead'});
  async function write(work:(db:Db)=>Promise<TicketLifecycleEvent>){let callbackCompleted=false;
-  try{const result=await client.$transaction(async db=>{await fence(db,true);await guarded(db);const e=await work(db);callbackCompleted=true;return e;},{...options,isolationLevel:'Serializable'});
-   await reading(async db=>{const p=await read(db,result.ticketId,clock());if(!same(p.head,result))deny();
+  try{dependencies();const result=await client.$transaction(async db=>{await fence(db,true);await guarded(db);const e=await work(db);callbackCompleted=true;return e;},{...options,isolationLevel:'Serializable'});
+   await reading(async db=>{const p=await readVerified(db,result.ticketId);if(!same(p.head,result))deny();
     // Terminal denial receipts can be confirmed after authority loss; admission
     // receipts require fresh authority. Uncertainty is never a successful ACK.
     if(['issue','reserve','consume','dispatch','complete'].includes(result.action)){
-     const proof=result.action==='issue'?await db.$queryRaw<any[]>`SELECT bootstrap_lifecycle_anchors_current(${JSON.stringify(p.root.identity)}::jsonb) AS ticket_current`:
-      await db.$queryRaw<any[]>`SELECT bootstrap_lifecycle_current(${JSON.stringify(p.root.identity)}::jsonb) AS ticket_current`;
+     if(!await dependencies().channel.inspect(db,p.root,clock()))deny();
+     const proof=await db.$queryRaw<any[]>`SELECT bootstrap_lifecycle_current(${JSON.stringify(p.root.identity)}::jsonb) AS ticket_current`;
      if(proof.length!==1||proof[0].ticket_current!==true||clock().getTime()>=Date.parse(p.root.identity.expiresAt))deny();
      const f=await db.$queryRaw<any[]>`SELECT fence_revision::text AS receipt_fence FROM worker_bootstrap_write_receipts WHERE table_name='worker_bootstrap_lifecycle_events' AND row_id=${result.id}::text`;
      if(f.length!==1||f[0].receipt_fence!==p.fence)deny();
@@ -134,20 +144,19 @@ export function createPrismaTicketLifecycleStore(client:Pick<PrismaClient,'$tran
   }catch{if(callbackCompleted)throw new TicketLifecycleUnknown();return deny();}
  }
  return Object.freeze({
-  async inspect(value:unknown){try{const c=input.parse(value),p=await reading(db=>read(db,c.ticketId,clock()));
+  async inspect(value:unknown){try{dependencies();const c=input.parse(value),p=await reading(db=>readVerified(db,c.ticketId));
    return freezePublic({ok:true as const,qualification:'source_only_unapplied_v1' as const,identity:p.root.identity,head:p.head,digest:p.digest,fence:p.fence,usable:p.usable,authorityCurrent:p.authorityCurrent,...lifecycleFlags});
   }catch{return {ok:false as const,blockers:['bootstrap_ticket_revocation_unavailable'],...lifecycleFlags};}},
   register:(value:unknown)=>write(async db=>{const c=lifecycleRegistration.parse(value),i=c.identity,p=c.record.signed.payload;
+   await verified(db,c);
    await db.$executeRaw`INSERT INTO worker_bootstrap_tickets(id,workspace_id,host_id,owner_id,decision_id,request_id,generation,credential_epoch,target_id,predecessor_id,binding_digest,ticket_digest,record,record_digest,expires_at,lifecycle_identity)
     VALUES(${i.ticketId}::uuid,${i.binding.workspaceId}::uuid,${i.binding.hostId}::uuid,${i.ownerId}::uuid,${i.decisionId}::uuid,${p.intent.requestId}::uuid,${i.generation},${i.credentialEpoch},${p.intent.target.id}::uuid,
      ${i.predecessor?.attemptId??null}::uuid,${reviewDigest(i.binding)},${i.ticketDigest},${JSON.stringify(c.record)}::jsonb,${reviewDigest(c.record)},${new Date(i.expiresAt)},${JSON.stringify(i)}::jsonb)`;
-   // Trusted, transaction-bound composition seam only. No default binder exists.
-   // A later channel write burns the receipt's fence; it cannot silently renew
-   // this issue. Binding must be in this same transaction before the issue receipt.
-   if(channelBinding){if(channelBinding.qualification!=='unapplied_ticket_channel_binding_v1')deny();await channelBinding.bind(db,freezePublic(c));await guarded(db);}
-   const e=advanceTicketLifecycle(i,null,null,{id:c.operationId,action:'issue',attemptId:null,historyId:null},clock());await append(db,e);return e;
+   await dependencies().channel.bind(db,freezePublic(c),clock());await guarded(db);await verified(db,c);
+   const e=advanceTicketLifecycle(i,null,null,{id:c.operationId,action:'issue',attemptId:null,historyId:null},clock());await append(db,e);
+   if(!await dependencies().channel.inspect(db,c,clock()))deny();return e;
   }),
-  transition:(value:unknown)=>write(async db=>{const c=command.parse(value),p=await read(db,c.ticketId,clock()),i=p.root.identity,t=p.root.record.signed.payload;
+  transition:(value:unknown)=>write(async db=>{const c=command.parse(value),p=await readVerified(db,c.ticketId),i=p.root.identity,t=p.root.record.signed.payload;
    if(p.head.revision!==c.expectedRevision||p.fence!==c.expectedFence||['reserve','consume','dispatch','complete'].includes(c.action)&&!p.usable)deny();
    if(c.action!=='dispatch'&&c.action!=='complete'&&c.evidence||c.action==='dispatch'&&(!c.evidence?.peer||c.evidence.completion)||c.action==='complete'&&(!c.evidence?.completion||c.evidence.peer))deny();
    let attemptId=p.head.attemptId,historyId=p.head.historyId,previous:z.infer<typeof persistedBootstrapHistory>|null=null;

@@ -4,54 +4,91 @@ import crypto,{randomUUID,createHash} from 'node:crypto';
 import {readFileSync,readdirSync} from 'node:fs';
 import net from 'node:net';import tls from 'node:tls';import http from 'node:http';import https from 'node:https';import dns from 'node:dns';import childProcess from 'node:child_process';
 import {bootstrapChannelFixture} from './bootstrap-channel-fixture';
-import {createPrismaTicketLifecycleStore,TicketLifecycleUnknown} from '../modules/api-keys/bootstrap-ticket-lifecycle-store';
+import {createPrismaTicketLifecycleStore,TicketLifecycleUnknown,type TicketV2Dependencies} from '../modules/api-keys/bootstrap-ticket-lifecycle-store';
 import {createTicketLifecycleProtocol} from '../modules/api-keys/bootstrap-ticket-lifecycle-model';
 import {lifecycleRegistration,lifecycleFlags,lifecycleIdentity} from '../modules/api-keys/bootstrap-ticket-lifecycle-contract';
 import {ticketGuards,ticketOwnGuards,ticketHelpers,ticketChannelHelper} from '../modules/api-keys/bootstrap-ticket-lifecycle-guards';
 import {createCanonicalBootstrapAuthoritySource,CanonicalBootstrapBlocked} from '../modules/api-keys/worker-bootstrap-authority-source';
 import {reviewDigest} from '../modules/agent-runtime/task-review-contract';
+import {ticketEnvelopeDigest,ticketChannelPlanDigest,ticketContentDigest,ticketV2Domains} from '../modules/api-keys/bootstrap-ticket-v2-digests';
+import {createBootstrapV2ChannelBinding,createPrismaBootstrapChannelStore} from '../modules/api-keys/bootstrap-channel-store';
+import {channelGuards,channelShapeHash} from '../modules/api-keys/bootstrap-channel-guards';
+import {issuerGuards} from '../modules/api-keys/bootstrap-issuer-guards';
+import {advanceIssuer} from '../modules/api-keys/bootstrap-issuer-contract';
+import {advanceLifecycle} from '../modules/api-keys/worker-identity-lifecycle';
+import {channelSnapshotDigest} from '../modules/api-keys/bootstrap-channel-persistence-contract';
 const copy=<T>(v:T):T=>structuredClone(v),hash=(s:string)=>s.repeat(64),migration='prisma/migrations/20260924010000_bootstrap_ticket_lifecycle/migration.sql';
-function fixture(atomicBinding=false){
+function fixture(atomicBinding=false,integrated=false){
  const f=bootstrapChannelFixture();let now=f.now().getTime(),tail=Promise.resolve(),fault='',current=true,available=true,verified=true,origin=true,writes=0,transactions=0;
+ let transactionId=0,activeTransaction=0,signatureValid=true;const verifications:any[]=[],plans=new Map<string,any>(),decisions=new Map<string,any>(),lifecycle:any[]=[];
+ const b=f.snapshot.binding,der=Buffer.from('302a300506032b6570032100d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a','hex');
+ if(integrated)b.ticketPublicKeyDigest=createHash('sha256').update(der).digest('hex');
+ const key={workspaceId:b.workspaceId,installationId:b.installationId,keyId:b.ticketKeyId,epoch:1,publicKeyDigest:b.ticketPublicKeyDigest};
+ const issuerIntent={schemaVersion:'bootstrap-issuer-v1' as const,binding:{workspaceId:b.workspaceId,issuerId:b.workspaceId,installationId:b.installationId,purpose:'worker-bootstrap-owner-ticket-v1' as const},
+  action:'adopt' as const,expectedRevision:0,targetEpoch:1,material:{keyId:b.ticketKeyId,algorithm:'Ed25519' as const,format:'spki-der-base64' as const,spki:der.toString('base64'),publicKeyDigest:b.ticketPublicKeyDigest},
+  activatesAt:null,cutoverAt:null,adoptionEvidenceDigest:hash('a'),expiresAt:f.iso(60000)};
+ const issuer=integrated?advanceIssuer(issuerIntent,[],{ownerId:f.ticket.ownerId,decisionId:randomUUID(),decisionRevision:1,intent:issuerIntent,current:true,fresh:false,head:key},randomUUID(),new Date(f.iso(-10000))):null;
+ if(integrated)for(const kind of ['installation','host'] as const){const i={schemaVersion:'worker-identity-lifecycle-v1' as const,workspaceId:b.workspaceId,kind,subjectId:kind==='host'?b.hostId:b.installationId,
+  action:'adopt' as const,expected:null,generation:kind==='host'?f.snapshot.hostGeneration:f.snapshot.installationGeneration,installationId:b.installationId,installationGeneration:f.snapshot.installationGeneration,
+  hostFingerprint:kind==='host'?b.hostFingerprint:null,authorityDigest:hash('a'),adoptionEvidenceDigest:hash('b'),expiresAt:f.iso(60000)};
+  lifecycle.push(advanceLifecycle(i,[],{ownerId:f.ticket.ownerId,decisionId:randomUUID(),decisionRevision:1,intent:i,current:true,anchorFresh:false,hostEnabled:true,writerFenced:true,installation:lifecycle[0]??null},randomUUID(),f.now()));}
+ f.snapshot.recordDigest=channelSnapshotDigest(f.snapshot);
  const guards:any[]=ticketGuards.map(g=>({...g,enabled:true})),helpers:any[]=[...ticketHelpers,ticketChannelHelper].map(h=>({...h,enabled:true}));
- const state:any={tickets:[],attempts:[],history:[],heads:[],audit:[],events:[],receipts:[],fence:10,channelCurrent:!atomicBinding},calls:string[]=[],options:any[]=[];
+ const state:any={tickets:[],attempts:[],history:[],heads:[],audit:[],events:[],receipts:[],fence:10,channelCurrent:!atomicBinding,
+  transport:{generations:[],grants:[],history:[],head:null}},calls:string[]=[],options:any[]=[];
  const clock=()=>new Date(now),last=(id:string)=>state.events.filter((e:any)=>e.ticketId===id).at(-1);
  function registration(previous?:any){
   const base=copy(f.ticket),purpose=previous?'owner_recovery':'first_enrollment';if(previous){base.id=randomUUID();base.decisionId=randomUUID();base.intent.requestId=randomUUID();base.intent.target.id=randomUUID();}
+  const snapshot=copy(f.snapshot);
+  if(integrated&&previous){snapshot.generation=randomUUID();snapshot.purpose=purpose;snapshot.revision=(state.transport.head?.revision??0)+1;
+   snapshot.certificateEpoch=(state.transport.head?.highWater??0)+1;snapshot.highWaterEpoch=snapshot.certificateEpoch;snapshot.leafPin=hash('7');
+   base.intent.channel.revision=snapshot.revision;base.intent.channel.certificateEpoch=snapshot.certificateEpoch;base.intent.channel.highWaterEpoch=snapshot.highWaterEpoch;
+   base.intent.channel.profile.certificate.fingerprint=snapshot.leafPin;base.intent.channel.profile.bootstrap.fingerprint=snapshot.leafPin;}
+  snapshot.expiresAt=new Date(now+60000).toISOString();snapshot.recordDigest=channelSnapshotDigest(snapshot);
   const identity:any={version:'bootstrap-ticket-revocation-proposal-v1',ticketId:base.id,ticketDigest:hash('0'),ownerId:base.ownerId,decisionId:base.decisionId,decisionRevision:1,purpose,binding:copy(f.snapshot.binding),
    generation:previous?previous.identity.generation+1:1,credentialEpoch:previous?previous.identity.credentialEpoch+1:1,issuedAt:f.iso(-1000),notBefore:f.iso(-500),expiresAt:f.iso(60000),
-   hostGeneration:f.snapshot.hostGeneration,installationGeneration:f.snapshot.installationGeneration,issuerRevision:1,issuerHistoryDigest:hash('1'),channelGeneration:f.snapshot.generation,channelRevision:1,channelDigest:hash('2'),
+   hostGeneration:snapshot.hostGeneration,installationGeneration:snapshot.installationGeneration,issuerRevision:1,issuerHistoryDigest:hash('1'),channelGeneration:snapshot.generation,channelRevision:snapshot.revision,channelDigest:ticketChannelPlanDigest(snapshot),
    predecessor:previous?{ticketId:previous.identity.ticketId,ticketDigest:previous.identity.ticketDigest,attemptId:previous.head.attemptId,generation:previous.identity.generation,credentialEpoch:previous.identity.credentialEpoch,
     historyDigest:previous.digest,state:previous.head.state,workspaceId:f.snapshot.binding.workspaceId,hostId:f.snapshot.binding.hostId}:null};
   base.version='worker-bootstrap-owner-ticket-v2';base.intent.schemaVersion='worker-bootstrap-admission-v2';base.intent.purpose=purpose;base.intent.prior=copy(identity.predecessor);
   base.intent.baseline.enrollmentGeneration=identity.generation-1;base.intent.baseline.credentialHighWater=identity.credentialEpoch-1;base.intent.target.epoch=identity.credentialEpoch;
   identity.issuedAt=new Date(now-1000).toISOString();identity.notBefore=new Date(now-500).toISOString();identity.expiresAt=new Date(now+60000).toISOString();base.issuedAt=identity.issuedAt;base.intent.expiresAt=identity.expiresAt;
   const {ticketDigest,...metadata}=identity;base.lifecycle=metadata;base.decisionIntentDigest=reviewDigest(base.intent);
-  const signed={payload:base,signature:'0'.repeat(128)};identity.ticketDigest=reviewDigest(signed);
+  const signed={payload:base,signature:'0'.repeat(128)};identity.ticketDigest=ticketEnvelopeDigest(signed);
   const decision={payload:{id:base.decisionId,revision:1,ownerId:base.ownerId,authority:'owner_reserved',state:'accepted',intentDigest:base.decisionIntentDigest,acceptedAt:f.iso(-2000),expiresAt:identity.expiresAt},signature:'0'.repeat(128)};
+  plans.set(identity.ticketId,snapshot);decisions.set(identity.ticketId,{id:randomUUID(),revision:1,ownerId:base.ownerId,acceptanceId:randomUUID(),intent:{schemaVersion:'worker-bootstrap-channel-v1',ticketId:identity.ticketId,ticketDigest:identity.ticketDigest,expectedRevision:snapshot.revision-1,snapshot}});
   return lifecycleRegistration.parse({operationId:randomUUID(),identity,record:{signed,decision}});
  }
  function receipt(kind:string,id:string,ticketId:string,record:unknown){
   state.fence++;if(fault==='fence')throw Error('synthetic');
   const event={id:randomUUID(),kind,ticketId,digest:reviewDigest(record)};state.audit.push(event);if(fault==='event')throw Error('synthetic');
-  state.receipts.push({kind,id,ticketId,digest:event.digest,eventId:event.id,fence:String(state.fence)});if(fault==='audit')throw Error('synthetic');
+  state.receipts.push({kind,id,ticketId,digest:event.digest,eventId:event.id,fence:String(state.fence),xid:activeTransaction});if(fault==='audit')throw Error('synthetic');
  }
  const client:any={$transaction:async(work:any,option:any)=>{
   let release!:()=>void;const wait=tail;tail=new Promise<void>(r=>release=r);await wait;
   const saved=copy(state);let readOnly=false;options.push(option);if(option.isolationLevel==='Serializable')transactions++;
+  activeTransaction=++transactionId;
   const db:any={$executeRaw:async(strings:TemplateStringsArray,...v:any[])=>{
    const sql=strings.join('?').replace(/\s+/g,' ').trim();calls.push(sql);
    if(sql==='SET TRANSACTION READ ONLY'){readOnly=true;return 0;}assert.equal(readOnly,false);assert.equal(option.isolationLevel,'Serializable');writes++;
-   if(sql.includes('synthetic_channel_binding')){state.channelCurrent=true;state.fence++;}
+   if(sql.startsWith('INSERT INTO worker_transport_generations')){const row={id:v[0],identity:JSON.parse(v[4]),purpose:v[6]};assert.equal(state.transport.generations.some((g:any)=>g.id===row.id),false);
+    state.transport.generations.push(row);receipt('transport_generation',row.id,state.tickets.at(-1).identity.ticketId,row);if(fault==='generation')throw Error('synthetic');}
+   else if(sql.startsWith('INSERT INTO worker_transport_bootstrap_grants')){const g=JSON.parse(v[6]);assert.equal(state.transport.grants.some((r:any)=>r.intent.ticketId===g.intent.ticketId),false);
+    state.transport.grants.push(g);receipt('transport_grant',g.id,g.intent.ticketId,g);if(fault==='grant')throw Error('synthetic');}
+   else if(sql.startsWith('WITH v AS')){const r=JSON.parse(v[0]),g=JSON.parse(v[1]),s=g.intent.snapshot;assert.equal(r.revision,(state.transport.head?.revision??0)+1);
+    state.transport.history.push(r);if(fault==='channel_history')throw Error('synthetic');
+    receipt('transport_history',r.id,g.intent.ticketId,r);state.transport.head={id:r.id,revision:r.revision,highWater:s.highWaterEpoch,purpose:s.purpose,state:r.state,generation:s.generation,pin:s.leafPin,record:copy(r),fence:String(state.fence)};
+    if(fault==='binding')throw Error('synthetic');}
+   else if(sql.includes('synthetic_channel_binding')){state.channelCurrent=true;state.fence++;}
    else if(sql.startsWith('INSERT INTO worker_bootstrap_tickets')){
     assert.equal(current,true);const i=JSON.parse(v[15]),record=JSON.parse(v[12]);lifecycleRegistration.parse({operationId:randomUUID(),identity:i,record});
     const old=state.tickets.filter((t:any)=>t.identity.binding.workspaceId===i.binding.workspaceId&&t.identity.binding.hostId===i.binding.hostId).at(-1);
     assert.equal(state.tickets.some((t:any)=>t.identity.ticketId===i.ticketId),false);assert.equal(i.generation,(old?.identity.generation??0)+1);
     if(old){assert.equal(old.identity.version,i.version);const e=last(old.identity.ticketId);assert.equal(i.predecessor.historyDigest,reviewDigest(e));assert.equal(i.predecessor.attemptId,e.attemptId);assert.ok(['revoked','expired','delivery_unknown'].includes(e.state));}
-    state.tickets.push({identity:i,record});receipt('root',i.ticketId,i.ticketId,{identity:i,record});
+    state.tickets.push({identity:i,record});receipt('root',i.ticketId,i.ticketId,{identity:i,record});if(fault==='root')throw Error('synthetic');
    }else if(sql.startsWith('INSERT INTO worker_bootstrap_lifecycle_events')){
     const e=JSON.parse(v[4]),p=last(e.ticketId);assert.equal(e.revision,(p?.revision??0)+1);assert.equal(e.previousDigest,p?reviewDigest(p):null);
-    assert.equal(state.events.some((r:any)=>r.id===e.id),false);state.events.push(e);if(fault==='history')throw Error('synthetic');receipt('lifecycle',e.id,e.ticketId,e);
+    assert.equal(state.events.some((r:any)=>r.id===e.id),false);state.events.push(e);if(fault==='history'||fault==='issue')throw Error('synthetic');receipt('lifecycle',e.id,e.ticketId,e);
    }else if(sql.startsWith('INSERT INTO worker_bootstrap_attempts')){
     const a=JSON.parse(v[7]);assert.equal(state.attempts.some((a2:any)=>a2.ticketId===a.ticketId),false);state.attempts.push(a);receipt('attempt',a.id,a.ticketId,a);
    }else if(sql.startsWith('INSERT INTO worker_bootstrap_history')){
@@ -64,8 +101,37 @@ function fixture(atomicBinding=false){
   },$queryRaw:async(strings:TemplateStringsArray,...v:any[])=>{
    const sql=strings.join('?').replace(/\s+/g,' ').trim();calls.push(sql);
    if(sql.includes('AS ticket_lifecycle_available'))return [{ticket_lifecycle_available:available}];
-   if(sql.includes('FROM pg_trigger'))return copy(guards).map(g=>({...g,enabled:g.enabled&&origin&&['Serializable','RepeatableRead'].includes(option.isolationLevel)}));
-   if(sql.includes('FROM pg_proc'))return copy(helpers);
+   if(sql.includes('FROM pg_trigger')){
+    const list=(v[0].length===issuerGuards.length?issuerGuards:v[0].length===channelGuards.length?channelGuards:guards).map((g:any)=>({...g,enabled:g.enabled!==false&&origin&&['Serializable','RepeatableRead'].includes(option.isolationLevel)}));return copy(list);}
+   if(sql.includes('FROM pg_proc'))return sql.includes("p.proname='transport_bootstrap_shape'")?[{hash:channelShapeHash,enabled:true}]:copy(helpers);
+   if(sql.includes('AS channel_available'))return [{channel_available:available}];
+   if(sql.includes('to_regclass'))return [{available}];
+   if(sql.includes('AS channel_fence'))return [{channel_fence:String(state.fence)}];
+   if(sql.includes('AS v2_issue_pending'))return [{v2_issue_pending:!readOnly&&!last(v[0])&&state.receipts.some((r:any)=>r.kind==='root'&&r.ticketId===v[0]&&r.xid===activeTransaction)}];
+   if(sql.startsWith('SELECT d.id,r.version AS revision')){const d=decisions.get(v[1]);return d?[{id:d.id,revision:d.revision}]:[];}
+   if(sql.includes('AS channel_ticket')){const t=state.tickets.find((t:any)=>t.identity.ticketId===v[0]);return t?[{channel_ticket:copy(t.record.signed.payload),digest:t.identity.ticketDigest,channel_record:copy(t.record),channel_identity:copy(t.identity),verified}]:[];}
+   if(sql.includes('AS channel_grant'))return state.transport.grants.filter((g:any)=>g.intent.ticketId===v[0]).map((g:any)=>({channel_grant:copy(g),verified}));
+   if(sql.includes('AS v2_channel_bound')){
+    const issue=state.events.find((e:any)=>e.ticketId===v[0]&&e.action==='issue'),g=state.transport.grants.find((g:any)=>g.intent.ticketId===v[0]);
+    const rr=state.receipts.find((r:any)=>r.kind==='root'&&r.ticketId===v[0]),gr=state.receipts.find((r:any)=>r.kind==='transport_grant'&&r.id===g?.id),ir=state.receipts.find((r:any)=>r.kind==='lifecycle'&&r.id===issue?.id);
+    const generation=state.transport.generations.find((r:any)=>r.id===g?.intent.snapshot.generation),history=state.transport.history.find((r:any)=>r.grantId===g?.id&&r.action==='grant');
+    const genr=state.receipts.find((r:any)=>r.kind==='transport_generation'&&r.id===generation?.id),hr=state.receipts.find((r:any)=>r.kind==='transport_history'&&r.id===history?.id);
+    const latest=state.receipts.find((r:any)=>r.kind==='lifecycle'&&r.id===last(v[0])?.id);
+    return [{v2_channel_bound:verified&&current&&[rr,genr,gr,hr,ir].every(Boolean)&&new Set([rr,genr,gr,hr,ir].map(r=>r?.xid)).size===1&&
+     [rr,genr,gr,hr,ir].every((r,k,a)=>k===0||Number(a[k-1].fence)<Number(r.fence))&&genr.digest===reviewDigest(generation)&&gr.digest===reviewDigest(g)&&hr.digest===reviewDigest(history)&&
+     latest?.fence===String(state.fence)&&state.transport.head?.state==='current'}];
+   }
+   if(sql.includes('AS channel_confirmed')){const r=JSON.parse(v[0]);return [{channel_confirmed:verified&&state.transport.head?.id===r.id&&state.transport.head.fence===String(state.fence)}];}
+   if(sql.includes('FROM worker_transport_heads'))return state.transport.head?[{...copy(state.transport.head),verified}]:[];
+   if(sql.startsWith('SELECT generation_id AS generation'))return state.transport.history.map((r:any)=>{const g=state.transport.grants.find((g:any)=>g.id===r.grantId);return {generation:g.intent.snapshot.generation,pin:g.intent.snapshot.leafPin,staged:null};});
+   if(sql.startsWith('SELECT record_digest AS digest'))return [{digest:reviewDigest(state.transport.history.find((r:any)=>r.id===v[0]))}];
+   if(sql.includes('FROM decisions d')){const d=[...decisions.values()].find(d=>d.id===v[0]);return d?[{ownerId:d.ownerId,revision:d.revision,acceptanceId:d.acceptanceId,intent:copy(d.intent),current}]:[];}
+   if(sql.includes('worker_identity_lifecycle_guarded'))return [{guarded:current}];
+   if(sql.includes('FROM worker_identity_lifecycle l'))return lifecycle.filter(r=>r.intent.kind===v[1]).map(record=>({record:copy(record),verified}));
+   if(sql.includes('FROM bootstrap_issuer_history h'))return [{record:copy(issuer),fence:'1',verified}];
+   if(sql.startsWith('SELECT revision,record_digest AS digest'))return [{revision:1,digest:hash('1')}];
+   if(sql.includes('FROM trusted_provider_ticket_keys'))return [copy(key)];
+   if(sql.includes('FROM api_keys'))return [{total:0,active:0}];
    if(sql.includes('AS ticket_fence'))return [{ticket_fence:String(state.fence)}];
    if(sql.startsWith('SELECT lifecycle_identity'))return copy(state.tickets.filter((t:any)=>t.identity.ticketId===v[0]));
    if(sql.startsWith('WITH objects')){
@@ -79,7 +145,7 @@ function fixture(atomicBinding=false){
    if(sql.startsWith('SELECT t.ticket_digest')){const t=state.tickets.find((t:any)=>t.identity.ticketId===v[0]),e=last(v[0]);return t&&e?[{digest:t.identity.ticketDigest,history:reviewDigest(e),attempt:e.attemptId,state:e.state,generation:t.identity.generation,credential:t.identity.credentialEpoch}]:[];}
    if(sql.includes('AS ticket_ledger_verified')){const e=last(v[0]);return [{ticket_ledger_verified:state.attempts.filter((a:any)=>a.ticketId===v[0]).length===(e.attemptId?1:0)&&
     (!e.attemptId||v[4]||state.heads.some((h:any)=>h.attemptId===e.attemptId&&h.id===e.historyId))}];}
-   if(sql.includes('AS ticket_current'))return [{ticket_current:current&&(sql.includes('anchors_current')||state.channelCurrent)}];
+   if(sql.includes('AS ticket_current'))return [{ticket_current:current&&state.channelCurrent&&!(readOnly&&fault==='post_commit_read')}];
    if(sql.startsWith('SELECT fence_revision'))return state.receipts.filter((r:any)=>r.kind==='lifecycle'&&r.id===v[0]).map((r:any)=>({receipt_fence:r.fence}));
    if(sql.startsWith('SELECT record FROM worker_bootstrap_history')){const h=state.history.filter((h:any)=>h.attemptId===v[0]).at(-1);return h?[{record:copy(h)}]:[];}
    assert.fail('Unexpected query');
@@ -92,8 +158,10 @@ function fixture(atomicBinding=false){
    }return value;
   }catch(e){if(!(e instanceof TicketLifecycleUnknown))Object.assign(state,saved);throw e;}finally{release();}
  }};
- const store=createPrismaTicketLifecycleStore(client,clock,atomicBinding?{qualification:'unapplied_ticket_channel_binding_v1',
-  bind:async db=>{await db.$executeRaw`SELECT 1 /* synthetic_channel_binding */`;}}:undefined);
+ const deps:TicketV2Dependencies={verifier:{qualification:'worker_bootstrap_ticket_verifier_v2' as const,verify:async(_db,proof)=>{verifications.push(copy(proof));return signatureValid;}},
+  channel:integrated?createBootstrapV2ChannelBinding():{qualification:'unapplied_ticket_channel_binding_v2' as const,
+   bind:async(db:any)=>{if(atomicBinding)await db.$executeRaw`SELECT 1 /* synthetic_channel_binding */`;},inspect:async()=>state.channelCurrent}};
+ const store=createPrismaTicketLifecycleStore(client,clock,deps);
  const inspect=async(id:string)=>{const p=await store.inspect({ticketId:id});assert.equal(p.ok,true);if(!p.ok)throw Error('denied');return p;};
  const command=async(ticketId:string,action:string,evidence?:unknown)=>{const p=await inspect(ticketId);return {ticketId,operationId:randomUUID(),expectedRevision:p.head.revision,expectedFence:p.fence,action,...(evidence?{evidence}:{})};};
  const transition=async(ticketId:string,action:string,evidence?:unknown)=>store.transition(await command(ticketId,action,evidence));
@@ -101,7 +169,7 @@ function fixture(atomicBinding=false){
   origin:f.profile.origin,serverName:f.profile.serverName,pin:f.profile.certificate.fingerprint,caDigest:f.profile.trust.caDigest,
   certificateNotBefore:f.iso(-60000),certificateNotAfter:f.iso(120000),addresses:['8.8.8.8'],peerAddress:'8.8.8.8',resolverPolicy:'public_ipv4_only_v1',source:'issuer_signed_peer_observation_v1',
   chainValid:true,hostnameValid:true,observedAt:clock().toISOString(),expiresAt:new Date(now+30000).toISOString(),redirect:false,proxy:false,downgrade:false},signature:'0'.repeat(128)};}
- return {f,store,registration,inspect,command,transition,clock,bootstrapPeer,guards,helpers,calls,options,state:()=>copy(state),mutate:(fn:(s:any)=>void)=>fn(state),
+ return {f,store,client,deps,plans,decisions,lifecycle,key,issuer,verifications,signature:(v:boolean)=>signatureValid=v,registration,inspect,command,transition,clock,bootstrapPeer,guards,helpers,calls,options,state:()=>copy(state),mutate:(fn:(s:any)=>void)=>fn(state),
   at:(ms:number)=>now=Date.parse(f.iso(ms)),fault:(s:string)=>fault=s,current:(v:boolean)=>current=v,origin:(v:boolean)=>origin=v,available:(v:boolean)=>available=v,verified:(v:boolean)=>verified=v,counts:()=>({writes,transactions})};
 }
 
@@ -142,7 +210,7 @@ test('unapplied bootstrap lifecycle schema and source-only adapter',async t=>{
   }
  });
  await t.test('status is read only; explicit validity, missing legacy, replay and stale source fence deny',async()=>{
-  const f=fixture(),c=f.registration();c.identity.notBefore=f.f.iso(500);c.record.signed.payload.lifecycle.notBefore=c.identity.notBefore;c.identity.ticketDigest=reviewDigest(c.record.signed);
+  const f=fixture(),c=f.registration();c.identity.notBefore=f.f.iso(500);c.record.signed.payload.lifecycle.notBefore=c.identity.notBefore;c.identity.ticketDigest=ticketEnvelopeDigest(c.record.signed);
   await f.store.register(c);const baseline=f.state();for(let n=0;n<4;n++)await f.inspect(c.identity.ticketId);assert.deepEqual(f.state(),baseline);
   assert.equal((await f.inspect(c.identity.ticketId)).usable,false);await assert.rejects(f.transition(c.identity.ticketId,'reserve'));f.at(60000);assert.equal((await f.inspect(c.identity.ticketId)).usable,false);assert.deepEqual(f.state(),baseline);
   const g=fixture(),d=g.registration();await g.store.register(d);const old=await g.command(d.identity.ticketId,'reserve');g.mutate(s=>s.fence++);await assert.rejects(g.store.transition(old));assert.equal((await g.inspect(d.identity.ticketId)).usable,false);
@@ -217,11 +285,74 @@ test('unapplied bootstrap lifecycle schema and source-only adapter',async t=>{
   }
  });
  await t.test('issue is a reservation only; channel binding must precede its receipt in the same transaction',async()=>{
-  const f=fixture(),c=f.registration();f.mutate(s=>s.channelCurrent=false);await f.store.register(c);assert.equal((await f.inspect(c.identity.ticketId)).usable,false);
-  await assert.rejects(f.transition(c.identity.ticketId,'reserve'));f.mutate(s=>{s.channelCurrent=true;s.fence++;});assert.equal((await f.inspect(c.identity.ticketId)).usable,false);
+  const f=fixture(),c=f.registration();f.mutate(s=>s.channelCurrent=false);const before=f.state();await assert.rejects(f.store.register(c));assert.deepEqual(f.state(),before);
   const g=fixture(true),d=g.registration();await g.store.register(d);assert.equal((await g.inspect(d.identity.ticketId)).usable,true);
   const root=g.calls.findIndex(s=>s.startsWith('INSERT INTO worker_bootstrap_tickets')),binding=g.calls.findIndex(s=>s.includes('synthetic_channel_binding')),receipt=g.calls.findIndex(s=>s.startsWith('INSERT INTO worker_bootstrap_lifecycle_events'));
   assert.ok(root<binding&&binding<receipt);assert.equal(g.counts().transactions,1);
+ });
+ await t.test('v2 integrated issue uses the existing channel writer, one transaction and one immutable receipt chain',async()=>{
+  const f=fixture(false,true),c=f.registration();const binder=f.deps.channel,visibility:boolean[]=[];
+  f.deps.channel={...binder,bind:async(db,r,now)=>{visibility.push(await binder.inspect(db,r,now));await binder.bind(db,r,now);visibility.push(await binder.inspect(db,r,now));}};
+  const result=await f.store.register(c);assert.deepEqual(visibility,[false,false]);assert.equal(result.implementationReady,false);assert.equal(f.counts().transactions,1);
+  const p=await f.inspect(c.identity.ticketId);assert.equal(p.usable,true);const s=f.state();assert.equal(s.tickets.length,1);assert.equal(s.transport.generations.length,1);assert.equal(s.transport.grants.length,1);assert.equal(s.transport.history.length,1);
+  const order=['INSERT INTO worker_bootstrap_tickets','INSERT INTO worker_transport_generations','INSERT INTO worker_transport_bootstrap_grants','WITH v AS','INSERT INTO worker_bootstrap_lifecycle_events'].map(prefix=>f.calls.findIndex(s=>s.startsWith(prefix)));
+  assert.ok(order.every((n,k)=>n>=0&&(k===0||n>order[k-1])));assert.equal(new Set(s.receipts.map((r:any)=>r.xid)).size,1);
+  assert.ok(f.options.some(o=>o.isolationLevel==='RepeatableRead'));await f.transition(c.identity.ticketId,'reserve');await f.transition(c.identity.ticketId,'consume');
+  assert.equal(f.state().attempts.length,1);assert.equal(f.state().transport.grants.length,1);assert.equal(f.state().transport.history.length,1);
+ });
+ await t.test('v2 integrated recovery binds the next canonical channel generation without a dummy predecessor attempt',async()=>{
+  const f=fixture(false,true),c=f.registration();await f.store.register(c);
+  await createPrismaBootstrapChannelStore(f.client,f.clock).transition({ticketId:c.identity.ticketId,operationId:randomUUID(),expectedRevision:1,action:'revoke'});
+  await f.transition(c.identity.ticketId,'revoke');const next=f.registration(await f.inspect(c.identity.ticketId));assert.equal(next.identity.predecessor?.attemptId,null);
+  await f.store.register(next);assert.equal((await f.inspect(next.identity.ticketId)).usable,true);const s=f.state();assert.equal(s.tickets.length,2);assert.equal(s.transport.generations.length,2);
+  assert.equal(s.transport.head.revision,3);assert.equal(s.transport.head.highWater,2);assert.equal(s.attempts.length,0);
+ });
+ await t.test('v2 digest domains are acyclic and the injected verifier sees the exact signed content and issuer identity',async()=>{
+  const f=fixture(false,true),c=f.registration(),s=f.plans.get(c.identity.ticketId),before=copy(c.record.signed);
+  assert.equal(c.identity.channelDigest,ticketChannelPlanDigest(s));assert.equal(c.identity.ticketDigest,ticketEnvelopeDigest(c.record.signed));
+  assert.notEqual(c.identity.channelDigest,s.recordDigest);assert.notEqual(c.identity.ticketDigest,reviewDigest(c.record.signed));assert.notEqual(ticketContentDigest(c.record.signed.payload),c.identity.ticketDigest);
+  assert.ok(!('ticketDigest'in c.record.signed.payload.lifecycle));assert.ok(!('ticketDigest'in s));assert.throws(()=>ticketChannelPlanDigest({...s,ticketDigest:hash('0')}));
+  const grantDigest=reviewDigest(f.decisions.get(c.identity.ticketId).intent);assert.notEqual(grantDigest,c.identity.ticketDigest);assert.deepEqual(c.record.signed,before);
+  await f.store.register(c);assert.ok(f.verifications.length>=3);for(const p of f.verifications){assert.equal(p.domain,ticketV2Domains.content);assert.equal(p.contentDigest,ticketContentDigest(c.record.signed.payload));
+   assert.equal(p.envelopeDigest,c.identity.ticketDigest);assert.deepEqual(p.identity,c.identity);assert.deepEqual(p.signed,c.record.signed);}
+ });
+ await t.test('v2 integration rolls back every issue/binding phase and treats false/unknown COMMIT as reconciliation',async()=>{
+  for(const fault of ['root','generation','grant','channel_history','binding','issue','fence','event','audit','verify_after_bind','precommit','false_ack','unknown','post_commit_read']){
+   const f=fixture(false,true),c=f.registration(),before=f.state();if(fault==='verify_after_bind'){const binder=f.deps.channel;f.deps.channel={...binder,bind:async(db,r,at)=>{await binder.bind(db,r,at);f.signature(false);}};}
+   f.fault(fault);await assert.rejects(f.store.register(c),e=>['precommit','false_ack','unknown','post_commit_read'].includes(fault)?e instanceof TicketLifecycleUnknown:true);
+   assert.equal(f.counts().transactions,1,fault);if(!['unknown','post_commit_read'].includes(fault))assert.deepEqual(f.state(),before,fault);
+   else{assert.equal(f.state().tickets.length,1);assert.equal(f.state().transport.grants.length,1);assert.equal(f.state().events.length,1);}
+  }
+ });
+ await t.test('v2 twenty concurrent issue+bind commands commit exactly one root, generation, grant and issue',async()=>{
+  const f=fixture(false,true),c=f.registration();const results=await Promise.allSettled(Array.from({length:20},()=>f.store.register({...c,operationId:randomUUID()})));
+  assert.equal(results.filter(r=>r.status==='fulfilled').length,1);assert.equal(f.counts().transactions,20);const s=f.state();
+  for(const rows of [s.tickets,s.transport.generations,s.transport.grants,s.transport.history,s.events])assert.equal(rows.length,1);
+  assert.equal(new Set(s.receipts.map((r:any)=>r.xid)).size,1);
+ });
+ await t.test('v2 missing verifier/binder, rejected signature and standalone/late binding fail closed',async()=>{
+  for(const missing of ['all','verifier','channel']){const f=fixture(false,true),c=f.registration(),deps:any={...f.deps};if(missing!=='all')delete deps[missing];
+   const store=createPrismaTicketLifecycleStore(f.client,f.clock,missing==='all'?undefined:deps);await assert.rejects(store.register(c));assert.equal((await store.inspect({ticketId:c.identity.ticketId})).ok,false);assert.equal(f.counts().transactions,0);}
+  const rejected=fixture(false,true),invalid=rejected.registration();rejected.signature(false);await assert.rejects(rejected.store.register(invalid));assert.equal(rejected.counts().writes,0);
+  const f=fixture(false,true),c=f.registration();await f.store.register(c);const before=f.state();
+  await assert.rejects(f.client.$transaction((db:any)=>f.deps.channel.bind(db,c,f.clock()),{isolationLevel:'Serializable'}));assert.deepEqual(f.state(),before);
+  await assert.rejects(createPrismaBootstrapChannelStore(f.client,f.clock).grant({ticketId:c.identity.ticketId,operationId:randomUUID(),decisionId:f.decisions.get(c.identity.ticketId).id,decisionRevision:1}));assert.deepEqual(f.state(),before);
+  const broken=fixture(false,true),d=broken.registration();broken.deps.channel={...broken.deps.channel,bind:async()=>{}};
+  await assert.rejects(broken.store.register(d));assert.equal(broken.state().tickets.length,0);assert.equal(broken.state().transport.grants.length,0);
+ });
+ await t.test('v2 signed shape rejects legacy and caller overrides; status cannot repair a partial or separately rebound issue',async()=>{
+  const f=fixture(false,true),c=f.registration();for(const change of [(x:any)=>x.record.signed.payload.version='worker-bootstrap-owner-ticket-v1',(x:any)=>delete x.record.signed.signature,
+   (x:any)=>x.identity.channelDigest=hash('0'),(x:any)=>x.force=true,(x:any)=>x.verifier=true,(x:any)=>x.channel={verified:true}]){const bad=copy(c);change(bad);await assert.rejects(f.store.register(bad));}
+  assert.equal(f.state().tickets.length,0);await f.store.register(c);const before=f.state();await f.inspect(c.identity.ticketId);await f.inspect(c.identity.ticketId);assert.deepEqual(f.state(),before);
+  f.mutate(s=>s.receipts.find((r:any)=>r.kind==='transport_grant').xid++);const p=await f.inspect(c.identity.ticketId);assert.equal(p.usable,false);await assert.rejects(f.transition(c.identity.ticketId,'reserve'));
+  assert.equal(f.state().attempts.length,0);f.mutate(s=>s.events=[]);assert.equal((await f.store.inspect({ticketId:c.identity.ticketId})).ok,false);
+ });
+ await t.test('v2 owner/lifecycle/issuer/channel drift and validity mismatches roll back atomically',async()=>{
+  for(const change of [(f:any,c:any)=>f.decisions.get(c.identity.ticketId).ownerId=randomUUID(),(f:any)=>f.lifecycle[1].intent.generation=randomUUID(),
+   (f:any)=>f.key.epoch++,(f:any,c:any)=>f.plans.get(c.identity.ticketId).purpose='owner_recovery',(f:any,c:any)=>f.plans.get(c.identity.ticketId).certificateEpoch++,
+   (f:any,c:any)=>f.plans.get(c.identity.ticketId).expiresAt=f.f.iso(500),(f:any)=>f.at(60000),(f:any)=>f.current(false)]){
+   const f=fixture(false,true),c=f.registration(),before=f.state();change(f,c);await assert.rejects(f.store.register(c));assert.deepEqual(f.state(),before);
+  }
  });
  await t.test('unapplied DDL keeps a single root/head and fingerprints every native guard/helper',()=>{
   const sql=readFileSync(migration,'utf8').replace(/\r/g,'');assert.match(sql,/SOURCE PROPOSAL \/ UNAPPLIED/);assert.match(sql,/ALTER TABLE worker_bootstrap_tickets ADD COLUMN lifecycle_identity JSONB/);

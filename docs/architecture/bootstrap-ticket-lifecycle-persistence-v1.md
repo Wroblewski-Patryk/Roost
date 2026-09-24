@@ -1,6 +1,6 @@
 # Bootstrap ticket lifecycle persistence proposal
 
-Owner amendment v45, 2026-09-24. One source-only atom after `d899883d`.
+Owner amendment v46, 2026-09-24. One source-only integration atom after `b40ef604`.
 Migration **82 is UNAPPLIED**. No DB, Docker, native SQL, network/DNS, key material,
 signing, issuance, delivery, endpoints, default composition or activation.
 
@@ -35,11 +35,21 @@ generation under the shared fence; terminal tickets retain their reservation.
 Failed transactions reserve nothing; committed unknown/revoked issues burn their
 generation. Incomplete legacy in the same scope blocks a new issue.
 
-The signed v2 public envelope includes the metadata except `ticketDigest`; the
-digest binds that signed envelope externally, avoiding a circular digest. It is
-a strict new persistence shape, not reinterpretation of a signed v1 ticket or a
-cryptographic signature verifier. `channelDigest` binds the planned immutable
-channel history record, not a caller-supplied revocation boolean.
+The signed v2 public envelope includes the metadata except `ticketDigest`.
+Strict v2 ingestion never upgrades a v1 payload or accepts extra override fields.
+The acyclic digest order is planned snapshot -> ticket content -> signed envelope
+-> channel grant. Each digest uses canonical `reviewDigest` over the object below:
+
+| Digest | Exact domain and input |
+| --- | --- |
+| `channelDigest` | `{domain: 'worker-bootstrap-channel-plan-v2', snapshot}` |
+| Verifier content digest | `{domain: 'worker-bootstrap-ticket-content-v2', payload}` |
+| `ticketDigest` | `{domain: 'worker-bootstrap-ticket-envelope-v2', signed}` |
+
+The strict planned snapshot includes its existing snapshot `recordDigest`, but
+contains no ticket, grant, history or receipt digest. Signed lifecycle metadata
+contains `channelDigest`, excludes `ticketDigest`; the grant binds the resulting
+envelope digest. This supersedes v45's planned history-digest interpretation.
 
 ## Transactions and denial
 
@@ -52,7 +62,7 @@ attempt ledger. Revoke/expiry before dispatch blocks exchange; after dispatch or
 completion it records sticky `delivery_unknown`. Reconciliation closes an unknown
 outcome without un-revoke, replaying attempt history, or claiming credential undo.
 
-Readers verify **89 distinct trigger definitions and 6 helper definitions**,
+Readers verify **89 distinct trigger definitions and 7 helper definitions**,
 including inherited source/lifecycle/issuer/channel writers, exact bindings,
 function configuration, trigger mode and digest. Missing, disabled, rebound,
 changed guards or replica mode deny. Receipt/Event verification and monotonic
@@ -69,23 +79,41 @@ Late authority loss produces `delivery_unknown`, never success.
 
 ## Issue/channel ordering and remaining qualification
 
-Channel grants require a root ticket. Issue therefore checks owner/lifecycle/
-issuer anchors and reserves the immutable planned channel binding first. A
-successful issue ACK confirms that reservation, **not** usable admission. Without
-an exact current ticket-bound grant, inspect returns `usable: false`.
+`createPrismaTicketLifecycleStore` requires an explicit ticket signature verifier
+and channel binder; missing dependencies deny before opening a write transaction.
+There is **no default verifier or binder**. The verifier receives frozen exact
+public payload, identity, time and both ticket digests in the fenced transaction.
+Its contract requires Ed25519 verification of UTF-8
+`worker-bootstrap-ticket-content-v2:<contentDigest>` against the exact current
+issuer public key. Real cryptographic verification is not implemented or
+qualified here; tests inject synthetic results and never sign or use private keys.
+This seam supplies no signed-current-decision authority.
 
-A trusted transaction-scoped binder seam can insert the corresponding channel
-binding after the root and before the issue receipt, in the same transaction.
-There is **no default binder**. A separate later channel write invalidates the
-issue fence; status cannot refresh it. Existing channel and signature readers
-still accept v1 tickets; their v2 ingestion/composition is not implemented here.
+The concrete `createBootstrapV2ChannelBinding` reuses the existing channel grant
+writer and canonical generations/history/head/audit. It creates no transaction
+or second channel registry. One Serializable transaction holds the shared fence:
+verify the strict ticket -> insert/reserve its root -> resolve the exact accepted
+channel decision -> bind its planned snapshot -> reverify -> append issue and
+receipt/Event/audit -> inspect the complete binding. It checks exact owner,
+workspace, installation, host, issuer, purpose, generations, time and TLS profile.
+
+The native proposal links root, transport generation/grant/history and issue
+receipts by the same transaction ID, exact row digests and increasing fence
+order. Deferred issue checks reject an incomplete binding. Before binding or
+before the issue receipt there is no usable ticket. Any failure rolls back all
+writes. Standalone v2 channel grants and later binding deny; historical standalone
+v1 channel behavior remains unchanged. A separate READ ONLY transaction confirms
+the complete current binding and exact latest receipt after COMMIT; false ACK,
+unknown COMMIT or readback failure gives `reconciliation_required`, without retry.
+
 Do not wire this proposal into the current bootstrap service or remove either
 canonical blocker. Production completion/credential-source integration remains
 unqualified; synthetic callbacks are not signatures, TLS or delivery evidence.
 
 ## Verification
 
-**15/15 new results; 95/95 selected source/mocked results, zero failures/skips.**
+**23/23 lifecycle results (8 added); 103/103 selected source/mocked results,
+zero failures/skips.**
 Server build, lint (338 routes / 45 route files) and diff check pass. Native SQL,
 Prisma migration application and DB/COMMIT qualification were **not run**.
 
@@ -99,8 +127,15 @@ command is rejected and must be freshly reviewed; the adapter never retries it.
 Mocks serialize promises; they do not qualify PostgreSQL concurrency or DDL.
 Network, DNS, process launch and private-key/signing APIs are trapped in tests.
 
-**One recommended next atom:** source-only v2 ticket ingestion and atomic
-issue/channel-binding integration using the existing channel store, with tests
-for the complete ordering and denial path. Keep migration 82 unapplied and both
-canonical blockers active; no signed-current-decision authority or activation.
-Not started. Native migration/COMMIT qualification remains a later gate.
+Integrated tests use the actual shared channel writer with a transaction mock:
+full issue/reserve/consume, pre-consume recovery with no fabricated attempt,
+digest domains, verifier inputs, every write-phase rollback, verifier failure
+after binding, false/unknown COMMIT, 20 concurrent admissions yielding one root
+and one binding, missing/no-op dependencies, late binding, v1/override denial,
+read purity and owner/issuer/lifecycle/channel/purpose/certificate/time drift.
+
+**One recommended next atom:** separately authorize isolated native PostgreSQL
+qualification of migration 82 and atomic v2 issue/channel binding with a synthetic
+verifier. Qualify rollback, deferred COMMIT and concurrency; keep both canonical
+blockers and all readiness flags unchanged. No production keys or activation.
+Not started; this atom did not apply the migration or access a database.

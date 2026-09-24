@@ -2,11 +2,12 @@ import type {Prisma,PrismaClient} from '@prisma/client';
 import {z} from 'zod';
 import {reviewDigest} from '../agent-runtime/task-review-contract';
 import {bootstrapOwnerTicket} from './worker-bootstrap-contract';
+import {lifecycleRegistration} from './bootstrap-ticket-lifecycle-contract';
 import {persistedSignedTransport} from './worker-transport-persistence-contract';
 import {inspectCanonicalLifecycle} from './worker-identity-lifecycle-store';
 import {inspectCanonicalIssuer} from './bootstrap-issuer-store';
 import {channelGuards,channelShapeHash} from './bootstrap-channel-guards';
-import {channelGrant,channelGrantIntent,channelTransition,channelEqual,channelSnapshotDigest,validateChannelGrant,advanceChannel,denyChannel,type ChannelGrant,type ChannelHead,type ChannelTransition} from './bootstrap-channel-persistence-contract';
+import {channelGrant,channelGrantIntent,channelTransition,channelEqual,channelSnapshotDigest,validateChannelGrant,validateV2ChannelPlan,advanceChannel,denyChannel,type ChannelGrant,type ChannelHead,type ChannelTransition} from './bootstrap-channel-persistence-contract';
 type Db=Prisma.TransactionClient;
 const id=z.string().uuid(),epoch=z.number().int().positive(),command=z.object({ticketId:id,decisionId:id,decisionRevision:epoch,operationId:id}).strict();
 const transitionCommand=z.object({ticketId:id,operationId:id,expectedRevision:epoch,action:z.enum(['consume','revoke','unknown','close'])}).strict();
@@ -37,10 +38,15 @@ async function fence(db:Db,write=false){
   if(rows.length!==1||!/^\d+$/.test(rows[0].channel_fence))denyChannel();return rows[0].channel_fence as string;
 }
 async function ticket(db:Db,ticketId:string){
-  const rows=await db.$queryRaw<any[]>`SELECT record->'signed'->'payload' AS channel_ticket,ticket_digest AS digest,
+  const rows=await db.$queryRaw<any[]>`SELECT record->'signed'->'payload' AS channel_ticket,ticket_digest AS digest,record AS channel_record,to_jsonb(t)->'lifecycle_identity' AS channel_identity,
     (record->'signed'->'payload'->>'id'=id::text AND record->'signed'->'payload'->'intent'->'binding'->>'workspaceId'=workspace_id::text
-     AND record->'signed'->'payload'->'intent'->'binding'->>'hostId'=host_id::text) AS verified FROM worker_bootstrap_tickets WHERE id=${ticketId}::uuid`;
+     AND record->'signed'->'payload'->'intent'->'binding'->>'hostId'=host_id::text) AS verified FROM worker_bootstrap_tickets t WHERE id=${ticketId}::uuid`;
   if(rows.length!==1||rows[0].verified!==true||!/^[a-f0-9]{64}$/.test(rows[0].digest))denyChannel();
+  if(rows[0].channel_ticket?.version==='worker-bootstrap-owner-ticket-v2'){
+    const r=lifecycleRegistration.parse({operationId:ticketId,identity:rows[0].channel_identity,record:rows[0].channel_record});
+    if(r.identity.ticketDigest!==rows[0].digest||!channelEqual(r.record.signed.payload,rows[0].channel_ticket))denyChannel();
+    return {ticket:r.record.signed.payload,digest:rows[0].digest as string};
+  }
   return {ticket:bootstrapOwnerTicket.parse(rows[0].channel_ticket),digest:rows[0].digest as string};
 }
 async function head(db:Db,workspaceId:string,hostId:string):Promise<ChannelHead|null>{
@@ -75,6 +81,7 @@ async function owner(db:Db,decisionId:string,workspaceId:string){
 }
 async function live(db:Db,g:ChannelGrant,now:Date){
   const s=g.intent.snapshot,b=s.binding,a=await owner(db,g.decisionId,b.workspaceId),t=await ticket(db,g.intent.ticketId);
+  if(t.ticket.version==='worker-bootstrap-owner-ticket-v2')validateV2ChannelPlan(t.ticket,s,now);
   if(a.ownerId!==g.ownerId||a.revision!==g.decisionRevision||a.acceptanceId!==g.acceptanceId||!channelEqual(a.intent,g.intent)||t.digest!==g.intent.ticketDigest||t.ticket.ownerId!==g.ownerId||
     !channelEqual(t.ticket.intent.binding,b)||t.ticket.intent.purpose!==s.purpose||Date.parse(t.ticket.intent.expiresAt)<=now.getTime()||
     s.recordDigest!==channelSnapshotDigest(s)||Date.parse(s.validFrom)>now.getTime()||Date.parse(s.expiresAt)<=now.getTime()||s.cutoverAt&&now.getTime()>=Date.parse(s.cutoverAt))denyChannel();
@@ -95,9 +102,50 @@ async function grantRow(db:Db,ticketId:string){
     WHERE g.ticket_id=${ticketId}::uuid LIMIT 2`;
   if(rows.length!==1||rows[0].verified!==true)denyChannel();return channelGrant.parse(rows[0].channel_grant);
 }
+async function boundV2(db:Db,ticketId:string){
+ const proof=await db.$queryRaw<any[]>`SELECT (bootstrap_lifecycle_channel_bound(t.lifecycle_identity)
+  AND bootstrap_lifecycle_current(t.lifecycle_identity) AND a.fence_revision=f.revision) AS v2_channel_bound
+  FROM worker_bootstrap_tickets t JOIN LATERAL(SELECT * FROM worker_bootstrap_lifecycle_events WHERE ticket_id=t.id ORDER BY revision DESC LIMIT 1) e ON true
+  JOIN worker_bootstrap_write_receipts a ON a.table_name='worker_bootstrap_lifecycle_events' AND a.row_id=e.id::text AND a.writer_xid=e.writer_xid
+  JOIN ready_source_fence f ON f.id=1 WHERE t.id=${ticketId}::uuid`;
+ return proof.length===1&&proof[0].v2_channel_bound===true;
+}
+export type BootstrapV2ChannelBinding={qualification:'unapplied_ticket_channel_binding_v2';
+ bind:(db:Db,registration:z.infer<typeof lifecycleRegistration>,now:Date)=>Promise<void>;
+ inspect:(db:Db,registration:z.infer<typeof lifecycleRegistration>,now:Date)=>Promise<boolean>};
+// Reuses the exact channel writer below; no client/transaction/default binder.
+// This is an explicitly selected dependency of v2 ticket ingestion only.
+export function createBootstrapV2ChannelBinding():BootstrapV2ChannelBinding{
+ return Object.freeze({qualification:'unapplied_ticket_channel_binding_v2' as const,
+  async bind(db:Db,value:z.infer<typeof lifecycleRegistration>,now:Date){
+   const c=lifecycleRegistration.parse(value);await fence(db,true);if(!await guarded(db))denyChannel();
+   const fresh=await db.$queryRaw<any[]>`SELECT EXISTS(SELECT 1 FROM worker_bootstrap_tickets t
+    JOIN worker_bootstrap_write_receipts r ON r.ticket_id=t.id AND r.table_name='worker_bootstrap_tickets' AND r.row_id=t.id::text
+    WHERE t.id=${c.identity.ticketId}::uuid AND r.writer_xid=pg_current_xact_id()::text
+     AND r.row_digest=encode(sha256(convert_to(to_jsonb(t)::text,'UTF8')),'hex')
+     AND current_setting('transaction_isolation')='serializable' AND current_setting('transaction_read_only')='off'
+     AND NOT EXISTS(SELECT 1 FROM worker_bootstrap_lifecycle_events WHERE ticket_id=t.id)) AS v2_issue_pending`;
+   if(fresh.length!==1||fresh[0].v2_issue_pending!==true)denyChannel();
+   const persisted=await ticket(db,c.identity.ticketId);
+   if(!channelEqual(persisted.ticket,c.record.signed.payload)||persisted.digest!==c.identity.ticketDigest)denyChannel();
+   const decisions=await db.$queryRaw<any[]>`SELECT d.id,r.version AS revision FROM decisions d JOIN decision_revisions r ON r.decision_id=d.id
+    JOIN decision_acceptances a ON a.decision_id=d.id WHERE d.workspace_id=${c.identity.binding.workspaceId}::uuid
+     AND r.body->'workerBootstrapChannel'->>'ticketId'=${c.identity.ticketId} AND d.status='accepted' LIMIT 2`;
+   if(decisions.length!==1)denyChannel();const d=z.object({id,revision:epoch}).strict().parse(decisions[0]);
+   await grantInTransaction(db,{ticketId:c.identity.ticketId,decisionId:d.id,decisionRevision:d.revision,operationId:c.operationId},()=>now,true);
+  },
+  async inspect(db:Db,c:z.infer<typeof lifecycleRegistration>,now:Date){
+   const result=await inspectCanonicalBootstrapChannel(db,c.identity.ticketId,now);
+   return !!result.facts&&result.facts.ticketDigest===c.identity.ticketDigest;
+  }
+ });
+}
 export async function inspectCanonicalBootstrapChannel(db:Db,ticketId:string,now=new Date()){
   try{if(!id.safeParse(ticketId).success||!await guarded(db))denyChannel();const before=await fence(db),g=await grantRow(db,ticketId),b=g.intent.snapshot.binding,h=await head(db,b.workspaceId,b.hostId);
-    if(!h||h.purpose!==g.intent.snapshot.purpose||h.generation!==g.intent.snapshot.generation||h.fence!==before)denyChannel();
+    if(!h||h.purpose!==g.intent.snapshot.purpose||h.generation!==g.intent.snapshot.generation)denyChannel();
+    const t=await ticket(db,ticketId);
+    if(t.ticket.version==='worker-bootstrap-owner-ticket-v2'){if(!await boundV2(db,ticketId))denyChannel();}
+    else if(h!.fence!==before)denyChannel();
     const r=channelTransition.parse(h!.record);if(r.grantId!==g.id||r.action!=='grant'||r.state!=='current')denyChannel();await live(db,g,now);
     if(await fence(db)!==before)denyChannel();return {blockers:[] as string[],facts:{snapshot:g.intent.snapshot,grantId:g.id,ticketId,ticketDigest:g.intent.ticketDigest,revision:h!.revision}};
   }catch{return {blockers:['bootstrap_channel_authority_unavailable'],facts:null};}
@@ -110,6 +158,20 @@ async function append(db:Db,g:ChannelGrant,h:ChannelHead|null,r:ChannelTransitio
    SELECT (r->>'id')::uuid,${s.binding.workspaceId}::uuid,${s.binding.hostId}::uuid,${s.generation}::uuid,(r->>'revision')::int,${'0'.repeat(64)},
     ${h?.revision??null},${h?(await db.$queryRaw<any[]>`SELECT record_digest AS digest FROM worker_transport_history WHERE id=${h.id}::uuid`)[0]?.digest:null},${h?.highWater??null},${h?.state??null},${h?.generation??null}::uuid,
     ${s.certificateEpoch},${s.highWaterEpoch},r->>'state',(r->>'id')::uuid,${r.action==='grant'?g.decisionId:null}::uuid,${g.decisionRevision},${reviewDigest(g.intent)},${g.ownerId}::uuid,${s.leafPin},NULL,r,NULL,${s.purpose} FROM v`;
+}
+async function grantInTransaction(db:Db,input:unknown,clock:()=>Date,v2=false){
+  const c=command.parse(input),t=await ticket(db,c.ticketId),b=t.ticket.intent.binding,a=await owner(db,c.decisionId,b.workspaceId);
+  if((t.ticket.version==='worker-bootstrap-owner-ticket-v2')!==v2)denyChannel();
+  if(a.revision!==c.decisionRevision||a.intent.ticketId!==c.ticketId)denyChannel();const h=await head(db,b.workspaceId,b.hostId);
+  const used=await db.$queryRaw<any[]>`SELECT generation_id AS generation,current_pin AS pin,staged_pin AS staged FROM worker_transport_history WHERE workspace_id=${b.workspaceId}::uuid AND host_id=${b.hostId}::uuid ORDER BY revision LIMIT 1001`;
+  if(used.length>1000)denyChannel();const i=validateChannelGrant(a.intent,t.ticket,t.digest,a.ownerId,h,{generations:used.map(r=>r.generation),pins:used.flatMap(r=>[r.pin,r.staged].filter(Boolean))},clock());
+  const g=channelGrant.parse({id:c.operationId,intent:i,ownerId:a.ownerId,decisionId:c.decisionId,decisionRevision:c.decisionRevision,acceptanceId:a.acceptanceId,at:clock().toISOString()});await live(db,g,clock());
+  const s=i.snapshot,identity={binding:s.binding,hostGeneration:s.hostGeneration,installationGeneration:s.installationGeneration};
+  await db.$executeRaw`INSERT INTO worker_transport_generations(id,workspace_id,host_id,installation_id,credential_id,identity,identity_digest,purpose)
+   VALUES(${s.generation}::uuid,${b.workspaceId}::uuid,${b.hostId}::uuid,${b.installationId}::uuid,NULL,${JSON.stringify(identity)}::jsonb,${reviewDigest(identity)},${s.purpose})`;
+  await db.$executeRaw`INSERT INTO worker_transport_bootstrap_grants(id,generation_id,purpose,ticket_id,decision_id,acceptance_id,record,record_digest)
+   VALUES(${g.id}::uuid,${s.generation}::uuid,${s.purpose},${c.ticketId}::uuid,${c.decisionId}::uuid,${g.acceptanceId}::uuid,${JSON.stringify(g)}::jsonb,${'0'.repeat(64)})`;
+  const r=advanceChannel(g,h,'grant',c.operationId,clock());await append(db,g,h,r);return r;
 }
 // Explicit factory only. No signer, exchange, credential issuance or routes.
 export function createPrismaBootstrapChannelStore(client:Pick<PrismaClient,'$transaction'>,clock=()=>new Date()){
@@ -126,18 +188,7 @@ export function createPrismaBootstrapChannelStore(client:Pick<PrismaClient,'$tra
   }
   return Object.freeze({
     inspect:(ticketId:string)=>client.$transaction(async db=>{await db.$executeRaw`SET TRANSACTION READ ONLY`;return inspectCanonicalBootstrapChannel(db,ticketId,clock());},{isolationLevel:'RepeatableRead',timeout:10000,maxWait:2000}),
-    grant:(input:unknown)=>write(async db=>{const c=command.parse(input),t=await ticket(db,c.ticketId),b=t.ticket.intent.binding,a=await owner(db,c.decisionId,b.workspaceId);
-      if(a.revision!==c.decisionRevision||a.intent.ticketId!==c.ticketId)denyChannel();const h=await head(db,b.workspaceId,b.hostId);
-      const used=await db.$queryRaw<any[]>`SELECT generation_id AS generation,current_pin AS pin,staged_pin AS staged FROM worker_transport_history WHERE workspace_id=${b.workspaceId}::uuid AND host_id=${b.hostId}::uuid ORDER BY revision LIMIT 1001`;
-      if(used.length>1000)denyChannel();const i=validateChannelGrant(a.intent,t.ticket,t.digest,a.ownerId,h,{generations:used.map(r=>r.generation),pins:used.flatMap(r=>[r.pin,r.staged].filter(Boolean))},clock());
-      const g=channelGrant.parse({id:c.operationId,intent:i,ownerId:a.ownerId,decisionId:c.decisionId,decisionRevision:c.decisionRevision,acceptanceId:a.acceptanceId,at:clock().toISOString()});await live(db,g,clock());
-      const s=i.snapshot,identity={binding:s.binding,hostGeneration:s.hostGeneration,installationGeneration:s.installationGeneration};
-      await db.$executeRaw`INSERT INTO worker_transport_generations(id,workspace_id,host_id,installation_id,credential_id,identity,identity_digest,purpose)
-       VALUES(${s.generation}::uuid,${b.workspaceId}::uuid,${b.hostId}::uuid,${b.installationId}::uuid,NULL,${JSON.stringify(identity)}::jsonb,${reviewDigest(identity)},${s.purpose})`;
-      await db.$executeRaw`INSERT INTO worker_transport_bootstrap_grants(id,generation_id,purpose,ticket_id,decision_id,acceptance_id,record,record_digest)
-       VALUES(${g.id}::uuid,${s.generation}::uuid,${s.purpose},${c.ticketId}::uuid,${c.decisionId}::uuid,${g.acceptanceId}::uuid,${JSON.stringify(g)}::jsonb,${'0'.repeat(64)})`;
-      const r=advanceChannel(g,h,'grant',c.operationId,clock());await append(db,g,h,r);return r;
-    }),
+    grant:(input:unknown)=>write(db=>grantInTransaction(db,input,clock)),
     transition:(input:unknown)=>write(async db=>{const c=transitionCommand.parse(input),g=await grantRow(db,c.ticketId),b=g.intent.snapshot.binding,h=await head(db,b.workspaceId,b.hostId);
       if(!h||h.revision!==c.expectedRevision)denyChannel();let action:ChannelTransition['action']=c.action;
       if(['consume','close'].includes(action)){try{if(h!.fence!==await fence(db))denyChannel();await live(db,g,clock());}catch{if(action==='close')action='unknown';else denyChannel();}}

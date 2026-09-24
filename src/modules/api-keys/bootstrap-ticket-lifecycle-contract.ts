@@ -3,6 +3,7 @@ import {bootstrapOwnerTicket,bootstrapBinding,bootstrapChannel,bootstrapCredenti
 import {revocationIdentity} from './bootstrap-ticket-revocation-contract';
 import {reviewDigest} from '../agent-runtime/task-review-contract';
 import {freezePublic} from './worker-transport-snapshot';
+import {ticketEnvelopeDigest} from './bootstrap-ticket-v2-digests';
 
 export const lifecycleId=z.string().uuid(),lifecycleHash=z.string().regex(/^[a-f0-9]{64}$/);
 const integer=z.number().int().min(1).max(2147483647),count=integer.or(z.literal(0)),time=z.string().datetime();
@@ -20,12 +21,12 @@ const intent=z.object({schemaVersion:z.literal('worker-bootstrap-admission-v2'),
  binding:bootstrapBinding,requestId:lifecycleId,deviceProofDigest:lifecycleHash,channel:bootstrapChannel,
  baseline:z.object({enrollmentGeneration:count,credentialHighWater:count,credential:bootstrapCredential.nullable()}).strict(),target:bootstrapCredential,
  prior:signedMetadata.shape.predecessor,expiresAt:time}).strict();
-const payload=bootstrapOwnerTicket.omit({version:true,intent:true}).extend({version:z.literal('worker-bootstrap-owner-ticket-v2'),intent,lifecycle:signedMetadata}).strict();
+export const lifecycleTicketPayload=bootstrapOwnerTicket.omit({version:true,intent:true}).extend({version:z.literal('worker-bootstrap-owner-ticket-v2'),intent,lifecycle:signedMetadata}).strict();
 const signature=z.string().regex(/^[a-f0-9]{128}$/);
 export const lifecycleRegistration=z.object({operationId:lifecycleId,identity:lifecycleIdentity,
- record:z.object({signed:z.object({payload,signature}).strict(),decision:z.object({payload:bootstrapOwnerDecision,signature}).strict()}).strict()}).strict().superRefine((v,c)=>{
+ record:z.object({signed:z.object({payload:lifecycleTicketPayload,signature}).strict(),decision:z.object({payload:bootstrapOwnerDecision,signature}).strict()}).strict()}).strict().superRefine((v,c)=>{
  const i=v.identity,p=v.record.signed.payload,d=v.record.decision.payload,{ticketDigest,...metadata}=i;
- if(!lifecycleEqual(p.lifecycle,metadata)||ticketDigest!==reviewDigest(v.record.signed)||p.id!==i.ticketId||p.ownerId!==i.ownerId||p.decisionId!==i.decisionId||p.decisionRevision!==i.decisionRevision||
+ if(!lifecycleEqual(p.lifecycle,metadata)||ticketDigest!==ticketEnvelopeDigest(v.record.signed)||p.id!==i.ticketId||p.ownerId!==i.ownerId||p.decisionId!==i.decisionId||p.decisionRevision!==i.decisionRevision||
  p.issuedAt!==i.issuedAt||p.intent.expiresAt!==i.expiresAt||p.intent.purpose!==i.purpose||!lifecycleEqual(p.intent.binding,i.binding)||!lifecycleEqual(p.intent.prior,i.predecessor)||
  p.intent.baseline.enrollmentGeneration!==i.generation-1||p.intent.baseline.credentialHighWater!==i.credentialEpoch-1||p.intent.target.epoch!==i.credentialEpoch||p.intent.target.version!==1||
  p.decisionIntentDigest!==reviewDigest(p.intent)||d.id!==i.decisionId||d.ownerId!==i.ownerId||d.revision!==i.decisionRevision||d.state!=='accepted'||d.intentDigest!==p.decisionIntentDigest||

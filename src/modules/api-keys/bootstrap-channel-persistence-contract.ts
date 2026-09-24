@@ -2,6 +2,8 @@ import {z} from 'zod';
 import {reviewDigest} from '../agent-runtime/task-review-contract';
 import {bootstrapChannelSnapshot} from './bootstrap-channel-contract';
 import {bootstrapOwnerTicket} from './worker-bootstrap-contract';
+import {lifecycleTicketPayload} from './bootstrap-ticket-lifecycle-contract';
+import {ticketChannelPlanDigest} from './bootstrap-ticket-v2-digests';
 
 const id=z.string().uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),epoch=z.number().int().positive().max(2147483647),time=z.string().datetime();
 export const channelGrantIntent=z.object({schemaVersion:z.literal('worker-bootstrap-channel-v1'),ticketId:id,ticketDigest:hash,
@@ -15,8 +17,21 @@ export type ChannelHead={id:string;revision:number;highWater:number;purpose:stri
 export const channelEqual=(a:unknown,b:unknown)=>reviewDigest(a)===reviewDigest(b);
 export const denyChannel=():never=>{throw Error('bootstrap_channel_denied');};
 export function channelSnapshotDigest(input:unknown){const {recordDigest,...rest}=bootstrapChannelSnapshot.parse(input);return reviewDigest(rest);}
+export function validateV2ChannelPlan(ticketInput:unknown,snapshotInput:unknown,now:Date){
+ const t=lifecycleTicketPayload.parse(ticketInput),s=bootstrapChannelSnapshot.parse(snapshotInput),m=t.lifecycle,c=t.intent.channel,p=c.profile,n=now.getTime();
+ if(m.channelDigest!==ticketChannelPlanDigest(s)||s.recordDigest!==channelSnapshotDigest(s)||m.channelGeneration!==s.generation||m.channelRevision!==s.revision||
+  m.hostGeneration!==s.hostGeneration||m.installationGeneration!==s.installationGeneration||m.issuerRevision!==s.issuerRevision||m.issuerHistoryDigest!==s.issuerHistoryDigest||
+  m.generation!==t.intent.baseline.enrollmentGeneration+1||m.credentialEpoch!==t.intent.target.epoch||m.purpose!==s.purpose||!channelEqual(t.intent.binding,s.binding)||
+  Date.parse(m.issuedAt)>n||Date.parse(m.notBefore)<Date.parse(m.issuedAt)||Date.parse(m.notBefore)<Date.parse(s.validFrom)||
+  Date.parse(m.expiresAt)>Date.parse(s.expiresAt)||Date.parse(m.notBefore)>=Date.parse(m.expiresAt)||Date.parse(m.expiresAt)<=n||
+  Date.parse(s.validFrom)>n||Date.parse(s.certificateNotBefore)>n||Date.parse(s.certificateNotAfter)<Date.parse(m.expiresAt)||s.cutoverAt&&n>=Date.parse(s.cutoverAt)||
+  c.revision!==s.revision||c.certificateEpoch!==s.certificateEpoch||c.highWaterEpoch!==s.highWaterEpoch||
+  p.origin!==s.origin||p.serverName!==s.serverName||p.trust.caDigest!==s.caDigest||p.certificate.fingerprint!==s.leafPin||
+  p.certificate.notBefore!==s.certificateNotBefore||p.certificate.notAfter!==s.certificateNotAfter||p.bootstrap.evidenceDigest!==s.certificateEvidenceDigest||p.resolver.policy!==s.resolverPolicy)denyChannel();
+}
 export function validateChannelGrant(input:unknown,ticketInput:unknown,ticketDigest:string,ownerId:string,head:ChannelHead|null,used:{generations:string[];pins:string[]},now:Date){
-  const i=channelGrantIntent.parse(input),s=i.snapshot,t=bootstrapOwnerTicket.parse(ticketInput),c=t.intent.channel,p=c.profile,n=now.getTime();
+  const i=channelGrantIntent.parse(input),s=i.snapshot,t=z.union([bootstrapOwnerTicket,lifecycleTicketPayload]).parse(ticketInput),c=t.intent.channel,p=c.profile,n=now.getTime();
+  if(t.version==='worker-bootstrap-owner-ticket-v2')validateV2ChannelPlan(t,s,now);
   if(s.recordDigest!==channelSnapshotDigest(s)||s.revision!==i.expectedRevision+1||i.expectedRevision!==(head?.revision??0)||
     head&&head.state!=='revoked'||s.certificateEpoch!==(head?.highWater??0)+1||s.highWaterEpoch!==s.certificateEpoch||
     used.generations.includes(s.generation)||used.pins.includes(s.leafPin)||t.id!==i.ticketId||ticketDigest!==i.ticketDigest||t.ownerId!==ownerId||

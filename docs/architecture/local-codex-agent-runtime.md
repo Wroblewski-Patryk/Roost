@@ -1,18 +1,19 @@
 # Local Codex Agent Runtime
 
-Owner amendment v45: [ticket lifecycle persistence proposal](bootstrap-ticket-lifecycle-persistence-v1.md)
-adds UNAPPLIED migration 82, immutable metadata on the existing ticket root,
-append-only lifecycle/receipt children and a source-only adapter. The original
-attempt/history/head/audit ledger remains the sole execution ledger. Generation
-is reserved at issue; pre-consume recovery has a real predecessor ticket and no
-fabricated attempt. Post-COMMIT readback, terminal uncertainty and all-writer
-catalog verification fail closed. No prior migration or legacy row is changed.
-RF-HOST-035 PARTIAL, production BLOCKED; ticket revocation and signed-current-
-decision blockers remain; all six flags plus transportQualified/launchAuthority
-false. No DB/Docker/native/network, keys/signing, issuance/delivery or activation.
-One next atom: source-only v2 ticket ingestion and atomic issue/channel-binding
-integration with the existing channel store; keep migration unapplied and both
-blockers. Not started. Prior next recommendations are historical.
+Owner amendment v46: [atomic v2 ticket/channel ingestion](bootstrap-ticket-lifecycle-persistence-v1.md)
+uses the existing root and channel writer in one Serializable/fenced transaction:
+root reservation -> exact channel binding -> issue receipt/Event/audit -> separate
+READ ONLY commit readback. Domain-separated snapshot/content/envelope digests are
+acyclic. Verifier and binder are mandatory explicit dependencies, unavailable by
+default. Same-transaction receipts reject later binding; uncertainty never retries.
+103/103 selected source/mocked results pass. Migration 82 remains UNAPPLIED;
+prior 81 migrations and Prisma schema unchanged. RF-HOST-035 PARTIAL, production
+BLOCKED; bootstrap_ticket_revocation_unavailable and signed_current_decision_unavailable
+remain; six readiness flags plus transportQualified/launchAuthority stay false.
+No DB/Docker/native/network, signing, issuance/delivery or activation.
+One next atom: separately authorized isolated native qualification of migration 82
+and atomic v2 binding with a synthetic verifier, keeping both blockers. Not started.
+Prior next recommendations are historical.
 
 Owner amendment v26: [loopback HTTPS handoff adapter](worker-handoff-https-v1.md)
 passes 9/9 real HTTPS results and 189/189 selected tests. Its sole client surface
