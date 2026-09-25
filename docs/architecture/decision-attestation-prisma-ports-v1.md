@@ -1,5 +1,84 @@
 # Decision attestation: Prisma ports and native persistence evidence
 
+## Owner amendment v65: signed canonical completion, source only
+
+`createCanonicalBootstrapCompletion` is an explicit, unwired factory. It uses the
+existing canonical authority reader and durable dispatch history, not a second
+credential registry or the HTTPS coordinator's process-local latches. There is no
+network transport, signer, private-key access, credential creation, provisioning,
+endpoint, default composition or activation of installation/profile/target/model.
+
+| Existing root | Integration and boundary |
+| --- | --- |
+| Signed bootstrap peer/completion | Original signatures are retained. An additional signed binding covers the exact final command, durable predecessor receipt, seal/envelope, request, lifecycle generations, credential generation/fingerprint, handoff/approval, peer/completion digests and issued/completed times. Ordinary coordinator peer observations are not silently converted into bootstrap signatures. |
+| Ticket/attempt and dispatch | Existing branded authority reader runs in READ ONLY RepeatableRead. The same global source fence is locked in the write transaction; exact unchanged authority and dispatch predecessor are mandatory. Final durable dispatch append precedes canonical dispatched/acknowledged histories and matching dispatch/complete ticket events. Existing roots and their guards remain authoritative. |
+| ApiKey / handoff / credential operations | The target must already exist inactive and unrevoked, with an awaiting_ack handoff and separately accepted owner credential decision. Candidate/handoff preparation must precede the signed seal; this atom does not prepare them. Recovery uses the exact approved predecessor. Public fingerprint alone is not possession evidence. An explicit provider must validate existing handoff possession/ACK and return the exact SQL-derived public fact under the same transaction/fence. |
+| Transport | Existing bootstrap transport grant/history/head, peer address/SNI/CA/pin/certificate epoch and lifecycle generations remain bound through authority and immutable-source digests. No ordinary credential transport generation is created. Successor ordinary admission remains unqualified. |
+| Receipt children | UNAPPLIED additive migration 85 introduces worker_bootstrap_completions and worker_bootstrap_completion_receipts with FKs to existing dispatch/attempt/ticket/handoff/ApiKey roots. The child records evidence and receipt links, not a mutable authority projection. No migration 1-84 edits or Prisma schema changes. |
+
+The verifier is explicitly injected and called for peer, completion and the new
+binding with domain-separated payloads. Peer/completion retain the existing
+`roost-worker-bootstrap-v1:peer` / `:completion` domains; the binding uses
+`roost-bootstrap-canonical-completion-v1`. Verification must authenticate the
+exact current issuer public key and signed canonical payload digest. No default
+verifier or credential-possession provider exists. Source fixtures use synthetic
+signature strings and injected verdicts; they do not qualify cryptography.
+Every callback shares the bound writer transaction. Public facts, source digest,
+fence and validity are rechecked after callbacks; mutation or time drift denies.
+
+The concrete SQL writer performs 11 statements within one Serializable callback:
+final durable dispatch, two attempt histories/ticket events, one final head CAS, handoff ACK,
+existing-key activation CAS, existing credential operation/Event and the new
+completion child. Existing automatic bootstrap/decision receipts and Events remain
+intact. The proof joins exact full-row digests, writer XID and observed fence
+interval against the complete allowed receipt set, checking both source and legacy receipt sets. The mutable head is CASed once:
+its legacy receipt key is unique per row/transaction, so two head writes would
+conflict. Both immutable history records and matching ticket events are retained.
+The exact fence interval includes three statement epochs: attestation on handoff
+and ApiKey, plus transport-bootstrap on ApiKey. Those pinned statement fences
+precede the row fences; additional gaps deny. Source hashes cover all relevant workspace authority
+rows; only the exact target active bit and ACK state/time are excluded as intended
+writes. Foreign receipt rows or changes to other source fields deny. Native guard
+catalogs are pinned, including existing credential/handoff guards. Deferred checks
+require the final receipt, exact current fence, full proof and unexpired authority.
+
+An independent READ ONLY transaction checks the persisted child, automatic Event,
+full-row receipt, canonical heads, actual active credential and causal proof after
+COMMIT. Transaction-promise resolution alone is insufficient. Missing, mismatched
+or unavailable readback, false/lost ACK and possible COMMIT uncertainty return
+reconciliation_required with retryable=false; there is no automatic retry or
+resend. Identical evidence can acknowledge an already committed result without
+writes; changed evidence/operation/receipt denies. New factories reconstruct from
+storage. Historical rows are retained after later revocation; failure to prove the
+current completed/active state does not erase or rewrite them. Terminal dispatch
+states cannot be reopened by this completion factory.
+
+Verification: 37/37 focused source/mock tests and 288/288 selected source/mock
+tests pass, zero skips. Coverage includes first enrollment/recovery, 47 invalid
+binding/fact/time mutations, missing/invalid verifiers and possession provider,
+20 concurrent factories with one activation, exact/conflicting replay, restart,
+read purity, rollback at all 11 writer statements, deferred rejection, false/lost
+ACK, missing/mismatched/unavailable receipt readback, callback drift and a change
+immediately before COMMIT. These are source/mock results only. Server TypeScript
+build, lint (338 routes / 45 files), all three source-pin checks and scoped diff
+checks pass. No web build: backend-only atom. Default context remains below the
+150000-byte documentation budget.
+No database, Docker, native SQL execution or real network was used for v65.
+Migration 85 and its PL/pgSQL guards remain **UNAPPLIED / NATIVE UNQUALIFIED**;
+source tests cannot establish PostgreSQL trigger/deferred-constraint behavior,
+actual concurrent transaction isolation, production trust or credential delivery.
+The new factory's completionRecorded/credentialActivated flags are conditionally
+true only for the full verified source/mock transaction model. The existing
+ordinary/durable default paths are unchanged and retain false flags.
+
+RF-HOST-035 **PARTIAL**, production **BLOCKED**. implementationReady,
+executionSupported, pilotReady, liveAdmissionAllowed, pilotExecutionAuthorized,
+pilotExecutionStarted, transportQualified and launchAuthority remain false.
+Historical registration cause stays UNKNOWN / MONITORED RESIDUAL RISK.
+Exactly one next recommendation, **not started**: separately authorize bounded
+native qualification of migration 85 and the full canonical completion transaction,
+including real rollback, deferred rejection, contention and COMMIT/readback loss.
+
 ## Owner amendment v64: native causal dispatch lineage qualification
 
 **Final complete run: 24/24 PASS, zero skips, native exit 0,

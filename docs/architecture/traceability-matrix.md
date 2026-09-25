@@ -1,20 +1,20 @@
 # Foundation requirements traceability
 
-Owner amendment v64: [native causal dispatch lineage qualification](decision-attestation-prisma-ports-v1.md)
-passed 24/24 with zero skips and native/runner exit 0. One owned disposable
-database applied the complete unchanged 84-migration chain. Six normal phases
-each had twenty distinct writer clients and one winner; 22 malformed direct
-appends denied. Exact receipt lineage, restart reconstruction, corruption,
-revocation, READ ONLY status and uncertain COMMIT checks pass. Historical consumed
-heads are reconstructed from immutable records and checked against their original
-receipts; current blocked heads remain separately visible after ticket revocation.
-No current-authority rule is relaxed. Credential activation and signed canonical
-completion remain blocked. RF-HOST-035 PARTIAL; production BLOCKED; all eight
-flags false. No default wiring or real delivery. Historical registration cause
-UNKNOWN remains MONITORED RESIDUAL RISK. Exactly one next recommendation, not
-started: source-only integration of verified signed peer/completion evidence with
-atomic canonical lifecycle completion and exact causal receipts. Older amendments
-below are historical.
+Owner amendment v65: [canonical bootstrap completion, source only](decision-attestation-prisma-ports-v1.md)
+adds explicit signed peer/completion/binding verification and an injected canonical
+credential-possession provider. A single fenced Serializable writer appends the
+durable dispatch result, both canonical attempt/ticket transitions, existing
+handoff ACK, activation of an existing inactive ApiKey and its credential audit.
+A separate READ ONLY receipt/Event readback is required before the new opt-in
+factory reports completionRecorded/credentialActivated=true. No response digest
+or callback alone grants activation. Migration 85 adds two receipt children only;
+it is UNAPPLIED. Migrations 1-84 remain unchanged. Source/mock evidence does not
+qualify SQL, cryptography, native concurrency or transport. Default composition
+and the old durable adapter retain false completion/activation flags. RF-HOST-035
+PARTIAL; production BLOCKED; all eight readiness flags false. Registration cause
+UNKNOWN / MONITORED RESIDUAL RISK. Exactly one next recommendation, not started:
+bounded native qualification of migration 85 and the complete canonical completion
+transaction. Older amendments below are historical.
 
 Owner amendment v54: [native attestation qualification](decision-attestation-prisma-ports-v1.md)
 remains **BLOCKED**: final native 14/19 PASS, 5 FAIL (four subtests plus parent),

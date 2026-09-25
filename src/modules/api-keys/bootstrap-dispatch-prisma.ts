@@ -21,7 +21,7 @@ const capabilities=new WeakSet<object>();
 export function isDurableDispatchAdapter(value:unknown):value is DurableDispatchAdapter{
  return typeof value==='object'&&value!==null&&capabilities.has(value);
 }
-async function requireDispatchGuards(db:Db){
+export async function requireDispatchGuards(db:Db){
  const rows=await db.$queryRaw<any[]>`SELECT c.relname AS "table",t.tgname AS name,p.proname AS function,t.tgtype::int AS kind,t.tgdeferrable AS deferred,
  encode(sha256(convert_to(replace(p.prosrc,chr(13),''),'UTF8')),'hex') AS hash,
  (t.tgenabled='O' AND t.tgqual IS NULL AND t.tgnargs=0 AND t.tgattr=''::int2vector AND NOT t.tgisinternal
@@ -36,7 +36,7 @@ async function requireDispatchGuards(db:Db){
   const row=actual.get(`${g.table}:${g.name}`);return row?.enabled===true&&exact(g,row.g);
  }))deny();
 }
-async function history(db:Db,attemptId:string){
+export async function readDispatchHistory(db:Db,attemptId:string){
  const rows=await db.$queryRaw<unknown[]>`SELECT h.record,h.record_digest AS "recordDigest",h.request_digest AS "requestDigest",
  bootstrap_lifecycle_digest(to_jsonb(h)) AS "rowDigest",h.writer_xid AS "writerXid",h.fence_revision::text AS fence,r.event_id AS "eventId",
  (r.row_digest=bootstrap_lifecycle_digest(to_jsonb(h)) AND r.writer_xid=h.writer_xid AND r.fence_revision=h.fence_revision
@@ -62,6 +62,7 @@ async function history(db:Db,attemptId:string){
  }
  return entries;
 }
+const history=readDispatchHistory;
 
 export function createDurableDispatchAdapter(deps?:DispatchDependencies){
  const source=createCanonicalBootstrapAuthoritySource(undefined,undefined,deps?.decisionAuthority),seen=new WeakSet<object>();
