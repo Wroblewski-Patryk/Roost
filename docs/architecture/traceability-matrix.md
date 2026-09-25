@@ -1,20 +1,20 @@
 # Foundation requirements traceability
 
-Owner amendment v59: [canonical decision reader and source composition](decision-attestation-prisma-ports-v1.md)
-conditionally removes `signed_current_decision_unavailable` only with explicit
-factory-issued attestation ports, exact v58 qualification evidence and injected
-signature/authentication/key trust. Reads share one READ ONLY Db/fence; two fresh
-projections precede exchange and completion. Existing attempt seal and committed
-receipt must match; drift denies or becomes non-retryable delivery uncertainty.
-Default/legacy runtime remains unavailable. The driver is synthetic/source-only;
-its process-local one-use latch is not durable multi-process dispatch authority.
-RF-HOST-035 PARTIAL; production BLOCKED; all eight flags false. v58 native 24/24
-and deterministic matrix 11/11 remain prior evidence, not qualification of this
-new reader. Historical registration cause UNKNOWN, MONITORED RESIDUAL RISK with
-the existing reopen condition. One next atom, not started: bounded native reader/
-composition qualification with public synthetic dependencies and no real delivery.
-Detailed v55-v58 evidence is retained in the linked canonical document; older
-amendments below are historical.
+Owner amendment v60: [native canonical reader/composition qualification](decision-attestation-prisma-ports-v1.md)
+passed 18/18, zero skips, one full run: real bound READ ONLY projections for
+first enrollment/recovery, distinct client pairs, pure status, native 20-way races,
+exact seal/COMMIT receipts and one controlled post-COMMIT response loss. All 83
+migrations and runtime contracts are unchanged. The signed-current-decision gap
+is removable only with complete explicit dependencies; default/legacy runtime
+remains unavailable. Synthetic verifier/auth/key/delivery seams and the process-
+local latch do not qualify production crypto, real delivery or durable multi-
+process/restart dispatch. RF-HOST-035 PARTIAL; production BLOCKED; eight flags false.
+Historical registration cause UNKNOWN remains MONITORED RESIDUAL RISK with the
+existing reopen condition; no unplanned refusal occurred in this run. Exactly one
+next recommendation, not started: source-only durable dispatch/completion adapter
+on the existing attempt ledger with committed-claim and terminal reconciliation
+semantics, without default activation. Detailed v55-v59 evidence is retained in
+the linked canonical document; older amendments below are historical.
 
 Owner amendment v54: [native attestation qualification](decision-attestation-prisma-ports-v1.md)
 remains **BLOCKED**: final native 14/19 PASS, 5 FAIL (four subtests plus parent),

@@ -1,5 +1,83 @@
 # Decision attestation: Prisma ports and native persistence evidence
 
+## Owner amendment v60: native canonical reader/composition qualification
+
+**18/18 PASS, 0 skipped, native child exit 0, nativeRuns=1**, 148.663 seconds.
+The actual `createCanonicalBootstrapAuthoritySource`, concrete attestation ports,
+`createDecisionAuthorityReader` and `createAttestedBootstrapComposition` ran on
+PostgreSQL against the unchanged final 83-migration chain. No runtime contract,
+migration or Prisma schema correction was needed. Added only the native suite,
+its runner selection, and bounded recovery/cutover fixture options.
+
+| Boundary | Native evidence |
+| --- | --- |
+| Complete first enrollment and recovery | Current owner/lifecycle/issuer/channel/ticket/decision plus immutable attempt seal and committed operation receipt; recovery preserves a real terminal predecessor with nullable prior attempt. |
+| Same transaction | Signature, ticket, owner-auth and key-trust doubles receive the exact bound Db proxy used by the native SQL projections and lifecycle/issuer readers. No nested read transaction. |
+| Freshness and equality | Four distinct READ ONLY RepeatableRead transaction clients; each before-send/before-complete pair uses separate Prisma clients and distinct backend PIDs. Transaction timestamps differ; revision/digest/fence/seal remain equal. |
+| Read purity | All 31 selected canonical source/history/audit/receipt/Event/fence tables match before/after successful read/composition. Proxy rejects DML; PostgreSQL enforces READ ONLY. |
+| Invalid authority | Missing/copied/wrong capability, evidence/version/dependency, false signature/auth/key/ticket verification, unsigned or changed owner/revision/policy/lifecycle/issuer/channel/binding, key revocation, terminal decisions, clock expiry and certificate cutover deny. |
+| Existing attempt | Missing/mismatched seal, absent/mismatched receipt, terminal head and unsealed attempt deny; no repair or new attempt is synthesized. |
+| Before send | A committed source-revision or revocation change between the paired snapshots yields zero exchange. A held old MVCC snapshot cannot substitute for the fresh second client. |
+| After possible exchange commit | Source/revoke drift, synthetic reply loss, readback failure or completion uncertainty yields `delivery_unknown`, `reconciliationRequired=true`, `retryable=false`; no repeated exchange/completion. |
+| Twenty-way native concurrency | Twenty reads see one committed projection while a revoke/source-revision writer is held; after COMMIT all twenty deny. Twenty concurrent source factories produce exactly one synthetic exchange in the same process. |
+| COMMIT uncertainty | False seal acknowledgement leaves zero attempts; missing/mismatched/unavailable independent readback leaves one committed attempt and returns non-retryable reconciliation. One real relay cut after PostgreSQL COMMIT leaves exactly one seal, confirmed by pure read-only reconciliation, with no command retry or exchange. |
+
+The trust and delivery callbacks are public synthetic doubles. A signature-shaped
+public digest is qualification data, not cryptographic signing. The test forbids
+private-key/signing APIs, HTTP/DNS/TLS/delivery connections, subprocess creation
+inside the test, and fetch; the existing owned PostgreSQL relay is the only DB
+transport. No credentials, provisioning, endpoints, default composition, target,
+model/profile or activation were added. Test corruption/preparation is confined
+to newly created public fixtures in the owned database; admission reads run in
+origin mode with the real pinned guards enabled.
+
+**Process-local only:** the one-exchange concurrency result does not qualify a
+cross-process or restart-safe dispatch claim. Inspection after an uncertain seal
+COMMIT supplies reconciliation evidence, not authority to auto-send or retry.
+Durable atomic dispatch/completion ownership and terminal recovery remain
+production gaps, together with real crypto/auth/key trust, secure delivery and
+explicit runtime/default wiring and activation approval.
+
+One owned disposable database applied the final chain from empty with no function
+replacement. Read-only inventory and baseline covered three existing accessible
+Roost PostgreSQL databases and 214 table/sequence fingerprints. Soar was outside
+execution scope. Cleanup independently **PASS**, final runner **exit 0**: owned
+database removed, relay closed, helperFilesCreated=0, original container/volume/
+image/network inventory restored. Existing data/structure/role fingerprints are
+identical before and after; Roost PostgreSQL returned to its original stopped
+state and other containers remained unchanged.
+
+- Applied/final raw-file source-chain SHA-256:
+  `5e7d56f423aeb4c325edf7a5804551c8ffdc664ac85bf289c48ec69ccaff148b`.
+- Migration-83 LF SHA-256 (unchanged):
+  `b16939ff35320afe5f9cc0259edf1e444c7c43b70c7e186dc6a66ce096f9e0b5`.
+- Before/after existing-data SHA-256:
+  `e9e019524b6010b02b30b4635fff99133c4429ffac3f537b05ac860485a281f1`.
+
+Selected source regressions **218/218 PASS, 0 skipped, exit 0**. Full server/web
+build, lint (338 routes / 45 files), migration pins, runner syntax and scoped diff
+checks PASS. Existing web asset-resolution and large-chunk warnings remain; no
+web source changed. Protected dirty product/planning files were preserved and
+excluded from this commit; no push or deployment occurred.
+
+The registration monitored-risk guard remains active. An unexpected valid fixture
+registration denial emits `unexpected_registration_denial`, `reopen=true`, and
+blocks further fixture registration in that run; no retry/reissue is inferred.
+No such denial occurred. The historical incident remains MONITORED RESIDUAL RISK,
+root cause UNKNOWN; this pass does not claim to repair it.
+
+Conditional signed-current-decision source authority is now natively qualified
+with these explicit synthetic dependencies. Default `signed_current_decision_unavailable`
+and legacy context/store remain blocked. RF-HOST-035 **PARTIAL**, production
+**BLOCKED**. `implementationReady`, `executionSupported`, `pilotReady`,
+`liveAdmissionAllowed`, `pilotExecutionAuthorized`, `pilotExecutionStarted`,
+`transportQualified` and `launchAuthority` are all false.
+
+Exactly one next recommendation, **not started**: source-only durable dispatch/
+completion adapter on the existing attempt ledger, with committed-claim and
+terminal reconciliation semantics and no default activation. Older entries below
+are historical; v59 source evidence is supplemented, not replaced, by this run.
+
 ## Owner amendment v59: canonical decision reader and source composition
 
 `createCanonicalBootstrapAuthoritySource(clock, ticketVerifier, decisionAuthority)`

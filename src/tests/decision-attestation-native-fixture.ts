@@ -10,6 +10,8 @@ import {createBootstrapV2ChannelBinding} from '../modules/api-keys/bootstrap-cha
 import {attestationDigest} from '../modules/api-keys/decision-attestation-key-model';
 import {createPrismaDecisionAttestationPorts,type NativeAttestationDependencies} from '../modules/api-keys/decision-attestation-prisma-ports';
 import {AttestationCommitUnknown} from '../modules/api-keys/decision-attestation-persistence-model';
+import {channelSnapshotDigest} from '../modules/api-keys/bootstrap-channel-persistence-contract';
+import {ticketChannelPlanDigest} from '../modules/api-keys/bootstrap-ticket-v2-digests';
 export {owned,prepare,type Db};
 
 export async function preflight(){const db=new PrismaClient();try{await db.$connect();await owned(db);const f=await ticketFixture(db);
@@ -27,14 +29,17 @@ export type RegistrationProbe={beforeStatement?:(tx:Db,phase:string)=>Promise<vo
 export class NativeRegistrationDenied extends Error{
  constructor(readonly diagnostics:readonly any[],cause:unknown){super('Synthetic attestation registration failed: '+JSON.stringify(diagnostics),{cause});}
 }
-export async function attestationNativeFixture(db:PrismaClient,options:{policyTtlMs?:number;registrationProbe?:RegistrationProbe}={}){
- const f=await ticketFixture(db),q={decisionId:randomUUID(),ticketId:f.identity.ticketId},registration=structuredClone(f.registration);
+export async function attestationNativeFixture(db:PrismaClient,options:{policyTtlMs?:number;registrationProbe?:RegistrationProbe;
+ prior?:Parameters<typeof ticketFixture>[1];channelCutoverMs?:number}={}){
+ const f=await ticketFixture(db,options.prior),q={decisionId:randomUUID(),ticketId:f.identity.ticketId},registration=structuredClone(f.registration);
  const i=registration.identity,t=registration.record.signed.payload,b=i.binding,ownerId=i.ownerId,acceptanceId=randomUUID(),previewId=randomUUID();
  const at=(await db.$queryRaw<any[]>`SELECT to_char(date_trunc('milliseconds',clock_timestamp()) AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS at`)[0].at as string;
  i.decisionId=q.decisionId;t.decisionId=q.decisionId;t.lifecycle.decisionId=q.decisionId;
  // Preparation precedes all attestation operations and uses no secret material.
  // Shift the ticket issue boundary after this exact synthetic acceptance time.
  i.issuedAt=at;i.notBefore=at;t.issuedAt=at;t.lifecycle.issuedAt=at;t.lifecycle.notBefore=at;t.ownerAuthAt=at;
+ if(options.channelCutoverMs!==undefined){f.intent.snapshot.cutoverAt=new Date(Date.parse(at)+options.channelCutoverMs).toISOString();
+  f.intent.snapshot.recordDigest=channelSnapshotDigest(f.intent.snapshot);i.channelDigest=ticketChannelPlanDigest(f.intent.snapshot);t.lifecycle.channelDigest=i.channelDigest;}
  registration.record.decision.payload.id=q.decisionId;registration.record.decision.payload.acceptedAt=at;
  i.ticketDigest=ticketEnvelopeDigest(registration.record.signed);
  const impact={taskIds:[]},policy={version:'owner-decision-attestation-policy-v1',revision:1,evidenceDigest:reviewDigest(impact),validFrom:at,
