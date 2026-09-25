@@ -62,24 +62,18 @@ export async function completionRecoveryPrior(db:PrismaClient){
   const revoked=await tx.revoke(current,new Date());await tx.record(command,s.f.reg.identity.ownerId,reviewDigest(command),revoked,new Date());});
  await createPrismaWorkerHandoffStore(db).transaction(async tx=>{const h=await tx.handoff(s.handoffId);assert.ok(h);h.state='revoked';await tx.saveHandoff(h);await tx.handoffAudit(h,'revoked');});
  const channelOperation=randomUUID();
- try{await createPrismaBootstrapChannelStore(db).transition({ticketId:s.f.reg.identity.ticketId,operationId:channelOperation,expectedRevision:1,action:'revoke'});}
- catch(e:any){assert.equal(e.code,'reconciliation_required');
-  // The legacy store's fence equality predates the opt-in attestation receipts.
-  // Never retry its write. Reconcile this owned fixture from the actual row,
-  // current head and original native receipt, including the exact writer XID.
-  const proof=await db.$queryRaw<any[]>`SELECT (h.state='revoked' AND h.revision=2 AND head.history_id=h.id
-   AND a.writer_xid=h.writer_xid AND a.row_digest=encode(sha256(convert_to(to_jsonb(h)::text,'UTF8')),'hex')
-   AND h.record_digest=encode(sha256(convert_to(h.record::text,'UTF8')),'hex')) AS verified
-   FROM worker_transport_history h JOIN worker_transport_write_audit a ON a.table_name='worker_transport_history' AND a.row_id=h.id::text
-   JOIN worker_transport_heads head ON head.history_id=h.id WHERE h.id=${channelOperation}::uuid`;
-  assert.equal(proof.length,1);assert.equal(proof[0].verified,true);
- }
+ // Recovery requires direct success from the real writer and its independent
+ // committed readback. Any rejection propagates immediately; no reconciliation
+ // path, manual proof or retry can substitute for this result.
+ const channelRevocation=await createPrismaBootstrapChannelStore(db).transition({ticketId:s.f.reg.identity.ticketId,operationId:channelOperation,expectedRevision:1,action:'revoke'});
+ assert.equal(channelRevocation.id,channelOperation);assert.equal(channelRevocation.revision,2);
+ assert.equal(channelRevocation.action,'revoke');assert.equal(channelRevocation.state,'revoked');
  const store=createPrismaTicketLifecycleStore(db,()=>new Date(),{channel:createBootstrapV2ChannelBinding(),verifier:{qualification:'worker_bootstrap_ticket_verifier_v2',verify:async(_tx,r)=>reviewDigest(r.signed)===reviewDigest(s.f.reg.record.signed)}});
  const status=await store.inspect({ticketId:s.f.reg.identity.ticketId});assert.ok(status.ok);
  await store.transition({ticketId:s.f.reg.identity.ticketId,operationId:randomUUID(),action:'revoke',expectedRevision:status.head.revision,expectedFence:status.fence});
  const final=await store.inspect({ticketId:s.f.reg.identity.ticketId});assert.ok(final.ok);
  const key=safeWorkerCredential(await db.apiKey.findUniqueOrThrow({where:{id:kid}}));
- return {prior:{base:s.f.sourceFixture,identity:s.f.reg.identity,head:final.head,digest:final.digest},baselineCredential:{id:key.id,version:key.version,epoch:key.epoch,fingerprint:key.fingerprint}};
+ return {channelRevocation,prior:{base:s.f.sourceFixture,identity:s.f.reg.identity,head:final.head,digest:final.digest},baselineCredential:{id:key.id,version:key.version,epoch:key.epoch,fingerprint:key.fingerprint}};
 }
 export async function nativeCompletionHarness(db:PrismaClient,clients:PrismaClient[],recovery=false){
  const prior=recovery?await completionRecoveryPrior(db):undefined,s=await prepareCompletionSources(db,prior?.prior,prior?.baselineCredential),f=s.f;
@@ -133,7 +127,7 @@ export async function nativeCompletionHarness(db:PrismaClient,clients:PrismaClie
     return {credential:r.context.credential,handoffId:s.handoffId,inputDigest:reviewDigest(r.input),fence:r.context.fence,possessionVerified:!controls.provider};
    }}};return createCanonicalBootstrapCompletion(deps);
  }
- return {f,s,dispatch,controls,writes,errors,verifications,providers,input,factory,faultHits:()=>faultHits,
+ return {f,s,dispatch,controls,writes,errors,verifications,providers,input,factory,recoveryChannelRevocation:prior?.channelRevocation,faultHits:()=>faultHits,
   async fact(){const k=safeWorkerCredential(await db.apiKey.findUniqueOrThrow({where:{id:f.reg.record.signed.payload.intent.target.id}}));
    const h=await createPrismaWorkerHandoffStore(db).readHandoff!(s.handoffId);return {key:k,handoffState:h?.state,acknowledgedAt:h?.acknowledgedAt,
     completions:(await db.$queryRaw<any[]>`SELECT count(*)::int AS n FROM worker_bootstrap_completions WHERE attempt_id=${attempt}::uuid`)[0].n};}};

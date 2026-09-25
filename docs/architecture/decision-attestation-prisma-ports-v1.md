@@ -1,5 +1,105 @@
 # Decision attestation: Prisma ports and native persistence evidence
 
+## Owner amendment v70: canonical completion recovery without fallback
+
+**Full native suite: 20/20 PASS, zero failures/skips/cancellations, native child
+exit 0, nativeRuns=1, 446.072 seconds.** Exactly one fresh owned disposable
+PostgreSQL 16 database received the final unchanged 85-migration chain from zero.
+No retry, schema reset, migration edit or function replacement was needed.
+This atom changes only the canonical completion fixture, its recovery assertions
+and documentation. Runtime, Prisma schema and qualification runner are unchanged
+from delegated baseline `6de4bd98fe4e4c10a53713e09c7939d911f2432f`.
+
+`completionRecoveryPrior` now awaits exactly one real
+`createPrismaBootstrapChannelStore(db).transition({action:'revoke', ...})`.
+Its result must match the exact operation ID, revision 2, action revoke and state
+revoked. Any rejection, including `reconciliation_required`, propagates immediately
+and prevents ticket recovery setup. The historical catch and its independent SQL
+row/head/native-receipt/writer-XID proof are deleted. No manual readback,
+`reconcileRevocation` call, error substitution or write retry remains in that
+setup. A source check confirmed one direct call, zero catches, zero manual raw
+queries and zero explicit reconciliation calls in `completionRecoveryPrior`.
+The returned successful record is passed through to the recovery assertion;
+the runtime's own committed readback remains the only channel success gate.
+
+The native recovery case establishes all of the following in sequence:
+
+- Actual credential and handoff revocation precede direct channel revoke/readback
+  success at channel revision 2; actual ticket revocation then supplies recovery's
+  canonical predecessor.
+- Both the public baseline and the actual stored predecessor have credential
+  version 2. The stored predecessor is inactive with a revocation timestamp.
+- The fresh candidate has a different ID, is inactive before completion and has
+  epoch 2. It is inert fixture data with no corresponding usable credential.
+- Existing injected signed peer/completion/binding evidence doubles and possession
+  checks execute through the real explicit completion factory.
+- Exactly 11 writer statements produce one completion, the exact target ID and
+  fingerprint, an acknowledged handoff with ACK timestamp and an active epoch-2
+  fixture record. The native output records `directChannelRevoke=true`,
+  `reconciliationFallback=false`, `predecessorVersion=2`, `freshCandidateEpoch=2`,
+  `statements=11`, `acknowledged=true` and `activated=1`.
+
+The **entire** existing completion suite ran, not a recovery-only selection:
+first enrollment and recovery, 20 independent clients/PIDs with one completion
+writer, read-only exact replay/conflict denial, invalid signature/possession
+verdicts, 16 internally re-signed binding mutations, all 11 rollback phases,
+real deferred rejection including migration-85 receipt rejection despite Prisma
+false resolution, actual pre-COMMIT connection termination, false/lost ACK,
+two real post-COMMIT response cuts, missing/mismatched/unavailable independent
+readback, four callback source mutations, six immediately-before-COMMIT source
+mutations, eight malformed direct completion inserts, receipt/Event/digest/XID/
+fence/head/lineage tampering, ticket revocation/restart and immutable guards.
+Read paths do not repair evidence. Uncertain completion remains
+`reconciliation_required`, `retryable=false`, with zero automatic write retries.
+
+The runner's exact success assertions pass: `faultRelay.armed=2`,
+`faultRelay.applied=2`, `lostCommitResponseCuts=2`, `fullSuite=true`, `skips=0`,
+`nativeExitCode=0`, `nativeRuns=1`, `migrations=85`,
+`finalMigrationSourceChanged=false`. Applied/final source-chain SHA-256:
+`17a6849ec2c0442bb3d34b3a1e1d335321e95026312ff283051a527ecda2fbdd`.
+All migrations 1-85, runtime modules, Prisma schema and runner compare unchanged
+with the delegated baseline. No production migration was applied.
+
+Cleanup **PASS**, runner **exit 0**: the single owned DB was removed, relay
+listener/process closed, no active owned sessions remained and zero external
+helper files/directories were created. Container/volume/image/network inventory
+was restored, Roost PostgreSQL returned to its initial stopped state and Soar
+remained unchanged. The three existing databases / 214 tables and sequences
+retain the same before/after fingerprint:
+`e9e019524b6010b02b30b4635fff99133c4429ffac3f537b05ac860485a281f1`.
+
+Source/mocked regression **349/349 PASS**, zero failures/skips/cancellations,
+exit 0 (47.870 seconds). Server build, lint (338 routes / 45 files), three
+contract-pin checks, runner AST and scoped/staged diff checks pass. Default
+context remains below 150000 bytes. No web change or web build. Unrelated dirty
+product/planning documents, unread/untracked/unstaged `design-qa.md`, retained
+roots and historical sandbox content remain untouched. No push or deploy.
+
+The legacy channel revoke integration gap in canonical completion recovery is
+**closed for the tested native persistence path**. There is no newly discovered
+runtime defect. This qualifies the real committed persistence/readback behavior
+with injected public signature and possession doubles; it does not qualify
+cryptography, real delivery, usable-key/credential creation or provisioning.
+No default composition, endpoint or installation/target/profile/model activation
+was introduced. Non-database network/DNS/listener/process/private-key/signing
+APIs remain forbidden in the suite; `forbiddenEffects=0`, `privateKeys=0`,
+`realDelivery=0`, `defaultActivation=false`.
+
+RF-HOST-035 remains **PARTIAL**, production **BLOCKED**. `implementationReady`,
+`executionSupported`, `pilotReady`, `liveAdmissionAllowed`,
+`pilotExecutionAuthorized`, `pilotExecutionStarted`, `transportQualified` and
+`launchAuthority` remain false. Only explicit canonical completion can report
+completionRecorded/credentialActivated after exact committed proof; default and
+legacy durable paths remain false. Registration cause remains UNKNOWN /
+MONITORED RESIDUAL RISK. Concrete production signature verification, possession
+proof, secure delivery/provisioning and ordinary successor admission remain
+outside this persistence qualification.
+
+Exactly one next recommendation, **not started**: a source-only explicitly
+injected public-signature verifier for canonical completion peer/completion/
+binding, qualified with fixed public test vectors and current issuer binding,
+without private-key access, default wiring or activation.
+
 ## Owner amendment v69: native channel revocation readback passes
 
 **Final native run: 16/16 PASS, zero failures/skips/cancellations, native child

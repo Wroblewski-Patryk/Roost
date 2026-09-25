@@ -46,8 +46,16 @@ test('native canonical bootstrap completion',{skip:!process.env.WORKER_IDENTITY_
   console.log(JSON.stringify({firstEnrollment:true,statements:11,activated:1,receipt:result.receipt,publicFingerprintMatches:true}));happy=true;
  });assert.ok(happy,'Stop after first native completion failure');
  await t.test('owner recovery follows actual credential, handoff, channel and ticket revocation',async()=>{
-  const h=await fresh(true),v=await h.input();await complete(h,v);const fact=await h.fact();assert.equal(fact.key.epoch,2);assert.equal(fact.key.active,true);assert.equal(fact.completions,1);
-  assert.equal(h.f.reg.record.signed.payload.intent.baseline.credential!.version,2);recoveryHappy=true;
+  const h=await fresh(true),v=await h.input(),baseline=h.f.reg.record.signed.payload.intent.baseline.credential!;
+  assert.equal(h.recoveryChannelRevocation?.action,'revoke');assert.equal(h.recoveryChannelRevocation?.state,'revoked');assert.equal(h.recoveryChannelRevocation?.revision,2);
+  const prior=await db.apiKey.findUniqueOrThrow({where:{id:baseline.id},select:{active:true,revokedAt:true,credentialVersion:true}});
+  assert.equal(baseline.version,2);assert.equal(prior.credentialVersion,2);assert.equal(prior.active,false);assert.ok(prior.revokedAt);
+  const candidate=(await h.fact()).key;assert.equal(candidate.active,false);assert.equal(candidate.epoch,2);assert.notEqual(candidate.id,baseline.id);
+  await complete(h,v);const fact=await h.fact();assert.equal(h.writes.length,11);assert.equal(fact.key.epoch,2);assert.equal(fact.key.active,true);assert.equal(fact.completions,1);
+  assert.equal(fact.key.id,v.binding.payload.credential.id);assert.equal(fact.key.fingerprint,v.binding.payload.credential.fingerprint);
+  assert.equal(fact.handoffState,'acknowledged');assert.ok(fact.acknowledgedAt);
+  console.log(JSON.stringify({recovery:true,directChannelRevoke:true,channelRevision:h.recoveryChannelRevocation!.revision,predecessorVersion:prior.credentialVersion,
+   predecessorRevoked:true,freshCandidateEpoch:candidate.epoch,statements:h.writes.length,acknowledged:true,activated:1,reconciliationFallback:false}));recoveryHappy=true;
  });assert.ok(recoveryHappy,'Stop after native recovery failure');
  await t.test('twenty distinct clients contend with exactly one final writer and activation',async()=>{
   const h=await fresh(),base=await h.input(),requests=Array.from({length:20},()=>{const v=structuredClone(base);v.binding.payload.command.operationId=randomUUID();

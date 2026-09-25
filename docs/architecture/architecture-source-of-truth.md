@@ -1,22 +1,22 @@
 # Architecture Source Of Truth
 
-Owner amendment v69: [native channel revocation readback](decision-attestation-prisma-ports-v1.md)
-passes 16/16 native tests, zero skips, with real legacy store revoke and explicit
-READ ONLY reconciliation on one owned DB with the unchanged final 85 migrations.
-N=0/1/3 prove the exact F/H/A/T trigger sequence and legitimate shared epochs;
-corrupt/foreign/duplicate/missing evidence and concurrent drift deny. Two actual
-post-COMMIT response cuts in the final run reconcile without retry or fixture
-fallback. A minimal reader correction includes foreign native receipts in the
-operation interval. Source tests 349/349 PASS, build/lint/pins PASS. First run's
-8/16 result came from missing fixture decision revisions; corrected preparation
-forces deferred checks and confirms committed roots before testing. Native runs=2
-on the same DB, without schema reset. Cleanup and unchanged fingerprints are
-recorded in the linked evidence. The tested legacy readback gap is closed;
-canonical completion's old recovery-fixture fallback has not been requalified
-against this change. RF-HOST-035 PARTIAL, production BLOCKED, all eight readiness
-flags false; registration cause UNKNOWN / MONITORED RESIDUAL RISK. Exactly one
-next recommendation, not started: bounded native canonical completion recovery
-regression with the historical channel-revoke fallback removed.
+Owner amendment v70: [canonical completion recovery regression](decision-attestation-prisma-ports-v1.md)
+passes the complete native suite 20/20, zero skips, in one run on one fresh owned
+DB with the unchanged final 85 migrations. Recovery requires direct success from
+the real channel revoke/readback: the catch/manual row-head-receipt-XID fallback
+is removed, with no retry or explicit reconciliation substitute. The actual
+revoked predecessor stays version 2; a distinct inactive candidate at epoch 2
+completes all 11 statements, exact ACK and committed fixture activation. Both
+real post-COMMIT cuts pass with relay armed=2/applied=2. Source 349/349,
+build/lint/pins and diff checks pass. Runtime, migrations, schema and runner are
+unchanged; cleanup/fingerprint evidence is in the linked report. The recovery
+integration gap is closed for this tested persistence path. Public signature and
+possession doubles still do not qualify production cryptography, delivery or
+provisioning. RF-HOST-035 PARTIAL; production BLOCKED; all eight readiness flags
+false; registration cause UNKNOWN / MONITORED RESIDUAL RISK. Exactly one next
+recommendation, not started: source-only explicit public-signature verifier for
+canonical completion peer/completion/binding, with fixed public test vectors and
+no private-key access, default wiring or activation.
 
 Owner amendment v54: [native attestation qualification](decision-attestation-prisma-ports-v1.md)
 remains **BLOCKED**: final native 14/19 PASS, 5 FAIL (four subtests plus parent),
