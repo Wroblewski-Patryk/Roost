@@ -1,5 +1,18 @@
 # Local Codex Agent Runtime
 
+Owner amendment v56: [native attestation persistence](decision-attestation-prisma-ports-v1.md)
+final full run 24/24 PASS, 0 skipped, runner exit 0; cleanup independently PASS.
+One owned disposable DB applied 83 migrations; a one-line audit workspace fix
+in never-production-applied 83 was installed there and pinned before the final
+full run. Earlier 82 migrations/schema and existing DB fingerprints are unchanged;
+inventory restored. Source 204/204, server build/lint/pins PASS. Public synthetic
+doubles only; no production crypto, default composition or activation.
+Earlier intermittent fixture registration denial was not reproduced or explained;
+the final pass is not proof that this anomaly was repaired. RF-HOST-035 PARTIAL,
+production and canonical signed_current_decision_unavailable BLOCKED; all eight
+flags false. Exactly one next recommendation, not started: separately authorized
+bounded investigation/repair of that fixture anomaly. Earlier entries are historical.
+
 Owner amendment v55: [fence compatibility repair](decision-attestation-prisma-ports-v1.md)
 is source/mocked qualified: 204/204 regressions and final focused 22/22 PASS;
 build/lint/pins pass. Migration 83 locks without double-counting existing 81/82

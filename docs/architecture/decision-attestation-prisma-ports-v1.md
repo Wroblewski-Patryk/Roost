@@ -1,4 +1,95 @@
-# Decision attestation: Prisma ports and pending native requalification
+# Decision attestation: Prisma ports and native persistence evidence
+
+## Owner amendment v56: bounded native requalification
+
+Final full native run **24/24 PASS, 0 skipped**, native child and qualification
+runner **exit 0**; cleanup independently **PASS**. These are conditional native
+persistence results using public synthetic signer, verifier, authentication and
+key-authorizer doubles. Production signatures, owner authentication endpoints,
+transport, default composition and activation are not qualified.
+
+Exactly one owned, marked disposable PostgreSQL database applied all **83**
+migrations. Original migration-82 standalone register/reserve/consume and its
+catalog path passed before 83. Legacy operations after 83 and direct SQL strict
+anti-ABA denial passed; old rows and null authority opt-in stayed unchanged.
+Migration files **1-82** and Prisma schema are unchanged.
+
+The first full run was **21/24 PASS, 3 FAIL** (two subtests plus parent): seal
+committed, but full lineage assertions found the new history receipt had no
+workspace. History carries `attempt_id`, not `workspace_id` or `ticket_id`.
+The only migration-83 correction derives the workspace from that existing
+attempt in `decision_attestation_audit`; generated function pins were refreshed.
+While the runner retained its owned database, only that function was replaced
+from corrected source, and its native body hash verified. No migration replay,
+reset, backfill, earlier migration edit or second database occurred. The final
+catalog and full suite therefore exercise the corrected function, not a fresh
+replay of the final chain from an empty database.
+
+The second full run was **20/24 PASS, 4 FAIL** (three subtests plus parent):
+synthetic fixture registration intermittently returned
+`bootstrap_ticket_lifecycle_denied` before the operations under test. A bounded
+in-memory fixture diagnostic now preserves the underlying transaction error.
+The third full run passed unchanged assertions, but did not reproduce that
+registration denial. Its root cause is **not established**; a passing final run
+must not be described as a proven repair of this intermittent fixture anomaly.
+
+### Final native coverage
+
+- Exact through-fence boundary, all five start phases, six successive epochs,
+  both receipt families and nested history/audit proofs sharing an epoch.
+- Missing, stale, replayed and foreign receipts, fresh expected global gaps,
+  and source/key/owner/lifecycle/issuer/channel/policy mutation deny before any
+  port INSERT/UPDATE/DELETE; full fingerprints stay unchanged.
+- Twenty concurrent attest, seal and terminal operations each have one winner;
+  seal against twenty revokes and revoke against twenty seals preserve both
+  lock orders without a deadlock. All eleven rollback faults actually fire,
+  including final consume, then restore exact state/history/Event/audit/fence.
+- Public key create/adopt/stage/cutover/retire/revoke, positive expiry, terminal
+  immutability, successful seal and same-transaction dispatch denial.
+- Attest, seal and terminal each exercise deferred rejection (including false
+  Prisma success), false/unknown ACK, pre-COMMIT connection loss, real response
+  loss after COMMIT and missing/mismatched/unavailable independent READ ONLY
+  readback. Uncertainty is non-retryable reconciliation with exactly zero or
+  one committed operation. Three wire cuts occurred in the final run, nine
+  cumulatively across the three runs; final-run counters are checked separately.
+- Exact 111 own trigger bindings, 15 new functions/five helpers and upgraded
+  legacy writer pins; trigger/helper tampering, replica/isolation/UTC denial,
+  read purity and zero non-database/private-key effects.
+
+Selected source regressions **204/204 PASS**, server build, lint, generated pins,
+runner syntax and scoped diff checks PASS. The fixture's accepted-source setup
+still uses its documented privileged preparation; it does not qualify the
+production acceptance endpoint or real cryptography.
+
+### Cleanup, hashes and remaining authority
+
+The owned database and relay were removed; no helper files were created.
+Existing catalog/data/roles fingerprints match across three accessible databases
+and 214 table/sequence entries. Container inventory was restored, including the
+initially stopped target PostgreSQL; unrelated services were unchanged. No push,
+deploy, retained/sandbox cleanup or default activation occurred.
+
+- Final migration-83 LF SHA-256:
+  `b16939ff35320afe5f9cc0259edf1e444c7c43b70c7e186dc6a66ce096f9e0b5`.
+- Corrected native audit body SHA-256:
+  `524ae686d6d97955e3fee6f97cc2e91918ac8817e2119d2e4e712a18972f943b`.
+- Final source-chain digest (runner's raw-file hash convention):
+  `5e7d56f423aeb4c325edf7a5804551c8ffdc664ac85bf289c48ec69ccaff148b`.
+- Existing-database before/after fingerprint SHA-256:
+  `e9e019524b6010b02b30b4635fff99133c4429ffac3f537b05ac860485a281f1`.
+
+The explicit injected ports have conditional native persistence evidence;
+`signed_current_decision_unavailable` remains unconditional in the canonical
+runtime decision reader. RF-HOST-035 stays **PARTIAL**, production **BLOCKED**.
+`implementationReady`, `executionSupported`, `pilotReady`, `liveAdmissionAllowed`,
+`pilotExecutionAuthorized`, `pilotExecutionStarted`, `transportQualified` and
+`launchAuthority` remain **false**.
+
+Exactly one next recommendation, **not started**: separately authorize a bounded
+investigation and deterministic repair of intermittent native fixture
+registration, using the new diagnostic and an owned disposable database, before
+expanding authority integration. The v55 and older statuses/recommendations
+below are historical.
 
 ## Owner amendment v55: source fence compatibility repair
 

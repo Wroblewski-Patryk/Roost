@@ -78,6 +78,7 @@ const server=net.createServer(socket=>{
    if(backend.length<5)break;const n=backend.readInt32BE(1)+1;if(n<5||n>16777216||backend.length<n)break;
    if(backend[0]===69){const fields=backend.subarray(5,n).toString().split('\0'),code=fields.find(x=>x.startsWith('C'));emit({wireErrorCode:code?.slice(1)});}
    if(backend[0]===67){const tag=backend.subarray(5,n-1).toString();if(tag==='COMMIT'||tag==='ROLLBACK')emit({wireCompletion:tag});
+     if(tag==='ROLLBACK'&&dropCommit){dropCommit=false;emit({faultDisarmed:'rollback'});}
      if(tag==='COMMIT'&&dropCommit){dropCommit=false;child.stdout.unpipe(socket);socket.destroy();emit({faultApplied:'drop_commit_response'});}
    }
    backend=backend.subarray(n);
@@ -171,10 +172,26 @@ try:
     print(json.dumps({'migrationsApplied':len(chain),'chainDigest':hashlib.sha256(''.join(chain).encode()).hexdigest()}),flush=True)
     native_runs = 1
     cuts_before_last_run = 0
+    arms_before_last_run = 0
     suite = {'issuer':'bootstrap-issuer-native','channel':'bootstrap-channel-native','lifecycle':'worker-identity-lifecycle-native','ticket':'bootstrap-ticket-native','revocation':'bootstrap-ticket-revocation-native','attestation':'decision-attestation-native'}[args.suite]
     native_code = preamble+("require('tsx/cjs');require('./src/tests/"+suite+".test.ts');" if args.suite=='attestation' else "require('./dist/tests/"+suite+".test.js');")
-    result = subprocess.run(['node','-e',native_code],env=env,text=True,capture_output=True,timeout=900 if args.suite in ('channel','ticket','revocation','attestation') else 240,creationflags=hidden)
-    print(result.stdout,flush=True)
+    def native_run():
+        # Stream public synthetic TAP while retaining it in memory for exact
+        # final assertions. No log files or durable helper directories.
+        child = subprocess.Popen(['node','-e',native_code],env=env,text=True,encoding='utf-8',errors='replace',stdout=subprocess.PIPE,stderr=subprocess.STDOUT,creationflags=hidden)
+        lines = []
+        def read_output():
+            for line in child.stdout:
+                lines.append(line)
+                print(line,end='',flush=True)
+        output_reader = threading.Thread(target=read_output,daemon=True);output_reader.start()
+        try: child.wait(timeout=900 if args.suite in ('channel','ticket','revocation','attestation') else 240)
+        except subprocess.TimeoutExpired:
+            child.kill();child.wait();raise
+        finally: output_reader.join(timeout=10)
+        assert not output_reader.is_alive(),'Native output reader remains'
+        return subprocess.CompletedProcess(['node'],child.returncode,''.join(lines),'')
+    result = native_run()
     time.sleep(.1)
     print(json.dumps({'faultRelay':{'armed':sum(v.get('faultArmed')=='drop_commit_response' for v in wire),'applied':sum(v.get('faultApplied')=='drop_commit_response' for v in wire)}}),flush=True)
     if result.returncode and args.suite in ('channel','ticket','revocation','attestation'):
@@ -182,20 +199,25 @@ try:
         while native_runs<(8 if args.suite=='attestation' else 3) and input().strip()=='retry':
             native_runs += 1
             cuts_before_last_run = sum(v.get('faultApplied')=='drop_commit_response' for v in wire)
-            result = subprocess.run(['node','-e',native_code],env=env,text=True,capture_output=True,timeout=900,creationflags=hidden)
-            print(result.stdout,flush=True)
+            arms_before_last_run = sum(v.get('faultArmed')=='drop_commit_response' for v in wire)
+            result = native_run()
             if not result.returncode: break
             print('NATIVE_FAILED: retry or cleanup.',flush=True)
     if result.returncode: raise RuntimeError('Native '+args.suite+' qualification failed')
     assert re.search(r'^# skipped 0$',result.stdout,re.M) and re.search(r'^# fail 0$',result.stdout,re.M)
     if args.scenario=='full' or args.suite in ('issuer','channel','ticket','revocation','attestation'):
-        expected = 19 if args.suite=='attestation' else 13 if args.suite=='revocation' else 17 if args.suite=='ticket' else 19 if args.suite=='channel' else 17 if args.suite=='issuer' else 16
+        expected = 24 if args.suite=='attestation' else 13 if args.suite=='revocation' else 17 if args.suite=='ticket' else 19 if args.suite=='channel' else 17 if args.suite=='issuer' else 16
         assert re.search(r'^# tests '+str(expected)+'$',result.stdout,re.M),'Full suite count differs'
         time.sleep(.1)
-        expected_cuts = cuts_before_last_run+1 if args.suite in ('revocation','attestation') else native_runs if args.suite=='channel' else 1
-        assert sum(v.get('faultArmed')=='drop_commit_response' for v in wire)==expected_cuts
+        expected_cuts = cuts_before_last_run+(3 if args.suite=='attestation' else 1) if args.suite in ('revocation','attestation') else native_runs if args.suite=='channel' else 1
+        expected_arms = arms_before_last_run+3 if args.suite=='attestation' else expected_cuts
+        assert sum(v.get('faultArmed')=='drop_commit_response' for v in wire)==expected_arms
         assert sum(v.get('faultApplied')=='drop_commit_response' for v in wire)==expected_cuts
         print(json.dumps({'lostCommitResponseCuts':expected_cuts,'fullSuite':True,'skips':0}),flush=True)
+    final_chain = [hashlib.sha256(m.read_bytes()).hexdigest() for m in sorted((repo/'prisma/migrations').glob('*/migration.sql'))]
+    assert final_chain[:-1]==chain[:-1],'Earlier migration source changed'
+    print(json.dumps({'nativeExitCode':result.returncode,'nativeRuns':native_runs,'migrations':len(final_chain),
+        'finalSourceChainDigest':hashlib.sha256(''.join(final_chain).encode()).hexdigest(),'migration83SourceChanged':final_chain[-1]!=chain[-1]}),flush=True)
 finally:
     if bridge is not None:
         bridge.stdin.write('close\n');bridge.stdin.flush();bridge.wait(timeout=15);reader.join(timeout=5)

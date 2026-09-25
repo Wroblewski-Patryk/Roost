@@ -326,6 +326,7 @@ DECLARE public_row JSONB:=CASE WHEN TG_OP='DELETE' THEN to_jsonb(OLD) ELSE to_js
  w:=(public_row->>'workspace_id')::uuid;
  IF TG_TABLE_NAME='workspaces' THEN w:=(public_row->>'id')::uuid;END IF;
  IF w IS NULL AND public_row ? 'ticket_id' THEN SELECT workspace_id INTO w FROM worker_bootstrap_tickets WHERE id=(public_row->>'ticket_id')::uuid;END IF;
+ IF w IS NULL AND public_row ? 'attempt_id' THEN SELECT workspace_id INTO w FROM worker_bootstrap_attempts WHERE id=(public_row->>'attempt_id')::uuid;END IF;
  IF w IS NULL AND public_row ? 'generation_id' THEN SELECT workspace_id INTO w FROM worker_transport_generations WHERE id=(public_row->>'generation_id')::uuid;END IF;
  IF w IS NULL AND public_row ? 'decision_id' THEN SELECT workspace_id INTO w FROM decisions WHERE id=(public_row->>'decision_id')::uuid;END IF;
  ident:=COALESCE(public_row->>'id',public_row->>'decision_id',public_row->>'workspace_id')||COALESCE(':'||(public_row->>'host_id'),'');

@@ -14,13 +14,14 @@ export {owned,prepare,type Db};
 
 export async function preflight(){const db=new PrismaClient();try{await db.$connect();await owned(db);const f=await ticketFixture(db);
  await f.store.register(f.registration);await f.store.transition(await f.command('reserve'));await f.store.transition(await f.command('consume'));
+ assert.equal((await f.store.inspect({ticketId:f.identity.ticketId})).ok,true);
  await db.$executeRawUnsafe('CREATE TABLE native_attestation_preflight (kind TEXT PRIMARY KEY,body JSONB NOT NULL)');
  for(const table of ['decisions','decision_revisions','decision_acceptances','worker_bootstrap_tickets','worker_bootstrap_attempts','worker_bootstrap_history','worker_bootstrap_heads','worker_bootstrap_audit']){
   await db.$executeRawUnsafe(`INSERT INTO native_attestation_preflight SELECT '${table}',coalesce(jsonb_agg(to_jsonb(t)),'[]'::jsonb) FROM ${table} t`);}
- console.log(JSON.stringify({legacyAttestationPreflight:true,ticketAttempts:1,privateKeys:0}));
+ console.log(JSON.stringify({legacyAttestationPreflight:true,original82CatalogPath:true,ticketAttempts:1,privateKeys:0}));
  }finally{await db.$disconnect();}}
 
-export async function attestationNativeFixture(db:PrismaClient){
+export async function attestationNativeFixture(db:PrismaClient,options:{policyTtlMs?:number}={}){
  const f=await ticketFixture(db),q={decisionId:randomUUID(),ticketId:f.identity.ticketId},registration=structuredClone(f.registration);
  const i=registration.identity,t=registration.record.signed.payload,b=i.binding,ownerId=i.ownerId,acceptanceId=randomUUID(),previewId=randomUUID();
  const at=(await db.$queryRaw<any[]>`SELECT to_char(date_trunc('milliseconds',clock_timestamp()) AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS at`)[0].at as string;
@@ -30,7 +31,8 @@ export async function attestationNativeFixture(db:PrismaClient){
  i.issuedAt=at;i.notBefore=at;t.issuedAt=at;t.lifecycle.issuedAt=at;t.lifecycle.notBefore=at;t.ownerAuthAt=at;
  registration.record.decision.payload.id=q.decisionId;registration.record.decision.payload.acceptedAt=at;
  i.ticketDigest=ticketEnvelopeDigest(registration.record.signed);
- const impact={taskIds:[]},policy={version:'owner-decision-attestation-policy-v1',revision:1,evidenceDigest:reviewDigest(impact),validFrom:at,expiresAt:i.expiresAt};
+ const impact={taskIds:[]},policy={version:'owner-decision-attestation-policy-v1',revision:1,evidenceDigest:reviewDigest(impact),validFrom:at,
+  expiresAt:options.policyTtlMs?new Date(Date.parse(at)+options.policyTtlMs).toISOString():i.expiresAt};
  const body={workerBootstrap:t.intent,workerBootstrapLifecycle:t.lifecycle,ownerDecisionAttestation:policy};
  const channelIntent={...f.intent,ticketDigest:i.ticketDigest};
  await prepare(db,tx=>tx.$executeRaw`UPDATE decision_revisions SET body=${JSON.stringify({workerBootstrapChannel:channelIntent})}::jsonb WHERE decision_id=${f.accepted.decisionId}::uuid`);
@@ -60,10 +62,15 @@ export async function attestationNativeFixture(db:PrismaClient){
   for(const g of old)await tx.$executeRawUnsafe(`ALTER TABLE ${g.tbl} ENABLE TRIGGER ${g.name}`);
  },{isolationLevel:'Serializable',timeout:30000});
  const reg=lifecycleRegistration.parse(registration);
- await createPrismaTicketLifecycleStore(db,()=>new Date(),{channel:createBootstrapV2ChannelBinding(),verifier:{qualification:'worker_bootstrap_ticket_verifier_v2',
+ const registrationErrors:string[]=[];
+ const registrationClient=new Proxy(db,{get(target,key){if(key!=='$transaction')return Reflect.get(target,key);
+  return (work:any,options:any)=>target.$transaction(async tx=>{try{return await work(tx);}catch(e:any){
+   registrationErrors.push(String(e.meta?.message??e.stack??e.message).slice(0,1200));throw e;}},options);}});
+ try{await createPrismaTicketLifecycleStore(registrationClient,()=>new Date(),{channel:createBootstrapV2ChannelBinding(),verifier:{qualification:'worker_bootstrap_ticket_verifier_v2',
   verify:async(_tx,p)=>reviewDigest(p.signed)===reviewDigest(reg.record.signed)&&reviewDigest(p.identity)===reviewDigest(reg.identity)}}).register(reg);
+ }catch(e){throw new Error('Synthetic attestation registration failed: '+JSON.stringify(registrationErrors),{cause:e});}
  let fault='',before:((tx:Db)=>Promise<void>)|undefined,afterQuery:((tx:Db,sql:string)=>Promise<void>)|undefined;
- const counts={callbacks:0,writes:0,reads:0,signatures:0},errors:string[]=[],transactions:{mode:string;db:Db}[]=[];
+ const counts={callbacks:0,writes:0,reads:0,signatures:0,statements:0},errors:string[]=[],transactions:{mode:string;db:Db}[]=[];
  const material={keyId:randomUUID(),epoch:1,purpose:'owner-decision-attestation-v1' as const,algorithm:'Ed25519' as const,format:'raw-public-hex' as const,
   publicKey:'d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a',publicKeyDigest:'',
   provenance:{kind:'installation_secret_store' as const,installationId:b.installationId,authorizationDigest:reviewDigest('synthetic public authorization'),publicMaterialEvidenceDigest:reviewDigest('synthetic public material')},
@@ -78,6 +85,7 @@ export async function attestationNativeFixture(db:PrismaClient){
    if(before){const hook=before;before=undefined;await hook(tx);}
    const proxy=new Proxy(tx,{get(target,key){const value=Reflect.get(target,key);if(key==='$executeRaw'||key==='$queryRaw')return async(...args:any[])=>{
     const sql=(Array.isArray(args[0])?args[0].join('?'):args[0].sql).replace(/\s+/g,' ').trim();
+    if(/^(INSERT|UPDATE|DELETE)\b/.test(sql))counts.statements++;
     try{let result=await (value as any).apply(target,args);if(afterQuery)await afterQuery(tx,sql);
      if(mode==='read'&&sql.includes('operationCount')){if(fault==='missing')result=[];if(fault==='mismatch'&&result[0])result[0].mutationDigest='f'.repeat(64);}return result;
     }catch(e:any){errors.push(String(e.meta?.code??e.code??'unknown')+':'+String(e.meta?.message??e.message).slice(0,500));throw e;}
@@ -88,7 +96,7 @@ export async function attestationNativeFixture(db:PrismaClient){
     await db.$queryRaw`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid=${pid} AND datname=current_database()`;}
    if(mode==='write'&&fault==='unknown')throw new AttestationCommitUnknown();return returned;
   },{isolationLevel:mode==='read'?'RepeatableRead':'Serializable',maxWait:60000,timeout:30000});
-  }catch(e){if(e===falseAck)return returned;throw e;}
+  }catch(e:any){if(e===falseAck)return returned;errors.push(String(e.stack??e.message).split('\n').slice(0,4).join('\n').slice(0,750));throw e;}
  },ownerAuthentication:async()=>auth,authorizePublicKey:async()=>true,
  signer:{keyId:material.keyId,sign:async(_tx,e)=>{counts.signatures++;return reviewDigest({syntheticPublicAttestation:e.payloadDigest}).repeat(2);}},
  verifier:{verify:async(_tx,e)=>e.signature===reviewDigest({syntheticPublicAttestation:e.payloadDigest}).repeat(2)},
@@ -100,6 +108,6 @@ export async function attestationNativeFixture(db:PrismaClient){
   const operationId=randomUUID();return ports.execute(await command('key',{operationId,operation:{id:operationId,action,keyId,material:m,overlapStartsAt,cutoverAt}}));}
  async function ready(){assert.equal((await key('create',material.keyId,material)).ok,true,JSON.stringify(errors));
   assert.equal((await ports.execute(await command('auth'))).ok,true,JSON.stringify(errors));}
- return {...f,q,reg,material,auth,ports,deps,projection,command,key,ready,counts,errors,transactions,
+ return {...f,q,reg,material,auth,policy,ports,deps,projection,command,key,ready,counts,errors,transactions,
   fault:(v:string)=>fault=v,before:(hook:(tx:Db)=>Promise<void>)=>before=hook,afterQuery:(hook?:typeof afterQuery)=>afterQuery=hook};
 }
