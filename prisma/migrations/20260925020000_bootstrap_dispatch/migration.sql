@@ -36,7 +36,9 @@ END $$;
 CREATE FUNCTION bootstrap_dispatch_guard() RETURNS TRIGGER LANGUAGE plpgsql AS $$
 DECLARE p worker_bootstrap_dispatch_history;a worker_bootstrap_attempts;t worker_bootstrap_tickets;
  att decision_attestations;r JSONB;u JSONB;old JSONB;act TEXT;s TEXT;expected TEXT;k TEXT;f BIGINT;n TIMESTAMPTZ:=clock_timestamp();
- claim BOOLEAN;terminal BOOLEAN;BEGIN
+ claim BOOLEAN;terminal BOOLEAN;h worker_bootstrap_heads;l worker_bootstrap_lifecycle_events;
+ ar decision_attestation_write_receipts;hr decision_attestation_write_receipts;lr decision_attestation_write_receipts;
+ pr worker_bootstrap_dispatch_receipts;receipt_rows JSONB;anchor JSONB;previous_receipt JSONB;recorded TEXT;BEGIN
  IF TG_OP<>'INSERT' THEN RAISE EXCEPTION 'dispatch_history_immutable'; END IF;
  SELECT * INTO a FROM worker_bootstrap_attempts WHERE id=NEW.attempt_id FOR UPDATE;
  SELECT * INTO t FROM worker_bootstrap_tickets WHERE id=a.ticket_id;
@@ -50,13 +52,13 @@ DECLARE p worker_bootstrap_dispatch_history;a worker_bootstrap_attempts;t worker
   OR NEW.revision<>COALESCE(p.revision,0)+1 OR NEW.previous_digest IS DISTINCT FROM p.record_digest
   OR r->>'revision' IS DISTINCT FROM NEW.revision::text OR r->>'previousDigest' IS DISTINCT FROM NEW.previous_digest
   OR r->>'version' IS DISTINCT FROM 'bootstrap-attempt-dispatch-v1'
-  OR NOT r ?& ARRAY['version','attemptId','operationId','action','revision','previousDigest','authority','state','ownerId','ownerEpoch','claimGeneration','claimedAt','leaseExpiresAt','at','responseDigest','completionOperationId','evidenceDigest']
-  OR r-ARRAY['version','attemptId','operationId','action','revision','previousDigest','authority','state','ownerId','ownerEpoch','claimGeneration','claimedAt','leaseExpiresAt','at','responseDigest','completionOperationId','evidenceDigest']<>'{}'::jsonb
+  OR NOT r ?& ARRAY['version','attemptId','operationId','action','revision','previousDigest','authority','lineage','state','ownerId','ownerEpoch','claimGeneration','claimedAt','leaseExpiresAt','at','responseDigest','completionOperationId','evidenceDigest']
+  OR r-ARRAY['version','attemptId','operationId','action','revision','previousDigest','authority','lineage','state','ownerId','ownerEpoch','claimGeneration','claimedAt','leaseExpiresAt','at','responseDigest','completionOperationId','evidenceDigest']<>'{}'::jsonb
   OR NEW.record_digest IS DISTINCT FROM bootstrap_lifecycle_digest(r)
   OR NEW.fence_revision<>f OR (r->>'at')::timestamptz>n OR (r->>'at')::timestamptz<n-interval '5 seconds'
   OR p.id IS NOT NULL AND ((r->>'at')::timestamptz<(old->>'at')::timestamptz OR u IS DISTINCT FROM old->'authority' OR p.writer_xid=pg_current_xact_id()::text)
   THEN RAISE EXCEPTION 'dispatch_cas_or_record_invalid'; END IF;
- FOREACH k IN ARRAY ARRAY['version','attemptId','operationId','action','revision','authority','state','ownerEpoch','claimGeneration','at'] LOOP
+ FOREACH k IN ARRAY ARRAY['version','attemptId','operationId','action','revision','authority','lineage','state','ownerEpoch','claimGeneration','at'] LOOP
   IF r->k='null'::jsonb THEN RAISE EXCEPTION 'dispatch_null_required_field'; END IF;
  END LOOP;
  IF NOT u ?& ARRAY['attemptId','ticketId','decisionId','ownerId','ticketDigest','purpose','binding','hostGeneration','installationGeneration','credentialEpoch','version','projectionDigest','sealDigest','validFrom','expiresAt']
@@ -98,6 +100,53 @@ DECLARE p worker_bootstrap_dispatch_history;a worker_bootstrap_attempts;t worker
    AND (SELECT max(y.fence_revision) FROM decision_attestation_write_receipts y WHERE y.writer_xid=x.writer_xid)=f
    AND x.writer_xid<>pg_current_xact_id()::text)
   THEN RAISE EXCEPTION 'dispatch_authority_stale'; END IF;
+ -- Exact causal lineage is part of the immutable record and its receipt hash.
+ -- No new head: both anchors are the original consumed attempt/ticket facts.
+ SELECT * INTO STRICT h FROM worker_bootstrap_heads WHERE attempt_id=a.id;
+ SELECT * INTO STRICT l FROM worker_bootstrap_lifecycle_events WHERE ticket_id=t.id AND attempt_id=a.id AND history_id=h.history_id AND record->>'action'='consume' AND record->>'state'='consumed';
+ SELECT * INTO STRICT ar FROM decision_attestation_write_receipts WHERE table_name='worker_bootstrap_attempts'
+  AND row_id=a.id::text||':'||a.host_id::text AND row_digest=bootstrap_lifecycle_digest(to_jsonb(a)) AND operation='INSERT';
+ SELECT * INTO STRICT hr FROM decision_attestation_write_receipts WHERE table_name='worker_bootstrap_heads'
+  AND row_id=h.workspace_id::text||':'||h.host_id::text AND row_digest=bootstrap_lifecycle_digest(to_jsonb(h)) AND writer_xid=ar.writer_xid;
+ SELECT * INTO STRICT lr FROM decision_attestation_write_receipts WHERE table_name='worker_bootstrap_lifecycle_events'
+  AND row_id=l.id::text AND row_digest=bootstrap_lifecycle_digest(to_jsonb(l)) AND writer_xid=ar.writer_xid;
+ SELECT jsonb_agg(jsonb_build_object('table',x.table_name,'rowId',x.row_id,'digest',x.row_digest,'fence',x.fence_revision::text,
+  'receiptId',x.id,'eventId',x.event_id,'writerXid',x.writer_xid,'verified',true) ORDER BY x.table_name,x.row_id,x.id),
+  to_char(max(e.updated_at) AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') INTO receipt_rows,recorded
+  FROM decision_attestation_write_receipts x JOIN events e ON e.id=x.event_id WHERE x.writer_xid=ar.writer_xid;
+ IF ar.id IS NULL OR hr.id IS NULL OR lr.id IS NULL OR h.state<>'consumed' OR h.revision<>1
+  OR l.record->>'state'<>'consumed' OR receipt_rows IS NULL OR jsonb_array_length(receipt_rows)>4000
+  OR (SELECT count(*) FROM decision_attestation_write_receipts WHERE writer_xid=ar.writer_xid)<>jsonb_array_length(receipt_rows)
+  OR EXISTS(SELECT 1 FROM decision_attestation_write_receipts x LEFT JOIN events e ON e.id=x.event_id WHERE x.writer_xid=ar.writer_xid
+   AND (e.id IS NULL OR e.type<>'decision.attestation.write' OR e.source<>'roost' OR e.actor_type::text<>'system'
+    OR e.workspace_id IS DISTINCT FROM x.workspace_id OR e.resource_type<>x.table_name OR e.resource_id<>x.row_id
+    OR e.payload IS DISTINCT FROM jsonb_build_object('table',x.table_name,'rowId',x.row_id,'operation',x.operation,'rowDigest',x.row_digest,
+     'fence',x.fence_revision::text,'writerXid',x.writer_xid,'launchAuthority',false)))
+  THEN RAISE EXCEPTION 'dispatch_canonical_receipts_missing'; END IF;
+ anchor:=jsonb_build_object('version','bootstrap-dispatch-anchor-v1','attemptId',a.id,'ticketId',t.id,'decisionId',t.decision_id,
+  'sealDigest',bootstrap_lifecycle_digest(a.attestation_seal),'ticketEnvelopeDigest',t.ticket_digest,
+  'sealReceipt',jsonb_build_object('operationId',a.id,'decisionId',t.decision_id,'ticketId',t.id,'mutationDigest',a.attestation_mutation_digest,
+   'rowsDigest',bootstrap_lifecycle_digest(jsonb_build_object('domain','owner-decision-sql-operation-rows-v1','receipts',receipt_rows)),
+   'authorityRevision',att.authority_revision::text,'fence',f::text,'writerXid',ar.writer_xid,'recordedAt',recorded),
+  'ticketHead',jsonb_build_object('id',l.id,'revision',l.revision,'digest',l.record_digest,'state','consumed','historyId',h.history_id,
+   'receipt',jsonb_build_object('id',lr.id,'eventId',lr.event_id,'rowDigest',lr.row_digest,'writerXid',lr.writer_xid,'fence',lr.fence_revision::text)),
+  'attemptHead',jsonb_build_object('historyId',h.history_id,'revision',h.revision,'digest',h.record_digest,'state','consumed',
+   'receipt',jsonb_build_object('id',hr.id,'eventId',hr.event_id,'rowDigest',hr.row_digest,'writerXid',hr.writer_xid,'fence',hr.fence_revision::text)));
+ previous_receipt:='null'::jsonb;
+ IF p.id IS NOT NULL THEN
+  SELECT * INTO pr FROM worker_bootstrap_dispatch_receipts WHERE operation_id=p.id;
+  IF pr.operation_id IS NULL OR pr.row_digest IS DISTINCT FROM bootstrap_lifecycle_digest(to_jsonb(p))
+   OR pr.writer_xid IS DISTINCT FROM p.writer_xid OR pr.fence_revision<>f OR p.fence_revision<>f
+   OR NOT EXISTS(SELECT 1 FROM events e WHERE e.id=pr.event_id AND e.type='bootstrap.dispatch.write' AND e.source='roost'
+    AND e.actor_type::text='system' AND e.workspace_id=a.workspace_id AND e.resource_type='worker_bootstrap_dispatch_history' AND e.resource_id=p.id::text
+    AND e.payload=jsonb_build_object('operationId',p.id,'attemptId',p.attempt_id,'rowDigest',pr.row_digest,'writerXid',p.writer_xid,'fence',p.fence_revision::text,'launchAuthority',false))
+   THEN RAISE EXCEPTION 'dispatch_predecessor_receipt_missing'; END IF;
+  previous_receipt:=jsonb_build_object('operationId',p.id,'eventId',pr.event_id,'recordDigest',p.record_digest,'requestDigest',p.request_digest,
+   'rowDigest',pr.row_digest,'writerXid',pr.writer_xid,'fence',pr.fence_revision::text);
+ END IF;
+ IF r->'lineage' IS DISTINCT FROM jsonb_build_object('version','bootstrap-dispatch-lineage-v1','anchor',anchor,'previous',previous_receipt)
+  OR p.id IS NOT NULL AND old->'lineage'->'anchor' IS DISTINCT FROM anchor
+  THEN RAISE EXCEPTION 'dispatch_causal_lineage_invalid'; END IF;
  claim:=act IN ('claim','resume');terminal:=act IN ('require_reconciliation','reconcile','recover','cancel');
  IF terminal IS DISTINCT FROM (COALESCE(r->>'evidenceDigest','') ~ '^[a-f0-9]{64}$')
   OR NOT terminal AND r->'evidenceDigest'<>'null'::jsonb
@@ -121,8 +170,8 @@ DECLARE p worker_bootstrap_dispatch_history;a worker_bootstrap_attempts;t worker
    OR r->'responseDigest' IS DISTINCT FROM old->'responseDigest' OR r->'completionOperationId' IS DISTINCT FROM old->'completionOperationId'
    THEN RAISE EXCEPTION 'dispatch_claim_invalid'; END IF;
  ELSE
-  IF (r-ARRAY['operationId','action','revision','previousDigest','state','at','responseDigest','completionOperationId','evidenceDigest'])
-   IS DISTINCT FROM (old-ARRAY['operationId','action','revision','previousDigest','state','at','responseDigest','completionOperationId','evidenceDigest'])
+  IF (r-ARRAY['operationId','action','revision','previousDigest','lineage','state','at','responseDigest','completionOperationId','evidenceDigest'])
+   IS DISTINCT FROM (old-ARRAY['operationId','action','revision','previousDigest','lineage','state','at','responseDigest','completionOperationId','evidenceDigest'])
    THEN RAISE EXCEPTION 'dispatch_owner_changed'; END IF;
   IF NOT terminal AND (r->>'ownerId' IS NULL OR (old->>'leaseExpiresAt')::timestamptz<=n) THEN RAISE EXCEPTION 'dispatch_lease_expired'; END IF;
   expected:=CASE

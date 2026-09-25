@@ -39,7 +39,9 @@ export function createDurableAttestedBootstrapComposition(deps?:DurableCompositi
     if(!completing.completionAuthorized||completing.idempotent)throw Error('no_completion_permit');
     await deps!.complete(reply,completing.entry.record);
     const completed=await command('complete',{completionOperationId,responseDigest});
-    return freezePublic({ok:true as const,state:'completed' as const,entry:completed.entry,...lifecycleFlags});
+    return freezePublic({ok:true as const,state:'completed' as const,entry:completed.entry,
+     canonicalCompletionRecorded:false as const,credentialActivated:false as const,
+     completionBlocker:'signed_bootstrap_completion_required' as const,...lifecycleFlags});
    }catch{
     // No automatic resend, completion retry, or compensating write after an
     // uncertain COMMIT. Inspection exposes the durable start marker; an explicit

@@ -74,6 +74,17 @@ export type SqlMutationReceipt=z.infer<typeof sqlMutationReceipt>;
 const operationReceiptRow=z.object({table:z.string(),rowId:z.string(),digest:sqlHash,fence:positiveText,
  receiptId:z.string().uuid(),eventId:z.string().uuid(),writerXid:positiveText,verified:z.literal(true)}).strict();
 export async function readAttestationOperation(db:AttestationDb,q:AttestationScope,operationId:string){
+ return readOperation(db,q,operationId,false);
+}
+// Historical receipt reconstruction is not current seal/admission authority.
+// Later lifecycle children belong to other committed operations; their absence
+// from the original operation's receipt set is not damage to that receipt set.
+// The dispatch reader additionally requires its exact stored rowsDigest and
+// exact consumed head/lifecycle receipts. Current authority keeps strict mode.
+export async function readHistoricalAttestationOperation(db:AttestationDb,q:AttestationScope,operationId:string){
+ return readOperation(db,q,operationId,true);
+}
+async function readOperation(db:AttestationDb,q:AttestationScope,operationId:string,historical:boolean){
  z.string().uuid().parse(operationId);attestationScope.parse(q);
  const rows=await db.$queryRaw<any[]>(Prisma.sql`${attestationObjects(q)}, operation AS (
  SELECT o.*,COALESCE(o.row->>'mutation_digest',o.row->>'attestation_mutation_digest') AS mutation,
@@ -88,7 +99,7 @@ export async function readAttestationOperation(db:AttestationDb,q:AttestationSco
  SELECT op.mutation AS "mutationDigest",op.xid AS "writerXid",op.tbl AS "operationTable",op.row AS "operationRow",
  (SELECT count(*)::int FROM operation) AS "operationCount",
  NOT EXISTS(SELECT 1 FROM objects o WHERE (o.row->>'writer_xid'=op.xid OR o.row->>'id'=${operationId}
- OR op.tbl='worker_bootstrap_attempts' AND (o.row->>'attempt_id'=${operationId} OR o.tbl='worker_bootstrap_audit' AND o.row->>'history_id' IN (
+ OR NOT ${historical}::boolean AND op.tbl='worker_bootstrap_attempts' AND (o.row->>'attempt_id'=${operationId} OR o.tbl='worker_bootstrap_audit' AND o.row->>'history_id' IN (
  SELECT h.row->>'id' FROM objects h WHERE h.tbl='worker_bootstrap_history' AND h.row->>'attempt_id'=${operationId})))
  AND NOT EXISTS(SELECT 1 FROM receipts r WHERE r.table_name=o.tbl AND r.row_id=o.rid)) AS complete,
  COALESCE((SELECT max(revision) FROM decision_authority_events WHERE decision_id=${q.decisionId}::uuid AND fence_revision<=(SELECT max(fence_revision) FROM receipts)),0)::text AS "authorityRevision",

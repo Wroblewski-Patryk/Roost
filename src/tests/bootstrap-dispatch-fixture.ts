@@ -30,12 +30,31 @@ export async function dispatchFixture(purpose:'first_enrollment'|'owner_recovery
      if(sql.includes('SELECT id::text AS id FROM worker_bootstrap_attempts')){
       controls.atWrite();return values[0]===attemptId&&values[1]===scope.ticketId?[{id:attemptId}]:[];
      }
+     if(sql.includes('AS "attemptHead"')){
+      const attemptHead=f.objects().find(o=>o.table==='worker_bootstrap_heads')?.row;
+      return f.objects().filter(o=>o.table==='worker_bootstrap_lifecycle_events'&&o.row.attempt_id===attemptId&&
+       o.row.history_id===attemptHead?.history_id&&(o.row.record as any).action==='consume'&&(o.row.record as any).state==='consumed').map(o=>({attemptHead,ticketRow:o.row}));
+     }
+     if(sql.includes('AS "currentTicket"')){
+      const o=f.objects().filter(o=>o.table==='worker_bootstrap_lifecycle_events').at(-1);
+      return o?[{currentTicket:(o.row as any).record,digest:(o.row as any).record_digest,id:o.receiptId,eventId:o.eventId,
+       rowDigest:o.digest,writerXid:o.writerXid,fence:o.fence,verified:o.verified}]:[];
+     }
      if(sql.includes('FROM worker_bootstrap_dispatch_history h')){
       if(mode==='read'&&committed&&controls.fault==='readback')throw Error('unavailable readback');
       const rows:any[]=structuredClone(ledger);
       if(mode==='read'&&committed&&controls.fault==='missing')rows.pop();
       if(mode==='read'&&committed&&controls.fault==='mismatch'&&rows.length)rows.at(-1).requestDigest='f'.repeat(64);
       if(controls.fault==='receipt'&&rows.length)rows.at(-1).verified=false;
+      return rows;
+     }
+     if(sql.includes('operationCount')){
+      const rows=await base.$queryRaw(strings,...args) as any[];
+      // Mirror the strict current reader's complete-child requirement. Historical
+      // seal readback is explicitly scoped to that operation's own receipts.
+      if(!values.includes(true))for(const row of rows)if(row.operationTable==='worker_bootstrap_attempts'){
+       if(f.objects().some(o=>o.row.attempt_id===attemptId&&!row.receipts.some((r:any)=>r.table===o.table&&r.rowId===o.rowId)))row.complete=false;
+      }
       return rows;
      }
      return base.$queryRaw(strings,...args);

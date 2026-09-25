@@ -4,6 +4,7 @@ import {freezePublic} from './worker-transport-snapshot';
 import {bootstrapBinding} from './worker-bootstrap-contract';
 import {decisionAuthorityRequest,type DecisionAuthorityRead} from './bootstrap-decision-authority-reader';
 import {exact,positiveText,sqlHash} from './decision-attestation-sql';
+import {dispatchLineage,type DispatchLineage} from './bootstrap-dispatch-lineage';
 
 const id=z.string().uuid(),count=z.number().int().nonnegative().max(2147483646),time=z.string().datetime({offset:true});
 export const dispatchScope=decisionAuthorityRequest.extend({attemptId:id}).strict();
@@ -21,7 +22,7 @@ export const dispatchCommand=dispatchScope.extend({operationId:id,action:z.enum(
  completionOperationId:id.nullable(),evidenceDigest:sqlHash.nullable()}).strict();
 export const dispatchRecord=z.object({version:z.literal('bootstrap-attempt-dispatch-v1'),attemptId:id,
  operationId:id,action:z.enum(dispatchActions),revision:count.positive(),previousDigest:sqlHash.nullable(),
- authority:dispatchAuthority,state:z.enum(dispatchStates),ownerId:id.nullable(),ownerEpoch:count,claimGeneration:count,
+ authority:dispatchAuthority,lineage:dispatchLineage,state:z.enum(dispatchStates),ownerId:id.nullable(),ownerEpoch:count,claimGeneration:count,
  claimedAt:time.nullable(),leaseExpiresAt:time.nullable(),at:time,responseDigest:sqlHash.nullable(),
  completionOperationId:id.nullable(),evidenceDigest:sqlHash.nullable()}).strict();
 export type DispatchCommand=z.infer<typeof dispatchCommand>;
@@ -42,8 +43,14 @@ export function authorityForDispatch(proof:DecisionAuthorityRead,scope:z.infer<t
 
 // Pure transition model; the concrete adapter must lock the source fence and
 // append atomically, then verify a separate COMMIT readback before granting work.
-export function advanceDispatch(previous:DispatchRecord|null,authority:DispatchAuthority,input:unknown,at:string):DispatchRecord{
+export function advanceDispatch(previous:DispatchRecord|null,authority:DispatchAuthority,input:unknown,at:string,lineage:DispatchLineage):DispatchRecord{
  const c=dispatchCommand.parse(input),a=dispatchAuthority.parse(authority),p=previous?dispatchRecord.parse(previous):null,n=Date.parse(time.parse(at));
+ const l=dispatchLineage.parse(lineage),anchor=l.anchor;
+ if(anchor.attemptId!==a.attemptId||anchor.ticketId!==a.ticketId||anchor.decisionId!==a.decisionId||anchor.sealDigest!==a.sealDigest||
+  anchor.ticketHead.digest!==a.ticketDigest||anchor.sealReceipt.fence!==a.version.fence||anchor.sealReceipt.authorityRevision!==a.version.authorityRevision||
+  anchor.sealReceipt.operationId!==a.attemptId||anchor.sealReceipt.ticketId!==a.ticketId||anchor.sealReceipt.decisionId!==a.decisionId||
+  (p?(!exact(anchor,p.lineage.anchor)||!l.previous||l.previous.operationId!==p.operationId||l.previous.recordDigest!==dispatchDigest(p)||
+    l.previous.fence!==a.version.fence):l.previous!==null))denyDispatch();
  if(c.attemptId!==a.attemptId||c.ticketId!==a.ticketId||c.decisionId!==a.decisionId||c.purpose!==a.purpose||!exact(c.binding,a.binding)||
   n<Date.parse(a.validFrom)||n>=Date.parse(a.expiresAt)||c.expectedRevision!==(p?.revision??0)||
   c.expectedDigest!==(p?dispatchDigest(p):null)||p&&(!exact(a,p.authority)||n<Date.parse(p.at)))denyDispatch();
@@ -88,7 +95,7 @@ export function advanceDispatch(previous:DispatchRecord|null,authority:DispatchA
   }
  }
  return freezePublic(dispatchRecord.parse({version:'bootstrap-attempt-dispatch-v1',attemptId:c.attemptId,operationId:c.operationId,action:c.action,
-  revision:(p?.revision??0)+1,previousDigest:c.expectedDigest,authority:a,state,ownerId,ownerEpoch,claimGeneration,claimedAt,leaseExpiresAt,at,
+  revision:(p?.revision??0)+1,previousDigest:c.expectedDigest,authority:a,lineage:l,state,ownerId,ownerEpoch,claimGeneration,claimedAt,leaseExpiresAt,at,
   responseDigest,completionOperationId,evidenceDigest:c.evidenceDigest}));
 }
 
@@ -104,7 +111,7 @@ export function inspectDispatchHistory(input:unknown):DispatchRecord[]{
    ownerId:r.ownerId,ownerEpoch:r.ownerEpoch,claimGeneration:r.claimGeneration,
    leaseMs:claim?Date.parse(r.leaseExpiresAt!)-Date.parse(r.at):null,
    responseDigest:['outcome','start_complete','complete'].includes(r.action)?r.responseDigest:null,
-   completionOperationId:['start_complete','complete'].includes(r.action)?r.completionOperationId:null,evidenceDigest:r.evidenceDigest},r.at);
+   completionOperationId:['start_complete','complete'].includes(r.action)?r.completionOperationId:null,evidenceDigest:r.evidenceDigest},r.at,r.lineage);
   if(!exact(next,r))denyDispatch();p=r;
  }
  return freezePublic(rows);

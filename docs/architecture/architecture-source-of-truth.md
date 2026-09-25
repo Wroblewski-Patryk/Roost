@@ -1,19 +1,21 @@
 # Architecture Source Of Truth
 
-Owner amendment v62: [native durable dispatch/completion qualification](decision-attestation-prisma-ports-v1.md)
-passed a complete 20/20 native run with zero skips, twenty distinct database
-clients and two real post-COMMIT response cuts. The fresh 84-migration chain
-includes one minimal migration-84 digest-domain correction; migrations 1-83 are
-unchanged. Native one-writer, restart/lease, terminal disposition, rollback,
-COMMIT/readback and read-only history checks pass. Process restarts are modeled
-by fresh factories/clients, not OS restarts. Synthetic trust/delivery seams and
-consumed legacy attempt/ticket heads remain production gaps. RF-HOST-035 PARTIAL;
-production BLOCKED; all eight flags false. No default wiring or real delivery.
+Owner amendment v63: [canonical dispatch receipt lineage](decision-attestation-prisma-ports-v1.md)
+binds every dispatch child to the exact consumed attempt/ticket seal receipts and
+previous committed dispatch receipt. One READ ONLY snapshot separates
+`historyIntegrity` from `authorityCurrent`, reconstructs restart/recovery status,
+and classifies any intervening source epoch as drift. Own child writes preserve
+the signed-source fence; no gap, replay or foreign receipt grants work.
+Completion remains a durable adapter fact: signed peer/completion evidence is
+required before canonical acknowledgement or credential activation. The explicit
+integration blocker is `signed_bootstrap_completion_required`.
+Migration 84 alone has source-only causal guard changes; migrations 1-83 remain
+unchanged. v62 native evidence does not qualify this changed guard. RF-HOST-035
+PARTIAL; production BLOCKED; all eight flags false. No default wiring or delivery.
 Historical registration cause UNKNOWN remains MONITORED RESIDUAL RISK. Exactly
-one next recommendation, not started: source-only integration of durable receipts
-with the canonical attempt/ticket lifecycle through exact causal receipt lineage,
-without weakening source-drift checks or enabling delivery. Detailed prior
-evidence remains in the linked document; older amendments below are historical.
+one next recommendation, not started: bounded native qualification of the new
+causal lineage/guard in an owned disposable database. Earlier amendments below
+are historical.
 
 Owner amendment v54: [native attestation qualification](decision-attestation-prisma-ports-v1.md)
 remains **BLOCKED**: final native 14/19 PASS, 5 FAIL (four subtests plus parent),

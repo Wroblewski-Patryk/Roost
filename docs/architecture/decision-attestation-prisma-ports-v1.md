@@ -1,5 +1,107 @@
 # Decision attestation: Prisma ports and native persistence evidence
 
+## Owner amendment v63: canonical dispatch receipt lineage, source only
+
+The existing ticket and attempt roots remain the only roots. Every dispatch
+record now embeds a strict `bootstrap-dispatch-lineage-v1` value: the exact
+attempt seal digest and committed seal-operation receipt (including its complete
+receipt-set digest), consumed ticket revision/head digest/receipt, consumed
+attempt history/head digest/receipt, and the previous dispatch operation, Event,
+record/request/full-row digests, writer XID and fence. The first parent is null;
+all later parents must equal the actual preceding committed receipt. The current
+operation/request and response/completion digests are bound by its immutable
+record/full-row receipt. Anchor and authority revision/digest stay identical
+through claim, send, completion, unknown, reconcile, recover and cancellation.
+
+`bootstrap-dispatch-lineage.ts` reads the original canonical seal operation and
+its automatic receipts. Its historical operation read checks the original writer's
+rows and exact stored receipt-set digest; later lifecycle children from another
+writer are not required to occur in that earlier transaction. Current authority
+retains the existing stricter complete-child check. An audited later revocation
+therefore remains visible as authority drift without erasing the consumed anchor.
+The adapter replays the complete child state machine,
+recomputes command digests, verifies all receipt/Event identities, rejects gaps,
+duplicates, substituted source/foreign/replayed receipts, and re-reads the anchor
+under the write lock and after COMMIT. Missing evidence fails closed. No new
+registry, mutable head, process latch, automatic retry or source authority exists.
+
+**Fence rule:** the admitted interval starts and ends at the exact committed
+seal-operation fence. Dispatch children lock that same global fence without
+incrementing it; their independent revision/owner epoch/claim generation and
+receipt chain advance instead. Thus there are zero own *source* epochs to excuse.
+Any increase is explicitly `foreign_source_epoch`, a decrease `fence_regression`;
+neither admits work. The original canonical authority reader is unchanged.
+Source drift before send grants no permit; after `send_started` the projected
+state is `delivery_unknown`, with reconciliation required and retry disabled.
+
+**One read projection:** `inspect` uses one database-enforced READ ONLY,
+repeatable-read snapshot for canonical consumed heads, the separately audited
+current ticket fact, every dispatch receipt, last receipt, lease and recovery
+status. `historyIntegrity=true` means this bounded evidence was verified;
+`authorityCurrent` is evaluated separately by the canonical reader and fence
+rule. Expiry, revocation or unrelated authority changes can leave intact history
+readable while disabling all writes/permits. Invalid or unavailable history
+returns `historyIntegrity=false`, never a usable fallback. Fresh factories rebuild
+this result from persisted rows only. They model process boundaries, not an OS
+restart. No read grants a send/completion permit or writes a recovery decision.
+
+### Canonical completion integration boundary
+
+A dispatch `completed` record proves the adapter callback result and exact
+response digest, not canonical bootstrap acknowledgement. The existing attempt
+contract requires a verified `signedBootstrapPeer`, then a verified
+`signedBootstrapCompletion` bound to ticket, request, target credential, peer and
+time. The ticket requires a dispatched predecessor. This protocol currently has
+only a consumed canonical attempt/ticket and a response digest; those inputs do
+not satisfy either transition. It therefore leaves both canonical heads consumed
+and explicitly reports `completionRecorded=false`, `credentialActivated=false`
+and `signed_bootstrap_completion_required`. Composition reports the same
+limitation. No fabricated signed proof, success mapping or root mutation is used.
+
+The minimal future integration contract must receive and verify those exact
+signed peer/completion and actual credential facts, preserve the current attempt
+and ticket identities, and atomically append the permitted canonical predecessor
+and terminal histories/heads plus their automatic Event/receipts. The canonical
+writes must link their exact causal receipts back to the final dispatch and seal,
+account for every resulting source epoch under an explicitly qualified rule,
+and pass independent committed readback before reporting canonical completion.
+Until this is implemented and qualified, no dispatch-only response can activate
+a credential. Unknown/reconcile/recover/cancel remain linked child dispositions;
+they neither fabricate canonical terminal facts nor reset consumed roots.
+
+### Source-only schema and verification scope
+
+Only the **nonproduction migration 84** changes: its existing guard validates the
+strict lineage JSON against canonical receipt identities/sets and the immediately
+preceding receipt/Event. The existing full-row dispatch receipt binds the new
+field without new columns, tables or heads. The generated guard-body pin changes
+with it. Migrations 1-83 and the Prisma schema remain unchanged. No migration was
+applied in this atom; the v62 native PASS below applies to its earlier guard and
+**does not qualify these new fields or SQL**. Existing legacy child rows without
+lineage are denied; there is no backfill or silent admission path.
+
+Selected source/mocked tests **251/251 PASS, zero skips**; server TypeScript
+build, lint (338 routes / 45 files), both migration pin checks and scoped diff
+checks PASS. Default context is 145184 bytes, below its 150000-byte budget.
+
+Source/mocked tests cover both enrollment paths, twenty concurrent fresh factories
+at each of the six normal phases, receipt/anchor tampering, all terminal parents,
+restart reconstruction, unrelated epochs, read purity, rollback, false/lost ACK,
+readback failure and no repeated external effect. Native SQL, Docker, databases,
+network delivery and a web build are intentionally outside this source-only atom.
+
+RF-HOST-035 remains **PARTIAL**, production **BLOCKED**. All eight flags remain
+false: `implementationReady`, `executionSupported`, `pilotReady`,
+`liveAdmissionAllowed`, `pilotExecutionAuthorized`, `pilotExecutionStarted`,
+`transportQualified`, `launchAuthority`. The historical registration cause remains
+UNKNOWN / MONITORED RESIDUAL RISK. Default wiring, production trust, delivery,
+credential activation and successor admission remain unqualified.
+
+Exactly one next recommendation, **not started**: bounded native qualification of
+this causal lineage and changed migration-84 guard in an owned disposable database,
+including direct malformed appends, twenty-client contention and uncertain COMMIT.
+All recommendations and native evidence in v62 and older sections are historical.
+
 ## Owner amendment v62: native durable dispatch/completion qualification
 
 **Final full run: 20/20 PASS, zero skips, native exit 0, nativeRuns=1,
