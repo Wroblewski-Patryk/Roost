@@ -13,17 +13,16 @@ allowed to pass review.
 - No hidden fallback that changes business behavior silently.
 - No local-only behavior presented as production-ready.
 
-## Blocked Work
+## Missing Production Path
 
-If proper implementation is blocked:
+When the proper implementation is missing, treat the endpoint, schema,
+adapter, migration, test or reversible architecture correction as work inside
+the current outcome. Implement the correct path, verify it and continue. Do not
+ship a workaround or ask the owner to choose an ordinary technical detail.
 
-1. Stop.
-2. Describe the blocker.
-3. Identify the affected files, modules, or contracts.
-4. Propose the proper architectural solution.
-5. Record the decision needed from the user or owner.
-
-Do not ship a workaround while waiting for the decision.
+Pause only for a true owner dependency defined in `docs/implementation.md`.
+Before pausing, complete independent preparation, preserve recoverable state,
+describe the exact blocked action and ask one concrete question.
 
 ## Review Rule
 

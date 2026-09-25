@@ -24,8 +24,17 @@ nor a skip counts as that proof. No provider/model or production access is used.
 - Structural lint: `npm run lint`
 - Build: `npm run build`
 - Combined local validation: `npm run validate`
+- Codex delivery preflight: `npm run codex:preflight`
+- Requirements/traceability coverage: `npm run codex:requirements`
+- Codex infrastructure regression test: `npm run test:codex-infrastructure`
+- Combined Codex delivery contract check: `npm run codex:check`
 - Integration tests: `npm test`, `npm run test:api`, or
   `npm run test:api:local`
+
+The Codex checks validate the repository delivery contract and requirement
+coverage. They do not prove runtime, native Worker, deployment or production
+behavior. Run the component and end-to-end checks required by
+`docs/implementation.md` before advancing a delivery gate.
 - Container build: `docker compose build backend`; use the PROD-like path in
   [Local Development](local-development.md) for runtime smoke
 

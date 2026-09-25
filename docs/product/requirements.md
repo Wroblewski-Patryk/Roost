@@ -349,7 +349,7 @@ Gate/scope of enforcement: activation gates.
 | <a id="rf-act-008"></a>RF-ACT-008 | — | accepted | Unlock read-only, local write/test, push/PR, merge/deploy then higher risk only after evidence; after one-time write approval ordinary advancement is automatic, sensitive/live exceptions remain. | — |
 | <a id="rf-act-009"></a>RF-ACT-009 | — | accepted | Require three consecutive complete low-risk DemoApp successes with review, release and observation before medium risk; failure pauses advancement and independent analysis sets additional proof, not blind history reset. | — |
 | <a id="rf-act-010"></a>RF-ACT-010 | — | accepted | Each additional app gets its own audit, manifest, health contract and safe canary despite portable worker competencies. | current rule |
-| <a id="rf-act-011"></a>RF-ACT-011 | — | accepted | Each implementation run audits current mechanisms then closes exactly one smallest highest-priority ready atomic gap; do not duplicate foundations or start a second gap. | — |
+| <a id="rf-act-011"></a>RF-ACT-011 | — | accepted | Each implementation outcome first audits current mechanisms and advances the earliest unmet end-to-end gate. It may contain multiple bounded internal tasks and delegated components, but has one accountable implementation owner, one active outcome and coordinated non-overlapping writers. Do not duplicate foundations, start a competing outcome or stop at an internal atom while the accepted gate remains unproven. | Supersedes the former one-atom-per-run stopping rule. |
 
 ## DemoApp product and controlled integration tests (future native agents only)
 

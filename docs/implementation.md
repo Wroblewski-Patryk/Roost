@@ -31,6 +31,13 @@ owner may plan substeps, modify several components and create multiple
 reviewable commits, but does not hand the work back merely because an adapter,
 migration, test fixture or technical contract is complete.
 
+Codex work in this repository uses the `roost-runtime-delivery` repository
+skill, the orchestration rules in `AGENTS.md` and the deterministic
+`npm run codex:check` contract checks. These are delivery controls for building
+Roost; they do not themselves satisfy any runtime gate. Subagent findings or
+changes become evidence only after the implementation owner reviews,
+integrates and verifies them at the level required by the applicable gate.
+
 Ordinary implementation discoveries are resolved autonomously from, in order:
 
 1. current accepted Decisions and `product/requirements.md`;

@@ -19,6 +19,11 @@ Versioned technical documents are protocol/evidence records. Their historical
 "next atom" or "stop after this slice" statements are not the current work
 queue and never override `docs/implementation.md`.
 
+For implementation, integration, verification, release or delivery-status work
+that advances the objective in `docs/implementation.md`, use the
+`roost-runtime-delivery` repository skill. The skill is the operating method;
+the canonical documents remain the source of product and implementation truth.
+
 Do not create repository-local agent roles, task boards, project memory or
 coordination systems. External tools such as Codex keep their
 execution state outside this repository.
@@ -46,6 +51,25 @@ execution state outside this repository.
   before reporting that dependency and ask one concrete question.
 - Report progress at the end-to-end gates defined in `docs/implementation.md`,
   not by counting internal atoms, contracts or files.
+
+## Codex orchestration
+
+- The root agent is the single implementation owner and remains accountable for
+  the complete outcome, integration, verification and truthful report.
+- Delegate only independent, bounded work with an explicit question, owned file
+  surface and expected evidence. Keep dependent steps in the root agent.
+- Agents may implement separate non-overlapping components in parallel only
+  after their boundaries are explicit. Never assign two agents to edit the same
+  mutable files or let a subagent create a competing plan or source of truth.
+- Treat subagent output as unverified input. The root agent inspects every
+  resulting diff, reconciles it with accepted requirements and reruns the
+  material checks before accepting it.
+- Use subagents when parallelism or independent review materially improves the
+  result, not to repeat the same investigation or manufacture activity.
+- Before claiming a gate complete, run `npm run codex:check`, the relevant
+  component checks and the native or production proof required by that gate.
+  A source file, passing mock, commit or subagent statement alone is never
+  completion evidence.
 
 ## Project boundaries
 

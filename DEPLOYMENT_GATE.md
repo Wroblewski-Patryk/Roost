@@ -36,5 +36,12 @@ Before deployment, record:
 
 ## Release Rule
 
-If any hard block exists, do not deploy. Move the task to `BLOCKED` or
-`CHANGES_REQUIRED` and report the missing evidence.
+If any hard block exists, do not deploy. Keep the release `NOT_READY`, repair
+the missing implementation or evidence inside the current outcome and rerun the
+gate. A failed build, test, migration, configuration or smoke check does not by
+itself make the task owner-blocked.
+
+Use `BLOCKED` only for a true owner dependency defined in
+`docs/implementation.md`. Use `CHANGES_REQUIRED` for an independent review that
+returns an implementation for repair; the implementation owner retains the
+outcome and continues after fixing it.

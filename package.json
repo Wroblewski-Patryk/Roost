@@ -68,7 +68,11 @@
     "test:api": "npm run build && npm run prisma:migrate:deploy && node --test \"dist/tests/api.test.js\"",
     "test:api:local": "node scripts/test-api-local.mjs",
     "test": "npm run test:api",
-    "validate": "npm run lint && npm run typecheck && npm run build"
+    "validate": "npm run lint && npm run typecheck && npm run build",
+    "codex:preflight": "node .agents/skills/roost-runtime-delivery/scripts/preflight.mjs",
+    "codex:requirements": "node .agents/skills/roost-runtime-delivery/scripts/verify-requirement-coverage.mjs",
+    "test:codex-infrastructure": "node --test .agents/skills/roost-runtime-delivery/scripts/codex-infrastructure.test.mjs",
+    "codex:check": "npm run codex:preflight && npm run codex:requirements && npm run test:codex-infrastructure"
   },
   "dependencies": {
     "@phosphor-icons/web": "^2.1.2",

@@ -1124,7 +1124,7 @@ stays disabled and the canonical host stays observe.
 | [RF-ACT-008](../product/requirements.md#rf-act-008) | P1 | brak | [ACT](#e-act) | No capability progression lifecycle. |
 | [RF-ACT-009](../product/requirements.md#rf-act-009) | P1 | brak | [ACT](#e-act) | No probation counters/certification. |
 | [RF-ACT-010](../product/requirements.md#rf-act-010) | P1 | brak | [ACT](#e-act) | No app-onboarding readiness procedure. |
-| [RF-ACT-011](../product/requirements.md#rf-act-011) | P0 | działa | [GOV](#e-gov) | This batch is registry plus one runtime gap; future runs require scoped readiness selection. |
+| [RF-ACT-011](../product/requirements.md#rf-act-011) | P0 | częściowo działa | [GOV](#e-gov) | `AGENTS.md`, `docs/implementation.md` and the repository delivery skill enforce one accountable end-to-end outcome with bounded delegation. Native Roost/Worker enforcement and gate proof remain unverified. |
 | [RF-PILOT-001](../product/requirements.md#rf-demoapp-001) | P1 | wymaga konfiguracji | [PILOT](#e-demoapp) | Mapping declared; full product card and production baseline need audit. |
 | [RF-PILOT-002](../product/requirements.md#rf-demoapp-002) | P1 | brak | [PILOT](#e-demoapp) | No DemoApp code audit in this batch. |
 | [RF-PILOT-003](../product/requirements.md#rf-demoapp-003) | P1 | brak | [PILOT](#e-demoapp) | Future DemoApp acceptance; not verified. |

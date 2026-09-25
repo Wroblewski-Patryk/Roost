@@ -22,10 +22,11 @@ evidence. If any required item is missing, the task is not done and must remain
 - [ ] Changes are documented in the relevant source of truth.
 - [ ] Behavior is reproducible by another agent or developer using the recorded
   validation steps.
-- [ ] Architecture evidence gate passes with no actionable gaps
-  (`npm run architecture:refresh` or `npm run architecture:gate` after refresh).
-- [ ] Chain coverage gate passes for feature execution mapping
-  (`npm run architecture:gate-chains`).
+- [ ] Repository delivery contract and requirements traceability pass
+  (`npm run codex:check`).
+- [ ] Architecture and execution-chain evidence relevant to the changed
+  component is inspected and updated in its canonical document; a document or
+  generated report alone does not prove runtime behavior.
 - [ ] User impact, operator impact, or product success signal is recorded for
   substantial changes.
 - [ ] Reliability, security, privacy, and rollback evidence is recorded when

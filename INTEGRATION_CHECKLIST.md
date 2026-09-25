@@ -33,11 +33,16 @@ Feature work must be delivered as a vertical slice:
 Partial implementations are forbidden unless the task is explicitly scoped as
 analysis, design, or an approved non-runtime documentation change.
 
-## Stop Conditions
+## Continuation and Stop Conditions
 
-Stop and report instead of continuing when:
+A missing endpoint, schema, adapter, reproducible check or reversible
+architecture choice is implementation work. Add or repair the proper production
+path, validate it and continue within the current outcome. Never add a mock or
+placeholder merely to make the feature appear complete.
 
-- the real endpoint, schema, or service contract does not exist
-- the correct implementation requires an architecture decision
-- validation cannot be made reproducible
-- a mock or placeholder would be needed to make the feature appear complete
+Stop for owner input only for a true owner dependency defined in
+`docs/implementation.md`: an unavailable login/2FA/secret, an unapproved
+irreversible action against real data or an external account, a genuine
+contradiction in accepted business intent, or an unavailable external service
+without a safe technical alternative. Complete all independent preparation
+before asking one concrete question.
