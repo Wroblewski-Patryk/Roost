@@ -1,21 +1,20 @@
 # Architecture Source Of Truth
 
-Owner amendment v67: [native canonical completion rerun](decision-attestation-prisma-ports-v1.md)
-qualifies the tested native persistence path: 20/20 PASS, zero skips, native child
-exit 0 and runner exit 0 in one run on one fresh owned database. Exact relay
-counters are armed=2/applied=2; the applied and final 85-migration chains match.
-First/recovery activation, 20-client contention, read-only replay, all 11 rollback
-points, COMMIT/readback uncertainty, four callback mutations, six pre-COMMIT
-mutations and tampering pass. The v66 callback-fixture gap is closed. Runtime,
-harness and migrations are unchanged. Cleanup/fingerprints/inventory PASS; Soar
-untouched. Public signature/possession doubles do not qualify cryptography or
-real delivery. Explicit verified completion/activation may be true; default and
-legacy durable paths remain false. RF-HOST-035 PARTIAL; production BLOCKED; all
-eight readiness flags false; historical registration cause UNKNOWN / MONITORED
-RESIDUAL RISK. Legacy channel-store revocation readback still requires fixture
-reconciliation and remains a separate gap. Exactly one next recommendation,
-not started: source-only correction of that legacy readback using exact committed
-receipts, writer XID and causal fence evidence. Older amendments are historical.
+Owner amendment v68: [source-only channel revocation readback](decision-attestation-prisma-ports-v1.md)
+corrects the legacy store's strict current-fence comparison for attestation-enabled
+sources. It captures the writer XID and pre/post-write fence, then independently
+verifies the exact committed revoke, current head, native audit/Event/full-row
+receipts and every allowed source-change epoch. Nested legitimate receipts may
+share an epoch; foreign, missing, duplicate, stale or unexplained evidence denies.
+Legacy exact-catalog behavior is preserved. Unknown COMMIT/readback requires
+reconciliation_required without retry; explicit reconciliation is exact-operation
+READ ONLY. Source/mocked tests 348/348 PASS, build/lint/pins PASS; native validation
+of this change is pending. All 85 migrations, Prisma schema, native harness and
+default wiring remain unchanged. v67's 20/20 native completion result is historical
+evidence for that baseline, not qualification of this fix. RF-HOST-035 PARTIAL;
+production BLOCKED; all eight readiness flags false; historical registration cause
+UNKNOWN / MONITORED RESIDUAL RISK. Exactly one next recommendation, not started:
+bounded native qualification of this readback fix. Older amendments are historical.
 
 Owner amendment v54: [native attestation qualification](decision-attestation-prisma-ports-v1.md)
 remains **BLOCKED**: final native 14/19 PASS, 5 FAIL (four subtests plus parent),

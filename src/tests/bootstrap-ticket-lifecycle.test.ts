@@ -1,3 +1,4 @@
+import {channelRevocationEvidence} from './bootstrap-channel-revocation-fixture';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto,{randomUUID,createHash} from 'node:crypto';
@@ -80,7 +81,7 @@ function fixture(atomicBinding=false,integrated=false,upgraded=false){
    else if(sql.startsWith('INSERT INTO worker_transport_bootstrap_grants')){const g=JSON.parse(v[6]);assert.equal(state.transport.grants.some((r:any)=>r.intent.ticketId===g.intent.ticketId),false);
     state.transport.grants.push(g);receipt('transport_grant',g.id,g.intent.ticketId,g);if(fault==='grant')throw Error('synthetic');}
    else if(sql.startsWith('WITH v AS')){const r=JSON.parse(v[0]),g=JSON.parse(v[1]),s=g.intent.snapshot;assert.equal(r.revision,(state.transport.head?.revision??0)+1);
-    state.transport.history.push(r);if(fault==='channel_history')throw Error('synthetic');
+    state.transport.history.push(r);if(r.action==='revoke'){state.transport.revokeFrom=state.fence;state.fence+=3;}if(fault==='channel_history')throw Error('synthetic');
     receipt('transport_history',r.id,g.intent.ticketId,r);state.transport.head={id:r.id,revision:r.revision,highWater:s.highWaterEpoch,purpose:s.purpose,state:r.state,generation:s.generation,pin:s.leafPin,record:copy(r),fence:String(state.fence)};
     if(fault==='binding')throw Error('synthetic');}
    else if(sql.includes('synthetic_channel_binding')){state.channelCurrent=true;state.fence++;}
@@ -143,6 +144,11 @@ function fixture(atomicBinding=false,integrated=false,upgraded=false){
      [rr,genr,gr,hr,ir].every((r,k,a)=>k===0||Number(a[k-1].fence)<Number(r.fence))&&genr.digest===reviewDigest(generation)&&gr.digest===reviewDigest(g)&&hr.digest===reviewDigest(history)&&
      latest?.fence===String(state.fence)&&state.transport.head?.state==='current'}];
    }
+   if(sql.includes('channel_revoke_witness'))return [{writerXid:String(activeTransaction),toFence:String(state.fence)}];
+   if(sql.includes('AS channel_revoke_base')){const h=state.transport.head;if(!h||h.id!==v[0])return [];
+    const g=state.transport.grants.find((g:any)=>g.id===h.record.grantId),writer=state.receipts.find((p:any)=>p.kind==='transport_history'&&p.id===h.id).xid;
+    const proof=channelRevocationEvidence(h.record,{workspaceId:b.workspaceId,hostId:b.hostId,generationId:h.generation,ticketId:g.intent.ticketId},state.transport.revokeFrom,String(writer)).base;
+    proof.currentFence=String(state.fence);proof.verified=verified;return [{channel_revoke_base:proof}];}
    if(sql.includes('AS channel_confirmed')){const r=JSON.parse(v[0]);return [{channel_confirmed:verified&&state.transport.head?.id===r.id&&state.transport.head.fence===String(state.fence)}];}
    if(sql.includes('FROM worker_transport_heads'))return state.transport.head?[{...copy(state.transport.head),verified}]:[];
    if(sql.startsWith('SELECT generation_id AS generation'))return state.transport.history.map((r:any)=>{const g=state.transport.grants.find((g:any)=>g.id===r.grantId);return {generation:g.intent.snapshot.generation,pin:g.intent.snapshot.leafPin,staged:null};});

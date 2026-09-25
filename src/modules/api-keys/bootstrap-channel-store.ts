@@ -6,6 +6,7 @@ import {lifecycleRegistration} from './bootstrap-ticket-lifecycle-contract';
 import {persistedSignedTransport} from './worker-transport-persistence-contract';
 import {inspectCanonicalLifecycle} from './worker-identity-lifecycle-store';
 import {inspectCanonicalIssuer} from './bootstrap-issuer-store';
+import {readChannelRevocation,channelRevokeWitness,type ChannelRevokeWitness} from './bootstrap-channel-revocation-readback';
 import {channelGuards,channelShapeHash} from './bootstrap-channel-guards';
 import {channelGrant,channelGrantIntent,channelTransition,channelEqual,channelSnapshotDigest,validateChannelGrant,validateV2ChannelPlan,advanceChannel,denyChannel,type ChannelGrant,type ChannelHead,type ChannelTransition} from './bootstrap-channel-persistence-contract';
 type Db=Prisma.TransactionClient;
@@ -175,18 +176,37 @@ async function grantInTransaction(db:Db,input:unknown,clock:()=>Date,v2=false){
 }
 // Explicit factory only. No signer, exchange, credential issuance or routes.
 export function createPrismaBootstrapChannelStore(client:Pick<PrismaClient,'$transaction'>,clock=()=>new Date()){
-  async function write(work:(db:Db)=>Promise<ChannelTransition>){let completed=false;
-    try{const r=await client.$transaction(async db=>{await fence(db,true);if(!await guarded(db))denyChannel();const r=await work(db);completed=true;return r;},{isolationLevel:'Serializable',timeout:10000,maxWait:2000});
-      await client.$transaction(async db=>{await db.$executeRaw`SET TRANSACTION READ ONLY`;if(!await guarded(db))denyChannel();
+  async function write(work:(db:Db)=>Promise<ChannelTransition>){let completed=false,writeEntered=false;let observed:ChannelTransition|undefined,witness:ChannelRevokeWitness|undefined;
+    try{const r=await client.$transaction(async db=>{if(writeEntered)denyChannel();writeEntered=true;const fromFence=await fence(db,true);if(!await guarded(db))denyChannel();
+      const r=await work(db);completed=true;observed=r;
+      if(r.action==='revoke'){
+        const rows=await db.$queryRaw<any[]>`SELECT pg_current_xact_id()::text AS "writerXid",revision::text AS "toFence" FROM ready_source_fence WHERE id=1 /* channel_revoke_witness */`;
+        if(rows.length!==1)denyChannel();witness=channelRevokeWitness.parse({...rows[0],fromFence});
+      }return r;},{isolationLevel:'Serializable',timeout:10000,maxWait:2000});
+      if(!observed||!channelEqual(r,observed))denyChannel();
+      let entered=false,confirmed=false;
+      await client.$transaction(async db=>{if(entered)denyChannel();entered=true;await db.$executeRaw`SET TRANSACTION READ ONLY`;if(!await guarded(db))denyChannel();
+        if(r.action==='revoke'){if(!witness)denyChannel();await readChannelRevocation(db,r,witness);confirmed=true;return;}
         const proof=await db.$queryRaw<any[]>`SELECT (h.record=${JSON.stringify(r)}::jsonb AND a.record_digest=h.record_digest AND h.record_digest=encode(sha256(convert_to(h.record::text,'UTF8')),'hex')
          AND w.row_digest=encode(sha256(convert_to(to_jsonb(h)::text,'UTF8')),'hex') AND w.fence_revision=f.revision) AS channel_confirmed
          FROM worker_transport_history h JOIN worker_transport_audit a ON a.history_id=h.id JOIN worker_transport_heads head ON head.history_id=h.id
          JOIN worker_transport_write_audit w ON w.table_name='worker_transport_history' AND w.row_id=h.id::text AND w.writer_xid=h.writer_xid JOIN ready_source_fence f ON f.id=1 WHERE h.id=${r.id}::uuid`;
-        if(proof.length!==1||proof[0].channel_confirmed!==true)denyChannel();
-      },{isolationLevel:'RepeatableRead',timeout:10000,maxWait:2000});return r;
+        if(proof.length!==1||proof[0].channel_confirmed!==true)denyChannel();confirmed=true;
+      },{isolationLevel:'RepeatableRead',timeout:10000,maxWait:2000});if(!confirmed)denyChannel();return r;
     }catch{if(completed)throw new ChannelReconciliationRequired();return denyChannel();}
   }
   return Object.freeze({
+    // Explicit reconciliation is SELECT-only and requires the entire exact
+    // operation record. It never retries transition(), refreshes a witness or repairs.
+    reconcileRevocation:async(input:unknown)=>{
+      try{const r=channelTransition.parse(input);if(r.action!=='revoke'||r.state!=='revoked')denyChannel();
+        let entered=false,observed:ChannelTransition|undefined;
+        const result=await client.$transaction(async db=>{if(entered)denyChannel();entered=true;await db.$executeRaw`SET TRANSACTION READ ONLY`;
+          if(!await guarded(db))denyChannel();observed=(await readChannelRevocation(db,r)).record;return observed;
+        },{isolationLevel:'RepeatableRead',timeout:10000,maxWait:2000});
+        if(!observed||!channelEqual(result,observed))denyChannel();return observed!;
+      }catch{throw new ChannelReconciliationRequired();}
+    },
     inspect:(ticketId:string)=>client.$transaction(async db=>{await db.$executeRaw`SET TRANSACTION READ ONLY`;return inspectCanonicalBootstrapChannel(db,ticketId,clock());},{isolationLevel:'RepeatableRead',timeout:10000,maxWait:2000}),
     grant:(input:unknown)=>write(db=>grantInTransaction(db,input,clock)),
     transition:(input:unknown)=>write(async db=>{const c=transitionCommand.parse(input),g=await grantRow(db,c.ticketId),b=g.intent.snapshot.binding,h=await head(db,b.workspaceId,b.hostId);

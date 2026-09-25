@@ -1,5 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';import crypto,{randomUUID,createHash} from 'node:crypto';import {readFileSync} from 'node:fs';
 import net from 'node:net';import tls from 'node:tls';import http from 'node:http';import https from 'node:https';import dns from 'node:dns';import childProcess from 'node:child_process';
+import {channelRevocationEvidence} from './bootstrap-channel-revocation-fixture';
 import {bootstrapChannelFixture} from './bootstrap-channel-fixture';
 import {createPrismaBootstrapChannelStore,ChannelReconciliationRequired} from '../modules/api-keys/bootstrap-channel-store';
 import {channelGrantIntent,channelSnapshotDigest,channelEqual} from '../modules/api-keys/bootstrap-channel-persistence-contract';
@@ -36,7 +37,7 @@ function fixture(purpose:'first_enrollment'|'owner_recovery'='first_enrollment')
       if(sql==='SET TRANSACTION READ ONLY'){readonly=true;return 0;}assert.equal(readonly,false);assert.equal(option.isolationLevel,'Serializable');
       if(sql.startsWith('INSERT INTO worker_transport_generations')){state.generations.push({id:v[0],identity:JSON.parse(v[4]),purpose:v[6]});state.fence++;state.audit.push({kind:'generation',fence:state.fence});if(fault==='generation')throw Error('synthetic');return 1;}
       if(sql.startsWith('INSERT INTO worker_transport_bootstrap_grants')){assert.equal(state.grants.length,0);state.grants.push(JSON.parse(v[6]));state.fence++;state.audit.push({kind:'grant',fence:state.fence});if(fault==='grant')throw Error('synthetic');return 1;}
-      assert.ok(sql.startsWith('WITH v AS'));appends++;const r=JSON.parse(v[0]),g=JSON.parse(v[1]);state.fence++;state.history.push(r);if(fault==='history')throw Error('synthetic');
+      assert.ok(sql.startsWith('WITH v AS'));appends++;const r=JSON.parse(v[0]),g=JSON.parse(v[1]);state.fence++;state.history.push(r);if(r.action==='revoke'){state.revokeFrom=state.fence-1;state.fence++;}if(fault==='history')throw Error('synthetic');
       state.fence++;state.head={id:r.id,revision:r.revision,highWater:g.intent.snapshot.highWaterEpoch,purpose:g.intent.snapshot.purpose,state:r.state,generation:g.intent.snapshot.generation,pin:g.intent.snapshot.leafPin,record:copy(r),fence:''};if(fault==='head')throw Error('synthetic');
       state.fence++;state.head.fence=String(state.fence);state.audit.push({kind:'history',id:r.id,fence:state.fence});if(fault==='audit')throw Error('synthetic');return 1;
     },$queryRaw:async(strings:TemplateStringsArray,...v:any[])=>{const sql=strings.join('?').replace(/\s+/g,' ').trim();calls.push(sql);
@@ -45,6 +46,10 @@ function fixture(purpose:'first_enrollment'|'owner_recovery'='first_enrollment')
       if(sql.includes('FROM pg_trigger'))return sql.includes('AS deferred')?copy(guards):issuerGuards.map(g=>({...g,enabled:true}));
       if(sql.includes('FROM pg_proc'))return [copy(shape)];
       if(sql.includes('AS channel_fence')){if(fault==='fence'&&!readonly)throw Error('synthetic');return [{channel_fence:String(state.fence)}];}
+      if(sql.includes('channel_revoke_witness'))return [{writerXid:'900',toFence:String(state.fence)}];
+      if(sql.includes('AS channel_revoke_base')){const h=state.head;if(!h||h.id!==v[0])return [];
+        const proof=channelRevocationEvidence(h.record,{workspaceId:b.workspaceId,hostId:b.hostId,generationId:h.generation,ticketId:f.ticket.id},state.revokeFrom).base;
+        proof.currentFence=String(state.fence);proof.verified=verified;return [{channel_revoke_base:proof}];}
       if(sql.includes('AS channel_confirmed')){const r=JSON.parse(v[0]);return [{channel_confirmed:verified&&state.head?.id===r.id&&channelEqual(state.head.record,r)&&state.head.fence===String(state.fence)&&state.audit.some((a:any)=>a.id===r.id)}];}
       if(sql.includes('AS channel_ticket'))return [{channel_ticket:copy(f.ticket),digest:hash('5'),verified}];
       if(sql.includes('AS channel_grant'))return state.grants.map((g:any)=>({channel_grant:copy(g),verified}));

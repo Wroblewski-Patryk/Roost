@@ -1,5 +1,90 @@
 # Decision attestation: Prisma ports and native persistence evidence
 
+## Owner amendment v68: source-only legacy channel revocation readback
+
+The legacy channel store no longer treats the native history receipt's fence as
+necessarily equal to the final committed fence for `revoke`. On attestation-enabled
+sources, migration 83 appends automatic decision-authority source changes after
+that receipt. The old equality could therefore report `reconciliation_required`
+after a valid committed revocation. This atom changes only the source reader,
+its store integration, mocked regression fixtures/tests and this documentation;
+it does not qualify the new SQL on PostgreSQL.
+
+The algorithm is tied to the existing pinned migration-81/83 trigger bodies.
+Let F be the fence locked before the revoke and N the number of opted-in workspace
+decision roots (`authority_revision=1`):
+
+| Phase | Exact fence / evidence |
+| --- | --- |
+| History INSERT and head UPSERT | History BEFORE ROW, speculative head INSERT and actual head UPDATE advance three epochs. Native head receipt and source head receipt share H=F+3. |
+| Head source changes | Exactly one authority child per opted-in decision, with its own automatic receipt/Event, occupies H+1 through H+N. |
+| Native audit/history | Native audit INSERT advances one epoch. Native audit and history receipts, plus the source history receipt, share A=H+N+1. |
+| History source changes | Exactly one authority child per same decision occupies A+1 through A+N. Final fence T=F+4+2N. |
+
+The three initial increments are derived from the pinned writer/UPSERT order,
+not unexplained gaps permitted by a relaxed comparison. With N=0, the old exact
+catalog path requires A=H+1 and T=A and references no migration-82/83 relations
+or helpers. An expanded tail requires the complete pinned attestation catalog.
+Distinct native and source receipts can legitimately share a phase's epoch;
+duplicate identities or child epochs cannot substitute for missing evidence.
+
+The write transaction captures its actual writer XID and F/T witness. A separate
+Repeatable Read READ ONLY transaction must observe the exact operation record,
+current head, predecessor, generation and grant bindings, automatic channel Event,
+native audit and all three native full-row receipts for that XID. An expanded tail
+also reads actual source rows, all authority children of that writer, and all
+attestation receipts either belonging to that writer or within the complete
+interval, including foreign receipts. It validates exact row digests, Event
+metadata/payload, source bindings, decision set, operations, XIDs, unique receipt
+and Event identities, predecessor digests/revisions and every causal epoch.
+The head-source predecessor precedes the operation; each history-source child
+extends its own head-source child. The captured witness is never reset to a
+newer current fence. A concurrent unrelated source change fails closed.
+
+False/unknown COMMIT, a lost response or an incomplete independent readback returns
+`ChannelReconciliationRequired` (`code=reconciliation_required`,
+`retryable=false`, `deliveryUnknown=true`), without an automatic retry. Writer and
+read callbacks cannot be replayed to authorize success. The explicit
+`reconcileRevocation(exactOperationRecord)` method can independently reconstruct
+only that committed revoke in READ ONLY Repeatable Read. Successful repeated
+reconciliation is idempotent; missing/conflicting/unavailable proof remains
+reconciliation-required. It never invokes transition, repairs or backfills rows,
+refreshes a write witness or grants launch/delivery authority. Existing status and
+inspection stay read only; other transition types retain their existing proof.
+
+Validation **PASS**: 348/348 selected source/mocked tests, zero failures/skips/
+cancellations, exit 0 (42.203 seconds), including 45 new revocation readback tests
+and the existing channel-store/ticket-lifecycle suites. Coverage includes legacy
+and attested catalogs, N=1/N=3 causal tails, legitimate shared epochs, receipt,
+Event/XID/digest/head/operation mismatches, missing/duplicate/foreign/replayed
+proof, gaps/regressions, concurrent source change, false/lost/unknown COMMIT,
+missing/repeated callbacks, explicit exact read-only reconciliation and no retry.
+The new suite forbids network, DNS, listener, process-launch, key-generation and
+signing APIs; observed effects=0. Mocked SQL verdicts are not native SQL execution
+or proof that the PostgreSQL trigger sequence has passed.
+
+Server build, lint (338 routes / 45 files), three source-contract pin checks and
+scoped/staged diff checks pass. All 85 migration files and Prisma schema compare
+unchanged with the delegated baseline `04de66d877dffc7fa4043aec575f58544a916fe2`;
+no native harness change. Default documentation context is below 150000 bytes.
+No DB/Docker/private-key/network run, migration/reset, real delivery, default
+wiring, credential generation, installation/target/profile/model activation,
+push or deploy. Unrelated worktree changes and retained directories are preserved.
+
+RF-HOST-035 remains **PARTIAL**, production **BLOCKED**. `implementationReady`,
+`executionSupported`, `pilotReady`, `liveAdmissionAllowed`,
+`pilotExecutionAuthorized`, `pilotExecutionStarted`, `transportQualified` and
+`launchAuthority` remain false. Canonical explicit completion/activation retains
+its existing committed-proof condition; default and legacy durable flags remain
+false. Historical registration cause remains UNKNOWN / MONITORED RESIDUAL RISK.
+The v67 native 20/20 result below applies to its unchanged baseline and does not
+qualify this new legacy readback implementation.
+
+Exactly one next recommendation, **not started**: bounded native qualification of
+this source-only channel revocation readback fix on a fresh owned disposable DB,
+including actual trigger order, independent receipt/XID/fence proof and uncertain
+COMMIT/read-only reconciliation, without a fixture fallback hiding failure.
+
 ## Owner amendment v67: full native completion rerun passes
 
 **20/20 PASS, zero failures/skips/cancellations, native child exit 0, runner exit 0,
