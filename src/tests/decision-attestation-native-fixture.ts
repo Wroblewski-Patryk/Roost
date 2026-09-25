@@ -30,9 +30,15 @@ export class NativeRegistrationDenied extends Error{
  constructor(readonly diagnostics:readonly any[],cause:unknown){super('Synthetic attestation registration failed: '+JSON.stringify(diagnostics),{cause});}
 }
 export async function attestationNativeFixture(db:PrismaClient,options:{policyTtlMs?:number;registrationProbe?:RegistrationProbe;
- prior?:Parameters<typeof ticketFixture>[1];channelCutoverMs?:number}={}){
+ prior?:Parameters<typeof ticketFixture>[1];channelCutoverMs?:number;
+ completionPreparation?:{fingerprint:string;baselineCredential?:any;prepare:(registration:any)=>Promise<void>}}={}){
  const f=await ticketFixture(db,options.prior),q={decisionId:randomUUID(),ticketId:f.identity.ticketId},registration=structuredClone(f.registration);
  const i=registration.identity,t=registration.record.signed.payload,b=i.binding,ownerId=i.ownerId,acceptanceId=randomUUID(),previewId=randomUUID();
+ if(options.completionPreparation){
+  t.intent.target.fingerprint=options.completionPreparation.fingerprint;
+  if(options.completionPreparation.baselineCredential)t.intent.baseline.credential=options.completionPreparation.baselineCredential;
+  t.decisionIntentDigest=reviewDigest(t.intent);registration.record.decision.payload.intentDigest=t.decisionIntentDigest;
+ }
  const at=(await db.$queryRaw<any[]>`SELECT to_char(date_trunc('milliseconds',clock_timestamp()) AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS at`)[0].at as string;
  i.decisionId=q.decisionId;t.decisionId=q.decisionId;t.lifecycle.decisionId=q.decisionId;
  // Preparation precedes all attestation operations and uses no secret material.
@@ -108,6 +114,9 @@ export async function attestationNativeFixture(db:PrismaClient,options:{policyTt
   verify:async(_tx,p)=>reviewDigest(p.signed)===reviewDigest(reg.record.signed)&&reviewDigest(p.identity)===reviewDigest(reg.identity)}}).register(reg);
  }catch(e){console.error(JSON.stringify({alert:'native_registration_denial',retryable:false,requiresClassification:true,diagnostics:registrationErrors}));
   throw new NativeRegistrationDenied(registrationErrors,e);}
+ // Candidate facts follow ticket issue, which requires no first-enrollment key.
+ // They precede attestation/seal; this is owned fixture preparation only.
+ await options.completionPreparation?.prepare(reg);
  let fault='',before:((tx:Db)=>Promise<void>)|undefined,afterQuery:((tx:Db,sql:string)=>Promise<void>)|undefined;
  const counts={callbacks:0,writes:0,reads:0,signatures:0,statements:0},errors:string[]=[],transactions:{mode:string;db:Db}[]=[];
  const material={keyId:randomUUID(),epoch:1,purpose:'owner-decision-attestation-v1' as const,algorithm:'Ed25519' as const,format:'raw-public-hex' as const,
@@ -147,6 +156,6 @@ export async function attestationNativeFixture(db:PrismaClient,options:{policyTt
   const operationId=randomUUID();return ports.execute(await command('key',{operationId,operation:{id:operationId,action,keyId,material:m,overlapStartsAt,cutoverAt}}));}
  async function ready(){assert.equal((await key('create',material.keyId,material)).ok,true,JSON.stringify(errors));
   assert.equal((await ports.execute(await command('auth'))).ok,true,JSON.stringify(errors));}
- return {...f,q,reg,material,auth,policy,ports,deps,projection,command,key,ready,counts,errors,transactions,
+ return {...f,sourceFixture:f,q,reg,material,auth,policy,ports,deps,projection,command,key,ready,counts,errors,transactions,
   fault:(v:string)=>fault=v,before:(hook:(tx:Db)=>Promise<void>)=>before=hook,afterQuery:(hook?:typeof afterQuery)=>afterQuery=hook};
 }

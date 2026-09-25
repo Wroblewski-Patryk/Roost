@@ -1,20 +1,20 @@
 # Local Codex Agent Runtime
 
-Owner amendment v65: [canonical bootstrap completion, source only](decision-attestation-prisma-ports-v1.md)
-adds explicit signed peer/completion/binding verification and an injected canonical
-credential-possession provider. A single fenced Serializable writer appends the
-durable dispatch result, both canonical attempt/ticket transitions, existing
-handoff ACK, activation of an existing inactive ApiKey and its credential audit.
-A separate READ ONLY receipt/Event readback is required before the new opt-in
-factory reports completionRecorded/credentialActivated=true. No response digest
-or callback alone grants activation. Migration 85 adds two receipt children only;
-it is UNAPPLIED. Migrations 1-84 remain unchanged. Source/mock evidence does not
-qualify SQL, cryptography, native concurrency or transport. Default composition
-and the old durable adapter retain false completion/activation flags. RF-HOST-035
-PARTIAL; production BLOCKED; all eight readiness flags false. Registration cause
-UNKNOWN / MONITORED RESIDUAL RISK. Exactly one next recommendation, not started:
-bounded native qualification of migration 85 and the complete canonical completion
-transaction. Older amendments below are historical.
+Owner amendment v66: [native canonical completion qualification](decision-attestation-prisma-ports-v1.md)
+is BLOCKED: last full native run 18/20 PASS, two failures (one subtest and parent),
+zero skips; native/runner exit 1. First/recovery activation, 20 distinct clients
+with one writer, all 11 rollback points, deferred rejection, COMMIT/readback loss
+and receipt/Event/head/lineage tampering passed. Callback drift injection hit the
+existing worker_identity_authority_requires_lifecycle guard before producing drift.
+The owned fault fixture is corrected in source; its final native rerun is pending.
+One disposable database applied fresh chain 85; all 85 migrations are unchanged.
+Cleanup PASS, original data fingerprints/container inventory restored, Soar untouched.
+The explicit factory alone can report verified completion/activation; default and
+legacy durable flags stay false. RF-HOST-035 PARTIAL; production BLOCKED; all eight
+readiness flags false. Registration cause UNKNOWN / MONITORED RESIDUAL RISK.
+Exactly one next recommendation, not started: bounded full native rerun of the
+corrected completion fixture under a new one-database delegation. Older amendments
+below are historical.
 
 Owner amendment v54: [native attestation qualification](decision-attestation-prisma-ports-v1.md)
 remains **BLOCKED**: final native 14/19 PASS, 5 FAIL (four subtests plus parent),

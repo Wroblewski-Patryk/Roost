@@ -1,5 +1,79 @@
 # Decision attestation: Prisma ports and native persistence evidence
 
+## Owner amendment v66: native completion evidence, qualification blocked
+
+**Last full native run: 18/20 PASS, zero skips, native exit 1, runner exit 1,
+416.718 seconds.** One subtest and its parent failed. This is not a successful
+native qualification, even though all other completion scenarios passed.
+
+The real explicit completion factory, concrete SQL writer, branded authority
+reader and existing dispatch/credential/handoff/lifecycle stores were exercised
+on PostgreSQL 16 with Prisma 5.22.0. Twenty separate clients had distinct backend
+PIDs. Public signature and possession checks remained synthetic injected doubles
+on the same writer Db; no cryptographic signing API/private key, real delivery,
+credential generator, provisioning, endpoint or default composition was used.
+Inactive candidate ApiKey/handoff facts were owned fixtures prepared after ticket
+issue and before attestation/seal. There is no deploy-time or recurring seed.
+
+| Native case | Observed result |
+| --- | --- |
+| First enrollment and owner recovery | PASS: all 11 concrete statements commit atomically; independent readback proves exact acknowledged handoff and active credential. Recovery uses actual revoked prior credential version 2 and new epoch 2. |
+| Contention and replay | PASS: 20 clients / 20 writer backend PIDs, one completion writer, one activation and one credential operation; exact completed replay is READ ONLY/idempotent, conflicting evidence denies. |
+| Binding and callback verdicts | PASS: 16 internally re-signed binding mutations and invalid peer/completion/binding/possession verdicts deny without completion writes. Doubles do not qualify cryptography. |
+| Statement rollback | PASS: injected faults after each of the 11 actual statements, each confirmed hit; full canonical table/fence snapshots remain identical, zero activation. |
+| Transaction ambiguity | PASS: real deferred rejection, migration-85 missing-receipt rejection despite Prisma false resolution, actual pre-COMMIT connection termination, false/lost ACK, two real post-COMMIT relay-cut scenarios and missing/mismatched/unavailable independent readback. Results require reconciliation, never automatic retry; persisted activation is zero or one. |
+| Callback source drift | FAIL: the first host mutation was rejected by the existing worker_identity_authority_requires_lifecycle guard before the test's post-mutation hit flag. Remaining callback mutations in that loop were not reached. No native completion success was returned. |
+| Immediately before COMMIT | PASS: six injected fence/decision/certificate/key/channel/credential changes are rejected and fully rolled back. Fault preparation temporarily uses replica mode inside the owned transaction; writer/deferred checks run in origin mode. |
+| Direct insertion and committed corruption | PASS: eight malformed child inserts; missing/extra receipt, Event payload, row digest, XID, fence, head and predecessor-lineage corruption all deny. Read paths do not repair data. Ticket revocation/reconstruction and immutable-row guards also pass. |
+
+The final source fixture now injects callback corruption temporarily in replica
+mode, restores origin before returning to the real observer, and records the hit
+only after the mutation. This mirrors the separately passing pre-COMMIT fault
+fixture; it is not a production writer or a weakened guard. **That correction has
+compilation evidence only; a final complete native exit-0 run is still missing.**
+The one-database delegation has been exhausted and cleaned up; no second database
+was created or next atom started.
+
+Three native suite executions in one runner used the same disposable database/OID, rebuilding
+only its public schema and reapplying all 85 migrations before each retry. Run 1
+exposed candidate preparation before first-enrollment ticket issue; run 2 exposed
+the legacy channel store's strict fence readback after a committed revocation.
+Two bounded recovery probes (one diagnostic join correction, one success) used
+that same database before the last schema rebuild. The recovery fixture now
+catches only reconciliation_required and proves the exact committed channel row,
+current head, original row digest and writer XID independently, without retrying
+the write. This does not repair or qualify the legacy store's default readback;
+that compatibility gap remains separate from canonical completion.
+
+All migrations 1-85 and the Prisma schema are unchanged; no SQL correction was
+needed. Fresh applied chain SHA-256:
+`17a6849ec2c0442bb3d34b3a1e1d335321e95026312ff283051a527ecda2fbdd`.
+Migration 85 LF SHA-256:
+`92235ec16e72b98d9170b040e1650b331896f0cb89cba895f3267a2b9fba7237`.
+Production application remains unauthorized. The runner's final success-only
+aggregate assertions were not reached after the failed test.
+
+Cleanup independently **PASS**: owned database removed, relay listener/process
+closed, no helper files/external helper directories created, original container
+inventory restored (including stopped Roost PostgreSQL), Soar untouched. All
+three existing databases / 214 tables and sequences have identical before/after
+fingerprint `e9e019524b6010b02b30b4635fff99133c4429ffac3f537b05ac860485a281f1`.
+Selected source tests: 288/288 PASS, zero skips. Server build, lint (338 routes /
+45 files), three source-pin checks, runner AST and scoped diff checks pass.
+No web build: backend/test-only atom. Default context stays within 150000 bytes.
+
+The new explicit factory's completionRecorded/credentialActivated can be true
+only for a proved committed result. Default/legacy durable paths remain false.
+RF-HOST-035 PARTIAL; production BLOCKED; implementationReady, executionSupported,
+pilotReady, liveAdmissionAllowed, pilotExecutionAuthorized, pilotExecutionStarted,
+transportQualified and launchAuthority remain false. Historical registration cause
+remains UNKNOWN / MONITORED RESIDUAL RISK; the newly classified fixture error does
+not resolve that separate historical question.
+
+Exactly one next recommendation, **not started**: a bounded full native rerun of
+the corrected completion fixture, under a new one-disposable-database delegation,
+requiring 20/20 PASS, exit 0, relay counters, final-chain equality and cleanup.
+
 ## Owner amendment v65: signed canonical completion, source only
 
 `createCanonicalBootstrapCompletion` is an explicit, unwired factory. It uses the

@@ -89,7 +89,7 @@ export function nativeDispatchHarness(admin:PrismaClient,clients:PrismaClient[],
   for(const action of ['prepare','claim','start_send','outcome','start_complete','complete'] as const){await step(action,action==='claim'?{leaseMs}:{});
    if((await head())?.state===state)return;}throw Error('invalid fixture target');
  }
- return {f,scope,reader,deps,adapter,factory,controls,traces,errors,rows,head,command,step,through,counts:()=>({writes}),
+ return {f,scope,reader,deps,adapter,factory,controls,traces,errors,rows,head,command,step,through,active,transactionFor,counts:()=>({writes}),
   clear:()=>{controls.fault='';controls.beforeWrite=undefined;controls.afterWrite=undefined;committed=false;}};
 }
 export type NativeDispatchHarness=ReturnType<typeof nativeDispatchHarness>;
