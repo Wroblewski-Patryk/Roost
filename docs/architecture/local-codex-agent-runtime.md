@@ -1,20 +1,21 @@
 # Local Codex Agent Runtime
 
-Owner amendment v66: [native canonical completion qualification](decision-attestation-prisma-ports-v1.md)
-is BLOCKED: last full native run 18/20 PASS, two failures (one subtest and parent),
-zero skips; native/runner exit 1. First/recovery activation, 20 distinct clients
-with one writer, all 11 rollback points, deferred rejection, COMMIT/readback loss
-and receipt/Event/head/lineage tampering passed. Callback drift injection hit the
-existing worker_identity_authority_requires_lifecycle guard before producing drift.
-The owned fault fixture is corrected in source; its final native rerun is pending.
-One disposable database applied fresh chain 85; all 85 migrations are unchanged.
-Cleanup PASS, original data fingerprints/container inventory restored, Soar untouched.
-The explicit factory alone can report verified completion/activation; default and
-legacy durable flags stay false. RF-HOST-035 PARTIAL; production BLOCKED; all eight
-readiness flags false. Registration cause UNKNOWN / MONITORED RESIDUAL RISK.
-Exactly one next recommendation, not started: bounded full native rerun of the
-corrected completion fixture under a new one-database delegation. Older amendments
-below are historical.
+Owner amendment v67: [native canonical completion rerun](decision-attestation-prisma-ports-v1.md)
+qualifies the tested native persistence path: 20/20 PASS, zero skips, native child
+exit 0 and runner exit 0 in one run on one fresh owned database. Exact relay
+counters are armed=2/applied=2; the applied and final 85-migration chains match.
+First/recovery activation, 20-client contention, read-only replay, all 11 rollback
+points, COMMIT/readback uncertainty, four callback mutations, six pre-COMMIT
+mutations and tampering pass. The v66 callback-fixture gap is closed. Runtime,
+harness and migrations are unchanged. Cleanup/fingerprints/inventory PASS; Soar
+untouched. Public signature/possession doubles do not qualify cryptography or
+real delivery. Explicit verified completion/activation may be true; default and
+legacy durable paths remain false. RF-HOST-035 PARTIAL; production BLOCKED; all
+eight readiness flags false; historical registration cause UNKNOWN / MONITORED
+RESIDUAL RISK. Legacy channel-store revocation readback still requires fixture
+reconciliation and remains a separate gap. Exactly one next recommendation,
+not started: source-only correction of that legacy readback using exact committed
+receipts, writer XID and causal fence evidence. Older amendments are historical.
 
 Owner amendment v54: [native attestation qualification](decision-attestation-prisma-ports-v1.md)
 remains **BLOCKED**: final native 14/19 PASS, 5 FAIL (four subtests plus parent),

@@ -1,5 +1,75 @@
 # Decision attestation: Prisma ports and native persistence evidence
 
+## Owner amendment v67: full native completion rerun passes
+
+**20/20 PASS, zero failures/skips/cancellations, native child exit 0, runner exit 0,
+nativeRuns=1, 416.558 seconds.** This rerun used the unchanged committed harness
+from `e9671f2d5c3ddc29ae62a312be308f0b4ad98fc9` on one fresh owned PostgreSQL 16
+disposable database. All 85 final migrations were applied from zero, without schema
+reset, function replacement, migration edits or backfill. This atom changes only
+documentation evidence. The v66 callback-fixture qualification gap is now closed;
+the unsuccessful v66 result below remains historical evidence.
+
+The real explicit completion factory and existing concrete authority, dispatch,
+credential, handoff and lifecycle stores were used. Public peer/completion/binding
+verification and possession checks remain injected synthetic doubles on the same
+Db; no private key, cryptographic signing API, credential generation, real delivery,
+provisioning, endpoint, default wiring or installation/target/profile/model
+activation was performed. The tested activation concerns exact inert fixture
+ApiKey facts, not delivery of a usable secret.
+
+| Native evidence | Complete rerun result |
+| --- | --- |
+| First enrollment / recovery | PASS: 11 statements atomically persist completion, acknowledged handoff and exact active credential, independently read back. Recovery retains actual revoked predecessor version 2 and activates new epoch 2. |
+| Contention / replay | PASS: 20 independent clients and 20 writer backend PIDs produce one writer, activation and credential operation. Identical completed replay is READ ONLY/idempotent; conflicting replay denies. |
+| Rollback | PASS: all 11 statement faults hit their intended phase; all canonical snapshots/fence values match before/after, with zero activation. |
+| COMMIT/readback | PASS: real deferred rejection, native migration-85 missing-receipt rejection despite Prisma false resolution, pre-COMMIT connection termination, false/lost ACK, two real post-COMMIT response cuts, and missing/mismatched/unavailable independent readback. Uncertainty is reconciliation_required with retryable=false and zero or one persisted activation. No automatic operation retries. |
+| Callback drift | PASS: all four host/credential/handoff/fence mutations actually execute in controlled fixture mode, restore origin before the real observer, then deny and roll back with no completion writes. |
+| Immediately before COMMIT | PASS: all six fence/decision/certificate/key/channel/credential mutations deny and roll back. |
+| Binding / tampering | PASS: 16 re-signed binding mutations, invalid verifier/possession verdicts, eight malformed direct child inserts, missing/extra receipt, Event/digest/XID/fence/head/lineage corruption, ticket revocation/reconstruction and immutable guards. Read paths do not repair evidence. |
+
+The runner's success-only aggregate assertions were reached and passed:
+`faultRelay.armed=2`, `faultRelay.applied=2`, `lostCommitResponseCuts=2`,
+`fullSuite=true`, `skips=0`, `nativeExitCode=0`, `nativeRuns=1`,
+`migrations=85`, `finalMigrationSourceChanged=false` and exact applied/final
+source-chain equality. All migrations 1-85, Prisma schema, runtime and harness
+remain unchanged. Chain SHA-256:
+`17a6849ec2c0442bb3d34b3a1e1d335321e95026312ff283051a527ecda2fbdd`.
+Migration 85 LF SHA-256:
+`92235ec16e72b98d9170b040e1650b331896f0cb89cba895f3267a2b9fba7237`.
+Production migration application remains unauthorized.
+
+Cleanup **PASS**: the sole owned DB was removed, relay listener/process closed,
+zero external helper files/directories were created, initial container inventory
+was restored, Roost PostgreSQL returned to its initial stopped state and Soar was
+unchanged. All three existing databases / 214 tables and sequences retain the
+same before/after fingerprint:
+`e9e019524b6010b02b30b4635fff99133c4429ffac3f537b05ac860485a281f1`.
+Source tests **288/288 PASS**, zero skips, exit 0 (44.857 seconds). Server build,
+lint (338 routes / 45 files), three source-pin checks, runner AST and scoped/staged
+diff checks pass. Default documentation context remains below 150000 bytes.
+No web build was needed; this rerun introduces no code change.
+
+Qualification is limited to the tested native persistence path and injected
+public-evidence context. Only the explicit factory may return
+completionRecorded=true/credentialActivated=true after verified committed proof;
+default and legacy durable paths remain false. RF-HOST-035 PARTIAL, production
+BLOCKED; implementationReady, executionSupported, pilotReady, liveAdmissionAllowed,
+pilotExecutionAuthorized, pilotExecutionStarted, transportQualified and
+launchAuthority remain false. Historical registration cause remains UNKNOWN /
+MONITORED RESIDUAL RISK.
+
+The known legacy channel-store revocation readback gap is unchanged and outside
+this atom: an attestation-enabled fixture may commit revoke then receive
+reconciliation_required from the older strict-fence readback. The fixture proves
+the exact committed row/current head/native receipt/XID independently without
+retrying. This successful completion rerun does not qualify that legacy readback.
+
+Exactly one next recommendation, **not started**: source-only correction of the
+legacy channel-store revocation readback for attestation-enabled sources, retaining
+exact committed receipt, writer-XID and causal-fence proof rather than dropping
+fence checks; no migration, default wiring, real delivery or activation changes.
+
 ## Owner amendment v66: native completion evidence, qualification blocked
 
 **Last full native run: 18/20 PASS, zero skips, native exit 1, runner exit 1,
