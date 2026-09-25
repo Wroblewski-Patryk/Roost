@@ -21,7 +21,12 @@ export async function preflight(){const db=new PrismaClient();try{await db.$conn
  console.log(JSON.stringify({legacyAttestationPreflight:true,original82CatalogPath:true,ticketAttempts:1,privateKeys:0}));
  }finally{await db.$disconnect();}}
 
-export type RegistrationProbe={beforeStatement?:(tx:Db,phase:string)=>Promise<void>;clock?:()=>Date};
+export type RegistrationProbe={beforeStatement?:(tx:Db,phase:string)=>Promise<void>;clock?:()=>Date;
+ beforeTransaction?:(tx:Db,mode:'write'|'read',identity:any)=>Promise<void>;
+ client?:PrismaClient;measurement?:'before'|'after';fencePreRead?:boolean};
+export class NativeRegistrationDenied extends Error{
+ constructor(readonly diagnostics:readonly any[],cause:unknown){super('Synthetic attestation registration failed: '+JSON.stringify(diagnostics),{cause});}
+}
 export async function attestationNativeFixture(db:PrismaClient,options:{policyTtlMs?:number;registrationProbe?:RegistrationProbe}={}){
  const f=await ticketFixture(db),q={decisionId:randomUUID(),ticketId:f.identity.ticketId},registration=structuredClone(f.registration);
  const i=registration.identity,t=registration.record.signed.payload,b=i.binding,ownerId=i.ownerId,acceptanceId=randomUUID(),previewId=randomUUID();
@@ -64,16 +69,18 @@ export async function attestationNativeFixture(db:PrismaClient,options:{policyTt
  },{isolationLevel:'Serializable',timeout:30000});
  const reg=lifecycleRegistration.parse(registration);
  const registrationErrors:unknown[]=[];let phase='begin',evidence:unknown,inputEvent:unknown,hostAtStatement:string|undefined;
- const registrationClient=new Proxy(db,{get(target,key){if(key!=='$transaction')return Reflect.get(target,key);
+ const registrationClient=new Proxy(options.registrationProbe?.client??db,{get(target,key){if(key!=='$transaction')return Reflect.get(target,key);
   return (work:any,transactionOptions:any)=>target.$transaction(async tx=>{try{
+   await options.registrationProbe?.beforeTransaction?.(tx,transactionOptions.isolationLevel==='Serializable'?'write':'read',i);
    async function capture(){const hostBefore=new Date().toISOString();
     const native=(await tx.$queryRaw<any[]>`SELECT clock_timestamp()::text AS clock,transaction_timestamp()::text AS started,
      revision::text AS fence,pg_current_xact_id()::text AS xid,current_setting('session_replication_role') AS role,
      (SELECT coalesce(jsonb_agg(jsonb_build_object('table',r.table_name,'row',r.row_id,'fence',r.fence_revision::text,'xid',r.writer_xid)),'[]'::jsonb)
       FROM worker_bootstrap_write_receipts r WHERE r.ticket_id=${i.ticketId}::uuid) AS receipts FROM ready_source_fence WHERE id=1`)[0];
     evidence={...native,hostBefore,hostAfter:new Date().toISOString()};}
-   const diagnostic=options.registrationProbe&&transactionOptions.isolationLevel==='Serializable';
-   if(diagnostic){await tx.$queryRawUnsafe(`SELECT 'native_registration_diagnostic:${i.ticketId}:registration'`);await capture();}
+   const diagnostic=(options.registrationProbe||process.env.PROBE_REGISTRATION==='1')&&transactionOptions.isolationLevel==='Serializable';
+   if(diagnostic){await tx.$queryRawUnsafe(`SELECT 'native_registration_diagnostic:${i.ticketId}:registration'`);
+    if(options.registrationProbe?.fencePreRead!==false)await capture();}
    const proxy=new Proxy(tx,{get(target,key){const value=Reflect.get(target,key);if(key==='$executeRaw'||key==='$queryRaw')return async(...args:any[])=>{
     const sql=(Array.isArray(args[0])?args[0].join('?'):args[0].sql).replace(/\s+/g,' ').trim();
     phase=sql.startsWith('INSERT INTO ')?sql.split(' ')[2].split('(')[0]:sql.startsWith('WITH v AS')?'worker_transport_history':sql.slice(0,60);
@@ -81,19 +88,21 @@ export async function attestationNativeFixture(db:PrismaClient,options:{policyTt
     if(diagnostic&&mutation){
      assert.match(phase,/^[a-z_]+$/);
      if(options.registrationProbe?.beforeStatement)await options.registrationProbe.beforeStatement(tx,phase);
+     if(options.registrationProbe?.measurement==='before')await capture();
      const record=args.slice(1).find((v:unknown)=>typeof v==='string'&&v.startsWith('{')&&v.includes('"action"'));
      inputEvent=record?JSON.parse(record):null;hostAtStatement=new Date().toISOString();
     }
-    // Observe successful writes afterwards: no diagnostic round trip between
-    // a newly generated event timestamp and its native guard.
-    const result=await (value as any).apply(target,args);if(diagnostic&&mutation)await capture();return result;
+    // By default observe writes afterwards. The explicit matrix can instead
+    // measure before an insert to test that timing boundary independently.
+    const result=await (value as any).apply(target,args);if(diagnostic&&mutation&&options.registrationProbe?.measurement!=='before')await capture();return result;
    };return typeof value==='function'?value.bind(target):value;}});
    return await work(proxy);
-  }catch(e:any){registrationErrors.push({phase,sqlstate:e.meta?.code??null,message:String(e.meta?.message??e.message).slice(0,1600),
+  }catch(e:any){registrationErrors.push({phase,transactionMode:transactionOptions.isolationLevel,sqlstate:e.meta?.code??null,message:String(e.meta?.message??e.message).slice(0,1600),
     constraint:e.meta?.constraint??null,stack:e.meta?undefined:String(e.stack).split('\n').slice(0,6),evidence,inputEvent,hostAtStatement,identity:i});throw e;}},transactionOptions);}});
  try{await createPrismaTicketLifecycleStore(registrationClient,options.registrationProbe?.clock??(()=>new Date()),{channel:createBootstrapV2ChannelBinding(),verifier:{qualification:'worker_bootstrap_ticket_verifier_v2',
   verify:async(_tx,p)=>reviewDigest(p.signed)===reviewDigest(reg.record.signed)&&reviewDigest(p.identity)===reviewDigest(reg.identity)}}).register(reg);
- }catch(e){throw new Error('Synthetic attestation registration failed: '+JSON.stringify(registrationErrors),{cause:e});}
+ }catch(e){console.error(JSON.stringify({alert:'native_registration_denial',retryable:false,requiresClassification:true,diagnostics:registrationErrors}));
+  throw new NativeRegistrationDenied(registrationErrors,e);}
  let fault='',before:((tx:Db)=>Promise<void>)|undefined,afterQuery:((tx:Db,sql:string)=>Promise<void>)|undefined;
  const counts={callbacks:0,writes:0,reads:0,signatures:0,statements:0},errors:string[]=[],transactions:{mode:string;db:Db}[]=[];
  const material={keyId:randomUUID(),epoch:1,purpose:'owner-decision-attestation-v1' as const,algorithm:'Ed25519' as const,format:'raw-public-hex' as const,

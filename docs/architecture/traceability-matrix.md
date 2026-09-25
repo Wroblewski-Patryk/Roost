@@ -1,5 +1,16 @@
 # Foundation requirements traceability
 
+Owner amendment v58: [deterministic registration matrix](decision-attestation-prisma-ports-v1.md)
+passed 11/11: eight register/seal cases and three exact expected denials, no
+unexpected refusal/retry. Fresh final83 replay, full native24/24, source204/204,
+full build/lint/pins and cleanup PASS. Historical cause UNKNOWN: now MONITORED
+RESIDUAL RISK, not by itself a gate against canonical reader/composition work.
+The native registration alert and valid-input-failure reopen condition are explicit.
+RF-HOST-035 PARTIAL; canonical signed_current_decision_unavailable and production
+BLOCKED, all eight flags false. One next atom, not started: source-only canonical
+reader/composition with injected qualified ports and fail-closed dependencies.
+No further random stress without new evidence; older blocker labels are historical.
+
 Owner amendment v57: [registration investigation](decision-attestation-prisma-ports-v1.md)
 completed 96 new registrations/12 seals and one full native suite 24/24, no skips,
 runner exit 0; cleanup PASS. Final unchanged 83-migration chain replayed from empty

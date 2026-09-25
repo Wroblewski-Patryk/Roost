@@ -11,10 +11,12 @@ parser.add_argument('--container', required=True)
 parser.add_argument('--db-user', required=True)
 parser.add_argument('--pause-after-diagnosis', action='store_true')
 parser.add_argument('--registration-probe', action='store_true')
+parser.add_argument('--registration-matrix', action='store_true')
 parser.add_argument('--scenario', choices=['commit','full'], default='commit')
 parser.add_argument('--suite', choices=['lifecycle','issuer','channel','ticket','revocation','attestation'], default='lifecycle')
 args = parser.parse_args()
 assert not args.registration_probe or args.suite=='attestation','Registration probe requires attestation suite'
+assert not args.registration_matrix or args.suite=='attestation' and not args.registration_probe,'Select one attestation experiment'
 repo = pathlib.Path.cwd()
 hidden = subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
 
@@ -146,7 +148,7 @@ try:
     env = {k:v for k,v in os.environ.items() if k.upper() in ['PATH','PATHEXT','SYSTEMROOT','TEMP','TMP','APPDATA','LOCALAPPDATA','COMSPEC']}
     env['PROBE_CONTAINER'] = args.container
     env['PROBE_FAULTS'] = '1' if args.scenario=='full' or args.suite in ('issuer','channel','ticket','revocation','attestation') else '0'
-    env['PROBE_REGISTRATION'] = '1' if args.registration_probe else '0'
+    env['PROBE_REGISTRATION'] = '1' if args.registration_probe or args.registration_matrix else '0'
     bridge = subprocess.Popen(['node','-e',bridge_code],env=env,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True,creationflags=hidden)
     port = json.loads(bridge.stdout.readline())['port']
     def collect():
@@ -181,11 +183,12 @@ try:
             sql(name,migration.read_text(encoding='utf-8-sig'))
         chain.append(hashlib.sha256(migration.read_bytes()).hexdigest())
     print(json.dumps({'migrationsApplied':len(chain),'chainDigest':hashlib.sha256(''.join(chain).encode()).hexdigest()}),flush=True)
-    if args.registration_probe:
+    if args.registration_probe or args.registration_matrix:
+        experiment='registrationMatrix' if args.registration_matrix else 'registrationProbe'
         for probe_run in range(1,5):
-            probe=subprocess.run(['node','-e',preamble+"require('tsx/cjs');require('./src/tests/decision-attestation-registration-probe.ts').registrationProbe().catch(e=>{console.error(e.message);process.exitCode=1;});"],env=env,text=True,encoding='utf-8',capture_output=True,timeout=240,creationflags=hidden)
+            probe=subprocess.run(['node','-e',preamble+"require('tsx/cjs');require('./src/tests/decision-attestation-registration-probe.ts')."+experiment+"().catch(e=>{console.error(e.message);process.exitCode=1;});"],env=env,text=True,encoding='utf-8',capture_output=True,timeout=240,creationflags=hidden)
             print(probe.stdout,flush=True);print(probe.stderr,flush=True)
-            print(json.dumps({'registrationProbeRun':probe_run,'exitCode':probe.returncode}),flush=True)
+            print(json.dumps({'registrationProbeRun':probe_run,'experiment':experiment,'exitCode':probe.returncode}),flush=True)
             print('REGISTRATION_PROBE: enter probe for a new bounded experiment, full for native suite, otherwise cleanup.',flush=True)
             action=input().strip()
             if action=='full': break

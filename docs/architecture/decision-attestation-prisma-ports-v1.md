@@ -1,5 +1,100 @@
 # Decision attestation: Prisma ports and native persistence evidence
 
+## Owner amendment v58: deterministic boundaries and monitored residual risk
+
+One **11-row deterministic matrix PASS** (one invocation, 21.766 seconds): eight
+admitted registrations with eight seals, three expected controls, zero unexpected
+denials and zero retries. The matrix has a 180-second internal / 240-second
+process cap, fresh identities per row, explicit awaited ordering and no random
+sleeps or fuzzing. The event clock uses the database transaction-start millisecond
+projection; separate samples use an independent read-only transaction. Different
+backend PIDs verify separation, including two clients where selected. Every
+registration itself stays atomic; only measurement/ordering varies.
+
+| Variant | Event clock / measurement | Fence pre-read / ordering | Observed result |
+| --- | --- | --- | --- |
+| 1 | tx start -1 ms / after insert | no | register + seal PASS |
+| 2 | tx start +1 ms / after insert | no | register + seal PASS |
+| 3 | tx start -1 ms / before insert | yes | register + seal PASS |
+| 4 | tx start +1 ms / before insert | yes | register + seal PASS |
+| 5 | separate transaction, same client +1 ms / after | yes | register + seal PASS |
+| 6 | separate client sample +1 ms / after | no | register + seal PASS |
+| 7 | tx start +1 ms / after | read-only peer while registration holds fence | register + seal PASS |
+| 8 | tx start +1 ms / after | business-value-preserving source write commits before snapshot | register + seal PASS |
+| 9 | tx start +1 ms / after | source writer commits after snapshot/pre-read | expected SQLSTATE 40001; zero ticket/issue rows |
+| 10 | tx start +1 ms / after | source writer commits before independent confirmation | expected reconciliation_required; exactly one ticket/issue row |
+| 11 | tx start +60000 ms / after | future-time negative control | expected P0001/bootstrap_lifecycle_cas; zero ticket/issue rows |
+
+The no-op business-value write still advances the protected source fence, as it
+must. Row 9 fails at the native fence lock with `could not serialize access due
+to concurrent update`; native constraint/context are null, not fabricated.
+Row 10 is an application readback refusal, with no native SQLSTATE/trigger, and
+returns non-retryable reconciliation after its one actual COMMIT. Row 11 reports
+`bootstrap_lifecycle_write_guard()` at its RAISE. Public in-memory evidence binds
+the phase, identity/event, XID, fence, clock and prior successful receipt lineage.
+These controls demonstrate correct guards for known invalid schedules/inputs;
+they do **not** establish which cause produced the historical v56 anomaly.
+No native guard defect or unexpected valid-input refusal was reproduced. There
+is no behavioral fix claim and no runtime port/migration/schema change.
+
+### Risk classification and actionable diagnostic
+
+The historical incident is now **MONITORED RESIDUAL RISK**, with cause UNKNOWN.
+Under this owner delegation it is **not, by itself, a gate against further
+canonical decision-reader/composition integration**. This supersedes the v56/v57
+residual-blocker classification, without removing any production authority gate.
+No additional random stress testing is recommended without new evidence.
+
+The native registration runtime emits `native_registration_denial` with
+`retryable=false`, `requiresClassification=true` and bounded synthetic diagnostic
+data whenever registration fails. The matrix emits
+`unexpected_registration_denial` with `reopen=true` on a valid-row refusal;
+expected controls are classified only after their exact error and committed-row
+assertions pass. Marked wire diagnostics provide PostgreSQL SQLSTATE/message,
+constraint/table and function/trigger context when PostgreSQL supplies them.
+The controlled denials exercised this path. Signals are in-memory/stdout/stderr
+only, with no durable logs or secrets. This is native-harness monitoring; no
+production telemetry sink or default composition was installed.
+
+**Reopen condition:** any unplanned refusal of a valid matrix registration or an
+ordinary fresh-chain native fixture, or a contradictory COMMIT/readback count.
+Stop that attempt, retain the bounded diagnostic and investigate its concrete
+SQLSTATE/phase/clock/fence evidence. Do not retry/reissue; an uncertain committed
+operation requires independent read-only reconciliation. Expected stale-input,
+future-time or controlled serialization denials alone are not evidence of a
+broken guard. Broader production diagnostic wiring belongs to explicit composition.
+
+### Final verification and authority
+
+Exactly one owned disposable DB applied the unchanged **final 83-migration chain
+from empty**, without replacement functions, reset or backfill. One full native
+suite then passed **24/24, 0 skipped**, three applied post-COMMIT cuts, child and
+final runner **exit 0**. Selected source **204/204**, full server/web build, lint,
+generated pins, runner syntax and scoped diff PASS. Existing web asset/chunk
+warnings remain outside this backend test scope. Cleanup independently **PASS**:
+owned DB/relay removed, helperFilesCreated=0, inventory restored; three existing
+accessible databases and 214 table/sequence fingerprints match. Other services,
+dirty documents and retained roots were preserved; no push/deploy/activation.
+
+- Migration-83 LF SHA-256 (unchanged):
+  `b16939ff35320afe5f9cc0259edf1e444c7c43b70c7e186dc6a66ce096f9e0b5`.
+- Fresh applied/final source-chain digest:
+  `5e7d56f423aeb4c325edf7a5804551c8ffdc664ac85bf289c48ec69ccaff148b`.
+- Existing database before/after fingerprint SHA-256:
+  `e9e019524b6010b02b30b4635fff99133c4429ffac3f537b05ac860485a281f1`.
+
+RF-HOST-035 remains **PARTIAL**, production **BLOCKED**, and canonical
+`signed_current_decision_unavailable` is unchanged. `implementationReady`,
+`executionSupported`, `pilotReady`, `liveAdmissionAllowed`,
+`pilotExecutionAuthorized`, `pilotExecutionStarted`, `transportQualified` and
+`launchAuthority` all remain false. Public synthetic doubles qualify no real
+signature, authentication, transport or delivery authority.
+
+Exactly one next recommendation, **not started**: source-only canonical decision
+reader/composition wiring to explicitly injected qualified attestation ports,
+with absent/untrusted dependencies failing closed and default activation unchanged.
+Earlier entries below are historical.
+
 ## Owner amendment v57: bounded registration investigation
 
 The intermittent fixture registration denial was **not reproduced**. Two bounded
