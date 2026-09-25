@@ -1,16 +1,13 @@
 # Architecture Source Of Truth
 
-Owner amendment v75: [v3 issuance/seal contract](bootstrap-proof-issuance-v3.md)
-is complete only as source-only contracts, explicit injected orchestration and
-transactional tests. Final selected source 142/142, server build/lint/four pins
-PASS. No SQL writer or migration 87; migrations/guards 1–86 unchanged. Existing
-v3 links still deny. Prior [v74 native reservation evidence](bootstrap-proof-persistence-v1.md)
-remains valid but grants no issuance authority. RF-HOST-035 PARTIAL, production
-BLOCKED; all eight flags false, registration UNKNOWN / MONITORED RESIDUAL RISK.
-Exactly one next recommendation, not started: canonical own-XID/receipt source
-projection that cannot mask foreign drift/ABA, then additive migration 87 and
-pin-checked guard upgrades. Native qualification is a later separate atom.
-No default signer, real signing, delivery or activation. Earlier entries are historical.
+Owner amendment v76: [v3 source projection](bootstrap-proof-projection-v3.md)
+defines exact own-XID/receipt lineage, complete source sets, explicit shared/nested
+epoch cardinality and immutable phase prefixes. Source-only; native projection,
+persistence and production authority remain BLOCKED. No migration 87 or changes
+to guards/migrations 1–86. RF-HOST-035 PARTIAL; all eight flags false, registration
+UNKNOWN / MONITORED RESIDUAL RISK. Exactly one next atom, not started: additive
+migration 87 and pin-checked guard/native-port upgrades. Native qualification
+comes later. Earlier entries are historical.
 
 Owner amendment v54: [native attestation qualification](decision-attestation-prisma-ports-v1.md)
 remains **BLOCKED**: final native 14/19 PASS, 5 FAIL (four subtests plus parent),

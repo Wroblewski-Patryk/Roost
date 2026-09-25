@@ -5,8 +5,8 @@ persistence and its bounded native qualification are now recorded in the
 [v74 persistence evidence](bootstrap-proof-persistence-v1.md). Cryptographic
 verification and production ticket-v3 issuance/sealing remain BLOCKED. The
 [v75 source-only issuance contract](bootstrap-proof-issuance-v3.md) adds strict
-transcripts and injected orchestration, without native persistence integration
-or a production verifier.
+transcripts and injected orchestration; the [v76 projection contract](bootstrap-proof-projection-v3.md)
+adds exact own-delta lineage. Native integration and a production verifier remain absent.
 
 ## Principals and public history
 

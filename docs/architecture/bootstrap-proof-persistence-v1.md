@@ -6,9 +6,10 @@ in one owned disposable PostgreSQL database. Existing installations were not
 migrated. Implements the public children of the
 [approved signer model](bootstrap-proof-authority-v1.md).
 
-The [v75 issuance contract](bootstrap-proof-issuance-v3.md) now defines and tests
-the source-only v3 orchestration seam. It adds no native writer or migration 87;
-the link denial below remains in force. The v74 evidence below is historical.
+The [v75 issuance](bootstrap-proof-issuance-v3.md) and
+[v76 projection](bootstrap-proof-projection-v3.md) contracts define source-only v3
+orchestration/lineage. No native writer or migration 87 exists; the link denial
+below remains in force. The v74 evidence below is historical.
 
 ## Children and guards
 
@@ -174,6 +175,6 @@ RISK. Fixed public vectors only; no private key generation/signing, usable
 credentials, delivery, provisioning or production activation. No push/deploy.
 
 The v74 next-step recommendation was narrowed by v75 to the source-only contract.
-The current next atom and own-source-delta blocker are recorded in the
-[v3 issuance contract](bootstrap-proof-issuance-v3.md); no persistence integration
-or migration 87 has started.
+The current next atom is recorded in the
+[v3 projection contract](bootstrap-proof-projection-v3.md); no native projection,
+persistence integration or migration 87 has started.

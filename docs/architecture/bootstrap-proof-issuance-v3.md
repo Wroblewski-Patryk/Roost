@@ -8,6 +8,10 @@ composition, endpoint, default issuer or sealer. Migrations and guards 1–86 ar
 unchanged. Existing SQL continues to deny v3 links and legacy v1/v2 cannot enter
 the new contract.
 
+The [v76 projection contract](bootstrap-proof-projection-v3.md) now defines exact
+own-delta lineage and immutable phase verification. Its native port remains
+unimplemented; the v75 model/evidence below is historical.
+
 ## Public wire and authority
 
 `bootstrap-proof-issuance-contract.ts` defines separate strict v3 intent,
@@ -74,11 +78,9 @@ or ABA; comparing an unchanged digest would reject the operation's own writes.
 The transactional fixture models an ideal projection but does not implement or
 qualify this behavior in PostgreSQL.
 
-Exactly one next recommendation, **not started**: implement the canonical v3
-projection that recognizes only exact own-XID/receipt lineage, rejecting foreign
-source changes and ABA, then the additive migration 87 and pin-checked versioned
-guard upgrades required for persistence. Preserve the legacy branch and all
-historical migration files. Native qualification is a later separate atom.
+The source projection contract is now defined by v76. The current single next
+atom is migration 87 and pin-checked guard/native-port upgrades under that
+contract; no native projection, migration or integration has started.
 
 ## Verification and limits
 
