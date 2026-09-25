@@ -70,7 +70,11 @@ DECLARE p worker_bootstrap_dispatch_history;a worker_bootstrap_attempts;t worker
  FOR k IN SELECT jsonb_object_keys(u) LOOP IF u->k='null'::jsonb THEN RAISE EXCEPTION 'dispatch_null_authority'; END IF;END LOOP;
  IF u->>'attemptId' IS DISTINCT FROM a.id::text OR u->>'ticketId' IS DISTINCT FROM t.id::text
   OR u->>'decisionId' IS DISTINCT FROM t.decision_id::text OR u->>'ownerId' IS DISTINCT FROM t.owner_id::text
-  OR u->>'ticketDigest' IS DISTINCT FROM t.ticket_digest OR u->'binding' IS DISTINCT FROM a.record->'binding'
+  -- The canonical reader's ticketDigest is the lifecycle HEAD digest. The
+  -- signed envelope digest is a distinct domain, retained in the attempt seal.
+  OR u->>'ticketDigest' IS DISTINCT FROM (SELECT e.record_digest FROM worker_bootstrap_lifecycle_events e WHERE e.ticket_id=t.id ORDER BY e.revision DESC LIMIT 1)
+  OR a.attestation_seal->'bindings'->>'ticketEnvelopeDigest' IS DISTINCT FROM t.ticket_digest
+  OR u->'binding' IS DISTINCT FROM a.record->'binding'
   OR u->>'purpose' IS DISTINCT FROM t.lifecycle_identity->>'purpose'
   OR u->>'credentialEpoch' IS DISTINCT FROM a.credential_epoch::text
   OR u->>'hostGeneration' IS DISTINCT FROM t.lifecycle_identity->>'hostGeneration'

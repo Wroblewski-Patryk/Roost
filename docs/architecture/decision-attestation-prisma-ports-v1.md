@@ -1,5 +1,84 @@
 # Decision attestation: Prisma ports and native persistence evidence
 
+## Owner amendment v62: native durable dispatch/completion qualification
+
+**Final full run: 20/20 PASS, zero skips, native exit 0, nativeRuns=1,
+488.335 seconds.** The actual `bootstrap-dispatch-prisma` adapter and durable
+composition ran against a fresh complete 84-migration chain. Twenty separate
+Prisma clients held distinct PostgreSQL backend PIDs. Fresh adapter factories
+model process/restart boundaries; this is not an OS process restart test.
+Exchange/completion, signing, owner authentication and key trust remain public
+synthetic seams. No default wiring or real delivery was introduced.
+
+| Boundary | Native evidence |
+| --- | --- |
+| State machine and authority | First enrollment and owner recovery complete all six normal transitions on the same attempt. Prepare, claim, start-send, outcome, start-complete, complete and status use distinct clients/PIDs; all writes have separate XIDs and exact immutable Event/receipt readback. The signed-source fence remains unchanged by dispatch children. |
+| Competing owners | Twenty concurrent claims on twenty writer PIDs yield one committed owner. Twenty independent composition factories yield exactly one synthetic exchange and one completion. Twenty start-complete and twenty final-complete contenders each produce one winning append. |
+| Completion identity | Exact final operation/request and response/completion-operation digests are idempotently acknowledged without another permit. Changed response, completion operation or final operation is denied. |
+| Restart/lease | Pre-send recovery requires explicit expired-lease resume and increased ownerEpoch/claimGeneration. Old owners and stale CAS values deny. `send_started`, `delivery_unknown` and `completion_started` never regain a permit through restart or lease expiry. Expiry during committed readback also returns no permit. |
+| Source drift | Owner, credential, host, installation, decision, ticket, lifecycle, issuer, channel and global-fence changes block writes. The audited history remains inspectable with `authorityCurrent=false`. A source change between the authority read and claim lock produces no append. |
+| Rollback | Twelve phases times six failure modes: after-insert rollback, pre-COMMIT rollback, injected deferred rejection, actual migration-84 deferred rejection after removal of its uncommitted receipt, false ACK, and real connection termination before COMMIT. All 72 cases retain the exact pre-operation table fingerprints and zero committed transitions. |
+| Uncertain COMMIT | Lost ACK at every phase leaves exactly one transition and no work permit. Missing, conflicting or unavailable independent readback after send/final completion also denies. Two real relay cuts after PostgreSQL COMMIT each leave one operation; armed=2, applied=2, no replay. |
+| Terminal disposition | Explicit fresh-authority reconcile/recover/cancel retain history and do not reset the attempt. Invalid evidence/scope/CAS denies. Revoked/expired authority can inspect but cannot perform terminal mutations. |
+| Integrity and purity | Native UPDATE/DELETE/TRUNCATE and malformed direct append are rejected. All eight new trigger bindings/bodies are checked; disabling each guard, changing a canonical helper configuration, replica mode or a read-only write transaction denies. Status uses database-enforced READ ONLY transactions and unchanged canonical-table fingerprints. |
+
+The first, **uncounted** full attempt failed (0/20) and was independently cleaned
+up before the final fresh run. Its first failure identified a digest-domain
+mismatch in migration 84: the existing canonical reader's `ticketDigest` is the
+ticket lifecycle **head** digest, whereas the original constraint compared it
+with the signed envelope digest. The minimal correction compares the lifecycle
+head and separately checks the seal's signed `ticketEnvelopeDigest` against the
+ticket root. No TypeScript authority contract or existing writer was relaxed.
+Only migration 84 and its generated guard-body pin changed; migrations 1-83 are
+unchanged. The final database applied this corrected chain from empty, with no
+post-application function replacement. Migration 84 remains unapplied outside
+the disposable qualification databases.
+
+The initial recovery fixture also omitted the required prior-channel revocation.
+Its registration alert was classified against `validateChannelGrant`'s requirement
+for a revoked predecessor channel, and the fixture now performs that canonical
+transition before registration, as the earlier reader suite already did. The
+final run had no unexpected registration denial. This identified fixture error
+does not resolve the older incident: historical root cause UNKNOWN remains
+MONITORED RESIDUAL RISK with the same reopen condition.
+
+- Final applied/source raw-file chain SHA-256:
+  `023340baa83c128b600dfbbdca282bf3790d30b1803429d4e7a8a6107eb73413`.
+- Corrected migration-84 LF SHA-256:
+  `d6c75c21183aeac4ccd3b39e6b8d2be68a797e8465d05363fc6fcc05cf7ae46e`.
+- Native dispatch guard body SHA-256:
+  `c44f0b63b257446f70d0adcddd1ae55c06daf4309160e7bf36d9e6c17d6b4df2`.
+- Existing-data fingerprint (three databases / 214 tables and sequences):
+  `e9e019524b6010b02b30b4635fff99133c4429ffac3f537b05ac860485a281f1`.
+
+Cleanup independently **PASS**, final runner **exit 0**: owned database removed,
+relay/listener and child process closed, helperFilesCreated=0, before/after
+existing-data/structure/role fingerprints identical, container/volume/image/network
+inventory restored. Roost PostgreSQL returned to its original stopped state;
+Soar PostgreSQL/Redis stayed running and unchanged. Each run owned one disposable
+database at a time. The earlier failed database was removed before the final
+database was created. No external helper directory,
+private dotenv, secret/key generation, provider delivery, HTTPS/DNS, provisioning,
+target/model/profile or activation is part of this qualification.
+
+Selected source/mocked tests **238/238 PASS, zero skips**. Server TypeScript
+build, lint (338 routes / 45 files), both migration pin checks, runner syntax and
+scoped diff checks PASS. No web build was run; no web behavior changed. Protected
+dirty product/planning work and unread `design-qa.md` are excluded from the atom.
+
+RF-HOST-035 remains **PARTIAL**, production **BLOCKED**. All eight flags remain
+false: `implementationReady`, `executionSupported`, `pilotReady`,
+`liveAdmissionAllowed`, `pilotExecutionAuthorized`, `pilotExecutionStarted`,
+`transportQualified`, `launchAuthority`. This qualifies the durable child
+protocol, not production trust/crypto/delivery, credential activation, or the
+legacy bootstrap/ticket heads, which still remain consumed. Terminal writes
+after revocation/expiry and successor admission need their explicit authority.
+
+Exactly one next recommendation, **not started**: a source-only integration of
+durable dispatch/completion receipts with the canonical attempt/ticket lifecycle,
+using exact causal receipt lineage without weakening source-drift checks or
+enabling delivery/default wiring. Older recommendations below are historical.
+
 ## Owner amendment v61: durable dispatch and completion, source only
 
 `createDurableDispatchAdapter` and the explicit

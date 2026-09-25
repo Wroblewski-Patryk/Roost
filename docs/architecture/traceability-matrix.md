@@ -1,19 +1,19 @@
 # Foundation requirements traceability
 
-Owner amendment v61: [durable dispatch/completion, source only](decision-attestation-prisma-ports-v1.md)
-replaces the runtime process latch with a committed attempt child history,
-owner/lease/CAS fencing and independent COMMIT readback. Migration 84 is additive
-and UNAPPLIED; migrations 1-83 are unchanged. Restart before send requires an
-explicit resume; after send/completion start neither restart nor lease expiry
-permits replay. Terminal reconciliation preserves history and cannot reset the
-attempt. Stale authority remains inspectable but cannot write. Source/mocked
-multi-factory races are not native multi-process evidence. No DB/Docker, real
-delivery, default composition, push/deploy or activation. RF-HOST-035 PARTIAL;
-production BLOCKED; all eight flags false. Historical registration cause UNKNOWN
-remains MONITORED RESIDUAL RISK. Exactly one next recommendation, not started:
-separately authorize bounded native qualification of migration 84 and the durable
-adapter without default wiring or real delivery. Detailed v55-v60 evidence remains
-in the linked canonical document; older amendments below are historical.
+Owner amendment v62: [native durable dispatch/completion qualification](decision-attestation-prisma-ports-v1.md)
+passed a complete 20/20 native run with zero skips, twenty distinct database
+clients and two real post-COMMIT response cuts. The fresh 84-migration chain
+includes one minimal migration-84 digest-domain correction; migrations 1-83 are
+unchanged. Native one-writer, restart/lease, terminal disposition, rollback,
+COMMIT/readback and read-only history checks pass. Process restarts are modeled
+by fresh factories/clients, not OS restarts. Synthetic trust/delivery seams and
+consumed legacy attempt/ticket heads remain production gaps. RF-HOST-035 PARTIAL;
+production BLOCKED; all eight flags false. No default wiring or real delivery.
+Historical registration cause UNKNOWN remains MONITORED RESIDUAL RISK. Exactly
+one next recommendation, not started: source-only integration of durable receipts
+with the canonical attempt/ticket lifecycle through exact causal receipt lineage,
+without weakening source-drift checks or enabling delivery. Detailed prior
+evidence remains in the linked document; older amendments below are historical.
 
 Owner amendment v54: [native attestation qualification](decision-attestation-prisma-ports-v1.md)
 remains **BLOCKED**: final native 14/19 PASS, 5 FAIL (four subtests plus parent),
