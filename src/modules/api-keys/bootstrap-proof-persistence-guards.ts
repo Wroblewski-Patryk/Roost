@@ -42,7 +42,7 @@ export const proofPersistenceFunctions=[
  },
  {
   "name": "bootstrap_proof_owner",
-  "args": "w uuid, d uuid, revision integer, field text, value jsonb",
+  "args": "w uuid, d uuid, revision bigint, field text, value jsonb",
   "result": "uuid",
   "language": "plpgsql",
   "volatility": "v",
@@ -78,7 +78,7 @@ export const proofPersistenceFunctions=[
   "result": "jsonb",
   "language": "plpgsql",
   "volatility": "v",
-  "hash": "2673771c205299856d2ccc65e13ecbecfd7149764195822cc24b475c2a7dcf2e"
+  "hash": "1b10b297a6fcd12b7230368053361bd5ce94846c638c541d677d717cc56af2b1"
  },
  {
   "name": "bootstrap_proof_reference",
@@ -94,7 +94,7 @@ export const proofPersistenceFunctions=[
   "result": "boolean",
   "language": "plpgsql",
   "volatility": "v",
-  "hash": "a28416543359f621f9b8fe7a2f0b18c815e61d7d016e7137b739fe4949452b12"
+  "hash": "e6311e9a1ba9d32a374c7c0aad897ae84fdb37778a4c13608efbdc92af3bf87e"
  },
  {
   "name": "bootstrap_proof_child_guard",

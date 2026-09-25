@@ -1,8 +1,10 @@
 # Bootstrap peer, completion and binding signing authority
 
-Owner amendment v72. **Approved source-only authority contract; persistence and
-cryptographic verification BLOCKED.** This resolves the v71 *model decision*
-gap, not its missing canonical persisted history or production verifier.
+Owner amendment v72 defines the approved authority contract below. Public
+persistence and its bounded native qualification are now recorded in the
+[v74 persistence evidence](bootstrap-proof-persistence-v1.md). Cryptographic
+verification and ticket-v3 issuance/sealing remain BLOCKED; this model and native
+persistence evidence do not provide a production verifier.
 
 ## Principals and public history
 

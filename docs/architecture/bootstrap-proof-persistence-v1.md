@@ -1,8 +1,10 @@
 # Public proof authority persistence
 
-Owner amendment v73. **Source-only persistence/ports DONE; migration 86
-UNAPPLIED; native and production authority BLOCKED.** Implements the public
-children of the [approved signer model](bootstrap-proof-authority-v1.md).
+Owner amendment v74. **Public persistence and bounded native qualification DONE;
+production signing/issuance authority BLOCKED.** Migration 86 was qualified only
+in one owned disposable PostgreSQL database. Existing installations were not
+migrated. Implements the public children of the
+[approved signer model](bootstrap-proof-authority-v1.md).
 
 ## Children and guards
 
@@ -32,7 +34,8 @@ admin and fixtures. They perform a **same-value MVCC write** on the existing
 `ready_source_fence`, forcing stale serializable writers to conflict without
 adding unreceipted numeric increments to existing protocols. Existing pinned
 source guards retain their numeric increments/audits. This compatibility is
-source-reviewed only; native behavior remains unqualified. New key/attachment
+verified natively by the existing eleven-statement completion writer and its
+committed numeric receipts under the final 86-migration chain. New key/attachment
 inserts increment the same fence once and automatically append Event/receipt.
 Deferred commit guards recheck exact evidence and root source digest. History,
 attachments, receipts and their Events cannot be mutated or truncated.
@@ -61,8 +64,9 @@ The SQL binary encoder mirrors v72 tagged lengths/counts, ordered arrays and
 UTF-8-sorted object keys. Each public record stores exact BYTEA plus its digest;
 both SQL and TypeScript recompute and compare them. It is not a JSON signature
 downgrade. JSONB is storage projection only and cannot attest raw JSON duplicate
-keys or original lexical spelling. Strict future wire decoding and cross-language
-native encoding parity still require qualification.
+keys or original lexical spelling. Native SQL/TypeScript bytes and digest parity are verified for supported
+values, ordering, Unicode and limits. This object-only port rejects raw JSON
+strings; strict future wire decoding remains outside its qualification.
 
 Full key replay validates ordering, previous/history/intent/receipt digests,
 monotonic epochs/high-water, bounded overlap and hard cutover/terminal revocation.
@@ -94,35 +98,77 @@ they are not evidence of a working v3 recovery ceremony.
 
 ## Evidence and remaining boundary
 
-New transactional-mocked suite: **33/33 PASS**. Selected source/mocked regression:
-**106/106 PASS**, zero failures/skips/cancellations, exit 0 (29.177 seconds).
-Final focused rerun after PostgreSQL catalog type-name normalization: **33/33
-PASS**, exit 0 (24.999 seconds); final server build also passes.
-Includes first/recovery and all six key lifecycle actions; same-Db operations and
-independent readback; 20 competing writers/one winner and 20 pure readers; all six
-row/audit/Event/receipt/constraint/source rollback phases for keys and attachments;
-false/lost COMMIT and missing/mismatched readback; guard/role/schema/FK tampering;
-wrong principal/purpose/binding/history and public material reuse; malformed
-committed bytes/receipts/Events; absent default composition and owner reservation.
-These mocks exercise the real TypeScript SQL ports, not actual PostgreSQL guards.
+Final native suite: **23/23 PASS**, no failures/skips/cancellations, child/runner exit 0,
+116.168 seconds. One owned database/OID was retained across bounded corrections;
+each native retry rebuilt only its disposable schema and applied the full chain.
+The final fifth native run used unchanged final test sources and migration bytes.
+Earlier failed/interrupted probes are not qualification evidence.
 
+Three minimal migration-86 corrections were necessary: parenthesize a CASE
+expression in PL/pgSQL, accept Prisma's bigint revision parameter, and use the
+existing host status rather than a nonexistent enabled column. Migrations 1–85
+and the Prisma schema remain byte-for-byte unchanged. Fixture-only corrections
+separated the deliberately disconnected writer from the control client and added
+the required expiry to an inert revoked credential. No runtime port was relaxed.
+
+The native suite exercises the real Prisma public ports and SQL guards:
+
+- First reservation and recovery against exact public canonical roots; both
+  principals' create/adopt/stage/cutover/retire/revoke histories, overlap,
+  hard cutover, terminal revocation, high-water and material-purpose separation.
+- SQL/TypeScript binary bytes and digest parity; array order, UTF-8 object-key
+  order, safe integers and rejection of controls, unpaired Unicode, coercions,
+  noncanonical text and depth/container/byte limits. JSONB lexical duplicate
+  members and negative zero cannot be authenticated after JSON parsing.
+- Twenty distinct PostgreSQL writers with one winner and twenty pure readers;
+  exact owner/decision/root/generation/ticket/request/history bindings.
+- All 19 function configurations, 59 trigger enablements and 18 FKs individually
+  tampered and transactionally restored; changed function body, replica role and
+  shadow search path denied. Final catalogs match the pinned source.
+- Key/attachment child, Event, receipt and source rollback; pre-COMMIT termination,
+  real deferred COMMIT rejection, false/lost acknowledgement and independent
+  missing/mismatched/unavailable readback. Uncertainty is nonretryable and yields
+  zero or one committed operation. Two actual post-COMMIT wire cuts in the final
+  run reconcile read-only; four cuts total include an earlier failed test run.
+- Immutable/corrupt byte, receipt, native-XID, fence and Event denial; source drift
+  rollback and stale SERIALIZABLE conflict without an extra numeric increment.
+- The real canonical completion compatibility fixture preserves migrations
+  81–85 receipts and all eleven statements. Its synthetic verifier/credential
+  fixture does not establish signing, possession or production activation.
+- Legacy v1/v2 links deny with bootstrap_proof_legacy_ticket_blocked; proposed
+  v3 links still deny with bootstrap_proof_v3_seal_unavailable. Recovery uses
+  inert pre-existing roots; no v3 issuance/sealing ceremony is manufactured.
+
+Final chain SHA-256:
+`08f3d8e57f4886762e4d9437d44b3ac7a5eb9b03e1aef4faac19033fc2b145bc`.
+Unchanged first 85 migrations:
+`17a6849ec2c0442bb3d34b3a1e1d335321e95026312ff283051a527ecda2fbdd`.
+Final native test/fixture source SHA-256:
+`7f82e4ca5de71a74463b864aaa1b565d8303183ccab157e931f55418b2dffe59`.
+
+Cleanup **PASS**: the owned database was removed, relay/listener and test processes
+closed, no runtime helper files/directories created, and the selected database
+container restored to its initial stopped state. Unrelated containers and all
+three existing databases (214 tables/sequences) are unchanged. Before/after
+fingerprint SHA-256:
+`e9e019524b6010b02b30b4635fff99133c4429ffac3f537b05ac860485a281f1`.
+
+Selected source/mocked regression **106/106 PASS**, no failures/skips/cancellations,
+exit 0 (26.559 seconds), including the 33-result public persistence suite.
 Server build, lint (338 routes/45 files), four source-pin checks and diff checks
-pass. Consolidated default context is 143089/150000 bytes. SQL execution/DDL compilation, real concurrent writers, deferred native
-COMMIT and PostgreSQL binary parity were **NOT RUN**. Migration 86 remains
-UNAPPLIED. No DB/Docker/network or web build; signing-key-generating legacy suites
-were excluded. No private/keypair/seed/sign operation: low-level crypto private/
-sign/verify, network/DNS/process APIs are trapped; forbidden effects/logs are zero.
-The initial public points are fixed existing test material, not signed vectors.
+pass. Default context is 144720/150000 bytes. No web build or signing-key-generating
+legacy suite was run. Unrelated dirty product/planning documents and retained
+artifacts were preserved; design-qa.md remained unread/untracked/unstaged.
 
-RF-HOST-035 PARTIAL; native qualification, ticket-v3/seal and production signature
-verification remain BLOCKED. All eight flags stay false: implementationReady,
-executionSupported, pilotReady, liveAdmissionAllowed, pilotExecutionAuthorized,
-pilotExecutionStarted, transportQualified, launchAuthority. Registration UNKNOWN /
-MONITORED RESIDUAL RISK. Unrelated dirty documents and retained artifacts remain
-untouched; design-qa.md stays unread/untracked/unstaged. No push/deploy.
+RF-HOST-035 PARTIAL; ticket-v3/seal and production signature verification remain
+BLOCKED. The ports retain their conservative source-only qualification marker
+and blockers; native evidence alone does not install a production composition.
+All eight flags stay false: implementationReady, executionSupported, pilotReady,
+liveAdmissionAllowed, pilotExecutionAuthorized, pilotExecutionStarted,
+transportQualified, launchAuthority. Registration UNKNOWN / MONITORED RESIDUAL
+RISK. Fixed public vectors only; no private key generation/signing, usable
+credentials, delivery, provisioning or production activation. No push/deploy.
 
-Exactly one next recommendation, not started: **native qualification** of the
-final 86-migration chain in one explicitly authorized owned disposable database,
-including SQL/TypeScript binary parity, full history/attachment/guard/FK tests,
-actual concurrent writers, rollback/deferred COMMIT/lost ACK/readback, compatibility
-with existing numeric fence receipts, intentional v3-link denial and cleanup.
+Exactly one next recommendation, not started: source-only v3 ticket issuance and
+seal integration bound to the persisted public proof-authority reservation,
+with explicit injected authority, denial tests and no default activation.

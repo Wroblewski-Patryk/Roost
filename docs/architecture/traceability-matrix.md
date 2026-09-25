@@ -1,16 +1,17 @@
 # Foundation requirements traceability
 
-Owner amendment v73: [public proof authority persistence](bootstrap-proof-persistence-v1.md)
-adds four SQL-owned public children and explicit same-Db ports; migration 86 is
-UNAPPLIED, migrations 1–85 and Prisma schema unchanged. Catalogs pin 19 functions,
-59 triggers and 18 FKs. SERIALIZABLE writes require separate READ ONLY committed
-row/Event/receipt readback; uncertainty never retries. New mocked suite 33/33,
-selected source 106/106, build/lint/four pins PASS. Ticket-v3/seal links remain
-deliberately denied; no private/signing, DB/Docker/network, delivery or activation.
-RF-HOST-035 PARTIAL, native/production authority BLOCKED; all eight flags false,
+Owner amendment v74: [public proof authority persistence](bootstrap-proof-persistence-v1.md)
+is natively qualified in one owned disposable PostgreSQL database: final 23/23
+PASS on all 86 migrations, including 20 competing writers, committed readback,
+deferred COMMIT and two real final-run lost-response cuts. Three minimal fixes
+are confined to migration 86; 1–85 and Prisma schema are unchanged. Catalogs pin
+19 functions, 59 triggers and 18 FKs. Existing numeric receipts remain compatible.
+Selected source 106/106, build/lint/four pins PASS. Ticket-v3/seal links remain
+deliberately denied; no private signing, production delivery or activation.
+RF-HOST-035 PARTIAL, production authority BLOCKED; all eight flags false,
 registration UNKNOWN / MONITORED RESIDUAL RISK. Exactly one next recommendation,
-not started: native qualification of the final 86-migration chain, including
-numeric fence compatibility and intentional v3 denial. Earlier entries are historical.
+not started: source-only v3 issuance/seal integration under the persisted proof
+reservation, with explicit authority and denial tests. Earlier entries are historical.
 
 Owner amendment v54: [native attestation qualification](decision-attestation-prisma-ports-v1.md)
 remains **BLOCKED**: final native 14/19 PASS, 5 FAIL (four subtests plus parent),

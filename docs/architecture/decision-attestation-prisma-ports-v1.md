@@ -1,16 +1,18 @@
 # Decision attestation: Prisma ports and native persistence evidence
 
-## Owner amendment v73: source-only public proof persistence
+## Owner amendment v74: native public proof persistence
 
-The [persistence contract](bootstrap-proof-persistence-v1.md) implements v72's
-approved [signer model](bootstrap-proof-authority-v1.md) with four public children,
-same-Db ports and separate committed row/Event/receipt readback. Migration 86
-UNAPPLIED; 1–85 and Prisma schema unchanged. New mocked suite 33/33, selected
-source 106/106, build/lint/four pins PASS. Native authority, v3 ticket/seal and
-production verifier remain BLOCKED; all eight flags false. No private/signing,
-DB/Docker/network, delivery or activation. Exactly one next recommendation,
-not started: native qualification, including fence compatibility and intentional
-v3-link denial. Earlier status and next recommendations below are historical.
+The [persistence qualification](bootstrap-proof-persistence-v1.md) passes 23/23
+native tests in one owned disposable database on the final 86-migration chain.
+Three migration-86 corrections preserve 1–85 and the Prisma schema. Public
+history/reservation, binary parity, 19 functions/59 triggers/18 FKs, real
+concurrency, COMMIT loss and independent readback are covered. The existing
+canonical completion writer retains its numeric receipts and eleven statements.
+Selected source 106/106, build/lint/four pins PASS. Production signing, v3
+issuance/seal, delivery and activation remain BLOCKED; all eight flags false.
+Exactly one next recommendation, not started: source-only v3 issuance/seal
+integration under the persisted public reservation, with explicit authority
+and denial tests. Earlier status and next recommendations below are historical.
 
 ## Owner amendment v71: public completion verifier blocked on signer authority
 

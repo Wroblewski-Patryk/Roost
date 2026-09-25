@@ -101,7 +101,7 @@ DECLARE b BYTEA; BEGIN
   AND encode(b,'base64')=m->>'spki' AND encode(sha256(b),'hex')=m->>'publicKeyDigest',false);
 END $$;
 
-CREATE FUNCTION bootstrap_proof_owner(w UUID,d UUID,revision INT,field TEXT,value JSONB) RETURNS UUID LANGUAGE plpgsql VOLATILE AS $$
+CREATE FUNCTION bootstrap_proof_owner(w UUID,d UUID,revision BIGINT,field TEXT,value JSONB) RETURNS UUID LANGUAGE plpgsql VOLATILE AS $$
 DECLARE owner UUID;BEGIN
  SELECT x.owner_user_id INTO owner FROM workspaces x JOIN decisions q ON q.workspace_id=x.id
  JOIN decision_revisions r ON r.decision_id=q.id AND r.workspace_id=x.id JOIN decision_acceptances a ON a.decision_id=q.id AND a.workspace_id=x.id
@@ -177,7 +177,7 @@ DECLARE r JSONB;i JSONB;s JSONB:=NULL;g JSONB;gs JSONB:='[]';b JSONB;action TEXT
   IF action IN ('create','adopt','stage') THEN
    IF NOT bootstrap_proof_public_material(i->'material') OR NOT bootstrap_proof_shape(i->'provenance',ARRAY['source','evidenceDigest'])
     OR (i->'provenance'->>'evidenceDigest'~'^[a-f0-9]{64}$') IS DISTINCT FROM true
-    OR i->'provenance'->>'source' IS DISTINCT FROM CASE WHEN b->>'principal'='local_worker' THEN 'local_worker_os_protected' ELSE 'roost_server_secret_store' END
+    OR i->'provenance'->>'source' IS DISTINCT FROM (CASE WHEN b->>'principal'='local_worker' THEN 'local_worker_os_protected' ELSE 'roost_server_secret_store' END)
     OR b->>'principal'='local_worker' AND NOT bootstrap_proof_shape(i->'generation',ARRAY['installationGeneration','hostId','hostGeneration'])
     OR b->>'principal'='roost_server' AND i->'generation'<>'null'::jsonb
    THEN RAISE EXCEPTION 'bootstrap_proof_public_material_invalid'; END IF;
@@ -234,7 +234,7 @@ CREATE FUNCTION bootstrap_proof_lifecycle(w UUID,installation UUID,host UUID,ig 
 BEGIN RETURN EXISTS(SELECT 1 FROM worker_identity_lifecycle i JOIN worker_identity_lifecycle h ON h.workspace_id=i.workspace_id
  JOIN agent_hosts a ON a.id=h.subject_id AND a.workspace_id=w JOIN trusted_provider_ticket_keys k ON k.workspace_id=w AND k.installation_id=installation
  WHERE i.id=ir AND h.id=hr AND i.workspace_id=w AND i.kind='installation' AND i.subject_id=installation AND i.generation=ig AND i.state='active'
- AND h.kind='host' AND h.subject_id=host AND h.generation=hg AND h.state='active' AND a.enabled
+ AND h.kind='host' AND h.subject_id=host AND h.generation=hg AND h.state='active' AND a.status::text<>'disabled'
  AND h.record->'intent'->>'installationId'=installation::text AND h.record->'intent'->>'installationGeneration'=ig::text
  AND NOT EXISTS(SELECT 1 FROM worker_identity_lifecycle n WHERE n.workspace_id=w AND ((n.kind='host' AND n.subject_id=host AND n.epoch>h.epoch) OR (n.kind='installation' AND n.subject_id=installation AND n.epoch>i.epoch)))); END $$;
 
