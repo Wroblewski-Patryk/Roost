@@ -3,8 +3,10 @@
 Owner amendment v72 defines the approved authority contract below. Public
 persistence and its bounded native qualification are now recorded in the
 [v74 persistence evidence](bootstrap-proof-persistence-v1.md). Cryptographic
-verification and ticket-v3 issuance/sealing remain BLOCKED; this model and native
-persistence evidence do not provide a production verifier.
+verification and production ticket-v3 issuance/sealing remain BLOCKED. The
+[v75 source-only issuance contract](bootstrap-proof-issuance-v3.md) adds strict
+transcripts and injected orchestration, without native persistence integration
+or a production verifier.
 
 ## Principals and public history
 

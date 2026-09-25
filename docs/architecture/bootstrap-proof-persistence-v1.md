@@ -6,6 +6,10 @@ in one owned disposable PostgreSQL database. Existing installations were not
 migrated. Implements the public children of the
 [approved signer model](bootstrap-proof-authority-v1.md).
 
+The [v75 issuance contract](bootstrap-proof-issuance-v3.md) now defines and tests
+the source-only v3 orchestration seam. It adds no native writer or migration 87;
+the link denial below remains in force. The v74 evidence below is historical.
+
 ## Children and guards
 
 Migration `20260925040000_bootstrap_proof_authority` adds four SQL-owned children:
@@ -169,6 +173,7 @@ transportQualified, launchAuthority. Registration UNKNOWN / MONITORED RESIDUAL
 RISK. Fixed public vectors only; no private key generation/signing, usable
 credentials, delivery, provisioning or production activation. No push/deploy.
 
-Exactly one next recommendation, not started: source-only v3 ticket issuance and
-seal integration bound to the persisted public proof-authority reservation,
-with explicit injected authority, denial tests and no default activation.
+The v74 next-step recommendation was narrowed by v75 to the source-only contract.
+The current next atom and own-source-delta blocker are recorded in the
+[v3 issuance contract](bootstrap-proof-issuance-v3.md); no persistence integration
+or migration 87 has started.

@@ -1,17 +1,16 @@
 # Local Codex Agent Runtime
 
-Owner amendment v74: [public proof authority persistence](bootstrap-proof-persistence-v1.md)
-is natively qualified in one owned disposable PostgreSQL database: final 23/23
-PASS on all 86 migrations, including 20 competing writers, committed readback,
-deferred COMMIT and two real final-run lost-response cuts. Three minimal fixes
-are confined to migration 86; 1–85 and Prisma schema are unchanged. Catalogs pin
-19 functions, 59 triggers and 18 FKs. Existing numeric receipts remain compatible.
-Selected source 106/106, build/lint/four pins PASS. Ticket-v3/seal links remain
-deliberately denied; no private signing, production delivery or activation.
-RF-HOST-035 PARTIAL, production authority BLOCKED; all eight flags false,
-registration UNKNOWN / MONITORED RESIDUAL RISK. Exactly one next recommendation,
-not started: source-only v3 issuance/seal integration under the persisted proof
-reservation, with explicit authority and denial tests. Earlier entries are historical.
+Owner amendment v75: [v3 issuance/seal contract](bootstrap-proof-issuance-v3.md)
+is complete only as source-only contracts, explicit injected orchestration and
+transactional tests. Final selected source 142/142, server build/lint/four pins
+PASS. No SQL writer or migration 87; migrations/guards 1–86 unchanged. Existing
+v3 links still deny. Prior [v74 native reservation evidence](bootstrap-proof-persistence-v1.md)
+remains valid but grants no issuance authority. RF-HOST-035 PARTIAL, production
+BLOCKED; all eight flags false, registration UNKNOWN / MONITORED RESIDUAL RISK.
+Exactly one next recommendation, not started: canonical own-XID/receipt source
+projection that cannot mask foreign drift/ABA, then additive migration 87 and
+pin-checked guard upgrades. Native qualification is a later separate atom.
+No default signer, real signing, delivery or activation. Earlier entries are historical.
 
 Owner amendment v54: [native attestation qualification](decision-attestation-prisma-ports-v1.md)
 remains **BLOCKED**: final native 14/19 PASS, 5 FAIL (four subtests plus parent),

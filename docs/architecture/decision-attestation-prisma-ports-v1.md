@@ -1,18 +1,18 @@
 # Decision attestation: Prisma ports and native persistence evidence
 
-## Owner amendment v74: native public proof persistence
+## Owner amendment v75: source-only v3 issuance contract
 
-The [persistence qualification](bootstrap-proof-persistence-v1.md) passes 23/23
-native tests in one owned disposable database on the final 86-migration chain.
-Three migration-86 corrections preserve 1–85 and the Prisma schema. Public
-history/reservation, binary parity, 19 functions/59 triggers/18 FKs, real
-concurrency, COMMIT loss and independent readback are covered. The existing
-canonical completion writer retains its numeric receipts and eleven statements.
-Selected source 106/106, build/lint/four pins PASS. Production signing, v3
-issuance/seal, delivery and activation remain BLOCKED; all eight flags false.
-Exactly one next recommendation, not started: source-only v3 issuance/seal
-integration under the persisted public reservation, with explicit authority
-and denial tests. Earlier status and next recommendations below are historical.
+Owner amendment v75: [v3 issuance/seal contract](bootstrap-proof-issuance-v3.md)
+is complete only as source-only contracts, explicit injected orchestration and
+transactional tests. Final selected source 142/142, server build/lint/four pins
+PASS. No SQL writer or migration 87; migrations/guards 1–86 unchanged. Existing
+v3 links still deny. Prior [v74 native reservation evidence](bootstrap-proof-persistence-v1.md)
+remains valid but grants no issuance authority. RF-HOST-035 PARTIAL, production
+BLOCKED; all eight flags false, registration UNKNOWN / MONITORED RESIDUAL RISK.
+Exactly one next recommendation, not started: canonical own-XID/receipt source
+projection that cannot mask foreign drift/ABA, then additive migration 87 and
+pin-checked guard upgrades. Native qualification is a later separate atom.
+No default signer, real signing, delivery or activation. Earlier entries are historical.
 
 ## Owner amendment v71: public completion verifier blocked on signer authority
 
