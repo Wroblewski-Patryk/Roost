@@ -1,24 +1,26 @@
-# Interview foundation requirements — V2
+# Accepted requirements
 
-Version: `ROOST-INTERVIEW-FOUNDATION-V2`. Status: frozen accepted baseline.
-Public product baseline. Private interview provenance and installation details are maintained outside this repository.
+Status: current accepted product requirements. Private interview provenance and
+installation details are maintained outside this repository.
 
-This is canonical product/architecture/operations/release requirements truth,
-not an execution queue, agent memory or a claim of completed implementation.
+This is the canonical product, architecture, operations and release
+requirements registry. It is not an execution queue, agent memory or a claim of
+completed implementation.
 The [traceability matrix](../architecture/traceability-matrix.md) separately records
 implementation/proof status. Repeated approvals are consolidated into requirements
 with explicit acceptance clauses; none of these clauses independently authorizes
 execution, external writes or financial tests.
 
-## Provenance and version rules
+## Maintenance and provenance
 
 These requirements describe the reusable product. Examples are fictional and do not configure a deployment or authorize access to another installation.
 
-IDs remain stable across future versions. Do not repurpose or renumber an ID.
-A changed mandate gets a new version/ID and explicit supersedes/superseded-by
-links; Git preserves the old baseline. Evidence status may advance in the matrix
-without rewriting the frozen decision. `accepted`, `deferred` and
-`superseded` describe decisions, not implementation.
+IDs remain stable. Do not repurpose or renumber an ID. Update the current
+requirement in place when the owner changes the accepted rule; Git preserves the
+prior wording and rationale. Add a new ID only for a genuinely new requirement,
+not for another interview or implementation iteration. Evidence status may
+advance in the matrix without rewriting product intent. `accepted` and
+`deferred` describe decisions, not implementation.
 P0/P1/P2 are engineering dependency priorities assigned during this audit,
 not owner approval or a runtime incident priority.
 
@@ -55,15 +57,15 @@ Gate/scope of enforcement: governance.
 | <a id="rf-gov-007"></a>RF-GOV-007 | — | accepted | Maintain a complete role catalog across twelve departments; instantiate active agents only for demonstrated demand. | — |
 | <a id="rf-gov-008"></a>RF-GOV-008 | — | accepted | HR recruitment requires manager request, role profile, director placement, Security least privilege, competency eval and probation; no self-hiring or self-promotion. | — |
 | <a id="rf-gov-009"></a>RF-GOV-009 | — | accepted | Evaluate difficulty-adjusted outcomes, quality, regressions, rework, evidence, handoff, time and cost; independently diagnose failures before training, reassignment or deactivation. | — |
-| <a id="rf-gov-010"></a>RF-GOV-010 | — | accepted | Requalify after material role/model/tool/procedure changes; skills transfer across similar apps, while new technology/risk requires additional proof and app-specific access. | supersedes [RF-OLD-009](#rf-old-009) |
+| <a id="rf-gov-010"></a>RF-GOV-010 | — | accepted | Requalify after material role/model/tool/procedure changes; skills transfer across similar apps, while new technology/risk requires additional proof and app-specific access. | current rule |
 | <a id="rf-gov-011"></a>RF-GOV-011 | — | accepted | PM owns product result, Technology implementation quality; UI design, visual design, frontend, visual QA and functional testing remain distinct responsibilities when needed. | — |
 | <a id="rf-gov-012"></a>RF-GOV-012 | — | accepted | Application-specific PMs share cross-portfolio technical specialists; add staff only for competence gaps or sustained overload. | — |
 | <a id="rf-gov-013"></a>RF-GOV-013 | — | accepted | Dynamic subagents are allowed with visible parent, role, goal, scope, budget, minimal authority, structured return and scheduler-controlled resource/writer limits. | — |
 | <a id="rf-gov-014"></a>RF-GOV-014 | — | accepted | Every agent has its own technical identity; never record agent actions as owner actions or infer authority from actor type alone. | — |
 | <a id="rf-gov-015"></a>RF-GOV-015 | — | accepted | Bootstrap implementation changes only Roost and its host/infrastructure; DemoApp and other applications are future native-agent targets, never bootstrap edits. | — |
-| <a id="rf-gov-016"></a>RF-GOV-016 | — | accepted | Only closed versioned batches authorize bootstrap work; freeze a batch until DONE/BLOCKED; ordinary later answers wait, except STOP/SAFETY/material scope correction. | supersedes [RF-OLD-007](#rf-old-007) |
+| <a id="rf-gov-016"></a>RF-GOV-016 | — | accepted | One implementation owner carries an accepted end-to-end outcome through coding, integration, verification and demonstration. Internal substeps and multiple commits are allowed but are not handoff or STOP boundaries; new interview input changes active work only for STOP, safety or a material scope correction. | current rule |
 | <a id="rf-gov-017"></a>RF-GOV-017 | — | accepted | Every accepted requirement has a stable ID, decision/supersession status and evidence links to code, tests, configuration, commit and deployment where verified. | — |
-| <a id="rf-gov-018"></a>RF-GOV-018 | — | accepted | Clarifications and BLOCKER reports go to the source interview task; preserve unrelated work and avoid repository task boards or execution memory. | — |
+| <a id="rf-gov-018"></a>RF-GOV-018 | — | accepted | Resolve reversible technical choices autonomously from accepted requirements, current architecture and evidence. Owner input is reserved for unavailable login/2FA/secret, an unapproved irreversible real-data action, a genuine business-intent contradiction or an unavailable external service without a safe alternative. Preserve unrelated work and avoid repository task boards or execution memory. | — |
 | <a id="rf-gov-019"></a>RF-GOV-019 | — | accepted | Managed portfolio is NotesApp, ContentApp, PortalApp and DemoApp; Roost is bootstrap infrastructure, excluded from application imports and agent targets. | — |
 | <a id="rf-gov-020"></a>RF-GOV-020 | — | accepted | Key decisions, authority changes, releases, rollback and incidents use an append-only audit with corrections as linked new entries and permanent compact retention. | — |
 
@@ -106,9 +108,9 @@ Gate/scope of enforcement: before execution.
 | ID | Reference | Decision | Requirement and acceptance clauses | Supersession |
 | --- | --- | --- | --- | --- |
 | <a id="rf-host-001"></a>RF-HOST-001 | — | accepted | VPS owns queue and private database; Windows host initiates outbound HTTPS; offline laptop leaves work queued without agent token consumption. | — |
-| <a id="rf-host-002"></a>RF-HOST-002 | — | accepted | Only one writer across the laptop, with parallel lightweight readers only after resource checks; release writer on waiting only after safe checkpoint and confirmed stop. | supersedes [RF-OLD-008](#rf-old-008) |
+| <a id="rf-host-002"></a>RF-HOST-002 | — | accepted | Only one writer across the laptop, with parallel lightweight readers only after resource checks; release writer on waiting only after safe checkpoint and confirmed stop. | current rule |
 | <a id="rf-host-003"></a>RF-HOST-003 | — | accepted | Reconcile API lease, local processes, branch/files and versioned checkpoints before claiming; resume same work when safe, otherwise preserve evidence and block/replan with reason. | — |
-| <a id="rf-host-004"></a>RF-HOST-004 | — | accepted | One direct canonical physical clone per app; verify root, origin and branch provenance; no worktree/copy bypass, reset-hard or destruction of unknown work. | supersedes [RF-OLD-008](#rf-old-008) |
+| <a id="rf-host-004"></a>RF-HOST-004 | — | accepted | One direct canonical physical clone per app; verify root, origin and branch provenance; no worktree/copy bypass, reset-hard or destruction of unknown work. | current rule |
 | <a id="rf-host-005"></a>RF-HOST-005 | — | accepted | One deterministic task branch per task; checkpoint/WIP remote backup allowed in private GitHub; branch ends merged, formally rejected or recoverable with evidence, never abandoned. | — |
 | <a id="rf-host-006"></a>RF-HOST-006 | — | accepted | Checkpoint before side effects and periodically; lease loss/cancellation stops execution and preserves writer lock when process termination cannot be proven. | — |
 | <a id="rf-host-007"></a>RF-HOST-007 | — | accepted | Windows login starts one hidden observer with visible identity, heartbeat and status; observer never claims work or launches Codex. | — |
@@ -155,7 +157,7 @@ Gate/scope of enforcement: before writing or release.
 | <a id="rf-res-002"></a>RF-RES-002 | — | accepted | Start registered services only if absent; stop/clean only execution-owned temporary resources; unknown conflicts trigger diagnosis without kill/alternate port/duplicate environment. | — |
 | <a id="rf-res-003"></a>RF-RES-003 | — | accepted | Rebuild disposable dependencies/containers safely; persistent volume changes require risk gates and verified backup; preserve unknown files/data until provenance resolved. | — |
 | <a id="rf-res-004"></a>RF-RES-004 | — | accepted | Ordinary code relies on Git and prior image; risky data changes need verified backup before replacement; retain last good copy plus temporary pre-release copy through observation, then rotate by capacity. | — |
-| <a id="rf-res-005"></a>RF-RES-005 | — | accepted | Before agents, prove encrypted Roost DB backup/restore without disturbing production; sync one latest verified encrypted copy to owner-designated laptop folder; keep restore key separate. | supersedes [RF-OLD-010](#rf-old-010) |
+| <a id="rf-res-005"></a>RF-RES-005 | — | accepted | Before agents, prove encrypted Roost DB backup/restore without disturbing production; sync one latest verified encrypted copy to owner-designated laptop folder; keep restore key separate. | current rule |
 | <a id="rf-res-006"></a>RF-RES-006 | — | accepted | Generate one-time owner recovery code stored off laptop/VPS; record only acknowledgement, never code in Roost records or artifacts. | — |
 | <a id="rf-res-007"></a>RF-RES-007 | — | accepted | Default one VPS deployment or heavy production test at a time unless manifest proves capacity; check disk/memory/load/Docker/services and wait with reason if insufficient. | — |
 | <a id="rf-res-008"></a>RF-RES-008 | — | accepted | Coolify owns scheduled cleanup; Roost does not duplicate, diagnose or repair that cleanup job; insufficient resources only delay deployment. | — |
@@ -182,8 +184,8 @@ Gate/scope of enforcement: before push or release.
 | <a id="rf-rel-014"></a>RF-REL-014 | — | accepted | Production configuration has versioned desired state, reason and proof; diagnose drift before correction, escalate unclear/risky differences instead of overwriting. | — |
 | <a id="rf-rel-015"></a>RF-REL-015 | — | accepted | App health contract includes critical flows, jobs, integrations, errors and thresholds; establish deployed commit/services/config/known-problem baseline and block unknown production state. | — |
 | <a id="rf-rel-016"></a>RF-REL-016 | — | accepted | Each app has deployment windows and tolerated interruption; Roost any time after draining/checkpoint, target interruption at most ten minutes and safe rollback. | — |
-| <a id="rf-rel-017"></a>RF-REL-017 | — | accepted | DemoApp any time only without active live position/trading; expected full six-component deployment within 20 minutes, warning after 20, component diagnosis after 30, never timeout-only rollback; propose threshold changes, never silently extend. | supersedes [RF-OLD-002](#rf-old-002) |
-| <a id="rf-rel-018"></a>RF-REL-018 | — | accepted | Feature flags are required only when concrete risk warrants them, not on every change during the test stage. | supersedes [RF-OLD-005](#rf-old-005) |
+| <a id="rf-rel-017"></a>RF-REL-017 | — | accepted | DemoApp any time only without active live position/trading; expected full six-component deployment within 20 minutes, warning after 20, component diagnosis after 30, never timeout-only rollback; propose threshold changes, never silently extend. | current rule |
+| <a id="rf-rel-018"></a>RF-REL-018 | — | accepted | Feature flags are required only when concrete risk warrants them, not on every change during the test stage. | current rule |
 
 ## Readiness and staged activation
 
@@ -193,14 +195,14 @@ Gate/scope of enforcement: activation gates.
 | --- | --- | --- | --- | --- |
 | <a id="rf-act-001"></a>RF-ACT-001 | — | accepted | Keep execution disabled until applicable readiness gates pass; observer presence, docs, completed bootstrap batch and account keys do not activate agents. | — |
 | <a id="rf-act-002"></a>RF-ACT-002 | — | accepted | Before writing, run local synthetic end-to-end readiness and fault injection covering interruption/restart, lease expiry, reviewer rejection, missing resources, preserving work and preventing duplication. | — |
-| <a id="rf-act-003"></a>RF-ACT-003 | — | accepted | Before push/PR certify broker main protection; then one temporary owner-provided private GitHub repository and canonical folder exercise branch, commit, push, PR, review, merge, Coolify, health and rollback. | supersedes [RF-OLD-004](#rf-old-004) |
-| <a id="rf-act-004"></a>RF-ACT-004 | — | accepted | After temporary certification, remove only owned local clone/containers/Coolify app and archive test repository; recreate only after material host/process changes, never permanent playground. | supersedes [RF-OLD-004](#rf-old-004) |
+| <a id="rf-act-003"></a>RF-ACT-003 | — | accepted | Before push/PR certify broker main protection; then one temporary owner-provided private GitHub repository and canonical folder exercise branch, commit, push, PR, review, merge, Coolify, health and rollback. | current rule |
+| <a id="rf-act-004"></a>RF-ACT-004 | — | accepted | After temporary certification, remove only owned local clone/containers/Coolify app and archive test repository; recreate only after material host/process changes, never permanent playground. | current rule |
 | <a id="rf-act-005"></a>RF-ACT-005 | — | accepted | First real worker is read-only DemoApp Application Auditor: verify repo/docs/code/tests/Git/public health and report findings; no edits, Docker, branch, commit or exchange operation. | — |
 | <a id="rf-act-006"></a>RF-ACT-006 | — | accepted | Second worker is independent read-only Audit Verifier with fresh session and structured handoff; sample evidence, validate target and unchanged files/Git/processes/Docker, approve or return gaps. | — |
 | <a id="rf-act-007"></a>RF-ACT-007 | — | accepted | First write requires both canaries and one concise readiness report with proofs, exact capabilities, prohibitions, risks and recovery plus owner approval; select small reproducible reversible non-financial DemoApp bug. | — |
 | <a id="rf-act-008"></a>RF-ACT-008 | — | accepted | Unlock read-only, local write/test, push/PR, merge/deploy then higher risk only after evidence; after one-time write approval ordinary advancement is automatic, sensitive/live exceptions remain. | — |
 | <a id="rf-act-009"></a>RF-ACT-009 | — | accepted | Require three consecutive complete low-risk DemoApp successes with review, release and observation before medium risk; failure pauses advancement and independent analysis sets additional proof, not blind history reset. | — |
-| <a id="rf-act-010"></a>RF-ACT-010 | — | accepted | Each additional app gets its own audit, manifest, health contract and safe canary despite portable worker competencies. | supersedes [RF-OLD-009](#rf-old-009) |
+| <a id="rf-act-010"></a>RF-ACT-010 | — | accepted | Each additional app gets its own audit, manifest, health contract and safe canary despite portable worker competencies. | current rule |
 | <a id="rf-act-011"></a>RF-ACT-011 | — | accepted | Each implementation run audits current mechanisms then closes exactly one smallest highest-priority ready atomic gap; do not duplicate foundations or start a second gap. | — |
 
 ## DemoApp product and controlled integration tests (future native agents only)
@@ -215,15 +217,15 @@ Gate/scope of enforcement: after activation and relevant approval.
 | <a id="rf-demoapp-004"></a>RF-PILOT-004 | — | accepted | Deploy must not silently change mode/config or interrupt/duplicate trading; verify live positions/orders/processes, stop new orders and reconcile in-flight work before safe restart. | — |
 | <a id="rf-demoapp-005"></a>RF-PILOT-005 | — | accepted | Current test mandate is 10 USDT Binance Futures and 10 USDT Gate.io Futures; minimize losses, protect all spot assets; increased capital or spot scope needs new decision. | — |
 | <a id="rf-demoapp-006"></a>RF-PILOT-006 | — | accepted | No deposits, withdrawals or wallet transfers by DemoApp/agents; before first live test confirm once that BOTH exchange API keys lack withdrawal AND transfer rights, automatically if API supports else owner manual check. | — |
-| <a id="rf-demoapp-007"></a>RF-PILOT-007 | — | accepted | Every real-position live test requires fresh single-use owner consent bound to exchange, strategy, amount, duration, closing procedure and start window; owner confirms laptop available at least one hour; expiry/silence blocks. | supersedes [RF-OLD-001](#rf-old-001) |
-| <a id="rf-demoapp-008"></a>RF-PILOT-008 | — | accepted | Test only target DemoApp functions for open/manage/close/history; at most 60 minutes exposure, prompt closure and risk reduction preferred to price; no temporary watchdog/test-only app feature. | supersedes [RF-OLD-006](#rf-old-006) |
+| <a id="rf-demoapp-007"></a>RF-PILOT-007 | — | accepted | Every real-position live test requires fresh single-use owner consent bound to exchange, strategy, amount, duration, closing procedure and start window; owner confirms laptop available at least one hour; expiry/silence blocks. | current rule |
+| <a id="rf-demoapp-008"></a>RF-PILOT-008 | — | accepted | Test only target DemoApp functions for open/manage/close/history; at most 60 minutes exposure, prompt closure and risk reduction preferred to price; no temporary watchdog/test-only app feature. | current rule |
 | <a id="rf-demoapp-009"></a>RF-PILOT-009 | — | accepted | One position at a time, smallest market-supported size, at most 1 USDT margin, leverage at most 10x and confirmed isolated margin; impossible minima/unknown mode block or require new owner decision. | — |
-| <a id="rf-demoapp-010"></a>RF-PILOT-010 | — | accepted | Failed close or laptop interruption fails test, blocks further tests and may need owner manual close; never claim a temporary VPS watchdog will rescue it. | supersedes [RF-OLD-006](#rf-old-006) |
+| <a id="rf-demoapp-010"></a>RF-PILOT-010 | — | accepted | Failed close or laptop interruption fails test, blocks further tests and may need owner manual close; never claim a temporary VPS watchdog will rescue it. | current rule |
 | <a id="rf-demoapp-011"></a>RF-PILOT-011 | — | accepted | Before test verify no conflicting existing orders/position; after test reconcile exchange and DemoApp DB, history, fees, result, zero residual orders/position; certify Binance and Gate.io separately and sequentially. | — |
 | <a id="rf-demoapp-012"></a>RF-PILOT-012 | — | accepted | Same impacted code/config passes automatic tests, backtest and paper before proposing live; paper sample/time and pass conditions set in advance; technical correctness separate from investment performance. | — |
 | <a id="rf-demoapp-013"></a>RF-PILOT-013 | — | accepted | During repairs adjust strategy only to reproduce/test, not optimize profit; version test config, restore prior active config unless approved target; each run links ID, code, strategy and config to decisions/orders/results. | — |
 | <a id="rf-demoapp-014"></a>RF-PILOT-014 | — | accepted | After uncertain order response or reconnect reconcile exchange by order identifier before retry to avoid duplicated positions. | — |
-| <a id="rf-demoapp-015"></a>RF-PILOT-015 | — | accepted | Use separate application test accounts where feasible; external integrations specifically use owner real connected account in an isolated folder/list/tag or exact allowed operations. | supersedes [RF-OLD-003](#rf-old-003) |
+| <a id="rf-demoapp-015"></a>RF-PILOT-015 | — | accepted | Use separate application test accounts where feasible; external integrations specifically use owner real connected account in an isolated folder/list/tag or exact allowed operations. | current rule |
 | <a id="rf-demoapp-016"></a>RF-PILOT-016 | — | accepted | Mark integration artifacts with test ID and delete only artifacts created by that test unless retained by acceptance; respect rate/cost limits, extra charge requires budget decision. | — |
 | <a id="rf-demoapp-017"></a>RF-PILOT-017 | — | accepted | Test locally/mocked first, then local integration; use resource-bounded VPS gateway only for demonstrated callback/fixed-IP requirement within approved scope. | — |
 
@@ -254,7 +256,7 @@ Gate/scope of enforcement: nonblocking and disabled.
 | <a id="rf-def-003"></a>RF-DEF-003 | — | deferred | Investment optimization agent and its detailed mandate remain future decisions; current work only stabilizes/tests DemoApp. | — |
 | <a id="rf-def-004"></a>RF-DEF-004 | — | deferred | Changing workspace language after creation is deferred. | — |
 | <a id="rf-def-005"></a>RF-DEF-005 | — | deferred | External email/Telegram notifications are deferred; use Roost attention surfaces initially. | — |
-| <a id="rf-def-006"></a>RF-DEF-006 | — | deferred | Native Roost self-development, Constitution work and shutdown of both bootstrap automations remain deferred until separate owner decision. | supersedes [RF-OLD-011](#rf-old-011) |
+| <a id="rf-def-006"></a>RF-DEF-006 | — | deferred | Native Roost self-development, Constitution work and shutdown of both bootstrap automations remain deferred until separate owner decision. | current rule |
 
 ## Organization and product lifecycle
 
@@ -267,21 +269,3 @@ Gate/scope of enforcement: before related workflows.
 | <a id="rf-org-003"></a>RF-ORG-003 | — | accepted | Applications progress concept/prototype/stabilization/market readiness/product-service/maintenance using evidence and one shared application identity across departments. | — |
 | <a id="rf-org-004"></a>RF-ORG-004 | — | accepted | Postmortem has one accountable owner and independent domain reviewers; author contributes evidence but cannot unilaterally change own instructions or company process. | — |
 | <a id="rf-org-005"></a>RF-ORG-005 | — | accepted | Classify legacy product assumptions before migration; Roost owns approved company/product context, repositories own current technical architecture/tests; retain provenance without mechanical copy. | — |
-
-## Historical superseded policies
-
-Gate/scope of enforcement: not active.
-
-| ID | Reference | Decision | Requirement and acceptance clauses | Supersession |
-| --- | --- | --- | --- | --- |
-| <a id="rf-old-001"></a>RF-OLD-001 | — | superseded | Live tests may start without a fresh test-specific owner consent. | replaced by [RF-PILOT-007](#rf-demoapp-007) |
-| <a id="rf-old-002"></a>RF-OLD-002 | — | superseded | DemoApp deployment target interruption is at most ten minutes. | replaced by [RF-REL-017](#rf-rel-017) |
-| <a id="rf-old-003"></a>RF-OLD-003 | — | superseded | External integrations should default to separate test accounts/sandbox. | replaced by [RF-PILOT-015](#rf-demoapp-015) |
-| <a id="rf-old-004"></a>RF-OLD-004 | — | superseded | Keep a permanent Roost certification playground. | replaced by [RF-ACT-003](#rf-act-003); replaced by [RF-ACT-004](#rf-act-004) |
-| <a id="rf-old-005"></a>RF-OLD-005 | — | superseded | Every new or risky feature must ship disabled behind a feature flag. | replaced by [RF-REL-018](#rf-rel-018) |
-| <a id="rf-old-006"></a>RF-OLD-006 | — | superseded | Add temporary DemoApp/VPS watchdog to close test positions on timeout or laptop loss. | replaced by [RF-PILOT-008](#rf-demoapp-008); replaced by [RF-PILOT-010](#rf-demoapp-010) |
-| <a id="rf-old-007"></a>RF-OLD-007 | — | superseded | Send incremental individual interview answers directly to active implementation. | replaced by [RF-GOV-016](#rf-gov-016) |
-| <a id="rf-old-008"></a>RF-OLD-008 | — | superseded | Use separate execution worktrees/clones and a writer limit per repository. | replaced by [RF-HOST-002](#rf-host-002); replaced by [RF-HOST-004](#rf-host-004) |
-| <a id="rf-old-009"></a>RF-OLD-009 | — | superseded | Repeat full worker competency certification for each new application. | replaced by [RF-GOV-010](#rf-gov-010); replaced by [RF-ACT-010](#rf-act-010) |
-| <a id="rf-old-010"></a>RF-OLD-010 | — | superseded | Never copy any production database to the laptop under any circumstance. | replaced by [RF-RES-005](#rf-res-005) |
-| <a id="rf-old-011"></a>RF-OLD-011 | — | superseded | Finish native Roost self-development and Constitution and retire bootstrap automations before foundations proceed. | replaced by [RF-DEF-006](#rf-def-006) |

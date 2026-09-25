@@ -875,8 +875,8 @@ Two natural-use cycles passed after owner recovery; healthy Running is allowed.
 The separate pinned-install prerequisite verdict does not activate execution.
 
 
-Version: ROOST-INTERVIEW-FOUNDATION-V2. Audit baseline: `36be71bcef2dced598f41f6377724741f4eb2107`.
-Decision authority and cutoff: [frozen requirements registry](../product/interview-foundation-v2.md).
+Version: ROOST-REQUIREMENTS. Audit baseline: `36be71bcef2dced598f41f6377724741f4eb2107`.
+Decision authority: [current accepted requirements](../product/requirements.md).
 One row per stable requirement; repeated interview approvals share acceptance clauses.
 This matrix is product verification truth, not a task board or execution history.
 
@@ -933,168 +933,157 @@ stays disabled and the canonical host stays observe.
 
 | Requirement | Priority | Status | Inspected evidence | Remaining boundary / proof |
 | --- | --- | --- | --- | --- |
-| [RF-GOV-001](../product/interview-foundation-v2.md#rf-gov-001) | P0 | częściowo działa | [GOV](#e-gov) | No complete delegated-mandate enforcement. |
-| [RF-GOV-002](../product/interview-foundation-v2.md#rf-gov-002) | P1 | częściowo działa | [GOAL](#e-goal) | CRUD exists; orphan, duplicate and owner-intent guards incomplete. |
-| [RF-GOV-003](../product/interview-foundation-v2.md#rf-gov-003) | P1 | częściowo działa | [ORG](#e-org) | Registry exists; peer authority and manager configuration need verification. |
-| [RF-GOV-004](../product/interview-foundation-v2.md#rf-gov-004) | P0 | częściowo działa | [ORG](#e-org) | Current multi-department workforce needs accountable-department semantics. |
-| [RF-GOV-005](../product/interview-foundation-v2.md#rf-gov-005) | P1 | częściowo działa | [ORG](#e-org) | Organizational relations exist without enforced routing. |
-| [RF-GOV-006](../product/interview-foundation-v2.md#rf-gov-006) | P1 | częściowo działa | [ORG](#e-org) | Workforce and ephemeral sessions exist; lifecycle orchestration incomplete. |
-| [RF-GOV-007](../product/interview-foundation-v2.md#rf-gov-007) | P1 | częściowo działa | [ORG](#e-org) | Role records exist; catalog coverage and activation process unverified. |
-| [RF-GOV-008](../product/interview-foundation-v2.md#rf-gov-008) | P1 | częściowo działa | [ORG](#e-org) | Missing enforced HR qualification flow. |
-| [RF-GOV-009](../product/interview-foundation-v2.md#rf-gov-009) | P1 | brak | [ORG](#e-org) | No verified evaluation or remediation engine. |
-| [RF-GOV-010](../product/interview-foundation-v2.md#rf-gov-010) | P1 | brak | [ORG](#e-org) | No competency certification lifecycle. |
-| [RF-GOV-011](../product/interview-foundation-v2.md#rf-gov-011) | P1 | częściowo działa | [ORG](#e-org) | Role data does not enforce separation. |
-| [RF-GOV-012](../product/interview-foundation-v2.md#rf-gov-012) | P1 | częściowo działa | [ORG](#e-org) | Profile configuration and allocation unverified. |
-| [RF-GOV-013](../product/interview-foundation-v2.md#rf-gov-013) | P1 | brak | [SCHED](#e-sched) | No governed subagent scheduler. |
-| [RF-GOV-014](../product/interview-foundation-v2.md#rf-gov-014) | P0 | częściowo działa | [AUTH](#e-auth) | Immutable workforce-bound keys and current DB principal checks govern native review/manager commands, with expiry, atomic rotation, revocation and agent/credential audit. Other legacy command classes remain outside this slice; native review writes also require RF-SEC-003 task grants. |
-| [RF-GOV-015](../product/interview-foundation-v2.md#rf-gov-015) | P0 | działa | [GOV](#e-gov) | Boundary is governing policy; no DemoApp change authorized. |
-| [RF-GOV-016](../product/interview-foundation-v2.md#rf-gov-016) | P0 | działa | [GOV](#e-gov) | Closed-batch contract governs this delivery. |
-| [RF-GOV-017](../product/interview-foundation-v2.md#rf-gov-017) | P0 | działa | [DOC](#e-doc) | 162 stable requirements, decision status and supersession links; all 162 mapped to inspected evidence and limitations in this V2 registry. |
-| [RF-GOV-018](../product/interview-foundation-v2.md#rf-gov-018) | P0 | działa | [GOV](#e-gov) | Governance boundary, not a new runtime feature. |
-| [RF-GOV-019](../product/interview-foundation-v2.md#rf-gov-019) | P0 | działa | [PORT](#e-port) | Current code/config boundary from 36be71bc retained. |
-| [RF-GOV-020](../product/interview-foundation-v2.md#rf-gov-020) | P0 | częściowo działa | [AUDIT](#e-audit) | Events exist; generic records/evidence remain mutable. |
-| [RF-CTX-001](../product/interview-foundation-v2.md#rf-ctx-001) | P0 | częściowo działa | [PACKET](#e-packet) | Structural packet works; semantic completeness and full compiler remain partial. |
-| [RF-CTX-002](../product/interview-foundation-v2.md#rf-ctx-002) | P0 | częściowo działa | [CTX](#e-ctx) | Source precedence documented, not enforced throughout compilation. |
-| [RF-CTX-003](../product/interview-foundation-v2.md#rf-ctx-003) | P0 | częściowo działa | [CTX](#e-ctx) | Record/evidence models exist; epistemic labeling not uniformly enforced. |
-| [RF-CTX-004](../product/interview-foundation-v2.md#rf-ctx-004) | P0 | częściowo działa | [PACKET](#e-packet) | Application context exists; validated full manifest absent. |
-| [RF-CTX-005](../product/interview-foundation-v2.md#rf-ctx-005) | P0 | częściowo działa | [PACKET](#e-packet) | Packet references versions; complete layered selection/reason trace missing. |
-| [RF-CTX-006](../product/interview-foundation-v2.md#rf-ctx-006) | P0 | częściowo działa | [PACKET](#e-packet) | Ready invalidation and active-attempt fencing stop work at observed checkpoint/event/heartbeat boundaries; late authority and restart are rejected. Arbitrary internal runner operations/OS freezes and atomic database-to-spawn remain outside the guarantee; no live provider proof. |
-| [RF-CTX-007](../product/interview-foundation-v2.md#rf-ctx-007) | P1 | brak | [CTX](#e-ctx) | No runtime context expansion protocol. |
-| [RF-CTX-008](../product/interview-foundation-v2.md#rf-ctx-008) | P0 | działa | [SUBMIT](#e-submit) | Within the supervised runtime, only the explicit versioned/idempotent Submit command grants Ready after validation. Draft/Needs context/Needs decision are durable; create/assign/edit/import and alternate database writes cannot admit work. Automatic interviews and semantic completeness belong to separate requirements. |
-| [RF-CTX-009](../product/interview-foundation-v2.md#rf-ctx-009) | P0 | częściowo działa | [TASK](#e-task), [single-task contract](execution-packet-contract.md#single-task-scope-rf-ctx-009), `scripts/agent-host-single-task.test.mjs`, `src/tests/api.test.ts`, `scripts/task-readiness-ui.test.mjs` | Submit requires one resolved app/component, manager, executor, measured result and deterministic branch; bounded shared-cause exception is visible/auditable. API/DB/host gates, legacy invalidation and source revision checks prevent ordinary bypass. Structural and PL/EN ambiguity checks do not prove arbitrary prose semantics; independent acceptance/role separation remains RF-CTX-010. |
-| [RF-CTX-010](../product/interview-foundation-v2.md#rf-ctx-010) | P0 | częściowo działa | [role contract](execution-packet-contract.md#explicit-task-roles-rf-ctx-010), `scripts/lib/agent-host-task-roles.mjs`, `src/modules/agent-runtime/task-role-context.ts`, `src/tests/api.test.ts`, `scripts/agent-host-task-roles.test.mjs`, `scripts/task-roles-migration.test.mjs`, `scripts/task-readiness-ui.test.mjs` | Submit resolves five current roles, immutable human origin and accepted author history; API/DB/host reject self-review/self-release and stale authority. Membership/profile edits invalidate Ready. Declared mandates/skills do not certify qualifications or bind runtime credentials; review/return and release execution remain absent. |
-| [RF-CTX-011](../product/interview-foundation-v2.md#rf-ctx-011) | P1 | częściowo działa | [PROC](#e-proc) | Registry primitives exist; task-type execution contract incomplete. |
-| [RF-CTX-012](../product/interview-foundation-v2.md#rf-ctx-012) | P0 | częściowo działa | [versioned composition](versioned-procedure-composition.md), `procedure-composition.ts`, API/DB and host/UI tests | Native immutable base/extension contracts, deterministic composition, exact expiring independent-owner exceptions and Ready/packet/host pins work. Automatic procedure execution and company-wide workflow coverage remain outside this boundary. |
-| [RF-CTX-013](../product/interview-foundation-v2.md#rf-ctx-013) | P0 | częściowo działa | [typed handoff](typed-work-handoff.md), `task-handoff.ts`, contract/API/DB/UI tests | Native immutable execution/material handoff, exact role/principal receipt, typed rejection and superseding versions work under current risk, redaction and task-scoped agent grants. Source references are validated; independent Git/test attestation, receiver invocation and external conversation coverage remain separate. |
-| [RF-CTX-014](../product/interview-foundation-v2.md#rf-ctx-014) | P0 | częściowo działa | [native review contract](task-review-workflow.md), `src/modules/agent-runtime/task-review.ts`, `src/tests/api.test.ts`, `scripts/task-review-ui.test.mjs`, `scripts/task-review-migration.test.mjs` | Current human or credential-bound agent verifier records versioned approve/reject; manager returns scoped work or creates one dependent specialist draft. Append-only history, role/DB guards, correction Submit, stale/concurrent/restart and UI paths verified. Automated reviewer invocation and artifact/Git attestation remain separate. |
-| [RF-CTX-015](../product/interview-foundation-v2.md#rf-ctx-015) | P1 | częściowo działa | [governed clarification](governed-task-clarification.md), `src/modules/agent-runtime/task-clarification.ts`, `src/tests/api.test.ts`, `scripts/task-clarification-ui.test.mjs` | Native append-only typed conversations bind current task-role principals and canonical same-application task relations; exact grants, read/reply receipts, superseding corrections, material notices and deterministic execution receipts are implemented. External delivery, automatic routing, semantic material inference and independent artifact attestation remain outside this contract. |
-| [RF-CTX-016](../product/interview-foundation-v2.md#rf-ctx-016) | P1 | częściowo działa | [DEC](#e-dec) | Native versioned material-question cases, scoped owner answer → Decision proposal → separate acceptance and dependency Ready fences; see [contract](material-unknown-interviews.md). Full hierarchy and semantic/model orchestration remain outside this slice. |
-| [RF-CTX-017](../product/interview-foundation-v2.md#rf-ctx-017) | P0 | częściowo działa | [DEC](#e-dec) | Native immutable supersession, exact declared conflicts, directional impact previews, separately gated owner acceptance, scoped Ready/active-work invalidation and typed event-based reopening are implemented; see [contract](decision-supersession-impact.md). Semantic company-wide discovery, hierarchy authority and automatic external event delivery remain outside this slice. |
-| [RF-CTX-018](../product/interview-foundation-v2.md#rf-ctx-018) | P0 | częściowo działa | [DEC](#e-dec) | Native typed owner reservations, versioned exact mandates, shortest workforce routes, expiry/revocation fences and Decision/interview/Ready/review integration: [contract](delegated-decision-authority.md). Semantic inference and company-wide delegation remain outside this bounded implementation. |
-| [RF-CTX-019](../product/interview-foundation-v2.md#rf-ctx-019) | P1 | częściowo działa | [TASK](#e-task) | Records/relations exist; execution enforcement incomplete. |
-| [RF-CTX-020](../product/interview-foundation-v2.md#rf-ctx-020) | P1 | częściowo działa | [LEARN](#e-learn) | Knowledge/standard records exist; promotion/eval loop absent. |
-| [RF-CTX-021](../product/interview-foundation-v2.md#rf-ctx-021) | P0 | działa | [FIND](#e-find) | Versioned Finding verification, independent adjudication and idempotent native-task triage implemented; no autonomy activation. |
-| [RF-CTX-022](../product/interview-foundation-v2.md#rf-ctx-022) | P1 | brak | [FIND](#e-find) | No complete prioritization rule engine. |
-| [RF-CTX-023](../product/interview-foundation-v2.md#rf-ctx-023) | P1 | brak | [FIND](#e-find) | DemoApp audit not executed. |
-| [RF-CTX-024](../product/interview-foundation-v2.md#rf-ctx-024) | P1 | brak | [CTX](#e-ctx) | No automated provenance/license release gate. |
-| [RF-CTX-025](../product/interview-foundation-v2.md#rf-ctx-025) | P1 | brak | [REVIEW](#e-review) | No dispute protocol. |
-| [RF-HOST-001](../product/interview-foundation-v2.md#rf-host-001) | P0 | częściowo działa | [HOST](#e-host) | Queue/observer implemented; full scheduler pending. |
-| [RF-HOST-002](../product/interview-foundation-v2.md#rf-host-002) | P0 | częściowo działa | [LOCK](#e-lock) | Global writer lock works; waiting/read resource admission absent. |
-| [RF-HOST-003](../product/interview-foundation-v2.md#rf-host-003) | P0 | częściowo działa | [RECOVERY](#e-recovery) | Pre-spawn recovery implemented; after-spawn recovery deliberately blocked. |
-| [RF-HOST-004](../product/interview-foundation-v2.md#rf-host-004) | P0 | częściowo działa | [WORKSPACE](#e-workspace) | Path/origin guard exists; full clean-main and unknown-change admission absent. |
-| [RF-HOST-005](../product/interview-foundation-v2.md#rf-host-005) | P1 | częściowo działa | [WORKSPACE](#e-workspace) | No governed branch lifecycle or WIP broker. |
-| [RF-HOST-006](../product/interview-foundation-v2.md#rf-host-006) | P0 | częściowo działa | [LEASE](#e-lease) | Lease/process-tree and durable spawn barriers exist; all operation checkpoints incomplete. |
-| [RF-HOST-007](../product/interview-foundation-v2.md#rf-host-007) | P0 | częściowo działa | [OBSERVER](#e-observer) | Console-free GUI launcher and synthetic action-start retry verified; real relogin/reboot and forced-crash restart unproven. |
-| [RF-HOST-008](../product/interview-foundation-v2.md#rf-host-008) | P1 | brak | [HOST](#e-host) | No signed update protocol. |
-| [RF-HOST-009](../product/interview-foundation-v2.md#rf-host-009) | P0 | częściowo działa | [SCHED](#e-sched) | Existing claim is FIFO, not readiness/priority scheduler. |
-| [RF-HOST-010](../product/interview-foundation-v2.md#rf-host-010) | P0 | częściowo działa | [BUDGET](#e-budget) | Attempts/duration validated and contained; output tokens fail closed before Codex spawn because an execution-wide enforcing interface is unproven. Synthetic exhaustion/recovery fencing tested. Usable provider hard cap, cost enforcement and independent new-budget approval remain missing. |
-| [RF-HOST-011](../product/interview-foundation-v2.md#rf-host-011) | P1 | częściowo działa | [BUDGET](#e-budget) | Bounded provider transport retry is distinguished from task retry. One CLI/turn retains input/attempt/deadline; terminal or incomplete output is non-retryable. Retry counts and partial usage remain unknown when unexposed. General execution loop breaker absent. |
-| [RF-HOST-012](../product/interview-foundation-v2.md#rf-host-012) | P1 | częściowo działa | [BUDGET](#e-budget) | Usage stored per execution; attribution and quality-constrained optimization absent. |
-| [RF-HOST-013](../product/interview-foundation-v2.md#rf-host-013) | P0 | brak | [RESOURCE](#e-resource) | No resource-aware host/service-operation broker. |
-| [RF-HOST-014](../product/interview-foundation-v2.md#rf-host-014) | P0 | częściowo działa | [PROTOCOL](#e-protocol) | Host/API admission before recovery/claim/spawn implemented; coordinated backend/UI/schema drain/update/rollback remains missing. |
-| [RF-HOST-015](../product/interview-foundation-v2.md#rf-host-015) | P1 | częściowo działa | [AUTH](#e-auth) | Host identity and scoped provisioning exist; interactive pairing absent. |
-| [RF-HOST-016](../product/interview-foundation-v2.md#rf-host-016) | P0 | działa | [MODEL](#e-model) | Explicit allowlist/pair validation and exact argv verified by synthetic host tests; no provider call/activation. Full routing/observed usage remain RF-HOST-017/018. |
-| [RF-HOST-017](../product/interview-foundation-v2.md#rf-host-017) | P1 | brak | [MODEL](#e-model) | No stage router, minima, availability or override UI. |
-| [RF-HOST-018](../product/interview-foundation-v2.md#rf-host-018) | P1 | częściowo działa | [MODEL](#e-model) | No model/effort execution evidence. |
-| [RF-HOST-019](../product/interview-foundation-v2.md#rf-host-019) | P0 | częściowo działa | [PACKET](#e-packet) | Prompt marks context untrusted; no comprehensive quarantine/reporting. |
-| [RF-HOST-020](../product/interview-foundation-v2.md#rf-host-020) | P0 | częściowo działa | [WORKSPACE](#e-workspace) | Workspace-write sandbox is not read isolation; browser/session broker absent. |
-| [RF-SEC-001](../product/interview-foundation-v2.md#rf-sec-001) | P0 | częściowo działa | [RISK](#e-risk) | [Bounded native assessment](native-task-risk.md) computes seven-dimension maximum, uncertainty and cumulative canonical task groups; binds Ready/execution/grants. Company-wide automated risk discovery remains absent. |
-| [RF-SEC-002](../product/interview-foundation-v2.md#rf-sec-002) | P0 | częściowo działa | [native risk admission](native-risk-admission.md), `task-risk-admission.ts`, `src/tests/api.test.ts`, `scripts/task-risk-admission-ui.test.mjs` | Native level-specific procedure/review/mandate/backup/restore/owner gates bind exact operation and current evidence; API/DB/host fences and PL/EN UI are implemented. External fact attestation, release brokerage and company-wide coverage remain absent. |
-| [RF-SEC-003](../product/interview-foundation-v2.md#rf-sec-003) | P0 | częściowo działa | [BROKER](#e-broker) | Durable exact task/agent/credential/application/operation/time grants govern the three native review commands, with human issue/revoke, atomic use receipts and context invalidation. General sensitive-tool/secrets brokering, risk and automatic issuance remain absent. |
-| [RF-SEC-004](../product/interview-foundation-v2.md#rf-sec-004) | P0 | częściowo działa | [REDACTION](#e-redaction) | Shared native runtime policy gates required model/checkpoint input and sanitizes diagnostics/projections with safe deduplicated incidents. Whole-Roost DLP, arbitrary encodings/files and historical cleanup remain outside this slice. |
-| [RF-SEC-005](../product/interview-foundation-v2.md#rf-sec-005) | P0 | częściowo działa | [Worker read-only MCP broker](worker-readonly-mcp-broker.md), `scripts/agent-host-mcp-broker.test.mjs` | Synthetic proof for exact pinned reads, attempt capability, limits and stop; no general tool/network/install broker, native Hermes containment or live/model proof. Observer and Hermes execution remain disabled for this path. |
-| [RF-SEC-006](../product/interview-foundation-v2.md#rf-sec-006) | P0 | częściowo działa | [BROKER](#e-broker) | Workspace scoping exists, not field-level diagnostic access. |
-| [RF-SEC-007](../product/interview-foundation-v2.md#rf-sec-007) | P0 | brak | [REVIEW](#e-review) | No mandatory security-review or emergency-exception lifecycle. |
-| [RF-SEC-008](../product/interview-foundation-v2.md#rf-sec-008) | P0 | częściowo działa | [BROKER](#e-broker) | Environment schema and encrypted integration settings exist; dependency gating incomplete. |
-| [RF-SEC-009](../product/interview-foundation-v2.md#rf-sec-009) | P1 | częściowo działa | [AUTH](#e-auth) | Membership/invitation role checks exist; finer project/decision mandates incomplete. |
-| [RF-SEC-010](../product/interview-foundation-v2.md#rf-sec-010) | P0 | brak | [HEALTH](#e-health) | No generic application-health contract runner. |
-| [RF-SEC-011](../product/interview-foundation-v2.md#rf-sec-011) | P0 | częściowo działa | [IDEMP](#e-idemp) | Some provider inbox/execution CAS dedup exists; universal operation receipts absent. |
-| [RF-SEC-012](../product/interview-foundation-v2.md#rf-sec-012) | P0 | częściowo działa | [INCIDENT](#e-incident) | Exact native capability suspension, independent versioned remediation verification, explicit owner restore and manual-intervention reread/replan are enforced. General risk classification and external broker containment remain absent. |
-| [RF-RES-001](../product/interview-foundation-v2.md#rf-res-001) | P0 | częściowo działa | [RESOURCE](#e-resource) | Host repo allowlist exists; full runtime resource manifest absent. |
-| [RF-RES-002](../product/interview-foundation-v2.md#rf-res-002) | P0 | brak | [RESOURCE](#e-resource) | No ownership-aware service lifecycle. |
-| [RF-RES-003](../product/interview-foundation-v2.md#rf-res-003) | P0 | brak | [BACKUP](#e-backup) | No governed volume-operation gate. |
-| [RF-RES-004](../product/interview-foundation-v2.md#rf-res-004) | P0 | częściowo działa | [BACKUP](#e-backup) | Operational instructions exist; automated verification/rotation unproven. |
-| [RF-RES-005](../product/interview-foundation-v2.md#rf-res-005) | P0 | brak | [BACKUP](#e-backup) | No verified encrypted sync/restore implementation; later Roost-only exception to earlier no-DB-download rule. |
-| [RF-RES-006](../product/interview-foundation-v2.md#rf-res-006) | P1 | brak | [BACKUP](#e-backup) | No recovery-code setup flow. |
-| [RF-RES-007](../product/interview-foundation-v2.md#rf-res-007) | P0 | brak | [RESOURCE](#e-resource) | No shared release resource admission. |
-| [RF-RES-008](../product/interview-foundation-v2.md#rf-res-008) | P1 | działa | [GOV](#e-gov) | Boundary retained; no new cleanup mechanism. |
-| [RF-REL-001](../product/interview-foundation-v2.md#rf-rel-001) | P0 | brak | [RELEASE](#e-release) | No native Git/PR/merge broker. |
-| [RF-REL-002](../product/interview-foundation-v2.md#rf-rel-002) | P0 | działa | [GOV](#e-gov) | Governing prohibition retained. |
-| [RF-REL-003](../product/interview-foundation-v2.md#rf-rel-003) | P0 | brak | [REVIEW](#e-review) | No independent review orchestrator. |
-| [RF-REL-004](../product/interview-foundation-v2.md#rf-rel-004) | P0 | brak | [RELEASE](#e-release) | No exact-commit release authorization. |
-| [RF-REL-005](../product/interview-foundation-v2.md#rf-rel-005) | P0 | częściowo działa | [RELEASE](#e-release) | Bootstrap workflow exists; native completion gate absent. |
-| [RF-REL-006](../product/interview-foundation-v2.md#rf-rel-006) | P0 | brak | [HEALTH](#e-health) | No automated baseline-aware observation gate. |
-| [RF-REL-007](../product/interview-foundation-v2.md#rf-rel-007) | P0 | brak | [RELEASE](#e-release) | Current health exposes commit; image identity/rollback manifest not proven. |
-| [RF-REL-008](../product/interview-foundation-v2.md#rf-rel-008) | P0 | brak | [RELEASE](#e-release) | Manual operations docs exist; automatic rollback absent. |
-| [RF-REL-009](../product/interview-foundation-v2.md#rf-rel-009) | P1 | brak | [HEALTH](#e-health) | No continuous multi-app monitoring worker. |
-| [RF-REL-010](../product/interview-foundation-v2.md#rf-rel-010) | P0 | brak | [HEALTH](#e-health) | No verified per-app safety certification. |
-| [RF-REL-011](../product/interview-foundation-v2.md#rf-rel-011) | P0 | częściowo działa | [TEST](#e-test) | Repository tests exist; risk-based native test gate absent. |
-| [RF-REL-012](../product/interview-foundation-v2.md#rf-rel-012) | P1 | brak | [TEST](#e-test) | Bootstrap skill workflow exists; native enforcement absent. |
-| [RF-REL-013](../product/interview-foundation-v2.md#rf-rel-013) | P0 | częściowo działa | [TEST](#e-test) | API tests exist; compatibility release gate incomplete. |
-| [RF-REL-014](../product/interview-foundation-v2.md#rf-rel-014) | P0 | brak | [RELEASE](#e-release) | No desired-state reconciliation service. |
-| [RF-REL-015](../product/interview-foundation-v2.md#rf-rel-015) | P0 | częściowo działa | [HEALTH](#e-health) | Roost public health/build exists; complete app contracts absent. |
-| [RF-REL-016](../product/interview-foundation-v2.md#rf-rel-016) | P1 | brak | [RELEASE](#e-release) | No scheduler-enforced windows or drain. |
-| [RF-REL-017](../product/interview-foundation-v2.md#rf-rel-017) | P1 | brak | [RELEASE](#e-release) | Future DemoApp release configuration, not implemented here. |
-| [RF-REL-018](../product/interview-foundation-v2.md#rf-rel-018) | P1 | działa | [GOV](#e-gov) | Risk-based target policy retained. |
-| [RF-ACT-001](../product/interview-foundation-v2.md#rf-act-001) | P0 | częściowo działa | [HOST](#e-host) | Default execution flag works; formal staged readiness state absent. |
-| [RF-ACT-002](../product/interview-foundation-v2.md#rf-act-002) | P0 | częściowo działa | [DRY](#e-dry) | Lease/recovery fixture tests exist; complete dry-run certification absent. |
-| [RF-ACT-003](../product/interview-foundation-v2.md#rf-act-003) | P0 | brak | [RELEASE](#e-release) | Needs broker and passed local dry run; ask owner for repo/folder only at that stage. |
-| [RF-ACT-004](../product/interview-foundation-v2.md#rf-act-004) | P1 | brak | [RESOURCE](#e-resource) | Not yet reached; no resources created. |
-| [RF-ACT-005](../product/interview-foundation-v2.md#rf-act-005) | P0 | brak | [AUDITOR](#e-auditor) | Current supervised host only has workspace-write; read-only canary absent. |
-| [RF-ACT-006](../product/interview-foundation-v2.md#rf-act-006) | P0 | brak | [AUDITOR](#e-auditor) | No two-stage canary orchestration. |
-| [RF-ACT-007](../product/interview-foundation-v2.md#rf-act-007) | P0 | brak | [ACT](#e-act) | No readiness report or activation authorization state machine. |
-| [RF-ACT-008](../product/interview-foundation-v2.md#rf-act-008) | P1 | brak | [ACT](#e-act) | No capability progression lifecycle. |
-| [RF-ACT-009](../product/interview-foundation-v2.md#rf-act-009) | P1 | brak | [ACT](#e-act) | No probation counters/certification. |
-| [RF-ACT-010](../product/interview-foundation-v2.md#rf-act-010) | P1 | brak | [ACT](#e-act) | No app-onboarding readiness procedure. |
-| [RF-ACT-011](../product/interview-foundation-v2.md#rf-act-011) | P0 | działa | [GOV](#e-gov) | This batch is registry plus one runtime gap; future runs require scoped readiness selection. |
-| [RF-PILOT-001](../product/interview-foundation-v2.md#rf-demoapp-001) | P1 | wymaga konfiguracji | [PILOT](#e-demoapp) | Mapping declared; full product card and production baseline need audit. |
-| [RF-PILOT-002](../product/interview-foundation-v2.md#rf-demoapp-002) | P1 | brak | [PILOT](#e-demoapp) | No DemoApp code audit in this batch. |
-| [RF-PILOT-003](../product/interview-foundation-v2.md#rf-demoapp-003) | P1 | brak | [PILOT](#e-demoapp) | Future DemoApp acceptance; not verified. |
-| [RF-PILOT-004](../product/interview-foundation-v2.md#rf-demoapp-004) | P0 | brak | [PILOT](#e-demoapp) | Future application-safe-deploy gate; no DemoApp modification. |
-| [RF-PILOT-005](../product/interview-foundation-v2.md#rf-demoapp-005) | P0 | wymaga konfiguracji | [PILOT](#e-demoapp) | Owner mandate recorded; never treat balance as enforcement. |
-| [RF-PILOT-006](../product/interview-foundation-v2.md#rf-demoapp-006) | P0 | wymaga konfiguracji | [PILOT](#e-demoapp) | Required confirmation not obtained from exchanges; no live permission granted here. |
-| [RF-PILOT-007](../product/interview-foundation-v2.md#rf-demoapp-007) | P0 | brak | [PILOT](#e-demoapp) | Supersedes unrestricted live-test approval; no consent issued in this batch. |
-| [RF-PILOT-008](../product/interview-foundation-v2.md#rf-demoapp-008) | P0 | wymaga konfiguracji | [PILOT](#e-demoapp) | No guarantee of autonomous closure claimed; native strategy/risk configuration must be verified. |
-| [RF-PILOT-009](../product/interview-foundation-v2.md#rf-demoapp-009) | P0 | wymaga konfiguracji | [PILOT](#e-demoapp) | Limits are mandates, not verified exchange settings. |
-| [RF-PILOT-010](../product/interview-foundation-v2.md#rf-demoapp-010) | P0 | brak | [PILOT](#e-demoapp) | Target test failure procedure absent. |
-| [RF-PILOT-011](../product/interview-foundation-v2.md#rf-demoapp-011) | P0 | brak | [PILOT](#e-demoapp) | No live or production trading test run. |
-| [RF-PILOT-012](../product/interview-foundation-v2.md#rf-demoapp-012) | P0 | brak | [PILOT](#e-demoapp) | Certification evidence not established. |
-| [RF-PILOT-013](../product/interview-foundation-v2.md#rf-demoapp-013) | P1 | brak | [PILOT](#e-demoapp) | Future DemoApp controlled test lifecycle. |
-| [RF-PILOT-014](../product/interview-foundation-v2.md#rf-demoapp-014) | P0 | brak | [PILOT](#e-demoapp) | Future DemoApp idempotency proof required. |
-| [RF-PILOT-015](../product/interview-foundation-v2.md#rf-demoapp-015) | P1 | częściowo działa | [INTEGRATION](#e-integration) | Connectors exist; test-scope admission incomplete. |
-| [RF-PILOT-016](../product/interview-foundation-v2.md#rf-demoapp-016) | P0 | częściowo działa | [INTEGRATION](#e-integration) | Provider operations exist; generic test ownership/cost guard absent. |
-| [RF-PILOT-017](../product/interview-foundation-v2.md#rf-demoapp-017) | P1 | brak | [INTEGRATION](#e-integration) | No generic integration test ladder controller. |
-| [RF-UX-001](../product/interview-foundation-v2.md#rf-ux-001) | P1 | częściowo działa | [ATTENTION](#e-attention) | Dashboards/events exist; unified attention lifecycle incomplete. |
-| [RF-UX-002](../product/interview-foundation-v2.md#rf-ux-002) | P1 | częściowo działa | [ATTENTION](#e-attention) | Execution timeline exists; complete explainable evidence view partial. |
-| [RF-UX-003](../product/interview-foundation-v2.md#rf-ux-003) | P0 | częściowo działa | [HOST](#e-host) | Cancel and observer stop exist; full owner controls absent. |
-| [RF-UX-004](../product/interview-foundation-v2.md#rf-ux-004) | P1 | częściowo działa | [AUDIT](#e-audit) | Ignored evidence guard exists; runtime log retention not implemented. |
-| [RF-UX-005](../product/interview-foundation-v2.md#rf-ux-005) | P1 | brak | [LANG](#e-lang) | UI localStorage locale only; account communication/workspace settings missing. |
-| [RF-UX-006](../product/interview-foundation-v2.md#rf-ux-006) | P0 | brak | [LANG](#e-lang) | Workspace schema lacks language. |
-| [RF-UX-007](../product/interview-foundation-v2.md#rf-ux-007) | P1 | częściowo działa | [LANG](#e-lang) | PL/EN and fallback exist; missing-key finding and account persistence incomplete. |
-| [RF-UX-008](../product/interview-foundation-v2.md#rf-ux-008) | P1 | brak | [TIME](#e-time) | DateTime storage exists; user/workspace timezone settings absent. |
-| [RF-UX-009](../product/interview-foundation-v2.md#rf-ux-009) | P1 | brak | [TIME](#e-time) | No native timezone-aware recurring task scheduler. |
-| [RF-DEF-001](../product/interview-foundation-v2.md#rf-def-001) | P2 | brak | [AUTH](#e-auth) | Deferred; do not add an activation gate. |
-| [RF-DEF-002](../product/interview-foundation-v2.md#rf-def-002) | P2 | brak | [RELEASE](#e-release) | Deferred; current constraints remain valid. |
-| [RF-DEF-003](../product/interview-foundation-v2.md#rf-def-003) | P2 | brak | [PILOT](#e-demoapp) | Deferred; no optimization worker activated. |
-| [RF-DEF-004](../product/interview-foundation-v2.md#rf-def-004) | P2 | brak | [LANG](#e-lang) | Deferred; creation choice remains immutable. |
-| [RF-DEF-005](../product/interview-foundation-v2.md#rf-def-005) | P2 | brak | [ATTENTION](#e-attention) | Deferred; no external notification channel activation. |
-| [RF-DEF-006](../product/interview-foundation-v2.md#rf-def-006) | P2 | brak | [GOV](#e-gov) | Deferred; neither automation is retired by this batch. |
-| [RF-ORG-001](../product/interview-foundation-v2.md#rf-org-001) | P1 | częściowo działa | [ORG](#e-org) | Workforce profile JSON and indexes exist; competency levels and policy enforcement incomplete. |
-| [RF-ORG-002](../product/interview-foundation-v2.md#rf-org-002) | P1 | częściowo działa | [PROC](#e-proc) | Canonical models exist; complete execution semantics partial. |
-| [RF-ORG-003](../product/interview-foundation-v2.md#rf-org-003) | P1 | częściowo działa | [PORT](#e-port) | Product-engineering readiness exists; lifecycle gates need configuration/proof. |
-| [RF-ORG-004](../product/interview-foundation-v2.md#rf-org-004) | P1 | częściowo działa | [LEARN](#e-learn) | Generic knowledge/procedure records do not enforce promotion. |
-| [RF-ORG-005](../product/interview-foundation-v2.md#rf-org-005) | P1 | częściowo działa | [CTX](#e-ctx) | Documentation imports exist; approval/provenance reconciliation incomplete. |
-| [RF-OLD-001](../product/interview-foundation-v2.md#rf-old-001) | P2 | brak | [PILOT](#e-demoapp) | Superseded by RF-PILOT-007 at messages 576–578. |
-| [RF-OLD-002](../product/interview-foundation-v2.md#rf-old-002) | P2 | brak | [RELEASE](#e-release) | Superseded by RF-REL-017 at messages 704–706. |
-| [RF-OLD-003](../product/interview-foundation-v2.md#rf-old-003) | P2 | brak | [INTEGRATION](#e-integration) | Superseded by RF-PILOT-015 at messages 630–634; application test accounts remain distinct. |
-| [RF-OLD-004](../product/interview-foundation-v2.md#rf-old-004) | P2 | brak | [RESOURCE](#e-resource) | Rejected/superseded by RF-ACT-003 and RF-ACT-004. |
-| [RF-OLD-005](../product/interview-foundation-v2.md#rf-old-005) | P2 | brak | [GOV](#e-gov) | Superseded by RF-REL-018; flags only where actual risk requires. |
-| [RF-OLD-006](../product/interview-foundation-v2.md#rf-old-006) | P2 | brak | [PILOT](#e-demoapp) | Superseded by RF-PILOT-008 and RF-PILOT-010; test target functions only. |
-| [RF-OLD-007](../product/interview-foundation-v2.md#rf-old-007) | P2 | brak | [GOV](#e-gov) | Superseded by RF-GOV-016 closed versioned batches. |
-| [RF-OLD-008](../product/interview-foundation-v2.md#rf-old-008) | P2 | brak | [WORKSPACE](#e-workspace) | Superseded by RF-HOST-002 and RF-HOST-004: one laptop writer, one canonical clone per app. |
-| [RF-OLD-009](../product/interview-foundation-v2.md#rf-old-009) | P2 | brak | [ORG](#e-org) | Superseded by RF-GOV-010 and RF-ACT-010: portable competence, separate app readiness. |
-| [RF-OLD-010](../product/interview-foundation-v2.md#rf-old-010) | P2 | brak | [BACKUP](#e-backup) | Narrowed by RF-RES-005 to owner-approved encrypted verified Roost backup only; other production data remain excluded. |
-| [RF-OLD-011](../product/interview-foundation-v2.md#rf-old-011) | P2 | brak | [GOV](#e-gov) | Superseded/deferred by RF-DEF-006 and RF-GOV-015. |
+| [RF-GOV-001](../product/requirements.md#rf-gov-001) | P0 | częściowo działa | [GOV](#e-gov) | No complete delegated-mandate enforcement. |
+| [RF-GOV-002](../product/requirements.md#rf-gov-002) | P1 | częściowo działa | [GOAL](#e-goal) | CRUD exists; orphan, duplicate and owner-intent guards incomplete. |
+| [RF-GOV-003](../product/requirements.md#rf-gov-003) | P1 | częściowo działa | [ORG](#e-org) | Registry exists; peer authority and manager configuration need verification. |
+| [RF-GOV-004](../product/requirements.md#rf-gov-004) | P0 | częściowo działa | [ORG](#e-org) | Current multi-department workforce needs accountable-department semantics. |
+| [RF-GOV-005](../product/requirements.md#rf-gov-005) | P1 | częściowo działa | [ORG](#e-org) | Organizational relations exist without enforced routing. |
+| [RF-GOV-006](../product/requirements.md#rf-gov-006) | P1 | częściowo działa | [ORG](#e-org) | Workforce and ephemeral sessions exist; lifecycle orchestration incomplete. |
+| [RF-GOV-007](../product/requirements.md#rf-gov-007) | P1 | częściowo działa | [ORG](#e-org) | Role records exist; catalog coverage and activation process unverified. |
+| [RF-GOV-008](../product/requirements.md#rf-gov-008) | P1 | częściowo działa | [ORG](#e-org) | Missing enforced HR qualification flow. |
+| [RF-GOV-009](../product/requirements.md#rf-gov-009) | P1 | brak | [ORG](#e-org) | No verified evaluation or remediation engine. |
+| [RF-GOV-010](../product/requirements.md#rf-gov-010) | P1 | brak | [ORG](#e-org) | No competency certification lifecycle. |
+| [RF-GOV-011](../product/requirements.md#rf-gov-011) | P1 | częściowo działa | [ORG](#e-org) | Role data does not enforce separation. |
+| [RF-GOV-012](../product/requirements.md#rf-gov-012) | P1 | częściowo działa | [ORG](#e-org) | Profile configuration and allocation unverified. |
+| [RF-GOV-013](../product/requirements.md#rf-gov-013) | P1 | brak | [SCHED](#e-sched) | No governed subagent scheduler. |
+| [RF-GOV-014](../product/requirements.md#rf-gov-014) | P0 | częściowo działa | [AUTH](#e-auth) | Immutable workforce-bound keys and current DB principal checks govern native review/manager commands, with expiry, atomic rotation, revocation and agent/credential audit. Other legacy command classes remain outside this slice; native review writes also require RF-SEC-003 task grants. |
+| [RF-GOV-015](../product/requirements.md#rf-gov-015) | P0 | działa | [GOV](#e-gov) | Boundary is governing policy; no DemoApp change authorized. |
+| [RF-GOV-016](../product/requirements.md#rf-gov-016) | P0 | działa | [GOV](#e-gov) | Current documentation requires one implementation owner to carry the end-to-end outcome; internal substeps are not STOP boundaries. Runtime completion remains governed by the other rows. |
+| [RF-GOV-017](../product/requirements.md#rf-gov-017) | P0 | działa | [DOC](#e-doc) | 151 current accepted/deferred requirements have stable IDs and map to inspected evidence and limitations. Git retains superseded wording outside the active registry. |
+| [RF-GOV-018](../product/requirements.md#rf-gov-018) | P0 | działa | [GOV](#e-gov) | Current documentation defines the four true owner dependencies and keeps ordinary technical resolution with the implementation owner. |
+| [RF-GOV-019](../product/requirements.md#rf-gov-019) | P0 | działa | [PORT](#e-port) | Current code/config boundary from 36be71bc retained. |
+| [RF-GOV-020](../product/requirements.md#rf-gov-020) | P0 | częściowo działa | [AUDIT](#e-audit) | Events exist; generic records/evidence remain mutable. |
+| [RF-CTX-001](../product/requirements.md#rf-ctx-001) | P0 | częściowo działa | [PACKET](#e-packet) | Structural packet works; semantic completeness and full compiler remain partial. |
+| [RF-CTX-002](../product/requirements.md#rf-ctx-002) | P0 | częściowo działa | [CTX](#e-ctx) | Source precedence documented, not enforced throughout compilation. |
+| [RF-CTX-003](../product/requirements.md#rf-ctx-003) | P0 | częściowo działa | [CTX](#e-ctx) | Record/evidence models exist; epistemic labeling not uniformly enforced. |
+| [RF-CTX-004](../product/requirements.md#rf-ctx-004) | P0 | częściowo działa | [PACKET](#e-packet) | Application context exists; validated full manifest absent. |
+| [RF-CTX-005](../product/requirements.md#rf-ctx-005) | P0 | częściowo działa | [PACKET](#e-packet) | Packet references versions; complete layered selection/reason trace missing. |
+| [RF-CTX-006](../product/requirements.md#rf-ctx-006) | P0 | częściowo działa | [PACKET](#e-packet) | Ready invalidation and active-attempt fencing stop work at observed checkpoint/event/heartbeat boundaries; late authority and restart are rejected. Arbitrary internal runner operations/OS freezes and atomic database-to-spawn remain outside the guarantee; no live provider proof. |
+| [RF-CTX-007](../product/requirements.md#rf-ctx-007) | P1 | brak | [CTX](#e-ctx) | No runtime context expansion protocol. |
+| [RF-CTX-008](../product/requirements.md#rf-ctx-008) | P0 | działa | [SUBMIT](#e-submit) | Within the supervised runtime, only the explicit versioned/idempotent Submit command grants Ready after validation. Draft/Needs context/Needs decision are durable; create/assign/edit/import and alternate database writes cannot admit work. Automatic interviews and semantic completeness belong to separate requirements. |
+| [RF-CTX-009](../product/requirements.md#rf-ctx-009) | P0 | częściowo działa | [TASK](#e-task), [single-task contract](execution-packet-contract.md#single-task-scope-rf-ctx-009), `scripts/agent-host-single-task.test.mjs`, `src/tests/api.test.ts`, `scripts/task-readiness-ui.test.mjs` | Submit requires one resolved app/component, manager, executor, measured result and deterministic branch; bounded shared-cause exception is visible/auditable. API/DB/host gates, legacy invalidation and source revision checks prevent ordinary bypass. Structural and PL/EN ambiguity checks do not prove arbitrary prose semantics; independent acceptance/role separation remains RF-CTX-010. |
+| [RF-CTX-010](../product/requirements.md#rf-ctx-010) | P0 | częściowo działa | [role contract](execution-packet-contract.md#explicit-task-roles-rf-ctx-010), `scripts/lib/agent-host-task-roles.mjs`, `src/modules/agent-runtime/task-role-context.ts`, `src/tests/api.test.ts`, `scripts/agent-host-task-roles.test.mjs`, `scripts/task-roles-migration.test.mjs`, `scripts/task-readiness-ui.test.mjs` | Submit resolves five current roles, immutable human origin and accepted author history; API/DB/host reject self-review/self-release and stale authority. Membership/profile edits invalidate Ready. Declared mandates/skills do not certify qualifications or bind runtime credentials; review/return and release execution remain absent. |
+| [RF-CTX-011](../product/requirements.md#rf-ctx-011) | P1 | częściowo działa | [PROC](#e-proc) | Registry primitives exist; task-type execution contract incomplete. |
+| [RF-CTX-012](../product/requirements.md#rf-ctx-012) | P0 | częściowo działa | [versioned composition](versioned-procedure-composition.md), `procedure-composition.ts`, API/DB and host/UI tests | Native immutable base/extension contracts, deterministic composition, exact expiring independent-owner exceptions and Ready/packet/host pins work. Automatic procedure execution and company-wide workflow coverage remain outside this boundary. |
+| [RF-CTX-013](../product/requirements.md#rf-ctx-013) | P0 | częściowo działa | [typed handoff](typed-work-handoff.md), `task-handoff.ts`, contract/API/DB/UI tests | Native immutable execution/material handoff, exact role/principal receipt, typed rejection and superseding versions work under current risk, redaction and task-scoped agent grants. Source references are validated; independent Git/test attestation, receiver invocation and external conversation coverage remain separate. |
+| [RF-CTX-014](../product/requirements.md#rf-ctx-014) | P0 | częściowo działa | [native review contract](task-review-workflow.md), `src/modules/agent-runtime/task-review.ts`, `src/tests/api.test.ts`, `scripts/task-review-ui.test.mjs`, `scripts/task-review-migration.test.mjs` | Current human or credential-bound agent verifier records versioned approve/reject; manager returns scoped work or creates one dependent specialist draft. Append-only history, role/DB guards, correction Submit, stale/concurrent/restart and UI paths verified. Automated reviewer invocation and artifact/Git attestation remain separate. |
+| [RF-CTX-015](../product/requirements.md#rf-ctx-015) | P1 | częściowo działa | [governed clarification](governed-task-clarification.md), `src/modules/agent-runtime/task-clarification.ts`, `src/tests/api.test.ts`, `scripts/task-clarification-ui.test.mjs` | Native append-only typed conversations bind current task-role principals and canonical same-application task relations; exact grants, read/reply receipts, superseding corrections, material notices and deterministic execution receipts are implemented. External delivery, automatic routing, semantic material inference and independent artifact attestation remain outside this contract. |
+| [RF-CTX-016](../product/requirements.md#rf-ctx-016) | P1 | częściowo działa | [DEC](#e-dec) | Native versioned material-question cases, scoped owner answer → Decision proposal → separate acceptance and dependency Ready fences; see [contract](material-unknown-interviews.md). Full hierarchy and semantic/model orchestration remain outside this slice. |
+| [RF-CTX-017](../product/requirements.md#rf-ctx-017) | P0 | częściowo działa | [DEC](#e-dec) | Native immutable supersession, exact declared conflicts, directional impact previews, separately gated owner acceptance, scoped Ready/active-work invalidation and typed event-based reopening are implemented; see [contract](decision-supersession-impact.md). Semantic company-wide discovery, hierarchy authority and automatic external event delivery remain outside this slice. |
+| [RF-CTX-018](../product/requirements.md#rf-ctx-018) | P0 | częściowo działa | [DEC](#e-dec) | Native typed owner reservations, versioned exact mandates, shortest workforce routes, expiry/revocation fences and Decision/interview/Ready/review integration: [contract](delegated-decision-authority.md). Semantic inference and company-wide delegation remain outside this bounded implementation. |
+| [RF-CTX-019](../product/requirements.md#rf-ctx-019) | P1 | częściowo działa | [TASK](#e-task) | Records/relations exist; execution enforcement incomplete. |
+| [RF-CTX-020](../product/requirements.md#rf-ctx-020) | P1 | częściowo działa | [LEARN](#e-learn) | Knowledge/standard records exist; promotion/eval loop absent. |
+| [RF-CTX-021](../product/requirements.md#rf-ctx-021) | P0 | działa | [FIND](#e-find) | Versioned Finding verification, independent adjudication and idempotent native-task triage implemented; no autonomy activation. |
+| [RF-CTX-022](../product/requirements.md#rf-ctx-022) | P1 | brak | [FIND](#e-find) | No complete prioritization rule engine. |
+| [RF-CTX-023](../product/requirements.md#rf-ctx-023) | P1 | brak | [FIND](#e-find) | DemoApp audit not executed. |
+| [RF-CTX-024](../product/requirements.md#rf-ctx-024) | P1 | brak | [CTX](#e-ctx) | No automated provenance/license release gate. |
+| [RF-CTX-025](../product/requirements.md#rf-ctx-025) | P1 | brak | [REVIEW](#e-review) | No dispute protocol. |
+| [RF-HOST-001](../product/requirements.md#rf-host-001) | P0 | częściowo działa | [HOST](#e-host) | Queue/observer implemented; full scheduler pending. |
+| [RF-HOST-002](../product/requirements.md#rf-host-002) | P0 | częściowo działa | [LOCK](#e-lock) | Global writer lock works; waiting/read resource admission absent. |
+| [RF-HOST-003](../product/requirements.md#rf-host-003) | P0 | częściowo działa | [RECOVERY](#e-recovery) | Pre-spawn recovery implemented; after-spawn recovery deliberately blocked. |
+| [RF-HOST-004](../product/requirements.md#rf-host-004) | P0 | częściowo działa | [WORKSPACE](#e-workspace) | Path/origin guard exists; full clean-main and unknown-change admission absent. |
+| [RF-HOST-005](../product/requirements.md#rf-host-005) | P1 | częściowo działa | [WORKSPACE](#e-workspace) | No governed branch lifecycle or WIP broker. |
+| [RF-HOST-006](../product/requirements.md#rf-host-006) | P0 | częściowo działa | [LEASE](#e-lease) | Lease/process-tree and durable spawn barriers exist; all operation checkpoints incomplete. |
+| [RF-HOST-007](../product/requirements.md#rf-host-007) | P0 | częściowo działa | [OBSERVER](#e-observer) | Console-free GUI launcher and synthetic action-start retry verified; real relogin/reboot and forced-crash restart unproven. |
+| [RF-HOST-008](../product/requirements.md#rf-host-008) | P1 | brak | [HOST](#e-host) | No signed update protocol. |
+| [RF-HOST-009](../product/requirements.md#rf-host-009) | P0 | częściowo działa | [SCHED](#e-sched) | Existing claim is FIFO, not readiness/priority scheduler. |
+| [RF-HOST-010](../product/requirements.md#rf-host-010) | P0 | częściowo działa | [BUDGET](#e-budget) | Attempts/duration validated and contained; output tokens fail closed before Codex spawn because an execution-wide enforcing interface is unproven. Synthetic exhaustion/recovery fencing tested. Usable provider hard cap, cost enforcement and independent new-budget approval remain missing. |
+| [RF-HOST-011](../product/requirements.md#rf-host-011) | P1 | częściowo działa | [BUDGET](#e-budget) | Bounded provider transport retry is distinguished from task retry. One CLI/turn retains input/attempt/deadline; terminal or incomplete output is non-retryable. Retry counts and partial usage remain unknown when unexposed. General execution loop breaker absent. |
+| [RF-HOST-012](../product/requirements.md#rf-host-012) | P1 | częściowo działa | [BUDGET](#e-budget) | Usage stored per execution; attribution and quality-constrained optimization absent. |
+| [RF-HOST-013](../product/requirements.md#rf-host-013) | P0 | brak | [RESOURCE](#e-resource) | No resource-aware host/service-operation broker. |
+| [RF-HOST-014](../product/requirements.md#rf-host-014) | P0 | częściowo działa | [PROTOCOL](#e-protocol) | Host/API admission before recovery/claim/spawn implemented; coordinated backend/UI/schema drain/update/rollback remains missing. |
+| [RF-HOST-015](../product/requirements.md#rf-host-015) | P1 | częściowo działa | [AUTH](#e-auth) | Host identity and scoped provisioning exist; interactive pairing absent. |
+| [RF-HOST-016](../product/requirements.md#rf-host-016) | P0 | działa | [MODEL](#e-model) | Explicit allowlist/pair validation and exact argv verified by synthetic host tests; no provider call/activation. Full routing/observed usage remain RF-HOST-017/018. |
+| [RF-HOST-017](../product/requirements.md#rf-host-017) | P1 | brak | [MODEL](#e-model) | No stage router, minima, availability or override UI. |
+| [RF-HOST-018](../product/requirements.md#rf-host-018) | P1 | częściowo działa | [MODEL](#e-model) | No model/effort execution evidence. |
+| [RF-HOST-019](../product/requirements.md#rf-host-019) | P0 | częściowo działa | [PACKET](#e-packet) | Prompt marks context untrusted; no comprehensive quarantine/reporting. |
+| [RF-HOST-020](../product/requirements.md#rf-host-020) | P0 | częściowo działa | [WORKSPACE](#e-workspace) | Workspace-write sandbox is not read isolation; browser/session broker absent. |
+| [RF-SEC-001](../product/requirements.md#rf-sec-001) | P0 | częściowo działa | [RISK](#e-risk) | [Bounded native assessment](native-task-risk.md) computes seven-dimension maximum, uncertainty and cumulative canonical task groups; binds Ready/execution/grants. Company-wide automated risk discovery remains absent. |
+| [RF-SEC-002](../product/requirements.md#rf-sec-002) | P0 | częściowo działa | [native risk admission](native-risk-admission.md), `task-risk-admission.ts`, `src/tests/api.test.ts`, `scripts/task-risk-admission-ui.test.mjs` | Native level-specific procedure/review/mandate/backup/restore/owner gates bind exact operation and current evidence; API/DB/host fences and PL/EN UI are implemented. External fact attestation, release brokerage and company-wide coverage remain absent. |
+| [RF-SEC-003](../product/requirements.md#rf-sec-003) | P0 | częściowo działa | [BROKER](#e-broker) | Durable exact task/agent/credential/application/operation/time grants govern the three native review commands, with human issue/revoke, atomic use receipts and context invalidation. General sensitive-tool/secrets brokering, risk and automatic issuance remain absent. |
+| [RF-SEC-004](../product/requirements.md#rf-sec-004) | P0 | częściowo działa | [REDACTION](#e-redaction) | Shared native runtime policy gates required model/checkpoint input and sanitizes diagnostics/projections with safe deduplicated incidents. Whole-Roost DLP, arbitrary encodings/files and historical cleanup remain outside this slice. |
+| [RF-SEC-005](../product/requirements.md#rf-sec-005) | P0 | częściowo działa | [Worker read-only MCP broker](worker-readonly-mcp-broker.md), `scripts/agent-host-mcp-broker.test.mjs` | Synthetic proof for exact pinned reads, attempt capability, limits and stop; no general tool/network/install broker, native Hermes containment or live/model proof. Observer and Hermes execution remain disabled for this path. |
+| [RF-SEC-006](../product/requirements.md#rf-sec-006) | P0 | częściowo działa | [BROKER](#e-broker) | Workspace scoping exists, not field-level diagnostic access. |
+| [RF-SEC-007](../product/requirements.md#rf-sec-007) | P0 | brak | [REVIEW](#e-review) | No mandatory security-review or emergency-exception lifecycle. |
+| [RF-SEC-008](../product/requirements.md#rf-sec-008) | P0 | częściowo działa | [BROKER](#e-broker) | Environment schema and encrypted integration settings exist; dependency gating incomplete. |
+| [RF-SEC-009](../product/requirements.md#rf-sec-009) | P1 | częściowo działa | [AUTH](#e-auth) | Membership/invitation role checks exist; finer project/decision mandates incomplete. |
+| [RF-SEC-010](../product/requirements.md#rf-sec-010) | P0 | brak | [HEALTH](#e-health) | No generic application-health contract runner. |
+| [RF-SEC-011](../product/requirements.md#rf-sec-011) | P0 | częściowo działa | [IDEMP](#e-idemp) | Some provider inbox/execution CAS dedup exists; universal operation receipts absent. |
+| [RF-SEC-012](../product/requirements.md#rf-sec-012) | P0 | częściowo działa | [INCIDENT](#e-incident) | Exact native capability suspension, independent versioned remediation verification, explicit owner restore and manual-intervention reread/replan are enforced. General risk classification and external broker containment remain absent. |
+| [RF-RES-001](../product/requirements.md#rf-res-001) | P0 | częściowo działa | [RESOURCE](#e-resource) | Host repo allowlist exists; full runtime resource manifest absent. |
+| [RF-RES-002](../product/requirements.md#rf-res-002) | P0 | brak | [RESOURCE](#e-resource) | No ownership-aware service lifecycle. |
+| [RF-RES-003](../product/requirements.md#rf-res-003) | P0 | brak | [BACKUP](#e-backup) | No governed volume-operation gate. |
+| [RF-RES-004](../product/requirements.md#rf-res-004) | P0 | częściowo działa | [BACKUP](#e-backup) | Operational instructions exist; automated verification/rotation unproven. |
+| [RF-RES-005](../product/requirements.md#rf-res-005) | P0 | brak | [BACKUP](#e-backup) | No verified encrypted sync/restore implementation; later Roost-only exception to earlier no-DB-download rule. |
+| [RF-RES-006](../product/requirements.md#rf-res-006) | P1 | brak | [BACKUP](#e-backup) | No recovery-code setup flow. |
+| [RF-RES-007](../product/requirements.md#rf-res-007) | P0 | brak | [RESOURCE](#e-resource) | No shared release resource admission. |
+| [RF-RES-008](../product/requirements.md#rf-res-008) | P1 | działa | [GOV](#e-gov) | Boundary retained; no new cleanup mechanism. |
+| [RF-REL-001](../product/requirements.md#rf-rel-001) | P0 | brak | [RELEASE](#e-release) | No native Git/PR/merge broker. |
+| [RF-REL-002](../product/requirements.md#rf-rel-002) | P0 | działa | [GOV](#e-gov) | Governing prohibition retained. |
+| [RF-REL-003](../product/requirements.md#rf-rel-003) | P0 | brak | [REVIEW](#e-review) | No independent review orchestrator. |
+| [RF-REL-004](../product/requirements.md#rf-rel-004) | P0 | brak | [RELEASE](#e-release) | No exact-commit release authorization. |
+| [RF-REL-005](../product/requirements.md#rf-rel-005) | P0 | częściowo działa | [RELEASE](#e-release) | Bootstrap workflow exists; native completion gate absent. |
+| [RF-REL-006](../product/requirements.md#rf-rel-006) | P0 | brak | [HEALTH](#e-health) | No automated baseline-aware observation gate. |
+| [RF-REL-007](../product/requirements.md#rf-rel-007) | P0 | brak | [RELEASE](#e-release) | Current health exposes commit; image identity/rollback manifest not proven. |
+| [RF-REL-008](../product/requirements.md#rf-rel-008) | P0 | brak | [RELEASE](#e-release) | Manual operations docs exist; automatic rollback absent. |
+| [RF-REL-009](../product/requirements.md#rf-rel-009) | P1 | brak | [HEALTH](#e-health) | No continuous multi-app monitoring worker. |
+| [RF-REL-010](../product/requirements.md#rf-rel-010) | P0 | brak | [HEALTH](#e-health) | No verified per-app safety certification. |
+| [RF-REL-011](../product/requirements.md#rf-rel-011) | P0 | częściowo działa | [TEST](#e-test) | Repository tests exist; risk-based native test gate absent. |
+| [RF-REL-012](../product/requirements.md#rf-rel-012) | P1 | brak | [TEST](#e-test) | Bootstrap skill workflow exists; native enforcement absent. |
+| [RF-REL-013](../product/requirements.md#rf-rel-013) | P0 | częściowo działa | [TEST](#e-test) | API tests exist; compatibility release gate incomplete. |
+| [RF-REL-014](../product/requirements.md#rf-rel-014) | P0 | brak | [RELEASE](#e-release) | No desired-state reconciliation service. |
+| [RF-REL-015](../product/requirements.md#rf-rel-015) | P0 | częściowo działa | [HEALTH](#e-health) | Roost public health/build exists; complete app contracts absent. |
+| [RF-REL-016](../product/requirements.md#rf-rel-016) | P1 | brak | [RELEASE](#e-release) | No scheduler-enforced windows or drain. |
+| [RF-REL-017](../product/requirements.md#rf-rel-017) | P1 | brak | [RELEASE](#e-release) | Future DemoApp release configuration, not implemented here. |
+| [RF-REL-018](../product/requirements.md#rf-rel-018) | P1 | działa | [GOV](#e-gov) | Risk-based target policy retained. |
+| [RF-ACT-001](../product/requirements.md#rf-act-001) | P0 | częściowo działa | [HOST](#e-host) | Default execution flag works; formal staged readiness state absent. |
+| [RF-ACT-002](../product/requirements.md#rf-act-002) | P0 | częściowo działa | [DRY](#e-dry) | Lease/recovery fixture tests exist; complete dry-run certification absent. |
+| [RF-ACT-003](../product/requirements.md#rf-act-003) | P0 | brak | [RELEASE](#e-release) | Needs broker and passed local dry run; ask owner for repo/folder only at that stage. |
+| [RF-ACT-004](../product/requirements.md#rf-act-004) | P1 | brak | [RESOURCE](#e-resource) | Not yet reached; no resources created. |
+| [RF-ACT-005](../product/requirements.md#rf-act-005) | P0 | brak | [AUDITOR](#e-auditor) | Current supervised host only has workspace-write; read-only canary absent. |
+| [RF-ACT-006](../product/requirements.md#rf-act-006) | P0 | brak | [AUDITOR](#e-auditor) | No two-stage canary orchestration. |
+| [RF-ACT-007](../product/requirements.md#rf-act-007) | P0 | brak | [ACT](#e-act) | No readiness report or activation authorization state machine. |
+| [RF-ACT-008](../product/requirements.md#rf-act-008) | P1 | brak | [ACT](#e-act) | No capability progression lifecycle. |
+| [RF-ACT-009](../product/requirements.md#rf-act-009) | P1 | brak | [ACT](#e-act) | No probation counters/certification. |
+| [RF-ACT-010](../product/requirements.md#rf-act-010) | P1 | brak | [ACT](#e-act) | No app-onboarding readiness procedure. |
+| [RF-ACT-011](../product/requirements.md#rf-act-011) | P0 | działa | [GOV](#e-gov) | This batch is registry plus one runtime gap; future runs require scoped readiness selection. |
+| [RF-PILOT-001](../product/requirements.md#rf-demoapp-001) | P1 | wymaga konfiguracji | [PILOT](#e-demoapp) | Mapping declared; full product card and production baseline need audit. |
+| [RF-PILOT-002](../product/requirements.md#rf-demoapp-002) | P1 | brak | [PILOT](#e-demoapp) | No DemoApp code audit in this batch. |
+| [RF-PILOT-003](../product/requirements.md#rf-demoapp-003) | P1 | brak | [PILOT](#e-demoapp) | Future DemoApp acceptance; not verified. |
+| [RF-PILOT-004](../product/requirements.md#rf-demoapp-004) | P0 | brak | [PILOT](#e-demoapp) | Future application-safe-deploy gate; no DemoApp modification. |
+| [RF-PILOT-005](../product/requirements.md#rf-demoapp-005) | P0 | wymaga konfiguracji | [PILOT](#e-demoapp) | Owner mandate recorded; never treat balance as enforcement. |
+| [RF-PILOT-006](../product/requirements.md#rf-demoapp-006) | P0 | wymaga konfiguracji | [PILOT](#e-demoapp) | Required confirmation not obtained from exchanges; no live permission granted here. |
+| [RF-PILOT-007](../product/requirements.md#rf-demoapp-007) | P0 | brak | [PILOT](#e-demoapp) | Supersedes unrestricted live-test approval; no consent issued in this batch. |
+| [RF-PILOT-008](../product/requirements.md#rf-demoapp-008) | P0 | wymaga konfiguracji | [PILOT](#e-demoapp) | No guarantee of autonomous closure claimed; native strategy/risk configuration must be verified. |
+| [RF-PILOT-009](../product/requirements.md#rf-demoapp-009) | P0 | wymaga konfiguracji | [PILOT](#e-demoapp) | Limits are mandates, not verified exchange settings. |
+| [RF-PILOT-010](../product/requirements.md#rf-demoapp-010) | P0 | brak | [PILOT](#e-demoapp) | Target test failure procedure absent. |
+| [RF-PILOT-011](../product/requirements.md#rf-demoapp-011) | P0 | brak | [PILOT](#e-demoapp) | No live or production trading test run. |
+| [RF-PILOT-012](../product/requirements.md#rf-demoapp-012) | P0 | brak | [PILOT](#e-demoapp) | Certification evidence not established. |
+| [RF-PILOT-013](../product/requirements.md#rf-demoapp-013) | P1 | brak | [PILOT](#e-demoapp) | Future DemoApp controlled test lifecycle. |
+| [RF-PILOT-014](../product/requirements.md#rf-demoapp-014) | P0 | brak | [PILOT](#e-demoapp) | Future DemoApp idempotency proof required. |
+| [RF-PILOT-015](../product/requirements.md#rf-demoapp-015) | P1 | częściowo działa | [INTEGRATION](#e-integration) | Connectors exist; test-scope admission incomplete. |
+| [RF-PILOT-016](../product/requirements.md#rf-demoapp-016) | P0 | częściowo działa | [INTEGRATION](#e-integration) | Provider operations exist; generic test ownership/cost guard absent. |
+| [RF-PILOT-017](../product/requirements.md#rf-demoapp-017) | P1 | brak | [INTEGRATION](#e-integration) | No generic integration test ladder controller. |
+| [RF-UX-001](../product/requirements.md#rf-ux-001) | P1 | częściowo działa | [ATTENTION](#e-attention) | Dashboards/events exist; unified attention lifecycle incomplete. |
+| [RF-UX-002](../product/requirements.md#rf-ux-002) | P1 | częściowo działa | [ATTENTION](#e-attention) | Execution timeline exists; complete explainable evidence view partial. |
+| [RF-UX-003](../product/requirements.md#rf-ux-003) | P0 | częściowo działa | [HOST](#e-host) | Cancel and observer stop exist; full owner controls absent. |
+| [RF-UX-004](../product/requirements.md#rf-ux-004) | P1 | częściowo działa | [AUDIT](#e-audit) | Ignored evidence guard exists; runtime log retention not implemented. |
+| [RF-UX-005](../product/requirements.md#rf-ux-005) | P1 | brak | [LANG](#e-lang) | UI localStorage locale only; account communication/workspace settings missing. |
+| [RF-UX-006](../product/requirements.md#rf-ux-006) | P0 | brak | [LANG](#e-lang) | Workspace schema lacks language. |
+| [RF-UX-007](../product/requirements.md#rf-ux-007) | P1 | częściowo działa | [LANG](#e-lang) | PL/EN and fallback exist; missing-key finding and account persistence incomplete. |
+| [RF-UX-008](../product/requirements.md#rf-ux-008) | P1 | brak | [TIME](#e-time) | DateTime storage exists; user/workspace timezone settings absent. |
+| [RF-UX-009](../product/requirements.md#rf-ux-009) | P1 | brak | [TIME](#e-time) | No native timezone-aware recurring task scheduler. |
+| [RF-DEF-001](../product/requirements.md#rf-def-001) | P2 | brak | [AUTH](#e-auth) | Deferred; do not add an activation gate. |
+| [RF-DEF-002](../product/requirements.md#rf-def-002) | P2 | brak | [RELEASE](#e-release) | Deferred; current constraints remain valid. |
+| [RF-DEF-003](../product/requirements.md#rf-def-003) | P2 | brak | [PILOT](#e-demoapp) | Deferred; no optimization worker activated. |
+| [RF-DEF-004](../product/requirements.md#rf-def-004) | P2 | brak | [LANG](#e-lang) | Deferred; creation choice remains immutable. |
+| [RF-DEF-005](../product/requirements.md#rf-def-005) | P2 | brak | [ATTENTION](#e-attention) | Deferred; no external notification channel activation. |
+| [RF-DEF-006](../product/requirements.md#rf-def-006) | P2 | brak | [GOV](#e-gov) | Deferred; neither automation is retired by this batch. |
+| [RF-ORG-001](../product/requirements.md#rf-org-001) | P1 | częściowo działa | [ORG](#e-org) | Workforce profile JSON and indexes exist; competency levels and policy enforcement incomplete. |
+| [RF-ORG-002](../product/requirements.md#rf-org-002) | P1 | częściowo działa | [PROC](#e-proc) | Canonical models exist; complete execution semantics partial. |
+| [RF-ORG-003](../product/requirements.md#rf-org-003) | P1 | częściowo działa | [PORT](#e-port) | Product-engineering readiness exists; lifecycle gates need configuration/proof. |
+| [RF-ORG-004](../product/requirements.md#rf-org-004) | P1 | częściowo działa | [LEARN](#e-learn) | Generic knowledge/procedure records do not enforce promotion. |
+| [RF-ORG-005](../product/requirements.md#rf-org-005) | P1 | częściowo działa | [CTX](#e-ctx) | Documentation imports exist; approval/provenance reconciliation incomplete. |
 
 ## Evidence index
 
@@ -1106,7 +1095,7 @@ Each entry links existing canonical files; a test link is not a passing result.
 [docs/architecture/autonomy-activation-contract.md](../../docs/architecture/autonomy-activation-contract.md).
 
 <a id="e-doc"></a>
-**DOC** — Baseline was TRACE-000 placeholder; V2 registry/matrix closes documentation traceability only.
+**DOC** — The current requirements registry and matrix close documentation traceability only.
 
 [docs/architecture/traceability-matrix.md](../../docs/architecture/traceability-matrix.md).
 

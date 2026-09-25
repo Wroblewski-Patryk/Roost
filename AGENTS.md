@@ -6,9 +6,46 @@ Read `docs/documentation-contract.json`, then load its bounded
 `defaultAgentContext` and only the sources relevant to the task. Product,
 architecture, operations and release truth lives under `docs/`.
 
+The durable starting set is intentionally small:
+
+- `docs/product/product.md` defines what Roost is and why it exists.
+- `docs/product/requirements.md` contains the current accepted requirements.
+- `docs/implementation.md` contains the current implementation state, the
+  outcome being delivered and its end-to-end acceptance gates.
+- architecture, operations and evidence documents are loaded only for the
+  component being changed.
+
+Versioned technical documents are protocol/evidence records. Their historical
+"next atom" or "stop after this slice" statements are not the current work
+queue and never override `docs/implementation.md`.
+
 Do not create repository-local agent roles, task boards, project memory or
 coordination systems. External tools such as Codex keep their
 execution state outside this repository.
+
+## Delivery behavior
+
+- One implementation owner carries the current outcome in
+  `docs/implementation.md` through coding, integration, verification and the
+  required demonstration. Internal substeps and multiple reviewable commits
+  are allowed; they are not handoff boundaries.
+- Do not stop after producing a proposal, source-only contract, migration,
+  adapter or mocked test when the accepted outcome requires a working
+  integration. Continue through the remaining technical work and repair failed
+  checks within the same task.
+- Resolve ordinary reversible technical choices from the accepted requirements,
+  current architecture, inspected code and test evidence. Do not ask the owner
+  to choose implementation details already determined by those sources.
+- A larger-than-expected implementation, failing test, missing adapter,
+  migration requirement, Docker/database problem or architecture correction is
+  work to solve, not a reason to bounce the task between conversations.
+- Stop for owner input only when progress requires an unavailable login/2FA or
+  secret, an unapproved irreversible action against real data, a genuine
+  contradiction in accepted business intent, or an unavailable external
+  service with no safe technical alternative. Prepare everything possible
+  before reporting that dependency and ask one concrete question.
+- Report progress at the end-to-end gates defined in `docs/implementation.md`,
+  not by counting internal atoms, contracts or files.
 
 ## Project boundaries
 

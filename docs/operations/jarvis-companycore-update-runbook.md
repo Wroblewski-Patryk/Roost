@@ -25,7 +25,7 @@ CompanyCore repository:
 
 CompanyCore tracks durable deployment guidance in
 `docs/operations/post-deploy-smoke.md`, with current development priorities in
-`docs/planning/mvp-next-commits.md`.
+`docs/implementation.md`.
 
 ## Required Runtime Environment
 
@@ -232,7 +232,7 @@ Confirm that the chat context injector is deployed:
 
 ## Documentation Updates After Deployment
 
-After a successful update, refresh `docs/planning/mvp-next-commits.md` when the
+After a successful update, refresh `docs/implementation.md` when the
 development queue changes and update `docs/operations/post-deploy-smoke.md`
 when the smoke contract itself changes.
 

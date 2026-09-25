@@ -5,15 +5,14 @@
   "defaultAgentContext": [
     "docs/README.md",
     "docs/product/product.md",
-    "docs/architecture/architecture-source-of-truth.md",
-    "docs/architecture/local-codex-agent-runtime.md",
-    "docs/architecture/workspace-human-access.md"
+    "docs/product/requirements.md",
+    "docs/implementation.md"
   ],
   "authority": {
     "product": ["docs/product/"],
     "architecture": ["docs/architecture/", "docs/decisions/"],
     "operations": ["docs/operations/"],
-    "activePlanning": ["docs/planning/open-decisions.md", "docs/planning/mvp-next-commits.md"]
+    "activePlanning": ["docs/implementation.md", "docs/planning/open-decisions.md"]
   },
   "budgets": {
     "maxDefaultContextBytes": 150000,

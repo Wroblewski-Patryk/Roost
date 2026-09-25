@@ -1,6 +1,6 @@
 # Local Codex Agent Host
 
-Foundation V2 requires an explicit `metadata.executionContract.modelSelection`
+accepted requirements requires an explicit `metadata.executionContract.modelSelection`
 for every supervised execution. See the [packet model admission contract](../architecture/execution-packet-contract.md#foundation-v2-explicit-model-admission-rf-host-016).
 Older packets without model and reasoning effort fail closed. Observer mode is
 unaffected and remains the configured mode until separately authorized gates pass.

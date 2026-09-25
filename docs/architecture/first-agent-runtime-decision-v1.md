@@ -145,7 +145,7 @@ execute. Blocked command requests must fail the attempt rather than escalate.
 | Immutable uncommitted change evidence, independent review of the exact bytes, no automatic task Done or release. | Main protection, PR/merge/release and rollback certification before any future release. |
 
 Under today's accepted contracts, an ordinary task approval cannot waive L03 or
-L05. [Foundation V2](../product/interview-foundation-v2.md) RF-HOST-010 retains
+L05. [accepted requirements](../product/requirements.md) RF-HOST-010 retains
 time/token/cost/attempt limits; RF-SEC-007 requires a fresh narrow expiring owner
 exception for disabling a key gate and Security review for safeguard changes.
 [Host lifecycle safety](../operations/host-lifecycle-safety.md) still denies

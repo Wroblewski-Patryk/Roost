@@ -29,7 +29,7 @@ No network access or Codex execution was used to author this specification.
 | S04 | [Recovery v1](agent-host-recovery.md), [supervised runtime](local-codex-agent-runtime.md) and [host lifecycle safety](../operations/host-lifecycle-safety.md): machine writer, lease, checkpoint, stop and current denial. |
 | S05 | [RF002 synthetic boundary](../operations/hermes-linux-synthetic-transport.md): 29 fake-server cases and research limits; not real App Server or escaping-descendant proof. |
 | S06 | [RF001 assessment](hermes-codex-isolation-assessment.md), [RF003 audit](hermes-clean-transport-api.md) and ADR-001: Hermes is optional; existing synthetic wrapper is not approved production code. |
-| S07 | [Foundation V2](../product/interview-foundation-v2.md): RF-HOST-010/011/016, RF-SEC-011 and RF-RES-001..004; [native redaction](native-runtime-redaction.md). |
+| S07 | [accepted requirements](../product/requirements.md): RF-HOST-010/011/016, RF-SEC-011 and RF-RES-001..004; [native redaction](native-runtime-redaction.md). |
 
 ## CAS-R01 — Ownership and scope
 
@@ -605,7 +605,7 @@ versions; every CAS-T row passes its required evidence level on exact admitted
 artifacts/platform, including real-server and native deny/escape/crash tests;
 hard output/cost/retry enforcement with complete accounting; independently
 verified resource/privacy/authority/recovery and unchanged existing workloads;
-all relevant Foundation V2 context/review/backup/host gates; fresh explicit
+all relevant accepted requirements context/review/backup/host gates; fresh explicit
 single-use pilot task authority and rollback/stop plan. No waiver through local
 metadata or a successful synthetic fixture. Missing evidence means all activation
 flags remain false; later activation is a separate authorized change.

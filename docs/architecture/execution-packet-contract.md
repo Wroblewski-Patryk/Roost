@@ -349,7 +349,7 @@ and bounded to 2,000 characters; required text lists contain at most 30 entries.
 | `scope` | Nonempty `allowed` and `forbidden` lists; the same entry cannot occur in both, ignoring case. |
 | `assignment` | `agentId`, `role`, `competencies`; match the active assigned workforce entity of type `agent`, its primary role and `skillIndex`. |
 | `singleTask` | Required `roost-single-task-v1` scope described below; one resolved application/component, accountable manager, assigned executor, measured outcome and deterministic task branch. |
-| `modelSelection` | Explicit `model` and `reasoningEffort` admitted by the Foundation V2 policy below. No inherited/default selection. |
+| `modelSelection` | Explicit `model` and `reasoningEffort` admitted by the accepted requirements policy below. No inherited/default selection. |
 | `context` | Nonempty `company`, `product`, `technical` lists of `{id, revision}`; at most 10 per category. |
 | `procedures` | Explicit set of `{id, revision}` referencing active procedures; revision is the string form of their numeric `version`. All application/capability-linked procedures must be included. |
 | `skills` | Explicit set of `{name, version}` matching `name@version` entries in the assigned agent's `skillIndex`. |
@@ -430,7 +430,7 @@ coordination boundary. Protocol version stays 1, with mandatory
 
 ## Start Gate And Diagnostic Result
 
-### Foundation V2 explicit model admission (RF-HOST-016)
+### accepted requirements explicit model admission (RF-HOST-016)
 
 Every contract now requires `modelSelection: {model, reasoningEffort}`. Supported
 model IDs are `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna` and `gpt-6-astra`.

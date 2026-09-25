@@ -1,69 +1,36 @@
 # Agent Delivery Foundations And Activation Contract
 
-Owner amendment v15, 2026-09-23:
-[managed Hermes is the sole agent layer](codex-static-inventory-v1.md) after
-Windows Local Worker, with explicit Codex OAuth/Responses or local Ollama
-backends. Direct CLI is disabled diagnostic/emergency reference only and has
-no pilot authority or fallback role. Its static inventory does not authorize
-Hermes launch. All six flags and independent activation gates remain false/
-required. Earlier statements calling direct CLI an alternative are historical.
-
-RF-RUNTIME-002 / [ADR-004](../decisions/ADR-004-native-hermes-codex-pilot.md)
-supersedes the first-provider ordering below with native Hermes using Codex OAuth
-behind Windows Local Worker. Direct CLI remains an alternative; Herdr is optional.
-Disposable VM/Windows Sandbox/Hyper-V qualification is deferred, not an activation
-prerequisite. Workspace, one-writer, Ready, secret isolation, process cleanup,
-budgets and independent review/release gates are unchanged. The
-[Hermes CLI adapter](hermes-cli-launch-v1.md) explicitly denies unqualified launch;
-implementationReady/executionSupported/pilotReady/liveAdmissionAllowed remain false.
-
-Worker-sealed bootstrap input is implemented under provider contract v4. It
-proves synthetic context preparation and final spawn admission, not Stage 2:
-model tool calls are no longer required to obtain mandatory initial context.
-Live direct App Server compatibility, native containment and hard output/cost budgets
-remain open. Execution stays false, observer stays observe, Hermes stays disabled
-and `pilotReadiness.ready` stays false. Runtime reads require separate authority
-and cannot replace a sealed active context outside RF-CTX-006 reconciliation.
-
-The [offline pinned Hermes transport test](../operations/hermes-windows-attestation.md#offline-transport-examination-adapter-blocked)
-reproduces byte-capture and descendant-cleanup gaps. The requested production
-adapter remains blocked; this negative evidence does not satisfy activation.
-
-[ADR-001 v1 / RF-HERMES-004](../decisions/ADR-001-direct-codex-app-server-pilot.md)
-accepts Roost control plane/API → Local Worker → directly Codex App Server as
-the pilot target. Hermes is optional outside enforcement and no longer a pilot
-prerequisite. OpenShell is optional isolation; required containment remains a
-gate. The [implemented provider contract v5](adopt-before-build.md) is unchanged,
-with executionSupported=false, pilotReady=false and liveAdmissionAllowed=false.
-The existing CLI reference and synthetic wrapper do not implement or qualify the
-new adapter. Neither host metadata nor an environment flag grants admission;
-there is no automatic fallback or provider substitution.
-
 Status: accepted target; not an assertion of implemented autonomy.
 
-The frozen [Foundation V2 registry](../product/interview-foundation-v2.md) is the
-current accepted requirements baseline through 2026-09-06 03:36:23.550 UTC.
-Its explicit supersessions take precedence over earlier descriptions below;
-the [traceability matrix](traceability-matrix.md) separates existing mechanisms
-from missing gates. Live tests need fresh single-use consent, DemoApp deployment
-uses 20/30-minute thresholds, and no temporary DemoApp watchdog is authorized.
-Deferred features are not activation prerequisites. No batch completion enables
-execution by itself.
+The current runtime path is:
 
-Source: the public Foundation V2 requirements. Private interview provenance is
-maintained outside this repository.
+```text
+Roost control plane/API
+  -> Windows Local Worker
+  -> managed Hermes
+  -> explicit Codex OAuth/Responses or local Ollama backend
+```
 
-Scope correction: accepted handoff
-`roost-interview-scope-correction-2026-09-05-v1` from the same source supersedes
-any implication that the bootstrap implementation automation may modify DemoApp.
+Managed Hermes is the sole normal agent layer after the Worker. Direct provider
+launch is diagnostic/emergency reference only and has no pilot authority or
+automatic fallback role. Herdr and OpenShell are optional supporting tools, not
+required layers. Disposable VM/Windows Sandbox/Hyper-V isolation is deferred;
+workspace, one-writer, Ready, secret isolation, process cleanup, budget and
+independent review/release controls remain required.
 
-Current authority: accepted scope reset
-`roost-interview-foundations-scope-reset-2026-09-05-v1`. It retains multi-application
-delivery under owner supervision and defers native Roost self-development,
-Constitution work and bootstrap retirement. Earlier self-improvement and
-Constitution handoffs do not authorize current implementation work or block
-these foundations. Both bootstrap automations remain active until a separate
-future owner decision.
+The [accepted requirements](../product/requirements.md) define current intent,
+the [current implementation handoff](../implementation.md) defines delivery,
+and the [traceability matrix](traceability-matrix.md) separates implemented
+mechanisms from missing evidence. Versioned provider, transport and isolation
+documents retain protocol evidence only; their historical provider choices and
+"next atom" statements do not direct current implementation.
+
+All readiness and activation flags remain false until the end-to-end gates in
+`docs/implementation.md` are demonstrated. Deferred features are not activation
+prerequisites. Current work builds Roost, its Local Worker and supporting
+infrastructure; the configured pilot application is changed only later through
+the native Roost-controlled delivery flow. Native Roost self-development,
+constitutional governance and retirement of bootstrap tooling remain deferred.
 
 ## Bootstrap Responsibility
 
@@ -79,11 +46,12 @@ evidence, recovery and process improvement. The DemoApp pilot must use this flow
 The bootstrap automation may prepare and observe it in Roost, but cannot perform
 the application change itself, even under a pilot contract.
 
-A runtime handoff is not complete with documentation alone. Deliver the smallest
-ready Roost change through implementation/configuration, tests, task branch,
-commit, main integration, push, Coolify deployment and production smoke when
-access, gates and rollback are available. Report a structured BLOCKER to the
-interview task if a required stage is unavailable; do not label it Done.
+A runtime handoff is not complete with documentation alone. The implementation
+owner continues through configuration, integration, tests and the native
+demonstration required by `docs/implementation.md`; an internal component is not
+a delivery boundary. Ordinary missing components and failed checks are repaired
+inside the same task. Owner input is reserved for the four true dependencies
+defined in the implementation handoff; incomplete work must not be labeled Done.
 
 ## Authority And Current Boundary
 
