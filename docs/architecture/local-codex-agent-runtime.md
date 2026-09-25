@@ -1,5 +1,16 @@
 # Local Codex Agent Runtime
 
+Owner amendment v57: [registration investigation](decision-attestation-prisma-ports-v1.md)
+completed 96 new registrations/12 seals and one full native suite 24/24, no skips,
+runner exit 0; cleanup PASS. Final unchanged 83-migration chain replayed from empty
+in one owned disposable DB, without function replacement. Source204/204, full
+server/web build, lint/pins PASS. Historical registration denial not reproduced:
+root cause UNKNOWN and residual blocker remains; no behavioral fix is claimed.
+Only bounded in-memory synthetic diagnostics were added. RF-HOST-035 PARTIAL,
+canonical signed_current_decision_unavailable and production BLOCKED; all eight
+flags false. One next recommendation, not started: separately authorized controlled
+registration clock/transaction-ordering investigation. Earlier entries are historical.
+
 Owner amendment v56: [native attestation persistence](decision-attestation-prisma-ports-v1.md)
 final full run 24/24 PASS, 0 skipped, runner exit 0; cleanup independently PASS.
 One owned disposable DB applied 83 migrations; a one-line audit workspace fix

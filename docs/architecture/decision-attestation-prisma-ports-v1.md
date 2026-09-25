@@ -1,5 +1,64 @@
 # Decision attestation: Prisma ports and native persistence evidence
 
+## Owner amendment v57: bounded registration investigation
+
+The intermittent fixture registration denial was **not reproduced**. Two bounded
+serial experiments each completed **48/48 new registrations and 6/6 seals**, with
+zero operation retries (96 registrations, 12 seals total). They stopped after
+their fixed count, with an additional 180-second in-test/240-second process cap.
+The first measured before writes; the second moved observations after successful
+writes so no diagnostic SQL round trip separates a freshly generated event time
+from its native guard. This is controlled reproduction evidence, not proof that
+the historical failure cannot recur. **Root cause remains UNKNOWN; no runtime or
+fixture behavior fix is claimed.** The residual registration blocker remains.
+
+The new optional runner probe and fixture diagnostics retain only public synthetic
+metadata in memory: transaction/write phase, native clock and host clock bounds,
+fence/XID, relevant protected receipt lineage, input identity/event and original
+SQLSTATE/message. The owned relay additionally preserves native constraint/table
+and PL/pgSQL context (including the trigger function where supplied) for marked
+registration errors. No query payloads, credentials or durable logs are written.
+Experiments fail at their first denial; retrying the same registration is absent.
+The diagnostic was not exercised by an actual registration failure in this atom.
+
+One marked disposable database applied the **final 83-migration chain from empty**,
+including the existing corrected audit function. No migration file, Prisma schema,
+runtime port or guard changed; no function replacement, reset or backfill occurred.
+The existing privileged synthetic source preparation is unchanged; tested
+registration operations run with origin guards and ordinary protected receipts.
+No guard suspension or receipt fabrication was added to bypass a refusal.
+
+After the two experiments, exactly one full native suite passed **24/24, 0 skipped**,
+child and final runner **exit 0**, with three applied post-COMMIT wire cuts.
+The original 82-only preflight and final catalog/legacy/seal/lineage/lifecycle suite
+passed on this fresh replay. Selected source regressions **204/204**, full server
+and web build, lint, generated pins, runner syntax and scoped diff checks PASS.
+The web build reported unresolved runtime asset references and a large-chunk
+warning; no frontend change or browser qualification is part of this atom.
+
+Cleanup independently **PASS**: the owned database and relay were removed,
+helperFilesCreated=0, inventory restored, and existing three accessible databases /
+214 table-sequence fingerprints unchanged. Unrelated services and dirty documents
+were preserved; no retained-root cleanup, push, deployment or activation occurred.
+
+- Unchanged migration-83 LF SHA-256:
+  `b16939ff35320afe5f9cc0259edf1e444c7c43b70c7e186dc6a66ce096f9e0b5`.
+- Fresh applied and final source-chain digest:
+  `5e7d56f423aeb4c325edf7a5804551c8ffdc664ac85bf289c48ec69ccaff148b`.
+- Existing database before/after fingerprint SHA-256:
+  `e9e019524b6010b02b30b4635fff99133c4429ffac3f537b05ac860485a281f1`.
+
+Fresh replay is now evidenced, but the registration anomaly is still a residual
+blocker. Canonical `signed_current_decision_unavailable` is unchanged; RF-HOST-035
+**PARTIAL**, production **BLOCKED**. All six readiness/execution flags plus
+`transportQualified` and `launchAuthority` remain false. Public synthetic doubles
+provide no production signature/authentication/transport authority.
+
+Exactly one next recommendation, **not started**: a separately authorized,
+controlled registration clock-boundary and transaction-ordering experiment,
+using this diagnostic to distinguish fixture scheduling from native refusal.
+Earlier v56 and older statuses/recommendations below are historical.
+
 ## Owner amendment v56: bounded native requalification
 
 Final full native run **24/24 PASS, 0 skipped**, native child and qualification

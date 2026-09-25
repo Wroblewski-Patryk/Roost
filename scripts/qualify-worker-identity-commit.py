@@ -10,9 +10,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--container', required=True)
 parser.add_argument('--db-user', required=True)
 parser.add_argument('--pause-after-diagnosis', action='store_true')
+parser.add_argument('--registration-probe', action='store_true')
 parser.add_argument('--scenario', choices=['commit','full'], default='commit')
 parser.add_argument('--suite', choices=['lifecycle','issuer','channel','ticket','revocation','attestation'], default='lifecycle')
 args = parser.parse_args()
+assert not args.registration_probe or args.suite=='attestation','Registration probe requires attestation suite'
 repo = pathlib.Path.cwd()
 hidden = subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
 
@@ -60,24 +62,30 @@ const net=require('node:net'),{spawn}=require('node:child_process'),peers=new Se
 const emit=v=>console.log(JSON.stringify(v));
 const server=net.createServer(socket=>{
  const child=spawn('docker',['exec','-i',process.env.PROBE_CONTAINER,'nc','127.0.0.1','5432'],{windowsHide:true,stdio:['pipe','pipe','ignore']});
- const peer={socket,child};peers.add(peer);let backend=Buffer.alloc(0),frontend=Buffer.alloc(0),startup=true,dropCommit=false;
+ const peer={socket,child};peers.add(peer);let backend=Buffer.alloc(0),frontend=Buffer.alloc(0),startup=true,dropCommit=false,diagnostic=null;
  // Diagnostic traffic is passive. Only the explicit full-suite fault marker
  // arms a one-connection cut after PostgreSQL's real COMMIT completion. Never
- // log query text, row values, credentials or raw error messages; never replay.
+ // log query text, row values or credentials; never replay. Only the explicit
+ // owned synthetic registration probe exposes marked error metadata in memory.
  socket.on('data',data=>{frontend=Buffer.concat([frontend,data]);while(frontend.length>=5){
    if(startup){const n=frontend.readInt32BE(0);if(n<8||n>1048576||frontend.length<n)break;const ssl=n===8;frontend=frontend.subarray(n);if(!ssl)startup=false;continue;}
    const n=frontend.readInt32BE(1)+1;if(n<5||n>1048576||frontend.length<n)break;
    if(process.env.PROBE_FAULTS==='1'&&(frontend[0]===81||frontend[0]===80)){
      const start=frontend[0]===81?5:frontend.indexOf(0,5)+1,end=frontend.indexOf(0,start);
      if(frontend.subarray(start,end).toString()==="SELECT 'native_drop_commit_response'"){dropCommit=true;emit({faultArmed:'drop_commit_response'});}
+     const marker=frontend.subarray(start,end).toString().match(/^SELECT 'native_registration_diagnostic:([a-f0-9-]{36}):([a-z_]+)'$/);
+     if(process.env.PROBE_REGISTRATION==='1'&&marker)diagnostic={ticketId:marker[1],phase:marker[2]};
    }
    if(frontend[0]===81){const query=frontend.subarray(5,n-1).toString().trim().toUpperCase();if(query==='COMMIT'||query==='ROLLBACK')emit({wireRequest:query});}
    frontend=frontend.subarray(n);
  }});
  child.stdout.on('data',data=>{backend=Buffer.concat([backend,data]);while(backend.length){
    if(backend.length<5)break;const n=backend.readInt32BE(1)+1;if(n<5||n>16777216||backend.length<n)break;
-   if(backend[0]===69){const fields=backend.subarray(5,n).toString().split('\0'),code=fields.find(x=>x.startsWith('C'));emit({wireErrorCode:code?.slice(1)});}
+   if(backend[0]===69){const fields=backend.subarray(5,n).toString().split('\0'),code=fields.find(x=>x.startsWith('C'));emit({wireErrorCode:code?.slice(1)});
+    if(diagnostic){const get=k=>fields.find(x=>x.startsWith(k))?.slice(1)??null;
+     emit({registrationWireError:{...diagnostic,sqlstate:get('C'),message:get('M'),constraint:get('n'),table:get('t'),context:get('W')}});}}
    if(backend[0]===67){const tag=backend.subarray(5,n-1).toString();if(tag==='COMMIT'||tag==='ROLLBACK')emit({wireCompletion:tag});
+     if(tag==='COMMIT'||tag==='ROLLBACK')diagnostic=null;
      if(tag==='ROLLBACK'&&dropCommit){dropCommit=false;emit({faultDisarmed:'rollback'});}
      if(tag==='COMMIT'&&dropCommit){dropCommit=false;child.stdout.unpipe(socket);socket.destroy();emit({faultApplied:'drop_commit_response'});}
    }
@@ -138,10 +146,13 @@ try:
     env = {k:v for k,v in os.environ.items() if k.upper() in ['PATH','PATHEXT','SYSTEMROOT','TEMP','TMP','APPDATA','LOCALAPPDATA','COMSPEC']}
     env['PROBE_CONTAINER'] = args.container
     env['PROBE_FAULTS'] = '1' if args.scenario=='full' or args.suite in ('issuer','channel','ticket','revocation','attestation') else '0'
+    env['PROBE_REGISTRATION'] = '1' if args.registration_probe else '0'
     bridge = subprocess.Popen(['node','-e',bridge_code],env=env,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True,creationflags=hidden)
     port = json.loads(bridge.stdout.readline())['port']
     def collect():
-        for line in bridge.stdout: wire.append(json.loads(line))
+        for line in bridge.stdout:
+            value=json.loads(line);wire.append(value)
+            if 'registrationWireError' in value: print(json.dumps(value),flush=True)
     reader = threading.Thread(target=collect,daemon=True);reader.start()
     env.update(DATABASE_URL=f'postgresql://{args.db_user}@127.0.0.1:{port}/{name}?schema=public&connection_limit=25&sslmode=disable',NODE_ENV='test',COMPANYCORE_SKIP_DOTENV='1',WORKER_IDENTITY_NATIVE_DATABASE=name,WORKER_IDENTITY_NATIVE_SCENARIO=args.scenario,WORKER_IDENTITY_NATIVE_FAULT_RELAY=env['PROBE_FAULTS'])
     result = subprocess.run(['node','-e',preamble+diagnosis],env=env,text=True,capture_output=True,timeout=60,creationflags=hidden)
@@ -170,6 +181,16 @@ try:
             sql(name,migration.read_text(encoding='utf-8-sig'))
         chain.append(hashlib.sha256(migration.read_bytes()).hexdigest())
     print(json.dumps({'migrationsApplied':len(chain),'chainDigest':hashlib.sha256(''.join(chain).encode()).hexdigest()}),flush=True)
+    if args.registration_probe:
+        for probe_run in range(1,5):
+            probe=subprocess.run(['node','-e',preamble+"require('tsx/cjs');require('./src/tests/decision-attestation-registration-probe.ts').registrationProbe().catch(e=>{console.error(e.message);process.exitCode=1;});"],env=env,text=True,encoding='utf-8',capture_output=True,timeout=240,creationflags=hidden)
+            print(probe.stdout,flush=True);print(probe.stderr,flush=True)
+            print(json.dumps({'registrationProbeRun':probe_run,'exitCode':probe.returncode}),flush=True)
+            print('REGISTRATION_PROBE: enter probe for a new bounded experiment, full for native suite, otherwise cleanup.',flush=True)
+            action=input().strip()
+            if action=='full': break
+            if action!='probe': raise RuntimeError('Registration investigation stopped; cleanup')
+        else: raise RuntimeError('Registration experiment budget exhausted')
     native_runs = 1
     cuts_before_last_run = 0
     arms_before_last_run = 0

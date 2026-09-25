@@ -21,7 +21,8 @@ export async function preflight(){const db=new PrismaClient();try{await db.$conn
  console.log(JSON.stringify({legacyAttestationPreflight:true,original82CatalogPath:true,ticketAttempts:1,privateKeys:0}));
  }finally{await db.$disconnect();}}
 
-export async function attestationNativeFixture(db:PrismaClient,options:{policyTtlMs?:number}={}){
+export type RegistrationProbe={beforeStatement?:(tx:Db,phase:string)=>Promise<void>;clock?:()=>Date};
+export async function attestationNativeFixture(db:PrismaClient,options:{policyTtlMs?:number;registrationProbe?:RegistrationProbe}={}){
  const f=await ticketFixture(db),q={decisionId:randomUUID(),ticketId:f.identity.ticketId},registration=structuredClone(f.registration);
  const i=registration.identity,t=registration.record.signed.payload,b=i.binding,ownerId=i.ownerId,acceptanceId=randomUUID(),previewId=randomUUID();
  const at=(await db.$queryRaw<any[]>`SELECT to_char(date_trunc('milliseconds',clock_timestamp()) AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS at`)[0].at as string;
@@ -62,11 +63,35 @@ export async function attestationNativeFixture(db:PrismaClient,options:{policyTt
   for(const g of old)await tx.$executeRawUnsafe(`ALTER TABLE ${g.tbl} ENABLE TRIGGER ${g.name}`);
  },{isolationLevel:'Serializable',timeout:30000});
  const reg=lifecycleRegistration.parse(registration);
- const registrationErrors:string[]=[];
+ const registrationErrors:unknown[]=[];let phase='begin',evidence:unknown,inputEvent:unknown,hostAtStatement:string|undefined;
  const registrationClient=new Proxy(db,{get(target,key){if(key!=='$transaction')return Reflect.get(target,key);
-  return (work:any,options:any)=>target.$transaction(async tx=>{try{return await work(tx);}catch(e:any){
-   registrationErrors.push(String(e.meta?.message??e.stack??e.message).slice(0,1200));throw e;}},options);}});
- try{await createPrismaTicketLifecycleStore(registrationClient,()=>new Date(),{channel:createBootstrapV2ChannelBinding(),verifier:{qualification:'worker_bootstrap_ticket_verifier_v2',
+  return (work:any,transactionOptions:any)=>target.$transaction(async tx=>{try{
+   async function capture(){const hostBefore=new Date().toISOString();
+    const native=(await tx.$queryRaw<any[]>`SELECT clock_timestamp()::text AS clock,transaction_timestamp()::text AS started,
+     revision::text AS fence,pg_current_xact_id()::text AS xid,current_setting('session_replication_role') AS role,
+     (SELECT coalesce(jsonb_agg(jsonb_build_object('table',r.table_name,'row',r.row_id,'fence',r.fence_revision::text,'xid',r.writer_xid)),'[]'::jsonb)
+      FROM worker_bootstrap_write_receipts r WHERE r.ticket_id=${i.ticketId}::uuid) AS receipts FROM ready_source_fence WHERE id=1`)[0];
+    evidence={...native,hostBefore,hostAfter:new Date().toISOString()};}
+   const diagnostic=options.registrationProbe&&transactionOptions.isolationLevel==='Serializable';
+   if(diagnostic){await tx.$queryRawUnsafe(`SELECT 'native_registration_diagnostic:${i.ticketId}:registration'`);await capture();}
+   const proxy=new Proxy(tx,{get(target,key){const value=Reflect.get(target,key);if(key==='$executeRaw'||key==='$queryRaw')return async(...args:any[])=>{
+    const sql=(Array.isArray(args[0])?args[0].join('?'):args[0].sql).replace(/\s+/g,' ').trim();
+    phase=sql.startsWith('INSERT INTO ')?sql.split(' ')[2].split('(')[0]:sql.startsWith('WITH v AS')?'worker_transport_history':sql.slice(0,60);
+    const mutation=/^(INSERT|WITH v AS)/.test(sql);
+    if(diagnostic&&mutation){
+     assert.match(phase,/^[a-z_]+$/);
+     if(options.registrationProbe?.beforeStatement)await options.registrationProbe.beforeStatement(tx,phase);
+     const record=args.slice(1).find((v:unknown)=>typeof v==='string'&&v.startsWith('{')&&v.includes('"action"'));
+     inputEvent=record?JSON.parse(record):null;hostAtStatement=new Date().toISOString();
+    }
+    // Observe successful writes afterwards: no diagnostic round trip between
+    // a newly generated event timestamp and its native guard.
+    const result=await (value as any).apply(target,args);if(diagnostic&&mutation)await capture();return result;
+   };return typeof value==='function'?value.bind(target):value;}});
+   return await work(proxy);
+  }catch(e:any){registrationErrors.push({phase,sqlstate:e.meta?.code??null,message:String(e.meta?.message??e.message).slice(0,1600),
+    constraint:e.meta?.constraint??null,stack:e.meta?undefined:String(e.stack).split('\n').slice(0,6),evidence,inputEvent,hostAtStatement,identity:i});throw e;}},transactionOptions);}});
+ try{await createPrismaTicketLifecycleStore(registrationClient,options.registrationProbe?.clock??(()=>new Date()),{channel:createBootstrapV2ChannelBinding(),verifier:{qualification:'worker_bootstrap_ticket_verifier_v2',
   verify:async(_tx,p)=>reviewDigest(p.signed)===reviewDigest(reg.record.signed)&&reviewDigest(p.identity)===reviewDigest(reg.identity)}}).register(reg);
  }catch(e){throw new Error('Synthetic attestation registration failed: '+JSON.stringify(registrationErrors),{cause:e});}
  let fault='',before:((tx:Db)=>Promise<void>)|undefined,afterQuery:((tx:Db,sql:string)=>Promise<void>)|undefined;
