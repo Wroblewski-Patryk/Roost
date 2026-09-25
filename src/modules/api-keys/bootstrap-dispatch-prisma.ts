@@ -7,7 +7,7 @@ import {isDecisionAuthorityReader} from './bootstrap-decision-authority-reader';
 import {attestationDbClock} from './decision-attestation-projection';
 import {requireDecisionAttestationGuards} from './decision-attestation-adapter';
 import {exact,positiveText,sqlHash,type AttestationDb as Db} from './decision-attestation-sql';
-import {readDispatchAnchor,readDispatchTicketStatus,linkDispatchReceipt,classifyDispatchFence} from './bootstrap-dispatch-lineage';
+import {readDispatchAnchor,readDispatchTicketStatus,readDispatchAttemptStatus,linkDispatchReceipt,classifyDispatchFence} from './bootstrap-dispatch-lineage';
 import {dispatchGuards} from './bootstrap-dispatch-guards';
 import {dispatchCommand,dispatchScope,dispatchRecord,advanceDispatch,authorityForDispatch,inspectDispatchHistory,
  dispatchDigest,denyDispatch as deny,type DispatchAuthority,type DispatchRecord} from './bootstrap-dispatch-contract';
@@ -80,7 +80,8 @@ export function createDurableDispatchAdapter(deps?:DispatchDependencies){
   const q=dispatchScope.parse(input),{attemptId,...scope}=q;
   return transaction('read',async db=>{
    await requireDecisionAttestationGuards(db);
-   const entries=await history(db,attemptId),anchor=await readDispatchAnchor(db,q),ticketCurrent=await readDispatchTicketStatus(db,q.ticketId),clock=await attestationDbClock(db);
+   const entries=await history(db,attemptId),anchor=await readDispatchAnchor(db,q),ticketCurrent=await readDispatchTicketStatus(db,q.ticketId),
+    attemptCurrent=await readDispatchAttemptStatus(db,q.attemptId),clock=await attestationDbClock(db);
    if(entries.some(e=>!exact(e.record.lineage.anchor,anchor)||e.record.authority.purpose!==q.purpose||
     !exact(e.record.authority.binding,q.binding)))deny();
    let authority:DispatchAuthority|undefined=entries.at(-1)?.record.authority,authorityCurrent=false;
@@ -99,7 +100,7 @@ export function createDurableDispatchAdapter(deps?:DispatchDependencies){
    return freezePublic({authorityCurrent,historyIntegrity:true as const,authority:authority!,entries,head,anchor,fenceLineage,
     leaseExpired:expired,reconciliationRequired,possibleDelivery,
     effectiveState:!terminal&&possibleDelivery&&(!authorityCurrent||reconciliationRequired)?'delivery_unknown' as const:head?.state??'consumed',
-    canonical:{attemptId:q.attemptId,ticketId:q.ticketId,attempt:anchor.attemptHead,ticketAtSeal:anchor.ticketHead,ticketCurrent,
+    canonical:{attemptId:q.attemptId,ticketId:q.ticketId,attempt:attemptCurrent,attemptAtSeal:anchor.attemptHead,ticketAtSeal:anchor.ticketHead,ticketCurrent,
      completionRecorded:false as const,credentialActivated:false as const,
      completionBlocker:'signed_bootstrap_completion_required' as const},
     lastReceipt:entries.length?linkDispatchReceipt(entries.at(-1)!):null,

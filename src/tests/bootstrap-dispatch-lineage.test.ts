@@ -111,10 +111,14 @@ test('source-only canonical dispatch receipt lineage',async t=>{
   later.row.record_digest=reviewDigest(record);later.row.writer_xid='9000';
   later.rowId=record.id;later.digest=reviewDigest(later.row);later.receiptId=randomUUID();later.eventId=randomUUID();
   later.writerXid='9000';f.f.drift();later.fence=String(f.f.state().fence);f.f.objects().push(later);
+  const current=f.f.objects().find(o=>o.table==='worker_bootstrap_heads')!;
+  current.row.history_id=randomUUID();current.row.revision=2;current.row.state='blocked';current.row.record_digest='d'.repeat(64);
+  current.digest=reviewDigest(current.row);current.receiptId=randomUUID();current.eventId=randomUUID();current.writerXid='9000';current.fence=later.fence;
   const before=f.f.state(),r=await f.factory().inspect(f.scope);assert.ok(r.ok);
   assert.equal(r.authorityCurrent,false);assert.equal(r.historyIntegrity,true);assert.equal(r.effectiveState,'delivery_unknown');
   assert.equal(r.canonical.ticketAtSeal.revision,record.revision-1);
   assert.equal(r.canonical.ticketCurrent.record.revoked,true);assert.equal(r.canonical.ticketCurrent.record.revision,record.revision);
+  assert.equal(r.canonical.attemptAtSeal.state,'consumed');assert.equal(r.canonical.attempt.state,'blocked');
   assert.equal((await f.factory().execute(f.command('outcome'))).ok,false);assert.deepEqual(f.f.state(),before);
   const missing=f.f.operations().get(f.scope.attemptId)!;missing.receipts=missing.receipts.filter((r:any)=>r.table!=='worker_bootstrap_heads');
   const denied=await f.factory().inspect(f.scope);assert.equal(denied.ok,false);assert.equal(denied.historyIntegrity,false);

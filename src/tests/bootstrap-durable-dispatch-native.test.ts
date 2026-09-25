@@ -6,11 +6,14 @@ import {PrismaClient} from '@prisma/client';
 import {attestationNativeFixture,owned,prepare,NativeRegistrationDenied} from './decision-attestation-native-fixture';
 import {ticketFixture} from './bootstrap-ticket-native-fixture';
 import {nativeDispatchHarness,type NativeDispatchHarness} from './bootstrap-dispatch-native-fixture';
-import {dispatchDigest,type DispatchCommand} from '../modules/api-keys/bootstrap-dispatch-contract';
+import {dispatchDigest,advanceDispatch,type DispatchCommand} from '../modules/api-keys/bootstrap-dispatch-contract';
+import {linkDispatchReceipt} from '../modules/api-keys/bootstrap-dispatch-lineage';
+import {reviewDigest} from '../modules/agent-runtime/task-review-contract';
 import {dispatchGuards} from '../modules/api-keys/bootstrap-dispatch-guards';
 import {createAttestedBootstrapComposition} from '../modules/api-keys/bootstrap-attested-composition';
 import {createDurableDispatchAdapter} from '../modules/api-keys/bootstrap-dispatch-prisma';
-import {createPrismaBootstrapChannelStore} from '../modules/api-keys/bootstrap-channel-store';
+import {createPrismaBootstrapChannelStore,createBootstrapV2ChannelBinding} from '../modules/api-keys/bootstrap-channel-store';
+import {createPrismaTicketLifecycleStore} from '../modules/api-keys/bootstrap-ticket-lifecycle-store';
 import {lifecycleFlags} from '../modules/api-keys/bootstrap-ticket-lifecycle-contract';
 
 test('native durable bootstrap dispatch/completion',{skip:!process.env.WORKER_IDENTITY_NATIVE_DATABASE,timeout:850000},async t=>{
@@ -57,6 +60,22 @@ test('native durable bootstrap dispatch/completion',{skip:!process.env.WORKER_ID
   h.clear();return {h,c:await h.command(action)};
  }
  const phases=['prepare','claim','resume','start_send','outcome','unknown','start_complete','complete','require_reconciliation','reconcile','recover','cancel'] as const;
+ async function lineage(h:NativeDispatchHarness){
+  const status=await h.factory().inspect(h.scope);assert.ok(status.ok,JSON.stringify(h.errors.slice(-3)));assert.equal(status.historyIntegrity,true);
+  const rows=await db.$queryRaw<any[]>`SELECT h.record,h.record_digest AS "recordDigest",h.request_digest AS "requestDigest",
+   bootstrap_lifecycle_digest(to_jsonb(h)) AS "rowDigest",h.writer_xid AS "writerXid",h.fence_revision::text AS fence,r.event_id AS "eventId",
+   r.row_digest AS "receiptDigest",r.writer_xid AS "receiptXid",e.type
+   FROM worker_bootstrap_dispatch_history h JOIN worker_bootstrap_dispatch_receipts r ON r.operation_id=h.id JOIN events e ON e.id=r.event_id
+   WHERE h.attempt_id=${h.scope.attemptId}::uuid ORDER BY h.revision`;
+  assert.equal(rows.length,status.entries.length);
+  for(let i=0;i<rows.length;i++){
+   const row=rows[i];assert.equal(row.rowDigest,row.receiptDigest);assert.equal(row.writerXid,row.receiptXid);assert.equal(row.type,'bootstrap.dispatch.write');
+   assert.deepEqual(row.record.lineage.anchor,status.anchor);assert.deepEqual(row.record.lineage.previous,i?linkDispatchReceipt(rows[i-1]):null);
+   assert.equal(row.fence,status.anchor.sealReceipt.fence);
+  }
+  assert.equal(status.canonical.completionRecorded,false);assert.equal(status.canonical.credentialActivated,false);
+  assert.equal(status.canonical.completionBlocker,'signed_bootstrap_completion_required');return status;
+ }
 
  await t.test('actual SQL full state machine, committed receipts and distinct phase clients/PIDs',async()=>{
   const h=await fresh(),fence=(await db.$queryRaw<any[]>`SELECT revision::text AS f FROM ready_source_fence WHERE id=1`)[0].f;
@@ -71,7 +90,85 @@ test('native durable bootstrap dispatch/completion',{skip:!process.env.WORKER_ID
   const status=h.traces.at(-1)!;assert.ok(!writers.some(w=>w.pid===status.pid));
   const receipts=await db.$queryRaw<any[]>`SELECT r.operation_id,e.type FROM worker_bootstrap_dispatch_receipts r JOIN events e ON e.id=r.event_id JOIN worker_bootstrap_dispatch_history h ON h.id=r.operation_id WHERE h.attempt_id=${h.scope.attemptId}::uuid`;
   assert.equal(receipts.length,6);assert.ok(receipts.every(r=>r.type==='bootstrap.dispatch.write'));
+  const causal=await lineage(h);assert.equal(causal.authorityCurrent,true);assert.equal(causal.fenceLineage.status,'exact_seal_epoch');
+  assert.equal(causal.canonical.attempt.state,'consumed');assert.equal(causal.canonical.ticketCurrent.record.state,'consumed');
   console.log(JSON.stringify({phasePids:writers.map(w=>({phase:w.phase,pid:w.pid})),statusPid:status.pid,sourceFenceUnchanged:true,attempts:1,committedTransitions:6}));
+ });
+ await t.test('twenty distinct writer clients contend at every normal phase with one exact next receipt',async()=>{
+  for(const phase of ['prepare','claim','start_send','outcome','start_complete','complete'] as const){
+   const {h}=await operation(phase),n=(await h.rows()).length,commands=await Promise.all(Array.from({length:20},()=>h.command(phase))),start=h.traces.length;
+   const results=await Promise.all(commands.map((c,i)=>h.factory(i).execute(c)));
+   assert.equal(results.filter(r=>r.ok).length,1,JSON.stringify({phase,errors:h.errors.slice(-3)}));assert.equal((await h.rows()).length,n+1);
+   assert.equal(new Set(h.traces.slice(start).filter(r=>r.mode==='write').map(r=>r.pid)).size,20);
+   await lineage(h);
+  }
+  console.log(JSON.stringify({causalContentionPhases:6,clientsPerPhase:20,winnersPerPhase:1}));
+ });
+ await t.test('direct malformed causal appends reject exact parent, anchor, receipt and epoch substitutions',async()=>{
+  const h=await fresh();await h.through('claimed_not_sent');const status=await lineage(h),before=await snapshot();
+  const cases:[string,(r:any)=>void][]=[
+   ['missing',r=>delete r.lineage],['extra',r=>r.lineage.extra=true],['nullParent',r=>r.lineage.previous=null],
+   ...['operationId','eventId','recordDigest','requestDigest','rowDigest','writerXid','fence'].map(key=>[key,(r:any)=>{
+    r.lineage.previous[key]=key.endsWith('Id')?randomUUID():key.endsWith('Digest')?'f'.repeat(64):'999999';}] as [string,(r:any)=>void]),
+   ['sealDigest',r=>r.lineage.anchor.sealDigest='f'.repeat(64)],['rowsDigest',r=>r.lineage.anchor.sealReceipt.rowsDigest='f'.repeat(64)],
+   ['sealXid',r=>r.lineage.anchor.sealReceipt.writerXid='999999'],['sourceEpoch',r=>r.lineage.anchor.sealReceipt.fence='999999'],
+   ['foreignAttempt',r=>r.lineage.anchor.attemptId=randomUUID()],['ticketRevision',r=>r.lineage.anchor.ticketHead.revision++],
+   ['ticketDigest',r=>r.lineage.anchor.ticketHead.digest='f'.repeat(64)],['ticketEvent',r=>r.lineage.anchor.ticketHead.receipt.eventId=randomUUID()],
+   ['attemptReceipt',r=>r.lineage.anchor.attemptHead.receipt.rowDigest='f'.repeat(64)],['gap',r=>r.revision++],
+   ['duplicate',r=>r.operationId=status.head!.operationId],['replay',r=>r.lineage.previous=status.entries[0].record.lineage.previous]
+  ];
+  for(const [label,mutate] of cases){
+   const c=await h.command('start_send'),record=structuredClone(advanceDispatch(status.head,status.authority,c,new Date().toISOString(),
+    {version:'bootstrap-dispatch-lineage-v1',anchor:status.anchor,previous:status.lastReceipt}));mutate(record);
+   await assert.rejects(db.$transaction(async tx=>{await tx.$executeRaw`INSERT INTO worker_bootstrap_dispatch_history(id,attempt_id,revision,previous_digest,record,record_digest,request_digest,fence_revision,writer_xid)
+    VALUES(${record.operationId}::uuid,${h.scope.attemptId}::uuid,${record.revision},${record.previousDigest},${JSON.stringify(record)}::jsonb,
+    ${reviewDigest(record)},${reviewDigest(c)},${status.authority.version.fence}::bigint,pg_current_xact_id()::text)`;},{isolationLevel:'Serializable'}),label);
+  }
+  assert.deepEqual(await snapshot(),before);await h.step('start_send');await lineage(h);
+  console.log(JSON.stringify({malformedDirectCausalAppends:cases.length,denied:cases.length,subsequentValidAppend:true}));
+ });
+ await t.test('missing or corrupted native receipts/history and fence regression deny status without repair',async()=>{
+  const h=await fresh();await h.through('send_started');const rows=await h.rows(),first=rows[0],last=rows.at(-1),before=await snapshot();
+  const receipt=(await db.$queryRaw<any[]>`SELECT to_jsonb(r) AS row FROM worker_bootstrap_dispatch_receipts r WHERE operation_id=${last.id}::uuid`)[0].row;
+  for(const fault of ['gap','missingReceipt','wrongEvent','rowDigest','writerXid','fence','sourceReceipt','regression']){
+   // Explicit owned-fixture corruption tests the reader; all changes are restored
+   // after observation. Normal guarded DML rejection is tested separately.
+   await prepare(db,async tx=>{
+    if(fault==='gap')await tx.$executeRaw`DELETE FROM worker_bootstrap_dispatch_history WHERE id=${first.id}::uuid`;
+    if(fault==='missingReceipt')await tx.$executeRaw`DELETE FROM worker_bootstrap_dispatch_receipts WHERE operation_id=${last.id}::uuid`;
+    if(fault==='wrongEvent')await tx.$executeRaw`UPDATE worker_bootstrap_dispatch_receipts SET event_id=${randomUUID()}::uuid WHERE operation_id=${last.id}::uuid`;
+    if(fault==='rowDigest')await tx.$executeRaw`UPDATE worker_bootstrap_dispatch_receipts SET row_digest=${'f'.repeat(64)} WHERE operation_id=${last.id}::uuid`;
+    if(fault==='writerXid')await tx.$executeRaw`UPDATE worker_bootstrap_dispatch_receipts SET writer_xid='999999' WHERE operation_id=${last.id}::uuid`;
+    if(fault==='fence')await tx.$executeRaw`UPDATE worker_bootstrap_dispatch_receipts SET fence_revision=fence_revision+1 WHERE operation_id=${last.id}::uuid`;
+    if(fault==='sourceReceipt')await tx.$executeRaw`UPDATE decision_attestation_write_receipts SET row_digest=${'f'.repeat(64)} WHERE id=${first.record.lineage.anchor.attemptHead.receipt.id}::uuid`;
+    if(fault==='regression')await tx.$executeRaw`UPDATE ready_source_fence SET revision=revision-1 WHERE id=1`;
+   });
+   try{const corrupted=await snapshot(),status=await h.factory().inspect(h.scope);assert.equal(status.ok,false,fault);assert.equal(status.historyIntegrity,false,fault);
+    assert.equal((await h.factory().execute(await h.command('outcome'))).ok,false,fault);assert.deepEqual(await snapshot(),corrupted);
+   }finally{await prepare(db,async tx=>{
+    if(fault==='gap')await tx.$executeRaw`INSERT INTO worker_bootstrap_dispatch_history SELECT * FROM jsonb_populate_record(NULL::worker_bootstrap_dispatch_history,${JSON.stringify({...first,fence_revision:String(first.fence_revision)})}::jsonb)`;
+    if(fault==='sourceReceipt')await tx.$executeRaw`UPDATE decision_attestation_write_receipts SET row_digest=${first.record.lineage.anchor.attemptHead.receipt.rowDigest} WHERE id=${first.record.lineage.anchor.attemptHead.receipt.id}::uuid`;
+    if(fault==='regression')await tx.$executeRaw`UPDATE ready_source_fence SET revision=revision+1 WHERE id=1`;
+    if(!['gap','sourceReceipt','regression'].includes(fault)){
+     await tx.$executeRaw`DELETE FROM worker_bootstrap_dispatch_receipts WHERE operation_id=${last.id}::uuid`;
+     await tx.$executeRaw`INSERT INTO worker_bootstrap_dispatch_receipts SELECT * FROM jsonb_populate_record(NULL::worker_bootstrap_dispatch_receipts,${JSON.stringify(receipt)}::jsonb)`;
+    }
+   });}
+   assert.deepEqual(await snapshot(),before);await lineage(h);
+  }
+ });
+ await t.test('real canonical ticket revocation preserves historical seal integrity and exposes blocked current attempt',async()=>{
+  const h=await fresh();await h.through('send_started');const original=await lineage(h),store=createPrismaTicketLifecycleStore(db,()=>new Date(),{
+   channel:createBootstrapV2ChannelBinding(),verifier:{qualification:'worker_bootstrap_ticket_verifier_v2',verify:async(_tx,p)=>
+    reviewDigest(p.signed)===reviewDigest(h.f.reg.record.signed)&&reviewDigest(p.identity)===reviewDigest(h.f.reg.identity)}});
+  const ticket=await store.inspect({ticketId:h.scope.ticketId});assert.ok(ticket.ok);
+  await store.transition({ticketId:h.scope.ticketId,operationId:randomUUID(),action:'revoke',expectedRevision:ticket.head.revision,expectedFence:ticket.fence});
+  const before=await snapshot(),start=h.traces.length,status=await lineage(h);assert.equal(h.traces.length-start,1);
+  assert.equal(status.authorityCurrent,false);assert.equal(status.historyIntegrity,true);assert.deepEqual(status.anchor,original.anchor);
+  assert.equal(status.canonical.attemptAtSeal.state,'consumed');assert.equal(status.canonical.attempt.state,'blocked');
+  assert.equal(status.canonical.ticketCurrent.record.revoked,true);assert.equal(status.effectiveState,'delivery_unknown');
+  assert.equal(status.fenceLineage.status,'foreign_source_epoch');uncertain(await h.factory().execute(await h.command('outcome')));
+  assert.deepEqual(await snapshot(),before);console.log(JSON.stringify({canonicalTicketRevocation:true,historyIntegrity:true,authorityCurrent:false,currentAttempt:'blocked',originalAnchor:'consumed',readOnly:true}));
  });
  await t.test('owner recovery uses real predecessor and preserves exactly one new attempt',async()=>{
   const prior=await ticketFixture(db);await prior.store.register(prior.registration);
@@ -140,7 +237,10 @@ test('native durable bootstrap dispatch/completion',{skip:!process.env.WORKER_ID
     if(cause==='issuer')await tx.$executeRaw`UPDATE trusted_provider_ticket_keys SET epoch=epoch+1 WHERE workspace_id=${f.b.workspaceId}::uuid`;
     if(cause==='channel')await tx.$executeRaw`UPDATE worker_transport_bootstrap_grants SET record_digest=${'f'.repeat(64)} WHERE ticket_id=${f.q.ticketId}::uuid`;
    });const before=await snapshot();assert.equal((await h.factory().execute(c)).ok,false,cause);
-   const status=await h.factory().inspect(h.scope);assert.ok(status.ok,cause);assert.equal(status.ok&&status.authorityCurrent,false,cause);
+   const status=await h.factory().inspect(h.scope);assert.equal(status.authorityCurrent,false,cause);
+   // Directly altering the sealed immutable attempt corrupts historical proof;
+   // ordinary authority drift alone does not change that proof.
+   assert.equal(status.historyIntegrity,cause!=='credential',cause);assert.equal(status.ok,cause!=='credential',cause);
    assert.deepEqual(await snapshot(),before,cause);
   }
  });
@@ -178,6 +278,7 @@ test('native durable bootstrap dispatch/completion',{skip:!process.env.WORKER_ID
   const h=await fresh();await h.through('send_started');await h.step('unknown');await h.step('require_reconciliation');
   for(const extra of [{evidenceDigest:null},{decisionId:randomUUID()},{expectedDigest:'f'.repeat(64)}])assert.equal((await h.factory().execute(await h.command('reconcile',extra))).ok,false);
   await h.step('reconcile');await h.step('recover');assert.equal((await h.head())!.state,'cancelled');assert.equal((await h.rows()).length,7);
+  await lineage(h);
   assert.equal((await h.factory().execute(await h.command('resume'))).ok,false);
   for(const state of ['sealed_ready','claimed_not_sent'] as const){const g=await fresh();await g.through(state);await g.step('cancel');assert.equal((await g.head())!.state,'cancelled');}
   for(const cause of ['expiry','revoke']){const g=await fresh(cause==='expiry'?{policyTtlMs:12000}:{});await g.through('send_started',cause==='expiry'?5000:30000);

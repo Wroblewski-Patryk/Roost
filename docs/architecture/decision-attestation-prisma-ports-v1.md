@@ -1,5 +1,79 @@
 # Decision attestation: Prisma ports and native persistence evidence
 
+## Owner amendment v64: native causal dispatch lineage qualification
+
+**Final complete run: 24/24 PASS, zero skips, native exit 0,
+runner exit 0, nativeRuns=1, 569.722 seconds.** One owned disposable
+PostgreSQL database applied the complete final 84-migration chain from empty.
+The real durable adapter, composition and unified status reader were used.
+Twenty separate clients have distinct backend PIDs. Fresh factories model restart
+boundaries; no OS process restart, production signer/trust or real delivery is
+claimed.
+
+| Boundary | Native evidence |
+| --- | --- |
+| Causal chain | Seal, consumed attempt/ticket anchors, every dispatch predecessor, request/response, Event/full-row digest, XID and fence match. Own dispatch writes leave the signed-source fence unchanged. First enrollment and owner recovery both complete the adapter sequence. Terminal unknown/reconcile/recover/cancel preserve every predecessor. |
+| Contention | Twenty distinct writer clients at each of six normal phases produce one committed next receipt. Twenty composition factories produce one synthetic exchange and one completion. Separate twenty-way completion races retain exact final-operation idempotency without another permit. |
+| Direct SQL | All 22 malformed appends deny: missing/extra lineage, null/replayed parent, wrong operation/Event/record/request/full-row digest/XID/fence, foreign anchor, altered seal/source receipt and ticket revision/digest, revision gap and duplicate operation. A valid append still succeeds afterward. |
+| Corruption and drift | Eight explicitly corrupted owned-fixture cases cover missing history/receipt, wrong Event/full-row digest/XID/fence, missing exact source digest and source-fence regression. Status/writes deny without repair; each fixture is restored and independently fingerprinted. Normal guarded UPDATE/DELETE/TRUNCATE remains rejected. Ten source-drift cases and a change between read and lock deny writes. |
+| Canonical revocation | The existing ticket lifecycle store performs real revocation, appends blocked attempt history and updates the current head. The original seal/receipt anchor remains identical, historyIntegrity=true, authorityCurrent=false, current attempt=blocked, effective delivery=unknown and no retry/permit. Status uses one READ ONLY snapshot. |
+| Restart and purity | Fresh factories rebuild the whole lineage and separate current authority from historical integrity. Expired leases cannot restore send/completion; explicit pre-send resume raises owner high water. Canonical table fingerprints remain identical across inspection. |
+| COMMIT | Twelve phases times six rollback modes: after insert, before COMMIT, injected deferred rejection, actual deferred receipt rejection, false ACK and real pre-COMMIT connection termination. All 72 preserve exact snapshots with zero transitions. Lost ACK at each phase leaves exactly one transition and no permit. Missing/mismatched/unavailable readback after send/completion denies. Two actual relay cuts after PostgreSQL COMMIT preserve one transition each; armed=2/applied=2. |
+
+### Historical head correction
+
+The v63 mocked later-ticket-event case did not move the canonical attempt head.
+The real revocation contract also writes blocked attempt history and replaces that
+head. Reading the current head as the original consumed row would therefore
+misclassify valid history as damaged. The bounded reader correction reconstructs
+the exact original public head from immutable attempt metadata and revision-one
+consumed history. Its full-row digest must equal the original automatic receipt,
+and the complete original operation receipt-set digest must still equal the stored
+dispatch anchor. Missing or altered evidence still denies. Current head status is
+read separately with its own exact receipt/Event. The current authority reader
+continues to use the actual current head and strict completeness; no historical
+projection can authorize a writer. This is a READ ONLY derivation, not a new head,
+registry, backfill or source-authority exception.
+
+**No migration correction was needed.** Migrations 1-84 and the Prisma schema are
+unchanged from v63; migration 84 remains unapplied outside owned qualification
+databases. Applied/final raw-file chain SHA-256:
+`725ecf536d28bffea1886c47ab23875636939782a4052f53f15d16d3b88a1bf8`.
+Migration-84 LF SHA-256:
+`26c2fb9731b60583f5266397f3e473dbdbcac7bb80b1435dbef760457dfc8e54`.
+Unchanged migrations 1-83 raw-file chain:
+`5e7d56f423aeb4c325edf7a5804551c8ffdc664ac85bf289c48ec69ccaff148b`.
+
+Cleanup independently **PASS**: owned database removed, relay/listener and child
+processes closed, helperFilesCreated=0, zero external directories. Before/after
+catalog, table/sequence, structure and role fingerprints match across three
+existing databases / 214 tables and sequences:
+`e9e019524b6010b02b30b4635fff99133c4429ffac3f537b05ac860485a281f1`.
+Roost PostgreSQL returned to stopped; other containers/inventory remained unchanged.
+Soar was not operated. No private dotenv, credential/key generation, provisioning,
+target/model/profile, real delivery or activation occurred.
+
+Selected source/mocked tests **251/251 PASS, zero skips**. Server TypeScript build,
+lint (338 routes / 45 files), both source-pin checks, runner syntax and scoped diff
+checks PASS. No web build: backend-only changes. Protected dirty product/planning
+documents, unread `design-qa.md` and retained roots are excluded.
+
+Adapter completion still reports `completionRecorded=false`,
+`credentialActivated=false` and `signed_bootstrap_completion_required`. Verified
+signed peer/completion, atomic canonical lifecycle completion, real credential
+facts, production trust/delivery and successor admission remain separate gaps.
+RF-HOST-035 **PARTIAL**, production **BLOCKED**; `implementationReady`,
+`executionSupported`, `pilotReady`, `liveAdmissionAllowed`,
+`pilotExecutionAuthorized`, `pilotExecutionStarted`, `transportQualified` and
+`launchAuthority` all remain false. Historical registration cause remains
+UNKNOWN / MONITORED RESIDUAL RISK.
+
+Exactly one next recommendation, **not started**: source-only integration of
+verified signed peer/completion evidence with atomic canonical attempt/ticket
+lifecycle completion and exact causal receipts, without default delivery or
+credential activation from a response digest alone. Older recommendations below
+are historical.
+
 ## Owner amendment v63: canonical dispatch receipt lineage, source only
 
 The existing ticket and attempt roots remain the only roots. Every dispatch

@@ -19,7 +19,18 @@ export function exactTime(value:unknown){
 // Static identifiers only. No raw/unsafe SQL and no application-supplied table names.
 // This CTE includes the original roots and bounded immutable histories, never a
 // writable projection blob. Secret-bearing api_keys are deliberately not selected.
-export function attestationObjects(q:AttestationScope){return Prisma.sql`WITH scope AS (
+// Reconstruct only the original head's exact public row from immutable roots /
+// revision-one history. Its original automatic receipt must still match this
+// full-row digest. This is historical evidence, never the current writable head.
+export const consumedAttemptHead=Prisma.sql`jsonb_build_object('workspace_id',a.workspace_id,'host_id',a.host_id,
+ 'attempt_id',a.id,'history_id',h.id,'generation',a.generation,'credential_epoch',a.credential_epoch,
+ 'revision',h.revision,'record_digest',h.record_digest,'state',h.state)`;
+export function attestationObjects(q:AttestationScope,historicalAttemptId?:string){
+ const heads=historicalAttemptId?Prisma.sql`SELECT 'worker_bootstrap_heads',a.workspace_id::text||':'||a.host_id::text,${consumedAttemptHead}
+ FROM worker_bootstrap_attempts a JOIN scope s ON s.ticket_id=a.ticket_id JOIN worker_bootstrap_history h ON h.attempt_id=a.id
+ WHERE a.id=${historicalAttemptId}::uuid AND h.revision=1 AND h.state='consumed'`:
+ Prisma.sql`SELECT 'worker_bootstrap_heads',h.workspace_id::text||':'||h.host_id::text,to_jsonb(h) FROM worker_bootstrap_heads h JOIN scope s ON s.workspace_id=h.workspace_id AND s.host_id=h.host_id`;
+ return Prisma.sql`WITH scope AS (
  SELECT d.id,d.workspace_id,t.id AS ticket_id,t.host_id,(t.lifecycle_identity->'binding'->>'installationId')::uuid AS installation_id
  FROM decisions d JOIN worker_bootstrap_tickets t ON t.decision_id=d.id WHERE d.id=${q.decisionId}::uuid AND t.id=${q.ticketId}::uuid
 ), objects AS (
@@ -36,7 +47,7 @@ export function attestationObjects(q:AttestationScope){return Prisma.sql`WITH sc
  UNION ALL SELECT 'worker_bootstrap_tickets',t.id::text||':'||t.host_id::text,to_jsonb(t) FROM worker_bootstrap_tickets t JOIN scope s ON s.ticket_id=t.id
  UNION ALL SELECT 'worker_bootstrap_attempts',a.id::text||':'||a.host_id::text,to_jsonb(a) FROM worker_bootstrap_attempts a JOIN scope s ON s.ticket_id=a.ticket_id
  UNION ALL SELECT 'worker_bootstrap_history',h.id::text,to_jsonb(h) FROM worker_bootstrap_history h JOIN worker_bootstrap_attempts a ON a.id=h.attempt_id JOIN scope s ON s.ticket_id=a.ticket_id
- UNION ALL SELECT 'worker_bootstrap_heads',h.workspace_id::text||':'||h.host_id::text,to_jsonb(h) FROM worker_bootstrap_heads h JOIN scope s ON s.workspace_id=h.workspace_id AND s.host_id=h.host_id
+ UNION ALL ${heads}
  UNION ALL SELECT 'worker_bootstrap_audit',a.id::text,to_jsonb(a) FROM worker_bootstrap_audit a JOIN scope s ON s.ticket_id=a.ticket_id
  UNION ALL SELECT 'worker_bootstrap_lifecycle_events',e.id::text,to_jsonb(e) FROM worker_bootstrap_lifecycle_events e JOIN scope s ON s.ticket_id=e.ticket_id
  UNION ALL SELECT 'worker_transport_bootstrap_grants',g.id::text,to_jsonb(g) FROM worker_transport_bootstrap_grants g JOIN scope s ON s.ticket_id=g.ticket_id
@@ -86,7 +97,7 @@ export async function readHistoricalAttestationOperation(db:AttestationDb,q:Atte
 }
 async function readOperation(db:AttestationDb,q:AttestationScope,operationId:string,historical:boolean){
  z.string().uuid().parse(operationId);attestationScope.parse(q);
- const rows=await db.$queryRaw<any[]>(Prisma.sql`${attestationObjects(q)}, operation AS (
+ const rows=await db.$queryRaw<any[]>(Prisma.sql`${attestationObjects(q,historical?operationId:undefined)}, operation AS (
  SELECT o.*,COALESCE(o.row->>'mutation_digest',o.row->>'attestation_mutation_digest') AS mutation,
  COALESCE(o.row->>'writer_xid',(SELECT r.writer_xid FROM decision_attestation_write_receipts r
  WHERE r.table_name=o.tbl AND r.row_id=o.rid AND r.operation='INSERT' LIMIT 1)) AS xid

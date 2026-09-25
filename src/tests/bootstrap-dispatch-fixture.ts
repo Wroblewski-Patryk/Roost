@@ -31,9 +31,16 @@ export async function dispatchFixture(purpose:'first_enrollment'|'owner_recovery
       controls.atWrite();return values[0]===attemptId&&values[1]===scope.ticketId?[{id:attemptId}]:[];
      }
      if(sql.includes('AS "attemptHead"')){
-      const attemptHead=f.objects().find(o=>o.table==='worker_bootstrap_heads')?.row;
+      const a=f.objects().find(o=>o.table==='worker_bootstrap_attempts')!.row,
+       h=f.objects().find(o=>o.table==='worker_bootstrap_history'&&o.row.revision===1)!.row,
+       attemptHead={workspace_id:a.workspace_id,host_id:a.host_id,attempt_id:a.id,history_id:h.id,generation:a.generation,
+        credential_epoch:a.credential_epoch,revision:h.revision,record_digest:h.record_digest,state:h.state};
       return f.objects().filter(o=>o.table==='worker_bootstrap_lifecycle_events'&&o.row.attempt_id===attemptId&&
        o.row.history_id===attemptHead?.history_id&&(o.row.record as any).action==='consume'&&(o.row.record as any).state==='consumed').map(o=>({attemptHead,ticketRow:o.row}));
+     }
+     if(sql.includes('AS "currentAttempt"')){
+      const o=f.objects().find(o=>o.table==='worker_bootstrap_heads');
+      return o?[{currentAttempt:o.row,id:o.receiptId,eventId:o.eventId,rowDigest:o.digest,writerXid:o.writerXid,fence:o.fence,verified:o.verified}]:[];
      }
      if(sql.includes('AS "currentTicket"')){
       const o=f.objects().filter(o=>o.table==='worker_bootstrap_lifecycle_events').at(-1);

@@ -230,7 +230,7 @@ try:
     if result.returncode: raise RuntimeError('Native '+args.suite+' qualification failed')
     assert re.search(r'^# skipped 0$',result.stdout,re.M) and re.search(r'^# fail 0$',result.stdout,re.M)
     if args.scenario=='full' or args.suite in ('issuer','channel','ticket','revocation','attestation','attested-reader','dispatch'):
-        expected = 20 if args.suite=='dispatch' else 18 if args.suite=='attested-reader' else 24 if args.suite=='attestation' else 13 if args.suite=='revocation' else 17 if args.suite=='ticket' else 19 if args.suite=='channel' else 17 if args.suite=='issuer' else 16
+        expected = 24 if args.suite=='dispatch' else 18 if args.suite=='attested-reader' else 24 if args.suite=='attestation' else 13 if args.suite=='revocation' else 17 if args.suite=='ticket' else 19 if args.suite=='channel' else 17 if args.suite=='issuer' else 16
         assert re.search(r'^# tests '+str(expected)+'$',result.stdout,re.M),'Full suite count differs'
         time.sleep(.1)
         expected_cuts = cuts_before_last_run+(3 if args.suite=='attestation' else 2 if args.suite=='dispatch' else 1) if args.suite in ('revocation','attestation','attested-reader','dispatch') else native_runs if args.suite=='channel' else 1

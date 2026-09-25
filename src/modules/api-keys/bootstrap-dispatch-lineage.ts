@@ -1,10 +1,11 @@
 import {z} from 'zod';
+import {Prisma} from '@prisma/client';
 import {reviewDigest} from '../agent-runtime/task-review-contract';
 import {freezePublic} from './worker-transport-snapshot';
 import {bootstrapBinding} from './worker-bootstrap-contract';
-import {persistedBootstrapAttempt} from './worker-bootstrap-persistence-contract';
+import {persistedBootstrapAttempt,bootstrapAttemptState} from './worker-bootstrap-persistence-contract';
 import {lifecycleEvent} from './bootstrap-ticket-lifecycle-contract';
-import {readHistoricalAttestationOperation,sqlMutationReceipt,sqlHash,positiveText,exact,one,type AttestationDb as Db} from './decision-attestation-sql';
+import {readHistoricalAttestationOperation,consumedAttemptHead,sqlMutationReceipt,sqlHash,positiveText,exact,one,type AttestationDb as Db} from './decision-attestation-sql';
 
 const id=z.string().uuid(),revision=z.number().int().positive().max(2147483646);
 const sourceReceipt=z.object({id,eventId:id,rowDigest:sqlHash,writerXid:positiveText,fence:positiveText}).strict();
@@ -31,11 +32,11 @@ export async function readDispatchAnchor(db:Db,q:{attemptId:string;ticketId:stri
  if(operation.operationTable!=='worker_bootstrap_attempts'||root.id!==q.attemptId||record.id!==q.attemptId||record.ticketId!==q.ticketId||
   record.decisionId!==q.decisionId||!exact(record.binding,q.binding)||root.attestation_seal?.attemptId!==q.attemptId||
   root.attestation_seal?.bindings?.ticketEnvelopeDigest!==record.ticketDigest)deny();
- const row=one(await db.$queryRaw<any[]>`SELECT to_jsonb(h) AS "attemptHead",to_jsonb(l) AS "ticketRow"
- FROM worker_bootstrap_attempts a JOIN worker_bootstrap_heads h ON h.attempt_id=a.id
+ const row=one(await db.$queryRaw<any[]>(Prisma.sql`SELECT ${consumedAttemptHead} AS "attemptHead",to_jsonb(l) AS "ticketRow"
+ FROM worker_bootstrap_attempts a JOIN worker_bootstrap_history h ON h.attempt_id=a.id AND h.revision=1 AND h.state='consumed'
  JOIN LATERAL (SELECT * FROM worker_bootstrap_lifecycle_events WHERE ticket_id=a.ticket_id
- AND attempt_id=a.id AND history_id=h.history_id AND record->>'action'='consume' AND record->>'state'='consumed') l ON true
- WHERE a.id=${q.attemptId}::uuid AND a.ticket_id=${q.ticketId}::uuid AND a.record->>'decisionId'=${q.decisionId}`);
+ AND attempt_id=a.id AND history_id=h.id AND record->>'action'='consume' AND record->>'state'='consumed') l ON true
+ WHERE a.id=${q.attemptId}::uuid AND a.ticket_id=${q.ticketId}::uuid AND a.record->>'decisionId'=${q.decisionId}`));
  const h=row.attemptHead,t=row.ticketRow,head=lifecycleEvent.parse(t.record);
  const receipt=(table:string,rowId:string,raw:unknown)=>{
   const r=one(operation.receipts.filter(r=>r.table===table&&r.rowId===rowId));
@@ -74,6 +75,23 @@ export async function readDispatchTicketStatus(db:Db,ticketId:string){
  if(row.verified!==true||record.ticketId!==ticketId||reviewDigest(record)!==row.digest)deny();
  return freezePublic({record,digest:row.digest as string,receipt:sourceReceipt.parse({id:row.id,eventId:row.eventId,
   rowDigest:row.rowDigest,writerXid:row.writerXid,fence:row.fence})});
+}
+
+export async function readDispatchAttemptStatus(db:Db,attemptId:string){
+ const row=one(await db.$queryRaw<any[]>`SELECT to_jsonb(h) AS "currentAttempt",
+ r.id,r.event_id AS "eventId",r.row_digest AS "rowDigest",r.writer_xid AS "writerXid",r.fence_revision::text AS fence,
+ (r.row_digest=bootstrap_lifecycle_digest(to_jsonb(h)) AND r.fence_revision<=f.revision
+ AND e.type='decision.attestation.write' AND e.source='roost' AND e.actor_type::text='system'
+ AND e.workspace_id IS NOT DISTINCT FROM r.workspace_id AND e.resource_type=r.table_name AND e.resource_id=r.row_id
+ AND e.payload=jsonb_build_object('table',r.table_name,'rowId',r.row_id,'operation',r.operation,'rowDigest',r.row_digest,
+ 'fence',r.fence_revision::text,'writerXid',r.writer_xid,'launchAuthority',false)) AS verified
+ FROM worker_bootstrap_heads h CROSS JOIN ready_source_fence f
+ LEFT JOIN decision_attestation_write_receipts r ON r.table_name='worker_bootstrap_heads'
+ AND r.row_id=h.workspace_id::text||':'||h.host_id::text AND r.row_digest=bootstrap_lifecycle_digest(to_jsonb(h))
+ LEFT JOIN events e ON e.id=r.event_id WHERE h.attempt_id=${attemptId}::uuid AND f.id=1`);
+ const h=row.currentAttempt;if(row.verified!==true||h.attempt_id!==attemptId)deny();
+ return freezePublic({historyId:id.parse(h.history_id),revision:revision.parse(h.revision),digest:sqlHash.parse(h.record_digest),
+  state:bootstrapAttemptState.parse(h.state),receipt:sourceReceipt.parse({id:row.id,eventId:row.eventId,rowDigest:row.rowDigest,writerXid:row.writerXid,fence:row.fence})});
 }
 
 // This atom admits only unchanged signed-source epochs. Child dispatch writes

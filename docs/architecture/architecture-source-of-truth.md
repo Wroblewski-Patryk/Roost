@@ -1,21 +1,20 @@
 # Architecture Source Of Truth
 
-Owner amendment v63: [canonical dispatch receipt lineage](decision-attestation-prisma-ports-v1.md)
-binds every dispatch child to the exact consumed attempt/ticket seal receipts and
-previous committed dispatch receipt. One READ ONLY snapshot separates
-`historyIntegrity` from `authorityCurrent`, reconstructs restart/recovery status,
-and classifies any intervening source epoch as drift. Own child writes preserve
-the signed-source fence; no gap, replay or foreign receipt grants work.
-Completion remains a durable adapter fact: signed peer/completion evidence is
-required before canonical acknowledgement or credential activation. The explicit
-integration blocker is `signed_bootstrap_completion_required`.
-Migration 84 alone has source-only causal guard changes; migrations 1-83 remain
-unchanged. v62 native evidence does not qualify this changed guard. RF-HOST-035
-PARTIAL; production BLOCKED; all eight flags false. No default wiring or delivery.
-Historical registration cause UNKNOWN remains MONITORED RESIDUAL RISK. Exactly
-one next recommendation, not started: bounded native qualification of the new
-causal lineage/guard in an owned disposable database. Earlier amendments below
-are historical.
+Owner amendment v64: [native causal dispatch lineage qualification](decision-attestation-prisma-ports-v1.md)
+passed 24/24 with zero skips and native/runner exit 0. One owned disposable
+database applied the complete unchanged 84-migration chain. Six normal phases
+each had twenty distinct writer clients and one winner; 22 malformed direct
+appends denied. Exact receipt lineage, restart reconstruction, corruption,
+revocation, READ ONLY status and uncertain COMMIT checks pass. Historical consumed
+heads are reconstructed from immutable records and checked against their original
+receipts; current blocked heads remain separately visible after ticket revocation.
+No current-authority rule is relaxed. Credential activation and signed canonical
+completion remain blocked. RF-HOST-035 PARTIAL; production BLOCKED; all eight
+flags false. No default wiring or real delivery. Historical registration cause
+UNKNOWN remains MONITORED RESIDUAL RISK. Exactly one next recommendation, not
+started: source-only integration of verified signed peer/completion evidence with
+atomic canonical lifecycle completion and exact causal receipts. Older amendments
+below are historical.
 
 Owner amendment v54: [native attestation qualification](decision-attestation-prisma-ports-v1.md)
 remains **BLOCKED**: final native 14/19 PASS, 5 FAIL (four subtests plus parent),
