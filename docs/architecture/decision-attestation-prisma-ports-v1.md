@@ -1,20 +1,16 @@
 # Decision attestation: Prisma ports and native persistence evidence
 
-## Owner amendment v72: approved public proof authority model
+## Owner amendment v73: source-only public proof persistence
 
-The [separate signer authority contract](bootstrap-proof-authority-v1.md) resolves
-v71's missing model decision: Local Worker `worker-bootstrap-proof-v1` signs
-peer/completion, Roost `bootstrap-completion-binding-attestation-v1` signs binding.
-Public histories, exact owner/ticket attachment, deterministic binary transcript,
-same-Db mock reader/verifier/reread and additive persistence proposal are defined.
-New model 17/17 and selected source/mocked 73/73 PASS (24.413 seconds); build,
-lint and three contract pins PASS. No private key/signing, DB/Docker/network,
-migration/schema change or activation. Canonical persistence/native readers,
-strict wire decoding and cryptographic verification remain BLOCKED; default
-verifier stays unavailable and all eight readiness flags remain false.
-Exactly one next recommendation, not started: source-only additive public-key/
-attachment persistence and same-Db reader, with all-writer guards and exact
-receipt/readback rules. Earlier model gaps and next recommendations are historical.
+The [persistence contract](bootstrap-proof-persistence-v1.md) implements v72's
+approved [signer model](bootstrap-proof-authority-v1.md) with four public children,
+same-Db ports and separate committed row/Event/receipt readback. Migration 86
+UNAPPLIED; 1–85 and Prisma schema unchanged. New mocked suite 33/33, selected
+source 106/106, build/lint/four pins PASS. Native authority, v3 ticket/seal and
+production verifier remain BLOCKED; all eight flags false. No private/signing,
+DB/Docker/network, delivery or activation. Exactly one next recommendation,
+not started: native qualification, including fence compatibility and intentional
+v3-link denial. Earlier status and next recommendations below are historical.
 
 ## Owner amendment v71: public completion verifier blocked on signer authority
 

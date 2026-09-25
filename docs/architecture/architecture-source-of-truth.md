@@ -1,21 +1,16 @@
 # Architecture Source Of Truth
 
-Owner amendment v72: [approved proof signing authority](bootstrap-proof-authority-v1.md)
-defines separate Local Worker peer/completion and Roost server binding keys,
-purposes, public histories and owner-decision/ticket attachments. Source-only
-replay covers monotonic epochs, bounded overlap, hard cutover and terminal
-revocation; a versioned length-framed binary transcript binds complete canonical
-payloads. Same-Db mock read/verify/reread rejects drift before send and requires
-non-retryable reconciliation after send. New model 17/17; selected source/mocked
-tests 73/73, server build, lint and three pins PASS. No private/signing operation,
-migration/schema change, DB/Docker/network, delivery or activation. The signer
-model gap is resolved; canonical persisted histories, native writer/reader,
-strict wire decoding and production cryptography remain BLOCKED. Default
-verifier still unavailable. RF-HOST-035 PARTIAL; all eight readiness flags false;
+Owner amendment v73: [public proof authority persistence](bootstrap-proof-persistence-v1.md)
+adds four SQL-owned public children and explicit same-Db ports; migration 86 is
+UNAPPLIED, migrations 1–85 and Prisma schema unchanged. Catalogs pin 19 functions,
+59 triggers and 18 FKs. SERIALIZABLE writes require separate READ ONLY committed
+row/Event/receipt readback; uncertainty never retries. New mocked suite 33/33,
+selected source 106/106, build/lint/four pins PASS. Ticket-v3/seal links remain
+deliberately denied; no private/signing, DB/Docker/network, delivery or activation.
+RF-HOST-035 PARTIAL, native/production authority BLOCKED; all eight flags false,
 registration UNKNOWN / MONITORED RESIDUAL RISK. Exactly one next recommendation,
-not started: source-only additive proof-key/attachment persistence and explicit
-same-Db reader with all-writer guards/receipt/readback rules; migration remains
-unapplied and default wiring unavailable. Earlier amendments below are historical.
+not started: native qualification of the final 86-migration chain, including
+numeric fence compatibility and intentional v3 denial. Earlier entries are historical.
 
 Owner amendment v54: [native attestation qualification](decision-attestation-prisma-ports-v1.md)
 remains **BLOCKED**: final native 14/19 PASS, 5 FAIL (four subtests plus parent),
