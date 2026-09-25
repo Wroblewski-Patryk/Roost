@@ -2,15 +2,17 @@
 
 ## MVP Business Objective
 
-Roost MVP must provide the minimum coherent operating capabilities needed for
-the owner and an authorized Roost agent to finish one already-started
-application against accepted assumptions and bring it to evidence-backed
-readiness for sale as a subscription product. The process must be reusable for
-further applications. Digital-service sales, prospect collection, and client
-delivery follow only after this product-first proof. This objective does not
-authorize implementation.
+The current first-stage MVP is an internally usable Roost plus Local Worker that
+provides a governed team of agents for the owner. It must retain bounded company
+and application context, assign responsibility, execute and review real work,
+and let those agents take over and finish already-started applications without
+mixing their assumptions. Subscription sale readiness follows after this
+internal creation/completion system works. Digital-service sales, prospect
+collection, client delivery and sale of Roost follow later. This objective does
+not authorize implementation.
 
-## In Scope
+<a id="in-scope"></a>
+## Current First-Stage In Scope
 
 - Owner/workspace authentication and workspace-scoped service API keys.
 - React owner-console views for authentication, account/workspace settings,
@@ -22,9 +24,22 @@ authorize implementation.
 - Workspace-scoped ClickUp sync/webhooks and Google Drive connection, selected
   folder, metadata/content, Docs, and Sheets foundation.
 - Validation of the owner loop with one human owner and supervised agents.
-- One connected application-completion flow: `idea -> defined problem and
-  audience -> completion plan -> build -> verification -> sale readiness ->
-  subscription offering -> active subscriber -> support and renewal`.
+- A real end-to-end Roost-plus-Worker round trip in which an accepted task
+  receives bounded context, reaches the intended agent, returns evidence and
+  independent review, and is shown truthfully to the owner.
+- One application lifecycle with two entry paths: new-product definition or an
+  existing-product takeover audit. After takeover establishes an approved
+  evidence-backed baseline, both paths use the same stages and gates.
+- Proof that Worker-supplied agents can take over one configured existing
+  application, preserve its own assumptions, expose contradictions and gaps,
+  and complete an accepted verified outcome. The mechanism must then onboard a
+  further configured application without changing the core runtime.
+- Gate- and evidence-based progress. Internal technical atoms, repeated tests,
+  documents, migrations and commits do not count as delivery of a required
+  end-to-end result, and subjective percentages cannot replace gate evidence.
+
+### Later sale-readiness scope (accepted, not a current first-stage gate)
+
 - A clear ownership boundary: the application manages its users, subscription
   entitlement, and access response to payment callbacks; Roost does not mirror
   per-user application access state.
@@ -63,6 +78,9 @@ authorize implementation.
   login or entitlement data.
 - An owner revenue view separated by application offering and digital service,
   covering paid and exceptional transactions, invoices, and accounting state.
+
+### Application takeover and completion scope
+
 - An initial assumption-to-product audit: accepted assumptions, observed current
   state, contradictions, implementation classification, prioritized completion
   plan, accountable tasks, and connected verification evidence.
@@ -87,6 +105,11 @@ authorize implementation.
   evidence, and the owner's explicit acceptance.
 - A reusable completion blueprint with common stages and evidence rules plus
   explicit application-specific assumptions and exceptions.
+- One universal minimum standard for product intent, acceptance, documentation,
+  security, data handling, testing, error handling, monitoring, recovery,
+  release and evidence, combined with requirements specific to each application.
+- An owner portfolio showing proven stage, gate state, blockers, decisions,
+  nearest outcome, accountable actor and evidence for each application.
 - A private, owner-selected reference application may supply installation
   evidence, but its identity and private assumptions stay outside distributed
   product documentation.

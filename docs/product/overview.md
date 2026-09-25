@@ -88,17 +88,20 @@ historical attribution, and surfaces affected work for reassignment.
 
 ## Current Phase
 
-- Phase: application-completion foundation; the managed agent runtime remains
+- Phase: internal Roost-plus-Worker foundation; the managed agent runtime remains
   incomplete until the end-to-end gates in `../implementation.md` pass.
 - Primary outcome for this phase: a workspace-safe owner control plane and
   agent integration boundary built around the operating loop `attention ->
   decision -> accountable delegation -> completion evidence`.
-- MVP business objective: the owner and an authorized Roost agent use one
-  governed process to take an already-started application from its current state
-  to evidence-backed readiness for sale as a subscription product. That process
-  must then be reusable for further applications. Customer acquisition and
-  digital-service sales are the next business expansion, not the first Roost
-  proof.
+- Current first-stage objective: Roost plus the Local Worker provides the owner
+  with a governed team of agents that retains bounded context, divides
+  responsibility and completes a real end-to-end task with evidence and review.
+  Internal atoms and subjective progress estimates are not completion.
+- First application-work proof: those agents take over one already-started
+  configured application, establish its truthful assumption/implementation
+  baseline without mixing product contexts, complete an accepted verified
+  outcome, and reuse the mechanism for another application. Subscription sale
+  readiness, customer acquisition and digital-service sales follow later.
 - Application completion starts by separating accepted product assumptions from
   observed implementation. Each material assumption is classified as not
   implemented, implemented correctly, implemented incorrectly, or unverified
@@ -183,6 +186,7 @@ historical attribution, and surfaces affected work for reassignment.
   disconnect-and-purge lifecycle for integrations are accepted later-phase
   directions, not MVP requirements.
 - Product-direction caveat: the current runtime still implements the fixed
-  reference areas. The
-  accepted configurable-area direction remains documentation-only until its
-  conflict with the current architecture is explicitly resolved.
+  reference areas. `RF-PROD-002` supersedes fixed topology as the accepted
+  product target, while the technical migration remains open and unimplemented.
+  Existing records and history must not be treated as disposable merely because
+  the target structure is configurable.

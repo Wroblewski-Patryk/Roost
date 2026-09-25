@@ -34,6 +34,9 @@ public/react/
 # Local automation session artifacts
 .tmp-*.json
 
+# Local visual QA notes may contain machine-specific evidence paths.
+/design-qa.md
+
 # Local Obsidian runtime/plugin state
 docs/.obsidian/plugins/
 docs/.obsidian/themes/

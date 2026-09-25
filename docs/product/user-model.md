@@ -1,6 +1,6 @@
 # User Model
 
-Last updated: 2026-09-23
+Last updated: 2026-09-25
 
 ## Purpose
 
@@ -23,6 +23,13 @@ administrator, member, viewer, and provider-only roles remain part of the
 product model and existing capabilities are not removed, but multi-human
 onboarding is not required to validate the present owner workflow.
 
+Roost mechanisms are actor-neutral. A role may be occupied by a person, an
+agent, or an explicitly governed combination. Authority, responsibility and
+escalation follow the role and mandate rather than actor type. Each work item or
+decision has exactly one accountable actor or role at a time; contributors may
+be many, but transfer of accountability is explicit and preserves context,
+history and evidence.
+
 ## Operator Roles
 
 | Role | Responsibilities | Tools | Approval authority | Evidence needed |
@@ -41,11 +48,13 @@ onboarding is not required to validate the present owner workflow.
 - A material decision presents affected goals, projects, tasks, and processes
   before acceptance. Applying the decision preserves the prior direction and a
   traceable record of every accepted downstream effect.
-- The current MVP owner journey selects an existing application, confirms its
-  intended outcome and readiness definition, reviews gaps and a completion plan,
-  delegates bounded work to an authorized agent, and accepts sale readiness only
-  from connected verification evidence. The agent does not define product intent
-  or declare commercial readiness on its own authority.
+- The current first-stage owner journey observes a real Roost-plus-Worker task,
+  sees which role and agent are accountable, and receives the evidence-backed
+  result and independent review without reconstructing context manually. The
+  following application journey selects an existing configured application,
+  approves its takeover baseline, reviews contradictions and gaps, and delegates
+  bounded completion work. Sale readiness is a later gate. An agent does not
+  redefine product intent or declare commercial readiness on its own authority.
 - During the initial audit, the interface must keep decision status separate
   from implementation state. For every material accepted assumption, the owner
   can see whether it is not implemented, implemented correctly, implemented

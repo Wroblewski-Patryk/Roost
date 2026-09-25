@@ -1,5 +1,9 @@
 # Foundation requirements traceability
 
+Current delivery work starts at [Matrix](#matrix). The amendment stream before
+it is historical evidence and should be skipped unless a specific requirement
+or implementation claim needs provenance; it is never the work queue.
+
 Owner amendment v76: [v3 source projection](bootstrap-proof-projection-v3.md)
 defines exact own-XID/receipt lineage, complete source sets, explicit shared/nested
 epoch cardinality and immutable phase prefixes. Source-only; native projection,
@@ -933,6 +937,79 @@ stays disabled and the canonical host stays observe.
 
 | Requirement | Priority | Status | Inspected evidence | Remaining boundary / proof |
 | --- | --- | --- | --- | --- |
+| [RF-PROD-001](../product/requirements.md#rf-prod-001) | P1 | nieocenione | [DOC](#e-doc) | Reusable self-hosting and private-configuration behavior require an implementation audit. |
+| [RF-PROD-002](../product/requirements.md#rf-prod-002) | P2 | nieocenione | [ORG](#e-org) | Configurable composition is accepted intent; the migration design remains deferred under OPEN-ORG-001. |
+| [RF-PROD-003](../product/requirements.md#rf-prod-003) | P1 | nieocenione | [DOC](#e-doc) | Canonical shared records, stewardship and contextual projections require an implementation audit. |
+| [RF-PROD-004](../product/requirements.md#rf-prod-004) | P2 | nieocenione | [ORG](#e-org) | Editable onboarding templates are not part of the current runtime delivery gate. |
+| [RF-PROD-005](../product/requirements.md#rf-prod-005) | P1 | nieocenione | [AUTH](#e-auth) | Existing roles are evidence only; multi-human onboarding is not a current gate. |
+| [RF-PROD-006](../product/requirements.md#rf-prod-006) | P1 | nieocenione | [AUTH](#e-auth) | Role-scoped projections and correctable inferred context require an implementation audit. |
+| [RF-PROD-007](../product/requirements.md#rf-prod-007) | P1 | nieocenione | [ORG](#e-org) | Department stewardship over shared capabilities and records is not yet reconciled. |
+| [RF-PROD-008](../product/requirements.md#rf-prod-008) | P2 | nieocenione | [ORG](#e-org) | Safe post-launch composition changes await the configurable-composition phase. |
+| [RF-PROD-009](../product/requirements.md#rf-prod-009) | P2 | nieocenione | [DOC](#e-doc) | This packaging boundary is accepted policy; no separate-module implementation is required now. |
+| [RF-PROD-010](../product/requirements.md#rf-prod-010) | P0 | nieocenione | [GOV](#e-gov) | Actor-neutral authority and lowest-authorized escalation need end-to-end runtime proof. |
+| [RF-PROD-011](../product/requirements.md#rf-prod-011) | P0 | nieocenione | [DOC](#e-doc) | This is the current first-stage outcome; completion is proven only by Gates 1-5 in `docs/implementation.md`. |
+| [RF-PROD-012](../product/requirements.md#rf-prod-012) | P0 | nieocenione | [DOC](#e-doc) | Script, agent and person execution ownership must be proven in the real delivery. |
+| [RF-PROD-013](../product/requirements.md#rf-prod-013) | P0 | nieocenione | [GOV](#e-gov) | Exactly-one accountability and explicit transfer need end-to-end enforcement proof. |
+| [RF-OUT-001](../product/requirements.md#rf-out-001) | P0 | nieocenione | [ATTENTION](#e-attention) | The complete attention-to-evidence owner loop has not been audited end to end. |
+| [RF-OUT-002](../product/requirements.md#rf-out-002) | P1 | nieocenione | [ATTENTION](#e-attention) | Actionable attention, rationale and authorized reprioritization require an implementation audit. |
+| [RF-OUT-003](../product/requirements.md#rf-out-003) | P1 | nieocenione | [DEC](#e-dec) | Cross-record impact preview and separate acceptance require whole-product proof. |
+| [RF-OUT-004](../product/requirements.md#rf-out-004) | P2 | nieocenione | [DOC](#e-doc) | Baselines and numeric targets intentionally remain unmeasured until operation begins. |
+| [RF-OUT-005](../product/requirements.md#rf-out-005) | P0 | działa | [DOC](#e-doc) | Current handoff and AGENTS instructions require gate evidence and reject atom/percentage completion claims. |
+| [RF-OUT-006](../product/requirements.md#rf-out-006) | P1 | nieocenione | [GOAL](#e-goal) | Goal/risk/dependency-based priority and mandate-aware escalation require implementation proof. |
+| [RF-OUT-007](../product/requirements.md#rf-out-007) | P1 | nieocenione | [GOAL](#e-goal) | Measurable goals, evidence sources and forecast/deadline separation require an audit. |
+| [RF-APP-001](../product/requirements.md#rf-app-001) | P0 | nieocenione | [PORT](#e-port) | The configured-application completion proof begins only after the real agent round trip works. |
+| [RF-APP-002](../product/requirements.md#rf-app-002) | P2 | nieocenione | [PORT](#e-port) | Full commercialization lifecycle is accepted later-phase intent, not a current delivery gate. |
+| [RF-APP-003](../product/requirements.md#rf-app-003) | P0 | nieocenione | [FIND](#e-find) | Takeover audit structure exists in intent; a real application baseline has not been completed. |
+| [RF-APP-004](../product/requirements.md#rf-app-004) | P1 | nieocenione | [HEALTH](#e-health) | Product-ready and sale-ready controls require application-specific evidence. |
+| [RF-APP-005](../product/requirements.md#rf-app-005) | P1 | nieocenione | [PORT](#e-port) | Primary user/problem/core-path criteria are takeover outputs for each configured application. |
+| [RF-APP-006](../product/requirements.md#rf-app-006) | P1 | nieocenione | [HEALTH](#e-health) | Critical-blocker classification needs application-specific health and risk evidence. |
+| [RF-APP-007](../product/requirements.md#rf-app-007) | P1 | nieocenione | [DEC](#e-dec) | Limitation acceptance requires a real readiness decision and attached evidence. |
+| [RF-APP-008](../product/requirements.md#rf-app-008) | P1 | nieocenione | [REVIEW](#e-review) | Owner readiness acceptance has not been exercised for a configured application. |
+| [RF-APP-009](../product/requirements.md#rf-app-009) | P0 | nieocenione | [DOC](#e-doc) | Existing application records must be inventoried during takeover before any new mechanism is added. |
+| [RF-APP-010](../product/requirements.md#rf-app-010) | P0 | nieocenione | [PORT](#e-port) | The two-entry lifecycle and approved takeover baseline await the pilot. |
+| [RF-APP-011](../product/requirements.md#rf-app-011) | P0 | nieocenione | [CTX](#e-ctx) | Cross-source comparison and no-leakage behavior await the pilot audit. |
+| [RF-APP-012](../product/requirements.md#rf-app-012) | P0 | nieocenione | [DOC](#e-doc) | The universal minimum and application-specific extension need runtime reconciliation. |
+| [RF-APP-013](../product/requirements.md#rf-app-013) | P1 | nieocenione | [PORT](#e-port) | Evidence-backed stage transitions and regression await application lifecycle proof. |
+| [RF-APP-014](../product/requirements.md#rf-app-014) | P1 | nieocenione | [ATTENTION](#e-attention) | Portfolio gate state and evidence presentation require an implementation audit. |
+| [RF-APP-015](../product/requirements.md#rf-app-015) | P2 | nieocenione | [HEALTH](#e-health) | Controlled commercial launch is a later gate after application completion. |
+| [RF-BIZ-001](../product/requirements.md#rf-biz-001) | P2 | nieocenione | [DOC](#e-doc) | Application/Roost authority boundaries are later sale-readiness work. |
+| [RF-BIZ-002](../product/requirements.md#rf-biz-002) | P2 | nieocenione | [DOC](#e-doc) | Canonical customer identity is later business-operation scope. |
+| [RF-BIZ-003](../product/requirements.md#rf-biz-003) | P2 | nieocenione | [DOC](#e-doc) | Subscription lifecycle behavior awaits a selected offering and provider path. |
+| [RF-BIZ-004](../product/requirements.md#rf-biz-004) | P2 | nieocenione | [IDEMP](#e-idemp) | Financial automation is later scope and awaits provider-specific implementation. |
+| [RF-BIZ-005](../product/requirements.md#rf-biz-005) | P2 | nieocenione | [ATTENTION](#e-attention) | Financial synchronization and failure attention await provider selection. |
+| [RF-BIZ-006](../product/requirements.md#rf-biz-006) | P2 | nieocenione | [TEST](#e-test) | Sandbox-to-live commercial proof is later scope. |
+| [RF-BIZ-007](../product/requirements.md#rf-biz-007) | P2 | nieocenione | [GOV](#e-gov) | Reserved financial approvals remain policy until providers are selected. |
+| [RF-BIZ-008](../product/requirements.md#rf-biz-008) | P2 | nieocenione | [DOC](#e-doc) | Revenue view is later business-operation scope. |
+| [RF-BIZ-009](../product/requirements.md#rf-biz-009) | P2 | nieocenione | [INTEGRATION](#e-integration) | Field authority and provider provenance need provider-specific audits. |
+| [RF-SUP-001](../product/requirements.md#rf-sup-001) | P2 | nieocenione | [INCIDENT](#e-incident) | Customer-application incident intake is later support scope. |
+| [RF-SUP-002](../product/requirements.md#rf-sup-002) | P2 | nieocenione | [ATTENTION](#e-attention) | Canonical customer support cases are later support scope. |
+| [RF-SUP-003](../product/requirements.md#rf-sup-003) | P2 | nieocenione | [FIND](#e-find) | Customer-input classification is later support scope. |
+| [RF-SUP-004](../product/requirements.md#rf-sup-004) | P2 | nieocenione | [ATTENTION](#e-attention) | Public support channel commitments remain deferred. |
+| [RF-SVC-001](../product/requirements.md#rf-svc-001) | P2 | nieocenione | [DOC](#e-doc) | Offering thresholds and prices remain deferred under OPEN-SVC-001. |
+| [RF-SVC-002](../product/requirements.md#rf-svc-002) | P2 | nieocenione | [DOC](#e-doc) | Exact deposits and milestone amounts remain deferred under OPEN-SVC-001. |
+| [RF-SVC-003](../product/requirements.md#rf-svc-003) | P2 | nieocenione | [DEC](#e-dec) | Paid scope-change operation is later service-delivery scope. |
+| [RF-SVC-004](../product/requirements.md#rf-svc-004) | P2 | nieocenione | [AUTH](#e-auth) | Customer-side authority is later service-delivery scope. |
+| [RF-SVC-005](../product/requirements.md#rf-svc-005) | P2 | nieocenione | [REVIEW](#e-review) | Customer milestone acceptance is later service-delivery scope. |
+| [RF-SVC-006](../product/requirements.md#rf-svc-006) | P2 | nieocenione | [FIND](#e-find) | Defect-versus-scope-change classification is later service scope. |
+| [RF-SVC-007](../product/requirements.md#rf-svc-007) | P2 | nieocenione | [DOC](#e-doc) | Exact review and deemed-acceptance terms remain deferred under OPEN-SVC-002. |
+| [RF-SVC-008](../product/requirements.md#rf-svc-008) | P2 | nieocenione | [DOC](#e-doc) | Warranty implementation and legal wording are later scope. |
+| [RF-SVC-009](../product/requirements.md#rf-svc-009) | P2 | nieocenione | [AUDIT](#e-audit) | Handover, rights and asset separation are later service scope. |
+| [RF-SVC-010](../product/requirements.md#rf-svc-010) | P2 | nieocenione | [DEC](#e-dec) | Refusal/exit handling is accepted policy awaiting service operation. |
+| [RF-SVC-011](../product/requirements.md#rf-svc-011) | P2 | nieocenione | [AUTH](#e-auth) | Customer-system identity and least-scope access are later service scope. |
+| [RF-SVC-012](../product/requirements.md#rf-svc-012) | P2 | nieocenione | [AUDIT](#e-audit) | Project-close access revocation and retention await the service phase. |
+| [RF-SVC-013](../product/requirements.md#rf-svc-013) | P2 | odroczone | [DOC](#e-doc) | Dedicated customer staging/anonymization waits for the service phase and resources. |
+| [RF-INT-001](../product/requirements.md#rf-int-001) | P1 | nieocenione | [INTEGRATION](#e-integration) | Provider-only work and exact synchronized authority need integration-specific proof. |
+| [RF-INT-002](../product/requirements.md#rf-int-002) | P1 | nieocenione | [INTEGRATION](#e-integration) | Native-completeness and adapter-necessity rules need capability-by-capability audit. |
+| [RF-INT-003](../product/requirements.md#rf-int-003) | P1 | nieocenione | [INTEGRATION](#e-integration) | Field authority, provenance and unverified identity behavior need end-to-end proof. |
+| [RF-INT-004](../product/requirements.md#rf-int-004) | P1 | nieocenione | [BROKER](#e-broker) | Classification, least scope and offboarding require provider-specific proof. |
+| [RF-INT-005](../product/requirements.md#rf-int-005) | P1 | nieocenione | [INTEGRATION](#e-integration) | Conflict handling, stale state and bounded catch-up require integration proof. |
+| [RF-INT-006](../product/requirements.md#rf-int-006) | P2 | odroczone | [DOC](#e-doc) | Export, archive/delete and disconnect lifecycle details remain deferred under OPEN-DATA-001. |
+| [RF-SCOPE-001](../product/requirements.md#rf-scope-001) | P2 | odroczone | [DOC](#e-doc) | Native mobile is explicitly outside the current MVP. |
+| [RF-SCOPE-002](../product/requirements.md#rf-scope-002) | P2 | poza zakresem | [DOC](#e-doc) | Company City and gamification are rejected roadmap directions. |
+| [RF-SCOPE-003](../product/requirements.md#rf-scope-003) | P2 | odroczone | [DOC](#e-doc) | Native billing, marketplace, multi-tenant SaaS and full CRM are outside the current phase. |
+| [RF-SCOPE-004](../product/requirements.md#rf-scope-004) | P2 | odroczone | [DOC](#e-doc) | Prospect and service-sales implementation follows proven application completion. |
+| [RF-SCOPE-005](../product/requirements.md#rf-scope-005) | P2 | odroczone | [AUTH](#e-auth) | Invitation delivery, multi-human onboarding and external notifications are not current gates. |
+| [RF-SCOPE-006](../product/requirements.md#rf-scope-006) | P2 | odroczone | [DOC](#e-doc) | Customer-project staging/anonymization is deferred and does not alter the owner-controlled runtime. |
 | [RF-GOV-001](../product/requirements.md#rf-gov-001) | P0 | częściowo działa | [GOV](#e-gov) | No complete delegated-mandate enforcement. |
 | [RF-GOV-002](../product/requirements.md#rf-gov-002) | P1 | częściowo działa | [GOAL](#e-goal) | CRUD exists; orphan, duplicate and owner-intent guards incomplete. |
 | [RF-GOV-003](../product/requirements.md#rf-gov-003) | P1 | częściowo działa | [ORG](#e-org) | Registry exists; peer authority and manager configuration need verification. |
@@ -949,7 +1026,7 @@ stays disabled and the canonical host stays observe.
 | [RF-GOV-014](../product/requirements.md#rf-gov-014) | P0 | częściowo działa | [AUTH](#e-auth) | Immutable workforce-bound keys and current DB principal checks govern native review/manager commands, with expiry, atomic rotation, revocation and agent/credential audit. Other legacy command classes remain outside this slice; native review writes also require RF-SEC-003 task grants. |
 | [RF-GOV-015](../product/requirements.md#rf-gov-015) | P0 | działa | [GOV](#e-gov) | Boundary is governing policy; no DemoApp change authorized. |
 | [RF-GOV-016](../product/requirements.md#rf-gov-016) | P0 | działa | [GOV](#e-gov) | Current documentation requires one implementation owner to carry the end-to-end outcome; internal substeps are not STOP boundaries. Runtime completion remains governed by the other rows. |
-| [RF-GOV-017](../product/requirements.md#rf-gov-017) | P0 | działa | [DOC](#e-doc) | 151 current accepted/deferred requirements have stable IDs and map to inspected evidence and limitations. Git retains superseded wording outside the active registry. |
+| [RF-GOV-017](../product/requirements.md#rf-gov-017) | P0 | działa | [DOC](#e-doc) | 225 current accepted/deferred/rejected requirements have stable IDs and map to inspected evidence and limitations. Git retains superseded wording outside the active registry. |
 | [RF-GOV-018](../product/requirements.md#rf-gov-018) | P0 | działa | [GOV](#e-gov) | Current documentation defines the four true owner dependencies and keeps ordinary technical resolution with the implementation owner. |
 | [RF-GOV-019](../product/requirements.md#rf-gov-019) | P0 | działa | [PORT](#e-port) | Current code/config boundary from 36be71bc retained. |
 | [RF-GOV-020](../product/requirements.md#rf-gov-020) | P0 | częściowo działa | [AUDIT](#e-audit) | Events exist; generic records/evidence remain mutable. |
@@ -978,6 +1055,7 @@ stays disabled and the canonical host stays observe.
 | [RF-CTX-023](../product/requirements.md#rf-ctx-023) | P1 | brak | [FIND](#e-find) | DemoApp audit not executed. |
 | [RF-CTX-024](../product/requirements.md#rf-ctx-024) | P1 | brak | [CTX](#e-ctx) | No automated provenance/license release gate. |
 | [RF-CTX-025](../product/requirements.md#rf-ctx-025) | P1 | brak | [REVIEW](#e-review) | No dispute protocol. |
+| [RF-CTX-026](../product/requirements.md#rf-ctx-026) | P1 | nieocenione | [PROC](#e-proc) | Executor-class declarations, bounded retry/fallback and promotion to deterministic automation require procedure-runtime proof. |
 | [RF-HOST-001](../product/requirements.md#rf-host-001) | P0 | częściowo działa | [HOST](#e-host) | Queue/observer implemented; full scheduler pending. |
 | [RF-HOST-002](../product/requirements.md#rf-host-002) | P0 | częściowo działa | [LOCK](#e-lock) | Global writer lock works; waiting/read resource admission absent. |
 | [RF-HOST-003](../product/requirements.md#rf-host-003) | P0 | częściowo działa | [RECOVERY](#e-recovery) | Pre-spawn recovery implemented; after-spawn recovery deliberately blocked. |

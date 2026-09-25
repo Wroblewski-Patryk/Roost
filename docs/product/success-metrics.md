@@ -1,6 +1,6 @@
 # Success Metrics
 
-Last updated: 2026-09-24
+Last updated: 2026-09-25
 
 ## Purpose
 
@@ -12,13 +12,16 @@ Use metrics to guide prioritization, not to create vanity dashboards.
 
 | Metric | Target | Source | Review cadence | Notes |
 | --- | --- | --- | --- | --- |
+| Roost-plus-Worker first-stage proof | One accepted real task completes the full Roost, Worker, intended-agent, evidence, independent-review and owner-result path, followed by takeover work in one configured application | Runtime receipts, bounded context, task/result records, review evidence and owner read-back | At every first-stage gate | Source-only contracts, isolated tests, migrations, commits and subjective percentages are supporting evidence, not this outcome. |
+| Application takeover integrity | Every taken-over application has one approved baseline comparing its own assumptions, documentation, implementation, tests and observed behavior before affected implementation begins | Application audit, decision status, implementation classifications, contradictions and owner decisions | At takeover and after material assumption change | Requirements from another application are never accepted by inference. |
+| Truthful completion reporting | No item is reported complete unless its accepted end-to-end gate and required evidence pass | Gate state, acceptance criteria, evidence, review and owner-visible result | At every completion claim | Internal atoms and "nearly done" estimates do not count as delivered outcomes. |
 | Time to owner orientation | Baseline first; numeric target pending | Owner-flow timing and short owner check-in | Weekly during the first 90 days | Time needed to identify what requires attention and why. |
 | Lost decision or assumption incidents | Baseline first; trend downward | Decision history, reopened work, and owner review | Monthly | Count only confirmed losses or material ambiguity, not ordinary decision changes. |
 | Decision lead time | Baseline first; trend downward | Decision records from request to accepted outcome | Monthly | Segment by consequence and urgency so safety review is not treated as waste. |
 | Accountable ownership coverage | Baseline first; trend upward | Active goals, initiatives, and tasks | Weekly | Share with one accountable owner or manager and a clear executor where applicable. |
 | Evidence-backed completion coverage | Baseline first; trend upward | Completed work and linked evidence | Weekly | A completion claim without required evidence does not count. |
 | Actionable-attention precision | Baseline first; trend upward | Owner review of attention items | Weekly | Share of surfaced items that required a concrete response; routine activity and duplicate alerts count against usefulness. |
-| Reference application sale readiness | One owner-selected existing application reaches an explicitly accepted sale-ready state through Roost | Application assumptions, gaps, plan, tasks, verification evidence, and owner decision | At every readiness review | The private application identity belongs to installation data, not distributed product documentation. |
+| Reference application completion | After the Roost-plus-Worker round trip works, one owner-selected existing application reaches an explicitly accepted verified completion outcome through the takeover lifecycle | Application assumptions, gaps, plan, tasks, verification evidence, and owner decision | At every completion review | Sale readiness is a later gate. The private application identity belongs to installation data, not distributed product documentation. |
 | Application-completion reuse | The accepted completion structure can initialize the next application without copying private assumptions | Completion blueprint and next-application setup review | After the first sale-readiness acceptance | Reuse means common stages and evidence rules with explicit application-specific differences, not identical product requirements. |
 | Material-assumption implementation coverage | Every material accepted assumption for the reference application has an evidence-backed implementation state before either readiness decision | Assumption registry, observations, verification evidence, and readiness review | At every audit and readiness review | `unverified` is an honest state but blocks a positive readiness claim when the assumption is required for that gate. |
 | Core user outcome proof | The named primary intended user repeatedly completes the application's explicit end-to-end core path and obtains the promised value without routine developer assistance | Readiness profile, application-specific criteria, repeated end-to-end outcome evidence, and owner readiness review | At product-ready review | Technical completion or secondary feature coverage without the primary outcome does not qualify; the exact repetition threshold is risk- and application-specific. |
@@ -68,6 +71,9 @@ Use when agents or automations are part of the project.
 | Verified agent outcome rate | Baseline first; trend upward | Reviewed agent results and acceptance evidence | Weekly once active | Count independently accepted outcomes, not process exit or self-reported completion. |
 | Owner intervention rate | Baseline first; trend downward without reducing safety | Clarifications, corrections, cancellations, and manual recoveries | Weekly once active | Distinguish useful reserved decisions from avoidable supervision caused by weak context or execution. |
 | Deterministic automation coverage | Every eligible stable and repeatable financial step runs through a tested callback, API, or script rather than routine AI or manual handling | Workflow classification, automation evidence, and exception records | At readiness review and quarterly once active | Agent verification and exception handling remain valid; the metric targets unnecessary model work, not useful judgment. |
+| Context packet precision | Every launched task has all required canonical sources and no unjustified broad company or cross-application context | Pinned packet manifest, inclusion reasons, missing-context blocks and post-task review | At task launch and weekly sampling | Repeated rereading caused by missing context and unnecessary bulk context both count as failures to improve. |
+| No-progress loop containment | Repeated attempts without movement in the parent end-to-end gate stop at the accepted bound and resume only after an independent diagnosis and changed approach | Attempt history, gate transitions, stop reason, diagnosis and revised plan | At every bounded-attempt stop and weekly review | More tests or tokens without changed evidence are activity, not progress. |
+| Outcome-adjusted resource efficiency | Model usage, elapsed time, retries and rework are attributable to a difficulty-adjusted independently accepted outcome | Provider usage when available, attempt and review history, accepted result and difficulty classification | Weekly once active | Unknown usage remains unknown; this metric cannot justify weaker quality, testing, review or safety. |
 
 ## Ninety-Day Outcome Set
 
@@ -80,12 +86,14 @@ The owner accepted all of the following as success outcomes on 2026-09-20:
 - more completed work with inspectable evidence;
 - successful agent work with less continuous supervision.
 
-On 2026-09-23 the owner added the immediate MVP proof: one existing application
-reaches evidence-backed readiness for subscription sale through Roost and an
-authorized supervised agent, and the resulting completion process is reusable
-for further applications. Service sales and customer acquisition follow later.
-The audit must distinguish accepted assumptions from observed implementation and
-classify every material assumption before readiness is accepted.
+On 2026-09-25 the owner corrected the immediate MVP proof: first, Roost plus its
+Local Worker must provide a real governed team-of-agents path and truthful
+end-to-end delivery. Next, those agents take over one existing configured
+application, distinguish its accepted assumptions from observed implementation,
+resolve or escalate contradictions, and complete a verified outcome. The
+takeover and completion process must then be reusable for further applications.
+Subscription sale readiness, service sales and customer acquisition follow
+later.
 
 These directions are accepted. Baselines, numeric targets, data-collection
 details, and any prioritization among them remain open until the product can

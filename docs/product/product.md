@@ -36,10 +36,18 @@ not authorize new product scope or change existing API/database identifiers.
   operating record with an API/MCP boundary and a human control plane.
 - Primary owner loop: identify what requires attention, resolve the necessary
   decision, delegate accountable work, and inspect evidence of completion.
-- Current MVP business objective: let the owner and an explicitly authorized
-  Roost agent take an already-started application from its current incomplete
-  state to evidence-backed readiness for sale as a subscription product, then
-  reuse that governed completion process for further applications.
+- Current first-stage MVP objective: make Roost plus its Local Worker an
+  internally usable operating system for the owner and a governed team of
+  agents. The combined system must retain context, divide responsibility and
+  complete real work without treating repeated rediscovery, internal technical
+  atoms or unsupported progress estimates as delivery.
+- First application-work proof: the Worker-supplied agents take over one
+  already-started configured application, audit its own assumptions and actual
+  state without importing assumptions from another product, resolve or escalate
+  contradictions, and carry an accepted outcome through verification. The same
+  process must then work for further configured applications.
+- Subscription sale readiness follows only after that internal creation and
+  completion system works. It is not the current Worker-completion gate.
 - Later business expansion: after the application-completion flow works, extend
   Roost to acquire customers and sell and deliver digital services. This later
   direction must not displace the product-first MVP priority.
@@ -68,6 +76,33 @@ not authorize new product scope or change existing API/database identifiers.
   Administrators, employees, viewers, and invitation-based multi-human operation
   remain valid product roles, but they are not required to validate the current
   owner loop.
+
+## Current First-Stage MVP
+
+Roost is the shared work surface, context system and visible operating record;
+the Local Worker supplies governed agent execution. Deterministic scripts handle
+repeatable data collection and operations, while people or agents perform work
+and judgment within role authority. Roost itself is not described as an actor.
+
+The first stage is complete only when the combined Roost-plus-Worker system can
+accept real work, provide the correct bounded company and application context,
+assign one accountable role, execute through the intended agents, return
+evidence, obtain the required review, and let the owner see the truthful result.
+Source-only contracts, migrations, fixtures, isolated tests, commits or a
+subjective completion percentage are supporting work, not completion of this
+end-to-end outcome.
+
+Application work uses one lifecycle with two entry paths. A new product begins
+with its user and problem. An existing product first goes through takeover:
+recover its own assumptions, inspect documentation and implementation, identify
+contradictions and gaps, preserve valid history, and establish an approved
+baseline. It then joins the common lifecycle at the stage supported by evidence.
+Product-specific requirements never leak between applications.
+
+The current reference cohort is the owner plus Worker-supplied agents on the
+owner-controlled environment. Selling Roost, native mobile, multi-human rollout,
+customer-hosted execution and the later service business remain outside this
+first-stage completion gate.
 
 ## Accepted Company Composition Direction
 
@@ -128,9 +163,13 @@ not authorize new product scope or change existing API/database identifiers.
 
 The currently implemented surface still exposes `00 General` and departments
 `01`-`12`.
-The configurable target above requires an explicit architecture-supersession and
-migration decision before implementation; it does not silently rewrite the
-current accepted requirements.
+`RF-PROD-002` now makes the configurable model the accepted product target and
+supersedes the former fixed-topology requirement. This does not claim that the
+current fixed V1 surface already implements that target. Before implementation,
+the open technical migration decision must define stable area identity,
+permissions, workforce and provider mappings, compatibility, versioning, impact
+preview, and safe detachment or reassignment without losing canonical records or
+history.
 
 ## Accepted Onboarding Direction
 
@@ -284,6 +323,29 @@ The first delivery proof is a low-risk DemoApp repair under a separate task cont
   projects, tasks, or processes, Roost shows the affected scope and expected
   consequences. An authorized actor accepts the impact separately; previous
   direction and the resulting changes remain traceable.
+- Task-context policy: every executable task receives a minimal, versioned packet
+  assembled from canonical sources for that application and mandate. It includes
+  only the company context needed for the outcome, records why each source was
+  included, and treats missing or contradictory required context as a visible
+  blocker rather than inviting the executor to guess.
+- Execution-routing policy: every process step declares whether a deterministic
+  script, an authorized agent or an authorized person is the primary executor,
+  together with success, retry and escalation behavior. Stable repeatable work
+  should migrate to tested automation; judgment, exceptions and reserved
+  decisions remain with the appropriate role.
+- Evidence-freshness policy: a material change invalidates only the evidence and
+  gates it can actually affect. Direct checks run first; broad revalidation is
+  reserved for shared core, security, data, API or release impact. Independent
+  acceptance does not recursively require another reviewer unless relevant new
+  change or failure appears.
+- Resume policy: Worker scripts observe deterministic machine and task state,
+  Roost stores checkpoints and observations, and an authorized agent interprets
+  differences before continuation. Roost is the record and work surface, not the
+  reasoning actor.
+- Loop-control policy: repeated operations without progress in the parent
+  outcome consume only a bounded number of attempts. Further execution waits for
+  a recorded diagnosis and materially changed approach instead of silently
+  spending another model budget on the same loop.
 
 ## Accepted Later-Phase Data Lifecycle Direction
 
@@ -535,6 +597,19 @@ their storage, retention, deletion, or provider behavior in the current phase.
   stages, classifications, evidence types, and gates. Each application retains
   its own assumptions, criteria, risks, and justified exceptions; reuse never
   means copying private product requirements.
+- The reusable lifecycle is `problem and intended user -> accepted requirements
+  -> solution design -> implementation -> verification -> product readiness ->
+  sale readiness -> operation and improvement`. A stage advances only from
+  evidence and may move backward when new evidence invalidates its gate.
+- The takeover path is a pre-stage for existing applications, not a second
+  development method. It establishes the application's truthful baseline and
+  then enters the same lifecycle used for a new application.
+- Every application follows a shared minimum for requirements, acceptance,
+  security, data handling, testing, error handling, monitoring, recovery,
+  release and evidence, while retaining its own domain behavior and criteria.
+- The owner portfolio presents the proven stage, gate state, blockers, pending
+  decisions, next outcome, accountable actor and evidence for every application.
+  Percentages are only orientation and never override an unmet gate.
 - The owner reports that a similar assessment process may already have been
   started, but its completion and authority are unknown. Before creating any new
   mechanism, future work must locate and evaluate existing canonical records,
