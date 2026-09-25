@@ -9,7 +9,7 @@ import {createPrismaBootstrapChannelStore} from '../modules/api-keys/bootstrap-c
 import {createPrismaDecisionAttestationPorts} from '../modules/api-keys/decision-attestation-prisma-ports';
 import {createDecisionAuthorityReader,decisionReaderEvidence,type DecisionReaderTrust} from '../modules/api-keys/bootstrap-decision-authority-reader';
 import {createCanonicalBootstrapAuthoritySource} from '../modules/api-keys/worker-bootstrap-authority-source';
-import {createAttestedBootstrapComposition} from '../modules/api-keys/bootstrap-attested-composition';
+import {createAttestedBootstrapComposition} from './bootstrap-attested-composition-harness';
 import {reviewDigest} from '../modules/agent-runtime/task-review-contract';
 import {lifecycleFlags} from '../modules/api-keys/bootstrap-ticket-lifecycle-contract';
 

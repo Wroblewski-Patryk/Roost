@@ -7,7 +7,7 @@ import {nativeAttestationFixture} from './decision-attestation-prisma-fixture';
 import {createDecisionAuthorityReader,decisionReaderEvidence,type DecisionReaderTrust} from '../modules/api-keys/bootstrap-decision-authority-reader';
 import {createCanonicalBootstrapAuthoritySource} from '../modules/api-keys/worker-bootstrap-authority-source';
 import {createPrismaDecisionAttestationPorts} from '../modules/api-keys/decision-attestation-prisma-ports';
-import {createAttestedBootstrapComposition} from '../modules/api-keys/bootstrap-attested-composition';
+import {createAttestedBootstrapComposition} from './bootstrap-attested-composition-harness';
 import {lifecycleFlags} from '../modules/api-keys/bootstrap-ticket-lifecycle-contract';
 
 async function fixture(purpose:'first_enrollment'|'owner_recovery'='first_enrollment',sealed=true,cutoverAfter?:number){

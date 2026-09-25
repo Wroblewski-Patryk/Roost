@@ -1,5 +1,104 @@
 # Decision attestation: Prisma ports and native persistence evidence
 
+## Owner amendment v61: durable dispatch and completion, source only
+
+`createDurableDispatchAdapter` and the explicit
+`createAttestedBootstrapComposition` now use committed attempt ownership.
+The v59/v60 process-local latch survives only in a historical test harness;
+it is no longer a runtime composition. No default client, transport, endpoint,
+credential provisioning or activation is supplied.
+
+**Schema decision:** the existing ticket, attempt, history, head, audit, Event
+and receipt relations remain the attempt source of truth. Their states do not
+represent a process owner, lease, send-start marker or completion-start marker.
+Unapplied migration 84 therefore adds only `worker_bootstrap_dispatch_history`
+and `worker_bootstrap_dispatch_receipts`, foreign-key children of the existing
+attempt. No second attempt/task registry, root mutation, seed, backfill, defaults,
+or edits to migrations 1-83. The append-only history is the ownership head;
+there is no independently writable dispatch head.
+
+| Action | Required state | Result and authority |
+| --- | --- | --- |
+| prepare | No dispatch child; exact committed sealed attempt | `sealed_ready`; no send permission. |
+| claim | `sealed_ready` | `claimed_not_sent`; owner UUID, epoch and claim generation, database observed claimedAt, bounded lease (maximum 30 seconds). |
+| resume | `claimed_not_sent`, expired lease | Explicit new operation and fresh authority; owner epoch and claim generation each increase by one. No implicit renewal. |
+| start_send | Exact live owner/CAS in `claimed_not_sent` | Commit `send_started`, independently read it back, then grant one synthetic send. Replaying the operation never grants another permit. |
+| outcome / unknown | Exact live owner in `send_started` | `delivered` with public response digest, or `delivery_unknown`. No response/secret payload is persisted. |
+| start_complete | `delivered`, exact live owner and response digest | Commit `completion_started` with exact completion operation ID; independent readback precedes the synthetic completion callback. |
+| complete | `completion_started`, same live owner, operation and response | `completed`. Only replay of the identical final operation/request digest is acknowledged idempotently, without another callback. |
+| require_reconciliation | Nonterminal state except `terminal_failed` | Explicit operation, evidence digest and fresh authority; append `reconciliation_required`. |
+| reconcile | `delivery_unknown`, `completion_started` or `reconciliation_required` | Explicit evidence/operation and fresh authority; append `terminal_failed`. It cannot infer successful delivery from a timeout. |
+| recover / cancel | `terminal_failed`; cancellation also before send | Append `cancelled`, preserve all history. This closes the old attempt; it never resets it or allocates a successor ticket/credential. |
+
+Each writer first reads the existing branded canonical authority reader in a
+fresh READ ONLY RepeatableRead transaction. Serializable writes lock the same
+`ready_source_fence` row and the exact attempt, compare authority revision/digest/
+fence, immutable seal digest, owner/binding, installation/host generations,
+ticket digest and credential epoch, then compare child revision/digest and owner
+epoch/claim generation. Database time bounds every lease and authority expiry.
+Every phase requires a previously committed predecessor, not another append in
+the same transaction. SQL guards create immutable Event/receipt pairs, validate
+them at deferred COMMIT, and reject UPDATE/DELETE/TRUNCATE. Runtime reads pin all
+eight new trigger bindings and bodies in addition to the existing authority
+catalog. `check-bootstrap-dispatch-contract.mjs` checks the source pins offline.
+
+Dispatch children **lock but do not advance the signed-source fence**: ownership
+does not change signed decision authority or the consumed attempt seal. Their
+own append-only revision/digest and claim generation provide the CAS/high water.
+Any actual source writer still advances the global fence and blocks further
+dispatch. This explicit separation avoids pretending that an old seal receipt
+matches a newly advanced source fence. It does not weaken any existing writer
+or change migration-83 lineage predicates.
+
+An independent fresh READ ONLY transaction must find the exact row, request
+digest, writer XID, Event and receipt after every write. A resolved transaction
+promise alone is insufficient. Rollback, false/lost COMMIT acknowledgement or
+missing/conflicting readback returns `reconciliation_required`, `retryable=false`,
+and no work permit. There is no automatic compensating write after an uncertain
+COMMIT; the durable row may be absent or at its last committed phase. Inspection
+reports a persisted send/completion start as needing reconciliation, never as
+permission to replay. An expired lease after either start cannot restore work.
+
+Inspection is read-only even after expiry/revocation/source drift: it may return
+the exact audited historical head with `authorityCurrent=false`, never authority
+to write. Terminal writers still require a fresh valid original authority. If
+that authority is revoked/expired, terminal mutation is **BLOCKED**; inventing a
+replacement owner decision or reusing the old seal is not recovery. Authorizing
+a distinct successor ceremony remains a separate existing admission contract.
+The legacy bootstrap/ticket lifecycle heads remain consumed in this source atom;
+durable child completion is not proof of credential activation or native legacy
+completion integration.
+
+Source/mocked verification covers first enrollment/recovery; twenty claim,
+completion-owner and terminal-completion races; twenty independent composition
+factories with one synthetic exchange/completion; pre-send restart/resume and
+anti-ABA fencing; no resend after start or lease expiry; owner/credential/host/
+revision drift; exact completion idempotency versus conflicts; rollback and
+false/lost COMMIT ACK at every normal and terminal phase; receipt/readback faults;
+history tampering; pure stale-authority status and terminal recovery/cancel.
+Mocks share serialized durable storage across factories and fresh transaction
+objects. This models multiple processes; it is **not native multi-process or
+PostgreSQL/MVCC qualification**. Network, subprocess, private-key and signing
+effects are forbidden in the tests. No database or Docker was used for v61.
+
+Validation: **238/238 selected source/mocked tests PASS, 0 skipped** (including
+20 results in the new suite), server TypeScript build and lint (338 routes /
+45 files) PASS. Migration-83 and migration-84 source pins and scoped diff checks
+PASS. No native tests or web build were run; no web behavior changed.
+
+RF-HOST-035 remains **PARTIAL**, production **BLOCKED**. `implementationReady`,
+`executionSupported`, `pilotReady`, `liveAdmissionAllowed`,
+`pilotExecutionAuthorized`, `pilotExecutionStarted`, `transportQualified` and
+`launchAuthority` remain false. Production crypto/auth/trust, real delivery,
+native SQL behavior, successor recovery and explicit activation remain gates.
+Historical registration root cause UNKNOWN remains MONITORED RESIDUAL RISK;
+v61 supplies no new native evidence about that incident.
+
+Exactly one next recommendation, **not started**: separately authorize bounded
+native qualification of migration 84 and this adapter, including real distinct
+database clients, transaction loss and cleanup evidence, without default wiring
+or real delivery. All earlier recommendations below are historical.
+
 ## Owner amendment v60: native canonical reader/composition qualification
 
 **18/18 PASS, 0 skipped, native child exit 0, nativeRuns=1**, 148.663 seconds.

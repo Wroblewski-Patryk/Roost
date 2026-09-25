@@ -1,20 +1,19 @@
 # Foundation requirements traceability
 
-Owner amendment v60: [native canonical reader/composition qualification](decision-attestation-prisma-ports-v1.md)
-passed 18/18, zero skips, one full run: real bound READ ONLY projections for
-first enrollment/recovery, distinct client pairs, pure status, native 20-way races,
-exact seal/COMMIT receipts and one controlled post-COMMIT response loss. All 83
-migrations and runtime contracts are unchanged. The signed-current-decision gap
-is removable only with complete explicit dependencies; default/legacy runtime
-remains unavailable. Synthetic verifier/auth/key/delivery seams and the process-
-local latch do not qualify production crypto, real delivery or durable multi-
-process/restart dispatch. RF-HOST-035 PARTIAL; production BLOCKED; eight flags false.
-Historical registration cause UNKNOWN remains MONITORED RESIDUAL RISK with the
-existing reopen condition; no unplanned refusal occurred in this run. Exactly one
-next recommendation, not started: source-only durable dispatch/completion adapter
-on the existing attempt ledger with committed-claim and terminal reconciliation
-semantics, without default activation. Detailed v55-v59 evidence is retained in
-the linked canonical document; older amendments below are historical.
+Owner amendment v61: [durable dispatch/completion, source only](decision-attestation-prisma-ports-v1.md)
+replaces the runtime process latch with a committed attempt child history,
+owner/lease/CAS fencing and independent COMMIT readback. Migration 84 is additive
+and UNAPPLIED; migrations 1-83 are unchanged. Restart before send requires an
+explicit resume; after send/completion start neither restart nor lease expiry
+permits replay. Terminal reconciliation preserves history and cannot reset the
+attempt. Stale authority remains inspectable but cannot write. Source/mocked
+multi-factory races are not native multi-process evidence. No DB/Docker, real
+delivery, default composition, push/deploy or activation. RF-HOST-035 PARTIAL;
+production BLOCKED; all eight flags false. Historical registration cause UNKNOWN
+remains MONITORED RESIDUAL RISK. Exactly one next recommendation, not started:
+separately authorize bounded native qualification of migration 84 and the durable
+adapter without default wiring or real delivery. Detailed v55-v60 evidence remains
+in the linked canonical document; older amendments below are historical.
 
 Owner amendment v54: [native attestation qualification](decision-attestation-prisma-ports-v1.md)
 remains **BLOCKED**: final native 14/19 PASS, 5 FAIL (four subtests plus parent),
