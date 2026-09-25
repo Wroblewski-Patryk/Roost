@@ -1,5 +1,21 @@
 # Decision attestation: Prisma ports and native persistence evidence
 
+## Owner amendment v72: approved public proof authority model
+
+The [separate signer authority contract](bootstrap-proof-authority-v1.md) resolves
+v71's missing model decision: Local Worker `worker-bootstrap-proof-v1` signs
+peer/completion, Roost `bootstrap-completion-binding-attestation-v1` signs binding.
+Public histories, exact owner/ticket attachment, deterministic binary transcript,
+same-Db mock reader/verifier/reread and additive persistence proposal are defined.
+New model 17/17 and selected source/mocked 73/73 PASS (24.413 seconds); build,
+lint and three contract pins PASS. No private key/signing, DB/Docker/network,
+migration/schema change or activation. Canonical persistence/native readers,
+strict wire decoding and cryptographic verification remain BLOCKED; default
+verifier stays unavailable and all eight readiness flags remain false.
+Exactly one next recommendation, not started: source-only additive public-key/
+attachment persistence and same-Db reader, with all-writer guards and exact
+receipt/readback rules. Earlier model gaps and next recommendations are historical.
+
 ## Owner amendment v71: public completion verifier blocked on signer authority
 
 **Minimal blocked contract DONE; cryptographic verifier BLOCKED.** The delegated

@@ -1,22 +1,21 @@
 # Foundation requirements traceability
 
-Owner amendment v71: [public completion signer authority gap](decision-attestation-prisma-ports-v1.md)
-closes the delegated minimal blocked-contract fallback; cryptographic verification
-remains BLOCKED. Canonical SPKI history authorizes owner tickets only. Neither
-it nor owner-decision keys define a signer/purpose/history for peer, completion
-or binding. An explicit frozen verifier contract reports the three precise
-blockers and always denies, with no alternate key reader or trust callback.
-Focused denial integration 6/6 and selected source/mocked regression 56/56 pass;
-server build, lint and three contract pins pass. No public signature vectors or
-positive/rotation/encoding cryptographic qualification: those remain BLOCKED.
-No private-key/signing operation, DB/Docker/network, migration/schema change,
-default wiring, credential creation, delivery or activation. The prior v70
-native 20/20 qualifies persistence with doubles only. RF-HOST-035 PARTIAL;
-production BLOCKED; all eight readiness flags false; registration cause UNKNOWN /
-MONITORED RESIDUAL RISK. Exactly one next recommendation, not started:
-owner-approved source-only signer identity/purpose/history contract for all
-three message kinds before implementing verification. Earlier amendments and
-their next-atom recommendations below are historical.
+Owner amendment v72: [approved proof signing authority](bootstrap-proof-authority-v1.md)
+defines separate Local Worker peer/completion and Roost server binding keys,
+purposes, public histories and owner-decision/ticket attachments. Source-only
+replay covers monotonic epochs, bounded overlap, hard cutover and terminal
+revocation; a versioned length-framed binary transcript binds complete canonical
+payloads. Same-Db mock read/verify/reread rejects drift before send and requires
+non-retryable reconciliation after send. New model 17/17; selected source/mocked
+tests 73/73, server build, lint and three pins PASS. No private/signing operation,
+migration/schema change, DB/Docker/network, delivery or activation. The signer
+model gap is resolved; canonical persisted histories, native writer/reader,
+strict wire decoding and production cryptography remain BLOCKED. Default
+verifier still unavailable. RF-HOST-035 PARTIAL; all eight readiness flags false;
+registration UNKNOWN / MONITORED RESIDUAL RISK. Exactly one next recommendation,
+not started: source-only additive proof-key/attachment persistence and explicit
+same-Db reader with all-writer guards/receipt/readback rules; migration remains
+unapplied and default wiring unavailable. Earlier amendments below are historical.
 
 Owner amendment v54: [native attestation qualification](decision-attestation-prisma-ports-v1.md)
 remains **BLOCKED**: final native 14/19 PASS, 5 FAIL (four subtests plus parent),
