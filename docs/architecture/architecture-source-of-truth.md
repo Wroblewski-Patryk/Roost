@@ -1,22 +1,22 @@
 # Architecture Source Of Truth
 
-Owner amendment v70: [canonical completion recovery regression](decision-attestation-prisma-ports-v1.md)
-passes the complete native suite 20/20, zero skips, in one run on one fresh owned
-DB with the unchanged final 85 migrations. Recovery requires direct success from
-the real channel revoke/readback: the catch/manual row-head-receipt-XID fallback
-is removed, with no retry or explicit reconciliation substitute. The actual
-revoked predecessor stays version 2; a distinct inactive candidate at epoch 2
-completes all 11 statements, exact ACK and committed fixture activation. Both
-real post-COMMIT cuts pass with relay armed=2/applied=2. Source 349/349,
-build/lint/pins and diff checks pass. Runtime, migrations, schema and runner are
-unchanged; cleanup/fingerprint evidence is in the linked report. The recovery
-integration gap is closed for this tested persistence path. Public signature and
-possession doubles still do not qualify production cryptography, delivery or
-provisioning. RF-HOST-035 PARTIAL; production BLOCKED; all eight readiness flags
-false; registration cause UNKNOWN / MONITORED RESIDUAL RISK. Exactly one next
-recommendation, not started: source-only explicit public-signature verifier for
-canonical completion peer/completion/binding, with fixed public test vectors and
-no private-key access, default wiring or activation.
+Owner amendment v71: [public completion signer authority gap](decision-attestation-prisma-ports-v1.md)
+closes the delegated minimal blocked-contract fallback; cryptographic verification
+remains BLOCKED. Canonical SPKI history authorizes owner tickets only. Neither
+it nor owner-decision keys define a signer/purpose/history for peer, completion
+or binding. An explicit frozen verifier contract reports the three precise
+blockers and always denies, with no alternate key reader or trust callback.
+Focused denial integration 6/6 and selected source/mocked regression 56/56 pass;
+server build, lint and three contract pins pass. No public signature vectors or
+positive/rotation/encoding cryptographic qualification: those remain BLOCKED.
+No private-key/signing operation, DB/Docker/network, migration/schema change,
+default wiring, credential creation, delivery or activation. The prior v70
+native 20/20 qualifies persistence with doubles only. RF-HOST-035 PARTIAL;
+production BLOCKED; all eight readiness flags false; registration cause UNKNOWN /
+MONITORED RESIDUAL RISK. Exactly one next recommendation, not started:
+owner-approved source-only signer identity/purpose/history contract for all
+three message kinds before implementing verification. Earlier amendments and
+their next-atom recommendations below are historical.
 
 Owner amendment v54: [native attestation qualification](decision-attestation-prisma-ports-v1.md)
 remains **BLOCKED**: final native 14/19 PASS, 5 FAIL (four subtests plus parent),

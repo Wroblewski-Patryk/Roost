@@ -1,5 +1,97 @@
 # Decision attestation: Prisma ports and native persistence evidence
 
+## Owner amendment v71: public completion verifier blocked on signer authority
+
+**Minimal blocked contract DONE; cryptographic verifier BLOCKED.** The delegated
+fallback applies: the current public-key model does not authorize a canonical
+signer for peer, completion or binding. No signing authority is inferred from
+an existing key's ability to verify Ed25519 bytes.
+
+Signer/key-purpose inventory:
+
+| Source | Existing authority | Missing authority |
+| --- | --- | --- |
+| `bootstrap-issuer-contract.ts`, `bootstrap-issuer-authority-v1.md` | Canonical Ed25519 SPKI DER history, purpose `worker-bootstrap-owner-ticket-v1`, issuer = workspace, installation binding, epoch/revision/high-water and rotation history | No peer/completion/binding purpose or worker signer identity/history |
+| `TrustedProviderTicketKey` in Prisma schema | Workspace/installation ticket-key anchor with key ID, epoch and digest | No additional signer purpose or host identity; not a second key registry |
+| `decision-attestation-key-model.ts` | `owner-decision-attestation-v1`, raw-public-hex, its own digest/history | Owner decision authority cannot authorize worker proofs |
+| `bootstrap-signed-decision-contract.ts` | `bootstrap-current-owner-decision-v1`, raw public key proposal | Does not define peer/completion/binding authority |
+| `worker-bootstrap.service.ts` | Synthetic context reuses its supplied ticket public key for ticket/decision/peer/completion | Synthetic convention is not canonical signer qualification |
+
+`bootstrap-canonical-completion-verifier.ts` exports the frozen
+`completionPublicVerifierContract` and explicit
+`createCanonicalCompletionPublicVerifier()` dependency accepted by
+`createCanonicalBootstrapCompletion`. This is an **always-denying availability
+contract**, not cryptographic verification: `verify` returns false without
+reading the supplied Db, request, public key or any trust callback. It accepts
+no alternate key reader or caller-supplied authority. `cryptographyQualified`
+and `signerAuthorityQualified` are false. Precise blockers are
+`bootstrap_peer_signer_purpose_history_unavailable`,
+`bootstrap_completion_signer_purpose_history_unavailable` and
+`bootstrap_binding_signer_purpose_history_unavailable`. Default composition
+still has no verifier; no endpoint or runtime wiring changes.
+
+Existing wire inventory, **not a newly approved encoding**: peer and completion
+use `roost-worker-bootstrap-v1:peer` and `roost-worker-bootstrap-v1:completion`;
+binding uses `roost-bootstrap-canonical-completion-v1`. Existing helpers encode
+UTF-8 `domain + ':' + reviewDigest(payload)`, with a SHA-256 hex digest of JSON
+after recursively sorting object keys and preserving array order. Generic
+`reviewDigest` alone does not qualify untrusted raw JSON: JSON coercions and
+duplicate-key loss, Unicode and NUL policy still need an explicit strict wire
+contract. No domain, signature format or existing signed bytes changed.
+
+The minimum future contract must explicitly identify which principal signs
+each kind and authorize its purpose in canonical public-key history, linked to
+the actual issuer/worker identity and installation/host generations. It must
+bind exact key ID/purpose/Ed25519/SPKI DER format and digest, epoch/high-water/
+revision, issue/completion/observation time, and stage/cutover/overlap/revoke/
+retire history; old keys must fail after hard cutover. Selection and fresh key
+and source rereads must use the same bound Db and deny drift. Strict canonical
+44-byte Ed25519 SPKI DER/base64 and 64-byte signature encoding, separate versioned
+domains, unambiguous canonical bytes and low-level fail-closed verification
+must retain all lifecycle/credential/ticket/envelope/request/attempt/seal/
+dispatch/certificate/SNI/address/time/digest bindings already checked by
+`validateCompletion`. No signer principal or new purpose is approved here.
+
+Focused denial integration: **6/6 PASS**, including first enrollment, recovery,
+default composition, wrong/invented purposes, hostile Db/request objects and
+20 concurrent completions. Zero writes, credential activation, provider calls,
+private-key/sign/verify/network/process effects or captured logs. This tests
+the blocker, not valid signatures or concurrency against rotation/revocation.
+No new signed public vectors, RFC8032 signature qualification or provenance
+claims: **NOT RUN / BLOCKED** are positive peer/completion/binding verification,
+signature/field/key tampering, malformed DER/base64/signature rejection,
+cryptographic domain separation, fresh key reread and 20 verification-versus-
+rotate/revoke races. Existing issuer public-point tests do not qualify these
+signatures. Synthetic verifier doubles remain test-only.
+
+Selected source/mocked regression: **56/56 PASS**, zero failures/skips/cancellations,
+exit 0 (24.227 seconds), covering the new denial contract, existing canonical
+completion and canonical issuer suites. Server build, lint (338 routes / 45
+files) and all three contract-pin checks pass. Legacy bootstrap suites that
+generate test signing keys were not run. No native suite or web build this atom.
+Diff checks pass; all 85 migration directories, Prisma schema, existing runtime
+and runner remain unchanged from `abc397719c620d2ce8229ac874cf34bab97c82fe`.
+Default context is 143919 bytes, below the 150000-byte limit.
+
+No private key, seed, keypair or signing operation was introduced or used in
+this atom. No DB, Docker, network, credential creation, delivery/provisioning,
+schema/migration edit, default activation, push or deployment. The v70 native
+20/20 below is historical persistence evidence and is not cryptographic proof.
+Unrelated dirty documents, unread/untracked/unstaged `design-qa.md`, retained
+roots and historical sandbox content remain untouched.
+
+RF-HOST-035 remains **PARTIAL**, production **BLOCKED**. `implementationReady`,
+`executionSupported`, `pilotReady`, `liveAdmissionAllowed`,
+`pilotExecutionAuthorized`, `pilotExecutionStarted`, `transportQualified` and
+`launchAuthority` remain false. Registration cause remains UNKNOWN / MONITORED
+RESIDUAL RISK. Possession proof, secure delivery/provisioning and ordinary
+successor admission remain outside this atom.
+
+Exactly one next recommendation, **not started**: owner-approved source-only
+signer identity/purpose/history contract for all three message kinds, resolving
+the canonical authority gap before implementing public-signature verification.
+Earlier next-atom recommendations below are historical.
+
 ## Owner amendment v70: canonical completion recovery without fallback
 
 **Full native suite: 20/20 PASS, zero failures/skips/cancellations, native child
