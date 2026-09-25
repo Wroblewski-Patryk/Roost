@@ -1,5 +1,98 @@
 # Decision attestation: Prisma ports and native persistence evidence
 
+## Owner amendment v69: native channel revocation readback passes
+
+**Final native run: 16/16 PASS, zero failures/skips/cancellations, native child
+exit 0, 56.880 seconds.** One fresh owned disposable PostgreSQL 16 database was
+created; the complete unchanged 85-migration chain was applied once from zero.
+The qualifier ran twice in the same DB/OID without schema reset or migration
+replacement. The first run was **8/16 PASS, exit 1**: its opted-in fixture decisions
+lacked the required decision revisions and were rolled back by a deferred guard
+despite a resolved Prisma promise. Corrected fixture creation includes the
+revision, forces deferred constraints before returning, restores the older policy
+guards and independently confirms the committed N before invoking the runtime.
+All migration-83 triggers stay active during that preparation. This corrects
+fixture evidence; the first failed run is not presented as a clean pass.
+
+The final suite calls the real `createPrismaBootstrapChannelStore().transition`
+and `reconcileRevocation` with actual migration-81/83 triggers, rows, receipts and
+Events. Complete committed proof returns a successful revoke Promise directly.
+There is no fallback that catches a failed revoke and labels a manual read as
+success, and no mocked SQL verdict. Public source fixtures contain no usable
+credential, private key, signer or real delivery. N=0 exercises the legacy exact
+reader path on the final catalog; N=1 and N=3 exercise the attested causal path.
+
+| Opted-in roots N | Before F | Native head H | Audit/history A | Final T | Authority children |
+| --- | --- | --- | --- | --- | --- |
+| 0 | 653 | 656 | 657 | 657 | 0 |
+| 1 | 695 | 698 | 700 | 701 | 2 |
+| 3 | 759 | 762 | 766 | 769 | 6 |
+
+These are actual final-run values, not predicted replacements for readback.
+They establish H=F+3, A=H+N+1 and T=A+N. Native head and source-head receipts share
+H; native audit/history and source-history receipts share A. Each opted-in decision
+has one head-source child followed by one history-source child, with exact
+predecessor digest/revision. Independent assertions check the real child receipt
+fences, XIDs, canonical row digests and Event payloads. Runtime readback verifies
+the exact operation, head, previous history, generation, grant and native full-row
+receipt bindings. Repeated explicit reconciliation leaves canonical snapshots
+unchanged and executes READ ONLY Repeatable Read only.
+
+One minimal source correction was required by review of the native negative
+cases: selecting only native receipts with the operation's XID hid an extra
+foreign-XID receipt in the same interval. The base query now includes own-XID
+receipts **or any native receipt in the reconstructed interval**; existing exact
+cardinality, digest and XID checks reject the foreign duplicate. This is covered
+by a new source regression and the native corruption matrix. No fence comparison,
+source lineage check, catalog pin or migration was weakened.
+
+| Native boundary | Final evidence |
+| --- | --- |
+| Transport bindings | Eight committed corruption cases deny: missing native receipt, wrong XID/digest, foreign duplicate receipt, wrong head, predecessor, generation and grant. |
+| Source lineage | Nine committed cases deny: missing/duplicate/foreign/stale/gapped/unrelated receipt, digest mismatch, authority predecessor corruption and internally consistent foreign-XID replay. |
+| Events / fence / operation | All five automatic Events in an N=1 revoke reject wrong payloads; current-fence regression/gap, stale or missing head and five exact-operation substitutions deny. |
+| COMMIT uncertainty | False ACK, explicit pre-COMMIT rollback, actual writer connection termination and real deferred native audit rejection return reconciliation_required, leave no committed revoke and perform no writer retry. |
+| Committed response loss | Synthetic caller-response loss and two real relay cuts after PostgreSQL COMMIT leave exactly one revoke, return reconciliation_required and succeed only through explicit exact READ ONLY reconciliation. Final-cut N=1: F/H/A/T=1203/1206/1208/1209; N=3: 1267/1270/1274/1277. |
+| Incomplete / concurrent readback | Removing an actual committed receipt or performing a separate origin source mutation between COMMIT and readback denies; subsequent reads do not repair or rebase the proof. |
+| Purity / pins | Replica reads, a disabled source trigger and altered helper volatility deny. Restoring exact catalog metadata restores successful reconciliation. Direct guarded receipt deletes reject. Non-DB network/DNS/listener/process/private-key/signing APIs are forbidden; effects=0. |
+
+Fault-relay aggregate assertions pass: three armed/applied cuts across both runs
+(one in the failed run, **two in the final full run**), `fullSuite=true`, `skips=0`,
+`nativeRuns=2`, `nativeExitCode=0`. The chain matches final source exactly:
+`17a6849ec2c0442bb3d34b3a1e1d335321e95026312ff283051a527ecda2fbdd`.
+All migrations 1-85 and Prisma schema compare unchanged with delegated baseline
+`e3db77138a33247de2bc23d5277ad733dda09bff`. No production migration was applied.
+
+Cleanup **PASS**, runner **exit 0**: the single owned database was removed;
+relay listener/process closed, no active owned DB sessions remained, and zero
+external helper files/directories were created. Container/volume/image/network
+inventory was restored, Roost PostgreSQL returned to its initial stopped state,
+and Soar remained unchanged. The three existing databases / 214 tables and
+sequences retain the exact before/after fingerprint:
+`e9e019524b6010b02b30b4635fff99133c4429ffac3f537b05ac860485a281f1`.
+
+Source/mocked regression **349/349 PASS**, zero failures/skips, exit 0 (45.182
+seconds). Server build, lint (338 routes / 45 files), three contract-pin checks,
+runner AST and scoped/staged diff checks pass; default context remains below
+150000 bytes. No web change or web build. Unrelated dirty documents,
+`design-qa.md` (unread/untracked/unstaged), retained roots and historical sandbox
+content remain untouched. No default wiring, deployment, push, real key or
+credential delivery, provisioning or installation/target/profile/model activation.
+
+The legacy channel revoke readback gap is **closed for the tested native path**.
+This does not broaden authority or qualify production transport. RF-HOST-035
+remains **PARTIAL**, production **BLOCKED**. `implementationReady`,
+`executionSupported`, `pilotReady`, `liveAdmissionAllowed`,
+`pilotExecutionAuthorized`, `pilotExecutionStarted`, `transportQualified` and
+`launchAuthority` remain false. Existing explicit canonical completion/activation
+retains its committed-proof condition; default/legacy durable flags remain false.
+Historical registration cause is UNKNOWN / MONITORED RESIDUAL RISK.
+
+Exactly one next recommendation, **not started**: bounded native canonical
+completion recovery regression with the historical channel-revoke reconciliation
+fallback removed from its fixture, requiring direct successful revoke/readback
+before recovery and rerunning the complete completion suite on an owned DB.
+
 ## Owner amendment v68: source-only legacy channel revocation readback
 
 The legacy channel store no longer treats the native history receipt's fence as

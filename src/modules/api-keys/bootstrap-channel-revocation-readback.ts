@@ -70,6 +70,9 @@ export async function readChannelRevocationBase(db:Db,r:ChannelTransition){
  ), checks AS (
   SELECT w.*,COALESCE(o.tbl IS NOT NULL AND w.generation_id=h.generation_id AND w.row_digest=encode(sha256(convert_to(o.row::text,'UTF8')),'hex'),false) AS verified
   FROM target h JOIN worker_transport_write_audit w ON w.writer_xid=h.writer_xid
+   OR w.fence_revision>(SELECT min(p.fence_revision)-3 FROM worker_transport_write_audit p
+    WHERE p.writer_xid=h.writer_xid AND p.table_name='worker_transport_heads' AND p.row_id=h.workspace_id::text||':'||h.host_id::text)
+    AND w.fence_revision<=(SELECT revision FROM ready_source_fence WHERE id=1)
   LEFT JOIN objects o ON o.tbl=w.table_name AND o.rid=w.row_id
  ) SELECT jsonb_build_object('operation',h.record,'workspaceId',h.workspace_id,'hostId',h.host_id,'generationId',h.generation_id,
   'ticketId',g.ticket_id,'writerXid',h.writer_xid,'currentFence',f.revision::text,

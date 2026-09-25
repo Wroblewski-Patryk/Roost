@@ -106,6 +106,7 @@ test('source-only legacy channel revoke committed readback',async t=>{
  const mutations:Record<string,(p:any)=>void>={
   'missing native receipt':p=>p.base.receipts.pop(),
   'duplicate native receipt':p=>p.base.receipts[2]=copy(p.base.receipts[1]),
+  'extra foreign native receipt in the operation interval':p=>p.base.receipts.push({...p.base.receipts[2],writerXid:'901'}),
   'foreign native XID':p=>p.base.receipts[0].writerXid='901',
   'foreign native generation':p=>p.base.receipts[0].generationId=randomUUID(),
   'wrong native head':p=>p.base.receipts[0].rowId=randomUUID(),

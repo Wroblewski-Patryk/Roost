@@ -1,20 +1,22 @@
 # Foundation requirements traceability
 
-Owner amendment v68: [source-only channel revocation readback](decision-attestation-prisma-ports-v1.md)
-corrects the legacy store's strict current-fence comparison for attestation-enabled
-sources. It captures the writer XID and pre/post-write fence, then independently
-verifies the exact committed revoke, current head, native audit/Event/full-row
-receipts and every allowed source-change epoch. Nested legitimate receipts may
-share an epoch; foreign, missing, duplicate, stale or unexplained evidence denies.
-Legacy exact-catalog behavior is preserved. Unknown COMMIT/readback requires
-reconciliation_required without retry; explicit reconciliation is exact-operation
-READ ONLY. Source/mocked tests 348/348 PASS, build/lint/pins PASS; native validation
-of this change is pending. All 85 migrations, Prisma schema, native harness and
-default wiring remain unchanged. v67's 20/20 native completion result is historical
-evidence for that baseline, not qualification of this fix. RF-HOST-035 PARTIAL;
-production BLOCKED; all eight readiness flags false; historical registration cause
-UNKNOWN / MONITORED RESIDUAL RISK. Exactly one next recommendation, not started:
-bounded native qualification of this readback fix. Older amendments are historical.
+Owner amendment v69: [native channel revocation readback](decision-attestation-prisma-ports-v1.md)
+passes 16/16 native tests, zero skips, with real legacy store revoke and explicit
+READ ONLY reconciliation on one owned DB with the unchanged final 85 migrations.
+N=0/1/3 prove the exact F/H/A/T trigger sequence and legitimate shared epochs;
+corrupt/foreign/duplicate/missing evidence and concurrent drift deny. Two actual
+post-COMMIT response cuts in the final run reconcile without retry or fixture
+fallback. A minimal reader correction includes foreign native receipts in the
+operation interval. Source tests 349/349 PASS, build/lint/pins PASS. First run's
+8/16 result came from missing fixture decision revisions; corrected preparation
+forces deferred checks and confirms committed roots before testing. Native runs=2
+on the same DB, without schema reset. Cleanup and unchanged fingerprints are
+recorded in the linked evidence. The tested legacy readback gap is closed;
+canonical completion's old recovery-fixture fallback has not been requalified
+against this change. RF-HOST-035 PARTIAL, production BLOCKED, all eight readiness
+flags false; registration cause UNKNOWN / MONITORED RESIDUAL RISK. Exactly one
+next recommendation, not started: bounded native canonical completion recovery
+regression with the historical channel-revoke fallback removed.
 
 Owner amendment v54: [native attestation qualification](decision-attestation-prisma-ports-v1.md)
 remains **BLOCKED**: final native 14/19 PASS, 5 FAIL (four subtests plus parent),
