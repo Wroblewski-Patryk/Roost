@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {randomUUID} from 'node:crypto';
+import {randomUUID,createHash} from 'node:crypto';
 import {bootstrapChannelFixture} from './bootstrap-channel-fixture';
 import {attestationPersistenceFixture} from './decision-attestation-fixture';
 import {reviewDigest} from '../modules/agent-runtime/task-review-contract';
@@ -11,19 +11,38 @@ import {decisionAttestationGuards,decisionAttestationHelpers} from '../modules/a
 import {createPrismaDecisionAttestationPorts,type NativeAttestationDependencies} from '../modules/api-keys/decision-attestation-prisma-ports';
 import {AttestationCommitUnknown} from '../modules/api-keys/decision-attestation-persistence-model';
 import {lineageOracle,type EpochProof} from './decision-attestation-lineage-oracle';
+import {advanceLifecycle} from '../modules/api-keys/worker-identity-lifecycle';
+import {issuerGuards} from '../modules/api-keys/bootstrap-issuer-guards';
 const clone=<T>(v:T):T=>structuredClone(v);
 type Row=Record<string,any>;type ObjectRow={table:string;rowId:string;row:Row;digest:string;receiptId:string;eventId:string;fence:string;writerXid:string;verified:boolean};
-export function nativeAttestationFixture(){
- const f=bootstrapChannelFixture(),keyFixture=attestationPersistenceFixture(),b=f.snapshot.binding,t=clone(f.ticket),snapshot=clone(f.snapshot);
+export function nativeAttestationFixture(purpose:'first_enrollment'|'owner_recovery'='first_enrollment',cutoverAfter?:number){
+ const f=bootstrapChannelFixture(purpose),keyFixture=attestationPersistenceFixture(),b=f.snapshot.binding;
+ // RFC public point only. This fixture never constructs a private key or signs.
+ const bytes=Buffer.from('302a300506032b6570032100d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a','hex');
+ const issuerMaterial={keyId:b.ticketKeyId,algorithm:'Ed25519',format:'spki-der-base64',spki:bytes.toString('base64'),publicKeyDigest:createHash('sha256').update(bytes).digest('hex')};
+ b.ticketPublicKeyDigest=issuerMaterial.publicKeyDigest;f.ticket.intent.binding=clone(b);
+ const t=clone(f.ticket),snapshot=clone(f.snapshot);
+ const issuer={id:randomUUID(),revision:1,previousId:null,decisionId:randomUUID(),decisionRevision:1,ownerId:t.ownerId,at:f.iso(-3000),
+  intent:{schemaVersion:'bootstrap-issuer-v1',binding:{workspaceId:b.workspaceId,issuerId:b.workspaceId,installationId:b.installationId,purpose:'worker-bootstrap-owner-ticket-v1'},
+   action:'create',expectedRevision:0,targetEpoch:1,material:issuerMaterial,activatesAt:null,cutoverAt:null,adoptionEvidenceDigest:null,expiresAt:f.iso(240000)}};
+ snapshot.issuerHistoryDigest=reviewDigest(issuer);
+ const lifecycle:any[]=[];
+ for(const kind of ['installation','host'] as const){const intent={schemaVersion:'worker-identity-lifecycle-v1',workspaceId:b.workspaceId,kind,
+  subjectId:kind==='host'?b.hostId:b.installationId,action:'adopt',expected:null,generation:kind==='host'?snapshot.hostGeneration:snapshot.installationGeneration,
+  installationId:b.installationId,installationGeneration:snapshot.installationGeneration,hostFingerprint:kind==='host'?b.hostFingerprint:null,
+  authorityDigest:'b'.repeat(64),adoptionEvidenceDigest:'c'.repeat(64),expiresAt:f.iso(240000)};
+  lifecycle.push(advanceLifecycle(intent,[],{ownerId:t.ownerId,decisionId:randomUUID(),decisionRevision:1,intent,current:true,anchorFresh:false,hostEnabled:true,
+   writerFenced:true,installation:lifecycle[0]??null},randomUUID(),f.now()));}
  let at=f.iso().replace('Z','123Z'),fence=10,xid=1,tail=Promise.resolve(),fault='',reads=0,writes=0,signatures=0,callbacks=0,verified=true,origin=true;
  const calls:{sql:string;values:unknown[];db:object;mode:string}[]=[],guards:any[]=decisionAttestationGuards.map(g=>({...g,enabled:true})),helpers:any[]=decisionAttestationHelpers.map(h=>({...h,enabled:true}));
- snapshot.expiresAt=f.iso(60000);snapshot.recordDigest=channelSnapshotDigest(snapshot);
+ snapshot.expiresAt=f.iso(60000);if(cutoverAfter!==undefined)snapshot.cutoverAt=f.iso(cutoverAfter);snapshot.recordDigest=channelSnapshotDigest(snapshot);
  const identity:any={version:'bootstrap-ticket-revocation-proposal-v1',ticketId:t.id,ticketDigest:'0'.repeat(64),ownerId:t.ownerId,decisionId:t.decisionId,decisionRevision:1,
-  purpose:'first_enrollment',binding:b,generation:1,credentialEpoch:1,issuedAt:f.iso(-1000),notBefore:f.iso(-500),expiresAt:f.iso(60000),hostGeneration:snapshot.hostGeneration,
+  purpose,binding:b,generation:purpose==='first_enrollment'?1:2,credentialEpoch:purpose==='first_enrollment'?1:2,issuedAt:f.iso(-1000),notBefore:f.iso(-500),expiresAt:f.iso(60000),hostGeneration:snapshot.hostGeneration,
   installationGeneration:snapshot.installationGeneration,issuerRevision:1,issuerHistoryDigest:snapshot.issuerHistoryDigest,channelGeneration:snapshot.generation,channelRevision:snapshot.revision,
-  channelDigest:ticketChannelPlanDigest(snapshot),predecessor:null};
+  channelDigest:ticketChannelPlanDigest(snapshot),predecessor:purpose==='first_enrollment'?null:{ticketId:randomUUID(),ticketDigest:'6'.repeat(64),attemptId:t.intent.prior.attemptId,
+   generation:1,credentialEpoch:1,historyDigest:'7'.repeat(64),state:'revoked',workspaceId:b.workspaceId,hostId:b.hostId}};
  const {ticketDigest,...metadata}=identity;
- t.version='worker-bootstrap-owner-ticket-v2';t.intent.schemaVersion='worker-bootstrap-admission-v2';t.intent.expiresAt=identity.expiresAt;t.issuedAt=identity.issuedAt;t.lifecycle=metadata;t.decisionIntentDigest=reviewDigest(t.intent);
+ t.version='worker-bootstrap-owner-ticket-v2';t.intent.schemaVersion='worker-bootstrap-admission-v2';t.intent.prior=identity.predecessor;t.intent.expiresAt=identity.expiresAt;t.issuedAt=identity.issuedAt;t.lifecycle=metadata;t.decisionIntentDigest=reviewDigest(t.intent);
  const signed={payload:t,signature:'0'.repeat(128)};identity.ticketDigest=ticketEnvelopeDigest(signed);
  const record={signed,decision:{payload:{id:t.decisionId,revision:1,ownerId:t.ownerId,authority:'owner_reserved',state:'accepted',intentDigest:t.decisionIntentDigest,acceptedAt:f.iso(-2000),expiresAt:identity.expiresAt},signature:'0'.repeat(128)}};
  lifecycleRegistration.parse({operationId:t.id,identity,record});
@@ -64,15 +83,25 @@ export function nativeAttestationFixture(){
   record_digest:digest('owner-decision-auth-evidence-v1',auth),writer_xid:String(xid),mutation_digest:'2'.repeat(64)});event('source_change',ar);
  const revision=()=>String(objects.filter(o=>o.table==='decision_authority_events').length);
  const deps:NativeAttestationDependencies={transaction:async(mode,work)=>{
-  // This mock serializes writes only, like the shared database fence. Read
-  // snapshots retain committed data; no state is persisted outside this test.
+  // Serializes writes. Reads deliberately expose injected changes so source
+  // fence checks are exercised; this is not a native MVCC concurrency proof.
   let release=()=>{};if(mode==='write'){const wait=tail;tail=new Promise<void>(r=>release=r);await wait;}
   const saved=clone(objects),oldFence=fence,oldOps=new Map(operations),oldProofs=clone(epochProofs);let returned:any;
   const transactionXid=++xid;
   const db:any={$queryRaw:async(strings:any,...args:any[])=>{
    const sql=(Array.isArray(strings)?strings.join('?'):strings.sql).replace(/\s+/g,' ').trim(),v=Array.isArray(strings)?args:strings.values;calls.push({sql,values:clone(v),db,mode});
    if(sql.includes('decision_attestation_available'))return [{decision_attestation_available:true}];
-   if(sql.includes('FROM pg_trigger'))return clone(guards);if(sql.includes('FROM pg_proc'))return clone(helpers);
+   if(sql.includes("to_regclass('public.bootstrap_issuer_history')"))return [{available:fault!=='issuer'}];
+   if(sql.includes('FROM pg_trigger'))return v[0]?.[0]===issuerGuards[0].name?issuerGuards.map(g=>({...g,enabled:true})):clone(guards);if(sql.includes('FROM pg_proc'))return clone(helpers);
+   if(sql.includes('worker_identity_lifecycle_guarded()'))return [{guarded:fault!=='lifecycle'}];
+   if(sql.includes('FROM worker_identity_lifecycle l'))return lifecycle.filter(r=>r.intent.kind===v[1]).map(record=>({record:clone(record),verified:true}));
+   if(sql.includes('FROM trusted_provider_ticket_keys'))return [{workspaceId:b.workspaceId,installationId:b.installationId,keyId:b.ticketKeyId,epoch:b.ticketKeyEpoch,publicKeyDigest:b.ticketPublicKeyDigest}];
+   if(sql.includes('FROM bootstrap_issuer_history h'))return [{record:clone(issuer),fence:'2',verified:true}];
+   if(sql.includes('FROM bootstrap_issuer_history WHERE'))return [{revision:1,digest:reviewDigest(issuer)}];
+   if(sql.includes('lifecycle_identity AS identity'))return [{id:q.ticketId,identity:clone(identity)}];
+   if(sql.includes('FROM worker_bootstrap_tickets t JOIN LATERAL')){const p=identity.predecessor;
+    return p?[{digest:p.ticketDigest,history:p.historyDigest,attempt:p.attemptId,state:p.state,generation:p.generation,credential:p.credentialEpoch}]:[];}
+   if(sql.includes('AS revision,current_setting'))return [{revision:String(fence),isolation:mode==='read'?'repeatable read':'serializable',readonly:mode==='read'?'on':'off'}];
    if(sql.includes('transaction_isolation')&&sql.includes('to_char(clock_timestamp()'))return [{fence:String(fence),isolation:mode==='read'?'repeatable read':'serializable',readOnly:mode==='read'?'on':'off',origin:origin?'origin':'replica',timezone:'UTC',at}];
    if(sql.endsWith('FROM ready_source_fence WHERE id=1 FOR UPDATE')){assert.equal(mode,'write');return [{fence:String(fence)}];}
    if(sql.includes('AS "sealLineage"')){
@@ -129,16 +158,17 @@ export function nativeAttestationFixture(){
    if(mode==='write'&&fault==='false'){objects=saved;fence=oldFence;operations=oldOps;epochProofs=oldProofs;return returned;}
    if(mode==='write'&&fault==='lost')throw new AttestationCommitUnknown();
    if(mode==='write'&&fault==='precommit')throw Error('lost acknowledgement');return returned;
-  }catch(e){if(!(e instanceof AttestationCommitUnknown)){objects=saved;fence=oldFence;operations=oldOps;epochProofs=oldProofs;}throw e;}finally{release();}
+  }catch(e){if(mode==='write'&&!(e instanceof AttestationCommitUnknown)){objects=saved;fence=oldFence;operations=oldOps;epochProofs=oldProofs;}throw e;}finally{release();}
  },ownerAuthentication:async()=>clone(auth),authorizePublicKey:async()=>true,
  signer:{keyId:material.keyId,sign:async()=>{signatures++;return 'a'.repeat(128);}},verifier:{verify:async()=>fault!=='signature'},ticketVerifier:{verify:async()=>fault!=='ticket'}};
  const ports=createPrismaDecisionAttestationPorts(deps);
  async function projection(){return deps.transaction('read',async db=>{await ports.bind(db,'read');return ports.projectCanonical(db,q);});}
  async function command(kind:string,extra:Row={}){return {...q,operationId:randomUUID(),expected:(await projection()).version,kind,...extra};}
- return {...f,q,b,ports,deps,material,auth,objects:()=>objects,calls,guards,helpers,projection,command,
+ return {...f,q,b,ports,deps,material,auth,lifecycle,issuer,objects:()=>objects,calls,guards,helpers,projection,command,
   execute:async(kind:string,extra:Row={})=>ports.execute(await command(kind,extra)),
   fault:(v:string)=>fault=v,origin:(v:boolean)=>origin=v,verified:(v:boolean)=>verified=v,at:(v:string)=>at=v,
   remove:(table:string)=>{objects=objects.filter(o=>o.table!==table);},
   stats:()=>({reads,writes,signatures,callbacks,faultHits}),state:()=>clone({objects,fence,epochProofs}),operations:()=>operations,
-  lineageProofs:()=>epochProofs,drift:()=>{fence++;}};
+  lineageProofs:()=>epochProofs,drift:()=>{fence++;},revise:()=>{const r=clone(objects.find(o=>o.table==='decision_revisions')!.row);r.version++;
+   event('source_change',put('decision_revisions',r));}};
 }

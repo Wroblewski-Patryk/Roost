@@ -13,6 +13,7 @@ import { bootstrapChannelGap } from "./bootstrap-channel-contract";
 import {readCanonicalTicketRevocation,invalidTicketRevocation,type TicketRevocationVerifier,type TicketRevocationRead} from './bootstrap-ticket-revocation-reader';
 import { bootstrapTicketRevocationGap } from './bootstrap-ticket-revocation-contract';
 import {signedDecisionGap} from './bootstrap-signed-decision-contract';
+import {isDecisionAuthorityReader,decisionAuthorityRequest,type DecisionAuthorityRead} from './bootstrap-decision-authority-reader';
 
 type Db=Prisma.TransactionClient;
 const id=z.string().uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),epoch=z.number().int().positive().safe();
@@ -41,7 +42,7 @@ const flags={transportQualified:false,implementationReady:false,executionSupport
 
 // Only projections of existing canonical records. No tables, seeds, signer,
 // secret material, credentials, independent truth store or production factory.
-export function createCanonicalBootstrapAuthoritySource(clock=()=>new Date(),ticketVerifier?:TicketRevocationVerifier){
+export function createCanonicalBootstrapAuthoritySource(clock=()=>new Date(),ticketVerifier?:TicketRevocationVerifier,decisionAuthority?:unknown){
   const sessions=new WeakMap<object,{mode:"read"|"write";fence:string}>();
   async function fence(db:Db){
     const rows=await db.$queryRaw<any[]>`SELECT revision::text AS revision,current_setting('transaction_isolation') AS isolation,current_setting('transaction_read_only') AS readonly FROM ready_source_fence WHERE id=1`;
@@ -55,6 +56,11 @@ export function createCanonicalBootstrapAuthoritySource(clock=()=>new Date(),tic
   async function inspectTicketRevocation(db:Db,input:unknown){
     const s=await bound(db),result=await readCanonicalTicketRevocation(db,input,s.fence,ticketVerifier,clock);await bound(db);return result;
   }
+  async function inspectDecisionAuthority(db:Db,input:unknown):Promise<DecisionAuthorityRead>{
+    const s=await bound(db);if(s.mode!=='read'||!isDecisionAuthorityReader(decisionAuthority))return blocked('signed_current_decision_unavailable');
+    try{const proof=await decisionAuthority.read(db,input,s.fence);await bound(db);return proof;}
+    catch{return blocked('signed_current_decision_unavailable');}
+  }
   async function inspect(db:Db,input:unknown){
     const blockers:string[]=[...bootstrapAuthorityGaps];
     let ticketRevocationAuthority:TicketRevocationRead|typeof bootstrapTicketRevocationGap=bootstrapTicketRevocationGap;
@@ -64,6 +70,18 @@ export function createCanonicalBootstrapAuthoritySource(clock=()=>new Date(),tic
       credentialHighWater?:number;credentialAbsent?:boolean;handoff?:{id:string;state:string;hostFingerprint:string};
       decision?:{id:string;revision:number;ownerId:string;intentDigest:string;expiresAt:string};channel?:{revision:number;certificateEpoch:number;highWaterEpoch:number;recordDigest:string;profileDigest:string;state:string;validUntil:string};
       ticket?:{id:string;digest:string;expiresAt:string;issuedAt?:string};issuerPublic?:NonNullable<Awaited<ReturnType<typeof inspectCanonicalIssuer>>['facts']>;fenceRevision?:string;lifecycle?:NonNullable<Awaited<ReturnType<typeof inspectCanonicalLifecycle>>['facts']>}={};
+    // V2 authority is a separate, complete native projection. Never reinterpret
+    // its attestation signature as the legacy v1 signedBootstrapDecision.
+    if(decisionAuthority!==undefined){try{
+      const q=request.parse(input),value=decisionAuthorityRequest.parse({binding:q.binding,decisionId:q.decisionId,ticketId:q.ticketId,purpose:q.purpose});
+      const proof=await inspectDecisionAuthority(db,value);
+      if(q.issuedAt&&q.issuedAt!==proof.identity.issuedAt)blocked('bootstrap_ticket_binding_mismatch');
+      const nativeFacts:typeof facts={ownerId:proof.identity.ownerId,fenceRevision:proof.version.fence,lifecycle:proof.lifecycle,issuerPublic:proof.issuer};
+      return {ok:true as const,qualification:'canonical_attested_projection_only_v1' as const,blockers:[] as string[],
+        decisionAuthority:proof,channelAuthority:{available:true,qualification:'native_attestation_channel_binding_v1'},
+        ticketRevocationAuthority:{available:true,qualification:'native_attestation_ticket_lifecycle_v1'},
+        facts:nativeFacts,...flags};
+    }catch{/* Preserve the legacy diagnostics and explicit dependency blocker. */}}
     try{
       const scoped=await bound(db),q=request.parse(input),b=q.binding;facts.fenceRevision=scoped.fence;
       const lifecycle=await inspectCanonicalLifecycle(db,b);
@@ -183,8 +201,13 @@ export function createCanonicalBootstrapAuthoritySource(clock=()=>new Date(),tic
       const channel=ticketId?await inspectCanonicalBootstrapChannel(db,ticketId,clock()):null;
       const ticket=ticketId&&ticketVerifier?await inspectTicketRevocation(db,{ticketId}):null;await bound(db);
       return blocked(...bootstrapAuthorityGaps.filter(code=>!lifecycleMissing.some(m=>m===code)&&!issuerGaps.some(m=>m===code)&&!(code==='bootstrap_channel_authority_unavailable'&&channel?.facts&&same(channel.facts.snapshot.binding,binding))&&!(code==='bootstrap_ticket_revocation_unavailable'&&ticket?.ok&&ticket.admissible&&same(ticket.identity.binding,binding)&&ticket.identity.issuedAt===issuedAt)),...lifecycle.blockers,...issuer.blockers);},
-    async decision(db,id){await bound(db);if(!z.string().uuid().safeParse(id).success)blocked("decision_missing_or_invalid");return blocked("signed_current_decision_unavailable");},
+    async decision(db,id){await bound(db);if(!z.string().uuid().safeParse(id).success)blocked("decision_missing_or_invalid");
+      if(!isDecisionAuthorityReader(decisionAuthority))return blocked('signed_current_decision_unavailable');
+      // Ambiguous/reused decisions deny; request data cannot select a different ticket.
+      const rows=await db.$queryRaw<any[]>`SELECT id,lifecycle_identity AS identity FROM worker_bootstrap_tickets WHERE decision_id=${id}::uuid LIMIT 2`;
+      if(rows.length!==1)return blocked('signed_current_decision_unavailable');
+      return inspectDecisionAuthority(db,{decisionId:id,ticketId:rows[0].id,binding:rows[0].identity?.binding,purpose:rows[0].identity?.purpose});},
     async ticketRevoked(db,id){await bound(db);if(!z.string().uuid().safeParse(id).success)blocked("bootstrap_ticket_missing");const proof=await inspectTicketRevocation(db,{ticketId:id});if(!proof.ok)return blocked("bootstrap_ticket_revocation_unavailable");return proof.revoked;}
   };
-  return Object.freeze({...source,inspect,inspectTicketRevocation});
+  return Object.freeze({...source,inspect,inspectTicketRevocation,inspectDecisionAuthority});
 }

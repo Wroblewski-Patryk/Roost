@@ -32,6 +32,10 @@ export type NativeAttestationDependencies={
  ticketVerifier?:{verify:(db:Db,registration:Readonly<NativeAttestationProjection['registration']>)=>Promise<boolean>};
 };
 const json=JSON.stringify;
+const concretePorts=new WeakSet<object>();
+export function isConcreteDecisionAttestationPorts(value:unknown):value is ReturnType<typeof createPrismaDecisionAttestationPorts>{
+ return typeof value==='object'&&value!==null&&concretePorts.has(value);
+}
 function requireCurrent(p:NativeAttestationProjection){if(!p.usable||p.terminal)deny();}
 function authCurrent(p:NativeAttestationProjection,at:string){const a=p.auth;
  if(!a||Date.parse(at)-Date.parse(a.authTime)>300000||Date.parse(a.authTime)>Date.parse(at))deny();return a!;}
@@ -172,7 +176,23 @@ export function createPrismaDecisionAttestationPorts(deps:NativeAttestationDepen
  }
  async function readCommittedOperation(db:Db,q:AttestationScope,operationId:string){await bound(db,'read');await requireDecisionAttestationGuards(db);
   const result=await readAttestationOperation(db,q,operationId);await bound(db,'read');return freezePublic(result.receipt);}
- return Object.freeze({qualification:'unapplied_prisma_decision_attestation_ports_v1' as const,bind,projectCanonical,appendChildren,readCommittedOperation,
+ const ports=Object.freeze({qualification:'unapplied_prisma_decision_attestation_ports_v1' as const,bind,projectCanonical,appendChildren,readCommittedOperation,
+  // The caller supplies the SAME transaction used by the other authority reads.
+  // This surface cannot sign, start an attempt or open a nested transaction.
+  async inspectBound(db:Db,input:unknown,expectedFence:string){
+   const q=attestationScope.parse(input);await bind(db,'read');
+   try{const p=await projectCanonical(db,q);if(p.version.fence!==expectedFence)deny();
+    await ticket(db,p);const attestation=await currentAttestation(db,p);
+    let attemptReceipt:SqlMutationReceipt|null=null;
+    if(p.attempts.length){const attempt=p.attempts[0],operation=await readAttestationOperation(db,q,String(attempt.id));
+     if(operation.operationTable!=='worker_bootstrap_attempts'||!exact(operation.operationRow,attempt)||
+      operation.receipt.mutationDigest!==attempt.attestation_mutation_digest||
+      operation.receipt.authorityRevision!==p.version.authorityRevision||operation.receipt.fence!==p.version.fence)deny();
+     attemptReceipt=operation.receipt;
+    }
+    await unchanged(db,p);return freezePublic({projection:p,attestation,attemptReceipt});
+   }finally{sessions.delete(db);}
+  },
   async inspect(input:unknown){try{const q=attestationScope.parse(input);return await deps.transaction('read',async db=>{await bind(db,'read');
    try{const p=await projectCanonical(db,q);await ticket(db,p);await currentAttestation(db,p);return {ok:true as const,version:p.version,sealed:!!p.attempts.length,...lifecycleFlags};}
    finally{sessions.delete(db);}});}catch{return {ok:false as const,blocker:'signed_current_decision_unavailable',...lifecycleFlags};}},
@@ -187,4 +207,5 @@ export function createPrismaDecisionAttestationPorts(deps:NativeAttestationDepen
    }catch(e){return {ok:false as const,error:completed||e instanceof AttestationCommitUnknown?'reconciliation_required':'denied',retryable:false as const,...lifecycleFlags};}
   }
  });
+ concretePorts.add(ports);return ports;
 }

@@ -1,5 +1,98 @@
 # Decision attestation: Prisma ports and native persistence evidence
 
+## Owner amendment v59: canonical decision reader and source composition
+
+`createCanonicalBootstrapAuthoritySource(clock, ticketVerifier, decisionAuthority)`
+now accepts an explicit reader capability. `inspectDecisionAuthority`, the v2
+branch of `inspect`, and `decision` use it only inside the source's bound
+repeatable-read READ ONLY transaction. Missing, copied, untrusted or incomplete
+dependencies retain `signed_current_decision_unavailable`. No runtime route or
+default factory creates this capability. Legacy `context` remains blocked and the
+legacy store parses only its original v1 signed envelope: a native v2 attestation
+is never silently converted to a different signature domain.
+
+`createDecisionAuthorityReader` accepts only the frozen concrete port object
+issued by `createPrismaDecisionAttestationPorts`, the exact capability version
+and `decisionReaderEvidence`. The evidence pins migration-83 LF SHA-256 and the
+complete guard/helper catalog, and names v58 commit
+`3970dffe2b7e3de0a73d7beb06a13af19d2ab5f4`. This is evidence of the previously
+qualified persistence implementation, **not native qualification of the new
+reader/composition**. The existing historical port version contains `unapplied`;
+that identifier is preserved for compatibility, not used as deployment status.
+Every read rechecks the native catalog. A matching text tag alone grants nothing.
+
+The additive `inspectBound` port performs concrete `projectCanonical`, ticket
+verification and current attestation signature verification on that same Db.
+The reader also replays existing canonical lifecycle and issuer histories on
+that Db, verifies the exact issuer history head, and validates the protected
+channel plan at the current database time. The pinned native projection joins
+owner/membership, accepted revision/preview/policy, authentication evidence,
+attestation envelope, derived authority-event revision and terminal events,
+key purpose/material/epoch/high-water/history, ticket and attempt/lifecycle
+receipts, channel bindings and recovery predecessor. It reprojects after the
+explicit owner-authentication and public-key-trust callbacks. Missing verifier,
+false result, invalid policy, stale owner/key, revoked authority, expired validity
+or altered source fence fails closed. No signer or private-key API is added.
+The trust seams are explicitly `synthetic_decision_reader_trust_v1` in this atom;
+they do not claim production cryptographic or authentication qualification.
+
+For a sealed attempt, the independent SELECT of the existing operation receipts
+must match its entire row, mutation digest, derived authority revision and current
+source fence. No intervening source write is silently accepted. The immutable
+seal must bind the exact attempt, ticket, attestation, signed bindings and start
+state. Inspection is pure, never starts or repairs an attempt, and never invokes
+mutating `decisionGovernanceView`.
+
+`createAttestedBootstrapComposition` is an opt-in **synthetic source driver**.
+It accepts no replacement projector, network configuration or caller authority.
+It obtains two distinct, fresh READ ONLY Db projections before exchange and two
+more before completion. All four must match revision, full projection digest,
+fence and seal; the existing ticket must be consumed for that exact attempt.
+Clock observations are checked for validity on each read but excluded from digest
+equality. Callback replay, reused Db and fabricated transaction return values
+deny. A missing/mismatched seal or pre-send drift produces zero exchanges.
+After possible exchange commit, failure or drift returns `delivery_unknown`,
+`reconciliationRequired=true`, `retryable=false`; completion is not retried.
+
+The bounded process-local attempt latch prevents concurrent/repeated sends,
+including new factory instances in the same process. **It is not a durable
+cross-process claim** and is not persisted by read-only inspection. Durable
+atomic dispatch/completion, restart recovery and real delivery remain explicit
+production gaps. The driver is not connected to endpoints or default runtime.
+No new schema, migration, registry, credentials, keys, DB/Docker operation,
+network exchange, provisioning, target/model/profile or activation was used.
+
+Validation: focused reader/composition **14/14 PASS** using mocked native rows
+and public synthetic verifier/auth/key/transport doubles. Coverage includes both
+first enrollment and recovery, four distinct Db identities, unchanged database
+state/audit/fence, missing evidence/seams, invalid signatures, owner/revision/key/
+terminal/binding/validity drift, channel cutover, callbacks changing authority,
+exact committed attempt receipt, absent/mismatched/reused/terminal attempts,
+pre-send zero exchange and post-commit uncertainty without retry. Twenty
+concurrent source runs yield one exchange; twenty reads race revise/revoke and
+cannot restore authority. The fixture serializes writes and deliberately exposes
+read drift: these tests **do not claim native MVCC or distributed concurrency**.
+Source test guards forbid network, processes and real signing.
+
+Final selected source regressions **218/218 PASS, 0 skipped**; server TypeScript
+build, lint (338 routes / 45 files), migration guard pins, read-surface AST check
+and scoped `git diff --check` PASS. All 83 migrations and Prisma schema remain
+unchanged. Native DB/Docker/network tests and the web build were not run in this
+source-only backend atom. Default context was consolidated below its 150000-byte
+budget; protected product/planning changes were excluded from the commit.
+
+RF-HOST-035 remains **PARTIAL**, production **BLOCKED**. Only a complete explicitly
+injected source projection can remove the signed-decision blocker; default runtime
+cannot. `implementationReady`, `executionSupported`, `pilotReady`,
+`liveAdmissionAllowed`, `pilotExecutionAuthorized`, `pilotExecutionStarted`,
+`transportQualified` and `launchAuthority` remain false. v58 registration risk
+remains MONITORED RESIDUAL RISK, cause UNKNOWN, with its existing reopen condition.
+
+Exactly one next recommendation, **not started**: separately authorized bounded
+native qualification of this reader/composition against the unchanged final
+migration chain, using public synthetic dependencies and no real delivery.
+Earlier statuses and next-atom recommendations below are historical.
+
 ## Owner amendment v58: deterministic boundaries and monitored residual risk
 
 One **11-row deterministic matrix PASS** (one invocation, 21.766 seconds): eight

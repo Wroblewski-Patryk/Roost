@@ -5,6 +5,7 @@ import type { SignedTransport } from "./worker-transport.service";
 import type { BootstrapBinding,BootstrapTicket,BootstrapDecision } from "./worker-bootstrap-contract";
 import { authorizeWorkerBootstrap,bootstrapPeerMatches,verifyBootstrapSignature,type BootstrapContext,type BootstrapStore,type BootstrapTx,type BootstrapAttempt } from "./worker-bootstrap.service";
 import { persistedBootstrapTicket,persistedBootstrapAttempt,persistedBootstrapHistory,signedBootstrapTicket,signedBootstrapDecision,boundedBootstrapRecord } from "./worker-bootstrap-persistence-contract";
+import type {DecisionAuthorityRead} from './bootstrap-decision-authority-reader';
 
 type Db=Prisma.TransactionClient;
 type SourceContext=Omit<BootstrapContext,"enrollmentGeneration"|"prior">&{credentialState:"absent"|"pending"|"acknowledged"|"revoked"|"expired"};
@@ -17,7 +18,9 @@ export interface BootstrapAuthoritySource{
   bindTransaction?(db:Db,mode:"read"|"write"):Promise<()=>void>;
   inspect?(db:Db,input:unknown):Promise<unknown>;
   context(db:Db,binding:BootstrapBinding,issuedAt?:string,ticketId?:string):Promise<SourceContext|null>;
-  decision(db:Db,id:string):Promise<SignedTransport<BootstrapDecision>|null>;
+  // Native v2 attestation is deliberately a distinct result. The legacy adapter
+  // below parses only v1; it cannot silently reuse a signature in another domain.
+  decision(db:Db,id:string):Promise<SignedTransport<BootstrapDecision>|DecisionAuthorityRead|null>;
   ticketRevoked(db:Db,id:string):Promise<boolean>;
 }
 type Head={workspace_id:string;host_id:string;attempt_id:string;history_id:string;generation:number;credential_epoch:number;revision:number;record_digest:string;state:BootstrapAttempt["state"]};

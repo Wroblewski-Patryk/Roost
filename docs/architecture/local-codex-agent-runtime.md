@@ -1,51 +1,20 @@
 # Local Codex Agent Runtime
 
-Owner amendment v58: [deterministic registration matrix](decision-attestation-prisma-ports-v1.md)
-passed 11/11: eight register/seal cases and three exact expected denials, no
-unexpected refusal/retry. Fresh final83 replay, full native24/24, source204/204,
-full build/lint/pins and cleanup PASS. Historical cause UNKNOWN: now MONITORED
-RESIDUAL RISK, not by itself a gate against canonical reader/composition work.
-The native registration alert and valid-input-failure reopen condition are explicit.
-RF-HOST-035 PARTIAL; canonical signed_current_decision_unavailable and production
-BLOCKED, all eight flags false. One next atom, not started: source-only canonical
-reader/composition with injected qualified ports and fail-closed dependencies.
-No further random stress without new evidence; older blocker labels are historical.
-
-Owner amendment v57: [registration investigation](decision-attestation-prisma-ports-v1.md)
-completed 96 new registrations/12 seals and one full native suite 24/24, no skips,
-runner exit 0; cleanup PASS. Final unchanged 83-migration chain replayed from empty
-in one owned disposable DB, without function replacement. Source204/204, full
-server/web build, lint/pins PASS. Historical registration denial not reproduced:
-root cause UNKNOWN and residual blocker remains; no behavioral fix is claimed.
-Only bounded in-memory synthetic diagnostics were added. RF-HOST-035 PARTIAL,
-canonical signed_current_decision_unavailable and production BLOCKED; all eight
-flags false. One next recommendation, not started: separately authorized controlled
-registration clock/transaction-ordering investigation. Earlier entries are historical.
-
-Owner amendment v56: [native attestation persistence](decision-attestation-prisma-ports-v1.md)
-final full run 24/24 PASS, 0 skipped, runner exit 0; cleanup independently PASS.
-One owned disposable DB applied 83 migrations; a one-line audit workspace fix
-in never-production-applied 83 was installed there and pinned before the final
-full run. Earlier 82 migrations/schema and existing DB fingerprints are unchanged;
-inventory restored. Source 204/204, server build/lint/pins PASS. Public synthetic
-doubles only; no production crypto, default composition or activation.
-Earlier intermittent fixture registration denial was not reproduced or explained;
-the final pass is not proof that this anomaly was repaired. RF-HOST-035 PARTIAL,
-production and canonical signed_current_decision_unavailable BLOCKED; all eight
-flags false. Exactly one next recommendation, not started: separately authorized
-bounded investigation/repair of that fixture anomaly. Earlier entries are historical.
-
-Owner amendment v55: [fence compatibility repair](decision-attestation-prisma-ports-v1.md)
-is source/mocked qualified: 204/204 regressions and final focused 22/22 PASS;
-build/lint/pins pass. Migration 83 locks without double-counting existing 81/82
-row writers and adds exact per-epoch receipt lineage for the attested start.
-Two hash-checked predicates of the existing lifecycle writer are upgraded;
-legacy equality and every other statement remain intact. Migration files 1-82
-and Prisma schema are unchanged. No DB/Docker/network/default activation ran.
-Native requalification PENDING, RF-HOST-035 PARTIAL, production and
-signed_current_decision_unavailable BLOCKED; all eight flags false.
-Exactly one next atom, not started: separately authorized full native
-requalification. The v54 and earlier outcomes/recommendations below are historical.
+Owner amendment v59: [canonical decision reader and source composition](decision-attestation-prisma-ports-v1.md)
+conditionally removes `signed_current_decision_unavailable` only with explicit
+factory-issued attestation ports, exact v58 qualification evidence and injected
+signature/authentication/key trust. Reads share one READ ONLY Db/fence; two fresh
+projections precede exchange and completion. Existing attempt seal and committed
+receipt must match; drift denies or becomes non-retryable delivery uncertainty.
+Default/legacy runtime remains unavailable. The driver is synthetic/source-only;
+its process-local one-use latch is not durable multi-process dispatch authority.
+RF-HOST-035 PARTIAL; production BLOCKED; all eight flags false. v58 native 24/24
+and deterministic matrix 11/11 remain prior evidence, not qualification of this
+new reader. Historical registration cause UNKNOWN, MONITORED RESIDUAL RISK with
+the existing reopen condition. One next atom, not started: bounded native reader/
+composition qualification with public synthetic dependencies and no real delivery.
+Detailed v55-v58 evidence is retained in the linked canonical document; older
+amendments below are historical.
 
 Owner amendment v54: [native attestation qualification](decision-attestation-prisma-ports-v1.md)
 remains **BLOCKED**: final native 14/19 PASS, 5 FAIL (four subtests plus parent),
