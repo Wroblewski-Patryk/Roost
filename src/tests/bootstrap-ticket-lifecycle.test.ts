@@ -1,5 +1,6 @@
 import {channelRevocationEvidence} from './bootstrap-channel-revocation-fixture';
 import test from 'node:test';
+import {upgradeLegacyClient} from './bootstrap-v3-catalog-fixture';
 import assert from 'node:assert/strict';
 import crypto,{randomUUID,createHash} from 'node:crypto';
 import {readFileSync,readdirSync} from 'node:fs';
@@ -222,7 +223,9 @@ test('unapplied bootstrap lifecycle schema and source-only adapter',async t=>{
   await assert.rejects(f.transition(c.identity.ticketId,'consume'));for(const k of Object.keys(lifecycleFlags))assert.equal((await f.inspect(c.identity.ticketId) as any)[k],false);
  });
  await t.test('legacy lifecycle preserves exact fence semantics on original and fully pinned upgraded catalogs',async()=>{
-  for(const upgraded of [false,true]){const f=fixture(false,false,upgraded),c=f.registration();await f.store.register(c);
+  for(const version of [82,83,87]){const upgraded=version>=83,f=fixture(false,false,upgraded),c=f.registration();
+   if(version===87)upgradeLegacyClient(f.client);
+   await f.store.register(c);
    await f.transition(c.identity.ticketId,'reserve');await f.transition(c.identity.ticketId,'consume');assert.equal(f.state().attempts.length,1);
    const stale=await f.command(c.identity.ticketId,'revoke');f.mutate(s=>s.fence++);
    await assert.rejects(f.store.transition(stale));assert.equal((await f.inspect(c.identity.ticketId)).usable,false);

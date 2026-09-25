@@ -1,10 +1,14 @@
 # Bootstrap v3 source projection and receipt lineage
 
 Owner amendment v76: **source-only projection contract and transactional tests
-DONE; native projection/persistence BLOCKED**. This extends the
+DONE; native qualification/persistence integration BLOCKED**. This extends the
 [v75 issuance contract](bootstrap-proof-issuance-v3.md), without wiring a default
 port, changing SQL/guards 1–86 or creating migration 87. It does not confer
 signing, delivery, admission or activation authority.
+
+Subsequent atom A supplies the [migration-87 SQL backend](bootstrap-proof-native-backend-v3.md)
+and versioned catalog readers. It remains UNAPPLIED / NATIVE UNQUALIFIED; the
+v76 verification below is historical, and the Prisma port is still absent.
 
 ## Immutable source boundary
 
@@ -104,7 +108,6 @@ is supplied. Persistence/cryptography qualification, sendPermit and all eight
 readiness/activation flags remain false. RF-HOST-035 PARTIAL, production BLOCKED,
 registration UNKNOWN / MONITORED RESIDUAL RISK.
 
-Exactly one next recommendation, **not started**: additive migration 87 and
-pin-checked versioned guard upgrades/native projection port satisfying this
-contract while preserving the legacy branches and migration files. Native
-qualification remains a later separate atom. No push/deploy.
+Current next atom, **not started**: B, explicit Prisma integration of atom A's
+SQL backend with this projector and independent committed readback. Native
+qualification remains a later separate delegation. No push/deploy.

@@ -3,6 +3,7 @@ import {reviewDigest} from '../agent-runtime/task-review-contract';import {freez
 import {decisionAttestationOwnGuards,decisionAttestationOwnHelpers,decisionAttestationLifecycleGuardHash} from './decision-attestation-guards';
 import {ticketGuards,ticketHelpers,ticketChannelHelper} from './bootstrap-ticket-lifecycle-guards';
 import {attestationKeyMaterial} from './decision-attestation-key-model';
+import {recognizeV3Backend,v3Pinned} from './bootstrap-v3-catalog';
 import {createAttestationPersistenceModel,inspectAttestationState,attestationSourceVersion,recordAttestationKeyWrite,recordAttestationSourceWrite,
  ownerAuthenticationEvidence,AttestationCommitUnknown,type AttestationModelState,type AttestationModelDependencies} from './decision-attestation-persistence-model';
 type Db=Prisma.TransactionClient;type State=AttestationModelState;
@@ -26,8 +27,9 @@ export async function requireDecisionAttestationGuards(db:Db){
   FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace JOIN pg_proc p ON p.oid=t.tgfoid
   JOIN pg_namespace pn ON pn.oid=p.pronamespace WHERE t.tgname=ANY(${[...new Set(decisionAttestationGuards.map(g=>g.name))]}::text[])`;
  const guards=new Map(rows.map(({enabled,...row})=>[`${row.table}:${row.name}`,{enabled,row}]));
+ const v3=await recognizeV3Backend(db,rows);
  if(rows.length!==decisionAttestationGuards.length||guards.size!==rows.length||!decisionAttestationGuards.every(g=>{
-  const actual=guards.get(`${g.table}:${g.name}`);return actual?.enabled===true&&same(actual.row,g);
+  const actual=guards.get(`${g.table}:${g.name}`);return actual?.enabled===true&&same(actual.row,v3Pinned(g,v3));
  }))deny();
  const helpers=await db.$queryRaw<any[]>`SELECT p.proname AS name,p.proargtypes::text AS args,p.provolatile::text AS volatility,p.prorettype::regtype::text AS result,
   encode(sha256(convert_to(replace(p.prosrc,chr(13),''),'UTF8')),'hex') AS hash,

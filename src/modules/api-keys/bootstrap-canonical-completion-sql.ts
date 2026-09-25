@@ -6,6 +6,7 @@ import {persistedBootstrapHistory} from './worker-bootstrap-persistence-contract
 import {one,exact,type AttestationDb as Db} from './decision-attestation-sql';
 import {completionReceipt,denyCompletion as deny,type CanonicalCompletionInput,type CompletionContext} from './bootstrap-canonical-completion-contract';
 import {completionFunctions,completionTriggers} from './bootstrap-canonical-completion-guards';
+import {recognizeV3Backend,v3Pinned} from './bootstrap-v3-catalog';
 
 export async function requireCompletionGuards(db:Db){
  const f=await db.$queryRaw<any[]>`SELECT p.proname AS name,pg_get_function_identity_arguments(p.oid) AS args,
@@ -14,7 +15,8 @@ export async function requireCompletionGuards(db:Db){
   (n.nspname='public' AND p.prokind='f' AND NOT p.prosecdef AND p.proconfig IS NULL AND NOT p.proisstrict
    AND NOT p.proleakproof AND p.proparallel='u') AS enabled
  FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace JOIN pg_language l ON l.oid=p.prolang WHERE p.proname=ANY(${completionFunctions.map(f=>f.name)}::text[])`;
- if(f.length!==completionFunctions.length||!completionFunctions.every(e=>f.filter(({enabled,...v})=>enabled===true&&exact(e,v)).length===1))deny();
+ const v3=await recognizeV3Backend(db,f);
+ if(f.length!==completionFunctions.length||!completionFunctions.every(e=>f.filter(({enabled,...v})=>enabled===true&&exact(v3Pinned(e,v3),v)).length===1))deny();
  const t=await db.$queryRaw<any[]>`SELECT c.relname AS "table",t.tgname AS name,p.proname AS function,t.tgtype::int AS kind,
   t.tgdeferrable AS deferred,(t.tgenabled='O' AND t.tgqual IS NULL AND t.tgnargs=0 AND t.tgattr=''::int2vector AND NOT t.tgisinternal
    AND (t.tgconstraint<>0)=t.tgdeferrable AND t.tginitdeferred=t.tgdeferrable AND n.nspname='public' AND pn.nspname='public'

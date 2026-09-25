@@ -8,6 +8,7 @@ import {inspectCanonicalLifecycle} from './worker-identity-lifecycle-store';
 import {inspectCanonicalIssuer} from './bootstrap-issuer-store';
 import {readChannelRevocation,channelRevokeWitness,type ChannelRevokeWitness} from './bootstrap-channel-revocation-readback';
 import {channelGuards,channelShapeHash} from './bootstrap-channel-guards';
+import {recognizeV3Backend,v3Pinned} from './bootstrap-v3-catalog';
 import {channelGrant,channelGrantIntent,channelTransition,channelEqual,channelSnapshotDigest,validateChannelGrant,validateV2ChannelPlan,advanceChannel,denyChannel,type ChannelGrant,type ChannelHead,type ChannelTransition} from './bootstrap-channel-persistence-contract';
 type Db=Prisma.TransactionClient;
 const id=z.string().uuid(),epoch=z.number().int().positive(),command=z.object({ticketId:id,decisionId:id,decisionRevision:epoch,operationId:id}).strict();
@@ -31,7 +32,8 @@ async function guarded(db:Db){
     (n.nspname='public' AND p.pronargs=1 AND p.proargtypes='3802'::oidvector AND p.prorettype='boolean'::regtype AND p.prokind='f'
     AND p.prolang=(SELECT oid FROM pg_language WHERE lanname='plpgsql') AND p.provolatile='i' AND NOT p.prosecdef AND p.proconfig IS NULL AND NOT p.proisstrict AND NOT p.proleakproof AND p.proparallel='u') AS enabled
     FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE p.proname='transport_bootstrap_shape'`;
-  return shape.length===1&&shape[0].enabled===true&&shape[0].hash===channelShapeHash&&rows.length===channelGuards.length&&channelGuards.every(g=>rows.filter(({enabled,...r})=>enabled===true&&channelEqual(g,r)).length===1);
+  const v3=await recognizeV3Backend(db,rows);
+  return shape.length===1&&shape[0].enabled===true&&shape[0].hash===channelShapeHash&&rows.length===channelGuards.length&&channelGuards.every(g=>rows.filter(({enabled,...r})=>enabled===true&&channelEqual(v3Pinned(g,v3),r)).length===1);
 }
 async function fence(db:Db,write=false){
   const rows=write?await db.$queryRaw<any[]>`SELECT revision::text AS channel_fence FROM ready_source_fence WHERE id=1 FOR UPDATE`:

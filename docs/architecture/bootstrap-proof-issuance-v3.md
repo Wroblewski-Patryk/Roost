@@ -8,9 +8,11 @@ composition, endpoint, default issuer or sealer. Migrations and guards 1–86 ar
 unchanged. Existing SQL continues to deny v3 links and legacy v1/v2 cannot enter
 the new contract.
 
-The [v76 projection contract](bootstrap-proof-projection-v3.md) now defines exact
-own-delta lineage and immutable phase verification. Its native port remains
-unimplemented; the v75 model/evidence below is historical.
+The [v76 projection contract](bootstrap-proof-projection-v3.md) defines exact
+own-delta lineage and immutable phase verification. Subsequent
+[atom A](bootstrap-proof-native-backend-v3.md) adds the UNAPPLIED / NATIVE
+UNQUALIFIED migration-87 SQL backend and catalog compatibility. The Prisma
+issuance/projection port remains absent; the v75 model/evidence below is historical.
 
 ## Public wire and authority
 
@@ -78,9 +80,9 @@ or ABA; comparing an unchanged digest would reject the operation's own writes.
 The transactional fixture models an ideal projection but does not implement or
 qualify this behavior in PostgreSQL.
 
-The source projection contract is now defined by v76. The current single next
-atom is migration 87 and pin-checked guard/native-port upgrades under that
-contract; no native projection, migration or integration has started.
+The source projection contract is defined by v76 and its SQL backend by atom A.
+The current single next atom is B: explicit Prisma integration and independent
+committed readback. No database application or native qualification has started.
 
 ## Verification and limits
 

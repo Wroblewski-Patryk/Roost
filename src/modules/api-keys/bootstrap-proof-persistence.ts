@@ -8,6 +8,7 @@ import {proofPersistenceFunctions,proofPersistenceTriggers,proofPersistenceForei
 import {requireDecisionAttestationGuards} from './decision-attestation-adapter';
 import {requireDispatchGuards} from './bootstrap-dispatch-prisma';
 import {requireCompletionGuards} from './bootstrap-canonical-completion-sql';
+import {recognizeV3Backend,v3Pinned} from './bootstrap-v3-catalog';
 import {one,positiveText,sqlHash,type AttestationDb as Db} from './decision-attestation-sql';
 import {freezePublic} from './worker-transport-snapshot';
 import {lifecycleFlags} from './bootstrap-ticket-lifecycle-contract';
@@ -31,7 +32,8 @@ export async function requireProofPersistenceGuards(db:Db){
   encode(sha256(convert_to(replace(p.prosrc,chr(13),''),'UTF8')),'hex') AS hash,
   (n.nspname='public' AND p.prokind='f' AND NOT p.prosecdef AND p.proconfig IS NULL AND NOT p.proisstrict AND NOT p.proleakproof AND p.proparallel='u') AS enabled
  FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace JOIN pg_language l ON l.oid=p.prolang WHERE p.proname=ANY(${proofPersistenceFunctions.map(f=>f.name)}::text[])`;
- if(f.length!==proofPersistenceFunctions.length||!proofPersistenceFunctions.every(e=>f.filter(({enabled,...v})=>enabled===true&&proofEqual(e,v)).length===1))denyProof();
+ const v3=await recognizeV3Backend(db,f);
+ if(f.length!==proofPersistenceFunctions.length||!proofPersistenceFunctions.every(e=>f.filter(({enabled,...v})=>enabled===true&&proofEqual(v3Pinned(e,v3),v)).length===1))denyProof();
  const t=await db.$queryRaw<any[]>`/* proof triggers */ SELECT c.relname AS "table",t.tgname AS name,p.proname AS function,t.tgtype::int AS kind,t.tgdeferrable AS deferred,
   (t.tgenabled='O' AND t.tgqual IS NULL AND t.tgnargs=0 AND t.tgattr=''::int2vector AND NOT t.tgisinternal AND (t.tgconstraint<>0)=t.tgdeferrable
    AND t.tginitdeferred=t.tgdeferrable AND n.nspname='public' AND pn.nspname='public' AND c.relkind='r' AND p.pronargs=0 AND p.prorettype='trigger'::regtype

@@ -1,6 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import crypto,{randomUUID,createHash} from 'node:crypto';import {readFileSync} from 'node:fs';
 import net from 'node:net';import tls from 'node:tls';import http from 'node:http';import https from 'node:https';import dns from 'node:dns';import childProcess from 'node:child_process';
 import {channelRevocationEvidence} from './bootstrap-channel-revocation-fixture';
+import {upgradeLegacyClient} from './bootstrap-v3-catalog-fixture';
 import {bootstrapChannelFixture} from './bootstrap-channel-fixture';
 import {createPrismaBootstrapChannelStore,ChannelReconciliationRequired} from '../modules/api-keys/bootstrap-channel-store';
 import {channelGrantIntent,channelSnapshotDigest,channelEqual} from '../modules/api-keys/bootstrap-channel-persistence-contract';
@@ -88,6 +89,13 @@ test('source-only canonical bootstrap transport adapter proposal',async t=>{
       const before=f.state();await f.store.transition(f.transition());assert.equal(f.state().generations.length,1);assert.deepEqual(f.state().grants,before.grants);assert.equal(f.state().head.record.action,'consume');
       assert.ok((await f.store.inspect(f.ticket.id)).blockers.length);await assert.rejects(f.store.transition(f.transition()));await f.store.transition(f.transition('close'));assert.equal(f.state().head.state,'revoked');
     }
+  });
+  await t.test('legacy channel works on complete v3 catalog and rejects partial catalog before writes',async()=>{
+    for(const purpose of ['first_enrollment','owner_recovery'] as const){const f=fixture(purpose),checks=upgradeLegacyClient(f.client);
+      await f.store.grant(f.command());await f.store.transition(f.transition());assert.equal(f.state().head.record.action,'consume');assert.ok(checks()>0);
+    }
+    const f=fixture();upgradeLegacyClient(f.client,(sql,r)=>{if(sql.includes('functions'))r.pop();});
+    await assert.rejects(f.store.grant(f.command()));assert.equal(f.state().generations.length,0);assert.equal(f.counts().appends,0);
   });
   await t.test('ordinary current head cannot grant and bootstrap has no ordinary credential identity',async()=>{
     const f=fixture();f.mutate(s=>s.head={id:randomUUID(),revision:1,highWater:1,purpose:null,state:'current',generation:randomUUID(),pin:hash('0'),record:{},fence:String(s.fence)});
