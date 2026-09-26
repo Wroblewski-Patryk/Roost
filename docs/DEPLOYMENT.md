@@ -93,6 +93,35 @@ Required environment values:
 - `ROOST_CODEX_EXECUTION_ENABLED` remains `false` during the foundation
   rollout. Set it to `true` only after the application map, scoped worker key,
   Windows host, paused trigger contract, and non-critical trial are reviewed.
+- `ROOST_V3_TICKET_PRIVATE_KEY_B64`: canonical base64 of an Ed25519 PKCS8 DER
+  key for the approved worker bootstrap ticket issuer. Its public SPKI digest
+  must match the persisted issuer history and trusted ticket-key anchor.
+- `ROOST_V3_BINDING_PRIVATE_KEY_B64`: a separate Ed25519 PKCS8 DER key for the
+  bootstrap binding seal. Its public key must match the persisted server proof
+  key history. The ticket and binding keys must differ.
+- `ROOST_MANAGED_ADMISSION_PRIVATE_KEY_B64`: Ed25519 PKCS8 DER key for short
+  lived, per-attempt managed Hermes admission. Its public key digest must match
+  the installation's trusted ticket-key anchor, and the Worker receives only
+  that public key in private configuration. The ticket issuer key can supply
+  this role when the same installation anchor is deliberately used.
+- `ROOST_HANDOFF_HTTPS_ORIGIN`: exact public HTTPS API origin admitted for the
+  first Worker credential handoff.
+- `ROOST_HANDOFF_TLS_LEAF_SHA256`: SHA-256 of the currently served TLS leaf DER
+  certificate. Provision the same pin in the private Windows handoff binding;
+  update both when the certificate rotates.
+- `ROOST_HANDOFF_TRUSTED_PROXY_ADDRESS`: exact private address of the TLS
+  ingress container on this application's Docker network. Handoff closes when
+  that address changes until the installation setting is updated. The ingress
+  must sanitize client supplied forwarded headers and be the only route to the
+  backend port.
+
+Keep all private keys in the installation secret store, outside Git, images,
+logs and Worker files. Missing or mismatched keys deny issuance or launch. The
+Worker's private proof key stays on Windows; it is never a server environment
+variable. Enable supervised execution for the controlled non-critical Gate 1
+trial after the application map, scoped Worker credential, host configuration
+and owner approval are in place. Keep further task admission paused until the
+native round trip and cancellation path have been observed.
 - `ROOST_ALLOW_WORKSPACE_CREATION` remains unset/`false` by default.
   Enable it only for an explicitly approved multi-workspace
   deployment; ordinary people join through workspace invitations.

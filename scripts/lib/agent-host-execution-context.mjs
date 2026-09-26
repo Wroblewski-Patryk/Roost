@@ -37,7 +37,7 @@ export async function fetchExecutionContext(api, claimed, { signal, secrets = []
     guardHostContent({ taskContext, prompt: claimed.prompt }, "required", [claimed.leaseToken, ...secrets]);
     signal?.throwIfAborted();
     const query = readyContext.readyContextQuery(taskContext?.task ?? taskContext, claimed.prompt);
-    const applicationContext = await api(`/v1/product-engineering/applications/${claimed.applicationId}/agent-context?profile=execution`,
+    const applicationContext = await api(`/v1/product-engineering/applications/${claimed.applicationId}/agent-context?profile=execution&executionId=${encodeURIComponent(claimed.id)}`,
       { ...fresh, headers: { ...fresh.headers, "X-Roost-Agent-Context-Query": query } });
     signal?.throwIfAborted();
     return { taskContext, applicationContext };

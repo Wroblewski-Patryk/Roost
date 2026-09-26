@@ -10,7 +10,7 @@ import { consumeHermesBudgetReceipt, assertHermesBudgetProcess, completeHermesBu
 // Real native backend; no receipt or cleanup callback can be injected by config.
 // Build happens before any target process, rechecking authority afterward.
 export async function runHermesOwnedProcess({ executable, argv, cwd, environment, input, attempt,
-  remainingMs, secrets = [], assertAuthority, signal, shutdownRequested = () => false, stopReason = () => undefined, budgetReceipt, nativeToolReceipt, jobArtifact, onAssigned = () => {} }) {
+  remainingMs, secrets = [], assertAuthority, assertLaunchAuthority = () => {}, signal, shutdownRequested = () => false, stopReason = () => undefined, budgetReceipt, nativeToolReceipt, jobArtifact, expectedJobSourceDigest, onAssigned = () => {} }) {
   const began = performance.now();
   let observedJob, observedExit, nativeProof, nativeResult;
   if (hermesBudgetRequiresNativeBoundary(budgetReceipt) && !nativeToolReceipt)
@@ -19,6 +19,8 @@ export async function runHermesOwnedProcess({ executable, argv, cwd, environment
   const remaining = () => Math.min(remainingMs(), budgetRemaining ? budgetRemaining() : Infinity);
   const withJob = jobArtifact ? async run => { assertWindowsJobCapability(jobArtifact); return run(jobArtifact); } : temporaryWindowsJobLauncher;
   try { return await withJob(async artifact => {
+    if (expectedJobSourceDigest && assertWindowsJobCapability(artifact).sourceDigest !== expectedJobSourceDigest)
+      throw Object.assign(failure("hermes_job_source_changed"), { protocolAdmission: true });
     let problem, handle;
     const guard = createHermesQuietGuard({ secrets });
     const check = () => {
@@ -42,6 +44,7 @@ export async function runHermesOwnedProcess({ executable, argv, cwd, environment
     // even though the budget/native one-use proofs have already been consumed.
     if (budgetReceipt) assertHermesBudgetProcess(budgetReceipt, { executable, argv, cwd, environment });
     if (jobArtifact) assertWindowsJobCapability(jobArtifact);
+    assertLaunchAuthority();
     // Reserve the existing 3-second launcher assignment window too. The Worker
     // timer includes that window; compute AFTER the bounded footprint recheck
     // so its time cannot extend the original native cleanup deadline.
@@ -52,6 +55,7 @@ export async function runHermesOwnedProcess({ executable, argv, cwd, environment
     handle = await startWindowsJob(artifact, { executable, argv, cwd, environment, input, attempt,
       ...(nativeProof ? { confirmResume: assignment => {
         check(); if (problem) throw problem;
+        assertLaunchAuthority();
         const receipt = authorizeNativeBoundaryResume(nativeProof, assignment, runtimeBinding());
         check(); if (problem) throw problem; return receipt;
       } } : {}),
@@ -150,6 +154,8 @@ export function createHermesQuietGuard({ secrets = [] } = {}) {
         failed = Object.assign(failure("hermes_quiet_process_failed"), { details: { providerDiagnostic: hint } });
         throw failed;
       }
+      if (!channels.stdout.text.trim()) fail("hermes_quiet_empty_result");
+      if (channels.stdout.text.length > 100000) fail("hermes_quiet_report_limit");
       return Object.freeze({ finalResponse: channels.stdout.text, exitCode: 0,
         trust: "untrusted_process_output", outcome: "candidate_result", reviewRequired: true, usage: null,
         toolEventsAvailable: false, internalTurnCount: null, transportRetryCount: null });

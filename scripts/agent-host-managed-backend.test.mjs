@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import cp from "node:child_process";
+import { createHash, generateKeyPairSync, sign } from "node:crypto";
 import { syncBuiltinESMExports } from "node:module";
 import { createManagedBackendFixture as setup, managedSelectionFixture } from "./fixtures/trusted-pilot.mjs";
 import { managedBackendSelectionSchema } from "./lib/agent-host-model-policy.mjs";
@@ -12,8 +13,43 @@ import { runFixedExecution } from "./lib/agent-host-fixed-execution.mjs";
 import { pinReadyFixture } from "./fixtures/execution-packet.mjs";
 import providers from "./lib/agent-host-provider-contract.cjs";
 import { assertProviderInputAvailable } from "./lib/agent-host-provider-input.mjs";
+import { inspectFixedContainment } from "./lib/agent-host-fixed-execution.mjs";
+import { writerRecoveryEvidence } from "./lib/agent-host-writer-lock.mjs";
+import { nativeDigest, physicalIdentity } from "./lib/agent-host-native-footprint.mjs";
+import { inspectManagedBackend, managedBackendContext, managedBackendRuntime, nativeEvidenceSchema } from "./lib/agent-host-managed-backend.mjs";
+import { trustedPilotBytes } from "./lib/agent-host-trusted-pilot.mjs";
 
 const windows = { skip: process.platform !== "win32", timeout: 60000 };
+
+test("signed native backend evidence binds the current source and rejects tampering", windows, async t => {
+  const x = await setup(t, "codex_responses"), source = inspectFixedContainment(x.grant);
+  source.qualification = "signed_native_v1";
+  source.gates.outputBudget = "worker_deadline_output_intent";
+  source.gates.launcher = { sourceDigest: source.gates.launcher.sourceDigest };
+  const writerDigest = nativeDigest(writerRecoveryEvidence(x.options.writerLock));
+  const payload = { ...x.record, signatureDomain: "roost-managed-backend-evidence-v1",
+    qualification: "signed_native_v1", issuedAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 120000).toISOString(),
+    availability: { backend: "installed", model: "selected_unverified", resources: "bounded_by_worker" },
+    runtime: managedBackendRuntime(source), context: managedBackendContext(source, writerDigest) };
+  assert.deepEqual(nativeEvidenceSchema.safeParse(payload).error?.issues, undefined);
+  const { publicKey, privateKey } = generateKeyPairSync("ed25519");
+  const authorityPublicKey = publicKey.export({ type: "spki", format: "pem" });
+  const publish = body => fs.writeFileSync(x.evidencePath, trustedPilotBytes({ payload: body,
+    signature: sign(null, trustedPilotBytes(body), privateKey).toString("hex") }));
+  const read = file => { const body = fs.readFileSync(file); return { body, identity: physicalIdentity(file, false),
+    digest: createHash("sha256").update(body).digest("hex") }; };
+  const profile = read(x.profilePath);
+  publish(payload);
+  const binding = inspectManagedBackend({ source, writerDigest, profile, profilePath: x.profilePath,
+    installationIdentity: physicalIdentity(x.privateRoot), read, authorityPublicKey });
+  assert.equal(binding.realIssuerQualified, true);
+  assert.equal(binding.privateAnchorQualified, true);
+  payload.availability.model = "unavailable";
+  fs.writeFileSync(x.evidencePath, trustedPilotBytes({ payload, signature: sign(null,
+    trustedPilotBytes({ ...payload, availability: { ...payload.availability, model: "selected_unverified" } }), privateKey).toString("hex") }));
+  assert.throws(() => inspectManagedBackend({ source, writerDigest, profile, profilePath: x.profilePath,
+    installationIdentity: physicalIdentity(x.privateRoot), read, authorityPublicKey }), /managed_backend_contract_blocked/);
+});
 const admit = x => x.options.containmentReceipt = prepareTrustedProviderPilot(x.options, x.authority);
 function withoutProcesses(fn) {
   const methods = ["spawn", "spawnSync", "exec", "execSync", "execFile", "execFileSync"], originals = new Map(); let starts = 0;

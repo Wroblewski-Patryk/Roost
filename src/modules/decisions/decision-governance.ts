@@ -76,9 +76,9 @@ export async function decisionGovernanceCommand(db:Db,w:string,actor:ReviewActor
   const result={record:{...wire(prior),...(kind==="proposal"?{id:prior.decision_id}:{})},replayed:true};requireRuntimeContent(result,"decision.replay",{workspaceId:w});return result;}
  if(input.expectedVersion!==s.expectedVersion)return {error:"decision_stale"};
  if(kind==="proposal"&&input.supersedesId&&(await db.$queryRaw<any[]>`SELECT 1 FROM decision_revisions WHERE workspace_id=${w}::uuid AND supersedes_id=${input.supersedesId}::uuid`).length)return {error:"decision_successor_exists"};
- const rid=randomUUID();
+ const rid=kind==='proposal'&&input.decisionId?input.decisionId:randomUUID();
  if(kind==="proposal"){
-  const {requestId,expectedVersion,...b}=input;
+  const {requestId,decisionId,expectedVersion,...b}=input;
   const predecessor=b.supersedesId?(await db.$queryRaw<any[]>`SELECT to_jsonb(d) AS value FROM decisions d WHERE id=${b.supersedesId}::uuid AND workspace_id=${w}::uuid`)[0]?.value:null;
   requireRuntimeContent(predecessor,"decision.predecessor",{workspaceId:w});
   const created=await db.decision.create({data:{id:rid,workspaceId:w,title:b.title,context:b.context,decision:b.decision,rationale:b.rationale,consequences:b.consequences,status:"proposed",source:"roost_decision",authorType:"user",authorId:u,supersedesId:b.supersedesId}});

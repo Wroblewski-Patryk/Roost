@@ -30,10 +30,15 @@ export function workerTicketPrincipal(record: any, at = new Date()): WorkerTicke
   return parsed.success ? parsed.data : null;
 }
 
-// The shared capability also covers registration/recovery. This credential class
-// authorizes exactly these three existing endpoints, never those other routes.
+// The claim-only credential can reach only the Worker's runtime transport. The
+// middleware also binds each request to its installed host/execution; handlers
+// enforce the current lease and context before a state transition.
 export function workerCredentialRoute(method: string, path: string) {
-  return method === "POST" && /^\/v1\/agent-runtime\/(?:executions\/claim|owner-tickets\/(?:consume|status))$/.test(path.replace(/\/+$/, ""));
+  const target=path.replace(/\/+$/, "");
+  if(method==='POST'&&/^\/v1\/agent-runtime\/(?:executions\/claim|owner-tickets\/(?:consume|status)|hosts\/register|hosts\/[0-9a-f-]{36}\/heartbeat)$/.test(target))return true;
+  if(method==='GET'&&(/^\/v1\/agent-runtime\/recovery$/.test(target)||/^\/v1\/company-intelligence\/tasks\/[0-9a-f-]{36}\/agent-context$/.test(target)
+    ||/^\/v1\/product-engineering\/applications\/[0-9a-f-]{36}\/agent-context$/.test(target)))return true;
+  return method==='POST'&&/^\/v1\/agent-runtime\/executions\/[0-9a-f-]{36}\/(?:checkpoint|heartbeat|events|actions\/(?:managed-admission|recover|recovery-blocked|context-stopped|complete|fail|cancelled))$/.test(target);
 }
 export async function workerClaimAllowed(db: Prisma.TransactionClient, auth: AuthContext, hostId: string, at = new Date()) {
   if (!auth.workerTicketIdentity || !auth.apiKeyId || auth.authType !== "api_key" || auth.agentId || auth.userId) return false;

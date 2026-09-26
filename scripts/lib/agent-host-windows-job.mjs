@@ -12,6 +12,7 @@ export const windowsJobVersion = "roost-windows-job-v1";
 const source = fileURLToPath(new URL("../roost-windows-job.cs", import.meta.url));
 const exec = promisify(execFile), builds = new WeakMap(), receipts = new WeakMap();
 const digest = bytes => createHash("sha256").update(bytes).digest("hex");
+export const windowsJobSourceDigest = () => digest(readFileSync(source));
 const fail = () => Object.assign(new Error("hermes_stop_recovery_unproven"), { leaseLost: true, retryable: false });
 const uuid = z.string().uuid(), integer = z.number().int().nonnegative();
 const base = { version: z.literal(windowsJobVersion), attempt: uuid };

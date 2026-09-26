@@ -21,6 +21,9 @@ import { createDirectTurnGuard } from "./lib/agent-host-direct-turn.mjs";
 import { createHermesOutputIntent } from "./lib/agent-host-hermes-budget.mjs";
 import { hermesBudgetProfileVersion, hermesNativeProfileVersion } from "./lib/agent-host-hermes-profile.mjs";
 import { runHermesOwnedProcess } from "./lib/agent-host-hermes-quiet.mjs";
+import { isWindowsJobCleanupReceipt } from "./lib/agent-host-windows-job.mjs";
+import { buildManagedAdmissionSource, requestManagedAdmission } from "./lib/agent-host-managed-admission.mjs";
+import { managedBackendVersion } from "./lib/agent-host-model-policy.mjs";
 import fixed from "./lib/agent-host-fixed-program.cjs";
 import { prepareFixedExecution, runFixedExecution, createFixedOutputBudget, assertFixedTask, abandonFixedExecution } from "./lib/agent-host-fixed-execution.mjs";
 import { collectWorkspaceEvidence } from "./lib/agent-host-workspace-evidence.mjs";
@@ -96,8 +99,8 @@ async function api(route, options = {}) {
   return body.data;
 }
 
-async function refreshAdmission() {
-  host.metadata.executionProvider = await inspectExecutionProvider(config);
+async function refreshAdmission(freshAttestation = false) {
+  host.metadata.executionProvider = await inspectExecutionProvider(config, { freshAttestation });
   registeredHost = await api(registeredHost ? `/v1/agent-runtime/hosts/${registeredHost.id}/heartbeat` : "/v1/agent-runtime/hosts/register",
     { method: "POST", body: JSON.stringify(registeredHost ? { metadata: host.metadata, applicationSlugs: host.applicationSlugs, capabilities: host.capabilities } : host) });
   const reason = providerAdmission(host.metadata.executionProvider) || apiCompatibility(registeredHost?.runtime, host.capabilities);
@@ -124,9 +127,9 @@ async function waitForAdmission(holdForReconciliation = false) {
   return false;
 }
 
-async function assertAdmission() {
+async function assertAdmission(freshAttestation = false) {
   let reason, status;
-  try { reason = await refreshAdmission(); }
+  try { reason = await refreshAdmission(freshAttestation); }
   catch (error) { reason = "api_unavailable"; status = error.status; }
   if (reason) {
     if (reason === lifecycle.admissionReason) throw lifecycle.lifecycleError();
@@ -197,7 +200,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
   let duration;
   let outputBudget;
   let hermesBaseline, nativeInput, fixedGrant;
-  let hermesCollection, hermesAbort;
+  let hermesCollection, hermesAbort, hermesCompletedReceipt;
   function stopWorker() {
     stopping = true;
     retainWriterLock = true;
@@ -287,7 +290,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
         deadline: new Date(Date.now() + duration.remainingMs).toISOString() }));
     }
     lease.assertValid();
-    await api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, type: "runner_started", message: config.executionProvider?.kind === fixed.kind ? "Starting the fixed synthetic program." : `Starting Codex in ${claimed.application.slug}.`, payload: { sandbox, providerInput: { schemaVersion: providerInput.schemaVersion, seal: providerInput.seal }, requestedModelSelection: config.executionProvider?.kind === fixed.kind ? null : taskContext.executionPacket.contract.modelSelection, baseBranch: repository.baseBranch || claimed.baseBranch || null, preExistingDirtyFiles: beforeStatus.map(statusPath) } }) }).catch((error) => { lease.reject(error); throw lease.failure ?? error; });
+    await api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, type: "runner_started", message: config.executionProvider?.kind === fixed.kind ? "Starting the fixed synthetic program." : config.executionProvider?.kind === "hermes_codex" ? "Preparing managed Hermes." : `Starting Codex in ${claimed.application.slug}.`, payload: { sandbox, providerInput: { schemaVersion: providerInput.schemaVersion, seal: providerInput.seal }, requestedModelSelection: config.executionProvider?.kind === fixed.kind ? null : taskContext.executionPacket.contract.modelSelection, baseBranch: repository.baseBranch || claimed.baseBranch || null, preExistingDirtyFiles: beforeStatus.map(statusPath) } }) }).catch((error) => { lease.reject(error); throw lease.failure ?? error; });
     lease.assertValid();
     await duration.wait(assertAdmission());
     await duration.wait(validateAgentHostWorkspace(config));
@@ -306,6 +309,28 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       startupEnvironment: config.executionProvider?.kind === "hermes_codex" && config.executionProvider.profile
         ? hermesStartupEnvironment(config.executionProvider.profile, process.env, repositoryPath) : undefined };
     const launchAuthority = { fresh, claimed, currentCommit, assertAuthority: assertProviderAuthority, secrets: [apiKey] };
+    if (config.executionProvider?.kind === "hermes_codex" && providerInput.contract.modelSelection.schemaVersion === managedBackendVersion) {
+      await duration.wait(assertAdmission(true));
+      const prepared = buildManagedAdmissionSource({ envelope: providerInput, claimed, writerLock,
+        repositoryPath, provider: config.executionProvider, startupEnvironment: launchOptions.startupEnvironment,
+        remainingMs: () => duration.remainingMs });
+      launchOptions.managedAdmission = await duration.wait(requestManagedAdmission({ api, ...prepared,
+        assertAuthority: assertProviderAuthority }));
+      await duration.wait(api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST",
+        body: JSON.stringify({ leaseToken: claimed.leaseToken, type: "runner_progress",
+          message: "Signed managed admission accepted; preparing native Hermes launch." }) }));
+      // JIT signing is an awaited remote operation. Reopen every mutable
+      // authority check after it, immediately before spending the local proof.
+      await duration.wait(assertAdmission());
+      await duration.wait(validateAgentHostWorkspace(config));
+      assertTaskBranch(await duration.wait(readTaskBranch(repositoryPath)), taskContext.executionPacket.contract.singleTask.branch);
+      launchAuthority.currentCommit = await duration.wait(readTaskCommit(repositoryPath));
+      launchAuthority.fresh = await duration.wait(fetchExecutionContext(api, claimed));
+      guardHostContent(launchAuthority.fresh, "required", [apiKey, claimed.leaseToken]);
+      assertFreshExecutionContext(contextRevision, launchAuthority.fresh, claimed);
+      readyContext.assertReadyContext(launchAuthority.fresh.taskContext, launchAuthority.fresh.applicationContext, claimed);
+      await duration.wait(lease.refresh());
+    }
     if (config.executionProvider?.kind === fixed.kind)
       launchOptions.containmentReceipt = prepareFixedHostContainment(launchOptions, launchAuthority);
     const launch = prepareProviderLaunch(launchOptions, launchAuthority);
@@ -321,23 +346,29 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       usage = { inputTokens: 0, outputTokens: 0, cost: 0, physicalModelCalls: 0 };
       transportAccounting = { interface: fixed.program, outcome: "candidate_result", modelInvoked: false };
     } else if (launch.kind === "hermes_codex") {
-      // Unreachable until the remaining containment/configuration gates qualify.
-      // One stdin write; no JSON/tool-event interpretation or provider fallback.
+      // One stdin write; quiet output is not parsed as tool events or usage.
       hermesAbort = new AbortController();
       const pending = hermesCollection = runHermesOwnedProcess({ executable: launch.command, argv: launch.args,
         cwd: launch.cwd, environment: launch.candidateEnvironment, attempt: claimed.id, input: launch.input, remainingMs: () => duration.remainingMs,
         signal: hermesAbort.signal, budgetReceipt: launch.budgetReceipt, nativeToolReceipt: launch.nativeToolReceipt,
         stopReason: () => duration.failure ?? lease.failure,
         secrets: [apiKey, claimed.leaseToken], assertAuthority: assertProviderAuthority,
-        shutdownRequested: () => shutdownRequested || stopping });
+        assertLaunchAuthority: launch.assertLaunchAuthority,
+        shutdownRequested: () => shutdownRequested || stopping, expectedJobSourceDigest: launch.expectedJobSourceDigest });
+      void pending.then(receipt => { hermesCompletedReceipt = receipt.ownedTreeReceipt; }, () => undefined);
       void pending.catch(() => undefined);
-      await duration.wait(checkpoint("running", taskContext.executionPacket.revision, digest));
+      // Keep the signed spawn-intent Writer bytes stable until native cleanup.
+      // Recovery already classifies this stage as process-may-be-running.
       const receipt = await duration.wait(pending);
+      hermesCompletedReceipt = receipt.ownedTreeReceipt;
       finalResponse = receipt.finalResponse;
       usage = { inputTokens: null, outputTokens: null, cost: null, physicalModelCalls: null, toolCalls: null, transportRetries: null };
       verification.ownedTreeReceipt = receipt.ownedTreeReceipt;
       verification.attemptBudgetReceipt = receipt.attemptBudgetReceipt;
       verification.nativeToolReceipt = receipt.nativeToolReceipt;
+      verification.managedAdmission = { qualification: launch.trustedPilot.qualification,
+        decisionId: launch.trustedPilot.decisionId, revision: launch.trustedPilot.revision,
+        evidenceDigest: launch.managedBackend.evidence.digest, jobSourceDigest: launch.expectedJobSourceDigest };
       verification.outcome = "candidate_result";
       verification.reviewRequired = true;
       transportAccounting = { interface: "quiet", outcome: "candidate_result", usageAccounting: "unavailable", internalTurnCount: null,
@@ -434,12 +465,21 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: summary.slice(0, 10000), finalResponse, codexThreadId, changedFiles, verification, usage, resultRevision, metadata: { repositoryPathLabel: path.basename(repositoryPath), preExistingDirtyFiles: beforeStatus.map(statusPath), transportAccounting } })
     });
   } catch (error) {
+    let hermesStopReceipt;
     if (hermesCollection) {
       hermesAbort.abort();
       await hermesCollection.catch(stopped => {
+        hermesStopReceipt = stopped.details?.ownedTreeReceipt;
         if (stopped.details?.attemptBudgetReceipt) for (const cause of [error, duration?.failure, lease.failure].filter(Boolean))
           cause.details = { ...cause.details, attemptBudgetReceipt: stopped.details.attemptBudgetReceipt };
       });
+    }
+    if (lease.failure?.message === "agent_execution_cancel_requested"
+      && isWindowsJobCleanupReceipt(hermesStopReceipt ?? hermesCompletedReceipt)) {
+      await api(`/v1/agent-runtime/executions/${claimed.id}/actions/cancelled`, {
+        method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken }) });
+      retainWriterLock = false;
+      return;
     }
     if (error.hostLifecycle) { stopWorker(); lease.stop(); await stopPromise; throw error; }
     if (error.contextStop || lease.failure?.contextStop) {

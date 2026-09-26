@@ -1,5 +1,13 @@
 import { nativeBoundaryResultBlocked } from "./task-review-contract";
 import { ownerTicketHandler } from "./owner-ticket-http";
+import { managedAdmission, managedAdmissionSignerFromEnvironment } from "./managed-admission";
+import { recordV3OwnerAuth } from "../api-keys/bootstrap-v3-owner-auth";
+import { issueNativeV3 } from "../api-keys/bootstrap-proof-issuance-native";
+import { createPrismaBootstrapIssuerStore } from "../api-keys/bootstrap-issuer-store";
+import { createPrismaProofAuthorityStore } from "../api-keys/bootstrap-proof-persistence";
+import { provisionBootstrapInstallation } from "../api-keys/bootstrap-installation-provision";
+import { createPrismaWorkerIdentityLifecycleStore } from "../api-keys/worker-identity-lifecycle-store";
+import { freshWorkerOwner } from "../api-keys/worker-credential.service";
 import { workerClaimAllowed } from "../../auth/worker-ticket-principal";
 import { executionProviderRegistry, projectProvider, sanitizeProviderMetadata } from "./execution-provider";
 import { interviewView,interviewCommand } from "./task-interview";
@@ -99,7 +107,8 @@ function hostRuntime(host: { workspaceId: string; metadata: unknown; capabilitie
   const metadata = host.metadata && typeof host.metadata === "object" && !Array.isArray(host.metadata) ? host.metadata as Record<string, unknown> : {};
   const clientReasons = Array.isArray(metadata.executionUnavailableReasons) ? metadata.executionUnavailableReasons.filter((value): value is string => typeof value === "string" && ["api_protocol_missing", "api_protocol_mismatch", "api_capabilities_missing", "api_contract_invalid", "api_unavailable", "execution_reconciliation_required"].includes(value)) : [];
   return { workspaceId: host.workspaceId, executionEnabled: executionEnabled(), mode: executionEnabled() ? "supervised_execution" : "foundation_only", protocol, compatibility, executionProvider: projectProvider(metadata.executionProvider),
-    executionUnavailableReasons: [...new Set([...(compatibility.reason ? [compatibility.reason] : []), ...clientReasons, ...(metadata.executionMode === "supervised" && metadata.outputTokenBudgetEnforcement === "unavailable" ? ["output_token_limit_unsupported"] : []), ...(!executionEnabled() ? ["runtime_disabled"] : [])])] };
+    executionUnavailableReasons: [...new Set([...(compatibility.reason ? [compatibility.reason] : []), ...clientReasons, ...(metadata.executionMode === "supervised" && metadata.outputTokenBudgetEnforcement === "unavailable"
+      && (metadata.executionProvider as any)?.admissionProfile !== "managed_hermes_codex_low_v1" ? ["output_token_limit_unsupported"] : []), ...(!executionEnabled() ? ["runtime_disabled"] : [])])] };
 }
 
 function visibleHost<T extends { status: string; lastSeenAt: Date | null; workspaceId: string; metadata: unknown; capabilities: unknown }>(host: T) {
@@ -146,12 +155,64 @@ async function applicationForTask(workspaceId: string, taskId: string, requested
 }
 
 export const agentRuntimeRouter = Router();
+agentRuntimeRouter.post('/bootstrap/installation',asyncHandler(async(req,res)=>{
+  res.setHeader('Cache-Control','no-store');
+  if(process.env.NODE_ENV==='production'&&req.header('x-forwarded-proto')!=='https')
+    return sendApiError(res,403,'bootstrap_https_required');
+  try{return res.status(201).json({data:await provisionBootstrapInstallation(prisma,req.auth!,req.body)});}
+  catch{return sendApiError(res,409,'bootstrap_installation_denied');}
+}));
+agentRuntimeRouter.post('/bootstrap/lifecycle',asyncHandler(async(req,res)=>{
+  res.setHeader('Cache-Control','no-store');
+  if(process.env.NODE_ENV==='production'&&req.header('x-forwarded-proto')!=='https')
+    return sendApiError(res,403,'bootstrap_https_required');
+  if(!req.auth||!freshWorkerOwner(req.auth,new Date())||req.body?.intent?.workspaceId!==req.auth.workspaceId)
+    return sendApiError(res,403,'bootstrap_owner_required');
+  try{return res.status(201).json({data:await createPrismaWorkerIdentityLifecycleStore(prisma).apply(req.body)});}
+  catch{return sendApiError(res,409,'bootstrap_lifecycle_denied');}
+}));
 // Intentionally unavailable until server composition/transport is qualified.
 agentRuntimeRouter.post("/owner-tickets/issue", ownerTicketHandler("issue"));
 agentRuntimeRouter.post("/owner-tickets/consume", ownerTicketHandler("consume"));
 agentRuntimeRouter.post("/owner-tickets/status", ownerTicketHandler("status"));
 agentRuntimeRouter.post("/owner-tickets/revoke", ownerTicketHandler("revoke"));
 agentRuntimeRouter.post("/owner-tickets/rotate", ownerTicketHandler("rotate"));
+agentRuntimeRouter.post("/bootstrap/v3/owner-auth",asyncHandler(async(req,res)=>{
+  res.setHeader("Cache-Control","no-store");
+  if(process.env.NODE_ENV==='production'&&req.header('x-forwarded-proto')!=='https')
+    return sendApiError(res,403,'bootstrap_v3_https_required');
+  try{return res.status(201).json({data:await recordV3OwnerAuth(prisma,req.auth!,req.body)});}
+  catch{return sendApiError(res,409,"bootstrap_v3_owner_auth_denied");}
+}));
+agentRuntimeRouter.post("/bootstrap/v3/issue",asyncHandler(async(req,res)=>{
+  res.setHeader("Cache-Control","no-store");
+  if(process.env.NODE_ENV==="production"&&req.header("x-forwarded-proto")!=="https")
+    return sendApiError(res,403,"bootstrap_v3_https_required");
+  try{return res.status(201).json({data:await issueNativeV3(prisma,req.auth!,req.body)});}
+  catch(error){return sendApiError(res,error instanceof Error&&error.message==="bootstrap_v3_private_signer_unavailable"?503:409,
+    error instanceof Error&&error.message==="bootstrap_v3_private_signer_unavailable"?"bootstrap_v3_private_signer_unavailable":"bootstrap_v3_issue_denied");}
+}));
+const bootstrapOwnerWrite=(action:'issuer'|'proof-key'|'proof-authority')=>asyncHandler(async(req,res)=>{
+  res.setHeader('Cache-Control','no-store');
+  if(req.auth?.authType!=='user'||req.auth.workspaceRole!=='owner'||!req.auth.userId)
+    return sendApiError(res,403,'bootstrap_owner_required');
+  if(process.env.NODE_ENV==='production'&&req.header('x-forwarded-proto')!=='https')
+    return sendApiError(res,403,'bootstrap_https_required');
+  try{
+    const owner=await prisma.workspace.findUnique({where:{id:req.auth.workspaceId},select:{ownerUserId:true}});
+    const target=action==='issuer'?req.body?.intent?.binding?.workspaceId:action==='proof-key'?req.body?.intent?.scope?.workspaceId:req.body?.attachment?.workspaceId;
+    if(owner?.ownerUserId!==req.auth.userId||target!==req.auth.workspaceId)
+      return sendApiError(res,403,'bootstrap_owner_required');
+    if(action==='issuer')return res.status(201).json({data:await createPrismaBootstrapIssuerStore(prisma).apply(req.body)});
+    const proof=createPrismaProofAuthorityStore(prisma);
+    const result=action==='proof-key'?await proof.applyKey(req.body):await proof.attach(req.body);
+    if(!result.ok)return sendApiError(res,409,'bootstrap_authority_denied');
+    return res.status(201).json({data:result});
+  }catch{return sendApiError(res,409,'bootstrap_authority_denied');}
+});
+agentRuntimeRouter.post('/bootstrap/issuer',bootstrapOwnerWrite('issuer'));
+agentRuntimeRouter.post('/bootstrap/proof-key',bootstrapOwnerWrite('proof-key'));
+agentRuntimeRouter.post('/bootstrap/proof-authority',bootstrapOwnerWrite('proof-authority'));
 agentRuntimeRouter.use("/capability-suspensions", capabilitySuspensionRouter);
 
 agentRuntimeRouter.get("/tasks/:id/interviews",asyncHandler(async(req,res)=>{
@@ -541,6 +602,16 @@ agentRuntimeRouter.post("/executions/claim", asyncHandler(async (req, res) => {
     return res.json({ data: execution });
   }
   return res.status(409).json({ error: "agent_execution_claim_conflict" });
+}));
+
+agentRuntimeRouter.post("/executions/:id/actions/managed-admission", asyncHandler(async (req,res) => {
+  res.setHeader("Cache-Control","no-store");
+  if(!executionEnabled()||process.env.NODE_ENV==="production"&&req.header("x-forwarded-proto")!=="https")
+    return sendApiError(res,403,"managed_admission_https_required");
+  const signer=managedAdmissionSignerFromEnvironment();
+  if(!signer)return sendApiError(res,503,"managed_admission_signer_unavailable");
+  try { return res.json({data:await managedAdmission(prisma,req.auth!,z.string().uuid().parse(req.params.id),req.body,signer)}); }
+  catch { return sendApiError(res,409,"managed_admission_denied"); }
 }));
 
 agentRuntimeRouter.post("/executions/:id/heartbeat", asyncHandler(async (req, res) => {

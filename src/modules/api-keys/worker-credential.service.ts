@@ -40,6 +40,14 @@ export interface SyntheticWorkerDelivery {
   hash(secret: Buffer): Promise<string>;
   deliver(secret: Buffer): Promise<string>;
 }
+// Bound production delivery uses the ordinary API-key generator and server-side
+// HMAC verifier. The raw value is disclosed once, only after the handoff commit.
+export interface ProductionWorkerDelivery {
+  qualification: "production_server_secret_v1";
+  generate(): Promise<Buffer>;
+  hash(secret: Buffer): Promise<string>;
+  deliver(secret: Buffer): Promise<string>;
+}
 // Shared candidate shape for the existing lifecycle and owner-approved handoff.
 // A handoff inserts it inactive; only its acknowledged transaction may activate it.
 export function workerCredentialCandidate(intent: WorkerCredentialIntent, hash: string, at: Date, active: boolean): ApiKey {

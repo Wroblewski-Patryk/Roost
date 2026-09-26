@@ -36,6 +36,7 @@ test("fresh retrieval uses existing scoped endpoints and derives application que
   const result = await fetchExecutionContext(async (route, options) => { calls.push({ route, options }); return calls.length === 1 ? f.taskContext : f.applicationContext; }, f.claimed);
   assert.equal(result.taskContext, f.taskContext); assert.equal(calls.length, 2);
   assert.ok(calls[0].route.includes(`executionId=${f.claimed.id}`));
+  assert.ok(calls[1].route.includes(`executionId=${f.claimed.id}`));
   assert.ok(calls[1].options.headers["X-Roost-Agent-Context-Query"].includes("Fresh authoritative task"));
   assert.ok(calls.every((c) => c.options.cache === "no-store" && c.options.headers["Cache-Control"] === "no-cache"));
 });

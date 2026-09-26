@@ -32,7 +32,7 @@ const credential = z.object({ id, workspaceId:id, installationId:id, hostId:id, 
   fingerprint:digest, active:z.literal(false), revokedAt:z.null(), expiresAt:z.string().datetime(), scopes:z.tuple([z.literal("agent-runtime:claim")]) }).strict();
 const requested = state.extend({ userCode:z.string().regex(/^[A-F0-9]{8}$/), binding:workerHandoffBinding, expiresAt:z.string().datetime(), state:z.literal("requested"), deliverySpent:z.literal(false) }).strict();
 const delivered = state.extend({ state:z.literal("awaiting_ack"), deliverySpent:z.literal(true), credential, responseDigest:digest,
-  ackDeadline:z.string().datetime(), key:z.string().min(32).max(256) }).strict();
+  ackDeadline:z.string().datetime(), key:z.string().min(32).max(256), ackProof:digest.optional() }).strict();
 type ErrorCode = "unavailable"|"request_invalid"|"tls_denied"|"connect_timeout"|"read_timeout"|"deadline"|"redirect_denied"|"response_invalid"|"connection_lost"|"remote_denied"|"replay_denied"|"delivery_unknown";
 type Failure = { ok:false; error:ErrorCode; deliveryUnknown:boolean; transportQualified:false; launchAuthority:false };
 export type HandoffHttpsResult = Failure | { ok:true; data:any; transportQualified:false; launchAuthority:false };

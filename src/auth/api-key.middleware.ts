@@ -38,7 +38,7 @@ function bearerToken(req: Request) {
   return authorization.slice("Bearer ".length).trim();
 }
 
-export function createAuthContextMiddleware(db: Pick<PrismaClient, "apiKey" | "workspaceMembership"> = prisma) {
+export function createAuthContextMiddleware(db: Pick<PrismaClient, "apiKey" | "workspaceMembership"> & Partial<Pick<PrismaClient,"agentExecution"|"agentHost">> = prisma) {
 return async function requireAuthContext(req: Request, res: Response, next: NextFunction) {
   const token = bearerToken(req);
 
@@ -103,15 +103,37 @@ return async function requireAuthContext(req: Request, res: Response, next: Next
     return sendApiError(res, 403, "agent_principal_forbidden");
   }
   const workerIdentity = workerTicketPrincipal(record);
+  const requestPath=`${req.baseUrl}${req.path}`.replace(/\/+$/, "");
   if ((record.workerHostId || record.workerInstallationId || record.workerBindingEpoch) && (!workerIdentity
     || !record.workerHost || record.workerHost.workspaceId !== record.workspaceId || record.workerHost.status === "disabled"
-    || !workerCredentialRoute(req.method, `${req.baseUrl}${req.path}`)))
+    || !workerCredentialRoute(req.method, requestPath)))
     return sendApiError(res, 403, "worker_credential_forbidden");
+  if(workerIdentity){
+    const executionId=requestPath.match(/^\/v1\/agent-runtime\/executions\/([0-9a-f-]{36})\//)?.[1]
+      ?? (/^\/v1\/(?:company-intelligence|product-engineering)\//.test(requestPath)?req.query.executionId:null);
+    if(executionId){
+      if(typeof executionId!=="string"||!db.agentExecution)return sendApiError(res,403,"worker_credential_forbidden");
+      const execution=await db.agentExecution.findFirst({where:{id:executionId,workspaceId:workerIdentity.workspaceId,agentHostId:workerIdentity.hostId}});
+      const taskId=requestPath.match(/^\/v1\/company-intelligence\/tasks\/([0-9a-f-]{36})\/agent-context$/)?.[1];
+      const applicationId=requestPath.match(/^\/v1\/product-engineering\/applications\/([0-9a-f-]{36})\/agent-context$/)?.[1];
+      if(!execution||taskId&&execution.taskId!==taskId||applicationId&&execution.applicationId!==applicationId)return sendApiError(res,403,"worker_credential_forbidden");
+    }else if(/^\/v1\/(?:company-intelligence|product-engineering)\//.test(requestPath))return sendApiError(res,403,"worker_credential_forbidden");
+    const hostId=requestPath.match(/^\/v1\/agent-runtime\/hosts\/([0-9a-f-]{36})\/heartbeat$/)?.[1];
+    if(hostId&&hostId!==workerIdentity.hostId)return sendApiError(res,403,"worker_credential_forbidden");
+    if(requestPath==="/v1/agent-runtime/hosts/register"||requestPath==="/v1/agent-runtime/recovery"){
+      const slug=requestPath.endsWith("register")?req.body?.slug:req.query.hostSlug;
+      if(typeof slug!=="string"||!db.agentHost)return sendApiError(res,403,"worker_credential_forbidden");
+      const host=await db.agentHost.findFirst({where:{id:workerIdentity.hostId,workspaceId:workerIdentity.workspaceId,slug,status:{not:"disabled"}}});
+      if(!host)return sendApiError(res,403,"worker_credential_forbidden");
+    }
+  }
   const scopes = Array.isArray(record.scopes)
     ? record.scopes.filter((scope): scope is string => typeof scope === "string")
     : [];
   const requiredCapability = capabilityForRequest(req);
-  if (requiredCapability && !hasCapability(scopes, requiredCapability)) {
+  const workerTransport=!!workerIdentity&&workerCredentialRoute(req.method,requestPath)
+    && ["agent-runtime:claim","agent-runtime:report","company-graph:read","product-engineering:read"].includes(requiredCapability??"");
+  if (requiredCapability && !workerTransport&&!hasCapability(scopes, requiredCapability)) {
     return sendApiError(res, 403, "forbidden");
   }
 

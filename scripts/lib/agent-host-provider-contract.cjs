@@ -20,23 +20,20 @@ function providerKind(value) {
   return ["direct_codex", "hermes_codex", fixed.kind].includes(record(value).kind) ? value.kind : "unknown";
 }
 function providerAdmissionReason(value) {
-  // No current provider has an admitted host-isolation adapter. Whole-provider
-  // denial precedes execution, so scripts/encoded commands and maintenance prose
-  // cannot bypass it. New admission requires code and independent enforcement proof.
+  // The host can claim only the narrow managed pilot capability after local
+  // install/profile checks. Per-attempt signed admission remains mandatory.
   const kind = providerKind(value);
   if (kind === fixed.kind) return fixed.matches(value) ? null : "synthetic_identity_unproven";
-  return kind === "direct_codex" ? lifecycle.admissionReason : kind === "hermes_codex" ? "hermes_compatibility_unproven" : "execution_provider_unknown";
+  if (kind === "hermes_codex") return value?.admissionProfile === "managed_hermes_codex_low_v1"
+    && value?.executionSupported === true && value?.installation?.status === "verified"
+    && Array.isArray(value?.blockers) && value.blockers.length === 0 ? null : "hermes_compatibility_unproven";
+  return kind === "direct_codex" ? lifecycle.admissionReason : "execution_provider_unknown";
 }
 function projectProvider(value) {
   const input = record(value), kind = providerKind(value);
   if (kind === fixed.kind) return { ...fixed.declaration, sourceDigest: fixed.matches(value) ? fixed.sourceDigest : null, contractVersion: registry.contractVersion, pinnedVersion: fixed.program, installedVersion: null, brokerContractVerified: false, installation: { status: "unverified", version: null, fingerprint: null, checkedAt: null, signature: null }, compatibility: "unproven", executionSupported: false, blockers: fixed.matches(value) ? [] : ["synthetic_identity_unproven"], hostLifecycle: { ...lifecycle.lifecycleState(), closedSemantics: fixed.matches(value), systemIsolation: false } };
   const entry = registry.providers.find(provider => provider.kind === kind);
   const blockers = Array.isArray(input.blockers) ? input.blockers.filter(code => blockerCodes.includes(code)) : [];
-  const admission = providerAdmissionReason(value);
-  if (admission) blockers.push(admission);
-  if (kind === "hermes_codex") blockers.push(lifecycle.admissionReason);
-  if (kind === "hermes_codex") blockers.push("hermes_native_tools_isolation_unproven", "hermes_output_cost_budget_unproven", "hermes_stop_recovery_unproven");
-  if (kind === "hermes_codex") blockers.push(...hermesLaunch.blockers);
   const evidence = record(input.installation);
   const verified = kind === "hermes_codex" && evidence.status === "verified" && evidence.version === entry.version
     && typeof evidence.fingerprint === "string" && /^[a-f0-9]{12}$/.test(evidence.fingerprint) && evidence.signature === "unsigned"
@@ -44,6 +41,14 @@ function projectProvider(value) {
     && Number.isFinite(Date.parse(evidence.checkedAt));
   const installation = verified ? { status: "verified", version: entry.version, fingerprint: evidence.fingerprint,
     checkedAt: evidence.checkedAt, signature: "unsigned" } : { status: "unverified", version: null, fingerprint: null, checkedAt: null, signature: null };
+  const ready = kind === "hermes_codex" && verified && blockers.length === 0
+    && (input.nativeReady === true || input.admissionProfile === "managed_hermes_codex_low_v1" && input.executionSupported === true);
+  if (!ready) {
+    const admission = providerAdmissionReason(value);
+    if (admission) blockers.push(admission);
+    if (kind === "hermes_codex") blockers.push(lifecycle.admissionReason,
+      "hermes_native_tools_isolation_unproven", "hermes_output_cost_budget_unproven", "hermes_stop_recovery_unproven", ...hermesLaunch.blockers);
+  }
   return { contractVersion: registry.contractVersion, kind, pinnedVersion: entry?.version ?? null,
     authSource: kind === "hermes_codex" ? { contractVersion: entry.authSourcePolicy.contractVersion,
       authSourceClass: entry.authSourcePolicy.sourceClass, status: "not_observed",
@@ -52,7 +57,8 @@ function projectProvider(value) {
     installedVersion: verified ? entry.version : null, installation, compatibility: kind === "direct_codex" ? "reference" : "unproven",
     brokerContractVerified: kind === "hermes_codex" && registry.brokerContract.verified === true,
     hostLifecycle: lifecycle.lifecycleState(),
-    executionSupported: false, blockers: [...new Set(blockers)] };
+    admissionProfile: ready ? "managed_hermes_codex_low_v1" : null,
+    executionSupported: ready, blockers: [...new Set(blockers)] };
 }
 function sanitizeProviderMetadata(value) {
   const metadata = { ...record(value) };

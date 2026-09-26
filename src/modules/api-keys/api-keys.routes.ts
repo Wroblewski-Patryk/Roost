@@ -12,7 +12,7 @@ import { requireWorkspaceRole } from "../../auth/workspace-access";
 import { workerCredentialHandler } from "./worker-credential-http";
 import { createWorkerCredentialService } from "./worker-credential.service";
 import { createPrismaWorkerCredentialStore } from "./worker-credential-store";
-import { workerHandoffUnavailable } from "./worker-handoff-http";
+import { productionWorkerHandoffHandler } from "./worker-handoff-http";
 
 const createApiKeySchema = z.object({
   name: z.string().min(1),
@@ -30,8 +30,9 @@ export const apiKeysRouter = Router();
 const workerLifecycle = createWorkerCredentialService(createPrismaWorkerCredentialStore(prisma));
 for (const action of ["enroll", "rotate", "revoke"] as const)
   apiKeysRouter.post(`/worker-credentials/${action}`, workerCredentialHandler(action, workerLifecycle));
-for (const action of ["request", "approve"] as const)
-  apiKeysRouter.post(`/worker-credentials/handoff/${action}`, workerHandoffUnavailable);
+// The owner approval remains behind the ordinary authenticated API router.
+// Device request/poll/ACK/status are mounted before API-key auth in app.ts.
+apiKeysRouter.post('/worker-credentials/handoff/approve',productionWorkerHandoffHandler('approve'));
 
 function requireOwner(req: Request, res: Response) {
   return requireWorkspaceRole(req, res, "admin");

@@ -30,9 +30,13 @@ export const handoffCode = (requestId: string) => handoffHash("code", requestId)
 export function equalHandoffDigest(a: string, b: string) {
   return /^[a-f0-9]{64}$/.test(a) && /^[a-f0-9]{64}$/.test(b) && timingSafeEqual(Buffer.from(a, "hex"), Buffer.from(b, "hex"));
 }
-// The Worker computes keyHash locally from the received credential. Its public
-// fingerprint cannot substitute for this possession proof; raw key never enters ack.
+// The server computes this one-use token from its private keyHash and discloses
+// it only with the raw credential. The Worker returns it after durable storage.
+// No raw credential or token enters the persistent handoff row.
 export const handoffAckProof = (keyHash: string, requestId: string, responseDigest: string) =>
   createHmac("sha256", keyHash).update(`roost-worker-handoff-v1:ack:${requestId}:${responseDigest}`).digest("hex");
 export type SyntheticHandoffTransport = { qualification: "synthetic_memory_only"; requestedOrigin: string; connectedOrigin: string;
   certificateFingerprint: string; tlsValidated: boolean; redirected: boolean; proxyOrigin: string | null };
+export type ProductionHandoffTransport = Omit<SyntheticHandoffTransport,"qualification"> & {
+  qualification:"trusted_proxy_https_v1";
+};

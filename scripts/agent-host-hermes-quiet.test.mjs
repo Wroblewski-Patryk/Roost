@@ -16,6 +16,14 @@ test("quiet output is arbitrary untrusted text, not JSON events or a success ver
 });
 for (const [code, reason] of [[1, "process_failed"], [130, "interrupted"], [null, "process_failed"]])
   test(`quiet exit ${code} never reports success`, () => assert.throws(() => createHermesQuietGuard().complete(code), new RegExp(reason)));
+test("quiet zero exit without a final answer is not a completed task", () => {
+  const guard = createHermesQuietGuard(); guard.write("stdout", Buffer.from("  \n"));
+  assert.throws(() => guard.complete(0), /empty_result/);
+});
+test("quiet answer cannot exceed the Roost completion field", () => {
+  const guard = createHermesQuietGuard(); guard.write("stdout", Buffer.alloc(100001, 65));
+  assert.throws(() => guard.complete(0), /report_limit/);
+});
 for (const channel of ["stdout", "stderr"]) {
   test(`${channel} bound and fatal UTF-8 including incomplete final sequence`, () => {
     assert.throws(() => createHermesQuietGuard().write(channel, Buffer.alloc(channel === "stdout" ? 131073 : 32769)), /limit/);

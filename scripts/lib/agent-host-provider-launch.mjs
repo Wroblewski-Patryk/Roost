@@ -14,6 +14,7 @@ import { hermesOwnedTreeBlockers } from "./agent-host-windows-job.mjs";
 
 import { hermesBudgetBlocker, hermesBudgetBlockers } from "./agent-host-hermes-budget.mjs";
 import { consumeHostContainment, revokeHostContainment } from "./agent-host-containment.mjs";
+import { consumeManagedAdmission } from "./agent-host-managed-admission.mjs";
 
 export { hermesContract };
 const hermes = contract.registry.providers.find(p => p.kind === "hermes_codex");
@@ -105,6 +106,7 @@ export function projectProviderLaunch({ provider, envelope, repositoryPath, code
 // Even if an outer admission is accidentally weakened, Hermes cannot reach
 // spawn or fall through to Codex. Failed admission burns the local envelope.
 export function prepareProviderLaunch(options, consumption) {
+  if (options.managedAdmission) return consumeManagedAdmission(options.managedAdmission, options, consumption);
   const plan = projectProviderLaunch(options);
   if (plan.kind === fixed.kind) {
     try {

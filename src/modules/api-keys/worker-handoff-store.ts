@@ -13,7 +13,7 @@ const columns = { requestId: "id", workspaceId: "workspace_id", installationId: 
 const projection = Prisma.raw(Object.entries(columns).map(([key, column]) => `${column} AS "${key}"`).join(","));
 function decode(row: any): WorkerHandoff { return { ...row, ownerAuthTime: row.ownerAuthTime === null ? null : Number(row.ownerAuthTime) }; }
 
-// Explicitly injected by qualification only; application composition stays closed.
+// Production composition passes the existing Prisma client explicitly.
 export function createPrismaWorkerHandoffStore(client: PrismaClient): WorkerHandoffStore {
   return {
     async readHandoff(id) {

@@ -3,6 +3,9 @@ import { lstat, realpath } from "node:fs/promises";
 import contract from "./agent-host-provider-contract.cjs";
 import { attestHermes } from "./agent-host-hermes-attestation.mjs";
 import { hermesProfileBindingSchema } from "./agent-host-hermes-profile.mjs";
+import { hermesNativeProfileVersion, inspectHermesProfile } from "./agent-host-hermes-profile.mjs";
+import { inspectManagedHostInstallation } from "./agent-host-trusted-pilot.mjs";
+import { writerStateDirectory } from "./agent-host-writer-lock.mjs";
 
 export const { registry, providerAdmissionReason } = contract;
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -34,6 +37,16 @@ export async function inspectExecutionProvider(config, { platform = process.plat
     || Object.keys(input).some(key => !["kind", "enabled", "officialSource", "version", "commit", "executablePath", "policy", "attestation", "profile"].includes(key))
     || (input.profile !== undefined && !hermesProfileBindingSchema.safeParse(input.profile).success)) blockers.push("hermes_authority_policy_invalid");
   const evidence = blockers.every(code => code === "hermes_disabled") ? await attestHermes(input, { useCache: !freshAttestation }) : {};
+  let nativeReady = false;
+  if (config.executionMode === "supervised" && input.enabled === true && blockers.length === 0
+      && input.profile?.schemaVersion === hermesNativeProfileVersion && evidence.installation?.status === "verified") {
+    try {
+      const repositories = Object.values(config.repositories ?? {});
+      if (!repositories.length) throw Error("hermes_repository_mapping_missing");
+      for (const repository of repositories) inspectHermesProfile(input.profile, path.resolve(repository.path));
+      nativeReady = inspectManagedHostInstallation(path.join(writerStateDirectory, "trusted-provider-pilot", "installation.json"));
+    } catch { nativeReady = false; }
+  }
   // Installation evidence never overrides runtime compatibility or execution admission.
-  return contract.projectProvider({ kind: "hermes_codex", ...evidence, blockers: [...blockers, ...(evidence.blockers ?? [])] });
+  return contract.projectProvider({ kind: "hermes_codex", ...evidence, nativeReady, blockers: [...blockers, ...(evidence.blockers ?? [])] });
 }

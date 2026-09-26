@@ -4,7 +4,7 @@ import { lstatSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import contract from "./agent-host-provider-contract.cjs";
-import { modelSelectionSchema } from "./agent-host-model-policy.mjs";
+import { modelSelectionSchema, managedBackendSelectionSchema, managedBackendVersion } from "./agent-host-model-policy.mjs";
 import { hermesStartupProfileVersion, hermesStartupProfileDigest, hermesBudgetProfileVersion, hermesBudgetProfileDigest, hermesNativeProfileVersion, hermesNativeProfileDigest, inspectHermesProfile, sealHermesProfile, assertHermesProfile } from "./agent-host-hermes-profile.mjs";
 
 import { hermesBudgetArgs } from "./agent-host-hermes-budget.mjs";
@@ -60,7 +60,11 @@ export function hermesTaskToolsets(envelope) {
 }
 const expansion = { file: ["read_file", "write_file", "patch", "search_files"], terminal: ["terminal", "process_manage"] };
 export function hermesStartupArgs(envelope) {
-  const selection = modelSelectionSchema.safeParse(envelope.contract.modelSelection);
+  const requested = envelope.contract.modelSelection;
+  const managed = requested?.schemaVersion === managedBackendVersion ? managedBackendSelectionSchema.safeParse(requested) : null;
+  if (managed && (!managed.success || managed.data.backend !== "codex_responses" || managed.data.riskClass !== "low"
+      || managed.data.attemptPolicy.apiMaxRetries !== 2)) fail("hermes_startup_model_policy_invalid");
+  const selection = modelSelectionSchema.safeParse(managed ? managed.data.modelSelection : requested);
   if (!selection.success) fail("hermes_startup_model_policy_invalid");
   return ["chat", "--cli", "--oneshot", "--quiet", "--query-file", "-", "--provider", "openai-codex",
     "--model", selection.data.model, "--reasoning", selection.data.reasoningEffort,
@@ -129,6 +133,7 @@ export const hermesStartupReceiptSchema = z.object({
   hermesVersion: z.literal(pin.version), hermesCommit: z.literal(pin.commit), profileVersion: z.enum([hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion]), configDigest: z.enum([hermesStartupProfileDigest, hermesBudgetProfileDigest, hermesNativeProfileDigest]),
   authAttestationId: z.string().uuid(), authAttestationDigest: hash, authPolicyVersion: z.literal("roost-hermes-same-owner-auth-v2"),
   readyRevision: hash, inputSeal: hash, provider: z.literal("openai-codex"), modelSelection: modelSelectionSchema,
+  backend: z.literal("codex_responses").optional(),
   toolsets: z.array(z.enum(["file", "terminal"])).min(1).max(2), expandedTools: z.array(z.enum(Object.values(expansion).flat())).min(1).max(6),
   categories: z.array(z.enum(["repository_read", "repository_write", "local_test"])).min(2).max(3),
   fallbackProvidersEmpty: z.literal(true), legacyFallbackEmpty: z.literal(true), worktree: z.literal(false), safeMode: z.literal(true), updateCheck: z.literal(false),
@@ -152,7 +157,10 @@ export function assertHermesStartup(seal, options) {
   const body = { schemaVersion: hermesStartupVersion, policyVersion: hermesStartupPolicy, qualification: "source_backed_synthetic_startup_policy",
     hermesVersion: pin.version, hermesCommit: pin.commit, profileVersion: profile.profileVersion, configDigest: profile.configDigest,
     authAttestationId: profile.auth.attestationId, authAttestationDigest: profile.auth.attestationDigest, authPolicyVersion: profile.auth.policyVersion,
-    readyRevision: saved.ready, inputSeal: saved.input, provider: "openai-codex", modelSelection: { ...options.envelope.contract.modelSelection },
+    readyRevision: saved.ready, inputSeal: saved.input, provider: "openai-codex",
+    modelSelection: { ...(options.envelope.contract.modelSelection.schemaVersion === managedBackendVersion
+      ? options.envelope.contract.modelSelection.modelSelection : options.envelope.contract.modelSelection) },
+    ...(options.envelope.contract.modelSelection.schemaVersion === managedBackendVersion ? { backend: "codex_responses" } : {}),
     toolsets, expandedTools: toolsets.flatMap(t => expansion[t]), categories: ["repository_read", "repository_write", ...(toolsets.includes("terminal") ? ["local_test"] : [])],
     fallbackProvidersEmpty: true, legacyFallbackEmpty: true, worktree: false, safeMode: true, updateCheck: false,
     acceptedSideEffects: { ...acceptedHermesStartupEffects }, windowsEnvironment, argvDigest: digest(options.candidate.args), environmentDigest: digest(options.candidate.environment),

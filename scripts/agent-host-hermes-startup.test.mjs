@@ -11,7 +11,21 @@ import { prepareProviderInput, assertProviderStartup } from "./lib/agent-host-pr
 import { projectProviderLaunch, prepareProviderLaunch, hermesContract } from "./lib/agent-host-provider-launch.mjs";
 import { validPacketFixture, pinReadyFixture } from "./fixtures/execution-packet.mjs";
 import contract from "./lib/agent-host-provider-contract.cjs";
+import { managedSelectionFixture } from "./fixtures/trusted-pilot.mjs";
+import { hermesStartupArgs } from "./lib/agent-host-hermes-startup.mjs";
 const pin = contract.registry.providers.find(p => p.kind === "hermes_codex");
+
+test("managed low-risk Codex selection produces one explicit Hermes backend, model and effort", () => {
+  const selection = managedSelectionFixture("codex_responses");
+  const envelope = { contract: { modelSelection: selection, access: {
+    tools: ["repository_read", "repository_write"], permissions: ["repository_read", "repository_write"] } } };
+  assert.deepEqual(hermesStartupArgs(envelope), ["chat", "--cli", "--oneshot", "--quiet", "--query-file", "-",
+    "--provider", "openai-codex", "--model", "gpt-5.6-sol", "--reasoning", "medium", "--toolsets", "file"]);
+  assert.throws(() => hermesStartupArgs({ contract: { ...envelope.contract,
+    modelSelection: managedSelectionFixture("ollama_loopback") } }), /hermes_startup_model_policy_invalid/);
+  assert.throws(() => hermesStartupArgs({ contract: { ...envelope.contract,
+    modelSelection: { ...selection, riskClass: "high" } } }), /hermes_startup_model_policy_invalid/);
+});
 
 function fixture(t, packetChange = () => {}) {
   const root = mkdtempSync(path.join(os.tmpdir(), "roost-hermes-startup-test-"));

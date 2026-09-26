@@ -5,22 +5,52 @@ import { workerTransportIntent } from "../api-keys/worker-transport-contract";
 import { workerBootstrapIntent } from "../api-keys/worker-bootstrap-contract";
 import { lifecycleIntent } from "../api-keys/worker-identity-lifecycle";
 import { channelGrantIntent } from "../api-keys/bootstrap-channel-persistence-contract";
+import { bootstrapChannelSnapshot } from "../api-keys/bootstrap-channel-contract";
+import { issuerIntent } from "../api-keys/bootstrap-issuer-contract";
+import { proofKeyIntent } from "../api-keys/bootstrap-proof-key-contract";
+import { proofAuthorityAttachment } from "../api-keys/bootstrap-proof-authority-contract";
+import { v3Intent } from "../api-keys/bootstrap-proof-issuance-contract";
 
 const uuid=z.string().uuid(), text=z.string().trim().min(3).max(2000), hash=z.string().regex(/^[a-f0-9]{64}$/);
+export const managedRuntimeApproval=z.object({schemaVersion:z.literal('roost-managed-runtime-approval-v1'),
+  taskId:uuid,applicationId:uuid,installationId:uuid,selectionDigest:hash,
+  backend:z.literal('codex_responses'),riskClass:z.literal('low'),
+  mode:z.literal('trusted_provider_pilot'),residualRiskAccepted:z.literal(true),
+  acknowledgement:z.literal('windows_account_authority_not_os_isolation')}).strict();
 export const decisionNodeTypes=["task","application","project","procedure","company_record","resource","decision"] as const;
 export const decisionNode=z.object({type:z.enum(decisionNodeTypes),id:uuid}).strict();
-export const decisionProposal=z.object({requestId:uuid,expectedVersion:hash,title:text,context:text,decision:text,rationale:text,consequences:text,
+export const decisionProposal=z.object({requestId:uuid,decisionId:uuid.optional(),expectedVersion:hash,title:text,context:text,decision:text,rationale:text,consequences:text,
   findingAdjudication:z.object({versionId:uuid,principal:z.object({kind:z.enum(["user","agent"]),id:uuid}).strict()}).strict().optional(),
   authority:decisionAuthorityDeclaration.optional(),
   workerCredential:workerCredentialIntent.optional(),
   workerTransport:workerTransportIntent.optional(),
   workerBootstrap:workerBootstrapIntent.optional(),
   workerIdentityLifecycle:lifecycleIntent.optional(),
-  workerBootstrapChannel:channelGrantIntent.optional(),
+  workerBootstrapIssuer:issuerIntent.optional(),
+  workerBootstrapProofKey:proofKeyIntent.optional(),
+  workerBootstrapProofAuthority:proofAuthorityAttachment.optional(),
+  workerBootstrapAdmissionV3:v3Intent.optional(),
+  workerBootstrapChannel:z.union([channelGrantIntent,z.object({schemaVersion:z.literal('worker-bootstrap-channel-v1'),ticketId:uuid,
+    snapshot:bootstrapChannelSnapshot}).strict()]).optional(),
+  managedRuntimeApproval:managedRuntimeApproval.optional(),
   scopeReason:text,scope:z.array(decisionNode).min(1).max(8),supersedesId:uuid.nullable(),
   conflicts:z.array(z.object({kind:z.enum(["contradicts","narrows","replaces"]),oldProvision:text,newProvision:text,explanation:text}).strict()).max(12)
 }).strict().superRefine((v,c)=>{
-  if(v.workerBootstrapChannel&&(v.authority||v.workerBootstrap||v.workerCredential||v.workerTransport||v.workerIdentityLifecycle))c.addIssue({code:"custom",message:"Bootstrap channel requires its own primary-owner decision"});
+  if(v.managedRuntimeApproval&&(!v.scope.some(n=>n.type==='task'&&n.id===v.managedRuntimeApproval!.taskId)
+    ||v.authority||v.workerBootstrap||v.workerCredential||v.workerTransport||v.workerIdentityLifecycle
+    ||v.workerBootstrapIssuer||v.workerBootstrapProofKey||v.workerBootstrapProofAuthority||v.workerBootstrapAdmissionV3||v.workerBootstrapChannel))
+    c.addIssue({code:'custom',message:'Managed runtime approval requires its exact task and a separate primary-owner decision'});
+  const v3=!!v.workerBootstrapAdmissionV3||!!v.workerBootstrapProofAuthority;
+  if(v3){
+   if(!v.decisionId||!v.workerBootstrapAdmissionV3||!v.workerBootstrapProofAuthority||!v.workerBootstrapChannel||!('snapshot' in v.workerBootstrapChannel)
+     ||v.workerBootstrapProofAuthority.decisionId!==v.decisionId
+     ||v.workerBootstrapAdmissionV3.proofAuthority.ticketId!==v.workerBootstrapChannel.ticketId
+     ||JSON.stringify(v.workerBootstrapAdmissionV3.proofAuthority)!==JSON.stringify(v.workerBootstrapProofAuthority)
+     ||v.authority||v.workerBootstrap||v.workerCredential||v.workerTransport||v.workerIdentityLifecycle||v.workerBootstrapIssuer||v.workerBootstrapProofKey)
+    c.addIssue({code:'custom',message:'V3 first enrollment requires one exact owner-approved authority, intent and channel snapshot'});
+  }else if(v.workerBootstrapChannel&&(v.authority||v.workerBootstrap||v.workerCredential||v.workerTransport||v.workerIdentityLifecycle||v.workerBootstrapIssuer||v.workerBootstrapProofKey))c.addIssue({code:"custom",message:"Bootstrap channel requires its own primary-owner decision"});
+  if((v.workerBootstrapIssuer||v.workerBootstrapProofKey)&&(v.authority||v.workerBootstrap||v.workerCredential||v.workerTransport||v.workerIdentityLifecycle||v.workerBootstrapIssuer&&v.workerBootstrapProofKey))
+   c.addIssue({code:'custom',message:'Bootstrap key lifecycle requires a separate primary-owner decision'});
   if(v.workerIdentityLifecycle&&(v.authority||v.workerBootstrap||v.workerCredential||v.workerTransport))c.addIssue({code:"custom",message:"Identity lifecycle requires its own primary-owner decision"});
   if(v.workerBootstrap&&(v.authority||v.workerCredential||v.workerTransport))c.addIssue({code:"custom",message:"Bootstrap requires its own primary-owner decision"});
   if(v.workerCredential&&v.authority)c.addIssue({code:"custom",message:"Worker credential decisions are reserved to the primary owner"});

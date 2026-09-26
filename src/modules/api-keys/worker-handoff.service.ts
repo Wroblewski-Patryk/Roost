@@ -4,9 +4,10 @@ import { workerTicketFingerprint } from "../../auth/worker-ticket-principal";
 import { reviewDigest } from "../agent-runtime/task-review-contract";
 import { type WorkerCredentialCommand, workerCredentialIntent } from "./worker-credential-contract";
 import { freshWorkerOwner, safeWorkerCredential, workerCredentialCandidate, workerCredentialGenerationMatches,
-  WorkerCredentialError, type SyntheticWorkerDelivery, type WorkerCredentialTx } from "./worker-credential.service";
+  WorkerCredentialError, type SyntheticWorkerDelivery, type ProductionWorkerDelivery, type WorkerCredentialTx } from "./worker-credential.service";
 import { handoffRequest, handoffApproval, handoffDeviceProof, handoffAck, handoffCode, handoffHash, handoffAckProof,
-  handoffPolicy, equalHandoffDigest, exactHttpsOrigin, type HandoffRequest, type HandoffDeviceProof, type SyntheticHandoffTransport } from "./worker-handoff-contract";
+  handoffPolicy, equalHandoffDigest, exactHttpsOrigin, type HandoffRequest, type HandoffDeviceProof,
+  type SyntheticHandoffTransport, type ProductionHandoffTransport } from "./worker-handoff-contract";
 
 export type HandoffState = "requested" | "approved" | "awaiting_ack" | "acknowledged" | "delivery_unknown" | "revoked" | "expired" | "locked";
 export type WorkerHandoff = HandoffRequest & { requestDigest: string; userCodeHash: string; state: HandoffState;
@@ -26,14 +27,15 @@ export interface WorkerHandoffStore {
   // Conflict fallback is a read only projection, never a command retry.
   readHandoff?(id: string): Promise<WorkerHandoff | null>;
 }
-export type HandoffDependencies = { delivery: SyntheticWorkerDelivery;
+export type HandoffDependencies = { delivery: SyntheticWorkerDelivery | ProductionWorkerDelivery;
   // Trusted adapter output, never JSON/header evidence supplied by the caller.
-  transport(): Promise<SyntheticHandoffTransport> };
+  transport(): Promise<SyntheticHandoffTransport | ProductionHandoffTransport> };
 const failed = (code: string, status = 409) => ({ error: { code: `worker_handoff_${code}`, status } });
 const deny = (code: string, status = 409): never => { const e = failed(code, status).error; throw new WorkerCredentialError(e.code, e.status); };
 const terminal = (row: WorkerHandoff) => ["acknowledged", "delivery_unknown", "revoked", "expired", "locked"].includes(row.state);
-const status = (row: WorkerHandoff) => ({ requestId: row.requestId, state: row.state, deliverySpent: !!row.spentAt,
-  qualification: "synthetic_memory_only", transportQualified: false, realProvisioningQualified: false, launchAuthority: false });
+const status = (row: WorkerHandoff,production=false) => ({ requestId: row.requestId, state: row.state, deliverySpent: !!row.spentAt,
+  qualification: production?"production_https_v1":"synthetic_memory_only",
+  transportQualified: production, realProvisioningQualified: production, launchAuthority: false });
 const ownerOf = (r: WorkerHandoff): AuthContext => ({ authType: "user", workspaceId: r.workspaceId, userId: r.ownerId!,
   workspaceRole: "owner", authenticatedAt: r.ownerAuthTime! });
 const binding = (r: WorkerHandoff) => ({ requestId: r.requestId, requestDigest: r.requestDigest, hostFingerprint: r.hostFingerprint,
@@ -43,8 +45,10 @@ function proofMatches(proof: HandoffDeviceProof, row: WorkerHandoff) {
     && equalHandoffDigest(handoffHash("device", proof.deviceSecret), row.deviceSecretHash)
     && equalHandoffDigest(handoffHash("challenge", proof.challenge), row.challengeHash);
 }
-function checkTransport(evidence: SyntheticHandoffTransport, origin: string, pin: string) {
-  if (!exactHttpsOrigin.safeParse(origin).success || evidence.qualification !== "synthetic_memory_only" || !evidence.tlsValidated || evidence.redirected
+function checkTransport(evidence: SyntheticHandoffTransport | ProductionHandoffTransport, origin: string, pin: string,
+  qualification: SyntheticWorkerDelivery["qualification"] | ProductionWorkerDelivery["qualification"]) {
+  if (!exactHttpsOrigin.safeParse(origin).success || evidence.qualification !==
+    (qualification==="production_server_secret_v1"?"trusted_proxy_https_v1":"synthetic_memory_only") || !evidence.tlsValidated || evidence.redirected
     || evidence.requestedOrigin !== origin || evidence.connectedOrigin !== origin || evidence.certificateFingerprint !== pin
     || evidence.proxyOrigin !== null && evidence.proxyOrigin !== origin) deny("transport_invalid", 403);
 }
@@ -52,16 +56,18 @@ function checkTransport(evidence: SyntheticHandoffTransport, origin: string, pin
 export function createWorkerHandoffService(store?: WorkerHandoffStore, dependencies?: HandoffDependencies, clock = () => new Date()) {
   return async (action: "request" | "approve" | "poll" | "ack" | "status", auth: AuthContext | undefined, body: unknown) => {
     let raw: Buffer | undefined;
-    let evidence: SyntheticHandoffTransport | undefined;
+    let evidence: SyntheticHandoffTransport | ProductionHandoffTransport | undefined;
+    let ackToken: string | undefined;
     const at = clock();
     try {
       if (action === "approve" && (!auth || !freshWorkerOwner(auth, at))) deny("forbidden", 403);
       const delivery = dependencies?.delivery;
-      if (!store || !delivery || delivery.qualification !== "synthetic_memory_only" || !dependencies?.transport
+      if (!store || !delivery || !["synthetic_memory_only","production_server_secret_v1"].includes(delivery.qualification) || !dependencies?.transport
         || ![delivery.generate, delivery.hash, delivery.deliver].every(f => typeof f === "function")) deny("unavailable", 503);
+      const production=delivery!.qualification==="production_server_secret_v1";
       evidence = await dependencies!.transport();
       function transport(origin: string, pin: string) {
-        checkTransport(evidence!, origin, pin);
+        checkTransport(evidence!, origin, pin, delivery!.qualification);
       }
       const result: any = await store!.transaction(async tx => {
         async function retire(row: WorkerHandoff, state: HandoffState) {
@@ -108,7 +114,7 @@ export function createWorkerHandoffService(store?: WorkerHandoffStore, dependenc
             userCodeHash: handoffHash("code", handoffCode(input.requestId)), creatorUserId: auth?.userId ?? null, createdAt: at, expiresAt, state: "requested", badAttempts: 0, polls: 0, nextPollAt: null,
             ownerId: null, ownerAuthTime: null, command: null, credentialId: null, responseDigest: null, spentAt: null, ackDeadline: null, acknowledgedAt: null };
           await tx.saveHandoff(row); await tx.handoffAudit(row, "requested");
-          return { ...status(row), userCode: handoffCode(row.requestId), binding: binding(row), expiresAt: row.expiresAt.toISOString() };
+          return { ...status(row,production), userCode: handoffCode(row.requestId), binding: binding(row), expiresAt: row.expiresAt.toISOString() };
         }
         if (action === "approve") {
           const input = handoffApproval.parse(body), row = await tx.handoff(input.requestId);
@@ -116,15 +122,15 @@ export function createWorkerHandoffService(store?: WorkerHandoffStore, dependenc
           transport(row.origin, row.certificateFingerprint);
           if (auth!.workspaceId !== row.workspaceId || !await tx.primaryOwner(auth!)) return failed("forbidden", 403);
           await reconcile(row);
-          if (terminal(row) || row.spentAt) return status(row);
+          if (terminal(row) || row.spentAt) return status(row,production);
           if (!equalHandoffDigest(handoffHash("code", input.userCode), row.userCodeHash)) return badAttempt(row, "approval_invalid");
           const i = input.command.intent;
           if (i.action === "revoke" || i.workspaceId !== row.workspaceId || i.installationId !== row.installationId || i.hostId !== row.hostId
             || reviewDigest(i.handoff) !== reviewDigest(binding(row)) || !await tx.decision(input.command, auth!.userId!, at)
             || Date.parse(i.validUntil) <= at.getTime()) return badAttempt(row, "approval_invalid");
-          if (row.command) return reviewDigest(row.command) === reviewDigest(input.command) ? status(row) : failed("approval_changed");
+          if (row.command) return reviewDigest(row.command) === reviewDigest(input.command) ? status(row,production) : failed("approval_changed");
           row.command = input.command; row.ownerId = auth!.userId!; row.ownerAuthTime = auth!.authenticatedAt!; row.state = "approved";
-          await tx.saveHandoff(row); await tx.handoffAudit(row, "approved"); return status(row);
+          await tx.saveHandoff(row); await tx.handoffAudit(row, "approved"); return status(row,production);
         }
         const proof = (action === "ack" ? handoffAck : handoffDeviceProof).parse(body) as HandoffDeviceProof;
         const row = await tx.handoff(proof.requestId);
@@ -132,8 +138,8 @@ export function createWorkerHandoffService(store?: WorkerHandoffStore, dependenc
         transport(row.origin, row.certificateFingerprint);
         await reconcile(row);
         if (!proofMatches(proof, row)) return badAttempt(row);
-        if (terminal(row)) return status(row);
-        if (action === "status") return status(row);
+        if (terminal(row)) return status(row,production);
+        if (action === "status") return status(row,production);
         if (action === "ack") {
           const ack = handoffAck.parse(body), key = row.credentialId && await tx.credential(row.credentialId);
           if (row.state !== "awaiting_ack" || !key || key.revokedAt || key.active || key.expiresAt! <= at || !await currentApproval(row)) {
@@ -144,14 +150,14 @@ export function createWorkerHandoffService(store?: WorkerHandoffStore, dependenc
           row.state = "acknowledged"; row.acknowledgedAt = at; await tx.saveHandoff(row);
           const active = await tx.activate(key, at);
           await tx.record(row.command!, row.ownerId!, reviewDigest({ input: row.command, actorId: row.ownerId }), active, at);
-          await tx.handoffAudit(row, "acknowledged"); return status(row);
+          await tx.handoffAudit(row, "acknowledged"); return status(row,production);
         }
-        if (row.spentAt) return status(row);
+        if (row.spentAt) return status(row,production);
         if (row.polls >= handoffPolicy.maxPolls) { await retire(row, "locked"); return failed("locked", 429); }
         row.polls++;
         if (row.nextPollAt && row.nextPollAt > at) { await tx.saveHandoff(row); return failed("rate_limited", 429); }
         row.nextPollAt = new Date(at.getTime() + handoffPolicy.pollIntervalMs); await tx.saveHandoff(row);
-        if (row.state !== "approved") return status(row);
+        if (row.state !== "approved") return status(row,production);
         if (!await currentApproval(row)) { await retire(row, "revoked"); return failed("approval_changed"); }
         const intent = row.command!.intent, old = await tx.latest(row.workspaceId, row.hostId);
         if (!workerCredentialGenerationMatches(old, intent)) return failed("generation_changed");
@@ -174,15 +180,16 @@ export function createWorkerHandoffService(store?: WorkerHandoffStore, dependenc
         row.ackDeadline = new Date(Math.min(at.getTime() + handoffPolicy.ackTtlMs, expiry));
         row.responseDigest = reviewDigest({ requestId: row.requestId, requestDigest: row.requestDigest,
           credential: safeWorkerCredential(candidate), ackDeadline: row.ackDeadline.toISOString() });
+        ackToken=handoffAckProof(hash,row.requestId,row.responseDigest);
         await tx.saveHandoff(row); await tx.handoffAudit(row, "delivered");
-        return { ...status(row), credential: safeWorkerCredential(candidate), responseDigest: row.responseDigest, ackDeadline: row.ackDeadline.toISOString() };
+        return { ...status(row,production), credential: safeWorkerCredential(candidate), responseDigest: row.responseDigest, ackDeadline: row.ackDeadline.toISOString() };
       });
       if (result.error) throw new WorkerCredentialError(result.error.code, result.error.status);
       // Only this invocation owns the ephemeral buffer. No read/replay can
       // recover it, including after a failed/lost post-commit delivery.
       if (raw) { const key = await delivery!.deliver(raw);
         if (typeof key !== "string" || key.length < 32 || key.length > 256 || key !== raw.toString()) deny("unavailable", 503);
-        return { ...result, key };
+        return { ...result, key, ackProof: ackToken };
       }
       return result;
     } catch (e) {
@@ -191,8 +198,8 @@ export function createWorkerHandoffService(store?: WorkerHandoffStore, dependenc
           const proof = (action === "ack" ? handoffAck : handoffDeviceProof).parse(body);
           const row = await store.readHandoff(proof.requestId);
           if (row) {
-            checkTransport(evidence, row.origin, row.certificateFingerprint);
-            if (proofMatches(proof, row) && row.spentAt) return status(row);
+            checkTransport(evidence, row.origin, row.certificateFingerprint, dependencies!.delivery.qualification);
+            if (proofMatches(proof, row) && row.spentAt) return status(row,dependencies!.delivery.qualification==="production_server_secret_v1");
           }
         } catch { /* Never expose database, proof or transport diagnostics. */ }
       }
