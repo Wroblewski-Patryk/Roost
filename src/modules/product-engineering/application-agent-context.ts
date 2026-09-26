@@ -44,17 +44,19 @@ function executionRecordSelection<T extends AgentContextRecord>(records: T[], qu
   const byId = new Map(records.map((record) => [record.id, record]));
   const selectedIds = new Set<string>();
   for (const candidate of records.slice().sort((left, right) => score(right) - score(left) || left.title.localeCompare(right.title))) {
-    if (selectedIds.size >= 72) break;
+    if (selectedIds.size >= 12) break;
     const chain: string[] = [];
     let current: T | undefined = candidate;
     while (current && !selectedIds.has(current.id)) {
       chain.push(current.id);
       current = current.parentId ? byId.get(current.parentId) : undefined;
     }
-    if (selectedIds.size + chain.length > 72) continue;
+    if (selectedIds.size + chain.length > 12) continue;
     chain.reverse().forEach((id) => selectedIds.add(id));
   }
-  const descriptionBudget = 60_000;
+  // Keep the selected records inside the Worker's sealed 128 KiB input cap.
+  // The full graph remains available in Roost; execution gets a ranked slice.
+  const descriptionBudget = 8_000;
   let usedDescriptionCharacters = 0;
   const selected = records
     .filter((record) => selectedIds.has(record.id))
@@ -138,6 +140,9 @@ export async function loadApplicationAgentContext(workspaceId: string, applicati
     : null;
   const executionApplication = executionProfile ? {
     ...application,
+    // Installation metadata can contain machine-local paths and transport
+    // configuration. The execution contract uses the repository relation.
+    metadata: undefined,
     architecture: undefined,
     technologies: undefined,
     interfaces: undefined,
