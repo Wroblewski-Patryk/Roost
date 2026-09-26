@@ -111,7 +111,7 @@ function executionRecordSelection<T extends AgentContextRecord>(records: T[], qu
 }
 
 
-export async function loadApplicationAgentContext(workspaceId: string, applicationId: string, executionProfile = false, contextQuery = "", db: Prisma.TransactionClient = prisma) {
+export async function loadApplicationAgentContext(workspaceId: string, applicationId: string, executionProfile = false, contextQuery = "", db: Prisma.TransactionClient = prisma, targetComponentId?: string) {
   const application = await db.application.findFirst({
     where: { id: applicationId, workspaceId: workspaceId },
     include: {
@@ -145,7 +145,12 @@ export async function loadApplicationAgentContext(workspaceId: string, applicati
     procedures: undefined,
     projects: undefined
   } : application;
-  const executionArchitecture = executionProfile ? application.architecture.map((component) => {
+  // A task-scoped execution receives its pinned component, rather than every
+  // historical architecture import (which may contain unrelated sensitive data).
+  const architectureSource = executionProfile && targetComponentId
+    ? application.architecture.filter(component => component.id === targetComponentId)
+    : application.architecture;
+  const executionArchitecture = executionProfile ? architectureSource.map((component) => {
     const metadata = component.metadata && typeof component.metadata === "object" && !Array.isArray(component.metadata) ? component.metadata as Record<string, unknown> : {};
     return {
       id: component.id,

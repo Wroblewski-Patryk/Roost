@@ -69,7 +69,7 @@ export async function prepareRiskScope(db: Db, workspaceId: string, taskId: stri
   const envelope = { id:taskId, taskId, workspaceId, applicationId:input.applicationId, attempt:1, metadata:{executionContract:input.contract}, prompt:input.prompt??null, baseBranch:input.baseBranch??null } as any;
   const authorities = await taskDecisionAuthorities(db, workspaceId, taskId);
   const context = await loadTaskAgentContext(workspaceId,taskId,envelope,watched.db,{authorId:userId,requestId:input.requestId},authorities);
-  const application = await loadApplicationAgentContext(workspaceId,input.applicationId,true,task.title,watched.db);
+  const application = await loadApplicationAgentContext(workspaceId,input.applicationId,true,task.title,watched.db,componentId);
   requireRuntimeContent({context,application},"task_risk.context",{workspaceId,taskId});
   await db.$executeRaw`INSERT INTO task_risk_heads(task_id) VALUES(${taskId}::uuid) ON CONFLICT DO NOTHING`;
   await watched.persist(taskId,true);
