@@ -614,7 +614,7 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
   let resumedExecution;
   try {
     if (pending[0]) classifyRecovery(pending[0], recovery.executionEnabled);
-    writerLock = await acquireLock({ recoveryCandidate: pending[0] });
+    writerLock = await acquireLock({ recoveryCandidate: pending[0], terminalCandidates: recovery.terminalPreSpawn });
     config = await validateAgentHostWorkspace(config);
     if (pending[0]) {
       if (!await waitForAdmission()) { retainWriterLock = true; return; }

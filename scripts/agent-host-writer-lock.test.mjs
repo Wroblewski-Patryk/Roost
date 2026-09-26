@@ -43,6 +43,23 @@ test("a dead owner is not automatically reclaimed", async (t) => {
   await assert.rejects(acquireWriterLock(directory), /agent_host_writer_locked/);
 });
 
+test("a terminal pre-spawn attempt releases only its exact dead-owner lock", { skip: process.platform !== "win32" }, async t => {
+  const directory = await fixture(t);
+  const candidate = { id: "00000000-0000-4000-8000-000000000001", workspaceId: "00000000-0000-4000-8000-000000000002",
+    taskId: "00000000-0000-4000-8000-000000000003", applicationId: "00000000-0000-4000-8000-000000000004",
+    agentHostId: "00000000-0000-4000-8000-000000000005", status: "failed", attempt: 1, checkpointVersion: 1,
+    leaseExpiresAt: null, completedAt: new Date().toISOString(), checkpoint: { schemaVersion: "roost-recovery-v1", stage: "claimed",
+      sessionId: null, packetRevision: null, workspaceDigest: null } };
+  const script = `import { acquireWriterLock } from './scripts/lib/agent-host-writer-lock.mjs'; const lock=await acquireWriterLock(${JSON.stringify(directory)}); await lock.checkpoint({...${JSON.stringify(candidate)},checkpoint:{...${JSON.stringify(candidate.checkpoint)},sessionId:lock.sessionId}});`;
+  const child = spawn(process.execPath, ["--input-type=module", "-e", script], { windowsHide: true, stdio: "ignore" });
+  assert.equal((await once(child, "close"))[0], 0);
+  const saved = JSON.parse(await readFile(path.join(directory, writerLockFilename), "utf8"));
+  candidate.checkpoint.sessionId = saved.checkpoint.sessionId;
+  await assert.rejects(acquireWriterLock(directory, { terminalCandidates: [{ ...candidate, checkpointVersion: 2 }] }), /agent_host_writer_locked/);
+  const next = await acquireWriterLock(directory, { terminalCandidates: [candidate] });
+  await next.release();
+});
+
 test("release does not delete a lock whose ownership changed", async (t) => {
   const directory = await fixture(t);
   const lock = await acquireWriterLock(directory);

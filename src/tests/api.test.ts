@@ -3535,6 +3535,14 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
   assert.equal(ownerExecution.status, "completed");
   assert.deepEqual(ownerExecution.changedFiles, ["src/app.ts"]);
   assert.ok(ownerExecution.events.some((event) => event.type === "completed"));
+  const terminalPreSpawn = await prisma.agentExecution.create({ data: { workspaceId: owner.workspace.id, taskId: task.id,
+    applicationId: application.id, agentHostId: originalHost.id, requestedByType: "user", status: "failed", attempt: 1,
+    completedAt: new Date(), checkpointVersion: 1, checkpoint: { schemaVersion: "roost-recovery-v1", stage: "claimed",
+      sessionId: randomUUID(), packetRevision: null, workspaceDigest: null } } });
+  const recoveryRead = await request("/v1/agent-runtime/recovery?hostSlug=test-windows", { headers: workerAuth });
+  assert.equal(recoveryRead.status, 200);
+  assert.deepEqual((recoveryRead.body as any).data.terminalPreSpawn.map((item: { id: string }) => item.id), [terminalPreSpawn.id]);
+  assert.equal(JSON.stringify(recoveryRead.body).includes("leaseToken"), false);
 
   const packetRoute = `/v1/company-intelligence/tasks/${task.id}/agent-context?executionId=${queued.id}`;
   assert.equal((await request(packetRoute)).status, 401);

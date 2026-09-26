@@ -401,7 +401,12 @@ agentRuntimeRouter.get("/recovery", asyncHandler(async (req, res) => {
   if (!host) return sendApiError(res, 404, "agent_host_not_found");
   if (protocolBlocked(req, res, host)) return;
   const executions = host ? await prisma.agentExecution.findMany({ where: { workspaceId: req.auth!.workspaceId, agentHostId: host.id, status: { in: ["queued", "claimed", "running", "waiting_for_approval"] } }, include: executionInclude, take: 3, orderBy: { createdAt: "asc" } }) : [];
-  res.json({ data: { executionEnabled: executionEnabled(), executions: executions.map(({ leaseToken: _leaseToken, ...execution }) => execution) } });
+  // A terminal pre-spawn attempt can leave a local lock if its failure reply
+  // was uncertain. Expose only exact checkpoint identity for bounded recovery.
+  const terminalPreSpawn = await prisma.agentExecution.findMany({ where: { workspaceId: req.auth!.workspaceId, agentHostId: host.id, status: { in: ["failed", "cancelled"] }, completedAt: { not: null }, leaseExpiresAt: null },
+    select: { id: true, workspaceId: true, taskId: true, applicationId: true, agentHostId: true, status: true, attempt: true, checkpoint: true, checkpointVersion: true, completedAt: true, leaseExpiresAt: true },
+    take: 20, orderBy: { completedAt: "desc" } });
+  res.json({ data: { executionEnabled: executionEnabled(), executions: executions.map(({ leaseToken: _leaseToken, ...execution }) => execution), terminalPreSpawn: terminalPreSpawn.filter(item => ["claimed", "prepared"].includes((item.checkpoint as any)?.stage)) } });
 }));
 
 agentRuntimeRouter.post("/executions/:id/checkpoint", asyncHandler(async (req, res) => {

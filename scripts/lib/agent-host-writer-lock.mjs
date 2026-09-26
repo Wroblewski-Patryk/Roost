@@ -1,5 +1,5 @@
 import { randomUUID, createHash } from "node:crypto";
-import { currentNativeProcessIdentity } from "./agent-host-process-identity.mjs";
+import { currentNativeProcessIdentity, observeWindowsProcessIdentity } from "./agent-host-process-identity.mjs";
 import { guardHostContent } from "./agent-host-redaction.mjs";
 import { lstat, mkdir, open, readFile, unlink } from "node:fs/promises";
 import path from "node:path";
@@ -61,6 +61,34 @@ async function reclaimBeforeSpawn(directory, candidate) {
   } finally { await gate.close(); await unlink(gatePath); }
 }
 
+async function reclaimTerminalBeforeSpawn(directory, candidates) {
+  const lockPath = path.join(directory, writerLockFilename);
+  const prior = await lstat(lockPath).catch(error => { if (error.code === "ENOENT") return null; throw error; });
+  if (!prior) return;
+  const gatePath = path.join(directory, recoveryLockFilename);
+  let gate;
+  try { gate = await open(gatePath, "wx", 0o600); } catch { throw new Error("agent_host_writer_locked"); }
+  try {
+    const stat = await lstat(lockPath);
+    if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1 || stat.size > 65536) throw new Error("agent_host_writer_locked");
+    const bytes = await readFile(lockPath, "utf8"), current = JSON.parse(bytes);
+    const checkpoint = current.checkpoint;
+    if (!Array.isArray(candidates) || !["claimed", "prepared"].includes(checkpoint?.stage)
+      || !current.ownerProcess || current.ownerProcess.pid !== current.ownerPid
+      || !/^[a-f0-9]{64}$/.test(current.ownerProcess.executableDigest ?? "")
+      || !/^[a-f0-9]{64}$/.test(current.ownerProcess.executablePathDigest ?? "")
+      || !/^\d{16,20}$/.test(current.ownerProcess.creationTime ?? "")) throw new Error("agent_host_writer_locked");
+    const candidate = candidates.find(item => item?.id === checkpoint.executionId && item?.agentHostId
+      && ["failed", "cancelled"].includes(item.status) && item.leaseExpiresAt === null
+      && Number.isInteger(item.checkpointVersion) && item.checkpointVersion >= 1
+      && Number.isFinite(Date.parse(item.completedAt))
+      && JSON.stringify(localCheckpoint(item)) === JSON.stringify(checkpoint));
+    if (!candidate || observeWindowsProcessIdentity(current.ownerPid) !== null) throw new Error("agent_host_writer_locked");
+    if (await readFile(lockPath, "utf8") !== bytes) throw new Error("agent_host_writer_locked");
+    await unlink(lockPath);
+  } finally { await gate.close(); await unlink(gatePath); }
+}
+
 export function localCheckpoint(execution) {
   const checkpoint = execution?.checkpoint;
   return { schemaVersion: checkpoint?.schemaVersion, executionId: execution?.id, workspaceId: execution?.workspaceId,
@@ -69,13 +97,14 @@ export function localCheckpoint(execution) {
     packetRevision: checkpoint?.packetRevision, workspaceDigest: checkpoint?.workspaceDigest, contextRevision: checkpoint?.contextRevision };
 }
 
-export async function acquireWriterLock(directory = writerStateDirectory, { recoveryCandidate } = {}) {
+export async function acquireWriterLock(directory = writerStateDirectory, { recoveryCandidate, terminalCandidates } = {}) {
   await mkdir(directory, { recursive: false }).catch((error) => { if (error.code !== "EEXIST") throw error; });
   const stat = await lstat(directory);
   if (!stat.isDirectory() || stat.isSymbolicLink()) throw new Error("agent_host_state_directory_invalid");
   const lockPath = path.join(directory, writerLockFilename);
   if (await lstat(path.join(directory, recoveryLockFilename)).catch((error) => { if (error.code !== "ENOENT") throw error; return null; })) throw new Error("agent_host_writer_locked");
   if (recoveryCandidate) await reclaimBeforeSpawn(directory, recoveryCandidate);
+  else if (terminalCandidates) await reclaimTerminalBeforeSpawn(directory, terminalCandidates);
   const ownerNonce = randomUUID();
   let file;
   try {
