@@ -58,33 +58,39 @@ PostgreSQL/Prisma persistence, Express API, React owner console, workspace
 boundaries, API/MCP surfaces, provider adapters, task/context/review primitives,
 Windows Worker foundations and Hermes qualification evidence.
 
-The latest completed bootstrap work is:
+Gate 1 is in progress. Commit `392dd91c` added the native Prisma v3 issuance
+path, forward-only catalog correction, production HTTPS Worker credential
+handoff and managed Hermes admission. Commit `bb0aeb87` fixes initial managed
+Worker admission against verified repository paths. Migrations 87 and 88 are
+applied in production. A disposable native database qualified all v3 issuance
+phases, real signing and verification, committed readback and the normal owner
+Decision API. The production deployment passed build identity, migration and
+public health readback. A production HTTPS handoff request reached the route and
+was rejected at input validation as expected. These facts do not prove a real
+agent round trip. The production installation still needs its owner-provisioned
+public key anchor, accepted task and Worker credential; the local Hermes profile
+still needs the owner's OAuth login. Production execution remains disabled and
+the Windows Worker remains in observe mode.
 
-- `bbb758ce` — source-only v3 issuance contract;
-- `091a6f8e` — exact v3 source projection lineage;
-- `5d3de878` — source-only migration 87 SQL backend and catalog guards.
-
-For `5d3de878`, 254 selected source/mocked tests, server build, lint and catalog
-pin checks passed. Migration 87 is still unapplied and native-unqualified. Its
-Prisma transaction/authority/projection/issuance integration is absent.
-
-These commits are foundations, not a working agent runtime. At this starting
-point:
+Current capability truth:
 
 | Capability | Current truth |
 | --- | --- |
 | Accepted task starts a real managed agent | Not working |
-| Roost and the Windows Worker exchange a production-authorized task | Partial foundations only |
-| Worker starts managed Hermes | Not working |
-| Hermes routes explicitly to approved Codex or local Ollama | Source/manual evidence only; not a managed Roost run |
-| Result and evidence return to Roost | Partial data/API foundations; no complete real run |
+| Roost and the Windows Worker exchange a production-authorized task | Production HTTPS handoff deployed; no active Gate 1 Worker credential or claim yet |
+| Worker starts managed Hermes | Native launch path implemented and tested; no authenticated real run yet |
+| Hermes routes explicitly to approved Codex or local Ollama | Explicit low-risk Codex selection implemented; no managed model invocation yet |
+| Result and evidence return to Roost | Reporting path implemented; no complete real run |
 | Independent review and release execute | Partial contracts; no complete orchestration |
 | Commit, push, deployment, health proof and rollback execute as one flow | Not working |
 | Pilot application is repaired through that flow | Not started |
 
 All public readiness, execution, pilot and live-admission flags remain false.
-Production and the configured pilot application have not been changed by the
-latest bootstrap commits.
+Production code and schema have changed; the configured pilot application has
+not been changed by Gate 1. Gate 1 remains open until the intended Worker claims
+an accepted low-risk task, managed Hermes runs it and Roost records heartbeats,
+terminal result and bounded evidence, with safe cancellation and lease-loss
+behavior demonstrated.
 
 ## End-to-end delivery gates
 
