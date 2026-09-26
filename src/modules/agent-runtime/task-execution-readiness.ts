@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
-import { requireRuntimeContent } from "./runtime-redaction-policy";
+import { redactionPolicy, requireRuntimeContent, runtimeSecrets } from "./runtime-redaction-policy";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { Prisma, type AgentExecution } from "@prisma/client";
@@ -251,6 +251,14 @@ export async function readyEditorData(db: Prisma.TransactionClient, workspaceId:
       principalKey: item.type === "agent" && item.source !== "user" ? `agent:${item.id}` : membership ? `user:${membership.userId}` : null,
       eligible: Boolean(item.role?.trim() && (item.type === "agent" && item.source !== "user" || membership && ["owner", "admin", "member"].includes(membership.role))) };
   });
+  // Legacy architecture imports may contain credentials in a component name.
+  // Keep those names out of the owner editor while the final response boundary
+  // continues to inspect every field that is returned.
+  const secrets = runtimeSecrets();
+  const safeComponents = components.filter(item => {
+    const checked = redactionPolicy.sanitize(item.name, { mode: "required", secrets });
+    return !checked.blocked && !checked.redacted;
+  });
   return {
     roleCatalog, roleCatalogTruncated: roleWorkers.length > 500,
     requester: requester ? { id: requester.userId, label: requester.user.name ?? "—", revision: requester.updatedAt.toISOString() } : null,
@@ -259,7 +267,8 @@ export async function readyEditorData(db: Prisma.TransactionClient, workspaceId:
     submissionVersion: await submissionVersion(db, workspaceId, taskId, selected, context),
     taskIdentity: { contractId: `roost-task:${taskId}`, branch: `codex/task-${taskId}` },
     managers: managers.map(item => ({ id: item.id, label: item.name, revision: item.updatedAt.toISOString() })),
-    components: components.map(item => ({ id: item.id, label: item.name, revision: item.updatedAt.toISOString() })),
+    components: safeComponents.map(item => ({ id: item.id, label: item.name, revision: item.updatedAt.toISOString() })),
+    hiddenSensitiveComponents: components.length - safeComponents.length,
     task: { id: task.id, title: task.title, status: task.status, project: task.project ? { id: task.project.id, name: task.project.name } : null, goal: task.goal ? { id: task.goal.id, title: task.goal.title } : null },
     agent: agent ? { id: agent.id, name: agent.name, role: agent.role, eligible: agent.type === "agent" && agent.status === "active", competencies: strings(agent.skillIndex), tools: strings(agent.toolIndex).filter(item => ["repository_read", "repository_write", "local_test", "local_commit", "remote_push", "deployment"].includes(item)), permissions: strings(agent.authorityScope).filter(item => ["repository_read", "repository_write", "local_test", "local_commit", "remote_push", "deployment"].includes(item)) } : null,
     applications, projects, goals, agents, applicationId: selected, activeExecution: active > 0, catalogTruncated: records.length > 500,
