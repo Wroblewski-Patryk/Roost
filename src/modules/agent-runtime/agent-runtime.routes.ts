@@ -18,7 +18,7 @@ import { capabilitySuspensionRouter, suspensionBlocks } from "./capability-suspe
 import { taskCapabilityView, issueTaskCapability, revokeTaskCapability } from "./task-capability";
 import { isDeepStrictEqual } from "node:util";
 import { taskReviewView, recordTaskReview, actOnTaskReview } from "./task-review";
-import { inspectReady, lockReadyTask, readyTransaction, submitReady, readyEditorData } from "./task-execution-readiness";
+import { inspectReady, lockReadyTask, readyTransaction, submitReady, readyEditorData, submissionVersion } from "./task-execution-readiness";
 import { taskRiskView, prepareRiskScope, recordRiskAssessment } from "./task-risk";
 import { acknowledgeContextStop, contextStopCode, guardExecutionContext } from "./execution-context-stop";
 import { requireWorkspaceRole, roleAtLeast } from "../../auth/workspace-access";
@@ -370,6 +370,19 @@ agentRuntimeRouter.post("/tasks/:id/actions/submit-for-execution", asyncHandler(
 
 agentRuntimeRouter.get("/tasks/:id/execution-readiness", asyncHandler(async (req, res) => {
   const taskId = z.string().uuid().parse(req.params.id);
+  if (req.query.version === "1") {
+    const applicationId = z.string().uuid().parse(req.query.applicationId);
+    const result = await readyTransaction(async tx => {
+      const task = await tx.task.findFirst({ where: { id: taskId, workspaceId: req.auth!.workspaceId }, select: { projectId: true } });
+      if (!task) return { error: "task_not_found" };
+      const application = await tx.application.findFirst({ where: { id: applicationId, workspaceId: req.auth!.workspaceId,
+        projects: { some: { projectId: task.projectId ?? "00000000-0000-0000-0000-000000000000" } } }, select: { id: true } });
+      if (!application) return { error: "application_not_found" };
+      return { applicationId, submissionVersion: await submissionVersion(tx, req.auth!.workspaceId, taskId, applicationId) };
+    });
+    if ("error" in result) return sendApiError(res, result.error?.endsWith("not_found") ? 404 : 409, result.error!);
+    return res.json({ data: result });
+  }
   const result = await readyTransaction(async tx => {
     const ready = await inspectReady(tx, req.auth!.workspaceId, taskId);
     if (ready.error === "task_not_found" || req.query.editor !== "1") return ready;

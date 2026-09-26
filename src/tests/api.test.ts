@@ -1561,6 +1561,9 @@ test("versioned procedure composition preserves exact contracts and fails closed
  await t.test("Ready and queued execution keep old versions across publication; withdrawal fences them",async()=>{
   await refreshCompositionRisk(task.id,auth);await prepareAdmissionFixture(root+"/risk-admission",f.input,auth);
   const editor=((await request(root+`/execution-readiness?editor=1&applicationId=${app.id}`,{headers:auth})).body as any).data.editor;
+  const narrow=await request(root+`/execution-readiness?version=1&applicationId=${app.id}`,{headers:auth});
+  assert.equal(narrow.status,200,JSON.stringify(narrow.body));
+  assert.deepEqual((narrow.body as any).data,{applicationId:app.id,submissionVersion:editor.submissionVersion});
   const accepted=await post(root+"/actions/submit-for-execution",{...f.input,requestId:randomUUID(),expectedVersion:editor.submissionVersion});assert.equal(accepted.status,200,JSON.stringify(accepted.body));
   const pin=(await prisma.task.findUniqueOrThrow({where:{id:task.id}})).executionReadiness as any;
   const previousEnabled=process.env.ROOST_CODEX_EXECUTION_ENABLED;let queued;
