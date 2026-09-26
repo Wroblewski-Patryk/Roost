@@ -44,11 +44,13 @@ export async function flushRuntimeIncidents(state: RedactionState) {
 }
 function project(body: any, all: boolean, state: RedactionState, allowLease: boolean) {
   if (all) {
-    const lease = allowLease ? body?.data?.leaseToken : undefined;
-    const source = lease ? { ...body, data: { ...body.data, leaseToken: null } } : body;
+    // A lease belongs only to claim/recover responses. Other native reads must
+    // omit it before diagnostic redaction, without manufacturing an incident.
+    const lease = body?.data?.leaseToken;
+    const source = typeof lease === "string" ? { ...body, data: { ...body.data, leaseToken: null } } : body;
     const result = inspectRuntime(source, "read.native");
     const value = result.value;
-    if (lease && value?.data) value.data.leaseToken = lease;
+    if (allowLease && typeof lease === "string" && value?.data) value.data.leaseToken = lease;
     if (result.redacted && value?.data && !Array.isArray(value.data)) value.data.redaction = { policy: redactionPolicy.POLICY, redacted: true };
     return value;
   }

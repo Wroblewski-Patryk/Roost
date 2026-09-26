@@ -3463,7 +3463,8 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
   assert.equal((disabledQueue.body as { error: string }).error, "agent_execution_disabled");
   process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
 
-  await prepareReadyFixture(owner.workspace.id, task.id, application.id, ownerAuth);
+  const unrelatedComponent = await prisma.applicationArchitectureComponent.create({ data: { applicationId: application.id, type: "backend", name: "Unselected legacy component", description: "api_key=synthetic-unselected-credential" } });
+  const readyFixture = await prepareReadyFixture(owner.workspace.id, task.id, application.id, ownerAuth);
   const queueResponse = await request("/v1/agent-runtime/executions", {
     method: "POST",
     headers: ownerAuth,
@@ -3490,6 +3491,11 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
   assert.equal(claimed.id, queued.id);
   assert.equal(claimed.status, "claimed");
   assert.ok(claimed.leaseToken);
+  const incidentCountBeforeOwnerRead = await prisma.companyRecord.count({ where: { workspaceId: owner.workspace.id, source: "runtime_redaction_v1" } });
+  const ownerClaimed = await request(`/v1/agent-runtime/executions/${claimed.id}`, { headers: ownerAuth });
+  assert.equal(ownerClaimed.status, 200);
+  assert.equal((ownerClaimed.body as any).data.leaseToken, null);
+  assert.equal(await prisma.companyRecord.count({ where: { workspaceId: owner.workspace.id, source: "runtime_redaction_v1" } }), incidentCountBeforeOwnerRead);
   assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).status, "in_progress");
   const acceptedMetadata = (await prisma.agentExecution.findUniqueOrThrow({ where: { id: queued.id } })).metadata as { readyContextPin: unknown; executionContract: unknown };
 
@@ -3536,6 +3542,13 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
   assert.equal((await request(`/v1/company-intelligence/tasks/${task.id}/agent-context?executionId=invalid`, { headers: workerAuth })).status, 400);
   const packetRead = await request(packetRoute, { headers: workerAuth });
   assert.equal(packetRead.status, 200);
+  const applicationContextRoute = `/v1/product-engineering/applications/${application.id}/agent-context?profile=execution&executionId=${queued.id}`;
+  assert.equal((await request(`/v1/product-engineering/applications/${application.id}/agent-context?profile=execution&executionId=invalid`, { headers: workerAuth })).status, 400);
+  const scopedApplicationContext = await request(applicationContextRoute, { headers: workerAuth });
+  assert.equal(scopedApplicationContext.status, 200);
+  assert.deepEqual((scopedApplicationContext.body as any).data.architecture.map((component: { id: string }) => component.id), [readyFixture.component.id]);
+  assert.equal(JSON.stringify(scopedApplicationContext.body).includes(unrelatedComponent.name), false);
+  assert.equal(JSON.stringify(scopedApplicationContext.body).includes("synthetic-unselected-credential"), false);
   const prepared = (packetRead.body as { data: { executionPacket: { schemaVersion: string; revision: string; identity: { executionId: string; workspaceId: string; taskId: string }; contract: unknown } } }).data.executionPacket;
   assert.equal(prepared.schemaVersion, "roost-execution-packet-v1");
   assert.equal(prepared.identity.executionId, queued.id);
