@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import test from 'node:test';
-import { productionOrigin, validateHandoffBinding, runHandoff } from './lib/agent-host-handoff-client.mjs';
+import { productionOrigin, validateHandoffBinding, runHandoff, pinnedIpv4Lookup } from './lib/agent-host-handoff-client.mjs';
 
 const binding = Object.freeze({ schemaVersion: 'roost-worker-handoff-client-v1', origin: 'https://api.fictional-roost.net:443',
   hostSlug: 'example-worker', workspaceId: '00000000-0000-4000-8000-000000000001',
@@ -14,6 +14,15 @@ const canonical = (value) => Array.isArray(value) ? value.map(canonical) : value
 const review = (value) => hash(JSON.stringify(canonical(value)));
 const status = (requestId, state, deliverySpent = false) => ({ requestId, state, deliverySpent,
   qualification: 'production_https_v1', transportQualified: true, realProvisioningQualified: true, launchAuthority: false });
+
+test('pinned IPv4 lookup supports both Node socket lookup result shapes', async () => {
+  const lookup = pinnedIpv4Lookup('8.8.8.8');
+  const one = await new Promise((resolve, reject) => lookup('worker.example.test', {}, (error, address, family) => error ? reject(error) : resolve({ address, family })));
+  const all = await new Promise((resolve, reject) => lookup('worker.example.test', { all: true }, (error, addresses) => error ? reject(error) : resolve(addresses)));
+  assert.deepEqual(one, { address: '8.8.8.8', family: 4 });
+  assert.deepEqual(all, [{ address: '8.8.8.8', family: 4 }]);
+  assert.throws(() => pinnedIpv4Lookup('127.0.0.1'), /worker_handoff_dns_invalid/);
+});
 
 function exchangeFixture({ badCredentialHost = false } = {}) {
   const calls = [];

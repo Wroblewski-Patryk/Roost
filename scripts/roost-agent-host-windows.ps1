@@ -15,7 +15,9 @@ $launcherPath = Join-Path $stateDirectory 'roost-agent-host-launcher.exe'
 
 function Stop-RoostObserver {
   [IO.File]::WriteAllText($stopPath, 'stop')
-  for ($attempt = 0; $attempt -lt 30; $attempt++) {
+  # A supervised start may be finishing its bounded 60-second native Hermes
+  # inventory check before it observes the stop request.
+  for ($attempt = 0; $attempt -lt 90; $attempt++) {
     if ((Get-ScheduledTask -TaskName $taskName).State -ne 'Running') { return }
     Start-Sleep -Milliseconds 1000
   }

@@ -5,6 +5,7 @@ import { lstat, realpath, readFile, readdir, writeFile, unlink } from "node:fs/p
 import { spawn } from "node:child_process";
 import { terminateWindowsProcessTree } from "./agent-host-execution-lease.mjs";
 import contract from "./agent-host-provider-contract.cjs";
+import { verifyHermesSmokeInstallation } from "./agent-host-hermes-smoke-installation.mjs";
 
 const pin = contract.registry.providers.find(p => p.kind === "hermes_codex");
 const sha = value => createHash("sha256").update(value).digest("hex");
@@ -106,12 +107,18 @@ export async function attestHermes(input, { runVersion = runVersionProbe, verify
     // Its timestamp stays unchanged. A restart or standalone checker obtains fresh proof.
     if (useCache && cached) return structuredClone(cached.result);
     const manifest = JSON.parse(bytes);
-    if (manifest.schemaVersion !== 1 || manifest.source !== pin.officialSource || manifest.version !== pin.version
+    if (![1, 2].includes(manifest.schemaVersion) || manifest.source !== pin.officialSource || manifest.version !== pin.version
       || manifest.commit !== pin.commit || manifest.release !== pin.release || manifest.signature !== "unsigned"
       || manifest.executable !== input.executablePath || !Array.isArray(manifest.roots) || manifest.roots.length !== 2) fail("hermes_attestation_invalid");
     const [checkout, python] = manifest.roots;
     if (checkout.kind !== "checkout" || python.kind !== "pythonBase"
       || input.executablePath !== path.win32.join(checkout.path, "venv", "Scripts", "hermes.exe")) fail("hermes_attestation_invalid");
+    if (manifest.schemaVersion === 2) {
+      const attestationPath = path.join(path.dirname(attestation.manifestPath), "roost-installation-attestation.json");
+      const receipt = await verifyHermesSmokeInstallation({ attestationPath, manifestPath: attestation.manifestPath });
+      if (receipt.manifestDigest !== attestation.sha256 || receipt.version !== pin.version
+        || receipt.executableDigest !== sha(await readFile(input.executablePath))) fail("hermes_integrity_mismatch");
+    } else {
     const integrityDeadline = AbortSignal.timeout(60000);
     for (const root of manifest.roots) {
       await canonical(root.path, true);
@@ -142,6 +149,7 @@ export async function attestHermes(input, { runVersion = runVersionProbe, verify
     const binding = path.win32.join(checkout.path, "venv", "Scripts", "python.exe").toLowerCase();
     const bindings = [...launcher.toString("latin1").matchAll(/#!([^\r\n]+)/g)];
     if (bindings.length !== 1 || bindings[0][1].replace(/^"|"$/g, "").toLowerCase() !== binding) fail("hermes_integrity_mismatch");
+    }
     await verifyProbe(manifest.probeDirectory);
     const result = await runVersion(input.executablePath, { cwd: checkout.path, env: versionProbeEnvironment(manifest.probeDirectory) });
     if (result.code) {

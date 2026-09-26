@@ -1,11 +1,12 @@
 import type {AttestationDb as Db} from './decision-attestation-sql';
 import {proofEqual,denyProof} from './bootstrap-proof-key-contract';
 import {v3UpgradePins} from './bootstrap-v3-backend-pins';
-import {v3CatalogV2Manifest} from './bootstrap-v3-catalog-v2-pins';
+import {v3CatalogV3Manifest,v3HostGuardHash} from './bootstrap-v3-catalog-v3-pins';
 
 type Pin={hash:string;function?:string;name?:string};
 export function v3Pinned<T extends Pin>(pin:T,upgraded:boolean):T {
  const name=pin.function??pin.name;
+ if(upgraded&&name==='worker_identity_host_anchor_guard')return {...pin,hash:v3HostGuardHash};
  const version=name&&Object.hasOwn(v3UpgradePins,name)?v3UpgradePins[name as keyof typeof v3UpgradePins]:null;
  return upgraded&&version?{...pin,hash:version.hash}:pin;
 }
@@ -14,7 +15,7 @@ export function v3Pinned<T extends Pin>(pin:T,upgraded:boolean):T {
 // Legacy readers recognize a new hash only after validating the ENTIRE native
 // catalog and its immutable migration manifest on the same supplied Db.
 export async function requireV3BackendCatalog(db:Db){
- const expected=v3CatalogV2Manifest.functions;
+ const expected=v3CatalogV3Manifest.functions;
  const functions=await db.$queryRaw<any[]>`/* v3 backend functions */ SELECT p.proname AS name,pg_get_function_identity_arguments(p.oid) AS args,
   p.prorettype::regtype::text AS result,l.lanname AS language,p.provolatile::text AS volatility,pg_get_expr(p.proargdefaults,0) AS defaults,
   encode(sha256(convert_to(replace(p.prosrc,chr(13),''),'UTF8')),'hex') AS hash,
@@ -24,8 +25,8 @@ export async function requireV3BackendCatalog(db:Db){
  if(functions.length!==expected.length||byName.size!==functions.length||!expected.every(e=>{
   const actual=byName.get(e.name);return actual?.enabled===true&&proofEqual(e,actual.row);
  }))denyProof();
- const manifest=await db.$queryRaw<any[]>`/* v3 backend manifest */ SELECT id,record FROM bootstrap_v3_catalog_manifest_v2`;
- if(manifest.length!==1||manifest[0].id!==true||!proofEqual(manifest[0].record,v3CatalogV2Manifest))denyProof();
+ const manifest=await db.$queryRaw<any[]>`/* v3 backend manifest */ SELECT id,record FROM bootstrap_v3_catalog_manifest_v3`;
+ if(manifest.length!==1||manifest[0].id!==true||!proofEqual(manifest[0].record,v3CatalogV3Manifest))denyProof();
  // Function source and manifest have already been checked independently.
  // The pinned SQL now checks trigger/FK/schema attributes, extra source triggers
  // and its complete function closure, including its own function definition.

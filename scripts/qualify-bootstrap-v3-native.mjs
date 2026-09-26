@@ -1,5 +1,5 @@
 /**
- * Gate 1 migrations 87-88 qualification on one uniquely owned disposable database.
+ * Gate 1 migrations 87-89 qualification on one uniquely owned disposable database.
  * Run: node --import tsx scripts/qualify-bootstrap-v3-native.mjs
  * The existing Compose postgres must already be running. No container is started
  * or stopped, and no existing database is reset.
@@ -22,8 +22,8 @@ const marker=`worker-identity-native:${token}`;
 const migrationNames=readdirSync('prisma/migrations',{withFileTypes:true})
  .filter(x=>x.isDirectory()&&/^\d/.test(x.name)).map(x=>x.name).sort();
 const migrationHashes=migrationNames.map(n=>createHash('sha256').update(readFileSync(`prisma/migrations/${n}/migration.sql`)).digest('hex'));
-assert.equal(migrationNames.length,88,'Expected the unchanged 88-migration chain');
-assert.equal(migrationNames.at(-1),'20260926010000_bootstrap_v3_catalog_correction');
+assert.equal(migrationNames.length,89,'Expected the 89-migration Gate 1 chain');
+assert.equal(migrationNames.at(-1),'20260927010000_agent_host_runtime_declaration');
 
 function run(command,args,{env=process.env,timeout=120000}={}){
  const r=spawnSync(command,args,{env,encoding:'utf8',windowsHide:true,timeout,maxBuffer:32*1024*1024});
@@ -74,7 +74,7 @@ try{
 
  client=new PrismaClient({datasources:{db:{url:databaseUrl}}});await client.$connect();
  const [inventory]=await client.$queryRawUnsafe('SELECT count(*)::int AS total,count(*) FILTER (WHERE finished_at IS NOT NULL AND rolled_back_at IS NULL)::int AS finished FROM _prisma_migrations');
- assert.equal(inventory.total,88);assert.equal(inventory.finished,88);
+ assert.equal(inventory.total,89);assert.equal(inventory.finished,89);
  const installed=await client.$queryRawUnsafe('SELECT migration_name FROM _prisma_migrations ORDER BY started_at,migration_name');
  assert.deepEqual(installed.map(x=>x.migration_name).sort(),migrationNames);
  console.log(JSON.stringify({phase:'prisma_status_verified',migrationRows:inventory.finished}));
@@ -82,7 +82,7 @@ try{
   await tx.$executeRawUnsafe('SET TRANSACTION READ ONLY');
   await tx.$executeRawUnsafe('SET LOCAL search_path = pg_catalog, public');
   const mismatches=await tx.$queryRawUnsafe(`WITH pins AS (
-   SELECT value AS expected FROM bootstrap_v3_catalog_manifest_v2, jsonb_array_elements(record->'functions')
+   SELECT value AS expected FROM bootstrap_v3_catalog_manifest_v3, jsonb_array_elements(record->'functions')
   ), live AS (
    SELECT p.proname AS name,jsonb_build_object('name',p.proname,'args',pg_get_function_identity_arguments(p.oid),
     'result',p.prorettype::regtype::text,'language',l.lanname,'volatility',p.provolatile::text,
@@ -101,7 +101,7 @@ try{
  },{isolationLevel:'RepeatableRead',timeout:90000});
  console.log(JSON.stringify({phase:'catalog_verified',prismaStatusExitCode:status.status,migrationRows:inventory.finished,v3CatalogPinned:true}));
 
- // Exercise an older native writer with real PostgreSQL guards after migration 88.
+ // Exercise an older native writer with real PostgreSQL guards after migration 89.
  // The fixture contains only public synthetic key material and no signer.
  const fixture=await proofNativeFixture(client);
  const command=await fixture.command();

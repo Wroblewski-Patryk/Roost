@@ -3,7 +3,7 @@ import { inspectExecutionProvider, providerAdmissionReason } from "./lib/agent-h
 import lifecycle from "./lib/agent-host-lifecycle.cjs";
 import { spawn } from "node:child_process";
 import { guardHostContent, hostTransport, boundedRunnerLines, readHostResponse } from "./lib/agent-host-redaction.mjs";
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -67,6 +67,13 @@ const codexCommand = String(config.codexCommand || "codex");
 const sandbox = String(config.sandbox || "workspace-write");
 let stopping = false;
 let shutdownRequested = false;
+if (config.executionMode === "supervised") {
+  const stopPath = path.join(path.dirname(path.resolve(configPath)), "stop.request");
+  const stopPoll = setInterval(() => {
+    void access(stopPath).then(() => { stopping = true; shutdownRequested = true; }, () => {});
+  }, 500);
+  stopPoll.unref();
+}
 let protocolHalted = false;
 let retainWriterLock = false;
 let registeredHost = null;
@@ -109,12 +116,16 @@ async function refreshAdmission(freshAttestation = false) {
 }
 
 async function waitForAdmission(holdForReconciliation = false) {
-  let lastReason;
+  let lastReason, lastDiagnostic;
   while (!shutdownRequested) {
     let reason;
     try { reason = await refreshAdmission(); }
     catch (error) {
       if ([401, 403, 404, 409, 422].includes(error.status)) throw error;
+      const diagnostic = typeof error?.message === "string" && /^[a-z][a-z0-9_]{2,80}$/.test(error.message)
+        ? error.message : Number.isInteger(error?.status) ? `http_${error.status}` : "transport_or_local";
+      if (diagnostic !== lastDiagnostic) process.stderr.write(`Agent Host admission diagnostic: ${diagnostic}\n`);
+      lastDiagnostic = diagnostic;
       reason = "api_unavailable";
     }
     if (holdForReconciliation) reason = "execution_reconciliation_required";

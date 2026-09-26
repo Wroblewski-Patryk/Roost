@@ -38,6 +38,14 @@ const equalDigest = (a, b) => digest.test(a || '') && digest.test(b || '')
   && timingSafeEqual(Buffer.from(a, 'hex'), Buffer.from(b, 'hex'));
 const peerAddress = (value) => isIP(value) === 4 && !blocked.check(value, 'ipv4');
 
+export function pinnedIpv4Lookup(address) {
+  if (!peerAddress(address)) fail('dns_invalid');
+  return (_hostname, options, callback) => {
+    if (options?.all) callback(null, [{ address, family: 4 }]);
+    else callback(null, address, 4);
+  };
+}
+
 export function productionOrigin(value) {
   const match = typeof value === 'string' && /^https:\/\/([a-z0-9](?:[a-z0-9.-]*[a-z0-9])?):([1-9][0-9]{0,4})$/.exec(value);
   if (!match || Number(match[2]) > 65535 || isIP(match[1]) || !match[1].includes('.')
@@ -130,7 +138,7 @@ export async function productionHandoffExchange(binding, action, body) {
     const req = https.request({ protocol: 'https:', hostname: url.hostname, servername: url.hostname,
       port: Number(url.port || '443'), path: paths[action], method: 'POST',
       agent: false, rejectUnauthorized: true, minVersion: 'TLSv1.2', timeout: 10000,
-      lookup: (_hostname, options, callback) => callback(null, address, 4),
+      lookup: pinnedIpv4Lookup(address),
       checkServerIdentity: (name, certificate) => {
         const ordinary = checkServerIdentity(name, certificate);
         if (ordinary) return ordinary;
