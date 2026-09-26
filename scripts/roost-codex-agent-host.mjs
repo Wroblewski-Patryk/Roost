@@ -579,6 +579,12 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
   providerAdmission = providerAdmissionForTest;
   // Observe never enters recovery, writer locking, claim, or execution code.
   if (config.executionMode === "observe") return runObserver({ config, api, stopped: () => stopping });
+  // Managed Hermes admission inspects its private profile against each canonical
+  // checkout. Resolve and verify the configured repositories before the first
+  // admission heartbeat; otherwise a valid installation remains permanently
+  // blocked because the raw config has only directory names, not checked paths.
+  if (config.executionProvider?.kind === "hermes_codex" && config.executionProvider.enabled === true
+      && config.executionProvider.profile) config = await validateAgentHostWorkspace(config);
   if (!await waitForAdmission()) return;
   let recovery;
   try { recovery = await api(`/v1/agent-runtime/recovery?hostSlug=${encodeURIComponent(host.slug)}`); }
