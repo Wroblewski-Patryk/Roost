@@ -49,6 +49,7 @@ if (!existsSync(implementationPath)) {
     "## Execution ownership",
     "## Current verified state",
     "## End-to-end delivery gates",
+    "## Gate authorization boundary",
     "## True owner dependencies",
     "## Completion evidence",
   ];

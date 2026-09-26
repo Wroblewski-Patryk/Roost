@@ -30,7 +30,7 @@ execution state outside this repository.
 
 ## Delivery behavior
 
-- One implementation owner carries the current outcome in
+- One implementation owner carries the currently authorized gate in
   `docs/implementation.md` through coding, integration, verification and the
   required demonstration. Internal substeps and multiple reviewable commits
   are allowed; they are not handoff boundaries.
@@ -51,6 +51,11 @@ execution state outside this repository.
   before reporting that dependency and ask one concrete question.
 - Report progress at the end-to-end gates defined in `docs/implementation.md`,
   not by counting internal atoms, contracts or files.
+- One user task authorizes exactly one delivery gate unless the user explicitly
+  names a wider range. Complete that gate autonomously, record its evidence and
+  stop at its boundary. Never begin the next gate merely because context,
+  time or account usage remains; the owner checks available usage and issues a
+  new task before the next gate starts.
 
 ## Codex orchestration
 
@@ -70,6 +75,9 @@ execution state outside this repository.
   component checks and the native or production proof required by that gate.
   A source file, passing mock, commit or subagent statement alone is never
   completion evidence.
+- At a completed gate boundary, leave the repository recoverable and clean when
+  the task authorizes commits. Push or deploy only when the current gate and
+  user authority require it. Report the next gate without starting it.
 
 ## Project boundaries
 

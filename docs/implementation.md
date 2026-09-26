@@ -26,10 +26,12 @@ credentials remain private configuration rather than repository defaults.
 
 ## Execution ownership
 
-One implementation owner carries this objective through all gates below. The
-owner may plan substeps, modify several components and create multiple
-reviewable commits, but does not hand the work back merely because an adapter,
-migration, test fixture or technical contract is complete.
+One implementation owner carries the currently authorized gate through its
+complete result. The owner may plan substeps, modify several components and
+create multiple reviewable commits, but does not hand the work back merely
+because an adapter, migration, test fixture or technical contract is complete.
+The same owner may continue later, but authorization for one gate never implies
+authorization to start the next gate.
 
 Codex work in this repository uses the `roost-runtime-delivery` repository
 skill, the orchestration rules in `AGENTS.md` and the deterministic
@@ -86,9 +88,24 @@ latest bootstrap commits.
 
 ## End-to-end delivery gates
 
-These gates are outcomes, not separate implementation owners. Continue from one
-gate to the next without requesting permission for ordinary reversible
-technical work.
+These gates are outcome-sized delivery boundaries, not internal technical
+atoms. Complete the currently authorized gate without requesting permission for
+ordinary reversible technical work inside it.
+
+## Gate authorization boundary
+
+One user task authorizes one named gate by default. If the task does not name a
+gate, use only the earliest unmet gate. The implementation owner may decompose,
+delegate, repair and commit within that gate when authorized, but must not begin
+the next gate in the same task unless the user explicitly authorized multiple
+gates.
+
+After proving the current gate, update this document, run the required checks,
+leave recoverable state, report the exact evidence and stop. Remaining account
+usage, available context or elapsed time is not authority to continue. The
+owner reviews usage and starts or continues work with a new instruction for the
+next gate. Push and deployment remain governed by their gate and explicit user
+authority.
 
 ### Gate 1 — real agent round trip
 

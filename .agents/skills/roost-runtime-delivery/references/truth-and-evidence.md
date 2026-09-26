@@ -49,5 +49,9 @@ Every material report includes:
 - residual limitations and checks not run;
 - the exact owner action needed only when genuinely blocked.
 
+When a gate reaches `met`, report the next unmet gate as future work without
+starting it. Available tokens, time or context do not change the authorized
+gate boundary.
+
 Do not say "done", "ready", "working" or "production-safe" without naming the
 evidence level that supports the statement.

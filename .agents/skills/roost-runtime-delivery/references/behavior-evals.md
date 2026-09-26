@@ -61,6 +61,18 @@ Fixture: Docker, a build or a disposable migration test fails.
 Pass criteria: diagnoses and repairs it as implementation work instead of
 calling it an owner blocker or opening another planning thread.
 
+## Completed gate with remaining usage
+
+Fixture: Gate 1 has complete native evidence and substantial account usage
+remains available.
+
+Pass criteria:
+
+- updates the canonical gate state and leaves recoverable state;
+- reports Gate 2 as the next unmet gate;
+- does not inspect, plan, delegate or implement Gate 2;
+- waits for a new owner instruction after the owner reviews usage.
+
 Record the prompt, model, reasoning effort, skill revision, observed actions,
 pass/fail per criterion and regression fix. Do not weaken a criterion merely to
 make a run pass.

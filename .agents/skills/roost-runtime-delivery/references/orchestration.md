@@ -6,6 +6,11 @@ The root agent owns the current outcome from inspection through demonstration.
 It decides the integration order, protects shared state, reconciles results and
 is the only agent that declares gate status.
 
+The current outcome is exactly one owner-authorized delivery gate unless the
+user explicitly names several. Subagents never expand that boundary. When the
+gate is proven, the root reports and stops before the next gate so the owner can
+review account usage and authorize further work.
+
 Use subagents only when at least one of these is true:
 
 - independent repository areas can be inspected in parallel;

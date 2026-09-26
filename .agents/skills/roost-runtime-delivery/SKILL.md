@@ -14,8 +14,9 @@ define intent and current truth.
 1. Read `docs/documentation-contract.json` and its bounded
    `defaultAgentContext`.
 2. Run `npm run codex:preflight`.
-3. Identify the earliest unmet gate in `docs/implementation.md` that the current
-   request advances. Do not derive work from an old versioned document.
+3. Identify the one gate explicitly authorized by the current request. If none
+   is named, use only the earliest unmet gate in `docs/implementation.md`. Do
+   not derive work from an old versioned document or start a later gate.
 4. Inspect only the architecture, operations, security and engineering sources
    needed for that gate and the components actually being changed.
 
@@ -23,6 +24,9 @@ define intent and current truth.
 
 - Keep one root implementation owner through code, integration, verification
   and demonstration.
+- Treat the selected gate as the complete authorized outcome. Work
+  autonomously inside it, but never infer permission for the next gate from
+  remaining context, time or account usage.
 - Break work into internal milestones when useful, but do not report those as
   delivered outcomes.
 - Resolve reversible technical choices from accepted requirements, current
@@ -54,6 +58,8 @@ For realistic forward tests of this workflow, read
 3. Run `npm run codex:check` and `git diff --check`.
 4. Update `docs/implementation.md` only to the highest claim level actually
    demonstrated.
-5. Report the gate state, exact checks and evidence, changed files, remaining
+5. If the authorized gate is proven, leave recoverable clean state as permitted
+   by the task, report the next gate and stop without beginning it.
+6. Report the gate state, exact checks and evidence, changed files, remaining
    limitations and any true owner dependency. Do not provide a subjective
    completion percentage.

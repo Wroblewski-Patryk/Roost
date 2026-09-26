@@ -1,6 +1,6 @@
 interface:
   display_name: "Roost Runtime Delivery"
   short_description: "Deliver verified Roost runtime outcomes"
-  default_prompt: "Use $roost-runtime-delivery to advance the current Roost delivery gate end to end."
+  default_prompt: "Use $roost-runtime-delivery to complete the one authorized Roost delivery gate end to end, then stop before the next gate."
 policy:
   allow_implicit_invocation: true
