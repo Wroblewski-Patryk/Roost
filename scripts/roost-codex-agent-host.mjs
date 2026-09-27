@@ -656,13 +656,10 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: summary.slice(0, 10000), finalResponse, codexThreadId, changedFiles, verification, usage, resultRevision, metadata: { repositoryPathLabel: path.basename(repositoryPath), preExistingDirtyFiles: beforeStatus.map(statusPath), transportAccounting } })
     });
   } catch (error) {
-    const diagnosticCodes = new Set(["agent_execution_lease_expired", "agent_execution_lease_invalid",
-      "agent_execution_lease_rejected", "agent_execution_lease_refresh_unconfirmed",
-      "managed_admission_blocked", "readonly_boundary_unproven", "agent_provider_input_blocked",
-      "agent_execution_recovery_blocked", "roost_http_409"]);
-    const code = diagnosticCodes.has(error?.message) ? error.message : "other";
-    const leaseCode = diagnosticCodes.has(lease.failure?.message) ? lease.failure.message : "none";
-    process.stderr.write(`Agent Host safe diagnostic: phase=${executionPhase} code=${code} lease=${leaseCode} status=${Number.isInteger(error?.status) ? error.status : "none"}.\n`);
+    const safeCode = value => /^[a-z][a-z0-9_]{2,80}$/.test(value ?? "") ? value : "other";
+    const code = safeCode(error?.message), leaseCode = lease.failure ? safeCode(lease.failure.message) : "none";
+    const detailCode = safeCode(error?.details?.reason);
+    process.stderr.write(`Agent Host safe diagnostic: phase=${executionPhase} code=${code} detail=${detailCode} lease=${leaseCode} status=${Number.isInteger(error?.status) ? error.status : "none"}.\n`);
     let hermesStopReceipt;
     if (hermesCollection) {
       hermesAbort.abort();

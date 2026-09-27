@@ -84,6 +84,15 @@ async function reclaimTerminalBeforeSpawn(directory, candidates) {
       && Number.isFinite(Date.parse(item.completedAt))
       && JSON.stringify(localCheckpoint(item)) === JSON.stringify(checkpoint)
       && (["claimed", "branch_intent", "branch_ready", "prepared"].includes(checkpoint?.stage)
+        || checkpoint?.stage === "spawn_intent" && item?.errorState?.code === "agent_readonly_terminal_reconciled"
+          && item.errorState?.details?.priorCode === "code_reviewer_unproven"
+          && item.errorState?.details?.checkpointStage === "spawn_intent"
+          && item.errorState?.details?.checkpointSessionId === checkpoint.sessionId
+          && item.errorState?.details?.writerLockDigest === createHash("sha256").update(bytes).digest("hex")
+          && item.errorState?.details?.nativeProcessesAbsent === true
+          && item.errorState?.details?.pilotBaselineUnchanged === true
+          && item.codexThreadId === null && item.finalResponse === null
+          && Array.isArray(item.changedFiles) && item.changedFiles.length === 0
         || checkpoint?.stage === "spawn_intent" && item?.errorState?.code === "managed_admission_blocked"
           && (item.errorState?.details?.phase === "backend_evidence_persist"
             || item.errorState?.details?.phase === "backend_evidence_request"

@@ -430,7 +430,11 @@ agentRuntimeRouter.get("/recovery", asyncHandler(async (req, res) => {
     const preModelAdmission = error?.details?.phase === "backend_evidence_persist"
       || error?.details?.phase === "backend_evidence_request" && error?.details?.reason === "roost_http_409"
         && error?.details?.status === 409;
-    return stage === "spawn_intent" && error?.code === "managed_admission_blocked" && preModelAdmission
+    const reconciledReviewer = error?.code === "agent_readonly_terminal_reconciled"
+      && error?.details?.priorCode === "code_reviewer_unproven"
+      && error?.details?.checkpointStage === "spawn_intent"
+      && error?.details?.nativeProcessesAbsent === true && error?.details?.pilotBaselineUnchanged === true;
+    return stage === "spawn_intent" && (error?.code === "managed_admission_blocked" && preModelAdmission || reconciledReviewer)
       && item.codexThreadId === null && item.finalResponse === null
       && Array.isArray(item.changedFiles) && item.changedFiles.length === 0;
   });
@@ -519,7 +523,7 @@ agentRuntimeRouter.post("/executions/:id/actions/reconcile-readonly-spawn", asyn
       agentHostId: host.id }, include: { task: { select: { projectId: true } } } });
     if (!current) return { error: "agent_readonly_reconciliation_conflict" };
     const previous = current.errorState as any;
-    if (current.status === "failed" && ["agent_readonly_spawn_reconciled", "agent_readonly_claim_reconciled"].includes(previous?.code)
+    if (current.status === "failed" && ["agent_readonly_spawn_reconciled", "agent_readonly_claim_reconciled", "agent_readonly_terminal_reconciled"].includes(previous?.code)
       && previous?.details?.attestationDigest === attestationDigest
       && previous?.details?.checkpointVersion === input.expectedVersion)
       return { execution: current, replay: true };
@@ -528,15 +532,20 @@ agentRuntimeRouter.post("/executions/:id/actions/reconcile-readonly-spawn", asyn
     const checkpoint = recoveryCheckpoint.safeParse(current.checkpoint);
     const metadata = current.metadata as any;
     const contract = metadata?.executionContract, pin = metadata?.readyContextPin;
-    const noResult = !current.summary && !current.finalResponse
+    const noResult = !current.summary && !current.finalResponse && !current.codexThreadId
       && Array.isArray(current.changedFiles) && current.changedFiles.length === 0
       && (!current.verification || typeof current.verification === "object" && !Array.isArray(current.verification)
         && Object.keys(current.verification).length === 0)
       && !metadata?.resultRevision;
     const claimedOnly = checkpoint.success && checkpoint.data.stage === "claimed";
     const preSpawn = claimedOnly || checkpoint.success && checkpoint.data.stage === "spawn_intent";
-    if (!["claimed", "running"].includes(current.status) || current.completedAt || current.contextInvalidatedAt
-      || !current.leaseExpiresAt || current.leaseExpiresAt > now || current.checkpointVersion !== input.expectedVersion
+    const terminalReviewer = current.status === "failed" && previous?.code === "code_reviewer_unproven"
+      && contract?.nativeBoundary?.inspectReadOnly?.kind === "code-reviewer" && !claimedOnly
+      && current.completedAt && current.leaseExpiresAt === null;
+    const activeExpired = ["claimed", "running"].includes(current.status) && !current.completedAt
+      && current.leaseExpiresAt && current.leaseExpiresAt <= now;
+    if ((!terminalReviewer && !activeExpired) || current.contextInvalidatedAt
+      || current.checkpointVersion !== input.expectedVersion
       || current.attempt < 1 || !preSpawn || !checkpoint.success
       || checkpoint.data.sessionId !== input.checkpointSessionId
       || !pin?.revision || !noResult
@@ -547,7 +556,7 @@ agentRuntimeRouter.post("/executions/:id/actions/reconcile-readonly-spawn", asyn
       || contract?.access?.permissions?.length !== 1 || contract.access.permissions[0] !== "repository_read"
       || input.baselineCommit !== pin?.riskAdmissionCommit || input.baselineBranch !== contract?.singleTask?.branch
       || checkpoint.data.branch !== undefined || checkpoint.data.headCommit !== undefined
-      || observedAt <= current.leaseExpiresAt)
+      || observedAt <= (terminalReviewer ? current.completedAt! : current.leaseExpiresAt!))
       return { error: "agent_readonly_reconciliation_conflict" };
     if (contract.nativeBoundary.inspectReadOnly.kind === "code-reviewer"
       && await tx.taskReviewDecision.count({ where: { executionId: current.id, workspaceId: current.workspaceId } }))
@@ -555,25 +564,31 @@ agentRuntimeRouter.post("/executions/:id/actions/reconcile-readonly-spawn", asyn
     if (claimedOnly && (await tx.trustedProviderTicket.count({ where: { executionId: current.id, workspaceId: current.workspaceId } })
       || await tx.agentExecutionEvent.count({ where: { executionId: current.id, type: { in: ["runner_started", "runner_progress"] } } })))
       return { error: "agent_readonly_reconciliation_conflict" };
-    const code = claimedOnly ? "agent_readonly_claim_reconciled" : "agent_readonly_spawn_reconciled";
-    const eventType = claimedOnly ? "readonly_claim_reconciled" : "readonly_spawn_reconciled";
-    const message = claimedOnly
+    const code = terminalReviewer ? "agent_readonly_terminal_reconciled" : claimedOnly ? "agent_readonly_claim_reconciled" : "agent_readonly_spawn_reconciled";
+    const eventType = terminalReviewer ? "readonly_terminal_reconciled" : claimedOnly ? "readonly_claim_reconciled" : "readonly_spawn_reconciled";
+    const message = terminalReviewer ? "Failed read-only review reconciled after its native process ended; no result or decision was accepted." : claimedOnly
       ? "Read-only execution reconciled after expired claim; no runner was started or result accepted."
       : "Read-only execution reconciled after expired spawn intent; no result was accepted.";
     const details = { schemaVersion: "roost-readonly-spawn-reconciliation-v1", checkpointStage: checkpoint.data.stage,
       checkpointSessionId: input.checkpointSessionId,
       checkpointVersion: input.expectedVersion, baselineCommit: input.baselineCommit, baselineBranch: input.baselineBranch,
       repositoryDigest: input.repositoryDigest, writerLockDigest: input.writerLockDigest,
-      applicationLease: input.applicationLease, observedAt: input.observedAt, attestationDigest };
+      applicationLease: input.applicationLease, observedAt: input.observedAt, attestationDigest,
+      ...(terminalReviewer ? { priorCode: "code_reviewer_unproven", nativeProcessesAbsent: input.nativeProcessesAbsent,
+        pilotBaselineUnchanged: input.workingTreeClean } : {}) };
     const changed = await tx.agentExecution.updateMany({ where: { id: current.id, workspaceId: current.workspaceId,
       agentHostId: host.id, status: current.status, checkpointVersion: input.expectedVersion,
-      leaseToken: current.leaseToken, leaseExpiresAt: { lte: now }, completedAt: null, contextInvalidatedAt: null },
-      data: { status: "failed", completedAt: now, leaseToken: null, leaseExpiresAt: null,
-        errorState: json({ code, message, retryable: false, details }) } });
+      ...(terminalReviewer ? { completedAt: current.completedAt, leaseExpiresAt: null,
+        errorState: { path: ["code"], equals: "code_reviewer_unproven" } }
+        : { leaseToken: current.leaseToken, leaseExpiresAt: { lte: now }, completedAt: null }),
+      contextInvalidatedAt: null },
+      data: terminalReviewer ? { errorState: json({ code, message, retryable: false, details }) }
+        : { status: "failed", completedAt: now, leaseToken: null, leaseExpiresAt: null,
+          errorState: json({ code, message, retryable: false, details }) } });
     if (!changed.count) return { error: "agent_readonly_reconciliation_conflict" };
     await tx.agentExecutionEvent.create({ data: { workspaceId: current.workspaceId, executionId: current.id,
       type: eventType, level: "warning", message, payload: json(details) } });
-    await tx.event.create({ data: { type: "agent_execution_failed", workspaceId: current.workspaceId,
+    if (!terminalReviewer) await tx.event.create({ data: { type: "agent_execution_failed", workspaceId: current.workspaceId,
       taskId: current.taskId, projectId: current.task.projectId, resourceType: "agent_execution", resourceId: current.id,
       source: "codex", payload: json({ executionId: current.id, code, retryable: false }) } });
     return { execution: await tx.agentExecution.findUniqueOrThrow({ where: { id: current.id } }), replay: false };
@@ -611,7 +626,7 @@ agentRuntimeRouter.post(["/executions/:id/actions/reconcile-coding-branch-intent
     const routeClaimed = req.path.endsWith("/reconcile-coding-claimed");
     const metadata = current.metadata as any;
     const contract = metadata?.executionContract, pin = metadata?.readyContextPin;
-    const noResult = !current.summary && !current.finalResponse && !current.codexThreadId
+    const noResult = !current.summary && !current.finalResponse
       && Array.isArray(current.changedFiles) && current.changedFiles.length === 0
       && (!current.verification || typeof current.verification === "object" && !Array.isArray(current.verification)
         && Object.keys(current.verification).length === 0)

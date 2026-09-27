@@ -24,7 +24,8 @@ const reviewerDecision = z.discriminatedUnion("decision", [
     correction: z.object({ scope: lines, excluded: lines, outcome: line,
       competencies: z.array(z.string().trim().min(1).max(120)).min(1).max(30) }).strict() }).strict()
 ]);
-const fail = () => { throw Object.assign(new Error("code_reviewer_unproven"), { protocolAdmission: true, retryable: false,
+const fail = (reason = "unproven") => { throw Object.assign(new Error("code_reviewer_unproven"), { protocolAdmission: true, retryable: false,
+  details: { reason: /^[a-z][a-z0-9_]{2,80}$/.test(reason) ? reason : "unproven" },
   publicMessage: "Independent code review credential, transport or exact result could not be verified." }); };
 const credentialScript = fileURLToPath(new URL("../roost-agent-credential.ps1", import.meta.url));
 export async function readCodeReviewerCredential(config) {
@@ -42,21 +43,24 @@ export async function readCodeReviewerCredential(config) {
     });
     if (!/^cc_v1_[A-Za-z0-9_-]{32}$/.test(key)) fail();
     return key;
-  } catch { fail(); }
+  } catch { fail("credential_unproven"); }
 }
 
 export async function reviewerApi({ baseUrl, config, key, route, method = "GET", body }) {
+  let stage = "api_input_invalid";
   try {
     codeReviewerConfigSchema.parse(config);
     const origin = new URL(baseUrl);
     if (origin.protocol !== "https:" || origin.username || origin.password || origin.search || origin.hash
         || origin.pathname !== "/" || !/^\/v1\/agent-runtime\/tasks\/[a-f0-9-]{36}\/(?:review|actions\/review)$/.test(route)
         || !/^cc_v1_[A-Za-z0-9_-]{32}$/.test(key) || !["GET", "POST"].includes(method)) fail();
+    stage = "api_dns_unproven";
     const addresses = await dnsLookup(origin.hostname, { all: true, family: 4, verbatim: true });
     if (!addresses.length || addresses.length > 16) fail();
     const address = addresses[0].address, lookup = pinnedIpv4Lookup(address);
     const payload = body === undefined ? null : JSON.stringify(body);
     if ((method === "POST") !== (payload !== null) || payload && Buffer.byteLength(payload) > 32768) fail();
+    stage = "api_transport_unproven";
     const value = await new Promise((resolve, reject) => {
       const request = https.request({ protocol: "https:", hostname: origin.hostname, servername: origin.hostname,
         port: origin.port || "443", path: route, method, agent: false, lookup, rejectUnauthorized: true,
@@ -68,7 +72,10 @@ export async function reviewerApi({ baseUrl, config, key, route, method = "GET",
           return timingSafeEqual(actual, Buffer.from(config.certificateFingerprint, "hex")) ? undefined : Error("review_tls_pin_invalid");
         }, headers: { "X-API-Key": key, Accept: "application/json", "Content-Type": "application/json",
           "Cache-Control": "no-store", ...(payload ? { "Content-Length": Buffer.byteLength(payload) } : {}) } }, response => {
-        if (response.statusCode !== 200 || response.headers.location || response.headers["content-encoding"]) { response.destroy(); reject(new Error()); return; }
+        if (response.statusCode !== 200 || response.headers.location || response.headers["content-encoding"]) {
+          stage = Number.isInteger(response.statusCode) ? `api_http_${response.statusCode}` : "api_response_invalid";
+          response.destroy(); reject(new Error()); return;
+        }
         let size = 0; const chunks = [];
         response.on("data", chunk => { size += chunk.length; if (size > 131072) { response.destroy(); reject(new Error()); } else chunks.push(chunk); });
         response.on("end", () => { try { resolve(JSON.parse(Buffer.concat(chunks).toString("utf8"))); } catch { reject(new Error()); } });
@@ -78,9 +85,10 @@ export async function reviewerApi({ baseUrl, config, key, route, method = "GET",
       request.on("timeout", () => { request.destroy(); reject(new Error()); });
       request.end(payload ?? undefined);
     });
-    if (!value?.data || typeof value.data !== "object") fail();
+    stage = "api_response_invalid";
+    if (!value?.data || typeof value.data !== "object") fail(stage);
     return value.data;
-  } catch { fail(); }
+  } catch { fail(stage); }
 }
 
 export function validateCodeReviewView(view, review, reviewerAgentId) {
@@ -91,21 +99,28 @@ export function validateCodeReviewView(view, review, reviewerAgentId) {
         || view.result?.contract?.assignment?.agentId === reviewerAgentId || !view.canReview
         || view.grantAccess?.review_decision?.status === "blocked") fail();
     return view;
-  } catch { fail(); }
+  } catch { fail("review_view_invalid"); }
 }
 
 export function prepareCodeReviewDecision({ finalResponse, view, review, config, readOnlyAudit }) {
   try {
-    const candidate = reviewerDecision.parse(JSON.parse(finalResponse.trim()));
+    let parsed;
+    try { parsed = JSON.parse(finalResponse.trim()); } catch { fail("model_json_invalid"); }
+    const result = reviewerDecision.safeParse(parsed);
+    if (!result.success) {
+      const field = String(result.error.issues[0]?.path?.[0] ?? "root");
+      fail(`model_schema_${/^[a-z][a-z0-9]{0,30}$/.test(field) ? field : "field"}`);
+    }
+    const candidate = result.data;
     if (candidate.reviewedCommit !== review.reviewedCommit || candidate.evidenceDigest !== view.materialVersion
         || readOnlyAudit?.reviewedCommit !== review.reviewedCommit || readOnlyAudit?.verifiedEvidenceDigest !== view.materialVersion
-        || readOnlyAudit?.verifiedExecutionId !== review.verifiedExecutionId) fail();
+        || readOnlyAudit?.verifiedExecutionId !== review.verifiedExecutionId) fail("model_binding_invalid");
     const { evidenceDigest: _evidenceDigest, reviewedCommit, ...decision } = candidate;
     const body = { grantId: config.grantId, requestId: randomUUID(), expectedVersion: view.expectedVersion,
       executionId: review.verifiedExecutionId, materialVersion: view.materialVersion, ...decision,
       ...(candidate.decision === "approve" ? { reviewedCommit } : {}) };
     const checked = guardHostContent(body, "required");
-    if (checked.redacted || JSON.stringify(checked.value) !== JSON.stringify(body)) fail();
+    if (checked.redacted || JSON.stringify(checked.value) !== JSON.stringify(body)) fail("model_content_blocked");
     return body;
-  } catch { fail(); }
+  } catch (error) { if (error?.message === "code_reviewer_unproven") throw error; fail("model_result_unproven"); }
 }

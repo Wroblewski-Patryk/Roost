@@ -1,4 +1,5 @@
 import { strict as assert } from "node:assert";
+import { createHash } from "node:crypto";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { mkdtemp, readFile, writeFile, unlink, rmdir } from "node:fs/promises";
@@ -84,6 +85,29 @@ test("terminal managed evidence rejection reclaims only the proven pre-model spa
   const persisted = { ...candidate, errorState: { code: "managed_admission_blocked", details: { phase: "backend_evidence_persist" } } };
   const recovered = await acquireWriterLock(directory, { terminalCandidates: [persisted] });
   await recovered.release();
+});
+
+test("a failed read-only reviewer needs an exact terminal reconciliation receipt before lock release", { skip: process.platform !== "win32" }, async t => {
+  const directory = await fixture(t);
+  const candidate = { id: "00000000-0000-4000-8000-000000000021", workspaceId: "00000000-0000-4000-8000-000000000022",
+    taskId: "00000000-0000-4000-8000-000000000023", applicationId: "00000000-0000-4000-8000-000000000024",
+    agentHostId: "00000000-0000-4000-8000-000000000025", status: "failed", attempt: 1, checkpointVersion: 3,
+    leaseExpiresAt: null, completedAt: new Date().toISOString(), codexThreadId: null, finalResponse: null, changedFiles: [],
+    checkpoint: { schemaVersion: "roost-recovery-v1", stage: "spawn_intent", sessionId: null,
+      packetRevision: "revision", workspaceDigest: "digest", contextRevision: "context" } };
+  const script = `import { acquireWriterLock } from './scripts/lib/agent-host-writer-lock.mjs'; const lock=await acquireWriterLock(${JSON.stringify(directory)}); await lock.checkpoint({...${JSON.stringify(candidate)},checkpoint:{...${JSON.stringify(candidate.checkpoint)},sessionId:lock.sessionId}});`;
+  const child = spawn(process.execPath, ["--input-type=module", "-e", script], { windowsHide: true, stdio: "ignore" });
+  assert.equal((await once(child, "close"))[0], 0);
+  const bytes = await readFile(path.join(directory, writerLockFilename));
+  candidate.checkpoint.sessionId = JSON.parse(bytes).checkpoint.sessionId;
+  const details = { priorCode: "code_reviewer_unproven", checkpointStage: "spawn_intent",
+    checkpointSessionId: candidate.checkpoint.sessionId, writerLockDigest: createHash("sha256").update(bytes).digest("hex"),
+    nativeProcessesAbsent: true, pilotBaselineUnchanged: true };
+  candidate.errorState = { code: "agent_readonly_terminal_reconciled", details };
+  await assert.rejects(acquireWriterLock(directory, { terminalCandidates: [{ ...candidate,
+    errorState: { ...candidate.errorState, details: { ...details, writerLockDigest: "0".repeat(64) } } }] }), /agent_host_writer_locked/);
+  const next = await acquireWriterLock(directory, { terminalCandidates: [candidate] });
+  await next.release();
 });
 
 test("release does not delete a lock whose ownership changed", async (t) => {
