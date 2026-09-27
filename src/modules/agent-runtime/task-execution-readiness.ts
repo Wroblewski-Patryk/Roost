@@ -54,6 +54,8 @@ export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) =
     const interviewError=nativeDiagnostic.match(/\binterview_(?:history_immutable|scope_invalid|content_invalid|forbidden|grant_required|revision_invalid|evidence_invalid|stale|transition_invalid|proposal_required|ready_required|decision_immutable|receipt_required)\b/)?.[0];if(interviewError)return {error:interviewError};
     const compositionError=nativeDiagnostic.match(/\bprocedure_composition_[a-z_]+\b/)?.[0];
     if(compositionError)return {error:compositionError};
+    const scopeError=nativeDiagnostic.match(/\btask_(?:single_scope_required|scope_split_required|scope_shared_cause_required|roles_required)\b/)?.[0];
+    if(scopeError)return {error:scopeError};
     if (error instanceof Prisma.PrismaClientKnownRequestError && (["P2034", "P2028"].includes(error.code) ||
       error.code === "P2010" && ["40001", "40P01"].includes(String(error.meta?.code)))) return { error: "task_ready_context_conflict" };
     // Native routes intentionally suppress raw exception text. Keep a bounded,
