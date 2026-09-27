@@ -113,15 +113,15 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
       throw error;
     }
   };
-  const task = await lockReadyTask(db, workspaceId, taskId);
+  const task = await at("task_lock", () => lockReadyTask(db, workspaceId, taskId));
   if (!task) return { error: "task_not_found" };
   if (actor.requestedByType !== "user" || !actor.requestedById || !await db.workspaceMembership.findFirst({ where: { workspaceId, userId: actor.requestedById, role: { in: ["owner", "admin", "member"] } } })) return { error: "forbidden" };
-  if (await suspensionBlocks(db,workspaceId,taskId,input.applicationId,"runtime_execute",task.assignedWorkforceEntityId)) return {error:"native_capability_suspended"};
-  const reviewError = await reviewAdmissionError(db, workspaceId, taskId, input.contract);
+  if (await at("suspension", () => suspensionBlocks(db,workspaceId,taskId,input.applicationId,"runtime_execute",task.assignedWorkforceEntityId))) return {error:"native_capability_suspended"};
+  const reviewError = await at("review_admission", () => reviewAdmissionError(db, workspaceId, taskId, input.contract));
   if (reviewError) return { error: reviewError };
   if (!/^[a-f0-9]{64}$/.test(input.expectedVersion ?? "") || !/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(input.requestId ?? "")) return { error: "task_submission_precondition_required" };
   const requestHash = digest({ ...input, ...actor });
-  const receipts = await db.$queryRaw<Array<{ request_hash: string; result: any }>>`SELECT request_hash, result FROM task_execution_submissions WHERE task_id = ${taskId}::uuid AND request_id = ${input.requestId}::uuid`;
+  const receipts = await at("prior_receipt", () => db.$queryRaw<Array<{ request_hash: string; result: any }>>`SELECT request_hash, result FROM task_execution_submissions WHERE task_id = ${taskId}::uuid AND request_id = ${input.requestId}::uuid`);
   if (receipts[0]) {
     if (receipts[0].request_hash !== requestHash) return { error: "task_submission_key_conflict" };
     if (receipts[0].result.readiness?.status === "ready") {
@@ -130,8 +130,8 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
     }
     return receipts[0].result;
   }
-  if (await db.agentExecution.count({ where: { workspaceId, taskId, status: { in: ["queued", "claimed", "running", "waiting_for_approval"] } } })) return { error: "task_agent_execution_active" };
-  if (input.expectedVersion !== await submissionVersion(db, workspaceId, taskId, input.applicationId)) return { error: "task_submission_version_conflict" };
+  if (await at("active_execution", () => db.agentExecution.count({ where: { workspaceId, taskId, status: { in: ["queued", "claimed", "running", "waiting_for_approval"] } } }))) return { error: "task_agent_execution_active" };
+  if (input.expectedVersion !== await at("submission_version", () => submissionVersion(db, workspaceId, taskId, input.applicationId))) return { error: "task_submission_version_conflict" };
   async function receipt(result: any, pin?: any) {
     const encodedPin = pin ? JSON.stringify(pin) : null, encodedResult = JSON.stringify(result);
     await at("submission_receipt", () => db.$executeRaw`INSERT INTO task_execution_submissions (task_id, request_id, actor_id, request_hash, pin_digest, result)
@@ -146,7 +146,7 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
     const issues = object(error).details?.issues ?? [];
     const status = issues.length > 0 && issues.every((issue: any) => /^(contract|taskContext)\.decisions(\.|$)/.test(issue.field)) ? "needs_decision" : "needs_context";
     const previous = object(task.executionReadiness);
-    await db.task.update({ where: { id: taskId }, data: { executionReadiness: { ...previous, status, reason: "submission_incomplete", issues } } });
+    await at("incomplete_status", () => db.task.update({ where: { id: taskId }, data: { executionReadiness: { ...previous, status, reason: "submission_incomplete", issues } } }));
     const result = { error: "task_execution_contract_invalid", issues, readiness: { status, reason: "submission_incomplete", issues } };
     await receipt(result);
     await db.event.create({ data: { workspaceId, taskId, type: "task_execution_submission_rejected", source: "roost", resourceType: "task", resourceId: taskId, payload: { requestId: input.requestId, status, issues, ...actor } } });
@@ -156,23 +156,23 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
   const risk = await at("risk_admission", () => riskAdmission(db, taskId, input));
   if ("error" in risk) {
     const readiness = {status:"needs_context",reason:risk.error};
-    await db.task.update({where:{id:taskId},data:{executionReadiness:{...object(task.executionReadiness),...readiness}}});
+    await at("risk_status", () => db.task.update({where:{id:taskId},data:{executionReadiness:{...object(task.executionReadiness),...readiness}}}));
     return receipt({error:risk.error,readiness});
   }
   const admission = await at("risk_level_admission", () => riskLevelAdmission(db,taskId));
   const composition=await at("procedure_composition", () => composeProcedure(db,taskId,"runtime_execute",true));
   if(!composition.seal || (task.executionReadiness as any)?.status==="ready" && (task.executionReadiness as any)?.procedureComposition?.seal && (task.executionReadiness as any).procedureComposition.seal!==composition.seal) {
     const readiness={status:"needs_context",reason:"procedure_composition_required",issues:[...composition.missing,...composition.conflicts].map((code:string)=>({field:"procedureComposition",code}))};
-    await db.task.update({where:{id:taskId},data:{executionReadiness:{...object(task.executionReadiness),...readiness}}});
+    await at("composition_status", () => db.task.update({where:{id:taskId},data:{executionReadiness:{...object(task.executionReadiness),...readiness}}}));
     return receipt({error:"procedure_composition_required",readiness});
   }
   if (admission.error) {
     const readiness={status:"needs_decision",reason:admission.error};
-    await db.task.update({where:{id:taskId},data:{executionReadiness:{...object(task.executionReadiness),...readiness}}});
+    await at("admission_status", () => db.task.update({where:{id:taskId},data:{executionReadiness:{...object(task.executionReadiness),...readiness}}}));
     return receipt({error:admission.error,readiness});
   }
   const procedureCompositionSet=Object.fromEntries(await Promise.all(admissionOperations.map(async op=>[op,await at("procedure_composition_set", () => composeProcedure(db,taskId,op,true))])));
-  const interviewVersion=(await db.$queryRaw<any[]>`SELECT task_interview_version(${taskId}::uuid) AS value`)[0].value;
+  const interviewVersion=(await at("interview_version", () => db.$queryRaw<any[]>`SELECT task_interview_version(${taskId}::uuid) AS value`))[0].value;
   const pin = { interviewVersion, schemaVersion: "roost-ready-context-v1", sourceWatchVersion: "1", submissionId: input.requestId, status: "ready", pinId: randomUUID(), revision: context.revision,
     riskAssessmentId: risk.id,
     riskAdmissionSeal: admission.seal, riskAdmissionCommit: admission.commit,
@@ -181,9 +181,9 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
     validatedAt: new Date().toISOString(), validation: { validator: "execution-packet-v1", revision: context.revision }, ...actor };
   const result = { readiness: { status: "ready", pinId: pin.pinId, revision: pin.revision, validationRevision: pin.validation.revision } };
   await receipt(result, pin);
-  await db.task.update({ where: { id: task.id }, data: { executionReadiness: pin, executionRoleProvenance: pin.roleProvenance } });
-  await db.event.create({ data: { workspaceId, taskId, type: "task_execution_ready", source: "roost", resourceType: "task", resourceId: taskId,
-    payload: { pinId: pin.pinId, revision: pin.revision, validation: pin.validation, validatedAt: pin.validatedAt, singleTask: input.contract.singleTask, taskRoles: input.contract.taskRoles, roleProvenance: pin.roleProvenance, outcome: input.contract.objective.outcome, ...actor } } });
+  await at("ready_pin_update", () => db.task.update({ where: { id: task.id }, data: { executionReadiness: pin, executionRoleProvenance: pin.roleProvenance } }));
+  await at("ready_event", () => db.event.create({ data: { workspaceId, taskId, type: "task_execution_ready", source: "roost", resourceType: "task", resourceId: taskId,
+    payload: { pinId: pin.pinId, revision: pin.revision, validation: pin.validation, validatedAt: pin.validatedAt, singleTask: input.contract.singleTask, taskRoles: input.contract.taskRoles, roleProvenance: pin.roleProvenance, outcome: input.contract.objective.outcome, ...actor } } }));
   return result;
 }
 
