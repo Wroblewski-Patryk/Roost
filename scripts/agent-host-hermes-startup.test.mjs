@@ -149,6 +149,9 @@ test("profile identity, attestation, provider and input drift reject prior proof
 });
 test("receipt expiry uses the Ready-time deadline, never a sliding renewal", t => {
   const f = fixture(t), time = Date.parse(f.checked.receipt.issuedAt);
+  const within = t.mock.method(Date, "now", () => time + 61_000);
+  assert.doesNotThrow(() => assertProviderStartup(f.options));
+  within.mock.restore();
   const clock = t.mock.method(Date, "now", () => time + hermesStartupMaxAgeMs);
   assert.throws(() => assertProviderStartup(f.options), /hermes_startup_receipt_expired/);
   assert.deepEqual(hermesStartupBlockers(hermesContract.blockers, f.checked.receipt, f.checked.options), hermesContract.blockers);

@@ -12,7 +12,10 @@ import { windowsEnvironmentPolicy, assertWindowsStartupPaths, inspectWindowsSyst
 
 export const hermesStartupVersion = "roost-hermes-startup-receipt-v2";
 export const hermesStartupPolicy = "roost-hermes-standard-startup-v2";
-export const hermesStartupMaxAgeMs = 60000;
+// Two complete installation checks and the owner-side admission round trip can
+// exceed one minute on the supported Windows installation. This local seal is
+// still absolute and is revalidated against current Ready, profile and input.
+export const hermesStartupMaxAgeMs = 180000;
 export const acceptedHermesStartupEffects = Object.freeze({ bundledSkillsLocalSync: true, localBannerPrefetch: true, networkUpdateCheck: false });
 const pin = contract.registry.providers.find(p => p.kind === "hermes_codex");
 const canonical = v => Array.isArray(v) ? v.map(canonical) : v && typeof v === "object"

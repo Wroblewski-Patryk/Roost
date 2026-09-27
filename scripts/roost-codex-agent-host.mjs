@@ -21,6 +21,9 @@ import { createDirectTurnGuard } from "./lib/agent-host-direct-turn.mjs";
 import { createHermesOutputIntent } from "./lib/agent-host-hermes-budget.mjs";
 import { hermesBudgetProfileVersion, hermesNativeProfileVersion } from "./lib/agent-host-hermes-profile.mjs";
 import { runHermesOwnedProcess } from "./lib/agent-host-hermes-quiet.mjs";
+import { verifyCompletedNativeBoundary, releaseReviewedNativeBoundary } from "./lib/agent-host-hermes-native-boundary.mjs";
+import { verifyHermesSmokeInstallation } from "./lib/agent-host-hermes-smoke-installation.mjs";
+import { captureReadOnlyReviewBaseline, verifyReadOnlyReview } from "./lib/agent-host-readonly-review.mjs";
 import { isWindowsJobCleanupReceipt } from "./lib/agent-host-windows-job.mjs";
 import { buildManagedAdmissionSource, requestManagedAdmission } from "./lib/agent-host-managed-admission.mjs";
 import { managedBackendVersion } from "./lib/agent-host-model-policy.mjs";
@@ -101,6 +104,7 @@ async function api(route, options = {}) {
     if (["task_ready_pin_required", "task_ready_revalidation_required", "task_ready_context_conflict"].includes(body.error)) throw readyContext.readyAdmissionError();
     const error = new Error(`roost_http_${response.status}`);
     error.status = response.status;
+    if (typeof body.error === "string" && /^[a-z][a-z0-9_]{2,80}$/.test(body.error)) error.details = { reason: body.error };
     throw error;
   }
   return body.data;
@@ -210,7 +214,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
   let stopRequested = false;
   let duration;
   let outputBudget;
-  let hermesBaseline, nativeInput, fixedGrant;
+  let hermesBaseline, hermesReadOnlyBaseline, nativeInput, fixedGrant;
   let hermesCollection, hermesAbort, hermesCompletedReceipt;
   function stopWorker() {
     stopping = true;
@@ -286,9 +290,13 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       startupEnvironment: config.executionProvider?.kind === "hermes_codex" && config.executionProvider.profile
         ? hermesStartupEnvironment(config.executionProvider.profile, process.env, repositoryPath) : undefined });
     nativeInput = providerInput;
-    if (config.executionProvider?.kind === "hermes_codex") hermesBaseline = await duration.wait(collectWorkspaceEvidence({
-      repositoryPath, expectedHead: preparedCommit, expectedBranch: taskContext.executionPacket.contract.singleTask.branch,
-      inputSeal: providerInput.seal, secrets: [apiKey, claimed.leaseToken] }));
+    if (config.executionProvider?.kind === "hermes_codex") {
+      hermesBaseline = await duration.wait(collectWorkspaceEvidence({
+        repositoryPath, expectedHead: preparedCommit, expectedBranch: taskContext.executionPacket.contract.singleTask.branch,
+        inputSeal: providerInput.seal, secrets: [apiKey, claimed.leaseToken] }));
+      hermesReadOnlyBaseline = await duration.wait(captureReadOnlyReviewBaseline({ repositoryPath,
+        contract: taskContext.executionPacket.contract, workspaceEvidence: hermesBaseline }));
+    }
     if (resumeCheckpoint) assertRecoverySnapshot(resumeCheckpoint, taskContext.executionPacket.revision, digest, contextRevision);
     if (claimed.checkpoint?.stage === "claimed") await duration.wait(checkpoint("prepared", taskContext.executionPacket.revision, digest));
     else if (claimed.checkpoint?.stage !== "prepared") throw recoveryError("checkpoint_mismatch");
@@ -459,6 +467,21 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       verification.workspaceEvidence = await duration.wait(collectWorkspaceEvidence({ repositoryPath,
         expectedHead: preparedCommit, expectedBranch: taskContext.executionPacket.contract.singleTask.branch,
         inputSeal: providerInput.seal, baselineSeal: hermesBaseline.seal, secrets: [apiKey, claimed.leaseToken] }));
+      const reviewed = await duration.wait(verifyCompletedNativeBoundary(verification.nativeToolReceipt, {
+        verify: () => verifyReadOnlyReview({ repositoryPath, baseline: hermesReadOnlyBaseline,
+          workspaceEvidence: verification.workspaceEvidence }),
+        installation: async () => {
+          const manifestPath = config.executionProvider.attestation.manifestPath;
+          const post = await verifyHermesSmokeInstallation({ manifestPath,
+            attestationPath: path.join(path.dirname(manifestPath), "roost-installation-attestation.json") });
+          return { status: "PASS", manifestDigest: post.manifestDigest };
+        }
+      }));
+      verification.nativeReviewReceipt = reviewed.publicReceipt;
+      verification.nativeReviewReceiptDigest = reviewed.receiptDigest;
+      if (reviewed.publicReceipt.verdict !== "verified_candidate") throw Object.assign(
+        new Error("agent_native_review_blocked"), { retryable: false, publicMessage: "Native review did not verify the candidate result." });
+      releaseReviewedNativeBoundary(verification.nativeToolReceipt, reviewed.capability);
     }
     const committedPaths=await duration.wait(readTaskPaths(repositoryPath,currentCommit,resultCommit));
     const changedFiles = [...new Set([...committedPaths,...afterStatus.map(statusPath)])];

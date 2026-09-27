@@ -18,8 +18,10 @@ const signed = schema => z.object({ payload: schema, signature: z.string().regex
 const response = (phase, schema) => z.object({ schemaVersion: z.literal(managedAdmissionVersion), phase: z.literal(phase), signed: signed(schema) }).strict();
 const same = (a, b) => trustedPilotBytes(a).equals(trustedPilotBytes(b));
 const grants = new WeakMap();
-function fail() { throw Object.assign(new Error("managed_admission_blocked"), { protocolAdmission: true, retryable: false,
-  outcome: "policy_blocked", publicMessage: "Managed launch evidence is missing, changed or not signed for this attempt." }); }
+function fail(phase, status, reason) { throw Object.assign(new Error("managed_admission_blocked"), { protocolAdmission: true, retryable: false,
+  outcome: "policy_blocked", publicMessage: "Managed launch evidence is missing, changed or not signed for this attempt.",
+  ...(phase ? { details: { phase, ...(Number.isInteger(status) ? { status } : {}),
+    ...(/^[a-z][a-z0-9_]{2,80}$/.test(reason ?? "") ? { reason } : {}) } } : {}) }); }
 function authenticate(value, publicKey) {
   const key = createPublicKey(publicKey);
   if (key.asymmetricKeyType !== "ed25519" || !verify(null, trustedPilotBytes(value.payload), key, Buffer.from(value.signature, "hex"))) fail();
@@ -37,6 +39,7 @@ function persist(file, value) {
 // grant the Worker a private signing key.
 export function buildManagedAdmissionSource({ envelope, claimed, writerLock, repositoryPath, provider,
   startupEnvironment, remainingMs }) {
+  let phase = "preconditions";
   try {
     if (provider?.kind !== "hermes_codex" || provider?.enabled !== true || process.platform !== "win32"
       || envelope.contract.modelSelection?.schemaVersion !== managedBackendVersion
@@ -44,10 +47,15 @@ export function buildManagedAdmissionSource({ envelope, claimed, writerLock, rep
       || envelope.contract.modelSelection.riskClass !== "low"
       || claimed.id !== envelope.identity.executionId || claimed.attempt !== 1 || claimed.checkpoint?.stage !== "spawn_intent"
       || remainingMs() <= 3000) fail();
+    phase = "startup";
     const startup = assertProviderStartup({ envelope, provider, repositoryPath, startupEnvironment });
+    phase = "native_boundary";
     const native = assertProviderNativeBoundary(envelope);
+    phase = "writer";
     const writerDigest = nativeDigest(writerRecoveryEvidence(writerLock));
+    phase = "transport";
     const transport = providerInputTransport("hermes_codex", envelope);
+    phase = "source_fields";
     const source = { qualification: "signed_native_v1", envelope, claimed, writerLock, repositoryPath, provider,
       runtime: { executable: fixtureRuntimeBinding(provider.executablePath), node: fixtureRuntimeBinding(process.execPath),
         launcher: { sourceDigest: windowsJobSourceDigest() } },
@@ -63,10 +71,11 @@ export function buildManagedAdmissionSource({ envelope, claimed, writerLock, rep
         outputBudget: "worker_deadline_output_intent", durationDeadline: startup.budgetReceipt.acceptedDeadline,
         release: "independent_review_no_release" } };
     return { source, writerDigest, startup, native };
-  } catch { fail(); }
+  } catch (error) { fail(`source_${phase}`, error?.status, error?.message); }
 }
 
 export async function requestManagedAdmission({ api, source, writerDigest, assertAuthority }) {
+  let phase = "installation";
   try {
     assertAuthority();
     const configurationPath = path.join(writerRecoveryEvidence(source.writerLock).directory, "trusted-provider-pilot", "installation.json");
@@ -77,9 +86,11 @@ export async function requestManagedAdmission({ api, source, writerDigest, asser
       availability: { backend: "installed", model: "selected_unverified", resources: "bounded_by_worker" },
       ownerAttestation: installed.ownerAttestation };
     const route = `/v1/agent-runtime/executions/${source.claimed.id}/actions/managed-admission`;
+    phase = "backend_evidence_request";
     const evidenceReply = response("backend_evidence", nativeEvidenceSchema).parse(await api(route, { method: "POST", body: JSON.stringify({
       schemaVersion: managedAdmissionVersion, phase: "backend_evidence", leaseToken: source.claimed.leaseToken,
       executionId: source.claimed.id, source: expected }) }));
+    phase = "backend_evidence_verify";
     assertAuthority();
     const evidence = authenticate(evidenceReply.signed, installed.authorityPublicKey);
     if (evidence.state !== "accepted" || Date.parse(evidence.expiresAt) - Date.parse(evidence.issuedAt) > 300000
@@ -88,10 +99,12 @@ export async function requestManagedAdmission({ api, source, writerDigest, asser
         ownerAttestation: evidence.ownerAttestation }, expected)) fail();
     persist(path.join(installed.directory, "managed-backend-evidence.json"), evidenceReply.signed);
     const proposal = proposeTrustedPilotDecision(configurationPath, source, writerDigest);
+    phase = "decision_request";
     const decisionReply = response("decision", trustedPilotDecisionSchema).parse(await api(route, { method: "POST", body: JSON.stringify({
       schemaVersion: managedAdmissionVersion, phase: "decision", leaseToken: source.claimed.leaseToken,
       executionId: source.claimed.id, provider: proposal.provider, scope: proposal.scope,
       installation: proposal.installation, evidenceDigest: proposal.evidenceDigest }) }));
+    phase = "decision_verify";
     assertAuthority();
     const decision = authenticate(decisionReply.signed, installed.authorityPublicKey);
     if (decision.qualification !== "signed_native_v1" || decision.state !== "accepted"
@@ -106,7 +119,7 @@ export async function requestManagedAdmission({ api, source, writerDigest, asser
     const grant = Object.freeze({});
     grants.set(grant, { source, writerDigest, acceptance, used: false });
     return grant;
-  } catch { fail(); }
+  } catch (error) { fail(phase, error?.status, error?.message); }
 }
 
 export function consumeManagedAdmission(grant, options, consumption) {
