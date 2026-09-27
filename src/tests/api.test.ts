@@ -1389,6 +1389,11 @@ test("product engineering keeps definitions shared, observations explicit, and p
   assert.equal(executionContext.operatingModel.applicationProcedures.length, 1);
   assert.equal(executionContext.operatingModel.capabilityProcedures.length, 1);
   assert.equal(executionContext.operatingModel.projects.length, 1);
+  const boundedContextResponse = await request(`/v1/product-engineering/applications/${roostId}/agent-context?profile=execution&query=Verify%20release`, { headers: auth });
+  assert.equal(boundedContextResponse.status, 200);
+  const boundedProjects = (boundedContextResponse.body as { data: { operatingModel: { projects: Array<{ project: { id: string; tasks?: unknown[] } }> } } }).data.operatingModel.projects;
+  assert.equal(boundedProjects[0]?.project.id, deliveryProject.id);
+  assert.equal(boundedProjects[0]?.project.tasks, undefined);
   const unlinkProject = await request(`/v1/product-engineering/applications/${roostId}/projects/${deliveryProject.id}`, { method: "DELETE", headers: auth });
   assert.equal(unlinkProject.status, 204);
   const unlinkApplicationProcedure = await request(`/v1/product-engineering/applications/${roostId}/procedures/${procedure.id}`, { method: "DELETE", headers: auth });

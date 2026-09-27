@@ -181,6 +181,21 @@ export async function loadApplicationAgentContext(workspaceId: string, applicati
       }
     };
   }) : application.architecture;
+  // The task compiler provides the selected task and its pinned requirements.
+  // Project membership is useful context, but embedding every task in a linked
+  // project can exhaust the Worker's sealed input before the bounded task and
+  // repository evidence are added. Keep the project identity and status.
+  const executionProjects = executionProfile ? application.projects.map((link) => ({
+    applicationId: link.applicationId,
+    projectId: link.projectId,
+    relationType: link.relationType,
+    project: {
+      id: link.project.id,
+      name: link.project.name,
+      description: link.project.description,
+      status: link.project.status
+    }
+  })) : application.projects;
   return {
       schemaVersion: "application-agent-context-v2",
       generatedAt: new Date().toISOString(),
@@ -203,7 +218,7 @@ export async function loadApplicationAgentContext(workspaceId: string, applicati
           capabilityKey: item.capabilityDefinition.key,
           ...link
         }))),
-        projects: application.projects
+        projects: executionProjects
       },
       architecture: executionArchitecture,
       technologies: application.technologies,

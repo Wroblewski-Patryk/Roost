@@ -56,10 +56,10 @@ const canonical = value => Array.isArray(value) ? value.map(canonical) : value &
 const serialize = value => JSON.stringify(canonical(value));
 const digest = value => createHash("sha256").update(serialize(value)).digest("hex");
 const issued = new WeakMap();
-function blocked() {
+function blocked(reason = "provider_input_invalid", safeDetails = {}) {
   return Object.assign(new Error("agent_provider_input_blocked"), { contextAdmission: true, retryable: false,
     publicMessage: "Worker provider input failed validation. No model was started; reconcile this attempt.",
-    details: { schemaVersion: providerInputVersion, reason: "provider_input_invalid" } });
+    details: { schemaVersion: providerInputVersion, reason, ...safeDetails } });
 }
 function freeze(value) { if (value && typeof value === "object") { Object.values(value).forEach(freeze); Object.freeze(value); } return value; }
 const wrap = (provenance, value) => ({ provenance, trust: "untrusted_evidence", value });
@@ -120,12 +120,14 @@ function seal(fresh, claimed, secrets, repositoryEvidence) {
   // Private local paths are never prompt context. Relative repository paths and
   // canonical HTTPS origins remain evidence, not transport configuration.
   const visit = value => {
-    if (typeof value === "string" && /(?:(?:^|[^a-z0-9])[a-z]:[\\/]|\\\\[^\\\s]+[\\/]|file:\/\/|(?:^|[\s"'])\/(?:home|Users|tmp|var|etc|mnt|Volumes|root|srv|opt|run)\/)/i.test(value)) throw blocked();
+    if (typeof value === "string" && /(?:(?:^|[^a-z0-9])[a-z]:[\\/]|\\\\[^\\\s]+[\\/]|file:\/\/|(?:^|[\s"'])\/(?:home|Users|tmp|var|etc|mnt|Volumes|root|srv|opt|run)\/)/i.test(value)) throw blocked("private_path");
     if (value && typeof value === "object") Object.values(value).forEach(visit);
   };
   visit(body);
   const envelope = { ...body, seal: digest(body) };
-  if (!providerInputSchema.safeParse(envelope).success || Buffer.byteLength(serialize(envelope)) > providerInputMaxBytes) throw blocked();
+  if (!providerInputSchema.safeParse(envelope).success) throw blocked("schema_invalid");
+  const inputBytes = Buffer.byteLength(serialize(envelope));
+  if (inputBytes > providerInputMaxBytes) throw blocked("size_exceeded", { inputBytes, maximumBytes: providerInputMaxBytes });
   return freeze(JSON.parse(serialize(envelope)));
 }
 
