@@ -18,6 +18,9 @@ through the intended host, signed managed admission, Hermes 0.21.2 and the
 explicit Codex Responses model selection. See [current implementation](../implementation.md)
 for the execution identity and exact proof. Configuration, owner authentication,
 Worker credential and installation paths stay outside the repository.
+The `-Action Status` Host block can still show an older observer `status.json`;
+use the current server host heartbeat, execution mode and provider blockers
+together with the scheduled-task state to judge supervised connectivity.
 
 The Worker verifies the clean checkout and accepted read-only test before
 launch, then waits for native Job cleanup, repeats the test and workspace
