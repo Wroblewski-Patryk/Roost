@@ -56,6 +56,16 @@ export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) =
     if(compositionError)return {error:compositionError};
     if (error instanceof Prisma.PrismaClientKnownRequestError && (["P2034", "P2028"].includes(error.code) ||
       error.code === "P2010" && ["40001", "40P01"].includes(String(error.meta?.code)))) return { error: "task_ready_context_conflict" };
+    // Native routes intentionally suppress raw exception text. Keep a bounded,
+    // value-free diagnostic for unexpected failures so a live Ready error can
+    // be located without logging task context, SQL arguments or credentials.
+    const frames = error instanceof Error ? (error.stack ?? "").split("\n").slice(1, 5)
+      .map(line => line.match(/\bat\s+([A-Za-z_$][\w.$<>]*)/)?.[1] ?? "unknown") : [];
+    console.error("Ready transaction unexpected failure", {
+      kind: error instanceof Error ? error.constructor.name : "unknown",
+      code: error instanceof Prisma.PrismaClientKnownRequestError ? error.code : null,
+      frames
+    });
     throw error;
   }
 }
