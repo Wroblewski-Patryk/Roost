@@ -41,15 +41,22 @@ export function retireManagedAdmissionArtifacts({ directory, executionId, eviden
   try {
     if (!/^[a-f0-9-]{36}$/.test(executionId ?? "") || !/^[a-f0-9]{64}$/.test(evidenceDigest ?? "")) fail();
     physicalIdentity(directory);
-    const anchor = JSON.parse(readFileSync(path.join(directory, "installation.json"), "utf8"));
+    const installationPath = path.join(directory, "installation.json");
+    const validFile = file => {
+      const stat = lstatSync(file);
+      if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1 || stat.size < 1 || stat.size > 16384) fail();
+      return stat.size;
+    };
+    const installationBytes = validFile(installationPath);
+    const installation = readFileSync(installationPath);
+    if (installation.length !== installationBytes) fail();
+    const anchor = JSON.parse(installation);
     if (anchor.decisionFile !== "trusted-provider-pilot.json") fail();
     const evidencePath = path.join(directory, "managed-backend-evidence.json");
     const decisionPath = path.join(directory, anchor.decisionFile);
+    const evidenceBytes = validFile(evidencePath), signedDecisionBytes = validFile(decisionPath);
     const bytes = readFileSync(evidencePath), decisionBytes = readFileSync(decisionPath);
-    if (bytes.length > 16384 || decisionBytes.length > 16384
-        || ![evidencePath, decisionPath].every(file => {
-          const stat = lstatSync(file); return stat.isFile() && !stat.isSymbolicLink() && stat.nlink === 1;
-        })
+    if (bytes.length !== evidenceBytes || decisionBytes.length !== signedDecisionBytes
         || createHash("sha256").update(bytes).digest("hex") !== evidenceDigest) fail();
     const evidence = signed(nativeEvidenceSchema).parse(JSON.parse(bytes));
     const decision = signed(trustedPilotDecisionSchema).parse(JSON.parse(decisionBytes));
