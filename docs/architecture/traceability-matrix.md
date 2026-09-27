@@ -16,18 +16,27 @@ The verifier links the auditor execution and digest. Both context invalidation
 fields are null. Earlier failed audits remain historical and are not counted.
 
 Incomplete and out-of-scope coding submissions returned 409 with
-`task_execution_contract_invalid`. The coding task
+`task_execution_contract_invalid`. Coding task
 `0566f074-1d15-4a05-98a9-3ed4f60a15a4` has a dedicated component,
-assigned coder, published base and application procedures, scoped two-file
-contract and accepted managed runtime Decision
-`ee47832d-b2c4-4f6f-8fed-04224bc71829`. A separate exact first-write
-Decision `fc201896-b48a-4875-838a-c32608a76181` is proposed with its
-impact and evidence gates admitted, but **not accepted**. The pilot checkout
-is clean on `main`; no pilot edit, local commit, reviewer decision or native
-interruption/recovery proof has occurred. Requirement rows below advance only
-after the remaining native evidence. Roost commit `b86ea566` adds bounded
-reviewer-return correction on the same task branch; its deployment is tracked
-separately from the application release and does not certify Gate 2.
+assigned coder, published procedures, canonical pilot checkout and accepted
+managed runtime Decision `ee47832d-b2c4-4f6f-8fed-04224bc71829`. The
+separate first-write Decision `fc201896-b48a-4875-838a-c32608a76181` was
+accepted before the first application edit. Native Worker evidence covers
+writer exclusion, interruption at a checkpoint and safe same-attempt resume.
+The managed coding executions produced local commits
+`cdc1865bd76ab7ad0ceaf2b6bd83d45bb5305780`,
+`6e25aa1478a9befe03114a12400085f5e61d0f4b` and
+`a5eb15fe21e25e8647fbef1700c2ccbd1a77575c`. Independent reviewer
+decisions rejected each exact candidate. The latest decision
+`37945081-1536-46fc-a54a-c6eb8a6d641f` rejects the passing old test
+receipt as insufficient because the nested-alias relative-link regression is
+missing. Accountable manager action `6c4a809f-e4cf-4393-8e0b-610a40125153`
+returned a test-only correction; Ready pin
+`e16e6010-b67d-4ae7-8d11-4e265e235f50` is awaiting managed execution.
+The pilot branch remains clean at `a5eb15fe21e25e8647fbef1700c2ccbd1a77575c`,
+local only. No pilot push, deployment or final independent acceptance exists.
+Roost build `2f05568e2850028bc77ea06e8b09a315cb5cdd9c` was deployed and
+read back on both health endpoints. Gate 2 remains in progress.
 
 Owner amendment v76: [v3 source projection](bootstrap-proof-projection-v3.md)
 defines exact own-XID/receipt lineage, complete source sets, explicit shared/nested

@@ -85,10 +85,16 @@ Production readiness reports `executionEnabled: true` and
 claim independent coding review or release. Ollama remains unqualified.
 
 **Gate 2 is in progress, not met.** Independent native auditor and verifier
-completed with matching clean-checkout evidence. The separate first-write
-Decision is pending; the pilot remains unchanged. See the
-[evidence checkpoint](architecture/traceability-matrix.md) for identities and
-the remaining coding, interruption, correction and review proofs.
+completed on the clean pilot baseline. The separate first-write Decision was
+accepted before application edits. Managed coding, a one-writer rejection,
+checkpoint interruption and safe resume have native evidence. Independent
+review rejected successive local candidates with reproducible defects; the
+accountable manager returned each correction through Roost. The current pilot
+branch is clean at local commit `a5eb15fe21e25e8647fbef1700c2ccbd1a77575c`,
+which was rejected because the nested-alias regression test is absent. The
+one-file test correction is Ready, but no exact commit has independent final
+acceptance. No pilot push or deployment has occurred. See the
+[evidence checkpoint](architecture/traceability-matrix.md).
 
 ## End-to-end delivery gates
 
