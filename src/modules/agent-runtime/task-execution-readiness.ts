@@ -64,6 +64,8 @@ export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) =
     console.error("Ready transaction unexpected failure", {
       kind: error instanceof Error ? error.constructor.name : "unknown",
       code: error instanceof Prisma.PrismaClientKnownRequestError ? error.code : null,
+      sqlstate: nativeDiagnostic.match(/(?:Code: [`']?|SQLSTATE[: ]+)([A-Z0-9]{5})\b/)?.[1] ?? null,
+      category: ["does not exist", "invalid input syntax", "permission denied", "statement timeout", "could not serialize", "transaction already closed"].find(value => nativeDiagnostic.includes(value)) ?? null,
       frames
     });
     throw error;
@@ -104,6 +106,13 @@ async function resolved(db: Prisma.TransactionClient, workspaceId: string, taskI
 }
 
 export async function submitReady(db: Prisma.TransactionClient, workspaceId: string, taskId: string, input: Record<string, any>, actor: { requestedByType: string; requestedById: string | null }) {
+  const at = async <T>(stage: string, work: () => Promise<T>): Promise<T> => {
+    try { return await work(); }
+    catch (error) {
+      if (error instanceof Prisma.PrismaClientUnknownRequestError) console.error("Ready submit unexpected stage", stage);
+      throw error;
+    }
+  };
   const task = await lockReadyTask(db, workspaceId, taskId);
   if (!task) return { error: "task_not_found" };
   if (actor.requestedByType !== "user" || !actor.requestedById || !await db.workspaceMembership.findFirst({ where: { workspaceId, userId: actor.requestedById, role: { in: ["owner", "admin", "member"] } } })) return { error: "forbidden" };
@@ -125,13 +134,13 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
   if (input.expectedVersion !== await submissionVersion(db, workspaceId, taskId, input.applicationId)) return { error: "task_submission_version_conflict" };
   async function receipt(result: any, pin?: any) {
     const encodedPin = pin ? JSON.stringify(pin) : null, encodedResult = JSON.stringify(result);
-    await db.$executeRaw`INSERT INTO task_execution_submissions (task_id, request_id, actor_id, request_hash, pin_digest, result)
+    await at("submission_receipt", () => db.$executeRaw`INSERT INTO task_execution_submissions (task_id, request_id, actor_id, request_hash, pin_digest, result)
       VALUES (${taskId}::uuid, ${input.requestId}::uuid, ${actor.requestedById}::uuid, ${requestHash},
-        CASE WHEN ${encodedPin}::text IS NULL THEN NULL ELSE encode(sha256(convert_to((${encodedPin}::jsonb)::text, 'UTF8')), 'hex') END, ${encodedResult}::jsonb)`;
+        CASE WHEN ${encodedPin}::text IS NULL THEN NULL ELSE encode(sha256(convert_to((${encodedPin}::jsonb)::text, 'UTF8')), 'hex') END, ${encodedResult}::jsonb)`);
     return result;
   }
   let context;
-  try { context = await resolved(db, workspaceId, taskId, input, undefined, { authorId: actor.requestedById, requestId: input.requestId }); }
+  try { context = await at("resolved_context", () => resolved(db, workspaceId, taskId, input, undefined, { authorId: actor.requestedById!, requestId: input.requestId })); }
   catch (error) {
     if (error instanceof Error && error.message === "agent_runtime_content_blocked") throw error;
     const issues = object(error).details?.issues ?? [];
@@ -143,15 +152,15 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
     await db.event.create({ data: { workspaceId, taskId, type: "task_execution_submission_rejected", source: "roost", resourceType: "task", resourceId: taskId, payload: { requestId: input.requestId, status, issues, ...actor } } });
     return result;
   }
-  await context.watched.persist(taskId);
-  const risk = await riskAdmission(db, taskId, input);
+  await at("source_watch", () => context.watched.persist(taskId));
+  const risk = await at("risk_admission", () => riskAdmission(db, taskId, input));
   if ("error" in risk) {
     const readiness = {status:"needs_context",reason:risk.error};
     await db.task.update({where:{id:taskId},data:{executionReadiness:{...object(task.executionReadiness),...readiness}}});
     return receipt({error:risk.error,readiness});
   }
-  const admission = await riskLevelAdmission(db,taskId);
-  const composition=await composeProcedure(db,taskId,"runtime_execute",true);
+  const admission = await at("risk_level_admission", () => riskLevelAdmission(db,taskId));
+  const composition=await at("procedure_composition", () => composeProcedure(db,taskId,"runtime_execute",true));
   if(!composition.seal || (task.executionReadiness as any)?.status==="ready" && (task.executionReadiness as any)?.procedureComposition?.seal && (task.executionReadiness as any).procedureComposition.seal!==composition.seal) {
     const readiness={status:"needs_context",reason:"procedure_composition_required",issues:[...composition.missing,...composition.conflicts].map((code:string)=>({field:"procedureComposition",code}))};
     await db.task.update({where:{id:taskId},data:{executionReadiness:{...object(task.executionReadiness),...readiness}}});
@@ -162,7 +171,7 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
     await db.task.update({where:{id:taskId},data:{executionReadiness:{...object(task.executionReadiness),...readiness}}});
     return receipt({error:admission.error,readiness});
   }
-  const procedureCompositionSet=Object.fromEntries(await Promise.all(admissionOperations.map(async op=>[op,await composeProcedure(db,taskId,op,true)])));
+  const procedureCompositionSet=Object.fromEntries(await Promise.all(admissionOperations.map(async op=>[op,await at("procedure_composition_set", () => composeProcedure(db,taskId,op,true))])));
   const interviewVersion=(await db.$queryRaw<any[]>`SELECT task_interview_version(${taskId}::uuid) AS value`)[0].value;
   const pin = { interviewVersion, schemaVersion: "roost-ready-context-v1", sourceWatchVersion: "1", submissionId: input.requestId, status: "ready", pinId: randomUUID(), revision: context.revision,
     riskAssessmentId: risk.id,
