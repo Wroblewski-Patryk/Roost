@@ -458,6 +458,7 @@ export const adapterManifest = {
       { method: "POST", path: "/v1/agent-runtime/executions/:id/checkpoint", capability: "agent-runtime:report" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/recover", capability: "agent-runtime:claim" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/reconcile-readonly-spawn", capability: "agent-runtime:claim" },
+      { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/reconcile-coding-branch-intent", capability: "agent-runtime:claim" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/prior-readonly-audit", capability: "agent-runtime:claim" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/recovery-blocked", capability: "agent-runtime:report" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/context-stopped", capability: "agent-runtime:report" },

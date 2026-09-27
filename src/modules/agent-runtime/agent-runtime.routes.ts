@@ -565,6 +565,74 @@ agentRuntimeRouter.post("/executions/:id/actions/reconcile-readonly-spawn", asyn
   res.json({ data: result.execution, replay: result.replay });
 }));
 
+// Branch creation is still before the model boundary. An expired lease here
+// cannot be renewed; a fresh native observation may terminalize only this
+// exact pre-spawn checkpoint, leaving the local writer fence for reconciliation.
+agentRuntimeRouter.post("/executions/:id/actions/reconcile-coding-branch-intent", asyncHandler(async (req, res) => {
+  const input = readonlySpawnReconciliationSchema.parse(req.body);
+  if (!req.auth!.workerTicketIdentity || req.auth!.authType !== "api_key") return sendApiError(res, 403, "worker_credential_forbidden");
+  const host = await prisma.agentHost.findFirst({ where: { id: req.auth!.workerTicketIdentity.hostId,
+    workspaceId: req.auth!.workspaceId, slug: input.hostSlug, status: { not: "disabled" } } });
+  if (!host) return sendApiError(res, 403, "worker_credential_forbidden");
+  const observedAt = new Date(input.observedAt), now = new Date();
+  const attestationDigest = createHash("sha256").update(JSON.stringify(input)).digest("hex");
+  const result = await readyTransaction(async tx => {
+    if (!await workerClaimAllowed(tx, req.auth!, host.id)) return { error: "worker_credential_forbidden" };
+    const current = await tx.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId,
+      agentHostId: host.id }, include: { task: { select: { projectId: true } } } });
+    if (!current) return { error: "agent_coding_branch_reconciliation_conflict" };
+    const previous = current.errorState as any;
+    if (current.status === "failed" && previous?.code === "agent_coding_branch_intent_reconciled"
+      && previous?.details?.attestationDigest === attestationDigest
+      && previous?.details?.checkpointVersion === input.expectedVersion)
+      return { execution: current, replay: true };
+    if (observedAt.getTime() > now.getTime() || now.getTime() - observedAt.getTime() > 120_000)
+      return { error: "agent_coding_branch_reconciliation_stale" };
+    const checkpoint = recoveryCheckpoint.safeParse(current.checkpoint);
+    const metadata = current.metadata as any;
+    const contract = metadata?.executionContract, pin = metadata?.readyContextPin;
+    const noResult = !current.summary && !current.finalResponse
+      && Array.isArray(current.changedFiles) && current.changedFiles.length === 0
+      && (!current.verification || typeof current.verification === "object" && !Array.isArray(current.verification)
+        && Object.keys(current.verification).length === 0)
+      && !metadata?.resultRevision;
+    if (!["claimed", "running"].includes(current.status) || current.completedAt || current.contextInvalidatedAt
+      || !current.leaseExpiresAt || current.leaseExpiresAt > now || current.checkpointVersion !== input.expectedVersion
+      || current.attempt < 1 || !checkpoint.success || checkpoint.data.stage !== "branch_intent"
+      || checkpoint.data.sessionId !== input.checkpointSessionId || !pin?.revision || !noResult
+      || !checkpoint.data.contextRevision || !checkpoint.data.packetRevision || !checkpoint.data.workspaceDigest
+      || contract?.nativeBoundary?.profile !== "coding-local"
+      || checkpoint.data.branch !== contract?.singleTask?.branch
+      || input.baselineCommit !== pin.riskAdmissionCommit || checkpoint.data.headCommit !== input.baselineCommit
+      || observedAt <= current.leaseExpiresAt
+      || await tx.trustedProviderTicket.count({ where: { executionId: current.id, workspaceId: current.workspaceId } })
+      || await tx.agentExecutionEvent.count({ where: { executionId: current.id, type: { in: ["runner_started", "runner_progress"] } } }))
+      return { error: "agent_coding_branch_reconciliation_conflict" };
+    const code = "agent_coding_branch_intent_reconciled";
+    const details = { schemaVersion: "roost-coding-branch-reconciliation-v1", checkpointStage: "branch_intent",
+      checkpointSessionId: input.checkpointSessionId, checkpointVersion: input.expectedVersion,
+      baselineCommit: input.baselineCommit, baselineBranch: input.baselineBranch,
+      repositoryDigest: input.repositoryDigest, writerLockDigest: input.writerLockDigest,
+      applicationLease: input.applicationLease, observedAt: input.observedAt, attestationDigest };
+    const changed = await tx.agentExecution.updateMany({ where: { id: current.id, workspaceId: current.workspaceId,
+      agentHostId: host.id, status: current.status, checkpointVersion: input.expectedVersion,
+      leaseToken: current.leaseToken, leaseExpiresAt: { lte: now }, completedAt: null, contextInvalidatedAt: null },
+      data: { status: "failed", completedAt: now, leaseToken: null, leaseExpiresAt: null,
+        errorState: json({ code, message: "Coding branch intent reconciled before model launch; no result was accepted.",
+          retryable: false, details }) } });
+    if (!changed.count) return { error: "agent_coding_branch_reconciliation_conflict" };
+    await tx.agentExecutionEvent.create({ data: { workspaceId: current.workspaceId, executionId: current.id,
+      type: "coding_branch_intent_reconciled", level: "warning",
+      message: "Coding branch intent reconciled before model launch.", payload: json(details) } });
+    await tx.event.create({ data: { type: "agent_execution_failed", workspaceId: current.workspaceId,
+      taskId: current.taskId, projectId: current.task.projectId, resourceType: "agent_execution", resourceId: current.id,
+      source: "codex", payload: json({ executionId: current.id, code, retryable: false }) } });
+    return { execution: await tx.agentExecution.findUniqueOrThrow({ where: { id: current.id } }), replay: false };
+  });
+  if ("error" in result && typeof result.error === "string") return sendApiError(res, result.error === "worker_credential_forbidden" ? 403 : 409, result.error);
+  res.json({ data: result.execution, replay: result.replay });
+}));
+
 agentRuntimeRouter.post("/executions/:id/actions/recovery-blocked", asyncHandler(async (req, res) => {
   const input = z.object({ hostSlug: z.string().min(1).max(120), reason: recoveryReasons }).strict().parse(req.body);
   const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, agentHost: { slug: input.hostSlug }, status: { in: ["queued", "claimed", "running", "waiting_for_approval"] } } });

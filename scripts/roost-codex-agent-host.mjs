@@ -1,7 +1,7 @@
 import { abandonProviderNativeBoundary } from "./lib/agent-host-provider-input.mjs";
 import { inspectExecutionProvider, providerAdmissionReason } from "./lib/agent-host-execution-provider.mjs";
 import lifecycle from "./lib/agent-host-lifecycle.cjs";
-import { spawn, execFile } from "node:child_process";
+import { spawn } from "node:child_process";
 import { guardHostContent, hostTransport, boundedRunnerLines, readHostResponse } from "./lib/agent-host-redaction.mjs";
 import { access, readFile } from "node:fs/promises";
 import os from "node:os";
@@ -43,6 +43,7 @@ import { protocol, protocolHeaders, apiCompatibility, protocolAdmissionError } f
 import readyContext from "./lib/agent-host-ready-context.cjs";
 import { contextStopError } from "./lib/agent-host-context-stop.mjs";
 import { assertTaskBranch, readCurrentTaskBranch, readCurrentTaskCommit, readCommittedTaskPaths } from "./lib/agent-host-single-task.mjs";
+import { createTaskBranch } from "./lib/agent-host-task-branch.mjs";
 
 const baseUrl = String(process.env.ROOST_BASE_URL || process.env.COMPANYCORE_BASE_URL || "").replace(/\/+$/, "");
 const apiKey = process.env.ROOST_AGENT_API_KEY || process.env.COMPANYCORE_API_KEY;
@@ -170,14 +171,6 @@ async function gitStatus(repositoryPath) {
     child.on("error", reject);
     child.on("close", (code) => code === 0 ? resolve(stdout.split(/\r?\n/).filter(Boolean)) : reject(new Error(`git_status_failed: ${stderr.trim()}`)));
   });
-}
-
-async function createTaskBranch(repositoryPath, branch) {
-  if (!/^codex\/task-[a-f0-9-]{36}$/.test(branch)) throw recoveryError("repository_mismatch");
-  await new Promise((resolve, reject) => execFile("git", ["-c", "core.hooksPath=NUL", "-c", "core.fsmonitor=false",
-    "switch", "--create", "--no-track", branch], { cwd: repositoryPath, shell: false, windowsHide: true, timeout: 10000,
-    maxBuffer: 16384, env: { ...process.env, GIT_OPTIONAL_LOCKS: "0", GIT_NO_REPLACE_OBJECTS: "1" } },
-  error => error ? reject(recoveryError("repository_mismatch")) : resolve()));
 }
 
 function statusPath(line) {

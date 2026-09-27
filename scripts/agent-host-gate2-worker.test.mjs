@@ -13,6 +13,7 @@ import { finalizeLocalCommit } from "./lib/agent-host-local-commit.mjs";
 import { prepareCodingTests, runCodingTests } from "./lib/agent-host-coding-tests.mjs";
 import { acquireWriterLock } from "./lib/agent-host-writer-lock.mjs";
 import { collectWorkspaceEvidence } from "./lib/agent-host-workspace-evidence.mjs";
+import { createTaskBranch } from "./lib/agent-host-task-branch.mjs";
 
 const digest = value => createHash("sha256").update(value).digest("hex");
 const git = (cwd, ...args) => execFileSync("git", ["-c", "user.name=Roost Test", "-c", "user.email=test@invalid.local", ...args],
@@ -81,6 +82,21 @@ test("local finalizer cannot infer commit authority from a coding result", () =>
   assert.throws(() => finalizeLocalCommit({ firstWrite: { operations: { localCommit: false } },
     nativeReviewReceipt: { verdict: "verified_candidate" }, nativeReviewReceiptDigest: "a".repeat(64),
     candidateTests: { passed: true }, workspaceEvidence: {}, writePaths: ["src"] }), /local_commit_unproven/);
+});
+
+test("Worker creates exactly the pinned task branch from a clean baseline", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "roost-gate2-branch-"));
+  try {
+    const taskId = randomUUID(), branch = `codex/task-${taskId}`;
+    git(root, "init", "-b", "main");
+    git(root, "commit", "--allow-empty", "-m", "Baseline");
+    const baseline = git(root, "rev-parse", "HEAD");
+    await createTaskBranch(root, branch);
+    assert.equal(git(root, "branch", "--show-current"), branch);
+    assert.equal(git(root, "rev-parse", "HEAD"), baseline);
+    await assert.rejects(createTaskBranch(root, branch), error =>
+      error.message === "agent_execution_recovery_blocked" && error.recoveryReason === "repository_mismatch");
+  } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
 test("configured npm acceptance test runs in a real owned Windows Job", { skip: process.platform !== "win32", timeout: 30000 }, async () => {

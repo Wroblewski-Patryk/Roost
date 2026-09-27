@@ -3937,6 +3937,39 @@ test("expired read-only spawn terminalization requires the exact bound Worker an
   await prisma.agentExecutionEvent.create({ data: { workspaceId, executionId: started.execution.id,
     type: "runner_started", message: "Synthetic inconsistent event", payload: {} } });
   assert.equal((await started.post(started.proof)).status, 409);
+
+  const codingBranch = `codex/task-${task.id}`, codingSession = randomUUID();
+  const codingCheckpoint = { schemaVersion: "roost-recovery-v1", stage: "branch_intent", sessionId: codingSession,
+    packetRevision: "c".repeat(64), workspaceDigest: "d".repeat(64), contextRevision: "e".repeat(64),
+    branch: codingBranch, headCommit: baseline };
+  const coding = await prisma.$transaction(async tx => {
+    await tx.$executeRawUnsafe("ALTER TABLE agent_executions DISABLE TRIGGER USER");
+    const row = await tx.agentExecution.create({ data: { workspaceId, taskId: task.id, applicationId: application.id,
+      agentHostId: host.id, requestedByType: "user", status: "running", attempt: 1,
+      startedAt: new Date(Date.now() - 90_000), leaseToken: randomUUID(), leaseExpiresAt: new Date(Date.now() - 10_000),
+      checkpointVersion: 2, checkpoint: codingCheckpoint,
+      metadata: { executionContract: { nativeBoundary: { profile: "coding-local" }, singleTask: { branch: codingBranch } },
+        readyContextPin: { revision: "b".repeat(64), riskAdmissionCommit: baseline } } } });
+    await tx.$executeRawUnsafe("ALTER TABLE agent_executions ENABLE TRIGGER USER");
+    return row;
+  });
+  const codingPath = `/v1/agent-runtime/executions/${coding.id}/actions/reconcile-coding-branch-intent`;
+  const codingProof = { ...released.proof, expectedVersion: 2, checkpointSessionId: codingSession,
+    baselineBranch: "main", observedAt: new Date().toISOString() };
+  const codingPost = (body: unknown, headers: Record<string,string> = workerAuth) =>
+    request(codingPath, { method: "POST", headers, body: JSON.stringify(body) });
+  assert.equal((await codingPost(codingProof, auth)).status, 403);
+  const codingDenied = await codingPost({ ...codingProof, baselineCommit: "0".repeat(40) });
+  assert.equal(codingDenied.status, 409, JSON.stringify(codingDenied.body));
+  const codingAccepted = await codingPost(codingProof);
+  assert.equal(codingAccepted.status, 200, JSON.stringify(codingAccepted.body));
+  assert.equal((await codingPost(codingProof)).status, 200);
+  const codingAfter = await prisma.agentExecution.findUniqueOrThrow({ where: { id: coding.id } });
+  assert.equal(codingAfter.status, "failed");
+  assert.equal(codingAfter.leaseExpiresAt, null);
+  assert.equal((codingAfter.errorState as any).code, "agent_coding_branch_intent_reconciled");
+  assert.equal(await prisma.agentExecutionEvent.count({ where: { executionId: coding.id,
+    type: "coding_branch_intent_reconciled" } }), 1);
 });
 
 test("CompanyCore v1 protected API flow", async () => {
