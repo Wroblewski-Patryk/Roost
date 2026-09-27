@@ -4,7 +4,8 @@ Current delivery work starts at [Matrix](#matrix). The amendment stream before
 it is historical evidence and should be skipped unless a specific requirement
 or implementation claim needs provenance; it is never the work queue.
 
-Gate 2 checkpoint (2026-09-27): the gate remains **in progress**. The current
+Gate 2 native evidence (2026-09-27): the gate is **met** for the configured
+pilot coding and independent review flow. The
 native read-only auditor execution `b00d5c8b-8e5f-4d32-aeb9-2240ea67322f`
 and independent verifier execution `bbb0e0e1-16d0-48f5-b58c-67a0dcad7f0f`
 both completed under separate roles and signed managed admission on the same
@@ -27,16 +28,50 @@ The managed coding executions produced local commits
 `cdc1865bd76ab7ad0ceaf2b6bd83d45bb5305780`,
 `6e25aa1478a9befe03114a12400085f5e61d0f4b` and
 `a5eb15fe21e25e8647fbef1700c2ccbd1a77575c`. Independent reviewer
-decisions rejected each exact candidate. The latest decision
-`37945081-1536-46fc-a54a-c6eb8a6d641f` rejects the passing old test
-receipt as insufficient because the nested-alias relative-link regression is
-missing. Accountable manager action `6c4a809f-e4cf-4393-8e0b-610a40125153`
-returned a test-only correction; Ready pin
-`e16e6010-b67d-4ae7-8d11-4e265e235f50` is awaiting managed execution.
-The pilot branch remains clean at `a5eb15fe21e25e8647fbef1700c2ccbd1a77575c`,
-local only. No pilot push, deployment or final independent acceptance exists.
-Roost build `2f05568e2850028bc77ea06e8b09a315cb5cdd9c` was deployed and
-read back on both health endpoints. Gate 2 remains in progress.
+decisions rejected each exact candidate. Decision
+`37945081-1536-46fc-a54a-c6eb8a6d641f` identified the absent nested-alias
+regression despite a passing old test receipt. Accountable manager action
+`6c4a809f-e4cf-4393-8e0b-610a40125153` returned a test-only correction.
+Managed coding execution `b95cf777-fe24-46a4-a88e-4bd0a9314bef` then
+created local commit `774e858ae48d1f05d2b56982a7113da983f62af8`
+against baseline `a5eb15fe21e25e8647fbef1700c2ccbd1a77575c`. Its signed
+local-commit receipt binds first-write Decision
+`fc201896-b48a-4875-838a-c32608a76181`, candidate test digest
+`5938582e5acbb3b2e1f200f3fc9a86bf12e4f7f287cc0fdf1df7390773254bab`,
+and native `verified_candidate` receipt: installation and verification PASS,
+no violations, Job exit 0 and zero active processes. Windows focused test:
+8 pass, 0 fail, 1 POSIX fixture skipped. A separate offline Linux read-only
+run on the same commit: 8 pass, 0 fail, 1 Windows fixture skipped, including
+the actual nested relative-link case; output SHA-256
+`0acdf4df73402dafa0292a61813c0a55fc6772fba665216b0687397fcffdda8c`
+and Roost evidence `7e076475-e667-473e-bed3-f424913280bc`.
+
+Independent read-only reviewer execution
+`5c27d054-7cc3-45a1-9ef6-d43760316e69` used Ready pin
+`d3aaeedc-71f4-4281-b5e6-99468d33f73e`, a fresh scoped review grant,
+and managed Hermes `codex_responses` / `gpt-5.6-sol` / medium reasoning.
+Its native audit reported unchanged Git, process and Docker state, Job exit 0
+and zero active processes. Roost read back Decision
+`c349899b-72c3-4260-9b77-de733f42866c` with `approve`, exact commit
+`774e858ae48d1f05d2b56982a7113da983f62af8`, coding material digest
+`cb9381a5ad6ba1dc28416b96cfe45861edc8c5e55be0495bbf22de3a72eb3569`
+and evidence citing both platform tests. This is native Gate 2 acceptance,
+not release certification. The pilot branch remains clean and local with no
+push or deployment. Roost build `7ee3e19cdb0dc4d9cfd26085ff85dde6a23d4523`
+was deployed and read back on health and build-info endpoints before final
+review; the subsequent evidence and test update does not change API behavior.
+
+An earlier failed native coding attempt required signed terminal, lease and
+spent-admission reconciliation before further execution. The exact recovery
+was archived outside Git. General after-spawn automatic recovery and arbitrary
+external filesystem effects remain outside this proof; Hermes usage/cost
+telemetry is unavailable. Gate 2 completion does not advance Gate 3.
+After final acceptance, `npm run test:agent-host-gate2` passed 7/7,
+`npm run test:agent-host-recovery` passed 20/20, the managed-admission and
+review-migration tests passed 2/2, and the PL/EN review UI test passed 76
+checks after its synthetic fixture was updated to include the exact commit
+required for approval. `npm run validate` and `npm run codex:check` passed;
+the latter covered all 225 accepted requirement IDs.
 
 Owner amendment v76: [v3 source projection](bootstrap-proof-projection-v3.md)
 defines exact own-XID/receipt lineage, complete source sets, explicit shared/nested
@@ -1069,15 +1104,15 @@ stays disabled and the canonical host stays observe.
 | [RF-CTX-003](../product/requirements.md#rf-ctx-003) | P0 | częściowo działa | [CTX](#e-ctx) | Record/evidence models exist; epistemic labeling not uniformly enforced. |
 | [RF-CTX-004](../product/requirements.md#rf-ctx-004) | P0 | częściowo działa | [PACKET](#e-packet) | Application context exists; validated full manifest absent. |
 | [RF-CTX-005](../product/requirements.md#rf-ctx-005) | P0 | częściowo działa | [PACKET](#e-packet) | Packet references versions; complete layered selection/reason trace missing. |
-| [RF-CTX-006](../product/requirements.md#rf-ctx-006) | P0 | częściowo działa | [PACKET](#e-packet) | Ready invalidation and active-attempt fencing stop work at observed checkpoint/event/heartbeat boundaries; late authority and restart are rejected. Arbitrary internal runner operations/OS freezes and atomic database-to-spawn remain outside the guarantee; no live provider proof. |
+| [RF-CTX-006](../product/requirements.md#rf-ctx-006) | P0 | częściowo działa | [PACKET](#e-packet), Gate 2 native evidence above | Ready invalidation and active-attempt fencing stop work at observed checkpoint/event/heartbeat boundaries; late authority and restart are rejected. Gate 2 ran a real managed provider after pinned Ready and a safe same-attempt resume at a pre-spawn checkpoint. Arbitrary internal runner operations/OS freezes and atomic database-to-spawn remain outside the guarantee. |
 | [RF-CTX-007](../product/requirements.md#rf-ctx-007) | P1 | brak | [CTX](#e-ctx) | No runtime context expansion protocol. |
 | [RF-CTX-008](../product/requirements.md#rf-ctx-008) | P0 | działa | [SUBMIT](#e-submit) | Within the supervised runtime, only the explicit versioned/idempotent Submit command grants Ready after validation. Draft/Needs context/Needs decision are durable; create/assign/edit/import and alternate database writes cannot admit work. Automatic interviews and semantic completeness belong to separate requirements. |
 | [RF-CTX-009](../product/requirements.md#rf-ctx-009) | P0 | częściowo działa | [TASK](#e-task), [single-task contract](execution-packet-contract.md#single-task-scope-rf-ctx-009), `scripts/agent-host-single-task.test.mjs`, `src/tests/api.test.ts`, `scripts/task-readiness-ui.test.mjs` | Submit requires one resolved app/component, manager, executor, measured result and deterministic branch; bounded shared-cause exception is visible/auditable. API/DB/host gates, legacy invalidation and source revision checks prevent ordinary bypass. Structural and PL/EN ambiguity checks do not prove arbitrary prose semantics; independent acceptance/role separation remains RF-CTX-010. |
-| [RF-CTX-010](../product/requirements.md#rf-ctx-010) | P0 | częściowo działa | [role contract](execution-packet-contract.md#explicit-task-roles-rf-ctx-010), `scripts/lib/agent-host-task-roles.mjs`, `src/modules/agent-runtime/task-role-context.ts`, `src/tests/api.test.ts`, `scripts/agent-host-task-roles.test.mjs`, `scripts/task-roles-migration.test.mjs`, `scripts/task-readiness-ui.test.mjs` | Submit resolves five current roles, immutable human origin and accepted author history; API/DB/host reject self-review/self-release and stale authority. Membership/profile edits invalidate Ready. Declared mandates/skills do not certify qualifications or bind runtime credentials; review/return and release execution remain absent. |
+| [RF-CTX-010](../product/requirements.md#rf-ctx-010) | P0 | częściowo działa | [role contract](execution-packet-contract.md#explicit-task-roles-rf-ctx-010), `scripts/lib/agent-host-task-roles.mjs`, `src/modules/agent-runtime/task-role-context.ts`, `src/tests/api.test.ts`, `scripts/agent-host-task-roles.test.mjs`, `scripts/task-roles-migration.test.mjs`, `scripts/task-readiness-ui.test.mjs`, Gate 2 native evidence above | Submit resolves five current roles, immutable human origin and accepted author history; API/DB/host reject self-review/self-release and stale authority. Gate 2 bound separate coder, manager and credential-bound reviewer, including return and exact-commit acceptance. Membership/profile edits invalidate Ready. Broad qualification certification and release execution remain outside this proof. |
 | [RF-CTX-011](../product/requirements.md#rf-ctx-011) | P1 | częściowo działa | [PROC](#e-proc) | Registry primitives exist; task-type execution contract incomplete. |
 | [RF-CTX-012](../product/requirements.md#rf-ctx-012) | P0 | częściowo działa | [versioned composition](versioned-procedure-composition.md), `procedure-composition.ts`, API/DB and host/UI tests | Native immutable base/extension contracts, deterministic composition, exact expiring independent-owner exceptions and Ready/packet/host pins work. Automatic procedure execution and company-wide workflow coverage remain outside this boundary. |
 | [RF-CTX-013](../product/requirements.md#rf-ctx-013) | P0 | częściowo działa | [typed handoff](typed-work-handoff.md), `task-handoff.ts`, contract/API/DB/UI tests | Native immutable execution/material handoff, exact role/principal receipt, typed rejection and superseding versions work under current risk, redaction and task-scoped agent grants. Source references are validated; independent Git/test attestation, receiver invocation and external conversation coverage remain separate. |
-| [RF-CTX-014](../product/requirements.md#rf-ctx-014) | P0 | częściowo działa | [native review contract](task-review-workflow.md), `src/modules/agent-runtime/task-review.ts`, `src/tests/api.test.ts`, `scripts/task-review-ui.test.mjs`, `scripts/task-review-migration.test.mjs` | Current human or credential-bound agent verifier records versioned approve/reject; manager returns scoped work or creates one dependent specialist draft. Append-only history, role/DB guards, correction Submit, stale/concurrent/restart and UI paths verified. Automated reviewer invocation and artifact/Git attestation remain separate. |
+| [RF-CTX-014](../product/requirements.md#rf-ctx-014) | P0 | częściowo działa | [native review contract](task-review-workflow.md), `src/modules/agent-runtime/task-review.ts`, `src/tests/api.test.ts`, `scripts/task-review-ui.test.mjs`, `scripts/task-review-migration.test.mjs`, Gate 2 native evidence above | Current human or credential-bound agent verifier records versioned approve/reject; manager returns scoped work or creates one dependent specialist draft. Gate 2 exercised managed independent reviewer invocation, repeated rejection, manager correction and approval bound to the Worker local commit and material digest. Broader artifact/Git attestation and release authorization remain separate. |
 | [RF-CTX-015](../product/requirements.md#rf-ctx-015) | P1 | częściowo działa | [governed clarification](governed-task-clarification.md), `src/modules/agent-runtime/task-clarification.ts`, `src/tests/api.test.ts`, `scripts/task-clarification-ui.test.mjs` | Native append-only typed conversations bind current task-role principals and canonical same-application task relations; exact grants, read/reply receipts, superseding corrections, material notices and deterministic execution receipts are implemented. External delivery, automatic routing, semantic material inference and independent artifact attestation remain outside this contract. |
 | [RF-CTX-016](../product/requirements.md#rf-ctx-016) | P1 | częściowo działa | [DEC](#e-dec) | Native versioned material-question cases, scoped owner answer → Decision proposal → separate acceptance and dependency Ready fences; see [contract](material-unknown-interviews.md). Full hierarchy and semantic/model orchestration remain outside this slice. |
 | [RF-CTX-017](../product/requirements.md#rf-ctx-017) | P0 | częściowo działa | [DEC](#e-dec) | Native immutable supersession, exact declared conflicts, directional impact previews, separately gated owner acceptance, scoped Ready/active-work invalidation and typed event-based reopening are implemented; see [contract](decision-supersession-impact.md). Semantic company-wide discovery, hierarchy authority and automatic external event delivery remain outside this slice. |
@@ -1091,8 +1126,8 @@ stays disabled and the canonical host stays observe.
 | [RF-CTX-025](../product/requirements.md#rf-ctx-025) | P1 | brak | [REVIEW](#e-review) | No dispute protocol. |
 | [RF-CTX-026](../product/requirements.md#rf-ctx-026) | P1 | nieocenione | [PROC](#e-proc) | Executor-class declarations, bounded retry/fallback and promotion to deterministic automation require procedure-runtime proof. |
 | [RF-HOST-001](../product/requirements.md#rf-host-001) | P0 | częściowo działa | [HOST](#e-host) | Queue/observer implemented; full scheduler pending. |
-| [RF-HOST-002](../product/requirements.md#rf-host-002) | P0 | częściowo działa | [LOCK](#e-lock) | Global writer lock works; waiting/read resource admission absent. |
-| [RF-HOST-003](../product/requirements.md#rf-host-003) | P0 | częściowo działa | [RECOVERY](#e-recovery) | Pre-spawn recovery implemented; after-spawn recovery deliberately blocked. |
+| [RF-HOST-002](../product/requirements.md#rf-host-002) | P0 | częściowo działa | [LOCK](#e-lock), Gate 2 native evidence above | Global writer lock rejected a second writing executor while the first held the pilot slot. General waiting/read resource admission remains partial. |
+| [RF-HOST-003](../product/requirements.md#rf-host-003) | P0 | częściowo działa | [RECOVERY](#e-recovery), Gate 2 native evidence above | A stopped pre-spawn attempt resumed safely under the same checkpoint and identity. An after-spawn failed coding candidate needed exact signed manual lease and admission reconciliation; automatic recovery for every such failure remains unproven. |
 | [RF-HOST-004](../product/requirements.md#rf-host-004) | P0 | częściowo działa | [WORKSPACE](#e-workspace) | Path/origin guard exists; full clean-main and unknown-change admission absent. |
 | [RF-HOST-005](../product/requirements.md#rf-host-005) | P1 | częściowo działa | [WORKSPACE](#e-workspace) | No governed branch lifecycle or WIP broker. |
 | [RF-HOST-006](../product/requirements.md#rf-host-006) | P0 | częściowo działa | [LEASE](#e-lease) | Lease/process-tree and durable spawn barriers exist; all operation checkpoints incomplete. |
@@ -1132,7 +1167,7 @@ stays disabled and the canonical host stays observe.
 | [RF-RES-008](../product/requirements.md#rf-res-008) | P1 | działa | [GOV](#e-gov) | Boundary retained; no new cleanup mechanism. |
 | [RF-REL-001](../product/requirements.md#rf-rel-001) | P0 | brak | [RELEASE](#e-release) | No native Git/PR/merge broker. |
 | [RF-REL-002](../product/requirements.md#rf-rel-002) | P0 | działa | [GOV](#e-gov) | Governing prohibition retained. |
-| [RF-REL-003](../product/requirements.md#rf-rel-003) | P0 | brak | [REVIEW](#e-review) | No independent review orchestrator. |
+| [RF-REL-003](../product/requirements.md#rf-rel-003) | P0 | częściowo działa | [REVIEW](#e-review), Gate 2 native evidence above | Separate managed read-only reviewer rejected three exact commits and approved corrected commit `774e858ae48d1f05d2b56982a7113da983f62af8` through a scoped credential and Roost Decision. Release review/certification remains unproven. |
 | [RF-REL-004](../product/requirements.md#rf-rel-004) | P0 | brak | [RELEASE](#e-release) | No exact-commit release authorization. |
 | [RF-REL-005](../product/requirements.md#rf-rel-005) | P0 | częściowo działa | [RELEASE](#e-release) | Bootstrap workflow exists; native completion gate absent. |
 | [RF-REL-006](../product/requirements.md#rf-rel-006) | P0 | brak | [HEALTH](#e-health) | No automated baseline-aware observation gate. |
@@ -1140,7 +1175,7 @@ stays disabled and the canonical host stays observe.
 | [RF-REL-008](../product/requirements.md#rf-rel-008) | P0 | brak | [RELEASE](#e-release) | Manual operations docs exist; automatic rollback absent. |
 | [RF-REL-009](../product/requirements.md#rf-rel-009) | P1 | brak | [HEALTH](#e-health) | No continuous multi-app monitoring worker. |
 | [RF-REL-010](../product/requirements.md#rf-rel-010) | P0 | brak | [HEALTH](#e-health) | No verified per-app safety certification. |
-| [RF-REL-011](../product/requirements.md#rf-rel-011) | P0 | częściowo działa | [TEST](#e-test) | Repository tests exist; risk-based native test gate absent. |
+| [RF-REL-011](../product/requirements.md#rf-rel-011) | P0 | częściowo działa | [TEST](#e-test), Gate 2 native evidence above | Worker enforced focused Windows candidate test before local commit; supplemental read-only POSIX test passed and independent reviewer cited both. General risk-based test selection and release gate remain unproven. |
 | [RF-REL-012](../product/requirements.md#rf-rel-012) | P1 | brak | [TEST](#e-test) | Bootstrap skill workflow exists; native enforcement absent. |
 | [RF-REL-013](../product/requirements.md#rf-rel-013) | P0 | częściowo działa | [TEST](#e-test) | API tests exist; compatibility release gate incomplete. |
 | [RF-REL-014](../product/requirements.md#rf-rel-014) | P0 | brak | [RELEASE](#e-release) | No desired-state reconciliation service. |
@@ -1152,8 +1187,8 @@ stays disabled and the canonical host stays observe.
 | [RF-ACT-002](../product/requirements.md#rf-act-002) | P0 | częściowo działa | [DRY](#e-dry) | Lease/recovery fixture tests exist; complete dry-run certification absent. |
 | [RF-ACT-003](../product/requirements.md#rf-act-003) | P0 | brak | [RELEASE](#e-release) | Needs broker and passed local dry run; ask owner for repo/folder only at that stage. |
 | [RF-ACT-004](../product/requirements.md#rf-act-004) | P1 | brak | [RESOURCE](#e-resource) | Not yet reached; no resources created. |
-| [RF-ACT-005](../product/requirements.md#rf-act-005) | P0 | brak | [AUDITOR](#e-auditor) | Current supervised host only has workspace-write; read-only canary absent. |
-| [RF-ACT-006](../product/requirements.md#rf-act-006) | P0 | brak | [AUDITOR](#e-auditor) | No two-stage canary orchestration. |
+| [RF-ACT-005](../product/requirements.md#rf-act-005) | P0 | częściowo działa | [AUDITOR](#e-auditor), Gate 2 native evidence above | Managed read-only pilot auditor and exact-commit reviewer completed with unchanged Git/process/Docker audits. General continuous canary activation remains unproven. |
+| [RF-ACT-006](../product/requirements.md#rf-act-006) | P0 | częściowo działa | [AUDITOR](#e-auditor), Gate 2 native evidence above | Separate read-only auditor and verifier completed against one clean baseline with matching evidence digest before the first write. General scheduled canary orchestration remains unproven. |
 | [RF-ACT-007](../product/requirements.md#rf-act-007) | P0 | brak | [ACT](#e-act) | No readiness report or activation authorization state machine. |
 | [RF-ACT-008](../product/requirements.md#rf-act-008) | P1 | brak | [ACT](#e-act) | No capability progression lifecycle. |
 | [RF-ACT-009](../product/requirements.md#rf-act-009) | P1 | brak | [ACT](#e-act) | No probation counters/certification. |
@@ -1426,7 +1461,7 @@ not execute verification, backup, restore or releases.
 [src/modules/company-objects/company-objects.routes.ts](../../src/modules/company-objects/company-objects.routes.ts), [prisma/schema.prisma](../../prisma/schema.prisma).
 
 <a id="e-review"></a>
-**REVIEW** — Native human result review and manager correction return are governed by [RF-CTX-014](task-review-workflow.md). Independent agent routing and exact-commit release authorization remain absent.
+**REVIEW** — Native human or credential-bound agent review and manager correction return are governed by [RF-CTX-014](task-review-workflow.md). Gate 2 proved managed independent exact-commit coding review; exact-commit release authorization remains absent.
 
 [src/modules/company-os/company-os.routes.ts](../../src/modules/company-os/company-os.routes.ts), [prisma/schema.prisma](../../prisma/schema.prisma).
 

@@ -40,6 +40,28 @@ tracked paths and unchanged tree with the fresh local snapshot before passing
 the auditor's response into the sealed model input as untrusted evidence. A
 missing or changed receipt stops the verifier before model launch.
 
+## Gate 2 coding and review evidence
+
+The configured pilot completed the bounded native coding and independent
+review flow described in [current implementation](../implementation.md) and
+the [evidence matrix](../architecture/traceability-matrix.md). The owner first
+accepted a separate one-time first-write Decision. A scoped managed coder then
+changed the canonical checkout and the Worker, not the model, created the
+local commit after a passing candidate test, native review and a fresh
+first-write admission check. A separate credential-bound read-only reviewer
+received only the pinned source, diff and evidence, ran inside a Windows Job
+without native tools, and submitted an exact-commit Decision through Roost.
+The accepted pilot commit is retained on its local task branch, clean and
+unpublished. A release requires separately authorized work; a review Decision
+does not push or deploy the pilot.
+
+For a failed after-spawn attempt, preserve the signed terminal review and
+original artifacts. An observed Gate 2 failure required exact owner-authorized
+manual lease reconciliation and archival of spent admission by execution ID
+before the next attempt. Do not delete an active lease or admission pair on
+the strength of a process-list snapshot alone. The generic automatic recovery
+path for every after-spawn failure is not qualified by this Gate 2 proof.
+
 The observer foundation notes below describe earlier installation states.
 Their statements that production execution is disabled do not describe the
 current Gate 1 installation.

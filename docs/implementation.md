@@ -84,17 +84,34 @@ Production readiness reports `executionEnabled: true` and
 `supervised_execution`. Gate 1 proves this bounded round trip; it does not
 claim independent coding review or release. Ollama remains unqualified.
 
-**Gate 2 is in progress, not met.** Independent native auditor and verifier
-completed on the clean pilot baseline. The separate first-write Decision was
-accepted before application edits. Managed coding, a one-writer rejection,
-checkpoint interruption and safe resume have native evidence. Independent
-review rejected successive local candidates with reproducible defects; the
-accountable manager returned each correction through Roost. The current pilot
-branch is clean at local commit `a5eb15fe21e25e8647fbef1700c2ccbd1a77575c`,
-which was rejected because the nested-alias regression test is absent. The
-one-file test correction is Ready, but no exact commit has independent final
-acceptance. No pilot push or deployment has occurred. See the
-[evidence checkpoint](architecture/traceability-matrix.md).
+**Gate 2 is met at native coding and independent review evidence level
+(2026-09-27).** Separate managed read-only auditor and verifier executions
+completed on the clean pilot baseline before the owner's one-time first-write
+Decision. Incomplete and out-of-scope work was refused at Submit. The Windows
+Worker demonstrated writer exclusion, an interrupted checkpoint and safe
+same-attempt resume. Its managed Hermes coder worked only in the configured
+pilot checkout, ran focused tests and created local commits. An independent
+credential-bound reviewer rejected three successive candidates with specific
+defects, and the accountable manager returned bounded corrections in Roost.
+The corrected execution `b95cf777-fe24-46a4-a88e-4bd0a9314bef` produced
+commit `774e858ae48d1f05d2b56982a7113da983f62af8` with a signed local
+commit receipt, native `verified_candidate` review, passing Windows test and
+clean checkout. A separate read-only Linux test passed the POSIX case. Reviewer
+execution `5c27d054-7cc3-45a1-9ef6-d43760316e69` completed with unchanged
+Git/process/Docker state and stored Decision
+`c349899b-72c3-4260-9b77-de733f42866c` approving that exact commit and
+coding material digest in Roost. The pilot branch remains local, clean and
+recoverable. It has not been pushed or deployed. See the
+[evidence record](architecture/traceability-matrix.md).
+
+Gate 2 proof is bounded to this configured pilot task, its declared resolver
+paths, procedures, roles and runtime. It does not certify general automatic
+scheduling, all context semantics, arbitrary filesystem effects, release or
+production behavior of the pilot change. Hermes token/cost usage remains
+unavailable. A failed earlier coding attempt needed exact manual native lease
+and spent-admission reconciliation before a later candidate could run; the
+signed terminal proof and archived private artifacts are retained. Automatic
+reconciliation of every after-spawn failure is not claimed.
 
 ## End-to-end delivery gates
 
