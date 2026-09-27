@@ -3970,6 +3970,31 @@ test("expired read-only spawn terminalization requires the exact bound Worker an
   assert.equal((codingAfter.errorState as any).code, "agent_coding_branch_intent_reconciled");
   assert.equal(await prisma.agentExecutionEvent.count({ where: { executionId: coding.id,
     type: "coding_branch_intent_reconciled" } }), 1);
+
+  const claimedSession = randomUUID();
+  const codingClaim = await prisma.$transaction(async tx => {
+    await tx.$executeRawUnsafe("ALTER TABLE agent_executions DISABLE TRIGGER USER");
+    const row = await tx.agentExecution.create({ data: { workspaceId, taskId: task.id, applicationId: application.id,
+      agentHostId: host.id, requestedByType: "user", status: "running", attempt: 1,
+      startedAt: new Date(Date.now() - 90_000), leaseToken: randomUUID(), leaseExpiresAt: new Date(Date.now() - 10_000),
+      checkpointVersion: 1, checkpoint: { schemaVersion: "roost-recovery-v1", stage: "claimed", sessionId: claimedSession,
+        packetRevision: null, workspaceDigest: null },
+      metadata: { executionContract: { nativeBoundary: { profile: "coding-local" }, singleTask: { branch: codingBranch } },
+        readyContextPin: { revision: "b".repeat(64), riskAdmissionCommit: baseline } } } });
+    await tx.$executeRawUnsafe("ALTER TABLE agent_executions ENABLE TRIGGER USER");
+    return row;
+  });
+  const claimPath = `/v1/agent-runtime/executions/${codingClaim.id}/actions/reconcile-coding-claimed`;
+  const claimProof = { ...codingProof, expectedVersion: 1, checkpointSessionId: claimedSession,
+    observedAt: new Date().toISOString() };
+  const claimPost = (body: unknown) => request(claimPath, { method: "POST", headers: workerAuth,
+    body: JSON.stringify(body) });
+  assert.equal((await claimPost({ ...claimProof, checkpointSessionId: randomUUID() })).status, 409);
+  assert.equal((await claimPost(claimProof)).status, 200);
+  assert.equal((await claimPost(claimProof)).status, 200);
+  assert.equal((await prisma.agentExecution.findUniqueOrThrow({ where: { id: codingClaim.id } })).status, "failed");
+  assert.equal(await prisma.agentExecutionEvent.count({ where: { executionId: codingClaim.id,
+    type: "coding_claim_reconciled" } }), 1);
 });
 
 test("CompanyCore v1 protected API flow", async () => {

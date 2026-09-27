@@ -568,7 +568,8 @@ agentRuntimeRouter.post("/executions/:id/actions/reconcile-readonly-spawn", asyn
 // Branch creation is still before the model boundary. An expired lease here
 // cannot be renewed; a fresh native observation may terminalize only this
 // exact pre-spawn checkpoint, leaving the local writer fence for reconciliation.
-agentRuntimeRouter.post("/executions/:id/actions/reconcile-coding-branch-intent", asyncHandler(async (req, res) => {
+agentRuntimeRouter.post(["/executions/:id/actions/reconcile-coding-branch-intent",
+  "/executions/:id/actions/reconcile-coding-claimed"], asyncHandler(async (req, res) => {
   const input = readonlySpawnReconciliationSchema.parse(req.body);
   if (!req.auth!.workerTicketIdentity || req.auth!.authType !== "api_key") return sendApiError(res, 403, "worker_credential_forbidden");
   const host = await prisma.agentHost.findFirst({ where: { id: req.auth!.workerTicketIdentity.hostId,
@@ -582,13 +583,15 @@ agentRuntimeRouter.post("/executions/:id/actions/reconcile-coding-branch-intent"
       agentHostId: host.id }, include: { task: { select: { projectId: true } } } });
     if (!current) return { error: "agent_coding_branch_reconciliation_conflict" };
     const previous = current.errorState as any;
-    if (current.status === "failed" && previous?.code === "agent_coding_branch_intent_reconciled"
+    if (current.status === "failed" && ["agent_coding_branch_intent_reconciled", "agent_coding_claim_reconciled"].includes(previous?.code)
       && previous?.details?.attestationDigest === attestationDigest
       && previous?.details?.checkpointVersion === input.expectedVersion)
       return { execution: current, replay: true };
     if (observedAt.getTime() > now.getTime() || now.getTime() - observedAt.getTime() > 120_000)
       return { error: "agent_coding_branch_reconciliation_stale" };
     const checkpoint = recoveryCheckpoint.safeParse(current.checkpoint);
+    const claimedOnly = checkpoint.success && checkpoint.data.stage === "claimed";
+    const routeClaimed = req.path.endsWith("/reconcile-coding-claimed");
     const metadata = current.metadata as any;
     const contract = metadata?.executionContract, pin = metadata?.readyContextPin;
     const noResult = !current.summary && !current.finalResponse
@@ -598,18 +601,21 @@ agentRuntimeRouter.post("/executions/:id/actions/reconcile-coding-branch-intent"
       && !metadata?.resultRevision;
     if (!["claimed", "running"].includes(current.status) || current.completedAt || current.contextInvalidatedAt
       || !current.leaseExpiresAt || current.leaseExpiresAt > now || current.checkpointVersion !== input.expectedVersion
-      || current.attempt < 1 || !checkpoint.success || checkpoint.data.stage !== "branch_intent"
+      || current.attempt < 1 || !checkpoint.success || claimedOnly !== routeClaimed
+      || !["claimed", "branch_intent"].includes(checkpoint.data.stage)
       || checkpoint.data.sessionId !== input.checkpointSessionId || !pin?.revision || !noResult
-      || !checkpoint.data.contextRevision || !checkpoint.data.packetRevision || !checkpoint.data.workspaceDigest
+      || (!claimedOnly && (!checkpoint.data.contextRevision || !checkpoint.data.packetRevision || !checkpoint.data.workspaceDigest))
       || contract?.nativeBoundary?.profile !== "coding-local"
-      || checkpoint.data.branch !== contract?.singleTask?.branch
-      || input.baselineCommit !== pin.riskAdmissionCommit || checkpoint.data.headCommit !== input.baselineCommit
+      || (claimedOnly ? checkpoint.data.branch !== undefined || checkpoint.data.headCommit !== undefined
+        || checkpoint.data.packetRevision !== null || checkpoint.data.workspaceDigest !== null
+        : checkpoint.data.branch !== contract?.singleTask?.branch || checkpoint.data.headCommit !== input.baselineCommit)
+      || input.baselineCommit !== pin.riskAdmissionCommit
       || observedAt <= current.leaseExpiresAt
       || await tx.trustedProviderTicket.count({ where: { executionId: current.id, workspaceId: current.workspaceId } })
       || await tx.agentExecutionEvent.count({ where: { executionId: current.id, type: { in: ["runner_started", "runner_progress"] } } }))
       return { error: "agent_coding_branch_reconciliation_conflict" };
-    const code = "agent_coding_branch_intent_reconciled";
-    const details = { schemaVersion: "roost-coding-branch-reconciliation-v1", checkpointStage: "branch_intent",
+    const code = claimedOnly ? "agent_coding_claim_reconciled" : "agent_coding_branch_intent_reconciled";
+    const details = { schemaVersion: "roost-coding-branch-reconciliation-v1", checkpointStage: checkpoint.data.stage,
       checkpointSessionId: input.checkpointSessionId, checkpointVersion: input.expectedVersion,
       baselineCommit: input.baselineCommit, baselineBranch: input.baselineBranch,
       repositoryDigest: input.repositoryDigest, writerLockDigest: input.writerLockDigest,
@@ -618,12 +624,12 @@ agentRuntimeRouter.post("/executions/:id/actions/reconcile-coding-branch-intent"
       agentHostId: host.id, status: current.status, checkpointVersion: input.expectedVersion,
       leaseToken: current.leaseToken, leaseExpiresAt: { lte: now }, completedAt: null, contextInvalidatedAt: null },
       data: { status: "failed", completedAt: now, leaseToken: null, leaseExpiresAt: null,
-        errorState: json({ code, message: "Coding branch intent reconciled before model launch; no result was accepted.",
+        errorState: json({ code, message: "Coding checkpoint reconciled before model launch; no result was accepted.",
           retryable: false, details }) } });
     if (!changed.count) return { error: "agent_coding_branch_reconciliation_conflict" };
     await tx.agentExecutionEvent.create({ data: { workspaceId: current.workspaceId, executionId: current.id,
-      type: "coding_branch_intent_reconciled", level: "warning",
-      message: "Coding branch intent reconciled before model launch.", payload: json(details) } });
+      type: claimedOnly ? "coding_claim_reconciled" : "coding_branch_intent_reconciled", level: "warning",
+      message: "Coding checkpoint reconciled before model launch.", payload: json(details) } });
     await tx.event.create({ data: { type: "agent_execution_failed", workspaceId: current.workspaceId,
       taskId: current.taskId, projectId: current.task.projectId, resourceType: "agent_execution", resourceId: current.id,
       source: "codex", payload: json({ executionId: current.id, code, retryable: false }) } });
