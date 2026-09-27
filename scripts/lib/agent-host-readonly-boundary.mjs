@@ -72,7 +72,7 @@ export function collectReadOnlyRepositoryEvidence({ repositoryPath, expected, pa
       const inspected = guardHostContent({ relative, content }, "required", secrets);
       if (inspected.redacted || inspected.blocked || inspected.value?.content !== content
           || inspected.value?.relative !== relative) fail();
-      files.push({ path: relative, content: inspected.value.content, sha256: hex(bytes) });
+      files.push({ path: relative, mimeType: "text/plain", content: inspected.value.content, sha256: hex(bytes) });
     }
     const post = state(root, expected);
     if (nativeDigest(pre) !== nativeDigest(post)) fail();

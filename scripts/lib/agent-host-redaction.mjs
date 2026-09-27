@@ -2,7 +2,13 @@ import policy from "./agent-runtime-redaction.cjs";
 import { StringDecoder } from "node:string_decoder";
 export function guardHostContent(value, mode = "required", extra = []) {
   const result = policy.sanitize(value, { mode, secrets: policy.knownRuntimeSecrets(process.env, extra) });
-  if (result.blocked) throw Object.assign(new Error("agent_runtime_content_blocked"), { redaction: true, retryable: false });
+  if (result.blocked) throw Object.assign(new Error("agent_runtime_content_blocked"), {
+    redaction: true, retryable: false,
+    // Policy findings contain only fixed categories and bounded, sanitized
+    // structural locations. They locate a false positive without exposing the
+    // matched text, source value, credential, or arbitrary field name.
+    details: { policy: result.policy, findings: result.findings }
+  });
   return result;
 }
 export function hostTransport(body, extra = []) {

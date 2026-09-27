@@ -38,7 +38,7 @@ export const providerInputSchema = z.object({
     ownerInstruction: evidence("claimed.prompt.ready_approved", z.string().max(16000).nullable()),
     repositoryInspection: evidence("worker.bounded_repository_read", z.object({
       schemaVersion: z.literal("roost-readonly-repository-evidence-v1"), head: z.string().regex(/^[a-f0-9]{40}$/), branch: z.string().min(1),
-      files: z.array(z.object({ path: z.string().min(1), content: z.string().max(32768), sha256: hash }).strict()).min(1).max(32),
+      files: z.array(z.object({ path: z.string().min(1), mimeType: z.literal("text/plain"), content: z.string().max(32768), sha256: hash }).strict()).min(1).max(32),
       tree: hash, processDigest: hash, dockerDigest: hash,
       reviewed: z.object({ verifiedTaskId: id, verifiedExecutionId: id, materialVersion: hash,
         baselineCommit: z.string().regex(/^[a-f0-9]{40}$/), reviewedCommit: z.string().regex(/^[a-f0-9]{40}$/),

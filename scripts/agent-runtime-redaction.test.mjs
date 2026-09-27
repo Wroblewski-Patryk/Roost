@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import policy from "./lib/agent-runtime-redaction.cjs";
-import { boundedRunnerLines, hostTransport, readHostResponse } from "./lib/agent-host-redaction.mjs";
+import { boundedRunnerLines, guardHostContent, hostTransport, readHostResponse } from "./lib/agent-host-redaction.mjs";
 import { Readable } from "node:stream";
 const known = "synthetic-runtime-value-987654321";
 test("one recursive policy removes values and never reports dynamic keys or matches", () => {
@@ -71,6 +71,14 @@ test("resanitized required input, nested encodings and interleaved stream fragme
   assert.equal(policy.sanitize([{ type: "progress", text: "api_" }, { type: "progress", text: "key=synthetic-sensitive" }]).blocked, true);
   const lease = "00000000-0000-4000-8000-000000000001", taskId = "00000000-0000-4000-8000-000000000002";
   assert.deepEqual(policy.sanitize({ taskId }, { secrets: [lease] }).value, { taskId });
+});
+test("bounded source files retain an explicit text MIME type in required provider evidence", () => {
+  const file = { path: "scripts/check.mjs", mimeType: "text/plain", content: "export const safe = true;\n", sha256: "a".repeat(64) };
+  assert.equal(guardHostContent({ repositoryInspection: { files: [file] } }, "required").blocked, false);
+  assert.throws(() => guardHostContent({ repositoryInspection: { files: [{ ...file, mimeType: undefined }] } }, "required"),
+    error => error.message === "agent_runtime_content_blocked"
+      && error.details?.findings?.some(finding => finding.category === "unsupported_format")
+      && !JSON.stringify(error.details).includes(file.content));
 });
 test("host transport preserves only root authentication and bounds UTF-8 streams without a fallback", async () => {
   const leaseToken = "00000000-0000-4000-8000-000000000019";
