@@ -85,8 +85,9 @@ async function reclaimTerminalBeforeSpawn(directory, candidates) {
       && JSON.stringify(localCheckpoint(item)) === JSON.stringify(checkpoint)
       && (["claimed", "branch_intent", "branch_ready", "prepared"].includes(checkpoint?.stage)
         || checkpoint?.stage === "spawn_intent" && item?.errorState?.code === "managed_admission_blocked"
-          && item.errorState?.details?.phase === "backend_evidence_request"
-          && item.errorState?.details?.reason === "roost_http_409" && item.errorState?.details?.status === 409
+          && (item.errorState?.details?.phase === "backend_evidence_persist"
+            || item.errorState?.details?.phase === "backend_evidence_request"
+              && item.errorState?.details?.reason === "roost_http_409" && item.errorState?.details?.status === 409)
           && item.codexThreadId === null && item.finalResponse === null
           && Array.isArray(item.changedFiles) && item.changedFiles.length === 0));
     if (!candidate || observeWindowsProcessIdentity(current.ownerPid) !== null) throw new Error("agent_host_writer_locked");

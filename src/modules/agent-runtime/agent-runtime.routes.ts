@@ -427,9 +427,11 @@ agentRuntimeRouter.get("/recovery", asyncHandler(async (req, res) => {
     const error = item.errorState as any;
     // The managed evidence request precedes provider launch. A terminal error
     // at this exact phase can be reconciled only when no model result exists.
-    return stage === "spawn_intent" && error?.code === "managed_admission_blocked"
-      && error?.details?.phase === "backend_evidence_request" && error?.details?.reason === "roost_http_409"
-      && error?.details?.status === 409 && item.codexThreadId === null && item.finalResponse === null
+    const preModelAdmission = error?.details?.phase === "backend_evidence_persist"
+      || error?.details?.phase === "backend_evidence_request" && error?.details?.reason === "roost_http_409"
+        && error?.details?.status === 409;
+    return stage === "spawn_intent" && error?.code === "managed_admission_blocked" && preModelAdmission
+      && item.codexThreadId === null && item.finalResponse === null
       && Array.isArray(item.changedFiles) && item.changedFiles.length === 0;
   });
   res.json({ data: { executionEnabled: executionEnabled(), executions: executions.map(({ leaseToken: _leaseToken, ...execution }) => execution), terminalPreSpawn: recoverable } });

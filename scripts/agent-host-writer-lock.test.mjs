@@ -78,6 +78,12 @@ test("terminal managed evidence rejection reclaims only the proven pre-model spa
   await assert.rejects(acquireWriterLock(directory, { terminalCandidates: [{ ...candidate, changedFiles: ["src/app.ts"] }] }), /agent_host_writer_locked/);
   const next = await acquireWriterLock(directory, { terminalCandidates: [candidate] });
   await next.release();
+  const another = spawn(process.execPath, ["--input-type=module", "-e", script], { windowsHide: true, stdio: "ignore" });
+  assert.equal((await once(another, "close"))[0], 0);
+  candidate.checkpoint.sessionId = JSON.parse(await readFile(path.join(directory, writerLockFilename), "utf8")).checkpoint.sessionId;
+  const persisted = { ...candidate, errorState: { code: "managed_admission_blocked", details: { phase: "backend_evidence_persist" } } };
+  const recovered = await acquireWriterLock(directory, { terminalCandidates: [persisted] });
+  await recovered.release();
 });
 
 test("release does not delete a lock whose ownership changed", async (t) => {
