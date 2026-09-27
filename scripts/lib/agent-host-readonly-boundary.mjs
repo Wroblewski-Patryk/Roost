@@ -12,8 +12,8 @@ import { guardHostContent } from "./agent-host-redaction.mjs";
 
 const sealed = new WeakMap(), receipts = new WeakMap();
 const hex = value => createHash("sha256").update(value).digest("hex");
-const fail = () => { throw Object.assign(new Error("readonly_boundary_unproven"), { protocolAdmission: true,
-  retryable: false, publicMessage: "Read-only inspection changed or cannot be proven; reconcile before another attempt." }); };
+const fail = (reason = "unproven") => { throw Object.assign(new Error("readonly_boundary_unproven"), { protocolAdmission: true,
+  retryable: false, details: { reason }, publicMessage: "Read-only inspection changed or cannot be proven; reconcile before another attempt." }); };
 const frozen = value => { if (value && typeof value === "object") { Object.values(value).forEach(frozen); Object.freeze(value); } return value; };
 const git = (root, args) => execFileSync("git", ["--literal-pathspecs", "-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", ...args], {
   cwd: root, windowsHide: true, shell: false, timeout: 10000, maxBuffer: 65536,
@@ -130,14 +130,15 @@ export function sealReadOnlyBoundary({ envelope, provider, repositoryPath, expec
 export function assertReadOnlyBoundary(proof, envelope) {
   try {
     const saved = sealed.get(proof);
-    if (!saved || saved.envelope !== envelope || saved.consumed || saved.complete) fail();
+    if (!saved || saved.envelope !== envelope || saved.consumed || saved.complete) fail("proof_invalid");
     assertWriterLock(saved.writerLock); assertApplicationLease(saved.app); assertHermesBudgetReceipt(saved.budgetReceipt);
     if (!isHermesStartupReceipt(saved.startupReceipt, envelope)
-        || saved.startupReceipt.expandedTools.length || saved.startupReceipt.toolsets.join() !== "bot_room") fail();
-    if (hermesToolSource(saved.provider).sourceDigest !== saved.tools.sourceDigest) fail();
+        || saved.startupReceipt.expandedTools.length || saved.startupReceipt.toolsets.join() !== "bot_room") fail("startup_changed");
+    if (hermesToolSource(saved.provider).sourceDigest !== saved.tools.sourceDigest) fail("tool_source_changed");
     const now = state(saved.repositoryPath, saved.expected);
-    if (now.footprint.digest !== saved.repositoryEvidence.tree || now.processDigest !== saved.repositoryEvidence.processDigest
-        || now.dockerDigest !== saved.repositoryEvidence.dockerDigest) fail();
+    if (now.footprint.digest !== saved.repositoryEvidence.tree) fail("repository_changed");
+    if (now.processDigest !== saved.repositoryEvidence.processDigest) fail("process_changed");
+    if (now.dockerDigest !== saved.repositoryEvidence.dockerDigest) fail("docker_changed");
     const body = { schemaVersion: "roost-hermes-readonly-boundary-v1", attemptId: envelope.identity.executionId,
       inputSeal: envelope.seal, preFootprintDigest: now.footprint.digest, canonicalRootDigest: now.footprint.rootIdentity,
       repositoryIdentityDigest: now.footprint.gitIdentity, oneWriterReference: nativeDigest(assertWriterLock(saved.writerLock).reference),
@@ -147,7 +148,7 @@ export function assertReadOnlyBoundary(proof, envelope) {
       toolsets: ["bot_room"], nativeTools: [], readPaths: [...envelope.contract.nativeBoundary.readPaths] };
     const receipt = frozen({ ...body, digest: nativeDigest(body) });
     receipts.set(receipt, proof); return receipt;
-  } catch { fail(); }
+  } catch (error) { if (error.message === "readonly_boundary_unproven" && error.protocolAdmission) throw error; fail("assertion_unavailable"); }
 }
 
 export function consumeReadOnlyBoundary(receipt, { cwd, environment, attempt, budgetReceipt }) {
@@ -155,9 +156,10 @@ export function consumeReadOnlyBoundary(receipt, { cwd, environment, attempt, bu
     const proof = receipts.get(receipt), saved = sealed.get(proof);
     if (!saved || saved.consumed || saved.complete || cwd !== saved.repositoryPath
         || environment.HERMES_SAFE_MODE !== "1" || attempt !== saved.envelope.identity.executionId
-        || budgetReceipt !== saved.budgetReceipt || assertReadOnlyBoundary(proof, saved.envelope).digest !== receipt.digest) fail();
+        || budgetReceipt !== saved.budgetReceipt) fail("binding_changed");
+    if (assertReadOnlyBoundary(proof, saved.envelope).digest !== receipt.digest) fail("receipt_changed");
     saved.consumed = true; return proof;
-  } catch { fail(); }
+  } catch (error) { if (error.message === "readonly_boundary_unproven" && error.protocolAdmission) throw error; fail("consumption_unavailable"); }
 }
 
 export function authorizeReadOnlyResume(proof, assignment, runtime) {
