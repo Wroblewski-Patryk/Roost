@@ -50,7 +50,10 @@ function state(root, expected) {
     ? execFileSync("powershell", ["-NoProfile", "-NonInteractive", "-Command",
       "Get-NetTCPConnection -State Listen | Sort-Object LocalAddress,LocalPort,OwningProcess | ForEach-Object { '{0}|{1}|{2}' -f $_.LocalAddress,$_.LocalPort,$_.OwningProcess }"],
       { windowsHide: true, timeout: 10000, maxBuffer: 262144, encoding: "utf8" }) : "non_windows_test";
-  const docker = execFileSync("docker", ["ps", "--no-trunc", "--format", "{{.ID}}|{{.Image}}|{{.Status}}|{{.Ports}}"],
+  // Docker's human-readable Status includes elapsed time (for example, "Up 3 minutes").
+  // It changes while containers are untouched and makes a long bounded read look
+  // like a side effect. State retains the stable running-container identity check.
+  const docker = execFileSync("docker", ["ps", "--no-trunc", "--format", "{{.ID}}|{{.Image}}|{{.State}}|{{.Ports}}"],
     { windowsHide: true, shell: false, timeout: 10000, maxBuffer: 262144, encoding: "utf8" });
   return { footprint, processDigest: hex(listening), dockerDigest: hex(docker) };
 }
@@ -75,7 +78,9 @@ export function collectReadOnlyRepositoryEvidence({ repositoryPath, expected, pa
       files.push({ path: relative, mimeType: "text/plain", content: inspected.value.content, sha256: hex(bytes) });
     }
     const post = state(root, expected);
-    if (nativeDigest(pre) !== nativeDigest(post)) fail();
+    if (pre.footprint.digest !== post.footprint.digest) fail("repository_changed");
+    if (pre.processDigest !== post.processDigest) fail("process_changed");
+    if (pre.dockerDigest !== post.dockerDigest) fail("docker_changed");
     let reviewed = null;
     if (review) {
       if (!reviewMaterial || review.reviewedCommit !== expected.head
