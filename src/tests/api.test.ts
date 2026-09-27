@@ -1326,7 +1326,7 @@ test("product engineering keeps definitions shared, observations explicit, and p
   assert.equal(executionAgentContext.contextSelection.profile, "execution");
   assert.equal(executionAgentContext.contextSelection.totalRecordCount, 2);
   assert.equal(executionAgentContext.contextSelection.selectedRecordCount, 2);
-  assert.equal(executionAgentContext.contextSelection.descriptionCharacterBudget, 8_000);
+  assert.equal(executionAgentContext.contextSelection.descriptionCharacterBudget, 4_000);
   assert.equal("metadata" in executionAgentContext.application, false);
   assert.equal(executionAgentContext.documentationIndex.length, 1);
   assert.ok(executionAgentContext.companyRecords.every((record) => record.metadata.sourceKind === "canonical_documentation"));
