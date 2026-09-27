@@ -60,60 +60,35 @@ Windows Worker foundations and Hermes qualification evidence.
 
 **Gate 1 is met at production/runtime evidence level (2026-09-27).** The
 production API build `18bd5c6466372263316a5846f990f61cacd41040` was
-read back after deployment `yesokuu2ikcxh43zdf3fju9w`. Additive migrations
-87–89 are applied. Native disposable-database tests qualified the v3 issuer,
-signatures, committed readback and owner Decision path. The sole owner
-provisioned the production public-key anchor and transferred the scoped Worker
-credential over the HTTPS handoff into Windows Credential Manager. The
-installation now uses supervised execution and an attested Hermes 0.21.2
-installation. Private installation values and credentials remain outside Git.
+read back after deployment `yesokuu2ikcxh43zdf3fju9w`; additive migrations
+87–89 and native v3 signing/issuer checks passed. The sole owner provisioned
+the public-key anchor and delivered the scoped Worker credential through HTTPS
+handoff into Windows Credential Manager. Supervised execution uses attested
+Hermes 0.21.2. Private installation values remain outside Git.
 
-The accepted low-risk task `a965868b-60b1-4c42-9acd-c077c044002d` was
-claimed by host `edcde4a6-243a-4fab-a885-715c7013c6fc`. Execution
-`9fc132c6-af99-4d98-a2e2-27de7d576879` completed on its first attempt:
-queued 01:04:29, claimed 01:05:26, runner started 01:05:38, native runner
-progress 01:06:50 and completed 01:08:43 UTC. The accepted signed Decision
-`2c12bf61-7cfe-475a-8431-40c8f3d8514a` selected `codex_responses`,
-`gpt-5.6-sol`, low reasoning, two turns and two API retries with no fallback.
-Roost's authoritative readback contains a 355-character model response, the
-exact clean result commit `cf90418cc694dc0cb773a44c001c569407d05f9f`,
-no changed files, managed admission digest, the native Job receipt and the
-workspace evidence seal. The Job exited 0 and closed with zero active
-processes. Durable native review is `verified_candidate`, with verification
-and installation both PASS, zero violations and no unreviewed changed paths.
-The signed review was read back from private durable storage after cleanup;
-spent admission files were archived by execution ID and the active names were
-cleared. Quiet Hermes does not expose token or cost accounting, so those usage
-fields are explicitly unavailable rather than estimated.
+Host `edcde4a6-243a-4fab-a885-715c7013c6fc` claimed low-risk task
+`a965868b-60b1-4c42-9acd-c077c044002d`. Execution
+`9fc132c6-af99-4d98-a2e2-27de7d576879` completed on its first attempt at
+01:08:43 UTC under signed Decision `2c12bf61-7cfe-475a-8431-40c8f3d8514a`:
+`codex_responses`, `gpt-5.6-sol`, low reasoning, no fallback. Roost read back
+the model response, clean baseline commit
+`cf90418cc694dc0cb773a44c001c569407d05f9f`, no changed files, signed
+admission, native Job exit 0/zero active processes and durable
+`verified_candidate` review with verification and installation PASS. Spent
+admission files were archived by execution ID. Hermes token/cost usage is
+unavailable. Cancellation and lease-loss controls passed 66 focused
+Worker/native tests, including Windows Job descendant termination; forced
+production cancellation and lease-loss were not exercised.
 
-Cancellation and lease-loss handling passed 66 focused Worker/native tests,
-including real Windows Job termination of descendants for both causes.
-These are native process and protocol proofs; a forced production cancellation
-or production lease-loss experiment was not run. The configured pilot checkout
-remains clean at the same commit. No independent role approval, governed coding
-commit or release is claimed by this Gate 1 read-only run.
+Production readiness reports `executionEnabled: true` and
+`supervised_execution`. Gate 1 proves this bounded round trip; it does not
+claim independent coding review or release. Ollama remains unqualified.
 
-Current capability truth:
-
-| Capability | Current truth |
-| --- | --- |
-| Accepted task starts a real managed agent | Production verified for the bounded Gate 1 task and intended Worker |
-| Roost and the Windows Worker exchange a production-authorized task | HTTPS credential handoff, signed admission, claim and heartbeats verified |
-| Worker starts managed Hermes | Attested native 0.21.2 process and Windows Job receipt verified |
-| Hermes routes explicitly to approved Codex or local Ollama | Approved Codex Responses backend/model/effort verified; Ollama remains unqualified |
-| Result and evidence return to Roost | Completed readback, workspace seal and durable native review verified |
-| Independent review and release execute | Not demonstrated by Gate 1 |
-| Commit, push, deployment, health proof and rollback execute as one flow | Not demonstrated by Gate 1 |
-| Pilot application is repaired through that flow | Not started |
-
-Production runtime readiness now reports `executionEnabled: true` and mode
-`supervised_execution`. The broader static pilot-readiness flag remains false;
-the Gate 1 read-only proof does not certify coding delivery or release. The
-configured pilot application was not changed.
-
-**Gate 2 is in progress, not met.** The [evidence checkpoint](architecture/traceability-matrix.md)
-records failed pre-model audits and the repair. Pilot clean; login
-needed to retry. No write approval or accepted commit exists.
+**Gate 2 is in progress, not met.** Independent native auditor and verifier
+completed with matching clean-checkout evidence. The separate first-write
+Decision is pending; the pilot remains unchanged. See the
+[evidence checkpoint](architecture/traceability-matrix.md) for identities and
+the remaining coding, interruption, correction and review proofs.
 
 ## End-to-end delivery gates
 

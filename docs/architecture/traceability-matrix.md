@@ -4,31 +4,30 @@ Current delivery work starts at [Matrix](#matrix). The amendment stream before
 it is historical evidence and should be skipped unless a specific requirement
 or implementation claim needs provenance; it is never the work queue.
 
-Gate 2 checkpoint (2026-09-27): the governed coding controls are implemented
-and component-tested, but the gate remains **in progress**. Production build
-`23d61f38bfbdcc79edc27c3afb6eca88662f4688` is deployed. Two native
-read-only audit attempts stopped before model launch on a source-evidence MIME
-type/redaction mismatch; the repair is deployed and a fresh owner session is
-needed to queue the post-fix run. Neither the independent verifier nor the
-pilot first-write, exact-commit review or recovery proof has completed. The
-requirement-row statuses below are not advanced by source tests or deployments;
-they require the real Gate 2 evidence in `docs/implementation.md`.
+Gate 2 checkpoint (2026-09-27): the gate remains **in progress**. The current
+native read-only auditor execution `b00d5c8b-8e5f-4d32-aeb9-2240ea67322f`
+and independent verifier execution `bbb0e0e1-16d0-48f5-b58c-67a0dcad7f0f`
+both completed under separate roles and signed managed admission on the same
+clean pilot baseline `cf90418cc694dc0cb773a44c001c569407d05f9f`.
+Both report `changedFiles: []`, verified Git, process and Docker state, native
+Windows Job exit 0 with no active processes, and matching evidence digest
+`8e686212c618e75d9792acf58dea289b2762bda3b1fb8cf6a34fd2f40b346434`.
+The verifier links the auditor execution and digest. Both context invalidation
+fields are null. Earlier failed audits remain historical and are not counted.
 
-The implementation includes additive migrations 90–91, pinned read-only and
-coding profiles, two-canary first-write admission, local test/commit receipts
-and exact-commit review. Deployment `h9s3e2en6en7np0d4iktetu8` finished and
-public build readback matched the commit. Auditor task
-`46837235-ca2f-4fde-80d6-ae21fc650df1` reached Ready pin
-`8b717910-363d-4662-a120-9de936850136` with accepted managed runtime
-Decision `27872371-ca1d-4d39-8ab7-6c5a0afb2b9a`. Executions
-`01179260-eec6-4c9d-af18-ae231e4a5987` and
-`b8c7cf01-64f8-496f-930c-2db0b4d08adc` failed at checkpoint version 1
-before a model launch. The Worker recovery readback has no active execution.
-Commit `23d61f38` repaired the MIME type/redaction mismatch, passed focused
-Worker and redaction tests, and is deployed; its native retry is pending. The
-pilot checkout is clean at `cf90418cc694dc0cb773a44c001c569407d05f9f`.
-No first-write Decision or pilot change exists. The owner session expired and
-must be refreshed to continue owner API actions.
+Incomplete and out-of-scope coding submissions returned 409 with
+`task_execution_contract_invalid`. The coding task
+`0566f074-1d15-4a05-98a9-3ed4f60a15a4` has a dedicated component,
+assigned coder, published base and application procedures, scoped two-file
+contract and accepted managed runtime Decision
+`ee47832d-b2c4-4f6f-8fed-04224bc71829`. A separate exact first-write
+Decision `fc201896-b48a-4875-838a-c32608a76181` is proposed with its
+impact and evidence gates admitted, but **not accepted**. The pilot checkout
+is clean on `main`; no pilot edit, local commit, reviewer decision or native
+interruption/recovery proof has occurred. Requirement rows below advance only
+after the remaining native evidence. Roost commit `b86ea566` adds bounded
+reviewer-return correction on the same task branch; its deployment is tracked
+separately from the application release and does not certify Gate 2.
 
 Owner amendment v76: [v3 source projection](bootstrap-proof-projection-v3.md)
 defines exact own-XID/receipt lineage, complete source sets, explicit shared/nested
