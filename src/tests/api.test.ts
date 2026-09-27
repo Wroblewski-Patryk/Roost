@@ -3878,9 +3878,11 @@ test("expired read-only spawn terminalization requires the exact bound Worker an
   const metadata = { executionContract: { nativeBoundary: { profile: "inspect-readonly", inspectReadOnly: { kind: "auditor" } },
     access: { tools: ["repository_read"], permissions: ["repository_read"] }, singleTask: { branch } },
     readyContextPin: { revision: "b".repeat(64), riskAdmissionCommit: baseline } };
-  const create = async (lease: "released" | "retained") => {
-    const sessionId = randomUUID(), checkpoint = { schemaVersion: "roost-recovery-v1", stage: "spawn_intent", sessionId,
-      packetRevision: "c".repeat(64), workspaceDigest: "d".repeat(64), contextRevision: "e".repeat(64) };
+  const create = async (lease: "released" | "retained", stage: "spawn_intent" | "claimed" = "spawn_intent") => {
+    const sessionId = randomUUID(), checkpoint = { schemaVersion: "roost-recovery-v1", stage, sessionId,
+      packetRevision: stage === "claimed" ? null : "c".repeat(64),
+      workspaceDigest: stage === "claimed" ? null : "d".repeat(64),
+      contextRevision: stage === "claimed" ? null : "e".repeat(64) };
     // This opt-in database fixture synthesizes the post-spawn state. User
     // admission triggers are disabled only inside this transaction and restored
     // before commit; constraint/FK triggers remain active throughout. The
@@ -3890,7 +3892,7 @@ test("expired read-only spawn terminalization requires the exact bound Worker an
       const row = await tx.agentExecution.create({ data: { workspaceId, taskId: task.id, applicationId: application.id,
         agentHostId: host.id, requestedByType: "user", status: "running", attempt: 1,
         startedAt: new Date(Date.now() - 90_000), leaseToken: randomUUID(), leaseExpiresAt: new Date(Date.now() - 10_000),
-        checkpointVersion: 3, checkpoint, metadata } });
+        checkpointVersion: stage === "claimed" ? 1 : 3, checkpoint, metadata } });
       await tx.$executeRawUnsafe("ALTER TABLE agent_executions ENABLE TRIGGER USER");
       return row;
     });
@@ -3898,7 +3900,7 @@ test("expired read-only spawn terminalization requires the exact bound Worker an
       WHERE tgrelid='agent_executions'::regclass AND NOT tgisinternal`;
     assert.ok(triggers.length > 0); assert.ok(triggers.every(trigger => trigger.tgenabled === "O"));
     const path = `/v1/agent-runtime/executions/${execution.id}/actions/reconcile-readonly-spawn`;
-    const proof = { hostSlug: host.slug, expectedVersion: 3, checkpointSessionId: sessionId,
+    const proof = { hostSlug: host.slug, expectedVersion: stage === "claimed" ? 1 : 3, checkpointSessionId: sessionId,
       baselineCommit: baseline, baselineBranch: branch, repositoryDigest: "f".repeat(64), writerLockDigest: "1".repeat(64),
       applicationLease: lease === "released" ? { state: "released", absent: true } : { state: "retained", digest: "2".repeat(64) },
       observedAt: new Date().toISOString(), nativeProcessesAbsent: true, ownerProcessAbsent: true, workingTreeClean: true };
@@ -3924,6 +3926,17 @@ test("expired read-only spawn terminalization requires the exact bound Worker an
   const retained = await create("retained");
   assert.equal((await retained.post(retained.proof)).status, 200);
   assert.equal((await prisma.agentExecution.findUniqueOrThrow({ where: { id: retained.execution.id } })).status, "failed");
+  const claimed = await create("released", "claimed");
+  assert.equal((await claimed.post(claimed.proof)).status, 200);
+  const claimedAfter = await prisma.agentExecution.findUniqueOrThrow({ where: { id: claimed.execution.id } });
+  assert.equal(claimedAfter.status, "failed");
+  assert.equal((claimedAfter.errorState as any).code, "agent_readonly_claim_reconciled");
+  assert.equal(await prisma.agentExecutionEvent.count({ where: { executionId: claimed.execution.id,
+    type: "readonly_claim_reconciled" } }), 1);
+  const started = await create("released", "claimed");
+  await prisma.agentExecutionEvent.create({ data: { workspaceId, executionId: started.execution.id,
+    type: "runner_started", message: "Synthetic inconsistent event", payload: {} } });
+  assert.equal((await started.post(started.proof)).status, 409);
 });
 
 test("CompanyCore v1 protected API flow", async () => {
