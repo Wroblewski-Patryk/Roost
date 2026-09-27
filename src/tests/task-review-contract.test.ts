@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { reviewDecisionSchema, reviewActionSchema, correctionDraft, exactReviewCommit, nativeBoundaryResultBlocked, reviewDigest } from "../modules/agent-runtime/task-review-contract";
+import { reviewDecisionSchema, reviewActionSchema, correctionDraft, exactReviewCommit, managerCorrectionCompetencies, nativeBoundaryResultBlocked, reviewDigest } from "../modules/agent-runtime/task-review-contract";
 const id="00000000-0000-4000-8000-000000000001";
 test("uncommitted byte evidence changes invalidate the review material digest",()=>{
   const result={commit:"a".repeat(40),verification:{workspaceEvidence:{seal:"b".repeat(64),manifest:[{path:"source.ts",working:{sha256:"c".repeat(64)}}]}}};
@@ -45,6 +45,17 @@ test("manager disposition is explicit and rejects ambiguous alternatives",()=>{
   assert.equal(reviewActionSchema.safeParse({...input,competencies:[]}).success,false);
   assert.equal(reviewActionSchema.safeParse({...input,childTasks:[id,id]}).success,false);
   assert.equal(reviewActionSchema.safeParse({...input,action:"create_specialist_task"}).success,false);
+});
+test("manager retains a previously assigned competency only with a recorded explanation",()=>{
+  const recommended=["Node.js filesystem and symlink semantics","path-containment security testing"];
+  const assigned=["governed coding"];
+  assert.deepEqual(managerCorrectionCompetencies(recommended,assigned,["governed coding"]),{error:"task_review_competency_rationale_required"});
+  assert.deepEqual(managerCorrectionCompetencies(recommended,assigned,["unassigned specialty"],"Manager reviewed the task"),{error:"task_review_competencies_expanded"});
+  const mapped=managerCorrectionCompetencies(recommended,assigned,["governed coding"],"The assigned executor retains the governed coding scope; the focused symlink regression and independent review remain mandatory.");
+  if ("error" in mapped) throw new Error(mapped.error);
+  assert.deepEqual(mapped.competencies,["governed coding"]);
+  assert.equal(mapped.managerCompetencyRationale?.startsWith("The assigned executor"),true);
+  assert.deepEqual(recommended,["Node.js filesystem and symlink semantics","path-containment security testing"]);
 });
 test("correction drafts have a distinct task identity and require measurement review",()=>{
  const original={objective:{outcome:"Original"},scope:{},assignment:{},taskRoles:{},singleTask:{component:{id},branch:"main"}};

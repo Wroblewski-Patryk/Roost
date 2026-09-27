@@ -8,7 +8,7 @@ import { pathToFileURL } from "node:url";
 import type { Prisma } from "@prisma/client";
 import { lockReadyTask } from "./task-execution-readiness";
 import { resolveTaskRoleContext } from "./task-role-context";
-import { nativeBoundaryResultBlocked, exactReviewCommit, correctionDraft, object, reviewActionSchema, reviewDecisionSchema, reviewDigest, wire } from "./task-review-contract";
+import { nativeBoundaryResultBlocked, exactReviewCommit, correctionDraft, managerCorrectionCompetencies, object, reviewActionSchema, reviewDecisionSchema, reviewDigest, wire } from "./task-review-contract";
 
 const loadESM = new Function("specifier", "return import(specifier)") as (specifier: string) => Promise<any>;
 const roleValidator = loadESM(pathToFileURL(path.resolve(__dirname, "../../../scripts/lib/agent-host-task-roles.mjs")).href);
@@ -110,10 +110,12 @@ export async function actOnTaskReview(db: Db, workspaceId: string, taskId: strin
   if (!s.current || s.expectedVersion !== input.expectedVersion || s.decision?.id !== input.reviewId) return { error: "task_review_stale" };
   if (!s.canManage) return { error: "task_review_manager_action_required" };
   const evidence = object(s.decision!.evidence);
-  const competencies = input.action === "return_to_executor" && input.competencies
-    ? [...new Set(input.competencies)] : evidence.correction.competencies;
-  if (competencies.some((skill: string) => !evidence.correction.competencies.includes(skill))) return { error: "task_review_competencies_expanded" };
-  const correction = { ...evidence.correction, scope: [...new Set(input.scope)], competencies };
+  const resolved = input.action === "return_to_executor"
+    ? managerCorrectionCompetencies(evidence.correction.competencies, s.contract.assignment.competencies,
+      input.competencies, input.competencyRationale)
+    : { competencies: evidence.correction.competencies };
+  if ("error" in resolved) return { error: resolved.error };
+  const correction = { ...evidence.correction, scope: [...new Set(input.scope)], ...resolved };
   if (input.scope.some(scope => !evidence.correction.scope.includes(scope))) return { error: "task_review_scope_expanded" };
   const executorId = input.action === "create_specialist_task" ? input.specialist.id : s.contract.assignment.agentId;
   const executor = await db.workforceEntity.findFirst({ where: { id: executorId, workspaceId, type: "agent", status: "active" } });

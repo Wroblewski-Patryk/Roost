@@ -13,9 +13,17 @@ export const reviewDecisionSchema = z.discriminatedUnion("decision", [
 ]);
 export const reviewActionSchema = z.discriminatedUnion("action", [
   z.object({ grantId: precondition.grantId, requestId: precondition.requestId, expectedVersion: precondition.expectedVersion, reviewId: z.string().uuid(), action: z.literal("return_to_executor"), scope: lines,
-    competencies: z.array(z.string().trim().min(1).max(120)).min(1).max(30).optional() }).strict(),
+    competencies: z.array(z.string().trim().min(1).max(120)).min(1).max(30).optional(),
+    competencyRationale: text.optional() }).strict(),
   z.object({ grantId: precondition.grantId, requestId: precondition.requestId, expectedVersion: precondition.expectedVersion, reviewId: z.string().uuid(), action: z.literal("create_specialist_task"), scope: lines, specialist: z.object({ id: z.string().uuid(), revision: z.string().min(1).max(100) }).strict() }).strict()
 ]);
+export function managerCorrectionCompetencies(recommended: string[], assigned: string[], requested?: string[], rationale?: string) {
+  const competencies = [...new Set(requested ?? recommended)];
+  const retained = competencies.filter(skill => !recommended.includes(skill));
+  if (retained.some(skill => !assigned.includes(skill))) return { error: "task_review_competencies_expanded" } as const;
+  if (retained.length && !text.safeParse(rationale).success) return { error: "task_review_competency_rationale_required" } as const;
+  return { competencies, ...(retained.length ? { managerCompetencyRationale: rationale } : {}) };
+}
 export const object = (value: unknown): Record<string, any> => value && typeof value === "object" && !Array.isArray(value) ? value : {};
 export function exactReviewCommit(result: unknown, execution: { id: string; attempt: number; agentHostId: string | null; checkpointVersion: number; metadata: unknown } | null | undefined): string | null {
   if (!execution) return null;
