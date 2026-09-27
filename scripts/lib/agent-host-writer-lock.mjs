@@ -50,7 +50,7 @@ async function reclaimBeforeSpawn(directory, candidate) {
     const lockPath = path.join(directory, writerLockFilename);
     const current = JSON.parse(await readFile(lockPath, "utf8"));
     const expected = localCheckpoint(candidate);
-    if (candidate?.contextInvalidatedAt || !candidate?.leaseExpiresAt || Date.parse(candidate.leaseExpiresAt) <= Date.now() || !["claimed", "prepared"].includes(expected.stage)
+    if (candidate?.contextInvalidatedAt || !candidate?.leaseExpiresAt || Date.parse(candidate.leaseExpiresAt) <= Date.now() || !["claimed", "branch_intent", "branch_ready", "prepared"].includes(expected.stage)
       || current.ownerNonce !== expected.sessionId || JSON.stringify(current.checkpoint) !== JSON.stringify(expected)
       || !ownerIsGone(current.ownerPid)) throw new Error("agent_host_writer_locked");
     // A dead PID alone is never sufficient. A matching durable pre-spawn barrier
@@ -73,7 +73,7 @@ async function reclaimTerminalBeforeSpawn(directory, candidates) {
     if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1 || stat.size > 65536) throw new Error("agent_host_writer_locked");
     const bytes = await readFile(lockPath, "utf8"), current = JSON.parse(bytes);
     const checkpoint = current.checkpoint;
-    if (!Array.isArray(candidates) || !["claimed", "prepared"].includes(checkpoint?.stage)
+    if (!Array.isArray(candidates) || !["claimed", "branch_intent", "branch_ready", "prepared"].includes(checkpoint?.stage)
       || !current.ownerProcess || current.ownerProcess.pid !== current.ownerPid
       || !/^[a-f0-9]{64}$/.test(current.ownerProcess.executableDigest ?? "")
       || !/^[a-f0-9]{64}$/.test(current.ownerProcess.executablePathDigest ?? "")
@@ -94,7 +94,8 @@ export function localCheckpoint(execution) {
   return { schemaVersion: checkpoint?.schemaVersion, executionId: execution?.id, workspaceId: execution?.workspaceId,
     applicationId: execution?.applicationId, taskId: execution?.taskId, attempt: execution?.attempt,
     checkpointVersion: execution?.checkpointVersion, stage: checkpoint?.stage, sessionId: checkpoint?.sessionId,
-    packetRevision: checkpoint?.packetRevision, workspaceDigest: checkpoint?.workspaceDigest, contextRevision: checkpoint?.contextRevision };
+    packetRevision: checkpoint?.packetRevision, workspaceDigest: checkpoint?.workspaceDigest, contextRevision: checkpoint?.contextRevision,
+    ...(checkpoint?.branch ? { branch: checkpoint.branch } : {}), ...(checkpoint?.headCommit ? { headCommit: checkpoint.headCommit } : {}) };
 }
 
 export async function acquireWriterLock(directory = writerStateDirectory, { recoveryCandidate, terminalCandidates } = {}) {

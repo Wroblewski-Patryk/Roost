@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { reviewDecisionSchema, reviewActionSchema, correctionDraft, reviewDigest } from "../modules/agent-runtime/task-review-contract";
+import { reviewDecisionSchema, reviewActionSchema, correctionDraft, exactReviewCommit, nativeBoundaryResultBlocked, reviewDigest } from "../modules/agent-runtime/task-review-contract";
 const id="00000000-0000-4000-8000-000000000001";
 test("uncommitted byte evidence changes invalidate the review material digest",()=>{
   const result={commit:"a".repeat(40),verification:{workspaceEvidence:{seal:"b".repeat(64),manifest:[{path:"source.ts",working:{sha256:"c".repeat(64)}}]}}};
@@ -11,7 +11,26 @@ const reject = { requestId:id, executionId:id, expectedVersion:"a".repeat(64), m
 test("complete rejection and approval are accepted",()=>{
   assert.ok(reviewDecisionSchema.safeParse(reject).success);
   const {reproduction,expected,observed,correction,...approve}=reject;
-  assert.ok(reviewDecisionSchema.safeParse({...approve,decision:"approve"}).success);
+  assert.ok(reviewDecisionSchema.safeParse({...approve,decision:"approve",reviewedCommit:"c".repeat(40),evidence:[{kind:"test",reference:"npm test -- parser",result:"Empty-input case passes",verdict:"pass"}]}).success);
+  assert.equal(reviewDecisionSchema.safeParse({...approve,decision:"approve",reviewedCommit:"c".repeat(40)}).success,false);
+  assert.equal(reviewDecisionSchema.safeParse({...approve,decision:"approve",reviewedCommit:"c".repeat(40),evidence:[{kind:"test",reference:"npm test -- parser",result:"Empty-input case fails",verdict:"fail"}]}).success,false);
+});
+test("exact review commit requires a clean typed receipt bound to the host and checkpoint",()=>{
+  const hostId="00000000-0000-4000-8000-000000000002", branch="codex/task-1", commit="c".repeat(40);
+  const execution={id,attempt:1,agentHostId:hostId,checkpointVersion:3,metadata:{resultRevisionReviewVersion:"1"}};
+  const result={contract:{singleTask:{branch}},resultRevision:{schemaVersion:"roost-result-revision-v1",id,executionId:id,attempt:1,hostId,checkpointVersion:3,observedAt:new Date().toISOString(),commit,branch,workingTree:"clean"}};
+  assert.equal(exactReviewCommit(result,execution),commit);
+  for(const revision of [{...result.resultRevision,workingTree:"dirty"},{...result.resultRevision,branch:"main"},{...result.resultRevision,checkpointVersion:2},{...result.resultRevision,commit:"short"}])
+    assert.equal(exactReviewCommit({...result,resultRevision:revision},execution),null);
+  assert.equal(exactReviewCommit(result,{...execution,metadata:{}}),null);
+});
+test("read-only completion requires a verified unchanged zero-tool receipt",()=>{
+ const contract={nativeBoundary:{profile:"inspect-readonly"}};
+ const receipt={schemaVersion:"roost-readonly-audit-v1",verdict:"verified",evidenceDigest:"a".repeat(64),preTree:"b".repeat(64),postTree:"b".repeat(64),processState:"unchanged",dockerState:"unchanged",gitState:"unchanged",nativeTools:[]};
+ assert.equal(nativeBoundaryResultBlocked({readOnlyAudit:receipt},contract),false);
+ for(const bad of [{...receipt,postTree:"c".repeat(64)},{...receipt,nativeTools:["terminal"]},{...receipt,processState:"changed"}])
+   assert.equal(nativeBoundaryResultBlocked({readOnlyAudit:bad},contract),true);
+ assert.equal(nativeBoundaryResultBlocked({},contract),true);
 });
 for(const name of ["summary","reproduction","expected","observed","evidence","correction","expectedVersion","materialVersion"]){
   test(`rejection requires ${name}`,()=>{const input:any=structuredClone(reject);delete input[name];assert.equal(reviewDecisionSchema.safeParse(input).success,false);});

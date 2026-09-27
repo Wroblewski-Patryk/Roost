@@ -196,8 +196,10 @@ export function inspectTrustedPilotDecision(configurationPath, source, writerDig
       filesystemDigest: nativeDigest(source.filesystemScope), writerDigest };
     if (!same(p.provider, actualProvider) || provider && !same(provider, actualProvider) || !same(p.scope, scope)
       || e.identity.attempt !== 1 || e.contract.budgets.maxAttempts !== 1 || e.contract.access.externalWrites
-      || e.contract.access.sandbox !== "workspace-write"
-      || [...e.contract.access.tools, ...e.contract.access.permissions].some(x => !["repository_read", "repository_write", "local_test"].includes(x))) fail();
+      || e.contract.access.sandbox !== (e.contract.nativeBoundary?.profile === "inspect-readonly" ? "read-only" : "workspace-write")
+      || (e.contract.nativeBoundary?.profile === "inspect-readonly"
+        ? e.contract.access.tools.join() !== "repository_read" || e.contract.access.permissions.join() !== "repository_read"
+        : [...e.contract.access.tools, ...e.contract.access.permissions].some(x => !["repository_read", "repository_write", "local_test"].includes(x)))) fail();
     return { schemaVersion: trustedPilotVersion, decisionId: p.decisionId, revision: p.revision, installationId: p.installationId,
       configuration: { identity: config.identity, digest: config.digest }, decision: { identity: decision.identity, digest: decision.digest },
       profile: actualProvider.profile, provider: actualProvider, scope, expiresAt: p.expiresAt,

@@ -2,6 +2,7 @@ import { typedOperationSchema, nativeBoundaryContractSchema } from "./agent-host
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import { normalizeGitRemote } from "./agent-host-workspace-guard.mjs";
+import { nativeRelative } from "./agent-host-native-footprint.mjs";
 import { taskModelSelectionSchema } from "./agent-host-model-policy.mjs";
 export { codexEditorModels } from "./agent-host-model-policy.mjs";
 import { singleTaskSchema, singleTaskIssues } from "./agent-host-single-task.mjs";
@@ -18,7 +19,18 @@ const operations = typedOperationSchema;
 export const executionContractSchema = z.object({
   executionClass: z.literal("roost-fixed-effect-v1").optional(),
   version: text,
-  nativeBoundary: nativeBoundaryContractSchema.optional(),
+  nativeBoundary: z.discriminatedUnion("profile", [nativeBoundaryContractSchema,
+    z.object({ profile: z.literal("inspect-readonly"), readPaths: z.array(z.string().min(1).max(512)).min(1).max(32),
+      runtime: z.object({ required: z.literal(false), ports: z.tuple([]) }).strict(),
+      inspectReadOnly: z.discriminatedUnion("kind", [
+        z.object({ kind: z.literal("auditor") }).strict(),
+        z.object({ kind: z.literal("verifier"), verifiedExecutionId: id,
+          verifiedEvidenceDigest: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
+        z.object({ kind: z.literal("code-reviewer"), verifiedTaskId: id, verifiedExecutionId: id,
+          verifiedEvidenceDigest: z.string().regex(/^[a-f0-9]{64}$/),
+          baselineCommit: z.string().regex(/^[a-f0-9]{40}$/), reviewedCommit: z.string().regex(/^[a-f0-9]{40}$/) }).strict()
+      ]) }).strict()
+  ]).optional(),
   singleTask: singleTaskSchema,
   taskRoles: taskRolesSchema,
   objective: z.object({ outcome: text, goalId: id }).strict(),
@@ -29,7 +41,7 @@ export const executionContractSchema = z.object({
   procedures: optionalSet(ref),
   skills: optionalSet(z.object({ name: text, version: text }).strict()),
   access: z.object({ tools: z.array(operations).min(1).max(6), permissions: z.array(operations).min(1).max(6),
-    sandbox: z.literal("workspace-write"), externalWrites: z.literal(false), restrictions: texts }).strict(),
+    sandbox: z.enum(["workspace-write", "read-only"]), externalWrites: z.literal(false), restrictions: texts }).strict(),
   dependencies: optionalSet(ref.extend({ resolution: z.literal("satisfied"), evidence: text })),
   decisions: optionalSet(ref),
   budgets: z.object({ maxAttempts: z.number().int().min(1).max(5), maxDurationSeconds: z.number().int().min(60).max(3600), maxOutputTokens: z.number().int().min(128).max(100000) }).strict(),
@@ -74,6 +86,13 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
     const p = parsed.data, c = p.contract, task = taskContext?.task, agent = task?.assignedWorkforceEntity;
     if ([...c.access.tools, ...c.access.permissions].some(op => ["local_commit", "remote_push", "deployment"].includes(op)))
       add("contract.access", "separate_finalization_or_release_stage_required");
+    const inspect = c.nativeBoundary?.profile === "inspect-readonly";
+    if (inspect && (c.access.sandbox !== "read-only" || c.access.tools.length !== 1 || c.access.tools[0] !== "repository_read"
+      || c.access.permissions.length !== 1 || c.access.permissions[0] !== "repository_read")) add("contract.access", "readonly_authority_required");
+    if (inspect) for (const entry of c.nativeBoundary.readPaths) {
+      try { nativeRelative(entry); } catch { add("contract.nativeBoundary.readPaths", "invalid"); }
+    }
+    if (!inspect && c.access.sandbox !== "workspace-write") add("contract.access.sandbox", "coding_sandbox_required");
     const composition=p.procedureComposition;
     if(!options.allowUncomposed && (composition.algorithm!=="roost-procedure-composition-v1" || composition.status!=="composed" || !/^[a-f0-9]{64}$/.test(composition.seal??"") || composition.operation!=="runtime_execute" || composition.applicationId!==claimed?.applicationId || !Array.isArray(composition.missing) || composition.missing.length || !Array.isArray(composition.conflicts) || composition.conflicts.length)) add("procedureComposition","missing_or_conflicting");
     if((!options.allowUncomposed || composition.status==="composed") && c.access.tools.some(tool=>!composition.fields?.tools?.includes(tool)))add("procedureComposition.tools","outside_composed_authority");

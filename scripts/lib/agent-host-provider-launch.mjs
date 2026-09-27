@@ -23,7 +23,8 @@ const configSchema = z.object({
   officialSource: z.literal(hermes.officialSource), version: z.literal(hermes.version),
   commit: z.literal(hermes.commit), executablePath: z.string().min(1).max(1024),
   policy: z.object(Object.fromEntries(Object.keys(contract.registry.hermesPolicy).map(k => [k, z.unknown()]))).strict(),
-  attestation: z.unknown().optional(), profile: hermesProfileBindingSchema.optional()
+  attestation: z.unknown().optional(), profile: hermesProfileBindingSchema.optional(),
+  testManifestPath: z.string().min(1).max(1024).optional()
 }).strict();
 const canonical = value => Array.isArray(value) ? value.map(canonical) : value && typeof value === "object"
   ? Object.fromEntries(Object.keys(value).sort().map(k => [k, canonical(value[k])])) : value;

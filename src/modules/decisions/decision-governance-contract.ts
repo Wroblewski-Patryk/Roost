@@ -17,6 +17,20 @@ export const managedRuntimeApproval=z.object({schemaVersion:z.literal('roost-man
   backend:z.literal('codex_responses'),riskClass:z.literal('low'),
   mode:z.literal('trusted_provider_pilot'),residualRiskAccepted:z.literal(true),
   acknowledgement:z.literal('windows_account_authority_not_os_isolation')}).strict();
+// A coding task needs a separate owner decision after two completed, independent
+// read-only canaries. The decision is scoped to one installation, task and branch;
+// it grants no push or deployment capability.
+export const firstWriteApproval=z.object({schemaVersion:z.literal('roost-first-write-approval-v1'),
+  taskId:uuid,applicationId:uuid,installationId:uuid,
+  branch:z.string().regex(/^codex\/task-[a-f0-9-]{36}$/),
+  baselineCommit:z.string().regex(/^[a-f0-9]{40}$/),
+  auditorExecutionId:uuid,verifierExecutionId:uuid,
+  auditorEvidenceDigest:hash,verifierEvidenceDigest:hash,
+  capabilities:z.tuple([z.literal('repository_read'),z.literal('repository_write'),z.literal('local_test')]),
+  operations:z.object({localCommit:z.literal(true)}).strict(),
+  remotePush:z.literal(false),deployment:z.literal(false),financialWrites:z.literal(false)
+}).strict().refine(v=>v.auditorExecutionId!==v.verifierExecutionId,
+  {message:'Independent read-only canaries are required'});
 export const decisionNodeTypes=["task","application","project","procedure","company_record","resource","decision"] as const;
 export const decisionNode=z.object({type:z.enum(decisionNodeTypes),id:uuid}).strict();
 export const decisionProposal=z.object({requestId:uuid,decisionId:uuid.optional(),expectedVersion:hash,title:text,context:text,decision:text,rationale:text,consequences:text,
@@ -33,6 +47,7 @@ export const decisionProposal=z.object({requestId:uuid,decisionId:uuid.optional(
   workerBootstrapChannel:z.union([channelGrantIntent,z.object({schemaVersion:z.literal('worker-bootstrap-channel-v1'),ticketId:uuid,
     snapshot:bootstrapChannelSnapshot}).strict()]).optional(),
   managedRuntimeApproval:managedRuntimeApproval.optional(),
+  firstWriteApproval:firstWriteApproval.optional(),
   scopeReason:text,scope:z.array(decisionNode).min(1).max(8),supersedesId:uuid.nullable(),
   conflicts:z.array(z.object({kind:z.enum(["contradicts","narrows","replaces"]),oldProvision:text,newProvision:text,explanation:text}).strict()).max(12)
 }).strict().superRefine((v,c)=>{
@@ -40,6 +55,10 @@ export const decisionProposal=z.object({requestId:uuid,decisionId:uuid.optional(
     ||v.authority||v.workerBootstrap||v.workerCredential||v.workerTransport||v.workerIdentityLifecycle
     ||v.workerBootstrapIssuer||v.workerBootstrapProofKey||v.workerBootstrapProofAuthority||v.workerBootstrapAdmissionV3||v.workerBootstrapChannel))
     c.addIssue({code:'custom',message:'Managed runtime approval requires its exact task and a separate primary-owner decision'});
+  if(v.firstWriteApproval&&(!v.scope.some(n=>n.type==='task'&&n.id===v.firstWriteApproval!.taskId)
+    ||v.authority||v.managedRuntimeApproval||v.workerBootstrap||v.workerCredential||v.workerTransport||v.workerIdentityLifecycle
+    ||v.workerBootstrapIssuer||v.workerBootstrapProofKey||v.workerBootstrapProofAuthority||v.workerBootstrapAdmissionV3||v.workerBootstrapChannel))
+    c.addIssue({code:'custom',message:'First pilot write requires its own exact primary-owner decision'});
   const v3=!!v.workerBootstrapAdmissionV3||!!v.workerBootstrapProofAuthority;
   if(v3){
    if(!v.decisionId||!v.workerBootstrapAdmissionV3||!v.workerBootstrapProofAuthority||!v.workerBootstrapChannel||!('snapshot' in v.workerBootstrapChannel)

@@ -1,7 +1,7 @@
 import { abandonProviderNativeBoundary } from "./lib/agent-host-provider-input.mjs";
 import { inspectExecutionProvider, providerAdmissionReason } from "./lib/agent-host-execution-provider.mjs";
 import lifecycle from "./lib/agent-host-lifecycle.cjs";
-import { spawn } from "node:child_process";
+import { spawn, execFile } from "node:child_process";
 import { guardHostContent, hostTransport, boundedRunnerLines, readHostResponse } from "./lib/agent-host-redaction.mjs";
 import { access, readFile } from "node:fs/promises";
 import os from "node:os";
@@ -25,11 +25,16 @@ import { verifyCompletedNativeBoundary, releaseReviewedNativeBoundary } from "./
 import { verifyHermesSmokeInstallation } from "./lib/agent-host-hermes-smoke-installation.mjs";
 import { captureReadOnlyReviewBaseline, verifyReadOnlyReview } from "./lib/agent-host-readonly-review.mjs";
 import { isWindowsJobCleanupReceipt } from "./lib/agent-host-windows-job.mjs";
-import { buildManagedAdmissionSource, requestManagedAdmission, retireManagedAdmissionArtifacts } from "./lib/agent-host-managed-admission.mjs";
+import { buildManagedAdmissionSource, requestManagedAdmission, requestFirstWriteAdmission, retireManagedAdmissionArtifacts } from "./lib/agent-host-managed-admission.mjs";
 import { managedBackendVersion } from "./lib/agent-host-model-policy.mjs";
 import fixed from "./lib/agent-host-fixed-program.cjs";
 import { prepareFixedExecution, runFixedExecution, createFixedOutputBudget, assertFixedTask, abandonFixedExecution } from "./lib/agent-host-fixed-execution.mjs";
 import { collectWorkspaceEvidence } from "./lib/agent-host-workspace-evidence.mjs";
+import { collectReadOnlyRepositoryEvidence } from "./lib/agent-host-readonly-boundary.mjs";
+import { prepareCodingTests, runCodingTests } from "./lib/agent-host-coding-tests.mjs";
+import { finalizeLocalCommit } from "./lib/agent-host-local-commit.mjs";
+import { readCodeReviewerCredential, reviewerApi, validateCodeReviewView, prepareCodeReviewDecision,
+  codeReviewerConfigSchema } from "./lib/agent-host-code-reviewer.mjs";
 import { createExecutionDuration } from "./lib/agent-host-execution-duration.mjs";
 import { createCodexOutputBudget } from "./lib/agent-host-output-budget.mjs";
 import { fetchExecutionContext, executionContextRevision, assertFreshExecutionContext } from "./lib/agent-host-execution-context.mjs";
@@ -166,6 +171,14 @@ async function gitStatus(repositoryPath) {
   });
 }
 
+async function createTaskBranch(repositoryPath, branch) {
+  if (!/^codex\/task-[a-f0-9-]{36}$/.test(branch)) throw recoveryError("repository_mismatch");
+  await new Promise((resolve, reject) => execFile("git", ["-c", "core.hooksPath=NUL", "-c", "core.fsmonitor=false",
+    "switch", "--create", "--no-track", branch], { cwd: repositoryPath, shell: false, windowsHide: true, timeout: 10000,
+    maxBuffer: 16384, env: { ...process.env, GIT_OPTIONAL_LOCKS: "0", GIT_NO_REPLACE_OBJECTS: "1" } },
+  error => error ? reject(recoveryError("repository_mismatch")) : resolve()));
+}
+
 function statusPath(line) {
   const value = line.slice(3).trim();
   const renamed = value.includes(" -> ") ? value.split(" -> ").at(-1) : value;
@@ -214,7 +227,9 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
   let stopRequested = false;
   let duration;
   let outputBudget;
-  let hermesBaseline, hermesReadOnlyBaseline, nativeInput, fixedGrant;
+  let hermesBaseline, hermesReadOnlyBaseline, nativeInput, fixedGrant, readOnlyEvidence, firstWrite, codingTests;
+  let codeReviewerView, codeReviewerKey;
+  let preparedCommit;
   let hermesCollection, hermesAbort, hermesCompletedReceipt;
   function stopWorker() {
     stopping = true;
@@ -240,7 +255,9 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
   async function checkpoint(stage, packetRevision, digest) {
     await lease.refresh();
     lease.assertValid();
-    const next = { schemaVersion: "roost-recovery-v1", stage, sessionId: writerLock.sessionId, packetRevision, workspaceDigest: digest, contextRevision };
+    const coding = taskContext?.executionPacket?.contract?.nativeBoundary?.profile === "coding-local";
+    const next = { schemaVersion: "roost-recovery-v1", stage, sessionId: writerLock.sessionId, packetRevision, workspaceDigest: digest, contextRevision,
+      ...(coding ? { branch: taskContext.executionPacket.contract.singleTask.branch, headCommit: preparedCommit } : {}) };
     const expectedVersion = claimed.checkpointVersion;
     // Persist locally first. Any crash between the two stores leaves a mismatch
     // and must stop recovery. The spawn barrier is durable before a child exists.
@@ -262,7 +279,8 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     readyContext.assertReadyContext(taskContext, applicationContext, claimed);
     const practicalHermes = config.executionProvider?.kind === "hermes_codex"
       && [hermesBudgetProfileVersion, hermesNativeProfileVersion].includes(config.executionProvider.profile?.schemaVersion);
-    if (config.executionProvider?.kind === "hermes_codex" && (resumeCheckpoint || claimed.codexThreadId)) throw protocolAdmissionError("hermes_attempt_resume_forbidden");
+    if (config.executionProvider?.kind === "hermes_codex" && (claimed.codexThreadId
+      || resumeCheckpoint && !["branch_intent", "branch_ready", "prepared"].includes(resumeCheckpoint.stage))) throw protocolAdmissionError("hermes_attempt_resume_forbidden");
     if (config.executionProvider?.kind === fixed.kind && resumeCheckpoint) throw protocolAdmissionError("synthetic_execution_resume_forbidden");
     outputBudget = (config.executionProvider?.kind === fixed.kind ? createFixedOutputBudget : practicalHermes ? createHermesOutputIntent : createOutputBudget)({ maxOutputTokens: taskContext.executionPacket.contract.budgets.maxOutputTokens, onStopped: stopWorker });
     outputBudget.assertWithinBudget();
@@ -272,10 +290,13 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     duration.assertWithinBudget();
     // No execution-specific subprocess (including git) is started for an invalid packet.
     await duration.wait(validateAgentHostWorkspace(config));
-    assertTaskBranch(await duration.wait(readTaskBranch(repositoryPath)), taskContext.executionPacket.contract.singleTask.branch);
-    const beforeStatus = await duration.wait(gitStatus(repositoryPath));
-    const digest = await duration.wait(workspaceDigest(repositoryPath));
-    const preparedCommit = await duration.wait(readTaskCommit(repositoryPath));
+    const taskContract = taskContext.executionPacket.contract;
+    const coding = taskContract.nativeBoundary?.profile === "coding-local";
+    const inspecting = taskContract.nativeBoundary?.profile === "inspect-readonly";
+    let actualBranch = await duration.wait(readTaskBranch(repositoryPath));
+    let beforeStatus = await duration.wait(gitStatus(repositoryPath));
+    let digest = await duration.wait(workspaceDigest(repositoryPath));
+    preparedCommit = await duration.wait(readTaskCommit(repositoryPath));
     const assertProviderAuthority = () => {
       const reason = providerAdmission(host.metadata.executionProvider) || apiCompatibility(registeredHost?.runtime, host.capabilities);
       if (reason === lifecycle.admissionReason) throw lifecycle.lifecycleError();
@@ -283,22 +304,79 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       if (stopRequested || stopping) throw contextStopError();
       lease.assertValid(); duration.assertWithinBudget(); outputBudget.assertWithinBudget();
     };
+    if (coding) {
+      if (beforeStatus.length || preparedCommit !== taskContext.readyAdmission.riskAdmission.commit) throw recoveryError("workspace_changed");
+      if (resumeCheckpoint) {
+        if (resumeCheckpoint.headCommit !== preparedCommit || resumeCheckpoint.branch !== taskContract.singleTask.branch
+            || resumeCheckpoint.packetRevision !== taskContext.executionPacket.revision
+            || resumeCheckpoint.contextRevision !== contextRevision) throw recoveryError("checkpoint_mismatch");
+        if (resumeCheckpoint.stage === "branch_intent") {
+          if (![repository.baseBranch, taskContract.singleTask.branch].includes(actualBranch)) throw recoveryError("repository_mismatch");
+          if (actualBranch === repository.baseBranch && digest !== resumeCheckpoint.workspaceDigest) throw recoveryError("workspace_changed");
+        } else {
+          assertTaskBranch(actualBranch, taskContract.singleTask.branch);
+          if (digest !== resumeCheckpoint.workspaceDigest) throw recoveryError("workspace_changed");
+        }
+      } else if (actualBranch !== repository.baseBranch || claimed.checkpoint?.stage !== "claimed") throw recoveryError("repository_mismatch");
+      firstWrite = await duration.wait(requestFirstWriteAdmission({ api, claimed, writerLock, repositoryPath,
+        provider: config.executionProvider, contract: taskContract, baselineCommit: preparedCommit,
+        assertAuthority: assertProviderAuthority }));
+      if (actualBranch === repository.baseBranch) {
+        if (claimed.checkpoint.stage === "claimed") await duration.wait(checkpoint("branch_intent", taskContext.executionPacket.revision, digest));
+        else if (claimed.checkpoint.stage !== "branch_intent") throw recoveryError("checkpoint_mismatch");
+        assertProviderAuthority();
+        if (await duration.wait(readTaskCommit(repositoryPath)) !== firstWrite.baselineCommit
+            || (await duration.wait(gitStatus(repositoryPath))).length) throw recoveryError("workspace_changed");
+        await duration.wait(createTaskBranch(repositoryPath, taskContract.singleTask.branch));
+        actualBranch = await duration.wait(readTaskBranch(repositoryPath));
+        assertTaskBranch(actualBranch, taskContract.singleTask.branch);
+        if (await duration.wait(readTaskCommit(repositoryPath)) !== preparedCommit
+            || (await duration.wait(gitStatus(repositoryPath))).length) throw recoveryError("workspace_changed");
+        digest = await duration.wait(workspaceDigest(repositoryPath));
+        await duration.wait(checkpoint("branch_ready", taskContext.executionPacket.revision, digest));
+      } else if (claimed.checkpoint.stage === "branch_intent") {
+        // Interrupted after branch switch but before the branch_ready checkpoint.
+        // This path is safe only at the exact signed baseline with a clean tree.
+        digest = await duration.wait(workspaceDigest(repositoryPath));
+        await duration.wait(checkpoint("branch_ready", taskContext.executionPacket.revision, digest));
+      }
+    } else {
+      assertTaskBranch(actualBranch, taskContract.singleTask.branch);
+      if (inspecting && beforeStatus.length) throw recoveryError("workspace_changed");
+    }
+    const inspection = taskContract.nativeBoundary?.inspectReadOnly;
+    if (inspecting && inspection.kind === "code-reviewer") {
+      if (!codeReviewerConfigSchema.safeParse(config.codeReviewer).success
+          || config.codeReviewer.agentId !== taskContext.executionPacket.identity.agentId) throw protocolAdmissionError("code_reviewer_config_invalid");
+      codeReviewerKey = await duration.wait(readCodeReviewerCredential(config.codeReviewer));
+      codeReviewerView = validateCodeReviewView(await duration.wait(reviewerApi({ baseUrl, config: config.codeReviewer,
+        key: codeReviewerKey, route: `/v1/agent-runtime/tasks/${inspection.verifiedTaskId}/review` })),
+      inspection, taskContext.executionPacket.identity.agentId);
+    }
+    if (inspecting) readOnlyEvidence = await duration.wait(collectReadOnlyRepositoryEvidence({ repositoryPath,
+      expected: { head: preparedCommit, branch: actualBranch, origin: repository.originUrl },
+      paths: taskContract.nativeBoundary.readPaths, secrets: [apiKey, claimed.leaseToken, codeReviewerKey].filter(Boolean),
+      reviewMaterial: codeReviewerView, review: inspection.kind === "code-reviewer" ? inspection : null }));
+    if (coding && taskContract.nativeBoundary.writePaths.length) codingTests = prepareCodingTests({
+      manifestPath: config.executionProvider.testManifestPath, repositoryPath, originUrl: repository.originUrl,
+      acceptanceTests: taskContract.acceptance.tests });
     const providerInput = prepareProviderInput({ fresh: { taskContext, applicationContext }, claimed,
-      currentCommit: preparedCommit, assertAuthority: assertProviderAuthority, secrets: [apiKey],
+      currentCommit: preparedCommit, assertAuthority: assertProviderAuthority, secrets: [apiKey, codeReviewerKey].filter(Boolean),
       provider: config.executionProvider, repositoryPath,
+      repositoryEvidence: readOnlyEvidence,
       nativeBoundaryOptions: { writerLock, expected: { head: preparedCommit, branch: taskContext.executionPacket.contract.singleTask.branch, origin: repository.originUrl } },
       startupEnvironment: config.executionProvider?.kind === "hermes_codex" && config.executionProvider.profile
         ? hermesStartupEnvironment(config.executionProvider.profile, process.env, repositoryPath) : undefined });
     nativeInput = providerInput;
-    if (config.executionProvider?.kind === "hermes_codex") {
+    if (config.executionProvider?.kind === "hermes_codex" && !inspecting) {
       hermesBaseline = await duration.wait(collectWorkspaceEvidence({
         repositoryPath, expectedHead: preparedCommit, expectedBranch: taskContext.executionPacket.contract.singleTask.branch,
-        inputSeal: providerInput.seal, secrets: [apiKey, claimed.leaseToken] }));
-      hermesReadOnlyBaseline = await duration.wait(captureReadOnlyReviewBaseline({ repositoryPath,
+        inputSeal: providerInput.seal, secrets: [apiKey, claimed.leaseToken, codeReviewerKey].filter(Boolean) }));
+      if (!codingTests) hermesReadOnlyBaseline = await duration.wait(captureReadOnlyReviewBaseline({ repositoryPath,
         contract: taskContext.executionPacket.contract, workspaceEvidence: hermesBaseline }));
     }
     if (resumeCheckpoint) assertRecoverySnapshot(resumeCheckpoint, taskContext.executionPacket.revision, digest, contextRevision);
-    if (claimed.checkpoint?.stage === "claimed") await duration.wait(checkpoint("prepared", taskContext.executionPacket.revision, digest));
+    if (["claimed", "branch_ready"].includes(claimed.checkpoint?.stage)) await duration.wait(checkpoint("prepared", taskContext.executionPacket.revision, digest));
     else if (claimed.checkpoint?.stage !== "prepared") throw recoveryError("checkpoint_mismatch");
     await duration.wait(checkpoint("spawn_intent", taskContext.executionPacket.revision, digest));
     if (config.executionProvider?.kind === fixed.kind) {
@@ -324,17 +402,17 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     await duration.wait(lease.refresh());
     // No awaited RPC/work remains between this admission check and spawn.
     const launchOptions = { provider: config.executionProvider, envelope: providerInput, fixedGrant, writerLock,
-      repositoryPath, codexCommand, sandbox, secrets: [apiKey, claimed.leaseToken],
+      repositoryPath, codexCommand, sandbox: inspecting ? "read-only" : sandbox, secrets: [apiKey, claimed.leaseToken, codeReviewerKey].filter(Boolean),
       startupEnvironment: config.executionProvider?.kind === "hermes_codex" && config.executionProvider.profile
         ? hermesStartupEnvironment(config.executionProvider.profile, process.env, repositoryPath) : undefined };
-    const launchAuthority = { fresh, claimed, currentCommit, assertAuthority: assertProviderAuthority, secrets: [apiKey] };
+    const launchAuthority = { fresh, claimed, currentCommit, assertAuthority: assertProviderAuthority, secrets: [apiKey, codeReviewerKey].filter(Boolean) };
     if (config.executionProvider?.kind === "hermes_codex" && providerInput.contract.modelSelection.schemaVersion === managedBackendVersion) {
       await duration.wait(assertAdmission(true));
       const prepared = buildManagedAdmissionSource({ envelope: providerInput, claimed, writerLock,
         repositoryPath, provider: config.executionProvider, startupEnvironment: launchOptions.startupEnvironment,
         remainingMs: () => duration.remainingMs });
       launchOptions.managedAdmission = await duration.wait(requestManagedAdmission({ api, ...prepared,
-        assertAuthority: assertProviderAuthority }));
+        firstWrite, assertAuthority: assertProviderAuthority }));
       await duration.wait(api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST",
         body: JSON.stringify({ leaseToken: claimed.leaseToken, type: "runner_progress",
           message: "Signed managed admission accepted; preparing native Hermes launch." }) }));
@@ -370,8 +448,9 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       const pending = hermesCollection = runHermesOwnedProcess({ executable: launch.command, argv: launch.args,
         cwd: launch.cwd, environment: launch.candidateEnvironment, attempt: claimed.id, input: launch.input, remainingMs: () => duration.remainingMs,
         signal: hermesAbort.signal, budgetReceipt: launch.budgetReceipt, nativeToolReceipt: launch.nativeToolReceipt,
+        readOnlyToolReceipt: launch.readOnlyToolReceipt,
         stopReason: () => duration.failure ?? lease.failure,
-        secrets: [apiKey, claimed.leaseToken], assertAuthority: assertProviderAuthority,
+        secrets: [apiKey, claimed.leaseToken, codeReviewerKey].filter(Boolean), assertAuthority: assertProviderAuthority,
         assertLaunchAuthority: launch.assertLaunchAuthority,
         shutdownRequested: () => shutdownRequested || stopping, expectedJobSourceDigest: launch.expectedJobSourceDigest });
       void pending.then(receipt => { hermesCompletedReceipt = receipt.ownedTreeReceipt; }, () => undefined);
@@ -385,6 +464,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       verification.ownedTreeReceipt = receipt.ownedTreeReceipt;
       verification.attemptBudgetReceipt = receipt.attemptBudgetReceipt;
       verification.nativeToolReceipt = receipt.nativeToolReceipt;
+      if (inspecting) verification.readOnlyAudit = receipt.readOnlyAudit;
       verification.managedAdmission = { qualification: launch.trustedPilot.qualification,
         decisionId: launch.trustedPilot.decisionId, revision: launch.trustedPilot.revision,
         evidenceDigest: launch.managedBackend.evidence.digest, jobSourceDigest: launch.expectedJobSourceDigest };
@@ -457,19 +537,51 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       event.type === "item.completed" && event.item?.type === "agent_message" && typeof event.item.text === "string" && event.item.text.trim()));
     }
 
-    const afterStatus = await duration.wait(gitStatus(repositoryPath));
+    let afterStatus = await duration.wait(gitStatus(repositoryPath));
     const resultBranch=await duration.wait(readTaskBranch(repositoryPath));
     assertTaskBranch(resultBranch,taskContext.executionPacket.contract.singleTask.branch);
-    const resultCommit=await duration.wait(readTaskCommit(repositoryPath));
-    if (launch.kind === "hermes_codex") {
+    let resultCommit=await duration.wait(readTaskCommit(repositoryPath));
+    if (inspecting && (afterStatus.length || resultCommit !== preparedCommit || !verification.readOnlyAudit
+        || verification.readOnlyAudit.verdict !== "verified")) throw protocolAdmissionError("readonly_result_changed");
+    if (inspecting && inspection.kind === "code-reviewer") {
+      const freshReview = validateCodeReviewView(await duration.wait(reviewerApi({ baseUrl, config: config.codeReviewer,
+        key: codeReviewerKey, route: `/v1/agent-runtime/tasks/${inspection.verifiedTaskId}/review` })),
+      inspection, taskContext.executionPacket.identity.agentId);
+      if (freshReview.expectedVersion !== codeReviewerView.expectedVersion
+          || freshReview.materialVersion !== codeReviewerView.materialVersion) throw protocolAdmissionError("code_review_material_changed");
+      const decision = prepareCodeReviewDecision({ finalResponse, view: codeReviewerView, review: inspection,
+        config: config.codeReviewer, readOnlyAudit: verification.readOnlyAudit });
+      const outcome = await duration.wait(reviewerApi({ baseUrl, config: config.codeReviewer, key: codeReviewerKey,
+        route: `/v1/agent-runtime/tasks/${inspection.verifiedTaskId}/actions/review`, method: "POST", body: decision }));
+      if (outcome.decision?.executionId !== inspection.verifiedExecutionId
+          || outcome.decision?.materialVersion !== inspection.verifiedEvidenceDigest
+          || outcome.decision?.decision !== decision.decision || outcome.decision?.actorAgentId !== config.codeReviewer.agentId)
+        throw protocolAdmissionError("code_review_decision_unproven");
+      verification.codeReviewDecision = { id: outcome.decision.id, decision: outcome.decision.decision,
+        executionId: outcome.decision.executionId, materialVersion: outcome.decision.materialVersion,
+        reviewedCommit: inspection.reviewedCommit, reviewerAgentId: config.codeReviewer.agentId };
+    }
+    if (launch.kind === "hermes_codex" && !inspecting) {
       // The supervised implementer may not commit. Review binds the exact dirty
       // bytes through verification, already part of Roost's review fingerprint.
       verification.workspaceEvidence = await duration.wait(collectWorkspaceEvidence({ repositoryPath,
         expectedHead: preparedCommit, expectedBranch: taskContext.executionPacket.contract.singleTask.branch,
         inputSeal: providerInput.seal, baselineSeal: hermesBaseline.seal, secrets: [apiKey, claimed.leaseToken] }));
       const reviewed = await duration.wait(verifyCompletedNativeBoundary(verification.nativeToolReceipt, {
-        verify: () => verifyReadOnlyReview({ repositoryPath, baseline: hermesReadOnlyBaseline,
-          workspaceEvidence: verification.workspaceEvidence }),
+        verify: async () => {
+          if (!codingTests) return verifyReadOnlyReview({ repositoryPath, baseline: hermesReadOnlyBaseline,
+            workspaceEvidence: verification.workspaceEvidence });
+          const tested = await runCodingTests(codingTests, { phase: "candidate", workspaceSeal: verification.workspaceEvidence.seal,
+            remainingMs: () => duration.remainingMs, assertAuthority: assertProviderAuthority });
+          verification.codingTests = tested;
+          const postTest = await collectWorkspaceEvidence({ repositoryPath, expectedHead: preparedCommit,
+            expectedBranch: taskContract.singleTask.branch, inputSeal: providerInput.seal,
+            baselineSeal: hermesBaseline.seal, secrets: [apiKey, claimed.leaseToken] });
+          if (postTest.seal !== verification.workspaceEvidence.seal) throw protocolAdmissionError("coding_tests_changed_workspace");
+          return { before: { exit: null }, after: { exit: tested.passed ? 0 : 1, passed: tested.passed },
+            testUnchanged: true, baselineCommitUnchanged: true, minimalChange: true,
+            diffDigest: verification.workspaceEvidence.seal };
+        },
         installation: async () => {
           const manifestPath = config.executionProvider.attestation.manifestPath;
           const post = await verifyHermesSmokeInstallation({ manifestPath,
@@ -482,9 +594,30 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       if (reviewed.publicReceipt.verdict !== "verified_candidate") throw Object.assign(
         new Error("agent_native_review_blocked"), { retryable: false, publicMessage: "Native review did not verify the candidate result." });
       releaseReviewedNativeBoundary(verification.nativeToolReceipt, reviewed.capability);
+      if (codingTests) {
+        const renewedFirstWrite = await duration.wait(requestFirstWriteAdmission({ api, claimed, writerLock, repositoryPath,
+          provider: config.executionProvider, contract: taskContract, baselineCommit: preparedCommit,
+          assertAuthority: assertProviderAuthority }));
+        if (renewedFirstWrite.decisionId !== firstWrite.decisionId
+            || renewedFirstWrite.baselineCommit !== firstWrite.baselineCommit
+            || renewedFirstWrite.branch !== firstWrite.branch) throw protocolAdmissionError("first_write_changed_before_commit");
+        firstWrite = renewedFirstWrite;
+        verification.localCommit = finalizeLocalCommit({ repositoryPath, writerLock, executionId: claimed.id,
+          taskId: claimed.taskId, baselineCommit: preparedCommit, branch: resultBranch,
+          writePaths: taskContract.nativeBoundary.writePaths, firstWrite,
+          nativeReviewReceipt: reviewed.publicReceipt, nativeReviewReceiptDigest: reviewed.receiptDigest,
+          candidateTests: verification.codingTests, workspaceEvidence: verification.workspaceEvidence,
+          assertAuthority: assertProviderAuthority });
+        resultCommit = await duration.wait(readTaskCommit(repositoryPath));
+        afterStatus = await duration.wait(gitStatus(repositoryPath));
+        if (resultCommit !== verification.localCommit.commit || afterStatus.length) throw protocolAdmissionError("local_commit_result_drift");
+      }
       retireManagedAdmissionArtifacts({ directory: path.join(writerRecoveryEvidence(writerLock).directory, "trusted-provider-pilot"),
         executionId: claimed.id, evidenceDigest: launch.managedBackend.evidence.digest });
     }
+    if (launch.kind === "hermes_codex" && inspecting) retireManagedAdmissionArtifacts({
+      directory: path.join(writerRecoveryEvidence(writerLock).directory, "trusted-provider-pilot"),
+      executionId: claimed.id, evidenceDigest: launch.managedBackend.evidence.digest });
     const committedPaths=await duration.wait(readTaskPaths(repositoryPath,currentCommit,resultCommit));
     const changedFiles = [...new Set([...committedPaths,...afterStatus.map(statusPath)])];
     const resultRevision={commit:resultCommit,branch:resultBranch,workingTree:afterStatus.length?"dirty":"clean"};

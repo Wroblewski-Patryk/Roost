@@ -55,13 +55,21 @@ export function hermesStartupEnvironment(binding, source = process.env, reposito
 // File exposes writes: do not grant it to a repository-read-only task. Terminal
 // is enabled only for an explicit local_test grant in BOTH packet lists.
 export function hermesTaskToolsets(envelope) {
+  if (envelope.contract.nativeBoundary?.profile === "inspect-readonly") {
+    const access = envelope.contract.access;
+    if (access.sandbox !== "read-only" || access.tools.length !== 1 || access.tools[0] !== "repository_read"
+        || access.permissions.length !== 1 || access.permissions[0] !== "repository_read") fail("hermes_readonly_authority_invalid");
+    // Pinned Hermes 0.21.2 expands bot_room to the empty native tool list.
+    // This explicit nonempty toolset suppresses the coding posture defaults.
+    return ["bot_room"];
+  }
   if (envelope.contract.nativeBoundary) { assertCodingAuthority(envelope); return ["file", "terminal"]; }
   const access = envelope.contract.access;
   const allowed = op => access.tools.includes(op) && access.permissions.includes(op);
   if (!allowed("repository_read") || !allowed("repository_write")) fail("hermes_startup_tools_not_authorized");
   return allowed("local_test") ? ["file", "terminal"] : ["file"];
 }
-const expansion = { file: ["read_file", "write_file", "patch", "search_files"], terminal: ["terminal", "process_manage"] };
+const expansion = { file: ["read_file", "write_file", "patch", "search_files"], terminal: ["terminal", "process_manage"], bot_room: [] };
 export function hermesStartupArgs(envelope) {
   const requested = envelope.contract.modelSelection;
   const managed = requested?.schemaVersion === managedBackendVersion ? managedBackendSelectionSchema.safeParse(requested) : null;
@@ -101,8 +109,8 @@ function validate({ provider, envelope, repositoryPath, candidate, budget }) {
       || provider.officialSource !== pin.officialSource || ![hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion].includes(provider.profile?.schemaVersion)
       || provider.profile.configDigest !== (provider.profile.schemaVersion === hermesNativeProfileVersion ? hermesNativeProfileDigest : provider.profile.schemaVersion === hermesBudgetProfileVersion ? hermesBudgetProfileDigest : hermesStartupProfileDigest)
       || serialize(provider.policy) !== serialize(contract.registry.hermesPolicy)
-      || Object.keys(provider).some(k => !["kind", "enabled", "version", "commit", "officialSource", "executablePath", "profile", "policy", "attestation"].includes(k))) fail("hermes_startup_profile_required");
-  if (provider.profile.schemaVersion === hermesNativeProfileVersion) assertCodingAuthority(envelope);
+      || Object.keys(provider).some(k => !["kind", "enabled", "version", "commit", "officialSource", "executablePath", "profile", "policy", "attestation", "testManifestPath"].includes(k))) fail("hermes_startup_profile_required");
+  if (provider.profile.schemaVersion === hermesNativeProfileVersion && envelope.contract.nativeBoundary?.profile !== "inspect-readonly") assertCodingAuthority(envelope);
   const env = candidate?.environment;
   if (!env || Object.keys(env).some(k => ![...plumbing, ...(process.platform === "win32" ? ["SYSTEMDRIVE"] : []), "HERMES_HOME", "HERMES_SAFE_MODE", "HERMES_DISABLE_LAZY_INSTALLS", "HERMES_WRITE_SAFE_ROOT", "PYTHONNOUSERSITE", "PYTHONDONTWRITEBYTECODE", "PYTHONUTF8", "GIT_TERMINAL_PROMPT", "GIT_OPTIONAL_LOCKS"].includes(k))) fail("hermes_startup_environment_invalid");
   assertWindowsStartupPaths([...Object.values(env), candidate.command, candidate.cwd, repositoryPath,
@@ -137,8 +145,8 @@ export const hermesStartupReceiptSchema = z.object({
   authAttestationId: z.string().uuid(), authAttestationDigest: hash, authPolicyVersion: z.literal("roost-hermes-same-owner-auth-v2"),
   readyRevision: hash, inputSeal: hash, provider: z.literal("openai-codex"), modelSelection: modelSelectionSchema,
   backend: z.literal("codex_responses").optional(),
-  toolsets: z.array(z.enum(["file", "terminal"])).min(1).max(2), expandedTools: z.array(z.enum(Object.values(expansion).flat())).min(1).max(6),
-  categories: z.array(z.enum(["repository_read", "repository_write", "local_test"])).min(2).max(3),
+  toolsets: z.array(z.enum(["file", "terminal", "bot_room"])).min(1).max(2), expandedTools: z.array(z.enum(Object.values(expansion).flat())).max(6),
+  categories: z.array(z.enum(["repository_read", "repository_write", "local_test"])).min(1).max(3),
   fallbackProvidersEmpty: z.literal(true), legacyFallbackEmpty: z.literal(true), worktree: z.literal(false), safeMode: z.literal(true), updateCheck: z.literal(false),
   acceptedSideEffects: z.object({ bundledSkillsLocalSync: z.literal(true), localBannerPrefetch: z.literal(true), networkUpdateCheck: z.literal(false) }).strict(),
   windowsEnvironment: z.discriminatedUnion("category", [
@@ -164,7 +172,7 @@ export function assertHermesStartup(seal, options) {
     modelSelection: { ...(options.envelope.contract.modelSelection.schemaVersion === managedBackendVersion
       ? options.envelope.contract.modelSelection.modelSelection : options.envelope.contract.modelSelection) },
     ...(options.envelope.contract.modelSelection.schemaVersion === managedBackendVersion ? { backend: "codex_responses" } : {}),
-    toolsets, expandedTools: toolsets.flatMap(t => expansion[t]), categories: ["repository_read", "repository_write", ...(toolsets.includes("terminal") ? ["local_test"] : [])],
+    toolsets, expandedTools: toolsets.flatMap(t => expansion[t]), categories: toolsets.includes("bot_room") ? ["repository_read"] : ["repository_read", "repository_write", ...(toolsets.includes("terminal") ? ["local_test"] : [])],
     fallbackProvidersEmpty: true, legacyFallbackEmpty: true, worktree: false, safeMode: true, updateCheck: false,
     acceptedSideEffects: { ...acceptedHermesStartupEffects }, windowsEnvironment, argvDigest: digest(options.candidate.args), environmentDigest: digest(options.candidate.environment),
     policyDigest: digest([hermesStartupPolicy, windowsEnvironmentPolicy, acceptedHermesStartupEffects, expansion, profile.configDigest]),

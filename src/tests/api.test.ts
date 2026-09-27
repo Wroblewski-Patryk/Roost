@@ -2017,7 +2017,9 @@ let reviewFixtureSequence=0;
     if(interview)interviewFixtureInputs.add(f.input);
     const accepted = await post(submitRoute, await submissionInput(submitRoute, f.input, auth)); assert.equal(accepted.status, 200, JSON.stringify(accepted.body));
     const pin = (await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness as any;
-    const execution = await prisma.agentExecution.create({ data: { workspaceId, taskId: task.id, applicationId: app.id, status: "completed", requestedByType: "user", requestedById: manager.externalId, attempt: 1, startedAt: new Date(Date.now()-1000), completedAt: new Date(), summary: "Parser result", finalResponse: "Changed empty-input handling", changedFiles: ["src/parser.ts"], verification: { command: "npm test -- parser", result: "fixture completed" }, metadata: { executionContract: f.input.contract, readyContextPin: { pinId: pin.pinId, revision: pin.revision, compositionSeal:pin.procedureComposition.seal, riskAdmissionSeal:pin.riskAdmissionSeal, riskAdmissionCommit:pin.riskAdmissionCommit } } } });
+    const host = await prisma.agentHost.create({ data: { workspaceId, name: "Review fixture host", slug: `review-host-${reviewFixtureSequence}`, platform: "win32" } });
+    const executionId = randomUUID(), resultCommit = "c".repeat(40);
+    const execution = await prisma.agentExecution.create({ data: { id: executionId, workspaceId, taskId: task.id, applicationId: app.id, agentHostId: host.id, status: "completed", requestedByType: "user", requestedById: manager.externalId, attempt: 1, startedAt: new Date(Date.now()-1000), completedAt: new Date(), summary: "Parser result", finalResponse: "Changed empty-input handling", changedFiles: ["src/parser.ts"], verification: { command: "npm test -- parser", result: "fixture completed" }, checkpointVersion: 1, checkpoint: { schemaVersion: "roost-recovery-v1", stage: "effect_possible", sessionId: randomUUID(), packetRevision: "a".repeat(64), workspaceDigest: "b".repeat(64), contextRevision: pin.revision }, metadata: { executionContract: f.input.contract, readyContextPin: { pinId: pin.pinId, revision: pin.revision, compositionSeal:pin.procedureComposition.seal, riskAdmissionSeal:pin.riskAdmissionSeal, riskAdmissionCommit:pin.riskAdmissionCommit }, resultRevisionReviewVersion: "1", resultRevision: { schemaVersion: "roost-result-revision-v1", id: randomUUID(), executionId, attempt: 1, hostId: host.id, checkpointVersion: 1, observedAt: new Date().toISOString(), commit: resultCommit, branch: pin.contract.singleTask.branch, workingTree: "clean" } } } });
     if(handoff)await prepareHandoffResultFixture(execution,pin);
     const view = async (headers = reviewerAuth) => (await request(`${root}/review`, { headers })).body as any;
     const grants: Record<string,string> = {};
@@ -2035,7 +2037,7 @@ let reviewFixtureSequence=0;
     const rejection = async () => { const capability=await grantFor("review_decision"), s = (await view()).data; return {...capability, requestId: randomUUID(), expectedVersion: s.expectedVersion, executionId: execution.id, materialVersion: s.materialVersion, decision: "reject", summary: "Empty input throws", reproduction: ["Run the empty parser fixture"], expected: "A validation message", observed: "An exception is thrown", evidence: [{ kind: "test", reference: "npm test -- parser", result: "Empty input fails" }], correction: { scope: ["Handle empty parser input"], excluded: ["Do not change other parser behavior"], outcome: "Empty input returns a validation message", competencies: ["javascript"] } }; };
     const reject = async () => { const body = await rejection(); const r = await post(`${root}/actions/review`, body, reviewerAuth); assert.equal(r.status, 200, JSON.stringify(r.body)); return body; };
     const action = async (kind = "return_to_executor") => { const capability=await grantFor(kind), s = (await view(auth)).data; return {...capability, requestId: randomUUID(), expectedVersion: s.expectedVersion, reviewId: s.decision.id, action: kind, scope: ["Handle empty parser input"] }; };
-    return { ...f, grant, issue, verifierKey, managerKey, auth, workspaceId, task, app, execution, root, post, view, rejection, reject, action, reviewerAuth, verifier, user, submitRoute };
+    return { ...f, grant, issue, verifierKey, managerKey, auth, workspaceId, task, app, execution, resultCommit, root, post, view, rejection, reject, action, reviewerAuth, verifier, user, submitRoute };
   }
 
 const clarificationFixtureContent=(extra:any={})=>({type:"question",text:"Which recorded test covers empty input?",references:[],expectedResponse:{kind:"answer",instruction:"Identify the recorded fixture evidence",dueAt:null},material:null,...extra});
@@ -2461,7 +2463,7 @@ test("native review records decisions and manager returns without implementation
     const f=await fixture(true,false), reject=await f.rejection();
     const grant=await f.grant("review_decision",{validFrom:new Date(Date.now()+60000).toISOString()});assert.equal(grant.response.status,201);
     const g=(grant.response.body as any).data.grant;
-    const {reproduction,expected,observed,correction,...evidence}=reject, body={...evidence,decision:"approve",grantId:g.id};
+    const {reproduction,expected,observed,correction,...evidence}=reject, body={...evidence,decision:"approve",grantId:g.id,reviewedCommit:f.resultCommit,evidence:[{kind:"test",reference:"npm test -- parser",result:"Parser regression passes",verdict:"pass"}]};
     assert.equal((await f.post(f.root+"/actions/review",body,f.reviewerAuth)).status,409);
     // Advance this isolated fixture's activation boundary explicitly; API latency
     // must not turn a pending-grant assertion into a race against a 500 ms timer.
@@ -2631,8 +2633,12 @@ test("native review records decisions and manager returns without implementation
   });
   await t.test("approve is immutable, idempotent and does not mark delivery or change assignment", async () => {
     const f = await fixture(), before = await prisma.task.findUniqueOrThrow({ where: { id: f.task.id } });
-    const { reproduction, expected, observed, correction, ...input } = await f.rejection(); const body = { ...input, decision: "approve" };
+    const { reproduction, expected, observed, correction, ...input } = await f.rejection(); const body = { ...input, decision: "approve", reviewedCommit:f.resultCommit,evidence:[{kind:"test",reference:"npm test -- parser",result:"Parser regression passes",verdict:"pass"}] };
     const material = (await f.view()).data.result;
+    assert.equal(material.resultRevision.commit,f.resultCommit);
+    assert.equal(material.checkpointVersion,1);
+    assert.equal((await f.post(`${f.root}/actions/review`,{...body,requestId:randomUUID(),reviewedCommit:"d".repeat(40)},f.reviewerAuth)).status,409);
+    assert.equal((await f.post(`${f.root}/actions/review`,{...body,requestId:randomUUID(),evidence:[{kind:"test",reference:"npm test -- parser",result:"Regression failed",verdict:"fail"}]},f.reviewerAuth)).status,400);
     await assert.rejects(prisma.taskReviewDecision.create({ data: { workspaceId: f.workspaceId, taskId: f.task.id, executionId: f.execution.id, requestId: randomUUID(), requestHash: "a".repeat(64), materialVersion: "0".repeat(64), actorUserId: f.user.id, verifierId: f.verifier.id, managerId: f.input.contract.taskRoles.accountableManager.id, decision: "approve", evidence: body, snapshot: { result: material } } }), /task_review_material_version_invalid/);
     const r = await f.post(`${f.root}/actions/review`, body, f.reviewerAuth); assert.equal(r.status, 200, JSON.stringify(r.body));
     assert.deepEqual((await f.post(`${f.root}/actions/review`, body, f.reviewerAuth)).body, { data: { ...(r.body as any).data, replayed: true } });
@@ -2642,6 +2648,17 @@ test("native review records decisions and manager returns without implementation
     await assert.rejects(prisma.taskReviewDecision.delete({ where: { id } }), /task_review_append_only/);
     await assert.rejects(prisma.agentExecution.update({ where: { id: f.execution.id }, data: { summary: "Replacement result" } }), /task_review_result_immutable/);
     assert.equal((await f.view()).data.canManage, false);
+  });
+  await t.test("dirty candidate can be rejected but cannot be approved, including through direct storage writes", async () => {
+    const f=await fixture(), metadata=(await prisma.agentExecution.findUniqueOrThrow({where:{id:f.execution.id}})).metadata as any;
+    await prisma.agentExecution.update({where:{id:f.execution.id},data:{metadata:{...metadata,resultRevision:{...metadata.resultRevision,workingTree:"dirty"}}}});
+    const rejected=await f.rejection();
+    const {reproduction,expected,observed,correction,...base}=rejected;
+    const approval={...base,requestId:randomUUID(),decision:"approve",reviewedCommit:f.resultCommit,evidence:[{kind:"test",reference:"npm test -- parser",result:"Parser regression passes",verdict:"pass"}]};
+    assert.equal((await f.post(`${f.root}/actions/review`,approval,f.reviewerAuth)).status,409);
+    const material=(await f.view()).data.result;
+    await assert.rejects(prisma.taskReviewDecision.create({data:{workspaceId:f.workspaceId,taskId:f.task.id,executionId:f.execution.id,requestId:randomUUID(),requestHash:"a".repeat(64),materialVersion:(await f.view()).data.materialVersion,actorUserId:f.user.id,verifierId:f.verifier.id,managerId:f.input.contract.taskRoles.accountableManager.id,decision:"approve",evidence:{summary:"Independent review",reviewedCommit:f.resultCommit,evidence:approval.evidence},snapshot:{result:material}}}),/task_review_exact_commit_required/);
+    assert.equal((await f.post(`${f.root}/actions/review`,rejected,f.reviewerAuth)).status,200);
   });
   await t.test("reject requires reproducible evidence and cannot carry implementation effects", async () => {
     const f = await fixture(), input:any = await f.rejection();

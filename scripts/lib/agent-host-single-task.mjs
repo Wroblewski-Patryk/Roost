@@ -43,7 +43,9 @@ export function singleTaskIssues(contract, packet, claimed) {
   const s = contract.singleTask, issues = [], add = (field, reason) => issues.push({ field: `contract.singleTask.${field}`, reason });
   const identity = singleTaskIdentity(claimed.taskId);
   if (s.contractId !== identity.contractId) add("contractId", "mismatch");
-  if (s.branch !== identity.branch) add("branch", "mismatch");
+  if (contract.nativeBoundary?.profile === "inspect-readonly") {
+    if (!/^[A-Za-z0-9][A-Za-z0-9._\/-]{0,119}$/.test(s.branch) || s.branch.includes("..") || s.branch.endsWith("/")) add("branch", "invalid");
+  } else if (s.branch !== identity.branch) add("branch", "mismatch");
   if (s.applicationId !== claimed.applicationId) add("applicationId", "mismatch");
   const { component, manager } = packet.scopeAuthorities;
   if (!component || component.id !== s.component.id || component.applicationId !== claimed.applicationId || component.status !== "active") add("component", "unavailable");

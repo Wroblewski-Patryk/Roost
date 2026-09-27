@@ -1,5 +1,6 @@
 import { nativeBoundaryRules } from "./agent-host-native-authority.mjs";
 import { sealNativeToolBoundary, assertNativeToolBoundary, abandonNativeToolBoundary } from "./agent-host-hermes-native-boundary.mjs";
+import { sealReadOnlyBoundary, assertReadOnlyBoundary, abortReadOnlyBoundary } from "./agent-host-readonly-boundary.mjs";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import { executionContractSchema, validateExecutionPacket } from "./agent-host-execution-packet.mjs";
@@ -34,7 +35,16 @@ export const providerInputSchema = z.object({
     procedures: evidence("taskContext.procedures.contract_refs", records),
     decisions: evidence("taskContext.decisions.contract_refs", records),
     dependencies: evidence("taskContext.dependencies.contract_refs", records),
-    ownerInstruction: evidence("claimed.prompt.ready_approved", z.string().max(16000).nullable())
+    ownerInstruction: evidence("claimed.prompt.ready_approved", z.string().max(16000).nullable()),
+    repositoryInspection: evidence("worker.bounded_repository_read", z.object({
+      schemaVersion: z.literal("roost-readonly-repository-evidence-v1"), head: z.string().regex(/^[a-f0-9]{40}$/), branch: z.string().min(1),
+      files: z.array(z.object({ path: z.string().min(1), content: z.string().max(32768), sha256: hash }).strict()).min(1).max(32),
+      tree: hash, processDigest: hash, dockerDigest: hash,
+      reviewed: z.object({ verifiedTaskId: id, verifiedExecutionId: id, materialVersion: hash,
+        baselineCommit: z.string().regex(/^[a-f0-9]{40}$/), reviewedCommit: z.string().regex(/^[a-f0-9]{40}$/),
+        changedFiles: z.array(z.string()).max(128), codingTests: record, localCommit: record, nativeReview: record,
+        diff: z.string().max(32768), diffDigest: hash }).strict().optional(), digest: hash
+    }).strict()).optional()
   }).strict(),
   startupTools: z.tuple([]),
   seal: hash
@@ -54,7 +64,7 @@ function blocked() {
 function freeze(value) { if (value && typeof value === "object") { Object.values(value).forEach(freeze); Object.freeze(value); } return value; }
 const wrap = (provenance, value) => ({ provenance, trust: "untrusted_evidence", value });
 const applicationKeys = ["schemaVersion", "application", "lifecycle", "targetCapabilities", "observedCapabilities", "gaps", "blockers", "dependencies", "companyRecords", "documentationIndex", "contextSelection", "genericEvidence", "entityRelations", "operatingModel", "architecture", "technologies", "interfaces", "evidenceSummary", "readiness", "authority"];
-function projection(fresh, claimed) {
+function projection(fresh, claimed, repositoryEvidence) {
   const { taskContext: task, applicationContext: application } = fresh, packet = task.executionPacket;
   // Only the existing execution compiler response. New top-level sources need a
   // deliberate contract change; provider-supplied context is never merged here.
@@ -70,7 +80,16 @@ function projection(fresh, claimed) {
       risk: task.readyAdmission.riskAdmission.seal, composition: packet.procedureComposition.seal },
     provenance: { identity: "worker.claimed_attempt", revisions: "worker.validated_ready_context", contract: "executionPacket.contract", rules: "worker.provider_input_v1" },
     rules: [
-      ...(packet.contract.nativeBoundary ? nativeBoundaryRules : []),
+      ...(packet.contract.nativeBoundary?.profile === "coding-local" ? nativeBoundaryRules : []),
+      ...(packet.contract.nativeBoundary?.profile === "inspect-readonly" ? [
+        "Inspect only the bounded repository evidence supplied by Worker. You have no native tools. Do not request shell, file, process, Docker, Git or network operations.",
+        "Return a reasoned audit of scope, requirements and evidence. A verifier must independently assess the cited auditor evidence; report discrepancies."
+      ] : []),
+      ...(packet.contract.nativeBoundary?.inspectReadOnly?.kind === "code-reviewer" ? [
+        "Independently review the exact commit and Worker-provided diff, tests and coding receipt. Return ONLY a strict JSON object, no Markdown.",
+        "JSON must contain decision ('approve' or 'reject'), reviewedCommit (exact 40-hex), evidenceDigest (the reviewed materialVersion), summary, and evidence array of {kind:'test'|'artifact',reference,result,verdict?}.",
+        "For approve include a passing test item. For reject include reproduction array, expected, observed, and correction {scope,excluded,outcome,competencies}. Do not claim a test you did not observe."
+      ] : []),
       "Execute only the contract objective and acceptance criteria in the current approved repository; leave results for owner review.",
       "Follow applicable repository instructions and documentation. Preserve unrelated changes; create no checkout, worktree or sibling project.",
       "No commit, push, deployment, publication, external write or authority beyond the contract access restrictions.",
@@ -84,7 +103,8 @@ function projection(fresh, claimed) {
       roles: wrap("executionPacket.roleAuthorities", packet.roleAuthorities), risk: wrap("taskContext.readyAdmission.riskAdmission", task.readyAdmission.riskAdmission),
       application: wrap("application-agent-context-v2.execution", Object.fromEntries(applicationKeys.filter(key => application[key] !== undefined).map(key => [key, application[key]]))),
       procedures: wrap("taskContext.procedures.contract_refs", refs("procedures")), decisions: wrap("taskContext.decisions.contract_refs", refs("decisions")),
-      dependencies: wrap("taskContext.dependencies.contract_refs", refs("dependencies")), ownerInstruction: wrap("claimed.prompt.ready_approved", claimed.prompt ?? null)
+      dependencies: wrap("taskContext.dependencies.contract_refs", refs("dependencies")), ownerInstruction: wrap("claimed.prompt.ready_approved", claimed.prompt ?? null),
+      ...(repositoryEvidence ? { repositoryInspection: wrap("worker.bounded_repository_read", repositoryEvidence) } : {})
     }, startupTools: []
   };
 }
@@ -94,8 +114,8 @@ function validate(fresh, claimed, currentCommit, secrets) {
   ready.assertReadyContext(fresh.taskContext, fresh.applicationContext, claimed);
   ready.assertRiskAdmission(fresh.taskContext, claimed, currentCommit);
 }
-function seal(fresh, claimed, secrets) {
-  const body = projection(fresh, claimed);
+function seal(fresh, claimed, secrets, repositoryEvidence) {
+  const body = projection(fresh, claimed, repositoryEvidence);
   guardHostContent(body, "required", [claimed.leaseToken, ...secrets].filter(Boolean));
   // Private local paths are never prompt context. Relative repository paths and
   // canonical HTTPS origins remain evidence, not transport configuration.
@@ -112,10 +132,11 @@ function seal(fresh, claimed, secrets) {
 // Only Worker calls these factories. No config/env/network argument can provide
 // the authority callback. Existing lease/writer/Ready/checkpoint own authority.
 /** @returns {ProviderInput} */
-export function prepareProviderInput({ fresh, claimed, currentCommit, assertAuthority, secrets = [], provider, repositoryPath, hermesAuthReceipt, startupEnvironment, startupCandidate, nativeBoundaryOptions }) {
+export function prepareProviderInput({ fresh, claimed, currentCommit, assertAuthority, secrets = [], provider, repositoryPath, hermesAuthReceipt, startupEnvironment, startupCandidate, nativeBoundaryOptions, repositoryEvidence }) {
   try {
     assertAuthority(); validate(fresh, claimed, currentCommit, secrets);
-    const envelope = seal(fresh, claimed, secrets);
+    if (fresh.taskContext.executionPacket.contract.nativeBoundary?.profile === "inspect-readonly" ? !repositoryEvidence : Boolean(repositoryEvidence)) throw blocked();
+    const envelope = seal(fresh, claimed, secrets, repositoryEvidence);
     assertAuthority();
     const profile = provider?.kind === "hermes_codex" ? sealHermesProfile(provider.profile,
       { repositoryPath, readyRevision: envelope.revisions.ready, authReceipt: hermesAuthReceipt }) : undefined;
@@ -125,10 +146,13 @@ export function prepareProviderInput({ fresh, claimed, currentCommit, assertAuth
       ? sealHermesStartup({ provider, envelope, repositoryPath, budget, candidate: startupCandidate ?? createHermesStartupCandidate({
         provider, envelope, repositoryPath, budget, environment: startupEnvironment }) }) : undefined;
     assertAuthority();
-    issued.set(envelope, { consumed: false, profile, startup, budget });
+    issued.set(envelope, { consumed: false, profile, startup, budget, repositoryEvidence });
     if (provider?.kind === "hermes_codex" && provider.profile?.schemaVersion === hermesNativeProfileVersion) {
       const checked = assertProviderStartup({ envelope, provider, repositoryPath, startupEnvironment, startupCandidate });
-      issued.get(envelope).native = sealNativeToolBoundary({ ...nativeBoundaryOptions, envelope, provider, repositoryPath,
+      if (envelope.contract.nativeBoundary?.profile === "inspect-readonly") {
+        issued.get(envelope).readonly = sealReadOnlyBoundary({ ...nativeBoundaryOptions, envelope, provider, repositoryPath,
+          repositoryEvidence, startupEnvironment, startupReceipt: checked.receipt, budgetReceipt: checked.budgetReceipt });
+      } else issued.get(envelope).native = sealNativeToolBoundary({ ...nativeBoundaryOptions, envelope, provider, repositoryPath,
         startupReceipt: checked.receipt, budgetReceipt: checked.budgetReceipt });
     }
     return envelope;
@@ -173,7 +197,7 @@ export function consumeProviderInput(envelope, { fresh, claimed, currentCommit, 
     if (state.budget) assertHermesBudget(state.budget, envelope, claimed);
     assertAuthority(); validate(fresh, claimed, currentCommit, secrets);
     assertFreshExecutionContext(envelope.revisions.context, fresh, claimed);
-    if (seal(fresh, claimed, secrets).seal !== envelope.seal) throw blocked();
+    if (seal(fresh, claimed, secrets, state.repositoryEvidence).seal !== envelope.seal) throw blocked();
     assertAuthority();
     return providerInputTransport("direct_codex", envelope);
   } catch (error) { if (error.redaction || error.readyAdmission || error.leaseLost || error.durationLimit || error.outputLimit || error.contextStop || error.protocolAdmission) throw error; throw blocked(); }
@@ -182,7 +206,12 @@ export function consumeProviderInput(envelope, { fresh, claimed, currentCommit, 
 export function assertProviderNativeBoundary(envelope) {
   return assertNativeToolBoundary(issued.get(envelope)?.native, envelope);
 }
+export function assertProviderReadOnlyBoundary(envelope) {
+  return assertReadOnlyBoundary(issued.get(envelope)?.readonly, envelope);
+}
 export function abandonProviderNativeBoundary(envelope) {
   const proof = issued.get(envelope)?.native;
   if (proof) abandonNativeToolBoundary(proof);
+  const readonly = issued.get(envelope)?.readonly;
+  if (readonly) abortReadOnlyBoundary(readonly);
 }

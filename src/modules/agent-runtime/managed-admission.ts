@@ -1,10 +1,10 @@
 import { createHash, createPrivateKey, createPublicKey, randomUUID, sign, type KeyObject } from 'node:crypto';
 import { z } from 'zod';
-import type { PrismaClient } from '@prisma/client';
+import type { Prisma, PrismaClient } from '@prisma/client';
 import type { AuthContext } from '../../auth/api-key.middleware';
 import { workerClaimAllowed } from '../../auth/worker-ticket-principal';
 import { inspectReady } from './task-execution-readiness';
-import { managedRuntimeApproval } from '../decisions/decision-governance-contract';
+import { firstWriteApproval, managedRuntimeApproval } from '../decisions/decision-governance-contract';
 
 const load = new Function('p', 'return import(p)') as (p: string) => Promise<any>;
 const pilot = load(require('node:url').pathToFileURL(require('node:path').resolve(__dirname, '../../../scripts/lib/agent-host-trusted-pilot.mjs')).href);
@@ -19,12 +19,81 @@ const firstSchema = z.object({ schemaVersion: z.literal('roost-managed-admission
 const secondSchema = z.object({ schemaVersion: z.literal('roost-managed-admission-v1'), phase: z.literal('decision'),
   leaseToken: id, executionId: id, provider: z.unknown(), scope: z.unknown(),
   installation: z.object({ id, identity: digest, configurationIdentity: digest }).strict(), evidenceDigest: digest }).strict();
-export const managedAdmissionInput = z.union([firstSchema, secondSchema]);
+const firstWriteSchema = z.object({ schemaVersion: z.literal('roost-managed-admission-v1'), phase: z.literal('first_write'),
+  leaseToken: id, executionId: id }).strict();
+export const managedAdmissionInput = z.union([firstSchema, secondSchema, firstWriteSchema]);
 const pending = new Map<string, { leaseDigest: string; hostId: string; workspaceId: string; installationId: string; taskId: string;
   applicationId: string; selection: unknown; context: any; runtime: unknown; profile: unknown; installationIdentity: string;
   ownerAttestation: unknown; evidenceFileDigest:string; expiry: number; decisionId: string; decisionRevision: number; decisionAt: string }>();
 const sha = (value: string) => createHash('sha256').update(value).digest('hex');
 function fail(): never { throw new Error('managed_admission_denied'); }
+const hex64 = /^[a-f0-9]{64}$/;
+const hex40 = /^[a-f0-9]{40}$/;
+
+// A first coding launch is admitted only after two independent native canaries
+// and a separate owner acceptance. These are database facts, never claims in a
+// task prompt or a Worker-supplied packet.
+export async function firstWriteGate(db: Prisma.TransactionClient, workspaceId: string, installationId: string,
+  execution: any, pin: any, ownerUserId: string) {
+  if (pin.contract?.nativeBoundary?.profile !== 'coding-local') return null;
+  const rows = await db.$queryRaw<Array<{id:string;at:Date;body:any}>>`
+    SELECT d.id,a.created_at AS at,r.body FROM decisions d
+    JOIN decision_revisions r ON r.decision_id=d.id
+    JOIN decision_acceptances a ON a.decision_id=d.id
+    WHERE d.workspace_id=${workspaceId}::uuid AND d.status='accepted'
+      AND decision_state(d.id)='accepted' AND a.actor_user_id=${ownerUserId}::uuid
+      AND a.actor_agent_id IS NULL
+      AND r.body->'firstWriteApproval'->>'taskId'=${execution.taskId}
+      AND r.body->'firstWriteApproval'->>'applicationId'=${execution.applicationId}
+      AND r.body->'firstWriteApproval'->>'installationId'=${installationId}
+      AND NOT EXISTS (SELECT 1 FROM decisions s JOIN decision_acceptances sa ON sa.decision_id=s.id WHERE s.supersedes_id=d.id)
+    LIMIT 2`;
+  if (rows.length !== 1) fail();
+  const approval = firstWriteApproval.parse(rows[0].body.firstWriteApproval);
+  if (approval.branch !== pin.contract.singleTask?.branch
+    || !approval.branch.endsWith(execution.taskId)
+    || approval.taskId !== execution.taskId || approval.applicationId !== execution.applicationId
+    || approval.installationId !== installationId) fail();
+  const canaries = await db.agentExecution.findMany({ where: {
+    workspaceId, id: { in: [approval.auditorExecutionId, approval.verifierExecutionId] },
+    applicationId: execution.applicationId, status: 'completed', contextInvalidatedAt: null
+  }, select: { id:true, agentHostId:true, taskId:true, status:true, completedAt:true,
+    verification:true, changedFiles:true, metadata:true } });
+  if (canaries.length !== 2 || canaries.some((c:any)=>c.agentHostId!==execution.agentHostId
+    || !c.completedAt || c.taskId===execution.taskId || !Array.isArray(c.changedFiles) || c.changedFiles.length)) fail();
+  const auditor = canaries.find((c:any)=>c.id===approval.auditorExecutionId);
+  const verifier = canaries.find((c:any)=>c.id===approval.verifierExecutionId);
+  if (!auditor || !verifier || auditor.taskId===verifier.taskId
+    || !auditor.completedAt || !verifier.completedAt
+    || auditor.completedAt >= verifier.completedAt || verifier.completedAt >= rows[0].at) fail();
+  const obj=(v:unknown):Record<string,any>=>v&&typeof v==='object'&&!Array.isArray(v)?v as Record<string,any>:{};
+  const auditContract = (c:any)=>obj(c.metadata).executionContract;
+  const receipt = (c:any)=>obj(c.verification).readOnlyAudit;
+  const clean = (c:any,kind:string,digest:string)=>{
+    const r=receipt(c), rev=obj(c.metadata).resultRevision;
+    return auditContract(c)?.nativeBoundary?.profile==='inspect-readonly'
+      && auditContract(c)?.nativeBoundary?.inspectReadOnly?.kind===kind
+      && auditContract(c)?.access?.tools?.length===1
+      && auditContract(c)?.access?.tools?.[0]==='repository_read'
+      && auditContract(c)?.access?.permissions?.length===1
+      && auditContract(c)?.access?.permissions?.[0]==='repository_read'
+      && r?.schemaVersion==='roost-readonly-audit-v1' && r.verdict==='verified'
+      && r.evidenceDigest===digest && hex64.test(digest)
+      && hex64.test(r.preTree??'') && r.preTree===r.postTree
+      && r.processState==='unchanged' && r.dockerState==='unchanged'
+      && r.gitState==='unchanged' && Array.isArray(r.nativeTools) && r.nativeTools.length===0
+      && rev?.workingTree==='clean' && rev.commit===approval.baselineCommit
+      && hex40.test(rev.commit??'');
+  };
+  if (!clean(auditor,'auditor',approval.auditorEvidenceDigest)
+    || !clean(verifier,'verifier',approval.verifierEvidenceDigest)
+    || auditContract(auditor)?.assignment?.agentId
+      ===auditContract(verifier)?.assignment?.agentId
+    || receipt(verifier)?.verifiedExecutionId!==auditor.id
+    || receipt(verifier)?.verifiedEvidenceDigest!==approval.auditorEvidenceDigest) fail();
+  return { decisionId: rows[0].id, baselineCommit: approval.baselineCommit, branch: approval.branch,
+    operations: approval.operations };
+}
 
 export type ManagedAdmissionSigner = { publicKey: string; sign(bytes: Buffer): Buffer };
 export function managedAdmissionSignerFromEnvironment(): ManagedAdmissionSigner | null {
@@ -85,12 +154,23 @@ export async function managedAdmission(client: PrismaClient, auth: AuthContext, 
     const approval=managedRuntimeApproval.parse(decisions[0].body?.managedRuntimeApproval);
     if (approval.backend!==selection.backend||approval.riskClass!==selection.riskClass
       ||approval.selectionDigest!==selectionDigest) fail();
-    return { execution, selection, decision: decisions[0], pin };
+    const firstWrite = await firstWriteGate(db, identity.workspaceId, identity.installationId,
+      execution, pin, workspace.ownerUserId);
+    return { execution, selection, decision: decisions[0], pin, firstWrite };
   }, { isolationLevel: 'RepeatableRead', maxWait: 3000, timeout: 15000 });
   const { execution, selection, decision } = state;
   const expiresAt = new Date(Math.min(now.getTime() + 60000, execution.leaseExpiresAt!.getTime()));
   if (expiresAt.getTime() <= now.getTime() + 1000) fail();
   const b = await backend, p = await pilot;
+  if (input.phase === 'first_write') {
+    if (!state.firstWrite) fail();
+    const payload = { schemaVersion: 'roost-first-write-admission-v1', executionId,
+      workspaceId: identity.workspaceId, taskId: execution.taskId, applicationId: execution.applicationId,
+      installationId: identity.installationId, issuedAt: now.toISOString(), expiresAt: expiresAt.toISOString(),
+      ...state.firstWrite };
+    return { schemaVersion: 'roost-managed-admission-v1', phase: input.phase,
+      signed: await signed(payload, signer) };
+  }
   if (input.phase === 'backend_evidence') {
     const source = input.source;
     if (!p.trustedPilotBytes(source.selection).equals(p.trustedPilotBytes(selection))) fail();
@@ -134,5 +214,6 @@ export async function managedAdmission(client: PrismaClient, auth: AuthContext, 
     installationIdentity: prior.installationIdentity, provider, scope, mode: 'trusted_provider_pilot', systemIsolation: false,
     arbitraryProviderAdmission: false, fullAutonomy: false, residualRiskAccepted: true,
     acknowledgement: p.trustedPilotAcknowledgement, qualification: 'signed_native_v1' });
-  return { schemaVersion: 'roost-managed-admission-v1', phase: input.phase, signed: await signed(payload, signer) };
+  return { schemaVersion: 'roost-managed-admission-v1', phase: input.phase,
+    ...(state.firstWrite ? { firstWrite: state.firstWrite } : {}), signed: await signed(payload, signer) };
 }

@@ -4,10 +4,11 @@ import { z } from "zod";
 const text = z.string().trim().min(3).max(2000).refine(value => !/\b(?:Bearer\s+\S+|-----BEGIN .*PRIVATE KEY|(?:password|api[_-]?key|access[_-]?token|secret)\s*[:=]\s*\S+)/i.test(value), "Remove credentials from review evidence");
 const lines = z.array(text).min(1).max(12);
 export const correctionSchema = z.object({ scope: lines, excluded: lines, outcome: text, competencies: z.array(z.string().trim().min(1).max(120)).min(1).max(30) }).strict();
-const evidence = z.array(z.object({ kind: z.enum(["test", "artifact"]), reference: text, result: text }).strict()).min(1).max(12);
+const evidence = z.array(z.object({ kind: z.enum(["test", "artifact"]), reference: text, result: text, verdict: z.enum(["pass", "fail", "unknown"]).optional() }).strict()).min(1).max(12);
+const approvalEvidence = evidence.refine(items => items.some(item => item.kind === "test" && item.verdict === "pass"), "An independent passing test is required");
 const precondition = { grantId: z.string().uuid().optional(), requestId: z.string().uuid(), expectedVersion: z.string().regex(/^[a-f0-9]{64}$/), executionId: z.string().uuid(), materialVersion: z.string().regex(/^[a-f0-9]{64}$/) };
 export const reviewDecisionSchema = z.discriminatedUnion("decision", [
-  z.object({ ...precondition, decision: z.literal("approve"), summary: text, evidence }).strict(),
+  z.object({ ...precondition, decision: z.literal("approve"), reviewedCommit: z.string().regex(/^[a-f0-9]{40}$/), summary: text, evidence: approvalEvidence }).strict(),
   z.object({ ...precondition, decision: z.literal("reject"), summary: text, evidence, reproduction: lines, expected: text, observed: text, correction: correctionSchema }).strict()
 ]);
 export const reviewActionSchema = z.discriminatedUnion("action", [
@@ -15,11 +16,31 @@ export const reviewActionSchema = z.discriminatedUnion("action", [
   z.object({ grantId: precondition.grantId, requestId: precondition.requestId, expectedVersion: precondition.expectedVersion, reviewId: z.string().uuid(), action: z.literal("create_specialist_task"), scope: lines, specialist: z.object({ id: z.string().uuid(), revision: z.string().min(1).max(100) }).strict() }).strict()
 ]);
 export const object = (value: unknown): Record<string, any> => value && typeof value === "object" && !Array.isArray(value) ? value : {};
+export function exactReviewCommit(result: unknown, execution: { id: string; attempt: number; agentHostId: string | null; checkpointVersion: number; metadata: unknown } | null | undefined): string | null {
+  if (!execution) return null;
+  const material = object(result), revision = object(material.resultRevision), contract = object(material.contract), single = object(contract.singleTask);
+  if (revision.schemaVersion !== "roost-result-revision-v1" || !/^[a-f0-9]{40}$/.test(revision.commit ?? "")
+    || revision.workingTree !== "clean" || revision.branch !== single.branch || !execution.agentHostId
+    || revision.executionId !== execution.id || revision.attempt !== execution.attempt
+    || revision.hostId !== execution.agentHostId || revision.checkpointVersion !== execution.checkpointVersion
+    || !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(revision.id ?? "")
+    || !Number.isFinite(Date.parse(revision.observedAt ?? ""))
+    || object(execution.metadata).resultRevisionReviewVersion !== "1") return null;
+  return revision.commit;
+}
 // Negative evidence must never be laundered through completion or approval.
 // This is a conservative result guard, not authority from serialized receipts.
 export function nativeBoundaryResultBlocked(verification: unknown, contract?: unknown): boolean {
   const v = object(verification), receipt = object(v.nativeToolReceipt), review = object(v.nativeReviewReceipt);
   if (["boundary_violation", "policy_blocked", "acceptance_failed", "verification_blocked", "process_failed"].includes(v.outcome)) return true;
+  if (object(object(contract).nativeBoundary).profile === "inspect-readonly") {
+    const audit = object(v.readOnlyAudit);
+    return audit.schemaVersion !== "roost-readonly-audit-v1" || audit.verdict !== "verified"
+      || !/^[a-f0-9]{64}$/.test(audit.evidenceDigest ?? "")
+      || !/^[a-f0-9]{64}$/.test(audit.preTree ?? "") || audit.preTree !== audit.postTree
+      || audit.processState !== "unchanged" || audit.dockerState !== "unchanged"
+      || audit.gitState !== "unchanged" || !Array.isArray(audit.nativeTools) || audit.nativeTools.length !== 0;
+  }
   if (!object(contract).nativeBoundary && v.nativeToolReceipt === undefined) return false;
   return review.version !== "roost-native-review-public-v2" || review.policy !== "roost-root-scoped-coding-v2"
     || review.verdict !== "verified_candidate" || review.verification !== "PASS" || review.installation !== "PASS"
