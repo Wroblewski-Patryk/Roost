@@ -53,6 +53,13 @@ test("read-only Hermes budget receipt accepts the zero-tool bot_room profile", t
   assert.equal(hermesBudgetReceiptSchema.safeParse(projected).success, true);
 });
 
+test("startup revalidation preserves the original budget receipt identity", t => {
+  const f = budgetFixture(t);
+  const again = assertProviderStartup(f.options);
+  assert.strictEqual(again.receipt, f.checked.receipt);
+  assert.strictEqual(again.budgetReceipt, f.checked.budgetReceipt);
+});
+
 for (const [label, edit] of Object.entries({ over900: f => { f.packet.contract.budgets.maxDurationSeconds = 901; },
   retryTask: f => { f.packet.contract.budgets.maxAttempts = 2; }, resume: f => { f.claimed.codexThreadId = "old-session"; },
   checkpoint: f => { f.claimed.checkpoint = { stage: "prepared" }; }, ultra: f => { f.packet.contract.modelSelection.reasoningEffort = "ultra"; } })) {

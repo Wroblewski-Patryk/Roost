@@ -10,7 +10,7 @@ import ready from "./agent-host-ready-context.cjs";
 import { sealHermesProfile, assertHermesProfile, hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion } from "./agent-host-hermes-profile.mjs";
 import { createHermesStartupCandidate, sealHermesStartup, assertHermesStartup } from "./agent-host-hermes-startup.mjs";
 
-import { sealHermesBudget, assertHermesBudget, createHermesBudgetReceipt } from "./agent-host-hermes-budget.mjs";
+import { sealHermesBudget, assertHermesBudget, assertHermesBudgetReceipt, createHermesBudgetReceipt } from "./agent-host-hermes-budget.mjs";
 
 export const providerInputVersion = "roost-provider-input-v1";
 export const providerInputMaxBytes = 131072;
@@ -178,11 +178,21 @@ export function assertProviderProfile(envelope, provider, repositoryPath, authRe
 
 export function assertProviderStartup({ envelope, provider, repositoryPath, startupEnvironment, startupCandidate }) {
   assertProviderProfile(envelope, provider, repositoryPath);
-  const budget = issued.get(envelope)?.budget;
+  const state = issued.get(envelope);
+  if (!state) throw blocked();
+  const budget = state.budget;
   const candidate = startupCandidate ?? createHermesStartupCandidate({ provider, envelope, repositoryPath, budget, environment: startupEnvironment });
   const options = { envelope, provider, repositoryPath, candidate, budget };
-  const receipt = assertHermesStartup(issued.get(envelope)?.startup, options);
-  return { candidate, receipt, options, budgetReceipt: budget ? createHermesBudgetReceipt(budget, envelope, receipt) : undefined };
+  const observed = assertHermesStartup(state.startup, options);
+  if (state.startupReceipt) {
+    if (observed.digest !== state.startupReceipt.digest) throw blocked("startup_changed");
+    if (state.budgetReceipt) assertHermesBudgetReceipt(state.budgetReceipt);
+    return { candidate, receipt: state.startupReceipt, options, budgetReceipt: state.budgetReceipt };
+  }
+  const budgetReceipt = budget ? createHermesBudgetReceipt(budget, envelope, observed) : undefined;
+  state.startupReceipt = observed;
+  state.budgetReceipt = budgetReceipt;
+  return { candidate, receipt: observed, options, budgetReceipt };
 }
 
 // Pure transport preparation is available for both adapters; it cannot launch
