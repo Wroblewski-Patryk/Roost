@@ -9,7 +9,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { repositoryForExecution, validateAgentHostWorkspace } from "./lib/agent-host-workspace-guard.mjs";
 import { createExecutionLease, terminateWindowsProcessTree } from "./lib/agent-host-execution-lease.mjs";
-import { acquireWriterLock } from "./lib/agent-host-writer-lock.mjs";
+import { acquireWriterLock, writerRecoveryEvidence } from "./lib/agent-host-writer-lock.mjs";
 import { validateExecutionPacket } from "./lib/agent-host-execution-packet.mjs";
 import { assertRecoverySnapshot, classifyRecovery, recoveryError, workspaceDigest } from "./lib/agent-host-recovery.mjs";
 import { runObserver } from "./lib/agent-host-observer.mjs";
@@ -25,7 +25,7 @@ import { verifyCompletedNativeBoundary, releaseReviewedNativeBoundary } from "./
 import { verifyHermesSmokeInstallation } from "./lib/agent-host-hermes-smoke-installation.mjs";
 import { captureReadOnlyReviewBaseline, verifyReadOnlyReview } from "./lib/agent-host-readonly-review.mjs";
 import { isWindowsJobCleanupReceipt } from "./lib/agent-host-windows-job.mjs";
-import { buildManagedAdmissionSource, requestManagedAdmission } from "./lib/agent-host-managed-admission.mjs";
+import { buildManagedAdmissionSource, requestManagedAdmission, retireManagedAdmissionArtifacts } from "./lib/agent-host-managed-admission.mjs";
 import { managedBackendVersion } from "./lib/agent-host-model-policy.mjs";
 import fixed from "./lib/agent-host-fixed-program.cjs";
 import { prepareFixedExecution, runFixedExecution, createFixedOutputBudget, assertFixedTask, abandonFixedExecution } from "./lib/agent-host-fixed-execution.mjs";
@@ -482,6 +482,8 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       if (reviewed.publicReceipt.verdict !== "verified_candidate") throw Object.assign(
         new Error("agent_native_review_blocked"), { retryable: false, publicMessage: "Native review did not verify the candidate result." });
       releaseReviewedNativeBoundary(verification.nativeToolReceipt, reviewed.capability);
+      retireManagedAdmissionArtifacts({ directory: path.join(writerRecoveryEvidence(writerLock).directory, "trusted-provider-pilot"),
+        executionId: claimed.id, evidenceDigest: launch.managedBackend.evidence.digest });
     }
     const committedPaths=await duration.wait(readTaskPaths(repositoryPath,currentCommit,resultCommit));
     const changedFiles = [...new Set([...committedPaths,...afterStatus.map(statusPath)])];

@@ -1,6 +1,6 @@
 import path from "node:path";
-import { writeFileSync } from "node:fs";
-import { createPublicKey, verify } from "node:crypto";
+import { writeFileSync, readFileSync, mkdirSync, renameSync, lstatSync, existsSync } from "node:fs";
+import { createPublicKey, verify, createHash } from "node:crypto";
 import { z } from "zod";
 import { nativeDigest, physicalIdentity } from "./agent-host-native-footprint.mjs";
 import { fixtureRuntimeBinding } from "./agent-host-fixture-ownership.mjs";
@@ -32,6 +32,41 @@ function persist(file, value) {
   // reopens the exact file with physical identity and digest checks afterward.
   writeFileSync(file, JSON.stringify(value, null, 2) + "\n", { flag: "wx", mode: 0o600 });
   physicalIdentity(file, false);
+}
+
+// A signed, spent admission is kept for recovery, but must not occupy the
+// one-shot active filenames used by the next execution. Call only after native
+// review has verified the candidate and released its application lease.
+export function retireManagedAdmissionArtifacts({ directory, executionId, evidenceDigest }) {
+  try {
+    if (!/^[a-f0-9-]{36}$/.test(executionId ?? "") || !/^[a-f0-9]{64}$/.test(evidenceDigest ?? "")) fail();
+    physicalIdentity(directory);
+    const anchor = JSON.parse(readFileSync(path.join(directory, "installation.json"), "utf8"));
+    if (anchor.decisionFile !== "trusted-provider-pilot.json") fail();
+    const evidencePath = path.join(directory, "managed-backend-evidence.json");
+    const decisionPath = path.join(directory, anchor.decisionFile);
+    const bytes = readFileSync(evidencePath), decisionBytes = readFileSync(decisionPath);
+    if (bytes.length > 16384 || decisionBytes.length > 16384
+        || ![evidencePath, decisionPath].every(file => {
+          const stat = lstatSync(file); return stat.isFile() && !stat.isSymbolicLink() && stat.nlink === 1;
+        })
+        || createHash("sha256").update(bytes).digest("hex") !== evidenceDigest) fail();
+    const evidence = signed(nativeEvidenceSchema).parse(JSON.parse(bytes));
+    const decision = signed(trustedPilotDecisionSchema).parse(JSON.parse(decisionBytes));
+    if (decision.payload.scope.executionId !== executionId
+        || decision.payload.provider.managedBackend?.evidence?.digest !== evidenceDigest) fail();
+    authenticate(evidence, anchor.authorityPublicKey);
+    authenticate(decision, anchor.authorityPublicKey);
+    const spent = path.join(directory, "spent");
+    if (!existsSync(spent)) mkdirSync(spent, { mode: 0o700 });
+    physicalIdentity(spent);
+    const target = path.join(spent, executionId);
+    mkdirSync(target, { mode: 0o700 });
+    physicalIdentity(target);
+    renameSync(evidencePath, path.join(target, "managed-backend-evidence.json"));
+    renameSync(decisionPath, path.join(target, anchor.decisionFile));
+    return target;
+  } catch (error) { fail("retire", undefined, error?.message); }
 }
 
 // The source is rebuilt only from local sealed startup, native boundary, live
@@ -97,6 +132,7 @@ export async function requestManagedAdmission({ api, source, writerDigest, asser
       || !same({ selection: evidence.selection, context: evidence.context, runtime: evidence.runtime,
         installationIdentity: evidence.installationIdentity, profile: evidence.profile, availability: evidence.availability,
         ownerAttestation: evidence.ownerAttestation }, expected)) fail();
+    phase = "backend_evidence_persist";
     persist(path.join(installed.directory, "managed-backend-evidence.json"), evidenceReply.signed);
     const proposal = proposeTrustedPilotDecision(configurationPath, source, writerDigest);
     phase = "decision_request";
@@ -113,6 +149,7 @@ export async function requestManagedAdmission({ api, source, writerDigest, asser
       || decision.installationId !== proposal.installation.id
       || decision.installationIdentity !== proposal.installation.identity
       || decision.configurationIdentity !== proposal.installation.configurationIdentity) fail();
+    phase = "decision_persist";
     persist(installed.decisionFile, decisionReply.signed);
     const acceptance = inspectTrustedPilotDecision(configurationPath, source, writerDigest);
     if (!same(acceptance.provider, proposal.provider) || !same(acceptance.scope, proposal.scope)) fail();

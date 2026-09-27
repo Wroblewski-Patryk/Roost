@@ -9,7 +9,7 @@ import { writerRecoveryEvidence } from "./lib/agent-host-writer-lock.mjs";
 import { createOwnerAttestation } from "./lib/agent-host-hermes-owner-auth.mjs";
 import { managedOwnerBinding, nativeEvidenceSchema } from "./lib/agent-host-managed-backend.mjs";
 import { trustedPilotBytes, trustedPilotDecisionSchema } from "./lib/agent-host-trusted-pilot.mjs";
-import { requestManagedAdmission } from "./lib/agent-host-managed-admission.mjs";
+import { requestManagedAdmission, retireManagedAdmissionArtifacts } from "./lib/agent-host-managed-admission.mjs";
 
 const sha = value => createHash("sha256").update(value).digest("hex");
 test("two-phase signed admission binds Worker evidence and accepted decision without a model process", {
@@ -58,4 +58,14 @@ test("two-phase signed admission binds Worker evidence and accepted decision wit
   assert.ok(grant);
   assert.deepEqual(phases, ["backend_evidence", "decision"]);
   assert.ok(fs.statSync(x.decisionPath).size > 0);
+  const evidenceDigest = sha(fs.readFileSync(x.evidencePath));
+  const executionId = JSON.parse(fs.readFileSync(x.decisionPath, "utf8")).payload.scope.executionId;
+  assert.throws(() => retireManagedAdmissionArtifacts({ directory: x.privateRoot,
+    executionId: "00000000-0000-4000-8000-000000000000", evidenceDigest }), /managed_admission_blocked/);
+  assert.ok(fs.existsSync(x.evidencePath));
+  const archive = retireManagedAdmissionArtifacts({ directory: x.privateRoot, executionId, evidenceDigest });
+  assert.equal(fs.existsSync(x.evidencePath), false);
+  assert.equal(fs.existsSync(x.decisionPath), false);
+  assert.ok(fs.existsSync(`${archive}/managed-backend-evidence.json`));
+  assert.ok(fs.existsSync(`${archive}/trusted-provider-pilot.json`));
 });
