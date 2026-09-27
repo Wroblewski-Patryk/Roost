@@ -1,12 +1,38 @@
 # Local Codex Agent Host
 
-accepted requirements requires an explicit `metadata.executionContract.modelSelection`
+Accepted requirements require an explicit `metadata.executionContract.modelSelection`
 for every supervised execution. See the [packet model admission contract](../architecture/execution-packet-contract.md#foundation-v2-explicit-model-admission-rf-host-016).
 Older packets without model and reasoning effort fail closed. Observer mode is
-unaffected and remains the configured mode until separately authorized gates pass.
+unaffected.
 
 This runbook connects a Windows laptop containing application repositories to
 the production Roost queue on the VPS. The connection is outbound HTTPS only.
+
+## Current Gate 1 operating state
+
+The owner-authorized Gate 1 installation uses `executionMode: "supervised"` in
+private configuration. Its scheduled task retains the historical `Roost Agent
+Host Observer` name; that name does not select observer mode. Production
+readiness reports `supervised_execution`, and a real read-only task completed
+through the intended host, signed managed admission, Hermes 0.21.2 and the
+explicit Codex Responses model selection. See [current implementation](../implementation.md)
+for the execution identity and exact proof. Configuration, owner authentication,
+Worker credential and installation paths stay outside the repository.
+
+The Worker verifies the clean checkout and accepted read-only test before
+launch, then waits for native Job cleanup, repeats the test and workspace
+snapshot, verifies the installation and persists the signed native review
+before posting completion. It archives the spent signed admission pair under
+the private installation by execution ID only after that review verifies the
+candidate and releases the application lease. Failed or interrupted attempts
+retain their evidence and locks for exact reconciliation; do not delete active
+files or clear a Writer lock to make a new claim possible. The native Windows
+Job and lease tests cover cancellation and lease-loss stops; a forced
+production cancellation or lease loss has not been exercised.
+
+The observer foundation notes below describe earlier installation states.
+Their statements that production execution is disabled do not describe the
+current Gate 1 installation.
 
 ## Observer Login Autostart
 

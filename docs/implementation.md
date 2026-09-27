@@ -58,39 +58,59 @@ PostgreSQL/Prisma persistence, Express API, React owner console, workspace
 boundaries, API/MCP surfaces, provider adapters, task/context/review primitives,
 Windows Worker foundations and Hermes qualification evidence.
 
-Gate 1 is in progress. Commit `392dd91c` added the native Prisma v3 issuance
-path, forward-only catalog correction, production HTTPS Worker credential
-handoff and managed Hermes admission. Commit `bb0aeb87` fixes initial managed
-Worker admission against verified repository paths. Migrations 87 and 88 are
-applied in production. A disposable native database qualified all v3 issuance
-phases, real signing and verification, committed readback and the normal owner
-Decision API. The production deployment passed build identity, migration and
-public health readback. A production HTTPS handoff request reached the route and
-was rejected at input validation as expected. These facts do not prove a real
-agent round trip. The production installation still needs its owner-provisioned
-public key anchor, accepted task and Worker credential; the local Hermes profile
-still needs the owner's OAuth login. Production execution remains disabled and
-the Windows Worker remains in observe mode.
+**Gate 1 is met at production/runtime evidence level (2026-09-27).** The
+production API build `18bd5c6466372263316a5846f990f61cacd41040` was
+read back after deployment `yesokuu2ikcxh43zdf3fju9w`. Additive migrations
+87–89 are applied. Native disposable-database tests qualified the v3 issuer,
+signatures, committed readback and owner Decision path. The sole owner
+provisioned the production public-key anchor and transferred the scoped Worker
+credential over the HTTPS handoff into Windows Credential Manager. The
+installation now uses supervised execution and an attested Hermes 0.21.2
+installation. Private installation values and credentials remain outside Git.
+
+The accepted low-risk task `a965868b-60b1-4c42-9acd-c077c044002d` was
+claimed by host `edcde4a6-243a-4fab-a885-715c7013c6fc`. Execution
+`9fc132c6-af99-4d98-a2e2-27de7d576879` completed on its first attempt:
+queued 01:04:29, claimed 01:05:26, runner started 01:05:38, native runner
+progress 01:06:50 and completed 01:08:43 UTC. The accepted signed Decision
+`2c12bf61-7cfe-475a-8431-40c8f3d8514a` selected `codex_responses`,
+`gpt-5.6-sol`, low reasoning, two turns and two API retries with no fallback.
+Roost's authoritative readback contains a 355-character model response, the
+exact clean result commit `cf90418cc694dc0cb773a44c001c569407d05f9f`,
+no changed files, managed admission digest, the native Job receipt and the
+workspace evidence seal. The Job exited 0 and closed with zero active
+processes. Durable native review is `verified_candidate`, with verification
+and installation both PASS, zero violations and no unreviewed changed paths.
+The signed review was read back from private durable storage after cleanup;
+spent admission files were archived by execution ID and the active names were
+cleared. Quiet Hermes does not expose token or cost accounting, so those usage
+fields are explicitly unavailable rather than estimated.
+
+Cancellation and lease-loss handling passed 66 focused Worker/native tests,
+including real Windows Job termination of descendants for both causes.
+These are native process and protocol proofs; a forced production cancellation
+or production lease-loss experiment was not run. The configured pilot checkout
+remains clean at the same commit. No independent role approval, governed coding
+commit or release is claimed by this Gate 1 read-only run.
 
 Current capability truth:
 
 | Capability | Current truth |
 | --- | --- |
-| Accepted task starts a real managed agent | Not working |
-| Roost and the Windows Worker exchange a production-authorized task | Production HTTPS handoff deployed; no active Gate 1 Worker credential or claim yet |
-| Worker starts managed Hermes | Native launch path implemented and tested; no authenticated real run yet |
-| Hermes routes explicitly to approved Codex or local Ollama | Explicit low-risk Codex selection implemented; no managed model invocation yet |
-| Result and evidence return to Roost | Reporting path implemented; no complete real run |
-| Independent review and release execute | Partial contracts; no complete orchestration |
-| Commit, push, deployment, health proof and rollback execute as one flow | Not working |
+| Accepted task starts a real managed agent | Production verified for the bounded Gate 1 task and intended Worker |
+| Roost and the Windows Worker exchange a production-authorized task | HTTPS credential handoff, signed admission, claim and heartbeats verified |
+| Worker starts managed Hermes | Attested native 0.21.2 process and Windows Job receipt verified |
+| Hermes routes explicitly to approved Codex or local Ollama | Approved Codex Responses backend/model/effort verified; Ollama remains unqualified |
+| Result and evidence return to Roost | Completed readback, workspace seal and durable native review verified |
+| Independent review and release execute | Not demonstrated by Gate 1 |
+| Commit, push, deployment, health proof and rollback execute as one flow | Not demonstrated by Gate 1 |
 | Pilot application is repaired through that flow | Not started |
 
-All public readiness, execution, pilot and live-admission flags remain false.
-Production code and schema have changed; the configured pilot application has
-not been changed by Gate 1. Gate 1 remains open until the intended Worker claims
-an accepted low-risk task, managed Hermes runs it and Roost records heartbeats,
-terminal result and bounded evidence, with safe cancellation and lease-loss
-behavior demonstrated.
+Production runtime readiness now reports `executionEnabled: true` and mode
+`supervised_execution`. The broader static pilot-readiness flag remains false;
+the Gate 1 read-only proof does not certify coding delivery or release. The
+configured pilot application was not changed. Gate 2 is the next separately
+authorized gate; no Gate 2 work is included here.
 
 ## End-to-end delivery gates
 
