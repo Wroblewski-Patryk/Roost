@@ -3896,7 +3896,8 @@ test("expired read-only spawn terminalization requires the exact bound Worker an
   const metadata = { executionContract: { nativeBoundary: { profile: "inspect-readonly", inspectReadOnly: { kind: "auditor" } },
     access: { tools: ["repository_read"], permissions: ["repository_read"] }, singleTask: { branch } },
     readyContextPin: { revision: "b".repeat(64), riskAdmissionCommit: baseline } };
-  const create = async (lease: "released" | "retained", stage: "spawn_intent" | "claimed" = "spawn_intent") => {
+  const create = async (lease: "released" | "retained", stage: "spawn_intent" | "claimed" = "spawn_intent",
+    kind: "auditor" | "code-reviewer" = "auditor") => {
     const sessionId = randomUUID(), checkpoint = { schemaVersion: "roost-recovery-v1", stage, sessionId,
       packetRevision: stage === "claimed" ? null : "c".repeat(64),
       workspaceDigest: stage === "claimed" ? null : "d".repeat(64),
@@ -3910,7 +3911,9 @@ test("expired read-only spawn terminalization requires the exact bound Worker an
       const row = await tx.agentExecution.create({ data: { workspaceId, taskId: task.id, applicationId: application.id,
         agentHostId: host.id, requestedByType: "user", status: "running", attempt: 1,
         startedAt: new Date(Date.now() - 90_000), leaseToken: randomUUID(), leaseExpiresAt: new Date(Date.now() - 10_000),
-        checkpointVersion: stage === "claimed" ? 1 : 3, checkpoint, metadata } });
+        checkpointVersion: stage === "claimed" ? 1 : 3, checkpoint,
+        metadata: { ...metadata, executionContract: { ...metadata.executionContract,
+          nativeBoundary: { profile: "inspect-readonly", inspectReadOnly: { kind } } } } } });
       await tx.$executeRawUnsafe("ALTER TABLE agent_executions ENABLE TRIGGER USER");
       return row;
     });
@@ -3944,6 +3947,9 @@ test("expired read-only spawn terminalization requires the exact bound Worker an
   const retained = await create("retained");
   assert.equal((await retained.post(retained.proof)).status, 200);
   assert.equal((await prisma.agentExecution.findUniqueOrThrow({ where: { id: retained.execution.id } })).status, "failed");
+  const reviewer = await create("released", "spawn_intent", "code-reviewer");
+  assert.equal((await reviewer.post(reviewer.proof)).status, 200);
+  assert.equal((await prisma.agentExecution.findUniqueOrThrow({ where: { id: reviewer.execution.id } })).status, "failed");
   const claimed = await create("released", "claimed");
   assert.equal((await claimed.post(claimed.proof)).status, 200);
   const claimedAfter = await prisma.agentExecution.findUniqueOrThrow({ where: { id: claimed.execution.id } });

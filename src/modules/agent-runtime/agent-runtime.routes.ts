@@ -540,12 +540,15 @@ agentRuntimeRouter.post("/executions/:id/actions/reconcile-readonly-spawn", asyn
       || !pin?.revision || !noResult
       || !claimedOnly && (!checkpoint.data.contextRevision || !checkpoint.data.packetRevision || !checkpoint.data.workspaceDigest)
       || contract?.nativeBoundary?.profile !== "inspect-readonly"
-      || !["auditor", "verifier"].includes(contract?.nativeBoundary?.inspectReadOnly?.kind)
+      || !["auditor", "verifier", "code-reviewer"].includes(contract?.nativeBoundary?.inspectReadOnly?.kind)
       || contract?.access?.tools?.length !== 1 || contract.access.tools[0] !== "repository_read"
       || contract?.access?.permissions?.length !== 1 || contract.access.permissions[0] !== "repository_read"
       || input.baselineCommit !== pin?.riskAdmissionCommit || input.baselineBranch !== contract?.singleTask?.branch
       || checkpoint.data.branch !== undefined || checkpoint.data.headCommit !== undefined
       || observedAt <= current.leaseExpiresAt)
+      return { error: "agent_readonly_reconciliation_conflict" };
+    if (contract.nativeBoundary.inspectReadOnly.kind === "code-reviewer"
+      && await tx.taskReviewDecision.count({ where: { executionId: current.id, workspaceId: current.workspaceId } }))
       return { error: "agent_readonly_reconciliation_conflict" };
     if (claimedOnly && (await tx.trustedProviderTicket.count({ where: { executionId: current.id, workspaceId: current.workspaceId } })
       || await tx.agentExecutionEvent.count({ where: { executionId: current.id, type: { in: ["runner_started", "runner_progress"] } } })))
@@ -606,7 +609,7 @@ agentRuntimeRouter.post(["/executions/:id/actions/reconcile-coding-branch-intent
     const routeClaimed = req.path.endsWith("/reconcile-coding-claimed");
     const metadata = current.metadata as any;
     const contract = metadata?.executionContract, pin = metadata?.readyContextPin;
-    const noResult = !current.summary && !current.finalResponse
+    const noResult = !current.summary && !current.finalResponse && !current.codexThreadId
       && Array.isArray(current.changedFiles) && current.changedFiles.length === 0
       && (!current.verification || typeof current.verification === "object" && !Array.isArray(current.verification)
         && Object.keys(current.verification).length === 0)
