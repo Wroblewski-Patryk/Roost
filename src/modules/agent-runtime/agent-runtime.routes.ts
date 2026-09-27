@@ -654,6 +654,43 @@ agentRuntimeRouter.get("/executions/:id", asyncHandler(async (req, res) => {
   res.json({ data: execution });
 }));
 
+agentRuntimeRouter.post("/executions/:id/actions/prior-readonly-audit", asyncHandler(async (req, res) => {
+  const input = leaseSchema.parse(req.body), now = new Date();
+  const current = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId,
+    leaseToken: input.leaseToken, leaseExpiresAt: { gt: now }, cancelRequestedAt: null,
+    contextInvalidatedAt: null, status: { in: ["claimed", "running"] } } });
+  if (!current?.agentHostId || !req.auth!.workerTicketIdentity
+      || !await workerClaimAllowed(prisma, req.auth!, current.agentHostId, now))
+    return sendApiError(res, 403, "worker_credential_forbidden");
+  const contract = (current.metadata as any)?.executionContract;
+  const reference = contract?.nativeBoundary?.inspectReadOnly;
+  if (contract?.nativeBoundary?.profile !== "inspect-readonly" || reference?.kind !== "verifier"
+      || !z.string().uuid().safeParse(reference.verifiedExecutionId).success
+      || !/^[a-f0-9]{64}$/.test(reference.verifiedEvidenceDigest ?? ""))
+    return sendApiError(res, 409, "prior_readonly_audit_not_pinned");
+  const prior = await prisma.agentExecution.findFirst({ where: { id: reference.verifiedExecutionId,
+    workspaceId: current.workspaceId, applicationId: current.applicationId, agentHostId: current.agentHostId,
+    status: "completed", contextInvalidatedAt: null, completedAt: { not: null } } });
+  const previous = (prior?.metadata as any)?.executionContract;
+  const receipt = (prior?.verification as any)?.readOnlyAudit;
+  if (!prior || prior.taskId === current.taskId || prior.errorState || !Array.isArray(prior.changedFiles)
+      || prior.changedFiles.length || previous?.nativeBoundary?.profile !== "inspect-readonly"
+      || previous.nativeBoundary.inspectReadOnly?.kind !== "auditor"
+      || previous.assignment?.agentId === contract.assignment?.agentId
+      || receipt?.schemaVersion !== "roost-readonly-audit-v1" || receipt.verdict !== "verified"
+      || receipt.evidenceDigest !== reference.verifiedEvidenceDigest
+      || typeof prior.finalResponse !== "string" || !prior.finalResponse.trim()
+      || Buffer.byteLength(prior.finalResponse, "utf8") > 10000)
+    return sendApiError(res, 409, "prior_readonly_audit_invalid");
+  res.json({ data: { id: prior.id, taskId: prior.taskId, workspaceId: prior.workspaceId,
+    applicationId: prior.applicationId, agentHostId: prior.agentHostId, status: prior.status,
+    completedAt: prior.completedAt, contextInvalidatedAt: prior.contextInvalidatedAt,
+    errorState: prior.errorState, changedFiles: prior.changedFiles,
+    finalResponse: prior.finalResponse,
+    metadata: { executionContract: previous, resultRevision: (prior.metadata as any).resultRevision },
+    verification: { readOnlyAudit: receipt } } });
+}));
+
 agentRuntimeRouter.post("/executions", asyncHandler(async (req, res) => {
   if (!executionEnabled()) return sendApiError(res, 409, "agent_execution_disabled");
   const input = createExecutionSchema.parse(req.body);

@@ -33,6 +33,13 @@ files or clear a Writer lock to make a new claim possible. The native Windows
 Job and lease tests cover cancellation and lease-loss stops; a forced
 production cancellation or lease loss has not been exercised.
 
+For a Gate 2 read-only verifier, the Worker fetches only the completed auditor
+execution named in its pinned contract, using its current leased execution and
+bound Worker credential. It compares the prior receipt, actor, branch, commit,
+tracked paths and unchanged tree with the fresh local snapshot before passing
+the auditor's response into the sealed model input as untrusted evidence. A
+missing or changed receipt stops the verifier before model launch.
+
 The observer foundation notes below describe earlier installation states.
 Their statements that production execution is disabled do not describe the
 current Gate 1 installation.

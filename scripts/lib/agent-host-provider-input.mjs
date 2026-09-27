@@ -36,6 +36,14 @@ export const providerInputSchema = z.object({
     decisions: evidence("taskContext.decisions.contract_refs", records),
     dependencies: evidence("taskContext.dependencies.contract_refs", records),
     ownerInstruction: evidence("claimed.prompt.ready_approved", z.string().max(16000).nullable()),
+    priorAudit: evidence("worker.verified_prior_readonly_audit", z.object({
+      schemaVersion: z.literal("roost-prior-readonly-audit-v1"), executionId: id, taskId: id,
+      auditorAgentId: id, completedAt: z.string().datetime(), branch: z.string().min(1),
+      commit: z.string().regex(/^[a-f0-9]{40}$/),
+      receipt: z.object({ evidenceDigest: hash, digest: hash, preTree: hash, postTree: hash,
+        verdict: z.literal("verified") }).strict(),
+      finalResponse: z.string().min(1).max(10000), digest: hash
+    }).strict()).optional(),
     repositoryInspection: evidence("worker.bounded_repository_read", z.object({
       schemaVersion: z.literal("roost-readonly-repository-evidence-v1"), head: z.string().regex(/^[a-f0-9]{40}$/), branch: z.string().min(1),
       files: z.array(z.object({ path: z.string().min(1), mimeType: z.literal("text/plain"), content: z.string().max(32768), sha256: hash }).strict()).min(1).max(32),
@@ -64,7 +72,7 @@ function blocked(reason = "provider_input_invalid", safeDetails = {}) {
 function freeze(value) { if (value && typeof value === "object") { Object.values(value).forEach(freeze); Object.freeze(value); } return value; }
 const wrap = (provenance, value) => ({ provenance, trust: "untrusted_evidence", value });
 const applicationKeys = ["schemaVersion", "application", "lifecycle", "targetCapabilities", "observedCapabilities", "gaps", "blockers", "dependencies", "companyRecords", "documentationIndex", "contextSelection", "genericEvidence", "entityRelations", "operatingModel", "architecture", "technologies", "interfaces", "evidenceSummary", "readiness", "authority"];
-function projection(fresh, claimed, repositoryEvidence) {
+function projection(fresh, claimed, repositoryEvidence, priorAudit) {
   const { taskContext: task, applicationContext: application } = fresh, packet = task.executionPacket;
   // Only the existing execution compiler response. New top-level sources need a
   // deliberate contract change; provider-supplied context is never merged here.
@@ -104,6 +112,7 @@ function projection(fresh, claimed, repositoryEvidence) {
       application: wrap("application-agent-context-v2.execution", Object.fromEntries(applicationKeys.filter(key => application[key] !== undefined).map(key => [key, application[key]]))),
       procedures: wrap("taskContext.procedures.contract_refs", refs("procedures")), decisions: wrap("taskContext.decisions.contract_refs", refs("decisions")),
       dependencies: wrap("taskContext.dependencies.contract_refs", refs("dependencies")), ownerInstruction: wrap("claimed.prompt.ready_approved", claimed.prompt ?? null),
+      ...(priorAudit ? { priorAudit: wrap("worker.verified_prior_readonly_audit", priorAudit) } : {}),
       ...(repositoryEvidence ? { repositoryInspection: wrap("worker.bounded_repository_read", repositoryEvidence) } : {})
     }, startupTools: []
   };
@@ -114,8 +123,8 @@ function validate(fresh, claimed, currentCommit, secrets) {
   ready.assertReadyContext(fresh.taskContext, fresh.applicationContext, claimed);
   ready.assertRiskAdmission(fresh.taskContext, claimed, currentCommit);
 }
-function seal(fresh, claimed, secrets, repositoryEvidence) {
-  const body = projection(fresh, claimed, repositoryEvidence);
+function seal(fresh, claimed, secrets, repositoryEvidence, priorAudit) {
+  const body = projection(fresh, claimed, repositoryEvidence, priorAudit);
   guardHostContent(body, "required", [claimed.leaseToken, ...secrets].filter(Boolean));
   // Private local paths are never prompt context. Relative repository paths and
   // canonical HTTPS origins remain evidence, not transport configuration.
@@ -134,13 +143,14 @@ function seal(fresh, claimed, secrets, repositoryEvidence) {
 // Only Worker calls these factories. No config/env/network argument can provide
 // the authority callback. Existing lease/writer/Ready/checkpoint own authority.
 /** @returns {ProviderInput} */
-export function prepareProviderInput({ fresh, claimed, currentCommit, assertAuthority, secrets = [], provider, repositoryPath, hermesAuthReceipt, startupEnvironment, startupCandidate, nativeBoundaryOptions, repositoryEvidence }) {
+export function prepareProviderInput({ fresh, claimed, currentCommit, assertAuthority, secrets = [], provider, repositoryPath, hermesAuthReceipt, startupEnvironment, startupCandidate, nativeBoundaryOptions, repositoryEvidence, priorAudit }) {
   let stage = "validate";
   try {
     assertAuthority(); validate(fresh, claimed, currentCommit, secrets);
     if (fresh.taskContext.executionPacket.contract.nativeBoundary?.profile === "inspect-readonly" ? !repositoryEvidence : Boolean(repositoryEvidence)) throw blocked();
+    if ((fresh.taskContext.executionPacket.contract.nativeBoundary?.inspectReadOnly?.kind === "verifier") !== Boolean(priorAudit)) throw blocked("prior_audit_missing");
     stage = "seal";
-    const envelope = seal(fresh, claimed, secrets, repositoryEvidence);
+    const envelope = seal(fresh, claimed, secrets, repositoryEvidence, priorAudit);
     assertAuthority();
     stage = "profile";
     const profile = provider?.kind === "hermes_codex" ? sealHermesProfile(provider.profile,

@@ -31,6 +31,7 @@ import fixed from "./lib/agent-host-fixed-program.cjs";
 import { prepareFixedExecution, runFixedExecution, createFixedOutputBudget, assertFixedTask, abandonFixedExecution } from "./lib/agent-host-fixed-execution.mjs";
 import { collectWorkspaceEvidence } from "./lib/agent-host-workspace-evidence.mjs";
 import { collectReadOnlyRepositoryEvidence } from "./lib/agent-host-readonly-boundary.mjs";
+import { verifiedPriorReadOnlyAudit } from "./lib/agent-host-prior-readonly-audit.mjs";
 import { prepareCodingTests, runCodingTests } from "./lib/agent-host-coding-tests.mjs";
 import { finalizeLocalCommit } from "./lib/agent-host-local-commit.mjs";
 import { readCodeReviewerCredential, reviewerApi, validateCodeReviewView, prepareCodeReviewDecision,
@@ -227,7 +228,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
   let stopRequested = false;
   let duration;
   let outputBudget;
-  let hermesBaseline, hermesReadOnlyBaseline, nativeInput, fixedGrant, readOnlyEvidence, firstWrite, codingTests;
+  let hermesBaseline, hermesReadOnlyBaseline, nativeInput, fixedGrant, readOnlyEvidence, priorAudit, firstWrite, codingTests;
   let codeReviewerView, codeReviewerKey;
   let preparedCommit;
   let hermesCollection, hermesAbort, hermesCompletedReceipt;
@@ -357,13 +358,17 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       expected: { head: preparedCommit, branch: actualBranch, origin: repository.originUrl },
       paths: taskContract.nativeBoundary.readPaths, secrets: [apiKey, claimed.leaseToken, codeReviewerKey].filter(Boolean),
       reviewMaterial: codeReviewerView, review: inspection.kind === "code-reviewer" ? inspection : null }));
+    if (inspection?.kind === "verifier") priorAudit = verifiedPriorReadOnlyAudit(
+      await duration.wait(api(`/v1/agent-runtime/executions/${claimed.id}/actions/prior-readonly-audit`, {
+        method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken }) })),
+      { claimed, contract: taskContract, repositoryEvidence: readOnlyEvidence });
     if (coding && taskContract.nativeBoundary.writePaths.length) codingTests = prepareCodingTests({
       manifestPath: config.executionProvider.testManifestPath, repositoryPath, originUrl: repository.originUrl,
       acceptanceTests: taskContract.acceptance.tests });
     const providerInput = prepareProviderInput({ fresh: { taskContext, applicationContext }, claimed,
       currentCommit: preparedCommit, assertAuthority: assertProviderAuthority, secrets: [apiKey, codeReviewerKey].filter(Boolean),
       provider: config.executionProvider, repositoryPath,
-      repositoryEvidence: readOnlyEvidence,
+      repositoryEvidence: readOnlyEvidence, priorAudit,
       nativeBoundaryOptions: { writerLock, expected: { head: preparedCommit, branch: taskContext.executionPacket.contract.singleTask.branch, origin: repository.originUrl } },
       startupEnvironment: config.executionProvider?.kind === "hermes_codex" && config.executionProvider.profile
         ? hermesStartupEnvironment(config.executionProvider.profile, process.env, repositoryPath) : undefined });
