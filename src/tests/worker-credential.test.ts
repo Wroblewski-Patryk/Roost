@@ -7,13 +7,21 @@ import type { ApiKey } from "@prisma/client";
 import { hashApiKey } from "../auth/api-key";
 import { createAuthToken, verifyAuthToken } from "../auth/token";
 import { createAuthContextMiddleware, type AuthContext } from "../auth/api-key.middleware";
-import { workerClaimAllowed, workerTicketPrincipal, workerTicketFingerprint } from "../auth/worker-ticket-principal";
+import { workerClaimAllowed, workerCredentialRoute, workerTicketPrincipal, workerTicketFingerprint } from "../auth/worker-ticket-principal";
 import { createWorkerCredentialService, freshWorkerOwner, safeWorkerCredential, WorkerCredentialError, type WorkerCredentialStore, type WorkerCredentialTx, type SyntheticWorkerDelivery } from "../modules/api-keys/worker-credential.service";
 import { workerCredentialCommand, type WorkerCredentialCommand } from "../modules/api-keys/worker-credential-contract";
 import { workerCredentialHandler } from "../modules/api-keys/worker-credential-http";
 import { createPrismaWorkerCredentialStore } from "../modules/api-keys/worker-credential-store";
 import { reviewDigest } from "../modules/agent-runtime/task-review-contract";
 import { executionProviderRegistry } from "../modules/agent-runtime/execution-provider";
+
+test("bound Worker transport admits only the exact read-only spawn reconciliation route", () => {
+  const id = randomUUID(), path = `/v1/agent-runtime/executions/${id}/actions/reconcile-readonly-spawn`;
+  assert.equal(workerCredentialRoute("POST", path), true);
+  assert.equal(workerCredentialRoute("GET", path), false);
+  assert.equal(workerCredentialRoute("POST", `${path}/other`), false);
+  assert.equal(workerCredentialRoute("POST", path.replace(id, "bad-id")), false);
+});
 
 function fixture() {
   const workspaceId = randomUUID(), hostId = randomUUID(), installationId = randomUUID(), ownerId = randomUUID();

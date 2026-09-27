@@ -3854,6 +3854,78 @@ test("execution recovery fences old leases and preserves an auditable same-attem
   } finally { delete process.env.ROOST_CODEX_EXECUTION_ENABLED; }
 });
 
+test("expired read-only spawn terminalization requires the exact bound Worker and clean baseline attestation",
+  { skip: !process.env.WORKER_CREDENTIAL_TEST_DATABASE }, async () => {
+  const owner = await registerOwner(`readonly-spawn-${randomUUID()}@example.test`, "Readonly spawn fixture");
+  const workspaceId = owner.workspace.id, auth = { Authorization: `Bearer ${owner.token}` };
+  const { ownerTicketFixture } = await import("./owner-ticket-fixture");
+  const { hashApiKey } = await import("../auth/api-key");
+  const keyFixture = await ownerTicketFixture();
+  await prisma.trustedProviderTicketKey.create({ data: { workspaceId, ...keyFixture.state().key } });
+  const host = await prisma.agentHost.create({ data: { workspaceId, name: "Readonly test host", slug: `readonly-${randomUUID()}`,
+    platform: "win32", status: "online" } });
+  const raw = randomUUID();
+  await prisma.apiKey.create({ data: { workspaceId, name: "Synthetic bound Worker", keyHash: hashApiKey(raw),
+    scopes: ["agent-runtime:claim"], active: true, expiresAt: new Date(Date.now() + 600_000),
+    workerHostId: host.id, workerInstallationId: keyFixture.state().key.installationId, workerBindingEpoch: 1 } });
+  const workerAuth = { "X-API-Key": raw };
+  const application = await prisma.application.create({ data: { workspaceId, name: "Readonly fixture app", slug: randomUUID() } });
+  const project = await prisma.project.create({ data: { workspaceId, name: "Readonly fixture project" } });
+  await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id } });
+  const task = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: "Inert readonly task" } });
+  // An auditor inspects the coding task's branch, not its own task ID.
+  const branch = `codex/task-${randomUUID()}`, baseline = "a".repeat(40);
+  const metadata = { executionContract: { nativeBoundary: { profile: "inspect-readonly", inspectReadOnly: { kind: "auditor" } },
+    access: { tools: ["repository_read"], permissions: ["repository_read"] }, singleTask: { branch } },
+    readyContextPin: { revision: "b".repeat(64), riskAdmissionCommit: baseline } };
+  const create = async (lease: "released" | "retained") => {
+    const sessionId = randomUUID(), checkpoint = { schemaVersion: "roost-recovery-v1", stage: "spawn_intent", sessionId,
+      packetRevision: "c".repeat(64), workspaceDigest: "d".repeat(64), contextRevision: "e".repeat(64) };
+    // This opt-in database fixture synthesizes the post-spawn state. User
+    // admission triggers are disabled only inside this transaction and restored
+    // before commit; constraint/FK triggers remain active throughout. The
+    // handler runs later with every database guard enabled.
+    const execution = await prisma.$transaction(async tx => {
+      await tx.$executeRawUnsafe("ALTER TABLE agent_executions DISABLE TRIGGER USER");
+      const row = await tx.agentExecution.create({ data: { workspaceId, taskId: task.id, applicationId: application.id,
+        agentHostId: host.id, requestedByType: "user", status: "running", attempt: 1,
+        startedAt: new Date(Date.now() - 90_000), leaseToken: randomUUID(), leaseExpiresAt: new Date(Date.now() - 10_000),
+        checkpointVersion: 3, checkpoint, metadata } });
+      await tx.$executeRawUnsafe("ALTER TABLE agent_executions ENABLE TRIGGER USER");
+      return row;
+    });
+    const triggers = await prisma.$queryRaw<Array<{ tgenabled: string }>>`SELECT tgenabled FROM pg_trigger
+      WHERE tgrelid='agent_executions'::regclass AND NOT tgisinternal`;
+    assert.ok(triggers.length > 0); assert.ok(triggers.every(trigger => trigger.tgenabled === "O"));
+    const path = `/v1/agent-runtime/executions/${execution.id}/actions/reconcile-readonly-spawn`;
+    const proof = { hostSlug: host.slug, expectedVersion: 3, checkpointSessionId: sessionId,
+      baselineCommit: baseline, baselineBranch: branch, repositoryDigest: "f".repeat(64), writerLockDigest: "1".repeat(64),
+      applicationLease: lease === "released" ? { state: "released", absent: true } : { state: "retained", digest: "2".repeat(64) },
+      observedAt: new Date().toISOString(), nativeProcessesAbsent: true, ownerProcessAbsent: true, workingTreeClean: true };
+    const post = (body: unknown, headers: Record<string,string> = workerAuth) => request(path, { method: "POST", headers, body: JSON.stringify(body) });
+    return { execution, proof, post };
+  };
+  const released = await create("released");
+  for (const patch of [{ expectedVersion: 2 }, { checkpointSessionId: randomUUID() }, { baselineCommit: "0".repeat(40) },
+    { baselineBranch: "main" }, { observedAt: new Date(Date.now() - 300_000).toISOString() }]) {
+    const denied = await released.post({ ...released.proof, ...patch });
+    assert.equal(denied.status, 409, JSON.stringify(denied.body));
+  }
+  assert.equal((await released.post(released.proof, auth)).status, 403);
+  const accepted = await released.post(released.proof), replay = await released.post(released.proof);
+  assert.equal(accepted.status, 200, JSON.stringify(accepted.body));
+  assert.equal(replay.status, 200, JSON.stringify(replay.body)); assert.equal((replay.body as any).replay, true);
+  const after = await prisma.agentExecution.findUniqueOrThrow({ where: { id: released.execution.id } });
+  assert.equal(after.status, "failed"); assert.equal(after.leaseToken, null);
+  assert.equal((after.errorState as any).code, "agent_readonly_spawn_reconciled");
+  assert.equal((after.errorState as any).retryable, false);
+  assert.equal(await prisma.agentExecutionEvent.count({ where: { executionId: released.execution.id, type: "readonly_spawn_reconciled" } }), 1);
+  assert.equal((await released.post({ ...released.proof, applicationLease: { state: "retained", digest: "2".repeat(64) } })).status, 409);
+  const retained = await create("retained");
+  assert.equal((await retained.post(retained.proof)).status, 200);
+  assert.equal((await prisma.agentExecution.findUniqueOrThrow({ where: { id: retained.execution.id } })).status, "failed");
+});
+
 test("CompanyCore v1 protected API flow", async () => {
   const oauthCallback = await realFetch(`${baseUrl}/settings/drive?code=synthetic&state=synthetic`);
   assert.equal(oauthCallback.status, 200);

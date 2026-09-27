@@ -308,6 +308,21 @@ confirmed dead prior parent, valid lease, unchanged prepared packet/workspace
 and a single writer lock. Long shutdowns that outlast the lease, interrupted
 Codex work and uncertain effects require operator reconciliation.
 
+An expired `spawn_intent` for an `inspect-readonly` audit can be terminalized
+through `POST /v1/agent-runtime/executions/:id/actions/reconcile-readonly-spawn`
+only by that host's current installation-bound Worker credential. The Worker
+must first verify that the native process tree and its owner process are gone,
+the canonical checkout remains clean at the pinned baseline commit and branch,
+and the retained writer lock identifies this execution. The application lease
+must either still identify the same execution or be proven absent after normal
+Worker cleanup. It sends fresh digests of retained local observations with the exact checkpoint
+session/version. Roost checks the expired lease, read-only contract, pinned
+baseline and absence of a reported result, then atomically records a terminal,
+non-retryable failure and one event. It never converts that attempt to success
+or renews its lease. Reconcile the retained local fences against this terminal
+record before starting another execution; a missing process or expired lease
+alone is insufficient.
+
 After an interactive trial, run the host under a Windows service wrapper or
 Task Scheduler using the same Windows user that owns the Codex login and local
 repositories. Configure automatic restart, a working directory of the Roost

@@ -149,7 +149,7 @@ export function buildManagedAdmissionSource({ envelope, claimed, writerLock, rep
   } catch (error) { fail(`source_${phase}`, error?.status, error?.message); }
 }
 
-export async function requestManagedAdmission({ api, source, writerDigest, assertAuthority, firstWrite }) {
+export async function requestManagedAdmission({ api, source, writerDigest, assertAuthority, refreshLease = async () => {}, firstWrite }) {
   let phase = "installation";
   try {
     assertAuthority();
@@ -162,6 +162,10 @@ export async function requestManagedAdmission({ api, source, writerDigest, asser
       ownerAttestation: installed.ownerAttestation };
     const route = `/v1/agent-runtime/executions/${source.claimed.id}/actions/managed-admission`;
     phase = "backend_evidence_request";
+    // Native startup and boundary collection above can occupy most of a short
+    // lease. Confirm a fresh server lease before each signed, one-shot RPC.
+    await refreshLease();
+    assertAuthority();
     const evidenceReply = response("backend_evidence", nativeEvidenceSchema).parse(await api(route, { method: "POST", body: JSON.stringify({
       schemaVersion: managedAdmissionVersion, phase: "backend_evidence", leaseToken: source.claimed.leaseToken,
       executionId: source.claimed.id, source: expected }) }));
@@ -176,6 +180,8 @@ export async function requestManagedAdmission({ api, source, writerDigest, asser
     persist(path.join(installed.directory, "managed-backend-evidence.json"), evidenceReply.signed);
     const proposal = proposeTrustedPilotDecision(configurationPath, source, writerDigest);
     phase = "decision_request";
+    await refreshLease();
+    assertAuthority();
     const decisionReply = response("decision", trustedPilotDecisionSchema).parse(await api(route, { method: "POST", body: JSON.stringify({
       schemaVersion: managedAdmissionVersion, phase: "decision", leaseToken: source.claimed.leaseToken,
       executionId: source.claimed.id, provider: proposal.provider, scope: proposal.scope,
@@ -200,6 +206,8 @@ export async function requestManagedAdmission({ api, source, writerDigest, asser
         || decisionReply.firstWrite.branch !== firstWrite.branch
         || !decisionReply.firstWrite.operations.localCommit) fail();
     if (requiresFirstWrite && decisionReply.firstWrite.baselineCommit !== source.envelope.evidence.risk.value.commit) fail();
+    await refreshLease();
+    assertAuthority();
     const grant = Object.freeze({});
     grants.set(grant, { source, writerDigest, acceptance, firstWrite: decisionReply.firstWrite, used: false });
     return grant;

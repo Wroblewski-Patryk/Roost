@@ -34,9 +34,9 @@ test("two-phase signed admission binds Worker evidence and accepted decision wit
   source.gates.outputBudget = "worker_deadline_output_intent";
   const writerDigest = nativeDigest(writerRecoveryEvidence(x.options.writerLock));
   const signed = payload => ({ payload, signature: sign(null, trustedPilotBytes(payload), privateKey).toString("hex") });
-  let phases = [];
+  let phases = [], renewals = 0, order = [];
   const api = async (_route, options) => {
-    const request = JSON.parse(options.body); phases.push(request.phase);
+    const request = JSON.parse(options.body); phases.push(request.phase); order.push(request.phase);
     if (request.phase === "backend_evidence") {
       assert.equal(request.source.ownerAttestation.digest, owner.binding.digest);
       const payload = nativeEvidenceSchema.parse({ ...request.source,
@@ -54,8 +54,11 @@ test("two-phase signed admission binds Worker evidence and accepted decision wit
       qualification: "signed_native_v1" });
     return { schemaVersion: "roost-managed-admission-v1", phase: request.phase, signed: signed(payload) };
   };
-  const grant = await requestManagedAdmission({ api, source, writerDigest, assertAuthority() {} });
+  const grant = await requestManagedAdmission({ api, source, writerDigest, assertAuthority() {},
+    refreshLease: async () => { renewals += 1; order.push("lease"); } });
   assert.ok(grant);
+  assert.equal(renewals, 3);
+  assert.deepEqual(order, ["lease", "backend_evidence", "lease", "decision", "lease"]);
   assert.deepEqual(phases, ["backend_evidence", "decision"]);
   assert.ok(fs.statSync(x.decisionPath).size > 0);
   const evidenceDigest = sha(fs.readFileSync(x.evidencePath));

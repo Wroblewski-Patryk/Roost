@@ -72,6 +72,18 @@ test("network/server failure does not extend the last confirmed deadline", async
   assert.equal(h.losses.length, 1);
 });
 
+test("managed admission requires a newly confirmed lease even after a transient renewal failure", async () => {
+  const h = harness();
+  await h.lease.refresh();
+  h.setTime(20_000);
+  h.setRenew(async () => { throw { status: 503 }; });
+  await assert.rejects(h.lease.refreshConfirmed(), /lease_refresh_unconfirmed/);
+  h.lease.assertValid();
+  h.setRenew(async () => ({ leaseExpiresAt: new Date(1_800_000_000_000 + 20_000 + 90_000).toISOString() }));
+  await h.lease.refreshConfirmed();
+  h.lease.assertValid();
+});
+
 test("a hanging renewal cannot disable the independent expiry timer", async () => {
   const h = harness();
   await h.lease.refresh();

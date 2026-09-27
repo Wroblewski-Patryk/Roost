@@ -13,6 +13,7 @@ export function createExecutionLease({ renew, onLost, now = () => performance.no
   let pending;
   let failure;
   let disposed = false;
+  let confirmations = 0;
 
   function lose(code) {
     if (failure || disposed) return;
@@ -46,6 +47,7 @@ export function createExecutionLease({ renew, onLost, now = () => performance.no
       const remaining = Math.min(Date.parse(result?.leaseExpiresAt) - wallNow(), maximumLeaseMs - (now() - started)) - stopMarginMs;
       if (!Number.isFinite(remaining) || remaining <= 0) return lose("agent_execution_lease_invalid");
       deadline = now() + remaining;
+      confirmations += 1;
       clearTimer(expiryTimer);
       expiryTimer = setTimer(() => lose("agent_execution_lease_expired"), remaining);
     } catch (error) {
@@ -69,6 +71,13 @@ export function createExecutionLease({ renew, onLost, now = () => performance.no
 
   return {
     refresh,
+    async refreshConfirmed(minimumRemainingMs = 45_000) {
+      const before = confirmations;
+      await refresh();
+      assertValid();
+      if (confirmations === before || deadline - now() < minimumRemainingMs)
+        throw new Error("agent_execution_lease_refresh_unconfirmed");
+    },
     reject,
     assertValid,
     get remainingMs() { assertValid(); return Math.max(0, deadline - now()); },

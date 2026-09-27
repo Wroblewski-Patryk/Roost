@@ -408,14 +408,23 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     const launchAuthority = { fresh, claimed, currentCommit, assertAuthority: assertProviderAuthority, secrets: [apiKey, codeReviewerKey].filter(Boolean) };
     if (config.executionProvider?.kind === "hermes_codex" && providerInput.contract.modelSelection.schemaVersion === managedBackendVersion) {
       await duration.wait(assertAdmission(true));
+      await duration.wait(lease.refreshConfirmed());
+      lease.assertValid();
       const prepared = buildManagedAdmissionSource({ envelope: providerInput, claimed, writerLock,
         repositoryPath, provider: config.executionProvider, startupEnvironment: launchOptions.startupEnvironment,
         remainingMs: () => duration.remainingMs });
+      // Source construction is synchronous and may delay the periodic heartbeat.
+      // A stale local deadline must stop here, before asking Roost to sign.
+      await duration.wait(lease.refreshConfirmed());
+      lease.assertValid();
       launchOptions.managedAdmission = await duration.wait(requestManagedAdmission({ api, ...prepared,
-        firstWrite, assertAuthority: assertProviderAuthority }));
+        firstWrite, assertAuthority: assertProviderAuthority,
+        refreshLease: () => duration.wait(lease.refreshConfirmed()) }));
       await duration.wait(api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST",
         body: JSON.stringify({ leaseToken: claimed.leaseToken, type: "runner_progress",
           message: "Signed managed admission accepted; preparing native Hermes launch." }) }));
+      await duration.wait(lease.refreshConfirmed());
+      lease.assertValid();
       // JIT signing is an awaited remote operation. Reopen every mutable
       // authority check after it, immediately before spending the local proof.
       await duration.wait(assertAdmission());
