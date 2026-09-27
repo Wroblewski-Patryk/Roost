@@ -346,9 +346,11 @@ retrying when operator reconciliation is required. This does not police other
 coding tools; bootstrap sessions must still obey the single-writer rule.
 
 Atomic API claims alone do not prove an expired worker stopped.
-The host renews before launching Codex, makes API calls with a ten-second timeout,
-and stops the Windows process tree when authority is rejected or the confirmed
-lease reaches its five-second stop margin. It then stops polling for new work.
+The API grants a 180-second execution lease. The host renews it every 20 seconds,
+makes API calls with a ten-second timeout, and stops the Windows process tree
+when authority is rejected or the last confirmed lease reaches its five-second
+stop margin. A pending or late heartbeat never extends local authority. The
+host then stops polling for new work.
 Reconcile local processes and files before restarting; do not start a second host
 as a recovery shortcut. A late heartbeat cannot revive lost authority.
 

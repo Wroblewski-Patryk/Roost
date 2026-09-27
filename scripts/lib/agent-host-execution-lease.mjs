@@ -1,8 +1,8 @@
 import { spawn } from "node:child_process";
 import { performance } from "node:perf_hooks";
 
-// The API grants 90 seconds. Reserve time for stopping the Windows process tree.
-const maximumLeaseMs = 90_000;
+// The API grants 180 seconds. Reserve time for stopping the Windows process tree.
+const maximumLeaseMs = 180_000;
 const stopMarginMs = 5_000;
 
 export function createExecutionLease({ renew, onLost, now = () => performance.now(), wallNow = Date.now,

@@ -16,7 +16,7 @@ function harness() {
   let nextTimer = 0;
   const timers = new Map();
   const losses = [];
-  let renew = async () => ({ leaseExpiresAt: new Date(1_800_000_000_000 + time + 90_000).toISOString() });
+  let renew = async () => ({ leaseExpiresAt: new Date(1_800_000_000_000 + time + 180_000).toISOString() });
   const lease = createExecutionLease({
     renew: () => renew(), onLost: (error) => losses.push(error.message), now: () => time,
     wallNow: () => 1_800_000_000_000 + time,
@@ -26,7 +26,7 @@ function harness() {
   return { lease, losses, timers,
     setRenew(callback) { renew = callback; },
     setTime(value) { time = value; },
-    expire() { time = 85_000; for (const [id, timer] of [...timers]) if (timer.at === time) { timers.delete(id); timer.callback(); } }
+    expire() { time = 175_000; for (const [id, timer] of [...timers]) if (timer.at === time) { timers.delete(id); timer.callback(); } }
   };
 }
 
@@ -79,7 +79,7 @@ test("managed admission requires a newly confirmed lease even after a transient 
   h.setRenew(async () => { throw { status: 503 }; });
   await assert.rejects(h.lease.refreshConfirmed(), /lease_refresh_unconfirmed/);
   h.lease.assertValid();
-  h.setRenew(async () => ({ leaseExpiresAt: new Date(1_800_000_000_000 + 20_000 + 90_000).toISOString() }));
+  h.setRenew(async () => ({ leaseExpiresAt: new Date(1_800_000_000_000 + 20_000 + 180_000).toISOString() }));
   await h.lease.refreshConfirmed();
   h.lease.assertValid();
 });
@@ -99,10 +99,25 @@ test("a hanging renewal cannot disable the independent expiry timer", async () =
   assert.equal(h.losses.length, 1);
 });
 
+test("a delayed managed-admission heartbeat can be confirmed before the extended deadline", async () => {
+  const h = harness();
+  await h.lease.refresh();
+  h.setTime(100_000);
+  let resolve;
+  h.setRenew(() => new Promise(done => { resolve = done; }));
+  const pending = h.lease.refreshConfirmed();
+  h.setTime(160_000);
+  resolve({ leaseExpiresAt: new Date(1_800_000_000_000 + 280_000).toISOString() });
+  await pending;
+  h.lease.assertValid();
+  h.setTime(176_000);
+  h.lease.assertValid();
+});
+
 test("late renewal cannot revive authority even before the timer callback runs", async () => {
   const h = harness();
   await h.lease.refresh();
-  h.setTime(86_000);
+  h.setTime(176_000);
   await h.lease.refresh();
   assert.throws(() => h.lease.assertValid(), /lease_expired/);
 });
@@ -112,7 +127,7 @@ test("successful renewal moves the deadline and disposal clears all timers", asy
   await h.lease.refresh();
   h.setTime(20_000);
   await h.lease.refresh();
-  h.setTime(86_000);
+  h.setTime(176_000);
   h.lease.assertValid();
   h.lease.stop();
   assert.equal(h.timers.size, 0);

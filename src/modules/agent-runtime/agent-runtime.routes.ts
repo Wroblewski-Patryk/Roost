@@ -35,6 +35,7 @@ import { protocol, hostCompatibility, requestCompatibility } from "./host-protoc
 import type { Request, Response } from "express";
 
 const jsonRecord = z.record(z.unknown());
+const executionLeaseMs = 180_000;
 const hostSchema = z.object({
   name: z.string().trim().min(1).max(120),
   slug: z.string().trim().min(1).max(120).regex(/^[a-z0-9][a-z0-9._-]*$/),
@@ -475,7 +476,7 @@ agentRuntimeRouter.post("/executions/:id/actions/recover", asyncHandler(async (r
     const ready = await inspectReady(tx, req.auth!.workspaceId, existing.taskId, existing);
     if (ready.error) return { error: ready.error };
     if (await tx.trustedProviderTicket.count({ where: { executionId: existing.id, workspaceId: existing.workspaceId } })) return { error: "owner_ticket_recovery_requires_review" };
-    const changed = await tx.agentExecution.updateMany({ where: { id: existing.id, checkpointVersion: input.expectedVersion, leaseToken: existing.leaseToken, leaseExpiresAt: { gt: new Date() }, cancelRequestedAt: null, status: { in: ["claimed", "running"] } }, data: { checkpoint: json(checkpoint), checkpointVersion: { increment: 1 }, leaseToken: token, leaseExpiresAt: new Date(Date.now() + 90_000), lastHeartbeatAt: new Date(), errorState: Prisma.DbNull } });
+    const changed = await tx.agentExecution.updateMany({ where: { id: existing.id, checkpointVersion: input.expectedVersion, leaseToken: existing.leaseToken, leaseExpiresAt: { gt: new Date() }, cancelRequestedAt: null, status: { in: ["claimed", "running"] } }, data: { checkpoint: json(checkpoint), checkpointVersion: { increment: 1 }, leaseToken: token, leaseExpiresAt: new Date(Date.now() + executionLeaseMs), lastHeartbeatAt: new Date(), errorState: Prisma.DbNull } });
     if (!changed.count) return null;
     const mode = checkpoint.stage === "prepared" ? "resume_from_checkpoint" : checkpoint.stage === "branch_intent" ? "reconcile_branch_intent" : checkpoint.stage === "branch_ready" ? "reconcile_branch_ready" : "restart_same_attempt";
     await tx.agentExecutionEvent.create({ data: { workspaceId: existing.workspaceId, executionId: existing.id, type: "recovering", message: `Recovering the same execution and attempt from ${checkpoint.stage}: ${mode}; no worker had been started.`, payload: json({ schemaVersion: "roost-recovery-v1", stage: checkpoint.stage, mode, version: input.expectedVersion + 1, attempt: existing.attempt }) } });
@@ -700,7 +701,7 @@ agentRuntimeRouter.post("/executions/claim", asyncHandler(async (req, res) => {
       const ready = await inspectReady(tx, workspaceId, candidate.taskId, candidate);
       if (ready.error) return { error: ready.error };
       if (await suspensionBlocks(tx, workspaceId, candidate.taskId, candidate.applicationId, "runtime_execute", ready.taskContext?.task?.assignedWorkforceEntityId, null, host.id)) return { error: "native_capability_suspended" };
-    const changed = await tx.agentExecution.updateMany({ where: { id: candidate.id, workspaceId, status: "queued", attempt: 0 }, data: { status: "claimed", agentHostId: host.id, leaseToken, leaseExpiresAt: new Date(Date.now() + 90_000), lastHeartbeatAt: now, startedAt: candidate.startedAt ?? now, attempt: { increment: 1 }, checkpoint: json(checkpoint), checkpointVersion: 1 } });
+    const changed = await tx.agentExecution.updateMany({ where: { id: candidate.id, workspaceId, status: "queued", attempt: 0 }, data: { status: "claimed", agentHostId: host.id, leaseToken, leaseExpiresAt: new Date(Date.now() + executionLeaseMs), lastHeartbeatAt: now, startedAt: candidate.startedAt ?? now, attempt: { increment: 1 }, checkpoint: json(checkpoint), checkpointVersion: 1 } });
       return { count: changed.count };
     });
     if ("error" in admitted) return sendApiError(res, 409, admitted.error!);
@@ -730,7 +731,7 @@ agentRuntimeRouter.post("/executions/:id/heartbeat", asyncHandler(async (req, re
   const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, leaseToken: input.leaseToken, status: { in: ["claimed", "running", "waiting_for_approval"] } } });
   if (!existing) return sendApiError(res, 409, "agent_execution_lease_invalid");
   if (existing.cancelRequestedAt) return res.status(409).json({ error: "agent_execution_cancel_requested", data: { cancelRequested: true } });
-  const leaseExpiresAt = new Date(Date.now() + 90_000);
+  const leaseExpiresAt = new Date(Date.now() + executionLeaseMs);
   const status = input.status ?? (existing.status === "claimed" ? "running" : existing.status);
   const updated = await readyTransaction(async tx => {
     const context = await guardExecutionContext(tx, existing);
