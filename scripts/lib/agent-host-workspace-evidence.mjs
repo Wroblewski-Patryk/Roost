@@ -28,8 +28,10 @@ async function snapshot(directory, expectedHead, expectedBranch, secrets) {
   const branch = decode(await git(root, ["symbolic-ref", "--short", "HEAD"])).trim();
   if (!/^[a-f0-9]{40}$/.test(head) || head !== expectedHead || branch !== expectedBranch) fail();
   const status = decode(await git(root, ["status", "--porcelain=v1", "-z", "--no-renames", "--untracked-files=all"]));
-  guardHostContent({ head, branch, status }, "required", secrets);
   const rows = status.split("\0").filter(Boolean);
+  // PostgreSQL JSONB cannot store a NUL code point. Keep the Git -z
+  // boundaries as an array of exact entries in the sealed evidence.
+  guardHostContent({ head, branch, status: rows }, "required", secrets);
   if (rows.length > limits.files) fail();
   const manifest = []; let total = 0;
   for (const row of rows) {
@@ -74,7 +76,7 @@ async function snapshot(directory, expectedHead, expectedBranch, secrets) {
     if ((total += bytes.length) > limits.totalBytes) fail();
     patches.push({ kind: cached ? "index" : "worktree", bytes: bytes.length, sha256: hash(bytes) });
   }
-  const payload = { head, branch, status, manifest, patches };
+  const payload = { head, branch, status: rows, manifest, patches };
   guardHostContent(payload, "required", secrets);
   if (Buffer.byteLength(JSON.stringify(payload)) > 65536) fail();
   return payload;

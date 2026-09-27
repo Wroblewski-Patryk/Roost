@@ -73,7 +73,7 @@ async function reclaimTerminalBeforeSpawn(directory, candidates) {
     if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1 || stat.size > 65536) throw new Error("agent_host_writer_locked");
     const bytes = await readFile(lockPath, "utf8"), current = JSON.parse(bytes);
     const checkpoint = current.checkpoint;
-    if (!Array.isArray(candidates) || !["claimed", "branch_intent", "branch_ready", "prepared"].includes(checkpoint?.stage)
+    if (!Array.isArray(candidates)
       || !current.ownerProcess || current.ownerProcess.pid !== current.ownerPid
       || !/^[a-f0-9]{64}$/.test(current.ownerProcess.executableDigest ?? "")
       || !/^[a-f0-9]{64}$/.test(current.ownerProcess.executablePathDigest ?? "")
@@ -82,7 +82,13 @@ async function reclaimTerminalBeforeSpawn(directory, candidates) {
       && ["failed", "cancelled"].includes(item.status) && item.leaseExpiresAt === null
       && Number.isInteger(item.checkpointVersion) && item.checkpointVersion >= 1
       && Number.isFinite(Date.parse(item.completedAt))
-      && JSON.stringify(localCheckpoint(item)) === JSON.stringify(checkpoint));
+      && JSON.stringify(localCheckpoint(item)) === JSON.stringify(checkpoint)
+      && (["claimed", "branch_intent", "branch_ready", "prepared"].includes(checkpoint?.stage)
+        || checkpoint?.stage === "spawn_intent" && item?.errorState?.code === "managed_admission_blocked"
+          && item.errorState?.details?.phase === "backend_evidence_request"
+          && item.errorState?.details?.reason === "roost_http_409" && item.errorState?.details?.status === 409
+          && item.codexThreadId === null && item.finalResponse === null
+          && Array.isArray(item.changedFiles) && item.changedFiles.length === 0));
     if (!candidate || observeWindowsProcessIdentity(current.ownerPid) !== null) throw new Error("agent_host_writer_locked");
     if (await readFile(lockPath, "utf8") !== bytes) throw new Error("agent_host_writer_locked");
     await unlink(lockPath);

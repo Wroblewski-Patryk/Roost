@@ -53,6 +53,26 @@ test("read-only Hermes budget receipt accepts the zero-tool bot_room profile", t
   assert.equal(hermesBudgetReceiptSchema.safeParse(projected).success, true);
 });
 
+test("coding budget accepts an exact durable branch checkpoint before model launch", t => {
+  const f = budgetFixture(t);
+  const envelope = { ...f.envelope, contract: { ...f.envelope.contract,
+    nativeBoundary: { profile: "coding-local" }, singleTask: { branch: "codex/task-00000000-0000-4000-8000-000000000001" } } };
+  const claimed = { ...f.f.claimed, checkpoint: { stage: "branch_ready",
+    packetRevision: envelope.revisions.packet, contextRevision: envelope.revisions.context,
+    workspaceDigest: "b".repeat(64), branch: envelope.contract.singleTask.branch, headCommit: "a".repeat(40) } };
+  assert.ok(sealHermesBudget({ envelope, claimed, inputBytes: 100 }));
+  assert.ok(sealHermesBudget({ envelope: { ...envelope, contract: { ...envelope.contract,
+    budgets: { ...envelope.contract.budgets, maxDurationSeconds: 1800 } } }, claimed, inputBytes: 100 }));
+  assert.throws(() => sealHermesBudget({ envelope, claimed: { ...claimed,
+    checkpoint: { ...claimed.checkpoint, branch: "main" } }, inputBytes: 100 }), /invalid/);
+});
+
+test("signed 1800 second attempt produces a bounded startup receipt", t => {
+  const f = budgetFixture(t, state => { state.packet.contract.budgets.maxDurationSeconds = 1800; });
+  assert.ok(f.checked.budgetReceipt.runBudgetSeconds <= 1795);
+  assert.ok(f.checked.budgetReceipt.runBudgetSeconds >= 1790);
+});
+
 test("startup revalidation preserves the original budget receipt identity", t => {
   const f = budgetFixture(t);
   const again = assertProviderStartup(f.options);
@@ -60,7 +80,7 @@ test("startup revalidation preserves the original budget receipt identity", t =>
   assert.strictEqual(again.budgetReceipt, f.checked.budgetReceipt);
 });
 
-for (const [label, edit] of Object.entries({ over900: f => { f.packet.contract.budgets.maxDurationSeconds = 901; },
+for (const [label, edit] of Object.entries({ over1800: f => { f.packet.contract.budgets.maxDurationSeconds = 1801; },
   retryTask: f => { f.packet.contract.budgets.maxAttempts = 2; }, resume: f => { f.claimed.codexThreadId = "old-session"; },
   checkpoint: f => { f.claimed.checkpoint = { stage: "prepared" }; }, ultra: f => { f.packet.contract.modelSelection.reasoningEffort = "ultra"; } })) {
   test(`${label} is denied before startup`, t => assert.throws(() => budgetFixture(t, edit)));

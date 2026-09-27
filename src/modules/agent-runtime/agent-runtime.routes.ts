@@ -418,9 +418,21 @@ agentRuntimeRouter.get("/recovery", asyncHandler(async (req, res) => {
   // A terminal pre-spawn attempt can leave a local lock if its failure reply
   // was uncertain. Expose only exact checkpoint identity for bounded recovery.
   const terminalPreSpawn = await prisma.agentExecution.findMany({ where: { workspaceId: req.auth!.workspaceId, agentHostId: host.id, status: { in: ["failed", "cancelled"] }, completedAt: { not: null }, leaseExpiresAt: null },
-    select: { id: true, workspaceId: true, taskId: true, applicationId: true, agentHostId: true, status: true, attempt: true, checkpoint: true, checkpointVersion: true, completedAt: true, leaseExpiresAt: true },
+    select: { id: true, workspaceId: true, taskId: true, applicationId: true, agentHostId: true, status: true, attempt: true, checkpoint: true, checkpointVersion: true, completedAt: true, leaseExpiresAt: true,
+      errorState: true, codexThreadId: true, finalResponse: true, changedFiles: true },
     take: 20, orderBy: { completedAt: "desc" } });
-  res.json({ data: { executionEnabled: executionEnabled(), executions: executions.map(({ leaseToken: _leaseToken, ...execution }) => execution), terminalPreSpawn: terminalPreSpawn.filter(item => ["claimed", "branch_intent", "branch_ready", "prepared"].includes((item.checkpoint as any)?.stage)) } });
+  const recoverable = terminalPreSpawn.filter(item => {
+    const stage = (item.checkpoint as any)?.stage;
+    if (["claimed", "branch_intent", "branch_ready", "prepared"].includes(stage)) return true;
+    const error = item.errorState as any;
+    // The managed evidence request precedes provider launch. A terminal error
+    // at this exact phase can be reconciled only when no model result exists.
+    return stage === "spawn_intent" && error?.code === "managed_admission_blocked"
+      && error?.details?.phase === "backend_evidence_request" && error?.details?.reason === "roost_http_409"
+      && error?.details?.status === 409 && item.codexThreadId === null && item.finalResponse === null
+      && Array.isArray(item.changedFiles) && item.changedFiles.length === 0;
+  });
+  res.json({ data: { executionEnabled: executionEnabled(), executions: executions.map(({ leaseToken: _leaseToken, ...execution }) => execution), terminalPreSpawn: recoverable } });
 }));
 
 agentRuntimeRouter.post("/executions/:id/checkpoint", asyncHandler(async (req, res) => {

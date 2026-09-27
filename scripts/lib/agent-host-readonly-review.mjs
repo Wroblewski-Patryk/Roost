@@ -17,7 +17,7 @@ async function readmeDigest(repositoryPath) {
     return sha(bytes);
   } catch { fail(); }
 }
-const clean = evidence => evidence?.status === "" && Array.isArray(evidence.manifest) && evidence.manifest.length === 0
+const clean = evidence => Array.isArray(evidence?.status) && evidence.status.length === 0
   && Array.isArray(evidence.patches) && evidence.patches.length === 2
   && evidence.patches.every(p => (p.kind === "index" || p.kind === "worktree") && p.bytes === 0 && p.sha256 === sha(""))
   && evidence.patches[0].kind !== evidence.patches[1].kind;

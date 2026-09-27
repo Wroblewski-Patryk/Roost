@@ -3567,6 +3567,24 @@ test("local Codex Agent Host claims scoped work and reports owner-visible eviden
   assert.equal(recoveryRead.status, 200);
   assert.deepEqual((recoveryRead.body as any).data.terminalPreSpawn.map((item: { id: string }) => item.id), [terminalPreSpawn.id]);
   assert.equal(JSON.stringify(recoveryRead.body).includes("leaseToken"), false);
+  const admissionFailure = await prisma.agentExecution.create({ data: { workspaceId: owner.workspace.id, taskId: task.id,
+    applicationId: application.id, agentHostId: originalHost.id, requestedByType: "user", status: "failed", attempt: 1,
+    completedAt: new Date(), checkpointVersion: 3, checkpoint: { schemaVersion: "roost-recovery-v1", stage: "spawn_intent",
+      sessionId: randomUUID(), packetRevision: "revision", workspaceDigest: "digest" },
+    errorState: { code: "managed_admission_blocked", retryable: false,
+      details: { phase: "backend_evidence_request", reason: "roost_http_409", status: 409 } } } });
+  const unsafeSpawn = await prisma.agentExecution.create({ data: { workspaceId: owner.workspace.id, taskId: task.id,
+    applicationId: application.id, agentHostId: originalHost.id, requestedByType: "user", status: "failed", attempt: 1,
+    completedAt: new Date(), checkpointVersion: 3, checkpoint: { schemaVersion: "roost-recovery-v1", stage: "spawn_intent",
+      sessionId: randomUUID(), packetRevision: "revision", workspaceDigest: "digest" },
+    errorState: { code: "managed_admission_blocked", retryable: false,
+      details: { phase: "decision_request", reason: "roost_http_409", status: 409 } } } });
+  const admissionRecovery = await request("/v1/agent-runtime/recovery?hostSlug=test-windows", { headers: workerAuth });
+  assert.equal(admissionRecovery.status, 200);
+  const recoverableIds = (admissionRecovery.body as any).data.terminalPreSpawn.map((item: { id: string }) => item.id);
+  assert.ok(recoverableIds.includes(admissionFailure.id));
+  assert.ok(recoverableIds.includes(terminalPreSpawn.id));
+  assert.ok(!recoverableIds.includes(unsafeSpawn.id));
 
   const packetRoute = `/v1/company-intelligence/tasks/${task.id}/agent-context?executionId=${queued.id}`;
   assert.equal((await request(packetRoute)).status, 401);

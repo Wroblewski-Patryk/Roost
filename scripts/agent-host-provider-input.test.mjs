@@ -58,6 +58,25 @@ test("verifier consumption retains the pinned prior audit in the sealed input", 
   assert.equal(consumeProviderInput(envelope, options(f)).input, providerInputTransport("hermes_codex", envelope).input);
 });
 
+test("read-only source regex syntax is not mistaken for a private UNC path", () => {
+  const f = validPacketFixture();
+  f.packet.contract.nativeBoundary = { profile: "inspect-readonly", readPaths: ["scripts/resolver.mjs"],
+    runtime: { required: false, ports: [] }, inspectReadOnly: { kind: "auditor" } };
+  f.packet.contract.access = { ...f.packet.contract.access, tools: ["repository_read"],
+    permissions: ["repository_read"], sandbox: "read-only" };
+  f.packet.procedureComposition.fields.tools = ["repository_read"];
+  pinReadyFixture(f);
+  const repositoryEvidence = { schemaVersion: "roost-readonly-repository-evidence-v1",
+    head: "a".repeat(40), branch: f.packet.contract.singleTask.branch,
+    files: [{ path: "scripts/resolver.mjs", mimeType: "text/plain",
+      content: String.raw`relativePath.split(/[\\/]/).includes('..')`, sha256: "c".repeat(64) }],
+    tree: "d".repeat(64), processDigest: "e".repeat(64), dockerDigest: "f".repeat(64), digest: "1".repeat(64) };
+  const envelope = prepareProviderInput({ ...options(f), repositoryEvidence });
+  assert.equal(envelope.evidence.repositoryInspection.value.files[0].content, repositoryEvidence.files[0].content);
+  repositoryEvidence.files[0].content = String.raw`\\private-server\private-share\file`;
+  assert.throws(() => prepareProviderInput({ ...options(f), repositoryEvidence }), /agent_provider_input_blocked/);
+});
+
 for (const [name, change] of Object.entries({
   missingObjective: f => delete f.packet.contract.objective,
   missingReady: f => delete f.taskContext.readyAdmission,

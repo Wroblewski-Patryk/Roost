@@ -147,6 +147,8 @@ test("local finalizer commits exact observed bytes under a writer lock", { timeo
     writeFileSync(path.join(repo, "src", "pilot.txt"), "candidate\n");
     const workspaceEvidence = await collectWorkspaceEvidence({ repositoryPath: repo, expectedHead: baselineCommit,
       expectedBranch: branch, inputSeal: "a".repeat(64) });
+    assert.deepEqual(workspaceEvidence.status, [" M src/pilot.txt"]);
+    assert.equal(JSON.stringify(workspaceEvidence).includes("\\u0000"), false);
     assert.equal(workspaceEvidence.manifest[0].working.sha256, digest(readFileSync(path.join(repo, "src", "pilot.txt"))));
     lock = await acquireWriterLock(state);
     const receipt = finalizeLocalCommit({ repositoryPath: repo, writerLock: lock, executionId: randomUUID(),

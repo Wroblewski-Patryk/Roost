@@ -128,9 +128,12 @@ function seal(fresh, claimed, secrets, repositoryEvidence, priorAudit) {
   guardHostContent(body, "required", [claimed.leaseToken, ...secrets].filter(Boolean));
   // Private local paths are never prompt context. Relative repository paths and
   // canonical HTTPS origins remain evidence, not transport configuration.
-  const visit = value => {
-    if (typeof value === "string" && /(?:(?:^|[^a-z0-9])[a-z]:[\\/]|\\\\[^\\\s]+[\\/]|file:\/\/|(?:^|[\s"'])\/(?:home|Users|tmp|var|etc|mnt|Volumes|root|srv|opt|run)\/)/i.test(value)) throw blocked("private_path");
-    if (value && typeof value === "object") Object.values(value).forEach(visit);
+  const visit = (value, field = "input") => {
+    if (typeof value === "string" && /(?:(?:^|[^a-z0-9])[a-z]:[\\/]|\\\\[A-Za-z0-9][A-Za-z0-9._-]{0,63}[\\/][A-Za-z0-9]|file:\/\/|(?:^|[\s"'])\/(?:home|Users|tmp|var|etc|mnt|Volumes|root|srv|opt|run)\/)/i.test(value)) throw blocked("private_path", { field });
+    if (value && typeof value === "object") for (const [key, item] of Object.entries(value)) {
+      const safeKey = /^[A-Za-z][A-Za-z0-9_]{0,40}$/.test(key) ? key : Array.isArray(value) ? "item" : "field";
+      visit(item, `${field}.${safeKey}`.slice(0, 160));
+    }
   };
   visit(body);
   const envelope = { ...body, seal: digest(body) };
@@ -176,7 +179,13 @@ export function prepareProviderInput({ fresh, claimed, currentCommit, assertAuth
     return envelope;
   } catch (error) { if (error.message === "agent_provider_input_blocked" && error.contextAdmission) throw error;
     if (error.redaction || error.readyAdmission || error.leaseLost || error.durationLimit || error.outputLimit || error.contextStop || error.protocolAdmission) throw error;
-    throw blocked("provider_input_invalid", { stage }); }
+    const site = stage === "native_boundary" ? String(error?.stack ?? "").match(/agent-host-([a-z-]+)\.mjs:(\d{1,4}):\d{1,4}/) : null;
+    const safeCause = stage === "native_boundary" ? {
+      causeType: ["Error", "TypeError", "ReferenceError", "RangeError"].includes(error?.name) ? error.name : "other",
+      ...(site ? { causeSite: `${site[1]}:${site[2]}` } : {}),
+      ...(/^[a-z][a-z0-9_]{2,80}$/.test(error?.message ?? "") ? { causeCode: error.message } : {})
+    } : {};
+    throw blocked("provider_input_invalid", { stage, ...safeCause }); }
 }
 
 // Local profile authority is tied to the same validated Ready/input object, not

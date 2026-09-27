@@ -46,7 +46,7 @@ export function finalizeLocalCommit({ repositoryPath, writerLock, executionId, t
         if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1 || h(readFileSync(target)) !== row.working.sha256) fail();
       } else if (!rows.find(item => item.file === file)?.code.includes("D")) fail();
     }
-    if (workspaceEvidence.status !== rows.map(row => `${row.code} ${row.file}`).join("\0") + "\0") fail();
+    if (JSON.stringify(workspaceEvidence.status) !== JSON.stringify(rows.map(row => `${row.code} ${row.file}`))) fail();
     // Stage individual observed files only; never hand Git a directory.
     git(repositoryPath, ["add", "--", ...paths]);
     const staged = git(repositoryPath, ["diff", "--cached", "--name-only", "-z", "--no-renames"]).toString("utf8")

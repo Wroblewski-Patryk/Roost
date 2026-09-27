@@ -60,6 +60,26 @@ test("a terminal pre-spawn attempt releases only its exact dead-owner lock", { s
   await next.release();
 });
 
+test("terminal managed evidence rejection reclaims only the proven pre-model spawn intent", { skip: process.platform !== "win32" }, async t => {
+  const directory = await fixture(t);
+  const candidate = { id: "00000000-0000-4000-8000-000000000011", workspaceId: "00000000-0000-4000-8000-000000000012",
+    taskId: "00000000-0000-4000-8000-000000000013", applicationId: "00000000-0000-4000-8000-000000000014",
+    agentHostId: "00000000-0000-4000-8000-000000000015", status: "failed", attempt: 1, checkpointVersion: 3,
+    leaseExpiresAt: null, completedAt: new Date().toISOString(), codexThreadId: null, finalResponse: null, changedFiles: [],
+    errorState: { code: "managed_admission_blocked", details: { phase: "backend_evidence_request", reason: "roost_http_409", status: 409 } },
+    checkpoint: { schemaVersion: "roost-recovery-v1", stage: "spawn_intent", sessionId: null,
+      packetRevision: "revision", workspaceDigest: "digest", contextRevision: "context" } };
+  const script = `import { acquireWriterLock } from './scripts/lib/agent-host-writer-lock.mjs'; const lock=await acquireWriterLock(${JSON.stringify(directory)}); await lock.checkpoint({...${JSON.stringify(candidate)},checkpoint:{...${JSON.stringify(candidate.checkpoint)},sessionId:lock.sessionId}});`;
+  const child = spawn(process.execPath, ["--input-type=module", "-e", script], { windowsHide: true, stdio: "ignore" });
+  assert.equal((await once(child, "close"))[0], 0);
+  candidate.checkpoint.sessionId = JSON.parse(await readFile(path.join(directory, writerLockFilename), "utf8")).checkpoint.sessionId;
+  await assert.rejects(acquireWriterLock(directory, { terminalCandidates: [{ ...candidate,
+    errorState: { ...candidate.errorState, details: { ...candidate.errorState.details, phase: "decision_request" } } }] }), /agent_host_writer_locked/);
+  await assert.rejects(acquireWriterLock(directory, { terminalCandidates: [{ ...candidate, changedFiles: ["src/app.ts"] }] }), /agent_host_writer_locked/);
+  const next = await acquireWriterLock(directory, { terminalCandidates: [candidate] });
+  await next.release();
+});
+
 test("release does not delete a lock whose ownership changed", async (t) => {
   const directory = await fixture(t);
   const lock = await acquireWriterLock(directory);

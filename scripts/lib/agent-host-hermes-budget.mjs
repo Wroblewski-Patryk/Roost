@@ -24,12 +24,20 @@ export function sealHermesBudget({ envelope, claimed, inputBytes, cleanupMarginM
   const seconds = envelope.contract.budgets.maxDurationSeconds, started = Date.parse(claimed.startedAt), at = Date.now();
   const selection = envelope.contract.modelSelection;
   const effort = selection?.schemaVersion === managedBackendVersion ? selection.modelSelection?.reasoningEffort : selection?.reasoningEffort;
+  const checkpoint = claimed.checkpoint;
+  const checkpointReady = !checkpoint || checkpoint.stage === "claimed" || (["branch_ready", "prepared"].includes(checkpoint.stage)
+    && checkpoint.packetRevision === envelope.revisions.packet
+    && checkpoint.contextRevision === envelope.revisions.context
+    && /^[a-f0-9]{64}$/.test(checkpoint.workspaceDigest ?? "")
+    && (envelope.contract.nativeBoundary?.profile === "coding-local"
+      ? checkpoint.branch === envelope.contract.singleTask.branch && /^[a-f0-9]{40}$/.test(checkpoint.headCommit ?? "")
+      : checkpoint.branch === undefined && checkpoint.headCommit === undefined));
   if (selection?.schemaVersion === managedBackendVersion && (selection.backend !== "codex_responses"
       || selection.riskClass !== "low" || selection.attemptPolicy?.apiMaxRetries !== 2)) fail("hermes_attempt_budget_invalid");
   if (claimed.id !== envelope.identity.executionId || claimed.taskId !== envelope.identity.taskId
       || claimed.attempt !== 1 || envelope.identity.attempt !== 1 || envelope.contract.budgets.maxAttempts !== 1
-      || claimed.codexThreadId || (claimed.checkpoint && claimed.checkpoint.stage !== "claimed")
-      || !Number.isInteger(seconds) || seconds < 60 || seconds > 900
+      || claimed.codexThreadId || !checkpointReady
+      || !Number.isInteger(seconds) || seconds < 60 || seconds > 1800
       || !Number.isFinite(started) || started > at || cleanupMarginMs !== durationStopMarginMs || cleanupMarginMs < 5000
       || !Number.isInteger(inputBytes) || inputBytes < 1 || inputBytes > 131072
       || effort === "ultra") fail("hermes_attempt_budget_invalid");
@@ -64,7 +72,7 @@ export const hermesBudgetReceiptSchema = z.object({
   readyRevision: digest, inputSeal: digest, startupReceiptDigest: digest, configDigest: digest,
   maxTurns: z.number().int().min(1).max(24), apiMaxRetries: z.literal(2), maxAttempts: z.literal(1), wholeTaskRetries: z.literal(0),
   acceptedDeadline: z.string().datetime(), cleanupMarginMs: z.literal(5000),
-  runBudgetSeconds: z.number().int().min(1).max(895), runBudgetEnforcement: z.literal("advisory_worker_deadline_authoritative"),
+  runBudgetSeconds: z.number().int().min(1).max(1795), runBudgetEnforcement: z.literal("advisory_worker_deadline_authoritative"),
   inputBytes: z.number().int().min(1).max(131072), inputByteCap: z.literal(131072), inputByteCapScope: z.literal("initial_sealed_input_only"),
   maxOutputTokensIntent: z.number().int().positive(), outputTokenEnforcement: z.literal("unavailable"), costEnforcement: z.literal("unavailable"),
   model: z.string(), reasoning: z.string(), toolsets: z.array(z.enum(["file", "terminal", "bot_room"])).min(1).max(2),
