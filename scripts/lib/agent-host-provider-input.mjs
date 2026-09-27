@@ -163,7 +163,7 @@ export function prepareProviderInput({ fresh, claimed, currentCommit, assertAuth
       ? sealHermesStartup({ provider, envelope, repositoryPath, budget, candidate: startupCandidate ?? createHermesStartupCandidate({
         provider, envelope, repositoryPath, budget, environment: startupEnvironment }) }) : undefined;
     assertAuthority();
-    issued.set(envelope, { consumed: false, profile, startup, budget, repositoryEvidence });
+    issued.set(envelope, { consumed: false, profile, startup, budget, repositoryEvidence, priorAudit });
     if (provider?.kind === "hermes_codex" && provider.profile?.schemaVersion === hermesNativeProfileVersion) {
       stage = "native_boundary";
       const checked = assertProviderStartup({ envelope, provider, repositoryPath, startupEnvironment, startupCandidate });
@@ -227,7 +227,7 @@ export function consumeProviderInput(envelope, { fresh, claimed, currentCommit, 
     if (state.budget) assertHermesBudget(state.budget, envelope, claimed);
     assertAuthority(); validate(fresh, claimed, currentCommit, secrets);
     assertFreshExecutionContext(envelope.revisions.context, fresh, claimed);
-    if (seal(fresh, claimed, secrets, state.repositoryEvidence).seal !== envelope.seal) throw blocked();
+    if (seal(fresh, claimed, secrets, state.repositoryEvidence, state.priorAudit).seal !== envelope.seal) throw blocked();
     assertAuthority();
     return providerInputTransport("direct_codex", envelope);
   } catch (error) { if (error.redaction || error.readyAdmission || error.leaseLost || error.durationLimit || error.outputLimit || error.contextStop || error.protocolAdmission) throw error; throw blocked(); }

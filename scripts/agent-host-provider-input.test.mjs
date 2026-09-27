@@ -31,6 +31,33 @@ test("same canonical input for both providers, stable seal, exact model and no b
   assert.throws(() => consumeProviderInput(envelope, options(f)), /agent_provider_input_blocked/);
 });
 
+test("verifier consumption retains the pinned prior audit in the sealed input", () => {
+  const f = validPacketFixture();
+  f.packet.contract.nativeBoundary = { profile: "inspect-readonly", readPaths: ["scripts/guard.mjs"],
+    runtime: { required: false, ports: [] }, inspectReadOnly: { kind: "verifier",
+      verifiedExecutionId: "00000000-0000-4000-8000-000000000099", verifiedEvidenceDigest: "b".repeat(64) } };
+  f.packet.contract.access = { ...f.packet.contract.access, tools: ["repository_read"],
+    permissions: ["repository_read"], sandbox: "read-only" };
+  f.packet.procedureComposition.fields.tools = ["repository_read"];
+  pinReadyFixture(f);
+  const repositoryEvidence = { schemaVersion: "roost-readonly-repository-evidence-v1",
+    head: "a".repeat(40), branch: f.packet.contract.singleTask.branch,
+    files: [{ path: "scripts/guard.mjs", mimeType: "text/plain", content: "export const ok = true;",
+      sha256: "c".repeat(64) }], tree: "d".repeat(64), processDigest: "e".repeat(64),
+    dockerDigest: "f".repeat(64), digest: "1".repeat(64) };
+  const priorAudit = { schemaVersion: "roost-prior-readonly-audit-v1",
+    executionId: f.packet.contract.nativeBoundary.inspectReadOnly.verifiedExecutionId,
+    taskId: "00000000-0000-4000-8000-000000000098", auditorAgentId: "00000000-0000-4000-8000-000000000097",
+    completedAt: "2026-09-27T14:08:23.057Z", branch: repositoryEvidence.branch,
+    commit: repositoryEvidence.head, receipt: { evidenceDigest: "b".repeat(64), digest: "2".repeat(64),
+      preTree: repositoryEvidence.tree, postTree: repositoryEvidence.tree, verdict: "verified" },
+    finalResponse: "The prior auditor found a bounded defect.", digest: "3".repeat(64) };
+  const envelope = prepareProviderInput({ ...options(f), repositoryEvidence, priorAudit });
+  assert.deepEqual(envelope.evidence.priorAudit.value, priorAudit);
+  checkpoint(f, envelope);
+  assert.equal(consumeProviderInput(envelope, options(f)).input, providerInputTransport("hermes_codex", envelope).input);
+});
+
 for (const [name, change] of Object.entries({
   missingObjective: f => delete f.packet.contract.objective,
   missingReady: f => delete f.taskContext.readyAdmission,
