@@ -135,21 +135,27 @@ function seal(fresh, claimed, secrets, repositoryEvidence) {
 // the authority callback. Existing lease/writer/Ready/checkpoint own authority.
 /** @returns {ProviderInput} */
 export function prepareProviderInput({ fresh, claimed, currentCommit, assertAuthority, secrets = [], provider, repositoryPath, hermesAuthReceipt, startupEnvironment, startupCandidate, nativeBoundaryOptions, repositoryEvidence }) {
+  let stage = "validate";
   try {
     assertAuthority(); validate(fresh, claimed, currentCommit, secrets);
     if (fresh.taskContext.executionPacket.contract.nativeBoundary?.profile === "inspect-readonly" ? !repositoryEvidence : Boolean(repositoryEvidence)) throw blocked();
+    stage = "seal";
     const envelope = seal(fresh, claimed, secrets, repositoryEvidence);
     assertAuthority();
+    stage = "profile";
     const profile = provider?.kind === "hermes_codex" ? sealHermesProfile(provider.profile,
       { repositoryPath, readyRevision: envelope.revisions.ready, authReceipt: hermesAuthReceipt }) : undefined;
+    stage = "budget";
     const budget = provider?.kind === "hermes_codex" && [hermesBudgetProfileVersion, hermesNativeProfileVersion].includes(provider.profile?.schemaVersion)
       ? sealHermesBudget({ envelope, claimed, inputBytes: Buffer.byteLength(serialize(envelope)) }) : undefined;
+    stage = "startup";
     const startup = provider?.kind === "hermes_codex" && [hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion].includes(provider.profile?.schemaVersion)
       ? sealHermesStartup({ provider, envelope, repositoryPath, budget, candidate: startupCandidate ?? createHermesStartupCandidate({
         provider, envelope, repositoryPath, budget, environment: startupEnvironment }) }) : undefined;
     assertAuthority();
     issued.set(envelope, { consumed: false, profile, startup, budget, repositoryEvidence });
     if (provider?.kind === "hermes_codex" && provider.profile?.schemaVersion === hermesNativeProfileVersion) {
+      stage = "native_boundary";
       const checked = assertProviderStartup({ envelope, provider, repositoryPath, startupEnvironment, startupCandidate });
       if (envelope.contract.nativeBoundary?.profile === "inspect-readonly") {
         issued.get(envelope).readonly = sealReadOnlyBoundary({ ...nativeBoundaryOptions, envelope, provider, repositoryPath,
@@ -158,7 +164,9 @@ export function prepareProviderInput({ fresh, claimed, currentCommit, assertAuth
         startupReceipt: checked.receipt, budgetReceipt: checked.budgetReceipt });
     }
     return envelope;
-  } catch (error) { if (error.redaction || error.readyAdmission || error.leaseLost || error.durationLimit || error.outputLimit || error.contextStop || error.protocolAdmission) throw error; throw blocked(); }
+  } catch (error) { if (error.message === "agent_provider_input_blocked" && error.contextAdmission) throw error;
+    if (error.redaction || error.readyAdmission || error.leaseLost || error.durationLimit || error.outputLimit || error.contextStop || error.protocolAdmission) throw error;
+    throw blocked("provider_input_invalid", { stage }); }
 }
 
 // Local profile authority is tied to the same validated Ready/input object, not
