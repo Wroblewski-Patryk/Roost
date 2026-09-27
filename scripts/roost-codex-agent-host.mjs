@@ -319,10 +319,15 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
           assertTaskBranch(actualBranch, taskContract.singleTask.branch);
           if (digest !== resumeCheckpoint.workspaceDigest) throw recoveryError("workspace_changed");
         }
-      } else if (actualBranch !== repository.baseBranch || claimed.checkpoint?.stage !== "claimed") throw recoveryError("repository_mismatch");
+      } else if (![repository.baseBranch, taskContract.singleTask.branch].includes(actualBranch)
+          || claimed.checkpoint?.stage !== "claimed") throw recoveryError("repository_mismatch");
       firstWrite = await duration.wait(requestFirstWriteAdmission({ api, claimed, writerLock, repositoryPath,
         provider: config.executionProvider, contract: taskContract, baselineCommit: preparedCommit,
         assertAuthority: assertProviderAuthority }));
+      if (actualBranch === repository.baseBranch && firstWrite.continuation
+          || actualBranch === taskContract.singleTask.branch && (!firstWrite.continuation && !resumeCheckpoint
+            || firstWrite.continuation && firstWrite.continuation.previousCommit !== preparedCommit))
+        throw recoveryError("repository_mismatch");
       if (actualBranch === repository.baseBranch) {
         if (claimed.checkpoint.stage === "claimed") await duration.wait(checkpoint("branch_intent", taskContext.executionPacket.revision, digest));
         else if (claimed.checkpoint.stage !== "branch_intent") throw recoveryError("checkpoint_mismatch");
@@ -335,6 +340,11 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
         if (await duration.wait(readTaskCommit(repositoryPath)) !== preparedCommit
             || (await duration.wait(gitStatus(repositoryPath))).length) throw recoveryError("workspace_changed");
         digest = await duration.wait(workspaceDigest(repositoryPath));
+        await duration.wait(checkpoint("branch_ready", taskContext.executionPacket.revision, digest));
+      } else if (claimed.checkpoint.stage === "claimed") {
+        // A reviewer-returned correction starts on the same clean task branch.
+        // Record both durable boundaries even though no branch switch is needed.
+        await duration.wait(checkpoint("branch_intent", taskContext.executionPacket.revision, digest));
         await duration.wait(checkpoint("branch_ready", taskContext.executionPacket.revision, digest));
       } else if (claimed.checkpoint.stage === "branch_intent") {
         // Interrupted after branch switch but before the branch_ready checkpoint.

@@ -17,14 +17,18 @@ export const managedAdmissionVersion = "roost-managed-admission-v1";
 const signed = schema => z.object({ payload: schema, signature: z.string().regex(/^[a-f0-9]{128}$/) }).strict();
 const response = (phase, schema) => z.object({ schemaVersion: z.literal(managedAdmissionVersion), phase: z.literal(phase), signed: signed(schema),
   ...(phase === "decision" ? { firstWrite: z.object({ decisionId: z.string().uuid(), baselineCommit: z.string().regex(/^[a-f0-9]{40}$/),
-    branch: z.string().min(1).max(200), operations: z.object({ localCommit: z.literal(true) }).strict() }).strict().optional() } : {}) }).strict();
+    branch: z.string().min(1).max(200), operations: z.object({ localCommit: z.literal(true) }).strict(),
+    continuation: z.object({ reviewId: z.string().uuid(), previousExecutionId: z.string().uuid(),
+      previousCommit: z.string().regex(/^[a-f0-9]{40}$/) }).strict().optional() }).strict().optional() } : {}) }).strict();
 const same = (a, b) => trustedPilotBytes(a).equals(trustedPilotBytes(b));
 const grants = new WeakMap();
 const firstWriteSchema = z.object({ schemaVersion: z.literal("roost-first-write-admission-v1"),
   executionId: z.string().uuid(), workspaceId: z.string().uuid(), taskId: z.string().uuid(), applicationId: z.string().uuid(),
   installationId: z.string().uuid(), issuedAt: z.string().datetime(), expiresAt: z.string().datetime(),
   decisionId: z.string().uuid(), baselineCommit: z.string().regex(/^[a-f0-9]{40}$/), branch: z.string().min(1).max(200),
-  operations: z.object({ localCommit: z.literal(true) }).strict() }).strict();
+  operations: z.object({ localCommit: z.literal(true) }).strict(),
+  continuation: z.object({ reviewId: z.string().uuid(), previousExecutionId: z.string().uuid(),
+    previousCommit: z.string().regex(/^[a-f0-9]{40}$/) }).strict().optional() }).strict();
 function fail(phase, status, reason) { throw Object.assign(new Error("managed_admission_blocked"), { protocolAdmission: true, retryable: false,
   outcome: "policy_blocked", publicMessage: "Managed launch evidence is missing, changed or not signed for this attempt.",
   ...(phase ? { details: { phase, ...(Number.isInteger(status) ? { status } : {}),
@@ -60,7 +64,8 @@ export async function requestFirstWriteAdmission({ api, claimed, writerLock, rep
         || result.taskId !== claimed.taskId || result.applicationId !== claimed.applicationId
         || result.installationId !== installed.installation.id || result.baselineCommit !== baselineCommit
         || result.branch !== contract.singleTask.branch || Date.parse(result.issuedAt) > now
-        || Date.parse(result.expiresAt) <= now || Date.parse(result.expiresAt) - Date.parse(result.issuedAt) > 300000) fail();
+        || Date.parse(result.expiresAt) <= now || Date.parse(result.expiresAt) - Date.parse(result.issuedAt) > 300000
+        || result.continuation && result.continuation.previousCommit !== baselineCommit) fail();
     return Object.freeze(result);
   } catch (error) { fail("first_write", error?.status, error?.message); }
 }

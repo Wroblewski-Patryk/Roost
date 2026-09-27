@@ -91,8 +91,31 @@ export async function firstWriteGate(db: Prisma.TransactionClient, workspaceId: 
       ===auditContract(verifier)?.assignment?.agentId
     || receipt(verifier)?.verifiedExecutionId!==auditor.id
     || receipt(verifier)?.verifiedEvidenceDigest!==approval.auditorEvidenceDigest) fail();
-  return { decisionId: rows[0].id, baselineCommit: approval.baselineCommit, branch: approval.branch,
-    operations: approval.operations };
+  const currentCommit = pin.riskAdmissionCommit;
+  if (!hex40.test(currentCommit ?? '')) fail();
+  let continuation: { reviewId: string; previousExecutionId: string; previousCommit: string } | undefined;
+  if (currentCommit !== approval.baselineCommit) {
+    // A later write uses the owner's original one-time approval only after a
+    // separate reviewer rejected the exact preceding commit and the manager
+    // returned bounded correction work to this executor. The risk admission
+    // must pin that same clean commit before a new Worker launch.
+    const latest = await db.taskReviewDecision.findFirst({ where: { workspaceId, taskId: execution.taskId },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], include: { action: true, execution: true } });
+    const prior = latest?.execution, revision = obj(prior?.metadata).resultRevision,
+      localCommit = obj(prior?.verification).localCommit;
+    if (latest?.decision !== 'reject' || latest.action?.action !== 'return_to_executor'
+      || latest.action?.childTaskId || !prior || prior.status !== 'completed'
+      || prior.contextInvalidatedAt || prior.agentHostId !== execution.agentHostId
+      || prior.taskId !== execution.taskId || prior.applicationId !== execution.applicationId
+      || revision.commit !== currentCommit || revision.branch !== approval.branch
+      || revision.workingTree !== 'clean' || localCommit.commit !== currentCommit
+      || localCommit.branch !== approval.branch || localCommit.decisionId !== rows[0].id
+      || localCommit.taskId !== execution.taskId || localCommit.executionId !== prior.id
+      || !hex40.test(localCommit.baselineCommit ?? '')) fail();
+    continuation = { reviewId: latest.id, previousExecutionId: prior.id, previousCommit: currentCommit };
+  }
+  return { decisionId: rows[0].id, baselineCommit: currentCommit, branch: approval.branch,
+    operations: approval.operations, ...(continuation ? { continuation } : {}) };
 }
 
 export type ManagedAdmissionSigner = { publicKey: string; sign(bytes: Buffer): Buffer };
