@@ -300,6 +300,10 @@ The first delivery proof is a low-risk DemoApp repair under a separate task cont
   reliably. Native mobile is deferred until that proof exists. Company City and
   gamification are not accepted roadmap assumptions and require a fresh owner
   decision before they may re-enter product planning.
+- Future mobile direction: the mobile application uses the same Roost backend,
+  authorization rules and canonical company records as the web client. Its
+  initial workflows, platform coverage and distribution are defined when that
+  later phase opens; it does not create a second operating source of truth.
 - Shared-capability policy: internal and customer-facing uses should reuse the
   same canonical capability and record model whenever their behavior is the
   same; context and relationships distinguish the use case.

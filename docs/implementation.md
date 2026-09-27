@@ -176,11 +176,18 @@ consent explicitly required by `product/requirements.md` remain binding.
 ### Gate 5 — reusable company operation
 
 The same mechanism can onboard another configured application without changing
-the core runtime. Remaining accepted requirements are reconciled against real
-operation: organization and competencies, procedures and goals, attention and
+the core runtime. Accepted requirements applicable to internal application
+delivery are reconciled against real operation: organization and competencies,
+procedures and goals, attention and
 Decision UX, localization/time, recovery, resources, security, monitoring,
 release and continuous improvement. A requirement is complete only with the
 runtime evidence defined in the traceability matrix.
+
+This gate proves reusable internal application development. Commercial sales,
+customer-service delivery, native mobile and other explicitly deferred product
+directions remain later phases. Reconciling a requirement means recording its
+evidence and applicability; it does not make every accepted future requirement
+an immediate implementation dependency or mark it complete.
 
 ## What is not a blocker
 
@@ -220,3 +227,160 @@ the native or production proof required by the gate.
 
 Update this document in place as gates advance. Do not create a new versioned
 plan or a new "next atom" document. Git history is the implementation history.
+
+## Planning and execution handoff
+
+The planning conversation prepares gates and reviews evidence. Each execution
+conversation implements one authorized gate. Owner-requested planning of later
+gates does not authorize their execution or expand an active assignment.
+
+Keep product decisions in the existing product chapters and requirement IDs,
+delivery scope and acceptance here, evidence in the traceability matrix and
+technical records, and unresolved business choices in `planning/open-decisions.md`.
+Conversation history is supporting context, never the required handoff source.
+
+Batch new requirements for the next handoff; interrupt active work only for
+STOP, safety or material scope correction. Preserve verified-state sections.
+Before assigning a gate, reconcile its prerequisites against the previous
+result and current repository. Planning alone never advances runtime status.
+
+### Assignment contents
+
+Prepare one outcome-sized assignment from the selected gate below. It contains:
+
+- the gate, expected user-visible result, prerequisite evidence and relevant
+  requirement IDs;
+- the inspected existing implementation to reuse, missing behavior to build,
+  installation configuration to apply and the proof needed for each;
+- the scoped API/MCP, web and Worker surfaces, allowed local/VPS operations,
+  credential availability, resource constraints and required owner approvals;
+- observable success and failure cases, evidence locations and completion
+  checks;
+- one implementation owner, permitted bounded delegation, commit/push/deploy
+  authority, current resource/usage budget and a mandatory stop after the gate.
+
+Inspect code/configuration for the selected gate. Reuse adequate existing
+dependencies; justify additions by missing behavior and maintenance/resource cost.
+
+### Execution brief for Gate 2 — accountable coding and review
+
+**Entry:** verified Gate 1 run and compatible runtime/configuration identities.
+Primary requirements: RF-CTX-001 through RF-CTX-026, applicable RF-GOV and
+RF-ORG rules, RF-HOST-002 through RF-HOST-012, RF-REL-003, RF-REL-011,
+RF-ACT-002 and RF-ACT-005 through RF-ACT-008. Security, backup and resource
+requirements apply before the operations they protect.
+
+**Build and configure:** task readiness and pinned context, role/hierarchy and
+competence routing, procedure assignment, model/effort policy, canonical
+checkout and resource manifest, writer admission, checkpoints/resume,
+independent review and the owner's attention/decision/result views. Configure
+the actual roles and procedures needed for the proof; empty screens or example
+records do not satisfy the gate. Agents use the scoped MCP interface over the
+same authoritative API as the web console; no direct database bypass.
+
+**Proof:** demonstrate rejection of incomplete/out-of-scope work, one-writer
+enforcement, interruption and safe resume, review rejection and corrected
+resubmission, then independent acceptance of an exact reviewable commit. The
+owner can trace the assignment, responsible roles, tests, decisions and result
+in Roost without reconstructing terminal conversations. Read-only pilot audit
+and independent verifier precede the one-time first-write approval. Synthetic
+qualification may prepare the flow before that approval; it cannot replace the
+required native evidence. Application edits are performed by the managed
+runtime under its mandate, not directly by the bootstrap implementation agent.
+
+**Exit:** record accepted commit/run/context/configuration identities and
+recovery proof; stop before release certification. Any prerequisite safety
+control is implemented before use, even if its broader proof belongs to Gate 3.
+Gate 2 authorizes neither a pilot push/deploy nor the one-time first-write
+activation decision. After review, retain the pilot commit and branch as an
+explicit recoverable handoff for later release; never claim the change shipped.
+Bootstrap Roost/Worker commits and deployments follow the assignment's separate
+authority and do not themselves certify the managed Gate 3 release path.
+
+### Execution brief for Gate 3 — controlled release and recovery
+
+**Entry:** Gate 2 coding/review proof. Primary requirements: RF-REL-001 through
+RF-REL-018, RF-RES-001 through RF-RES-008, RF-ACT-003 and RF-ACT-004 and
+applicable security/compatibility rules.
+
+**Build and configure:** exact-commit release authority, free-account-compatible
+Git protection, Git/deployment mapping, service and health manifests, baseline,
+observation thresholds, backup/restore, compatible rollback artifacts and
+cleanup ownership. Configure real deployment behavior; a release status field
+alone is insufficient.
+
+**Proof:** certify the branch/commit/push/PR/review/merge/deploy/health path in
+the owner-provided temporary certification target, plus rejection of an
+unreviewed or changed commit and a controlled recovery/rollback scenario.
+Reconcile uncertain remote outcomes before retry. Verify deployed identity,
+data preservation and cleanup/archive of only certification-owned resources.
+Reuse any still-valid proof; request the temporary repository/folder/access
+only when needed. Never change repository visibility to obtain free features.
+
+**Exit:** release and recovery are proven with exact identities and observations;
+stop before the real application repair pilot.
+
+### Execution brief for Gate 4 — first real application repair
+
+**Entry:** Gates 1–3 evidence and the pilot's required activation approval.
+Primary requirements: RF-APP-003 through RF-APP-014, RF-ACT-005 through
+RF-ACT-009, RF-CTX-021/RF-CTX-022 and applicable RF-PILOT rules.
+
+**Build and configure:** reuse the pilot's assumptions, readiness records,
+application card, roles, procedure and health/release settings. Select a
+verified reversible low-risk non-financial defect and repair missing Roost
+support. Reuse still-valid Gate 2 coding evidence where it fits the chosen task.
+
+**Proof:** managed agents audit, plan, repair, review, release and verify the
+original reproduction; link requirement, task, review, commit, deployment and
+result. Direct bootstrap edits to the pilot cannot count as managed delivery.
+
+**Exit:** one real repair proven. This does not mean the entire pilot application
+is finished or sale-ready. Medium-risk access still requires the separate
+three-success rule; live-position tests retain their explicit consent rules.
+
+### Execution brief for Gate 5 — reusable internal application operation
+
+**Entry:** proven pilot repair. Primary requirements: RF-PROD-011/RF-PROD-012,
+RF-APP-001 through RF-APP-014, RF-ACT-010, RF-ORG and applicable RF-OUT,
+RF-UX, RF-GOV, context, resource and recovery requirements.
+
+**Build and configure:** reusable takeover and delivery procedures, configured
+roles/competencies, application-specific assumptions and manifests, portfolio
+status and owner decision flow. Audit the next owner-selected application and
+apply its own configuration. Reuse shared mechanisms and preserve separate
+product context, access and evidence. Existing apps enter at their proven
+lifecycle stage rather than restarting development.
+
+**Proof:** run the same managed flow for a bounded accepted outcome in a second
+configured application. Demonstrate that onboarding uses application context and
+configuration rather than a new execution engine; repair any discovered generic
+gap and retain the pilot's relevant regression proof. The owner can identify
+each application's current stage, nearest outcome, accountable role, blocker or
+decision and evidence in the web console. Demonstrate continuation of approved
+work and safe waiting for an actual owner decision through the intended queue.
+
+**Exit:** reconcile applicable requirements against source, configuration and
+runtime evidence in the existing matrix. Explicitly retain unmet or deferred
+later-phase requirements. The outcome is a usable system for continuing the
+internal portfolio; it is not a claim that every application or every future
+company capability is complete. Each additional application still needs its
+own audit and safe onboarding proof.
+
+## Later product phases
+
+These are planning horizons, not additional authorized execution gates. Prepare
+concrete gates here when the preceding outcome is proven and the phase's
+business choices are available. Do not silently add them to Gate 5.
+
+| Horizon | Result and entry condition | Existing requirements / decisions |
+| --- | --- | --- |
+| Application completion | After Gate 5, deliver each app's backlog to owner-accepted product readiness. | RF-APP-001–014; private app baseline |
+| Product sales | Prove offer, payments/access, invoices/accounting, support and controlled launch for a ready product. | RF-APP-015, RF-BIZ, RF-SUP; OPEN-FIN-001 |
+| Customer-service capability | After sale readiness, configure website/service scoping, delivery, access, acceptance and settlement. | RF-SVC, RF-SCOPE-004/006; OPEN-SVC-001–004 |
+| Customer acquisition | After proving delivery capacity and commercial rules, operate prospect qualification, offers and paid delivery. | RF-SVC, RF-SUP, RF-BIZ |
+| Mobile application | After reliable web operation, use the same backend and authority; define platform and initial workflows before execution. | RF-SCOPE-001 |
+
+New company needs extend the owning product chapter with status and dependencies.
+Report progress against the authorized gate, not a percentage of the evolving
+company vision.
