@@ -67,7 +67,7 @@ export const hermesBudgetReceiptSchema = z.object({
   runBudgetSeconds: z.number().int().min(1).max(895), runBudgetEnforcement: z.literal("advisory_worker_deadline_authoritative"),
   inputBytes: z.number().int().min(1).max(131072), inputByteCap: z.literal(131072), inputByteCapScope: z.literal("initial_sealed_input_only"),
   maxOutputTokensIntent: z.number().int().positive(), outputTokenEnforcement: z.literal("unavailable"), costEnforcement: z.literal("unavailable"),
-  model: z.string(), reasoning: z.string(), toolsets: z.array(z.enum(["file", "terminal"])).min(1).max(2),
+  model: z.string(), reasoning: z.string(), toolsets: z.array(z.enum(["file", "terminal", "bot_room"])).min(1).max(2),
   physicalModelCalls: z.null(), toolCalls: z.null(), transportRetries: z.null(), inputTokens: z.null(), outputTokens: z.null(), totalTokens: z.null(), cost: z.null(),
   resume: z.literal(false), checkpoints: z.literal(false), worktree: z.literal(false), automaticRestart: z.literal(false),
   reviewRequired: z.literal(true), digest

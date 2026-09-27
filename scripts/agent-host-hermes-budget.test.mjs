@@ -47,6 +47,12 @@ test("coding-small-v1 is Ready-bound, private, honest about unknowns, and stops 
     assert.equal(hermesContract[flag], false);
 });
 
+test("read-only Hermes budget receipt accepts the zero-tool bot_room profile", t => {
+  const f = budgetFixture(t);
+  const projected = { ...f.checked.budgetReceipt, toolsets: ["bot_room"] };
+  assert.equal(hermesBudgetReceiptSchema.safeParse(projected).success, true);
+});
+
 for (const [label, edit] of Object.entries({ over900: f => { f.packet.contract.budgets.maxDurationSeconds = 901; },
   retryTask: f => { f.packet.contract.budgets.maxAttempts = 2; }, resume: f => { f.claimed.codexThreadId = "old-session"; },
   checkpoint: f => { f.claimed.checkpoint = { stage: "prepared" }; }, ultra: f => { f.packet.contract.modelSelection.reasoningEffort = "ultra"; } })) {
