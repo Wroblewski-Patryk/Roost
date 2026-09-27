@@ -109,8 +109,11 @@ Current capability truth:
 Production runtime readiness now reports `executionEnabled: true` and mode
 `supervised_execution`. The broader static pilot-readiness flag remains false;
 the Gate 1 read-only proof does not certify coding delivery or release. The
-configured pilot application was not changed. Gate 2 is the next separately
-authorized gate; no Gate 2 work is included here.
+configured pilot application was not changed.
+
+**Gate 2 is in progress, not met.** The [evidence checkpoint](architecture/traceability-matrix.md)
+records failed pre-model audits and the repair. Pilot clean; login
+needed to retry. No write approval or accepted commit exists.
 
 ## End-to-end delivery gates
 
