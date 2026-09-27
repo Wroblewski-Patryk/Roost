@@ -12,7 +12,8 @@ export const reviewDecisionSchema = z.discriminatedUnion("decision", [
   z.object({ ...precondition, decision: z.literal("reject"), summary: text, evidence, reproduction: lines, expected: text, observed: text, correction: correctionSchema }).strict()
 ]);
 export const reviewActionSchema = z.discriminatedUnion("action", [
-  z.object({ grantId: precondition.grantId, requestId: precondition.requestId, expectedVersion: precondition.expectedVersion, reviewId: z.string().uuid(), action: z.literal("return_to_executor"), scope: lines }).strict(),
+  z.object({ grantId: precondition.grantId, requestId: precondition.requestId, expectedVersion: precondition.expectedVersion, reviewId: z.string().uuid(), action: z.literal("return_to_executor"), scope: lines,
+    competencies: z.array(z.string().trim().min(1).max(120)).min(1).max(30).optional() }).strict(),
   z.object({ grantId: precondition.grantId, requestId: precondition.requestId, expectedVersion: precondition.expectedVersion, reviewId: z.string().uuid(), action: z.literal("create_specialist_task"), scope: lines, specialist: z.object({ id: z.string().uuid(), revision: z.string().min(1).max(100) }).strict() }).strict()
 ]);
 export const object = (value: unknown): Record<string, any> => value && typeof value === "object" && !Array.isArray(value) ? value : {};

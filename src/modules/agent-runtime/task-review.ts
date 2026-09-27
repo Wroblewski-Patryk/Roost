@@ -109,7 +109,11 @@ export async function actOnTaskReview(db: Db, workspaceId: string, taskId: strin
   if (prior) return prior.requestHash === requestHash ? { action: actionView(prior), replayed: true } : { error: "task_review_key_conflict" };
   if (!s.current || s.expectedVersion !== input.expectedVersion || s.decision?.id !== input.reviewId) return { error: "task_review_stale" };
   if (!s.canManage) return { error: "task_review_manager_action_required" };
-  const evidence = object(s.decision!.evidence), correction = { ...evidence.correction, scope: [...new Set(input.scope)] };
+  const evidence = object(s.decision!.evidence);
+  const competencies = input.action === "return_to_executor" && input.competencies
+    ? [...new Set(input.competencies)] : evidence.correction.competencies;
+  if (competencies.some((skill: string) => !evidence.correction.competencies.includes(skill))) return { error: "task_review_competencies_expanded" };
+  const correction = { ...evidence.correction, scope: [...new Set(input.scope)], competencies };
   if (input.scope.some(scope => !evidence.correction.scope.includes(scope))) return { error: "task_review_scope_expanded" };
   const executorId = input.action === "create_specialist_task" ? input.specialist.id : s.contract.assignment.agentId;
   const executor = await db.workforceEntity.findFirst({ where: { id: executorId, workspaceId, type: "agent", status: "active" } });

@@ -41,6 +41,8 @@ test("review cannot carry implementation effects or credential-shaped evidence",
 test("manager disposition is explicit and rejects ambiguous alternatives",()=>{
   const input={requestId:id,expectedVersion:"a".repeat(64),reviewId:id,action:"return_to_executor",scope:reject.correction.scope};
   assert.ok(reviewActionSchema.safeParse(input).success);
+  assert.ok(reviewActionSchema.safeParse({...input,competencies:["governed coding"]}).success);
+  assert.equal(reviewActionSchema.safeParse({...input,competencies:[]}).success,false);
   assert.equal(reviewActionSchema.safeParse({...input,childTasks:[id,id]}).success,false);
   assert.equal(reviewActionSchema.safeParse({...input,action:"create_specialist_task"}).success,false);
 });
