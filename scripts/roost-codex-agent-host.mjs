@@ -232,6 +232,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
   let codeReviewerView, codeReviewerKey;
   let preparedCommit;
   let hermesCollection, hermesAbort, hermesCompletedReceipt;
+  let executionPhase = "context";
   function stopWorker() {
     stopping = true;
     retainWriterLock = true;
@@ -392,7 +393,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
         deadline: new Date(Date.now() + duration.remainingMs).toISOString() }));
     }
     lease.assertValid();
-    await api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, type: "runner_started", message: config.executionProvider?.kind === fixed.kind ? "Starting the fixed synthetic program." : config.executionProvider?.kind === "hermes_codex" ? "Preparing managed Hermes." : `Starting Codex in ${claimed.application.slug}.`, payload: { sandbox, providerInput: { schemaVersion: providerInput.schemaVersion, seal: providerInput.seal }, requestedModelSelection: config.executionProvider?.kind === fixed.kind ? null : taskContext.executionPacket.contract.modelSelection, baseBranch: repository.baseBranch || claimed.baseBranch || null, preExistingDirtyFiles: beforeStatus.map(statusPath) } }) }).catch((error) => { lease.reject(error); throw lease.failure ?? error; });
+    await api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, type: "runner_started", message: config.executionProvider?.kind === fixed.kind ? "Starting the fixed synthetic program." : config.executionProvider?.kind === "hermes_codex" ? "Preparing managed Hermes." : `Starting Codex in ${claimed.application.slug}.`, payload: { sandbox: inspecting ? "read-only" : sandbox, providerInput: { schemaVersion: providerInput.schemaVersion, seal: providerInput.seal }, requestedModelSelection: config.executionProvider?.kind === fixed.kind ? null : taskContext.executionPacket.contract.modelSelection, baseBranch: repository.baseBranch || claimed.baseBranch || null, preExistingDirtyFiles: beforeStatus.map(statusPath) } }) }).catch((error) => { lease.reject(error); throw lease.failure ?? error; });
     lease.assertValid();
     await duration.wait(assertAdmission());
     await duration.wait(validateAgentHostWorkspace(config));
@@ -422,12 +423,14 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       // A stale local deadline must stop here, before asking Roost to sign.
       await duration.wait(lease.refreshConfirmed());
       lease.assertValid();
+      executionPhase = "managed_admission";
       launchOptions.managedAdmission = await duration.wait(requestManagedAdmission({ api, ...prepared,
         firstWrite, assertAuthority: assertProviderAuthority,
         refreshLease: () => duration.wait(lease.refreshConfirmed()) }));
       await duration.wait(api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST",
         body: JSON.stringify({ leaseToken: claimed.leaseToken, type: "runner_progress",
           message: "Signed managed admission accepted; preparing native Hermes launch." }) }));
+      executionPhase = "post_admission";
       await duration.wait(lease.refreshConfirmed());
       lease.assertValid();
       // JIT signing is an awaited remote operation. Reopen every mutable
@@ -444,7 +447,9 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     }
     if (config.executionProvider?.kind === fixed.kind)
       launchOptions.containmentReceipt = prepareFixedHostContainment(launchOptions, launchAuthority);
+    executionPhase = "provider_launch";
     const launch = prepareProviderLaunch(launchOptions, launchAuthority);
+    executionPhase = "native_execution";
     assertProviderAuthority();
     let transportAccounting;
     if (launch.kind === fixed.kind) {
@@ -648,6 +653,13 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: summary.slice(0, 10000), finalResponse, codexThreadId, changedFiles, verification, usage, resultRevision, metadata: { repositoryPathLabel: path.basename(repositoryPath), preExistingDirtyFiles: beforeStatus.map(statusPath), transportAccounting } })
     });
   } catch (error) {
+    const diagnosticCodes = new Set(["agent_execution_lease_expired", "agent_execution_lease_invalid",
+      "agent_execution_lease_rejected", "agent_execution_lease_refresh_unconfirmed",
+      "managed_admission_blocked", "readonly_boundary_unproven", "agent_provider_input_blocked",
+      "agent_execution_recovery_blocked", "roost_http_409"]);
+    const code = diagnosticCodes.has(error?.message) ? error.message : "other";
+    const leaseCode = diagnosticCodes.has(lease.failure?.message) ? lease.failure.message : "none";
+    process.stderr.write(`Agent Host safe diagnostic: phase=${executionPhase} code=${code} lease=${leaseCode} status=${Number.isInteger(error?.status) ? error.status : "none"}.\n`);
     let hermesStopReceipt;
     if (hermesCollection) {
       hermesAbort.abort();
