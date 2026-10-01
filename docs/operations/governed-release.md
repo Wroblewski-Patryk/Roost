@@ -258,4 +258,13 @@ changes. Historical v1 assessments remain immutable and conservative.
 The focused suite passed 15/15, including real local PostgreSQL checks in a
 rolled-back transaction: four audits plus one change remain low, two changes
 escalate to medium, four to high, and forged exemptions or low results are
-rejected. Production classification and managed certification are still pending.
+rejected. Production classification passes below; managed certification is pending.
+
+Build `3289ab2b5d9e1d712699ff7f13a4e157f235363a` was pushed to the delivery
+branch and main by non-forced fast-forward and deployed through the existing
+webhook (`zdr0ux8y640nx9exb0x7z7sh`). HTTPS health/build-info confirmed this
+commit. The actual production assessment records all five related tasks,
+four qualified read-only scopes and one change, with a server/SQL computed
+low result. Component verification passed 124 Node and 32 TypeScript tests,
+including the opt-in native PostgreSQL case, without skips. Runtime decisions
+are prepared; acceptance, credential rotation and managed release remain pending.
