@@ -287,7 +287,17 @@ The production rotation attempt was rejected before acceptance or delivery;
 read-back confirmed the Decision remained proposed and the prior credential
 generation remained unchanged. Its expired request and journal are retained
 before preparing a new request. Nine focused tests, local validation and seven
-native API assertions pass without skips. The disposable PostgreSQL API test
+native API tests pass without skips. The disposable PostgreSQL API test
 proves stale-reference refusal, rollback of an explicit failed verdict, normal
 acceptance and replay without duplicate evidence or events. The atomic
 production acceptance and the managed certification remain pending.
+
+Build `0735f3242f86e0327c5d11fc7b3c25376623f32d` was pushed by non-forced
+fast-forward and deployed as `ecb88s7jgni39yl6apzhhttj`; HTTPS health and
+build-info returned 200 with this exact commit. A controlled production
+acceptance with an explicit failed procedure verdict returned
+`risk_admission_required`. All five affected tasks retained exactly the same
+native admission versions and evidence history, and the Decision remained
+proposed. This proves atomic refusal in production; it does not prove a
+successful rotation, model execution or release. Fresh owner authentication
+is required before continuing those prepared operations.
