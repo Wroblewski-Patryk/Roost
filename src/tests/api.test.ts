@@ -3904,12 +3904,12 @@ test("expired read-only spawn terminalization requires the exact bound Worker an
   const keyFixture = await ownerTicketFixture();
   await prisma.trustedProviderTicketKey.create({ data: { workspaceId, ...keyFixture.state().key } });
   const host = await prisma.agentHost.create({ data: { workspaceId, name: "Readonly test host", slug: `readonly-${randomUUID()}`,
-    platform: "win32", status: "online" } });
+    platform: "win32", status: "online", metadata: validHostMetadata, capabilities: protocol.requiredHostCapabilities } });
   const raw = randomUUID();
   await prisma.apiKey.create({ data: { workspaceId, name: "Synthetic bound Worker", keyHash: hashApiKey(raw),
     scopes: ["agent-runtime:claim"], active: true, expiresAt: new Date(Date.now() + 600_000),
     workerHostId: host.id, workerInstallationId: keyFixture.state().key.installationId, workerBindingEpoch: 1 } });
-  const workerAuth = { "X-API-Key": raw };
+  const workerAuth = { "X-API-Key": raw, ...hostProtocolHeaders };
   const application = await prisma.application.create({ data: { workspaceId, name: "Readonly fixture app", slug: randomUUID() } });
   const project = await prisma.project.create({ data: { workspaceId, name: "Readonly fixture project" } });
   await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id } });
@@ -3920,7 +3920,10 @@ test("expired read-only spawn terminalization requires the exact bound Worker an
     access: { tools: ["repository_read"], permissions: ["repository_read"] }, singleTask: { branch } },
     readyContextPin: { revision: "b".repeat(64), riskAdmissionCommit: baseline } };
   const create = async (lease: "released" | "retained", stage: "spawn_intent" | "claimed" = "spawn_intent",
-    kind: "auditor" | "code-reviewer" = "auditor") => {
+    kind: "auditor" | "verifier" | "code-reviewer" = "auditor", options: {
+      terminalCode?: string; profile?: string; changedFiles?: readonly string[]; finalResponse?: string;
+      verification?: Record<string, boolean>; contextInvalidatedAt?: Date;
+    } = {}) => {
     const sessionId = randomUUID(), checkpoint = { schemaVersion: "roost-recovery-v1", stage, sessionId,
       packetRevision: stage === "claimed" ? null : "c".repeat(64),
       workspaceDigest: stage === "claimed" ? null : "d".repeat(64),
@@ -3932,11 +3935,18 @@ test("expired read-only spawn terminalization requires the exact bound Worker an
     const execution = await prisma.$transaction(async tx => {
       await tx.$executeRawUnsafe("ALTER TABLE agent_executions DISABLE TRIGGER USER");
       const row = await tx.agentExecution.create({ data: { workspaceId, taskId: task.id, applicationId: application.id,
-        agentHostId: host.id, requestedByType: "user", status: "running", attempt: 1,
-        startedAt: new Date(Date.now() - 90_000), leaseToken: randomUUID(), leaseExpiresAt: new Date(Date.now() - 10_000),
+        agentHostId: host.id, requestedByType: "user", status: options.terminalCode ? "failed" : "running", attempt: 1,
+        startedAt: new Date(Date.now() - 90_000), leaseToken: options.terminalCode ? null : randomUUID(),
+        leaseExpiresAt: options.terminalCode ? null : new Date(Date.now() - 10_000),
+        ...(options.terminalCode ? { completedAt: new Date(Date.now() - 10_000),
+          errorState: { code: options.terminalCode, retryable: false, details: {} } } : {}),
+        ...(options.changedFiles ? { changedFiles: [...options.changedFiles] } : {}),
+        ...(options.finalResponse ? { finalResponse: options.finalResponse } : {}),
+        ...(options.verification ? { verification: options.verification } : {}),
+        ...(options.contextInvalidatedAt ? { contextInvalidatedAt: options.contextInvalidatedAt } : {}),
         checkpointVersion: stage === "claimed" ? 1 : 3, checkpoint,
         metadata: { ...metadata, executionContract: { ...metadata.executionContract,
-          nativeBoundary: { profile: "inspect-readonly", inspectReadOnly: { kind } } } } } });
+          nativeBoundary: { profile: options.profile ?? "inspect-readonly", inspectReadOnly: { kind } } } } } });
       await tx.$executeRawUnsafe("ALTER TABLE agent_executions ENABLE TRIGGER USER");
       return row;
     });
@@ -3984,6 +3994,57 @@ test("expired read-only spawn terminalization requires the exact bound Worker an
   await prisma.agentExecutionEvent.create({ data: { workspaceId, executionId: started.execution.id,
     type: "runner_started", message: "Synthetic inconsistent event", payload: {} } });
   assert.equal((await started.post(started.proof)).status, 409);
+
+  // A signed native admission may end before any accepted result without a
+  // backend-evidence phase diagnostic. Reconciliation records only its exact
+  // failed identity and fresh stopped/clean observation; it never accepts work.
+  for (const kind of ["auditor", "verifier", "code-reviewer"] as const) {
+    const terminal = await create("retained", "spawn_intent", kind, { terminalCode: "managed_admission_blocked" });
+    for (const patch of [{ expectedVersion: 2 }, { checkpointSessionId: randomUUID() },
+      { baselineCommit: "0".repeat(40) }, { baselineBranch: "main" },
+      { observedAt: new Date(Date.now() - 300_000).toISOString() }]) {
+      assert.equal((await terminal.post({ ...terminal.proof, ...patch })).status, 409);
+    }
+    for (const field of ["nativeProcessesAbsent", "ownerProcessAbsent", "workingTreeClean"])
+      assert.equal((await terminal.post({ ...terminal.proof, [field]: false })).status, 400);
+    assert.equal((await terminal.post(terminal.proof, auth)).status, 403);
+    const outcomes = await Promise.all([terminal.post(terminal.proof), terminal.post(terminal.proof)]);
+    assert.ok(outcomes.some(result => result.status === 200));
+    assert.ok(outcomes.every(result => result.status === 200 || result.status === 409));
+    const terminalReplay = await terminal.post(terminal.proof);
+    assert.equal(terminalReplay.status, 200, JSON.stringify(terminalReplay.body));
+    assert.equal((terminalReplay.body as any).replay, true);
+    const saved = await prisma.agentExecution.findUniqueOrThrow({ where: { id: terminal.execution.id } });
+    assert.equal(saved.status, "failed"); assert.equal(saved.completedAt!.getTime(), terminal.execution.completedAt!.getTime());
+    assert.equal(saved.checkpointVersion, terminal.execution.checkpointVersion);
+    assert.equal(saved.leaseToken, null); assert.equal(saved.codexThreadId, null); assert.equal(saved.finalResponse, null);
+    assert.deepEqual(saved.changedFiles, []); assert.equal((saved.errorState as any).retryable, false);
+    assert.equal((saved.errorState as any).code, "agent_readonly_terminal_reconciled");
+    assert.equal((saved.errorState as any).details.priorCode, "managed_admission_blocked");
+    assert.equal(await prisma.agentExecutionEvent.count({ where: { executionId: saved.id,
+      type: "readonly_terminal_reconciled" } }), 1);
+    assert.equal((await terminal.post({ ...terminal.proof, writerLockDigest: "0".repeat(64) })).status, 409);
+    const recovery = await request(`/v1/agent-runtime/recovery?hostSlug=${host.slug}`, { headers: workerAuth });
+    assert.equal(recovery.status, 200, JSON.stringify(recovery.body));
+    assert.ok((recovery.body as any).data.terminalPreSpawn.some((item: any) => item.id === saved.id));
+  }
+  const priorReviewer = await create("released", "spawn_intent", "code-reviewer", { terminalCode: "code_reviewer_unproven" });
+  assert.equal((await priorReviewer.post(priorReviewer.proof)).status, 200);
+  for (const [stage, kind, options] of [
+    ["spawn_intent", "auditor", { terminalCode: "unknown_failure" }],
+    ["spawn_intent", "auditor", { terminalCode: "code_reviewer_unproven" }],
+    ["spawn_intent", "auditor", { terminalCode: "managed_admission_blocked", profile: "coding-local" }],
+    ["claimed", "auditor", { terminalCode: "managed_admission_blocked" }],
+    ["spawn_intent", "auditor", { terminalCode: "managed_admission_blocked", changedFiles: ["release.json"] }],
+    ["spawn_intent", "auditor", { terminalCode: "managed_admission_blocked", finalResponse: "result" }],
+    ["spawn_intent", "auditor", { terminalCode: "managed_admission_blocked", verification: { passed: true } }],
+    ["spawn_intent", "auditor", { terminalCode: "managed_admission_blocked", contextInvalidatedAt: new Date() }]
+  ] as const) {
+    const refused = await create("released", stage, kind, options);
+    assert.equal((await refused.post(refused.proof)).status, 409);
+    assert.equal(await prisma.agentExecutionEvent.count({ where: { executionId: refused.execution.id,
+      type: "readonly_terminal_reconciled" } }), 0);
+  }
 
   const codingBranch = `codex/task-${task.id}`, codingSession = randomUUID();
   const codingCheckpoint = { schemaVersion: "roost-recovery-v1", stage: "branch_intent", sessionId: codingSession,

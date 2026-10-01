@@ -392,3 +392,29 @@ unsigned or interrupted receipts fail before publication. Reviewer credential
 configuration also permits a distinct bounded Gate 3 protected-storage target,
 preserving Gate 2's slot and its existing authority checks. These changes still
 require a successful native continuation; they do not certify Gate 3.
+
+Roost deployment `qdd1yzl8chksraqmbmo4lrnr` finished at commit
+`4784c1e524e9c77432f2ccbaa0b29f6fe489395c`; HTTPS health and build identity
+matched. Auditor `8409b8fb-2d6d-465d-972a-7231d5e9ebf4` then passed signed
+managed admission but failed at launch consumption with no accepted result.
+The old catch erased the boundary diagnostic, so its precise cause remains
+unconfirmed. Cold preparation took 208.5 seconds against a 180-second local
+startup seal, providing a concrete expiry hypothesis.
+
+Launch consumption now reports only named boundaries and bounded protocol
+codes. The original, nonrenewing startup seal has a 300-second absolute and
+monotonic maximum, consistent with the signed native admission upper bound;
+Ready, input, profile, executable, environment and current authority checks
+remain mandatory. A closed fixture with real signatures, input, startup,
+writer, lease and launch readers passes after 208.5 seconds of simulated
+preparation; expiry, monotonic expiry and clock rollback remain denied.
+This fixture does not invoke a model or prove a completed production audit.
+
+The existing read-only spawn reconciliation also accepts terminal managed
+admission failures for auditors, verifiers and code reviewers only after its
+exact host/session/version/baseline/process and no-result guards. It records
+the prior failure and preserves the failed outcome; coding attempts, changed
+trees, accepted results and unknown errors are refused. Normal writer reclaim
+requires that exact receipt and the original dead-owner proof. Root integration
+passed 104 component checks without skips. Actual release certification,
+controlled rollback and owned target cleanup remain pending.

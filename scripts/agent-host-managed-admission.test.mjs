@@ -3,18 +3,25 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { syncBuiltinESMExports } from "node:module";
-import { execFile } from "node:child_process";
+import childProcess, { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 import { createHash, generateKeyPairSync, sign } from "node:crypto";
-import { createManagedBackendFixture } from "./fixtures/trusted-pilot.mjs";
+import { createManagedBackendFixture, managedSelectionFixture } from "./fixtures/trusted-pilot.mjs";
+import { nativeFixture } from "./fixtures/hermes-native.mjs";
+import { pinReadyFixture } from "./fixtures/execution-packet.mjs";
 import { inspectFixedContainment } from "./lib/agent-host-fixed-execution.mjs";
 import { nativeDigest, physicalIdentity } from "./lib/agent-host-native-footprint.mjs";
 import { writerRecoveryEvidence } from "./lib/agent-host-writer-lock.mjs";
 import { createOwnerAttestation } from "./lib/agent-host-hermes-owner-auth.mjs";
 import { managedOwnerBinding, nativeEvidenceSchema } from "./lib/agent-host-managed-backend.mjs";
 import { trustedPilotBytes, trustedPilotDecisionSchema } from "./lib/agent-host-trusted-pilot.mjs";
-import { requestManagedAdmission, requestFirstWriteAdmission, retireManagedAdmissionArtifacts, reserveManagedDispatch } from "./lib/agent-host-managed-admission.mjs";
+import { requestManagedAdmission, requestFirstWriteAdmission, buildManagedAdmissionSource, retireManagedAdmissionArtifacts, reserveManagedDispatch } from "./lib/agent-host-managed-admission.mjs";
+import { prepareProviderLaunch } from "./lib/agent-host-provider-launch.mjs";
+import { prepareProviderInput, assertProviderStartup, abandonProviderNativeBoundary } from "./lib/agent-host-provider-input.mjs";
+import { collectReadOnlyRepositoryEvidence } from "./lib/agent-host-readonly-boundary.mjs";
+import { renderHermesNativeProfile, hermesNativeProfileBinding } from "./lib/agent-host-hermes-profile.mjs";
+import { hermesStartupEnvironment, hermesStartupMaxAgeMs } from "./lib/agent-host-hermes-startup.mjs";
 import { readDurableNativeReview } from "./lib/agent-host-native-review.mjs";
 import { qualifyNativeReconciliation, issueNativeReconciliationApproval, reconcileNativeArtifacts } from "./lib/agent-host-native-reconciliation.mjs";
 import { acquireWriterLock } from "./lib/agent-host-writer-lock.mjs";
@@ -78,6 +85,98 @@ async function signedAdmissionFixture(t, settings = {}) {
   return { ...x, evidenceDigest, executionId };
 }
 const windows = { skip: process.platform !== "win32", timeout: 60000 };
+
+for (const scenario of ["current", "cold_preparation", "expired_startup"]) test(`signed managed read-only retry-zero launch: ${scenario}`, windows, async t => {
+  const x = await nativeFixture(t, { prepare: false });
+  const selection = managedSelectionFixture("codex_responses");
+  selection.attemptPolicy = { ...selection.attemptPolicy, maxTurns: 2, apiMaxRetries: 0 };
+  const c = x.f.packet.contract;
+  c.modelSelection = selection;
+  c.nativeBoundary = { profile: "inspect-readonly", readPaths: ["editable.txt"], runtime: { required: false, ports: [] }, inspectReadOnly: { kind: "auditor" } };
+  c.access = { ...c.access, tools: ["repository_read"], permissions: ["repository_read"], sandbox: "read-only" };
+  x.f.packet.procedureComposition.fields.tools = ["repository_read"];
+  pinReadyFixture(x.f);
+  x.f.taskContext.readyAdmission.riskAdmission.commit = x.options.currentCommit;
+  x.f.claimed.metadata.readyContextPin.riskAdmissionCommit = x.options.currentCommit;
+  x.provider.profile = hermesNativeProfileBinding(path.join(x.home, "config.yaml"), { apiMaxRetries: 0 });
+  fs.writeFileSync(x.provider.profile.profilePath, renderHermesNativeProfile({ apiMaxRetries: 0 }));
+  const owner = createOwnerAttestation(x.provider.profile); x.provider.profile.ownerAttestation = owner.binding;
+  fs.writeFileSync(path.join(x.home, "owner-attestation.json"), owner.bytes);
+  fs.writeFileSync(x.provider.executablePath, "closed fixture executable, never spawned\n");
+  for (const relative of ["toolsets.py", "model_tools.py", "cli.py", "agent/agent_init.py", "agent/coding_context.py", "hermes_cli/oneshot.py"]) {
+    const file = path.join(x.install, relative); fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, "# closed fixture source\n");
+  }
+  const originalExec = childProcess.execFileSync;
+  // Only external observation/qualification output is substituted. The real
+  // profile, startup, Ready, input, signatures, writer, lease and launch readers run.
+  childProcess.execFileSync = (command, args, options) => {
+    if (command === "powershell" && args?.includes("Get-NetTCPConnection -State Listen | Sort-Object LocalAddress,LocalPort,OwningProcess | ForEach-Object { '{0}|{1}|{2}' -f $_.LocalAddress,$_.LocalPort,$_.OwningProcess }")) return "closed_fixture_listeners\n";
+    if (command === "docker" && args?.[0] === "ps") return "";
+    if (options?.cwd === x.install && command === "git") return args.includes("rev-parse") ? x.provider.commit : "";
+    if (command === path.join(x.install, "venv", "Scripts", "python.exe")) return "[[], []]\n";
+    return originalExec(command, args, options);
+  };
+  syncBuiltinESMExports();
+  let envelope; const originalNow = Date.now;
+  try {
+    const startupEnvironment = hermesStartupEnvironment(x.provider.profile, { SYSTEMROOT: process.env.SystemRoot ?? "C:\\Windows" }, x.repositoryPath);
+    const repositoryEvidence = collectReadOnlyRepositoryEvidence({ repositoryPath: x.repositoryPath,
+      expected: x.options.nativeBoundaryOptions.expected, paths: c.nativeBoundary.readPaths });
+    envelope = prepareProviderInput({ ...x.options, startupEnvironment, repositoryEvidence });
+    x.f.claimed.checkpoint = { stage: "spawn_intent", packetRevision: envelope.revisions.packet, contextRevision: envelope.revisions.context };
+    if (scenario === "cold_preparation") Date.now = () => originalNow() + 208500;
+    const prepared = buildManagedAdmissionSource({ envelope, claimed: x.f.claimed, writerLock: x.writerLock,
+      repositoryPath: x.repositoryPath, provider: x.provider, startupEnvironment, remainingMs: () => 300000 });
+    const directory = path.join(x.state, "trusted-provider-pilot"); fs.mkdirSync(directory);
+    const { publicKey, privateKey } = generateKeyPairSync("ed25519");
+    const installationId = "00000000-0000-4000-8000-000000000070";
+    fs.writeFileSync(path.join(directory, "installation.json"), trustedPilotBytes({ schemaVersion: "roost-trusted-provider-pilot-v1",
+      installationId, workspaceId: x.f.claimed.workspaceId, authorityPublicKey: publicKey.export({ type: "spki", format: "pem" }),
+      decisionFile: "trusted-provider-pilot.json", profileFile: "trusted-provider-profile.json", qualification: "signed_native_v1" }));
+    const profilePath = path.join(directory, "trusted-provider-profile.json");
+    fs.writeFileSync(profilePath, trustedPilotBytes({ schemaVersion: "roost-trusted-provider-pilot-v1", purpose: "managed-agent",
+      providerKind: "hermes_codex", version: x.provider.version, backend: "codex_responses", fallback: "none",
+      modelSelection: selection, qualification: "signed_native_v1" }));
+    const managedOwner = createOwnerAttestation(managedOwnerBinding(profilePath, sha(fs.readFileSync(profilePath))));
+    fs.writeFileSync(path.join(directory, "owner-attestation.json"), managedOwner.bytes);
+    const api = async (_route, options) => {
+      const r = JSON.parse(options.body), now = Date.now();
+      const common = { state: "accepted", expiresAt: new Date(now + 240000).toISOString() };
+      const payload = r.phase === "backend_evidence"
+        ? nativeEvidenceSchema.parse({ ...r.source, ...common, issuedAt: new Date(now).toISOString(),
+          schemaVersion: "roost-managed-hermes-backend-v1", signatureDomain: "roost-managed-backend-evidence-v1",
+          id: "00000000-0000-4000-8000-000000000071", purpose: "managed-agent", qualification: "signed_native_v1" })
+        : trustedPilotDecisionSchema.parse({ ...common, schemaVersion: "roost-trusted-provider-pilot-v1",
+          decisionId: "00000000-0000-4000-8000-000000000072", revision: 1, decidedAt: new Date(now).toISOString(),
+          installationId, installationIdentity: r.installation.identity, configurationIdentity: r.installation.configurationIdentity,
+          provider: r.provider, scope: r.scope, mode: "trusted_provider_pilot", systemIsolation: false,
+          arbitraryProviderAdmission: false, fullAutonomy: false, residualRiskAccepted: true,
+          acknowledgement: "windows_account_authority_not_os_isolation", qualification: "signed_native_v1" });
+      return { schemaVersion: "roost-managed-admission-v1", phase: r.phase,
+        signed: { payload, signature: sign(null, trustedPilotBytes(payload), privateKey).toString("hex") } };
+    };
+    const grant = await requestManagedAdmission({ api, ...prepared, assertAuthority() {} });
+    const options = { provider: x.provider, envelope, repositoryPath: x.repositoryPath, writerLock: x.writerLock,
+      startupEnvironment, sandbox: "read-only", managedAdmission: grant };
+    if (scenario === "expired_startup") {
+      // Test the local seal directly beyond its exported bound. Do not invent
+      // a signed pair that lasts beyond the independent five-minute cap.
+      Date.now = () => originalNow() + hermesStartupMaxAgeMs + 1000;
+      assert.throws(() => assertProviderStartup(options), /hermes_startup_receipt_expired/);
+      Date.now = originalNow;
+    } else {
+      const plan = prepareProviderLaunch(options, x.options);
+      assert.equal(plan.version, "roost-managed-hermes-launch-v1");
+      assert.equal(plan.budgetReceipt.apiMaxRetries, 0); assert.deepEqual(plan.readOnlyToolReceipt.nativeTools, []);
+      assert.equal(plan.readOnlyToolReceipt.readPaths.join(), "editable.txt");
+    }
+    if (scenario !== "expired_startup") assert.throws(() => prepareProviderLaunch(options, x.options), e => e.details?.phase === "consume_grant");
+  } finally {
+    Date.now = originalNow;
+    if (envelope) abandonProviderNativeBoundary(envelope);
+    childProcess.execFileSync = originalExec; syncBuiltinESMExports();
+  }
+});
 
 const future = (payload, field, offset = 100) => {
   payload[field] = new Date(Date.now() + offset).toISOString();

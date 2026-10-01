@@ -160,13 +160,23 @@ test("profile identity, attestation, provider and input drift reject prior proof
 });
 test("receipt expiry uses the Ready-time deadline, never a sliding renewal", t => {
   const f = fixture(t), time = Date.parse(f.checked.receipt.issuedAt);
-  const within = t.mock.method(Date, "now", () => time + 61_000);
+  assert.equal(hermesStartupMaxAgeMs, 300000);
+  assert.equal(Date.parse(f.checked.receipt.expiresAt) - time, hermesStartupMaxAgeMs);
+  const within = t.mock.method(Date, "now", () => time + 208_500);
   assert.doesNotThrow(() => assertProviderStartup(f.options));
+  assert.equal(assertProviderStartup(f.options).receipt.digest, f.checked.receipt.digest);
   within.mock.restore();
   const clock = t.mock.method(Date, "now", () => time + hermesStartupMaxAgeMs);
   assert.throws(() => assertProviderStartup(f.options), /hermes_startup_receipt_expired/);
   assert.deepEqual(hermesStartupBlockers(hermesContract.blockers, f.checked.receipt, f.checked.options), hermesContract.blockers);
   clock.mock.restore();
+  const monotonic = performance.now();
+  const elapsed = t.mock.method(performance, "now", () => monotonic + hermesStartupMaxAgeMs);
+  assert.throws(() => assertProviderStartup(f.options), /hermes_startup_receipt_expired/);
+  elapsed.mock.restore();
+  const rollback = t.mock.method(Date, "now", () => time - 1);
+  assert.throws(() => assertProviderStartup(f.options), /hermes_startup_receipt_expired/);
+  rollback.mock.restore();
 });
 test("environment values and source-sidecar appearance after Ready are blocked without reading their content", t => {
   const f = fixture(t);

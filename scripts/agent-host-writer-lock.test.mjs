@@ -87,7 +87,7 @@ test("terminal managed evidence rejection reclaims only the proven pre-model spa
   await recovered.release();
 });
 
-test("a failed read-only reviewer needs an exact terminal reconciliation receipt before lock release", { skip: process.platform !== "win32" }, async t => {
+for (const priorCode of ["code_reviewer_unproven", "managed_admission_blocked"]) test(`failed read-only ${priorCode} needs an exact terminal reconciliation receipt before lock release`, { skip: process.platform !== "win32" }, async t => {
   const directory = await fixture(t);
   const candidate = { id: "00000000-0000-4000-8000-000000000021", workspaceId: "00000000-0000-4000-8000-000000000022",
     taskId: "00000000-0000-4000-8000-000000000023", applicationId: "00000000-0000-4000-8000-000000000024",
@@ -100,12 +100,21 @@ test("a failed read-only reviewer needs an exact terminal reconciliation receipt
   assert.equal((await once(child, "close"))[0], 0);
   const bytes = await readFile(path.join(directory, writerLockFilename));
   candidate.checkpoint.sessionId = JSON.parse(bytes).checkpoint.sessionId;
-  const details = { priorCode: "code_reviewer_unproven", checkpointStage: "spawn_intent",
+  const details = { priorCode, checkpointStage: "spawn_intent",
     checkpointSessionId: candidate.checkpoint.sessionId, writerLockDigest: createHash("sha256").update(bytes).digest("hex"),
     nativeProcessesAbsent: true, pilotBaselineUnchanged: true };
   candidate.errorState = { code: "agent_readonly_terminal_reconciled", details };
+  for (const patch of [{ writerLockDigest: "0".repeat(64) }, { priorCode: "unknown_failure" },
+    { checkpointSessionId: "different-session" }, { checkpointStage: "prepared" },
+    { nativeProcessesAbsent: false }, { pilotBaselineUnchanged: false }])
+    await assert.rejects(acquireWriterLock(directory, { terminalCandidates: [{ ...candidate,
+      errorState: { ...candidate.errorState, details: { ...details, ...patch } } }] }), /agent_host_writer_locked/);
+  for (const patch of [{ checkpointVersion: 4 }, { status: "running" }, { changedFiles: ["release.json"] },
+    { finalResponse: "unaccepted model result" }, { codexThreadId: "model-session" }])
+    await assert.rejects(acquireWriterLock(directory, { terminalCandidates: [{ ...candidate, ...patch }] }), /agent_host_writer_locked/);
+  // The original managed failure alone lacks a native process/baseline receipt.
   await assert.rejects(acquireWriterLock(directory, { terminalCandidates: [{ ...candidate,
-    errorState: { ...candidate.errorState, details: { ...details, writerLockDigest: "0".repeat(64) } } }] }), /agent_host_writer_locked/);
+    errorState: { code: priorCode, details: {} } }] }), /agent_host_writer_locked/);
   const next = await acquireWriterLock(directory, { terminalCandidates: [candidate] });
   await next.release();
 });

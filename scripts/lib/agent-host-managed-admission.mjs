@@ -300,8 +300,9 @@ export async function requestManagedAdmission({ api, source, writerDigest, asser
 
 export function consumeManagedAdmission(grant, options, consumption) {
   const saved = grants.get(grant);
-  if (!saved || saved.used) fail();
+  if (!saved || saved.used) fail("consume_grant");
   saved.used = true;
+  let phase = "consume_bindings";
   try {
     const { source, writerDigest, acceptance } = saved;
     const inspect = source.envelope.contract.nativeBoundary?.profile === "inspect-readonly";
@@ -309,22 +310,31 @@ export function consumeManagedAdmission(grant, options, consumption) {
       || options.provider !== source.provider || options.repositoryPath !== source.repositoryPath
       || options.writerLock !== source.writerLock || consumption.claimed !== source.claimed
       || options.sandbox !== (inspect ? "read-only" : "workspace-write")) fail();
+    phase = "consume_authority";
     consumption.assertAuthority();
+    phase = "consume_writer";
     const freshWriterDigest = nativeDigest(writerRecoveryEvidence(source.writerLock));
     if (freshWriterDigest !== writerDigest || windowsJobSourceDigest() !== source.gates.launcher.sourceDigest) fail();
+    phase = "consume_runtime";
     if (!same(fixtureRuntimeBinding(options.provider.executablePath), source.runtime.executable)
       || !same(fixtureRuntimeBinding(process.execPath), source.runtime.node)) fail();
     const configurationPath = path.join(writerRecoveryEvidence(source.writerLock).directory,
       "trusted-provider-pilot", "installation.json");
+    phase = "consume_decision";
     const current = inspectTrustedPilotDecision(configurationPath, source, writerDigest);
     if (!same(current, acceptance)) fail();
-    const startup = assertProviderStartup(options), native = inspect ? assertProviderReadOnlyBoundary(options.envelope)
-      : assertProviderNativeBoundary(options.envelope);
+    phase = "consume_startup";
+    const startup = assertProviderStartup(options);
+    phase = "consume_native_boundary";
+    const native = inspect ? assertProviderReadOnlyBoundary(options.envelope) : assertProviderNativeBoundary(options.envelope);
+    phase = "consume_startup_bindings";
     if (startup.receipt.digest !== source.configuration.startupDigest
       || startup.budgetReceipt.digest !== source.configuration.budgetDigest
       || native.digest !== source.configuration.nativeBoundaryDigest) fail();
+    phase = "consume_transport";
     const transport = providerInputTransport("hermes_codex", options.envelope);
     if (nativeDigest(transport.input) !== source.configuration.inputDigest) fail();
+    phase = "consume_input";
     consumeProviderInput(options.envelope, consumption);
     const assertLaunchAuthority = () => {
       consumption.assertAuthority();
@@ -334,8 +344,10 @@ export function consumeManagedAdmission(grant, options, consumption) {
         || !same(fixtureRuntimeBinding(process.execPath), source.runtime.node)
         || !same(inspectTrustedPilotDecision(configurationPath, source, writerDigest), acceptance)) fail();
     };
+    phase = "consume_first_write";
     if (source.envelope.contract.nativeBoundary?.profile === "coding-local"
         && (!saved.firstWrite || saved.firstWrite.baselineCommit !== consumption.currentCommit)) fail();
+    phase = "consume_dispatch_reserve";
     if (!inspect) bindNativeSpentRecord(native, reserveManagedDispatch({ writerLock: source.writerLock,
       identity: source.envelope.identity, evidenceDigest: current.provider.managedBackend.evidence.digest }));
     return Object.freeze({ version: "roost-managed-hermes-launch-v1", kind: "hermes_codex",
@@ -344,5 +356,9 @@ export function consumeManagedAdmission(grant, options, consumption) {
       budgetReceipt: startup.budgetReceipt, ...(inspect ? { readOnlyToolReceipt: native } : { nativeToolReceipt: native }),
       expectedJobSourceDigest: source.gates.launcher.sourceDigest,
       managedBackend: current.provider.managedBackend, trustedPilot: current, assertLaunchAuthority });
-  } catch { fail(); }
+  } catch (error) {
+    // Publish only a named boundary and an existing protocol code, never raw
+    // exception text, paths, envelopes or command output.
+    fail(phase, undefined, error?.protocolAdmission && error.message !== "managed_admission_blocked" ? error.message : undefined);
+  }
 }
