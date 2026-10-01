@@ -69,7 +69,7 @@ function state(root, expected) {
   // It changes while containers are untouched and makes a long bounded read look
   // like a side effect. State retains the stable running-container identity check.
   const docker = observe("docker", () => execFileSync("docker", ["ps", "--no-trunc", "--format", "{{.ID}}|{{.Image}}|{{.State}}|{{.Ports}}"],
-    { windowsHide: true, shell: false, timeout: 10000, maxBuffer: 262144, encoding: "utf8" }));
+    { windowsHide: true, shell: false, timeout: 30000, maxBuffer: 262144, encoding: "utf8" }));
   return { footprint, processDigest: hex(listening), dockerDigest: hex(docker) };
 }
 

@@ -1502,6 +1502,9 @@ with a verified read-only receipt and closed Windows Job; independent Gate 3
 verification and release certification remain pending.
 Expired read-only spawn reconciliation and exact writer reclamation also
 completed on Windows after a later verifier's lease loss; no result was accepted.
+The next verifier failed before model launch on a named Docker observation
+timeout. Bounded observation and normal terminal cleanup were repaired; actual
+independent verification and release certification remain pending.
 
 [Operations and evidence checkpoint](../operations/governed-release.md),
 [server authority](../../src/modules/agent-runtime/governed-release.ts),

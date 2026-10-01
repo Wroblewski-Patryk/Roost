@@ -493,3 +493,12 @@ five-second cleanup reserve, 45-second confirmation minimum and refusal to
 revive expired authority remain unchanged. Bounded counters/durations aid
 expiry diagnostics. These changes still require native continuation; they do
 not establish a completed second canary or release certificate.
+
+Verifier `1490c34f-12dc-4690-9794-d6fcf8190f57` passed signed admission and
+failed before model launch at 2026-10-01 22:10:27 UTC with
+`readonly_boundary_unproven/docker_observation_timeout`. No result or verification
+was accepted. Docker observation now has a bounded 30-second deadline; missing
+or changed observations still refuse admission. Normal terminal reconciliation
+also recognizes this exact read-only error, preserving the existing contract,
+identity, no-result and physical-process guards. The Worker was stopped with
+its original artifacts retained pending deployed reconciliation.

@@ -3921,7 +3921,7 @@ test("expired read-only spawn terminalization requires the exact bound Worker an
     readyContextPin: { revision: "b".repeat(64), riskAdmissionCommit: baseline } };
   const create = async (lease: "released" | "retained", stage: "spawn_intent" | "claimed" = "spawn_intent",
     kind: "auditor" | "verifier" | "code-reviewer" = "auditor", options: {
-      terminalCode?: string; profile?: string; changedFiles?: readonly string[]; finalResponse?: string;
+      terminalCode?: string; terminalReason?: string; profile?: string; changedFiles?: readonly string[]; finalResponse?: string;
       verification?: Record<string, boolean>; contextInvalidatedAt?: Date;
     } = {}) => {
     const sessionId = randomUUID(), checkpoint = { schemaVersion: "roost-recovery-v1", stage, sessionId,
@@ -3939,7 +3939,7 @@ test("expired read-only spawn terminalization requires the exact bound Worker an
         startedAt: new Date(Date.now() - 90_000), leaseToken: options.terminalCode ? null : randomUUID(),
         leaseExpiresAt: options.terminalCode ? null : new Date(Date.now() - 10_000),
         ...(options.terminalCode ? { completedAt: new Date(Date.now() - 10_000),
-          errorState: { code: options.terminalCode, retryable: false, details: {} } } : {}),
+          errorState: { code: options.terminalCode, retryable: false, details: options.terminalReason ? { reason: options.terminalReason } : {} } } : {}),
         ...(options.changedFiles ? { changedFiles: [...options.changedFiles] } : {}),
         ...(options.finalResponse ? { finalResponse: options.finalResponse } : {}),
         ...(options.verification ? { verification: options.verification } : {}),
@@ -3998,8 +3998,9 @@ test("expired read-only spawn terminalization requires the exact bound Worker an
   // A signed native admission may end before any accepted result without a
   // backend-evidence phase diagnostic. Reconciliation records only its exact
   // failed identity and fresh stopped/clean observation; it never accepts work.
-  for (const kind of ["auditor", "verifier", "code-reviewer"] as const) {
-    const terminal = await create("retained", "spawn_intent", kind, { terminalCode: "managed_admission_blocked" });
+  for (const terminalCode of ["managed_admission_blocked", "readonly_boundary_unproven"]) for (const kind of ["auditor", "verifier", "code-reviewer"] as const) {
+    const terminal = await create("retained", "spawn_intent", kind, { terminalCode,
+      ...(terminalCode === "readonly_boundary_unproven" ? { terminalReason: "docker_observation_timeout" } : {}) });
     for (const patch of [{ expectedVersion: 2 }, { checkpointSessionId: randomUUID() },
       { baselineCommit: "0".repeat(40) }, { baselineBranch: "main" },
       { observedAt: new Date(Date.now() - 300_000).toISOString() }]) {
@@ -4020,7 +4021,7 @@ test("expired read-only spawn terminalization requires the exact bound Worker an
     assert.equal(saved.leaseToken, null); assert.equal(saved.codexThreadId, null); assert.equal(saved.finalResponse, null);
     assert.deepEqual(saved.changedFiles, []); assert.equal((saved.errorState as any).retryable, false);
     assert.equal((saved.errorState as any).code, "agent_readonly_terminal_reconciled");
-    assert.equal((saved.errorState as any).details.priorCode, "managed_admission_blocked");
+    assert.equal((saved.errorState as any).details.priorCode, terminalCode);
     assert.equal(await prisma.agentExecutionEvent.count({ where: { executionId: saved.id,
       type: "readonly_terminal_reconciled" } }), 1);
     assert.equal((await terminal.post({ ...terminal.proof, writerLockDigest: "0".repeat(64) })).status, 409);
@@ -4038,7 +4039,14 @@ test("expired read-only spawn terminalization requires the exact bound Worker an
     ["spawn_intent", "auditor", { terminalCode: "managed_admission_blocked", changedFiles: ["release.json"] }],
     ["spawn_intent", "auditor", { terminalCode: "managed_admission_blocked", finalResponse: "result" }],
     ["spawn_intent", "auditor", { terminalCode: "managed_admission_blocked", verification: { passed: true } }],
-    ["spawn_intent", "auditor", { terminalCode: "managed_admission_blocked", contextInvalidatedAt: new Date() }]
+    ["spawn_intent", "auditor", { terminalCode: "managed_admission_blocked", contextInvalidatedAt: new Date() }],
+    ["spawn_intent", "verifier", { terminalCode: "readonly_boundary_unproven", profile: "coding-local" }],
+    ["claimed", "verifier", { terminalCode: "readonly_boundary_unproven" }],
+    ["spawn_intent", "verifier", { terminalCode: "readonly_boundary_unknown" }],
+    ["spawn_intent", "verifier", { terminalCode: "readonly_boundary_unproven", changedFiles: ["release.json"] }],
+    ["spawn_intent", "verifier", { terminalCode: "readonly_boundary_unproven", finalResponse: "result" }],
+    ["spawn_intent", "verifier", { terminalCode: "readonly_boundary_unproven", verification: { passed: true } }],
+    ["spawn_intent", "verifier", { terminalCode: "readonly_boundary_unproven", contextInvalidatedAt: new Date() }]
   ] as const) {
     const refused = await create("released", stage, kind, options);
     assert.equal((await refused.post(refused.proof)).status, 409);

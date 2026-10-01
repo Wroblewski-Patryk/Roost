@@ -36,6 +36,9 @@ async function fixture(t, scenario = "current") {
     if (command === "docker" && args?.[0] === "ps") {
       dockerCalls += 1;
       if (scenario === "docker_timeout") throw timeout();
+      // Simulate a responding observer beyond the former ten-second bound;
+      // no real sleep or model call is needed to check the command deadline.
+      if (scenario === "slow_docker" && options.timeout < 12000) throw timeout();
       return scenario === "docker_changed" && dockerCalls > 1 ? "changed_fixture_container\n" : "";
     }
     if (options?.cwd === x.install && command === "git") {
@@ -67,6 +70,15 @@ test("read-only collection returns bounded evidence from an unchanged physical r
   const x = await fixture(t);
   try { const evidence = x.collect(); assert.equal(evidence.head, x.options.currentCommit); assert.equal(evidence.files[0].content, "base\n"); }
   finally { x.restore(); }
+});
+
+test("a slow responding Docker observer can prove an unchanged snapshot while a timeout remains denied", windows, async t => {
+  const slow = await fixture(t, "slow_docker");
+  try { assert.equal(slow.collect().files[0].content, "base\n"); }
+  finally { slow.restore(); }
+  const stalled = await fixture(t, "docker_timeout");
+  try { assert.throws(stalled.collect, blocked("docker_observation_timeout")); }
+  finally { stalled.restore(); }
 });
 
 for (const [scenario, reason] of Object.entries({ tcp_timeout: "tcp_observation_timeout", docker_timeout: "docker_observation_timeout",

@@ -433,7 +433,7 @@ agentRuntimeRouter.get("/recovery", asyncHandler(async (req, res) => {
       || error?.details?.phase === "backend_evidence_request" && error?.details?.reason === "roost_http_409"
         && error?.details?.status === 409;
     const reconciledReadonly = error?.code === "agent_readonly_terminal_reconciled"
-      && ["code_reviewer_unproven", "managed_admission_blocked"].includes(error?.details?.priorCode)
+      && ["code_reviewer_unproven", "managed_admission_blocked", "readonly_boundary_unproven"].includes(error?.details?.priorCode)
       && error?.details?.checkpointStage === "spawn_intent"
       && error?.details?.nativeProcessesAbsent === true && error?.details?.pilotBaselineUnchanged === true;
     return stage === "spawn_intent" && (error?.code === "managed_admission_blocked" && preModelAdmission || reconciledReadonly)
@@ -545,7 +545,7 @@ agentRuntimeRouter.post("/executions/:id/actions/reconcile-readonly-spawn", asyn
     // read-only attempts with no accepted result may receive this cleanup
     // receipt; all stopped-process and exact-baseline proofs remain required.
     const terminalReadonly = current.status === "failed" && !claimedOnly
-      && (previous?.code === "managed_admission_blocked"
+      && (["managed_admission_blocked", "readonly_boundary_unproven"].includes(previous?.code)
         || previous?.code === "code_reviewer_unproven" && contract?.nativeBoundary?.inspectReadOnly?.kind === "code-reviewer")
       && current.completedAt && current.leaseExpiresAt === null;
     const activeExpired = ["claimed", "running"].includes(current.status) && !current.completedAt

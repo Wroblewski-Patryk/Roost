@@ -139,7 +139,7 @@ async function reclaimTerminalBeforeSpawn(directory, candidates) {
       && (["claimed", "branch_intent", "branch_ready", "prepared"].includes(checkpoint?.stage)
         || checkpoint?.stage === "spawn_intent" && reconciledReadOnlySpawn(item, checkpoint, bytes)
         || checkpoint?.stage === "spawn_intent" && item?.errorState?.code === "agent_readonly_terminal_reconciled"
-          && ["code_reviewer_unproven", "managed_admission_blocked"].includes(item.errorState?.details?.priorCode)
+          && ["code_reviewer_unproven", "managed_admission_blocked", "readonly_boundary_unproven"].includes(item.errorState?.details?.priorCode)
           && item.errorState?.details?.checkpointStage === "spawn_intent"
           && item.errorState?.details?.checkpointSessionId === checkpoint.sessionId
           && item.errorState?.details?.writerLockDigest === createHash("sha256").update(bytes).digest("hex")

@@ -92,7 +92,7 @@ test("terminal managed evidence rejection reclaims only the proven pre-model spa
   await recovered.release();
 });
 
-for (const priorCode of ["code_reviewer_unproven", "managed_admission_blocked"]) test(`failed read-only ${priorCode} needs an exact terminal reconciliation receipt before lock release`, { skip: process.platform !== "win32" }, async t => {
+for (const priorCode of ["code_reviewer_unproven", "managed_admission_blocked", "readonly_boundary_unproven"]) test(`failed read-only ${priorCode} needs an exact terminal reconciliation receipt before lock release`, { skip: process.platform !== "win32" }, async t => {
   const directory = await fixture(t);
   const candidate = { id: "00000000-0000-4000-8000-000000000021", workspaceId: "00000000-0000-4000-8000-000000000022",
     taskId: "00000000-0000-4000-8000-000000000023", applicationId: "00000000-0000-4000-8000-000000000024",
@@ -124,7 +124,7 @@ for (const priorCode of ["code_reviewer_unproven", "managed_admission_blocked"])
   await next.release();
 });
 
-async function retainedReadonlyFixture(t, { reconciledSpawn = false, kind = "verifier" } = {}) {
+async function retainedReadonlyFixture(t, { reconciledSpawn = false, kind = "verifier", terminalPriorCode = "managed_admission_blocked" } = {}) {
   const candidate = { id: "00000000-0000-4000-8000-000000000031", workspaceId: "00000000-0000-4000-8000-000000000032",
     taskId: "00000000-0000-4000-8000-000000000033", applicationId: "00000000-0000-4000-8000-000000000034",
     agentHostId: "00000000-0000-4000-8000-000000000035", status: "failed", attempt: 1, checkpointVersion: 3,
@@ -147,7 +147,7 @@ async function retainedReadonlyFixture(t, { reconciledSpawn = false, kind = "ver
   const writerBytes = await readFile(lockPath), leaseBytes = await readFile(leasePath);
   candidate.checkpoint.sessionId = JSON.parse(writerBytes).checkpoint.sessionId;
   candidate.errorState = { code: "agent_readonly_terminal_reconciled", details: {
-    priorCode: "managed_admission_blocked", checkpointStage: "spawn_intent", checkpointSessionId: candidate.checkpoint.sessionId,
+    priorCode: terminalPriorCode, checkpointStage: "spawn_intent", checkpointSessionId: candidate.checkpoint.sessionId,
     writerLockDigest: createHash("sha256").update(writerBytes).digest("hex"), nativeProcessesAbsent: true, pilotBaselineUnchanged: true,
     applicationLease: { state: "retained", digest: createHash("sha256").update(leaseBytes).digest("hex") } } };
   if (reconciledSpawn) candidate.errorState = { code: "agent_readonly_spawn_reconciled", retryable: false, details: {
@@ -159,8 +159,8 @@ async function retainedReadonlyFixture(t, { reconciledSpawn = false, kind = "ver
   return { directory, candidate, lockPath, leasePath, writerBytes, leaseBytes, record: JSON.parse(leaseBytes) };
 }
 
-test("exact terminal read-only receipt retires its retained application lease and original dead-owner Writer", { skip: process.platform !== "win32" }, async t => {
-  const f = await retainedReadonlyFixture(t);
+for (const terminalPriorCode of ["managed_admission_blocked", "readonly_boundary_unproven"]) test(`exact terminal read-only ${terminalPriorCode} receipt retires its retained application lease and original dead-owner Writer`, { skip: process.platform !== "win32" }, async t => {
+  const f = await retainedReadonlyFixture(t, { terminalPriorCode });
   const next = await acquireWriterLock(f.directory, { terminalCandidates: [f.candidate] });
   await assert.rejects(lstat(f.leasePath), { code: "ENOENT" });
   assert.notEqual(next.sessionId, f.candidate.checkpoint.sessionId);
