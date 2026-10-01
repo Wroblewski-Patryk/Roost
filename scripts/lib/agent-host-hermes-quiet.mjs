@@ -48,10 +48,11 @@ export async function runHermesOwnedProcess({ executable, argv, cwd, environment
     if (budgetReceipt) assertHermesBudgetProcess(budgetReceipt, { executable, argv, cwd, environment });
     if (jobArtifact) assertWindowsJobCapability(jobArtifact);
     assertLaunchAuthority();
-    // Reserve the existing 3-second launcher assignment window too. The Worker
-    // timer includes that window; compute AFTER the bounded footprint recheck
-    // so its time cannot extend the original native cleanup deadline.
-    const nativeDuration = Math.floor(remaining()) - (budgetReceipt ? 3000 : 0);
+    // Reserve creation/assignment from the original task budget. Gated v2
+    // deducts physical admission time from durationMs while the target remains
+    // suspended; its separate admission cap cannot extend this deadline.
+    const preparationReserveMs = 3000;
+    const nativeDuration = Math.floor(remaining()) - (budgetReceipt ? preparationReserveMs : 0);
     if (nativeDuration < 1) throw failure("hermes_quiet_timeout");
     const runtimeBinding = () => ({ executable: fixtureRuntimeBinding(executable), launcher: fixtureRuntimeBinding(artifact.executable), node: fixtureRuntimeBinding(process.execPath) });
     if (nativeProof) prepareNativeBoundaryResume(nativeProof, runtimeBinding());
@@ -67,7 +68,7 @@ export async function runHermesOwnedProcess({ executable, argv, cwd, environment
         try { guard.write(channel, bytes); }
         catch (error) { problem ??= error; throw error; }
       } });
-    const deadlineTimer = setTimeout(() => { problem ??= failure("hermes_quiet_timeout"); handle.stop("timeout"); }, nativeDuration + (budgetReceipt ? 3000 : 0));
+    const deadlineTimer = setTimeout(() => { problem ??= failure("hermes_quiet_timeout"); handle.stop("timeout"); }, nativeDuration + (budgetReceipt ? preparationReserveMs : 0));
     const timer = setInterval(check, 25), abort = () => check();
     signal?.addEventListener("abort", abort, { once: true });
     try {

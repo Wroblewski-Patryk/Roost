@@ -1,5 +1,16 @@
 # Windows owned-process job v1
 
+Gate 3 amendment (2026-10-01): authorized managed v2 targets retain the
+three-second creation/assignment and cleanup bounds. After assignment, the
+target remains suspended for at most a source-selected 60-second physical
+admission window. Exact challenge/receipt acknowledgment is still required;
+late, missing or rejected acknowledgment cannot execute the target. Admission
+consumes the original duration, including short tasks. Generic v1 retains its
+three-second startup bound. Current delivery claims and authority are defined
+in [implementation](../implementation.md) and
+[governed release](../operations/governed-release.md); older disabled-provider
+statements below are historical qualification evidence.
+
 Current B28 amendment: [original ownership before resume](fixture-ownership-before-resume.md).
 Native coding uses gated Windows Job v2 with durable Ready/origin/actual-Job
 bindings before acknowledgment and ResumeThread. Ordinary reconciliation can

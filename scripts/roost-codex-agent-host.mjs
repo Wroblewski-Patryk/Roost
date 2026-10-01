@@ -9,6 +9,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { repositoryForExecution, validateAgentHostWorkspace } from "./lib/agent-host-workspace-guard.mjs";
 import { createExecutionLease, terminateWindowsProcessTree } from "./lib/agent-host-execution-lease.mjs";
+import { safeExecutionDiagnostic, leaseRecoveryReason } from "./lib/agent-host-recovery-diagnostics.mjs";
 import { acquireWriterLock, writerRecoveryEvidence } from "./lib/agent-host-writer-lock.mjs";
 import { validateExecutionPacket } from "./lib/agent-host-execution-packet.mjs";
 import { assertRecoverySnapshot, classifyRecovery, recoveryError, workspaceDigest } from "./lib/agent-host-recovery.mjs";
@@ -660,10 +661,6 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: summary.slice(0, 10000), finalResponse, codexThreadId, changedFiles, verification, usage, resultRevision, metadata: { repositoryPathLabel: path.basename(repositoryPath), preExistingDirtyFiles: beforeStatus.map(statusPath), transportAccounting } })
     });
   } catch (error) {
-    const safeCode = value => /^[a-z][a-z0-9_]{2,80}$/.test(value ?? "") ? value : "other";
-    const code = safeCode(error?.message), leaseCode = lease.failure ? safeCode(lease.failure.message) : "none";
-    const detailCode = safeCode(error?.details?.reason);
-    process.stderr.write(`Agent Host safe diagnostic: phase=${executionPhase} code=${code} detail=${detailCode} lease=${leaseCode} status=${Number.isInteger(error?.status) ? error.status : "none"}.\n`);
     let hermesStopReceipt;
     if (hermesCollection) {
       hermesAbort.abort();
@@ -672,6 +669,18 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
         if (stopped.details?.attemptBudgetReceipt) for (const cause of [error, duration?.failure, lease.failure].filter(Boolean))
           cause.details = { ...cause.details, attemptBudgetReceipt: stopped.details.attemptBudgetReceipt };
       });
+    }
+    // Report only closed, bounded diagnostic fields after observing cleanup.
+    // This append-only observation grants no authority and cannot revive a lease.
+    const observedStop = hermesStopReceipt ?? hermesCompletedReceipt ?? error.details?.ownedTreeReceipt;
+    const diagnostic = safeExecutionDiagnostic({ error, executionPhase, leaseFailure: lease.failure,
+      nativeTermination: isWindowsJobCleanupReceipt(observedStop) ? observedStop.terminationReason : undefined });
+    process.stderr.write(`Agent Host safe diagnostic: ${JSON.stringify(diagnostic)}.\n`);
+    if (executionPhase !== "context" && lease.failure?.message !== "agent_execution_lease_rejected") {
+      await api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST", body: JSON.stringify({
+        leaseToken: claimed.leaseToken, type: "runner_progress", level: "warning",
+        message: "Native execution stopped; inspect bounded diagnostic fields.", payload: { diagnostic }
+      }) }).catch(() => process.stderr.write("Bounded execution diagnostic could not reach Roost; ownership remains retained.\n"));
     }
     if (lease.failure?.message === "agent_execution_cancel_requested"
       && isWindowsJobCleanupReceipt(hermesStopReceipt ?? hermesCompletedReceipt)) {
@@ -751,7 +760,8 @@ function recoveryReason(error) {
   if (error.contextStop) return "context_changed";
   if (error.recoveryReason) return error.recoveryReason;
   if (error.message === "agent_process_tree_stop_failed") return "process_may_be_running";
-  if (error.leaseLost || error.message === "agent_recovery_lease_expired") return "lease_expired";
+  const leaseReason = leaseRecoveryReason(error);
+  if (leaseReason) return leaseReason;
   if (error.message === "execution_packet_invalid") return "packet_invalid";
   if (error.readyAdmission) return "context_changed";
   if (/sandbox/.test(error.message)) return "sandbox_invalid";

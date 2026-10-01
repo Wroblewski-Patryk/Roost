@@ -502,3 +502,34 @@ or changed observations still refuse admission. Normal terminal reconciliation
 also recognizes this exact read-only error, preserving the existing contract,
 identity, no-result and physical-process guards. The Worker was stopped with
 its original artifacts retained pending deployed reconciliation.
+
+Deployment `l443t4q61jx9g38graqtmrkq` finished at
+`98df677642017ed124b487a9e8c7d6bd720acd07`; HTTPS health/build both returned
+200 and the exact commit. At 22:21:04 UTC the failed verifier's normal API
+receipt retired its exact retained application lease, original dead-owner Writer
+and unchanged signed pair (backend digest
+`50b2f9f04141f07c04199045d230e0190615885f53be52ee0e7d1ebd5e177c7c`).
+
+Verifier `0a083873-e799-4e23-94a7-b1701badffa2` passed signed admission but
+stopped before any accepted result. Its recorded `lease_expired` reason does
+not prove actual heartbeat expiry: native cleanup uncertainty also set
+`leaseLost` and was incorrectly classified as expiry. The exact earlier native
+cause was not retained. Normal expired read-only reconciliation and writer/signed
+artifact retirement completed at 22:31:41 UTC with unchanged baseline and no
+pinned process. A bounded diagnostic event now distinguishes actual lease expiry
+from process uncertainty without serializing exceptions or credentials.
+
+The gated Windows launcher also imposed its three-second startup deadline on
+the synchronous physical resume checks. Git/TCP/Docker checks can exceed that
+deadline while the owned target remains suspended. Gated v2 now separates its
+source-selected 60-second admission window from the unchanged three-second
+creation/assignment and cleanup limits. Admission time is deducted from the
+original native duration; neither this window nor a late acknowledgment extends
+that budget or revives authority. Final managed verification remains required.
+
+Root integration checks passed without skips: 30 lease/diagnostic tests,
+71 budget/native-boundary tests and 30 actual Windows Job qualification tests.
+The latter proved a 3.6-second admission, deduction from a short task budget,
+rejection/cancellation without target execution and the native 60-second cap
+while the controller event loop was blocked. These fixtures qualify the repair;
+they do not establish the missing managed verifier or release certificate.

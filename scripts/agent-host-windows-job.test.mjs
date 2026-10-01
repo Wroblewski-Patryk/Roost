@@ -7,7 +7,7 @@ import path from "node:path";
 import os from "node:os";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { buildWindowsJobLauncher, startWindowsJob, isWindowsJobReceipt, isWindowsJobCleanupReceipt, hermesOwnedTreeBlockers, assertWindowsJobCapability } from "./lib/agent-host-windows-job.mjs";
+import { buildWindowsJobLauncher, startWindowsJob, isWindowsJobReceipt, isWindowsJobCleanupReceipt, hermesOwnedTreeBlockers, assertWindowsJobCapability, windowsJobResumeWindowMs } from "./lib/agent-host-windows-job.mjs";
 import { classifyHermesOutcome } from "./lib/agent-host-hermes-budget.mjs";
 import { runHermesOwnedProcess } from "./lib/agent-host-hermes-quiet.mjs";
 import { validPacketFixture, pinReadyFixture } from "./fixtures/execution-packet.mjs";
@@ -23,7 +23,7 @@ async function gone(pids) {
   }
   assert.fail("owned_fixture_process_remaining");
 }
-test("native Windows Job qualification (serial, owned fixtures only)", {skip:process.platform!=="win32",timeout:120000}, async t=>{
+test("native Windows Job qualification (serial, owned fixtures only)", {skip:process.platform!=="win32",timeout:180000}, async t=>{
  const parent=await realpath(os.tmpdir()),directory=await mkdtemp(path.join(parent,"roost-job-native-test-"));
  const fixture=path.join(directory,"fixture with spaces.exe");
  const env={SystemRoot:process.env.SystemRoot};
@@ -72,6 +72,56 @@ test("native Windows Job qualification (serial, owned fixtures only)", {skip:pro
   });
   await t.test("surviving child/grandchild are terminated after normal root exit",async()=>{
    const r=await run("survivor");assert.equal(r.pids.length,4);assert.equal(r.receipt.terminationReason,"root_exit");assert.equal(r.receipt.rootExit,0);
+  });
+  await t.test("v2 admits a source-bounded synchronous callback beyond 3s while target remains suspended", async () => {
+   let assigned, callbackMs = 0;
+   const result = await run("echo", { resumeWindowMs: 1, onAssigned:a=>{assigned=a;}, confirmResume: assignment => {
+    const began=performance.now();
+    assert.equal(assignment.job,assigned.job);assert.equal(assignment.rootPid,assigned.rootPid);
+    assert.equal(assignment.assignedBeforeResume,true);assert.match(assignment.challenge,/^[a-f0-9-]{36}$/);
+    assert.equal(assignment.launcherSha256,artifact.sha256);assert.equal(assignment.sourceSha256,artifact.sourceSha256);
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,3600);
+    callbackMs=performance.now()-began;return "a".repeat(64);
+   }});
+   assert.equal(windowsJobResumeWindowMs,60000);assert.ok(callbackMs>=3500);
+   assert.equal(result.receipt.version,"roost-windows-job-v2");assert.equal(result.receipt.resumeReceipt,"a".repeat(64));
+   assert.equal(result.receipt.resumed,true);assert.equal(result.receipt.rootExit,0);
+   assert.equal(result.receipt.terminationReason,"root_exit");assert.ok(isWindowsJobReceipt(result.receipt));
+   assert.equal(isWindowsJobReceipt({...result.receipt,rootPid:result.receipt.rootPid+1}),false);
+  });
+  await t.test("v2 admission spends actual time inside the original short execution budget", async () => {
+   let confirmedAt;
+   const r=await run("tree",{durationMs:1200,confirmResume:()=>{
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,850);confirmedAt=performance.now();return "c".repeat(64);
+   }});
+   assert.equal(r.receipt.resumed,true);assert.equal(r.receipt.terminationReason,"timeout");
+   assert.ok(performance.now()-confirmedAt<1000,"resume must not reset the original duration");
+   assert.equal(r.receipt.resumeReceipt,"c".repeat(64));assert.ok(isWindowsJobCleanupReceipt(r.receipt));
+  });
+  for (const mode of ["reject", "short-expired", "expired", "cancel"]) await t.test(`v2 ${mode} resume admission never executes target and retains genuine bounded cleanup`, async () => {
+   let assignment, output="";
+   current=await startWindowsJob(artifact,{executable:fixture,argv:["echo"],cwd:directory,environment:env,input:"",durationMs:mode==="expired"?90000:mode==="short-expired"?700:1000,
+    onAssigned:a=>{assignment=a;},onData:(c,b)=>{output+=b;},confirmResume:()=>{
+     if(mode==="reject")throw Error("private admission callback details");
+     if(mode==="cancel"){current.stop("cancel");return "b".repeat(64);}
+     // Block the controller event loop to prove the native watchdog independently
+     // bounds suspended admission; a late valid digest cannot resume the target.
+     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,mode==="short-expired"?900:windowsJobResumeWindowMs+800);
+     return "b".repeat(64);
+    }});
+   try {
+    await assert.rejects(current.completion,error=>{
+     assert.equal(error.message,"hermes_stop_recovery_unproven");assert.equal(error.retryable,false);
+     const receipt=error.details?.ownedTreeReceipt;
+     assert.ok(isWindowsJobCleanupReceipt(receipt));assert.equal(receipt.resumed,false);
+     assert.equal(receipt.resumeReceipt,null);assert.equal(receipt.activeProcesses,0);assert.equal(receipt.jobClosed,true);
+     assert.ok(receipt.cleanupMs<=3000);assert.equal(receipt.rootPid,assignment.rootPid);
+     assert.equal(receipt.terminationReason,mode==="expired"?"startup_timeout":mode==="short-expired"?"timeout":mode==="cancel"?"cancel":"preparation_failed");
+     assert.equal(isWindowsJobReceipt(receipt),false);assert.equal(isWindowsJobCleanupReceipt({...receipt}),false);
+     assert.ok(!JSON.stringify(error).includes("private admission callback details"));return true;
+    });
+    assert.equal(output,"");await gone([assignment.rootPid,assignment.launcherPid]);
+   } finally {current.stop();await current.completion.catch(()=>{});current=null;}
   });
   for (const gated of [false, true]) await t.test(`consumer rejection retains genuine cleanup on v${gated ? 2 : 1}`, async () => {
    let calls=0, assignment;

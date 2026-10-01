@@ -9,6 +9,9 @@ import { fileURLToPath } from "node:url";
 import { z } from "zod";
 
 export const windowsJobVersion = "roost-windows-job-v1";
+// Source-selected v2 admission cap only; actual admission consumes durationMs.
+// Caller/config cannot override it, creation or cleanup, or reset the deadline.
+export const windowsJobResumeWindowMs = 60_000;
 const source = fileURLToPath(new URL("../roost-windows-job.cs", import.meta.url));
 const exec = promisify(execFile), builds = new WeakMap(), receipts = new WeakMap();
 const digest = bytes => createHash("sha256").update(bytes).digest("hex");
@@ -138,8 +141,9 @@ export async function startWindowsJob(artifact, options) {
           if (event.type === "assigned") {
             if (assigned || !executableDigest || !event.assignedBeforeResume || !event.rootCreationTime || event.launcherPid !== child.pid) throw fail(); assigned = event; onAssigned(event);
             if (confirmResume) {
+              const admissionBegan = performance.now();
               const receiptDigest = confirmResume(Object.freeze({ ...event, executableDigest, launcherSha256: artifact.sha256, sourceSha256: artifact.sourceSha256 }));
-              if (stopped || !/^[a-f0-9]{64}$/.test(receiptDigest ?? "")) throw fail();
+              if (stopped || performance.now() - admissionBegan >= Math.min(windowsJobResumeWindowMs, durationMs) || !/^[a-f0-9]{64}$/.test(receiptDigest ?? "")) throw fail();
               authorizedDigest = receiptDigest;
               child.stdin.write(JSON.stringify({ version, attempt, job: event.job, challenge: event.challenge, receipt: receiptDigest, resume: true }) + "\n");
             }

@@ -20,8 +20,11 @@ internal static class RoostWindowsJob
     static readonly Stream Control = Console.OpenStandardInput();
     static readonly Stream Wire = Console.OpenStandardOutput();
     static readonly Stopwatch Clock = Stopwatch.StartNew();
+    const int CreationWindowMs = 3000, ResumeAdmissionWindowMs = 60000;
     static volatile string reason;
     static long killDeadline = 3500;
+    static long startupDeadline = CreationWindowMs;
+    static string startupStopReason = "startup_timeout";
     static string attempt, identity = Guid.NewGuid().ToString(), challenge, resumeDigest;
     static IntPtr job, process, thread;
     static volatile bool resumed;
@@ -95,10 +98,15 @@ internal static class RoostWindowsJob
     {
         IntPtr attributes = IntPtr.Zero, handles = IntPtr.Zero, jobList = IntPtr.Zero, environment = IntPtr.Zero;
         var pipes = new List<IntPtr>(); Thread outPump = null, errPump = null; FileStream fixedFile = null;
-        int stopMs = 3000, duration = 0; bool clean = false; uint active = 0;
+        int stopMs = 3000, duration = 0; long executionDeadline = 0; bool clean = false; uint active = 0;
         // A blocked request/read/output channel cannot indefinitely retain a job.
         Background(delegate { while (Clock.ElapsedMilliseconds < Interlocked.Read(ref killDeadline)) Thread.Sleep(10); Environment.Exit(3); });
-        Background(delegate { Thread.Sleep(3000); if (!resumed) Stop("startup_timeout"); });
+        Background(delegate {
+            while (!resumed && Reason == null) {
+                lock (Gate) { if (!resumed && Reason == null && Clock.ElapsedMilliseconds >= Interlocked.Read(ref startupDeadline)) Stop(startupStopReason); }
+                Thread.Sleep(5);
+            }
+        });
         Dictionary<string, object> request = null;
         Background(delegate {
             try { var line = Line(262144); if (line == null) { Stop("controller_closed"); return; }
@@ -187,12 +195,34 @@ bool member; Need(IsProcessInJob(process, job, out member) && member && Active()
                 { "rootCreationTime", rootCreationTime }, { "launcherPid", launcherId }, { "launcherCreationTime", launcherCreationTime },
                 { "assignedBeforeResume", true }, { "killOnClose", true }, { "breakaway", false }, { "controllerInJob", controllerJob }, { "inheritedJob", inheritedJob } };
             if (Version == "roost-windows-job-v2") assignment.Add("challenge", challenge);
+            lock (Gate) {
+                Need(Reason == null && Clock.ElapsedMilliseconds < CreationWindowMs);
+                // Only an already assigned, still suspended v2 target gets the
+                // source-selected admission window. Creation and cleanup retain
+                // their original bounds; neither request nor acknowledgement can
+                // select a longer window or execute the target before approval.
+                if (Version == "roost-windows-job-v2") {
+                    long assignedAt = Clock.ElapsedMilliseconds;
+                    executionDeadline = assignedAt + duration;
+                    // Admission consumes the original duration, even for short
+                    // tasks. It cannot reset their execution deadline on resume.
+                    Interlocked.Exchange(ref startupDeadline, Math.Min(assignedAt + ResumeAdmissionWindowMs, executionDeadline));
+                    startupStopReason = duration <= ResumeAdmissionWindowMs ? "timeout" : "startup_timeout";
+                    Interlocked.Exchange(ref killDeadline, Interlocked.Read(ref startupDeadline) + stopMs + 500);
+                }
+            }
             Need(Emit(assignment));
             if (Version == "roost-windows-job-v2") {
                 Dictionary<string, object> acknowledgement = null;
                 Background(delegate {
                     try { var line = Line(1024); if (line == null) { Stop("controller_closed"); return; }
                         var value = new JavaScriptSerializer { MaxJsonLength = 1024, RecursionLimit = 4 }.Deserialize<Dictionary<string, object>>(line);
+                        if (value.ContainsKey("stop")) {
+                            Exact(value, new[] { "version", "attempt", "stop" });
+                            Need(Str(value, "version") == Version && Str(value, "attempt") == attempt);
+                            string why = Str(value, "stop"); Need(Array.IndexOf(new[] { "cancel", "timeout", "lease_lost", "context_stop", "controller_shutdown", "preparation_failed" }, why) >= 0);
+                            Stop(why); return;
+                        }
                         Exact(value, new[] { "version", "attempt", "job", "challenge", "receipt", "resume" });
                         Need(Str(value, "version") == Version && Str(value, "attempt") == attempt && Str(value, "job") == identity && Str(value, "challenge") == challenge);
                         Need(value["resume"] is bool && (bool)value["resume"]);
@@ -208,9 +238,10 @@ bool member; Need(IsProcessInJob(process, job, out member) && member && Active()
             if (Str(request, "fault") == "resume") Close(ref thread); // force actual ResumeThread failure
 #endif
             lock (Gate) {
-                Need(Reason == null && Clock.ElapsedMilliseconds < 3000);
+                Need(Reason == null && Clock.ElapsedMilliseconds < Interlocked.Read(ref startupDeadline));
+                if (Version == "roost-windows-job-v2") { duration = (int)(executionDeadline - Clock.ElapsedMilliseconds); Need(duration > 0); }
                 Need(ResumeThread(thread) == 1); resumed = true;
-                Interlocked.Exchange(ref killDeadline, Clock.ElapsedMilliseconds + duration + stopMs + 500); Close(ref thread);
+                Interlocked.Exchange(ref killDeadline, (Version == "roost-windows-job-v2" ? executionDeadline : Clock.ElapsedMilliseconds + duration) + stopMs + 500); Close(ref thread);
             }
             pipes.Remove(pout[0]); pipes.Remove(perr[0]);
             outPump = Background(delegate { Pump(pout[0], "stdout"); }); errPump = Background(delegate { Pump(perr[0], "stderr"); });
@@ -226,7 +257,7 @@ bool member; Need(IsProcessInJob(process, job, out member) && member && Active()
                     Stop(why);
                 } catch { Stop("protocol_error"); }
             });
-            long deadline = Clock.ElapsedMilliseconds + duration;
+            long deadline = Version == "roost-windows-job-v2" ? executionDeadline : Clock.ElapsedMilliseconds + duration;
             while (Reason == null) {
                 if (WaitForSingleObject(process, 0) == 0) { Stop("root_exit"); break; }
                 if (Clock.ElapsedMilliseconds >= deadline) { Stop("timeout"); break; }
