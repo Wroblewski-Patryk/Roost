@@ -437,3 +437,32 @@ or changed artifacts remain blocked. Actual recovery completed at
 2026-10-01 21:27:47 UTC through this protocol, with no native process, accepted
 result or baseline change. Root checks passed 39 admission and 13 native
 Windows writer tests, without skips. The release certificate remains pending.
+
+Roost deployment `cj1ftk9dnqmazis05jb5lvjv` finished at
+`593df37ef5031e48603f05fa86aadc9a0887749a`; HTTPS health and build identity
+both returned 200 and the exact commit. Native baseline auditor
+`28c85e4a-01de-40d0-a5ed-86bebdb09eac` completed at
+2026-10-01 21:39:29 UTC on baseline
+`efac14d67f8f8398d133b20723c92c82046dbc33`. Its verified read-only evidence
+digest is `ba035096a93a7cedad40c24efec3a8ee0956d64c9c6e9f579f3745fbb4ecc661`;
+pre/post footprint matched, Git/listening TCP/running container state was
+unchanged, native tools were empty, and the owned Windows Job exited zero,
+closed and reported zero active processes. Retry intent was zero and the
+attempt used the admitted low/two-turn profile; physical calls/token usage
+remain unavailable. The model described the baseline and correctly retained
+missing candidate, runtime test and final release evidence.
+
+Independent verifier `f63c3c0d-4887-4cd7-8c85-ae9481b353a6` failed at the
+claimed checkpoint before a model/result or application lease. Its boundary
+error lost the inner reason; this does not invalidate the completed baseline
+audit or establish a verified second canary. Normal terminal writer reclaim
+completed at 21:43:53 UTC with the exact unchanged baseline footprint and no
+pinned native runtime. A separately running desktop application was identified
+as a different executable and was left untouched. The first-write Decision,
+candidate, independent exact review and governed release remain pending.
+
+Collection, tool qualification and read-only sealing now retain bounded named
+boundary causes as well. Nested observation failures and changed snapshots
+previously became a generic `unproven` error in these pre-launch stages.
+Focused physical-repository fixtures cover that loss of diagnostics without
+changing the admission checks, command allowlist, observation scope or timeouts.

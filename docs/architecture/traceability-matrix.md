@@ -1497,6 +1497,9 @@ candidate/review/push/PR/merge/deploy/health/failure/rollback/cleanup remain pen
 Normal HTTPS reconciliation and exact dead-owner recovery of a failed read-only
 attempt's retained application lease are proven on Windows; this is local
 pre-release recovery evidence, not a governed release certificate.
+Native baseline auditor `28c85e4a-01de-40d0-a5ed-86bebdb09eac` completed
+with a verified read-only receipt and closed Windows Job; independent Gate 3
+verification and release certification remain pending.
 
 [Operations and evidence checkpoint](../operations/governed-release.md),
 [server authority](../../src/modules/agent-runtime/governed-release.ts),
@@ -1543,7 +1546,11 @@ native diagnostics and on-demand legacy projections; value-free incidents.
 [scripts/agent-host-recovery.test.mjs](../../scripts/agent-host-recovery.test.mjs), [scripts/agent-host-execution-lease.test.mjs](../../scripts/agent-host-execution-lease.test.mjs), [scripts/agent-host-writer-lock.test.mjs](../../scripts/agent-host-writer-lock.test.mjs).
 
 <a id="e-auditor"></a>
-**AUDITOR** — Existing outcome prompt assumes implementation and sandbox is workspace-write; no read-only canary.
+**AUDITOR** — Gate 2 has native read-only auditor/verifier proof. Gate 3's
+baseline auditor completed with unchanged Git, listening TCP and running
+container observations, no native tools and a closed owned Windows Job.
+Its independent verifier has not yet completed; continuous canary activation
+remains unproven.
 
 [scripts/roost-codex-agent-host.mjs](../../scripts/roost-codex-agent-host.mjs), [scripts/lib/agent-host-execution-packet.mjs](../../scripts/lib/agent-host-execution-packet.mjs).
 

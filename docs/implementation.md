@@ -161,8 +161,8 @@ inside the same outcome rather than deferred into unrelated contract work.
 
 ### Gate 3 — governed release
 
-**In progress (2026-10-01):** Five-task admission, backup/restore and Worker
-credential rotation pass; native audits/release/rollback remain unproven.
+**In progress (2026-10-01):** Admission, backup/restore and native baseline
+audit pass; independent verification/release/rollback remain unproven.
 [Operations/evidence](operations/governed-release.md). Gate 4 is not started.
 
 An accepted exact commit follows the configured Git and deployment path,
