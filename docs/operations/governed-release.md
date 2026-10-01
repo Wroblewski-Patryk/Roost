@@ -323,3 +323,17 @@ acceptance still validates every task in the complete native transaction.
 Eleven focused tests, seven native API tests and the additional projection API
 case pass; local validation and `codex:check` pass. Full positive production
 impact and the governed release certificate remain pending.
+
+The complete production acceptance also exceeded the scoped 90-second budget
+(P2028 after 94608 ms); normal read-back found the same proposed Decision with
+no acceptance. Read-only queries in one repeatable-read snapshot showed that
+disabling PostgreSQL JIT reduced pending-version calculation from 2744.558 ms
+to 647.795 ms with the same result digest. Rollback restored the original JIT
+setting. Explicit complete-impact acceptance now uses `SET LOCAL jit = off`
+inside its existing Serializable transaction. This changes query compilation
+only; native dependency hashes, deferred proposals, freshness and acceptance
+guards remain unchanged. Other transactions retain their prior settings.
+Ten native API checks passed, including local JIT restoration after success
+and rollback, unchanged high/critical gates, stale and concurrent refusals,
+atomic evidence acceptance and replay. Validation and `codex:check` passed.
+Positive full production acceptance must still be proved after deployment.

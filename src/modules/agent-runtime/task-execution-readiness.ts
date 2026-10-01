@@ -37,7 +37,13 @@ export async function submissionVersion(db: Prisma.TransactionClient, workspaceI
 }
 export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) => Promise<T>, options: { timeoutMs?: 20000 | 90000 } = {}): Promise<T | { error: string }> {
   const startedAt=Date.now(),timeoutMs=options.timeoutMs??20000;
-  try { return await prisma.$transaction(work, { isolationLevel: "Serializable", maxWait: 5000, timeout: timeoutMs }); }
+  try { return await prisma.$transaction(async tx => {
+    // Complete-impact acceptance repeatedly checks current native dependencies.
+    // Compiling each short graph query costs more than executing it. LOCAL keeps
+    // this tuning inside this transaction; no gate, source or isolation changes.
+    if (timeoutMs === 90000) await tx.$executeRaw`SET LOCAL jit = off`;
+    return work(tx);
+  }, { isolationLevel: "Serializable", maxWait: 5000, timeout: timeoutMs }); }
   catch (error) {
     if(error instanceof Error && /^finding_[a-z_]+$/.test(error.message))return {error:error.message};
     const nativeDiagnostic = error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2010" ? String(error.meta?.message ?? "") : error instanceof Prisma.PrismaClientUnknownRequestError ? error.message : "";

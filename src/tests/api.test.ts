@@ -14432,6 +14432,18 @@ test("decision governance atomically records explicit human procedure evidence a
  assert.equal((await prisma.$queryRaw<any[]>`SELECT count(*)::int AS n FROM decision_acceptances WHERE decision_id=${p.id}::uuid`)[0].n,1);
 });
 
+test("complete-impact transaction disables JIT locally and restores pooled settings after success and rollback",async()=>{
+ const {readyTransaction}=await import("../modules/agent-runtime/task-execution-readiness");
+ const setting=async(db:any)=>(await db.$queryRaw`SELECT current_setting('jit') AS value`)[0].value;
+ const original=await setting(prisma);
+ assert.equal(await readyTransaction(db=>setting(db)),original);
+ assert.equal(await readyTransaction(db=>setting(db),{timeoutMs:90000}),"off");
+ assert.equal(await setting(prisma),original);
+ const refused=await readyTransaction(async db=>{assert.equal(await setting(db),"off");throw Error("finding_jit_rollback");},{timeoutMs:90000});
+ assert.deepEqual(refused,{error:"finding_jit_rollback"});
+ assert.equal(await setting(prisma),original);
+});
+
 test("decision governance follows directional dependencies without sibling expansion",async()=>{
  const owner=await registerOwner("decision-direction@example.test","Directional decision fixture"),workspaceId=owner.workspace.id,auth={Authorization:`Bearer ${owner.token}`};
  const project=await prisma.project.create({data:{workspaceId,name:"Directional project"}}),app=await prisma.application.create({data:{workspaceId,name:"Directional app",slug:"directional-fixture"}});
