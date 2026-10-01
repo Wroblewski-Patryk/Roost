@@ -5,6 +5,7 @@ import { lstat, mkdir, open, readFile, unlink } from "node:fs/promises";
 import path from "node:path";
 import { readFileSync, lstatSync, existsSync, openSync, closeSync, ftruncateSync, writeSync, fsyncSync, fstatSync } from "node:fs";
 import { qualifyReleaseWriterReclaim } from "./agent-host-release-writer-recovery.mjs";
+import { nativeDigest, physicalIdentity } from "./agent-host-native-footprint.mjs";
 
 const liveWriters = new WeakMap();
 export function writerRecoveryEvidence(lock) {
@@ -122,7 +123,44 @@ async function reclaimTerminalBeforeSpawn(directory, candidates) {
           && item.codexThreadId === null && item.finalResponse === null
           && Array.isArray(item.changedFiles) && item.changedFiles.length === 0));
     if (!candidate || observeWindowsProcessIdentity(current.ownerPid) !== null) throw new Error("agent_host_writer_locked");
+    let retainedLease = null;
+    if (checkpoint?.stage === "spawn_intent" && candidate.errorState?.code === "agent_readonly_terminal_reconciled") {
+      // A failed read-only boundary can retain its application reservation.
+      // Only the normal terminal reconciliation receipt may retire that exact
+      // lease; generic failures and coding checkpoints grant no lease cleanup.
+      const attestation = candidate.errorState.details.applicationLease;
+      const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
+      if (!uuid.test(checkpoint.applicationId ?? "") || !uuid.test(checkpoint.executionId ?? "")
+        || !(attestation?.state === "retained" && /^[a-f0-9]{64}$/.test(attestation.digest ?? "")
+          || attestation?.state === "released" && attestation.absent === true)) throw new Error("agent_host_writer_locked");
+      const application = nativeDigest(checkpoint.applicationId);
+      const file = path.join(directory, `application-${application}.lease`);
+      const leaseStat = await lstat(file, { bigint: true }).catch(error => { if (error.code === "ENOENT") return null; throw error; });
+      if (leaseStat) {
+        if (attestation.state !== "retained" || !leaseStat.isFile() || leaseStat.isSymbolicLink()
+          || leaseStat.nlink !== 1n || leaseStat.size > 2048n) throw new Error("agent_host_writer_locked");
+        let identity; try { identity = physicalIdentity(file, false); } catch { throw new Error("agent_host_writer_locked"); }
+        const leaseBytes = await readFile(file); let record;
+        try { record = JSON.parse(leaseBytes); } catch { throw new Error("agent_host_writer_locked"); }
+        if (createHash("sha256").update(leaseBytes).digest("hex") !== attestation.digest
+          || !record || typeof record !== "object" || Array.isArray(record)
+          || Object.keys(record).sort().join() !== "application,attempt,nonce,version,writer"
+          || record.version !== 1 || !uuid.test(record.nonce ?? "") || record.attempt !== checkpoint.executionId
+          || record.application !== application || record.writer !== current.ownerNonce) throw new Error("agent_host_writer_locked");
+        retainedLease = { file, bytes: leaseBytes, identity };
+      }
+      // An absent retained lease can be the uncertain outcome of the previous
+      // exact unlink. The same terminal receipt still binds the retained Writer.
+      const latestLease = await lstat(file).catch(error => { if (error.code === "ENOENT") return null; throw error; });
+      if (!retainedLease && latestLease) throw new Error("agent_host_writer_locked");
+    }
     if (await readFile(lockPath, "utf8") !== bytes) throw new Error("agent_host_writer_locked");
+    if (retainedLease) {
+      let identity; try { identity = physicalIdentity(retainedLease.file, false); } catch { throw new Error("agent_host_writer_locked"); }
+      if (identity !== retainedLease.identity || !(await readFile(retainedLease.file)).equals(retainedLease.bytes)) throw new Error("agent_host_writer_locked");
+      await unlink(retainedLease.file);
+      if (await readFile(lockPath, "utf8") !== bytes) throw new Error("agent_host_writer_locked");
+    }
     await unlink(lockPath);
   } finally { await gate.close(); await unlink(gatePath); }
 }

@@ -2,14 +2,19 @@ import { strict as assert } from "node:assert";
 import { createHash } from "node:crypto";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
-import { mkdtemp, readFile, writeFile, unlink, rmdir } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile, unlink, rmdir, lstat, link, mkdir } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 import { acquireWriterLock, writerLockFilename } from "./lib/agent-host-writer-lock.mjs";
+import { nativeDigest } from "./lib/agent-host-native-footprint.mjs";
 
-async function fixture(t) {
+async function fixture(t, cleanupNames = []) {
   const directory = await mkdtemp(path.join(process.cwd(), "scripts", ".writer-lock-test-"));
   t.after(async () => {
+    for (const name of cleanupNames) {
+      const file = path.join(directory, name), stat = await lstat(file).catch(error => { if (error.code === "ENOENT") return null; throw error; });
+      if (stat) await (stat.isDirectory() && !stat.isSymbolicLink() ? rmdir(file) : unlink(file));
+    }
     await unlink(path.join(directory, writerLockFilename)).catch((error) => { if (error.code !== "ENOENT") throw error; });
     await rmdir(directory);
   });
@@ -102,7 +107,7 @@ for (const priorCode of ["code_reviewer_unproven", "managed_admission_blocked"])
   candidate.checkpoint.sessionId = JSON.parse(bytes).checkpoint.sessionId;
   const details = { priorCode, checkpointStage: "spawn_intent",
     checkpointSessionId: candidate.checkpoint.sessionId, writerLockDigest: createHash("sha256").update(bytes).digest("hex"),
-    nativeProcessesAbsent: true, pilotBaselineUnchanged: true };
+    nativeProcessesAbsent: true, pilotBaselineUnchanged: true, applicationLease: { state: "released", absent: true } };
   candidate.errorState = { code: "agent_readonly_terminal_reconciled", details };
   for (const patch of [{ writerLockDigest: "0".repeat(64) }, { priorCode: "unknown_failure" },
     { checkpointSessionId: "different-session" }, { checkpointStage: "prepared" },
@@ -116,6 +121,87 @@ for (const priorCode of ["code_reviewer_unproven", "managed_admission_blocked"])
   await assert.rejects(acquireWriterLock(directory, { terminalCandidates: [{ ...candidate,
     errorState: { code: priorCode, details: {} } }] }), /agent_host_writer_locked/);
   const next = await acquireWriterLock(directory, { terminalCandidates: [candidate] });
+  await next.release();
+});
+
+async function retainedReadonlyFixture(t) {
+  const candidate = { id: "00000000-0000-4000-8000-000000000031", workspaceId: "00000000-0000-4000-8000-000000000032",
+    taskId: "00000000-0000-4000-8000-000000000033", applicationId: "00000000-0000-4000-8000-000000000034",
+    agentHostId: "00000000-0000-4000-8000-000000000035", status: "failed", attempt: 1, checkpointVersion: 3,
+    leaseExpiresAt: null, completedAt: new Date().toISOString(), codexThreadId: null, finalResponse: null, changedFiles: [],
+    checkpoint: { schemaVersion: "roost-recovery-v1", stage: "spawn_intent", sessionId: null,
+      packetRevision: "revision", workspaceDigest: "digest", contextRevision: "context" } };
+  const leaseName = `application-${nativeDigest(candidate.applicationId)}.lease`;
+  const directory = await fixture(t, ["owned-test-lease-link", leaseName]);
+  const script = `import { acquireWriterLock } from './scripts/lib/agent-host-writer-lock.mjs'; import { acquireApplicationLease } from './scripts/lib/agent-host-application-lease.mjs'; const lock=await acquireWriterLock(${JSON.stringify(directory)}); await lock.checkpoint({...${JSON.stringify(candidate)},checkpoint:{...${JSON.stringify(candidate.checkpoint)},sessionId:lock.sessionId}}); acquireApplicationLease({writerLock:lock,applicationId:${JSON.stringify(candidate.applicationId)},attempt:${JSON.stringify(candidate.id)},runtime:{required:false,ports:[]}});`;
+  const child = spawn(process.execPath, ["--input-type=module", "-e", script], { windowsHide: true, stdio: "ignore" });
+  assert.equal((await once(child, "close"))[0], 0);
+  const lockPath = path.join(directory, writerLockFilename), leasePath = path.join(directory, leaseName);
+  const writerBytes = await readFile(lockPath), leaseBytes = await readFile(leasePath);
+  candidate.checkpoint.sessionId = JSON.parse(writerBytes).checkpoint.sessionId;
+  candidate.errorState = { code: "agent_readonly_terminal_reconciled", details: {
+    priorCode: "managed_admission_blocked", checkpointStage: "spawn_intent", checkpointSessionId: candidate.checkpoint.sessionId,
+    writerLockDigest: createHash("sha256").update(writerBytes).digest("hex"), nativeProcessesAbsent: true, pilotBaselineUnchanged: true,
+    applicationLease: { state: "retained", digest: createHash("sha256").update(leaseBytes).digest("hex") } } };
+  return { directory, candidate, lockPath, leasePath, writerBytes, leaseBytes, record: JSON.parse(leaseBytes) };
+}
+
+test("exact terminal read-only receipt retires its retained application lease and original dead-owner Writer", { skip: process.platform !== "win32" }, async t => {
+  const f = await retainedReadonlyFixture(t);
+  const next = await acquireWriterLock(f.directory, { terminalCandidates: [f.candidate] });
+  await assert.rejects(lstat(f.leasePath), { code: "ENOENT" });
+  assert.notEqual(next.sessionId, f.candidate.checkpoint.sessionId);
+  await next.release();
+});
+
+test("uncertain exact lease unlink resumes from retained receipt without adopting a new lease", { skip: process.platform !== "win32" }, async t => {
+  const f = await retainedReadonlyFixture(t);
+  await unlink(f.leasePath); // Owned fixture simulates crash between the two exact unlinks.
+  const next = await acquireWriterLock(f.directory, { terminalCandidates: [f.candidate] });
+  await next.release();
+});
+
+test("terminal read-only lease cleanup rejects foreign bytes and identity, preserving the original Writer", { skip: process.platform !== "win32" }, async t => {
+  const f = await retainedReadonlyFixture(t);
+  const deny = async candidate => {
+    await assert.rejects(acquireWriterLock(f.directory, { terminalCandidates: [candidate] }), /agent_host_writer_locked/);
+    assert.deepEqual(await readFile(f.lockPath), f.writerBytes);
+  };
+  for (const patch of [{ version: 2 }, { nonce: "not-a-uuid" }, { attempt: "00000000-0000-4000-8000-000000000099" },
+    { application: "0".repeat(64) }, { writer: "00000000-0000-4000-8000-000000000099" }, { foreign: true }]) {
+    const bytes = Buffer.from(JSON.stringify({ ...f.record, ...patch }));
+    await writeFile(f.leasePath, bytes);
+    const candidate = { ...f.candidate, errorState: { ...f.candidate.errorState,
+      details: { ...f.candidate.errorState.details, applicationLease: { state: "retained", digest: createHash("sha256").update(bytes).digest("hex") } } } };
+    await deny(candidate); assert.deepEqual(await readFile(f.leasePath), bytes);
+  }
+  await writeFile(f.leasePath, f.leaseBytes);
+  await deny({ ...f.candidate, errorState: { ...f.candidate.errorState,
+    details: { ...f.candidate.errorState.details, applicationLease: { state: "retained", digest: "0".repeat(64) } } } });
+  await deny({ ...f.candidate, errorState: { ...f.candidate.errorState,
+    details: { ...f.candidate.errorState.details, applicationLease: { state: "released", absent: true } } } });
+  await deny({ ...f.candidate, errorState: { ...f.candidate.errorState,
+    details: { ...f.candidate.errorState.details, applicationLease: undefined } } });
+  const hardlink = path.join(f.directory, "owned-test-lease-link");
+  await link(f.leasePath, hardlink); await deny(f.candidate); await unlink(hardlink);
+  await unlink(f.leasePath); await mkdir(f.leasePath); await deny(f.candidate); await rmdir(f.leasePath);
+  await writeFile(f.leasePath, "{invalid"); await deny(f.candidate);
+  for (const bytes of ["null", "[]", "42", '"foreign"']) {
+    await writeFile(f.leasePath, bytes);
+    await deny({ ...f.candidate, errorState: { ...f.candidate.errorState,
+      details: { ...f.candidate.errorState.details, applicationLease: {
+        state: "retained", digest: createHash("sha256").update(bytes).digest("hex") } } } });
+  }
+  await writeFile(f.leasePath, f.leaseBytes);
+  const next = await acquireWriterLock(f.directory, { terminalCandidates: [f.candidate] });
+  await next.release();
+});
+
+test("generic pre-signature failure cannot retire a retained application lease", { skip: process.platform !== "win32" }, async t => {
+  const f = await retainedReadonlyFixture(t);
+  const generic = { ...f.candidate, errorState: { code: "managed_admission_blocked", details: { phase: "backend_evidence_persist" } } };
+  const next = await acquireWriterLock(f.directory, { terminalCandidates: [generic] });
+  assert.deepEqual(await readFile(f.leasePath), f.leaseBytes);
   await next.release();
 });
 

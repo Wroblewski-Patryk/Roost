@@ -86,7 +86,7 @@ async function signedAdmissionFixture(t, settings = {}) {
 }
 const windows = { skip: process.platform !== "win32", timeout: 60000 };
 
-for (const scenario of ["current", "cold_preparation", "expired_startup"]) test(`signed managed read-only retry-zero launch: ${scenario}`, windows, async t => {
+for (const scenario of ["current", "cold_preparation", "expired_startup", "repository_changed_before_signing", "repository_changed_after_signing", "process_changed_before_signing", "docker_changed_before_signing", "tcp_observation_timeout_before_signing", "docker_observation_timeout_before_signing"]) test(`signed managed read-only retry-zero launch: ${scenario}`, windows, async t => {
   const x = await nativeFixture(t, { prepare: false });
   const selection = managedSelectionFixture("codex_responses");
   selection.attemptPolicy = { ...selection.attemptPolicy, maxTurns: 2, apiMaxRetries: 0 };
@@ -107,11 +107,18 @@ for (const scenario of ["current", "cold_preparation", "expired_startup"]) test(
     const file = path.join(x.install, relative); fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, "# closed fixture source\n");
   }
   const originalExec = childProcess.execFileSync;
+  let observedProcess = "closed_fixture_listeners\n", observedDocker = "";
   // Only external observation/qualification output is substituted. The real
   // profile, startup, Ready, input, signatures, writer, lease and launch readers run.
   childProcess.execFileSync = (command, args, options) => {
-    if (command === "powershell" && args?.includes("Get-NetTCPConnection -State Listen | Sort-Object LocalAddress,LocalPort,OwningProcess | ForEach-Object { '{0}|{1}|{2}' -f $_.LocalAddress,$_.LocalPort,$_.OwningProcess }")) return "closed_fixture_listeners\n";
-    if (command === "docker" && args?.[0] === "ps") return "";
+    if (command === "powershell" && args?.includes("Get-NetTCPConnection -State Listen | Sort-Object LocalAddress,LocalPort,OwningProcess | ForEach-Object { '{0}|{1}|{2}' -f $_.LocalAddress,$_.LocalPort,$_.OwningProcess }")) {
+      if (observedProcess instanceof Error) throw observedProcess;
+      return observedProcess;
+    }
+    if (command === "docker" && args?.[0] === "ps") {
+      if (observedDocker instanceof Error) throw observedDocker;
+      return observedDocker;
+    }
     if (options?.cwd === x.install && command === "git") return args.includes("rev-parse") ? x.provider.commit : "";
     if (command === path.join(x.install, "venv", "Scripts", "python.exe")) return "[[], []]\n";
     return originalExec(command, args, options);
@@ -125,8 +132,24 @@ for (const scenario of ["current", "cold_preparation", "expired_startup"]) test(
     envelope = prepareProviderInput({ ...x.options, startupEnvironment, repositoryEvidence });
     x.f.claimed.checkpoint = { stage: "spawn_intent", packetRevision: envelope.revisions.packet, contextRevision: envelope.revisions.context };
     if (scenario === "cold_preparation") Date.now = () => originalNow() + 208500;
-    const prepared = buildManagedAdmissionSource({ envelope, claimed: x.f.claimed, writerLock: x.writerLock,
-      repositoryPath: x.repositoryPath, provider: x.provider, startupEnvironment, remainingMs: () => 300000 });
+    const sourceOptions = { envelope, claimed: x.f.claimed, writerLock: x.writerLock,
+      repositoryPath: x.repositoryPath, provider: x.provider, startupEnvironment, remainingMs: () => 300000 };
+    if (scenario.endsWith("_before_signing")) {
+      const boundaryReason = scenario.replace("_before_signing", "");
+      if (boundaryReason === "repository_changed") fs.writeFileSync(path.join(x.repositoryPath, "editable.txt"), "changed after read-only sealing\n");
+      if (boundaryReason === "process_changed") observedProcess = "changed_fixture_listeners\n";
+      if (boundaryReason === "docker_changed") observedDocker = "changed_fixture_container\n";
+      if (boundaryReason === "tcp_observation_timeout" || boundaryReason === "docker_observation_timeout") {
+        const timeout = Object.assign(Error("Synthetic private path and raw output must not escape"), { code: "ETIMEDOUT" });
+        if (boundaryReason === "tcp_observation_timeout") observedProcess = timeout;
+        else observedDocker = timeout;
+      }
+      assert.throws(() => buildManagedAdmissionSource(sourceOptions), e => e.details?.phase === "source_native_boundary"
+        && e.details?.reason === "readonly_boundary_unproven" && e.details?.boundaryReason === boundaryReason);
+      assert.equal(fs.existsSync(path.join(x.state, "trusted-provider-pilot")), false);
+      return;
+    }
+    const prepared = buildManagedAdmissionSource(sourceOptions);
     const directory = path.join(x.state, "trusted-provider-pilot"); fs.mkdirSync(directory);
     const { publicKey, privateKey } = generateKeyPairSync("ed25519");
     const installationId = "00000000-0000-4000-8000-000000000070";
@@ -164,6 +187,10 @@ for (const scenario of ["current", "cold_preparation", "expired_startup"]) test(
       Date.now = () => originalNow() + hermesStartupMaxAgeMs + 1000;
       assert.throws(() => assertProviderStartup(options), /hermes_startup_receipt_expired/);
       Date.now = originalNow;
+    } else if (scenario === "repository_changed_after_signing") {
+      fs.writeFileSync(path.join(x.repositoryPath, "editable.txt"), "changed after signed admission\n");
+      assert.throws(() => prepareProviderLaunch(options, x.options), e => e.details?.phase === "consume_native_boundary"
+        && e.details?.reason === "readonly_boundary_unproven" && e.details?.boundaryReason === "repository_changed");
     } else {
       const plan = prepareProviderLaunch(options, x.options);
       assert.equal(plan.version, "roost-managed-hermes-launch-v1");
@@ -173,7 +200,16 @@ for (const scenario of ["current", "cold_preparation", "expired_startup"]) test(
     if (scenario !== "expired_startup") assert.throws(() => prepareProviderLaunch(options, x.options), e => e.details?.phase === "consume_grant");
   } finally {
     Date.now = originalNow;
-    if (envelope) abandonProviderNativeBoundary(envelope);
+    observedProcess = "closed_fixture_listeners\n"; observedDocker = "";
+    if (envelope) {
+      try { abandonProviderNativeBoundary(envelope); }
+      catch (error) {
+        // Deliberate repository drift also fences normal abort. The enclosing
+        // nativeFixture owns and verifies deletion of this disposable test root.
+        if (!scenario.includes("_changed_")) throw error;
+        assert.equal(error.message, "readonly_boundary_unproven");
+      }
+    }
     childProcess.execFileSync = originalExec; syncBuiltinESMExports();
   }
 });

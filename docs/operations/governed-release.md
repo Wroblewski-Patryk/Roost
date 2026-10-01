@@ -418,3 +418,22 @@ trees, accepted results and unknown errors are refused. Normal writer reclaim
 requires that exact receipt and the original dead-owner proof. Root integration
 passed 104 component checks without skips. Actual release certification,
 controlled rollback and owned target cleanup remain pending.
+
+The next auditor `a8e350dd-9f1a-4415-8090-27dfa6cd0b14` failed before
+signing/model execution at `source_native_boundary/readonly_boundary_unproven`.
+The exact inner cause was not retained by that version. Read-only observations
+now preserve bounded repository/process/container change or observation failure
+codes, including TCP/Docker timeout, without publishing paths or process rows.
+Current Windows TCP and Docker observations were stable in two samples 30
+seconds apart; this does not establish the historical failure's cause.
+
+That failure retained the original application lease. Normal HTTPS terminal
+reconciliation succeeded, and cleanup stopped while the retained lease lacked
+a normal recovery path. The writer protocol now validates the receipt's exact
+lease digest, physical single-file identity, nonce, execution/application and
+original dead Writer binding under the recovery barrier. It recognizes an
+already completed exact lease unlink before retrying the Writer unlink; foreign
+or changed artifacts remain blocked. Actual recovery completed at
+2026-10-01 21:27:47 UTC through this protocol, with no native process, accepted
+result or baseline change. Root checks passed 39 admission and 13 native
+Windows writer tests, without skips. The release certificate remains pending.

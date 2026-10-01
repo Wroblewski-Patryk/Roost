@@ -31,10 +31,11 @@ const firstWriteSchema = z.object({ schemaVersion: z.literal("roost-first-write-
   operations: z.object({ localCommit: z.literal(true) }).strict(),
   continuation: z.object({ reviewId: z.string().uuid(), previousExecutionId: z.string().uuid(),
     previousCommit: z.string().regex(/^[a-f0-9]{40}$/) }).strict().optional() }).strict();
-function fail(phase, status, reason) { throw Object.assign(new Error("managed_admission_blocked"), { protocolAdmission: true, retryable: false,
+function fail(phase, status, reason, boundaryReason) { throw Object.assign(new Error("managed_admission_blocked"), { protocolAdmission: true, retryable: false,
   outcome: "policy_blocked", publicMessage: "Managed launch evidence is missing, changed or not signed for this attempt.",
   ...(phase ? { details: { phase, ...(Number.isInteger(status) ? { status } : {}),
-    ...(/^[a-z][a-z0-9_]{2,80}$/.test(reason ?? "") ? { reason } : {}) } } : {}) }); }
+    ...(/^[a-z][a-z0-9_]{2,80}$/.test(reason ?? "") ? { reason } : {}),
+    ...(/^[a-z][a-z0-9_]{2,80}$/.test(boundaryReason ?? "") ? { boundaryReason } : {}) } } : {}) }); }
 function authenticate(value, publicKey) {
   const key = createPublicKey(publicKey);
   if (key.asymmetricKeyType !== "ed25519" || !verify(null, trustedPilotBytes(value.payload), key, Buffer.from(value.signature, "hex"))) fail();
@@ -228,7 +229,8 @@ export function buildManagedAdmissionSource({ envelope, claimed, writerLock, rep
         outputBudget: "worker_deadline_output_intent", durationDeadline: startup.budgetReceipt.acceptedDeadline,
         release: "independent_review_no_release" } };
     return { source, writerDigest, startup, native };
-  } catch (error) { fail(`source_${phase}`, error?.status, error?.message); }
+  } catch (error) { fail(`source_${phase}`, error?.status, error?.message,
+    error?.protocolAdmission ? error.details?.reason : undefined); }
 }
 
 export async function requestManagedAdmission({ api, source, writerDigest, assertAuthority, refreshLease = async () => {}, firstWrite }) {
@@ -359,6 +361,7 @@ export function consumeManagedAdmission(grant, options, consumption) {
   } catch (error) {
     // Publish only a named boundary and an existing protocol code, never raw
     // exception text, paths, envelopes or command output.
-    fail(phase, undefined, error?.protocolAdmission && error.message !== "managed_admission_blocked" ? error.message : undefined);
+    fail(phase, undefined, error?.protocolAdmission && error.message !== "managed_admission_blocked" ? error.message : undefined,
+      error?.protocolAdmission ? error.details?.reason : undefined);
   }
 }

@@ -1494,6 +1494,9 @@ passing component checks. Additive migration and scoped API checks pass against
 real local PostgreSQL. These checks do not certify the managed release path.
 Temporary target bootstrap commits are initialization evidence only. Real
 candidate/review/push/PR/merge/deploy/health/failure/rollback/cleanup remain pending.
+Normal HTTPS reconciliation and exact dead-owner recovery of a failed read-only
+attempt's retained application lease are proven on Windows; this is local
+pre-release recovery evidence, not a governed release certificate.
 
 [Operations and evidence checkpoint](../operations/governed-release.md),
 [server authority](../../src/modules/agent-runtime/governed-release.ts),

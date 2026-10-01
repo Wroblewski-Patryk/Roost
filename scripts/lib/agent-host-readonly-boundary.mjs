@@ -43,18 +43,24 @@ export function qualifyHermesReadOnlyTools(provider, environment) {
 }
 
 function state(root, expected) {
-  const footprint = captureNativeFootprint(root, expected);
+  // Keep observation failures distinguishable from a changed snapshot without
+  // publishing command output, process rows, addresses or repository paths.
+  const observe = (kind, action) => {
+    try { return action(); }
+    catch (error) { fail(`${kind}_observation_${error?.code === "ETIMEDOUT" ? "timeout" : "unavailable"}`); }
+  };
+  const footprint = observe("repository", () => captureNativeFootprint(root, expected));
   // These are observations, not commands exposed to Hermes. A missing observer
   // cannot be reported as unchanged.
   const listening = process.platform === "win32"
-    ? execFileSync("powershell", ["-NoProfile", "-NonInteractive", "-Command",
+    ? observe("tcp", () => execFileSync("powershell", ["-NoProfile", "-NonInteractive", "-Command",
       "Get-NetTCPConnection -State Listen | Sort-Object LocalAddress,LocalPort,OwningProcess | ForEach-Object { '{0}|{1}|{2}' -f $_.LocalAddress,$_.LocalPort,$_.OwningProcess }"],
-      { windowsHide: true, timeout: 10000, maxBuffer: 262144, encoding: "utf8" }) : "non_windows_test";
+      { windowsHide: true, timeout: 10000, maxBuffer: 262144, encoding: "utf8" })) : "non_windows_test";
   // Docker's human-readable Status includes elapsed time (for example, "Up 3 minutes").
   // It changes while containers are untouched and makes a long bounded read look
   // like a side effect. State retains the stable running-container identity check.
-  const docker = execFileSync("docker", ["ps", "--no-trunc", "--format", "{{.ID}}|{{.Image}}|{{.State}}|{{.Ports}}"],
-    { windowsHide: true, shell: false, timeout: 10000, maxBuffer: 262144, encoding: "utf8" });
+  const docker = observe("docker", () => execFileSync("docker", ["ps", "--no-trunc", "--format", "{{.ID}}|{{.Image}}|{{.State}}|{{.Ports}}"],
+    { windowsHide: true, shell: false, timeout: 10000, maxBuffer: 262144, encoding: "utf8" }));
   return { footprint, processDigest: hex(listening), dockerDigest: hex(docker) };
 }
 
