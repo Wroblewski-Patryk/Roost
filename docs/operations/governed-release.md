@@ -268,3 +268,26 @@ four qualified read-only scopes and one change, with a server/SQL computed
 low result. Component verification passed 124 Node and 32 TypeScript tests,
 including the opt-in native PostgreSQL case, without skips. Runtime decisions
 are prepared; acceptance, credential rotation and managed release remain pending.
+
+### Atomic procedure evidence at human Decision acceptance
+
+A Decision can affect every related task even when its declared scope names
+one task. A new pending Decision invalidates the group's earlier
+`decision_supersede` procedure evidence. Human acceptance may now include
+explicit `procedureEvidence` (verdict, current evidence reference, rationale,
+validation and observed result). The server derives the complete current
+impact, validates the exact preview, and records ordinary procedure admissions
+for every affected task in the same Serializable transaction as acceptance.
+Agents cannot supply this human evidence. Risk, independence, authority and
+five-minute owner-authentication guards remain unchanged. Returned admission
+errors roll back all earlier evidence through a savepoint; native acceptance
+exceptions roll back the outer transaction. No assessment is copied or inferred.
+
+The production rotation attempt was rejected before acceptance or delivery;
+read-back confirmed the Decision remained proposed and the prior credential
+generation remained unchanged. Its expired request and journal are retained
+before preparing a new request. Nine focused tests, local validation and seven
+native API assertions pass without skips. The disposable PostgreSQL API test
+proves stale-reference refusal, rollback of an explicit failed verdict, normal
+acceptance and replay without duplicate evidence or events. The atomic
+production acceptance and the managed certification remain pending.

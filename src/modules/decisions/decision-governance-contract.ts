@@ -10,6 +10,7 @@ import { issuerIntent } from "../api-keys/bootstrap-issuer-contract";
 import { proofKeyIntent } from "../api-keys/bootstrap-proof-key-contract";
 import { proofAuthorityAttachment } from "../api-keys/bootstrap-proof-authority-contract";
 import { v3Intent } from "../api-keys/bootstrap-proof-issuance-contract";
+import { admissionEvidenceSchema } from "../agent-runtime/task-risk-admission-contract";
 
 const uuid=z.string().uuid(), text=z.string().trim().min(3).max(2000), hash=z.string().regex(/^[a-f0-9]{64}$/);
 export const managedRuntimeApproval=z.object({schemaVersion:z.literal('roost-managed-runtime-approval-v1'),
@@ -78,7 +79,13 @@ export const decisionProposal=z.object({requestId:uuid,decisionId:uuid.optional(
   if(new Set(v.scope.map(n=>n.type+":"+n.id)).size!==v.scope.length)c.addIssue({code:"custom",message:"Duplicate scope"});
   if(v.conflicts.some(x=>!v.decision.includes(x.newProvision)))c.addIssue({code:"custom",message:"New provision must be quoted exactly"});
 });
-export const decisionAction=z.object({requestId:uuid,expectedVersion:hash,action:z.enum(["review_impact","accept"]),previewId:uuid.optional(),grantIds:z.array(z.object({taskId:uuid,grantId:uuid}).strict()).min(1).max(200).optional()}).strict();
+// The caller supplies inspected evidence explicitly. The server selects every
+// affected task and binds each normal procedure gate to its current admission.
+export const decisionProcedureEvidence=admissionEvidenceSchema.options[0]
+ .omit({requestId:true,expectedVersion:true,operation:true,gate:true});
+export const decisionAction=z.object({requestId:uuid,expectedVersion:hash,action:z.enum(["review_impact","accept"]),previewId:uuid.optional(),grantIds:z.array(z.object({taskId:uuid,grantId:uuid}).strict()).min(1).max(200).optional(),procedureEvidence:decisionProcedureEvidence.optional()}).strict().superRefine((v,c)=>{
+ if(v.procedureEvidence&&v.action!=="accept")c.addIssue({code:"custom",message:"Procedure evidence requires a human acceptance action"});
+});
 export const reopenCondition=z.discriminatedUnion("type",[
   z.object({type:z.literal("resource_available"),referenceId:uuid}).strict(),
   z.object({type:z.literal("configuration_changed"),referenceId:uuid}).strict(),

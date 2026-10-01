@@ -1,0 +1,144 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { decisionAction, decisionDeferral, decisionProposal, reopeningEvent } from "../modules/decisions/decision-governance-contract";
+import { decisionGovernanceCommand } from "../modules/decisions/decision-governance";
+import { reviewDigest } from "../modules/agent-runtime/task-review-contract";
+
+const id=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,"0")}`;
+const workspaceId=id(1),ownerId=id(2),decisionId=id(3),previewId=id(4);
+const procedureEvidence={verdict:"passed",evidence:{id:id(5),revision:"2026-10-01T12:00:00.000Z"},
+ rationale:"Inspected the published procedure against the actual task scope",
+ validation:"Read and verify the selected base and extension composition",
+ observedResult:"Both published procedures cover the inspected scope"};
+
+// This fixture exercises the normal command and normal admission command, not
+// a substituted gate writer. SQL constraint failures are injected at the real
+// acceptance INSERT; the enclosing transaction owns rollback on exceptions.
+function fixture(options:{taskIds?:string[];blockedTask?:string;missingTask?:string;nativeFailure?:boolean;actor?:"agent"}={}){
+ const taskIds=options.taskIds??[id(10),id(11),id(12),id(13),id(14)];
+ const impact={taskIds,nodes:taskIds.map(taskId=>({type:"task",id:taskId}))};
+ const authority={status:"owner_reserved",reason:"unclassified_owner",principal:{kind:"user",id:ownerId},path:[],mandate:null};
+ const revision={decision_id:decisionId,state:"pending",body:{scope:[{type:"task",id:taskIds[0]}]}};
+ const preview={id:previewId,impact,authority};
+ const principal=options.actor==="agent"?{kind:"agent",id:id(40),credentialId:id(41),credentialPrefix:"unit"}:
+  {kind:"user",id:ownerId,credentialId:null,credentialPrefix:null};
+ const expectedVersion=reviewDigest({u:options.actor?null:ownerId,role:options.actor?null:"owner",principal,ownerUserId:ownerId,authority,
+  revisions:[[decisionId,"pending"]],previews:[previewId],acceptance:undefined,deferrals:[],references:[],impact});
+ let evidenceRows:any[]=[],events:any[]=[],acceptances:any[]=[],saved:any=null;
+ const calls:Array<{sql:string;values:any[]}>=[];
+ const text=(parts:any)=>Array.from(parts as string[]).join("?");
+ const db:any={
+  workspaceMembership:{findFirst:async()=>({role:"owner",userId:ownerId})},
+  workspace:{findUnique:async()=>({ownerUserId:ownerId})},
+  task:{findFirst:async({where}:any)=>where.id===options.missingTask?null:{id:where.id,title:"Certification task"}},
+  companyRecord:{findFirst:async()=>({description:"Inspected technical context"})},
+  event:{create:async({data}:any)=>{events.push(data);return data;}},
+  apiKey:{findFirst:async()=>({id:id(41),active:true,expiresAt:new Date(Date.now()+60_000),credentialVersion:1,boundAgentId:id(40),
+   keyPrefix:"unit",scopes:["agent-runtime:write"],boundAgent:{id:id(40),workspaceId,type:"agent",status:"active",source:"manual"}})},
+  $queryRaw:async(parts:any,...values:any[])=>{
+   const sql=text(parts);calls.push({sql,values});
+   if(sql.includes("FROM decision_revisions"))return [revision];
+   if(sql.includes("FROM decision_impact_previews"))return [preview];
+   if(sql.includes("FROM decision_acceptances")||sql.includes("FROM decision_deferrals")||sql.includes("FROM workforce_mandate_versions")||sql.includes("FROM workforce_entities")||sql.startsWith("SELECT * FROM ? WHERE"))return [];
+   if(sql.includes("decision_current_impact"))return [{value:impact}];
+   if(sql.includes("AS version"))return [{version:"c".repeat(64)}];
+   if(sql.includes("SELECT request_hash")||sql.includes("SELECT id,request_hash"))return [];
+   if(sql.includes("task_admission_view"))return [{value:values[0]===options.blockedTask?{status:"blocked",seal:null}:{status:"admitted",seal:"d".repeat(64)}}];
+   if(sql.includes("FROM tasks")||sql.includes("FROM api_keys"))return [];
+   throw new Error(`Unexpected query in fixture: ${sql}`);
+  },
+  $executeRaw:async(parts:any,...values:any[])=>{
+   const sql=text(parts);calls.push({sql,values});
+   if(sql==="SAVEPOINT decision_acceptance_evidence")saved={evidenceRows:[...evidenceRows],events:[...events],acceptances:[...acceptances]};
+   else if(sql==="ROLLBACK TO SAVEPOINT decision_acceptance_evidence")({evidenceRows,events,acceptances}=saved);
+   else if(sql.includes("INSERT INTO task_admission_evidence"))evidenceRows.push({id:values[0],taskId:values[2],operation:values[4],gate:values[5],evidenceId:values[13],detail:JSON.parse(values[16])});
+   else if(sql.includes("INSERT INTO decision_acceptances")){
+    if(options.nativeFailure)throw new Error("decision_risk_admission_required");
+    acceptances.push({id:values[0],decisionId:values[1],previewId:values[3]});
+   }
+   return 1;
+  }
+ };
+ const actor:any=options.actor?{authType:"api_key",workspaceId,agentId:id(40),apiKeyId:id(41),credentialVersion:1}:ownerId;
+ const run=async(overrides:Record<string,unknown>={})=>{
+  const before={evidenceRows:[...evidenceRows],events:[...events],acceptances:[...acceptances]};
+  try{return await decisionGovernanceCommand(db,workspaceId,actor,"action",{requestId:id(20),expectedVersion,action:"accept",previewId,procedureEvidence,...overrides},decisionId);}
+  catch(error){({evidenceRows,events,acceptances}=before);throw error;}
+ };
+ return {run,calls,expectedVersion,taskIds,rows:()=>({evidenceRows,events,acceptances})};
+}
+
+test("explicit procedure evidence is bounded, complete and allowed only for acceptance",()=>{
+ const action={requestId:id(20),expectedVersion:"a".repeat(64),action:"accept",previewId,procedureEvidence};
+ assert.equal(decisionAction.safeParse(action).success,true);
+ for(const key of ["verdict","evidence","rationale","validation","observedResult"]){
+  const incomplete:any={...procedureEvidence};delete incomplete[key];
+  assert.equal(decisionAction.safeParse({...action,procedureEvidence:incomplete}).success,false);
+ }
+ for(const extra of [{taskIds:[id(10)]},{operation:"runtime_execute"},{gate:"owner_approval"},{actorUserId:ownerId},{validation:"x".repeat(2001)}])
+  assert.equal(decisionAction.safeParse({...action,procedureEvidence:{...procedureEvidence,...extra}}).success,false);
+ assert.equal(decisionAction.safeParse({...action,action:"review_impact"}).success,false);
+ assert.equal(decisionProposal.safeParse({...action,title:"Not a proposal"}).success,false);
+ assert.equal(decisionDeferral.safeParse({requestId:id(20),expectedVersion:"a".repeat(64),targetType:"decision",targetId:decisionId,
+  reason:"budget",explanation:"Wait for budget",condition:{type:"owner_signal"},procedureEvidence}).success,false);
+ assert.equal(reopeningEvent.safeParse({requestId:id(20),expectedVersion:"a".repeat(64),deferralId:id(21),type:"owner_signal",
+  explanation:"Owner signalled readiness",procedureEvidence}).success,false);
+ assert.equal(decisionAction.safeParse({...action,procedureEvidence:undefined}).success,true);
+});
+
+test("one human acceptance records normal procedure gates for every expanded impact task",async()=>{
+ const f=fixture(),result:any=await f.run();
+ assert.equal(result.replayed,false);
+ const rows=f.rows();assert.equal(rows.acceptances.length,1);
+ assert.deepEqual(rows.evidenceRows.map(row=>row.taskId),f.taskIds);
+ for(const row of rows.evidenceRows){
+  assert.equal(row.operation,"decision_supersede");assert.equal(row.gate,"procedure");
+  assert.equal(row.evidenceId,procedureEvidence.evidence.id);
+  assert.equal(row.detail.validation,procedureEvidence.validation);
+  assert.equal(row.detail.observedResult,procedureEvidence.observedResult);
+  assert.equal(row.detail.verdict,"passed");
+ }
+ const event=rows.events.find(row=>row.type==="decision_governance_recorded");
+ assert.deepEqual(event.payload.procedureAdmissions,rows.evidenceRows.map(row=>({taskId:row.taskId,evidenceId:row.id})));
+ const order=f.calls.map(c=>c.sql.includes("INSERT INTO decision_acceptances")?"accept":c.sql.includes("INSERT INTO task_admission_evidence")?"evidence":"other");
+ assert.ok(order.indexOf("accept")>order.lastIndexOf("evidence"));
+});
+
+test("stale version or noncurrent preview rejects before any procedure write",async()=>{
+ for(const override of [{expectedVersion:"f".repeat(64)},{previewId:id(99)}]){
+  const f=fixture();assert.deepEqual(await f.run(override),{error:"decision_stale"});
+  assert.equal(f.rows().evidenceRows.length,0);assert.equal(f.rows().acceptances.length,0);
+  assert.equal(f.calls.some(c=>c.sql.startsWith("SAVEPOINT")),false);
+ }
+});
+
+test("agent cannot attach human procedure evidence",async()=>{
+ const f=fixture({actor:"agent"});assert.deepEqual(await f.run(),{error:"decision_forbidden"});
+ assert.equal(f.rows().evidenceRows.length,0);assert.equal(f.rows().acceptances.length,0);
+});
+
+test("a later task rejection rolls back every earlier normal evidence and its event",async()=>{
+ for(const options of [{blockedTask:id(12)},{missingTask:id(12)}]){
+  const f=fixture(options),result:any=await f.run();
+  assert.equal(result.error,options.blockedTask?"risk_admission_required":"task_not_found");
+  assert.deepEqual(f.rows(),{evidenceRows:[],events:[],acceptances:[]});
+  assert.ok(f.calls.some(c=>c.sql==="ROLLBACK TO SAVEPOINT decision_acceptance_evidence"));
+  assert.equal(f.calls.some(c=>c.sql.includes("INSERT INTO decision_acceptances")),false);
+ }
+});
+
+test("native acceptance guard failure propagates and rolls back the enclosing transaction",async()=>{
+ const f=fixture({nativeFailure:true});await assert.rejects(f.run(),/decision_risk_admission_required/);
+ assert.equal(f.calls.filter(c=>c.sql.includes("INSERT INTO task_admission_evidence")).length,5);
+ assert.ok(f.calls.some(c=>c.sql.includes("INSERT INTO decision_acceptances")));
+ assert.deepEqual(f.rows(),{evidenceRows:[],events:[],acceptances:[]});
+});
+
+test("expanded impacts are never truncated to the evidence or caller-selected task",async()=>{
+ const f=fixture({taskIds:Array.from({length:201},(_,n)=>id(100+n))});
+ assert.deepEqual(await f.run(),{error:"decision_impact_too_large"});
+ assert.equal(f.rows().evidenceRows.length,0);
+ const duplicate=fixture({taskIds:[id(10),id(10)]});
+ assert.deepEqual(await duplicate.run(),{error:"decision_scope_invalid"});
+ assert.equal(duplicate.rows().evidenceRows.length,0);
+});

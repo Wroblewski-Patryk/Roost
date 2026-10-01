@@ -33,15 +33,19 @@ export async function admissionView(db: Db, workspaceId: string, taskId: string,
     procedures:procedures.slice(0,100),records:records.slice(0,500).map(r=>({...r,revision:r.updatedAt.toISOString(),updatedAt:undefined})),
     catalogTruncated:procedures.length>100||records.length>500,history:history.slice(0,20),historyTruncated:history.length>20 };
 }
-export async function admissionCommand(db: Db, workspaceId: string, taskId: string, userId: string, kind: "scope"|"evidence", body: unknown) {
+export async function admissionCommand(db: Db, workspaceId: string, taskId: string, userId: string, kind: "scope"|"evidence", body: unknown, options: { compact?: boolean } = {}) {
   const input = kind==="scope" ? admissionScopeSchema.parse(body) : admissionEvidenceSchema.parse(body);
   requireRuntimeContent(input,"risk_admission.command",{workspaceId,taskId});
   const task=await lockReadyTask(db,workspaceId,taskId);
   if (!task) return {error:"task_not_found"};
   if (!["owner","admin","member"].includes((await membership(db,workspaceId,userId))?.role??"")) return {error:"risk_admission_forbidden"};
   const hash=reviewDigest({input,kind,taskId,userId}), table=kind==="scope"?Prisma.sql`task_admission_scopes`:Prisma.sql`task_admission_evidence`;
-  const prior=await db.$queryRaw<any[]>`SELECT request_hash FROM ${table} WHERE workspace_id=${workspaceId}::uuid AND request_id=${input.requestId}::uuid`;
-  if(prior[0]) return prior[0].request_hash===hash?{...await admissionView(db,workspaceId,taskId,userId),replayed:true}:{error:"risk_admission_request_conflict"};
+  const prior=await db.$queryRaw<any[]>`SELECT id,request_hash FROM ${table} WHERE workspace_id=${workspaceId}::uuid AND request_id=${input.requestId}::uuid`;
+  if(prior[0]) {
+    if(prior[0].request_hash!==hash)return {error:"risk_admission_request_conflict"};
+    if(options.compact&&kind==="evidence")return {evidenceId:prior[0].id,operation:admissionEvidenceSchema.parse(input).operation,...await riskLevelAdmission(db,taskId,admissionEvidenceSchema.parse(input).operation),replayed:true};
+    return {...await admissionView(db,workspaceId,taskId,userId),replayed:true};
+  }
   if(input.expectedVersion!==await admissionVersion(db,taskId)) return {error:"risk_admission_stale"};
   const id=randomUUID();
   const {requestId,expectedVersion,...detail}=input;
@@ -60,5 +64,6 @@ export async function admissionCommand(db: Db, workspaceId: string, taskId: stri
       task_admission_source(${taskId}::uuid),task_admission_dependencies(${taskId}::uuid,${e.operation},${e.gate}),${e.evidence.id}::uuid,${e.evidence.revision}::timestamptz,${e.verdict},${JSON.stringify(detail)}::jsonb,${userId}::uuid,${requestId}::uuid,${hash})`;
   }
   await db.event.create({data:{workspaceId,taskId,type:`task_risk_admission_${kind}`,source:"roost",actorType:"user",actorId:userId,resourceType:`task_admission_${kind}`,resourceId:id,payload:{id,policy:"roost-native-risk-admission-v1"}}});
+  if (options.compact && kind === "evidence") return { evidenceId:id, operation:admissionEvidenceSchema.parse(input).operation, ...await riskLevelAdmission(db,taskId,admissionEvidenceSchema.parse(input).operation) };
   return admissionView(db,workspaceId,taskId,userId);
 }

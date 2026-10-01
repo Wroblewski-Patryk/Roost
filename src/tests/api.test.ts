@@ -14378,6 +14378,55 @@ test("decision governance retains high and critical gates and rejects stale conc
 });
 
 
+test("decision governance atomically records explicit human procedure evidence and replays without duplicate gates",async()=>{
+ const f=await prepareReviewFixture(false,false);
+ const p=await decisionFixtureProposal(f);assert.equal(p.response.status,201,JSON.stringify(p.response.body));
+ await decisionFixtureProof(f);
+ const url=`/v1/decisions/${p.id}/governance`;
+ const read=async()=>{const r=await request(url,{headers:f.auth});assert.equal(r.status,200,JSON.stringify(r.body));return (r.body as any).data;};
+ const source=await prisma.companyRecord.findUniqueOrThrow({where:{id:f.input.contract.context.company[0].id}});
+ const procedureEvidence={verdict:"passed",evidence:{id:source.id,revision:source.updatedAt.toISOString()},
+  rationale:"Verified the fixture's exact published procedure composition",
+  validation:"Read the selected base and application extension against the task scope",
+  observedResult:"Published procedure steps cover the actual fixture decision impact"};
+ const evidenceRows=()=>prisma.$queryRaw<any[]>`SELECT id,task_id,operation,gate,evidence_id,evidence_revision,verdict,detail,source_version,dependency_version FROM task_admission_evidence WHERE workspace_id=${f.workspaceId}::uuid AND task_id=${f.task.id}::uuid AND operation='decision_supersede' AND gate='procedure' ORDER BY version`;
+ const events=()=>prisma.event.findMany({where:{workspaceId:f.workspaceId,OR:[{type:"task_risk_admission_evidence",taskId:f.task.id},{type:"decision_governance_recorded",resourceId:p.id}]},orderBy:{id:"asc"}});
+ const beforeRows=await evidenceRows(),beforeEvents=await events();
+ const input=async(extra:any={})=>{const v=await read();return {requestId:randomUUID(),expectedVersion:v.expectedVersion,action:"accept",previewId:v.previews[0].id,procedureEvidence,...extra};};
+
+ // The real native evidence guard still rejects a stale record revision. Its
+ // enclosing API transaction must leave neither a gate nor an acceptance.
+ const stale=await f.post(url+"/actions",await input({procedureEvidence:{...procedureEvidence,evidence:{id:source.id,revision:new Date(source.updatedAt.getTime()-1000).toISOString()}}}));
+ assert.equal(stale.status,409,JSON.stringify(stale.body));assert.equal((stale.body as any).error,"risk_admission_evidence_stale");
+ assert.deepEqual(await evidenceRows(),beforeRows);assert.deepEqual(await events(),beforeEvents);
+ assert.equal((await read()).acceptance,null);
+
+ // A valid explicit failed verdict is inserted through the normal command,
+ // then refused by the native admission view. The savepoint rolls back that
+ // inserted gate and its event rather than keeping partial acceptance evidence.
+ const failed=await f.post(url+"/actions",await input({procedureEvidence:{...procedureEvidence,verdict:"failed",observedResult:"The inspected procedure does not cover the requested fixture operation"}}));
+ assert.equal(failed.status,409,JSON.stringify(failed.body));assert.equal((failed.body as any).error,"risk_admission_required");
+ assert.deepEqual(await evidenceRows(),beforeRows);assert.deepEqual(await events(),beforeEvents);
+ assert.equal((await read()).acceptance,null);
+
+ const body=await input(),accepted=await f.post(url+"/actions",body);
+ assert.equal(accepted.status,201,JSON.stringify(accepted.body));
+ const acceptanceId=(accepted.body as any).data.record.id,rows=await evidenceRows();
+ assert.equal(rows.length,beforeRows.length+1);
+ const inserted=rows.find(r=>!beforeRows.some(old=>old.id===r.id));assert.ok(inserted);
+ assert.equal(inserted.task_id,f.task.id);assert.equal(inserted.operation,"decision_supersede");assert.equal(inserted.gate,"procedure");
+ assert.equal(inserted.evidence_id,source.id);assert.equal(inserted.evidence_revision.toISOString(),source.updatedAt.toISOString());assert.equal(inserted.verdict,"passed");
+ assert.equal(inserted.detail.rationale,procedureEvidence.rationale);assert.equal(inserted.detail.validation,procedureEvidence.validation);assert.equal(inserted.detail.observedResult,procedureEvidence.observedResult);
+ assert.match(inserted.source_version,/^[a-f0-9]{64}$/);assert.match(inserted.dependency_version,/^[a-f0-9]{64}$/);
+ const receipt=await prisma.event.findFirstOrThrow({where:{workspaceId:f.workspaceId,type:"decision_governance_recorded",resourceId:p.id,payload:{path:["recordId"],equals:acceptanceId}}});
+ assert.deepEqual((receipt.payload as any).procedureAdmissions,[{taskId:f.task.id,evidenceId:inserted.id}]);
+ assert.equal((await read()).selected.state,"accepted");
+ const afterEvents=await events(),replay=await f.post(url+"/actions",body);
+ assert.equal(replay.status,200,JSON.stringify(replay.body));assert.equal((replay.body as any).data.replayed,true);assert.equal((replay.body as any).data.record.id,acceptanceId);
+ assert.deepEqual(await evidenceRows(),rows);assert.deepEqual(await events(),afterEvents);
+ assert.equal((await prisma.$queryRaw<any[]>`SELECT count(*)::int AS n FROM decision_acceptances WHERE decision_id=${p.id}::uuid`)[0].n,1);
+});
+
 test("decision governance follows directional dependencies without sibling expansion",async()=>{
  const owner=await registerOwner("decision-direction@example.test","Directional decision fixture"),workspaceId=owner.workspace.id,auth={Authorization:`Bearer ${owner.token}`};
  const project=await prisma.project.create({data:{workspaceId,name:"Directional project"}}),app=await prisma.application.create({data:{workspaceId,name:"Directional app",slug:"directional-fixture"}});

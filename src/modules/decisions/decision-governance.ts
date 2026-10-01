@@ -7,6 +7,7 @@ import { decisionAction,decisionDeferral,decisionProposal,reopeningEvent } from 
 import { decisionAuthority,mandateView } from "./decision-authority";
 import { resolveReviewPrincipal, type ReviewActor } from "../../auth/agent-principal";
 import { admitCapability,recordCapabilityUse,grantState } from "../agent-runtime/task-capability-admission";
+import { admissionCommand,admissionVersion } from "../agent-runtime/task-risk-admission";
 type Db=Prisma.TransactionClient;
 const wire=(r:any)=>Object.fromEntries(Object.entries(r).filter(([k])=>k!=="request_hash").map(([k,v])=>[k.replace(/_([a-z])/g,(_,c)=>c.toUpperCase()),v]));
 async function state(db:Db,w:string,actor:ReviewActor|null,id?:string){
@@ -57,12 +58,38 @@ export async function decisionGovernanceView(db:Db,w:string,actor:ReviewActor|nu
 async function event(db:Db,w:string,u:string,type:string,id:string,payload:any,actorType:"user"|"agent"="user"){
  await db.event.create({data:{workspaceId:w,type,source:"roost",actorType,actorId:u,resourceType:"decision",resourceId:id,payload}});
 }
+type ProcedureAdmission={taskId:string;evidenceId:string};
+async function acceptanceProcedureEvidence(db:Db,w:string,u:string,input:any,impact:any,preview:any):Promise<{error:string}|{records:ProcedureAdmission[]}>{
+ // Check the same current preview used by the native acceptance guard before
+ // recording evidence. No caller-provided task list can narrow its impact.
+ if(preview?.id!==input.previewId||reviewDigest(impact)!==reviewDigest(preview.impact))return {error:"decision_stale"};
+ const tasks:unknown=impact?.taskIds;
+ if(!Array.isArray(tasks)||!tasks.length||new Set(tasks).size!==tasks.length||tasks.some(t=>typeof t!=="string"||!/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(t)))return {error:"decision_scope_invalid"};
+ if(tasks.length>200)return {error:"decision_impact_too_large"};
+ // Normal admission commands may return a rejected precondition rather than
+ // throw. Roll back all earlier gates in that case; SQL exceptions still roll
+ // back the enclosing normal Serializable route transaction.
+ await db.$executeRaw`SAVEPOINT decision_acceptance_evidence`;
+ const records:ProcedureAdmission[]=[];
+ for(const taskId of tasks){
+  const admitted=await admissionCommand(db,w,taskId,u,"evidence",{...input.procedureEvidence,
+   requestId:randomUUID(),expectedVersion:await admissionVersion(db,taskId),operation:"decision_supersede",gate:"procedure"},{compact:true});
+  if("error" in admitted){
+   await db.$executeRaw`ROLLBACK TO SAVEPOINT decision_acceptance_evidence`;
+   await db.$executeRaw`RELEASE SAVEPOINT decision_acceptance_evidence`;
+   return {error:admitted.error};
+  }
+  records.push({taskId,evidenceId:admitted.evidenceId});
+ }
+ return {records};
+}
 export async function decisionGovernanceCommand(db:Db,w:string,actor:ReviewActor|null,kind:"proposal"|"action"|"defer"|"reopen",body:unknown,id?:string){
  const input:any=(kind==="proposal"?decisionProposal:kind==="action"?decisionAction:kind==="defer"?decisionDeferral:reopeningEvent).parse(body);
  requireRuntimeContent(input,"decision.command",{workspaceId:w});
  const s=await state(db,w,actor,kind==="action"?id:undefined);if("error" in s)return s;const u=s.u,principal=s.principal;
  const acceptance=kind==="action"&&input.action==="accept";
  if(!principal)return {error:"decision_forbidden"};
+ if(input.procedureEvidence&&(!acceptance||principal.kind!=="user"))return {error:"decision_forbidden"};
  if(acceptance){if(!(s.authority&&"principal" in s.authority&&s.authority.principal?.kind===principal.kind&&s.authority.principal.id===principal.id))return {error:"decision_forbidden"};}
  else if(!u||s.role!=="owner"||u!==s.ownerUserId)return {error:"decision_forbidden"};
  const hash=reviewDigest({input,kind,id:id??null,u,...(principal.kind==="agent"?{principal}:{})});
@@ -92,6 +119,7 @@ export async function decisionGovernanceCommand(db:Db,w:string,actor:ReviewActor
  }
  if(kind==="action"){
   if(!s.selected)return {error:"decision_not_found"};
+  const procedureAdmissions:ProcedureAdmission[]=[];
   requireRuntimeContent({proposal:s.selected,impact:s.impact},"decision.acceptance",{workspaceId:w});
   if(input.action==="review_impact"){
    await db.$executeRaw`INSERT INTO decision_impact_previews(id,decision_id,workspace_id,version,impact,authority,actor_user_id,request_id,request_hash) VALUES(${rid}::uuid,${id}::uuid,${w}::uuid,${(s.previews[0]?.version??0)+1},${JSON.stringify(s.impact)}::jsonb,${JSON.stringify(s.authority)}::jsonb,${u}::uuid,${input.requestId}::uuid,${hash})`;
@@ -103,10 +131,16 @@ export async function decisionGovernanceCommand(db:Db,w:string,actor:ReviewActor
     if(!input.grantIds||input.grantIds.length!==s.impact.taskIds.length)return {error:"decision_authority_grant_required"};
     for(const taskId of s.impact.taskIds){const binding=input.grantIds.find((g:any)=>g.taskId===taskId);const admitted=await admitCapability(db,w,taskId,principal,"decision_supersede",binding?.grantId);if("error" in admitted)return admitted;grants.push(admitted.grant);}
    }else if(input.grantIds)return {error:"decision_authority_grant_invalid"};
+   if(input.procedureEvidence){
+    const evidence=await acceptanceProcedureEvidence(db,w,u!,input,s.impact,s.previews[0]);
+    if("error" in evidence)return evidence;
+    procedureAdmissions.push(...evidence.records);
+   }
    await db.$executeRaw`INSERT INTO decision_acceptances(id,decision_id,workspace_id,preview_id,authority,actor_user_id,actor_agent_id,actor_credential_id,capability_grants,request_id,request_hash) VALUES(${rid}::uuid,${id}::uuid,${w}::uuid,${input.previewId}::uuid,${JSON.stringify(s.authority)}::jsonb,${u}::uuid,${principal.kind==="agent"?principal.id:null}::uuid,${principal.credentialId}::uuid,${JSON.stringify(input.grantIds??[])}::jsonb,${input.requestId}::uuid,${hash})`;
+   if(input.procedureEvidence)await db.$executeRaw`RELEASE SAVEPOINT decision_acceptance_evidence`;
    for(const grant of grants)await recordCapabilityUse(db,grant,randomUUID(),"governedDecision",rid);
   }
-  await event(db,w,principal.id,"decision_governance_recorded",id!,{decisionId:id,action:input.action,recordId:rid},principal.kind);
+  await event(db,w,principal.id,"decision_governance_recorded",id!,{decisionId:id,action:input.action,recordId:rid,...(input.procedureEvidence?{procedureAdmissions}:{})},principal.kind);
  }else if(kind==="defer"){
   let scope:any,entryId:string|null=null;
   if(input.targetType==="decision")scope=s.revisions.find(r=>r.decision_id===input.targetId)?.body.scope;
