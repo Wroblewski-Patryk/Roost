@@ -27,6 +27,17 @@ test("managed low-risk Codex selection produces one explicit Hermes backend, mod
     modelSelection: { ...selection, riskClass: "high" } } }), /hermes_startup_model_policy_invalid/);
 });
 
+for (const apiMaxRetries of [0, 1, 2]) test(`managed startup args accept bounded retry setting ${apiMaxRetries}`, () => {
+  const selection = managedSelectionFixture("codex_responses"); selection.attemptPolicy.apiMaxRetries = apiMaxRetries;
+  const envelope = { contract: { modelSelection: selection, access: {
+    tools: ["repository_read", "repository_write"], permissions: ["repository_read", "repository_write"] } } };
+  assert.ok(hermesStartupArgs(envelope).includes("openai-codex"));
+  for (const invalid of [-1, 3, 0.5, "0", undefined]) {
+    selection.attemptPolicy.apiMaxRetries = invalid;
+    assert.throws(() => hermesStartupArgs(envelope), /hermes_startup_model_policy_invalid/);
+  }
+});
+
 function fixture(t, packetChange = () => {}) {
   const root = mkdtempSync(path.join(os.tmpdir(), "roost-hermes-startup-test-"));
   t.after(() => {

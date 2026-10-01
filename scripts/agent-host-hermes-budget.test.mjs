@@ -9,14 +9,108 @@ import { budgetFixture } from "./fixtures/hermes-budget.mjs";
 import { isWindowsJobCleanupReceipt } from "./lib/agent-host-windows-job.mjs";
 import { sealHermesBudget, assertHermesBudget, hermesBudgetReceiptSchema, hermesBudgetBlocker, hermesBudgetBlockers,
   assertHermesBudgetReceipt, consumeHermesBudgetReceipt, createHermesBudgetReceipt, classifyHermesOutcome } from "./lib/agent-host-hermes-budget.mjs";
-import { sealHermesStartup } from "./lib/agent-host-hermes-startup.mjs";
-import { assertProviderStartup, consumeProviderInput, providerInputTransport } from "./lib/agent-host-provider-input.mjs";
+import { sealHermesStartup, assertHermesStartup, createHermesStartupCandidate, hermesStartupEnvironment, hermesStartupReceiptSchema } from "./lib/agent-host-hermes-startup.mjs";
+import { hermesBudgetProfileBinding, renderHermesBudgetProfile, hermesNativeProfileBinding, renderHermesNativeProfile } from "./lib/agent-host-hermes-profile.mjs";
+import { createOwnerAttestation } from "./lib/agent-host-hermes-owner-auth.mjs";
+import { managedSelectionFixture } from "./fixtures/trusted-pilot.mjs";
+import { pinReadyFixture } from "./fixtures/execution-packet.mjs";
+import { prepareProviderInput, assertProviderStartup, consumeProviderInput, providerInputTransport } from "./lib/agent-host-provider-input.mjs";
 import { projectProviderLaunch, prepareProviderLaunch, hermesContract } from "./lib/agent-host-provider-launch.mjs";
 import { runHermesOwnedProcess } from "./lib/agent-host-hermes-quiet.mjs";
 const counters = ["physicalModelCalls", "toolCalls", "transportRetries", "inputTokens", "outputTokens", "totalTokens", "cost"];
 const processOptions = f => ({ executable: f.checked.candidate.command, argv: f.checked.candidate.args,
   cwd: f.checked.candidate.cwd, environment: f.checked.candidate.environment, attempt: f.envelope.identity.executionId,
   input: providerInputTransport("hermes_codex", f.envelope).input });
+
+function managedBudgetFixture(t, apiMaxRetries, configuredRetries = apiMaxRetries) {
+  const f = budgetFixture(t), file = f.provider.profile.profilePath;
+  const profile = hermesBudgetProfileBinding(file, { apiMaxRetries: configuredRetries });
+  writeFileSync(file, renderHermesBudgetProfile({ apiMaxRetries: configuredRetries }));
+  const owner = createOwnerAttestation(profile); profile.ownerAttestation = owner.binding;
+  writeFileSync(path.join(path.dirname(file), "owner-attestation.json"), owner.bytes);
+  f.provider.profile = profile;
+  f.f.packet.contract.modelSelection = managedSelectionFixture("codex_responses");
+  Object.assign(f.f.packet.contract.modelSelection.attemptPolicy, { maxTurns: 2, apiMaxRetries });
+  f.f.claimed.checkpoint = undefined; pinReadyFixture(f.f);
+  f.envelope = prepareProviderInput(f.consumption);
+  f.f.claimed.checkpoint = { stage: "spawn_intent", packetRevision: f.envelope.revisions.packet, contextRevision: f.envelope.revisions.context };
+  f.options = { ...f.options, envelope: f.envelope }; f.checked = assertProviderStartup(f.options);
+  return f;
+}
+
+for (const apiMaxRetries of [0, 1, 2]) {
+  test(`native v5 read-only startup binds selected retry setting ${apiMaxRetries}`, t => {
+    const f = budgetFixture(t), envelope = structuredClone(f.envelope), file = f.provider.profile.profilePath;
+    const profile = hermesNativeProfileBinding(file, { apiMaxRetries });
+    writeFileSync(file, renderHermesNativeProfile({ apiMaxRetries }));
+    const owner = createOwnerAttestation(profile); profile.ownerAttestation = owner.binding;
+    writeFileSync(path.join(path.dirname(file), "owner-attestation.json"), owner.bytes); f.provider.profile = profile;
+    envelope.contract.modelSelection = managedSelectionFixture("codex_responses");
+    Object.assign(envelope.contract.modelSelection.attemptPolicy, { maxTurns: 2, apiMaxRetries });
+    envelope.contract.nativeBoundary = { profile: "inspect-readonly" };
+    envelope.contract.access = { sandbox: "read-only", tools: ["repository_read"], permissions: ["repository_read"] };
+    const budget = sealHermesBudget({ envelope, claimed: { ...f.f.claimed, checkpoint: undefined }, inputBytes: 100 });
+    const environment = hermesStartupEnvironment(profile, process.env, f.options.repositoryPath);
+    const candidate = createHermesStartupCandidate({ provider: f.provider, envelope, repositoryPath: f.options.repositoryPath, environment, budget });
+    const options = { provider: f.provider, envelope, repositoryPath: f.options.repositoryPath, candidate, budget };
+    const startup = assertHermesStartup(sealHermesStartup(options), options);
+    const receipt = createHermesBudgetReceipt(budget, envelope, startup);
+    assert.equal(startup.apiMaxRetries, apiMaxRetries); assert.equal(receipt.apiMaxRetries, apiMaxRetries);
+    const { apiMaxRetries: omitted, ...historical } = startup;
+    assert.equal(hermesStartupReceiptSchema.safeParse(historical).success, apiMaxRetries === 2);
+    assert.equal(startup.configDigest, profile.configDigest); assert.equal(receipt.configDigest, profile.configDigest);
+    assert.deepEqual(startup.toolsets, ["bot_room"]); assert.deepEqual(startup.expandedTools, []);
+    assert.ok(assertHermesBudgetReceipt(receipt).remainingMs > 0);
+  });
+  test(`managed selected retry setting ${apiMaxRetries} binds actual profile, startup and budget receipts`, t => {
+    const f = managedBudgetFixture(t, apiMaxRetries), receipt = f.checked.budgetReceipt;
+    assert.equal(JSON.parse(readFileSync(f.provider.profile.profilePath)).agent.api_max_retries, apiMaxRetries);
+    assert.equal(f.checked.receipt.apiMaxRetries, apiMaxRetries);
+    assert.equal(receipt.apiMaxRetries, apiMaxRetries); assert.equal(receipt.maxTurns, 2);
+    assert.equal(f.checked.candidate.args[f.checked.candidate.args.indexOf("--max-turns") + 1], "2");
+    assert.equal(hermesStartupReceiptSchema.safeParse(f.checked.receipt).success, true);
+    const { apiMaxRetries: omitted, ...historical } = f.checked.receipt;
+    assert.equal(hermesStartupReceiptSchema.safeParse(historical).success, apiMaxRetries === 2);
+    assert.equal(hermesBudgetReceiptSchema.safeParse(receipt).success, true);
+    for (const counter of counters) assert.equal(receipt[counter], null);
+    for (const other of [0, 1, 2].filter(value => value !== apiMaxRetries)) {
+      assert.equal(hermesStartupReceiptSchema.safeParse({ ...f.checked.receipt, apiMaxRetries: other }).success, false);
+      assert.throws(() => assertHermesBudgetReceipt({ ...receipt, apiMaxRetries: other }), /unproven/);
+      writeFileSync(f.provider.profile.profilePath, renderHermesBudgetProfile({ apiMaxRetries: other }));
+      assert.throws(() => assertProviderStartup(f.options), /hermes_profile_config_invalid/);
+      assert.deepEqual(hermesBudgetBlockers([hermesBudgetBlocker], receipt), [hermesBudgetBlocker]);
+      writeFileSync(f.provider.profile.profilePath, renderHermesBudgetProfile({ apiMaxRetries }));
+    }
+    const remaining = consumeHermesBudgetReceipt(receipt, processOptions(f)); assert.ok(remaining() > 0);
+    assert.throws(() => consumeHermesBudgetReceipt(receipt, processOptions(f)), /reuse/);
+  });
+  for (const configured of [0, 1, 2].filter(value => value !== apiMaxRetries)) {
+    test(`selected retry setting ${apiMaxRetries} rejects genuine profile configured ${configured}`, t => {
+      assert.throws(() => managedBudgetFixture(t, apiMaxRetries, configured), /hermes_startup_retry_policy_mismatch/);
+    });
+  }
+}
+
+test("managed retry and turn policy cannot change after budget sealing", t => {
+  const f = budgetFixture(t), envelope = structuredClone(f.envelope);
+  envelope.contract.modelSelection = managedSelectionFixture("codex_responses");
+  envelope.contract.modelSelection.attemptPolicy.apiMaxRetries = 0;
+  const seal = sealHermesBudget({ envelope, claimed: { ...f.f.claimed, checkpoint: undefined }, inputBytes: 100 });
+  envelope.contract.modelSelection.attemptPolicy.apiMaxRetries = 1;
+  assert.throws(() => assertHermesBudget(seal, envelope), /hermes_attempt_budget_changed/);
+  envelope.contract.modelSelection.attemptPolicy.apiMaxRetries = 0;
+  envelope.contract.modelSelection.attemptPolicy.maxTurns = 2;
+  assert.throws(() => assertHermesBudget(seal, envelope), /hermes_attempt_budget_changed/);
+});
+
+test("budget sealing rejects retry settings outside the managed policy", t => {
+  const f = budgetFixture(t), envelope = structuredClone(f.envelope);
+  envelope.contract.modelSelection = managedSelectionFixture("codex_responses");
+  for (const apiMaxRetries of [-1, 3, 0.5, "0", undefined]) {
+    envelope.contract.modelSelection.attemptPolicy.apiMaxRetries = apiMaxRetries;
+    assert.throws(() => sealHermesBudget({ envelope, claimed: { ...f.f.claimed, checkpoint: undefined }, inputBytes: 100 }), /hermes_attempt_budget_invalid/);
+  }
+});
 
 test("coding-small-v1 is Ready-bound, private, honest about unknowns, and stops before real launch", t => {
   const f = budgetFixture(t), r = f.checked.budgetReceipt;

@@ -6,7 +6,9 @@ import os from "node:os";
 import path from "node:path";
 import { mkdtempSync, mkdirSync, writeFileSync, renameSync, linkSync, symlinkSync, rmSync } from "node:fs";
 import { renderHermesProfile, hermesProfileBinding, inspectHermesProfile, sealHermesProfile,
-  assertHermesProfile, observeHermesSameOwner, hermesAuthSourceClass, hermesProfileAuthBlockers } from "./lib/agent-host-hermes-profile.mjs";
+  assertHermesProfile, observeHermesSameOwner, hermesAuthSourceClass, hermesProfileAuthBlockers,
+  renderHermesNativeProfile, hermesNativeProfileBinding, hermesNativeProfileDigest,
+  renderHermesBudgetProfile, hermesBudgetProfileBinding, hermesBudgetProfileDigest, hermesProfileBindingSchema } from "./lib/agent-host-hermes-profile.mjs";
 import { validPacketFixture, pinReadyFixture } from "./fixtures/execution-packet.mjs";
 import { prepareProviderInput, assertProviderProfile } from "./lib/agent-host-provider-input.mjs";
 import { prepareProviderLaunch, projectProviderLaunch } from "./lib/agent-host-provider-launch.mjs";
@@ -14,13 +16,15 @@ import contract from "./lib/agent-host-provider-contract.cjs";
 const readyRevision = "a".repeat(64);
 const metadata = () => ({ authSourceClass: hermesAuthSourceClass, status: "logged-in" });
 const sha = value => createHash("sha256").update(value).digest("hex");
-function fixture(t) {
+function fixture(t, apiMaxRetries) {
   const root = mkdtempSync(path.join(os.tmpdir(), "roost-hermes-profile-test-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const repositoryPath = path.join(root, "app"), home = path.join(root, "profile");
   mkdirSync(repositoryPath); mkdirSync(home);
-  const file = path.join(home, "config.yaml"); writeFileSync(file, renderHermesProfile());
-  const binding = hermesProfileBinding(file), attestation = createOwnerAttestation(binding);
+  const file = path.join(home, "config.yaml");
+  writeFileSync(file, apiMaxRetries === undefined ? renderHermesProfile() : renderHermesNativeProfile({ apiMaxRetries }));
+  const binding = apiMaxRetries === undefined ? hermesProfileBinding(file) : hermesNativeProfileBinding(file, { apiMaxRetries });
+  const attestation = createOwnerAttestation(binding);
   const attestationFile = path.join(home, "owner-attestation.json"); writeFileSync(attestationFile, attestation.bytes);
   binding.ownerAttestation = attestation.binding;
   const authReceipt = observeHermesSameOwner(metadata);
@@ -28,6 +32,34 @@ function fixture(t) {
   const snapshot = sealHermesProfile(binding, options);
   return { root, home, file, binding, snapshot, options, repositoryPath, authReceipt, attestation, attestationFile };
 }
+
+test("legacy budget and native defaults retain their exact reviewed retry-2 bytes and digests", () => {
+  assert.equal(sha(renderHermesBudgetProfile()), hermesBudgetProfileDigest);
+  assert.equal(sha(renderHermesNativeProfile()), hermesNativeProfileDigest);
+  assert.equal(renderHermesBudgetProfile(), renderHermesBudgetProfile({ apiMaxRetries: 2 }));
+  assert.equal(renderHermesNativeProfile(), renderHermesNativeProfile({ apiMaxRetries: 2 }));
+});
+
+for (const apiMaxRetries of [0, 1, 2]) test(`native profile exact reviewed retry-${apiMaxRetries} bytes seal and reject substitution`, t => {
+  const f = fixture(t, apiMaxRetries);
+  assert.equal(inspectHermesProfile(f.binding, f.repositoryPath).apiMaxRetries, apiMaxRetries);
+  assert.equal(assertHermesProfile(f.snapshot, f.binding, f.options).apiMaxRetries, apiMaxRetries);
+  assert.equal(hermesProfileBindingSchema.safeParse(f.binding).success, true);
+  for (const other of [0, 1, 2].filter(value => value !== apiMaxRetries)) {
+    writeFileSync(f.file, renderHermesNativeProfile({ apiMaxRetries: other }));
+    assert.throws(() => assertHermesProfile(f.snapshot, f.binding, f.options), /hermes_profile_config_invalid/);
+    const next = { ...hermesNativeProfileBinding(f.file, { apiMaxRetries: other }), ownerAttestation: f.binding.ownerAttestation };
+    assert.throws(() => assertHermesProfile(f.snapshot, next, f.options), /hermes_profile_changed/);
+  }
+  assert.equal(hermesProfileBindingSchema.safeParse({ ...f.binding, configDigest: "d".repeat(64) }).success, false);
+  assert.equal(hermesProfileBindingSchema.safeParse({ ...hermesBudgetProfileBinding(f.file, { apiMaxRetries }), configDigest: f.binding.configDigest }).success, false);
+});
+
+test("rendering rejects retry settings outside the accepted bounded integer policy", () => {
+  for (const render of [renderHermesBudgetProfile, renderHermesNativeProfile])
+    for (const apiMaxRetries of [-1, 3, 0.5, "0", null, NaN])
+      assert.throws(() => render({ apiMaxRetries }), /hermes_profile_retry_policy_invalid/);
+});
 test("approved synthetic profile and nonsecret same-owner observation reach only the pre-spawn profile boundary", t => {
   const f = fixture(t), result = assertHermesProfile(f.snapshot, f.binding, f.options);
   assert.equal(result.auth.authSourceClass, hermesAuthSourceClass);

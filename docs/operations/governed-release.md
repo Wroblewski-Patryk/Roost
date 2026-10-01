@@ -346,3 +346,28 @@ The reconciled baseline-retention Decision
 23647 ms. This Decision grants no execution, credential or release capability.
 Worker credential rotation, managed audits and the release certificate still
 require their separate normal authority and runtime proof.
+
+The normal HTTPS rotation subsequently completed: device ACK
+`ab6f1a9f-3b26-4bb8-8ff9-5f8a7ccbe09f`, new active claim-only credential
+`843ef939-c403-4158-ad24-75d9193ca167`, epoch 2, version 1. Protected Windows
+storage was verified before ACK; the previous generation was replaced. All
+five prepared task-specific runtime Decisions were accepted, and the auditor
+passed normal Ready submission. Its first real Worker claim
+`d9212577-1b1d-4ecf-8975-96e449e6b0e4` failed before model launch with
+`hermes_attempt_budget_invalid`: the accepted selection requests zero API
+retries, while the historical startup/budget validators require exactly two.
+The terminal claimed checkpoint and absent original process were reconciled
+through the existing writer-lock protocol; no lock was cleared by a manual
+filesystem bypass. Configuration/Worker correction is required before a new
+attempt. These receipts prove connection and safe pre-launch refusal, not a
+completed audit or governed release.
+
+The selected retry policy now binds the exact reviewed Hermes profile bytes,
+startup receipt and attempt budget: integer settings 0, 1 and 2 are supported,
+and mismatched physical configuration is refused. The default two-retry
+profile remains byte-identical; historical receipts are accepted only for
+that default digest. The installation was migrated to its approved zero-retry
+profile while preserving owner attestation identity and expiry. Root integration
+checks passed 259 tests with no skips, and `npm run validate` passed. This
+corrects the pre-launch refusal; a new managed audit and the governed release
+certificate are still required.

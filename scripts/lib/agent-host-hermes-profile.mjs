@@ -39,8 +39,14 @@ export const renderHermesStartupProfile = () => startupProfileBytes;
 export const hermesBudgetProfileVersion = "roost-hermes-profile-v3";
 const budgetProfileBytes = JSON.stringify({ ...JSON.parse(startupProfileBytes), agent: { max_turns: 24, api_max_retries: 2 } }, null, 2) + "\n";
 export const hermesBudgetProfileDigest = sha(budgetProfileBytes);
-export const renderHermesBudgetProfile = () => budgetProfileBytes;
-export const hermesBudgetProfileBinding = profilePath => ({ ...hermesStartupProfileBinding(profilePath), schemaVersion: hermesBudgetProfileVersion, configDigest: hermesBudgetProfileDigest });
+const retryProfileBytes = (bytes, apiMaxRetries) => {
+  if (!Number.isInteger(apiMaxRetries) || apiMaxRetries < 0 || apiMaxRetries > 2) fail("hermes_profile_retry_policy_invalid");
+  const reviewed = JSON.parse(bytes); reviewed.agent.api_max_retries = apiMaxRetries;
+  return JSON.stringify(reviewed, null, 2) + "\n";
+};
+export const renderHermesBudgetProfile = ({ apiMaxRetries = 2 } = {}) => retryProfileBytes(budgetProfileBytes, apiMaxRetries);
+export const hermesBudgetProfileBinding = (profilePath, options) => ({ ...hermesStartupProfileBinding(profilePath),
+  schemaVersion: hermesBudgetProfileVersion, configDigest: sha(renderHermesBudgetProfile(options)) });
 export const hermesLegacyNativeProfileVersion = "roost-hermes-profile-v4";
 const legacyNativeProfileBytes = JSON.stringify({ ...JSON.parse(budgetProfileBytes),
   lsp: { enabled: false, install_strategy: "off" },
@@ -52,10 +58,23 @@ export const hermesLegacyNativeProfileDigest = sha(legacyNativeProfileBytes);
 export const hermesNativeProfileVersion = "roost-hermes-profile-v5";
 const nativeProfileBytes = JSON.stringify({ ...JSON.parse(legacyNativeProfileBytes), security: { allow_lazy_installs: false } }, null, 2) + "\n";
 export const hermesNativeProfileDigest = sha(nativeProfileBytes);
-export const renderHermesNativeProfile = () => nativeProfileBytes;
-export const hermesNativeProfileBinding = profilePath => ({ ...hermesBudgetProfileBinding(profilePath),
-  schemaVersion: hermesNativeProfileVersion, configDigest: hermesNativeProfileDigest,
+export const renderHermesNativeProfile = ({ apiMaxRetries = 2 } = {}) => retryProfileBytes(nativeProfileBytes, apiMaxRetries);
+export const hermesNativeProfileBinding = (profilePath, options) => ({ ...hermesBudgetProfileBinding(profilePath, options),
+  schemaVersion: hermesNativeProfileVersion, configDigest: sha(renderHermesNativeProfile(options)),
   nativeToolsRisk: { policyVersion: nativeToolPolicy, decisionReference: nativeRiskReference } });
+// Admit only these reviewed byte variants, never an arbitrary declared digest.
+const budgetProfiles = Object.fromEntries([0, 1, 2].map(apiMaxRetries => {
+  const bytes = renderHermesBudgetProfile({ apiMaxRetries }); return [sha(bytes), bytes];
+}));
+const nativeProfiles = Object.fromEntries([0, 1, 2].map(apiMaxRetries => {
+  const bytes = renderHermesNativeProfile({ apiMaxRetries }); return [sha(bytes), bytes];
+}));
+export const hermesStartupConfigDigests = Object.freeze([hermesStartupProfileDigest, ...Object.keys(budgetProfiles), ...Object.keys(nativeProfiles)]);
+export function hermesProfileRetrySetting(profileVersion, configDigest) {
+  const bytes = profileVersion === hermesBudgetProfileVersion ? budgetProfiles[configDigest]
+    : profileVersion === hermesNativeProfileVersion ? nativeProfiles[configDigest] : undefined;
+  return bytes === undefined ? undefined : JSON.parse(bytes).agent.api_max_retries;
+}
 const legacyBindingSchema = z.object({
   schemaVersion: z.literal(hermesProfileVersion), hermesVersion: z.literal(pin.version),
   hermesCommit: z.literal(pin.commit), profilePath: z.string().min(1).max(1024),
@@ -64,10 +83,10 @@ const legacyBindingSchema = z.object({
 }).strict();
 export const hermesProfileBindingSchema = z.discriminatedUnion("schemaVersion", [legacyBindingSchema,
   legacyBindingSchema.extend({ schemaVersion: z.literal(hermesStartupProfileVersion), configDigest: z.literal(hermesStartupProfileDigest) }).strict(),
-  legacyBindingSchema.extend({ schemaVersion: z.literal(hermesBudgetProfileVersion), configDigest: z.literal(hermesBudgetProfileDigest) }).strict(),
+  legacyBindingSchema.extend({ schemaVersion: z.literal(hermesBudgetProfileVersion), configDigest: z.enum(Object.keys(budgetProfiles)) }).strict(),
   legacyBindingSchema.extend({ schemaVersion: z.literal(hermesLegacyNativeProfileVersion), configDigest: z.literal(hermesLegacyNativeProfileDigest),
     nativeToolsRisk: z.object({ policyVersion: z.literal(nativeToolPolicy), decisionReference: z.literal(nativeRiskReference) }).strict() }).strict(),
-  legacyBindingSchema.extend({ schemaVersion: z.literal(hermesNativeProfileVersion), configDigest: z.literal(hermesNativeProfileDigest),
+  legacyBindingSchema.extend({ schemaVersion: z.literal(hermesNativeProfileVersion), configDigest: z.enum(Object.keys(nativeProfiles)),
     nativeToolsRisk: z.object({ policyVersion: z.literal(nativeToolPolicy), decisionReference: z.literal(nativeRiskReference) }).strict() }).strict()]);
 const failure = reason => Object.assign(new Error(reason), { protocolAdmission: true, retryable: false,
   publicMessage: "Hermes profile/auth admission is blocked. No model was started.", details: { reason } });
@@ -88,7 +107,7 @@ function readProfile(input, repositoryPath) {
   const parsed = hermesProfileBindingSchema.safeParse(input);
   if (!parsed.success) fail("hermes_profile_binding_invalid");
   const binding = parsed.data, file = binding.profilePath;
-  const expectedBytes = binding.schemaVersion === hermesNativeProfileVersion ? nativeProfileBytes : binding.schemaVersion === hermesLegacyNativeProfileVersion ? legacyNativeProfileBytes : binding.schemaVersion === hermesBudgetProfileVersion ? budgetProfileBytes : binding.schemaVersion === hermesStartupProfileVersion ? startupProfileBytes : profileBytes;
+  const expectedBytes = binding.schemaVersion === hermesNativeProfileVersion ? nativeProfiles[binding.configDigest] : binding.schemaVersion === hermesLegacyNativeProfileVersion ? legacyNativeProfileBytes : binding.schemaVersion === hermesBudgetProfileVersion ? budgetProfiles[binding.configDigest] : binding.schemaVersion === hermesStartupProfileVersion ? startupProfileBytes : profileBytes;
   if (!path.isAbsolute(file) || path.normalize(file) !== file || path.basename(file) !== "config.yaml"
       || /[\x00-\x1f]/.test(file) || (process.platform === "win32" && (!/^[a-z]:\\/i.test(file)
         || file.slice(2).includes(":") || file.split("\\").some(part => /[. ]$/.test(part))))) fail("hermes_profile_path_invalid");
@@ -121,8 +140,10 @@ function readProfile(input, repositoryPath) {
 }
 
 function audit(binding, authReceipt) {
+  const apiMaxRetries = hermesProfileRetrySetting(binding.schemaVersion, binding.configDigest);
   return Object.freeze({ profileVersion: binding.schemaVersion, hermesVersion: binding.hermesVersion,
     hermesCommit: binding.hermesCommit, configDigest: binding.configDigest,
+    ...(apiMaxRetries !== undefined ? { apiMaxRetries } : {}),
     auth: inspectOwnerAttestation(binding, authReceipt) });
 }
 export function inspectHermesProfile(binding, repositoryPath) {

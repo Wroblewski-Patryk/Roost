@@ -3,7 +3,7 @@ import { z } from "zod";
 import { durationStopMarginMs } from "./agent-host-execution-duration.mjs";
 import { isWindowsJobReceipt } from "./agent-host-windows-job.mjs";
 import { isHermesStartupReceipt, hermesStartupProcessMatches } from "./agent-host-hermes-startup.mjs";
-import { managedBackendVersion } from "./agent-host-model-policy.mjs";
+import { managedBackendVersion, managedBackendSelectionSchema } from "./agent-host-model-policy.mjs";
 
 export const hermesBudgetPolicy = "coding-small-v1";
 export const hermesBudgetBlocker = "hermes_attempt_budget_policy_unproven";
@@ -12,6 +12,13 @@ const hash = value => createHash("sha256").update(JSON.stringify(value)).digest(
 const freeze = value => { if (value && typeof value === "object") { Object.values(value).forEach(freeze); Object.freeze(value); } return value; };
 const fail = reason => { throw Object.assign(new Error(reason), { protocolAdmission: true, retryable: false,
   outcome: "policy_blocked", publicMessage: "Hermes attempt budget policy blocked this attempt.", details: { reason } }); };
+function attemptPolicy(envelope) {
+  const selection = envelope.contract.modelSelection;
+  if (selection?.schemaVersion !== managedBackendVersion) return { maxTurns: 24, apiMaxRetries: 2 };
+  const parsed = managedBackendSelectionSchema.safeParse(selection);
+  if (!parsed.success || parsed.data.backend !== "codex_responses" || parsed.data.riskClass !== "low") fail("hermes_attempt_budget_invalid");
+  return { maxTurns: parsed.data.attemptPolicy.maxTurns, apiMaxRetries: parsed.data.attemptPolicy.apiMaxRetries };
+}
 
 // This is an explicit owner waiver of hard token/cost accounting, not a meter.
 // Direct Codex keeps its separate fail-closed output-budget contract.
@@ -32,8 +39,7 @@ export function sealHermesBudget({ envelope, claimed, inputBytes, cleanupMarginM
     && (envelope.contract.nativeBoundary?.profile === "coding-local"
       ? checkpoint.branch === envelope.contract.singleTask.branch && /^[a-f0-9]{40}$/.test(checkpoint.headCommit ?? "")
       : checkpoint.branch === undefined && checkpoint.headCommit === undefined));
-  if (selection?.schemaVersion === managedBackendVersion && (selection.backend !== "codex_responses"
-      || selection.riskClass !== "low" || selection.attemptPolicy?.apiMaxRetries !== 2)) fail("hermes_attempt_budget_invalid");
+  const policy = attemptPolicy(envelope);
   if (claimed.id !== envelope.identity.executionId || claimed.taskId !== envelope.identity.taskId
       || claimed.attempt !== 1 || envelope.identity.attempt !== 1 || envelope.contract.budgets.maxAttempts !== 1
       || claimed.codexThreadId || !checkpointReady
@@ -46,31 +52,31 @@ export function sealHermesBudget({ envelope, claimed, inputBytes, cleanupMarginM
   if (runBudgetSeconds < 1) fail("hermes_attempt_budget_expired");
   const seal = Object.freeze({});
   seals.set(seal, { envelope, startedAt: claimed.startedAt, deadline, stopAt, at, monotonic: performance.now(), used: false,
-    runBudgetSeconds, inputBytes });
+    runBudgetSeconds, inputBytes, policy });
   return seal;
 }
 export function assertHermesBudget(seal, envelope, claimed) {
   const proof = seals.get(seal);
   if (!proof || proof.envelope !== envelope || (claimed && (claimed.startedAt !== proof.startedAt
       || claimed.id !== envelope.identity.executionId || claimed.taskId !== envelope.identity.taskId
-      || claimed.attempt !== 1 || claimed.codexThreadId))) fail("hermes_attempt_budget_changed");
+      || claimed.attempt !== 1 || claimed.codexThreadId))
+      || hash(proof.policy) !== hash(attemptPolicy(envelope))) fail("hermes_attempt_budget_changed");
   const elapsed = proof.elapsed = Math.max(proof.elapsed ?? 0, Date.now() - proof.at, performance.now() - proof.monotonic);
   const remainingMs = proof.stopAt - proof.at - elapsed;
   if (remainingMs < 1) fail("hermes_attempt_budget_expired");
   return { runBudgetSeconds: proof.runBudgetSeconds, remainingMs, acceptedDeadline: new Date(proof.deadline).toISOString(),
-    cleanupMarginMs: durationStopMarginMs, inputBytes: proof.inputBytes };
+    cleanupMarginMs: durationStopMarginMs, inputBytes: proof.inputBytes, ...proof.policy };
 }
 export function hermesBudgetArgs(seal, envelope) {
-  const selection = envelope.contract.modelSelection;
-  const maxTurns = selection?.schemaVersion === managedBackendVersion ? selection.attemptPolicy.maxTurns : 24;
-  return ["--max-turns", String(maxTurns), "--run-budget", String(assertHermesBudget(seal, envelope).runBudgetSeconds)];
+  const budget = assertHermesBudget(seal, envelope);
+  return ["--max-turns", String(budget.maxTurns), "--run-budget", String(budget.runBudgetSeconds)];
 }
 const digest = z.string().regex(/^[a-f0-9]{64}$/);
 export const hermesBudgetReceiptSchema = z.object({
   schemaVersion: z.literal("roost-hermes-attempt-budget-v1"), policy: z.literal(hermesBudgetPolicy),
   attemptId: z.string().uuid(), taskId: z.string().uuid(), attempt: z.literal(1),
   readyRevision: digest, inputSeal: digest, startupReceiptDigest: digest, configDigest: digest,
-  maxTurns: z.number().int().min(1).max(24), apiMaxRetries: z.literal(2), maxAttempts: z.literal(1), wholeTaskRetries: z.literal(0),
+  maxTurns: z.number().int().min(1).max(24), apiMaxRetries: z.number().int().min(0).max(2), maxAttempts: z.literal(1), wholeTaskRetries: z.literal(0),
   acceptedDeadline: z.string().datetime(), cleanupMarginMs: z.literal(5000),
   runBudgetSeconds: z.number().int().min(1).max(1795), runBudgetEnforcement: z.literal("advisory_worker_deadline_authoritative"),
   inputBytes: z.number().int().min(1).max(131072), inputByteCap: z.literal(131072), inputByteCapScope: z.literal("initial_sealed_input_only"),
@@ -83,12 +89,11 @@ export const hermesBudgetReceiptSchema = z.object({
 export function createHermesBudgetReceipt(seal, envelope, startup) {
   if (!isHermesStartupReceipt(startup, envelope, seal)) fail("hermes_budget_startup_unproven");
   const budget = assertHermesBudget(seal, envelope);
+  if (startup.apiMaxRetries !== budget.apiMaxRetries) fail("hermes_budget_startup_unproven");
   const body = { schemaVersion: "roost-hermes-attempt-budget-v1", policy: hermesBudgetPolicy,
     attemptId: envelope.identity.executionId, taskId: envelope.identity.taskId, attempt: 1,
     readyRevision: envelope.revisions.ready, inputSeal: envelope.seal, startupReceiptDigest: startup.digest, configDigest: startup.configDigest,
-    maxTurns: envelope.contract.modelSelection?.schemaVersion === managedBackendVersion
-      ? envelope.contract.modelSelection.attemptPolicy.maxTurns : 24,
-    apiMaxRetries: 2, maxAttempts: 1, wholeTaskRetries: 0,
+    maxTurns: budget.maxTurns, apiMaxRetries: budget.apiMaxRetries, maxAttempts: 1, wholeTaskRetries: 0,
     acceptedDeadline: budget.acceptedDeadline, cleanupMarginMs: budget.cleanupMarginMs, runBudgetSeconds: budget.runBudgetSeconds,
     runBudgetEnforcement: "advisory_worker_deadline_authoritative", inputBytes: budget.inputBytes,
     inputByteCap: 131072, inputByteCapScope: "initial_sealed_input_only", maxOutputTokensIntent: envelope.contract.budgets.maxOutputTokens,

@@ -5,7 +5,7 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 import contract from "./agent-host-provider-contract.cjs";
 import { modelSelectionSchema, managedBackendSelectionSchema, managedBackendVersion } from "./agent-host-model-policy.mjs";
-import { hermesStartupProfileVersion, hermesStartupProfileDigest, hermesBudgetProfileVersion, hermesBudgetProfileDigest, hermesNativeProfileVersion, hermesNativeProfileDigest, inspectHermesProfile, sealHermesProfile, assertHermesProfile } from "./agent-host-hermes-profile.mjs";
+import { hermesStartupProfileVersion, hermesStartupProfileDigest, hermesStartupConfigDigests, hermesProfileBindingSchema, hermesProfileRetrySetting, hermesBudgetProfileVersion, hermesNativeProfileVersion, inspectHermesProfile, sealHermesProfile, assertHermesProfile } from "./agent-host-hermes-profile.mjs";
 
 import { hermesBudgetArgs } from "./agent-host-hermes-budget.mjs";
 import { windowsEnvironmentPolicy, assertWindowsStartupPaths, inspectWindowsSystemEnvironment } from "./agent-host-windows-environment.mjs";
@@ -73,8 +73,7 @@ const expansion = { file: ["read_file", "write_file", "patch", "search_files"], 
 export function hermesStartupArgs(envelope) {
   const requested = envelope.contract.modelSelection;
   const managed = requested?.schemaVersion === managedBackendVersion ? managedBackendSelectionSchema.safeParse(requested) : null;
-  if (managed && (!managed.success || managed.data.backend !== "codex_responses" || managed.data.riskClass !== "low"
-      || managed.data.attemptPolicy.apiMaxRetries !== 2)) fail("hermes_startup_model_policy_invalid");
+  if (managed && (!managed.success || managed.data.backend !== "codex_responses" || managed.data.riskClass !== "low")) fail("hermes_startup_model_policy_invalid");
   const selection = modelSelectionSchema.safeParse(managed ? managed.data.modelSelection : requested);
   if (!selection.success) fail("hermes_startup_model_policy_invalid");
   return ["chat", "--cli", "--oneshot", "--quiet", "--query-file", "-", "--provider", "openai-codex",
@@ -107,7 +106,7 @@ function assertNoStartupOverlays(provider, candidate) {
 function validate({ provider, envelope, repositoryPath, candidate, budget }) {
   if (provider.kind !== "hermes_codex" || !provider.enabled || provider.version !== pin.version || provider.commit !== pin.commit
       || provider.officialSource !== pin.officialSource || ![hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion].includes(provider.profile?.schemaVersion)
-      || provider.profile.configDigest !== (provider.profile.schemaVersion === hermesNativeProfileVersion ? hermesNativeProfileDigest : provider.profile.schemaVersion === hermesBudgetProfileVersion ? hermesBudgetProfileDigest : hermesStartupProfileDigest)
+      || !hermesProfileBindingSchema.safeParse(provider.profile).success
       || serialize(provider.policy) !== serialize(contract.registry.hermesPolicy)
       || Object.keys(provider).some(k => !["kind", "enabled", "version", "commit", "officialSource", "executablePath", "profile", "policy", "attestation", "testManifestPath"].includes(k))) fail("hermes_startup_profile_required");
   if (provider.profile.schemaVersion === hermesNativeProfileVersion && envelope.contract.nativeBoundary?.profile !== "inspect-readonly") assertCodingAuthority(envelope);
@@ -124,6 +123,12 @@ function validate({ provider, envelope, repositoryPath, candidate, budget }) {
   const expected = createHermesStartupCandidate({ provider, envelope, repositoryPath, environment: expectedEnvironment, budget });
   if (serialize(expected) !== serialize(candidate)) fail("hermes_startup_candidate_invalid");
   const profile = inspectHermesProfile(provider.profile, repositoryPath);
+  const selection = envelope.contract.modelSelection;
+  const requestedRetries = selection?.schemaVersion === managedBackendVersion ? selection.attemptPolicy.apiMaxRetries : 2;
+  // Match reviewed private bytes to the Ready-selected setting exactly. Pinned
+  // Hermes normalizes configured 0/1 to one ordinary attempt; this is no meter.
+  if ((selection?.schemaVersion === managedBackendVersion || profile.apiMaxRetries !== undefined)
+      && profile.apiMaxRetries !== requestedRetries) fail("hermes_startup_retry_policy_mismatch");
   assertNoStartupOverlays(provider, candidate);
   const windowsEnvironment = process.platform === "win32"
     ? { policy: windowsEnvironmentPolicy, category: "derived_verified_systemroot", systemDriveDigest: digest(env.SYSTEMDRIVE), rootIdentityDigest: host.rootIdentity }
@@ -141,10 +146,11 @@ export function sealHermesStartup(options) {
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 export const hermesStartupReceiptSchema = z.object({
   schemaVersion: z.literal(hermesStartupVersion), policyVersion: z.literal(hermesStartupPolicy), qualification: z.literal("source_backed_synthetic_startup_policy"),
-  hermesVersion: z.literal(pin.version), hermesCommit: z.literal(pin.commit), profileVersion: z.enum([hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion]), configDigest: z.enum([hermesStartupProfileDigest, hermesBudgetProfileDigest, hermesNativeProfileDigest]),
+  hermesVersion: z.literal(pin.version), hermesCommit: z.literal(pin.commit), profileVersion: z.enum([hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion]), configDigest: z.enum(hermesStartupConfigDigests),
   authAttestationId: z.string().uuid(), authAttestationDigest: hash, authPolicyVersion: z.literal("roost-hermes-same-owner-auth-v2"),
   readyRevision: hash, inputSeal: hash, provider: z.literal("openai-codex"), modelSelection: modelSelectionSchema,
   backend: z.literal("codex_responses").optional(),
+  apiMaxRetries: z.number().int().min(0).max(2).optional(),
   toolsets: z.array(z.enum(["file", "terminal", "bot_room"])).min(1).max(2), expandedTools: z.array(z.enum(Object.values(expansion).flat())).max(6),
   categories: z.array(z.enum(["repository_read", "repository_write", "local_test"])).min(1).max(3),
   fallbackProvidersEmpty: z.literal(true), legacyFallbackEmpty: z.literal(true), worktree: z.literal(false), safeMode: z.literal(true), updateCheck: z.literal(false),
@@ -154,7 +160,12 @@ export const hermesStartupReceiptSchema = z.object({
     z.object({ policy: z.literal(windowsEnvironmentPolicy), category: z.literal("non_windows_omitted") }).strict()
   ]),
   argvDigest: hash, environmentDigest: hash, policyDigest: hash, issuedAt: z.string().datetime(), expiresAt: z.string().datetime(), digest: hash
-}).strict();
+}).strict().refine(receipt => receipt.profileVersion === hermesStartupProfileVersion
+  ? receipt.configDigest === hermesStartupProfileDigest && receipt.apiMaxRetries === undefined
+  // Historical default-2 diagnostics lacked this field. Only their exact
+  // reviewed digest preserves parsing; serialized reports never gain authority.
+  : (receipt.apiMaxRetries ?? 2) === hermesProfileRetrySetting(receipt.profileVersion, receipt.configDigest),
+{ message: "Hermes startup receipt retry setting must match its exact reviewed profile digest." });
 
 export function assertHermesStartup(seal, options) {
   const saved = seals.get(seal), now = Date.now();
@@ -172,6 +183,7 @@ export function assertHermesStartup(seal, options) {
     modelSelection: { ...(options.envelope.contract.modelSelection.schemaVersion === managedBackendVersion
       ? options.envelope.contract.modelSelection.modelSelection : options.envelope.contract.modelSelection) },
     ...(options.envelope.contract.modelSelection.schemaVersion === managedBackendVersion ? { backend: "codex_responses" } : {}),
+    ...(profile.apiMaxRetries !== undefined ? { apiMaxRetries: profile.apiMaxRetries } : {}),
     toolsets, expandedTools: toolsets.flatMap(t => expansion[t]), categories: toolsets.includes("bot_room") ? ["repository_read"] : ["repository_read", "repository_write", ...(toolsets.includes("terminal") ? ["local_test"] : [])],
     fallbackProvidersEmpty: true, legacyFallbackEmpty: true, worktree: false, safeMode: true, updateCheck: false,
     acceptedSideEffects: { ...acceptedHermesStartupEffects }, windowsEnvironment, argvDigest: digest(options.candidate.args), environmentDigest: digest(options.candidate.environment),
