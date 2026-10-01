@@ -163,6 +163,10 @@ Image cleanup requires application absence, exact digest/ID/tags/creation time,
 private linked package/repository and no containers using the image. Use no force,
 prune or package-wide delete. The owner registry token needs `read:packages`,
 `write:packages` and `delete:packages` for these owned test versions.
+GitHub's normalized scope header may omit `read:packages` when `write:packages`
+includes it. The adapter accepts either read scope while still requiring deletion
+authority and exact actor/private package ownership. A live package GET confirmed
+this behavior; the regression also denies a write token without deletion scope.
 
 ## Evidence checkpoint — 2026-10-01
 
@@ -181,7 +185,13 @@ prune or package-wide delete. The owner registry token needs `read:packages`,
   This is component recovery evidence, not a Hermes release of the certification app.
 - Backup test: real local PostgreSQL custom archive and restore with synthetic
   multiline/JSON data, schema/index/sequence parity, authenticated encryption and
-  both owned test databases absent. Production backup/off-device setup is pending.
+  both owned test databases absent.
+- Production backup/restore passed after owner setup: archive 28,151,762 bytes,
+  SHA-256 `86e159f5e77f9c1dba16f32a6b5816e00f3a66f973af5b235fec9e5b98403ac7`;
+  encrypted read-back, full schema/data/sequence parity, owned restore database
+  absence and latest-copy promotion verified at `2026-10-01T16:47:21.572Z`.
+  A separate prerequisite read decrypted/authenticated the actual latest copy and
+  verified the owner's off-device acknowledgement. No unresolved backup remains.
 - Adapters and broker have focused negative/uncertain/progression tests. Remote
   operations use test doubles in these checks; native local Git cleanup is real.
 - `npm run test:agent-host-release`: 117/117 passed (101 Node and 16 TypeScript),
@@ -192,6 +202,7 @@ prune or package-wide delete. The owner registry token needs `read:packages`,
   binary input and local Docker inspection also passed.
 - `npm run validate` passed lint, type checking and server/web builds. Existing
   web asset/chunk warnings remain; these checks are not deployment evidence.
+- Subsequent normalized-registry-scope regression: 31/31 image cleanup tests passed.
 - Adjacent native managed-admission, failed-review, B19 reconciliation and Writer
   checks: 37/37 passed without skips. Agent-principal checks: 2/2 passed.
   `npm run codex:check` passed, including all 225 requirements mapped once.

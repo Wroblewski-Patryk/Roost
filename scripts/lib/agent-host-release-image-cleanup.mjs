@@ -148,7 +148,9 @@ export function createReleaseImageCleanup({ ownership, readOwnership, applicatio
   const registryAccess = async () => {
     const actor = await api('/user');
     check(actor.status === 200 && actor.body?.login?.toLowerCase() === owned.actorLogin.toLowerCase()
-      && actor.scopes?.includes('read:packages') && actor.scopes?.includes('delete:packages'), 'github_authority_unproven');
+      // GitHub normalizes scopes: write:packages subsumes read:packages.
+      && (actor.scopes?.includes('read:packages') || actor.scopes?.includes('write:packages'))
+      && actor.scopes?.includes('delete:packages'), 'github_authority_unproven');
     if (owned.registryOwnerType === 'user') check(owned.actorLogin.toLowerCase() === owned.registryOwner.toLowerCase(), 'github_owner_changed');
     const repo = await api(`/repos/${fullName}`);
     check(repo.status === 200 && repo.body?.full_name?.toLowerCase() === fullName.toLowerCase() && repo.body?.private === true, 'github_repository_changed');

@@ -38,7 +38,7 @@ function fixture() {
   const githubTransport = async args => {
     calls.push({ ...args, token: '[hidden]' });
     if (state.denied) return { status: 403, body: { message: 'secret raw error' } };
-    if (args.path === '/user') return { status: 200, body: { login: 'example', ...state.userExtra }, scopes: ['read:packages', 'delete:packages'] };
+    if (args.path === '/user') return { status: 200, body: { login: 'example', ...state.userExtra }, scopes: state.scopes ?? ['read:packages', 'delete:packages'] };
     if (args.path.startsWith('/repos/')) return { status: 200, body: { full_name: 'example/release-cert', private: true, ...state.repoExtra } };
     if (!args.path.includes('/versions/')) return state.packageMissing ? { status: 404, body: null }
       : { status: 200, body: { ...state.package, ...state.packageExtra } };
@@ -70,6 +70,15 @@ test('deletes only the exact GHCR version, verifies absence, never deletes the p
   const mutations = calls.filter(row => row.method === 'DELETE');
   assert.deepEqual(mutations.map(row => row.path), ['/user/packages/container/release-cert/versions/456']);
   assert.equal((await adapter.reconcileResource('image_registry')).status, 'succeeded');
+});
+
+test('normalized write scope includes package reads but never supplies deletion authority', async () => {
+  const x = fixture(); x.state.scopes = ['repo', 'write:packages', 'delete:packages'];
+  await x.adapter.removeResource('image_registry');
+  assert.equal(x.calls.filter(row => row.method === 'DELETE').length, 1);
+  const denied = fixture(); denied.state.scopes = ['repo', 'write:packages'];
+  await assert.rejects(denied.adapter.removeResource('image_registry'), /github_authority_unproven/);
+  assert.equal(denied.calls.some(row => row.method === 'DELETE'), false);
 });
 test('existing absence is proven by reads without issuing any removal', async () => {
   const { adapter, calls, present } = fixture(); present.local = false; present.registry = false;
