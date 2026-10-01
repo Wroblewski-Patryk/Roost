@@ -40,6 +40,25 @@ function authenticate(value, publicKey) {
   if (key.asymmetricKeyType !== "ed25519" || !verify(null, trustedPilotBytes(value.payload), key, Buffer.from(value.signature, "hex"))) fail();
   return value.payload;
 }
+// Wait only for an already authenticated, exact receipt. A slightly advanced
+// server clock does not admit a future grant: the existing readers still require
+// it to be current locally. Poll authority so lease, stop and duration fences
+// remain effective during the bounded wait; monotonic time caps clock changes.
+async function awaitCurrentIssuance(issuedAt, expiresAt, assertAuthority) {
+  const start = Date.parse(issuedAt), end = Date.parse(expiresAt), now = Date.now();
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start || end - start > 300000
+      || end <= now || start - now > 5000) fail();
+  const began = performance.now();
+  for (;;) {
+    assertAuthority();
+    const remaining = 5000 - (performance.now() - began);
+    if (remaining <= 0) fail();
+    const current = Date.now();
+    if (end <= current) fail();
+    if (start <= current) return;
+    await new Promise(resolve => setTimeout(resolve, Math.min(50, start - current, remaining)));
+  }
+}
 function persist(file, value) {
   // A spent or earlier attempt must never be silently overwritten. The reader
   // reopens the exact file with physical identity and digest checks afterward.
@@ -61,13 +80,12 @@ export async function requestFirstWriteAdmission({ api, claimed, writerLock, rep
       schemaVersion: managedAdmissionVersion, phase: "first_write", leaseToken: claimed.leaseToken, executionId: claimed.id }) }));
     assertAuthority();
     const result = authenticate(reply.signed, installed.authorityPublicKey);
-    const now = Date.now();
     if (result.executionId !== claimed.id || result.workspaceId !== claimed.workspaceId
         || result.taskId !== claimed.taskId || result.applicationId !== claimed.applicationId
         || result.installationId !== installed.installation.id || result.baselineCommit !== baselineCommit
-        || result.branch !== contract.singleTask.branch || Date.parse(result.issuedAt) > now
-        || Date.parse(result.expiresAt) <= now || Date.parse(result.expiresAt) - Date.parse(result.issuedAt) > 300000
+        || result.branch !== contract.singleTask.branch
         || result.continuation && result.continuation.previousCommit !== baselineCommit) fail();
+    await awaitCurrentIssuance(result.issuedAt, result.expiresAt, assertAuthority);
     return Object.freeze(result);
   } catch (error) { fail("first_write", error?.status, error?.message); }
 }
@@ -240,6 +258,7 @@ export async function requestManagedAdmission({ api, source, writerDigest, asser
       || !same({ selection: evidence.selection, context: evidence.context, runtime: evidence.runtime,
         installationIdentity: evidence.installationIdentity, profile: evidence.profile, availability: evidence.availability,
         ownerAttestation: evidence.ownerAttestation }, expected)) fail();
+    await awaitCurrentIssuance(evidence.issuedAt, evidence.expiresAt, assertAuthority);
     phase = "backend_evidence_persist";
     persist(path.join(installed.directory, "managed-backend-evidence.json"), evidenceReply.signed);
     const proposal = proposeTrustedPilotDecision(configurationPath, source, writerDigest);
@@ -259,10 +278,6 @@ export async function requestManagedAdmission({ api, source, writerDigest, asser
       || decision.installationId !== proposal.installation.id
       || decision.installationIdentity !== proposal.installation.identity
       || decision.configurationIdentity !== proposal.installation.configurationIdentity) fail();
-    phase = "decision_persist";
-    persist(installed.decisionFile, decisionReply.signed);
-    const acceptance = inspectTrustedPilotDecision(configurationPath, source, writerDigest);
-    if (!same(acceptance.provider, proposal.provider) || !same(acceptance.scope, proposal.scope)) fail();
     const requiresFirstWrite = source.envelope.contract.nativeBoundary?.profile === "coding-local";
     if (!requiresFirstWrite ? decisionReply.firstWrite !== undefined || firstWrite !== undefined
       : !decisionReply.firstWrite || !firstWrite || decisionReply.firstWrite.decisionId !== firstWrite.decisionId
@@ -270,6 +285,11 @@ export async function requestManagedAdmission({ api, source, writerDigest, asser
         || decisionReply.firstWrite.branch !== firstWrite.branch
         || !decisionReply.firstWrite.operations.localCommit) fail();
     if (requiresFirstWrite && decisionReply.firstWrite.baselineCommit !== source.envelope.evidence.risk.value.commit) fail();
+    await awaitCurrentIssuance(decision.decidedAt, decision.expiresAt, assertAuthority);
+    phase = "decision_persist";
+    persist(installed.decisionFile, decisionReply.signed);
+    const acceptance = inspectTrustedPilotDecision(configurationPath, source, writerDigest);
+    if (!same(acceptance.provider, proposal.provider) || !same(acceptance.scope, proposal.scope)) fail();
     await refreshLease();
     assertAuthority();
     const grant = Object.freeze({});

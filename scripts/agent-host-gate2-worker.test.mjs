@@ -19,6 +19,14 @@ const digest = value => createHash("sha256").update(value).digest("hex");
 const git = (cwd, ...args) => execFileSync("git", ["-c", "user.name=Roost Test", "-c", "user.email=test@invalid.local", ...args],
   { cwd, encoding: "utf8", windowsHide: true }).trim();
 
+test("independent reviewer credentials have separate bounded Gate 2 and Gate 3 targets", () => {
+  const config = { agentId: randomUUID(), grantId: randomUUID(), certificateFingerprint: "a".repeat(64) };
+  for (const credentialTarget of ["Roost/Gate2/CodeReviewer", "Roost/Gate3/CodeReviewer"])
+    assert.equal(codeReviewerConfigSchema.safeParse({ ...config, credentialTarget }).success, true);
+  for (const credentialTarget of ["Roost/Gate4/CodeReviewer", "Roost/AgentHost/Supervised", "Roost/Gate3/../CodeReviewer", "Roost/Gate3/CodeReviewer'", "Roost/Gate3/"])
+    assert.equal(codeReviewerConfigSchema.safeParse({ ...config, credentialTarget }).success, false);
+});
+
 function readonlyFixture(kind = "auditor") {
   const f = validPacketFixture(), c = f.packet.contract;
   c.nativeBoundary = { profile: "inspect-readonly", readPaths: ["README.md"], runtime: { required: false, ports: [] },

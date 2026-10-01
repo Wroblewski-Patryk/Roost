@@ -371,3 +371,24 @@ profile while preserving owner attestation identity and expiry. Root integration
 checks passed 259 tests with no skips, and `npm run validate` passed. This
 corrects the pre-launch refusal; a new managed audit and the governed release
 certificate are still required.
+
+The next native auditor `2b43fcaa-be9a-4c00-834b-9acc4f70bae1` stopped before
+model launch at `managed_admission_blocked/backend_evidence_persist`. Its
+backend receipt passed schema, Ed25519 signature, installation/profile
+identity, model policy and owner-attestation checks. At persistence, the
+signed issuance time was approximately 148 ms ahead of the Windows clock;
+Windows Time reported an unsynchronized local CMOS source. The strict reader
+correctly refused a receipt that was not yet current. The stopped Worker,
+actual terminal checkpoint and absent native processes were reconciled through
+the writer-lock protocol. The expired, verified backend-only artifact was
+archived with unchanged bytes under that execution; no native Decision,
+dispatch reservation or model launch was created.
+
+Authenticated exact first-write, backend and Decision receipts now wait at
+most five monotonic seconds for their issuance time to become current locally.
+Existing authority checks run at most 50 ms apart, and expiry, validity-window,
+identity and strict reader guards remain in force. Far-future, expired, changed,
+unsigned or interrupted receipts fail before publication. Reviewer credential
+configuration also permits a distinct bounded Gate 3 protected-storage target,
+preserving Gate 2's slot and its existing authority checks. These changes still
+require a successful native continuation; they do not certify Gate 3.

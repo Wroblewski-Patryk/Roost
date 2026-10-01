@@ -10,7 +10,7 @@ import { pinnedIpv4Lookup } from "./agent-host-handoff-client.mjs";
 import { guardHostContent } from "./agent-host-redaction.mjs";
 
 const id = z.string().uuid(), hash = z.string().regex(/^[a-f0-9]{64}$/), commit = z.string().regex(/^[a-f0-9]{40}$/);
-export const codeReviewerConfigSchema = z.object({ agentId: id, credentialTarget: z.string().regex(/^Roost\/Gate2\/[A-Za-z0-9._-]{1,80}$/),
+export const codeReviewerConfigSchema = z.object({ agentId: id, credentialTarget: z.string().regex(/^Roost\/Gate(?:2|3)\/[A-Za-z0-9._-]{1,80}$/),
   grantId: id, certificateFingerprint: hash }).strict();
 const line = z.string().trim().min(3).max(2000);
 const lines = z.array(line).min(1).max(12);
