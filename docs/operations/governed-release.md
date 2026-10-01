@@ -533,3 +533,30 @@ The latter proved a 3.6-second admission, deduction from a short task budget,
 rejection/cancellation without target execution and the native 60-second cap
 while the controller event loop was blocked. These fixtures qualify the repair;
 they do not establish the missing managed verifier or release certificate.
+
+Deployment `hiczvfbtm1v2lx37fs2xex37` finished at
+`fc4ce855ce5a9caf9c832b722db0a4cd72c25f09`, with HTTPS health/build 200 and
+the exact source identity. Verifier `dcdef197-189c-48a0-ad22-14861f5e6d0d`
+completed at 2026-10-01 22:47:25.520 UTC. Its native read-only verdict is
+`verified`, binding auditor `28c85e4a-01de-40d0-a5ed-86bebdb09eac` and auditor
+evidence digest
+`ba035096a93a7cedad40c24efec3a8ee0956d64c9c6e9f579f3745fbb4ecc661`.
+Verifier evidence digest is
+`24e7c7861fa1bfa3d50ecb4291b71b78a662075542b7f4fb37b65a94cdfdc997`.
+Both observed baseline `efac14d67f8f8398d133b20723c92c82046dbc33` on `main`
+and the same six scoped files/tree. Each execution independently proves unchanged
+Git, listening TCP and running-container state; global observation digests need
+not match across separate sessions. No file changed, context was not invalidated,
+and the verifier's genuine Windows Job exited 0, closed with zero active
+processes and a three-millisecond cleanup. The managed attempt used low reasoning,
+two turns and zero retries; wall time was 89,744 ms. Token/call/cost telemetry is
+unavailable, not zero.
+
+The normal first-write proposal `1e09be6a-234e-43f5-9c3d-3984b1800ad0`
+pins both execution identities/digests and this baseline. It proposes only a
+managed local `release.json` candidate change, fixed tests and local commit;
+remote push, deployment and financial effects are excluded from this Decision.
+Separate owner consent and fresh owner acceptance remain required. The Worker
+was normally stopped after the completed audit; the Writer lock is absent.
+The candidate, independent exact review, governed release, fault/rollback and
+owned cleanup/archive remain pending. Gate 4 has not started.

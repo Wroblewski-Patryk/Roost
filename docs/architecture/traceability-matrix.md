@@ -1189,7 +1189,7 @@ stays disabled and the canonical host stays observe.
 | [RF-ACT-004](../product/requirements.md#rf-act-004) | P1 | częściowo działa | [RELEASE](#e-release) | Exact owned cleanup and repository archival are implemented and tested; real test resources are retained until certification/cleanup proof. |
 | [RF-ACT-005](../product/requirements.md#rf-act-005) | P0 | częściowo działa | [AUDITOR](#e-auditor), Gate 2 native evidence above | Managed read-only pilot auditor and exact-commit reviewer completed with unchanged Git/process/Docker audits. General continuous canary activation remains unproven. |
 | [RF-ACT-006](../product/requirements.md#rf-act-006) | P0 | częściowo działa | [AUDITOR](#e-auditor), Gate 2 native evidence above | Separate read-only auditor and verifier completed against one clean baseline with matching evidence digest before the first write. General scheduled canary orchestration remains unproven. |
-| [RF-ACT-007](../product/requirements.md#rf-act-007) | P0 | brak | [ACT](#e-act) | No readiness report or activation authorization state machine. |
+| [RF-ACT-007](../product/requirements.md#rf-act-007) | P0 | częściowo działa | [ACT](#e-act) | Two actual Gate 3 baseline canaries and a normal exact first-write proposal are recorded; separate owner consent/acceptance and managed candidate delivery remain pending. |
 | [RF-ACT-008](../product/requirements.md#rf-act-008) | P1 | brak | [ACT](#e-act) | No capability progression lifecycle. |
 | [RF-ACT-009](../product/requirements.md#rf-act-009) | P1 | brak | [ACT](#e-act) | No probation counters/certification. |
 | [RF-ACT-010](../product/requirements.md#rf-act-010) | P1 | brak | [ACT](#e-act) | No app-onboarding readiness procedure. |
@@ -1498,13 +1498,15 @@ Normal HTTPS reconciliation and exact dead-owner recovery of a failed read-only
 attempt's retained application lease are proven on Windows; this is local
 pre-release recovery evidence, not a governed release certificate.
 Native baseline auditor `28c85e4a-01de-40d0-a5ed-86bebdb09eac` completed
-with a verified read-only receipt and closed Windows Job; independent Gate 3
-verification and release certification remain pending.
+with a verified read-only receipt and closed Windows Job. Independent verifier
+`dcdef197-189c-48a0-ad22-14861f5e6d0d` also completed with the exact prior
+audit binding, unchanged baseline and closed Windows Job. Release certification
+remains pending.
 Expired read-only spawn reconciliation and exact writer reclamation also
 completed on Windows after a later verifier's lease loss; no result was accepted.
 The next verifier failed before model launch on a named Docker observation
 timeout. Bounded observation and normal terminal cleanup were repaired; actual
-independent verification and release certification remain pending.
+independent verification subsequently passed; release certification is pending.
 Another verifier stopped before a result; its generic recovery reason had
 misclassified native uncertainty as lease expiry. Normal stopped-process recovery
 passed; typed diagnostics and bounded suspended-target admission were repaired.
@@ -1557,13 +1559,17 @@ native diagnostics and on-demand legacy projections; value-free incidents.
 **AUDITOR** — Gate 2 has native read-only auditor/verifier proof. Gate 3's
 baseline auditor completed with unchanged Git, listening TCP and running
 container observations, no native tools and a closed owned Windows Job.
-Its independent verifier has not yet completed; continuous canary activation
-remains unproven.
+Its independent verifier completed on the same exact baseline and prior audit
+digest, with unchanged observations and a closed owned Windows Job. Continuous
+canary activation remains unproven.
 
 [scripts/roost-codex-agent-host.mjs](../../scripts/roost-codex-agent-host.mjs), [scripts/lib/agent-host-execution-packet.mjs](../../scripts/lib/agent-host-execution-packet.mjs).
 
 <a id="e-act"></a>
-**ACT** — Target only; no runtime activation ladder implementation.
+**ACT** — Normal execution admission binds actual auditor/verifier receipts and
+an exact one-time first-write Decision. Gate 3 has both native baseline proofs
+and a concrete proposal; separate owner consent/acceptance and the first managed
+candidate remain pending. This does not certify the entire activation ladder.
 
 [docs/architecture/autonomy-activation-contract.md](../../docs/architecture/autonomy-activation-contract.md), [src/modules/agent-runtime/agent-runtime.routes.ts](../../src/modules/agent-runtime/agent-runtime.routes.ts).
 
