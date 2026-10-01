@@ -400,6 +400,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     lease.assertValid();
     await api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, type: "runner_started", message: config.executionProvider?.kind === fixed.kind ? "Starting the fixed synthetic program." : config.executionProvider?.kind === "hermes_codex" ? "Preparing managed Hermes." : `Starting Codex in ${claimed.application.slug}.`, payload: { sandbox: inspecting ? "read-only" : sandbox, providerInput: { schemaVersion: providerInput.schemaVersion, seal: providerInput.seal }, requestedModelSelection: config.executionProvider?.kind === fixed.kind ? null : taskContext.executionPacket.contract.modelSelection, baseBranch: repository.baseBranch || claimed.baseBranch || null, preExistingDirtyFiles: beforeStatus.map(statusPath) } }) }).catch((error) => { lease.reject(error); throw lease.failure ?? error; });
     lease.assertValid();
+    executionPhase = "launch_context";
     await duration.wait(assertAdmission());
     await duration.wait(validateAgentHostWorkspace(config));
     assertTaskBranch(await duration.wait(readTaskBranch(repositoryPath)), taskContext.executionPacket.contract.singleTask.branch);
@@ -418,9 +419,14 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
         ? hermesStartupEnvironment(config.executionProvider.profile, process.env, repositoryPath) : undefined };
     const launchAuthority = { fresh, claimed, currentCommit, assertAuthority: assertProviderAuthority, secrets: [apiKey, codeReviewerKey].filter(Boolean) };
     if (config.executionProvider?.kind === "hermes_codex" && providerInput.contract.modelSelection.schemaVersion === managedBackendVersion) {
+      executionPhase = "installation_attestation";
+      // Full disk verification can block timers. Enter it with a freshly
+      // confirmed lease; its elapsed time still consumes the original budget.
+      await duration.wait(lease.refreshConfirmed());
       await duration.wait(assertAdmission(true));
       await duration.wait(lease.refreshConfirmed());
       lease.assertValid();
+      executionPhase = "managed_source";
       const prepared = buildManagedAdmissionSource({ envelope: providerInput, claimed, writerLock,
         repositoryPath, provider: config.executionProvider, startupEnvironment: launchOptions.startupEnvironment,
         remainingMs: () => duration.remainingMs });
@@ -676,7 +682,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     const diagnostic = safeExecutionDiagnostic({ error, executionPhase, leaseFailure: lease.failure,
       nativeTermination: isWindowsJobCleanupReceipt(observedStop) ? observedStop.terminationReason : undefined });
     process.stderr.write(`Agent Host safe diagnostic: ${JSON.stringify(diagnostic)}.\n`);
-    if (executionPhase !== "context" && lease.failure?.message !== "agent_execution_lease_rejected") {
+    if ((executionPhase !== "context" || lease.failure) && lease.failure?.message !== "agent_execution_lease_rejected") {
       await api(`/v1/agent-runtime/executions/${claimed.id}/events`, { method: "POST", body: JSON.stringify({
         leaseToken: claimed.leaseToken, type: "runner_progress", level: "warning",
         message: "Native execution stopped; inspect bounded diagnostic fields.", payload: { diagnostic }

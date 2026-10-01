@@ -1189,7 +1189,7 @@ stays disabled and the canonical host stays observe.
 | [RF-ACT-004](../product/requirements.md#rf-act-004) | P1 | częściowo działa | [RELEASE](#e-release) | Exact owned cleanup and repository archival are implemented and tested; real test resources are retained until certification/cleanup proof. |
 | [RF-ACT-005](../product/requirements.md#rf-act-005) | P0 | częściowo działa | [AUDITOR](#e-auditor), Gate 2 native evidence above | Managed read-only pilot auditor and exact-commit reviewer completed with unchanged Git/process/Docker audits. General continuous canary activation remains unproven. |
 | [RF-ACT-006](../product/requirements.md#rf-act-006) | P0 | częściowo działa | [AUDITOR](#e-auditor), Gate 2 native evidence above | Separate read-only auditor and verifier completed against one clean baseline with matching evidence digest before the first write. General scheduled canary orchestration remains unproven. |
-| [RF-ACT-007](../product/requirements.md#rf-act-007) | P0 | częściowo działa | [ACT](#e-act) | Two actual Gate 3 baseline canaries and a normal exact first-write proposal are recorded; separate owner consent/acceptance and managed candidate delivery remain pending. |
+| [RF-ACT-007](../product/requirements.md#rf-act-007) | P0 | częściowo działa | [ACT](#e-act) | Two actual Gate 3 baseline canaries and separate owner consent/normal exact first-write acceptance are recorded; managed candidate delivery remains pending. |
 | [RF-ACT-008](../product/requirements.md#rf-act-008) | P1 | brak | [ACT](#e-act) | No capability progression lifecycle. |
 | [RF-ACT-009](../product/requirements.md#rf-act-009) | P1 | brak | [ACT](#e-act) | No probation counters/certification. |
 | [RF-ACT-010](../product/requirements.md#rf-act-010) | P1 | brak | [ACT](#e-act) | No app-onboarding readiness procedure. |
@@ -1568,8 +1568,8 @@ canary activation remains unproven.
 <a id="e-act"></a>
 **ACT** — Normal execution admission binds actual auditor/verifier receipts and
 an exact one-time first-write Decision. Gate 3 has both native baseline proofs
-and a concrete proposal; separate owner consent/acceptance and the first managed
-candidate remain pending. This does not certify the entire activation ladder.
+and separate owner consent/normal exact first-write acceptance. The first managed
+candidate remains pending. This does not certify the entire activation ladder.
 
 [docs/architecture/autonomy-activation-contract.md](../../docs/architecture/autonomy-activation-contract.md), [src/modules/agent-runtime/agent-runtime.routes.ts](../../src/modules/agent-runtime/agent-runtime.routes.ts).
 

@@ -556,7 +556,33 @@ The normal first-write proposal `1e09be6a-234e-43f5-9c3d-3984b1800ad0`
 pins both execution identities/digests and this baseline. It proposes only a
 managed local `release.json` candidate change, fixed tests and local commit;
 remote push, deployment and financial effects are excluded from this Decision.
-Separate owner consent and fresh owner acceptance remain required. The Worker
-was normally stopped after the completed audit; the Writer lock is absent.
+Separate owner consent was received; normal acceptance
+`ccfe16bf-6f3f-42ee-8703-7d8045e39097` is recorded. No further first-write
+consent is required for this exact scope.
 The candidate, independent exact review, governed release, fault/rollback and
 owned cleanup/archive remain pending. Gate 4 has not started.
+
+### Unsigned coding preparation recovery (2026-10-02)
+
+Coding execution `0c036b33-a099-4862-8bbe-9000a95c91cc` stopped at
+`spawn_intent`, before signed admission, a native runner or a candidate result.
+The exact local expiry cause is unproven. Context transport measured 1.3 seconds;
+fresh installation verification blocked the Worker event loop for 21 seconds.
+Preparation now requires a newly confirmed lease before that verification and
+preserves closed phase diagnostics. Original lease and task budgets remain binding.
+
+`reconcile-coding-unsigned-spawn` terminalizes only an expired, unchanged,
+first-attempt managed coding intent. A bound Worker must freshly observe the
+dead fenced owner, clean exact task branch/baseline/Ready and absence of active
+or archived signed admission, managed spent reservation, native review and
+application lease under the recovery barrier. Progress, native activity, output,
+review decisions and provider tickets refuse this path. Exact replay returns
+the receipt; it grants neither launch nor resume authority. Normal Writer
+reclamation matches the complete receipt and rechecks physical artifact absence
+under its exclusive barrier. No generic coding spawn intent is reclaimed.
+
+Integration checks include 20 actual Windows Writer tests, 31 lease/diagnostic
+tests and 57 credential tests, with no skips. A nonce-owned PostgreSQL/HTTP run
+passed both terminalization tests and its adverse authority/result matrix,
+restoring user triggers and removing its owned database after marker verification.
+These checks qualify recovery code, not the missing release certificate.

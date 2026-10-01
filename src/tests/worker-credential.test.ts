@@ -23,6 +23,7 @@ test("bound Worker transport admits only the exact read-only spawn reconciliatio
   assert.equal(workerCredentialRoute("POST", path.replace(id, "bad-id")), false);
   assert.equal(workerCredentialRoute("POST", path.replace("reconcile-readonly-spawn", "reconcile-coding-branch-intent")), true);
   assert.equal(workerCredentialRoute("POST", path.replace("reconcile-readonly-spawn", "reconcile-coding-claimed")), true);
+  assert.equal(workerCredentialRoute("POST", path.replace("reconcile-readonly-spawn", "reconcile-coding-unsigned-spawn")), true);
 });
 
 test("bound Worker can read only the prior audit pinned to its current leased verifier execution", () => {

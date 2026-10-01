@@ -4113,6 +4113,133 @@ test("expired read-only spawn terminalization requires the exact bound Worker an
     type: "coding_claim_reconciled" } }), 1);
 });
 
+test("expired unsigned coding spawn terminalization denies native authority and requires exact fresh Worker observation",
+  { skip: !process.env.WORKER_CREDENTIAL_TEST_DATABASE }, async () => {
+  const owner = await registerOwner(`unsigned-coding-${randomUUID()}@example.test`, "Unsigned coding fixture");
+  const workspaceId = owner.workspace.id, auth = { Authorization: `Bearer ${owner.token}` };
+  const { ownerTicketFixture } = await import("./owner-ticket-fixture"), { hashApiKey } = await import("../auth/api-key");
+  const key = (await ownerTicketFixture()).state().key;
+  await prisma.trustedProviderTicketKey.create({ data: { workspaceId, ...key } });
+  const host = await prisma.agentHost.create({ data: { workspaceId, name: "Unsigned coding test host",
+    slug: `unsigned-${randomUUID()}`, platform: "win32", status: "online", metadata: validHostMetadata,
+    capabilities: protocol.requiredHostCapabilities } });
+  const raw = randomUUID();
+  await prisma.apiKey.create({ data: { workspaceId, name: "Synthetic bound Worker", keyHash: hashApiKey(raw),
+    scopes: ["agent-runtime:claim"], active: true, expiresAt: new Date(Date.now() + 600_000),
+    workerHostId: host.id, workerInstallationId: key.installationId, workerBindingEpoch: 1 } });
+  const workerAuth = { "X-API-Key": raw, ...hostProtocolHeaders };
+  const application = await prisma.application.create({ data: { workspaceId, name: "Unsigned fixture app", slug: randomUUID() } });
+  const project = await prisma.project.create({ data: { workspaceId, name: "Unsigned fixture project" } });
+  await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id } });
+  const task = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: "Inert unsigned coding task" } });
+  const baseline = "a".repeat(40), branch = `codex/task-${task.id}`, readyRevision = "b".repeat(64);
+  const metadata = { executionContract: { nativeBoundary: { profile: "coding-local" }, singleTask: { branch },
+    modelSelection: { schemaVersion: "roost-managed-hermes-backend-v1", backend: "codex_responses" } },
+    readyContextPin: { revision: readyRevision, riskAdmissionCommit: baseline } };
+  const create = async (options: { stage?: string; event?: string; eventMessage?: string;
+    data?: Partial<Prisma.AgentExecutionUncheckedCreateInput>; metadata?: Prisma.InputJsonValue } = {}) => {
+    const sessionId = randomUUID(), stage = options.stage ?? "spawn_intent";
+    const checkpoint = { schemaVersion: "roost-recovery-v1", stage, sessionId, packetRevision: "c".repeat(64),
+      workspaceDigest: "d".repeat(64), contextRevision: "e".repeat(64), branch, headCommit: baseline };
+    // Owned opt-in database only. Restore every user trigger before the handler.
+    const execution = await prisma.$transaction(async tx => {
+      await tx.$executeRawUnsafe("ALTER TABLE agent_executions DISABLE TRIGGER USER");
+      const row = await tx.agentExecution.create({ data: { workspaceId, taskId: task.id, applicationId: application.id,
+        agentHostId: host.id, requestedByType: "user", status: "running", attempt: 1,
+        startedAt: new Date(Date.now() - 90_000), leaseToken: randomUUID(), leaseExpiresAt: new Date(Date.now() - 10_000),
+        checkpointVersion: 5, checkpoint, metadata: options.metadata ?? metadata, ...options.data } });
+      await tx.$executeRawUnsafe("ALTER TABLE agent_executions ENABLE TRIGGER USER");
+      return row;
+    });
+    if (options.event) await prisma.agentExecutionEvent.create({ data: { workspaceId, executionId: execution.id,
+      type: options.event, message: options.eventMessage ?? (options.event === "runner_started" ? "Preparing managed Hermes." : "Signed admission or native activity."),
+      payload: { sandbox: "workspace-write", providerInput: { seal: "f".repeat(64) } } } });
+    const proof = { hostSlug: host.slug, expectedVersion: 5, checkpointSessionId: sessionId, baselineCommit: baseline,
+      baselineBranch: branch, readyRevision, repositoryDigest: "f".repeat(64), writerLockDigest: "1".repeat(64),
+      applicationLease: { state: "released", absent: true }, observedAt: new Date().toISOString(),
+      nativeProcessesAbsent: true, ownerProcessAbsent: true, workingTreeClean: true,
+      unsignedLaunch: { schemaVersion: "roost-coding-unsigned-spawn-observation-v1", nativeReviewAbsent: true,
+        managedBackendEvidenceAbsent: true, managedDecisionAbsent: true, managedSpentReservationAbsent: true,
+        archivedAdmissionAbsent: true } };
+    const post = (body: unknown, headers: Record<string,string> = workerAuth) => request(
+      `/v1/agent-runtime/executions/${execution.id}/actions/reconcile-coding-unsigned-spawn`,
+      { method: "POST", headers, body: JSON.stringify(body) });
+    return { execution, proof, post };
+  };
+  const positive = await create({ event: "runner_started" });
+  assert.equal((await positive.post(positive.proof, auth)).status, 403);
+  assert.equal((await positive.post({ ...positive.proof, hostSlug: `foreign-${randomUUID()}` })).status, 403);
+  const foreignHost = await prisma.agentHost.create({ data: { workspaceId, name: "Foreign unsigned test host",
+    slug: `foreign-${randomUUID()}`, platform: "win32", status: "online", metadata: validHostMetadata,
+    capabilities: protocol.requiredHostCapabilities } });
+  const foreignRaw = randomUUID();
+  await prisma.apiKey.create({ data: { workspaceId, name: "Foreign bound Worker", keyHash: hashApiKey(foreignRaw),
+    scopes: ["agent-runtime:claim"], active: true, expiresAt: new Date(Date.now() + 600_000),
+    workerHostId: foreignHost.id, workerInstallationId: key.installationId, workerBindingEpoch: 1 } });
+  assert.equal((await positive.post(positive.proof, { "X-API-Key": foreignRaw, ...hostProtocolHeaders })).status, 403);
+  for (const patch of [{ expectedVersion: 4 }, { checkpointSessionId: randomUUID() }, { baselineCommit: "0".repeat(40) },
+    { baselineBranch: "main" }, { readyRevision: "0".repeat(64) },
+    { observedAt: new Date(Date.now() - 300_000).toISOString() }, { observedAt: new Date(Date.now() + 60_000).toISOString() }]) {
+    const denied = await positive.post({ ...positive.proof, ...patch });
+    assert.equal(denied.status, 409, JSON.stringify(denied.body));
+  }
+  for (const field of ["nativeReviewAbsent", "managedBackendEvidenceAbsent", "managedDecisionAbsent",
+    "managedSpentReservationAbsent", "archivedAdmissionAbsent"]) {
+    assert.equal((await positive.post({ ...positive.proof, unsignedLaunch: { ...positive.proof.unsignedLaunch, [field]: false } })).status, 400);
+  }
+  assert.equal((await positive.post({ ...positive.proof, applicationLease: { state: "retained", digest: "2".repeat(64) } })).status, 400);
+  assert.equal((await positive.post({ ...positive.proof, unsignedLaunch: { ...positive.proof.unsignedLaunch,
+    ownedTreeReceipt: { version: "roost-windows-job-v2", activeProcessCount: 0 } } })).status, 400);
+  const accepted = await positive.post(positive.proof);
+  assert.equal(accepted.status, 200, JSON.stringify(accepted.body));
+  const replay = await positive.post(positive.proof);
+  assert.equal(replay.status, 200); assert.equal((replay.body as any).replay, true);
+  assert.equal((await positive.post({ ...positive.proof, writerLockDigest: "2".repeat(64) })).status, 409);
+  const after = await prisma.agentExecution.findUniqueOrThrow({ where: { id: positive.execution.id } });
+  assert.equal(after.status, "failed"); assert.equal(after.leaseToken, null); assert.equal(after.leaseExpiresAt, null);
+  assert.equal((after.errorState as any).code, "agent_coding_unsigned_spawn_reconciled");
+  assert.equal(await prisma.agentExecutionEvent.count({ where: { executionId: after.id, type: "coding_unsigned_spawn_reconciled" } }), 1);
+  assert.equal(await prisma.event.count({ where: { resourceId: after.id, type: "agent_execution_failed" } }), 1);
+  const recovered = await request(`/v1/agent-runtime/recovery?hostSlug=${host.slug}`, { headers: workerAuth });
+  assert.equal(recovered.status, 200);
+  assert.ok((recovered.body as any).data.terminalPreSpawn.some((execution: any) => execution.id === after.id));
+  assert.equal((await request(`/v1/agent-runtime/executions/${after.id}/actions/recover`, { method: "POST", headers: workerAuth,
+    body: JSON.stringify({ hostSlug: host.slug, sessionId: randomUUID(), expectedVersion: 5 }) })).status, 409);
+  const beforePreparing = await create();
+  const concurrent = await Promise.all([beforePreparing.post(beforePreparing.proof), beforePreparing.post(beforePreparing.proof)]);
+  assert.ok(concurrent.some(reply => reply.status === 200));
+  assert.ok(concurrent.every(reply => reply.status === 200 || reply.status === 409
+    && (reply.body as any).error === "task_ready_context_conflict"), JSON.stringify(concurrent));
+  const concurrentReplay = await beforePreparing.post(beforePreparing.proof);
+  assert.equal(concurrentReplay.status, 200); assert.equal((concurrentReplay.body as any).replay, true);
+  assert.equal(await prisma.agentExecutionEvent.count({ where: { executionId: beforePreparing.execution.id,
+    type: "coding_unsigned_spawn_reconciled" } }), 1);
+  for (const options of [
+    { stage: "running" }, { stage: "effect_possible" }, { stage: "prepared" },
+    { event: "runner_progress" }, { event: "native_started" }, { event: "runner_completed" },
+    { event: "runner_started", eventMessage: "Starting Codex in an application." },
+    { data: { leaseExpiresAt: new Date(Date.now() + 60_000) } },
+    { data: { summary: "accepted summary" } }, { data: { finalResponse: "model output" } },
+    { data: { codexThreadId: "model-thread" } }, { data: { changedFiles: ["release.json"] } },
+    { data: { usage: { physicalModelCalls: 1 } } },
+    { data: { verification: { ownedTreeReceipt: { activeProcessCount: 0 } } } },
+    { data: { contextInvalidatedAt: new Date() } }, { data: { cancelRequestedAt: new Date() } },
+    { data: { attempt: 2 } },
+    { metadata: { ...metadata, resultRevision: { commit: baseline, branch, workingTree: "clean" } } },
+    { metadata: { ...metadata, executionContract: { ...metadata.executionContract, nativeBoundary: { profile: "inspect-readonly" } } } },
+    { metadata: { ...metadata, executionContract: { ...metadata.executionContract, modelSelection: { schemaVersion: "unknown", backend: "codex_responses" } } } }
+  ]) {
+    const refused = await create(options);
+    const denied = await refused.post(refused.proof);
+    assert.equal(denied.status, 409, JSON.stringify({ options, response: denied.body }));
+    assert.equal((await prisma.agentExecution.findUniqueOrThrow({ where: { id: refused.execution.id } })).status, "running");
+    assert.equal(await prisma.agentExecutionEvent.count({ where: { executionId: refused.execution.id, type: "coding_unsigned_spawn_reconciled" } }), 0);
+  }
+  const triggers = await prisma.$queryRaw<Array<{ tgenabled: string }>>`SELECT tgenabled FROM pg_trigger
+    WHERE tgrelid='agent_executions'::regclass AND NOT tgisinternal`;
+  assert.ok(triggers.length > 0); assert.ok(triggers.every(trigger => trigger.tgenabled === "O"));
+});
+
 test("CompanyCore v1 protected API flow", async () => {
   const oauthCallback = await realFetch(`${baseUrl}/settings/drive?code=synthetic&state=synthetic`);
   assert.equal(oauthCallback.status, 200);

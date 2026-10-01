@@ -267,6 +267,54 @@ test("readonly spawn receipt rejects missing authority, coding access, results a
   await next.release();
 });
 
+test("unsigned coding terminal receipt reclaims only a dead fenced owner with all launch artifacts absent", { skip: process.platform !== "win32" }, async t => {
+  const directory = await fixture(t), id = "00000000-0000-4000-8000-000000000061";
+  const taskId = "00000000-0000-4000-8000-000000000062", branch = `codex/task-${taskId}`;
+  const candidate = { id, taskId, workspaceId: "00000000-0000-4000-8000-000000000063",
+    applicationId: "00000000-0000-4000-8000-000000000064", agentHostId: "00000000-0000-4000-8000-000000000065",
+    status: "failed", attempt: 1, checkpointVersion: 5, leaseToken: null, leaseExpiresAt: null, contextInvalidatedAt: null,
+    completedAt: new Date().toISOString(), summary: null, codexThreadId: null, finalResponse: null, changedFiles: [], verification: {}, usage: {},
+    checkpoint: { schemaVersion: "roost-recovery-v1", stage: "spawn_intent", sessionId: null,
+      packetRevision: "1".repeat(64), workspaceDigest: "2".repeat(64), contextRevision: "3".repeat(64), branch, headCommit: "a".repeat(40) },
+    metadata: { executionContract: { nativeBoundary: { profile: "coding-local" }, singleTask: { branch },
+      modelSelection: { schemaVersion: "roost-managed-hermes-backend-v1", backend: "codex_responses" } },
+      readyContextPin: { revision: "4".repeat(64), riskAdmissionCommit: "a".repeat(40) } } };
+  const script = `import { acquireWriterLock } from './scripts/lib/agent-host-writer-lock.mjs'; const lock=await acquireWriterLock(${JSON.stringify(directory)}); await lock.checkpoint({...${JSON.stringify(candidate)},checkpoint:{...${JSON.stringify(candidate.checkpoint)},sessionId:lock.sessionId}});`;
+  const child = spawn(process.execPath, ["--input-type=module", "-e", script], { windowsHide: true, stdio: "ignore" });
+  assert.equal((await once(child, "close"))[0], 0);
+  const file = path.join(directory, writerLockFilename), bytes = await readFile(file);
+  candidate.checkpoint.sessionId = JSON.parse(bytes).checkpoint.sessionId;
+  candidate.errorState = { code: "agent_coding_unsigned_spawn_reconciled", retryable: false, details: {
+    schemaVersion: "roost-coding-unsigned-spawn-reconciliation-v1", checkpointStage: "spawn_intent",
+    checkpointSessionId: candidate.checkpoint.sessionId, checkpointVersion: 5,
+    writerLockDigest: createHash("sha256").update(bytes).digest("hex"), readyRevision: "4".repeat(64),
+    repositoryDigest: "5".repeat(64), attestationDigest: "6".repeat(64), baselineCommit: "a".repeat(40), baselineBranch: branch,
+    observedAt: candidate.completedAt, nativeProcessesAbsent: true, ownerProcessAbsent: true, workingTreeClean: true,
+    applicationLease: { state: "released", absent: true }, unsignedLaunch: { schemaVersion: "roost-coding-unsigned-spawn-observation-v1",
+      nativeReviewAbsent: true, managedBackendEvidenceAbsent: true, managedDecisionAbsent: true,
+      managedSpentReservationAbsent: true, archivedAdmissionAbsent: true } } };
+  const deny = async c => { await assert.rejects(acquireWriterLock(directory, { terminalCandidates: [c] }), /agent_host_writer_locked/); assert.deepEqual(await readFile(file), bytes); };
+  for (const patch of [{ readyRevision: "0".repeat(64) }, { ownerProcessAbsent: false }, { baselineBranch: "main" },
+    { baselineCommit: "b".repeat(40) }, { unsignedLaunch: undefined }, { applicationLease: { state: "retained", digest: "0".repeat(64) } }]) {
+    const c = structuredClone(candidate); Object.assign(c.errorState.details, patch); await deny(c);
+  }
+  for (const mutate of [c => { c.usage = { calls: 1 }; }, c => { c.verification = { passed: true }; },
+    c => { c.metadata.executionContract.modelSelection.backend = "other"; }, c => { c.errorState.retryable = true; },
+    c => { c.changedFiles = ["release.json"]; }, c => { c.errorState.details.unsignedLaunch.nativeReviewAbsent = false; }]) {
+    const c = structuredClone(candidate); mutate(c); await deny(c);
+  }
+  const anchor = path.join(directory, "trusted-provider-pilot"), spent = path.join(anchor, "spent");
+  await mkdir(anchor); await mkdir(spent);
+  try {
+    for (const artifact of [path.join(directory, `native-review-${id}`), path.join(directory, `managed-spent-${id}.json`),
+      path.join(directory, `application-${nativeDigest(candidate.applicationId)}.lease`),
+      path.join(anchor, "managed-backend-evidence.json"), path.join(anchor, "trusted-provider-pilot.json"), path.join(spent, id)]) {
+      await writeFile(artifact, "owned fixture"); await deny(candidate); await unlink(artifact);
+    }
+    const next = await acquireWriterLock(directory, { terminalCandidates: [candidate] }); await next.release();
+  } finally { await rmdir(spent); await rmdir(anchor); }
+});
+
 test("release does not delete a lock whose ownership changed", async (t) => {
   const directory = await fixture(t);
   const lock = await acquireWriterLock(directory);

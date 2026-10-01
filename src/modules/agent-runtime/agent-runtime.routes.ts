@@ -94,6 +94,19 @@ const readonlySpawnReconciliationSchema = z.object({
   observedAt: z.string().datetime({ offset: true }),
   nativeProcessesAbsent: z.literal(true), ownerProcessAbsent: z.literal(true), workingTreeClean: z.literal(true)
 }).strict();
+// An unsigned coding attempt may have recorded its launch intent without ever
+// crossing the native boundary. Absence is a fresh observation by the bound
+// Worker under its recovery barrier, never a serialized Job/resume capability.
+const codingUnsignedSpawnReconciliationSchema = readonlySpawnReconciliationSchema.extend({
+  applicationLease: z.object({ state: z.literal("released"), absent: z.literal(true) }).strict(),
+  readyRevision: z.string().regex(/^[a-f0-9]{64}$/),
+  unsignedLaunch: z.object({
+    schemaVersion: z.literal("roost-coding-unsigned-spawn-observation-v1"),
+    nativeReviewAbsent: z.literal(true), managedBackendEvidenceAbsent: z.literal(true),
+    managedDecisionAbsent: z.literal(true), managedSpentReservationAbsent: z.literal(true),
+    archivedAdmissionAbsent: z.literal(true)
+  }).strict()
+}).strict();
 
 const executionInclude = {
   task: { include: { project: { select: { id: true, name: true } }, goal: { select: { id: true, title: true } }, taskList: { select: { id: true, name: true } } } },
@@ -436,7 +449,13 @@ agentRuntimeRouter.get("/recovery", asyncHandler(async (req, res) => {
       && ["code_reviewer_unproven", "managed_admission_blocked", "readonly_boundary_unproven"].includes(error?.details?.priorCode)
       && error?.details?.checkpointStage === "spawn_intent"
       && error?.details?.nativeProcessesAbsent === true && error?.details?.pilotBaselineUnchanged === true;
-    return stage === "spawn_intent" && (error?.code === "managed_admission_blocked" && preModelAdmission || reconciledReadonly)
+    const reconciledUnsignedCoding = error?.code === "agent_coding_unsigned_spawn_reconciled"
+      && error?.details?.schemaVersion === "roost-coding-unsigned-spawn-reconciliation-v1"
+      && error?.details?.checkpointStage === "spawn_intent"
+      && error?.details?.nativeProcessesAbsent === true && error?.details?.ownerProcessAbsent === true
+      && error?.details?.workingTreeClean === true
+      && codingUnsignedSpawnReconciliationSchema.shape.unsignedLaunch.safeParse(error?.details?.unsignedLaunch).success;
+    return stage === "spawn_intent" && (error?.code === "managed_admission_blocked" && preModelAdmission || reconciledReadonly || reconciledUnsignedCoding)
       && item.codexThreadId === null && item.finalResponse === null
       && Array.isArray(item.changedFiles) && item.changedFiles.length === 0;
   });
@@ -668,6 +687,89 @@ agentRuntimeRouter.post(["/executions/:id/actions/reconcile-coding-branch-intent
     await tx.agentExecutionEvent.create({ data: { workspaceId: current.workspaceId, executionId: current.id,
       type: claimedOnly ? "coding_claim_reconciled" : "coding_branch_intent_reconciled", level: "warning",
       message: "Coding checkpoint reconciled before model launch.", payload: json(details) } });
+    await tx.event.create({ data: { type: "agent_execution_failed", workspaceId: current.workspaceId,
+      taskId: current.taskId, projectId: current.task.projectId, resourceType: "agent_execution", resourceId: current.id,
+      source: "codex", payload: json({ executionId: current.id, code, retryable: false }) } });
+    return { execution: await tx.agentExecution.findUniqueOrThrow({ where: { id: current.id } }), replay: false };
+  });
+  if ("error" in result && typeof result.error === "string") return sendApiError(res, result.error === "worker_credential_forbidden" ? 403 : 409, result.error);
+  res.json({ data: result.execution, replay: result.replay });
+}));
+
+agentRuntimeRouter.post("/executions/:id/actions/reconcile-coding-unsigned-spawn", asyncHandler(async (req, res) => {
+  const input = codingUnsignedSpawnReconciliationSchema.parse(req.body);
+  if (!req.auth!.workerTicketIdentity || req.auth!.authType !== "api_key") return sendApiError(res, 403, "worker_credential_forbidden");
+  const host = await prisma.agentHost.findFirst({ where: { id: req.auth!.workerTicketIdentity.hostId,
+    workspaceId: req.auth!.workspaceId, slug: input.hostSlug, status: { not: "disabled" } } });
+  if (!host) return sendApiError(res, 403, "worker_credential_forbidden");
+  const observedAt = new Date(input.observedAt), now = new Date();
+  const attestationDigest = createHash("sha256").update(JSON.stringify(input)).digest("hex");
+  const code = "agent_coding_unsigned_spawn_reconciled";
+  const result = await readyTransaction(async tx => {
+    if (!await workerClaimAllowed(tx, req.auth!, host.id)) return { error: "worker_credential_forbidden" };
+    const current = await tx.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId,
+      agentHostId: host.id }, include: { task: { select: { projectId: true } } } });
+    if (!current) return { error: "agent_coding_unsigned_spawn_reconciliation_conflict" };
+    const previous = current.errorState as any;
+    if (current.status === "failed" && previous?.code === code
+      && previous?.details?.attestationDigest === attestationDigest
+      && previous?.details?.checkpointVersion === input.expectedVersion)
+      return { execution: current, replay: true };
+    if (observedAt > now || now.getTime() - observedAt.getTime() > 120_000)
+      return { error: "agent_coding_unsigned_spawn_reconciliation_stale" };
+    const checkpoint = recoveryCheckpoint.safeParse(current.checkpoint), metadata = current.metadata as any;
+    const contract = metadata?.executionContract, pin = metadata?.readyContextPin;
+    const noResult = !current.summary && !current.finalResponse && !current.codexThreadId
+      && Array.isArray(current.changedFiles) && current.changedFiles.length === 0
+      && (!current.verification || typeof current.verification === "object" && !Array.isArray(current.verification)
+        && Object.keys(current.verification).length === 0)
+      && (!current.usage || typeof current.usage === "object" && !Array.isArray(current.usage)
+        && Object.keys(current.usage).length === 0) && !metadata?.resultRevision;
+    if (!["claimed", "running"].includes(current.status) || current.completedAt || current.contextInvalidatedAt
+      || current.cancelRequestedAt || !current.applicationId || !current.leaseExpiresAt || current.leaseExpiresAt > now
+      || observedAt <= current.leaseExpiresAt || current.checkpointVersion !== input.expectedVersion
+      || current.attempt !== 1 || !checkpoint.success || checkpoint.data.stage !== "spawn_intent"
+      || checkpoint.data.sessionId !== input.checkpointSessionId || !checkpoint.data.contextRevision
+      || !checkpoint.data.packetRevision || !checkpoint.data.workspaceDigest || !noResult
+      || contract?.nativeBoundary?.profile !== "coding-local"
+      || contract?.modelSelection?.schemaVersion !== "roost-managed-hermes-backend-v1"
+      || contract?.modelSelection?.backend !== "codex_responses"
+      || !/^codex\/task-[a-f0-9-]{36}$/.test(contract?.singleTask?.branch ?? "")
+      || contract.singleTask.branch !== `codex/task-${current.taskId}`
+      || checkpoint.data.branch !== contract.singleTask.branch || input.baselineBranch !== checkpoint.data.branch
+      || checkpoint.data.headCommit !== input.baselineCommit || pin?.riskAdmissionCommit !== input.baselineCommit
+      || pin?.revision !== input.readyRevision
+      || await tx.trustedProviderTicket.count({ where: { executionId: current.id, workspaceId: current.workspaceId } })
+      || await tx.taskReviewDecision.count({ where: { executionId: current.id, workspaceId: current.workspaceId } }))
+      return { error: "agent_coding_unsigned_spawn_reconciliation_conflict" };
+    // This event is written before any signed admission or provider launch.
+    // Every progress/native/result event is refused, including unknown types.
+    const events = await tx.agentExecutionEvent.findMany({ where: { executionId: current.id },
+      select: { type: true, message: true, payload: true }, take: 1001 });
+    const preparing = events.filter(event => event.type === "runner_started");
+    if (events.length > 1000 || preparing.length > 1 || preparing.some(event => event.message !== "Preparing managed Hermes."
+        || (event.payload as any)?.sandbox !== "workspace-write"
+        || !/^[a-f0-9]{64}$/.test((event.payload as any)?.providerInput?.seal ?? ""))
+      || events.some(event => !["queued", "claimed", "checkpoint", "recovery_blocked", "runner_started"].includes(event.type)
+        || event.type === "checkpoint" && ["running", "effect_possible"].includes((event.payload as any)?.stage)))
+      return { error: "agent_coding_unsigned_spawn_reconciliation_conflict" };
+    const details = { schemaVersion: "roost-coding-unsigned-spawn-reconciliation-v1", checkpointStage: checkpoint.data.stage,
+      checkpointSessionId: input.checkpointSessionId, checkpointVersion: input.expectedVersion,
+      baselineCommit: input.baselineCommit, baselineBranch: input.baselineBranch, readyRevision: input.readyRevision,
+      repositoryDigest: input.repositoryDigest, writerLockDigest: input.writerLockDigest,
+      applicationLease: input.applicationLease, observedAt: input.observedAt, attestationDigest,
+      nativeProcessesAbsent: input.nativeProcessesAbsent, ownerProcessAbsent: input.ownerProcessAbsent,
+      workingTreeClean: input.workingTreeClean, unsignedLaunch: input.unsignedLaunch };
+    const changed = await tx.agentExecution.updateMany({ where: { id: current.id, workspaceId: current.workspaceId,
+      agentHostId: host.id, status: current.status, checkpointVersion: input.expectedVersion, leaseToken: current.leaseToken,
+      leaseExpiresAt: { lte: now }, completedAt: null, contextInvalidatedAt: null, cancelRequestedAt: null },
+      data: { status: "failed", completedAt: now, leaseToken: null, leaseExpiresAt: null,
+        errorState: json({ code, message: "Expired unsigned coding launch intent reconciled; no native runner or result was accepted.",
+          retryable: false, details }) } });
+    if (!changed.count) return { error: "agent_coding_unsigned_spawn_reconciliation_conflict" };
+    await tx.agentExecutionEvent.create({ data: { workspaceId: current.workspaceId, executionId: current.id,
+      type: "coding_unsigned_spawn_reconciled", level: "warning",
+      message: "Coding launch intent reconciled before signed admission and native launch.", payload: json(details) } });
     await tx.event.create({ data: { type: "agent_execution_failed", workspaceId: current.workspaceId,
       taskId: current.taskId, projectId: current.task.projectId, resourceType: "agent_execution", resourceId: current.id,
       source: "codex", payload: json({ executionId: current.id, code, retryable: false }) } });

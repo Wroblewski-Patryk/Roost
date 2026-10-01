@@ -38,7 +38,7 @@ export function workerCredentialRoute(method: string, path: string) {
   if(method==='POST'&&/^\/v1\/agent-runtime\/(?:executions\/claim|owner-tickets\/(?:consume|status)|hosts\/register|hosts\/[0-9a-f-]{36}\/heartbeat)$/.test(target))return true;
   if(method==='GET'&&(/^\/v1\/agent-runtime\/recovery$/.test(target)||/^\/v1\/company-intelligence\/tasks\/[0-9a-f-]{36}\/agent-context$/.test(target)
     ||/^\/v1\/product-engineering\/applications\/[0-9a-f-]{36}\/agent-context$/.test(target)))return true;
-  return method==='POST'&&/^\/v1\/agent-runtime\/executions\/[0-9a-f-]{36}\/(?:checkpoint|heartbeat|events|actions\/(?:managed-admission|prior-readonly-audit|recover|reconcile-readonly-spawn|reconcile-coding-branch-intent|reconcile-coding-claimed|recovery-blocked|context-stopped|complete|fail|cancelled))$/.test(target);
+  return method==='POST'&&/^\/v1\/agent-runtime\/executions\/[0-9a-f-]{36}\/(?:checkpoint|heartbeat|events|actions\/(?:managed-admission|prior-readonly-audit|recover|reconcile-readonly-spawn|reconcile-coding-branch-intent|reconcile-coding-claimed|reconcile-coding-unsigned-spawn|recovery-blocked|context-stopped|complete|fail|cancelled))$/.test(target);
 }
 export async function workerClaimAllowed(db: Prisma.TransactionClient, auth: AuthContext, hostId: string, at = new Date()) {
   if (!auth.workerTicketIdentity || !auth.apiKeyId || auth.authType !== "api_key" || auth.agentId || auth.userId) return false;

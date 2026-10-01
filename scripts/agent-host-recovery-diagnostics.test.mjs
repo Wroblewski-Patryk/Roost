@@ -24,6 +24,13 @@ test("only the two explicit expiry errors report lease_expired", () => {
   assert.equal(leaseRecoveryReason({ message: "agent_execution_lease_expired_suffix", leaseLost: "true" }), undefined);
 });
 
+test("prelaunch context and installation phases preserve closed lease diagnostics", () => {
+  for (const phase of ["launch_context", "installation_attestation", "managed_source"]) {
+    const diagnostic = safeExecutionDiagnostic({ executionPhase: phase, error: new Error("agent_execution_lease_expired") });
+    assert.equal(diagnostic.phase, phase); assert.equal(diagnostic.code, "agent_execution_lease_expired");
+  }
+});
+
 test("known managed boundary diagnostic retains only protocol fields", () => {
   const error = Object.assign(new Error("managed_admission_blocked"), { details: {
     phase: "consume_native_boundary", reason: "readonly_boundary_unproven", boundaryReason: "docker_observation_timeout",

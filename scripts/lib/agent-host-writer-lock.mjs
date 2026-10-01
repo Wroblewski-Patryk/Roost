@@ -93,6 +93,52 @@ function reconciledReadOnlySpawn(item, checkpoint, writerBytes) {
     && item.metadata.resultRevision == null;
 }
 
+function reconciledUnsignedCodingSpawn(item, checkpoint, writerBytes) {
+  const error = item?.errorState, d = error?.details, contract = item?.metadata?.executionContract;
+  const pin = item?.metadata?.readyContextPin, hash = value => /^[a-f0-9]{64}$/.test(value ?? "");
+  const empty = value => value === null || value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).length === 0;
+  const unsigned = d?.unsignedLaunch;
+  return item?.status === "failed" && item.leaseToken === null && item.contextInvalidatedAt === null
+    && item.attempt === 1 && error?.code === "agent_coding_unsigned_spawn_reconciled" && error.retryable === false
+    && d?.schemaVersion === "roost-coding-unsigned-spawn-reconciliation-v1"
+    && d.checkpointStage === "spawn_intent" && d.checkpointSessionId === checkpoint.sessionId
+    && d.checkpointVersion === item.checkpointVersion
+    && d.writerLockDigest === createHash("sha256").update(writerBytes).digest("hex")
+    && hash(d.repositoryDigest) && hash(d.attestationDigest) && hash(d.readyRevision) && d.readyRevision === pin?.revision
+    && /^[a-f0-9]{40}$/.test(d.baselineCommit ?? "") && d.baselineCommit === checkpoint.headCommit
+    && pin?.riskAdmissionCommit === d.baselineCommit && d.baselineBranch === checkpoint.branch
+    && contract?.singleTask?.branch === `codex/task-${item.taskId}` && contract.singleTask.branch === d.baselineBranch
+    && contract?.nativeBoundary?.profile === "coding-local"
+    && contract?.modelSelection?.schemaVersion === "roost-managed-hermes-backend-v1"
+    && contract.modelSelection.backend === "codex_responses"
+    && hash(checkpoint.packetRevision) && hash(checkpoint.contextRevision) && hash(checkpoint.workspaceDigest)
+    && Number.isFinite(Date.parse(d.observedAt)) && Date.parse(d.observedAt) <= Date.parse(item.completedAt)
+    && d.nativeProcessesAbsent === true && d.ownerProcessAbsent === true && d.workingTreeClean === true
+    && d.applicationLease?.state === "released" && d.applicationLease.absent === true
+    && unsigned?.schemaVersion === "roost-coding-unsigned-spawn-observation-v1"
+    && ["nativeReviewAbsent", "managedBackendEvidenceAbsent", "managedDecisionAbsent", "managedSpentReservationAbsent", "archivedAdmissionAbsent"].every(key => unsigned[key] === true)
+    && item.summary === null && item.codexThreadId === null && item.finalResponse === null
+    && Array.isArray(item.changedFiles) && item.changedFiles.length === 0
+    && empty(item.verification) && empty(item.usage) && item.metadata.resultRevision == null;
+}
+
+async function assertUnsignedCodingArtifactsAbsent(directory, checkpoint) {
+  const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
+  if (!uuid.test(checkpoint.executionId ?? "") || !uuid.test(checkpoint.applicationId ?? "")) throw Error("agent_host_writer_locked");
+  const anchor = path.join(directory, "trusted-provider-pilot"), spent = path.join(anchor, "spent");
+  for (const parent of [anchor, spent]) {
+    const stat = await lstat(parent).catch(e => { if (e.code === "ENOENT") return null; throw e; });
+    if (stat && (!stat.isDirectory() || stat.isSymbolicLink())) throw Error("agent_host_writer_locked");
+  }
+  for (const file of [path.join(directory, `native-review-${checkpoint.executionId}`),
+    path.join(directory, `managed-spent-${checkpoint.executionId}.json`),
+    path.join(directory, `application-${nativeDigest(checkpoint.applicationId)}.lease`),
+    path.join(anchor, "managed-backend-evidence.json"), path.join(anchor, "trusted-provider-pilot.json"),
+    path.join(spent, checkpoint.executionId)]) {
+    if (await lstat(file).catch(e => { if (e.code === "ENOENT") return null; throw e; })) throw Error("agent_host_writer_locked");
+  }
+}
+
 // Only the live in-process Writer capability may publish this durable release
 // barrier. Torn writes deliberately fail closed, like ordinary checkpoints.
 export function persistReleaseWriterCheckpoint(lock, checkpoint) {
@@ -138,6 +184,7 @@ async function reclaimTerminalBeforeSpawn(directory, candidates) {
       && JSON.stringify(localCheckpoint(item)) === JSON.stringify(checkpoint)
       && (["claimed", "branch_intent", "branch_ready", "prepared"].includes(checkpoint?.stage)
         || checkpoint?.stage === "spawn_intent" && reconciledReadOnlySpawn(item, checkpoint, bytes)
+        || checkpoint?.stage === "spawn_intent" && reconciledUnsignedCodingSpawn(item, checkpoint, bytes)
         || checkpoint?.stage === "spawn_intent" && item?.errorState?.code === "agent_readonly_terminal_reconciled"
           && ["code_reviewer_unproven", "managed_admission_blocked", "readonly_boundary_unproven"].includes(item.errorState?.details?.priorCode)
           && item.errorState?.details?.checkpointStage === "spawn_intent"
@@ -154,6 +201,8 @@ async function reclaimTerminalBeforeSpawn(directory, candidates) {
           && item.codexThreadId === null && item.finalResponse === null
           && Array.isArray(item.changedFiles) && item.changedFiles.length === 0));
     if (!candidate || observeWindowsProcessIdentity(current.ownerPid) !== null) throw new Error("agent_host_writer_locked");
+    if (candidate.errorState?.code === "agent_coding_unsigned_spawn_reconciled")
+      await assertUnsignedCodingArtifactsAbsent(directory, checkpoint);
     let retainedLease = null;
     if (checkpoint?.stage === "spawn_intent" && ["agent_readonly_terminal_reconciled", "agent_readonly_spawn_reconciled"].includes(candidate.errorState?.code)) {
       // A failed read-only boundary can retain its application reservation.
