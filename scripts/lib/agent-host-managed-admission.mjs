@@ -1,6 +1,6 @@
 import path from "node:path";
-import { writeFileSync, readFileSync, mkdirSync, renameSync, lstatSync, existsSync } from "node:fs";
-import { createPublicKey, verify, createHash } from "node:crypto";
+import { writeFileSync, readFileSync, mkdirSync, renameSync, lstatSync, existsSync, readdirSync, openSync, fsyncSync, closeSync } from "node:fs";
+import { createPublicKey, verify } from "node:crypto";
 import { z } from "zod";
 import { nativeDigest, physicalIdentity } from "./agent-host-native-footprint.mjs";
 import { fixtureRuntimeBinding } from "./agent-host-fixture-ownership.mjs";
@@ -12,6 +12,8 @@ import { trustedPilotBytes, inspectTrustedPilotInstallation, proposeTrustedPilot
   trustedPilotDecisionSchema, inspectTrustedPilotDecision } from "./agent-host-trusted-pilot.mjs";
 import { windowsJobSourceDigest } from "./agent-host-windows-job.mjs";
 import { managedBackendVersion } from "./agent-host-model-policy.mjs";
+import { bindNativeSpentRecord } from "./agent-host-hermes-native-boundary.mjs";
+import { nativeArtifactSnapshot } from "./agent-host-native-review.mjs";
 
 export const managedAdmissionVersion = "roost-managed-admission-v1";
 const signed = schema => z.object({ payload: schema, signature: z.string().regex(/^[a-f0-9]{128}$/) }).strict();
@@ -70,44 +72,101 @@ export async function requestFirstWriteAdmission({ api, claimed, writerLock, rep
   } catch (error) { fail("first_write", error?.status, error?.message); }
 }
 
-// A signed, spent admission is kept for recovery, but must not occupy the
-// one-shot active filenames used by the next execution. Call only after native
-// review has verified the candidate and released its application lease.
+function admissionFile(file) {
+  const stat = lstatSync(file);
+  if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1 || stat.size < 1 || stat.size > 16384) fail();
+  return nativeArtifactSnapshot(file);
+}
+function admissionAnchor(directory) {
+  physicalIdentity(directory);
+  const anchor = admissionFile(path.join(directory, "installation.json")).record;
+  if (anchor.decisionFile !== "trusted-provider-pilot.json") fail();
+  return anchor;
+}
+function verifyAdmissionPair(evidence, decision, anchor, executionId, evidenceDigest) {
+  const backend = signed(nativeEvidenceSchema).parse(evidence.record);
+  const accepted = signed(trustedPilotDecisionSchema).parse(decision.record);
+  authenticate(backend, anchor.authorityPublicKey);
+  authenticate(accepted, anchor.authorityPublicKey);
+  if (evidence.digest !== evidenceDigest || accepted.payload.scope.executionId !== executionId
+      || accepted.payload.provider.managedBackend?.evidence?.digest !== evidenceDigest
+      || accepted.payload.installationId !== anchor.installationId
+      || accepted.payload.scope.workspaceId !== anchor.workspaceId
+      || accepted.payload.state !== "accepted" || backend.payload.state !== "accepted") fail();
+  return { backend: backend.payload, decision: accepted.payload };
+}
+
+// This record grants no launch authority. It reserves the already signed,
+// exact managed dispatch before native review captures its immutable snapshot.
+// Never backfill it into a historical review or overwrite a spent reservation.
+export function reserveManagedDispatch({ writerLock, identity, evidenceDigest }) {
+  try {
+    const fields = ["executionId", "workspaceId", "taskId", "applicationId", "attempt"];
+    if (!identity || Object.keys(identity).length !== fields.length
+        || !fields.slice(0, 4).every(k => /^[a-f0-9-]{36}$/.test(identity[k] ?? ""))
+        || identity.attempt !== 1 || !/^[a-f0-9]{64}$/.test(evidenceDigest ?? "")) fail();
+    const writer = writerRecoveryEvidence(writerLock), directory = path.join(writer.directory, "trusted-provider-pilot");
+    const anchor = admissionAnchor(directory);
+    const pair = verifyAdmissionPair(admissionFile(path.join(directory, "managed-backend-evidence.json")),
+      admissionFile(path.join(directory, anchor.decisionFile)), anchor, identity.executionId, evidenceDigest);
+    if (fields.slice(0, 4).some(k => pair.decision.scope[k] !== identity[k])
+        || pair.backend.context.identityDigest !== nativeDigest(identity)
+        || pair.decision.scope.writerDigest !== nativeDigest(writer)
+        || pair.backend.context.writerDigest !== nativeDigest(writer)
+        || Date.parse(pair.decision.decidedAt) > Date.now() || Date.parse(pair.decision.expiresAt) <= Date.now()
+        || Date.parse(pair.backend.issuedAt) > Date.now() || Date.parse(pair.backend.expiresAt) <= Date.now()) fail();
+    const record = { state: "dispatch_reserved", scope: "managed_hermes_native",
+      attemptDigest: nativeDigest(identity), decisionId: pair.decision.decisionId, evidenceDigest };
+    const file = path.join(writer.directory, `managed-spent-${identity.executionId}.json`);
+    const bytes = Buffer.from(JSON.stringify(record) + "\n"), fd = openSync(file, "wx", 0o600);
+    try { writeFileSync(fd, bytes); fsyncSync(fd); } finally { closeSync(fd); }
+    if (!readFileSync(file).equals(bytes)) fail();
+    physicalIdentity(file, false);
+    return file;
+  } catch (error) { fail("dispatch_reservation", undefined, error?.message); }
+}
+
+// Call after lease release or separately authorized exact terminal reconciliation.
+// Read both authoritative locations before retrying: a rename may have succeeded
+// even when the original invocation did not return. Preserve the signed bytes.
 export function retireManagedAdmissionArtifacts({ directory, executionId, evidenceDigest }) {
   try {
     if (!/^[a-f0-9-]{36}$/.test(executionId ?? "") || !/^[a-f0-9]{64}$/.test(evidenceDigest ?? "")) fail();
-    physicalIdentity(directory);
-    const installationPath = path.join(directory, "installation.json");
-    const validFile = file => {
-      const stat = lstatSync(file);
-      if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1 || stat.size < 1 || stat.size > 16384) fail();
-      return stat.size;
-    };
-    const installationBytes = validFile(installationPath);
-    const installation = readFileSync(installationPath);
-    if (installation.length !== installationBytes) fail();
-    const anchor = JSON.parse(installation);
-    if (anchor.decisionFile !== "trusted-provider-pilot.json") fail();
-    const evidencePath = path.join(directory, "managed-backend-evidence.json");
-    const decisionPath = path.join(directory, anchor.decisionFile);
-    const evidenceBytes = validFile(evidencePath), signedDecisionBytes = validFile(decisionPath);
-    const bytes = readFileSync(evidencePath), decisionBytes = readFileSync(decisionPath);
-    if (bytes.length !== evidenceBytes || decisionBytes.length !== signedDecisionBytes
-        || createHash("sha256").update(bytes).digest("hex") !== evidenceDigest) fail();
-    const evidence = signed(nativeEvidenceSchema).parse(JSON.parse(bytes));
-    const decision = signed(trustedPilotDecisionSchema).parse(JSON.parse(decisionBytes));
-    if (decision.payload.scope.executionId !== executionId
-        || decision.payload.provider.managedBackend?.evidence?.digest !== evidenceDigest) fail();
-    authenticate(evidence, anchor.authorityPublicKey);
-    authenticate(decision, anchor.authorityPublicKey);
+    const parentIdentity = physicalIdentity(directory), anchor = admissionAnchor(directory);
+    const installationPath = path.join(directory, "installation.json"), installation = admissionFile(installationPath);
     const spent = path.join(directory, "spent");
-    if (!existsSync(spent)) mkdirSync(spent, { mode: 0o700 });
-    physicalIdentity(spent);
     const target = path.join(spent, executionId);
-    mkdirSync(target, { mode: 0o700 });
-    physicalIdentity(target);
-    renameSync(evidencePath, path.join(target, "managed-backend-evidence.json"));
-    renameSync(decisionPath, path.join(target, anchor.decisionFile));
+    if (existsSync(spent)) physicalIdentity(spent);
+    const names = ["managed-backend-evidence.json", anchor.decisionFile];
+    if (existsSync(target)) {
+      physicalIdentity(target);
+      if (readdirSync(target).some(name => !names.includes(name))) fail();
+    }
+    const entries = names.map(name => {
+      const active = path.join(directory, name), archived = path.join(target, name);
+      const a = existsSync(active), b = existsSync(archived);
+      if (a === b) fail(); // missing or duplicate: never guess ownership
+      return { active, archived, source: a ? active : archived, artifact: admissionFile(a ? active : archived) };
+    });
+    verifyAdmissionPair(entries[0].artifact, entries[1].artifact, anchor, executionId, evidenceDigest);
+    if (!existsSync(spent)) mkdirSync(spent, { mode: 0o700 });
+    const spentIdentity = physicalIdentity(spent);
+    if (!existsSync(target)) mkdirSync(target, { mode: 0o700 });
+    const targetIdentity = physicalIdentity(target);
+    for (const entry of entries) {
+      if (physicalIdentity(directory) !== parentIdentity || physicalIdentity(spent) !== spentIdentity
+          || physicalIdentity(target) !== targetIdentity) fail();
+      const currentInstallation = admissionFile(installationPath);
+      if (currentInstallation.identity !== installation.identity || currentInstallation.digest !== installation.digest) fail();
+      const now = admissionFile(entry.source);
+      if (now.identity !== entry.artifact.identity || now.digest !== entry.artifact.digest) fail();
+      if (entry.source === entry.active) {
+        if (existsSync(entry.archived)) fail();
+        renameSync(entry.active, entry.archived);
+      }
+      const archived = admissionFile(entry.archived);
+      if (existsSync(entry.active) || archived.identity !== entry.artifact.identity || archived.digest !== entry.artifact.digest) fail();
+    }
     return target;
   } catch (error) { fail("retire", undefined, error?.message); }
 }
@@ -257,6 +316,8 @@ export function consumeManagedAdmission(grant, options, consumption) {
     };
     if (source.envelope.contract.nativeBoundary?.profile === "coding-local"
         && (!saved.firstWrite || saved.firstWrite.baselineCommit !== consumption.currentCommit)) fail();
+    if (!inspect) bindNativeSpentRecord(native, reserveManagedDispatch({ writerLock: source.writerLock,
+      identity: source.envelope.identity, evidenceDigest: current.provider.managedBackend.evidence.digest }));
     return Object.freeze({ version: "roost-managed-hermes-launch-v1", kind: "hermes_codex",
       command: startup.candidate.command, args: startup.candidate.args, cwd: startup.candidate.cwd,
       candidateEnvironment: startup.candidate.environment, input: transport.input,

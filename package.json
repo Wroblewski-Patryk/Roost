@@ -45,6 +45,7 @@
     "test:agent-context-stop-ui": "npm run build:web && node scripts/agent-context-stop-ui.test.mjs",
     "test:agent-host-recovery": "node --test scripts/agent-host-recovery.test.mjs",
     "test:agent-host-gate2": "node --test scripts/agent-host-gate2-worker.test.mjs",
+    "test:agent-host-release": "node --test --test-concurrency=1 scripts/agent-host-release-broker.test.mjs scripts/agent-host-release-github.test.mjs scripts/agent-host-release-coolify.test.mjs scripts/agent-host-release-resources.test.mjs scripts/agent-host-release-cleanup.test.mjs scripts/agent-host-release-backup.test.mjs scripts/agent-host-release-image-cleanup.test.mjs scripts/agent-host-release-process.test.mjs scripts/agent-host-release-writer-recovery.test.mjs && tsx --test src/tests/governed-release-contract.test.ts src/tests/governed-release-readiness.test.ts",
     "test:agent-host-observer": "node --test scripts/agent-host-observer.test.mjs",
     "test:task-readiness-ui": "npm run build:web && tsx --test web/src/features/departments/task-readiness-model.test.ts && node scripts/task-readiness-ui.test.mjs",
     "test:agent-host-launcher": "powershell.exe -NoProfile -NonInteractive -File scripts/agent-host-windows-launcher.test.ps1",

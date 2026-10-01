@@ -1986,6 +1986,23 @@ async function prepareHandoffResultFixture(execution:any,pin:any){
  await prisma.agentExecution.update({where:{id:execution.id},data:{checkpointVersion:5,checkpoint:{schemaVersion:"roost-recovery-v1",stage:"effect_possible",sessionId:randomUUID(),packetRevision:"b".repeat(64),workspaceDigest:"c".repeat(64),contextRevision:pin.revision},metadata:{...execution.metadata,resultRevision:{schemaVersion:"roost-result-revision-v1",id:randomUUID(),executionId:execution.id,attempt:execution.attempt,hostId:execution.agentHostId,checkpointVersion:5,observedAt:new Date().toISOString(),commit:"d".repeat(40),branch:pin.contract.singleTask.branch,workingTree:"dirty"}}}});
 }
 let reviewFixtureSequence=0;
+test("governed release transport requires separately provisioned principal scope and owner authority",async()=>{
+ const owner=await registerOwner(`release-transport-${Date.now()}@example.test`,"Release fixture owner"),workspaceId=owner.workspace.id;
+ const auth={Authorization:`Bearer ${owner.token}`};
+ const ordinary=await prisma.workforceEntity.create({data:{workspaceId,name:"Review-only fixture",slug:`review-only-${randomUUID()}`,type:"agent",role:"verifier",skillIndex:["javascript"],authorityScope:["task_verification"]}});
+ const releaser=await prisma.workforceEntity.create({data:{workspaceId,name:"Release fixture",slug:`release-${randomUUID()}`,type:"agent",role:"releaser",skillIndex:["governed release"],authorityScope:["release_authorization"],toolIndex:["remote_push","deployment"]}});
+ const issue=async(agentId:string,purpose?:string)=>request("/v1/api-keys/agent-credentials",{method:"POST",headers:auth,body:JSON.stringify({requestId:randomUUID(),agentId,name:"Scoped fixture",expiresAt:new Date(Date.now()+1800000).toISOString(),...(purpose?{purpose}:{})})});
+ const reviewKey=await issue(ordinary.id);assert.equal(reviewKey.status,201,JSON.stringify(reviewKey.body));
+ const rejected=await issue(ordinary.id,"governed_release");assert.equal(rejected.status,409,JSON.stringify(rejected.body));
+ const key=await issue(releaser.id,"governed_release");assert.equal(key.status,201,JSON.stringify(key.body));
+ assert.ok((key.body as any).data.scopes.includes("agent-runtime:release"));assert.ok(!(reviewKey.body as any).data.scopes.includes("agent-runtime:release"));
+ const root="/v1/agent-runtime/releases",hostId=randomUUID();
+ const denied=await request(`${root}?hostId=${hostId}`,{headers:{"X-API-Key":(reviewKey.body as any).data.key}});assert.equal(denied.status,403);
+ const queue=await request(`${root}?hostId=${hostId}`,{headers:{"X-API-Key":(key.body as any).data.key}});assert.equal(queue.status,200,JSON.stringify(queue.body));assert.deepEqual((queue.body as any).data.releases,[]);
+ const create=await request(root,{method:"POST",headers:{"X-API-Key":(key.body as any).data.key},body:JSON.stringify({requestId:randomUUID()})});assert.equal(create.status,403);
+ const incomplete=await request(root,{method:"POST",headers:auth,body:JSON.stringify({requestId:randomUUID()})});assert.equal(incomplete.status,400,JSON.stringify(incomplete.body));
+ const operation=await request(`${root}/${randomUUID()}/operations`,{method:"POST",headers:auth,body:JSON.stringify({})});assert.ok([400,403,404].includes(operation.status));
+});
   async function prepareReviewFixture(agentMode = false, autoGrants = true, handoff = false, clarification = false, interview = false, decisionNeighbor = false) {
     const suffix = `${Date.now()}-${reviewFixtureSequence++}`;
     const owner = await registerOwner(`review-${suffix}@example.test`, "Review fixture"), workspaceId = owner.workspace.id;

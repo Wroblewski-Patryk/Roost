@@ -1,4 +1,5 @@
 import { nativeBoundaryResultBlocked } from "./task-review-contract";
+import { governedReleaseRouter } from "./governed-release.routes";
 import { ownerTicketHandler } from "./owner-ticket-http";
 import { managedAdmission, managedAdmissionSignerFromEnvironment } from "./managed-admission";
 import { recordV3OwnerAuth } from "../api-keys/bootstrap-v3-owner-auth";
@@ -169,6 +170,7 @@ async function applicationForTask(workspaceId: string, taskId: string, requested
 }
 
 export const agentRuntimeRouter = Router();
+agentRuntimeRouter.use("/releases", governedReleaseRouter);
 agentRuntimeRouter.post('/bootstrap/installation',asyncHandler(async(req,res)=>{
   res.setHeader('Cache-Control','no-store');
   if(process.env.NODE_ENV==='production'&&req.header('x-forwarded-proto')!=='https')

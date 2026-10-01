@@ -86,6 +86,7 @@ export const capabilities = [
   "agent-runtime:write",
   "agent-runtime:claim",
   "agent-runtime:report",
+  "agent-runtime:release",
   "events:read",
   "integration-settings:clickup:read",
   "integration-settings:clickup:write",
@@ -453,6 +454,12 @@ export const adapterManifest = {
       { method: "POST", path: "/v1/agent-events/:id/ack", capability: "agent-events:ack" }
     ],
     agentRuntime: [
+      { method: "GET", path: "/v1/agent-runtime/releases", capability: "agent-runtime:release" },
+      { method: "POST", path: "/v1/agent-runtime/releases", capability: "agent-runtime:release" },
+      { method: "GET", path: "/v1/agent-runtime/releases/:releaseId", capability: "agent-runtime:release" },
+      { method: "POST", path: "/v1/agent-runtime/releases/:releaseId/operations", capability: "agent-runtime:release" },
+      { method: "POST", path: "/v1/agent-runtime/releases/:releaseId/operations/:operationId/outcome", capability: "agent-runtime:release" },
+      { method: "POST", path: "/v1/agent-runtime/releases/:releaseId/actions/revoke", capability: "agent-runtime:release" },
       { method: "GET", path: "/v1/agent-runtime/hosts", capability: "agent-runtime:read" },
       { method: "GET", path: "/v1/agent-runtime/recovery", capability: "agent-runtime:claim" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/checkpoint", capability: "agent-runtime:report" },

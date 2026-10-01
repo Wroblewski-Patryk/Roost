@@ -1157,36 +1157,36 @@ stays disabled and the canonical host stays observe.
 | [RF-SEC-010](../product/requirements.md#rf-sec-010) | P0 | brak | [HEALTH](#e-health) | No generic application-health contract runner. |
 | [RF-SEC-011](../product/requirements.md#rf-sec-011) | P0 | częściowo działa | [IDEMP](#e-idemp) | Some provider inbox/execution CAS dedup exists; universal operation receipts absent. |
 | [RF-SEC-012](../product/requirements.md#rf-sec-012) | P0 | częściowo działa | [INCIDENT](#e-incident) | Exact native capability suspension, independent versioned remediation verification, explicit owner restore and manual-intervention reread/replan are enforced. General risk classification and external broker containment remain absent. |
-| [RF-RES-001](../product/requirements.md#rf-res-001) | P0 | częściowo działa | [RESOURCE](#e-resource) | Host repo allowlist exists; full runtime resource manifest absent. |
-| [RF-RES-002](../product/requirements.md#rf-res-002) | P0 | brak | [RESOURCE](#e-resource) | No ownership-aware service lifecycle. |
-| [RF-RES-003](../product/requirements.md#rf-res-003) | P0 | brak | [BACKUP](#e-backup) | No governed volume-operation gate. |
-| [RF-RES-004](../product/requirements.md#rf-res-004) | P0 | częściowo działa | [BACKUP](#e-backup) | Operational instructions exist; automated verification/rotation unproven. |
-| [RF-RES-005](../product/requirements.md#rf-res-005) | P0 | brak | [BACKUP](#e-backup) | No verified encrypted sync/restore implementation; later Roost-only exception to earlier no-DB-download rule. |
-| [RF-RES-006](../product/requirements.md#rf-res-006) | P1 | brak | [BACKUP](#e-backup) | No recovery-code setup flow. |
-| [RF-RES-007](../product/requirements.md#rf-res-007) | P0 | brak | [RESOURCE](#e-resource) | No shared release resource admission. |
+| [RF-RES-001](../product/requirements.md#rf-res-001) | P0 | częściowo działa | [RELEASE](#e-release) | Private ownership manifest binds the exact clone, application, image digests and resources; native certification remains pending. |
+| [RF-RES-002](../product/requirements.md#rf-res-002) | P0 | częściowo działa | [RELEASE](#e-release) | Ownership-aware cleanup has native local Git and adapter checks; real target cleanup remains pending. |
+| [RF-RES-003](../product/requirements.md#rf-res-003) | P0 | częściowo działa | [BACKUP](#e-backup), [RELEASE](#e-release) | Shared volumes/network deletion and global Docker cleanup are disabled; unknown resources are preserved. Certification target has no business data or persistent storage. |
+| [RF-RES-004](../product/requirements.md#rf-res-004) | P0 | częściowo działa | [BACKUP](#e-backup) | Verified backup promotion and compatible immutable rollback are implemented and tested; production backup and release observation remain pending. |
+| [RF-RES-005](../product/requirements.md#rf-res-005) | P0 | częściowo działa | [BACKUP](#e-backup) | Real local PostgreSQL dump/restore, schema/data parity, encrypted read-back and owned database cleanup pass. Owner folder and production proof remain pending. |
+| [RF-RES-006](../product/requirements.md#rf-res-006) | P1 | częściowo działa | [BACKUP](#e-backup) | Interactive owner setup generates a code once and stores only a salted hash/acknowledgement. Actual off-device acknowledgement remains pending. |
+| [RF-RES-007](../product/requirements.md#rf-res-007) | P0 | częściowo działa | [RELEASE](#e-release) | Broker checks disk/memory/load/Docker and overlapping Coolify deployments before effects; shared scheduling and native certification remain unproven. |
 | [RF-RES-008](../product/requirements.md#rf-res-008) | P1 | działa | [GOV](#e-gov) | Boundary retained; no new cleanup mechanism. |
-| [RF-REL-001](../product/requirements.md#rf-rel-001) | P0 | brak | [RELEASE](#e-release) | No native Git/PR/merge broker. |
+| [RF-REL-001](../product/requirements.md#rf-rel-001) | P0 | częściowo działa | [RELEASE](#e-release) | Private GitHub Free broker implements exact branch push/PR/review/fast-forward merge, without visibility changes; actual certification remains pending. |
 | [RF-REL-002](../product/requirements.md#rf-rel-002) | P0 | działa | [GOV](#e-gov) | Governing prohibition retained. |
 | [RF-REL-003](../product/requirements.md#rf-rel-003) | P0 | częściowo działa | [REVIEW](#e-review), Gate 2 native evidence above | Separate managed read-only reviewer rejected three exact commits and approved corrected commit `774e858ae48d1f05d2b56982a7113da983f62af8` through a scoped credential and Roost Decision. Release review/certification remains unproven. |
-| [RF-REL-004](../product/requirements.md#rf-rel-004) | P0 | brak | [RELEASE](#e-release) | No exact-commit release authorization. |
+| [RF-REL-004](../product/requirements.md#rf-rel-004) | P0 | częściowo działa | [RELEASE](#e-release) | Fresh owner grant binds native candidate proof, independent exact review, read-only release audit and current readiness; contract/API/DB checks pass. Real grant remains pending. |
 | [RF-REL-005](../product/requirements.md#rf-rel-005) | P0 | częściowo działa | [RELEASE](#e-release) | Bootstrap workflow exists; native completion gate absent. |
-| [RF-REL-006](../product/requirements.md#rf-rel-006) | P0 | brak | [HEALTH](#e-health) | No automated baseline-aware observation gate. |
-| [RF-REL-007](../product/requirements.md#rf-rel-007) | P0 | brak | [RELEASE](#e-release) | Current health exposes commit; image identity/rollback manifest not proven. |
-| [RF-REL-008](../product/requirements.md#rf-rel-008) | P0 | brak | [RELEASE](#e-release) | Manual operations docs exist; automatic rollback absent. |
+| [RF-REL-006](../product/requirements.md#rf-rel-006) | P0 | częściowo działa | [RELEASE](#e-release) | Baseline-aware observation verifies exact live image/config/schema/tree/data and elapsed window; actual deployment observation remains pending. |
+| [RF-REL-007](../product/requirements.md#rf-rel-007) | P0 | częściowo działa | [RELEASE](#e-release) | Immutable OCI identity comes from the running container and independently inspected labels; compatible rollback manifest is tested, not yet certified live. |
+| [RF-REL-008](../product/requirements.md#rf-rel-008) | P0 | częściowo działa | [RELEASE](#e-release) | Journaled rollback configuration/deploy/observation is implemented; controlled failure and real rollback remain pending. |
 | [RF-REL-009](../product/requirements.md#rf-rel-009) | P1 | brak | [HEALTH](#e-health) | No continuous multi-app monitoring worker. |
 | [RF-REL-010](../product/requirements.md#rf-rel-010) | P0 | brak | [HEALTH](#e-health) | No verified per-app safety certification. |
 | [RF-REL-011](../product/requirements.md#rf-rel-011) | P0 | częściowo działa | [TEST](#e-test), Gate 2 native evidence above | Worker enforced focused Windows candidate test before local commit; supplemental read-only POSIX test passed and independent reviewer cited both. General risk-based test selection and release gate remain unproven. |
 | [RF-REL-012](../product/requirements.md#rf-rel-012) | P1 | brak | [TEST](#e-test) | Bootstrap skill workflow exists; native enforcement absent. |
 | [RF-REL-013](../product/requirements.md#rf-rel-013) | P0 | częściowo działa | [TEST](#e-test) | API tests exist; compatibility release gate incomplete. |
-| [RF-REL-014](../product/requirements.md#rf-rel-014) | P0 | brak | [RELEASE](#e-release) | No desired-state reconciliation service. |
+| [RF-REL-014](../product/requirements.md#rf-rel-014) | P0 | częściowo działa | [RELEASE](#e-release) | Durable intent/outcome journal forces read-only reconciliation before retry; adapter uncertainty checks pass, real uncertain operation remains unproven. |
 | [RF-REL-015](../product/requirements.md#rf-rel-015) | P0 | częściowo działa | [HEALTH](#e-health) | Roost public health/build exists; complete app contracts absent. |
 | [RF-REL-016](../product/requirements.md#rf-rel-016) | P1 | brak | [RELEASE](#e-release) | No scheduler-enforced windows or drain. |
 | [RF-REL-017](../product/requirements.md#rf-rel-017) | P1 | brak | [RELEASE](#e-release) | Future DemoApp release configuration, not implemented here. |
 | [RF-REL-018](../product/requirements.md#rf-rel-018) | P1 | działa | [GOV](#e-gov) | Risk-based target policy retained. |
 | [RF-ACT-001](../product/requirements.md#rf-act-001) | P0 | częściowo działa | [HOST](#e-host) | Default execution flag works; formal staged readiness state absent. |
 | [RF-ACT-002](../product/requirements.md#rf-act-002) | P0 | częściowo działa | [DRY](#e-dry) | Lease/recovery fixture tests exist; complete dry-run certification absent. |
-| [RF-ACT-003](../product/requirements.md#rf-act-003) | P0 | brak | [RELEASE](#e-release) | Needs broker and passed local dry run; ask owner for repo/folder only at that stage. |
-| [RF-ACT-004](../product/requirements.md#rf-act-004) | P1 | brak | [RESOURCE](#e-resource) | Not yet reached; no resources created. |
+| [RF-ACT-003](../product/requirements.md#rf-act-003) | P0 | częściowo działa | [RELEASE](#e-release) | Component checks pass; owner-authorized private test repository, canonical directory and Coolify target are provisioned. Managed certification remains pending. |
+| [RF-ACT-004](../product/requirements.md#rf-act-004) | P1 | częściowo działa | [RELEASE](#e-release) | Exact owned cleanup and repository archival are implemented and tested; real test resources are retained until certification/cleanup proof. |
 | [RF-ACT-005](../product/requirements.md#rf-act-005) | P0 | częściowo działa | [AUDITOR](#e-auditor), Gate 2 native evidence above | Managed read-only pilot auditor and exact-commit reviewer completed with unchanged Git/process/Docker audits. General continuous canary activation remains unproven. |
 | [RF-ACT-006](../product/requirements.md#rf-act-006) | P0 | częściowo działa | [AUDITOR](#e-auditor), Gate 2 native evidence above | Separate read-only auditor and verifier completed against one clean baseline with matching evidence digest before the first write. General scheduled canary orchestration remains unproven. |
 | [RF-ACT-007](../product/requirements.md#rf-act-007) | P0 | brak | [ACT](#e-act) | No readiness report or activation authorization state machine. |
@@ -1471,14 +1471,30 @@ not execute verification, backup, restore or releases.
 [config/roost-agent-host.example.json](../../config/roost-agent-host.example.json), [docker-compose.yml](../../docker-compose.yml), [docs/architecture/autonomy-activation-contract.md](../../docs/architecture/autonomy-activation-contract.md).
 
 <a id="e-backup"></a>
-**BACKUP** — Operational guidance only; no certified encrypted backup/sync/restore result claimed.
+**BACKUP** — Native local PostgreSQL dump/restore, schema/data parity, encrypted
+read-back and owned test-database cleanup pass (8 tests). Owner prerequisite
+setup and production Roost backup/sync remain unproven.
 
+[Governed release evidence](../operations/governed-release.md),
+[backup gateway](../../scripts/lib/agent-host-release-backup.mjs),
+[native backup tests](../../scripts/agent-host-release-backup.test.mjs),
 [docs/operations/rollback-and-recovery.md](../../docs/operations/rollback-and-recovery.md).
 
 <a id="e-release"></a>
-**RELEASE** — Bootstrap Coolify contract and manual delivery; native broker/release automation absent.
+**RELEASE** — Gate 3 implementation is in progress (2026-10-01). Exact owner
+authority, append-only operation journal, Worker broker, private GitHub path,
+immutable Coolify deployment, runtime inspection and owned cleanup have 117
+passing component checks. Additive migration and scoped API checks pass against
+real local PostgreSQL. These checks do not certify the managed release path.
+Temporary target bootstrap commits are initialization evidence only. Real
+candidate/review/push/PR/merge/deploy/health/failure/rollback/cleanup remain pending.
 
-[docs/operations/coolify-vps-deployment-contract.md](../../docs/operations/coolify-vps-deployment-contract.md), [docs/operations/rollback-and-recovery.md](../../docs/operations/rollback-and-recovery.md), [Dockerfile](../../Dockerfile), [docker-compose.coolify.yml](../../docker-compose.coolify.yml).
+[Operations and evidence checkpoint](../operations/governed-release.md),
+[server authority](../../src/modules/agent-runtime/governed-release.ts),
+[Worker broker](../../scripts/lib/agent-host-release-broker.mjs),
+[Coolify adapter](../../scripts/lib/agent-host-release-coolify.mjs),
+[GitHub adapter](../../scripts/lib/agent-host-release-github.mjs),
+[resource gateway](../../scripts/lib/agent-host-release-resources.mjs).
 
 <a id="e-health"></a>
 **HEALTH** — Roost health/readiness build metadata exists; not full multi-app functional health.

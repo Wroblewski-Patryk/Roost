@@ -1,10 +1,13 @@
 import type { Prisma } from "@prisma/client";
 import type { AuthContext } from "./api-key.middleware";
 
-// This credential class grants native review and exact handoff operations, never host or release execution.
+// Default credentials grant review and handoff. Release transport additionally
+// requires a separately provisioned scope and exact server-side release grant.
 export const agentPrincipalScopes = ["connection:read", "tasks:read", "workforce:read", "agent-runtime:read", "agent-runtime:write"];
 export function agentPrincipalRoute(method: string, path: string) {
   const route = path.replace(/^\/v1(?=\/)/, "");
+  if (method === "GET" && (route === "/agent-runtime/releases" || /^\/agent-runtime\/releases\/[a-f0-9-]{36}$/.test(route))
+    || method === "POST" && /^\/agent-runtime\/releases\/[a-f0-9-]{36}\/operations(?:\/[a-f0-9-]{36}\/outcome)?$/.test(route)) return true;
   if(method==="GET"&&/^\/product-engineering\/(?:applications\/[a-f0-9-]+\/findings(?:\/catalog)?|findings\/[a-f0-9-]+)$/i.test(route)||method==="POST"&&/^\/product-engineering\/(?:applications\/[a-f0-9-]+\/findings|findings\/[a-f0-9-]+\/(?:versions|occurrences|actions))$/i.test(route))return true;
   if (method === "GET" && /^\/decisions\/[a-f0-9-]+\/governance$/i.test(route) || method === "POST" && /^\/decisions\/[a-f0-9-]+\/governance\/actions$/i.test(route)) return true;
   return method === "GET" && (route === "/connection" || route === "/tasks" || /^\/tasks\/[a-f0-9-]+$/i.test(route) || route === "/workforce" || /^\/agent-runtime\/tasks\/[a-f0-9-]+\/(?:review|handoffs|clarifications|interviews)$/i.test(route)) ||

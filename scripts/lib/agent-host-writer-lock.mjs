@@ -3,7 +3,8 @@ import { currentNativeProcessIdentity, observeWindowsProcessIdentity } from "./a
 import { guardHostContent } from "./agent-host-redaction.mjs";
 import { lstat, mkdir, open, readFile, unlink } from "node:fs/promises";
 import path from "node:path";
-import { readFileSync, lstatSync, existsSync } from "node:fs";
+import { readFileSync, lstatSync, existsSync, openSync, closeSync, ftruncateSync, writeSync, fsyncSync, fstatSync } from "node:fs";
+import { qualifyReleaseWriterReclaim } from "./agent-host-release-writer-recovery.mjs";
 
 const liveWriters = new WeakMap();
 export function writerRecoveryEvidence(lock) {
@@ -61,6 +62,27 @@ async function reclaimBeforeSpawn(directory, candidate) {
   } finally { await gate.close(); await unlink(gatePath); }
 }
 
+// Only the live in-process Writer capability may publish this durable release
+// barrier. Torn writes deliberately fail closed, like ordinary checkpoints.
+export function persistReleaseWriterCheckpoint(lock, checkpoint) {
+  const checked = assertWriterLock(lock), saved = liveWriters.get(lock), stat = lstatSync(saved.file, { bigint: true });
+  const current = JSON.parse(readFileSync(saved.file, "utf8"));
+  current.releaseCheckpoint = guardHostContent(checkpoint).value;
+  const bytes = Buffer.from(JSON.stringify(current) + "\n");
+  if (bytes.length > 65536) throw Error("agent_host_release_checkpoint_limit");
+  const fd = openSync(saved.file, "r+");
+  try {
+    const opened = fstatSync(fd, { bigint: true });
+    // Windows libuv reports path lstat.dev=0 but the handle's real volume ID.
+    if (stat.dev !== 0n && opened.dev !== stat.dev || opened.ino !== stat.ino || opened.nlink !== 1n) throw Error("agent_host_writer_lock_owner_changed");
+    ftruncateSync(fd, 0); let offset = 0; while (offset < bytes.length) offset += writeSync(fd, bytes, offset); fsyncSync(fd);
+  } finally { closeSync(fd); }
+  return createHash("sha256").update(bytes).digest("hex");
+}
+export function clearWriterReleaseRecoveryRestriction(lock) {
+  assertWriterLock(lock); const saved = liveWriters.get(lock); saved.releaseRecovery = null;
+}
+
 async function reclaimTerminalBeforeSpawn(directory, candidates) {
   const lockPath = path.join(directory, writerLockFilename);
   const prior = await lstat(lockPath).catch(error => { if (error.code === "ENOENT") return null; throw error; });
@@ -114,13 +136,33 @@ export function localCheckpoint(execution) {
     ...(checkpoint?.branch ? { branch: checkpoint.branch } : {}), ...(checkpoint?.headCommit ? { headCommit: checkpoint.headCommit } : {}) };
 }
 
-export async function acquireWriterLock(directory = writerStateDirectory, { recoveryCandidate, terminalCandidates } = {}) {
+async function reclaimSealedRelease(directory, candidate) {
+  const gatePath = path.join(directory, recoveryLockFilename), lockPath = path.join(directory, writerLockFilename);
+  const prior = await lstat(lockPath).catch(error => { if (error.code === "ENOENT") return null; throw error; });
+  if (!prior) return null; // First release-only Worker; wx below still fences a racing owner.
+  let gate;
+  try { gate = await open(gatePath, "wx", 0o600); } catch { throw Error("agent_host_writer_locked"); }
+  try {
+    const stat = await lstat(lockPath);
+    if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1 || stat.size > 65536) throw Error("agent_host_writer_locked");
+    const bytes = await readFile(lockPath, "utf8"), current = JSON.parse(bytes);
+    const recovered = qualifyReleaseWriterReclaim(current, candidate, directory);
+    const latest = await lstat(lockPath);
+    if (latest.dev !== stat.dev || latest.ino !== stat.ino || await readFile(lockPath, "utf8") !== bytes) throw Error("agent_host_writer_locked");
+    await unlink(lockPath); return recovered;
+  } catch { throw Error("agent_host_writer_locked"); }
+  finally { await gate.close(); await unlink(gatePath); }
+}
+
+export async function acquireWriterLock(directory = writerStateDirectory, { recoveryCandidate, terminalCandidates, releaseRecoveryCandidate } = {}) {
   await mkdir(directory, { recursive: false }).catch((error) => { if (error.code !== "EEXIST") throw error; });
   const stat = await lstat(directory);
   if (!stat.isDirectory() || stat.isSymbolicLink()) throw new Error("agent_host_state_directory_invalid");
   const lockPath = path.join(directory, writerLockFilename);
   if (await lstat(path.join(directory, recoveryLockFilename)).catch((error) => { if (error.code !== "ENOENT") throw error; return null; })) throw new Error("agent_host_writer_locked");
-  if (recoveryCandidate) await reclaimBeforeSpawn(directory, recoveryCandidate);
+  let releaseRecovery = null;
+  if (releaseRecoveryCandidate) releaseRecovery = await reclaimSealedRelease(directory, releaseRecoveryCandidate);
+  else if (recoveryCandidate) await reclaimBeforeSpawn(directory, recoveryCandidate);
   else if (terminalCandidates) await reclaimTerminalBeforeSpawn(directory, terminalCandidates);
   const ownerNonce = randomUUID();
   let file;
@@ -150,12 +192,16 @@ export async function acquireWriterLock(directory = writerStateDirectory, { reco
   }
   // Never reclaim by PID/age: an orphaned Codex process may still be writing.
   let released = false;
-  const proof = { file: lockPath, nonce: ownerNonce, released: false };
+  const proof = { file: lockPath, nonce: ownerNonce, released: false, releaseRecovery };
   const lock = {
     sessionId: ownerNonce,
+    get releaseRecovery() { return proof.releaseRecovery; },
     async checkpoint(execution) {
       const current = JSON.parse(await readFile(lockPath, "utf8"));
       if (current.ownerNonce !== ownerNonce) throw new Error("agent_host_writer_lock_owner_changed");
+      if (proof.releaseRecovery || current.releaseCheckpoint && current.releaseCheckpoint.phase !== "all_local_children_closed") throw Error("agent_host_release_reconciliation_pending");
+      // Starting a new managed attempt invalidates an older release barrier.
+      delete record.releaseCheckpoint;
       record.checkpoint = guardHostContent(localCheckpoint(execution)).value;
       const handle = await open(lockPath, "r+");
       try {
@@ -169,6 +215,7 @@ export async function acquireWriterLock(directory = writerStateDirectory, { reco
       if (released) return;
       const current = JSON.parse(await readFile(lockPath, "utf8"));
       if (current.ownerNonce !== ownerNonce) throw new Error("agent_host_writer_lock_owner_changed");
+      if (proof.releaseRecovery || current.releaseCheckpoint && current.releaseCheckpoint.phase !== "all_local_children_closed") throw Error("agent_host_release_reconciliation_pending");
       await unlink(lockPath);
       released = true;
       proof.released = true;

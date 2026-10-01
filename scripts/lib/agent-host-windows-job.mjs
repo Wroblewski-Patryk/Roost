@@ -49,7 +49,7 @@ export function hermesOwnedTreeBlockers(blockers, receipt) {
 }
 
 // Build only into a caller-owned temporary directory; no machine install/cache.
-export async function buildWindowsJobLauncher(directory, { testFaults = false } = {}) {
+export async function buildWindowsJobLauncher(directory, { testFaults = false, compile } = {}) {
   if (process.platform !== "win32" || process.arch !== "x64") throw fail();
   const executable = path.join(directory, testFaults ? "roost-job-test.exe" : "roost-job.exe");
   const compiler = path.join(process.env.SystemRoot, "Microsoft.NET", "Framework64", "v4.0.30319", "csc.exe");
@@ -57,7 +57,10 @@ export async function buildWindowsJobLauncher(directory, { testFaults = false } 
     const args = ["/nologo", "/target:exe", "/platform:x64", "/optimize+", "/reference:System.Web.Extensions.dll", `/out:${executable}`];
     if (testFaults) args.push("/define:TEST_FAULTS");
     args.push(source);
-    await exec(compiler, args, { windowsHide: true, timeout: 30000, maxBuffer: 65536 });
+    // Release broker refreshes its launcher through an already owned Job. This
+    // callback is source-selected; configuration and dispatch cannot supply it.
+    if (compile) await compile(compiler, args);
+    else await exec(compiler, args, { windowsHide: true, timeout: 30000, maxBuffer: 65536 });
     const artifact = Object.freeze({ executable, sha256: digest(await readFile(executable)), sourceSha256: digest(await readFile(source)) });
     builds.set(artifact, { testFaults, at: Date.now(), monotonic: performance.now(),
       identity: String(lstatSync(executable, { bigint: true }).ino), physicalPath: realpathSync.native(executable) }); return artifact;

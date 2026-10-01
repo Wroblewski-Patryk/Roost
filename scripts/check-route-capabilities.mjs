@@ -51,6 +51,7 @@ const protectedMounts = new Map([
   ["agent-logs.routes.ts", "/agent-logs"],
   ["agent-events.routes.ts", "/agent-events"],
   ["agent-runtime.routes.ts", "/agent-runtime"],
+  ["governed-release.routes.ts", "/agent-runtime/releases"],
   ["capability-suspension.ts", "/agent-runtime/capability-suspensions"],
   ["events.routes.ts", "/events"],
   ["integration-settings.routes.ts", "/integration-settings"],

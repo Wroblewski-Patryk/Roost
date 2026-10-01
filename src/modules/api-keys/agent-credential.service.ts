@@ -5,7 +5,7 @@ import { agentPrincipalScopes } from "../../auth/agent-principal";
 import { reviewDigest } from "../agent-runtime/task-review-contract";
 import { readyTransaction } from "../agent-runtime/task-execution-readiness";
 
-export const createAgentCredentialSchema = z.object({ requestId: z.string().uuid(), agentId: z.string().uuid(), name: z.string().trim().min(1).max(120), expiresAt: z.string().datetime() }).strict();
+export const createAgentCredentialSchema = z.object({ requestId: z.string().uuid(), agentId: z.string().uuid(), name: z.string().trim().min(1).max(120), expiresAt: z.string().datetime(), purpose: z.enum(["task", "governed_release"]).optional() }).strict();
 export const changeAgentCredentialSchema = z.object({ requestId: z.string().uuid(), expectedVersion: z.number().int().positive(), expiresAt: z.string().datetime().optional() }).strict();
 export function safeCredential(k: any) {
   return { id: k.id, name: k.name, agentId: k.boundAgentId, agentName: k.boundAgent?.name, agentStatus: k.boundAgent?.status,
@@ -29,6 +29,9 @@ export async function agentCredentialCommand(workspaceId: string, actorUserId: s
     const agentId = "agentId" in input ? input.agentId : existing!.boundAgentId!;
     const agent = await tx.workforceEntity.findFirst({ where: { id: agentId, workspaceId, type: "agent", source: { not: "user" }, status: "active" } });
     if (action !== "revoke" && !agent) return { error: "credential_agent_inactive" };
+    const releasePurpose = "purpose" in input ? input.purpose === "governed_release" : Array.isArray(existing?.scopes) && existing.scopes.includes("agent-runtime:release");
+    if (action !== "revoke" && releasePurpose && (!Array.isArray(agent?.authorityScope) || !agent.authorityScope.includes("release_authorization")
+      || !Array.isArray(agent.skillIndex) || !agent.skillIndex.includes("governed release"))) return { error: "credential_release_role_required" };
     const expiresAt = input.expiresAt ? new Date(input.expiresAt) : null;
     if (action !== "revoke" && (!expiresAt || expiresAt <= new Date() || expiresAt.getTime() > Date.now() + 366 * 86400000)) return { error: "credential_invalid_expiry" };
     if (action === "create" && await tx.apiKey.findFirst({ where: { workspaceId, boundAgentId: agentId, active: true, revokedAt: null } })) return { error: "credential_already_bound" };
@@ -37,7 +40,7 @@ export async function agentCredentialCommand(workspaceId: string, actorUserId: s
     if (existing && !existing.revokedAt) record = await tx.apiKey.update({ where: { id: existing.id }, data: { active: false, revokedAt: new Date(), credentialVersion: { increment: 1 } }, include: { boundAgent: true } });
     const rawKey = action === "revoke" ? null : generateApiKey();
     if (rawKey) record = await tx.apiKey.create({ data: { workspaceId, boundAgentId: agentId, name: "name" in input ? input.name : existing!.name,
-      keyHash: hashApiKey(rawKey), keyPrefix: apiKeyPrefix(rawKey), scopes: agentPrincipalScopes, expiresAt }, include: { boundAgent: true } });
+      keyHash: hashApiKey(rawKey), keyPrefix: apiKeyPrefix(rawKey), scopes: releasePurpose ? [...agentPrincipalScopes, "agent-runtime:release"] : agentPrincipalScopes, expiresAt }, include: { boundAgent: true } });
     const snapshot = { ...safeCredential(record), previousKeyId: existing?.id ?? null };
     await tx.agentCredentialOperation.create({ data: { workspaceId, requestId: input.requestId, requestHash, keyId: record!.id, actorUserId, action, snapshot: JSON.parse(JSON.stringify(snapshot)) } });
     await tx.event.create({ data: { workspaceId, type: `api_key.agent_${action}`, actorType: "user", actorId: actorUserId, source: "roost_api", resourceType: "api_key", resourceId: record!.id,

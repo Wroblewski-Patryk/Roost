@@ -44,6 +44,7 @@ import readyContext from "./lib/agent-host-ready-context.cjs";
 import { contextStopError } from "./lib/agent-host-context-stop.mjs";
 import { assertTaskBranch, readCurrentTaskBranch, readCurrentTaskCommit, readCommittedTaskPaths } from "./lib/agent-host-single-task.mjs";
 import { createTaskBranch } from "./lib/agent-host-task-branch.mjs";
+import { runGovernedReleaseQueueStep, getGovernedReleaseRecoveryCandidate } from "./lib/agent-host-release-worker.mjs";
 
 const baseUrl = String(process.env.ROOST_BASE_URL || process.env.COMPANYCORE_BASE_URL || "").replace(/\/+$/, "");
 const apiKey = process.env.ROOST_AGENT_API_KEY || process.env.COMPANYCORE_API_KEY;
@@ -797,8 +798,10 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
   let writerLock;
   let resumedExecution;
   try {
+    if (pending[0] && config.governedRelease) throw recoveryError("multiple_executions");
     if (pending[0]) classifyRecovery(pending[0], recovery.executionEnabled);
-    writerLock = await acquireLock({ recoveryCandidate: pending[0], terminalCandidates: recovery.terminalPreSpawn });
+    const releaseRecoveryCandidate = await getGovernedReleaseRecoveryCandidate({config,baseUrl,hostId:registeredHost.id});
+    writerLock = await acquireLock({ recoveryCandidate: pending[0], terminalCandidates: recovery.terminalPreSpawn,releaseRecoveryCandidate });
     config = await validateAgentHostWorkspace(config);
     if (pending[0]) {
       if (!await waitForAdmission()) { retainWriterLock = true; return; }
@@ -812,6 +815,10 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
       let execution = null;
       try {
         if (!await waitForAdmission()) break;
+        const releaseStep = await runGovernedReleaseQueueStep({ config, baseUrl, hostId: registeredHost.id,
+          writerLock, stopped: () => stopping });
+        if (releaseStep.handled) { if (!stopping) await delay(1000); continue; }
+        if (config.governedRelease) { if (!stopping) await delay(pollIntervalMs); continue; }
         execution = await api("/v1/agent-runtime/executions/claim", { method: "POST", body: JSON.stringify({ hostSlug: host.slug, sessionId: writerLock.sessionId }) });
         if (execution) {
           process.stdout.write("Execution claimed.\n");
@@ -820,6 +827,11 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
           await execute(execution, writerLock, { onCheckpoint, createOutputBudget, readTaskBranch, readTaskCommit, readTaskPaths });
         }
       } catch (error) {
+        if (error.releaseBlocked) { stopping = true; retainWriterLock = true; }
+        // A terminal failed review still owns its native lease and signed Writer
+        // snapshot. Preserve both until exact reconciliation; another claim must
+        // not replace the captured Writer bytes or inherit the application's slot.
+        if (error.message === "agent_native_review_blocked") { stopping = true; retainWriterLock = true; }
         if (error.hostLifecycle) { stopping = true; retainWriterLock = true; }
         if (error.protocolAdmission) { protocolHalted = true; stopping = true; retainWriterLock = true; }
         if (error.providerFailure) stopping = true;
@@ -835,11 +847,12 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
       if (!stopping) await delay(execution ? 1_000 : pollIntervalMs);
     }
   } catch (error) {
+    if (error.message === "agent_native_review_blocked") { stopping = true; retainWriterLock = true; }
     if (error.hostLifecycle) { stopping = true; retainWriterLock = true; }
     if (error.protocolAdmission) { protocolHalted = true; stopping = true; retainWriterLock = true; }
     if (pending[0]) {
       retainWriterLock = true;
-      if ((error.hostLifecycle || error.outputLimit || error.durationLimit || error.contextAdmission || error.protocolAdmission || error.readyAdmission) && resumedExecution) await reportFailure(resumedExecution, error, writerLock);
+      if ((error.message === "agent_native_review_blocked" || error.hostLifecycle || error.outputLimit || error.durationLimit || error.contextAdmission || error.protocolAdmission || error.readyAdmission) && resumedExecution) await reportFailure(resumedExecution, error, writerLock);
       else await reportRecovery(pending[0], recoveryReason(error));
     }
     throw error;

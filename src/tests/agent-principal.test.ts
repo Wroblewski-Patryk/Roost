@@ -8,6 +8,11 @@ test("bound credentials admit only known review reads and commands including com
     assert.ok(agentPrincipalRoute("POST", `${prefix}/agent-runtime/tasks/${id}/actions/review`));
     assert.ok(agentPrincipalRoute("POST", `${prefix}/agent-runtime/tasks/${id}/actions/review-return`));
     assert.ok(agentPrincipalRoute("GET", `${prefix}/agent-runtime/tasks/${id}/review`));
+    assert.ok(agentPrincipalRoute("GET", `${prefix}/agent-runtime/releases/${id}`));
+    assert.ok(agentPrincipalRoute("POST", `${prefix}/agent-runtime/releases/${id}/operations`));
+    assert.ok(agentPrincipalRoute("POST", `${prefix}/agent-runtime/releases/${id}/operations/${id}/outcome`));
+    assert.equal(agentPrincipalRoute("POST", `${prefix}/agent-runtime/releases`), false);
+    assert.equal(agentPrincipalRoute("POST", `${prefix}/agent-runtime/releases/${id}/actions/revoke`), false);
     assert.ok(agentPrincipalRoute("GET", `${prefix}/decisions/${id}/governance`));
     assert.ok(agentPrincipalRoute("POST", `${prefix}/decisions/${id}/governance/actions`));
     for (const route of ["/decisions/mandates", "/decisions/governance/proposals", "/decisions/deferrals", "/decisions/reopening-events"]) assert.equal(agentPrincipalRoute("POST",prefix+route),false);
