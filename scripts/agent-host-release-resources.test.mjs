@@ -129,13 +129,25 @@ test("capacity checks actual available disk/memory/load and forbids overlapping 
 });
 test("registered stopped resource is removed once and uncertain result reconciles through read-only absence", windows, async t => {
   const x = fixture(t);
-  assert.deepEqual(x.gateway.ownedResource(x.manifest, x.binding, "owned-network"), { kind: "network", id: RESOURCE });
+  assert.deepEqual(x.gateway.ownedResource(x.manifest, x.binding, "owned-network"), { resourceId: "owned-network", kind: "network", id: RESOURCE, createdAt: DATE });
   assert.deepEqual(await x.gateway.removeResource(x.manifest, x.binding, "owned-network"), { absenceVerified: true, resourceIds: ["owned-network"] });
   const mutations = x.requests.filter(row => row.operation === "remove_resource"); assert.equal(mutations.length, 1);
   assert.ok(mutations[0].command.endsWith(`'${RESOURCE}'`)); assert.ok(!mutations[0].command.includes("--force"));
   assert.equal((await x.gateway.reconcileResource(x.manifest, x.binding, "owned-network")).status, "succeeded");
   await x.gateway.removeResource(x.manifest, x.binding, "owned-network");
   assert.equal(x.requests.filter(row => row.operation === "remove_resource").length, 1);
+});
+
+test("registered image projection preserves identity and creation time required by the release Worker", windows, t => {
+  const x = fixture(t), row = { resourceId: "owned-image", kind: "docker_image", id: IMAGE_ID, createdAt: DATE, temporary: true };
+  x.ledger.resources = [row]; x.manifest.cleanup.ownedResourceIds = [row.resourceId];
+  x.ledger.manifestDigest = releaseContract.releaseDigest(x.manifest); x.binding.manifestDigest = x.ledger.manifestDigest;
+  fs.writeFileSync(x.ownershipFile, JSON.stringify(x.ledger));
+  const gateway = createReleaseResourceGateway(x.config), registered = gateway.ownedResource(x.manifest, x.binding, row.resourceId);
+  assert.deepEqual(registered, { resourceId: row.resourceId, kind: row.kind, id: row.id, createdAt: row.createdAt });
+  assert.equal(Object.isFrozen(registered), true); assert.equal(registered.temporary, undefined);
+  assert.throws(() => gateway.ownedResource(x.manifest, { ...x.binding, releaseId: randomUUID() }, row.resourceId));
+  assert.equal(x.requests.length, 0);
 });
 test("resource ownership/registration conflict preserves resource and does not issue removal", windows, async t => {
   const x = fixture(t); x.state.resource.releaseId = randomUUID();

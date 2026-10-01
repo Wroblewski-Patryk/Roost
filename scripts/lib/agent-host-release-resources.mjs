@@ -161,7 +161,7 @@ export function createReleaseResourceGateway({ sshHost, workspaceRoot, ownership
   const ownedResource = (manifest, binding, id) => { bind(manifest, binding); const row = ownership.resources.find(item => item.resourceId === id);
     check(row, "resource_unregistered");
     check(row.kind !== "coolify_application" || row.id === ownership.targetId, "resource_identity_invalid");
-    return Object.freeze({ kind: row.kind, id: row.id }); };
+    return Object.freeze({ resourceId: row.resourceId, kind: row.kind, id: row.id, createdAt: row.createdAt }); };
   const resource = (manifest, binding, id) => { const registered = ownedResource(manifest, binding, id);
     check(registered.kind !== "coolify_application", "coolify_cleanup_gateway_required");
     const row = ownership.resources.find(item => item.resourceId === id);

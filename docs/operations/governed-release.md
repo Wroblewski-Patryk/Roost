@@ -586,3 +586,19 @@ tests and 57 credential tests, with no skips. A nonce-owned PostgreSQL/HTTP run
 passed both terminalization tests and its adverse authority/result matrix,
 restoring user triggers and removing its owned database after marker verification.
 These checks qualify recovery code, not the missing release certificate.
+
+Deployment `k11wmvhli03t7yufwmkhgb0k` finished at
+`540c29ad52043586d84ec2100774d40e42ac8c73`; health/build returned 200 with
+that exact identity. At 23:38:49 UTC the normal unsigned-coding API reconciled
+the stopped execution. At 23:38:55 UTC normal Writer reclamation rechecked the
+receipt and physical absence, then released the exact dead owner's lock.
+The empty task branch created by that Worker was compensated to the unchanged
+baseline; no model result or application change was accepted. Execution
+`eac347c7-5998-4b06-b9d6-159cd298db5a` was queued with the same Ready pin and
+accepted first-write Decision. Its result remains pending.
+
+Release resource projections now retain registered resource identity and
+creation time. The dedicated release Worker needs both to match its image
+ownership ledger before cleanup; dropping them incorrectly blocked any ledger
+containing images. A focused test binds an actual owned fixture ledger to this
+projection and rejects a foreign release without transport effects.
