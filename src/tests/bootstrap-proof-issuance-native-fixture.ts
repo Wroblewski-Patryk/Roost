@@ -22,7 +22,7 @@ import {createBootstrapProofV3Issuance,type V3OwnerTicketIssuer,type V3BindingSe
 import type {AuthContext} from '../auth/api-key.middleware';
 import {decisionGovernanceCommand,decisionGovernanceView} from '../modules/decisions/decision-governance';
 import {admissionCommand,admissionVersion} from '../modules/agent-runtime/task-risk-admission';
-import {computeRisk} from '../modules/agent-runtime/task-risk-contract';
+import {computeRisk,riskAlgorithm} from '../modules/agent-runtime/task-risk-contract';
 
 // Public source rows and ephemeral signing keys are created only on an owned
 // disposable database. No private key is persisted or printed. Native guards
@@ -245,7 +245,7 @@ export async function probeV3OwnerDecisionApi(db:PrismaClient,
  await db.$executeRaw`INSERT INTO task_risk_assessments(id,workspace_id,task_id,version,source_version,sources,entries,result,joint_rationale,algorithm,actor_user_id,request_id,request_hash)
   VALUES(${randomUUID()}::uuid,${workspaceId}::uuid,${task.id}::uuid,1,task_risk_version(${task.id}::uuid),task_risk_sources(${task.id}::uuid),
    ${JSON.stringify(entries)}::jsonb,${JSON.stringify(result)}::jsonb,'Isolated decision admission',
-   'roost-native-risk-v1',${ownerId}::uuid,${randomUUID()}::uuid,${reviewDigest({entries})})`;
+   ${riskAlgorithm},${ownerId}::uuid,${randomUUID()}::uuid,${reviewDigest({entries})})`;
  const scope=await db.$transaction(async tx=>admissionCommand(tx,workspaceId,task.id,ownerId,'scope',{
   requestId:randomUUID(),expectedVersion:await admissionVersion(tx,task.id),taskType:'review',environment:'development',
   targetId:source.id,releaseId:source.id,commit:'a'.repeat(40),destructive:false,procedureId:procedure.id,
@@ -306,7 +306,7 @@ export async function probeV3OwnerDecisionApi(db:PrismaClient,
  if(!currentRisk)await db.$executeRaw`INSERT INTO task_risk_assessments(id,workspace_id,task_id,version,source_version,sources,entries,result,joint_rationale,algorithm,actor_user_id,request_id,request_hash)
   VALUES(${randomUUID()}::uuid,${workspaceId}::uuid,${task.id}::uuid,(SELECT max(version)+1 FROM task_risk_assessments WHERE task_id=${task.id}::uuid),
    task_risk_version(${task.id}::uuid),task_risk_sources(${task.id}::uuid),${JSON.stringify(entries)}::jsonb,
-   ${JSON.stringify(result)}::jsonb,'Recheck after accepted V3 decision','roost-native-risk-v1',
+   ${JSON.stringify(result)}::jsonb,'Recheck after accepted V3 decision',${riskAlgorithm},
    ${ownerId}::uuid,${randomUUID()}::uuid,${reviewDigest({entries,after:'v3_acceptance'})})`;
  const managedView=await db.$transaction(tx=>decisionGovernanceView(tx,workspaceId,ownerId),
   {isolationLevel:'Serializable',timeout:30000});

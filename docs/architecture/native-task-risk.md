@@ -8,7 +8,7 @@ evidence gates; production stays disabled/observe.
 
 ## Versioned assessment
 
-`roost-native-risk-v1` defines seven mandatory dimensions: money, data, security,
+`roost-native-risk-v2` defines seven mandatory dimensions: money, data, security,
 availability, legal, reversibility and users. For every task in the canonical
 group, the assessor records each dimension's low/medium/high/critical impact,
 rationale and 1–10 current company-record evidence references. Records must have
@@ -19,11 +19,17 @@ explicit evidence-backed assertion; it is never a default.
 
 The API computes the maximum impact and the database independently checks the
 result. The conservative cumulative rule first takes the maximum per dimension,
-then adds one tier for 2–3 related tasks or two tiers for 4–50 tasks, capped at
+then adds one tier for 2–3 related changes or two tiers for 4–50 changes, capped at
 critical. Bounded uncertainty adds another tier, also capped. The final result
 is the maximum of these adjusted dimensions. These are ordinal impact tiers,
 not an estimate of financial loss or a calibrated probability model. Even
 related low-impact tasks require a joint rationale and cumulative assessment.
+
+Complete `inspect-readonly` scopes remain in the full group and all impact and
+uncertainty checks, but are excluded from the count of changes. The server uses
+the actual execution schema and native path rules; SQL independently validates
+the stored immutable contract. Missing, malformed or mutating contracts count
+as changes. Historical v1 assessments remain immutable and conservative.
 
 Unverifiable uncertainty and declared contradictions are retained as an
 append-only Needs decision assessment with no admitting level. Missing fields,

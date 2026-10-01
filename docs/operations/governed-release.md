@@ -231,12 +231,31 @@ this behavior; the regression also denies a write token without deletion scope.
   reconciliation and tamper rejection. The release Worker requires the private
   `imageCleanup.provenanceCacheDirectory` and exact `publicationDigest` for each
   registry version. Native baseline provenance and offline restart passed.
+- Roost build `e29ae06f10e90e049c4aea415e644211060e87ad`, deployed by the
+  existing main-branch webhook as `x7o2g52eowfm6wlmgmhcltsk`, was confirmed by
+  HTTPS build-info and the authenticated Worker-generation catalog. This verifies
+  deployment of these mechanisms, not candidate certification.
 - A bounded human owner/admin Worker-generation catalog supports ordinary
   credential rotation without guessing historical generation metadata. The
-  deployed endpoint and the actual one-use rotation still need verification.
+  endpoint returns the actual expired generation; one-use rotation is pending.
 
 Run `npm run test:agent-host-release`, scoped API/migration checks, the Windows
 managed recovery fixture, `npm run validate`, `npm run codex:check` and the real
 certification path before claiming completion. Resume only Gate 3. The next safe
 step is validating the owner's private prerequisites, obtaining a fresh owner
 session for configuration, and preserving exact identities during installation.
+
+### Cumulative changes and read-only prerequisites
+
+Risk algorithm `roost-native-risk-v2` retains the full related task group,
+source watches, evidence, maximum impact and uncertainty. Only complete
+`inspect-readonly` contracts validated by the execution schema, native path
+rules and read-only permissions are excluded from the count of changes.
+The API derives this from stored immutable scopes; the additive database guard
+independently verifies the same count. Missing or malformed scopes count as
+changes. Historical v1 assessments remain immutable and conservative.
+
+The focused suite passed 15/15, including real local PostgreSQL checks in a
+rolled-back transaction: four audits plus one change remain low, two changes
+escalate to medium, four to high, and forged exemptions or low results are
+rejected. Production classification and managed certification are still pending.

@@ -7,7 +7,7 @@ import { taskDecisionAuthorities } from "../decisions/decision-authority";
 import { loadApplicationAgentContext } from "../product-engineering/application-agent-context";
 import { reviewDigest } from "./task-review-contract";
 import { requireRuntimeContent } from "./runtime-redaction-policy";
-import { computeRisk, riskAlgorithm, riskAssessmentSchema, riskScopeSchema } from "./task-risk-contract";
+import { computeRisk, riskAlgorithm, riskAssessmentSchema, riskScopeSchema, riskScopeIsReadonly } from "./task-risk-contract";
 type Db = Prisma.TransactionClient;
 const object = (v: any): any => v && typeof v === "object" && !Array.isArray(v) ? v : {};
 export const riskInputHash = (input: any) => reviewDigest({ applicationId: input.applicationId, contract: input.contract, prompt: input.prompt ?? null, baseBranch: input.baseBranch ?? null });
@@ -103,7 +103,16 @@ export async function recordRiskAssessment(db: Db, workspaceId: string, taskId: 
     await db.$executeRaw`INSERT INTO task_risk_source_watches(task_id,source_table,predicate) VALUES(${entry.taskId}::uuid,'risk_evidence',${predicate}::jsonb)
       ON CONFLICT(task_id,source_table) DO UPDATE SET predicate=EXCLUDED.predicate`;
   }
-  const result=computeRisk(input.entries), id=randomUUID();
+  // Read exact immutable scopes pinned by the canonical full group. Missing or
+  // malformed contracts conservatively count as changes; callers cannot opt out.
+  const scopes = await db.$queryRaw<any[]>`SELECT id,task_id AS "taskId",input->'contract' AS contract FROM task_risk_scopes
+    WHERE workspace_id=${workspaceId}::uuid AND id IN (${Prisma.join(state.sources.map((s:any)=>Prisma.sql`${s.scopeId}::uuid`))})`;
+  const readonlyTaskIds = new Set<string>();
+  for (const source of state.sources) {
+    const scope = scopes.find(s => s.id === source.scopeId && s.taskId === source.taskId);
+    if (scope && await riskScopeIsReadonly(scope.contract)) readonlyTaskIds.add(source.taskId);
+  }
+  const result=computeRisk(input.entries, readonlyTaskIds), id=randomUUID();
   await db.$executeRaw`INSERT INTO task_risk_assessments(id,workspace_id,task_id,version,source_version,sources,entries,result,joint_rationale,algorithm,actor_user_id,request_id,request_hash)
     VALUES(${id}::uuid,${workspaceId}::uuid,${taskId}::uuid,(SELECT COALESCE(max(version),0)+1 FROM task_risk_assessments WHERE task_id=${taskId}::uuid),${state.sourceVersion},${JSON.stringify(state.sources)}::jsonb,${JSON.stringify(input.entries)}::jsonb,${JSON.stringify(result)}::jsonb,${input.jointRationale},${riskAlgorithm},${userId}::uuid,${input.requestId}::uuid,${hash})`;
   await audit(db,workspaceId,taskId,userId,"assessed",id);
