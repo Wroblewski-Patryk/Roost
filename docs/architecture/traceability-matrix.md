@@ -1321,6 +1321,12 @@ Draft/Needs context/Needs decision remain nonexecuting. No automatic queue/claim
 <a id="e-dec"></a>
 **DEC** — Structured decisions with supersession; no complete authority/impact propagation.
 
+Complete five-task procedure admission and normal owner acceptance were proved
+in production in 23647 ms on build `fac409e5`; all five native evidence records
+passed. [Receipt and scoped transaction tuning](../operations/governed-release.md)
+also record refusal/rollback and replay checks. This configuration acceptance
+grants no execution or release authority; Gate 3 certification remains pending.
+
 [src/modules/decisions/decisions.routes.ts](../../src/modules/decisions/decisions.routes.ts), [web/src/features/departments/decisions-workbench.tsx](../../web/src/features/departments/decisions-workbench.tsx), [prisma/schema.prisma](../../prisma/schema.prisma).
 
 <a id="e-learn"></a>

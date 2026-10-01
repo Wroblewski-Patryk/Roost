@@ -336,4 +336,13 @@ guards remain unchanged. Other transactions retain their prior settings.
 Ten native API checks passed, including local JIT restoration after success
 and rollback, unchanged high/critical gates, stale and concurrent refusals,
 atomic evidence acceptance and replay. Validation and `codex:check` passed.
-Positive full production acceptance must still be proved after deployment.
+Build `fac409e5007bac35bf30e4c536f044bb8f7d9cc2` was pushed by non-forced
+fast-forward. Existing GitHub/Coolify integration started deployment
+`sx606sj625am7fpygtrekl74`; queue reconciliation prevented a duplicate manual
+deployment. It finished with HTTPS health/build-info 200 at this exact commit.
+The reconciled baseline-retention Decision
+`db922cd2-cd36-40da-a9a6-92948d55c38f` then received normal acceptance
+`46b49de8-94f1-4e60-ba27-f74eb19bb32a` for all five affected tasks in
+23647 ms. This Decision grants no execution, credential or release capability.
+Worker credential rotation, managed audits and the release certificate still
+require their separate normal authority and runtime proof.
