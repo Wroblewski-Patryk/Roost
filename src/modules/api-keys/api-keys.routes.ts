@@ -10,7 +10,7 @@ import { asyncHandler } from "../../middleware/async-handler";
 import { sendApiError } from "../../middleware/api-error";
 import { requireWorkspaceRole } from "../../auth/workspace-access";
 import { workerCredentialHandler } from "./worker-credential-http";
-import { createWorkerCredentialService } from "./worker-credential.service";
+import { createWorkerCredentialService, safeWorkerCredential } from "./worker-credential.service";
 import { createPrismaWorkerCredentialStore } from "./worker-credential-store";
 import { productionWorkerHandoffHandler } from "./worker-handoff-http";
 
@@ -157,6 +157,28 @@ apiKeysRouter.get("/agent-credentials", asyncHandler(async (req, res) => {
   if (!requireOwner(req, res)) return;
   res.json({ data: await agentCredentialCatalog(req.auth!.workspaceId) });
 }));
+// Rotation needs the current server generation, including expired credentials.
+// A historical event or local receipt cannot establish the latest binding.
+// Read access follows ordinary human administrator auth; fresh primary-owner
+// authentication remains mandatory for the separate lifecycle command.
+export function workerCredentialCatalogHandler(db: Pick<typeof prisma, "apiKey"> = prisma) {
+ return async (req: Request, res: Response) => {
+  res.setHeader("Cache-Control", "no-store");
+  if (!requireOwner(req, res)) return;
+  const query = z.object({ hostId: z.string().uuid().optional() }).strict().parse(req.query);
+  const rows = await db.apiKey.findMany({
+    where: { workspaceId: req.auth!.workspaceId, boundAgentId: null,
+      workerHostId: query.hostId ?? { not: null } },
+    orderBy: [{ workerBindingEpoch: "desc" }, { createdAt: "desc" }, { id: "desc" }],
+    distinct: ["workerHostId"], take: query.hostId ? 1 : 51,
+  });
+  // Explicit projection omits raw key, verifier hash and prefixes. Even a
+  // revoked/latest generation is retained so callers cannot resurrect an old one.
+  res.json({ data: { schemaVersion: "roost-worker-credential-catalog-v1",
+    credentials: rows.slice(0, 50).map(safeWorkerCredential), truncated: rows.length > 50 } });
+ };
+}
+apiKeysRouter.get("/worker-credentials", asyncHandler(workerCredentialCatalogHandler()));
 apiKeysRouter.post("/agent-credentials", asyncHandler(async (req, res) => {
   if (!requireOwner(req, res)) return;
   const result = await agentCredentialCommand(req.auth!.workspaceId, req.auth!.userId!, "create", null, req.body);

@@ -14,6 +14,7 @@ const ownership = () => ({ schemaVersion: 'roost-release-image-ownership-v1', re
     { resourceId: 'image_vps', kind: 'docker_image', engine: 'vps', imageRepository: repository, imageDigest, imageId,
       createdAt, tags: [], temporary: true },
     { resourceId: 'image_registry', kind: 'ghcr_version', imageRepository: repository, imageDigest, versionId: 456,
+      publicationDigest: imageDigest,
       createdAt, tags: ['candidate'], temporary: true },
   ] });
 
@@ -21,7 +22,7 @@ function fixture() {
   const ledger = ownership(), calls = [], present = { local: true, vps: true, registry: true };
   const state = { ledger, appAbsent: true, lost: null, denied: false, packageMissing: false,
     dockerExtra: {}, versionExtra: {}, packageExtra: {}, repoExtra: {}, userExtra: {},
-    package: { id: 123, package_type: 'container', owner: { login: 'example' }, visibility: 'private',
+    package: { id: 123, name: 'release-cert', package_type: 'container', owner: { login: 'example' }, visibility: 'private',
       repository: { full_name: 'example/release-cert', private: true } } };
   const dockerTransport = async args => {
     calls.push({ ...args });
@@ -53,7 +54,9 @@ function fixture() {
       : { status: 404, body: null };
   };
   const adapter = createReleaseImageCleanup({ ownership: ledger, readOwnership: async () => state.ledger,
-    applicationAbsent: async () => state.appAbsent, dockerTransport, githubCredential: async () => 'fake-sensitive-token', githubTransport });
+    applicationAbsent: async () => state.appAbsent, dockerTransport, githubCredential: async () => 'fake-sensitive-token', githubTransport,
+    registryProof: async args => ({ provenanceVerified: true, publicationDigest: args.publicationDigest, imageDigest: args.imageDigest,
+      imageRepository: args.imageRepository, repositoryUrl: args.repositoryUrl.replace(/\.git$/, ''), memberDigests: [args.imageDigest], ...state.proofExtra }) });
   return { adapter, state, calls, present };
 }
 
@@ -114,7 +117,7 @@ for (const [label, extra] of [
 for (const [label, field, extra] of [
   ['package owner', 'packageExtra', { owner: { login: 'foreign' } }],
   ['public package', 'packageExtra', { visibility: 'public' }],
-  ['unlinked package', 'packageExtra', { repository: null }],
+  ['wrong package name', 'packageExtra', { name: 'shared' }],
   ['foreign linked repository', 'packageExtra', { repository: { full_name: 'example/other', private: true } }],
   ['public repository', 'repoExtra', { private: false }],
   ['wrong actor', 'userExtra', { login: 'other' }],
@@ -122,6 +125,13 @@ for (const [label, field, extra] of [
   const { adapter, state, calls } = fixture(); state[field] = extra;
   await assert.rejects(adapter.removeResource('image_registry'), /github_(package_changed|repository_changed|authority_unproven)/);
   assert.equal(calls.some(row => row.method === 'DELETE'), false);
+});
+test('current REST omission of repository requires OCI source proof; conflicting optional projection is still denied', async () => {
+  const x = fixture(); delete x.state.package.repository;
+  await x.adapter.removeResource('image_registry');
+  const denied = fixture(); delete denied.state.package.repository; denied.state.proofExtra = { provenanceVerified: false };
+  await assert.rejects(denied.adapter.removeResource('image_registry'), /registry_provenance_unproven/);
+  assert.equal(denied.calls.some(row => row.method === 'DELETE'), false);
 });
 test('changed external ledger or unowned resource is rejected before effects', async () => {
   const { adapter, state, calls } = fixture();

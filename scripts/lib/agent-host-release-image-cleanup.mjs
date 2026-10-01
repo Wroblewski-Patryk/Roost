@@ -4,6 +4,7 @@ import https from 'node:https';
 import { z } from 'zod';
 import { hasReleaseProcessScope, runReleaseNativeProcess } from './agent-host-release-process.mjs';
 import os from 'node:os';
+import { createReleaseRegistryProof } from './agent-host-release-registry-proof.mjs';
 
 const image = /^sha256:[a-f0-9]{64}$/;
 const identifier = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$/;
@@ -22,6 +23,7 @@ const resourceSchema = z.discriminatedUnion('kind', [
   z.object({ ...common, kind: z.literal('docker_image'), engine: z.enum(['local', 'vps']),
     imageId: z.string().regex(image), tags: z.array(z.string().min(1).max(400)).max(1) }).strict(),
   z.object({ ...common, kind: z.literal('ghcr_version'), versionId: z.number().int().positive().safe(),
+    publicationDigest: z.string().regex(image),
     tags: z.array(z.string().regex(tag)).max(20) }).strict(),
 ]);
 export const releaseImageOwnershipSchema = z.object({ schemaVersion: z.literal('roost-release-image-ownership-v1'),
@@ -99,7 +101,7 @@ export function githubImageCleanupJson({ path, method, token }) {
 // After an uncertain outcome it must invoke reconcileResource, including after
 // process restart. This adapter never turns observed presence into retry consent.
 export function createReleaseImageCleanup({ ownership, readOwnership, applicationAbsent, dockerTransport,
-  githubCredential, githubTransport = githubImageCleanupJson }) {
+  githubCredential, githubTransport = githubImageCleanupJson, registryProof = createReleaseRegistryProof() }) {
   let owned; try { owned = releaseImageOwnershipSchema.parse(ownership); } catch { fail('ownership_invalid'); }
   const pinned = hash(owned), spent = new Set();
   check(typeof readOwnership === 'function' && typeof applicationAbsent === 'function', 'ownership_gateway_missing');
@@ -157,7 +159,14 @@ export function createReleaseImageCleanup({ ownership, readOwnership, applicatio
     const pkg = await api(packagePath);
     check(pkg.status === 200 && pkg.body?.id === owned.packageId && pkg.body?.package_type === 'container'
       && pkg.body?.owner?.login?.toLowerCase() === owned.registryOwner.toLowerCase() && pkg.body?.visibility === 'private'
-      && pkg.body?.repository?.full_name?.toLowerCase() === fullName.toLowerCase() && pkg.body?.repository?.private === true, 'github_package_changed');
+      && pkg.body?.name === owned.packageName, 'github_package_changed');
+    // GitHub's current container-package REST projection omits repository.
+    // A supplied projection must agree; absence is replaced by immutable OCI
+    // source provenance below, never by a fabricated REST association.
+    if (pkg.body.repository !== undefined && pkg.body.repository !== null) {
+      check(pkg.body.repository.full_name?.toLowerCase() === fullName.toLowerCase()
+        && pkg.body.repository.private === true, 'github_package_changed');
+    }
   };
   const inspectVersion = async row => {
     await registryAccess(); const response = await api(`${packagePath}/versions/${row.versionId}`);
@@ -165,7 +174,19 @@ export function createReleaseImageCleanup({ ownership, readOwnership, applicatio
     const version = response.body;
     check(response.status === 200 && version?.id === row.versionId && version?.name === row.imageDigest
       && version?.created_at === row.createdAt && version?.metadata?.package_type === 'container'
-      && equalSet(version.metadata?.container?.tags, row.tags), 'github_version_changed'); return true;
+      && equalSet(version.metadata?.container?.tags, row.tags), 'github_version_changed');
+    check(typeof registryProof === 'function', 'registry_proof_missing');
+    // The source-selected proof factory may preserve raw immutable OCI bytes
+    // in its private durable cache. Every use hashes and validates the complete
+    // graph again; no JSON receipt boolean grants cleanup authority.
+    let proof;
+    try { proof = await registryProof({ imageRepository: row.imageRepository, publicationDigest: row.publicationDigest,
+      imageDigest: row.imageDigest, repositoryUrl: owned.repositoryUrl, token: await githubCredential() }); }
+    catch { fail('registry_provenance_unproven'); }
+    check(proof?.provenanceVerified === true && proof.publicationDigest === row.publicationDigest
+      && proof.imageDigest === row.imageDigest && proof.imageRepository === row.imageRepository
+      && proof.repositoryUrl === `https://github.com/${fullName}` && proof.memberDigests?.includes(row.imageDigest), 'registry_provenance_unproven');
+    await stable(); return true;
   };
   const inspect = row => row.kind === 'docker_image' ? inspectDocker(row) : inspectVersion(row);
   const evidence = id => ({ absenceVerified: true, resourceIds: [id] });

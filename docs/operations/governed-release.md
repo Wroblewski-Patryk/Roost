@@ -210,11 +210,30 @@ this behavior; the regression also denies a write token without deletion scope.
   were created after absence checks. Baseline commits
   `6f3b070b610a5eb3ebbfd91aa23e534bc9d5524c` and
   `1353fc309df99fe679c8ac155f9ae2ec177053e1` were pushed solely to initialize the
-  disposable target. No application deployment or managed release yet.
+  disposable target. A dual-stack health repair initialized baseline commit
+  `efac14d67f8f8398d133b20723c92c82046dbc33`; baseline deployment
+  `sdn3gz0ehdckey4biy2xubfi` is healthy over verified HTTPS with the exact
+  commit/tree/configuration/schema/synthetic-data identities. Earlier failed
+  bootstrap deployments were inspected before retry. This is baseline
+  initialization, not a managed candidate or release proof.
 - Actual independent candidate acceptance, broker PR/merge/deploy, HTTPS/version,
   observation, controlled regression/rollback and final cleanup/archive remain
   unproven. Gate 3 is not accepted. Private installation receipts contain target
   UUID, URL and ownership details; no real deployment settings are distributed.
+- Production read-back retained the completed Gate 1 execution and Gate 2
+  coding/reviewer executions at the accepted pilot commit. The temporary target
+  has its own Roost application, project, context, roles and published procedures.
+- GHCR REST omits its repository projection. Cleanup instead verifies original
+  immutable OCI manifest/configuration bytes, source label and publication graph.
+  A private cache preserves those exact bytes before deletion and revalidates
+  them after restart; it never stores credentials or accepts a receipt boolean.
+  Focused provenance/cleanup checks: 53/53 passed, including interrupted cleanup
+  reconciliation and tamper rejection. The release Worker requires the private
+  `imageCleanup.provenanceCacheDirectory` and exact `publicationDigest` for each
+  registry version. Native baseline provenance and offline restart passed.
+- A bounded human owner/admin Worker-generation catalog supports ordinary
+  credential rotation without guessing historical generation metadata. The
+  deployed endpoint and the actual one-use rotation still need verification.
 
 Run `npm run test:agent-host-release`, scoped API/migration checks, the Windows
 managed recovery fixture, `npm run validate`, `npm run codex:check` and the real

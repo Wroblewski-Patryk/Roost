@@ -16,13 +16,14 @@ import { readFileSync } from 'node:fs';
 import { physicalIdentity } from './agent-host-native-footprint.mjs';
 import { createHash } from 'node:crypto';
 import { createReleaseBackupGateway } from './agent-host-release-backup.mjs';
+import { createReleaseRegistryProof } from './agent-host-release-registry-proof.mjs';
 
 const target=z.string().regex(/^Roost\/Gate3\/[A-Za-z0-9._-]{1,80}$/),hash=z.string().regex(/^[a-f0-9]{64}$/);
 const url=z.string().url().refine(v=>{const u=new URL(v);return u.protocol==='https:'&&!u.username&&!u.password&&!u.search&&!u.hash&&u.pathname==='/';});
 export const governedReleaseWorkerSchema=z.object({client:releaseClientSchema,githubCredentialTarget:target,coolifyCredentialTarget:target,
  coolify:z.object({origin:url,targetId:z.string().regex(/^[A-Za-z0-9_-]{1,80}$/),candidateConfig:z.record(z.unknown()),rollbackConfig:z.record(z.unknown()),certificateSha256:hash.optional(),healthCertificateSha256:hash.optional()}).strict(),
  resources:z.object({sshHost:z.string().regex(/^[A-Za-z0-9._-]{1,64}$/),workspaceRoot:z.string().min(3),ownershipFile:z.string().min(3)}).strict(),
- imageCleanup:z.object({ownershipFile:z.string().min(3),credentialTarget:target}).strict().optional(),
+ imageCleanup:z.object({ownershipFile:z.string().min(3),credentialTarget:target,provenanceCacheDirectory:z.string().min(3)}).strict().optional(),
  prerequisites:z.object({configurationFile:z.string().min(3),evidenceFile:z.string().min(3)}).strict()}).strict();
 function verifiedBackup(settings){
  const read=filename=>{physicalIdentity(filename,false);const bytes=readFileSync(filename);if(bytes.length>32768)throw Error('release_prerequisites_invalid');return JSON.parse(bytes.toString('utf8').replace(/^\uFEFF/,''));};
@@ -110,7 +111,8 @@ export async function runGovernedReleaseQueueStep({config,baseUrl,hostId,writerL
     return JSON.parse(current);
    },applicationAbsent:async()=>{
     await coolifyHttpsJson({url:`${new URL(settings.coolify.origin).origin}/api/v1/applications/${settings.coolify.targetId}`,method:'GET',expectedStatus:404,token:coolifyKey,certificateSha256:settings.coolify.certificateSha256});return true;
-   },dockerTransport:createFixedDockerImageCleanupTransport({sshHost:settings.resources.sshHost,sudo:false}),githubCredential:async()=>registryKey});
+   },dockerTransport:createFixedDockerImageCleanupTransport({sshHost:settings.resources.sshHost,sudo:false}),githubCredential:async()=>registryKey,
+   registryProof:createReleaseRegistryProof({cacheDirectory:settings.imageCleanup.provenanceCacheDirectory})});
   }
   prepared=await prepareReleaseProcessScope();
   context=beginReleaseWriterCheckpoint({writerLock,state,client:settings.client});
