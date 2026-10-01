@@ -1500,6 +1500,8 @@ pre-release recovery evidence, not a governed release certificate.
 Native baseline auditor `28c85e4a-01de-40d0-a5ed-86bebdb09eac` completed
 with a verified read-only receipt and closed Windows Job; independent Gate 3
 verification and release certification remain pending.
+Expired read-only spawn reconciliation and exact writer reclamation also
+completed on Windows after a later verifier's lease loss; no result was accepted.
 
 [Operations and evidence checkpoint](../operations/governed-release.md),
 [server authority](../../src/modules/agent-runtime/governed-release.ts),

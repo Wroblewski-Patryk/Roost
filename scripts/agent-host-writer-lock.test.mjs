@@ -124,13 +124,20 @@ for (const priorCode of ["code_reviewer_unproven", "managed_admission_blocked"])
   await next.release();
 });
 
-async function retainedReadonlyFixture(t) {
+async function retainedReadonlyFixture(t, { reconciledSpawn = false, kind = "verifier" } = {}) {
   const candidate = { id: "00000000-0000-4000-8000-000000000031", workspaceId: "00000000-0000-4000-8000-000000000032",
     taskId: "00000000-0000-4000-8000-000000000033", applicationId: "00000000-0000-4000-8000-000000000034",
     agentHostId: "00000000-0000-4000-8000-000000000035", status: "failed", attempt: 1, checkpointVersion: 3,
     leaseExpiresAt: null, completedAt: new Date().toISOString(), codexThreadId: null, finalResponse: null, changedFiles: [],
     checkpoint: { schemaVersion: "roost-recovery-v1", stage: "spawn_intent", sessionId: null,
       packetRevision: "revision", workspaceDigest: "digest", contextRevision: "context" } };
+  if (reconciledSpawn) {
+    Object.assign(candidate, { leaseToken: null, contextInvalidatedAt: null, summary: null, verification: {},
+      metadata: { executionContract: { nativeBoundary: { profile: "inspect-readonly", inspectReadOnly: { kind } },
+        access: { sandbox: "read-only", tools: ["repository_read"], permissions: ["repository_read"] },
+        singleTask: { branch: "main" } }, readyContextPin: { revision: "1".repeat(64), riskAdmissionCommit: "a".repeat(40) } } });
+    Object.assign(candidate.checkpoint, { packetRevision: "2".repeat(64), workspaceDigest: "3".repeat(64), contextRevision: "4".repeat(64) });
+  }
   const leaseName = `application-${nativeDigest(candidate.applicationId)}.lease`;
   const directory = await fixture(t, ["owned-test-lease-link", leaseName]);
   const script = `import { acquireWriterLock } from './scripts/lib/agent-host-writer-lock.mjs'; import { acquireApplicationLease } from './scripts/lib/agent-host-application-lease.mjs'; const lock=await acquireWriterLock(${JSON.stringify(directory)}); await lock.checkpoint({...${JSON.stringify(candidate)},checkpoint:{...${JSON.stringify(candidate.checkpoint)},sessionId:lock.sessionId}}); acquireApplicationLease({writerLock:lock,applicationId:${JSON.stringify(candidate.applicationId)},attempt:${JSON.stringify(candidate.id)},runtime:{required:false,ports:[]}});`;
@@ -142,6 +149,12 @@ async function retainedReadonlyFixture(t) {
   candidate.errorState = { code: "agent_readonly_terminal_reconciled", details: {
     priorCode: "managed_admission_blocked", checkpointStage: "spawn_intent", checkpointSessionId: candidate.checkpoint.sessionId,
     writerLockDigest: createHash("sha256").update(writerBytes).digest("hex"), nativeProcessesAbsent: true, pilotBaselineUnchanged: true,
+    applicationLease: { state: "retained", digest: createHash("sha256").update(leaseBytes).digest("hex") } } };
+  if (reconciledSpawn) candidate.errorState = { code: "agent_readonly_spawn_reconciled", retryable: false, details: {
+    schemaVersion: "roost-readonly-spawn-reconciliation-v1", checkpointStage: "spawn_intent",
+    checkpointSessionId: candidate.checkpoint.sessionId, checkpointVersion: candidate.checkpointVersion,
+    baselineCommit: "a".repeat(40), baselineBranch: "main", repositoryDigest: "5".repeat(64), attestationDigest: "6".repeat(64),
+    writerLockDigest: createHash("sha256").update(writerBytes).digest("hex"), observedAt: candidate.completedAt,
     applicationLease: { state: "retained", digest: createHash("sha256").update(leaseBytes).digest("hex") } } };
   return { directory, candidate, lockPath, leasePath, writerBytes, leaseBytes, record: JSON.parse(leaseBytes) };
 }
@@ -202,6 +215,55 @@ test("generic pre-signature failure cannot retire a retained application lease",
   const generic = { ...f.candidate, errorState: { code: "managed_admission_blocked", details: { phase: "backend_evidence_persist" } } };
   const next = await acquireWriterLock(f.directory, { terminalCandidates: [generic] });
   assert.deepEqual(await readFile(f.leasePath), f.leaseBytes);
+  await next.release();
+});
+
+for (const kind of ["auditor", "verifier", "code-reviewer"]) test(`expired readonly ${kind} spawn receipt releases only its exact retained lease and dead-owner Writer`, { skip: process.platform !== "win32" }, async t => {
+  const f = await retainedReadonlyFixture(t, { reconciledSpawn: true, kind });
+  // The real nonterminal API receipt deliberately has no priorCode/process
+  // fields: its request schema already required literal true observations.
+  assert.equal(f.candidate.errorState.details.priorCode, undefined);
+  assert.equal(f.candidate.errorState.details.nativeProcessesAbsent, undefined);
+  const next = await acquireWriterLock(f.directory, { terminalCandidates: [f.candidate] });
+  await assert.rejects(lstat(f.leasePath), { code: "ENOENT" });
+  await next.release();
+});
+
+test("readonly spawn receipt rejects missing authority, coding access, results and foreign lease without retiring either file", { skip: process.platform !== "win32" }, async t => {
+  const f = await retainedReadonlyFixture(t, { reconciledSpawn: true });
+  const deny = async candidate => {
+    await assert.rejects(acquireWriterLock(f.directory, { terminalCandidates: [candidate] }), /agent_host_writer_locked/);
+    assert.deepEqual(await readFile(f.lockPath), f.writerBytes);
+    assert.deepEqual(await readFile(f.leasePath), f.leaseBytes);
+  };
+  for (const patch of [{ schemaVersion: "foreign" }, { checkpointSessionId: "foreign" }, { checkpointVersion: 4 },
+    { writerLockDigest: "0".repeat(64) }, { repositoryDigest: undefined }, { attestationDigest: undefined },
+    { baselineCommit: "b".repeat(40) }, { baselineBranch: "foreign" }, { observedAt: "unobserved" },
+    { observedAt: new Date(Date.parse(f.candidate.completedAt) + 10_000).toISOString() },
+    { applicationLease: { state: "released", absent: true } }, { applicationLease: { state: "retained", digest: "0".repeat(64) } }]) {
+    const candidate = structuredClone(f.candidate); Object.assign(candidate.errorState.details, patch); await deny(candidate);
+  }
+  for (const mutate of [
+    c => { c.metadata = undefined; }, c => { c.metadata.executionContract.nativeBoundary.profile = "coding-local"; },
+    c => { c.metadata.executionContract.nativeBoundary.inspectReadOnly.kind = "unknown"; },
+    c => { c.metadata.executionContract.access.sandbox = "workspace-write"; },
+    c => { c.metadata.executionContract.access.tools.push("repository_write"); },
+    c => { c.metadata.executionContract.access.permissions.push("deployment"); },
+    c => { c.metadata.readyContextPin.revision = undefined; }, c => { c.metadata.resultRevision = { commit: "a".repeat(40) }; },
+    c => { c.summary = "result"; }, c => { c.verification = { passed: true }; }, c => { c.changedFiles = ["release.json"]; },
+    c => { c.finalResponse = "result"; }, c => { c.codexThreadId = "thread"; }, c => { c.leaseToken = "active-lease"; },
+    c => { c.contextInvalidatedAt = new Date().toISOString(); }, c => { c.errorState.retryable = true; },
+    c => { c.errorState.code = "agent_execution_recovery_blocked"; }
+  ]) { const candidate = structuredClone(f.candidate); mutate(candidate); await deny(candidate); }
+  const foreignBytes = Buffer.from(JSON.stringify({ ...f.record, writer: "00000000-0000-4000-8000-000000000099" }));
+  await writeFile(f.leasePath, foreignBytes);
+  const foreign = structuredClone(f.candidate);
+  foreign.errorState.details.applicationLease.digest = createHash("sha256").update(foreignBytes).digest("hex");
+  await assert.rejects(acquireWriterLock(f.directory, { terminalCandidates: [foreign] }), /agent_host_writer_locked/);
+  assert.deepEqual(await readFile(f.lockPath), f.writerBytes); assert.deepEqual(await readFile(f.leasePath), foreignBytes);
+  await writeFile(f.leasePath, f.leaseBytes);
+  await unlink(f.leasePath); // Same exact receipt also reconciles uncertain prior lease unlink.
+  const next = await acquireWriterLock(f.directory, { terminalCandidates: [f.candidate] });
   await next.release();
 });
 

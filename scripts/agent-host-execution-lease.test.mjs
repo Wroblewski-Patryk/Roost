@@ -114,6 +114,66 @@ test("a delayed managed-admission heartbeat can be confirmed before the extended
   h.lease.assertValid();
 });
 
+test("a managed boundary drains an earlier pending heartbeat and requires a new serialized RPC", async () => {
+  const h = harness(); await h.lease.refresh(); h.setTime(20_000);
+  let resolveOld, calls = 0, active = 0, maximumActive = 0;
+  h.setRenew(async () => {
+    calls += 1; active += 1; maximumActive = Math.max(maximumActive, active);
+    try {
+      if (calls === 1) return await new Promise(resolve => { resolveOld = resolve; });
+      return { leaseExpiresAt: new Date(1_800_000_000_000 + 130_000 + 180_000).toISOString() };
+    } finally { active -= 1; }
+  });
+  const earlier = h.lease.refresh(); h.setTime(100_000);
+  const boundary = h.lease.refreshConfirmed();
+  assert.equal(calls, 1);
+  h.setTime(130_000);
+  resolveOld({ leaseExpiresAt: new Date(1_800_000_000_000 + 310_000).toISOString() });
+  await earlier; await boundary;
+  assert.equal(calls, 2); assert.equal(maximumActive, 1);
+  assert.equal(h.lease.remainingMs, 175_000);
+  assert.deepEqual(h.losses, []);
+});
+
+test("a granted earlier heartbeat cannot stand in for a failed fresh boundary RPC", async () => {
+  const h = harness(); await h.lease.refresh(); h.setTime(20_000);
+  let resolveOld, calls = 0;
+  h.setRenew(() => {
+    calls += 1;
+    if (calls === 1) return new Promise(resolve => { resolveOld = resolve; });
+    throw { status: 503 };
+  });
+  const earlier = h.lease.refresh(); h.setTime(100_000);
+  const boundary = h.lease.refreshConfirmed();
+  h.setTime(130_000); resolveOld({ leaseExpiresAt: new Date(1_800_000_000_000 + 310_000).toISOString() });
+  await earlier;
+  await assert.rejects(boundary, /lease_refresh_unconfirmed/);
+  assert.equal(calls, 2); assert.equal(h.lease.remainingMs, 65_000);
+});
+
+for (const outcome of ["expired", "cancelled"]) test(`draining an earlier ${outcome} heartbeat never starts a replacement RPC`, async () => {
+  const h = harness(); await h.lease.refresh(); h.setTime(20_000);
+  let resolveOld, calls = 0;
+  h.setRenew(() => { calls += 1; return new Promise(resolve => { resolveOld = resolve; }); });
+  const earlier = h.lease.refresh(); h.setTime(100_000);
+  const boundary = h.lease.refreshConfirmed();
+  h.setTime(outcome === "expired" ? 176_000 : 130_000);
+  resolveOld({ leaseExpiresAt: new Date(1_800_000_000_000 + 360_000).toISOString(), cancelRequested: outcome === "cancelled" });
+  await earlier;
+  await assert.rejects(boundary, outcome === "expired" ? /lease_expired/ : /cancel_requested/);
+  assert.equal(calls, 1); assert.equal(h.losses.length, 1);
+});
+
+test("lease expiry diagnostics contain only bounded counters and durations", async () => {
+  const h = harness(); await h.lease.refresh(); h.setTime(20_000);
+  h.setRenew(async () => { throw { status: 503 }; });
+  await h.lease.refresh(); h.expire();
+  assert.deepEqual(h.lease.failure.details, { confirmationCount: 1, lastRequestElapsedMs: 0,
+    lastConfirmedRemainingMs: 175_000, currentMonotonicRemainingMs: 0 });
+  for (const value of Object.values(h.lease.failure.details)) assert.ok(Number.isFinite(value));
+  assert.deepEqual(h.losses, ["agent_execution_lease_expired"]);
+});
+
 test("late renewal cannot revive authority even before the timer callback runs", async () => {
   const h = harness();
   await h.lease.refresh();

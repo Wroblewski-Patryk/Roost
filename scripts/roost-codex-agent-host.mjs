@@ -447,7 +447,10 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       guardHostContent(launchAuthority.fresh, "required", [apiKey, claimed.leaseToken]);
       assertFreshExecutionContext(contextRevision, launchAuthority.fresh, claimed);
       readyContext.assertReadyContext(launchAuthority.fresh.taskContext, launchAuthority.fresh.applicationContext, claimed);
-      await duration.wait(lease.refresh());
+      // A periodic heartbeat begun before these awaited checks is not the
+      // final launch confirmation. Obtain a new serialized renewal here;
+      // its original deadline still cannot be revived by a late response.
+      await duration.wait(lease.refreshConfirmed());
     }
     if (config.executionProvider?.kind === fixed.kind)
       launchOptions.containmentReceipt = prepareFixedHostContainment(launchOptions, launchAuthority);

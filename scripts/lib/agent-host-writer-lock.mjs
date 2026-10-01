@@ -63,6 +63,36 @@ async function reclaimBeforeSpawn(directory, candidate) {
   } finally { await gate.close(); await unlink(gatePath); }
 }
 
+function reconciledReadOnlySpawn(item, checkpoint, writerBytes) {
+  const error = item?.errorState, details = error?.details;
+  const contract = item?.metadata?.executionContract, pin = item?.metadata?.readyContextPin;
+  const hash = value => /^[a-f0-9]{64}$/.test(value ?? "");
+  return item?.status === "failed" && item.leaseToken === null && item.contextInvalidatedAt === null
+    && error?.code === "agent_readonly_spawn_reconciled" && error.retryable === false
+    && details?.schemaVersion === "roost-readonly-spawn-reconciliation-v1"
+    && details.checkpointStage === "spawn_intent" && details.checkpointSessionId === checkpoint.sessionId
+    && details.checkpointVersion === item.checkpointVersion
+    && details.writerLockDigest === createHash("sha256").update(writerBytes).digest("hex")
+    && hash(details.repositoryDigest) && hash(details.attestationDigest)
+    && /^[a-f0-9]{40}$/.test(details.baselineCommit ?? "")
+    && typeof details.baselineBranch === "string" && details.baselineBranch.length > 0 && details.baselineBranch.length <= 240
+    && Number.isFinite(Date.parse(details.observedAt)) && Date.parse(details.observedAt) <= Date.parse(item.completedAt)
+    && hash(checkpoint.packetRevision) && hash(checkpoint.contextRevision) && hash(checkpoint.workspaceDigest)
+    && checkpoint.branch === undefined && checkpoint.headCommit === undefined
+    && contract?.nativeBoundary?.profile === "inspect-readonly"
+    && ["auditor", "verifier", "code-reviewer"].includes(contract.nativeBoundary.inspectReadOnly?.kind)
+    && contract?.access?.sandbox === "read-only"
+    && contract.access.tools?.length === 1 && contract.access.tools[0] === "repository_read"
+    && contract.access.permissions?.length === 1 && contract.access.permissions[0] === "repository_read"
+    && contract.singleTask?.branch === details.baselineBranch
+    && hash(pin?.revision) && pin.riskAdmissionCommit === details.baselineCommit
+    && item.summary === null && item.codexThreadId === null && item.finalResponse === null
+    && Array.isArray(item.changedFiles) && item.changedFiles.length === 0
+    && (item.verification === null || item.verification && typeof item.verification === "object"
+      && !Array.isArray(item.verification) && Object.keys(item.verification).length === 0)
+    && item.metadata.resultRevision == null;
+}
+
 // Only the live in-process Writer capability may publish this durable release
 // barrier. Torn writes deliberately fail closed, like ordinary checkpoints.
 export function persistReleaseWriterCheckpoint(lock, checkpoint) {
@@ -107,6 +137,7 @@ async function reclaimTerminalBeforeSpawn(directory, candidates) {
       && Number.isFinite(Date.parse(item.completedAt))
       && JSON.stringify(localCheckpoint(item)) === JSON.stringify(checkpoint)
       && (["claimed", "branch_intent", "branch_ready", "prepared"].includes(checkpoint?.stage)
+        || checkpoint?.stage === "spawn_intent" && reconciledReadOnlySpawn(item, checkpoint, bytes)
         || checkpoint?.stage === "spawn_intent" && item?.errorState?.code === "agent_readonly_terminal_reconciled"
           && ["code_reviewer_unproven", "managed_admission_blocked"].includes(item.errorState?.details?.priorCode)
           && item.errorState?.details?.checkpointStage === "spawn_intent"
@@ -124,7 +155,7 @@ async function reclaimTerminalBeforeSpawn(directory, candidates) {
           && Array.isArray(item.changedFiles) && item.changedFiles.length === 0));
     if (!candidate || observeWindowsProcessIdentity(current.ownerPid) !== null) throw new Error("agent_host_writer_locked");
     let retainedLease = null;
-    if (checkpoint?.stage === "spawn_intent" && candidate.errorState?.code === "agent_readonly_terminal_reconciled") {
+    if (checkpoint?.stage === "spawn_intent" && ["agent_readonly_terminal_reconciled", "agent_readonly_spawn_reconciled"].includes(candidate.errorState?.code)) {
       // A failed read-only boundary can retain its application reservation.
       // Only the normal terminal reconciliation receipt may retire that exact
       // lease; generic failures and coding checkpoints grant no lease cleanup.

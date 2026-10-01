@@ -466,3 +466,30 @@ boundary causes as well. Nested observation failures and changed snapshots
 previously became a generic `unproven` error in these pre-launch stages.
 Focused physical-repository fixtures cover that loss of diagnostics without
 changing the admission checks, command allowlist, observation scope or timeouts.
+
+Deployment `q13g5wmz4tyft98wek55uaef` finished at
+`a97d97c8a72f61a26296de2260ca7848033647d9`, with exact HTTPS health/build
+read-back. Verifier `b2c6fab4-a191-4b8f-9dcc-227831ca0870` passed signed
+admission but lost its local lease before an accepted result. A later server
+expiry is not proof that the Worker accepted that heartbeat locally. Earlier
+pending renewal and synchronous preparation are possible causes; the exact
+timing of that failure was not retained.
+
+The existing expired read-only spawn reconciliation changed the execution to
+`failed/agent_readonly_spawn_reconciled`. At 2026-10-01 22:00:29 UTC, normal
+writer reclamation consumed the full current API receipt, checked the exact
+read-only contract/Ready/baseline/session/version/no-result bindings and original
+dead process, and verified local release. The signed pair was retired without
+changing bytes (backend digest
+`a0b28cbcd8e0b18a61ab9125ac6dd2477beb20094a7ab48078402c6882881a6b`).
+The baseline was unchanged, with no accepted result or pinned native process.
+Use the full reconcile response or execution read-back: the recovery catalog
+projection does not contain this receipt's contract metadata.
+
+Confirmed renewal now drains an earlier pending heartbeat, checks the original
+deadline and obtains a new serialized RPC. The last managed launch boundary
+requires that confirmation after context/Ready reads. The 180-second maximum,
+five-second cleanup reserve, 45-second confirmation minimum and refusal to
+revive expired authority remain unchanged. Bounded counters/durations aid
+expiry diagnostics. These changes still require native continuation; they do
+not establish a completed second canary or release certificate.

@@ -14,10 +14,21 @@ export function createExecutionLease({ renew, onLost, now = () => performance.no
   let failure;
   let disposed = false;
   let confirmations = 0;
+  let requestStarted;
+  let lastRequestElapsedMs;
+  let lastConfirmedRemainingMs;
+  const boundedMs = value => Number.isFinite(value) ? Math.max(-maximumLeaseMs, Math.min(maximumLeaseMs, Math.floor(value))) : undefined;
 
   function lose(code) {
     if (failure || disposed) return;
     failure = Object.assign(code instanceof Error ? code : new Error(code), { leaseLost: true });
+    if (failure.message === "agent_execution_lease_expired") failure.details = {
+      confirmationCount: Math.min(confirmations, 1_000_000),
+      ...(requestStarted !== undefined || lastRequestElapsedMs !== undefined
+        ? { lastRequestElapsedMs: boundedMs(requestStarted !== undefined ? now() - requestStarted : lastRequestElapsedMs) } : {}),
+      ...(lastConfirmedRemainingMs !== undefined ? { lastConfirmedRemainingMs: boundedMs(lastConfirmedRemainingMs) } : {}),
+      currentMonotonicRemainingMs: boundedMs(deadline ? deadline - now() : 0)
+    };
     clearTimer(expiryTimer);
     clearTimer(renewalTimer);
     onLost(failure);
@@ -38,6 +49,7 @@ export function createExecutionLease({ renew, onLost, now = () => performance.no
   async function renewOnce() {
     if (failure || disposed) return;
     const started = now();
+    requestStarted = started;
     try {
       const result = await renew();
       if (failure || disposed) return;
@@ -47,6 +59,7 @@ export function createExecutionLease({ renew, onLost, now = () => performance.no
       const remaining = Math.min(Date.parse(result?.leaseExpiresAt) - wallNow(), maximumLeaseMs - (now() - started)) - stopMarginMs;
       if (!Number.isFinite(remaining) || remaining <= 0) return lose("agent_execution_lease_invalid");
       deadline = now() + remaining;
+      lastConfirmedRemainingMs = remaining;
       confirmations += 1;
       clearTimer(expiryTimer);
       expiryTimer = setTimer(() => lose("agent_execution_lease_expired"), remaining);
@@ -57,6 +70,8 @@ export function createExecutionLease({ renew, onLost, now = () => performance.no
       // Transient outages never extend the last confirmed lease; initial failure forbids spawn.
       if (!deadline || now() >= deadline) lose("agent_execution_lease_expired");
     } finally {
+      lastRequestElapsedMs = now() - started;
+      requestStarted = undefined;
       if (!failure && !disposed) {
         clearTimer(renewalTimer);
         renewalTimer = setTimer(() => { void refresh(); }, heartbeatMs);
@@ -72,6 +87,14 @@ export function createExecutionLease({ renew, onLost, now = () => performance.no
   return {
     refresh,
     async refreshConfirmed(minimumRemainingMs = 45_000) {
+      // A heartbeat started before this boundary is not its requested fresh
+      // confirmation. Drain all earlier work, then serialize a new request;
+      // expiry/cancellation remains terminal even if its late reply was granted.
+      while (pending) {
+        await pending;
+        assertValid();
+      }
+      if (deadline || failure || disposed) assertValid();
       const before = confirmations;
       await refresh();
       assertValid();
