@@ -602,3 +602,24 @@ creation time. The dedicated release Worker needs both to match its image
 ownership ledger before cleanup; dropping them incorrectly blocked any ledger
 containing images. A focused test binds an actual owned fixture ledger to this
 projection and rejects a foreign release without transport effects.
+
+### Native certification candidate (2026-10-02)
+
+Execution `eac347c7-5998-4b06-b9d6-159cd298db5a` completed at
+23:48:22 UTC with clean local commit `de6ebe7a4267078196534a36f73ff9bccb09d3ae`,
+tree `467fcad81f5676c80ffbf37d2f30a6ef4ba85827`. Worker/Hermes changed only
+`release.json` to version 2.0.0 with delayed failure after 30 seconds. The fixed
+three native tests passed. Signed admission, installation verification and
+`verified_candidate` native review passed; the Windows Job closed with root exit
+0, no active processes and verified cleanup. Roost retained the exact result.
+Independent managed review and release certification remain pending.
+
+The coding procedures now also publish a separate `review_decision` contract,
+with the verifier role and repository-read authority only. The exact selection,
+full five-task risk assessment and admission evidence precede the independent
+review grant. This configuration grants no source write, push or deployment.
+
+Image cleanup accepts an immutable Docker digest alias only when it equals the
+recorded repository and digest. Foreign or changed aliases remain refused.
+The root rerun passed all 39 focused image-cleanup tests with no skips. These
+are component checks, not live cleanup certification.

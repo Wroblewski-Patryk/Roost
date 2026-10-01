@@ -116,7 +116,8 @@ export function createReleaseImageCleanup({ ownership, readOwnership, applicatio
   'duplicate_resource');
   for (const row of owned.resources) {
     check(row.imageRepository === repository, 'image_repository_changed');
-    if (row.kind === 'docker_image') check(row.tags.every(ref => ref.startsWith(`${repository}:`) && tag.test(ref.slice(repository.length + 1))), 'docker_tag_unowned');
+    if (row.kind === 'docker_image') check(row.tags.every(ref => ref === `${repository}@${row.imageDigest}`
+      || (ref.startsWith(`${repository}:`) && tag.test(ref.slice(repository.length + 1)))), 'docker_tag_unowned');
   }
   const stable = async () => {
     let current; try { current = releaseImageOwnershipSchema.parse(await readOwnership()); } catch { fail('ownership_changed'); }

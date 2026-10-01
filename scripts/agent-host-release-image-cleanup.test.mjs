@@ -18,8 +18,8 @@ const ownership = () => ({ schemaVersion: 'roost-release-image-ownership-v1', re
       createdAt, tags: ['candidate'], temporary: true },
   ] });
 
-function fixture() {
-  const ledger = ownership(), calls = [], present = { local: true, vps: true, registry: true };
+function fixture(ledger = ownership()) {
+  const calls = [], present = { local: true, vps: true, registry: true };
   const state = { ledger, appAbsent: true, lost: null, denied: false, packageMissing: false,
     dockerExtra: {}, versionExtra: {}, packageExtra: {}, repoExtra: {}, userExtra: {},
     package: { id: 123, name: 'release-cert', package_type: 'container', owner: { login: 'example' }, visibility: 'private',
@@ -66,6 +66,30 @@ test('removes exact local and VPS images only, verifies each absence and retains
   const removes = calls.filter(row => row.operation === 'remove');
   assert.deepEqual(removes, [{ operation: 'remove', engine: 'local', imageId }, { operation: 'remove', engine: 'vps', imageId }]);
   assert.equal(present.registry, true);
+});
+for (const engine of ['local', 'vps']) test(`accepts ${engine} Docker immutable digest alias only when it equals the owned digest reference`, async () => {
+  const ledger = ownership(), row = ledger.resources.find(item => item.kind === 'docker_image' && item.engine === engine);
+  row.tags = [`${repository}@${imageDigest}`];
+  const { adapter, state, calls } = fixture(ledger); state.dockerExtra = { tags: row.tags };
+  assert.deepEqual(await adapter.removeResource(row.resourceId), { absenceVerified: true, resourceIds: [row.resourceId] });
+  assert.deepEqual(calls.filter(item => item.operation === 'remove'), [{ operation: 'remove', engine, imageId }]);
+});
+for (const [label, alias] of [
+  ['foreign repository', `ghcr.io/example/shared@${imageDigest}`],
+  ['different digest', `${repository}@sha256:${'c'.repeat(64)}`],
+  ['missing digest algorithm', `${repository}@${'a'.repeat(64)}`],
+  ['alias suffix', `${repository}@${imageDigest}:candidate`],
+]) test(`rejects ledger digest alias with ${label} before calling a gateway`, () => {
+  const ledger = ownership(); ledger.resources.find(row => row.resourceId === 'image_vps').tags = [alias];
+  assert.throws(() => fixture(ledger), /docker_tag_unowned/);
+});
+test('preserves owned digest alias image when Docker reports an added or changed alias', async () => {
+  for (const tags of [[`${repository}@sha256:${'c'.repeat(64)}`], [`${repository}@${imageDigest}`, `${repository}:shared`]]) {
+    const ledger = ownership(); ledger.resources.find(row => row.resourceId === 'image_vps').tags = [`${repository}@${imageDigest}`];
+    const { adapter, state, calls } = fixture(ledger); state.dockerExtra = { tags };
+    await assert.rejects(adapter.removeResource('image_vps'), /docker_identity_changed/);
+    assert.equal(calls.some(row => row.operation === 'remove'), false);
+  }
 });
 test('deletes only the exact GHCR version, verifies absence, never deletes the package', async () => {
   const { adapter, calls } = fixture();
