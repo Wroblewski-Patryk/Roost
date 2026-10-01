@@ -14389,6 +14389,11 @@ test("decision governance atomically records explicit human procedure evidence a
   rationale:"Verified the fixture's exact published procedure composition",
   validation:"Read the selected base and application extension against the task scope",
   observedResult:"Published procedure steps cover the actual fixture decision impact"};
+ const full=await read(),projection=await request(url+"?version=1",{headers:f.auth});assert.equal(projection.status,200);
+ const versionOnly=(projection.body as any).data;
+ assert.equal(versionOnly.expectedVersion,full.expectedVersion);assert.equal(versionOnly.current,full.current);assert.equal(versionOnly.canAccept,full.canAccept);
+ assert.deepEqual(versionOnly.impact,full.impact);assert.equal(versionOnly.previews[0].id,full.previews[0].id);
+ assert.equal("gates" in versionOnly,false);assert.equal("authorityCatalog" in versionOnly,false);
  const evidenceRows=()=>prisma.$queryRaw<any[]>`SELECT id,task_id,operation,gate,evidence_id,evidence_revision,verdict,detail,source_version,dependency_version FROM task_admission_evidence WHERE workspace_id=${f.workspaceId}::uuid AND task_id=${f.task.id}::uuid AND operation='decision_supersede' AND gate='procedure' ORDER BY version`;
  const events=()=>prisma.event.findMany({where:{workspaceId:f.workspaceId,OR:[{type:"task_risk_admission_evidence",taskId:f.task.id},{type:"decision_governance_recorded",resourceId:p.id}]},orderBy:{id:"asc"}});
  const beforeRows=await evidenceRows(),beforeEvents=await events();
@@ -14402,10 +14407,10 @@ test("decision governance atomically records explicit human procedure evidence a
  assert.equal((await read()).acceptance,null);
 
  // A valid explicit failed verdict is inserted through the normal command,
- // then refused by the native admission view. The savepoint rolls back that
- // inserted gate and its event rather than keeping partial acceptance evidence.
+ // then refused by the final native acceptance guard. The enclosing transaction
+ // rolls back that inserted gate and its event; compact writes claim no seal.
  const failed=await f.post(url+"/actions",await input({procedureEvidence:{...procedureEvidence,verdict:"failed",observedResult:"The inspected procedure does not cover the requested fixture operation"}}));
- assert.equal(failed.status,409,JSON.stringify(failed.body));assert.equal((failed.body as any).error,"risk_admission_required");
+ assert.equal(failed.status,409,JSON.stringify(failed.body));assert.equal((failed.body as any).error,"decision_risk_admission_required");
  assert.deepEqual(await evidenceRows(),beforeRows);assert.deepEqual(await events(),beforeEvents);
  assert.equal((await read()).acceptance,null);
 

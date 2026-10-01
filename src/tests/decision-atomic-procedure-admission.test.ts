@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { decisionAction, decisionDeferral, decisionProposal, reopeningEvent } from "../modules/decisions/decision-governance-contract";
+import { decisionAction, decisionActionTimeout, decisionDeferral, decisionProposal, reopeningEvent } from "../modules/decisions/decision-governance-contract";
 import { decisionGovernanceCommand } from "../modules/decisions/decision-governance";
 import { reviewDigest } from "../modules/agent-runtime/task-review-contract";
+import { admissionCommand } from "../modules/agent-runtime/task-risk-admission";
 
 const id=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,"0")}`;
 const workspaceId=id(1),ownerId=id(2),decisionId=id(3),previewId=id(4);
@@ -43,7 +44,7 @@ function fixture(options:{taskIds?:string[];blockedTask?:string;missingTask?:str
    if(sql.includes("decision_current_impact"))return [{value:impact}];
    if(sql.includes("AS version"))return [{version:"c".repeat(64)}];
    if(sql.includes("SELECT request_hash")||sql.includes("SELECT id,request_hash"))return [];
-   if(sql.includes("task_admission_view"))return [{value:values[0]===options.blockedTask?{status:"blocked",seal:null}:{status:"admitted",seal:"d".repeat(64)}}];
+   if(sql.includes("task_admission_view"))throw new Error("Compact evidence must not probe or claim an admission seal");
    if(sql.includes("FROM tasks")||sql.includes("FROM api_keys"))return [];
    throw new Error(`Unexpected query in fixture: ${sql}`);
   },
@@ -53,7 +54,7 @@ function fixture(options:{taskIds?:string[];blockedTask?:string;missingTask?:str
    else if(sql==="ROLLBACK TO SAVEPOINT decision_acceptance_evidence")({evidenceRows,events,acceptances}=saved);
    else if(sql.includes("INSERT INTO task_admission_evidence"))evidenceRows.push({id:values[0],taskId:values[2],operation:values[4],gate:values[5],evidenceId:values[13],detail:JSON.parse(values[16])});
    else if(sql.includes("INSERT INTO decision_acceptances")){
-    if(options.nativeFailure)throw new Error("decision_risk_admission_required");
+    if(options.nativeFailure||options.blockedTask&&taskIds.includes(options.blockedTask)||evidenceRows.some(row=>row.detail.verdict==="failed"))throw new Error("decision_risk_admission_required");
     acceptances.push({id:values[0],decisionId:values[1],previewId:values[3]});
    }
    return 1;
@@ -65,7 +66,7 @@ function fixture(options:{taskIds?:string[];blockedTask?:string;missingTask?:str
   try{return await decisionGovernanceCommand(db,workspaceId,actor,"action",{requestId:id(20),expectedVersion,action:"accept",previewId,procedureEvidence,...overrides},decisionId);}
   catch(error){({evidenceRows,events,acceptances}=before);throw error;}
  };
- return {run,calls,expectedVersion,taskIds,rows:()=>({evidenceRows,events,acceptances})};
+ return {run,db,calls,expectedVersion,taskIds,rows:()=>({evidenceRows,events,acceptances})};
 }
 
 test("explicit procedure evidence is bounded, complete and allowed only for acceptance",()=>{
@@ -104,6 +105,18 @@ test("one human acceptance records normal procedure gates for every expanded imp
  assert.ok(order.indexOf("accept")>order.lastIndexOf("evidence"));
 });
 
+test("only structurally valid explicit-proof acceptance receives the bounded transaction budget",()=>{
+ const action={requestId:id(20),expectedVersion:"a".repeat(64),action:"accept",previewId,procedureEvidence};
+ assert.equal(decisionActionTimeout(action),90_000);
+ assert.equal(decisionActionTimeout({...action,procedureEvidence:undefined}),20_000);
+ assert.equal(decisionActionTimeout({...action,action:"review_impact"}),20_000);
+ for(const body of [null,{}, {...action,requestId:"invalid"},{...action,procedureEvidence:{...procedureEvidence,validation:""}},
+  {...action,timeoutMs:3600000},{...action,timeout:3600000}]){
+  assert.equal(decisionAction.safeParse(body).success,false);
+  assert.equal(decisionActionTimeout(body),20_000);
+ }
+});
+
 test("stale version or noncurrent preview rejects before any procedure write",async()=>{
  for(const override of [{expectedVersion:"f".repeat(64)},{previewId:id(99)}]){
   const f=fixture();assert.deepEqual(await f.run(override),{error:"decision_stale"});
@@ -117,21 +130,32 @@ test("agent cannot attach human procedure evidence",async()=>{
  assert.equal(f.rows().evidenceRows.length,0);assert.equal(f.rows().acceptances.length,0);
 });
 
-test("a later task rejection rolls back every earlier normal evidence and its event",async()=>{
- for(const options of [{blockedTask:id(12)},{missingTask:id(12)}]){
-  const f=fixture(options),result:any=await f.run();
-  assert.equal(result.error,options.blockedTask?"risk_admission_required":"task_not_found");
-  assert.deepEqual(f.rows(),{evidenceRows:[],events:[],acceptances:[]});
-  assert.ok(f.calls.some(c=>c.sql==="ROLLBACK TO SAVEPOINT decision_acceptance_evidence"));
-  assert.equal(f.calls.some(c=>c.sql.includes("INSERT INTO decision_acceptances")),false);
- }
+test("a missing later task rolls back every earlier normal evidence and its event",async()=>{
+ const f=fixture({missingTask:id(12)}),result:any=await f.run();
+ assert.equal(result.error,"task_not_found");
+ assert.deepEqual(f.rows(),{evidenceRows:[],events:[],acceptances:[]});
+ assert.ok(f.calls.some(c=>c.sql==="ROLLBACK TO SAVEPOINT decision_acceptance_evidence"));
+ assert.equal(f.calls.some(c=>c.sql.includes("INSERT INTO decision_acceptances")),false);
 });
 
 test("native acceptance guard failure propagates and rolls back the enclosing transaction",async()=>{
- const f=fixture({nativeFailure:true});await assert.rejects(f.run(),/decision_risk_admission_required/);
- assert.equal(f.calls.filter(c=>c.sql.includes("INSERT INTO task_admission_evidence")).length,5);
- assert.ok(f.calls.some(c=>c.sql.includes("INSERT INTO decision_acceptances")));
- assert.deepEqual(f.rows(),{evidenceRows:[],events:[],acceptances:[]});
+ for(const [options,override] of [[{nativeFailure:true},{}],[{blockedTask:id(12)},{}],[{},
+  {procedureEvidence:{...procedureEvidence,verdict:"failed",observedResult:"Required procedure coverage failed verification"}}]] as const){
+  const f=fixture(options);await assert.rejects(f.run(override),/decision_risk_admission_required/);
+  assert.equal(f.calls.filter(c=>c.sql.includes("INSERT INTO task_admission_evidence")).length,5);
+  assert.ok(f.calls.some(c=>c.sql.includes("INSERT INTO decision_acceptances")));
+  assert.deepEqual(f.rows(),{evidenceRows:[],events:[],acceptances:[]});
+ }
+});
+
+test("internal compact evidence returns a record identity without claiming admission or probing a seal",async()=>{
+ for(const verdict of ["passed","failed"]){
+  const f=fixture(),result:any=await admissionCommand(f.db,workspaceId,id(10),ownerId,"evidence",{
+   ...procedureEvidence,verdict,requestId:id(21),expectedVersion:"c".repeat(64),operation:"decision_supersede",gate:"procedure"},{compact:true});
+  assert.deepEqual(Object.keys(result).sort(),["evidenceId","operation"]);
+  assert.equal(result.evidenceId,f.rows().evidenceRows[0].id);assert.equal(result.operation,"decision_supersede");
+  assert.equal(f.calls.some(c=>c.sql.includes("task_admission_view")),false);
+ }
 });
 
 test("expanded impacts are never truncated to the evidence or caller-selected task",async()=>{

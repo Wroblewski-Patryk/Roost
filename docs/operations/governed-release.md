@@ -301,3 +301,25 @@ native admission versions and evidence history, and the Decision remained
 proposed. This proves atomic refusal in production; it does not prove a
 successful rotation, model execution or release. Fresh owner authentication
 is required before continuing those prepared operations.
+
+The subsequent complete positive impact returned `task_ready_context_conflict`
+under the ordinary 20-second transaction budget; native
+read-back confirmed no acceptance or credential change. Read-only production
+`EXPLAIN ANALYZE` measured approximately 246 ms for admission source,
+2430 ms for dependencies and 5086 ms for one admission view. Internal compact
+evidence now returns only its record identity, without a status or seal claim.
+The unchanged final native acceptance guard performs the complete admission
+check, avoiding duplicate probes. Explicit structurally valid acceptance with
+procedure evidence has a fixed 90-second Serializable transaction budget;
+other operations retain 20 seconds. Callers cannot choose these durations.
+Conflict diagnostics contain only error code, SQLSTATE and elapsed/budget
+times. Authority, evidence, independence, freshness and rollback rules are
+unchanged. Every uncertain attempt is read back before any new request.
+`GET /v1/decisions/:id/governance?version=1` returns the same current impact,
+authority eligibility, preview and optimistic version without the display-only
+gate probes or catalogs. Native API checks verify equivalence with the full
+view. This keeps short HTTPS handoff and fresh-owner windows usable while
+acceptance still validates every task in the complete native transaction.
+Eleven focused tests, seven native API tests and the additional projection API
+case pass; local validation and `codex:check` pass. Full positive production
+impact and the governed release certificate remain pending.

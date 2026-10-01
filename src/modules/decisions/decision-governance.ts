@@ -33,8 +33,16 @@ async function state(db:Db,w:string,actor:ReviewActor|null,id?:string){
  const expectedVersion=reviewDigest({u,role,principal,ownerUserId,authority,revisions:revisions.map(r=>[r.decision_id,r.state]),previews:previews.map(p=>p.id),acceptance:acceptance?.id,deferrals:deferrals.map(f=>[f.id,f.event_id]),references,impact});
  return {u,principal,role,ownerUserId,authority,revisions,selected,previews,acceptance,deferrals,references,impact,expectedVersion};
 }
-export async function decisionGovernanceView(db:Db,w:string,actor:ReviewActor|null,id?:string){
+export async function decisionGovernanceView(db:Db,w:string,actor:ReviewActor|null,id?:string,options:{versionOnly?:boolean}={}){
  const s=await state(db,w,actor,id);if("error" in s)return s;const u=s.u;
+ if(options.versionOnly){
+  const data={expectedVersion:s.expectedVersion,canWrite:s.role==="owner"&&u===s.ownerUserId,
+   canAccept:!!s.principal&&"principal" in (s.authority??{})&&(s.authority as any).principal?.kind===s.principal.kind&&(s.authority as any).principal?.id===s.principal.id,
+   selected:s.selected?{decisionId:s.selected.decision_id,state:s.selected.state}:null,
+   previews:s.previews.slice(0,1).map(p=>({id:p.id,version:p.version})),acceptance:s.acceptance?{id:s.acceptance.id}:null,impact:s.impact,
+   current:!!s.impact&&!!s.previews[0]&&reviewDigest(s.impact)===reviewDigest(s.previews[0].impact)&&(!s.previews[0].authority||reviewDigest(s.authority)===reviewDigest(s.previews[0].authority))};
+  requireRuntimeContent(data,"decision.read",{workspaceId:w});return data;
+ }
  const authorityCatalog=await mandateView(db,w,actor??undefined);
  const catalog=id?[]:await db.task.findMany({where:{workspaceId:w},select:{id:true,title:true},orderBy:{id:"asc"},take:101});
  const resourceCatalog=id?[]:await db.resource.findMany({where:{workspaceId:w},select:{id:true,name:true},orderBy:{id:"asc"},take:101});
@@ -74,10 +82,10 @@ async function acceptanceProcedureEvidence(db:Db,w:string,u:string,input:any,imp
  for(const taskId of tasks){
   const admitted=await admissionCommand(db,w,taskId,u,"evidence",{...input.procedureEvidence,
    requestId:randomUUID(),expectedVersion:await admissionVersion(db,taskId),operation:"decision_supersede",gate:"procedure"},{compact:true});
-  if("error" in admitted){
+  if(("error" in admitted&&typeof admitted.error==="string")||!("evidenceId" in admitted)||typeof admitted.evidenceId!=="string"){
    await db.$executeRaw`ROLLBACK TO SAVEPOINT decision_acceptance_evidence`;
    await db.$executeRaw`RELEASE SAVEPOINT decision_acceptance_evidence`;
-   return {error:admitted.error};
+   return {error:"error" in admitted&&typeof admitted.error==="string"?admitted.error:"risk_admission_receipt_required"};
   }
   records.push({taskId,evidenceId:admitted.evidenceId});
  }

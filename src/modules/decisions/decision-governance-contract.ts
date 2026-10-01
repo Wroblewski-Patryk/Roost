@@ -86,6 +86,12 @@ export const decisionProcedureEvidence=admissionEvidenceSchema.options[0]
 export const decisionAction=z.object({requestId:uuid,expectedVersion:hash,action:z.enum(["review_impact","accept"]),previewId:uuid.optional(),grantIds:z.array(z.object({taskId:uuid,grantId:uuid}).strict()).min(1).max(200).optional(),procedureEvidence:decisionProcedureEvidence.optional()}).strict().superRefine((v,c)=>{
  if(v.procedureEvidence&&v.action!=="accept")c.addIssue({code:"custom",message:"Procedure evidence requires a human acceptance action"});
 });
+// Full impact admission has a bounded larger transaction budget. Every other
+// action retains the ordinary Ready budget; no caller controls this duration.
+export function decisionActionTimeout(body:unknown):20000|90000 {
+ const parsed=decisionAction.safeParse(body);
+ return parsed.success&&parsed.data.action==="accept"&&parsed.data.procedureEvidence?90000:20000;
+}
 export const reopenCondition=z.discriminatedUnion("type",[
   z.object({type:z.literal("resource_available"),referenceId:uuid}).strict(),
   z.object({type:z.literal("configuration_changed"),referenceId:uuid}).strict(),

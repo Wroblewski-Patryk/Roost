@@ -43,7 +43,7 @@ export async function admissionCommand(db: Db, workspaceId: string, taskId: stri
   const prior=await db.$queryRaw<any[]>`SELECT id,request_hash FROM ${table} WHERE workspace_id=${workspaceId}::uuid AND request_id=${input.requestId}::uuid`;
   if(prior[0]) {
     if(prior[0].request_hash!==hash)return {error:"risk_admission_request_conflict"};
-    if(options.compact&&kind==="evidence")return {evidenceId:prior[0].id,operation:admissionEvidenceSchema.parse(input).operation,...await riskLevelAdmission(db,taskId,admissionEvidenceSchema.parse(input).operation),replayed:true};
+    if(options.compact&&kind==="evidence")return {evidenceId:prior[0].id,operation:admissionEvidenceSchema.parse(input).operation,replayed:true};
     return {...await admissionView(db,workspaceId,taskId,userId),replayed:true};
   }
   if(input.expectedVersion!==await admissionVersion(db,taskId)) return {error:"risk_admission_stale"};
@@ -64,6 +64,8 @@ export async function admissionCommand(db: Db, workspaceId: string, taskId: stri
       task_admission_source(${taskId}::uuid),task_admission_dependencies(${taskId}::uuid,${e.operation},${e.gate}),${e.evidence.id}::uuid,${e.evidence.revision}::timestamptz,${e.verdict},${JSON.stringify(detail)}::jsonb,${userId}::uuid,${requestId}::uuid,${hash})`;
   }
   await db.event.create({data:{workspaceId,taskId,type:`task_risk_admission_${kind}`,source:"roost",actorType:"user",actorId:userId,resourceType:`task_admission_${kind}`,resourceId:id,payload:{id,policy:"roost-native-risk-admission-v1"}}});
-  if (options.compact && kind === "evidence") return { evidenceId:id, operation:admissionEvidenceSchema.parse(input).operation, ...await riskLevelAdmission(db,taskId,admissionEvidenceSchema.parse(input).operation) };
+  // This internal receipt makes no admission claim. Its atomic caller must use
+  // the unchanged native acceptance guard for every affected task's seal.
+  if (options.compact && kind === "evidence") return { evidenceId:id, operation:admissionEvidenceSchema.parse(input).operation };
   return admissionView(db,workspaceId,taskId,userId);
 }

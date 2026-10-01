@@ -35,8 +35,9 @@ export async function submissionVersion(db: Prisma.TransactionClient, workspaceI
   const revision = readyContextRevision({ ...wire(context), executionPacket: { contract: null, sources: [] } }, wire(application ?? {}), {});
   return digest({ revision, applicationId: applicationId ?? null, updatedAt: context.task.updatedAt, readiness: context.task.executionReadiness, riskVersion:await riskContextVersion(db,taskId), admissionVersion:await admissionVersion(db,taskId),compositionVersion:await compositionVersion(db,taskId) });
 }
-export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T | { error: string }> {
-  try { return await prisma.$transaction(work, { isolationLevel: "Serializable", maxWait: 5000, timeout: 20000 }); }
+export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) => Promise<T>, options: { timeoutMs?: 20000 | 90000 } = {}): Promise<T | { error: string }> {
+  const startedAt=Date.now(),timeoutMs=options.timeoutMs??20000;
+  try { return await prisma.$transaction(work, { isolationLevel: "Serializable", maxWait: 5000, timeout: timeoutMs }); }
   catch (error) {
     if(error instanceof Error && /^finding_[a-z_]+$/.test(error.message))return {error:error.message};
     const nativeDiagnostic = error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2010" ? String(error.meta?.message ?? "") : error instanceof Prisma.PrismaClientUnknownRequestError ? error.message : "";
@@ -57,7 +58,10 @@ export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) =
     const scopeError=nativeDiagnostic.match(/\btask_(?:single_scope_required|scope_split_required|scope_shared_cause_required|roles_required)\b/)?.[0];
     if(scopeError)return {error:scopeError};
     if (error instanceof Prisma.PrismaClientKnownRequestError && (["P2034", "P2028"].includes(error.code) ||
-      error.code === "P2010" && ["40001", "40P01"].includes(String(error.meta?.code)))) return { error: "task_ready_context_conflict" };
+      error.code === "P2010" && ["40001", "40P01"].includes(String(error.meta?.code)))) {
+      console.warn("Ready transaction conflict",{code:error.code,sqlstate:error.code==="P2010"?String(error.meta?.code):null,elapsedMs:Date.now()-startedAt,timeoutMs});
+      return { error: "task_ready_context_conflict" };
+    }
     // Native routes intentionally suppress raw exception text. Keep a bounded,
     // value-free diagnostic for unexpected failures so a live Ready error can
     // be located without logging task context, SQL arguments or credentials.
