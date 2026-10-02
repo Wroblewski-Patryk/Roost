@@ -1,8 +1,98 @@
 # Governed release operation and evidence
 
 This is the component contract for Gate 3. The active delivery state and scope
-remain in [implementation](../implementation.md). Gate 3 is **in progress**.
-Provisioning, unit checks and harmless native fixtures do not certify release.
+remain in [implementation](../implementation.md). Gate 3 is **certified on the
+temporary target** (2026-10-02). Gate 4 has not started.
+
+## Current certification — 2026-10-02
+
+The normal Windows Worker/Hermes managed coder produced
+`de6ebe7a4267078196534a36f73ff9bccb09d3ae` (tree
+`467fcad81f5676c80ffbf37d2f30a6ef4ba85827`) after two read-only baseline
+canaries and the owner's separate first-write Decision. Three candidate tests
+passed; its native execution `eac347c7-5998-4b06-b9d6-159cd298db5a` closed
+the owned Windows Job. Independent managed review
+`154d5cc2-904b-4413-9947-4820ee413648` accepted that exact commit. A separate
+managed release audit completed before owner grant
+`21585a17-79ca-4623-aa63-4018f1d03965`. Changed-commit admission returned 409;
+read-back proved no grant was created for the changed commit.
+
+The release broker pushed the declared branch, opened PR 1, published the
+independent Roost review and merged the exact accepted SHA into private main.
+An uncertain merge was reconciled as succeeded at 10:28:59 UTC without repeating
+the effect. Repository visibility stayed private; this is the configured broker
+path on GitHub Free, not a claim of native protected-branch enforcement against
+an administrator acting outside that path.
+
+Candidate deployment `wx4xo4bq7he5a8i48xhmpbq0` was queued exactly once.
+A normal controller stop preserved its sealed Writer checkpoint and all sixteen
+closed native children, including twelve in authenticated compacted history.
+Normal restart qualified the same grant and journal for read-only reconciliation.
+Thirteen actual HTTPS samples proved the exact candidate running, initially
+healthy and then failed after its configured 30-second fault. HTTP remained 200;
+the application health payload correctly caused rejection. Deployment intent
+`0ad8fc8b-2842-4647-b470-2d7dcbc54ece` reconciled as failed at 10:52:35 UTC,
+without another deployment POST. This proves the Gate 2 recovery repair on the
+real release path, not merely a native fixture.
+
+The broker restored the compatible baseline image/configuration/schema through
+rollback deployment `dzy2y8t689far4zowki7hte4`. Actual runtime and HTTPS health
+matched baseline commit `efac14d67f8f8398d133b20723c92c82046dbc33`, image
+`sha256:4041c6fb25be80c38312636fcb4061bab9140c5395ff7ceff483a1a27d4d8de6`,
+configuration `bb9d56deb636c365af9f7c6f1a260a4740fcb2df5c7045f33c51973b46a0cbbf`
+and schema `386748e356d86b4b02641516c71b6249de9853286efe6840c5b5cb4a347e6f00`.
+Rollback succeeded at 10:54:44 UTC and a 64-second healthy observation completed
+at 10:56:16 UTC. Synthetic data digest
+`efbd6a7dcb4c8700082c53a57beda905fbf38b40e29fdcba72b304fee7b9e889`
+stayed unchanged throughout failure and recovery. The target had no database or
+business data; this does not claim a production database rollback. Separately,
+the prerequisite encrypted production PostgreSQL backup/isolated restore proved
+schema, row and sequence parity, authenticated read-back and restore database
+absence; its separate key and off-device owner acknowledgement remain private.
+
+Final read-only cleanup intent `980dd672-10cb-4b52-ba68-5fbffe15dd64`
+succeeded at 11:24:05 UTC. It proved absence of all sixteen owned resources:
+one Coolify application, nine registry versions, four local images and two VPS
+images. The exact temporary repository was archived, the clean owned canonical
+clone removed, and shared networks, volumes, services and other repositories
+preserved. The authoritative journal has 34 resolved operations and status
+`completed`; historical absent/failed attempts are retained.
+
+Roost ApplicationEvidence `e3bac90e-be97-4592-82e0-783180267af5` is **verified**,
+with reference `roost:gate3:release:21585a17-79ca-4623-aa63-4018f1d03965:certificate:v1`
+and payload digest `a27e5b585f4879dd5624ca1e68faef7da6948dd60088605d694cca92d3e212a2`.
+It contains typed journal, native execution, independent acceptance, interruption,
+backup/restore, health, rollback and cleanup proofs. Archived test records retain
+the certificate; Task Events and EvidenceRecords retain operation projections.
+Credentials, recovery codes and private installation paths are not in the record.
+
+Root checks passed `npm run test:agent-host-release`, including actual Windows
+Git/Job/crash/reclaim checks, plus focused cleanup/provenance tests and standard
+typecheck/build/lint/routes/documentation checks. The standard release suite's
+optional PostgreSQL integration case was skipped without its environment; the
+separate disposable PostgreSQL migration and real HTTP authority checks passed
+without skips. These tests supplement the actual release proof above.
+
+### Implementation commit inventory
+
+Gate 3 source/operations history follows Gate 2 commit
+`1f7f94aa77856a66e60c1d2f3cd1eaa813cdba9e`. In chronological order, the
+reviewable Roost commits through the final code repair are:
+
+`0618d00e`, `26d70006`, `e29ae06f`, `3289ab2b`, `d37e8bbe`, `0735f324`,
+`4c567478`, `c729f89a`, `fac409e5`, `7034eee5`, `dec8fe4b`, `4784c1e5`,
+`2ed64c2e`, `593df37e`, `a97d97c8`, `2f9c511a`, `98df6776`, `fc4ce855`,
+`323ca3d6`, `540c29ad`, `2aafac10`, `08f8685e`, `654b42c1`, `4b00ec65`,
+`4dd973bc`, `d16e1303`, `1a326ade`, `73e68dba`, `14cefae3`, `dcad6a85`,
+`f6161d27`, `d33da1db`, `41b4ffe2`, `51ad22a7`.
+
+The final code commit is `51ad22a76f4dcb83dac2440e0b5f8491d5ff8f31`.
+These are bootstrap implementation commits; the managed test application commit
+and its separate deployment/recovery identities are recorded above. The final
+documentation commit and exact deployed Roost build are read back separately at
+handoff. Git history and the historical checkpoints below retain individual
+deployment outcomes, including unsuccessful attempts; no failed queue is treated
+as a deployed-version proof.
 
 ## Authority and execution
 
@@ -73,7 +163,7 @@ Keep visibility private. The broker restricts publication to the declared task
 branch and a candidate with exactly one parent equal to the accepted base.
 A COMMENT records the independent Roost acceptance; it does not impersonate a
 second GitHub reviewer. A non-forced fast-forward must close the PR as merged at
-the **same** approved SHA. This behavior still needs the real certification test;
+the **same** approved SHA. The certification above proves this exact path;
 tree equality cannot substitute a different merge SHA. Operator admin authority
 outside the managed mechanism is not a broker capability.
 
@@ -146,8 +236,8 @@ journal prefix. Restart after this barrier permits reconciliation only until the
 fresh journal proves all outcomes resolved. A crash during a child, missing
 receipt, changed journal/key or torn checkpoint retains ownership. Closed receipts
 compact into an authenticated bounded history, without relying on historical PID
-reuse. This repair has native crash/restart evidence; external release certification
-remains pending.
+reuse. Native crash/restart checks and the real interrupted candidate deployment
+above prove this repair for the certified path.
 
 A normal controller stop also retains the sealed Writer when the broker records
 an uncertain outcome. It exits before another effect; restart must qualify the
@@ -194,7 +284,11 @@ catalog/DELETE precondition; concurrent owner/admin publication outside the
 managed mechanism is outside this guarantee. Never enable the option for a
 shared or previously existing package.
 
-## Evidence checkpoint — 2026-10-01
+## Historical evidence checkpoints — 2026-10-01 to 2026-10-02
+
+The checkpoints below record earlier incomplete states and repairs. Their pending
+or next-action statements are superseded by the current certification above;
+they are retained as historical evidence, not an active work queue.
 
 - Live Roost public health/build-info: HTTP 200, build
   `1f7f94aa77856a66e60c1d2f3cd1eaa813cdba9e`. Authenticated prior evidence read-back

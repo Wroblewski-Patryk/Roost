@@ -1157,39 +1157,39 @@ stays disabled and the canonical host stays observe.
 | [RF-SEC-010](../product/requirements.md#rf-sec-010) | P0 | brak | [HEALTH](#e-health) | No generic application-health contract runner. |
 | [RF-SEC-011](../product/requirements.md#rf-sec-011) | P0 | częściowo działa | [IDEMP](#e-idemp) | Some provider inbox/execution CAS dedup exists; universal operation receipts absent. |
 | [RF-SEC-012](../product/requirements.md#rf-sec-012) | P0 | częściowo działa | [INCIDENT](#e-incident) | Exact native capability suspension, independent versioned remediation verification, explicit owner restore and manual-intervention reread/replan are enforced. General risk classification and external broker containment remain absent. |
-| [RF-RES-001](../product/requirements.md#rf-res-001) | P0 | częściowo działa | [RELEASE](#e-release) | Private ownership manifest binds the exact clone, application, image digests and resources; native certification remains pending. |
-| [RF-RES-002](../product/requirements.md#rf-res-002) | P0 | częściowo działa | [RELEASE](#e-release) | Ownership-aware cleanup has native local Git and adapter checks; real target cleanup remains pending. |
+| [RF-RES-001](../product/requirements.md#rf-res-001) | P0 | częściowo działa | [RELEASE](#e-release) | Private ownership manifest binds exact clone, application, image digests and sixteen resources; real Gate 3 registration and absence proof pass. Broader portfolio inventory remains outside this proof. |
+| [RF-RES-002](../product/requirements.md#rf-res-002) | P0 | częściowo działa | [RELEASE](#e-release) | Real broker cleanup removed sixteen owned test resources and the exact canonical clone, archived the private repository and retained evidence; shared resources were preserved. |
 | [RF-RES-003](../product/requirements.md#rf-res-003) | P0 | częściowo działa | [BACKUP](#e-backup), [RELEASE](#e-release) | Shared volumes/network deletion and global Docker cleanup are disabled; unknown resources are preserved. Certification target has no business data or persistent storage. |
-| [RF-RES-004](../product/requirements.md#rf-res-004) | P0 | częściowo działa | [BACKUP](#e-backup) | Verified backup promotion and compatible immutable rollback are implemented and tested; production encrypted backup/restore passes; release observation remains pending. |
-| [RF-RES-005](../product/requirements.md#rf-res-005) | P0 | częściowo działa | [BACKUP](#e-backup) | Real local and production PostgreSQL dump/restore, schema/data/sequence parity, encrypted read-back, owner acknowledgment and owned restore database cleanup pass. Exact release rollback certification remains pending; see [Gate 3 evidence](../operations/governed-release.md). |
+| [RF-RES-004](../product/requirements.md#rf-res-004) | P0 | częściowo działa | [BACKUP](#e-backup), [RELEASE](#e-release) | Verified backup promotion, production encrypted backup/restore and real compatible immutable rollback with 64-second healthy observation pass. The temporary target has no database or business data. |
+| [RF-RES-005](../product/requirements.md#rf-res-005) | P0 | częściowo działa | [BACKUP](#e-backup), [RELEASE](#e-release) | Real local and production PostgreSQL dump/restore, schema/data/sequence parity, encrypted read-back, owner acknowledgment and owned restore database cleanup pass. Gate 3 additionally proves exact image/config/schema rollback with unchanged synthetic data; no production database rollback is claimed. |
 | [RF-RES-006](../product/requirements.md#rf-res-006) | P1 | częściowo działa | [BACKUP](#e-backup) | Interactive owner setup generates a code once and stores only a salted hash/acknowledgement. Actual owner/off-device acknowledgment passes; recovery code stays outside Roost records. |
-| [RF-RES-007](../product/requirements.md#rf-res-007) | P0 | częściowo działa | [RELEASE](#e-release) | Broker checks disk/memory/load/Docker and overlapping Coolify deployments before effects; shared scheduling and native certification remain unproven. |
+| [RF-RES-007](../product/requirements.md#rf-res-007) | P0 | częściowo działa | [RELEASE](#e-release) | Broker checked disk/memory/load/Docker and overlapping Coolify deployments on the real target before effects. General shared scheduling remains unproven. |
 | [RF-RES-008](../product/requirements.md#rf-res-008) | P1 | działa | [GOV](#e-gov) | Boundary retained; no new cleanup mechanism. |
-| [RF-REL-001](../product/requirements.md#rf-rel-001) | P0 | częściowo działa | [RELEASE](#e-release) | Native private GitHub Free push/PR/review/exact merge passed without visibility changes; deployment/recovery certification remains pending. |
+| [RF-REL-001](../product/requirements.md#rf-rel-001) | P0 | częściowo działa | [RELEASE](#e-release) | Native private GitHub Free branch/commit/push/PR/independent Roost review/exact merge and deployment/recovery pass without visibility changes. Broker protection does not restrict administrator actions outside the managed path. |
 | [RF-REL-002](../product/requirements.md#rf-rel-002) | P0 | działa | [GOV](#e-gov) | Governing prohibition retained. |
-| [RF-REL-003](../product/requirements.md#rf-rel-003) | P0 | częściowo działa | [REVIEW](#e-review), Gate 2 native evidence above | Separate managed read-only reviewer rejected three exact commits and approved corrected commit `774e858ae48d1f05d2b56982a7113da983f62af8` through a scoped credential and Roost Decision. Release review/certification remains unproven. |
-| [RF-REL-004](../product/requirements.md#rf-rel-004) | P0 | częściowo działa | [RELEASE](#e-release) | Fresh production owner grant `21585a17-79ca-4623-aa63-4018f1d03965` binds exact native candidate, independent review and release audit; changed commit refused with 409 and read-back proves absence. Managed publication/recovery remains pending. |
-| [RF-REL-005](../product/requirements.md#rf-rel-005) | P0 | częściowo działa | [RELEASE](#e-release) | Bootstrap workflow exists; native completion gate absent. |
-| [RF-REL-006](../product/requirements.md#rf-rel-006) | P0 | częściowo działa | [RELEASE](#e-release) | Baseline-aware observation verifies exact live image/config/schema/tree/data and elapsed window; actual deployment observation remains pending. |
-| [RF-REL-007](../product/requirements.md#rf-rel-007) | P0 | częściowo działa | [RELEASE](#e-release) | Immutable OCI identity comes from the running container and independently inspected labels; compatible rollback manifest is tested, not yet certified live. |
-| [RF-REL-008](../product/requirements.md#rf-rel-008) | P0 | częściowo działa | [RELEASE](#e-release) | Journaled rollback configuration/deploy/observation is implemented; controlled failure and real rollback remain pending. |
+| [RF-REL-003](../product/requirements.md#rf-rel-003) | P0 | częściowo działa | [REVIEW](#e-review), [RELEASE](#e-release) | Gate 2 independently rejected three commits and accepted corrected local pilot `774e858ae48d1f05d2b56982a7113da983f62af8`. Gate 3 independently accepted exact test candidate `de6ebe7a4267078196534a36f73ff9bccb09d3ae` and used that acceptance through release/recovery. General qualification lifecycle remains outside this proof. |
+| [RF-REL-004](../product/requirements.md#rf-rel-004) | P0 | częściowo działa | [RELEASE](#e-release) | Owner grant `21585a17-79ca-4623-aa63-4018f1d03965` binds exact native candidate, independent review and separate release audit; changed commit refused with 409 and absence read-back. Normal same-grant renewal and real publication/recovery pass. |
+| [RF-REL-005](../product/requirements.md#rf-rel-005) | P0 | częściowo działa | [RELEASE](#e-release) | Real governed Git/deployment/health flow reached completed certification after controlled rollback and cleanup. This certifies the temporary target, not pilot release. |
+| [RF-REL-006](../product/requirements.md#rf-rel-006) | P0 | częściowo działa | [RELEASE](#e-release) | Real candidate health transition and 64-second healthy rollback observation verify exact live image/config/schema/tree/data and elapsed window. Broader continuous monitoring remains separate. |
+| [RF-REL-007](../product/requirements.md#rf-rel-007) | P0 | częściowo działa | [RELEASE](#e-release) | Actual container/OCI inspection proved candidate and compatible prior image/config/schema; real rollback and observation passed. Artifact absence during pause was repaired by pulling the same immutable identity. |
+| [RF-REL-008](../product/requirements.md#rf-rel-008) | P0 | częściowo działa | [RELEASE](#e-release) | Broker detected controlled candidate failure, deployed exact compatible baseline and proved health plus full observation; data digest remained unchanged. Real business-data rollback is outside this no-database target. |
 | [RF-REL-009](../product/requirements.md#rf-rel-009) | P1 | brak | [HEALTH](#e-health) | No continuous multi-app monitoring worker. |
-| [RF-REL-010](../product/requirements.md#rf-rel-010) | P0 | brak | [HEALTH](#e-health) | No verified per-app safety certification. |
-| [RF-REL-011](../product/requirements.md#rf-rel-011) | P0 | częściowo działa | [TEST](#e-test), Gate 2 native evidence above | Worker enforced focused Windows candidate test before local commit; supplemental read-only POSIX test passed and independent reviewer cited both. General risk-based test selection and release gate remain unproven. |
+| [RF-REL-010](../product/requirements.md#rf-rel-010) | P0 | częściowo działa | [RELEASE](#e-release) | Verified safety certificate exists for the temporary minimal target, including controlled failure, recovery and owned cleanup. Other applications remain uncertified. |
+| [RF-REL-011](../product/requirements.md#rf-rel-011) | P0 | częściowo działa | [TEST](#e-test), [RELEASE](#e-release), Gate 2 native evidence above | Worker enforced candidate tests before local commit and independent review. Gate 3 required native read-only baseline/verifier/release audit and actual deployment/recovery checks. General risk-based test selection remains unproven. |
 | [RF-REL-012](../product/requirements.md#rf-rel-012) | P1 | brak | [TEST](#e-test) | Bootstrap skill workflow exists; native enforcement absent. |
-| [RF-REL-013](../product/requirements.md#rf-rel-013) | P0 | częściowo działa | [TEST](#e-test) | API tests exist; compatibility release gate incomplete. |
-| [RF-REL-014](../product/requirements.md#rf-rel-014) | P0 | częściowo działa | [RELEASE](#e-release) | Actual uncertain merge reconciled through restarted Windows Worker, sealed HMAC/closed native children and GitHub read-back, without repeating merge; deployment recovery remains pending. |
+| [RF-REL-013](../product/requirements.md#rf-rel-013) | P0 | częściowo działa | [TEST](#e-test), [RELEASE](#e-release) | Additive migration and real PostgreSQL/HTTP checks pass; exact image/config/schema compatibility and unchanged synthetic data passed real rollback. General schema-changing application release remains unproven. |
+| [RF-REL-014](../product/requirements.md#rf-rel-014) | P0 | częściowo działa | [RELEASE](#e-release) | Actual uncertain merge and interrupted deployment reconciled through normal restarted Windows Worker, sealed HMAC, exact grant/journal and closed native children; neither effect repeated. Real controlled recovery and final absence certification pass. Other ambiguous failure classes remain fail-closed. |
 | [RF-REL-015](../product/requirements.md#rf-rel-015) | P0 | częściowo działa | [HEALTH](#e-health) | Roost public health/build exists; complete app contracts absent. |
 | [RF-REL-016](../product/requirements.md#rf-rel-016) | P1 | brak | [RELEASE](#e-release) | No scheduler-enforced windows or drain. |
 | [RF-REL-017](../product/requirements.md#rf-rel-017) | P1 | brak | [RELEASE](#e-release) | Future DemoApp release configuration, not implemented here. |
 | [RF-REL-018](../product/requirements.md#rf-rel-018) | P1 | działa | [GOV](#e-gov) | Risk-based target policy retained. |
 | [RF-ACT-001](../product/requirements.md#rf-act-001) | P0 | częściowo działa | [HOST](#e-host) | Default execution flag works; formal staged readiness state absent. |
 | [RF-ACT-002](../product/requirements.md#rf-act-002) | P0 | częściowo działa | [DRY](#e-dry) | Lease/recovery fixture tests exist; complete dry-run certification absent. |
-| [RF-ACT-003](../product/requirements.md#rf-act-003) | P0 | częściowo działa | [RELEASE](#e-release) | Component checks pass; owner-authorized private test repository, canonical directory and Coolify target are provisioned. Managed certification remains pending. |
-| [RF-ACT-004](../product/requirements.md#rf-act-004) | P1 | częściowo działa | [RELEASE](#e-release) | Exact owned cleanup and repository archival are implemented and tested; real test resources are retained until certification/cleanup proof. |
+| [RF-ACT-003](../product/requirements.md#rf-act-003) | P0 | częściowo działa | [RELEASE](#e-release) | Owner-authorized single temporary target completed actual managed Git/release/failure/rollback/cleanup certification; verified certificate is retained in Roost. Pilot certification remains separate. |
+| [RF-ACT-004](../product/requirements.md#rf-act-004) | P1 | częściowo działa | [RELEASE](#e-release) | Actual sixteen-resource absence, exact clean clone removal and private repository archival passed; five test tasks, three roles and application archived with historical evidence retained. |
 | [RF-ACT-005](../product/requirements.md#rf-act-005) | P0 | częściowo działa | [AUDITOR](#e-auditor), Gate 2 native evidence above | Managed read-only pilot auditor and exact-commit reviewer completed with unchanged Git/process/Docker audits. General continuous canary activation remains unproven. |
 | [RF-ACT-006](../product/requirements.md#rf-act-006) | P0 | częściowo działa | [AUDITOR](#e-auditor), Gate 2 native evidence above | Separate read-only auditor and verifier completed against one clean baseline with matching evidence digest before the first write. General scheduled canary orchestration remains unproven. |
-| [RF-ACT-007](../product/requirements.md#rf-act-007) | P0 | częściowo działa | [ACT](#e-act) | Two Gate 3 baseline canaries, separate owner consent and exact first-write acceptance are recorded; native candidate `de6ebe7a4267078196534a36f73ff9bccb09d3ae` has three passing tests and closed Windows Job. Current independent approval `154d5cc2-904b-4413-9947-4820ee413648` and separate native release audit passed; real release remains pending. |
+| [RF-ACT-007](../product/requirements.md#rf-act-007) | P0 | częściowo działa | [ACT](#e-act), [RELEASE](#e-release) | Two Gate 3 read-only baseline canaries preceded separate owner consent and exact first-write acceptance. Native candidate `de6ebe7a4267078196534a36f73ff9bccb09d3ae`, three tests, independent approval `154d5cc2-904b-4413-9947-4820ee413648`, separate release audit and real release/recovery passed. Full activation ladder remains outside this proof. |
 | [RF-ACT-008](../product/requirements.md#rf-act-008) | P1 | brak | [ACT](#e-act) | No capability progression lifecycle. |
 | [RF-ACT-009](../product/requirements.md#rf-act-009) | P1 | brak | [ACT](#e-act) | No probation counters/certification. |
 | [RF-ACT-010](../product/requirements.md#rf-act-010) | P1 | brak | [ACT](#e-act) | No app-onboarding readiness procedure. |
@@ -1325,7 +1325,8 @@ Complete five-task procedure admission and normal owner acceptance were proved
 in production in 23647 ms on build `fac409e5`; all five native evidence records
 passed. [Receipt and scoped transaction tuning](../operations/governed-release.md)
 also record refusal/rollback and replay checks. This configuration acceptance
-grants no execution or release authority; Gate 3 certification remains pending.
+grants no execution or release authority; the separate certified grant is in
+[RELEASE](#e-release).
 
 [src/modules/decisions/decisions.routes.ts](../../src/modules/decisions/decisions.routes.ts), [web/src/features/departments/decisions-workbench.tsx](../../web/src/features/departments/decisions-workbench.tsx), [prisma/schema.prisma](../../prisma/schema.prisma).
 
@@ -1487,30 +1488,44 @@ setup and production Roost backup/sync remain unproven.
 [docs/operations/rollback-and-recovery.md](../../docs/operations/rollback-and-recovery.md).
 
 <a id="e-release"></a>
-**RELEASE** — Gate 3 implementation is in progress (2026-10-01). Exact owner
-authority, append-only operation journal, Worker broker, private GitHub path,
-immutable Coolify deployment, runtime inspection and owned cleanup have 117
-passing component checks. Additive migration and scoped API checks pass against
-real local PostgreSQL. These checks do not certify the managed release path.
-Temporary target bootstrap commits are initialization evidence only. Native
-candidate/review/push/PR/merge pass; deploy/health/failure/rollback/cleanup remain
-pending. Actual uncertain merge reconciled on restart without a repeated effect.
-Normal HTTPS reconciliation and exact dead-owner recovery of a failed read-only
-attempt's retained application lease are proven on Windows; this is local
-pre-release recovery evidence, not a governed release certificate.
-Native baseline auditor `28c85e4a-01de-40d0-a5ed-86bebdb09eac` completed
-with a verified read-only receipt and closed Windows Job. Independent verifier
-`dcdef197-189c-48a0-ad22-14861f5e6d0d` also completed with the exact prior
-audit binding, unchanged baseline and closed Windows Job. Release certification
-remains pending.
-Expired read-only spawn reconciliation and exact writer reclamation also
-completed on Windows after a later verifier's lease loss; no result was accepted.
-The next verifier failed before model launch on a named Docker observation
-timeout. Bounded observation and normal terminal cleanup were repaired; actual
-independent verification subsequently passed; release certification is pending.
-Another verifier stopped before a result; its generic recovery reason had
-misclassified native uncertainty as lease expiry. Normal stopped-process recovery
-passed; typed diagnostics and bounded suspended-target admission were repaired.
+**RELEASE** — Gate 3 is certified on the sole temporary target (2026-10-02).
+Normal Windows Worker/Hermes coding produced exact candidate
+`de6ebe7a4267078196534a36f73ff9bccb09d3ae`; independent review
+`154d5cc2-904b-4413-9947-4820ee413648` and a separate native release audit
+preceded owner grant `21585a17-79ca-4623-aa63-4018f1d03965`. Changed-commit
+admission returned 409 with absence read-back. Private GitHub Free branch/push/
+PR 1/review/exact merge passed. An uncertain merge reconciled without repetition.
+Candidate deployment `wx4xo4bq7he5a8i48xhmpbq0` was queued once, interrupted
+by normal stop and reconciled as failed after restart. A sealed HMAC checkpoint
+qualified the exact grant/journal and sixteen closed native children (twelve in
+authenticated history). Actual health samples proved healthy-to-failed transition
+on the exact candidate; the broker checked the payload despite HTTP 200.
+Rollback `dzy2y8t689far4zowki7hte4` restored the exact compatible baseline
+image/config/schema and passed a 64-second healthy observation with unchanged
+synthetic data. This no-database target does not prove real business-data rollback.
+Separately, actual encrypted production backup/isolated restore proved schema,
+row/sequence parity and owned restore database cleanup.
+
+Final read-only certificate at 11:24:05 UTC proved sixteen owned resources absent,
+the exact private repository archived and canonical clone removed. Journal status
+is `completed`, with 34 resolved operations including historical failed/absent
+attempts. Roost ApplicationEvidence `e3bac90e-be97-4592-82e0-783180267af5`
+is verified; payload digest
+`a27e5b585f4879dd5624ca1e68faef7da6948dd60088605d694cca92d3e212a2`
+binds native, review, interruption, backup, health, rollback and cleanup proofs.
+Five test tasks, three roles and the application were archived with evidence
+retained. Owned runtime configuration and dedicated agent keys were cleaned up;
+shared configuration, credentials, services and the local Gate 2 pilot remain.
+Native Windows Git/Job/crash/reclaim, focused provenance/cleanup checks, additive
+PostgreSQL migration and real HTTP checks supplement this actual certification.
+
+Before coding, native baseline auditor `28c85e4a-01de-40d0-a5ed-86bebdb09eac`
+and independent verifier `dcdef197-189c-48a0-ad22-14861f5e6d0d` completed
+on an unchanged baseline, with verified read-only receipts and closed Windows
+Jobs. Earlier expired/uncertain audit attempts were reconciled without accepting
+their results. The certified release also exercised the Gate 2 ownership recovery
+repair. This does not certify every hypothetical crash or all portfolio release
+requirements. Gate 4 has not started; the pilot was neither pushed nor deployed.
 
 [Operations and evidence checkpoint](../operations/governed-release.md),
 [server authority](../../src/modules/agent-runtime/governed-release.ts),
@@ -1570,7 +1585,8 @@ canary activation remains unproven.
 **ACT** — Normal execution admission binds actual auditor/verifier receipts and
 an exact one-time first-write Decision. Gate 3 has both native baseline proofs
 and separate owner consent/normal exact first-write acceptance. The first managed
-candidate remains pending. This does not certify the entire activation ladder.
+candidate and governed release/recovery passed on the temporary target. This does
+not certify the entire activation ladder.
 
 [docs/architecture/autonomy-activation-contract.md](../../docs/architecture/autonomy-activation-contract.md), [src/modules/agent-runtime/agent-runtime.routes.ts](../../src/modules/agent-runtime/agent-runtime.routes.ts).
 

@@ -161,9 +161,9 @@ inside the same outcome rather than deferred into unrelated contract work.
 
 ### Gate 3 — governed release
 
-**In progress (2026-10-02):** Admission, backup/restore, two native baseline
-canaries, coding, current review, release audit and push/PR pass; release unproven.
-[Operations/evidence](operations/governed-release.md). Gate 4 is not started.
+**Met at native/production evidence level (2026-10-02):** Exact Git/PR/merge,
+interrupted deployment, controlled failure, healthy rollback and owned cleanup
+passed. [Evidence](operations/governed-release.md). Gate 4 is not started.
 
 An accepted exact commit follows the configured Git and deployment path,
 production health is observed against a recorded baseline, and the release is
