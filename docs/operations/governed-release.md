@@ -55,6 +55,9 @@ The resource ownership file uses `roost-release-resource-ownership-v1`: exact
 grant/request/application IDs, Coolify UUID and numeric ID, immutable image
 repository/digests, manifest digest, canonical clone physical identity, marker
 digest, temporary resource IDs/kinds/creation times and capacity thresholds.
+Docker image records also require the `local` or `vps` engine. The same immutable
+image may exist on both; duplicates within one engine and missing engine bindings
+are refused. The Worker matches this field to its separate image ownership file.
 The clone marker lives in `.git/roost-release-owned.json`; the external ledger
 survives local cleanup. Preserve a partially deleted, changed or foreign clone.
 Never infer ownership from a matching resource name.
@@ -734,3 +737,11 @@ The prepared release manifest binds current independent acceptance, separate
 native releaser audit, unchanged healthy baseline and verified backup/restore.
 Fresh owner login is still required before its normal release-grant command;
 candidate Git push/PR/merge/deployment, fault recovery and cleanup remain unproven.
+
+Normal production admission refused a changed commit with
+`409 release_review_stale`; a subsequent read proved no release was created for
+that request. Fresh owner admission created release
+`21585a17-79ca-4623-aa63-4018f1d03965` for the accepted candidate, review and
+separate audit. Expired temporary credentials were renewed normally after the
+overnight pause. Engine-scoped ownership checks passed 65 focused cleanup/resource
+tests with zero skips. External release effects remain pending.

@@ -139,14 +139,29 @@ test("registered stopped resource is removed once and uncertain result reconcile
 });
 
 test("registered image projection preserves identity and creation time required by the release Worker", windows, t => {
-  const x = fixture(t), row = { resourceId: "owned-image", kind: "docker_image", id: IMAGE_ID, createdAt: DATE, temporary: true };
+  const x = fixture(t), row = { resourceId: "owned-image", kind: "docker_image", engine: "local", id: IMAGE_ID, createdAt: DATE, temporary: true };
   x.ledger.resources = [row]; x.manifest.cleanup.ownedResourceIds = [row.resourceId];
   x.ledger.manifestDigest = releaseContract.releaseDigest(x.manifest); x.binding.manifestDigest = x.ledger.manifestDigest;
   fs.writeFileSync(x.ownershipFile, JSON.stringify(x.ledger));
   const gateway = createReleaseResourceGateway(x.config), registered = gateway.ownedResource(x.manifest, x.binding, row.resourceId);
-  assert.deepEqual(registered, { resourceId: row.resourceId, kind: row.kind, id: row.id, createdAt: row.createdAt });
+  assert.deepEqual(registered, { resourceId: row.resourceId, kind: row.kind, engine: "local", id: row.id, createdAt: row.createdAt });
   assert.equal(Object.isFrozen(registered), true); assert.equal(registered.temporary, undefined);
   assert.throws(() => gateway.ownedResource(x.manifest, { ...x.binding, releaseId: randomUUID() }, row.resourceId));
+  assert.equal(x.requests.length, 0);
+});
+test("same immutable image on distinct engines is scoped; duplicate engine and missing engine are refused", windows, t => {
+  const x = fixture(t), local = { resourceId: "local-image", kind: "docker_image", engine: "local", id: IMAGE_ID, createdAt: DATE, temporary: true };
+  const vps = { ...local, resourceId: "vps-image", engine: "vps" };
+  x.ledger.resources = [local, vps]; x.manifest.cleanup.ownedResourceIds = [local.resourceId, vps.resourceId];
+  x.ledger.manifestDigest = releaseContract.releaseDigest(x.manifest); x.binding.manifestDigest = x.ledger.manifestDigest;
+  fs.writeFileSync(x.ownershipFile, JSON.stringify(x.ledger));
+  const gateway = createReleaseResourceGateway(x.config);
+  assert.equal(gateway.ownedResource(x.manifest, x.binding, local.resourceId).engine, "local");
+  assert.equal(gateway.ownedResource(x.manifest, x.binding, vps.resourceId).engine, "vps");
+  x.ledger.resources[1].engine = "local"; fs.writeFileSync(x.ownershipFile, JSON.stringify(x.ledger));
+  assert.throws(() => createReleaseResourceGateway(x.config), /ownership_invalid/);
+  delete x.ledger.resources[1].engine; fs.writeFileSync(x.ownershipFile, JSON.stringify(x.ledger));
+  assert.throws(() => createReleaseResourceGateway(x.config), /ownership_invalid/);
   assert.equal(x.requests.length, 0);
 });
 test("resource ownership/registration conflict preserves resource and does not issue removal", windows, async t => {

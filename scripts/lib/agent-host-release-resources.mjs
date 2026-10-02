@@ -22,7 +22,9 @@ const ownershipSchema = z.object({ schemaVersion: z.literal("roost-release-resou
   canonicalDir: z.string().min(3).max(1000), cloneIdentity: digest, repositoryUrl: z.string().url(),
   cloneMarker: z.object({ filename: z.literal(".git/roost-release-owned.json"), digest }).strict(),
   resources: z.array(z.object({ resourceId: z.string().regex(identifier), kind: z.enum(["container", "network", "volume", "coolify_application", "docker_image", "ghcr_version"]),
-    id: z.string().min(1).max(120), createdAt: z.string().datetime(), temporary: z.literal(true) }).strict()).max(30),
+    id: z.string().min(1).max(120), createdAt: z.string().datetime(), temporary: z.literal(true),
+    engine: z.enum(["local", "vps"]).optional() }).strict().refine(row =>
+      row.kind === "docker_image" ? row.engine !== undefined : row.engine === undefined)).max(30),
   capacity: z.object({ minDiskBytes: z.number().int().positive(), minMemoryBytes: z.number().int().positive(),
     maxLoad1: z.number().positive().max(100) }).strict() }).strict();
 const inside = (parent, child) => { const relative = path.relative(parent, child); return relative && !relative.startsWith("..") && !path.isAbsolute(relative); };
@@ -85,7 +87,7 @@ export function createReleaseResourceGateway({ sshHost, workspaceRoot, ownership
   check(path.isAbsolute(ownership.canonicalDir) && path.normalize(ownership.canonicalDir) === ownership.canonicalDir
     && inside(workspaceRoot, ownership.canonicalDir) && !inside(ownership.canonicalDir, ownershipFile), "path_invalid");
   check(new Set(ownership.resources.map(row => row.resourceId)).size === ownership.resources.length
-    && new Set(ownership.resources.map(row => `${row.kind}:${row.id}`)).size === ownership.resources.length, "ownership_invalid");
+    && new Set(ownership.resources.map(row => `${row.kind}:${row.engine ?? ""}:${row.id}`)).size === ownership.resources.length, "ownership_invalid");
   const stable = () => {
     check(physicalIdentity(workspaceRoot) === workspaceIdentity && physicalIdentity(ownershipFile, false) === fileIdentity
       && sha(readFileSync(ownershipFile)) === originalDigest, "ownership_changed");
@@ -161,7 +163,8 @@ export function createReleaseResourceGateway({ sshHost, workspaceRoot, ownership
   const ownedResource = (manifest, binding, id) => { bind(manifest, binding); const row = ownership.resources.find(item => item.resourceId === id);
     check(row, "resource_unregistered");
     check(row.kind !== "coolify_application" || row.id === ownership.targetId, "resource_identity_invalid");
-    return Object.freeze({ resourceId: row.resourceId, kind: row.kind, id: row.id, createdAt: row.createdAt }); };
+    return Object.freeze({ resourceId: row.resourceId, kind: row.kind, id: row.id, createdAt: row.createdAt,
+      ...(row.engine ? { engine: row.engine } : {}) }); };
   const resource = (manifest, binding, id) => { const registered = ownedResource(manifest, binding, id);
     check(registered.kind !== "coolify_application", "coolify_cleanup_gateway_required");
     const row = ownership.resources.find(item => item.resourceId === id);

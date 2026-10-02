@@ -102,7 +102,8 @@ export async function runGovernedReleaseQueueStep({config,baseUrl,hostId,writerL
    if(registeredImages.length!==owned.resources.length||registeredImages.some(row=>!owned.resources.some(image=>image.resourceId===row.resourceId)))throw Error('release_image_coverage_changed');
    for(const row of owned.resources){
     const registered=gateway.ownedResource(m,{...s,releaseId:state.release.id},row.resourceId);
-    if(registered.kind!==row.kind||registered.id!==(row.kind==='docker_image'?row.imageId:String(row.versionId))||registered.createdAt!==row.createdAt)throw Error('release_image_resource_changed');
+    if(registered.kind!==row.kind||registered.id!==(row.kind==='docker_image'?row.imageId:String(row.versionId))||registered.createdAt!==row.createdAt
+      ||row.kind==='docker_image'&&registered.engine!==row.engine)throw Error('release_image_resource_changed');
    }
    const registryKey=await readReleaseCredential(settings.imageCleanup.credentialTarget);
    images=createReleaseImageCleanup({ownership:owned,readOwnership:()=>{
