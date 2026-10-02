@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,readFileSync,rmSync} from 'node:fs';
+import {mkdtempSync,mkdirSync,readFileSync,writeFileSync,rmSync} from 'node:fs';
+import {execFileSync} from 'node:child_process';
 import path from 'node:path';
 import os from 'node:os';
 import {acquireWriterLock,writerLockFilename} from './lib/agent-host-writer-lock.mjs';
@@ -8,6 +9,33 @@ import {beginReleaseWriterCheckpoint,sealReleaseWriterCheckpoint} from './lib/ag
 import {prepareReleaseProcessScope,withReleaseProcessScope,runReleaseNativeProcess} from './lib/agent-host-release-process.mjs';
 import {releaseStateFixture} from './fixtures/release-state.mjs';
 import {createHash} from 'node:crypto';
+import {inspectReleaseCheckout} from './lib/agent-host-release-github.mjs';
+import releaseContract from './lib/agent-host-release-contract.cjs';
+
+test('Windows release checkout validates real commit, parent and tree inside owned Git Jobs',
+ {skip:process.platform!=='win32',timeout:90000},async()=>{
+ const directory=mkdtempSync(path.join(os.tmpdir(),'roost-release-checkout-test-'));
+ const checkout=path.join(directory,'checkout');mkdirSync(checkout);
+ let writer,prepared,context;
+ try{
+  const git=(...argv)=>execFileSync('git',argv,{cwd:checkout,windowsHide:true,encoding:'utf8',env:{...process.env,GIT_CONFIG_GLOBAL:'NUL',GIT_CONFIG_NOSYSTEM:'1'}}).trim();
+  git('init','--initial-branch=main');git('config','user.name','Synthetic Test');git('config','user.email','fixture@example.test');
+  writeFileSync(path.join(checkout,'version.txt'),'1');git('add','version.txt');git('commit','-m','Synthetic baseline');const base=git('rev-parse','HEAD'),baseTree=git('rev-parse','HEAD^{tree}');
+  git('switch','-c','codex/certificate');writeFileSync(path.join(checkout,'version.txt'),'2');git('add','version.txt');git('commit','-m','Synthetic candidate');
+  const commit=git('rev-parse','HEAD'),tree=git('rev-parse','HEAD^{tree}');git('remote','add','origin','https://github.com/example/certificate');
+  const state=releaseStateFixture(checkout),s=state.release.snapshot;s.commit=commit;s.candidateTree=tree;s.baseCommit=base;s.baseTree=baseTree;s.manifest.baseline.commit=base;s.manifest.rollback.commit=base;
+  s.manifestDigest=releaseContract.releaseDigest(s.manifest);state.release.manifestDigest=s.manifestDigest;
+  prepared=await prepareReleaseProcessScope();writer=await acquireWriterLock(directory);
+  context=beginReleaseWriterCheckpoint({writerLock:writer,state,client:{hostId:s.hostId,agentId:s.releaserAgentId}});
+  const proof=await withReleaseProcessScope(prepared,context,()=>inspectReleaseCheckout(s.manifest,commit,base,tree));
+  assert.deepEqual(proof,{commit,tree,baseCommit:base});sealReleaseWriterCheckpoint(context);
+  const checkpoint=JSON.parse(readFileSync(path.join(directory,writerLockFilename))).releaseCheckpoint;
+  assert.equal(checkpoint.registeredChildCount,6);assert(checkpoint.children.every(child=>child.state==='closed'&&child.receipt.cleanup&&child.receipt.activeProcesses===0));
+ }catch(error){console.log(JSON.stringify({nativeCheckoutFailure:error.message,diagnostic:error.details?.reason}));throw error;}finally{
+  if(context)sealReleaseWriterCheckpoint(context);
+  await writer?.release();await prepared?.dispose();assert.equal(path.dirname(directory),os.tmpdir());assert(path.basename(directory).startsWith('roost-release-checkout-test-'));rmSync(directory,{recursive:true});
+ }
+});
 
 test('real release Git child has a suspended native assignment and closed receipt before sealing',
  {skip:process.platform!=='win32'},async()=>{

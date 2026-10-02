@@ -41,18 +41,27 @@ export async function withReleaseProcessScope(prepared,context,run){
 
 async function ownedChild(scope,executable,{argv,cwd,environment=minimalReleaseEnvironment(),input='',durationMs=15000,maxBytes=131072}){
  const token=reserveReleaseChild(scope.context,{artifact:scope.artifact,executable});
- const chunks=[];let bytes=0,job;
+ const chunks=[];let bytes=0,job,diagnostic;
  try{
   job=await startWindowsJob(scope.artifact,{executable,argv,cwd,environment,input,durationMs,attempt:token.attemptId,
    confirmResume:event=>bindReleaseChild(token,event),
-   onData:(channel,chunk)=>{if(channel==='stdout'){bytes+=chunk.length;if(bytes>maxBytes)fail();chunks.push(chunk);}}});
+   onData:(channel,chunk)=>{if(channel==='stdout'){bytes+=chunk.length;if(bytes>maxBytes)fail();chunks.push(chunk);}
+    else if(channel==='stderr'){
+     // Only fixed classifications survive. Never retain a Git URL, path or token.
+     const text=chunk.toString('utf8');
+     if(/detected dubious ownership/i.test(text))diagnostic='git_ownership_unproven';
+     else if(/unable to read config file|invalid argument/i.test(text))diagnostic='git_config_unreadable';
+     else if(/not a git repository/i.test(text))diagnostic='git_repository_unavailable';
+     else if(/Permission denied|Access is denied/i.test(text))diagnostic='native_access_denied';
+    }}});
   const receipt=await job.completion;
   recordReleaseChildReceipt(token,receipt);
-  if(receipt.rootExit!==0||receipt.terminationReason!=='root_exit')fail();
+  if(receipt.rootExit!==0||receipt.terminationReason!=='root_exit')throw Object.assign(Error('release_child_failed'),{details:{reason:diagnostic??'native_exit_failed'}});
   return Buffer.concat(chunks);
  }catch(error){
   if(isWindowsJobCleanupReceipt(error.details?.ownedTreeReceipt))recordReleaseChildReceipt(token,error.details.ownedTreeReceipt);
-  throw Object.assign(Error('release_child_failed'),{releaseBlocked:true,retryable:false});
+  const reason=['git_ownership_unproven','git_config_unreadable','git_repository_unavailable','native_access_denied','native_exit_failed'].includes(error.details?.reason)?error.details.reason:undefined;
+  throw Object.assign(Error('release_child_failed'),{releaseBlocked:true,retryable:false,...(reason?{details:{reason}}:{})});
  }
 }
 

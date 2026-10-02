@@ -203,7 +203,7 @@ export function createReleaseResourceGateway({ sshHost, workspaceRoot, ownership
     const git = async args => { try {
       const argv = ["-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", ...args];
       if(hasReleaseProcessScope())return (await runReleaseNativeProcess('git',{argv,cwd:root,durationMs:10000,maxBytes:131072,
-        environment:{...minimalReleaseEnvironment(),GIT_OPTIONAL_LOCKS:'0',GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:os.devNull}})).toString('utf8').trim();
+        environment:{...minimalReleaseEnvironment(),GIT_OPTIONAL_LOCKS:'0',GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:process.platform==='win32'?'NUL':os.devNull}})).toString('utf8').trim();
       return execFileSync("git", argv,
       { cwd: root, shell: false, windowsHide: true, timeout: 10000, maxBuffer: 1048576, encoding: "utf8",
         env: { PATH: process.env.PATH, SystemRoot: process.env.SystemRoot, TEMP: process.env.TEMP, TMP: process.env.TMP,

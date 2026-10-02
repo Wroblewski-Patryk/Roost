@@ -745,3 +745,12 @@ that request. Fresh owner admission created release
 separate audit. Expired temporary credentials were renewed normally after the
 overnight pause. Engine-scoped ownership checks passed 65 focused cleanup/resource
 tests with zero skips. External release effects remain pending.
+
+Native release preflight exposed a Git for Windows incompatibility: Node's
+`\\.\nul` device path is rejected as Git's global configuration file. Fixed
+adapters now use `NUL` on Windows and the native null device elsewhere. Eight
+focused Git/process tests passed with no skips, including six real owned Git
+Jobs checking a clean repository, exact branch/commit/tree, parent and origin.
+Preflight failure preserved a sealed Writer and genuine closed-child receipt;
+its server journal remained empty. Only fixed native error classifications are
+retained; stderr paths, URLs and credential values are discarded.

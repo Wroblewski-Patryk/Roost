@@ -7,6 +7,8 @@ import { temporaryWindowsJobLauncher, startWindowsJob, isWindowsJobReceipt } fro
 import { hasReleaseProcessScope, runReleaseNativeProcess, minimalReleaseEnvironment } from './agent-host-release-process.mjs';
 
 const sha = /^[a-f0-9]{40}$/;
+// Git for Windows accepts NUL, but rejects Node's Win32 device path \\.\nul.
+const gitNull = process.platform === 'win32' ? 'NUL' : os.devNull;
 const fail = (code, uncertain = false) => { throw Object.assign(Error(code), { uncertain, retryable: false }); };
 const ref = value => {
   if (typeof value !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9/_.-]{0,159}$/.test(value)
@@ -42,12 +44,12 @@ export function githubReleaseTransport({ method, route, token, body }) {
 // participate in the upload. Only this deterministic child receives the credential.
 async function git(cwd, args, { input, token, limit = 128_000_000 } = {}) {
   if (hasReleaseProcessScope()) {
-    const environment = { ...minimalReleaseEnvironment(), GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: os.devNull,
+    const environment = { ...minimalReleaseEnvironment(), GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: gitNull,
       GIT_TERMINAL_PROMPT: '0', GIT_OPTIONAL_LOCKS: '0',
       ...(token ? { GIT_CONFIG_COUNT: '3', GIT_CONFIG_KEY_0: 'http.https://github.com/.extraHeader',
         GIT_CONFIG_VALUE_0: `Authorization: Basic ${Buffer.from(`x-access-token:${token}`).toString('base64')}`,
         GIT_CONFIG_KEY_1: 'http.followRedirects', GIT_CONFIG_VALUE_1: 'false', GIT_CONFIG_KEY_2: 'credential.helper', GIT_CONFIG_VALUE_2: '' } : {}) };
-    return runReleaseNativeProcess('git', { argv: ['--no-replace-objects', '-c', 'core.hooksPath='+os.devNull,
+    return runReleaseNativeProcess('git', { argv: ['--no-replace-objects', '-c', 'core.hooksPath='+gitNull,
       '-c', 'core.fsmonitor=false', '-c', 'core.untrackedCache=false', '-C', cwd, ...args],
       cwd, environment, input: input ?? '', durationMs: 30000, maxBytes: Math.min(limit, 131072) });
   }
@@ -56,7 +58,7 @@ async function git(cwd, args, { input, token, limit = 128_000_000 } = {}) {
   if (token) {
     if (process.platform !== 'win32' || input) fail('release_git_containment_required');
     const env = { PATH: process.env.PATH, SystemRoot: process.env.SystemRoot, TEMP: process.env.TEMP,
-      TMP: process.env.TMP, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: os.devNull,
+      TMP: process.env.TMP, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: gitNull,
       GIT_TERMINAL_PROMPT: '0', GIT_OPTIONAL_LOCKS: '0', GIT_CONFIG_COUNT: '3',
       GIT_CONFIG_KEY_0: 'http.https://github.com/.extraHeader',
       GIT_CONFIG_VALUE_0: `Authorization: Basic ${Buffer.from(`x-access-token:${token}`).toString('base64')}`,
@@ -68,7 +70,7 @@ async function git(cwd, args, { input, token, limit = 128_000_000 } = {}) {
     return temporaryWindowsJobLauncher(async artifact => {
       const chunks = []; let bytes = 0;
       const job = await startWindowsJob(artifact, { executable,
-        argv: ['--no-replace-objects', '-c', 'core.hooksPath=' + os.devNull, '-C', cwd, ...args],
+        argv: ['--no-replace-objects', '-c', 'core.hooksPath=' + gitNull, '-C', cwd, ...args],
         cwd, environment: env, input: '', durationMs: 60000,
         onData: (channel, data) => { if (channel === 'stdout') { bytes += data.length;
           if (bytes > Math.min(limit, 131072)) throw Error('release_git_output_limit'); chunks.push(data); } } });
@@ -79,13 +81,13 @@ async function git(cwd, args, { input, token, limit = 128_000_000 } = {}) {
   }
   return new Promise((resolve, reject) => {
     const env = { PATH: process.env.PATH, SystemRoot: process.env.SystemRoot, TEMP: process.env.TEMP,
-      TMP: process.env.TMP, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: os.devNull,
+      TMP: process.env.TMP, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: gitNull,
       GIT_TERMINAL_PROMPT: '0', GIT_OPTIONAL_LOCKS: '0' };
     if (token) Object.assign(env, { GIT_CONFIG_COUNT: '3', GIT_CONFIG_KEY_0: 'http.https://github.com/.extraHeader',
       GIT_CONFIG_VALUE_0: `Authorization: Basic ${Buffer.from(`x-access-token:${token}`).toString('base64')}`,
       GIT_CONFIG_KEY_1: 'http.followRedirects', GIT_CONFIG_VALUE_1: 'false',
       GIT_CONFIG_KEY_2: 'credential.helper', GIT_CONFIG_VALUE_2: '' });
-    const child = spawn('git', ['--no-replace-objects', '-c', 'core.hooksPath=' + os.devNull,
+    const child = spawn('git', ['--no-replace-objects', '-c', 'core.hooksPath=' + gitNull,
       '-C', cwd, ...args], { env, shell: false, windowsHide: true, stdio: ['pipe', 'pipe', 'ignore'] });
     const chunks = []; let bytes = 0;
     const timer = setTimeout(() => child.kill(), 60000);
