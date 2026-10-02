@@ -762,3 +762,36 @@ environment now includes it, and a real owned `ssh -G` test checks configuration
 resolution without making a network connection. Release effects remain pending.
 Worker refusal diagnostics now retain only an explicit list of admission codes;
 all other exception content becomes `release_preflight_unproven`.
+
+### Native release Git path (2026-10-02, certification still incomplete)
+
+Release `21585a17-79ca-4623-aa63-4018f1d03965` recorded push
+`72743f91-f6ee-4b18-8e0a-59a4e1dea6db`, PR
+`c3c8b736-0279-4bc7-b6f1-7d200379f1bc` and independent acceptance publication
+`f8dd4065-3664-4212-b578-30734e90742e`, all succeeded for the accepted commit.
+Merge `59982201-def8-4fd0-9769-a1eea3baa3e8` had an uncertain outcome.
+Read-only GitHub reconciliation confirmed PR 1 merged at the exact candidate,
+with matching main and tree, before any retry. The actual dead controller's
+sealed Writer qualified through HMAC, the exact grant/journal and eleven closed
+native children (seven compacted into its signed history). Normal restart
+persisted `reconciled/succeeded` at 10:28:59 UTC without repeating merge. Deployment,
+controlled regression/rollback and final cleanup remain unproven.
+
+### Same-grant owner renewal
+
+`POST /v1/agent-runtime/releases/:id/actions/renew` accepts only a request UUID,
+current expected version and new expiry. The original issuer must still be an
+owner with a login younger than five minutes. Current credential, exact review,
+signed candidate, separate release audit, configuration, readiness and suspension
+checks run again. An additive immutable renewal row extends admission by at most
+one hour, bounded by credential expiry and the original backup's 24-hour age.
+The response's `effectiveExpiresAt` controls admission; original snapshot,
+manifest, grant digest and operation journal remain unchanged. Renewal cannot
+resolve pending operations, revive revoked authority or reopen completed cleanup.
+The Worker reconciles any pending operation before using renewed authority.
+
+Root verification passed 23 focused authority/readiness tests, ten broker and
+fixed-diagnostic tests, typecheck, server build, lint, route inventory and
+`codex:check`. A fresh disposable PostgreSQL migration and two real HTTP tests
+passed without skips, including stale-login, immutable-input and direct-SQL
+denial. Positive production renewal is still pending normal fresh-owner admission.

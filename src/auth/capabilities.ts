@@ -460,6 +460,7 @@ export const adapterManifest = {
       { method: "POST", path: "/v1/agent-runtime/releases/:releaseId/operations", capability: "agent-runtime:release" },
       { method: "POST", path: "/v1/agent-runtime/releases/:releaseId/operations/:operationId/outcome", capability: "agent-runtime:release" },
       { method: "POST", path: "/v1/agent-runtime/releases/:releaseId/actions/revoke", capability: "agent-runtime:release" },
+      { method: "POST", path: "/v1/agent-runtime/releases/:releaseId/actions/renew", capability: "agent-runtime:release" },
       { method: "GET", path: "/v1/agent-runtime/hosts", capability: "agent-runtime:read" },
       { method: "GET", path: "/v1/agent-runtime/recovery", capability: "agent-runtime:claim" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/checkpoint", capability: "agent-runtime:report" },

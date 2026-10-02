@@ -42,6 +42,11 @@ function parameters(operation,s,state){
  return{};
 }
 const dated=e=>({...e,observedAt:new Date().toISOString()});
+function effectiveExpiry(state,snapshot){
+ const expiry=contract.createReleaseSchema.shape.expiresAt.safeParse(state.effectiveExpiresAt??snapshot.expiresAt);
+ if(!expiry.success)fail('release_expiry_unproven');
+ return Date.parse(expiry.data);
+}
 // The production caller supplies fixed adapters, a sealed HTTPS API and its live
 // Writer capability. Neither Hermes input nor a release packet can select code,
 // shell commands, credentials, callbacks, URLs or a different repository.
@@ -89,7 +94,7 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
  await onOperation(authorized,authorized.operation);
  // No effect after a shutdown or elapsed authority. The durable intent then
  // forces read-only reconciliation on the next invocation.
- if(stopped()||Date.parse(s.expiresAt)<=Date.now())fail('release_effect_not_started');
+ if(stopped()||effectiveExpiry(authorized.effectiveExpiresAt===undefined?state:authorized,s)<=Date.now())fail('release_effect_not_started');
  await assertWriter();
  let evidence,status='succeeded';
  try{

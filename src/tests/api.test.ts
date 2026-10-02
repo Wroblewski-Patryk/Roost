@@ -35,12 +35,14 @@ import { registerFixedPublicTests, fixedAdmissionCommits } from "./fixed-public-
 import { registerOwnerTicketDatabaseTests } from "./owner-ticket-api";
 import { registerWorkerCredentialDatabaseTests } from "./worker-credential-api";
 import { registerWorkerHandoffDatabaseTests } from "./worker-handoff-api";
+import { registerReleaseRenewalTests } from "./governed-release-renewal-api";
 
 registerFindingTests({request,registerOwner,prepareReviewFixture,decisionFixtureProposal,decisionFixtureProof,refreshCompositionRisk,submissionInput});
 registerOwnerTicketDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof });
 registerOwnerTicketDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof }, true);
 registerWorkerCredentialDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof, refreshCompositionRisk });
 registerWorkerHandoffDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, decisionFixtureProposal, decisionFixtureProof, refreshCompositionRisk });
+registerReleaseRenewalTests({request,registerOwner});
 registerFixedPublicTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, getBaseUrl: () => baseUrl, restoreAdmission: () => providerAdmissionMock.mock.mockImplementation(realProviderAdmission), restoreLegacyAdmission: () => providerAdmissionMock.mock.mockImplementation(syntheticProviderAdmission) });
 
 const realFetch = globalThis.fetch.bind(globalThis);

@@ -1165,7 +1165,7 @@ stays disabled and the canonical host stays observe.
 | [RF-RES-006](../product/requirements.md#rf-res-006) | P1 | częściowo działa | [BACKUP](#e-backup) | Interactive owner setup generates a code once and stores only a salted hash/acknowledgement. Actual owner/off-device acknowledgment passes; recovery code stays outside Roost records. |
 | [RF-RES-007](../product/requirements.md#rf-res-007) | P0 | częściowo działa | [RELEASE](#e-release) | Broker checks disk/memory/load/Docker and overlapping Coolify deployments before effects; shared scheduling and native certification remain unproven. |
 | [RF-RES-008](../product/requirements.md#rf-res-008) | P1 | działa | [GOV](#e-gov) | Boundary retained; no new cleanup mechanism. |
-| [RF-REL-001](../product/requirements.md#rf-rel-001) | P0 | częściowo działa | [RELEASE](#e-release) | Private GitHub Free broker implements exact branch push/PR/review/fast-forward merge, without visibility changes; actual certification remains pending. |
+| [RF-REL-001](../product/requirements.md#rf-rel-001) | P0 | częściowo działa | [RELEASE](#e-release) | Native private GitHub Free push/PR/review/exact merge passed without visibility changes; deployment/recovery certification remains pending. |
 | [RF-REL-002](../product/requirements.md#rf-rel-002) | P0 | działa | [GOV](#e-gov) | Governing prohibition retained. |
 | [RF-REL-003](../product/requirements.md#rf-rel-003) | P0 | częściowo działa | [REVIEW](#e-review), Gate 2 native evidence above | Separate managed read-only reviewer rejected three exact commits and approved corrected commit `774e858ae48d1f05d2b56982a7113da983f62af8` through a scoped credential and Roost Decision. Release review/certification remains unproven. |
 | [RF-REL-004](../product/requirements.md#rf-rel-004) | P0 | częściowo działa | [RELEASE](#e-release) | Fresh production owner grant `21585a17-79ca-4623-aa63-4018f1d03965` binds exact native candidate, independent review and release audit; changed commit refused with 409 and read-back proves absence. Managed publication/recovery remains pending. |
@@ -1178,7 +1178,7 @@ stays disabled and the canonical host stays observe.
 | [RF-REL-011](../product/requirements.md#rf-rel-011) | P0 | częściowo działa | [TEST](#e-test), Gate 2 native evidence above | Worker enforced focused Windows candidate test before local commit; supplemental read-only POSIX test passed and independent reviewer cited both. General risk-based test selection and release gate remain unproven. |
 | [RF-REL-012](../product/requirements.md#rf-rel-012) | P1 | brak | [TEST](#e-test) | Bootstrap skill workflow exists; native enforcement absent. |
 | [RF-REL-013](../product/requirements.md#rf-rel-013) | P0 | częściowo działa | [TEST](#e-test) | API tests exist; compatibility release gate incomplete. |
-| [RF-REL-014](../product/requirements.md#rf-rel-014) | P0 | częściowo działa | [RELEASE](#e-release) | Durable intent/outcome journal forces read-only reconciliation before retry; adapter uncertainty checks pass, real uncertain operation remains unproven. |
+| [RF-REL-014](../product/requirements.md#rf-rel-014) | P0 | częściowo działa | [RELEASE](#e-release) | Actual uncertain merge reconciled through restarted Windows Worker, sealed HMAC/closed native children and GitHub read-back, without repeating merge; deployment recovery remains pending. |
 | [RF-REL-015](../product/requirements.md#rf-rel-015) | P0 | częściowo działa | [HEALTH](#e-health) | Roost public health/build exists; complete app contracts absent. |
 | [RF-REL-016](../product/requirements.md#rf-rel-016) | P1 | brak | [RELEASE](#e-release) | No scheduler-enforced windows or drain. |
 | [RF-REL-017](../product/requirements.md#rf-rel-017) | P1 | brak | [RELEASE](#e-release) | Future DemoApp release configuration, not implemented here. |
@@ -1492,8 +1492,9 @@ authority, append-only operation journal, Worker broker, private GitHub path,
 immutable Coolify deployment, runtime inspection and owned cleanup have 117
 passing component checks. Additive migration and scoped API checks pass against
 real local PostgreSQL. These checks do not certify the managed release path.
-Temporary target bootstrap commits are initialization evidence only. Real
-candidate/review/push/PR/merge/deploy/health/failure/rollback/cleanup remain pending.
+Temporary target bootstrap commits are initialization evidence only. Native
+candidate/review/push/PR/merge pass; deploy/health/failure/rollback/cleanup remain
+pending. Actual uncertain merge reconciled on restart without a repeated effect.
 Normal HTTPS reconciliation and exact dead-owner recovery of a failed read-only
 attempt's retained application lease are proven on Windows; this is local
 pre-release recovery evidence, not a governed release certificate.

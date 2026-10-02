@@ -9,6 +9,23 @@ export const releaseIntentSchema = shared.intentSchema as z.ZodType<any>;
 export const releaseOutcomeSchema = shared.outcomeSchema as z.ZodType<any>;
 export const releaseDigest: (value: unknown) => string = shared.releaseDigest;
 export const releaseOperations: readonly string[] = shared.operations;
+export const renewReleaseSchema=z.object({requestId:z.string().uuid(),expectedVersion:z.string().regex(/^[a-f0-9]{64}$/),expiresAt:z.string().datetime()}).strict();
+
+// Renewal changes only the admission window. Baseline identity stays sealed;
+// its age is not reset, and the actual current target is checked by the broker.
+export function releaseRenewalWindowError(input:any,previousExpiry:Date,credentialExpiry:Date,manifest:any,now=new Date()) {
+ const expiry=new Date(input.expiresAt);
+ if(expiry<=now||expiry<=previousExpiry||expiry.getTime()>now.getTime()+3600000||expiry>credentialExpiry)return "release_window_invalid";
+ const verified=Date.parse(manifest.backup.restoreVerifiedAt);
+ if(!Number.isFinite(verified)||verified>now.getTime()+60000||now.getTime()-verified>86400000)return "release_prerequisite_stale";
+ return null;
+}
+export function releaseRenewalStateError(state:any,userId:string|undefined) {
+ if(state.release.issuer_user_id!==userId)return "release_issuer_required";
+ if(state.revocations.length)return "release_authority_inactive";
+ if(state.journal.some((j:any)=>j.operation==="cleanup"&&effectiveOutcome(j.outcome)==="succeeded"))return "release_already_completed";
+ return null;
+}
 
 export function releaseCandidateNativeError(execution: any, contract: any) {
   const v = object(execution?.verification), managed = object(v.managedAdmission), receipt = object(v.ownedTreeReceipt);

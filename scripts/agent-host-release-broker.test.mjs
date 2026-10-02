@@ -57,6 +57,18 @@ test('shutdown after intent preserves pending operation without invoking push',a
 test('wrong host or releaser cannot use another agent release queue',async()=>{
  for(const field of ['hostId','agentId']){const h=harness(fixture());h.args.client[field]=randomUUID();await assert.rejects(runReleaseStep(h.args),/binding_changed/);assert.equal(h.calls.length,0);}
 });
+test('renewed authority keeps the immutable grant while allowing its authorized effect',async()=>{
+ const state=fixture();state.release.snapshot.expiresAt=new Date(Date.now()-60000).toISOString();state.effectiveExpiresAt=new Date(Date.now()+60000).toISOString();
+ const original=JSON.stringify(state.release.snapshot),h=harness(state);await runReleaseStep(h.args);
+ assert.equal(JSON.stringify(state.release.snapshot),original);assert.equal(h.calls.filter(c=>c.kind==='effect').length,1);
+});
+test('expired or malformed effective authority cannot perform an effect',async()=>{
+ for(const expiry of [new Date(Date.now()-60000).toISOString(),'invalid']){
+  const h=harness(fixture());h.state.effectiveExpiresAt=expiry;
+  await assert.rejects(runReleaseStep(h.args),/release_effect_not_started|release_expiry_unproven/);
+  assert.equal(h.calls.filter(c=>c.kind==='effect').length,0);
+ }
+});
 test('rollback requires separate configuration and observation before cleanup',()=>{
  const state=fixture();state.journal=[{operation:'deploy',outcome:{status:'failed'}},{operation:'rollback_config',outcome:{status:'succeeded'}}];
  assert.equal(nextReleaseOperation(state),'rollback');state.journal.push({operation:'rollback',outcome:{status:'succeeded'}});

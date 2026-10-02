@@ -9,7 +9,7 @@ import { nativeBoundaryResultBlocked, object, wire } from "./task-review-contrac
 import { suspensionBlocks } from "./capability-suspension";
 import { freshWorkerOwner } from "../api-keys/worker-credential.service";
 import { requireRuntimeContent } from "./runtime-redaction-policy";
-import { createReleaseSchema, releaseIntentSchema, releaseOutcomeSchema, releaseDigest, releaseApprovalError, releaseWindowError, releaseIntentError, releaseOutcomeError, effectiveOutcome, releaseCandidateNativeError } from "./governed-release-contract";
+import { createReleaseSchema, releaseIntentSchema, releaseOutcomeSchema, releaseDigest, releaseApprovalError, releaseWindowError, releaseIntentError, releaseOutcomeError, effectiveOutcome, releaseCandidateNativeError, renewReleaseSchema, releaseRenewalWindowError, releaseRenewalStateError } from "./governed-release-contract";
 type Db=Prisma.TransactionClient;
 // A completed result does not preserve authority after its task basis changes.
 // Reuse the current readiness validator, including admission expiry, without
@@ -74,7 +74,9 @@ async function load(db:Db,workspaceId:string,id:string) {
  if(!release)return null;
  const journal=await db.$queryRaw<any[]>`SELECT o.*, (SELECT to_jsonb(x) FROM governed_release_outcomes x WHERE x.operation_id=o.id ORDER BY x.sequence DESC LIMIT 1) AS outcome FROM governed_release_operations o WHERE o.release_id=${id}::uuid ORDER BY o.sequence`;
  const revocations=await db.$queryRaw<any[]>`SELECT * FROM governed_release_revocations WHERE release_id=${id}::uuid ORDER BY created_at,id`;
- return {release,journal,revocations,expectedVersion:releaseDigest(wire({release,journal,revocations}))};
+ const renewals=await db.$queryRaw<any[]>`SELECT * FROM governed_release_renewals WHERE release_id=${id}::uuid ORDER BY sequence`;
+ const effectiveExpiresAt=renewals.at(-1)?.expires_at??release.expires_at;
+ return {release,journal,revocations,renewals,effectiveExpiresAt,expectedVersion:releaseDigest(wire({release,journal,revocations,renewals}))};
 }
 async function mayRead(db:Db,workspaceId:string,state:any,auth:AuthContext) {
  if(await owner(db,workspaceId,auth))return true;
@@ -82,10 +84,10 @@ async function mayRead(db:Db,workspaceId:string,state:any,auth:AuthContext) {
  return p?.kind==="agent"&&p.id===r.releaser_agent_id&&p.credentialId===r.releaser_credential_id&&auth.credentialVersion===r.credential_version;
 }
 function publicState(state:any) {
- const {release,journal,revocations,expectedVersion}=state;
+ const {release,journal,revocations,renewals,effectiveExpiresAt,expectedVersion}=state;
  const completed=journal.some((j:any)=>j.operation==="cleanup"&&effectiveOutcome(j.outcome)==="succeeded");
- return {release:camel(release),journal:journal.map((j:any)=>({...camel(j),outcome:j.outcome?camel(j.outcome):null})),revocations:revocations.map(camel),expectedVersion,
-  status:completed?"completed":revocations.length?"revoked":new Date(release.expires_at)<=new Date()?"expired":journal.some((j:any)=>!effectiveOutcome(j.outcome)||effectiveOutcome(j.outcome)==="uncertain")?"reconciliation_required":"active"};
+ return {release:camel(release),journal:journal.map((j:any)=>({...camel(j),outcome:j.outcome?camel(j.outcome):null})),revocations:revocations.map(camel),renewals:renewals.map(camel),effectiveExpiresAt,expectedVersion,
+  status:completed?"completed":revocations.length?"revoked":new Date(effectiveExpiresAt)<=new Date()?"expired":journal.some((j:any)=>!effectiveOutcome(j.outcome)||effectiveOutcome(j.outcome)==="uncertain")?"reconciliation_required":"active"};
 }
 export async function releaseView(db:Db,workspaceId:string,id:string,auth:AuthContext) {
  const state=await load(db,workspaceId,id);
@@ -97,7 +99,7 @@ export async function listReleases(db:Db,workspaceId:string,auth:AuthContext,hos
  const isOwner=await owner(db,workspaceId,auth),p=isOwner?null:await resolveReviewPrincipal(db,workspaceId,auth);
  if(!isOwner&&(p?.kind!=="agent"||!hostId||!auth.scopes?.includes("agent-runtime:release")))return {error:"release_forbidden"};
  const rows=isOwner?await db.$queryRaw<any[]>`SELECT id FROM governed_releases WHERE workspace_id=${workspaceId}::uuid ORDER BY created_at DESC,id DESC LIMIT 51`:
-  await db.$queryRaw<any[]>`SELECT r.id FROM governed_releases r WHERE r.workspace_id=${workspaceId}::uuid AND r.host_id=${hostId}::uuid AND r.releaser_agent_id=${p!.id}::uuid AND r.releaser_credential_id=${p!.credentialId}::uuid AND r.credential_version=${auth.credentialVersion} AND ((r.expires_at>now() AND NOT EXISTS(SELECT 1 FROM governed_release_revocations v WHERE v.release_id=r.id) AND NOT EXISTS(SELECT 1 FROM governed_release_operations o JOIN governed_release_outcomes x ON x.operation_id=o.id WHERE o.release_id=r.id AND o.operation='cleanup' AND (x.status='succeeded' OR x.status='reconciled' AND x.reconciled_status='succeeded'))) OR EXISTS(SELECT 1 FROM governed_release_operations o WHERE o.release_id=r.id AND COALESCE((SELECT x.status FROM governed_release_outcomes x WHERE x.operation_id=o.id ORDER BY x.sequence DESC LIMIT 1),'unresolved') IN ('unresolved','uncertain'))) ORDER BY r.created_at,r.id LIMIT 51`;
+  await db.$queryRaw<any[]>`SELECT r.id FROM governed_releases r WHERE r.workspace_id=${workspaceId}::uuid AND r.host_id=${hostId}::uuid AND r.releaser_agent_id=${p!.id}::uuid AND r.releaser_credential_id=${p!.credentialId}::uuid AND r.credential_version=${auth.credentialVersion} AND ((governed_release_effective_expiry(r.id)>now() AND NOT EXISTS(SELECT 1 FROM governed_release_revocations v WHERE v.release_id=r.id) AND NOT EXISTS(SELECT 1 FROM governed_release_operations o JOIN governed_release_outcomes x ON x.operation_id=o.id WHERE o.release_id=r.id AND o.operation='cleanup' AND (x.status='succeeded' OR x.status='reconciled' AND x.reconciled_status='succeeded'))) OR EXISTS(SELECT 1 FROM governed_release_operations o WHERE o.release_id=r.id AND COALESCE((SELECT x.status FROM governed_release_outcomes x WHERE x.operation_id=o.id ORDER BY x.sequence DESC LIMIT 1),'unresolved') IN ('unresolved','uncertain'))) ORDER BY r.created_at,r.id LIMIT 51`;
  return {releases:await Promise.all(rows.slice(0,50).map(r=>releaseView(db,workspaceId,r.id,auth))),truncated:rows.length>50};
 }
 async function supplemental(db:Db,workspaceId:string,release:any,event:string,details:any,auth:AuthContext) {
@@ -134,7 +136,11 @@ export async function createRelease(db:Db,workspaceId:string,auth:AuthContext,bo
 async function liveError(db:Db,workspaceId:string,state:any,auth:AuthContext) {
  const r=state.release,s=r.snapshot,p=await resolveReviewPrincipal(db,workspaceId,auth);
  if(p?.kind!=="agent"||p.id!==r.releaser_agent_id||p.credentialId!==r.releaser_credential_id||auth.credentialVersion!==r.credential_version)return "release_principal_invalid";
- if(state.revocations.length||new Date(r.expires_at)<=new Date())return "release_authority_inactive";
+ if(state.revocations.length||new Date(state.effectiveExpiresAt)<=new Date())return "release_authority_inactive";
+ return currentBasisError(db,workspaceId,state,auth);
+}
+async function currentBasisError(db:Db,workspaceId:string,state:any,auth:AuthContext) {
+ const r=state.release,s=r.snapshot;
  if(!await credential(db,workspaceId,s))return "release_credential_invalid";
  const review=await reviewState(db,workspaceId,r.task_id,auth),reviewError=releaseApprovalError(review,s);if(reviewError)return reviewError;
  if(!await releaseExecutionBasisCurrent(db,workspaceId,(review as any).execution))return "release_source_basis_changed";
@@ -143,6 +149,23 @@ async function liveError(db:Db,workspaceId:string,state:any,auth:AuthContext) {
  if(await readiness(db,workspaceId,s)!==s.readinessDigest)return "release_readiness_changed";
  if(await suspensionBlocks(db,workspaceId,r.task_id,r.application_id,"runtime_execute",r.releaser_agent_id,r.releaser_credential_id,r.host_id))return "native_capability_suspended";
  return null;
+}
+export async function renewRelease(db:Db,workspaceId:string,id:string,auth:AuthContext,body:unknown) {
+ const input=renewReleaseSchema.parse(body);requireRuntimeContent(input,"release.renew",{workspaceId});
+ if(!await owner(db,workspaceId,auth)||!freshWorkerOwner(auth,new Date()))return {error:"release_fresh_owner_required"};
+ let state=await load(db,workspaceId,id);if(!state)return {error:"release_not_found"};
+ await appLock(db,state.release.application_id);state=(await load(db,workspaceId,id))!;
+ const error=releaseRenewalStateError(state,auth.userId);if(error)return {error};
+ const hash=releaseDigest({input,id,userId:auth.userId}),prior=(await db.$queryRaw<any[]>`SELECT * FROM governed_release_renewals WHERE workspace_id=${workspaceId}::uuid AND request_id=${input.requestId}::uuid`)[0];
+ if(prior)return prior.release_id===id&&prior.request_hash===hash?{...publicState(state),replayed:true}:{error:"release_request_conflict"};
+ if(input.expectedVersion!==state.expectedVersion)return {error:"release_version_stale"};
+ const key=await credential(db,workspaceId,state.release.snapshot);if(!key)return {error:"release_credential_invalid"};
+ const windowError=releaseRenewalWindowError(input,new Date(state.effectiveExpiresAt),key.expiresAt!,state.release.snapshot.manifest);if(windowError)return {error:windowError};
+ const basisError=await currentBasisError(db,workspaceId,state,auth);if(basisError)return {error:basisError};
+ await db.$executeRaw`INSERT INTO governed_release_renewals(id,release_id,workspace_id,sequence,issuer_user_id,owner_authenticated_at,previous_expires_at,expires_at,expected_version,request_id,request_hash)
+ VALUES(${randomUUID()}::uuid,${id}::uuid,${workspaceId}::uuid,${state.renewals.length+1},${auth.userId}::uuid,${new Date(auth.authenticatedAt!*1000)},${new Date(state.effectiveExpiresAt)},${new Date(input.expiresAt)},${input.expectedVersion},${input.requestId}::uuid,${hash})`;
+ await supplemental(db,workspaceId,state.release,"renewed",{previousExpiresAt:state.effectiveExpiresAt,expiresAt:input.expiresAt},auth);
+ return {...publicState((await load(db,workspaceId,id))!),replayed:false};
 }
 export async function releaseIntent(db:Db,workspaceId:string,id:string,auth:AuthContext,body:unknown) {
  const input=releaseIntentSchema.parse(body);requireRuntimeContent(input,"release.intent",{workspaceId});
