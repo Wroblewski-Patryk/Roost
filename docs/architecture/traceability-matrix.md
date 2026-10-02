@@ -1491,20 +1491,28 @@ setup and production Roost backup/sync remain unproven.
 **RELEASE** — Gate 3 is certified on the sole temporary target (2026-10-02).
 Gate 4 has a completed signed native read-only PWA audit and source support for
 retained Dockerfile release sets, per-target durable intents and exact runtime
-identity. Independent repair acceptance and pilot release remain unproven;
+identity. Managed repair and historical exact review are proven; current
+acceptance basis and pilot release remain unproven;
 actual LIVE activity blocks the installed release adapter. See
 [current application evidence](../operations/application-release.md).
 An independent audit verifier returned a handoff gap; the corrected structured
 receipt then passed fresh independent assessment with explicit uncertainty.
 Both native receipts prove unchanged state. Separate first-write approval was
-accepted; implementation/review/release remain unproven. Failed read-only
+accepted; current acceptance/release remain pending. Failed read-only
 execution was reconciled through the normal API and exact local ownership
 protocol without accepting its result.
 Managed coding then failed native candidate acceptance. Signed owned-only
 rollback archived one added test, restored the clean audited base and preserved
 the prior accepted pilot commit. Normal signed Writer/lease cleanup and admission
 retirement passed; Roost retains the immutable failure and separate recovery
-record. No accepted repair commit or release is claimed from this recovery.
+record. This recovery itself does not prove the later repair or release.
+Fresh managed coder `58387e7a-c4b2-4fbd-acf9-7fd835832eb5` returned local
+`7512bc395d65df0fca7cf701047033031f63eb7e`, with a genuine red assertion and
+fixed native green Vitest result (one pass, no skips). Independent reviewer
+`a272c952-bf70-47f9-81f6-67108fa606db` approved it as
+`fd94c23c-c3b9-4f5f-aaac-250f50305386`; later configuration requires a fresh
+acceptance basis. Separate exact release authority, pilot backup and production
+reproduction proof remain pending; active LIVE state blocks release.
 Normal Windows Worker/Hermes coding produced exact candidate
 `de6ebe7a4267078196534a36f73ff9bccb09d3ae`; independent review
 `154d5cc2-904b-4413-9947-4820ee413648` and a separate native release audit

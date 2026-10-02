@@ -370,7 +370,8 @@ for (const kind of ["scope","evidence"] as const) agentRuntimeRouter.post(`/task
 agentRuntimeRouter.get("/tasks/:id/risk", asyncHandler(async (req,res) => {
   if (!requireWorkspaceRole(req,res,"viewer")) return;
   const taskId=z.string().uuid().parse(req.params.id);
-  const result=await readyTransaction(db=>taskRiskView(db,req.auth!.workspaceId,taskId,req.auth!.userId!));
+  const cursor=z.string().uuid().optional().parse(req.query.cursor);
+  const result=await readyTransaction(db=>taskRiskView(db,req.auth!.workspaceId,taskId,req.auth!.userId!,cursor));
   if ("error" in result) return sendApiError(res,result.error==="task_not_found"?404:409,result.error!);
   res.json({data:result});
 }));

@@ -1788,6 +1788,23 @@ test("native risk assessments compute, bind and invalidate joint task scope",asy
   const next=await command(),responses=await Promise.all([post(`${route}/assessments`,next),post(`${route}/assessments`,{...next,requestId:randomUUID()})]);
   assert.deepEqual(responses.map(r=>r.status).sort(),[200,409]);
  });
+ await t.test("risk history pages preserve the current head and every immutable assessment",async()=>{
+  const first=await get(),ids:string[]=[];
+  assert.equal(first.history.length,5);assert.equal(first.historyTruncated,true);assert.ok(first.nextCursor);
+  let page=first;
+  while(true){
+   assert.equal(page.currentId,first.currentId);assert.equal(page.expectedVersion,first.expectedVersion);
+   assert.ok(page.history.length<=5);ids.push(...page.history.map((row:any)=>row.id));
+   if(!page.nextCursor)break;
+   page=await get(`${route}?cursor=${page.nextCursor}`);
+  }
+  assert.equal(new Set(ids).size,ids.length);
+  const stored=await prisma.taskRiskAssessment.findMany({where:{workspaceId},select:{id:true}});
+  assert.deepEqual([...ids].sort(),stored.map(row=>row.id).sort());
+  const invalid=await request(`${route}?cursor=${randomUUID()}`,{headers:auth});
+  assert.equal(invalid.status,409);assert.equal((invalid.body as any).error,"task_risk_cursor_invalid");
+  assert.equal((await request(`${route}?cursor=invalid`,{headers:auth})).status,400);
+ });
  await t.test("accepted context binds assessment and evidence changes fence Ready durably",async()=>{
   await post(`${route}/assessments`,await command());
   await prepareAdmissionFixture(route.replace(/\/risk$/,"/risk-admission"),f.input,auth);

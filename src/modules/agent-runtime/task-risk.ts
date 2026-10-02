@@ -29,15 +29,21 @@ export async function riskAdmission(db: Db, taskId: string, input?: any) {
   }
   return { id: s.current as string };
 }
-export async function taskRiskView(db: Db, workspaceId: string, taskId: string, userId?: string) {
+export async function taskRiskView(db: Db, workspaceId: string, taskId: string, userId?: string, cursor?: string) {
   const task = await lockReadyTask(db, workspaceId, taskId);
   if (!task) return { error: "task_not_found" };
   const state = await sourceState(db, taskId), ids = state.sources.map((s: any) => s.taskId);
   const members = await db.$queryRaw<any[]>`SELECT t.id,t.title,t.goal_id AS "goalId",s.id AS "scopeId",s.input,s.application_id AS "applicationId",s.component_id AS "componentId",s.release_set_id AS "releaseSetId",s.version
     FROM tasks t LEFT JOIN LATERAL(SELECT * FROM task_risk_scopes WHERE task_id=t.id ORDER BY version DESC LIMIT 1)s ON true
     WHERE t.workspace_id=${workspaceId}::uuid AND t.id IN (${Prisma.join(ids.map((id: string) => Prisma.sql`${id}::uuid`))}) ORDER BY t.id`;
+  const before = cursor ? (await db.$queryRaw<Array<{sequence: bigint}>>`SELECT sequence FROM task_risk_assessments
+    WHERE id=${cursor}::uuid AND workspace_id=${workspaceId}::uuid AND sources @> ${JSON.stringify([{taskId}])}::jsonb`)[0] : null;
+  if (cursor && !before) return {error:"task_risk_cursor_invalid"};
+  // Full group assessments repeat many evidence references. Bound each page
+  // before runtime redaction; history remains immutable and cursor accessible.
   const history = await db.$queryRaw<any[]>`SELECT id,task_id AS "taskId",version,source_version AS "sourceVersion",entries,result,joint_rationale AS "jointRationale",actor_user_id AS "assessorId",created_at AS "createdAt"
-    FROM task_risk_assessments WHERE workspace_id=${workspaceId}::uuid AND sources @> ${JSON.stringify([{taskId}])}::jsonb ORDER BY sequence DESC LIMIT 21`;
+    FROM task_risk_assessments WHERE workspace_id=${workspaceId}::uuid AND sources @> ${JSON.stringify([{taskId}])}::jsonb
+    AND (${before?.sequence ?? null}::bigint IS NULL OR sequence < ${before?.sequence ?? null}::bigint) ORDER BY sequence DESC LIMIT 6`;
   const records = await db.companyRecord.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ applicationId: null }, { applicationId: { in: members.map((m: any) => m.applicationId).filter(Boolean) } }] }, select: { id: true, title: true, updatedAt: true, applicationId: true }, take: 501, orderBy: { id: "asc" } });
   const blockers = [...(members.length > 50 ? ["group_limit"] : []), ...(members.some(m => !m.scopeId) ? ["scope_missing"] : []), ...(!state.current ? ["assessment_missing_or_stale"] : [])];
   return { task: { id: taskId, title: task.title }, algorithm: riskAlgorithm, expectedVersion: state.version, currentId: state.current,
@@ -48,7 +54,8 @@ export async function taskRiskView(db: Db, workspaceId: string, taskId: string, 
         ...(m.applicationId&&m.applicationId===other.applicationId&&m.releaseSetId&&m.releaseSetId===other.releaseSetId?["release_set"]:[]),
         ...(state.sources.find((s:any)=>s.taskId===m.id)?.lineage.some((id:string)=>state.sources.find((s:any)=>s.taskId===other.id)?.lineage.includes(id))?["lineage"]:[])]))],
       objective: object(object(m.input).contract).objective?.outcome ?? null, scope: m.id === taskId ? m.input : undefined })),
-    history: history.slice(0,20), historyTruncated: history.length > 20, evidence: records.slice(0,500).map(r => ({ id: r.id, label: r.title, revision: r.updatedAt.toISOString(), applicationId: r.applicationId })), evidenceTruncated: records.length > 500 };
+    history: history.slice(0,5), historyTruncated: history.length > 5, nextCursor: history.length > 5 ? history[4]!.id : null,
+    evidence: records.slice(0,500).map(r => ({ id: r.id, label: r.title, revision: r.updatedAt.toISOString(), applicationId: r.applicationId })), evidenceTruncated: records.length > 500 };
 }
 export async function prepareRiskScope(db: Db, workspaceId: string, taskId: string, userId: string, body: unknown) {
   const input = riskScopeSchema.parse(body);

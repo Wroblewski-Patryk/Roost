@@ -17,8 +17,8 @@ The pinned baseline is `cf90418cc694dc0cb773a44c001c569407d05f9f`.
 The audit identifies a PWA screenshot declared as 512 by 512 while the shipped
 PNG is 1000 by 1000. A separate HTTPS observation reproduced the mismatch.
 The audit distinguishes that supplied observation from an independent native
-retrieval. A managed repair, exact-commit acceptance and production release are
-unproven; independent verification and first-write consent are recorded below.
+retrieval. The managed repair and an independent exact-commit review are recorded
+below; current review basis and production release remain pending.
 The earlier accepted local pilot branch/commit is preserved.
 
 Independent verifier execution `05f069aa-2a1d-48c1-959d-86a473372460`
@@ -102,6 +102,50 @@ versions. Source support retains this topology without another application or
 deployment migration. Production safety reads found active LIVE activity and
 nonterminal orders. No trading, cancellation, data mutation, push or application
 deployment was performed for this repair.
+
+### Managed candidate and review
+
+Coder execution `58387e7a-c4b2-4fbd-acf9-7fd835832eb5` completed through the
+normal Windows Worker/Hermes runtime and returned clean local commit
+`7512bc395d65df0fca7cf701047033031f63eb7e` on its isolated task branch.
+Only the approved manifest and regression test changed. The model reported the
+genuine initial dimension assertion failure; its tool budget ended after the
+repair. The fixed Worker then ran the actual installed workspace Vitest test:
+one passed, zero failed or pending, owned Job closed with zero active children.
+It created the local commit only after that green result. The model's report
+and the fixed native verification are distinct evidence.
+
+Independent read-only reviewer execution
+`a272c952-bf70-47f9-81f6-67108fa606db` completed without changes and approved
+that exact commit through normal decision
+`fd94c23c-c3b9-4f5f-aaac-250f50305386`. Its unchanged-state evidence digest is
+`7773d43c4661ba71697ca50e75847fcd45935bb9664c7985a2fe2b6c1259a6a5`.
+Append-only result-basis revalidation
+`4a700d6c-bf1d-49f6-84d2-6489c730c6b7` preserved the original native result
+and linked the then-current Ready basis. Subsequent release configuration
+changes invalidate that acceptance basis; a fresh independent acceptance is
+required before release. Historical approval is retained, not grandfathered.
+
+Roost infrastructure commit `ea71213315e61bbc595c347efe9fc8a2fca184e7` was
+pushed and deployed as `mtkgm3xb7ms6bi7ubtgf9bkl`; health and build identity
+matched the exact commit. It includes nine passing real Windows failed-candidate
+recovery cases. This infrastructure deployment did not release the pilot.
+
+Fresh six-target inspection retained the mixed baseline and compatible schema.
+Web catches up seven existing dashboard source/test paths in addition to the two
+new PWA paths; API/workers have no source or migration delta beyond the PWA
+candidate. API health/readiness and the web manifest returned HTTP 200; API
+payloads were `ok` and `ready`. Actual LIVE counts remained one active bot,
+one running session, five open orders and five pending dedupes. Pilot backup/
+restore, stable data fingerprints and separate exact owner release authority
+remain unproven. No pilot push, deployment or financial action occurred.
+
+Large repeated group-risk history exceeded the runtime encoded-value scanning
+budget. An uncertain assessment reply was reconciled by its exact persisted
+request/assessment identity before retry. Risk history now has five-row pages
+and a workspace/task-bound cursor; historical records and current assessment
+identity remain unchanged. Bounded release context removes redundant copies;
+redaction limits and split-secret checks remain enforced.
 
 ## Sealed release contract
 
