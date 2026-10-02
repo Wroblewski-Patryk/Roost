@@ -9,6 +9,7 @@ import { isHermesStartupReceipt } from "./agent-host-hermes-startup.mjs";
 import { assertHermesBudgetReceipt, hermesBudgetReceiptMatches } from "./agent-host-hermes-budget.mjs";
 import { isWindowsJobCleanupReceipt } from "./agent-host-windows-job.mjs";
 import { guardHostContent } from "./agent-host-redaction.mjs";
+import { codeReviewReferenceMatches } from "./agent-host-code-reviewer.mjs";
 
 const sealed = new WeakMap(), receipts = new WeakMap();
 const hex = value => createHash("sha256").update(value).digest("hex");
@@ -106,7 +107,7 @@ export function collectReadOnlyRepositoryEvidence({ repositoryPath, expected, pa
     if (review) {
       stage = "review_material_unavailable";
       if (!reviewMaterial || review.reviewedCommit !== expected.head
-          || reviewMaterial.materialVersion !== review.verifiedEvidenceDigest
+          || !codeReviewReferenceMatches(reviewMaterial, review)
           || reviewMaterial.result?.executionId !== review.verifiedExecutionId
           || reviewMaterial.result?.resultRevision?.commit !== review.reviewedCommit
           || reviewMaterial.result?.verification?.localCommit?.commit !== review.reviewedCommit
@@ -119,7 +120,9 @@ export function collectReadOnlyRepositoryEvidence({ repositoryPath, expected, pa
       const safe = guardHostContent({ diff }, "required", secrets);
       if (safe.redacted || safe.value?.diff !== diff) fail("review_diff_redaction_blocked");
       reviewed = { verifiedTaskId: review.verifiedTaskId, verifiedExecutionId: review.verifiedExecutionId,
-        materialVersion: reviewMaterial.materialVersion, baselineCommit: review.baselineCommit,
+        materialVersion: reviewMaterial.materialVersion,
+        ...(reviewMaterial.result.basisRevalidation ? { originalMaterialVersion: review.verifiedEvidenceDigest, basisCurrent: reviewMaterial.basisCurrent,
+          basisRevalidation: structuredClone(reviewMaterial.result.basisRevalidation) } : {}), baselineCommit: review.baselineCommit,
         reviewedCommit: review.reviewedCommit, changedFiles: reviewMaterial.result.changedFiles,
         codingTests: reviewMaterial.result.verification.codingTests,
         localCommit: reviewMaterial.result.verification.localCommit,
@@ -227,7 +230,8 @@ export function completeReadOnlyBoundary(proof, { ownedTreeReceipt, error } = {}
       preTree: saved.repositoryEvidence.tree, postTree: now.footprint.digest, processState: "unchanged", dockerState: "unchanged",
       gitState: "unchanged", nativeTools: [], processCoverage: "listening_tcp_plus_owned_job_zero_processes",
       dockerCoverage: "running_container_list", ...(review.kind === "verifier" || review.kind === "code-reviewer"
-        ? { verifiedExecutionId: review.verifiedExecutionId, verifiedEvidenceDigest: review.verifiedEvidenceDigest } : {}),
+        ? { verifiedExecutionId: review.verifiedExecutionId, verifiedEvidenceDigest: review.kind === "code-reviewer"
+          ? saved.repositoryEvidence.reviewed.materialVersion : review.verifiedEvidenceDigest } : {}),
       ...(review.kind === "code-reviewer" ? { verifiedTaskId: review.verifiedTaskId, reviewedCommit: review.reviewedCommit,
         baselineCommit: review.baselineCommit, diffDigest: saved.repositoryEvidence.reviewed.diffDigest } : {}) };
     return frozen({ ...body, digest: nativeDigest(body) });

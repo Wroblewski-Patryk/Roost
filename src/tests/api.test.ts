@@ -2028,6 +2028,11 @@ test("completed native result basis requires current owner Ready and preserves i
  assert.equal((await post(route+"/actions/revalidate-result-basis",{...body,commit:"d".repeat(40)})).status,409);
  const result=await post(route+"/actions/revalidate-result-basis",body);assert.equal(result.status,200,JSON.stringify(result.body));
  const saved=(result.body as any).data;assert.notEqual(saved.materialVersion,before.materialVersion);assert.equal(saved.originalMaterialVersion,old.materialVersion);
+ const reviewBefore=await request(`/v1/agent-runtime/tasks/${task.id}/review`,{headers:auth});
+ assert.equal(reviewBefore.status,200,JSON.stringify(reviewBefore.body));
+ assert.equal((reviewBefore.body as any).data.basisCurrent,true);
+ assert.equal((reviewBefore.body as any).data.materialVersion,saved.materialVersion);
+ assert.equal((reviewBefore.body as any).data.result.basisRevalidation.originalMaterialVersion,old.materialVersion);
  const replay=await post(route+"/actions/revalidate-result-basis",body);assert.equal(replay.status,200,JSON.stringify(replay.body));assert.equal((replay.body as any).data.replayed,true);
  assert.deepEqual((await prisma.agentExecution.findUniqueOrThrow({where:{id}})).metadata,execution.metadata);
  await assert.rejects(prisma.$executeRaw`UPDATE completed_result_basis_revalidations SET commit=${"d".repeat(40)} WHERE execution_id=${id}::uuid`,/completed_result_basis_append_only/);
@@ -2036,6 +2041,9 @@ test("completed native result basis requires current owner Ready and preserves i
  const {readyTransaction}=await import("../modules/agent-runtime/task-execution-readiness"),{releaseExecutionBasisCurrent}=await import("../modules/agent-runtime/governed-release");
  assert.equal(await readyTransaction(tx=>releaseExecutionBasisCurrent(tx,workspaceId,execution)),true);
  await prisma.companyRecord.update({where:{id:f.sources[0]!.id},data:{description:"Actual context drift"}});
+ const reviewAfter=await request(`/v1/agent-runtime/tasks/${task.id}/review`,{headers:auth});
+ assert.equal((reviewAfter.body as any).data.basisCurrent,false);
+ assert.equal((reviewAfter.body as any).data.canReview,false);
  assert.equal(await readyTransaction(tx=>releaseExecutionBasisCurrent(tx,workspaceId,execution)),false);
  assert.equal((await post(route+"/actions/revalidate-result-basis",command(await view()))).status,409);
 });

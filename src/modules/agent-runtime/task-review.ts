@@ -41,7 +41,7 @@ export async function reviewState(db: Db, workspaceId: string, taskId: string, a
   const effectivePin = object(object(effective?.metadata).readyContextPin);
   const current = Boolean(execution?.status === "completed" && execution.completedAt && !execution.contextInvalidatedAt && result?.pin?.pinId && pin.pinId === effectivePin.pinId && pin.revision === effectivePin.revision && task.assignedWorkforceEntityId === contract.assignment?.agentId);
   const expectedVersion = reviewDigest({ task: { id: task.id, updatedAt: task.updatedAt, readiness: pin, provenance: task.executionRoleProvenance, executor: task.assignedWorkforceEntityId }, result, authorities, decision });
-  return { task, execution, result, contract, authorities, labels, decision, materialVersion, approvalCommit, expectedVersion, current, roleIssues, principal, roleMatches,
+  return { task, execution, result, contract, authorities, labels, decision, materialVersion, approvalCommit, expectedVersion, current, basisCurrent: Boolean(current && effective !== execution), roleIssues, principal, roleMatches,
     canReview: current && !decision && !roleIssues.length && roleMatches(authorities.verifier),
     canManage: current && decision?.decision === "reject" && !decision.action && !roleIssues.length && roleMatches(authorities.accountableManager) };
 }
@@ -60,7 +60,7 @@ export async function taskReviewView(db: Db, workspaceId: string, taskId: string
   const canManageGrants = s.principal?.kind === "user" && Boolean(await db.workspaceMembership.findFirst({ where: { workspaceId, userId: s.principal.id, role: { in: ["owner", "admin"] } } }));
   return { task: { id: taskId, title: s.task.title }, decisionAuthorities:await taskDecisionAuthorities(db,workspaceId,taskId),expectedVersion: s.expectedVersion, materialVersion: s.materialVersion,
     ...await suspensionList(db,workspaceId,taskId), blockedOperations:{review_decision:reviewBlocked,return_to_executor:returnBlocked,create_specialist_task:specialistBlocked},
-    result: s.result, labels: s.labels, decision: decisionView(s.decision), approvalCommit: s.approvalCommit, canReview: Boolean(canReview), canManage: Boolean(canManage), grantAccess, canManageGrants,
+    result: s.result, basisCurrent: s.basisCurrent, labels: s.labels, decision: decisionView(s.decision), approvalCommit: s.approvalCommit, canReview: Boolean(canReview), canManage: Boolean(canManage), grantAccess, canManageGrants,
     reason: grantAccess && (s.canReview && !canReview || s.canManage && !canManage) ? "capability_grant_required" : !s.execution ? "no_result" : !s.current ? "stale_result" : s.roleIssues.length ? "roles_need_context" : s.canReview || s.canManage ? null : s.decision ? s.decision.action ? "action_recorded" : s.decision.decision === "approve" ? "approved" : "manager_required" : "verifier_required",
     history: history.slice(0, 50).map(decisionView), nextCursor: history.length > 50 ? history[49]!.id : null,
     specialists: specialists.slice(0, 500).map(w => ({ id: w.id, label: w.name, revision: w.updatedAt.toISOString(), competencies: w.skillIndex, role: w.role })), specialistsTruncated: specialists.length > 500 };

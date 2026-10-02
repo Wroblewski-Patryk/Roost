@@ -3,11 +3,15 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import childProcess from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { syncBuiltinESMExports } from "node:module";
 import { nativeFixture } from "./fixtures/hermes-native.mjs";
 import { pinReadyFixture } from "./fixtures/execution-packet.mjs";
-import { collectReadOnlyRepositoryEvidence, qualifyHermesReadOnlyTools } from "./lib/agent-host-readonly-boundary.mjs";
-import { prepareProviderInput, abandonProviderNativeBoundary } from "./lib/agent-host-provider-input.mjs";
+import { collectReadOnlyRepositoryEvidence, qualifyHermesReadOnlyTools, consumeReadOnlyBoundary,
+  authorizeReadOnlyResume, completeReadOnlyBoundary } from "./lib/agent-host-readonly-boundary.mjs";
+import { prepareProviderInput, abandonProviderNativeBoundary, assertProviderStartup,
+  assertProviderReadOnlyBoundary } from "./lib/agent-host-provider-input.mjs";
+import { buildWindowsJobLauncher, startWindowsJob } from "./lib/agent-host-windows-job.mjs";
 
 const windows = { skip: process.platform !== "win32", timeout: 60000 };
 const blocked = reason => error => {
@@ -119,3 +123,82 @@ for (const [scenario, reason] of Object.entries({ qualification_timeout: "tool_q
     }
   });
 }
+
+function reviewedCandidate(x, mapped) {
+  const baselineCommit = x.git("rev-parse", "HEAD");
+  fs.writeFileSync(path.join(x.repositoryPath, "editable.txt"), "candidate\n");
+  x.git("add", "editable.txt"); x.git("commit", "-m", "bounded reviewed candidate");
+  const reviewedCommit = x.git("rev-parse", "HEAD"), originalPinId = randomUUID();
+  x.options.currentCommit = reviewedCommit; x.options.nativeBoundaryOptions.expected.head = reviewedCommit;
+  const review = { kind: "code-reviewer", verifiedTaskId: randomUUID(), verifiedExecutionId: randomUUID(),
+    verifiedEvidenceDigest: "a".repeat(64), baselineCommit, reviewedCommit };
+  const reviewMaterial = { task: { id: review.verifiedTaskId }, canReview: true, basisCurrent: mapped,
+    approvalCommit: reviewedCommit, grantAccess: { review_decision: { status: "active" } },
+    materialVersion: mapped ? "b".repeat(64) : review.verifiedEvidenceDigest,
+    result: { taskId: review.verifiedTaskId, executionId: review.verifiedExecutionId,
+      pin: { pinId: originalPinId, revision: "c".repeat(64) }, resultRevision: { commit: reviewedCommit },
+      changedFiles: ["editable.txt"], verification: { codingTests: { passed: true },
+        localCommit: { commit: reviewedCommit }, nativeReviewReceipt: { verdict: "verified_candidate" } } } };
+  if (mapped) reviewMaterial.result.basisRevalidation = { id: randomUUID(), originalPinId,
+    originalRevision: "c".repeat(64), originalMaterialVersion: review.verifiedEvidenceDigest,
+    readyPinId: randomUUID(), readyRevision: "d".repeat(64), readyPinDigest: "e".repeat(64),
+    commit: reviewedCommit, actorUserId: randomUUID(), createdAt: "2026-10-02T00:00:00.000" };
+  const collect = () => collectReadOnlyRepositoryEvidence({ repositoryPath: x.repositoryPath,
+    expected: x.options.nativeBoundaryOptions.expected, paths: ["editable.txt"], reviewMaterial, review });
+  return { review, reviewMaterial, collect };
+}
+for (const mapped of [false, true]) test(`repository collector seals ${mapped ? "revalidated" : "ordinary"} review material with exact native diff`, windows, async t => {
+  const x = await fixture(t);
+  try {
+    const candidate = reviewedCandidate(x, mapped), evidence = candidate.collect();
+    assert.equal(evidence.reviewed.materialVersion, candidate.reviewMaterial.materialVersion);
+    assert.ok(evidence.reviewed.diff.includes("+candidate"));
+    if (mapped) {
+      assert.equal(evidence.reviewed.basisCurrent, true);
+      assert.equal(evidence.reviewed.originalMaterialVersion, candidate.review.verifiedEvidenceDigest);
+      assert.deepEqual(evidence.reviewed.basisRevalidation, candidate.reviewMaterial.result.basisRevalidation);
+      assert.equal(Object.isFrozen(evidence.reviewed.basisRevalidation), true);
+    } else { assert.equal(evidence.reviewed.basisRevalidation, undefined); assert.equal(evidence.reviewed.originalMaterialVersion, undefined); }
+  } finally { x.restore(); }
+});
+test("repository collector rejects a stale mapped basis before model input", windows, async t => {
+  const x = await fixture(t);
+  try {
+    const candidate = reviewedCandidate(x, true); candidate.reviewMaterial.basisCurrent = false;
+    assert.throws(candidate.collect, blocked("review_material_mismatch"));
+  } finally { x.restore(); }
+});
+test("revalidated code-reviewer audit binds sealed current material after a real owned Windows Job", windows, async t => {
+  const x = await fixture(t); let job;
+  try {
+    const candidate = reviewedCandidate(x, true), repositoryEvidence = candidate.collect(), c = x.f.packet.contract;
+    c.nativeBoundary = { profile: "inspect-readonly", readPaths: ["editable.txt"], runtime: { required: false, ports: [] },
+      inspectReadOnly: candidate.review };
+    c.access = { ...c.access, tools: ["repository_read"], permissions: ["repository_read"], sandbox: "read-only" };
+    x.f.packet.procedureComposition.fields.tools = ["repository_read"];
+    pinReadyFixture(x.f);
+    x.f.taskContext.readyAdmission.riskAdmission.commit = x.options.currentCommit;
+    x.f.claimed.metadata.readyContextPin.riskAdmissionCommit = x.options.currentCommit;
+    const envelope = prepareProviderInput({ ...x.options, repositoryEvidence });
+    const checked = assertProviderStartup({ envelope, provider: x.provider, repositoryPath: x.repositoryPath,
+      startupEnvironment: x.options.startupEnvironment });
+    const receipt = assertProviderReadOnlyBoundary(envelope);
+    const proof = consumeReadOnlyBoundary(receipt, { cwd: x.repositoryPath, environment: x.options.startupEnvironment,
+      attempt: envelope.identity.executionId, budgetReceipt: checked.budgetReceipt });
+    const launcher = await buildWindowsJobLauncher(x.root);
+    job = await startWindowsJob(launcher, { executable: process.execPath, argv: ["-e", "process.exit(0)"], cwd: x.repositoryPath,
+      environment: x.options.startupEnvironment, input: "", durationMs: 5000, attempt: envelope.identity.executionId,
+      confirmResume: assignment => authorizeReadOnlyResume(proof, assignment, { kind: "owned_readonly_fixture" }) });
+    const ownedTreeReceipt = await job.completion;
+    const audit = completeReadOnlyBoundary(proof, { ownedTreeReceipt });
+    assert.equal(audit.verdict, "verified");
+    assert.equal(audit.verifiedEvidenceDigest, candidate.reviewMaterial.materialVersion);
+    assert.notEqual(audit.verifiedEvidenceDigest, candidate.review.verifiedEvidenceDigest);
+    assert.equal(audit.verifiedExecutionId, candidate.review.verifiedExecutionId);
+    assert.equal(audit.reviewedCommit, candidate.review.reviewedCommit);
+    assert.equal(audit.diffDigest, repositoryEvidence.reviewed.diffDigest);
+  } finally {
+    if (job) { job.stop(); await job.completion.catch(() => {}); }
+    x.restore();
+  }
+});

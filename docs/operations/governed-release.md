@@ -646,7 +646,28 @@ Root verification passed 30 component tests and 14 actual PostgreSQL/HTTP tests
 with zero skips. The latter applied the forward migration in a nonce-owned
 database, exercised owner/version restrictions, exact replay, immutable native
 evidence, source drift, output/input watches and ordinary Ready fences, then
-removed the owned database and role. Production revalidation and the managed
-release certificate remain pending. Roost deployment `yzuxho42q6ffu4lmgehyce2m`
+removed the owned database and role. The managed release certificate remains
+pending. Roost deployment `yzuxho42q6ffu4lmgehyce2m`
 finished at `08f8685ef94b71c3c3ad4c4c08d7a3e313bc28ff`; both health/build
 endpoints returned 200 with that exact commit.
+
+Deployment `f10u5x4m99b2cwz2jd6d66m0` finished at
+`654b42c1ccea24738382d80c989d8e562ee74b31`, with exact health/build 200.
+Normal owner commands refreshed the complete five-task assessment, procedure
+evidence and three Ready contracts, then recorded revalidation
+`f7122ebd-4bbc-44e7-a519-3614d95275ec` for the unchanged native candidate.
+Its review material is
+`1bb8a5668e1b9b2b2d9252f51af0345ee48acdb456526b733a0e60af63170a89`.
+The original native pin/result remains intact; fresh independent review is still
+required. The earlier reviewer failed before model launch because its unused
+grant was invalidated by a sibling claim. Normal stopped-Worker reclamation
+proved process/lease absence and unchanged source before releasing its Writer.
+
+Worker review contracts retain the immutable original native material reference.
+Only a current server basis mapping and active grant permit that reference; the
+sealed model input contains the full new mapping, while the native audit,
+decision and API read-back bind the new material. This avoids changing the
+shared risk basis merely to reference its own digest. Root reruns passed 103
+Worker/input/review tests, including actual Git collection and an owned Windows
+Job, and 14 PostgreSQL/HTTP tests proving the server current-basis flag and
+source-drift refusal. All had zero skips. Actual managed review remains pending.

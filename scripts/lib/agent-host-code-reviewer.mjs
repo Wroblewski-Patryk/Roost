@@ -91,9 +91,33 @@ export async function reviewerApi({ baseUrl, config, key, route, method = "GET",
   } catch { fail(stage); }
 }
 
+export const basisRevalidationSchema = z.object({ id, originalPinId: id, originalRevision: hash,
+  originalMaterialVersion: hash, readyPinId: id, readyRevision: hash, readyPinDigest: hash,
+  commit, actorUserId: id, createdAt: z.string().min(19).max(40).refine(value => Number.isFinite(Date.parse(value))) }).strict();
+
+// This mapping is a trusted TLS API projection of an append-only server record,
+// not client permission to replace the original native evidence. Review and the
+// eventual decision bind the current material, including its new required basis.
+export function codeReviewReferenceMatches(view, review) {
+  const mapping = view?.result?.basisRevalidation;
+  if (!mapping) return hash.safeParse(review?.verifiedEvidenceDigest).success
+    && view?.materialVersion === review.verifiedEvidenceDigest;
+  const parsed = basisRevalidationSchema.safeParse(mapping);
+  if (!parsed.success || view.basisCurrent !== true || view.canReview !== true
+    || view.grantAccess?.review_decision?.status !== "active"
+    || !hash.safeParse(view.materialVersion).success || view.materialVersion === review?.verifiedEvidenceDigest) return false;
+  const basis = parsed.data;
+  return basis.originalMaterialVersion === review?.verifiedEvidenceDigest
+    && basis.commit === review.reviewedCommit && basis.originalPinId !== basis.readyPinId
+    && view.result?.pin?.pinId === basis.originalPinId && view.result?.pin?.revision === basis.originalRevision
+    && view.task?.id === review.verifiedTaskId && view.result?.taskId === review.verifiedTaskId
+    && view.result?.executionId === review.verifiedExecutionId
+    && view.result?.resultRevision?.commit === review.reviewedCommit && view.approvalCommit === review.reviewedCommit;
+}
+
 export function validateCodeReviewView(view, review, reviewerAgentId) {
   try {
-    if (view?.materialVersion !== review.verifiedEvidenceDigest || view.result?.executionId !== review.verifiedExecutionId
+    if (!codeReviewReferenceMatches(view, review) || view.result?.executionId !== review.verifiedExecutionId
         || view.result?.resultRevision?.commit !== review.reviewedCommit || view.approvalCommit !== review.reviewedCommit
         || view.result?.contract?.taskRoles?.verifier?.id !== reviewerAgentId
         || view.result?.contract?.assignment?.agentId === reviewerAgentId || !view.canReview
@@ -112,7 +136,7 @@ export function prepareCodeReviewDecision({ finalResponse, view, review, config,
       fail(`model_schema_${/^[a-z][a-z0-9]{0,30}$/.test(field) ? field : "field"}`);
     }
     const candidate = result.data;
-    if (candidate.reviewedCommit !== review.reviewedCommit || candidate.evidenceDigest !== view.materialVersion
+    if (!codeReviewReferenceMatches(view, review) || candidate.reviewedCommit !== review.reviewedCommit || candidate.evidenceDigest !== view.materialVersion
         || readOnlyAudit?.reviewedCommit !== review.reviewedCommit || readOnlyAudit?.verifiedEvidenceDigest !== view.materialVersion
         || readOnlyAudit?.verifiedExecutionId !== review.verifiedExecutionId) fail("model_binding_invalid");
     const { evidenceDigest: _evidenceDigest, reviewedCommit, ...decision } = candidate;

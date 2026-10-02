@@ -9,6 +9,7 @@ import { guardHostContent } from "./agent-host-redaction.mjs";
 import ready from "./agent-host-ready-context.cjs";
 import { sealHermesProfile, assertHermesProfile, hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion } from "./agent-host-hermes-profile.mjs";
 import { createHermesStartupCandidate, sealHermesStartup, assertHermesStartup } from "./agent-host-hermes-startup.mjs";
+import { basisRevalidationSchema } from "./agent-host-code-reviewer.mjs";
 
 import { sealHermesBudget, assertHermesBudget, assertHermesBudgetReceipt, createHermesBudgetReceipt } from "./agent-host-hermes-budget.mjs";
 
@@ -49,6 +50,8 @@ export const providerInputSchema = z.object({
       files: z.array(z.object({ path: z.string().min(1), mimeType: z.literal("text/plain"), content: z.string().max(32768), sha256: hash }).strict()).min(1).max(32),
       tree: hash, processDigest: hash, dockerDigest: hash,
       reviewed: z.object({ verifiedTaskId: id, verifiedExecutionId: id, materialVersion: hash,
+        originalMaterialVersion: hash.optional(), basisCurrent: z.literal(true).optional(),
+        basisRevalidation: basisRevalidationSchema.optional(),
         baselineCommit: z.string().regex(/^[a-f0-9]{40}$/), reviewedCommit: z.string().regex(/^[a-f0-9]{40}$/),
         changedFiles: z.array(z.string()).max(128), codingTests: record, localCommit: record, nativeReview: record,
         diff: z.string().max(32768), diffDigest: hash }).strict().optional(), digest: hash
@@ -56,7 +59,23 @@ export const providerInputSchema = z.object({
   }).strict(),
   startupTools: z.tuple([]),
   seal: hash
-}).strict();
+}).strict().superRefine((input, context) => {
+  const reviewed = input.evidence.repositoryInspection?.value.reviewed;
+  if (!reviewed) return;
+  const mapping = reviewed.basisRevalidation, reference = input.contract.nativeBoundary?.inspectReadOnly;
+  // Ordinary reviews keep their historical evidence shape. A revalidated input
+  // cannot discard the original reference or substitute a different task/result.
+  const mapped = mapping !== undefined || reviewed.basisCurrent !== undefined || reviewed.originalMaterialVersion !== undefined;
+  if (mapped && (!mapping || reviewed.basisCurrent !== true || reference?.kind !== "code-reviewer"
+    || reviewed.originalMaterialVersion !== mapping.originalMaterialVersion
+    || reviewed.originalMaterialVersion !== reference.verifiedEvidenceDigest
+    || reviewed.materialVersion === reviewed.originalMaterialVersion
+    || mapping.originalPinId === mapping.readyPinId
+    || reviewed.verifiedTaskId !== reference.verifiedTaskId || reviewed.verifiedExecutionId !== reference.verifiedExecutionId
+    || reviewed.reviewedCommit !== reference.reviewedCommit || mapping.commit !== reviewed.reviewedCommit
+    || reviewed.baselineCommit !== reference.baselineCommit)) context.addIssue({ code: z.ZodIssueCode.custom,
+    path: ["evidence", "repositoryInspection", "value", "reviewed"], message: "review_basis_mapping_invalid" });
+});
 /** @typedef {import('zod').infer<typeof providerInputSchema>} ProviderInput */
 
 const canonical = value => Array.isArray(value) ? value.map(canonical) : value && typeof value === "object"

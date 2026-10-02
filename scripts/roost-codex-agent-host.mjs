@@ -587,7 +587,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       const outcome = await duration.wait(reviewerApi({ baseUrl, config: config.codeReviewer, key: codeReviewerKey,
         route: `/v1/agent-runtime/tasks/${inspection.verifiedTaskId}/actions/review`, method: "POST", body: decision }));
       if (outcome.decision?.executionId !== inspection.verifiedExecutionId
-          || outcome.decision?.materialVersion !== inspection.verifiedEvidenceDigest
+          || outcome.decision?.materialVersion !== codeReviewerView.materialVersion
           || outcome.decision?.decision !== decision.decision || outcome.decision?.actorAgentId !== config.codeReviewer.agentId)
         throw protocolAdmissionError("code_review_decision_unproven");
       verification.codeReviewDecision = { id: outcome.decision.id, decision: outcome.decision.decision,
