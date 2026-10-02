@@ -4,6 +4,7 @@ import type { AuthContext } from "../../auth/api-key.middleware";
 import { resolveReviewPrincipal } from "../../auth/agent-principal";
 import { reviewState } from "./task-review";
 import { inspectReady } from "./task-execution-readiness";
+import { effectiveCompletedResult } from "./completed-result-basis";
 import { nativeBoundaryResultBlocked, object, wire } from "./task-review-contract";
 import { suspensionBlocks } from "./capability-suspension";
 import { freshWorkerOwner } from "../api-keys/worker-credential.service";
@@ -16,6 +17,12 @@ type Db=Prisma.TransactionClient;
 export async function releaseExecutionBasisCurrent(db:Db,workspaceId:string,execution:any) {
  if(!execution)return false;
  const current=await inspectReady(db,workspaceId,execution.taskId,execution,true);
+ if("error" in current&&object(current.readiness).reason==="execution_pin_mismatch") {
+  const effective=await effectiveCompletedResult(db,workspaceId,execution);
+  if(effective===execution)return false;
+  const revalidated=await inspectReady(db,workspaceId,execution.taskId,effective,true);
+  return !("error" in revalidated)&&revalidated.readiness.status==="ready";
+ }
  return !("error" in current)&&current.readiness.status==="ready";
 }
 const camel=(row:any)=>Object.fromEntries(Object.entries(row).filter(([k])=>k!=="request_hash").map(([k,v])=>[k.replace(/_([a-z])/g,(_:string,c:string)=>c.toUpperCase()),v]));

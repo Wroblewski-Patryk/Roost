@@ -29,7 +29,14 @@ export async function loadTaskAgentContext(workspaceId: string, taskId: string, 
   const replaced=new Set(governed.map(r=>r.supersedesId).filter(Boolean));
   const effective=await db.decision.findMany({where:{workspaceId,id:{in:governed.map(r=>r.decisionId).filter(id=>!replaced.has(id))}}});
   decisions.splice(0,decisions.length,...decisions.filter(d=>!replaced.has(d.id)&&!effective.some(n=>n.id===d.id)),...effective);
-  const evidence = await db.evidenceRecord.findMany({ where: { workspaceId, OR: [{ entityType: "task", entityId: task.id }, { entityId: { in: records.map((record) => record.id) } }] }, orderBy: { observedAt: "desc" } });
+  // Runtime receipts are outputs of this task, not changes to its input.
+  // They remain available through execution and evidence views. Human evidence
+  // and evidence attached to required records still participates in Ready.
+  const evidence = await db.evidenceRecord.findMany({ where: {
+    workspaceId,
+    OR: [{ entityType: "task", entityId: task.id }, { entityId: { in: records.map((record) => record.id) } }],
+    NOT: { entityType: "task", entityId: task.id, source: { in: ["agent", "system"] }, type: { in: ["manual_verification", "deployment"] } }
+  }, orderBy: { observedAt: "desc" } });
   return {
     schemaVersion: "task-agent-execution-context-v1", generatedAt: new Date().toISOString(), task, organizationalContext: contexts.get(task.id),...(decisionAuthorities.length?{decisionAuthorities}:{}),
     ...(execution ? { executionPacket: await prepareExecutionPacket(execution, task, db, submission) } : {}),

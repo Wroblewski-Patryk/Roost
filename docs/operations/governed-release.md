@@ -595,7 +595,7 @@ receipt and physical absence, then released the exact dead owner's lock.
 The empty task branch created by that Worker was compensated to the unchanged
 baseline; no model result or application change was accepted. Execution
 `eac347c7-5998-4b06-b9d6-159cd298db5a` was queued with the same Ready pin and
-accepted first-write Decision. Its result remains pending.
+accepted first-write Decision. Its completed result is recorded below.
 
 Release resource projections now retain registered resource identity and
 creation time. The dedicated release Worker needs both to match its image
@@ -623,3 +623,30 @@ Image cleanup accepts an immutable Docker digest alias only when it equals the
 recorded repository and digest. Foreign or changed aliases remain refused.
 The root rerun passed all 39 focused image-cleanup tests with no skips. These
 are component checks, not live cleanup certification.
+
+### Completed candidate basis revalidation
+
+Own automated task receipts are execution outputs; they remain visible in
+evidence views but do not alter accepted task inputs. Application execution
+context loads project membership without unused sibling task collections.
+Human task evidence, required records and explicit dependencies remain watched.
+
+An unreviewed, unchanged completed native coding result can be bound to a fresh
+owner-accepted Ready through `GET /executions/:id/result-basis` and
+`POST /executions/:id/actions/revalidate-result-basis` under `/v1/agent-runtime`.
+The command requires exact versions, commit, original contract, context
+references, prompt and baseline, signed native/test evidence, and current risk,
+admission, procedure, finding, interview and suspension checks. The append-only
+mapping changes review material and requires a new independent review. It does
+not rewrite the original native result or Ready pin, revive invalidated work,
+accept existing reviews, or authorize release. Source drift invalidates the
+mapping and subsequent review/release admission.
+
+Root verification passed 30 component tests and 14 actual PostgreSQL/HTTP tests
+with zero skips. The latter applied the forward migration in a nonce-owned
+database, exercised owner/version restrictions, exact replay, immutable native
+evidence, source drift, output/input watches and ordinary Ready fences, then
+removed the owned database and role. Production revalidation and the managed
+release certificate remain pending. Roost deployment `yzuxho42q6ffu4lmgehyce2m`
+finished at `08f8685ef94b71c3c3ad4c4c08d7a3e313bc28ff`; both health/build
+endpoints returned 200 with that exact commit.

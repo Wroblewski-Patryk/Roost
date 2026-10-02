@@ -528,6 +528,8 @@ export const adapterManifest = {
       { method: "POST", path: "/v1/agent-runtime/executions/:id/heartbeat", capability: "agent-runtime:report" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/events", capability: "agent-runtime:report" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/complete", capability: "agent-runtime:report" },
+      { method: "GET", path: "/v1/agent-runtime/executions/:id/result-basis", capability: "agent-runtime:read" },
+      { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/revalidate-result-basis", capability: "agent-runtime:write" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/fail", capability: "agent-runtime:report" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/cancelled", capability: "agent-runtime:report" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/cancel", capability: "agent-runtime:write" },

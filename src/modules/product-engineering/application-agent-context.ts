@@ -123,7 +123,9 @@ export async function loadApplicationAgentContext(workspaceId: string, applicati
       interfaces: true,
       offerings: true,
       procedures: { include: { procedure: { include: procedureInclude } }, orderBy: { createdAt: "asc" } },
-      projects: { include: { project: { include: projectInclude } }, orderBy: { createdAt: "asc" } }
+      // Watch only the project membership delivered to the execution. Loading
+      // unused sibling tasks here would invalidate another task on claim.
+      projects: { include: { project: executionProfile ? true : { include: projectInclude } }, orderBy: { createdAt: "asc" } }
     }
   });
   if (!application) return null;

@@ -7,6 +7,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import type { Prisma } from "@prisma/client";
 import { lockReadyTask } from "./task-execution-readiness";
+import { effectiveCompletedResult } from "./completed-result-basis";
 import { resolveTaskRoleContext } from "./task-role-context";
 import { nativeBoundaryResultBlocked, exactReviewCommit, correctionDraft, managerCorrectionCompetencies, object, reviewActionSchema, reviewDecisionSchema, reviewDigest, wire } from "./task-review-contract";
 
@@ -36,7 +37,9 @@ export async function reviewState(db: Db, workspaceId: string, taskId: string, a
   const roleMatches = (role: any) => principal && role?.principal?.kind === principal.kind && role.principal.id === principal.id;
   const materialVersion = material?.version ?? null;
   const approvalCommit = exactReviewCommit(result, execution);
-  const current = Boolean(execution?.status === "completed" && execution.completedAt && !execution.contextInvalidatedAt && result?.pin?.pinId && pin.pinId === result.pin.pinId && task.assignedWorkforceEntityId === contract.assignment?.agentId);
+  const effective = execution && pin.pinId !== result?.pin?.pinId ? await effectiveCompletedResult(db, workspaceId, execution) : execution;
+  const effectivePin = object(object(effective?.metadata).readyContextPin);
+  const current = Boolean(execution?.status === "completed" && execution.completedAt && !execution.contextInvalidatedAt && result?.pin?.pinId && pin.pinId === effectivePin.pinId && pin.revision === effectivePin.revision && task.assignedWorkforceEntityId === contract.assignment?.agentId);
   const expectedVersion = reviewDigest({ task: { id: task.id, updatedAt: task.updatedAt, readiness: pin, provenance: task.executionRoleProvenance, executor: task.assignedWorkforceEntityId }, result, authorities, decision });
   return { task, execution, result, contract, authorities, labels, decision, materialVersion, approvalCommit, expectedVersion, current, roleIssues, principal, roleMatches,
     canReview: current && !decision && !roleIssues.length && roleMatches(authorities.verifier),

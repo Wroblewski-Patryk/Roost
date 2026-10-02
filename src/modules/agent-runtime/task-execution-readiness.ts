@@ -56,6 +56,8 @@ export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) =
     if (suspensionError) return {error:suspensionError};
     const riskError = nativeDiagnostic.match(/\btask_risk_[a-z_]+\b/)?.[0];
     if (riskError) return {error:riskError};
+    const completedResultError = nativeDiagnostic.match(/\bcompleted_result_[a-z_]+\b/)?.[0];
+    if (completedResultError) return {error:completedResultError};
     const admissionError = nativeDiagnostic.match(/\brisk_admission_[a-z_]+\b/)?.[0];
     if (admissionError) return {error:admissionError};
     const interviewError=nativeDiagnostic.match(/\binterview_(?:history_immutable|scope_invalid|content_invalid|forbidden|grant_required|revision_invalid|evidence_invalid|stale|transition_invalid|proposal_required|ready_required|decision_immutable|receipt_required)\b/)?.[0];if(interviewError)return {error:interviewError};

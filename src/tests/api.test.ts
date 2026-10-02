@@ -1986,6 +1986,60 @@ async function prepareHandoffResultFixture(execution:any,pin:any){
  await prisma.agentExecution.update({where:{id:execution.id},data:{checkpointVersion:5,checkpoint:{schemaVersion:"roost-recovery-v1",stage:"effect_possible",sessionId:randomUUID(),packetRevision:"b".repeat(64),workspaceDigest:"c".repeat(64),contextRevision:pin.revision},metadata:{...execution.metadata,resultRevision:{schemaVersion:"roost-result-revision-v1",id:randomUUID(),executionId:execution.id,attempt:execution.attempt,hostId:execution.agentHostId,checkpointVersion:5,observedAt:new Date().toISOString(),commit:"d".repeat(40),branch:pin.contract.singleTask.branch,workingTree:"dirty"}}}});
 }
 let reviewFixtureSequence=0;
+test("completed native result basis requires current owner Ready and preserves immutable evidence", async () => {
+ const owner = await registerOwner(`completed-basis-${randomUUID()}@example.test`, "Completed basis owner"), workspaceId = owner.workspace.id;
+ const auth = { Authorization: `Bearer ${owner.token}` };
+ const app = await prisma.application.create({data:{workspaceId,name:"Completed basis app",slug:randomUUID()}});
+ const project=await prisma.project.create({data:{workspaceId,name:"Completed basis project"}});
+ await prisma.applicationProject.create({data:{applicationId:app.id,projectId:project.id}});
+ const task = await prisma.task.create({data:{workspaceId,projectId:project.id,title:"One unchanged coding candidate"}});
+ const f = await prepareReadyFixture(workspaceId, task.id, app.id, auth, false);
+ const contract:any = f.input.contract;
+ contract.nativeBoundary={profile:"coding-local",writePaths:["src/parser.ts"],runtime:{required:false,ports:[]}};
+ contract.modelSelection={schemaVersion:"roost-managed-hermes-backend-v1",agent:"managed_hermes",riskClass:"low",fallback:"none",
+  attemptPolicy:{maxTurns:2,apiMaxRetries:0,unavailable:"stop_attempt",restart:"never"},backend:"codex_responses",provider:"openai-codex",
+  modelSelection:{model:"gpt-5.6-sol",reasoningEffort:"low"},auth:"same_owner_subscription"};
+ const post=(route:string,body:any,headers=auth)=>request(route,{method:"POST",headers,body:JSON.stringify(body)});
+ const submitRoute=`/v1/agent-runtime/tasks/${task.id}/actions/submit-for-execution`;
+ const accept=async()=>{const r=await post(submitRoute,await submissionInput(submitRoute,f.input,auth));assert.equal(r.status,200,JSON.stringify(r.body));return (await prisma.task.findUniqueOrThrow({where:{id:task.id}})).executionReadiness as any;};
+ const originalPin=await accept(), host=await prisma.agentHost.create({data:{workspaceId,name:"Completed basis host",slug:randomUUID(),platform:"win32"}});
+ const id=randomUUID(),digest="a".repeat(64),commit="c".repeat(40);
+ const nativeToolReceipt={footprintPolicy:"roost-root-scoped-coding-v2",scopeReviewRequired:false,policyVersion:"roost-hermes-native-audited-coding-v1",
+  ownerRiskReference:"ADR-004-v7-native-tools",authorityProfile:"coding-local",authorities:["repository_read","repository_write","local_test"],toolsets:["file","terminal"],
+  classification:"review_required",releaseAllowed:false,reviewRequired:true,violations:[],postFootprintDigest:digest,jobReceiptDigest:digest};
+ const metadata={executionContract:contract,readyContextPin:{pinId:originalPin.pinId,revision:originalPin.revision,riskAdmissionSeal:originalPin.riskAdmissionSeal,
+  riskAdmissionCommit:originalPin.riskAdmissionCommit,compositionSeal:originalPin.procedureComposition.seal},resultRevisionReviewVersion:"1",
+  resultRevision:{schemaVersion:"roost-result-revision-v1",id:randomUUID(),executionId:id,attempt:1,hostId:host.id,checkpointVersion:1,
+   observedAt:new Date().toISOString(),commit,branch:contract.singleTask.branch,workingTree:"clean"}};
+ const execution=await prisma.agentExecution.create({data:{id,workspaceId,taskId:task.id,applicationId:app.id,agentHostId:host.id,
+  requestedByType:"user",prompt:originalPin.prompt,baseBranch:originalPin.baseBranch,status:"completed",completedAt:new Date(),attempt:1,checkpointVersion:1,
+  metadata,verification:{codingTests:{passed:true},managedAdmission:{qualification:"signed_native_v1",evidenceDigest:digest,jobSourceDigest:digest},
+   ownedTreeReceipt:{cleanup:true,activeProcesses:0,attempt:id},nativeToolReceipt,nativeReviewReceiptDigest:digest,
+   nativeReviewReceipt:{version:"roost-native-review-public-v2",policy:"roost-root-scoped-coding-v2",verdict:"verified_candidate",verification:"PASS",installation:"PASS",
+    reviewRequired:true,releaseAllowed:false,scopeReviewRequired:false,violations:[],postFootprintDigest:digest,jobDigest:digest}}}});
+ const route=`/v1/agent-runtime/executions/${id}`,view=async()=>{const r=await request(route+"/result-basis",{headers:auth});assert.equal(r.status,200,JSON.stringify(r.body));return (r.body as any).data;};
+ const command=(v:any)=>({requestId:randomUUID(),expectedVersion:v.expectedVersion,materialVersion:v.materialVersion,readyPinId:v.readyPinId,readyRevision:v.readyRevision,commit});
+ const old=await view();assert.equal(old.reason,"completed_result_fresh_ready_required");
+ assert.equal((await post(route+"/actions/revalidate-result-basis",command(old))).status,409);
+ const freshPin=await accept(),before=await view(),body=command(before);
+ assert.notEqual(freshPin.pinId,originalPin.pinId);assert.equal(before.reason,null);
+ const outsider=await registerOwner(`completed-outsider-${randomUUID()}@example.test`,"Outside basis");
+ assert.equal((await request(route+"/result-basis",{headers:{Authorization:`Bearer ${outsider.token}`}})).status,404);
+ assert.equal((await post(route+"/actions/revalidate-result-basis",{...body,commit:"d".repeat(40)})).status,409);
+ const result=await post(route+"/actions/revalidate-result-basis",body);assert.equal(result.status,200,JSON.stringify(result.body));
+ const saved=(result.body as any).data;assert.notEqual(saved.materialVersion,before.materialVersion);assert.equal(saved.originalMaterialVersion,old.materialVersion);
+ const replay=await post(route+"/actions/revalidate-result-basis",body);assert.equal(replay.status,200,JSON.stringify(replay.body));assert.equal((replay.body as any).data.replayed,true);
+ assert.deepEqual((await prisma.agentExecution.findUniqueOrThrow({where:{id}})).metadata,execution.metadata);
+ await assert.rejects(prisma.$executeRaw`UPDATE completed_result_basis_revalidations SET commit=${"d".repeat(40)} WHERE execution_id=${id}::uuid`,/completed_result_basis_append_only/);
+ await assert.rejects(prisma.$executeRaw`DELETE FROM completed_result_basis_revalidations WHERE execution_id=${id}::uuid`,/completed_result_basis_append_only/);
+ await assert.rejects(prisma.agentExecution.update({where:{id},data:{summary:"Changed native body"}}),/completed_result_native_immutable/);
+ const {readyTransaction}=await import("../modules/agent-runtime/task-execution-readiness"),{releaseExecutionBasisCurrent}=await import("../modules/agent-runtime/governed-release");
+ assert.equal(await readyTransaction(tx=>releaseExecutionBasisCurrent(tx,workspaceId,execution)),true);
+ await prisma.companyRecord.update({where:{id:f.sources[0]!.id},data:{description:"Actual context drift"}});
+ assert.equal(await readyTransaction(tx=>releaseExecutionBasisCurrent(tx,workspaceId,execution)),false);
+ assert.equal((await post(route+"/actions/revalidate-result-basis",command(await view()))).status,409);
+});
+
 test("governed release transport requires separately provisioned principal scope and owner authority",async()=>{
  const owner=await registerOwner(`release-transport-${Date.now()}@example.test`,"Release fixture owner"),workspaceId=owner.workspace.id;
  const auth={Authorization:`Bearer ${owner.token}`};
@@ -3117,6 +3171,20 @@ test("Ready source writes atomically invalidate accepted read scopes without a r
     assert.equal((await pin()).status, "ready");
     assert.equal((await pin()).pinId, f.readiness.pinId);
   });
+  await t.test("own runtime output and unused sibling claims preserve accepted inputs", async () => {
+    for (const [source, type] of [["agent", "manual_verification"], ["system", "deployment"]] as const) {
+      await prisma.evidenceRecord.create({ data: { workspaceId, entityType: "task", entityId: task.id,
+        source, type, reference: "Runtime receipt", metadata: { executionId: randomUUID() } } });
+      assert.equal((await pin()).status, "ready");
+      assert.equal((await pin()).pinId, f.readiness.pinId);
+    }
+    const sibling = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: "Separate sibling" } });
+    await prisma.task.update({ where: { id: sibling.id }, data: { status: "in_progress" } });
+    assert.equal((await pin()).status, "ready");
+    assert.equal((await pin()).pinId, f.readiness.pinId);
+    const current = await readyTransaction(tx => inspectReady(tx, workspaceId, task.id));
+    assert.equal("error" in current, false, JSON.stringify(current));
+  });
   await t.test("rollback preserves Ready; raw SQL edit and exact revert commit one invalidation", async () => {
     await assert.rejects(prisma.$transaction(async tx => {
       await tx.goal.update({ where: { id: f.goal.id }, data: { title: "Rolled back" } });
@@ -3152,6 +3220,13 @@ test("Ready source writes atomically invalidate accepted read scopes without a r
     await prisma.capabilityDomain.update({ where: { id: domain.id }, data: { name: "Changed domain" } });
     assert.equal((await pin()).status, "needs_revalidation");
     assert.equal((await pin()).changedSources[0].id, domain.id);
+  });
+  await t.test("human task evidence remains an accepted input", async () => {
+    await accept();
+    const input = await prisma.evidenceRecord.create({ data: { workspaceId, entityType: "task", entityId: task.id,
+      source: "human", type: "manual_verification", reference: "Changed acceptance evidence" } });
+    assert.equal((await pin()).status, "needs_revalidation");
+    assert.equal((await pin()).changedSources[0].id, input.id);
   });
   await t.test("new collection member and delete invalidate without polling", async () => {
     await accept();

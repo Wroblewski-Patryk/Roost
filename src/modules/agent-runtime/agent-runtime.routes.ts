@@ -1,4 +1,5 @@
 import { nativeBoundaryResultBlocked } from "./task-review-contract";
+import { completedResultBasisView, revalidateCompletedResultBasis } from "./completed-result-basis";
 import { governedReleaseRouter } from "./governed-release.routes";
 import { ownerTicketHandler } from "./owner-ticket-http";
 import { managedAdmission, managedAdmissionSignerFromEnvironment } from "./managed-admission";
@@ -870,6 +871,17 @@ agentRuntimeRouter.get("/executions", asyncHandler(async (req, res) => {
   const applicationId = typeof req.query.applicationId === "string" ? req.query.applicationId : undefined;
   const executions = await prisma.agentExecution.findMany({ where: { workspaceId: req.auth!.workspaceId, ...(status ? { status } : {}), ...(taskId ? { taskId } : {}), ...(applicationId ? { applicationId } : {}) }, include: executionInclude, orderBy: { createdAt: "desc" }, take: 200 });
   res.json({ data: executions });
+}));
+
+agentRuntimeRouter.get("/executions/:id/result-basis", asyncHandler(async (req, res) => {
+  const result = await readyTransaction(tx => completedResultBasisView(tx, req.auth!.workspaceId, String(req.params.id), req.auth!));
+  if ("error" in result && typeof result.error === "string") return sendApiError(res, result.error === "completed_result_owner_required" ? 403 : 404, result.error);
+  res.json({ data: result });
+}));
+agentRuntimeRouter.post("/executions/:id/actions/revalidate-result-basis", asyncHandler(async (req, res) => {
+  const result = await readyTransaction(tx => revalidateCompletedResultBasis(tx, req.auth!.workspaceId, String(req.params.id), req.auth!, req.body));
+  if ("error" in result && typeof result.error === "string") return sendApiError(res, result.error === "completed_result_owner_required" ? 403 : 409, result.error);
+  res.json({ data: result });
 }));
 
 agentRuntimeRouter.get("/executions/:id", asyncHandler(async (req, res) => {
