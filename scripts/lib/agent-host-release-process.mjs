@@ -8,7 +8,9 @@ import { reserveReleaseChild, bindReleaseChild, recordReleaseChildReceipt } from
 
 const scopes=new AsyncLocalStorage();
 const fail=()=>{throw Object.assign(Error('release_child_ownership_unproven'),{releaseBlocked:true,retryable:false});};
-export const minimalReleaseEnvironment=()=>({PATH:process.env.PATH,SystemRoot:process.env.SystemRoot,TEMP:process.env.TEMP,TMP:process.env.TMP});
+// Windows OpenSSH needs ProgramData to resolve its system configuration even
+// when no user credential or provider environment is inherited.
+export const minimalReleaseEnvironment=()=>({PATH:process.env.PATH,SystemRoot:process.env.SystemRoot,ProgramData:process.env.ProgramData,TEMP:process.env.TEMP,TMP:process.env.TMP});
 export const hasReleaseProcessScope=()=>!!scopes.getStore();
 
 // Resolve/build before publishing a release checkpoint. These are fixed native

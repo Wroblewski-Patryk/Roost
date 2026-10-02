@@ -52,9 +52,11 @@ test('real release Git child has a suspended native assignment and closed receip
   assert.equal(blob.toString('utf8').trim(),expected,'binary object upload input must survive native Job transport');
   const engine=await withReleaseProcessScope(prepared,context,()=>runReleaseNativeProcess('docker',{argv:['info','--format','{{.ID}}'],cwd:directory,durationMs:10000}));
   assert(engine.toString('utf8').trim().length>0,'fixed Docker CLI reaches the existing engine with isolated environment');
+  const ssh=await withReleaseProcessScope(prepared,context,()=>runReleaseNativeProcess('ssh',{argv:['-G','fixture.invalid'],cwd:directory,durationMs:10000}));
+  assert.match(ssh.toString('utf8'),/^hostname fixture\.invalid$/m,'Windows OpenSSH resolves configuration without a network connection');
   const barrier=sealReleaseWriterCheckpoint(context);assert.equal(barrier.nativeProcessesAbsent,true);
   const checkpoint=JSON.parse(readFileSync(path.join(directory,writerLockFilename))).releaseCheckpoint;
-  assert.equal(checkpoint.children.length,3);assert(checkpoint.children.every(child=>child.state==='closed'));
+  assert.equal(checkpoint.children.length,4);assert(checkpoint.children.every(child=>child.state==='closed'));
   assert.equal(checkpoint.children[0].receipt.resumed,true);assert.equal(checkpoint.children[0].receipt.activeProcesses,0);
   assert.equal(checkpoint.children[0].receipt.resumeReceipt,checkpoint.children[0].resumeDigest);
  }finally{

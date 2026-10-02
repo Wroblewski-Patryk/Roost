@@ -754,3 +754,9 @@ Jobs checking a clean repository, exact branch/commit/tree, parent and origin.
 Preflight failure preserved a sealed Writer and genuine closed-child receipt;
 its server journal remained empty. Only fixed native error classifications are
 retained; stderr paths, URLs and credential values are discarded.
+
+The next native preflight closed twelve owned children before refusing SSH.
+Windows OpenSSH exited 255 without `ProgramData` in its minimal environment;
+the same read-only connection passed with that system variable alone. The
+environment now includes it, and a real owned `ssh -G` test checks configuration
+resolution without making a network connection. Release effects remain pending.
