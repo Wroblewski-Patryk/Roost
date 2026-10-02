@@ -4,6 +4,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { createInstalledGitSetRelease, installedGitSetReleaseSchema, parseGitSetSafetyCounts, gitSetTradingSafetySql, releaseServiceResponseHealthy }
   from './lib/agent-host-release-git-set-worker.mjs';
 import contract from './lib/agent-host-release-contract.cjs';
@@ -46,13 +47,14 @@ function fixture(t) {
     baselineDeployments: [{ targetId, deploymentId: oldDeploymentId }], source: { sshHost: 'fixture-vps', container: '8'.repeat(64), user: 'appuser', database: 'appdb' },
     capacity: { minDiskBytes: 100, minMemoryBytes: 100, maxLoad1: 10 }, coolify: { origin: 'https://controller.example.test' }, health: {} };
   const state = { release: { id: randomUUID(), snapshot: binding }, journal: [] };
-  const calls = [], controls = { counts: { ...zeroCounts }, pin: baseCommit, failSql: false };
+  const calls = [], controls = { counts: { ...zeroCounts }, pin: baseCommit, failSql: false, dataDigest };
   const dependencies = { nativeProcess: async (kind, options) => {
     calls.push({ kind, options });
     if (kind === 'git') return Buffer.from((options.argv.at(-1).startsWith(baseCommit) ? baseTree : candidateTree) + '\n');
     const command = options.argv.at(-1), input = options.input;
-    if (command.startsWith('bash -o pipefail')) return Buffer.from(`${schemaDigest}  -\n${dataDigest}  -\n`);
-    if (command.includes(' psql ')) { if (controls.failSql) throw Error('private DSN'); return Buffer.from(JSON.stringify(controls.counts)); }
+    if (command.startsWith('bash -o pipefail')) return Buffer.from(`${schemaDigest}  -\n${controls.dataDigest}  -\n`);
+    if (command.includes(' psql ')) { if (controls.failSql) throw Error('private DSN');
+      return controls.readSafety ? controls.readSafety(input) : Buffer.from(JSON.stringify(controls.counts)); }
     if (command.startsWith('set -eu;')) return Buffer.from('{"diskBytes":1000,"memoryBytes":1000,"load1":0.1}');
     if (input.includes('configurationFields')) return Buffer.from(JSON.stringify({ targetId, applicationId: '4', buildPack: 'dockerfile',
       dockerfile: target.dockerfile, configDigest, schemaDigest, gitCommit: controls.pin, autoDeploy: false, topologyDigest: '9'.repeat(64) }));
@@ -91,13 +93,116 @@ test('sealed JSON health rejects a failure payload despite HTTP 200 and ignores 
 
 test('fixed global LIVE and orphan predicates distinguish paper while conservatively blocking restarts', () => {
   assert.match(gitSetTradingSafetySql, /READ ONLY/); assert.match(gitSetTradingSafetySql, /w\.mode='LIVE'/);
-  assert.match(gitSetTradingSafetySql, /d\."botId" IS NULL/); assert.match(gitSetTradingSafetySql, /b\.id IS NULL AND w\.id IS NULL/);
+  assert.match(gitSetTradingSafetySql, /d\."botId" IS NULL/); assert.match(gitSetTradingSafetySql, /b\.id IS NOT NULL OR w\.id IS NOT NULL/);
   assert.doesNotMatch(gitSetTradingSafetySql, /UPDATE |DELETE |INSERT |ALTER |TRUNCATE /);
   assert.equal(parseGitSetSafetyCounts(JSON.stringify({ ...zeroCounts, activeBots: 1, runningSessions: 1,
     pendingDedupes: 5, liveOpenOrders: 5, allOpenOrders: 5, allOpenPositions: 23 })).activeTrading, 7);
   assert.throws(() => parseGitSetSafetyCounts('{}'), /safety_unavailable/);
   assert.throws(() => parseGitSetSafetyCounts(JSON.stringify({ ...zeroCounts, liveOpenOrders: 1 })), /safety_unavailable/);
 });
+
+test('source gateway allows known PAPER records but preserves totals and the full data fingerprint', async t => {
+  const f = fixture(t); f.controls.counts = { ...zeroCounts, allOpenOrders: 3, allOpenPositions: 24 };
+  const installed = f.install();
+  assert.deepEqual(await installed.safety(), { activeTrading: 0, openOrders: 0, openPositions: 0, schemaDigest, dataDigest });
+  const audit = await installed.safetyDiagnostic();
+  assert.equal(audit.allOpenOrders, 3); assert.equal(audit.allOpenPositions, 24);
+  await installed.coolify.configureCandidate(f.manifest, f.state.release.snapshot);
+  assert.equal(f.calls.filter(row => row.request?.method === 'PATCH').length, 1);
+  assert.ok(f.calls.some(row => row.options?.argv?.at(-1)?.includes('pg_dump')));
+  f.calls.length = 0; f.controls.dataDigest = 'f'.repeat(64);
+  await assert.rejects(installed.coolify.configureCandidate(f.manifest, f.state.release.snapshot), /data_or_schema_changed/);
+  assert.equal(f.calls.filter(row => row.request?.method === 'PATCH').length, 0);
+});
+
+test('source gateway still blocks each LIVE, unknown or restart predicate before fingerprint and effects', async t => {
+  for (const counts of [{ activeBots: 1 }, { runningSessions: 1 }, { pendingDedupes: 1 },
+    { liveOpenOrders: 1, allOpenOrders: 1 }, { liveOpenPositions: 1, allOpenPositions: 1 },
+    { unknownOpenOrders: 1, allOpenOrders: 1 }, { unknownOpenPositions: 1, allOpenPositions: 1 }]) {
+    const f = fixture(t); f.controls.counts = { ...zeroCounts, ...counts };
+    const installed = f.install();
+    await assert.rejects(installed.safety(), /activity_present/);
+    await assert.rejects(installed.coolify.configureCandidate(f.manifest, f.state.release.snapshot), /safety_unproven/);
+    assert.equal(f.calls.filter(row => row.request?.method === 'PATCH').length, 0);
+    assert.equal(f.calls.filter(row => row.options?.argv?.at(-1)?.includes('pg_dump')).length, 0);
+  }
+});
+
+// Explicit opt-in executes the production query on PostgreSQL with synthetic
+// CTE relations in a READ ONLY transaction. No table, schema or data is written.
+// The installed gateway still receives its exact fixed query; transport alone
+// supplies the CTE fixture and runs it against the local test service.
+test('read-only PostgreSQL gateway fixture classifies LIVE, explicit PAPER and unknown associations',
+  { skip: process.env.ROOST_TEST_POSTGRES_SAFETY !== '1' }, async t => {
+    const f = fixture(t), installed = f.install();
+    const bots = [{ id: 'paper-bot', mode: 'PAPER', isActive: false }, { id: 'live-bot', mode: 'LIVE', isActive: false },
+      { id: 'unknown-bot', mode: 'UNRECOGNIZED', isActive: false }, { id: 'null-bot', mode: null, isActive: false }];
+    const wallets = [{ id: 'paper-wallet', mode: 'PAPER' }, { id: 'live-wallet', mode: 'LIVE' },
+      { id: 'unknown-wallet', mode: 'UNRECOGNIZED' }, { id: 'null-wallet', mode: null }];
+    let records, dedupes = [], sessions = [];
+    f.controls.readSafety = input => {
+      assert.equal(input, gitSetTradingSafetySql);
+      const relation = (name, values, columns) => `"${name}" AS (SELECT * FROM jsonb_to_recordset('${JSON.stringify(values)}'::jsonb) AS fixture(${columns}))`;
+      const cte = [relation('Bot', bots, 'id text, mode text, "isActive" boolean'),
+        relation('Wallet', wallets, 'id text, mode text'),
+        relation('Order', records.map(row => ({ status: 'OPEN', ...row })), '"botId" text, "walletId" text, origin text, status text'),
+        relation('Position', records.map(row => ({ status: 'OPEN', ...row })), '"botId" text, "walletId" text, origin text, status text'),
+        relation('RuntimeExecutionDedupe', dedupes, '"botId" text, status text'),
+        relation('BotRuntimeSession', sessions, 'mode text, status text')].join(',\n');
+      return execFileSync('docker', ['compose', 'exec', '-T', 'postgres', 'psql', '-X', '-qAt', '-v', 'ON_ERROR_STOP=1',
+        '-U', 'companycore', '-d', 'companycore'], { input: input.replace('\nSELECT ', `\nWITH ${cte}\nSELECT `), timeout: 15000 });
+    };
+    const cases = [
+      ['PAPER bot', { botId: 'paper-bot', walletId: null, origin: 'BOT' }, 'paper'],
+      ['PAPER wallet', { botId: null, walletId: 'paper-wallet', origin: 'USER' }, 'paper'],
+      ['both PAPER', { botId: 'paper-bot', walletId: 'paper-wallet', origin: 'BOT' }, 'paper'],
+      ['LIVE bot', { botId: 'live-bot', walletId: null, origin: 'BOT' }, 'live'],
+      ['LIVE wallet', { botId: null, walletId: 'live-wallet', origin: 'USER' }, 'live'],
+      ['conflicting modes', { botId: 'paper-bot', walletId: 'live-wallet', origin: 'BOT' }, 'live'],
+      ['orphan exchange', { botId: null, walletId: null, origin: 'EXCHANGE_SYNC' }, 'live'],
+      ['PAPER exchange origin', { botId: 'paper-bot', walletId: 'paper-wallet', origin: 'EXCHANGE_SYNC' }, 'live'],
+      ['orphan BOT', { botId: null, walletId: null, origin: 'BOT' }, 'unknown'],
+      ['orphan MANUAL', { botId: null, walletId: null, origin: 'MANUAL' }, 'unknown'],
+      ['orphan USER', { botId: null, walletId: null, origin: 'USER' }, 'unknown'],
+      ['null origin orphan', { botId: null, walletId: null, origin: null }, 'unknown'],
+      ['dangling bot with PAPER wallet', { botId: 'missing', walletId: 'paper-wallet', origin: 'BOT' }, 'unknown'],
+      ['PAPER bot with dangling wallet', { botId: 'paper-bot', walletId: 'missing', origin: 'BOT' }, 'unknown'],
+      ['unknown bot mode', { botId: 'unknown-bot', walletId: null, origin: 'BOT' }, 'unknown'],
+      ['unknown wallet mode', { botId: null, walletId: 'unknown-wallet', origin: 'USER' }, 'unknown'],
+      ['null bot mode with PAPER wallet', { botId: 'null-bot', walletId: 'paper-wallet', origin: 'BOT' }, 'unknown'],
+      ['PAPER bot with null wallet mode', { botId: 'paper-bot', walletId: 'null-wallet', origin: 'BOT' }, 'unknown']
+    ];
+    for (const [label, record, classification] of cases) {
+      records = [record]; f.calls.length = 0;
+      const counts = await installed.safetyDiagnostic();
+      assert.equal(counts.available, true, label);
+      assert.equal(counts.allOpenOrders, 1, label); assert.equal(counts.allOpenPositions, 1, label);
+      assert.equal(counts.liveOpenOrders, Number(classification === 'live'), label);
+      assert.equal(counts.liveOpenPositions, Number(classification === 'live'), label);
+      assert.equal(counts.unknownOpenOrders, Number(classification === 'unknown'), label);
+      assert.equal(counts.unknownOpenPositions, Number(classification === 'unknown'), label);
+      if (classification === 'paper') {
+        assert.equal((await installed.safety()).openPositions, 0, label);
+        await installed.coolify.configureCandidate(f.manifest, f.state.release.snapshot);
+        assert.equal(f.calls.filter(row => row.request?.method === 'PATCH').length, 1, label);
+      } else {
+        await assert.rejects(installed.safety(), /activity_present/, label);
+        await assert.rejects(installed.coolify.configureCandidate(f.manifest, f.state.release.snapshot), /safety_unproven/, label);
+        assert.equal(f.calls.filter(row => row.request?.method === 'PATCH').length, 0, label);
+        assert.equal(f.calls.filter(row => row.options?.argv?.at(-1)?.includes('pg_dump')).length, 0, label);
+      }
+    }
+    records = [];
+    for (const botId of ['paper-bot', 'live-bot', null, 'missing', 'unknown-bot', 'null-bot']) {
+      dedupes = [{ botId, status: 'PENDING' }];
+      const counts = await installed.safetyDiagnostic();
+      assert.equal(counts.pendingDedupes, Number(botId !== 'paper-bot'), `pending dedupe ${botId}`);
+      if (botId !== 'paper-bot') await assert.rejects(installed.safety(), /activity_present/);
+    }
+    dedupes = []; bots[1].isActive = true; sessions = [{ mode: 'LIVE', status: 'RUNNING' }];
+    const counts = await installed.safetyDiagnostic(); assert.equal(counts.activeBots, 1); assert.equal(counts.runningSessions, 1);
+    await assert.rejects(installed.safety(), /activity_present/);
+  });
 
 test('nonquiescent safety blocks configuration before PATCH without zero fallback', async t => {
   const f = fixture(t); f.controls.counts = { ...zeroCounts, activeBots: 1, runningSessions: 1, liveOpenOrders: 5,

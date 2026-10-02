@@ -35,6 +35,11 @@ test("the verifier receives the exact completed, independent auditor receipt as 
   assert.equal(evidence.commit, scope.repositoryEvidence.head);
   assert.match(evidence.finalResponse, /parent traversal/);
   assert.match(evidence.digest, /^[a-f0-9]{64}$/);
+  assert.equal(evidence.receipt.gitState, "unchanged");
+  assert.equal(evidence.receipt.processState, "unchanged");
+  assert.equal(evidence.receipt.dockerState, "unchanged");
+  assert.deepEqual(evidence.receipt.nativeTools, []);
+  assert.equal(evidence.receipt.comparisonScope, "same_repository_and_per_execution_state");
 });
 
 for (const [label, alter] of Object.entries({
@@ -43,6 +48,10 @@ for (const [label, alter] of Object.entries({
   sameActor: (p, s) => { p.metadata.executionContract.assignment.agentId = s.contract.assignment.agentId; },
   wrongReceipt: p => { p.verification.readOnlyAudit.evidenceDigest = "f".repeat(64); },
   changedTree: p => { p.verification.readOnlyAudit.postTree = "f".repeat(64); },
+  changedProcesses: p => { p.verification.readOnlyAudit.processState = "changed"; },
+  changedDocker: p => { p.verification.readOnlyAudit.dockerState = "changed"; },
+  changedGit: p => { p.verification.readOnlyAudit.gitState = "changed"; },
+  nativeTools: p => { p.verification.readOnlyAudit.nativeTools = ["terminal"]; },
   changedFiles: p => { p.changedFiles = ["scripts/guard.mjs"]; },
   wrongFiles: p => { p.metadata.executionContract.nativeBoundary.readPaths = ["other.mjs"]; },
   wrongCommit: p => { p.metadata.resultRevision.commit = "f".repeat(40); },

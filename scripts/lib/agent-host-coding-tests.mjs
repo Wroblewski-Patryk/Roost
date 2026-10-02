@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { lstatSync, readFileSync, realpathSync } from "node:fs";
+import { existsSync, lstatSync, readFileSync, realpathSync } from "node:fs";
 import path from "node:path";
 import { z } from "zod";
 import { physicalIdentity, nativeDigest, nativeRelative } from "./agent-host-native-footprint.mjs";
@@ -12,6 +12,10 @@ const commandSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("npm_script"), script: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9:_-]{0,79}$/),
     expectedCommand: z.string().min(1).max(1000), acceptanceTest: z.string().min(1).max(2000) }).strict(),
   z.object({ kind: z.literal("node_test"), relativePath: z.string().min(1).max(512),
+    acceptanceTest: z.string().min(1).max(2000) }).strict(),
+  z.object({ kind: z.literal("workspace_vitest"), workspace: z.string().min(1).max(200),
+    packageName: z.string().regex(/^(?:@[a-z0-9._-]+\/)?[a-z0-9][a-z0-9._-]{0,79}$/),
+    version: z.string().regex(/^[0-9]+\.[0-9]+\.[0-9]+$/), relativePath: z.string().min(1).max(300),
     acceptanceTest: z.string().min(1).max(2000) }).strict()
 ]);
 const manifestSchema = z.object({ schemaVersion: z.literal("roost-gate2-test-manifest-v1"), repositoryOrigin: z.string().min(1).max(1024),
@@ -27,6 +31,22 @@ function fileBytes(file, max) {
   if (BigInt(bytes.length) !== first.size || second.ino !== first.ino || second.mtimeNs !== first.mtimeNs) fail();
   return bytes;
 }
+// pnpm's readonly installed packages normally share hardlinks with its store.
+// The resolved file stays inside the sealed installation tree; aliases gain no
+// write authority, and identity/link-count/content are rechecked before launch.
+function dependencyIdentity(file) {
+  physicalIdentity(path.dirname(file));
+  const stat = lstatSync(file, { bigint: true });
+  if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink < 1n || realpathSync.native(file) !== file) fail();
+  return nativeDigest([file, String(stat.dev), String(stat.ino), String(stat.nlink)]);
+}
+function dependencyBytes(file, max) {
+  const identity = dependencyIdentity(file), first = lstatSync(file, { bigint: true });
+  if (first.size > BigInt(max)) fail();
+  const bytes = readFileSync(file), second = lstatSync(file, { bigint: true });
+  if (BigInt(bytes.length) !== first.size || second.mtimeNs !== first.mtimeNs || dependencyIdentity(file) !== identity) fail();
+  return bytes;
+}
 function nodeTestFile(root, relative) {
   nativeRelative(relative);
   if (!relative.startsWith("scripts/") || !relative.endsWith(".test.mjs")) fail();
@@ -39,9 +59,71 @@ function nodeTestFile(root, relative) {
   if (tracked !== relative) fail();
   return file;
 }
-export function prepareCodingTests({ manifestPath, repositoryPath, originUrl, acceptanceTests }) {
+function trackedUnchanged(root, relative) {
+  nativeRelative(relative);
+  const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => /^(?:SYSTEMROOT|WINDIR|PATH|PATHEXT|COMSPEC|TEMP|TMP)$/i.test(key)));
+  Object.assign(env, { GIT_OPTIONAL_LOCKS: "0", GIT_NO_REPLACE_OBJECTS: "1", GIT_CONFIG_NOSYSTEM: "1",
+    GIT_CONFIG_GLOBAL: process.platform === "win32" ? "NUL" : "/dev/null", GIT_TERMINAL_PROMPT: "0" });
+  const args = ["--no-replace-objects", "-c", "core.fsmonitor=false", "-c", "core.hooksPath=" + (process.platform === "win32" ? "NUL" : "/dev/null")];
+  const bytes = fileBytes(path.join(root, relative), 4 * 1024 * 1024);
+  const baseline = execFileSync("git", [...args, "show", `HEAD:${relative}`], { cwd: root, env,
+    shell: false, windowsHide: true, timeout: 10000, maxBuffer: 4 * 1024 * 1024 });
+  // Git for Windows may materialize tracked text as CRLF; pin the actual bytes
+  // below while checking that the checkout differs only by line endings.
+  const text = value => new TextDecoder("utf-8", { fatal: true }).decode(value).replace(/\r\n/g, "\n");
+  if (h(text(bytes)) !== h(text(baseline))) fail();
+  return { filename: path.join(root, relative), digest: h(bytes), identity: physicalIdentity(path.join(root, relative), false) };
+}
+const inside = (root, value) => { const relative = path.relative(root, value); return !!relative && !relative.startsWith("..") && !path.isAbsolute(relative); };
+function workspaceTestFile(p, command, required = true) {
+  const relative = `${command.workspace}/${command.relativePath}`;
+  if (!p.writePaths.includes(relative)) fail();
+  const file = path.join(p.repositoryPath, relative);
+  if (!existsSync(file)) { if (required) fail(); return; }
+  const bytes = fileBytes(file, 128 * 1024);
+  const text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  if (!text.trim() || /\x00/.test(text)) fail();
+  return file;
+}
+function prepareWorkspaceVitest(root, command, writePaths) {
+  nativeRelative(command.workspace); nativeRelative(command.relativePath);
+  if (!/^apps\/[a-z0-9][a-z0-9_-]{0,79}$/.test(command.workspace)
+      || !/^[A-Za-z0-9][A-Za-z0-9._/-]*\.test\.(?:[cm]?[jt]s|[jt]sx)$/.test(command.relativePath)
+      || command.acceptanceTest !== `pnpm --filter ${command.packageName} exec vitest run ${command.relativePath}`) fail();
+  const directory = path.join(root, command.workspace), workspaceIdentity = physicalIdentity(directory);
+  const workspacePackage = trackedUnchanged(root, `${command.workspace}/package.json`), lock = trackedUnchanged(root, "pnpm-lock.yaml");
+  const pkg = JSON.parse(fileBytes(workspacePackage.filename, 128 * 1024));
+  const specifier = pkg.devDependencies?.vitest ?? pkg.dependencies?.vitest;
+  if (pkg.name !== command.packageName || typeof specifier !== "string" || !new RegExp(`^[~^]?${command.version.replaceAll(".", "\\.")}$`).test(specifier)) fail();
+  // Deliberately support the inspected pnpm v9 importer shape, not arbitrary YAML
+  // tags/aliases or another package manager's mutable dependency resolution.
+  const lockText = new TextDecoder("utf-8", { fatal: true }).decode(fileBytes(lock.filename, 4 * 1024 * 1024));
+  if (!/^lockfileVersion: ['"]?9\.0['"]?\r?$/m.test(lockText)) fail();
+  const marker = `  ${command.workspace}:`, importerLines = lockText.split(/\r?\n/);
+  const start = importerLines.indexOf(marker); if (start < 0 || importerLines.lastIndexOf(marker) !== start) fail();
+  let end = start + 1; while (end < importerLines.length && (importerLines[end] === "" || importerLines[end].startsWith("    "))) end++;
+  const importer = importerLines.slice(start + 1, end).join("\n");
+  const dependency = importer.match(/^      vitest:\n        specifier: ([^\n]+)\n        version: ([^\n]+)$/m);
+  if (!dependency || dependency[1] !== specifier || dependency[2].split("(")[0] !== command.version) fail();
+  const installedRoot = realpathSync.native(path.join(directory, "node_modules", "vitest"));
+  if (!inside(path.join(root, "node_modules"), installedRoot)
+      && !inside(path.join(directory, "node_modules"), installedRoot)) fail();
+  const installedPackage = path.join(installedRoot, "package.json"), installedBytes = dependencyBytes(installedPackage, 128 * 1024);
+  const installed = JSON.parse(installedBytes);
+  if (installed.name !== "vitest" || installed.version !== command.version || !["./vitest.mjs", "vitest.mjs"].includes(installed.bin?.vitest)) fail();
+  const cli = path.join(installedRoot, "vitest.mjs"), cliBytes = dependencyBytes(cli, 4 * 1024 * 1024);
+  if (/\x00/.test(new TextDecoder("utf-8", { fatal: true }).decode(cliBytes))) fail();
+  const pinned = [workspacePackage, lock, { filename: installedPackage, identity: dependencyIdentity(installedPackage), digest: h(installedBytes), dependency: true },
+    { filename: cli, identity: dependencyIdentity(cli), digest: h(cliBytes), dependency: true }];
+  const configurationNames = ["vitest", "vite"].flatMap(name => ["ts", "mts", "cts", "js", "mjs", "cjs"].map(extension => `${name}.config.${extension}`));
+  const configurations = configurationNames.filter(name => existsSync(path.join(directory, name)));
+  for (const name of configurations) pinned.push(trackedUnchanged(root, `${command.workspace}/${name}`));
+  const state = { repositoryPath: root, writePaths }; workspaceTestFile(state, command, false);
+  return { command, directory, workspaceIdentity, installedRoot, cli, pinned, configurationNames, configurations };
+}
+export function prepareCodingTests({ manifestPath, repositoryPath, originUrl, acceptanceTests, writePaths = [] }) {
   try {
-    if (!path.isAbsolute(manifestPath) || manifestPath.startsWith(repositoryPath + path.sep)) fail();
+    if (!path.isAbsolute(manifestPath) || inside(repositoryPath, manifestPath)) fail();
     const bytes = fileBytes(manifestPath, 16384), manifest = manifestSchema.parse(JSON.parse(bytes));
     if (normalizeGitRemote(manifest.repositoryOrigin) !== normalizeGitRemote(originUrl)) fail();
     if (manifest.commands.length !== acceptanceTests.length
@@ -51,11 +133,18 @@ export function prepareCodingTests({ manifestPath, repositoryPath, originUrl, ac
     const pkg = JSON.parse(packageBytes);
     if (manifest.commands.some(x => x.kind === "npm_script" && pkg.scripts?.[x.script] !== x.expectedCommand)) fail();
     for (const command of manifest.commands) if (command.kind === "node_test") nodeTestFile(repositoryPath, command.relativePath);
-    const npm = path.join(path.dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js");
-    const npmIdentity = physicalIdentity(npm, false), npmDigest = h(fileBytes(npm, 4 * 1024 * 1024));
+    const workspaceCommands = manifest.commands.filter(command => command.kind === "workspace_vitest");
+    if (workspaceCommands.length) { physicalIdentity(repositoryPath); trackedUnchanged(repositoryPath, "package.json");
+      if (!Array.isArray(writePaths) || new Set(writePaths).size !== writePaths.length) fail(); for (const relative of writePaths) nativeRelative(relative); }
+    const workspaces = workspaceCommands.map(command => prepareWorkspaceVitest(repositoryPath, command, writePaths));
+    const npm = manifest.commands.some(command => command.kind !== "workspace_vitest")
+      ? path.join(path.dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js") : undefined;
+    const npmIdentity = npm ? physicalIdentity(npm, false) : undefined, npmDigest = npm ? h(fileBytes(npm, 4 * 1024 * 1024)) : undefined;
     const proof = Object.freeze({});
     proofs.set(proof, { manifestPath, manifestDigest: h(bytes), packagePath, packageDigest: h(packageBytes),
       repositoryPath, commands: manifest.commands, npm, npmIdentity, npmDigest, runs: 0 });
+    const saved = proofs.get(proof); Object.assign(saved, { proof, writePaths: [...writePaths], workspaces,
+      ...(workspaceCommands.length ? { nodeIdentity: dependencyIdentity(process.execPath), nodeDigest: h(dependencyBytes(process.execPath, 128 * 1024 * 1024)) } : {}) });
     return proof;
   } catch { fail(); }
 }
@@ -63,7 +152,17 @@ function assertProof(proof) {
   const p = proofs.get(proof);
   if (!p || p.runs >= 1 || h(fileBytes(p.manifestPath, 16384)) !== p.manifestDigest
       || h(fileBytes(p.packagePath, 128 * 1024)) !== p.packageDigest
-      || physicalIdentity(p.npm, false) !== p.npmIdentity || h(fileBytes(p.npm, 4 * 1024 * 1024)) !== p.npmDigest) fail();
+      || p.npm && (physicalIdentity(p.npm, false) !== p.npmIdentity || h(fileBytes(p.npm, 4 * 1024 * 1024)) !== p.npmDigest)) fail();
+  if (p.workspaces.length) {
+    if (dependencyIdentity(process.execPath) !== p.nodeIdentity || h(dependencyBytes(process.execPath, 128 * 1024 * 1024)) !== p.nodeDigest) fail();
+    for (const workspace of p.workspaces) {
+      if (physicalIdentity(workspace.directory) !== workspace.workspaceIdentity) fail();
+      if (realpathSync.native(path.join(workspace.directory, "node_modules", "vitest")) !== workspace.installedRoot
+          || JSON.stringify(workspace.configurationNames.filter(name => existsSync(path.join(workspace.directory, name)))) !== JSON.stringify(workspace.configurations)) fail();
+      for (const pin of workspace.pinned) if ((pin.dependency ? dependencyIdentity(pin.filename) : physicalIdentity(pin.filename, false)) !== pin.identity
+          || h(pin.dependency ? dependencyBytes(pin.filename, 4 * 1024 * 1024) : fileBytes(pin.filename, 4 * 1024 * 1024)) !== pin.digest) fail();
+    }
+  }
   return p;
 }
 async function runOne(p, command, remainingMs, assertAuthority) {
@@ -73,22 +172,35 @@ async function runOne(p, command, remainingMs, assertAuthority) {
       /^(?:SYSTEMROOT|WINDIR|PATH|PATHEXT|COMSPEC|TEMP|TMP|USERPROFILE|HOME|APPDATA|LOCALAPPDATA)$/i.test(key)));
     Object.assign(env, { npm_config_ignore_scripts: "true", npm_config_audit: "false", npm_config_fund: "false",
       npm_config_update_notifier: "false", GIT_TERMINAL_PROMPT: "0" });
-    let bytes = 0; const output = createHash("sha256");
+    let bytes = 0; const output = createHash("sha256"), reporterChunks = [];
     const receipt = await temporaryWindowsJobLauncher(async artifact => {
       if (command.kind === "node_test") nodeTestFile(p.repositoryPath, command.relativePath);
+      const workspace = command.kind === "workspace_vitest" ? p.workspaces.find(item => item.command === command) : undefined;
+      if (workspace) { assertProof(p.proof); workspaceTestFile(p, command); }
       const handle = await startWindowsJob(artifact, { executable: process.execPath,
         argv: command.kind === "npm_script" ? [p.npm, "--ignore-scripts", "run", command.script]
-          : ["--test", "--", command.relativePath], cwd: p.repositoryPath,
+          : workspace ? [workspace.cli, "run", command.relativePath, "--maxWorkers=1", "--fileParallelism=false", "--pool=forks", "--passWithNoTests=false", "--reporter=json"]
+          : ["--test", "--", command.relativePath], cwd: workspace?.directory ?? p.repositoryPath,
         environment: env, input: "", attempt: randomUUID(), durationMs: Math.max(1, Math.min(remainingMs(), 120000)),
-        onData: (_channel, chunk) => { bytes += chunk.length; if (bytes > 131072) throw Error("output_limit"); output.update(chunk); assertAuthority(); } });
+        onData: (channel, chunk) => { bytes += chunk.length; if (bytes > 131072) throw Error("output_limit"); output.update(chunk);
+          if (workspace && channel === "stdout") reporterChunks.push(chunk); assertAuthority(); } });
       return handle.completion;
     });
     if (!isWindowsJobCleanupReceipt(receipt) || !receipt.cleanup || !receipt.jobClosed || receipt.activeProcesses !== 0
         || receipt.terminationReason !== "root_exit" || !Number.isInteger(receipt.rootExit)) fail();
     assertAuthority();
+    let testCounts;
+    if (command.kind === "workspace_vitest") {
+      let report; try { report = JSON.parse(Buffer.concat(reporterChunks).toString("utf8")); } catch { fail(); }
+      const counts = [report.numTotalTests, report.numPassedTests, report.numFailedTests, report.numPendingTests];
+      if (!counts.every(value => Number.isSafeInteger(value) && value >= 0) || counts[0] < 1
+          || counts[1] + counts[2] + counts[3] !== counts[0]
+          || receipt.rootExit === 0 && (counts[1] !== counts[0] || report.success !== true)) fail();
+      testCounts = { totalTests: counts[0], passedTests: counts[1], failedTests: counts[2], pendingTests: counts[3] };
+    }
     return { kind: command.kind, ...(command.kind === "npm_script" ? { script: command.script } : { relativePath: command.relativePath }),
       acceptanceTest: command.acceptanceTest, exitCode: receipt.rootExit,
-      outputDigest: output.digest("hex"), outputBytes: bytes, jobDigest: nativeDigest(receipt) };
+      outputDigest: output.digest("hex"), outputBytes: bytes, jobDigest: nativeDigest(receipt), ...(testCounts ? { testCounts } : {}) };
   } catch { fail(); }
 }
 export async function runCodingTests(proof, { phase, workspaceSeal, remainingMs, assertAuthority }) {
@@ -97,6 +209,7 @@ export async function runCodingTests(proof, { phase, workspaceSeal, remainingMs,
     if (phase !== "candidate" || p.runs !== 0 || !/^[a-f0-9]{64}$/.test(workspaceSeal)) fail();
     const results = [];
     for (const command of p.commands) results.push(await runOne(p, command, remainingMs, assertAuthority));
+    assertProof(proof);
     p.runs += 1;
     return Object.freeze({ schemaVersion: "roost-coding-tests-v1", phase, manifestDigest: p.manifestDigest,
       packageDigest: p.packageDigest, workspaceSeal, tests: results,

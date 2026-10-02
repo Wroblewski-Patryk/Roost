@@ -89,11 +89,15 @@ export async function runHermesOwnedProcess({ executable, argv, cwd, environment
         nativeResult = completeNativeToolBoundary(nativeProof, { ownedTreeReceipt: receipt, error: problem });
         if (nativeResult.classification === "boundary_violation") throw Object.assign(failure("hermes_native_boundary_violation"), { boundaryViolation: true, protocolAdmission: true });
       }
-      if (readOnlyProof) readOnlyResult = completeReadOnlyBoundary(readOnlyProof, { ownedTreeReceipt: receipt, error: problem });
+      let quietResult;
+      if (readOnlyProof) {
+        const completed = completeHermesReadOnlyProcess(readOnlyProof, { guard, ownedTreeReceipt: receipt, error: problem });
+        readOnlyResult = completed.readOnlyAudit; quietResult = completed.quiet;
+      }
       if (problem) throw problem;
       check(); if (problem) throw problem;
       if (receipt.terminationReason !== "root_exit") throw failure(`hermes_quiet_${receipt.terminationReason}`);
-      return Object.freeze({ ...guard.complete(receipt.rootExit), ownedTreeReceipt: receipt, nativeToolReceipt: nativeResult, readOnlyAudit: readOnlyResult,
+      return Object.freeze({ ...(quietResult ?? guard.complete(receipt.rootExit)), ownedTreeReceipt: receipt, nativeToolReceipt: nativeResult, readOnlyAudit: readOnlyResult,
         ...(budgetReceipt ? { attemptBudgetReceipt: completeHermesBudgetReceipt(budgetReceipt, { ownedTreeReceipt: receipt, exitCode: receipt.rootExit, wallTimeMs: performance.now() - began }) } : {}) });
     } finally {
       clearTimeout(deadlineTimer); clearInterval(timer); signal?.removeEventListener("abort", abort);
@@ -129,6 +133,27 @@ export async function runHermesOwnedProcess({ executable, argv, cwd, environment
 
 const usedChildren = new WeakSet();
 const failure = code => Object.assign(new Error(code), { providerFailure: true, retryable: false });
+
+// A failed process must still fail the native audit. Preserve only the fixed
+// quiet diagnosis before that failure masks it; never publish provider output.
+export function completeHermesReadOnlyProcess(proof, { guard, ownedTreeReceipt, error }) {
+  let quiet, quietError;
+  if (!error) {
+    try { quiet = guard.complete(ownedTreeReceipt?.rootExit); }
+    catch (problem) { quietError = problem; }
+  }
+  try {
+    const readOnlyAudit = completeReadOnlyBoundary(proof, { ownedTreeReceipt, error: error ?? quietError });
+    return { quiet, readOnlyAudit };
+  } catch (boundaryError) {
+    if (quietError?.providerFailure && /^hermes_quiet_(process_failed|interrupted|empty_result|report_limit|sensitive|utf8_invalid|limit|closed)$/.test(quietError.message)) {
+      boundaryError.details = { ...boundaryError.details, providerFailureCode: quietError.message,
+        providerDiagnostic: quietError.details?.providerDiagnostic === "authentication_required_reported"
+          ? "authentication_required_reported" : "unknown" };
+    }
+    throw boundaryError;
+  }
+}
 
 // No event/turn/usage inference from plain text. Completion means process exit,
 // never correctness, one internal turn, tool absence, or a review decision.

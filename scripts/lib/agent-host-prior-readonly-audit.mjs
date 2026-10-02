@@ -47,7 +47,9 @@ export function verifiedPriorReadOnlyAudit(prior, { claimed, contract, repositor
     auditorAgentId: previous.assignment.agentId, completedAt: prior.completedAt,
     branch: revision.branch, commit: revision.commit,
     receipt: { evidenceDigest: receipt.evidenceDigest, digest: receipt.digest,
-      preTree: receipt.preTree, postTree: receipt.postTree, verdict: receipt.verdict },
+      preTree: receipt.preTree, postTree: receipt.postTree, verdict: receipt.verdict,
+      gitState: receipt.gitState, processState: receipt.processState, dockerState: receipt.dockerState,
+      nativeTools: [], comparisonScope: "same_repository_and_per_execution_state" },
     finalResponse: prior.finalResponse
   };
   return Object.freeze({ ...evidence, digest: nativeDigest(evidence) });

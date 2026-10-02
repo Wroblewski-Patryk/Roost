@@ -8,10 +8,11 @@ import { syncBuiltinESMExports } from "node:module";
 import { nativeFixture } from "./fixtures/hermes-native.mjs";
 import { pinReadyFixture } from "./fixtures/execution-packet.mjs";
 import { collectReadOnlyRepositoryEvidence, qualifyHermesReadOnlyTools, consumeReadOnlyBoundary,
-  authorizeReadOnlyResume, completeReadOnlyBoundary } from "./lib/agent-host-readonly-boundary.mjs";
+  authorizeReadOnlyResume, completeReadOnlyBoundary, abortReadOnlyBoundary } from "./lib/agent-host-readonly-boundary.mjs";
 import { prepareProviderInput, abandonProviderNativeBoundary, assertProviderStartup,
   assertProviderReadOnlyBoundary } from "./lib/agent-host-provider-input.mjs";
 import { buildWindowsJobLauncher, startWindowsJob } from "./lib/agent-host-windows-job.mjs";
+import { createHermesQuietGuard, completeHermesReadOnlyProcess } from "./lib/agent-host-hermes-quiet.mjs";
 
 const windows = { skip: process.platform !== "win32", timeout: 60000 };
 const blocked = reason => error => {
@@ -74,6 +75,51 @@ test("read-only collection returns bounded evidence from an unchanged physical r
   const x = await fixture(t);
   try { const evidence = x.collect(); assert.equal(evidence.head, x.options.currentCommit); assert.equal(evidence.files[0].content, "base\n"); }
   finally { x.restore(); }
+});
+
+for (const [exitCode, output, code, diagnostic] of [
+  [1, "AuthError: credentials missing; SYNTHETIC_PRIVATE", "process_failed", "authentication_required_reported"],
+  [1, "API call failed; SYNTHETIC_PRIVATE", "process_failed", "unknown"],
+  [0, "", "empty_result", "unknown"],
+  [0, "Native audit candidate", null, null]
+]) test(`native read-only exit ${exitCode}/${code ?? "candidate"} preserves completion and fixed failure diagnostics`, windows, async t => {
+  const x = await fixture(t); let job, envelope, proof, receipt, completed = false;
+  try {
+    const c = x.f.packet.contract;
+    c.nativeBoundary = { profile: "inspect-readonly", readPaths: ["editable.txt"], runtime: { required: false, ports: [] }, inspectReadOnly: { kind: "auditor" } };
+    c.access = { ...c.access, tools: ["repository_read"], permissions: ["repository_read"], sandbox: "read-only" };
+    x.f.packet.procedureComposition.fields.tools = ["repository_read"]; pinReadyFixture(x.f);
+    x.f.taskContext.readyAdmission.riskAdmission.commit = x.options.currentCommit;
+    x.f.claimed.metadata.readyContextPin.riskAdmissionCommit = x.options.currentCommit;
+    envelope = prepareProviderInput({ ...x.options, repositoryEvidence: x.collect() });
+    const checked = assertProviderStartup({ envelope, provider: x.provider, repositoryPath: x.repositoryPath, startupEnvironment: x.options.startupEnvironment });
+    proof = consumeReadOnlyBoundary(assertProviderReadOnlyBoundary(envelope), { cwd: x.repositoryPath,
+      environment: x.options.startupEnvironment, attempt: envelope.identity.executionId, budgetReceipt: checked.budgetReceipt });
+    const launcher = await buildWindowsJobLauncher(x.root), guard = createHermesQuietGuard();
+    job = await startWindowsJob(launcher, { executable: process.execPath,
+      argv: ["-e", `process.stdout.write(${JSON.stringify(output)});process.exit(${exitCode})`], cwd: x.repositoryPath,
+      environment: x.options.startupEnvironment, input: "", durationMs: 5000, attempt: envelope.identity.executionId,
+      onData: (channel, bytes) => guard.write(channel, bytes),
+      confirmResume: assignment => authorizeReadOnlyResume(proof, assignment, { kind: "owned_readonly_fixture" }) });
+    receipt = await job.completion;
+    assert.equal(receipt.activeProcesses, 0); assert.equal(receipt.jobClosed, true);
+    if (code === null) {
+      const result = completeHermesReadOnlyProcess(proof, { guard, ownedTreeReceipt: receipt }); completed = true;
+      assert.equal(result.readOnlyAudit.verdict, "verified"); assert.equal(result.quiet.finalResponse, output);
+      assert.equal(result.quiet.trust, "untrusted_process_output"); assert.equal(result.quiet.reviewRequired, true);
+    } else assert.throws(() => completeHermesReadOnlyProcess(proof, { guard, ownedTreeReceipt: receipt }), error => {
+      assert.equal(error.message, "readonly_boundary_unproven"); assert.equal(error.protocolAdmission, true);
+      assert.equal(error.details.providerFailureCode, `hermes_quiet_${code}`);
+      assert.equal(error.details.providerDiagnostic, diagnostic);
+      assert.equal(JSON.stringify(error.details).includes("SYNTHETIC_PRIVATE"), false); return true;
+    });
+  } finally {
+    if (job) { job.stop(); await job.completion.catch(() => {}); }
+    if (completed) { /* The genuine completion already released the application lease. */ }
+    else if (proof && receipt) abortReadOnlyBoundary(proof, receipt);
+    else if (envelope) abandonProviderNativeBoundary(envelope);
+    x.restore();
+  }
 });
 
 test("a slow responding Docker observer can prove an unchanged snapshot while a timeout remains denied", windows, async t => {

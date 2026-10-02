@@ -370,7 +370,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       { claimed, contract: taskContract, repositoryEvidence: readOnlyEvidence });
     if (coding && taskContract.nativeBoundary.writePaths.length) codingTests = prepareCodingTests({
       manifestPath: config.executionProvider.testManifestPath, repositoryPath, originUrl: repository.originUrl,
-      acceptanceTests: taskContract.acceptance.tests });
+      acceptanceTests: taskContract.acceptance.tests, writePaths: taskContract.nativeBoundary.writePaths });
     const providerInput = prepareProviderInput({ fresh: { taskContext, applicationContext }, claimed,
       currentCommit: preparedCommit, assertAuthority: assertProviderAuthority, secrets: [apiKey, codeReviewerKey].filter(Boolean),
       provider: config.executionProvider, repositoryPath,
@@ -625,7 +625,9 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       verification.nativeReviewReceipt = reviewed.publicReceipt;
       verification.nativeReviewReceiptDigest = reviewed.receiptDigest;
       if (reviewed.publicReceipt.verdict !== "verified_candidate") throw Object.assign(
-        new Error("agent_native_review_blocked"), { retryable: false, publicMessage: "Native review did not verify the candidate result." });
+        new Error("agent_native_review_blocked"), { retryable: false, publicMessage: "Native review did not verify the candidate result.",
+          details: { nativeReviewReceipt: reviewed.publicReceipt, nativeReviewReceiptDigest: reviewed.receiptDigest,
+            ...(verification.codingTests ? { codingTests: verification.codingTests } : {}) } });
       releaseReviewedNativeBoundary(verification.nativeToolReceipt, reviewed.capability);
       if (codingTests) {
         const renewedFirstWrite = await duration.wait(requestFirstWriteAdmission({ api, claimed, writerLock, repositoryPath,
@@ -818,7 +820,7 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
   let resumedExecution;
   try {
     if (pending[0] && config.governedRelease) throw recoveryError("multiple_executions");
-    if (pending[0]) classifyRecovery(pending[0], recovery.executionEnabled);
+    const recoveryMode = pending[0] ? classifyRecovery(pending[0], recovery.executionEnabled) : null;
     const releaseRecoveryCandidate = await getGovernedReleaseRecoveryCandidate({config,baseUrl,hostId:registeredHost.id});
     writerLock = await acquireLock({ recoveryCandidate: pending[0], terminalCandidates: recovery.terminalPreSpawn,releaseRecoveryCandidate });
     config = await validateAgentHostWorkspace(config);
@@ -828,7 +830,11 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
       resumedExecution = resumed;
       if (resumed?.id !== pending[0].id || resumed?.attempt !== pending[0].attempt) throw recoveryError("recovery_conflict");
       await writerLock.checkpoint(resumed);
-      await execute(resumed, writerLock, { resumeCheckpoint: pending[0].checkpoint, onCheckpoint, createOutputBudget, readTaskBranch, readTaskCommit, readTaskPaths });
+      // A claimed checkpoint proves no execution preparation/effect occurred.
+      // Revalidate this same attempt from entry; branch checkpoints instead
+      // retain their sealed packet, context, branch and workspace snapshot.
+      await execute(resumed, writerLock, { resumeCheckpoint: recoveryMode === "resume_from_checkpoint" ? pending[0].checkpoint : undefined,
+        onCheckpoint, createOutputBudget, readTaskBranch, readTaskCommit, readTaskPaths });
     }
     while (!stopping) {
       let execution = null;

@@ -1494,6 +1494,17 @@ retained Dockerfile release sets, per-target durable intents and exact runtime
 identity. Independent repair acceptance and pilot release remain unproven;
 actual LIVE activity blocks the installed release adapter. See
 [current application evidence](../operations/application-release.md).
+An independent audit verifier returned a handoff gap; the corrected structured
+receipt then passed fresh independent assessment with explicit uncertainty.
+Both native receipts prove unchanged state. Separate first-write approval was
+accepted; implementation/review/release remain unproven. Failed read-only
+execution was reconciled through the normal API and exact local ownership
+protocol without accepting its result.
+Managed coding then failed native candidate acceptance. Signed owned-only
+rollback archived one added test, restored the clean audited base and preserved
+the prior accepted pilot commit. Normal signed Writer/lease cleanup and admission
+retirement passed; Roost retains the immutable failure and separate recovery
+record. No accepted repair commit or release is claimed from this recovery.
 Normal Windows Worker/Hermes coding produced exact candidate
 `de6ebe7a4267078196534a36f73ff9bccb09d3ae`; independent review
 `154d5cc2-904b-4413-9947-4820ee413648` and a separate native release audit
@@ -1530,7 +1541,8 @@ on an unchanged baseline, with verified read-only receipts and closed Windows
 Jobs. Earlier expired/uncertain audit attempts were reconciled without accepting
 their results. The certified release also exercised the Gate 2 ownership recovery
 repair. This does not certify every hypothetical crash or all portfolio release
-requirements. Gate 4 has not started; the pilot was neither pushed nor deployed.
+requirements. At that certification boundary the pilot was neither pushed nor
+deployed; current Gate 4 evidence is recorded above.
 
 [Operations and evidence checkpoint](../operations/governed-release.md),
 [server authority](../../src/modules/agent-runtime/governed-release.ts),

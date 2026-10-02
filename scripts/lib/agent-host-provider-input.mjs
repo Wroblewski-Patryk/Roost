@@ -42,7 +42,10 @@ export const providerInputSchema = z.object({
       auditorAgentId: id, completedAt: z.string().datetime(), branch: z.string().min(1),
       commit: z.string().regex(/^[a-f0-9]{40}$/),
       receipt: z.object({ evidenceDigest: hash, digest: hash, preTree: hash, postTree: hash,
-        verdict: z.literal("verified") }).strict(),
+        verdict: z.literal("verified"), gitState: z.literal("unchanged").optional(),
+        processState: z.literal("unchanged").optional(), dockerState: z.literal("unchanged").optional(),
+        nativeTools: z.array(z.never()).optional(),
+        comparisonScope: z.literal("same_repository_and_per_execution_state").optional() }).strict(),
       finalResponse: z.string().min(1).max(10000), digest: hash
     }).strict()).optional(),
     repositoryInspection: evidence("worker.bounded_repository_read", z.object({

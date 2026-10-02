@@ -42,18 +42,18 @@ const sha256 = value => createHash('sha256').update(value).digest('hex');
 const inside = (parent, child) => { const relative = path.relative(parent, child); return relative && !relative.startsWith('..') && !path.isAbsolute(relative); };
 
 // Fixed read-only, installation-wide predicates. Unknown mode associations are
-// treated conservatively: nonterminal orders, open positions and pending dedupes
-// block release even when they might belong to paper activity.
+// treated conservatively. Only explicit, fully resolved PAPER associations may
+// remain open; totals are retained separately for audit, never projected as LIVE.
 export const gitSetTradingSafetySql = `BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY;
 SELECT json_build_object('activeBots',(SELECT count(*) FROM "Bot" WHERE "isActive"=true AND mode='LIVE'),
 'runningSessions',(SELECT count(*) FROM "BotRuntimeSession" WHERE status='RUNNING' AND mode='LIVE'),
 'liveOpenOrders',(SELECT count(*) FROM "Order" o LEFT JOIN "Bot" b ON b.id=o."botId" LEFT JOIN "Wallet" w ON w.id=o."walletId" WHERE o.status IN ('PENDING','OPEN','PARTIALLY_FILLED') AND (b.mode='LIVE' OR w.mode='LIVE' OR o.origin='EXCHANGE_SYNC')),
 'liveOpenPositions',(SELECT count(*) FROM "Position" p LEFT JOIN "Bot" b ON b.id=p."botId" LEFT JOIN "Wallet" w ON w.id=p."walletId" WHERE p.status='OPEN' AND (b.mode='LIVE' OR w.mode='LIVE' OR p.origin='EXCHANGE_SYNC')),
-'unknownOpenOrders',(SELECT count(*) FROM "Order" o LEFT JOIN "Bot" b ON b.id=o."botId" LEFT JOIN "Wallet" w ON w.id=o."walletId" WHERE o.status IN ('PENDING','OPEN','PARTIALLY_FILLED') AND b.id IS NULL AND w.id IS NULL AND o.origin='BOT'),
-'unknownOpenPositions',(SELECT count(*) FROM "Position" p LEFT JOIN "Bot" b ON b.id=p."botId" LEFT JOIN "Wallet" w ON w.id=p."walletId" WHERE p.status='OPEN' AND b.id IS NULL AND w.id IS NULL AND p.origin='BOT'),
+'unknownOpenOrders',(SELECT count(*) FROM "Order" o LEFT JOIN "Bot" b ON b.id=o."botId" LEFT JOIN "Wallet" w ON w.id=o."walletId" WHERE o.status IN ('PENDING','OPEN','PARTIALLY_FILLED') AND NOT COALESCE(b.mode='LIVE' OR w.mode='LIVE' OR o.origin='EXCHANGE_SYNC',false) AND NOT COALESCE((b.id IS NOT NULL OR w.id IS NOT NULL) AND (o."botId" IS NULL OR (b.id IS NOT NULL AND b.mode='PAPER')) AND (o."walletId" IS NULL OR (w.id IS NOT NULL AND w.mode='PAPER')),false)),
+'unknownOpenPositions',(SELECT count(*) FROM "Position" p LEFT JOIN "Bot" b ON b.id=p."botId" LEFT JOIN "Wallet" w ON w.id=p."walletId" WHERE p.status='OPEN' AND NOT COALESCE(b.mode='LIVE' OR w.mode='LIVE' OR p.origin='EXCHANGE_SYNC',false) AND NOT COALESCE((b.id IS NOT NULL OR w.id IS NOT NULL) AND (p."botId" IS NULL OR (b.id IS NOT NULL AND b.mode='PAPER')) AND (p."walletId" IS NULL OR (w.id IS NOT NULL AND w.mode='PAPER')),false)),
 'allOpenOrders',(SELECT count(*) FROM "Order" WHERE status IN ('PENDING','OPEN','PARTIALLY_FILLED')),
 'allOpenPositions',(SELECT count(*) FROM "Position" WHERE status='OPEN'),
-'pendingDedupes',(SELECT count(*) FROM "RuntimeExecutionDedupe" d LEFT JOIN "Bot" b ON b.id=d."botId" WHERE d.status='PENDING' AND (b.mode='LIVE' OR d."botId" IS NULL OR b.id IS NULL)))::text;
+'pendingDedupes',(SELECT count(*) FROM "RuntimeExecutionDedupe" d LEFT JOIN "Bot" b ON b.id=d."botId" WHERE d.status='PENDING' AND (d."botId" IS NULL OR b.id IS NULL OR b.mode IS DISTINCT FROM 'PAPER')))::text;
 COMMIT;`;
 // Identical row/sequence fingerprint contract to the verified backup gateway.
 const fingerprintSql = `BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY;
@@ -163,9 +163,9 @@ export function createInstalledGitSetRelease({ settings, state, backup, github, 
     const counts = parseGitSetSafetyCounts(await ssh({ command: psql(cfg.source), stdin: gitSetTradingSafetySql }));
     // Reject actual activity before scanning a potentially large live database.
     // The release needs a stable basis; fingerprints cannot make activity safe.
-    check(counts.activeTrading === 0 && counts.allOpenOrders === 0 && counts.allOpenPositions === 0, 'activity_present');
-    const basis = await fingerprint(); return { activeTrading: counts.activeTrading, openOrders: counts.allOpenOrders,
-      openPositions: counts.allOpenPositions, ...basis };
+    check(counts.activeTrading === 0 && counts.liveOpenOrders === 0 && counts.liveOpenPositions === 0, 'activity_present');
+    const basis = await fingerprint(); return { activeTrading: counts.activeTrading, openOrders: counts.liveOpenOrders,
+      openPositions: counts.liveOpenPositions, ...basis };
   };
   const liveQueue = new Map();
   for (const row of state.journal ?? []) if (['deploy', 'rollback'].includes(row.operation) && row.intent?.parameters?.targetId) {
