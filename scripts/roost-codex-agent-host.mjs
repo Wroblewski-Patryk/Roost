@@ -849,7 +849,9 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
           await execute(execution, writerLock, { onCheckpoint, createOutputBudget, readTaskBranch, readTaskCommit, readTaskPaths });
         }
       } catch (error) {
-        if (error.releaseBlocked) { stopping = true; retainWriterLock = true; }
+        if (error.releaseBlocked) { stopping = true; retainWriterLock = true;
+          if (error.releaseDiagnostic) process.stderr.write(`Release Worker blocked: ${error.releaseDiagnostic}\n`);
+        }
         // A terminal failed review still owns its native lease and signed Writer
         // snapshot. Preserve both until exact reconciliation; another claim must
         // not replace the captured Writer bytes or inherit the application's slot.

@@ -760,3 +760,5 @@ Windows OpenSSH exited 255 without `ProgramData` in its minimal environment;
 the same read-only connection passed with that system variable alone. The
 environment now includes it, and a real owned `ssh -G` test checks configuration
 resolution without making a network connection. Release effects remain pending.
+Worker refusal diagnostics now retain only an explicit list of admission codes;
+all other exception content becomes `release_preflight_unproven`.

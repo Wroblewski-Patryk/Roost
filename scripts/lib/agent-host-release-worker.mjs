@@ -20,6 +20,8 @@ import { createReleaseRegistryProof } from './agent-host-release-registry-proof.
 
 const target=z.string().regex(/^Roost\/Gate3\/[A-Za-z0-9._-]{1,80}$/),hash=z.string().regex(/^[a-f0-9]{64}$/);
 const url=z.string().url().refine(v=>{const u=new URL(v);return u.protocol==='https:'&&!u.username&&!u.password&&!u.search&&!u.hash&&u.pathname==='/';});
+const releaseDiagnosticReasons=new Set(['agent_runtime_content_blocked','release_api_uncertain','release_api_response_invalid','release_api_rejected','release_api_input_invalid','release_principal_invalid','release_authority_inactive','release_credential_invalid','release_review_stale','release_source_basis_changed','release_native_candidate_unproven','release_configuration_changed','release_readiness_changed','release_version_stale','release_candidate_changed','release_base_changed','release_operation_unresolved']);
+export const releaseWorkerDiagnostic=error=>releaseDiagnosticReasons.has(error?.message)?error.message:'release_preflight_unproven';
 export const governedReleaseWorkerSchema=z.object({client:releaseClientSchema,githubCredentialTarget:target,coolifyCredentialTarget:target,
  coolify:z.object({origin:url,targetId:z.string().regex(/^[A-Za-z0-9_-]{1,80}$/),candidateConfig:z.record(z.unknown()),rollbackConfig:z.record(z.unknown()),certificateSha256:hash.optional(),healthCertificateSha256:hash.optional()}).strict(),
  resources:z.object({sshHost:z.string().regex(/^[A-Za-z0-9._-]{1,64}$/),workspaceRoot:z.string().min(3),ownershipFile:z.string().min(3)}).strict(),
@@ -130,8 +132,8 @@ export async function runGovernedReleaseQueueStep({config,baseUrl,hostId,writerL
   sealReleaseWriterCheckpoint(context);
   if(writerLock.releaseRecovery&&result.state?.journal?.every(j=>j.outcome&&j.outcome.status!=='uncertain'))clearReleaseWriterRecovery(writerLock,result.state,settings.client);
   return result;
- }catch{
+ }catch(error){
   if(context){try{sealReleaseWriterCheckpoint(context);}catch{}}
-  throw Object.assign(Error('release_worker_reconciliation_required'),{releaseBlocked:true,retryable:false});
+  throw Object.assign(Error('release_worker_reconciliation_required'),{releaseBlocked:true,retryable:false,releaseDiagnostic:releaseWorkerDiagnostic(error)});
  }finally{await prepared?.dispose();}
 }
