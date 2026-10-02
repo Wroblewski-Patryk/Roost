@@ -76,9 +76,14 @@ export function createFixedDockerImageCleanupTransport({ sshHost, sudo = true } 
   };
 }
 
-export function githubImageCleanupJson({ path, method, token }) {
-  check(['GET', 'DELETE'].includes(method) && /^\/(user(?:\/packages\/container\/[^?]+)?|orgs\/[^?]+|repos\/[^?]+)$/.test(path), 'github_path_invalid');
-  check(method !== 'DELETE' || /^\/(?:user|orgs\/[a-zA-Z0-9-]+)\/packages\/container\/[^/?]+\/versions\/[1-9][0-9]*$/.test(path), 'github_delete_scope_invalid');
+const packageRemovalCapabilities = new WeakMap();
+export function githubImageCleanupJson({ path, method, token, packageRemovalCapability }) {
+  const catalog=/^\/(?:user|orgs\/[a-zA-Z0-9-]+)\/packages(?:\?package_type=container&per_page=100&page=[1-9][0-9]?|\/container\/[^/?]+\/versions\?per_page=100&page=1)$/.test(path);
+  check(['GET', 'DELETE'].includes(method) && (catalog || /^\/(user(?:\/packages\/container\/[^?]+)?|orgs\/[^?]+|repos\/[^?]+)$/.test(path)), 'github_path_invalid');
+  if(method==='DELETE'&&!/^\/(?:user|orgs\/[a-zA-Z0-9-]+)\/packages\/container\/[^/?]+\/versions\/[1-9][0-9]*$/.test(path)){
+    check(packageRemovalCapabilities.get(packageRemovalCapability)===path,'github_delete_scope_invalid');
+    packageRemovalCapabilities.delete(packageRemovalCapability);
+  }
   check(typeof token === 'string' && token.length > 0 && !/[\r\n]/.test(token), 'credential_unavailable');
   return new Promise((resolve, reject) => {
     const req = https.request({ hostname: 'api.github.com', path, method, timeout: 15000, rejectUnauthorized: true,
@@ -86,7 +91,7 @@ export function githubImageCleanupJson({ path, method, token }) {
       let output = '', bytes = 0;
       res.on('data', part => { bytes += part.length; if (bytes > 262144) req.destroy(); else output += part.toString('utf8'); });
       res.on('end', () => {
-        if (![200, 204, 404].includes(res.statusCode)) { reject(Error('github_response_unproven')); return; }
+        if (![200, 204, 404].includes(res.statusCode)) { reject(Object.assign(Error('github_response_unproven'), { httpStatus: res.statusCode })); return; }
         try { resolve({ status: res.statusCode, body: output ? JSON.parse(output) : null,
           scopes: String(res.headers['x-oauth-scopes'] ?? '').split(',').map(value => value.trim()).filter(Boolean) }); }
         catch { reject(Error('github_response_unproven')); }
@@ -99,9 +104,11 @@ export function githubImageCleanupJson({ path, method, token }) {
 
 // The root broker durably reserves one cleanup intent before removeResource.
 // After an uncertain outcome it must invoke reconcileResource, including after
-// process restart. This adapter never turns observed presence into retry consent.
+// process restart. Proven unchanged presence resolves the prior deletion as
+// absent; another effect still requires a new durable broker capability.
 export function createReleaseImageCleanup({ ownership, readOwnership, applicationAbsent, dockerTransport,
-  githubCredential, githubTransport = githubImageCleanupJson, registryProof = createReleaseRegistryProof() }) {
+  githubCredential, githubTransport = githubImageCleanupJson, registryProof = createReleaseRegistryProof(), allowTemporaryPackageRemoval=false }) {
+  check(typeof allowTemporaryPackageRemoval==='boolean','package_removal_configuration_invalid');
   let owned; try { owned = releaseImageOwnershipSchema.parse(ownership); } catch { fail('ownership_invalid'); }
   const pinned = hash(owned), spent = new Set();
   check(typeof readOwnership === 'function' && typeof applicationAbsent === 'function', 'ownership_gateway_missing');
@@ -140,14 +147,38 @@ export function createReleaseImageCleanup({ ownership, readOwnership, applicatio
     check(Array.isArray(result.containers) && result.containers.every(id => /^[a-f0-9]{64}$/.test(id)), 'docker_containers_unproven');
     check(result.containers.length === 0, 'docker_image_in_use'); return true;
   };
-  const api = async (path, method = 'GET') => {
+  const api = async (path, method = 'GET', packageRemovalCapability) => {
     check(typeof githubCredential === 'function', 'github_credential_missing');
-    let result; try { result = await githubTransport({ path, method, token: await githubCredential() }); }
-    catch { fail('github_transport_unproven', method === 'DELETE'); }
+    let result; try { result = await githubTransport({ path, method, token: await githubCredential(), ...(packageRemovalCapability?{packageRemovalCapability}:{}) }); }
+    catch(error) { throw Object.assign(Error('release_image_cleanup_github_transport_unproven'), { retryable:false,
+      uncertain:method==='DELETE', transportDiagnostic:Number.isInteger(error?.httpStatus)&&error.httpStatus>=100&&error.httpStatus<=599
+        ?`response_unproven_http_${error.httpStatus}`:'transport_uncertain' }); }
     check(result && [200, 204, 404].includes(result.status), 'github_response_unproven'); await stable(); return result;
   };
   const base = owned.registryOwnerType === 'user' ? '/user' : `/orgs/${encodeURIComponent(owned.registryOwner)}`;
   const packagePath = `${base}/packages/container/${encodeURIComponent(owned.packageName)}`;
+  const proveSource=async (row,cacheOnly=false)=>{
+    check(typeof registryProof==='function','registry_proof_missing');let proof;
+    try{proof=await registryProof({imageRepository:row.imageRepository,publicationDigest:row.publicationDigest,imageDigest:row.imageDigest,repositoryUrl:owned.repositoryUrl,token:await githubCredential(),cacheOnly});}
+    catch{fail('registry_provenance_unproven');}
+    check(proof?.provenanceVerified===true&&proof.publicationDigest===row.publicationDigest&&proof.imageDigest===row.imageDigest
+      &&proof.imageRepository===row.imageRepository&&proof.repositoryUrl===`https://github.com/${fullName}`&&proof.memberDigests?.includes(row.imageDigest),'registry_provenance_unproven');
+    await stable();
+  };
+  const proveOwnedPackageSources=async()=>{for(const row of owned.resources.filter(r=>r.kind==='ghcr_version'))await proveSource(row,true);};
+  const provePackageAbsent=async()=>{
+    check(owned.registryOwnerType==='user','github_package_owner_unproven');
+    // A 404 alone can hide inaccessible packages. A complete authenticated
+    // owner catalog plus immutable former source proofs must also establish absence.
+    for(let page=1;page<=10;page++){
+      const response=await api(`${base}/packages?package_type=container&per_page=100&page=${page}`);
+      check(response.status===200&&Array.isArray(response.body)&&response.body.length<=100,'github_catalog_unproven');
+      check(response.body.every(p=>Number.isSafeInteger(p?.id)&&typeof p.name==='string'&&p.package_type==='container'),'github_catalog_unproven');
+      check(!response.body.some(p=>p.id===owned.packageId||p.name===owned.packageName),'github_package_changed');
+      if(response.body.length<100){await proveOwnedPackageSources();return;}
+    }
+    fail('github_catalog_truncated');
+  };
   const registryAccess = async () => {
     const actor = await api('/user');
     check(actor.status === 200 && actor.body?.login?.toLowerCase() === owned.actorLogin.toLowerCase()
@@ -158,6 +189,7 @@ export function createReleaseImageCleanup({ ownership, readOwnership, applicatio
     const repo = await api(`/repos/${fullName}`);
     check(repo.status === 200 && repo.body?.full_name?.toLowerCase() === fullName.toLowerCase() && repo.body?.private === true, 'github_repository_changed');
     const pkg = await api(packagePath);
+    if(pkg.status===404){await provePackageAbsent();return null;}
     check(pkg.status === 200 && pkg.body?.id === owned.packageId && pkg.body?.package_type === 'container'
       && pkg.body?.owner?.login?.toLowerCase() === owned.registryOwner.toLowerCase() && pkg.body?.visibility === 'private'
       && pkg.body?.name === owned.packageName, 'github_package_changed');
@@ -168,26 +200,44 @@ export function createReleaseImageCleanup({ ownership, readOwnership, applicatio
       check(pkg.body.repository.full_name?.toLowerCase() === fullName.toLowerCase()
         && pkg.body.repository.private === true, 'github_package_changed');
     }
+    return pkg.body;
   };
   const inspectVersion = async row => {
-    await registryAccess(); const response = await api(`${packagePath}/versions/${row.versionId}`);
+    const pkg=await registryAccess(); const response = await api(`${packagePath}/versions/${row.versionId}`);
     if (response.status === 404) return false;
+    check(pkg!==null,'github_package_changed');
     const version = response.body;
     check(response.status === 200 && version?.id === row.versionId && version?.name === row.imageDigest
       && version?.created_at === row.createdAt && version?.metadata?.package_type === 'container'
       && equalSet(version.metadata?.container?.tags, row.tags), 'github_version_changed');
-    check(typeof registryProof === 'function', 'registry_proof_missing');
     // The source-selected proof factory may preserve raw immutable OCI bytes
     // in its private durable cache. Every use hashes and validates the complete
     // graph again; no JSON receipt boolean grants cleanup authority.
-    let proof;
-    try { proof = await registryProof({ imageRepository: row.imageRepository, publicationDigest: row.publicationDigest,
-      imageDigest: row.imageDigest, repositoryUrl: owned.repositoryUrl, token: await githubCredential() }); }
-    catch { fail('registry_provenance_unproven'); }
-    check(proof?.provenanceVerified === true && proof.publicationDigest === row.publicationDigest
-      && proof.imageDigest === row.imageDigest && proof.imageRepository === row.imageRepository
-      && proof.repositoryUrl === `https://github.com/${fullName}` && proof.memberDigests?.includes(row.imageDigest), 'registry_provenance_unproven');
+    await proveSource(row);
     await stable(); return true;
+  };
+  const removeRegistry=async row=>{
+    const pkg=await registryAccess();check(pkg!==null,'github_package_changed');
+    let capability;
+    if(pkg.version_count===1){
+      check(allowTemporaryPackageRemoval,'github_package_removal_not_authorized');
+      check(owned.registryOwnerType==='user','github_package_owner_unproven');
+      const versions=await api(`${packagePath}/versions?per_page=100&page=1`);
+      check(versions.status===200&&Array.isArray(versions.body)&&versions.body.length===1,'github_final_version_unproven');
+      const v=versions.body[0];
+      check(v.id===row.versionId&&v.name===row.imageDigest&&v.created_at===row.createdAt&&v.metadata?.package_type==='container'
+        &&equalSet(v.metadata?.container?.tags,row.tags),'github_final_version_unproven');
+      await proveOwnedPackageSources();await beforeEffect();
+      const fresh=await registryAccess(),finalVersions=await api(`${packagePath}/versions?per_page=100&page=1`);
+      check(fresh?.version_count===1&&finalVersions.status===200&&Array.isArray(finalVersions.body)&&finalVersions.body.length===1
+        &&hash(finalVersions.body[0])===hash(v),'github_final_version_changed');
+      // The owner authorized cleanup of this entire temporary package. Only
+      // the sole exact remaining owned version can mint this non-serializable,
+      // single-use transport capability; no model or generic caller can do so.
+      capability={};packageRemovalCapabilities.set(capability,packagePath);
+    }
+    const result=await api(capability?packagePath:`${packagePath}/versions/${row.versionId}`,'DELETE',capability);
+    if(result.status!==204)fail('github_delete_unproven',true);
   };
   const inspect = row => row.kind === 'docker_image' ? inspectDocker(row) : inspectVersion(row);
   const evidence = id => ({ absenceVerified: true, resourceIds: [id] });
@@ -200,14 +250,14 @@ export function createReleaseImageCleanup({ ownership, readOwnership, applicatio
       // callers in this process cannot both dispatch the same removal.
       check(!spent.has(id), 'mutation_already_dispatched'); spent.add(id);
       if (row.kind === 'docker_image') await docker(row, 'remove');
-      else { const result = await api(`${packagePath}/versions/${row.versionId}`, 'DELETE'); if (result.status !== 204) fail('github_delete_unproven', true); }
+      else await removeRegistry(row);
       try { if (await inspect(row)) fail('removal_pending', true); }
       catch (error) { fail('removal_unproven', true); }
       return evidence(id);
     },
     async reconcileResource(id) {
       const row = await rowFor(id); await beforeEffect();
-      return await inspect(row) ? { status: 'uncertain', evidence: { presenceObserved: true, resourceIds: [id] } }
+      return await inspect(row) ? { status: 'absent', evidence: { absenceVerified: true, resourcePresent: true, resourceIds: [id] } }
         : { status: 'succeeded', evidence: evidence(id) };
     },
     async verifyCleanup() {

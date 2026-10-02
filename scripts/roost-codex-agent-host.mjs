@@ -45,7 +45,7 @@ import readyContext from "./lib/agent-host-ready-context.cjs";
 import { contextStopError } from "./lib/agent-host-context-stop.mjs";
 import { assertTaskBranch, readCurrentTaskBranch, readCurrentTaskCommit, readCommittedTaskPaths } from "./lib/agent-host-single-task.mjs";
 import { createTaskBranch } from "./lib/agent-host-task-branch.mjs";
-import { runGovernedReleaseQueueStep, getGovernedReleaseRecoveryCandidate } from "./lib/agent-host-release-worker.mjs";
+import { runGovernedReleaseQueueStep, getGovernedReleaseRecoveryCandidate, persistReleaseWorkerDiagnostic } from "./lib/agent-host-release-worker.mjs";
 
 const baseUrl = String(process.env.ROOST_BASE_URL || process.env.COMPANYCORE_BASE_URL || "").replace(/\/+$/, "");
 const apiKey = process.env.ROOST_AGENT_API_KEY || process.env.COMPANYCORE_API_KEY;
@@ -839,7 +839,8 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
         // An uncertain remote effect must survive a normal controller stop too.
         // The next owner first qualifies this sealed Writer and only reconciles.
         if (releaseStep.reconciliationRequired) { stopping = true; retainWriterLock = true;
-          if(releaseStep.uncertaintyDiagnostic)process.stderr.write(`Release Worker uncertainty: ${releaseStep.uncertaintyDiagnostic}\n`);
+          if(releaseStep.uncertaintyDiagnostic){process.stderr.write(`Release Worker uncertainty: ${releaseStep.uncertaintyDiagnostic}\n`);
+            persistReleaseWorkerDiagnostic(configPath,'uncertainty',releaseStep.uncertaintyDiagnostic);}
         }
         if (releaseStep.handled) { if (!stopping) await delay(1000); continue; }
         if (config.governedRelease) { if (!stopping) await delay(pollIntervalMs); continue; }
@@ -852,7 +853,8 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
         }
       } catch (error) {
         if (error.releaseBlocked) { stopping = true; retainWriterLock = true;
-          if (error.releaseDiagnostic) process.stderr.write(`Release Worker blocked: ${error.releaseDiagnostic}\n`);
+          if (error.releaseDiagnostic) {process.stderr.write(`Release Worker blocked: ${error.releaseDiagnostic}\n`);
+            persistReleaseWorkerDiagnostic(configPath,'blocked',error.releaseDiagnostic);}
         }
         // A terminal failed review still owns its native lease and signed Writer
         // snapshot. Preserve both until exact reconciliation; another claim must

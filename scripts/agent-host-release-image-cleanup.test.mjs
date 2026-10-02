@@ -18,7 +18,7 @@ const ownership = () => ({ schemaVersion: 'roost-release-image-ownership-v1', re
       createdAt, tags: ['candidate'], temporary: true },
   ] });
 
-function fixture(ledger = ownership()) {
+function fixture(ledger = ownership(), allowTemporaryPackageRemoval=false) {
   const calls = [], present = { local: true, vps: true, registry: true };
   const state = { ledger, appAbsent: true, lost: null, denied: false, packageMissing: false,
     dockerExtra: {}, versionExtra: {}, packageExtra: {}, repoExtra: {}, userExtra: {},
@@ -41,6 +41,14 @@ function fixture(ledger = ownership()) {
     if (state.denied) return { status: 403, body: { message: 'secret raw error' } };
     if (args.path === '/user') return { status: 200, body: { login: 'example', ...state.userExtra }, scopes: state.scopes ?? ['read:packages', 'delete:packages'] };
     if (args.path.startsWith('/repos/')) return { status: 200, body: { full_name: 'example/release-cert', private: true, ...state.repoExtra } };
+    if(args.path.includes('?package_type=container'))return{status:200,body:state.packageCatalog??[]};
+    if(args.path.includes('/versions?'))return{status:200,body:state.versionCatalog??[{id:456,name:imageDigest,created_at:createdAt,metadata:{package_type:'container',container:{tags:['candidate']}}}]};
+    if(args.method==='DELETE'&&!args.path.includes('/versions/')){
+      if(state.lost==='package_before')throw Error('private error');
+      state.packageMissing=true;present.registry=false;
+      if(state.lost==='package_after')throw Error('private error');
+      return{status:204,body:null};
+    }
     if (!args.path.includes('/versions/')) return state.packageMissing ? { status: 404, body: null }
       : { status: 200, body: { ...state.package, ...state.packageExtra } };
     if (args.method === 'DELETE') {
@@ -53,7 +61,7 @@ function fixture(ledger = ownership()) {
       metadata: { package_type: 'container', container: { tags: ['candidate'] } }, ...state.versionExtra } }
       : { status: 404, body: null };
   };
-  const adapter = createReleaseImageCleanup({ ownership: ledger, readOwnership: async () => state.ledger,
+  const adapter = createReleaseImageCleanup({ ownership: ledger, allowTemporaryPackageRemoval, readOwnership: async () => state.ledger,
     applicationAbsent: async () => state.appAbsent, dockerTransport, githubCredential: async () => 'fake-sensitive-token', githubTransport,
     registryProof: async args => ({ provenanceVerified: true, publicationDigest: args.publicationDigest, imageDigest: args.imageDigest,
       imageRepository: args.imageRepository, repositoryUrl: args.repositoryUrl.replace(/\.git$/, ''), memberDigests: [args.imageDigest], ...state.proofExtra }) });
@@ -141,6 +149,7 @@ for (const [label, extra] of [
 for (const [label, field, extra] of [
   ['package owner', 'packageExtra', { owner: { login: 'foreign' } }],
   ['public package', 'packageExtra', { visibility: 'public' }],
+  ['package ID', 'packageExtra', { id: 124 }],
   ['wrong package name', 'packageExtra', { name: 'shared' }],
   ['foreign linked repository', 'packageExtra', { repository: { full_name: 'example/other', private: true } }],
   ['public repository', 'repoExtra', { private: false }],
@@ -172,10 +181,10 @@ for (const [kind, id] of [['docker', 'image_local'], ['registry', 'image_registr
     await adapter.removeResource(id);
     assert.equal(calls.filter(row => row.operation === 'remove' || row.method === 'DELETE').length, 1);
   });
-  test(`${kind} response lost before deletion leaves an uncertain hold without retry`, async () => {
+  test(`${kind} response lost before deletion resolves absent only after exact identity inspection, without retrying in this adapter`, async () => {
     const { adapter, state, calls } = fixture(); state.lost = `${kind}_before`;
     await assert.rejects(adapter.removeResource(id), error => error.uncertain === true);
-    assert.equal((await adapter.reconcileResource(id)).status, 'uncertain');
+    assert.deepEqual(await adapter.reconcileResource(id), { status: 'absent', evidence: { absenceVerified: true, resourcePresent: true, resourceIds: [id] } });
     await assert.rejects(adapter.removeResource(id), /mutation_already_dispatched/);
     assert.equal(calls.filter(row => row.operation === 'remove' || row.method === 'DELETE').length, 1);
   });
@@ -196,6 +205,47 @@ test('fixed Docker transport refuses malformed IDs and arbitrary operations with
   await assert.rejects(run({ operation: 'remove', engine: 'vps', imageId: 'base; docker prune' }), /docker_scope_invalid/);
   await assert.rejects(run({ operation: 'prune', engine: 'vps', imageId }), /docker_operation_invalid/);
   assert.throws(() => createFixedDockerImageCleanupTransport({ sshHost: 'host;command' }), /ssh_configuration_invalid/);
+});
+test('sole remaining exact owned version permits only its fully proven temporary package cleanup',async()=>{
+ const x=fixture(ownership(),true);x.state.package.version_count=1;
+ await x.adapter.removeResource('image_registry');
+ const mutations=x.calls.filter(row=>row.method==='DELETE');
+ assert.equal(mutations.length,1);assert.equal(mutations[0].path,'/user/packages/container/release-cert');
+ assert.equal((await x.adapter.reconcileResource('image_registry')).status,'succeeded');
+});
+test('final package cleanup preserves any extra, foreign or unproved active version',async()=>{
+ for(const versions of [[],[{id:457}],Array(100).fill({id:456})]){
+  const x=fixture(ownership(),true);x.state.package.version_count=1;x.state.versionCatalog=versions;
+  await assert.rejects(x.adapter.removeResource('image_registry'),/github_final_version_unproven/);
+  assert.equal(x.calls.some(row=>row.method==='DELETE'),false);
+ }
+});
+test('final package cleanup cannot replace authenticated former OCI provenance with a ledger assertion',async()=>{
+ const x=fixture(ownership(),true);x.state.package.version_count=1;x.state.proofExtra={provenanceVerified:false};
+ await assert.rejects(x.adapter.removeResource('image_registry'),/registry_provenance_unproven/);
+ assert.equal(x.calls.some(row=>row.method==='DELETE'),false);
+});
+test('lost package cleanup reply reconciles authenticated catalog, exact version absence and immutable source before any retry',async()=>{
+ const x=fixture(ownership(),true);x.state.package.version_count=1;x.state.lost='package_after';
+ await assert.rejects(x.adapter.removeResource('image_registry'),error=>error.uncertain===true);
+ assert.equal((await x.adapter.reconcileResource('image_registry')).status,'succeeded');
+ assert.equal(x.calls.filter(row=>row.method==='DELETE').length,1);
+ x.state.packageCatalog=[{id:123,name:'release-cert',package_type:'container'}];
+ await assert.rejects(x.adapter.reconcileResource('image_registry'),/github_package_changed/);
+});
+test('serializable flags cannot authorize generic package deletion',()=>{
+ assert.throws(()=>githubImageCleanupJson({path:'/user/packages/container/release-cert',method:'DELETE',token:'fake',packageRemovalCapability:{approved:true}}),/github_delete_scope_invalid/);
+});
+test('temporary package deletion requires separate installation authority; it is disabled by default',async()=>{
+ const x=fixture();x.state.package.version_count=1;
+ await assert.rejects(x.adapter.removeResource('image_registry'),/github_package_removal_not_authorized/);
+ assert.equal(x.calls.some(row=>row.method==='DELETE'),false);
+});
+test('a new active version appearing during final cleanup preparation preserves the package',async()=>{
+ const x=fixture(ownership(),true);x.state.package.version_count=1;let reads=0;
+ Object.defineProperty(x.state,'versionCatalog',{get(){reads++;return [{id:reads===1?456:457,name:imageDigest,created_at:createdAt,metadata:{package_type:'container',container:{tags:['candidate']}}}];}});
+ await assert.rejects(x.adapter.removeResource('image_registry'),/github_final_version_changed/);
+ assert.equal(x.calls.some(row=>row.method==='DELETE'),false);
 });
 test('verification accounts for every recorded owned image', async () => {
   const { adapter, present } = fixture();

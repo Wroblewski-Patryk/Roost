@@ -84,3 +84,13 @@ test('rollback requires separate configuration and observation before cleanup',(
  assert.equal(nextReleaseOperation(state),'observe');state.journal.push({operation:'observe',intent:{parameters:{mode:'rollback'}},outcome:{status:'succeeded'}});
  assert.equal(nextReleaseOperation(state),'cleanup_resource');
 });
+test('exact resource presence resolves a prior uncertain deletion without dispatching another effect',async()=>{
+ const state=fixture(),id=randomUUID();
+ state.journal.push({id,operation:'cleanup_resource',intent:{parameters:{resourceId:'owned_app'}},outcome:{status:'uncertain'}});
+ let effects=0;
+ const h=harness(state,{resources:{reconcileResource:async()=>({status:'absent',evidence:{observedAt:new Date().toISOString(),absenceVerified:true,resourcePresent:true,resourceIds:['owned_app']}}),removeResource:async()=>{effects++;}}});
+ await runReleaseStep(h.args);
+ assert.equal(effects,0);assert.equal(state.journal.length,1);
+ assert.equal(state.journal[0].outcome.status,'reconciled');assert.equal(state.journal[0].outcome.reconciledStatus,'absent');
+ assert.equal(state.journal[0].outcome.evidence.resourcePresent,true);
+});

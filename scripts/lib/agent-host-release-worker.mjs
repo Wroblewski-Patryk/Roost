@@ -12,7 +12,8 @@ import { beginReleaseWriterCheckpoint, checkpointReleaseOperation, sealReleaseWr
 import { nextReleaseOperation } from './agent-host-release-broker.mjs';
 import { createReleaseImageCleanup, createFixedDockerImageCleanupTransport, releaseImageOwnershipSchema } from './agent-host-release-image-cleanup.mjs';
 import { coolifyHttpsJson } from './agent-host-release-coolify.mjs';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
 import { physicalIdentity } from './agent-host-native-footprint.mjs';
 import { createHash } from 'node:crypto';
 import { createReleaseBackupGateway } from './agent-host-release-backup.mjs';
@@ -22,10 +23,18 @@ const target=z.string().regex(/^Roost\/Gate3\/[A-Za-z0-9._-]{1,80}$/),hash=z.str
 const url=z.string().url().refine(v=>{const u=new URL(v);return u.protocol==='https:'&&!u.username&&!u.password&&!u.search&&!u.hash&&u.pathname==='/';});
 const releaseDiagnosticReasons=new Set(['agent_runtime_content_blocked','release_api_uncertain','release_api_response_invalid','release_api_rejected','release_api_input_invalid','release_principal_invalid','release_authority_inactive','release_credential_invalid','release_review_stale','release_source_basis_changed','release_native_candidate_unproven','release_configuration_changed','release_readiness_changed','release_version_stale','release_candidate_changed','release_base_changed','release_operation_unresolved']);
 export const releaseWorkerDiagnostic=error=>releaseDiagnosticReasons.has(error?.message)?error.message:'release_preflight_unproven';
+export function persistReleaseWorkerDiagnostic(configPath,phase,reason){
+ if(!['blocked','uncertainty'].includes(phase))throw Error('release_diagnostic_phase_invalid');
+ const safe=phase==='blocked'?releaseWorkerDiagnostic({message:reason}):
+  /^(transport_uncertain|response_unproven|response_size_invalid|response_invalid)(_http_[1-5][0-9]{2})?$/.test(reason??'')?reason:'release_effect_unproven';
+ // Hidden Windows launchers do not always inherit stderr. Persist only the
+ // fixed classification beside the private installation config, never errors.
+ try{writeFileSync(path.join(path.dirname(configPath),'release-worker-diagnostic.json'),JSON.stringify({phase,reason:safe,observedAt:new Date().toISOString()}),{mode:0o600});return true;}catch{return false;}
+}
 export const governedReleaseWorkerSchema=z.object({client:releaseClientSchema,githubCredentialTarget:target,coolifyCredentialTarget:target,
  coolify:z.object({origin:url,targetId:z.string().regex(/^[A-Za-z0-9_-]{1,80}$/),candidateConfig:z.record(z.unknown()),rollbackConfig:z.record(z.unknown()),certificateSha256:hash.optional(),healthCertificateSha256:hash.optional()}).strict(),
  resources:z.object({sshHost:z.string().regex(/^[A-Za-z0-9._-]{1,64}$/),workspaceRoot:z.string().min(3),ownershipFile:z.string().min(3)}).strict(),
- imageCleanup:z.object({ownershipFile:z.string().min(3),credentialTarget:target,provenanceCacheDirectory:z.string().min(3)}).strict().optional(),
+ imageCleanup:z.object({ownershipFile:z.string().min(3),credentialTarget:target,provenanceCacheDirectory:z.string().min(3),allowTemporaryPackageRemoval:z.boolean().optional()}).strict().optional(),
  prerequisites:z.object({configurationFile:z.string().min(3),evidenceFile:z.string().min(3)}).strict()}).strict();
 function verifiedBackup(settings){
  const read=filename=>{physicalIdentity(filename,false);const bytes=readFileSync(filename);if(bytes.length>32768)throw Error('release_prerequisites_invalid');return JSON.parse(bytes.toString('utf8').replace(/^\uFEFF/,''));};
@@ -108,7 +117,7 @@ export async function runGovernedReleaseQueueStep({config,baseUrl,hostId,writerL
       ||row.kind==='docker_image'&&registered.engine!==row.engine)throw Error('release_image_resource_changed');
    }
    const registryKey=await readReleaseCredential(settings.imageCleanup.credentialTarget);
-   images=createReleaseImageCleanup({ownership:owned,readOwnership:()=>{
+   images=createReleaseImageCleanup({ownership:owned,allowTemporaryPackageRemoval:settings.imageCleanup.allowTemporaryPackageRemoval??false,readOwnership:()=>{
     const current=readFileSync(filename);
     if(physicalIdentity(filename,false)!==identity||createHash('sha256').update(current).digest('hex')!==digest)throw Error('release_image_ownership_changed');
     return JSON.parse(current);

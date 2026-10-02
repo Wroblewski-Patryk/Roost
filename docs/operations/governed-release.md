@@ -50,6 +50,8 @@ outside Git. `governedRelease` has:
   copy and its authenticated archive/restore identities before admitting release.
 - `imageCleanup`: private image ownership file and registry credential target;
   required when image resources are registered for certification cleanup.
+  `allowTemporaryPackageRemoval` defaults to false. Enable it only when the
+  owner explicitly authorized removal of the entire newly created test package.
 
 The resource ownership file uses `roost-release-resource-ownership-v1`: exact
 grant/request/application IDs, Coolify UUID and numeric ID, immutable image
@@ -168,12 +170,29 @@ after final journal/evidence read-back.
 Register each owned local/VPS immutable Docker image and GHCR version separately.
 Image cleanup requires application absence, exact digest/ID/tags/creation time,
 private linked package/repository and no containers using the image. Use no force,
-prune or package-wide delete. The owner registry token needs `read:packages`,
+prune or generic package deletion. The owner registry token needs `read:packages`,
 `write:packages` and `delete:packages` for these owned test versions.
 GitHub's normalized scope header may omit `read:packages` when `write:packages`
 includes it. The adapter accepts either read scope while still requiring deletion
 authority and exact actor/private package ownership. A live package GET confirmed
 this behavior; the regression also denies a write token without deletion scope.
+
+An uncertain deletion with unchanged exact resource presence is reconciled as
+an absent effect before a new broker intent. The same adapter cannot repeat its
+spent mutation. Changed identity, inaccessible state or missing source proof
+retains the hold. HTTP 400 was observed for the sole remaining untagged test
+version. With explicit whole-test-package authority, its cleanup uses an exact
+private package ID/owner, the sole complete active-version catalog and cache-only
+OCI proofs for every registered version. A second catalog check precedes the
+effect. An internal non-serializable, single-use capability permits that exact
+package DELETE; arbitrary callers and serialized flags cannot authorize it.
+Package/version 404 additionally requires the authenticated owner's complete
+package catalog and those immutable prior proofs. This path is qualified for a
+user-owned test package, not organization-wide absence. Managed publishers must
+be stopped under the existing Writer before cleanup. GitHub has no atomic
+catalog/DELETE precondition; concurrent owner/admin publication outside the
+managed mechanism is outside this guarantee. Never enable the option for a
+shared or previously existing package.
 
 ## Evidence checkpoint — 2026-10-01
 

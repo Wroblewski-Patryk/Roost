@@ -113,7 +113,8 @@ export function fixedRegistryProofRead({ url, headers, maxBytes }) {
 export function createReleaseRegistryProof({ transport = fixedRegistryProofRead, cacheDirectory } = {}) {
   check(typeof transport === 'function', 'transport_missing');
   const cache = privateCache(cacheDirectory);
-  return async ({ imageRepository, publicationDigest, imageDigest, repositoryUrl, token }) => {
+  return async ({ imageRepository, publicationDigest, imageDigest, repositoryUrl, token, cacheOnly=false }) => {
+    check(typeof cacheOnly==='boolean','cache_mode_invalid');
     check(typeof token === 'string' && token.length > 0 && !/[\r\n]/.test(token), 'credential_unavailable');
     check(/^ghcr\.io\/[a-z0-9][a-z0-9-]{0,38}\/[a-z0-9][a-z0-9._/-]{0,200}$/.test(imageRepository)
       && !imageRepository.includes('..') && !imageRepository.includes('//'), 'repository_scope_invalid');
@@ -126,6 +127,7 @@ export function createReleaseRegistryProof({ transport = fixedRegistryProofRead,
     check(source.pathname.split('/')[1].toLowerCase() === name.split('/')[0], 'source_owner_invalid');
     const bindings = { imageRepository, publicationDigest, repositoryUrl: canonicalSource };
     const cached = cache?.read(bindings), objects = new Map(), usedObjects = new Set();
+    check(!cacheOnly||Boolean(cached),'cache_required');
     if (cached) {
       check(Object.keys(cached).sort().join(',') === 'imageRepository,objects,publicationDigest,repositoryUrl,schemaVersion'
         && cached.schemaVersion === cacheVersion && cached.imageRepository === imageRepository

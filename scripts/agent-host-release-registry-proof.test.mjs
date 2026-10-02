@@ -125,6 +125,13 @@ test('raw immutable graph is atomically persisted without authentication metadat
   assert.equal((await restarted({ ...x.args, imageDigest: x.attestation.digest })).provenanceVerified, true);
   assert.equal(x.calls.length, 0);
 });
+test('cache-only authority rejects a missing archive before network reads or cache writes',async t=>{
+ const cacheDirectory=cacheFixture(t),x=fixture({cacheDirectory});
+ await assert.rejects(x.proof({...x.args,cacheOnly:true}),/cache_required/);
+ assert.equal(x.calls.length,0);assert.deepEqual(readdirSync(cacheDirectory),[]);
+ await x.proof(x.args);x.calls.length=0;x.state.offline=true;
+ assert.equal((await x.proof({...x.args,cacheOnly:true})).provenanceVerified,true);assert.equal(x.calls.length,0);
+});
 test('changed persisted bytes or bindings are rejected, never replaced by a network fallback', async t => {
   const cacheDirectory = cacheFixture(t), x = fixture({ cacheDirectory }); await x.proof(x.args);
   const filename = path.join(cacheDirectory, readdirSync(cacheDirectory)[0]), original = readFileSync(filename, 'utf8');
@@ -132,6 +139,7 @@ test('changed persisted bytes or bindings are rejected, never replaced by a netw
   x.calls.length = 0;
   await assert.rejects(createReleaseRegistryProof({ cacheDirectory, transport: x.transport })(x.args), /cache_digest_unproven/);
   assert.equal(x.calls.length, 0);
+  await assert.rejects(createReleaseRegistryProof({cacheDirectory,transport:x.transport})({...x.args,cacheOnly:true}),/cache_digest_unproven/);
   const wrong = JSON.parse(original); wrong.repositoryUrl = 'https://github.com/example/shared'; writeFileSync(filename, JSON.stringify(wrong));
   await assert.rejects(createReleaseRegistryProof({ cacheDirectory, transport: x.transport })(x.args), /cache_record_invalid/);
   assert.equal(x.calls.length, 0);
