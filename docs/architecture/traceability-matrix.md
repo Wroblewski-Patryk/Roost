@@ -1479,8 +1479,11 @@ not execute verification, backup, restore or releases.
 
 <a id="e-backup"></a>
 **BACKUP** — Native local PostgreSQL dump/restore, schema/data parity, encrypted
-read-back and owned test-database cleanup pass (8 tests). Owner prerequisite
-setup and production Roost backup/sync remain unproven.
+read-back and owned test-database cleanup pass. Owner prerequisites and production
+Roost backup/restore are verified; the full pilot backup remains unproven.
+The shared bounded fingerprint fix passes local native parity/termination tests.
+The pilot VPS is unavailable after an incomplete second read-only fingerprint;
+remote query reconciliation and production proof remain pending.
 
 [Governed release evidence](../operations/governed-release.md),
 [backup gateway](../../scripts/lib/agent-host-release-backup.mjs),
@@ -1492,8 +1495,11 @@ setup and production Roost backup/sync remain unproven.
 Gate 4 has a completed signed native read-only PWA audit and source support for
 retained Dockerfile release sets, per-target durable intents and exact runtime
 identity. Managed repair and historical exact review are proven; current
-acceptance basis and pilot release remain unproven;
-actual LIVE activity blocks the installed release adapter. See
+acceptance basis, full pilot backup and release remain unproven.
+Separately authorized maintenance retained order/dedupe history and resolved
+the previously observed activity blocker; fresh exchange and database read-back
+found no LIVE activity. Managed release audit returned blocked before that
+maintenance. Operator maintenance is distinct from managed repair/release. See
 [current application evidence](../operations/application-release.md).
 An independent audit verifier returned a handoff gap; the corrected structured
 receipt then passed fresh independent assessment with explicit uncertainty.

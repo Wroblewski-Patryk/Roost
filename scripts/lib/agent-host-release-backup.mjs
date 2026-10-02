@@ -3,6 +3,7 @@ import { spawn } from "node:child_process";
 import { createHash, randomBytes, randomUUID, createCipheriv, createDecipheriv, timingSafeEqual } from "node:crypto";
 import { existsSync, lstatSync, realpathSync, readFileSync, openSync, writeSync, fsyncSync, closeSync, renameSync, unlinkSync } from "node:fs";
 import { z } from "zod";
+import { buildReleaseFingerprintCommand } from './agent-host-release-fingerprint.mjs';
 
 const fail = reason => { throw Error(`release_backup_${reason}`); };
 const check = (value, reason) => { if (!value) fail(reason); };
@@ -131,27 +132,6 @@ export function acknowledgeRecoveryCode({ installationId, repositoryRoot, receip
 
 const pgArgs = (e, database) => ["-U", e.user, "-d", database];
 function dockerCommand(e, program, args, input = false) { return `docker exec ${input ? "-i " : ""}${quote(e.container)} ${program} ${args.map(quote).join(" ")}`; }
-function fingerprintCommand(e, database) {
-  // Schema statement order/whole literal values participate. Row JSON hashes
-  // preserve multiline field pairing while allowing different insertion order.
-  const suffix = " | sed -e '/^\\\\restrict /d' -e '/^\\\\unrestrict /d' | sha256sum";
-  const common = ["--no-owner", "--no-acl", "--quote-all-identifiers", ...pgArgs(e, database)];
-  const rows = `printf %s ${quote(restoreFingerprintSql)} | ${dockerCommand(e, "psql", ["-X", "-qAt", "-v", "ON_ERROR_STOP=1", ...pgArgs(e, database)], true)} | LC_ALL=C sort | sha256sum`;
-  return `bash -o pipefail -c ${quote(`${dockerCommand(e, "pg_dump", ["--schema-only", ...common])}${suffix}; ${rows}`)}`;
-}
-
-// This is a fixed read-only program, not SQL from a dispatch packet. Dynamic
-// table names are quoted by PostgreSQL's format(%I); raw rows never leave PG.
-const restoreFingerprintSql = `BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY;
-SELECT format('SELECT jsonb_build_object(''schema'',%L,''table'',%L,''count'',count(*),''digest'',encode(sha256(convert_to(coalesce(string_agg(encode(sha256(convert_to(to_jsonb(t)::text,''UTF8'')),''hex''),'''' ORDER BY encode(sha256(convert_to(to_jsonb(t)::text,''UTF8'')),''hex'')),''''),''UTF8'')),''hex''))::text FROM %I.%I t;', n.nspname,c.relname,n.nspname,c.relname)
-FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
-WHERE c.relkind IN ('r','p','m') AND n.nspname NOT IN ('pg_catalog','information_schema') AND n.nspname NOT LIKE 'pg_toast%'
-ORDER BY n.nspname,c.relname
-\\gexec
-SELECT format('SELECT jsonb_build_object(''schema'',%L,''sequence'',%L,''lastValue'',last_value,''isCalled'',is_called)::text FROM %I.%I;',n.nspname,c.relname,n.nspname,c.relname) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relkind='S' ORDER BY n.nspname,c.relname
-\\gexec
-COMMIT;
-`;
 
 export function createReleaseBackupGateway(privateConfig, { transport = sshTransport } = {}) {
   const cfg = configSchema.parse(privateConfig); check(typeof transport === "function", "transport_invalid");
@@ -178,7 +158,8 @@ export function createReleaseBackupGateway(privateConfig, { transport = sshTrans
   };
   const sql = (operation, database, input) => run(operation, cfg.restore, dockerCommand(cfg.restore, "psql", ["-X", "-qAt", "-v", "ON_ERROR_STOP=1", ...pgArgs(cfg.restore, database)], true), Buffer.from(input));
   const fingerprint = async (endpoint, database) => {
-    const output = (await run("fingerprint", { ...endpoint, database }, fingerprintCommand(endpoint, database))).toString("utf8").trim().split(/\r?\n/);
+    const target = { ...endpoint, database };
+    const output = (await run("fingerprint", target, buildReleaseFingerprintCommand(target, cfg.timeoutMs))).toString("utf8").trim().split(/\r?\n/);
     check(output.length === 2 && output.every(line => /^[a-f0-9]{64}\s+-\s*$/.test(line)), "fingerprint_invalid");
     return { schemaDigest: output[0].slice(0, 64), dataDigest: output[1].slice(0, 64) };
   };

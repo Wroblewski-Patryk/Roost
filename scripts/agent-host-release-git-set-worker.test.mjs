@@ -52,7 +52,10 @@ function fixture(t) {
     calls.push({ kind, options });
     if (kind === 'git') return Buffer.from((options.argv.at(-1).startsWith(baseCommit) ? baseTree : candidateTree) + '\n');
     const command = options.argv.at(-1), input = options.input;
-    if (command.startsWith('bash -o pipefail')) return Buffer.from(`${schemaDigest}  -\n${controls.dataDigest}  -\n`);
+    if (command.includes('set -m; fingerprint_owner=')) {
+      if (controls.fingerprintError) throw Error('synthetic fingerprint timeout');
+      return controls.fingerprintOutput ?? Buffer.from(`${schemaDigest}  -\n${controls.dataDigest}  -\n`);
+    }
     if (command.includes(' psql ')) { if (controls.failSql) throw Error('private DSN');
       return controls.readSafety ? controls.readSafety(input) : Buffer.from(JSON.stringify(controls.counts)); }
     if (command.startsWith('set -eu;')) return Buffer.from('{"diskBytes":1000,"memoryBytes":1000,"load1":0.1}');
@@ -113,6 +116,38 @@ test('source gateway allows known PAPER records but preserves totals and the ful
   f.calls.length = 0; f.controls.dataDigest = 'f'.repeat(64);
   await assert.rejects(installed.coolify.configureCandidate(f.manifest, f.state.release.snapshot), /data_or_schema_changed/);
   assert.equal(f.calls.filter(row => row.request?.method === 'PATCH').length, 0);
+});
+
+test('fingerprint deadline is installation-only, bounded and preserves historical settings round-trip', async t => {
+  const f = fixture(t);
+  assert.deepEqual(installedGitSetReleaseSchema.parse(f.settings), f.settings);
+  for (const timeoutMs of [undefined, 30000, 120000, 300000]) {
+    if (timeoutMs === undefined) delete f.settings.fingerprintTimeoutMs;
+    else f.settings.fingerprintTimeoutMs = timeoutMs;
+    f.calls.length = 0;
+    await f.install().safety();
+    const fingerprints = f.calls.filter(row => row.options?.argv?.at(-1)?.includes('set -m; fingerprint_owner='));
+    assert.equal(fingerprints.length, 1);
+    assert.equal(fingerprints[0].options.durationMs, timeoutMs ?? 300000);
+    assert.equal(f.calls.find(row => row.options?.input === gitSetTradingSafetySql).options.durationMs, 15000);
+    assert.match(fingerprints[0].options.argv.at(-1), /docker exec -i .* bash -e -o pipefail -c/);
+    assert.match(fingerprints[0].options.argv.at(-1), /statement_timeout=/);
+    assert.match(fingerprints[0].options.argv.at(-1), /lock_timeout=/);
+  }
+  for (const timeoutMs of [0, 29999, 300001, 1800000, 30000.5, '300000'])
+    assert.equal(installedGitSetReleaseSchema.safeParse({ ...f.settings, fingerprintTimeoutMs: timeoutMs }).success, false);
+});
+
+test('failed, incomplete or changed fingerprints block configuration and final health evidence', async t => {
+  for (const control of [{ fingerprintError: true }, { fingerprintOutput: Buffer.from(`${schemaDigest}  -\n`) },
+    { fingerprintOutput: Buffer.from(`${schemaDigest}  -\nnot-a-digest\n`) }, { dataDigest: 'f'.repeat(64) }]) {
+    const f = fixture(t); Object.assign(f.controls, control); const installed = f.install();
+    await assert.rejects(installed.coolify.configureCandidate(f.manifest, f.state.release.snapshot));
+    assert.equal(f.calls.filter(row => row.request?.method === 'PATCH').length, 0);
+    await assert.rejects(installed.coolify.health(f.manifest, f.state.release.snapshot, { rollback: true }));
+    await assert.rejects(installed.coolify.observe(f.manifest, f.state.release.snapshot, { rollback: true }));
+    assert.equal(f.calls.filter(row => row.options?.argv?.at(-1)?.includes('deployTarget')).length, 0);
+  }
 });
 
 test('source gateway still blocks each LIVE, unknown or restart predicate before fingerprint and effects', async t => {

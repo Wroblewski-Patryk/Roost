@@ -99,9 +99,9 @@ No model, commit, push, deployment or financial action occurred during recovery.
 
 The actual deployment has separate Dockerfile targets and mixed baseline source
 versions. Source support retains this topology without another application or
-deployment migration. Production safety reads found active LIVE activity and
-nonterminal orders. No trading, cancellation, data mutation, push or application
-deployment was performed for this repair.
+deployment migration. Initial production safety reads found active LIVE activity
+and nonterminal orders. Later separately authorized maintenance is recorded below;
+it is distinct from the managed PWA repair and does not authorize release.
 
 ### Managed candidate and review
 
@@ -138,7 +138,7 @@ candidate. API health/readiness and the web manifest returned HTTP 200; API
 payloads were `ok` and `ready`. Actual LIVE counts remained one active bot,
 one running session, five open orders and five pending dedupes. Pilot backup/
 restore, stable data fingerprints and separate exact owner release authority
-remain unproven. No pilot push, deployment or financial action occurred.
+remain unproven at that observation. No pilot push or deployment occurred.
 
 Large repeated group-risk history exceeded the runtime encoded-value scanning
 budget. An uncertain assessment reply was reconciled by its exact persisted
@@ -146,6 +146,93 @@ request/assessment identity before retry. Risk history now has five-row pages
 and a workspace/task-bound cursor; historical records and current assessment
 identity remain unchanged. Bounded release context removes redundant copies;
 redaction limits and split-secret checks remain enforced.
+
+### Release audit and separately authorized maintenance
+
+Infrastructure commit `f6a3a93aebe5c09988bef708e5e7876f13b0529e` was pushed
+and deployed as `y68mu1p1ichdd8wm8ethyaks`; health/build identity matched.
+An earlier release-audit attempt was rejected before model launch because its
+input exceeded the unchanged provider limit. Normal terminal reconciliation
+reclaimed Writer only after unchanged candidate and absent owned processes were
+proven. Bounding the actual read paths and supplying an explicitly identified
+compact prior-source diff allowed managed audit
+`0860059e-2060-4d3f-bbbc-6a18146caf5a` to complete. It returned **blocked**,
+with verified unchanged native state, closed Job and zero remaining children.
+Its receipt digest is
+`33183502ae8e042278c9429f295f1b30096bc000ad554b66608ba49d01d98b8c`.
+The historical audit predates the subsequent maintenance and remains intact.
+
+The owner separately authorized stopping bots and reconciling stale local orders.
+The LIVE bot was already inactive at the fresh read; the operator stopped the
+five remaining PAPER bots through the installed application service. Authenticated
+read-only Futures calls through the existing execution worker found zero open
+exchange orders and zero nonzero positions. Two exact historical order identifiers
+returned FILLED; three returned absence, which does not establish their historical
+outcome. No exchange cancellation, trading or position mutation was performed.
+
+After preserving an encrypted local before-state, operator maintenance
+`1a6197ca-4832-4e4f-8912-beaf0a10fb57` used a serializable transaction with
+unchanged-row checks. It retained five order records: two were reconciled to
+FILLED and three administratively EXPIRED, all marked ORPHAN_LOCAL. Five expired
+dedupes became nonretryable FAILED; ten audit entries preserve the previous state
+and uncertainty. Amounts, fees, positions and history were not removed or changed.
+Read-back at 15:27 UTC found zero active bots/running sessions, zero open LIVE
+orders/positions, zero unknown mode associations and zero pending LIVE dedupes.
+Twenty-three PAPER positions remain recorded. Bots must remain paused until an
+explicit owner instruction to restart them.
+
+The API's installed encryption-key configuration differs from the execution
+workers; its historical credential decryption failed while the execution worker
+decrypted successfully. No secret was rotated, copied into records or changed.
+This pre-existing discrepancy remains an explicit limitation. The same API image
+and source were restarted under maintenance authority after it consumed about
+4.37 GiB. An uncertain restart reply was reconciled from immutable container/image
+identity and its new start time before any retry; no second restart occurred.
+Fresh web, API health and readiness probes returned HTTP 200 with `ok`/`ready`.
+
+These operator actions are maintenance evidence, not managed source-change or
+pilot-release evidence. The scoped encrypted before-state is not a verified full
+pilot backup. Full database fingerprint/backup/restore, current independent
+acceptance and separate exact owner release authority remain pending. The pilot
+candidate remains local and unreleased; the earlier Gate 2 branch is preserved.
+
+### Full fingerprint preparation and unavailable VPS
+
+The fixed backup and release gateways now share the byte-identical historical
+fingerprint SQL. All tables, row multiplicity, ordering-independent row digests
+and sequence state remain included. The Worker has an installation-only
+`fingerprintTimeoutMs` range of 30,000–300,000 ms, default 300,000 ms; the
+backup keeps its existing deadline bounds. The fixed remote program bounds
+statement/lock waiting and the whole fingerprint inside the immutable container.
+Owned parents reap terminated children; escalation addresses only direct owned
+leaves. Native tests cover both TERM and an ignored-TERM leaf, unchanged
+PostgreSQL auxiliary processes, zero remaining owned queries and restore parity.
+Three rejected intermediate implementations failed independent root checks and
+were repaired before the accepted local rerun. None was used on production.
+The focused root rerun passed 24 tests with one existing opt-in safety skip.
+This is local PostgreSQL/source evidence, not installed pilot release proof.
+
+A separate read-only production diagnostic used the same SQL through direct
+`psql` with server statement/lock deadlines, without the new supervisor. The
+first complete data fingerprint covered 33 relations in 59.1 seconds, confirming
+the former Worker deadline was insufficient. The second read did not complete.
+At 16:03 UTC the VPS became unavailable over SSH and all inspected HTTPS
+surfaces. Independent Internet access remained available; the cause is unknown.
+No pilot push, deployment, full backup or restore was started. Termination of
+the second remote query cannot be certified while the host is inaccessible.
+
+Recover provider-console access and inspect actual host, memory/OOM and database
+activity before another scan or release operation. Do not reinstall, reset data,
+delete volumes or retry an uncertain operation. Full pilot backup, stable data,
+current independent review and exact owner release approval remain pending.
+Five earlier unmarked local synthetic fixture databases are retained pending
+individual ownership reconciliation; newly marked fixtures and owned helper
+processes from the final test were cleaned with read-back.
+
+Root integration checks passed: 239 Node release tests and 62 TypeScript tests,
+zero failures and two existing opt-in skips, including native PostgreSQL parity
+and actual Windows process/Git/recovery cases. `codex:check` passed. Pilot restore,
+installed release execution and production observation remain unverified.
 
 ## Sealed release contract
 

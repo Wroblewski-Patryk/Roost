@@ -11,6 +11,7 @@ import { createDockerfileStateGateway } from './agent-host-release-dockerfile-st
 import { createCoolifyGitSetGateway, createFixedCoolifyGitSetSshTransport, coolifyGitSetDeploymentId } from './agent-host-release-coolify-git-set-gateway.mjs';
 import { createCoolifyGitSetAdapter } from './agent-host-release-coolify-git-set.mjs';
 import contract from './agent-host-release-contract.cjs';
+import { buildReleaseFingerprintCommand, releaseFingerprintDefaultTimeoutMs, releaseFingerprintTimeoutSchema } from './agent-host-release-fingerprint.mjs';
 
 const hash = /^[a-f0-9]{64}$/, sha = /^[a-f0-9]{40}$/;
 const ident = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/), hex = z.string().regex(hash);
@@ -23,6 +24,7 @@ export const installedGitSetReleaseSchema = z.object({ sshHost: alias, workspace
   sourcePins: z.object({ queueHelper: hex, deploymentJob: hex }).strict(),
   baselineDeployments: z.array(z.object({ targetId: ident, deploymentId: ident }).strict()).min(1).max(6),
   source: z.object({ sshHost: alias, container: hex, user: pgident, database: pgident }).strict(),
+  fingerprintTimeoutMs: releaseFingerprintTimeoutSchema.min(30000).max(300000).optional(),
   capacity: z.object({ minDiskBytes: z.number().int().positive(), minMemoryBytes: z.number().int().positive(), maxLoad1: z.number().positive().max(100) }).strict(),
   coolify: z.object({ origin, certificateSha256: hex.optional() }).strict(),
   health: z.object({ certificateSha256: hex.optional() }).strict()
@@ -55,17 +57,6 @@ SELECT json_build_object('activeBots',(SELECT count(*) FROM "Bot" WHERE "isActiv
 'allOpenPositions',(SELECT count(*) FROM "Position" WHERE status='OPEN'),
 'pendingDedupes',(SELECT count(*) FROM "RuntimeExecutionDedupe" d LEFT JOIN "Bot" b ON b.id=d."botId" WHERE d.status='PENDING' AND (d."botId" IS NULL OR b.id IS NULL OR b.mode IS DISTINCT FROM 'PAPER')))::text;
 COMMIT;`;
-// Identical row/sequence fingerprint contract to the verified backup gateway.
-const fingerprintSql = `BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY;
-SELECT format('SELECT jsonb_build_object(''schema'',%L,''table'',%L,''count'',count(*),''digest'',encode(sha256(convert_to(coalesce(string_agg(encode(sha256(convert_to(to_jsonb(t)::text,''UTF8'')),''hex''),'''' ORDER BY encode(sha256(convert_to(to_jsonb(t)::text,''UTF8'')),''hex'')),''''),''UTF8'')),''hex''))::text FROM %I.%I t;', n.nspname,c.relname,n.nspname,c.relname)
-FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
-WHERE c.relkind IN ('r','p','m') AND n.nspname NOT IN ('pg_catalog','information_schema') AND n.nspname NOT LIKE 'pg_toast%'
-ORDER BY n.nspname,c.relname
-\\gexec
-SELECT format('SELECT jsonb_build_object(''schema'',%L,''sequence'',%L,''lastValue'',last_value,''isCalled'',is_called)::text FROM %I.%I;',n.nspname,c.relname,n.nspname,c.relname) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relkind='S' ORDER BY n.nspname,c.relname
-\\gexec
-COMMIT;
-`;
 function psql(source) { return `docker exec -i ${quote(source.container)} psql -X -qAt -v ON_ERROR_STOP=1 -U ${quote(source.user)} -d ${quote(source.database)}`; }
 export function parseGitSetSafetyCounts(output) {
   let row; try { row = JSON.parse(output.trim()); } catch { fail('safety_unavailable'); }
@@ -152,10 +143,8 @@ export function createInstalledGitSetRelease({ settings, state, backup, github, 
     try { return JSON.parse(output); } catch { fail('response_invalid'); }
   };
   const fingerprint = async () => {
-    const source = cfg.source, pgArgs = `-U ${quote(source.user)} -d ${quote(source.database)}`;
-    const schemaCommand = `docker exec ${quote(source.container)} pg_dump --schema-only --no-owner --no-acl --quote-all-identifiers ${pgArgs} | sed -e '/^\\\\restrict /d' -e '/^\\\\unrestrict /d' | sha256sum`;
-    const rowsCommand = `printf %s ${quote(fingerprintSql)} | ${psql(source)} | LC_ALL=C sort | sha256sum`;
-    const output = await ssh({ command: `bash -o pipefail -c ${quote(`${schemaCommand}; ${rowsCommand}`)}`, timeoutMs: 30000 });
+    const timeoutMs = cfg.fingerprintTimeoutMs ?? releaseFingerprintDefaultTimeoutMs;
+    const output = await ssh({ command: buildReleaseFingerprintCommand(cfg.source, timeoutMs), timeoutMs });
     const rows = output.trim().split(/\r?\n/); check(rows.length === 2 && rows.every(row => /^[a-f0-9]{64}\s+-\s*$/.test(row)), 'fingerprint_unavailable');
     return { schemaDigest: rows[0].slice(0, 64), dataDigest: rows[1].slice(0, 64) };
   };
