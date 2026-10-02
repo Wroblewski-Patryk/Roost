@@ -144,6 +144,10 @@ compact into an authenticated bounded history, without relying on historical PID
 reuse. This repair has native crash/restart evidence; external release certification
 remains pending.
 
+A normal controller stop also retains the sealed Writer when the broker records
+an uncertain outcome. It exits before another effect; restart must qualify the
+same grant, journal and native closure before read-only reconciliation.
+
 Managed dispatch now durably binds the signed execution identity before native
 launch. Failed native review retains the exact Writer/application fence. Admission
 retirement can recognize a partially archived signed pair without replacing its
@@ -698,3 +702,22 @@ The isolated database applied the forward migration and proved stale-approval
 remapping, no inherited decision, fresh agent grant/review, protected current
 approval and rejection, immutable history and drift refusal; its database and
 role were removed. Live release certification remains pending.
+
+Deployment `rsqk3zphd3jp4t23m7mt69jb` finished at
+`4dd973bc125b55aa87840a14756936d4a5203c65`; health/build returned 200 with that
+commit. Normal basis mapping `ec285162-492b-4edb-929b-a9005f017ca6` bound the
+unchanged native candidate to material
+`f81ddbbb2b5e97aa0c7b66860c2e7c625fc5564da65698d2ed3bf86e703163be`.
+Managed reviewer `ba77e3c6-2da2-4f26-a917-0148e5d4b30e` completed at 00:59:39 UTC;
+decision `154d5cc2-904b-4413-9947-4820ee413648` approves the exact candidate.
+The separate release-readiness audit `26e15d8d-69c5-4012-a7a8-1db5bb688fe6`
+completed at 01:05:29 UTC. Both native read-only audits verified unchanged source,
+root exit 0 and closed Windows Jobs with no active descendants. The release
+grant and external certification path remain unproven.
+
+Root checks passed 11 focused broker/native-process/Writer-recovery tests with
+zero skips, including controller crash after nine genuinely closed children,
+forged receipt/key/journal rejection and reconciliation without repeating the
+effect. `codex:check` and `git diff --check` passed. The native candidate image
+was built from the unchanged, independently approved commit; publication and
+release certification remain separate pending effects.

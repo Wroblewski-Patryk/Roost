@@ -836,6 +836,9 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
         if (!await waitForAdmission()) break;
         const releaseStep = await runGovernedReleaseQueueStep({ config, baseUrl, hostId: registeredHost.id,
           writerLock, stopped: () => stopping });
+        // An uncertain remote effect must survive a normal controller stop too.
+        // The next owner first qualifies this sealed Writer and only reconciles.
+        if (releaseStep.reconciliationRequired) { stopping = true; retainWriterLock = true; }
         if (releaseStep.handled) { if (!stopping) await delay(1000); continue; }
         if (config.governedRelease) { if (!stopping) await delay(pollIntervalMs); continue; }
         execution = await api("/v1/agent-runtime/executions/claim", { method: "POST", body: JSON.stringify({ hostSlug: host.slug, sessionId: writerLock.sessionId }) });
