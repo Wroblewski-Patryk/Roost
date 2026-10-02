@@ -18,6 +18,12 @@ const canonical = value => JSON.stringify(value, (_key, item) => item && typeof 
   ? Object.fromEntries(Object.entries(item).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)) : item);
 const digest = value => createHash("sha256").update(canonical(value)).digest("hex");
 const digestOrder = (a, b) => digest(a) < digest(b) ? -1 : digest(a) > digest(b) ? 1 : 0;
+const transportReasons = new Set(['transport_uncertain','response_unproven','response_size_invalid','response_invalid']);
+export function coolifyTransportDiagnostic(error) {
+  const reason=error?.message?.replace(/^release_coolify_/, '');
+  if(!transportReasons.has(reason))return 'transport_unclassified';
+  return reason+(Number.isInteger(error.httpStatus)&&error.httpStatus>=100&&error.httpStatus<=599?`_http_${error.httpStatus}`:'');
+}
 const deny = (reason, uncertain = false) => {
   throw Object.assign(new Error(`release_coolify_${reason}`), { uncertain, retryable: false });
 };
@@ -96,8 +102,8 @@ export async function coolifyHttpsJson({ url, method = "GET", body, token, certi
   const payload = body === undefined ? undefined : JSON.stringify(body);
   assert(payload === undefined || Buffer.byteLength(payload) <= 32768, "request_size_invalid");
   return new Promise((resolve, reject) => {
-    const error = (reason = "transport_uncertain") => reject(Object.assign(new Error(`release_coolify_${reason}`),
-      { uncertain: method !== "GET", retryable: false }));
+    const error = (reason = "transport_uncertain", httpStatus) => reject(Object.assign(new Error(`release_coolify_${reason}`),
+      { uncertain: method !== "GET", retryable: false, ...(Number.isInteger(httpStatus)?{httpStatus}:{}) }));
     const request = https.request(target, { method, agent: false, timeout: timeoutMs, minVersion: "TLSv1.2",
       rejectUnauthorized: true, maxHeaderSize: 8192,
       checkServerIdentity(host, cert) {
@@ -111,7 +117,7 @@ export async function coolifyHttpsJson({ url, method = "GET", body, token, certi
     }, response => {
       if (response.headers.location || response.headers["content-encoding"]
         || (expectedStatus !== undefined ? response.statusCode !== expectedStatus : response.statusCode < 200 || response.statusCode > 299)) {
-        response.destroy(); error("response_unproven"); return;
+        response.destroy(); error("response_unproven",response.statusCode); return;
       }
       let size = 0; const chunks = [];
       response.on("data", chunk => { size += chunk.length; if (size > 1048576) {
@@ -173,7 +179,8 @@ export function createCoolifyReleaseAdapter({ origin, credential, targetId, cand
   const api = async (route, method = "GET", body) => {
     let token; try { token = await credential(); } catch { deny("credential_unavailable"); }
     try { return await transport({ url: `${apiOrigin}/api/v1${route}`, method, body, token, certificateSha256, timeoutMs }); }
-    catch { deny(method === "GET" ? "read_unproven" : "mutation_uncertain", method !== "GET"); }
+    catch(error) { throw Object.assign(Error(`release_coolify_${method === "GET" ? "read_unproven" : "mutation_uncertain"}`),
+      {uncertain:method!=="GET",retryable:false,transportDiagnostic:coolifyTransportDiagnostic(error)}); }
   };
   const liveConfiguration = async () => {
     if (configurationInspector) {
@@ -254,7 +261,8 @@ export function createCoolifyReleaseAdapter({ origin, credential, targetId, cand
         && actual.gitCommit === proof.commit, "config_mutation_unproven");
     } catch (error) {
       if (error.message === "release_coolify_credential_unavailable") throw error;
-      deny("config_mutation_uncertain", true);
+      throw Object.assign(Error('release_coolify_config_mutation_uncertain'),{uncertain:true,retryable:false,
+        transportDiagnostic:error.transportDiagnostic??'configuration_readback_unproven'});
     }
     return { targetId, ...proof };
   };

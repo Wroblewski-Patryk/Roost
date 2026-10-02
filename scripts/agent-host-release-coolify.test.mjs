@@ -1,7 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { createCoolifyReleaseAdapter, coolifyConfigurationDigest, coolifyHttpsJson } from "./lib/agent-host-release-coolify.mjs";
+import { createCoolifyReleaseAdapter, coolifyConfigurationDigest, coolifyHttpsJson, coolifyTransportDiagnostic } from "./lib/agent-host-release-coolify.mjs";
+
+test('transport diagnostics retain only fixed classes and numeric HTTP status',()=>{
+  assert.equal(coolifyTransportDiagnostic({message:'release_coolify_response_unproven',httpStatus:422}),'response_unproven_http_422');
+  for(const message of ['secret-value','release_coolify_secret-value','release_coolify_response_unproven\ncredential'])
+    assert.equal(coolifyTransportDiagnostic({message,httpStatus:422}),'transport_unclassified');
+  assert.equal(coolifyTransportDiagnostic({message:'release_coolify_transport_uncertain',httpStatus:'private-value'}),'transport_uncertain');
+});
 
 const canonical = value => value && typeof value === "object" ? Array.isArray(value) ? value.map(canonical)
   : Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])])) : value;

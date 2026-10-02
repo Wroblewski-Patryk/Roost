@@ -49,6 +49,15 @@ test('uncertain push is reported once and next step only reconciles',async()=>{
  assert.equal(h.calls.filter(c=>c.kind==='readonly_reconcile').length,1);
  assert.equal(h.state.journal[0].outcome.status,'reconciled');
 });
+test('uncertain effects expose only fixed transport diagnostics outside the journal',async()=>{
+ for(const diagnostic of ['response_unproven_http_422','transport_uncertain','secret-value','response_invalid\ncredential']){
+  const h=harness(fixture());h.args.github.push=async()=>{throw Object.assign(Error('private credential-bearing response'),{transportDiagnostic:diagnostic});};
+  const result=await runReleaseStep(h.args);
+  assert.equal(result.uncertaintyDiagnostic,['response_unproven_http_422','transport_uncertain'].includes(diagnostic)?diagnostic:'release_effect_unproven');
+  assert.equal(JSON.stringify(h.state.journal).includes('private credential-bearing response'),false);
+  assert.equal('uncertaintyDiagnostic' in h.state.journal[0].outcome,false);
+ }
+});
 test('shutdown after intent preserves pending operation without invoking push',async()=>{
  const h=harness(fixture());h.args.stopped=()=>h.state.journal.length>0;
  await assert.rejects(runReleaseStep(h.args),/effect_not_started/);

@@ -121,13 +121,15 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
   else if(operation==='cleanup_local')evidence=await resources.cleanupLocal(m,s);
   else if(operation==='cleanup')evidence={...await resources.verifyCleanup(m,s),...await github.verifyArchive(m)};
   else fail('release_operation_unsupported');
- }catch{
+ }catch(error){
   // A transport can lose a reply after committing the effect. Preserve this
   // fact without retaining credential-bearing errors or replaying the action.
   await onChildrenClosed();
   const body=contract.outcomeSchema.parse({requestId:randomUUID(),status:'uncertain',observationOnly:false,evidence:dated({})});
   const updated=await api(`${route}/operations/${authorized.operation.id}/outcome`,{method:'POST',body});
-  return{handled:true,state:updated,reconciliationRequired:true};
+  const diagnostic=/^(transport_uncertain|response_unproven|response_size_invalid|response_invalid)(_http_[1-5][0-9]{2})?$/.test(error?.transportDiagnostic??'')
+   ?error.transportDiagnostic:'release_effect_unproven';
+  return{handled:true,state:updated,reconciliationRequired:true,uncertaintyDiagnostic:diagnostic};
  }
  await onChildrenClosed();
  const body=contract.outcomeSchema.parse({requestId:randomUUID(),status,observationOnly:['observe','cleanup'].includes(operation),evidence:dated(evidence)});

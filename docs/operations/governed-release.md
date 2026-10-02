@@ -794,4 +794,18 @@ Root verification passed 23 focused authority/readiness tests, ten broker and
 fixed-diagnostic tests, typecheck, server build, lint, route inventory and
 `codex:check`. A fresh disposable PostgreSQL migration and two real HTTP tests
 passed without skips, including stale-login, immutable-input and direct-SQL
-denial. Positive production renewal is still pending normal fresh-owner admission.
+denial. Normal fresh-owner renewal `a055b067-5c6e-43d7-a901-b9fda57aa4c4`
+extended this same grant to 11:24:30 UTC on 2026-10-02; authoritative read-back
+confirmed unchanged snapshot and journal prefix. Build
+`d33da1dbc4eba60c941ace8ba53d5e5ef1470034` deployed as
+`me6zv8noedzrq5v2xj6n7hy5`, with exact HTTPS health/build confirmation.
+
+Before configuration or deployment, inspect the actual immutable artifacts
+again. The overnight pause left the candidate image absent on the VPS; its
+removal cause was not established. Three configuration attempts were preserved
+as uncertain and reconciled as absent before another attempt. Restoring only
+the same proven immutable image, source labels and creation identity repaired
+this prerequisite without starting a container or changing the manifest.
+The following Worker configuration operation succeeded. Shared cleanup jobs
+were not modified. Fixed transport diagnostics retain only classified reasons
+and numeric HTTP status, never response bodies, headers or arbitrary errors.
