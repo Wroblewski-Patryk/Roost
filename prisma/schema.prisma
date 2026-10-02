@@ -2031,7 +2031,7 @@ model AgentHost {
 model AgentExecution {
   ownerTickets TrustedProviderTicket[]
   capabilityGrants TaskCapabilityGrant[]
-  reviewDecision    TaskReviewDecision?
+  reviewDecisions   TaskReviewDecision[]
   id                String                @id @default(uuid()) @db.Uuid
   workspaceId       String                @map("workspace_id") @db.Uuid
   workspace         Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -2086,7 +2086,7 @@ model TaskReviewDecision {
   workspaceId     String @map("workspace_id") @db.Uuid
   taskId          String @map("task_id") @db.Uuid
   task            Task @relation(fields: [taskId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  executionId     String @unique @map("execution_id") @db.Uuid
+  executionId     String @map("execution_id") @db.Uuid
   execution       AgentExecution @relation(fields: [executionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   requestId       String @map("request_id") @db.Uuid
   requestHash     String @map("request_hash")
@@ -2103,6 +2103,7 @@ model TaskReviewDecision {
   snapshot        Json
   createdAt       DateTime @default(now()) @map("created_at")
   action          TaskReviewAction?
+  @@unique([executionId, materialVersion])
   @@unique([workspaceId, requestId])
   @@index([workspaceId, taskId, createdAt])
   @@map("task_review_decisions")

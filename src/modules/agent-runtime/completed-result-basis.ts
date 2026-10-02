@@ -101,7 +101,11 @@ export async function revalidateCompletedResultBasis(db: Db, workspaceId: string
   if (prior) return prior.execution_id === id && prior.request_hash === requestHash
     ? { ...projection(state), revalidationId: prior.id, replayed: true }
     : { error: "completed_result_request_conflict" };
-  if (await db.taskReviewDecision.count({ where: { executionId: id } })) return { error: "completed_result_already_reviewed" };
+  // Historical approvals stay in the ledger, but cannot approve a changed
+  // Ready/material. A rejection always requires the governed correction path.
+  if ((await db.$queryRaw<any[]>`SELECT completed_result_review_blocks_revalidation(e) AS blocked
+    FROM agent_executions e WHERE id=${id}::uuid AND workspace_id=${workspaceId}::uuid`)[0]?.blocked)
+    return { error: "completed_result_already_reviewed" };
   const latest = await db.agentExecution.findFirst({ where: { workspaceId, taskId: state.task.id },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }], select: { id: true } });
   if (latest?.id !== id) return { error: "completed_result_superseded" };

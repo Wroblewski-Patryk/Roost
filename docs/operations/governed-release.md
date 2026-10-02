@@ -631,7 +631,7 @@ evidence views but do not alter accepted task inputs. Application execution
 context loads project membership without unused sibling task collections.
 Human task evidence, required records and explicit dependencies remain watched.
 
-An unreviewed, unchanged completed native coding result can be bound to a fresh
+An unchanged completed native coding result can be bound to a fresh
 owner-accepted Ready through `GET /executions/:id/result-basis` and
 `POST /executions/:id/actions/revalidate-result-basis` under `/v1/agent-runtime`.
 The command requires exact versions, commit, original contract, context
@@ -671,3 +671,30 @@ shared risk basis merely to reference its own digest. Root reruns passed 103
 Worker/input/review tests, including actual Git collection and an owned Windows
 Job, and 14 PostgreSQL/HTTP tests proving the server current-basis flag and
 source-drift refusal. All had zero skips. Actual managed review remains pending.
+
+Deployment `eeb1l0imzh9bftsyhok81tqu` finished at
+`4b00ec65ba44105b47832a40783200872fdf0a0a`; health/build returned 200 with that
+exact commit. Managed reviewer execution
+`5c9dfe9b-664e-4c0e-90e9-cc89f7fe6415` completed at 00:35:49 UTC and independently
+approved the unchanged candidate in decision
+`d9678774-e140-417b-95a2-534a9f05a624`. Its native read-only audit verified equal
+pre/post footprints, and its Windows Job closed with zero active processes.
+That approval is historical: legacy risk watches prepared before the output/input
+fix counted the reviewer's own completion receipt, changing its source revision
+and invalidating the joint Ready basis. Normal owner scope commands refreshed all
+five watches with identical inputs; a new assessment and Ready precede another
+independent review. No release effect used the stale approval.
+
+The additive stale-review migration preserves decisions and native results.
+Reviews are unique per execution and exact material. A fresh accepted basis can
+replace a stale approval only through a new append-only owner mapping and new
+independent review. Current approvals and every rejection remain protected;
+rejection requires the existing governed correction path. Capability and handoff
+lookups select current material while retaining the historical ledger.
+
+Root verification passed 49 focused component tests and 14 actual PostgreSQL/HTTP
+tests with zero skips, plus lint, typecheck, server build and `codex:check`.
+The isolated database applied the forward migration and proved stale-approval
+remapping, no inherited decision, fresh agent grant/review, protected current
+approval and rejection, immutable history and drift refusal; its database and
+role were removed. Live release certification remains pending.

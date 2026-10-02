@@ -112,3 +112,35 @@ test("effective envelope uses only an exact valid append-only mapping and never 
   }
   assert.ok(calls.every(sql => sql.includes("completed_result_basis_current") && !sql.includes("FOR UPDATE")));
 });
+
+for (const [label, blocked] of [["current approval", true], ["any rejection", true], ["stale historical approval", false]] as const) {
+  test(`${label} is resolved against the protected review basis before appending`, async () => {
+    const { execution, pin } = candidate(), workspaceId = randomUUID(), queries: string[] = [];
+    const db = {
+      workspaceMembership: { findFirst: async () => ({ role: "owner" }) },
+      agentExecution: { findFirst: async () => execution, findFirstOrThrow: async () => execution },
+      task: { findFirst: async () => ({ id: execution.taskId, executionReadiness: pin }) },
+      $queryRaw: async (sql: TemplateStringsArray) => {
+        const query = sql.join("?"); queries.push(query);
+        if (query.includes("AS original")) return [{ original: "a".repeat(64), current: "b".repeat(64), pin_digest: "c".repeat(64) }];
+        if (query.includes("AS blocked")) return [{ blocked }];
+        return [];
+      },
+      $executeRaw: async (sql: TemplateStringsArray) => {
+        assert.ok(/ready_source_fence|decision_authority_invalidate/.test(sql.join("?")), "no append or result mutation permitted");
+        return 1;
+      }
+    } as any;
+    // After an eligible stale approval the next normal supersession check is
+    // reached; a current decision is refused before that check or any append.
+    let reads = 0;
+    db.agentExecution.findFirst = async () => ++reads === 1 ? execution : { id: randomUUID() };
+    const result = await revalidateCompletedResultBasis(db, workspaceId, execution.id,
+      { authType: "user", userId: randomUUID(), workspaceId }, {
+        requestId: randomUUID(), expectedVersion: "a".repeat(64), materialVersion: "b".repeat(64),
+        readyPinId: pin.pinId, readyRevision: pin.revision, commit: execution.metadata.resultRevision.commit
+      });
+    assert.equal((result as any).error, blocked ? "completed_result_already_reviewed" : "completed_result_superseded");
+    assert.ok(queries.some(query => query.includes("completed_result_review_blocks_revalidation")));
+  });
+}

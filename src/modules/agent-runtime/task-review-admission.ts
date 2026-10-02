@@ -8,8 +8,11 @@ export async function reviewAdmissionError(db: Prisma.TransactionClient, workspa
   const latest = await db.taskReviewDecision.findFirst({ where: { workspaceId, taskId }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], include: { action: true } });
   if (latest?.decision === "reject" && !latest.action) return "task_review_manager_action_required";
   if (latest?.decision === "reject" && latest.action?.childTaskId) {
-    const child = await db.agentExecution.findFirst({ where: { workspaceId, taskId: latest.action.childTaskId }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], include: { reviewDecision: true } });
-    if (child?.status !== "completed" || child.reviewDecision?.decision !== "approve") return "task_review_specialist_pending";
+    const child = await db.agentExecution.findFirst({ where: { workspaceId, taskId: latest.action.childTaskId }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] });
+    const approved = child && (await db.$queryRaw<any[]>`SELECT EXISTS(SELECT 1 FROM task_review_decisions d
+      JOIN agent_executions e ON e.id=d.execution_id WHERE e.id=${child.id}::uuid
+      AND d.decision='approve' AND d.snapshot->'result'=task_review_material(e)) AS approved`)[0]?.approved;
+    if (child?.status !== "completed" || !approved) return "task_review_specialist_pending";
   }
   const correctionAction = latest?.decision === "reject" && latest.action?.action === "return_to_executor" ? latest.action :
     !latest ? await db.taskReviewAction.findUnique({ where: { childTaskId: taskId } }) : null;

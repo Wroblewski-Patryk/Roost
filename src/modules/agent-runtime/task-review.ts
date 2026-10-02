@@ -32,7 +32,8 @@ export async function reviewState(db: Db, workspaceId: string, taskId: string, a
   let roleIssues: any[] = [];
   if (!taskRolesSchema.safeParse(contract.taskRoles).success || !roleAuthoritiesSchema.safeParse(authorities).success || !contract.singleTask || !Array.isArray(contract.assignment?.competencies)) roleIssues = [{ reason: "task_roles_required" }];
   else roleIssues = taskRoleIssues(contract, { roleAuthorities: authorities }, { workspaceId });
-  const decision = execution ? await db.taskReviewDecision.findUnique({ where: { executionId: execution.id }, include: { action: true } }) : null;
+  const decision = execution && material ? await db.taskReviewDecision.findFirst({
+    where: { executionId: execution.id, materialVersion: material.version }, include: { action: true } }) : null;
   const principal = await resolveReviewPrincipal(db, workspaceId, actor);
   const roleMatches = (role: any) => principal && role?.principal?.kind === principal.kind && role.principal.id === principal.id;
   const materialVersion = material?.version ?? null;

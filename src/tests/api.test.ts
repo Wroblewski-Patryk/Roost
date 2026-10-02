@@ -2000,6 +2000,9 @@ test("completed native result basis requires current owner Ready and preserves i
   attemptPolicy:{maxTurns:2,apiMaxRetries:0,unavailable:"stop_attempt",restart:"never"},backend:"codex_responses",provider:"openai-codex",
   modelSelection:{model:"gpt-5.6-sol",reasoningEffort:"low"},auth:"same_owner_subscription"};
  const post=(route:string,body:any,headers=auth)=>request(route,{method:"POST",headers,body:JSON.stringify(body)});
+ const reviewerKey=await post("/v1/api-keys/agent-credentials",{requestId:randomUUID(),agentId:f.verifier.id,name:"Completed basis independent reviewer",expiresAt:new Date(Date.now()+1800000).toISOString()});
+ assert.equal(reviewerKey.status,201,JSON.stringify(reviewerKey.body));
+ const reviewerAuth={"X-API-Key":(reviewerKey.body as any).data.key};
  const submitRoute=`/v1/agent-runtime/tasks/${task.id}/actions/submit-for-execution`;
  const accept=async()=>{const r=await post(submitRoute,await submissionInput(submitRoute,f.input,auth));assert.equal(r.status,200,JSON.stringify(r.body));return (await prisma.task.findUniqueOrThrow({where:{id:task.id}})).executionReadiness as any;};
  const originalPin=await accept(), host=await prisma.agentHost.create({data:{workspaceId,name:"Completed basis host",slug:randomUUID(),platform:"win32"}});
@@ -2040,6 +2043,48 @@ test("completed native result basis requires current owner Ready and preserves i
  await assert.rejects(prisma.agentExecution.update({where:{id},data:{summary:"Changed native body"}}),/completed_result_native_immutable/);
  const {readyTransaction}=await import("../modules/agent-runtime/task-execution-readiness"),{releaseExecutionBasisCurrent}=await import("../modules/agent-runtime/governed-release");
  assert.equal(await readyTransaction(tx=>releaseExecutionBasisCurrent(tx,workspaceId,execution)),true);
+ const taskRoute=`/v1/agent-runtime/tasks/${task.id}`;
+ const review=async()=>{const r=await request(taskRoute+"/review",{headers:reviewerAuth});assert.equal(r.status,200,JSON.stringify(r.body));return (r.body as any).data;};
+ const reviewCommand=async(decision:"approve"|"reject")=>{
+  const catalog=await request(taskRoute+"/capability-grants",{headers:auth});assert.equal(catalog.status,200,JSON.stringify(catalog.body));
+  const data=(catalog.body as any).data,option=data.options.find((o:any)=>o.operation==="review_decision");assert.ok(option);
+  const grant=await post(taskRoute+"/capability-grants",{requestId:randomUUID(),expectedVersion:data.expectedVersion,credentialId:option.credentialId,
+   operation:"review_decision",validFrom:new Date().toISOString(),validUntil:new Date(Date.now()+900000).toISOString(),reason:"Independent review of current completed basis"});
+  assert.equal(grant.status,201,JSON.stringify(grant.body));
+  const s=await review();assert.equal(s.canReview,true,JSON.stringify(s));
+  return {requestId:randomUUID(),expectedVersion:s.expectedVersion,executionId:id,materialVersion:s.materialVersion,grantId:(grant.body as any).data.grant.id,
+   decision,summary:"Independent exact candidate review",evidence:[{kind:"test",reference:"npm test -- parser",result:"Independent fixture test",verdict:decision==="approve"?"pass":"fail"}],
+   ...(decision==="approve"?{reviewedCommit:commit}:{reproduction:["Run the fixture"],expected:"A valid result",observed:"A failing case",
+    correction:{scope:["Repair the bounded fixture"],excluded:["Do not expand scope"],outcome:"Fixture produces expected result",competencies:["javascript"]}})};
+ };
+ const approval=await reviewCommand("approve"),approved=await post(taskRoute+"/actions/review",approval,reviewerAuth as any);
+ assert.equal(approved.status,200,JSON.stringify(approved.body));
+ assert.equal((await review()).reason,"approved");
+ const currentDenied=await post(route+"/actions/revalidate-result-basis",command(await view()));
+ assert.equal(currentDenied.status,409);assert.equal((currentDenied.body as any).error,"completed_result_already_reviewed");
+ await assert.rejects(prisma.$executeRaw`INSERT INTO completed_result_basis_revalidations
+  (id,workspace_id,task_id,execution_id,actor_user_id,original_pin_id,original_revision,original_material_version,ready_pin_id,ready_revision,ready_pin_digest,ready_pin,commit,request_id,request_hash)
+  SELECT ${randomUUID()}::uuid,workspace_id,task_id,execution_id,actor_user_id,original_pin_id,original_revision,original_material_version,ready_pin_id,ready_revision,ready_pin_digest,ready_pin,commit,${randomUUID()}::uuid,request_hash
+  FROM completed_result_basis_revalidations WHERE id=${saved.revalidationId}::uuid`,/completed_result_basis_scope_invalid/);
+ // Normal owner risk/Ready acceptance changes the required basis. Historical
+ // approval remains immutable but is unusable until a new independent review.
+ await accept();
+ assert.equal((await review()).reason,"stale_result");
+ const second=await post(route+"/actions/revalidate-result-basis",command(await view()));
+ assert.equal(second.status,200,JSON.stringify(second.body));
+ const mapped=(second.body as any).data;assert.notEqual(mapped.materialVersion,saved.materialVersion);
+ const unreviewed=await review();assert.equal(unreviewed.decision,null);assert.equal(unreviewed.history.length,1);
+ assert.equal(unreviewed.reason,"capability_grant_required");
+ assert.equal(await prisma.taskReviewDecision.count({where:{executionId:id}}),1);
+ assert.deepEqual((await prisma.agentExecution.findUniqueOrThrow({where:{id}})).metadata,execution.metadata);
+ assert.equal((await post(taskRoute+"/actions/review",{...approval,requestId:randomUUID()},reviewerAuth as any)).status,409);
+ const rejection=await reviewCommand("reject"),rejected=await post(taskRoute+"/actions/review",rejection,reviewerAuth as any);
+ assert.equal(rejected.status,200,JSON.stringify(rejected.body));
+ assert.equal(await prisma.taskReviewDecision.count({where:{executionId:id}}),2);
+ assert.equal((await post(route+"/actions/revalidate-result-basis",command(await view()))).status,409);
+ const rejectedReady=await post(submitRoute,await submissionInput(submitRoute,f.input,auth));
+ assert.equal(rejectedReady.status,409);assert.equal((rejectedReady.body as any).error,"task_review_manager_action_required");
+ await assert.rejects(prisma.taskReviewDecision.update({where:{id:(approved.body as any).data.decision.id},data:{decision:"reject"}}),/task_review_append_only/);
  await prisma.companyRecord.update({where:{id:f.sources[0]!.id},data:{description:"Actual context drift"}});
  const reviewAfter=await request(`/v1/agent-runtime/tasks/${task.id}/review`,{headers:auth});
  assert.equal((reviewAfter.body as any).data.basisCurrent,false);
