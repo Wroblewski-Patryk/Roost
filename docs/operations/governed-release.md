@@ -721,3 +721,16 @@ forged receipt/key/journal rejection and reconciliation without repeating the
 effect. `codex:check` and `git diff --check` passed. The native candidate image
 was built from the unchanged, independently approved commit; publication and
 release certification remain separate pending effects.
+
+Roost deployment `ztcvxzi0bnei29wzb8he1j46` finished at
+`d16e130331ef3fd1107659ccab044ace27f7e049`; both health/build endpoints returned
+200 with that commit. The candidate image was published and pulled on the VPS
+by immutable digest
+`sha256:1de99c544bbf0ae67626a8a9d4289760bdd496163d82cf1137e63e4eb1ce0379`,
+without starting a candidate container. Full OCI provenance and actual inventories
+cover nine registry versions, four local images and two VPS images. Together with
+the owned test application, sixteen resources are recorded for scoped cleanup.
+The prepared release manifest binds current independent acceptance, separate
+native releaser audit, unchanged healthy baseline and verified backup/restore.
+Fresh owner login is still required before its normal release-grant command;
+candidate Git push/PR/merge/deployment, fault recovery and cleanup remain unproven.
