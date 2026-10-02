@@ -1,0 +1,184 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import os from 'node:os';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
+import { createInstalledGitSetRelease, installedGitSetReleaseSchema, parseGitSetSafetyCounts, gitSetTradingSafetySql, releaseServiceResponseHealthy }
+  from './lib/agent-host-release-git-set-worker.mjs';
+import contract from './lib/agent-host-release-contract.cjs';
+import { governedReleaseWorkerSchema, assertReleaseWorkerAdapter } from './lib/agent-host-release-worker.mjs';
+import { releaseClientSchema } from './lib/agent-host-release-client.mjs';
+
+const commit = 'a'.repeat(40), candidateTree = 'b'.repeat(40), baseCommit = 'c'.repeat(40), baseTree = 'd'.repeat(40);
+const configDigest = '1'.repeat(64), schemaDigest = '2'.repeat(64), dataDigest = '3'.repeat(64), imageDigest = `sha256:${'4'.repeat(64)}`;
+const targetId = 'fixture-web', oldDeploymentId = 'old-deployment', at = '2026-10-02T00:00:00.000Z';
+const zeroCounts = { activeBots: 0, runningSessions: 0, liveOpenOrders: 0, liveOpenPositions: 0,
+  unknownOpenOrders: 0, unknownOpenPositions: 0, allOpenOrders: 0, allOpenPositions: 0, pendingDedupes: 0 };
+
+function fixture(t) {
+  const directory = mkdtempSync(path.join(os.tmpdir(), 'roost-git-set-source-'));
+  t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const workspaceRoot = path.join(directory, 'workspace'), canonicalDir = path.join(workspaceRoot, 'pilot');
+  mkdirSync(path.join(canonicalDir, '.git'), { recursive: true });
+  const applicationId = randomUUID(), ownershipFile = path.join(directory, 'ownership.json'), repositoryUrl = 'https://github.com/example/pilot';
+  const target = { targetId, name: 'web', dockerfile: '/apps/web/Dockerfile', configDigest,
+    baseline: { commit: baseCommit, tree: baseTree, imageDigest, configDigest } };
+  const aggregate = contract.releaseDigest([{ targetId, configDigest }]);
+  const backup = { digest: '5'.repeat(64), bytes: 100, capturedAt: at, restoreVerifiedAt: at, restoreDigest: '5'.repeat(64) };
+  const services = [{ name: 'web', healthUrl: 'https://pilot.example.test/health', expectedStatus: 200 }];
+  const manifest = { schemaVersion: 'roost-release-manifest-v2', purpose: 'application_release',
+    repository: { url: repositoryUrl, defaultBranch: 'main', candidateBranch: 'codex/release', canonicalDir },
+    deployment: { provider: 'coolify_git_set', targetId, controllerUrl: 'https://controller.example.test', url: 'https://pilot.example.test',
+      artifactSetDigest: '', configDigest: aggregate, schemaDigest, publicOrigins: ['https://pilot.example.test'], targets: [target] },
+    services, baseline: { commit: baseCommit, artifactSetDigest: '', configDigest: aggregate, schemaDigest, healthDigest:
+      contract.releaseDigest(services.map(service => ({ ...service, healthy: true }))), dataDigest, observedAt: at },
+    observation: { seconds: 1, intervalSeconds: 1, maxFailures: 0 }, backup, rollback: { commit: baseCommit,
+      artifactSetDigest: '', configDigest: aggregate, schemaDigest, compatibleSchemaDigests: [schemaDigest] },
+    cleanup: { repositoryUrl, canonicalDir, coolifyTargetId: targetId, archiveRepository: false,
+      ownedResourceIds: [], protectedResourceIds: [targetId, imageDigest] } };
+  const binding = { applicationId, commit, candidateTree, baseCommit, baseTree, manifest };
+  manifest.deployment.artifactSetDigest = contract.gitSetArtifactDigest(manifest, binding);
+  manifest.baseline.artifactSetDigest = manifest.rollback.artifactSetDigest = contract.gitSetArtifactDigest(manifest, binding, true);
+  writeFileSync(ownershipFile, JSON.stringify({ schemaVersion: 'roost-application-release-ownership-v1', applicationId,
+    canonicalDir, repositoryUrl, targetIds: [targetId], protectedResourceIds: manifest.cleanup.protectedResourceIds, ownedResourceIds: [] }));
+  const settings = { sshHost: 'fixture-vps', workspaceRoot, ownershipFile, sourcePins: { queueHelper: '6'.repeat(64), deploymentJob: '7'.repeat(64) },
+    baselineDeployments: [{ targetId, deploymentId: oldDeploymentId }], source: { sshHost: 'fixture-vps', container: '8'.repeat(64), user: 'appuser', database: 'appdb' },
+    capacity: { minDiskBytes: 100, minMemoryBytes: 100, maxLoad1: 10 }, coolify: { origin: 'https://controller.example.test' }, health: {} };
+  const state = { release: { id: randomUUID(), snapshot: binding }, journal: [] };
+  const calls = [], controls = { counts: { ...zeroCounts }, pin: baseCommit, failSql: false };
+  const dependencies = { nativeProcess: async (kind, options) => {
+    calls.push({ kind, options });
+    if (kind === 'git') return Buffer.from((options.argv.at(-1).startsWith(baseCommit) ? baseTree : candidateTree) + '\n');
+    const command = options.argv.at(-1), input = options.input;
+    if (command.startsWith('bash -o pipefail')) return Buffer.from(`${schemaDigest}  -\n${dataDigest}  -\n`);
+    if (command.includes(' psql ')) { if (controls.failSql) throw Error('private DSN'); return Buffer.from(JSON.stringify(controls.counts)); }
+    if (command.startsWith('set -eu;')) return Buffer.from('{"diskBytes":1000,"memoryBytes":1000,"load1":0.1}');
+    if (input.includes('configurationFields')) return Buffer.from(JSON.stringify({ targetId, applicationId: '4', buildPack: 'dockerfile',
+      dockerfile: target.dockerfile, configDigest, schemaDigest, gitCommit: controls.pin, autoDeploy: false, topologyDigest: '9'.repeat(64) }));
+    if (input.includes('activeDeployments')) return Buffer.from('{"activeDeployments":0}');
+    if (input.includes('finishedAt')) return Buffer.from(JSON.stringify({ targetId, deploymentId: oldDeploymentId,
+      commit: baseCommit, status: 'finished', createdAt: '2026-10-02T00:00:00.000Z', finishedAt: '2026-10-02T00:00:02.000Z' }));
+    if (command.startsWith('docker container ls')) return Buffer.from('e'.repeat(64));
+    if (command.startsWith('docker container inspect')) return Buffer.from(JSON.stringify({ id: 'e'.repeat(64), imageId: imageDigest,
+      imageRef: `${targetId}:${baseCommit}`, createdAt: '2026-10-02T00:00:01.000Z', applicationId: '4', deploymentId: null, running: true, health: null }));
+    if (command.startsWith('docker image inspect')) return Buffer.from(JSON.stringify({ imageId: imageDigest, createdAt: at, repoDigests: [] }));
+    throw Error('unhandled fixed source test command');
+  }, coolifyJson: async request => { calls.push({ request }); if (request.method === 'PATCH') controls.pin = request.body.git_commit_sha; return { uuid: targetId }; },
+    healthProbe: async () => true };
+  const install = () => createInstalledGitSetRelease({ settings, state, backup, github: { inspect: async () => ({ remoteBase: commit }) },
+    coolifyCredential: 'fixture-credential-private', }, dependencies);
+  return { install, settings, state, manifest, backup, controls, calls, ownershipFile, canonicalDir };
+}
+
+test('installation rejects scripts, callbacks, mismatched SSH endpoint and duplicate targets', t => {
+  const f = fixture(t); assert.ok(installedGitSetReleaseSchema.safeParse(f.settings).success);
+  for (const change of [{ script: 'code' }, { source: { ...f.settings.source, sshHost: 'other-vps' } },
+    { baselineDeployments: [f.settings.baselineDeployments[0], f.settings.baselineDeployments[0]] }])
+    assert.equal(installedGitSetReleaseSchema.safeParse({ ...f.settings, ...change }).success, false);
+});
+
+test('sealed JSON health rejects a failure payload despite HTTP 200 and ignores volatile timestamps', () => {
+  const bytes = value => Buffer.from(JSON.stringify(value));
+  assert.equal(releaseServiceResponseHealthy(bytes({ status: 'ok', timestamp: 'first' }), 'ok'), true);
+  assert.equal(releaseServiceResponseHealthy(bytes({ status: 'ready', timestamp: 'second' }), 'ready'), true);
+  for (const value of [{ status: 'failed' }, { status: 'starting' }, { healthy: true }, [], null])
+    assert.equal(releaseServiceResponseHealthy(bytes(value), 'ok'), false);
+  assert.equal(releaseServiceResponseHealthy(Buffer.from('not JSON'), 'ready'), false);
+  assert.equal(releaseServiceResponseHealthy(Buffer.alloc(65537), 'ok'), false);
+  assert.equal(releaseServiceResponseHealthy(bytes({ status: 'ok' }), 'unsealed'), false);
+});
+
+test('fixed global LIVE and orphan predicates distinguish paper while conservatively blocking restarts', () => {
+  assert.match(gitSetTradingSafetySql, /READ ONLY/); assert.match(gitSetTradingSafetySql, /w\.mode='LIVE'/);
+  assert.match(gitSetTradingSafetySql, /d\."botId" IS NULL/); assert.match(gitSetTradingSafetySql, /b\.id IS NULL AND w\.id IS NULL/);
+  assert.doesNotMatch(gitSetTradingSafetySql, /UPDATE |DELETE |INSERT |ALTER |TRUNCATE /);
+  assert.equal(parseGitSetSafetyCounts(JSON.stringify({ ...zeroCounts, activeBots: 1, runningSessions: 1,
+    pendingDedupes: 5, liveOpenOrders: 5, allOpenOrders: 5, allOpenPositions: 23 })).activeTrading, 7);
+  assert.throws(() => parseGitSetSafetyCounts('{}'), /safety_unavailable/);
+  assert.throws(() => parseGitSetSafetyCounts(JSON.stringify({ ...zeroCounts, liveOpenOrders: 1 })), /safety_unavailable/);
+});
+
+test('nonquiescent safety blocks configuration before PATCH without zero fallback', async t => {
+  const f = fixture(t); f.controls.counts = { ...zeroCounts, activeBots: 1, runningSessions: 1, liveOpenOrders: 5,
+    allOpenOrders: 5, pendingDedupes: 5, allOpenPositions: 23 };
+  const installed = f.install(); const proof = await installed.safetyDiagnostic();
+  assert.equal(proof.activeTrading, 7); assert.equal(proof.allOpenPositions, 23);
+  await assert.rejects(installed.safety(), /activity_present/);
+  await assert.rejects(installed.coolify.configureCandidate(f.manifest, f.state.release.snapshot), /safety_unproven/);
+  assert.equal(f.calls.filter(row => row.request?.method === 'PATCH').length, 0);
+  assert.equal(f.calls.filter(row => row.options?.argv?.at(-1)?.includes('pg_dump')).length, 0);
+  f.controls.failSql = true;
+  assert.deepEqual(await installed.safetyDiagnostic(), { available: false, reason: 'release_trading_safety_unproven' });
+  await assert.rejects(installed.safety(), /ssh_unavailable/);
+});
+
+test('quiescent configuration changes only exact commit pin through normal HTTPS API', async t => {
+  const f = fixture(t), installed = f.install();
+  await installed.coolify.configureCandidate(f.manifest, f.state.release.snapshot);
+  const requests = f.calls.filter(row => row.request?.method === 'PATCH'); assert.equal(requests.length, 1);
+  assert.deepEqual(requests[0].request.body, { git_commit_sha: commit });
+  assert.equal(requests[0].request.url, `https://controller.example.test/api/v1/applications/${targetId}`);
+  assert.ok(f.calls.filter(row => row.kind === 'ssh').every(row => row.options.argv.includes('StrictHostKeyChecking=yes')));
+  const pg = f.calls.find(row => row.options?.input === gitSetTradingSafetySql);
+  assert.ok(pg.options.argv.at(-1).includes(f.settings.source.container)); assert.ok(!pg.options.argv.join(' ').includes('password'));
+});
+
+test('permanent retention checks real clone/ledger/application and never removes or archives', async t => {
+  const f = fixture(t), installed = f.install(); await installed.assertClone();
+  const result = await installed.resources.verifyRetention(f.manifest);
+  assert.equal(result.applicationActive, true); assert.equal(result.absenceVerified, true); assert.deepEqual(result.resourceIds, []);
+  assert.equal(result.protectedResourcesDigest, contract.releaseDigest(f.manifest.cleanup.protectedResourceIds));
+  assert.throws(() => installed.resources.cleanupLocal(), /deletion_prohibited/);
+  assert.throws(() => installed.resources.cleanupCoolifyApplication(), /deletion_prohibited/);
+  writeFileSync(f.ownershipFile, '{}'); await assert.rejects(installed.assertClone(), /clone_or_ownership_changed/);
+});
+
+test('resources require capacity and reject disposable ownership and escaped controller', async t => {
+  const f = fixture(t), installed = f.install(); assert.equal((await installed.resources.inspectCapacity(f.manifest)).available, true);
+  f.manifest.cleanup.ownedResourceIds = ['temp']; assert.throws(f.install, /binding_invalid|manifest_invalid/);
+  f.manifest.cleanup.ownedResourceIds = []; f.settings.coolify.origin = 'https://another.example.test';
+  assert.throws(f.install, /target_binding_changed/);
+});
+
+function legacyWorkerSettings(){return {
+ client:{hostId:randomUUID(),agentId:randomUUID(),credentialTarget:'Roost/Gate3/releaser',certificateFingerprint:'e'.repeat(64)},
+ githubCredentialTarget:'Roost/Gate3/github',coolifyCredentialTarget:'Roost/Gate3/coolify',
+ coolify:{origin:'https://controller.example.test/',targetId:'fixture-web',candidateConfig:{},rollbackConfig:{}},
+ resources:{sshHost:'fixture-vps',workspaceRoot:'C:\\Fixture\\workspace',ownershipFile:'C:\\Private\\ownership.json'},
+ prerequisites:{configurationFile:'C:\\Private\\backup.json',evidenceFile:'C:\\Private\\verified.json'}
+};}
+
+test('historical untagged Gate3 worker settings round-trip unchanged with image cleanup',()=>{
+ const settings=legacyWorkerSettings();
+ settings.imageCleanup={ownershipFile:'C:\\Private\\images.json',credentialTarget:'Roost/Gate3/registry',provenanceCacheDirectory:'C:\\Private\\cache',allowTemporaryPackageRemoval:true};
+ assert.deepEqual(governedReleaseWorkerSchema.parse(settings),settings);
+ assert.deepEqual(releaseClientSchema.parse(settings.client),settings.client);
+ assert.equal(assertReleaseWorkerAdapter(settings,{schemaVersion:'roost-release-manifest-v1',deployment:{provider:'coolify'}}),false);
+});
+
+test('explicit Gate4 git-set worker config is strict, accepts scoped keys and refuses mixed legacy data',t=>{
+ const f=fixture(t),legacy=legacyWorkerSettings();
+ const settings={adapter:'coolify_git_set',client:{...legacy.client,credentialTarget:'Roost/Gate4/releaser'},
+  githubCredentialTarget:'Roost/Gate4/github',coolifyCredentialTarget:'Roost/Gate4/coolify',gitSet:f.settings,prerequisites:legacy.prerequisites};
+ assert.deepEqual(governedReleaseWorkerSchema.parse(settings),settings);
+ assert.deepEqual(releaseClientSchema.parse(settings.client),settings.client);
+ assert.equal(assertReleaseWorkerAdapter(settings,f.manifest),true);
+ for(const mutation of [{coolify:legacy.coolify},{resources:legacy.resources},{imageCleanup:{}},{adapter:undefined},
+  {gitSet:{...f.settings,script:'arbitrary code'}}])assert.equal(governedReleaseWorkerSchema.safeParse({...settings,...mutation}).success,false);
+ for(const prefix of ['Roost/Gate5/','Roost/Gate2/','Custom/','Roost/Gate4/../']){
+  assert.equal(governedReleaseWorkerSchema.safeParse({...settings,githubCredentialTarget:prefix+'github'}).success,false);
+  assert.equal(governedReleaseWorkerSchema.safeParse({...settings,client:{...settings.client,credentialTarget:prefix+'releaser'}}).success,false);
+ }
+});
+
+test('worker rejects adapter/purpose mismatch before invoking the installed factory',t=>{
+ const f=fixture(t),legacy=legacyWorkerSettings(),set={adapter:'coolify_git_set'};
+ const certification={schemaVersion:'roost-release-manifest-v1',deployment:{provider:'coolify'}};
+ assert.throws(()=>assertReleaseWorkerAdapter(set,certification),/adapter_mismatch/);
+ assert.throws(()=>assertReleaseWorkerAdapter(legacy,f.manifest),/adapter_mismatch/);
+ assert.throws(()=>assertReleaseWorkerAdapter(set,{...f.manifest,purpose:'temporary_certification'}),/adapter_mismatch/);
+ assert.throws(()=>assertReleaseWorkerAdapter(set,{...f.manifest,cleanup:{...f.manifest.cleanup,archiveRepository:true}}),/adapter_mismatch/);
+ assert.throws(()=>assertReleaseWorkerAdapter(set,{...f.manifest,deployment:{...f.manifest.deployment,provider:'coolify'}}),/adapter_mismatch/);
+ assert.throws(()=>assertReleaseWorkerAdapter(legacy,{...certification,schemaVersion:'roost-release-manifest-v2'}),/adapter_mismatch/);
+});

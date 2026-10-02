@@ -8,10 +8,10 @@ import { guardHostContent } from './agent-host-redaction.mjs';
 
 const fail = code => { throw Object.assign(Error(code), { retryable: false }); };
 export const releaseClientSchema=z.object({hostId:z.string().uuid(),agentId:z.string().uuid(),
- credentialTarget:z.string().regex(/^Roost\/Gate3\/[A-Za-z0-9._-]{1,80}$/),
+ credentialTarget:z.string().regex(/^Roost\/Gate[34]\/[A-Za-z0-9._-]{1,80}$/),
  certificateFingerprint:z.string().regex(/^[a-f0-9]{64}$/)}).strict();
 export async function readReleaseCredential(target) {
- if(!/^Roost\/Gate3\/[A-Za-z0-9._-]{1,80}$/.test(target))fail('release_credential_target_invalid');
+ if(!/^Roost\/Gate[34]\/[A-Za-z0-9._-]{1,80}$/.test(target))fail('release_credential_target_invalid');
  const script=fileURLToPath(new URL('../roost-agent-credential.ps1',import.meta.url));
  const source=`$ErrorActionPreference='Stop'; . '${script.replaceAll("'","''")}'; [Console]::Out.Write([RoostCredential]::Read('${target}'))`;
  const value=await new Promise((resolve,reject)=>{

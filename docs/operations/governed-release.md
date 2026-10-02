@@ -2,7 +2,8 @@
 
 This is the component contract for Gate 3. The active delivery state and scope
 remain in [implementation](../implementation.md). Gate 3 is **certified on the
-temporary target** (2026-10-02). Gate 4 has not started.
+temporary target** (2026-10-02). Gate 4 is in progress; see
+[application release](application-release.md) for its evidence boundary.
 
 ## Current certification — 2026-10-02
 

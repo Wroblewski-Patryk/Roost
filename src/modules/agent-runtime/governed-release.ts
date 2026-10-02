@@ -9,7 +9,7 @@ import { nativeBoundaryResultBlocked, object, wire } from "./task-review-contrac
 import { suspensionBlocks } from "./capability-suspension";
 import { freshWorkerOwner } from "../api-keys/worker-credential.service";
 import { requireRuntimeContent } from "./runtime-redaction-policy";
-import { createReleaseSchema, releaseIntentSchema, releaseOutcomeSchema, releaseDigest, releaseApprovalError, releaseWindowError, releaseIntentError, releaseOutcomeError, effectiveOutcome, releaseCandidateNativeError, renewReleaseSchema, releaseRenewalWindowError, releaseRenewalStateError } from "./governed-release-contract";
+import { createReleaseSchema, releaseIntentSchema, releaseOutcomeSchema, releaseDigest, releaseApprovalError, releaseWindowError, releaseIntentError, releaseOutcomeError, effectiveOutcome, releaseCandidateNativeError, renewReleaseSchema, releaseRenewalWindowError, releaseRenewalStateError, releasePurposeMatches, releaseIsGitSet } from "./governed-release-contract";
 type Db=Prisma.TransactionClient;
 // A completed result does not preserve authority after its task basis changes.
 // Reuse the current readiness validator, including admission expiry, without
@@ -34,9 +34,14 @@ async function configuration(db:Db,workspaceId:string,input:any) {
  const host=await db.agentHost.findFirst({where:{id:input.hostId,workspaceId,status:{not:"disabled"}}});
  if(!application||!host||application.status!=="active")return null;
  const primary=application.repositories.filter(r=>r.isPrimary),m=input.manifest,metadata=object(application.metadata);
- if(metadata.releasePurpose!=="temporary_certification"||primary.length!==1||primary[0].url!==m.repository.url||primary[0].defaultBranch!==m.repository.defaultBranch
+ if(!releasePurposeMatches(metadata,m)||primary.length!==1||primary[0].url!==m.repository.url||primary[0].defaultBranch!==m.repository.defaultBranch
   ||metadata.localDirectory!==m.repository.canonicalDir||metadata.deploymentUrl!==m.deployment.url
   ||!Array.isArray(host.applicationSlugs)||!host.applicationSlugs.includes(application.slug))return null;
+ if(releaseIsGitSet(m)) {
+  if(!Array.isArray(metadata.releaseTargets)||!Array.isArray(metadata.releasePublicOrigins)
+   ||releaseDigest(metadata.releaseTargets)!==releaseDigest(m.deployment.targets.map((t:any)=>({targetId:t.targetId,dockerfile:t.dockerfile})))
+   ||releaseDigest(metadata.releasePublicOrigins)!==releaseDigest(m.deployment.publicOrigins))return null;
+ }
  return releaseDigest({application:{id:application.id,slug:application.slug,status:application.status,metadata:application.metadata,updatedAt:application.updatedAt.toISOString(),repositories:application.repositories.map(r=>({...r,createdAt:r.createdAt.toISOString(),updatedAt:r.updatedAt.toISOString()}))},host:{id:host.id,slug:host.slug,platform:host.platform,applicationSlugs:host.applicationSlugs}});
 }
 async function readiness(db:Db,workspaceId:string,input:any) {
@@ -194,7 +199,7 @@ export async function releaseOutcome(db:Db,workspaceId:string,id:string,operatio
  if(prior)return prior.operation_id===operationId&&prior.request_hash===hash?{...publicState(state),replayed:true}:{error:"release_request_conflict"};
  if(operation.outcome&&!(operation.outcome.status==="uncertain"&&input.status==="reconciled"))return {error:"release_outcome_already_terminal"};
  if(input.status==="reconciled"&&!input.observationOnly)return {error:"release_reconciliation_effect_forbidden"};
- const error=releaseOutcomeError(state.release,operation,input);if(error)return {error};
+ const error=releaseOutcomeError(state.release,operation,input,state.journal);if(error)return {error};
  await db.$executeRaw`INSERT INTO governed_release_outcomes(id,release_id,operation_id,workspace_id,status,reconciled_status,observation_only,evidence,request_id,request_hash)
  VALUES(${randomUUID()}::uuid,${id}::uuid,${operationId}::uuid,${workspaceId}::uuid,${input.status},${input.reconciledStatus??null},${input.observationOnly},${JSON.stringify(input.evidence)}::jsonb,${input.requestId}::uuid,${hash})`;
  await supplemental(db,workspaceId,state.release,"outcome",{operationId,status:input.status,reconciledStatus:input.reconciledStatus??null,evidence:input.evidence},auth);

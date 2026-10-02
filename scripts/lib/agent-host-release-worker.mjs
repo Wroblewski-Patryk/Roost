@@ -18,8 +18,10 @@ import { physicalIdentity } from './agent-host-native-footprint.mjs';
 import { createHash } from 'node:crypto';
 import { createReleaseBackupGateway } from './agent-host-release-backup.mjs';
 import { createReleaseRegistryProof } from './agent-host-release-registry-proof.mjs';
+import { createInstalledGitSetRelease, installedGitSetReleaseSchema } from './agent-host-release-git-set-worker.mjs';
+import releaseContract from './agent-host-release-contract.cjs';
 
-const target=z.string().regex(/^Roost\/Gate3\/[A-Za-z0-9._-]{1,80}$/),hash=z.string().regex(/^[a-f0-9]{64}$/);
+const target=z.string().regex(/^Roost\/Gate[34]\/[A-Za-z0-9._-]{1,80}$/),hash=z.string().regex(/^[a-f0-9]{64}$/);
 const url=z.string().url().refine(v=>{const u=new URL(v);return u.protocol==='https:'&&!u.username&&!u.password&&!u.search&&!u.hash&&u.pathname==='/';});
 const releaseDiagnosticReasons=new Set(['agent_runtime_content_blocked','release_api_uncertain','release_api_response_invalid','release_api_rejected','release_api_input_invalid','release_principal_invalid','release_authority_inactive','release_credential_invalid','release_review_stale','release_source_basis_changed','release_native_candidate_unproven','release_configuration_changed','release_readiness_changed','release_version_stale','release_candidate_changed','release_base_changed','release_operation_unresolved']);
 export const releaseWorkerDiagnostic=error=>releaseDiagnosticReasons.has(error?.message)?error.message:'release_preflight_unproven';
@@ -31,11 +33,26 @@ export function persistReleaseWorkerDiagnostic(configPath,phase,reason){
  // fixed classification beside the private installation config, never errors.
  try{writeFileSync(path.join(path.dirname(configPath),'release-worker-diagnostic.json'),JSON.stringify({phase,reason:safe,observedAt:new Date().toISOString()}),{mode:0o600});return true;}catch{return false;}
 }
-export const governedReleaseWorkerSchema=z.object({client:releaseClientSchema,githubCredentialTarget:target,coolifyCredentialTarget:target,
+const releaseWorkerClientSchema=releaseClientSchema.extend({credentialTarget:target}).strict();
+const prerequisitesSchema=z.object({configurationFile:z.string().min(3),evidenceFile:z.string().min(3)}).strict();
+const legacyReleaseWorkerSchema=z.object({client:releaseWorkerClientSchema,githubCredentialTarget:target,coolifyCredentialTarget:target,
+ adapter:z.literal('coolify').optional(),
  coolify:z.object({origin:url,targetId:z.string().regex(/^[A-Za-z0-9_-]{1,80}$/),candidateConfig:z.record(z.unknown()),rollbackConfig:z.record(z.unknown()),certificateSha256:hash.optional(),healthCertificateSha256:hash.optional()}).strict(),
  resources:z.object({sshHost:z.string().regex(/^[A-Za-z0-9._-]{1,64}$/),workspaceRoot:z.string().min(3),ownershipFile:z.string().min(3)}).strict(),
  imageCleanup:z.object({ownershipFile:z.string().min(3),credentialTarget:target,provenanceCacheDirectory:z.string().min(3),allowTemporaryPackageRemoval:z.boolean().optional()}).strict().optional(),
- prerequisites:z.object({configurationFile:z.string().min(3),evidenceFile:z.string().min(3)}).strict()}).strict();
+ prerequisites:prerequisitesSchema}).strict();
+const gitSetReleaseWorkerSchema=z.object({adapter:z.literal('coolify_git_set'),client:releaseWorkerClientSchema,
+ githubCredentialTarget:target,coolifyCredentialTarget:target,gitSet:installedGitSetReleaseSchema,
+ prerequisites:prerequisitesSchema}).strict();
+// Untagged v1 installations retain their original wire shape. Permanent
+// Dockerfile sets require an explicit discriminator and their own strict data.
+export const governedReleaseWorkerSchema=z.union([legacyReleaseWorkerSchema,gitSetReleaseWorkerSchema]);
+export function assertReleaseWorkerAdapter(settings,manifest){
+ const set=settings.adapter==='coolify_git_set';
+ if(set?!releaseContract.isGitSetManifest(manifest):manifest?.schemaVersion!=='roost-release-manifest-v1'
+  ||manifest?.deployment?.provider!=='coolify')throw Error('release_worker_adapter_mismatch');
+ return set;
+}
 function verifiedBackup(settings){
  const read=filename=>{physicalIdentity(filename,false);const bytes=readFileSync(filename);if(bytes.length>32768)throw Error('release_prerequisites_invalid');return JSON.parse(bytes.toString('utf8').replace(/^\uFEFF/,''));};
  return createReleaseBackupGateway(read(settings.prerequisites.configurationFile)).verifyPrerequisites(read(settings.prerequisites.evidenceFile));
@@ -76,6 +93,7 @@ export async function getGovernedReleaseRecoveryCandidate({config,baseUrl,hostId
  const key=await readReleaseCredential(settings.client.credentialTarget);
  const queue=await releaseApi({baseUrl,config:settings.client,key,route:`/v1/agent-runtime/releases?hostId=${hostId}`});
  if(queue.truncated||!Array.isArray(queue.releases)||queue.releases.length>1)throw Error('release_queue_ambiguous');
+ if(queue.releases[0])assertReleaseWorkerAdapter(settings,queue.releases[0].release?.snapshot?.manifest);
  return queue.releases[0]?releaseRecoveryCandidate(queue.releases[0],settings.client):undefined;
 }
 export async function runGovernedReleaseQueueStep({config,baseUrl,hostId,writerLock,stopped}){
@@ -84,7 +102,8 @@ export async function runGovernedReleaseQueueStep({config,baseUrl,hostId,writerL
  try{
   const settings=governedReleaseWorkerSchema.parse(config.governedRelease);
   const backup=verifiedBackup(settings);
-  if(settings.client.hostId!==hostId||settings.resources.workspaceRoot!==config.workspaceRoot)throw Error('release_installation_binding_changed');
+  const set=settings.adapter==='coolify_git_set';
+  if(settings.client.hostId!==hostId||(set?settings.gitSet.workspaceRoot:settings.resources.workspaceRoot)!==config.workspaceRoot)throw Error('release_installation_binding_changed');
   const key=await readReleaseCredential(settings.client.credentialTarget);
   const api=(route,options={})=>releaseApi({baseUrl,config:settings.client,key,route,...options});
   const queue=await api(`/v1/agent-runtime/releases?hostId=${hostId}`);
@@ -92,16 +111,17 @@ export async function runGovernedReleaseQueueStep({config,baseUrl,hostId,writerL
   const state=queue.releases[0];if(!state)return{handled:false};
   if(writerLock.releaseRecovery&&nextReleaseOperation(state)!=='reconcile')clearReleaseWriterRecovery(writerLock,state,settings.client);
   const s=state.release.snapshot,m=s.manifest;
+  assertReleaseWorkerAdapter(settings,m);
   if(m.backup.digest!==backup.digest||m.backup.restoreDigest!==backup.restoreDigest||m.backup.bytes!==backup.bytes
     ||m.backup.restoreVerifiedAt!==backup.restoreVerifiedAt)throw Error('release_backup_basis_changed');
   const mappings=Object.values(config.repositories).filter(r=>r.path?.toLowerCase()===m.repository.canonicalDir.toLowerCase()
    &&r.originUrl?.replace(/\.git$/,'')===m.repository.url.replace(/\.git$/,''));
   if(mappings.length!==1)throw Error('release_repository_not_installed');
-  const gateway=createReleaseResourceGateway(settings.resources);
+  const gateway=set?undefined:createReleaseResourceGateway(settings.resources);
   // Credential readers and native launcher construction precede the checkpoint.
   // This dedicated process never claims or launches a model execution.
   const githubKey=await readReleaseCredential(settings.githubCredentialTarget),coolifyKey=await readReleaseCredential(settings.coolifyCredentialTarget);
-  const registeredImages=m.cleanup.ownedResourceIds.map(id=>gateway.ownedResource(m,{...s,releaseId:state.release.id},id))
+  const registeredImages=set?[]:m.cleanup.ownedResourceIds.map(id=>gateway.ownedResource(m,{...s,releaseId:state.release.id},id))
    .filter(row=>['docker_image','ghcr_version'].includes(row.kind));
   if(registeredImages.length&&!settings.imageCleanup)throw Error('release_image_cleanup_not_installed');
   let images;
@@ -128,16 +148,24 @@ export async function runGovernedReleaseQueueStep({config,baseUrl,hostId,writerL
   }
   prepared=await prepareReleaseProcessScope();
   context=beginReleaseWriterCheckpoint({writerLock,state,client:settings.client});
-  const resources=createReleaseCleanupGateway({resources:gateway,coolify:settings.coolify,credential:async()=>coolifyKey,images});
   const github=createGithubReleaseAdapter({credential:async()=>githubKey});
-  const raw=createCoolifyReleaseAdapter({...settings.coolify,credential:async()=>coolifyKey,
-   imageInspector:resources.imageInspector,configurationInspector:resources.configurationInspector,deploymentInspector:resources.deploymentInspector,runtimeInspector:resources.runtimeInspector});
-  const coolify=coolifyWire(raw);
-  const result=await withReleaseProcessScope(prepared,context,()=>runReleaseStep({state,client:settings.client,api,github,coolify,resources,stopped,
-   inspectCheckout:async(m,commit,base,tree)=>{await gateway.assertClone(m,{...s,releaseId:state.release.id});return inspectReleaseCheckout(m,commit,base,tree);},
+  const result=await withReleaseProcessScope(prepared,context,()=>{
+   let resources,coolify,assertClone;
+   if(set){
+    const installed=createInstalledGitSetRelease({settings:settings.gitSet,state,backup,github,coolifyCredential:coolifyKey});
+    ({resources,coolify,assertClone}=installed);
+   }else{
+    resources=createReleaseCleanupGateway({resources:gateway,coolify:settings.coolify,credential:async()=>coolifyKey,images});
+    const raw=createCoolifyReleaseAdapter({...settings.coolify,credential:async()=>coolifyKey,
+     imageInspector:resources.imageInspector,configurationInspector:resources.configurationInspector,deploymentInspector:resources.deploymentInspector,runtimeInspector:resources.runtimeInspector});
+    coolify=coolifyWire(raw);assertClone=(manifest)=>gateway.assertClone(manifest,{...s,releaseId:state.release.id});
+   }
+   return runReleaseStep({state,client:settings.client,api,github,coolify,resources,stopped,
+   inspectCheckout:async(m,commit,base,tree)=>{await assertClone(m);return inspectReleaseCheckout(m,commit,base,tree);},
    assertWriter:()=>{writerRecoveryEvidence(writerLock);if(writerLock.releaseRecovery&&nextReleaseOperation(state)!=='reconcile')throw Error('release_reconciliation_only');},
    onOperation:(fresh,operation)=>checkpointReleaseOperation(context,fresh,operation,settings.client),
-   onChildrenClosed:()=>sealReleaseWriterCheckpoint(context)}));
+   onChildrenClosed:()=>sealReleaseWriterCheckpoint(context)});
+  });
   sealReleaseWriterCheckpoint(context);
   if(writerLock.releaseRecovery&&result.state?.journal?.every(j=>j.outcome&&j.outcome.status!=='uncertain'))clearReleaseWriterRecovery(writerLock,result.state,settings.client);
   return result;

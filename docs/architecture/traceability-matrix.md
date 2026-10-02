@@ -1489,6 +1489,11 @@ setup and production Roost backup/sync remain unproven.
 
 <a id="e-release"></a>
 **RELEASE** — Gate 3 is certified on the sole temporary target (2026-10-02).
+Gate 4 has a completed signed native read-only PWA audit and source support for
+retained Dockerfile release sets, per-target durable intents and exact runtime
+identity. Independent repair acceptance and pilot release remain unproven;
+actual LIVE activity blocks the installed release adapter. See
+[current application evidence](../operations/application-release.md).
 Normal Windows Worker/Hermes coding produced exact candidate
 `de6ebe7a4267078196534a36f73ff9bccb09d3ae`; independent review
 `154d5cc2-904b-4413-9947-4820ee413648` and a separate native release audit

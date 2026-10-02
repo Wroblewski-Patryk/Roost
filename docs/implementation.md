@@ -163,15 +163,15 @@ inside the same outcome rather than deferred into unrelated contract work.
 
 **Met at native/production evidence level (2026-10-02):** Exact Git/PR/merge,
 interrupted deployment, controlled failure, healthy rollback and owned cleanup
-passed. [Evidence](operations/governed-release.md). Gate 4 is not started.
+passed. [Evidence](operations/governed-release.md). Gate 4 is in progress.
 
-An accepted exact commit follows the configured Git and deployment path,
-production health is observed against a recorded baseline, and the release is
-either certified or rolled back. The path proves audit, secrets boundaries,
-backup/restore prerequisites, compatibility, monitoring and cleanup without
-creating extra clones, services or abandoned branches.
+An accepted exact commit follows Git, deployment, baseline health, observation
+and certification or rollback. Audit, secrets, backup/restore, compatibility
+and owned cleanup are required; no extra clones or services.
 
 ### Gate 4 — pilot application proof
+
+**In progress:** [evidence](operations/application-release.md); release unproven.
 
 One real low-risk defect in the configured pilot application is discovered,
 planned, implemented, independently tested, committed, released and verified in
