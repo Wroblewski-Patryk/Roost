@@ -22,6 +22,7 @@ const pgident = z.string().regex(/^[A-Za-z][A-Za-z0-9_]{0,62}$/);
 const protectedId = z.string().min(1).max(1000).refine(value => !/[\x00-\x1f]|Bearer\s+|(?:token|password|secret)\s*[:=]/i.test(value));
 const origin = z.string().url().refine(value => { const u = new URL(value); return u.protocol === 'https:' && !u.username && !u.password && !u.search && !u.hash && u.pathname === '/'; });
 export const installedGitSetReleaseSchema = z.object({ sshHost: alias, workspaceRoot: filepath, ownershipFile: filepath,
+  sshAddressFamily: z.enum(['auto', 'ipv4', 'ipv6']).optional(),
   sourcePins: z.object({ queueHelper: hex, deploymentJob: hex }).strict(),
   baselineDeployments: z.array(z.object({ targetId: ident, deploymentId: ident }).strict()).min(1).max(6),
   source: z.object({ sshHost: alias, container: hex, user: pgident, database: pgident }).strict(),
@@ -135,7 +136,8 @@ export function createInstalledGitSetRelease({ settings, state, backup, github, 
   };
   const ssh = async ({ command, stdin = '', timeoutMs = 15000, maxOutputBytes = 16384 }) => {
     await assertClone(); if (!dependencies.nativeProcess) check(hasReleaseProcessScope(), 'owned_process_scope_required');
-    let output; try { output = await native('ssh', { argv: ['-T', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=10', cfg.sshHost, command],
+    const addressFamily = cfg.sshAddressFamily === 'ipv4' ? ['-4'] : cfg.sshAddressFamily === 'ipv6' ? ['-6'] : [];
+    let output; try { output = await native('ssh', { argv: [...addressFamily, '-T', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=10', cfg.sshHost, command],
       cwd: os.tmpdir(), input: stdin, durationMs: timeoutMs, maxBytes: maxOutputBytes }); } catch (error) { fail('ssh_unavailable', error); }
     await assertClone(); check((typeof output === 'string' || Buffer.isBuffer(output)) && Buffer.byteLength(output) <= maxOutputBytes, 'response_size_invalid'); return output.toString('utf8');
   };

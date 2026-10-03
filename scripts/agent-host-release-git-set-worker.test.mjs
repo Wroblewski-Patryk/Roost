@@ -56,6 +56,11 @@ function fixture(t) {
       if (controls.fingerprintError) throw Error('synthetic fingerprint timeout');
       return controls.fingerprintOutput ?? Buffer.from(`${schemaDigest}  -\n${controls.dataDigest}  -\n`);
     }
+    if (controls.refuseQueueDispatch && input.includes('queue_application_deployment(')) {
+      const payload = JSON.parse(Buffer.from(input.match(/base64_decode\('([A-Za-z0-9+/=]+)'/)[1], 'base64').toString('utf8'));
+      if (payload.operation === 'dispatch') throw Error('synthetic dispatch refusal');
+      return Buffer.from('{"ok":true,"queue":null}');
+    }
     if (command.includes(' psql ')) { if (controls.failSql) throw Error('private DSN');
       return controls.readSafety ? controls.readSafety(input) : Buffer.from(JSON.stringify(controls.counts)); }
     if (command.startsWith('set -eu;')) return Buffer.from('{"diskBytes":1000,"memoryBytes":1000,"load1":0.1}');
@@ -121,6 +126,67 @@ test('installation rejects scripts, callbacks, mismatched SSH endpoint and dupli
   for (const change of [{ script: 'code' }, { source: { ...f.settings.source, sshHost: 'other-vps' } },
     { baselineDeployments: [f.settings.baselineDeployments[0], f.settings.baselineDeployments[0]] }])
     assert.equal(installedGitSetReleaseSchema.safeParse({ ...f.settings, ...change }).success, false);
+});
+
+test('installation SSH address family is optional and strictly enumerated', t => {
+  const f = fixture(t);
+  assert.deepEqual(installedGitSetReleaseSchema.parse(f.settings), f.settings);
+  for (const sshAddressFamily of ['auto', 'ipv4', 'ipv6'])
+    assert.deepEqual(installedGitSetReleaseSchema.parse({ ...f.settings, sshAddressFamily }), { ...f.settings, sshAddressFamily });
+  for (const sshAddressFamily of ['any', 'IPv4', '-4', '', null, 4, ['ipv4']]) {
+    f.settings.sshAddressFamily = sshAddressFamily;
+    assert.equal(installedGitSetReleaseSchema.safeParse(f.settings).success, false);
+    assert.throws(f.install);
+  }
+  assert.equal(f.calls.length, 0);
+});
+
+test('installed SSH captures exact native argv for legacy, auto and explicit address families', async t => {
+  const f = fixture(t);
+  const legacyPrefix = ['-T', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=10', f.settings.sshHost];
+  for (const sshAddressFamily of [undefined, 'auto', 'ipv4', 'ipv6']) {
+    if (sshAddressFamily === undefined) delete f.settings.sshAddressFamily;
+    else f.settings.sshAddressFamily = sshAddressFamily;
+    f.calls.length = 0;
+    const installed = f.install();
+    await installed.safety();
+    await installed.resources.inspectCapacity(f.manifest);
+    const sshCalls = f.calls.filter(row => row.kind === 'ssh');
+    assert.equal(sshCalls.length, 4);
+    const family = sshAddressFamily === 'ipv4' ? ['-4'] : sshAddressFamily === 'ipv6' ? ['-6'] : [];
+    for (const { options } of sshCalls)
+      assert.deepEqual(options.argv, [...family, ...legacyPrefix, options.argv.at(-1)]);
+    const counts = sshCalls.find(row => row.options.input === gitSetTradingSafetySql);
+    assert.equal(counts.options.durationMs, 15000);
+    assert.equal(counts.options.maxBytes, 16384);
+    const fingerprint = sshCalls.find(row => row.options.argv.at(-1) === 'bash -s');
+    assert.equal(fingerprint.options.durationMs, 300000);
+    assert.ok(fingerprint.options.input.includes('set -m; fingerprint_owner='));
+  }
+});
+
+test('installed queue dispatch inherits explicit SSH address family and remains uncertain on refusal', async t => {
+  for (const [sshAddressFamily, flag] of [['ipv4', '-4'], ['ipv6', '-6']]) {
+    const f = fixture(t);
+    f.settings.sshAddressFamily = sshAddressFamily;
+    f.controls.refuseQueueDispatch = true;
+    f.controls.pin = commit;
+    await assert.rejects(f.install().coolify.deploy(f.manifest, f.state.release.snapshot,
+      { targetId, operationId: 'fixture-dispatch', since: new Date(Date.now() - 1000).toISOString() }), /deployment_dispatch_uncertain/);
+    const queueCalls = f.calls.filter(row => row.options?.input?.includes('queue_application_deployment('));
+    assert.ok(queueCalls.length > 1);
+    const dispatch = queueCalls.find(row => {
+      const encoded = row.options.input.match(/base64_decode\('([A-Za-z0-9+/=]+)'/)[1];
+      return JSON.parse(Buffer.from(encoded, 'base64').toString('utf8')).operation === 'dispatch';
+    });
+    assert.ok(dispatch);
+    assert.deepEqual(dispatch.options.argv, [flag, '-T', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes',
+      '-o', 'ConnectTimeout=10', f.settings.sshHost, 'docker exec -i coolify php']);
+    assert.equal(dispatch.options.durationMs, 15000);
+    assert.equal(dispatch.options.maxBytes, 8192);
+    assert.ok(queueCalls.every(row => row.options.argv[0] === flag));
+    assert.equal(f.calls.filter(row => row.request?.method === 'PATCH').length, 0);
+  }
 });
 
 test('sealed JSON health rejects a failure payload despite HTTP 200 and ignores volatile timestamps', () => {
@@ -347,6 +413,8 @@ test('explicit Gate4 git-set worker config is strict, accepts scoped keys and re
  assert.deepEqual(governedReleaseWorkerSchema.parse(settings),settings);
  assert.deepEqual(releaseClientSchema.parse(settings.client),settings.client);
  assert.equal(assertReleaseWorkerAdapter(settings,f.manifest),true);
+ for(const sshAddressFamily of ['auto','ipv4','ipv6'])assert.equal(governedReleaseWorkerSchema.safeParse({...settings,gitSet:{...f.settings,sshAddressFamily}}).success,true);
+ assert.equal(governedReleaseWorkerSchema.safeParse({...settings,gitSet:{...f.settings,sshAddressFamily:'any'}}).success,false);
  for(const mutation of [{coolify:legacy.coolify},{resources:legacy.resources},{imageCleanup:{}},{adapter:undefined},
   {gitSet:{...f.settings,script:'arbitrary code'}}])assert.equal(governedReleaseWorkerSchema.safeParse({...settings,...mutation}).success,false);
  for(const prefix of ['Roost/Gate5/','Roost/Gate2/','Custom/','Roost/Gate4/../']){

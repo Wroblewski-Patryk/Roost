@@ -664,6 +664,13 @@ Only those fixed categories reach private diagnostics; stderr and exception bodi
 are not retained. An unknown native failure remains unproven. This changes no
 deadline, host-key policy, reconciliation guard or release authority.
 
+Installed `sshAddressFamily` may be `auto`, `ipv4` or `ipv6`; omission keeps
+OpenSSH's existing selection. Explicit selection applies to every installed SSH
+read and dispatch, preserving host identity checks, credentials and deadlines.
+A production read-only diagnosis reproduced an SSH timeout with a closed native
+Job; a separate IPv4 probe succeeded. Selecting that verified route is installation
+configuration, not proof that IPv6 caused the earlier timeout.
+
 Focused integration checks passed 95 tests with one existing opt-in PostgreSQL
 skip; `codex:check` passed. Native release continuation and production observation
 remain pending at this source checkpoint.
