@@ -1502,7 +1502,14 @@ without promotion. This qualifies backup, not pilot release. The baseline execut
 service/image was removed by a global host pruning timer. Logs also prove that
 timer removed a newly created Roost backend; it is disabled with configuration
 preserved. Roost's normal controller recovery and exact health/build pass, but
-pilot baseline recovery and retained rollback artifacts remain required.
+pilot baseline recovery subsequently passed through normal pinned queue
+`r0ea03ba3b84040e68fce52a`: exact unchanged source, retained image, running
+state, zero restarts/OOM, six runtime/configuration rows and health/readiness.
+Post-startup full data/sequence/schema parity with the certified backup passed
+at 14:14:05 UTC. Current Ready and append-only result-basis revalidation
+`9fdff96c-35e0-4062-a5be-0b8844ae56c1` passed after including every effective
+accepted task decision; the rejected prior request was reconciled. Current
+independent acceptance and exact owner release authority remain required.
 Installed HTTPS ingress passed a certificate-pinned validation refusal. Internal
 atomic evidence construction after a single normal fence has 17 source tests;
 external stale CAS remains denied. Production refusal was traced to five stale

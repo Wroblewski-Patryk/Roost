@@ -107,8 +107,16 @@ recreated on the same image, preserving source pins, command limits and all
 application services. One exact unused Roost build-cache entry was reclaimed;
 no image, volume or application data was deleted. A fresh contained full-data
 read matched the certified backup before a new uniquely identified baseline
-queue `r0ea03ba3b84040e68fce52a` was submitted. Completion remains subject to
-actual runtime, six-target configuration, data and health read-back.
+queue `r0ea03ba3b84040e68fce52a` finished. Runtime read-back at 14:09:40 UTC
+verified unchanged source `cf90418c`, retained image
+`sha256:c773439f95200b614e79ce1af5a8474755ef54926b0bcde93c20e87faabbdcc8`,
+running state, no OOM and zero restarts. Full data/sequence/schema parity with
+the certified backup passed after startup at 14:14:05 UTC. Six-target runtime
+and configuration read-back passed at 14:14:47 UTC; health/readiness passed at
+14:15:37 UTC. Trading remains paused and 23 PAPER positions are preserved.
+Scoped unused unshared build-stage caches were reclaimed with exact absence
+read-back, preserving all images, services and volumes. This recovered an
+existing baseline; the candidate remains local and unreleased.
 
 The subsequent monitored normal backup gateway completed on 2026-10-03 at
 13:47:38 UTC: backup `811332d3-67ab-4e9c-afae-c12bc374fa84`, archive
