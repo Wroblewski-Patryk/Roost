@@ -15,7 +15,7 @@ const procedureEvidence={verdict:"passed",evidence:{id:id(5),revision:"2026-10-0
 // This fixture exercises the normal command and normal admission command, not
 // a substituted gate writer. SQL constraint failures are injected at the real
 // acceptance INSERT; the enclosing transaction owns rollback on exceptions.
-function fixture(options:{taskIds?:string[];blockedTask?:string;missingTask?:string;nativeFailure?:boolean;actor?:"agent"}={}){
+function fixture(options:{taskIds?:string[];blockedTask?:string;missingTask?:string;nativeFailure?:boolean;actor?:"agent";invalidateAtTaskFence?:boolean}={}){
  const taskIds=options.taskIds??[id(10),id(11),id(12),id(13),id(14)];
  const impact={taskIds,nodes:taskIds.map(taskId=>({type:"task",id:taskId}))};
  const authority={status:"owner_reserved",reason:"unclassified_owner",principal:{kind:"user",id:ownerId},path:[],mandate:null};
@@ -26,6 +26,8 @@ function fixture(options:{taskIds?:string[];blockedTask?:string;missingTask?:str
  const expectedVersion=reviewDigest({u:options.actor?null:ownerId,role:options.actor?null:"owner",principal,ownerUserId:ownerId,authority,
   revisions:[[decisionId,"pending"]],previews:[previewId],acceptance:undefined,deferrals:[],references:[],impact});
  let evidenceRows:any[]=[],events:any[]=[],acceptances:any[]=[],saved:any=null;
+ let taskFence=false,admissionEpoch=0;
+ const versionReads:Array<{taskId:string;version:string}>=[];
  const calls:Array<{sql:string;values:any[]}>=[];
  const text=(parts:any)=>Array.from(parts as string[]).join("?");
  const db:any={
@@ -42,7 +44,9 @@ function fixture(options:{taskIds?:string[];blockedTask?:string;missingTask?:str
    if(sql.includes("FROM decision_impact_previews"))return [preview];
    if(sql.includes("FROM decision_acceptances")||sql.includes("FROM decision_deferrals")||sql.includes("FROM workforce_mandate_versions")||sql.includes("FROM workforce_entities")||sql.startsWith("SELECT * FROM ? WHERE"))return [];
    if(sql.includes("decision_current_impact"))return [{value:impact}];
-   if(sql.includes("AS version"))return [{version:"c".repeat(64)}];
+   if(sql.includes("AS version")){
+    const version=(admissionEpoch?"d":"c").repeat(64);versionReads.push({taskId:values[0],version});return [{version}];
+   }
    if(sql.includes("SELECT request_hash")||sql.includes("SELECT id,request_hash"))return [];
    if(sql.includes("task_admission_view"))throw new Error("Compact evidence must not probe or claim an admission seal");
    if(sql.includes("FROM tasks")||sql.includes("FROM api_keys"))return [];
@@ -50,8 +54,10 @@ function fixture(options:{taskIds?:string[];blockedTask?:string;missingTask?:str
   },
   $executeRaw:async(parts:any,...values:any[])=>{
    const sql=text(parts);calls.push({sql,values});
-   if(sql==="SAVEPOINT decision_acceptance_evidence")saved={evidenceRows:[...evidenceRows],events:[...events],acceptances:[...acceptances]};
-   else if(sql==="ROLLBACK TO SAVEPOINT decision_acceptance_evidence")({evidenceRows,events,acceptances}=saved);
+   if(sql.includes("UPDATE ready_source_fence SET revision = revision + 1"))taskFence=true;
+   if(sql.includes("SELECT decision_authority_invalidate")&&taskFence&&options.invalidateAtTaskFence&&!admissionEpoch)admissionEpoch++;
+   if(sql==="SAVEPOINT decision_acceptance_evidence")saved={evidenceRows:[...evidenceRows],events:[...events],acceptances:[...acceptances],admissionEpoch,taskFence};
+   else if(sql==="ROLLBACK TO SAVEPOINT decision_acceptance_evidence")({evidenceRows,events,acceptances,admissionEpoch,taskFence}=saved);
    else if(sql.includes("INSERT INTO task_admission_evidence"))evidenceRows.push({id:values[0],taskId:values[2],operation:values[4],gate:values[5],evidenceId:values[13],detail:JSON.parse(values[16])});
    else if(sql.includes("INSERT INTO decision_acceptances")){
     if(options.nativeFailure||options.blockedTask&&taskIds.includes(options.blockedTask)||evidenceRows.some(row=>row.detail.verdict==="failed"))throw new Error("decision_risk_admission_required");
@@ -62,11 +68,11 @@ function fixture(options:{taskIds?:string[];blockedTask?:string;missingTask?:str
  };
  const actor:any=options.actor?{authType:"api_key",workspaceId,agentId:id(40),apiKeyId:id(41),credentialVersion:1}:ownerId;
  const run=async(overrides:Record<string,unknown>={})=>{
-  const before={evidenceRows:[...evidenceRows],events:[...events],acceptances:[...acceptances]};
+  const before={evidenceRows:[...evidenceRows],events:[...events],acceptances:[...acceptances],admissionEpoch,taskFence};
   try{return await decisionGovernanceCommand(db,workspaceId,actor,"action",{requestId:id(20),expectedVersion,action:"accept",previewId,procedureEvidence,...overrides},decisionId);}
-  catch(error){({evidenceRows,events,acceptances}=before);throw error;}
+  catch(error){({evidenceRows,events,acceptances,admissionEpoch,taskFence}=before);throw error;}
  };
- return {run,db,calls,expectedVersion,taskIds,rows:()=>({evidenceRows,events,acceptances})};
+ return {run,db,calls,expectedVersion,taskIds,versionReads,admissionEpoch:()=>admissionEpoch,rows:()=>({evidenceRows,events,acceptances})};
 }
 
 test("explicit procedure evidence is bounded, complete and allowed only for acceptance",()=>{
@@ -125,26 +131,45 @@ test("stale version or noncurrent preview rejects before any procedure write",as
  }
 });
 
+test("atomic human evidence reads its CAS version after task fencing invalidates expired authority",async()=>{
+ const f=fixture({invalidateAtTaskFence:true}),result:any=await f.run();
+ assert.equal(result.error,undefined,JSON.stringify(result));
+ assert.equal(result.replayed,false);assert.equal(f.admissionEpoch(),1);
+ assert.equal(f.rows().acceptances.length,1);assert.equal(f.rows().evidenceRows.length,f.taskIds.length);
+ assert.deepEqual(f.versionReads.map(r=>r.version),Array(f.taskIds.length*2).fill("d".repeat(64)));
+ for(const taskId of f.taskIds)assert.equal(f.versionReads.filter(r=>r.taskId===taskId).length,2,
+  "Each generated version is still checked by the normal admission command");
+});
+
+test("an external admission CAS captured before authority invalidation remains stale",async()=>{
+ const f=fixture({invalidateAtTaskFence:true}),result=await admissionCommand(f.db,workspaceId,id(10),ownerId,"evidence",{
+  ...procedureEvidence,requestId:id(21),expectedVersion:"c".repeat(64),operation:"decision_supersede",gate:"procedure"},{compact:true});
+ assert.deepEqual(result,{error:"risk_admission_stale"});assert.equal(f.admissionEpoch(),1);
+ assert.deepEqual(f.rows(),{evidenceRows:[],events:[],acceptances:[]});
+});
+
 test("agent cannot attach human procedure evidence",async()=>{
  const f=fixture({actor:"agent"});assert.deepEqual(await f.run(),{error:"decision_forbidden"});
  assert.equal(f.rows().evidenceRows.length,0);assert.equal(f.rows().acceptances.length,0);
 });
 
 test("a missing later task rolls back every earlier normal evidence and its event",async()=>{
- const f=fixture({missingTask:id(12)}),result:any=await f.run();
- assert.equal(result.error,"task_not_found");
- assert.deepEqual(f.rows(),{evidenceRows:[],events:[],acceptances:[]});
- assert.ok(f.calls.some(c=>c.sql==="ROLLBACK TO SAVEPOINT decision_acceptance_evidence"));
- assert.equal(f.calls.some(c=>c.sql.includes("INSERT INTO decision_acceptances")),false);
+ for(const invalidateAtTaskFence of [false,true]){
+  const f=fixture({missingTask:id(12),invalidateAtTaskFence}),result:any=await f.run();
+  assert.equal(result.error,"task_not_found");
+  assert.deepEqual(f.rows(),{evidenceRows:[],events:[],acceptances:[]});assert.equal(f.admissionEpoch(),0);
+  assert.ok(f.calls.some(c=>c.sql==="ROLLBACK TO SAVEPOINT decision_acceptance_evidence"));
+  assert.equal(f.calls.some(c=>c.sql.includes("INSERT INTO decision_acceptances")),false);
+ }
 });
 
 test("native acceptance guard failure propagates and rolls back the enclosing transaction",async()=>{
- for(const [options,override] of [[{nativeFailure:true},{}],[{blockedTask:id(12)},{}],[{},
+ for(const [options,override] of [[{nativeFailure:true},{}],[{nativeFailure:true,invalidateAtTaskFence:true},{}],[{blockedTask:id(12)},{}],[{},
   {procedureEvidence:{...procedureEvidence,verdict:"failed",observedResult:"Required procedure coverage failed verification"}}]] as const){
   const f=fixture(options);await assert.rejects(f.run(override),/decision_risk_admission_required/);
   assert.equal(f.calls.filter(c=>c.sql.includes("INSERT INTO task_admission_evidence")).length,5);
   assert.ok(f.calls.some(c=>c.sql.includes("INSERT INTO decision_acceptances")));
-  assert.deepEqual(f.rows(),{evidenceRows:[],events:[],acceptances:[]});
+  assert.deepEqual(f.rows(),{evidenceRows:[],events:[],acceptances:[]});assert.equal(f.admissionEpoch(),0);
  }
 });
 

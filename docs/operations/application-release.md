@@ -26,7 +26,39 @@ match the actual socket peer. Sanitized HTTPS authority/path/header checks and
 certificate pinning remain required. An unset or empty optional host preserves
 legacy exact-IP installations; invalid names, ambiguous/public DNS and lookup
 failure deny admission. Eleven focused ingress/production tests pass. Installed
-configuration is prepared; successful deployed handoff is still pending.
+configuration is deployed as `ed399218474846cb1c58b28bce0458fdd208f9bc`,
+deployment `ze00dq3vlat2wx4vl6iacu6j`; health/build identity match. A real
+certificate-pinned malformed request passes transport and is denied by validation.
+Credential delivery remains pending: its owner Decision exposed a fencing-order
+defect. Internal procedure evidence now fences and invalidates expired authority
+before deriving its CAS version; the normal command still rechecks CAS. Eleven
+focused tests retain external stale refusal and atomic rollback. Live acceptance
+of this correction is still pending.
+
+The controlled restore contains identical full data and sequence state. Its
+schema dump initially differed only in built-in public-schema framing because
+the source has an ordinary schema owner and template0 uses `pg_database_owner`.
+Normalizing that class only in the proven owned restore database reproduced the
+exact historical schema bytes. Source schema/ownership remained untouched. The
+fixed backup path normalizes only the owned restore public-owner class, never
+source roles or ACLs. Primary failure survives a cleanup failure as a fixed
+code; the separate cleanup code contains no raw diagnostics. Session drain,
+DROP and absence reads share a five-second budget and never terminate clients.
+Explicit reconciliation requires unchanged installation/configuration/attempt,
+local lock identity and exact database OID/marker; it neither repeats dump/create
+nor promotes a backup. The interrupted production attempt was reconciled through
+this path: owned database and lock are absent, with no promotion. No pilot backup
+is certified yet.
+Root verification passed 15 backup tests including actual local PostgreSQL, 11
+atomic admission tests, `validate`, `codex:check` and `git diff --check`. Native
+backup/fingerprint fixture suites run serially because their global temporary
+file observation collides when run concurrently.
+
+The stopped baseline execution service and its image subsequently became absent.
+Its existing controller application, canonical branch and generated configuration
+remain; no candidate deployment occurred. Recent controller cleanup records do
+not establish the disappearance cause. Baseline service and compatible rollback
+artifact recovery remain required before managed release.
 
 ## Current evidence — 2026-10-02
 

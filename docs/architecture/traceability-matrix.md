@@ -1488,6 +1488,15 @@ pass and bots remain paused. Native streaming fingerprint and backup/Worker
 checks pass (26 passed, one opt-in skip); sort/temp resources and process cleanup
 are bounded. Full production backup proof remains pending; the provider storage
 cause is unverified and no hard PostgreSQL RSS ceiling is claimed.
+A production owned restore matched full data/sequences and, after guarded
+public-owner-class normalization, the exact historical schema. The source was
+unchanged. Native tests qualify both owner classes and connected-client refusal;
+explicit exact-owned cleanup removed the interrupted attempt and lock without
+promotion. Full encrypted pilot backup remains pending. The baseline execution
+service/image disappeared; recovery and retained rollback artifacts are required.
+Installed HTTPS ingress passed a certificate-pinned validation refusal. Internal
+atomic evidence fencing has 11 source tests; live credential acceptance remains
+pending. No pilot release is claimed.
 
 [Governed release evidence](../operations/governed-release.md),
 [backup gateway](../../scripts/lib/agent-host-release-backup.mjs),

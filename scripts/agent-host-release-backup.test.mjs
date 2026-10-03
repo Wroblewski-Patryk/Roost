@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import os from "node:os";
 import { randomBytes, randomUUID, createHash } from "node:crypto";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync, existsSync, rmSync } from "node:fs";
 import { createReleaseBackupGateway, encryptReleaseBackup, decryptReleaseBackup, generateOneTimeRecoveryCode,
   acknowledgeRecoveryCode } from "./lib/agent-host-release-backup.mjs";
@@ -36,6 +36,7 @@ function syntheticTransport({ failRestore = false, wrongFingerprint = false, cha
   const transport = async request => {
     calls.push(request.operation); const text = request.stdin?.toString() ?? "";
     switch (request.operation) {
+      case "public_owner_class": return Buffer.from("t\n");
       case "fingerprint": fingerprintsRead++; return Buffer.from(wrongFingerprint && database !== null && request.endpoint.database === database
         || changedSource && fingerprintsRead === 2 ? `${d}  -\n${"e".repeat(64)}  -\n` : fingerprints);
       case "dump": return Buffer.from(archiveBytes);
@@ -46,12 +47,17 @@ function syntheticTransport({ failRestore = false, wrongFingerprint = false, cha
         return Buffer.from(`${oid}:${marker}\n`);
       }
       case "restore": if (changedOwnership) marker = "unrelated-owner"; if (failRestore) throw Error("synthetic restore failure"); return Buffer.alloc(0);
+      case "restore_public_owner": assert.equal(request.endpoint.database, database); assert(text.includes('ALTER SCHEMA "public" OWNER TO "pg_database_owner";')); return Buffer.alloc(0);
       case "restore_sessions": return Buffer.from(activeRestoreSession ? "1\n" : "0\n");
       case "restore_drop": assert(text.includes(`DROP DATABASE "${database}"`) && /^roost_restore_[a-f0-9]{32}$/.test(database)); database = null; return Buffer.alloc(0);
       default: throw Error("unexpected operation");
     }
   };
   return { transport, calls, database: () => database };
+}
+function cleanupTiming() {
+  let now = 0;
+  return { cleanupClock: () => now, cleanupSleep: async ms => { now += ms; } };
 }
 
 test('shared fingerprint retains historical SQL bytes and remote deadlines end before client deadline', () => {
@@ -82,11 +88,11 @@ test('backup uses its existing timeout for shared fingerprints; timeout retains 
   try {
     const latest = path.join(f.cfg.laptopFolder, 'roost-latest-verified.enc'); writeFileSync(latest, previous);
     const requests = [];
-    const transport = async request => { requests.push(request); throw Error('synthetic timeout'); };
+    const transport = async request => { requests.push(request); if (request.operation === 'public_owner_class') return Buffer.from('t\n'); throw Error('synthetic timeout'); };
     await assert.rejects(createReleaseBackupGateway(f.cfg, { transport }).backupAndVerify(), /operation_fingerprint_unproven/);
-    assert.equal(requests.length, 1); assert.equal(requests[0].operation, 'fingerprint');
-    assert.equal(requests[0].timeoutMs, f.cfg.timeoutMs);
-    assert.equal(requests[0].command, buildReleaseFingerprintCommand(f.cfg.source, f.cfg.timeoutMs));
+    assert.equal(requests.length, 2); assert.equal(requests[1].operation, 'fingerprint');
+    assert.equal(requests[1].timeoutMs, f.cfg.timeoutMs);
+    assert.equal(requests[1].command, buildReleaseFingerprintCommand(f.cfg.source, f.cfg.timeoutMs));
     assert.deepEqual(readFileSync(latest), previous);
     assert.deepEqual(readdirSync(f.cfg.laptopFolder), ['roost-latest-verified.enc']);
   } finally { f.cleanup(); }
@@ -204,6 +210,118 @@ test("changed restore ownership or active sessions preserves DB and fence; chang
   } finally { f.cleanup(); }
 });
 
+test('primary restore error survives a failed cleanup with only a separate fixed cleanup code', async () => {
+  const f=fixture(),sim=syntheticTransport({failRestore:true,activeRestoreSession:true});
+  try {
+    const latest=path.join(f.cfg.laptopFolder,'roost-latest-verified.enc'),previous=Buffer.from('previous verified copy');writeFileSync(latest,previous);
+    await assert.rejects(createReleaseBackupGateway(f.cfg,{transport:sim.transport,...cleanupTiming()}).backupAndVerify(),error=>{
+      assert.equal(error.code,'release_backup_operation_restore_unproven');
+      assert.equal(error.message,error.code);assert.equal(error.cleanupErrorCode,'release_backup_restore_cleanup_sessions_active');
+      assert(!JSON.stringify(error).includes('synthetic restore failure'));return true;
+    });
+    assert(sim.database());assert(!sim.calls.includes('restore_drop'));
+    assert(existsSync(path.join(f.cfg.laptopFolder,'.roost-backup.lock')));assert.deepEqual(readFileSync(latest),previous);
+  }finally{f.cleanup();}
+});
+
+test('bounded drain waits for all sessions, rejects OID/lock drift and never terminates a session',async()=>{
+  for(const scenario of ['drain','expiry','oid_drift','lock_drift']){
+    const f=fixture(),sim=syntheticTransport();let reads=0;const requests=[];
+    const transport=async req=>{
+      requests.push(req);
+      if(req.operation==='restore_sessions'){
+        reads++;
+        if(scenario==='lock_drift')writeFileSync(path.join(f.cfg.laptopFolder,'.roost-backup.lock'),Buffer.from('changed lock'));
+        return Buffer.from(scenario==='drain'&&reads>2?'0\n':'1\n');
+      }
+      const result=await sim.transport(req);
+      if(scenario==='oid_drift'&&reads>0&&req.operation==='restore_inspect')return Buffer.from(result.toString().replace(/^987:/,'988:'));
+      return result;
+    };
+    try{
+      const gateway=createReleaseBackupGateway(f.cfg,{transport,...cleanupTiming()});
+      if(scenario==='drain'){assert((await gateway.backupAndVerify()).restoreDatabaseAbsent);assert(reads>=3);}
+      else {await assert.rejects(gateway.backupAndVerify(),/release_backup_(?:restore|backup_lock_changed)/);
+        assert(sim.database());assert(!sim.calls.includes('restore_drop'));assert(existsSync(path.join(f.cfg.laptopFolder,'.roost-backup.lock')));
+        assert(!existsSync(path.join(f.cfg.laptopFolder,'roost-latest-verified.enc')));}
+      assert(requests.filter(req=>req.operation==='restore_sessions').every(req=>req.timeoutMs<=5000));
+      for(const req of requests.filter(req=>req.operation==='restore_drop')) {
+        assert(req.timeoutMs<=5000);
+        assert(req.stdin.toString().includes(`SET lock_timeout='${req.timeoutMs}ms'; SET statement_timeout='${req.timeoutMs}ms';`));
+        const index=requests.indexOf(req);assert(requests[index+1].timeoutMs<=req.timeoutMs);
+      }
+      assert(requests.every(req=>!/(pg_terminate_backend|pg_cancel_backend|WITH\s*\(FORCE\))/i.test(req.stdin?.toString()??'')));
+    }finally{f.cleanup();}
+  }
+});
+
+test('explicit reconciliation cleans only the inspected legacy owned attempt, or retires an unchanged absent attempt',async()=>{
+  for(const absent of [false,true]){
+    const f=fixture(),sim=syntheticTransport({ambiguousCreate:true});
+    const transport=async req=>{if(absent&&req.operation==='restore_create')throw Error('uncertain create before effect');return sim.transport(req);};
+    try{
+      const gateway=createReleaseBackupGateway(f.cfg,{transport,...cleanupTiming()});
+      await assert.rejects(gateway.backupAndVerify(),/operation_restore_create_unproven/);
+      const inspection=await gateway.inspectInterruptedBackup();assert.equal(inspection.restoreAbsent,absent);
+      const lock=JSON.parse(readFileSync(path.join(f.cfg.laptopFolder,'.roost-backup.lock')));assert.equal(lock.restoreOid,undefined,'legacy uncertain create remains unchanged');
+      const callsBefore=[...sim.calls];const result=await gateway.reconcileInterruptedBackup(inspection);
+      assert(result.lockRetired&&result.restoreDatabaseAbsent&&result.latestPromoted===false);assert.equal(sim.database(),null);
+      assert(!existsSync(path.join(f.cfg.laptopFolder,'.roost-backup.lock')));assert(!existsSync(path.join(f.cfg.laptopFolder,'roost-latest-verified.enc')));
+      assert.equal(sim.calls.filter(value=>value==='dump').length,callsBefore.filter(value=>value==='dump').length);
+      assert.equal(sim.calls.filter(value=>value==='restore_create').length,callsBefore.filter(value=>value==='restore_create').length);
+      assert.equal(sim.calls.filter(value=>value==='restore_drop').length,absent?0:1);
+      await assert.rejects(gateway.reconcileInterruptedBackup(inspection),/reconciliation_basis_changed/);
+    }finally{f.cleanup();}
+  }
+});
+
+test('reconciliation refuses changed binding, OID, ownership, lock or an attached client and preserves latest',async()=>{
+  for(const scenario of ['installation','config','attempt','expected_oid','oid','marker','lock','client']){
+    const f=fixture(),sim=syntheticTransport({ambiguousCreate:true});let alter=false;
+    const transport=async req=>{
+      if(alter&&scenario==='client'&&req.operation==='restore_sessions')return Buffer.from('1\n');
+      const bytes=await sim.transport(req);
+      if(alter&&scenario==='oid'&&req.operation==='restore_inspect')return Buffer.from(bytes.toString().replace(/^987:/,'988:'));
+      if(alter&&scenario==='marker'&&req.operation==='restore_inspect')return Buffer.from('987:unrelated-owner\n');
+      if(alter&&scenario==='lock'&&req.operation==='restore_sessions')writeFileSync(path.join(f.cfg.laptopFolder,'.roost-backup.lock'),Buffer.from('changed lock'));
+      return bytes;
+    };
+    try{
+      const latest=path.join(f.cfg.laptopFolder,'roost-latest-verified.enc'),previous=Buffer.from('previous latest');writeFileSync(latest,previous);
+      const gateway=createReleaseBackupGateway(f.cfg,{transport,...cleanupTiming()});await assert.rejects(gateway.backupAndVerify());
+      const expected=await gateway.inspectInterruptedBackup();alter=true;
+      if(scenario==='installation')expected.installationId=randomUUID();
+      if(scenario==='config')expected.configurationDigest='9'.repeat(64);
+      if(scenario==='attempt')expected.attemptId=randomUUID();
+      if(scenario==='expected_oid')expected.restoreOid='988';
+      await assert.rejects(gateway.reconcileInterruptedBackup(expected),/release_backup_/);
+      assert(!sim.calls.includes('restore_drop'));assert(sim.database());assert(existsSync(path.join(f.cfg.laptopFolder,'.roost-backup.lock')));
+      assert.deepEqual(readFileSync(latest),previous);
+    }finally{f.cleanup();}
+  }
+});
+
+test('public schema owner class normalizes only the proven temporary DB without copying unknown roles or ACLs',async()=>{
+  for(const builtin of [true,false]){
+    const f=fixture(),sim=syntheticTransport();const requests=[];
+    const transport=async req=>{
+      requests.push(req);
+      if(req.operation==='public_owner_class')return Buffer.from(builtin?'t\n':'f\n');
+      if(req.operation==='restore_public_owner')return Buffer.alloc(0);
+      return sim.transport(req);
+    };
+    try{
+      assert((await createReleaseBackupGateway(f.cfg,{transport}).backupAndVerify()).restoreVerified);
+      const source=requests.find(req=>req.operation==='public_owner_class');assert.equal(source.endpoint.database,f.cfg.source.database);
+      assert(!source.stdin.toString().includes('ALTER'));assert(source.maxBytes<=32);
+      const normalize=requests.find(req=>req.operation==='restore_public_owner');assert.match(normalize.endpoint.database,/^roost_restore_[a-f0-9]{32}$/);
+      const sql=normalize.stdin.toString();assert(sql.includes(`ALTER SCHEMA "public" OWNER TO "${builtin?'pg_database_owner':f.cfg.restore.user}";`));
+      assert(sql.includes("oid::text='987'"));assert(sql.includes('shobj_description'));assert(sql.includes('current_database()'));
+      assert(!/(CREATE ROLE|GRANT|REVOKE|unknown_source_role)/i.test(sql));
+    }finally{f.cleanup();}
+  }
+});
+
 test("real local PostgreSQL synthetic custom archive restores exact schema/data, encrypted copy decrypts, DBs absent", async t => {
   let nativeContainer;
   try { nativeContainer = execFileSync("docker", ["compose", "ps", "--status", "running", "-q", "postgres"], { windowsHide: true, encoding: "utf8", timeout: 15000, stdio: ["ignore", "pipe", "ignore"] }).trim(); }
@@ -228,6 +346,7 @@ test("real local PostgreSQL synthetic custom archive restores exact schema/data,
   const sql = (db, text) => docker(["psql", "-X", "-qAt", "-v", "ON_ERROR_STOP=1", "-U", "companycore", "-d", db], Buffer.from(text));
   const cfg = { ...f.cfg, source: { sshHost: "fixture", container: nativeContainer, user: "companycore", database: source },
     restore: { sshHost: "fixture", container: nativeContainer, user: "companycore", database: "postgres" }, timeoutMs: 30000 };
+  let expectedBeforeNormalization = null, schemaMismatchReproduced = false;
   const transport = async req => {
     calls.push(req.operation); assert.equal(req.endpoint.container, nativeContainer);
     if (req.operation === "fingerprint") {
@@ -243,6 +362,18 @@ test("real local PostgreSQL synthetic custom archive restores exact schema/data,
     }
     if (req.operation === "dump") return docker(["pg_dump", "--format=custom", "--no-owner", "--no-acl", "--serializable-deferrable", "-U", "companycore", "-d", source]);
     if (req.operation === "restore") return docker(["pg_restore", "--exit-on-error", "--no-owner", "--no-acl", "-U", "companycore", "-d", req.endpoint.database], req.stdin);
+    if (req.operation === "public_owner_class") return sql(source, req.stdin.toString('utf8'));
+    if (req.operation === "restore_public_owner") {
+      assert.match(req.endpoint.database,/^roost_restore_[a-f0-9]{32}$/);
+      if (expectedBeforeNormalization !== null) {
+        const unnormalized = await transport({ operation:'fingerprint', endpoint:req.endpoint, timeoutMs:cfg.timeoutMs,
+          command:buildReleaseFingerprintCommand(req.endpoint,cfg.timeoutMs) });
+        const expectedLines=expectedBeforeNormalization.toString().trim().split(/\r?\n/),actualLines=unnormalized.toString().trim().split(/\r?\n/);
+        assert.equal(actualLines[1],expectedLines[1],'owner-class framing changes no row/sequence data');
+        schemaMismatchReproduced ||= actualLines[0]!==expectedLines[0];
+      }
+      return sql(req.endpoint.database,req.stdin.toString('utf8'));
+    }
     return sql("postgres", req.stdin.toString("utf8"));
   };
   const sourceMarker = `roost-release-fingerprint-fixture:${source}:${randomUUID()}`;
@@ -253,7 +384,7 @@ test("real local PostgreSQL synthetic custom archive restores exact schema/data,
     const serverStartedAt = sql('postgres', 'SELECT pg_postmaster_start_time()::text;').toString().trim();
     const serverProcesses = () => sql('postgres', `SELECT backend_type,pid FROM pg_stat_activity WHERE backend_type IN ('checkpointer','background writer','walwriter','autovacuum launcher','logical replication launcher') ORDER BY backend_type;`).toString().trim();
     const serverPids = serverProcesses(); assert(serverPids);
-    sql(source, `CREATE TABLE sample(id bigserial PRIMARY KEY, body text NOT NULL, nested jsonb); INSERT INTO sample(body,nested) VALUES ('synthetic α','{"array":[1,2]}'),('quote '' and newline' || chr(10) || 'row','{"null":null}'); CREATE INDEX sample_body_idx ON sample(body); CREATE SEQUENCE not_called_yet; SELECT setval('not_called_yet',42,false); CREATE SCHEMA business; CREATE TABLE business.empty_table(body text); CREATE TABLE duplicate_rows(body text); INSERT INTO duplicate_rows VALUES ('α'),('β'),('α'); CREATE TABLE partitions(id int) PARTITION BY RANGE(id); CREATE TABLE partition_one PARTITION OF partitions FOR VALUES FROM (0) TO (100); INSERT INTO partitions VALUES (42); CREATE MATERIALIZED VIEW materialized_rows AS SELECT body FROM duplicate_rows;`);
+    sql(source, `CREATE TABLE sample(id bigserial PRIMARY KEY, body text NOT NULL, nested jsonb); INSERT INTO sample(body,nested) VALUES ('synthetic α','{"array":[1,2]}'),('quote '' and newline' || chr(10) || 'row','{"null":null}'); CREATE INDEX sample_body_idx ON sample(body); CREATE SEQUENCE not_called_yet; SELECT setval('not_called_yet',42,false); CREATE SCHEMA business; CREATE TABLE business.empty_table(body text); CREATE TABLE duplicate_rows(body text); INSERT INTO duplicate_rows VALUES ('α'),('β'),('α'); CREATE TABLE partitions(id int) PARTITION BY RANGE(id); CREATE TABLE partition_one PARTITION OF partitions FOR VALUES FROM (0) TO (100); INSERT INTO partitions VALUES (42); CREATE MATERIALIZED VIEW materialized_rows AS SELECT body FROM duplicate_rows; ALTER SCHEMA public OWNER TO companycore;`);
     const fingerprint = () => transport({ operation: 'fingerprint', endpoint: cfg.source, timeoutMs: cfg.timeoutMs,
       command: buildReleaseFingerprintCommand(cfg.source, cfg.timeoutMs) });
     const before = await fingerprint();
@@ -306,7 +437,10 @@ test("real local PostgreSQL synthetic custom archive restores exact schema/data,
       assert.equal(sql('postgres', `SELECT count(*) FROM pg_stat_activity WHERE datname='${source}';`).toString().trim(), '0');
     }
     assert.deepEqual(await fingerprint(), before);
+    expectedBeforeNormalization=before;
     const result = await createReleaseBackupGateway(cfg, { transport }).backupAndVerify(); assert(result.restoreVerified && result.latestVerifiedCopy);
+    assert(schemaMismatchReproduced,'actual pg_dump public-owner framing mismatch must be reproduced before normalization');
+    assert.deepEqual(await fingerprint(),before,'source remains byte-identical after owned restore normalization');
     assert.equal(before.toString().trim().split(/\r?\n/)[0].slice(0, 64), result.schemaDigest);
     assert.equal(before.toString().trim().split(/\r?\n/)[1].slice(0, 64), result.dataDigest);
     const encrypted = readFileSync(path.join(cfg.laptopFolder, "roost-latest-verified.enc")); const decoded = decryptReleaseBackup(encrypted, f.key, cfg.installationId);
@@ -316,6 +450,39 @@ test("real local PostgreSQL synthetic custom archive restores exact schema/data,
     assert(calls.includes("restore_drop")); assert.equal(sql(source, "SELECT count(*) FROM sample;").toString().trim(), "2");
     assert.equal(sql('postgres', 'SELECT pg_postmaster_start_time()::text;').toString().trim(), serverStartedAt);
     assert.equal(serverProcesses(), serverPids);
+    // Qualify the builtin-owner class too, in the same owned synthetic source.
+    sql(source,'ALTER SCHEMA public OWNER TO pg_database_owner;');expectedBeforeNormalization=await fingerprint();
+    const builtinResult=await createReleaseBackupGateway(cfg,{transport}).backupAndVerify();assert(builtinResult.restoreVerified);
+    assert.deepEqual(await fingerprint(),expectedBeforeNormalization);
+    const previousLatest=readFileSync(path.join(cfg.laptopFolder,'roost-latest-verified.enc'));
+    const interrupted=createReleaseBackupGateway(cfg,{transport:async req=>{
+      const bytes=await transport(req);if(req.operation==='restore_create')throw Error('synthetic lost reply after owned CREATE');return bytes;
+    }});
+    await assert.rejects(interrupted.backupAndVerify(),/operation_restore_create_unproven/);
+    let inspection=await interrupted.inspectInterruptedBackup();assert(inspection.ownershipVerified);
+    const client=spawn('docker',['exec',nativeContainer,'psql','-X','-qAt','-U','companycore','-d',inspection.restoreDatabase,
+      '-c','SELECT pg_backend_pid();','-c','SELECT pg_sleep(7);'],{windowsHide:true,stdio:['ignore','pipe','pipe']});
+    const closed=new Promise((resolve,reject)=>{client.once('error',reject);client.once('close',resolve);});
+    try {
+      await new Promise((resolve,reject)=>{
+        let output='';const timer=setTimeout(()=>reject(Error('owned_client_readiness_unproven')),5000);
+        client.stdout.on('data',bytes=>{output+=bytes.toString();if(/^[0-9]+\r?\n/.test(output)){clearTimeout(timer);resolve();}});
+        client.once('error',error=>{clearTimeout(timer);reject(error);});
+      });
+      assert(Number(sql('postgres',`SELECT count(*) FROM pg_stat_activity WHERE datname='${inspection.restoreDatabase}';`).toString().trim())>0);
+      const priorDrops=calls.filter(value=>value==='restore_drop').length;
+      await assert.rejects(interrupted.reconcileInterruptedBackup(inspection),/restore_cleanup_sessions_active/);
+      assert.equal(calls.filter(value=>value==='restore_drop').length,priorDrops);
+      assert(existsSync(path.join(cfg.laptopFolder,'.roost-backup.lock')));assert.deepEqual(readFileSync(path.join(cfg.laptopFolder,'roost-latest-verified.enc')),previousLatest);
+      assert.equal(await closed,0);inspection=await interrupted.inspectInterruptedBackup();
+      assert((await interrupted.reconcileInterruptedBackup(inspection)).lockRetired);
+      assert.equal(sql('postgres',`SELECT count(*) FROM pg_database WHERE datname='${inspection.restoreDatabase}';`).toString().trim(),'0');
+      assert.deepEqual(readFileSync(path.join(cfg.laptopFolder,'roost-latest-verified.enc')),previousLatest);
+    } finally {
+      await closed;
+      const remaining=await interrupted.inspectInterruptedBackup();
+      if(remaining.unresolvedAttempt&&(remaining.ownershipVerified||remaining.restoreAbsent))await interrupted.reconcileInterruptedBackup(remaining);
+    }
   } finally {
     assert(/^roost_backup_fixture_[a-f0-9]{24}$/.test(source));
     // Give already-closing synthetic connections a bounded opportunity to exit;

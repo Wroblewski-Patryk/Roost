@@ -106,6 +106,13 @@ const receiptSchema = z.object({ format: z.literal("roost-recovery-ack-v1"), ins
   challengeId: z.string().uuid(), salt: z.string().regex(hex), codeHash: z.string().regex(hex),
   createdAt: z.string().datetime(), acknowledgedAt: z.string().datetime().nullable(), storedOffDevice: z.boolean() }).strict();
 const codeHash = (salt, code) => sha(Buffer.from(`${salt}\n${code}`, "utf8"));
+const restoreOidSchema = z.string().regex(/^[1-9][0-9]{0,9}$/).refine(value => BigInt(value) <= 4294967295n);
+const attemptSchema = z.object({ format: z.literal("roost-backup-attempt-v1"), installationId: z.string().uuid(), attemptId: z.string().uuid(),
+  configurationDigest: z.string().regex(hex), restoreDatabase: z.string().regex(/^roost_restore_[a-f0-9]{32}$/),
+  ownershipMarker: z.string().regex(/^roost-isolated-restore:[a-f0-9-]{36}:[a-f0-9-]{36}$/), startedAt: z.string().datetime(),
+  restoreOid: restoreOidSchema.optional() }).strict();
+const safeBackupError = error => { const code = /^release_backup_[a-z0-9_]+$/.test(error?.message ?? "") ? error.message : "release_backup_unproven";
+  return Object.assign(Error(code), { code }); };
 
 // Call from a private owner setup surface only. The returned code is a secret,
 // displayed once; never serialize the return value into Roost/tool artifacts.
@@ -133,8 +140,10 @@ export function acknowledgeRecoveryCode({ installationId, repositoryRoot, receip
 const pgArgs = (e, database) => ["-U", e.user, "-d", database];
 function dockerCommand(e, program, args, input = false) { return `docker exec ${input ? "-i " : ""}${quote(e.container)} ${program} ${args.map(quote).join(" ")}`; }
 
-export function createReleaseBackupGateway(privateConfig, { transport = sshTransport } = {}) {
+export function createReleaseBackupGateway(privateConfig, { transport = sshTransport,
+  cleanupClock = Date.now, cleanupSleep = ms => new Promise(resolve => setTimeout(resolve, ms)) } = {}) {
   const cfg = configSchema.parse(privateConfig); check(typeof transport === "function", "transport_invalid");
+  check(typeof cleanupClock === "function" && typeof cleanupSleep === "function", "cleanup_timing_invalid");
   assertPath(cfg.laptopFolder, { directory: true, repositoryRoot: cfg.repositoryRoot });
   assertPath(cfg.restoreKeyFile, { repositoryRoot: cfg.repositoryRoot, forbiddenFolder: cfg.laptopFolder });
   assertPath(cfg.recoveryAcknowledgmentFile, { repositoryRoot: cfg.repositoryRoot, forbiddenFolder: cfg.laptopFolder });
@@ -151,19 +160,81 @@ export function createReleaseBackupGateway(privateConfig, { transport = sshTrans
   };
   const assertFolder = () => { assertPath(cfg.laptopFolder, { directory: true, repositoryRoot: cfg.repositoryRoot }); const now = lstatSync(cfg.laptopFolder, { bigint: true });
     check(now.dev === folderIdentity.dev && now.ino === folderIdentity.ino, "backup_folder_changed"); };
-  const run = async (operation, endpoint, command, stdin, maxBytes = 65536) => {
-    try { const bytes = await transport({ operation, endpoint: { ...endpoint }, command, stdin, maxBytes, timeoutMs: cfg.timeoutMs });
+  const run = async (operation, endpoint, command, stdin, maxBytes = 65536, timeoutMs = cfg.timeoutMs) => {
+    try { const bytes = await transport({ operation, endpoint: { ...endpoint }, command, stdin, maxBytes, timeoutMs });
       check(Buffer.isBuffer(bytes) && bytes.length <= maxBytes, "transport_output_invalid"); return bytes;
     } catch { fail(`operation_${operation}_unproven`); }
   };
-  const sql = (operation, database, input) => run(operation, cfg.restore, dockerCommand(cfg.restore, "psql", ["-X", "-qAt", "-v", "ON_ERROR_STOP=1", ...pgArgs(cfg.restore, database)], true), Buffer.from(input));
+  const sql = (operation, database, input, timeoutMs = cfg.timeoutMs) => run(operation, cfg.restore, dockerCommand(cfg.restore, "psql", ["-X", "-qAt", "-v", "ON_ERROR_STOP=1", ...pgArgs(cfg.restore, database)], true), Buffer.from(input), 65536, timeoutMs);
   const fingerprint = async (endpoint, database) => {
     const target = { ...endpoint, database };
     const output = (await run("fingerprint", target, buildReleaseFingerprintCommand(target, cfg.timeoutMs))).toString("utf8").trim().split(/\r?\n/);
     check(output.length === 2 && output.every(line => /^[a-f0-9]{64}\s+-\s*$/.test(line)), "fingerprint_invalid");
     return { schemaDigest: output[0].slice(0, 64), dataDigest: output[1].slice(0, 64) };
   };
+  const lockFile = path.join(cfg.laptopFolder, ".roost-backup.lock");
+  const configurationDigest = sha(JSON.stringify(cfg));
+  const identityQuery = database => `SELECT oid::text || ':' || coalesce(shobj_description(oid,'pg_database'),'') FROM pg_database WHERE datname='${database}';`;
+  const lockIdentityDigest = identity => sha(JSON.stringify({ dev: identity.dev.toString(), ino: identity.ino.toString(), hash: identity.hash }));
+  const assertLock = identity => {
+    assertFolder(); assertPrivateFiles(); assertPath(lockFile, { repositoryRoot: cfg.repositoryRoot });
+    check(existsSync(lockFile), "backup_lock_changed"); const now = privateIdentity(lockFile);
+    check(now.dev === identity.dev && now.ino === identity.ino && now.hash === identity.hash, "backup_lock_changed");
+  };
+  const readAttempt = () => {
+    assertFolder(); assertPrivateFiles(); assertPath(lockFile, { repositoryRoot: cfg.repositoryRoot });
+    const bytes = readFileSync(lockFile), identity = privateIdentity(lockFile);
+    check(identity.hash === sha(bytes), "backup_lock_changed");
+    let attempt; try { attempt = attemptSchema.parse(JSON.parse(bytes)); } catch { fail("attempt_invalid"); }
+    check(attempt.installationId === cfg.installationId && attempt.configurationDigest === configurationDigest
+      && attempt.ownershipMarker.startsWith(`roost-isolated-restore:${cfg.installationId}:`), "attempt_binding_mismatch");
+    return { attempt, identity };
+  };
+  const retireLock = identity => { assertLock(identity); unlinkSync(lockFile); check(!existsSync(lockFile), "backup_lock_retirement_unproven"); };
+  async function dropOwnedRestore(database, oid, marker, lockIdentity, reason, deadline) {
+    for (;;) {
+      assertLock(lockIdentity);
+      check(cleanupClock() <= deadline, `${reason}_sessions_active`);
+      const remaining = () => Math.max(1, Math.min(cfg.timeoutMs, deadline - cleanupClock()));
+      const state = (await sql("restore_inspect", cfg.restore.database, identityQuery(database), remaining())).toString().trim();
+      check(state === `${oid}:${marker}`, `${reason}_identity_changed`);
+      const sessions = (await sql("restore_sessions", cfg.restore.database, `SELECT count(*) FROM pg_stat_activity WHERE datname='${database}';`, remaining())).toString().trim();
+      check(/^(0|[1-9][0-9]*)$/.test(sessions), `${reason}_sessions_unproven`);
+      if (sessions === "0") {
+        assertLock(lockIdentity);
+        check((await sql("restore_inspect", cfg.restore.database, identityQuery(database), remaining())).toString().trim() === `${oid}:${marker}`, `${reason}_identity_changed`);
+        assertLock(lockIdentity);
+        // No FORCE, termination or backend-type exception: PostgreSQL refuses a
+        // new connection arriving after our zero-session observation.
+        const dropTimeout = remaining();
+        await sql("restore_drop", cfg.restore.database,
+          `SET lock_timeout='${dropTimeout}ms'; SET statement_timeout='${dropTimeout}ms'; DROP DATABASE "${database}";`, dropTimeout);
+        check((await sql("restore_inspect", cfg.restore.database, identityQuery(database), remaining())).toString().trim() === "", "restore_cleanup_unproven");
+        return;
+      }
+      check(cleanupClock() < deadline, `${reason}_sessions_active`);
+      await cleanupSleep(Math.min(200, Math.max(1, deadline - cleanupClock())));
+    }
+  }
+  let backupActive = false, reconciliationActive = false;
+  async function normalizeRestorePublicOwner(database, oid, marker, lockIdentity, builtinOwner) {
+    assertLock(lockIdentity);
+    check((await sql("restore_inspect", cfg.restore.database, identityQuery(database))).toString().trim() === `${oid}:${marker}`, "restore_identity_changed");
+    const owner = builtinOwner ? "pg_database_owner" : cfg.restore.user;
+    const input = `SELECT oid::text='${oid}' AND coalesce(shobj_description(oid,'pg_database'),'')='${marker}' AND current_database()='${database}' AS restore_identity_matches FROM pg_database WHERE datname=current_database()
+\\gset
+\\if :restore_identity_matches
+ALTER SCHEMA "public" OWNER TO "${owner}";
+\\else
+SELECT 'release_backup_restore_identity_changed'::integer;
+\\endif
+`;
+    assertLock(lockIdentity);
+    await run("restore_public_owner", { ...cfg.restore, database }, dockerCommand(cfg.restore, "psql", ["-X", "-qAt", "-v", "ON_ERROR_STOP=1", ...pgArgs(cfg.restore, database)], true), Buffer.from(input));
+    assertLock(lockIdentity);
+  }
   async function backupAndVerify() {
+    check(!backupActive && !reconciliationActive, "backup_already_active_or_unreconciled");
     assertFolder(); assertPrivateFiles();
     const receipt = receiptSchema.parse(JSON.parse(readFileSync(cfg.recoveryAcknowledgmentFile)));
     check(receipt.installationId === cfg.installationId && receipt.storedOffDevice && receipt.acknowledgedAt, "recovery_ack_required");
@@ -171,11 +242,18 @@ export function createReleaseBackupGateway(privateConfig, { transport = sshTrans
     const restoreDatabase = `roost_restore_${randomBytes(16).toString("hex")}`;
     const marker = `roost-isolated-restore:${cfg.installationId}:${randomUUID()}`;
     let archive, restored, encrypted; let ownedOid = null; let pending = null, pendingIdentity = null, uncertainCreate = false, uncertainSync = false;
-    const lockFile = path.join(cfg.laptopFolder, ".roost-backup.lock");
-    const lockBytes = Buffer.from(JSON.stringify({ format: "roost-backup-attempt-v1", installationId: cfg.installationId, attemptId: randomUUID(),
+    let primaryError = null, cleanupDeadline = null;
+    let lockBytes = Buffer.from(JSON.stringify({ format: "roost-backup-attempt-v1", installationId: cfg.installationId, attemptId: randomUUID(),
       configurationDigest: sha(JSON.stringify(cfg)), restoreDatabase, ownershipMarker: marker, startedAt: new Date().toISOString() }));
     try { durableNew(lockFile, lockBytes); } catch { key.fill(0); fail("backup_already_active_or_unreconciled"); }
+    let lockIdentity;
+    try { lockIdentity = privateIdentity(lockFile); } catch (error) { key.fill(0); throw safeBackupError(error); }
+    backupActive = true;
+    const drainDeadline = () => cleanupDeadline ??= cleanupClock() + Math.min(5000, cfg.timeoutMs);
     try {
+      const ownerClass = (await run("public_owner_class", cfg.source, dockerCommand(cfg.source, "psql", ["-X", "-qAt", "-v", "ON_ERROR_STOP=1", ...pgArgs(cfg.source, cfg.source.database)], true),
+        Buffer.from("SELECT nspowner = (SELECT oid FROM pg_roles WHERE rolname='pg_database_owner') FROM pg_namespace WHERE nspname='public';"), 32)).toString().trim();
+      check(ownerClass === "t" || ownerClass === "f", "public_owner_class_unproven");
       const before = await fingerprint(cfg.source, cfg.source.database);
       const capturedAt = new Date().toISOString();
       archive = await run("dump", cfg.source, dockerCommand(cfg.source, "pg_dump", ["--format=custom", "--no-owner", "--no-acl", "--serializable-deferrable", ...pgArgs(cfg.source, cfg.source.database)]), undefined, cfg.maxDumpBytes);
@@ -187,7 +265,16 @@ export function createReleaseBackupGateway(privateConfig, { transport = sshTrans
       uncertainCreate = true;
       const created = (await sql("restore_create", cfg.restore.database, `CREATE DATABASE "${restoreDatabase}" TEMPLATE template0;\nCOMMENT ON DATABASE "${restoreDatabase}" IS '${marker}';\n${identityQuery}`)).toString().trim();
       check(new RegExp(`^[0-9]+:${marker}$`).test(created), "restore_ownership_unproven"); ownedOid = created.split(":")[0]; uncertainCreate = false;
+      // Persist the proven OID for new attempts. A legacy interrupted v1 lock
+      // without it requires the explicit fresh inspection basis below.
+      assertLock(lockIdentity);
+      const oidLockBytes = Buffer.from(JSON.stringify({ ...JSON.parse(lockBytes), restoreOid: restoreOidSchema.parse(ownedOid) }));
+      const oidPending = `${lockFile}.${randomUUID()}.pending`;
+      try { durableNew(oidPending, oidLockBytes); assertLock(lockIdentity); renameSync(oidPending, lockFile);
+        lockBytes = oidLockBytes; lockIdentity = privateIdentity(lockFile); }
+      catch { uncertainSync = true; fail("attempt_sync_unproven"); }
       await run("restore", { ...cfg.restore, database: restoreDatabase }, dockerCommand(cfg.restore, "pg_restore", ["--exit-on-error", "--no-owner", "--no-acl", ...pgArgs(cfg.restore, restoreDatabase)], true), archive);
+      await normalizeRestorePublicOwner(restoreDatabase, ownedOid, marker, lockIdentity, ownerClass === "t");
       restored = await fingerprint(cfg.restore, restoreDatabase);
       check(JSON.stringify(before) === JSON.stringify(restored), "restore_content_mismatch");
       const metadata = { installationId: cfg.installationId, backupId: randomUUID(), createdAt: capturedAt, database: cfg.source.database,
@@ -201,48 +288,65 @@ export function createReleaseBackupGateway(privateConfig, { transport = sshTrans
       const durableCopy = readFileSync(pending); check(sha(durableCopy) === sha(encrypted), "sync_readback_mismatch");
       const decoded = decryptReleaseBackup(durableCopy, key, cfg.installationId); decoded.archive.fill(0);
       // A verified copy becomes latest only after the owned restore DB is gone.
-      const identity = (await sql("restore_inspect", cfg.restore.database, identityQuery)).toString().trim();
-      check(identity === `${ownedOid}:${marker}`, "restore_identity_changed");
-      check((await sql("restore_sessions", cfg.restore.database, `SELECT count(*) FROM pg_stat_activity WHERE datname='${restoreDatabase}';`)).toString().trim() === "0", "restore_sessions_active");
-      await sql("restore_drop", cfg.restore.database, `DROP DATABASE "${restoreDatabase}";`);
-      check((await sql("restore_inspect", cfg.restore.database, identityQuery)).toString().trim() === "", "restore_cleanup_unproven"); ownedOid = null;
-      assertFolder(); assertPath(latest, { repositoryRoot: cfg.repositoryRoot }); renameSync(pending, latest); pending = null;
+      await dropOwnedRestore(restoreDatabase, ownedOid, marker, lockIdentity, "restore", drainDeadline()); ownedOid = null;
+      assertLock(lockIdentity); assertPath(latest, { repositoryRoot: cfg.repositoryRoot }); renameSync(pending, latest); pending = null;
       check(sha(readFileSync(latest)) === sha(encrypted), "latest_readback_mismatch");
       return { installationId: cfg.installationId, backupId: metadata.backupId, archiveDigest: sha(archive), encryptedDigest: sha(encrypted),
         archiveBytes: archive.length, encryptedBytes: encrypted.length, ...restored, restoreVerified: true, restoreDatabaseAbsent: true,
         latestVerifiedCopy: true, verifiedAt: metadata.restoreVerifiedAt, recoveryAcknowledgmentDigest: sha(readFileSync(cfg.recoveryAcknowledgmentFile)) };
-    } finally {
+    } catch (error) { primaryError = safeBackupError(error); throw primaryError; }
+    finally {
       key.fill(0); archive?.fill(0);
+      try {
       if (ownedOid !== null) {
         // Fail closed on unknown ownership or active sessions. Never terminate a
         // session, drop a production DB, or guess after an uncertain create.
-        const identity = (await sql("restore_inspect", cfg.restore.database, `SELECT oid::text || ':' || coalesce(shobj_description(oid,'pg_database'),'') FROM pg_database WHERE datname='${restoreDatabase}';`)).toString().trim();
-        check(identity === `${ownedOid}:${marker}`, "restore_cleanup_identity_changed");
-        check((await sql("restore_sessions", cfg.restore.database, `SELECT count(*) FROM pg_stat_activity WHERE datname='${restoreDatabase}';`)).toString().trim() === "0", "restore_cleanup_sessions_active");
-        await sql("restore_drop", cfg.restore.database, `DROP DATABASE "${restoreDatabase}";`);
-        check((await sql("restore_inspect", cfg.restore.database, `SELECT oid FROM pg_database WHERE datname='${restoreDatabase}';`)).toString().trim() === "", "restore_cleanup_unproven");
+        await dropOwnedRestore(restoreDatabase, ownedOid, marker, lockIdentity, "restore_cleanup", drainDeadline());
       }
       if (pending !== null && pendingIdentity !== null) {
         assertFolder(); check(path.dirname(pending) === cfg.laptopFolder, "pending_path_invalid");
         assertPath(pending, { repositoryRoot: cfg.repositoryRoot }); const current = privateIdentity(pending);
         check(current.dev === pendingIdentity.dev && current.ino === pendingIdentity.ino && current.hash === pendingIdentity.hash, "pending_changed"); unlinkSync(pending);
       }
-      if (!uncertainCreate && !uncertainSync) { assertFolder(); assertPath(lockFile, { repositoryRoot: cfg.repositoryRoot }); check(sha(readFileSync(lockFile)) === sha(lockBytes), "backup_lock_changed"); unlinkSync(lockFile); }
+      if (!uncertainCreate && !uncertainSync) retireLock(lockIdentity);
+      } catch (error) { const cleanupError = safeBackupError(error); if (primaryError) primaryError.cleanupErrorCode = cleanupError.code; else throw cleanupError; }
+      finally { backupActive = false; }
     }
   }
   async function inspectInterruptedBackup() {
     assertFolder(); assertPrivateFiles(); const lockFile = path.join(cfg.laptopFolder, ".roost-backup.lock");
     if (!existsSync(lockFile)) return { unresolvedAttempt: false };
-    assertPath(lockFile, { repositoryRoot: cfg.repositoryRoot });
-    const attempt = z.object({ format: z.literal("roost-backup-attempt-v1"), installationId: z.string().uuid(), attemptId: z.string().uuid(),
-      configurationDigest: z.string().regex(hex), restoreDatabase: z.string().regex(/^roost_restore_[a-f0-9]{32}$/),
-      ownershipMarker: z.string().regex(/^roost-isolated-restore:[a-f0-9-]{36}:[a-f0-9-]{36}$/), startedAt: z.string().datetime() }).strict().parse(JSON.parse(readFileSync(lockFile)));
-    check(attempt.installationId === cfg.installationId && attempt.configurationDigest === sha(JSON.stringify(cfg))
-      && attempt.ownershipMarker.startsWith(`roost-isolated-restore:${cfg.installationId}:`), "attempt_binding_mismatch");
-    const state = (await sql("restore_inspect", cfg.restore.database, `SELECT oid::text || ':' || coalesce(shobj_description(oid,'pg_database'),'') FROM pg_database WHERE datname='${attempt.restoreDatabase}';`)).toString().trim();
-    const provenOwned = new RegExp(`^[0-9]+:${attempt.ownershipMarker}$`).test(state);
-    return { unresolvedAttempt: true, attemptId: attempt.attemptId, restoreDatabase: attempt.restoreDatabase,
-      restoreAbsent: state === "", ownershipVerified: provenOwned, ownershipUnproven: state !== "" && !provenOwned };
+    const { attempt, identity } = readAttempt();
+    const state = (await sql("restore_inspect", cfg.restore.database, identityQuery(attempt.restoreDatabase))).toString().trim();
+    assertLock(identity);
+    const stateOid = state.split(":")[0];
+    const provenOwned = new RegExp(`^[0-9]+:${attempt.ownershipMarker}$`).test(state) && restoreOidSchema.safeParse(stateOid).success
+      && (attempt.restoreOid === undefined || attempt.restoreOid === stateOid);
+    return { unresolvedAttempt: true, installationId: cfg.installationId, configurationDigest, attemptId: attempt.attemptId,
+      restoreDatabase: attempt.restoreDatabase, ownershipMarker: attempt.ownershipMarker, restoreOid: provenOwned ? stateOid : null,
+      lockIdentityDigest: lockIdentityDigest(identity), restoreAbsent: state === "", ownershipVerified: provenOwned, ownershipUnproven: state !== "" && !provenOwned };
+  }
+  async function reconcileInterruptedBackup(expectedInspection) {
+    check(!backupActive && !reconciliationActive, "backup_already_active_or_unreconciled");
+    reconciliationActive = true;
+    try {
+      const current = await inspectInterruptedBackup();
+      check(current.unresolvedAttempt && expectedInspection?.unresolvedAttempt === true
+        && Object.keys(current).length === Object.keys(expectedInspection).length
+        && Object.entries(current).every(([key, value]) => expectedInspection[key] === value), "reconciliation_basis_changed");
+      check(current.restoreAbsent || current.ownershipVerified, "restore_cleanup_identity_changed");
+      const { attempt, identity } = readAttempt();
+      check(lockIdentityDigest(identity) === current.lockIdentityDigest, "backup_lock_changed");
+      if (!current.restoreAbsent) await dropOwnedRestore(attempt.restoreDatabase, current.restoreOid, attempt.ownershipMarker, identity,
+        "restore_cleanup", cleanupClock() + Math.min(5000, cfg.timeoutMs));
+      // Owned cleanup already read back absence inside its deadline. An absent
+      // interrupted attempt still needs a bounded fresh absence observation.
+      if (current.restoreAbsent) check((await sql("restore_inspect", cfg.restore.database, identityQuery(attempt.restoreDatabase), Math.min(5000, cfg.timeoutMs))).toString().trim() === "", "restore_cleanup_unproven");
+      retireLock(identity);
+      return { installationId: cfg.installationId, attemptId: attempt.attemptId, restoreDatabase: attempt.restoreDatabase,
+        restoreDatabaseAbsent: true, lockRetired: true, latestPromoted: false };
+    } catch (error) { throw safeBackupError(error); }
+    finally { reconciliationActive = false; }
   }
   function verifyPrerequisites(evidence) {
     assertFolder(); assertPrivateFiles();
@@ -265,5 +369,5 @@ export function createReleaseBackupGateway(privateConfig, { transport = sshTrans
         capturedAt:m.createdAt,restoreVerifiedAt:m.restoreVerifiedAt};
     }finally{key.fill(0);decoded?.archive.fill(0);}
   }
-  return Object.freeze({ backupAndVerify, inspectInterruptedBackup, verifyPrerequisites });
+  return Object.freeze({ backupAndVerify, inspectInterruptedBackup, reconcileInterruptedBackup, verifyPrerequisites });
 }
