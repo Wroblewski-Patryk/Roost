@@ -248,11 +248,33 @@ export function createCoolifyGitSetAdapter({ gateway, now = () => Date.now(),
       await sleep(Math.min(1000, deadline - now()));
     } while (true);
   };
-  const reconcileConfiguration = async (manifest, binding, { rollback = false } = {}) => {
-    const targets = checked(manifest, binding); let matches = 0;
+  const reconcileConfiguration = async (manifest, binding, { rollback = false, operationId, since } = {}) => {
+    const targets = checked(manifest, binding); let matches = 0; const states = [];
     for (const target of targets) {
       const row = await targetState(manifest, target);
+      states.push(row);
       if (row.gitCommit === expected(target, binding, rollback).commit) matches += 1;
+    }
+    if (!rollback && matches === 0 && validId(operationId) && typeof since === "string" && Number.isFinite(Date.parse(since))
+      && typeof gateway.inspectConfigurationPreimage === "function") {
+      const preimage = await gateway.inspectConfigurationPreimage({ operationId, since });
+      if (preimage && preimage.absenceVerified === true && hash.test(preimage.preimageDigest)
+        && Array.isArray(preimage.configuredTargets) && preimage.configuredTargets.length === targets.length
+        && new Set(preimage.configuredTargets.map(row => row.targetId)).size === targets.length
+        && states.every(row => preimage.configuredTargets.some(prior => prior.targetId === row.targetId
+          && prior.gitCommit === row.gitCommit && prior.configDigest === row.configDigest))) {
+        await safety(manifest); await backup(manifest);
+        const evidence = await health(manifest, binding, { rollback: true });
+        assert(evidence.healthy && evidence.healthDigest === manifest.baseline.healthDigest, "baseline_health_changed");
+        const after = await gateway.inspectConfigurationPreimage({ operationId, since });
+        assert(after?.absenceVerified === true && after.preimageDigest === preimage.preimageDigest
+          && digest(after.configuredTargets) === digest(preimage.configuredTargets), "configuration_preimage_changed");
+        for (const target of targets) {
+          const row = await targetState(manifest, target);
+          assert(states.some(prior => prior.targetId === row.targetId && prior.gitCommit === row.gitCommit), "configuration_preimage_changed");
+        }
+        return { targetId: manifest.deployment.targetId, state: "absent", evidence: { ...evidence, absenceVerified: true } };
+      }
     }
     return { targetId: manifest.deployment.targetId, state: matches === targets.length ? "applied" : "uncertain",
       configDigest: manifest.deployment.configDigest, schemaDigest: manifest.deployment.schemaDigest,

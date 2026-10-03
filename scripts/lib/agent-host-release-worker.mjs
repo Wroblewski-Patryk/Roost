@@ -3,7 +3,7 @@ import { readReleaseCredential,releaseApi,releaseClientSchema } from './agent-ho
 import { createGithubReleaseAdapter,inspectReleaseCheckout } from './agent-host-release-github.mjs';
 import { createCoolifyReleaseAdapter } from './agent-host-release-coolify.mjs';
 import { createReleaseResourceGateway } from './agent-host-release-resources.mjs';
-import { runReleaseStep } from './agent-host-release-broker.mjs';
+import { runReleaseStep, releaseEffectDiagnostic } from './agent-host-release-broker.mjs';
 import { writerRecoveryEvidence } from './agent-host-writer-lock.mjs';
 import { createReleaseCleanupGateway } from './agent-host-release-cleanup.mjs';
 import { prepareReleaseProcessScope, withReleaseProcessScope } from './agent-host-release-process.mjs';
@@ -33,8 +33,7 @@ export function releaseWorkerDiagnostic(error){
 }
 export function persistReleaseWorkerDiagnostic(configPath,phase,reason){
  if(!['blocked','uncertainty'].includes(phase))throw Error('release_diagnostic_phase_invalid');
- const safe=phase==='blocked'?releaseWorkerDiagnostic({message:reason}):
-  /^(transport_uncertain|response_unproven|response_size_invalid|response_invalid)(_http_[1-5][0-9]{2})?$/.test(reason??'')?reason:'release_effect_unproven';
+ const safe=phase==='blocked'?releaseWorkerDiagnostic({message:reason}):releaseEffectDiagnostic({message:reason,transportDiagnostic:reason});
  // Hidden Windows launchers do not always inherit stderr. Persist only the
  // fixed classification beside the private installation config, never errors.
  try{writeFileSync(path.join(path.dirname(configPath),'release-worker-diagnostic.json'),JSON.stringify({phase,reason:safe,observedAt:new Date().toISOString()}),{mode:0o600});return true;}catch{return false;}

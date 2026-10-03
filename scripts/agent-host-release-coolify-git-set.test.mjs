@@ -68,6 +68,55 @@ function fixture() {
     tick: ms => { clock += ms; } };
 }
 const configured = async () => { const f = fixture(); await f.adapter.configureCandidate(f.manifest, f.binding); return f; };
+function preimageFixture() {
+  const f = fixture(), rows = f.targets.map(target => ({ targetId: target.targetId, gitCommit: git('9'), configDigest: target.configDigest }));
+  for (const row of rows) f.states.get(row.targetId).gitCommit = row.gitCommit;
+  f.gateway.inspectConfigurationPreimage = async () => ({ absenceVerified: true, preimageDigest: sha('8'), configuredTargets: structuredClone(rows) });
+  return f;
+}
+test('configuration absence proves original configured pins separately from mixed runtime baseline with reads only', async () => {
+  const f = preimageFixture(), result = await f.adapter.reconcileConfiguration(f.manifest, f.binding, f.options);
+  assert.equal(result.state, 'absent'); assert.equal(result.evidence.absenceVerified, true);
+  assert.deepEqual(result.evidence.deployedTargets.map(row => row.commit), f.targets.map(row => row.baseline.commit));
+  assert.equal(result.evidence.artifactSetDigest, f.manifest.baseline.artifactSetDigest);
+  assert.equal(result.evidence.dataDigest, f.manifest.baseline.dataDigest);
+  assert.equal(f.calls.filter(row => ['configure', 'deploy'].includes(row.action)).length, 0);
+});
+test('missing preimage, partial candidate pins and unrecorded original pins never prove absence', async () => {
+  for (const mode of ['missing', 'partial', 'unknown', 'duplicate']) {
+    const f = preimageFixture();
+    if (mode === 'missing') delete f.gateway.inspectConfigurationPreimage;
+    if (mode === 'partial') f.states.get('api').gitCommit = f.binding.commit;
+    if (mode === 'unknown') f.states.get('api').gitCommit = git('8');
+    if (mode === 'duplicate') f.gateway.inspectConfigurationPreimage = async () => ({ absenceVerified: true, preimageDigest: sha('8'),
+      configuredTargets: [1, 2].map(() => ({ targetId: 'api', gitCommit: git('9'), configDigest: sha('1') })) });
+    assert.equal((await f.adapter.reconcileConfiguration(f.manifest, f.binding, f.options)).state, 'uncertain');
+    assert.equal(f.calls.filter(row => ['configure', 'deploy'].includes(row.action)).length, 0);
+  }
+});
+test('absence refuses changed runtime, data, health, backup and preimage after inspection', async () => {
+  for (const mode of ['runtime', 'data', 'health', 'backup', 'preimage', 'pin']) {
+    const f = preimageFixture();
+    if (mode === 'runtime') f.runtimes.get('api').imageDigest = image('9');
+    if (mode === 'data') f.controls.safety.dataDigest = sha('9');
+    if (mode === 'health') f.controls.health = false;
+    if (mode === 'backup') f.gateway.inspectBackup = async () => ({ ...f.manifest.backup, bytes: 999 });
+    if (['preimage', 'pin'].includes(mode)) { let reads = 0; const read = f.gateway.inspectConfigurationPreimage;
+      f.gateway.inspectConfigurationPreimage = async () => { const row = await read(); if (++reads === 2) {
+        if (mode === 'preimage') row.preimageDigest = sha('9'); else f.states.get('api').gitCommit = git('8');
+      } return row; }; }
+    await assert.rejects(f.adapter.reconcileConfiguration(f.manifest, f.binding, f.options), /release_coolify_git_set_/);
+    assert.equal(f.calls.filter(row => ['configure', 'deploy'].includes(row.action)).length, 0);
+  }
+});
+test('already applied configuration does not consume optional preimage or require absence proof', async () => {
+  const f = await configured(); f.gateway.inspectConfigurationPreimage = async () => { throw Error('must not read'); };
+  assert.equal((await f.adapter.reconcileConfiguration(f.manifest, f.binding, f.options)).state, 'applied');
+});
+test('historical reconciliation without operation metadata retains uncertainty', async () => {
+  const f = preimageFixture(); f.gateway.inspectConfigurationPreimage = async () => { throw Error('must not read'); };
+  assert.equal((await f.adapter.reconcileConfiguration(f.manifest, f.binding)).state, 'uncertain');
+});
 test("source test: seals independent artifact and deployed sets without fictional OCI digest", async () => {
   const f = await configured(), result = await f.adapter.deploy(f.manifest, f.binding, f.options);
   assert.equal(result.state, "finished"); assert.equal(result.deploymentIds.length, 2);

@@ -6,7 +6,7 @@ const id = /^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/;
 const validId = value => typeof value === 'string' && id.test(value);
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 const statuses = ['queued', 'in_progress', 'finished', 'failed', 'cancelled-by-user'];
-const deny = (reason, uncertain = false) => { throw Object.assign(new Error(`release_git_set_gateway_${reason}`), { uncertain, retryable: false }); };
+const deny = (reason, uncertain = false, cause) => { throw Object.assign(new Error(`release_git_set_gateway_${reason}`, cause ? { cause } : undefined), { uncertain, retryable: false }); };
 const assert = (value, reason) => { if (!value) deny(reason); };
 const exact = (value, keys) => value && typeof value === 'object' && !Array.isArray(value)
   && Object.keys(value).every(key => keys.includes(key));
@@ -104,7 +104,7 @@ function validQueue(row) {
  * git_commit_sha; the sealed config digest intentionally excludes that pin.
  */
 export function createCoolifyGitSetGateway({ manifest, binding, releaseId, sourcePins, transport,
-  inspectTarget, inspectRuntime, inspectRemote, configureTarget, safety, checkServices, inspectBackup }) {
+  inspectTarget, inspectRuntime, inspectRemote, configureTarget, safety, checkServices, inspectBackup, inspectConfigurationPreimage }) {
   assert(manifest?.deployment?.provider === 'coolify_git_set' && manifest.purpose === 'application_release'
     && manifest.cleanup?.archiveRepository === false && uuid.test(releaseId) && sha.test(binding?.commit)
     && sha.test(binding?.candidateTree) && Array.isArray(manifest.deployment.targets)
@@ -121,7 +121,7 @@ export function createCoolifyGitSetGateway({ manifest, binding, releaseId, sourc
     && sha.test(row.baseline?.commit) && sha.test(row.baseline?.tree) && image.test(row.baseline?.imageDigest)
     && row.baseline.configDigest === row.configDigest, 'target_configuration_invalid');
   const invoke = async (callback, args, reason) => {
-    try { return await callback(...args); } catch { deny(reason); }
+    try { return await callback(...args); } catch (error) { deny(reason, false, error); }
   };
   const targets = new Map(manifest.deployment.targets.map(target => [target.targetId, structuredClone(target)]));
   const target = targetId => { const result = targets.get(targetId); assert(result, 'target_outside_scope'); return result; };
@@ -158,6 +158,19 @@ export function createCoolifyGitSetGateway({ manifest, binding, releaseId, sourc
     return result.queue;
   };
   return Object.freeze({ inspectTarget: state, safety: safetyRead, inspectRemote: remote,
+    async inspectConfigurationPreimage(options) {
+      if (inspectConfigurationPreimage === undefined) return null;
+      assert(exact(options, ['operationId', 'since']) && validId(options.operationId) && date(options.since), 'preimage_operation_invalid');
+      assert(typeof inspectConfigurationPreimage === 'function', 'preimage_reader_invalid');
+      const row = await invoke(inspectConfigurationPreimage, [options], 'preimage_unproven');
+      if (row === null) return null;
+      assert(exact(row, ['absenceVerified', 'preimageDigest', 'configuredTargets']) && row.absenceVerified === true && hash.test(row.preimageDigest)
+        && Array.isArray(row.configuredTargets) && row.configuredTargets.length === targets.size
+        && new Set(row.configuredTargets.map(value => value.targetId)).size === targets.size
+        && row.configuredTargets.every(value => exact(value, ['targetId', 'gitCommit', 'configDigest'])
+          && targets.has(value.targetId) && sha.test(value.gitCommit) && value.configDigest === target(value.targetId).configDigest), 'preimage_unproven');
+      return structuredClone(row);
+    },
     async configure(targetId, expectedConfigDigest, mode) {
       assert(['candidate', 'rollback'].includes(mode), 'mode_invalid'); const t = target(targetId);
       assert(expectedConfigDigest === t.configDigest, 'configuration_changed'); await safe(); await state(targetId);

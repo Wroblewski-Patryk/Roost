@@ -70,6 +70,39 @@ test('source test: source configure journals source aggregate before images exis
  assert.equal(e.artifactSetDigest,f.m.deployment.artifactSetDigest);assert.equal(e.deployedCommit,f.snapshot.commit);
  assert.equal(e.imageDigest,undefined);assert.equal(e.deployedTargets,undefined);
 });
+
+test('source test: configuration absence retains actual baseline rows and reconciles without a write',async()=>{
+ const f=fixture('deploy_config'),op={id:randomUUID(),operation:'deploy_config',createdAt:new Date().toISOString(),
+  intent:{parameters:{}},outcome:{status:'uncertain'}};
+ f.state.journal.push(op);f.state.status='reconciliation_required';
+ const baseline={...f.evidence,deployedCommit:f.snapshot.baseCommit,deployedTree:f.snapshot.baseTree,
+  artifactSetDigest:f.m.baseline.artifactSetDigest,absenceVerified:true,
+  deployedTargets:f.m.deployment.targets.map(t=>({...t.baseline,targetId:t.targetId,schemaDigest:f.m.baseline.schemaDigest,
+   healthy:true,deploymentId:'baseline-'+t.targetId})),
+  deploymentIds:f.m.deployment.targets.map(t=>({targetId:t.targetId,deploymentId:'baseline-'+t.targetId}))};
+ let writes=0;f.args.coolify.configureCandidate=async()=>{writes++;throw Error('unexpected_write');};
+ f.args.coolify.reconcileConfiguration=async(_m,_s,options)=>{
+  assert.equal(options.operationId,op.id);assert.equal(options.since,op.createdAt);
+  return{state:'absent',evidence:baseline};
+ };
+ await runReleaseStep(f.args);
+ assert.equal(writes,0);assert.equal(f.state.journal.length,5);
+ assert.equal(op.outcome.status,'reconciled');assert.equal(op.outcome.reconciledStatus,'absent');
+ assert.deepEqual(op.outcome.evidence.deployedTargets,baseline.deployedTargets);
+ assert.equal(op.outcome.evidence.deployedCommit,f.snapshot.baseCommit);
+ assert.equal(op.outcome.evidence.artifactSetDigest,f.m.baseline.artifactSetDigest);
+ assert.equal(op.outcome.evidence.absenceVerified,true);
+});
+
+test('source test: an unsupported or unproven configuration absence cannot settle the pending intent',async()=>{
+ for(const result of [{state:'absent',evidence:{}},{state:'uncertain'},undefined]){
+  const f=fixture('deploy_config');f.state.journal.push({id:randomUUID(),operation:'deploy_config',
+   createdAt:new Date().toISOString(),intent:{parameters:{}},outcome:{status:'uncertain'}});
+  f.args.coolify.reconcileConfiguration=async()=>result;
+  await assert.rejects(runReleaseStep(f.args),/release_reconciliation_unproven/);
+  assert.equal(f.calls.length,0);
+ }
+});
 test('source test: uncertain batch response is journalled once then only reconciles same durable identity',async()=>{
  const f=fixture();let dispatches=0;
  f.args.coolify.deploy=async()=>{dispatches++;return {state:'uncertain',deploymentIds:[]};};

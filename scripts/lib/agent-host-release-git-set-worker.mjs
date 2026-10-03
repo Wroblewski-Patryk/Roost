@@ -2,7 +2,7 @@ import { z } from 'zod';
 import path from 'node:path';
 import os from 'node:os';
 import https from 'node:https';
-import { readFileSync } from 'node:fs';
+import { readFileSync, lstatSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { physicalIdentity } from './agent-host-native-footprint.mjs';
 import { runReleaseNativeProcess, hasReleaseProcessScope, minimalReleaseEnvironment } from './agent-host-release-process.mjs';
@@ -12,6 +12,7 @@ import { createCoolifyGitSetGateway, createFixedCoolifyGitSetSshTransport, cooli
 import { createCoolifyGitSetAdapter } from './agent-host-release-coolify-git-set.mjs';
 import contract from './agent-host-release-contract.cjs';
 import { buildReleaseFingerprintCommand, releaseFingerprintDefaultTimeoutMs, releaseFingerprintTimeoutSchema } from './agent-host-release-fingerprint.mjs';
+import { parseConfigurationPreimage } from './agent-host-release-configuration-preimage.mjs';
 
 const hash = /^[a-f0-9]{64}$/, sha = /^[a-f0-9]{40}$/;
 const ident = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/), hex = z.string().regex(hash);
@@ -25,6 +26,7 @@ export const installedGitSetReleaseSchema = z.object({ sshHost: alias, workspace
   baselineDeployments: z.array(z.object({ targetId: ident, deploymentId: ident }).strict()).min(1).max(6),
   source: z.object({ sshHost: alias, container: hex, user: pgident, database: pgident }).strict(),
   fingerprintTimeoutMs: releaseFingerprintTimeoutSchema.min(30000).max(300000).optional(),
+  configurationPreimage: z.object({ file: filepath, sha256: hex }).strict().optional(),
   capacity: z.object({ minDiskBytes: z.number().int().positive(), minMemoryBytes: z.number().int().positive(), maxLoad1: z.number().positive().max(100) }).strict(),
   coolify: z.object({ origin, certificateSha256: hex.optional() }).strict(),
   health: z.object({ certificateSha256: hex.optional() }).strict()
@@ -164,15 +166,44 @@ export function createInstalledGitSetRelease({ settings, state, backup, github, 
     liveQueue.set(targetId, coolifyGitSetDeploymentId({ releaseId: state.release.id, operationId: row.id, targetId, rollback: row.operation === 'rollback' }));
   }
   const baseline = new Map(cfg.baselineDeployments.map(row => [row.targetId, row.deploymentId]));
-  const stateGateway = createDockerfileStateGateway({ targets: m.deployment.targets, schemaDigest: m.deployment.schemaDigest, sourcePins: cfg.sourcePins,
-    transport: ssh, expectedDeploymentId: async targetId => liveQueue.get(targetId) ?? baseline.get(targetId),
-    readDeployment: payload => phpRead(queueReadPhp, payload), treeForCommit: async commit => {
+  const treeForCommit = async commit => {
       check(sha.test(commit), 'source_commit_invalid'); await assertClone();
       const output = await native('git', { argv: ['--no-replace-objects', '-c', `core.hooksPath=${process.platform === 'win32' ? 'NUL' : '/dev/null'}`,
         '-c', 'core.fsmonitor=false', '-C', m.repository.canonicalDir, 'rev-parse', `${commit}^{tree}`], cwd: m.repository.canonicalDir,
         environment: { ...minimalReleaseEnvironment(), GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: process.platform === 'win32' ? 'NUL' : '/dev/null', GIT_TERMINAL_PROMPT: '0', GIT_OPTIONAL_LOCKS: '0' }, durationMs: 10000, maxBytes: 4096 });
       const tree = output.toString('utf8').trim(); check(sha.test(tree), 'source_tree_unproven'); return tree;
-    } });
+    };
+  const stateGateway = createDockerfileStateGateway({ targets: m.deployment.targets, schemaDigest: m.deployment.schemaDigest, sourcePins: cfg.sourcePins,
+    transport: ssh, expectedDeploymentId: async targetId => liveQueue.get(targetId) ?? baseline.get(targetId),
+    readDeployment: payload => phpRead(queueReadPhp, payload), treeForCommit });
+  const inspectConfigurationPreimage = async ({ operationId, since }) => {
+    if (!cfg.configurationPreimage) return null;
+    check(state.journal.some(row => row.id === operationId && row.operation === 'deploy_config' && row.createdAt === since), 'preimage_operation_changed');
+    const sealed = cfg.configurationPreimage;
+    check(sealed.file !== cfg.workspaceRoot && !inside(cfg.workspaceRoot, sealed.file), 'preimage_path_invalid');
+    const fileIdentity = identity(sealed.file, false), stat = lstatSync(sealed.file);
+    check(stat.size > 0 && stat.size <= 131072, 'preimage_size_invalid');
+    const bytes = readFile(sealed.file);
+    check(identity(sealed.file, false) === fileIdentity, 'preimage_file_changed');
+    const original = parseConfigurationPreimage(bytes, { sha256: sealed.sha256, sourcePins: cfg.sourcePins,
+      manifest: m, baselineDeployments: cfg.baselineDeployments, since });
+    check(original.targets.every(row => ownership.protectedResourceIds.includes(row.targetId)), 'preimage_target_unprotected');
+    const queues = new Map(original.baselineDeployments.map(row => [row.targetId, row.deploymentId]));
+    const reader = createDockerfileStateGateway({ targets: original.targets, schemaDigest: original.schemaDigest, sourcePins: cfg.sourcePins,
+      transport: ssh, expectedDeploymentId: async targetId => queues.get(targetId), readDeployment: payload => phpRead(queueReadPhp, payload), treeForCommit });
+    for (const row of original.rows) {
+      const configuration = await reader.snapshot(row.configuration.targetId), runtime = await reader.inspectRuntime(row.configuration.targetId);
+      check(contract.releaseDigest(configuration) === contract.releaseDigest(row.configuration)
+        && contract.releaseDigest(runtime) === contract.releaseDigest(row.runtime), 'preimage_live_state_changed');
+      // Re-read the pin after runtime inspection, whose configuration digest excludes it.
+      check(contract.releaseDigest(await reader.snapshot(row.configuration.targetId)) === contract.releaseDigest(row.configuration), 'preimage_live_state_changed');
+    }
+    check(identity(sealed.file, false) === fileIdentity && sha256(readFile(sealed.file)) === sealed.sha256, 'preimage_file_changed');
+    return { absenceVerified: true, preimageDigest: sealed.sha256, configuredTargets: m.deployment.targets.map(target => {
+      const row = original.rows.find(value => value.configuration.targetId === target.targetId).configuration;
+      return { targetId: row.targetId, gitCommit: row.gitCommit, configDigest: row.configDigest };
+    }) };
+  };
   // The owned process runner resolves the SSH executable inside its prepared
   // scope. The transport descriptor's placeholder absolute path is never run.
   const queueTransport = createFixedCoolifyGitSetSshTransport({ sshBinary: process.platform === 'win32' ? 'C:\\Windows\\System32\\OpenSSH\\ssh.exe' : '/usr/bin/ssh', sshHost: cfg.sshHost,
@@ -180,6 +211,7 @@ export function createInstalledGitSetRelease({ settings, state, backup, github, 
       timeoutMs: descriptor.timeoutMs, maxOutputBytes: descriptor.maxOutputBytes }), exitCode: 0 }) });
   const rawGateway = createCoolifyGitSetGateway({ manifest: m, binding: s, releaseId: state.release.id, sourcePins: cfg.sourcePins, transport: queueTransport,
     inspectTarget: stateGateway.inspectTarget, inspectRuntime: stateGateway.inspectRuntime, safety,
+    ...(cfg.configurationPreimage ? { inspectConfigurationPreimage } : {}),
     inspectRemote: async () => { const row = await github.inspect(m, { allowArchived: false }); return { mainCommit: row.remoteBase }; },
     configureTarget: async ({ targetId, commit }) => { await coolifyJson({ url: `${new URL(cfg.coolify.origin).origin}/api/v1/applications/${targetId}`,
       method: 'PATCH', token: coolifyCredential, certificateSha256: cfg.coolify.certificateSha256, body: { git_commit_sha: commit } }); },

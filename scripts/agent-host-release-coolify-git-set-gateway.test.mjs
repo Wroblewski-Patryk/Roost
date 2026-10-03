@@ -35,6 +35,14 @@ function setup(changes = {}) {
     sourcePins, transport, ...callbacks, ...changes });
   return { gateway, manifest, state, calls, transport, callbacks, setQueue: row => { queue = row; } };
 }
+test('preimage reader wrapper retains non-enumerable causes for bounded diagnostics and historical omission is null', async () => {
+  assert.equal(await setup().gateway.inspectConfigurationPreimage({}), null);
+  const cause = Error('release_native_response_unproven'), f = setup({ inspectConfigurationPreimage: async () => { throw cause; } });
+  await assert.rejects(f.gateway.inspectConfigurationPreimage({ operationId, since }), error => {
+    assert.equal(error.message, 'release_git_set_gateway_preimage_unproven'); assert.equal(error.cause, cause);
+    assert.equal(Object.keys(error).includes('cause'), false); assert.equal(JSON.stringify(error).includes(cause.message), false); return true;
+  });
+});
 
 test('deterministic queue identity binds release, operation, target and mode', () => {
   const input = { releaseId, operationId, targetId };

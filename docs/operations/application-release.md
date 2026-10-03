@@ -636,6 +636,32 @@ object alternate and exact commit/tree/connectivity checks. No history pack
 crosses the bounded native stdout/stdin; only the later isolated push receives
 the credential. Canonical hooks, config and object contents remain untouched.
 
+### Configuration outcome reconciliation
+
+The normal Worker pushed the exact accepted candidate and created PR 1. Its
+merge reply was uncertain; authoritative Git/PR reads proved the exact candidate
+already merged. The normal signed Writer reclaim reconciled that operation
+without another merge. A later configuration preflight read failed, leaving a
+durable uncertain intent with genuinely closed native children. Read-back found
+the original configured source pin and no active deployment. A separate owned
+native safety read then passed, including full certified data/schema parity.
+The original failure's precise cause is unproven; no raw logs are retained.
+
+Configuration absence now requires an optional installation reference to the
+byte-exact, hashed capture made before the intent. Configured source pins are
+checked separately from mixed running baseline commits. Every recorded protected
+configuration, runtime image/source/queue and automatic-deployment control must
+remain unchanged. Safety, backup, baseline health and a second preimage read are
+required before the normal broker can record absence. Partial, changed, missing
+or unknown evidence remains uncertain; legacy settings remain compatible. The
+absence receipt retains actual baseline target rows, never a candidate deployment
+claim. Reconciliation performs no configuration write. Fixed diagnostic causes
+survive privately without exception bodies, credentials or journal changes.
+
+Focused integration checks passed 95 tests with one existing opt-in PostgreSQL
+skip; `codex:check` passed. Native release continuation and production observation
+remain pending at this source checkpoint.
+
 Source checks passed 233 Node release tests, including actual Windows owned
 process/recovery/local Git checks; 62 TypeScript tests passed and one optional
 PostgreSQL case was skipped. `typecheck`, build, lint and `codex:check` passed.

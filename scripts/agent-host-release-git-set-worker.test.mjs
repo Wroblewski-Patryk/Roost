@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import os from 'node:os';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { createInstalledGitSetRelease, installedGitSetReleaseSchema, parseGitSetSafetyCounts, gitSetTradingSafetySql, releaseServiceResponseHealthy }
   from './lib/agent-host-release-git-set-worker.mjs';
@@ -75,6 +75,46 @@ function fixture(t) {
     coolifyCredential: 'fixture-credential-private', }, dependencies);
   return { install, settings, state, manifest, backup, controls, calls, ownershipFile, canonicalDir };
 }
+
+function installPreimage(f) {
+  const snapshot = { observedAt: at, sourcePins: f.settings.sourcePins, schemaDigest,
+    targets: [{ targetId, dockerfile: '/apps/web/Dockerfile' }], baselineDeployments: structuredClone(f.settings.baselineDeployments),
+    rows: [{ configuration: { targetId, applicationId: '4', buildPack: 'dockerfile', dockerfile: '/apps/web/Dockerfile',
+      configDigest, schemaDigest, gitCommit: '9'.repeat(40), autoDeploy: false, topologyDigest: '9'.repeat(64) },
+    runtime: { targetId, commit: baseCommit, tree: baseTree, imageDigest, configDigest, schemaDigest, healthy: true, deploymentId: oldDeploymentId } }] };
+  const file = path.join(path.dirname(f.ownershipFile), 'preimage.json'), bytes = Buffer.from(JSON.stringify(snapshot));
+  writeFileSync(file, bytes); f.settings.configurationPreimage = { file, sha256: createHash('sha256').update(bytes).digest('hex') };
+  f.controls.pin = snapshot.rows[0].configuration.gitCommit;
+  const options = { operationId: 'configuration-one', since: '2026-10-02T01:00:00.000Z' };
+  f.state.journal.push({ id: options.operationId, createdAt: options.since, operation: 'deploy_config' });
+  return { snapshot, options, file };
+}
+
+test('installed original preimage reconciles pin distinct from baseline runtime through normal read-only adapter', async t => {
+  const f = fixture(t), p = installPreimage(f), installed = f.install();
+  const result = await installed.coolify.reconcileConfiguration(f.manifest, f.state.release.snapshot, p.options);
+  assert.equal(result.state, 'absent'); assert.equal(result.evidence.absenceVerified, true);
+  assert.equal(result.evidence.deployedTargets[0].commit, baseCommit);
+  assert.equal(f.controls.pin, '9'.repeat(40)); assert.equal(f.calls.filter(row => row.request?.method === 'PATCH').length, 0);
+  assert.deepEqual(installedGitSetReleaseSchema.parse(f.settings), f.settings);
+});
+test('private original capture drift, changed configured pin and operation mismatch fail closed without PATCH', async t => {
+  for (const mode of ['bytes', 'pin', 'intent', 'time', 'inside', 'unprotected']) {
+    const f = fixture(t), p = installPreimage(f);
+    if (mode === 'bytes') writeFileSync(p.file, JSON.stringify({ ...p.snapshot, observedAt: p.options.since }));
+    if (mode === 'pin') f.controls.pin = '8'.repeat(40);
+    if (mode === 'intent') p.options.operationId = 'different-operation';
+    if (mode === 'time') p.options.since = at;
+    if (mode === 'inside') f.settings.configurationPreimage.file = path.join(f.canonicalDir, 'preimage.json');
+    if (mode === 'unprotected') { p.snapshot.targets.push({ targetId: 'unprotected', dockerfile: '/apps/api/Dockerfile' });
+      p.snapshot.baselineDeployments.push({ targetId: 'unprotected', deploymentId: 'other-queue' });
+      p.snapshot.rows.push({ configuration: { ...p.snapshot.rows[0].configuration, targetId: 'unprotected' },
+        runtime: { ...p.snapshot.rows[0].runtime, targetId: 'unprotected', deploymentId: 'other-queue' } });
+      const bytes = Buffer.from(JSON.stringify(p.snapshot)); writeFileSync(p.file, bytes); f.settings.configurationPreimage.sha256 = createHash('sha256').update(bytes).digest('hex'); }
+    await assert.rejects(f.install().coolify.reconcileConfiguration(f.manifest, f.state.release.snapshot, p.options), /release_/);
+    assert.equal(f.calls.filter(row => row.request?.method === 'PATCH').length, 0);
+  }
+});
 
 test('installation rejects scripts, callbacks, mismatched SSH endpoint and duplicate targets', t => {
   const f = fixture(t); assert.ok(installedGitSetReleaseSchema.safeParse(f.settings).success);

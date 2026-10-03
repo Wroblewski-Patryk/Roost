@@ -3,6 +3,18 @@ import contract from './agent-host-release-contract.cjs';
 import { inspectReleaseCheckout } from './agent-host-release-github.mjs';
 
 const fail=code=>{throw Object.assign(Error(code),{retryable:false,releaseBlocked:true});};
+const effectReasons=new Set(['release_git_push_uncertain','release_git_merge_uncertain','release_git_remote_uncertain',
+ 'release_git_set_installation_ssh_unavailable','release_git_set_installation_fingerprint_unavailable',
+ 'release_git_set_gateway_safety_unproven','release_git_set_gateway_configuration_result_uncertain',
+ 'release_coolify_git_set_configuration_mutation_uncertain','release_coolify_git_set_service_health_unproven',
+ ...['native_assignment_unobserved','native_resume_or_cleanup_unproven','native_exit_failed',
+ 'native_access_denied','git_ownership_unproven','git_config_unreadable','git_repository_unavailable'].map(v=>'release_child_'+v)]);
+export function releaseEffectDiagnostic(error){
+ if(/^(transport_uncertain|response_unproven|response_size_invalid|response_invalid)(_http_[1-5][0-9]{2})?$/.test(error?.transportDiagnostic??''))return error.transportDiagnostic;
+ let reason='release_effect_unproven';
+ for(let depth=0;error&&depth<5;depth++,error=error.cause)if(effectReasons.has(error.message))reason=error.message;
+ return reason;
+}
 export const releaseOutcomeStatus=o=>!o?null:o.status==='reconciled'?o.reconciledStatus:o.status;
 const completedSet=(state,operation)=>state.release.snapshot.manifest.deployment.targets.every(target=>state.journal.some(j=>j.operation===operation
  &&j.intent?.parameters?.targetId===target.targetId&&releaseOutcomeStatus(j.outcome)==='succeeded'));
@@ -111,6 +123,8 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
   else if(['deploy_config','rollback_config'].includes(pending.operation)){
    result=await coolify.reconcileConfiguration(m,s,{rollback:pending.operation==='rollback_config',operationId:pending.id,since:pending.createdAt});
    if(contract.isGitSetManifest(m)&&result?.state==='applied')result={status:'succeeded',evidence:gitSetEvidence(result,m,s,{configuration:true,rollback:pending.operation==='rollback_config'})};
+   else if(contract.isGitSetManifest(m)&&result?.state==='absent'&&result.evidence?.absenceVerified===true)
+    result={status:'absent',evidence:gitSetEvidence(result.evidence,m,s)};
   }else if(['deploy','rollback'].includes(pending.operation)){
    result=await coolify.reconcileDeployment(m,s,{rollback:pending.operation==='rollback',since:pending.createdAt,operationId:pending.id,targetId:pending.intent.parameters.targetId,deploymentId:pending.intent.parameters.deploymentId});
    if(contract.isGitSetManifest(m)&&['finished','failed'].includes(result?.state)){
@@ -191,8 +205,7 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
   await onChildrenClosed();
   const body=contract.outcomeSchema.parse({requestId:randomUUID(),status:'uncertain',observationOnly:false,evidence:dated({})});
   const updated=await api(`${route}/operations/${authorized.operation.id}/outcome`,{method:'POST',body});
-  const diagnostic=/^(transport_uncertain|response_unproven|response_size_invalid|response_invalid)(_http_[1-5][0-9]{2})?$/.test(error?.transportDiagnostic??'')
-   ?error.transportDiagnostic:'release_effect_unproven';
+  const diagnostic=releaseEffectDiagnostic(error);
   return{handled:true,state:updated,reconciliationRequired:true,uncertaintyDiagnostic:diagnostic};
  }
  await onChildrenClosed();
