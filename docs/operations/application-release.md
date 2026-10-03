@@ -6,7 +6,17 @@ dated recovery and source checkpoints that follow.
 
 ## Current production proof — 2026-10-03
 
-Gate 4 remains in progress. Candidate observation failed after 1055 seconds:
+Gate 4 is production verified for the bounded PWA repair. Managed release
+`da2536bd-eb56-45c0-87a6-06967a53e676` deployed exact candidate
+`7512bc395d65df0fca7cf701047033031f63eb7e`, passed a full 1238-second healthy
+observation and completed retention cleanup. Independent postrelease execution
+`5ad30a92-d457-4456-957f-4e480e81ed27` returned `verified`; its paired native
+receipt confirms unchanged state, the prior audit binding and a closed Job.
+Production readbacks show declared/actual PWA dimensions 1000x1000, preserved
+schema/data and five protected services, and paused trading. This proves one
+repair, not all application flows or LIVE trading. Stop before Gate 5.
+
+The first candidate observation failed after 1055 seconds:
 the sealed digest identifies one false API `/health` probe while the frontend
 and API `/ready` were healthy; runtime and full schema/data identity matched.
 Current operator probes return HTTP 200 with expected payloads, but do not
@@ -200,9 +210,77 @@ qualified a private normal release request. Forty-one offline guard checks passe
 these checks create no authority. The request preserves the immutable FAILED
 closure, exact adopted image and all protected resources. Server-derived Git
 publication lineage must be read back before dispatch; the next operation is
-configuration, with no repeat push/PR/merge. No new candidate deployment or grant
-has been dispatched on this baseline. Fresh owner authentication, normal managed
-deployment and full observation remain required; Gate 4 is incomplete.
+configuration, with no repeat push/PR/merge. New managed grant
+`da2536bd-eb56-45c0-87a6-06967a53e676`, manifest
+`a655202c1a6fbae2807e6da81e29fe1ec1423cda1dae0f589e9c16cfe1b59f8b`,
+binds that current acceptance and the owner-adopted baseline. Configuration
+`0433f6e7-e469-4f25-806e-b518824b429c` succeeded. Deployment
+`2a7cd3a4-79fc-49c5-9f81-248c8bb99df4` dispatched queue
+`r39bd5854d21bc53ac279b63` once; it finished at 22:49:34 UTC.
+Normal restart reconciled the finished queue without repeating deployment:
+outcome `02cf1d5c-214a-4078-90f4-b72fd2ae545a` proves exact candidate/tree,
+image `sha256:a2c974deb04727c1f35159511b4e91b37f9fa9853529e42b0f5ac57eb1c8034e`,
+healthy services and unchanged schema/data. A dated operator HTTP/PNG read
+also confirms declared and actual screenshot dimensions are both 1000x1000.
+
+Observation `3ed4a07c-da8b-4995-bfb0-2c5ad6ddb24f` interrupted with the
+fixed native classification `release_child_ssh_timeout` at 23:04:49 UTC.
+It is uncertain, not a successful shortened observation. All 71 registered
+children closed; the signed Writer was retained. Windows subsequently reused
+the exited owner's PID for an unrelated process. Worker fix `98d96126` compares
+the authenticated owner's native creation time with the current exact-PID
+observation; equal creation time still blocks, and malformed/unavailable
+observation cannot qualify recovery. No replacement process is terminated.
+Seven recovery tests passed, including actual Windows Job/crash/live-owner
+cases; independent source review found no blocking defect. Actual operator
+read-back authenticated the retained checkpoint and proved differing creation
+times before normal Worker reclaimed it for reconciliation only. The same
+grant was renewed with immutable snapshot and journal prefix preserved.
+Normal Worker reconciled the same observation as succeeded in outcome
+`a3156d60-b2e7-4e17-a9d0-b660c47381db`: 1238 actual seconds, healthy,
+same exact candidate/tree/image and unchanged schema/data. Retention cleanup
+`c8bf0433-11e1-4b3b-94af-03dc2aa70da7` succeeded with application and repository
+retained; the release is completed. Normal stop returned zero, the terminal
+signed checkpoint passed HMAC/current-grant/journal and native child-absence
+checks, and the Writer is absent. Only the owned release runtime binding was
+removed. Dated root read-backs confirm six healthy runtime identities,
+unchanged five protected services/configurations/schema, exact deployed PWA
+dimensions, paused trading/sync, retained 23 PAPER positions and exact adopted
+rollback image. Available disk is 22,955,282,432 bytes.
+
+The earlier audit cannot serve as the postrelease verifier's exact repository
+snapshot after the documented local default-reference fast-forward changed
+bounded Git metadata. Fresh managed two-file auditor
+`717a9845-3e47-46e0-83c9-e72bd007f10e` supplied a verified native receipt,
+unchanged Git/process/Docker state and a closed Job. Its model response remains
+`blocked`: the auditor could not see its own after-turn receipt and requested
+explanations of snapshot/tree identity, configuration aggregation and original
+Git publication lineage. Those gaps were supplied to the distinct verifier;
+the blocked response was preserved rather than rewritten as positive evidence.
+The auditor's native evidence digest is
+`4680eb580f373bd9a5457dcdbd0d86c8febe96d9a8e3236379bac98831fd7773`.
+Managed admission records accepted `signed_native_v1`; the readable JSON alone
+is not represented as a standalone signature.
+
+Distinct postrelease verifier `5ad30a92-d457-4456-957f-4e480e81ed27` completed
+at 23:53:50.978 UTC with `GATE4_POSTRELEASE_VERDICT: verified`. It assessed the
+original four publication outcomes, exact Git tree, aggregate/target configuration
+mapping, managed release journal and dated production observations. Its own
+after-turn native receipt validates the exact prior auditor execution/digest,
+unchanged Git/process/Docker state and a closed Job with zero active children;
+native audit digest is
+`d8425a2d3611d23db81fb423ac14a74dfd7a1f31d6b3baa56eedd32df54a9281`.
+Actual auditor/verifier context sizes were 121483/129347 bytes. Production facts
+retain operator/Roost provenance; no model HTTP or command access is implied.
+Normal stop returned zero for both runs and the Writer is absent.
+
+After completion, the obsolete failed-candidate encrypted archive was removed
+with exact size/hash and absence verification (425824043 logical bytes).
+Its historical restore proof remains, while the adopted baseline encrypted
+archive, current candidate image and verified database backup are retained.
+No credential rotation or shared-resource deletion was implied by cleanup.
+Gate 4 is complete within this scope. The Worker-only fix is installed from
+local source `98d96126`; the unchanged server remains deployed on `a0ec89e4`.
 
 Qualification of this recovery support: 62 adapter/broker/diagnostic/native
 checkpoint tests passed; 46 installed Worker/gateway tests passed with one

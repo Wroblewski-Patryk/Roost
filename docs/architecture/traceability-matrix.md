@@ -1028,18 +1028,18 @@ stays disabled and the canonical host stays observe.
 | [RF-OUT-007](../product/requirements.md#rf-out-007) | P1 | nieocenione | [GOAL](#e-goal) | Measurable goals, evidence sources and forecast/deadline separation require an audit. |
 | [RF-APP-001](../product/requirements.md#rf-app-001) | P0 | nieocenione | [PORT](#e-port) | The configured-application completion proof begins only after the real agent round trip works. |
 | [RF-APP-002](../product/requirements.md#rf-app-002) | P2 | nieocenione | [PORT](#e-port) | Full commercialization lifecycle is accepted later-phase intent, not a current delivery gate. |
-| [RF-APP-003](../product/requirements.md#rf-app-003) | P0 | nieocenione | [FIND](#e-find) | Takeover audit structure exists in intent; a real application baseline has not been completed. |
+| [RF-APP-003](../product/requirements.md#rf-app-003) | P0 | częściowo działa | [FIND](#e-find), [RELEASE](#e-release) | Gate 4 proves a bounded pilot audit, owner-adopted baseline and governed PWA repair; full product takeover remains unverified. |
 | [RF-APP-004](../product/requirements.md#rf-app-004) | P1 | nieocenione | [HEALTH](#e-health) | Product-ready and sale-ready controls require application-specific evidence. |
 | [RF-APP-005](../product/requirements.md#rf-app-005) | P1 | nieocenione | [PORT](#e-port) | Primary user/problem/core-path criteria are takeover outputs for each configured application. |
 | [RF-APP-006](../product/requirements.md#rf-app-006) | P1 | nieocenione | [HEALTH](#e-health) | Critical-blocker classification needs application-specific health and risk evidence. |
 | [RF-APP-007](../product/requirements.md#rf-app-007) | P1 | nieocenione | [DEC](#e-dec) | Limitation acceptance requires a real readiness decision and attached evidence. |
 | [RF-APP-008](../product/requirements.md#rf-app-008) | P1 | nieocenione | [REVIEW](#e-review) | Owner readiness acceptance has not been exercised for a configured application. |
-| [RF-APP-009](../product/requirements.md#rf-app-009) | P0 | nieocenione | [DOC](#e-doc) | Existing application records must be inventoried during takeover before any new mechanism is added. |
-| [RF-APP-010](../product/requirements.md#rf-app-010) | P0 | nieocenione | [PORT](#e-port) | The two-entry lifecycle and approved takeover baseline await the pilot. |
-| [RF-APP-011](../product/requirements.md#rf-app-011) | P0 | nieocenione | [CTX](#e-ctx) | Cross-source comparison and no-leakage behavior await the pilot audit. |
-| [RF-APP-012](../product/requirements.md#rf-app-012) | P0 | nieocenione | [DOC](#e-doc) | The universal minimum and application-specific extension need runtime reconciliation. |
-| [RF-APP-013](../product/requirements.md#rf-app-013) | P1 | nieocenione | [PORT](#e-port) | Evidence-backed stage transitions and regression await application lifecycle proof. |
-| [RF-APP-014](../product/requirements.md#rf-app-014) | P1 | nieocenione | [ATTENTION](#e-attention) | Portfolio gate state and evidence presentation require an implementation audit. |
+| [RF-APP-009](../product/requirements.md#rf-app-009) | P0 | częściowo działa | [DOC](#e-doc), [RELEASE](#e-release) | Existing pilot records, repository and pinned runtime context were used in Gate 4; inventory across the portfolio remains unverified. |
+| [RF-APP-010](../product/requirements.md#rf-app-010) | P0 | częściowo działa | [PORT](#e-port), [RELEASE](#e-release) | Existing-application baseline adoption and bounded repair delivery passed; the new empty application path is not proven here. |
+| [RF-APP-011](../product/requirements.md#rf-app-011) | P0 | częściowo działa | [CTX](#e-ctx), [RELEASE](#e-release) | Gate 4 compares scoped requirements, code, Git and production facts with provenance; full financial/product audit is not claimed. |
+| [RF-APP-012](../product/requirements.md#rf-app-012) | P0 | częściowo działa | [DOC](#e-doc), [RELEASE](#e-release) | Base procedure and pilot-specific release/safety context ran together for one PWA repair; universal application coverage is unverified. |
+| [RF-APP-013](../product/requirements.md#rf-app-013) | P1 | częściowo działa | [PORT](#e-port), [RELEASE](#e-release) | One repair has evidence-backed delivery; the failed release remains FAILED before adoption and reissue. General lifecycle readiness is unverified. |
+| [RF-APP-014](../product/requirements.md#rf-app-014) | P1 | częściowo działa | [ATTENTION](#e-attention), [RELEASE](#e-release) | Pilot tasks, review, grant, runtime outcomes and postrelease verification are recorded in Roost; broader portfolio presentation remains unverified. |
 | [RF-APP-015](../product/requirements.md#rf-app-015) | P2 | nieocenione | [HEALTH](#e-health) | Controlled commercial launch is a later gate after application completion. |
 | [RF-BIZ-001](../product/requirements.md#rf-biz-001) | P2 | nieocenione | [DOC](#e-doc) | Application/Roost authority boundaries are later sale-readiness work. |
 | [RF-BIZ-002](../product/requirements.md#rf-biz-002) | P2 | nieocenione | [DOC](#e-doc) | Canonical customer identity is later business-operation scope. |
@@ -1189,15 +1189,15 @@ stays disabled and the canonical host stays observe.
 | [RF-ACT-004](../product/requirements.md#rf-act-004) | P1 | częściowo działa | [RELEASE](#e-release) | Actual sixteen-resource absence, exact clean clone removal and private repository archival passed; five test tasks, three roles and application archived with historical evidence retained. |
 | [RF-ACT-005](../product/requirements.md#rf-act-005) | P0 | częściowo działa | [AUDITOR](#e-auditor), Gate 2 native evidence above | Managed read-only pilot auditor and exact-commit reviewer completed with unchanged Git/process/Docker audits. General continuous canary activation remains unproven. |
 | [RF-ACT-006](../product/requirements.md#rf-act-006) | P0 | częściowo działa | [AUDITOR](#e-auditor), Gate 2 native evidence above | Separate read-only auditor and verifier completed against one clean baseline with matching evidence digest before the first write. General scheduled canary orchestration remains unproven. |
-| [RF-ACT-007](../product/requirements.md#rf-act-007) | P0 | częściowo działa | [ACT](#e-act), [RELEASE](#e-release) | Two Gate 3 read-only baseline canaries preceded separate owner consent and exact first-write acceptance. Native candidate `de6ebe7a4267078196534a36f73ff9bccb09d3ae`, three tests, independent approval `154d5cc2-904b-4413-9947-4820ee413648`, separate release audit and real release/recovery passed. Full activation ladder remains outside this proof. |
+| [RF-ACT-007](../product/requirements.md#rf-act-007) | P0 | częściowo działa | [ACT](#e-act), [RELEASE](#e-release) | Gate 3 read-only canaries, separate first-write consent and native release/recovery passed. Gate 4 adds scoped read-only audits, separate first-write/release consent, exact acceptance and independent production verification. The full activation ladder and medium-risk progression rule remain unproven. |
 | [RF-ACT-008](../product/requirements.md#rf-act-008) | P1 | brak | [ACT](#e-act) | No capability progression lifecycle. |
 | [RF-ACT-009](../product/requirements.md#rf-act-009) | P1 | brak | [ACT](#e-act) | No probation counters/certification. |
 | [RF-ACT-010](../product/requirements.md#rf-act-010) | P1 | brak | [ACT](#e-act) | No app-onboarding readiness procedure. |
 | [RF-ACT-011](../product/requirements.md#rf-act-011) | P0 | częściowo działa | [GOV](#e-gov) | `AGENTS.md`, `docs/implementation.md` and the repository delivery skill enforce one accountable authorized gate with bounded delegation and a mandatory stop before the next gate. Native Roost/Worker enforcement and gate proof remain unverified. |
-| [RF-PILOT-001](../product/requirements.md#rf-demoapp-001) | P1 | wymaga konfiguracji | [PILOT](#e-demoapp) | Mapping declared; full product card and production baseline need audit. |
-| [RF-PILOT-002](../product/requirements.md#rf-demoapp-002) | P1 | brak | [PILOT](#e-demoapp) | No DemoApp code audit in this batch. |
-| [RF-PILOT-003](../product/requirements.md#rf-demoapp-003) | P1 | brak | [PILOT](#e-demoapp) | Future DemoApp acceptance; not verified. |
-| [RF-PILOT-004](../product/requirements.md#rf-demoapp-004) | P0 | brak | [PILOT](#e-demoapp) | Future application-safe-deploy gate; no DemoApp modification. |
+| [RF-PILOT-001](../product/requirements.md#rf-demoapp-001) | P1 | częściowo działa | [PILOT](#e-demoapp), [RELEASE](#e-release) | Pilot mapping, scoped application context and six-service production baseline were audited; full product readiness is not proven. |
+| [RF-PILOT-002](../product/requirements.md#rf-demoapp-002) | P1 | częściowo działa | [PILOT](#e-demoapp), [RELEASE](#e-release) | Native two-file PWA audit and RED/GREEN proof passed; whole codebase and financial behavior remain unverified. |
+| [RF-PILOT-003](../product/requirements.md#rf-demoapp-003) | P1 | częściowo działa | [PILOT](#e-demoapp), [RELEASE](#e-release) | Exact PWA repair acceptance and independent production verification passed; other product flows are not certified. |
+| [RF-PILOT-004](../product/requirements.md#rf-demoapp-004) | P0 | częściowo działa | [PILOT](#e-demoapp), [RELEASE](#e-release) | Managed frontend release, backup/restore readiness, data preservation and 1238-second healthy observation passed with trading paused; this does not certify financial/LIVE deployment. |
 | [RF-PILOT-005](../product/requirements.md#rf-demoapp-005) | P0 | wymaga konfiguracji | [PILOT](#e-demoapp) | Owner mandate recorded; never treat balance as enforcement. |
 | [RF-PILOT-006](../product/requirements.md#rf-demoapp-006) | P0 | wymaga konfiguracji | [PILOT](#e-demoapp) | Required confirmation not obtained from exchanges; no live permission granted here. |
 | [RF-PILOT-007](../product/requirements.md#rf-demoapp-007) | P0 | brak | [PILOT](#e-demoapp) | Supersedes unrestricted live-test approval; no consent issued in this batch. |
@@ -1568,17 +1568,32 @@ closure `90e65069-4a8e-465b-ae37-8e6692e68fa0` and native same-commit verificati
 `a4aa7a19-7e2b-4231-9025-8a6d4b9c5c03` remains historical after audit-context
 updates. Current decision `01d5559f-5b83-4de5-8efd-5908733dcef8` approved
 the exact candidate after managed audit `e62dcbd8-2094-422a-9d9a-2cb48e556220`;
-normal API reads confirm current acceptance and Ready. Scoped
+normal API reads confirmed acceptance and Ready before grant admission. Scoped
 owner-authorized obsolete-resource cleanup recovered build
 capacity; current full data parity and six retained runtimes passed. Managed
-release proof remains required.
+release proof now includes the full observation. New grant
+`da2536bd-eb56-45c0-87a6-06967a53e676` and once-dispatched queue
+`r39bd5854d21bc53ac279b63` are proven; normal reconciliation confirms exact
+candidate/image `a2c974de` and unchanged schema/data. Interrupted observation
+was uncertain and was reconciled after a new full 1238-second healthy window.
+Retention cleanup succeeded and the grant is completed; normal stop and signed
+terminal checkpoint/child-absence checks pass. Fresh postrelease auditor
+`717a9845-3e47-46e0-83c9-e72bd007f10e` has verified unchanged native state;
+its blocked semantic response is preserved, with evidence gaps supplied to
+distinct verifier `5ad30a92-d457-4456-957f-4e480e81ed27`. That verifier returned
+`verified` and its paired native receipt confirms the exact prior audit,
+unchanged state, closed Job and zero active children. Normal Worker stopped;
+Writer absent. Gate 4 is proven for this bounded PWA repair.
+Worker `98d96126` qualifies an exited signed owner despite actual
+Windows PID reuse, with current native creation identity and unchanged
+grant/journal checks. Seven recovery checks passed; unrelated process retained.
 The owner accepted the current healthy rebuilt image as a new baseline, with
-data and paused trading preserved. Fresh exact-commit grant and managed release
-remain pending; provider backup
+data and paused trading preserved. Final independent postrelease verification passed;
+provider backup
 mounting is no longer a dependency of this new path.
 Managed existing-commit continuation `2948f84d-fa86-4d14-8c73-621bc41ba6fb`
 proves native RED on the parent and GREEN on the unchanged candidate, paired
-unchanged state and a closed Windows Job. Current independent reviewer execution
+unchanged state and a closed Windows Job. Historical initial reviewer execution
 `0d66d98b-3f24-4ff9-a991-6ac9b1461ec9` approved the exact candidate as
 `655a3ade-567d-496e-821b-9a5fa2367d21`; release audit
 `def562bd-bb5f-44e7-abdb-822b02edefa4` assessed the full bounded context.

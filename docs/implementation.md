@@ -163,7 +163,7 @@ inside the same outcome rather than deferred into unrelated contract work.
 
 **Met at native/production evidence level (2026-10-02):** Exact Git/PR/merge,
 interrupted deployment, controlled failure, healthy rollback and owned cleanup
-passed. [Evidence](operations/governed-release.md). Gate 4 is in progress.
+passed. [Evidence](operations/governed-release.md).
 
 An accepted exact commit follows Git, deployment, baseline health, observation
 and certification or rollback. Audit, secrets, backup/restore, compatibility
@@ -171,10 +171,12 @@ and owned cleanup are required; no extra clones or services.
 
 ### Gate 4 — pilot application proof
 
-**In progress:** [evidence](operations/application-release.md); backup verified;
-native RED/GREEN and current acceptance verified; observation failed;
-old rollback unqualified; owner-adopted baseline secured and healthy for 1200s.
-FAILED closure and fresh native verification proven; capacity recovered, new release pending.
+**Production verified:** [evidence](operations/application-release.md).
+Managed PWA repair `7512bc3` is released with 1238s healthy observation,
+unchanged data/protected services and independent postrelease verification.
+The failed rollback remains unqualified; exact adopted rollback image and
+verified backup/restore are retained. Worker stopped; resources cleaned.
+Stop here; Gate 5 requires a separate assignment.
 
 One real low-risk defect in the configured pilot application is discovered,
 planned, implemented, independently tested, committed, released and verified in
