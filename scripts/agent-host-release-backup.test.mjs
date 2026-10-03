@@ -275,9 +275,71 @@ test('explicit reconciliation cleans only the inspected legacy owned attempt, or
   }
 });
 
+test('private cleanup timeout accepts only bounded integers and omission preserves the historical configuration digest',async()=>{
+  for(const value of [999,120001,1000.5,'30000',null,NaN,Infinity]){
+    const f=fixture();let called=false;
+    try{
+      assert.throws(()=>createReleaseBackupGateway({...f.cfg,restoreCleanupTimeoutMs:value},{transport:async()=>{called=true;return Buffer.alloc(0);}}));
+      assert.equal(called,false);
+    }finally{f.cleanup();}
+  }
+  for(const value of [undefined,1000,120000]){
+    const f=fixture(),sim=syntheticTransport({ambiguousCreate:true});
+    if(value!==undefined)f.cfg.restoreCleanupTimeoutMs=value;
+    try{
+      const gateway=createReleaseBackupGateway(f.cfg,{transport:sim.transport,...cleanupTiming()});
+      await assert.rejects(gateway.backupAndVerify(),/operation_restore_create_unproven/);
+      const lock=JSON.parse(readFileSync(path.join(f.cfg.laptopFolder,'.roost-backup.lock')));
+      assert.equal(lock.configurationDigest,sha(JSON.stringify(f.cfg)));
+      assert.equal((await gateway.inspectInterruptedBackup()).configurationDigest,lock.configurationDigest);
+      if(value===undefined)assert(!Object.hasOwn(f.cfg,'restoreCleanupTimeoutMs'));
+    }finally{f.cleanup();}
+  }
+});
+
+test('six-second owned session drain requires a configured budget in backup and reconciliation and respects transport timeout',async()=>{
+  for(const flow of ['backup','reconcile'])for(const scenario of ['default','configured','transport_cap']){
+    const f=fixture();let now=0;const requests=[];
+    if(scenario!=='default')f.cfg.restoreCleanupTimeoutMs=7000;
+    if(scenario==='transport_cap')f.cfg.timeoutMs=4000;
+    const budget=Math.min(f.cfg.timeoutMs,f.cfg.restoreCleanupTimeoutMs??5000);
+    const sim=syntheticTransport({ambiguousCreate:flow==='reconcile'});
+    const transport=async req=>{
+      requests.push(req);
+      if(req.operation==='restore_sessions')return Buffer.from(now<6000?'1\n':'0\n');
+      return sim.transport(req);
+    };
+    try{
+      const gateway=createReleaseBackupGateway(f.cfg,{transport,cleanupClock:()=>now,cleanupSleep:async ms=>{now+=ms;}});
+      let operation;
+      if(flow==='backup')operation=()=>gateway.backupAndVerify();
+      else{
+        await assert.rejects(gateway.backupAndVerify(),/operation_restore_create_unproven/);
+        const basis=await gateway.inspectInterruptedBackup();operation=()=>gateway.reconcileInterruptedBackup(basis);
+      }
+      if(scenario==='configured'){
+        const result=await operation();assert(result.restoreDatabaseAbsent);assert.equal(sim.database(),null);
+        assert.equal(now,6000);assert(!existsSync(path.join(f.cfg.laptopFolder,'.roost-backup.lock')));
+        assert.equal(existsSync(path.join(f.cfg.laptopFolder,'roost-latest-verified.enc')),flow==='backup');
+      }else{
+        await assert.rejects(operation(),/release_backup_restore(?:_cleanup)?_sessions_active/);
+        assert.equal(now,budget);assert(sim.database());assert(!sim.calls.includes('restore_drop'));
+        assert(existsSync(path.join(f.cfg.laptopFolder,'.roost-backup.lock')));
+        assert(!existsSync(path.join(f.cfg.laptopFolder,'roost-latest-verified.enc')));
+      }
+      assert(requests.filter(req=>req.operation==='restore_sessions'||req.operation==='restore_drop').every(req=>req.timeoutMs<=budget));
+      for(const req of requests.filter(req=>req.operation==='restore_drop')){
+        assert.equal(req.timeoutMs,1000,'DROP receives the remaining configured deadline');
+        const next=requests[requests.indexOf(req)+1];assert.equal(next.operation,'restore_inspect');assert(next.timeoutMs<=1000);
+      }
+      assert(requests.every(req=>!/(pg_terminate_backend|pg_cancel_backend|WITH\s*\(FORCE\))/i.test(req.stdin?.toString()??'')));
+    }finally{f.cleanup();}
+  }
+});
+
 test('reconciliation refuses changed binding, OID, ownership, lock or an attached client and preserves latest',async()=>{
   for(const scenario of ['installation','config','attempt','expected_oid','oid','marker','lock','client']){
-    const f=fixture(),sim=syntheticTransport({ambiguousCreate:true});let alter=false;
+    const f=fixture(),sim=syntheticTransport({ambiguousCreate:true});let alter=false;f.cfg.restoreCleanupTimeoutMs=7000;
     const transport=async req=>{
       if(alter&&scenario==='client'&&req.operation==='restore_sessions')return Buffer.from('1\n');
       const bytes=await sim.transport(req);

@@ -43,13 +43,17 @@ exact historical schema bytes. Source schema/ownership remained untouched. The
 fixed backup path normalizes only the owned restore public-owner class, never
 source roles or ACLs. Primary failure survives a cleanup failure as a fixed
 code; the separate cleanup code contains no raw diagnostics. Session drain,
-DROP and absence reads share a five-second budget and never terminate clients.
+DROP and absence reads share one bounded budget and never terminate clients.
+Optional private `restoreCleanupTimeoutMs` accepts 1000–120000 ms, capped by
+`timeoutMs`; omission preserves five seconds and the historical config digest.
+A real SSH cleanup exhausted that default before DROP. The owned attempt was
+subsequently reconciled without promotion; this installation now uses 30 seconds.
 Explicit reconciliation requires unchanged installation/configuration/attempt,
 local lock identity and exact database OID/marker; it neither repeats dump/create
 nor promotes a backup. The interrupted production attempt was reconciled through
 this path: owned database and lock are absent, with no promotion. No pilot backup
 is certified yet.
-Root verification passed 15 backup tests including actual local PostgreSQL, 11
+Root verification passed 17 backup tests including actual local PostgreSQL, 11
 atomic admission tests, `validate`, `codex:check` and `git diff --check`. Native
 backup/fingerprint fixture suites run serially because their global temporary
 file observation collides when run concurrently.

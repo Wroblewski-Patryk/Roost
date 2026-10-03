@@ -19,7 +19,8 @@ const endpointSchema = z.object({ sshHost: z.string().regex(alias), container: z
 const configSchema = z.object({ installationId: z.string().uuid(), repositoryRoot: z.string(), laptopFolder: z.string(),
   restoreKeyFile: z.string(), recoveryAcknowledgmentFile: z.string(), source: endpointSchema, restore: endpointSchema,
   maxDumpBytes: z.number().int().min(1024).max(1024 * 1024 * 1024).default(256 * 1024 * 1024),
-  timeoutMs: z.number().int().min(1000).max(30 * 60 * 1000).default(5 * 60 * 1000) }).strict();
+  timeoutMs: z.number().int().min(1000).max(30 * 60 * 1000).default(5 * 60 * 1000),
+  restoreCleanupTimeoutMs: z.number().int().min(1000).max(120000).optional() }).strict();
 const magic = Buffer.from("ROOSTBK1");
 const envelopeSchema = z.object({ format: z.literal("roost-encrypted-backup-v1"), installationId: z.string().uuid(),
   backupId: z.string().uuid(), createdAt: z.string().datetime(), database: z.string().regex(id), archiveDigest: z.string().regex(hex),
@@ -174,6 +175,7 @@ export function createReleaseBackupGateway(privateConfig, { transport = sshTrans
   };
   const lockFile = path.join(cfg.laptopFolder, ".roost-backup.lock");
   const configurationDigest = sha(JSON.stringify(cfg));
+  const cleanupBudgetMs = Math.min(cfg.timeoutMs, cfg.restoreCleanupTimeoutMs ?? 5000);
   const identityQuery = database => `SELECT oid::text || ':' || coalesce(shobj_description(oid,'pg_database'),'') FROM pg_database WHERE datname='${database}';`;
   const lockIdentityDigest = identity => sha(JSON.stringify({ dev: identity.dev.toString(), ino: identity.ino.toString(), hash: identity.hash }));
   const assertLock = identity => {
@@ -249,7 +251,7 @@ SELECT 'release_backup_restore_identity_changed'::integer;
     let lockIdentity;
     try { lockIdentity = privateIdentity(lockFile); } catch (error) { key.fill(0); throw safeBackupError(error); }
     backupActive = true;
-    const drainDeadline = () => cleanupDeadline ??= cleanupClock() + Math.min(5000, cfg.timeoutMs);
+    const drainDeadline = () => cleanupDeadline ??= cleanupClock() + cleanupBudgetMs;
     try {
       const ownerClass = (await run("public_owner_class", cfg.source, dockerCommand(cfg.source, "psql", ["-X", "-qAt", "-v", "ON_ERROR_STOP=1", ...pgArgs(cfg.source, cfg.source.database)], true),
         Buffer.from("SELECT nspowner = (SELECT oid FROM pg_roles WHERE rolname='pg_database_owner') FROM pg_namespace WHERE nspname='public';"), 32)).toString().trim();
@@ -338,10 +340,10 @@ SELECT 'release_backup_restore_identity_changed'::integer;
       const { attempt, identity } = readAttempt();
       check(lockIdentityDigest(identity) === current.lockIdentityDigest, "backup_lock_changed");
       if (!current.restoreAbsent) await dropOwnedRestore(attempt.restoreDatabase, current.restoreOid, attempt.ownershipMarker, identity,
-        "restore_cleanup", cleanupClock() + Math.min(5000, cfg.timeoutMs));
+        "restore_cleanup", cleanupClock() + cleanupBudgetMs);
       // Owned cleanup already read back absence inside its deadline. An absent
       // interrupted attempt still needs a bounded fresh absence observation.
-      if (current.restoreAbsent) check((await sql("restore_inspect", cfg.restore.database, identityQuery(attempt.restoreDatabase), Math.min(5000, cfg.timeoutMs))).toString().trim() === "", "restore_cleanup_unproven");
+      if (current.restoreAbsent) check((await sql("restore_inspect", cfg.restore.database, identityQuery(attempt.restoreDatabase), cleanupBudgetMs)).toString().trim() === "", "restore_cleanup_unproven");
       retireLock(identity);
       return { installationId: cfg.installationId, attemptId: attempt.attemptId, restoreDatabase: attempt.restoreDatabase,
         restoreDatabaseAbsent: true, lockRetired: true, latestPromoted: false };
