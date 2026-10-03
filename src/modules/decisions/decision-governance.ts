@@ -8,7 +8,6 @@ import { decisionAuthority,mandateView } from "./decision-authority";
 import { resolveReviewPrincipal, type ReviewActor } from "../../auth/agent-principal";
 import { admitCapability,recordCapabilityUse,grantState } from "../agent-runtime/task-capability-admission";
 import { admissionCommand,admissionVersion } from "../agent-runtime/task-risk-admission";
-import { lockReadyTask } from "../agent-runtime/task-execution-readiness";
 type Db=Prisma.TransactionClient;
 const wire=(r:any)=>Object.fromEntries(Object.entries(r).filter(([k])=>k!=="request_hash").map(([k,v])=>[k.replace(/_([a-z])/g,(_,c)=>c.toUpperCase()),v]));
 async function state(db:Db,w:string,actor:ReviewActor|null,id?:string){
@@ -81,12 +80,11 @@ async function acceptanceProcedureEvidence(db:Db,w:string,u:string,input:any,imp
  await db.$executeRaw`SAVEPOINT decision_acceptance_evidence`;
  const records:ProcedureAdmission[]=[];
  for(const taskId of tasks){
-  // This internal CAS must describe the state after fencing and authority
-  // invalidation. The normal command still fences again and checks that exact
-  // version; external callers never receive an automatic version refresh.
-  const task=await lockReadyTask(db,w,taskId);
-  const admitted=task?await admissionCommand(db,w,taskId,u,"evidence",{...input.procedureEvidence,
-   requestId:randomUUID(),expectedVersion:await admissionVersion(db,taskId),operation:"decision_supersede",gate:"procedure"},{compact:true}):{error:"task_not_found"};
+  // Construct the internal CAS after the normal command's single fence and
+  // authority invalidation. Its common version check and SQL guards remain.
+  const admitted=await admissionCommand(db,w,taskId,u,"evidence",undefined,{compact:true,bodyAfterLock:async()=>({
+   ...input.procedureEvidence,requestId:randomUUID(),expectedVersion:await admissionVersion(db,taskId),operation:"decision_supersede",gate:"procedure"
+  })});
   if(("error" in admitted&&typeof admitted.error==="string")||!("evidenceId" in admitted)||typeof admitted.evidenceId!=="string"){
    await db.$executeRaw`ROLLBACK TO SAVEPOINT decision_acceptance_evidence`;
    await db.$executeRaw`RELEASE SAVEPOINT decision_acceptance_evidence`;

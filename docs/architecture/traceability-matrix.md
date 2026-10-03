@@ -1495,7 +1495,8 @@ explicit exact-owned cleanup removed the interrupted attempt and lock without
 promotion. Full encrypted pilot backup remains pending. The baseline execution
 service/image disappeared; recovery and retained rollback artifacts are required.
 Installed HTTPS ingress passed a certificate-pinned validation refusal. Internal
-atomic evidence fencing has 11 source tests; live credential acceptance remains
+atomic evidence construction after a single normal fence has 17 source tests;
+external stale CAS remains denied. Live credential acceptance remains
 pending. No pilot release is claimed.
 
 [Governed release evidence](../operations/governed-release.md),

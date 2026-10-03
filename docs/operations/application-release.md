@@ -29,11 +29,13 @@ failure deny admission. Eleven focused ingress/production tests pass. Installed
 configuration is deployed as `ed399218474846cb1c58b28bce0458fdd208f9bc`,
 deployment `ze00dq3vlat2wx4vl6iacu6j`; health/build identity match. A real
 certificate-pinned malformed request passes transport and is denied by validation.
-Credential delivery remains pending: its owner Decision exposed a fencing-order
-defect. Internal procedure evidence now fences and invalidates expired authority
-before deriving its CAS version; the normal command still rechecks CAS. Eleven
-focused tests retain external stale refusal and atomic rollback. Live acceptance
-of this correction is still pending.
+Credential delivery remains pending: real acceptance still refused the first
+fencing-order correction without issuing or replacing a credential. Internal
+procedure evidence now constructs its body and CAS after the normal command's
+single fence; the common command still validates, redacts and checks CAS. External
+literal bodies retain stale refusal. Seventeen focused tests cover each-fence
+invalidation, restrictions, replay and atomic rollback. Live acceptance is pending;
+the precise production invalidation path is not yet established.
 
 The controlled restore contains identical full data and sequence state. Its
 schema dump initially differed only in built-in public-schema framing because
@@ -52,8 +54,11 @@ Explicit reconciliation requires unchanged installation/configuration/attempt,
 local lock identity and exact database OID/marker; it neither repeats dump/create
 nor promotes a backup. The interrupted production attempt was reconciled through
 this path: owned database and lock are absent, with no promotion. No pilot backup
-is certified yet.
-Root verification passed 17 backup tests including actual local PostgreSQL, 11
+is certified yet. Another interrupted create was read back absent and its owned
+lock retired. A resource-observation transport failure cancelled only its tagged
+query. Two subsequent serial IPv4 full-source reads matched with no remaining
+owned sessions; this does not by itself certify a backup.
+Root verification passed 17 backup tests including actual local PostgreSQL, 17
 atomic admission tests, `validate`, `codex:check` and `git diff --check`. Native
 backup/fingerprint fixture suites run serially because their global temporary
 file observation collides when run concurrently.

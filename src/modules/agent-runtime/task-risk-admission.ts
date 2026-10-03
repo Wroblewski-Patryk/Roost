@@ -33,12 +33,19 @@ export async function admissionView(db: Db, workspaceId: string, taskId: string,
     procedures:procedures.slice(0,100),records:records.slice(0,500).map(r=>({...r,revision:r.updatedAt.toISOString(),updatedAt:undefined})),
     catalogTruncated:procedures.length>100||records.length>500,history:history.slice(0,20),historyTruncated:history.length>20 };
 }
-export async function admissionCommand(db: Db, workspaceId: string, taskId: string, userId: string, kind: "scope"|"evidence", body: unknown, options: { compact?: boolean } = {}) {
-  const input = kind==="scope" ? admissionScopeSchema.parse(body) : admissionEvidenceSchema.parse(body);
-  requireRuntimeContent(input,"risk_admission.command",{workspaceId,taskId});
+export async function admissionCommand(db: Db, workspaceId: string, taskId: string, userId: string, kind: "scope"|"evidence", body: unknown, options: { compact?: boolean; bodyAfterLock?: () => Promise<unknown> } = {}) {
+  // Only an internal atomic evidence writer can construct its explicit body
+  // after this command's normal fence. Literal API bodies retain their CAS.
+  const factory=options.bodyAfterLock;
+  if(factory!==undefined&&(typeof factory!=="function"||kind!=="evidence"||options.compact!==true))throw new Error("risk_admission_internal_factory_invalid");
+  const parse=(value:unknown)=>kind==="scope"?admissionScopeSchema.parse(value):admissionEvidenceSchema.parse(value);
+  const prepared=factory?null:parse(body);
+  if(prepared)requireRuntimeContent(prepared,"risk_admission.command",{workspaceId,taskId});
   const task=await lockReadyTask(db,workspaceId,taskId);
   if (!task) return {error:"task_not_found"};
   if (!["owner","admin","member"].includes((await membership(db,workspaceId,userId))?.role??"")) return {error:"risk_admission_forbidden"};
+  const input=prepared??parse(await factory!());
+  if(factory)requireRuntimeContent(input,"risk_admission.command",{workspaceId,taskId});
   const hash=reviewDigest({input,kind,taskId,userId}), table=kind==="scope"?Prisma.sql`task_admission_scopes`:Prisma.sql`task_admission_evidence`;
   const prior=await db.$queryRaw<any[]>`SELECT id,request_hash FROM ${table} WHERE workspace_id=${workspaceId}::uuid AND request_id=${input.requestId}::uuid`;
   if(prior[0]) {
