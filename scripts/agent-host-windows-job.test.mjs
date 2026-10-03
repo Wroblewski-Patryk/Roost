@@ -188,7 +188,10 @@ test("native Windows Job qualification (serial, owned fixtures only)", {skip:pro
    assert.equal(done.cleanup,true);assert.equal(done.activeProcesses,0);
   });
   for(const channel of ["stdout","stderr"])await t.test(channel+" bound terminates job",async()=>{const r=await run(channel);assert.equal(r.receipt.terminationReason,"output_limit");});
-  for(const [name,change] of Object.entries({executable:{executable:path.join(directory,"missing.exe")},cwd:{cwd:path.join(directory,"missing")},argv:{argv:[null]},assign:{fault:"assign"},resume:{fault:"resume"}}))
+  await t.test("invalid argv is refused before any native process or receipt",async()=>{
+   await assert.rejects(run("tree",{argv:[null]}),/hermes_stop_recovery_unproven/);assert.equal(current,null);
+  });
+  for(const [name,change] of Object.entries({executable:{executable:path.join(directory,"missing.exe")},cwd:{cwd:path.join(directory,"missing")},assign:{fault:"assign"},resume:{fault:"resume"}}))
    await t.test(name+" preparation failure leaves no running code",async()=>{const r=await run("tree",change);assert.equal(r.receipt.resumed,false);assert.equal(r.output,"");assert.equal(isWindowsJobReceipt(r.receipt),false);});
   await t.test("breakaway denied; unrelated concurrent process preserved",async()=>{
    foreign=spawn(fixture,["foreign"],{windowsHide:true,stdio:["ignore","pipe","ignore"]});
