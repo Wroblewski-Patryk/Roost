@@ -33,6 +33,15 @@ const checkpointSchema = z.object({ schemaVersion: z.literal("roost-release-writ
   closedHistory: z.object({ count: z.number().int().nonnegative().max(1000000), digest: hex }).strict(),
   children: z.array(childSchema).max(12) }).strict();
 const same = (a, b) => contract.releaseDigest(a) === contract.releaseDigest(b);
+export function releaseOwnerInstanceAbsent(owner, current) {
+  const expected = processSchema.parse(owner);
+  if (current === null) return true;
+  const observed = processSchema.parse(current);
+  check(observed.pid === expected.pid);
+  // Windows reuses PIDs. A different native creation time proves that the
+  // sealed owner instance has exited; the unrelated replacement stays intact.
+  return observed.creationTime !== expected.creationTime;
+}
 function grant(state, client) {
   check(state?.release && Array.isArray(state.journal) && state.journal.length <= 100 && !state.truncated);
   const { readinessDigest, configurationDigest, successorBasis, publishedGitBasis, ...raw } = state.release.snapshot ?? {};
@@ -206,7 +215,7 @@ export function qualifyReleaseWriterReclaim(raw, candidate, directory) {
   check(checked.journal.length >= checkpoint.binding.journalCount
     && contract.releaseDigest(checked.journal.slice(0, checkpoint.binding.journalCount).map(entry => entry.binding)) === checkpoint.binding.journalPrefixDigest);
   if (checkpoint.binding.operationId !== null) check(checked.journal.some(entry => same(entry.binding, operationBindingFromCheckpoint(checkpoint.binding))));
-  check(observeWindowsProcessIdentity(raw.ownerPid) === null);
+  check(releaseOwnerInstanceAbsent(checkpoint.ownerProcess, observeWindowsProcessIdentity(raw.ownerPid)));
   let quiescence;
   if (checkpoint.phase === "all_local_children_closed") assertClosed(checkpoint);
   else {

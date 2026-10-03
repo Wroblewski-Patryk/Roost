@@ -9,12 +9,22 @@ import { once } from "node:events";
 import { pathToFileURL } from "node:url";
 import contract from "./lib/agent-host-release-contract.cjs";
 import { acquireWriterLock, writerLockFilename, writerRecoveryEvidence } from "./lib/agent-host-writer-lock.mjs";
-import { releaseRecoveryCandidate, clearReleaseWriterRecovery, qualifyReleaseWriterReclaim } from "./lib/agent-host-release-writer-recovery.mjs";
+import { releaseRecoveryCandidate, clearReleaseWriterRecovery, qualifyReleaseWriterReclaim, releaseOwnerInstanceAbsent } from "./lib/agent-host-release-writer-recovery.mjs";
 import { observeWindowsProcessIdentity } from "./lib/agent-host-process-identity.mjs";
 import { runReleaseStep } from "./lib/agent-host-release-broker.mjs";
 
 const native = { skip: process.platform !== "win32", timeout: 90000 };
 const moduleUrl = name => pathToFileURL(path.join(process.cwd(), "scripts", "lib", name)).href;
+test('sealed release owner uses native process creation identity across Windows PID reuse', () => {
+  const owner = { pid: 1234, creationTime: '134000000000000000', executablePathDigest: 'a'.repeat(64), executableDigest: 'b'.repeat(64) };
+  assert.equal(releaseOwnerInstanceAbsent(owner, null), true);
+  assert.equal(releaseOwnerInstanceAbsent(owner, { ...owner }), false);
+  assert.equal(releaseOwnerInstanceAbsent(owner, { ...owner, executableDigest: 'c'.repeat(64) }), false);
+  assert.equal(releaseOwnerInstanceAbsent(owner, { ...owner, creationTime: '134000000000000001' }), true);
+  assert.throws(() => releaseOwnerInstanceAbsent(owner, { ...owner, pid: 1235 }), /recovery_unproven/);
+  assert.throws(() => releaseOwnerInstanceAbsent(owner, { pid: 1234 }), /./);
+  assert.throws(() => releaseOwnerInstanceAbsent(owner, undefined), /./);
+});
 function stateFixture(directory) {
   const hash = "d".repeat(64), commit = "a".repeat(40), base = "b".repeat(40), at = new Date().toISOString();
   const artifact = { commit: base, imageDigest: `sha256:${"1".repeat(64)}`, configDigest: hash, schemaDigest: hash };
