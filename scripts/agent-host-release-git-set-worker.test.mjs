@@ -52,7 +52,7 @@ function fixture(t) {
     calls.push({ kind, options });
     if (kind === 'git') return Buffer.from((options.argv.at(-1).startsWith(baseCommit) ? baseTree : candidateTree) + '\n');
     const command = options.argv.at(-1), input = options.input;
-    if (command.includes('set -m; fingerprint_owner=')) {
+    if (command === 'bash -s' && input.includes('set -m; fingerprint_owner=')) {
       if (controls.fingerprintError) throw Error('synthetic fingerprint timeout');
       return controls.fingerprintOutput ?? Buffer.from(`${schemaDigest}  -\n${controls.dataDigest}  -\n`);
     }
@@ -112,7 +112,7 @@ test('source gateway allows known PAPER records but preserves totals and the ful
   assert.equal(audit.allOpenOrders, 3); assert.equal(audit.allOpenPositions, 24);
   await installed.coolify.configureCandidate(f.manifest, f.state.release.snapshot);
   assert.equal(f.calls.filter(row => row.request?.method === 'PATCH').length, 1);
-  assert.ok(f.calls.some(row => row.options?.argv?.at(-1)?.includes('pg_dump')));
+  assert.ok(f.calls.some(row => row.options?.input?.includes('pg_dump')));
   f.calls.length = 0; f.controls.dataDigest = 'f'.repeat(64);
   await assert.rejects(installed.coolify.configureCandidate(f.manifest, f.state.release.snapshot), /data_or_schema_changed/);
   assert.equal(f.calls.filter(row => row.request?.method === 'PATCH').length, 0);
@@ -126,13 +126,16 @@ test('fingerprint deadline is installation-only, bounded and preserves historica
     else f.settings.fingerprintTimeoutMs = timeoutMs;
     f.calls.length = 0;
     await f.install().safety();
-    const fingerprints = f.calls.filter(row => row.options?.argv?.at(-1)?.includes('set -m; fingerprint_owner='));
+    const fingerprints = f.calls.filter(row => row.options?.input?.includes('set -m; fingerprint_owner='));
     assert.equal(fingerprints.length, 1);
     assert.equal(fingerprints[0].options.durationMs, timeoutMs ?? 300000);
     assert.equal(f.calls.find(row => row.options?.input === gitSetTradingSafetySql).options.durationMs, 15000);
-    assert.match(fingerprints[0].options.argv.at(-1), /docker exec -i .* bash -e -o pipefail -c/);
-    assert.match(fingerprints[0].options.argv.at(-1), /statement_timeout=/);
-    assert.match(fingerprints[0].options.argv.at(-1), /lock_timeout=/);
+    assert.equal(fingerprints[0].options.argv.at(-1), 'bash -s');
+    assert.ok(fingerprints[0].options.input.length > 8192);
+    assert.ok(Buffer.byteLength(fingerprints[0].options.input) <= 131072);
+    assert.match(fingerprints[0].options.input, /docker exec -i .* bash -e -o pipefail -c/);
+    assert.match(fingerprints[0].options.input, /statement_timeout=/);
+    assert.match(fingerprints[0].options.input, /lock_timeout=/);
   }
   for (const timeoutMs of [0, 29999, 300001, 1800000, 30000.5, '300000'])
     assert.equal(installedGitSetReleaseSchema.safeParse({ ...f.settings, fingerprintTimeoutMs: timeoutMs }).success, false);
@@ -159,7 +162,7 @@ test('source gateway still blocks each LIVE, unknown or restart predicate before
     await assert.rejects(installed.safety(), /activity_present/);
     await assert.rejects(installed.coolify.configureCandidate(f.manifest, f.state.release.snapshot), /safety_unproven/);
     assert.equal(f.calls.filter(row => row.request?.method === 'PATCH').length, 0);
-    assert.equal(f.calls.filter(row => row.options?.argv?.at(-1)?.includes('pg_dump')).length, 0);
+    assert.equal(f.calls.filter(row => row.options?.input?.includes('pg_dump')).length, 0);
   }
 });
 
@@ -224,7 +227,7 @@ test('read-only PostgreSQL gateway fixture classifies LIVE, explicit PAPER and u
         await assert.rejects(installed.safety(), /activity_present/, label);
         await assert.rejects(installed.coolify.configureCandidate(f.manifest, f.state.release.snapshot), /safety_unproven/, label);
         assert.equal(f.calls.filter(row => row.request?.method === 'PATCH').length, 0, label);
-        assert.equal(f.calls.filter(row => row.options?.argv?.at(-1)?.includes('pg_dump')).length, 0, label);
+        assert.equal(f.calls.filter(row => row.options?.input?.includes('pg_dump')).length, 0, label);
       }
     }
     records = [];
@@ -247,7 +250,7 @@ test('nonquiescent safety blocks configuration before PATCH without zero fallbac
   await assert.rejects(installed.safety(), /activity_present/);
   await assert.rejects(installed.coolify.configureCandidate(f.manifest, f.state.release.snapshot), /safety_unproven/);
   assert.equal(f.calls.filter(row => row.request?.method === 'PATCH').length, 0);
-  assert.equal(f.calls.filter(row => row.options?.argv?.at(-1)?.includes('pg_dump')).length, 0);
+  assert.equal(f.calls.filter(row => row.options?.input?.includes('pg_dump')).length, 0);
   f.controls.failSql = true;
   assert.deepEqual(await installed.safetyDiagnostic(), { available: false, reason: 'release_trading_safety_unproven' });
   await assert.rejects(installed.safety(), /ssh_unavailable/);

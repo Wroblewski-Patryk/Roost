@@ -617,7 +617,14 @@ Native tests exercised dead/live owners, a live unrelated SSH-name fixture,
 changed/nonempty journal refusal, preserved archive and reconciliation-only
 restriction. Four native recovery cases passed; the focused installed adapter,
 state and diagnostic suites passed 27 tests with one existing opt-in skip.
-The real blocked preflight still needs normal Worker recovery and release proof.
+The real blocked reservation qualified through native process absence and exact
+remote candidate/main read-back. Normal Worker reclamation preserved the original
+signed record. Repetition identified the cause: the fixed fingerprint command
+is 9558 characters, exceeding the unchanged 8192-character native argument bound.
+The installed adapter now streams that unchanged source program through SSH stdin;
+shared request validation rejects oversized arguments before reserving a child.
+Fourteen adapter cases passed with one opt-in skip. Managed release proof remains
+pending; no push or deployment was admitted by these blocked attempts.
 
 Source checks passed 233 Node release tests, including actual Windows owned
 process/recovery/local Git checks; 62 TypeScript tests passed and one optional

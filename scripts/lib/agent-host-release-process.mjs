@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdtemp, rm, realpath } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { buildWindowsJobLauncher, startWindowsJob, isWindowsJobCleanupReceipt } from './agent-host-windows-job.mjs';
+import { buildWindowsJobLauncher, startWindowsJob, isWindowsJobCleanupReceipt, assertWindowsJobRequestBounds } from './agent-host-windows-job.mjs';
 import { reserveReleaseChild, bindReleaseChild, recordReleaseChildReceipt } from './agent-host-release-writer-recovery.mjs';
 
 const scopes=new AsyncLocalStorage();
@@ -42,6 +42,7 @@ export async function withReleaseProcessScope(prepared,context,run){
 }
 
 async function ownedChild(scope,executable,{argv,cwd,environment=minimalReleaseEnvironment(),input='',durationMs=15000,maxBytes=131072}){
+ try{assertWindowsJobRequestBounds({argv,input,durationMs});}catch{throw Object.assign(Error('release_native_request_bounds_invalid'),{releaseBlocked:true,retryable:false});}
  const token=reserveReleaseChild(scope.context,{artifact:scope.artifact,executable});
  const chunks=[];let bytes=0,job,diagnostic,assignmentObserved=false;
  try{

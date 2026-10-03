@@ -144,7 +144,9 @@ export function createInstalledGitSetRelease({ settings, state, backup, github, 
   };
   const fingerprint = async () => {
     const timeoutMs = cfg.fingerprintTimeoutMs ?? releaseFingerprintDefaultTimeoutMs;
-    const output = await ssh({ command: buildReleaseFingerprintCommand(cfg.source, timeoutMs), timeoutMs });
+    // The fixed fingerprint exceeds the native per-argument limit. Stream it
+    // through stdin; keep the native bounds and historical program unchanged.
+    const output = await ssh({ command: 'bash -s', stdin: buildReleaseFingerprintCommand(cfg.source, timeoutMs) + '\n', timeoutMs });
     const rows = output.trim().split(/\r?\n/); check(rows.length === 2 && rows.every(row => /^[a-f0-9]{64}\s+-\s*$/.test(row)), 'fingerprint_unavailable');
     return { schemaDigest: rows[0].slice(0, 64), dataDigest: rows[1].slice(0, 64) };
   };

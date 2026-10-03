@@ -26,6 +26,7 @@ const url=z.string().url().refine(v=>{const u=new URL(v);return u.protocol==='ht
 const releaseDiagnosticReasons=new Set(['agent_runtime_content_blocked','release_api_uncertain','release_api_response_invalid','release_api_rejected','release_api_input_invalid','release_principal_invalid','release_authority_inactive','release_credential_invalid','release_review_stale','release_source_basis_changed','release_native_candidate_unproven','release_configuration_changed','release_readiness_changed','release_version_stale','release_candidate_changed','release_base_changed','release_operation_unresolved']);
 for (const reason of ['release_git_repository_changed','release_git_checkout_changed','release_git_origin_changed','release_git_remote_rejected','release_git_remote_uncertain','release_git_remote_invalid','release_git_set_ssh_unavailable','release_git_set_capacity_unavailable','release_git_set_activity_present']) releaseDiagnosticReasons.add(reason);
 for (const reason of ['native_assignment_unobserved','native_resume_or_cleanup_unproven','git_ownership_unproven','git_config_unreadable','git_repository_unavailable','native_access_denied','native_exit_failed']) releaseDiagnosticReasons.add('release_child_'+reason);
+releaseDiagnosticReasons.add('release_native_request_bounds_invalid');
 export function releaseWorkerDiagnostic(error){
  for(let depth=0;error&&depth<4;depth++,error=error.cause)if(releaseDiagnosticReasons.has(error.message))return error.message;
  return 'release_preflight_unproven';

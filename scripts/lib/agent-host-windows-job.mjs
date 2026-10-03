@@ -97,7 +97,14 @@ export async function temporaryWindowsJobLauncher(run) {
 }
 
 // One raw native attempt. Output callbacks are in-memory consumers, never logs.
+export function assertWindowsJobRequestBounds({ argv, input = '', durationMs }) {
+  // Reject the source launcher's fixed wire/argument limits before a release
+  // reservation is published. Native validation remains authoritative too.
+  if (!Array.isArray(argv) || argv.length > 64 || argv.some(arg => typeof arg !== 'string' || arg.length > 8192 || arg.includes('\0'))
+    || Buffer.byteLength(input) > 131072 || !Number.isInteger(durationMs) || durationMs < 1 || durationMs > 3600000) throw fail();
+}
 export async function startWindowsJob(artifact, options) {
+  assertWindowsJobRequestBounds(options);
   const build = builds.get(artifact);
   try { if (!build || digest(await readFile(artifact.executable)) !== artifact.sha256) throw fail(); }
   catch { throw fail(); }
