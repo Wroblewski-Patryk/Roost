@@ -321,9 +321,10 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       firstWrite = await duration.wait(requestFirstWriteAdmission({ api, claimed, writerLock, repositoryPath,
         provider: config.executionProvider, contract: taskContract, baselineCommit: preparedCommit,
         assertAuthority: assertProviderAuthority }));
-      if (actualBranch === repository.baseBranch && firstWrite.continuation
-          || actualBranch === taskContract.singleTask.branch && (!firstWrite.continuation && !resumeCheckpoint
-            || firstWrite.continuation && firstWrite.continuation.previousCommit !== preparedCommit))
+      const existingAuthority=firstWrite.existingCommitVerification??firstWrite.continuation;
+      if (actualBranch === repository.baseBranch && existingAuthority
+          || actualBranch === taskContract.singleTask.branch && (!existingAuthority && !resumeCheckpoint
+            || existingAuthority && existingAuthority.previousCommit !== preparedCommit))
         throw recoveryError("repository_mismatch");
       if (actualBranch === repository.baseBranch) {
         if (claimed.checkpoint.stage === "claimed") await duration.wait(checkpoint("branch_intent", taskContext.executionPacket.revision, digest));
@@ -370,8 +371,11 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       await duration.wait(api(`/v1/agent-runtime/executions/${claimed.id}/actions/prior-readonly-audit`, {
         method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken }) })),
       { claimed, contract: taskContract, repositoryEvidence: readOnlyEvidence });
+    if(coding&&firstWrite?.existingCommitVerification&&!config.executionProvider.testReplayPath)
+      throw protocolAdmissionError("existing_commit_verification_replay_required");
     if (coding && config.executionProvider.testReplayPath) {
-      if (!firstWrite?.continuation || firstWrite.continuation.previousCommit !== preparedCommit)
+      const existingAuthority=firstWrite?.existingCommitVerification??firstWrite?.continuation;
+      if (!existingAuthority || existingAuthority.previousCommit !== preparedCommit)
         throw protocolAdmissionError("coding_test_replay_continuation_required");
       replayConfiguration = prepareTestReplayConfiguration({ filename: config.executionProvider.testReplayPath,
         repositoryPath, candidateCommit: preparedCommit, branch: actualBranch });
@@ -654,7 +658,10 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
         if (renewedFirstWrite.decisionId !== firstWrite.decisionId
             || renewedFirstWrite.baselineCommit !== firstWrite.baselineCommit
             || renewedFirstWrite.branch !== firstWrite.branch
-            || JSON.stringify(renewedFirstWrite.continuation ?? null) !== JSON.stringify(firstWrite.continuation ?? null)) throw protocolAdmissionError("first_write_changed_before_commit");
+            || JSON.stringify(renewedFirstWrite.continuation ?? null) !== JSON.stringify(firstWrite.continuation ?? null)
+            || JSON.stringify(renewedFirstWrite.existingCommitVerification ?? null) !== JSON.stringify(firstWrite.existingCommitVerification ?? null)
+            || renewedFirstWrite.operation!==firstWrite.operation
+            || renewedFirstWrite.operations.localCommit!==firstWrite.operations.localCommit) throw protocolAdmissionError("first_write_changed_before_commit");
         firstWrite = renewedFirstWrite;
         verification.localCommit = (codingReplay ? verifyExistingLocalCommit : finalizeLocalCommit)({ repositoryPath, writerLock, executionId: claimed.id,
           taskId: claimed.taskId, baselineCommit: preparedCommit, branch: resultBranch,

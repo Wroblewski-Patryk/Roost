@@ -175,6 +175,7 @@ export function completeNativeToolBoundary(proof, { ownedTreeReceipt, error } = 
     post = captureNativeFootprint(saved.repositoryPath, saved.expected);
     const compared = comparison = compareNativeFootprint(saved.before, post, saved.scope.writePaths);
     violations.push(...compared.violations);
+    if(saved.scope.existingCommitVerification&&compared.changes.length)violations.push("unexpected_changed_path");
     if (siblings(saved.repositoryPath) !== saved.siblingDigest) violations.push("unexpected_changed_path");
   } catch (error) { captureFailure = error.message; violations.push("footprint_unavailable"); }
   try { assertApplicationLease(saved.app); } catch { violations.push("application_instance_or_lease_changed"); }

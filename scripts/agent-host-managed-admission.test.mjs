@@ -6,7 +6,7 @@ import { syncBuiltinESMExports } from "node:module";
 import childProcess, { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
-import { createHash, generateKeyPairSync, sign } from "node:crypto";
+import { createHash, generateKeyPairSync, sign, randomUUID } from "node:crypto";
 import { createManagedBackendFixture, managedSelectionFixture } from "./fixtures/trusted-pilot.mjs";
 import { nativeFixture } from "./fixtures/hermes-native.mjs";
 import { pinReadyFixture } from "./fixtures/execution-packet.mjs";
@@ -295,6 +295,32 @@ for (const fault of [null, "far_future", "expired", "lease_lost", "wrong_commit"
     if (fault) await assert.rejects(promise, /managed_admission_blocked/);
     else { const grant = await promise; assert.ok(Date.parse(grant.issuedAt) <= Date.now()); }
     assert.equal(fs.existsSync(x.evidencePath), false); assert.equal(fs.existsSync(x.decisionPath), false);
+  });
+}
+for(const fault of [null,"changed_closure","changed_consent","creation_authority","invented_rejection","missing_pointer"]){
+  test(`signed existing-commit verification binds exact owner closure: ${fault??"accepted"}`,windows,async t=>{
+    const x=await signedAdmissionFixture(t,{prepareOnly:true}),claimed=x.f.claimed;
+    const pointer={releaseId:randomUUID(),closureId:randomUUID(),consentDigest:"c".repeat(64),previousExecutionId:randomUUID(),previousCommit:"a".repeat(40)};
+    const contract=structuredClone(x.options.envelope.contract);
+    contract.nativeBoundary={profile:"coding-local",existingCommitVerification:pointer};contract.singleTask.branch=`codex/task-${claimed.taskId}`;
+    const api=async(_route,request)=>{
+      assert.deepEqual(JSON.parse(request.body).existingCommitVerification,pointer);
+      const payload={schemaVersion:"roost-first-write-admission-v1",executionId:claimed.id,workspaceId:claimed.workspaceId,
+        taskId:claimed.taskId,applicationId:claimed.applicationId,installationId:x.anchor.installationId,decisionId:x.payload.decisionId,
+        baselineCommit:pointer.previousCommit,branch:contract.singleTask.branch,operations:{localCommit:false},operation:"verify_existing_local_commit",
+        existingCommitVerification:{...pointer,closureDigest:"d".repeat(64)}};
+      future(payload,"issuedAt",0);
+      if(fault==="changed_closure")payload.existingCommitVerification.closureId=randomUUID();
+      if(fault==="changed_consent")payload.existingCommitVerification.consentDigest="f".repeat(64);
+      if(fault==="creation_authority")payload.operations.localCommit=true;
+      if(fault==="invented_rejection")payload.continuation={reviewId:randomUUID(),previousExecutionId:pointer.previousExecutionId,previousCommit:pointer.previousCommit};
+      if(fault==="missing_pointer")delete payload.existingCommitVerification;
+      return {schemaVersion:"roost-managed-admission-v1",phase:"first_write",signed:x.signed(payload)};
+    };
+    const promise=requestFirstWriteAdmission({api,claimed,writerLock:x.options.writerLock,repositoryPath:x.options.repositoryPath,
+      provider:{kind:"hermes_codex"},contract,baselineCommit:pointer.previousCommit,assertAuthority(){}});
+    if(fault)await assert.rejects(promise,/managed_admission_blocked/);
+    else {const grant=await promise;assert.equal(grant.operations.localCommit,false);assert.deepEqual(grant.existingCommitVerification,{...pointer,closureDigest:"d".repeat(64)});}
   });
 }
 test("two-phase signed admission binds Worker evidence and accepted decision without a model process", windows, async t => {

@@ -32,14 +32,19 @@ export function verifyExistingLocalCommit({ repositoryPath, writerLock, executio
   baselineCommit, branch, writePaths, firstWrite, nativeReviewReceipt,
   nativeReviewReceiptDigest, candidateTests, workspaceEvidence, assertAuthority }) {
   try {
-    const continuation = firstWrite?.continuation;
-    if (!firstWrite?.operations?.localCommit || firstWrite.baselineCommit !== baselineCommit
+    const continuation = firstWrite?.continuation, verification=firstWrite?.existingCommitVerification;
+    const authority=verification??continuation;
+    const validVerification=verification && !continuation && firstWrite.operation==="verify_existing_local_commit"
+      && firstWrite.operations?.localCommit===false && /^[0-9a-f-]{36}$/.test(verification.releaseId??"")
+      && /^[0-9a-f-]{36}$/.test(verification.closureId??"") && /^[a-f0-9]{64}$/.test(verification.consentDigest??"")
+      && /^[a-f0-9]{64}$/.test(verification.closureDigest??"");
+    if (!(verification?validVerification:firstWrite?.operations?.localCommit===true&&firstWrite.operation===undefined) || firstWrite.baselineCommit !== baselineCommit
         || firstWrite.branch !== branch || !Number.isFinite(Date.parse(firstWrite.expiresAt))
         || Date.parse(firstWrite.expiresAt) <= Date.now() || !firstWrite.decisionId
-        || !continuation || continuation.previousCommit !== baselineCommit
-        || !/^[0-9a-f-]{36}$/.test(continuation.previousExecutionId ?? "")
-        || !/^[0-9a-f-]{36}$/.test(continuation.reviewId ?? "")
-        || continuation.previousExecutionId === executionId
+        || !authority || authority.previousCommit !== baselineCommit
+        || !/^[0-9a-f-]{36}$/.test(authority.previousExecutionId ?? "")
+        || !verification && !/^[0-9a-f-]{36}$/.test(continuation.reviewId ?? "")
+        || authority.previousExecutionId === executionId
         || !isCodingTestReplayReceipt(candidateTests, baselineCommit)
         || nativeReviewReceipt?.verdict !== "verified_candidate"
         || !/^[a-f0-9]{64}$/.test(nativeReviewReceiptDigest ?? "")
@@ -61,7 +66,8 @@ export function verifyExistingLocalCommit({ repositoryPath, writerLock, executio
     const body = { schemaVersion: "roost-local-commit-verification-v1", operation: "verify_existing_local_commit",
       executionId, taskId, decisionId: firstWrite.decisionId, commit: baselineCommit,
       baselineCommit: parent, verificationBaselineCommit: baselineCommit, branch, tree, paths,
-      previousExecutionId: continuation.previousExecutionId, rejectionReviewId: continuation.reviewId,
+      previousExecutionId: authority.previousExecutionId,
+      ...(verification?{existingCommitVerification:verification}:{rejectionReviewId:continuation.reviewId}),
       workspaceEvidenceDigest: workspaceEvidence.seal, nativeReviewReceiptDigest, testDigest: candidateTests.digest,
       commitCreated: false, remotePush: false, deployment: false };
     return Object.freeze({ ...body, digest: nativeDigest(body) });

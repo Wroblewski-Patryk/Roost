@@ -155,6 +155,9 @@ function projection(fresh, claimed, repositoryEvidence, priorAudit) {
     provenance: { identity: "worker.claimed_attempt", revisions: "worker.validated_ready_context", contract: "executionPacket.contract", rules: "worker.provider_input_v1" },
     rules: [
       ...(packet.contract.nativeBoundary?.profile === "coding-local" ? nativeBoundaryRules : []),
+      ...(packet.contract.nativeBoundary?.existingCommitVerification ? [
+        "This stage verifies an existing accepted commit. Read the canonical repository and report evidence only; do not write source, create or amend a commit, switch branches, push or deploy. Worker runs the fixed regression replay and rejects any observed workspace change."
+      ] : []),
       ...(packet.contract.nativeBoundary?.profile === "inspect-readonly" ? [
         "Inspect only the bounded repository evidence supplied by Worker. You have no native tools. Do not request shell, file, process, Docker, Git or network operations.",
         "Return a reasoned audit of scope, requirements and evidence. A verifier must independently assess the cited auditor evidence; report discrepancies."

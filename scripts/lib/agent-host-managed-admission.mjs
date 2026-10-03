@@ -14,23 +14,28 @@ import { windowsJobSourceDigest } from "./agent-host-windows-job.mjs";
 import { managedBackendVersion } from "./agent-host-model-policy.mjs";
 import { bindNativeSpentRecord } from "./agent-host-hermes-native-boundary.mjs";
 import { nativeArtifactSnapshot } from "./agent-host-native-review.mjs";
+import { existingCommitVerificationSchema } from "./agent-host-native-authority.mjs";
 
 export const managedAdmissionVersion = "roost-managed-admission-v1";
 const signed = schema => z.object({ payload: schema, signature: z.string().regex(/^[a-f0-9]{128}$/) }).strict();
-const response = (phase, schema) => z.object({ schemaVersion: z.literal(managedAdmissionVersion), phase: z.literal(phase), signed: signed(schema),
-  ...(phase === "decision" ? { firstWrite: z.object({ decisionId: z.string().uuid(), baselineCommit: z.string().regex(/^[a-f0-9]{40}$/),
-    branch: z.string().min(1).max(200), operations: z.object({ localCommit: z.literal(true) }).strict(),
+const authorityShape = z.object({ decisionId: z.string().uuid(), baselineCommit: z.string().regex(/^[a-f0-9]{40}$/),
+    branch: z.string().min(1).max(200), operations: z.object({ localCommit: z.boolean() }).strict(),
     continuation: z.object({ reviewId: z.string().uuid(), previousExecutionId: z.string().uuid(),
-      previousCommit: z.string().regex(/^[a-f0-9]{40}$/) }).strict().optional() }).strict().optional() } : {}) }).strict();
+      previousCommit: z.string().regex(/^[a-f0-9]{40}$/) }).strict().optional(),
+    operation: z.literal("verify_existing_local_commit").optional(),
+    existingCommitVerification: existingCommitVerificationSchema.extend({closureDigest:z.string().regex(/^[a-f0-9]{64}$/)}).optional()
+}).strict();
+const validAuthority = value => value.existingCommitVerification
+  ? !value.continuation && value.operation === "verify_existing_local_commit" && value.operations.localCommit === false
+  : value.operation === undefined && value.operations.localCommit === true;
+const response = (phase, schema) => z.object({ schemaVersion: z.literal(managedAdmissionVersion), phase: z.literal(phase), signed: signed(schema),
+  ...(phase === "decision" ? { firstWrite: authorityShape.refine(validAuthority).optional() } : {}) }).strict();
 const same = (a, b) => trustedPilotBytes(a).equals(trustedPilotBytes(b));
 const grants = new WeakMap();
-const firstWriteSchema = z.object({ schemaVersion: z.literal("roost-first-write-admission-v1"),
+const firstWriteSchema = authorityShape.extend({ schemaVersion: z.literal("roost-first-write-admission-v1"),
   executionId: z.string().uuid(), workspaceId: z.string().uuid(), taskId: z.string().uuid(), applicationId: z.string().uuid(),
   installationId: z.string().uuid(), issuedAt: z.string().datetime(), expiresAt: z.string().datetime(),
-  decisionId: z.string().uuid(), baselineCommit: z.string().regex(/^[a-f0-9]{40}$/), branch: z.string().min(1).max(200),
-  operations: z.object({ localCommit: z.literal(true) }).strict(),
-  continuation: z.object({ reviewId: z.string().uuid(), previousExecutionId: z.string().uuid(),
-    previousCommit: z.string().regex(/^[a-f0-9]{40}$/) }).strict().optional() }).strict();
+}).strict().refine(validAuthority);
 function fail(phase, status, reason, boundaryReason) { throw Object.assign(new Error("managed_admission_blocked"), { protocolAdmission: true, retryable: false,
   outcome: "policy_blocked", publicMessage: "Managed launch evidence is missing, changed or not signed for this attempt.",
   ...(phase ? { details: { phase, ...(Number.isInteger(status) ? { status } : {}),
@@ -78,14 +83,18 @@ export async function requestFirstWriteAdmission({ api, claimed, writerLock, rep
       repositoryPath, envelope: { identity: { workspaceId: claimed.workspaceId }, contract } });
     const route = `/v1/agent-runtime/executions/${claimed.id}/actions/managed-admission`;
     const reply = response("first_write", firstWriteSchema).parse(await api(route, { method: "POST", body: JSON.stringify({
-      schemaVersion: managedAdmissionVersion, phase: "first_write", leaseToken: claimed.leaseToken, executionId: claimed.id }) }));
+      schemaVersion: managedAdmissionVersion, phase: "first_write", leaseToken: claimed.leaseToken, executionId: claimed.id,
+      ...(contract.nativeBoundary.existingCommitVerification ? {existingCommitVerification:contract.nativeBoundary.existingCommitVerification} : {}) }) }));
     assertAuthority();
     const result = authenticate(reply.signed, installed.authorityPublicKey);
     if (result.executionId !== claimed.id || result.workspaceId !== claimed.workspaceId
         || result.taskId !== claimed.taskId || result.applicationId !== claimed.applicationId
         || result.installationId !== installed.installation.id || result.baselineCommit !== baselineCommit
         || result.branch !== contract.singleTask.branch
-        || result.continuation && result.continuation.previousCommit !== baselineCommit) fail();
+        || result.continuation && result.continuation.previousCommit !== baselineCommit
+        || Boolean(result.existingCommitVerification) !== Boolean(contract.nativeBoundary.existingCommitVerification)
+        || result.existingCommitVerification && (!same(existingCommitVerificationSchema.parse(Object.fromEntries(Object.entries(result.existingCommitVerification).filter(([key])=>key!=="closureDigest"))),contract.nativeBoundary.existingCommitVerification)
+          || result.existingCommitVerification.previousCommit !== baselineCommit)) fail();
     await awaitCurrentIssuance(result.issuedAt, result.expiresAt, assertAuthority);
     return Object.freeze(result);
   } catch (error) { fail("first_write", error?.status, error?.message); }
@@ -252,7 +261,8 @@ export async function requestManagedAdmission({ api, source, writerDigest, asser
     assertAuthority();
     const evidenceReply = response("backend_evidence", nativeEvidenceSchema).parse(await api(route, { method: "POST", body: JSON.stringify({
       schemaVersion: managedAdmissionVersion, phase: "backend_evidence", leaseToken: source.claimed.leaseToken,
-      executionId: source.claimed.id, source: expected }) }));
+      executionId: source.claimed.id, source: expected,
+      ...(source.envelope.contract.nativeBoundary?.existingCommitVerification ? {existingCommitVerification:source.envelope.contract.nativeBoundary.existingCommitVerification} : {}) }) }));
     phase = "backend_evidence_verify";
     assertAuthority();
     const evidence = authenticate(evidenceReply.signed, installed.authorityPublicKey);
@@ -270,7 +280,8 @@ export async function requestManagedAdmission({ api, source, writerDigest, asser
     const decisionReply = response("decision", trustedPilotDecisionSchema).parse(await api(route, { method: "POST", body: JSON.stringify({
       schemaVersion: managedAdmissionVersion, phase: "decision", leaseToken: source.claimed.leaseToken,
       executionId: source.claimed.id, provider: proposal.provider, scope: proposal.scope,
-      installation: proposal.installation, evidenceDigest: proposal.evidenceDigest }) }));
+      installation: proposal.installation, evidenceDigest: proposal.evidenceDigest,
+      ...(source.envelope.contract.nativeBoundary?.existingCommitVerification ? {existingCommitVerification:source.envelope.contract.nativeBoundary.existingCommitVerification} : {}) }) }));
     phase = "decision_verify";
     assertAuthority();
     const decision = authenticate(decisionReply.signed, installed.authorityPublicKey);
@@ -285,7 +296,10 @@ export async function requestManagedAdmission({ api, source, writerDigest, asser
       : !decisionReply.firstWrite || !firstWrite || decisionReply.firstWrite.decisionId !== firstWrite.decisionId
         || decisionReply.firstWrite.baselineCommit !== firstWrite.baselineCommit
         || decisionReply.firstWrite.branch !== firstWrite.branch
-        || !decisionReply.firstWrite.operations.localCommit) fail();
+        || !same(decisionReply.firstWrite.operations,firstWrite.operations)
+        || !same(decisionReply.firstWrite.continuation??null,firstWrite.continuation??null)
+        || !same(decisionReply.firstWrite.existingCommitVerification??null,firstWrite.existingCommitVerification??null)
+        || decisionReply.firstWrite.operation!==firstWrite.operation) fail();
     if (requiresFirstWrite && decisionReply.firstWrite.baselineCommit !== source.envelope.evidence.risk.value.commit) fail();
     await awaitCurrentIssuance(decision.decidedAt, decision.expiresAt, assertAuthority);
     phase = "decision_persist";

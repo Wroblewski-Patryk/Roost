@@ -118,6 +118,23 @@ test('real replay authorizes only exact unchanged existing commit under live wri
       assert.throws(() => call({ candidateTests: JSON.parse(JSON.stringify(f.tests)) }), /local_commit_unproven/);
       assert.throws(() => call({ writerLock: Object.freeze({}) }), /local_commit_unproven/); unchanged();
     });
+    await t.test('owner-adopted baseline verifies same commit with no creation authority or invented rejection', () => {
+      const fw={...approved,operations:{localCommit:false},operation:'verify_existing_local_commit',
+        existingCommitVerification:{releaseId:randomUUID(),closureId:randomUUID(),consentDigest:hash,closureDigest:hash,
+          previousExecutionId:approved.continuation.previousExecutionId,previousCommit:f.candidate}};
+      delete fw.continuation;
+      const run=value=>verifyExistingLocalCommit({...f.options,firstWrite:value,assertAuthority:()=>assert.deepEqual(value,fw)});
+      const before=git(f.root,'rev-list','--count','HEAD'), result=run(fw);
+      assert.equal(result.commitCreated,false);assert.equal(result.rejectionReviewId,undefined);
+      assert.deepEqual(result.existingCommitVerification,fw.existingCommitVerification);
+      assert.equal(git(f.root,'rev-list','--count','HEAD'),before);unchanged();
+      for(const mutate of [v=>v.operations.localCommit=true,v=>delete v.operation,
+        v=>v.continuation=approved.continuation,v=>delete v.existingCommitVerification.closureDigest,
+        v=>v.existingCommitVerification.previousCommit=f.parentCommit,
+        v=>v.existingCommitVerification.previousExecutionId=f.options.executionId]){
+        const bad=structuredClone(fw);mutate(bad);assert.throws(()=>run(bad),/local_commit_unproven/);unchanged();
+      }
+    });
     await t.test('missing/expired/unauthorized continuation and exact execution/review changes are refused', () => {
       const mutations = [fw => delete fw.continuation, fw => fw.operations.localCommit = false,
         fw => fw.expiresAt = new Date(Date.now() - 1000).toISOString(), fw => fw.continuation.previousCommit = f.parentCommit,

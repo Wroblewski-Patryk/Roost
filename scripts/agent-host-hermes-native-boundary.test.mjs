@@ -113,6 +113,17 @@ test("forged Job and widened receipts never become a completed candidate", async
   assert.equal(result.classification, "boundary_violation"); assert.equal(result.releaseAllowed, false);
   assert.equal(classifyHermesOutcome({ error: { boundaryViolation: true, durationLimit: true }, exitCode: 0 }), "boundary_violation");
 });
+test("existing-commit verification rejects even a declared source edit and preserves its evidence",async t=>{
+  const f=await nativeFixture(t,{edit:f=>{f.packet.contract.nativeBoundary.existingCommitVerification={
+    releaseId:"00000000-0000-4000-8000-000000000001",closureId:"00000000-0000-4000-8000-000000000002",
+    previousExecutionId:"00000000-0000-4000-8000-000000000003",consentDigest:"c".repeat(64),previousCommit:"a".repeat(40)};}}),c=f.checked.candidate;
+  assert.ok(f.envelope.rules.some(rule=>rule.includes("verifies an existing accepted commit")));
+  const proof=consumeNativeToolBoundary(f.receipt,{cwd:c.cwd,environment:c.environment,attempt:f.envelope.identity.executionId,budgetReceipt:f.checked.budgetReceipt});
+  writeFileSync(path.join(f.repositoryPath,"editable.txt"),"unapproved verification edit\n");
+  const result=completeNativeToolBoundary(proof,{ownedTreeReceipt:{attempt:f.envelope.identity.executionId,cleanup:true}});
+  assert.ok(result.violations.includes("unexpected_changed_path"));assert.equal(result.classification,"boundary_violation");
+  assert.equal(readFileSync(path.join(f.repositoryPath,"editable.txt"),"utf8"),"unapproved verification edit\n");
+});
 test("native harmless Job returns only review-required evidence; no Hermes code executes", { skip: process.platform !== "win32", timeout: 30000 }, async t => {
   const f = await nativeFixture(t, { dirty: true }), c = f.checked.candidate;
   execFileSync(path.join(process.env.SystemRoot, "Microsoft.NET", "Framework64", "v4.0.30319", "csc.exe"),

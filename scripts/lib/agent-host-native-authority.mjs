@@ -5,11 +5,16 @@ export const nativeRiskReference = "ADR-004-v7-native-tools";
 export const typedOperations = ["repository_read", "repository_write", "local_test", "local_commit", "remote_push", "deployment"];
 export const typedOperationSchema = z.enum(typedOperations);
 export const codingAuthorities = Object.freeze(typedOperations.slice(0, 3));
+export const existingCommitVerificationSchema = z.object({
+  releaseId: z.string().uuid(), closureId: z.string().uuid(), consentDigest: z.string().regex(/^[a-f0-9]{64}$/),
+  previousExecutionId: z.string().uuid(), previousCommit: z.string().regex(/^[a-f0-9]{40}$/)
+}).strict();
 export const nativeBoundaryContractSchema = z.object({
   profile: z.literal("coding-local"),
   // Expected outputs for acceptance review, not the security boundary. The
   // physical canonical root and protected structures remain mandatory.
   writePaths: z.array(z.string().min(1).max(512)).max(128).default([]),
+  existingCommitVerification: existingCommitVerificationSchema.optional(),
   runtime: z.object({ required: z.boolean(), ports: z.array(z.number().int().min(1).max(65535)).max(16) }).strict()
 }).strict();
 export function nativeBoundaryError(reason = "native_boundary_policy_blocked") {

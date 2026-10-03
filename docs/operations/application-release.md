@@ -26,7 +26,13 @@ baseline commit, as a new baseline. This authorizes securing its exact artifact,
 truthfully closing the failed grant, obtaining new independent acceptance and
 issuing a new grant for the unchanged candidate. Data, protected services and
 paused trading remain preserved. It does not authorize reinstalling the VPS,
-deleting data or advancing Gate 5. New source support and live proof are pending.
+deleting data or advancing Gate 5. Recovery support `34a9eaaa` was deployed through
+one reconciled normal queue; HTTPS health and build identity match. The adopted
+image was exported with authenticated encryption and restored locally with the
+same complete OCI index identity; all pre-existing local images were preserved.
+Its unchanged three health probes passed 41 samples over 1200 seconds. This is
+owner baseline evidence, not new managed candidate release evidence. Old-operation
+reconciliation, FAILED closure and new managed acceptance/release remain pending.
 
 The owner authorized temporary read-only backup access for exact image recovery.
 Two provider mount attempts failed; fresh provider read-back reports no mounted
@@ -54,7 +60,7 @@ and retained cleanup. The server derives and rechecks its immutable lineage;
 fresh approval, readiness and owner authentication remain required. It starts
 at configuration and cannot push, open/review a PR or merge again. The current
 incomplete recovery does not qualify for this grant. These additions have not
-yet been deployed or demonstrated by the live Worker.
+yet been demonstrated by the live Worker.
 
 ### Owner-adopted baseline restart
 
@@ -70,6 +76,17 @@ no unresolved operations, fresh exact runtime/configuration/schema/data/queue
 evidence and the full original healthy observation duration. It records the
 owner's consent digest, an immutable FAILED closure and atomic revocation.
 Historical grant bytes and failed outcomes remain unchanged.
+
+Fresh coding material may use `nativeBoundary.existingCommitVerification` with
+the exact release, FAILED closure, owner consent digest and prior execution/commit.
+All three managed admission phases must match that pointer to current Ready.
+The server verifies the immutable closure/revocation and earlier accepted native
+candidate against the original first-write approval. Its signed authority permits
+only `verify_existing_local_commit`, with `localCommit:false`; it carries no
+reviewer rejection or manager-return claim. The Worker requires a genuine native
+RED/GREEN replay, exact clean branch/tree and renewed matching signed authority.
+It cannot create an empty commit. This evidence-only addition is source-qualified;
+its deployed native execution and new independent review remain required.
 
 A new grant may then carry `baselineRestart`; its server-derived
 `publishedGitBasis` references the closure and verified prior Git operations.
