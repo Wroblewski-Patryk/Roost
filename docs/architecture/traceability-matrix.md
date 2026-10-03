@@ -1480,19 +1480,25 @@ not execute verification, backup, restore or releases.
 <a id="e-backup"></a>
 **BACKUP** — Native local PostgreSQL dump/restore, schema/data parity, encrypted
 read-back and owned test-database cleanup pass. Owner prerequisites and production
-Roost backup/restore are verified; the full pilot backup remains unproven.
+Roost backup/restore and the full encrypted pilot backup are verified.
 The shared bounded fingerprint fix passes local native parity/termination tests.
 The pilot VPS recovered on 2026-10-03 with a new PostgreSQL start and no active
 fingerprint query, reconciling the interrupted read. Public health/readiness
 pass and bots remain paused. Native streaming fingerprint and backup/Worker
 checks pass (26 passed, one opt-in skip); sort/temp resources and process cleanup
-are bounded. Full production backup proof remains pending; the provider storage
+are bounded. Full pilot backup proof now passes; the provider storage
 cause is unverified and no hard PostgreSQL RSS ceiling is claimed.
 A production owned restore matched full data/sequences and, after guarded
 public-owner-class normalization, the exact historical schema. The source was
 unchanged. Native tests qualify both owner classes and connected-client refusal;
 explicit exact-owned cleanup removed the interrupted attempt and lock without
-promotion. Full encrypted pilot backup remains pending. The baseline execution
+promotion. A subsequent monitored normal gateway backup
+`811332d3-67ab-4e9c-afae-c12bc374fa84` completed at 2026-10-03 13:47:38 UTC:
+212,322,910 archive bytes, encrypted latest read-back, source before/after and
+isolated restore schema/full-data/sequence parity, restore/lock absence and zero
+owned sessions. Both persistent channels closed normally; minimum monitored
+memory/disk were 4,938/12,844 MiB. Earlier uncertain attempts were reconciled
+without promotion. This qualifies backup, not pilot release. The baseline execution
 service/image was removed by a global host pruning timer. Logs also prove that
 timer removed a newly created Roost backend; it is disabled with configuration
 preserved. Roost's normal controller recovery and exact health/build pass, but
@@ -1521,7 +1527,7 @@ not a new model execution or pilot release proof.
 Gate 4 has a completed signed native read-only PWA audit and source support for
 retained Dockerfile release sets, per-target durable intents and exact runtime
 identity. Managed repair and historical exact review are proven; current
-acceptance basis, full pilot backup and release remain unproven.
+acceptance basis and release remain unproven; full pilot backup now passes.
 Separately authorized maintenance retained order/dedupe history and resolved
 the previously observed activity blocker; fresh exchange and database read-back
 found no LIVE activity. Managed release audit returned blocked before that
@@ -1543,8 +1549,9 @@ Fresh managed coder `58387e7a-c4b2-4fbd-acf9-7fd835832eb5` returned local
 fixed native green Vitest result (one pass, no skips). Independent reviewer
 `a272c952-bf70-47f9-81f6-67108fa606db` approved it as
 `fd94c23c-c3b9-4f5f-aaac-250f50305386`; later configuration requires a fresh
-acceptance basis. Separate exact release authority, pilot backup and production
-reproduction proof remain pending; active LIVE state blocks release.
+acceptance basis. Separate exact release authority and production reproduction
+proof remain pending. Authorized maintenance now pauses trading and retains
+history; full encrypted pilot backup/isolated restore passes.
 Normal Windows Worker/Hermes coding produced exact candidate
 `de6ebe7a4267078196534a36f73ff9bccb09d3ae`; independent review
 `154d5cc2-904b-4413-9947-4820ee413648` and a separate native release audit

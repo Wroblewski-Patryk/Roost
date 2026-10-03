@@ -16,8 +16,8 @@ was stopped. A subsequent encrypted-backup attempt lost its resource observation
 and cancelled only its tagged dump query; it does not qualify backup or restore.
 Maintenance now pauses external-position sync/management through the existing
 profile service, with encrypted prior flags, lifecycle audit and no credential
-rotation. Trading remains paused. Full backup, current independent review,
-service recovery and separate exact-commit release consent remain required.
+rotation. Trading remains paused. Full backup is now verified below; current
+independent review, service recovery and exact-commit release consent remain required.
 
 Roost's installed reverse-proxy address changed after restart. Optional
 `ROOST_HANDOFF_TRUSTED_PROXY_HOST` selects one configured Docker service label:
@@ -73,11 +73,11 @@ promotion; this installation now uses the bounded 120-second maximum.
 Explicit reconciliation requires unchanged installation/configuration/attempt,
 local lock identity and exact database OID/marker; it neither repeats dump/create
 nor promotes a backup. The interrupted production attempt was reconciled through
-this path: owned database and lock are absent, with no promotion. No pilot backup
-is certified yet. Another interrupted create was read back absent and its owned
+this path: owned database and lock are absent, with no promotion. Those attempts
+did not certify a backup. Another interrupted create was read back absent and its owned
 lock retired. A resource-observation transport failure cancelled only its tagged
 query. Two subsequent serial IPv4 full-source reads matched with no remaining
-owned sessions; this does not by itself certify a backup.
+owned sessions; this did not by itself certify a backup.
 Root verification passed 17 backup tests including actual local PostgreSQL, 17
 atomic admission tests, `validate`, `codex:check` and `git diff --check`. Native
 backup/fingerprint fixture suites run serially because their global temporary
@@ -95,6 +95,38 @@ health/build identity match. Failed and unissued dispatches were read back befor
 retry. The pilot's existing controller application, canonical branch and generated
 configuration remain; no candidate deployment occurred. Baseline service and
 compatible rollback artifact recovery remain required before managed release.
+
+The first baseline rebuild queue `r43c83668d6064748885c30c` failed with SSH
+exit 255 after successful compilation, during the final image ownership step.
+Read-back found a terminal failed queue, no active deployment and no remaining
+owned helper or execution-service container. This is not a released candidate.
+Coolify's shared SSH master can be closed by its concurrent health refresh;
+that mechanism is a transport risk, not a proven cause of the provider outage.
+The existing installation now sets `MUX_ENABLED=false`; only its controller was
+recreated on the same image, preserving source pins, command limits and all
+application services. One exact unused Roost build-cache entry was reclaimed;
+no image, volume or application data was deleted. A fresh contained full-data
+read matched the certified backup before a new uniquely identified baseline
+queue `r0ea03ba3b84040e68fce52a` was submitted. Completion remains subject to
+actual runtime, six-target configuration, data and health read-back.
+
+The subsequent monitored normal backup gateway completed on 2026-10-03 at
+13:47:38 UTC: backup `811332d3-67ab-4e9c-afae-c12bc374fa84`, archive
+212,322,910 bytes, encrypted copy 212,323,495 bytes. Full source fingerprints
+before/after export and the isolated restore agree on schema, all table rows,
+multiplicity and sequence state. Encrypted latest-copy read-back, owned restore
+absence and zero tagged PostgreSQL sessions pass. Both persistent SSH channels
+closed normally. The operation retained 44 bounded resource samples: minimum
+4,938 MiB available memory and 12,844 MiB available disk; no parallel build/scan.
+Archive digest: `477c186f0a7b873e9f62c5031eb4e2ea712c4042431220e1b1f1eb5421b626a6`.
+An earlier completed dump hit the five-minute restore-input budget; its exact
+owned database/lock were reconciled without promotion. Another lost its resource
+observer and cancelled only its tagged query, with subsequent zero-session and
+absent-lock read-back. This installation uses a ten-minute operation budget,
+the unchanged two-minute cleanup cap and a twenty-minute total transport cap.
+The SSH keepalive now leaves the unchanged 35-second resource-freshness guard
+to detect a stale observation first. This successful attempt qualifies the backup;
+it does not establish a cause for intermittent SSH stalls or provider storage loss.
 
 ## Current evidence — 2026-10-02
 
