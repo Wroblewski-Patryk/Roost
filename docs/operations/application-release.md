@@ -4,6 +4,30 @@ The current gate and authority remain in [implementation](../implementation.md).
 This document describes Gate 4 support and its evidence; it does not certify a
 production application release.
 
+### Recovery support — 2026-10-03
+
+Authenticated SSH, a new normal boot and a writable root filesystem are
+confirmed. Required application endpoints respond; provider storage root cause
+is unproven. Monitoring was paused before resuming delivery. The pilot candidate
+and prior Gate 2 branch remain local and unchanged. No pilot release occurred.
+
+Two serial contained full-data fingerprints matched while the execution service
+was stopped. A subsequent encrypted-backup attempt lost its resource observation
+and cancelled only its tagged dump query; it does not qualify backup or restore.
+Maintenance now pauses external-position sync/management through the existing
+profile service, with encrypted prior flags, lifecycle audit and no credential
+rotation. Trading remains paused. Full backup, current independent review,
+service recovery and separate exact-commit release consent remain required.
+
+Roost's installed reverse-proxy address changed after restart. Optional
+`ROOST_HANDOFF_TRUSTED_PROXY_HOST` selects one configured Docker service label:
+server DNS must return exactly one private IPv4 within one second, which must
+match the actual socket peer. Sanitized HTTPS authority/path/header checks and
+certificate pinning remain required. An unset or empty optional host preserves
+legacy exact-IP installations; invalid names, ambiguous/public DNS and lookup
+failure deny admission. Eleven focused ingress/production tests pass. Installed
+configuration is prepared; successful deployed handoff is still pending.
+
 ## Current evidence — 2026-10-02
 
 The managed Windows Worker/Hermes read-only PWA audit completed as execution
