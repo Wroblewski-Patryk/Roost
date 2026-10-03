@@ -13,6 +13,21 @@ const fail=()=>{throw Object.assign(Error('release_child_ownership_unproven'),{r
 export const minimalReleaseEnvironment=()=>({PATH:process.env.PATH,SystemRoot:process.env.SystemRoot,ProgramData:process.env.ProgramData,TEMP:process.env.TEMP,TMP:process.env.TMP});
 export const hasReleaseProcessScope=()=>!!scopes.getStore();
 
+// Classify only fixed stderr signatures; callers never persist the input text.
+export function releaseChildStderrDiagnostic(executable,chunk){
+ const text=typeof chunk==='string'?chunk:Buffer.isBuffer(chunk)?chunk.toString('utf8'):'';
+ if(/(?:^|[\\/])ssh(?:\.exe)?$/i.test(executable)){
+  if(/REMOTE HOST IDENTIFICATION HAS CHANGED|Host key verification failed|No .* host key is known .* strict checking|host key .* (?:changed|differs)/i.test(text))return 'ssh_host_identity_unproven';
+  if(/Connection timed out|Operation timed out|Connection timeout|Timeout, server .* not responding|timed out during banner exchange/i.test(text))return 'ssh_timeout';
+  if(/Connection (?:closed|reset)(?: by| during|$)|Connection to .* closed|kex_exchange_identification: .* (?:closed|reset)|ssh_exchange_identification: .* (?:closed|reset)|Broken pipe/i.test(text))return 'ssh_connection_closed';
+ }
+ if(/detected dubious ownership/i.test(text))return 'git_ownership_unproven';
+ if(/unable to read config file|invalid argument/i.test(text))return 'git_config_unreadable';
+ if(/not a git repository/i.test(text))return 'git_repository_unavailable';
+ if(/Permission denied|Access is denied/i.test(text))return 'native_access_denied';
+ return undefined;
+}
+
 // Resolve/build before publishing a release checkpoint. These are fixed native
 // utilities, and cannot perform a repository or external release mutation.
 export async function prepareReleaseProcessScope(){
@@ -52,11 +67,7 @@ async function ownedChild(scope,executable,{argv,cwd,environment=minimalReleaseE
    onData:(channel,chunk)=>{if(channel==='stdout'){bytes+=chunk.length;if(bytes>maxBytes)fail();chunks.push(chunk);}
     else if(channel==='stderr'){
      // Only fixed classifications survive. Never retain a Git URL, path or token.
-     const text=chunk.toString('utf8');
-     if(/detected dubious ownership/i.test(text))diagnostic='git_ownership_unproven';
-     else if(/unable to read config file|invalid argument/i.test(text))diagnostic='git_config_unreadable';
-     else if(/not a git repository/i.test(text))diagnostic='git_repository_unavailable';
-     else if(/Permission denied|Access is denied/i.test(text))diagnostic='native_access_denied';
+     diagnostic=releaseChildStderrDiagnostic(executable,chunk)??diagnostic;
     }}});
   const receipt=await job.completion;
   recordReleaseChildReceipt(token,receipt);
@@ -65,7 +76,8 @@ async function ownedChild(scope,executable,{argv,cwd,environment=minimalReleaseE
   return Buffer.concat(chunks);
  }catch(error){
   if(isWindowsJobCleanupReceipt(error.details?.ownedTreeReceipt))recordReleaseChildReceipt(token,error.details.ownedTreeReceipt);
-  const reason=['git_ownership_unproven','git_config_unreadable','git_repository_unavailable','native_access_denied','native_exit_failed'].includes(error.details?.reason)?error.details.reason:
+  const reason=['git_ownership_unproven','git_config_unreadable','git_repository_unavailable','native_access_denied','native_exit_failed',
+   'ssh_timeout','ssh_connection_closed','ssh_host_identity_unproven'].includes(error.details?.reason)?error.details.reason:
    assignmentObserved?'native_resume_or_cleanup_unproven':'native_assignment_unobserved';
   throw Object.assign(Error('release_child_'+reason),{releaseBlocked:true,retryable:false,details:{reason}});
  }

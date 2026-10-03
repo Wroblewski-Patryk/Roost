@@ -658,6 +658,12 @@ absence receipt retains actual baseline target rows, never a candidate deploymen
 claim. Reconciliation performs no configuration write. Fixed diagnostic causes
 survive privately without exception bodies, credentials or journal changes.
 
+The owned native runner also classifies SSH timeout, connection closure and host
+identity refusal using fixed signatures restricted to the pinned SSH executable.
+Only those fixed categories reach private diagnostics; stderr and exception bodies
+are not retained. An unknown native failure remains unproven. This changes no
+deadline, host-key policy, reconciliation guard or release authority.
+
 Focused integration checks passed 95 tests with one existing opt-in PostgreSQL
 skip; `codex:check` passed. Native release continuation and production observation
 remain pending at this source checkpoint.

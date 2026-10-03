@@ -8,7 +8,8 @@ const effectReasons=new Set(['release_git_push_uncertain','release_git_merge_unc
  'release_git_set_gateway_safety_unproven','release_git_set_gateway_configuration_result_uncertain',
  'release_coolify_git_set_configuration_mutation_uncertain','release_coolify_git_set_service_health_unproven',
  ...['native_assignment_unobserved','native_resume_or_cleanup_unproven','native_exit_failed',
- 'native_access_denied','git_ownership_unproven','git_config_unreadable','git_repository_unavailable'].map(v=>'release_child_'+v)]);
+ 'native_access_denied','git_ownership_unproven','git_config_unreadable','git_repository_unavailable',
+ 'ssh_timeout','ssh_connection_closed','ssh_host_identity_unproven'].map(v=>'release_child_'+v)]);
 export function releaseEffectDiagnostic(error){
  if(/^(transport_uncertain|response_unproven|response_size_invalid|response_invalid)(_http_[1-5][0-9]{2})?$/.test(error?.transportDiagnostic??''))return error.transportDiagnostic;
  let reason='release_effect_unproven';

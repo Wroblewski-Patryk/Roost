@@ -65,3 +65,29 @@ test('real release Git child has a suspended native assignment and closed receip
   rmSync(directory,{recursive:true});
  }
 });
+
+test('native SSH configuration refusal stays a fixed failure and closes its owned Job without a connection',
+ {skip:process.platform!=='win32'},async()=>{
+ const directory=mkdtempSync(path.join(os.tmpdir(),'roost-release-ssh-error-test-'));
+ let writer,prepared,context;
+ try{
+  prepared=await prepareReleaseProcessScope();writer=await acquireWriterLock(directory);
+  const state=releaseStateFixture(directory),client={hostId:state.release.snapshot.hostId,agentId:state.release.snapshot.releaserAgentId};
+  context=beginReleaseWriterCheckpoint({writerLock:writer,state,client});
+  await assert.rejects(withReleaseProcessScope(prepared,context,()=>runReleaseNativeProcess('ssh',{
+   argv:['-F',path.join(directory,'missing-fixture-config'),'-G','fixture.invalid'],cwd:directory,durationMs:10000
+  })),error=>{
+   assert.equal(error.message,'release_child_native_exit_failed');
+   assert.deepEqual(error.details,{reason:'native_exit_failed'});return true;
+  });
+  assert.equal(sealReleaseWriterCheckpoint(context).nativeProcessesAbsent,true);
+  const checkpoint=JSON.parse(readFileSync(path.join(directory,writerLockFilename))).releaseCheckpoint;
+  assert.equal(checkpoint.registeredChildCount,1);assert.equal(checkpoint.children[0].state,'closed');
+  assert.equal(checkpoint.children[0].receipt.jobClosed,true);assert.equal(checkpoint.children[0].receipt.activeProcesses,0);
+ }finally{
+  if(context)sealReleaseWriterCheckpoint(context);
+  await writer?.release();await prepared?.dispose();
+  assert.equal(path.dirname(directory),os.tmpdir());assert(path.basename(directory).startsWith('roost-release-ssh-error-test-'));
+  rmSync(directory,{recursive:true});
+ }
+});
