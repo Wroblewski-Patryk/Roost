@@ -71,6 +71,24 @@ test("packet content mutation invalidates its revision", () => {
   const f = validPacketFixture(); f.packet.contract.objective.outcome = "Changed after preparation";
   assert.throws(() => validate(f), (error) => error.details.issues.some((issue) => issue.field === "revision"));
 });
+test("optional application and capability procedures do not become global task requirements", () => {
+  const f = validPacketFixture(), id = f.claimed.id;
+  f.applicationContext.operatingModel.applicationProcedures = [{ procedureId: id, required: false }];
+  f.applicationContext.operatingModel.capabilityProcedures = [{ procedureId: id, required: false }];
+  assert.equal(validate(f), f.packet);
+  for (const field of ["applicationProcedures", "capabilityProcedures"]) {
+    f.applicationContext.operatingModel[field][0].required = true;
+    assert.throws(() => validate(f), error => error.details.issues.some(issue => issue.field === "contract.procedures" && issue.reason === "missing"));
+    f.applicationContext.operatingModel[field][0].required = false;
+  }
+  f.packet.contract.procedures = { items: [{ id, revision: "2" }], noneReason: null };
+  sealPacket(f.packet);
+  assert.throws(() => validate(f), error => error.details.issues.some(issue => issue.field === "contract.procedures" && issue.reason === "unavailable"));
+  f.taskContext.procedures = [{ id, workspaceId: f.claimed.workspaceId, version: 2, status: "active" }];
+  assert.equal(validate(f), f.packet);
+  f.taskContext.procedures[0].version = 3;
+  assert.throws(() => validate(f), error => error.details.issues.some(issue => issue.field === "contract.procedures" && issue.reason === "stale"));
+});
 for (const field of ["identity", "taskRevision", "schemaVersion", "contract.context.company", "contract.context.product", "contract.context.technical", "contract.acceptance.tests", "contract.acceptance.evidence", "contract.recovery.escalation"]) test(`rejects missing ${field}`, () => {
   const f = validPacketFixture(), parts = field.split(".");
   const target = parts.slice(0, -1).reduce((value, key) => value[key], f.packet);

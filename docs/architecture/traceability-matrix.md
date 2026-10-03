@@ -1482,8 +1482,12 @@ not execute verification, backup, restore or releases.
 read-back and owned test-database cleanup pass. Owner prerequisites and production
 Roost backup/restore are verified; the full pilot backup remains unproven.
 The shared bounded fingerprint fix passes local native parity/termination tests.
-The pilot VPS is unavailable after an incomplete second read-only fingerprint;
-remote query reconciliation and production proof remain pending.
+The pilot VPS recovered on 2026-10-03 with a new PostgreSQL start and no active
+fingerprint query, reconciling the interrupted read. Public health/readiness
+pass and bots remain paused. Native streaming fingerprint and backup/Worker
+checks pass (26 passed, one opt-in skip); sort/temp resources and process cleanup
+are bounded. Full production backup proof remains pending; the provider storage
+cause is unverified and no hard PostgreSQL RSS ceiling is claimed.
 
 [Governed release evidence](../operations/governed-release.md),
 [backup gateway](../../scripts/lib/agent-host-release-backup.mjs),

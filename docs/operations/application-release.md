@@ -196,10 +196,10 @@ pilot backup. Full database fingerprint/backup/restore, current independent
 acceptance and separate exact owner release authority remain pending. The pilot
 candidate remains local and unreleased; the earlier Gate 2 branch is preserved.
 
-### Full fingerprint preparation and unavailable VPS
+### Full fingerprint preparation and VPS recovery
 
-The fixed backup and release gateways now share the byte-identical historical
-fingerprint SQL. All tables, row multiplicity, ordering-independent row digests
+The fixed backup and release gateways retain the historical fingerprint digest
+contract. All tables, row multiplicity, ordering-independent row digests
 and sequence state remain included. The Worker has an installation-only
 `fingerprintTimeoutMs` range of 30,000–300,000 ms, default 300,000 ms; the
 backup keeps its existing deadline bounds. The fixed remote program bounds
@@ -218,11 +218,36 @@ first complete data fingerprint covered 33 relations in 59.1 seconds, confirming
 the former Worker deadline was insufficient. The second read did not complete.
 At 16:03 UTC the VPS became unavailable over SSH and all inspected HTTPS
 surfaces. Independent Internet access remained available; the cause is unknown.
-No pilot push, deployment, full backup or restore was started. Termination of
-the second remote query cannot be certified while the host is inaccessible.
+No pilot push, deployment, full backup or restore was started. The provider KVM
+later showed repeating journal read-only filesystem and I/O errors. This does
+not establish the storage failure's cause or a relationship to the query.
 
-Recover provider-console access and inspect actual host, memory/OOM and database
-activity before another scan or release operation. Do not reinstall, reset data,
+On 2026-10-03 at 10:25 UTC, authenticated SSH and the deployment console returned.
+The new normal boot began at 10:22:37 UTC, with the root filesystem mounted rw.
+PostgreSQL restarted at 10:22:49 UTC; a bounded activity read found no other
+active query and no active fingerprint. The old postmaster and its interrupted
+query therefore cannot still be running. Historical kernel evidence was absent;
+current Docker OOM state and available memory do not prove the earlier cause.
+Public pilot health/readiness and manifest requests returned HTTP 200. Fresh
+all-mode counts found zero active bots, running sessions, pending dedupes and
+open orders; 23 retained PAPER positions remain. No automation was reactivated.
+The four-hour recovery heartbeat was paused and its saved status read back
+before further work. The owner-authorized support update was posted and verified.
+Neither restoration nor another restart was initiated by the implementation owner.
+
+The replacement fingerprint streams sorted row hashes inside the container,
+preserving historical bytes and one read-only repeatable-read snapshot. Its
+session uses 4 MB work memory, a 512 MB temporary-file limit, no parallel query
+workers and no JIT; catalog metadata and private transient files are bounded.
+Native PostgreSQL tests qualify duplicate/Unicode/partition/sequence parity,
+snapshot isolation, external sort, capacity and malformed-pipeline rejection,
+backend cancellation and complete owned process/file cleanup. The independent
+root run of fingerprint, backup and Worker components passed 26 of 27 tests,
+with one existing opt-in skip, including actual backup/restore parity.
+This removes aggregate memory growth; it is not a hard PostgreSQL RSS ceiling
+and does not resolve the unknown provider storage cause. Production scans still
+require fresh capacity, paused writers and serial operation; production full
+backup/restore proof remains pending. Do not reinstall, reset data,
 delete volumes or retry an uncertain operation. Full pilot backup, stable data,
 current independent review and exact owner release approval remain pending.
 Five earlier unmarked local synthetic fixture databases are retained pending
@@ -233,6 +258,20 @@ Root integration checks passed: 239 Node release tests and 62 TypeScript tests,
 zero failures and two existing opt-in skips, including native PostgreSQL parity
 and actual Windows process/Git/recovery cases. `codex:check` passed. Pilot restore,
 installed release execution and production observation remain unverified.
+
+### Post-recovery task admission correction
+
+The normal API recovery read confirmed the native candidate and append-only
+review history were retained. A fresh task submission then correctly refused to
+launch, reporting a missing procedure. Inspection found that the release audit
+procedure was already linked as optional, while the shared packet validator
+treated every application/capability link as globally mandatory. The validator
+now honors explicit `required: false`. Required and legacy unspecified links
+still block omissions, and every declared procedure retains its active-version
+check. The selected task composition remains independently mandatory and sealed.
+The focused packet suite passed 74 tests, including actual Windows admission
+cases; lint, typecheck and server/web build passed. This is local evidence;
+installed Ready revalidation, a new independent review and release remain pending.
 
 ## Sealed release contract
 
