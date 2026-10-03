@@ -1557,6 +1557,13 @@ healthy frontend and ready API. Rollback queue finished on the baseline commit
 with a different rebuilt image; exact baseline image is absent from Docker and
 containerd. Worker stopped with signed closed-child checkpoint retained. Recovery
 is unqualified; this attempt does not certify Gate 4. Probe cause is unproven.
+The owner-adopted new baseline has an authenticated encrypted exact OCI image
+backup and verified local restore; 41 sealed health samples cover 1200 seconds.
+Recovery support is deployed on `34a9eaaa`. New exact-commit verification source
+`6213ed52` passed 9 native existing-commit, 6 signed-pointer, 30 native-boundary/replay
+and 8 backend admission checks, plus validate and codex:check. Fresh owner login,
+old-operation reconciliation/FAILED closure and new managed release proof remain
+required; these source and baseline checks do not certify Gate 4.
 The owner accepted the current healthy rebuilt image as a new baseline, with
 data and paused trading preserved. Failed-grant closure, new independent
 acceptance and a fresh exact-commit release remain pending; provider backup
