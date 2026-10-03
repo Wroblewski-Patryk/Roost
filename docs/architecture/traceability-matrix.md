@@ -1551,34 +1551,40 @@ not a new model execution or pilot release proof.
 
 <a id="e-release"></a>
 **RELEASE** — Gate 3 is certified on the sole temporary target (2026-10-02).
-Gate 4 has a completed signed native read-only PWA audit and source support for
-retained Dockerfile release sets, per-target durable intents and exact runtime
-identity. Managed repair, current exact review and full pilot backup pass;
-the pilot remains unreleased without separate exact owner authority.
-Separately authorized maintenance retained order/dedupe history and resolved
-the previously observed activity blocker; fresh exchange and database read-back
-found no LIVE activity. Managed release audit returned blocked before that
-maintenance. Operator maintenance is distinct from managed repair/release. See
-[current application evidence](../operations/application-release.md).
-An independent audit verifier returned a handoff gap; the corrected structured
-receipt then passed fresh independent assessment with explicit uncertainty.
-Both native receipts prove unchanged state. Separate first-write approval was
-accepted; current acceptance/release remain pending. Failed read-only
-execution was reconciled through the normal API and exact local ownership
-protocol without accepting its result.
-Managed coding then failed native candidate acceptance. Signed owned-only
-rollback archived one added test, restored the clean audited base and preserved
-the prior accepted pilot commit. Normal signed Writer/lease cleanup and admission
-retirement passed; Roost retains the immutable failure and separate recovery
-record. This recovery itself does not prove the later repair or release.
-Fresh managed coder `58387e7a-c4b2-4fbd-acf9-7fd835832eb5` returned local
-`7512bc395d65df0fca7cf701047033031f63eb7e`, with a model-reported red assertion and
-fixed native green Vitest result (one pass, no skips). Independent reviewer
-`a272c952-bf70-47f9-81f6-67108fa606db` approved it as
-`fd94c23c-c3b9-4f5f-aaac-250f50305386`; later configuration requires a fresh
-acceptance basis. Separate exact release authority and production reproduction
-proof remain pending. Authorized maintenance now pauses trading and retains
-history; full encrypted pilot backup/isolated restore passes.
+Gate 4 exact candidate `7512bc395d65df0fca7cf701047033031f63eb7e` was deployed;
+observation failed at 1055 seconds on one API health probe with unchanged data,
+healthy frontend and ready API. Rollback queue finished on the baseline commit
+with a different rebuilt image; exact baseline image is absent from Docker and
+containerd. Worker stopped with signed closed-child checkpoint retained. Recovery
+is unqualified; this attempt does not certify Gate 4. Probe cause is unproven.
+Managed existing-commit continuation `2948f84d-fa86-4d14-8c73-621bc41ba6fb`
+proves native RED on the parent and GREEN on the unchanged candidate, paired
+unchanged state and a closed Windows Job. Current independent reviewer execution
+`0d66d98b-3f24-4ff9-a991-6ac9b1461ec9` approved the exact candidate as
+`655a3ade-567d-496e-821b-9a5fa2367d21`; release audit
+`def562bd-bb5f-44e7-abdb-822b02edefa4` assessed the full bounded context.
+Separate first-write consent and owner release authority were recorded.
+Grant `7f28822a-c4bd-444d-877f-f351038bf6cf` binds that review, material and
+single frontend scope. Normal Worker push, PR 1, review and exact merge pass.
+An uncertain merge was read back without repeating the mutation. Original
+uncertain configuration was proven absent against immutable protected preimage;
+the next configuration succeeded. Deployment `ra59fe70c4ae9d08d7cf9627` was
+dispatched once and finished; after its short queue wait expired, normal Worker
+reclaimed the signed closed checkpoint and reconciled the exact healthy runtime.
+No direct bootstrap pilot edit or manual pilot deployment counts as proof.
+
+Root production HTTP/PNG readback shows the original `/logo.png` screenshot
+declaration changed from 512x512 to the actual 1000x1000. This observation is
+distinct from managed coding/review and is supplied with provenance to the final
+verifier. Full encrypted backup/isolated restore
+`811332d3-67ab-4e9c-afae-c12bc374fa84` and unchanged schema/data pass.
+Trading and external sync remain paused, historical PAPER data retained and
+Gate 2 local branch preserved. The other five services and rollback images are
+protected. See [current application evidence](../operations/application-release.md)
+for exact image, digests, current state and retained historical failed attempts.
+This is one PWA repair plus audited existing frontend catch-up; it does not
+certify all product flows or LIVE trading. Historical older approvals and
+model-reported RED assertions are not the current native proof.
 Normal Windows Worker/Hermes coding produced exact candidate
 `de6ebe7a4267078196534a36f73ff9bccb09d3ae`; independent review
 `154d5cc2-904b-4413-9947-4820ee413648` and a separate native release audit

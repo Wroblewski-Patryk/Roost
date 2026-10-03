@@ -9,7 +9,7 @@ import { nativeBoundaryResultBlocked, object, wire } from "./task-review-contrac
 import { suspensionBlocks } from "./capability-suspension";
 import { freshWorkerOwner } from "../api-keys/worker-credential.service";
 import { requireRuntimeContent } from "./runtime-redaction-policy";
-import { createReleaseSchema, releaseIntentSchema, releaseOutcomeSchema, releaseDigest, releaseApprovalError, releaseWindowError, releaseIntentError, releaseOutcomeError, effectiveOutcome, releaseCandidateNativeError, renewReleaseSchema, releaseRenewalWindowError, releaseRenewalStateError, releasePurposeMatches, releaseIsGitSet } from "./governed-release-contract";
+import { createReleaseSchema, releaseIntentSchema, releaseOutcomeSchema, releaseDigest, releaseApprovalError, releaseWindowError, releaseIntentError, releaseOutcomeError, effectiveOutcome, releaseCandidateNativeError, renewReleaseSchema, releaseRenewalWindowError, releaseRenewalStateError, releasePurposeMatches, releaseIsGitSet, releaseSuccessorBasis } from "./governed-release-contract";
 type Db=Prisma.TransactionClient;
 // A completed result does not preserve authority after its task basis changes.
 // Reuse the current readiness validator, including admission expiry, without
@@ -119,6 +119,13 @@ export async function createRelease(db:Db,workspaceId:string,auth:AuthContext,bo
  await appLock(db,input.applicationId);
  const lockedPrior=(await db.$queryRaw<any[]>`SELECT * FROM governed_releases WHERE workspace_id=${workspaceId}::uuid AND request_id=${input.requestId}::uuid`)[0];
  if(lockedPrior)return lockedPrior.request_hash===hash?{...await releaseView(db,workspaceId,lockedPrior.id,auth),replayed:true}:{error:"release_request_conflict"};
+ let successorBasis;
+ if(input.predecessor) {
+  const predecessor=await load(db,workspaceId,input.predecessor.releaseId),basis=releaseSuccessorBasis(predecessor,input);
+  if(basis.error)return basis;
+  if(predecessor!.release.issuer_user_id!==auth.userId)return {error:"release_predecessor_issuer_required"};
+  successorBasis=basis.successorBasis;
+ }
  const s=await reviewState(db,workspaceId,input.taskId,auth),approvalError=releaseApprovalError(s,input);
  if(approvalError)return {error:approvalError};
  if((s as any).execution.agentHostId!==input.hostId)return {error:"release_host_invalid"};
@@ -132,10 +139,10 @@ export async function createRelease(db:Db,workspaceId:string,auth:AuthContext,bo
  if(await suspensionBlocks(db,workspaceId,input.taskId,input.applicationId,"runtime_execute",input.releaserAgentId,input.releaserCredentialId,input.hostId))return {error:"native_capability_suspended"};
  const active=await db.$queryRaw<any[]>`SELECT r.id FROM governed_releases r WHERE r.application_id=${input.applicationId}::uuid AND ((NOT EXISTS(SELECT 1 FROM governed_release_revocations v WHERE v.release_id=r.id) AND NOT EXISTS(SELECT 1 FROM governed_release_operations o JOIN governed_release_outcomes x ON x.operation_id=o.id WHERE o.release_id=r.id AND o.operation='cleanup' AND (x.status='succeeded' OR x.status='reconciled' AND x.reconciled_status='succeeded'))) OR EXISTS(SELECT 1 FROM governed_release_operations o WHERE o.release_id=r.id AND COALESCE((SELECT x.status FROM governed_release_outcomes x WHERE x.operation_id=o.id ORDER BY x.sequence DESC LIMIT 1),'unresolved') IN ('unresolved','uncertain')))`;
  if(active.length)return {error:"release_application_busy"};
- const id=randomUUID(),snapshot=wire({...input,readinessDigest,configurationDigest:config});
+ const id=randomUUID(),snapshot=wire({...input,readinessDigest,configurationDigest:config,...(successorBasis?{successorBasis}:{})});
  await db.$executeRaw`INSERT INTO governed_releases(id,workspace_id,task_id,application_id,host_id,release_execution_id,review_id,releaser_agent_id,releaser_credential_id,credential_version,issuer_user_id,expires_at,manifest_digest,configuration_digest,snapshot,request_id,request_hash)
  VALUES(${id}::uuid,${workspaceId}::uuid,${input.taskId}::uuid,${input.applicationId}::uuid,${input.hostId}::uuid,${input.releaseExecutionId}::uuid,${input.reviewId}::uuid,${input.releaserAgentId}::uuid,${input.releaserCredentialId}::uuid,${input.credentialVersion},${auth.userId}::uuid,${new Date(input.expiresAt)},${input.manifestDigest},${config},${JSON.stringify(snapshot)}::jsonb,${input.requestId}::uuid,${hash})`;
- const state=await load(db,workspaceId,id);await supplemental(db,workspaceId,state!.release,"authorized",{reviewId:input.reviewId,releaseExecutionId:input.releaseExecutionId,manifestDigest:input.manifestDigest},auth);
+ const state=await load(db,workspaceId,id);await supplemental(db,workspaceId,state!.release,"authorized",{reviewId:input.reviewId,releaseExecutionId:input.releaseExecutionId,manifestDigest:input.manifestDigest,...(successorBasis?{predecessorReleaseId:successorBasis.releaseId}:{})},auth);
  return {...publicState(state),replayed:false};
 }
 async function liveError(db:Db,workspaceId:string,state:any,auth:AuthContext) {
@@ -146,6 +153,11 @@ async function liveError(db:Db,workspaceId:string,state:any,auth:AuthContext) {
 }
 async function currentBasisError(db:Db,workspaceId:string,state:any,auth:AuthContext) {
  const r=state.release,s=r.snapshot;
+ if(s.predecessor||s.successorBasis) {
+  const predecessor=s.predecessor?await load(db,workspaceId,s.predecessor.releaseId):null,basis=releaseSuccessorBasis(predecessor,s);
+  if(basis.error)return basis.error;
+  if(releaseDigest(basis.successorBasis)!==releaseDigest(s.successorBasis))return "release_successor_basis_invalid";
+ }
  if(!await credential(db,workspaceId,s))return "release_credential_invalid";
  const review=await reviewState(db,workspaceId,r.task_id,auth),reviewError=releaseApprovalError(review,s);if(reviewError)return reviewError;
  if(!await releaseExecutionBasisCurrent(db,workspaceId,(review as any).execution))return "release_source_basis_changed";
@@ -178,6 +190,7 @@ export async function releaseIntent(db:Db,workspaceId:string,id:string,auth:Auth
  const principalError=await liveError(db,workspaceId,state,auth);if(principalError)return {error:principalError};
  const hash=releaseDigest({input,credentialId:auth.apiKeyId}),prior=(await db.$queryRaw<any[]>`SELECT * FROM governed_release_operations WHERE workspace_id=${workspaceId}::uuid AND request_id=${input.requestId}::uuid`)[0];
  if(prior)return prior.release_id===id&&prior.request_hash===hash?{...publicState(state),operation:camel(prior),replayed:true}:{error:"release_request_conflict"};
+ if(state.journal.some((j:any)=>j.operation==="cleanup"&&effectiveOutcome(j.outcome)==="succeeded"))return {error:"release_already_completed"};
  if(input.expectedVersion!==state.expectedVersion)return {error:"release_version_stale"};
  const error=releaseIntentError(state.release,input,state.journal);if(error)return {error};
  const operationId=randomUUID(),sequence=state.journal.length+1;

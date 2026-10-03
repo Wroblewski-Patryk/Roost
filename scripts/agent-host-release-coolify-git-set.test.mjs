@@ -68,6 +68,25 @@ function fixture() {
     tick: ms => { clock += ms; } };
 }
 const configured = async () => { const f = fixture(); await f.adapter.configureCandidate(f.manifest, f.binding); return f; };
+test('recognized rebuilt rollback image records failure with reads only; exact recovery health still refuses it',async()=>{
+ const f=fixture(),target=f.targets[0],deploymentId='rollback-api';
+ f.queues.get(target.targetId).push({targetId:target.targetId,deploymentId,commit:target.baseline.commit,createdAt:f.options.since,status:'finished'});
+ f.runtimes.get(target.targetId).deploymentId=deploymentId;f.runtimes.get(target.targetId).imageDigest=image('9');
+ const options={...f.options,targetId:target.targetId,rollback:true};
+ const result=await f.adapter.reconcileDeployment(f.manifest,f.binding,options);
+ assert.equal(result.state,'failed');assert.equal(result.healthy,false);assert.equal(result.failureKind,'rollback_image_mismatch');
+ assert.equal(result.deployedTargets[0].imageDigest,image('9'));assert.equal(result.deployedTargets[0].healthy,true);
+ assert.equal(result.deployedSetDigest,coolifyGitSetDeployedDigest(result.deployedTargets));
+ assert.equal(f.calls.filter(row=>['configure','deploy'].includes(row.action)).length,0);
+ await assert.rejects(f.adapter.health(f.manifest,f.binding,options),/runtime_identity_changed/);
+ for(const key of ['commit','tree','configDigest','schemaDigest']){
+  const old=f.runtimes.get(target.targetId)[key];f.runtimes.get(target.targetId)[key]=git('8');
+  await assert.rejects(f.adapter.reconcileDeployment(f.manifest,f.binding,options),/runtime_identity_changed/);f.runtimes.get(target.targetId)[key]=old;
+ }
+ f.runtimes.get(target.targetId).imageDigest=target.baseline.imageDigest;
+ const recovered=await f.adapter.reconcileDeployment(f.manifest,f.binding,options);
+ assert.equal(recovered.state,'finished');assert.equal(recovered.healthy,true);assert.equal(recovered.failureKind,undefined);
+});
 function preimageFixture() {
   const f = fixture(), rows = f.targets.map(target => ({ targetId: target.targetId, gitCommit: git('9'), configDigest: target.configDigest }));
   for (const row of rows) f.states.get(row.targetId).gitCommit = row.gitCommit;

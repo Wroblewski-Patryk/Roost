@@ -18,6 +18,8 @@ test('uncertain effect diagnostics preserve fixed native causes without error te
   assert.equal(releaseEffectDiagnostic(Error(message)),'release_effect_unproven');
 });
 test('release diagnostics retain only fixed admission reasons and discard arbitrary exception content',()=>{
+ assert.equal(releaseWorkerDiagnostic(Error('release_coolify_git_set_runtime_identity_changed')),'release_coolify_git_set_runtime_identity_changed');
+ assert.equal(releaseWorkerDiagnostic(Error('release_coolify_git_set_runtime_identity_changed\nprivate-value')),'release_preflight_unproven');
  assert.equal(releaseWorkerDiagnostic(Error('release_readiness_changed')),'release_readiness_changed');
  assert.equal(releaseWorkerDiagnostic(Error('release_api_uncertain')),'release_api_uncertain');
  assert.equal(releaseWorkerDiagnostic(Error('release_git_repository_changed')),'release_git_repository_changed');

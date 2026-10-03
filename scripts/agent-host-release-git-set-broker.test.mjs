@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import contract from './lib/agent-host-release-contract.cjs';
-import { runReleaseStep } from './lib/agent-host-release-broker.mjs';
+import { runReleaseStep, nextReleaseOperation } from './lib/agent-host-release-broker.mjs';
 const hash=c=>c.repeat(64),git=c=>c.repeat(40);
 function fixture(operation='deploy'){
  const at=new Date().toISOString(),snapshot={requestId:randomUUID(),taskId:randomUUID(),applicationId:randomUUID(),hostId:randomUUID(),
@@ -69,6 +69,48 @@ test('source test: source configure journals source aggregate before images exis
  const e=f.state.journal.at(-1).outcome.evidence;
  assert.equal(e.artifactSetDigest,f.m.deployment.artifactSetDigest);assert.equal(e.deployedCommit,f.snapshot.commit);
  assert.equal(e.imageDigest,undefined);assert.equal(e.deployedTargets,undefined);
+});
+
+test('diagnosed rollback image failure preserves actual journal and permits only a fresh strict rollback intent',async()=>{
+ const f=fixture('deploy'),t=f.m.deployment.targets[0],at=new Date().toISOString(),row={targetId:t.targetId,...t.baseline,imageDigest:`sha256:${hash('9')}`,schemaDigest:f.m.rollback.schemaDigest,healthy:true,deploymentId:'rebuilt-api'};
+ const e={observedAt:at,deployedCommit:f.m.rollback.commit,deployedTree:f.snapshot.baseTree,artifactSetDigest:f.m.rollback.artifactSetDigest,configDigest:f.m.rollback.configDigest,schemaDigest:f.m.rollback.schemaDigest,dataDigest:f.m.baseline.dataDigest,healthDigest:hash('5'),healthy:false,failureKind:'rollback_image_mismatch',deployedTargets:[row],deploymentIds:[{targetId:t.targetId,deploymentId:row.deploymentId}],deployedSetDigest:contract.releaseDigest([{...t.baseline,targetId:t.targetId,imageDigest:row.imageDigest,schemaDigest:row.schemaDigest}])};
+ f.state.journal.push({id:randomUUID(),operation:'observe',intent:{parameters:{mode:'candidate'}},outcome:{status:'failed',evidence:{healthy:false}}},{id:randomUUID(),operation:'rollback_config',intent:{parameters:{}},outcome:{status:'succeeded',evidence:{}}},{id:randomUUID(),operation:'rollback',createdAt:at,intent:{parameters:{targetId:t.targetId}},outcome:{status:'uncertain',evidence:{}}});
+ f.args.coolify.reconcileDeployment=async()=>({state:'failed',...e});
+ await runReleaseStep(f.args);
+ const failed=f.state.journal.at(-1);assert.equal(failed.outcome.status,'reconciled');assert.equal(failed.outcome.reconciledStatus,'failed');assert.equal(failed.outcome.evidence.failureKind,'rollback_image_mismatch');
+ assert.equal(nextReleaseOperation(f.state),'rollback');assert.equal(f.calls.filter(c=>c.action==='deploy').length,0);
+ failed.outcome.evidence.deployedTargets[0].imageDigest=t.baseline.imageDigest;
+ assert.throws(()=>nextReleaseOperation(f.state),/release_recovery_diagnosis_required/);
+});
+
+function successorFixture(){
+ const f=fixture('deploy_config'),releaseId=randomUUID(),expectedVersion=hash('a');
+ f.state.journal=[];f.snapshot.predecessor={releaseId,expectedVersion};
+ f.snapshot.successorBasis={schemaVersion:'roost-release-successor-v1',releaseId,expectedVersion,mergeOperationId:randomUUID(),rollbackObservationOperationId:randomUUID(),cleanupOperationId:randomUUID(),rollbackDeploymentIds:f.m.deployment.targets.map(t=>({targetId:t.targetId,deploymentId:'rollback-'+t.targetId}))};
+ f.args.coolify.inspect=async()=>{f.calls.push({action:'actual_baseline_inspection'});};
+ for(const op of ['push','pr','review','merge'])f.args.github[op]=async()=>{throw Error('git_mutation_must_not_repeat');};
+ return f;
+}
+test('source test: successor uses exact existing publication and new baseline inspection without fictitious Git operations',async()=>{
+ const f=successorFixture();assert.equal(nextReleaseOperation(f.state),'deploy_config');
+ await runReleaseStep(f.args);assert.deepEqual(f.state.journal.map(x=>x.operation),['deploy_config']);
+ assert.equal(f.calls.filter(x=>x.action==='actual_baseline_inspection').length,1);
+ assert.equal(f.state.journal[0].outcome.status,'succeeded');
+});
+test('source test: successor rejects changed actual main before intent and never substitutes candidate for its parent',async()=>{
+ const f=successorFixture();f.args.inspectCheckout=async(_m,commit,parent,tree)=>{assert.equal(parent,f.snapshot.baseCommit);assert.equal(commit,f.snapshot.commit);assert.equal(tree,f.snapshot.candidateTree);};
+ f.args.github.inspect=async()=>({remoteBase:f.snapshot.baseCommit,remoteTree:f.snapshot.baseTree});
+ await assert.rejects(runReleaseStep(f.args),/release_base_changed/);assert.equal(f.state.journal.length,0);
+});
+test('source test: client supplied predecessor without server basis and forged or self lineage fail closed',async()=>{
+ for(const change of ['missing','version','target','self']){
+  const f=successorFixture();
+  if(change==='missing')delete f.snapshot.successorBasis;
+  if(change==='version')f.snapshot.successorBasis.expectedVersion=hash('b');
+  if(change==='target')f.snapshot.successorBasis.rollbackDeploymentIds[0].targetId='outside';
+  if(change==='self'){f.snapshot.predecessor.releaseId=f.state.release.id;f.snapshot.successorBasis.releaseId=f.state.release.id;}
+  await assert.rejects(runReleaseStep(f.args),/release_successor_binding_changed/);assert.equal(f.state.journal.length,0);
+ }
 });
 
 test('source test: configuration absence retains actual baseline rows and reconciles without a write',async()=>{

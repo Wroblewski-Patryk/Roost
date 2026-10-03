@@ -25,13 +25,15 @@ export function nextReleaseOperation(state){
  if(j.some(x=>!releaseOutcomeStatus(x.outcome)||releaseOutcomeStatus(x.outcome)==='uncertain'))return 'reconcile';
  if(state.status!=='active')return null;
  if(j.some(x=>x.operation==='rollback'&&releaseOutcomeStatus(x.outcome)==='failed'
+  &&!contract.releaseRollbackImageFailureValid(state.release.snapshot,x.outcome.evidence,x.intent.parameters.targetId)
   ||x.operation==='observe'&&x.intent.parameters.mode==='rollback'&&releaseOutcomeStatus(x.outcome)==='failed'))fail('release_recovery_diagnosis_required');
  if(j.some(x=>['deploy','observe'].includes(x.operation)&&releaseOutcomeStatus(x.outcome)==='failed')){
   if(!done('rollback_config'))return 'rollback_config';if(contract.isGitSetManifest(state.release.snapshot.manifest)?!completedSet(state,'rollback'):!done('rollback'))return 'rollback';
   if(!j.some(x=>x.operation==='observe'&&x.intent.parameters.mode==='rollback'&&releaseOutcomeStatus(x.outcome)==='succeeded'))return 'observe';
   return nextCleanup(state);
  }
- return ['push','pr','review','merge','deploy_config','deploy','observe'].find(op=>op==='deploy'&&contract.isGitSetManifest(state.release.snapshot.manifest)?!completedSet(state,'deploy'):!done(op))??nextCleanup(state);
+ const sequence=contract.releaseHasSuccessor(state.release.snapshot)?['deploy_config','deploy','observe']:['push','pr','review','merge','deploy_config','deploy','observe'];
+ return sequence.find(op=>op==='deploy'&&contract.isGitSetManifest(state.release.snapshot.manifest)?!completedSet(state,'deploy'):!done(op))??nextCleanup(state);
 }
 function nextCleanup(state){
  const j=state.journal,done=(op,resource)=>j.some(x=>x.operation===op&&releaseOutcomeStatus(x.outcome)==='succeeded'&&(!resource||x.intent.parameters.resourceId===resource));
@@ -66,8 +68,9 @@ async function verifyRetention(manifest,binding,{resources,github,inspectCheckou
 }
 function validateState(state,client){
  if(!state?.release?.id||!Array.isArray(state.journal))fail('release_view_invalid');
- const {readinessDigest:_readiness,configurationDigest:_configuration,...snapshot}=state.release.snapshot;
+ const {readinessDigest:_readiness,configurationDigest:_configuration,successorBasis,...snapshot}=state.release.snapshot;
  const s=contract.createReleaseSchema.parse(snapshot);
+ if(s.predecessor||successorBasis){if(s.predecessor?.releaseId===state.release.id||!contract.releaseHasSuccessor({...s,successorBasis}))fail('release_successor_binding_changed');s.successorBasis=successorBasis;}
  if(s.hostId!==client.hostId||s.releaserAgentId!==client.agentId||state.release.manifestDigest!==s.manifestDigest
   ||contract.releaseDigest(s.manifest)!==s.manifestDigest)fail('release_binding_changed');
  return {...s,releaseId:state.release.id};
@@ -97,7 +100,7 @@ function gitSetEvidence(e,manifest,binding,{configuration=false,rollback=false,d
  const result={deployedCommit:e.deployedCommit??e.commit,artifactSetDigest:e.artifactSetDigest,
   configDigest:e.configDigest,schemaDigest:e.schemaDigest};
  if(configuration)return result;
- for(const key of ['deployedTree','deployedSetDigest','deployedTargets','healthDigest','dataDigest','healthy','observationSeconds','absenceVerified'])
+ for(const key of ['deployedTree','deployedSetDigest','deployedTargets','healthDigest','dataDigest','healthy','observationSeconds','absenceVerified','failureKind'])
   if(e[key]!==undefined)result[key]=e[key];
  result.deploymentIds=deploymentIds??e.deploymentIds;
  return result;
@@ -153,7 +156,7 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
  // Validate actual checkout and remote base before requesting a capability.
  const cleanupStage=['cleanup','cleanup_local','cleanup_resource','archive_repository'].includes(operation);
  if(operation!=='cleanup')await inspectCheckout(m,s.commit,s.baseCommit,s.candidateTree);
- const remote=await github.inspect(m,{allowArchived:cleanupStage&&!contract.retainsApplication(m)}),merged=state.journal.some(j=>j.operation==='merge'&&releaseOutcomeStatus(j.outcome)==='succeeded');
+ const remote=await github.inspect(m,{allowArchived:cleanupStage&&!contract.retainsApplication(m)}),merged=contract.releaseHasSuccessor(state.release.snapshot)||state.journal.some(j=>j.operation==='merge'&&releaseOutcomeStatus(j.outcome)==='succeeded');
  if(remote.remoteBase!==(merged?s.commit:s.baseCommit)
   ||remote.remoteTree!==(merged?s.candidateTree:s.baseTree))fail('release_base_changed');
  if(!state.journal.length)await coolify.inspect(m,s);

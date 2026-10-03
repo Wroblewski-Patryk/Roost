@@ -28,6 +28,7 @@ for (const reason of ['release_git_repository_changed','release_git_checkout_cha
 for (const reason of ['native_assignment_unobserved','native_resume_or_cleanup_unproven','git_ownership_unproven','git_config_unreadable','git_repository_unavailable','native_access_denied','native_exit_failed',
  'ssh_timeout','ssh_connection_closed','ssh_host_identity_unproven']) releaseDiagnosticReasons.add('release_child_'+reason);
 releaseDiagnosticReasons.add('release_native_request_bounds_invalid');
+releaseDiagnosticReasons.add('release_coolify_git_set_runtime_identity_changed');
 export function releaseWorkerDiagnostic(error){
  for(let depth=0;error&&depth<4;depth++,error=error.cause)if(releaseDiagnosticReasons.has(error.message))return error.message;
  return 'release_preflight_unproven';
@@ -158,7 +159,8 @@ export async function runGovernedReleaseQueueStep({config,baseUrl,hostId,writerL
   const result=await withReleaseProcessScope(prepared,context,()=>{
    let resources,coolify,assertClone;
    if(set){
-    const installed=createInstalledGitSetRelease({settings:settings.gitSet,state,backup,github,coolifyCredential:coolifyKey});
+    const installed=createInstalledGitSetRelease({settings:settings.gitSet,state,backup,github,coolifyCredential:coolifyKey},
+     {readReleaseState:()=>api(`/v1/agent-runtime/releases/${state.release.id}`)});
     ({resources,coolify,assertClone}=installed);
    }else{
     resources=createReleaseCleanupGateway({resources:gateway,coolify:settings.coolify,credential:async()=>coolifyKey,images});

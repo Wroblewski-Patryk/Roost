@@ -82,8 +82,10 @@ const gitSetManifestSchema=gitSetManifestObject.superRefine((m,c)=>{
 const manifestSchema=z.union([certificationManifestSchema,applicationManifestSchema,gitSetManifestSchema]);
 const retainsApplication=m=>m?.schemaVersion==="roost-release-manifest-v2"&&m?.purpose==="application_release"&&m?.cleanup?.archiveRepository===false;
 const releaseExpirySchema=z.string().datetime();
-const createReleaseSchema=z.object({requestId:id,taskId:id,applicationId:id,hostId:id,releaseExecutionId:id,releaserAgentId:id,releaserCredentialId:id,credentialVersion:z.number().int().positive(),reviewId:id,materialVersion:hash,commit:sha,candidateTree:sha,baseCommit:sha,baseTree:sha,releaserRevision:z.string().datetime(),expiresAt:releaseExpirySchema,manifest:manifestSchema,manifestDigest:hash}).strict().superRefine((s,c)=>{
+const predecessorSchema=z.object({releaseId:id,expectedVersion:hash}).strict();
+const createReleaseSchema=z.object({requestId:id,taskId:id,applicationId:id,hostId:id,releaseExecutionId:id,releaserAgentId:id,releaserCredentialId:id,credentialVersion:z.number().int().positive(),reviewId:id,materialVersion:hash,commit:sha,candidateTree:sha,baseCommit:sha,baseTree:sha,releaserRevision:z.string().datetime(),expiresAt:releaseExpirySchema,manifest:manifestSchema,manifestDigest:hash,predecessor:predecessorSchema.optional()}).strict().superRefine((s,c)=>{
  if(isGitSetManifest(s.manifest)&&(s.manifest.deployment.artifactSetDigest!==gitSetArtifactDigest(s.manifest,s)||s.manifest.baseline.commit!==s.baseCommit))c.addIssue({code:'custom',message:'release_source_set_mismatch'});
+ if(s.predecessor&&!isGitSetManifest(s.manifest))c.addIssue({code:'custom',message:'release_successor_scope_invalid'});
 });
 const operations=["push","pr","review","merge","deploy_config","deploy","observe","rollback_config","rollback","cleanup_resource","archive_repository","cleanup_local","cleanup"];
 const parametersSchema=z.object({targetId:text.optional(),branch:text.optional(),pullRequestNumber:z.number().int().positive().optional(),deploymentId:text.optional(),commit:sha.optional(),imageDigest:image.optional(),artifactSetDigest:hash.optional(),configDigest:hash.optional(),schemaDigest:hash.optional(),mode:z.enum(["candidate","rollback"]).optional(),faultInjection:z.boolean().optional(),resourceId:text.optional(),resourceIds:z.array(text).max(30).optional()}).strict();
@@ -92,9 +94,40 @@ const intentSchema=z.object({requestId:id,operation:z.enum(operations),manifestD
  if(Object.keys(v.parameters).some(k=>!allowed.includes(k)))c.addIssue({code:"custom",message:"operation_parameters_outside_scope"});
 });
 const deploymentIdentity=z.object({targetId:text,deploymentId:text}).strict();
+// This is server-derived immutable evidence, never owner-supplied create input.
+const releaseSuccessorBasisSchema=z.object({schemaVersion:z.literal('roost-release-successor-v1'),releaseId:id,expectedVersion:hash,
+ mergeOperationId:id,rollbackObservationOperationId:id,cleanupOperationId:id,
+ rollbackDeploymentIds:z.array(deploymentIdentity).min(1).max(6)}).strict();
+const releaseHasSuccessor=s=>{
+ const parsed=releaseSuccessorBasisSchema.safeParse(s?.successorBasis);
+ if(!parsed.success||!isGitSetManifest(s?.manifest)||!manifestSchema.safeParse(s.manifest).success||parsed.data.releaseId!==s.predecessor?.releaseId
+  ||parsed.data.expectedVersion!==s.predecessor?.expectedVersion)return false;
+ const rows=parsed.data.rollbackDeploymentIds,targets=s.manifest.deployment.targets;
+ return rows.length===targets.length&&new Set(rows.map(r=>r.targetId)).size===rows.length
+  &&new Set(rows.map(r=>r.deploymentId)).size===rows.length&&targets.every(t=>rows.some(r=>r.targetId===t.targetId));
+};
 const deployedTarget=z.object({targetId:text,commit:sha,tree:sha,imageDigest:image,configDigest:hash,schemaDigest:hash,healthy:z.boolean(),deploymentId:text.optional()}).strict();
-const evidenceSchema=z.object({observedAt:z.string().datetime(),remoteCommit:sha.optional(),remoteBase:sha.optional(),remoteTree:sha.optional(),pullRequestNumber:z.number().int().positive().optional(),prHeadCommit:sha.optional(),prMerged:z.boolean().optional(),reviewApproved:z.boolean().optional(),mergedCommit:sha.optional(),deploymentId:text.optional(),deploymentIds:z.array(deploymentIdentity).min(1).max(6).optional(),deployedTargets:z.array(deployedTarget).min(1).max(6).optional(),artifactSetDigest:hash.optional(),deployedSetDigest:hash.optional(),deployedCommit:sha.optional(),deployedTree:sha.optional(),imageDigest:image.optional(),configDigest:hash.optional(),schemaDigest:hash.optional(),healthDigest:hash.optional(),dataDigest:hash.optional(),backupDigest:hash.optional(),restoreDigest:hash.optional(),healthy:z.boolean().optional(),observationSeconds:z.number().int().nonnegative().max(3600).optional(),resourceIds:z.array(text).max(30).optional(),resourcePresent:z.boolean().optional(),repositoryArchived:z.boolean().optional(),localAbsent:z.boolean().optional(),absenceVerified:z.boolean().optional(),retentionVerified:z.boolean().optional(),repositoryUrl:url.optional(),canonicalDir:dir.optional(),targetId:text.optional(),applicationActive:z.boolean().optional(),localCommit:sha.optional(),localTree:sha.optional(),protectedResourcesDigest:hash.optional()}).strict();
+const evidenceSchema=z.object({observedAt:z.string().datetime(),failureKind:z.literal('rollback_image_mismatch').optional(),remoteCommit:sha.optional(),remoteBase:sha.optional(),remoteTree:sha.optional(),pullRequestNumber:z.number().int().positive().optional(),prHeadCommit:sha.optional(),prMerged:z.boolean().optional(),reviewApproved:z.boolean().optional(),mergedCommit:sha.optional(),deploymentId:text.optional(),deploymentIds:z.array(deploymentIdentity).min(1).max(6).optional(),deployedTargets:z.array(deployedTarget).min(1).max(6).optional(),artifactSetDigest:hash.optional(),deployedSetDigest:hash.optional(),deployedCommit:sha.optional(),deployedTree:sha.optional(),imageDigest:image.optional(),configDigest:hash.optional(),schemaDigest:hash.optional(),healthDigest:hash.optional(),dataDigest:hash.optional(),backupDigest:hash.optional(),restoreDigest:hash.optional(),healthy:z.boolean().optional(),observationSeconds:z.number().int().nonnegative().max(3600).optional(),resourceIds:z.array(text).max(30).optional(),resourcePresent:z.boolean().optional(),repositoryArchived:z.boolean().optional(),localAbsent:z.boolean().optional(),absenceVerified:z.boolean().optional(),retentionVerified:z.boolean().optional(),repositoryUrl:url.optional(),canonicalDir:dir.optional(),targetId:text.optional(),applicationActive:z.boolean().optional(),localCommit:sha.optional(),localTree:sha.optional(),protectedResourcesDigest:hash.optional()}).strict();
+// A diagnosed failure describes the actual rebuilt image. It never proves a
+// successful rollback or permits a changed source/configuration/data baseline.
+const releaseRollbackImageFailureValid=(s,e,targetId)=>{
+ if(!isGitSetManifest(s?.manifest)||!manifestSchema.safeParse(s.manifest).success||!sha.safeParse(s?.baseTree).success
+  ||typeof targetId!=='string'||!evidenceSchema.safeParse(e).success)return false;
+ const m=s.manifest,t=m.deployment.targets.find(t=>t.targetId===targetId),rows=e.deployedTargets,queues=e.deploymentIds;
+ if(!t||e.failureKind!=='rollback_image_mismatch'||e.healthy!==false||e.imageDigest!==undefined||e.deploymentId!==undefined
+  ||e.repositoryArchived===true||e.localAbsent===true
+  ||e.deployedCommit!==m.rollback.commit||e.deployedTree!==s.baseTree||e.artifactSetDigest!==m.rollback.artifactSetDigest
+  ||e.artifactSetDigest!==gitSetArtifactDigest(m,s,true)||e.configDigest!==m.rollback.configDigest||e.schemaDigest!==m.rollback.schemaDigest
+  ||e.dataDigest!==m.baseline.dataDigest||!hash.safeParse(e.healthDigest).success
+  ||!Array.isArray(rows)||rows.length!==1||!Array.isArray(queues)||queues.length!==1)return false;
+ const r=rows[0],q=queues[0];
+ if(r.targetId!==targetId||r.commit!==t.baseline.commit||r.tree!==t.baseline.tree||r.configDigest!==t.baseline.configDigest
+  ||r.schemaDigest!==m.rollback.schemaDigest||r.imageDigest===t.baseline.imageDigest||!image.safeParse(r.imageDigest).success
+  ||typeof r.healthy!=='boolean'||!text.safeParse(r.deploymentId).success||q.targetId!==targetId||q.deploymentId!==r.deploymentId)return false;
+ const actual={targetId:r.targetId,commit:r.commit,tree:r.tree,imageDigest:r.imageDigest,configDigest:r.configDigest,schemaDigest:r.schemaDigest};
+ return e.deployedSetDigest===releaseDigest([actual]);
+};
 const outcomeSchema=z.object({requestId:id,status:z.enum(["succeeded","failed","uncertain","reconciled"]),reconciledStatus:z.enum(["succeeded","absent","failed"]).optional(),observationOnly:z.boolean(),evidence:evidenceSchema}).strict().superRefine((v,c)=>{if(v.status==="reconciled"?(!v.observationOnly||!v.reconciledStatus):v.reconciledStatus!==undefined)c.addIssue({code:"custom",message:"reconciliation_shape_invalid"});});
 const canonical=v=>Array.isArray(v)?v.map(canonical):v&&typeof v==="object"?Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])])):v;
 const releaseDigest=v=>createHash("sha256").update(JSON.stringify(canonical(v))).digest("hex");
-module.exports={manifestSchema,createReleaseSchema,intentSchema,outcomeSchema,operations,releaseDigest,retainsApplication,applicationManifestObject,refineApplicationManifest,gitSetManifestObject,isGitSetManifest,gitSetArtifactDigest,releaseExpirySchema};
+module.exports={manifestSchema,createReleaseSchema,intentSchema,outcomeSchema,operations,releaseDigest,retainsApplication,applicationManifestObject,refineApplicationManifest,gitSetManifestObject,isGitSetManifest,gitSetArtifactDigest,releaseExpirySchema,releaseSuccessorBasisSchema,releaseHasSuccessor,releaseRollbackImageFailureValid};

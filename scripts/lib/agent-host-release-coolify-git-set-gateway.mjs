@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import contract from './agent-host-release-contract.cjs';
+import { dockerfileConfigurationFields } from './agent-host-release-dockerfile-state.mjs';
 
 const hash = /^[a-f0-9]{64}$/, sha = /^[a-f0-9]{40}$/, image = /^sha256:[a-f0-9]{64}$/;
 const id = /^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/;
@@ -12,6 +13,76 @@ const exact = (value, keys) => value && typeof value === 'object' && !Array.isAr
   && Object.keys(value).every(key => keys.includes(key));
 const date = value => typeof value === 'string' && Number.isFinite(Date.parse(value));
 const digest = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
+
+// Fixed installed capability. Exported for executing this same program against
+// source-test doubles; no PHP or shell supplied by a model enters this function.
+export const coolifyGitSetRollbackPreparationPhp = String.raw`
+function roost_canonical($v){if(is_object($v))$v=get_object_vars($v);if(is_array($v)){if(!array_is_list($v))ksort($v,SORT_STRING);foreach($v as $k=>$x)$v[$k]=roost_canonical($x);}return $v;}
+function roost_encoded($v){return json_encode(roost_canonical($v),JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);}
+function roost_hashed($v){return hash('sha256',roost_encoded($v));}
+function roost_rows($v){usort($v,fn($a,$b)=>strcmp(roost_hashed($a),roost_hashed($b)));return $v;}
+function roost_pick($v,$keys){$r=[];foreach($keys as $key)$r[$key]=$v[$key]??null;return $r;}
+function roost_config_digest($a){$raw=$a->toArray();$settings=$a->settings->toArray();$configuration=[];
+ $configurationFields=json_decode(base64_decode('${Buffer.from(JSON.stringify(dockerfileConfigurationFields)).toString('base64')}'),true,32,JSON_THROW_ON_ERROR);
+ foreach($configurationFields as $key)$configuration[$key]=$raw[$key]??$settings[$key]??null;
+ $env=[];foreach($a->environment_variables->merge($a->environment_variables_preview) as $item){$v=$item->toArray();$v['value']=$item->value;
+  if(!is_string($v['key']??null)||!is_string($v['value']))throw new Exception('environment');$env[]=roost_pick($v,['key','value','is_build_time','is_runtime','is_preview','is_literal','is_multiline','is_shown_once']);}
+ $persistent=[];foreach($a->persistentStorages as $item)$persistent[]=roost_pick($item->toArray(),['name','mount_path','host_path','is_readonly','resource_type']);
+ $files=[];foreach($a->fileStorages as $item){if(!is_string($item->content))throw new Exception('storage');$x=roost_pick($item->toArray(),['fs_path','mount_path','is_directory','is_based_on_git','is_readonly']);$x['contentDigest']=roost_hashed($item->content);$files[]=$x;}
+ $topology=['applicationId'=>(string)$a->id,'projectId'=>(string)$a->environment->project_id,'environmentId'=>(string)$a->environment_id,
+  'destinationId'=>(string)$a->destination_id,'destinationType'=>$a->destination_type,'serverId'=>(string)$a->destination->server->id];
+ return roost_hashed(['configuration'=>$configuration,'environmentHash'=>roost_hashed(roost_rows($env)),
+  'storageHash'=>roost_hashed(['persistent'=>roost_rows($persistent),'files'=>roost_rows($files)]),'topology'=>$topology]);}
+function roost_prepare_rollback($a,$p,$readSource,$run){
+ $r=$p['rollbackImage'];
+ if(!$p['rollback']||$readSource('/var/www/html/app/Models/Application.php')!==$r['applicationModel'])throw new Exception('source');
+ if($a->build_pack!=='dockerfile'||$a->dockerfile||$a->docker_registry_image_name||$a->git_commit_sha!==$p['commit']
+  ||$a->settings->is_auto_deploy_enabled!==false||$a->settings->is_build_server_enabled||$a->additional_servers->count()>0)throw new Exception('scope');
+ if(App\Models\ApplicationDeploymentQueue::whereIn('status',['queued','in_progress'])->exists())throw new Exception('queue');
+ $sealedConfig=fn()=>roost_config_digest($a);
+ if($sealedConfig()!==$r['configDigest']||$a->isConfigurationChanged(false)!==false)throw new Exception('configuration');
+ $alias=$a->uuid.':'.$p['commit'];
+ $inspect=fn($ref)=>trim($run('docker image inspect --format '.escapeshellarg('{{.Id}}').' -- '.escapeshellarg($ref).' 2>/dev/null || true'));
+ if($inspect($r['imageDigest'])!==$r['imageDigest'])throw new Exception('image');
+ $current=$inspect($alias);
+ if($current!==''&&$current!==$r['imageDigest']&&$current!==$r['previousImageDigest'])throw new Exception('alias');
+ if($current!==$r['imageDigest'])$run('docker image tag -- '.escapeshellarg($r['imageDigest']).' '.escapeshellarg($alias));
+ $a->refresh();
+ if($inspect($alias)!==$r['imageDigest']||$sealedConfig()!==$r['configDigest']||$a->git_commit_sha!==$p['commit']
+  ||$a->settings->is_auto_deploy_enabled!==false||$a->isConfigurationChanged(false)!==false
+  ||App\Models\ApplicationDeploymentQueue::whereIn('status',['queued','in_progress'])->exists())throw new Exception('postcondition');
+}
+`;
+
+export const coolifyGitSetBaselinePreservationPhp = String.raw`
+function roost_preserve_baseline($a,$p,$readSource,$run){
+ $r=$p['preserveImage'];
+ if($readSource('/var/www/html/app/Models/Application.php')!==$r['applicationModel']
+  ||$readSource('/var/www/html/app/Actions/Server/CleanupDocker.php')!==$r['cleanupAction'])throw new Exception('source');
+ if($a->build_pack!=='dockerfile'||$a->dockerfile||$a->docker_registry_image_name||$a->git_commit_sha!==$p['commit']
+  ||$a->settings->is_auto_deploy_enabled!==false||$a->settings->is_build_server_enabled||$a->additional_servers->count()>0
+  ||roost_config_digest($a)!==$r['configDigest'])throw new Exception('configuration');
+ if(App\Models\ApplicationDeploymentQueue::whereIn('status',['queued','in_progress'])->exists())throw new Exception('queue');
+ $keep=$a->settings->docker_images_to_keep;
+ if($a->destination->server->settings->disable_application_image_retention!==false||!is_int($keep)||$keep<3)throw new Exception('retention');
+ $refs=trim($run('docker images --format '.escapeshellarg('{{.Repository}}:{{.Tag}}').' --filter '.escapeshellarg('reference='.$a->uuid.'*')));
+ $rows=$refs===''?[]:explode("\n",$refs);$regular=[];
+ foreach($rows as $ref){$ref=trim($ref);if(!preg_match('/^'.preg_quote($a->uuid,'/').'[A-Za-z0-9_-]*:[A-Za-z0-9_.-]+$/',$ref))throw new Exception('references');
+  $tag=substr($ref,strrpos($ref,':')+1);if(!str_starts_with($tag,'pr-')&&!str_ends_with($tag,'-build'))$regular[$ref]=true;}
+ if(count($regular)+2>$keep)throw new Exception('retention');
+ $inspect=fn($ref)=>trim($run('docker image inspect --format '.escapeshellarg('{{.Id}}').' -- '.escapeshellarg($ref).' 2>/dev/null || true'));
+ if($inspect($r['imageDigest'])!==$r['imageDigest'])throw new Exception('image');
+ $alias=$a->uuid.':roost-baseline-'.$r['baselineCommit'];$current=$inspect($alias);
+ if($current!==''&&$current!==$r['imageDigest'])throw new Exception('alias');
+ // Rollback only verifies the alias created before candidate deployment.
+ if($p['rollback']&&$current!==$r['imageDigest'])throw new Exception('preserved_alias');
+ if(!$p['rollback']&&$current==='')$run('docker image tag -- '.escapeshellarg($r['imageDigest']).' '.escapeshellarg($alias));
+ $a->refresh();
+ if($inspect($alias)!==$r['imageDigest']||roost_config_digest($a)!==$r['configDigest']||$a->git_commit_sha!==$p['commit']
+  ||$a->settings->is_auto_deploy_enabled!==false||$a->destination->server->settings->disable_application_image_retention!==false
+  ||$a->settings->docker_images_to_keep!==$keep||App\Models\ApplicationDeploymentQueue::whereIn('status',['queued','in_progress'])->exists())throw new Exception('postcondition');
+}
+`;
 
 /** Stable across lost replies and process restarts; never use a fresh ID on retry. */
 export function coolifyGitSetDeploymentId({ releaseId, operationId, targetId, rollback = false }) {
@@ -28,6 +99,8 @@ try {
 require '/var/www/html/vendor/autoload.php';
 $app = require '/var/www/html/bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+${coolifyGitSetRollbackPreparationPhp}
+${coolifyGitSetBaselinePreservationPhp}
 if (!is_array($p) || !in_array($p['operation'], ['read', 'dispatch'], true)) throw new Exception('input');
 $application = App\Models\Application::where('uuid', $p['targetId'])->first();
 if (!$application || $application->build_pack !== 'dockerfile' || $application->dockerfile_location !== $p['dockerfile']) throw new Exception('target');
@@ -48,6 +121,10 @@ if ($p['operation'] === 'dispatch') {
    return;
   }
   if ($application->settings->is_auto_deploy_enabled !== false || $application->git_commit_sha !== $p['commit']) throw new Exception('configuration');
+  if (isset($p['preserveImage'])) roost_preserve_baseline($application,$p,
+   fn($path)=>hash_file('sha256',$path),fn($command)=>instant_remote_process([$command],$application->destination->server,true));
+  if (isset($p['rollbackImage'])) roost_prepare_rollback($application,$p,
+   fn($path)=>hash_file('sha256',$path),fn($command)=>instant_remote_process([$command],$application->destination->server,true));
   queue_application_deployment(application: $application, deployment_uuid: $p['deploymentId'], commit: $p['commit'],
    force_rebuild: false, is_api: true, rollback: $p['rollback']);
  });
@@ -69,12 +146,20 @@ export function createFixedCoolifyGitSetSshTransport({ runOwned, sshBinary, sshH
     && Number.isInteger(timeoutMs) && timeoutMs >= 1000 && timeoutMs <= 30000, 'transport_config_invalid');
   return Object.freeze({ async run(operation, payload) {
     assert(['read', 'dispatch'].includes(operation) && exact(payload,
-      ['targetId', 'dockerfile', 'deploymentId', 'commit', 'rollback', 'sourcePins'])
+      ['targetId', 'dockerfile', 'deploymentId', 'commit', 'rollback', 'sourcePins', 'rollbackImage', 'preserveImage'])
       && validId(payload.targetId) && /^\/[A-Za-z0-9._/-]+$/.test(payload.dockerfile)
       && !payload.dockerfile.split('/').some(part => ['.', '..'].includes(part))
       && /^r[a-f0-9]{23}$/.test(payload.deploymentId) && sha.test(payload.commit)
       && typeof payload.rollback === 'boolean' && exact(payload.sourcePins, ['queueHelper', 'deploymentJob'])
-      && hash.test(payload.sourcePins.queueHelper) && hash.test(payload.sourcePins.deploymentJob), 'transport_input_invalid');
+      && hash.test(payload.sourcePins.queueHelper) && hash.test(payload.sourcePins.deploymentJob)
+      && (payload.rollbackImage === undefined || operation === 'dispatch' && payload.rollback === true
+        && exact(payload.rollbackImage, ['imageDigest', 'previousImageDigest', 'tree', 'configDigest', 'applicationModel'])
+        && image.test(payload.rollbackImage.imageDigest) && (payload.rollbackImage.previousImageDigest === null || image.test(payload.rollbackImage.previousImageDigest))
+        && sha.test(payload.rollbackImage.tree) && hash.test(payload.rollbackImage.configDigest) && hash.test(payload.rollbackImage.applicationModel))
+      && (payload.preserveImage === undefined || operation === 'dispatch'
+        && exact(payload.preserveImage, ['baselineCommit', 'imageDigest', 'tree', 'configDigest', 'applicationModel', 'cleanupAction'])
+        && sha.test(payload.preserveImage.baselineCommit) && image.test(payload.preserveImage.imageDigest) && sha.test(payload.preserveImage.tree)
+        && hash.test(payload.preserveImage.configDigest) && hash.test(payload.preserveImage.applicationModel) && hash.test(payload.preserveImage.cleanupAction)), 'transport_input_invalid');
     const encoded = Buffer.from(JSON.stringify({ ...payload, operation })).toString('base64');
     const stdin = `<?php\n$p=json_decode(base64_decode('${encoded}',true),true,32,JSON_THROW_ON_ERROR);\n${phpBody}`;
     let result;
@@ -104,7 +189,7 @@ function validQueue(row) {
  * git_commit_sha; the sealed config digest intentionally excludes that pin.
  */
 export function createCoolifyGitSetGateway({ manifest, binding, releaseId, sourcePins, transport,
-  inspectTarget, inspectRuntime, inspectRemote, configureTarget, safety, checkServices, inspectBackup, inspectConfigurationPreimage }) {
+  inspectTarget, inspectRuntime, inspectRemote, configureTarget, safety, checkServices, inspectBackup, inspectConfigurationPreimage, prepareRollbackImage, prepareBaselineImage }) {
   assert(manifest?.deployment?.provider === 'coolify_git_set' && manifest.purpose === 'application_release'
     && manifest.cleanup?.archiveRepository === false && uuid.test(releaseId) && sha.test(binding?.commit)
     && sha.test(binding?.candidateTree) && Array.isArray(manifest.deployment.targets)
@@ -186,7 +271,24 @@ export function createCoolifyGitSetGateway({ manifest, binding, releaseId, sourc
       if (existing) return { targetId, deploymentId: existing.deploymentId, commit: existing.commit };
       await safe(); const before = await state(targetId); assert(before.gitCommit === commit, 'configuration_pin_changed');
       if (!rollback) assert((await remote()).mainCommit === commit, 'remote_changed');
-      try { await transport.run('dispatch', payload(t, operationId, rollback)); }
+      const dispatch = payload(t, operationId, rollback);
+      if (prepareBaselineImage !== undefined) {
+        assert(typeof prepareBaselineImage === 'function', 'baseline_preparation_invalid');
+        const row = await invoke(prepareBaselineImage, [Object.freeze({ targetId, operationId, since, rollback })], 'baseline_preparation_unproven');
+        assert(exact(row, ['baselineCommit', 'imageDigest', 'tree', 'configDigest', 'applicationModel', 'cleanupAction'])
+          && row.baselineCommit === t.baseline.commit && row.imageDigest === t.baseline.imageDigest && row.tree === t.baseline.tree
+          && row.configDigest === t.baseline.configDigest && hash.test(row.applicationModel) && hash.test(row.cleanupAction), 'baseline_preparation_unproven');
+        dispatch.preserveImage = Object.freeze(structuredClone(row));
+      }
+      if (rollback && prepareRollbackImage !== undefined) {
+        assert(typeof prepareRollbackImage === 'function', 'rollback_preparation_invalid');
+        const row = await invoke(prepareRollbackImage, [Object.freeze({ targetId, operationId, since })], 'rollback_preparation_unproven');
+        assert(exact(row, ['imageDigest', 'previousImageDigest', 'tree', 'configDigest', 'applicationModel'])
+          && row.imageDigest === t.baseline.imageDigest && row.tree === t.baseline.tree && row.configDigest === t.baseline.configDigest
+          && (row.previousImageDigest === null || image.test(row.previousImageDigest)) && hash.test(row.applicationModel), 'rollback_preparation_unproven');
+        dispatch.rollbackImage = Object.freeze(structuredClone(row));
+      }
+      try { await transport.run('dispatch', dispatch); }
       catch { deny('dispatch_result_uncertain', true); }
       // A successful reply alone is not a durable queue receipt.
       const row = await readQueue(t, operationId, rollback, since); if (!row) deny('dispatch_result_uncertain', true);

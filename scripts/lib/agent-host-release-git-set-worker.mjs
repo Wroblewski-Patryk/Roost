@@ -28,6 +28,7 @@ export const installedGitSetReleaseSchema = z.object({ sshHost: alias, workspace
   source: z.object({ sshHost: alias, container: hex, user: pgident, database: pgident }).strict(),
   fingerprintTimeoutMs: releaseFingerprintTimeoutSchema.min(30000).max(300000).optional(),
   configurationPreimage: z.object({ file: filepath, sha256: hex }).strict().optional(),
+  exactRollbackImage: z.object({ applicationModel: hex, cleanupAction: hex }).strict().optional(),
   capacity: z.object({ minDiskBytes: z.number().int().positive(), minMemoryBytes: z.number().int().positive(), maxLoad1: z.number().positive().max(100) }).strict(),
   coolify: z.object({ origin, certificateSha256: hex.optional() }).strict(),
   health: z.object({ certificateSha256: hex.optional() }).strict()
@@ -88,20 +89,52 @@ export function releaseServiceResponseHealthy(body, expectedJsonStatus) {
   try { const value = JSON.parse(body.toString('utf8')); return !!value && !Array.isArray(value)
     && typeof value === 'object' && value.status === expectedJsonStatus; } catch { return false; }
 }
-async function probeHealth(url, expectedStatus, certificateSha256, expectedJsonStatus) {
+export const releaseHealthProbeReasons = Object.freeze(['healthy', 'http_status', 'redirect', 'encoded_response',
+  'certificate_pin', 'body_limit', 'payload_invalid', 'response_error', 'transport_timeout', 'connection_closed', 'transport_error']);
+export async function probeHealth(url, expectedStatus, certificateSha256, expectedJsonStatus, { request: requestHttps = https.request, diagnostic } = {}) {
   // A sealed payload predicate distinguishes application failure from HTTP 200.
   // Bodies stay transient; timestamps and readiness detail are never evidence.
   return new Promise(resolve => {
-    const u = new URL(url); let done = false; const finish = healthy => { if (!done) { done = true; resolve(healthy); } };
-    const request = https.request(u, { method: 'GET', agent: false, timeout: 10000, rejectUnauthorized: true, minVersion: 'TLSv1.2',
+    let done = false, request, responseSeen = false, deadline;
+    const finish = (healthy, reason) => {
+      if (done) return; done = true; clearTimeout(deadline); resolve(healthy);
+      // Diagnostics receive one fixed word only. They cannot reject health or
+      // make its result wait for a returned promise.
+      try { const pending = diagnostic?.(reason); Promise.resolve(pending).catch(() => {}); } catch {}
+    };
+    const destroy = value => { try { value?.destroy(); } catch {} };
+    deadline = setTimeout(() => { finish(false, 'transport_timeout'); destroy(request); }, 10000);
+    try {
+    const u = new URL(url); if (u.protocol !== 'https:') { finish(false, 'transport_error'); return; }
+    request = requestHttps(u, { method: 'GET', agent: false, timeout: 10000, rejectUnauthorized: true, minVersion: 'TLSv1.2',
       headers: { Accept: 'application/json', 'Cache-Control': 'no-store', 'Accept-Encoding': 'identity' } }, response => {
+      responseSeen = true;
+      if (done) { destroy(response); return; }
       let bytes = 0; const chunks = [];
-      if (certificateSha256 && sha256(response.socket.getPeerCertificate().raw ?? Buffer.alloc(0)) !== certificateSha256) { response.destroy(); finish(false); return; }
-      if (response.statusCode !== expectedStatus || response.headers.location || response.headers['content-encoding']) { response.destroy(); finish(false); return; }
-      response.on('data', chunk => { bytes += chunk.length; if (bytes > 65536) { response.destroy(); finish(false); } else chunks.push(chunk); });
-      response.on('end', () => finish(releaseServiceResponseHealthy(Buffer.concat(chunks), expectedJsonStatus))); response.on('error', () => finish(false));
+      response.on('error', () => finish(false, 'response_error'));
+      response.on('aborted', () => finish(false, 'connection_closed'));
+      response.on('close', () => finish(false, 'connection_closed'));
+      try {
+        if (certificateSha256 && sha256(response.socket.getPeerCertificate().raw ?? Buffer.alloc(0)) !== certificateSha256) { finish(false, 'certificate_pin'); destroy(response); return; }
+        if (response.headers.location) { finish(false, 'redirect'); destroy(response); return; }
+        if (response.headers['content-encoding']) { finish(false, 'encoded_response'); destroy(response); return; }
+        if (response.statusCode !== expectedStatus) { finish(false, 'http_status'); destroy(response); return; }
+      } catch { finish(false, 'certificate_pin'); destroy(response); return; }
+      response.on('data', chunk => { if (done) return; bytes += chunk.length; if (bytes > 65536) { finish(false, 'body_limit'); destroy(response); } else chunks.push(chunk); });
+      response.on('end', () => {
+        if (done) return;
+        const healthy = releaseServiceResponseHealthy(Buffer.concat(chunks), expectedJsonStatus);
+        finish(healthy, healthy ? 'healthy' : 'payload_invalid');
+      });
     });
-    request.on('error', () => finish(false)); request.on('timeout', () => { request.destroy(); finish(false); }); request.end();
+    request.on('error', error => {
+      if (done) return;
+      finish(false, error?.code === 'ECONNRESET' ? 'connection_closed'
+        : error?.code === 'ETIMEDOUT' ? 'transport_timeout' : 'transport_error'); destroy(request);
+    });
+    request.on('close', () => { if (!responseSeen) finish(false, 'connection_closed'); });
+    request.on('timeout', () => { finish(false, 'transport_timeout'); destroy(request); }); request.end();
+    } catch { finish(false, 'transport_error'); destroy(request); }
   });
 }
 
@@ -109,6 +142,7 @@ async function probeHealth(url, expectedStatus, certificateSha256, expectedJsonS
  * never settings/module/script choices from an execution or model packet. */
 export function createInstalledGitSetRelease({ settings, state, backup, github, coolifyCredential }, dependencies = {}) {
   const cfg = installedGitSetReleaseSchema.parse(settings), s = structuredClone(state?.release?.snapshot);
+  check(!cfg.exactRollbackImage || typeof dependencies.readReleaseState === 'function', 'rollback_intent_reader_required');
   let m; try { m = contract.manifestSchema.parse(s?.manifest); } catch { fail('manifest_invalid'); }
   check(contract.isGitSetManifest(m) && m.cleanup.ownedResourceIds.length === 0 && github && typeof github.inspect === 'function'
     && typeof coolifyCredential === 'string' && coolifyCredential.length >= 8, 'binding_invalid');
@@ -167,7 +201,17 @@ export function createInstalledGitSetRelease({ settings, state, backup, github, 
     const targetId = row.intent.parameters.targetId;
     liveQueue.set(targetId, coolifyGitSetDeploymentId({ releaseId: state.release.id, operationId: row.id, targetId, rollback: row.operation === 'rollback' }));
   }
-  const baseline = new Map(cfg.baselineDeployments.map(row => [row.targetId, row.deploymentId]));
+  let baselineDeployments = cfg.baselineDeployments;
+  if (s.predecessor !== undefined || s.successorBasis !== undefined) {
+    check(contract.releaseHasSuccessor(s), 'successor_basis_invalid');
+    baselineDeployments = s.successorBasis.rollbackDeploymentIds;
+    const sorted = rows => rows.slice().sort((a, b) => a.targetId.localeCompare(b.targetId));
+    // The server attests the prior rollback queues; local configuration must
+    // agree with them rather than substituting historical pre-release queues.
+    check(contract.releaseDigest(sorted(baselineDeployments)) === contract.releaseDigest(sorted(cfg.baselineDeployments)),
+      'successor_baseline_changed');
+  }
+  const baseline = new Map(baselineDeployments.map(row => [row.targetId, row.deploymentId]));
   const treeForCommit = async commit => {
       check(sha.test(commit), 'source_commit_invalid'); await assertClone();
       const output = await native('git', { argv: ['--no-replace-objects', '-c', `core.hooksPath=${process.platform === 'win32' ? 'NUL' : '/dev/null'}`,
@@ -214,12 +258,62 @@ export function createInstalledGitSetRelease({ settings, state, backup, github, 
   const rawGateway = createCoolifyGitSetGateway({ manifest: m, binding: s, releaseId: state.release.id, sourcePins: cfg.sourcePins, transport: queueTransport,
     inspectTarget: stateGateway.inspectTarget, inspectRuntime: stateGateway.inspectRuntime, safety,
     ...(cfg.configurationPreimage ? { inspectConfigurationPreimage } : {}),
+    ...(cfg.exactRollbackImage ? { prepareBaselineImage: async ({ targetId, operationId, since, rollback }) => {
+      const current = await dependencies.readReleaseState();
+      check(['active', 'reconciliation_required'].includes(current?.status) && current?.release?.id === state.release.id && contract.releaseDigest(current.release.snapshot) === contract.releaseDigest(s)
+        && Array.isArray(current.journal), 'baseline_authority_changed');
+      const status = row => row?.outcome?.status === 'reconciled' ? row.outcome.reconciledStatus : row?.outcome?.status;
+      const index = current.journal.findIndex(row => row.id === operationId), intent = current.journal[index];
+      check(index === current.journal.length - 1 && intent?.operation === (rollback ? 'rollback' : 'deploy') && intent.createdAt === since
+        && intent.intent?.parameters?.targetId === targetId && !status(intent)
+        && !current.journal.slice(0, index).some(row => !status(row) || status(row) === 'uncertain'), 'baseline_intent_unproven');
+      const target = m.deployment.targets.find(row => row.targetId === targetId); check(target, 'baseline_target_changed');
+      const before = await stateGateway.inspectTarget(targetId);
+      check(before.configDigest === target.baseline.configDigest && before.gitCommit === (rollback ? target.baseline.commit : s.commit)
+        && before.autoDeploy === false && await treeForCommit(target.baseline.commit) === target.baseline.tree
+        && ownership.protectedResourceIds.includes(target.baseline.imageDigest), 'baseline_basis_changed');
+      return Object.freeze({ baselineCommit: target.baseline.commit, imageDigest: target.baseline.imageDigest,
+        tree: target.baseline.tree, configDigest: target.baseline.configDigest,
+        applicationModel: cfg.exactRollbackImage.applicationModel, cleanupAction: cfg.exactRollbackImage.cleanupAction });
+    } } : {}),
+    ...(cfg.exactRollbackImage ? { prepareRollbackImage: async ({ targetId, operationId, since }) => {
+      // This reader is wired by the installed Worker to the normal release API.
+      // Initial poll state predates journal authorization and cannot prove it.
+      check(typeof dependencies.readReleaseState === 'function', 'rollback_intent_reader_required');
+      const current = await dependencies.readReleaseState();
+      check(['active', 'reconciliation_required'].includes(current?.status) && current?.release?.id === state.release.id && contract.releaseDigest(current.release.snapshot) === contract.releaseDigest(s)
+        && Array.isArray(current.journal), 'rollback_authority_changed');
+      const status = row => row?.outcome?.status === 'reconciled' ? row.outcome.reconciledStatus : row?.outcome?.status;
+      const index = current.journal.findIndex(row => row.id === operationId), intent = current.journal[index];
+      check(index === current.journal.length - 1 && intent?.operation === 'rollback' && intent.createdAt === since
+        && intent.intent?.parameters?.targetId === targetId && !status(intent)
+        && !current.journal.slice(0, index).some(row => !status(row) || status(row) === 'uncertain'), 'rollback_intent_unproven');
+      const target = m.deployment.targets.find(row => row.targetId === targetId); check(target, 'rollback_target_changed');
+      const before = await stateGateway.inspectTarget(targetId);
+      check(before.configDigest === target.baseline.configDigest && before.gitCommit === target.baseline.commit
+        && before.autoDeploy === false && await treeForCommit(target.baseline.commit) === target.baseline.tree, 'rollback_basis_changed');
+      let previousImageDigest = null;
+      const prior = current.journal.slice(0, index).reverse().find(row => row.operation === 'rollback' && row.intent?.parameters?.targetId === targetId);
+      if (prior && status(prior) === 'failed') {
+        check(contract.releaseRollbackImageFailureValid(s, prior.outcome.evidence, targetId), 'rollback_failure_unproven');
+        const runtime = prior.outcome.evidence.deployedTargets[0];
+        check(runtime.deploymentId === coolifyGitSetDeploymentId({ releaseId: state.release.id, operationId: prior.id, targetId, rollback: true }),
+          'rollback_failure_queue_changed');
+        previousImageDigest = runtime.imageDigest;
+      } else check(!prior || status(prior) === 'succeeded' || status(prior) === 'absent', 'rollback_failure_unproven');
+      return Object.freeze({ imageDigest: target.baseline.imageDigest, previousImageDigest, tree: target.baseline.tree,
+        configDigest: target.baseline.configDigest, applicationModel: cfg.exactRollbackImage.applicationModel });
+    } } : {}),
     inspectRemote: async () => { const row = await github.inspect(m, { allowArchived: false }); return { mainCommit: row.remoteBase }; },
     configureTarget: async ({ targetId, commit }) => { await coolifyJson({ url: `${new URL(cfg.coolify.origin).origin}/api/v1/applications/${targetId}`,
       method: 'PATCH', token: coolifyCredential, certificateSha256: cfg.coolify.certificateSha256, body: { git_commit_sha: commit } }); },
     checkServices: async manifest => {
       const observations = []; let healthy = true;
-      for (const service of manifest.services) { const ok = await healthProbe(service.healthUrl, service.expectedStatus, cfg.health.certificateSha256, service.expectedJsonStatus); healthy &&= ok;
+      for (const [index, service] of manifest.services.entries()) {
+        let reason = 'transport_error';
+        const ok = await healthProbe(service.healthUrl, service.expectedStatus, cfg.health.certificateSha256, service.expectedJsonStatus,
+          { diagnostic: value => { if (releaseHealthProbeReasons.includes(value)) reason = value; } }); healthy &&= ok;
+        if (!ok) process.stderr.write(`Release Worker health probe: ${index} ${reason}\n`);
         observations.push({ name: service.name, healthUrl: service.healthUrl, expectedStatus: service.expectedStatus,
           ...(service.expectedJsonStatus === undefined ? {} : { expectedJsonStatus: service.expectedJsonStatus }), healthy: ok }); }
       const basis = await fingerprint(); return { healthy, healthDigest: contract.releaseDigest(observations), dataDigest: basis.dataDigest };

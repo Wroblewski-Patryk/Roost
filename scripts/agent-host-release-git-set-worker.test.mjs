@@ -5,11 +5,13 @@ import os from 'node:os';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { randomUUID, createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { createInstalledGitSetRelease, installedGitSetReleaseSchema, parseGitSetSafetyCounts, gitSetTradingSafetySql, releaseServiceResponseHealthy }
+import { EventEmitter } from 'node:events';
+import { createInstalledGitSetRelease, installedGitSetReleaseSchema, parseGitSetSafetyCounts, gitSetTradingSafetySql, releaseServiceResponseHealthy, probeHealth, releaseHealthProbeReasons }
   from './lib/agent-host-release-git-set-worker.mjs';
 import contract from './lib/agent-host-release-contract.cjs';
 import { governedReleaseWorkerSchema, assertReleaseWorkerAdapter } from './lib/agent-host-release-worker.mjs';
 import { releaseClientSchema } from './lib/agent-host-release-client.mjs';
+import { coolifyGitSetDeploymentId } from './lib/agent-host-release-coolify-git-set-gateway.mjs';
 
 const commit = 'a'.repeat(40), candidateTree = 'b'.repeat(40), baseCommit = 'c'.repeat(40), baseTree = 'd'.repeat(40);
 const configDigest = '1'.repeat(64), schemaDigest = '2'.repeat(64), dataDigest = '3'.repeat(64), imageDigest = `sha256:${'4'.repeat(64)}`;
@@ -67,7 +69,7 @@ function fixture(t) {
     if (input.includes('configurationFields')) return Buffer.from(JSON.stringify({ targetId, applicationId: '4', buildPack: 'dockerfile',
       dockerfile: target.dockerfile, configDigest, schemaDigest, gitCommit: controls.pin, autoDeploy: false, topologyDigest: '9'.repeat(64) }));
     if (input.includes('activeDeployments')) return Buffer.from('{"activeDeployments":0}');
-    if (input.includes('finishedAt')) return Buffer.from(JSON.stringify({ targetId, deploymentId: oldDeploymentId,
+    if (input.includes('finishedAt')) return Buffer.from(JSON.stringify({ targetId, deploymentId: controls.baselineDeploymentId ?? oldDeploymentId,
       commit: baseCommit, status: 'finished', createdAt: '2026-10-02T00:00:00.000Z', finishedAt: '2026-10-02T00:00:02.000Z' }));
     if (command.startsWith('docker container ls')) return Buffer.from('e'.repeat(64));
     if (command.startsWith('docker container inspect')) return Buffer.from(JSON.stringify({ id: 'e'.repeat(64), imageId: imageDigest,
@@ -78,8 +80,109 @@ function fixture(t) {
     healthProbe: async () => true };
   const install = () => createInstalledGitSetRelease({ settings, state, backup, github: { inspect: async () => ({ remoteBase: commit }) },
     coolifyCredential: 'fixture-credential-private', }, dependencies);
-  return { install, settings, state, manifest, backup, controls, calls, ownershipFile, canonicalDir };
+  return { install, settings, state, manifest, backup, controls, calls, ownershipFile, canonicalDir, dependencies };
 }
+
+function httpsProbeFixture(action, overrides = {}) {
+  const requests = [], rawCertificate = Buffer.from('fixture-certificate'), request = new EventEmitter(), response = new EventEmitter();
+  request.destroy = () => { request.destroyed = true; request.emit('error', Error('PRIVATE transport credential')); };
+  response.statusCode = 200; response.headers = {}; response.socket = { getPeerCertificate: () => ({ raw: rawCertificate }) };
+  response.destroy = () => { response.destroyed = true; response.emit('error', Error('PRIVATE response body')); };
+  Object.assign(response, overrides);
+  const requestHttps = (url, options, callback) => {
+    requests.push({ url, options });
+    request.end = () => queueMicrotask(() => { action({ request, response, callback }); });
+    return request;
+  };
+  return { requestHttps, requests, request, response, pin: createHash('sha256').update(rawCertificate).digest('hex') };
+}
+
+test('strict HTTPS probe retains TLS, pin, identity headers, timeout and exact payload checks', async () => {
+  const f = httpsProbeFixture(({ response, callback }) => {
+    callback(response); response.emit('data', Buffer.from('{"status":"ready","private":"never reported"}'));
+    response.emit('end'); response.emit('close');
+  }), reasons = [];
+  assert.equal(await probeHealth('https://service.example.test/ready', 200, f.pin, 'ready',
+    { request: f.requestHttps, diagnostic: reason => reasons.push(reason) }), true);
+  assert.deepEqual(reasons, ['healthy']);
+  assert.deepEqual(f.requests[0].options, { method: 'GET', agent: false, timeout: 10000, rejectUnauthorized: true, minVersion: 'TLSv1.2',
+    headers: { Accept: 'application/json', 'Cache-Control': 'no-store', 'Accept-Encoding': 'identity' } });
+  assert.equal(f.requests[0].options.family, undefined);
+});
+
+test('HTTPS callback and event refusals expose only one fixed reason and preserve false', async () => {
+  const cases = [
+    ['http_status', ({ response, callback }) => { response.statusCode = 503; callback(response); }],
+    ['redirect', ({ response, callback }) => { response.headers.location = 'https://private.example.test/secret'; callback(response); }],
+    ['encoded_response', ({ response, callback }) => { response.headers['content-encoding'] = 'gzip'; callback(response); }],
+    ['certificate_pin', ({ response, callback }) => { response.socket.getPeerCertificate = () => ({ raw: Buffer.from('wrong private certificate') }); callback(response); }],
+    ['body_limit', ({ response, callback }) => { callback(response); response.emit('data', Buffer.alloc(65537)); }],
+    ['payload_invalid', ({ response, callback }) => { callback(response); response.emit('data', Buffer.from('{"status":"failed","secret":"private"}')); response.emit('end'); }],
+    ['payload_invalid', ({ response, callback }) => { callback(response); response.emit('data', Buffer.from('private invalid body')); response.emit('end'); }],
+    ['response_error', ({ response, callback }) => { callback(response); response.emit('error', Error('PRIVATE body/token')); }],
+    ['connection_closed', ({ response, callback }) => { callback(response); response.emit('data', Buffer.from('{"status":')); response.emit('close'); }],
+    ['connection_closed', ({ request }) => request.emit('close')],
+    ['transport_error', ({ request }) => request.emit('error', Error('PRIVATE DSN/password'))],
+    ['connection_closed', ({ request }) => request.emit('error', Object.assign(Error('PRIVATE socket'), { code: 'ECONNRESET' }))],
+    ['transport_timeout', ({ request }) => request.emit('error', Object.assign(Error('PRIVATE socket'), { code: 'ETIMEDOUT' }))],
+    ['transport_timeout', ({ request }) => request.emit('timeout')]
+  ];
+  for (const [reason, action] of cases) {
+    const f = httpsProbeFixture(action), reasons = [];
+    assert.equal(await probeHealth('https://service.example.test/health?private-value', 200, f.pin, 'ok',
+      { request: f.requestHttps, diagnostic: value => reasons.push(value) }), false, reason);
+    assert.deepEqual(reasons, [reason]); assert.ok(reasons.every(value => releaseHealthProbeReasons.includes(value)));
+    if (reason === 'transport_timeout') assert.equal(f.request.destroyed, true);
+  }
+  const reasons = [];
+  assert.equal(await probeHealth('not a URL', 200, undefined, undefined,
+    { request: () => { throw Error('must not be called'); }, diagnostic: value => reasons.push(value) }), false);
+  assert.deepEqual(reasons, ['transport_error']);
+});
+
+test('body bound is inclusive and diagnostic throwing or pending promise cannot change or delay health', async () => {
+  for (const diagnostic of [() => { throw Error('private callback'); }, () => new Promise(() => {}), () => Promise.reject(Error('private callback'))]) {
+    const f = httpsProbeFixture(({ response, callback }) => { callback(response); response.emit('data', Buffer.alloc(65536)); response.emit('end'); });
+    assert.equal(await probeHealth('https://service.example.test/', 200, undefined, undefined,
+      { request: f.requestHttps, diagnostic }), true);
+    const refused = httpsProbeFixture(({ request }) => request.emit('timeout'));
+    assert.equal(await probeHealth('https://service.example.test/', 200, undefined, undefined,
+      { request: refused.requestHttps, diagnostic }), false);
+  }
+});
+
+test('successor baseline uses exact server-attested rollback queue and refuses local or coverage drift', async t => {
+  const f = fixture(t), priorId = randomUUID(), expectedVersion = 'f'.repeat(64), rollbackQueue = 'actual-rollback-queue';
+  const snapshot = f.state.release.snapshot;
+  snapshot.predecessor = { releaseId: priorId, expectedVersion };
+  snapshot.successorBasis = { schemaVersion: 'roost-release-successor-v1', releaseId: priorId, expectedVersion,
+    mergeOperationId: randomUUID(), rollbackObservationOperationId: randomUUID(), cleanupOperationId: randomUUID(),
+    rollbackDeploymentIds: [{ targetId, deploymentId: rollbackQueue }] };
+  assert.throws(f.install, /successor_baseline_changed/);
+  f.settings.baselineDeployments = [{ targetId, deploymentId: rollbackQueue }]; f.controls.baselineDeploymentId = rollbackQueue;
+  await f.install().coolify.health(f.manifest, snapshot, { rollback: true });
+  const queueRead = f.calls.find(row => row.options?.input?.includes('finishedAt'));
+  const encoded = queueRead.options.input.match(/base64_decode\('([A-Za-z0-9+/=]+)'/)[1];
+  assert.equal(JSON.parse(Buffer.from(encoded, 'base64').toString('utf8')).deploymentId, rollbackQueue);
+  snapshot.successorBasis.rollbackDeploymentIds = [{ targetId: 'other-target', deploymentId: rollbackQueue }];
+  assert.throws(f.install, /successor_basis_invalid/);
+  snapshot.successorBasis.rollbackDeploymentIds = [{ targetId, deploymentId: rollbackQueue }];
+  snapshot.successorBasis.expectedVersion = 'e'.repeat(64); assert.throws(f.install, /successor_basis_invalid/);
+  delete snapshot.successorBasis; assert.throws(f.install, /successor_basis_invalid/);
+});
+
+test('normal installed service failure writes only indexed whitelisted stderr, without changing evidence', async t => {
+  const f = fixture(t), lines = [];
+  t.mock.method(process.stderr, 'write', value => { lines.push(value); return true; });
+  f.dependencies.healthProbe = (url, status, pin, jsonStatus, options) => {
+    const probe = httpsProbeFixture(({ request }) => request.emit('error', Error('PRIVATE access token and URL')));
+    return probeHealth(url, status, pin, jsonStatus, { ...options, request: probe.requestHttps });
+  };
+  const result = await f.install().coolify.health(f.manifest, f.state.release.snapshot, { rollback: true });
+  assert.equal(result.healthy, false);
+  assert.deepEqual(lines, ['Release Worker health probe: 0 transport_error\n']);
+  assert.ok(!JSON.stringify(result).includes('transport_error'));
+});
 
 function installPreimage(f) {
   const snapshot = { observedAt: at, sourcePins: f.settings.sourcePins, schemaDigest,
@@ -187,6 +290,86 @@ test('installed queue dispatch inherits explicit SSH address family and remains 
     assert.ok(queueCalls.every(row => row.options.argv[0] === flag));
     assert.equal(f.calls.filter(row => row.request?.method === 'PATCH').length, 0);
   }
+});
+
+function exactRollbackFixture(t, previousFailure = false) {
+  const f = fixture(t), operationId = randomUUID(), since = new Date(Date.now() - 1000).toISOString();
+  f.settings.exactRollbackImage = { applicationModel: '9'.repeat(64), cleanupAction: '0'.repeat(64) }; f.controls.refuseQueueDispatch = true;
+  const current = structuredClone(f.state); current.status = 'active';
+  if (previousFailure) {
+    const id = randomUUID(), deploymentId = coolifyGitSetDeploymentId({ releaseId: current.release.id, operationId: id, targetId, rollback: true });
+    const actual = { targetId, commit: baseCommit, tree: baseTree, imageDigest: `sha256:${'f'.repeat(64)}`, configDigest, schemaDigest };
+    current.journal.push({ id, operation: 'rollback', createdAt: since, intent: { parameters: { targetId } }, outcome: { status: 'failed', evidence: {
+      observedAt: since, failureKind: 'rollback_image_mismatch', deployedTargets: [{ ...actual, healthy: true, deploymentId }], deploymentIds: [{ targetId, deploymentId }],
+      healthy: false, deployedCommit: baseCommit, deployedTree: baseTree, artifactSetDigest: f.manifest.rollback.artifactSetDigest,
+      configDigest: f.manifest.rollback.configDigest, schemaDigest, dataDigest, healthDigest: '0'.repeat(64), deployedSetDigest: contract.releaseDigest([actual]) } } });
+  }
+  current.journal.push({ id: operationId, operation: 'rollback', createdAt: since, intent: { parameters: { targetId } } });
+  f.dependencies.readReleaseState = async () => structuredClone(current);
+  const dispatch = () => f.calls.filter(row => row.options?.input?.includes('queue_application_deployment(')).map(row => {
+    const encoded = row.options.input.match(/base64_decode\('([A-Za-z0-9+/=]+)'/)[1]; return JSON.parse(Buffer.from(encoded, 'base64').toString('utf8'));
+  }).filter(row => row.operation === 'dispatch');
+  const run = () => f.install().coolify.rollback(f.manifest, f.state.release.snapshot, { targetId, operationId, since });
+  return { ...f, current, operationId, since, dispatch, run };
+}
+
+test('installed exact rollback binds fresh durable intent and only attested failed image preimage', async t => {
+  for (const previousFailure of [false, true]) {
+    const f = exactRollbackFixture(t, previousFailure);
+    await assert.rejects(f.run(), /deployment_dispatch_uncertain/);
+    const dispatch = f.dispatch(); assert.equal(dispatch.length, 1);
+    assert.deepEqual(dispatch[0].rollbackImage, { imageDigest, tree: baseTree, configDigest,
+      applicationModel: '9'.repeat(64), previousImageDigest: previousFailure ? `sha256:${'f'.repeat(64)}` : null });
+    assert.deepEqual(dispatch[0].preserveImage, { baselineCommit: baseCommit, imageDigest, tree: baseTree, configDigest,
+      applicationModel: '9'.repeat(64), cleanupAction: '0'.repeat(64) });
+    assert.equal(dispatch[0].commit, baseCommit); assert.equal(dispatch[0].rollback, true);
+    assert.equal(dispatch[0].deploymentId, coolifyGitSetDeploymentId({ releaseId: f.current.release.id, operationId: f.operationId, targetId, rollback: true }));
+  }
+});
+
+test('production-shaped reconciliation_required state proves only the latest exact unresolved authorized intent', async t => {
+  for (const mode of ['deploy', 'rollback']) {
+    const f = exactRollbackFixture(t, mode === 'rollback'); f.current.status = 'reconciliation_required';
+    f.current.journal.at(-1).operation = mode; if (mode === 'deploy') f.controls.pin = commit;
+    await assert.rejects(f.install().coolify[mode](f.manifest, f.state.release.snapshot,
+      { targetId, operationId: f.operationId, since: f.since }), /deployment_dispatch_uncertain/);
+    assert.equal(f.dispatch().length, 1); assert.ok(f.dispatch()[0].preserveImage);
+    if (mode === 'rollback') assert.ok(f.dispatch()[0].rollbackImage);
+    const blocked = exactRollbackFixture(t, true); blocked.current.status = 'reconciliation_required';
+    blocked.current.journal[0].outcome.status = 'uncertain';
+    await assert.rejects(blocked.run(), /deployment_dispatch_uncertain/); assert.equal(blocked.dispatch().length, 0);
+  }
+});
+
+test('installed exact image capability refuses stale authority, unresolved predecessor and invalid canonical failure before dispatch', async t => {
+  const mutations = [current => { current.status = 'expired'; }, current => { current.status = 'revoked'; },
+    current => { current.status = 'completed'; }, current => { current.release.id = randomUUID(); },
+    current => { current.release.snapshot.commit = 'e'.repeat(40); }, current => { current.journal.pop(); },
+    current => { current.journal.at(-1).createdAt = at; }, current => { current.journal.at(-1).intent.parameters.targetId = 'foreign'; },
+    current => { current.journal.at(-1).outcome = { status: 'uncertain' }; },
+    current => { current.journal[0].outcome = { status: 'uncertain' }; },
+    current => { current.journal[0].outcome.evidence.deployedTargets[0].imageDigest = imageDigest; },
+    current => { const row = current.journal[0].outcome.evidence; row.deploymentIds[0].deploymentId = row.deployedTargets[0].deploymentId = 'foreign-queue'; }];
+  for (const mutate of mutations) {
+    const f = exactRollbackFixture(t, true); mutate(f.current); await assert.rejects(f.run(), /deployment_dispatch_uncertain/); assert.equal(f.dispatch().length, 0);
+  }
+  const f = exactRollbackFixture(t); delete f.dependencies.readReleaseState;
+  assert.throws(() => f.install(), /rollback_intent_reader_required/);
+  assert.equal(installedGitSetReleaseSchema.safeParse({ ...f.settings, exactRollbackImage: { applicationModel: 'not-hash' } }).success, false);
+  assert.equal(installedGitSetReleaseSchema.safeParse({ ...f.settings, exactRollbackImage: { applicationModel: '9'.repeat(64), command: 'private' } }).success, false);
+});
+
+test('installed baseline preservation binds fresh candidate intent, while candidate reconciliation performs only reads', async t => {
+  const f = exactRollbackFixture(t); f.controls.pin = commit; f.current.journal.at(-1).operation = 'deploy';
+  await assert.rejects(f.install().coolify.deploy(f.manifest, f.state.release.snapshot,
+    { targetId, operationId: f.operationId, since: f.since }), /deployment_dispatch_uncertain/);
+  const [dispatch] = f.dispatch(); assert.ok(dispatch); assert.equal(dispatch.rollbackImage, undefined);
+  assert.deepEqual(dispatch.preserveImage, { baselineCommit: baseCommit, imageDigest, tree: baseTree, configDigest,
+    applicationModel: '9'.repeat(64), cleanupAction: '0'.repeat(64) });
+  f.calls.length = 0; f.dependencies.readReleaseState = async () => { throw Error('reader must not be invoked by reconcile'); };
+  const result = await f.install().coolify.reconcileDeployment(f.manifest, f.state.release.snapshot,
+    { targetId, operationId: f.operationId, since: f.since });
+  assert.equal(result.state, 'absent'); assert.equal(f.dispatch().length, 0);
 });
 
 test('sealed JSON health rejects a failure payload despite HTTP 200 and ignores volatile timestamps', () => {

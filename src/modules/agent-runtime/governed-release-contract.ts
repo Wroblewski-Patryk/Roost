@@ -12,6 +12,16 @@ export const releaseOperations: readonly string[] = shared.operations;
 export const releaseRetainsApplication: (manifest: any) => boolean = shared.retainsApplication;
 export const releaseIsGitSet: (manifest: any) => boolean = shared.isGitSetManifest;
 export const releaseGitSetArtifactDigest: (manifest: any, binding: any, rollback?: boolean) => string = shared.gitSetArtifactDigest;
+export const releaseSuccessorBasisSchema = shared.releaseSuccessorBasisSchema as z.ZodType<any>;
+export const releaseHasSuccessor: (snapshot: any) => boolean = shared.releaseHasSuccessor;
+export const releaseRollbackImageFailureValid: (snapshot:any,evidence:any,targetId:string) => boolean = shared.releaseRollbackImageFailureValid;
+// Fresh health/time and backup observations may change; the protected source,
+// data, configuration, rollback and observation policy remain the accepted ones.
+export function releaseSuccessorManifestBasis(manifest:any) {
+ const {backup:_backup,baseline,...rest}=manifest;
+ const {observedAt:_observed,healthDigest:_health,...stableBaseline}=baseline;
+ return {...rest,baseline:stableBaseline};
+}
 function gitSetQueuesAccepted(journal:any[],e:any,rollback:boolean) {
  const accepted=journal.filter(j=>j.operation===(rollback?"rollback":"deploy")&&effectiveOutcome(j.outcome)==="succeeded")
   .flatMap(j=>j.outcome.evidence?.deploymentIds??[]);
@@ -106,6 +116,42 @@ export function releaseWindowError(input: any, credentialExpiry: Date, now = new
 export function effectiveOutcome(outcome: any): string | null {
   return !outcome ? null : outcome.status === "reconciled" ? outcome.reconciled_status ?? outcome.reconciledStatus : outcome.status;
 }
+export function releaseSuccessorBasis(state:any,input:any):any {
+ if(!state)return {error:"release_predecessor_not_found"};
+ if(state.expectedVersion!==input.predecessor?.expectedVersion)return {error:"release_predecessor_version_stale"};
+ const r=state.release,s=r.snapshot,journal=state.journal;
+ if(r.id!==input.predecessor?.releaseId||!releaseIsGitSet(s.manifest)||!releaseIsGitSet(input.manifest)
+  ||state.revocations.length||s.predecessor||s.successorBasis
+  ||["taskId","applicationId","hostId","reviewId","materialVersion","commit","candidateTree","baseCommit","baseTree","releaserAgentId"].some(k=>s[k]!==input[k])
+  ||releaseDigest(releaseSuccessorManifestBasis(s.manifest))!==releaseDigest(releaseSuccessorManifestBasis(input.manifest)))return {error:"release_predecessor_binding_changed"};
+ if(journal.some((j:any)=>!effectiveOutcome(j.outcome)||effectiveOutcome(j.outcome)==="uncertain"))return {error:"release_predecessor_unresolved"};
+ const valid=(j:any)=>releaseOutcomeError(r,j,{status:j.outcome.status,reconciledStatus:j.outcome.reconciled_status??j.outcome.reconciledStatus,
+  observationOnly:j.outcome.observation_only??j.outcome.observationOnly,evidence:j.outcome.evidence},journal)===null;
+ const successful=(op:string,predicate=(j:any)=>true)=>journal.filter((j:any)=>j.operation===op&&effectiveOutcome(j.outcome)==="succeeded"&&predicate(j)&&valid(j)).at(-1);
+ const push=successful("push"),pr=successful("pr"),review=successful("review"),merge=successful("merge"),candidateConfig=successful("deploy_config");
+ const failure=journal.find((j:any)=>["deploy","observe"].includes(j.operation)&&j.intent?.parameters?.mode!=="rollback"
+  &&effectiveOutcome(j.outcome)==="failed"&&valid(j));
+ const rollbackConfig=successful("rollback_config"),observation=successful("observe",j=>j.intent?.parameters?.mode==="rollback"),cleanup=successful("cleanup");
+ const rollbacks=s.manifest.deployment.targets.map((t:any)=>successful("rollback",j=>j.intent?.parameters?.targetId===t.targetId));
+ const resources=s.manifest.cleanup.ownedResourceIds.map((id:string)=>successful("cleanup_resource",j=>j.intent?.parameters?.resourceId===id));
+ const position=(j:any)=>journal.indexOf(j);
+ if(!push||!pr||!review||!merge||!candidateConfig||!failure||!rollbackConfig||!observation||!cleanup||rollbacks.some((j:any)=>!j)||resources.some((j:any)=>!j)
+  ||position(push)>=position(pr)||position(pr)>=position(review)||position(review)>=position(merge)||position(merge)>=position(failure)
+  ||position(failure)>=position(rollbackConfig)||rollbacks.some((j:any)=>position(j)<=position(rollbackConfig)||position(j)>=position(observation))
+  ||position(observation)>=position(cleanup)
+  ||position(merge)>=position(candidateConfig)||position(candidateConfig)>=position(failure)
+  ||resources.some((j:any)=>position(j)<=position(observation)||position(j)>=position(cleanup))
+  ||[pr,review,merge].some(j=>j.outcome.evidence.pullRequestNumber!==pr.outcome.evidence.pullRequestNumber)
+  ||journal.some((j:any)=>["archive_repository","cleanup_local"].includes(j.operation)
+   ||effectiveOutcome(j.outcome)==="failed"&&(j.operation==="rollback"||j.operation==="observe"&&j.intent?.parameters?.mode==="rollback")
+    &&(!valid(j)||position(j)>=position(observation)||j.operation==="rollback"&&(!releaseRollbackImageFailureValid(s,j.outcome.evidence,j.intent?.parameters?.targetId)
+      ||!rollbacks.some((later:any)=>later.intent?.parameters?.targetId===j.intent?.parameters?.targetId&&position(later)>position(j))))))return {error:"release_predecessor_recovery_unproven"};
+ const successorBasis={schemaVersion:"roost-release-successor-v1",releaseId:r.id,expectedVersion:state.expectedVersion,
+  mergeOperationId:merge.id,rollbackObservationOperationId:observation.id,cleanupOperationId:cleanup.id,
+  rollbackDeploymentIds:observation.outcome.evidence.deploymentIds};
+ if(!releaseHasSuccessor({...input,successorBasis}))return {error:"release_predecessor_recovery_unproven"};
+ return {successorBasis};
+}
 export function releaseIntentError(release: any, input: any, journal: any[]) {
   const s=release.snapshot, m=s.manifest;
   const retained=releaseRetainsApplication(m);
@@ -116,11 +162,15 @@ export function releaseIntentError(release: any, input: any, journal: any[]) {
   if(journal.some(j=>!effectiveOutcome(j.outcome)||effectiveOutcome(j.outcome)==="uncertain"))return "release_operation_unresolved";
   const successful=(op:string)=>journal.some(j=>j.operation===op&&effectiveOutcome(j.outcome)==="succeeded");
   const setComplete=(op:string)=>m.deployment.targets.every((t:any)=>journal.some(j=>j.operation===op&&j.intent?.parameters?.targetId===t.targetId&&effectiveOutcome(j.outcome)==="succeeded"));
-  const merged=successful("merge");
+  const successor=releaseHasSuccessor(s);
+  if((s.predecessor||s.successorBasis)&&!successor)return "release_successor_basis_invalid";
+  if(successor&&["push","pr","review","merge"].includes(input.operation))return "release_successor_git_effect_forbidden";
+  const merged=successor||successful("merge");
   if(input.observed.baseCommit!==(merged?s.commit:s.baseCommit)||input.observed.baseTree!==(merged?s.candidateTree:s.baseTree))return "release_base_changed";
   const p=input.parameters;
   const dependencies:Record<string,string[]>={push:[],pr:["push"],review:["pr"],merge:["review"],deploy_config:["merge"],deploy:["deploy_config"],observe:["deploy"],rollback_config:[],rollback:["rollback_config"],cleanup_resource:[],archive_repository:[],cleanup_local:["archive_repository"],cleanup:["cleanup_local"]};
   if(retained)dependencies.cleanup=[];
+  if(successor)dependencies.deploy_config=[];
   if(input.operation==="observe"&&p.mode==="rollback")dependencies.observe=["rollback"];
   if(input.operation==="observe"&&!p.mode)return "release_observation_mode_required";
   if(dependencies[input.operation].some(op=>!successful(op)))return "release_progression_invalid";
@@ -147,6 +197,8 @@ export function releaseOutcomeError(release: any, operation: any, input: any,jou
   const s=release.snapshot,m=s.manifest,e=input.evidence,result=effectiveOutcome({status:input.status,reconciledStatus:input.reconciledStatus});
   const retained=releaseRetainsApplication(m);
   if(retained&&(["archive_repository","cleanup_local"].includes(operation.operation)||e.repositoryArchived===true||e.localAbsent===true))return "release_retention_policy_violation";
+  if(e.failureKind!==undefined&&(result!=="failed"||operation.operation!=="rollback"||!releaseIsGitSet(m)))return "release_failure_marker_invalid";
+  if(result==="failed"&&operation.operation==="rollback"&&releaseIsGitSet(m))return releaseRollbackImageFailureValid(s,e,operation.intent?.parameters?.targetId)?null:"release_failure_not_attributed";
   if(retained&&operation.operation==="cleanup_resource"&&(!m.cleanup.ownedResourceIds.includes(operation.intent?.parameters?.resourceId)||m.cleanup.protectedResourceIds.includes(operation.intent?.parameters?.resourceId)))return "release_cleanup_scope_invalid";
   if(input.status==="reconciled"&&result==="absent") {
     if(!e.absenceVerified)return "release_absence_unproven";

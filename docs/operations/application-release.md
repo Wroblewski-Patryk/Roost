@@ -1,8 +1,107 @@
 # Permanent application release
 
 The current gate and authority remain in [implementation](../implementation.md).
-This document describes Gate 4 support and its evidence; it does not certify a
-production application release.
+This document records Gate 4 evidence. The current state below supersedes the
+dated recovery and source checkpoints that follow.
+
+## Current production proof — 2026-10-03
+
+Gate 4 remains in progress. Candidate observation failed after 1055 seconds:
+the sealed digest identifies one false API `/health` probe while the frontend
+and API `/ready` were healthy; runtime and full schema/data identity matched.
+Current operator probes return HTTP 200 with expected payloads, but do not
+explain that historical refusal. Normal Worker initiated controlled rollback;
+rollback configuration succeeded. Queue `r4dca13b09cd352d8fcfdbd8` finished at
+18:54:16 UTC on the prior commit, but rebuilt image
+`sha256:23366ff709b15f282476d4e60a6a5e41e080f425089a14f925d4d7be78091247`
+differs from the sealed baseline
+`sha256:c6ad4493af3d6e770d354fc6b915af2475a6cc9225fa2325de0c1e977e1c7ad1`.
+Exact Docker and containerd reads found that baseline image absent. The normal
+Worker was stopped with its signed closed-child checkpoint retained; rollback
+remains unqualified. Backup image recovery and per-application retention
+protection are required before another effect. No full-server restore was run.
+Full recovery and a new successful observation remain required before
+independent certification; the historical unhealthy probe reason is unknown.
+
+Source recovery support is being qualified separately from this live proof.
+A typed `rollback_image_mismatch` may reconcile a finished queue as failed only
+when source, tree, configuration, schema, data and queue identity still match.
+It never satisfies successful rollback. A later rollback requires the exact
+preserved image. Installed image protection pins the controller's model and
+cleanup code, checks retention capacity, and retains an application-specific
+baseline alias before candidate dispatch; read-only reconciliation creates none.
+
+A same-commit successor grant may reuse completed Git publication only after
+the predecessor has exact-image recovery, a full healthy rollback observation
+and retained cleanup. The server derives and rechecks its immutable lineage;
+fresh approval, readiness and owner authentication remain required. It starts
+at configuration and cannot push, open/review a PR or merge again. The current
+incomplete recovery does not qualify for this grant. These additions have not
+yet been deployed or demonstrated by the live Worker.
+
+Qualification of this recovery support: 62 adapter/broker/diagnostic/native
+checkpoint tests passed; 46 installed Worker/gateway tests passed with one
+existing opt-in PostgreSQL test skipped; 48 backend contract tests passed.
+The successor migration qualification passed 10 tests against a disposable
+local PostgreSQL database, including the complete existing/new guard stack for
+positive grant insertion and configuration intent. The database was removed
+with absence read back. Independent source review's retention-evidence defect
+was corrected and rechecked. `npm run validate`, `npm run codex:check` and
+`git diff --check` passed. These checks do not prove live image recovery.
+
+Initial candidate deployment evidence follows. Exact pilot
+commit `7512bc395d65df0fca7cf701047033031f63eb7e`, tree
+`e3615195b9ece13c635e9a248f77a178b993ced8`, was deployed by the normal
+Windows release Worker. Deployment `ra59fe70c4ae9d08d7cf9627` was dispatched
+once, finished at 18:20:46 UTC, then reconciled from its actual queue and runtime
+without another dispatch. The initial healthy runtime image was
+`sha256:0730ccda842cca665a6bdc36f78ed26d2263ca499a29adad575130ce1c7f327e`.
+
+The governed release is `7f28822a-c4bd-444d-877f-f351038bf6cf`, sealed manifest
+`54f5c9b90c1db92e139be61658ca5c5556c7e4a834619d41300aad037e8271bb`.
+Normal push, PR 1, independent review and exact merge are recorded in Roost.
+The uncertain merge was read back rather than repeated. The original uncertain
+configuration intent was proven absent against its immutable original protected
+baseline; a later authorized configuration intent succeeded. The build exceeded
+the bounded queue wait, so the Worker closed all 38 native children and retained
+its signed checkpoint. Normal restart reconciled the same finished queue as
+healthy before beginning the required 1200-second candidate observation.
+
+Independent acceptance `655a3ade-567d-496e-821b-9a5fa2367d21` binds exact
+commit and coding material
+`b45dd66ed048ec2da61f49290b4909695bfecce07c4f235880c9fc10e998da5a`.
+Managed existing-commit continuation `2948f84d-fa86-4d14-8c73-621bc41ba6fb`
+proved actual native RED on the parent and GREEN on the unchanged candidate,
+with a closed Windows Job and paired unchanged evidence. Release auditor
+`def562bd-bb5f-44e7-abdb-822b02edefa4` independently assessed the complete
+bounded context. Historical audits and older review approvals below are not
+substitutes for these current identities.
+
+The owner separately authorized first write and exact release. Same-snapshot
+renewal `42f4f2aa-9557-4d13-9b3e-f2a227730b92` provides the recovery window
+through 19:40:00 UTC; it changes no commit, service scope or protected resource.
+Only the frontend is deployed. Its actual prior running commit was `0960b097`,
+while the repository reference was `cf90418c` and the original configured pin
+was `9d1801d9`. The release includes the separately audited existing frontend
+catch-up and the new two-file PWA repair. It is not a claim that only two files
+differ from the old production image. The other five services remain protected.
+
+Encrypted backup `811332d3-67ab-4e9c-afae-c12bc374fa84` and its isolated restore
+verified full schema, rows, multiplicity and sequences at 13:47:38 UTC. Managed
+release checks retain schema digest
+`c18ebd92b86234a8c3f247b3f5d2898d18447c81f71ee9150a8aa3caacf267a0`
+and data digest
+`2fbc5b3cfb6f2f5624629553f8e0c0f809083af9c3b3088c319791cb19dd27a1`.
+Trading, PAPER writers and external position synchronization remain paused;
+23 historical PAPER positions are retained. The Gate 2 local commit and branch
+remain preserved. This proof does not certify all application functions, LIVE
+trading, or the historical OVH/storage and API-encryption issues.
+
+### Historical recovery and implementation checkpoints
+
+The following sections retain dated states, including earlier absent consent,
+pending release and failed attempts. They are historical evidence rather than
+the current release status.
 
 ### Recovery support — 2026-10-03
 

@@ -90,31 +90,36 @@ export function createCoolifyGitSetAdapter({ gateway, now = () => Date.now(),
     assert(validId(targetId)&&targets.some(target=>target.targetId===targetId),"target_scope_invalid");
     return targets.filter(target=>target.targetId===targetId);
   };
-  const runtime = async (manifest, binding, rollback, targetId) => {
+  const runtime = async (manifest, binding, rollback, targetId, diagnoseRollbackImage = false) => {
     const targets = selectedTargets(manifest, binding,targetId), rows = [];
     for (const target of targets) {
       await targetState(manifest, target);
       const row = await gateway.inspectRuntime(target.targetId), version = expected(target, binding, rollback);
       assert(row?.targetId === target.targetId && row.commit === version.commit && row.tree === version.tree
         && row.configDigest === target.configDigest && row.schemaDigest === manifest.deployment.schemaDigest
-        && image.test(row.imageDigest) && (!rollback || row.imageDigest === target.baseline.imageDigest), "runtime_identity_changed");
+        && image.test(row.imageDigest) && (!rollback || diagnoseRollbackImage || row.imageDigest === target.baseline.imageDigest), "runtime_identity_changed");
       assert(typeof row.healthy === "boolean" && validId(row.deploymentId), "runtime_health_unproven");
       rows.push({ targetId: row.targetId, commit: row.commit, tree: row.tree, imageDigest: row.imageDigest,
         configDigest: row.configDigest, schemaDigest: row.schemaDigest, healthy: row.healthy, deploymentId: row.deploymentId });
     }
     return rows;
   };
-  const health = async (manifest, binding, { rollback = false,targetId } = {}) => {
-    const rows = await runtime(manifest, binding, rollback,targetId), services = await gateway.checkServices(manifest,{rollback,targetId});
+  const health = async (manifest, binding, { rollback = false,targetId,diagnoseRollbackImage = false } = {}) => {
+    // A recognized finished rollback with the exact source/config/data but a
+    // rebuilt image is a recorded failure. It never qualifies as recovery.
+    assert(!diagnoseRollbackImage || rollback && validId(targetId), "rollback_diagnosis_scope_invalid");
+    const rows = await runtime(manifest, binding, rollback,targetId,diagnoseRollbackImage), services = await gateway.checkServices(manifest,{rollback,targetId});
     assert(services && typeof services.healthy === "boolean" && hash.test(services.healthDigest)
       && services.dataDigest === manifest.baseline.dataDigest, "service_health_unproven");
+    const imageMismatch = diagnoseRollbackImage && rows.some(row => row.imageDigest !== manifest.deployment.targets.find(target => target.targetId === row.targetId).baseline.imageDigest);
     return { deployedCommit: rollback ? manifest.rollback.commit : binding.commit,
       deployedTree: rollback ? binding.baseTree : binding.candidateTree, deployedTargets: rows,
       deploymentIds: rows.map(row => ({ targetId: row.targetId, deploymentId: row.deploymentId })),
       artifactSetDigest: rollback ? manifest.rollback.artifactSetDigest : manifest.deployment.artifactSetDigest,
       deployedSetDigest: coolifyGitSetDeployedDigest(rows), configDigest: manifest.deployment.configDigest,
       schemaDigest: manifest.deployment.schemaDigest, healthDigest: services.healthDigest,
-      dataDigest: services.dataDigest, healthy: services.healthy && rows.every(row => row.healthy),
+      dataDigest: services.dataDigest, healthy: !imageMismatch && services.healthy && rows.every(row => row.healthy),
+      ...(imageMismatch ? {failureKind:'rollback_image_mismatch'} : {}),
       observedAt: new Date(now()).toISOString() };
   };
   const inspect = async (manifest, binding) => {
@@ -169,10 +174,10 @@ export function createCoolifyGitSetAdapter({ gateway, now = () => Date.now(),
     if (rows.some(row => row.state === "uncertain")) return { state: "uncertain", deploymentIds, reason: "exact_deployment_correlation_missing" };
     if (rows.some(row => row.state === "failed")) return { state: "failed", deploymentIds };
     if (rows.every(row => row.state === "finished")) {
-      const evidence = await health(manifest, binding, options);
+      const evidence = await health(manifest, binding, {...options,diagnoseRollbackImage: options.rollback === true});
       for (const row of rows) assert((await gateway.inspectRuntime(row.targetId))?.deploymentId === row.deploymentId,
         "runtime_deployment_changed");
-      return { state: "finished", deploymentIds, ...evidence };
+      return { state: evidence.failureKind ? "failed" : "finished", deploymentIds, ...evidence };
     }
     return { state: rows.every(row => row.state === "absent") ? "absent" : "pending", deploymentIds };
   };
