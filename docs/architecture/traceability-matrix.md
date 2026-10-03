@@ -1518,8 +1518,14 @@ missing native RED evidence. Manager return
 `2948f84d-fa86-4d14-8c73-621bc41ba6fb` now prove native RED/GREEN (one failed
 assertion, one passing test), retaining the exact commit without source/history
 changes. Signed admission, unchanged footprint, closed Job and absent writer
-lock passed. Fresh independent acceptance, exact owner release authority and
-production proof remain pending; the earlier rejection is immutable.
+lock passed. Fresh reviewer `0d66d98b-3f24-4ff9-a991-6ac9b1461ec9`
+approved through decision `655a3ade-567d-496e-821b-9a5fa2367d21` on the
+current mapped basis. Release audit `def562bd-bb5f-44e7-abdb-822b02edefa4`
+completed with unchanged native state and closed Job; it reported conditional
+frontend suitability. Its missing-candidate-acceptance statement was reconciled
+against the authoritative current approval. One-web release preparation passed
+without granting authority or executing external effects. Exact owner release
+consent and production proof remain pending; the earlier rejection is immutable.
 Installed HTTPS ingress passed a certificate-pinned validation refusal. Internal
 atomic evidence construction after a single normal fence has 17 source tests;
 external stale CAS remains denied. Production refusal was traced to five stale

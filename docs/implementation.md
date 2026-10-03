@@ -172,7 +172,8 @@ and owned cleanup are required; no extra clones or services.
 ### Gate 4 — pilot application proof
 
 **In progress:** [evidence](operations/application-release.md); backup verified;
-runtime recovered; managed native RED/GREEN verified; fresh review and release pending.
+runtime recovered; native RED/GREEN and current independent acceptance verified;
+one-web release prepared; separate owner release consent and production proof pending.
 
 One real low-risk defect in the configured pilot application is discovered,
 planned, implemented, independently tested, committed, released and verified in

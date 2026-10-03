@@ -271,10 +271,40 @@ and local-commit verification digest
 bind the unchanged candidate to the prior rejection and owner first-write
 decision. Signed native admission, paired unchanged footprint, closed Job,
 zero surviving children and absent writer lock passed. The historical rejection
-is preserved; fresh independent acceptance remains required. Roost backend
+is preserved. Fresh reviewer `0d66d98b-3f24-4ff9-a991-6ac9b1461ec9`
+approved exact candidate `7512bc395d65df0fca7cf701047033031f63eb7e`
+through decision `655a3ade-567d-496e-821b-9a5fa2367d21`, on current mapped
+basis `b45dd66ed048ec2da61f49290b4909695bfecce07c4f235880c9fc10e998da5a`.
+Its unchanged native footprint, signed admission and closed Job passed.
+Roost backend
 `e4003d231bb97a99befc602ec55d588a4343393e` is deployed and healthy; Worker
 source `f8ff3c2e2c6503a147fff534b2294e340eda30df` also rejects private replay
 configuration located inside the application checkout.
+
+Final read-only release audit `def562bd-bb5f-44e7-abdb-822b02edefa4`
+completed with 129429 input bytes, paired unchanged Git/process/Docker states,
+closed Job, zero surviving children and absent writer lock. It found the
+frontend correction technically suitable, while withholding release authority.
+Its statement that candidate acceptance was still required is contradicted by
+the subsequent authoritative review read-back: the exact current decision above
+is approved. The earlier independent full-context audit verification remains
+historical evidence; it is not verification of this new audit. Private release
+preparation independently checked the live acceptance, mapped Ready, native
+candidate, audit, installed roles, protected baselines, backup and capacity;
+it granted no authority and executed no external effect. Shared risk-group Ready
+reads are serialized to avoid the normal transaction-conflict refusal.
+
+Prepared manifest digest
+`fe4b83d3ac2ab2d35dbf81f79ee56fe6d72d60d95a54e536070bb7f4178ead02`
+selects one frontend target, three public probes and 1200 seconds of observation.
+All six automatic-deployment controls still require an authorized disable and
+read-back before push. The frontend also includes the seven existing dashboard
+paths between its older deployed baseline and the current main base. No API,
+worker, schema or data delta is introduced. Exact owner release consent remains
+absent; candidate deployment and post-release reproduction/observation remain
+unverified. Current capacity passed after reclaiming 19 individually identified
+unshared cache records from two owned Roost builds; six pilot images and the
+current Roost image were protected. Capacity must be refreshed before dispatch.
 
 Normal application configuration now selects one frontend release target while
 retaining all six runtime targets. The other five exact deployed baselines
