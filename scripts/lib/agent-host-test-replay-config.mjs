@@ -22,8 +22,9 @@ export function prepareTestReplayConfiguration({ filename, repositoryPath, candi
   const fail = () => { throw Object.assign(new Error("coding_test_replay_config_unproven"),
     { protocolAdmission: true, retryable: false }); };
   try {
-    if (!path.isAbsolute(filename) || filename === repositoryPath
-        || !path.relative(repositoryPath, filename).startsWith("..")) fail();
+    const relative = path.relative(repositoryPath, filename);
+    if (!path.isAbsolute(filename) || !(relative === ".."
+        || relative.startsWith(".." + path.sep) || path.isAbsolute(relative))) fail();
     const read = () => {
       const identity = physicalIdentity(filename, false), stat = lstatSync(filename, { bigint: true });
       if (stat.size > 16384n) fail();
