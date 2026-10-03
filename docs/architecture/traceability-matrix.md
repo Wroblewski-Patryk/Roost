@@ -1527,7 +1527,9 @@ against the authoritative current approval. One-web release preparation passed
 without granting authority or executing external effects. Exact owner release
 consent was subsequently recorded. Six authorized auto-deploy controls are off
 with unchanged configuration apart from that field and unchanged runtime images.
-Fresh owner admission and production proof remain pending; rejection is immutable.
+Exact grant `7f28822a-c4bd-444d-877f-f351038bf6cf` is active. Public retained
+repository support preserves private certification refusal; zero-effect preflight
+recovery qualified its signed Writer. Actual release/production proof is pending.
 Installed HTTPS ingress passed a certificate-pinned validation refusal. Internal
 atomic evidence construction after a single normal fence has 17 source tests;
 external stale CAS remains denied. Production refusal was traced to five stale

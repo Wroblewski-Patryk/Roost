@@ -23,6 +23,26 @@ test('broker refuses public target without changing visibility',async()=>{
  const {adapter,calls}=harness({privateRepo:false}); await assert.rejects(adapter.push(manifest,binding),/repository_changed/);
  assert.ok(calls.every(c=>c.method==='GET'));
 });
+test('retained application accepts existing public visibility using only reads',async()=>{
+ const {adapter,calls}=harness({privateRepo:false});
+ const retained={...manifest,schemaVersion:'roost-release-manifest-v2',purpose:'application_release',cleanup:{archiveRepository:false}};
+ assert.deepEqual(await adapter.inspect(retained),{remoteBase:base,remoteTree:'d'.repeat(40)});
+ assert.equal(calls.length,3);assert.ok(calls.every(c=>c.method==='GET'));
+ for(const changed of [
+  {...retained,purpose:'release_certification'},
+  {...retained,cleanup:{archiveRepository:true}},
+  {...retained,schemaVersion:'roost-release-manifest-v1'},
+ ])await assert.rejects(harness({privateRepo:false}).adapter.inspect(changed),/repository_changed/);
+});
+test('retained application requires proven boolean visibility and still refuses archived target',async()=>{
+ const retained={...manifest,schemaVersion:'roost-release-manifest-v2',purpose:'application_release',cleanup:{archiveRepository:false}};
+ for(const visibility of [undefined,null,'false',0]){
+  const adapter=createGithubReleaseAdapter({credential:async()=>'test-credential',transport:async()=>({status:200,body:{...repo,private:visibility}})});
+  await assert.rejects(adapter.inspect(retained),/repository_changed/);
+ }
+ const calls=[];const adapter=createGithubReleaseAdapter({credential:async()=>'test-credential',transport:async r=>{calls.push(r);return{status:200,body:{...repo,private:false,archived:true}};}});
+ await assert.rejects(adapter.inspect(retained),/repository_changed/);assert.ok(calls.every(c=>c.method==='GET'));
+});
 test('changed main refuses approved candidate before merge effect',async()=>{
  const {adapter,calls}=harness({main:'e'.repeat(40)}); await assert.rejects(adapter.merge(manifest,binding,1),/base_changed/);
  assert.ok(calls.every(c=>c.method==='GET'));

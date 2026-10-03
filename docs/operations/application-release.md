@@ -319,8 +319,19 @@ The final manifest digest is
 `54f5c9b90c1db92e139be61658ca5c5556c7e4a834619d41300aad037e8271bb`;
 comparison permits only the authorized auto-deploy configuration change and
 new observation timestamps. Separate consent is retained privately for this
-exact regenerated request. Fresh owner authentication, normal release-grant
-admission, Worker installation and the actual release/observation remain pending.
+exact regenerated request. Fresh owner authentication admitted active grant
+`7f28822a-c4bd-444d-877f-f351038bf6cf`; dedicated Worker installation passed.
+Its first preflight issued no operation: the Git adapter incorrectly applied the
+certification target's private-repository restriction to the existing public
+pilot. Retained application manifests now allow proven existing public/private
+visibility without any visibility mutation; certification manifests still deny
+public targets. Unknown visibility and archived repositories remain denied.
+Fixed diagnostics now preserve the corresponding safe refusal code.
+Ten focused Git/diagnostic tests passed; broker/installed-worker/recovery checks
+passed 36 tests with one opt-in PostgreSQL skip. Actual read-back proved an empty
+release journal, absent remote candidate, unchanged main and six closed native
+children; the signed Writer checkpoint qualified for normal reclaim. The second
+normal Worker launch reclaimed it. Release/production observation remain pending.
 
 Normal application configuration now selects one frontend release target while
 retaining all six runtime targets. The other five exact deployed baselines

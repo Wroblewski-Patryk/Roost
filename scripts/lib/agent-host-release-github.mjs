@@ -3,6 +3,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { mkdtemp, rm, realpath } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import releaseContract from './agent-host-release-contract.cjs';
 import { temporaryWindowsJobLauncher, startWindowsJob, isWindowsJobReceipt } from './agent-host-windows-job.mjs';
 import { hasReleaseProcessScope, runReleaseNativeProcess, minimalReleaseEnvironment } from './agent-host-release-process.mjs';
 
@@ -139,7 +140,10 @@ export function createGithubReleaseAdapter({ credential, transport = githubRelea
     if (r.status < 200 || r.status >= 300) fail('release_git_remote_rejected'); return r.body; };
   const inspect = async (manifest, {allowArchived=false}={}) => {
     const name = repository(manifest), repo = await required('GET', `/repos/${name}`);
-    if (repo.private !== true || repo.archived && !allowArchived || repo.default_branch !== manifest.repository.defaultBranch
+    // The certification target is private. A retained application may already
+    // be public; the governed path never changes repository visibility.
+    if (typeof repo.private !== 'boolean' || !releaseContract.retainsApplication(manifest) && repo.private !== true
+      || repo.archived && !allowArchived || repo.default_branch !== manifest.repository.defaultBranch
       || repo.full_name?.toLowerCase() !== name.toLowerCase()) fail('release_git_repository_changed');
     const main = await required('GET', `/repos/${name}/git/ref/heads/${manifest.repository.defaultBranch}`);
     if (!sha.test(main.object?.sha)) fail('release_git_remote_invalid');

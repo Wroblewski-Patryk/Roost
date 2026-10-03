@@ -3,6 +3,7 @@ import {mkdtempSync,readFileSync,rmSync} from 'node:fs';import path from 'node:p
 test('release diagnostics retain only fixed admission reasons and discard arbitrary exception content',()=>{
  assert.equal(releaseWorkerDiagnostic(Error('release_readiness_changed')),'release_readiness_changed');
  assert.equal(releaseWorkerDiagnostic(Error('release_api_uncertain')),'release_api_uncertain');
+ assert.equal(releaseWorkerDiagnostic(Error('release_git_repository_changed')),'release_git_repository_changed');
  for(const message of ['Bearer private-value','release_password_value','release_api_uncertain\nprivate-value','https://example.test/private','C:\\private\\credential'])assert.equal(releaseWorkerDiagnostic(Error(message)),'release_preflight_unproven');
 });
 test('hidden launcher diagnostic file keeps only the classified reason and never an exception body',()=>{
