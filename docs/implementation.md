@@ -173,7 +173,7 @@ and owned cleanup are required; no extra clones or services.
 
 **In progress:** [evidence](operations/application-release.md); backup verified;
 native RED/GREEN and current acceptance verified; observation failed;
-exact rollback image missing; backup mount unavailable; certification pending.
+old rollback unqualified; owner accepted a new baseline; new proof pending.
 
 One real low-risk defect in the configured pilot application is discovered,
 planned, implemented, independently tested, committed, released and verified in

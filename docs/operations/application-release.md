@@ -18,10 +18,15 @@ differs from the sealed baseline
 `sha256:c6ad4493af3d6e770d354fc6b915af2475a6cc9225fa2325de0c1e977e1c7ad1`.
 Exact Docker and containerd reads found that baseline image absent. The normal
 Worker was stopped with its signed closed-child checkpoint retained; rollback
-remains unqualified. Backup image recovery and per-application retention
-protection are required before another effect. No full-server restore was run.
-Full recovery and a new successful observation remain required before
-independent certification; the historical unhealthy probe reason is unknown.
+remains unqualified. No full-server restore was run. The historical unhealthy
+probe reason is unknown. This attempt must remain unsuccessful.
+
+The owner subsequently accepted the healthy rebuilt image above, on the same
+baseline commit, as a new baseline. This authorizes securing its exact artifact,
+truthfully closing the failed grant, obtaining new independent acceptance and
+issuing a new grant for the unchanged candidate. Data, protected services and
+paused trading remain preserved. It does not authorize reinstalling the VPS,
+deleting data or advancing Gate 5. New source support and live proof are pending.
 
 The owner authorized temporary read-only backup access for exact image recovery.
 Two provider mount attempts failed; fresh provider read-back reports no mounted
@@ -30,8 +35,9 @@ Docker/containerd/BuildKit directories found no exact image descriptor blob.
 No backup was restored over the server, imported or left exposed. The retained
 Writer was independently qualified against its HMAC, current grant and journal:
 owner absent, observer stopped and all 10 registered children closed. Provider
-backup access is now the concrete recovery dependency; the rebuilt image cannot
-replace the accepted baseline. Private recovery tooling is prepared separately;
+backup access failed for the old recovery path. The new owner-authorized baseline
+path no longer depends on that mount and cannot certify the old rollback.
+Private recovery tooling is prepared separately;
 its fixture checks are not production image recovery evidence.
 
 Source recovery support is being qualified separately from this live proof.
@@ -49,6 +55,31 @@ fresh approval, readiness and owner authentication remain required. It starts
 at configuration and cannot push, open/review a PR or merge again. The current
 incomplete recovery does not qualify for this grant. These additions have not
 yet been deployed or demonstrated by the live Worker.
+
+### Owner-adopted baseline restart
+
+This separate path does not qualify the strict successful-rollback successor.
+`actions/authorize-reconciliation` requires a fresh owner, a normally provisioned
+current credential of the same agent and explicit unresolved operation IDs. Its
+immutable authorization lasts at most one hour and permits only reads and
+`observationOnly` reconciled outcomes against the original snapshot and journal.
+It cannot execute an expired grant or change its credential binding.
+
+`actions/close-failed` requires an attributed terminal rollback image failure,
+no unresolved operations, fresh exact runtime/configuration/schema/data/queue
+evidence and the full original healthy observation duration. It records the
+owner's consent digest, an immutable FAILED closure and atomic revocation.
+Historical grant bytes and failed outcomes remain unchanged.
+
+A new grant may then carry `baselineRestart`; its server-derived
+`publishedGitBasis` references the closure and verified prior Git operations.
+It preserves the real candidate parent, source and protected services, requires
+new independent review and release-audit identities, and runs ordinary current
+readiness checks. Protected IDs retain their exact order and append only missing
+baseline images attested by the closure. The Worker independently checks current
+remote Git and installed baseline queues, then starts at deployment configuration.
+It cannot repeat push, PR, review publication or merge. Source qualification is
+distinct from the still-required new managed deployment and observation proof.
 
 Qualification of this recovery support: 62 adapter/broker/diagnostic/native
 checkpoint tests passed; 46 installed Worker/gateway tests passed with one

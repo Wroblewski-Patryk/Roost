@@ -35,11 +35,16 @@ const checkpointSchema = z.object({ schemaVersion: z.literal("roost-release-writ
 const same = (a, b) => contract.releaseDigest(a) === contract.releaseDigest(b);
 function grant(state, client) {
   check(state?.release && Array.isArray(state.journal) && state.journal.length <= 100 && !state.truncated);
-  const { readinessDigest, configurationDigest, successorBasis, ...raw } = state.release.snapshot ?? {};
+  const { readinessDigest, configurationDigest, successorBasis, publishedGitBasis, ...raw } = state.release.snapshot ?? {};
   const snapshot = contract.createReleaseSchema.parse(raw);
   if (snapshot.predecessor || successorBasis) {
     check(snapshot.predecessor?.releaseId !== state.release.id && contract.releaseHasSuccessor({ ...snapshot, successorBasis }));
     snapshot.successorBasis = successorBasis;
+  }
+  if (snapshot.baselineRestart || publishedGitBasis) {
+    check(snapshot.baselineRestart?.releaseId !== state.release.id
+      && contract.releaseHasPublishedGitBasis({ ...snapshot, publishedGitBasis }));
+    snapshot.publishedGitBasis = publishedGitBasis;
   }
   hex.parse(readinessDigest); hex.parse(configurationDigest); uuid.parse(state.release.id);
   check(snapshot.hostId === client.hostId && snapshot.releaserAgentId === client.agentId

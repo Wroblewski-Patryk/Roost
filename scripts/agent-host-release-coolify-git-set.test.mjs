@@ -229,6 +229,15 @@ test("source test: observation measures actual elapsed interval and false health
   f.controls.health = false;
   assert.equal((await f.adapter.observe(f.manifest, f.binding)).healthy, false);
 });
+test('new release measures a fresh full 1200 seconds and zero failures without borrowing prior observation',async()=>{
+ const f=await configured();await f.adapter.deploy(f.manifest,f.binding,f.options);
+ f.manifest.observation={seconds:1200,intervalSeconds:30,maxFailures:0};let samples=0;
+ const read=f.gateway.checkServices;f.gateway.checkServices=async()=>{samples++;return read();};
+ f.tick(1055*1000);const result=await f.adapter.observe(f.manifest,f.binding);
+ assert.equal(result.observationSeconds,1200);assert.equal(result.healthy,true);assert.equal(samples,41);
+ samples=0;f.controls.health=false;const failed=await f.adapter.observe(f.manifest,f.binding);
+ assert.equal(failed.healthy,false);assert.equal(failed.observationSeconds,0);assert.equal(samples,1);
+});
 test("source test: an uncertain later target blocks every new batch effect", async () => {
   const f = await configured();
   f.queues.get("web").push({ targetId: "web", deploymentId: "unrelated", commit: git("f"),

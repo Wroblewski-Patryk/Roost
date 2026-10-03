@@ -211,6 +211,15 @@ export function createInstalledGitSetRelease({ settings, state, backup, github, 
     check(contract.releaseDigest(sorted(baselineDeployments)) === contract.releaseDigest(sorted(cfg.baselineDeployments)),
       'successor_baseline_changed');
   }
+  if (s.baselineRestart !== undefined || s.publishedGitBasis !== undefined) {
+    check(s.baselineRestart?.releaseId !== state.release.id && contract.releaseHasPublishedGitBasis(s), 'published_git_basis_invalid');
+    baselineDeployments = s.publishedGitBasis.baselineDeploymentIds;
+    const sorted = rows => rows.slice().sort((a, b) => a.targetId < b.targetId ? -1 : a.targetId > b.targetId ? 1 : 0);
+    // These queues attest the newly accepted live baseline, not recovery of
+    // the failed release's original image. Its Git publication alone is reused.
+    check(contract.releaseDigest(sorted(baselineDeployments)) === contract.releaseDigest(sorted(cfg.baselineDeployments)),
+      'published_git_baseline_changed');
+  }
   const baseline = new Map(baselineDeployments.map(row => [row.targetId, row.deploymentId]));
   const treeForCommit = async commit => {
       check(sha.test(commit), 'source_commit_invalid'); await assertClone();

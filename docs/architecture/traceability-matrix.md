@@ -1557,6 +1557,10 @@ healthy frontend and ready API. Rollback queue finished on the baseline commit
 with a different rebuilt image; exact baseline image is absent from Docker and
 containerd. Worker stopped with signed closed-child checkpoint retained. Recovery
 is unqualified; this attempt does not certify Gate 4. Probe cause is unproven.
+The owner accepted the current healthy rebuilt image as a new baseline, with
+data and paused trading preserved. Failed-grant closure, new independent
+acceptance and a fresh exact-commit release remain pending; provider backup
+mounting is no longer a dependency of this new path.
 Managed existing-commit continuation `2948f84d-fa86-4d14-8c73-621bc41ba6fb`
 proves native RED on the parent and GREEN on the unchanged candidate, paired
 unchanged state and a closed Windows Job. Current independent reviewer execution

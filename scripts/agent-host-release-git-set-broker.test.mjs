@@ -91,6 +91,53 @@ function successorFixture(){
  for(const op of ['push','pr','review','merge'])f.args.github[op]=async()=>{throw Error('git_mutation_must_not_repeat');};
  return f;
 }
+function publishedFixture(){
+ const f=successorFixture(),{releaseId,expectedVersion}=f.snapshot.predecessor,closureId=randomUUID();
+ delete f.snapshot.predecessor;delete f.snapshot.successorBasis;
+ f.snapshot.baselineRestart={releaseId,expectedVersion,closureId,consentDigest:hash('c')};
+ f.snapshot.publishedGitBasis={schemaVersion:'roost-release-published-git-v1',releaseId,expectedVersion,closureId,closureDigest:hash('d'),
+  pushOperationId:randomUUID(),prOperationId:randomUUID(),reviewOperationId:randomUUID(),mergeOperationId:randomUUID(),
+  baselineDeploymentIds:f.m.deployment.targets.map(t=>({targetId:t.targetId,deploymentId:'accepted-baseline-'+t.targetId}))};
+ return f;
+}
+test('owner accepted baseline inherits only publication and runs fresh ordinary deployment and observation',async()=>{
+ const f=publishedFixture(),parent=f.snapshot.baseCommit;f.m.observation={seconds:1200,intervalSeconds:30,maxFailures:0};f.snapshot.manifestDigest=f.state.release.manifestDigest=contract.releaseDigest(f.m);
+ f.args.inspectCheckout=async(_m,commit,base,tree)=>{assert.equal(commit,f.snapshot.commit);assert.equal(base,parent);assert.equal(tree,f.snapshot.candidateTree);};
+ f.args.coolify.observe=async(m)=>{assert.deepEqual(m.observation,{seconds:1200,intervalSeconds:30,maxFailures:0});return{...structuredClone(f.evidence),observationSeconds:1200};};
+ assert.equal(nextReleaseOperation(f.state),'deploy_config');
+ for(let index=0;index<4;index++)await runReleaseStep(f.args);
+ assert.deepEqual(f.state.journal.map(row=>row.operation),['deploy_config','deploy','deploy','observe']);
+ assert.equal(f.calls.filter(row=>row.action==='actual_baseline_inspection').length,1);
+ assert.equal(f.calls.filter(row=>row.action==='deploy').length,2);
+ assert.equal(f.state.journal.at(-1).intent.parameters.mode,'candidate');assert.equal(f.state.journal.at(-1).outcome.evidence.observationSeconds,1200);
+ assert.equal(f.snapshot.baseCommit,parent);assert.equal(f.snapshot.successorBasis,undefined);
+});
+test('publication restart refuses forged lineage, old main and missing baseline before any new intent',async()=>{
+ for(const change of ['missing','version','closure','coverage','self','mix','old-main']){
+  const f=publishedFixture();
+  if(change==='missing')delete f.snapshot.publishedGitBasis;
+  if(change==='version')f.snapshot.publishedGitBasis.expectedVersion=hash('f');
+  if(change==='closure')f.snapshot.publishedGitBasis.closureId=randomUUID();
+  if(change==='coverage')f.snapshot.publishedGitBasis.baselineDeploymentIds[0].targetId='foreign';
+  if(change==='self')f.snapshot.baselineRestart.releaseId=f.snapshot.publishedGitBasis.releaseId=f.state.release.id;
+  if(change==='mix')f.snapshot.successorBasis=successorFixture().snapshot.successorBasis;
+  if(change==='old-main')f.args.github.inspect=async()=>({remoteBase:f.snapshot.baseCommit,remoteTree:f.snapshot.baseTree});
+  await assert.rejects(runReleaseStep(f.args));assert.equal(f.state.journal.length,0);assert.equal(f.calls.filter(row=>row.action==='deploy').length,0);
+ }
+});
+test('expired uncertain rollback records attributed FAILED read-only and never resumes original image recovery',async()=>{
+ const f=fixture(),t=f.m.deployment.targets[0],at=new Date().toISOString();
+ f.state.status='expired';f.state.effectiveExpiresAt=new Date(Date.now()-60000).toISOString();
+ const row={targetId:t.targetId,...t.baseline,imageDigest:`sha256:${hash('9')}`,schemaDigest:f.m.rollback.schemaDigest,healthy:true,deploymentId:'rebuilt-api'};
+ const evidence={observedAt:at,deployedCommit:f.m.rollback.commit,deployedTree:f.snapshot.baseTree,artifactSetDigest:f.m.rollback.artifactSetDigest,configDigest:f.m.rollback.configDigest,schemaDigest:f.m.rollback.schemaDigest,dataDigest:f.m.baseline.dataDigest,healthDigest:hash('5'),healthy:false,failureKind:'rollback_image_mismatch',deployedTargets:[row],deploymentIds:[{targetId:t.targetId,deploymentId:row.deploymentId}],deployedSetDigest:contract.releaseDigest([{...t.baseline,targetId:t.targetId,imageDigest:row.imageDigest,schemaDigest:row.schemaDigest}])};
+ f.state.journal.push({id:randomUUID(),operation:'rollback',createdAt:at,intent:{parameters:{targetId:t.targetId}},outcome:{status:'uncertain',evidence:{}}});
+ f.args.coolify.reconcileDeployment=async()=>({state:'failed',...evidence});
+ await runReleaseStep(f.args);const outcome=f.state.journal.at(-1).outcome;
+ assert.equal(outcome.status,'reconciled');assert.equal(outcome.reconciledStatus,'failed');assert.equal(outcome.observationOnly,true);
+ assert.equal(contract.releaseRollbackImageFailureValid(f.snapshot,outcome.evidence,t.targetId),true);
+ assert.equal(nextReleaseOperation(f.state),null);assert.equal((await runReleaseStep(f.args)).handled,false);
+ assert.equal(f.calls.some(row=>row.action==='deploy'||row.route?.endsWith('/operations')),false);
+});
 test('source test: successor uses exact existing publication and new baseline inspection without fictitious Git operations',async()=>{
  const f=successorFixture();assert.equal(nextReleaseOperation(f.state),'deploy_config');
  await runReleaseStep(f.args);assert.deepEqual(f.state.journal.map(x=>x.operation),['deploy_config']);

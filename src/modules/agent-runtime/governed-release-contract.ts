@@ -15,6 +15,10 @@ export const releaseGitSetArtifactDigest: (manifest: any, binding: any, rollback
 export const releaseSuccessorBasisSchema = shared.releaseSuccessorBasisSchema as z.ZodType<any>;
 export const releaseHasSuccessor: (snapshot: any) => boolean = shared.releaseHasSuccessor;
 export const releaseRollbackImageFailureValid: (snapshot:any,evidence:any,targetId:string) => boolean = shared.releaseRollbackImageFailureValid;
+export const closeFailedReleaseSchema=shared.closeFailedReleaseSchema as z.ZodType<any>;
+export const authorizeReconciliationSchema=shared.authorizeReconciliationSchema as z.ZodType<any>;
+export const releaseHasPublishedGitBasis: (snapshot:any)=>boolean=shared.releaseHasPublishedGitBasis;
+export const releaseRestartProtectedResourceIds: (manifest:any,evidence:any)=>string[]|null=shared.releaseRestartProtectedResourceIds;
 // Fresh health/time and backup observations may change; the protected source,
 // data, configuration, rollback and observation policy remain the accepted ones.
 export function releaseSuccessorManifestBasis(manifest:any) {
@@ -116,6 +120,59 @@ export function releaseWindowError(input: any, credentialExpiry: Date, now = new
 export function effectiveOutcome(outcome: any): string | null {
   return !outcome ? null : outcome.status === "reconciled" ? outcome.reconciled_status ?? outcome.reconciledStatus : outcome.status;
 }
+// A failed release is retired truthfully. Acceptance of the observed image is a
+// new owner baseline, never evidence that the old exact image was recovered.
+export function releaseFailedClosureError(state:any,input:any,checkVersion=true) {
+ if(!state)return "release_not_found";
+ const s=state.release.snapshot,m=s.manifest,j=state.journal,e=input.evidence;
+ if(checkVersion&&state.expectedVersion!==input.expectedVersion)return "release_version_stale";
+ if(!releaseIsGitSet(m)||s.predecessor||s.successorBasis||s.baselineRestart||s.publishedGitBasis
+  ||checkVersion&&state.revocations.length||j.some((x:any)=>!effectiveOutcome(x.outcome)||effectiveOutcome(x.outcome)==="uncertain")
+  ||j.some((x:any)=>x.operation==="cleanup"&&effectiveOutcome(x.outcome)==="succeeded"))return "release_failed_closure_unproven";
+ const failed=j.find((x:any)=>x.id===input.failedOperationId),targetId=failed?.intent?.parameters?.targetId;
+ if(!failed||failed.operation!=="rollback"||effectiveOutcome(failed.outcome)!=="failed"
+  ||!releaseRollbackImageFailureValid(s,failed.outcome.evidence,targetId)
+  ||j.slice(j.indexOf(failed)+1).some((x:any)=>x.operation==="rollback"&&x.intent?.parameters?.targetId===targetId))return "release_failed_closure_unproven";
+ const targets=m.deployment.targets.map((t:any)=>({...t,baseline:{...t.baseline,imageDigest:t.targetId===targetId?failed.outcome.evidence.deployedTargets[0].imageDigest:t.baseline.imageDigest}}));
+ const observedSnapshot={...s,manifest:{...m,deployment:{...m.deployment,targets}}};
+ if(e.failureKind!==undefined||e.repositoryArchived===true||e.localAbsent===true||e.healthy!==true
+  ||releaseGitSetEvidenceError(observedSnapshot,e,true,true)||!Number.isInteger(e.observationSeconds)||e.observationSeconds<m.observation.seconds)return "release_failed_baseline_unproven";
+ for(const t of targets) {
+  const row=e.deployedTargets.find((x:any)=>x.targetId===t.targetId);
+  const prior=t.targetId===targetId?failed:j.filter((x:any)=>x.operation==="rollback"&&x.intent?.parameters?.targetId===t.targetId&&effectiveOutcome(x.outcome)==="succeeded").at(-1);
+  if(prior&&row.deploymentId!==prior.outcome.evidence.deploymentIds?.find((x:any)=>x.targetId===t.targetId)?.deploymentId)return "release_failed_baseline_unproven";
+ }
+ return null;
+}
+export function releasePublishedGitBasis(state:any,input:any):any {
+ const r=state?.release,s=r?.snapshot,restart=input.baselineRestart;
+ if(!state||!restart||r.id!==restart.releaseId||state.expectedVersion!==restart.expectedVersion)return {error:"release_restart_version_stale"};
+ const closure=state.failedClosures?.find((c:any)=>c.id===restart.closureId),receipt=closure?.snapshot;
+ if(!closure||closure.consent_digest!==restart.consentDigest||closure.closure_digest!==releaseDigest(receipt)
+  ||!state.revocations.some((v:any)=>v.id===closure.revocation_id)||receipt.failedOutcomeId!==state.journal.find((j:any)=>j.id===receipt.failedOperationId)?.outcome?.id
+  ||releaseFailedClosureError(state,receipt,false))return {error:"release_restart_closure_unproven"};
+ if(!releaseIsGitSet(input.manifest)||input.predecessor||input.successorBasis
+  ||input.reviewId===s.reviewId||input.releaseExecutionId===s.releaseExecutionId
+  ||["taskId","applicationId","hostId","commit","candidateTree","baseCommit","baseTree","releaserAgentId"].some(k=>s[k]!==input[k]))return {error:"release_restart_binding_changed"};
+ const protectedIds=releaseRestartProtectedResourceIds(s.manifest,receipt.evidence);
+ if(!protectedIds||releaseDigest(protectedIds)!==releaseDigest(input.manifest.cleanup.protectedResourceIds))return {error:"release_restart_binding_changed"};
+ // Source/configuration/data and all cleanup policy remain unchanged. Only
+ // attested baseline images are appended to the original protected footprint.
+ const stable=(m:any)=>{const {backup:_b,baseline,rollback,deployment,cleanup,...rest}=m;return {...rest,cleanup:{...cleanup,protectedResourceIds:s.manifest.cleanup.protectedResourceIds},baseline:{commit:baseline.commit,configDigest:baseline.configDigest,schemaDigest:baseline.schemaDigest,dataDigest:baseline.dataDigest},
+  rollback:{commit:rollback.commit,configDigest:rollback.configDigest,schemaDigest:rollback.schemaDigest,compatibleSchemaDigests:rollback.compatibleSchemaDigests},deployment:{...deployment,targets:deployment.targets.map((t:any)=>({...t,baseline:{...t.baseline,imageDigest:undefined}}))}};};
+ if(releaseDigest(stable(s.manifest))!==releaseDigest(stable(input.manifest)))return {error:"release_restart_binding_changed"};
+ for(const t of input.manifest.deployment.targets) {
+  const row=receipt.evidence.deployedTargets.find((x:any)=>x.targetId===t.targetId);
+  if(!row||["commit","tree","imageDigest","configDigest"].some(k=>t.baseline[k]!==row[k]))return {error:"release_restart_baseline_changed"};
+ }
+ const valid=(j:any)=>effectiveOutcome(j.outcome)==="succeeded"&&releaseOutcomeError(r,j,{status:j.outcome.status,reconciledStatus:j.outcome.reconciled_status??j.outcome.reconciledStatus,observationOnly:j.outcome.observation_only??j.outcome.observationOnly,evidence:j.outcome.evidence},state.journal)===null;
+ const ops=["push","pr","review","merge"].map(op=>state.journal.find((j:any)=>j.operation===op&&valid(j)));
+ if(ops.some(j=>!j)||ops.some((j,i)=>i>0&&state.journal.indexOf(j)<=state.journal.indexOf(ops[i-1]))
+  ||ops.slice(1).some(j=>j.outcome.evidence.pullRequestNumber!==ops[1].outcome.evidence.pullRequestNumber))return {error:"release_restart_git_unproven"};
+ const publishedGitBasis={schemaVersion:"roost-release-published-git-v1",releaseId:r.id,expectedVersion:state.expectedVersion,closureId:closure.id,closureDigest:closure.closure_digest,
+  pushOperationId:ops[0].id,prOperationId:ops[1].id,reviewOperationId:ops[2].id,mergeOperationId:ops[3].id,baselineDeploymentIds:receipt.evidence.deploymentIds};
+ return releaseHasPublishedGitBasis({...input,publishedGitBasis})?{publishedGitBasis}:{error:"release_restart_baseline_changed"};
+}
 export function releaseSuccessorBasis(state:any,input:any):any {
  if(!state)return {error:"release_predecessor_not_found"};
  if(state.expectedVersion!==input.predecessor?.expectedVersion)return {error:"release_predecessor_version_stale"};
@@ -162,7 +219,8 @@ export function releaseIntentError(release: any, input: any, journal: any[]) {
   if(journal.some(j=>!effectiveOutcome(j.outcome)||effectiveOutcome(j.outcome)==="uncertain"))return "release_operation_unresolved";
   const successful=(op:string)=>journal.some(j=>j.operation===op&&effectiveOutcome(j.outcome)==="succeeded");
   const setComplete=(op:string)=>m.deployment.targets.every((t:any)=>journal.some(j=>j.operation===op&&j.intent?.parameters?.targetId===t.targetId&&effectiveOutcome(j.outcome)==="succeeded"));
-  const successor=releaseHasSuccessor(s);
+  const restarted=releaseHasPublishedGitBasis(s),successor=releaseHasSuccessor(s)||restarted;
+  if((s.baselineRestart||s.publishedGitBasis)&&!restarted)return "release_restart_basis_invalid";
   if((s.predecessor||s.successorBasis)&&!successor)return "release_successor_basis_invalid";
   if(successor&&["push","pr","review","merge"].includes(input.operation))return "release_successor_git_effect_forbidden";
   const merged=successor||successful("merge");

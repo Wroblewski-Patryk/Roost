@@ -83,9 +83,11 @@ const manifestSchema=z.union([certificationManifestSchema,applicationManifestSch
 const retainsApplication=m=>m?.schemaVersion==="roost-release-manifest-v2"&&m?.purpose==="application_release"&&m?.cleanup?.archiveRepository===false;
 const releaseExpirySchema=z.string().datetime();
 const predecessorSchema=z.object({releaseId:id,expectedVersion:hash}).strict();
-const createReleaseSchema=z.object({requestId:id,taskId:id,applicationId:id,hostId:id,releaseExecutionId:id,releaserAgentId:id,releaserCredentialId:id,credentialVersion:z.number().int().positive(),reviewId:id,materialVersion:hash,commit:sha,candidateTree:sha,baseCommit:sha,baseTree:sha,releaserRevision:z.string().datetime(),expiresAt:releaseExpirySchema,manifest:manifestSchema,manifestDigest:hash,predecessor:predecessorSchema.optional()}).strict().superRefine((s,c)=>{
+const baselineRestartSchema=predecessorSchema.extend({closureId:id,consentDigest:hash}).strict();
+const createReleaseSchema=z.object({requestId:id,taskId:id,applicationId:id,hostId:id,releaseExecutionId:id,releaserAgentId:id,releaserCredentialId:id,credentialVersion:z.number().int().positive(),reviewId:id,materialVersion:hash,commit:sha,candidateTree:sha,baseCommit:sha,baseTree:sha,releaserRevision:z.string().datetime(),expiresAt:releaseExpirySchema,manifest:manifestSchema,manifestDigest:hash,predecessor:predecessorSchema.optional(),baselineRestart:baselineRestartSchema.optional()}).strict().superRefine((s,c)=>{
  if(isGitSetManifest(s.manifest)&&(s.manifest.deployment.artifactSetDigest!==gitSetArtifactDigest(s.manifest,s)||s.manifest.baseline.commit!==s.baseCommit))c.addIssue({code:'custom',message:'release_source_set_mismatch'});
  if(s.predecessor&&!isGitSetManifest(s.manifest))c.addIssue({code:'custom',message:'release_successor_scope_invalid'});
+ if(s.baselineRestart&&(!isGitSetManifest(s.manifest)||s.predecessor))c.addIssue({code:'custom',message:'release_restart_scope_invalid'});
 });
 const operations=["push","pr","review","merge","deploy_config","deploy","observe","rollback_config","rollback","cleanup_resource","archive_repository","cleanup_local","cleanup"];
 const parametersSchema=z.object({targetId:text.optional(),branch:text.optional(),pullRequestNumber:z.number().int().positive().optional(),deploymentId:text.optional(),commit:sha.optional(),imageDigest:image.optional(),artifactSetDigest:hash.optional(),configDigest:hash.optional(),schemaDigest:hash.optional(),mode:z.enum(["candidate","rollback"]).optional(),faultInjection:z.boolean().optional(),resourceId:text.optional(),resourceIds:z.array(text).max(30).optional()}).strict();
@@ -108,6 +110,33 @@ const releaseHasSuccessor=s=>{
 };
 const deployedTarget=z.object({targetId:text,commit:sha,tree:sha,imageDigest:image,configDigest:hash,schemaDigest:hash,healthy:z.boolean(),deploymentId:text.optional()}).strict();
 const evidenceSchema=z.object({observedAt:z.string().datetime(),failureKind:z.literal('rollback_image_mismatch').optional(),remoteCommit:sha.optional(),remoteBase:sha.optional(),remoteTree:sha.optional(),pullRequestNumber:z.number().int().positive().optional(),prHeadCommit:sha.optional(),prMerged:z.boolean().optional(),reviewApproved:z.boolean().optional(),mergedCommit:sha.optional(),deploymentId:text.optional(),deploymentIds:z.array(deploymentIdentity).min(1).max(6).optional(),deployedTargets:z.array(deployedTarget).min(1).max(6).optional(),artifactSetDigest:hash.optional(),deployedSetDigest:hash.optional(),deployedCommit:sha.optional(),deployedTree:sha.optional(),imageDigest:image.optional(),configDigest:hash.optional(),schemaDigest:hash.optional(),healthDigest:hash.optional(),dataDigest:hash.optional(),backupDigest:hash.optional(),restoreDigest:hash.optional(),healthy:z.boolean().optional(),observationSeconds:z.number().int().nonnegative().max(3600).optional(),resourceIds:z.array(text).max(30).optional(),resourcePresent:z.boolean().optional(),repositoryArchived:z.boolean().optional(),localAbsent:z.boolean().optional(),absenceVerified:z.boolean().optional(),retentionVerified:z.boolean().optional(),repositoryUrl:url.optional(),canonicalDir:dir.optional(),targetId:text.optional(),applicationActive:z.boolean().optional(),localCommit:sha.optional(),localTree:sha.optional(),protectedResourcesDigest:hash.optional()}).strict();
+const closeFailedReleaseSchema=z.object({requestId:id,expectedVersion:hash,failedOperationId:id,consentDigest:hash,evidence:evidenceSchema}).strict();
+const authorizeReconciliationSchema=z.object({requestId:id,expectedVersion:hash,credentialId:id,credentialVersion:z.number().int().positive(),operationIds:z.array(id).min(1).max(30),expiresAt:releaseExpirySchema}).strict();
+const publishedGitBasisSchema=z.object({schemaVersion:z.literal('roost-release-published-git-v1'),releaseId:id,expectedVersion:hash,
+ closureId:id,closureDigest:hash,pushOperationId:id,prOperationId:id,reviewOperationId:id,mergeOperationId:id,
+ baselineDeploymentIds:z.array(deploymentIdentity).min(1).max(6)}).strict();
+const releaseHasPublishedGit=s=>{
+ const parsed=publishedGitBasisSchema.safeParse(s?.publishedGitBasis), restart=baselineRestartSchema.safeParse(s?.baselineRestart);
+ if(!parsed.success||!restart.success||s.predecessor||s.successorBasis||!isGitSetManifest(s.manifest)||!manifestSchema.safeParse(s.manifest).success)return false;
+ const b=parsed.data,r=restart.data,rows=b.baselineDeploymentIds,targets=s.manifest.deployment.targets;
+ return b.releaseId===r.releaseId&&b.expectedVersion===r.expectedVersion&&b.closureId===r.closureId
+  &&rows.length===targets.length&&new Set(rows.map(x=>x.targetId)).size===rows.length&&new Set(rows.map(x=>x.deploymentId)).size===rows.length
+  &&targets.every(t=>rows.some(x=>x.targetId===t.targetId));
+};
+// A fresh baseline may add protection for exactly the images attested by its
+// immutable closure. Preserve the original footprint and its order verbatim.
+const releaseRestartProtectedResourceIds=(manifest,evidence)=>{
+ if(!isGitSetManifest(manifest)||!manifestSchema.safeParse(manifest).success)return null;
+ const rows=evidence?.deployedTargets,targets=manifest.deployment.targets;
+ if(!Array.isArray(rows)||rows.length!==targets.length||new Set(rows.map(r=>r.targetId)).size!==rows.length)return null;
+ const protectedIds=manifest.cleanup.protectedResourceIds.slice();
+ for(const target of targets){
+  const row=rows.find(r=>r.targetId===target.targetId);
+  if(!row||!image.safeParse(row.imageDigest).success)return null;
+  if(!protectedIds.includes(row.imageDigest))protectedIds.push(row.imageDigest);
+ }
+ return protectedIds;
+};
 // A diagnosed failure describes the actual rebuilt image. It never proves a
 // successful rollback or permits a changed source/configuration/data baseline.
 const releaseRollbackImageFailureValid=(s,e,targetId)=>{
@@ -130,4 +159,4 @@ const releaseRollbackImageFailureValid=(s,e,targetId)=>{
 const outcomeSchema=z.object({requestId:id,status:z.enum(["succeeded","failed","uncertain","reconciled"]),reconciledStatus:z.enum(["succeeded","absent","failed"]).optional(),observationOnly:z.boolean(),evidence:evidenceSchema}).strict().superRefine((v,c)=>{if(v.status==="reconciled"?(!v.observationOnly||!v.reconciledStatus):v.reconciledStatus!==undefined)c.addIssue({code:"custom",message:"reconciliation_shape_invalid"});});
 const canonical=v=>Array.isArray(v)?v.map(canonical):v&&typeof v==="object"?Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])])):v;
 const releaseDigest=v=>createHash("sha256").update(JSON.stringify(canonical(v))).digest("hex");
-module.exports={manifestSchema,createReleaseSchema,intentSchema,outcomeSchema,operations,releaseDigest,retainsApplication,applicationManifestObject,refineApplicationManifest,gitSetManifestObject,isGitSetManifest,gitSetArtifactDigest,releaseExpirySchema,releaseSuccessorBasisSchema,releaseHasSuccessor,releaseRollbackImageFailureValid};
+module.exports={manifestSchema,createReleaseSchema,intentSchema,outcomeSchema,operations,releaseDigest,retainsApplication,applicationManifestObject,refineApplicationManifest,gitSetManifestObject,isGitSetManifest,gitSetArtifactDigest,releaseExpirySchema,releaseSuccessorBasisSchema,releaseHasSuccessor,releaseRollbackImageFailureValid,baselineRestartSchema,closeFailedReleaseSchema,authorizeReconciliationSchema,publishedGitBasisSchema,releaseHasPublishedGitBasis:releaseHasPublishedGit,releaseRestartProtectedResourceIds};

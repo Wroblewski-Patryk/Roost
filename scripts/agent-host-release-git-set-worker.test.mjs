@@ -171,6 +171,30 @@ test('successor baseline uses exact server-attested rollback queue and refuses l
   delete snapshot.successorBasis; assert.throws(f.install, /successor_basis_invalid/);
 });
 
+test('publication restart reads newly owner accepted baseline queues and refuses historical queue substitution', async t => {
+  const f=fixture(t),snapshot=f.state.release.snapshot,releaseId=randomUUID(),expectedVersion='a'.repeat(64),closureId=randomUUID(),queue='accepted-baseline-queue';
+  snapshot.baselineRestart={releaseId,expectedVersion,closureId,consentDigest:'b'.repeat(64)};
+  snapshot.publishedGitBasis={schemaVersion:'roost-release-published-git-v1',releaseId,expectedVersion,closureId,closureDigest:'c'.repeat(64),
+    pushOperationId:randomUUID(),prOperationId:randomUUID(),reviewOperationId:randomUUID(),mergeOperationId:randomUUID(),baselineDeploymentIds:[{targetId,deploymentId:queue}]};
+  assert.throws(f.install,/published_git_baseline_changed/);
+  f.settings.baselineDeployments=[{targetId,deploymentId:queue}];f.controls.baselineDeploymentId=queue;
+  const result=await f.install().coolify.health(f.manifest,snapshot,{rollback:true});
+  assert.equal(result.healthy,true);assert.equal(result.deployedTargets[0].deploymentId,queue);assert.equal(result.deployedTargets[0].imageDigest,imageDigest);
+  assert.equal(snapshot.baseCommit,baseCommit);assert.equal(snapshot.successorBasis,undefined);
+  assert.equal(f.calls.some(row=>row.request?.method==='PATCH'||row.options?.input?.includes('queue_application_deployment(')),false);
+  for(const change of ['missing','version','closure','coverage','self','mixed']){
+    const original=structuredClone(snapshot);
+    if(change==='missing')delete snapshot.publishedGitBasis;
+    if(change==='version')snapshot.publishedGitBasis.expectedVersion='f'.repeat(64);
+    if(change==='closure')snapshot.publishedGitBasis.closureId=randomUUID();
+    if(change==='coverage')snapshot.publishedGitBasis.baselineDeploymentIds[0].targetId='foreign';
+    if(change==='self')snapshot.baselineRestart.releaseId=snapshot.publishedGitBasis.releaseId=f.state.release.id;
+    if(change==='mixed')snapshot.successorBasis={};
+    assert.throws(f.install,/published_git_basis_invalid|successor_basis_invalid/);
+    for(const key of Object.keys(snapshot))delete snapshot[key];Object.assign(snapshot,original);
+  }
+});
+
 test('normal installed service failure writes only indexed whitelisted stderr, without changing evidence', async t => {
   const f = fixture(t), lines = [];
   t.mock.method(process.stderr, 'write', value => { lines.push(value); return true; });

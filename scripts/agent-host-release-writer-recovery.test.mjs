@@ -35,10 +35,43 @@ function stateFixture(directory) {
   return { release: { id: randomUUID(), manifestDigest: snapshot.manifestDigest, snapshot }, status: "active", expectedVersion: hash,
     journal: [{ id: randomUUID(), operation: "push", intent, createdAt: at, outcome: null }] };
 }
-async function launchBroker(t, { crashDuringChild = false, rejectForgedReceipt = false, cycles = 1 } = {}) {
+function gitSetStateFixture(directory,{publication=false}={}){
+ const state=stateFixture(directory),s=state.release.snapshot,m=s.manifest,targetId=m.deployment.targetId;
+ const target={targetId,name:'web',dockerfile:'/apps/web/Dockerfile',configDigest:m.deployment.configDigest,
+  baseline:{commit:s.baseCommit,tree:s.baseTree,imageDigest:m.baseline.imageDigest,configDigest:m.baseline.configDigest}};
+ m.schemaVersion='roost-release-manifest-v2';m.purpose='application_release';m.deployment.provider='coolify_git_set';delete m.deployment.imageDigest;
+ m.deployment.targets=[target];m.deployment.publicOrigins=[m.deployment.url];m.deployment.configDigest=contract.releaseDigest([{targetId,configDigest:target.configDigest}]);
+ m.baseline.configDigest=m.rollback.configDigest=m.deployment.configDigest;delete m.baseline.imageDigest;delete m.rollback.imageDigest;
+ m.deployment.artifactSetDigest=contract.gitSetArtifactDigest(m,s);m.baseline.artifactSetDigest=m.rollback.artifactSetDigest=contract.gitSetArtifactDigest(m,s,true);
+ m.cleanup.archiveRepository=false;m.cleanup.protectedResourceIds=[targetId,target.baseline.imageDigest];s.manifestDigest=state.release.manifestDigest=contract.releaseDigest(m);
+ state.journal[0].operation=state.journal[0].intent.operation='rollback';state.journal[0].intent.manifestDigest=s.manifestDigest;
+ state.journal[0].intent.parameters={targetId,commit:m.rollback.commit,artifactSetDigest:m.rollback.artifactSetDigest,configDigest:m.rollback.configDigest,schemaDigest:m.rollback.schemaDigest};
+ if(publication){const releaseId=randomUUID(),expectedVersion='1'.repeat(64),closureId=randomUUID();
+  s.baselineRestart={releaseId,expectedVersion,closureId,consentDigest:'2'.repeat(64)};
+  s.publishedGitBasis={schemaVersion:'roost-release-published-git-v1',releaseId,expectedVersion,closureId,closureDigest:'3'.repeat(64),
+   pushOperationId:randomUUID(),prOperationId:randomUUID(),reviewOperationId:randomUUID(),mergeOperationId:randomUUID(),baselineDeploymentIds:[{targetId,deploymentId:'accepted-baseline'}]};}
+ return state;
+}
+test('published Git basis remains inside the native grant digest and unpaired or self lineage is refused',()=>{
+ const state=gitSetStateFixture(os.tmpdir(),{publication:true}),client={hostId:state.release.snapshot.hostId,agentId:state.release.snapshot.releaserAgentId};
+ const candidate=releaseRecoveryCandidate(state,client),snapshot=state.release.snapshot;
+ assert.equal(candidate.grantDigest,contract.releaseDigest({releaseId:state.release.id,snapshot}));
+ for(const key of ['closureDigest','mergeOperationId','baselineDeploymentIds']){
+  const changed=structuredClone(state),basis=changed.release.snapshot.publishedGitBasis;
+  if(key==='closureDigest')basis[key]='4'.repeat(64);
+  if(key==='mergeOperationId')basis[key]=randomUUID();
+  if(key==='baselineDeploymentIds')basis[key][0].deploymentId='different-accepted-queue';
+  assert.notEqual(releaseRecoveryCandidate(changed,client).grantDigest,candidate.grantDigest);
+ }
+ const changed=structuredClone(state);delete changed.release.snapshot.publishedGitBasis;
+ assert.throws(()=>releaseRecoveryCandidate(changed,client),/recovery_unproven/);
+ snapshot.baselineRestart.releaseId=snapshot.publishedGitBasis.releaseId=state.release.id;
+ assert.throws(()=>releaseRecoveryCandidate(state,client),/recovery_unproven/);
+});
+async function launchBroker(t, { crashDuringChild = false, rejectForgedReceipt = false, cycles = 1, stateFactory=stateFixture } = {}) {
   const directory = mkdtempSync(path.join(os.tmpdir(), "roost-release-writer-native-"));
   mkdirSync(path.join(directory, "launcher"));
-  const marker = path.join(directory, "synthetic-effect.txt"), state = stateFixture(directory);
+  const marker = path.join(directory, "synthetic-effect.txt"), state = stateFactory(directory);
   const client = { hostId: state.release.snapshot.hostId, agentId: state.release.snapshot.releaserAgentId };
   const source = `
 import {acquireWriterLock} from ${JSON.stringify(moduleUrl("agent-host-writer-lock.mjs"))};
@@ -122,6 +155,34 @@ test("native broker crash after closed child and before outcome reclaims only ex
   assert.equal(readFileSync(f.marker, "utf8"), "one native effect");
   clearReleaseWriterRecovery(writer, f.state, f.client); assert.equal(writer.releaseRecovery, null); await writer.release();
   assert(!existsSync(path.join(f.directory, writerLockFilename)));
+});
+
+test('native publication lineage cannot be substituted while reclaiming an expired rollback; actual FAILED read-back clears Writer',native,async t=>{
+ const f=await launchBroker(t,{stateFactory:directory=>{
+  const state=gitSetStateFixture(directory,{publication:true});state.status='expired';state.release.snapshot.expiresAt=new Date(Date.now()-60000).toISOString();return state;
+ }});
+ f.child.kill();await f.closed;const saved=readFileSync(path.join(f.directory,writerLockFilename));
+ const forged=structuredClone(f.state);forged.release.snapshot.publishedGitBasis.closureDigest='5'.repeat(64);
+ await assert.rejects(acquireWriterLock(f.directory,{releaseRecoveryCandidate:releaseRecoveryCandidate(forged,f.client)}),/writer_locked/);
+ assert.deepEqual(readFileSync(path.join(f.directory,writerLockFilename)),saved);
+ const writer=await acquireWriterLock(f.directory,{releaseRecoveryCandidate:releaseRecoveryCandidate(f.state,f.client)});
+ assert.equal(writer.releaseRecovery.reconciliationOnly,true);await assert.rejects(writer.release(),/reconciliation_pending/);
+ const s=f.state.release.snapshot,m=s.manifest,target=m.deployment.targets[0],deploymentId='actual-rebuilt-queue';
+ const row={targetId:target.targetId,...target.baseline,imageDigest:`sha256:${'9'.repeat(64)}`,schemaDigest:m.rollback.schemaDigest,healthy:true,deploymentId};
+ const {healthy,deploymentId:_,...sealed}=row;
+ const evidence={deployedCommit:m.rollback.commit,deployedTree:s.baseTree,artifactSetDigest:m.rollback.artifactSetDigest,
+  configDigest:m.rollback.configDigest,schemaDigest:m.rollback.schemaDigest,dataDigest:m.baseline.dataDigest,healthDigest:'6'.repeat(64),healthy:false,
+  failureKind:'rollback_image_mismatch',deployedTargets:[row],deploymentIds:[{targetId:target.targetId,deploymentId}],deployedSetDigest:contract.releaseDigest([sealed])};
+ let observations=0,effects=0;
+ const result=await runReleaseStep({state:f.state,client:f.client,assertWriter:()=>writerRecoveryEvidence(writer),resources:{},
+  github:{push:async()=>{effects++;throw Error('forbidden effect');}},
+  coolify:{rollback:async()=>{effects++;throw Error('forbidden effect');},reconcileDeployment:async()=>{observations++;return{state:'failed',...evidence};}},
+  api:async(route,{body})=>{assert(route.endsWith(`/operations/${f.state.journal[0].id}/outcome`));assert.equal(body.observationOnly,true);f.state.journal[0].outcome=body;return f.state;}});
+ assert.equal(result.handled,true);assert.equal(observations,1);assert.equal(effects,0);
+ const outcome=f.state.journal[0].outcome;assert.equal(outcome.status,'reconciled');assert.equal(outcome.reconciledStatus,'failed');
+ assert.equal(contract.releaseRollbackImageFailureValid(s,outcome.evidence,target.targetId),true);
+ clearReleaseWriterRecovery(writer,f.state,f.client);assert.equal(writer.releaseRecovery,null);await writer.release();
+ assert.equal(existsSync(path.join(f.directory,writerLockFilename)),false);assert.equal(readFileSync(f.marker,'utf8'),'one native effect');
 });
 
 test("native crash during assigned child retains Writer even after kernel stops child; missing terminal receipt never qualifies", native, async t => {

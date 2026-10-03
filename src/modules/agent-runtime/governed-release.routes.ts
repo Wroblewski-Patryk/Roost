@@ -4,7 +4,7 @@ import { asyncHandler } from "../../middleware/async-handler";
 import { sendApiError } from "../../middleware/api-error";
 import { requireWorkspaceRole } from "../../auth/workspace-access";
 import { readyTransaction } from "./task-execution-readiness";
-import { createRelease, listReleases, releaseView, releaseIntent, releaseOutcome, revokeRelease, renewRelease } from "./governed-release";
+import { createRelease, listReleases, releaseView, releaseIntent, releaseOutcome, revokeRelease, renewRelease, closeFailedRelease, authorizeReleaseReconciliation } from "./governed-release";
 export const governedReleaseRouter=Router();
 const uuid=z.string().uuid();
 function send(res:any,result:any,created=false) {
@@ -17,6 +17,14 @@ governedReleaseRouter.post("/",asyncHandler(async(req,res)=>{
  return send(res,await readyTransaction(db=>createRelease(db,req.auth!.workspaceId,req.auth!,req.body)),true);
 }));
 governedReleaseRouter.get("/:releaseId",asyncHandler(async(req,res)=>send(res,await readyTransaction(db=>releaseView(db,req.auth!.workspaceId,uuid.parse(req.params.releaseId),req.auth!)))));
+governedReleaseRouter.post("/:releaseId/actions/close-failed",asyncHandler(async(req,res)=>{
+ if(!requireWorkspaceRole(req,res,"owner"))return;
+ return send(res,await readyTransaction(db=>closeFailedRelease(db,req.auth!.workspaceId,uuid.parse(req.params.releaseId),req.auth!,req.body)),true);
+}));
+governedReleaseRouter.post("/:releaseId/actions/authorize-reconciliation",asyncHandler(async(req,res)=>{
+ if(!requireWorkspaceRole(req,res,"owner"))return;
+ return send(res,await readyTransaction(db=>authorizeReleaseReconciliation(db,req.auth!.workspaceId,uuid.parse(req.params.releaseId),req.auth!,req.body)),true);
+}));
 
 governedReleaseRouter.post("/:releaseId/actions/renew",asyncHandler(async(req,res)=>{
  if(!requireWorkspaceRole(req,res,"owner"))return;
