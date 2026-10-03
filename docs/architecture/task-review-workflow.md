@@ -52,6 +52,24 @@ credential-shaped text is rejected. Evidence must be redacted by its author;
 this is not a general secret detector. Evidence references are stored as text,
 never fetched or executed by the command.
 
+A rejection after an append-only Ready-basis revalidation closes execution
+admission while preserving a manager-only return path. That path requires the
+exact latest rejected material, immutable mapping, executor and role provenance;
+Ready may differ only by the rejection status/reason. It permits only
+`return_to_executor`, not approval, specialist creation, release or another
+owner basis revalidation. API eligibility and the database trigger enforce the
+same boundary.
+
+An evidence-only coding correction can preserve the preceding local commit.
+The Windows Worker requires signed first-write continuation identifying the
+rejection and previous native execution, a clean unchanged candidate, and a
+fresh fixed regression replay. The replay loads exact parent module bytes in
+memory for RED and runs the unchanged candidate test for GREEN in owned Jobs.
+Pinned tests/assets/dependencies, exact assertion counts, cleanup and an
+in-process receipt are checked. The result records
+`verify_existing_local_commit`; it creates no commit and never replaces the
+original coding evidence. A new independent exact-material review is required.
+
 One review attempt/decision is stored per completed execution. The API's
 expectedVersion also covers current task state, role authorities and prior
 decision/action. A new result, reassignment, changed task, altered role evidence

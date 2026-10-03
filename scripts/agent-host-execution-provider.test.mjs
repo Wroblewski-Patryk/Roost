@@ -16,6 +16,13 @@ const hermes = registry.providers.find(provider => provider.kind === "hermes_cod
 const configured = () => ({ kind: "hermes_codex", enabled: true, officialSource: hermes.officialSource,
   version: hermes.version, commit: hermes.commit, executablePath: "C:\\Fictional\\uninstalled\\hermes.exe", policy: structuredClone(registry.hermesPolicy) });
 
+test("native replay configuration requires an absolute private path and an explicit test manifest", async () => {
+  for (const testReplayPath of ["relative.json", "\\\\server\\share\\replay.json", "C:\\Fictional\\..\\replay.json"])
+    assert.ok((await inspectExecutionProvider({ executionProvider: { ...configured(), testManifestPath: "C:\\Fictional\\tests.json", testReplayPath } })).blockers.includes("hermes_authority_policy_invalid"));
+  assert.ok((await inspectExecutionProvider({ executionProvider: { ...configured(), testReplayPath: "C:\\Fictional\\replay.json" } })).blockers.includes("hermes_authority_policy_invalid"));
+  assert.equal((await inspectExecutionProvider({ executionProvider: { ...configured(), testManifestPath: "C:\\Fictional\\tests.json", testReplayPath: "C:\\Fictional\\replay.json" } })).blockers.includes("hermes_authority_policy_invalid"), false);
+});
+
 test("legacy and explicit direct providers fail closed without host containment", async () => {
   for (const config of [{}, { executionProvider: { kind: "direct_codex" } }]) {
     const report = await inspectExecutionProvider(config);

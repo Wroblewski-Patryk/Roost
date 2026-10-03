@@ -17,9 +17,10 @@ async function safeGrant(db: Db, g: any) {
 }
 async function reviewChoices(db: Db, workspaceId: string, s: any) {
   if ("error" in await riskAdmission(db,s.task.id)) return [];
-  if (!s.current || s.roleIssues.length || !["todo", "in_progress"].includes(s.task.status) || s.execution.cancelRequestedAt) return [];
+  if ((!s.current && !s.manageCurrent) || s.roleIssues.length || !["todo", "in_progress"].includes(s.task.status) || s.execution.cancelRequestedAt) return [];
   const options = [];
   for (const operation of grantOperations) {
+    if (!s.current && operation !== "return_to_executor") continue;
     if ((await riskLevelAdmission(db,s.task.id,operation)).error) continue;
     if (operation === "review_decision" ? Boolean(s.decision) : s.decision?.decision !== "reject" || Boolean(s.decision.action)) continue;
     const role = operation === "review_decision" ? s.authorities.verifier : s.authorities.accountableManager;
@@ -30,7 +31,7 @@ async function reviewChoices(db: Db, workspaceId: string, s: any) {
     options.push({ operation, agentId: role.id, agentLabel: operation === "review_decision" ? s.labels.verifier : s.labels.manager, credentialId: key.id, credentialPrefix: key.keyPrefix,
       credentialVersion: key.credentialVersion, credentialExpiresAt: key.expiresAt, role });
   }
-  return [...options, ...await handoffGrantChoices(db,workspaceId,s.task.id,s.principal?.kind==="user"?s.principal.id:"")];
+  return [...options, ...(s.current ? await handoffGrantChoices(db,workspaceId,s.task.id,s.principal?.kind==="user"?s.principal.id:"") : [])];
 }
 async function decisionChoices(db: Db, workspaceId: string, s: any) {
   if (s.principal?.kind !== "user" || (await riskLevelAdmission(db,s.task.id,"decision_supersede")).error) return [];

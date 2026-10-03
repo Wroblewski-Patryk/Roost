@@ -34,9 +34,11 @@ export async function inspectExecutionProvider(config, { platform = process.plat
   const mcpKeys = ["mcpServer", "minimumTools", "supportsParallelToolCalls", "prompts", "resources", "sampling"];
   if (mcpKeys.some(key => !same(policy[key], expected[key])) || Object.keys(policy).some(key => !(key in expected))) blockers.push("hermes_mcp_policy_invalid");
   if (Object.keys(expected).filter(key => !mcpKeys.includes(key)).some(key => policy[key] !== expected[key])
-    || Object.keys(input).some(key => !["kind", "enabled", "officialSource", "version", "commit", "executablePath", "policy", "attestation", "profile", "testManifestPath"].includes(key))
+    || Object.keys(input).some(key => !["kind", "enabled", "officialSource", "version", "commit", "executablePath", "policy", "attestation", "profile", "testManifestPath", "testReplayPath"].includes(key))
     || (input.testManifestPath !== undefined && (typeof input.testManifestPath !== "string" || !/^[a-z]:\\/i.test(input.testManifestPath)
       || path.win32.normalize(input.testManifestPath) !== input.testManifestPath))
+    || (input.testReplayPath !== undefined && (typeof input.testReplayPath !== "string" || !/^[a-z]:\\/i.test(input.testReplayPath)
+      || path.win32.normalize(input.testReplayPath) !== input.testReplayPath || !input.testManifestPath))
     || (input.profile !== undefined && !hermesProfileBindingSchema.safeParse(input.profile).success)) blockers.push("hermes_authority_policy_invalid");
   const evidence = blockers.every(code => code === "hermes_disabled") ? await attestHermes(input, { useCache: !freshAttestation }) : {};
   let nativeReady = false;

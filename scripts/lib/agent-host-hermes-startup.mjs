@@ -108,7 +108,7 @@ function validate({ provider, envelope, repositoryPath, candidate, budget }) {
       || provider.officialSource !== pin.officialSource || ![hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion].includes(provider.profile?.schemaVersion)
       || !hermesProfileBindingSchema.safeParse(provider.profile).success
       || serialize(provider.policy) !== serialize(contract.registry.hermesPolicy)
-      || Object.keys(provider).some(k => !["kind", "enabled", "version", "commit", "officialSource", "executablePath", "profile", "policy", "attestation", "testManifestPath"].includes(k))) fail("hermes_startup_profile_required");
+      || Object.keys(provider).some(k => !["kind", "enabled", "version", "commit", "officialSource", "executablePath", "profile", "policy", "attestation", "testManifestPath", "testReplayPath"].includes(k))) fail("hermes_startup_profile_required");
   if (provider.profile.schemaVersion === hermesNativeProfileVersion && envelope.contract.nativeBoundary?.profile !== "inspect-readonly") assertCodingAuthority(envelope);
   const env = candidate?.environment;
   if (!env || Object.keys(env).some(k => ![...plumbing, ...(process.platform === "win32" ? ["SYSTEMDRIVE"] : []), "HERMES_HOME", "HERMES_SAFE_MODE", "HERMES_DISABLE_LAZY_INSTALLS", "HERMES_WRITE_SAFE_ROOT", "PYTHONNOUSERSITE", "PYTHONDONTWRITEBYTECODE", "PYTHONUTF8", "GIT_TERMINAL_PROMPT", "GIT_OPTIONAL_LOCKS"].includes(k))) fail("hermes_startup_environment_invalid");

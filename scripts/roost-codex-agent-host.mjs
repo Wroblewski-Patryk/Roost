@@ -34,7 +34,9 @@ import { collectWorkspaceEvidence } from "./lib/agent-host-workspace-evidence.mj
 import { collectReadOnlyRepositoryEvidence } from "./lib/agent-host-readonly-boundary.mjs";
 import { verifiedPriorReadOnlyAudit } from "./lib/agent-host-prior-readonly-audit.mjs";
 import { prepareCodingTests, runCodingTests } from "./lib/agent-host-coding-tests.mjs";
-import { finalizeLocalCommit } from "./lib/agent-host-local-commit.mjs";
+import { prepareCodingTestReplay, runCodingTestReplay, bindCodingTestReplayVerification } from "./lib/agent-host-coding-test-replay.mjs";
+import { prepareTestReplayConfiguration } from "./lib/agent-host-test-replay-config.mjs";
+import { finalizeLocalCommit, verifyExistingLocalCommit } from "./lib/agent-host-local-commit.mjs";
 import { readCodeReviewerCredential, reviewerApi, validateCodeReviewView, prepareCodeReviewDecision,
   codeReviewerConfigSchema } from "./lib/agent-host-code-reviewer.mjs";
 import { createExecutionDuration } from "./lib/agent-host-execution-duration.mjs";
@@ -223,7 +225,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
   let stopRequested = false;
   let duration;
   let outputBudget;
-  let hermesBaseline, hermesReadOnlyBaseline, nativeInput, fixedGrant, readOnlyEvidence, priorAudit, firstWrite, codingTests;
+  let hermesBaseline, hermesReadOnlyBaseline, nativeInput, fixedGrant, readOnlyEvidence, priorAudit, firstWrite, codingTests, codingReplay, replayConfiguration;
   let codeReviewerView, codeReviewerKey;
   let preparedCommit;
   let hermesCollection, hermesAbort, hermesCompletedReceipt;
@@ -368,7 +370,17 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       await duration.wait(api(`/v1/agent-runtime/executions/${claimed.id}/actions/prior-readonly-audit`, {
         method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken }) })),
       { claimed, contract: taskContract, repositoryEvidence: readOnlyEvidence });
-    if (coding && taskContract.nativeBoundary.writePaths.length) codingTests = prepareCodingTests({
+    if (coding && config.executionProvider.testReplayPath) {
+      if (!firstWrite?.continuation || firstWrite.continuation.previousCommit !== preparedCommit)
+        throw protocolAdmissionError("coding_test_replay_continuation_required");
+      replayConfiguration = prepareTestReplayConfiguration({ filename: config.executionProvider.testReplayPath,
+        repositoryPath, candidateCommit: preparedCommit, branch: actualBranch });
+      if (replayConfiguration.config.projectionPaths.some(relative => !taskContract.nativeBoundary.writePaths.includes(relative)))
+        throw protocolAdmissionError("coding_test_replay_scope_invalid");
+      codingReplay = prepareCodingTestReplay({ ...replayConfiguration.config,
+        manifestPath: config.executionProvider.testManifestPath, repositoryPath, originUrl: repository.originUrl,
+        acceptanceTests: taskContract.acceptance.tests, writePaths: taskContract.nativeBoundary.writePaths });
+    } else if (coding && taskContract.nativeBoundary.writePaths.length) codingTests = prepareCodingTests({
       manifestPath: config.executionProvider.testManifestPath, repositoryPath, originUrl: repository.originUrl,
       acceptanceTests: taskContract.acceptance.tests, writePaths: taskContract.nativeBoundary.writePaths });
     const providerInput = prepareProviderInput({ fresh: { taskContext, applicationContext }, claimed,
@@ -383,7 +395,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       hermesBaseline = await duration.wait(collectWorkspaceEvidence({
         repositoryPath, expectedHead: preparedCommit, expectedBranch: taskContext.executionPacket.contract.singleTask.branch,
         inputSeal: providerInput.seal, secrets: [apiKey, claimed.leaseToken, codeReviewerKey].filter(Boolean) }));
-      if (!codingTests) hermesReadOnlyBaseline = await duration.wait(captureReadOnlyReviewBaseline({ repositoryPath,
+      if (!codingTests && !codingReplay) hermesReadOnlyBaseline = await duration.wait(captureReadOnlyReviewBaseline({ repositoryPath,
         contract: taskContext.executionPacket.contract, workspaceEvidence: hermesBaseline }));
     }
     if (resumeCheckpoint) assertRecoverySnapshot(resumeCheckpoint, taskContext.executionPacket.revision, digest, contextRevision);
@@ -602,16 +614,22 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
         inputSeal: providerInput.seal, baselineSeal: hermesBaseline.seal, secrets: [apiKey, claimed.leaseToken] }));
       const reviewed = await duration.wait(verifyCompletedNativeBoundary(verification.nativeToolReceipt, {
         verify: async () => {
-          if (!codingTests) return verifyReadOnlyReview({ repositoryPath, baseline: hermesReadOnlyBaseline,
+          if (!codingTests && !codingReplay) return verifyReadOnlyReview({ repositoryPath, baseline: hermesReadOnlyBaseline,
             workspaceEvidence: verification.workspaceEvidence });
-          const tested = await runCodingTests(codingTests, { phase: "candidate", workspaceSeal: verification.workspaceEvidence.seal,
-            remainingMs: () => duration.remainingMs, assertAuthority: assertProviderAuthority });
+          const assertTestAuthority = () => { assertProviderAuthority(); replayConfiguration?.assertUnchanged(); };
+          if (codingReplay && (verification.workspaceEvidence.status.length || verification.workspaceEvidence.manifest.length))
+            throw protocolAdmissionError("coding_test_replay_changed_candidate");
+          const tested = codingReplay
+            ? bindCodingTestReplayVerification(await runCodingTestReplay(codingReplay, { workspaceSeal: verification.workspaceEvidence.seal,
+              remainingMs: () => duration.remainingMs, assertAuthority: assertTestAuthority }))
+            : await runCodingTests(codingTests, { phase: "candidate", workspaceSeal: verification.workspaceEvidence.seal,
+              remainingMs: () => duration.remainingMs, assertAuthority: assertTestAuthority });
           verification.codingTests = tested;
           const postTest = await collectWorkspaceEvidence({ repositoryPath, expectedHead: preparedCommit,
             expectedBranch: taskContract.singleTask.branch, inputSeal: providerInput.seal,
             baselineSeal: hermesBaseline.seal, secrets: [apiKey, claimed.leaseToken] });
           if (postTest.seal !== verification.workspaceEvidence.seal) throw protocolAdmissionError("coding_tests_changed_workspace");
-          return { before: { exit: null }, after: { exit: tested.passed ? 0 : 1, passed: tested.passed },
+          return { before: { exit: tested.regressionReplay?.red.exitCode ?? null }, after: { exit: tested.passed ? 0 : 1, passed: tested.passed },
             testUnchanged: true, baselineCommitUnchanged: true, minimalChange: true,
             diffDigest: verification.workspaceEvidence.seal };
         },
@@ -629,15 +647,16 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
           details: { nativeReviewReceipt: reviewed.publicReceipt, nativeReviewReceiptDigest: reviewed.receiptDigest,
             ...(verification.codingTests ? { codingTests: verification.codingTests } : {}) } });
       releaseReviewedNativeBoundary(verification.nativeToolReceipt, reviewed.capability);
-      if (codingTests) {
+      if (codingTests || codingReplay) {
         const renewedFirstWrite = await duration.wait(requestFirstWriteAdmission({ api, claimed, writerLock, repositoryPath,
           provider: config.executionProvider, contract: taskContract, baselineCommit: preparedCommit,
           assertAuthority: assertProviderAuthority }));
         if (renewedFirstWrite.decisionId !== firstWrite.decisionId
             || renewedFirstWrite.baselineCommit !== firstWrite.baselineCommit
-            || renewedFirstWrite.branch !== firstWrite.branch) throw protocolAdmissionError("first_write_changed_before_commit");
+            || renewedFirstWrite.branch !== firstWrite.branch
+            || JSON.stringify(renewedFirstWrite.continuation ?? null) !== JSON.stringify(firstWrite.continuation ?? null)) throw protocolAdmissionError("first_write_changed_before_commit");
         firstWrite = renewedFirstWrite;
-        verification.localCommit = finalizeLocalCommit({ repositoryPath, writerLock, executionId: claimed.id,
+        verification.localCommit = (codingReplay ? verifyExistingLocalCommit : finalizeLocalCommit)({ repositoryPath, writerLock, executionId: claimed.id,
           taskId: claimed.taskId, baselineCommit: preparedCommit, branch: resultBranch,
           writePaths: taskContract.nativeBoundary.writePaths, firstWrite,
           nativeReviewReceipt: reviewed.publicReceipt, nativeReviewReceiptDigest: reviewed.receiptDigest,

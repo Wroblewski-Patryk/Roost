@@ -90,6 +90,20 @@ export async function effectiveCompletedResult(db: Db, workspaceId: string, exec
     riskAdmissionCommit: pin.riskAdmissionCommit, compositionSeal: pin.procedureComposition?.seal } } };
 }
 
+// A rejection deliberately closes Ready. Its manager may still dispose of the
+// exact rejected material, but this envelope never grants review or release.
+export async function effectiveRejectedResultForDisposition(db: Db, workspaceId: string, execution: any) {
+  if (!execution) return execution;
+  const row = (await db.$queryRaw<any[]>`SELECT completed_result_rejection_disposition_current(e) AS current,
+    (SELECT r.ready_pin FROM completed_result_basis_revalidations r WHERE r.execution_id=e.id ORDER BY r.sequence DESC LIMIT 1) AS pin
+    FROM agent_executions e WHERE e.id=${execution.id}::uuid AND e.workspace_id=${workspaceId}::uuid`)[0];
+  if (!row?.current || !row.pin) return execution;
+  const pin = row.pin;
+  return { ...execution, metadata: { ...object(execution.metadata), readyContextPin: {
+    pinId: pin.pinId, revision: pin.revision, riskAdmissionSeal: pin.riskAdmissionSeal,
+    riskAdmissionCommit: pin.riskAdmissionCommit, compositionSeal: pin.procedureComposition?.seal } } };
+}
+
 export async function revalidateCompletedResultBasis(db: Db, workspaceId: string, id: string, auth: AuthContext, body: unknown) {
   const input = completedResultBasisSchema.parse(body);
   if (!await owner(db, workspaceId, auth)) return { error: "completed_result_owner_required" };

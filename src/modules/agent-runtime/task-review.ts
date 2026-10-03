@@ -7,7 +7,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import type { Prisma } from "@prisma/client";
 import { lockReadyTask } from "./task-execution-readiness";
-import { effectiveCompletedResult } from "./completed-result-basis";
+import { effectiveCompletedResult, effectiveRejectedResultForDisposition } from "./completed-result-basis";
 import { resolveTaskRoleContext } from "./task-role-context";
 import { nativeBoundaryResultBlocked, exactReviewCommit, correctionDraft, managerCorrectionCompetencies, object, reviewActionSchema, reviewDecisionSchema, reviewDigest, wire } from "./task-review-contract";
 
@@ -41,10 +41,15 @@ export async function reviewState(db: Db, workspaceId: string, taskId: string, a
   const effective = execution && pin.pinId !== result?.pin?.pinId ? await effectiveCompletedResult(db, workspaceId, execution) : execution;
   const effectivePin = object(object(effective?.metadata).readyContextPin);
   const current = Boolean(execution?.status === "completed" && execution.completedAt && !execution.contextInvalidatedAt && result?.pin?.pinId && pin.pinId === effectivePin.pinId && pin.revision === effectivePin.revision && task.assignedWorkforceEntityId === contract.assignment?.agentId);
+  const disposition = !current && decision?.decision === "reject" && !decision.action
+    ? await effectiveRejectedResultForDisposition(db, workspaceId, execution) : execution;
+  const dispositionPin = object(object(disposition?.metadata).readyContextPin);
+  const manageCurrent = current || Boolean(disposition !== execution && pin.pinId === dispositionPin.pinId
+    && pin.revision === dispositionPin.revision && task.assignedWorkforceEntityId === contract.assignment?.agentId);
   const expectedVersion = reviewDigest({ task: { id: task.id, updatedAt: task.updatedAt, readiness: pin, provenance: task.executionRoleProvenance, executor: task.assignedWorkforceEntityId }, result, authorities, decision });
-  return { task, execution, result, contract, authorities, labels, decision, materialVersion, approvalCommit, expectedVersion, current, basisCurrent: Boolean(current && effective !== execution), roleIssues, principal, roleMatches,
+  return { task, execution, result, contract, authorities, labels, decision, materialVersion, approvalCommit, expectedVersion, current, manageCurrent, basisCurrent: Boolean(current && effective !== execution), roleIssues, principal, roleMatches,
     canReview: current && !decision && !roleIssues.length && roleMatches(authorities.verifier),
-    canManage: current && decision?.decision === "reject" && !decision.action && !roleIssues.length && roleMatches(authorities.accountableManager) };
+    canManage: manageCurrent && decision?.decision === "reject" && !decision.action && !roleIssues.length && roleMatches(authorities.accountableManager) };
 }
 
 export async function taskReviewView(db: Db, workspaceId: string, taskId: string, actor: ReviewActor, cursor?: string) {
@@ -62,7 +67,7 @@ export async function taskReviewView(db: Db, workspaceId: string, taskId: string
   return { task: { id: taskId, title: s.task.title }, decisionAuthorities:await taskDecisionAuthorities(db,workspaceId,taskId),expectedVersion: s.expectedVersion, materialVersion: s.materialVersion,
     ...await suspensionList(db,workspaceId,taskId), blockedOperations:{review_decision:reviewBlocked,return_to_executor:returnBlocked,create_specialist_task:specialistBlocked},
     result: s.result, basisCurrent: s.basisCurrent, labels: s.labels, decision: decisionView(s.decision), approvalCommit: s.approvalCommit, canReview: Boolean(canReview), canManage: Boolean(canManage), grantAccess, canManageGrants,
-    reason: grantAccess && (s.canReview && !canReview || s.canManage && !canManage) ? "capability_grant_required" : !s.execution ? "no_result" : !s.current ? "stale_result" : s.roleIssues.length ? "roles_need_context" : s.canReview || s.canManage ? null : s.decision ? s.decision.action ? "action_recorded" : s.decision.decision === "approve" ? "approved" : "manager_required" : "verifier_required",
+    reason: grantAccess && (s.canReview && !canReview || s.canManage && !canManage) ? "capability_grant_required" : !s.execution ? "no_result" : !s.current && !s.manageCurrent ? "stale_result" : s.roleIssues.length ? "roles_need_context" : s.canReview || s.canManage ? null : s.decision ? s.decision.action ? "action_recorded" : s.decision.decision === "approve" ? "approved" : "manager_required" : "verifier_required",
     history: history.slice(0, 50).map(decisionView), nextCursor: history.length > 50 ? history[49]!.id : null,
     specialists: specialists.slice(0, 500).map(w => ({ id: w.id, label: w.name, revision: w.updatedAt.toISOString(), competencies: w.skillIndex, role: w.role })), specialistsTruncated: specialists.length > 500 };
 }
@@ -111,7 +116,8 @@ export async function actOnTaskReview(db: Db, workspaceId: string, taskId: strin
   const capability = await admitCapability(db, workspaceId, taskId, principal, input.action, input.grantId, prior);
   if ("error" in capability) return capability;
   if (prior) return prior.requestHash === requestHash ? { action: actionView(prior), replayed: true } : { error: "task_review_key_conflict" };
-  if (!s.current || s.expectedVersion !== input.expectedVersion || s.decision?.id !== input.reviewId) return { error: "task_review_stale" };
+  if (!s.manageCurrent || s.expectedVersion !== input.expectedVersion || s.decision?.id !== input.reviewId) return { error: "task_review_stale" };
+  if (!s.current && input.action !== "return_to_executor") return { error: "task_review_stale" };
   if (!s.canManage) return { error: "task_review_manager_action_required" };
   const evidence = object(s.decision!.evidence);
   const resolved = input.action === "return_to_executor"

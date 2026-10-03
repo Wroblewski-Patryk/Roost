@@ -1507,9 +1507,15 @@ pilot baseline recovery subsequently passed through normal pinned queue
 state, zero restarts/OOM, six runtime/configuration rows and health/readiness.
 Post-startup full data/sequence/schema parity with the certified backup passed
 at 14:14:05 UTC. Current Ready and append-only result-basis revalidation
-`9fdff96c-35e0-4062-a5be-0b8844ae56c1` passed after including every effective
-accepted task decision; the rejected prior request was reconciled. Current
-independent acceptance and exact owner release authority remain required.
+`06bd2036-cae5-4680-9e16-b4a6149c1343` passed after including every effective
+accepted task decision; the rejected prior request was reconciled. Historical
+independent acceptance passed in execution
+`4d7e218a-c632-410c-8a18-3edf11fb4a9d`, decision
+`0a0751be-8633-430a-b350-e3b8b796957a`, with unchanged native state and owned
+cleanup. Latest reviewer `5d505c06-8f0d-48c9-88ae-2ecd80b517c3` rejected
+missing native RED evidence. Current acceptance is absent; operator native replay
+proves RED/GREEN without source changes, but governed continuation and new review
+remain required. Exact owner release authority and production proof are pending.
 Installed HTTPS ingress passed a certificate-pinned validation refusal. Internal
 atomic evidence construction after a single normal fence has 17 source tests;
 external stale CAS remains denied. Production refusal was traced to five stale
@@ -1533,8 +1539,8 @@ not a new model execution or pilot release proof.
 **RELEASE** — Gate 3 is certified on the sole temporary target (2026-10-02).
 Gate 4 has a completed signed native read-only PWA audit and source support for
 retained Dockerfile release sets, per-target durable intents and exact runtime
-identity. Managed repair and historical exact review are proven; current
-acceptance basis and release remain unproven; full pilot backup now passes.
+identity. Managed repair, current exact review and full pilot backup pass;
+the pilot remains unreleased without separate exact owner authority.
 Separately authorized maintenance retained order/dedupe history and resolved
 the previously observed activity blocker; fresh exchange and database read-back
 found no LIVE activity. Managed release audit returned blocked before that
@@ -1552,7 +1558,7 @@ the prior accepted pilot commit. Normal signed Writer/lease cleanup and admissio
 retirement passed; Roost retains the immutable failure and separate recovery
 record. This recovery itself does not prove the later repair or release.
 Fresh managed coder `58387e7a-c4b2-4fbd-acf9-7fd835832eb5` returned local
-`7512bc395d65df0fca7cf701047033031f63eb7e`, with a genuine red assertion and
+`7512bc395d65df0fca7cf701047033031f63eb7e`, with a model-reported red assertion and
 fixed native green Vitest result (one pass, no skips). Independent reviewer
 `a272c952-bf70-47f9-81f6-67108fa606db` approved it as
 `fd94c23c-c3b9-4f5f-aaac-250f50305386`; later configuration requires a fresh

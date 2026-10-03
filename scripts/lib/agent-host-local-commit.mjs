@@ -4,6 +4,7 @@ import { lstatSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { assertWriterLock } from "./agent-host-writer-lock.mjs";
 import { nativeDigest, nativeRelative } from "./agent-host-native-footprint.mjs";
+import { isCodingTestReplayReceipt } from "./agent-host-coding-test-replay.mjs";
 
 const h = bytes => createHash("sha256").update(bytes).digest("hex");
 const fail = () => { throw Object.assign(new Error("local_commit_unproven"), { protocolAdmission: true, retryable: false,
@@ -21,6 +22,51 @@ const status = root => git(root, ["status", "--porcelain=v1", "-z", "--no-rename
     if (row.length < 4 || row[2] !== " ") fail();
     return { code: row.slice(0, 2), file: nativeRelative(row.slice(3)) };
   });
+
+// An evidence-only correction may retest the exact preceding native commit.
+// It never creates an empty commit or rewrites the original coding receipt.
+// The signed admission authenticates the rejected result and manager return;
+// the in-memory replay receipt prevents a serialized 'passed' claim from being
+// promoted into native test proof.
+export function verifyExistingLocalCommit({ repositoryPath, writerLock, executionId, taskId,
+  baselineCommit, branch, writePaths, firstWrite, nativeReviewReceipt,
+  nativeReviewReceiptDigest, candidateTests, workspaceEvidence, assertAuthority }) {
+  try {
+    const continuation = firstWrite?.continuation;
+    if (!firstWrite?.operations?.localCommit || firstWrite.baselineCommit !== baselineCommit
+        || firstWrite.branch !== branch || !Number.isFinite(Date.parse(firstWrite.expiresAt))
+        || Date.parse(firstWrite.expiresAt) <= Date.now() || !firstWrite.decisionId
+        || !continuation || continuation.previousCommit !== baselineCommit
+        || !/^[0-9a-f-]{36}$/.test(continuation.previousExecutionId ?? "")
+        || !/^[0-9a-f-]{36}$/.test(continuation.reviewId ?? "")
+        || continuation.previousExecutionId === executionId
+        || !isCodingTestReplayReceipt(candidateTests, baselineCommit)
+        || nativeReviewReceipt?.verdict !== "verified_candidate"
+        || !/^[a-f0-9]{64}$/.test(nativeReviewReceiptDigest ?? "")
+        || workspaceEvidence?.head !== baselineCommit || workspaceEvidence.branch !== branch
+        || workspaceEvidence.status?.length !== 0 || workspaceEvidence.manifest?.length !== 0
+        || !Array.isArray(writePaths) || !writePaths.length) fail();
+    assertWriterLock(writerLock); assertAuthority();
+    if (output(repositoryPath, ["rev-parse", "HEAD"]) !== baselineCommit
+        || output(repositoryPath, ["symbolic-ref", "--short", "HEAD"]) !== branch
+        || status(repositoryPath).length) fail();
+    const parent = output(repositoryPath, ["rev-parse", "HEAD^1"]);
+    if (candidateTests.regressionReplay?.baselineCommit !== parent
+        || output(repositoryPath, ["rev-list", "--parents", "-n", "1", "HEAD"]) !== `${baselineCommit} ${parent}`) fail();
+    const paths = git(repositoryPath, ["diff-tree", "--no-commit-id", "--name-only", "-r", "-z", "HEAD"])
+      .toString("utf8").split("\0").filter(Boolean).sort();
+    if (!paths.length || JSON.stringify(paths) !== JSON.stringify([...writePaths].map(nativeRelative).sort())) fail();
+    const tree = output(repositoryPath, ["rev-parse", "HEAD^{tree}"]);
+    assertWriterLock(writerLock); assertAuthority();
+    const body = { schemaVersion: "roost-local-commit-verification-v1", operation: "verify_existing_local_commit",
+      executionId, taskId, decisionId: firstWrite.decisionId, commit: baselineCommit,
+      baselineCommit: parent, verificationBaselineCommit: baselineCommit, branch, tree, paths,
+      previousExecutionId: continuation.previousExecutionId, rejectionReviewId: continuation.reviewId,
+      workspaceEvidenceDigest: workspaceEvidence.seal, nativeReviewReceiptDigest, testDigest: candidateTests.digest,
+      commitCreated: false, remotePush: false, deployment: false };
+    return Object.freeze({ ...body, digest: nativeDigest(body) });
+  } catch { fail(); }
+}
 export function finalizeLocalCommit({ repositoryPath, writerLock, executionId, taskId, baselineCommit, branch,
   writePaths, firstWrite, nativeReviewReceipt, nativeReviewReceiptDigest, candidateTests, workspaceEvidence,
   assertAuthority }) {

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import test from "node:test";
-import { completedResultBasisEligibility, completedResultBasisSchema, effectiveCompletedResult,
+import { completedResultBasisEligibility, completedResultBasisSchema, effectiveCompletedResult, effectiveRejectedResultForDisposition,
   revalidateCompletedResultBasis } from "../modules/agent-runtime/completed-result-basis";
 
 function candidate() {
@@ -39,6 +39,23 @@ test("fresh basis can reuse unchanged native code and tests without changing ori
   const { execution, pin } = candidate(), original = structuredClone(execution);
   assert.equal(completedResultBasisEligibility(execution, pin), null);
   assert.deepEqual(execution, original);
+});
+
+test("rejection disposition has a separate envelope and never makes the review basis current", async () => {
+  const { execution, pin } = candidate(), before = structuredClone(execution), calls: string[] = [];
+  const db = { $queryRaw: async (sql: TemplateStringsArray) => {
+    const query = sql.join("?"); calls.push(query);
+    return [{ current: query.includes("completed_result_rejection_disposition_current"), pin }];
+  } } as any;
+  assert.equal(await effectiveCompletedResult(db, randomUUID(), execution), execution);
+  const disposition = await effectiveRejectedResultForDisposition(db, randomUUID(), execution);
+  assert.notEqual(disposition, execution);
+  assert.equal(disposition.metadata.readyContextPin.pinId, pin.pinId);
+  assert.equal(disposition.verification, execution.verification);
+  assert.deepEqual(execution, before);
+  assert.equal(calls.length, 2);
+  const denied = { $queryRaw: async () => [{ current: false, pin }] } as any;
+  assert.equal(await effectiveRejectedResultForDisposition(denied, randomUUID(), execution), execution);
 });
 for (const [name, mutate] of Object.entries<Record<string, any>>({
   "dirty revision": { revision: { workingTree: "dirty" } },

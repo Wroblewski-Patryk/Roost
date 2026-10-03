@@ -16,8 +16,8 @@ was stopped. A subsequent encrypted-backup attempt lost its resource observation
 and cancelled only its tagged dump query; it does not qualify backup or restore.
 Maintenance now pauses external-position sync/management through the existing
 profile service, with encrypted prior flags, lifecycle audit and no credential
-rotation. Trading remains paused. Full backup is now verified below; current
-independent review, service recovery and exact-commit release consent remain required.
+rotation. Trading remains paused. Full backup, service recovery and current
+independent review are verified below; exact-commit release consent is absent.
 
 Roost's installed reverse-proxy address changed after restart. Optional
 `ROOST_HANDOFF_TRUSTED_PROXY_HOST` selects one configured Docker service label:
@@ -93,8 +93,8 @@ Roost recovered through the normal controller queue as
 `recce24c5c5b44981ae67a31`, commit `0462d5f4f418087dd5ea233178ae4839e045085a`;
 health/build identity match. Failed and unissued dispatches were read back before
 retry. The pilot's existing controller application, canonical branch and generated
-configuration remain; no candidate deployment occurred. Baseline service and
-compatible rollback artifact recovery remain required before managed release.
+configuration remain; no candidate deployment occurred. At that checkpoint,
+baseline service and compatible rollback artifacts still required recovery.
 
 The first baseline rebuild queue `r43c83668d6064748885c30c` failed with SSH
 exit 255 after successful compilation, during the final image ownership step.
@@ -136,7 +136,7 @@ The SSH keepalive now leaves the unchanged 35-second resource-freshness guard
 to detect a stale observation first. This successful attempt qualifies the backup;
 it does not establish a cause for intermittent SSH stalls or provider storage loss.
 
-## Current evidence — 2026-10-02
+## Earlier observations — 2026-10-02
 
 The managed Windows Worker/Hermes read-only PWA audit completed as execution
 `ab672c9f-57d9-44e6-9df4-ccee24e05b5f`, task
@@ -150,7 +150,7 @@ The audit identifies a PWA screenshot declared as 512 by 512 while the shipped
 PNG is 1000 by 1000. A separate HTTPS observation reproduced the mismatch.
 The audit distinguishes that supplied observation from an independent native
 retrieval. The managed repair and an independent exact-commit review are recorded
-below; current review basis and production release remain pending.
+below; the current review basis is refreshed below and production release is pending.
 The earlier accepted local pilot branch/commit is preserved.
 
 Independent verifier execution `05f069aa-2a1d-48c1-959d-86a473372460`
@@ -237,11 +237,79 @@ it is distinct from the managed PWA repair and does not authorize release.
 
 ### Managed candidate and review
 
+Historical post-recovery reviewer execution
+`4d7e218a-c632-410c-8a18-3edf11fb4a9d` approved the exact candidate through
+decision `0a0751be-8633-430a-b350-e3b8b796957a`, material
+`3238d5ac4dbe7fbea63d42ec5b6e5638e785a6537c92d44d9dd8c710633f8f00`.
+Append-only basis revalidation `06bd2036-cae5-4680-9e16-b4a6149c1343`
+binds the preserved native coding evidence to refreshed Ready. Native review
+confirmed unchanged Git/process/Docker state and zero surviving owned children;
+the normal Worker stopped and its writer lock was absent. Actual sealed input
+was 116,327 bytes under the unchanged 131,072-byte cap. Approval relies on
+the signed genuine candidate test; the reviewer did not execute another test.
+Later review supersedes this approval.
+
+Reviewer `5d505c06-8f0d-48c9-88ae-2ecd80b517c3` rejected the unchanged
+candidate through decision `b7862b0f-6a61-4861-883e-8acba820c097`: the
+native GREEN receipt exists, but the historical RED assertion was only
+model-reported. Its paired unchanged Git/process/Docker proof and closed Job
+are verified. The rejection remains immutable; current independent acceptance
+is absent. A fixed native Worker replay, invoked by the operator, now proves
+one actual dimension assertion failure against the exact parent module and
+one passing unchanged-candidate test, without changing any pilot file or Git
+state. Receipt digest
+`2ed7b00145cb7abd8e85fa699234e4fdcf51090f88fa73c13ded20e2de95123a` is
+preliminary operator evidence, not a new managed execution or historical RED
+receipt. Governed manager return, managed verification continuation and fresh
+independent acceptance remain required.
+
+Normal application configuration now selects one frontend release target while
+retaining all six runtime targets. The other five exact deployed baselines
+have no source delta outside frontend paths. All six remain protected and must
+have automatic deployment disabled before an authorized push. The selected
+build budget is the actual frontend image allowance plus 5 GiB transient build
+space and a 6 GiB retained disk floor; fresh dispatch evidence is mandatory.
+Two individually identified unused cache entries from the owned baseline
+recovery were removed, preserving all six images and running services.
+
+Release audit `2ffd4780-c6b4-4b92-8afe-2f4fe41e5358` failed before model start
+because its sealed input exceeded 131,072 bytes. Normal terminal reclamation
+verified process/lease absence and unchanged candidate. Successor
+`10c59ce4-cdd2-4e69-91dd-b38ae9aa6cd1` completed with 130,094 input bytes;
+its model refused technical readiness because changed-test bodies were absent.
+Worker's paired receipt independently verified unchanged Git/process/Docker state,
+closed Job and absent writer lock. This is not release acceptance. The lossless
+procedure-reference serializer preserves full selected procedures and application
+supplements under the unchanged cap; 43 input and 74 transport/launch tests,
+independent source review, `validate` and `codex:check` pass. Worker source
+`8b2602be8d859de4acc27eb88ad391a8f3d31e95` is committed and pushed.
+Full runtime/test diffs are admitted through normal refreshed Ready and independent review;
+the native two-file inspection scope remains unchanged.
+
+Full-context release audit `e93426bf-8f27-445b-99cc-80bcb1f24ac3` completed
+with 126,855 input bytes and a verified paired unchanged-state receipt.
+Independent verifier `08bf22ee-500a-43fc-a44e-b0bd683cf7ac` completed with
+118,136 bytes, matching the exact prior audit, candidate and both file hashes.
+It resolved the auditor's temporal uncertainty about postflight receipt fields;
+both owned Jobs closed with no children and normal Stop left no writer lock.
+It also flagged different releasers in different task packets. Candidate release
+is governed by the coding task's releaser, distinct from coder and code reviewer;
+the read-only audit retains its own separate releaser, as task role validation
+rejects self-release. These task roles must not be treated as a global identity.
+Normal release approval validation remains required; no role was reassigned.
+The first verifier attempt `139a1c49-900d-40b6-a8b7-4f75c7f4894e` stopped
+before model start because its native admission still pinned the baseline commit.
+Normal terminal reclamation verified absence; a new admission scope pins the
+candidate and reselects the same published procedure versions. This qualifies
+read-only verification, not production release. Exact owner consent, disabling
+auto-deploy, candidate deployment, 1,200-second observation and served
+manifest/PNG verification remain pending.
+
 Coder execution `58387e7a-c4b2-4fbd-acf9-7fd835832eb5` completed through the
 normal Windows Worker/Hermes runtime and returned clean local commit
 `7512bc395d65df0fca7cf701047033031f63eb7e` on its isolated task branch.
 Only the approved manifest and regression test changed. The model reported the
-genuine initial dimension assertion failure; its tool budget ended after the
+initial dimension assertion failure; its tool budget ended after the
 repair. The fixed Worker then ran the actual installed workspace Vitest test:
 one passed, zero failed or pending, owned Job closed with zero active children.
 It created the local commit only after that green result. The model's report
