@@ -1555,18 +1555,26 @@ Gate 4 exact candidate `7512bc395d65df0fca7cf701047033031f63eb7e` was deployed;
 observation failed at 1055 seconds on one API health probe with unchanged data,
 healthy frontend and ready API. Rollback queue finished on the baseline commit
 with a different rebuilt image; exact baseline image is absent from Docker and
-containerd. Worker stopped with signed closed-child checkpoint retained. Recovery
+containerd. Normal read-only reconciliation recorded exact-image failure; Worker
+stopped and released its Writer. Recovery
 is unqualified; this attempt does not certify Gate 4. Probe cause is unproven.
 The owner-adopted new baseline has an authenticated encrypted exact OCI image
 backup and verified local restore; 41 sealed health samples cover 1200 seconds.
-Recovery support is deployed on `34a9eaaa`. New exact-commit verification source
+Recovery support is deployed on `a0ec89e4`. New exact-commit verification source
 `6213ed52` passed 9 native existing-commit, 6 signed-pointer, 30 native-boundary/replay
-and 8 backend admission checks, plus validate and codex:check. Fresh owner login,
-old-operation reconciliation/FAILED closure and new managed release proof remain
-required; these source and baseline checks do not certify Gate 4.
+and 8 backend admission checks, plus validate and codex:check. Immutable FAILED
+closure `90e65069-4a8e-465b-ae37-8e6692e68fa0` and native same-commit verification
+`d670f051-3c9a-42f6-8438-25c7ccde124d` are proven. Independent new review
+`a4aa7a19-7e2b-4231-9025-8a6d4b9c5c03` remains historical after audit-context
+updates. Current decision `01d5559f-5b83-4de5-8efd-5908733dcef8` approved
+the exact candidate after managed audit `e62dcbd8-2094-422a-9d9a-2cb48e556220`;
+normal API reads confirm current acceptance and Ready. Scoped
+owner-authorized obsolete-resource cleanup recovered build
+capacity; current full data parity and six retained runtimes passed. Managed
+release proof remains required.
 The owner accepted the current healthy rebuilt image as a new baseline, with
-data and paused trading preserved. Failed-grant closure, new independent
-acceptance and a fresh exact-commit release remain pending; provider backup
+data and paused trading preserved. Fresh exact-commit grant and managed release
+remain pending; provider backup
 mounting is no longer a dependency of this new path.
 Managed existing-commit continuation `2948f84d-fa86-4d14-8c73-621bc41ba6fb`
 proves native RED on the parent and GREEN on the unchanged candidate, paired

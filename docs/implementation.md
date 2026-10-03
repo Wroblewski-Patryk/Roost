@@ -174,7 +174,7 @@ and owned cleanup are required; no extra clones or services.
 **In progress:** [evidence](operations/application-release.md); backup verified;
 native RED/GREEN and current acceptance verified; observation failed;
 old rollback unqualified; owner-adopted baseline secured and healthy for 1200s.
-Recovery support deployed; fresh-login reconciliation and new managed proof pending.
+FAILED closure and fresh native verification proven; capacity recovered, new release pending.
 
 One real low-risk defect in the configured pilot application is discovered,
 planned, implemented, independently tested, committed, released and verified in

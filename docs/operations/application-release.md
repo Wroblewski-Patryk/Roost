@@ -17,8 +17,8 @@ rollback configuration succeeded. Queue `r4dca13b09cd352d8fcfdbd8` finished at
 differs from the sealed baseline
 `sha256:c6ad4493af3d6e770d354fc6b915af2475a6cc9225fa2325de0c1e977e1c7ad1`.
 Exact Docker and containerd reads found that baseline image absent. The normal
-Worker was stopped with its signed closed-child checkpoint retained; rollback
-remains unqualified. No full-server restore was run. The historical unhealthy
+Worker subsequently reconciled that exact operation as failed and stopped with
+its Writer released; rollback remains unqualified. No full-server restore was run. The historical unhealthy
 probe reason is unknown. This attempt must remain unsuccessful.
 
 The owner subsequently accepted the healthy rebuilt image above, on the same
@@ -31,8 +31,10 @@ one reconciled normal queue; HTTPS health and build identity match. The adopted
 image was exported with authenticated encryption and restored locally with the
 same complete OCI index identity; all pre-existing local images were preserved.
 Its unchanged three health probes passed 41 samples over 1200 seconds. This is
-owner baseline evidence, not new managed candidate release evidence. Old-operation
-reconciliation, FAILED closure and new managed acceptance/release remain pending.
+owner baseline evidence, not new managed candidate release evidence. Normal
+read-only reconciliation and immutable FAILED closure are now proven. Fresh
+native verification and an independent acceptance are proven; a new release is
+tracked separately below. Build capacity was subsequently recovered.
 
 The owner authorized temporary read-only backup access for exact image recovery.
 Two provider mount attempts failed; fresh provider read-back reports no mounted
@@ -46,7 +48,7 @@ path no longer depends on that mount and cannot certify the old rollback.
 Private recovery tooling is prepared separately;
 its fixture checks are not production image recovery evidence.
 
-Source recovery support is being qualified separately from this live proof.
+Recovery support is deployed on `a0ec89e4`; qualification is separate from release proof.
 A typed `rollback_image_mismatch` may reconcile a finished queue as failed only
 when source, tree, configuration, schema, data and queue identity still match.
 It never satisfies successful rollback. A later rollback requires the exact
@@ -85,8 +87,8 @@ candidate against the original first-write approval. Its signed authority permit
 only `verify_existing_local_commit`, with `localCommit:false`; it carries no
 reviewer rejection or manager-return claim. The Worker requires a genuine native
 RED/GREEN replay, exact clean branch/tree and renewed matching signed authority.
-It cannot create an empty commit. This evidence-only addition is source-qualified;
-its deployed native execution and new independent review remain required.
+It cannot create an empty commit. This evidence-only addition now has an actual
+managed native execution and new independent acceptance; a new release remains required.
 
 A new grant may then carry `baselineRestart`; its server-derived
 `publishedGitBasis` references the closure and verified prior Git operations.
@@ -97,6 +99,110 @@ baseline images attested by the closure. The Worker independently checks current
 remote Git and installed baseline queues, then starts at deployment configuration.
 It cannot repeat push, PR, review publication or merge. Source qualification is
 distinct from the still-required new managed deployment and observation proof.
+
+### Adopted-baseline continuation evidence — 2026-10-03
+
+Normal Worker reconciliation outcome `bd546561-6eda-41ac-8af3-d6d900a5d198`
+at 21:11:59 UTC resolved rollback operation
+`26109e8a-a617-4578-9e11-dc23d911e644` as `failed`, with
+`rollback_image_mismatch` and `observationOnly:true`. Fresh six-service runtime,
+configuration, schema, full data identity and strict health checks supported
+normal owner closure `90e65069-4a8e-465b-ae37-8e6692e68fa0`, digest
+`c03e40f42a6801e9a2328cddec30521b77ae36a7d94f119d8fbc7716d3d5809d`.
+The original release remains FAILED; historical Git and failed observation were
+not rewritten. Its authority was atomically revoked. The normal Worker stopped,
+its process exited successfully and its Writer lock is absent.
+
+New managed verification `d670f051-3c9a-42f6-8438-25c7ccde124d` completed at
+21:28:51 UTC. The fixed native assertion reproduced the original dimensions
+failure (one failed test), then the unchanged candidate passed its regression
+(one passed, zero failed or skipped). Owned native processes closed with zero
+active children. Receipt
+`1ca0a6b502c7bd28cb834d882ac88c4eda7b60e98c2b375ad6937332f249e031`
+records `verify_existing_local_commit`, `commitCreated:false`, no push/deployment,
+the exact candidate/parent/tree and the authenticated FAILED closure pointer.
+The original first-write approval and Gate 2 branch remain preserved.
+
+Independent read-only execution `3ac40202-075d-4f44-9fdb-9b650977eb90`
+completed at 21:38:14 UTC. Its native unchanged-state receipt pinned the new
+verification and current material
+`73967ef2284590e22f7a40d595c8cdc3c5c86b1d5257aed0adb2f0ea721292b7`.
+Distinct reviewer decision `a4aa7a19-7e2b-4231-9025-8a6d4b9c5c03` approved the
+exact candidate at 21:38:10 UTC; normal read-back then confirmed `basisCurrent:true`.
+Owned processes closed and the normal Worker stopped with Writer absence read
+back. This acceptance grants no production release authority. Later audit-context
+and group-risk updates require append-only basis revalidation and a new current
+review before release; this earlier acceptance remains historical evidence.
+
+A private offline preparation validates the frontend-only adopted-baseline
+manifest, appends protection for its exact image, preserves the original Git
+parent and all previous protected IDs, and carries the actual closure/new review
+identities. It preserves timestamps rather than claiming old evidence is fresh.
+It makes no external writes and grants no authority. Capacity, dated safety/
+backup evidence, current independent release audit, exact Ready/basis, installed
+binding and fresh owner grant must qualify before normal Worker dispatch.
+
+Initial bounded capacity evidence reported 8,153,202,688 available disk bytes against
+13,927,274,934 required: unchanged 6 GiB free-disk floor, 5 GiB frontend build
+allowance and 2,116,114,870-byte final image. The shortfall is 5,774,072,246 bytes.
+Remaining unshared cache and individually attributed obsolete images do not
+prove sufficient physical reclaim; protected rollback, unresolved cache intents,
+shared layers, containers, volumes and data remain intact. Thirteen private
+capacity-analysis checks passed. Neither unmeasured build peaks nor the existing
+candidate tag justify lowering this budget or bypassing normal deployment.
+The owner rejected paid expansion and authorized deletion of proven obsolete
+resources while preserving working applications and avoiding unnecessary Windows
+archives. Scoped native cleanup removed three obsolete unused Roost images and
+the unused failed candidate image, preserving all other images, 31 containers
+and 21 volumes at each read-back. The exact failed candidate was first retained
+in an authenticated encrypted archive and restored with its exact OCI root on
+Docker Desktop; that proof is retained. Twenty-eight dated, unused Roost
+pre-change archives from September 8–12 were individually pinned, hashed and
+removed after verification of the current encrypted Roost backup. No new archive
+of those obsolete files was copied to Windows.
+
+Native systemd 30-day vacuum removed 50 closed historical journal segments,
+retaining all segments from September 5 onward, including the VPS incident.
+This is a one-time owner-authorized maintenance operation, not a duplicate
+Coolify cleanup scheduler. Exact read-back verified the removals. These scoped
+operations recovered about 7.16 GB, bringing actual free space to 15.32 GB.
+The owner separately removed the unused automation project; subsequent inventory
+reported about 25 GB free. That external deletion is not attributed to Roost.
+All six pilot runtimes, their configuration and schema remained unchanged.
+Fresh full row/multiplicity/sequence parity against backup
+`811332d3-67ab-4e9c-afae-c12bc374fa84` passed in 66 seconds at 22:03:58 UTC,
+with zero owned sessions; three HTTPS probes passed. The conservative build
+budget and resource floors remain unchanged. Two disposable local image-restore
+imports and the unnecessary obsolete-image archive were removed; encrypted
+candidate/baseline recovery sources and native proof remain intact. Three further
+unused local Roost build/fixture images were individually removed, with all
+other local images, containers and volumes preserved. At 22:07 UTC, the bounded
+resource read-back qualified 28,076,093,440 free disk bytes, 5,306,030,000 available
+memory bytes and load 0.55 against unchanged limits. Physical Windows VHD
+compaction was not performed or claimed.
+Managed release audit `e62dcbd8-2094-422a-9d9a-2cb48e556220` completed at
+22:21:51 UTC with signed admission, unchanged source and zero owned children.
+Its original Ready pin remains current. It honestly required a later current
+independent acceptance and fresh release authority; it did not attest a future
+review. Execution `a109087f-51f2-4f09-935e-dd45007cd795` then independently
+approved the exact candidate under decision
+`01d5559f-5b83-4de5-8efd-5908733dcef8` at 22:26:38 UTC and material
+`178169d266dc1f2fa24ec811b183b7bf2ee0956ba19f477d75703608af4f2529`.
+Actual native cleanup closed its Job and the normal Worker stopped; the owned
+review binding was removed. Serial normal API reads confirmed current acceptance
+and both original audit and revalidated coder Ready. The local default-branch
+reference was fast-forwarded to the already verified remote merge without
+changing the candidate worktree, earlier Gate 2 branch or remote Git history.
+
+Fresh six-service runtime/health, paused writers, local authenticated backup,
+exact-image archive authentication, credential and controller source read-backs
+qualified a private normal release request. Forty-one offline guard checks passed;
+these checks create no authority. The request preserves the immutable FAILED
+closure, exact adopted image and all protected resources. Server-derived Git
+publication lineage must be read back before dispatch; the next operation is
+configuration, with no repeat push/PR/merge. No new candidate deployment or grant
+has been dispatched on this baseline. Fresh owner authentication, normal managed
+deployment and full observation remain required; Gate 4 is incomplete.
 
 Qualification of this recovery support: 62 adapter/broker/diagnostic/native
 checkpoint tests passed; 46 installed Worker/gateway tests passed with one
