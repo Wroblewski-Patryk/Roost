@@ -48,8 +48,9 @@ code; the separate cleanup code contains no raw diagnostics. Session drain,
 DROP and absence reads share one bounded budget and never terminate clients.
 Optional private `restoreCleanupTimeoutMs` accepts 1000–120000 ms, capped by
 `timeoutMs`; omission preserves five seconds and the historical config digest.
-A real SSH cleanup exhausted that default before DROP. The owned attempt was
-subsequently reconciled without promotion; this installation now uses 30 seconds.
+A real SSH cleanup exhausted that default before DROP. Subsequent native session
+drain also exhausted 30 seconds. Both owned attempts were reconciled without
+promotion; this installation now uses the bounded 120-second maximum.
 Explicit reconciliation requires unchanged installation/configuration/attempt,
 local lock identity and exact database OID/marker; it neither repeats dump/create
 nor promotes a backup. The interrupted production attempt was reconciled through
@@ -63,11 +64,18 @@ atomic admission tests, `validate`, `codex:check` and `git diff --check`. Native
 backup/fingerprint fixture suites run serially because their global temporary
 file observation collides when run concurrently.
 
-The stopped baseline execution service and its image subsequently became absent.
-Its existing controller application, canonical branch and generated configuration
-remain; no candidate deployment occurred. Recent controller cleanup records do
-not establish the disappearance cause. Baseline service and compatible rollback
-artifact recovery remain required before managed release.
+An installation-wide housekeeping timer pruned all stopped containers and unused
+images every 20 minutes. Its logs confirm deletion of the stopped baseline
+execution service/image and a newly created Roost backend during deployment.
+The exact timer is stopped and disabled; its unit/script are preserved. This
+explains those artifact losses, not the provider filesystem/I/O outage. Future
+cleanup must respect active deployments and retained rollback artifacts.
+Roost recovered through the normal controller queue as
+`recce24c5c5b44981ae67a31`, commit `0462d5f4f418087dd5ea233178ae4839e045085a`;
+health/build identity match. Failed and unissued dispatches were read back before
+retry. The pilot's existing controller application, canonical branch and generated
+configuration remain; no candidate deployment occurred. Baseline service and
+compatible rollback artifact recovery remain required before managed release.
 
 ## Current evidence — 2026-10-02
 

@@ -1493,7 +1493,10 @@ public-owner-class normalization, the exact historical schema. The source was
 unchanged. Native tests qualify both owner classes and connected-client refusal;
 explicit exact-owned cleanup removed the interrupted attempt and lock without
 promotion. Full encrypted pilot backup remains pending. The baseline execution
-service/image disappeared; recovery and retained rollback artifacts are required.
+service/image was removed by a global host pruning timer. Logs also prove that
+timer removed a newly created Roost backend; it is disabled with configuration
+preserved. Roost's normal controller recovery and exact health/build pass, but
+pilot baseline recovery and retained rollback artifacts remain required.
 Installed HTTPS ingress passed a certificate-pinned validation refusal. Internal
 atomic evidence construction after a single normal fence has 17 source tests;
 external stale CAS remains denied. Live credential acceptance remains
