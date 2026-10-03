@@ -84,6 +84,23 @@ export function assertWindowsJobCapability(artifact) {
   } catch { throw fail(); }
 }
 
+// A long release read can outlive the initial build capability. Only a freshly
+// observed successful, closed execution of this exact artifact can reattest its
+// unchanged native image. This is not a new build, execution budget or authority.
+export function reattestWindowsJobCapability(artifact, receipt) {
+  try {
+    const saved = builds.get(artifact), proof = receipts.get(receipt);
+    if (!saved || saved.testFaults || proof?.artifact !== artifact || !isWindowsJobReceipt(receipt)
+      || receipt.rootExit !== 0 || receipt.terminationReason !== 'root_exit') throw fail();
+    const stat = lstatSync(artifact.executable, { bigint: true });
+    if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1n || String(stat.ino) !== saved.identity
+      || realpathSync.native(artifact.executable) !== saved.physicalPath
+      || digest(readFileSync(artifact.executable)) !== artifact.sha256 || digest(readFileSync(source)) !== artifact.sourceSha256) throw fail();
+    saved.at = Date.now(); saved.monotonic = performance.now();
+    return assertWindowsJobCapability(artifact);
+  } catch { throw fail(); }
+}
+
 export async function temporaryWindowsJobLauncher(run) {
   let parent, directory;
   try { parent = await realpath(os.tmpdir()); directory = await mkdtemp(path.join(parent, "roost-owned-job-")); }
@@ -182,7 +199,7 @@ export async function startWindowsJob(artifact, options) {
       if (code !== 0 || pending.length || !receipt?.cleanup || !receipt.jobClosed || receipt.activeProcesses !== 0 || receipt.cleanupMs > 3000) { reject(fail()); return; }
       const result = Object.freeze({ ...receipt, launcherSha256: artifact.sha256, sourceSha256: artifact.sourceSha256,
         executableDigest });
-      if (assigned && (receipt.resumed || version === "roost-windows-job-v2") && !build.testFaults) receipts.set(result, { at: performance.now() });
+      if (assigned && (receipt.resumed || version === "roost-windows-job-v2") && !build.testFaults) receipts.set(result, { at: performance.now(), artifact });
       if (problem) { const error = fail(); if (!receipt.resumed && version === "roost-windows-job-v2") error.details = { ownedTreeReceipt: result }; reject(error); return; }
       if (outputRejected) {
         reject(Object.assign(new Error("windows_job_output_rejected"), { providerFailure: true, retryable: false,

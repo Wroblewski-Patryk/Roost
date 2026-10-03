@@ -7,7 +7,7 @@ import path from "node:path";
 import os from "node:os";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { buildWindowsJobLauncher, startWindowsJob, isWindowsJobReceipt, isWindowsJobCleanupReceipt, hermesOwnedTreeBlockers, assertWindowsJobCapability, windowsJobResumeWindowMs } from "./lib/agent-host-windows-job.mjs";
+import { buildWindowsJobLauncher, startWindowsJob, isWindowsJobReceipt, isWindowsJobCleanupReceipt, hermesOwnedTreeBlockers, assertWindowsJobCapability, windowsJobResumeWindowMs, reattestWindowsJobCapability, assertWindowsJobRequestBounds } from "./lib/agent-host-windows-job.mjs";
 import { classifyHermesOutcome } from "./lib/agent-host-hermes-budget.mjs";
 import { runHermesOwnedProcess } from "./lib/agent-host-hermes-quiet.mjs";
 import { validPacketFixture, pinReadyFixture } from "./fixtures/execution-packet.mjs";
@@ -23,6 +23,11 @@ async function gone(pids) {
   }
   assert.fail("owned_fixture_process_remaining");
 }
+test("native request argument and stdin bounds are checked before launch",()=>{
+ assert.throws(()=>assertWindowsJobRequestBounds({argv:['x'.repeat(8193)],input:'',durationMs:15000}));
+ assert.throws(()=>assertWindowsJobRequestBounds({argv:[],input:Buffer.alloc(131073),durationMs:15000}));
+ assertWindowsJobRequestBounds({argv:['bash -s'],input:'x'.repeat(9558),durationMs:120000});
+});
 test("native Windows Job qualification (serial, owned fixtures only)", {skip:process.platform!=="win32",timeout:180000}, async t=>{
  const parent=await realpath(os.tmpdir()),directory=await mkdtemp(path.join(parent,"roost-job-native-test-"));
  const fixture=path.join(directory,"fixture with spaces.exe");
@@ -48,6 +53,20 @@ test("native Windows Job qualification (serial, owned fixtures only)", {skip:pro
    } finally {current.stop();await current.completion.catch(()=>{});current=null;}
   }
   async function treeReady(handle,output){for(let i=0;i<100;i++){if((output().match(/PID:/g)||[]).length>=3)return;await delay(20);}assert.fail("tree_not_started");}
+  await t.test("fresh successful native closure reattests only its unchanged exact launcher",async()=>{
+   const requalification=path.join(directory,'requalification');await mkdir(requalification);
+   const image=await buildWindowsJobLauncher(requalification);
+   const h=await startWindowsJob(image,{executable:fixture,argv:['echo'],cwd:directory,environment:env,input:'',durationMs:5000});
+   const receipt=await h.completion;assert.equal(receipt.rootExit,0);
+   const clock=Date.now;try{
+    Date.now=()=>clock()+120000;
+    assert.throws(()=>assertWindowsJobCapability(image));
+    assert.throws(()=>reattestWindowsJobCapability(image,{...receipt}));
+    assert.throws(()=>reattestWindowsJobCapability(artifact,receipt));
+    assert.equal(reattestWindowsJobCapability(image,receipt).launcherDigest,image.sha256);
+    assert.equal(assertWindowsJobCapability(image).launcherDigest,image.sha256);
+   }finally{Date.now=clock;}
+  });
   await t.test("natural exit plus exact stdin and argv quoting",async()=>{
    const args=["echo","","two words",'quote"slash\\','Zażółć'];const input="synthetic stdin 🐦";
    const r=await run("echo",{argv:args,input});assert.equal(r.receipt.rootExit,0);assert.ok(r.output.includes(input));

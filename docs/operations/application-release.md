@@ -626,6 +626,16 @@ shared request validation rejects oversized arguments before reserving a child.
 Fourteen adapter cases passed with one opt-in skip. Managed release proof remains
 pending; no push or deployment was admitted by these blocked attempts.
 
+The native streamed fingerprint closed successfully, but its duration exceeded
+the original 60-second build capability. A fresh successful terminal Job receipt
+can now reattest only that exact unchanged launcher image, before another release
+child; copied receipts, other artifacts and elapsed time alone cannot qualify.
+This does not extend execution deadlines or release authority. Larger existing
+Git histories use an isolated template-free bare repository with a read-only
+object alternate and exact commit/tree/connectivity checks. No history pack
+crosses the bounded native stdout/stdin; only the later isolated push receives
+the credential. Canonical hooks, config and object contents remain untouched.
+
 Source checks passed 233 Node release tests, including actual Windows owned
 process/recovery/local Git checks; 62 TypeScript tests passed and one optional
 PostgreSQL case was skipped. `typecheck`, build, lint and `codex:check` passed.

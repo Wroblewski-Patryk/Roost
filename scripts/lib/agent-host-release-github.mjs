@@ -4,6 +4,7 @@ import { mkdtemp, rm, realpath } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import releaseContract from './agent-host-release-contract.cjs';
+import { materializeReleaseGitObjects } from './agent-host-release-git-materialization.mjs';
 import { temporaryWindowsJobLauncher, startWindowsJob, isWindowsJobReceipt } from './agent-host-windows-job.mjs';
 import { hasReleaseProcessScope, runReleaseNativeProcess, minimalReleaseEnvironment } from './agent-host-release-process.mjs';
 
@@ -113,13 +114,11 @@ export async function inspectReleaseCheckout(manifest, commit, baseCommit, candi
   if (origin !== manifest.repository.url.replace(/\.git$/, '')) fail('release_git_origin_changed');
   return { commit, tree: candidateTree, baseCommit };
 }
-async function uploadExactCommit(manifest, commit, token) {
-  const pack = await git(manifest.repository.canonicalDir, ['pack-objects', '--stdout', '--revs'], { input: `${commit}\n` });
+async function uploadExactCommit(manifest, commit, token, candidateTree) {
   const prefix = path.join(os.tmpdir(), 'roost-release-objects-');
   const directory = await mkdtemp(prefix);
   try {
-    await git(directory, ['init', '--bare', '.']);
-    await git(directory, ['index-pack', '--stdin'], { input: pack });
+    await materializeReleaseGitObjects({ canonicalDir: manifest.repository.canonicalDir, directory, commit, candidateTree, run: git });
     await git(directory, ['push', '--porcelain', manifest.repository.url, `${commit}:refs/heads/${ref(manifest.repository.candidateBranch)}`], { token });
   } finally {
     const absolute = path.resolve(directory);
@@ -176,7 +175,7 @@ export function createGithubReleaseAdapter({ credential, transport = githubRelea
     async push(manifest, binding) {
       const state = await inspect(manifest), head = await candidate(manifest);
       if (state.remoteBase !== binding.baseCommit || head && head !== binding.commit) fail('release_git_base_changed');
-      if (!head) { try { await upload(manifest, binding.commit, await credential()); } catch { fail('release_git_push_uncertain', true); } }
+      if (!head) { try { await upload(manifest, binding.commit, await credential(), binding.candidateTree); } catch { fail('release_git_push_uncertain', true); } }
       if (await candidate(manifest) !== binding.commit) fail('release_git_push_uncertain', true);
       await exactCandidate(manifest, binding);
       return { remoteCommit: binding.commit, remoteBase: state.remoteBase, remoteTree: binding.candidateTree };

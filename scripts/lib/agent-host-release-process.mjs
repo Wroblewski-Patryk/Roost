@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdtemp, rm, realpath } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { buildWindowsJobLauncher, startWindowsJob, isWindowsJobCleanupReceipt, assertWindowsJobRequestBounds } from './agent-host-windows-job.mjs';
+import { buildWindowsJobLauncher, startWindowsJob, isWindowsJobCleanupReceipt, assertWindowsJobRequestBounds, reattestWindowsJobCapability } from './agent-host-windows-job.mjs';
 import { reserveReleaseChild, bindReleaseChild, recordReleaseChildReceipt } from './agent-host-release-writer-recovery.mjs';
 
 const scopes=new AsyncLocalStorage();
@@ -61,6 +61,7 @@ async function ownedChild(scope,executable,{argv,cwd,environment=minimalReleaseE
   const receipt=await job.completion;
   recordReleaseChildReceipt(token,receipt);
   if(receipt.rootExit!==0||receipt.terminationReason!=='root_exit')throw Object.assign(Error('release_child_failed'),{details:{reason:diagnostic??'native_exit_failed'}});
+  reattestWindowsJobCapability(scope.artifact,receipt);scope.builtAt=performance.now();
   return Buffer.concat(chunks);
  }catch(error){
   if(isWindowsJobCleanupReceipt(error.details?.ownedTreeReceipt))recordReleaseChildReceipt(token,error.details.ownedTreeReceipt);
