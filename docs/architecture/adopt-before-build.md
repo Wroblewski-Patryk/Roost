@@ -162,6 +162,15 @@ Generation timestamps, raw claim/lease/config, private paths and undeclared
 packet sources are excluded or rejected. No Roost key, broker capability or API
 proxy belongs in the envelope.
 
+Worker may replace an exactly duplicated application or capability procedure
+with `roost-shared-procedure-evidence-v1`: an id, version and canonical digest
+reference to the full selected record in `evidence.procedures.value`, plus every
+additional application field in `supplement`. Nonidentical records remain inline.
+The schema rejects unresolved, ambiguous, stale or overlapping references.
+Original context validation and redaction precede packing; the context revision,
+128 KiB cap and single-use seal remain unchanged. This is lossless serialization,
+not context summarization or additional procedure authority.
+
 The canonical serialized envelope has a stable SHA-256 seal and a deeply frozen
 Worker-owned object identity. Adapter input cannot replace or augment it. One
 consumption at the existing durable `spawn_intent` boundary requires identical

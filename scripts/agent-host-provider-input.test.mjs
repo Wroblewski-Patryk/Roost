@@ -10,6 +10,73 @@ const options = f => ({ fresh: { taskContext: f.taskContext, applicationContext:
   currentCommit: "a".repeat(40), assertAuthority() {}, secrets: ["synthetic-worker-private-key"] });
 const prepare = f => prepareProviderInput(options(f));
 function checkpoint(f, envelope) { f.claimed.checkpoint = { stage: "spawn_intent", packetRevision: envelope.revisions.packet, contextRevision: envelope.revisions.context }; }
+function procedureFixture(content = "Verify the exact declared dimensions.") {
+  const f = validPacketFixture(), procedure = { id: "00000000-0000-4000-8000-000000000080",
+    workspaceId: f.claimed.workspaceId, version: 1, status: "active", name: "Scoped verification",
+    purpose: "Preserve all required procedure context", steps: [{ instruction: content, requiredTools: ["repository_read"] }] };
+  f.taskContext.procedures = [procedure];
+  f.packet.contract.procedures = { items: [{ id: procedure.id, revision: "1" }], noneReason: null };
+  const link = { procedureId: procedure.id, required: true, relationType: "verification",
+    procedure: { ...structuredClone(procedure), process: { name: "Delivery" }, qualityStandard: null } };
+  f.applicationContext.operatingModel.applicationProcedures = [structuredClone(link)];
+  f.applicationContext.operatingModel.capabilityProcedures = [structuredClone(link)];
+  pinReadyFixture(f);
+  return f;
+}
+
+test("repeated full procedures fit the unchanged cap and reconstruct without losing application fields", () => {
+  const f = procedureFixture("Verify declared dimensions.\n".repeat(2400)), before = structuredClone(f);
+  assert.ok(Buffer.byteLength(JSON.stringify(f.applicationContext)) > 131072);
+  const envelope = prepare(f), primary = envelope.evidence.procedures.value[0];
+  assert.ok(Buffer.byteLength(JSON.stringify(envelope)) < 131072);
+  assert.deepEqual(primary, f.taskContext.procedures[0]);
+  for (const field of ["applicationProcedures", "capabilityProcedures"]) {
+    const original = f.applicationContext.operatingModel[field][0];
+    const packed = envelope.evidence.application.value.operatingModel[field][0];
+    assert.equal(packed.procedure.schemaVersion, "roost-shared-procedure-evidence-v1");
+    assert.equal(packed.procedure.reference.id, primary.id);
+    assert.equal(packed.procedure.reference.version, "1");
+    assert.deepEqual({ ...packed, procedure: { ...primary, ...packed.procedure.supplement } }, original);
+  }
+  assert.deepEqual(f, before);
+  checkpoint(f, envelope);
+  assert.ok(consumeProviderInput(envelope, options(f)).input.includes("Scoped verification"));
+});
+
+test("different procedure version, steps or missing fields remain fully inline", () => {
+  for (const mutate of [p => { p.version = 2; }, p => { p.steps[0].instruction = "Different verification"; }, p => { delete p.purpose; }]) {
+    const f = procedureFixture(); mutate(f.applicationContext.operatingModel.applicationProcedures[0].procedure); pinReadyFixture(f);
+    const envelope = prepare(f);
+    assert.deepEqual(envelope.evidence.application.value.operatingModel.applicationProcedures[0],
+      f.applicationContext.operatingModel.applicationProcedures[0]);
+  }
+});
+
+test("malformed, stale, ambiguous or overlapping shared procedure references are rejected", () => {
+  const envelope = prepare(procedureFixture());
+  for (const mutate of [
+    e => { e.evidence.application.value.operatingModel.applicationProcedures[0].procedure.reference.digest = "f".repeat(64); },
+    e => { e.evidence.application.value.operatingModel.applicationProcedures[0].procedure.reference.version = "2"; },
+    e => { e.evidence.application.value.operatingModel.applicationProcedures[0].procedure.supplement.steps = []; },
+    e => { e.evidence.application.value.operatingModel.applicationProcedures[0].procedure.reference.provenance = "provider"; },
+    e => { e.evidence.procedures.value.push(structuredClone(e.evidence.procedures.value[0])); },
+    e => { e.evidence.procedures.value = []; }
+  ]) {
+    const changed = structuredClone(envelope); mutate(changed);
+    const parsed = providerInputSchema.safeParse(changed);
+    assert.equal(parsed.success, false);
+    assert.ok(parsed.error.issues.some(issue => issue.message === "shared_procedure_evidence_invalid"));
+  }
+});
+
+test("packing never hides source secrets or permits changed duplicate procedure context at consumption", () => {
+  const secret = procedureFixture("synthetic-worker-private-key");
+  assert.throws(() => prepare(secret), /agent_runtime_content_blocked/);
+  const f = procedureFixture(), envelope = prepare(f); checkpoint(f, envelope);
+  f.applicationContext.operatingModel.applicationProcedures[0].procedure.process.name = "Changed process";
+  pinReadyFixture(f);
+  assert.throws(() => consumeProviderInput(envelope, options(f)), /agent_provider_input_blocked/);
+});
 
 test("same canonical input for both providers, stable seal, exact model and no bootstrap tools", () => {
   const f = validPacketFixture(), envelope = prepare(f);
