@@ -29,13 +29,23 @@ failure deny admission. Eleven focused ingress/production tests pass. Installed
 configuration is deployed as `ed399218474846cb1c58b28bce0458fdd208f9bc`,
 deployment `ze00dq3vlat2wx4vl6iacu6j`; health/build identity match. A real
 certificate-pinned malformed request passes transport and is denied by validation.
-Credential delivery remains pending: real acceptance still refused the first
-fencing-order correction without issuing or replacing a credential. Internal
+Real acceptance refused the first fencing-order correction without issuing or
+replacing a credential. Internal
 procedure evidence now constructs its body and CAS after the normal command's
 single fence; the common command still validates, redacts and checks CAS. External
 literal bodies retain stale refusal. Seventeen focused tests cover each-fence
-invalidation, restrictions, replay and atomic rollback. Live acceptance is pending;
-the precise production invalidation path is not yet established.
+invalidation, restrictions, replay and atomic rollback. Production diagnosis then
+distinguished native INSERT denial from CAS: five earlier tasks in the complete
+six-task impact had stale risk assessments. Their unchanged exact policy records
+were read individually; the bounded catalogue was truncated and could not prove
+absence. Two normal assessments refreshed the same prepared groups. All six
+native evidence INSERTs and decision admission seals passed in a transaction
+fully rolled back before a new handoff.
+The subsequent normal HTTPS rotation completed under decision
+`78ef42b8-5926-49ac-bfae-6713bda10c57`, request
+`5aa3afef-f92d-479a-9b2c-6f999b29cbf9`. Protected Windows storage read-back,
+device ACK and server catalogue verify active epoch 3 and revoked epoch 2.
+No old task execution, pilot push or release consent follows from this rotation.
 
 The controlled restore contains identical full data and sequence state. Its
 schema dump initially differed only in built-in public-schema framing because

@@ -1499,8 +1499,12 @@ preserved. Roost's normal controller recovery and exact health/build pass, but
 pilot baseline recovery and retained rollback artifacts remain required.
 Installed HTTPS ingress passed a certificate-pinned validation refusal. Internal
 atomic evidence construction after a single normal fence has 17 source tests;
-external stale CAS remains denied. Live credential acceptance remains
-pending. No pilot release is claimed.
+external stale CAS remains denied. Production refusal was traced to five stale
+risks in the complete six-task impact, distinct from CAS denial. Same-group
+reassessment used unchanged individually read policy revisions; native evidence
+and seals passed in a fully rolled-back transaction. A subsequent real pinned
+HTTPS handoff verifies protected storage, device ACK, active epoch 3 and revoked
+epoch 2. No pilot release is claimed.
 
 [Governed release evidence](../operations/governed-release.md),
 [backup gateway](../../scripts/lib/agent-host-release-backup.mjs),
