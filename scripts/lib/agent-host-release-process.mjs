@@ -43,9 +43,10 @@ export async function withReleaseProcessScope(prepared,context,run){
 
 async function ownedChild(scope,executable,{argv,cwd,environment=minimalReleaseEnvironment(),input='',durationMs=15000,maxBytes=131072}){
  const token=reserveReleaseChild(scope.context,{artifact:scope.artifact,executable});
- const chunks=[];let bytes=0,job,diagnostic;
+ const chunks=[];let bytes=0,job,diagnostic,assignmentObserved=false;
  try{
   job=await startWindowsJob(scope.artifact,{executable,argv,cwd,environment,input,durationMs,attempt:token.attemptId,
+   onAssigned:()=>{assignmentObserved=true;},
    confirmResume:event=>bindReleaseChild(token,event),
    onData:(channel,chunk)=>{if(channel==='stdout'){bytes+=chunk.length;if(bytes>maxBytes)fail();chunks.push(chunk);}
     else if(channel==='stderr'){
@@ -62,8 +63,9 @@ async function ownedChild(scope,executable,{argv,cwd,environment=minimalReleaseE
   return Buffer.concat(chunks);
  }catch(error){
   if(isWindowsJobCleanupReceipt(error.details?.ownedTreeReceipt))recordReleaseChildReceipt(token,error.details.ownedTreeReceipt);
-  const reason=['git_ownership_unproven','git_config_unreadable','git_repository_unavailable','native_access_denied','native_exit_failed'].includes(error.details?.reason)?error.details.reason:undefined;
-  throw Object.assign(Error('release_child_failed'),{releaseBlocked:true,retryable:false,...(reason?{details:{reason}}:{})});
+  const reason=['git_ownership_unproven','git_config_unreadable','git_repository_unavailable','native_access_denied','native_exit_failed'].includes(error.details?.reason)?error.details.reason:
+   assignmentObserved?'native_resume_or_cleanup_unproven':'native_assignment_unobserved';
+  throw Object.assign(Error('release_child_'+reason),{releaseBlocked:true,retryable:false,details:{reason}});
  }
 }
 

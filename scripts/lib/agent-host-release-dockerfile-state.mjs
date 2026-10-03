@@ -3,7 +3,7 @@ import { coolifyConfigurationFields, coolifyUnsupportedConfigurationFields } fro
 
 const hash = /^[a-f0-9]{64}$/, sha = /^[a-f0-9]{40}$/, image = /^sha256:[a-f0-9]{64}$/;
 const id = value => typeof value === 'string' && /^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/.test(value);
-const fail = reason => { throw Object.assign(Error(`release_dockerfile_state_${reason}`), { retryable: false }); };
+const fail = (reason, cause) => { throw Object.assign(Error(`release_dockerfile_state_${reason}`, cause ? { cause } : undefined), { retryable: false }); };
 const check = (value, reason) => { if (!value) fail(reason); };
 const canonical = value => Array.isArray(value) ? value.map(canonical) : value && typeof value === 'object'
   ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([key, item]) => [key, canonical(item)])) : value;
@@ -83,7 +83,7 @@ export function createDockerfileStateGateway({ targets, schemaDigest, sourcePins
   const target = targetId => { const row = targets.find(t => t.targetId === targetId); check(row, 'target_outside_scope'); return row; };
   const run = async (operation, command, stdin = '') => {
     let output; try { output = await transport({ operation, command, stdin, timeoutMs: 15000, maxOutputBytes: 16384, write: false }); }
-    catch { fail('transport_unproven'); }
+    catch (error) { fail('transport_unproven', error); }
     check(typeof output === 'string' && Buffer.byteLength(output) <= 16384, 'response_invalid'); return output;
   };
   const json = async (...args) => { const output = await run(...args); try { return JSON.parse(output); } catch { fail('response_invalid'); } };

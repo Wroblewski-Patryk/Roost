@@ -267,6 +267,29 @@ async function reclaimSealedRelease(directory, candidate) {
     const recovered = qualifyReleaseWriterReclaim(current, candidate, directory);
     const latest = await lstat(lockPath);
     if (latest.dev !== stat.dev || latest.ino !== stat.ino || await readFile(lockPath, "utf8") !== bytes) throw Error("agent_host_writer_locked");
+    if (recovered.preflightQuiescence) {
+      const archivePath = path.join(directory, `release-writer-reclaimed-${recovered.priorContextNonce}.json`);
+      let archive;
+      try { archive = await open(archivePath, "wx", 0o600); }
+      catch (error) {
+        if (error.code !== "EEXIST") throw error;
+        const before = await lstat(archivePath);
+        if (!before.isFile() || before.isSymbolicLink() || before.nlink !== 1 || before.size > 65536) throw Error("agent_host_writer_locked");
+        const preserved = JSON.parse(await readFile(archivePath, "utf8"));
+        const stable = recovery => { const copy = structuredClone(recovery); delete copy.preflightQuiescence?.observedAt; return copy; };
+        const after = await lstat(archivePath);
+        if (Object.keys(preserved).length !== 2 || JSON.stringify(preserved.originalWriter) !== JSON.stringify(current)
+          || JSON.stringify(stable(preserved.recovery)) !== JSON.stringify(stable(recovered))
+          || after.dev !== before.dev || after.ino !== before.ino || !after.isFile() || after.isSymbolicLink() || after.nlink !== 1) throw Error("agent_host_writer_locked");
+      }
+      if (archive) {
+        try { await archive.writeFile(JSON.stringify({ originalWriter: current, recovery: recovered }) + "\n"); await archive.sync(); }
+        finally { await archive.close(); }
+      }
+      const retained = await lstat(lockPath);
+      if (retained.dev !== stat.dev || retained.ino !== stat.ino || !retained.isFile() || retained.isSymbolicLink()
+        || retained.nlink !== 1 || await readFile(lockPath, "utf8") !== bytes) throw Error("agent_host_writer_locked");
+    }
     await unlink(lockPath); return recovered;
   } catch { throw Error("agent_host_writer_locked"); }
   finally { await gate.close(); await unlink(gatePath); }

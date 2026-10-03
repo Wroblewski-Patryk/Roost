@@ -4,6 +4,7 @@ test('release diagnostics retain only fixed admission reasons and discard arbitr
  assert.equal(releaseWorkerDiagnostic(Error('release_readiness_changed')),'release_readiness_changed');
  assert.equal(releaseWorkerDiagnostic(Error('release_api_uncertain')),'release_api_uncertain');
  assert.equal(releaseWorkerDiagnostic(Error('release_git_repository_changed')),'release_git_repository_changed');
+ assert.equal(releaseWorkerDiagnostic(Error('private outer content',{cause:Error('release_dockerfile_state_transport_unproven',{cause:Error('release_git_set_installation_ssh_unavailable',{cause:Error('release_child_native_assignment_unobserved')})})})),'release_child_native_assignment_unobserved');
  for(const message of ['Bearer private-value','release_password_value','release_api_uncertain\nprivate-value','https://example.test/private','C:\\private\\credential'])assert.equal(releaseWorkerDiagnostic(Error(message)),'release_preflight_unproven');
 });
 test('hidden launcher diagnostic file keeps only the classified reason and never an exception body',()=>{

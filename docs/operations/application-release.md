@@ -595,6 +595,30 @@ A PWA task/login grants neither that authority nor exact-commit release approval
 
 ## Verification boundary
 
+### Reserved native preflight recovery
+
+An installed release stopped before its first external intent with one reserved
+SSH child lacking an assignment or terminal receipt. Legacy reservations do not
+bind the native protocol; they cannot prove that the target never ran. Recovery
+therefore records resources absent and outcome unproven, never a fabricated
+terminal receipt or successful execution.
+
+The normal Writer acquisition checks the exact signed grant, empty journal,
+dead owner, one final null reservation and genuine closure of every earlier
+child. It pins the inspected native source and system SSH identity, then obtains
+an actual bounded Windows inventory. Any SSH or native launcher process blocks
+recovery. The inspected launcher uses atomic Job assignment, a noninheritable
+handle and KILL_ON_JOB_CLOSE in both protocol versions. The original signed
+Writer and qualification are archived privately before race-fenced reclamation.
+Git and every scoped Coolify baseline are recognized again by the broker before
+the first new intent. Assigned children missing a terminal receipt still block.
+
+Native tests exercised dead/live owners, a live unrelated SSH-name fixture,
+changed/nonempty journal refusal, preserved archive and reconciliation-only
+restriction. Four native recovery cases passed; the focused installed adapter,
+state and diagnostic suites passed 27 tests with one existing opt-in skip.
+The real blocked preflight still needs normal Worker recovery and release proof.
+
 Source checks passed 233 Node release tests, including actual Windows owned
 process/recovery/local Git checks; 62 TypeScript tests passed and one optional
 PostgreSQL case was skipped. `typecheck`, build, lint and `codex:check` passed.

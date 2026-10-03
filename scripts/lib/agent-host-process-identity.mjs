@@ -18,6 +18,21 @@ export function observeWindowsProcessIdentity(pid) {
   } catch { throw Error("native_process_identity_unavailable"); }
 }
 let self;
+// Conservative native negative observation for legacy release preflight only.
+// No command lines, credentials, process termination or operator-supplied PIDs.
+// Any SSH or qualified-launcher process (including an uninspectable suspended
+// root) blocks this proof. The source-pinned launcher owns its sole,
+// noninheritable KILL_ON_JOB_CLOSE handle in both native protocol versions.
+export function observeReleasePreflightQuiescence() {
+  if (process.platform !== "win32") throw Error("native_process_identity_unavailable");
+  const source = "$ErrorActionPreference='Stop'; $p=@(Get-CimInstance Win32_Process -Filter \"Name='ssh.exe' OR Name='roost-job.exe' OR Name='roost-job-test.exe'\" -ErrorAction Stop); @{count=$p.Count}|ConvertTo-Json -Compress";
+  try {
+    const value = JSON.parse(execFileSync("powershell.exe", ["-NoProfile", "-NonInteractive", "-EncodedCommand", Buffer.from(source, "utf16le").toString("base64")],
+      { windowsHide: true, timeout: 10000, maxBuffer: 4096, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }));
+    if (value.count !== 0) throw Error();
+    return Object.freeze({ observedAt: new Date().toISOString(), sshProcesses: 0, nativeLaunchers: 0 });
+  } catch { throw Error("native_process_identity_unavailable"); }
+}
 export function currentNativeProcessIdentity() {
   if (!self) self = observeWindowsProcessIdentity(process.pid);
   if (!self || self.pid !== process.pid) throw Error("native_process_identity_unavailable");

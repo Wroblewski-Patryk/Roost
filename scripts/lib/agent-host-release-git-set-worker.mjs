@@ -36,7 +36,7 @@ export const permanentReleaseOwnershipSchema = z.object({ schemaVersion: z.liter
   applicationId: z.string().uuid(), canonicalDir: filepath, repositoryUrl: z.string().url(), targetIds: z.array(ident).min(1).max(6),
   protectedResourceIds: z.array(protectedId).min(1).max(100), ownedResourceIds: z.array(ident).max(0)
 }).strict();
-const fail = reason => { throw Object.assign(Error(`release_git_set_installation_${reason}`), { retryable: false, releaseBlocked: true }); };
+const fail = (reason, cause) => { throw Object.assign(Error(`release_git_set_installation_${reason}`, cause ? { cause } : undefined), { retryable: false, releaseBlocked: true }); };
 const check = (condition, reason) => { if (!condition) fail(reason); };
 const quote = value => `'${value.replaceAll("'", "'\\''")}'`;
 const exact = (value, fields) => value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).every(key => fields.includes(key));
@@ -134,7 +134,7 @@ export function createInstalledGitSetRelease({ settings, state, backup, github, 
   const ssh = async ({ command, stdin = '', timeoutMs = 15000, maxOutputBytes = 16384 }) => {
     await assertClone(); if (!dependencies.nativeProcess) check(hasReleaseProcessScope(), 'owned_process_scope_required');
     let output; try { output = await native('ssh', { argv: ['-T', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=10', cfg.sshHost, command],
-      cwd: os.tmpdir(), input: stdin, durationMs: timeoutMs, maxBytes: maxOutputBytes }); } catch { fail('ssh_unavailable'); }
+      cwd: os.tmpdir(), input: stdin, durationMs: timeoutMs, maxBytes: maxOutputBytes }); } catch (error) { fail('ssh_unavailable', error); }
     await assertClone(); check((typeof output === 'string' || Buffer.isBuffer(output)) && Buffer.byteLength(output) <= maxOutputBytes, 'response_size_invalid'); return output.toString('utf8');
   };
   const phpRead = async (program, payload = {}) => {

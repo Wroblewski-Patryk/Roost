@@ -3,13 +3,13 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import os from "node:os";
 import { randomUUID } from "node:crypto";
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, existsSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, existsSync, rmSync, copyFileSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { pathToFileURL } from "node:url";
 import contract from "./lib/agent-host-release-contract.cjs";
 import { acquireWriterLock, writerLockFilename, writerRecoveryEvidence } from "./lib/agent-host-writer-lock.mjs";
-import { releaseRecoveryCandidate, clearReleaseWriterRecovery } from "./lib/agent-host-release-writer-recovery.mjs";
+import { releaseRecoveryCandidate, clearReleaseWriterRecovery, qualifyReleaseWriterReclaim } from "./lib/agent-host-release-writer-recovery.mjs";
 import { observeWindowsProcessIdentity } from "./lib/agent-host-process-identity.mjs";
 import { runReleaseStep } from "./lib/agent-host-release-broker.mjs";
 
@@ -60,6 +60,7 @@ receipt=await job.completion;
 ${rejectForgedReceipt ? "let denied=false;try{recordReleaseChildReceipt(token,JSON.parse(JSON.stringify(receipt)))}catch{denied=true};if(!denied)throw Error('forged_receipt_accepted');" : ""}
 recordReleaseChildReceipt(token,receipt);
 }
+
 const barrier=sealReleaseWriterCheckpoint(context);
 process.send({phase:'sealed',rootPid:receipt.rootPid,launcherPid:receipt.launcherPid,barrier});
 setInterval(()=>{},1000);`;
@@ -148,4 +149,60 @@ test("fresh active release queue acquires an empty Writer slot; a racing owner s
     if (writer) await writer.release();
     assert.equal(path.dirname(directory), os.tmpdir()); assert(path.basename(directory).startsWith("roost-release-writer-native-")); rmSync(directory, { recursive: true });
   }
+});
+
+test("legacy reserved SSH preflight recovers resources only; live SSH and admitted intents still block", native, async t => {
+  const directory = mkdtempSync(path.join(os.tmpdir(), "roost-release-reserved-native-"));
+  mkdirSync(path.join(directory, "launcher"));
+  const state = stateFixture(directory); state.journal = [];
+  const client = { hostId: state.release.snapshot.hostId, agentId: state.release.snapshot.releaserAgentId };
+  const source = `
+import {acquireWriterLock} from ${JSON.stringify(moduleUrl("agent-host-writer-lock.mjs"))};
+import {beginReleaseWriterCheckpoint,reserveReleaseChild} from ${JSON.stringify(moduleUrl("agent-host-release-writer-recovery.mjs"))};
+import {buildWindowsJobLauncher} from ${JSON.stringify(moduleUrl("agent-host-windows-job.mjs"))};
+import path from 'node:path';
+const artifact=await buildWindowsJobLauncher(${JSON.stringify(path.join(directory, "launcher"))});
+const lock=await acquireWriterLock(${JSON.stringify(directory)});
+const context=beginReleaseWriterCheckpoint({writerLock:lock,state:${JSON.stringify(state)},client:${JSON.stringify(client)}});
+reserveReleaseChild(context,{artifact,executable:path.join(process.env.SystemRoot,'System32','OpenSSH','ssh.exe')});
+process.send({reserved:true});setInterval(()=>{},1000);`;
+  const child = spawn(process.execPath, ["--input-type=module", "-e", source], { windowsHide: true, stdio: ["ignore", "ignore", "pipe", "ipc"] });
+  const closed = once(child, "close");
+  t.after(async () => {
+    if (child.exitCode === null && child.signalCode === null) { child.kill(); await closed; }
+    assert.equal(path.dirname(directory), os.tmpdir()); rmSync(directory, { recursive: true });
+  });
+  await once(child, "message");
+  await assert.rejects(acquireWriterLock(directory, { releaseRecoveryCandidate: releaseRecoveryCandidate(state, client) }), /writer_locked/);
+  child.kill(); await closed;
+  const bytes = readFileSync(path.join(directory, writerLockFilename));
+  const fixture = path.join(directory, "ssh.exe"); copyFileSync(process.execPath, fixture);
+  const foreign = spawn(fixture, ["-e", "setInterval(()=>{},1000)"], { windowsHide: true, stdio: "ignore" });
+  const foreignClosed = once(foreign, "close");
+  try {
+    await assert.rejects(acquireWriterLock(directory, { releaseRecoveryCandidate: releaseRecoveryCandidate(state, client) }), /writer_locked/);
+    assert.deepEqual(readFileSync(path.join(directory, writerLockFilename)), bytes);
+  } finally { foreign.kill(); await foreignClosed; }
+  const nonempty = structuredClone(state); nonempty.journal = stateFixture(directory).journal;
+  await assert.rejects(acquireWriterLock(directory, { releaseRecoveryCandidate: releaseRecoveryCandidate(nonempty, client) }), /writer_locked/);
+  assert.deepEqual(readFileSync(path.join(directory, writerLockFilename)), bytes);
+  // A crash after archival but before unlink must remain safely recoverable.
+  const originalWriter = JSON.parse(bytes);
+  const recovery = qualifyReleaseWriterReclaim(originalWriter, releaseRecoveryCandidate(state, client), directory);
+  const archivePath = path.join(directory, `release-writer-reclaimed-${recovery.priorContextNonce}.json`);
+  const archiveBytes = JSON.stringify({ originalWriter, recovery }) + "\n";
+  const altered = structuredClone(recovery); altered.preflightQuiescence.originalCheckpointDigest = "0".repeat(64);
+  writeFileSync(archivePath, JSON.stringify({ originalWriter, recovery: altered }));
+  await assert.rejects(acquireWriterLock(directory, { releaseRecoveryCandidate: releaseRecoveryCandidate(state, client) }), /writer_locked/);
+  assert.deepEqual(readFileSync(path.join(directory, writerLockFilename)), bytes);
+  writeFileSync(archivePath, archiveBytes);
+  const writer = await acquireWriterLock(directory, { releaseRecoveryCandidate: releaseRecoveryCandidate(state, client) });
+  const proof = writer.releaseRecovery.preflightQuiescence;
+  assert.equal(proof.kind, "legacy_reserved_resources_absent");
+  assert.equal(proof.terminalReceipt, false); assert.equal(proof.executionProven, false);
+  const archive = JSON.parse(readFileSync(path.join(directory, `release-writer-reclaimed-${writer.releaseRecovery.priorContextNonce}.json`)));
+  assert.deepEqual(archive.originalWriter, JSON.parse(bytes));
+  assert.equal(readFileSync(archivePath, "utf8"), archiveBytes);
+  await assert.rejects(writer.release(), /reconciliation_pending/);
+  clearReleaseWriterRecovery(writer, state, client); await writer.release();
 });

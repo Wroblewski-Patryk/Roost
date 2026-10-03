@@ -4,8 +4,8 @@ import path from "node:path";
 import { z } from "zod";
 import contract from "./agent-host-release-contract.cjs";
 import { writerRecoveryEvidence, persistReleaseWriterCheckpoint, clearWriterReleaseRecoveryRestriction } from "./agent-host-writer-lock.mjs";
-import { currentNativeProcessIdentity, observeWindowsProcessIdentity } from "./agent-host-process-identity.mjs";
-import { assertWindowsJobCapability, isWindowsJobCleanupReceipt } from "./agent-host-windows-job.mjs";
+import { currentNativeProcessIdentity, observeWindowsProcessIdentity, observeReleasePreflightQuiescence } from "./agent-host-process-identity.mjs";
+import { assertWindowsJobCapability, isWindowsJobCleanupReceipt, windowsJobSourceDigest } from "./agent-host-windows-job.mjs";
 
 const contexts = new WeakMap(), tokens = new WeakMap(), candidates = new WeakMap();
 const fail = () => { throw Object.assign(Error("release_writer_recovery_unproven"), { retryable: false, releaseBlocked: true }); };
@@ -193,14 +193,39 @@ export function qualifyReleaseWriterReclaim(raw, candidate, directory) {
   const checkpoint = checkpointSchema.parse(raw.releaseCheckpoint);
   verifyIntegrity(directory, checkpoint);
   check(raw.ownerNonce === checkpoint.sessionId && same(raw.ownerProcess, checkpoint.ownerProcess) && raw.ownerPid === checkpoint.ownerProcess.pid
-    && checkpoint.phase === "all_local_children_closed" && ["releaseId", "grantDigest", "hostId", "releaserAgentId"].every(key => checkpoint.binding[key] === candidate[key]));
+    && ["releaseId", "grantDigest", "hostId", "releaserAgentId"].every(key => checkpoint.binding[key] === candidate[key]));
   check(checked.journal.length >= checkpoint.binding.journalCount
     && contract.releaseDigest(checked.journal.slice(0, checkpoint.binding.journalCount).map(entry => entry.binding)) === checkpoint.binding.journalPrefixDigest);
   if (checkpoint.binding.operationId !== null) check(checked.journal.some(entry => same(entry.binding, operationBindingFromCheckpoint(checkpoint.binding))));
-  assertClosed(checkpoint); check(observeWindowsProcessIdentity(raw.ownerPid) === null);
+  check(observeWindowsProcessIdentity(raw.ownerPid) === null);
+  let quiescence;
+  if (checkpoint.phase === "all_local_children_closed") assertClosed(checkpoint);
+  else {
+    // Legacy reservations do not pin v2: never claim that code did not run,
+    // invent a terminal receipt or admit an assigned child missing its receipt.
+    // Only an initial SSH preflight with no external operation intent can use
+    // the inspected launcher's native handle/containment invariant plus actual
+    // OS absence. The broker must recognize Git and every baseline again before
+    // its first new intent. Preserve the original signed record separately.
+    const pinnedSource = "921e0e322aa3f3d1ad64af44b338cc2a623dde8ec2ca3893645a3e2d24d50f1a";
+    const child = checkpoint.children.at(-1);
+    const ssh = path.join(process.env.SystemRoot, "System32", "OpenSSH", "ssh.exe");
+    check(checkpoint.phase === "broker_open" && checkpoint.binding.journalCount === 0 && checked.journal.length === 0
+      && checkpoint.binding.operationId === null && checkpoint.binding.operationRequestId === null
+      && checkpoint.binding.intentDigest === null && checkpoint.binding.operationCreatedAt === null && child?.state === "reserved"
+      && child.assignment === null && child.resumeDigest === null && child.receipt === null && child.receiptDigest === null
+      && child.sourceDigest === pinnedSource && windowsJobSourceDigest() === pinnedSource
+      && child.executableDigest === sha(readFileSync(ssh)) && child.executablePathDigest === sha(realpathSync.native(ssh).toLowerCase()));
+    const closed = { ...checkpoint, registeredChildCount: checkpoint.registeredChildCount - 1, children: checkpoint.children.slice(0, -1) };
+    assertClosed(closed);
+    quiescence = { kind: "legacy_reserved_resources_absent", originalCheckpointDigest: contract.releaseDigest(checkpoint),
+      reservedAttemptId: child.attemptId, ...observeReleasePreflightQuiescence(), terminalReceipt: false, executionProven: false };
+    check(performance.now() - checked.at < 30000);
+  }
   return Object.freeze({ reconciliationOnly: true, releaseId: candidate.releaseId, grantDigest: candidate.grantDigest,
     priorContextNonce: checkpoint.contextNonce, operationId: checkpoint.binding.operationId,
-    journalPrefixDigest: checkpoint.binding.journalPrefixDigest, journalCount: checkpoint.binding.journalCount });
+    journalPrefixDigest: checkpoint.binding.journalPrefixDigest, journalCount: checkpoint.binding.journalCount,
+    ...(quiescence ? { preflightQuiescence: Object.freeze(quiescence) } : {}) });
 }
 function operationBindingFromCheckpoint(binding) { return Object.fromEntries(["operationId", "operationRequestId", "intentDigest", "operationCreatedAt"].map(key => [key, binding[key]])); }
 export function clearReleaseWriterRecovery(writerLock, state, client) {
