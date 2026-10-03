@@ -23,6 +23,17 @@ protection are required before another effect. No full-server restore was run.
 Full recovery and a new successful observation remain required before
 independent certification; the historical unhealthy probe reason is unknown.
 
+The owner authorized temporary read-only backup access for exact image recovery.
+Two provider mount attempts failed; fresh provider read-back reports no mounted
+restore point. The VPS itself reports active local boot. A bounded read of 4754
+Docker/containerd/BuildKit directories found no exact image descriptor blob.
+No backup was restored over the server, imported or left exposed. The retained
+Writer was independently qualified against its HMAC, current grant and journal:
+owner absent, observer stopped and all 10 registered children closed. Provider
+backup access is now the concrete recovery dependency; the rebuilt image cannot
+replace the accepted baseline. Private recovery tooling is prepared separately;
+its fixture checks are not production image recovery evidence.
+
 Source recovery support is being qualified separately from this live proof.
 A typed `rollback_image_mismatch` may reconcile a finished queue as failed only
 when source, tree, configuration, schema, data and queue identity still match.
