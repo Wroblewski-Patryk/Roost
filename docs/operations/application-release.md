@@ -47,6 +47,15 @@ The subsequent normal HTTPS rotation completed under decision
 device ACK and server catalogue verify active epoch 3 and revoked epoch 2.
 No old task execution, pilot push or release consent follows from this rotation.
 
+The standalone provider checker now uses the same canonical repository validation
+as the normal managed Worker before inspecting a sealed profile. Raw installation
+mappings contain directory names, not validated paths; inspecting them directly
+had incorrectly reported unavailable managed admission. All 28 focused provider
+tests pass. The actual Windows installation check exits zero with
+`managed_hermes_codex_low_v1`, execution supported and no blockers. Generic
+compatibility/authentication fields remain separate from managed admission;
+this inventory check neither launches a model nor certifies a new task execution.
+
 The controlled restore contains identical full data and sequence state. Its
 schema dump initially differed only in built-in public-schema framing because
 the source has an ordinary schema owner and template0 uses `pg_database_owner`.

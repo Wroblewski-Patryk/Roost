@@ -1506,6 +1506,11 @@ and seals passed in a fully rolled-back transaction. A subsequent real pinned
 HTTPS handoff verifies protected storage, device ACK, active epoch 3 and revoked
 epoch 2. No pilot release is claimed.
 
+Standalone provider inspection now resolves the same verified canonical workspace
+as normal Worker startup. The actual Windows check admits the managed profile
+without blockers; 28 provider tests pass. This corrects an inventory false denial,
+not a new model execution or pilot release proof.
+
 [Governed release evidence](../operations/governed-release.md),
 [backup gateway](../../scripts/lib/agent-host-release-backup.mjs),
 [native backup tests](../../scripts/agent-host-release-backup.test.mjs),
