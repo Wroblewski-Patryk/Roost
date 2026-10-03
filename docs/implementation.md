@@ -173,7 +173,7 @@ and owned cleanup are required; no extra clones or services.
 
 **In progress:** [evidence](operations/application-release.md); backup verified;
 runtime recovered; native RED/GREEN and current independent acceptance verified;
-one-web release prepared; separate owner release consent and production proof pending.
+one-web release consent recorded; fresh owner admission and production proof pending.
 
 One real low-risk defect in the configured pilot application is discovered,
 planned, implemented, independently tested, committed, released and verified in

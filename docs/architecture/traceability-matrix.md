@@ -1525,7 +1525,9 @@ completed with unchanged native state and closed Job; it reported conditional
 frontend suitability. Its missing-candidate-acceptance statement was reconciled
 against the authoritative current approval. One-web release preparation passed
 without granting authority or executing external effects. Exact owner release
-consent and production proof remain pending; the earlier rejection is immutable.
+consent was subsequently recorded. Six authorized auto-deploy controls are off
+with unchanged configuration apart from that field and unchanged runtime images.
+Fresh owner admission and production proof remain pending; rejection is immutable.
 Installed HTTPS ingress passed a certificate-pinned validation refusal. Internal
 atomic evidence construction after a single normal fence has 17 source tests;
 external stale CAS remains denied. Production refusal was traced to five stale

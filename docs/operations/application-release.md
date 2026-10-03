@@ -297,14 +297,30 @@ reads are serialized to avoid the normal transaction-conflict refusal.
 Prepared manifest digest
 `fe4b83d3ac2ab2d35dbf81f79ee56fe6d72d60d95a54e536070bb7f4178ead02`
 selects one frontend target, three public probes and 1200 seconds of observation.
-All six automatic-deployment controls still require an authorized disable and
+At that preparation, all six automatic-deployment controls required a disable and
 read-back before push. The frontend also includes the seven existing dashboard
 paths between its older deployed baseline and the current main base. No API,
-worker, schema or data delta is introduced. Exact owner release consent remains
-absent; candidate deployment and post-release reproduction/observation remain
+worker, schema or data delta is introduced. Exact owner release consent was
+absent at that preparation; candidate deployment and post-release observation remain
 unverified. Current capacity passed after reclaiming 19 individually identified
 unshared cache records from two owned Roost builds; six pilot images and the
 current Roost image were protected. Capacity must be refreshed before dispatch.
+
+The owner's subsequent direct instruction approved the exact prepared release.
+Six normal single-field Coolify PATCHes disabled automatic deployment; paired
+read-back verified unchanged environment, storage, topology, source pin and
+running baseline images. This installed API omits its numeric internal ID and
+settings from GET responses: target UUID/repository/branch/Dockerfile are checked
+through HTTPS, while exact internal ID, boolean and configuration digest are
+checked through bounded installed-controller reads. An initial SSH failure and
+projection refusals occurred before any effect intent; no PATCH was repeated.
+Fresh six-target runtime, unchanged schema, three HTTP probes and capacity passed.
+The final manifest digest is
+`54f5c9b90c1db92e139be61658ca5c5556c7e4a834619d41300aad037e8271bb`;
+comparison permits only the authorized auto-deploy configuration change and
+new observation timestamps. Separate consent is retained privately for this
+exact regenerated request. Fresh owner authentication, normal release-grant
+admission, Worker installation and the actual release/observation remain pending.
 
 Normal application configuration now selects one frontend release target while
 retaining all six runtime targets. The other five exact deployed baselines
