@@ -1513,9 +1513,13 @@ independent acceptance passed in execution
 `4d7e218a-c632-410c-8a18-3edf11fb4a9d`, decision
 `0a0751be-8633-430a-b350-e3b8b796957a`, with unchanged native state and owned
 cleanup. Latest reviewer `5d505c06-8f0d-48c9-88ae-2ecd80b517c3` rejected
-missing native RED evidence. Current acceptance is absent; operator native replay
-proves RED/GREEN without source changes, but governed continuation and new review
-remain required. Exact owner release authority and production proof are pending.
+missing native RED evidence. Manager return
+`f94a6688-ead6-4815-975d-6fd48e24e135` and new managed execution
+`2948f84d-fa86-4d14-8c73-621bc41ba6fb` now prove native RED/GREEN (one failed
+assertion, one passing test), retaining the exact commit without source/history
+changes. Signed admission, unchanged footprint, closed Job and absent writer
+lock passed. Fresh independent acceptance, exact owner release authority and
+production proof remain pending; the earlier rejection is immutable.
 Installed HTTPS ingress passed a certificate-pinned validation refusal. Internal
 atomic evidence construction after a single normal fence has 17 source tests;
 external stale CAS remains denied. Production refusal was traced to five stale

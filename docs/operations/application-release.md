@@ -260,8 +260,21 @@ one passing unchanged-candidate test, without changing any pilot file or Git
 state. Receipt digest
 `2ed7b00145cb7abd8e85fa699234e4fdcf51090f88fa73c13ded20e2de95123a` is
 preliminary operator evidence, not a new managed execution or historical RED
-receipt. Governed manager return, managed verification continuation and fresh
-independent acceptance remain required.
+receipt. Accountable manager return `f94a6688-ead6-4815-975d-6fd48e24e135`
+then admitted new managed execution `2948f84d-fa86-4d14-8c73-621bc41ba6fb`.
+Its fixed native replay verified RED exit 1 (one actual assertion failure) and
+GREEN exit 0 (one passing test), with no skips, candidate edits or new commit.
+Coding-test digest
+`990d032aef0377ca264a4917ba23f7fd735c7ec5d3981be06801206ebeb8ae83`
+and local-commit verification digest
+`297239ca78762d38d385f614f518c5061c814395af83028e2e3f1425ea6dd918`
+bind the unchanged candidate to the prior rejection and owner first-write
+decision. Signed native admission, paired unchanged footprint, closed Job,
+zero surviving children and absent writer lock passed. The historical rejection
+is preserved; fresh independent acceptance remains required. Roost backend
+`e4003d231bb97a99befc602ec55d588a4343393e` is deployed and healthy; Worker
+source `f8ff3c2e2c6503a147fff534b2294e340eda30df` also rejects private replay
+configuration located inside the application checkout.
 
 Normal application configuration now selects one frontend release target while
 retaining all six runtime targets. The other five exact deployed baselines
