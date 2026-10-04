@@ -192,9 +192,9 @@ an immediate implementation dependency or mark it complete.
 
 **Authorized preparation; production proof pending.** After Gate 5 the owner
 selected the second application's repair for the next bounded gate. Preserve
-local `3cf9645e` and its independent acceptance. Its canonical image build has
-a node-configuration TypeScript blocker; managed correction and a new exact
-independent acceptance are required before release. This is not product readiness.
+local `3cf9645e` and its independent acceptance. Managed correction `c21e0e0c`
+passes seven tests and canonical local build; regression evidence and independent
+acceptance remain pending. This is not product readiness.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

@@ -99,10 +99,27 @@ and a commit, followed by independent review; neither grants push or deployment.
 The SQL read-only risk mirror was updated through one new additive migration,
 without changing applied migrations or assessment history. Actual strict managed
 turn-budget boundary cases passed on the existing local PostgreSQL 16.14 inside
-a rolled-back transaction. Applying this migration in production remains pending.
+a rolled-back transaction. Roost `3d240c2f` was pushed and deployed through queue
+`aays28lhsm9vc04wu3p4lgta`; health/build-info returned 200 with that exact commit.
+The completed production migration checksum matched its committed SQL bytes.
 
 The new fixed public probe also read the existing deployment: backend/frontend
 revisions agreed with its actual baseline and both required readiness fields
 passed. The diagnostic readiness response was 70,842 bytes; the reader now has
 a fixed 128 KiB backend bound and independent 64 KiB frontend bound, with tests
 for both limits. Response bodies remain transient and are excluded from evidence.
+
+Managed coder `b5fe6ed3-ce6e-4224-b5cd-eb1a7284150d` produced clean local
+`c21e0e0cc52a8de7301869953121f48983f4d3ae`, based on preserved `3cf9645e`.
+The fixed Worker recorded seven passing tests and a closed native Job. The model
+reported an actual six-pass/one-fail TS2580 reproduction before the correction;
+its tool budget ended after two authorized paths, leaving the required regression
+log unchanged. Independent review remains pending and must evaluate that omission.
+The separate actual `npm run build` passed on this exact candidate in a closed
+Windows Job with version verification, unchanged source/dependencies and owned
+output cleanup. It is not an image/deployed-app or whole-product proof.
+The preceding claimed-only refusal was reconciled without model/source effects.
+The canonical build helper's unassigned preparation refusal was likewise checked
+for absent processes/outputs before retry; saved JSON was not treated as a fresh
+native receipt. The final build receipt is a separate actual execution.
+Worker is stopped; no application push, deployment or release grant exists.
