@@ -18,7 +18,7 @@ export function releaseEffectDiagnostic(error){
  for(let depth=0;error&&depth<5;depth++,error=error.cause)if(effectReasons.has(error.message))reason=error.message;
  return reason;
 }
-export const releaseOutcomeStatus=o=>!o?null:o.status==='reconciled'?o.reconciledStatus:o.status;
+export const releaseOutcomeStatus=o=>!o?null:o.status==='reconciled'?(o.reconciledStatus??o.reconciled_status):o.status;
 const completedSet=(state,operation)=>state.release.snapshot.manifest.deployment.targets.every(target=>state.journal.some(j=>j.operation===operation
  &&j.intent?.parameters?.targetId===target.targetId&&releaseOutcomeStatus(j.outcome)==='succeeded'));
 export function nextReleaseOperation(state){
@@ -28,16 +28,46 @@ export function nextReleaseOperation(state){
  if(contract.isComposeManifest(state.release?.snapshot?.manifest)&&j.some(x=>releaseOutcomeStatus(x.outcome)==='absent'&&x.outcome?.evidence?.composeRecovery))
   fail('release_compose_no_effect_diagnosis_required');
  if(state.status!=='active')return null;
+ const post=state.release.snapshot.manifest.postObservation;
+ if(post){
+  if(!contract.isComposeManifest(state.release.snapshot.manifest))fail('release_post_observation_scope_required');
+  for(const operation of j.filter(x=>contract.postObservationOperations.includes(x.operation))){
+   const o=operation.outcome,body={requestId:o.requestId??o.request_id,status:o.status,
+    ...(o.status==='reconciled'?{reconciledStatus:o.reconciledStatus??o.reconciled_status}:{}),
+    observationOnly:o.observationOnly??o.observation_only,evidence:o.evidence};
+   const error=contract.postObservationOutcomeError(state.release.snapshot,operation,body,j);
+   if(error)fail(error);
+  }
+  if(j.some(x=>['fixture_cleanup','runtime_resume'].includes(x.operation)&&releaseOutcomeStatus(x.outcome)==='failed'))
+   fail('release_post_observation_diagnosis_required');
+ }
  if(j.some(x=>x.operation==='rollback'&&releaseOutcomeStatus(x.outcome)==='failed'
   &&!contract.releaseRollbackImageFailureValid(state.release.snapshot,x.outcome.evidence,x.intent.parameters.targetId)
   ||x.operation==='observe'&&x.intent.parameters.mode==='rollback'&&releaseOutcomeStatus(x.outcome)==='failed'))fail('release_recovery_diagnosis_required');
- if(j.some(x=>['deploy','observe'].includes(x.operation)&&releaseOutcomeStatus(x.outcome)==='failed')){
+ const failedSmoke=post&&j.some(x=>x.operation==='smoke'&&releaseOutcomeStatus(x.outcome)==='failed');
+ if(failedSmoke&&!done('fixture_cleanup'))return nextPostOperation(state,'fixture_cleanup');
+ if(failedSmoke||j.some(x=>['deploy','observe'].includes(x.operation)&&releaseOutcomeStatus(x.outcome)==='failed')){
   if(!done('rollback_config'))return 'rollback_config';if(contract.isReleaseSetManifest(state.release.snapshot.manifest)?!completedSet(state,'rollback'):!done('rollback'))return 'rollback';
   if(!j.some(x=>x.operation==='observe'&&x.intent.parameters.mode==='rollback'&&releaseOutcomeStatus(x.outcome)==='succeeded'))return 'observe';
-  return nextCleanup(state);
+  return nextPostObservation(state,true);
  }
  const sequence=contract.releaseHasSuccessor(state.release.snapshot)||contract.releaseHasPublishedGitBasis(state.release.snapshot)?['deploy_config','deploy','observe']:['push','pr','review','merge','deploy_config','deploy','observe'];
- return sequence.find(op=>op==='deploy'&&contract.isReleaseSetManifest(state.release.snapshot.manifest)?!completedSet(state,'deploy'):!done(op))??nextCleanup(state);
+ return sequence.find(op=>op==='deploy'&&contract.isReleaseSetManifest(state.release.snapshot.manifest)?!completedSet(state,'deploy'):!done(op))??nextPostObservation(state,false);
+}
+function nextPostOperation(state,operation){
+ const p=state.release.snapshot.manifest.postObservation;
+ const error=contract.postObservationIntentError(state.release.snapshot,{operation,parameters:{postObservationDigest:contract.releaseDigest(p)}},state.journal);
+ if(error)fail(error);return operation;
+}
+function nextPostObservation(state,rollback){
+ const p=state.release.snapshot.manifest.postObservation;
+ if(!p)return nextCleanup(state);
+ const done=operation=>state.journal.some(j=>j.operation===operation&&releaseOutcomeStatus(j.outcome)==='succeeded');
+ if(!rollback&&!done('smoke'))return nextPostOperation(state,'smoke');
+ if(state.journal.some(j=>j.operation==='smoke')&&!done('fixture_cleanup'))return nextPostOperation(state,'fixture_cleanup');
+ if(!done('runtime_resume'))return nextPostOperation(state,'runtime_resume');
+ const operation=nextCleanup(state);
+ return operation?nextPostOperation(state,operation):null;
 }
 function nextCleanup(state){
  const j=state.journal,done=(op,resource)=>j.some(x=>x.operation===op&&releaseOutcomeStatus(x.outcome)==='succeeded'&&(!resource||x.intent.parameters.resourceId===resource));
@@ -82,6 +112,7 @@ function validateState(state,client){
 }
 function parameters(operation,s,state){
  const m=s.manifest;
+ if(contract.postObservationOperations.includes(operation))return {postObservationDigest:contract.releaseDigest(m.postObservation)};
  if(operation==='push')return{branch:m.repository.candidateBranch};
  if(['review','merge'].includes(operation))return{pullRequestNumber:state.journal.find(j=>j.operation==='pr'&&releaseOutcomeStatus(j.outcome)==='succeeded')?.outcome?.evidence?.pullRequestNumber};
  const artifact=value=>contract.isReleaseSetManifest(m)?{artifactSetDigest:value.artifactSetDigest}:{imageDigest:value.imageDigest};
@@ -94,6 +125,17 @@ function parameters(operation,s,state){
  return{};
 }
 const dated=e=>({...e,observedAt:new Date().toISOString()});
+// Trusted fixed adapters return phase evidence, never executable packet input.
+// An invalid reply after an effect becomes uncertainty; it is not silently
+// projected into success or retried. Reconciliation invokes only the reader.
+function postObservationResult(result,s,operation,state,reconciled=false){
+ if(!result||Object.keys(result).some(k=>!['status','evidence'].includes(k))||!['succeeded','failed'].includes(result.status)
+  ||!result.evidence||Object.keys(result.evidence).some(k=>k!=='postObservation'))fail('release_post_observation_result_unproven');
+ const body=contract.outcomeSchema.parse({requestId:randomUUID(),status:reconciled?'reconciled':result.status,
+  ...(reconciled?{reconciledStatus:result.status}:{}),observationOnly:reconciled,evidence:dated(result.evidence)});
+ const error=contract.postObservationOutcomeError(s,operation,body,state.journal);
+ if(error)fail(error);return result;
+}
 function effectiveExpiry(state,snapshot){
  const expiry=contract.releaseExpirySchema.safeParse(state.effectiveExpiresAt??snapshot.expiresAt);
  if(!expiry.success)fail('release_expiry_unproven');
@@ -184,6 +226,9 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
    const prior=priorDeployment(state,pending.intent.parameters.mode==='rollback');
    if(!contract.isReleaseSetManifest(m))evidence.deploymentId=prior?.outcome?.evidence?.deploymentId;
    result={status:evidence.healthy?'succeeded':'failed',evidence:releaseSetEvidence(evidence,m,s,{rollback:pending.intent.parameters.mode==='rollback',deploymentIds:prior?.outcome?.evidence?.deploymentIds})};
+  }else if(contract.postObservationOperations.includes(pending.operation)){
+   if(typeof resources?.reconcilePostObservation!=='function')fail('release_post_observation_reconciliation_gateway_required');
+   result=postObservationResult(await resources.reconcilePostObservation(m,s,{operation:pending.operation,state,operationId:pending.id}),s,pending,state,true);
   }else if(pending.operation==='cleanup_resource')result=await resources.reconcileResource(m,s,pending.intent.parameters.resourceId);
   else if(pending.operation==='archive_repository')result=await github.reconcileArchive(m);
   else if(pending.operation==='cleanup_local')result=await resources.reconcileLocal(m,s);
@@ -205,6 +250,10 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
  if(['deploy_config','deploy','rollback_config','rollback'].includes(operation))await resources.inspectCapacity(m);
  const intent=contract.intentSchema.parse({requestId:randomUUID(),operation,manifestDigest:s.manifestDigest,commit:s.commit,baseCommit:s.baseCommit,
   expectedVersion:state.expectedVersion,observed:{commit:s.commit,baseCommit:remote.remoteBase,baseTree:remote.remoteTree,manifestDigest:s.manifestDigest},parameters:parameters(operation,s,state)});
+ if(contract.postObservationOperations.includes(operation)){
+  if(typeof resources?.postObservation!=='function')fail('release_post_observation_gateway_required');
+  const error=contract.postObservationIntentError(s,intent,state.journal);if(error)fail(error);
+ }
  if(operation==='cleanup_resource')await assertDisposable(m,s,resources,intent.parameters.resourceId);
  await onChildrenClosed();
  const authorized=await api(`${route}/operations`,{method:'POST',body:intent});
@@ -250,6 +299,9 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
    if(!contract.isReleaseSetManifest(m))evidence.deploymentId=prior?.outcome?.evidence?.deploymentId;
    else evidence=releaseSetEvidence(evidence,m,s,{rollback:intent.parameters.mode==='rollback',deploymentIds:prior?.outcome?.evidence?.deploymentIds});
    if(!evidence.healthy)status='failed';
+  }else if(contract.postObservationOperations.includes(operation)){
+   const result=postObservationResult(await resources.postObservation(m,s,{operation,state:authorized,operationId:authorized.operation.id}),s,{...authorized.operation,intent},authorized);
+   evidence=result.evidence;status=result.status;
   }else if(operation==='cleanup_resource'){await assertDisposable(m,s,resources,intent.parameters.resourceId);evidence=await resources.removeResource(m,s,intent.parameters.resourceId);}
   else if(operation==='archive_repository')evidence=await github.archive(m);
   else if(operation==='cleanup_local')evidence=await resources.cleanupLocal(m,s);

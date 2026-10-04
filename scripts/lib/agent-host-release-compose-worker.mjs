@@ -13,11 +13,13 @@ import { composePhasePolicySchema, composePhaseArtifactFile, renderComposePhaseC
 import { createCoolifyComposeAdapter } from './agent-host-release-coolify-compose.mjs';
 import { composeConfigurationDigest, qualifyComposeRuntime, qualifyComposeRetainedBaseline } from './agent-host-release-compose-state.mjs';
 import { permanentReleaseOwnershipSchema } from './agent-host-release-git-set-worker.mjs';
-import { createComposeHealthProbe, composeHealthSettingsSchema } from './agent-host-release-compose-health.mjs';
+import { createComposeHealthProbe, composeHealthSettingsSchema, probeComposeIngressBlocked, observeRestoredComposeRuntime } from './agent-host-release-compose-health.mjs';
 import { coolifyHttpsJson } from './agent-host-release-coolify.mjs';
 import { buildReleaseFingerprintCommand, releaseFingerprintTimeoutSchema } from './agent-host-release-fingerprint.mjs';
 import { coolifyGitSetDeploymentId } from './agent-host-release-coolify-git-set-gateway.mjs';
 import contract from './agent-host-release-contract.cjs';
+import { installedActivitySettingsSchema, createActivityReleaseAdapter } from './agent-host-release-activity-adapter.mjs';
+import { createInstalledActivityTransport } from './agent-host-release-activity-installed.mjs';
 
 const hex=z.string().regex(/^[a-f0-9]{64}$/),alias=z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,79}$/);
 const file=z.string().min(3).max(1000).refine(v=>path.isAbsolute(v)&&path.normalize(v)===v);
@@ -30,7 +32,8 @@ export const installedComposeReleaseSchema=z.object({sshHost:alias,sshAddressFam
  source:z.object({sshHost:alias,container:hex,user:pg,database:pg}).strict(),
  fingerprintTimeoutMs:releaseFingerprintTimeoutSchema.min(30000).max(300000).optional(),
  capacity:z.object({minDiskBytes:z.number().int().positive(),minMemoryBytes:z.number().int().positive(),maxLoad1:z.number().positive().max(100)}).strict(),
- coolify:z.object({origin,certificateSha256:hex.optional()}).strict(),health:composeHealthSettingsSchema
+ coolify:z.object({origin,certificateSha256:hex.optional()}).strict(),health:composeHealthSettingsSchema,
+ activity:installedActivitySettingsSchema.optional()
 }).strict().superRefine((v,c)=>{if(v.sshHost!==v.source.sshHost)c.addIssue({code:'custom',message:'installation_scope_invalid'});});
 const deny=(reason,cause)=>{throw Object.assign(Error(`release_compose_installation_${reason}`,cause?{cause}:undefined),{retryable:false,releaseBlocked:true});};
 const check=(v,r)=>{if(!v)deny(r);};
@@ -53,13 +56,35 @@ else{$f=fopen($target,'x');if(!$f)throw new Exception('create');if(fwrite($f,$by
 if(is_link($target)||hash_file('sha256',$target)!==$p['sha256'])throw new Exception('readback');echo '{"staged":true}';`;
 const capacityCommand="set -eu; dockerRoot=$(docker info --format '{{.DockerRootDir}}'); disk=$(df -PB1 -- \"$dockerRoot\" | awk 'NR==2{print $4}'); memory=$(awk '/^MemAvailable:/{printf \"%.0f\",$2*1024}' /proc/meminfo); load=$(cut -d ' ' -f1 /proc/loadavg); printf '{\"diskBytes\":%s,\"memoryBytes\":%s,\"load1\":%s}' \"$disk\" \"$memory\" \"$load\"";
 
+// The post-observation stages may deliberately resume cadence state, but may
+// never replace a container, image, mount or accepted source binding.
+export function qualifyActivityRuntimeEvidence(snapshot,current,evidence){
+ const last=current?.journal?.at(-1),observation=current?.journal?.slice(0,-1).filter(r=>r.operation==='observe'
+  &&(r.outcome?.status==='succeeded'||r.outcome?.status==='reconciled'&&r.outcome.reconciledStatus==='succeeded')).at(-1);
+ check(current?.release?.id===snapshot.releaseId&&contract.postObservationOperations.includes(last?.operation)
+  &&['candidate','rollback'].includes(observation?.intent?.parameters?.mode),'activity_runtime_intent_unproven');
+ const rollback=observation.intent.parameters.mode==='rollback',proof=observation.outcome.evidence;
+ check(!contract.composeEvidenceError(snapshot,proof,rollback)&&proof.healthy===true
+  &&proof.observationSeconds>=snapshot.manifest.observation.seconds,'activity_observation_unproven');
+ const prior=proof.composeTargets[0],keys=['name','role','containerId','imageDigest','mountDigest','createdAt','commit','tree','deploymentId'];
+ const pins=rows=>rows.map(r=>Object.fromEntries(keys.filter(k=>r[k]!==undefined).map(k=>[k,r[k]]))).sort((a,b)=>a.name.localeCompare(b.name));
+ check(evidence.binding.queue.status==='finished'&&evidence.binding.commit===proof.deployedCommit&&evidence.binding.tree===proof.deployedTree
+  &&contract.releaseDigest(evidence.binding)===contract.releaseDigest(prior.binding)
+  &&composeConfigurationDigest(evidence.configuration)===composeConfigurationDigest(prior.configuration)
+  &&contract.releaseDigest(pins(evidence.runtime.services))===contract.releaseDigest(pins(prior.runtime.services)), 'activity_runtime_binding_changed');
+ return {commit:proof.deployedCommit,tree:proof.deployedTree,services:evidence.runtime.services};
+}
+
 /** Fixed per-installation wiring. Dependency substitutions exist for source
  * tests only; no executable/module/SQL comes from settings or a model. */
-export function createInstalledComposeRelease({settings,state,backup,github,coolifyCredential},dependencies={}){
+export function createInstalledComposeRelease({settings,state,backup,github,coolifyCredential,activitySeed},dependencies={}){
  const cfg=installedComposeReleaseSchema.parse(settings),s=structuredClone(state?.release?.snapshot),m=contract.manifestSchema.parse(s?.manifest);
  check(contract.isComposeManifest(m)&&m.cleanup.ownedResourceIds.length===0&&typeof dependencies.readReleaseState==='function'
   &&github&&typeof github.inspect==='function'&&typeof coolifyCredential==='string'&&coolifyCredential.length>=8,'binding_invalid');
  const t=m.deployment.targets[0],snapshotDigest=contract.releaseDigest(state.release.snapshot);s.releaseId=state.release.id;
+ check(Boolean(m.postObservation)===Boolean(cfg.activity),'activity_installation_binding_changed');
+ if(cfg.activity)check(typeof activitySeed==='string'&&/^[a-f0-9]{64}$/.test(activitySeed)
+  &&typeof dependencies.assertNativeClosed==='function','activity_native_capability_required');
  check(new URL(cfg.coolify.origin).origin===new URL(m.deployment.controllerUrl).origin,'controller_origin_changed');
  const identity=dependencies.identity??physicalIdentity,read=dependencies.readFile??readFileSync,native=dependencies.nativeProcess??runReleaseNativeProcess;
  const httpsJson=dependencies.coolifyJson??coolifyHttpsJson;
@@ -150,7 +175,9 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
    const context=live.get(t.targetId);check(phase!=='baseline'&&context?.rollback===(phase==='rollback'),'database_recreation_unproven');
    const q=await raw.readQueue(context);check(q?.status==='finished'&&q.commit===configuration.gitCommit,'database_recreation_unproven');
    const e=await inspector.readEvidence(q);
-   qualifyComposeRuntime({expected:{configuration,configDigest:digest},...e});
+   const current=cfg.activity?await dependencies.readReleaseState():null;
+   if(current?.journal?.at(-1)?.operation==='runtime_resume')qualifyActivityRuntimeEvidence(s,current,e);
+   else qualifyComposeRuntime({expected:{configuration,configDigest:digest},...e});
    check(e.runtime.services.filter(r=>r.role==='database').length===1
     &&e.runtime.services.some(r=>r.role==='database'&&r.name===row.name&&r.containerId===row.containerId
       &&r.imageDigest===row.imageDigest&&r.mountDigest===row.mountDigest),'database_recreation_unproven');
@@ -287,5 +314,23 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   async verifyRetention(){await assertClone();await observeConfig();check(m.cleanup.ownedResourceIds.length===0,'disposable_resources_unsupported');return{applicationActive:true,targetId:t.targetId,
    protectedResourcesDigest:contract.releaseDigest(ownership.protectedResourceIds),absenceVerified:true,resourceIds:[]};},
   ownedResource(){deny('disposable_resources_unsupported');},cleanupLocal(){deny('permanent_repository_deletion_prohibited');},cleanupCoolifyApplication(){deny('permanent_application_deletion_prohibited');}};
+ if(cfg.activity){
+  const facade=createInstalledActivityTransport({manifest:m,binding:s,settings:cfg.activity,seed:activitySeed,
+   installation:{sshHost:cfg.sshHost,frontendMetaName:cfg.health.frontendMetaName},baselineServices:baseline.services,
+   readScopeBytes:async({file,sha256,maxBytes})=>{check(maxBytes===131072,'activity_file_bound_invalid');return bytesFor(file,sha256);},
+   readRuntime:async options=>{
+    await assertClone();const current=await dependencies.readReleaseState(),context=live.get(t.targetId);check(context,'activity_current_queue_required');
+    const q=await raw.readQueue(context);check(q?.status==='finished'&&q.commit!=='HEAD','activity_finished_queue_required');
+    const e=await inspector.readEvidence(q),r=qualifyActivityRuntimeEvidence(s,current,e);
+    check(r.commit===options.commit&&r.tree===options.tree&&current.journal.at(-1).id===options.operationId,'activity_runtime_version_changed');
+    return {observedAt:new Date().toISOString(),targetId:t.targetId,...r};
+   },fullFingerprint:fingerprint,readReleaseState:dependencies.readReleaseState,ssh,nativeProcess:native,assertNativeClosed:dependencies.assertNativeClosed,
+   probeIngressBlocked:()=>probeComposeIngressBlocked({publicUrl:m.deployment.url,health:cfg.health}),
+   healthProbe:input=>observeRestoredComposeRuntime(input,{probeHealth:healthProbe,
+    readCadenceTicks:options=>facade.readCadenceTicks(options),now:dependencies.now,sleep:dependencies.sleep})
+  });
+  Object.assign(resources,createActivityReleaseAdapter({manifest:m,binding:s,settings:cfg.activity,seed:activitySeed,
+   readState:dependencies.readReleaseState,transport:facade.transport}));
+ }
  return Object.freeze({coolify:adapter,resources:Object.freeze(resources),assertClone,safety});
 }

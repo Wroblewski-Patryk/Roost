@@ -9,6 +9,11 @@ export const releaseIntentSchema = shared.intentSchema as z.ZodType<any>;
 export const releaseOutcomeSchema = shared.outcomeSchema as z.ZodType<any>;
 export const releaseDigest: (value: unknown) => string = shared.releaseDigest;
 export const releaseOperations: readonly string[] = shared.operations;
+export const releasePostObservationScopeSchema = shared.postObservationScopeSchema as z.ZodType<any>;
+export const releasePostObservationEvidenceSchema = shared.postObservationEvidenceSchema as z.ZodType<any>;
+export const releasePostObservationOperations: readonly string[] = shared.postObservationOperations;
+export const releasePostObservationIntentError: (snapshot:any,input:any,journal:any[])=>string|null=shared.postObservationIntentError;
+export const releasePostObservationOutcomeError: (snapshot:any,operation:any,input:any,journal:any[])=>string|null=shared.postObservationOutcomeError;
 export const releaseRetainsApplication: (manifest: any) => boolean = shared.retainsApplication;
 export const releaseIsGitSet: (manifest: any) => boolean = shared.isGitSetManifest;
 export const releaseIsCompose: (manifest: any) => boolean = shared.isComposeManifest;
@@ -240,6 +245,9 @@ export function releaseIntentError(release: any, input: any, journal: any[]) {
   if(successor&&["push","pr","review","merge"].includes(input.operation))return "release_successor_git_effect_forbidden";
   const merged=successor||successful("merge");
   if(input.observed.baseCommit!==(merged?s.commit:s.baseCommit)||input.observed.baseTree!==(merged?s.candidateTree:s.baseTree))return "release_base_changed";
+  const postError=releasePostObservationIntentError(s,input,journal);
+  if(postError)return postError;
+  if(releasePostObservationOperations.includes(input.operation))return null;
   const p=input.parameters;
   const dependencies:Record<string,string[]>={push:[],pr:["push"],review:["pr"],merge:["review"],deploy_config:["merge"],deploy:["deploy_config"],observe:["deploy"],rollback_config:[],rollback:["rollback_config"],cleanup_resource:[],archive_repository:[],cleanup_local:["archive_repository"],cleanup:["cleanup_local"]};
   if(retained)dependencies.cleanup=[];
@@ -257,7 +265,11 @@ export function releaseIntentError(release: any, input: any, journal: any[]) {
   if(["cleanup_resource","archive_repository","cleanup_local","cleanup"].includes(input.operation)&&!journal.some(j=>j.operation==="observe"&&effectiveOutcome(j.outcome)==="succeeded"&&j.intent.parameters.mode===(successful("rollback")?"rollback":"candidate")))return "release_cleanup_before_verification";
   if(input.operation==="cleanup_resource"&&(!m.cleanup.ownedResourceIds.includes(p.resourceId)||retained&&m.cleanup.protectedResourceIds.includes(p.resourceId)||journal.some(j=>j.operation==="cleanup_resource"&&j.intent.parameters.resourceId===p.resourceId&&effectiveOutcome(j.outcome)==="succeeded")))return "release_cleanup_scope_invalid";
   if(["archive_repository","cleanup"].includes(input.operation)&&m.cleanup.ownedResourceIds.some((r:string)=>!journal.some(j=>j.operation==="cleanup_resource"&&j.intent.parameters.resourceId===r&&effectiveOutcome(j.outcome)==="succeeded")))return "release_cleanup_resources_pending";
-  if(input.operation.startsWith("rollback")&&!journal.some(j=>["deploy","observe"].includes(j.operation)&&effectiveOutcome(j.outcome)==="failed"))return "release_rollback_without_attributed_failure";
+  const failedSmoke=!!m.postObservation&&journal.some((j,i)=>j.operation==='smoke'&&effectiveOutcome(j.outcome)==='failed'
+   &&!releasePostObservationOutcomeError(s,j,{requestId:j.outcome.requestId??j.outcome.request_id,status:j.outcome.status,
+    ...(j.outcome.status==='reconciled'?{reconciledStatus:j.outcome.reconciledStatus??j.outcome.reconciled_status}:{}),
+    observationOnly:j.outcome.observationOnly??j.outcome.observation_only,evidence:j.outcome.evidence},journal.slice(0,i)));
+  if(input.operation.startsWith("rollback")&&!failedSmoke&&!journal.some(j=>["deploy","observe"].includes(j.operation)&&effectiveOutcome(j.outcome)==="failed"))return "release_rollback_without_attributed_failure";
   if(input.operation==="push"&&p.branch!==m.repository.candidateBranch)return "release_parameter_scope_invalid";
   if(["review","merge"].includes(input.operation)&&p.pullRequestNumber!==journal.find(j=>j.operation==="pr"&&effectiveOutcome(j.outcome)==="succeeded")?.outcome?.evidence?.pullRequestNumber)return "release_parameter_scope_invalid";
   const artifactInvalid=(expected:any)=>releaseIsSet(m)?p.artifactSetDigest!==expected.artifactSetDigest||p.imageDigest!==undefined:p.imageDigest!==expected.imageDigest||p.artifactSetDigest!==undefined;
@@ -269,6 +281,13 @@ export function releaseIntentError(release: any, input: any, journal: any[]) {
 export function releaseOutcomeError(release: any, operation: any, input: any,journal:any[]=[]) {
   const s=release.snapshot,m=s.manifest,e=input.evidence,result=effectiveOutcome({status:input.status,reconciledStatus:input.reconciledStatus});
   const retained=releaseRetainsApplication(m);
+  if(releasePostObservationOperations.includes(operation.operation)||e.postObservation!==undefined)
+   return releasePostObservationOutcomeError(s,operation,input,journal);
+  if(m.postObservation&&result==='succeeded'&&['cleanup_resource','archive_repository','cleanup_local','cleanup'].includes(operation.operation)){
+   const ownIndex=journal.findIndex(j=>operation.id?j.id===operation.id:j===operation);
+   const postError=releasePostObservationIntentError(s,{operation:operation.operation,parameters:operation.intent?.parameters},ownIndex<0?journal:journal.slice(0,ownIndex));
+   if(postError)return postError;
+  }
   if(e.composeRecovery!==undefined){
    if(!releaseIsCompose(m)||!(result==="failed"&&['queue_failed','queue_absent'].includes(e.composeRecovery.kind)
      ||input.status==="reconciled"&&result==="absent"&&e.composeRecovery.kind==="queue_absent"))return "release_evidence_scope_invalid";

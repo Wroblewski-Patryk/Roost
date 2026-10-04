@@ -12,6 +12,32 @@ import {createHash} from 'node:crypto';
 import {inspectReleaseCheckout} from './lib/agent-host-release-github.mjs';
 import releaseContract from './lib/agent-host-release-contract.cjs';
 
+test('installed activity Node runtime keeps binary stdin and a closed native release receipt',
+ {skip:process.platform!=='win32',timeout:90000},async()=>{
+ const directory=mkdtempSync(path.join(os.tmpdir(),'roost-release-node-test-'));
+ let writer,prepared,context;
+ try{
+  prepared=await prepareReleaseProcessScope({activityBrowser:true});writer=await acquireWriterLock(directory);
+  const state=releaseStateFixture(directory),client={hostId:state.release.snapshot.hostId,agentId:state.release.snapshot.releaserAgentId};
+  context=beginReleaseWriterCheckpoint({writerLock:writer,state,client});
+  const bytes=Buffer.from([0,255,10]),expected=createHash('sha256').update(bytes).digest('hex');
+  const script="const c=require('node:crypto');let b=[];process.stdin.on('data',v=>b.push(v));process.stdin.on('end',()=>process.stdout.write(c.createHash('sha256').update(Buffer.concat(b)).digest('hex')));";
+  const out=await withReleaseProcessScope(prepared,context,()=>runReleaseNativeProcess('node',{argv:['-e',script],cwd:directory,input:bytes,durationMs:10000}));
+  assert.equal(out.toString('utf8'),expected);assert.equal(sealReleaseWriterCheckpoint(context).nativeProcessesAbsent,true);
+  const checkpoint=JSON.parse(readFileSync(path.join(directory,writerLockFilename))).releaseCheckpoint;
+  assert.equal(checkpoint.children.length,1);assert.equal(checkpoint.children[0].state,'closed');
+  assert.equal(checkpoint.children[0].receipt.activeProcesses,0);assert.equal(checkpoint.children[0].receipt.cleanup,true);
+  assert.equal(checkpoint.children[0].receipt.jobClosed,true);assert.equal(checkpoint.children[0].receipt.resumed,true);
+ }finally{
+  if(context)sealReleaseWriterCheckpoint(context);await writer?.release();await prepared?.dispose();
+  assert.equal(path.dirname(directory),os.tmpdir());assert(path.basename(directory).startsWith('roost-release-node-test-'));rmSync(directory,{recursive:true});
+ }
+});
+
+test('activity runtime selection rejects a data-provided executable selector before setup',async()=>{
+ await assert.rejects(prepareReleaseProcessScope({activityBrowser:'node'}),/release_child_ownership_unproven/);
+});
+
 test('Windows release checkout validates real commit, parent and tree inside owned Git Jobs',
  {skip:process.platform!=='win32',timeout:90000},async()=>{
  const directory=mkdtempSync(path.join(os.tmpdir(),'roost-release-checkout-test-'));

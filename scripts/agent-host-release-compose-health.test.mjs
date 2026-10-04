@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import { createHash } from 'node:crypto';
-import { composeHealthSettingsSchema, probeComposeHealth, createComposeHealthProbe }
+import { composeHealthSettingsSchema, probeComposeHealth, createComposeHealthProbe, probeComposeIngressBlocked, observeRestoredComposeRuntime }
   from './lib/agent-host-release-compose-health.mjs';
 
 const commit='a'.repeat(40),other='b'.repeat(40),metaName='sample-build-revision',cert=Buffer.from('fixture-certificate');
@@ -29,6 +29,63 @@ function fixture(overrides={}){
   };
   return {requests,responses,requestsClosed,request,probe:()=>probeComposeHealth({publicUrl:'https://app.example.test',expectedCommit:commit,health},{request})};
 }
+
+for(const status of [502,504])test(`owned ingress fence requires qualified proxy rejection ${status}`,async()=>{
+  const f=fixture({backend:{status}}),r=await probeComposeIngressBlocked({publicUrl:'https://app.example.test/',health},{request:f.request});
+  assert.equal(r.blocked,true);assert.equal(r.httpStatus,status);assert.equal(r.transportTimeout,false);
+  assert.deepEqual(f.requests.map(v=>v.url),['https://app.example.test/health']);
+  assert.deepEqual(f.responses,['backend']);assert.deepEqual(f.requestsClosed,['backend']);
+});
+for(const status of [200,401,403,500,503])test(`an application response ${status} does not prove ingress isolation`,async()=>{
+  await assert.rejects(probeComposeIngressBlocked({publicUrl:'https://app.example.test/',health},{request:fixture({backend:{status}}).request}),/ingress_unproven/);
+});
+test('certificate mismatch and redirects never qualify ingress isolation',async()=>{
+  for(const row of [{status:502,cert:Buffer.from('foreign')},{status:502,headers:{location:'https://foreign.example.test/'}}]){
+    await assert.rejects(probeComposeIngressBlocked({publicUrl:'https://app.example.test/',health},{request:fixture({backend:row}).request}),/ingress_unproven/);
+  }
+});
+test('connection error cannot masquerade as a bounded ingress timeout',async()=>{
+  await assert.rejects(probeComposeIngressBlocked({publicUrl:'https://app.example.test/',health},{request:fixture({backend:{requestEvent:'error'}}).request}),/ingress_unproven/);
+  const r=await probeComposeIngressBlocked({publicUrl:'https://app.example.test/',health},{request:fixture({backend:{requestEvent:'timeout'}}).request});
+  assert.equal(r.blocked,true);assert.equal(r.httpStatus,null);assert.equal(r.transportTimeout,true);
+});
+
+function restoration(overrides={}){
+  let clock=Date.parse('2026-01-01T12:00:00Z');const start=clock,calls=[];
+  const cadences=['maintenance','proactive'].map(name=>({name,behaviorDigest:'d'.repeat(64)}));
+  const input={commit,tree:other,since:new Date(start-1000).toISOString(),observationSeconds:10,cadences,operationId:'fixture'};
+  const dependencies={now:()=>clock,sleep:async ms=>{calls.push({sleep:ms});clock+=ms;},
+    probeHealth:async()=>{calls.push('health');return {healthy:true,versionVerified:true};},
+    readCadenceTicks:async()=>({status:'observed',cadenceEvidence:cadences.map(c=>({...c,behaviorVerified:true,completedTicks:1,
+      executionState:'executed',executionExpectationVerified:false,expectedExecutionState:null,summaryDigest:'e'.repeat(64),failureState:'none_recorded',
+      lastRunAt:new Date(start).toISOString(),observedAt:new Date(clock).toISOString()}))}),...overrides};
+  return {input,dependencies,calls,start,observe:()=>observeRestoredComposeRuntime(input,dependencies)};
+}
+test('restored service proof waits the whole window and preserves actual executed tick receipts',async()=>{
+  const f=restoration(),r=await f.observe();assert.equal(Date.parse(r.observedAt)-Date.parse(r.startedAt),10000);
+  assert.equal(f.calls.filter(c=>c==='health').length,5);assert.equal(r.cadenceEvidence.length,2);
+  assert(!JSON.stringify(r).includes('providerRequests'));assert.equal(r.cadenceEvidence[0].executionState,'executed');
+});
+test('healthy container and stale/missing tick alone cannot qualify restoration',async()=>{
+  for(const mutate of [v=>{v.status='pending';v.cadenceEvidence=[];},v=>{v.cadenceEvidence[0].lastRunAt='2025-01-01T00:00:00Z';},
+    v=>{v.cadenceEvidence[0].completedTicks=0;},v=>{delete v.cadenceEvidence[0].summaryDigest;},v=>{v.cadenceEvidence[0].failureState='recorded';},
+    v=>{v.cadenceEvidence[0].behaviorDigest='f'.repeat(64);},v=>{v.cadenceEvidence[1].name=v.cadenceEvidence[0].name;}]){
+    const f=restoration(),read=f.dependencies.readCadenceTicks;f.dependencies.readCadenceTicks=async()=>{const v=await read();mutate(v);return v;};
+    await assert.rejects(f.observe(),/restored_ticks_unproven/);
+  }
+});
+test('skipped ticks require separately verified matching execution expectations',async()=>{
+  for(const verified of [false,true]){
+    const f=restoration(),read=f.dependencies.readCadenceTicks;f.dependencies.readCadenceTicks=async()=>{const v=await read();
+      for(const c of v.cadenceEvidence){c.executionState='skipped';c.executionExpectationVerified=verified;c.expectedExecutionState=verified?'skipped':null;}return v;};
+    if(verified)assert.equal((await f.observe()).cadenceEvidence[0].executionState,'skipped');
+    else await assert.rejects(f.observe(),/restored_ticks_unproven/);
+  }
+});
+test('failed public version health aborts restoration observation immediately',async()=>{
+  const f=restoration({probeHealth:async()=>({healthy:true,versionVerified:false})});
+  await assert.rejects(f.observe(),/restored_health_unproven/);assert.deepEqual(f.calls,[]);
+});
 
 test('fixed TLS GET verifies separately served backend/frontend exact commit and required readiness, no bodies in evidence',async()=>{
   const f=fixture(),r=await f.probe();assert.equal(r.healthy,true);assert.equal(r.versionVerified,true);assert.match(r.healthDigest,/^[a-f0-9]{64}$/);

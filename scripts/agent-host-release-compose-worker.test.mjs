@@ -7,13 +7,38 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import fixtureModule from './fixtures/release-compose-contract.cjs';
 import contract from './lib/agent-host-release-contract.cjs';
-import { createInstalledComposeRelease, installedComposeReleaseSchema } from './lib/agent-host-release-compose-worker.mjs';
+import { createInstalledComposeRelease, installedComposeReleaseSchema, qualifyActivityRuntimeEvidence } from './lib/agent-host-release-compose-worker.mjs';
 import { composeConfigurationDigest } from './lib/agent-host-release-compose-state.mjs';
 import { composeControllerPolicyRecord, composeMountDigest, renderComposePhaseCommands } from './lib/agent-host-release-compose-controller.mjs';
 import { coolifyGitSetDeploymentId } from './lib/agent-host-release-coolify-git-set-gateway.mjs';
 
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const rendererFile = fileURLToPath(new URL('./lib/agent-host-release-compose-controller.mjs', import.meta.url));
+
+function activityBasis(){
+ const f=fixtureModule.fixture();f.s.releaseId=randomUUID();const proof=f.evidence(false);
+ const current={release:{id:f.s.releaseId},journal:[{operation:'observe',intent:{parameters:{mode:'candidate'}},outcome:{status:'succeeded',evidence:proof}},
+  {operation:'runtime_resume'}]};
+ return {f,current,evidence:structuredClone(proof.composeTargets[0])};
+}
+test('fresh queue evidence permits restored cadence state only with accepted immutable source and runtime pins',()=>{
+ const {f,current,evidence}=activityBasis();evidence.runtime.services.find(r=>r.role==='cadence').state='running';
+ const r=qualifyActivityRuntimeEvidence(f.s,current,evidence);assert.equal(r.commit,f.s.commit);assert.equal(r.tree,f.s.candidateTree);
+ assert.equal(r.services.find(r=>r.role==='cadence').state,'running');
+});
+for(const [name,mutate]of [
+ ['container replacement',v=>v.evidence.runtime.services[0].containerId=fixtureModule.hash('a')],
+ ['image replacement',v=>v.evidence.runtime.services[0].imageDigest=fixtureModule.image('a')],
+ ['mount replacement',v=>v.evidence.runtime.services[0].mountDigest=fixtureModule.hash('a')],
+ ['queue still building',v=>v.evidence.binding.queue.status='in_progress'],
+ ['changed configuration',v=>v.evidence.configuration.environmentDigest=fixtureModule.hash('a')],
+ ['wrong release',v=>v.current.release.id=randomUUID()],
+ ['missing accepted observation',v=>v.current.journal.shift()],
+ ['incomplete observation',v=>v.current.journal[0].outcome.evidence.observationSeconds=1],
+ ['non-post operation',v=>v.current.journal.at(-1).operation='deploy']
+])test(`post-resume identity qualification refuses ${name}`,()=>{
+ const v=activityBasis();mutate(v);assert.throws(()=>qualifyActivityRuntimeEvidence(v.f.s,v.current,v.evidence),/release_compose_installation_activity_/);
+});
 
 // These fixtures use actual independent files and directories. Only transports
 // and inspector observations are substituted; identity checks remain physical.

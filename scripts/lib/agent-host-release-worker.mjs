@@ -142,6 +142,9 @@ export async function runGovernedReleaseQueueStep({config,baseUrl,hostId,writerL
   // Credential readers and native launcher construction precede the checkpoint.
   // This dedicated process never claims or launches a model execution.
   const githubKey=await readReleaseCredential(settings.githubCredentialTarget),coolifyKey=await readReleaseCredential(settings.coolifyCredentialTarget);
+  const activitySeed=compose&&installedSettings.activity
+   ?await readReleaseCredential(installedSettings.activity.seedCredentialTarget):undefined;
+  if(compose&&Boolean(m.postObservation)!==Boolean(installedSettings.activity))throw Error('release_activity_installation_binding_changed');
   const registeredImages=set?[]:m.cleanup.ownedResourceIds.map(id=>gateway.ownedResource(m,{...s,releaseId:state.release.id},id))
    .filter(row=>['docker_image','ghcr_version'].includes(row.kind));
   if(registeredImages.length&&!settings.imageCleanup)throw Error('release_image_cleanup_not_installed');
@@ -167,14 +170,15 @@ export async function runGovernedReleaseQueueStep({config,baseUrl,hostId,writerL
    },dockerTransport:createFixedDockerImageCleanupTransport({sshHost:settings.resources.sshHost,sudo:false}),githubCredential:async()=>registryKey,
    registryProof:createReleaseRegistryProof({cacheDirectory:settings.imageCleanup.provenanceCacheDirectory})});
   }
-  prepared=await prepareReleaseProcessScope();
+  prepared=await prepareReleaseProcessScope({activityBrowser:compose&&Boolean(installedSettings.activity)});
   context=beginReleaseWriterCheckpoint({writerLock,state,client:settings.client});
   const github=createGithubReleaseAdapter({credential:async()=>githubKey});
   const result=await withReleaseProcessScope(prepared,context,()=>{
    let resources,coolify,assertClone;
    if(set){
-    const installed=(compose?createInstalledComposeRelease:createInstalledGitSetRelease)({settings:installedSettings,state,backup,github,coolifyCredential:coolifyKey},
-     {readReleaseState:()=>api(`/v1/agent-runtime/releases/${state.release.id}`)});
+    const installed=(compose?createInstalledComposeRelease:createInstalledGitSetRelease)({settings:installedSettings,state,backup,github,coolifyCredential:coolifyKey,activitySeed},
+     {readReleaseState:()=>api(`/v1/agent-runtime/releases/${state.release.id}`),
+      assertNativeClosed:()=>({nativeChildrenClosed:sealReleaseWriterCheckpoint(context).nativeProcessesAbsent===true})});
     ({resources,coolify,assertClone}=installed);
    }else{
     resources=createReleaseCleanupGateway({resources:gateway,coolify:settings.coolify,credential:async()=>coolifyKey,images});

@@ -129,8 +129,15 @@ Managed continuation `16ac99ca-c40d-456f-ace1-dffdd0401fdc` produced
 only the append-only regression log. Twelve source/test/config/lock seals remain
 unchanged. Its separate seven-test receipt and actual canonical build both passed
 in closed native Jobs; generated build outputs were removed. The older candidate's
-build remains historical evidence. Independent acceptance of the new commit is
-pending; an input measurement refused a private path before any model launch.
+build remains historical evidence. Independent read-only execution
+`41e75879-8765-4dac-bcf5-4c93b69d90a4` approved this exact candidate in decision
+`25632c42-648f-4e17-abe0-547203c4f53d`, binding material
+`95a98f930d679a4c7f2ecbc31f9371c60c766898cb26406ff1e471709eb21859`.
+The review consumed 131035/131072 input bytes, made no source changes and ended
+with root exit 0, zero active processes and a closed Windows Job. The normal
+review API reports `approved`; no basis revalidation was needed. An earlier
+input measurement refused two private paths before model launch; that unclaimed
+queue was cancelled before a narrowly sanitized replacement was measured/bound.
 
 A claimed pre-model refusal also exposed a recycled Windows PID. Reclaim now
 requires complete native identity and a strictly later creation time for the
@@ -138,3 +145,32 @@ different process. The normal terminal reconciliation retained its checkpoint;
 the official Worker reclaimed it without terminating the unrelated process.
 
 Worker is stopped; no application push, deployment or release grant exists.
+
+### Bounded activity proof after observation (source integration)
+
+The optional sealed Compose manifest now governs `smoke`, `fixture_cleanup`
+and `runtime_resume` before terminal cleanup. These source contracts and fixed
+installed transports are not deployed or application release evidence yet.
+The fixture owns exactly one synthetic user/session and one negative memory ID;
+it preserves business rows, sequences and the full schema. Ingress isolation
+requires the exact owned firewall rule, a negative public probe and a positive
+internal backend/frontend version/readiness probe before opening the write window.
+An actual browser checks empty and populated recent activity with provider/external
+actions disabled. Cleanup restores full baseline parity before restoring the
+original role setting, rule absence and existing cadence containers. Resume needs
+the complete public health window plus fresh actual loop receipts; a skipped tick
+requires a verified source/configuration expectation. Unknown results are read
+back before any retry. The new migration extends an operation CHECK only; it is
+not applied to production at this preparation checkpoint.
+
+The root reran the Compose/installed activity suite (538 passing tests), shared
+native-process/broker recovery regressions (23), legacy contract/Git-set checks
+(33), and the Python fixture/runtime controllers (18/34). `codex:check` passes;
+lint/typecheck/build passed during integration. Fixed read-only prerequisite
+reads confirm matching installed configuration, route, scheduler and entrypoint
+sources in the application and both cadence containers; they neither start a
+tick nor claim deployment/postrelease proof. The private package factory passes
+100 guards and returns buffers only. Production preparation still requires a
+fresh normal Coolify API credential, exact secret-reference provisioning, fresh
+maintenance/backup qualification and the separate owner exact-commit release
+grant. The expired credential has not been replaced and no release is started.

@@ -30,13 +30,20 @@ export function releaseChildStderrDiagnostic(executable,chunk){
 
 // Resolve/build before publishing a release checkpoint. These are fixed native
 // utilities, and cannot perform a repository or external release mutation.
-export async function prepareReleaseProcessScope(){
+export async function prepareReleaseProcessScope({activityBrowser=false}={}){
+ if(typeof activityBrowser!=='boolean')fail();
  if(process.platform!=='win32')fail();
  const executables={};
  for(const kind of ['git','ssh','docker']){
   const r=spawnSync('where.exe',[kind+'.exe'],{env:minimalReleaseEnvironment(),windowsHide:true,encoding:'utf8',timeout:5000,maxBuffer:32768});
   const executable=r.status===0?r.stdout.trim().split(/\r?\n/)[0]:null;
   if(!executable||!path.isAbsolute(executable))fail();executables[kind]=executable;
+ }
+ // The installed activity browser is a fixed source module running under this
+ // same Node runtime. No executable selector comes from a release packet.
+ if(activityBrowser){
+  if(!path.isAbsolute(process.execPath))fail();
+  executables.node=await realpath(process.execPath);
  }
  const parent=await realpath(os.tmpdir()),directories=[];
  const allocate=async()=>{const directory=await mkdtemp(path.join(parent,'roost-release-job-'));directories.push(directory);return directory;};

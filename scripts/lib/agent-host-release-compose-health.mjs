@@ -125,3 +125,62 @@ export function createComposeHealthProbe({publicUrl,health},dependencies={}){
     return probeComposeHealth({publicUrl:origin,expectedCommit:input.expectedCommit,health:settings},dependencies);
   };
 }
+
+/** An installed network fence requires a negative public observation and a
+ * separate positive internal health proof. HTTP errors from the app itself,
+ * certificate failures and malformed responses cannot qualify isolation. */
+export async function probeComposeIngressBlocked({publicUrl,health}, {request:requestHttps=https.request}={}){
+  const settings=composeHealthSettingsSchema.parse(health),origin=rootUrl(publicUrl);
+  if(typeof requestHttps!=='function')fail('transport_invalid');
+  return new Promise((resolve,reject)=>{
+    let done=false,request,deadline;
+    const finish=(status,timeout=false)=>{
+      if(done)return;done=true;clearTimeout(deadline);
+      try{request?.destroy();}catch{}
+      if(!(timeout&&status===null||!timeout&&[502,504].includes(status))){reject(Object.assign(Error('release_compose_health_ingress_unproven'),{retryable:false}));return;}
+      resolve({blocked:true,observedAt:new Date().toISOString(),httpStatus:status,transportTimeout:timeout});
+    };
+    deadline=setTimeout(()=>finish(null,true),10000);
+    try{
+      request=requestHttps(new URL(origin+'/health'),{method:'GET',agent:false,timeout:10000,minVersion:'TLSv1.2',rejectUnauthorized:true,maxHeaderSize:8192,
+        headers:{Accept:'application/json','Cache-Control':'no-store','Accept-Encoding':'identity'}},response=>{
+        try{
+          if(settings.certificateSha256){const raw=response.socket?.getPeerCertificate()?.raw;
+            if(!Buffer.isBuffer(raw)||!timingSafeEqual(createHash('sha256').update(raw).digest(),Buffer.from(settings.certificateSha256,'hex'))){finish(undefined);return;}}
+          finish(response.headers.location?undefined:response.statusCode);
+        }catch{finish(undefined);}finally{try{response.destroy();}catch{}}
+      });
+      request.on('error',()=>finish(undefined));request.on('timeout',()=>finish(null,true));request.end();
+    }catch{finish(undefined);}
+  });
+}
+
+/** Observe restored services from actual public version checks and fresh loop
+ * receipts. A skipped tick needs a separately verified execution expectation. */
+export async function observeRestoredComposeRuntime({commit,tree,since,observationSeconds,cadences,operationId},
+  {probeHealth,readCadenceTicks,now=Date.now,sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms))}){
+  sha.parse(commit);sha.parse(tree);
+  if(!Number.isFinite(Date.parse(since))||!Number.isInteger(observationSeconds)||observationSeconds<1||observationSeconds>300
+    ||!Array.isArray(cadences)||cadences.length!==2||new Set(cadences.map(c=>c.name)).size!==2
+    ||typeof probeHealth!=='function'||typeof readCadenceTicks!=='function')fail('restored_scope_invalid');
+  const startedAt=new Date(now()).toISOString();
+  if(Date.parse(startedAt)<Date.parse(since))fail('restored_time_invalid');
+  for(;;){
+    const h=await probeHealth({expectedCommit:commit});
+    if(h?.healthy!==true||h.versionVerified!==true)fail('restored_health_unproven');
+    if(now()-Date.parse(startedAt)>=observationSeconds*1000)break;
+    await sleep(Math.min(3000,observationSeconds*1000-(now()-Date.parse(startedAt))));
+  }
+  const ticks=await readCadenceTicks({operationId,since,commit,tree});
+  if(ticks?.status!=='observed'||ticks.cadenceEvidence?.length!==2
+    ||new Set(ticks.cadenceEvidence.map(c=>c.name)).size!==2
+    ||ticks.cadenceEvidence.some(c=>!cadences.some(e=>e.name===c.name&&e.behaviorDigest===c.behaviorDigest)
+      ||c.behaviorVerified!==true||!Number.isInteger(c.completedTicks)||c.completedTicks<1||c.failureState==='recorded'
+      ||!/^[a-f0-9]{64}$/.test(c.summaryDigest??'')||!Number.isFinite(Date.parse(c.lastRunAt))||!Number.isFinite(Date.parse(c.observedAt))
+      ||!['executed','skipped'].includes(c.executionState)
+      ||c.executionState==='skipped'&&(c.executionExpectationVerified!==true||c.expectedExecutionState!=='skipped')
+      ||Date.parse(c.lastRunAt)<Date.parse(since)||Date.parse(c.lastRunAt)>Date.parse(c.observedAt)
+      ||Date.parse(c.observedAt)<Date.parse(startedAt)||Date.parse(c.observedAt)>now()))fail('restored_ticks_unproven');
+  return {backendCommit:commit,frontendCommit:commit,healthy:true,startedAt,observedAt:new Date(now()).toISOString(),
+    cadenceEvidence:ticks.cadenceEvidence.map(c=>Object.fromEntries(['name','behaviorDigest','executionState','behaviorVerified','summaryDigest','completedTicks','observedAt'].map(k=>[k,c[k]])))};
+}
