@@ -13,6 +13,9 @@ const commandSchema = z.discriminatedUnion("kind", [
     expectedCommand: z.string().min(1).max(1000), acceptanceTest: z.string().min(1).max(2000) }).strict(),
   z.object({ kind: z.literal("node_test"), relativePath: z.string().min(1).max(512),
     acceptanceTest: z.string().min(1).max(2000) }).strict(),
+  z.object({ kind: z.literal("node_typescript_test"), relativePath: z.string().min(1).max(512),
+    sourcePaths: z.array(z.string().min(1).max(512)).min(1).max(8),
+    acceptanceTest: z.string().min(1).max(2000) }).strict(),
   z.object({ kind: z.literal("workspace_vitest"), workspace: z.string().min(1).max(200),
     packageName: z.string().regex(/^(?:@[a-z0-9._-]+\/)?[a-z0-9][a-z0-9._-]{0,79}$/),
     version: z.string().regex(/^[0-9]+\.[0-9]+\.[0-9]+$/), relativePath: z.string().min(1).max(300),
@@ -121,6 +124,81 @@ function prepareWorkspaceVitest(root, command, writePaths) {
   const state = { repositoryPath: root, writePaths }; workspaceTestFile(state, command, false);
   return { command, directory, workspaceIdentity, installedRoot, cli, pinned, configurationNames, configurations };
 }
+function typescriptFile(root, relative, required = true) {
+  nativeRelative(relative);
+  const filename = path.join(root, relative);
+  if (!inside(root, filename)) fail();
+  // A missing exact test is allowed only before launch, in an existing physical
+  // directory. No newly generated config, alternate executable or glob is used.
+  physicalIdentity(path.dirname(filename));
+  if (!existsSync(filename)) { if (required) fail(); return; }
+  const bytes = fileBytes(filename, 128 * 1024), text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  if (!text.trim() || text.includes("\0")) fail();
+  return { filename, identity: physicalIdentity(filename, false), digest: h(bytes) };
+}
+function optionalPackage(root, directory) {
+  const filename = path.join(directory, "package.json");
+  if (!inside(root, filename)) fail();
+  return existsSync(filename) ? { filename, identity: physicalIdentity(filename, false), digest: h(fileBytes(filename, 128 * 1024)) }
+    : { filename, absent: true };
+}
+function prepareNodeTypescript(root, command, writePaths) {
+  nativeRelative(command.relativePath);
+  if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*\.test\.ts$/.test(command.relativePath)
+      || !writePaths.includes(command.relativePath)
+      || command.acceptanceTest !== `node --experimental-strip-types --test -- ${command.relativePath}`
+      || new Set(command.sourcePaths).size !== command.sourcePaths.length) fail();
+  const sources = command.sourcePaths.map(relative => {
+    nativeRelative(relative);
+    if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*\.ts$/.test(relative) || /\.(?:test|spec)\.ts$/.test(relative)) fail();
+    const pin = trackedUnchanged(root, relative);
+    typescriptFile(root, relative);
+    return { ...pin, relative, writable: writePaths.includes(relative) };
+  });
+  typescriptFile(root, command.relativePath, false);
+  const directories = new Set([root]);
+  for (const relative of [...command.sourcePaths, command.relativePath]) {
+    for (let directory = path.dirname(path.join(root, relative)); directory !== root; directory = path.dirname(directory)) {
+      if (!inside(root, directory)) fail();
+      directories.add(directory);
+    }
+  }
+  return { command, sources, packages: [...directories].map(directory => optionalPackage(root, directory)) };
+}
+function assertPin(pin) {
+  if (pin.absent) { if (existsSync(pin.filename)) fail(); }
+  else if (physicalIdentity(pin.filename, false) !== pin.identity || h(fileBytes(pin.filename, 4 * 1024 * 1024)) !== pin.digest) fail();
+}
+function assertTypescriptScope(p) {
+  const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => /^(?:SYSTEMROOT|WINDIR|PATH|PATHEXT|COMSPEC|TEMP|TMP)$/i.test(key)));
+  Object.assign(env, { GIT_OPTIONAL_LOCKS: "0", GIT_NO_REPLACE_OBJECTS: "1", GIT_CONFIG_NOSYSTEM: "1",
+    GIT_CONFIG_GLOBAL: process.platform === "win32" ? "NUL" : "/dev/null", GIT_TERMINAL_PROMPT: "0" });
+  const status = execFileSync("git", ["--no-replace-objects", "--literal-pathspecs", "-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false",
+    "status", "--porcelain=v1", "-z", "--no-renames", "--untracked-files=all"],
+    { cwd: p.repositoryPath, env, shell: false, windowsHide: true, timeout: 10000, maxBuffer: 65536, encoding: "utf8" });
+  const rows = status.split("\0").filter(Boolean);
+  if (rows.length > 128 || rows.some(row => row.length < 4 || row[2] !== " " || !p.writePaths.includes(nativeRelative(row.slice(3))))) fail();
+}
+function typescriptCandidate(p, item) {
+  assertProof(p.proof); assertTypescriptScope(p);
+  return [...item.sources.map(source => typescriptFile(p.repositoryPath, source.relative)), typescriptFile(p.repositoryPath, item.command.relativePath)];
+}
+function nodeTapCounts(chunks, exitCode, relativePath) {
+  const output = Buffer.concat(chunks).toString("utf8"), counts = {};
+  // Node22 reports an empty test file as a passing file-wrapper subtest. That
+  // is process/load evidence, not a registered acceptance assertion.
+  const subtests = [...output.matchAll(/^# Subtest: (.+)\r?$/gm)].map(match => match[1].trim().replace(/\\+/g, "/"));
+  if (!subtests.length || subtests.some(name => name === relativePath || name.endsWith("/" + relativePath))) fail();
+  for (const key of ["tests", "pass", "fail", "cancelled", "skipped", "todo"]) {
+    const values = [...output.matchAll(new RegExp(`^# ${key} (\\d+)\\r?$`, "gm"))];
+    if (values.length !== 1) fail();
+    counts[key] = Number(values[0][1]);
+  }
+  if (!Object.values(counts).every(value => Number.isSafeInteger(value) && value >= 0) || counts.tests < 1
+      || counts.pass + counts.fail !== counts.tests || counts.cancelled || counts.skipped || counts.todo
+      || exitCode === 0 && (counts.pass !== counts.tests || counts.fail !== 0)) fail();
+  return { totalTests: counts.tests, passedTests: counts.pass, failedTests: counts.fail, pendingTests: 0 };
+}
 export function prepareCodingTests({ manifestPath, repositoryPath, originUrl, acceptanceTests, writePaths = [] }) {
   try {
     if (!path.isAbsolute(manifestPath) || inside(repositoryPath, manifestPath)) fail();
@@ -129,32 +207,42 @@ export function prepareCodingTests({ manifestPath, repositoryPath, originUrl, ac
     if (manifest.commands.length !== acceptanceTests.length
         || new Set(manifest.commands.map(x => x.acceptanceTest)).size !== manifest.commands.length
         || acceptanceTests.some(test => !manifest.commands.some(x => x.acceptanceTest === test))) fail();
-    const packagePath = path.join(repositoryPath, "package.json"), packageBytes = fileBytes(packagePath, 128 * 1024);
-    const pkg = JSON.parse(packageBytes);
+    const typescriptCommands = manifest.commands.filter(command => command.kind === "node_typescript_test");
+    const packagePath = path.join(repositoryPath, "package.json");
+    const packageBytes = manifest.commands.every(command => command.kind === "node_typescript_test") && !existsSync(packagePath)
+      ? undefined : fileBytes(packagePath, 128 * 1024);
+    const pkg = packageBytes ? JSON.parse(packageBytes) : {};
     if (manifest.commands.some(x => x.kind === "npm_script" && pkg.scripts?.[x.script] !== x.expectedCommand)) fail();
     for (const command of manifest.commands) if (command.kind === "node_test") nodeTestFile(repositoryPath, command.relativePath);
     const workspaceCommands = manifest.commands.filter(command => command.kind === "workspace_vitest");
-    if (workspaceCommands.length) { physicalIdentity(repositoryPath); trackedUnchanged(repositoryPath, "package.json");
+    if (workspaceCommands.length || typescriptCommands.length) { physicalIdentity(repositoryPath);
       if (!Array.isArray(writePaths) || new Set(writePaths).size !== writePaths.length) fail(); for (const relative of writePaths) nativeRelative(relative); }
+    if (workspaceCommands.length) trackedUnchanged(repositoryPath, "package.json");
     const workspaces = workspaceCommands.map(command => prepareWorkspaceVitest(repositoryPath, command, writePaths));
-    const npm = manifest.commands.some(command => command.kind !== "workspace_vitest")
+    const typescript = typescriptCommands.map(command => prepareNodeTypescript(repositoryPath, command, writePaths));
+    if (typescript.length && (!/^v22\./.test(process.version) || !process.allowedNodeEnvironmentFlags.has("--experimental-strip-types"))) fail();
+    const npm = manifest.commands.some(command => ["npm_script", "node_test"].includes(command.kind))
       ? path.join(path.dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js") : undefined;
     const npmIdentity = npm ? physicalIdentity(npm, false) : undefined, npmDigest = npm ? h(fileBytes(npm, 4 * 1024 * 1024)) : undefined;
     const proof = Object.freeze({});
-    proofs.set(proof, { manifestPath, manifestDigest: h(bytes), packagePath, packageDigest: h(packageBytes),
+    proofs.set(proof, { manifestPath, manifestDigest: h(bytes), packagePath, packageAbsent: !packageBytes, packageDigest: packageBytes ? h(packageBytes) : nativeDigest(null),
       repositoryPath, commands: manifest.commands, npm, npmIdentity, npmDigest, runs: 0 });
-    const saved = proofs.get(proof); Object.assign(saved, { proof, writePaths: [...writePaths], workspaces,
-      ...(workspaceCommands.length ? { nodeIdentity: dependencyIdentity(process.execPath), nodeDigest: h(dependencyBytes(process.execPath, 128 * 1024 * 1024)) } : {}) });
+    const saved = proofs.get(proof); Object.assign(saved, { proof, writePaths: [...writePaths], workspaces, typescript,
+      ...(typescript.length ? { repositoryIdentity: physicalIdentity(repositoryPath) } : {}),
+      ...(workspaceCommands.length || typescript.length ? { nodeExecutable: process.execPath, nodeVersion: process.version,
+        nodeIdentity: dependencyIdentity(process.execPath), nodeDigest: h(dependencyBytes(process.execPath, 128 * 1024 * 1024)) } : {}) });
     return proof;
   } catch { fail(); }
 }
 function assertProof(proof) {
   const p = proofs.get(proof);
   if (!p || p.runs >= 1 || h(fileBytes(p.manifestPath, 16384)) !== p.manifestDigest
-      || h(fileBytes(p.packagePath, 128 * 1024)) !== p.packageDigest
+      || p.repositoryIdentity && physicalIdentity(p.repositoryPath) !== p.repositoryIdentity
+      || (p.packageAbsent ? existsSync(p.packagePath) : h(fileBytes(p.packagePath, 128 * 1024)) !== p.packageDigest)
       || p.npm && (physicalIdentity(p.npm, false) !== p.npmIdentity || h(fileBytes(p.npm, 4 * 1024 * 1024)) !== p.npmDigest)) fail();
-  if (p.workspaces.length) {
-    if (dependencyIdentity(process.execPath) !== p.nodeIdentity || h(dependencyBytes(process.execPath, 128 * 1024 * 1024)) !== p.nodeDigest) fail();
+  if (p.workspaces.length || p.typescript.length) {
+    if (process.execPath !== p.nodeExecutable || process.version !== p.nodeVersion
+        || dependencyIdentity(p.nodeExecutable) !== p.nodeIdentity || h(dependencyBytes(p.nodeExecutable, 128 * 1024 * 1024)) !== p.nodeDigest) fail();
     for (const workspace of p.workspaces) {
       if (physicalIdentity(workspace.directory) !== workspace.workspaceIdentity) fail();
       if (realpathSync.native(path.join(workspace.directory, "node_modules", "vitest")) !== workspace.installedRoot
@@ -162,6 +250,10 @@ function assertProof(proof) {
       for (const pin of workspace.pinned) if ((pin.dependency ? dependencyIdentity(pin.filename) : physicalIdentity(pin.filename, false)) !== pin.identity
           || h(pin.dependency ? dependencyBytes(pin.filename, 4 * 1024 * 1024) : fileBytes(pin.filename, 4 * 1024 * 1024)) !== pin.digest) fail();
     }
+  }
+  for (const item of p.typescript) {
+    for (const pin of item.packages) assertPin(pin);
+    for (const pin of item.sources) if (!pin.writable) assertPin(pin);
   }
   return p;
 }
@@ -173,23 +265,28 @@ async function runOne(p, command, remainingMs, assertAuthority) {
     Object.assign(env, { npm_config_ignore_scripts: "true", npm_config_audit: "false", npm_config_fund: "false",
       npm_config_update_notifier: "false", GIT_TERMINAL_PROMPT: "0" });
     let bytes = 0; const output = createHash("sha256"), reporterChunks = [];
+    const typescript = command.kind === "node_typescript_test" ? p.typescript.find(item => item.command === command) : undefined;
+    const candidate = typescript ? typescriptCandidate(p, typescript) : undefined;
     const receipt = await temporaryWindowsJobLauncher(async artifact => {
       if (command.kind === "node_test") nodeTestFile(p.repositoryPath, command.relativePath);
       const workspace = command.kind === "workspace_vitest" ? p.workspaces.find(item => item.command === command) : undefined;
       if (workspace) { assertProof(p.proof); workspaceTestFile(p, command); }
+      if (typescript) { assertProof(p.proof); assertTypescriptScope(p); for (const pin of candidate) assertPin(pin); }
       const handle = await startWindowsJob(artifact, { executable: process.execPath,
         argv: command.kind === "npm_script" ? [p.npm, "--ignore-scripts", "run", command.script]
           : workspace ? [workspace.cli, "run", command.relativePath, "--maxWorkers=1", "--fileParallelism=false", "--pool=forks", "--passWithNoTests=false", "--reporter=json"]
-          : ["--test", "--", command.relativePath], cwd: workspace?.directory ?? p.repositoryPath,
+          : [ ...(typescript ? ["--experimental-strip-types"] : []), "--test", "--", command.relativePath], cwd: workspace?.directory ?? p.repositoryPath,
         environment: env, input: "", attempt: randomUUID(), durationMs: Math.max(1, Math.min(remainingMs(), 120000)),
         onData: (channel, chunk) => { bytes += chunk.length; if (bytes > 131072) throw Error("output_limit"); output.update(chunk);
-          if (workspace && channel === "stdout") reporterChunks.push(chunk); assertAuthority(); } });
+          if ((workspace || typescript) && channel === "stdout") reporterChunks.push(chunk); assertAuthority(); } });
       return handle.completion;
     });
     if (!isWindowsJobCleanupReceipt(receipt) || !receipt.cleanup || !receipt.jobClosed || receipt.activeProcesses !== 0
         || receipt.terminationReason !== "root_exit" || !Number.isInteger(receipt.rootExit)) fail();
     assertAuthority();
+    if (typescript) { assertProof(p.proof); assertTypescriptScope(p); for (const pin of candidate) assertPin(pin); }
     let testCounts;
+    if (typescript) testCounts = nodeTapCounts(reporterChunks, receipt.rootExit, command.relativePath);
     if (command.kind === "workspace_vitest") {
       let report; try { report = JSON.parse(Buffer.concat(reporterChunks).toString("utf8")); } catch { fail(); }
       const counts = [report.numTotalTests, report.numPassedTests, report.numFailedTests, report.numPendingTests];
@@ -200,7 +297,10 @@ async function runOne(p, command, remainingMs, assertAuthority) {
     }
     return { kind: command.kind, ...(command.kind === "npm_script" ? { script: command.script } : { relativePath: command.relativePath }),
       acceptanceTest: command.acceptanceTest, exitCode: receipt.rootExit,
-      outputDigest: output.digest("hex"), outputBytes: bytes, jobDigest: nativeDigest(receipt), ...(testCounts ? { testCounts } : {}) };
+      outputDigest: output.digest("hex"), outputBytes: bytes, jobDigest: nativeDigest(receipt), ...(testCounts ? { testCounts } : {}),
+      ...(typescript ? { runtimeVersion: p.nodeVersion, runtimeDigest: p.nodeDigest,
+        sourceDigests: typescript.sources.map((source, index) => ({ relativePath: source.relative, digest: candidate[index].digest })),
+        testDigest: candidate.at(-1).digest } : {}) };
   } catch { fail(); }
 }
 export async function runCodingTests(proof, { phase, workspaceSeal, remainingMs, assertAuthority }) {

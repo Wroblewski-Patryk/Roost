@@ -78,3 +78,15 @@ Standalone Basic credentials require an encoded `user:password` pair; ordinary
 Basic documentation titles retain their meaning. Authentication fields, known
 secrets, split content and encoded credentials remain protected. Verify both
 benign catalogue reads and credential rejection when changing this classifier.
+
+Task interviews expose application-owned assumptions before shared records,
+retaining the workspace/application/archive filters and 100-record limit.
+Truncation remains explicit; native revision references are never invented.
+
+For bounded pure TypeScript acceptance tests, the installation test manifest
+may select `node_typescript_test`: an exact authorized `.test.ts` path, tracked
+source paths, and fixed Node 22 strip-types/test arguments. Node, manifest,
+package configuration and candidate files are pinned before and after the run.
+The Windows Job must close with no remaining processes. Nonempty TAP assertions
+must pass; empty, skipped, cancelled or pending tests cannot qualify a candidate.
+This configuration does not authorize a write or replace independent review.

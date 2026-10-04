@@ -7,6 +7,7 @@ import { requireRuntimeContent } from "./runtime-redaction-policy";
 import { admitCapability,recordCapabilityUse } from "./task-capability-admission";
 import { interviewPublish, interviewRespond } from "./task-interview-contract";
 import { interviewDecisionAuthority,authorityState,mandateView } from "../decisions/decision-authority";
+import { taskInterviewSourceCatalogQuery } from "./task-interview-source-catalog";
 type Db=Prisma.TransactionClient;
 const wire=(r:any)=>Object.fromEntries(Object.entries(r).filter(([k])=>k!=="request_hash").map(([k,v])=>[k.replace(/_([a-z])/g,(_,c)=>c.toUpperCase()),v]));
 async function state(db:Db,w:string,t:string,actor:ReviewActor){
@@ -26,7 +27,7 @@ export async function interviewView(db:Db,w:string,t:string,actor:ReviewActor,ca
  const s=await state(db,w,t,actor);if("error" in s)return {error:s.error!};
  const catalog=await mandateView(db,w,actor);
  const appId=s.source.context?.application?.id;
- const sources=appId?await db.$queryRaw<any[]>`SELECT task_interview_record(id) AS ref FROM company_records WHERE workspace_id=${w}::uuid AND (application_id IS NULL OR application_id=${appId}::uuid) AND status<>'archived' ORDER BY id LIMIT 101`:[];
+ const sources=appId?await db.$queryRaw<any[]>(taskInterviewSourceCatalogQuery(w,appId)):[];
  const owners=await db.workspace.findMany({where:{id:w},select:{ownerUserId:true}});
  const selected=s.cases.find(c=>c.id===caseId)??s.cases.find(c=>!c.superseded&&c.status!=="accepted")??s.cases.find(c=>!c.superseded);
  const history=selected?await db.$queryRaw<any[]>`SELECT * FROM task_interview_entries WHERE case_id=${selected.id}::uuid ORDER BY version DESC LIMIT 51`:[];
