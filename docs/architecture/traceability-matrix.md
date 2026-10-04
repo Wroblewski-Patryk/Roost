@@ -1016,7 +1016,13 @@ Git/process/container receipts and closed Windows Jobs. Actual model inputs
 were 121,283 and 126,373 bytes within the 131,072-byte cap. The primary owner
 accepted bounded baseline `9321633f-fafa-4fb3-9265-cb418c20a062`; it conveys no
 first-write or release authority. Roost `2678d3d7` exact build/health passed.
-First-write consent, coding/review and native console proof remain outstanding.
+Separate first-write consent `33ba7f20` is accepted. Coder `b359092f` exhausted
+eight tool turns without edits or tests; fixed verification refused the missing
+test. Genuine signed terminal review and closed Job plus exact current unchanged
+footprint qualified native recovery: only lease/Writer fences were released,
+with the failed review and consumed attempt retained. Root verified 29 native
+Windows recovery tests; independent compatibility checks pass 71/71, zero skips.
+Coding/review and native console proof remain outstanding.
 Fixed coding/test suites pass 20 tests with three explicit fixture/privilege
 skips. An independent root native run of the sealed React 18.3.1/ReactDOM
 18.3.1/TypeScript 5.9.3 toolkit passes both actual empty/populated component

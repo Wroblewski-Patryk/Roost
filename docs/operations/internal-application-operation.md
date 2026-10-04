@@ -112,3 +112,13 @@ counts and a canonical digest. Required source bodies and procedure/authority
 records remain intact. Secret checks and freshness cover the complete native
 response, including omitted index rows. A size measurement issues no launch
 proof. Reconcile any earlier pre-model failure and native lock before retrying.
+
+A coding attempt that closes without edits may still fail fixed verification
+because its required candidate test is absent. `coding_tests_unproven` grants
+no acceptance or retry. For this exact refused class, native reconciliation
+requires signed Ready/resume/review/closed Job evidence, installation PASS,
+zero changes/violations and an exact current unchanged repository footprint.
+Provide the canonical root and expected HEAD/branch/origin. Every artifact
+deletion barrier repeats the footprint and signed-chain checks. Explicit scoped
+operator authority releases only lease/Writer fences; the failed result, review
+and consumed attempt stay retained. Any continuation needs normal new admission.

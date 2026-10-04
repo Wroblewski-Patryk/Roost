@@ -174,14 +174,16 @@ consent explicitly required by `product/requirements.md` remain binding.
 
 **In progress (2026-10-04), not met.** Two independent managed native audits
 of the owner's second application completed with unchanged repository/process/
-container state. Its primary-owner implementation baseline is accepted;
-first-write consent, coding/review and native console proof remain pending.
-Shared roles/base procedures and own context/extensions are reused. Bounded
-source provenance, takeover guards and portfolio navigation pass focused/native
-checks. Roost `2678d3d7` is deployed with exact build/health proof. A sealed
+container state. Its baseline and separate first-write consent are accepted.
+The initial eight-turn coder closed without edits; fixed verification refused
+the absent test. Native unchanged-state recovery released only lease/Writer,
+preserving the refusal and consumed attempt. A new bounded continuation is
+prepared; coding/review and console proof remain pending.
+Shared procedures and own context are reused. Provenance, takeover guards and
+portfolio navigation pass focused/native checks. Roost `2678d3d7` has deployed
+build/health proof. A sealed
 React/TypeScript rendered-test adapter passes real Windows Job verification;
-it grants no application write authority. Oversized pre-model refusal and
-normal lock recovery remain recorded.
+it grants no write authority. Earlier refusals and lock recovery remain recorded.
 Gate 5 is not complete. See
 [operation controls](operations/internal-application-operation.md).
 

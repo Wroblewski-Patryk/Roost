@@ -4,7 +4,7 @@ import path from "node:path";
 import { randomUUID, createHmac, timingSafeEqual } from "node:crypto";
 import { existsSync, readFileSync, openSync, writeFileSync, fsyncSync, closeSync, renameSync, unlinkSync, rmdirSync } from "node:fs";
 import { nativeArtifactSnapshot, readDurableNativeReview } from "./agent-host-native-review.mjs";
-import { nativeDigest, physicalIdentity, nativeFootprintPolicy } from "./agent-host-native-footprint.mjs";
+import { nativeDigest, physicalIdentity, nativeFootprintPolicy, captureNativeFootprint } from "./agent-host-native-footprint.mjs";
 import { observeWindowsProcessIdentity, currentNativeProcessIdentity } from "./agent-host-process-identity.mjs";
 import { writerLockFilename, recoveryLockFilename } from "./agent-host-writer-lock.mjs";
 import { bridgeRecoveryIdentity, legacyInputIdentityVersion } from "./agent-host-recovery-identity.mjs";
@@ -41,7 +41,38 @@ function journal(directory, key, payload) {
   const fd = openSync(pending, "wx", 0o600); try { writeFileSync(fd, data); fsyncSync(fd); } finally { closeSync(fd); }
   renameSync(pending, file); if (!readFileSync(file).equals(data)) fail("native_recovery_journal_unproven");
 }
-function qualify(directory, fixture) {
+// This exception releases only the retained fence of a refused, unchanged
+// coding attempt. It neither accepts its result nor restores dispatch authority.
+function refusedCodingWorkspace(p, workspace, directory) {
+  const b = p.binding, pub = p.public;
+  if (p.stage !== "final" || b.fixture || p.verification?.status !== "REFUSED" || p.verification.reason !== "coding_tests_unproven"
+      || pub?.verdict !== "verification_blocked" || pub.verification !== "REFUSED" || pub.installation !== "PASS"
+      || p.installation?.status !== "PASS" || !hash.test(p.installation.manifestDigest ?? "")
+      || !Array.isArray(p.privateChanges) || p.privateChanges.length || !Array.isArray(pub.changedPathIds) || pub.changedPathIds.length
+      || !Array.isArray(pub.violations) || pub.violations.length || pub.scopeReviewRequired !== false || pub.refusalCode !== null
+      || pub.categoryCounts?.content !== 0 || pub.categoryCounts?.protected !== 0 || pub.releaseAllowed !== false
+      || pub.bindingDigest !== nativeDigest(b) || b.preFootprintDigest !== p.postFootprintDigest
+      || pub.preFootprintDigest !== b.preFootprintDigest || pub.postFootprintDigest !== p.postFootprintDigest
+      || p.job?.rootExit !== 0 || p.job.terminationReason !== "root_exit" || p.job.version !== "roost-windows-job-v2") fail("native_recovery_review_not_eligible");
+  if (!p.readyResume || !p.resume) fail("native_recovery_resume_chain_missing");
+  const ready = readFixtureEvidence(directory, "fixture-ready.json"), resume = readFixtureEvidence(directory, "resume-authorized.json");
+  const r = ready.payload, s = resume.payload;
+  if (ready.identity !== p.readyResume.identity || ready.digest !== p.readyResume.digest
+      || resume.identity !== p.resume.identity || resume.digest !== p.resume.digest || p.job.resumeReceipt !== resume.digest
+      || r.version !== "roost-native-ready-origin-v1" || s.version !== "roost-native-resume-v1"
+      || r.bindingDigest !== nativeDigest(b) || s.bindingDigest !== nativeDigest(b) || s.readyDigest !== ready.digest
+      || !hash.test(r.authorityDigest ?? "") || s.authorityDigest !== r.authorityDigest
+      || r.executionRestorable !== false || s.executionRestorable !== false || nativeDigest(r.runtime) !== nativeDigest(s.runtime)
+      || !Number.isFinite(Date.parse(r.at)) || !Number.isFinite(Date.parse(s.at)) || Date.parse(s.at) < Date.parse(r.at)
+      || !Number.isFinite(Date.parse(r.runtime?.deadline)) || Date.parse(s.at) >= Date.parse(r.runtime.deadline)
+      || r.runtime?.executable?.digest !== p.job.executableDigest || r.runtime?.launcher?.digest !== p.job.launcherSha256
+      || ["job", "rootPid", "rootCreationTime", "launcherPid", "launcherCreationTime", "executableDigest", "launcherSha256", "sourceSha256"].some(k => s.assignment?.[k] !== p.job[k])) fail("native_recovery_resume_chain_missing");
+  if (!workspace?.root || !workspace.expected || typeof workspace.expected.head !== "string"
+      || typeof workspace.expected.branch !== "string" || typeof workspace.expected.origin !== "string") fail("native_recovery_workspace_evidence_missing");
+  const first = captureNativeFootprint(workspace.root, workspace.expected), second = captureNativeFootprint(workspace.root, workspace.expected);
+  if (first.rootIdentity !== b.rootIdentity || first.digest !== p.postFootprintDigest || second.digest !== first.digest) fail("native_recovery_workspace_changed");
+}
+function qualify(directory, fixture, workspace) {
   const review = readDurableNativeReview(directory), p = review.payload, state = path.dirname(directory), stateIdentity = physicalIdentity(state), b = p.binding;
   if (p.policy !== nativeFootprintPolicy || !["final", "cleaned"].includes(p.stage)) fail("native_recovery_terminal_evidence_missing");
   if (!b || !hash.test(b.rootIdentity) || !hash.test(b.ready) || !hash.test(b.preFootprintDigest) || !hash.test(p.postFootprintDigest ?? "")) fail("native_recovery_root_ready_chain_missing");
@@ -58,7 +89,9 @@ function qualify(directory, fixture) {
       || job.jobClosed !== true || job.assignedBeforeResume !== true || !(job.resumed === true || b.fixture && p.readyResume && job.version === "roost-windows-job-v2" && job.resumed === false) || job.killOnClose !== true || job.breakaway !== false
       || !hash.test(job.executableDigest) || !hash.test(job.launcherSha256) || !hash.test(job.sourceSha256)
       || nativeDigest(job) !== p.public?.jobDigest) fail("native_recovery_job_chain_missing");
-  if (!["verified_candidate", "acceptance_failed", "process_failed"].includes(p.public.verdict) || p.public.violations.length
+  const refusedCoding = p.public?.verdict === "verification_blocked" && p.verification?.status === "REFUSED";
+  if (refusedCoding) refusedCodingWorkspace(p, workspace, directory);
+  else if (!["verified_candidate", "acceptance_failed", "process_failed"].includes(p.public?.verdict) || p.public.violations.length
       || !["PASS", "FAIL"].includes(p.verification?.status) || p.installation?.status !== "PASS") fail("native_recovery_review_not_eligible");
   const key = readFileSync(path.join(directory, "integrity.key")), previous = readJournal(directory, key);
   if (previous && (previous.reviewDigest !== review.digest || !["prepared", "fixture_remove_intent", "fixture_removed_entry", "fixture_removed", "lease_remove_intent", "lease_removed", "writer_remove_intent", "writer_removed", "complete"].includes(previous.phase))) fail("native_recovery_journal_invalid");
@@ -129,8 +162,8 @@ function verifyFixtureRecovery(q, fixture) {
     assertB26Remaining(fixture.root, f.plan, f.removed, f.pending);
   }
 }
-export function qualifyNativeReconciliation(directory, fixture) {
-  try { const q = qualify(directory, fixture); return { eligible: !q.complete, completed: q.complete, missingEvidence: [], reviewDigest: q.review.digest }; }
+export function qualifyNativeReconciliation(directory, fixture, workspace) {
+  try { const q = qualify(directory, fixture, workspace); return { eligible: !q.complete, completed: q.complete, missingEvidence: [], reviewDigest: q.review.digest }; }
   catch (e) { return { eligible: false, completed: false, missingEvidence: [/^native_[a-z_]+$/.test(e.message) ? e.message : "native_recovery_evidence_unproven"] }; }
 }
 export function dryRunLegacyNativeReconciliation({ stateDirectory, leaseName, spentName }) {
@@ -143,14 +176,14 @@ export function dryRunLegacyNativeReconciliation({ stateDirectory, leaseName, sp
     writerLeaseNonceMatches: lease.record.writer === writer.record.ownerNonce,
     spentRetained: true, snapshotDigest: nativeDigest([writer, lease, spent]) });
 }
-export function issueNativeReconciliationApproval({ directory, fixture, assertOwnerAuthority }) {
+export function issueNativeReconciliationApproval({ directory, fixture, workspace, assertOwnerAuthority }) {
   if (typeof assertOwnerAuthority !== "function") fail("native_recovery_owner_approval_required");
-  assertOwnerAuthority(); const q = qualify(directory, fixture);
+  assertOwnerAuthority(); const q = qualify(directory, fixture, workspace);
   if (q.complete) fail("native_recovery_already_completed");
   const grant = Object.freeze({}); grants.set(grant, { directory, digest: q.review.digest, identity: q.review.directoryIdentity,
     receiptIdentity: q.review.identity, keyIdentity: q.review.keyIdentity,
     at: performance.now(), wall: Date.now(), lifetime: q.review.payload.binding.fixture ? 600000 : 60000,
-    assertOwnerAuthority, fixture: fixture && structuredClone(fixture), id: randomUUID(), done: false }); return grant;
+    assertOwnerAuthority, fixture: fixture && structuredClone(fixture), workspace: workspace && structuredClone(workspace), id: randomUUID(), done: false }); return grant;
 }
 export function reconcileNativeArtifacts(grant) {
   const g = grants.get(grant); if (!g) fail("native_recovery_approval_unproven");
@@ -159,7 +192,7 @@ export function reconcileNativeArtifacts(grant) {
     g.assertOwnerAuthority();
     if (performance.now() - g.at < 0 || performance.now() - g.at >= g.lifetime || Date.now() < g.wall || Date.now() - g.wall >= g.lifetime) fail("native_recovery_approval_expired");
   };
-  authority(); const q = qualify(g.directory, g.fixture);
+  authority(); const q = qualify(g.directory, g.fixture, g.workspace);
   if (q.complete || q.review.digest !== g.digest || q.review.directoryIdentity !== g.identity
       || q.review.identity !== g.receiptIdentity || q.review.keyIdentity !== g.keyIdentity) fail("native_recovery_approval_changed");
   const controller = acquireReconciliationController(q, g);
@@ -183,6 +216,7 @@ export function reconcileNativeArtifacts(grant) {
     matches(q.state, record.barrier); matches(q.state, q.review.payload.binding.spent);
     const current = readDurableNativeReview(g.directory);
     if (current.digest !== g.digest || current.identity !== g.receiptIdentity || current.keyIdentity !== g.keyIdentity) fail("native_recovery_review_changed");
+    if (current.payload.verification?.status === "REFUSED") refusedCodingWorkspace(current.payload, g.workspace, g.directory);
     ownerGone(q.review.payload.binding.writer.record.ownerProcess, "owner");
     ownerGone({ pid: q.review.payload.job.rootPid, creationTime: q.review.payload.job.rootCreationTime }, "root");
     ownerGone({ pid: q.review.payload.job.launcherPid, creationTime: q.review.payload.job.launcherCreationTime }, "launcher");
