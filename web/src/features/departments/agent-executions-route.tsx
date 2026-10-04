@@ -10,14 +10,15 @@ import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
 import { ChangedContextSources, type ChangedContextSource } from "./changed-context-sources";
 import { TaskReadinessModal } from "./task-readiness";
 import { RuntimeRedactionNotice, type RedactionIncident } from "./runtime-redaction-notice";
+import { refusedTrackedRecoveryEvidence } from "./refused-tracked-recovery-model";
 
 type Host = { id: string; name: string; slug: string; status: string; platform: string; lastSeenAt?: string | null; applicationSlugs: string[] };
 type ExecutionEvent = { id: string; type: string; level: string; message: string; payload: Record<string, unknown>; createdAt: string };
 type Execution = {
   id: string; status: string; summary?: string | null; finalResponse?: string | null; createdAt: string; startedAt?: string | null; completedAt?: string | null;
-  changedFiles: string[]; verification: Record<string, unknown>; usage: Record<string, unknown>; errorState?: { code?: string; message?: string; retryable?: boolean } | null;
-  checkpoint?: { stage?: string; contextRevision?: string | null } | null; checkpointVersion?: number;
-  metadata?: { resultRevision?: { commit: string; branch: string; workingTree: string; observedAt: string } | null } | null;
+  changedFiles: string[]; verification: Record<string, unknown>; usage: Record<string, unknown>; errorState?: { code?: string; message?: string; retryable?: boolean; details?: unknown } | null;
+  checkpoint?: { stage?: string; contextRevision?: string | null; headCommit?: string } | null; checkpointVersion?: number;
+  metadata?: { resultRevision?: { commit: string; branch: string; workingTree: string; observedAt: string } | null; refusedTrackedRecoveries?: unknown } | null;
   contextInvalidatedAt?: string | null; contextStoppedAt?: string | null; contextInvalidation?: { changedSources?: ChangedContextSource[] } | null;
   task: { id: string; title: string; project?: { id: string; name: string } | null };
   application: { id: string; name: string; slug: string };
@@ -47,6 +48,7 @@ export function AgentExecutionsRoute() {
   const readiness = useOwnerPacket<RuntimeReadiness>("/v1/agent-runtime/readiness", true, t);
   const agentLogs = useOwnerPacket<AgentLog[]>(`/v1/agent-logs?limit=80&refresh=${logRefresh}`, true, t);
   const rows = packet.data || []; const selected = rows.find((item) => item.id === selectedId) || null;
+  const recoveryEvidence = selected ? refusedTrackedRecoveryEvidence(selected) : [];
   const hasActiveExecution = rows.some((item) => activeStatuses.has(item.status));
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -105,6 +107,21 @@ export function AgentExecutionsRoute() {
       {selected.events.some(event => event.type === "runtime_redaction") || JSON.stringify(selected).includes("[REDACTED]") ? <RuntimeRedactionNotice incidents={selected.events.filter(event => event.type === "runtime_redaction").map(event => event.payload as RedactionIncident)} /> : null}
       {selected.summary || selected.finalResponse ? <section className="roost-work-panel mt-4 rounded-company p-4"><h3 className="font-black">{polish ? "Wynik" : "Result"}</h3><p className="mt-2 whitespace-pre-wrap text-sm text-company-muted">{selected.finalResponse || selected.summary}</p></section> : null}
       <section className="roost-work-panel mt-4 rounded-company p-4"><h3 className="font-black">{polish ? "Tożsamość wyniku i wznowienie" : "Result and recovery identity"}</h3><dl className="mt-3 grid gap-3 text-sm"><div><dt className="text-company-muted">{polish ? "Commit" : "Commit"}</dt><dd className="break-all font-mono">{selected.metadata?.resultRevision?.commit ?? "—"}</dd></div><div><dt className="text-company-muted">{polish ? "Gałąź i drzewo robocze" : "Branch and working tree"}</dt><dd className="break-all font-mono">{selected.metadata?.resultRevision ? `${selected.metadata.resultRevision.branch} · ${selected.metadata.resultRevision.workingTree}` : "—"}</dd></div><div><dt className="text-company-muted">Checkpoint</dt><dd>{selected.checkpoint?.stage ?? "—"} · {selected.checkpointVersion ?? "—"}</dd></div></dl></section>
+      {recoveryEvidence.length ? <section className="mt-4 border-t border-base-300 pt-4" aria-labelledby="refused-tracked-recovery-heading">
+        <h3 className="font-black" id="refused-tracked-recovery-heading">{polish ? "Dowód przywrócenia plików" : "File restoration evidence"}</h3>
+        <p className="mt-2 text-sm text-company-muted">{polish ? "Przywrócono pliki po odrzuconej próbie. Wykonanie pozostaje nieudane; nie zaakceptowano nowego kandydata ani nie udzielono zgody na ponowienie lub wydanie. Blokada zapisu była zachowana przy zakończeniu odzyskania." : "Files were restored after a refused attempt. The execution remains failed; no new candidate was accepted and no retry or release was authorized. The writer fence was retained when recovery completed."}</p>
+        <ul className="mt-3 divide-y divide-base-300">{recoveryEvidence.map(evidence => <li className="py-3 first:pt-0" key={evidence.requestId}>
+          <dl className="grid gap-3 text-sm">
+            <div><dt className="text-company-muted">{polish ? "Zapisano dowód" : "Evidence recorded"}</dt><dd><time dateTime={evidence.recordedAt}>{date(evidence.recordedAt)}</time></dd></div>
+            <div><dt className="text-company-muted">{polish ? "Przywrócone / zarchiwizowane pliki" : "Restored / archived files"}</dt><dd>{evidence.restoredFileCount} / {evidence.archivedFileCount}</dd></div>
+            <div><dt className="text-company-muted">{polish ? "Wykonanie" : "Execution"}</dt><dd className="break-all font-mono">{evidence.executionId}</dd></div>
+            <div><dt className="text-company-muted">{polish ? "Commit stanu bazowego" : "Baseline commit"}</dt><dd className="break-all font-mono">{evidence.baselineCommit}</dd></div>
+            <div><dt className="text-company-muted">{polish ? "SHA-256 odbioru" : "Review SHA-256"}</dt><dd className="break-all font-mono">{evidence.reviewDigest}</dd></div>
+            <div><dt className="text-company-muted">{polish ? "SHA-256 dziennika odzyskania" : "Recovery journal SHA-256"}</dt><dd className="break-all font-mono">{evidence.journalDigest}</dd></div>
+          </dl>
+          <p className="mt-3 text-xs text-company-muted">{polish ? "Odzyskanie nie uruchomiło modeli ani operacji zdalnych. Nie upoważnia do nowego wykonania ani wydania." : "Recovery invoked no models or remote operations. It authorizes no new execution or release."}</p>
+        </li>)}</ul>
+      </section> : null}
       {selected.errorState && !selected.contextInvalidatedAt ? <CcNotice tone="error" title={selected.errorState.code || "execution_failed"} detail={selected.errorState.message} /> : null}
       <section className="roost-work-panel mt-4 rounded-company p-4"><div className="flex justify-between"><h3 className="font-black">{polish ? "Zmienione pliki" : "Changed files"}</h3>{!selected.contextInvalidatedAt ? <span className="badge badge-outline">{selected.changedFiles.length}</span> : null}</div><ul className="mt-3 grid gap-1 text-sm text-company-muted">{selected.changedFiles.length ? selected.changedFiles.map((file) => <li className="font-mono" key={file}>{file}</li>) : <li>{selected.contextInvalidatedAt ? t("ready.unverifiedFiles") : "—"}</li>}</ul></section>
       <section className="roost-work-panel mt-4 rounded-company p-4"><div className="flex justify-between"><h3 className="font-black">{polish ? "Oś wykonania" : "Execution timeline"}</h3><span className="badge badge-outline">{selected.events.length}</span></div><ol className="mt-3 grid gap-2">{selected.events.map((event) => <li className="rounded-company border border-base-300 p-3" key={event.id}><div className="flex justify-between gap-3"><strong>{humanizeBusinessValue(event.type, undefined, locale)}</strong><time className="text-xs text-company-muted">{date(event.createdAt)}</time></div><p className="mt-1 whitespace-pre-wrap text-sm text-company-muted">{event.message}</p></li>)}</ol></section>

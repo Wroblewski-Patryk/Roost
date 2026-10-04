@@ -1,4 +1,8 @@
-param([ValidateSet('Install','InstallSupervised','Run','Start','Stop','Status','Handoff','StoreHandoffCredential')][string]$Action = 'Status')
+param(
+  [ValidateSet('Install','InstallSupervised','Run','Start','Stop','Status','Handoff','StoreHandoffCredential','RecoverRefusedTracked')][string]$Action = 'Status',
+  [ValidateSet('inspect','restore')][string]$RecoveryMode = 'inspect',
+  [string]$RecoveryRequestPath
+)
 $ErrorActionPreference = 'Stop'
 $taskName = 'Roost Agent Host Observer'
 # A direct user-profile directory is shared with Task Scheduler. Packaged-app
@@ -25,6 +29,70 @@ function Stop-RoostObserver {
 }
 
 switch ($Action) {
+  'RecoverRefusedTracked' {
+    # A separate fixed recovery child: no Worker loop or provider launch. The
+    # ordinary launcher mutex prevents concurrent runs; native recovery also
+    # verifies the original closed Job and retained Writer/lease fences.
+    $mutex = New-Object Threading.Mutex($false, 'Local\Roost.AgentHost.Launcher')
+    $owned = $false
+    $child = $null
+    try {
+      try { $owned = $mutex.WaitOne(0) } catch [Threading.AbandonedMutexException] { $owned = $true }
+      if (-not $owned) { throw 'refused_tracked_recovery_worker_running' }
+      $recoveryPath = Join-Path $PSScriptRoot 'roost-refused-tracked-recovery.mjs'
+      if (-not $RecoveryRequestPath -or -not [IO.Path]::IsPathRooted($RecoveryRequestPath) -or
+          -not (Test-Path -LiteralPath $RecoveryRequestPath -PathType Leaf) -or
+          -not (Test-Path -LiteralPath $configPath -PathType Leaf) -or
+          -not (Test-Path -LiteralPath $recoveryPath -PathType Leaf) -or
+          -not (Test-Path -LiteralPath $nodePath -PathType Leaf)) { throw 'refused_tracked_recovery_binding_missing' }
+      $startInfo = New-Object Diagnostics.ProcessStartInfo
+      $startInfo.FileName = $nodePath
+      $startInfo.Arguments = '"' + $recoveryPath + '" ' + $RecoveryMode
+      $startInfo.UseShellExecute = $false
+      $startInfo.CreateNoWindow = $true
+      $startInfo.WindowStyle = [Diagnostics.ProcessWindowStyle]::Hidden
+      $startInfo.RedirectStandardOutput = $true
+      $startInfo.RedirectStandardError = $true
+      $startInfo.EnvironmentVariables['ROOST_AGENT_HOST_CONFIG'] = $configPath
+      $startInfo.EnvironmentVariables['ROOST_REFUSED_TRACKED_RECOVERY_REQUEST'] = $RecoveryRequestPath
+      $startInfo.EnvironmentVariables.Remove('ROOST_AGENT_API_KEY')
+      if ($RecoveryMode -eq 'restore') {
+        . (Join-Path $PSScriptRoot 'roost-agent-credential.ps1')
+        $startInfo.EnvironmentVariables['ROOST_AGENT_API_KEY'] = [RoostCredential]::Read('Roost/AgentHost/Supervised')
+      }
+      try { $child = [Diagnostics.Process]::Start($startInfo) }
+      finally { $startInfo.EnvironmentVariables.Remove('ROOST_AGENT_API_KEY') }
+      # Drain both redirected pipes concurrently. Waiting first can deadlock
+      # on a full pipe, and hidden processes do not inherit a readable console.
+      $recoveryOutputTask = $child.StandardOutput.ReadToEndAsync()
+      $recoveryErrorTask = $child.StandardError.ReadToEndAsync()
+      $child.WaitForExit()
+      $recoveryExitCode = $child.ExitCode
+      $recoveryOutput = $recoveryOutputTask.GetAwaiter().GetResult()
+      $recoveryError = $recoveryErrorTask.GetAwaiter().GetResult()
+      if ($recoveryOutput.Length -gt 65536 -or $recoveryError.Length -gt 128) { throw 'refused_tracked_recovery_output_invalid' }
+      if ($recoveryOutput.Trim()) {
+        $recoveryResult = $recoveryOutput | ConvertFrom-Json
+        if ($recoveryResult.schemaVersion -notin @('roost-refused-tracked-recovery-inspection-v1','roost-refused-tracked-recovery-result-v1')) {
+          throw 'refused_tracked_recovery_output_invalid'
+        }
+        [Console]::Out.WriteLine($recoveryOutput.Trim())
+      }
+      if ($recoveryError.Trim()) {
+        if ($recoveryError.Trim() -cnotmatch '^refused_tracked_recovery_[a-z_]{1,80}$') { throw 'refused_tracked_recovery_output_invalid' }
+        [Console]::Error.WriteLine($recoveryError.Trim())
+      }
+      exit $recoveryExitCode
+    } catch {
+      # Never expose request contents, configuration, credential or exceptions.
+      [Console]::Error.WriteLine('refused_tracked_recovery_launcher_blocked')
+      exit 1
+    } finally {
+      if ($child) { $child.Dispose() }
+      if ($owned) { $mutex.ReleaseMutex() }
+      $mutex.Dispose()
+    }
+  }
   'Handoff' {
     if (-not (Test-Path -LiteralPath $handoffPath) -or -not (Test-Path -LiteralPath $configPath)) { throw 'handoff_binding_missing' }
     if (-not (Test-Path -LiteralPath $nodePath) -or -not (Test-Path -LiteralPath $handoffClientPath)) { throw 'handoff_client_missing' }

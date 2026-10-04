@@ -4,8 +4,8 @@ import { lstatSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import contract from "./agent-host-provider-contract.cjs";
-import { modelSelectionSchema, managedBackendSelectionSchema, managedBackendVersion } from "./agent-host-model-policy.mjs";
-import { hermesStartupProfileVersion, hermesStartupProfileDigest, hermesStartupConfigDigests, hermesProfileBindingSchema, hermesProfileRetrySetting, hermesBudgetProfileVersion, hermesNativeProfileVersion, inspectHermesProfile, sealHermesProfile, assertHermesProfile } from "./agent-host-hermes-profile.mjs";
+import { modelSelectionSchema, managedBackendSelectionSchema, managedBackendVersion, managedExtendedBudgetPolicy } from "./agent-host-model-policy.mjs";
+import { hermesStartupProfileVersion, hermesStartupProfileDigest, hermesStartupConfigDigests, hermesProfileBindingSchema, hermesProfileRetrySetting, hermesProfileTurnSetting, hermesBudgetProfileVersion, hermesNativeProfileVersion, inspectHermesProfile, sealHermesProfile, assertHermesProfile } from "./agent-host-hermes-profile.mjs";
 
 import { hermesBudgetArgs } from "./agent-host-hermes-budget.mjs";
 import { windowsEnvironmentPolicy, assertWindowsStartupPaths, inspectWindowsSystemEnvironment } from "./agent-host-windows-environment.mjs";
@@ -129,6 +129,11 @@ function validate({ provider, envelope, repositoryPath, candidate, budget }) {
   // Hermes normalizes configured 0/1 to one ordinary attempt; this is no meter.
   if ((selection?.schemaVersion === managedBackendVersion || profile.apiMaxRetries !== undefined)
       && profile.apiMaxRetries !== requestedRetries) fail("hermes_startup_retry_policy_mismatch");
+  const requestedProfileTurns = selection?.schemaVersion === managedBackendVersion
+    && selection.attemptPolicy.budgetPolicy === managedExtendedBudgetPolicy ? 48 : 24;
+  const profileTurns = hermesProfileTurnSetting(profile.profileVersion, profile.configDigest);
+  if (profileTurns !== undefined && profileTurns !== requestedProfileTurns
+      || requestedProfileTurns === 48 && profileTurns !== 48) fail("hermes_startup_turn_policy_mismatch");
   assertNoStartupOverlays(provider, candidate);
   const windowsEnvironment = process.platform === "win32"
     ? { policy: windowsEnvironmentPolicy, category: "derived_verified_systemroot", systemDriveDigest: digest(env.SYSTEMDRIVE), rootIdentityDigest: host.rootIdentity }

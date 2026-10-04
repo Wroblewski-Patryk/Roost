@@ -172,19 +172,16 @@ consent explicitly required by `product/requirements.md` remain binding.
 
 ### Gate 5 — reusable company operation
 
-**In progress (2026-10-04), not met.** Two independent managed audits of the
-second application prove unchanged native state. Baseline and first-write
-consent are accepted. The initial coder closed without edits or tests; fixed
-verification refused. Recovery released only lease/Writer, retaining the
-refusal and spent attempt. New admission reuses the unchanged task branch only
-after signed reconciliation and leased predecessor checks (31 native tests).
-Coding/review and console proof remain pending.
-Shared procedures and own context are reused. Provenance, takeover guards and
-portfolio navigation pass focused/native checks. Roost `2678d3d7` has deployed
-build/health proof. A sealed
-React/TypeScript rendered-test adapter passes real Windows Job verification;
-it grants no write authority. Earlier refusals and lock recovery remain recorded.
-Gate 5 is not complete. See
+**In progress (2026-10-04), not met.** Independent audits, baseline and
+first-write consent are proven. Initial unchanged refusal was reconciled;
+its spent attempt remains retained. Separately admitted coder `b7aa2342`
+exhausted 24 turns with four scoped edits, no test or commit. Fixed verification
+refused; lease/Writer remain held pending qualified fixed Worker recovery.
+No direct bootstrap application edit or automatic model retry is permitted.
+Shared procedures, own context and sealed rendered tests are reused. Roost
+`d0397e7e` has exact deployment/health proof; leased predecessor checks pass
+31 native tests. Coding, independent acceptance and console proof are pending.
+Gate 5 remains incomplete. See
 [operation controls](operations/internal-application-operation.md).
 
 The same mechanism can onboard another configured application without changing

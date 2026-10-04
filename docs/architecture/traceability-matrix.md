@@ -1027,6 +1027,19 @@ lease-bound predecessor POST; arbitrary execution GET remains forbidden.
 Root checks pass 31 native continuation tests and 128 refusal/auth tests,
 including JSONB receipt ordering, foreign scope and expired/revoked credentials.
 Coding/review and native console proof remain outstanding.
+Roost `d0397e7e` exact deployment/build/health is proven. Separately admitted
+coder `b7aa2342-bd65-499e-b0c2-aa7c4aa99706` exhausted 24 actual API turns;
+native verification refused four scoped tracked edits with no test or commit.
+Its original closed Job, refused review and Writer/lease are retained.
+The new recovery-only owner admission/status/result and Worker integration
+pass 160 focused refusal/auth tests; real application recovery is pending.
+Fixed tracked recovery passes 24 native tests, including six interruption
+points without replay, plus 31 unchanged-refusal regressions. Root independently
+verified the native restore/reconciliation fixture and actual four-file read-only
+inspection through the official Windows entrypoint. Recovery transport passes
+36 tests; safe console projection passes 31 tests. The explicit bounded
+48-turn tier passes 51 budget/tier tests. No fixture grants application recovery,
+candidate acceptance or a new dispatch; the real recovery is still pending.
 Fixed coding/test suites pass 20 tests with three explicit fixture/privilege
 skips. An independent root native run of the sealed React 18.3.1/ReactDOM
 18.3.1/TypeScript 5.9.3 toolkit passes both actual empty/populated component

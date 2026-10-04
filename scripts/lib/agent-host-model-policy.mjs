@@ -18,11 +18,16 @@ export const localHermesModelSelectionSchema = z.object({
   reasoningEffort: z.enum(["low", "medium", "high"])
 }).strict().refine(s => s.model.split(":")[0] === s.modelFamily, { message: "local_model_family_mismatch" });
 export const managedBackendVersion = "roost-managed-hermes-backend-v1";
+export const managedSmallBudgetPolicy = "coding-small-v1";
+export const managedExtendedBudgetPolicy = "coding-extended-v1";
 const managedBase = {
   schemaVersion: z.literal(managedBackendVersion), agent: z.literal("managed_hermes"),
   riskClass: z.enum(["low", "medium", "high", "critical"]), fallback: z.literal("none"),
-  attemptPolicy: z.object({ maxTurns: z.number().int().min(1).max(24), apiMaxRetries: z.number().int().min(0).max(2),
-    unavailable: z.literal("stop_attempt"), restart: z.literal("never") }).strict()
+  attemptPolicy: z.object({ maxTurns: z.number().int().min(1).max(48), apiMaxRetries: z.number().int().min(0).max(2),
+    budgetPolicy: z.enum([managedSmallBudgetPolicy, managedExtendedBudgetPolicy]).optional(),
+    unavailable: z.literal("stop_attempt"), restart: z.literal("never") }).strict().refine(policy =>
+      policy.budgetPolicy === managedExtendedBudgetPolicy ? policy.maxTurns > 24 : policy.maxTurns <= 24,
+    { message: "explicit_managed_turn_budget_required" })
 };
 // Explicit task input only: no availability discovery or routing algorithm.
 export const managedBackendSelectionSchema = z.discriminatedUnion("backend", [
@@ -31,7 +36,8 @@ export const managedBackendSelectionSchema = z.discriminatedUnion("backend", [
   z.object({ ...managedBase, backend: z.literal("ollama_loopback"), provider: z.literal("ollama"),
     endpoint: z.literal("http://127.0.0.1:11434"), modelSelection: localHermesModelSelectionSchema,
     config: z.object({ reasoning: z.literal("explicit_model_effort"), remote: z.literal(false) }).strict() }).strict()
-]);
+]).refine(selection => selection.attemptPolicy.budgetPolicy !== managedExtendedBudgetPolicy
+  || selection.backend === "codex_responses" && selection.riskClass === "low", { message: "extended_budget_backend_risk_invalid" });
 export const taskModelSelectionSchema = z.union([modelSelectionSchema, localHermesModelSelectionSchema, managedBackendSelectionSchema]);
 
 // The current Ready editor exposes only qualified Codex choices. Do not infer

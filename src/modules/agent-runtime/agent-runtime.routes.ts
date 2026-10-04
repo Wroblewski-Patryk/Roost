@@ -12,6 +12,7 @@ import { createPrismaWorkerIdentityLifecycleStore } from "../api-keys/worker-ide
 import { freshWorkerOwner } from "../api-keys/worker-credential.service";
 import { workerClaimAllowed } from "../../auth/worker-ticket-principal";
 import { priorCodingRefusal } from "./prior-coding-refusal";
+import { admitRefusedTrackedRecovery, refusedTrackedRecoveryStatus, recordRefusedTrackedRecoveryResult } from "./refused-tracked-recovery";
 import { executionProviderRegistry, projectProvider, sanitizeProviderMetadata } from "./execution-provider";
 import { interviewView,interviewCommand } from "./task-interview";
 import { clarificationView,clarificationCommand } from "./task-clarification";
@@ -896,6 +897,31 @@ agentRuntimeRouter.post("/executions/:id/actions/prior-coding-refusal", asyncHan
   const result = await readyTransaction(tx => priorCodingRefusal(tx, req.auth!, String(req.params.id), req.body));
   if ("error" in result) return sendApiError(res, "status" in result ? result.status : 409, result.error);
   res.json({ data: result.data });
+}));
+
+agentRuntimeRouter.post("/executions/:id/actions/refused-tracked-recovery-admission", asyncHandler(async (req,res) => {
+  res.setHeader("Cache-Control","no-store");
+  if(!executionEnabled()||process.env.NODE_ENV==="production"&&req.header("x-forwarded-proto")!=="https")return sendApiError(res,403,"managed_admission_https_required");
+  const signer=managedAdmissionSignerFromEnvironment();if(!signer)return sendApiError(res,503,"managed_admission_signer_unavailable");
+  const result=await readyTransaction(tx=>admitRefusedTrackedRecovery(tx,req.auth!,String(req.params.id),req.body,signer));
+  if("error" in result)return sendApiError(res,"status" in result?result.status:409,result.error);
+  res.json({data:result.data});
+}));
+
+agentRuntimeRouter.post("/executions/:id/actions/refused-tracked-recovery-status", asyncHandler(async (req,res) => {
+  res.setHeader("Cache-Control","no-store");
+  if(!executionEnabled()||process.env.NODE_ENV==="production"&&req.header("x-forwarded-proto")!=="https")return sendApiError(res,403,"managed_admission_https_required");
+  const result=await readyTransaction(tx=>refusedTrackedRecoveryStatus(tx,req.auth!,String(req.params.id),req.body));
+  if("error" in result)return sendApiError(res,"status" in result?result.status:409,result.error);
+  res.json({data:result.data});
+}));
+
+agentRuntimeRouter.post("/executions/:id/actions/refused-tracked-recovery-result", asyncHandler(async (req,res) => {
+  res.setHeader("Cache-Control","no-store");
+  if(!executionEnabled()||process.env.NODE_ENV==="production"&&req.header("x-forwarded-proto")!=="https")return sendApiError(res,403,"managed_admission_https_required");
+  const result=await readyTransaction(tx=>recordRefusedTrackedRecoveryResult(tx,req.auth!,String(req.params.id),req.body));
+  if("error" in result)return sendApiError(res,"status" in result?result.status:409,result.error);
+  res.json({data:result.data});
 }));
 
 agentRuntimeRouter.post("/executions/:id/actions/prior-readonly-audit", asyncHandler(async (req, res) => {

@@ -39,12 +39,13 @@ export const renderHermesStartupProfile = () => startupProfileBytes;
 export const hermesBudgetProfileVersion = "roost-hermes-profile-v3";
 const budgetProfileBytes = JSON.stringify({ ...JSON.parse(startupProfileBytes), agent: { max_turns: 24, api_max_retries: 2 } }, null, 2) + "\n";
 export const hermesBudgetProfileDigest = sha(budgetProfileBytes);
-const retryProfileBytes = (bytes, apiMaxRetries) => {
+const retryProfileBytes = (bytes, apiMaxRetries, maxTurns = 24) => {
   if (!Number.isInteger(apiMaxRetries) || apiMaxRetries < 0 || apiMaxRetries > 2) fail("hermes_profile_retry_policy_invalid");
-  const reviewed = JSON.parse(bytes); reviewed.agent.api_max_retries = apiMaxRetries;
+  if (![24, 48].includes(maxTurns)) fail("hermes_profile_turn_policy_invalid");
+  const reviewed = JSON.parse(bytes); reviewed.agent.api_max_retries = apiMaxRetries; reviewed.agent.max_turns = maxTurns;
   return JSON.stringify(reviewed, null, 2) + "\n";
 };
-export const renderHermesBudgetProfile = ({ apiMaxRetries = 2 } = {}) => retryProfileBytes(budgetProfileBytes, apiMaxRetries);
+export const renderHermesBudgetProfile = ({ apiMaxRetries = 2, maxTurns = 24 } = {}) => retryProfileBytes(budgetProfileBytes, apiMaxRetries, maxTurns);
 export const hermesBudgetProfileBinding = (profilePath, options) => ({ ...hermesStartupProfileBinding(profilePath),
   schemaVersion: hermesBudgetProfileVersion, configDigest: sha(renderHermesBudgetProfile(options)) });
 export const hermesLegacyNativeProfileVersion = "roost-hermes-profile-v4";
@@ -58,22 +59,27 @@ export const hermesLegacyNativeProfileDigest = sha(legacyNativeProfileBytes);
 export const hermesNativeProfileVersion = "roost-hermes-profile-v5";
 const nativeProfileBytes = JSON.stringify({ ...JSON.parse(legacyNativeProfileBytes), security: { allow_lazy_installs: false } }, null, 2) + "\n";
 export const hermesNativeProfileDigest = sha(nativeProfileBytes);
-export const renderHermesNativeProfile = ({ apiMaxRetries = 2 } = {}) => retryProfileBytes(nativeProfileBytes, apiMaxRetries);
+export const renderHermesNativeProfile = ({ apiMaxRetries = 2, maxTurns = 24 } = {}) => retryProfileBytes(nativeProfileBytes, apiMaxRetries, maxTurns);
 export const hermesNativeProfileBinding = (profilePath, options) => ({ ...hermesBudgetProfileBinding(profilePath, options),
   schemaVersion: hermesNativeProfileVersion, configDigest: sha(renderHermesNativeProfile(options)),
   nativeToolsRisk: { policyVersion: nativeToolPolicy, decisionReference: nativeRiskReference } });
 // Admit only these reviewed byte variants, never an arbitrary declared digest.
-const budgetProfiles = Object.fromEntries([0, 1, 2].map(apiMaxRetries => {
-  const bytes = renderHermesBudgetProfile({ apiMaxRetries }); return [sha(bytes), bytes];
-}));
-const nativeProfiles = Object.fromEntries([0, 1, 2].map(apiMaxRetries => {
-  const bytes = renderHermesNativeProfile({ apiMaxRetries }); return [sha(bytes), bytes];
-}));
+const budgetProfiles = Object.fromEntries([24, 48].flatMap(maxTurns => [0, 1, 2].map(apiMaxRetries => {
+  const bytes = renderHermesBudgetProfile({ apiMaxRetries, maxTurns }); return [sha(bytes), bytes];
+})));
+const nativeProfiles = Object.fromEntries([24, 48].flatMap(maxTurns => [0, 1, 2].map(apiMaxRetries => {
+  const bytes = renderHermesNativeProfile({ apiMaxRetries, maxTurns }); return [sha(bytes), bytes];
+})));
 export const hermesStartupConfigDigests = Object.freeze([hermesStartupProfileDigest, ...Object.keys(budgetProfiles), ...Object.keys(nativeProfiles)]);
 export function hermesProfileRetrySetting(profileVersion, configDigest) {
   const bytes = profileVersion === hermesBudgetProfileVersion ? budgetProfiles[configDigest]
     : profileVersion === hermesNativeProfileVersion ? nativeProfiles[configDigest] : undefined;
   return bytes === undefined ? undefined : JSON.parse(bytes).agent.api_max_retries;
+}
+export function hermesProfileTurnSetting(profileVersion, configDigest) {
+  const bytes = profileVersion === hermesBudgetProfileVersion ? budgetProfiles[configDigest]
+    : profileVersion === hermesNativeProfileVersion ? nativeProfiles[configDigest] : undefined;
+  return bytes === undefined ? undefined : JSON.parse(bytes).agent.max_turns;
 }
 const legacyBindingSchema = z.object({
   schemaVersion: z.literal(hermesProfileVersion), hermesVersion: z.literal(pin.version),

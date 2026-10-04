@@ -135,3 +135,29 @@ Provide the canonical root and expected HEAD/branch/origin. Every artifact
 deletion barrier repeats the footprint and signed-chain checks. Explicit scoped
 operator authority releases only lease/Writer fences; the failed result, review
 and consumed attempt stay retained. Any continuation needs normal new admission.
+
+A separate fixed recovery command handles only `coding_tests_unproven` with
+scoped, modified tracked files, no commit/result and the original closed Job.
+`RecoverRefusedTracked -RecoveryMode inspect` binds the configured root,
+origin/base branch, all approved paths and immutable native review. The primary
+owner obtains an exact five-minute Ed25519 recovery admission from Roost;
+`-RecoveryMode restore` uses the existing claim credential and repeats current
+authority checks at effect boundaries. This admission cannot launch a model.
+The Worker preserves every after-byte file privately, restores only those
+paths from the exact baseline through closed Windows Jobs, verifies a clean
+base branch and removes only the empty owned task branch still at that commit.
+Other source, index entries, refs and Git configuration remain bound. An
+uncertain operation requires actual-state reconciliation and its closed Job;
+absent processes alone never prove an effect. The HMAC completion disposition
+is separate from the historical refusal. Roost records its receipt without
+accepting a candidate. Regular native reconciliation then releases only
+lease/Writer; normal signed-pair retirement and a newly admitted task execution
+follow. Restored metadata is never described as an unchanged predecessor.
+Actual second-application recovery remains pending until recorded below.
+
+The historical managed turn tier remains at most 24. An explicit
+`attemptPolicy.budgetPolicy: coding-extended-v1` admits 25–48 turns only for
+low-risk managed Codex execution. Its reviewed profile has 48 configured turns
+and a distinct digest; startup rejects a tier/profile mismatch. The accepted
+task's exact turn count, retries, input seal and absolute deadline remain bound.
+This tier permits neither an automatic restart nor an inferred runtime grant.

@@ -10,6 +10,7 @@ import { writerLockFilename, recoveryLockFilename } from "./agent-host-writer-lo
 import { bridgeRecoveryIdentity, legacyInputIdentityVersion } from "./agent-host-recovery-identity.mjs";
 import { readOriginalFixture, readFixtureEvidence, fixtureFileBinding, fixtureRuntimeBinding, fixtureTaskDigest, fixtureInstallationBinding } from "./agent-host-fixture-ownership.mjs";
 import { b26Inventory, assertB26Remaining, b26Exists } from "./agent-host-b26-inventory.mjs";
+import { verifyRefusedTrackedRollbackDisposition } from "./agent-host-refused-tracked-rollback.mjs";
 const grants = new WeakMap(), hash = /^[a-f0-9]{64}$/, uuid = /^[a-f0-9-]{36}$/i;
 const fail = reason => { throw Error(reason); };
 const bytes = value => Buffer.from(JSON.stringify(value) + "\n");
@@ -44,6 +45,12 @@ function journal(directory, key, payload) {
 // This exception releases only the retained fence of a refused, unchanged
 // coding attempt. It neither accepts its result nor restores dispatch authority.
 function refusedCodingWorkspace(p, workspace, directory) {
+  // A scoped fixed Worker restore is a separate signed disposition. It never
+  // changes the historical REFUSED review into a candidate or relaunch permit.
+  if (Array.isArray(p.privateChanges) && p.privateChanges.length) {
+    try { verifyRefusedTrackedRollbackDisposition(directory, workspace); return; }
+    catch { fail("native_recovery_refused_restore_unproven"); }
+  }
   const b = p.binding, pub = p.public;
   if (p.stage !== "final" || b.fixture || p.verification?.status !== "REFUSED" || p.verification.reason !== "coding_tests_unproven"
       || pub?.verdict !== "verification_blocked" || pub.verification !== "REFUSED" || pub.installation !== "PASS"
