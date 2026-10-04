@@ -138,6 +138,7 @@ def validate_input(v, now=None, source_digest=None):
     db = s["database"]
     keys(db, {"containerId", "adminUser", "adminDatabase", "applicationUser", "applicationDatabase", "originalRoleConfig"})
     require(db["containerId"] == next(r["containerId"] for r in rows if r["name"] == "db"), "db_container")
+    require(db["adminUser"] != db["applicationUser"] or db["adminDatabase"] != db["applicationDatabase"], "admin_connection_must_not_inherit_owned_database_role")
     for k in ("adminUser", "adminDatabase", "applicationUser", "applicationDatabase"):
         require(isinstance(db[k], str) and IDENT.fullmatch(db[k]), "pg_identifier")
     cfg = db["originalRoleConfig"]
@@ -147,12 +148,22 @@ def validate_input(v, now=None, source_digest=None):
     require(all(a in {"default_transaction_read_only=on", "default_transaction_read_only=off"}
                 for a in cfg if a.startswith("default_transaction_read_only=")), "original_role_readonly")
     ingress = s["ingress"]
-    keys(ingress, {"chain", "port", "protocol", "appContainerId", "networkId", "originalOwnedRuleAbsent", "originalRulesDigest"})
-    require(ingress["chain"] == "DOCKER-USER" and ingress["port"] == 8000 and type(ingress["port"]) is int
+    keys(ingress, {"chain", "port", "protocol", "appContainerId", "networkId", "originalOwnedRuleAbsent", "originalRulesDigest"}
+         | ({"namespace"} if "namespace" in ingress else set()))
+    require(ingress["chain"] in {"DOCKER-USER", "INPUT"} and ingress["port"] == 8000 and type(ingress["port"]) is int
             and ingress["protocol"] == "tcp" and ingress["originalOwnedRuleAbsent"] is True
             and ingress["appContainerId"] == next(r["containerId"] for r in rows if r["name"] == "app"), "ingress_scope")
     hash_value(ingress["networkId"])
     hash_value(ingress["originalRulesDigest"])
+    require((ingress["chain"] == "INPUT") == ("namespace" in ingress), "ingress_namespace_mode")
+    if "namespace" in ingress:
+        namespace = ingress["namespace"]
+        keys(namespace, {"proxyContainerId", "proxyImageDigest", "proxyNetworkDigest"})
+        hash_value(namespace["proxyContainerId"])
+        hash_value(namespace["proxyNetworkDigest"])
+        require(namespace["proxyContainerId"] not in {r["containerId"] for r in rows}
+                and isinstance(namespace["proxyImageDigest"], str)
+                and re.fullmatch(r"sha256:[a-f0-9]{64}", namespace["proxyImageDigest"]), "ingress_proxy_identity")
     cadences = s["cadences"]
     require(isinstance(cadences, list) and len(cadences) == 2
             and {c.get("name") for c in cadences if isinstance(c, dict)} == {"maintenance_cadence", "proactive_cadence"}, "cadences")
@@ -210,7 +221,27 @@ def validate_input(v, now=None, source_digest=None):
 
 
 def bounded_process(argv, payload=None, timeout=10):
-    require(isinstance(argv, list) and argv and (argv[0] == "docker" or argv[:3] == ["sudo", "-n", "/usr/sbin/iptables"]), "fixed_executable")
+    namespace = (isinstance(argv, list) and len(argv) >= 11 and argv[:4] == ["sudo", "-n", "/usr/bin/nsenter", "-t"]
+                 and isinstance(argv[4], str) and re.fullmatch(r"[1-9][0-9]{0,9}", argv[4]) and int(argv[4]) <= 2147483647
+                 and argv[5:9] == ["-n", "/usr/sbin/iptables", "-w", "3"]
+                 and argv[9] in {"-S", "-I", "-D"} and argv[10] == "INPUT")
+    if namespace:
+        action = argv[9]
+        if action == "-S":
+            namespace = len(argv) == 11
+        else:
+            offset = 12 if action == "-I" else 11
+            tail = argv[offset:]
+            namespace = (len(tail) == 18 and (action != "-I" or argv[11] == "1")
+                         and tail[0] == "-s" and tail[2] == "-d"
+                         and tail[4:13] == ["-p", "tcp", "-m", "tcp", "--dport", "8000", "-m", "comment", "--comment"]
+                         and re.fullmatch(r"roost-activity-[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}", tail[13])
+                         and tail[14:] == ["-j", "REJECT", "--reject-with", "tcp-reset"])
+            if namespace:
+                for address in (tail[1], tail[3]):
+                    require(isinstance(address, str) and address.endswith("/32"), "fixed_rule_address")
+                    ipv4(address[:-3])
+    require(isinstance(argv, list) and argv and (argv[0] == "docker" or argv[:3] == ["sudo", "-n", "/usr/sbin/iptables"] or namespace), "fixed_executable")
     try:
         r = subprocess.run(argv, input=payload, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
                            timeout=timeout, check=False, shell=False)
@@ -223,13 +254,20 @@ def bounded_process(argv, payload=None, timeout=10):
 INSPECT = ('{"id":{{json .Id}},"image":{{json .Image}},'
            '"state":{"Status":{{json .State.Status}},"Running":{{json .State.Running}},'
            '"Paused":{{json .State.Paused}},"ExitCode":{{json .State.ExitCode}},'
-           '"Health":{{if .State.Health}}{"Status":{{json .State.Health.Status}}}{{else}}null{{end}}},'
+           '"Health":{{with (index .State "Health")}}{"Status":{{json .Status}}}{{else}}null{{end}}},'
            '"project":{{json (index .Config.Labels "com.docker.compose.project")}},'
            '"service":{{json (index .Config.Labels "com.docker.compose.service")}},'
            '"application":{{json (index .Config.Labels "coolify.applicationId")}},'
            '"entrypoint":{{json .Config.Entrypoint}},"command":{{json .Config.Cmd}},'
            '"workingDirectory":{{json .Config.WorkingDir}},'
-           '"mounts":{{json .Mounts}},"networks":{{json .NetworkSettings.Networks}}}')
+           '"mounts":{{json .Mounts}},"networks":{{json .NetworkSettings.Networks}},'
+           '"pid":{{json .State.Pid}},"sandboxKey":{{json .NetworkSettings.SandboxKey}},'
+           '"ports":{{json .NetworkSettings.Ports}},"portBindings":{{json .HostConfig.PortBindings}},'
+           '"networkMode":{{json .HostConfig.NetworkMode}}}')
+
+PROXY_INSPECT = ('{"id":{{json .Id}},"image":{{json .Image}},'
+                 '"running":{{json .State.Running}},"paused":{{json .State.Paused}},'
+                 '"networks":{{json .NetworkSettings.Networks}}}')
 
 
 def ipv4(v):
@@ -580,6 +618,7 @@ class Controller:
         self.p, self.s, self.f = (request[k] for k in ("policy", "runtimeSettings", "facts"))
         self.run = run or bounded_process  # Source-only test double; not an input selector.
         self.effect = False
+        self.namespace_snapshot = None
 
     def call(self, argv, payload=None):
         result = self.run(argv, payload)
@@ -607,11 +646,11 @@ class Controller:
             elif e["role"] == "migration":
                 require(status == "exited" and running is False and paused is False and state.get("ExitCode") == 0 and health is None, "migration_closed")
             else:
-                require(health is None and status in {"running", "exited", "created"}
+                require(health is None and status in {"running", "paused", "exited", "created"}
                         and type(paused) is bool and type(running) is bool and state.get("ExitCode") == 0, "cadence_state")
-                require((status == "running" and running) or (status in {"exited", "created"} and not running and not paused), "cadence_state")
+                require((status in {"running", "paused"} and running and paused == (status == "paused")) or (status in {"exited", "created"} and not running and not paused), "cadence_state")
                 if require_held:
-                    require((status == "running" and paused) or status in {"exited", "created"}, "cadence_not_held")
+                    require((status == "paused" and running and paused) or status in {"exited", "created"}, "cadence_not_held")
                 c = next(c for c in self.s["cadences"] if c["name"] == e["name"])
                 require(digest(canonical({"entrypoint": a.get("entrypoint") or [], "command": a.get("command") or [],
                                         "workingDirectory": a.get("workingDirectory") or ""})) == c["behaviorDigest"], "cadence_behavior")
@@ -626,20 +665,92 @@ class Controller:
                 app_ip = ipv4(matched[0].get("IPAddress", ""))
             rows.append({**e, "status": status, "paused": paused, "health": health})
         require(app_ip is not None and len(ips) <= 24, "scoped_networks")
-        return {"services": rows, "runtimeDigest": digest(canonical(rows)), "appIp": app_ip, "sessionIps": sorted(ips)}
+        result = {"services": rows, "runtimeDigest": digest(canonical(rows)), "appIp": app_ip, "sessionIps": sorted(ips)}
+        if "namespace" in self.s["ingress"]:
+            self.namespace_snapshot = self.namespace_state(app_ip)
+            result["ingressNamespace"] = self.namespace_snapshot
+        return result
+
+    def namespace_state(self, ip):
+        seal = self.s["ingress"]["namespace"]
+        expected = next(r for r in self.p["expectedRuntime"] if r["name"] == "app")
+        app = json.loads(self.call(["docker", "container", "inspect", "--format", INSPECT, expected["containerId"]]))
+        require(app.get("id") == expected["containerId"] and app.get("image") == expected["imageDigest"]
+                and app.get("project") == self.p["targetId"] and app.get("service") == "app"
+                and app.get("application") == self.p["coolifyApplicationId"], "namespace_app_identity")
+        state = app.get("state") or {}
+        require(state.get("Status") == "running" and state.get("Running") is True and state.get("Paused") is False
+                and (state.get("Health") or {}).get("Status") == "healthy", "namespace_app_health")
+        require(type(app.get("pid")) is int and 1 < app["pid"] <= 2147483647
+                and isinstance(app.get("sandboxKey"), str)
+                and re.fullmatch(r"/var/run/docker/netns/[a-f0-9]{1,64}", app["sandboxKey"])
+                and isinstance(app.get("networkMode"), str)
+                and 1 <= len(app["networkMode"]) <= 256 and app["networkMode"] not in {"host", "none"}
+                and not app["networkMode"].startswith("container:"), "namespace_app_pid_sandbox")
+        for key in ("ports", "portBindings"):
+            value = app.get(key)
+            require(value is None or isinstance(value, dict) and len(value) <= 32
+                    and all(v is None or v == [] for v in value.values()), "namespace_app_published_ports")
+        networks = app.get("networks")
+        require(isinstance(networks, dict) and 1 <= len(networks) <= 8, "namespace_app_networks")
+        matched = [v for v in networks.values() if v.get("NetworkID") == self.s["ingress"]["networkId"]]
+        require(len(matched) == 1 and ipv4(matched[0].get("IPAddress", "")) == ip, "namespace_app_address")
+        proxy = json.loads(self.call(["docker", "container", "inspect", "--format", PROXY_INSPECT, seal["proxyContainerId"]]))
+        keys(proxy, {"id", "image", "running", "paused", "networks"})
+        require(proxy["id"] == seal["proxyContainerId"] and proxy["image"] == seal["proxyImageDigest"]
+                and proxy["running"] is True and proxy["paused"] is False, "namespace_proxy_identity")
+        require(isinstance(proxy["networks"], dict) and 1 <= len(proxy["networks"]) <= 32
+                and digest(canonical(proxy["networks"])) == seal["proxyNetworkDigest"], "namespace_proxy_networks")
+        attached = [v for v in proxy["networks"].values() if v.get("NetworkID") == self.s["ingress"]["networkId"]]
+        require(len(attached) == 1, "namespace_proxy_bridge")
+        source = ipv4(attached[0].get("IPAddress", ""))
+        require(source != ip, "namespace_proxy_address")
+        return {"appContainerId": expected["containerId"], "appImageDigest": expected["imageDigest"],
+                "appPid": app["pid"], "sandboxKey": app["sandboxKey"], "appAddress": ip,
+                "appNetworksDigest": digest(canonical(networks)), "proxyAddress": source,
+                "proxyContainerId": seal["proxyContainerId"], "proxyImageDigest": seal["proxyImageDigest"],
+                "proxyNetworkDigest": seal["proxyNetworkDigest"]}
+
+    def iptables(self, action, ip):
+        require(action in {"-S", "-I", "-D"}, "fixed_rule_operation")
+        chain = self.s["ingress"]["chain"]
+        before = None
+        if chain == "INPUT":
+            require(self.namespace_snapshot is not None, "namespace_runtime_required")
+            before = self.namespace_state(ip)
+            require(before == self.namespace_snapshot, "namespace_changed_before_command")
+            prefix = ["sudo", "-n", "/usr/bin/nsenter", "-t", str(before["appPid"]), "-n", "/usr/sbin/iptables", "-w", "3"]
+        else:
+            prefix = ["sudo", "-n", "/usr/sbin/iptables", "-w", "3"]
+        arguments = [action, chain]
+        if action == "-I":
+            arguments += ["1"] + self.rule(ip)[2:]
+        elif action == "-D":
+            arguments += self.rule(ip)[2:]
+        output = self.call(prefix + arguments)
+        if before is not None:
+            require(self.namespace_state(ip) == before, "namespace_changed_after_command_uncertain")
+        return output
 
     def rule(self, ip):
-        return ["-A", "DOCKER-USER", "-d", ip + "/32", "-p", "tcp", "-m", "tcp", "--dport", "8000",
+        chain = self.s["ingress"]["chain"]
+        source = []
+        if chain == "INPUT":
+            require(self.namespace_snapshot is not None and self.namespace_snapshot["appAddress"] == ip, "namespace_runtime_required")
+            source = ["-s", self.namespace_snapshot["proxyAddress"] + "/32"]
+        return ["-A", chain] + source + ["-d", ip + "/32", "-p", "tcp", "-m", "tcp", "--dport", "8000",
                 "-m", "comment", "--comment", "roost-activity-" + self.p["fixtureId"], "-j", "REJECT", "--reject-with", "tcp-reset"]
 
     def ingress(self, ip):
-        raw = self.call(["sudo", "-n", "/usr/sbin/iptables", "-w", "3", "-S", "DOCKER-USER"]).decode()
+        chain = self.s["ingress"]["chain"]
+        raw = self.iptables("-S", ip).decode()
         try:
             rows = [shlex.split(line) for line in raw.splitlines() if line]
         except ValueError:
             raise Refusal("release_activity_runtime_rules_parse") from None
-        require(len(rows) <= 1000 and rows.count(["-N", "DOCKER-USER"]) == 1
-                and all(r == ["-N", "DOCKER-USER"] or r[:2] == ["-A", "DOCKER-USER"] for r in rows), "existing_chain")
+        original = ["-P", "INPUT", "ACCEPT"] if chain == "INPUT" else ["-N", "DOCKER-USER"]
+        require(len(rows) <= 1000 and rows.count(original) == 1
+                and all(r == original or r[:2] == ["-A", chain] for r in rows), "existing_chain")
         comment = "roost-activity-" + self.p["fixtureId"]
         owned = [r for r in rows if comment in r]
         require(len(owned) <= 1 and all(r == self.rule(ip) for r in owned), "owned_rule_collision")
@@ -656,7 +767,7 @@ class Controller:
     def owned_where(self, runtime):
         db = self.s["database"]
         return ("datname=" + literal(db["applicationDatabase"]) + " AND usename=" + literal(db["applicationUser"])
-                + " AND client_addr::text IN (" + ",".join(literal(ip) for ip in runtime["sessionIps"]) + ")")
+                + " AND host(client_addr) IN (" + ",".join(literal(ip) for ip in runtime["sessionIps"]) + ")")
 
     def database(self, runtime):
         db = self.s["database"]
@@ -714,7 +825,7 @@ class Controller:
                 "activeOwnedSessions": db["activeOwned"], "roleConfigDigest": digest(canonical(db["roleConfig"])),
                 "originalRoleConfigMatches": db["roleConfig"] == self.s["database"]["originalRoleConfig"],
                 "ingressOwnedRulePresent": ingress, "ingressBlockedByRoot": self.f["ingressBlockedByRoot"],
-                "cadencesHeld": all(r["status"] in {"exited", "created"} or r["status"] == "running" and r["paused"] for r in runtime["services"] if r["role"] == "cadence"),
+                "cadencesHeld": all(r["status"] in {"exited", "created"} or r["status"] == "paused" and r["paused"] for r in runtime["services"] if r["role"] == "cadence"),
                 "cadences": [{"name": r["name"], "state": "paused" if r["paused"] else r["status"],
                               "behaviorDigest": next(c["behaviorDigest"] for c in self.s["cadences"] if c["name"] == r["name"])}
                              for r in runtime["services"] if r["role"] == "cadence"],
@@ -805,7 +916,7 @@ class Controller:
         if op == "hold_ingress":
             require(not rule, "reconcile_before_ingress_repeat")
             self.effect = True
-            self.call(["sudo", "-n", "/usr/sbin/iptables", "-w", "3", "-I", "DOCKER-USER", "1"] + self.rule(before["appIp"])[2:])
+            self.iptables("-I", before["appIp"])
         elif op in {"open_fixture_window", "refence_fixture_window"}:
             require(rule and self.f["ingressBlockedByRoot"] is True, "external_ingress_fence")
             require(db["databaseReadOnly"] is (op == "open_fixture_window"), "reconcile_before_fence_repeat")
@@ -821,12 +932,12 @@ class Controller:
             restored = self.database(before)
             require(restored["roleConfig"] == self.s["database"]["originalRoleConfig"] and restored["activeOthers"] == 0, "original_role_restore")
             require(self.ingress(before["appIp"]) is True, "owned_rule_before_remove")
-            self.call(["sudo", "-n", "/usr/sbin/iptables", "-w", "3", "-D", "DOCKER-USER"] + self.rule(before["appIp"])[2:])
+            self.iptables("-D", before["appIp"])
             for c in sorted(self.s["cadences"], key=lambda c: c["name"]):
                 current = self.runtime()["services"]
                 row = next(r for r in current if r["name"] == c["name"])
                 if c["originalState"] == "running":
-                    if row["status"] == "running" and row["paused"]:
+                    if row["status"] == "paused" and row["paused"]:
                         self.call(["docker", "unpause", c["containerId"]])
                     elif row["status"] in {"exited", "created"}:
                         self.call(["docker", "start", c["containerId"]])
@@ -837,6 +948,7 @@ class Controller:
                     require(expected == c["originalState"], "original_cadence_state")
         after = self.runtime(require_held=held)
         require(before["appIp"] == after["appIp"] and before["sessionIps"] == after["sessionIps"], "network_changed")
+        require(before.get("ingressNamespace") == after.get("ingressNamespace"), "namespace_changed_during_operation_uncertain")
         final_rule = self.ingress(after["appIp"])
         final_db = self.database(after)
         require(final_db["activeOthers"] == 0, "post_other_sessions")

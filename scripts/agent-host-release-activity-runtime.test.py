@@ -75,7 +75,7 @@ class FakeRunner:
             status = self.states[row["name"]]
             a = {"id": row["containerId"], "image": self.image_override or row["imageDigest"], "project": "example-release",
                  "service": row["name"], "application": self.application_override or "10", "mounts": self.mount_override or [],
-                 "state": {"Status": status, "Running": status == "running", "Paused": row["name"] in self.paused, "ExitCode": 0,
+                 "state": {"Status": "paused" if row["name"] in self.paused else status, "Running": status == "running", "Paused": row["name"] in self.paused, "ExitCode": 0,
                            "Health": {"Status": "healthy"} if row["role"] in {"app", "database"} else None},
                  "entrypoint": [], "command": self.behavior_override or ["python", "-m", "example.cadence"], "workingDirectory": "/app",
                  "networks": {"example-network": {"NetworkID": "9" * 64, "IPAddress": self.ip_override or "172.20.0.11"}}}
@@ -121,6 +121,57 @@ class FakeRunner:
             self.paused.discard(row["name"])
             return (argv[-1] + "\n").encode()
         raise AssertionError("unexpected controller command")
+
+
+def namespace_sample(op="read_runtime_fence"):
+    r = sample(op)
+    proxy_networks = {"example-network": {"NetworkID": "9" * 64, "IPAddress": "172.20.0.2"},
+                      "other-network": {"NetworkID": "8" * 64, "IPAddress": "172.24.0.2"}}
+    r["runtimeSettings"]["ingress"].update(chain="INPUT", namespace={"proxyContainerId": "6" * 64,
+        "proxyImageDigest": "sha256:" + "6" * 64, "proxyNetworkDigest": m.digest(m.canonical(proxy_networks))},
+        originalRulesDigest=m.digest(m.canonical([["-P", "INPUT", "ACCEPT"]])))
+    return r
+
+
+class NamespaceRunner(FakeRunner):
+    def __init__(self, request):
+        super().__init__(request)
+        self.rules = [["-P", "INPUT", "ACCEPT"]]
+        self.app_pid, self.sandbox = 4321, "/var/run/docker/netns/abc123"
+        self.ports, self.port_bindings, self.network_mode = {"8000/tcp": None}, {}, "example-network"
+        self.proxy_networks = {"example-network": {"NetworkID": "9" * 64, "IPAddress": "172.20.0.2"},
+                               "other-network": {"NetworkID": "8" * 64, "IPAddress": "172.24.0.2"}}
+        self.proxy_image, self.proxy_paused = "sha256:" + "6" * 64, False
+        self.drift_after_insert, self.fail_insert = False, False
+
+    def owned_rule(self):
+        controller = m.Controller(self.request, self)
+        runtime = controller.runtime()
+        return controller.rule(runtime["appIp"])
+
+    def __call__(self, argv, payload=None):
+        if argv[:3] == ["docker", "container", "inspect"] and argv[-1] == "6" * 64:
+            self.calls.append((argv, payload))
+            return json.dumps({"id": "6" * 64, "image": self.proxy_image, "running": True,
+                               "paused": self.proxy_paused, "networks": self.proxy_networks}).encode()
+        if argv[:3] == ["docker", "container", "inspect"] and argv[-1] == self.request["runtimeSettings"]["ingress"]["appContainerId"]:
+            data = json.loads(super().__call__(argv, payload))
+            data.update(pid=self.app_pid, sandboxKey=self.sandbox, ports=self.ports, portBindings=self.port_bindings, networkMode=self.network_mode)
+            return json.dumps(data).encode()
+        if argv[:3] == ["sudo", "-n", "/usr/bin/nsenter"]:
+            self.calls.append((argv, payload))
+            assert argv[:9] == ["sudo", "-n", "/usr/bin/nsenter", "-t", str(self.app_pid), "-n", "/usr/sbin/iptables", "-w", "3"]
+            if argv[9] == "-S":
+                return ("\n".join(" ".join(row) for row in self.rules) + "\n").encode()
+            self.effects.append((argv, payload))
+            if argv[9] == "-I":
+                self.rules.append(["-A", "INPUT"] + argv[12:])
+                if self.fail_insert:raise m.Refusal("injected_insert_uncertain")
+                if self.drift_after_insert:self.app_pid += 1
+            elif argv[9] == "-D":self.rules.remove(["-A", "INPUT"] + argv[11:])
+            else:raise AssertionError("unpermitted namespace effect")
+            return b""
+        return super().__call__(argv, payload)
 
 
 class Tests(unittest.TestCase):
@@ -214,7 +265,7 @@ class Tests(unittest.TestCase):
         sqls = [p.decode() for a, p in run.calls if "psql" in a]
         effect = next(s for s in sqls if "ALTER ROLE" in s)
         self.assertIn('ALTER ROLE "example_user" IN DATABASE "example_db"', effect)
-        self.assertIn("datname='example_db' AND usename='example_user' AND client_addr::text IN ('172.20.0.11')", effect)
+        self.assertIn("datname='example_db' AND usename='example_user' AND host(client_addr) IN ('172.20.0.11')", effect)
         self.assertIn("pid<>pg_backend_pid()", effect)
         self.assertTrue(any("NOT COALESCE((" in s for s in sqls))
         self.assertNotIn("DROP", effect)
@@ -594,6 +645,90 @@ def expectation_fixture(folder, settings=SETTINGS_FIXTURE, scheduler=SCHEDULER_F
         sources[path] = str(file)
         sources[seal] = m.digest(file.read_bytes())
     return sources
+
+
+class NamespaceTests(unittest.TestCase):
+    def test_exact_proxy_only_rule_and_owned_cleanup(self):
+        r = namespace_sample("hold_ingress");runner = NamespaceRunner(r)
+        m.validate_input(r, now=NOW)
+        proof = m.Controller(r, runner).execute()
+        self.assertTrue(proof["ingressOwnedRulePresent"])
+        self.assertEqual(runner.rules[-1][:6], ["-A", "INPUT", "-s", "172.20.0.2/32", "-d", "172.20.0.11/32"])
+        self.assertNotIn(["-s", "127.0.0.1/32"], [runner.rules[-1]])
+        r["operation"] = "restore_runtime";runner.role = ["search_path=public", "default_transaction_read_only=on"]
+        m.Controller(r, runner).execute()
+        self.assertEqual(runner.rules, [["-P", "INPUT", "ACCEPT"]])
+        effects = [a for a,_ in runner.effects if a[0] == "sudo"]
+        self.assertEqual([a[9] for a in effects], ["-I", "-D"])
+        self.assertTrue(all(a[10] == "INPUT" for a in effects))
+        self.assertTrue(all(a[:3] != ["sudo", "-n", "/usr/sbin/iptables"] for a,_ in runner.calls))
+
+    def test_schema_has_no_pid_ip_path_or_command_selectors(self):
+        r = namespace_sample();m.validate_input(r,now=NOW)
+        for key,value in (("appPid",4321),("namespacePath","/proc/1/ns/net"),("proxyAddress","172.20.0.2"),("command","iptables")):
+            bad = copy.deepcopy(r);bad["runtimeSettings"]["ingress"]["namespace"][key] = value
+            with self.subTest(key=key),self.assertRaises(m.Refusal):m.validate_input(bad,now=NOW)
+        for chain,namespace in (("OUTPUT",True),("DOCKER-USER",True),("INPUT",False)):
+            bad = copy.deepcopy(r);bad["runtimeSettings"]["ingress"]["chain"] = chain
+            if not namespace:del bad["runtimeSettings"]["ingress"]["namespace"]
+            with self.subTest(chain=chain),self.assertRaises(m.Refusal):m.validate_input(bad,now=NOW)
+
+    def test_app_ports_pid_sandbox_and_network_modes_refused_before_effects(self):
+        variants = (("ports",{"8000/tcp":[{"HostIp":"0.0.0.0","HostPort":"8000"}]}),
+                    ("port_bindings",{"8000/tcp":[{"HostIp":"127.0.0.1","HostPort":"8000"}]}),
+                    ("app_pid",1),("app_pid",True),("sandbox","/proc/1/ns/net"),
+                    ("network_mode","host"),("network_mode","container:other"),("network_mode","none"))
+        for key,value in variants:
+            r=namespace_sample("hold_ingress");runner=NamespaceRunner(r);setattr(runner,key,value)
+            with self.subTest(key=key,value=value),self.assertRaises(m.Refusal):m.Controller(r,runner).execute()
+            self.assertEqual(runner.effects,[])
+
+    def test_proxy_full_networks_and_image_seal(self):
+        for changed in ("other-network", "example-network", "image", "paused"):
+            r=namespace_sample("hold_ingress");runner=NamespaceRunner(r)
+            if changed in runner.proxy_networks:runner.proxy_networks[changed]["IPAddress"]="172.26.0.5"
+            elif changed=="image":runner.proxy_image="sha256:"+"a"*64
+            else:runner.proxy_paused=True
+            with self.subTest(changed=changed),self.assertRaises(m.Refusal):m.Controller(r,runner).execute()
+            self.assertEqual(runner.effects,[])
+
+    def test_proxy_wrong_bridge_even_with_matching_whole_network_digest(self):
+        r=namespace_sample();runner=NamespaceRunner(r);runner.proxy_networks["example-network"]["NetworkID"]="a"*64
+        r["runtimeSettings"]["ingress"]["namespace"]["proxyNetworkDigest"] = m.digest(m.canonical(runner.proxy_networks))
+        with self.assertRaisesRegex(m.Refusal,"namespace_proxy_bridge"):m.Controller(r,runner).execute()
+
+    def test_real_docker_paused_state_and_original_rules_preserved(self):
+        r=namespace_sample();runner=NamespaceRunner(r)
+        for name in ("maintenance_cadence","proactive_cadence"):runner.states[name]="running";runner.paused.add(name)
+        c=m.Controller(r,runner);runtime=c.runtime(require_held=True)
+        self.assertEqual([row["status"] for row in runtime["services"] if row["role"]=="cadence"],["paused","paused"])
+        self.assertEqual(runner.effects,[])
+        runner.rules += [["-A","INPUT","-s","172.24.0.2/32","-j","ACCEPT"]]
+        with self.assertRaisesRegex(m.Refusal,"unowned_rules_changed"):m.Controller(r,runner).execute()
+
+    def test_namespace_drift_after_effect_is_uncertain_and_no_later_effects(self):
+        r=namespace_sample("hold_ingress");runner=NamespaceRunner(r);runner.drift_after_insert=True
+        with self.assertRaisesRegex(m.Refusal,"namespace_changed_after_command_uncertain"):m.Controller(r,runner).execute()
+        self.assertEqual(len(runner.effects),1)
+        runner.drift_after_insert=False
+        with self.assertRaisesRegex(m.Refusal,"reconcile_before_ingress_repeat"):m.Controller(r,runner).execute()
+        self.assertEqual(len(runner.effects),1)
+        r["operation"]="read_runtime_fence";self.assertTrue(m.Controller(r,runner).execute()["ingressOwnedRulePresent"])
+
+    def test_ambiguous_insert_never_blind_replays(self):
+        r=namespace_sample("hold_ingress");runner=NamespaceRunner(r);runner.fail_insert=True
+        with self.assertRaisesRegex(m.Refusal,"injected_insert_uncertain"):m.Controller(r,runner).execute()
+        runner.fail_insert=False
+        with self.assertRaisesRegex(m.Refusal,"reconcile_before_ingress_repeat"):m.Controller(r,runner).execute()
+        self.assertEqual(len(runner.effects),1)
+
+    def test_namespace_executable_allowlist_rejects_global_or_arbitrary_programs(self):
+        invalid = (["sudo","-n","modprobe","br_netfilter"], ["sudo","-n","sysctl","-w","net.bridge.bridge-nf-call-iptables=1"],
+                   ["sudo","-n","/usr/bin/nsenter","-t","4321","-n","/bin/sh","-c","anything"],
+                   ["sudo","-n","/usr/bin/nsenter","-t","4321","-n","/usr/sbin/iptables","-w","3","-F","INPUT"],
+                   ["sudo","-n","/usr/bin/nsenter","-t","4321","-n","/usr/sbin/iptables","-w","3","-S","INPUT","other"])
+        for argv in invalid:
+            with self.subTest(argv=argv),self.assertRaisesRegex(m.Refusal,"fixed_executable"):m.bounded_process(argv)
 
 
 class ExpectationTests(unittest.TestCase):

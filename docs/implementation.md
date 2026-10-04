@@ -1,9 +1,7 @@
 # Current implementation
 
-This document is the only active delivery handoff for completing Roost's
-supervised-agent runtime. It records current facts, the outcome being delivered
-and the demonstrations that prove completion. It is not a task board and does
-not prescribe one conversation or commit per internal step.
+This is the sole active delivery handoff: current facts, authorized outcome
+and required end-to-end evidence.
 
 ## Delivery objective
 
@@ -30,12 +28,9 @@ One implementation owner completes the authorized gate across components,
 integration and native proof. Internal steps/commits are not handoff boundaries.
 Continuing later requires new gate authority.
 
-Codex work in this repository uses the `roost-runtime-delivery` repository
-skill, the orchestration rules in `AGENTS.md` and the deterministic
-`npm run codex:check` contract checks. These are delivery controls for building
-Roost; they do not themselves satisfy any runtime gate. Subagent findings or
-changes become evidence only after the implementation owner reviews,
-integrates and verifies them at the level required by the applicable gate.
+Use `roost-runtime-delivery`, `AGENTS.md` and `npm run codex:check`.
+The owner integrates and verifies delegated work; these development controls
+alone do not prove a runtime gate.
 
 Ordinary implementation discoveries are resolved autonomously from, in order:
 
@@ -50,10 +45,8 @@ work.
 
 ## Current verified state
 
-The repository already contains substantial Roost product functionality:
-PostgreSQL/Prisma persistence, Express API, React owner console, workspace
-boundaries, API/MCP surfaces, provider adapters, task/context/review primitives,
-Windows Worker foundations and Hermes qualification evidence.
+Existing foundations: PostgreSQL/Prisma, Express, React owner console, workspace
+API/MCP boundaries, provider/task/context/review, Windows Worker and Hermes.
 
 **Gate 1 is met at production/runtime evidence level (2026-09-27).** The
 API build `18bd5c6466372263316a5846f990f61cacd41040`, deployment
@@ -196,6 +189,13 @@ local accepted `3cf9645e`. Independent review rejected `c21e0e0c` for its missin
 regression log. Log-only `c82e68b3` passes seven tests, a separate native build
 and independent read-only acceptance. No release grant or application deploy.
 
+Roost `15d857eb` and the additive post-observation migration are deployed.
+The existing target has a fresh verified backup/isolated restore, migration
+adoption and schema/data/sequence parity. Its public health is open while DB
+writes and cadences are held. Native preparation exposed Docker paused-state,
+PG address and proxy-isolation defects; Worker fixes are under verification.
+The exact release package, native release audit and owner grant remain pending.
+
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,
 cadences, health/parity, capacity, encrypted backup/verified restore, retained
@@ -213,16 +213,9 @@ requires a later assignment; no whole-product or commercial claim is authorized.
 
 ## What is not a blocker
 
-Do not stop or bounce the work because of:
-
-- a missing adapter, migration, route, UI or test;
-- a failed build, test, Docker start or database qualification;
-- an architecture correction or a larger-than-expected implementation;
-- the need to choose a reversible technical design;
-- the need for several commits or coordinated backend/Worker/Hermes changes;
-- discovery that an earlier source-only contract is incomplete.
-
-Those are implementation work. Diagnose, repair, verify and continue.
+Missing components, failed checks, migrations, architecture corrections and
+larger coordinated changes are implementation work. Resolve reversible choices,
+repair, verify and continue within the authorized gate.
 
 ## True owner dependencies
 

@@ -22,11 +22,16 @@ const cadenceExpectedSources=z.object({settingsSourcePath:pythonSourcePath,setti
  new Set([v.settingsSourcePath,v.schedulerSourcePath,v.maintenanceEntrypointPath,v.proactiveEntrypointPath]).size===4);
 const privatePolicySchema=z.object({schemaVersion:z.literal('roost-activity-installed-policy-v1'),postObservationDigest:hex,fixtureDigest:hex,targetId:id,
  applicationId:uuid,createdAt:instant,expiresAt:instant,catalogDigest:hex,controllerProgramDigest:hex}).strict();
+const ingressBase={port:z.literal(8000),protocol:z.literal('tcp'),appContainerId:hex,networkId:hex,
+ originalOwnedRuleAbsent:z.literal(true),originalRulesDigest:hex};
+export const activityIngressSettingsSchema=z.discriminatedUnion('chain',[
+ z.object({...ingressBase,chain:z.literal('DOCKER-USER')}).strict(),
+ z.object({...ingressBase,chain:z.literal('INPUT'),namespace:z.object({proxyContainerId:hex,proxyImageDigest:image,proxyNetworkDigest:hex}).strict()}).strict()
+]);
 const privateSettingsSchema=z.object({schemaVersion:z.literal('roost-activity-runtime-settings-private-v1'),targetId:id,
  database:z.object({containerId:hex,adminUser:pg,adminDatabase:pg,applicationUser:pg,applicationDatabase:pg,
   originalRoleConfig:z.array(z.string().min(3).max(1024).refine(v=>v.includes('=')&&!/[\x00\r\n]/.test(v))).max(32)}).strict(),
- ingress:z.object({chain:z.literal('DOCKER-USER'),port:z.literal(8000),protocol:z.literal('tcp'),appContainerId:hex,networkId:hex,
-  originalOwnedRuleAbsent:z.literal(true),originalRulesDigest:hex}).strict(),
+ ingress:activityIngressSettingsSchema,
  cadences:z.array(cadence.extend({containerId:hex,imageDigest:image,mountDigest:hex,originalState:z.enum(['running','paused','exited','created']),originalExitCode:z.literal(0)}).strict()).length(2),
  browserAccess:z.object({kind:z.literal('pydantic_settings_auth_cookie_v1'),settingsSourcePath:z.string().regex(/^\/app\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_-]+\.py$/),
   routesSourcePath:z.string().regex(/^\/app\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_-]+\.py$/),settingsSourceDigest:hex,routesSourceDigest:hex}).strict().optional(),
@@ -99,7 +104,7 @@ const sorted=rows=>rows.slice().sort((a,b)=>a.name.localeCompare(b.name));
 const pins=rows=>sorted(rows).map(r=>Object.fromEntries(['name','role','containerId','imageDigest','mountDigest'].map(k=>[k,r[k]])));
 const observedRows=(rows,cadences=[])=>sorted(rows).map(r=>{
  const state=cadences.find(c=>c.name===r.name)?.state??r.state;
- return {...pins([r])[0],status:state==='paused'?'running':state,paused:state==='paused',health:r.health};
+ return {...pins([r])[0],status:state,paused:state==='paused',health:r.health};
 });
 const normalizedDatabase=({containerId:_id,...settings})=>settings;
 const normalizedIngress=({appContainerId:_id,...settings})=>settings;

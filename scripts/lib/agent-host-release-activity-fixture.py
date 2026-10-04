@@ -343,7 +343,7 @@ async def app_run(request):
             async with c.begin():
                 if request["operation"]=="reconcile":await c.execute(text("SET TRANSACTION READ ONLY"))
                 # The DB endpoint must be the actual sealed Docker DB network IP.
-                actual=(await c.execute(text("SELECT current_database(),current_user,inet_server_addr()::text,inet_server_port()"))).one()
+                actual=(await c.execute(text("SELECT current_database(),current_user,host(inet_server_addr()),inet_server_port()"))).one()
                 require(actual[0]=="aion" and actual[1]=="aion" and actual[2] in request["observedDbIps"] and actual[3]==5432,"actual_database_identity")
                 tables=(await c.execute(text("SELECT n.nspname,c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relkind IN ('r','p','m') AND n.nspname NOT IN ('pg_catalog','information_schema') AND n.nspname NOT LIKE 'pg_toast%' ORDER BY n.nspname,c.relname"))).all()
                 require(3<=len(tables)<=1000 and all(("public",t) in tables for t in ("aion_auth_user","aion_auth_session","aion_memory")),"installed_catalog_scope")
@@ -414,7 +414,7 @@ def bounded_process(argv, payload=None, timeout=10):
 INSPECT = ('{"id":{{json .Id}},"image":{{json .Image}},'
            '"state":{"Status":{{json .State.Status}},"Running":{{json .State.Running}},'
            '"Paused":{{json .State.Paused}},"ExitCode":{{json .State.ExitCode}},'
-           '"Health":{{if .State.Health}}{"Status":{{json .State.Health.Status}}}{{else}}null{{end}}},'
+           '"Health":{{with (index .State "Health")}}{"Status":{{json .Status}}}{{else}}null{{end}}},'
            '"project":{{json (index .Config.Labels "com.docker.compose.project")}},'
            '"service":{{json (index .Config.Labels "com.docker.compose.service")}},'
            '"application":{{json (index .Config.Labels "coolify.applicationId")}},'
@@ -448,7 +448,7 @@ def runtime_scope(p, run=None):
                     and not state.get("Paused") and health is None, "actual_migration_closed")
         else:
             require(health is None and ((state.get("Status") in ("created", "exited") and state.get("ExitCode") == 0 and not state.get("Running"))
-                    or (state.get("Status") == "running" and state.get("Running") is True and state.get("Paused") is True)), "cadence_must_remain_held")
+                    or (state.get("Status") == "paused" and state.get("Running") is True and state.get("Paused") is True)), "cadence_must_remain_held")
         observations.append({**expected, "status": state["Status"], "paused": state.get("Paused", False), "health": health})
         if role == "database":
             ips = sorted({n["IPAddress"] for n in actual["networks"].values() if n.get("IPAddress")})

@@ -1135,6 +1135,19 @@ Unchanged node-configuration typing, whole backend/browser/mobile operation,
 product/sale readiness and unavailable physical provider cost/usage remain
 explicit limitations. No later phase was started.
 
+Second-application bounded release preparation continues separately from Gate 5.
+Exact `c82e68b3` has seven passing tests, a separate closed native build and
+independent acceptance `25632c42`; the preceding candidate was rejected for its
+missing regression log. Roost `15d857eb` and its additive post-observation CHECK
+migration are deployed. Fresh backup `727c73a3` and isolated migration adoption
+`88b04363` verify full schema/data/sequence parity and absence of the owned restore
+database. Normal API credential/reference configuration, baseline pinning and
+native ingress/DB/cadence maintenance are verified. Real-runtime discoveries
+produced Worker paused-state, PostgreSQL address/admin and namespace-ingress
+fixes; full post-release Worker proof remains pending. No second-application
+release grant, push/deploy, synthetic fixture write or runtime-resume claim.
+See [current operations evidence](../operations/governed-compose-release.md).
+
 ## Matrix
 
 | Requirement | Priority | Status | Inspected evidence | Remaining boundary / proof |

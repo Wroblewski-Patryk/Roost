@@ -75,7 +75,7 @@ function fixture(){
    if(operation==='smoke_populate'){assert.equal(native.state,'empty');native.state='populated';effect=true;}
    if(operation==='fixture_cleanup'){native.state='absent';effect=true;}
    const data=supplemental(),observations=rows().sort((a,b)=>a.name.localeCompare(b.name)).map(r=>({...policy.expectedRuntime.find(e=>e.name===r.name),
-    status:r.state==='paused'?'running':r.state,paused:r.state==='paused',health:r.health}));
+    status:r.state,paused:r.state==='paused',health:r.health}));
    return {schemaVersion:'roost-activity-fixture-observation-v1',operation,releaseId:binding.releaseId,operationId:policy.operationId,manifestDigest:s.manifestDigest,
     targetId:f.target.targetId,commit:policy.commit,tree:policy.tree,fixtureId:p.fixture.fixtureId,controllerProgramDigest:policy.controllerProgramDigest,
     runtimeDigest:sha(canonical(observations)),observedAt:instant(),expectedTreeBoundByParentObservation:true,providerCalls:0,cadenceStarted:false,fenceChanged:false,

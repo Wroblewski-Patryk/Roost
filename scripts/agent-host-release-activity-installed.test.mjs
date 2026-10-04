@@ -16,9 +16,9 @@ const canonical=v=>JSON.stringify(Array.isArray(v)?v.map(v=>JSON.parse(canonical
 const at=delta=>new Date(Date.now()+(delta??0)).toISOString();
 const sorted=v=>v.slice().sort((a,b)=>a.name.localeCompare(b.name));
 const pins=rows=>sorted(rows).map(r=>Object.fromEntries(['name','role','containerId','imageDigest','mountDigest'].map(k=>[k,r[k]])));
-const observed=rows=>sorted(rows).map(r=>({...pins([r])[0],status:r.state==='paused'?'running':r.state,paused:r.state==='paused',health:r.health}));
+const observed=rows=>sorted(rows).map(r=>({...pins([r])[0],status:r.state,paused:r.state==='paused',health:r.health}));
 
-function fixture(){
+function fixture({namespace=false}={}){
  const f=composeFixture(),calls=[];
  for(const config of [f.target.configuration,f.target.baseline.configuration,f.target.rollbackConfiguration]){
   config.services.find(r=>r.name==='maintenance').name='maintenance_cadence';
@@ -46,6 +46,7 @@ function fixture(){
    settingsSourcePath:'/app/app/config.py',settingsSourceDigest:hash('a'),schedulerSourcePath:'/app/app/scheduler.py',schedulerSourceDigest:hash('b'),
    maintenanceEntrypointPath:'/app/scripts/maintenance.py',maintenanceEntrypointDigest:hash('c'),proactiveEntrypointPath:'/app/scripts/proactive.py',proactiveEntrypointDigest:hash('d')}},
   internalHealth:{frontendMetaName:'fixture-revision'}};
+ if(namespace)raw.ingress={...raw.ingress,chain:'INPUT',namespace:{proxyContainerId:hash('c'),proxyImageDigest:image('d'),proxyNetworkDigest:hash('e')}};
  const source={fixture:readFileSync(new URL('./lib/agent-host-release-activity-fixture.py',import.meta.url)),
   runtime:readFileSync(new URL('./lib/agent-host-release-activity-runtime.py',import.meta.url)),browser:readFileSync(new URL('./lib/agent-host-release-activity-browser.mjs',import.meta.url))};
  const settings={seedCredentialTarget:'Roost/fixture/seed',policy:{file:'C:\\Private\\scope.json',sha256:hash('0')},controller:{sha256:sha(source.fixture)},
@@ -152,6 +153,19 @@ test('fixed Python rendering keeps code outside argv and policy; exact program s
  const raw=structuredClone(f.raw);raw.database.originalRoleConfig.push('application_name=zażółć');
  const {containerId,...normal}=raw.database;
  assert.equal(activityRestorationDigests(raw).databaseSettingsDigest,sha(canonical(normal)));
+});
+
+test('namespace transport retains sealed proxy identity while rebinding the rebuilt application',async()=>{
+ const f=fixture({namespace:true}),old=f.root.ssh,requests=[];
+ f.root.ssh=async options=>{const encoded=[...options.stdin.matchAll(/base64\.b64decode\('([A-Za-z0-9+/=]+)'\)/g)].map(m=>m[1]);
+  requests.push(JSON.parse(Buffer.from(encoded[1],'base64').toString('utf8')));return old(options);};
+ await f.transport().readRuntime({operationId:f.state.journal.at(-1).id,commit:f.s.commit,tree:f.s.candidateTree});
+ assert(requests.length>0);
+ for(const request of requests){assert.equal(request.runtimeSettings.ingress.chain,'INPUT');
+  assert.deepEqual(request.runtimeSettings.ingress.namespace,f.raw.ingress.namespace);
+  assert.equal(request.runtimeSettings.ingress.appContainerId,f.rows.find(r=>r.name==='app').containerId);
+  assert.notEqual(request.runtimeSettings.ingress.appContainerId,f.raw.ingress.appContainerId);}
+ assert.equal(f.native.readOnly,true);assert.equal(f.native.fixture,'absent');
 });
 
 test('readonly fixture and sequence use fixed source job and return no native qualification invention',async()=>{

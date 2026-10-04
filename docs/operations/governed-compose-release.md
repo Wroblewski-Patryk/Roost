@@ -146,11 +146,13 @@ the official Worker reclaimed it without terminating the unrelated process.
 
 Worker is stopped; no application push, deployment or release grant exists.
 
-### Bounded activity proof after observation (source integration)
+### Bounded activity proof after observation (deployed contracts; proof pending)
 
 The optional sealed Compose manifest now governs `smoke`, `fixture_cleanup`
-and `runtime_resume` before terminal cleanup. These source contracts and fixed
-installed transports are not deployed or application release evidence yet.
+and `runtime_resume` before terminal cleanup. Roost `15d857eb` and additive
+migration `20261004151000_release_post_observation_fixture` are deployed with
+exact build/health and migration checksum verification. Application release
+and post-observation proof remain pending.
 The fixture owns exactly one synthetic user/session and one negative memory ID;
 it preserves business rows, sequences and the full schema. Ingress isolation
 requires the exact owned firewall rule, a negative public probe and a positive
@@ -161,7 +163,7 @@ original role setting, rule absence and existing cadence containers. Resume need
 the complete public health window plus fresh actual loop receipts; a skipped tick
 requires a verified source/configuration expectation. Unknown results are read
 back before any retry. The new migration extends an operation CHECK only; it is
-not applied to production at this preparation checkpoint.
+applied without resetting data.
 
 The root reran the Compose/installed activity suite (538 passing tests), shared
 native-process/broker recovery regressions (23), legacy contract/Git-set checks
@@ -170,7 +172,34 @@ lint/typecheck/build passed during integration. Fixed read-only prerequisite
 reads confirm matching installed configuration, route, scheduler and entrypoint
 sources in the application and both cadence containers; they neither start a
 tick nor claim deployment/postrelease proof. The private package factory passes
-100 guards and returns buffers only. Production preparation still requires a
-fresh normal Coolify API credential, exact secret-reference provisioning, fresh
-maintenance/backup qualification and the separate owner exact-commit release
-grant. The expired credential has not been replaced and no release is started.
+161 guards and returns buffers only. Normal Coolify HTTPS credentials and
+secret-reference provisioning are qualified. API readback exposes UUIDs/flags;
+value hashes come from the installed model bound to the same key and UUID.
+Never claim that API responses disclosed values. The existing target is pinned
+to its baseline with automatic deployment disabled; original settings remain
+recoverable. A fresh encrypted backup, isolated same-image migration adoption
+and full schema/data/sequence parity pass. Store each application's retained
+backup in a separate folder; installation IDs may be shared.
+
+Real Docker/PG reads required Worker corrections: paused containers report
+`Status=paused`, absent Health needs a map lookup, and PostgreSQL IP comparisons
+use `host(inet)` without subnet suffixes. The maintenance connection uses a
+separate admin database so it cannot inherit the application role's DB-scoped
+read-only setting. These Worker corrections are source-verified; the complete
+five-service post-release path has not run.
+
+Where proxy traffic stays on a bridge that bypasses host filtering, private
+settings can select application-namespace `INPUT`. Exact proxy container/image
+and full network digests are required. The controller derives and rechecks the
+live application PID, namespace and addresses before/after every rule command;
+only proxy-to-application TCP ingress is fenced. Published ports, namespace or
+proxy drift refuse further effects and require reconciliation. Native baseline
+preparation proved public denial, then reopened health while preserving DB and
+cadence fences; it does not substitute for governed post-observation proof.
+
+The releaser credential is renewed through normal Roost API and WCM readback.
+An independent readiness task exists. Unused build-cache cleanup recovered
+4.927 GB without removing images, volumes or application data. The sealed
+release package, independent native audit and separate owner exact-manifest
+grant remain pending. Revoke the owner's temporary Coolify token through the
+normal UI after use. No application push/deploy or fixture write has occurred.

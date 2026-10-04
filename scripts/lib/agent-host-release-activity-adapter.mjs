@@ -144,7 +144,7 @@ export function createActivityReleaseAdapter({manifest,binding,settings,seed,rea
   check(r.operation===op&&r.releaseId===releaseId&&r.operationId===policy.operationId&&r.manifestDigest===s.manifestDigest
    &&r.targetId===t.targetId&&r.commit===policy.commit&&r.tree===policy.tree&&r.fixtureId===p.fixture.fixtureId
    &&r.controllerProgramDigest===policy.controllerProgramDigest&&Date.now()-Date.parse(r.observedAt)<=60000&&Date.parse(r.observedAt)<=Date.now()+2000,'fixture_identity_changed');
-  const expected=orderedRows(runtimeRows).map(row=>({...policy.expectedRuntime.find(e=>e.name===row.name),status:row.state==='paused'?'running':row.state,paused:row.state==='paused',health:row.health}));
+  const expected=orderedRows(runtimeRows).map(row=>({...policy.expectedRuntime.find(e=>e.name===row.name),status:row.state,paused:row.state==='paused',health:row.health}));
   check(r.runtimeDigest===textHash(canonical(expected)),'fixture_runtime_changed');
   const f=r.observed.phase==='needs_baseline_seal'?r.observed.observed:r.observed.after;
   check(f.nonOwnedDigest===m.baseline.dataDigest&&f.sequenceDigest===p.baselineSequenceDigest
