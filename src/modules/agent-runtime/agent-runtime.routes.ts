@@ -1,4 +1,5 @@
 import { nativeBoundaryResultBlocked } from "./task-review-contract";
+import { retryContextRead } from "./context-read-retry";
 import { completedResultBasisView, revalidateCompletedResultBasis } from "./completed-result-basis";
 import { governedReleaseRouter } from "./governed-release.routes";
 import { ownerTicketHandler } from "./owner-ticket-http";
@@ -405,24 +406,24 @@ agentRuntimeRouter.get("/tasks/:id/execution-readiness", asyncHandler(async (req
   const taskId = z.string().uuid().parse(req.params.id);
   if (req.query.version === "1") {
     const applicationId = z.string().uuid().parse(req.query.applicationId);
-    const result = await readyTransaction(async tx => {
+    const result = await retryContextRead(() => readyTransaction(async tx => {
       const task = await tx.task.findFirst({ where: { id: taskId, workspaceId: req.auth!.workspaceId }, select: { projectId: true } });
       if (!task) return { error: "task_not_found" };
       const application = await tx.application.findFirst({ where: { id: applicationId, workspaceId: req.auth!.workspaceId,
         projects: { some: { projectId: task.projectId ?? "00000000-0000-0000-0000-000000000000" } } }, select: { id: true } });
       if (!application) return { error: "application_not_found" };
       return { applicationId, submissionVersion: await submissionVersion(tx, req.auth!.workspaceId, taskId, applicationId) };
-    });
+    }));
     if ("error" in result) return sendApiError(res, result.error?.endsWith("not_found") ? 404 : 409, result.error!);
     return res.json({ data: result });
   }
-  const result = await readyTransaction(async tx => {
+  const result = await retryContextRead(() => readyTransaction(async tx => {
     const ready = await inspectReady(tx, req.auth!.workspaceId, taskId);
     if (ready.error === "task_not_found" || req.query.editor !== "1") return ready;
     const editor = await readyEditorData(tx, req.auth!.workspaceId, taskId, req.query.applicationId ? z.string().uuid().parse(req.query.applicationId) : undefined, req.auth!.userId ?? undefined);
     if (editor && "error" in editor) return { error: editor.error };
     return { ...ready, readiness: { ...ready.readiness, editor, canSubmit: req.auth!.authType === "user" && roleAtLeast(req.auth!.workspaceRole, "member"), executionEnabled: executionEnabled() } };
-  });
+  }));
   if ("error" in result && result.error === "task_not_found") return sendApiError(res, 404, result.error);
   if ("error" in result && result.error === "application_not_found") return sendApiError(res, 404, result.error);
   res.json({ data: "readiness" in result ? result.readiness : { status: "needs_revalidation", reason: result.error } });
