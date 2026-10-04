@@ -38,7 +38,10 @@ export async function riskScopeIsReadonly(contract: unknown): Promise<boolean> {
   if (c.nativeBoundary?.profile !== "inspect-readonly" || c.access.sandbox !== "read-only"
     || c.access.externalWrites !== false || c.access.tools.length !== 1 || c.access.tools[0] !== "repository_read"
     || c.access.permissions.length !== 1 || c.access.permissions[0] !== "repository_read") return false;
-  try { c.nativeBoundary.readPaths.forEach(nativeRelative); } catch { return false; }
+  try {
+    c.nativeBoundary.readPaths.forEach(nativeRelative);
+    (c.nativeBoundary.readFragments ?? []).forEach((fragment: {path:string}) => nativeRelative(fragment.path));
+  } catch { return false; }
   return true;
 }
 

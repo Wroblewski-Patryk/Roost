@@ -1,5 +1,6 @@
 import { DragEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { api } from "../../api/client";
+import { recordIdFromQuery, validateTaskNavigation } from '../../owner-record-navigation';
 import { userErrorMessage } from "../../api/errors";
 import { CcButton } from "../../components/cc-button";
 import { CcField } from "../../components/cc-field";
@@ -1325,7 +1326,17 @@ export function OperationsRoute() {
   const [selectedListIds, setSelectedListIds] = useState<string[]>([]);
   const [listSelectionInitialized, setListSelectionInitialized] = useState(false);
   const [selectedTask, setSelectedTask] = useState<OperationsWorkItem | null>(null);
-  const [readinessTask, setReadinessTask] = useState<string | null>(() => { const id = new URLSearchParams(window.location.search).get("taskId"); return id && /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id) ? id : null; });
+  const [readinessTask, setReadinessTask] = useState<string | null>(null);
+  const [navigationError, setNavigationError] = useState(false);
+  useEffect(() => {
+    const taskId = recordIdFromQuery(window.location.search, 'taskId');
+    if (!taskId) return;
+    let active = true;
+    validateTaskNavigation(taskId, id => api(`/v1/tasks/${id}`)).then(id => {
+      if (active) setReadinessTask(id);
+    }).catch(() => { if (active) setNavigationError(true); });
+    return () => { active = false; };
+  }, []);
   const [selectedList, setSelectedList] = useState<OperationsTaskList | null>(null);
   const [createTaskListId, setCreateTaskListId] = useState<string | null>(null);
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
@@ -1383,6 +1394,8 @@ export function OperationsRoute() {
 
   return (
     <>
+      {navigationError ? <CcNotice tone="error" title={locale === 'pl' ? 'Wskazane zadanie jest niedostępne w tym workspace.' : 'The requested task is unavailable in this workspace.'}
+        action={<CcButton variant="outline" onClick={() => setNavigationError(false)}>{locale === 'pl' ? 'Pokaż rejestr zadań' : 'Show task register'}</CcButton>} /> : null}
       <CcPageHeader
         actions={<><DepartmentScopeControl baseHref={`/areas?area=04-operacje&view=${activeView}`} value={departmentScope} />{activeView !== "calendar" ? <CcSelect aria-label={locale === "pl" ? "Widok zadań" : "Task view"} value={archive} onChange={event => { setArchive(event.target.value); setListSelectionInitialized(false); clearTaskFilters(); }}><option value="exclude">{locale === "pl" ? "Bieżące" : "Current"}</option><option value="only">{locale === "pl" ? "Archiwum" : "Archive"}</option><option value="all">{locale === "pl" ? "Wszystkie" : "All"}</option></CcSelect> : null}</>}
         description={departmentScope ? `Filtered to work assigned to ${departmentLabel(departmentScope, t)}.` : t(activeView === "calendar" ? "operations.calendarDescription" : "operations.description")}

@@ -42,6 +42,15 @@ test("the verifier receives the exact completed, independent auditor receipt as 
   assert.equal(evidence.receipt.comparisonScope, "same_repository_and_per_execution_state");
 });
 
+test('verifier must retain the exact bounded fragment selection from its qualified auditor', () => {
+  const scope = expected(); scope.contract.nativeBoundary.readFragments = [{ path: 'docs/accepted.md', startLine: 20, endLine: 25 }];
+  const candidate = prior(scope);
+  candidate.metadata.executionContract.nativeBoundary.readFragments = structuredClone(scope.contract.nativeBoundary.readFragments);
+  assert.equal(verifiedPriorReadOnlyAudit(candidate, scope).executionId, candidate.id);
+  candidate.metadata.executionContract.nativeBoundary.readFragments[0].endLine = 26;
+  assert.throws(() => verifiedPriorReadOnlyAudit(candidate, scope), /prior_readonly_audit_invalid/);
+});
+
 for (const [label, alter] of Object.entries({
   unfinished: p => { p.status = "running"; },
   otherHost: p => { p.agentHostId = id(99); },

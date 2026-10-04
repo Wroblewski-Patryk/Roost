@@ -10,6 +10,7 @@ import { computeRisk, riskDimensions, riskScopeIsReadonly, riskAssessmentSchema,
 const loadESM = new Function("specifier", "return import(specifier)") as (specifier: string) => Promise<any>;
 const root = path.resolve(__dirname, "../..");
 const migration = readFileSync(path.join(root, "prisma/migrations/20261001120000_risk_cumulative_mutations/migration.sql"), "utf8");
+const fragmentsMigration = readFileSync(path.join(root, 'prisma/migrations/20261004001500_readonly_fragments_risk/migration.sql'), 'utf8');
 const evidence = { id: randomUUID(), revision: "2026-10-01T00:00:00.000Z" };
 const entry = (): RiskEntry => ({ taskId: randomUUID(),
   dimensions: Object.fromEntries(riskDimensions.map(d => [d, { level: "low", rationale: "Bounded synthetic impact", evidence: [evidence] }])) as RiskEntry["dimensions"],
@@ -25,37 +26,10 @@ async function fixture() {
 
 // Pin the SQL mirror to the current real schema, including strict object keys
 // and all known refinements. Unknown validators fail here rather than drift.
-function descriptor(s: any): any {
-  const d = s._def, k = d.typeName.replace("Zod", "").toLowerCase();
-  if (k === "object") {
-    assert.equal(d.unknownKeys, "strict");
-    return { k, shape: Object.fromEntries(Object.entries(s.shape).map(([name, value]) => [name, descriptor(value)])) };
-  }
-  if (["optional", "nullable", "default"].includes(k)) return { k, inner: descriptor(d.innerType) };
-  if (k === "array") return { k, inner: descriptor(d.type), ...(d.minLength ? { min: d.minLength.value } : {}), ...(d.maxLength ? { max: d.maxLength.value } : {}) };
-  if (k === "tuple") { assert.equal(d.items.length, 0); return { k, items: [] }; }
-  if (["union", "discriminatedunion"].includes(k)) return { k: "union", options: d.options.map(descriptor) };
-  if (k === "literal") return { k, value: d.value };
-  if (k === "enum") return { k, values: d.values };
-  if (k === "boolean") return { k };
-  if (k === "string" || k === "number") return { k, checks: d.checks.map((check: any) => {
-    if (check.kind === "regex") { assert.equal(check.regex.flags, ""); return { kind: check.kind, pattern: check.regex.source }; }
-    assert.ok(["trim", "min", "max", "uuid", "int", "finite"].includes(check.kind)); return check;
-  }) };
-  if (k === "effects") {
-    const keys = Object.keys(d.schema.shape).sort().join(",");
-    const rule = keys === "items,noneReason" ? "optionalSet" : keys === "model,reasoningEffort" ? "codexModel"
-      : keys === "model,modelDigest,modelFamily,provider,reasoningEffort" ? "localModel" : null;
-    assert.equal(d.effect.type, "refinement"); assert.ok(rule, `Unmirrored refinement ${keys}`);
-    return { k: "refinement", rule, inner: descriptor(d.schema) };
-  }
-  throw new Error(`Unmirrored schema ${k}`);
-}
 test("SQL readonly classifier is pinned to the real strict execution schema", async () => {
-  const { executionContractSchema: s } = await loadESM(pathToFileURL(path.join(root, "scripts/lib/agent-host-execution-packet.mjs")).href);
-  const expected = descriptor(s);
-  expected.shape.nativeBoundary = descriptor(s.shape.nativeBoundary.unwrap().options.find((o: any) => o.shape.profile.value === "inspect-readonly"));
-  const stored = migration.match(/SELECT \$schema\$(.+)\$schema\$::jsonb/)?.[1];
+  const { readonlyRiskSchema } = await loadESM(pathToFileURL(path.join(root, 'scripts/lib/agent-host-risk-readonly-schema.mjs')).href);
+  const expected = readonlyRiskSchema();
+  const stored = fragmentsMigration.match(/SELECT \$schema\$(.+)\$schema\$::jsonb/)?.[1];
   assert.ok(stored); assert.deepEqual(JSON.parse(stored), JSON.parse(JSON.stringify(expected)));
 });
 
@@ -99,6 +73,11 @@ const malformed: Record<string, (c: any) => void> = {
   secretPath: c => { c.nativeBoundary.readPaths = [".env"]; },
   gitPath: c => { c.nativeBoundary.readPaths = [".git/config"]; },
   reservedPath: c => { c.nativeBoundary.readPaths = ["CON.json"]; }
+  ,fragmentTraversal: c => { c.nativeBoundary.readFragments = [{path:'../outside.md',startLine:1,endLine:2}]; }
+  ,fragmentOverlap: c => { c.nativeBoundary.readFragments = [{path:'docs/accepted.md',startLine:1,endLine:5},{path:'DOCS/accepted.md',startLine:5,endLine:9}]; }
+  ,fragmentTooLong: c => { c.nativeBoundary.readFragments = [{path:'docs/accepted.md',startLine:1,endLine:201}]; }
+  ,fragmentWholeConflict: c => { c.nativeBoundary.readFragments = [{path:'RELEASE.json',startLine:1,endLine:2}]; }
+  ,emptySelection: c => { c.nativeBoundary.readPaths = []; }
 };
 async function validVariants() {
   const base = await fixture(), variants: any[] = [base];
@@ -114,6 +93,8 @@ async function validVariants() {
     { ...managed, backend: "ollama_loopback", provider: "ollama", endpoint: "http://127.0.0.1:11434", modelSelection: local, config: { reasoning: "explicit_model_effort", remote: false } }
   ]) variants.push({ ...structuredClone(base), modelSelection });
   variants.push({ ...structuredClone(base), nativeBoundary: { ...base.nativeBoundary, readPaths: [".env.example", "src/module.ts"] } });
+  variants.push({ ...structuredClone(base), nativeBoundary: { ...base.nativeBoundary, readPaths: [], readFragments: [{path:'docs/accepted.md',startLine:1,endLine:200}] } });
+  variants.push({ ...structuredClone(base), nativeBoundary: { ...base.nativeBoundary, readFragments: [{path:'docs/accepted.md',startLine:1,endLine:5},{path:'docs/accepted.md',startLine:6,endLine:10}] } });
   return variants;
 }
 test("valid auditor, verifier and exact-commit reviewer remain readonly across admitted model shapes", async () => {
@@ -137,8 +118,9 @@ test("malformed or mutating audit declarations count as changes", async () => {
 test("PostgreSQL derives the same changes and rejects forged low assessment results", { skip: !process.env.ROOST_RISK_SQL_TEST_CONTAINER }, async () => {
   const container = process.env.ROOST_RISK_SQL_TEST_CONTAINER!;
   assert.match(container, /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,100}$/);
-  const qualify = (s: string) => s.replace(/\btask_risk_(contract_shape|readonly_schema|readonly_contract|history_guard|sources|version)\(/g, "pg_temp.task_risk_$1(");
-  const functions = qualify(migration.slice(migration.indexOf("CREATE FUNCTION task_risk_contract_shape"), migration.lastIndexOf("COMMIT;")));
+  const qualify = (s: string) => s.replace(/\btask_risk_(contract_shape|readonly_schema|readonly_contract|history_guard|sources|version|relative_path|readonly_selection)\(/g, "pg_temp.task_risk_$1(");
+  const functions = qualify(migration.slice(migration.indexOf("CREATE FUNCTION task_risk_contract_shape"), migration.lastIndexOf("COMMIT;")))
+    + qualify(fragmentsMigration.replace(/^BEGIN;\s*/, '').replace(/COMMIT;\s*$/, ''));
   const json = (v: unknown) => `$json$${JSON.stringify(v)}$json$::jsonb`;
   const c = await fixture(), audits = Array.from({ length: 4 }, entry), changes = Array.from({ length: 4 }, entry);
   let sql = `BEGIN;

@@ -13,6 +13,7 @@ import { FindingWorkbench } from "./finding-workbench";
 import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
 import {
   ApplicationCapability,
+  ApplicationOperation,
   ProductApplication,
   ProductEngineeringCatalog,
   ProductGap,
@@ -20,6 +21,7 @@ import {
   ProjectSummary,
   Readiness,
 } from "./product-engineering-types";
+import { operationLabel, portfolioOperation, portfolioRecordHref, portfolioTaskHref } from "./portfolio-operation-model";
 
 type PortfolioPacket = {
   summary: {
@@ -126,15 +128,6 @@ function humanize(value: string) {
   return humanizeBusinessValue(value);
 }
 
-function lifecycleIcon(stage: string) {
-  if (["productized", "growth", "mature"].includes(stage)) return "ph-rocket-launch";
-  if (["validation", "launch_preparation"].includes(stage)) return "ph-seal-check";
-  if (["development", "mvp"].includes(stage)) return "ph-code";
-  if (["prototype", "discovery"].includes(stage)) return "ph-flask";
-  if (["archived", "retired"].includes(stage)) return "ph-archive";
-  return "ph-lightbulb";
-}
-
 function Meter({ value, label }: { value: number; label: string }) {
   return (
     <div className="grid gap-1">
@@ -151,6 +144,31 @@ function Meter({ value, label }: { value: number; label: string }) {
   );
 }
 
+export function ApplicationOperationSummary({ operation, locale }: { operation?: ApplicationOperation; locale: "pl" | "en" }) {
+  const pl = locale === "pl", current = portfolioOperation(operation);
+  const copy = (polish: string, english: string) => pl ? polish : english;
+  const label = (value: string) => operationLabel(value, locale);
+  const date = (value: string) => Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString(pl ? "pl-PL" : "en-GB") : copy("Nieznana data", "Unknown date");
+  const link = (href: string | null, text: string) => href ? <a className="link link-primary [overflow-wrap:anywhere]" href={href}>{text}</a> : <span className="[overflow-wrap:anywhere]">{text}</span>;
+  return <section className="mt-4 grid gap-3 border-t border-base-300 pt-4 text-sm" aria-label={copy("Stan operacyjny aplikacji", "Application operation status")}>
+    <dl className="grid gap-3">
+      <div><dt className="text-company-muted">{copy("Etap potwierdzony dowodami", "Stage supported by evidence")}</dt><dd className="font-bold">{label(current?.stage.key ?? "unverified")}</dd>{current ? <dd className="mt-1 text-xs text-company-muted">{label(current.stage.claim)}</dd> : null}</div>
+      <div><dt className="text-company-muted">{copy("Brama najbliższego wyniku", "Nearest outcome gate")}</dt><dd className={`font-bold ${current?.gateState === "blocked" ? "text-error" : current?.gateState === "met" ? "text-success" : ""}`}>{current ? label(current.gateState) : copy("Niezweryfikowana", "Unverified")}</dd></div>
+      <div><dt className="text-company-muted">{copy("Najbliższy wynik", "Nearest outcome")}</dt><dd>{current?.nearestOutcome ? <>{link(portfolioTaskHref(current.nearestOutcome.taskId), current.nearestOutcome.title)}<span className="ml-2 text-xs text-company-muted">{label(current.nearestOutcome.status)}</span></> : copy("Brak wskazanego wyniku", "No outcome identified")}</dd></div>
+      <div><dt className="text-company-muted">{copy("Odpowiedzialność", "Accountability")}</dt><dd>{current?.accountable ? <>{current.accountable.label} · {label(current.accountable.role)}</> : copy("Nieustalona", "Not established")}</dd></div>
+    </dl>
+    <p className="text-xs text-company-muted">{copy("Stan bramy dotyczy wyłącznie najbliższego wyniku.", "Gate state applies only to the nearest outcome.")}</p>
+    {current?.stage.scope ? <p className="[overflow-wrap:anywhere]"><strong>{copy("Zakres dowodu", "Evidence scope")}:</strong> {current.stage.scope}</p> : null}
+    {current?.stage.asOf ? <p className="text-xs text-company-muted">{copy("Stan na", "As of")}: <time dateTime={current.stage.asOf}>{date(current.stage.asOf)}</time></p> : null}
+    {current?.stage.decisionId ? <p>{link(portfolioRecordHref(`/areas?area=01-strategia&view=decisions&decisionId=${encodeURIComponent(current.stage.decisionId)}`), copy("Decyzja dotycząca stanu bazowego", "Baseline decision"))}</p> : null}
+    <p className="text-xs text-company-muted">{copy("Gotowość produktu: niezweryfikowana · Gotowość do sprzedaży: niezweryfikowana", "Product readiness: unverified · Sale readiness: unverified")}</p>
+    <div><h4 className="font-bold">{copy("Blokady", "Blockers")}</h4>{current?.blockers.length ? <ul className="mt-1 list-disc space-y-1 pl-4">{current.blockers.map((blocker, index) => <li className="[overflow-wrap:anywhere]" key={`${blocker.code}-${index}`}>{label(blocker.code)}{blocker.reference ? <span className="block text-xs text-company-muted">{blocker.reference}</span> : null}</li>)}</ul> : <p className="text-company-muted">{current ? copy("Brak zgłoszonych blokad", "No reported blockers") : copy("Brak zweryfikowanego stanu blokad", "Blocker state is unverified")}</p>}</div>
+    <div><h4 className="font-bold">{copy("Decyzje wymagające uwagi", "Decisions needing attention")}</h4>{current?.decisions.length ? <ul className="mt-1 space-y-1">{current.decisions.map(decision => <li key={decision.id}>{link(portfolioRecordHref(decision.href), decision.title)}<span className="ml-2 text-xs text-company-muted">{label(decision.state)}</span></li>)}</ul> : <p className="text-company-muted">{current ? copy("Brak zgłoszonych decyzji", "No reported decisions") : copy("Brak zweryfikowanego stanu decyzji", "Decision state is unverified")}</p>}</div>
+    <div><h4 className="font-bold">{copy("Dowody", "Evidence")}</h4>{current?.evidence.length ? <ul className="mt-1 space-y-2">{current.evidence.map(evidence => <li key={`${evidence.kind}-${evidence.id}`}>{link(portfolioRecordHref(evidence.href), label(evidence.kind))}<span className="ml-2 text-xs text-company-muted"><time dateTime={evidence.at}>{date(evidence.at)}</time></span>{evidence.commit ? <code className="block break-all text-xs">{evidence.commit}</code> : null}</li>)}</ul> : <p className="text-company-muted">{copy("Brak dowodów zakończenia", "No completion evidence")}</p>}</div>
+    {current?.limitations.length ? <details className="text-xs text-company-muted"><summary className="cursor-pointer py-1">{copy("Granice dowodu", "Evidence limitations")}</summary><ul className="list-disc space-y-1 pl-4">{current.limitations.map((limitation, index) => <li className="[overflow-wrap:anywhere]" key={index}>{limitation}</li>)}</ul></details> : null}
+  </section>;
+}
+
 function ApplicationCard({
   application,
   onOpen,
@@ -158,31 +176,24 @@ function ApplicationCard({
   application: ProductApplication;
   onOpen: () => void;
 }) {
-  const { t } = useLanguage();
+  const { locale } = useLanguage();
   return (
-    <button
-      className="rounded-company border border-base-300 bg-base-100 p-5 text-left transition hover:border-primary hover:shadow-md"
-      onClick={onOpen}
-    >
+    <article className="rounded-company border border-base-300 bg-base-100 p-5 text-left">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-xl font-black text-company-ink">
             {application.name}
           </h3>
           <p className="mt-1 text-sm text-company-muted">
-            {application.description || "No application description yet."}
+            {application.description || (locale === "pl" ? "Brak opisu aplikacji." : "No application description yet.")}
           </p>
         </div>
-        <span
-          aria-label={`${t("innovation.stage")}: ${humanize(application.innovationStage)}`}
-          className="roost-stage-icon"
-          role="img"
-          title={humanize(application.innovationStage)}
-        >
-          <i className={`ph-bold ${lifecycleIcon(application.innovationStage)}`} aria-hidden="true"></i>
-        </span>
+        <CcButton size="sm" variant="outline" onClick={onOpen}>{locale === "pl" ? "Otwórz aplikację" : "Open application"}</CcButton>
       </div>
-      <div className="mt-5 grid gap-3">
+      <ApplicationOperationSummary operation={application.operation} locale={locale} />
+      <details className="mt-5 border-t border-base-300 pt-3 text-xs text-company-muted"><summary className="cursor-pointer">{locale === "pl" ? "Ocena funkcji i zadeklarowany etap" : "Capability score and declared stage"}</summary>
+      <p className="mt-3">{locale === "pl" ? "Zadeklarowany etap profilu" : "Declared profile stage"}: {humanize(application.innovationStage)}</p>
+      <div className="mt-3 grid gap-3">
         {(application.readiness?.dimensions || [])
           .slice(0, 5)
           .map((dimension) => (
@@ -194,15 +205,16 @@ function ApplicationCard({
           ))}
         {!application.readiness?.dimensions.length ? (
           <p className="text-sm text-company-muted">
-            Assign capabilities to calculate readiness.
+            {locale === "pl" ? "Przypisz funkcje, aby obliczyć ich ocenę." : "Assign capabilities to calculate their score."}
           </p>
         ) : null}
       </div>
       <div className="mt-5 flex flex-wrap items-center gap-2 text-xs font-bold">
-        {application.readiness?.dimensions.length ? <span className="text-company-muted">Overall readiness {application.readiness.overall || 0}%</span> : null}
-        {application.gapSummary?.blockers ? <span className="badge badge-error">{application.gapSummary.blockers} blockers</span> : null}
+        {application.readiness?.dimensions.length ? <span className="text-company-muted">{locale === "pl" ? "Ocena funkcji" : "Capability score"}: {application.readiness.overall || 0}%</span> : null}
+        {application.gapSummary?.blockers ? <span>{application.gapSummary.blockers} {locale === "pl" ? "blokad funkcji" : "capability blockers"}</span> : null}
       </div>
-    </button>
+      </details>
+    </article>
   );
 }
 
@@ -1090,7 +1102,7 @@ function ExecutionWorkbench({
 }
 
 export function InnovationRoute() {
-  const { t } = useLanguage();
+  const { locale, t } = useLanguage();
   const [portfolio, setPortfolio] = useState<PortfolioPacket | null>(null);
   const [catalog, setCatalog] = useState<ProductEngineeringCatalog | null>(
     null,
@@ -1274,7 +1286,7 @@ export function InnovationRoute() {
               </div>
               <div className="grid gap-2">
                 <span className="text-xs font-black uppercase text-company-muted">
-                  Innovation lifecycle
+                  {locale === "pl" ? "Zadeklarowany etap profilu" : "Declared profile stage"}
                 </span>
                 <select
                   className="select select-bordered"
@@ -1289,6 +1301,7 @@ export function InnovationRoute() {
                 </select>
               </div>
             </div>
+            <ApplicationOperationSummary operation={selected.operation} locale={locale} />
             <div className="tabs tabs-box mt-5 overflow-x-auto">
               {(
                 [
@@ -1371,7 +1384,7 @@ export function InnovationRoute() {
               </section>
               <section className="rounded-company border border-base-300 bg-base-100 p-5">
                 <div className="flex justify-between">
-                  <h3 className="text-xl font-black">Readiness</h3>
+                  <h3 className="text-xl font-black">{locale === "pl" ? "Ocena funkcji" : "Capability score"}</h3>
                   <span className="text-2xl font-black text-primary">
                     {readiness?.overall || 0}%
                   </span>

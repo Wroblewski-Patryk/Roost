@@ -32,6 +32,7 @@ import { createEvent } from "../events/event.service";
 import { buildPortfolioGraph } from "./application-graph";
 import { capabilityInclude, gapsFor, loadApplicationGraphPacket, loadCapabilities, procedureInclude, projectInclude, readinessInput } from "./application-graph-projection.service";
 import { calculateApplicationReadiness } from "./readiness";
+import { loadApplicationOperation } from './application-operation.service';
 import { reviewTransaction } from "../agent-runtime/task-capability-admission";
 import { findingCatalog, findingList, findingView, recordFinding, reviseFinding, recordOccurrence, commandFinding, issueFindingGrant } from "./finding-service";
 
@@ -503,11 +504,12 @@ productEngineeringRouter.get("/portfolio", asyncHandler(async (req, res) => {
     include: { capabilities: { include: capabilityInclude }, offerings: true },
     orderBy: { updatedAt: "desc" }
   });
-  const rows = applications.map((application) => {
+  const rows = await Promise.all(applications.map(async (application) => {
     const readiness = calculateApplicationReadiness(readinessInput(application.capabilities));
     const gaps = gapsFor(application.capabilities);
-    return { ...application, readiness, gapSummary: { total: gaps.length, blockers: gaps.filter((gap) => gap.blocked).length } };
-  });
+    const operation = await loadApplicationOperation(prisma, req.auth!.workspaceId, application.id);
+    return { ...application, operation, readiness, gapSummary: { total: gaps.length, blockers: gaps.filter((gap) => gap.blocked).length } };
+  }));
   res.json({
     data: {
       summary: {
@@ -580,7 +582,8 @@ productEngineeringRouter.get("/applications/:id", asyncHandler(async (req, res) 
     }
   });
   if (!application) return sendApiError(res, 404, "application_not_found");
-  res.json({ data: application });
+  const operation = await loadApplicationOperation(prisma, req.auth!.workspaceId, application.id);
+  res.json({ data: { ...application, operation } });
 }));
 
 productEngineeringRouter.patch("/applications/:id", asyncHandler(async (req, res) => {

@@ -1002,6 +1002,22 @@ partial in the full company: external broker containment, automatic risk
 classification and remediation are outside this scope. Production execution
 stays disabled and the canonical host stays observe.
 
+### <a id="e-app-operation"></a>E-APP-OP — reusable application operation
+
+Gate 5 is in progress, not complete. Source and test evidence adds strict
+canonical read fragments, additive native risk classification, primary-owner
+takeover baseline guards and evidence-derived portfolio/record navigation.
+Root checks: 37/37 focused API/model/UI tests; 29/29 Worker fragment/prior-audit
+tests; 6/6 tests including real disposable PostgreSQL baseline/risk guards,
+zero skips; `npm run validate` and `npm run codex:check` PASS. A bounded
+read-only collection in the second configured checkout selected 25 records,
+62,849 bytes, with unchanged native Git/process/container state. This is
+collector preflight, not a Hermes execution or accepted takeover. Managed
+audit/verifier, owner baseline/first write, coding/review, deployed endpoints
+and native console proof remain outstanding. Shared roles and the existing base
+procedure are reused with application-specific context/extension. See
+[controls and claim boundary](../operations/internal-application-operation.md).
+
 ## Matrix
 
 | Requirement | Priority | Status | Inspected evidence | Remaining boundary / proof |
@@ -1035,11 +1051,11 @@ stays disabled and the canonical host stays observe.
 | [RF-APP-007](../product/requirements.md#rf-app-007) | P1 | nieocenione | [DEC](#e-dec) | Limitation acceptance requires a real readiness decision and attached evidence. |
 | [RF-APP-008](../product/requirements.md#rf-app-008) | P1 | nieocenione | [REVIEW](#e-review) | Owner readiness acceptance has not been exercised for a configured application. |
 | [RF-APP-009](../product/requirements.md#rf-app-009) | P0 | częściowo działa | [DOC](#e-doc), [RELEASE](#e-release) | Existing pilot records, repository and pinned runtime context were used in Gate 4; inventory across the portfolio remains unverified. |
-| [RF-APP-010](../product/requirements.md#rf-app-010) | P0 | częściowo działa | [PORT](#e-port), [RELEASE](#e-release) | Existing-application baseline adoption and bounded repair delivery passed; the new empty application path is not proven here. |
+| [RF-APP-010](../product/requirements.md#rf-app-010) | P0 | częściowo działa | [PORT](#e-port), [RELEASE](#e-release), [APP-OP](#e-app-operation) | Pilot bounded adoption/repair passed; second-app typed owner takeover has source/native-guard proof only. New empty-app path remains unproven. |
 | [RF-APP-011](../product/requirements.md#rf-app-011) | P0 | częściowo działa | [CTX](#e-ctx), [RELEASE](#e-release) | Gate 4 compares scoped requirements, code, Git and production facts with provenance; full financial/product audit is not claimed. |
-| [RF-APP-012](../product/requirements.md#rf-app-012) | P0 | częściowo działa | [DOC](#e-doc), [RELEASE](#e-release) | Base procedure and pilot-specific release/safety context ran together for one PWA repair; universal application coverage is unverified. |
+| [RF-APP-012](../product/requirements.md#rf-app-012) | P0 | częściowo działa | [DOC](#e-doc), [RELEASE](#e-release), [APP-OP](#e-app-operation) | Pilot base/extension ran together; second-app roles/context/extension reuse is configured, managed outcome still pending. |
 | [RF-APP-013](../product/requirements.md#rf-app-013) | P1 | częściowo działa | [PORT](#e-port), [RELEASE](#e-release) | One repair has evidence-backed delivery; the failed release remains FAILED before adoption and reissue. General lifecycle readiness is unverified. |
-| [RF-APP-014](../product/requirements.md#rf-app-014) | P1 | częściowo działa | [ATTENTION](#e-attention), [RELEASE](#e-release) | Pilot tasks, review, grant, runtime outcomes and postrelease verification are recorded in Roost; broader portfolio presentation remains unverified. |
+| [RF-APP-014](../product/requirements.md#rf-app-014) | P1 | częściowo działa | [ATTENTION](#e-attention), [RELEASE](#e-release), [APP-OP](#e-app-operation) | Pilot evidence is recorded; stage/outcome/accountability/five-state portfolio has focused source/UI tests. Deployed console and actual owner waiting/continuation remain unverified. |
 | [RF-APP-015](../product/requirements.md#rf-app-015) | P2 | nieocenione | [HEALTH](#e-health) | Controlled commercial launch is a later gate after application completion. |
 | [RF-BIZ-001](../product/requirements.md#rf-biz-001) | P2 | nieocenione | [DOC](#e-doc) | Application/Roost authority boundaries are later sale-readiness work. |
 | [RF-BIZ-002](../product/requirements.md#rf-biz-002) | P2 | nieocenione | [DOC](#e-doc) | Canonical customer identity is later business-operation scope. |
@@ -1195,8 +1211,8 @@ stays disabled and the canonical host stays observe.
 | [RF-ACT-010](../product/requirements.md#rf-act-010) | P1 | brak | [ACT](#e-act) | No app-onboarding readiness procedure. |
 | [RF-ACT-011](../product/requirements.md#rf-act-011) | P0 | częściowo działa | [GOV](#e-gov) | `AGENTS.md`, `docs/implementation.md` and the repository delivery skill enforce one accountable authorized gate with bounded delegation and a mandatory stop before the next gate. Native Roost/Worker enforcement and gate proof remain unverified. |
 | [RF-PILOT-001](../product/requirements.md#rf-demoapp-001) | P1 | częściowo działa | [PILOT](#e-demoapp), [RELEASE](#e-release) | Pilot mapping, scoped application context and six-service production baseline were audited; full product readiness is not proven. |
-| [RF-PILOT-002](../product/requirements.md#rf-demoapp-002) | P1 | częściowo działa | [PILOT](#e-demoapp), [RELEASE](#e-release) | Native two-file PWA audit and RED/GREEN proof passed; whole codebase and financial behavior remain unverified. |
-| [RF-PILOT-003](../product/requirements.md#rf-demoapp-003) | P1 | częściowo działa | [PILOT](#e-demoapp), [RELEASE](#e-release) | Exact PWA repair acceptance and independent production verification passed; other product flows are not certified. |
+| [RF-PILOT-002](../product/requirements.md#rf-demoapp-002) | P1 | nieocenione | [PILOT](#e-demoapp) | Gate 4 PWA repair does not prove shared BACKTEST/PAPER/LIVE strategy decisions or multi-exchange/market/portfolio behavior. |
+| [RF-PILOT-003](../product/requirements.md#rf-demoapp-003) | P1 | nieocenione | [PILOT](#e-demoapp) | Gate 4 PWA repair does not prove immutable strategy/configuration/run versions or ownership of positions across rollback/migration. |
 | [RF-PILOT-004](../product/requirements.md#rf-demoapp-004) | P0 | częściowo działa | [PILOT](#e-demoapp), [RELEASE](#e-release) | Managed frontend release, backup/restore readiness, data preservation and 1238-second healthy observation passed with trading paused; this does not certify financial/LIVE deployment. |
 | [RF-PILOT-005](../product/requirements.md#rf-demoapp-005) | P0 | wymaga konfiguracji | [PILOT](#e-demoapp) | Owner mandate recorded; never treat balance as enforcement. |
 | [RF-PILOT-006](../product/requirements.md#rf-demoapp-006) | P0 | wymaga konfiguracji | [PILOT](#e-demoapp) | Required confirmation not obtained from exchanges; no live permission granted here. |

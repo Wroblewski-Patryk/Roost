@@ -11,6 +11,7 @@ import { proofKeyIntent } from "../api-keys/bootstrap-proof-key-contract";
 import { proofAuthorityAttachment } from "../api-keys/bootstrap-proof-authority-contract";
 import { v3Intent } from "../api-keys/bootstrap-proof-issuance-contract";
 import { admissionEvidenceSchema } from "../agent-runtime/task-risk-admission-contract";
+import { applicationBaseline } from "../product-engineering/application-takeover-contract";
 
 const uuid=z.string().uuid(), text=z.string().trim().min(3).max(2000), hash=z.string().regex(/^[a-f0-9]{64}$/);
 export const managedRuntimeApproval=z.object({schemaVersion:z.literal('roost-managed-runtime-approval-v1'),
@@ -49,9 +50,15 @@ export const decisionProposal=z.object({requestId:uuid,decisionId:uuid.optional(
     snapshot:bootstrapChannelSnapshot}).strict()]).optional(),
   managedRuntimeApproval:managedRuntimeApproval.optional(),
   firstWriteApproval:firstWriteApproval.optional(),
+  applicationBaseline:applicationBaseline.optional(),
   scopeReason:text,scope:z.array(decisionNode).min(1).max(8),supersedesId:uuid.nullable(),
   conflicts:z.array(z.object({kind:z.enum(["contradicts","narrows","replaces"]),oldProvision:text,newProvision:text,explanation:text}).strict()).max(12)
 }).strict().superRefine((v,c)=>{
+  if(v.applicationBaseline&&(!v.scope.some(n=>n.type==='application'&&n.id.toLowerCase()===v.applicationBaseline!.applicationId)
+    ||!v.scope.some(n=>n.type==='task'&&n.id.toLowerCase()===v.applicationBaseline!.auditTaskId)
+    ||v.authority||v.managedRuntimeApproval||v.firstWriteApproval||v.workerBootstrap||v.workerCredential||v.workerTransport||v.workerIdentityLifecycle
+    ||v.workerBootstrapIssuer||v.workerBootstrapProofKey||v.workerBootstrapProofAuthority||v.workerBootstrapAdmissionV3||v.workerBootstrapChannel||v.findingAdjudication))
+    c.addIssue({code:'custom',message:'Application takeover requires its exact application and audit task in a separate primary-owner decision'});
   if(v.managedRuntimeApproval&&(!v.scope.some(n=>n.type==='task'&&n.id===v.managedRuntimeApproval!.taskId)
     ||v.authority||v.workerBootstrap||v.workerCredential||v.workerTransport||v.workerIdentityLifecycle
     ||v.workerBootstrapIssuer||v.workerBootstrapProofKey||v.workerBootstrapProofAuthority||v.workerBootstrapAdmissionV3||v.workerBootstrapChannel))

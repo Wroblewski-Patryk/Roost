@@ -53,7 +53,12 @@ export const providerInputSchema = z.object({
     }).strict()).optional(),
     repositoryInspection: evidence("worker.bounded_repository_read", z.object({
       schemaVersion: z.literal("roost-readonly-repository-evidence-v1"), head: z.string().regex(/^[a-f0-9]{40}$/), branch: z.string().min(1),
-      files: z.array(z.object({ path: z.string().min(1), mimeType: z.literal("text/plain"), content: z.string().max(32768), sha256: hash }).strict()).min(1).max(32),
+      files: z.array(z.union([
+        z.object({ path: z.string().min(1), mimeType: z.literal("text/plain"), content: z.string().max(32768), sha256: hash }).strict(),
+        z.object({ path: z.string().min(1), mimeType: z.literal("text/plain"), content: z.string().max(65536), sha256: hash,
+          sourceSha256: hash, range: z.object({ startLine: z.number().int().min(1), endLine: z.number().int().min(1) }).strict()
+            .refine(value => value.endLine >= value.startLine && value.endLine - value.startLine < 200) }).strict()
+      ])).min(1).max(32),
       tree: hash, processDigest: hash, dockerDigest: hash,
       reviewed: z.object({ verifiedTaskId: id, verifiedExecutionId: id, materialVersion: hash,
         originalMaterialVersion: hash.optional(), basisCurrent: z.literal(true).optional(),

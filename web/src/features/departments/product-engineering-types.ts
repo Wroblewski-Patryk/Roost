@@ -13,6 +13,26 @@ export type Readiness = {
   blockers: Array<{ capabilityId: string; blockedByCapabilityId: string; reason: string }>;
 };
 
+export type ApplicationOperation = {
+  schemaVersion: "roost-application-operation-v1";
+  stage: {
+    key: "unverified" | "problem_definition" | "accepted_requirements" | "solution_design" | "implementation" | "verification" | "product_readiness" | "sale_readiness" | "operation_improvement";
+    claim: "unverified" | "owner_accepted_baseline" | "bounded_release_proof";
+    scope: string | null;
+    decisionId: string | null;
+    asOf: string | null;
+  };
+  gateState: "unmet" | "in_progress" | "met" | "blocked" | "explicitly_deferred";
+  nearestOutcome: { taskId: string; title: string; status: string } | null;
+  accountable: { id: string | null; role: string; label: string } | null;
+  blockers: Array<{ code: string; reference: string | null }>;
+  decisions: Array<{ id: string; title: string; state: string; href: string }>;
+  evidence: Array<{ kind: "audit" | "independent_review" | "release"; id: string; commit: string | null; at: string; href: string }>;
+  productReadiness: "unverified";
+  saleReadiness: "unverified";
+  limitations: string[];
+};
+
 export type ProductApplication = {
   id: string;
   name: string;
@@ -34,6 +54,7 @@ export type ProductApplication = {
   metadata?: Record<string, unknown>;
   updatedAt: string;
   readiness?: Readiness;
+  operation?: ApplicationOperation;
   gapSummary?: { total: number; blockers: number };
   offerings?: ProductOffering[];
   repositories?: Array<{ id: string; name: string; url: string; defaultBranch?: string | null; purpose?: string | null; isPrimary: boolean }>;

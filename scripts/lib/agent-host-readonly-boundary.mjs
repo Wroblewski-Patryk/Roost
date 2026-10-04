@@ -1,8 +1,8 @@
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { lstatSync, readFileSync, realpathSync } from "node:fs";
+import { lstatSync, readFileSync, realpathSync, openSync, fstatSync, closeSync } from "node:fs";
 import path from "node:path";
-import { captureNativeFootprint, nativeDigest, nativeRelative } from "./agent-host-native-footprint.mjs";
+import { captureNativeFootprint, nativeDigest, nativeRelative, physicalIdentity } from "./agent-host-native-footprint.mjs";
 import { assertWriterLock } from "./agent-host-writer-lock.mjs";
 import { acquireApplicationLease, assertApplicationLease, releaseApplicationLease } from "./agent-host-application-lease.mjs";
 import { isHermesStartupReceipt } from "./agent-host-hermes-startup.mjs";
@@ -74,10 +74,90 @@ function state(root, expected) {
   return { footprint, processDigest: hex(listening), dockerDigest: hex(docker) };
 }
 
-export function collectReadOnlyRepositoryEvidence({ repositoryPath, expected, paths, secrets = [], reviewMaterial = null, review = null }) {
+const sameSourceStat=(a,b)=>a.dev===b.dev&&a.ino===b.ino&&a.nlink===b.nlink&&a.size===b.size&&a.mtimeNs===b.mtimeNs&&a.ctimeNs===b.ctimeNs;
+// Windows lstat reports dev=0 while an open handle reports the volume device.
+// Compare the inode and all material metadata across those APIs; each API's own
+// before/after snapshot still compares its device as well.
+const samePathHandleStat=(a,b)=>a.ino===b.ino&&a.nlink===b.nlink&&a.size===b.size&&a.mtimeNs===b.mtimeNs&&a.ctimeNs===b.ctimeNs
+  &&(process.platform==="win32"&&a.dev===0n||a.dev===b.dev);
+function fragmentSource(file){
+  const identity=physicalIdentity(file,false);
+  const before=lstatSync(file,{bigint:true});
+  if(!before.isFile()||before.isSymbolicLink()||before.nlink!==1n||before.size>1048576n)fail("read_fragment_source_invalid");
+  let fd;
+  try{
+    fd=openSync(file,"r");
+    const handleBefore=fstatSync(fd,{bigint:true});
+    if(!samePathHandleStat(before,handleBefore))fail("read_fragment_source_changed");
+    const bytes=readFileSync(fd);
+    if(BigInt(bytes.length)!==before.size||!sameSourceStat(handleBefore,fstatSync(fd,{bigint:true}))
+      ||!sameSourceStat(before,lstatSync(file,{bigint:true}))||physicalIdentity(file,false)!==identity)fail("read_fragment_source_changed");
+    // Validate the entire source, including unselected lines. BOM and line
+    // endings remain original bytes in the selected fragment.
+    try{new TextDecoder("utf-8",{fatal:true,ignoreBOM:true}).decode(bytes);}catch{fail("read_fragment_encoding_invalid");}
+    return {bytes,stat:before,sha256:hex(bytes)};
+  }finally{if(fd!==undefined)closeSync(fd);}
+}
+function selectedFragment(bytes,startLine,endLine){
+  const offsets=[0];
+  for(let i=0;i<bytes.length;i++)if(bytes[i]===10&&i+1<bytes.length)offsets.push(i+1);
+  if(!bytes.length||endLine>offsets.length)fail("read_fragment_range_invalid");
+  return bytes.subarray(offsets[startLine-1],offsets[endLine]??bytes.length);
+}
+function assertSelections(paths,fragments){
+    if (!Array.isArray(paths) || !Array.isArray(fragments) || !paths.length&&!fragments.length
+      || paths.length+fragments.length>32 || new Set(paths).size !== paths.length) fail("read_paths_invalid");
+    const pathKey=p=>process.platform==="win32"?p.toLowerCase():p;
+    const ranges=new Map();
+    for(const fragment of fragments){
+      if(!fragment||typeof fragment!=="object"||Array.isArray(fragment)
+        ||Object.keys(fragment).sort().join(",")!=="endLine,path,startLine"||typeof fragment.path!=="string"
+        ||!Number.isSafeInteger(fragment.startLine)||!Number.isSafeInteger(fragment.endLine)||fragment.startLine<1
+        ||fragment.endLine<fragment.startLine||fragment.endLine-fragment.startLine+1>200)fail("read_fragment_selection_invalid");
+      nativeRelative(fragment.path);
+      const key=pathKey(fragment.path),previous=ranges.get(key)??[];
+      if(paths.some(p=>typeof p==="string"&&pathKey(p)===key)
+        ||previous.some(r=>fragment.startLine<=r.endLine&&fragment.endLine>=r.startLine))fail("read_fragment_selection_conflict");
+      previous.push(fragment);ranges.set(key,previous);
+    }
+}
+function assertRepositorySelection(evidence,boundary){
+  const paths=boundary?.readPaths??[],fragments=boundary?.readFragments??[];
+  assertSelections(paths,fragments);
+  if(!Array.isArray(evidence?.files)||evidence.files.length!==paths.length+fragments.length)fail("repository_evidence_selection_mismatch");
+  const {digest,...body}=evidence;
+  if(digest!==nativeDigest(body))fail("repository_evidence_mismatch");
+  let total=0;
+  for(let i=0;i<evidence.files.length;i++){
+    const file=evidence.files[i],selection=i<paths.length?null:fragments[i-paths.length];
+    if(file?.path!==(selection?.path??paths[i])||file.mimeType!=="text/plain"||typeof file.content!=="string"
+      ||!/^[a-f0-9]{64}$/.test(file.sha256??""))fail("repository_evidence_selection_mismatch");
+    if(selection){
+      if(Object.keys(file).sort().join(",")!=="content,mimeType,path,range,sha256,sourceSha256"
+        ||Object.keys(file.range??{}).sort().join(",")!=="endLine,startLine"
+        ||file.range?.startLine!==selection.startLine||file.range?.endLine!==selection.endLine
+        ||!/^[a-f0-9]{64}$/.test(file.sourceSha256??"")||hex(Buffer.from(file.content,"utf8"))!==file.sha256)
+        fail("repository_evidence_selection_mismatch");
+    }else if(Object.keys(file).sort().join(",")!=="content,mimeType,path,sha256"||Buffer.byteLength(file.content)>32768)
+      fail("repository_evidence_selection_mismatch");
+    if((total+=Buffer.byteLength(file.content))>65536)fail("read_file_budget_exceeded");
+  }
+}
+function assertFragmentProvenance(evidence,root){
+  const sources=new Map();
+  for(const entry of evidence.files){
+    if(!entry.range)continue;
+    let source=sources.get(entry.path);
+    if(!source){source=fragmentSource(path.join(root,entry.path));sources.set(entry.path,source);}
+    const bytes=selectedFragment(source.bytes,entry.range.startLine,entry.range.endLine);
+    if(source.sha256!==entry.sourceSha256||hex(bytes)!==entry.sha256
+      ||new TextDecoder("utf-8",{fatal:true,ignoreBOM:true}).decode(bytes)!==entry.content)fail("read_fragment_source_changed");
+  }
+}
+export function collectReadOnlyRepositoryEvidence({ repositoryPath, expected, paths = [], fragments = [], secrets = [], reviewMaterial = null, review = null }) {
   let stage = "repository_root_unavailable";
   try {
-    if (!Array.isArray(paths) || !paths.length || paths.length > 32 || new Set(paths).size !== paths.length) fail("read_paths_invalid");
+    assertSelections(paths,fragments);
     const root = realpathSync.native(repositoryPath), pre = state(root, expected);
     if (pre.footprint.dirty.length) fail("repository_dirty");
     const files = []; let total = 0;
@@ -99,10 +179,32 @@ export function collectReadOnlyRepositoryEvidence({ repositoryPath, expected, pa
           || inspected.value?.relative !== relative) fail("read_file_redaction_blocked");
       files.push({ path: relative, mimeType: "text/plain", content: inspected.value.content, sha256: hex(bytes) });
     }
+    const fragmentSources=new Map();
+    for(const fragment of fragments){
+      stage="read_fragment_observation_unavailable";
+      const file=path.join(root,fragment.path);
+      if(git(root,["ls-files","--error-unmatch","--",fragment.path])!==fragment.path)fail("read_file_untracked");
+      let source=fragmentSources.get(file);
+      if(!source){source=fragmentSource(file);fragmentSources.set(file,source);}
+      const bytes=selectedFragment(source.bytes,fragment.startLine,fragment.endLine);
+      if((total+=bytes.length)>65536)fail("read_file_budget_exceeded");
+      const content=new TextDecoder("utf-8",{fatal:true,ignoreBOM:true}).decode(bytes);
+      stage="read_file_redaction_blocked";
+      const inspected=guardHostContent({relative:fragment.path,content},"required",secrets);
+      if(inspected.redacted||inspected.blocked||inspected.value?.content!==content||inspected.value?.relative!==fragment.path)fail("read_file_redaction_blocked");
+      files.push({path:fragment.path,mimeType:"text/plain",content,sha256:hex(bytes),sourceSha256:source.sha256,
+        range:{startLine:fragment.startLine,endLine:fragment.endLine}});
+    }
     const post = state(root, expected);
     if (pre.footprint.digest !== post.footprint.digest) fail("repository_changed");
     if (pre.processDigest !== post.processDigest) fail("process_changed");
     if (pre.dockerDigest !== post.dockerDigest) fail("docker_changed");
+    // The full source is read only for provenance and never projected. Recheck
+    // it after the paired observations, including unselected source lines.
+    for(const [file,source]of fragmentSources){
+      const fresh=fragmentSource(file);
+      if(!sameSourceStat(source.stat,fresh.stat)||source.sha256!==fresh.sha256)fail("read_fragment_source_changed");
+    }
     let reviewed = null;
     if (review) {
       stage = "review_material_unavailable";
@@ -142,6 +244,7 @@ export function sealReadOnlyBoundary({ envelope, provider, repositoryPath, expec
   repositoryEvidence, startupEnvironment }) {
   let stage = "startup_binding_invalid";
   try {
+    assertRepositorySelection(repositoryEvidence,envelope.contract.nativeBoundary);
     if (envelope.contract.nativeBoundary?.profile !== "inspect-readonly" || envelope.contract.access.sandbox !== "read-only"
         || startupReceipt.toolsets.length !== 1 || startupReceipt.toolsets[0] !== "bot_room" || startupReceipt.expandedTools.length
         || startupReceipt.categories.length !== 1 || startupReceipt.categories[0] !== "repository_read"
@@ -153,6 +256,7 @@ export function sealReadOnlyBoundary({ envelope, provider, repositoryPath, expec
     stage = "repository_evidence_unavailable";
     if (repositoryEvidence?.head !== expected.head || repositoryEvidence.branch !== expected.branch) fail("repository_evidence_mismatch");
     if (repositoryEvidence.tree !== state(repositoryPath, expected).footprint.digest) fail("repository_changed");
+    assertFragmentProvenance(repositoryEvidence,repositoryPath);
     stage = "application_lease_unavailable";
     const app = acquireApplicationLease({ writerLock, applicationId: envelope.identity.applicationId,
       attempt: envelope.identity.executionId, runtime: envelope.contract.nativeBoundary.runtime });
@@ -167,6 +271,7 @@ export function assertReadOnlyBoundary(proof, envelope) {
   try {
     const saved = sealed.get(proof);
     if (!saved || saved.envelope !== envelope || saved.consumed || saved.complete) fail("proof_invalid");
+    assertRepositorySelection(saved.repositoryEvidence,envelope.contract.nativeBoundary);
     assertWriterLock(saved.writerLock); assertApplicationLease(saved.app); assertHermesBudgetReceipt(saved.budgetReceipt);
     if (!isHermesStartupReceipt(saved.startupReceipt, envelope)
         || saved.startupReceipt.expandedTools.length || saved.startupReceipt.toolsets.join() !== "bot_room") fail("startup_changed");
@@ -175,13 +280,16 @@ export function assertReadOnlyBoundary(proof, envelope) {
     if (now.footprint.digest !== saved.repositoryEvidence.tree) fail("repository_changed");
     if (now.processDigest !== saved.repositoryEvidence.processDigest) fail("process_changed");
     if (now.dockerDigest !== saved.repositoryEvidence.dockerDigest) fail("docker_changed");
+    assertFragmentProvenance(saved.repositoryEvidence,saved.repositoryPath);
     const body = { schemaVersion: "roost-hermes-readonly-boundary-v1", attemptId: envelope.identity.executionId,
       inputSeal: envelope.seal, preFootprintDigest: now.footprint.digest, canonicalRootDigest: now.footprint.rootIdentity,
       repositoryIdentityDigest: now.footprint.gitIdentity, oneWriterReference: nativeDigest(assertWriterLock(saved.writerLock).reference),
       applicationLeaseReference: assertApplicationLease(saved.app).reference,
       startupReceiptDigest: saved.startupReceipt.digest, budgetReceiptDigest: saved.budgetReceipt.digest,
       repositoryEvidenceDigest: saved.repositoryEvidence.digest, toolSourceDigest: saved.tools.sourceDigest,
-      toolsets: ["bot_room"], nativeTools: [], readPaths: [...envelope.contract.nativeBoundary.readPaths] };
+      toolsets: ["bot_room"], nativeTools: [], readPaths: [...envelope.contract.nativeBoundary.readPaths],
+      ...(envelope.contract.nativeBoundary.readFragments!==undefined
+        ?{readFragments:structuredClone(envelope.contract.nativeBoundary.readFragments)}:{}) };
     const receipt = frozen({ ...body, digest: nativeDigest(body) });
     receipts.set(receipt, proof); return receipt;
   } catch (error) { if (error.message === "readonly_boundary_unproven" && error.protocolAdmission) throw error; fail("assertion_unavailable"); }
@@ -206,6 +314,7 @@ export function authorizeReadOnlyResume(proof, assignment, runtime) {
     const now = state(saved.repositoryPath, saved.expected);
     if (now.footprint.digest !== saved.repositoryEvidence.tree || now.processDigest !== saved.repositoryEvidence.processDigest
         || now.dockerDigest !== saved.repositoryEvidence.dockerDigest) fail();
+    assertFragmentProvenance(saved.repositoryEvidence,saved.repositoryPath);
     saved.resumeAuthorized = true;
     return nativeDigest([saved.envelope.seal, saved.startupReceipt.digest, saved.budgetReceipt.digest,
       saved.repositoryEvidence.digest, assignment, runtime]);
@@ -223,6 +332,7 @@ export function completeReadOnlyBoundary(proof, { ownedTreeReceipt, error } = {}
     const now = state(saved.repositoryPath, saved.expected);
     if (now.footprint.digest !== saved.repositoryEvidence.tree || now.processDigest !== saved.repositoryEvidence.processDigest
         || now.dockerDigest !== saved.repositoryEvidence.dockerDigest) fail();
+    assertFragmentProvenance(saved.repositoryEvidence,saved.repositoryPath);
     assertApplicationLease(saved.app);
     releaseApplicationLease(saved.app);
     const review = saved.envelope.contract.nativeBoundary.inspectReadOnly;
@@ -247,6 +357,7 @@ export function abortReadOnlyBoundary(proof, ownedTreeReceipt = null) {
     const now = state(saved.repositoryPath, saved.expected);
     if (now.footprint.digest !== saved.repositoryEvidence.tree || now.processDigest !== saved.repositoryEvidence.processDigest
         || now.dockerDigest !== saved.repositoryEvidence.dockerDigest) fail();
+    assertFragmentProvenance(saved.repositoryEvidence,saved.repositoryPath);
     releaseApplicationLease(saved.app); saved.complete = true;
   } catch { fail(); }
 }

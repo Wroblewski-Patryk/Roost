@@ -6,6 +6,7 @@ import { execFileSync } from "node:child_process";
 import { nativeBoundaryError } from "./agent-host-native-authority.mjs";
 
 export const nativeDigest = value => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+export const nativeMetadataEntryLimit = 32768;
 const fail = code => { throw nativeBoundaryError(code); };
 const samePath = (a, b) => process.platform === "win32" ? a.toLowerCase() === b.toLowerCase() : a === b;
 const privateTemps = new WeakMap();
@@ -65,9 +66,9 @@ function tree(root, { metadata = false, allowGitRoot = false, ownedRepository = 
   function walk(dir, relative, depth) {
     if (depth > 24) fail("native_inventory_limit");
     const names = readdirSync(dir).sort();
-    if (names.length + count > 8192) fail("native_inventory_limit");
+    if (names.length + count > nativeMetadataEntryLimit) fail("native_inventory_limit");
     for (const name of names) {
-      if (++count > 8192) fail("native_inventory_limit");
+      if (++count > nativeMetadataEntryLimit) fail("native_inventory_limit");
       const rel = relative ? `${relative}/${name}` : name, file = path.join(dir, name);
       const s = lstatSync(file, { bigint: true });
       if (s.isSymbolicLink() || (!s.isDirectory() && !s.isFile())) fail("native_reparse_denied");

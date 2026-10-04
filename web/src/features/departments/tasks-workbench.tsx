@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
 import { CcConfirmDialog } from "../../components/cc-confirm-dialog";
@@ -12,6 +12,7 @@ import { CcSelect } from "../../components/cc-select";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
 import type { CoreAreaKey } from "../../types";
+import { recordIdFromQuery, validateTaskNavigation } from "../../owner-record-navigation";
 import { departmentLabel } from "./department-labels";
 import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
 import { TaskReadinessModal } from "./task-readiness";
@@ -40,6 +41,18 @@ export function TasksWorkbench({ departmentKey, canonical = false }: { departmen
   const [readinessTask, setReadinessTask] = useState<string | null>(null);
   const { locale, t } = useLanguage(); const polish = locale === "pl"; const [refreshKey, setRefreshKey] = useState(0); const [editing, setEditing] = useState<Task | null | undefined>(undefined); const [archiving, setArchiving] = useState<Task | null>(null); const [busy, setBusy] = useState(false); const [notice, setNotice] = useState<{ tone: "success" | "error"; title: string } | null>(null);
   const packet = useOwnerPacket<Task[]>(`/v1/tasks${canonical ? "?" : `?departmentKey=${departmentKey}&includeCompanyWide=true&` }refresh=${refreshKey}`, true, t); const departments = useOwnerPacket<{ departments: Department[] }>(`/v1/departments?refresh=${refreshKey}`, true, t); const rows = packet.data || []; const labels = useTranslatedTableLabels();
+  const requestedTaskId = recordIdFromQuery(window.location.search, "taskId");
+  useEffect(() => {
+    let current = true;
+    setReadinessTask(null);
+    setNotice(null);
+    if (requestedTaskId) {
+      void validateTaskNavigation(requestedTaskId, async id => (await api<{ data: Task }>(`/v1/tasks/${id}`)).data)
+        .then(id => { if (current) setReadinessTask(id); })
+        .catch(() => { if (current) setNotice({ tone: "error", title: polish ? "Wskazane zadanie jest niedostępne w tym workspace." : "The requested task is unavailable in this workspace." }); });
+    }
+    return () => { current = false; };
+  }, [requestedTaskId, polish]);
   const columns = useMemo<Array<CcTableColumn<Task>>>(() => [
     { key: "task", header: polish ? "Zadanie" : "Task", sortable: true, searchValue: (row) => `${row.title} ${row.description || ""}`, cell: (row) => <button className="grid text-left" onClick={() => setEditing(row)} type="button"><strong>{row.title}</strong><span className="text-xs text-company-muted">{row.project?.name || row.taskList?.name || row.description || "—"}</span></button> },
     { key: "owner", header: polish ? "Dział" : "Department", filterable: true, filterValue: (row) => row.organizationalContext?.ownerDepartment?.key || "unassigned", cell: (row) => <span className="text-sm text-company-muted">{row.organizationalContext?.ownerDepartment ? departmentLabel(row.organizationalContext.ownerDepartment.key, t) : "—"}</span> },

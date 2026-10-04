@@ -8,6 +8,7 @@ import { decisionAuthority,mandateView } from "./decision-authority";
 import { resolveReviewPrincipal, type ReviewActor } from "../../auth/agent-principal";
 import { admitCapability,recordCapabilityUse,grantState } from "../agent-runtime/task-capability-admission";
 import { admissionCommand,admissionVersion } from "../agent-runtime/task-risk-admission";
+import { validateApplicationTakeoverBaseline } from "../product-engineering/application-takeover-validation";
 type Db=Prisma.TransactionClient;
 const wire=(r:any)=>Object.fromEntries(Object.entries(r).filter(([k])=>k!=="request_hash").map(([k,v])=>[k.replace(/_([a-z])/g,(_,c)=>c.toUpperCase()),v]));
 async function state(db:Db,w:string,actor:ReviewActor|null,id?:string){
@@ -117,6 +118,7 @@ export async function decisionGovernanceCommand(db:Db,w:string,actor:ReviewActor
  const rid=kind==='proposal'&&input.decisionId?input.decisionId:randomUUID();
  if(kind==="proposal"){
   const {requestId,decisionId,expectedVersion,...b}=input;
+  if(b.applicationBaseline){const validation=await validateApplicationTakeoverBaseline(db,w,b.applicationBaseline);if(validation.error)return validation;}
   const predecessor=b.supersedesId?(await db.$queryRaw<any[]>`SELECT to_jsonb(d) AS value FROM decisions d WHERE id=${b.supersedesId}::uuid AND workspace_id=${w}::uuid`)[0]?.value:null;
   requireRuntimeContent(predecessor,"decision.predecessor",{workspaceId:w});
   const created=await db.decision.create({data:{id:rid,workspaceId:w,title:b.title,context:b.context,decision:b.decision,rationale:b.rationale,consequences:b.consequences,status:"proposed",source:"roost_decision",authorType:"user",authorId:u,supersedesId:b.supersedesId}});
@@ -136,6 +138,7 @@ export async function decisionGovernanceCommand(db:Db,w:string,actor:ReviewActor
    await db.$executeRaw`INSERT INTO decision_impact_previews(id,decision_id,workspace_id,version,impact,authority,actor_user_id,request_id,request_hash) VALUES(${rid}::uuid,${id}::uuid,${w}::uuid,${(s.previews[0]?.version??0)+1},${JSON.stringify(s.impact)}::jsonb,${JSON.stringify(s.authority)}::jsonb,${u}::uuid,${input.requestId}::uuid,${hash})`;
   }else{
    if(!input.previewId)return {error:"decision_preview_required"};
+   if(s.selected.body.applicationBaseline){const validation=await validateApplicationTakeoverBaseline(db,w,s.selected.body.applicationBaseline);if(validation.error)return validation;}
    if(s.previews[0]?.authority&&reviewDigest(s.previews[0].authority)!==reviewDigest(s.authority))return {error:"decision_authority_stale"};
    const grants:any[]=[];
    if(principal.kind==="agent"){

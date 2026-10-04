@@ -1,0 +1,117 @@
+BEGIN;
+-- Additive risk classification for bounded tracked fragments. Existing assessments remain immutable.
+CREATE FUNCTION task_risk_relative_path(item TEXT) RETURNS BOOLEAN LANGUAGE plpgsql IMMUTABLE AS $$
+DECLARE segment TEXT;
+BEGIN
+ IF item IS NULL OR item='' OR length(item)>512 OR item LIKE '/%' OR item ~ '[\\:[:cntrl:]]' THEN RETURN false; END IF;
+ FOREACH segment IN ARRAY string_to_array(item,'/') LOOP
+  IF segment IN ('','.','..') OR segment ~ '[. ]$' OR lower(segment)='.git'
+   OR segment ~* '^(con|prn|aux|nul|com[1-9]|lpt[1-9])([.]|$)'
+   OR (segment !~* '[.](example|sample|template)$'
+    AND segment ~* '^([.]env([.].*)?|[.]op[.]env|[.]codex|[.]ssh|[.]aws|auth[.]json|credentials?([.](json|yaml|yml))?|cookies?([.](json|sqlite|txt))?|id_(rsa|ed25519)|.*[.](key|pem|pfx))$')
+  THEN RETURN false; END IF;
+ END LOOP;
+ RETURN true;
+EXCEPTION WHEN OTHERS THEN RETURN false;
+END $$;
+CREATE FUNCTION task_risk_readonly_selection(value JSONB) RETURNS BOOLEAN LANGUAGE plpgsql IMMUTABLE AS $$
+DECLARE paths JSONB:=value->'readPaths'; fragments JSONB:=COALESCE(value->'readFragments','[]'::jsonb); item JSONB; other JSONB; seen JSONB:='[]';
+BEGIN
+ IF jsonb_typeof(paths) IS DISTINCT FROM 'array' OR jsonb_typeof(fragments) IS DISTINCT FROM 'array'
+  OR jsonb_array_length(paths)+jsonb_array_length(fragments) NOT BETWEEN 1 AND 32 THEN RETURN false; END IF;
+ IF (SELECT count(*)<>count(DISTINCT lower(p)) FROM jsonb_array_elements_text(paths)p) THEN RETURN false; END IF;
+ FOR item IN SELECT jsonb_array_elements(paths) LOOP
+  IF NOT task_risk_relative_path(item#>>'{}') THEN RETURN false; END IF;
+ END LOOP;
+ FOR item IN SELECT jsonb_array_elements(fragments) LOOP
+  IF NOT task_risk_relative_path(item->>'path')
+   OR EXISTS(SELECT 1 FROM jsonb_array_elements_text(paths)p WHERE lower(p)=lower(item->>'path')) THEN RETURN false; END IF;
+  FOR other IN SELECT jsonb_array_elements(seen) LOOP
+   IF lower(other->>'path')=lower(item->>'path') AND (item->>'startLine')::numeric<=(other->>'endLine')::numeric
+    AND (other->>'startLine')::numeric<=(item->>'endLine')::numeric THEN RETURN false; END IF;
+  END LOOP;
+  seen:=seen||jsonb_build_array(item);
+ END LOOP;
+ RETURN true;
+EXCEPTION WHEN OTHERS THEN RETURN false;
+END $$;
+CREATE OR REPLACE FUNCTION task_risk_contract_shape(value JSONB, shape JSONB) RETURNS BOOLEAN LANGUAGE plpgsql IMMUTABLE AS $$
+DECLARE kind TEXT:=shape->>'k'; pair RECORD; item JSONB; check_item JSONB; s TEXT; n NUMERIC;
+BEGIN
+ IF kind IN ('optional','default') THEN
+  RETURN value IS NULL OR task_risk_contract_shape(value,shape->'inner');
+ ELSIF kind='nullable' THEN
+  RETURN value='null'::jsonb OR task_risk_contract_shape(value,shape->'inner');
+ ELSIF value IS NULL THEN RETURN false;
+ ELSIF kind='literal' THEN RETURN value=shape->'value';
+ ELSIF kind='enum' THEN RETURN jsonb_typeof(value)='string' AND shape->'values' @> jsonb_build_array(value);
+ ELSIF kind='boolean' THEN RETURN jsonb_typeof(value)='boolean';
+ ELSIF kind='object' THEN
+  IF jsonb_typeof(value)<>'object' THEN RETURN false; END IF;
+  IF EXISTS(SELECT 1 FROM jsonb_object_keys(value) name WHERE NOT (shape->'shape' ? name)) THEN RETURN false; END IF;
+  FOR pair IN SELECT key,val FROM jsonb_each(shape->'shape') AS e(key,val) LOOP
+   IF task_risk_contract_shape(value->pair.key,pair.val) IS NOT TRUE THEN RETURN false; END IF;
+  END LOOP;
+  RETURN true;
+ ELSIF kind='array' THEN
+  IF jsonb_typeof(value)<>'array' OR jsonb_array_length(value)<COALESCE((shape->>'min')::int,0)
+   OR jsonb_array_length(value)>COALESCE((shape->>'max')::int,2147483647) THEN RETURN false; END IF;
+  FOR item IN SELECT val FROM jsonb_array_elements(value) AS e(val) LOOP
+   IF task_risk_contract_shape(item,shape->'inner') IS NOT TRUE THEN RETURN false; END IF;
+  END LOOP;
+  RETURN true;
+ ELSIF kind='tuple' THEN
+  -- The readonly runtime's ports tuple is empty; a new tuple shape fails closed.
+  RETURN jsonb_typeof(value)='array' AND jsonb_array_length(value)=0 AND jsonb_array_length(shape->'items')=0;
+ ELSIF kind='union' THEN
+  FOR item IN SELECT val FROM jsonb_array_elements(shape->'options') AS e(val) LOOP
+   IF task_risk_contract_shape(value,item) THEN RETURN true; END IF;
+  END LOOP;
+  RETURN false;
+ ELSIF kind='string' THEN
+  IF jsonb_typeof(value)<>'string' THEN RETURN false; END IF;
+  s:=value#>>'{}';
+  FOR check_item IN SELECT val FROM jsonb_array_elements(shape->'checks') AS e(val) LOOP
+   CASE check_item->>'kind'
+    WHEN 'trim' THEN s:=regexp_replace(s,'^[[:space:]]+|[[:space:]]+$','','g');
+    WHEN 'min' THEN IF length(s)<(check_item->>'value')::int THEN RETURN false; END IF;
+    WHEN 'max' THEN IF length(s)>(check_item->>'value')::int THEN RETURN false; END IF;
+    WHEN 'uuid' THEN IF s !~* '^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$' THEN RETURN false; END IF;
+    WHEN 'regex' THEN IF s !~ (check_item->>'pattern') THEN RETURN false; END IF;
+    ELSE RETURN false;
+   END CASE;
+  END LOOP;
+  RETURN true;
+ ELSIF kind='number' THEN
+  IF jsonb_typeof(value)<>'number' THEN RETURN false; END IF;
+  n:=(value#>>'{}')::numeric;
+  FOR check_item IN SELECT val FROM jsonb_array_elements(shape->'checks') AS e(val) LOOP
+   CASE check_item->>'kind'
+    WHEN 'int' THEN IF trunc(n)<>n THEN RETURN false; END IF;
+    WHEN 'min' THEN IF n<(check_item->>'value')::numeric THEN RETURN false; END IF;
+    WHEN 'max' THEN IF n>(check_item->>'value')::numeric THEN RETURN false; END IF;
+    WHEN 'finite' THEN IF abs(n)>1.7976931348623157e308 THEN RETURN false; END IF;
+    ELSE RETURN false;
+   END CASE;
+  END LOOP;
+  RETURN true;
+ ELSIF kind='refinement' THEN
+  IF task_risk_contract_shape(value,shape->'inner') IS NOT TRUE THEN RETURN false; END IF;
+  CASE shape->>'rule'
+   WHEN 'optionalSet' THEN RETURN CASE WHEN jsonb_array_length(value->'items')>0
+    THEN value->'noneReason'='null'::jsonb ELSE COALESCE(length(value->>'noneReason')>0,false) END;
+   WHEN 'codexModel' THEN RETURN NOT (value->>'model'='gpt-5.6-luna' AND value->>'reasoningEffort'='ultra');
+   WHEN 'localModel' THEN RETURN split_part(value->>'model',':',1)=value->>'modelFamily';
+   WHEN 'readFragment' THEN RETURN (value->>'endLine')::numeric>=(value->>'startLine')::numeric AND (value->>'endLine')::numeric-(value->>'startLine')::numeric<200 AND task_risk_relative_path(value->>'path');
+   WHEN 'readSelections' THEN RETURN task_risk_readonly_selection(value);
+   ELSE RETURN false;
+  END CASE;
+ END IF;
+ RETURN false;
+EXCEPTION WHEN OTHERS THEN RETURN false;
+END $$;
+
+CREATE OR REPLACE FUNCTION task_risk_readonly_schema() RETURNS JSONB LANGUAGE SQL IMMUTABLE AS $fn$
+ SELECT $schema${"k":"object","shape":{"executionClass":{"k":"optional","inner":{"k":"literal","value":"roost-fixed-effect-v1"}},"version":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"nativeBoundary":{"k":"refinement","rule":"readSelections","inner":{"k":"object","shape":{"profile":{"k":"literal","value":"inspect-readonly"},"readPaths":{"k":"array","inner":{"k":"string","checks":[{"kind":"min","value":1},{"kind":"max","value":512}]},"max":32},"readFragments":{"k":"optional","inner":{"k":"array","inner":{"k":"refinement","rule":"readFragment","inner":{"k":"object","shape":{"path":{"k":"string","checks":[{"kind":"min","value":1},{"kind":"max","value":512}]},"startLine":{"k":"number","checks":[{"kind":"int"},{"kind":"min","value":1,"inclusive":true},{"kind":"max","value":9007199254740991,"inclusive":true}]},"endLine":{"k":"number","checks":[{"kind":"int"},{"kind":"min","value":1,"inclusive":true},{"kind":"max","value":9007199254740991,"inclusive":true}]}}}},"max":32}},"runtime":{"k":"object","shape":{"required":{"k":"literal","value":false},"ports":{"k":"tuple","items":[]}}},"inspectReadOnly":{"k":"union","options":[{"k":"object","shape":{"kind":{"k":"literal","value":"auditor"}}},{"k":"object","shape":{"kind":{"k":"literal","value":"verifier"},"verifiedExecutionId":{"k":"string","checks":[{"kind":"uuid"}]},"verifiedEvidenceDigest":{"k":"string","checks":[{"kind":"regex","pattern":"^[a-f0-9]{64}$"}]}}},{"k":"object","shape":{"kind":{"k":"literal","value":"code-reviewer"},"verifiedTaskId":{"k":"string","checks":[{"kind":"uuid"}]},"verifiedExecutionId":{"k":"string","checks":[{"kind":"uuid"}]},"verifiedEvidenceDigest":{"k":"string","checks":[{"kind":"regex","pattern":"^[a-f0-9]{64}$"}]},"baselineCommit":{"k":"string","checks":[{"kind":"regex","pattern":"^[a-f0-9]{40}$"}]},"reviewedCommit":{"k":"string","checks":[{"kind":"regex","pattern":"^[a-f0-9]{40}$"}]}}}]}}}},"singleTask":{"k":"object","shape":{"schemaVersion":{"k":"literal","value":"roost-single-task-v1"},"contractId":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"applicationId":{"k":"string","checks":[{"kind":"uuid"}]},"component":{"k":"object","shape":{"id":{"k":"string","checks":[{"kind":"uuid"}]},"revision":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}},"accountableManager":{"k":"object","shape":{"id":{"k":"string","checks":[{"kind":"uuid"}]},"revision":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}},"branch":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"measurement":{"k":"object","shape":{"metric":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"comparison":{"k":"enum","values":["eq","lte","gte"]},"target":{"k":"number","checks":[{"kind":"finite"}]},"unit":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"method":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}},"problems":{"k":"array","inner":{"k":"object","shape":{"statement":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"componentId":{"k":"string","checks":[{"kind":"uuid"}]},"outcome":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"causalLink":{"k":"nullable","inner":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}}},"min":1,"max":3},"commonCause":{"k":"nullable","inner":{"k":"object","shape":{"mechanism":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"inseparability":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"evidence":{"k":"object","shape":{"id":{"k":"string","checks":[{"kind":"uuid"}]},"revision":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}}}}}}},"taskRoles":{"k":"object","shape":{"schemaVersion":{"k":"literal","value":"roost-task-roles-v1"},"requester":{"k":"object","shape":{"id":{"k":"string","checks":[{"kind":"uuid"}]},"revision":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}},"accountableManager":{"k":"object","shape":{"id":{"k":"string","checks":[{"kind":"uuid"}]},"revision":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}},"executor":{"k":"object","shape":{"id":{"k":"string","checks":[{"kind":"uuid"}]},"revision":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}},"verifier":{"k":"object","shape":{"id":{"k":"string","checks":[{"kind":"uuid"}]},"revision":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}},"releaser":{"k":"object","shape":{"id":{"k":"string","checks":[{"kind":"uuid"}]},"revision":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}}}},"objective":{"k":"object","shape":{"outcome":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"goalId":{"k":"string","checks":[{"kind":"uuid"}]}}},"scope":{"k":"object","shape":{"allowed":{"k":"array","inner":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"min":1,"max":30},"forbidden":{"k":"array","inner":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"min":1,"max":30}}},"assignment":{"k":"object","shape":{"agentId":{"k":"string","checks":[{"kind":"uuid"}]},"role":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"competencies":{"k":"array","inner":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"min":1,"max":30}}},"modelSelection":{"k":"union","options":[{"k":"refinement","rule":"codexModel","inner":{"k":"object","shape":{"model":{"k":"enum","values":["gpt-5.6-sol","gpt-5.6-terra","gpt-5.6-luna","gpt-6-astra"]},"reasoningEffort":{"k":"enum","values":["low","medium","high","xhigh","max","ultra"]}}}},{"k":"refinement","rule":"localModel","inner":{"k":"object","shape":{"provider":{"k":"literal","value":"hermes_local"},"model":{"k":"string","checks":[{"kind":"regex","pattern":"^[a-z0-9][a-z0-9._/-]{0,95}:[a-z0-9][a-z0-9._-]{0,63}$"}]},"modelFamily":{"k":"enum","values":["gpt-oss","devstral"]},"modelDigest":{"k":"string","checks":[{"kind":"regex","pattern":"^sha256:[a-f0-9]{64}$"}]},"reasoningEffort":{"k":"enum","values":["low","medium","high"]}}}},{"k":"union","options":[{"k":"object","shape":{"schemaVersion":{"k":"literal","value":"roost-managed-hermes-backend-v1"},"agent":{"k":"literal","value":"managed_hermes"},"riskClass":{"k":"enum","values":["low","medium","high","critical"]},"fallback":{"k":"literal","value":"none"},"attemptPolicy":{"k":"object","shape":{"maxTurns":{"k":"number","checks":[{"kind":"int"},{"kind":"min","value":1,"inclusive":true},{"kind":"max","value":24,"inclusive":true}]},"apiMaxRetries":{"k":"number","checks":[{"kind":"int"},{"kind":"min","value":0,"inclusive":true},{"kind":"max","value":2,"inclusive":true}]},"unavailable":{"k":"literal","value":"stop_attempt"},"restart":{"k":"literal","value":"never"}}},"backend":{"k":"literal","value":"codex_responses"},"provider":{"k":"literal","value":"openai-codex"},"modelSelection":{"k":"refinement","rule":"codexModel","inner":{"k":"object","shape":{"model":{"k":"enum","values":["gpt-5.6-sol","gpt-5.6-terra","gpt-5.6-luna","gpt-6-astra"]},"reasoningEffort":{"k":"enum","values":["low","medium","high","xhigh","max","ultra"]}}}},"auth":{"k":"literal","value":"same_owner_subscription"}}},{"k":"object","shape":{"schemaVersion":{"k":"literal","value":"roost-managed-hermes-backend-v1"},"agent":{"k":"literal","value":"managed_hermes"},"riskClass":{"k":"enum","values":["low","medium","high","critical"]},"fallback":{"k":"literal","value":"none"},"attemptPolicy":{"k":"object","shape":{"maxTurns":{"k":"number","checks":[{"kind":"int"},{"kind":"min","value":1,"inclusive":true},{"kind":"max","value":24,"inclusive":true}]},"apiMaxRetries":{"k":"number","checks":[{"kind":"int"},{"kind":"min","value":0,"inclusive":true},{"kind":"max","value":2,"inclusive":true}]},"unavailable":{"k":"literal","value":"stop_attempt"},"restart":{"k":"literal","value":"never"}}},"backend":{"k":"literal","value":"ollama_loopback"},"provider":{"k":"literal","value":"ollama"},"endpoint":{"k":"literal","value":"http://127.0.0.1:11434"},"modelSelection":{"k":"refinement","rule":"localModel","inner":{"k":"object","shape":{"provider":{"k":"literal","value":"hermes_local"},"model":{"k":"string","checks":[{"kind":"regex","pattern":"^[a-z0-9][a-z0-9._/-]{0,95}:[a-z0-9][a-z0-9._-]{0,63}$"}]},"modelFamily":{"k":"enum","values":["gpt-oss","devstral"]},"modelDigest":{"k":"string","checks":[{"kind":"regex","pattern":"^sha256:[a-f0-9]{64}$"}]},"reasoningEffort":{"k":"enum","values":["low","medium","high"]}}}},"config":{"k":"object","shape":{"reasoning":{"k":"literal","value":"explicit_model_effort"},"remote":{"k":"literal","value":false}}}}}]}]},"context":{"k":"object","shape":{"company":{"k":"array","inner":{"k":"object","shape":{"id":{"k":"string","checks":[{"kind":"uuid"}]},"revision":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}},"min":1,"max":10},"product":{"k":"array","inner":{"k":"object","shape":{"id":{"k":"string","checks":[{"kind":"uuid"}]},"revision":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}},"min":1,"max":10},"technical":{"k":"array","inner":{"k":"object","shape":{"id":{"k":"string","checks":[{"kind":"uuid"}]},"revision":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}},"min":1,"max":10}}},"procedures":{"k":"refinement","rule":"optionalSet","inner":{"k":"object","shape":{"items":{"k":"array","inner":{"k":"object","shape":{"id":{"k":"string","checks":[{"kind":"uuid"}]},"revision":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}},"max":30},"noneReason":{"k":"nullable","inner":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}}}},"skills":{"k":"refinement","rule":"optionalSet","inner":{"k":"object","shape":{"items":{"k":"array","inner":{"k":"object","shape":{"name":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"version":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}},"max":30},"noneReason":{"k":"nullable","inner":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}}}},"access":{"k":"object","shape":{"tools":{"k":"array","inner":{"k":"enum","values":["repository_read","repository_write","local_test","local_commit","remote_push","deployment"]},"min":1,"max":6},"permissions":{"k":"array","inner":{"k":"enum","values":["repository_read","repository_write","local_test","local_commit","remote_push","deployment"]},"min":1,"max":6},"sandbox":{"k":"enum","values":["workspace-write","read-only"]},"externalWrites":{"k":"literal","value":false},"restrictions":{"k":"array","inner":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"min":1,"max":30}}},"dependencies":{"k":"refinement","rule":"optionalSet","inner":{"k":"object","shape":{"items":{"k":"array","inner":{"k":"object","shape":{"id":{"k":"string","checks":[{"kind":"uuid"}]},"revision":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"resolution":{"k":"literal","value":"satisfied"},"evidence":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}},"max":30},"noneReason":{"k":"nullable","inner":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}}}},"decisions":{"k":"refinement","rule":"optionalSet","inner":{"k":"object","shape":{"items":{"k":"array","inner":{"k":"object","shape":{"id":{"k":"string","checks":[{"kind":"uuid"}]},"revision":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}},"max":30},"noneReason":{"k":"nullable","inner":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}}}},"budgets":{"k":"object","shape":{"maxAttempts":{"k":"number","checks":[{"kind":"int"},{"kind":"min","value":1,"inclusive":true},{"kind":"max","value":5,"inclusive":true}]},"maxDurationSeconds":{"k":"number","checks":[{"kind":"int"},{"kind":"min","value":60,"inclusive":true},{"kind":"max","value":3600,"inclusive":true}]},"maxOutputTokens":{"k":"number","checks":[{"kind":"int"},{"kind":"min","value":128,"inclusive":true},{"kind":"max","value":100000,"inclusive":true}]}}},"acceptance":{"k":"object","shape":{"criteria":{"k":"array","inner":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"min":1,"max":30},"tests":{"k":"array","inner":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"min":1,"max":30},"evidence":{"k":"array","inner":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"min":1,"max":30}}},"recovery":{"k":"object","shape":{"handoff":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"failure":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"escalation":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]},"rollback":{"k":"object","shape":{"mode":{"k":"enum","values":["restore_task_changes","not_applicable"]},"instructions":{"k":"string","checks":[{"kind":"trim"},{"kind":"min","value":1},{"kind":"max","value":2000}]}}}}}}}$schema$::jsonb
+$fn$;
+COMMIT;

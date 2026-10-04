@@ -16,21 +16,40 @@ const refs = z.array(ref).min(1).max(10);
 const optionalSet = (item) => z.object({ items: z.array(item).max(30), noneReason: text.nullable() }).strict()
   .refine((value) => value.items.length ? value.noneReason === null : Boolean(value.noneReason));
 const operations = typedOperationSchema;
+export const readFragmentSchema = z.object({ path: z.string().min(1).max(512),
+  startLine: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER), endLine: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER) }).strict()
+  .refine(value => value.endLine >= value.startLine && value.endLine - value.startLine < 200);
+const readSelections = (boundary, context) => {
+  const paths = boundary.readPaths, fragments = boundary.readFragments ?? [];
+  if (paths.length + fragments.length < 1 || paths.length + fragments.length > 32)
+    context.addIssue({ code: 'custom', path: ['readPaths'], message: 'invalid_read_selection_count' });
+  const canonical = value => nativeRelative(value).toLowerCase();
+  try {
+    const whole = paths.map(canonical);
+    if (new Set(whole).size !== whole.length) throw new Error();
+    for (const [index, fragment] of fragments.entries()) {
+      const name = canonical(fragment.path);
+      if (whole.includes(name) || fragments.slice(0, index).some(other => canonical(other.path) === name
+        && fragment.startLine <= other.endLine && other.startLine <= fragment.endLine)) throw new Error();
+    }
+  } catch { context.addIssue({ code: 'custom', path: ['readPaths'], message: 'invalid_read_selection' }); }
+};
+const readonlyBoundary = z.object({ profile: z.literal('inspect-readonly'),
+  readPaths: z.array(z.string().min(1).max(512)).max(32),
+  readFragments: z.array(readFragmentSchema).max(32).optional(),
+  runtime: z.object({ required: z.literal(false), ports: z.tuple([]) }).strict(),
+  inspectReadOnly: z.discriminatedUnion('kind', [
+    z.object({ kind: z.literal('auditor') }).strict(),
+    z.object({ kind: z.literal('verifier'), verifiedExecutionId: id,
+      verifiedEvidenceDigest: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
+    z.object({ kind: z.literal('code-reviewer'), verifiedTaskId: id, verifiedExecutionId: id,
+      verifiedEvidenceDigest: z.string().regex(/^[a-f0-9]{64}$/),
+      baselineCommit: z.string().regex(/^[a-f0-9]{40}$/), reviewedCommit: z.string().regex(/^[a-f0-9]{40}$/) }).strict()
+  ]) }).strict();
 export const executionContractSchema = z.object({
   executionClass: z.literal("roost-fixed-effect-v1").optional(),
   version: text,
-  nativeBoundary: z.discriminatedUnion("profile", [nativeBoundaryContractSchema,
-    z.object({ profile: z.literal("inspect-readonly"), readPaths: z.array(z.string().min(1).max(512)).min(1).max(32),
-      runtime: z.object({ required: z.literal(false), ports: z.tuple([]) }).strict(),
-      inspectReadOnly: z.discriminatedUnion("kind", [
-        z.object({ kind: z.literal("auditor") }).strict(),
-        z.object({ kind: z.literal("verifier"), verifiedExecutionId: id,
-          verifiedEvidenceDigest: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
-        z.object({ kind: z.literal("code-reviewer"), verifiedTaskId: id, verifiedExecutionId: id,
-          verifiedEvidenceDigest: z.string().regex(/^[a-f0-9]{64}$/),
-          baselineCommit: z.string().regex(/^[a-f0-9]{40}$/), reviewedCommit: z.string().regex(/^[a-f0-9]{40}$/) }).strict()
-      ]) }).strict()
-  ]).optional(),
+  nativeBoundary: z.union([nativeBoundaryContractSchema, readonlyBoundary.superRefine(readSelections)]).optional(),
   singleTask: singleTaskSchema,
   taskRoles: taskRolesSchema,
   objective: z.object({ outcome: text, goalId: id }).strict(),

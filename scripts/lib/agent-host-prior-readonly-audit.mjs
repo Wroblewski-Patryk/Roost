@@ -26,6 +26,7 @@ export function verifiedPriorReadOnlyAudit(prior, { claimed, contract, repositor
       || previous?.nativeBoundary?.profile !== "inspect-readonly"
       || previous.nativeBoundary.inspectReadOnly?.kind !== "auditor"
       || !same(previous.nativeBoundary.readPaths, contract.nativeBoundary.readPaths)
+      || !same(previous.nativeBoundary.readFragments ?? [], contract.nativeBoundary.readFragments ?? [])
       || !same(previous.access?.tools, ["repository_read"])
       || !same(previous.access?.permissions, ["repository_read"])
       || previous.assignment?.agentId === contract.assignment?.agentId

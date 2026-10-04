@@ -365,7 +365,8 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     }
     if (inspecting) readOnlyEvidence = await duration.wait(collectReadOnlyRepositoryEvidence({ repositoryPath,
       expected: { head: preparedCommit, branch: actualBranch, origin: repository.originUrl },
-      paths: taskContract.nativeBoundary.readPaths, secrets: [apiKey, claimed.leaseToken, codeReviewerKey].filter(Boolean),
+      paths: taskContract.nativeBoundary.readPaths, fragments: taskContract.nativeBoundary.readFragments ?? [],
+      secrets: [apiKey, claimed.leaseToken, codeReviewerKey].filter(Boolean),
       reviewMaterial: codeReviewerView, review: inspection.kind === "code-reviewer" ? inspection : null }));
     if (inspection?.kind === "verifier") priorAudit = verifiedPriorReadOnlyAudit(
       await duration.wait(api(`/v1/agent-runtime/executions/${claimed.id}/actions/prior-readonly-audit`, {

@@ -1,6 +1,7 @@
 import React, { Suspense, lazy, useEffect, useMemo } from "react";
 import { createRoot } from "react-dom/client";
 import { useAppLocation, useClientNavigation } from "./app-navigation";
+import { innovationRecordPath, recordIdFromQuery } from "./owner-record-navigation";
 import {
   canonicalGeneralDashboardPath,
   canonicalProductMapPath,
@@ -174,11 +175,15 @@ function App() {
     return <>{metadata}<PrivateAppRoute activeArea="01-strategia"><GoalsWorkbench canonical departmentKey="01-strategia" /></PrivateAppRoute></>;
   }
   if (pathname === "/areas" && currentAreaView() === "tasks" && areaKey !== "04-operacje") {
-    window.history.replaceState(null, "", `/areas?area=04-operacje&view=tasks&department=${encodeURIComponent(areaKey)}`);
+    const taskId = recordIdFromQuery(window.location.search, "taskId");
+    window.history.replaceState(null, "", `/areas?area=04-operacje&view=tasks&department=${encodeURIComponent(areaKey)}${taskId ? `&taskId=${encodeURIComponent(taskId)}` : ""}`);
     return <>{metadata}<PrivateAppRoute activeArea="04-operacje"><OperationsRoute /></PrivateAppRoute></>;
   }
   if (pathname === "/areas" && currentAreaView() === "decisions") {
-    if (areaKey !== "01-strategia") window.history.replaceState(null, "", `/areas?area=01-strategia&view=decisions&department=${encodeURIComponent(areaKey)}`);
+    if (areaKey !== "01-strategia") {
+      const decisionId = recordIdFromQuery(window.location.search, "decisionId");
+      window.history.replaceState(null, "", `/areas?area=01-strategia&view=decisions&department=${encodeURIComponent(areaKey)}${decisionId ? `&decisionId=${encodeURIComponent(decisionId)}` : ""}`);
+    }
     return <>{metadata}<PrivateAppRoute activeArea="01-strategia"><DecisionsWorkbench canonical departmentKey="01-strategia" /></PrivateAppRoute></>;
   }
   if (pathname === "/areas" && currentAreaView() === "procedures" && areaKey !== "04-operacje") {
@@ -302,8 +307,9 @@ function App() {
       }
       return <>{metadata}<PrivateAppRoute activeArea="11-innowacje"><ApplicationGraphRoute /></PrivateAppRoute></>;
     }
-    if (window.location.search !== "?area=11-innowacje&view=overview") {
-      window.history.replaceState(null, "", canonicalInnovationPath);
+    const innovationPath = innovationRecordPath(window.location.search, canonicalInnovationPath);
+    if (`${pathname}${window.location.search}` !== innovationPath) {
+      window.history.replaceState(null, "", innovationPath);
     }
     return <>{metadata}<PrivateAppRoute activeArea="11-innowacje"><InnovationRoute /></PrivateAppRoute></>;
   }

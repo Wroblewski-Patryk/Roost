@@ -66,19 +66,15 @@ the public-key anchor and delivered the scoped Worker credential through HTTPS
 handoff into Windows Credential Manager. Supervised execution uses attested
 Hermes 0.21.2. Private installation values remain outside Git.
 
-Host `edcde4a6-243a-4fab-a885-715c7013c6fc` claimed low-risk task
-`a965868b-60b1-4c42-9acd-c077c044002d`. Execution
-`9fc132c6-af99-4d98-a2e2-27de7d576879` completed on its first attempt at
-01:08:43 UTC under signed Decision `2c12bf61-7cfe-475a-8431-40c8f3d8514a`:
-`codex_responses`, `gpt-5.6-sol`, low reasoning, no fallback. Roost read back
-the model response, clean baseline commit
-`cf90418cc694dc0cb773a44c001c569407d05f9f`, no changed files, signed
-admission, native Job exit 0/zero active processes and durable
-`verified_candidate` review with verification and installation PASS. Spent
-admission files were archived by execution ID. Hermes token/cost usage is
-unavailable. Cancellation and lease-loss controls passed 66 focused
-Worker/native tests, including Windows Job descendant termination; forced
-production cancellation and lease-loss were not exercised.
+Execution `9fc132c6-af99-4d98-a2e2-27de7d576879` completed its first attempt
+at 01:08:43 UTC under signed Decision `2c12bf61-7cfe-475a-8431-40c8f3d8514a`:
+`codex_responses`, `gpt-5.6-sol`, low reasoning, no fallback. Native proof:
+clean `cf90418cc694dc0cb773a44c001c569407d05f9f`, unchanged files, signed
+admission, Job exit 0/zero active processes and durable `verified_candidate`.
+Exact task/host and archived artifacts remain in the
+[matrix](architecture/traceability-matrix.md). Hermes token/cost usage is
+unavailable. Cancellation/lease-loss passed 66 focused Worker/native checks;
+forced production cancellation/lease-loss were not exercised.
 
 Production readiness reports `executionEnabled: true` and
 `supervised_execution`. Gate 1 proves this bounded round trip; it does not
@@ -86,32 +82,23 @@ claim independent coding review or release. Ollama remains unqualified.
 
 **Gate 2 is met at native coding and independent review evidence level
 (2026-09-27).** Separate managed read-only auditor and verifier executions
-completed on the clean pilot baseline before the owner's one-time first-write
-Decision. Incomplete and out-of-scope work was refused at Submit. The Windows
-Worker demonstrated writer exclusion, an interrupted checkpoint and safe
-same-attempt resume. Its managed Hermes coder worked only in the configured
-pilot checkout, ran focused tests and created local commits. An independent
-credential-bound reviewer rejected three successive candidates with specific
-defects, and the accountable manager returned bounded corrections in Roost.
-The corrected execution `b95cf777-fe24-46a4-a88e-4bd0a9314bef` produced
+completed before the owner's separate first-write Decision. Submit rejected
+incomplete/out-of-scope work. Windows proof covers one writer, checkpoint/resume,
+scoped Hermes coding/tests and independent rejection/correction. Execution
+`b95cf777-fe24-46a4-a88e-4bd0a9314bef` produced
 commit `774e858ae48d1f05d2b56982a7113da983f62af8` with a signed local
-commit receipt, native `verified_candidate` review, passing Windows test and
-clean checkout. A separate read-only Linux test passed the POSIX case. Reviewer
-execution `5c27d054-7cc3-45a1-9ef6-d43760316e69` completed with unchanged
-Git/process/Docker state and stored Decision
-`c349899b-72c3-4260-9b77-de733f42866c` approving that exact commit and
-coding material digest in Roost. The pilot branch remains local, clean and
-recoverable. It has not been pushed or deployed. See the
+commit receipt, `verified_candidate`, passing Windows/POSIX tests and clean
+checkout. Independent execution `5c27d054-7cc3-45a1-9ef6-d43760316e69`
+preserved Git/process/Docker state; Decision
+`c349899b-72c3-4260-9b77-de733f42866c` accepted the exact commit/material.
+The Gate 2 branch remains local and recoverable, without push/deploy. See the
 [evidence record](architecture/traceability-matrix.md).
 
-Gate 2 proof is bounded to this configured pilot task, its declared resolver
-paths, procedures, roles and runtime. It does not certify general automatic
-scheduling, all context semantics, arbitrary filesystem effects, release or
-production behavior of the pilot change. Hermes token/cost usage remains
-unavailable. A failed earlier coding attempt needed exact manual native lease
-and spent-admission reconciliation before a later candidate could run; the
-signed terminal proof and archived private artifacts are retained. Automatic
-reconciliation of every after-spawn failure is not claimed.
+Gate 2 proves only its task/paths/procedures/roles/runtime. General scheduling,
+arbitrary filesystem effects and release are not certified; Hermes usage is
+unavailable. An earlier failed attempt required manual native lease/admission
+reconciliation; signed closure and private archives remain. Automatic recovery
+of every after-spawn failure is not claimed.
 
 ## End-to-end delivery gates
 
@@ -176,7 +163,7 @@ Managed PWA repair `7512bc3` is released with 1238s healthy observation,
 unchanged data/protected services and independent postrelease verification.
 The failed rollback remains unqualified; exact adopted rollback image and
 verified backup/restore are retained. Worker stopped; resources cleaned.
-Stop here; Gate 5 requires a separate assignment.
+Gate 5 received a separate owner assignment; no later phase is authorized.
 
 One real low-risk defect in the configured pilot application is discovered,
 planned, implemented, independently tested, committed, released and verified in
@@ -184,6 +171,16 @@ production through Gates 1–3. Application-specific safety rules and any owner
 consent explicitly required by `product/requirements.md` remain binding.
 
 ### Gate 5 — reusable company operation
+
+**In progress (2026-10-04), not met.** Existing shared roles and a published
+read-only base procedure are reused for the owner's second application. Its own
+context and two audit tasks are configured. Source changes add bounded canonical
+line fragments with native provenance, a separate primary-owner takeover
+Decision, and evidence-derived portfolio/Decision navigation. Focused tests and
+disposable PostgreSQL guards pass. Managed second-application audit, owner
+baseline, first write, coding/review and native web proof remain outstanding;
+neither deployment nor Gate 5 completion is inferred from these checks. See
+[operation controls](operations/internal-application-operation.md).
 
 The same mechanism can onboard another configured application without changing
 the core runtime. Accepted requirements applicable to internal application
