@@ -1,6 +1,20 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { setTimeout as pause } from "node:timers/promises";
 import { retryContextRead } from "../modules/agent-runtime/context-read-retry";
+
+test("an aborted read gives competing work time to finish before its fresh snapshot", async () => {
+  let busy = true;
+  let attempts = 0;
+  const competing = pause(50).then(() => { busy = false; });
+  const result = await retryContextRead(async () => {
+    attempts++;
+    return busy ? { error: "task_ready_context_conflict" } : { selected: "current" };
+  });
+  await competing;
+  assert.deepEqual(result, { selected: "current" });
+  assert.equal(attempts, 2);
+});
 
 test("a governed read retries an explicitly aborted source-fence conflict", async () => {
   let attempts = 0;
