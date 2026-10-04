@@ -1074,8 +1074,11 @@ retains its native review/spent bytes and leaves candidate/branch unchanged.
 Portfolio projects the accepted target instead of its completed native review
 helper only after exact persisted/current material, actors, native audit and Job
 bindings. Owner waiting and new missing context still block; baseline limitations
-remain historical. Twenty-three focused projection/receipt/UI tests and full
+remain historical. Twenty-four focused projection/receipt/UI tests and full
 `npm run validate` pass; authenticated browser proof remains pending.
+An exact current acceptance after a timestamped group-risk invalidation resolves
+only the result projection; later/unknown invalidation and actual owner waiting
+still block. Fresh execution/release authority is never inferred.
 Fixed coding/test suites pass 20 tests with three explicit fixture/privilege
 skips. An independent root native run of the sealed React 18.3.1/ReactDOM
 18.3.1/TypeScript 5.9.3 toolkit passes both actual empty/populated component

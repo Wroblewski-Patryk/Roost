@@ -132,6 +132,8 @@ export async function loadApplicationOperation(db: Db, workspaceId: string, appl
     const reviewCurrent = await applicationReviewCurrent(db, workspaceId, task, execution, review, material);
     const accountable = manager ?? (roles ? null : task.assignedWorkforceEntity);
     taskFacts.push({ id: task.id, title: task.title, status: task.status, readiness: String(object(task.executionReadiness).status ?? 'draft'),
+      readinessReason: typeof object(task.executionReadiness).reason === 'string' ? object(task.executionReadiness).reason : null,
+      readinessInvalidatedAt: typeof object(task.executionReadiness).invalidatedAt === 'string' ? object(task.executionReadiness).invalidatedAt : null,
       accountable: accountable ? { id: accountable.id, role: accountable.role ?? 'unassigned', label: accountable.name } : null,
       latestExecution: execution ? { id: execution.id, status: execution.status, invalidated: Boolean(execution.contextInvalidatedAt),
         executorAgentId: contract.assignment?.agentId ?? null,

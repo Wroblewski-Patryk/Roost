@@ -203,3 +203,6 @@ native audit/Job all match. Pending owner decisions and new context, risk or
 execution failures retain priority. This projection neither closes tasks nor
 grants release authority. Baseline limitations retain their historical audit
 timestamp; subsequent acceptance does not imply whole-application readiness.
+An exact current acceptance after a timestamped group-risk invalidation can
+resolve that result's display. A later or unknown invalidation still blocks.
+The next execution continues to require normal fresh Ready admission.

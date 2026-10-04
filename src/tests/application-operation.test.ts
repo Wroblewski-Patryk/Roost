@@ -74,3 +74,21 @@ test('a newly incomplete submission preserves a visible context blocker over its
   assert.equal(value.gateState, 'blocked');
   assert.ok(value.blockers.some(blocker => blocker.code === 'task_needs_context'));
 });
+
+test('current exact acceptance after a group-risk invalidation resolves only the result, never later risk or owner waiting', () => {
+  const f = facts(), t = { ...task(), readiness: 'needs_revalidation', readinessReason: 'risk_context_changed',
+    readinessInvalidatedAt: '2026-10-03T23:59:00Z' };
+  f.tasks = [t];
+  const accepted = applicationOperation(f);
+  assert.equal(accepted.gateState, 'met');
+  assert.ok(accepted.limitations.some(text => text.includes('another execution still requires fresh Ready')));
+  for (const value of ['', 'invalid', '2026-10-04T00:01:00Z']) {
+    t.readinessInvalidatedAt = value; assert.equal(applicationOperation(f).gateState, 'blocked');
+  }
+  t.readinessInvalidatedAt = '2026-10-03T23:59:00Z'; t.readinessReason = 'context_changed';
+  assert.equal(applicationOperation(f).gateState, 'blocked');
+  t.readinessReason = 'risk_context_changed'; t.review.current = false;
+  assert.equal(applicationOperation(f).gateState, 'blocked');
+  t.review.current = true; f.decisions = [{ id: id(21), title: 'Actual owner decision', state: 'proposed', taskIds: [t.id] }];
+  assert.equal(applicationOperation(f).gateState, 'blocked');
+});
