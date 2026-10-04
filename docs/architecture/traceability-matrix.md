@@ -1147,6 +1147,9 @@ produced Worker paused-state, PostgreSQL address/admin and namespace-ingress
 fixes; full post-release Worker proof remains pending. No second-application
 release grant, push/deploy, synthetic fixture write or runtime-resume claim.
 See [current operations evidence](../operations/governed-compose-release.md).
+Native configuration hashes now agree after excluding lazy ORM relations from
+persisted settings; environment/storage seals remain. PHP regression checks and
+541 Compose component checks pass. Exact package and release proof remain pending.
 
 ## Matrix
 

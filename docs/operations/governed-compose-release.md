@@ -197,6 +197,13 @@ proxy drift refuse further effects and require reconciliation. Native baseline
 preparation proved public denial, then reopened health while preserving DB and
 cadence fences; it does not substitute for governed post-observation proof.
 
+Configuration projection uses cast persisted attributes rather than loaded ORM
+relations. Native reads exposed a caller-order difference from lazy environment
+and storage relations; those retain separate complete digests. The repaired
+reader's Compose, settings and runtime hashes agree with the original documents.
+PHP regression checks preserve casts and invalidate eight changed attributes.
+This qualification does not grant release authority or prove deployment.
+
 The releaser credential is renewed through normal Roost API and WCM readback.
 An independent readiness task exists. Unused build-cache cleanup recovered
 4.927 GB without removing images, volumes or application data. The sealed

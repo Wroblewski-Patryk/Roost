@@ -36,7 +36,9 @@ function roost_compose_normalize($d,$targetId){foreach($d['services'] as $name=>
   elseif(is_int($key)&&is_string($value)&&preg_match('/^coolify\.name='.preg_quote(str_replace('_','-',$name).'-'.$targetId,'/').'(-[0-9]{6,20})?$/',$value))unset($s['labels'][$key]);
   elseif(is_int($key)&&is_string($value)&&preg_match('/^coolify\.version=[0-9]+\.[0-9]+\.[0-9]+(?:[-.+][A-Za-z0-9.+_-]+)?$/',$value))unset($s['labels'][$key]);}}
  }unset($s);return $d;}
-function roost_compose_configuration_projection($a){$raw=$a->toArray();$settings=$a->settings?->toArray()??[];
+// Persisted cast attributes must not depend on which lazy relations a caller
+// read first. Environment and storage relations have their own complete seals.
+function roost_compose_configuration_projection($a){$raw=$a->attributesToArray();$settings=$a->settings?->attributesToArray()??[];
  foreach(['id','uuid','name','description','created_at','updated_at','deleted_at','status','config_hash','git_commit_sha','docker_compose','docker_compose_raw','last_online_at','restart_count','last_restart_at','last_restart_type','server_status','settings','additional_servers','destination'] as $key)unset($raw[$key]);
  foreach(['id','application_id','created_at','updated_at'] as $key)unset($settings[$key]);return ['attributes'=>$raw,'settings'=>$settings];}
 function roost_compose_controller_invariants($a){$projection=roost_compose_configuration_projection($a);
@@ -60,7 +62,7 @@ function rows($v){usort($v,fn($a,$b)=>strcmp(hashed($a),hashed($b)));return $v;}
 function pick($v,$keys){$r=[];foreach($keys as $key)$r[$key]=$v[$key]??null;return $r;}
 if(hash_file('sha256','/var/www/html/bootstrap/helpers/applications.php')!==$p['sourcePins']['queueHelper']
  ||hash_file('sha256','/var/www/html/app/Jobs/ApplicationDeploymentJob.php')!==$p['sourcePins']['deploymentJob'])throw new Exception('source');
-$a=App\Models\Application::where('uuid',$p['target']['targetId'])->firstOrFail();$raw=$a->toArray();$settings=$a->settings?->toArray()??[];
+$a=App\Models\Application::where('uuid',$p['target']['targetId'])->firstOrFail();$raw=$a->attributesToArray();$settings=$a->settings?->attributesToArray()??[];
 if($a->build_pack!=='dockercompose'||$a->docker_compose_location!==$p['target']['composePath']||$a->git_branch!==$p['target']['branch'])throw new Exception('scope');
 $repository=preg_replace('/\.git$/','',$p['target']['repositoryUrl']);
 if(!in_array($a->git_repository,[$repository,preg_replace('#^https://github.com/#','',$repository)],true))throw new Exception('repository');

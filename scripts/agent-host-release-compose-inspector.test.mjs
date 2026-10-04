@@ -1,9 +1,45 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createComposeStateInspector } from './lib/agent-host-release-compose-inspector.mjs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { createComposeStateInspector, composeControllerInvariantPhp } from './lib/agent-host-release-compose-inspector.mjs';
 import { composeConfigurationDigest } from './lib/agent-host-release-compose-state.mjs';
 
 const h=c=>c.repeat(64),sha=c=>c.repeat(40),image=c=>`sha256:${h(c)}`;
+test('shared projection selects cast attributes while environment/storage keep independent seals',async()=>{
+ assert.match(composeControllerInvariantPhp,/\$raw=\$a->attributesToArray\(\)/);
+ assert.match(composeControllerInvariantPhp,/\$a->settings\?->attributesToArray\(\)/);
+ assert.doesNotMatch(composeControllerInvariantPhp,/\$a->toArray\(\)|\$a->settings\?->toArray\(\)/);
+ const f=fixture();await f.inspector().inspectConfiguration(f.target.targetId,f.commit);
+ const source=f.calls.find(c=>c.operation==='compose_configuration').stdin;
+ assert.match(source,/'environmentDigest'=>hashed\(\['variables'=>rows\(\$env\),'services'=>array_map/);
+ assert.match(source,/'storageDigest'=>hashed\(\['persistent'=>rows\(\$persistent\),'files'=>rows\(\$files\)\]\)/);
+});
+const phpAvailable=spawnSync('php',['-v'],{encoding:'utf8',windowsHide:true,timeout:3000}).status===0;
+test('native PHP projection ignores loaded relations but every persisted cast change invalidates digest',{skip:!phpAvailable},()=>{
+ const program=String.raw`<?php
+${composeControllerInvariantPhp}
+class ProjectionFixtureModel {
+ public $attributes;public $relations=[];public $settings=null;public $toArrayCalls=0;
+ function __construct($attributes){$this->attributes=$attributes;}
+ function attributesToArray(){return $this->attributes;}
+ function toArray(){$this->toArrayCalls++;return array_merge($this->attributes,$this->relations);}
+}
+$settings=new ProjectionFixtureModel(['id'=>7,'application_id'=>9,'is_auto_deploy_enabled'=>false,'retained_null'=>null,'retained_list'=>['second','first'],'retained_cast_number'=>1.5]);
+$a=new ProjectionFixtureModel(['id'=>9,'uuid'=>'fixture-target','git_commit_sha'=>'HEAD','git_branch'=>'main','source_id'=>13,'destination_id'=>15,'docker_compose_custom_build_command'=>null,'retained_cast_bool'=>false,'retained_cast_object'=>['preserved'=>true],'retained_secret_attribute'=>'fictional-only-value']);$a->settings=$settings;
+$before=roost_compose_configuration_projection($a);$beforeHash=roost_compose_hash($before);
+foreach(['environment_variables','environment_variables_preview','persistent_storages','file_storages','unrelated_loaded_relation'] as$key)$a->relations[$key]=[['id'=>77,'changing'=>true]];
+$settings->relations['unrelated_loaded_relation']=['different'];$after=roost_compose_configuration_projection($a);
+$changed=[];foreach([['attributes','git_branch','other'],['attributes','destination_id',16],['attributes','retained_cast_bool',true],['attributes','retained_secret_attribute','different-fictional-only-value'],['settings','is_auto_deploy_enabled',true],['settings','retained_list',['first','second']],['settings','retained_cast_number',2.5],['settings','retained_null','non-null']] as[$part,$key,$value]){$copy=$after;$copy[$part][$key]=$value;$changed[]=$beforeHash!==roost_compose_hash($copy);}
+echo json_encode(['stable'=>$beforeHash===roost_compose_hash($after),'changed'=>$changed,'legacyToArrayCalled'=>$a->toArrayCalls+$settings->toArrayCalls,
+ 'attributeKeys'=>array_keys($after['attributes']),'settingsKeys'=>array_keys($after['settings']),
+ 'typesPreserved'=>is_bool($after['attributes']['retained_cast_bool'])&&is_array($after['attributes']['retained_cast_object'])&&$after['settings']['retained_null']===null&&is_float($after['settings']['retained_cast_number']),
+ 'relationKeysAbsent'=>!array_key_exists('environment_variables',$after['attributes'])&&!array_key_exists('unrelated_loaded_relation',$after['settings'])],JSON_THROW_ON_ERROR);`;
+ const raw=execFileSync('php',[],{input:program,encoding:'utf8',windowsHide:true,timeout:5000,maxBuffer:8192,stdio:['pipe','pipe','pipe']});
+ const result=JSON.parse(raw);assert.equal(result.stable,true);assert.equal(result.legacyToArrayCalled,0);assert.equal(result.typesPreserved,true);assert.equal(result.relationKeysAbsent,true);
+ assert.equal(result.changed.length,8);assert(result.changed.every(Boolean));
+ assert(result.attributeKeys.includes('source_id'));assert(result.attributeKeys.includes('retained_secret_attribute'));assert(result.settingsKeys.includes('is_auto_deploy_enabled'));
+ assert(!result.attributeKeys.includes('id'));assert(!result.attributeKeys.includes('uuid'));assert(!result.settingsKeys.includes('application_id'));
+});
 function fixture() {
   const commit=sha('a'), tree=sha('b'), targetId='fixtureapp';
   const target={targetId,composePath:'/docker-compose.coolify.yml',repositoryUrl:'https://github.com/fixture/private-app',branch:'main',
