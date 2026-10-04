@@ -4,8 +4,8 @@
 
 Gate 5 is in progress. Two independent managed native audits of the second
 application completed; its bounded implementation baseline is separately
-accepted by the primary owner. First write, accepted coding outcome and native
-console proof remain pending. Each additional
+accepted by the primary owner. Separate first-write consent is accepted;
+accepted coding outcome and native console proof remain pending. Each additional
 application needs its own audit and context. Whole product, sale readiness,
 mobile and later company capabilities remain unverified or deferred.
 
@@ -182,3 +182,16 @@ low-risk managed Codex execution. Its reviewed profile has 48 configured turns
 and a distinct digest; startup rejects a tier/profile mismatch. The accepted
 task's exact turn count, retries, input seal and absolute deadline remain bound.
 This tier permits neither an automatic restart nor an inferred runtime grant.
+
+An oversized exact review patch may use `roost-review-crlf-diff-v1` only when
+the Worker proves uniform LF-to-CRLF serialization. It retains the complete
+normalized patch and binds every changed path to both exact Git blobs, byte
+digests and sizes, newline policy and the original full patch digest. Applying
+every represented hunk in memory must reproduce the complete normalized
+candidate; reversing its recorded newline policy must reproduce all original
+bytes. No source or index is written. Mixed endings, binary files, unsupported
+changes or an oversized remaining patch block review. The sealed provider input
+binds the certificate to the exact commits, paths and representation; the native
+receipt retains its digest. The independent reviewer must assess the newline
+change, rather than assume it harmless. This representation grants no authority
+and omits no semantic edit or other whitespace.

@@ -10,6 +10,7 @@ import ready from "./agent-host-ready-context.cjs";
 import { sealHermesProfile, assertHermesProfile, hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion } from "./agent-host-hermes-profile.mjs";
 import { createHermesStartupCandidate, sealHermesStartup, assertHermesStartup } from "./agent-host-hermes-startup.mjs";
 import { basisRevalidationSchema } from "./agent-host-code-reviewer.mjs";
+import { qualifiedCrlfDiffCertificateSchema } from "./agent-host-review-crlf-diff.mjs";
 
 import { sealHermesBudget, assertHermesBudget, assertHermesBudgetReceipt, createHermesBudgetReceipt } from "./agent-host-hermes-budget.mjs";
 
@@ -70,7 +71,8 @@ export const providerInputSchema = z.object({
         basisRevalidation: basisRevalidationSchema.optional(),
         baselineCommit: z.string().regex(/^[a-f0-9]{40}$/), reviewedCommit: z.string().regex(/^[a-f0-9]{40}$/),
         changedFiles: z.array(z.string()).max(128), codingTests: record, localCommit: record, nativeReview: record,
-        diff: z.string().max(32768), diffDigest: hash }).strict().optional(), digest: hash
+        diff: z.string().max(32768), diffDigest: hash,
+        diffCertificate: qualifiedCrlfDiffCertificateSchema.optional() }).strict().optional(), digest: hash
     }).strict()).optional()
   }).strict(),
   startupTools: z.tuple([]),
@@ -103,6 +105,16 @@ export const providerInputSchema = z.object({
   }
   const reviewed = input.evidence.repositoryInspection?.value.reviewed;
   if (!reviewed) return;
+  const certificate = reviewed.diffCertificate;
+  if (certificate && (certificate.baselineCommit !== reviewed.baselineCommit
+    || certificate.reviewedCommit !== reviewed.reviewedCommit
+    || certificate.representedDiffDigest !== createHash("sha256").update(reviewed.diff).digest("hex")
+    || certificate.representedDiffDigest !== reviewed.diffDigest
+    || certificate.representedDiffBytes !== Buffer.byteLength(reviewed.diff)
+    || certificate.changedFilesDigest !== createHash("sha256").update(JSON.stringify([...reviewed.changedFiles].sort())).digest("hex")
+    || JSON.stringify(certificate.files.map(file => file.path).sort()) !== JSON.stringify([...reviewed.changedFiles].sort())))
+    context.addIssue({ code: z.ZodIssueCode.custom,
+      path: ["evidence", "repositoryInspection", "value", "reviewed"], message: "review_diff_certificate_binding_invalid" });
   const mapping = reviewed.basisRevalidation, reference = input.contract.nativeBoundary?.inspectReadOnly;
   // Ordinary reviews keep their historical evidence shape. A revalidated input
   // cannot discard the original reference or substitute a different task/result.
@@ -204,6 +216,7 @@ function projection(fresh, claimed, repositoryEvidence, priorAudit) {
       ] : []),
       ...(packet.contract.nativeBoundary?.inspectReadOnly?.kind === "code-reviewer" ? [
         "Independently review the exact commit and Worker-provided diff, tests and coding receipt. Return ONLY a strict JSON object, no Markdown.",
+        "If diffCertificate is present, Worker losslessly reconstructed the complete normalized patch and exact uniform line-ending transformation for every changed Git blob. Assess that recorded LF-to-CRLF conversion explicitly; it is not declared harmless. Full original/represented patch digests, blob identities, byte counts and normalized digests are bound. No other whitespace or real edit is omitted.",
         "JSON must contain decision ('approve' or 'reject'), reviewedCommit (exact 40-hex), evidenceDigest (the reviewed materialVersion), summary, and evidence array of {kind:'test'|'artifact',reference,result,verdict?}.",
         "For approve include a passing test item. For reject include reproduction array, expected, observed, and correction {scope,excluded,outcome,competencies}. Do not claim a test you did not observe."
       ] : []),

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { randomUUID } from "node:crypto";
+import { randomUUID, createHash } from "node:crypto";
 import { codeReviewReferenceMatches, validateCodeReviewView, prepareCodeReviewDecision } from "./lib/agent-host-code-reviewer.mjs";
 import { providerInputSchema, prepareProviderInput } from "./lib/agent-host-provider-input.mjs";
 import { validPacketFixture, pinReadyFixture } from "./fixtures/execution-packet.mjs";
@@ -111,6 +111,39 @@ test("sealed model input retains exact original reference and complete current r
   assert.notEqual(inspected.value.reviewed.materialVersion, inspected.value.reviewed.originalMaterialVersion);
   assert.equal(inspected.value.reviewed.basisRevalidation.readyPinDigest.length, 64);
   assert.equal(Object.isFrozen(inspected.value.reviewed.basisRevalidation), true);
+});
+
+function qualifiedProviderInput() {
+  const input = structuredClone(mappedProviderInput()), reviewed = input.evidence.repositoryInspection.value.reviewed;
+  const sha = value => createHash("sha256").update(value).digest("hex");
+  reviewed.diffDigest = sha(reviewed.diff);
+  const blob = { blob: "a".repeat(40), sha256: "b".repeat(64), bytes: 100,
+    endings: "lf", newlines: 10, normalizedSha256: "c".repeat(64), normalizedBytes: 100 };
+  reviewed.diffCertificate = { schemaVersion: "roost-review-crlf-diff-v1", baselineCommit: reviewed.baselineCommit,
+    reviewedCommit: reviewed.reviewedCommit, originalDiffDigest: "d".repeat(64), originalDiffBytes: 40000,
+    representedDiffDigest: reviewed.diffDigest, representedDiffBytes: Buffer.byteLength(reviewed.diff),
+    changedFilesDigest: sha(JSON.stringify([...reviewed.changedFiles].sort())),
+    files: [{ path: "release.json", change: "modified", before: blob,
+      after: { ...blob, blob: "e".repeat(40), endings: "crlf", bytes: 110 } }] };
+  return input;
+}
+test("qualified review certificate stays bound to the exact sealed candidate representation", () => {
+  assert.equal(providerInputSchema.safeParse(qualifiedProviderInput()).success, true);
+});
+for (const [label, mutate] of [
+  ["different baseline", r => { r.diffCertificate.baselineCommit = "7".repeat(40); }],
+  ["different candidate", r => { r.diffCertificate.reviewedCommit = "7".repeat(40); }],
+  ["different represented digest", r => { r.diffCertificate.representedDiffDigest = "7".repeat(64); }],
+  ["different diff bytes", r => { r.diffCertificate.representedDiffBytes++; }],
+  ["changed diff", r => { r.diff += " omitted change"; }],
+  ["different diff digest", r => { r.diffDigest = "7".repeat(64); }],
+  ["different path digest", r => { r.diffCertificate.changedFilesDigest = "7".repeat(64); }],
+  ["different certificate paths", r => { r.diffCertificate.files[0].path = "another.json"; }],
+  ["missing certificate file", r => { r.diffCertificate.files = []; }],
+  ["unknown certificate claim", r => { r.diffCertificate.approved = true; }],
+]) test(`qualified provider input rejects ${label}`, () => {
+  const input = qualifiedProviderInput(); mutate(input.evidence.repositoryInspection.value.reviewed);
+  assert.equal(providerInputSchema.safeParse(input).success, false);
 });
 for (const [label, mutate] of [
   ["wrong original reference", r => { r.originalMaterialVersion = "7".repeat(64); }],

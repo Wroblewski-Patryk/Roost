@@ -170,9 +170,15 @@ for (const [scenario, reason] of Object.entries({ qualification_timeout: "tool_q
   });
 }
 
-function reviewedCandidate(x, mapped) {
+function reviewedCandidate(x, mapped, crlf = false) {
+  if (crlf) {
+    x.git("config", "core.autocrlf", "false");
+    fs.writeFileSync(path.join(x.repositoryPath, "editable.txt"), "baseline exact text\n".repeat(4000));
+    x.git("add", "editable.txt"); x.git("commit", "-m", "large exact LF baseline");
+  }
   const baselineCommit = x.git("rev-parse", "HEAD");
-  fs.writeFileSync(path.join(x.repositoryPath, "editable.txt"), "candidate\n");
+  fs.writeFileSync(path.join(x.repositoryPath, "editable.txt"), crlf
+    ? ("candidate  keep spaces\n" + "baseline exact text\n".repeat(3999)).replaceAll("\n", "\r\n") : "candidate\n");
   x.git("add", "editable.txt"); x.git("commit", "-m", "bounded reviewed candidate");
   const reviewedCommit = x.git("rev-parse", "HEAD"), originalPinId = randomUUID();
   x.options.currentCommit = reviewedCommit; x.options.nativeBoundaryOptions.expected.head = reviewedCommit;
@@ -190,7 +196,8 @@ function reviewedCandidate(x, mapped) {
     readyPinId: randomUUID(), readyRevision: "d".repeat(64), readyPinDigest: "e".repeat(64),
     commit: reviewedCommit, actorUserId: randomUUID(), createdAt: "2026-10-02T00:00:00.000" };
   const collect = () => collectReadOnlyRepositoryEvidence({ repositoryPath: x.repositoryPath,
-    expected: x.options.nativeBoundaryOptions.expected, paths: ["editable.txt"], reviewMaterial, review });
+    expected: x.options.nativeBoundaryOptions.expected, paths: crlf ? [] : ["editable.txt"],
+    fragments: crlf ? [{ path: "editable.txt", startLine: 1, endLine: 8 }] : [], reviewMaterial, review });
   return { review, reviewMaterial, collect };
 }
 for (const mapped of [false, true]) test(`repository collector seals ${mapped ? "revalidated" : "ordinary"} review material with exact native diff`, windows, async t => {
@@ -205,6 +212,20 @@ for (const mapped of [false, true]) test(`repository collector seals ${mapped ? 
       assert.deepEqual(evidence.reviewed.basisRevalidation, candidate.reviewMaterial.result.basisRevalidation);
       assert.equal(Object.isFrozen(evidence.reviewed.basisRevalidation), true);
     } else { assert.equal(evidence.reviewed.basisRevalidation, undefined); assert.equal(evidence.reviewed.originalMaterialVersion, undefined); }
+  } finally { x.restore(); }
+});
+
+test("large exact CRLF candidate is fully certified without hiding a real edit or spaces", windows, async t => {
+  const x = await fixture(t);
+  try {
+    const candidate = reviewedCandidate(x, false, true), evidence = candidate.collect();
+    assert.ok(evidence.reviewed.diff.includes("+candidate  keep spaces"));
+    assert.ok(Buffer.byteLength(evidence.reviewed.diff) < 32768);
+    assert.ok(evidence.reviewed.diffCertificate.originalDiffBytes > 32768);
+    assert.equal(evidence.reviewed.diffCertificate.baselineCommit, candidate.review.baselineCommit);
+    assert.equal(evidence.reviewed.diffCertificate.reviewedCommit, candidate.review.reviewedCommit);
+    assert.equal(evidence.reviewed.diffCertificate.files.length, 1);
+    assert.equal(Object.isFrozen(evidence.reviewed.diffCertificate.files[0]), true);
   } finally { x.restore(); }
 });
 test("repository collector rejects a stale mapped basis before model input", windows, async t => {

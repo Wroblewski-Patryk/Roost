@@ -10,6 +10,7 @@ import { assertHermesBudgetReceipt, hermesBudgetReceiptMatches } from "./agent-h
 import { isWindowsJobCleanupReceipt } from "./agent-host-windows-job.mjs";
 import { guardHostContent } from "./agent-host-redaction.mjs";
 import { codeReviewReferenceMatches } from "./agent-host-code-reviewer.mjs";
+import { collectQualifiedCrlfReviewDiff } from "./agent-host-review-crlf-diff.mjs";
 
 const sealed = new WeakMap(), receipts = new WeakMap();
 const hex = value => createHash("sha256").update(value).digest("hex");
@@ -18,10 +19,13 @@ const fail = (reason = "unproven") => { throw Object.assign(new Error("readonly_
 const preserveBoundaryFailure = (error, fallback) => fail(error?.protocolAdmission
   && /^[a-z][a-z0-9_]{2,80}$/.test(error.details?.reason ?? "") ? error.details.reason : fallback);
 const frozen = value => { if (value && typeof value === "object") { Object.values(value).forEach(frozen); Object.freeze(value); } return value; };
-const git = (root, args) => execFileSync("git", ["--literal-pathspecs", "-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", ...args], {
-  cwd: root, windowsHide: true, shell: false, timeout: 10000, maxBuffer: 65536,
+const git = (root, args, options = {}) => {
+  const result = execFileSync("git", ["--literal-pathspecs", "-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", ...args], {
+  cwd: root, windowsHide: true, shell: false, timeout: 10000, maxBuffer: options.binary ? 8388608 : 65536,
   env: { ...process.env, GIT_OPTIONAL_LOCKS: "0", GIT_NO_REPLACE_OBJECTS: "1", GIT_CONFIG_NOSYSTEM: "1",
-    GIT_CONFIG_GLOBAL: process.platform === "win32" ? "NUL" : "/dev/null" }, encoding: "utf8" }).trim();
+    GIT_CONFIG_GLOBAL: process.platform === "win32" ? "NUL" : "/dev/null" }, encoding: options.binary ? undefined : "utf8" });
+  return options.binary ? result : result.trim();
+};
 const hermesSources = ["toolsets.py", "model_tools.py", "cli.py", "agent/agent_init.py", "agent/coding_context.py", "hermes_cli/oneshot.py"];
 function hermesToolSource(provider) {
   const root = path.dirname(path.dirname(path.dirname(provider.executablePath)));
@@ -216,8 +220,14 @@ export function collectReadOnlyRepositoryEvidence({ repositoryPath, expected, pa
           || !reviewMaterial.result?.verification?.codingTests?.passed
           || git(root, ["rev-parse", `${review.reviewedCommit}^1`]) !== review.baselineCommit) fail("review_material_mismatch");
       stage = "review_diff_unavailable";
-      const diff = git(root, ["diff", "--binary", "--no-ext-diff", "--no-textconv",
-        review.baselineCommit, review.reviewedCommit, "--"]);
+      const rawDiff = git(root, ["diff", "--binary", "--no-ext-diff", "--no-textconv",
+        review.baselineCommit, review.reviewedCommit, "--"], { binary: true });
+      const legacyDiff = rawDiff.toString("utf8").trim();
+      const represented = collectQualifiedCrlfReviewDiff({ git: (args, options) => git(root, args, options),
+        baselineCommit: review.baselineCommit, reviewedCommit: review.reviewedCommit,
+        changedFiles: reviewMaterial.result.changedFiles,
+        rawDiff: Buffer.byteLength(legacyDiff) <= 32768 ? legacyDiff : rawDiff });
+      const { diff, certificate } = represented;
       if (!diff || Buffer.byteLength(diff) > 32768) fail("review_diff_invalid");
       const safe = guardHostContent({ diff }, "required", secrets);
       if (safe.redacted || safe.value?.diff !== diff) fail("review_diff_redaction_blocked");
@@ -229,7 +239,7 @@ export function collectReadOnlyRepositoryEvidence({ repositoryPath, expected, pa
         codingTests: reviewMaterial.result.verification.codingTests,
         localCommit: reviewMaterial.result.verification.localCommit,
         nativeReview: reviewMaterial.result.verification.nativeReviewReceipt,
-        diff, diffDigest: hex(diff) };
+        diff, diffDigest: hex(diff), ...(certificate ? { diffCertificate: certificate } : {}) };
       const checked = guardHostContent(reviewed, "required", secrets);
       if (checked.redacted || nativeDigest(checked.value) !== nativeDigest(reviewed)) fail("review_material_redaction_blocked");
     }
@@ -343,7 +353,11 @@ export function completeReadOnlyBoundary(proof, { ownedTreeReceipt, error } = {}
         ? { verifiedExecutionId: review.verifiedExecutionId, verifiedEvidenceDigest: review.kind === "code-reviewer"
           ? saved.repositoryEvidence.reviewed.materialVersion : review.verifiedEvidenceDigest } : {}),
       ...(review.kind === "code-reviewer" ? { verifiedTaskId: review.verifiedTaskId, reviewedCommit: review.reviewedCommit,
-        baselineCommit: review.baselineCommit, diffDigest: saved.repositoryEvidence.reviewed.diffDigest } : {}) };
+        baselineCommit: review.baselineCommit, diffDigest: saved.repositoryEvidence.reviewed.diffDigest,
+        ...(saved.repositoryEvidence.reviewed.diffCertificate ? {
+          diffCertificateDigest: nativeDigest(saved.repositoryEvidence.reviewed.diffCertificate),
+          originalDiffDigest: saved.repositoryEvidence.reviewed.diffCertificate.originalDiffDigest
+        } : {}) } : {}) };
     return frozen({ ...body, digest: nativeDigest(body) });
   } catch { fail(); }
 }
