@@ -2,9 +2,10 @@
 
 ## Claim boundary
 
-Gate 5 is in progress. The controls below have source and focused test evidence;
-the second application's managed audit, owner adoption, first write, accepted
-outcome and native console proof are not yet certified. Each additional
+Gate 5 is in progress. Two independent managed native audits of the second
+application completed; its bounded implementation baseline is separately
+accepted by the primary owner. First write, accepted coding outcome and native
+console proof remain pending. Each additional
 application needs its own audit and context. Whole product, sale readiness,
 mobile and later company capabilities remain unverified or deferred.
 
@@ -91,6 +92,17 @@ package configuration and candidate files are pinned before and after the run.
 The Windows Job must close with no remaining processes. Nonempty TAP assertions
 must pass; empty, skipped, cancelled or pending tests cannot qualify a candidate.
 This configuration does not authorize a write or replace independent review.
+
+For actual TSX rendering assertions, a separate `node_typescript_render_test`
+command pins the exact `.test.ts`, tracked TS/TSX sources (at most 1 MiB each),
+and a private external React/ReactDOM/TypeScript toolkit with exact versions.
+The toolkit must have only its package/lock files and flat declared dependency
+closure. Complete bounded inventory, physical identities and content digests
+are rechecked before and after the fixed Windows Job; links, extra packages,
+bin wrappers, drift and arbitrary command/environment fields are rejected.
+Only `ROOST_TEST_DEPENDENCY_ROOT` is exposed to the test. Meaningful nonempty
+TAP must pass with zero pending/skipped assertions. Rendered output is component
+proof; it does not establish browser layout or whole-application readiness.
 
 Measure the real queued packet and native selections before starting Worker.
 The 128 KiB input limit remains enforced. Reserve space for the verifier's

@@ -172,16 +172,16 @@ consent explicitly required by `product/requirements.md` remain binding.
 
 ### Gate 5 — reusable company operation
 
-**In progress (2026-10-04), not met.** Existing shared roles and a published
-read-only base procedure are reused for the owner's second application. Its own
-context and two audit tasks are configured. Source changes add bounded canonical
-line fragments with native provenance, a separate primary-owner takeover
-Decision, and evidence-derived portfolio/Decision navigation. Focused tests and
-disposable PostgreSQL guards pass. Runtime Decisions are accepted; oversized
-input was rejected before model start, with unchanged application and normal
-lock reclamation verified. Managed audit, owner baseline, first write,
-coding/review and native web proof remain outstanding. Roost `4902a887` is
-deployed; exact build/health and portfolio reads pass.
+**In progress (2026-10-04), not met.** Two independent managed native audits
+of the owner's second application completed with unchanged repository/process/
+container state. Its primary-owner implementation baseline is accepted;
+first-write consent, coding/review and native console proof remain pending.
+Shared roles/base procedures and own context/extensions are reused. Bounded
+source provenance, takeover guards and portfolio navigation pass focused/native
+checks. Roost `2678d3d7` is deployed with exact build/health proof. A sealed
+React/TypeScript rendered-test adapter passes real Windows Job verification;
+it grants no application write authority. Oversized pre-model refusal and
+normal lock recovery remain recorded.
 Gate 5 is not complete. See
 [operation controls](operations/internal-application-operation.md).
 

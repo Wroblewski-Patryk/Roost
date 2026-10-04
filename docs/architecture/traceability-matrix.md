@@ -1010,11 +1010,18 @@ takeover baseline guards and evidence-derived portfolio/record navigation.
 Root checks: 37/37 focused API/model/UI tests; 29/29 Worker fragment/prior-audit
 tests; 6/6 tests including real disposable PostgreSQL baseline/risk guards,
 zero skips; `npm run validate` and `npm run codex:check` PASS. A bounded
-read-only collection in the second configured checkout selected 25 records,
-62,849 bytes, with unchanged native Git/process/container state. This is
-collector preflight, not a Hermes execution or accepted takeover. Managed
-audit/verifier, owner baseline/first write, coding/review, deployed endpoints
-and native console proof remain outstanding. Shared roles and the existing base
+managed auditor `bc979125-4c58-47a9-b9ba-8e7cd480d57d` and independent verifier
+`efdbb7a8-e3eb-48a1-b5bb-9ba2188c380c` completed with signed unchanged native
+Git/process/container receipts and closed Windows Jobs. Actual model inputs
+were 121,283 and 126,373 bytes within the 131,072-byte cap. The primary owner
+accepted bounded baseline `9321633f-fafa-4fb3-9265-cb418c20a062`; it conveys no
+first-write or release authority. Roost `2678d3d7` exact build/health passed.
+First-write consent, coding/review and native console proof remain outstanding.
+Fixed coding/test suites pass 20 tests with three explicit fixture/privilege
+skips. An independent root native run of the sealed React 18.3.1/ReactDOM
+18.3.1/TypeScript 5.9.3 toolkit passes both actual empty/populated component
+assertions in a closed Windows Job; this synthetic proof changes no application
+source and does not certify browser layout. Shared roles and the existing base
 procedure are reused with application-specific context/extension. See
 [controls and claim boundary](../operations/internal-application-operation.md).
 
@@ -1051,9 +1058,9 @@ procedure are reused with application-specific context/extension. See
 | [RF-APP-007](../product/requirements.md#rf-app-007) | P1 | nieocenione | [DEC](#e-dec) | Limitation acceptance requires a real readiness decision and attached evidence. |
 | [RF-APP-008](../product/requirements.md#rf-app-008) | P1 | nieocenione | [REVIEW](#e-review) | Owner readiness acceptance has not been exercised for a configured application. |
 | [RF-APP-009](../product/requirements.md#rf-app-009) | P0 | częściowo działa | [DOC](#e-doc), [RELEASE](#e-release) | Existing pilot records, repository and pinned runtime context were used in Gate 4; inventory across the portfolio remains unverified. |
-| [RF-APP-010](../product/requirements.md#rf-app-010) | P0 | częściowo działa | [PORT](#e-port), [RELEASE](#e-release), [APP-OP](#e-app-operation) | Pilot bounded adoption/repair passed; second-app typed owner takeover has source/native-guard proof only. New empty-app path remains unproven. |
+| [RF-APP-010](../product/requirements.md#rf-app-010) | P0 | częściowo działa | [PORT](#e-port), [RELEASE](#e-release), [APP-OP](#e-app-operation) | Pilot bounded adoption/repair passed; second-app independent native audits and separate primary-owner typed baseline adoption passed. Bounded coding outcome and new empty-app path remain unproven. |
 | [RF-APP-011](../product/requirements.md#rf-app-011) | P0 | częściowo działa | [CTX](#e-ctx), [RELEASE](#e-release) | Gate 4 compares scoped requirements, code, Git and production facts with provenance; full financial/product audit is not claimed. |
-| [RF-APP-012](../product/requirements.md#rf-app-012) | P0 | częściowo działa | [DOC](#e-doc), [RELEASE](#e-release), [APP-OP](#e-app-operation) | Pilot base/extension ran together; second-app roles/context/extension reuse is configured, managed outcome still pending. |
+| [RF-APP-012](../product/requirements.md#rf-app-012) | P0 | częściowo działa | [DOC](#e-doc), [RELEASE](#e-release), [APP-OP](#e-app-operation) | Pilot base/extension ran together; second-app shared roles and own context/extension ran in two independent native audits. Managed accepted coding outcome remains pending. |
 | [RF-APP-013](../product/requirements.md#rf-app-013) | P1 | częściowo działa | [PORT](#e-port), [RELEASE](#e-release) | One repair has evidence-backed delivery; the failed release remains FAILED before adoption and reissue. General lifecycle readiness is unverified. |
 | [RF-APP-014](../product/requirements.md#rf-app-014) | P1 | częściowo działa | [ATTENTION](#e-attention), [RELEASE](#e-release), [APP-OP](#e-app-operation) | Pilot evidence is recorded; stage/outcome/accountability/five-state portfolio has focused source/UI tests. Deployed console and actual owner waiting/continuation remain unverified. |
 | [RF-APP-015](../product/requirements.md#rf-app-015) | P2 | nieocenione | [HEALTH](#e-health) | Controlled commercial launch is a later gate after application completion. |

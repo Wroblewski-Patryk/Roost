@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { existsSync, lstatSync, readFileSync, realpathSync } from "node:fs";
+import { existsSync, lstatSync, readFileSync, realpathSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { z } from "zod";
 import { physicalIdentity, nativeDigest, nativeRelative } from "./agent-host-native-footprint.mjs";
@@ -15,6 +15,12 @@ const commandSchema = z.discriminatedUnion("kind", [
     acceptanceTest: z.string().min(1).max(2000) }).strict(),
   z.object({ kind: z.literal("node_typescript_test"), relativePath: z.string().min(1).max(512),
     sourcePaths: z.array(z.string().min(1).max(512)).min(1).max(8),
+    acceptanceTest: z.string().min(1).max(2000) }).strict(),
+  z.object({ kind: z.literal("node_typescript_render_test"), relativePath: z.string().min(1).max(512),
+    sourcePaths: z.array(z.string().min(1).max(512)).min(1).max(8),
+    dependencyRoot: z.string().min(1).max(1024),
+    versions: z.object({ react: z.string().regex(/^[0-9]+\.[0-9]+\.[0-9]+$/),
+      reactDom: z.string().regex(/^[0-9]+\.[0-9]+\.[0-9]+$/), typescript: z.string().regex(/^[0-9]+\.[0-9]+\.[0-9]+$/) }).strict(),
     acceptanceTest: z.string().min(1).max(2000) }).strict(),
   z.object({ kind: z.literal("workspace_vitest"), workspace: z.string().min(1).max(200),
     packageName: z.string().regex(/^(?:@[a-z0-9._-]+\/)?[a-z0-9][a-z0-9._-]{0,79}$/),
@@ -165,6 +171,121 @@ function prepareNodeTypescript(root, command, writePaths) {
   }
   return { command, sources, packages: [...directories].map(directory => optionalPackage(root, directory)) };
 }
+// A private, minimal npm toolkit is provisioned outside the application before
+// admission. This runner never installs it or selects an executable from it.
+// Complete inventory limits admit TypeScript (~23 MiB, largest file ~9 MiB)
+// without permitting an unbounded dependency/configuration tree.
+const renderLimits = Object.freeze({ entries: 4096, depth: 16, fileBytes: 16 * 1024 * 1024, totalBytes: 64 * 1024 * 1024 });
+function renderInventory(root) {
+  const rows = []; let totalBytes = 0;
+  function walk(filename, relative, depth) {
+    if (depth > renderLimits.depth || rows.length >= renderLimits.entries) fail();
+    const stat = lstatSync(filename, { bigint: true });
+    if (stat.isSymbolicLink() || (!stat.isFile() && !stat.isDirectory())) fail();
+    const row = { relative, identity: physicalIdentity(filename, stat.isDirectory()), time: String(stat.mtimeNs) };
+    if (stat.isFile()) {
+      if (stat.nlink !== 1n || stat.size > BigInt(renderLimits.fileBytes)) fail();
+      totalBytes += Number(stat.size); if (totalBytes > renderLimits.totalBytes) fail();
+      row.bytes = Number(stat.size); row.digest = h(fileBytes(filename, renderLimits.fileBytes));
+    }
+    rows.push(row);
+    if (stat.isDirectory()) {
+      const names = readdirSync(filename).sort();
+      if (names.length + rows.length > renderLimits.entries) fail();
+      for (const name of names) {
+        const rel = relative ? `${relative}/${name}` : name;
+        if (/[\\:\x00-\x1f]/.test(name) || name === "." || name === "..") fail();
+        // The validated lock is flat. A nested dependency/configuration tree
+        // could otherwise change bare-import resolution inside a package.
+        if (name === "node_modules" && relative) fail();
+        const child = path.join(filename, name); if (!inside(root, child)) fail();
+        walk(child, rel, depth + 1);
+      }
+    }
+  }
+  walk(root, "", 0);
+  return { digest: nativeDigest(rows), fileCount: rows.filter(row => row.digest).length, totalBytes };
+}
+function prepareRenderToolkit(repository, command) {
+  const root = command.dependencyRoot;
+  if (!path.isAbsolute(root) || path.normalize(root) !== root || root.toLowerCase() === repository.toLowerCase()
+      || inside(repository, root) || inside(root, repository)) fail();
+  const identity = physicalIdentity(root), inventory = renderInventory(root);
+  if (JSON.stringify(readdirSync(root).sort()) !== JSON.stringify(["node_modules", "package-lock.json", "package.json"])) fail();
+  const pkg = JSON.parse(fileBytes(path.join(root, "package.json"), 128 * 1024));
+  const lock = JSON.parse(fileBytes(path.join(root, "package-lock.json"), 1024 * 1024));
+  const declared = { react: command.versions.react, "react-dom": command.versions.reactDom, typescript: command.versions.typescript };
+  const sorted = value => Object.entries(value ?? {}).sort(([a], [b]) => a.localeCompare(b));
+  if (!pkg.private || pkg.scripts && Object.keys(pkg.scripts).length || pkg.devDependencies && Object.keys(pkg.devDependencies).length
+      || pkg.optionalDependencies && Object.keys(pkg.optionalDependencies).length
+      || JSON.stringify(sorted(pkg.dependencies)) !== JSON.stringify(sorted(declared))
+      || lock.lockfileVersion !== 3 || !lock.packages || JSON.stringify(sorted(lock.packages[""]?.dependencies)) !== JSON.stringify(sorted(declared))) fail();
+  const packages = new Map();
+  for (const [relative, entry] of Object.entries(lock.packages)) {
+    if (!relative) continue;
+    if (!/^node_modules\/(?:@[a-z0-9._-]+\/)?[a-z0-9][a-z0-9._-]*$/.test(relative) || entry.link
+        || typeof entry.version !== "string" || !/^[0-9]+\.[0-9]+\.[0-9]+$/.test(entry.version)) fail();
+    const name = relative.slice("node_modules/".length), installed = JSON.parse(fileBytes(path.join(root, relative, "package.json"), 128 * 1024));
+    if (installed.name !== name || installed.version !== entry.version
+        || JSON.stringify(sorted(installed.dependencies)) !== JSON.stringify(sorted(entry.dependencies))
+        || Object.keys(installed.optionalDependencies ?? {}).length) fail();
+    packages.set(name, entry);
+  }
+  const visited = new Set(), pending = Object.keys(declared);
+  while (pending.length) {
+    const name = pending.pop(); if (visited.has(name)) continue;
+    const entry = packages.get(name); if (!entry || declared[name] && entry.version !== declared[name]) fail();
+    visited.add(name); pending.push(...Object.keys(entry.dependencies ?? {}));
+  }
+  if (visited.size !== packages.size || packages.size > 32) fail();
+  const modules = path.join(root, "node_modules"), allowed = new Set([".package-lock.json", ...[...packages.keys()].map(name => name.split("/")[0])]);
+  for (const name of readdirSync(modules)) if (!allowed.has(name)) fail();
+  for (const name of allowed) if (name.startsWith("@")) {
+    const scope = path.join(modules, name);
+    const expected = [...packages.keys()].filter(key => key.startsWith(name + "/")).map(key => key.slice(name.length + 1)).sort();
+    if (JSON.stringify(readdirSync(scope).sort()) !== JSON.stringify(expected)) fail();
+  }
+  const installedLock = path.join(modules, ".package-lock.json");
+  if (existsSync(installedLock)) {
+    const hidden = JSON.parse(fileBytes(installedLock, 1024 * 1024));
+    if (hidden.lockfileVersion !== 3 || JSON.stringify(Object.keys(hidden.packages ?? {}).sort()) !== JSON.stringify([...packages.keys()].map(name => `node_modules/${name}`).sort())
+        || [...packages].some(([name, entry]) => hidden.packages[`node_modules/${name}`].version !== entry.version)) fail();
+  }
+  if (renderInventory(root).digest !== inventory.digest) fail();
+  return { root, identity, ...inventory, versions: command.versions };
+}
+function assertRenderToolkit(toolkit) {
+  if (physicalIdentity(toolkit.root) !== toolkit.identity || renderInventory(toolkit.root).digest !== toolkit.digest) fail();
+}
+function renderSourceFile(root, relative) {
+  nativeRelative(relative); const filename = path.join(root, relative);
+  if (!inside(root, filename)) fail();
+  // App composition sources can exceed the original 128 KiB formatter cap.
+  const bytes = fileBytes(filename, 1024 * 1024), text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  if (!text.trim() || text.includes("\0")) fail();
+  return { filename, identity: physicalIdentity(filename, false), digest: h(bytes) };
+}
+function prepareNodeRender(root, command, writePaths) {
+  nativeRelative(command.relativePath);
+  if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*\.test\.ts$/.test(command.relativePath)
+      || !writePaths.includes(command.relativePath)
+      || command.acceptanceTest !== `node --experimental-strip-types --test -- ${command.relativePath}`
+      || new Set(command.sourcePaths).size !== command.sourcePaths.length) fail();
+  const sources = command.sourcePaths.map(relative => {
+    nativeRelative(relative);
+    if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*\.tsx?$/.test(relative) || /\.(?:test|spec)\.tsx?$/.test(relative)) fail();
+    const pin = trackedUnchanged(root, relative); renderSourceFile(root, relative);
+    return { ...pin, relative, writable: writePaths.includes(relative) };
+  });
+  typescriptFile(root, command.relativePath, false);
+  const directories = new Set([root]);
+  for (const relative of [...command.sourcePaths, command.relativePath]) {
+    for (let directory = path.dirname(path.join(root, relative)); directory !== root; directory = path.dirname(directory)) {
+      if (!inside(root, directory)) fail(); directories.add(directory);
+    }
+  }
+  return { command, sources, packages: [...directories].map(directory => optionalPackage(root, directory)), toolkit: prepareRenderToolkit(root, command) };
+}
 function assertPin(pin) {
   if (pin.absent) { if (existsSync(pin.filename)) fail(); }
   else if (physicalIdentity(pin.filename, false) !== pin.identity || h(fileBytes(pin.filename, 4 * 1024 * 1024)) !== pin.digest) fail();
@@ -181,7 +302,8 @@ function assertTypescriptScope(p) {
 }
 function typescriptCandidate(p, item) {
   assertProof(p.proof); assertTypescriptScope(p);
-  return [...item.sources.map(source => typescriptFile(p.repositoryPath, source.relative)), typescriptFile(p.repositoryPath, item.command.relativePath)];
+  return [...item.sources.map(source => item.toolkit ? renderSourceFile(p.repositoryPath, source.relative) : typescriptFile(p.repositoryPath, source.relative)),
+    typescriptFile(p.repositoryPath, item.command.relativePath)];
 }
 function nodeTapCounts(chunks, exitCode, relativePath) {
   const output = Buffer.concat(chunks).toString("utf8"), counts = {};
@@ -207,9 +329,9 @@ export function prepareCodingTests({ manifestPath, repositoryPath, originUrl, ac
     if (manifest.commands.length !== acceptanceTests.length
         || new Set(manifest.commands.map(x => x.acceptanceTest)).size !== manifest.commands.length
         || acceptanceTests.some(test => !manifest.commands.some(x => x.acceptanceTest === test))) fail();
-    const typescriptCommands = manifest.commands.filter(command => command.kind === "node_typescript_test");
+    const typescriptCommands = manifest.commands.filter(command => ["node_typescript_test", "node_typescript_render_test"].includes(command.kind));
     const packagePath = path.join(repositoryPath, "package.json");
-    const packageBytes = manifest.commands.every(command => command.kind === "node_typescript_test") && !existsSync(packagePath)
+    const packageBytes = manifest.commands.every(command => ["node_typescript_test", "node_typescript_render_test"].includes(command.kind)) && !existsSync(packagePath)
       ? undefined : fileBytes(packagePath, 128 * 1024);
     const pkg = packageBytes ? JSON.parse(packageBytes) : {};
     if (manifest.commands.some(x => x.kind === "npm_script" && pkg.scripts?.[x.script] !== x.expectedCommand)) fail();
@@ -219,7 +341,8 @@ export function prepareCodingTests({ manifestPath, repositoryPath, originUrl, ac
       if (!Array.isArray(writePaths) || new Set(writePaths).size !== writePaths.length) fail(); for (const relative of writePaths) nativeRelative(relative); }
     if (workspaceCommands.length) trackedUnchanged(repositoryPath, "package.json");
     const workspaces = workspaceCommands.map(command => prepareWorkspaceVitest(repositoryPath, command, writePaths));
-    const typescript = typescriptCommands.map(command => prepareNodeTypescript(repositoryPath, command, writePaths));
+    const typescript = typescriptCommands.map(command => command.kind === "node_typescript_render_test"
+      ? prepareNodeRender(repositoryPath, command, writePaths) : prepareNodeTypescript(repositoryPath, command, writePaths));
     if (typescript.length && (!/^v22\./.test(process.version) || !process.allowedNodeEnvironmentFlags.has("--experimental-strip-types"))) fail();
     const npm = manifest.commands.some(command => ["npm_script", "node_test"].includes(command.kind))
       ? path.join(path.dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js") : undefined;
@@ -254,6 +377,7 @@ function assertProof(proof) {
   for (const item of p.typescript) {
     for (const pin of item.packages) assertPin(pin);
     for (const pin of item.sources) if (!pin.writable) assertPin(pin);
+    if (item.toolkit) assertRenderToolkit(item.toolkit);
   }
   return p;
 }
@@ -265,7 +389,8 @@ async function runOne(p, command, remainingMs, assertAuthority) {
     Object.assign(env, { npm_config_ignore_scripts: "true", npm_config_audit: "false", npm_config_fund: "false",
       npm_config_update_notifier: "false", GIT_TERMINAL_PROMPT: "0" });
     let bytes = 0; const output = createHash("sha256"), reporterChunks = [];
-    const typescript = command.kind === "node_typescript_test" ? p.typescript.find(item => item.command === command) : undefined;
+    const typescript = ["node_typescript_test", "node_typescript_render_test"].includes(command.kind) ? p.typescript.find(item => item.command === command) : undefined;
+    if (typescript?.toolkit) env.ROOST_TEST_DEPENDENCY_ROOT = typescript.toolkit.root;
     const candidate = typescript ? typescriptCandidate(p, typescript) : undefined;
     const receipt = await temporaryWindowsJobLauncher(async artifact => {
       if (command.kind === "node_test") nodeTestFile(p.repositoryPath, command.relativePath);
@@ -300,7 +425,9 @@ async function runOne(p, command, remainingMs, assertAuthority) {
       outputDigest: output.digest("hex"), outputBytes: bytes, jobDigest: nativeDigest(receipt), ...(testCounts ? { testCounts } : {}),
       ...(typescript ? { runtimeVersion: p.nodeVersion, runtimeDigest: p.nodeDigest,
         sourceDigests: typescript.sources.map((source, index) => ({ relativePath: source.relative, digest: candidate[index].digest })),
-        testDigest: candidate.at(-1).digest } : {}) };
+        testDigest: candidate.at(-1).digest,
+        ...(typescript.toolkit ? { dependencyDigest: typescript.toolkit.digest, dependencyVersions: typescript.toolkit.versions,
+          dependencyFileCount: typescript.toolkit.fileCount, dependencyBytes: typescript.toolkit.totalBytes } : {}) } : {}) };
   } catch { fail(); }
 }
 export async function runCodingTests(proof, { phase, workspaceSeal, remainingMs, assertAuthority }) {
