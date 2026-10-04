@@ -9,7 +9,19 @@ const secretField = /^(?:password|passwd|pwd|secret|clientsecret|clientkey|secre
 const personalField = /^(?:email|emailaddress|personalemail|phone|phonenumber|mobile|postaladdress|streetaddress|homeaddress|dateofbirth|birthdate|ssn|passportnumber|nationalid|personalname|firstname|lastname|fullname)$/i;
 const keyName = key => key.toLowerCase().replace(/[-_\s.]/g, "");
 const safeFields = new Set("prompt contract task application execution metadata payload message summary finalResponse verification usage errorState details checkpoint evidence attachments content text body headers context sources events name title description code type status reference url changedFiles reason objective outcome scope allowed forbidden acceptance tests email phone password authorization cookie privateKey data identity workspaceId taskId executionId applicationId recordId correlationId policy surface findings category location fingerprint blocked redacted incidentIds stage packetRevision contextRevision workspaceDigest sessionId version attempt".split(" "));
-const credentialPattern = /(?:\bcc_v1_[A-Za-z0-9_-]{24,}|\b(?:sk-(?:proj-)?|gh[pousr]_|github_pat_|xox[baprs]-)[A-Za-z0-9_-]{16,}|\bAKIA[A-Z0-9]{16}\b|\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}|(?:Bearer|Basic)\s+[A-Za-z0-9+/_=.~-]{8,}|-----BEGIN[^\r\n]{0,80}PRIVATE KEY-----|(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?token|refresh[_-]?token|authorization|cookie|set-cookie)["'\s]{0,8}[:=]\s*["']?[^\s"',;}]{3,}|[a-z][a-z0-9+.-]{1,20}:\/\/[^\s/:]+:[^\s/@]+@)/i;
+const credentialPattern = /(?:\bcc_v1_[A-Za-z0-9_-]{24,}|\b(?:sk-(?:proj-)?|gh[pousr]_|github_pat_|xox[baprs]-)[A-Za-z0-9_-]{16,}|\bAKIA[A-Z0-9]{16}\b|\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}|Bearer\s+[A-Za-z0-9+/_=.~-]{8,}|-----BEGIN[^\r\n]{0,80}PRIVATE KEY-----|(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?token|refresh[_-]?token|authorization|cookie|set-cookie)["'\s]{0,8}[:=]\s*["']?[^\s"',;}]{3,}|[a-z][a-z0-9+.-]{1,20}:\/\/[^\s/:]+:[^\s/@]+@)/i;
+function containsCredential(text) {
+  if (credentialPattern.test(text)) return true;
+  // Basic credentials encode user:password. Ordinary titles such as "Basic
+  // architecture" must not turn the entire risk evidence catalogue into a
+  // credential. Authentication fields and known secrets stay independently
+  // protected, including malformed credentials.
+  for (const match of text.matchAll(/\bBasic\s+([A-Za-z0-9+/_=-]{1,8193})/gi)) {
+    if (match[1].length > 8192) return true;
+    if (Buffer.from(match[1], "base64url").includes(0x3a)) return true;
+  }
+  return false;
+}
 const emailPattern = /\b[A-Z0-9._%+-]{1,80}@[A-Z0-9.-]{1,160}\.[A-Z]{2,24}\b/i;
 const piiAssignment = /(?:email|phone(?:number)?|ssn|passportnumber|nationalid|dateofbirth|homeaddress)["'\s]{0,8}[:=]\s*["']?[^\s"',;}]{3,}/i;
 function normalize(value) {
@@ -58,7 +70,7 @@ function sanitize(input, { secrets = [], mode = "diagnostic" } = {}) {
     function category(value, decode = 3) {
       const text = normalize(value);
       if (exact.some(secret => text.includes(secret)) || containsFragment(text)) return "known_secret";
-      if (credentialPattern.test(text)) return "credential";
+      if (containsCredential(text)) return "credential";
       if (emailPattern.test(text) || piiAssignment.test(text)) return "personal_data";
       if (decode) {
         const tokens = text.match(/[A-Za-z0-9+/_=-]{16,}/g) ?? [];
@@ -73,7 +85,7 @@ function sanitize(input, { secrets = [], mode = "diagnostic" } = {}) {
             // valid UTF-8 participates in recursive text/PII interpretation;
             // known secrets and credential syntax remain protected in any bytes.
             if (isUtf8(bytes)) { if (category(decoded, decode - 1)) return "encoded_sensitive"; }
-            else { const normalized = normalize(decoded); if (exact.some(secret => normalized.includes(secret)) || containsFragment(normalized) || credentialPattern.test(normalized)) return "encoded_sensitive"; }
+            else { const normalized = normalize(decoded); if (exact.some(secret => normalized.includes(secret)) || containsFragment(normalized) || containsCredential(normalized)) return "encoded_sensitive"; }
           }
         }
       }

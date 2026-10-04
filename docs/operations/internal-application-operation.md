@@ -71,3 +71,10 @@ console. Retain the earlier pilot's evidence and local handoff. Run the
 repository checks, affected component checks and required native proof, update
 the matrix, then stop at Gate 5. Installation identities and private evidence
 stay outside distributed source.
+
+When a scope request returns a content-filter error, reconcile the exact request
+and persisted scope before retrying: response projection can fail after commit.
+Standalone Basic credentials require an encoded `user:password` pair; ordinary
+Basic documentation titles retain their meaning. Authentication fields, known
+secrets, split content and encoded credentials remain protected. Verify both
+benign catalogue reads and credential rejection when changing this classifier.

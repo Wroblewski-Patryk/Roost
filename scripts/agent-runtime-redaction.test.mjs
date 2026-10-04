@@ -4,6 +4,32 @@ import policy from "./lib/agent-runtime-redaction.cjs";
 import { boundedRunnerLines, guardHostContent, hostTransport, readHostResponse } from "./lib/agent-host-redaction.mjs";
 import { Readable } from "node:stream";
 const known = "synthetic-runtime-value-987654321";
+test("ordinary Basic titles survive while standalone, split and encoded Basic credentials are blocked", () => {
+  for (const title of ["Basic architecture", "Basic application model", "Basic Authentication guide"]) {
+    const value = { title, revision: "a".repeat(64) };
+    assert.deepEqual(policy.sanitize(value, { mode: "required" }).value, value);
+    assert.equal(policy.sanitize(value, { mode: "required" }).blocked, false);
+  }
+  const value = "Basic " + Buffer.from("fixture:synthetic-password").toString("base64");
+  for (const payload of [{ text: value }, { parts: [value.slice(0, 15), value.slice(15)] },
+    { text: encodeURIComponent(value) }, { text: Buffer.from(value).toString("base64") },
+    { authorization: "Basic malformed" }]) {
+    assert.equal(policy.sanitize(payload, { mode: "required" }).blocked, true);
+  }
+  for (const userLength of [6128, 6144, 6145]) {
+    const credential = "Basic " + Buffer.from("u".repeat(userLength) + ":synthetic-password").toString("base64");
+    assert.equal(policy.sanitize({ text: credential }, { mode: "required" }).blocked, true);
+  }
+  const boundary = Buffer.from("u".repeat(6142) + ":x").toString("base64");
+  assert.equal(boundary.length, 8192);
+  for (const token of [boundary, boundary + "A"]) {
+    assert.equal(policy.sanitize({ text: "Basic " + token }, { mode: "required" }).blocked, true);
+  }
+  for (const encoding of ["hex", "base64"]) {
+    const bytes = Buffer.concat([Buffer.from([0xff]), Buffer.from(value)]);
+    assert.equal(policy.sanitize({ text: bytes.toString(encoding) }, { mode: "required" }).blocked, true);
+  }
+});
 test("one recursive policy removes values and never reports dynamic keys or matches", () => {
   for (const payload of [
     { nested: [{ apiKey: "fictional-key-material" }] }, { token: "fictional-token-value" }, { secretKey: "fictional-key-value" }, { headers: { authorization: "Bearer synthetic-long-token", cookie: "session=fictional" } },

@@ -179,7 +179,8 @@ line fragments with native provenance, a separate primary-owner takeover
 Decision, and evidence-derived portfolio/Decision navigation. Focused tests and
 disposable PostgreSQL guards pass. Managed second-application audit, owner
 baseline, first write, coding/review and native web proof remain outstanding;
-neither deployment nor Gate 5 completion is inferred from these checks. See
+Roost `05a2ff3d` is deployed; exact build/health and portfolio reads pass.
+Gate 5 is not complete. See
 [operation controls](operations/internal-application-operation.md).
 
 The same mechanism can onboard another configured application without changing

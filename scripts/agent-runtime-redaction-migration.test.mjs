@@ -31,10 +31,17 @@ test("runtime redaction migration preserves historical content and authenticatio
       INSERT INTO task_review_decisions(id,workspace_id,task_id,execution_id,request_id,request_hash,material_version,actor_agent_id,actor_credential_id,actor_credential_prefix,verifier_id,manager_id,decision,evidence,snapshot) VALUES
       ('00000000-0000-4000-8000-000000000014','00000000-0000-4000-8000-000000000002','00000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000013','00000000-0000-4000-8000-000000000015','existing-agent-request','existing-agent-material','00000000-0000-4000-8000-000000000011','00000000-0000-4000-8000-000000000012','fixture_bound','00000000-0000-4000-8000-000000000011','00000000-0000-4000-8000-000000000010','approve','{"summary":"Existing agent evidence"}','{"fixture":"Existing agent history"}');
       ALTER TABLE task_review_decisions ENABLE TRIGGER USER;`);
-    const snapshot = () => sql("SELECT to_jsonb(t)::text FROM tasks t; SELECT to_jsonb(e)::text FROM agent_executions e; SELECT to_jsonb(k)::text FROM api_keys k; SELECT (to_jsonb(d)-'capability_grant_id')::text FROM task_review_decisions d;").trim();
+    const snapshot = () => sql("SELECT to_jsonb(t)::text FROM tasks t ORDER BY id; SELECT to_jsonb(e)::text FROM agent_executions e ORDER BY id; SELECT to_jsonb(k)::text FROM api_keys k ORDER BY id; SELECT (to_jsonb(d)-'capability_grant_id')::text FROM task_review_decisions d ORDER BY id;").trim().split("\n").map(row => JSON.parse(row));
     const before = snapshot();
     sql(migrations.filter(x => x >= "20260908080000").map(source).join("\n"));
-    assert.equal(snapshot(), before);
+    const after = snapshot();
+    assert.equal(after.length, before.length);
+    // Later additive migrations may introduce fields. Every original column
+    // and value, including historical sensitive content and authentication,
+    // must survive the full chain unchanged; removing a column still fails.
+    for (let i = 0; i < before.length; i++) {
+      assert.deepEqual(Object.fromEntries(Object.keys(before[i]).map(key => [key, after[i][key]])), before[i]);
+    }
     const sourceFunction = sql("SELECT pg_get_functiondef('ready_source_invalidate()'::regprocedure);");
     const stopFunction = sql("SELECT pg_get_functiondef('active_context_stop()'::regprocedure);");
     assert.ok(sourceFunction.includes("'label', 'Source changed'"));
