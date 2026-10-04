@@ -1,3 +1,4 @@
+import { retryContextRead } from "../agent-runtime/context-read-retry";
 import { loadApplicationAgentContext } from "./application-agent-context";
 import { requireRuntimeContent } from "../agent-runtime/runtime-redaction-policy";
 import {
@@ -341,10 +342,10 @@ async function findingTransaction(work:Parameters<typeof reviewTransaction>[0]) 
     throw error;
   }
 }
-productEngineeringRouter.get("/applications/:id/findings",asyncHandler(async(req,res)=>findingResponse(res,await findingTransaction(db=>findingList(db,req.auth!.workspaceId,idSchema.parse(req.params.id))))));
-productEngineeringRouter.get("/applications/:id/findings/catalog",asyncHandler(async(req,res)=>findingResponse(res,await findingTransaction(db=>findingCatalog(db,req.auth!.workspaceId,idSchema.parse(req.params.id))))));
+productEngineeringRouter.get("/applications/:id/findings",asyncHandler(async(req,res)=>findingResponse(res,await retryContextRead(()=>findingTransaction(db=>findingList(db,req.auth!.workspaceId,idSchema.parse(req.params.id)))))));
+productEngineeringRouter.get("/applications/:id/findings/catalog",asyncHandler(async(req,res)=>findingResponse(res,await retryContextRead(()=>findingTransaction(db=>findingCatalog(db,req.auth!.workspaceId,idSchema.parse(req.params.id)))))));
 productEngineeringRouter.post("/applications/:id/findings",asyncHandler(async(req,res)=>findingResponse(res,await findingTransaction(db=>recordFinding(db,req.auth!.workspaceId,idSchema.parse(req.params.id),req.auth,req.body)))));
-productEngineeringRouter.get("/findings/:id",asyncHandler(async(req,res)=>findingResponse(res,await findingTransaction(db=>findingView(db,req.auth!.workspaceId,idSchema.parse(req.params.id),req.auth)))));
+productEngineeringRouter.get("/findings/:id",asyncHandler(async(req,res)=>findingResponse(res,await retryContextRead(()=>findingTransaction(db=>findingView(db,req.auth!.workspaceId,idSchema.parse(req.params.id),req.auth))))));
 productEngineeringRouter.post("/findings/:id/versions",asyncHandler(async(req,res)=>findingResponse(res,await findingTransaction(db=>reviseFinding(db,req.auth!.workspaceId,idSchema.parse(req.params.id),req.auth,req.body)))));
 productEngineeringRouter.post("/findings/:id/occurrences",asyncHandler(async(req,res)=>findingResponse(res,await findingTransaction(db=>recordOccurrence(db,req.auth!.workspaceId,idSchema.parse(req.params.id),req.auth,req.body)))));
 productEngineeringRouter.post("/findings/:id/actions",asyncHandler(async(req,res)=>findingResponse(res,await findingTransaction(db=>commandFinding(db,req.auth!.workspaceId,idSchema.parse(req.params.id),req.auth,req.body)))));

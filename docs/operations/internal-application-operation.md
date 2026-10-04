@@ -4,8 +4,9 @@
 
 Gate 5 is in progress. Two independent managed native audits of the second
 application completed; its bounded implementation baseline is separately
-accepted by the primary owner. Separate first-write consent is accepted;
-accepted coding outcome and native console proof remain pending. Each additional
+accepted by the primary owner. Separate first-write consent is accepted.
+The bounded coding outcome has independent native acceptance; authenticated
+Decision history and evidence-console verification remain pending. Each additional
 application needs its own audit and context. Whole product, sale readiness,
 mobile and later company capabilities remain unverified or deferred.
 
@@ -206,3 +207,10 @@ timestamp; subsequent acceptance does not imply whole-application readiness.
 An exact current acceptance after a timestamped group-risk invalidation can
 resolve that result's display. A later or unknown invalidation still blocks.
 The next execution continues to require normal fresh Ready admission.
+
+Governed console reads can collide while maintaining their serializable source
+fence. Decision/mandate and finding GET routes retry only the explicit
+`task_ready_context_conflict` result, at most three complete transactions.
+Business preconditions, missing/denied records and uncertain transport failures
+remain failures. POST commands retain their original single invocation and
+idempotency/reconciliation rules; a read retry grants no new authority.

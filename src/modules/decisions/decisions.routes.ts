@@ -1,3 +1,4 @@
+import { retryContextRead } from "../agent-runtime/context-read-retry";
 import { requireRuntimeContent } from "../agent-runtime/runtime-redaction-policy";
 import { readyTransaction } from "../agent-runtime/task-execution-readiness";
 import { decisionGovernanceView,decisionGovernanceCommand } from "./decision-governance";
@@ -39,11 +40,11 @@ const updateDecisionSchema = createDecisionSchema.partial().omit({
 });
 
 export const decisionsRouter = Router();
-decisionsRouter.get('/mandates',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>mandateView(db,req.auth!.workspaceId,req.auth)))));
+decisionsRouter.get('/mandates',asyncHandler(async(req,res)=>governanceResponse(res,await retryContextRead(()=>readyTransaction(db=>mandateView(db,req.auth!.workspaceId,req.auth))))));
 decisionsRouter.post('/mandates',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>issueMandate(db,req.auth!.workspaceId,req.auth,req.body)))));
 function governanceResponse(res:any,result:any){if(result.error)return res.status(result.error.endsWith('not_found')?404:result.error.endsWith('forbidden')?403:409).json(result);return res.status(result.record&&!result.replayed?201:200).json({data:result});}
-decisionsRouter.get('/governance',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceView(db,req.auth!.workspaceId,req.auth)))));
-decisionsRouter.get('/:id/governance',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceView(db,req.auth!.workspaceId,req.auth,String(req.params.id),{versionOnly:req.query.version==='1'})))));
+decisionsRouter.get('/governance',asyncHandler(async(req,res)=>governanceResponse(res,await retryContextRead(()=>readyTransaction(db=>decisionGovernanceView(db,req.auth!.workspaceId,req.auth))))));
+decisionsRouter.get('/:id/governance',asyncHandler(async(req,res)=>governanceResponse(res,await retryContextRead(()=>readyTransaction(db=>decisionGovernanceView(db,req.auth!.workspaceId,req.auth,String(req.params.id),{versionOnly:req.query.version==='1'}))))));
 decisionsRouter.post('/governance/proposals',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceCommand(db,req.auth!.workspaceId,req.auth,'proposal',req.body)))));
 decisionsRouter.post('/:id/governance/actions',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceCommand(db,req.auth!.workspaceId,req.auth,'action',req.body,String(req.params.id)),{timeoutMs:decisionActionTimeout(req.body)}))));
 decisionsRouter.post('/deferrals',asyncHandler(async(req,res)=>governanceResponse(res,await readyTransaction(db=>decisionGovernanceCommand(db,req.auth!.workspaceId,req.auth,'defer',req.body)))));
