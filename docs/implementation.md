@@ -189,16 +189,16 @@ local accepted `3cf9645e`. Independent review rejected `c21e0e0c` for its missin
 regression log. Log-only `c82e68b3` passes seven tests, a separate native build
 and independent read-only acceptance. No release grant or application deploy.
 
-Roost `58244abe` and the additive post-observation migration are deployed.
+Roost `865825fd` and the additive Compose-scope migration are deployed.
 The existing target has a fresh verified backup/isolated restore, migration
 adoption and schema/data/sequence parity. Its public health is open while DB
 writes and cadences are held. Native preparation verified paused-state,
 PG address, proxy isolation and bounded fence renewal without data changes.
-Audit V8 retains 16 findings. Signed review `60699758` accepts exact c82 against
-current b5de material; both native Jobs closed unchanged at exit zero.
+V9 audit `79c10809` retains 16 findings and its historical b5de snapshot.
+Current bbb8 review `2f9b16e5` approves; both close unchanged, signed.
 Owner approved 06bf; its grant was rejected, with authoritative absence.
-Installed SQL refused Compose scope; a rollback probe proves the additive fix
-and five denials without data/grant changes. Deployment and acceptance pending.
+Installed SQL now admits Compose scope; a rollback probe proves five denials
+without data/grant changes. Fresh 0857 package awaits exact owner authority.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

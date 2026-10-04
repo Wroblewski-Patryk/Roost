@@ -274,3 +274,16 @@ release catalog after any uncertain or failed POST before an explicit retry.
 Expired baseline packages remain historical; a fresh manifest requires its own
 native audit and exact owner approval. Existing code approval may be reused only
 while its exact material, native evidence and current Ready basis remain valid.
+
+The scope migration is now installed and qualified against the deployed version.
+Risk/context refresh can invalidate code acceptance even when source is unchanged.
+Refresh Ready, record an append-only result-basis mapping and obtain a genuinely
+independent review of the new material before requesting release authority.
+Freeze readiness scope first: editing its prompt to name each subsequent review
+can invalidate the code basis again. Retain snapshot identities as history and
+qualify current code approval separately through normal API and native receipts.
+The fresh 0857 audit closed unchanged and retains sixteen `CHANGES_REQUIRED`
+findings. Its phase classification preserves mandatory deployment, observation,
+cleanup, cadence restoration and independent postrelease acceptance. Current
+monitoring qualification proves configuration and source routes only; supervised
+future events and external notifications remain unproven before execution.

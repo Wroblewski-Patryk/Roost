@@ -1931,3 +1931,17 @@ records plus four release guards. Installed rollback probe for manifest06bf
 verifies exact admission, five refusals and restoration of validator
 `508e57ae3c63491ffa321ab46a3c5565f900756f22e026477cfc9aa1d1cd7a26`.
 Owner consent remains historical and no grant/application deployment is proven.
+
+Production commit `865825fd` and deployment `kmyn20lzp0tmrt53epe4g9e1`
+confirm health/version and the applied migration; installed SQL scope admission
+is true. Fresh manifest0857 preserves its eight sealed artifacts. Normal risk
+refresh invalidated b5de; append-only mapping `4c0aff60` binds bbb8, accepted
+independently by signed native review `2f9b16e5` / decision `e209eefa`.
+The review input measured 130281/131072 bytes; Job closed at exit zero with
+unchanged source and no active children. Snapshot826/606 remains historical.
+Readiness audit `79c10809` measures 130592/131072 bytes and completes at exit zero
+with signed admission, unchanged source/Git/process/Docker state and no model
+native tools. It retains sixteen literal `CHANGES_REQUIRED` findings. Its
+frozen b5de package snapshot remains historical; the append-only current-basis
+reference separately qualifies review `2f9b16e5`, decision `e209eefa`, material
+bbb8. No application push/deploy or release grant is established by these reads.
