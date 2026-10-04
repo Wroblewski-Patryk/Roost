@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { releaseManifestSchema, releaseDigest, releaseIntentSchema, releaseOutcomeSchema, releaseApprovalError, releaseWindowError, releaseIntentError, releaseOutcomeError, releaseCandidateNativeError } from "../modules/agent-runtime/governed-release-contract";
+import { releaseManifestSchema, releaseDigest, releaseIntentSchema, releaseOutcomeSchema, releaseApprovalError, releaseWindowError, releaseIntentError, releaseOutcomeError, releaseCandidateNativeError, releaseCanonicalDirectoryMatches } from "../modules/agent-runtime/governed-release-contract";
 const id="00000000-0000-4000-8000-000000000001",commit="a".repeat(40),base="b".repeat(40),tree="c".repeat(40),baseTree="d".repeat(40),hash="e".repeat(64),at="2026-10-01T12:00:00.000Z";
 const prior={commit:base,imageDigest:`sha256:${"1".repeat(64)}`,configDigest:hash,schemaDigest:hash};
 export const releaseFixture={schemaVersion:"roost-release-manifest-v1",repository:{url:"https://github.com/example/certification",defaultBranch:"main",canonicalDir:"C:\\Certification\\one",candidateBranch:"codex/release"},deployment:{provider:"coolify",targetId:"fixture-target",controllerUrl:"https://controller.example.test",url:"https://certification.example.test",imageDigest:`sha256:${"2".repeat(64)}`,configDigest:hash,schemaDigest:hash},services:[{name:"api",healthUrl:"https://certification.example.test/health",expectedStatus:200}],baseline:{...prior,healthDigest:hash,dataDigest:hash,observedAt:at},observation:{seconds:30,intervalSeconds:5,maxFailures:0},backup:{digest:hash,bytes:123,capturedAt:at,restoreVerifiedAt:at,restoreDigest:hash},rollback:{...prior,compatibleSchemaDigests:[hash]},cleanup:{repositoryUrl:"https://github.com/example/certification",canonicalDir:"C:\\Certification\\one",coolifyTargetId:"fixture-target",ownedResourceIds:["fixture-target"],archiveRepository:true}};
@@ -8,6 +8,54 @@ const snapshot={commit,candidateTree:tree,baseCommit:base,baseTree,manifest:rele
 const release={snapshot,manifest_digest:releaseDigest(releaseFixture)};
 const input=(op:string,parameters:any={})=>({requestId:id,operation:op,manifestDigest:release.manifest_digest,commit,baseCommit:base,expectedVersion:hash,observed:{commit,baseCommit:base,baseTree,manifestDigest:release.manifest_digest},parameters});
 const complete=(operation:string,extra:any={})=>({operation,intent:input(operation),outcome:{status:"succeeded",evidence:extra}});
+test("relative Windows mapping resolves lexically under the explicit same-platform root on any server platform",()=>{
+ const metadata={localDirectory:"Nested/Example",localWorkspaceRoot:"C:\\Workspace\\Applications"},before=structuredClone(metadata);
+ assert.equal(releaseCanonicalDirectoryMatches(metadata,"c:/workspace/applications/nested/example"),true);
+ assert.deepEqual(metadata,before);
+ assert.equal(releaseCanonicalDirectoryMatches({localDirectory:"Example",localWorkspaceRoot:"C:/Workspace/Applications/"},"C:\\Workspace\\Applications\\Example\\"),true);
+ assert.equal(releaseCanonicalDirectoryMatches({localDirectory:"Example",localWorkspaceRoot:"C:\\"},"C:\\Example"),true);
+ assert.equal(releaseCanonicalDirectoryMatches({localDirectory:"example",localWorkspaceRoot:"/"},"/example"),true);
+});
+test("absolute legacy mappings retain Windows case/separator and exact POSIX semantics",()=>{
+ assert.equal(releaseCanonicalDirectoryMatches({localDirectory:"C:\\Workspace\\Example"},"c:/workspace/example"),true);
+ assert.equal(releaseCanonicalDirectoryMatches({localDirectory:"C:\\Workspace\\Example",localWorkspaceRoot:"D:\\Unrelated"},"C:\\Workspace\\Example"),true);
+ assert.equal(releaseCanonicalDirectoryMatches({localDirectory:"/srv/apps/example"},"/srv/apps/example/"),true);
+ assert.equal(releaseCanonicalDirectoryMatches({localDirectory:"/srv/apps/Example"},"/srv/apps/example"),false);
+ assert.equal(releaseCanonicalDirectoryMatches({localDirectory:"example",localWorkspaceRoot:"/srv/apps"},"/srv/apps/example"),true);
+});
+const directoryRefusals:[string,any,unknown][]=[
+ ["missing root",{localDirectory:"Example"},"C:\\Workspace\\Example"],
+ ["wrong root",{localDirectory:"Example",localWorkspaceRoot:"D:\\Workspace"},"C:\\Workspace\\Example"],
+ ["wrong relative directory",{localDirectory:"Other",localWorkspaceRoot:"C:\\Workspace"},"C:\\Workspace\\Example"],
+ ["prefix sibling",{localDirectory:"Example-other",localWorkspaceRoot:"C:\\Workspace"},"C:\\Workspace\\Example"],
+ ["parent traversal",{localDirectory:"..\\Example",localWorkspaceRoot:"C:\\Workspace"},"C:\\Example"],
+ ["dot segment",{localDirectory:".\\Example",localWorkspaceRoot:"C:\\Workspace"},"C:\\Workspace\\Example"],
+ ["nested traversal",{localDirectory:"Nested/../Example",localWorkspaceRoot:"C:\\Workspace"},"C:\\Workspace\\Example"],
+ ["root traversal",{localDirectory:"Example",localWorkspaceRoot:"C:\\Other\\..\\Workspace"},"C:\\Workspace\\Example"],
+ ["manifest traversal",{localDirectory:"C:\\Workspace\\Other\\..\\Example"},"C:\\Workspace\\Other\\..\\Example"],
+ ["drive-relative",{localDirectory:"C:Example",localWorkspaceRoot:"C:\\Workspace"},"C:\\Workspace\\Example"],
+ ["rooted relative",{localDirectory:"\\Example",localWorkspaceRoot:"C:\\Workspace"},"C:\\Example"],
+ ["UNC",{localDirectory:"\\\\server\\share\\Example"},"\\\\server\\share\\Example"],
+ ["extended namespace",{localDirectory:"\\\\?\\C:\\Workspace\\Example"},"\\\\?\\C:\\Workspace\\Example"],
+ ["device namespace",{localDirectory:"\\\\.\\C:\\Workspace\\Example"},"\\\\.\\C:\\Workspace\\Example"],
+ ["reserved device",{localDirectory:"NUL",localWorkspaceRoot:"C:\\Workspace"},"C:\\Workspace\\NUL"],
+ ["reserved device extension",{localDirectory:"CON.txt",localWorkspaceRoot:"C:\\Workspace"},"C:\\Workspace\\CON.txt"],
+ ["console input device",{localDirectory:"CONIN$",localWorkspaceRoot:"C:\\Workspace"},"C:\\Workspace\\CONIN$"],
+ ["superscript device",{localDirectory:"COM¹",localWorkspaceRoot:"C:\\Workspace"},"C:\\Workspace\\COM¹"],
+ ["alternate data stream",{localDirectory:"Example:stream",localWorkspaceRoot:"C:\\Workspace"},"C:\\Workspace\\Example:stream"],
+ ["trailing dot",{localDirectory:"Example.",localWorkspaceRoot:"C:\\Workspace"},"C:\\Workspace\\Example."],
+ ["trailing space",{localDirectory:"Example ",localWorkspaceRoot:"C:\\Workspace"},"C:\\Workspace\\Example "],
+ ["cross-platform root",{localDirectory:"Example",localWorkspaceRoot:"/srv/apps"},"C:\\Workspace\\Example"],
+ ["cross-platform directory",{localDirectory:"C:\\Workspace\\Example"},"/srv/apps/example"],
+ ["POSIX backslash ambiguity",{localDirectory:"nested\\example",localWorkspaceRoot:"/srv/apps"},"/srv/apps/nested/example"],
+ ["POSIX double-root ambiguity",{localDirectory:"//srv/apps/example"},"//srv/apps/example"],
+ ["relative manifest",{localDirectory:"Example",localWorkspaceRoot:"C:\\Workspace"},"Example"],
+ ["control character",{localDirectory:"Exam\0ple",localWorkspaceRoot:"C:\\Workspace"},"C:\\Workspace\\Exam\0ple"],
+ ["nonstring directory",{localDirectory:42,localWorkspaceRoot:"C:\\Workspace"},"C:\\Workspace\\Example"],
+ ["nonstring root",{localDirectory:"Example",localWorkspaceRoot:42},"C:\\Workspace\\Example"],
+ ["empty relative",{localDirectory:"",localWorkspaceRoot:"C:\\Workspace"},"C:\\Workspace"],
+];
+for(const [name,metadata,canonical] of directoryRefusals)test("canonical directory refuses "+name,()=>assert.equal(releaseCanonicalDirectoryMatches(metadata,canonical),false));
 
 test("a legacy completed review without concrete managed coding proof cannot authorize release",()=>{
  assert.equal(releaseCandidateNativeError({id,verification:{}},{}),"release_native_candidate_unproven");

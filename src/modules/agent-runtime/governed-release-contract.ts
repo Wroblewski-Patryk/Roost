@@ -85,6 +85,36 @@ export function releaseTargetMetadataMatches(metadata:any,manifest:any) {
   &&releaseDigest(metadata.releaseTargets)===releaseDigest(targets)
   &&releaseDigest(metadata.releasePublicOrigins)===releaseDigest(manifest.deployment.publicOrigins);
 }
+type DirectoryPlatform="win32"|"posix";
+function lexicalDirectory(value:unknown,platform:DirectoryPlatform,absolute:boolean):string|null {
+ if(typeof value!=="string"||!value||value.length>4096||/[\x00-\x1f\x7f]/.test(value))return null;
+ const windows=platform==="win32",isAbsolute=windows?/^[A-Za-z]:[\\/]/.test(value):value.startsWith("/")&&!value.startsWith("//");
+ if(absolute!==isAbsolute)return null;
+ if(!absolute&&(/^[\\/]/.test(value)||/^[A-Za-z]:/.test(value)))return null;
+ if((windows&&/^[\\/]/.test(value))||(!windows&&value.includes("\\")))return null;
+ const body=absolute?(windows?value.slice(3):value.slice(1)):value;
+ const parts=body.split(windows?/[\\/]/:/\//).filter(Boolean);
+ if(parts.some(p=>p==="."||p===".."||windows&&(/[<>:"|?*]/.test(p)||/[. ]$/.test(p)||/^(?:con|conin\$|conout\$|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\.|$)/i.test(p))))return null;
+ if(!absolute&&!parts.length)return null;
+ const api=windows?path.win32:path.posix,normalized=api.normalize(value),root=absolute?api.parse(normalized).root:"";
+ const trimmed=normalized.replace(windows?/[\\/]+$/:/\/+$/,"");
+ const result=trimmed.length<root.length?root:trimmed;
+ return windows?result.toLowerCase():result;
+}
+/** Pure lexical comparison; the server may run on Linux while the approved
+ * worker directory is Windows. No filesystem, cwd or platform defaults apply.
+ * Absolute legacy mappings remain authoritative; relative mappings require an
+ * explicit absolute workspace root of the same platform as the manifest. */
+export function releaseCanonicalDirectoryMatches(metadata:any,canonicalDir:unknown):boolean {
+ if(!metadata||typeof metadata!=="object"||Array.isArray(metadata)||typeof canonicalDir!=="string")return false;
+ const platform:DirectoryPlatform=/^[A-Za-z]:[\\/]/.test(canonicalDir)?"win32":"posix";
+ const expected=lexicalDirectory(canonicalDir,platform,true);if(!expected)return false;
+ const direct=lexicalDirectory(metadata.localDirectory,platform,true);if(direct!==null)return direct===expected;
+ const root=lexicalDirectory(metadata.localWorkspaceRoot,platform,true),relative=lexicalDirectory(metadata.localDirectory,platform,false);
+ if(root===null||relative===null)return false;
+ const api=platform==="win32"?path.win32:path.posix;
+ return lexicalDirectory(api.resolve(root,relative),platform,true)===expected;
+}
 export const renewReleaseSchema=z.object({requestId:z.string().uuid(),expectedVersion:z.string().regex(/^[a-f0-9]{64}$/),expiresAt:z.string().datetime()}).strict();
 
 // Renewal changes only the admission window. Baseline identity stays sealed;
