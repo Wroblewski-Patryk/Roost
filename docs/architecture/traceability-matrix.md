@@ -1022,6 +1022,10 @@ test. Genuine signed terminal review and closed Job plus exact current unchanged
 footprint qualified native recovery: only lease/Writer fences were released,
 with the failed review and consumed attempt retained. Root verified 29 native
 Windows recovery tests; independent compatibility checks pass 71/71, zero skips.
+New initial-branch reuse requires current first-write admission and a
+lease-bound predecessor POST; arbitrary execution GET remains forbidden.
+Root checks pass 31 native continuation tests and 128 refusal/auth tests,
+including JSONB receipt ordering, foreign scope and expired/revoked credentials.
 Coding/review and native console proof remain outstanding.
 Fixed coding/test suites pass 20 tests with three explicit fixture/privilege
 skips. An independent root native run of the sealed React 18.3.1/ReactDOM

@@ -177,7 +177,7 @@ second application prove unchanged native state. Baseline and first-write
 consent are accepted. The initial coder closed without edits or tests; fixed
 verification refused. Recovery released only lease/Writer, retaining the
 refusal and spent attempt. New admission reuses the unchanged task branch only
-after signed reconciliation and exact predecessor checks (30 native tests).
+after signed reconciliation and leased predecessor checks (31 native tests).
 Coding/review and console proof remain pending.
 Shared procedures and own context are reused. Provenance, takeover guards and
 portfolio navigation pass focused/native checks. Roost `2678d3d7` has deployed

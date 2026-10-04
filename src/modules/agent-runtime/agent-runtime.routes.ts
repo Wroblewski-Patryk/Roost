@@ -11,6 +11,7 @@ import { provisionBootstrapInstallation } from "../api-keys/bootstrap-installati
 import { createPrismaWorkerIdentityLifecycleStore } from "../api-keys/worker-identity-lifecycle-store";
 import { freshWorkerOwner } from "../api-keys/worker-credential.service";
 import { workerClaimAllowed } from "../../auth/worker-ticket-principal";
+import { priorCodingRefusal } from "./prior-coding-refusal";
 import { executionProviderRegistry, projectProvider, sanitizeProviderMetadata } from "./execution-provider";
 import { interviewView,interviewCommand } from "./task-interview";
 import { clarificationView,clarificationCommand } from "./task-clarification";
@@ -889,6 +890,12 @@ agentRuntimeRouter.get("/executions/:id", asyncHandler(async (req, res) => {
   const execution = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId }, include: executionInclude });
   if (!execution) return sendApiError(res, 404, "agent_execution_not_found");
   res.json({ data: execution });
+}));
+
+agentRuntimeRouter.post("/executions/:id/actions/prior-coding-refusal", asyncHandler(async (req, res) => {
+  const result = await readyTransaction(tx => priorCodingRefusal(tx, req.auth!, String(req.params.id), req.body));
+  if ("error" in result) return sendApiError(res, "status" in result ? result.status : 409, result.error);
+  res.json({ data: result.data });
 }));
 
 agentRuntimeRouter.post("/executions/:id/actions/prior-readonly-audit", asyncHandler(async (req, res) => {

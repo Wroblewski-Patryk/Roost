@@ -15,6 +15,7 @@ export async function observeUnchangedTaskBranch({ api, claimed, firstWrite, sta
   try {
     const previousId = claimed?.metadata?.predecessorExecutionId;
     if (!uuid(previousId) || previousId === claimed.id || claimed.attempt !== 1 || claimed.checkpoint?.stage !== "claimed"
+        || !uuid(claimed.leaseToken)
         || !uuid(claimed.agentHostId) || !/^[a-f0-9]{40}$/.test(expected?.head ?? "")
         || expected.branch !== `codex/task-${claimed.taskId}`
         || firstWrite?.schemaVersion !== "roost-first-write-admission-v1"
@@ -24,7 +25,11 @@ export async function observeUnchangedTaskBranch({ api, claimed, firstWrite, sta
         || !uuid(firstWrite.decisionId) || !Number.isFinite(Date.parse(firstWrite.issuedAt))
         || !Number.isFinite(Date.parse(firstWrite.expiresAt))
         || Date.parse(firstWrite.issuedAt) > Date.now() || Date.parse(firstWrite.expiresAt) <= Date.now()) deny();
-    const previous = await api(`/v1/agent-runtime/executions/${previousId}`);
+    // The Worker cannot read arbitrary executions. The server selects only
+    // this lease's recorded predecessor; no predecessor id is supplied here.
+    const previous = await api(`/v1/agent-runtime/executions/${claimed.id}/actions/prior-coding-refusal`, {
+      method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken })
+    });
     if (previous?.id !== previousId || previous.status !== "failed" || previous.attempt !== 1
         || ["workspaceId", "taskId", "applicationId", "agentHostId"].some(k => previous[k] !== claimed[k])
         || previous.leaseToken !== null || previous.leaseExpiresAt !== null || previous.contextInvalidatedAt !== null

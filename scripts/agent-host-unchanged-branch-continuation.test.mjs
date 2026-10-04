@@ -74,14 +74,18 @@ test("A separately admitted new attempt can reuse only the unchanged reconciled 
       readyContextPin: { riskAdmissionCommit: x.workspace.expected.head, revision: b.ready } },
     errorState: { code: "agent_native_review_blocked", details: { nativeReviewReceiptDigest: review.digest, nativeReviewReceipt: review.payload.public } } };
   const claimed = { id: randomUUID(), workspaceId: previous.workspaceId, taskId: previous.taskId,
-    applicationId: previous.applicationId, agentHostId, attempt: 1, checkpoint: { stage: "claimed" },
+    applicationId: previous.applicationId, agentHostId, attempt: 1, leaseToken: randomUUID(), checkpoint: { stage: "claimed" },
     metadata: { predecessorExecutionId: previous.id } };
   const firstWrite = { schemaVersion: "roost-first-write-admission-v1", executionId: claimed.id,
     workspaceId: claimed.workspaceId, taskId: claimed.taskId, applicationId: claimed.applicationId,
     decisionId: randomUUID(), baselineCommit: x.workspace.expected.head, branch: x.workspace.expected.branch,
     operations: { localCommit: true }, issuedAt: new Date(Date.now() - 1000).toISOString(), expiresAt: new Date(Date.now() + 60000).toISOString() };
   const args = { claimed, firstWrite, stateDirectory: x.state, repositoryPath: x.workspace.root, expected: x.workspace.expected,
-    async api(route) { assert.equal(route, `/v1/agent-runtime/executions/${previous.id}`); return previous; } };
+    async api(route, options) {
+      assert.equal(route, `/v1/agent-runtime/executions/${claimed.id}/actions/prior-coding-refusal`);
+      assert.deepEqual(options, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken }) });
+      return previous;
+    } };
   const deny = a => assert.rejects(observeUnchangedTaskBranch(a), e => e.recoveryReason === "repository_mismatch");
   // This fixture's exact task branch must be selected before native capture.
   assert.equal(x.workspace.expected.branch, `codex/task-${claimed.taskId}`);
@@ -100,6 +104,7 @@ test("A separately admitted new attempt can reuse only the unchanged reconciled 
     ["foreign current workspace", "claimed", "workspaceId", randomUUID()],
     ["foreign current host", "claimed", "agentHostId", randomUUID()],
     ["same consumed execution", "claimed", "id", previous.id],
+    ["missing current lease", "claimed", "leaseToken", undefined],
     ["foreign predecessor task", "previous", "taskId", randomUUID()],
     ["foreign predecessor application", "previous", "applicationId", randomUUID()],
     ["foreign predecessor host", "previous", "agentHostId", randomUUID()],

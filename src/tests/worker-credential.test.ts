@@ -34,6 +34,15 @@ test("bound Worker can read only the prior audit pinned to its current leased ve
   assert.equal(workerCredentialRoute("POST", route.replace(id, "bad-id")), false);
 });
 
+test("bound Worker refusal read is a current execution POST, never an arbitrary execution GET", () => {
+  const id = randomUUID(), route = `/v1/agent-runtime/executions/${id}/actions/prior-coding-refusal`;
+  assert.equal(workerCredentialRoute("POST", route), true);
+  assert.equal(workerCredentialRoute("GET", route), false);
+  assert.equal(workerCredentialRoute("GET", `/v1/agent-runtime/executions/${id}`), false);
+  assert.equal(workerCredentialRoute("POST", route + "/other"), false);
+  assert.equal(workerCredentialRoute("POST", route.replace(id, "bad-id")), false);
+});
+
 function fixture() {
   const workspaceId = randomUUID(), hostId = randomUUID(), installationId = randomUUID(), ownerId = randomUUID();
   const now = new Date();
