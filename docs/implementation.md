@@ -194,7 +194,7 @@ The existing target has a fresh verified backup/isolated restore, migration
 adoption and schema/data/sequence parity. Its public health is open while DB
 writes and cadences are held. Native preparation exposed Docker paused-state,
 PG address and proxy-isolation defects; Worker fixes are under verification.
-The exact release package, native release audit and owner grant remain pending.
+The exact release package is sealed; native release audit and owner grant remain pending.
 The configuration reader now excludes lazy ORM relations from persisted settings;
 separate environment/storage seals remain. Source checks and native hashes agree.
 
