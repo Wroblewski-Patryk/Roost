@@ -63,6 +63,9 @@ Opening a record requires a workspace-scoped read-back before the modal or
 cockpit opens. A pending Decision is an actual queue record, not a generic
 button or a fabricated authorization. History truncation prevents completion
 claims and directs the owner to canonical evidence.
+The canonical Operations route validates the task inside the actual HTTP
+`data` envelope. Missing or foreign task identities and denied reads cannot
+open a readiness/review modal.
 
 ## Evidence before completion
 

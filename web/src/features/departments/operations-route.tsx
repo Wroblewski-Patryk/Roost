@@ -1,6 +1,6 @@
 import { DragEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { api } from "../../api/client";
-import { recordIdFromQuery, validateTaskNavigation } from '../../owner-record-navigation';
+import { recordIdFromQuery, validateTaskPacketNavigation } from '../../owner-record-navigation';
 import { userErrorMessage } from "../../api/errors";
 import { CcButton } from "../../components/cc-button";
 import { CcField } from "../../components/cc-field";
@@ -1332,7 +1332,7 @@ export function OperationsRoute() {
     const taskId = recordIdFromQuery(window.location.search, 'taskId');
     if (!taskId) return;
     let active = true;
-    validateTaskNavigation(taskId, id => api(`/v1/tasks/${id}`)).then(id => {
+    validateTaskPacketNavigation(taskId, id => api(`/v1/tasks/${id}`)).then(id => {
       if (active) setReadinessTask(id);
     }).catch(() => { if (active) setNavigationError(true); });
     return () => { active = false; };

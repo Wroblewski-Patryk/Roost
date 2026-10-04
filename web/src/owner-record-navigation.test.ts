@@ -1,10 +1,21 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { innovationRecordPath, recordIdFromQuery, validateDecisionNavigation, validateTaskNavigation } from "./owner-record-navigation";
+import { innovationRecordPath, recordIdFromQuery, validateDecisionNavigation, validateTaskNavigation, validateTaskPacketNavigation } from "./owner-record-navigation";
 
 const id = "00000000-0000-4000-8000-000000000001";
 const other = "00000000-0000-4000-8000-000000000002";
 const canonical = "/areas?area=11-innowacje&view=overview";
+
+test("the canonical task route validates the actual HTTP data envelope", async () => {
+  assert.equal(await validateTaskPacketNavigation(id, async () => ({ data: { id } })), id);
+  await assert.rejects(validateTaskPacketNavigation(id, async () => ({ data: { id: other } })), /task_navigation_unavailable/);
+  await assert.rejects(validateTaskPacketNavigation(id, async () => ({})), /task_navigation_unavailable/);
+  const denied = new Error("request_403");
+  await assert.rejects(validateTaskPacketNavigation(id, async () => { throw denied; }), error => error === denied);
+  let reads = 0;
+  await assert.rejects(validateTaskPacketNavigation("invalid", async () => { reads++; return { data: { id } }; }), /invalid_task_navigation/);
+  assert.equal(reads, 0);
+});
 
 test("application evidence navigation retains only the exact record and supported cockpit", () => {
   assert.equal(innovationRecordPath(`?area=11-innowacje&view=overview&applicationId=${id}&cockpit=evidence&redirect=https://other.example&write=1`, canonical), `${canonical}&applicationId=${id}&cockpit=evidence`);

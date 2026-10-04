@@ -29,3 +29,7 @@ export async function validateTaskNavigation(taskId: string, read: (id: string) 
   if (task.id !== taskId) throw new Error("task_navigation_unavailable");
   return taskId;
 }
+
+export function validateTaskPacketNavigation(taskId: string, read: (id: string) => Promise<{ data?: { id?: string } }>) {
+  return validateTaskNavigation(taskId, async id => (await read(id)).data ?? {});
+}
