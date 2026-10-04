@@ -1,18 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createGithubReleaseAdapter } from './lib/agent-host-release-github.mjs';
+import {execFileSync} from 'node:child_process';
+import {mkdtempSync,writeFileSync,rmSync,realpathSync} from 'node:fs';
+import path from 'node:path';import os from 'node:os';
+import { createGithubReleaseAdapter,inspectReleaseCheckout } from './lib/agent-host-release-github.mjs';
 
 const commit='a'.repeat(40), base='b'.repeat(40), tree='c'.repeat(40);
 const manifest={repository:{url:'https://github.com/example/certificate',defaultBranch:'main',candidateBranch:'codex/certificate',canonicalDir:'C:\\test\\certificate'}};
 const binding={commit,baseCommit:base,candidateTree:tree,reviewId:'independent-decision',materialVersion:'d'.repeat(64)};
 const repo={private:true,archived:false,default_branch:'main',full_name:'example/certificate'};
 const pr={number:1,head:{sha:commit,ref:'codex/certificate',repo:{full_name:'example/certificate'}},base:{ref:'main'},state:'open',merged:false};
-function harness({main=base,head=commit,privateRepo=true,mutation=async()=>({status:200,body:{}})}={}) {
+function harness({main=base,head=commit,privateRepo=true,commitParents=[{sha:base}],candidateTree=tree,ancestry,mutation=async()=>({status:200,body:{}})}={}) {
  const calls=[];
  const transport=async r=>{calls.push(r); if(r.method!=='GET')return mutation(r);
   if(r.route.endsWith('/git/ref/heads/main'))return{status:200,body:{object:{sha:main}}};
   if(r.route.endsWith('/git/ref/heads/codex/certificate'))return head?{status:200,body:{object:{sha:head}}}:{status:404,body:{}};
-  if(r.route.endsWith(`/git/commits/${commit}`))return{status:200,body:{tree:{sha:tree},parents:[{sha:base}]}};
+  if(r.route.endsWith(`/git/commits/${commit}`))return{status:200,body:{tree:{sha:candidateTree},parents:commitParents}};
+  if(r.route.includes('/compare/'))return{status:200,body:ancestry};
   if(/\/git\/commits\/[a-f0-9]{40}$/.test(r.route))return{status:200,body:{tree:{sha:'d'.repeat(40)},parents:[]}};
   if(r.route.endsWith('/pulls/1'))return{status:200,body:pr};
   return{status:200,body:{...repo,private:privateRepo}};
@@ -69,3 +73,12 @@ test('no candidate operation may target main or an injected Git ref',async()=>{
   const {adapter,calls}=harness();await assert.rejects(adapter.inspect({...manifest,repository:{...manifest.repository,candidateBranch:branch}}));assert.equal(calls.length,0);
  }
 });
+
+function comparison(){return{status:'ahead',base_commit:{sha:base},merge_base_commit:{sha:base},total_commits:3,ahead_by:3,behind_by:0,commits:[{sha:'1'.repeat(40)},{sha:'2'.repeat(40)},{sha:commit}]};}
+test('remote exact accepted series proves bounded ancestry before reconciliation without any writes',async()=>{const {adapter,calls}=harness({commitParents:[{sha:'2'.repeat(40)}],ancestry:comparison()});const r=await adapter.reconcile(manifest,binding,'push');assert.equal(r.status,'succeeded');assert.equal(r.evidence.remoteCommit,commit);assert.equal(r.evidence.remoteTree,tree);assert.ok(calls.every(c=>c.method==='GET'));assert.equal(calls.filter(c=>c.route.includes('/compare/')).length,1);assert.ok(calls.some(c=>c.route.endsWith('per_page=100')));});
+for(const[n,m]of Object.entries({changedBase:p=>p.base_commit.sha='e'.repeat(40),unrelatedBase:p=>p.merge_base_commit.sha='e'.repeat(40),diverged:p=>p.status='diverged',behind:p=>p.behind_by=1,changedHead:p=>p.commits.at(-1).sha='e'.repeat(40),truncated:p=>p.commits.pop(),duplicate:p=>p.commits[1].sha=p.commits[0].sha,unbounded:p=>{p.total_commits=101;p.ahead_by=101;},countMismatch:p=>p.ahead_by=2,invalidSha:p=>p.commits[0].sha='untrusted'}))test('remote series refuses '+n,async()=>{const p=comparison();m(p);const {adapter,calls}=harness({commitParents:[{sha:'2'.repeat(40)}],ancestry:p});await assert.rejects(adapter.merge(manifest,binding,1),/exact_fastforward_required/);assert.ok(calls.every(c=>c.method==='GET'));});
+test('remote accepted tree must remain exact even with qualifying ancestry',async()=>{const {adapter,calls}=harness({commitParents:[{sha:'2'.repeat(40)}],ancestry:comparison(),candidateTree:'e'.repeat(40)});await assert.rejects(adapter.merge(manifest,binding,1),/exact_fastforward_required/);assert.ok(calls.every(c=>c.method==='GET'));});
+function actualCheckout(){const directory=realpathSync.native(mkdtempSync(path.join(os.tmpdir(),'roost-release-series-test-'))),env={...process.env,GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:process.platform==='win32'?'NUL':os.devNull},git=(...a)=>execFileSync('git',['--no-replace-objects','-c','core.hooksPath='+ (process.platform==='win32'?'NUL':os.devNull),'-C',directory,...a],{env,encoding:'utf8',windowsHide:true,stdio:['ignore','pipe','ignore']}).trim();git('init','--initial-branch=main');git('config','user.name','Synthetic Release');git('config','user.email','fixture@example.test');writeFileSync(path.join(directory,'version.txt'),'baseline');git('add','version.txt');git('commit','-m','baseline');const baseCommit=git('rev-parse','HEAD');git('switch','-c',manifest.repository.candidateBranch);for(const name of['accepted repair','accepted correction']){writeFileSync(path.join(directory,'version.txt'),name);git('add','version.txt');git('commit','-m',name);}git('remote','add','origin',manifest.repository.url);return{directory,git,baseCommit,commit:git('rev-parse','HEAD'),tree:git('rev-parse','HEAD^{tree}'),manifest:{repository:{...manifest.repository,canonicalDir:directory}}};}
+function cleanupCheckout(x){assert.equal(path.dirname(path.resolve(x.directory)),path.resolve(os.tmpdir()));assert.ok(path.basename(x.directory).startsWith('roost-release-series-test-'));rmSync(x.directory,{recursive:true,force:true});}
+test('real multi-commit accepted checkout qualifies base ancestor and refuses changed checkout/tree/origin/unrelated base',async()=>{const x=actualCheckout(),inspect=(commit=x.commit,base=x.baseCommit,tree=x.tree)=>inspectReleaseCheckout(x.manifest,commit,base,tree);try{assert.deepEqual(await inspect(),{commit:x.commit,tree:x.tree,baseCommit:x.baseCommit});assert.notEqual(x.git('rev-parse','HEAD^'),x.baseCommit);await assert.rejects(inspect(x.baseCommit),/checkout_changed/);await assert.rejects(inspect(x.commit,x.baseCommit,x.git('rev-parse',x.baseCommit+'^{tree}')),/checkout_changed/);writeFileSync(path.join(x.directory,'version.txt'),'unexpected');await assert.rejects(inspect(),/checkout_changed/);writeFileSync(path.join(x.directory,'version.txt'),'accepted correction');x.git('switch','main');await assert.rejects(inspect(),/checkout_changed/);x.git('switch',manifest.repository.candidateBranch);x.git('remote','set-url','origin','https://github.com/example/other');await assert.rejects(inspect(),/origin_changed/);x.git('remote','set-url','origin',manifest.repository.url);const unrelated=x.git('commit-tree',x.tree,'-m','unrelated root');await assert.rejects(inspect(x.commit,unrelated),/checkout_changed/);assert.equal(x.git('status','--porcelain'),'');assert.equal(x.git('rev-parse','HEAD'),x.commit);}finally{cleanupCheckout(x);}});
+test('real ancestry range exceeding100 commits is refused before upload',async()=>{const x=actualCheckout();try{let head=x.commit;for(let n=0;n<99;n++)head=x.git('commit-tree',x.tree,'-p',head,'-m','bounded synthetic ancestry '+n);x.git('update-ref','refs/heads/'+manifest.repository.candidateBranch,head,x.commit);await assert.rejects(inspectReleaseCheckout(x.manifest,head,x.baseCommit,x.tree),/checkout_changed/);assert.equal(x.git('status','--porcelain'),'');}finally{cleanupCheckout(x);}});

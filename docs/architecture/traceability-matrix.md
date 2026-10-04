@@ -1954,4 +1954,11 @@ future events and external alerts remain unproven. A normal execution view inclu
 mutable host relations: preserve its historical full hash and independently match
 the original immutable native terminal/selector; do not rewrite the reference.
 Owner/monitor/Worker checks pass 81 cases; the terminal-bound qualifier passes
-38 cases. The unsigned exact-owner package is prepared; no grant is issued.
+38 cases. Owner consent for exact manifest0857 now creates verified grant
+`a14dba8b`. Its first official Worker stops before any Git/deployment intent:
+the local guard incorrectly requires a direct parent for the accepted repair
+series. Five native children are closed and the signed Writer is retained.
+The repaired local/remote guard verifies exact head/tree/base ancestry, limits
+the range to 100 commits and preserves non-force Git updates. Root verification:
+37 GitHub/materialization/broker checks and the actual Windows multi-commit
+checkout Job pass; all seven children close. Application release proof pending.

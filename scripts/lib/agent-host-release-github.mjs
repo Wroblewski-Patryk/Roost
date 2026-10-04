@@ -9,6 +9,8 @@ import { temporaryWindowsJobLauncher, startWindowsJob, isWindowsJobReceipt } fro
 import { hasReleaseProcessScope, runReleaseNativeProcess, minimalReleaseEnvironment } from './agent-host-release-process.mjs';
 
 const sha = /^[a-f0-9]{40}$/;
+// Bound ancestry work while permitting an independently reviewed repair series.
+const maximumReleaseCommits = 100;
 // Git for Windows accepts NUL, but rejects Node's Win32 device path \\.\nul.
 const gitNull = process.platform === 'win32' ? 'NUL' : os.devNull;
 const fail = (code, uncertain = false) => { throw Object.assign(Error(code), { uncertain, retryable: false }); };
@@ -108,8 +110,12 @@ export async function inspectReleaseCheckout(manifest, commit, baseCommit, candi
   const read = async args => (await git(directory, args, { limit: 32768 })).toString('utf8').trim();
   if (await read(['status', '--porcelain']) !== '' || await read(['rev-parse', 'HEAD']) !== commit
     || await read(['branch', '--show-current']) !== manifest.repository.candidateBranch
-    || await read(['rev-parse', `${commit}^{tree}`]) !== candidateTree
-    || await read(['rev-list', '--parents', '-n', '1', commit]) !== `${commit} ${baseCommit}`) fail('release_git_checkout_changed');
+    || await read(['rev-parse', `${commit}^{tree}`]) !== candidateTree) fail('release_git_checkout_changed');
+  try {
+    await read(['merge-base', '--is-ancestor', baseCommit, commit]);
+    const count=await read(['rev-list', '--count', '--max-count='+String(maximumReleaseCommits+1), `${baseCommit}..${commit}`]);
+    if(!/^[1-9][0-9]{0,2}$/.test(count)||Number(count)>maximumReleaseCommits)fail('release_git_checkout_changed');
+  } catch { fail('release_git_checkout_changed'); }
   const origin = (await read(['remote', 'get-url', 'origin'])).replace(/\.git$/, '');
   if (origin !== manifest.repository.url.replace(/\.git$/, '')) fail('release_git_origin_changed');
   return { commit, tree: candidateTree, baseCommit };
@@ -161,8 +167,17 @@ export function createGithubReleaseAdapter({ credential, transport = githubRelea
     ...(p.merged ? { mergedCommit: p.merge_commit_sha } : {}) });
   const exactCandidate = async (manifest, binding) => {
     const c = await required('GET', `/repos/${repository(manifest)}/git/commits/${binding.commit}`);
-    if (c.tree?.sha !== binding.candidateTree || c.parents?.length !== 1 || c.parents[0].sha !== binding.baseCommit)
+    if (c.tree?.sha !== binding.candidateTree || !Array.isArray(c.parents) || !c.parents.length
+      || c.parents.length>maximumReleaseCommits || c.parents.some(p=>!sha.test(p?.sha)) || binding.commit===binding.baseCommit)
       fail('release_git_exact_fastforward_required');
+    if(c.parents.length!==1||c.parents[0].sha!==binding.baseCommit){
+      const proof=await required('GET', `/repos/${repository(manifest)}/compare/${binding.baseCommit}...${binding.commit}?per_page=${maximumReleaseCommits}`);
+      if(proof.status!=='ahead'||proof.base_commit?.sha!==binding.baseCommit||proof.merge_base_commit?.sha!==binding.baseCommit
+        ||!Number.isInteger(proof.total_commits)||proof.total_commits<1||proof.total_commits>maximumReleaseCommits
+        ||proof.ahead_by!==proof.total_commits||proof.behind_by!==0||!Array.isArray(proof.commits)||proof.commits.length!==proof.total_commits
+        ||proof.commits.some(p=>!sha.test(p?.sha))||new Set(proof.commits.map(p=>p.sha)).size!==proof.total_commits
+        ||proof.commits.at(-1)?.sha!==binding.commit)fail('release_git_exact_fastforward_required');
+    }
     return c;
   };
   const findPull = async manifest => {

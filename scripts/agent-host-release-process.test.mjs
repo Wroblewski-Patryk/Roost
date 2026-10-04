@@ -38,7 +38,7 @@ test('activity runtime selection rejects a data-provided executable selector bef
  await assert.rejects(prepareReleaseProcessScope({activityBrowser:'node'}),/release_child_ownership_unproven/);
 });
 
-test('Windows release checkout validates real commit, parent and tree inside owned Git Jobs',
+test('Windows release checkout validates exact multi-commit ancestry and tree inside owned Git Jobs',
  {skip:process.platform!=='win32',timeout:90000},async()=>{
  const directory=mkdtempSync(path.join(os.tmpdir(),'roost-release-checkout-test-'));
  const checkout=path.join(directory,'checkout');mkdirSync(checkout);
@@ -48,6 +48,7 @@ test('Windows release checkout validates real commit, parent and tree inside own
   git('init','--initial-branch=main');git('config','user.name','Synthetic Test');git('config','user.email','fixture@example.test');
   writeFileSync(path.join(checkout,'version.txt'),'1');git('add','version.txt');git('commit','-m','Synthetic baseline');const base=git('rev-parse','HEAD'),baseTree=git('rev-parse','HEAD^{tree}');
   git('switch','-c','codex/certificate');writeFileSync(path.join(checkout,'version.txt'),'2');git('add','version.txt');git('commit','-m','Synthetic candidate');
+  writeFileSync(path.join(checkout,'version.txt'),'3');git('add','version.txt');git('commit','-m','Synthetic accepted follow-up');
   const commit=git('rev-parse','HEAD'),tree=git('rev-parse','HEAD^{tree}');git('remote','add','origin','https://github.com/example/certificate');
   const state=releaseStateFixture(checkout),s=state.release.snapshot;s.commit=commit;s.candidateTree=tree;s.baseCommit=base;s.baseTree=baseTree;s.manifest.baseline.commit=base;s.manifest.rollback.commit=base;
   s.manifestDigest=releaseContract.releaseDigest(s.manifest);state.release.manifestDigest=s.manifestDigest;
@@ -56,7 +57,7 @@ test('Windows release checkout validates real commit, parent and tree inside own
   const proof=await withReleaseProcessScope(prepared,context,()=>inspectReleaseCheckout(s.manifest,commit,base,tree));
   assert.deepEqual(proof,{commit,tree,baseCommit:base});sealReleaseWriterCheckpoint(context);
   const checkpoint=JSON.parse(readFileSync(path.join(directory,writerLockFilename))).releaseCheckpoint;
-  assert.equal(checkpoint.registeredChildCount,6);assert(checkpoint.children.every(child=>child.state==='closed'&&child.receipt.cleanup&&child.receipt.activeProcesses===0));
+  assert.equal(checkpoint.registeredChildCount,7);assert(checkpoint.children.every(child=>child.state==='closed'&&child.receipt.cleanup&&child.receipt.activeProcesses===0));
  }catch(error){console.log(JSON.stringify({nativeCheckoutFailure:error.message,diagnostic:error.details?.reason}));throw error;}finally{
   if(context)sealReleaseWriterCheckpoint(context);
   await writer?.release();await prepared?.dispose();assert.equal(path.dirname(directory),os.tmpdir());assert(path.basename(directory).startsWith('roost-release-checkout-test-'));rmSync(directory,{recursive:true});

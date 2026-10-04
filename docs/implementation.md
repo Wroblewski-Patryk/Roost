@@ -183,11 +183,11 @@ an immediate implementation dependency or mark it complete.
 
 ### Second-application release gate — ship the accepted bounded repair
 
-**Authorized preparation; production proof pending.** After Gate 5 the owner
+**Authorized release; production proof pending.** After Gate 5 the owner
 selected the second application's repair for the next bounded gate. Preserve
 local accepted `3cf9645e`. Independent review rejected `c21e0e0c` for its missing
 regression log. Log-only `c82e68b3` passes seven tests, a separate native build
-and independent read-only acceptance. No release grant or application deploy.
+and independent read-only acceptance. No application deployment is proven.
 
 Roost `865825fd` and the additive Compose-scope migration are deployed.
 The existing target has a fresh verified backup/isolated restore, migration
@@ -198,7 +198,8 @@ V9 audit `79c10809` retains 16 findings and its historical b5de snapshot.
 Current bbb8 review `2f9b16e5` approves; both close unchanged, signed.
 Owner approved 06bf; its grant was rejected, with authoritative absence.
 Installed SQL now admits Compose scope; a rollback probe proves five denials
-without data/grant changes. Fresh 0857 package awaits exact owner authority.
+without data/grant changes. Exact 0857 grant `a14dba8b` is verified. Worker
+stopped before any effect: Git required a direct parent for a multi-commit repair.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,
