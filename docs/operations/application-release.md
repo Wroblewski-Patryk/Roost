@@ -1,5 +1,8 @@
 # Permanent application release
 
+For the distinct Compose provider and its current prerequisite evidence, see
+[governed Compose release](governed-compose-release.md). Its release remains pending.
+
 The current gate and authority remain in [implementation](../implementation.md).
 This document records Gate 4 evidence. The current state below supersedes the
 dated recovery and source checkpoints that follow.

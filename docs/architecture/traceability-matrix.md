@@ -1683,6 +1683,12 @@ not a new model execution or pilot release proof.
 [docs/operations/rollback-and-recovery.md](../../docs/operations/rollback-and-recovery.md).
 
 <a id="e-release"></a>
+The second application's Compose release remains pending. Its separate strict
+provider, installed controller/queue/health contracts and actual PostgreSQL 15
+encrypted backup with isolated verified restore are recorded in
+[governed Compose release](../operations/governed-compose-release.md).
+This prerequisite evidence does not establish a deployed application or rollback.
+
 **RELEASE** — Gate 3 is certified on the sole temporary target (2026-10-02).
 Gate 4 exact candidate `7512bc395d65df0fca7cf701047033031f63eb7e` was deployed;
 observation failed at 1055 seconds on one API health probe with unchanged data,

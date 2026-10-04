@@ -19,6 +19,7 @@ import { createHash } from 'node:crypto';
 import { createReleaseBackupGateway } from './agent-host-release-backup.mjs';
 import { createReleaseRegistryProof } from './agent-host-release-registry-proof.mjs';
 import { createInstalledGitSetRelease, installedGitSetReleaseSchema } from './agent-host-release-git-set-worker.mjs';
+import { createInstalledComposeRelease, installedComposeReleaseSchema } from './agent-host-release-compose-worker.mjs';
 import releaseContract from './agent-host-release-contract.cjs';
 
 const target=z.string().regex(/^Roost\/Gate[34]\/[A-Za-z0-9._-]{1,80}$/),hash=z.string().regex(/^[a-f0-9]{64}$/);
@@ -29,6 +30,15 @@ for (const reason of ['native_assignment_unobserved','native_resume_or_cleanup_u
  'ssh_timeout','ssh_connection_closed','ssh_host_identity_unproven']) releaseDiagnosticReasons.add('release_child_'+reason);
 releaseDiagnosticReasons.add('release_native_request_bounds_invalid');
 releaseDiagnosticReasons.add('release_coolify_git_set_runtime_identity_changed');
+for (const reason of ['phase_intent_unproven','phase_intent_changed','baseline_observation_unproven',
+ 'database_source_binding_changed','database_configuration_changed','database_runtime_changed','database_recreation_unproven',
+ 'database_changed_during_measurement','cadence_activity_present','maintenance_unproven','capacity_unproven',
+ 'controller_renderer_changed','phase_binding_changed','phase_configuration_changed','configuration_preimage_changed',
+ 'live_source_pin_changed','version_health_unproven','private_file_changed','backup_changed','response_unproven','ssh_unavailable'])
+ releaseDiagnosticReasons.add('release_compose_installation_'+reason);
+for (const reason of ['binding_invalid','data_or_activity_changed','backup_changed','baseline_unproven',
+ 'configuration_changed','queue_identity_changed','runtime_identity_unproven','health_or_data_unproven'])
+ releaseDiagnosticReasons.add('release_coolify_compose_'+reason);
 export function releaseWorkerDiagnostic(error){
  for(let depth=0;error&&depth<4;depth++,error=error.cause)if(releaseDiagnosticReasons.has(error.message))return error.message;
  return 'release_preflight_unproven';
@@ -51,14 +61,17 @@ const legacyReleaseWorkerSchema=z.object({client:releaseWorkerClientSchema,githu
 const gitSetReleaseWorkerSchema=z.object({adapter:z.literal('coolify_git_set'),client:releaseWorkerClientSchema,
  githubCredentialTarget:target,coolifyCredentialTarget:target,gitSet:installedGitSetReleaseSchema,
  prerequisites:prerequisitesSchema}).strict();
+const composeReleaseWorkerSchema=z.object({adapter:z.literal('coolify_compose'),client:releaseWorkerClientSchema,
+ githubCredentialTarget:target,coolifyCredentialTarget:target,compose:installedComposeReleaseSchema,
+ prerequisites:prerequisitesSchema}).strict();
 // Untagged v1 installations retain their original wire shape. Permanent
 // Dockerfile sets require an explicit discriminator and their own strict data.
-export const governedReleaseWorkerSchema=z.union([legacyReleaseWorkerSchema,gitSetReleaseWorkerSchema]);
+export const governedReleaseWorkerSchema=z.union([legacyReleaseWorkerSchema,gitSetReleaseWorkerSchema,composeReleaseWorkerSchema]);
 export function assertReleaseWorkerAdapter(settings,manifest){
- const set=settings.adapter==='coolify_git_set';
- if(set?!releaseContract.isGitSetManifest(manifest):manifest?.schemaVersion!=='roost-release-manifest-v1'
+ const set=settings.adapter==='coolify_git_set',compose=settings.adapter==='coolify_compose';
+ if(compose?!releaseContract.isComposeManifest(manifest):set?!releaseContract.isGitSetManifest(manifest):manifest?.schemaVersion!=='roost-release-manifest-v1'
   ||manifest?.deployment?.provider!=='coolify')throw Error('release_worker_adapter_mismatch');
- return set;
+ return set||compose;
 }
 function verifiedBackup(settings){
  const read=filename=>{physicalIdentity(filename,false);const bytes=readFileSync(filename);if(bytes.length>32768)throw Error('release_prerequisites_invalid');return JSON.parse(bytes.toString('utf8').replace(/^\uFEFF/,''));};
@@ -109,8 +122,9 @@ export async function runGovernedReleaseQueueStep({config,baseUrl,hostId,writerL
  try{
   const settings=governedReleaseWorkerSchema.parse(config.governedRelease);
   const backup=verifiedBackup(settings);
-  const set=settings.adapter==='coolify_git_set';
-  if(settings.client.hostId!==hostId||(set?settings.gitSet.workspaceRoot:settings.resources.workspaceRoot)!==config.workspaceRoot)throw Error('release_installation_binding_changed');
+  const compose=settings.adapter==='coolify_compose',set=compose||settings.adapter==='coolify_git_set';
+  const installedSettings=compose?settings.compose:settings.gitSet;
+  if(settings.client.hostId!==hostId||(set?installedSettings.workspaceRoot:settings.resources.workspaceRoot)!==config.workspaceRoot)throw Error('release_installation_binding_changed');
   const key=await readReleaseCredential(settings.client.credentialTarget);
   const api=(route,options={})=>releaseApi({baseUrl,config:settings.client,key,route,...options});
   const queue=await api(`/v1/agent-runtime/releases?hostId=${hostId}`);
@@ -159,7 +173,7 @@ export async function runGovernedReleaseQueueStep({config,baseUrl,hostId,writerL
   const result=await withReleaseProcessScope(prepared,context,()=>{
    let resources,coolify,assertClone;
    if(set){
-    const installed=createInstalledGitSetRelease({settings:settings.gitSet,state,backup,github,coolifyCredential:coolifyKey},
+    const installed=(compose?createInstalledComposeRelease:createInstalledGitSetRelease)({settings:installedSettings,state,backup,github,coolifyCredential:coolifyKey},
      {readReleaseState:()=>api(`/v1/agent-runtime/releases/${state.release.id}`)});
     ({resources,coolify,assertClone}=installed);
    }else{

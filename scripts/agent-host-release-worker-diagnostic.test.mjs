@@ -26,6 +26,14 @@ test('release diagnostics retain only fixed admission reasons and discard arbitr
  assert.equal(releaseWorkerDiagnostic(Error('private outer content',{cause:Error('release_dockerfile_state_transport_unproven',{cause:Error('release_git_set_installation_ssh_unavailable',{cause:Error('release_child_native_assignment_unobserved')})})})),'release_child_native_assignment_unobserved');
  for(const message of ['Bearer private-value','release_password_value','release_api_uncertain\nprivate-value','https://example.test/private','C:\\private\\credential'])assert.equal(releaseWorkerDiagnostic(Error(message)),'release_preflight_unproven');
 });
+test('Compose diagnostics identify fixed safety refusals without accepting a prefix or attached private content',()=>{
+ for(const reason of ['release_compose_installation_database_recreation_unproven','release_compose_installation_phase_intent_unproven',
+  'release_compose_installation_version_health_unproven','release_coolify_compose_runtime_identity_unproven']){
+  assert.equal(releaseWorkerDiagnostic(Error('outer',{cause:Error(reason)})),reason);
+  assert.equal(releaseWorkerDiagnostic(Error(reason+' private-value')),'release_preflight_unproven');
+ }
+ assert.equal(releaseWorkerDiagnostic(Error('release_compose_installation_credential_private')),'release_preflight_unproven');
+});
 test('hidden launcher diagnostic file keeps only the classified reason and never an exception body',()=>{
  const dir=mkdtempSync(path.join(os.tmpdir(),'release-diagnostic-'));
  try{for(const [phase,reason,expected] of [['uncertainty','response_unproven_http_400','response_unproven_http_400'],['uncertainty','release_child_native_exit_failed','release_child_native_exit_failed'],

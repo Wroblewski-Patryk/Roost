@@ -29,12 +29,24 @@ export function releaseFingerprintDeadlines(timeoutMs) {
 // Only fixed scripts run in the container. COPY streams hex row hashes, never
 // business rows. PostgreSQL still renders the historical JSON and retains its
 // original collation and repeatable-read snapshot. No aggregate grows with rows.
+// psql 15 lacks SHELL_ERROR. A relation first clears its previous digest/marker
+// and acknowledges clearance; only a successful complete COPY consumer can
+// atomically publish a new completion marker. Read-back checks both files and
+// SQL validates the captured digest, so empty/partial/old output fails closed.
+const prepareProgram = `set -e -o pipefail
+rm -f -- "$ROOST_FINGERPRINT_DIR/digest" "$ROOST_FINGERPRINT_DIR/digest.pending" "$ROOST_FINGERPRINT_DIR/complete" "$ROOST_FINGERPRINT_DIR/complete.pending"
+printf '%s' prepared
+`;
 const hashProgram = `set -e -o pipefail
 trap 'trap "" TERM HUP INT; for child in $(jobs -p); do wait "$child" 2>/dev/null || true; done; exit 124' TERM HUP INT
-LC_ALL=C awk 'length($0) != 64 || $0 !~ /^[0-9a-f]+$/ { exit 1 } { printf "%s", $0 }' | sha256sum > "$ROOST_FINGERPRINT_DIR/digest"
+LC_ALL=C awk 'length($0) != 64 || $0 !~ /^[0-9a-f]+$/ { exit 1 } { printf "%s", $0 }' | sha256sum > "$ROOST_FINGERPRINT_DIR/digest.pending"
+mv -- "$ROOST_FINGERPRINT_DIR/digest.pending" "$ROOST_FINGERPRINT_DIR/digest"
+printf '%s\\n' complete > "$ROOST_FINGERPRINT_DIR/complete.pending"
+mv -- "$ROOST_FINGERPRINT_DIR/complete.pending" "$ROOST_FINGERPRINT_DIR/complete"
 `;
 const readDigestProgram = `set -e -o pipefail
 trap 'trap "" TERM HUP INT; for child in $(jobs -p); do wait "$child" 2>/dev/null || true; done; exit 124' TERM HUP INT
+LC_ALL=C awk 'NR != 1 || $0 != "complete" { bad=1; exit 1 } END { if (bad || NR != 1) exit 1 }' "$ROOST_FINGERPRINT_DIR/complete"
 LC_ALL=C awk 'NR != 1 || NF != 2 || length($1) != 64 || $1 !~ /^[0-9a-f]+$/ || $2 != "-" { bad=1; exit 1 } END { if (bad || NR != 1) exit 1; print $1 }' "$ROOST_FINGERPRINT_DIR/digest"
 `;
 const streamingSql = `\\getenv fingerprint_dir ROOST_FINGERPRINT_DIR
@@ -47,18 +59,21 @@ SELECT count(*) <= 10000 AS fingerprint_catalog_bounded FROM pg_class c JOIN pg_
 SELECT 'release_fingerprint_catalog_capacity_exceeded'::integer;
 \\endif
 SELECT format($fingerprint$
+\\set fingerprint_prepared \`exec bash "$ROOST_FINGERPRINT_DIR/prepare.sh"\`
+SELECT :'fingerprint_prepared' = 'prepared' AS fingerprint_prepared_valid
+\\gset
+\\if :fingerprint_prepared_valid
+\\else
+SELECT 'release_fingerprint_clearance_unproven'::integer;
+\\endif
 COPY (SELECT encode(sha256(convert_to(to_jsonb(t)::text,'UTF8')),'hex') AS row_hash FROM %I.%I t ORDER BY row_hash) TO STDOUT
 \\g | exec bash "$ROOST_FINGERPRINT_DIR/hash.sh"
 \\set fingerprint_count :ROW_COUNT
-\\if :{?SHELL_ERROR}
-\\else
-SELECT 'release_fingerprint_client_capability_unproven'::integer;
-\\endif
-\\if :SHELL_ERROR
-SELECT 'release_fingerprint_pipeline_unproven'::integer;
-\\endif
 \\set fingerprint_digest \`exec bash "$ROOST_FINGERPRINT_DIR/read-digest.sh"\`
-\\if :SHELL_ERROR
+SELECT :'fingerprint_digest' ~ '^[0-9a-f]{64}$' AS fingerprint_digest_valid
+\\gset
+\\if :fingerprint_digest_valid
+\\else
 SELECT 'release_fingerprint_digest_unproven'::integer;
 \\endif
 SELECT :'fingerprint_count' ~ '^(0|[1-9][0-9]*)$' AS fingerprint_count_valid
@@ -96,10 +111,13 @@ export function buildReleaseFingerprintCommand(endpoint, timeoutMs) {
   // cached non-child Bash job indefinitely; explicit PID waits each run once.
   const reapOnSignal = `trap '' TERM HUP INT; fingerprint_jobs=$(jobs -p); for fingerprint_job in $fingerprint_jobs; do wait "$fingerprint_job" 2>/dev/null || true; done; exit 124`;
   const cleanup = `if test -n "$ROOST_FINGERPRINT_DIR"; then case "$ROOST_FINGERPRINT_DIR" in /tmp/roost-fingerprint.????????????) rm -rf -- "$ROOST_FINGERPRINT_DIR";; *) exit 1;; esac; fi`;
-  const script = `trap ${quote(reapOnSignal)} TERM HUP INT; ROOST_FINGERPRINT_DIR=; trap ${quote(cleanup)} EXIT; export PGOPTIONS=${quote(options)}; umask 077; ulimit -f 65536; ROOST_FINGERPRINT_DIR=$(mktemp -d /tmp/roost-fingerprint.XXXXXXXXXXXX); export ROOST_FINGERPRINT_DIR; printf %s ${quote(hashProgram)} > "$ROOST_FINGERPRINT_DIR/hash.sh"; printf %s ${quote(readDigestProgram)} > "$ROOST_FINGERPRINT_DIR/read-digest.sh"; ${schema}; ${rows}`;
+  const script = `trap ${quote(reapOnSignal)} TERM HUP INT; ROOST_FINGERPRINT_DIR=; trap ${quote(cleanup)} EXIT; export PGOPTIONS=${quote(options)}; umask 077; ulimit -f 65536; ROOST_FINGERPRINT_DIR=$(mktemp -d /tmp/roost-fingerprint.XXXXXXXXXXXX); export ROOST_FINGERPRINT_DIR; printf %s ${quote(prepareProgram)} > "$ROOST_FINGERPRINT_DIR/prepare.sh"; printf %s ${quote(hashProgram)} > "$ROOST_FINGERPRINT_DIR/hash.sh"; printf %s ${quote(readDigestProgram)} > "$ROOST_FINGERPRINT_DIR/read-digest.sh"; ${schema}; ${rows}`;
   // Escalation targets only binary leaves in the owned program group. Their
   // Bash/psql parents stay alive to reap them. Never KILL the whole group.
-  const ownedProcesses = `ps -o pid=,ppid=,pgid=,comm=`;
+  // Minimal official PostgreSQL images need not contain procps. Read the same
+  // process identity fields from procfs with Bash builtins, never argv/env.
+  // A vanished PID is skipped; escalation still filters the owned process group.
+  const ownedProcesses = `{ for fingerprint_stat_path in /proc/[0-9]*/stat; do if test -r "$fingerprint_stat_path" && read -r fingerprint_stat < "$fingerprint_stat_path"; then fingerprint_pid=\${fingerprint_stat_path#/proc/}; fingerprint_pid=\${fingerprint_pid%/stat}; fingerprint_comm=\${fingerprint_stat#* (}; fingerprint_comm=\${fingerprint_comm%)*}; fingerprint_fields=\${fingerprint_stat##*) }; read -r fingerprint_state fingerprint_parent fingerprint_group fingerprint_rest <<< "$fingerprint_fields"; if [[ "$fingerprint_pid" =~ ^[0-9]+$ && "$fingerprint_parent" =~ ^[0-9]+$ && "$fingerprint_group" =~ ^[0-9]+$ ]]; then printf '%s %s %s %s\\n' "$fingerprint_pid" "$fingerprint_parent" "$fingerprint_group" "$fingerprint_comm"; fi; fi; done; }`;
   const leaves = `${ownedProcesses} | awk -v owner="$fingerprint_child" ${quote('$3 == owner { parent[$1]=$2; name[$1]=$4; children[$2]=1 } END { for (pid in parent) if (!children[pid] && name[pid] != "bash" && name[pid] != "psql") print pid }')}`;
   // Preserve the client while its exec-Bash pipe reaper closes. A whole-group
   // TERM would orphan that pipe under a postmaster which does not reap it.

@@ -11,6 +11,11 @@ export const releaseDigest: (value: unknown) => string = shared.releaseDigest;
 export const releaseOperations: readonly string[] = shared.operations;
 export const releaseRetainsApplication: (manifest: any) => boolean = shared.retainsApplication;
 export const releaseIsGitSet: (manifest: any) => boolean = shared.isGitSetManifest;
+export const releaseIsCompose: (manifest: any) => boolean = shared.isComposeManifest;
+export const releaseIsSet: (manifest: any) => boolean = shared.isReleaseSetManifest;
+export const releaseSourceArtifactDigest: (manifest: any, binding: any, rollback?: boolean|'baseline') => string = shared.sourceArtifactDigest;
+export const releaseComposeEvidenceError: (snapshot:any,evidence:any,rollback?:boolean|'baseline',targetId?:string,allowUnhealthy?:boolean)=>string|null=shared.composeEvidenceError;
+export const releaseComposeRecoveryEvidenceError: (snapshot:any,evidence:any,operation:any)=>string|null=shared.composeRecoveryEvidenceError;
 export const releaseGitSetArtifactDigest: (manifest: any, binding: any, rollback?: boolean) => string = shared.gitSetArtifactDigest;
 export const releaseSuccessorBasisSchema = shared.releaseSuccessorBasisSchema as z.ZodType<any>;
 export const releaseHasSuccessor: (snapshot: any) => boolean = shared.releaseHasSuccessor;
@@ -33,6 +38,7 @@ function gitSetQueuesAccepted(journal:any[],e:any,rollback:boolean) {
  return Array.isArray(e.deploymentIds)&&releaseDigest(ordered(accepted))===releaseDigest(ordered(e.deploymentIds));
 }
 export function releaseGitSetEvidenceError(snapshot:any,e:any,rollback=false,queuesRequired=true,targetId?:string) {
+ if(releaseIsCompose(snapshot.manifest))return releaseComposeEvidenceError(snapshot,e,rollback,targetId,e.healthy===false);
  const m=snapshot.manifest,expected=rollback?m.rollback:m.deployment;
  const targets=targetId===undefined?m.deployment.targets:m.deployment.targets.filter((t:any)=>t.targetId===targetId);
  if(!targets.length)return "release_deployment_unproven";
@@ -65,6 +71,14 @@ export function releaseGitSetEvidenceError(snapshot:any,e:any,rollback=false,que
 export function releasePurposeMatches(metadata: any, manifest: any) {
  return manifest?.schemaVersion==="roost-release-manifest-v1" ? metadata?.releasePurpose==="temporary_certification"
   : releaseRetainsApplication(manifest)&&metadata?.releasePurpose==="application_release";
+}
+export function releaseTargetMetadataMatches(metadata:any,manifest:any) {
+ if(!releaseIsSet(manifest))return true;
+ const targets=manifest.deployment.targets.map((t:any)=>releaseIsCompose(manifest)
+  ?{targetId:t.targetId,composePath:t.composePath}:{targetId:t.targetId,dockerfile:t.dockerfile});
+ return Array.isArray(metadata.releaseTargets)&&Array.isArray(metadata.releasePublicOrigins)
+  &&releaseDigest(metadata.releaseTargets)===releaseDigest(targets)
+  &&releaseDigest(metadata.releasePublicOrigins)===releaseDigest(manifest.deployment.publicOrigins);
 }
 export const renewReleaseSchema=z.object({requestId:z.string().uuid(),expectedVersion:z.string().regex(/^[a-f0-9]{64}$/),expiresAt:z.string().datetime()}).strict();
 
@@ -177,7 +191,7 @@ export function releaseSuccessorBasis(state:any,input:any):any {
  if(!state)return {error:"release_predecessor_not_found"};
  if(state.expectedVersion!==input.predecessor?.expectedVersion)return {error:"release_predecessor_version_stale"};
  const r=state.release,s=r.snapshot,journal=state.journal;
- if(r.id!==input.predecessor?.releaseId||!releaseIsGitSet(s.manifest)||!releaseIsGitSet(input.manifest)
+ if(r.id!==input.predecessor?.releaseId||!releaseIsSet(s.manifest)||!releaseIsSet(input.manifest)
   ||state.revocations.length||s.predecessor||s.successorBasis
   ||["taskId","applicationId","hostId","reviewId","materialVersion","commit","candidateTree","baseCommit","baseTree","releaserAgentId"].some(k=>s[k]!==input[k])
   ||releaseDigest(releaseSuccessorManifestBasis(s.manifest))!==releaseDigest(releaseSuccessorManifestBasis(input.manifest)))return {error:"release_predecessor_binding_changed"};
@@ -217,6 +231,7 @@ export function releaseIntentError(release: any, input: any, journal: any[]) {
     || input.observed.commit!==s.commit || input.observed.manifestDigest!==release.manifest_digest)
     return "release_candidate_changed";
   if(journal.some(j=>!effectiveOutcome(j.outcome)||effectiveOutcome(j.outcome)==="uncertain"))return "release_operation_unresolved";
+  if(releaseIsCompose(m)&&journal.some(j=>effectiveOutcome(j.outcome)==="absent"&&j.outcome?.evidence?.composeRecovery))return "release_compose_no_effect_diagnosis_required";
   const successful=(op:string)=>journal.some(j=>j.operation===op&&effectiveOutcome(j.outcome)==="succeeded");
   const setComplete=(op:string)=>m.deployment.targets.every((t:any)=>journal.some(j=>j.operation===op&&j.intent?.parameters?.targetId===t.targetId&&effectiveOutcome(j.outcome)==="succeeded"));
   const restarted=releaseHasPublishedGitBasis(s),successor=releaseHasSuccessor(s)||restarted;
@@ -232,8 +247,8 @@ export function releaseIntentError(release: any, input: any, journal: any[]) {
   if(input.operation==="observe"&&p.mode==="rollback")dependencies.observe=["rollback"];
   if(input.operation==="observe"&&!p.mode)return "release_observation_mode_required";
   if(dependencies[input.operation].some(op=>!successful(op)))return "release_progression_invalid";
-  if(releaseIsGitSet(m)&&input.operation==="observe"&&!setComplete(p.mode==="rollback"?"rollback":"deploy"))return "release_progression_invalid";
-  if(releaseIsGitSet(m)&&["deploy","rollback"].includes(input.operation)) {
+  if(releaseIsSet(m)&&input.operation==="observe"&&!setComplete(p.mode==="rollback"?"rollback":"deploy"))return "release_progression_invalid";
+  if(releaseIsSet(m)&&["deploy","rollback"].includes(input.operation)) {
    if(!m.deployment.targets.some((t:any)=>t.targetId===p.targetId))return "release_parameter_scope_invalid";
    if(journal.some(j=>j.operation===input.operation&&j.intent?.parameters?.targetId===p.targetId&&effectiveOutcome(j.outcome)==="succeeded"))return "release_operation_already_succeeded";
    const next=m.deployment.targets.find((t:any)=>!journal.some(j=>j.operation===input.operation&&j.intent?.parameters?.targetId===t.targetId&&effectiveOutcome(j.outcome)==="succeeded"));
@@ -245,7 +260,7 @@ export function releaseIntentError(release: any, input: any, journal: any[]) {
   if(input.operation.startsWith("rollback")&&!journal.some(j=>["deploy","observe"].includes(j.operation)&&effectiveOutcome(j.outcome)==="failed"))return "release_rollback_without_attributed_failure";
   if(input.operation==="push"&&p.branch!==m.repository.candidateBranch)return "release_parameter_scope_invalid";
   if(["review","merge"].includes(input.operation)&&p.pullRequestNumber!==journal.find(j=>j.operation==="pr"&&effectiveOutcome(j.outcome)==="succeeded")?.outcome?.evidence?.pullRequestNumber)return "release_parameter_scope_invalid";
-  const artifactInvalid=(expected:any)=>releaseIsGitSet(m)?p.artifactSetDigest!==expected.artifactSetDigest||p.imageDigest!==undefined:p.imageDigest!==expected.imageDigest||p.artifactSetDigest!==undefined;
+  const artifactInvalid=(expected:any)=>releaseIsSet(m)?p.artifactSetDigest!==expected.artifactSetDigest||p.imageDigest!==undefined:p.imageDigest!==expected.imageDigest||p.artifactSetDigest!==undefined;
   if(["deploy_config","deploy"].includes(input.operation)&&(p.commit!==s.commit||artifactInvalid(m.deployment)||p.configDigest!==m.deployment.configDigest||p.schemaDigest!==m.deployment.schemaDigest))return "release_parameter_scope_invalid";
   if(["rollback_config","rollback"].includes(input.operation)&&(p.commit!==m.rollback.commit||artifactInvalid(m.rollback)||p.configDigest!==m.rollback.configDigest||p.schemaDigest!==m.rollback.schemaDigest))return "release_rollback_artifact_invalid";
   if(input.operation==="cleanup"&&releaseDigest(p.resourceIds??[])!==releaseDigest(m.cleanup.ownedResourceIds))return "release_cleanup_scope_invalid";
@@ -254,9 +269,17 @@ export function releaseIntentError(release: any, input: any, journal: any[]) {
 export function releaseOutcomeError(release: any, operation: any, input: any,journal:any[]=[]) {
   const s=release.snapshot,m=s.manifest,e=input.evidence,result=effectiveOutcome({status:input.status,reconciledStatus:input.reconciledStatus});
   const retained=releaseRetainsApplication(m);
+  if(e.composeRecovery!==undefined){
+   if(!releaseIsCompose(m)||!(result==="failed"&&['queue_failed','queue_absent'].includes(e.composeRecovery.kind)
+     ||input.status==="reconciled"&&result==="absent"&&e.composeRecovery.kind==="queue_absent"))return "release_evidence_scope_invalid";
+   return releaseComposeRecoveryEvidenceError({...s,releaseId:release.id},e,operation);
+  }
+  if(!releaseIsCompose(m)&&e.composeTargets!==undefined)return "release_evidence_scope_invalid";
   if(retained&&(["archive_repository","cleanup_local"].includes(operation.operation)||e.repositoryArchived===true||e.localAbsent===true))return "release_retention_policy_violation";
   if(e.failureKind!==undefined&&(result!=="failed"||operation.operation!=="rollback"||!releaseIsGitSet(m)))return "release_failure_marker_invalid";
   if(result==="failed"&&operation.operation==="rollback"&&releaseIsGitSet(m))return releaseRollbackImageFailureValid(s,e,operation.intent?.parameters?.targetId)?null:"release_failure_not_attributed";
+  if(result==="failed"&&operation.operation==="rollback"&&releaseIsCompose(m))return e.healthy===false&&typeof operation.intent?.parameters?.targetId==="string"
+   &&!releaseComposeEvidenceError(s,e,true,operation.intent.parameters.targetId,true)?null:"release_failure_not_attributed";
   if(retained&&operation.operation==="cleanup_resource"&&(!m.cleanup.ownedResourceIds.includes(operation.intent?.parameters?.resourceId)||m.cleanup.protectedResourceIds.includes(operation.intent?.parameters?.resourceId)))return "release_cleanup_scope_invalid";
   if(input.status==="reconciled"&&result==="absent") {
     if(!e.absenceVerified)return "release_absence_unproven";
@@ -265,7 +288,8 @@ export function releaseOutcomeError(release: any, operation: any, input: any,jou
     if(operation.operation==="cleanup_local")return e.localAbsent===false?null:"release_absence_unproven";
     if(operation.operation==="cleanup_resource")return e.resourcePresent===true&&releaseDigest(e.resourceIds??[])===releaseDigest([operation.intent.parameters.resourceId])?null:"release_absence_unproven";
     if(["deploy_config","deploy","rollback_config","rollback"].includes(operation.operation)) {
-      if(releaseIsGitSet(m))return releaseGitSetEvidenceError(s,e,!operation.operation.startsWith("rollback"),false,operation.intent?.parameters?.targetId)?"release_absence_unproven":null;
+      if(releaseIsCompose(m))return releaseComposeEvidenceError(s,e,operation.operation.startsWith("rollback")?false:'baseline',operation.intent?.parameters?.targetId)?"release_absence_unproven":null;
+      if(releaseIsSet(m))return releaseGitSetEvidenceError(s,e,!operation.operation.startsWith("rollback"),false,operation.intent?.parameters?.targetId)?"release_absence_unproven":null;
       const expected=operation.operation.startsWith("rollback")?{...m.deployment,commit:s.commit}:m.baseline;
       return e.deployedCommit===expected.commit&&e.imageDigest===expected.imageDigest&&e.configDigest===expected.configDigest&&e.schemaDigest===expected.schemaDigest&&e.dataDigest===m.baseline.dataDigest?null:"release_absence_unproven";
     }
@@ -273,7 +297,7 @@ export function releaseOutcomeError(release: any, operation: any, input: any,jou
   }
   if(result==="failed"&&["deploy","observe"].includes(operation.operation)) {
     const expected=operation.intent?.parameters?.mode==="rollback"?m.rollback:{...m.deployment,commit:s.commit};
-    if(releaseIsGitSet(m)) {
+    if(releaseIsSet(m)) {
       if(operation.operation==="deploy"&&typeof operation.intent?.parameters?.targetId!=="string")return "release_failure_not_attributed";
       if(releaseGitSetEvidenceError(s,e,operation.intent?.parameters?.mode==="rollback",true,operation.operation==="deploy"?operation.intent?.parameters?.targetId:undefined)
        ||e.healthy!==false||!e.healthDigest||operation.operation==="observe"&&!gitSetQueuesAccepted(journal,e,operation.intent?.parameters?.mode==="rollback"))return "release_failure_not_attributed";
@@ -287,13 +311,13 @@ export function releaseOutcomeError(release: any, operation: any, input: any,jou
   if(operation.operation==="merge"&&(e.prMerged!==true||e.mergedCommit!==s.commit))return "release_merge_commit_changed";
   if(["deploy_config","rollback_config"].includes(operation.operation)) {
     const expected=operation.operation==="deploy_config"?m.deployment:m.rollback;
-    const artifactInvalid=releaseIsGitSet(m)?e.artifactSetDigest!==expected.artifactSetDigest||e.imageDigest!==undefined||e.deploymentId!==undefined||e.deployedTargets!==undefined
+    const artifactInvalid=releaseIsSet(m)?e.artifactSetDigest!==expected.artifactSetDigest||e.imageDigest!==undefined||e.deploymentId!==undefined||e.deployedTargets!==undefined||e.composeTargets!==undefined
       :e.imageDigest!==expected.imageDigest||e.artifactSetDigest!==undefined;
     if(e.configDigest!==expected.configDigest||e.schemaDigest!==expected.schemaDigest||artifactInvalid||e.deployedCommit!==(operation.operation==="deploy_config"?s.commit:m.rollback.commit))return "release_config_identity_mismatch";
   }
   if(["deploy","observe","rollback"].includes(operation.operation)) {
     const rollback=operation.operation==="rollback"||operation.intent?.parameters?.mode==="rollback",expected=rollback?m.rollback:m.deployment;
-    if(releaseIsGitSet(m)) {
+    if(releaseIsSet(m)) {
       const targetId=operation.operation==="observe"?undefined:operation.intent?.parameters?.targetId;
       if(operation.operation!=="observe"&&typeof targetId!=="string")return "release_deployment_unproven";
       if(releaseGitSetEvidenceError(s,e,rollback,true,targetId)||e.healthy!==true||!e.healthDigest)return "release_deployment_unproven";

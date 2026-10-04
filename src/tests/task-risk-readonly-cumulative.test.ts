@@ -11,6 +11,7 @@ const loadESM = new Function("specifier", "return import(specifier)") as (specif
 const root = path.resolve(__dirname, "../..");
 const migration = readFileSync(path.join(root, "prisma/migrations/20261001120000_risk_cumulative_mutations/migration.sql"), "utf8");
 const fragmentsMigration = readFileSync(path.join(root, 'prisma/migrations/20261004001500_readonly_fragments_risk/migration.sql'), 'utf8');
+const managedMigration = readFileSync(path.join(root, 'prisma/migrations/20261004004000_readonly_managed_extended_budget/migration.sql'), 'utf8');
 const evidence = { id: randomUUID(), revision: "2026-10-01T00:00:00.000Z" };
 const entry = (): RiskEntry => ({ taskId: randomUUID(),
   dimensions: Object.fromEntries(riskDimensions.map(d => [d, { level: "low", rationale: "Bounded synthetic impact", evidence: [evidence] }])) as RiskEntry["dimensions"],
@@ -23,14 +24,29 @@ async function fixture() {
   c.access = { tools: ["repository_read"], permissions: ["repository_read"], sandbox: "read-only", externalWrites: false, restrictions: ["Read bounded repository sources"] };
   return c;
 }
+const managedSelection = (maxTurns: number, budgetPolicy?: string) => ({
+  schemaVersion: "roost-managed-hermes-backend-v1", agent: "managed_hermes", riskClass: "low", fallback: "none",
+  backend: "codex_responses", provider: "openai-codex", auth: "same_owner_subscription",
+  modelSelection: { model: "gpt-5.6-sol", reasoningEffort: "low" },
+  attemptPolicy: { maxTurns, apiMaxRetries: 0, unavailable: "stop_attempt", restart: "never", ...(budgetPolicy === undefined ? {} : { budgetPolicy }) }
+});
 
 // Pin the SQL mirror to the current real schema, including strict object keys
 // and all known refinements. Unknown validators fail here rather than drift.
 test("SQL readonly classifier is pinned to the real strict execution schema", async () => {
   const { readonlyRiskSchema } = await loadESM(pathToFileURL(path.join(root, 'scripts/lib/agent-host-risk-readonly-schema.mjs')).href);
   const expected = readonlyRiskSchema();
-  const stored = fragmentsMigration.match(/SELECT \$schema\$(.+)\$schema\$::jsonb/)?.[1];
+  const stored = managedMigration.match(/SELECT \$schema\$(.+)\$schema\$::jsonb/)?.[1];
   assert.ok(stored); assert.deepEqual(JSON.parse(stored), JSON.parse(JSON.stringify(expected)));
+});
+
+test("unmirrored managed union/object refinements and transforms fail descriptor generation", async () => {
+  const { riskSchemaDescriptor } = await loadESM(pathToFileURL(path.join(root, 'scripts/lib/agent-host-risk-readonly-schema.mjs')).href);
+  const { managedBackendSelectionSchema } = await loadESM(pathToFileURL(path.join(root, 'scripts/lib/agent-host-model-policy.mjs')).href);
+  const base = managedBackendSelectionSchema.innerType();
+  assert.throws(() => riskSchemaDescriptor(base.refine(() => true)), /Unmirrored refinement/);
+  assert.throws(() => riskSchemaDescriptor(base.options[0].shape.attemptPolicy.innerType().refine(() => true)), /Unmirrored refinement/);
+  assert.throws(() => riskSchemaDescriptor(base.transform((v: unknown) => v)), /refinement/);
 });
 
 test("four verified audits plus one change stay low; two and four changes still escalate", async () => {
@@ -78,6 +94,23 @@ const malformed: Record<string, (c: any) => void> = {
   ,fragmentTooLong: c => { c.nativeBoundary.readFragments = [{path:'docs/accepted.md',startLine:1,endLine:201}]; }
   ,fragmentWholeConflict: c => { c.nativeBoundary.readFragments = [{path:'RELEASE.json',startLine:1,endLine:2}]; }
   ,emptySelection: c => { c.nativeBoundary.readPaths = []; }
+  ,managedMissingExtended: c => { c.modelSelection = managedSelection(25); }
+  ,managedSmallAbove24: c => { c.modelSelection = managedSelection(25, 'coding-small-v1'); }
+  ,managedExtendedAt24: c => { c.modelSelection = managedSelection(24, 'coding-extended-v1'); }
+  ,managedAbove48: c => { c.modelSelection = managedSelection(49, 'coding-extended-v1'); }
+  ,managedZeroTurns: c => { c.modelSelection = managedSelection(0); }
+  ,managedFractionalTurns: c => { c.modelSelection = managedSelection(25.5, 'coding-extended-v1'); }
+  ,managedUnknownBudget: c => { c.modelSelection = managedSelection(30, 'unreviewed-v1'); }
+  ,managedNullBudget: c => { c.modelSelection = managedSelection(4); c.modelSelection.attemptPolicy.budgetPolicy = null; }
+  ,managedExtraBudgetField: c => { c.modelSelection = managedSelection(30, 'coding-extended-v1'); c.modelSelection.attemptPolicy.extra = true; }
+  ,managedRetryOverflow: c => { c.modelSelection = managedSelection(30, 'coding-extended-v1'); c.modelSelection.attemptPolicy.apiMaxRetries = 3; }
+  ,managedExtendedMedium: c => { c.modelSelection = managedSelection(30, 'coding-extended-v1'); c.modelSelection.riskClass = 'medium'; }
+  ,managedExtendedHigh: c => { c.modelSelection = managedSelection(30, 'coding-extended-v1'); c.modelSelection.riskClass = 'high'; }
+  ,managedExtendedCritical: c => { c.modelSelection = managedSelection(30, 'coding-extended-v1'); c.modelSelection.riskClass = 'critical'; }
+  ,managedExtendedOllama: c => { c.modelSelection = { schemaVersion: 'roost-managed-hermes-backend-v1', agent: 'managed_hermes', riskClass: 'low', fallback: 'none',
+    backend: 'ollama_loopback', provider: 'ollama', endpoint: 'http://127.0.0.1:11434',
+    modelSelection: { provider: 'hermes_local', model: 'gpt-oss:20b', modelFamily: 'gpt-oss', modelDigest: `sha256:${'a'.repeat(64)}`, reasoningEffort: 'low' },
+    config: { reasoning: 'explicit_model_effort', remote: false }, attemptPolicy: managedSelection(30, 'coding-extended-v1').attemptPolicy }; }
 };
 async function validVariants() {
   const base = await fixture(), variants: any[] = [base];
@@ -95,6 +128,10 @@ async function validVariants() {
   variants.push({ ...structuredClone(base), nativeBoundary: { ...base.nativeBoundary, readPaths: [".env.example", "src/module.ts"] } });
   variants.push({ ...structuredClone(base), nativeBoundary: { ...base.nativeBoundary, readPaths: [], readFragments: [{path:'docs/accepted.md',startLine:1,endLine:200}] } });
   variants.push({ ...structuredClone(base), nativeBoundary: { ...base.nativeBoundary, readFragments: [{path:'docs/accepted.md',startLine:1,endLine:5},{path:'docs/accepted.md',startLine:6,endLine:10}] } });
+  for (const variant of variants.slice(0, 3)) for (const [turns, policy] of [
+    [1, undefined], [24, undefined], [24, 'coding-small-v1'], [25, 'coding-extended-v1'], [48, 'coding-extended-v1']
+  ] as const) variants.push({ ...structuredClone(variant), modelSelection: managedSelection(turns, policy) });
+  for (const riskClass of ['low', 'medium', 'high', 'critical']) variants.push({ ...structuredClone(base), modelSelection: { ...managedSelection(24, 'coding-small-v1'), riskClass } });
   return variants;
 }
 test("valid auditor, verifier and exact-commit reviewer remain readonly across admitted model shapes", async () => {
@@ -120,7 +157,8 @@ test("PostgreSQL derives the same changes and rejects forged low assessment resu
   assert.match(container, /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,100}$/);
   const qualify = (s: string) => s.replace(/\btask_risk_(contract_shape|readonly_schema|readonly_contract|history_guard|sources|version|relative_path|readonly_selection)\(/g, "pg_temp.task_risk_$1(");
   const functions = qualify(migration.slice(migration.indexOf("CREATE FUNCTION task_risk_contract_shape"), migration.lastIndexOf("COMMIT;")))
-    + qualify(fragmentsMigration.replace(/^BEGIN;\s*/, '').replace(/COMMIT;\s*$/, ''));
+    + qualify(fragmentsMigration.replace(/^BEGIN;\s*/, '').replace(/COMMIT;\s*$/, ''))
+    + qualify(managedMigration.replace(/^BEGIN;\s*/, '').replace(/COMMIT;\s*$/, ''));
   const json = (v: unknown) => `$json$${JSON.stringify(v)}$json$::jsonb`;
   const c = await fixture(), audits = Array.from({ length: 4 }, entry), changes = Array.from({ length: 4 }, entry);
   let sql = `BEGIN;
@@ -136,6 +174,8 @@ CREATE FUNCTION pg_temp.task_risk_version(uuid) RETURNS text LANGUAGE SQL AS 'SE
 ${functions}
 CREATE TRIGGER task_risk_history_guard BEFORE INSERT ON task_risk_assessments FOR EACH ROW EXECUTE FUNCTION pg_temp.task_risk_history_guard();
 DO $proof$ BEGIN IF NOT pg_temp.task_risk_readonly_contract(${json(c)}) THEN RAISE EXCEPTION 'valid readonly rejected'; END IF; END $proof$;
+DO $proof$ BEGIN IF pg_temp.task_risk_contract_shape('true'::jsonb,'{"k":"refinement","rule":"unmirrored","inner":{"k":"boolean"}}'::jsonb)
+ THEN RAISE EXCEPTION 'unmirrored SQL refinement admitted'; END IF; END $proof$;
 `;
   for (const v of await validVariants()) sql += `DO $proof$ BEGIN IF NOT pg_temp.task_risk_readonly_contract(${json(v)}) THEN RAISE EXCEPTION 'valid variant rejected'; END IF; END $proof$;\n`;
   for (const [name, mutate] of Object.entries(malformed)) {

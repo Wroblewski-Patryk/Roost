@@ -24,6 +24,7 @@ test('streaming program preserves historical oracle and fixes per-session resour
   assert(!command.includes('string_agg')); assert(!command.includes('COLLATE'));
   assert(command.includes('COPY (SELECT')); assert(command.includes('TO STDOUT'));
   assert(!command.includes('TO PROGRAM')); assert(command.includes('BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY'));
+  assert(!command.includes('SHELL_ERROR')); assert(command.includes('fingerprint_prepared_valid'));assert(command.includes('complete.pending'));
 });
 
 test('native streaming fingerprint matches historical bytes, bounds sort, fails closed and reaps actual COPY pipes', async t => {
@@ -88,12 +89,18 @@ test('native streaming fingerprint matches historical bytes, bounds sort, fails 
       program => program.replace('LC_ALL=C awk', 'false; LC_ALL=C awk'),
       program => program.replace('length($0) != 64', 'length($0) != 63'),
       program => program.replace('sha256sum >', 'false >'),
+      // The second relation must not reuse the first relation's valid digest or
+      // marker when its COPY consumer fails before producing a new digest.
+      program => program.replace('LC_ALL=C awk', 'if test -f "$ROOST_FINGERPRINT_DIR/test-first"; then false; fi; touch "$ROOST_FINGERPRINT_DIR/test-first"; LC_ALL=C awk'),
       program => program.replace('sha256sum >', '(cat >/dev/null; echo malformed) >'),
       program => program.replace('count(*) <= 10000', 'count(*) <= 0'),
       program => program.replace('fingerprint_count :ROW_COUNT', 'fingerprint_count malformed'),
       program => program.replace('fingerprint_count :ROW_COUNT', 'fingerprint_count -1'),
       program => program.replace('fingerprint_count :ROW_COUNT', 'fingerprint_count 9223372036854775808'),
-      program => program.replace('\\if :{?SHELL_ERROR}', '\\if false')
+      program => program.replace('fingerprint_prepared_valid', 'fingerprint_prepared_invalid'),
+      program => program.replace('printf \'\\\'\'%s\\n\'\\\'\' complete', 'false; printf \'\\\'\'%s\\n\'\\\'\' complete'),
+      program => program.replace('rm -f --', 'false; rm -f --'),
+      program => program.replace('complete >', 'malformed >')
     ]) {
       assert.throws(() => docker(args(change)));
       assert.equal(tempDirectories(), initialDirectories);

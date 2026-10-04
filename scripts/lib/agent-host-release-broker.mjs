@@ -7,6 +7,8 @@ const effectReasons=new Set(['release_git_push_uncertain','release_git_merge_unc
  'release_git_set_installation_ssh_unavailable','release_git_set_installation_fingerprint_unavailable',
  'release_git_set_gateway_safety_unproven','release_git_set_gateway_configuration_result_uncertain',
  'release_coolify_git_set_configuration_mutation_uncertain','release_coolify_git_set_service_health_unproven',
+ 'release_compose_identity_invalid','release_compose_queue_identity_invalid','release_compose_deployment_unproven',
+ 'release_compose_configuration_identity_invalid','release_compose_controller_result_uncertain',
  ...['native_assignment_unobserved','native_resume_or_cleanup_unproven','native_exit_failed',
  'native_access_denied','git_ownership_unproven','git_config_unreadable','git_repository_unavailable',
  'ssh_timeout','ssh_connection_closed','ssh_host_identity_unproven'].map(v=>'release_child_'+v)]);
@@ -23,17 +25,19 @@ export function nextReleaseOperation(state){
  const j=state.journal??[],done=op=>j.some(x=>x.operation===op&&releaseOutcomeStatus(x.outcome)==='succeeded');
  if(contract.retainsApplication(state.release?.snapshot?.manifest)&&j.some(x=>['archive_repository','cleanup_local'].includes(x.operation)))fail('release_retention_policy_violation');
  if(j.some(x=>!releaseOutcomeStatus(x.outcome)||releaseOutcomeStatus(x.outcome)==='uncertain'))return 'reconcile';
+ if(contract.isComposeManifest(state.release?.snapshot?.manifest)&&j.some(x=>releaseOutcomeStatus(x.outcome)==='absent'&&x.outcome?.evidence?.composeRecovery))
+  fail('release_compose_no_effect_diagnosis_required');
  if(state.status!=='active')return null;
  if(j.some(x=>x.operation==='rollback'&&releaseOutcomeStatus(x.outcome)==='failed'
   &&!contract.releaseRollbackImageFailureValid(state.release.snapshot,x.outcome.evidence,x.intent.parameters.targetId)
   ||x.operation==='observe'&&x.intent.parameters.mode==='rollback'&&releaseOutcomeStatus(x.outcome)==='failed'))fail('release_recovery_diagnosis_required');
  if(j.some(x=>['deploy','observe'].includes(x.operation)&&releaseOutcomeStatus(x.outcome)==='failed')){
-  if(!done('rollback_config'))return 'rollback_config';if(contract.isGitSetManifest(state.release.snapshot.manifest)?!completedSet(state,'rollback'):!done('rollback'))return 'rollback';
+  if(!done('rollback_config'))return 'rollback_config';if(contract.isReleaseSetManifest(state.release.snapshot.manifest)?!completedSet(state,'rollback'):!done('rollback'))return 'rollback';
   if(!j.some(x=>x.operation==='observe'&&x.intent.parameters.mode==='rollback'&&releaseOutcomeStatus(x.outcome)==='succeeded'))return 'observe';
   return nextCleanup(state);
  }
  const sequence=contract.releaseHasSuccessor(state.release.snapshot)||contract.releaseHasPublishedGitBasis(state.release.snapshot)?['deploy_config','deploy','observe']:['push','pr','review','merge','deploy_config','deploy','observe'];
- return sequence.find(op=>op==='deploy'&&contract.isGitSetManifest(state.release.snapshot.manifest)?!completedSet(state,'deploy'):!done(op))??nextCleanup(state);
+ return sequence.find(op=>op==='deploy'&&contract.isReleaseSetManifest(state.release.snapshot.manifest)?!completedSet(state,'deploy'):!done(op))??nextCleanup(state);
 }
 function nextCleanup(state){
  const j=state.journal,done=(op,resource)=>j.some(x=>x.operation===op&&releaseOutcomeStatus(x.outcome)==='succeeded'&&(!resource||x.intent.parameters.resourceId===resource));
@@ -50,7 +54,7 @@ async function assertDisposable(manifest,binding,resources,id){
  const row=await resources.ownedResource(manifest,binding,id);
  if(!row||row.resourceId!==id||row.temporary!==true||!['container','network','volume','docker_image','ghcr_version'].includes(row.kind)
   ||p.some(value=>[row.id,row.imageId,row.imageDigest,row.publicationDigest].includes(value))
-  ||[manifest.deployment.imageDigest,manifest.baseline.imageDigest,...(manifest.deployment.targets??[]).map(t=>t.baseline.imageDigest)]
+  ||[manifest.deployment.imageDigest,manifest.baseline.imageDigest,...(manifest.deployment.targets??[]).flatMap(t=>[t.baseline.imageDigest,...(t.baseline.images??[]).map(r=>r.imageDigest),...(t.baseline.configuration?.services??[]).map(r=>r.imageDigest)])]
    .filter(Boolean).some(value=>[row.id,row.imageId,row.imageDigest,row.publicationDigest].includes(value)))fail('release_cleanup_protected_resource');
 }
 async function verifyRetention(manifest,binding,{resources,github,inspectCheckout}){
@@ -80,8 +84,8 @@ function parameters(operation,s,state){
  const m=s.manifest;
  if(operation==='push')return{branch:m.repository.candidateBranch};
  if(['review','merge'].includes(operation))return{pullRequestNumber:state.journal.find(j=>j.operation==='pr'&&releaseOutcomeStatus(j.outcome)==='succeeded')?.outcome?.evidence?.pullRequestNumber};
- const artifact=value=>contract.isGitSetManifest(m)?{artifactSetDigest:value.artifactSetDigest}:{imageDigest:value.imageDigest};
- const target=op=>contract.isGitSetManifest(m)?{targetId:m.deployment.targets.find(t=>!state.journal.some(j=>j.operation===op&&j.intent?.parameters?.targetId===t.targetId&&releaseOutcomeStatus(j.outcome)==='succeeded'))?.targetId}:{};
+ const artifact=value=>contract.isReleaseSetManifest(m)?{artifactSetDigest:value.artifactSetDigest}:{imageDigest:value.imageDigest};
+ const target=op=>contract.isReleaseSetManifest(m)?{targetId:m.deployment.targets.find(t=>!state.journal.some(j=>j.operation===op&&j.intent?.parameters?.targetId===t.targetId&&releaseOutcomeStatus(j.outcome)==='succeeded'))?.targetId}:{};
  if(['deploy_config','deploy'].includes(operation))return{commit:s.commit,...artifact(m.deployment),configDigest:m.deployment.configDigest,schemaDigest:m.deployment.schemaDigest,...(operation==='deploy'?target(operation):{})};
  if(['rollback_config','rollback'].includes(operation))return{commit:m.rollback.commit,...artifact(m.rollback),configDigest:m.rollback.configDigest,schemaDigest:m.rollback.schemaDigest,...(operation==='rollback'?target(operation):{})};
  if(operation==='observe')return{mode:state.journal.some(j=>j.operation==='rollback'&&releaseOutcomeStatus(j.outcome)==='succeeded')?'rollback':'candidate'};
@@ -95,8 +99,9 @@ function effectiveExpiry(state,snapshot){
  if(!expiry.success)fail('release_expiry_unproven');
  return Date.parse(expiry.data);
 }
-function gitSetEvidence(e,manifest,binding,{configuration=false,rollback=false,deploymentIds}={}){
- if(!contract.isGitSetManifest(manifest))return e;
+function releaseSetEvidence(e,manifest,binding,{configuration=false,rollback=false,deploymentIds}={}){
+ if(!contract.isReleaseSetManifest(manifest))return e;
+ if(contract.isComposeManifest(manifest))return composeEvidence(e,manifest,binding,{configuration,rollback,deploymentIds});
  if(e.imageDigest!==undefined||e.deploymentId!==undefined)fail('release_git_set_identity_invalid');
  const result={deployedCommit:e.deployedCommit??e.commit,artifactSetDigest:e.artifactSetDigest,
   configDigest:e.configDigest,schemaDigest:e.schemaDigest};
@@ -106,9 +111,35 @@ function gitSetEvidence(e,manifest,binding,{configuration=false,rollback=false,d
  result.deploymentIds=deploymentIds??e.deploymentIds;
  return result;
 }
+function composeEvidence(e,manifest,binding,{configuration=false,rollback=false,deploymentIds}={}){
+ if(!e||e.imageDigest!==undefined||e.deploymentId!==undefined||e.deployedTargets!==undefined)fail('release_compose_identity_invalid');
+ const expected=rollback==='baseline'?manifest.baseline:rollback?manifest.rollback:manifest.deployment;
+ const result={deployedCommit:e.deployedCommit??e.commit,artifactSetDigest:e.artifactSetDigest,
+  configDigest:e.configDigest,schemaDigest:e.schemaDigest};
+ if(configuration){
+  if(e.composeTargets!==undefined||e.deploymentIds!==undefined||result.deployedCommit!==(rollback?manifest.rollback.commit:binding.commit)
+   ||result.artifactSetDigest!==expected.artifactSetDigest||result.configDigest!==expected.configDigest||result.schemaDigest!==expected.schemaDigest)
+   fail('release_compose_configuration_identity_invalid');
+  return result;
+ }
+ for(const key of ['deployedTree','deployedSetDigest','composeTargets','healthDigest','dataDigest','healthy','observationSeconds','absenceVerified'])
+  if(e[key]!==undefined)result[key]=e[key];
+ // Do not relabel a health result using another queue's return value. Both the
+ // fixed reader facts and the journal/transport queue must identify one effect.
+ if(deploymentIds!==undefined&&e.deploymentIds!==undefined&&contract.releaseDigest(deploymentIds)!==contract.releaseDigest(e.deploymentIds))
+  fail('release_compose_queue_identity_invalid');
+ result.deploymentIds=deploymentIds??e.deploymentIds;
+ if(contract.composeEvidenceError({...binding,manifest},dated(result),rollback,undefined,result.healthy===false))fail('release_compose_deployment_unproven');
+ return result;
+}
+function assertComposeQueueIds(manifest,rows,targetId){
+ if(!contract.isComposeManifest(manifest))return;
+ if(!Array.isArray(rows)||rows.length!==1||rows[0].targetId!==(targetId??manifest.deployment.targetId)
+  ||typeof rows[0].deploymentId!=='string'||!rows[0].deploymentId)fail('release_compose_queue_identity_invalid');
+}
 function priorDeployment(state,rollback){
  const op=rollback?'rollback':'deploy',rows=state.journal.filter(j=>j.operation===op&&releaseOutcomeStatus(j.outcome)==='succeeded');
- if(contract.isGitSetManifest(state.release.snapshot.manifest))return {outcome:{evidence:{deploymentIds:rows.flatMap(j=>j.outcome.evidence.deploymentIds??[])}}};
+ if(contract.isReleaseSetManifest(state.release.snapshot.manifest))return {outcome:{evidence:{deploymentIds:rows.flatMap(j=>j.outcome.evidence.deploymentIds??[])}}};
  return rows.at(-1);
 }
 // The production caller supplies fixed adapters, a sealed HTTPS API and its live
@@ -127,22 +158,32 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
   if(['push','pr','review','merge'].includes(pending.operation))result=await github.reconcile(m,s,pending.operation,pending.intent.parameters.pullRequestNumber);
   else if(['deploy_config','rollback_config'].includes(pending.operation)){
    result=await coolify.reconcileConfiguration(m,s,{rollback:pending.operation==='rollback_config',operationId:pending.id,since:pending.createdAt});
-   if(contract.isGitSetManifest(m)&&result?.state==='applied')result={status:'succeeded',evidence:gitSetEvidence(result,m,s,{configuration:true,rollback:pending.operation==='rollback_config'})};
-   else if(contract.isGitSetManifest(m)&&result?.state==='absent'&&result.evidence?.absenceVerified===true)
-    result={status:'absent',evidence:gitSetEvidence(result.evidence,m,s)};
+   if(contract.isReleaseSetManifest(m)&&result?.state==='applied')result={status:'succeeded',evidence:releaseSetEvidence(result,m,s,{configuration:true,rollback:pending.operation==='rollback_config'})};
+   else if(contract.isReleaseSetManifest(m)&&result?.state==='absent'&&result.evidence?.absenceVerified===true)
+    result={status:'absent',evidence:releaseSetEvidence(result.evidence,m,s,{rollback:contract.isComposeManifest(m)?pending.operation==='rollback_config'?false:'baseline':false})};
   }else if(['deploy','rollback'].includes(pending.operation)){
    result=await coolify.reconcileDeployment(m,s,{rollback:pending.operation==='rollback',since:pending.createdAt,operationId:pending.id,targetId:pending.intent.parameters.targetId,deploymentId:pending.intent.parameters.deploymentId});
-   if(contract.isGitSetManifest(m)&&['finished','failed'].includes(result?.state)){
+   if(contract.isComposeManifest(m)&&result?.evidence?.composeRecovery){
+    const evidence=result.evidence;
+    if(contract.composeRecoveryEvidenceError(s,evidence,pending)||!['failed','absent'].includes(result.state)
+     ||evidence.composeRecovery.kind!==(result.state==='absent'?'queue_absent':'queue_failed'))fail('release_compose_recovery_unproven');
+    // Proven absence closes the attempted release as failed, rather than
+    // enabling a new candidate intent/queue ID. Only sealed recovery follows.
+    result={status:'failed',evidence};
+   }else if(contract.isReleaseSetManifest(m)&&['finished','failed'].includes(result?.state)){
+    assertComposeQueueIds(m,result.deploymentIds,pending.intent.parameters.targetId);
     const health=result.healthy===undefined?await coolify.health(m,s,{rollback:pending.operation==='rollback',targetId:pending.intent.parameters.targetId}):result;
     if(result.state==='failed'&&health.healthy!==false)fail('release_reconciliation_unproven');
-    result={status:health.healthy===true&&result.state==='finished'?'succeeded':'failed',evidence:gitSetEvidence(health,m,s,{rollback:pending.operation==='rollback',deploymentIds:result.deploymentIds})};
+    result={status:health.healthy===true&&result.state==='finished'?'succeeded':'failed',evidence:releaseSetEvidence(health,m,s,{rollback:pending.operation==='rollback',deploymentIds:result.deploymentIds})};
+   }else if(contract.isComposeManifest(m)&&result?.state==='absent'&&result.evidence?.absenceVerified===true){
+    result={status:'absent',evidence:releaseSetEvidence(result.evidence,m,s,{rollback:pending.operation==='rollback'?false:'baseline'})};
    }
   }
   else if(pending.operation==='observe'){
    const evidence=await coolify.observe(m,s,{rollback:pending.intent.parameters.mode==='rollback'});
    const prior=priorDeployment(state,pending.intent.parameters.mode==='rollback');
-   if(!contract.isGitSetManifest(m))evidence.deploymentId=prior?.outcome?.evidence?.deploymentId;
-   result={status:evidence.healthy?'succeeded':'failed',evidence:gitSetEvidence(evidence,m,s,{rollback:pending.intent.parameters.mode==='rollback',deploymentIds:prior?.outcome?.evidence?.deploymentIds})};
+   if(!contract.isReleaseSetManifest(m))evidence.deploymentId=prior?.outcome?.evidence?.deploymentId;
+   result={status:evidence.healthy?'succeeded':'failed',evidence:releaseSetEvidence(evidence,m,s,{rollback:pending.intent.parameters.mode==='rollback',deploymentIds:prior?.outcome?.evidence?.deploymentIds})};
   }else if(pending.operation==='cleanup_resource')result=await resources.reconcileResource(m,s,pending.intent.parameters.resourceId);
   else if(pending.operation==='archive_repository')result=await github.reconcileArchive(m);
   else if(pending.operation==='cleanup_local')result=await resources.reconcileLocal(m,s);
@@ -180,24 +221,34 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
   else if(operation==='pr')evidence={...await github.createPullRequest(m,s),remoteCommit:s.commit,remoteTree:s.candidateTree};
   else if(operation==='review')evidence={...await github.recordIndependentReview(m,s,number),remoteCommit:s.commit,remoteTree:s.candidateTree};
   else if(operation==='merge')evidence=await github.merge(m,s,number);
-  else if(operation==='deploy_config')evidence=gitSetEvidence(await coolify.configureCandidate(m,s),m,s,{configuration:true});
-  else if(operation==='rollback_config')evidence=gitSetEvidence(await coolify.configureRollback(m,s),m,s,{configuration:true,rollback:true});
+  else if(operation==='deploy_config')evidence=releaseSetEvidence(await coolify.configureCandidate(m,s),m,s,{configuration:true});
+  else if(operation==='rollback_config')evidence=releaseSetEvidence(await coolify.configureRollback(m,s),m,s,{configuration:true,rollback:true});
   else if(operation==='deploy'||operation==='rollback'){
    const operationOptions={operationId:authorized.operation.id,since:authorized.operation.createdAt,rollback:operation==='rollback',targetId:intent.parameters.targetId,stopped};
    const result=await coolify[operation](m,s,operationOptions);
-   if(contract.isGitSetManifest(m)&&!['finished','failed'].includes(result?.state))fail('release_deployment_identity_unproven');
+   if(contract.isReleaseSetManifest(m)&&!['finished','failed'].includes(result?.state))fail('release_deployment_identity_unproven');
+   assertComposeQueueIds(m,result.deploymentIds,intent.parameters.targetId);
    const deployment=await coolify.waitForDeployment(m,s,{rollback:operation==='rollback',since:authorized.operation.createdAt,
     operationId:authorized.operation.id,targetId:intent.parameters.targetId,deploymentId:result.deploymentId,deploymentIds:result.deploymentIds,stopped});
    if(!['finished','failed'].includes(deployment.state))fail('release_deployment_identity_unproven');
+   assertComposeQueueIds(m,deployment.deploymentIds,intent.parameters.targetId);
+   if(contract.isComposeManifest(m)&&contract.releaseDigest(result.deploymentIds)!==contract.releaseDigest(deployment.deploymentIds))fail('release_compose_queue_identity_invalid');
+   if(contract.isComposeManifest(m)&&deployment.evidence?.composeRecovery){
+    evidence=deployment.evidence;
+    if(deployment.state!=='failed'||evidence.composeRecovery.kind!=='queue_failed'
+     ||contract.composeRecoveryEvidenceError(s,evidence,authorized.operation))fail('release_compose_recovery_unproven');
+    status='failed';
+   }else{
    evidence=await coolify.health(m,s,{rollback:operation==='rollback',targetId:intent.parameters.targetId});
    if(deployment.state==='failed'&&evidence.healthy!==false)fail('release_deployment_failure_unattributed');
-   evidence=contract.isGitSetManifest(m)?gitSetEvidence(evidence,m,s,{rollback:operation==='rollback',deploymentIds:deployment.deploymentIds??result.deploymentIds})
+   evidence=contract.isReleaseSetManifest(m)?releaseSetEvidence(evidence,m,s,{rollback:operation==='rollback',deploymentIds:deployment.deploymentIds??result.deploymentIds})
     :{...evidence,deploymentId:result.deploymentId};if(!evidence.healthy||deployment.state==='failed')status='failed';
+   }
   }else if(operation==='observe'){
    evidence=await coolify.observe(m,s,{rollback:intent.parameters.mode==='rollback'});
    const prior=priorDeployment(state,intent.parameters.mode==='rollback');
-   if(!contract.isGitSetManifest(m))evidence.deploymentId=prior?.outcome?.evidence?.deploymentId;
-   else evidence=gitSetEvidence(evidence,m,s,{rollback:intent.parameters.mode==='rollback',deploymentIds:prior?.outcome?.evidence?.deploymentIds});
+   if(!contract.isReleaseSetManifest(m))evidence.deploymentId=prior?.outcome?.evidence?.deploymentId;
+   else evidence=releaseSetEvidence(evidence,m,s,{rollback:intent.parameters.mode==='rollback',deploymentIds:prior?.outcome?.evidence?.deploymentIds});
    if(!evidence.healthy)status='failed';
   }else if(operation==='cleanup_resource'){await assertDisposable(m,s,resources,intent.parameters.resourceId);evidence=await resources.removeResource(m,s,intent.parameters.resourceId);}
   else if(operation==='archive_repository')evidence=await github.archive(m);

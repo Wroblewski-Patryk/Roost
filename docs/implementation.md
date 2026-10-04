@@ -26,12 +26,9 @@ credentials remain private configuration rather than repository defaults.
 
 ## Execution ownership
 
-One implementation owner carries the currently authorized gate through its
-complete result. The owner may plan substeps, modify several components and
-create multiple reviewable commits, but does not hand the work back merely
-because an adapter, migration, test fixture or technical contract is complete.
-The same owner may continue later, but authorization for one gate never implies
-authorization to start the next gate.
+One implementation owner completes the authorized gate across components,
+integration and native proof. Internal steps/commits are not handoff boundaries.
+Continuing later requires new gate authority.
 
 Codex work in this repository uses the `roost-runtime-delivery` repository
 skill, the orchestration rules in `AGENTS.md` and the deterministic
@@ -59,12 +56,10 @@ boundaries, API/MCP surfaces, provider adapters, task/context/review primitives,
 Windows Worker foundations and Hermes qualification evidence.
 
 **Gate 1 is met at production/runtime evidence level (2026-09-27).** The
-production API build `18bd5c6466372263316a5846f990f61cacd41040` was
-read back after deployment `yesokuu2ikcxh43zdf3fju9w`; additive migrations
-87–89 and native v3 signing/issuer checks passed. The sole owner provisioned
-the public-key anchor and delivered the scoped Worker credential through HTTPS
-handoff into Windows Credential Manager. Supervised execution uses attested
-Hermes 0.21.2. Private installation values remain outside Git.
+API build `18bd5c6466372263316a5846f990f61cacd41040`, deployment
+`yesokuu2ikcxh43zdf3fju9w`, migrations 87–89, v3 signing/issuer,
+owner-provisioned key and HTTPS credential handoff to Windows Credential Manager
+are verified. Execution uses attested Hermes 0.21.2; installation values are private.
 
 Execution `9fc132c6-af99-4d98-a2e2-27de7d576879` completed its first attempt
 at 01:08:43 UTC under signed Decision `2c12bf61-7cfe-475a-8431-40c8f3d8514a`:
@@ -76,23 +71,20 @@ Exact task/host and archived artifacts remain in the
 unavailable. Cancellation/lease-loss passed 66 focused Worker/native checks;
 forced production cancellation/lease-loss were not exercised.
 
-Production readiness reports `executionEnabled: true` and
-`supervised_execution`. Gate 1 proves this bounded round trip; it does not
-claim independent coding review or release. Ollama remains unqualified.
+Readiness reports `executionEnabled: true` / `supervised_execution`.
+Coding/release and Ollama are outside this Gate 1 proof.
 
 **Gate 2 is met at native coding and independent review evidence level
-(2026-09-27).** Separate managed read-only auditor and verifier executions
-completed before the owner's separate first-write Decision. Submit rejected
-incomplete/out-of-scope work. Windows proof covers one writer, checkpoint/resume,
-scoped Hermes coding/tests and independent rejection/correction. Execution
+(2026-09-27).** Independent read-only canaries preceded separate first-write
+consent. Native proof covers incomplete/scope refusal, one writer, checkpoint/resume,
+Hermes coding/tests and independent rejection/correction. Execution
 `b95cf777-fe24-46a4-a88e-4bd0a9314bef` produced
 commit `774e858ae48d1f05d2b56982a7113da983f62af8` with a signed local
 commit receipt, `verified_candidate`, passing Windows/POSIX tests and clean
 checkout. Independent execution `5c27d054-7cc3-45a1-9ef6-d43760316e69`
 preserved Git/process/Docker state; Decision
 `c349899b-72c3-4260-9b77-de733f42866c` accepted the exact commit/material.
-The Gate 2 branch remains local and recoverable, without push/deploy. See the
-[evidence record](architecture/traceability-matrix.md).
+The branch remains local without push/deploy; see the [matrix](architecture/traceability-matrix.md).
 
 Gate 2 proves only its task/paths/procedures/roles/runtime. General scheduling,
 arbitrary filesystem effects and release are not certified; Hermes usage is
@@ -195,6 +187,29 @@ customer-service delivery, native mobile and other explicitly deferred product
 directions remain later phases. Reconciling a requirement means recording its
 evidence and applicability; it does not make every accepted future requirement
 an immediate implementation dependency or mark it complete.
+
+### Second-application release gate — ship the accepted bounded repair
+
+**Authorized preparation; production proof pending.** After Gate 5 the owner
+selected the second application's repair for the next bounded gate. Preserve
+local `3cf9645e` and its independent acceptance. Its canonical image build has
+a node-configuration TypeScript blocker; managed correction and a new exact
+independent acceptance are required before release. This is not product readiness.
+
+Reuse the existing application, repository and Compose installation; create no
+additional application or environment. Bind its own services, migrations,
+cadences, health/parity, capacity, encrypted backup/verified restore, retained
+compatible images and observation policy. Extend shared release capabilities
+only where this actual target requires it. Do not copy pilot assumptions.
+
+Before any application push/PR/merge/deploy, present a reviewable exact-commit
+package and obtain a separate owner release grant. Include any bounded smoke
+writes/model calls, compatible rollback and protected resources. Application
+edits are made through Worker/Hermes; root integrates Roost changes. Reconcile
+uncertain effects before retry. Prove deployed SHA, truthful empty/populated
+activity, data safety and independent postrelease acceptance in Roost. Run
+component checks and `codex:check`, record evidence and stop. Soar completion
+requires a later assignment; no whole-product or commercial claim is authorized.
 
 ## What is not a blocker
 
@@ -352,27 +367,18 @@ three-success rule; live-position tests retain their explicit consent rules.
 RF-APP-001 through RF-APP-014, RF-ACT-010, RF-ORG and applicable RF-OUT,
 RF-UX, RF-GOV, context, resource and recovery requirements.
 
-**Build and configure:** reusable takeover and delivery procedures, configured
-roles/competencies, application-specific assumptions and manifests, portfolio
-status and owner decision flow. Audit the next owner-selected application and
-apply its own configuration. Reuse shared mechanisms and preserve separate
-product context, access and evidence. Existing apps enter at their proven
-lifecycle stage rather than restarting development.
+**Build and configure:** shared takeover/delivery procedures and competent roles;
+own audited assumptions, manifests, access, portfolio and owner decisions.
+Existing apps enter their proven lifecycle stage.
 
-**Proof:** run the same managed flow for a bounded accepted outcome in a second
-configured application. Demonstrate that onboarding uses application context and
-configuration rather than a new execution engine; repair any discovered generic
-gap and retain the pilot's relevant regression proof. The owner can identify
-each application's current stage, nearest outcome, accountable role, blocker or
-decision and evidence in the web console. Demonstrate continuation of approved
-work and safe waiting for an actual owner decision through the intended queue.
+**Proof:** a second app completes bounded managed work using the shared engine
+and its own context. Repair generic gaps and preserve pilot regressions. The
+owner can trace each stage, nearest outcome, accountable role, blocker/decision
+and evidence in the console, including approved continuation and safe waiting.
 
-**Exit:** reconcile applicable requirements against source, configuration and
-runtime evidence in the existing matrix. Explicitly retain unmet or deferred
-later-phase requirements. The outcome is a usable system for continuing the
-internal portfolio; it is not a claim that every application or every future
-company capability is complete. Each additional application still needs its
-own audit and safe onboarding proof.
+**Exit:** reconcile source/configuration/runtime evidence in the existing matrix;
+retain unmet/deferred requirements. This proves portfolio operation, not all
+products or future capabilities. Each further app needs its own audit/onboarding.
 
 ## Later product phases
 

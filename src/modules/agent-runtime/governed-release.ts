@@ -9,7 +9,7 @@ import { nativeBoundaryResultBlocked, object, wire } from "./task-review-contrac
 import { suspensionBlocks } from "./capability-suspension";
 import { freshWorkerOwner } from "../api-keys/worker-credential.service";
 import { requireRuntimeContent } from "./runtime-redaction-policy";
-import { createReleaseSchema, releaseIntentSchema, releaseOutcomeSchema, releaseDigest, releaseApprovalError, releaseWindowError, releaseIntentError, releaseOutcomeError, effectiveOutcome, releaseCandidateNativeError, renewReleaseSchema, releaseRenewalWindowError, releaseRenewalStateError, releasePurposeMatches, releaseIsGitSet, releaseSuccessorBasis, closeFailedReleaseSchema, authorizeReconciliationSchema, releaseFailedClosureError, releasePublishedGitBasis } from "./governed-release-contract";
+import { createReleaseSchema, releaseIntentSchema, releaseOutcomeSchema, releaseDigest, releaseApprovalError, releaseWindowError, releaseIntentError, releaseOutcomeError, effectiveOutcome, releaseCandidateNativeError, renewReleaseSchema, releaseRenewalWindowError, releaseRenewalStateError, releasePurposeMatches, releaseTargetMetadataMatches, releaseSuccessorBasis, closeFailedReleaseSchema, authorizeReconciliationSchema, releaseFailedClosureError, releasePublishedGitBasis } from "./governed-release-contract";
 type Db=Prisma.TransactionClient;
 // A completed result does not preserve authority after its task basis changes.
 // Reuse the current readiness validator, including admission expiry, without
@@ -37,11 +37,7 @@ async function configuration(db:Db,workspaceId:string,input:any) {
  if(!releasePurposeMatches(metadata,m)||primary.length!==1||primary[0].url!==m.repository.url||primary[0].defaultBranch!==m.repository.defaultBranch
   ||metadata.localDirectory!==m.repository.canonicalDir||metadata.deploymentUrl!==m.deployment.url
   ||!Array.isArray(host.applicationSlugs)||!host.applicationSlugs.includes(application.slug))return null;
- if(releaseIsGitSet(m)) {
-  if(!Array.isArray(metadata.releaseTargets)||!Array.isArray(metadata.releasePublicOrigins)
-   ||releaseDigest(metadata.releaseTargets)!==releaseDigest(m.deployment.targets.map((t:any)=>({targetId:t.targetId,dockerfile:t.dockerfile})))
-   ||releaseDigest(metadata.releasePublicOrigins)!==releaseDigest(m.deployment.publicOrigins))return null;
- }
+ if(!releaseTargetMetadataMatches(metadata,m))return null;
  return releaseDigest({application:{id:application.id,slug:application.slug,status:application.status,metadata:application.metadata,updatedAt:application.updatedAt.toISOString(),repositories:application.repositories.map(r=>({...r,createdAt:r.createdAt.toISOString(),updatedAt:r.updatedAt.toISOString()}))},host:{id:host.id,slug:host.slug,platform:host.platform,applicationSlugs:host.applicationSlugs}});
 }
 async function readiness(db:Db,workspaceId:string,input:any) {
