@@ -14,7 +14,7 @@ import { CcSelect } from "../../components/cc-select";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
 import type { CoreAreaKey } from "../../types";
-import { recordIdFromQuery, validateDecisionNavigation } from "../../owner-record-navigation";
+import { recordIdFromQuery, validateGovernedDecisionPacketNavigation } from "../../owner-record-navigation";
 import { departmentLabel } from "./department-labels";
 import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
 
@@ -61,11 +61,10 @@ export function DecisionsWorkbench({ departmentKey, canonical = false }: { depar
     setNavigationError(false);
     setGovernance(null);
     if (requestedDecisionId) {
-      void validateDecisionNavigation(requestedDecisionId, async id =>
-        (await api<{ data: { selected?: { decisionId?: string } | null } }>(`/v1/decisions/${id}/governance?version=1`)).data
-      ).then(id => { if (current) setGovernance({ decisionId: id }); })
+      void validateGovernedDecisionPacketNavigation(requestedDecisionId, id => api(`/v1/decisions/${id}`))
+        .then(id => { if (current) setGovernance({ decisionId: id }); })
         .catch(error => {
-          console.warn("Owner Decision navigation rejected", { code: error instanceof AppApiError ? error.code : "decision_navigation_unavailable" });
+          console.warn(`Owner Decision navigation rejected: ${error instanceof AppApiError ? error.code : "decision_navigation_unavailable"}`);
           if (current) setNavigationError(true);
         });
     }

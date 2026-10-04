@@ -33,3 +33,10 @@ export async function validateTaskNavigation(taskId: string, read: (id: string) 
 export function validateTaskPacketNavigation(taskId: string, read: (id: string) => Promise<{ data?: { id?: string } }>) {
   return validateTaskNavigation(taskId, async id => (await read(id)).data ?? {});
 }
+
+export function validateGovernedDecisionPacketNavigation(decisionId: string, read: (id: string) => Promise<{ data?: { id?: string; source?: string } }>) {
+  return validateDecisionNavigation(decisionId, async id => {
+    const record = (await read(id)).data;
+    return { selected: record?.source === "roost_decision" ? { decisionId: record.id } : null };
+  });
+}

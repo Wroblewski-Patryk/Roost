@@ -1,10 +1,22 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { innovationRecordPath, recordIdFromQuery, validateDecisionNavigation, validateTaskNavigation, validateTaskPacketNavigation } from "./owner-record-navigation";
+import { innovationRecordPath, recordIdFromQuery, validateDecisionNavigation, validateTaskNavigation, validateTaskPacketNavigation, validateGovernedDecisionPacketNavigation } from "./owner-record-navigation";
 
 const id = "00000000-0000-4000-8000-000000000001";
 const other = "00000000-0000-4000-8000-000000000002";
 const canonical = "/areas?area=11-innowacje&view=overview";
+
+test("governed Decision navigation checks the exact canonical record before loading its current impact", async () => {
+  assert.equal(await validateGovernedDecisionPacketNavigation(id, async () => ({ data: { id, source: "roost_decision" } })), id);
+  for (const packet of [{}, { data: { id: other, source: "roost_decision" } }, { data: { id, source: "legacy" } }, { data: { id } }]) {
+    await assert.rejects(validateGovernedDecisionPacketNavigation(id, async () => packet), /decision_navigation_unavailable/);
+  }
+  const denied = new Error("request_403");
+  await assert.rejects(validateGovernedDecisionPacketNavigation(id, async () => { throw denied; }), error => error === denied);
+  let reads = 0;
+  await assert.rejects(validateGovernedDecisionPacketNavigation("invalid", async () => { reads++; return {}; }), /invalid_decision_navigation/);
+  assert.equal(reads, 0);
+});
 
 test("the canonical task route validates the actual HTTP data envelope", async () => {
   assert.equal(await validateTaskPacketNavigation(id, async () => ({ data: { id } })), id);
