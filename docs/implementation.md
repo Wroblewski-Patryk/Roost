@@ -194,10 +194,11 @@ The existing target has a fresh verified backup/isolated restore, migration
 adoption and schema/data/sequence parity. Its public health is open while DB
 writes and cadences are held. Native preparation verified paused-state,
 PG address, proxy isolation and bounded fence renewal without data changes.
-Fresh native audits closed unchanged. Code is accepted; the exact owner grant
-and deployment, observation, activity/cleanup and final acceptance remain pending.
-The configuration reader now excludes lazy ORM relations from persisted settings;
-Environment/storage seals remain; native hashes agree; directory checks pass 48 tests.
+Audit V8 retains 16 findings. Signed review `60699758` accepts exact c82 against
+current b5de material; both native Jobs closed unchanged at exit zero.
+Manifest 06bf replaces expired 3e. Its separate owner grant, deployment,
+observation, activity/cleanup and final acceptance remain pending.
+Persisted settings exclude lazy ORM relations; native seals and 48 checks pass.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

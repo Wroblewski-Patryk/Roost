@@ -1709,6 +1709,13 @@ provider, installed controller/queue/health contracts and actual PostgreSQL 15
 encrypted backup with isolated verified restore are recorded in
 [governed Compose release](../operations/governed-compose-release.md).
 This prerequisite evidence does not establish a deployed application or rollback.
+Current exact c82 review `60699758` / decision `82672c5e` approves material b5de
+after native audit `8469a7d0` of replacement manifest 06bf. Both signed Jobs
+closed unchanged at exit zero. The audit retains all sixteen negative findings;
+qualified monitoring configuration does not prove future event delivery.
+The unsigned exact owner package and its separate grant remain prerequisites;
+deployment, observation, fixture cleanup and independent final acceptance are
+still unproven. Historical 3e and original review records are preserved.
 Independent review rejected the initial build fix for missing regression evidence.
 Managed log-only `c82e68b3` now has its own seven-test and canonical native build
 receipts and independent native acceptance (`41e75879`, decision `25632c42`).

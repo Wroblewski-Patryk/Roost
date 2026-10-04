@@ -237,3 +237,17 @@ readiness result, all findings and mandatory execution checks; it is no waiver,
 release grant or completion claim. Current controls/capacity must be read again
 before effects. Normal outcome journals and task deployment evidence route failures
 to the configured owner under root supervision; external notifications are unproven.
+
+The expired 3e package remains historical. Its physically verified replacement
+manifest is `06bfaec1ee1248d4238beaa6d14bd5f0c9888681337a63c04cd974dd5472d513`.
+Native audit `8469a7d0-2aea-401e-8ed7-f6e012f00022` measured 130406/131072
+bytes and retained sixteen `CHANGES_REQUIRED` findings. Current independent
+review `60699758-4b85-49d3-91ea-1df521bd3478`, decision
+`82672c5e-b215-4892-a2e2-d081cc1ede32`, accepts exact c82 against material
+`b5de968ad9c4aa1c3d18973b706fb892850744d7f8b258bad76f9eaea3c5bb5f`.
+It measured 130282/131072 bytes. Both signed native read-only Jobs closed at
+exit zero with unchanged source and no model-side tools. Current monitoring
+configuration and source routes qualify root supervision at 30-second intervals;
+future release events and external alerts remain unproven. The unsigned owner
+package retains every finding, fixture/data safeguards and postrelease gate.
+These reads establish no current grant, application push or deployment.
