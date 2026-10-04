@@ -173,16 +173,15 @@ consent explicitly required by `product/requirements.md` remain binding.
 ### Gate 5 — reusable company operation
 
 **In progress (2026-10-04), not met.** Independent audits, baseline and
-first-write consent are proven. Coder `b7aa2342` exhausted 24 turns with four
-scoped edits and no test/commit. Official signed Worker recovery archived all
-four files and restored the clean baseline through four closed Windows Jobs.
-Normal reconciliation released lease/Writer and retired the old signed pair;
-the failed review and spent attempt remain retained. A separately admitted
-48-turn execution is being prepared. No direct bootstrap app edit or automatic
-model retry is permitted. Shared procedures, own context and sealed rendered
-tests are reused. Roost `02db23e3` has deployment/health proof; Worker fix
-`83b5f112` passes 3 root native cases. Coding, acceptance and console proof remain.
-Gate 5 remains incomplete. See
+first-write consent are proven. Failed coder `b7aa2342` was restored through four
+closed Worker Jobs; its refusal and spent attempt remain. Separately admitted
+execution `2680be9f` completed native tests and clean local commit `3cf9645e`.
+Root app diagnostics and external build passed; unchanged node-config diagnostics
+remain a limitation. Worker `cde34ea7` qualifies the complete CRLF diff without
+source edits; 63 focused tests pass. Oversized reviewer `04112b58` was cancelled
+before claim/model. Independent acceptance and authenticated console proof
+remain pending. Roost `02db23e3` retains deployment/health proof. No application
+push/deploy or automatic retry occurred. Gate 5 remains incomplete. See
 [operation controls](operations/internal-application-operation.md).
 
 The same mechanism can onboard another configured application without changing
