@@ -260,3 +260,17 @@ hold/open-health cycle: public 502 denial, healthy open ingress, database still
 read-only, both cadences paused, zero transactions/foreign sessions, unchanged
 data and sequences, no business writes or provider calls. This renews preparation
 only; release authority and deployed-candidate evidence remain absent.
+
+The first separately approved 06bf grant has authoritative absence: the installed
+SQL scope function still rejected Compose providers, relative workspace mappings
+and Compose paths. The forward function-only migration
+`20261004223000_release_compose_scope_parity` preserves all other historical
+scope predicates and release triggers. Actual installed rollback probing admitted
+the exact manifest under the patch, rejected five changed scope variants and
+restored the original validator digest after rollback. This creates no grant.
+SQL qualification must agree with server qualification before requesting fresh
+owner authentication; retain a bounded safe refusal code and read the normal
+release catalog after any uncertain or failed POST before an explicit retry.
+Expired baseline packages remain historical; a fresh manifest requires its own
+native audit and exact owner approval. Existing code approval may be reused only
+while its exact material, native evidence and current Ready basis remain valid.

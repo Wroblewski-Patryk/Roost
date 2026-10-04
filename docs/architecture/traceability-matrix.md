@@ -1921,3 +1921,13 @@ communication/translation routing are incomplete.
 manual user/workspace timezone or DST task scheduler.
 
 [prisma/schema.prisma](../../prisma/schema.prisma), [src/modules/workspaces/workspaces.routes.ts](../../src/modules/workspaces/workspaces.routes.ts), [web/src/i18n/date-format.ts](../../web/src/i18n/date-format.ts).
+
+Compose SQL scope parity: additive migration
+`20261004223000_release_compose_scope_parity` and
+`application-release-compose-scope-migration.test.ts` reproduce historical
+Compose/relative-directory refusal, preserve all other scope predicates, compare
+35 SQL/server directory cases, exercise 20 changed scope denials and preserve
+records plus four release guards. Installed rollback probe for manifest06bf
+verifies exact admission, five refusals and restoration of validator
+`508e57ae3c63491ffa321ab46a3c5565f900756f22e026477cfc9aa1d1cd7a26`.
+Owner consent remains historical and no grant/application deployment is proven.
