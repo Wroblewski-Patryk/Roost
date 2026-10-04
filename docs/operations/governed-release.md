@@ -160,8 +160,11 @@ Never infer ownership from a matching resource name.
 The private repository uses a broker-owned main credential and an independently
 approved Roost decision. GitHub Free private repositories do not provide the
 required native protected-branch gate ([GitHub documentation](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)).
-Keep visibility private. The broker restricts publication to the declared task
-branch and a candidate with exactly one parent equal to the accepted base.
+Keep visibility unchanged. The broker restricts publication to the declared task
+branch, exact approved SHA/tree and an accepted base ancestor. An approved repair
+series may contain up to 100 commits; local ancestry and a complete GitHub
+comparison must agree on the exact base and head. Divergence, truncation or a
+changed base/head/tree stops publication before the corresponding effect.
 A COMMENT records the independent Roost acceptance; it does not impersonate a
 second GitHub reviewer. A non-forced fast-forward must close the PR as merged at
 the **same** approved SHA. The certification above proves this exact path;
