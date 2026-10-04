@@ -8,13 +8,14 @@ import { randomUUID,createHmac } from 'node:crypto';
 import { mkdirSync,readFileSync,writeFileSync,existsSync,realpathSync,renameSync,linkSync,unlinkSync } from 'node:fs';
 import { inspectRefusedTrackedRollbackScope,rollbackRefusedTrackedCandidate,verifyRefusedTrackedRollbackDisposition } from './lib/agent-host-refused-tracked-rollback.mjs';
 import { createNativeReview,prepareNativeReviewResume,authorizeNativeReviewResume,captureNativeReview,completeNativeReview,nativeReviewLocation,readDurableNativeReview } from './lib/agent-host-native-review.mjs';
-import { nativeDigest,captureNativeFootprint,compareNativeFootprint,createNativeOwnedRepositoryTemp,inspectNativeOwnedTemp,cleanupNativeOwnedTemp } from './lib/agent-host-native-footprint.mjs';
+import { nativeDigest,physicalIdentity,captureNativeFootprint,compareNativeFootprint,createNativeOwnedRepositoryTemp,inspectNativeOwnedTemp,cleanupNativeOwnedTemp } from './lib/agent-host-native-footprint.mjs';
 import { acquireWriterLock } from './lib/agent-host-writer-lock.mjs';
 import { acquireApplicationLease } from './lib/agent-host-application-lease.mjs';
 import { fixtureRuntimeBinding } from './lib/agent-host-fixture-ownership.mjs';
 import { buildWindowsJobLauncher,startWindowsJob } from './lib/agent-host-windows-job.mjs';
 import { issueNativeReconciliationApproval,reconcileNativeArtifacts,qualifyNativeReconciliation } from './lib/agent-host-native-reconciliation.mjs';
 import { legacyRecoveryIdentityDigest,legacyInputIdentityVersion } from './lib/agent-host-recovery-identity.mjs';
+import { currentNativeProcessIdentity } from './lib/agent-host-process-identity.mjs';
 
 const windows={skip:process.platform!=='win32',timeout:180000};
 const files=['source-a.txt','source-b.txt','source-c.txt','source-d.txt'];
@@ -26,12 +27,14 @@ if(process.argv[2]==='refused-tracked-child') {
   let identity={executionId:randomUUID(),workspaceId:randomUUID(),taskId:randomUUID(),applicationId:randomUUID(),attempt:1};
   if(mode==='json-order')identity=Object.fromEntries(Object.entries(identity).sort(([a],[b])=>a.localeCompare(b)));
   const baseBranch='main',taskBranch=`codex/task-${identity.taskId}`,origin='https://example.invalid/RefusedTracked.git';
+  if(mode.startsWith('global-crlf')){process.env.GIT_CONFIG_GLOBAL=path.join(root,'synthetic-global-config');writeFileSync(process.env.GIT_CONFIG_GLOBAL,'[core]\n\tautocrlf = true\n');}
   git(repositoryPath,'init','-b',baseBranch);git(repositoryPath,'config','user.name','Synthetic Worker');git(repositoryPath,'config','user.email','fixture@example.invalid');
-  git(repositoryPath,'config','core.autocrlf','true');git(repositoryPath,'remote','add','origin',origin);
+  if(!mode.startsWith('global-crlf'))git(repositoryPath,'config','core.autocrlf','true');git(repositoryPath,'remote','add','origin',origin);
   for(const f of files)writeFileSync(path.join(repositoryPath,f),`synthetic ${f}\r\nsecond baseline line\r\n`);
   writeFileSync(path.join(repositoryPath,'unchanged.txt'),'unrelated baseline\r\n');
   git(repositoryPath,'add','--',...files,'unchanged.txt');git(repositoryPath,'-c','commit.gpgsign=false','commit','-m','fixture baseline');
   const baselineCommit=git(repositoryPath,'rev-parse','HEAD');git(repositoryPath,'switch','-c',taskBranch);
+  if(mode.startsWith('global-crlf')){await new Promise(resolve=>setTimeout(resolve,1100));git(repositoryPath,'update-index','--refresh');}
   if(mode==='pre-filter')git(repositoryPath,'config','filter.external.smudge','echo forbidden');
   const expected={head:baselineCommit,branch:taskBranch,origin},before=captureNativeFootprint(repositoryPath,expected),writer=await acquireWriterLock(state);
   await writer.checkpoint({...identity,id:identity.executionId,checkpointVersion:4,checkpoint:{schemaVersion:'roost-recovery-v1',stage:'spawn_intent',sessionId:writer.sessionId,headCommit:baselineCommit,branch:taskBranch}});
@@ -40,14 +43,14 @@ if(process.argv[2]==='refused-tracked-child') {
   const review=createNativeReview({writerLock:writer,applicationLease:lease,envelope:{identity,revisions:{ready:'a'.repeat(64)}},rootIdentity:before.rootIdentity,preFootprintDigest:before.digest,spentPath});
   const launcher=await buildWindowsJobLauncher(root),authorityDigest=nativeDigest('synthetic exact owner recovery'),runtime={executable:fixtureRuntimeBinding(process.execPath),node:fixtureRuntimeBinding(process.execPath),launcher:fixtureRuntimeBinding(launcher.executable),deadline:new Date(Date.now()+60000).toISOString()};
   prepareNativeReviewResume(review,{runtime,authorityDigest});
-  const program=mode==='added'?"require('fs').writeFileSync('foreign.txt','new')":mode==='deleted'?"require('fs').unlinkSync('source-a.txt')":mode==='outside'?"require('fs').writeFileSync('unchanged.txt','foreign modification')":`for(const f of ${JSON.stringify(files)})require('fs').writeFileSync(f,require('fs').readFileSync(f,'utf8')+'refused candidate\\r\\n');`;
+  const program=mode==='unchanged'?'void 0':mode==='added'?"require('fs').writeFileSync('foreign.txt','new')":mode==='deleted'?"require('fs').unlinkSync('source-a.txt')":mode==='outside'?"require('fs').writeFileSync('unchanged.txt','foreign modification')":`for(const f of ${JSON.stringify(files)})require('fs').writeFileSync(f,require('fs').readFileSync(f,'utf8')+'refused candidate\\r\\n');`;
   const job=await(await startWindowsJob(launcher,{executable:process.execPath,argv:['-e',program],cwd:repositoryPath,environment:{SystemRoot:process.env.SystemRoot},input:'',attempt:identity.executionId,durationMs:10000,
     confirmResume:assignment=>authorizeNativeReviewResume(review,{assignment,runtime,authorityDigest})})).completion;
   const after=captureNativeFootprint(repositoryPath,expected),comparison=compareNativeFootprint(before,after,files);
   captureNativeReview(review,{ownedTreeReceipt:job,comparison,postFootprintDigest:after.digest,violations:comparison.violations});
   const result=await completeNativeReview(review,{verify(){throw Error('coding_tests_unproven');},installation:()=>({status:'PASS',manifestDigest:'d'.repeat(64)})});
   if(mode==='modified')assert.equal(result.publicReceipt.verdict,'verification_blocked');
-  process.stdout.write(JSON.stringify({directory:nativeReviewLocation(review),repositoryPath,baselineCommit,taskBranch,baseBranch,origin,writePaths:files,state,spentPath})+'\n');
+  process.stdout.write(JSON.stringify({directory:nativeReviewLocation(review),repositoryPath,baselineCommit,taskBranch,baseBranch,origin,writePaths:mode==='global-crlf'?[...files,'unchanged.txt']:files,state,spentPath})+'\n');
 }else{
 function fixture(t,mode='modified') {
   const attempt=randomUUID(),owned=createNativeOwnedRepositoryTemp(realpathSync.native(os.tmpdir()),attempt),root=inspectNativeOwnedTemp(owned,attempt).root;
@@ -57,6 +60,13 @@ function fixture(t,mode='modified') {
   return {root,options,calls,run};
 }
 function sign(file,key,payload){writeFileSync(file,JSON.stringify({payload,signature:createHmac('sha256',key).update(JSON.stringify(payload)+'\n').digest('hex')})+'\n');}
+function nativeController(o,owner) {
+  const file=path.join(o.directory,'.reconciliation-controller.json'),key=readFileSync(path.join(o.directory,'integrity.key')),review=readDurableNativeReview(o.directory);
+  if(!existsSync(file))writeFileSync(file,'synthetic controller');
+  const payload={owner,nonce:randomUUID(),reviewDigest:review.digest,directory:review.directoryIdentity,self:physicalIdentity(file,false)};
+  const signature=createHmac('sha256',key).update('native-reconciliation-controller-v1\n').update(JSON.stringify(payload)+'\n').digest('hex');
+  writeFileSync(file,JSON.stringify({payload,signature})+'\n');return file;
+}
 async function runStopped(x,extra={}) {
   // Fail closed on momentary Windows PID reuse; no weaker synthetic identity.
   for(let n=0;n<3;n++)try{return await x.run(extra);}catch(error){
@@ -87,6 +97,77 @@ test('real refused four-file Windows candidate is archived and restored by fixed
   assert.equal(existsSync(path.join(o.state,'agent-host-writer.lock')),false);assert.equal(qualifyNativeReconciliation(o.directory,undefined,workspace).completed,true);
   assert.deepEqual(readFileSync(path.join(o.directory,'review.json')),reviewBytes);assert.deepEqual(readFileSync(o.spentPath),spentBytes);
   for(const forbidden of [o.repositoryPath,'source-a.txt','fixture@example.invalid',o.origin])assert.equal(JSON.stringify(result).includes(forbidden),false);
+});
+
+test('global-only CRLF baseline is qualified by exact untouched authorized bytes and restored with explicit fixed Git policy',windows,async t=>{
+  const x=fixture(t,'global-crlf'),o=x.options,config=readFileSync(path.join(o.repositoryPath,'.git','config'));
+  assert.equal(config.toString().includes('autocrlf'),false);
+  const untouched=readFileSync(path.join(o.repositoryPath,'unchanged.txt'));
+  assert.equal((await runStopped(x)).completed,true);
+  const record=JSON.parse(readFileSync(path.join(o.directory,'refused-tracked-rollback.json'))).payload;
+  assert.equal(record.restorePolicy.autocrlfOverride,'true');assert.equal(record.restorePolicy.anchors.length,1);
+  assert.equal(record.restorePolicy.anchors[0].path,'unchanged.txt');
+  assert.deepEqual(record.jobs.map(j=>j.operation),['restore','refresh','switch','delete_branch']);
+  for(const job of record.jobs){assert.equal(job.jobClosed,true);assert.equal(job.rootExit,0);assert.equal(job.activeProcesses,0);}
+  for(const f of files)assert.equal(readFileSync(path.join(o.repositoryPath,f),'utf8'),`synthetic ${f}\r\nsecond baseline line\r\n`);
+  assert.deepEqual(readFileSync(path.join(o.repositoryPath,'.git','config')),config);
+  assert.deepEqual(readFileSync(path.join(o.repositoryPath,'unchanged.txt')),untouched);
+  const workspace={root:o.repositoryPath,expected:{head:o.baselineCommit,branch:o.baseBranch,origin:o.origin}};
+  assert.equal(qualifyNativeReconciliation(o.directory,undefined,workspace).eligible,true);
+  assert.equal((await x.run()).replay,true);
+  const journal=path.join(o.directory,'refused-tracked-rollback.json'),bytes=readFileSync(journal),key=readFileSync(path.join(o.directory,'integrity.key'));
+  record.jobs=record.jobs.filter(j=>j.operation!=='refresh');sign(journal,key,record);
+  assert.equal(qualifyNativeReconciliation(o.directory,undefined,workspace).eligible,false);writeFileSync(journal,bytes);
+});
+
+test('global-only CRLF interruption before stat refresh resumes without repeating the observed restore Job',windows,async t=>{
+  const x=fixture(t,'global-crlf'),o=x.options;
+  await assert.rejects(runStopped(x,{onCheckpoint:async stage=>{if(stage==='refresh_intent')throw Error('refresh interruption');}}),/refresh interruption/);
+  const file=path.join(o.directory,'refused-tracked-rollback.json'),before=JSON.parse(readFileSync(file)).payload;
+  assert.equal(before.phase,'refresh_intent');assert.deepEqual(before.jobs.map(j=>j.operation),['restore']);
+  assert.equal(before.pendingJob,null);assert.equal(existsSync(path.join(o.state,'agent-host-writer.lock')),true);
+  assert.equal((await runStopped(x)).completed,true);
+  const after=JSON.parse(readFileSync(file)).payload;
+  assert.equal(after.jobs[0].job,before.jobs[0].job);assert.deepEqual(after.jobs.map(j=>j.operation),['restore','refresh','switch','delete_branch']);
+});
+
+test('global-only CRLF without an untouched authorized baseline anchor is refused before archive or source effects',windows,async t=>{
+  const x=fixture(t,'global-crlf-no-anchor'),o=x.options,before=files.map(f=>readFileSync(path.join(o.repositoryPath,f)));
+  await assert.rejects(runStopped(x),/rollback_unproven/);
+  assert.equal(existsSync(path.join(o.directory,'refused-tracked-rollback.json')),false);
+  assert.equal(existsSync(path.join(o.directory,'refused-tracked-rollback-bytes')),false);
+  for(let i=0;i<files.length;i++)assert.deepEqual(readFileSync(path.join(o.repositoryPath,files[i])),before[i]);
+});
+
+test('completed recovery rejects a current controller identity but accepts a positively newer PID owner after historical closure',windows,async t=>{
+  const x=fixture(t),o=x.options;await runStopped(x);
+  const file=path.join(o.directory,'.refused-tracked-rollback-controller.json'),key=readFileSync(path.join(o.directory,'integrity.key'));
+  const current=currentNativeProcessIdentity(),review=readDurableNativeReview(o.directory);
+  writeFileSync(file,'synthetic controller');
+  const record={reviewDigest:review.digest,owner:current,self:physicalIdentity(file,false)};
+  sign(file,key,record);await assert.rejects(x.run(),/rollback_unproven/);assert.equal(existsSync(file),true);
+  record.owner={...current,creationTime:String(BigInt(current.creationTime)+1n)};
+  sign(file,key,record);await assert.rejects(x.run(),/rollback_unproven/);assert.equal(existsSync(file),true);
+  record.owner={...current,creationTime:String(BigInt(current.creationTime)-1n)};
+  sign(file,key,record);assert.equal((await x.run()).replay,true);assert.equal(existsSync(file),false);
+  const workspace={root:o.repositoryPath,expected:{head:o.baselineCommit,branch:o.baseBranch,origin:o.origin}};
+  const nativeFile=nativeController(o,current);
+  assert.throws(()=>reconcileNativeArtifacts(issueNativeReconciliationApproval({directory:o.directory,workspace,assertOwnerAuthority(){}})),/native_recovery_process_alive/);
+  assert.equal(existsSync(nativeFile),true);
+  nativeController(o,{...current,creationTime:String(BigInt(current.creationTime)+1n)});
+  assert.throws(()=>reconcileNativeArtifacts(issueNativeReconciliationApproval({directory:o.directory,workspace,assertOwnerAuthority(){}})),/native_recovery_pid_reused/);
+  nativeController(o,{...current,creationTime:String(BigInt(current.creationTime)-1n)});
+  assert.equal(reconcileNativeArtifacts(issueNativeReconciliationApproval({directory:o.directory,workspace,assertOwnerAuthority(){}})).completed,true);
+  assert.equal(existsSync(nativeFile),false);
+});
+
+test('legacy unchanged refused reconciliation still denies a positively newer reused controller PID',windows,async t=>{
+  const x=fixture(t,'unchanged'),o=x.options,current=currentNativeProcessIdentity();
+  const file=nativeController(o,{...current,creationTime:String(BigInt(current.creationTime)-1n)});
+  const workspace={root:o.repositoryPath,expected:{head:o.baselineCommit,branch:o.taskBranch,origin:o.origin}};
+  assert.throws(()=>reconcileNativeArtifacts(issueNativeReconciliationApproval({directory:o.directory,workspace,assertOwnerAuthority(){}})),/native_recovery_pid_reused/);
+  assert.equal(existsSync(file),true);assert.equal(existsSync(path.join(o.state,'agent-host-writer.lock')),true);
+  assert.equal(existsSync(path.join(o.directory,'refused-tracked-rollback.json')),false);
 });
 
 for(const stage of ['restore_intent','restore_effect','restored','switch_effect','delete_branch_effect','complete'])test(`durable ${stage} interruption observes actual state and retains fences until restored`,windows,async t=>{

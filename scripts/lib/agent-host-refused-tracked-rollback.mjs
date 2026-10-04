@@ -46,7 +46,12 @@ function artifact(state,binding) {
   if(now.identity!==binding.identity||now.digest!==binding.digest)fail();return now;
 }
 function gone(value) {
-  if(!value||!Number.isSafeInteger(value.pid)||!/^\d{16,20}$/.test(value.creationTime??'')||observeWindowsProcessIdentity(value.pid))fail();
+  if(!value||!Number.isSafeInteger(value.pid)||value.pid<1||!/^\d{16,20}$/.test(value.creationTime??''))fail();
+  const current=observeWindowsProcessIdentity(value.pid);
+  // A positively identified newer process may reuse a closed Job's PID. It
+  // cannot be its historical root/launcher; equal, older or unknown identity
+  // still blocks. A missing closed-Job receipt never reaches this exception.
+  if(current&&BigInt(current.creationTime)<=BigInt(value.creationTime))fail();
 }
 function stoppedJob(job,executionId) {
   if(!job||!['roost-windows-job-v1','roost-windows-job-v2'].includes(job.version)||job.attempt!==executionId||!uuid.test(job.job??'')
@@ -133,7 +138,7 @@ function protectedGit(root,taskBranch) {
   }
   physicalIdentity(path.join(root,'.git'));walk(path.join(root,'.git'),'',0);return nativeDigest(rows);
 }
-function restoreBasis(root,baseline,changes) {
+function restoreBasis(root,baseline,changes,writePaths) {
   // No external attribute/filter/config execution may accompany fixed restore.
   if(git(root,['config','--local','--name-only','--get-regexp','^(filter\\.|include\\.|includeif\\.|core\\.attributesfile|core\\.worktree|extensions\\.)'],{empty:true}))fail();
   const attributes=git(root,['check-attr','--all','--',...changes.map(r=>r.path)]),map=new Map();
@@ -144,16 +149,41 @@ function restoreBasis(root,baseline,changes) {
   }
   const auto=git(root,['config','--get','core.autocrlf'],{empty:true}),eol=git(root,['config','--get','core.eol'],{empty:true});
   if(!['','true','false','input'].includes(auto)||!['','native','lf','crlf'].includes(eol))fail();
-  return changes.map(r=>{
-    const tree=git(root,['ls-tree','--full-tree',baseline,'--',r.path]);const m=/^100644 blob ([a-f0-9]{40})\t(.+)$/.exec(tree);
-    if(!m||m[2]!==r.path)fail();const bytes=git(root,['cat-file','blob',m[1]],{binary:true});
+  function blob(file,optional=false) {
+    const tree=git(root,['ls-tree','--full-tree',baseline,'--',file]);const m=/^100644 blob ([a-f0-9]{40})\t(.+)$/.exec(tree);
+    if(!m||m[2]!==file){if(optional&&!tree)return null;fail();}const bytes=git(root,['cat-file','blob',m[1]],{binary:true});
     if(bytes.length>8388608||bytes.includes(0)||!Buffer.from(bytes.toString('utf8'),'utf8').equals(bytes)
       ||createHash('sha1').update(Buffer.from(`blob ${bytes.length}\0`)).update(bytes).digest('hex')!==m[1])fail();
+    return {blob:m[1],bytes};
+  }
+  const crlfBytes=bytes=>Buffer.from(bytes.toString('utf8').replace(/\r?\n/g,'\r\n'),'utf8');
+  const source=changes.map(r=>({row:r,...blob(r.path)}));
+  // A historical normal checkout may have used global autocrlf. Do not load
+  // global config or filters: qualify one explicit policy from sealed before
+  // sizes AND the exact bytes of an untouched, authorized baseline file.
+  const inferred=!auto&&!eol&&!map.size&&source.some(v=>String(v.bytes.length)!==v.row.before.bytes);
+  const anchors=[];
+  if(inferred) {
+    if(!source.every(v=>String(crlfBytes(v.bytes).length)===v.row.before.bytes)
+      ||!source.some(v=>crlfBytes(v.bytes).length!==v.bytes.length))fail();
+    for(const file of [...writePaths].sort()) {
+      if(changes.some(r=>r.path===file)||!existsSync(path.join(root,file)))continue;
+      const value=blob(file,true);if(!value)continue;
+      if(git(root,['check-attr','--all','--',file]))fail();
+      const working=stableBytes(path.join(root,file)),converted=crlfBytes(value.bytes);
+      if(converted.length===value.bytes.length||!working.equals(converted))continue;
+      const stat=lstatSync(path.join(root,file),{bigint:true});
+      anchors.push({path:file,blob:value.blob,identity:`${stat.dev}:${stat.ino}`,bytes:String(stat.size),time:String(stat.mtimeNs),digest:digest(working)});
+    }
+    if(!anchors.length)fail();
+  }
+  const files=source.map(({row:r,blob:blobId,bytes})=>{
     const attr=map.get(r.path)??{},text=attr.text!=='unset'&&(attr.text==='set'||attr.text==='auto'||attr.eol||auto==='true'||auto==='input');
     const crlf=text&&(attr.eol==='crlf'||!attr.eol&&(auto==='true'||auto!=='input'&&eol!=='lf'&&(eol==='crlf'||process.platform==='win32')));
-    const working=crlf?Buffer.from(bytes.toString('utf8').replace(/\r?\n/g,'\r\n'),'utf8'):bytes;
-    if(String(working.length)!==r.before.bytes)fail();return {path:r.path,blob:m[1],bytes:String(working.length),digest:digest(working)};
+    const working=crlf||inferred?crlfBytes(bytes):bytes;
+    if(String(working.length)!==r.before.bytes)fail();return {path:r.path,blob:blobId,bytes:String(working.length),digest:digest(working)};
   });
+  return {files,policy:{autocrlfOverride:inferred?'true':null,anchors}};
 }
 function invariant(root,record,review,{branch,deleted=false,allowRestored=false}={}) {
   const {baselineCommit,taskBranch,baseBranch,origin}=record.parameters,changes=review.payload.privateChanges;
@@ -162,13 +192,19 @@ function invariant(root,record,review,{branch,deleted=false,allowRestored=false}
     ||now.originDigest!==record.original.originDigest||!equal(now.inventory.skipped,record.original.inventory.skipped)
     ||!equal(now.inventory.rows.filter(r=>!changes.some(c=>c.path===r.path)),record.original.inventory.rows.filter(r=>!changes.some(c=>c.path===r.path)))
     ||protectedGit(root,taskBranch)!==record.protectedGitDigest||nativeDigest(git(root,['ls-files','--stage','-z']))!==record.indexEntriesDigest
-    ||git(root,['diff','--cached','--name-only',baselineCommit,'--'])||!equal(restoreBasis(root,baselineCommit,changes),record.baselineFiles))fail();
+    ||git(root,['diff','--cached','--name-only',baselineCommit,'--'])
+    ||!equal(restoreBasis(root,baselineCommit,changes,record.parameters.writePaths),{files:record.baselineFiles,policy:record.restorePolicy}))fail();
   const refs=record.refs.split('\n').filter(line=>!deleted||!line.startsWith(`refs/heads/${taskBranch} `)).join('\n');
   if(git(root,['for-each-ref','--format=%(refname) %(objectname)'])!==refs||git(root,['rev-parse',`refs/heads/${baseBranch}`])!==baselineCommit)fail();
   for(const r of changes) {
     const row=now.inventory.rows.find(v=>v.path===r.path),dirty=now.dirty.find(v=>v.path===r.path),base=record.baselineFiles.find(v=>v.path===r.path);
     if(!row||row.kind!=='file'||row.links!=='1')fail();const bytes=stableBytes(path.join(root,r.path));
-    const restored=digest(bytes)===base.digest&&String(bytes.length)===base.bytes&&!dirty;
+    const baselineBytes=digest(bytes)===base.digest&&String(bytes.length)===base.bytes;
+    // Until the explicit refresh Job completes, Git may re-read a racy CRLF
+    // stat using its hermetic default. Exact baseline bytes are permitted only
+    // as intermediate state; completion still requires a clean Git footprint.
+    const refreshPending=record.restorePolicy.autocrlfOverride&&!record.jobs.some(j=>j.operation==='refresh');
+    const restored=baselineBytes&&(!dirty||allowRestored&&refreshPending&&dirty.status===' M');
     const original=equal(row,record.original.inventory.rows.find(v=>v.path===r.path))&&dirty?.status===' M'&&dirty.digest===r.after.digest;
     if(allowRestored?!restored&&!original:!restored)fail();
   }
@@ -181,6 +217,7 @@ function verifyRecord(directory,record,review) {
     ||!Array.isArray(record.jobs)||record.jobs.length<2||record.pendingJob!==null||record.archiveIdentity!==physicalIdentity(path.join(directory,archiveName)))fail();
   for(const job of record.jobs)stoppedJob(job,b.identity.executionId);
   if(!record.jobs.some(j=>j.operation==='restore')||!record.jobs.some(j=>j.operation==='switch')||!record.jobs.some(j=>j.operation==='delete_branch'))fail();
+  if(record.restorePolicy?.autocrlfOverride&&!record.jobs.some(j=>j.operation==='refresh'))fail();
   for(let i=0;i<p.privateChanges.length;i++) {
     const file=path.join(directory,archiveName,`${i}.bin`),entry=record.archived?.[i];
     if(!entry||physicalIdentity(file,false)!==entry.identity||digest(stableBytes(file))!==p.privateChanges[i].after.digest||entry.digest!==p.privateChanges[i].after.digest)fail();
@@ -206,7 +243,7 @@ export async function rollbackRefusedTrackedCandidate(options) {
   const state=path.dirname(directory),key=readFileSync(path.join(directory,'integrity.key')),journalFile=path.join(directory,journalName);
   const controllerFile=path.join(directory,'.refused-tracked-rollback-controller.json'),barrierPath=path.join(state,recoveryLockFilename),archive=path.join(directory,archiveName);
   await assertOwnerAuthority(scope);let record=existsSync(journalFile)?readSigned(journalFile,key):null;
-  const phases=['archive_intent','archived','restore_intent','restored','switch_intent','switched','delete_branch_intent','branch_deleted','complete'];
+  const phases=['archive_intent','archived','restore_intent','refresh_intent','restored','switch_intent','switched','delete_branch_intent','branch_deleted','complete'];
   if(record&&(!equal(record.scope,scope)||record.version!==1||record.reviewIdentity!==review.identity||record.directoryIdentity!==review.directoryIdentity
     ||record.stateIdentity!==physicalIdentity(state)||!phases.includes(record.phase)))fail();
   if(record?.phase==='complete') {
@@ -228,10 +265,11 @@ export async function rollbackRefusedTrackedCandidate(options) {
         ||original.dirty.some(r=>r.status!==' M'||!p.privateChanges.some(c=>c.path===r.path&&c.after.digest===r.digest))
         ||git(repositoryPath,['rev-parse',`refs/heads/${baseBranch}`])!==baselineCommit||git(repositoryPath,['rev-parse',`refs/heads/${taskBranch}`])!==baselineCommit)fail();
       for(const r of p.privateChanges)stableBytes(path.join(repositoryPath,r.path),r.after);
+      const basis=restoreBasis(repositoryPath,baselineCommit,p.privateChanges,options.writePaths);
       record={version:1,scope,parameters:{repositoryPath,baselineCommit,taskBranch,baseBranch,origin,writePaths:options.writePaths.map(nativeRelative)},
         reviewIdentity:review.identity,directoryIdentity:review.directoryIdentity,stateIdentity:physicalIdentity(state),phase:'archive_intent',original,
         protectedGitDigest:protectedGit(repositoryPath,taskBranch),indexEntriesDigest:nativeDigest(git(repositoryPath,['ls-files','--stage','-z'])),
-        refs:git(repositoryPath,['for-each-ref','--format=%(refname) %(objectname)']),baselineFiles:restoreBasis(repositoryPath,baselineCommit,p.privateChanges),
+        refs:git(repositoryPath,['for-each-ref','--format=%(refname) %(objectname)']),baselineFiles:basis.files,restorePolicy:basis.policy,
         archived:[],archiveIdentity:null,barrier:null,pendingJob:null,jobs:[],finalFootprintDigest:null};persist();
     }
     if(!record.barrier) {
@@ -256,20 +294,29 @@ export async function rollbackRefusedTrackedCandidate(options) {
     const executable=realpathSync.native(execFileSync('where.exe',['git.exe'],{env:environment(),windowsHide:true,encoding:'utf8',timeout:5000,maxBuffer:32768}).trim().split(/\r?\n/)[0]),executableDigest=digest(readFileSync(executable));
     const mutate=async(operation,args)=>{
       await check();if(realpathSync.native(executable)!==executable||!lstatSync(executable).isFile()||digest(readFileSync(executable))!==executableDigest)fail();
-      invariant(repositoryPath,record,review,{branch:operation==='delete_branch'?baseBranch:taskBranch,allowRestored:operation==='restore'});
-      const job=await(await startWindowsJob(launcher,{executable,argv:gitArgs(args),cwd:repositoryPath,environment:environment(),input:'',durationMs:15000,attempt:b.identity.executionId,
+      invariant(repositoryPath,record,review,{branch:operation==='delete_branch'?baseBranch:taskBranch,allowRestored:['restore','refresh'].includes(operation)});
+      const checkoutArgs=record.restorePolicy.autocrlfOverride&&['restore','refresh','switch'].includes(operation)?['-c',`core.autocrlf=${record.restorePolicy.autocrlfOverride}`,...args]:args;
+      const job=await(await startWindowsJob(launcher,{executable,argv:gitArgs(checkoutArgs),cwd:repositoryPath,environment:environment(),input:'',durationMs:15000,attempt:b.identity.executionId,
         confirmResume:assignment=>{record.pendingJob={operation,...assignment};persist();return nativeDigest(record.pendingJob);}})).completion;
       if(!isWindowsJobCleanupReceipt(job)||job.rootExit!==0||job.jobClosed!==true||job.terminationReason!=='root_exit')fail();
       record.jobs.push({...structuredClone(job),operation});record.pendingJob=null;persist();await onCheckpoint(`${operation}_effect`);
     };
-    if(['archived','restore_intent'].includes(record.phase)) {
+    if(['archived','restore_intent','refresh_intent'].includes(record.phase)) {
       const observed=invariant(repositoryPath,record,review,{branch:taskBranch,allowRestored:true});
       if(record.phase==='archived'&&observed.digest!==p.postFootprintDigest)fail();
-      if(observed.dirty.length) {
+      if(observed.dirty.length&&!record.jobs.some(j=>j.operation==='restore')) {
         record.phase='restore_intent';persist();await onCheckpoint('restore_intent');await check();
         invariant(repositoryPath,record,review,{branch:taskBranch,allowRestored:true});
         await mutate('restore',['restore',`--source=${baselineCommit}`,'--worktree','--',...p.privateChanges.map(r=>r.path)]);
       } else if(!record.jobs.some(j=>j.operation==='restore'))fail();
+      if(record.restorePolicy.autocrlfOverride&&!record.jobs.some(j=>j.operation==='refresh')) {
+        invariant(repositoryPath,record,review,{branch:taskBranch,allowRestored:true});
+        for(const file of record.baselineFiles)if(digest(stableBytes(path.join(repositoryPath,file.path)))!==file.digest)fail();
+        record.phase='refresh_intent';persist();await onCheckpoint('refresh_intent');
+        // Move the index timestamp beyond the restored files' racy stat second.
+        await new Promise(resolve=>setTimeout(resolve,1100));await check();
+        await mutate('refresh',['update-index','--refresh']);
+      }
       invariant(repositoryPath,record,review,{branch:taskBranch});record.phase='restored';persist();await onCheckpoint('restored');
     }
     if(['restored','switch_intent'].includes(record.phase)) {

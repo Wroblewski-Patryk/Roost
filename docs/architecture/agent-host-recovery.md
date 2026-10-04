@@ -201,3 +201,18 @@ before/after spawn. Run it separately from tests that mutate the same workspace
 because the digest intentionally detects such concurrent changes. Existing host
 suites and `npm run test:api:local` cover regression, migration, workspace scope,
 checkpoint CAS, old-token fencing and owner-visible secret-free diagnostics.
+
+## Fixed recovery of refused tracked edits
+
+The scoped `RecoverRefusedTracked` command has a separate owner-signed admission
+and completion disposition. It archives the exact refused bytes, restores the
+approved baseline in closed Windows Jobs and retains the original failed review
+and spent attempt. It does not authorize model replay or release.
+
+Only this verified completed disposition permits a positively observed strictly
+newer process creation time to establish that its historical PID owner is gone.
+The original closed Job chain remains mandatory and is checked again at fence
+release. Equal, older or unavailable process identities block; no foreign
+process is terminated. Unchanged refusal and startup reclamation continue to
+reject PID reuse. See the operational qualification and CRLF policy in
+[internal application operation](../operations/internal-application-operation.md).

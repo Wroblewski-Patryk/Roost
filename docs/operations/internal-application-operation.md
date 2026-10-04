@@ -155,6 +155,23 @@ lease/Writer; normal signed-pair retirement and a newly admitted task execution
 follow. Restored metadata is never described as an unchanged predecessor.
 Actual second-application recovery remains pending until recorded below.
 
+For an original Windows checkout whose CRLF policy came from global Git
+configuration, fixed recovery does not load that global configuration. It
+qualifies an explicit CRLF conversion from every signed historical before-size
+and exact baseline blob plus the complete bytes of an untouched authorized
+tracked file. The journal pins this policy and anchor identities. Restore,
+index refresh and branch switch use only that explicit Git setting in closed
+Windows Jobs; stored Git configuration and staged entries remain unchanged.
+An intermediate racy index cannot be reported as clean: completion requires
+the observed refresh receipt and the final clean native footprint.
+
+Only a verified completed tracked-file recovery may identify a reused PID by
+an observed strictly newer process creation time. Its historical root and
+launcher still require genuine closed Job receipts; equal, older or unknown
+identities block. Every fence-release boundary revalidates that disposition.
+Unchanged refusal and general startup reclamation retain their conservative
+PID-reuse denial. This rule never terminates the newer process.
+
 The historical managed turn tier remains at most 24. An explicit
 `attemptPolicy.budgetPolicy: coding-extended-v1` admits 25–48 turns only for
 low-risk managed Codex execution. Its reviewed profile has 48 configured turns

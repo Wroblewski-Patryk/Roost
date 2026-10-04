@@ -25,10 +25,14 @@ function matches(state, expected, absentAllowed = false) {
   if (now.identity !== expected.identity || now.digest !== expected.digest) fail("native_recovery_foreign_or_changed_artifact");
   return true;
 }
-function ownerGone(identity, label) {
+function ownerGone(identity, label, restoredTracked = false) {
   if (!identity || !Number.isSafeInteger(identity.pid) || !/^\d{16,20}$/.test(identity.creationTime ?? "")) fail(`native_recovery_${label}_identity_missing`);
   const now = observeWindowsProcessIdentity(identity.pid);
-  if (now) fail(now.creationTime !== identity.creationTime ? "native_recovery_pid_reused" : "native_recovery_process_alive");
+  // Only a separately verified tracked-restore disposition permits a positive
+  // later creation identity to prove the historical process is gone. Legacy
+  // and unchanged paths continue to deny every reused PID.
+  if (now && !(restoredTracked && BigInt(now.creationTime) > BigInt(identity.creationTime)))
+    fail(now.creationTime !== identity.creationTime ? "native_recovery_pid_reused" : "native_recovery_process_alive");
 }
 function readJournal(directory, key) {
   const file = path.join(directory, "reconciliation.json"); if (!existsSync(file)) return null;
@@ -48,7 +52,7 @@ function refusedCodingWorkspace(p, workspace, directory) {
   // A scoped fixed Worker restore is a separate signed disposition. It never
   // changes the historical REFUSED review into a candidate or relaunch permit.
   if (Array.isArray(p.privateChanges) && p.privateChanges.length) {
-    try { verifyRefusedTrackedRollbackDisposition(directory, workspace); return; }
+    try { verifyRefusedTrackedRollbackDisposition(directory, workspace); return true; }
     catch { fail("native_recovery_refused_restore_unproven"); }
   }
   const b = p.binding, pub = p.public;
@@ -97,13 +101,14 @@ function qualify(directory, fixture, workspace) {
       || !hash.test(job.executableDigest) || !hash.test(job.launcherSha256) || !hash.test(job.sourceSha256)
       || nativeDigest(job) !== p.public?.jobDigest) fail("native_recovery_job_chain_missing");
   const refusedCoding = p.public?.verdict === "verification_blocked" && p.verification?.status === "REFUSED";
-  if (refusedCoding) refusedCodingWorkspace(p, workspace, directory);
+  let restoredTracked = false;
+  if (refusedCoding) restoredTracked = refusedCodingWorkspace(p, workspace, directory) === true;
   else if (!["verified_candidate", "acceptance_failed", "process_failed"].includes(p.public?.verdict) || p.public.violations.length
       || !["PASS", "FAIL"].includes(p.verification?.status) || p.installation?.status !== "PASS") fail("native_recovery_review_not_eligible");
   const key = readFileSync(path.join(directory, "integrity.key")), previous = readJournal(directory, key);
   if (previous && (previous.reviewDigest !== review.digest || !["prepared", "fixture_remove_intent", "fixture_removed_entry", "fixture_removed", "lease_remove_intent", "lease_removed", "writer_remove_intent", "writer_removed", "complete"].includes(previous.phase))) fail("native_recovery_journal_invalid");
   if (b.fixture) verifyFixtureRecovery({ review, state, previous }, fixture);
-  if (previous?.phase === "complete" && !existsSync(path.join(state, recoveryLockFilename))) return { complete: true, review, state, key, previous, stateIdentity };
+  if (previous?.phase === "complete" && !existsSync(path.join(state, recoveryLockFilename))) return { complete: true, review, state, key, previous, stateIdentity, restoredTracked };
   matches(state, b.spent);
   const releaseIntent = p.stage === "cleaned" && p.leaseWriterReleaseIntent === true;
   const leaseMayBeAbsent = releaseIntent || previous && ["lease_remove_intent", "lease_removed", "writer_remove_intent", "writer_removed", "complete"].includes(previous.phase), writerMayBeAbsent = releaseIntent || previous && ["writer_remove_intent", "writer_removed", "complete"].includes(previous.phase);
@@ -111,10 +116,10 @@ function qualify(directory, fixture, workspace) {
   if (!writerPresent && leasePresent) fail("native_recovery_release_order_invalid");
   // PID absence is accepted ONLY with the original signed creation/executable
   // identity and a genuine-at-origin zero-active Job proof for all descendants.
-  ownerGone(owner, "owner");
-  ownerGone({ pid: job.rootPid, creationTime: job.rootCreationTime }, "root");
-  ownerGone({ pid: job.launcherPid, creationTime: job.launcherCreationTime }, "launcher");
-  return { complete: false, review, state, key, previous, stateIdentity };
+  ownerGone(owner, "owner", restoredTracked);
+  ownerGone({ pid: job.rootPid, creationTime: job.rootCreationTime }, "root", restoredTracked);
+  ownerGone({ pid: job.launcherPid, creationTime: job.launcherCreationTime }, "launcher", restoredTracked);
+  return { complete: false, review, state, key, previous, stateIdentity, restoredTracked };
 }
 function acquireReconciliationController(q, grant) {
   const file = path.join(grant.directory, ".reconciliation-controller.json");
@@ -123,7 +128,7 @@ function acquireReconciliationController(q, grant) {
     const old = nativeArtifactSnapshot(file), { payload, signature } = old.record;
     if (!hash.test(signature ?? "") || signature !== sign(payload) || payload.self !== physicalIdentity(file, false)
         || payload.reviewDigest !== grant.digest || payload.directory !== grant.identity) fail("native_recovery_controller_unproven");
-    ownerGone(payload.owner, "controller");
+    ownerGone(payload.owner, "controller", q.restoredTracked);
     if (nativeArtifactSnapshot(file).digest !== old.digest) fail("native_recovery_controller_unproven");
     unlinkSync(file);
   }
@@ -223,10 +228,12 @@ export function reconcileNativeArtifacts(grant) {
     matches(q.state, record.barrier); matches(q.state, q.review.payload.binding.spent);
     const current = readDurableNativeReview(g.directory);
     if (current.digest !== g.digest || current.identity !== g.receiptIdentity || current.keyIdentity !== g.keyIdentity) fail("native_recovery_review_changed");
-    if (current.payload.verification?.status === "REFUSED") refusedCodingWorkspace(current.payload, g.workspace, g.directory);
-    ownerGone(q.review.payload.binding.writer.record.ownerProcess, "owner");
-    ownerGone({ pid: q.review.payload.job.rootPid, creationTime: q.review.payload.job.rootCreationTime }, "root");
-    ownerGone({ pid: q.review.payload.job.launcherPid, creationTime: q.review.payload.job.launcherCreationTime }, "launcher");
+    const restoredTracked = current.payload.verification?.status === "REFUSED"
+      && refusedCodingWorkspace(current.payload, g.workspace, g.directory) === true;
+    if (restoredTracked !== q.restoredTracked) fail("native_recovery_review_changed");
+    ownerGone(q.review.payload.binding.writer.record.ownerProcess, "owner", restoredTracked);
+    ownerGone({ pid: q.review.payload.job.rootPid, creationTime: q.review.payload.job.rootCreationTime }, "root", restoredTracked);
+    ownerGone({ pid: q.review.payload.job.launcherPid, creationTime: q.review.payload.job.launcherCreationTime }, "launcher", restoredTracked);
     if (q.review.payload.binding.fixture) verifyFixtureRecovery({ ...q, previous: record }, g.fixture);
   };
   const step = phase => { record = { ...record, phase }; journal(g.directory, q.key, record); };

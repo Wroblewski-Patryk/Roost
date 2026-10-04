@@ -1040,6 +1040,11 @@ inspection through the official Windows entrypoint. Recovery transport passes
 36 tests; safe console projection passes 31 tests. The explicit bounded
 48-turn tier passes 51 budget/tier tests. No fixture grants application recovery,
 candidate acceptance or a new dispatch; the real recovery is still pending.
+CRLF restoration and the scoped closed-Job PID identity correction pass
+7 focused native cases independently, with 3 root native cases also passing,
+zero skips. These cover exact authorized anchors, refresh interruption,
+same/older identity denial, positively newer identities and retained legacy
+PID-reuse denial. `codex:check` and scoped syntax/diff checks pass.
 Fixed coding/test suites pass 20 tests with three explicit fixture/privilege
 skips. An independent root native run of the sealed React 18.3.1/ReactDOM
 18.3.1/TypeScript 5.9.3 toolkit passes both actual empty/populated component
