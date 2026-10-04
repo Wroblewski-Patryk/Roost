@@ -214,3 +214,5 @@ fence. Decision/mandate and finding GET routes retry only the explicit
 Business preconditions, missing/denied records and uncertain transport failures
 remain failures. POST commands retain their original single invocation and
 idempotency/reconciliation rules; a read retry grants no new authority.
+Opening an exact Decision loads its modal context without concurrently loading
+the register queue; the queue remains available in the normal register view.
