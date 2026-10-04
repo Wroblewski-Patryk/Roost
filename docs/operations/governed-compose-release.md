@@ -251,3 +251,12 @@ configuration and source routes qualify root supervision at 30-second intervals;
 future release events and external alerts remain unproven. The unsigned owner
 package retains every finding, fixture/data safeguards and postrelease gate.
 These reads establish no current grant, application push or deployment.
+
+A second bounded preparation renewal uses immutable original and immediately
+preceding scope/journal receipts. It preserves the original database fence
+cutoff and authority, allows exactly one additional two-hour link and refuses
+further nesting. Root reran 31 JavaScript and 29 Python checks, then the actual
+hold/open-health cycle: public 502 denial, healthy open ingress, database still
+read-only, both cadences paused, zero transactions/foreign sessions, unchanged
+data and sequences, no business writes or provider calls. This renews preparation
+only; release authority and deployed-candidate evidence remain absent.
