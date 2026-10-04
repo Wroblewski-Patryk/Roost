@@ -181,7 +181,7 @@ remain a limitation. Worker `cde34ea7` qualifies the complete CRLF diff without
 source edits; 63 focused tests pass. Reviewer `ab75f1c9` failed before model on
 duplicate Decisions; normal supersession `43ba8ba3` removed only the duplicate.
 Reviewer `7f78d3c2` accepted exact `3cf9645e` in decision `674c5607`, with unchanged
-native state and a closed Job. Authenticated console proof remains pending.
+native state and a closed Job. Roost `4ed32890` deployed; console proof pending.
 No app push/deploy or automatic retry. Gate 5 remains incomplete. See
 [operation controls](operations/internal-application-operation.md).
 
