@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import fixtureModule from './fixtures/release-compose-contract.cjs';
 import { createCoolifyComposeAdapter } from './lib/agent-host-release-coolify-compose.mjs';
+import {releaseEffectDiagnostic} from './lib/agent-host-release-broker.mjs';
+import contract from './lib/agent-host-release-contract.cjs';
 import { coolifyGitSetDeploymentId } from './lib/agent-host-release-coolify-git-set-gateway.mjs';
 
 function setup() {
@@ -37,6 +39,17 @@ function setup() {
   const adapter = createCoolifyComposeAdapter({ gateway, now: () => clock.now, sleep: async ms => { clock.now += ms; } });
   return { ...f, s, o, calls, clock, state, gateway, adapter, runtime, deploymentId };
 }
+
+function configAbsence(f){f.o.since='2026-10-04T12:01:00.000Z';const e=f.recoveryEvidence(f.s,f.o,'queue_absent'),r=e.composeRecovery;delete e.composeRecovery;
+ return {...e,configDigest:f.m.baseline.configDigest,composeConfigAbsence:{schemaVersion:'roost-compose-config-absence-v1',releaseId:f.s.releaseId,operationId:f.o.operationId,since:f.o.since,
+ targetId:f.target.targetId,requestedCommit:f.s.commit,requestedTree:f.s.candidateTree,configuration:structuredClone(f.target.baseline.configuration),baselineCommit:f.s.baseCommit,baselineTree:f.s.baseTree,
+ migrationSchemaVerified:true,controlPlaneQuiescent:true,noCandidateQueue:true,baselineServices:r.baselineServices,services:r.services}};}
+test('configuration absence requires complete qualified legacy proof instead of unchanged pin alone',async()=>{const f=setup(),e=configAbsence(f);f.gateway.inspectConfiguration=async()=>f.target.baseline.configuration;
+ f.gateway.inspectConfigurationAbsence=async()=>{f.calls.push('absence_read');return e;};const r=await f.adapter.reconcileConfiguration(f.m,f.s,f.o);
+ assert.equal(r.state,'absent');assert.equal(r.evidence,e);assert.deepEqual(f.calls,['absence_read']);assert.equal(contract.composeConfigAbsenceEvidenceError({...f.s,manifest:f.m},e,{id:f.o.operationId,createdAt:f.o.since,operation:'deploy_config'}),null);});
+for(const key of ['absenceVerified','healthy','configDigest'])test(`adapter refuses malformed config absence ${key}`,async()=>{const f=setup(),e=configAbsence(f);f.gateway.inspectConfiguration=async()=>f.target.baseline.configuration;
+ e[key]=key==='configDigest'?'0'.repeat(64):false;f.gateway.inspectConfigurationAbsence=async()=>e;await assert.rejects(f.adapter.reconcileConfiguration(f.m,f.s,f.o),/configuration_absence_unproven/);assert.equal(f.calls.includes('configure'),false);});
+test('absence collector cannot be used for rollback configuration',async()=>{const f=setup();f.gateway.inspectConfiguration=async()=>f.target.baseline.configuration;f.gateway.inspectConfigurationAbsence=async()=>{throw Error('must_not_collect');};assert.equal((await f.adapter.reconcileConfiguration(f.m,f.s,{...f.o,rollback:true})).state,'uncertain');});
 test('legacy observed baseline is inspected without inventing a finished queue', async () => {
   const f = setup(); assert.equal((await f.adapter.inspect(f.m, f.s)).baselineCommit, f.s.baseCommit);
   assert.deepEqual(f.calls, []);
@@ -151,3 +164,12 @@ test('configuration reconciliation never guesses absence from a different pin', 
   const f = setup(); f.gateway.inspectConfiguration = async () => ({ ...f.target.configuration, gitCommit: f.s.baseCommit });
   assert.equal((await f.adapter.reconcileConfiguration(f.m, f.s)).state, 'uncertain'); assert.equal(f.calls.includes('configure'), false);
 });
+
+for(const rollback of[false,true])test('configuration mutation preserves bounded native cause for safe broker diagnostic ('+rollback+')',async()=>{const f=setup(),leaf=Error('release_child_native_exit_failed'),ssh=Error('release_compose_installation_ssh_unavailable',{cause:leaf}),original=Error('release_compose_installation_response_unproven',{cause:ssh});let effects=0;f.gateway.configure=async()=>{effects++;throw original;};await assert.rejects(f.adapter[rollback?'configureRollback':'configureCandidate'](f.m,f.s),e=>{assert.equal(e.cause,original);assert.equal(e.message,'release_coolify_compose_configuration_mutation_uncertain');assert.equal(e.uncertain,true);assert.equal(e.retryable,false);assert.equal(releaseEffectDiagnostic(e),'release_child_native_exit_failed');return true;});assert.equal(effects,1);});
+for(const code of[401,403,422,500])test('configuration mutation forwards only fixed Coolify HTTP diagnostic '+code,async()=>{const f=setup(),original=Object.assign(Error('release_coolify_response_unproven'),{httpStatus:code});f.gateway.configure=async()=>{throw original;};await assert.rejects(f.adapter.configureCandidate(f.m,f.s),e=>{assert.equal(e.cause,original);assert.equal(e.transportDiagnostic,'response_unproven_http_'+code);assert.equal(releaseEffectDiagnostic(e),e.transportDiagnostic);return true;});});
+test('nested fixed transport diagnostic survives configure without logging native error body',async()=>{const f=setup(),leaf=Object.assign(Error('arbitrary sensitive underlying detail'),{transportDiagnostic:'response_invalid_http_502'});f.gateway.configure=async()=>{throw Error('opaque native wrapper',{cause:leaf});};await assert.rejects(f.adapter.configureCandidate(f.m,f.s),e=>{assert.equal(e.transportDiagnostic,'response_invalid_http_502');assert.equal(releaseEffectDiagnostic(e),'response_invalid_http_502');assert.ok(!JSON.stringify(e).includes('sensitive'));assert.ok(!e.message.includes('sensitive'));return true;});});
+for(const value of['token-value-sensitive','response_unproven_http_700','response_invalid_http_422 token-sensitive'])test('unrecognized transport strings remain private cause only: '+value.split(' ')[0],async()=>{const f=setup(),original=Object.assign(Error('raw sensitive message'),{transportDiagnostic:value});f.gateway.configure=async()=>{throw original;};await assert.rejects(f.adapter.configureCandidate(f.m,f.s),e=>{assert.equal(e.transportDiagnostic,undefined);assert.equal(e.cause,original);assert.equal(releaseEffectDiagnostic(e),'release_effect_unproven');assert.ok(!JSON.stringify(e).includes('sensitive'));return true;});});
+test('configuration readback failure retains uncertainty and fixed diagnostic without a repeated mutation',async()=>{const f=setup();let effects=0;f.gateway.configure=async()=>{effects++;};f.gateway.inspectConfiguration=async()=>({...f.target.configuration,gitCommit:f.s.baseCommit});await assert.rejects(f.adapter.configureCandidate(f.m,f.s),e=>e.uncertain===true&&e.cause.message==='release_coolify_compose_configuration_result_unproven');assert.equal(effects,1);});
+test('dispatch preserves native cause and never retries transport failure',async()=>{const f=setup(),original=Error('release_child_ssh_connection_closed');let effects=0;f.gateway.deployTarget=async()=>{effects++;throw original;};await assert.rejects(f.adapter.deploy(f.m,f.s,f.o),e=>e.uncertain===true&&e.cause===original&&releaseEffectDiagnostic(e)==='release_child_ssh_connection_closed');assert.equal(effects,1);});
+
+test('non-Error thrown values retain cause without breaking finite diagnostic handling',async()=>{for(const original of['sensitive arbitrary text',{message:42},null]){const f=setup();f.gateway.configure=async()=>{throw original;};await assert.rejects(f.adapter.configureCandidate(f.m,f.s),e=>e.uncertain===true&&e.cause===original&&e.transportDiagnostic===undefined&&releaseEffectDiagnostic(e)==='release_effect_unproven');}});

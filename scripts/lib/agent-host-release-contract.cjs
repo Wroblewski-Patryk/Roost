@@ -182,7 +182,7 @@ const createReleaseSchema=z.object({requestId:id,taskId:id,applicationId:id,host
  if(isComposeManifest(s.manifest)&&s.manifest.deployment.targets.some(t=>t.configuration.gitCommit!==s.commit||t.baseline.tree!==s.baseTree))c.addIssue({code:'custom',message:'release_compose_source_changed'});
  if(s.manifest.postObservation&&(s.manifest.postObservation.candidateCommit!==s.commit||s.manifest.postObservation.candidateTree!==s.candidateTree))c.addIssue({code:'custom',message:'release_post_observation_source_changed'});
  if(s.predecessor&&!isReleaseSetManifest(s.manifest))c.addIssue({code:'custom',message:'release_successor_scope_invalid'});
- if(s.baselineRestart&&(!isGitSetManifest(s.manifest)||s.predecessor))c.addIssue({code:'custom',message:'release_restart_scope_invalid'});
+ if(s.baselineRestart&&(!isReleaseSetManifest(s.manifest)||s.predecessor))c.addIssue({code:'custom',message:'release_restart_scope_invalid'});
 });
 const postObservationOperations=['smoke','fixture_cleanup','runtime_resume'];
 const operations=["push","pr","review","merge","deploy_config","deploy","observe","rollback_config","rollback",...postObservationOperations,"cleanup_resource","archive_repository","cleanup_local","cleanup"];
@@ -214,6 +214,16 @@ const composeRecoverySchema=z.object({schemaVersion:z.literal('roost-compose-rec
  controlPlaneQuiescent:z.literal(true),configuration:compose.composeConfigurationSchema,
  baselineCommit:sha,baselineTree:sha,migrationSchemaVerified:z.literal(true),
  baselineServices:z.array(compose.composeRuntimeServiceSchema).min(2).max(12),services:z.array(compose.composeRuntimeServiceSchema).min(2).max(12)}).strict();
+// An unchanged legacy baseline is a no-effect observation, never a deployment.
+const composeConfigAbsenceSchema=z.object({schemaVersion:z.literal('roost-compose-config-absence-v1'),releaseId:id,operationId:id,
+ since:z.string().datetime(),targetId:text,requestedCommit:sha,requestedTree:sha,configuration:compose.composeConfigurationSchema,
+ baselineCommit:sha,baselineTree:sha,migrationSchemaVerified:z.literal(true),controlPlaneQuiescent:z.literal(true),noCandidateQueue:z.literal(true),
+ baselineServices:z.array(compose.composeRuntimeServiceSchema).min(2).max(12),services:z.array(compose.composeRuntimeServiceSchema).min(2).max(12)}).strict();
+// This is the fresh owner's attestation of privately retained, signed native
+// closure evidence. The API does not pretend to inspect Windows processes.
+const releaseNativeClosureSchema=z.object({schemaVersion:z.literal('roost-release-owner-native-closure-v1'),releaseId:id,operationId:id,
+ agentHostId:id,evidenceDigest:hash,checkpointDigest:hash,controllerPid:z.number().int().positive(),registeredChildCount:z.number().int().positive(),
+ allChildrenClosed:z.literal(true),nativeProcessesAbsent:z.literal(true),writerAbsent:z.literal(true),observedAt:z.string().datetime()}).strict();
 const postObservationBinding=z.object({postObservationDigest:hash,fixtureDigest:hash,controllerDigest:hash,
  targetId:text,commit:sha,tree:sha}).strict();
 const postObservationEvidenceSchema=z.discriminatedUnion('kind',[
@@ -242,16 +252,18 @@ const postObservationEvidenceSchema=z.discriminatedUnion('kind',[
   failureCode:z.enum(['fixture_unproven','empty_render_failed','populated_render_failed','data_parity_failed','runtime_resume_failed']),
   ownedEffects:z.enum(['absent','present','unproven']),nativeChildrenClosed:z.literal(true)}).strict()
 ]);
-const evidenceSchema=z.object({postObservation:postObservationEvidenceSchema.optional(),composeRecovery:composeRecoverySchema.optional(),composeTargets:z.array(composeTargetEvidence).length(1).optional(),observedAt:z.string().datetime(),failureKind:z.literal('rollback_image_mismatch').optional(),remoteCommit:sha.optional(),remoteBase:sha.optional(),remoteTree:sha.optional(),pullRequestNumber:z.number().int().positive().optional(),prHeadCommit:sha.optional(),prMerged:z.boolean().optional(),reviewApproved:z.boolean().optional(),mergedCommit:sha.optional(),deploymentId:text.optional(),deploymentIds:z.array(deploymentIdentity).max(6).optional(),deployedTargets:z.array(deployedTarget).min(1).max(6).optional(),artifactSetDigest:hash.optional(),deployedSetDigest:hash.optional(),deployedCommit:sha.optional(),deployedTree:sha.optional(),imageDigest:image.optional(),configDigest:hash.optional(),schemaDigest:hash.optional(),healthDigest:hash.optional(),dataDigest:hash.optional(),backupDigest:hash.optional(),restoreDigest:hash.optional(),healthy:z.boolean().optional(),observationSeconds:z.number().int().nonnegative().max(3600).optional(),resourceIds:z.array(text).max(30).optional(),resourcePresent:z.boolean().optional(),repositoryArchived:z.boolean().optional(),localAbsent:z.boolean().optional(),absenceVerified:z.boolean().optional(),retentionVerified:z.boolean().optional(),repositoryUrl:url.optional(),canonicalDir:dir.optional(),targetId:text.optional(),applicationActive:z.boolean().optional(),localCommit:sha.optional(),localTree:sha.optional(),protectedResourcesDigest:hash.optional()}).strict().superRefine((e,c)=>{if(e.deploymentIds?.length===0&&!(e.composeRecovery?.kind==='queue_absent'&&e.absenceVerified===true))c.addIssue({code:'custom',message:'empty_deployment_ids_outside_recovery'});});
-const closeFailedReleaseSchema=z.object({requestId:id,expectedVersion:hash,failedOperationId:id,consentDigest:hash,evidence:evidenceSchema}).strict();
+const evidenceSchema=z.object({composeConfigAbsence:composeConfigAbsenceSchema.optional(),postObservation:postObservationEvidenceSchema.optional(),composeRecovery:composeRecoverySchema.optional(),composeTargets:z.array(composeTargetEvidence).length(1).optional(),observedAt:z.string().datetime(),failureKind:z.literal('rollback_image_mismatch').optional(),remoteCommit:sha.optional(),remoteBase:sha.optional(),remoteTree:sha.optional(),pullRequestNumber:z.number().int().positive().optional(),prHeadCommit:sha.optional(),prMerged:z.boolean().optional(),reviewApproved:z.boolean().optional(),mergedCommit:sha.optional(),deploymentId:text.optional(),deploymentIds:z.array(deploymentIdentity).max(6).optional(),deployedTargets:z.array(deployedTarget).min(1).max(6).optional(),artifactSetDigest:hash.optional(),deployedSetDigest:hash.optional(),deployedCommit:sha.optional(),deployedTree:sha.optional(),imageDigest:image.optional(),configDigest:hash.optional(),schemaDigest:hash.optional(),healthDigest:hash.optional(),dataDigest:hash.optional(),backupDigest:hash.optional(),restoreDigest:hash.optional(),healthy:z.boolean().optional(),observationSeconds:z.number().int().nonnegative().max(3600).optional(),resourceIds:z.array(text).max(30).optional(),resourcePresent:z.boolean().optional(),repositoryArchived:z.boolean().optional(),localAbsent:z.boolean().optional(),absenceVerified:z.boolean().optional(),retentionVerified:z.boolean().optional(),repositoryUrl:url.optional(),canonicalDir:dir.optional(),targetId:text.optional(),applicationActive:z.boolean().optional(),localCommit:sha.optional(),localTree:sha.optional(),protectedResourcesDigest:hash.optional()}).strict().superRefine((e,c)=>{if(e.deploymentIds?.length===0&&!((e.composeRecovery?.kind==='queue_absent'||e.composeConfigAbsence!==undefined)&&e.absenceVerified===true))c.addIssue({code:'custom',message:'empty_deployment_ids_outside_recovery'});});
+const closeFailedReleaseSchema=z.object({requestId:id,expectedVersion:hash,failedOperationId:id,consentDigest:hash,evidence:evidenceSchema,nativeClosure:releaseNativeClosureSchema.optional()}).strict();
 const authorizeReconciliationSchema=z.object({requestId:id,expectedVersion:hash,credentialId:id,credentialVersion:z.number().int().positive(),operationIds:z.array(id).min(1).max(30),expiresAt:releaseExpirySchema}).strict();
 const publishedGitBasisSchema=z.object({schemaVersion:z.literal('roost-release-published-git-v1'),releaseId:id,expectedVersion:hash,
  closureId:id,closureDigest:hash,pushOperationId:id,prOperationId:id,reviewOperationId:id,mergeOperationId:id,
- baselineDeploymentIds:z.array(deploymentIdentity).min(1).max(6)}).strict();
+ baselineDeploymentIds:z.array(deploymentIdentity).max(6),basisKind:z.literal('compose_config_absence').optional(),composeEvidenceDigest:hash.optional()}).strict().superRefine((b,c)=>{if(b.basisKind==='compose_config_absence'?b.baselineDeploymentIds.length!==0||!b.composeEvidenceDigest:b.baselineDeploymentIds.length===0||b.composeEvidenceDigest!==undefined)c.addIssue({code:'custom',message:'published_git_basis_kind_invalid'});});
 const releaseHasPublishedGit=s=>{
  const parsed=publishedGitBasisSchema.safeParse(s?.publishedGitBasis), restart=baselineRestartSchema.safeParse(s?.baselineRestart);
- if(!parsed.success||!restart.success||s.predecessor||s.successorBasis||!isGitSetManifest(s.manifest)||!manifestSchema.safeParse(s.manifest).success)return false;
+ if(!parsed.success||!restart.success||s.predecessor||s.successorBasis||!isReleaseSetManifest(s.manifest)||!manifestSchema.safeParse(s.manifest).success)return false;
  const b=parsed.data,r=restart.data,rows=b.baselineDeploymentIds,targets=s.manifest.deployment.targets;
+ if(isComposeManifest(s.manifest))return b.basisKind==='compose_config_absence'&&b.releaseId===r.releaseId&&b.expectedVersion===r.expectedVersion&&b.closureId===r.closureId&&rows.length===0;
+ if(b.basisKind!==undefined)return false;
  return b.releaseId===r.releaseId&&b.expectedVersion===r.expectedVersion&&b.closureId===r.closureId
   &&rows.length===targets.length&&new Set(rows.map(x=>x.targetId)).size===rows.length&&new Set(rows.map(x=>x.deploymentId)).size===rows.length
   &&targets.every(t=>rows.some(x=>x.targetId===t.targetId));
@@ -259,6 +271,7 @@ const releaseHasPublishedGit=s=>{
 // A fresh baseline may add protection for exactly the images attested by its
 // immutable closure. Preserve the original footprint and its order verbatim.
 const releaseRestartProtectedResourceIds=(manifest,evidence)=>{
+ if(isComposeManifest(manifest)&&manifestSchema.safeParse(manifest).success&&evidence?.composeConfigAbsence)return manifest.cleanup.protectedResourceIds.slice();
  if(!isGitSetManifest(manifest)||!manifestSchema.safeParse(manifest).success)return null;
  const rows=evidence?.deployedTargets,targets=manifest.deployment.targets;
  if(!Array.isArray(rows)||rows.length!==targets.length||new Set(rows.map(r=>r.targetId)).size!==rows.length)return null;
@@ -318,6 +331,25 @@ const composeEvidenceError=(s,e,rollback=false,targetId,allowUnhealthy=false)=>{
   if(e.deployedSetDigest!==releaseDigest([{targetId:t.targetId,runtimeSetDigest:proof.runtimeSetDigest}]))return 'release_deployment_unproven';
   return null;
  }catch{return 'release_deployment_unproven';}
+};
+const composeConfigAbsenceEvidenceError=(s,e,operation)=>{
+ try {
+  const m=s.manifest,t=m.deployment.targets[0],r=e.composeConfigAbsence;
+  if(!isComposeManifest(m)||!manifestSchema.safeParse(m).success||!evidenceSchema.safeParse(e).success||!r
+   ||Object.keys(e).some(k=>!['composeConfigAbsence','deploymentIds','deployedCommit','deployedTree','artifactSetDigest','configDigest','schemaDigest','dataDigest','healthDigest','healthy','observedAt','deployedSetDigest','absenceVerified'].includes(k))
+   ||operation.operation!=='deploy_config'||r.releaseId!==s.releaseId||r.operationId!==operation.id
+   ||Date.parse(r.since)!==new Date(operation.createdAt??operation.created_at).getTime()||r.targetId!==t.targetId
+   ||r.requestedCommit!==s.commit||r.requestedTree!==s.candidateTree||r.baselineCommit!==t.baseline.commit||r.baselineTree!==t.baseline.tree
+   ||releaseDigest(r.configuration)!==releaseDigest(t.baseline.configuration)||compose.composeConfigurationDigest(r.configuration)!==t.baseline.configDigest
+   ||e.deployedCommit!==t.baseline.commit||e.deployedTree!==t.baseline.tree||e.artifactSetDigest!==m.baseline.artifactSetDigest
+   ||e.configDigest!==m.baseline.configDigest||e.schemaDigest!==m.baseline.schemaDigest||e.dataDigest!==m.baseline.dataDigest
+   ||e.healthDigest!==m.baseline.healthDigest||e.healthy!==true||e.absenceVerified!==true||releaseDigest(e.deploymentIds)!==releaseDigest([])
+   ||Date.parse(e.observedAt)<Date.parse(r.since)||r.services.some(row=>Date.parse(row.createdAt)>Date.parse(r.since)))return 'release_compose_config_absence_unproven';
+  const ordered=rows=>rows.slice().sort((a,b)=>a.name<b.name?-1:a.name>b.name?1:0);
+  if(releaseDigest(ordered(r.services))!==releaseDigest(ordered(r.baselineServices)))return 'release_compose_config_absence_unproven';
+  const proof=compose.qualifyComposeRetainedBaseline({configuration:t.baseline.configuration,images:t.baseline.images,services:r.services,baselineServices:r.baselineServices});
+  return e.deployedSetDigest===releaseDigest([{targetId:t.targetId,runtimeSetDigest:proof.runtimeSetDigest}])?null:'release_compose_config_absence_unproven';
+ }catch{return 'release_compose_config_absence_unproven';}
 };
 const composeRecoveryEvidenceError=(s,e,operation)=>{
  try {
@@ -450,4 +482,4 @@ const postObservationIntentError=(s,input,journal=[])=>{
  }
  return null;
 };
-module.exports={postObservationScopeSchema,postObservationEvidenceSchema,postObservationOperations,postObservationIntentError,postObservationOutcomeError,composeRecoverySchema,composeRecoveryEvidenceError,composeManifestObject,isComposeManifest,isReleaseSetManifest,sourceArtifactDigest,composeEvidenceError,manifestSchema,createReleaseSchema,intentSchema,outcomeSchema,operations,releaseDigest,retainsApplication,applicationManifestObject,refineApplicationManifest,gitSetManifestObject,isGitSetManifest,gitSetArtifactDigest,releaseExpirySchema,releaseSuccessorBasisSchema,releaseHasSuccessor,releaseRollbackImageFailureValid,baselineRestartSchema,closeFailedReleaseSchema,authorizeReconciliationSchema,publishedGitBasisSchema,releaseHasPublishedGitBasis:releaseHasPublishedGit,releaseRestartProtectedResourceIds};
+module.exports={composeConfigAbsenceSchema,composeConfigAbsenceEvidenceError,releaseNativeClosureSchema,postObservationScopeSchema,postObservationEvidenceSchema,postObservationOperations,postObservationIntentError,postObservationOutcomeError,composeRecoverySchema,composeRecoveryEvidenceError,composeManifestObject,isComposeManifest,isReleaseSetManifest,sourceArtifactDigest,composeEvidenceError,manifestSchema,createReleaseSchema,intentSchema,outcomeSchema,operations,releaseDigest,retainsApplication,applicationManifestObject,refineApplicationManifest,gitSetManifestObject,isGitSetManifest,gitSetArtifactDigest,releaseExpirySchema,releaseSuccessorBasisSchema,releaseHasSuccessor,releaseRollbackImageFailureValid,baselineRestartSchema,closeFailedReleaseSchema,authorizeReconciliationSchema,publishedGitBasisSchema,releaseHasPublishedGitBasis:releaseHasPublishedGit,releaseRestartProtectedResourceIds};

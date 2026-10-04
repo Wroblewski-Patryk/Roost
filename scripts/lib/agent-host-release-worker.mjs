@@ -29,6 +29,7 @@ for (const reason of ['release_git_repository_changed','release_git_checkout_cha
 for (const reason of ['native_assignment_unobserved','native_resume_or_cleanup_unproven','git_ownership_unproven','git_config_unreadable','git_repository_unavailable','native_access_denied','native_exit_failed',
  'ssh_timeout','ssh_connection_closed','ssh_host_identity_unproven']) releaseDiagnosticReasons.add('release_child_'+reason);
 releaseDiagnosticReasons.add('release_native_request_bounds_invalid');
+releaseDiagnosticReasons.add('release_compose_no_effect_diagnosis_required');
 releaseDiagnosticReasons.add('release_coolify_git_set_runtime_identity_changed');
 for (const reason of ['phase_intent_unproven','phase_intent_changed','baseline_observation_unproven',
  'database_source_binding_changed','database_configuration_changed','database_runtime_changed','database_recreation_unproven',
@@ -52,16 +53,16 @@ export function persistReleaseWorkerDiagnostic(configPath,phase,reason){
 }
 const releaseWorkerClientSchema=releaseClientSchema.extend({credentialTarget:target}).strict();
 const prerequisitesSchema=z.object({configurationFile:z.string().min(3),evidenceFile:z.string().min(3)}).strict();
-const legacyReleaseWorkerSchema=z.object({client:releaseWorkerClientSchema,githubCredentialTarget:target,coolifyCredentialTarget:target,
+const legacyReleaseWorkerSchema=z.object({reconciliationOnly:z.boolean().optional(),client:releaseWorkerClientSchema,githubCredentialTarget:target,coolifyCredentialTarget:target,
  adapter:z.literal('coolify').optional(),
  coolify:z.object({origin:url,targetId:z.string().regex(/^[A-Za-z0-9_-]{1,80}$/),candidateConfig:z.record(z.unknown()),rollbackConfig:z.record(z.unknown()),certificateSha256:hash.optional(),healthCertificateSha256:hash.optional()}).strict(),
  resources:z.object({sshHost:z.string().regex(/^[A-Za-z0-9._-]{1,64}$/),workspaceRoot:z.string().min(3),ownershipFile:z.string().min(3)}).strict(),
  imageCleanup:z.object({ownershipFile:z.string().min(3),credentialTarget:target,provenanceCacheDirectory:z.string().min(3),allowTemporaryPackageRemoval:z.boolean().optional()}).strict().optional(),
  prerequisites:prerequisitesSchema}).strict();
-const gitSetReleaseWorkerSchema=z.object({adapter:z.literal('coolify_git_set'),client:releaseWorkerClientSchema,
+const gitSetReleaseWorkerSchema=z.object({reconciliationOnly:z.boolean().optional(),adapter:z.literal('coolify_git_set'),client:releaseWorkerClientSchema,
  githubCredentialTarget:target,coolifyCredentialTarget:target,gitSet:installedGitSetReleaseSchema,
  prerequisites:prerequisitesSchema}).strict();
-const composeReleaseWorkerSchema=z.object({adapter:z.literal('coolify_compose'),client:releaseWorkerClientSchema,
+const composeReleaseWorkerSchema=z.object({reconciliationOnly:z.boolean().optional(),adapter:z.literal('coolify_compose'),client:releaseWorkerClientSchema,
  githubCredentialTarget:target,coolifyCredentialTarget:target,compose:installedComposeReleaseSchema,
  prerequisites:prerequisitesSchema}).strict();
 // Untagged v1 installations retain their original wire shape. Permanent
@@ -186,7 +187,7 @@ export async function runGovernedReleaseQueueStep({config,baseUrl,hostId,writerL
      imageInspector:resources.imageInspector,configurationInspector:resources.configurationInspector,deploymentInspector:resources.deploymentInspector,runtimeInspector:resources.runtimeInspector});
     coolify=coolifyWire(raw);assertClone=(manifest)=>gateway.assertClone(manifest,{...s,releaseId:state.release.id});
    }
-   return runReleaseStep({state,client:settings.client,api,github,coolify,resources,stopped,
+   return runReleaseStep({state,client:settings.client,api,github,coolify,resources,stopped,reconciliationOnly:settings.reconciliationOnly===true,
    inspectCheckout:async(m,commit,base,tree)=>{await assertClone(m);return inspectReleaseCheckout(m,commit,base,tree);},
    assertWriter:()=>{writerRecoveryEvidence(writerLock);if(writerLock.releaseRecovery&&nextReleaseOperation(state)!=='reconcile')throw Error('release_reconciliation_only');},
    onOperation:(fresh,operation)=>checkpointReleaseOperation(context,fresh,operation,settings.client),

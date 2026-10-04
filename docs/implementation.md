@@ -198,8 +198,9 @@ V9 audit `79c10809` retains 16 findings and its historical b5de snapshot.
 Current bbb8 review `2f9b16e5` approves; both close unchanged, signed.
 Owner approved 06bf; its grant was rejected, with authoritative absence.
 Installed SQL now admits Compose scope; a rollback probe proves five denials
-without data/grant changes. Exact 0857 grant `a14dba8b` is verified. Worker
-stopped before any effect: Git required a direct parent for a multi-commit repair.
+without data/grant changes. Verified grant `a14dba8b` binds 0857. Repaired
+ancestry admits PR 2, merged at `c82e68b3`. Signed Worker reconciles merge,
+then stops on uncertain configuration; no deployment is started.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

@@ -926,3 +926,38 @@ this prerequisite without starting a container or changing the manifest.
 The following Worker configuration operation succeeded. Shared cleanup jobs
 were not modified. Fixed transport diagnostics retain only classified reasons
 and numeric HTTP status, never response bodies, headers or arbitrary errors.
+
+### Qualified Compose command configuration
+
+The fixed renderer's commands can be rejected by an installed controller's
+command-field validator. A new, explicit HTTPS 422 permits a separately qualified
+installation transport for the same three approved fields. Timeouts, permission
+errors and unclassified replies do not permit this transport. Recheck unchanged
+HTTPS preimage, pinned model/controller sources, the actual lazy Laravel
+validator, complete configuration and the current durable intent. A model row
+lock rechecks the same facts in a transaction. A changed unrelated attribute
+rolls back the transaction; verify the exact postimage through HTTPS. The
+validator, release scope and desired command digests remain unchanged.
+
+### Compose configuration absence before deployment
+
+A failed configuration reply does not prove that a write was absent. The fixed
+Worker reader must double-check the complete sealed legacy configuration,
+retained service identities, mounts, images, timestamps, schema, data, sequences
+and health. Require a quiescent control plane and no target queue changes since
+the intent. Qualified absence is an observation-only journal outcome. In the
+installed reconciliation-only mode, stop, archive the closed signed checkpoint
+and release the Writer; never retry configuration or create a deployment.
+
+For this bounded case, a fresh original owner can close the attempt as failed,
+binding the exact five-operation Git/configuration journal and a separately
+collected native closure. That receipt explicitly attests owner-observed native
+quiescence; the server does not claim to inspect Windows processes. Preserve the
+signed checkpoint privately. A new exact-owner grant needs a new credential,
+independent code acceptance and release audit. Its immutable published Git basis
+forbids repeating push, PR, review or merge. Preserve all baseline facts,
+configuration, artifacts, rollback, data and protected resources; only the new
+baseline observation time may change. Credential expiry remains immutable.
+
+These source mechanisms require actual native and production qualification;
+their tests alone do not prove a completed application release.

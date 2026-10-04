@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import {configureComposeWithQualifiedModelCas} from './agent-host-release-compose-config.mjs';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
@@ -203,14 +204,14 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
  const pins={queueHelper:cfg.sourcePins.queueHelper,deploymentJob:cfg.sourcePins.deploymentJob,applicationModel:cfg.sourcePins.applicationModel,composeParser:cfg.sourcePins.composeParser};
  const transport=createFixedComposeQueueTransport({sshBinary:process.platform==='win32'?'C:\\Windows\\System32\\OpenSSH\\ssh.exe':'/usr/bin/ssh',sshHost:cfg.sshHost,
   runOwned:async d=>({exitCode:0,stdout:await ssh({command:d.args.at(-1),stdin:d.stdin,timeoutMs:d.timeoutMs,maxOutputBytes:d.maxOutputBytes})})});
- const checkIntent=async(options,configuration=false)=>{
+ const checkIntent=async(options,configuration=false,reconciliation=false)=>{
   const current=await dependencies.readReleaseState(),last=current?.journal?.at(-1);
   check(current?.release?.id===s.releaseId&&['active','reconciliation_required'].includes(current.status)
    &&contract.releaseDigest(current.release.snapshot)===snapshotDigest
    &&Array.isArray(current.journal)&&current.journal.slice(0,-1).every(r=>['succeeded','failed'].includes(r.outcome?.status)
     ||r.outcome?.status==='reconciled'&&['succeeded','failed','absent'].includes(r.outcome.reconciledStatus))
    &&last?.operation===(configuration?options.rollback?'rollback_config':'deploy_config':options.rollback?'rollback':'deploy')
-   &&/^[a-f0-9-]{36}$/.test(last.id)&&Number.isFinite(Date.parse(last.createdAt))&&!last.outcome
+   &&/^[a-f0-9-]{36}$/.test(last.id)&&Number.isFinite(Date.parse(last.createdAt))&&(!last.outcome||configuration&&reconciliation&&last.outcome.status==='uncertain')
    &&(configuration?last.intent?.parameters?.commit===(options.rollback?t.baseline.commit:s.commit)
      &&last.intent.parameters.configDigest===(options.rollback?m.rollback.configDigest:m.deployment.configDigest)
      &&last.intent.parameters.artifactSetDigest===(options.rollback?m.rollback.artifactSetDigest:m.deployment.artifactSetDigest)
@@ -239,8 +240,12 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   check((await checkIntent({rollback:mode==='rollback'},true)).id===intent.id,'phase_intent_changed');
   const p=policies[mode];check((await php(stagePhp,{targetId:t.targetId,name:composePhaseArtifactFile(p),bytes:artifacts[mode].toString('base64'),sha256:p.artifactDigest})).staged===true,'artifact_stage_unproven');
   check((await checkIntent({rollback:mode==='rollback'},true)).id===intent.id,'phase_intent_changed');
-  const commands=renderComposePhaseCommands(p);await httpsJson({url:`${new URL(cfg.coolify.origin).origin}/api/v1/applications/${t.targetId}`,method:'PATCH',token:coolifyCredential,certificateSha256:cfg.coolify.certificateSha256,
-   body:{git_commit_sha:commit,docker_compose_custom_build_command:commands.build,docker_compose_custom_start_command:commands.start}});
+  check(p.commit===commit,'phase_binding_changed');
+  const url=`${new URL(cfg.coolify.origin).origin}/api/v1/applications/${t.targetId}`;
+  await configureComposeWithQualifiedModelCas({policy:p,scope:{targetId:t.targetId,repositoryPath:new URL(m.repository.url).pathname.slice(1).replace(/\.git$/,''),branch:m.repository.defaultBranch},
+   readApplication:()=>httpsJson({url,method:'GET',token:coolifyCredential,certificateSha256:cfg.coolify.certificateSha256}),
+   patchApplication:body=>httpsJson({url,method:'PATCH',token:coolifyCredential,certificateSha256:cfg.coolify.certificateSha256,body}),php,
+   beforeEffect:async()=>{await assertClone();check((await checkIntent({rollback:mode==='rollback'},true)).id===intent.id,'phase_intent_changed');check(composeConfigurationDigest(await observeConfig())===prior,'configuration_preimage_changed');}});
  };
  const raw=createComposeReleaseGateway({releaseId:state.release.id,expected:{configuration:t.configuration,configDigest:t.configDigest},
   rollbackExpected:{configuration:t.rollbackConfiguration,configDigest:t.rollbackConfigDigest},candidatePolicy:policies.candidate,rollbackPolicy:policies.rollback,
@@ -294,6 +299,30 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   check(contract.composeRecoveryEvidenceError(s,evidence,operation)===null,'recovery_observation_unproven');return evidence;
  };
  const servicesProbeBaseline=()=>services(m,{baseline:true});
+ const configurationAbsenceObservation=async options=>{
+  await assertClone();check(options.rollback!==true,'configuration_absence_candidate_only');
+  const operation=await checkIntent(options,true,true);
+  check(operation.id===options.operationId&&operation.createdAt===options.since,'configuration_absence_operation_changed');
+  const quiescent=async()=>{const q=await php(String.raw`$a=App\Models\Application::where('uuid',$p['targetId'])->firstOrFail();$since=Carbon\Carbon::parse($p['since']);echo json_encode(['activeDeployments'=>App\Models\ApplicationDeploymentQueue::whereIn('status',['queued','in_progress'])->count(),'targetDeploymentsSinceIntent'=>App\Models\ApplicationDeploymentQueue::where('application_id',$a->id)->where(function($q)use($since){$q->where('created_at','>=',$since)->orWhere('updated_at','>=',$since)->orWhere('finished_at','>=',$since);})->count()],JSON_THROW_ON_ERROR);`,{targetId:t.targetId,since:options.since});
+   check(q.activeDeployments===0&&q.targetDeploymentsSinceIntent===0,'configuration_absence_control_plane_unproven');};
+  const normalize=rows=>rows.map(row=>Object.fromEntries(['name','role','containerId','imageDigest','mountDigest','state','health','exitCode','createdAt'].map(k=>[k,row[k]]))).sort((a,b)=>a.name.localeCompare(b.name));
+  await quiescent();const configuration=await observeConfig();
+  check(composeConfigurationDigest(configuration)===t.baseline.configDigest,'configuration_absence_preimage_changed');
+  const before=await inspector.inspectLegacyBaseline(t.targetId,t.baseline.commit),baselineServices=normalize(baseline.services),services=normalize(before.services);
+  check(baseline.observed===true&&baseline.migrationSchemaVerified===true&&composeConfigurationDigest(before.configuration)===t.baseline.configDigest,'configuration_absence_baseline_unproven');
+  const proof=qualifyComposeRetainedBaseline({configuration:t.baseline.configuration,images:t.baseline.images,services,baselineServices});
+  const safe=await safety(),health=await servicesProbeBaseline();
+  check(safe.schemaDigest===m.baseline.schemaDigest&&safe.dataDigest===m.baseline.dataDigest&&health.healthy===true&&health.healthDigest===m.baseline.healthDigest&&health.dataDigest===m.baseline.dataDigest,'configuration_absence_data_or_health_changed');
+  const after=await inspector.inspectLegacyBaseline(t.targetId,t.baseline.commit),safeAfter=await safety(),healthAfter=await servicesProbeBaseline();await quiescent();
+  check(contract.releaseDigest(services)===contract.releaseDigest(normalize(after.services))&&composeConfigurationDigest(after.configuration)===t.baseline.configDigest
+   &&safeAfter.schemaDigest===safe.schemaDigest&&safeAfter.dataDigest===safe.dataDigest&&healthAfter.healthy===true&&healthAfter.healthDigest===health.healthDigest&&healthAfter.dataDigest===health.dataDigest,'configuration_absence_changed_during_inspection');
+  const last=await checkIntent(options,true,true);check(last.id===operation.id&&last.createdAt===operation.createdAt,'configuration_absence_operation_changed');await assertClone();
+  const evidence={composeConfigAbsence:{schemaVersion:'roost-compose-config-absence-v1',releaseId:s.releaseId,operationId:operation.id,since:operation.createdAt,targetId:t.targetId,
+   requestedCommit:s.commit,requestedTree:s.candidateTree,configuration,baselineCommit:t.baseline.commit,baselineTree:t.baseline.tree,migrationSchemaVerified:true,controlPlaneQuiescent:true,noCandidateQueue:true,baselineServices,services},
+   deployedCommit:t.baseline.commit,deployedTree:t.baseline.tree,artifactSetDigest:m.baseline.artifactSetDigest,configDigest:m.baseline.configDigest,schemaDigest:safe.schemaDigest,dataDigest:safe.dataDigest,
+   healthDigest:health.healthDigest,healthy:true,observedAt:new Date((dependencies.now??Date.now)()).toISOString(),absenceVerified:true,deploymentIds:[],deployedSetDigest:contract.releaseDigest([{targetId:t.targetId,runtimeSetDigest:proof.runtimeSetDigest}])};
+  check(contract.composeConfigAbsenceEvidenceError(s,evidence,operation)===null,'configuration_absence_observation_unproven');return evidence;
+ };
  const adapter=createCoolifyComposeAdapter({now:dependencies.now,sleep:dependencies.sleep,gateway:{
   inspectConfiguration:observeConfig,
   inspectBaseline:async()=>{await assertClone();check(baseline.observed===true&&baseline.migrationSchemaVerified===true,'baseline_observation_unproven');const o=await inspector.inspectLegacyBaseline(t.targetId,t.baseline.commit);
@@ -303,7 +332,7 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
    const f=await fingerprint(),h=await services(m,{baseline:true});return{...baseline,...f,healthDigest:h.healthDigest,healthy:h.healthy};},
   inspectRuntime:async()=>{const context=live.get(t.targetId);check(context,'current_queue_required');const q=await raw.readQueue(context);check(q?.status==='finished'&&q.commit!=='HEAD','finished_queue_required');const e=await inspector.readEvidence(q);
    return{targetId:t.targetId,...e,healthy:e.runtime.services.every(r=>['app','database'].includes(r.role)?r.health==='healthy':r.role==='migration'?r.state==='exited'&&r.exitCode===0:['paused','created','exited'].includes(r.state))};},
-  readQueue:async o=>{live.set(t.targetId,o);return raw.readQueue(o);},inspectRecovery:recoveryObservation,
+  readQueue:async o=>{live.set(t.targetId,o);return raw.readQueue(o);},inspectRecovery:recoveryObservation,inspectConfigurationAbsence:configurationAbsenceObservation,
   configure:(_id,mode)=>configurePhase({mode,commit:mode==='rollback'?t.baseline.commit:s.commit}),
   deployTarget:async o=>{live.set(t.targetId,o);return raw.deploy(o);},safety,checkServices:services,
   inspectBackup:async()=>{check(['digest','bytes','capturedAt','restoreVerifiedAt','restoreDigest'].every(k=>backup?.[k]===m.backup[k]),'backup_changed');return backup;}

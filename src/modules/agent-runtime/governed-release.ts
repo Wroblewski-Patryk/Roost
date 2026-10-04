@@ -285,6 +285,10 @@ export async function closeFailedRelease(db:Db,workspaceId:string,id:string,auth
  const error=releaseFailedClosureError(state,input);if(error)return {error};
  if(state.release.issuer_user_id!==auth.userId)return {error:"release_issuer_required"};
  const observed=Date.parse(input.evidence.observedAt),now=Date.now();if(observed>now+60000||now-observed>300000)return {error:"release_outcome_evidence_stale"};
+ if(input.nativeClosure){
+  const nativeObserved=Date.parse(input.nativeClosure.observedAt);
+  if(!Number.isFinite(nativeObserved)||nativeObserved>now+60000||now-nativeObserved>300000)return {error:"release_native_closure_stale"};
+ }
  const failed=state.journal.find((j:any)=>j.id===input.failedOperationId),closureId=randomUUID(),revocationId=randomUUID();
  const snapshot=wire({...input,releaseId:id,applicationId:state.release.application_id,hostId:state.release.host_id,issuerUserId:auth.userId,
   ownerAuthenticatedAt:new Date(auth.authenticatedAt!*1000),failedOutcomeId:failed.outcome.id,failedEvidenceDigest:releaseDigest(failed.outcome.evidence)}),closureDigest=releaseDigest(snapshot);

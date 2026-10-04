@@ -50,6 +50,21 @@ function fixture(start='deploy'){
   }};
  return {...f,s,state,args,calls,done};
 }
+test('installed reconciliation-only mode refuses every new effect before an intent',async()=>{
+ for(const stage of ['push','deploy','observe','cleanup']){
+  const f=fixture(stage),before=structuredClone(f.state.journal);
+  const result=await runReleaseStep({...f.args,reconciliationOnly:true});
+  assert.equal(result.reconciliationOnlyComplete,true);assert.deepEqual(f.state.journal,before);assert.deepEqual(f.calls,[]);
+ }
+});
+test('installed reconciliation-only mode reads and closes one uncertain configuration without continuing',async()=>{
+ const f=fixture('deploy_config'),at=new Date().toISOString(),operation={id:randomUUID(),operation:'deploy_config',createdAt:at,intent:{parameters:{commit:f.s.commit}},outcome:{status:'uncertain'}};
+ f.state.journal.push(operation);f.state.status='reconciliation_required';
+ const result=await runReleaseStep({...f.args,reconciliationOnly:true});
+ assert.equal(result.reconciliationOnlyComplete,true);assert.equal(operation.outcome.status,'reconciled');
+ assert.equal(operation.outcome.reconciledStatus,'succeeded');assert.equal(f.calls.some(x=>x?.kind==='deploy'),false);
+ const before=f.calls.length;await runReleaseStep({...f.args,reconciliationOnly:true});assert.equal(f.calls.length,before);
+});
 test('source orchestration covers Git to permanent Compose observation/retention with complete service evidence',async()=>{
  const f=fixture('push');for(let i=0;i<8;i++)await runReleaseStep(f.args);
  assert.deepEqual(f.state.journal.map(row=>row.operation),['push','pr','review','merge','deploy_config','deploy','observe','cleanup']);
@@ -158,4 +173,23 @@ test('absent rollback queue records FAILED and requires diagnosis without a seco
  f.args.coolify.reconcileDeployment=async(_m,_s,o)=>({state:'absent',evidence:f.recoveryEvidence({...f.s,releaseId:f.state.release.id},o,'queue_absent')});
  await runReleaseStep(f.args);assert.equal(operation.outcome.reconciledStatus,'failed');assert.equal(operation.outcome.evidence.composeRecovery.phase,'rollback');
  assert.throws(()=>nextReleaseOperation(f.state),/release_recovery_diagnosis_required/);assert.equal(f.calls.some(r=>r.kind==='deploy'||r.kind==='rollback'),false);
+});
+
+function configurationAbsence(f,op){const e=f.recoveryEvidence({...f.s,releaseId:f.state.release.id},{operationId:op.id,since:op.createdAt},'queue_absent'),r=e.composeRecovery;delete e.composeRecovery;
+ return {...e,configDigest:f.m.baseline.configDigest,composeConfigAbsence:{schemaVersion:'roost-compose-config-absence-v1',releaseId:f.state.release.id,operationId:op.id,since:op.createdAt,
+ targetId:f.target.targetId,requestedCommit:f.s.commit,requestedTree:f.s.candidateTree,configuration:structuredClone(f.target.baseline.configuration),baselineCommit:f.s.baseCommit,baselineTree:f.s.baseTree,
+ migrationSchemaVerified:true,controlPlaneQuiescent:true,noCandidateQueue:true,baselineServices:r.baselineServices,services:r.services}};}
+test('read-only configuration absence closes current intent and blocks automatic retry',async()=>{
+ const f=fixture('deploy_config'),op={...f.done('deploy_config'),outcome:{status:'uncertain'},intent:{parameters:{commit:f.s.commit,artifactSetDigest:f.m.deployment.artifactSetDigest,configDigest:f.m.deployment.configDigest,schemaDigest:f.m.deployment.schemaDigest}}};f.state.journal.push(op);
+ const e=configurationAbsence(f,op);f.args.coolify.reconcileConfiguration=async()=>({state:'absent',evidence:e});
+ const result=await runReleaseStep(f.args);assert.equal(result.nextOperationBlocked,true);assert.equal(result.configurationDiagnosisRequired,true);assert.equal(result.diagnosisReason,'release_compose_no_effect_diagnosis_required');assert.equal(result.reconciliationRequired,undefined);
+ assert.equal(op.outcome.status,'reconciled');assert.equal(op.outcome.reconciledStatus,'absent');assert.equal(op.outcome.observationOnly,true);
+ assert.deepEqual(op.outcome.evidence.composeConfigAbsence,e.composeConfigAbsence);assert.throws(()=>nextReleaseOperation(f.state),/release_compose_no_effect_diagnosis_required/);
+ assert.equal(f.calls.some(x=>x==='configure'||x==='rollback_config'||x.kind==='deploy'||x.kind==='rollback'),false);
+ await assert.rejects(runReleaseStep(f.args),/release_compose_no_effect_diagnosis_required/);
+});
+for(const [key,value]of[['noCandidateQueue',false],['controlPlaneQuiescent',false],['requestedCommit','0'.repeat(40)]])test(`broker refuses config absence without ${key}`,async()=>{
+ const f=fixture('deploy_config'),op={...f.done('deploy_config'),outcome:{status:'uncertain'},intent:{parameters:{commit:f.s.commit,artifactSetDigest:f.m.deployment.artifactSetDigest,configDigest:f.m.deployment.configDigest,schemaDigest:f.m.deployment.schemaDigest}}};f.state.journal.push(op);
+ const e=configurationAbsence(f,op);e.composeConfigAbsence[key]=value;f.args.coolify.reconcileConfiguration=async()=>({state:'absent',evidence:e});await assert.rejects(runReleaseStep(f.args),/release_compose_configuration_absence_unproven/);
+ assert.equal(op.outcome.status,'uncertain');assert.equal(f.calls.some(x=>x.kind==='api'),false);
 });

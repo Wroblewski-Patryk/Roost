@@ -9,7 +9,7 @@ import { once } from "node:events";
 import { pathToFileURL } from "node:url";
 import contract from "./lib/agent-host-release-contract.cjs";
 import { acquireWriterLock, writerLockFilename, writerRecoveryEvidence } from "./lib/agent-host-writer-lock.mjs";
-import { releaseRecoveryCandidate, clearReleaseWriterRecovery, qualifyReleaseWriterReclaim, releaseOwnerInstanceAbsent } from "./lib/agent-host-release-writer-recovery.mjs";
+import { releaseRecoveryCandidate, clearReleaseWriterRecovery, qualifyReleaseWriterReclaim, releaseOwnerInstanceAbsent, beginReleaseWriterCheckpoint, sealReleaseWriterCheckpoint } from "./lib/agent-host-release-writer-recovery.mjs";
 import { observeWindowsProcessIdentity } from "./lib/agent-host-process-identity.mjs";
 import { runReleaseStep } from "./lib/agent-host-release-broker.mjs";
 
@@ -163,7 +163,13 @@ test("native broker crash after closed child and before outcome reclaims only ex
     resources: {}, coolify: {} });
   assert(result.handled); assert.equal(effects, 0); assert.equal(observations, 1); assert.equal(f.state.journal[0].outcome.status, "reconciled");
   assert.equal(readFileSync(f.marker, "utf8"), "one native effect");
-  clearReleaseWriterRecovery(writer, f.state, f.client); assert.equal(writer.releaseRecovery, null); await writer.release();
+  clearReleaseWriterRecovery(writer, f.state, f.client); assert.equal(writer.releaseRecovery, null);
+  const closedContext = beginReleaseWriterCheckpoint({writerLock:writer,state:f.state,client:f.client});
+  sealReleaseWriterCheckpoint(closedContext);
+  const actualClosed = readFileSync(path.join(f.directory, writerLockFilename));
+  const contextNonce = JSON.parse(actualClosed).releaseCheckpoint.contextNonce;
+  await writer.release();
+  assert.deepEqual(readFileSync(path.join(f.directory, `release-writer-closed-${contextNonce}.json`)), actualClosed);
   assert(!existsSync(path.join(f.directory, writerLockFilename)));
 });
 

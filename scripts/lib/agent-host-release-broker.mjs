@@ -25,7 +25,7 @@ export function nextReleaseOperation(state){
  const j=state.journal??[],done=op=>j.some(x=>x.operation===op&&releaseOutcomeStatus(x.outcome)==='succeeded');
  if(contract.retainsApplication(state.release?.snapshot?.manifest)&&j.some(x=>['archive_repository','cleanup_local'].includes(x.operation)))fail('release_retention_policy_violation');
  if(j.some(x=>!releaseOutcomeStatus(x.outcome)||releaseOutcomeStatus(x.outcome)==='uncertain'))return 'reconcile';
- if(contract.isComposeManifest(state.release?.snapshot?.manifest)&&j.some(x=>releaseOutcomeStatus(x.outcome)==='absent'&&x.outcome?.evidence?.composeRecovery))
+ if(contract.isComposeManifest(state.release?.snapshot?.manifest)&&j.some(x=>releaseOutcomeStatus(x.outcome)==='absent'&&(x.outcome?.evidence?.composeRecovery||x.outcome?.evidence?.composeConfigAbsence)))
   fail('release_compose_no_effect_diagnosis_required');
  if(state.status!=='active')return null;
  const post=state.release.snapshot.manifest.postObservation;
@@ -187,9 +187,10 @@ function priorDeployment(state,rollback){
 // The production caller supplies fixed adapters, a sealed HTTPS API and its live
 // Writer capability. Neither Hermes input nor a release packet can select code,
 // shell commands, credentials, callbacks, URLs or a different repository.
-export async function runReleaseStep({state,client,api,github,coolify,assertWriter,resources,
+export async function runReleaseStep({state,client,api,github,coolify,assertWriter,resources,reconciliationOnly=false,
  inspectCheckout=inspectReleaseCheckout,stopped=()=>false,onOperation=async()=>{},onChildrenClosed=async()=>{}}){
  const s=validateState(state,client),m=s.manifest,operation=nextReleaseOperation(state);
+ if(reconciliationOnly&&operation!=='reconcile')return{handled:true,state,reconciliationOnlyComplete:true};
  if(!operation)return{handled:false,state};
  const route=`/v1/agent-runtime/releases/${state.release.id}`;
  await assertWriter();
@@ -200,7 +201,10 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
   if(['push','pr','review','merge'].includes(pending.operation))result=await github.reconcile(m,s,pending.operation,pending.intent.parameters.pullRequestNumber);
   else if(['deploy_config','rollback_config'].includes(pending.operation)){
    result=await coolify.reconcileConfiguration(m,s,{rollback:pending.operation==='rollback_config',operationId:pending.id,since:pending.createdAt});
-   if(contract.isReleaseSetManifest(m)&&result?.state==='applied')result={status:'succeeded',evidence:releaseSetEvidence(result,m,s,{configuration:true,rollback:pending.operation==='rollback_config'})};
+   if(contract.isComposeManifest(m)&&result?.evidence?.composeConfigAbsence){
+    if(result.state!=='absent'||contract.composeConfigAbsenceEvidenceError(s,result.evidence,pending))fail('release_compose_configuration_absence_unproven');
+    result={status:'absent',evidence:result.evidence};
+   }else if(contract.isReleaseSetManifest(m)&&result?.state==='applied')result={status:'succeeded',evidence:releaseSetEvidence(result,m,s,{configuration:true,rollback:pending.operation==='rollback_config'})};
    else if(contract.isReleaseSetManifest(m)&&result?.state==='absent'&&result.evidence?.absenceVerified===true)
     result={status:'absent',evidence:releaseSetEvidence(result.evidence,m,s,{rollback:contract.isComposeManifest(m)?pending.operation==='rollback_config'?false:'baseline':false})};
   }else if(['deploy','rollback'].includes(pending.operation)){
@@ -237,7 +241,8 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
   if(!['succeeded','failed','absent'].includes(result?.status))fail('release_reconciliation_unproven');
   await onChildrenClosed();
   const body=contract.outcomeSchema.parse({requestId:randomUUID(),status:'reconciled',reconciledStatus:result.status,observationOnly:true,evidence:dated(result.evidence)});
-  return{handled:true,state:await api(`${route}/operations/${pending.id}/outcome`,{method:'POST',body})};
+  const updated=await api(`${route}/operations/${pending.id}/outcome`,{method:'POST',body});
+  return{handled:true,state:updated,...(reconciliationOnly?{reconciliationOnlyComplete:true}:{}),...(result.evidence?.composeConfigAbsence?{nextOperationBlocked:true,configurationDiagnosisRequired:true,diagnosisReason:'release_compose_no_effect_diagnosis_required'}:{})};
  }
  if(stopped())return{handled:false,state};
  // Validate actual checkout and remote base before requesting a capability.

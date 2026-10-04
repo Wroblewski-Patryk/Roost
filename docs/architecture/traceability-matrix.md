@@ -1962,3 +1962,14 @@ The repaired local/remote guard verifies exact head/tree/base ancestry, limits
 the range to 100 commits and preserves non-force Git updates. Root verification:
 37 GitHub/materialization/broker checks and the actual Windows multi-commit
 checkout Job pass; all seven children close. Application release proof pending.
+
+Actual same-grant Worker publishes PR 2 and reconciles its uncertain merge;
+remote main, PR head and merge commit all equal `c82e68b3`. Configuration intent
+`92892242-1a4e-4fe9-907a-686265805937` remains uncertain. The controller closes
+at exit zero with 88 registered children closed; its signed Writer is retained.
+Read-only HTTPS confirms unchanged legacy source/custom commands. Native reads
+confirm the exact staged artifact and installed source pins; the actual Laravel
+validator rejects only the two generated command fields. The read-only fixed
+CAS qualification passes for candidate and rollback. No candidate queue or
+deployment has been started. Source recovery and native proof remain pending;
+these reads do not establish configuration absence in the Roost journal.

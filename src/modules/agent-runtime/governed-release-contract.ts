@@ -20,6 +20,7 @@ export const releaseIsCompose: (manifest: any) => boolean = shared.isComposeMani
 export const releaseIsSet: (manifest: any) => boolean = shared.isReleaseSetManifest;
 export const releaseSourceArtifactDigest: (manifest: any, binding: any, rollback?: boolean|'baseline') => string = shared.sourceArtifactDigest;
 export const releaseComposeEvidenceError: (snapshot:any,evidence:any,rollback?:boolean|'baseline',targetId?:string,allowUnhealthy?:boolean)=>string|null=shared.composeEvidenceError;
+export const releaseComposeConfigAbsenceEvidenceError: (snapshot:any,evidence:any,operation:any)=>string|null=shared.composeConfigAbsenceEvidenceError;
 export const releaseComposeRecoveryEvidenceError: (snapshot:any,evidence:any,operation:any)=>string|null=shared.composeRecoveryEvidenceError;
 export const releaseGitSetArtifactDigest: (manifest: any, binding: any, rollback?: boolean) => string = shared.gitSetArtifactDigest;
 export const releaseSuccessorBasisSchema = shared.releaseSuccessorBasisSchema as z.ZodType<any>;
@@ -174,6 +175,7 @@ export function effectiveOutcome(outcome: any): string | null {
 export function releaseFailedClosureError(state:any,input:any,checkVersion=true) {
  if(!state)return "release_not_found";
  const s=state.release.snapshot,m=s.manifest,j=state.journal,e=input.evidence;
+ if(releaseIsCompose(m))return composeConfigAbsentClosureError(state,input,checkVersion);
  if(checkVersion&&state.expectedVersion!==input.expectedVersion)return "release_version_stale";
  if(!releaseIsGitSet(m)||s.predecessor||s.successorBasis||s.baselineRestart||s.publishedGitBasis
   ||checkVersion&&state.revocations.length||j.some((x:any)=>!effectiveOutcome(x.outcome)||effectiveOutcome(x.outcome)==="uncertain")
@@ -193,7 +195,41 @@ export function releaseFailedClosureError(state:any,input:any,checkVersion=true)
  }
  return null;
 }
+function composeConfigAbsentClosureError(state:any,input:any,checkVersion=true) {
+ const r=state.release,s=r.snapshot,j=state.journal,e=input.evidence,n=input.nativeClosure;
+ if(checkVersion&&state.expectedVersion!==input.expectedVersion)return "release_version_stale";
+ const op=j.at(-1),schema=shared.releaseNativeClosureSchema.safeParse(n);
+ if(s.predecessor||s.successorBasis||s.baselineRestart||s.publishedGitBasis||checkVersion&&state.revocations.length
+  ||j.length!==5||j.map((x:any)=>x.operation).join(',')!=="push,pr,review,merge,deploy_config"
+  ||op.id!==input.failedOperationId||op.outcome?.status!=="reconciled"||effectiveOutcome(op.outcome)!=="absent"
+  ||(op.outcome.observation_only??op.outcome.observationOnly)!==true
+  ||releaseDigest(op.outcome.evidence)!==releaseDigest(e)
+  ||releaseComposeConfigAbsenceEvidenceError({...s,releaseId:r.id},e,op)||!schema.success
+  ||n.releaseId!==r.id||n.operationId!==op.id||n.agentHostId!==(r.host_id??s.hostId)||n.evidenceDigest!==releaseDigest(e)
+  ||Date.parse(n.observedAt)<Date.parse(e.observedAt))return "release_failed_closure_unproven";
+ const git=j.slice(0,4);if(git.some((x:any)=>effectiveOutcome(x.outcome)!=="succeeded"||releaseOutcomeError(r,x,{status:x.outcome.status,reconciledStatus:x.outcome.reconciled_status??x.outcome.reconciledStatus,observationOnly:x.outcome.observation_only??x.outcome.observationOnly,evidence:x.outcome.evidence},j))
+  ||git.slice(1).some((x:any)=>x.outcome.evidence.pullRequestNumber!==git[1].outcome.evidence.pullRequestNumber))return "release_restart_git_unproven";
+ return null;
+}
+function composeConfigAbsentPublishedBasis(state:any,input:any):any {
+ const r=state?.release,s=r?.snapshot,restart=input.baselineRestart;
+ if(!state||!restart||r.id!==restart.releaseId||state.expectedVersion!==restart.expectedVersion)return {error:"release_restart_version_stale"};
+ const closure=state.failedClosures?.find((c:any)=>c.id===restart.closureId),receipt=closure?.snapshot;
+ if(!closure||closure.consent_digest!==restart.consentDigest||closure.closure_digest!==releaseDigest(receipt)
+  ||!state.revocations.some((v:any)=>v.id===closure.revocation_id)||receipt.failedOutcomeId!==state.journal.at(-1)?.outcome?.id
+  ||releaseFailedClosureError(state,receipt,false))return {error:"release_restart_closure_unproven"};
+ if(!releaseIsCompose(input.manifest)||input.predecessor||input.successorBasis
+  ||["reviewId","releaseExecutionId","releaserCredentialId"].some(k=>input[k]===s[k])
+  ||["taskId","applicationId","hostId","commit","candidateTree","baseCommit","baseTree","releaserAgentId"].some(k=>input[k]!==s[k]))return {error:"release_restart_binding_changed"};
+ const stable=(m:any)=>({...m,baseline:Object.fromEntries(Object.entries(m.baseline).filter(([k])=>k!=="observedAt"))});
+ if(releaseDigest(stable(input.manifest))!==releaseDigest(stable(s.manifest)))return {error:"release_restart_binding_changed"};
+ const ops=state.journal.slice(0,4),publishedGitBasis={schemaVersion:"roost-release-published-git-v1",basisKind:"compose_config_absence",composeEvidenceDigest:releaseDigest(receipt.evidence),
+  releaseId:r.id,expectedVersion:state.expectedVersion,closureId:closure.id,closureDigest:closure.closure_digest,
+  pushOperationId:ops[0].id,prOperationId:ops[1].id,reviewOperationId:ops[2].id,mergeOperationId:ops[3].id,baselineDeploymentIds:[]};
+ return releaseHasPublishedGitBasis({...input,publishedGitBasis})?{publishedGitBasis}:{error:"release_restart_baseline_changed"};
+}
 export function releasePublishedGitBasis(state:any,input:any):any {
+ if(releaseIsCompose(state?.release?.snapshot?.manifest))return composeConfigAbsentPublishedBasis(state,input);
  const r=state?.release,s=r?.snapshot,restart=input.baselineRestart;
  if(!state||!restart||r.id!==restart.releaseId||state.expectedVersion!==restart.expectedVersion)return {error:"release_restart_version_stale"};
  const closure=state.failedClosures?.find((c:any)=>c.id===restart.closureId),receipt=closure?.snapshot;
@@ -317,6 +353,10 @@ export function releaseOutcomeError(release: any, operation: any, input: any,jou
    const ownIndex=journal.findIndex(j=>operation.id?j.id===operation.id:j===operation);
    const postError=releasePostObservationIntentError(s,{operation:operation.operation,parameters:operation.intent?.parameters},ownIndex<0?journal:journal.slice(0,ownIndex));
    if(postError)return postError;
+  }
+  if(e.composeConfigAbsence!==undefined){
+   if(input.status!=="reconciled"||result!=="absent"||input.observationOnly!==true)return "release_evidence_scope_invalid";
+   return releaseComposeConfigAbsenceEvidenceError({...s,releaseId:release.id},e,operation);
   }
   if(e.composeRecovery!==undefined){
    if(!releaseIsCompose(m)||!(result==="failed"&&['queue_failed','queue_absent'].includes(e.composeRecovery.kind)

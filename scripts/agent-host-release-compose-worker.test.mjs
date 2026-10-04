@@ -137,7 +137,9 @@ function setup(t) {
     coolifyJson: async args => {
       calls.push({ kind: 'https', ...args });
       if (args.method === 'PATCH') live.phase = args.body.git_commit_sha === s.commit ? 'candidate' : 'rollback';
-      return { uuid: target.targetId, git_commit_sha: phaseConfig().gitCommit };
+      const commands=live.phase==='baseline'?{build:'',start:''}:renderComposePhaseCommands(policies[live.phase]);
+      return { uuid: target.targetId, git_commit_sha: phaseConfig().gitCommit,
+        docker_compose_custom_build_command:commands.build,docker_compose_custom_start_command:commands.start };
     },
     createInspector: options => { inspectorOptions = options; return {
       inspectConfiguration: async () => structuredClone(phaseConfig()),
@@ -165,6 +167,7 @@ function setup(t) {
         return JSON.stringify({ ok: true, queue: live.queue });
       }
       if (payload.name) return '{"staged":true}';
+      if(options.input.includes('targetDeploymentsSinceIntent'))return JSON.stringify({activeDeployments:live.activeDeployments??0,targetDeploymentsSinceIntent:live.targetDeploymentsSinceIntent??0});
       return JSON.stringify({activeDeployments:live.activeDeployments??0});
     }
   };
@@ -348,6 +351,25 @@ test('missing current write intent cannot dispatch a new deployment', async t =>
   const f = setup(t), installed = f.install(); f.live.phase = 'candidate';
   await assert.rejects(installed.coolify.deploy(f.m, f.s, f.operation(false)), /dispatch_uncertain/);
   assert.equal(f.calls.some(r => r.kind === 'queue' && r.payload.operation === 'dispatch'), false);
+});
+
+test('uncertain config absence qualifies actual legacy baseline without inventing migration or queue',async t=>{
+ const f=setup(t);f.baseline.services=f.baseline.services.filter(r=>r.role!=='migration');f.sealBaseline();f.live.missingMigration=true;
+ const op=f.state.journal.at(-1),o={operationId:op.id,since:op.createdAt,rollback:false};op.outcome={status:'uncertain'};f.state.status='reconciliation_required';const result=await f.install().coolify.reconcileConfiguration(f.m,f.s,o);
+ assert.equal(result.state,'absent');assert.equal(result.evidence.composeConfigAbsence.noCandidateQueue,true);
+ assert.equal(result.evidence.composeConfigAbsence.migrationSchemaVerified,true);assert.equal(result.evidence.composeConfigAbsence.services.some(r=>r.role==='migration'),false);
+ assert.equal(result.evidence.configDigest,f.m.baseline.configDigest);assert.deepEqual(result.evidence.deploymentIds,[]);assert.equal(result.evidence.composeTargets,undefined);
+ assert.equal(f.calls.some(r=>r.method==='PATCH'||r.kind==='queue'&&r.payload.operation==='dispatch'),false);
+});
+for(const [name,mutate]of[
+ ['active global queue',f=>{f.live.activeDeployments=1;}],['any target queue since intent',f=>{f.live.targetDeploymentsSinceIntent=1;}],
+ ['database recreation',f=>{f.live.databaseContainer=fixtureModule.hash('0');}],['changed baseline image',f=>{f.live.appImage=fixtureModule.image('f');}],
+ ['unhealthy baseline',f=>{f.live.appHealth='unhealthy';}],['mount drift between reads',f=>{f.live.afterFingerprint=()=>{f.live.databaseMount=fixtureModule.hash('0');};}],
+ ['queue appears between reads',f=>{f.live.afterFingerprint=()=>{f.live.targetDeploymentsSinceIntent=1;};}],
+ ['intent identity changed',f=>{f.state.journal.at(-1).createdAt=new Date(Date.now()-1000).toISOString();}]
+])test(`configuration absence refuses ${name} without writes`,async t=>{
+ const f=setup(t),op=f.state.journal.at(-1),o={operationId:op.id,since:op.createdAt,rollback:false};mutate(f);
+ await assert.rejects(f.install().coolify.reconcileConfiguration(f.m,f.s,o));assert.equal(f.calls.some(r=>r.method==='PATCH'||r.kind==='queue'&&r.payload.operation==='dispatch'),false);
 });
 
 for (const rollback of [false, true]) test(`new ${rollback ? 'rollback' : 'candidate'} dispatch carries exact sealed phase capability and all service images`, async t => {

@@ -27,6 +27,8 @@ test('release diagnostics retain only fixed admission reasons and discard arbitr
  for(const message of ['Bearer private-value','release_password_value','release_api_uncertain\nprivate-value','https://example.test/private','C:\\private\\credential'])assert.equal(releaseWorkerDiagnostic(Error(message)),'release_preflight_unproven');
 });
 test('Compose diagnostics identify fixed safety refusals without accepting a prefix or attached private content',()=>{
+ assert.equal(releaseWorkerDiagnostic(Error('release_compose_no_effect_diagnosis_required')),'release_compose_no_effect_diagnosis_required');
+ assert.equal(releaseWorkerDiagnostic(Error('release_compose_no_effect_diagnosis_required private-value')),'release_preflight_unproven');
  for(const reason of ['release_compose_installation_database_recreation_unproven','release_compose_installation_phase_intent_unproven',
   'release_compose_installation_version_health_unproven','release_coolify_compose_runtime_identity_unproven']){
   assert.equal(releaseWorkerDiagnostic(Error('outer',{cause:Error(reason)})),reason);

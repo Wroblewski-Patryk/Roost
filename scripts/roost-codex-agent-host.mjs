@@ -879,6 +879,19 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
           writerLock, stopped: () => stopping });
         // An uncertain remote effect must survive a normal controller stop too.
         // The next owner first qualifies this sealed Writer and only reconciles.
+        if (releaseStep.configurationDiagnosisRequired && releaseStep.nextOperationBlocked) {
+          stopping = true; retainWriterLock = true;
+          process.stderr.write('Release Worker blocked: release_compose_no_effect_diagnosis_required\n');
+          persistReleaseWorkerDiagnostic(configPath,'blocked','release_compose_no_effect_diagnosis_required');
+        }
+        if (releaseStep.reconciliationOnlyComplete) {
+          stopping = true;
+          // The normal queue step has sealed native children and cleared its
+          // recovery restriction after the server accepted every known outcome.
+          // release() archives the closed signed checkpoint before unlocking.
+          retainWriterLock = Boolean(writerLock.releaseRecovery)
+            || !releaseStep.state?.journal?.every(row => row.outcome && row.outcome.status !== 'uncertain');
+        }
         if (releaseStep.reconciliationRequired) { stopping = true; retainWriterLock = true;
           if(releaseStep.uncertaintyDiagnostic){process.stderr.write(`Release Worker uncertainty: ${releaseStep.uncertaintyDiagnostic}\n`);
             persistReleaseWorkerDiagnostic(configPath,'uncertainty',releaseStep.uncertaintyDiagnostic);}

@@ -365,6 +365,13 @@ export async function acquireWriterLock(directory = writerStateDirectory, { reco
       const current = JSON.parse(await readFile(lockPath, "utf8"));
       if (current.ownerNonce !== ownerNonce) throw new Error("agent_host_writer_lock_owner_changed");
       if (proof.releaseRecovery || current.releaseCheckpoint && current.releaseCheckpoint.phase !== "all_local_children_closed") throw Error("agent_host_release_reconciliation_pending");
+      if (current.releaseCheckpoint) {
+        const archived = JSON.stringify(current) + "\n";
+        const filename = path.join(directory, `release-writer-closed-${current.releaseCheckpoint.contextNonce}.json`);
+        const handle = await open(filename, "wx", 0o600);
+        try { await handle.writeFile(archived); await handle.sync(); }
+        finally { await handle.close(); }
+      }
       await unlink(lockPath);
       released = true;
       proof.released = true;

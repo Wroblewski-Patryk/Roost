@@ -1,8 +1,20 @@
 import contract from './agent-host-release-contract.cjs';
+import {coolifyTransportDiagnostic} from './agent-host-release-coolify.mjs';
 import { composeConfigurationDigest, composeRuntimeSetDigest, qualifyComposeRuntime } from './agent-host-release-compose-state.mjs';
 import { coolifyGitSetDeploymentId } from './agent-host-release-coolify-git-set-gateway.mjs';
 
-const deny = (reason, uncertain = false) => { throw Object.assign(Error(`release_coolify_compose_${reason}`), { uncertain, retryable: false }); };
+const safeTransport = error => {
+  for(let depth=0;error&&depth<4;depth++,error=error.cause){
+    if(/^(transport_uncertain|response_unproven|response_size_invalid|response_invalid)(_http_[1-5][0-9]{2})?$/.test(error.transportDiagnostic??''))return error.transportDiagnostic;
+    const classified=typeof error.message==='string'?coolifyTransportDiagnostic(error):'transport_unclassified';
+    if(classified!=='transport_unclassified')return classified;
+  }
+};
+const deny = (reason, uncertain = false, cause) => {
+  const transportDiagnostic=safeTransport(cause);
+  throw Object.assign(Error(`release_coolify_compose_${reason}`,cause===undefined?undefined:{cause}),
+    {uncertain,retryable:false,...(transportDiagnostic?{transportDiagnostic}:{})});
+};
 const check = (value, reason) => { if (!value) deny(reason); };
 const hash = /^[a-f0-9]{64}$/;
 const status = row => row?.status === 'finished' ? 'finished'
@@ -57,7 +69,7 @@ export function createCoolifyComposeAdapter({ gateway, now = () => Date.now(),
     try {
       await gateway.configure(t.targetId, rollback ? 'rollback' : 'candidate');
       check((await configuration(t, rollback)).gitCommit === commit, 'configuration_result_unproven');
-    } catch { deny('configuration_mutation_uncertain', true); }
+    } catch(error) { deny('configuration_mutation_uncertain', true, error); }
     return { commit, deployedCommit: commit, artifactSetDigest: rollback ? m.rollback.artifactSetDigest : m.deployment.artifactSetDigest,
       configDigest: rollback ? m.rollback.configDigest : m.deployment.configDigest, schemaDigest: m.deployment.schemaDigest };
   };
@@ -161,7 +173,7 @@ export function createCoolifyComposeAdapter({ gateway, now = () => Date.now(),
     if (result.state === 'absent') {
       await safety(m);
       check((await configuration(t, rollback)).gitCommit === (rollback ? m.rollback.commit : s.commit), 'source_pin_changed');
-      try { await gateway.deployTarget(context); } catch { deny('dispatch_uncertain', true); }
+      try { await gateway.deployTarget(context); } catch(error) { deny('dispatch_uncertain', true, error); }
       result = await queue(m, s, context);
       if (result.state === 'absent') deny('dispatch_uncertain', true);
     }
@@ -171,6 +183,11 @@ export function createCoolifyComposeAdapter({ gateway, now = () => Date.now(),
     const t = bound(m, s), rollback = o.rollback === true, row = await gateway.inspectConfiguration(t.targetId);
     const matches = composeConfigurationDigest(row) === phase(t, rollback).configDigest
       && row.gitCommit === (rollback ? m.rollback.commit : s.commit);
+    if(!matches&&!rollback&&composeConfigurationDigest(row)===t.baseline.configDigest&&typeof gateway.inspectConfigurationAbsence==='function'){
+      const options=optionsFor(m,s,o),evidence=await gateway.inspectConfigurationAbsence(options);
+      check(contract.composeConfigAbsenceEvidenceError({...s,manifest:m},evidence,{id:options.operationId,createdAt:options.since,operation:'deploy_config'})===null,'configuration_absence_unproven');
+      return {state:'absent',evidence};
+    }
     // A changed pin alone cannot prove that an uncertain mutation did not run.
     return { state: matches ? 'applied' : 'uncertain', deployedCommit: rollback ? m.rollback.commit : s.commit,
       artifactSetDigest: rollback ? m.rollback.artifactSetDigest : m.deployment.artifactSetDigest,
