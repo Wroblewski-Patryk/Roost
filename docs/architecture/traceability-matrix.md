@@ -1945,3 +1945,13 @@ native tools. It retains sixteen literal `CHANGES_REQUIRED` findings. Its
 frozen b5de package snapshot remains historical; the append-only current-basis
 reference separately qualifies review `2f9b16e5`, decision `e209eefa`, material
 bbb8. No application push/deploy or release grant is established by these reads.
+
+Normal owner preparation qualifies manifest0857 against current code acceptance,
+eight physical seals, native baseline/health, unchanged data/sequences, capacity,
+backup and credential metadata. Installed SQL admits this actual manifest.
+Current V9 monitoring proof binds the full sealed policy and deployed source;
+future events and external alerts remain unproven. A normal execution view includes
+mutable host relations: preserve its historical full hash and independently match
+the original immutable native terminal/selector; do not rewrite the reference.
+Owner/monitor/Worker checks pass 81 cases; the terminal-bound qualifier passes
+38 cases. The unsigned exact-owner package is prepared; no grant is issued.

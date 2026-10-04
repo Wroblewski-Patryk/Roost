@@ -287,3 +287,10 @@ findings. Its phase classification preserves mandatory deployment, observation,
 cleanup, cadence restoration and independent postrelease acceptance. Current
 monitoring qualification proves configuration and source routes only; supervised
 future events and external notifications remain unproven before execution.
+
+Normal execution GET includes mutable host, task, application and event relations.
+Its full-response digest is an observation, not an immutable native result pin.
+Preserve the original digest as history. When that view changes, require the
+original physical selector and signed, closed native terminal; match every
+immutable result field and qualify current context/host separately. Do not
+reconstruct an unsaved historical response or replace its digest with today's.
