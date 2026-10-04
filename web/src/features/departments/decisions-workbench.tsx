@@ -62,9 +62,12 @@ export function DecisionsWorkbench({ departmentKey, canonical = false }: { depar
     setGovernance(null);
     if (requestedDecisionId) {
       void validateDecisionNavigation(requestedDecisionId, async id =>
-        (await api<{ data: { selected?: { decisionId?: string } | null } }>(`/v1/decisions/${id}/governance`)).data
+        (await api<{ data: { selected?: { decisionId?: string } | null } }>(`/v1/decisions/${id}/governance?version=1`)).data
       ).then(id => { if (current) setGovernance({ decisionId: id }); })
-        .catch(() => { if (current) setNavigationError(true); });
+        .catch(error => {
+          console.warn("Owner Decision navigation rejected", { code: error instanceof AppApiError ? error.code : "decision_navigation_unavailable" });
+          if (current) setNavigationError(true);
+        });
     }
     return () => { current = false; };
   }, [requestedDecisionId]);
