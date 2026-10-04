@@ -1138,13 +1138,18 @@ explicit limitations. No later phase was started.
 Second-application bounded release preparation continues separately from Gate 5.
 Exact `c82e68b3` has seven passing tests, a separate closed native build and
 independent acceptance `25632c42`; the preceding candidate was rejected for its
-missing regression log. Roost `15d857eb` and its additive post-observation CHECK
+missing regression log. Roost `58244abe` and its additive post-observation CHECK
 migration are deployed. Fresh backup `727c73a3` and isolated migration adoption
 `88b04363` verify full schema/data/sequence parity and absence of the owned restore
 database. Normal API credential/reference configuration, baseline pinning and
 native ingress/DB/cadence maintenance are verified. Real-runtime discoveries
 produced Worker paused-state, PostgreSQL address/admin and namespace-ingress
-fixes; full post-release Worker proof remains pending. No second-application
+fixes. Bounded fence renewal proved public denial/opening and unchanged data,
+schema and sequences. A fresh eight-file package leaves the original eight intact.
+Native audits `323aca74` and `0907f482` closed unchanged with signed receipts;
+both retain `CHANGES_REQUIRED` for owner authority and unexecuted release proof.
+The latter confirms accepted source/test/build basis; no final readiness or
+post-release acceptance is claimed. Full Worker proof remains pending. No second-application
 release grant, push/deploy, synthetic fixture write or runtime-resume claim.
 See [current operations evidence](../operations/governed-compose-release.md).
 Native configuration hashes now agree after excluding lazy ORM relations from

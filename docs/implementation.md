@@ -189,14 +189,15 @@ local accepted `3cf9645e`. Independent review rejected `c21e0e0c` for its missin
 regression log. Log-only `c82e68b3` passes seven tests, a separate native build
 and independent read-only acceptance. No release grant or application deploy.
 
-Roost `15d857eb` and the additive post-observation migration are deployed.
+Roost `58244abe` and the additive post-observation migration are deployed.
 The existing target has a fresh verified backup/isolated restore, migration
 adoption and schema/data/sequence parity. Its public health is open while DB
-writes and cadences are held. Native preparation exposed Docker paused-state,
-PG address and proxy-isolation defects; Worker fixes are under verification.
-The sealed package's native audit closed unchanged; context findings and the owner grant remain pending.
+writes and cadences are held. Native preparation verified paused-state,
+PG address, proxy isolation and bounded fence renewal without data changes.
+Fresh native audits closed unchanged. Code is accepted; the exact owner grant
+and deployment, observation, activity/cleanup and final acceptance remain pending.
 The configuration reader now excludes lazy ORM relations from persisted settings;
-separate environment/storage seals remain. Native hashes agree; explicit-root directory matching passes 48 tests.
+Environment/storage seals remain; native hashes agree; directory checks pass 48 tests.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

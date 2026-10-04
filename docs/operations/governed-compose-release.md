@@ -149,7 +149,7 @@ Worker is stopped; no application push, deployment or release grant exists.
 ### Bounded activity proof after observation (deployed contracts; proof pending)
 
 The optional sealed Compose manifest now governs `smoke`, `fixture_cleanup`
-and `runtime_resume` before terminal cleanup. Roost `15d857eb` and additive
+and `runtime_resume` before terminal cleanup. Roost `58244abe` and additive
 migration `20261004151000_release_post_observation_fixture` are deployed with
 exact build/health and migration checksum verification. Application release
 and post-observation proof remain pending.
@@ -207,6 +207,33 @@ This qualification does not grant release authority or prove deployment.
 The releaser credential is renewed through normal Roost API and WCM readback.
 An independent readiness task exists. Unused build-cache cleanup recovered
 4.927 GB without removing images, volumes or application data. The sealed
-release package, independent native audit and separate owner exact-manifest
-grant remain pending. Revoke the owner's temporary Coolify token through the
+release package has eight physically verified files. Its first native audit
+closed unchanged but requested context corrections; completion alone did not
+establish semantic readiness. An oversized replacement queue was cancelled
+at attempt zero without starting a model. The corrected, fresh-package audit
+measured 129528/131072 input bytes. It and the phase-qualified follow-up
+(130520/131072) completed unchanged with signed, closed native Jobs at exit zero.
+Both retain `CHANGES_REQUIRED`; accepted code/test/build evidence does not prove
+deployment, observation, fixtures, cleanup or restored cadences. Worker is stopped;
+the separate exact-manifest grant remains pending. Revoke the owner's temporary Coolify token through the
 normal UI after use. No application push/deploy or fixture write has occurred.
+
+Preparation renewal preserves the original database fence start time separately
+from renewed authorization expiry. A sealed prior hold/open-health receipt binds
+the same authority, containers, settings and parity. Existing idle pools are
+classified against the original fence; renewal neither terminates them nor
+changes role settings. The real renewed cycle proved public denial (502), then
+healthy ingress with database/cadences still held, no business writes and full
+schema/data/sequence parity. New immutable phase files bind fresh observations;
+the original eight files remain unchanged. This is preparation evidence only.
+
+The fresh manifest is `3e4d58a6b4f4793ee89dab06ae7af91182d3ec85a44811f9cbe949f74ad2d6dd`.
+Readiness execution `0907f482-bbf7-4e6e-aabc-f885a86dd39d` retains all fourteen
+findings. Its after-response native receipt proves only unchanged execution.
+RF-REL-004 permits a separately approved exact-commit controlled release after
+passing tests and code acceptance. RF-REL-005–008 require actual deployment and
+recovery evidence afterward. Preparing that owner request preserves the negative
+readiness result, all findings and mandatory execution checks; it is no waiver,
+release grant or completion claim. Current controls/capacity must be read again
+before effects. Normal outcome journals and task deployment evidence route failures
+to the configured owner under root supervision; external notifications are unproven.
