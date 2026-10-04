@@ -114,7 +114,9 @@ Managed coder `b5fe6ed3-ce6e-4224-b5cd-eb1a7284150d` produced clean local
 The fixed Worker recorded seven passing tests and a closed native Job. The model
 reported an actual six-pass/one-fail TS2580 reproduction before the correction;
 its tool budget ended after two authorized paths, leaving the required regression
-log unchanged. Independent review remains pending and must evaluate that omission.
+log unchanged. Independent native review `6e916681-dedf-4fad-bc91-7b7b575d6f79`
+rejected it solely for that omission; the manager returned the same task to its
+executor through the normal governed action.
 The separate actual `npm run build` passed on this exact candidate in a closed
 Windows Job with version verification, unchanged source/dependencies and owned
 output cleanup. It is not an image/deployed-app or whole-product proof.
@@ -122,4 +124,17 @@ The preceding claimed-only refusal was reconciled without model/source effects.
 The canonical build helper's unassigned preparation refusal was likewise checked
 for absent processes/outputs before retry; saved JSON was not treated as a fresh
 native receipt. The final build receipt is a separate actual execution.
+Managed continuation `16ac99ca-c40d-456f-ace1-dffdd0401fdc` produced
+`c82e68b30f937e00438d6b64a3c39e010364e24d`, directly based on `c21e0e0c`, changing
+only the append-only regression log. Twelve source/test/config/lock seals remain
+unchanged. Its separate seven-test receipt and actual canonical build both passed
+in closed native Jobs; generated build outputs were removed. The older candidate's
+build remains historical evidence. Independent acceptance of the new commit is
+pending; an input measurement refused a private path before any model launch.
+
+A claimed pre-model refusal also exposed a recycled Windows PID. Reclaim now
+requires complete native identity and a strictly later creation time for the
+different process. The normal terminal reconciliation retained its checkpoint;
+the official Worker reclaimed it without terminating the unrelated process.
+
 Worker is stopped; no application push, deployment or release grant exists.

@@ -1688,6 +1688,9 @@ provider, installed controller/queue/health contracts and actual PostgreSQL 15
 encrypted backup with isolated verified restore are recorded in
 [governed Compose release](../operations/governed-compose-release.md).
 This prerequisite evidence does not establish a deployed application or rollback.
+Independent review rejected the initial build fix for missing regression evidence.
+Managed log-only `c82e68b3` now has its own seven-test and canonical native build
+receipts. Acceptance, governed deployment and postrelease proof remain pending.
 
 **RELEASE** — Gate 3 is certified on the sole temporary target (2026-10-02).
 Gate 4 exact candidate `7512bc395d65df0fca7cf701047033031f63eb7e` was deployed;

@@ -38,3 +38,16 @@ export function currentNativeProcessIdentity() {
   if (!self || self.pid !== process.pid) throw Error("native_process_identity_unavailable");
   return self;
 }
+
+// A reused PID proves absence only with complete native identities and a
+// strictly later creation time. Changed executable bytes alone are insufficient.
+export function recordedProcessIsAbsent(recorded, observed) {
+  const valid = value => value && Number.isInteger(value.pid) && value.pid > 0
+    && /^\d{16,20}$/.test(value.creationTime ?? "")
+    && /^[a-f0-9]{64}$/.test(value.executablePathDigest ?? "")
+    && /^[a-f0-9]{64}$/.test(value.executableDigest ?? "");
+  if (!valid(recorded)) return false;
+  if (observed === null) return true;
+  return Boolean(valid(observed) && observed.pid === recorded.pid
+    && BigInt(observed.creationTime) > BigInt(recorded.creationTime));
+}

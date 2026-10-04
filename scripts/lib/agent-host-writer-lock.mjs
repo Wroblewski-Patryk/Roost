@@ -1,5 +1,5 @@
 import { randomUUID, createHash } from "node:crypto";
-import { currentNativeProcessIdentity, observeWindowsProcessIdentity } from "./agent-host-process-identity.mjs";
+import { currentNativeProcessIdentity, observeWindowsProcessIdentity, recordedProcessIsAbsent } from "./agent-host-process-identity.mjs";
 import { guardHostContent } from "./agent-host-redaction.mjs";
 import { lstat, mkdir, open, readFile, unlink } from "node:fs/promises";
 import path from "node:path";
@@ -44,6 +44,12 @@ function ownerIsGone(pid) {
   try { process.kill(pid, 0); return false; } catch (error) { return error.code === "ESRCH"; }
 }
 
+function recordedOwnerIsGone(record) {
+  if (process.platform !== "win32" || !record.ownerProcess) return ownerIsGone(record.ownerPid);
+  if (record.ownerProcess.pid !== record.ownerPid) return false;
+  return recordedProcessIsAbsent(record.ownerProcess, observeWindowsProcessIdentity(record.ownerPid));
+}
+
 async function reclaimBeforeSpawn(directory, candidate) {
   const gatePath = path.join(directory, recoveryLockFilename);
   let gate;
@@ -54,7 +60,9 @@ async function reclaimBeforeSpawn(directory, candidate) {
     const expected = localCheckpoint(candidate);
     if (candidate?.contextInvalidatedAt || !candidate?.leaseExpiresAt || Date.parse(candidate.leaseExpiresAt) <= Date.now() || !["claimed", "branch_intent", "branch_ready", "prepared"].includes(expected.stage)
       || current.ownerNonce !== expected.sessionId || JSON.stringify(current.checkpoint) !== JSON.stringify(expected)
-      || !ownerIsGone(current.ownerPid)) throw new Error("agent_host_writer_locked");
+      || !recordedOwnerIsGone(current)) throw new Error("agent_host_writer_locked");
+    // Native identity handles reused Windows PIDs; the matching durable
+    // pre-spawn barrier is still required.
     // A dead PID alone is never sufficient. A matching durable pre-spawn barrier
     // proves this host never launched a writer, including across an OS restart.
     const latest = JSON.parse(await readFile(lockPath, "utf8"));
@@ -200,7 +208,7 @@ async function reclaimTerminalBeforeSpawn(directory, candidates) {
               && item.errorState?.details?.reason === "roost_http_409" && item.errorState?.details?.status === 409)
           && item.codexThreadId === null && item.finalResponse === null
           && Array.isArray(item.changedFiles) && item.changedFiles.length === 0));
-    if (!candidate || observeWindowsProcessIdentity(current.ownerPid) !== null) throw new Error("agent_host_writer_locked");
+    if (!candidate || !recordedOwnerIsGone(current)) throw new Error("agent_host_writer_locked");
     if (candidate.errorState?.code === "agent_coding_unsigned_spawn_reconciled")
       await assertUnsignedCodingArtifactsAbsent(directory, checkpoint);
     let retainedLease = null;

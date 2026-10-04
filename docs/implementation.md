@@ -192,9 +192,9 @@ an immediate implementation dependency or mark it complete.
 
 **Authorized preparation; production proof pending.** After Gate 5 the owner
 selected the second application's repair for the next bounded gate. Preserve
-local `3cf9645e` and its independent acceptance. Managed correction `c21e0e0c`
-passes seven tests and canonical local build; regression evidence and independent
-acceptance remain pending. This is not product readiness.
+local accepted `3cf9645e`. Independent review rejected `c21e0e0c` for its missing
+regression log. Managed log-only correction `c82e68b3` passes seven tests and a
+separate native build; independent acceptance remains pending. No release grant.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,
