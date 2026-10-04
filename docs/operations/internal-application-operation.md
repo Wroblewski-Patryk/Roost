@@ -195,3 +195,11 @@ binds the certificate to the exact commits, paths and representation; the native
 receipt retains its digest. The independent reviewer must assess the newline
 change, rather than assume it harmless. This representation grants no authority
 and omits no semantic edit or other whitespace.
+
+Portfolio outcome selection retains every task and review in history. A closed
+native code-reviewer helper may point to its exact current accepted target only
+when the persisted review, material, commit, independent actors and unchanged
+native audit/Job all match. Pending owner decisions and new context, risk or
+execution failures retain priority. This projection neither closes tasks nor
+grants release authority. Baseline limitations retain their historical audit
+timestamp; subsequent acceptance does not imply whole-application readiness.

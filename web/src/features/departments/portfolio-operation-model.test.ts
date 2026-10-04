@@ -40,7 +40,7 @@ test("missing or incompatible operation projection cannot promote a declared app
 });
 
 test("all five gates and emitted blocker reasons have Polish and English labels", () => {
-  const keys = ["unmet", "in_progress", "met", "blocked", "explicitly_deferred", "takeover_baseline_missing", "takeover_baseline_stale", "owner_decision_pending", "owner_decision_deferred", "task_blocked", "task_needs_revalidation", "native_execution_failed", "independent_review_rejected", "evidence_unavailable", "outcome_not_defined"];
+  const keys = ["unmet", "in_progress", "met", "blocked", "explicitly_deferred", "takeover_baseline_missing", "takeover_baseline_stale", "owner_decision_pending", "owner_decision_deferred", "task_blocked", "task_needs_revalidation", "task_needs_context", "native_execution_failed", "independent_review_rejected", "evidence_unavailable", "outcome_not_defined"];
   for (const key of keys) for (const locale of ["pl", "en"] as const) {
     assert.ok(operationLabels[key]);
     assert.notEqual(operationLabel(key, locale), key);

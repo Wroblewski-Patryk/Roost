@@ -1,5 +1,5 @@
 import type { Prisma } from '@prisma/client';
-import { applicationOperation, type OperationFacts } from './application-operation';
+import { applicationOperation, currentApprovedOutcome, type OperationFacts } from './application-operation';
 import { applicationBaseline } from './application-takeover-contract';
 import { validateApplicationTakeoverBaseline } from './application-takeover-validation';
 import { nativeBoundaryResultBlocked, exactReviewCommit, object } from '../agent-runtime/task-review-contract';
@@ -134,9 +134,17 @@ export async function loadApplicationOperation(db: Db, workspaceId: string, appl
     taskFacts.push({ id: task.id, title: task.title, status: task.status, readiness: String(object(task.executionReadiness).status ?? 'draft'),
       accountable: accountable ? { id: accountable.id, role: accountable.role ?? 'unassigned', label: accountable.name } : null,
       latestExecution: execution ? { id: execution.id, status: execution.status, invalidated: Boolean(execution.contextInvalidatedAt),
+        executorAgentId: contract.assignment?.agentId ?? null,
         nativeVerified: !nativeBoundaryResultBlocked(execution.verification, contract) && object(execution.verification).managedAdmission?.qualification === 'signed_native_v1' } : null,
       review: review ? { id: review.id, executionId: review.executionId, decision: review.decision, commit: reviewedCommit,
-        at: iso(review.createdAt), current: reviewCurrent } : null });
+        at: iso(review.createdAt), current: reviewCurrent, reviewerAgentId: review.actorAgentId ?? null } : null });
+  }
+  for (const raw of tasks.slice(0, 100)) {
+    const execution = raw.agentExecutions[0], fact = taskFacts.find(t => t.id === raw.id);
+    const inspection = object(object(object(execution?.metadata).executionContract).nativeBoundary).inspectReadOnly;
+    const target = taskFacts.find(t => t.id === inspection?.verifiedTaskId);
+    if (fact && target && completedCodeReviewTarget(fact, execution, target,
+      materialById.get(target.latestExecution?.id ?? '')?.version)) fact.completedReviewOfTaskId = target.id;
   }
   return applicationOperation({ applicationId, baseline, tasks: taskFacts,
     decisions: decisions.slice(0, 100).map(row => ({ id: row.id, title: row.title, state: row.state,
@@ -148,4 +156,29 @@ export async function loadApplicationOperation(db: Db, workspaceId: string, appl
     }),
     truncated: scopes.length > 100 || tasks.length > 100 || decisions.length > 100 || releases.length > 50
       || journalRows.some(row => !Array.isArray(row.journal) || row.journal.length > 200) });
+}
+
+// This relationship is display-only; it never closes tasks or grants authority.
+export function completedCodeReviewTarget(helper: OperationFacts['tasks'][number], execution: any,
+  target: OperationFacts['tasks'][number], materialVersion: string | undefined): boolean {
+  const boundary = object(object(execution?.metadata).executionContract).nativeBoundary;
+  const reviewerId = object(object(execution?.metadata).executionContract).assignment?.agentId;
+  const inspection = boundary?.inspectReadOnly, verification = object(execution?.verification);
+  const receipt = verification.codeReviewDecision, audit = verification.readOnlyAudit, job = verification.ownedTreeReceipt;
+  return Boolean(helper.id !== target.id && helper.latestExecution && helper.latestExecution.id === execution?.id
+    && execution.status === 'completed' && execution.completedAt && !execution.contextInvalidatedAt
+    && Array.isArray(execution.changedFiles) && execution.changedFiles.length === 0
+    && helper.status !== 'blocked' && helper.readiness === 'ready'
+    && helper.latestExecution.status === 'completed' && helper.latestExecution.nativeVerified && !helper.latestExecution.invalidated
+    && boundary?.profile === 'inspect-readonly' && inspection?.kind === 'code-reviewer' && currentApprovedOutcome(target)
+    && inspection.verifiedTaskId === target.id && inspection.verifiedExecutionId === target.latestExecution?.id
+    && inspection.reviewedCommit === target.review?.commit && receipt?.id === target.review?.id
+    && receipt?.decision === 'approve' && receipt.executionId === target.latestExecution?.id
+    && receipt.reviewedCommit === target.review?.commit && materialVersion && receipt.materialVersion === materialVersion
+    && reviewerId && receipt.reviewerAgentId === reviewerId && target.review?.reviewerAgentId === reviewerId
+    && target.latestExecution?.executorAgentId && reviewerId !== target.latestExecution.executorAgentId
+    && audit?.verdict === 'verified' && audit.verifiedTaskId === target.id && audit.verifiedExecutionId === target.latestExecution?.id
+    && audit.reviewedCommit === target.review?.commit && /^[a-f0-9]{64}$/.test(audit.preTree) && audit.preTree === audit.postTree
+    && /^[a-f0-9]{64}$/.test(materialVersion) && audit.verifiedEvidenceDigest === materialVersion
+    && job?.jobClosed === true && job.cleanup === true && job.attempt === execution.id && job.rootExit === 0 && job.activeProcesses === 0);
 }

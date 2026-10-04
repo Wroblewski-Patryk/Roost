@@ -30,6 +30,7 @@ export const operationLabels: Record<string, [string, string]> = {
   owner_decision_deferred: ["Decyzja właściciela jest odroczona", "Owner decision deferred"],
   task_blocked: ["Zadanie jest zablokowane", "Task blocked"],
   task_needs_revalidation: ["Zadanie wymaga ponownej walidacji", "Task needs revalidation"],
+  task_needs_context: ["Zadanie wymaga uzupełnienia kontekstu", "Task needs complete context"],
   native_execution_failed: ["Uruchomienie natywne nie powiodło się", "Native execution failed"],
   independent_review_rejected: ["Niezależna ocena odrzuciła wynik", "Independent review rejected the result"],
   evidence_unavailable: ["Dowody są niedostępne", "Evidence unavailable"],

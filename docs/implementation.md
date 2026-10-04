@@ -178,10 +178,11 @@ closed Worker Jobs; its refusal and spent attempt remain. Separately admitted
 execution `2680be9f` completed native tests and clean local commit `3cf9645e`.
 Root app diagnostics and external build passed; unchanged node-config diagnostics
 remain a limitation. Worker `cde34ea7` qualifies the complete CRLF diff without
-source edits; 63 focused tests pass. Oversized reviewer `04112b58` was cancelled
-before claim/model. Independent acceptance and authenticated console proof
-remain pending. Roost `02db23e3` retains deployment/health proof. No application
-push/deploy or automatic retry occurred. Gate 5 remains incomplete. See
+source edits; 63 focused tests pass. Reviewer `ab75f1c9` failed before model on
+duplicate Decisions; normal supersession `43ba8ba3` removed only the duplicate.
+Reviewer `7f78d3c2` accepted exact `3cf9645e` in decision `674c5607`, with unchanged
+native state and a closed Job. Authenticated console proof remains pending.
+No app push/deploy or automatic retry. Gate 5 remains incomplete. See
 [operation controls](operations/internal-application-operation.md).
 
 The same mechanism can onboard another configured application without changing

@@ -49,3 +49,28 @@ test('an approval belonging to a different execution cannot establish a met gate
   const f = facts(); f.tasks = [task()]; f.tasks[0].review!.executionId = id(99);
   assert.notEqual(applicationOperation(f).gateState, 'met'); assert.equal(applicationOperation(f).evidence.length, 0);
 });
+
+test('completed exact review helper exposes its accepted outcome but actual owner waiting retains priority', () => {
+  const f = facts(), target = task();
+  const helper = { ...task(), id: id(20), title: 'Independent review', review: null, completedReviewOfTaskId: target.id };
+  f.tasks = [helper, target];
+  const accepted = applicationOperation(f);
+  assert.equal(accepted.nearestOutcome?.taskId, target.id);
+  assert.equal(accepted.nearestOutcome?.status, 'accepted');
+  assert.equal(accepted.gateState, 'met');
+  f.decisions = [{ id: id(21), title: 'Actual helper decision', state: 'proposed', taskIds: [helper.id] }];
+  const waiting = applicationOperation(f);
+  assert.equal(waiting.nearestOutcome?.taskId, helper.id);
+  assert.equal(waiting.gateState, 'blocked');
+  assert.equal(waiting.decisions[0].id, id(21));
+  f.decisions = []; target.review.current = false;
+  assert.equal(applicationOperation(f).nearestOutcome?.taskId, helper.id);
+  assert.notEqual(applicationOperation(f).gateState, 'met');
+});
+
+test('a newly incomplete submission preserves a visible context blocker over its older completed result', () => {
+  const f = facts(); f.tasks = [task()]; f.tasks[0].readiness = 'needs_context';
+  const value = applicationOperation(f);
+  assert.equal(value.gateState, 'blocked');
+  assert.ok(value.blockers.some(blocker => blocker.code === 'task_needs_context'));
+});

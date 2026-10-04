@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { applicationReviewCurrent, applicationReleaseCertified, loadApplicationOperation } from '../modules/product-engineering/application-operation.service';
+import { applicationReviewCurrent, applicationReleaseCertified, completedCodeReviewTarget, loadApplicationOperation } from '../modules/product-engineering/application-operation.service';
 import { releaseDigest, releaseIntentError, releaseOutcomeError, releaseGitSetArtifactDigest, releaseManifestSchema } from '../modules/agent-runtime/governed-release-contract';
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
@@ -22,6 +22,52 @@ function reviewedResult() {
   return { task, execution, review, material };
 }
 const noReads = { $queryRaw: async () => { throw Error('No revalidation read for the original exact pin'); } } as any;
+
+test('only a closed native reviewer of the persisted exact current accepted candidate is a completed helper', () => {
+  const target = { id: id(2), title: 'Outcome', status: 'in_progress', readiness: 'ready', accountable: null,
+    latestExecution: { id: id(4), status: 'completed', invalidated: false, nativeVerified: true, executorAgentId: id(3) },
+    review: { id: id(5), executionId: id(4), decision: 'approve', commit, at, current: true, reviewerAgentId: id(22) } };
+  const helper = { ...target, id: id(20), review: null, latestExecution: { ...target.latestExecution, id: id(21) } };
+  const execution = { id: id(21), status: 'completed', completedAt: at, contextInvalidatedAt: null, changedFiles: [],
+    metadata: { executionContract: { assignment: { agentId: id(22) }, nativeBoundary: { profile: 'inspect-readonly',
+    inspectReadOnly: { kind: 'code-reviewer', verifiedTaskId: target.id, verifiedExecutionId: id(4), reviewedCommit: commit, verifiedEvidenceDigest: hash } } } },
+    verification: { codeReviewDecision: { id: id(5), executionId: id(4), reviewedCommit: commit, decision: 'approve', materialVersion: hash, reviewerAgentId: id(22) },
+      readOnlyAudit: { verdict: 'verified', verifiedTaskId: target.id, verifiedExecutionId: id(4), reviewedCommit: commit, preTree: hash, postTree: hash, verifiedEvidenceDigest: hash },
+      ownedTreeReceipt: { jobClosed: true, cleanup: true, attempt: id(21), rootExit: 0, activeProcesses: 0 } } };
+  const original = { target, helper, execution };
+  assert.equal(completedCodeReviewTarget(helper, execution, target, hash), true);
+  // The native audit binds current mapped material, not the original contract
+  // digest retained as separate provenance by the Worker collector.
+  const mapped = structuredClone(original);
+  mapped.execution.metadata.executionContract.nativeBoundary.inspectReadOnly.verifiedEvidenceDigest = 'f'.repeat(64);
+  assert.equal(completedCodeReviewTarget(mapped.helper, mapped.execution, mapped.target, hash), true);
+  for (const mutate of [
+    (x: any) => { x.helper.latestExecution.status = 'failed'; },
+    (x: any) => { x.helper.latestExecution.invalidated = true; },
+    (x: any) => { x.helper.latestExecution.nativeVerified = false; },
+    (x: any) => { x.helper.readiness = 'needs_revalidation'; },
+    (x: any) => { x.helper.readiness = 'needs_context'; },
+    (x: any) => { x.helper.status = 'blocked'; },
+    (x: any) => { x.execution.completedAt = null; },
+    (x: any) => { x.execution.contextInvalidatedAt = at; },
+    (x: any) => { x.execution.changedFiles = ['unexpected.ts']; },
+    (x: any) => { x.target.review.current = false; },
+    (x: any) => { x.target.review.decision = 'reject'; },
+    (x: any) => { x.execution.metadata.executionContract.nativeBoundary.inspectReadOnly.verifiedExecutionId = id(99); },
+    (x: any) => { x.execution.verification.codeReviewDecision.id = id(99); },
+    (x: any) => { x.execution.verification.codeReviewDecision.reviewedCommit = base; },
+    (x: any) => { x.execution.verification.codeReviewDecision.materialVersion = 'f'.repeat(64); },
+    (x: any) => { x.execution.verification.codeReviewDecision.reviewerAgentId = id(99); },
+    (x: any) => { x.target.review.reviewerAgentId = id(99); },
+    (x: any) => { x.target.latestExecution.executorAgentId = id(22); },
+    (x: any) => { x.execution.verification.readOnlyAudit.postTree = 'f'.repeat(64); },
+    (x: any) => { x.execution.verification.readOnlyAudit.verifiedEvidenceDigest = 'f'.repeat(64); },
+    (x: any) => { x.execution.verification.ownedTreeReceipt.cleanup = false; },
+    (x: any) => { x.execution.verification.ownedTreeReceipt.attempt = id(99); },
+    (x: any) => { x.execution.verification.ownedTreeReceipt.activeProcesses = 1; }
+  ]) { const changed = structuredClone(original); mutate(changed);
+    assert.equal(completedCodeReviewTarget(changed.helper, changed.execution, changed.target, hash), false); }
+});
 test('current review uses the exact native completed pin, revision and assigned executor', async () => {
   const f = reviewedResult(); assert.equal(await applicationReviewCurrent(noReads, id(1), f.task, f.execution, f.review, f.material), true);
   for (const mutate of [
