@@ -79,7 +79,8 @@ Basic documentation titles retain their meaning. Authentication fields, known
 secrets, split content and encoded credentials remain protected. Verify both
 benign catalogue reads and credential rejection when changing this classifier.
 
-Task interviews expose application-owned assumptions before shared records,
+Task interviews expose sources pinned by server task context first, then
+application-owned assumptions before shared records,
 retaining the workspace/application/archive filters and 100-record limit.
 Truncation remains explicit; native revision references are never invented.
 
@@ -90,3 +91,12 @@ package configuration and candidate files are pinned before and after the run.
 The Windows Job must close with no remaining processes. Nonempty TAP assertions
 must pass; empty, skipped, cancelled or pending tests cannot qualify a candidate.
 This configuration does not authorize a write or replace independent review.
+
+Measure the real queued packet and native selections before starting Worker.
+The 128 KiB input limit remains enforced. Reserve space for the verifier's
+complete prior-auditor report. Execution navigation indexes retain selected
+application and pinned source rows; omitted navigation rows have explicit
+counts and a canonical digest. Required source bodies and procedure/authority
+records remain intact. Secret checks and freshness cover the complete native
+response, including omitted index rows. A size measurement issues no launch
+proof. Reconcile any earlier pre-model failure and native lock before retrying.

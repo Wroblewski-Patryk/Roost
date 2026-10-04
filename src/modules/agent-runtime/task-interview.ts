@@ -27,7 +27,7 @@ export async function interviewView(db:Db,w:string,t:string,actor:ReviewActor,ca
  const s=await state(db,w,t,actor);if("error" in s)return {error:s.error!};
  const catalog=await mandateView(db,w,actor);
  const appId=s.source.context?.application?.id;
- const sources=appId?await db.$queryRaw<any[]>(taskInterviewSourceCatalogQuery(w,appId)):[];
+ const sources=appId?await db.$queryRaw<any[]>(taskInterviewSourceCatalogQuery(w,appId,s.task.executionReadiness)):[];
  const owners=await db.workspace.findMany({where:{id:w},select:{ownerUserId:true}});
  const selected=s.cases.find(c=>c.id===caseId)??s.cases.find(c=>!c.superseded&&c.status!=="accepted")??s.cases.find(c=>!c.superseded);
  const history=selected?await db.$queryRaw<any[]>`SELECT * FROM task_interview_entries WHERE case_id=${selected.id}::uuid ORDER BY version DESC LIMIT 51`:[];

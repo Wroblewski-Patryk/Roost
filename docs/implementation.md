@@ -177,10 +177,11 @@ read-only base procedure are reused for the owner's second application. Its own
 context and two audit tasks are configured. Source changes add bounded canonical
 line fragments with native provenance, a separate primary-owner takeover
 Decision, and evidence-derived portfolio/Decision navigation. Focused tests and
-disposable PostgreSQL guards pass. Both audit runtime Decisions are accepted;
-the auditor is queued. Managed audit, owner
-baseline, first write, coding/review and native web proof remain outstanding;
-Roost `3b9e8bed` is deployed; exact build/health and portfolio reads pass.
+disposable PostgreSQL guards pass. Runtime Decisions are accepted; oversized
+input was rejected before model start, with unchanged application and normal
+lock reclamation verified. Managed audit, owner baseline, first write,
+coding/review and native web proof remain outstanding. Roost `4902a887` is
+deployed; exact build/health and portfolio reads pass.
 Gate 5 is not complete. See
 [operation controls](operations/internal-application-operation.md).
 

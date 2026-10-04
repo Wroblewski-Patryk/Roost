@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { validPacketFixture, pinReadyFixture, sealPacket } from "./fixtures/execution-packet.mjs";
-import { prepareProviderInput, consumeProviderInput, providerInputTransport, providerInputSchema } from "./lib/agent-host-provider-input.mjs";
+import { prepareProviderInput, consumeProviderInput, providerInputTransport, providerInputSchema, measureProviderInput } from "./lib/agent-host-provider-input.mjs";
+import { executionContextRevision } from "./lib/agent-host-execution-context.mjs";
 import { codexExecutionArgs } from "./lib/agent-host-model-policy.mjs";
 import { createExecutionLease } from "./lib/agent-host-execution-lease.mjs";
 import { createExecutionDuration } from "./lib/agent-host-execution-duration.mjs";
@@ -9,6 +10,88 @@ import { createObservedOutputBudget } from "./lib/agent-host-output-budget.mjs";
 const options = f => ({ fresh: { taskContext: f.taskContext, applicationContext: f.applicationContext }, claimed: f.claimed,
   currentCommit: "a".repeat(40), assertAuthority() {}, secrets: ["synthetic-worker-private-key"] });
 const prepare = f => prepareProviderInput(options(f));
+function navigationFixture() {
+  const f = validPacketFixture(), selected = "00000000-0000-4000-8000-000000000080", omitted = "00000000-0000-4000-8000-000000000081";
+  f.applicationContext.contextSelection = { profile: "execution", selectedRecordCount: 1 };
+  f.applicationContext.companyRecords = [{ id: selected, description: "Complete selected record body.\n".repeat(80) }];
+  f.applicationContext.documentationIndex = [
+    { id: selected, title: "Selected navigation", filePath: "docs/selected.md" },
+    { id: f.packet.sources[2].id, title: "Contract-pinned navigation", filePath: "docs/pinned.md" },
+    { id: omitted, title: "Unselected navigation", filePath: "docs/unselected.md" }
+  ];
+  pinReadyFixture(f); return f;
+}
+
+test("execution navigation projection retains selected and pinned rows and full authoritative revision", () => {
+  const f = navigationFixture(), before = structuredClone(f), envelope = prepare(f), application = envelope.evidence.application.value;
+  assert.deepEqual(application.documentationIndex, f.applicationContext.documentationIndex.slice(0, 2));
+  assert.deepEqual(application.companyRecords, f.applicationContext.companyRecords);
+  assert.deepEqual(envelope.evidence.sources.value, f.packet.sources);
+  assert.equal(application.documentationIndexProjection.originalCount, 3);
+  assert.equal(application.documentationIndexProjection.selectedCount, 2);
+  assert.equal(application.documentationIndexProjection.omittedCount, 1);
+  assert.match(application.documentationIndexProjection.originalCanonicalDigest, /^[a-f0-9]{64}$/);
+  assert.equal(envelope.revisions.context, executionContextRevision(f.taskContext, f.applicationContext));
+  assert.deepEqual(f, before);
+  checkpoint(f, envelope); f.applicationContext.documentationIndex[2].title = "Changed omitted navigation"; pinReadyFixture(f);
+  assert.throws(() => consumeProviderInput(envelope, options(f)), /agent_provider_input_blocked/);
+});
+
+test("navigation projection consistency rejects unknown fields, invalid counts, digests and unselected rows", () => {
+  const f = navigationFixture(), envelope = prepare(f);
+  for (const mutate of [
+    e => { e.evidence.application.value.documentationIndexProjection.extra = true; },
+    e => { e.evidence.application.value.documentationIndexProjection.selectedCount = 1; },
+    e => { e.evidence.application.value.documentationIndexProjection.omittedCount = 2; },
+    e => { e.evidence.application.value.documentationIndexProjection.originalCanonicalDigest = "invalid"; },
+    e => { e.evidence.application.value.documentationIndex[1] = f.applicationContext.documentationIndex[2]; },
+    e => { e.evidence.application.value.documentationIndex[1] = e.evidence.application.value.documentationIndex[0]; },
+    e => { e.evidence.application.value.contextSelection.profile = "complete"; }
+  ]) {
+    const changed = structuredClone(envelope); mutate(changed);
+    const parsed = providerInputSchema.safeParse(changed); assert.equal(parsed.success, false);
+    assert.ok(parsed.error.issues.some(issue => issue.message === "documentation_index_projection_invalid"));
+  }
+});
+
+test("complete or unsupported navigation shapes remain inline and omission never hides secrets", () => {
+  for (const mutate of [f => { f.applicationContext.contextSelection.profile = "complete"; },
+    f => { f.applicationContext.documentationIndex[2].id = "unsupported-id"; },
+    f => { f.applicationContext.documentationIndex.push(f.applicationContext.documentationIndex[2]); },
+    f => { delete f.applicationContext.companyRecords; }]) {
+    const f = navigationFixture(); mutate(f); pinReadyFixture(f);
+    const envelope = prepare(f); assert.deepEqual(envelope.evidence.application.value.documentationIndex, f.applicationContext.documentationIndex);
+    assert.equal(envelope.evidence.application.value.documentationIndexProjection, undefined);
+  }
+  const f = navigationFixture(); f.applicationContext.documentationIndex[2].title = "synthetic-worker-private-key"; pinReadyFixture(f);
+  assert.throws(() => prepare(f), /agent_runtime_content_blocked/);
+});
+
+test("measurement shares bounded projection, preserves bodies and grants no launch proof", () => {
+  const f = navigationFixture();
+  for (let index = 100; index < 500; index++) f.applicationContext.documentationIndex.push({
+    id: `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`, title: "Historical navigation " + "x".repeat(500), filePath: `docs/history-${index}.md` });
+  pinReadyFixture(f); assert.ok(Buffer.byteLength(JSON.stringify(f.applicationContext)) > 131072);
+  const measurement = measureProviderInput(options(f)), envelope = prepare(f);
+  assert.equal(measurement.measurementOnly, true); assert.equal(measurement.withinLimit, true);
+  assert.equal(measurement.inputBytes, Buffer.byteLength(providerInputTransport("direct_codex", envelope).input));
+  assert.deepEqual(envelope.evidence.sources.value, f.packet.sources);
+  assert.deepEqual(envelope.evidence.application.value.companyRecords, f.applicationContext.companyRecords);
+  assert.equal(envelope.evidence.application.value.documentationIndexProjection.omittedCount, 401);
+  assert.throws(() => providerInputTransport("direct_codex", measurement), /agent_provider_input_blocked/);
+  assert.throws(() => consumeProviderInput(measurement, options(f)), /agent_provider_input_blocked/);
+  f.applicationContext.application.description = "Additional scoped prose. ".repeat(5200); pinReadyFixture(f);
+  assert.equal(measureProviderInput(options(f)).withinLimit, false);
+  assert.throws(() => prepare(f), /agent_provider_input_blocked/);
+});
+
+test("measurement uses the same schema, secret and private-path denial", () => {
+  for (const mutate of [f => { f.applicationContext.application.description = "synthetic-worker-private-key"; },
+    f => { f.packet.contract.scope.allowed = ["C:\\Private\\fixture"]; },
+    f => { f.claimed.attempt = 0; }]) {
+    const f = validPacketFixture(); mutate(f); pinReadyFixture(f); assert.throws(() => measureProviderInput(options(f)));
+  }
+});
 function checkpoint(f, envelope) { f.claimed.checkpoint = { stage: "spawn_intent", packetRevision: envelope.revisions.packet, contextRevision: envelope.revisions.context }; }
 function procedureFixture(content = "Verify the exact declared dimensions.") {
   const f = validPacketFixture(), procedure = { id: "00000000-0000-4000-8000-000000000080",
