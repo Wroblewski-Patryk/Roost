@@ -1032,19 +1032,27 @@ coder `b7aa2342-bd65-499e-b0c2-aa7c4aa99706` exhausted 24 actual API turns;
 native verification refused four scoped tracked edits with no test or commit.
 Its original closed Job, refused review and Writer/lease are retained.
 The new recovery-only owner admission/status/result and Worker integration
-pass 160 focused refusal/auth tests; real application recovery is pending.
+pass 160 focused refusal/auth tests.
 Fixed tracked recovery passes 24 native tests, including six interruption
 points without replay, plus 31 unchanged-refusal regressions. Root independently
 verified the native restore/reconciliation fixture and actual four-file read-only
 inspection through the official Windows entrypoint. Recovery transport passes
 36 tests; safe console projection passes 31 tests. The explicit bounded
 48-turn tier passes 51 budget/tier tests. No fixture grants application recovery,
-candidate acceptance or a new dispatch; the real recovery is still pending.
+candidate acceptance or a new dispatch.
 CRLF restoration and the scoped closed-Job PID identity correction pass
 7 focused native cases independently, with 3 root native cases also passing,
 zero skips. These cover exact authorized anchors, refresh interruption,
 same/older identity denial, positively newer identities and retained legacy
 PID-reuse denial. `codex:check` and scoped syntax/diff checks pass.
+Actual official recovery request `7bbbc723-c9d2-43fb-a004-7374195e6e41`
+archived/restored all four refused files in four closed Windows Jobs, exit 0,
+and returned clean baseline `0e54945a`/main with the empty task branch removed.
+Roost recorded journal digest `005f3a9e74a7b4df7570f5b62b442f5a13fcf67bd4674c3c9f683d181507f5ee`.
+Normal native reconciliation and signed-pair retirement preserve the failed
+review/spent bytes and release only owned fences. No model or remote effect.
+Roost `02db23e3` exact deployment/health and Worker `83b5f112` source/native proof
+are distinct; coding, exact independent acceptance and console proof remain.
 Fixed coding/test suites pass 20 tests with three explicit fixture/privilege
 skips. An independent root native run of the sealed React 18.3.1/ReactDOM
 18.3.1/TypeScript 5.9.3 toolkit passes both actual empty/populated component

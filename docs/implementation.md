@@ -173,14 +173,15 @@ consent explicitly required by `product/requirements.md` remain binding.
 ### Gate 5 — reusable company operation
 
 **In progress (2026-10-04), not met.** Independent audits, baseline and
-first-write consent are proven. Initial unchanged refusal was reconciled;
-its spent attempt remains retained. Separately admitted coder `b7aa2342`
-exhausted 24 turns with four scoped edits, no test or commit. Fixed verification
-refused; lease/Writer remain held pending qualified fixed Worker recovery.
-No direct bootstrap application edit or automatic model retry is permitted.
-Shared procedures, own context and sealed rendered tests are reused. Roost
-`d0397e7e` has exact deployment/health proof; leased predecessor checks pass
-31 native tests. Coding, independent acceptance and console proof are pending.
+first-write consent are proven. Coder `b7aa2342` exhausted 24 turns with four
+scoped edits and no test/commit. Official signed Worker recovery archived all
+four files and restored the clean baseline through four closed Windows Jobs.
+Normal reconciliation released lease/Writer and retired the old signed pair;
+the failed review and spent attempt remain retained. A separately admitted
+48-turn execution is being prepared. No direct bootstrap app edit or automatic
+model retry is permitted. Shared procedures, own context and sealed rendered
+tests are reused. Roost `02db23e3` has deployment/health proof; Worker fix
+`83b5f112` passes 3 root native cases. Coding, acceptance and console proof remain.
 Gate 5 remains incomplete. See
 [operation controls](operations/internal-application-operation.md).
 

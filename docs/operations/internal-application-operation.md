@@ -153,7 +153,11 @@ is separate from the historical refusal. Roost records its receipt without
 accepting a candidate. Regular native reconciliation then releases only
 lease/Writer; normal signed-pair retirement and a newly admitted task execution
 follow. Restored metadata is never described as an unchanged predecessor.
-Actual second-application recovery remains pending until recorded below.
+Actual second-application execution `b7aa2342` was recovered with request
+`7bbbc723`: four archived/restored files and four closed Jobs (restore, refresh,
+switch, empty branch deletion). Roost recorded the completion; normal native
+reconciliation released lease/Writer and signed-pair retirement preserved the
+historical refusal and spent attempt. No model or remote effect occurred.
 
 For an original Windows checkout whose CRLF policy came from global Git
 configuration, fixed recovery does not load that global configuration. It
