@@ -403,6 +403,7 @@ agentRuntimeRouter.post("/tasks/:id/actions/submit-for-execution", asyncHandler(
 }));
 
 agentRuntimeRouter.get("/tasks/:id/execution-readiness", asyncHandler(async (req, res) => {
+  res.setHeader("Cache-Control", "no-store");
   const taskId = z.string().uuid().parse(req.params.id);
   if (req.query.version === "1") {
     const applicationId = z.string().uuid().parse(req.query.applicationId);

@@ -1327,6 +1327,7 @@ export function OperationsRoute() {
   const [listSelectionInitialized, setListSelectionInitialized] = useState(false);
   const [selectedTask, setSelectedTask] = useState<OperationsWorkItem | null>(null);
   const [readinessTask, setReadinessTask] = useState<string | null>(null);
+  const [holdBoardForRecord, setHoldBoardForRecord] = useState(() => Boolean(recordIdFromQuery(window.location.search, 'taskId')));
   const [navigationError, setNavigationError] = useState(false);
   useEffect(() => {
     const taskId = recordIdFromQuery(window.location.search, 'taskId');
@@ -1345,7 +1346,9 @@ export function OperationsRoute() {
   const [taskQuery, setTaskQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState<TaskPriorityFilter>("all");
   const [dateFilter, setDateFilter] = useState<TaskDateFilter>("all");
-  const packet = useOwnerPacket<OperationsPacket>(`/v1/operations/work-items?limit=200&archive=${activeView === "calendar" ? "exclude" : archive}${departmentScope ? `&departmentKey=${encodeURIComponent(departmentScope)}&includeCompanyWide=false` : ""}&refresh=${refreshKey}`, activeView !== "procedures", t);
+  // A direct record does not need the entire board behind its modal. Read the
+  // exact task first; load the board when the owner returns to that surface.
+  const packet = useOwnerPacket<OperationsPacket>(`/v1/operations/work-items?limit=200&archive=${activeView === "calendar" ? "exclude" : archive}${departmentScope ? `&departmentKey=${encodeURIComponent(departmentScope)}&includeCompanyWide=false` : ""}&refresh=${refreshKey}`, activeView !== "procedures" && !holdBoardForRecord, t);
   const rows = useMemo(() => (packet.data?.workItems || []).map((item) => ({ ...item, id: item.task.id })), [packet.data?.workItems]);
   const taskLists = packet.data?.taskLists || [];
   const departments = packet.data?.departments || [];
@@ -1395,7 +1398,7 @@ export function OperationsRoute() {
   return (
     <>
       {navigationError ? <CcNotice tone="error" title={locale === 'pl' ? 'Wskazane zadanie jest niedostępne w tym workspace.' : 'The requested task is unavailable in this workspace.'}
-        action={<CcButton variant="outline" onClick={() => setNavigationError(false)}>{locale === 'pl' ? 'Pokaż rejestr zadań' : 'Show task register'}</CcButton>} /> : null}
+        action={<CcButton variant="outline" onClick={() => { setNavigationError(false); setHoldBoardForRecord(false); }}>{locale === 'pl' ? 'Pokaż rejestr zadań' : 'Show task register'}</CcButton>} /> : null}
       <CcPageHeader
         actions={<><DepartmentScopeControl baseHref={`/areas?area=04-operacje&view=${activeView}`} value={departmentScope} />{activeView !== "calendar" ? <CcSelect aria-label={locale === "pl" ? "Widok zadań" : "Task view"} value={archive} onChange={event => { setArchive(event.target.value); setListSelectionInitialized(false); clearTaskFilters(); }}><option value="exclude">{locale === "pl" ? "Bieżące" : "Current"}</option><option value="only">{locale === "pl" ? "Archiwum" : "Archive"}</option><option value="all">{locale === "pl" ? "Wszystkie" : "All"}</option></CcSelect> : null}</>}
         description={departmentScope ? `Filtered to work assigned to ${departmentLabel(departmentScope, t)}.` : t(activeView === "calendar" ? "operations.calendarDescription" : "operations.description")}
@@ -1453,7 +1456,7 @@ export function OperationsRoute() {
         </section>
       ) : null}
 
-      {readinessTask ? <TaskReadinessModal key={readinessTask} taskId={readinessTask} onClose={() => setReadinessTask(null)} onSaved={refresh} /> : null}
+      {readinessTask ? <TaskReadinessModal key={readinessTask} taskId={readinessTask} onClose={() => { setReadinessTask(null); setHoldBoardForRecord(false); }} onSaved={refresh} /> : null}
       {selectedTask ? <TaskPreviewModal onReady={setReadinessTask} assignmentOptions={assignmentOptions} item={selectedTask} statuses={statuses} taskLists={taskLists} onClose={() => setSelectedTask(null)} onSaved={refresh} /> : null}
       {isCreateTaskOpen ? <TaskCreateModal assignmentOptions={assignmentOptions} taskLists={taskLists} statuses={statuses} defaultTaskListId={createTaskListId || undefined} onClose={() => setIsCreateTaskOpen(false)} onSaved={refresh} /> : null}
       {isCreateListOpen ? <TaskListModal departments={departments} onClose={() => setIsCreateListOpen(false)} onSaved={refresh} /> : null}

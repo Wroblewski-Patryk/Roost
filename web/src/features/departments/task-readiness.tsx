@@ -48,14 +48,17 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
   async function load(applicationId?: string, preserve = false) {
     setBusy("loading"); setError(null);
     try {
-      const response = await api<{ data: ReadyPacket }>(`/v1/agent-runtime/tasks/${taskId}/execution-readiness?editor=1${applicationId ? `&applicationId=${encodeURIComponent(applicationId)}` : ""}`);
+      const response = await api<{ data: ReadyPacket }>(`/v1/agent-runtime/tasks/${taskId}/execution-readiness?editor=1${applicationId ? `&applicationId=${encodeURIComponent(applicationId)}` : ""}`, { cache: "no-store" });
       if (!mounted.current) return;
-      if (!response.data.editor) throw new Error("editor_unavailable");
+      if (!response.data.editor) throw new AppApiError({ code: response.data.reason ?? "task_editor_unavailable", status: 409 });
       setPacket(response.data);
       if (["needs_context", "needs_decision"].includes(response.data.status)) { setError("invalid"); setIssues(validationSections(response.data)); }
       if (!preserve) { setDraft(draftFrom(response.data.editor)); setDirty(false); }
       setLinks({ projectId: response.data.editor.task.project?.id ?? "", goalId: response.data.editor.task.goal?.id ?? "", assignedWorkforceEntityId: response.data.editor.agent?.id ?? "" });
-    } catch (caught) { if (mounted.current) setError(errorCopy(caught)); }
+    } catch (caught) {
+      console.warn(`Owner task readiness read rejected: ${caught instanceof AppApiError ? caught.code : "task_editor_unavailable"}`);
+      if (mounted.current) setError(errorCopy(caught));
+    }
     finally { if (mounted.current) setBusy(null); }
   }
   useEffect(() => { mounted.current = true; void load(); return () => { mounted.current = false; }; }, [taskId]);
