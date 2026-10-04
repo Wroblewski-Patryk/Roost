@@ -2,13 +2,15 @@
 
 ## Claim boundary
 
-Gate 5 is in progress. Two independent managed native audits of the second
-application completed; its bounded implementation baseline is separately
-accepted by the primary owner. Separate first-write consent is accepted.
-The bounded coding outcome has independent native acceptance; authenticated
-Decision history and evidence-console verification remain pending. Each additional
-application needs its own audit and context. Whole product, sale readiness,
-mobile and later company capabilities remain unverified or deferred.
+Gate 5 is met at native/deployed-console evidence level on 2026-10-04. Two
+independent managed native audits of the second application completed; its
+bounded implementation baseline and separate first-write consent were accepted
+by the primary owner. The bounded coding outcome has independent exact-commit
+acceptance and authenticated portfolio, Decision history and evidence-console
+proof. Each additional application needs its own audit and context. Whole
+product, sale readiness, mobile and later company capabilities remain unverified
+or deferred. The second application's accepted candidate remains local; this
+gate conveys no application release authority.
 
 ## Existing application takeover
 
@@ -66,6 +68,10 @@ claims and directs the owner to canonical evidence.
 The canonical Operations route validates the task inside the actual HTTP
 `data` envelope. Missing or foreign task identities and denied reads cannot
 open a readiness/review modal.
+An exact Decision link first verifies its canonical workspace-scoped record,
+including its governed source, inside the same HTTP envelope. The normal modal
+then loads current authority, impact, risk and history; record existence is
+never an acceptance or authority grant.
 
 ## Evidence before completion
 
@@ -212,10 +218,50 @@ resolve that result's display. A later or unknown invalidation still blocks.
 The next execution continues to require normal fresh Ready admission.
 
 Governed console reads can collide while maintaining their serializable source
-fence. Decision/mandate and finding GET routes retry only the explicit
+fence. Decision/mandate, finding and task-readiness GET routes retry only the explicit
 `task_ready_context_conflict` result, at most three complete transactions.
 Business preconditions, missing/denied records and uncertain transport failures
 remain failures. POST commands retain their original single invocation and
 idempotency/reconciliation rules; a read retry grants no new authority.
 Opening an exact Decision loads its modal context without concurrently loading
-the register queue; the queue remains available in the normal register view.
+the register or interview queues; both remain available in the normal register
+view. Between explicit aborted read attempts, 100 ms then 250 ms pauses allow
+the concurrent source-fence transaction to finish. There are still at most three
+complete reads; uncertain results and commands are never replayed by this helper.
+Direct Task navigation defers the background board until the owner closes the
+record. Task readiness uses client/server `no-store` and retains exact error
+codes. Its first load exposes current role/context and genuine Ready invalidation;
+an accepted result is not fresh permission for another execution.
+
+## Recorded Gate 5 outcome
+
+| Proof | Actual identity and boundary |
+| --- | --- |
+| Independent native audits | `bc979125-4c58-47a9-b9ba-8e7cd480d57d` and `efdbb7a8-e3eb-48a1-b5bb-9ba2188c380c`; unchanged native state and closed Windows Jobs. |
+| Owner queue and continuation | Baseline `9321633f-fafa-4fb3-9265-cb418c20a062` waited from 01:40:11 to 01:50:38 UTC; separate first-write `ae84a00e` waited until 01:58:19, superseded by exact eight-path `33ba7f20` accepted at 02:05:08. Coding followed consent; no pending proposal granted writes. |
+| Native coding | `2680be9f-513d-4ee2-a5dc-7f69a9af059a`, completed at 04:07:46 UTC; six nonempty sealed formatter/React/TypeScript tests passed; closed zero-exit Job and clean local candidate `3cf9645e1823b892bdaa1dc6d24840f350ffe8ef`. |
+| Independent exact acceptance | Read-only `7f78d3c2-318e-4dee-88d4-551fd5ec92c0`, completed at 04:46:43 UTC; decision `674c5607-60c9-48b6-a81c-cfae4d5604fa`, material `c19c08a47c0e1584493f0324bc08309394a48d5812759bb922776555a12e7fc1`; unchanged native state, closed Job, zero remaining processes. |
+| Fixed recovery | `7bbbc723-c9d2-43fb-a004-7374195e6e41` archived/restored four refused files through four closed Jobs. Historical refusal and consumed identities remain; subsequent coding required new admission. |
+| Owner console | Authenticated portfolio shows proven stage, nearest accepted outcome, accountable manager, blockers/actual Decisions and canonical links. Exact Task Review shows the candidate, six native tests and independent acceptance. Direct baseline and first-write links load current authority/impact/history on first load. |
+| Shipped console | `d7a5e0dec1c81648f054e2976ddf61cc7290fe7e`, deployment `zz06emosz1v0nbxkwvvsd70t`, finished/observed 12:24:25 UTC; `/health` and `/api/build-info` return 200 with this exact commit. Branch and main pushes used the existing single deployment queue, with intent/read-back before any retry. |
+| Deployment recovery readiness | Encrypted backup `29ec8ed6-7794-481c-a39d-ded7027dbeff` verified at 11:38:50 UTC; isolated restore, schema/data parity and owned restore-database absence passed. No production restore was performed. |
+| Final checks | 36 focused projection/service/PL-EN/navigation/read-contention tests pass without skips; `npm run validate`, `npm run codex:check` and `git diff --check` pass. Other earlier native recovery/codec/protocol checks retain their stated boundaries in the matrix. |
+
+Private browser snapshots and signed native receipts are retained in the
+installation evidence directory, outside source. Failed reads/refusals remain
+historical evidence. Initial console contention required generic read and
+navigation repairs; final direct Decision loads need no manual refresh.
+Final direct Task readiness also loads without retry. Concurrent native
+Task-editor, Decision-impact and Finding-catalogue reads all pass; the genuine
+`risk_context_changed` execution guard remains visible rather than being bypassed.
+
+The actual console explicitly blocks new Findings while workspace canonical
+language is unset and discloses catalogue truncation. No business language was
+chosen implicitly. The flow here used canonical Tasks, not fabricated Findings.
+Node configuration typing still has an unchanged pre-existing diagnostic; app
+source diagnostics, external build and scoped native acceptance tests pass.
+Backend/provider/mobile behavior, complete authenticated second-app browser
+operation and product/sale readiness were not certified. Physical provider call
+counts, token totals and cost were unavailable; no zero values are inferred.
+Worker is stopped with its Writer released; the clean candidate and prior pilot
+handoff remain recoverable. No second-app push/deploy or later-phase work ran.

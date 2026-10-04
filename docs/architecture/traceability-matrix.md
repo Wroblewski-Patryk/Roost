@@ -1004,7 +1004,9 @@ stays disabled and the canonical host stays observe.
 
 ### <a id="e-app-operation"></a>E-APP-OP — reusable application operation
 
-Gate 5 is in progress, not complete. Source and test evidence adds strict
+Gate 5 is met at native/deployed-console evidence level on 2026-10-04, within
+the bounded second-application outcome. The chronological evidence below retains
+earlier failed attempts and incomplete milestones. Source and test evidence adds strict
 canonical read fragments, additive native risk classification, primary-owner
 takeover baseline guards and evidence-derived portfolio/record navigation.
 Root checks: 37/37 focused API/model/UI tests; 29/29 Worker fragment/prior-audit
@@ -1026,7 +1028,7 @@ New initial-branch reuse requires current first-write admission and a
 lease-bound predecessor POST; arbitrary execution GET remains forbidden.
 Root checks pass 31 native continuation tests and 128 refusal/auth tests,
 including JSONB receipt ordering, foreign scope and expired/revoked credentials.
-Coding/review and native console proof remain outstanding.
+At that recovery milestone, coding/review and native console proof were outstanding.
 Roost `d0397e7e` exact deployment/build/health is proven. Separately admitted
 coder `b7aa2342-bd65-499e-b0c2-aa7c4aa99706` exhausted 24 actual API turns;
 native verification refused four scoped tracked edits with no test or commit.
@@ -1068,14 +1070,14 @@ Normal supersession `43ba8ba3` retired only the older duplicate; fresh Ready
 04:46:43 UTC with exact independent approval `674c5607-60c9-48b6-a81c-cfae4d5604fa`
 for `3cf9645e` / material `c19c08a4`, unchanged native state and a closed zero-exit
 Job with zero remaining processes. Root read-back confirms approval and clean
-candidate, normal stopped Worker and released writer. Owner console proof remains
-pending; no app push/deploy. Signed-pair retirement
+candidate, normal stopped Worker and released writer. At 04:47 UTC owner console
+proof was pending; no app push/deploy. Signed-pair retirement
 retains its native review/spent bytes and leaves candidate/branch unchanged.
 Portfolio projects the accepted target instead of its completed native review
 helper only after exact persisted/current material, actors, native audit and Job
 bindings. Owner waiting and new missing context still block; baseline limitations
 remain historical. Twenty-four focused projection/receipt/UI tests and full
-`npm run validate` pass; authenticated browser proof remains pending.
+`npm run validate` pass; authenticated browser proof was pending at that milestone.
 An exact current acceptance after a timestamped group-risk invalidation resolves
 only the result projection; later/unknown invalidation and actual owner waiting
 still block. Fresh execution/release authority is never inferred.
@@ -1083,8 +1085,8 @@ Roost `4ed3289056d3db0cc57c374fe0270a5d4368dc9d`, deployment
 `gi3tc1464riyefqgnpv5a54r`, finished at 05:02:56 UTC; health and build-info
 return 200 with that exact commit. Production portfolio selects the accepted
 bounded coding outcome, accountable manager and exact independent-review link;
-whole-product/sale readiness remains unverified. Gate 5 still requires the
-authenticated owner-console and actual Decision queue/history proof.
+whole-product/sale readiness remains unverified. At 05:02 UTC Gate 5 still
+required authenticated owner-console and actual Decision queue/history proof.
 Fixed coding/test suites pass 20 tests with three explicit fixture/privilege
 skips. An independent root native run of the sealed React 18.3.1/ReactDOM
 18.3.1/TypeScript 5.9.3 toolkit passes both actual empty/populated component
@@ -1092,6 +1094,46 @@ assertions in a closed Windows Job; this synthetic proof changes no application
 source and does not certify browser layout. Shared roles and the existing base
 procedure are reused with application-specific context/extension. See
 [controls and claim boundary](../operations/internal-application-operation.md).
+
+Final authenticated native browser proof observes all four configured portfolio
+records: the pilot has its bounded release proof plus actual pending historical
+Decisions; two unaudited apps remain unmet; the second app shows implementation,
+owner-adopted baseline, nearest accepted repair, accountable manager, no reported
+blockers/Decisions and links to the actual audit and exact `3cf9645e` independent
+review. No declared score overrides these states. The Task Review modal shows
+the six passed sealed native tests, clean candidate, exact current independent
+acceptance and separate ungranted release authority. The evidence cockpit loads
+without error; its empty Findings list, unset canonical language and explicit
+catalogue truncation are retained rather than fabricated or silently omitted.
+
+The real owner queue history is complete: baseline `9321633f` proposed
+01:40:11 UTC and accepted 01:50:38; first-write `ae84a00e` proposed 01:56:39
+and accepted 01:58:19; exact eight-path supersession `33ba7f20` proposed
+02:03:43 and accepted 02:05:08. Private checkpoint records the actual safe
+`baseline_accepted_first_write_pending` phase. Managed coding followed these
+separate decisions; no new artificial pending Decision was created for proof.
+The browser register and direct baseline/first-write modals expose the actual
+authority, impact, limits, supersession and explicit-acceptance timestamps.
+
+Concurrent native console GETs initially returned explicit aborted
+`task_ready_context_conflict` responses. Scoped read retries, short backoff,
+deferred register/interview queues and actual HTTP-envelope identity checks
+repair the generic path without changing source fences or replaying commands.
+Final direct Decision and Task-readiness navigation succeed on first load
+without manual Refresh/Retry. Direct Task entry defers the board until close;
+client/server `no-store` prevents stale readiness responses. Concurrent native
+editor/impact/catalogue reads pass while preserving `risk_context_changed`.
+36 focused read-contention/navigation/operation-service/PL-EN projection tests
+pass with zero skips; `npm run validate`, `npm run codex:check` and scoped diff
+checks pass. Roost `d7a5e0dec1c81648f054e2976ddf61cc7290fe7e`, deployment
+`zz06emosz1v0nbxkwvvsd70t`, finished/observed 12:24:25 UTC with exact 200 health
+and build-info. Before deployment, encrypted backup `29ec8ed6` and isolated
+restore/schema/data parity passed; the owned restore database is absent.
+Only Roost was pushed/deployed. The clean second-app candidate/branch and
+earlier pilot handoff are retained; Worker is stopped and Writer is released.
+Unchanged node-configuration typing, whole backend/browser/mobile operation,
+product/sale readiness and unavailable physical provider cost/usage remain
+explicit limitations. No later phase was started.
 
 ## Matrix
 
@@ -1107,30 +1149,30 @@ procedure are reused with application-specific context/extension. See
 | [RF-PROD-008](../product/requirements.md#rf-prod-008) | P2 | nieocenione | [ORG](#e-org) | Safe post-launch composition changes await the configurable-composition phase. |
 | [RF-PROD-009](../product/requirements.md#rf-prod-009) | P2 | nieocenione | [DOC](#e-doc) | This packaging boundary is accepted policy; no separate-module implementation is required now. |
 | [RF-PROD-010](../product/requirements.md#rf-prod-010) | P0 | nieocenione | [GOV](#e-gov) | Actor-neutral authority and lowest-authorized escalation need end-to-end runtime proof. |
-| [RF-PROD-011](../product/requirements.md#rf-prod-011) | P0 | nieocenione | [DOC](#e-doc) | This is the current first-stage outcome; completion is proven only by Gates 1-5 in `docs/implementation.md`. |
-| [RF-PROD-012](../product/requirements.md#rf-prod-012) | P0 | nieocenione | [DOC](#e-doc) | Script, agent and person execution ownership must be proven in the real delivery. |
-| [RF-PROD-013](../product/requirements.md#rf-prod-013) | P0 | nieocenione | [GOV](#e-gov) | Exactly-one accountability and explicit transfer need end-to-end enforcement proof. |
-| [RF-OUT-001](../product/requirements.md#rf-out-001) | P0 | nieocenione | [ATTENTION](#e-attention) | The complete attention-to-evidence owner loop has not been audited end to end. |
+| [RF-PROD-011](../product/requirements.md#rf-prod-011) | P0 | częściowo działa | [RELEASE](#e-release), [APP-OP](#e-app-operation) | Governed pilot delivery and second-app audit/coding/exact acceptance are proven. This internal bounded delivery system does not establish completion of either whole application or arbitrary further onboarding. |
+| [RF-PROD-012](../product/requirements.md#rf-prod-012) | P0 | częściowo działa | [APP-OP](#e-app-operation), [RELEASE](#e-release) | Fixed Worker scripts collected/tested/restored; separate authorized agents audited/coded/reviewed; owner baseline and first-write decisions remain reserved. General company operations remain partial. |
+| [RF-PROD-013](../product/requirements.md#rf-prod-013) | P0 | częściowo działa | [GOV](#e-gov), [APP-OP](#e-app-operation) | Second-app pinned requester, accountable manager, executor and independent verifier remain distinct; portfolio names the manager. General case/process accountability transfers remain unverified. |
+| [RF-OUT-001](../product/requirements.md#rf-out-001) | P0 | częściowo działa | [ATTENTION](#e-attention), [APP-OP](#e-app-operation) | Actual portfolio exposes outcome, manager, blockers/Decisions and canonical evidence; owner pending-to-consent-to-native-continuation history is verified. The complete company attention lifecycle remains unverified. |
 | [RF-OUT-002](../product/requirements.md#rf-out-002) | P1 | nieocenione | [ATTENTION](#e-attention) | Actionable attention, rationale and authorized reprioritization require an implementation audit. |
-| [RF-OUT-003](../product/requirements.md#rf-out-003) | P1 | nieocenione | [DEC](#e-dec) | Cross-record impact preview and separate acceptance require whole-product proof. |
+| [RF-OUT-003](../product/requirements.md#rf-out-003) | P1 | częściowo działa | [DEC](#e-dec), [APP-OP](#e-app-operation) | Actual owner baseline/first-write modals show computed downstream impact, separate acceptance and original/superseding history. Semantic company-wide impact remains outside this proof. |
 | [RF-OUT-004](../product/requirements.md#rf-out-004) | P2 | nieocenione | [DOC](#e-doc) | Baselines and numeric targets intentionally remain unmeasured until operation begins. |
 | [RF-OUT-005](../product/requirements.md#rf-out-005) | P0 | działa | [DOC](#e-doc) | Current handoff and AGENTS instructions require gate evidence and reject atom/percentage completion claims. |
 | [RF-OUT-006](../product/requirements.md#rf-out-006) | P1 | nieocenione | [GOAL](#e-goal) | Goal/risk/dependency-based priority and mandate-aware escalation require implementation proof. |
 | [RF-OUT-007](../product/requirements.md#rf-out-007) | P1 | nieocenione | [GOAL](#e-goal) | Measurable goals, evidence sources and forecast/deadline separation require an audit. |
-| [RF-APP-001](../product/requirements.md#rf-app-001) | P0 | nieocenione | [PORT](#e-port) | The configured-application completion proof begins only after the real agent round trip works. |
+| [RF-APP-001](../product/requirements.md#rf-app-001) | P0 | częściowo działa | [PORT](#e-port), [APP-OP](#e-app-operation) | Two existing applications have governed bounded outcomes; no whole-application completion or sale readiness is claimed. |
 | [RF-APP-002](../product/requirements.md#rf-app-002) | P2 | nieocenione | [PORT](#e-port) | Full commercialization lifecycle is accepted later-phase intent, not a current delivery gate. |
-| [RF-APP-003](../product/requirements.md#rf-app-003) | P0 | częściowo działa | [FIND](#e-find), [RELEASE](#e-release) | Gate 4 proves a bounded pilot audit, owner-adopted baseline and governed PWA repair; full product takeover remains unverified. |
+| [RF-APP-003](../product/requirements.md#rf-app-003) | P0 | częściowo działa | [FIND](#e-find), [RELEASE](#e-release), [APP-OP](#e-app-operation) | Pilot and second-app independent audits, owner-adopted bounded baselines and governed repairs passed; full product takeover remains unverified. |
 | [RF-APP-004](../product/requirements.md#rf-app-004) | P1 | nieocenione | [HEALTH](#e-health) | Product-ready and sale-ready controls require application-specific evidence. |
-| [RF-APP-005](../product/requirements.md#rf-app-005) | P1 | nieocenione | [PORT](#e-port) | Primary user/problem/core-path criteria are takeover outputs for each configured application. |
+| [RF-APP-005](../product/requirements.md#rf-app-005) | P1 | częściowo działa | [PORT](#e-port), [APP-OP](#e-app-operation) | Second-app baseline pins intended operator, actual defect and measured truthful-activity outcome. Broader primary market user and whole-product core-path criteria remain unspecified/unverified. |
 | [RF-APP-006](../product/requirements.md#rf-app-006) | P1 | nieocenione | [HEALTH](#e-health) | Critical-blocker classification needs application-specific health and risk evidence. |
 | [RF-APP-007](../product/requirements.md#rf-app-007) | P1 | nieocenione | [DEC](#e-dec) | Limitation acceptance requires a real readiness decision and attached evidence. |
 | [RF-APP-008](../product/requirements.md#rf-app-008) | P1 | nieocenione | [REVIEW](#e-review) | Owner readiness acceptance has not been exercised for a configured application. |
-| [RF-APP-009](../product/requirements.md#rf-app-009) | P0 | częściowo działa | [DOC](#e-doc), [RELEASE](#e-release) | Existing pilot records, repository and pinned runtime context were used in Gate 4; inventory across the portfolio remains unverified. |
-| [RF-APP-010](../product/requirements.md#rf-app-010) | P0 | częściowo działa | [PORT](#e-port), [RELEASE](#e-release), [APP-OP](#e-app-operation) | Pilot adoption/repair passed; second-app native audits, separate owner baseline/first-write, coding and exact independent acceptance passed. Console and new empty-app path remain unproven. |
-| [RF-APP-011](../product/requirements.md#rf-app-011) | P0 | częściowo działa | [CTX](#e-ctx), [RELEASE](#e-release) | Gate 4 compares scoped requirements, code, Git and production facts with provenance; full financial/product audit is not claimed. |
+| [RF-APP-009](../product/requirements.md#rf-app-009) | P0 | częściowo działa | [DOC](#e-doc), [RELEASE](#e-release), [APP-OP](#e-app-operation) | Existing pilot and second-app repositories, histories, own assumptions and pinned context were reused. Other portfolio applications still require their own audit and safe onboarding. |
+| [RF-APP-010](../product/requirements.md#rf-app-010) | P0 | częściowo działa | [PORT](#e-port), [RELEASE](#e-release), [APP-OP](#e-app-operation) | Pilot adoption/repair and second-app native audits, owner baseline/first-write, coding/exact independent acceptance and authenticated console passed. New empty-app creation and broader product takeover remain unproven. |
+| [RF-APP-011](../product/requirements.md#rf-app-011) | P0 | częściowo działa | [CTX](#e-ctx), [RELEASE](#e-release), [APP-OP](#e-app-operation) | Two bounded audits compare pinned requirements, source and Git/native observations with classified assumptions and independent evidence. Full financial/product audit and second-app deployed parity remain unverified. |
 | [RF-APP-012](../product/requirements.md#rf-app-012) | P0 | częściowo działa | [DOC](#e-doc), [RELEASE](#e-release), [APP-OP](#e-app-operation) | Shared base/roles with own application context/extension ran in pilot delivery and second-app audits/coding/exact independent acceptance. Full application operation remains unproven. |
-| [RF-APP-013](../product/requirements.md#rf-app-013) | P1 | częściowo działa | [PORT](#e-port), [RELEASE](#e-release) | One repair has evidence-backed delivery; the failed release remains FAILED before adoption and reissue. General lifecycle readiness is unverified. |
-| [RF-APP-014](../product/requirements.md#rf-app-014) | P1 | częściowo działa | [ATTENTION](#e-attention), [RELEASE](#e-release), [APP-OP](#e-app-operation) | Pilot evidence is recorded; stage/outcome/accountability/five-state portfolio has focused source/UI tests. Deployed console and actual owner waiting/continuation remain unverified. |
+| [RF-APP-013](../product/requirements.md#rf-app-013) | P1 | częściowo działa | [PORT](#e-port), [RELEASE](#e-release), [APP-OP](#e-app-operation) | Two bounded repairs have evidence-backed acceptance; pilot release also has production proof. Historical failures and recovered refusals remain distinct from success. General lifecycle readiness is unverified. |
+| [RF-APP-014](../product/requirements.md#rf-app-014) | P1 | działa | [ATTENTION](#e-attention), [RELEASE](#e-release), [APP-OP](#e-app-operation) | Authenticated four-app portfolio shows proven stages, nearest outcomes, managers, actual blockers/Decisions and canonical evidence. All five gate states and PL/EN safe unknowns have focused tests; actual owner waiting/approved continuation and exact evidence links passed. This proves the scoped portfolio projection, not complete application readiness. |
 | [RF-APP-015](../product/requirements.md#rf-app-015) | P2 | nieocenione | [HEALTH](#e-health) | Controlled commercial launch is a later gate after application completion. |
 | [RF-BIZ-001](../product/requirements.md#rf-biz-001) | P2 | nieocenione | [DOC](#e-doc) | Application/Roost authority boundaries are later sale-readiness work. |
 | [RF-BIZ-002](../product/requirements.md#rf-biz-002) | P2 | nieocenione | [DOC](#e-doc) | Canonical customer identity is later business-operation scope. |
@@ -1218,7 +1260,7 @@ procedure are reused with application-specific context/extension. See
 | [RF-CTX-026](../product/requirements.md#rf-ctx-026) | P1 | nieocenione | [PROC](#e-proc) | Executor-class declarations, bounded retry/fallback and promotion to deterministic automation require procedure-runtime proof. |
 | [RF-HOST-001](../product/requirements.md#rf-host-001) | P0 | częściowo działa | [HOST](#e-host) | Queue/observer implemented; full scheduler pending. |
 | [RF-HOST-002](../product/requirements.md#rf-host-002) | P0 | częściowo działa | [LOCK](#e-lock), Gate 2 native evidence above | Global writer lock rejected a second writing executor while the first held the pilot slot. General waiting/read resource admission remains partial. |
-| [RF-HOST-003](../product/requirements.md#rf-host-003) | P0 | częściowo działa | [RECOVERY](#e-recovery), Gate 2 native evidence above | A stopped pre-spawn attempt resumed safely under the same checkpoint and identity. An after-spawn failed coding candidate needed exact signed manual lease and admission reconciliation; automatic recovery for every such failure remains unproven. |
+| [RF-HOST-003](../product/requirements.md#rf-host-003) | P0 | częściowo działa | [RECOVERY](#e-recovery), [APP-OP](#e-app-operation), Gate 2 native evidence above | Same-attempt pre-spawn resume passed. Exact signed refused-candidate recovery and actual four-file tracked restore completed through closed Jobs before fresh admission; spent attempts and historical refusals were retained. Automatic recovery for arbitrary failures remains unproven. |
 | [RF-HOST-004](../product/requirements.md#rf-host-004) | P0 | częściowo działa | [WORKSPACE](#e-workspace) | Path/origin guard exists; full clean-main and unknown-change admission absent. |
 | [RF-HOST-005](../product/requirements.md#rf-host-005) | P1 | częściowo działa | [WORKSPACE](#e-workspace) | No governed branch lifecycle or WIP broker. |
 | [RF-HOST-006](../product/requirements.md#rf-host-006) | P0 | częściowo działa | [LEASE](#e-lease) | Lease/process-tree and durable spawn barriers exist; all operation checkpoints incomplete. |
@@ -1233,7 +1275,7 @@ procedure are reused with application-specific context/extension. See
 | [RF-HOST-015](../product/requirements.md#rf-host-015) | P1 | częściowo działa | [AUTH](#e-auth) | Host identity and scoped provisioning exist; interactive pairing absent. |
 | [RF-HOST-016](../product/requirements.md#rf-host-016) | P0 | działa | [MODEL](#e-model) | Explicit allowlist/pair validation and exact argv verified by synthetic host tests; no provider call/activation. Full routing/observed usage remain RF-HOST-017/018. |
 | [RF-HOST-017](../product/requirements.md#rf-host-017) | P1 | brak | [MODEL](#e-model) | No stage router, minima, availability or override UI. |
-| [RF-HOST-018](../product/requirements.md#rf-host-018) | P1 | częściowo działa | [MODEL](#e-model) | No model/effort execution evidence. |
+| [RF-HOST-018](../product/requirements.md#rf-host-018) | P1 | częściowo działa | [MODEL](#e-model), [APP-OP](#e-app-operation) | Actual second-app coding used explicit medium effort and independent read-only review used low effort with pinned provider/model profiles, input caps, turns and no restart/retry. Physical provider calls, token counts and cost were not exposed; broad quality/optimization evidence is absent. |
 | [RF-HOST-019](../product/requirements.md#rf-host-019) | P0 | częściowo działa | [PACKET](#e-packet) | Prompt marks context untrusted; no comprehensive quarantine/reporting. |
 | [RF-HOST-020](../product/requirements.md#rf-host-020) | P0 | częściowo działa | [WORKSPACE](#e-workspace) | Workspace-write sandbox is not read isolation; browser/session broker absent. |
 | [RF-SEC-001](../product/requirements.md#rf-sec-001) | P0 | częściowo działa | [RISK](#e-risk) | [Bounded native assessment](native-task-risk.md) computes seven-dimension maximum, uncertainty and cumulative canonical task groups; binds Ready/execution/grants. Company-wide automated risk discovery remains absent. |
@@ -1283,7 +1325,7 @@ procedure are reused with application-specific context/extension. See
 | [RF-ACT-007](../product/requirements.md#rf-act-007) | P0 | częściowo działa | [ACT](#e-act), [RELEASE](#e-release) | Gate 3 read-only canaries, separate first-write consent and native release/recovery passed. Gate 4 adds scoped read-only audits, separate first-write/release consent, exact acceptance and independent production verification. The full activation ladder and medium-risk progression rule remain unproven. |
 | [RF-ACT-008](../product/requirements.md#rf-act-008) | P1 | brak | [ACT](#e-act) | No capability progression lifecycle. |
 | [RF-ACT-009](../product/requirements.md#rf-act-009) | P1 | brak | [ACT](#e-act) | No probation counters/certification. |
-| [RF-ACT-010](../product/requirements.md#rf-act-010) | P1 | częściowo działa | [ACT](#e-act), [APP-OP](#e-app-operation) | Own takeover context, independent audits, bounded canary/manifest and explicit owner baseline/first-write ran for two apps. Whole second-app health, release and arbitrary further onboarding are unverified. |
+| [RF-ACT-010](../product/requirements.md#rf-act-010) | P1 | częściowo działa | [ACT](#e-act), [APP-OP](#e-app-operation) | Own context, independent audits, bounded manifest, separate owner baseline/first-write, native coding/exact review and owner-console continuation ran using shared roles/procedures in two apps. Whole second-app health, release and arbitrary further onboarding are unverified. |
 | [RF-ACT-011](../product/requirements.md#rf-act-011) | P0 | częściowo działa | [GOV](#e-gov) | `AGENTS.md`, `docs/implementation.md` and the repository delivery skill enforce one accountable authorized gate with bounded delegation and a mandatory stop before the next gate. Native Roost/Worker enforcement and gate proof remain unverified. |
 | [RF-PILOT-001](../product/requirements.md#rf-demoapp-001) | P1 | częściowo działa | [PILOT](#e-demoapp), [RELEASE](#e-release) | Pilot mapping, scoped application context and six-service production baseline were audited; full product readiness is not proven. |
 | [RF-PILOT-002](../product/requirements.md#rf-demoapp-002) | P1 | nieocenione | [PILOT](#e-demoapp) | Gate 4 PWA repair does not prove shared BACKTEST/PAPER/LIVE strategy decisions or multi-exchange/market/portfolio behavior. |
@@ -1302,14 +1344,14 @@ procedure are reused with application-specific context/extension. See
 | [RF-PILOT-015](../product/requirements.md#rf-demoapp-015) | P1 | częściowo działa | [INTEGRATION](#e-integration) | Connectors exist; test-scope admission incomplete. |
 | [RF-PILOT-016](../product/requirements.md#rf-demoapp-016) | P0 | częściowo działa | [INTEGRATION](#e-integration) | Provider operations exist; generic test ownership/cost guard absent. |
 | [RF-PILOT-017](../product/requirements.md#rf-demoapp-017) | P1 | brak | [INTEGRATION](#e-integration) | No generic integration test ladder controller. |
-| [RF-UX-001](../product/requirements.md#rf-ux-001) | P1 | częściowo działa | [ATTENTION](#e-attention) | Dashboards/events exist; unified attention lifecycle incomplete. |
-| [RF-UX-002](../product/requirements.md#rf-ux-002) | P1 | częściowo działa | [ATTENTION](#e-attention) | Execution timeline exists; complete explainable evidence view partial. |
+| [RF-UX-001](../product/requirements.md#rf-ux-001) | P1 | częściowo działa | [ATTENTION](#e-attention), [APP-OP](#e-app-operation) | Actual portfolio, canonical pending Decision queue and accepted continuation history are verified; a unified company-wide attention lifecycle remains incomplete. |
+| [RF-UX-002](../product/requirements.md#rf-ux-002) | P1 | częściowo działa | [ATTENTION](#e-attention), [APP-OP](#e-app-operation) | Actual native Task Review, exact commit/tests/reviewer and owner Decision impact/history are visible. Complete evidence interpretation across every company capability remains partial. |
 | [RF-UX-003](../product/requirements.md#rf-ux-003) | P0 | częściowo działa | [HOST](#e-host) | Cancel and observer stop exist; full owner controls absent. |
 | [RF-UX-004](../product/requirements.md#rf-ux-004) | P1 | częściowo działa | [AUDIT](#e-audit) | Ignored evidence guard exists; runtime log retention not implemented. |
-| [RF-UX-005](../product/requirements.md#rf-ux-005) | P1 | brak | [LANG](#e-lang) | UI localStorage locale only; account communication/workspace settings missing. |
-| [RF-UX-006](../product/requirements.md#rf-ux-006) | P0 | brak | [LANG](#e-lang) | Workspace schema lacks language. |
+| [RF-UX-005](../product/requirements.md#rf-ux-005) | P1 | częściowo działa | [LANG](#e-lang), [APP-OP](#e-app-operation) | PL/EN UI persists preferredLanguage through auth/me; canonicalLanguage exists for Findings. Independent communication language, recipient routing and canonical translations remain unverified. |
+| [RF-UX-006](../product/requirements.md#rf-ux-006) | P0 | częściowo działa | [LANG](#e-lang), [APP-OP](#e-app-operation) | Canonical-language field and guarded Finding creation exist. Actual owner console refuses new Findings while language is unset. Creation-time choice/immutability is not implemented: creation omits the field and admin PATCH permits changes. No language was inferred or changed in Gate 5. |
 | [RF-UX-007](../product/requirements.md#rf-ux-007) | P1 | częściowo działa | [LANG](#e-lang) | PL/EN and fallback exist; missing-key finding and account persistence incomplete. |
-| [RF-UX-008](../product/requirements.md#rf-ux-008) | P1 | brak | [TIME](#e-time) | DateTime storage exists; user/workspace timezone settings absent. |
+| [RF-UX-008](../product/requirements.md#rf-ux-008) | P1 | częściowo działa | [TIME](#e-time), [APP-OP](#e-app-operation) | UTC API timestamps and browser-local Intl display show the actual Decision lineage. User manual timezone override and workspace scheduling timezone remain absent. |
 | [RF-UX-009](../product/requirements.md#rf-ux-009) | P1 | brak | [TIME](#e-time) | No native timezone-aware recurring task scheduler. |
 | [RF-DEF-001](../product/requirements.md#rf-def-001) | P2 | brak | [AUTH](#e-auth) | Deferred; do not add an activation gate. |
 | [RF-DEF-002](../product/requirements.md#rf-def-002) | P2 | brak | [RELEASE](#e-release) | Deferred; current constraints remain valid. |
@@ -1828,11 +1870,15 @@ not certify the entire activation ladder.
 [web/src/features/settings/agent-connections-section.tsx](../../web/src/features/settings/agent-connections-section.tsx), [src/modules/dashboard/dashboard.routes.ts](../../src/modules/dashboard/dashboard.routes.ts), [src/modules/agent-events/agent-events.routes.ts](../../src/modules/agent-events/agent-events.routes.ts).
 
 <a id="e-lang"></a>
-**LANG** — PL/EN localStorage UI selection and English fallback; ultimate fallback still exposes key.
+**LANG** — PL/EN localStorage/auth preferredLanguage UI selection and English
+fallback; ultimate fallback still exposes key. Workspace canonicalLanguage is
+available to Findings but creation-time immutable choice and separate
+communication/translation routing are incomplete.
 
 [web/src/i18n/i18n.tsx](../../web/src/i18n/i18n.tsx), [src/modules/workspaces/workspaces.routes.ts](../../src/modules/workspaces/workspaces.routes.ts), [prisma/schema.prisma](../../prisma/schema.prisma), [web/src/i18n/locales.ts](../../web/src/i18n/locales.ts).
 
 <a id="e-time"></a>
-**TIME** — DateTime columns only; no user/workspace timezone or DST task scheduler.
+**TIME** — UTC DateTime storage and browser-local Intl display; no persistent
+manual user/workspace timezone or DST task scheduler.
 
-[prisma/schema.prisma](../../prisma/schema.prisma), [src/modules/workspaces/workspaces.routes.ts](../../src/modules/workspaces/workspaces.routes.ts).
+[prisma/schema.prisma](../../prisma/schema.prisma), [src/modules/workspaces/workspaces.routes.ts](../../src/modules/workspaces/workspaces.routes.ts), [web/src/i18n/date-format.ts](../../web/src/i18n/date-format.ts).

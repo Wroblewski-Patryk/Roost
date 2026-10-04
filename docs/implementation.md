@@ -172,18 +172,15 @@ consent explicitly required by `product/requirements.md` remain binding.
 
 ### Gate 5 — reusable company operation
 
-**In progress (2026-10-04), not met.** Independent audits, baseline and
-first-write consent are proven. Failed coder `b7aa2342` was restored through four
-closed Worker Jobs; its refusal and spent attempt remain. Separately admitted
-execution `2680be9f` completed native tests and clean local commit `3cf9645e`.
-Root app diagnostics and external build passed; unchanged node-config diagnostics
-remain a limitation. Worker `cde34ea7` qualifies the complete CRLF diff without
-source edits; 63 focused tests pass. Reviewer `ab75f1c9` failed before model on
-duplicate Decisions; normal supersession `43ba8ba3` removed only the duplicate.
-Reviewer `7f78d3c2` accepted exact `3cf9645e` in decision `674c5607`, with unchanged
-native state and a closed Job. Roost `4ed32890` deployed; console proof pending.
-No app push/deploy or automatic retry. Gate 5 remains incomplete. See
-[operation controls](operations/internal-application-operation.md).
+**Met at native/deployed-console evidence level (2026-10-04).** The second
+configured application reused shared roles/procedures and its own audited,
+owner-accepted baseline and separate first-write consent. Worker/Hermes produced
+clean local `3cf9645e` with six native tests; independent `7f78d3c2` accepted the
+exact commit in `674c5607`. Fixed recovery preserved earlier refusals/spent
+attempts. Authenticated portfolio, evidence, actual Decision history and approved
+continuation are verified on Roost `d7a5e0de`. Worker stopped; no application
+push/deploy. Whole-product readiness and later capabilities remain unproven.
+See [evidence and operating limits](operations/internal-application-operation.md).
 
 The same mechanism can onboard another configured application without changing
 the core runtime. Accepted requirements applicable to internal application
