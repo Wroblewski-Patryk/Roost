@@ -118,6 +118,14 @@ because its required candidate test is absent. `coding_tests_unproven` grants
 no acceptance or retry. For this exact refused class, native reconciliation
 requires signed Ready/resume/review/closed Job evidence, installation PASS,
 zero changes/violations and an exact current unchanged repository footprint.
+
+A new admitted execution may reuse the initial task branch only when its
+explicit predecessor is terminal failed on the same host/task/application,
+without a candidate or result. The Worker authenticates current first-write
+admission, compares the API receipt with the signed local review and requires
+completed reconciliation, retained consumed identity and the exact unchanged
+workspace. Missing or changed evidence still blocks before model launch. This
+observation does not restore the predecessor or authorize an automatic retry.
 Provide the canonical root and expected HEAD/branch/origin. Every artifact
 deletion barrier repeats the footprint and signed-chain checks. Explicit scoped
 operator authority releases only lease/Writer fences; the failed result, review

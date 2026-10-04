@@ -172,13 +172,13 @@ consent explicitly required by `product/requirements.md` remain binding.
 
 ### Gate 5 — reusable company operation
 
-**In progress (2026-10-04), not met.** Two independent managed native audits
-of the owner's second application completed with unchanged repository/process/
-container state. Its baseline and separate first-write consent are accepted.
-The initial eight-turn coder closed without edits; fixed verification refused
-the absent test. Native unchanged-state recovery released only lease/Writer,
-preserving the refusal and consumed attempt. A new bounded continuation is
-prepared; coding/review and console proof remain pending.
+**In progress (2026-10-04), not met.** Two independent managed audits of the
+second application prove unchanged native state. Baseline and first-write
+consent are accepted. The initial coder closed without edits or tests; fixed
+verification refused. Recovery released only lease/Writer, retaining the
+refusal and spent attempt. New admission reuses the unchanged task branch only
+after signed reconciliation and exact predecessor checks (30 native tests).
+Coding/review and console proof remain pending.
 Shared procedures and own context are reused. Provenance, takeover guards and
 portfolio navigation pass focused/native checks. Roost `2678d3d7` has deployed
 build/health proof. A sealed

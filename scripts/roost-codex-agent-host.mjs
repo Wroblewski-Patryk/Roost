@@ -47,6 +47,7 @@ import readyContext from "./lib/agent-host-ready-context.cjs";
 import { contextStopError } from "./lib/agent-host-context-stop.mjs";
 import { assertTaskBranch, readCurrentTaskBranch, readCurrentTaskCommit, readCommittedTaskPaths } from "./lib/agent-host-single-task.mjs";
 import { createTaskBranch } from "./lib/agent-host-task-branch.mjs";
+import { observeUnchangedTaskBranch } from "./lib/agent-host-unchanged-branch-continuation.mjs";
 import { runGovernedReleaseQueueStep, getGovernedReleaseRecoveryCandidate, persistReleaseWorkerDiagnostic } from "./lib/agent-host-release-worker.mjs";
 
 const baseUrl = String(process.env.ROOST_BASE_URL || process.env.COMPANYCORE_BASE_URL || "").replace(/\/+$/, "");
@@ -322,9 +323,15 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
         provider: config.executionProvider, contract: taskContract, baselineCommit: preparedCommit,
         assertAuthority: assertProviderAuthority }));
       const existingAuthority=firstWrite.existingCommitVerification??firstWrite.continuation;
+      if (actualBranch === taskContract.singleTask.branch && !existingAuthority && !resumeCheckpoint) {
+        assertProviderAuthority();
+        await duration.wait(observeUnchangedTaskBranch({ api, claimed, firstWrite,
+          stateDirectory: writerRecoveryEvidence(writerLock).directory, repositoryPath,
+          expected: { head: preparedCommit, branch: taskContract.singleTask.branch, origin: repository.originUrl } }));
+        assertProviderAuthority();
+      }
       if (actualBranch === repository.baseBranch && existingAuthority
-          || actualBranch === taskContract.singleTask.branch && (!existingAuthority && !resumeCheckpoint
-            || existingAuthority && existingAuthority.previousCommit !== preparedCommit))
+          || actualBranch === taskContract.singleTask.branch && existingAuthority && existingAuthority.previousCommit !== preparedCommit)
         throw recoveryError("repository_mismatch");
       if (actualBranch === repository.baseBranch) {
         if (claimed.checkpoint.stage === "claimed") await duration.wait(checkpoint("branch_intent", taskContext.executionPacket.revision, digest));
@@ -340,7 +347,8 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
         digest = await duration.wait(workspaceDigest(repositoryPath));
         await duration.wait(checkpoint("branch_ready", taskContext.executionPacket.revision, digest));
       } else if (claimed.checkpoint.stage === "claimed") {
-        // A reviewer-returned correction starts on the same clean task branch.
+        // A reviewer-returned correction or independently admitted new attempt
+        // after an unchanged, fully reconciled refusal uses the clean task branch.
         // Record both durable boundaries even though no branch switch is needed.
         await duration.wait(checkpoint("branch_intent", taskContext.executionPacket.revision, digest));
         await duration.wait(checkpoint("branch_ready", taskContext.executionPacket.revision, digest));
