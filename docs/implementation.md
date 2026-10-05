@@ -198,9 +198,9 @@ authoritative absence. Installed Compose SQL admits 0857 and proves five denials
 Grant `a14dba8b` binds 0857; PR 2 merges at `c82e68b3`.
 Signed Worker reconciles merge and proves configuration absent. Normal closure
 `2eb9cdfd` records FAILED; 88 children close, Writer is archived/released.
-Credential rotation is verified. Current code approval can be retained;
-fresh baseline, native manifest audit and separate exact owner grant remain
-required. No application deployment is started.
+Rotation/baseline verified. Audit scope invalidates group Ready; new code
+review/revalidation, native manifest audit and separate exact owner grant remain
+required. No deployment has started.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,
