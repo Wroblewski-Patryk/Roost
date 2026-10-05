@@ -219,7 +219,8 @@ function composeConfigAbsentPublishedBasis(state:any,input:any):any {
   ||!state.revocations.some((v:any)=>v.id===closure.revocation_id)||receipt.failedOutcomeId!==state.journal.at(-1)?.outcome?.id
   ||releaseFailedClosureError(state,receipt,false))return {error:"release_restart_closure_unproven"};
  if(!releaseIsCompose(input.manifest)||input.predecessor||input.successorBasis
-  ||["reviewId","releaseExecutionId","releaserCredentialId"].some(k=>input[k]===s[k])
+  ||["releaseExecutionId","releaserCredentialId"].some(k=>input[k]===s[k])
+  ||input.reviewId===s.reviewId&&input.materialVersion!==s.materialVersion
   ||["taskId","applicationId","hostId","commit","candidateTree","baseCommit","baseTree","releaserAgentId"].some(k=>input[k]!==s[k]))return {error:"release_restart_binding_changed"};
  const stable=(m:any)=>({...m,baseline:Object.fromEntries(Object.entries(m.baseline).filter(([k])=>k!=="observedAt"))});
  if(releaseDigest(stable(input.manifest))!==releaseDigest(stable(s.manifest)))return {error:"release_restart_binding_changed"};

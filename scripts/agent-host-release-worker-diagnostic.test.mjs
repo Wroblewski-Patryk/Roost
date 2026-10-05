@@ -30,6 +30,7 @@ test('Compose diagnostics identify fixed safety refusals without accepting a pre
  assert.equal(releaseWorkerDiagnostic(Error('release_compose_no_effect_diagnosis_required')),'release_compose_no_effect_diagnosis_required');
  assert.equal(releaseWorkerDiagnostic(Error('release_compose_no_effect_diagnosis_required private-value')),'release_preflight_unproven');
  for(const reason of ['release_compose_installation_database_recreation_unproven','release_compose_installation_phase_intent_unproven',
+  'release_compose_installation_configuration_absence_observation_unproven','release_coolify_compose_configuration_absence_unproven',
   'release_compose_installation_version_health_unproven','release_coolify_compose_runtime_identity_unproven']){
   assert.equal(releaseWorkerDiagnostic(Error('outer',{cause:Error(reason)})),reason);
   assert.equal(releaseWorkerDiagnostic(Error(reason+' private-value')),'release_preflight_unproven');

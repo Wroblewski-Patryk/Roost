@@ -953,8 +953,9 @@ For this bounded case, a fresh original owner can close the attempt as failed,
 binding the exact five-operation Git/configuration journal and a separately
 collected native closure. That receipt explicitly attests owner-observed native
 quiescence; the server does not claim to inspect Windows processes. Preserve the
-signed checkpoint privately. A new exact-owner grant needs a new credential,
-independent code acceptance and release audit. Its immutable published Git basis
+signed checkpoint privately. A new exact-owner grant needs a new credential and
+release audit. Unchanged, current exact code acceptance may be retained; changed
+or stale approval is rejected by the normal release checks. Its published Git basis
 forbids repeating push, PR, review or merge. Preserve all baseline facts,
 configuration, artifacts, rollback, data and protected resources; only the new
 baseline observation time may change. Credential expiry remains immutable.

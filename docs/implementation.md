@@ -189,7 +189,7 @@ local accepted `3cf9645e`. Independent review rejected `c21e0e0c` for its missin
 regression log. Log-only `c82e68b3` passes seven tests, a separate native build
 and independent read-only acceptance. No application deployment is proven.
 
-Roost `865825fd` and the additive Compose-scope migration are deployed.
+Roost `a59bf222` and Compose recovery migration are deployed.
 The existing target has a fresh verified backup/isolated restore, migration
 adoption and schema/data/sequence parity. Its public health is open while DB
 writes and cadences are held. Native preparation verified paused-state,

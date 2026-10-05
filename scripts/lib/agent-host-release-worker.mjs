@@ -35,10 +35,13 @@ for (const reason of ['phase_intent_unproven','phase_intent_changed','baseline_o
  'database_source_binding_changed','database_configuration_changed','database_runtime_changed','database_recreation_unproven',
  'database_changed_during_measurement','cadence_activity_present','maintenance_unproven','capacity_unproven',
  'controller_renderer_changed','phase_binding_changed','phase_configuration_changed','configuration_preimage_changed',
- 'live_source_pin_changed','version_health_unproven','private_file_changed','backup_changed','response_unproven','ssh_unavailable'])
+ 'live_source_pin_changed','version_health_unproven','private_file_changed','backup_changed','response_unproven','ssh_unavailable',
+ 'configuration_absence_candidate_only','configuration_absence_operation_changed','configuration_absence_control_plane_unproven',
+ 'configuration_absence_preimage_changed','configuration_absence_baseline_unproven','configuration_absence_data_or_health_changed',
+ 'configuration_absence_changed_during_inspection','configuration_absence_observation_unproven'])
  releaseDiagnosticReasons.add('release_compose_installation_'+reason);
 for (const reason of ['binding_invalid','data_or_activity_changed','backup_changed','baseline_unproven',
- 'configuration_changed','queue_identity_changed','runtime_identity_unproven','health_or_data_unproven'])
+ 'configuration_changed','queue_identity_changed','runtime_identity_unproven','health_or_data_unproven','configuration_absence_unproven'])
  releaseDiagnosticReasons.add('release_coolify_compose_'+reason);
 export function releaseWorkerDiagnostic(error){
  for(let depth=0;error&&depth<4;depth++,error=error.cause)if(releaseDiagnosticReasons.has(error.message))return error.message;
