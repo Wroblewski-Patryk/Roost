@@ -196,7 +196,8 @@ Original cause remains unknown; diagnostics now retain fixed refusal codes.
 Recovery extends inherited Git closure and fresh nine-read parity, preserving
 original evidence clocks. A reclaim archive defect lost the older checkpoint;
 fresh read-only controller 187440 closed seven signed children and archived it.
-Source/DB checks pass; migration checksum verified; owner closure pending.
+Source/DB checks and migration checksum pass. Normal owner closure `14348e4c`
+marks `3c75a93e` FAILED, retaining the original absence clock. No deployment.
 Docker startup repaired; guarded start preserves socket parents.
 
 Reuse the existing application, repository and Compose installation; create no
