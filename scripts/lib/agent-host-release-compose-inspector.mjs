@@ -17,7 +17,7 @@ const configurationFields = composeConfigurationSchema.innerType().shape;
 const canonical = v => Array.isArray(v) ? v.map(canonical) : v && typeof v === 'object'
   ? Object.fromEntries(Object.keys(v).sort().map(k => [k, canonical(v[k])])) : v;
 const digest = v => createHash('sha256').update(JSON.stringify(canonical(v))).digest('hex');
-const fail = reason => { throw Object.assign(Error(`release_compose_inspector_${reason}`), { retryable: false }); };
+const fail = (reason, cause) => { throw Object.assign(Error(`release_compose_inspector_${reason}`, cause === undefined ? undefined : { cause }), { retryable: false }); };
 const check = (ok, reason) => { if (!ok) fail(reason); };
 const parse = (schema, value, reason) => { const result = schema.safeParse(value); if (!result.success) fail(reason); return result.data; };
 const encode = value => Buffer.from(JSON.stringify(value)).toString('base64');
@@ -211,7 +211,7 @@ export function createComposeStateInspector({ targets, sourcePins, transport, so
   check(new Set(scoped.map(t=>t.targetId)).size===scoped.length && [transport,sourceForCommit,treeForCommit,readDeployment].every(f=>typeof f==='function'),'configuration_invalid');
   const target = targetId => { const t=scoped.find(t=>t.targetId===targetId);check(t,'target_outside_scope');return t; };
   const run = async (operation, command, stdin) => {
-    let output;try { output=await transport({operation,command,stdin,timeoutMs:25000,maxOutputBytes:32768,write:false}); } catch { fail('transport_unproven'); }
+    let output;try { output=await transport({operation,command,stdin,timeoutMs:25000,maxOutputBytes:32768,write:false}); } catch (error) { fail('transport_unproven',error); }
     if (typeof output==='object' && output!==null) {check(output.exitCode===0,'transport_unproven');output=output.stdout;}
     check(typeof output==='string'&&Buffer.byteLength(output)<=32768,'response_invalid');
     try{return JSON.parse(output);}catch{fail('response_invalid');}
