@@ -2092,3 +2092,8 @@ closure/adoption and negative insert checks passed (five tests); 59 focused
 shared/backend checks and typecheck passed. This is database guard proof,
 not a persisted FAILED closure, deployment or gate completion. Native/new
 manifest audit and actual Aviary release proof remain required.
+Roost `241c1264` deployment is verified by finished queue
+`ukrtf327hyqx5hhxpltf6bmu` and exact health/build-info at 23:13:20.610 UTC;
+database readback verifies committed migration checksum, four functions, two
+guards and unchanged four-operation/zero-closure history. Normal owner closure,
+renewed manifest, runtime release and independent acceptance remain pending.

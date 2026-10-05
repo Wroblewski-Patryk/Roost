@@ -187,20 +187,21 @@ an immediate implementation dependency or mark it complete.
 Review rejected `c21e0e0c` for its missing regression log. Log-only `c82e68b3`
 passes seven tests, native build and independent read-only acceptance.
 
-Roost `d4014466` is deployed; restore/parity pass, writes/cadences held.
+Restore/parity pass; writes and cadences remain held.
 Closure `2eb9cdfd` retains PR 2/exact c82 and Git proof.
 Prior FAILED releases `3c75a93e`, `e7320bdf`, `f579ca87` and `6b4471c5`
 retain dated outcomes, native closures and Git. Closures `14348e4c`, `4d79f05f`,
 `4b0a9d74`, `4d4d7db5` are recorded; negative audits remain literal.
-Backup guards pass; V7 is renewed. Full receipts remain in release operations.
+Backup guards pass; V7 renewed. Receipts: release operations.
 Coolify repair `2d63cf62` preserves records. Locked requery fixes Stringable
 readback; native rolled-back CAS `bb121957` verifies all-record parity.
-Native c82 build `3e8510be`: seven tests pass, outputs restored.
+Native c82 build `3e8510be`: seven tests pass; outputs restored.
 Audit `d1004c62`: CHANGES_REQUIRED; review `17f8c1db` accepts c82.
 Grant `63750d89`: both queues ABSENT, prior services healthy, native closed.
 Two-queue closure/adoption pass 96 tests; Worker checks pass 202.
-Roost ac4203a8 is deployed. Queue-absence SQL passes eight rolled-back probes
-and disposable DB closure/adoption. Migration deployment and renewed manifest remain pending.
+Roost 241c1264 and queue-absence migration are deployed and verified.
+Eight rolled-back probes and disposable DB closure/adoption pass.
+FAILED closure, renewed manifest and actual release proof remain pending.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

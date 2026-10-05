@@ -1207,3 +1207,12 @@ guarded closure/revocation, inherited Git/adoption, negative inserts and old
 guard preservation; its temporary database was removed. Backend typecheck and
 59 focused shared/backend tests passed. Roost deployment and normal owner
 closure are still required; Aviary remains undeployed and its cadences held.
+
+Deployment readback at `2026-10-05T23:13:20.610Z` confirms Roost
+`241c12649ae41e9999a779e1f75251f09b79680b`, pushed to branch and main,
+sole automatic queue `ukrtf327hyqx5hhxpltf6bmu` finished, health and
+build-info HTTP 200 with that exact commit. Database receipt
+`241c1264-1791242010870` verifies the applied migration checksum against
+committed bytes, four new functions, two triggers and unchanged four-operation,
+zero-closure history. Normal FAILED closure and credential rotation await fresh
+owner authentication; neither has been retried. Aviary is not deployed.
