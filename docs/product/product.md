@@ -247,6 +247,12 @@ The first delivery proof is a low-risk DemoApp repair under a separate task cont
 - A later environment-steward role observes the local host and VPS, plans
   evidenced maintenance, preserves unknown/protected resources and operates
   under proven update mandates without duplicating platform cleanup.
+- Each installation may record its own owner-adopted strategic purpose. Roost
+  preserves its provenance and revisions, and makes relevant client, offer,
+  delivery and continuation choices confront that purpose with stated evidence
+  and exceptions. A guiding principle is distinct from a measurable goal;
+  neither may be silently inferred from the reference company's private intent.
+
 ## Product Rules
 
 - Key constraints: records, service keys, integration settings, and provider

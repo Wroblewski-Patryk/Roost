@@ -310,6 +310,7 @@ business choices are available. Do not silently add them to Gate 5.
 | Horizon | Result and entry condition | Existing requirements / decisions |
 | --- | --- | --- |
 | Application completion | After the current release, take the selected app to owner-accepted readiness, then repeat with an app-specific baseline and proof. | RF-APP-001–014; private app baseline |
+| Company strategic direction | Adopt a private, versioned company purpose; prove relevant decisions and agent tasks compare outcomes to it, then derive measurable targets from a real baseline. | RF-OUT-008; OPEN-STRATEGY-001 |
 | Context classification and Worker packet | Classify operational versus historical sources; prove only current, approved, scoped material enters a sealed task packet. | RF-CTX-027; RF-GOV-020 |
 | Context API/MCP and audit | With the same fixtures, prove ordinary agent reads exclude old/test material while explicit authorized audit retrieves it with provenance. | RF-CTX-027; RF-SEC-007 |
 | Owner access | Reproduce repeat-login behavior; prove sustained ordinary work, exact-action reauthentication and separate agent identity. | RF-SEC-013; OPEN-AUTH-001 |
