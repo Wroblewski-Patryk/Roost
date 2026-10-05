@@ -162,7 +162,13 @@ export function releaseApprovalError(s: any, input: any) {
 export function releaseWindowError(input: any, credentialExpiry: Date, now = new Date()) {
   const expiry=new Date(input.expiresAt), m=input.manifest;
   if (expiry <= now || expiry.getTime() > now.getTime()+3600000 || expiry > credentialExpiry) return "release_window_invalid";
-  if (Date.parse(m.baseline.observedAt) > now.getTime()+60000 || now.getTime()-Date.parse(m.baseline.observedAt)>3600000
+  // A separately sealed actual read revalidates identity; historical manifest
+  // time, approval, native readiness and the granted effect window stay intact.
+  if(input.baselineRevalidation!==undefined) {
+    const error=shared.releaseBaselineRevalidationError(input,now);
+    if(error)return error;
+  }
+  if (Date.parse(m.baseline.observedAt) > now.getTime()+60000 || (input.baselineRevalidation===undefined&&now.getTime()-Date.parse(m.baseline.observedAt)>3600000)
     || now.getTime()-Date.parse(m.backup.restoreVerifiedAt)>86400000 || Date.parse(m.backup.restoreVerifiedAt)>now.getTime()+60000)
     return "release_prerequisite_stale";
   return null;

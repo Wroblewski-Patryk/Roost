@@ -192,17 +192,13 @@ isolated restore and schema/data/sequence parity pass; DB writes/cadences are he
 Grant `a14dba8b` binds 0857; PR 2 merges exact `c82e68b3`. Signed Worker proves
 configuration absent. Closure `2eb9cdfd` records FAILED; 88 children close and
 Writer archived/released; immutable history retained.
-30a/e82 ungranted; audit `03a119f0` retains 16 pending proofs.
-`ae02d15d` approves code; `c2154bd6` fails without native closure.
-`6b15819d`: encrypted intent/GET reconciliation; Windows tests pass.
-Signed `12cbabd3`: source unchanged, zero processes, 15 pending.
-`3c4ad6b9` stops before model; `3256d57e` bounds renewal.
-`9383a914` closes; `29ae29db` approves c82.
-8c87/4f9c expire ungranted; audit `d051fb0a` stays historical.
-`45930056` cancels; credential renewed; audit `2a951463` closes unchanged.
+Prior refused, expired and closed attempts remain historical.
+Audit `2a951463` closes unchanged; credential renewed.
 `0dbbc62a` / `e7483bd5` approve c82; `7e6d0105` reconciled.
 Docker startup repaired; guarded start preserves socket parents.
 No app deployment started.
+Source adds fresh owner-attested baseline parity without changing the manifest;
+normal grant and runtime use remain unproven.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

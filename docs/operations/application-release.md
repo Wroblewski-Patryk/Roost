@@ -1029,3 +1029,28 @@ installed container/image/source/queue identities were read through the new
 state module; services without a Docker HEALTHCHECK were handled explicitly.
 These read-only observations do not prove production release/rollback. Actual
 grant admission and installed configuration still need verification before release.
+
+### Revalidating an unchanged Compose baseline
+
+A retained application restarting a closed release may supply
+`baselineRevalidation` with its normal owner release request. It preserves the
+manifest's original observation time, exact code approval and native readiness.
+This is owner attestation of actual platform reads, not a server inspection or
+new native signature. The owner reviews the supplemental evidence with the
+exact release scope; its complete bytes enter the request hash and snapshot.
+
+The shared validator binds application, host, candidate and base commits/trees,
+the entire stable baseline, target source/configuration/images, rollback,
+protected resources, backup and closed-release lineage. Nine component reads
+must each be no more than five minutes old and never in the future. Complete
+configuration, services, schema/data/sequences/catalog, health, capacity,
+backup presence, fixture absence, empty queues and held maintenance controls
+are mandatory. A timestamp or receipt hash alone cannot qualify.
+
+The original one-hour rule still applies without supplemental evidence.
+Credential-bounded release expiry, fresh owner authentication, independent
+approval, native readiness, 24-hour restore freshness and Worker preeffect
+inspection remain required. Changed artifacts fail binding; they need their
+own checks and approval. Historical receipts are never rewritten or restamped.
+Source tests prove this validator; an actual owner grant and runtime outcome
+are still required to prove installation use.

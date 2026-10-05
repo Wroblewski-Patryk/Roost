@@ -3,6 +3,7 @@ const { z } = require("zod");
 const { createHash } = require("node:crypto");
 // The pure CommonJS engine also backs the ESM transport wrapper; no loader cycle.
 const compose = require('./agent-host-release-compose-state.cjs');
+const baselineRevalidation = require('./agent-host-release-baseline-revalidation.cjs');
 const id=z.string().uuid(), sha=z.string().regex(/^[a-f0-9]{40}$/), hash=z.string().regex(/^[a-f0-9]{64}$/);
 const text=z.string().trim().min(1).max(1000).refine(v=>!/(?:cc_v1_[A-Za-z0-9_-]{24,}|Bearer\s+\S+|-----BEGIN .*PRIVATE KEY|(?:password|api[_-]?key|access[_-]?token|secret)\s*[:=]\s*\S+)/i.test(v),"Credentials prohibited");
 const url=z.string().url().max(2000).refine(v=>{const u=new URL(v);return u.protocol==="https:"&&!u.username&&!u.password&&!u.search&&!u.hash;},"HTTPS URL without credentials required");
@@ -177,12 +178,14 @@ const retainsApplication=m=>m?.schemaVersion==="roost-release-manifest-v2"&&m?.p
 const releaseExpirySchema=z.string().datetime();
 const predecessorSchema=z.object({releaseId:id,expectedVersion:hash}).strict();
 const baselineRestartSchema=predecessorSchema.extend({closureId:id,consentDigest:hash}).strict();
-const createReleaseSchema=z.object({requestId:id,taskId:id,applicationId:id,hostId:id,releaseExecutionId:id,releaserAgentId:id,releaserCredentialId:id,credentialVersion:z.number().int().positive(),reviewId:id,materialVersion:hash,commit:sha,candidateTree:sha,baseCommit:sha,baseTree:sha,releaserRevision:z.string().datetime(),expiresAt:releaseExpirySchema,manifest:manifestSchema,manifestDigest:hash,predecessor:predecessorSchema.optional(),baselineRestart:baselineRestartSchema.optional()}).strict().superRefine((s,c)=>{
+const baselineRevalidationSchema=baselineRevalidation.createBaselineRevalidationSchema(sourceSetArtifact.extend({healthDigest:hash,dataDigest:hash}).strict());
+const createReleaseSchema=z.object({requestId:id,taskId:id,applicationId:id,hostId:id,releaseExecutionId:id,releaserAgentId:id,releaserCredentialId:id,credentialVersion:z.number().int().positive(),reviewId:id,materialVersion:hash,commit:sha,candidateTree:sha,baseCommit:sha,baseTree:sha,releaserRevision:z.string().datetime(),expiresAt:releaseExpirySchema,manifest:manifestSchema,manifestDigest:hash,predecessor:predecessorSchema.optional(),baselineRestart:baselineRestartSchema.optional(),baselineRevalidation:baselineRevalidationSchema.optional()}).strict().superRefine((s,c)=>{
  if(isReleaseSetManifest(s.manifest)&&(s.manifest.deployment.artifactSetDigest!==sourceArtifactDigest(s.manifest,s)||s.manifest.baseline.commit!==s.baseCommit))c.addIssue({code:'custom',message:'release_source_set_mismatch'});
  if(isComposeManifest(s.manifest)&&s.manifest.deployment.targets.some(t=>t.configuration.gitCommit!==s.commit||t.baseline.tree!==s.baseTree))c.addIssue({code:'custom',message:'release_compose_source_changed'});
  if(s.manifest.postObservation&&(s.manifest.postObservation.candidateCommit!==s.commit||s.manifest.postObservation.candidateTree!==s.candidateTree))c.addIssue({code:'custom',message:'release_post_observation_source_changed'});
  if(s.predecessor&&!isReleaseSetManifest(s.manifest))c.addIssue({code:'custom',message:'release_successor_scope_invalid'});
  if(s.baselineRestart&&(!isReleaseSetManifest(s.manifest)||s.predecessor))c.addIssue({code:'custom',message:'release_restart_scope_invalid'});
+ const baselineError=baselineRevalidation.baselineRevalidationBindingError(s,baselineRevalidationSchema,releaseDigest);if(baselineError)c.addIssue({code:'custom',message:baselineError});
 });
 const postObservationOperations=['smoke','fixture_cleanup','runtime_resume'];
 const operations=["push","pr","review","merge","deploy_config","deploy","observe","rollback_config","rollback",...postObservationOperations,"cleanup_resource","archive_repository","cleanup_local","cleanup"];
@@ -482,4 +485,9 @@ const postObservationIntentError=(s,input,journal=[])=>{
  }
  return null;
 };
-module.exports={composeConfigAbsenceSchema,composeConfigAbsenceEvidenceError,releaseNativeClosureSchema,postObservationScopeSchema,postObservationEvidenceSchema,postObservationOperations,postObservationIntentError,postObservationOutcomeError,composeRecoverySchema,composeRecoveryEvidenceError,composeManifestObject,isComposeManifest,isReleaseSetManifest,sourceArtifactDigest,composeEvidenceError,manifestSchema,createReleaseSchema,intentSchema,outcomeSchema,operations,releaseDigest,retainsApplication,applicationManifestObject,refineApplicationManifest,gitSetManifestObject,isGitSetManifest,gitSetArtifactDigest,releaseExpirySchema,releaseSuccessorBasisSchema,releaseHasSuccessor,releaseRollbackImageFailureValid,baselineRestartSchema,closeFailedReleaseSchema,authorizeReconciliationSchema,publishedGitBasisSchema,releaseHasPublishedGitBasis:releaseHasPublishedGit,releaseRestartProtectedResourceIds};
+module.exports={baselineRevalidationSchema,composeConfigAbsenceSchema,composeConfigAbsenceEvidenceError,releaseNativeClosureSchema,postObservationScopeSchema,postObservationEvidenceSchema,postObservationOperations,postObservationIntentError,postObservationOutcomeError,composeRecoverySchema,composeRecoveryEvidenceError,composeManifestObject,isComposeManifest,isReleaseSetManifest,sourceArtifactDigest,composeEvidenceError,manifestSchema,createReleaseSchema,intentSchema,outcomeSchema,operations,releaseDigest,retainsApplication,applicationManifestObject,refineApplicationManifest,gitSetManifestObject,isGitSetManifest,gitSetArtifactDigest,releaseExpirySchema,releaseSuccessorBasisSchema,releaseHasSuccessor,releaseRollbackImageFailureValid,baselineRestartSchema,closeFailedReleaseSchema,authorizeReconciliationSchema,publishedGitBasisSchema,releaseHasPublishedGitBasis:releaseHasPublishedGit,releaseRestartProtectedResourceIds};
+module.exports.releaseBaselineRevalidationSchema=baselineRevalidationSchema;
+module.exports.releaseBaselineRevalidationBindings=input=>baselineRevalidation.baselineRevalidationBindings(input,releaseDigest);
+module.exports.releaseBaselineRevalidationDigest=value=>baselineRevalidation.baselineRevalidationDigest(value,releaseDigest);
+module.exports.releaseBaselineRevalidationBindingError=input=>baselineRevalidation.baselineRevalidationBindingError(input,baselineRevalidationSchema,releaseDigest);
+module.exports.releaseBaselineRevalidationError=(input,now)=>baselineRevalidation.baselineRevalidationError(input,baselineRevalidationSchema,releaseDigest,now);
