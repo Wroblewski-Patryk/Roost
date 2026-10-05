@@ -228,6 +228,25 @@ a staged target. The current supervised runtime and owner review described above
 remain in effect until the corresponding command and activation gates are proven.
 The first delivery proof is a low-risk DemoApp repair under a separate task contract.
 
+## Accepted Experience and Stewardship Direction
+
+- Inventory every owner-console route and configuration view. Prove complete
+  human and agent journeys through bounded UX deliveries, independent review
+  and whole-console regression after major feature groups.
+- Improve the public pre-login page using the approved website method. Its
+  audience, promise and primary action are owner decisions; claims match proven
+  product status.
+- Agents may inspect authorized reference sites, record sourced findings and
+  promote verified lessons into versioned checklists/procedures with explicit
+  applicability. Reuse relevant principles for apps and mobile without copying
+  another product's assumptions or visual identity.
+- Keep bootstrap/test history for audit while default task packets and ordinary
+  agent search use current, approved, scoped knowledge with provenance.
+- Ordinary owner sign-in supports sustained work; sensitive acts retain fresh
+  exact-action owner authentication. Agents use separate scoped identities.
+- A later environment-steward role observes the local host and VPS, plans
+  evidenced maintenance, preserves unknown/protected resources and operates
+  under proven update mandates without duplicating platform cleanup.
 ## Product Rules
 
 - Key constraints: records, service keys, integration settings, and provider
