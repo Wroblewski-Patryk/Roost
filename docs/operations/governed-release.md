@@ -958,7 +958,13 @@ release audit. Unchanged, current exact code acceptance may be retained; changed
 or stale approval is rejected by the normal release checks. Its published Git basis
 forbids repeating push, PR, review or merge. Preserve all baseline facts,
 configuration, artifacts, rollback, data and protected resources; only the new
-baseline observation time may change. Credential expiry remains immutable.
+baseline observation time or a genuinely new encrypted backup/verified restore
+tuple may change. The replacement archive must differ and be captured after the
+prior restore; changing only old archive clocks is refused. Configuration, phase
+policies, source, images, schema, data and observation remain exact. The new
+manifest needs fresh evidence, native audit, current independent acceptance and
+separate exact owner consent; the normal 24-hour backup age is unchanged.
+Credential expiry remains immutable.
 
 A restarted attempt has only its own configuration operation. Authenticate its
 inherited four Git operation IDs against the durable parent closure/history,

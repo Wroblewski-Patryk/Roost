@@ -294,3 +294,22 @@ Preserve the original digest as history. When that view changes, require the
 original physical selector and signed, closed native terminal; match every
 immutable result field and qualify current context/host separately. Do not
 reconstruct an unsaved historical response or replace its digest with today's.
+
+### Fresh backup after closed configuration absence
+
+Native review `3686c46c` completed at `2026-10-05T17:29:11.644Z`;
+decision `443d72ed` accepts unchanged `c82e68b3` on material `d21b44dc…565fd1`.
+Its signed Job and official controller closed at exit zero. Audit `699f795f`
+retains literal `CHANGES_REQUIRED`; code acceptance does not resolve its release
+findings. New encrypted backup `52c6187d` captured at `17:35:07.423Z` and
+verified its isolated restore at `17:35:14.698Z`. Archive `78526a58…555aee` is
+595619 bytes; schema/data match, the owned restore database is absent and the
+prior encrypted copy remains. Package `742c2d4d` changes only backup; all eight
+installed file bytes, phase policies and configurations remain identical.
+
+Shared/server predicates and additive migration
+`20261005033000_compose_restart_backup_refresh` permit this narrow renewal
+after authentic closure, rejecting scope drift and clock-only archive reuse.
+Normal fresh parity, native manifest audit, independent current approval, exact
+owner grant and the 24-hour backup age remain mandatory. Source checks do not
+prove production deployment; new audit and release proof remain pending.

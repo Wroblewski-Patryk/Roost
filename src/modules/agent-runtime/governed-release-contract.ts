@@ -235,8 +235,7 @@ function composeConfigAbsentPublishedBasis(state:any,input:any):any {
   ||["releaseExecutionId","releaserCredentialId"].some(k=>input[k]===s[k])
   ||input.reviewId===s.reviewId&&input.materialVersion!==s.materialVersion
   ||["taskId","applicationId","hostId","commit","candidateTree","baseCommit","baseTree","releaserAgentId"].some(k=>input[k]!==s[k]))return {error:"release_restart_binding_changed"};
- const stable=(m:any)=>({...m,baseline:Object.fromEntries(Object.entries(m.baseline).filter(([k])=>k!=="observedAt"))});
- if(releaseDigest(stable(input.manifest))!==releaseDigest(stable(s.manifest)))return {error:"release_restart_binding_changed"};
+ if(!shared.releaseComposeRestartManifestMatches(s.manifest,input.manifest))return {error:"release_restart_binding_changed"};
  const ops=state.journal.slice(0,4),git=releaseHasPublishedGitBasis(s)?s.publishedGitBasis:
   {pushOperationId:ops[0].id,prOperationId:ops[1].id,reviewOperationId:ops[2].id,mergeOperationId:ops[3].id};
  const publishedGitBasis={schemaVersion:"roost-release-published-git-v1",basisKind:"compose_config_absence",composeEvidenceDigest:releaseDigest(receipt.evidence),

@@ -523,3 +523,17 @@ module.exports.releaseBaselineRevalidationError=(input,now)=>baselineRevalidatio
 module.exports.releaseConfigAbsenceRevalidationSchema=configAbsenceRevalidationSchema;
 module.exports.releaseConfigAbsenceRevalidationBindingError=releaseConfigAbsenceRevalidationBindingError;
 module.exports.releaseConfigAbsenceRevalidationError=releaseConfigAbsenceRevalidationError;
+// A new encrypted backup/restore does not change the already published source.
+// All runtime, data, rollback and effect policy stays identical. Fresh admission
+// still verifies this new tuple, its age, current evidence and exact owner grant.
+module.exports.releaseComposeRestartManifestMatches=(previous,candidate)=>{
+ try {
+  if(!isComposeManifest(previous)||!isComposeManifest(candidate)||!manifestSchema.safeParse(candidate).success)return false;
+  const stable=m=>{const {backup,baseline,...rest}=m;return {...rest,baseline:Object.fromEntries(Object.entries(baseline).filter(([k])=>k!=='observedAt'))};};
+  if(releaseDigest(stable(previous))!==releaseDigest(stable(candidate)))return false;
+  if(releaseDigest(previous.backup)===releaseDigest(candidate.backup))return true;
+  const b=candidate.backup,p=previous.backup;
+  return b.digest!==p.digest&&Date.parse(b.capturedAt)>Date.parse(p.restoreVerifiedAt)
+   &&Date.parse(b.restoreVerifiedAt)>=Date.parse(b.capturedAt);
+ }catch{return false;}
+};

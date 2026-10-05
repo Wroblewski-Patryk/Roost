@@ -2036,3 +2036,16 @@ and Windows Credential Manager read-backs are verified; secrets are not stored
 in repository evidence. The new native audit, current independent code review,
 separate exact owner grant and production proof remain pending. Historical
 reviews and audit findings remain dated evidence, not current release authority.
+
+### Backup renewal after closed Compose configuration absence
+
+Native review `3686c46c` / decision `443d72ed` accepts unchanged `c82e68b3`
+on material `d21b44dc…565fd1`, with closed signed Job and controller. Audit
+`699f795f` retains `CHANGES_REQUIRED`. Actual encrypted backup/isolated restore
+`52c6187d` verified at `2026-10-05T17:35:14.698Z` preserves schema/data and the
+prior copy; the owned restore database is absent. Package `742c2d4d` changes
+only backup and retains eight exact installed files. Shared/server predicates
+and forward migration `20261005033000_compose_restart_backup_refresh` reject
+runtime/data/rollback/observation changes and clock-only archive reuse. Native
+new-manifest audit, current approval, exact owner grant and deployment remain
+pending; the existing 24-hour backup prerequisite is unchanged.
