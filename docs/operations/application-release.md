@@ -1163,6 +1163,47 @@ snapshot drift is refused. Focused Worker checks pass 202 tests; backend closure
 adoption and prior freshness/restart regressions pass 96. Typecheck passes.
 Roost backup `f478b19d` has encrypted-copy and isolated-restore evidence at
 `2026-10-05T22:31:02.160Z`; the same backend was restored healthy afterwards.
+
+Roost commit `ac4203a8ddd1f8680585e16fe9fb37afe9932c36` was pushed to the
+delivery branch and main. Its existing automatic deployment
+`fu0dbjl0ci7wgmw75x5xdpoi` finished; `/health` and `/api/build-info` both returned
+200 and the exact SHA at `2026-10-05T22:47:51.748Z`. Closure request
+`b02da409-41b2-4e90-b9c8-702b347ebe80` did not create a FAILED receipt. Normal
+readback retained the four immutable operations, expired status and zero
+closures. A bounded PostgreSQL read-only transaction confirmed that the existing
+failed-baseline and closure-revalidation SQL functions both reject this new
+two-queue case. Source/API tests do not prove its database integration. An
+additive database migration is required before another prepared closure;
+the original request is not replayed. All Workers remain stopped.
+
+Backup `c3f26c34-f52c-4e35-9f5c-2dbab6216f48` protects the next Roost migration:
+35,239,515 archive bytes, isolated restore verified at
+`2026-10-05T22:53:48.554Z`, temporary restore database removed, original backend
+restarted healthy. This is Roost maintenance evidence; Aviary has not been
+deployed and the release gate remains incomplete.
 An earlier backup preparation with a stale database-container reference failed
 before completion and remains a failure record. The corrected private binding
 preserves the database, volume, encryption key and previous backup records.
+### Two-queue database guard parity — 2026-10-05
+
+The additive `20261005230000_compose_queue_absence_closure_adoption`
+migration retains earlier closure paths, immutable operation/outcome history,
+credential guards and Git lineage. It accepts only the exact successful
+candidate/rollback configuration changes followed by two reconciled absent
+queues, a closed native tree and nine fresh component reads. Adoption derives
+the retained rollback configuration as the new baseline, pins the corrected
+renderer and recalculates every configuration/artifact digest; changed scope
+or controller commands are refused. It does not replay already published Git.
+
+The first SQL rehearsal failed compilation before persistence; bounded readback
+confirmed unchanged function definitions and release history. The corrected
+migration passed actual release `63750d89` in a rolled-back transaction:
+receipt `1f8734aa-d545-41d1-92e1-3081971155c7`, eight probes, complete
+function/history parity. Positive closure and recipe parity passed; writer,
+queue, configuration, stale-read and changed recipe cases were refused.
+These probes never inserted an owner closure or granted release authority.
+The separate disposable PostgreSQL test passed all five checks, including
+guarded closure/revocation, inherited Git/adoption, negative inserts and old
+guard preservation; its temporary database was removed. Backend typecheck and
+59 focused shared/backend tests passed. Roost deployment and normal owner
+closure are still required; Aviary remains undeployed and its cadences held.

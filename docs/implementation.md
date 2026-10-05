@@ -199,7 +199,8 @@ Native c82 build `3e8510be`: seven tests pass, outputs restored.
 Audit `d1004c62`: CHANGES_REQUIRED; review `17f8c1db` accepts c82.
 Grant `63750d89`: both queues ABSENT, prior services healthy, native closed.
 Two-queue closure/adoption pass 96 tests; Worker checks pass 202.
-Production FAILED closure and renewed manifest remain pending.
+Roost ac4203a8 is deployed. Queue-absence SQL passes eight rolled-back probes
+and disposable DB closure/adoption. Migration deployment and renewed manifest remain pending.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

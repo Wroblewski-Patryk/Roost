@@ -2073,3 +2073,22 @@ and forward migration `20261005033000_compose_restart_backup_refresh` reject
 runtime/data/rollback/observation changes and clock-only archive reuse. Native
 new-manifest audit, current approval, exact owner grant and deployment remain
 pending; the existing 24-hour backup prerequisite is unchanged.
+
+Roost `ac4203a8` deployed through auto queue `fu0dbjl0ci7wgmw75x5xdpoi` with
+exact public version/health readback. Actual closure request `b02da409` left
+zero closures; read-only PostgreSQL checks expose missing two-queue SQL guard
+support despite 96 passing source/API checks. Forward migration, actual FAILED
+closure, replacement package/audit/grant and application runtime are pending.
+Roost backup/restore `c3f26c34` verified at `2026-10-05T22:53:48.554Z` protects
+that migration; no application deployment or completed-gate claim is made.
+#### Two-queue SQL proof, 2026-10-05
+
+RF-REL-004 and recovery/Git inheritance retain exact authority and immutable
+history through additive migration
+`20261005230000_compose_queue_absence_closure_adoption`. Actual release
+`63750d89` passed eight probes in receipt `1f8734aa` with a rolled-back DDL
+transaction and exact function/history readback parity. Disposable PostgreSQL
+closure/adoption and negative insert checks passed (five tests); 59 focused
+shared/backend checks and typecheck passed. This is database guard proof,
+not a persisted FAILED closure, deployment or gate completion. Native/new
+manifest audit and actual Aviary release proof remain required.
