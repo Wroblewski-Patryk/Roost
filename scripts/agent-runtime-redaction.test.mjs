@@ -69,6 +69,40 @@ test("binary digests do not invent PII while encoded text and binary credentials
     }
   }
 });
+const referencePacket = count => ({ records: Array.from({ length: count }, (_, index) => ({
+  sourceDigest: "f".repeat(64), annotation: ` reference-${index}\n`,
+})) });
+test("bounded metadata retains more than 2048 references without a digest exemption", () => {
+  const input = referencePacket(2500), start = performance.now();
+  const result = policy.sanitize(input, { mode: "required" });
+  assert.equal(result.blocked, false);
+  assert.deepEqual(result.value, input);
+  assert.ok(performance.now() - start < 2000, "complete reference scan remains bounded");
+});
+test("joined encoded credentials beyond 2048 tokens remain blocked regardless of field names", () => {
+  const split = {
+    leftDigest: Buffer.from(" ".repeat(30) + "gh").toString("hex"),
+    rightDigest: Buffer.from("p_" + "A".repeat(16) + " ".repeat(14)).toString("hex"),
+  };
+  for (const input of [
+    { summary: split },
+    { ...referencePacket(2500), summary: split },
+    { ...referencePacket(2500), executionContract: { extra: split } },
+    { ...referencePacket(2500), one: "gh", two: "p_" + "A".repeat(16) },
+  ]) {
+    const result = policy.sanitize(input, { mode: "required" });
+    assert.equal(result.blocked, true);
+    assert.ok(result.findings.some(finding => finding.category === "split_sensitive"));
+    assert.throws(() => guardHostContent(input, "required"), /agent_runtime_content_blocked/);
+  }
+});
+test("the expanded decoding budget still fails closed without scanning a truncated prefix", () => {
+  const input = { records: Array.from({ length: policy.LIMITS.decodedTokens + 1 }, () => "abcdefghijklmnop!\n") };
+  const start = performance.now(), result = policy.sanitize(input, { mode: "required" });
+  assert.equal(result.blocked, true);
+  assert.ok(result.findings.some(finding => finding.category === "split_sensitive"));
+  assert.ok(performance.now() - start < 2000, "oversized token scan remains bounded");
+});
 test("binary, unsupported attachments, getters, cycles and resource limits fail closed", () => {
   const cyclic = {}; cyclic.self = cyclic;
   let deep = {}; for (let i = 0; i < 50; i++) deep = { deep };

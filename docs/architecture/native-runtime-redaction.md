@@ -60,7 +60,10 @@ checked in those bytes. Direct binary objects and unsupported attachments remain
 blocked. The fixed binary-digest regression is covered by the shared policy test.
 
 Limits per value: 512 KiB cumulative bytes, 128 KiB strings, 20000 nodes, depth 32,
-32 findings. Cycles, accessors, unsupported objects, non-finite numbers and
+32 findings and 8192 decoded tokens per text interpretation. Bounded metadata
+may exceed the former 2048-token count; every token and joined fragment is still
+checked, without digest-field exemptions or truncation. Cycles, accessors,
+unsupported objects, non-finite numbers and
 exhaustion fail closed. Locations use fixed schema names or positional indexes,
 never arbitrary input keys or matches. Supported attachment media are text/plain,
 text/markdown, text/csv and application/json; this is not a general file uploader.

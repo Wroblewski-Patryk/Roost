@@ -4,7 +4,7 @@ const { isUtf8 } = require("node:buffer");
 // arbitrary field name or exception text in findings.
 const POLICY = "roost-runtime-redaction-v1";
 const MARKER = "[REDACTED]";
-const LIMITS = Object.freeze({ bytes: 524288, string: 131072, nodes: 20000, depth: 32, findings: 32, secrets: 128 });
+const LIMITS = Object.freeze({ bytes: 524288, string: 131072, nodes: 20000, depth: 32, findings: 32, secrets: 128, decodedTokens: 8192 });
 const secretField = /^(?:password|passwd|pwd|secret|clientsecret|clientkey|secretkey|encryptionkey|signingkey|apikey|token|authtoken|sessiontoken|bearertoken|accesstoken|refreshtoken|idtoken|authorization|proxyauthorization|cookie|setcookie|privatekey|credentials|leasetoken|.*password|.*secret|.*apikey)$/i;
 const personalField = /^(?:email|emailaddress|personalemail|phone|phonenumber|mobile|postaladdress|streetaddress|homeaddress|dateofbirth|birthdate|ssn|passportnumber|nationalid|personalname|firstname|lastname|fullname)$/i;
 const keyName = key => key.toLowerCase().replace(/[-_\s.]/g, "");
@@ -74,7 +74,11 @@ function sanitize(input, { secrets = [], mode = "diagnostic" } = {}) {
       if (emailPattern.test(text) || piiAssignment.test(text)) return "personal_data";
       if (decode) {
         const tokens = text.match(/[A-Za-z0-9+/_=-]{16,}/g) ?? [];
-        if (tokens.length > 2048) return "limit";
+        // A bounded metadata packet can contain thousands of SHA-256 references.
+        // The byte budget permits at most 524288 / 64 = 8192 such tokens before
+        // field names and other content. Scan every token, including joined and
+        // recursively encoded content; never truncate or exempt digest fields.
+        if (tokens.length > LIMITS.decodedTokens) return "limit";
         for (const token of tokens) {
           if (token.length > LIMITS.string) return "limit";
           const bytes = /^[a-f0-9]{32,}$/i.test(token) && token.length % 2 === 0 ? Buffer.from(token, "hex") : Buffer.from(token, "base64url");

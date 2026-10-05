@@ -193,13 +193,13 @@ Grant `a14dba8b` binds 0857; PR 2 merges exact `c82e68b3`. Signed Worker proves
 configuration absent. Closure `2eb9cdfd` records FAILED; 88 children close and
 Writer is archived/released. Historical evidence remains immutable.
 Expired 30a/e82 have no grant. Audit `03a119f0` retains 16 pending proofs.
-API review `ae02d15d` approves code; reviewer `c2154bd6` fails with a terminal
-timeout and no durable native result. Worker `6b15819d`
-adds encrypted intent, bounded acknowledgement and GET reconciliation. Windows
-process/DPAPI checks pass. Fresh audit `12cbabd3` completes with signed native
-unchanged proof and zero processes; its 15 release findings remain pending.
-Review `3c4ad6b9` stops before model launch on an unconfirmed heartbeat. Add
-bounded renewal acknowledgement, then signed review before exact 8c87 grant.
+API review `ae02d15d` approves code; `c2154bd6` fails without native closure.
+Worker `6b15819d` adds encrypted intent and GET reconciliation; Windows checks
+pass. Audit `12cbabd3` signs unchanged state and zero processes; 15 findings
+remain pending.
+Review `3c4ad6b9` stops before model launch. Worker `3256d57e` bounds renewal;
+signed `9383a914` closes with zero processes; `29ae29db` approves exact c82.
+Final 8c87 package requires separate owner consent; runtime proofs stay pending.
 No application deployment started.
 
 Reuse the existing application, repository and Compose installation; create no
