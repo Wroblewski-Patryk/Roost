@@ -1989,6 +1989,12 @@ Roost `c185743df827c3f9c9137fdaf6a4456c7a8e109b`, deployment
 `20261005010000_compose_config_absence_current_review` are applied; exact Git
 blob checksums match the installed ledger. Restart can retain the same current
 exact code review/material after this no-effect closure. A new native manifest
-audit, credential, fresh baseline and separate exact owner grant remain required.
+audit and separate exact owner grant remain required. Rotation is verified;
+fresh baseline `2026-10-05T00:16:39.335Z` and package `30a3665f` retain four
+protected images and all schema/data/sequence facts, with eight physical
+installed read-backs. The new audit risk scope invalidates group Ready and
+current code approval. Preserve the historical review; freeze audit admission
+before native execution, then renew coder Ready/result basis and obtain a new
+independent code review before preparing exact owner release authority.
 Source checks cover stale/rejected/changed acceptance denial; this does not prove
 a new application release. The applied earlier migration remains unchanged.

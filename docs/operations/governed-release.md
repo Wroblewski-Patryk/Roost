@@ -971,5 +971,10 @@ Windows Credential Manager read-back succeeded. Roost `c185743d`, deployment
 `kcefoojxmg4hm1jmhvuossyw`, has exact healthy version and both additive
 configuration-absence migrations applied with Git-blob checksum parity.
 This proves closure and recovery prerequisites, not a new application release.
-New baseline/package qualification, native audit and separate exact owner grant
-are still required; prior failed authority is not transferred.
+Fresh baseline parity at `2026-10-05T00:16:39.335Z` verifies four protected
+images, held writes/cadences and unchanged schema/data/sequences. New package
+`30a3665f` has eight installed physical read-backs. The changed audit scope
+invalidates group Ready and the old code approval; retain it as dated history.
+Freeze the new audit admission, close its native attempt, then renew coder Ready
+and result basis and obtain a new independent code review. A separate exact
+owner release grant is still required; prior failed authority is not transferred.
