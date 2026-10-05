@@ -962,3 +962,14 @@ baseline observation time may change. Credential expiry remains immutable.
 
 These source mechanisms require actual native and production qualification;
 their tests alone do not prove a completed application release.
+
+The second application's real reconciliation observed configuration absent at
+`2026-10-05T00:02:49.601Z`. The official Windows controller closed 88 children,
+archived its signed checkpoint and released the Writer. Normal owner closure
+`2eb9cdfd` records the attempt FAILED; normal credential rotation and masked
+Windows Credential Manager read-back succeeded. Roost `c185743d`, deployment
+`kcefoojxmg4hm1jmhvuossyw`, has exact healthy version and both additive
+configuration-absence migrations applied with Git-blob checksum parity.
+This proves closure and recovery prerequisites, not a new application release.
+New baseline/package qualification, native audit and separate exact owner grant
+are still required; prior failed authority is not transferred.

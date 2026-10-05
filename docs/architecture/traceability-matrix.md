@@ -1973,3 +1973,22 @@ validator rejects only the two generated command fields. The read-only fixed
 CAS qualification passes for candidate and rollback. No candidate queue or
 deployment has been started. Source recovery and native proof remain pending;
 these reads do not establish configuration absence in the Roost journal.
+
+Later official reconciliation observes configuration absent at
+`2026-10-05T00:02:49.601Z`; the signed controller closes 88 children and exits
+zero. Its closed HMAC checkpoint is archived before normal Writer release.
+Normal owner closure `2eb9cdfd-5e13-40db-b594-4fe44f01285a` marks release
+`a14dba8b` FAILED and records revocation `589dcee6`; no candidate deployment
+occurred. Normal credential rotation is stored/read back through Windows
+Credential Manager; the prior credential is revoked. No secret is retained in
+repository evidence.
+
+Roost `c185743df827c3f9c9137fdaf6a4456c7a8e109b`, deployment
+`kcefoojxmg4hm1jmhvuossyw`, passes exact HTTPS health/version. Additive migrations
+`20261005003000_compose_config_absence_closure` and
+`20261005010000_compose_config_absence_current_review` are applied; exact Git
+blob checksums match the installed ledger. Restart can retain the same current
+exact code review/material after this no-effect closure. A new native manifest
+audit, credential, fresh baseline and separate exact owner grant remain required.
+Source checks cover stale/rejected/changed acceptance denial; this does not prove
+a new application release. The applied earlier migration remains unchanged.

@@ -189,18 +189,18 @@ local accepted `3cf9645e`. Independent review rejected `c21e0e0c` for its missin
 regression log. Log-only `c82e68b3` passes seven tests, a separate native build
 and independent read-only acceptance. No application deployment is proven.
 
-Roost `a59bf222` and Compose recovery migration are deployed.
-The existing target has a fresh verified backup/isolated restore, migration
-adoption and schema/data/sequence parity. Its public health is open while DB
-writes and cadences are held. Native preparation verified paused-state,
-PG address, proxy isolation and bounded fence renewal without data changes.
-V9 audit `79c10809` retains 16 findings and its historical b5de snapshot.
-Current bbb8 review `2f9b16e5` approves; both close unchanged, signed.
-Owner approved 06bf; its grant was rejected, with authoritative absence.
-Installed SQL now admits Compose scope; a rollback probe proves five denials
-without data/grant changes. Verified grant `a14dba8b` binds 0857. Repaired
-ancestry admits PR 2, merged at `c82e68b3`. Signed Worker reconciles merge,
-then stops on uncertain configuration; no deployment is started.
+Roost `c185743d` and both Compose recovery migrations are deployed.
+Backup/isolated restore, migration adoption and schema/data/sequence parity are
+verified. Public health is open; DB writes and cadences are held. Native fence
+renewal preserves data. V9 `79c10809` retains 16 findings and historical b5de;
+signed bbb8 review `2f9b16e5` approves unchanged code. Rejected 06bf grant has
+authoritative absence. Installed Compose SQL admits 0857 and proves five denials.
+Grant `a14dba8b` binds 0857; PR 2 merges at `c82e68b3`.
+Signed Worker reconciles merge and proves configuration absent. Normal closure
+`2eb9cdfd` records FAILED; 88 children close, Writer is archived/released.
+Credential rotation is verified. Current code approval can be retained;
+fresh baseline, native manifest audit and separate exact owner grant remain
+required. No application deployment is started.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,
