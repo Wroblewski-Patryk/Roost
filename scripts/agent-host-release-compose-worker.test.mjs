@@ -168,6 +168,9 @@ function setup(t) {
         return JSON.stringify({ ok: true, queue: live.queue });
       }
       if (payload.name) return '{"staged":true}';
+      if(options.input.includes('roost_compose_configuration_schema'))return JSON.stringify({schema:live.configurationSchema??[
+        {name:'docker_compose_custom_build_command',type:'text',maxLength:null},
+        {name:'docker_compose_custom_start_command',type:'text',maxLength:null}]});
       if(options.input.includes('targetDeploymentsSinceIntent'))return JSON.stringify({activeDeployments:live.activeDeployments??0,targetDeploymentsSinceIntent:live.targetDeploymentsSinceIntent??0});
       return JSON.stringify({activeDeployments:live.activeDeployments??0});
     }
@@ -352,6 +355,20 @@ test('missing current write intent cannot dispatch a new deployment', async t =>
   const f = setup(t), installed = f.install(); f.live.phase = 'candidate';
   await assert.rejects(installed.coolify.deploy(f.m, f.s, f.operation(false)), /dispatch_uncertain/);
   assert.equal(f.calls.some(r => r.kind === 'queue' && r.payload.operation === 'dispatch'), false);
+});
+
+test('legacy controller command capacity blocks before any configuration write or queue dispatch', async t => {
+ const f=setup(t);f.live.configurationSchema=['build','start'].map(x=>({name:`docker_compose_custom_${x}_command`,type:'character varying',maxLength:255}));
+ const journal=JSON.stringify(f.state.journal);
+ await assert.rejects(f.install().coolify.inspect(f.m,f.s),/release_compose_configuration_schema_capacity_insufficient/);
+ assert.equal(JSON.stringify(f.state.journal),journal);
+ assert.equal(f.calls.some(r=>r.kind==='queue'||r.method==='PATCH'||r.input?.includes('ALTER TABLE')),false);
+});
+
+test('missing controller command capacity evidence fails closed without an automatic migration', async t => {
+ const f=setup(t);f.live.configurationSchema=[];
+ await assert.rejects(f.install().coolify.inspect(f.m,f.s),/release_compose_configuration_schema_unproven/);
+ assert.equal(f.calls.some(r=>r.kind==='queue'||r.method==='PATCH'||r.input?.includes('ALTER TABLE')),false);
 });
 
 test('uncertain config absence qualifies actual legacy baseline without inventing migration or queue',async t=>{

@@ -31,6 +31,8 @@ for (const reason of ['native_assignment_unobserved','native_resume_or_cleanup_u
  'ssh_timeout','ssh_connection_closed','ssh_host_identity_unproven']) releaseNativeDiagnosticReasons.add('release_child_'+reason);
 for(const reason of releaseNativeDiagnosticReasons)releaseDiagnosticReasons.add(reason);
 releaseDiagnosticReasons.add('release_compose_no_effect_diagnosis_required');
+for(const reason of ['unproven','unsupported','mixed','capacity_insufficient'])
+ releaseDiagnosticReasons.add('release_compose_configuration_schema_'+reason);
 releaseDiagnosticReasons.add('release_coolify_git_set_runtime_identity_changed');
 // Fixed, reviewed refusal codes from the installed Compose preflight readers.
 // agent-host-release-compose-worker.mjs

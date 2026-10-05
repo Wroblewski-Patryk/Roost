@@ -1,4 +1,12 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {releaseWorkerDiagnostic,persistReleaseWorkerDiagnostic} from './lib/agent-host-release-worker.mjs';
+
+test('controller schema capacity refusals expose only fixed classifications',()=>{
+ for(const suffix of ['unproven','unsupported','mixed','capacity_insufficient']){
+  const reason='release_compose_configuration_schema_'+suffix;
+  assert.equal(releaseWorkerDiagnostic(Error('outer',{cause:Error(reason)})),reason);
+  assert.equal(releaseWorkerDiagnostic(Error(reason+' private-value')),'release_preflight_unproven');
+ }
+});
 import {mkdtempSync,readFileSync,rmSync} from 'node:fs';import path from 'node:path';import os from 'node:os';
 import {releaseEffectDiagnostic} from './lib/agent-host-release-broker.mjs';
 test('fixed SSH child reasons survive nested effect and preflight diagnostics',()=>{

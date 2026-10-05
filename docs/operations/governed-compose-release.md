@@ -30,6 +30,22 @@ production proof remains pending.
 
 ## Recovery and maintenance
 
+The installed controller must have `text` capacity for the two existing
+`applications.docker_compose_custom_build_command` and
+`applications.docker_compose_custom_start_command` columns. The Worker reads
+their actual metadata before a configuration intent; legacy `varchar(255)`,
+missing or mixed metadata refuses admission. It never runs installation DDL.
+The explicit installation helper rehearses in a rolled-back transaction, then
+widens only those columns with a schema/data preimage, idle deployment queue,
+bounded locks and complete application-row fingerprint parity. A missing apply
+response requires actual read-back before any retry. Keep private receipts.
+
+On 2026-10-05, actual receipt `2d63cf62` verified rehearsal rollback and apply:
+both columns became `text`, all ten application records retained identical
+aggregate fingerprints, and no application record was changed. This addresses
+the measured 321/570-byte commands versus the former 255-character capacity;
+it does not prove application deployment.
+
 Ordinary Coolify Compose rollback rebuilds images. Governed rollback uses retained
 immutable images and a sealed effective Compose artifact, with no build or pull.
 Every built service, including migration, is accounted for. Missing historical

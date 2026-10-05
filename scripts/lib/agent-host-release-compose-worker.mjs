@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {configureComposeWithQualifiedModelCas} from './agent-host-release-compose-config.mjs';
+import {composeConfigurationSchemaReadPhp,qualifyComposeConfigurationSchema} from './agent-host-release-compose-config-schema.mjs';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
@@ -325,7 +326,11 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
  };
  const adapter=createCoolifyComposeAdapter({now:dependencies.now,sleep:dependencies.sleep,gateway:{
   inspectConfiguration:observeConfig,
-  inspectBaseline:async()=>{await assertClone();check(baseline.observed===true&&baseline.migrationSchemaVerified===true,'baseline_observation_unproven');const o=await inspector.inspectLegacyBaseline(t.targetId,t.baseline.commit);
+  inspectBaseline:async()=>{await assertClone();
+   // Read the installed controller capacity before the broker records a write
+   // intent. Installation DDL remains an explicit operator operation.
+   qualifyComposeConfigurationSchema((await php(composeConfigurationSchemaReadPhp)).schema);
+   check(baseline.observed===true&&baseline.migrationSchemaVerified===true,'baseline_observation_unproven');const o=await inspector.inspectLegacyBaseline(t.targetId,t.baseline.commit);
    check(composeConfigurationDigest(o.configuration)===t.baseline.configDigest&&o.services.length===baseline.services.length
     &&o.services.every(r=>baseline.services.some(b=>b.name===r.name&&b.role===r.role&&b.imageDigest===r.imageDigest&&b.mountDigest===r.mountDigest
       &&(r.role!=='database'||r.containerId===b.containerId))),'baseline_runtime_changed');
