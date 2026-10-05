@@ -194,12 +194,12 @@ configuration absent. Closure `2eb9cdfd` records FAILED; 88 children close and
 Writer is archived/released. Historical evidence remains immutable.
 Expired 30a/e82 have no grant. Audit `03a119f0` retains 16 pending proofs.
 API review `ae02d15d` approves code; `c2154bd6` fails without native closure.
-Worker `6b15819d` adds encrypted intent and GET reconciliation; Windows checks
-pass. Audit `12cbabd3` signs unchanged state and zero processes; 15 findings
-remain pending.
+Worker `6b15819d` adds encrypted intent/GET reconciliation; Windows checks pass.
+Audit `12cbabd3` signs unchanged state and zero processes; 15 findings pending.
 Review `3c4ad6b9` stops before model launch. Worker `3256d57e` bounds renewal;
 signed `9383a914` closes with zero processes; `29ae29db` approves exact c82.
-Final 8c87 package requires separate owner consent; runtime proofs stay pending.
+8c87 expires ungranted. 4f9c audit `d051fb0a` signs unchanged state;
+review `45930056` is unclaimed. Host rotation needs fresh owner authentication.
 No application deployment started.
 
 Reuse the existing application, repository and Compose installation; create no

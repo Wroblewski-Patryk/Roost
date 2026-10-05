@@ -3,7 +3,8 @@
 The API and local host import the same policy, `roost-runtime-redaction-v1`, from
 [`scripts/lib/agent-runtime-redaction.cjs`](../../scripts/lib/agent-runtime-redaction.cjs).
 Supervised admission requires `native_runtime_redaction_v1`; older hosts cannot
-claim work. Production execution remains disabled and the canonical host observe.
+claim work. Accepted runtime authority and current native proof are recorded in
+the canonical implementation state; this policy alone grants no execution.
 
 ## Boundaries
 
