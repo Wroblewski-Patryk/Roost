@@ -12,7 +12,8 @@ export function validPacketFixture() {
   const uuid = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
   const revision = "2026-09-05T00:00:00.000Z";
   const workspaceId = uuid(1), taskId = uuid(2), applicationId = uuid(3), agentId = uuid(4), goalId = uuid(5), projectId = uuid(6);
-  const claimed = { id: uuid(7), workspaceId, taskId, applicationId, attempt: 1, leaseToken: uuid(8),
+  const claimed = { id: uuid(7), workspaceId, taskId, applicationId, agentHostId: uuid(91), status: "claimed", attempt: 1, leaseToken: uuid(8),
+    leaseExpiresAt: new Date(Date.now() + 90000).toISOString(),
     startedAt: new Date().toISOString(),
     task: { title: "Repair a synthetic fixture" }, application: { id: applicationId, workspaceId, slug: "demoapp", name: "DemoApp", repositories: [{ url: "https://github.com/example-org/DemoApp.git", isPrimary: true }] } };
   const sources = ["company", "product", "technical"].map((category, index) => ({ id: uuid(10 + index), workspaceId,
@@ -52,6 +53,20 @@ export function validPacketFixture() {
   const fixture = { packet, claimed, taskContext, applicationContext };
   pinReadyFixture(fixture);
   return fixture;
+}
+
+// The synthetic server emits the same terminal projection as the normal API:
+// exact submitted observations and a server-generated, identity-bound revision.
+export function completedExecutionFixture(active, input) {
+  const { leaseToken: _lease, resultRevision, metadata = {}, ...observations } = input;
+  return { ...active, ...observations, status: "completed", leaseToken: null, leaseExpiresAt: null,
+    completedAt: new Date().toISOString(), contextInvalidatedAt: null, cancelRequestedAt: null,
+    codexThreadId: input.codexThreadId === undefined ? active.codexThreadId ?? null : input.codexThreadId,
+    metadata: { ...active.metadata, ...metadata, resultRevision: resultRevision ? {
+      schemaVersion: "roost-result-revision-v1", id: "00000000-0000-4000-8000-000000000092",
+      executionId: active.id, attempt: active.attempt, hostId: active.agentHostId,
+      checkpointVersion: active.checkpointVersion, observedAt: new Date().toISOString(), ...resultRevision
+    } : null, ...(resultRevision ? { resultRevisionReviewVersion: "1" } : {}) } };
 }
 
 export function pinReadyFixture(f) {

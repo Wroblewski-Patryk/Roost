@@ -9,7 +9,7 @@ import { mkdtemp, readFile, writeFile, unlink, rmdir } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { validPacketFixture, sealPacket, pinReadyFixture } from "./fixtures/execution-packet.mjs";
+import { validPacketFixture, sealPacket, pinReadyFixture, completedExecutionFixture } from "./fixtures/execution-packet.mjs";
 import { writerLockFilename } from "./lib/agent-host-writer-lock.mjs";
 import { terminateWindowsProcessTree } from "./lib/agent-host-execution-lease.mjs";
 
@@ -77,6 +77,7 @@ for (const scenario of ["resultCommit", "branchAfterWork", "compositionExpiredFi
       if (/\/actions\/(complete|fail)$/.test(req.url)) {
         if (scenario === "reportUnavailable") return send("SYNTHETIC_SECRET_TRANSPORT", 503);
         finished = true;
+        if (req.url.endsWith("/complete")) { active = completedExecutionFixture(active, input); return send(active); }
       }
       return send({});
     });
@@ -144,7 +145,7 @@ for (const scenario of ["resultCommit", "branchAfterWork", "compositionExpiredFi
     } finally {
       if (host && host.exitCode === null && host.signalCode === null) await terminateWindowsProcessTree(host);
       server.closeAllConnections(); await new Promise((resolve) => server.close(resolve));
-      for (const file of [configPath, path.join(directory, writerLockFilename)]) await unlink(file).catch((e) => { if (e.code !== "ENOENT") throw e; });
+      for (const file of [configPath, path.join(directory, writerLockFilename), ...["intent", "dispatch"].map(kind => path.join(directory, `terminal-completion-${f.claimed.id}.${kind}.json`))]) await unlink(file).catch((e) => { if (e.code !== "ENOENT") throw e; });
       await rmdir(directory);
     }
   });

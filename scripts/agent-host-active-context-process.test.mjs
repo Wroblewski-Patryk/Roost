@@ -9,7 +9,7 @@ import { mkdtemp, readFile, writeFile, unlink, rmdir } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { compatibleHostFixture } from "./fixtures/host-protocol.mjs";
-import { validPacketFixture, pinReadyFixture } from "./fixtures/execution-packet.mjs";
+import { validPacketFixture, pinReadyFixture, completedExecutionFixture } from "./fixtures/execution-packet.mjs";
 import { writerLockFilename } from "./lib/agent-host-writer-lock.mjs";
 import { terminateWindowsProcessTree } from "./lib/agent-host-execution-lease.mjs";
 
@@ -55,6 +55,7 @@ for (const scenario of ["beforeSpawn", "unrelated", "beforeCheckpoint", "afterCh
         return send({ checkpoint: active.checkpoint, checkpointVersion: active.checkpointVersion });
       }
       if (req.url.endsWith("/complete") && scenario === "lateComplete") { invalidate(); return send("agent_execution_context_invalidated", 409); }
+      if (req.url.endsWith("/complete")) { active = completedExecutionFixture(active, input); return send(active); }
       if (req.url.endsWith("/context-stopped")) {
         unsafeAck ||= pids.some(alive);
         if (scenario === "ackLost") return send("fixture_unavailable", 503);
@@ -115,7 +116,7 @@ for (const scenario of ["beforeSpawn", "unrelated", "beforeCheckpoint", "afterCh
       for (const child of processes) if (child.exitCode === null && child.signalCode === null) await terminateWindowsProcessTree(child);
       for (const pid of pids) if (alive(pid)) await new Promise(resolve => execFile("taskkill.exe", ["/PID", String(pid), "/T", "/F"], { windowsHide: true, timeout: 5000 }, () => resolve()));
       server.closeAllConnections(); await new Promise(resolve => server.close(resolve));
-      for (const file of [configPath, path.join(directory, writerLockFilename)]) await unlink(file).catch(error => { if (error.code !== "ENOENT") throw error; });
+      for (const file of [configPath, path.join(directory, writerLockFilename), ...["intent", "dispatch"].map(kind => path.join(directory, `terminal-completion-${f.claimed.id}.${kind}.json`))]) await unlink(file).catch(error => { if (error.code !== "ENOENT") throw error; });
       await rmdir(directory);
     }
   });

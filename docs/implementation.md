@@ -187,20 +187,20 @@ an immediate implementation dependency or mark it complete.
 selected the second application's repair for the next bounded gate. Preserve
 local accepted `3cf9645e`. Independent review rejected `c21e0e0c` for its missing
 regression log. Log-only `c82e68b3` passes seven tests, a separate native build
-and independent read-only acceptance. No application deployment is proven.
+and independent read-only acceptance.
 
-Roost `c185743d` and both Compose recovery migrations are deployed.
-Backup/isolated restore, migration adoption and schema/data/sequence parity are
-verified. Public health is open; DB writes and cadences are held. Native fence
-renewal preserves data. V9 `79c10809` retains 16 findings and historical b5de;
-signed bbb8 review `2f9b16e5` approves unchanged code. Rejected 06bf grant has
-authoritative absence. Installed Compose SQL admits 0857 and proves five denials.
-Grant `a14dba8b` binds 0857; PR 2 merges at `c82e68b3`.
-Signed Worker reconciles merge and proves configuration absent. Normal closure
-`2eb9cdfd` records FAILED; 88 children close, Writer is archived/released.
-Audit `07a0bb46` and review `8e1d7f02` retain `c82e68b3`.
-Expired 30a has no grant. Fresh parity/eight files qualify `e82fe60c`;
-audit, current review and owner grant are pending. No deployment started.
+Roost `c185743d` and both Compose recovery migrations are deployed. Backup,
+isolated restore and schema/data/sequence parity pass; DB writes/cadences are held.
+Grant `a14dba8b` binds 0857; PR 2 merges exact `c82e68b3`. Signed Worker proves
+configuration absent. Closure `2eb9cdfd` records FAILED; 88 children close and
+Writer is archived/released. Historical evidence remains immutable.
+Expired 30a/e82 have no grant. Signed audit `03a119f0` retains 16 pending release
+proofs. API review `ae02d15d` approves current code, but reviewer `c2154bd6`
+fails with a terminal timeout and no durable native result. Worker completion
+repair adds encrypted intent, bounded acknowledgement and GET reconciliation;
+Windows process/DPAPI checks pass, actual repaired completion is pending. Refresh
+baseline/package, audit and signed current review before exact owner grant.
+No application deployment started.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

@@ -1,8 +1,9 @@
 // Observational metadata only. These closed sets do not grant authority or
 // accept persisted JSON as native evidence. Never publish arbitrary exception
 // text, even when it resembles a protocol code.
-const phases = new Set(["context", "launch_context", "installation_attestation", "managed_source", "managed_admission", "post_admission", "provider_launch", "native_execution"]);
+const phases = new Set(["context", "launch_context", "installation_attestation", "managed_source", "managed_admission", "post_admission", "provider_launch", "native_execution", "terminal_completion"]);
 const codes = new Set([
+  "agent_terminal_completion_uncertain",
   "managed_admission_blocked", "readonly_boundary_unproven", "trusted_provider_pilot_blocked",
   "agent_provider_input_blocked", "execution_packet_invalid", "agent_runtime_content_blocked",
   "agent_execution_lease_expired", "agent_recovery_lease_expired", "agent_execution_lease_invalid",

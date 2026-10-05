@@ -9,7 +9,7 @@ import { mkdtemp, readFile, writeFile, unlink, rmdir } from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 import { compatibleHostFixture } from "./fixtures/host-protocol.mjs";
-import { validPacketFixture, sealPacket, pinReadyFixture } from "./fixtures/execution-packet.mjs";
+import { validPacketFixture, sealPacket, pinReadyFixture, completedExecutionFixture } from "./fixtures/execution-packet.mjs";
 import { writerLockFilename } from "./lib/agent-host-writer-lock.mjs";
 import { terminateWindowsProcessTree } from "./lib/agent-host-execution-lease.mjs";
 
@@ -52,6 +52,7 @@ for (const scenario of scenarios) test(`output budget process containment: ${sce
     }
     if (req.url.endsWith("/fail") && scenario === "reportUnavailable") return send("fixture_unavailable", 503);
     if (/actions\/(fail|complete)$/.test(req.url)) finished = true;
+    if (req.url.endsWith("/complete")) { active = completedExecutionFixture(active, input); return send(active); }
     return send({});
   });
   server.listen(0, "127.0.0.1"); await once(server, "listening");
@@ -119,7 +120,7 @@ for (const scenario of scenarios) test(`output budget process containment: ${sce
     for (const child of processes) if (child.exitCode === null && child.signalCode === null) await terminateWindowsProcessTree(child);
     for (const pid of processIds) await new Promise(resolve => execFile("taskkill.exe", ["/PID", String(pid), "/T", "/F"], { windowsHide: true, timeout: 5000 }, () => resolve()));
     server.closeAllConnections(); await new Promise(resolve => server.close(resolve));
-    for (const file of [configPath, path.join(directory, writerLockFilename)]) await unlink(file).catch(error => { if (error.code !== "ENOENT") throw error; });
+    for (const file of [configPath, path.join(directory, writerLockFilename), ...["intent", "dispatch"].map(kind => path.join(directory, `terminal-completion-${f.claimed.id}.${kind}.json`))]) await unlink(file).catch(error => { if (error.code !== "ENOENT") throw error; });
     await rmdir(directory);
   }
 });

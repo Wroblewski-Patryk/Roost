@@ -2,6 +2,15 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { safeExecutionDiagnostic, leaseRecoveryReason } from "./lib/agent-host-recovery-diagnostics.mjs";
 
+test("lost completion response identifies terminal transport without exposing its proof", () => {
+  const error = Object.assign(new Error("agent_terminal_completion_uncertain"), {
+    terminalCompletionUncertain: true, details: { leaseToken: "private", ciphertext: "private" }
+  });
+  assert.deepEqual(safeExecutionDiagnostic({ error, executionPhase: "terminal_completion", nativeTermination: "root_exit" }), {
+    phase: "terminal_completion", code: "agent_terminal_completion_uncertain", detail: "other", leaseCode: "none", nativeTermination: "root_exit"
+  });
+});
+
 test("consumed read-only proof without Job cleanup is uncertainty, never a lease expiry", () => {
   // Mirrors quiet's post-consumption launch error followed by failing abort:
   // leaseLost is deliberately retained to forbid restart/ordinary fail reporting.

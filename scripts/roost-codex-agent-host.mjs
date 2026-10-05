@@ -49,6 +49,7 @@ import { assertTaskBranch, readCurrentTaskBranch, readCurrentTaskCommit, readCom
 import { createTaskBranch } from "./lib/agent-host-task-branch.mjs";
 import { observeUnchangedTaskBranch } from "./lib/agent-host-unchanged-branch-continuation.mjs";
 import { runGovernedReleaseQueueStep, getGovernedReleaseRecoveryCandidate, persistReleaseWorkerDiagnostic } from "./lib/agent-host-release-worker.mjs";
+import { createTerminalCompletionIntent, submitTerminalCompletion } from "./lib/agent-host-terminal-completion.mjs";
 
 const baseUrl = String(process.env.ROOST_BASE_URL || process.env.COMPANYCORE_BASE_URL || "").replace(/\/+$/, "");
 const apiKey = process.env.ROOST_AGENT_API_KEY || process.env.COMPANYCORE_API_KEY;
@@ -692,17 +693,32 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     const changedFiles = [...new Set([...committedPaths,...afterStatus.map(statusPath)])];
     const resultRevision={commit:resultCommit,branch:resultBranch,workingTree:afterStatus.length?"dirty":"clean"};
     const summary = finalResponse.trim();
-    await duration.wait(lease.refresh());
+    await duration.wait(lease.refreshConfirmed(75_000));
     lease.assertValid();
     duration.assertWithinBudget();
     outputBudget.assertWithinBudget();
+    // The claim's timestamp is stale after heartbeat renewal. Capture only the
+    // conservative remainder of the last confirmed monotonic lease.
+    const completionExecution = { ...claimed,
+      leaseExpiresAt: new Date(Date.now() + lease.remainingMs).toISOString() };
     // The child has exited. Avoid racing a heartbeat with the terminal API transition.
     lease.stop();
     duration.stop();
-    await api(`/v1/agent-runtime/executions/${claimed.id}/actions/complete`, {
-      method: "POST",
-      body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: summary.slice(0, 10000), finalResponse, codexThreadId, changedFiles, verification, usage, resultRevision, metadata: { repositoryPathLabel: path.basename(repositoryPath), preExistingDirtyFiles: beforeStatus.map(statusPath), transportAccounting } })
+    executionPhase = "terminal_completion";
+    // Capture precisely the sanitized wire body before the terminal effect.
+    // A lost reply retains the signed native proof and cannot become /fail.
+    const completionBody = hostTransport(JSON.stringify({ leaseToken: claimed.leaseToken,
+      summary: summary.slice(0, 10000), finalResponse, codexThreadId, changedFiles,
+      verification, usage, resultRevision, metadata: { repositoryPathLabel: path.basename(repositoryPath),
+        preExistingDirtyFiles: beforeStatus.map(statusPath), transportAccounting } }), [apiKey]);
+    const completionIntent = await createTerminalCompletionIntent({
+      directory: writerRecoveryEvidence(writerLock).directory, execution: completionExecution,
+      payload: JSON.parse(completionBody.body)
     });
+    await submitTerminalCompletion({ intent: completionIntent,
+      api: (route, options) => api(route, { ...options,
+        ...(completionBody.redacted && options?.method === "POST"
+          ? { headers: { ...options.headers, "X-Roost-Redaction-Notice": "1" } } : {}) }) });
   } catch (error) {
     let hermesStopReceipt;
     if (hermesCollection) {
@@ -783,7 +799,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
 }
 
 async function reportFailure(execution, error, writerLock) {
-  if (!execution?.leaseToken || error.leaseLost) return;
+  if (!execution?.leaseToken || error.leaseLost || error.terminalCompletionUncertain) return;
   return api(`/v1/agent-runtime/executions/${execution.id}/actions/fail`, {
     method: "POST",
     ...(error.redaction ? { headers: { "X-Roost-Redaction-Notice": "1" } } : {}),
@@ -906,6 +922,7 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
           await execute(execution, writerLock, { onCheckpoint, createOutputBudget, readTaskBranch, readTaskCommit, readTaskPaths });
         }
       } catch (error) {
+        if (error.terminalCompletionUncertain) { stopping = true; retainWriterLock = true; }
         if (error.releaseBlocked) { stopping = true; retainWriterLock = true;
           if (error.releaseDiagnostic) {process.stderr.write(`Release Worker blocked: ${error.releaseDiagnostic}\n`);
             persistReleaseWorkerDiagnostic(configPath,'blocked',error.releaseDiagnostic);}
@@ -922,13 +939,14 @@ export async function runHost({ acquireLock = (options) => acquireWriterLock(und
         if (error.recoveryReason || error.leaseLost) {
           stopping = true; retainWriterLock = true;
           await reportRecovery(execution, recoveryReason(error));
-        } else await reportFailure(execution, error, writerLock);
+        } else if (!error.terminalCompletionUncertain) await reportFailure(execution, error, writerLock);
         if (error.message === "agent_host_recovery_required") stopping = true;
         if (error.status === 401 || error.status === 403 || error.status === 422) break;
       }
       if (!stopping) await delay(execution ? 1_000 : pollIntervalMs);
     }
   } catch (error) {
+    if (error.terminalCompletionUncertain) { stopping = true; retainWriterLock = true; }
     if (error.message === "agent_native_review_blocked") { stopping = true; retainWriterLock = true; }
     if (error.hostLifecycle) { stopping = true; retainWriterLock = true; }
     if (error.protocolAdmission) { protocolHalted = true; stopping = true; retainWriterLock = true; }

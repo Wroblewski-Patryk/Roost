@@ -1,5 +1,27 @@
 # Agent Host Recovery v1
 
+## Terminal completion transport
+
+Before `/complete`, the Worker captures the exact sanitized request and native
+verification in a private DPAPI CurrentUser encrypted intent, synced to disk.
+A separate durable dispatch marker allows one POST only. A fresh confirmed lease
+reserves 75 seconds; completion waits at most 30 seconds (the server transaction
+may take 20 seconds plus five seconds in its queue). This changes no lease grant.
+
+After a lost or mismatched acknowledgement, the Worker performs only a bounded
+normal GET. Success requires exact execution/workspace/task/application/host,
+attempt, checkpoint, full result/proof and generated result-revision identity.
+An unresolved outcome stops the controller and retains Writer ownership; it
+cannot call `/fail`, replay `/complete`, restart a model or promote FAILED.
+A definite context-invalidated response retains the existing stop/ACK path.
+Loading an encrypted intent supports GET-only operator reconciliation. It does
+not authorize reclaiming a Writer or starting another attempt.
+
+Windows process tests, delayed acknowledgement beyond ten seconds, lost-response
+comparison and real DPAPI roundtrip pass. The observed reviewer timeout retained
+an API approval but lost its native terminal proof; that attempt remains FAILED.
+These checks do not claim a repaired production native completion.
+
 RF-RUNTIME-005C [owned-job v1](windows-owned-process-job-v1.md) adds native cleanup
 for the future Hermes branch. A lost/malformed/late cleanup receipt still retains
 writer ownership; controller crash does not prove durable acknowledgement or make
