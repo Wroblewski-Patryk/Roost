@@ -11,6 +11,7 @@ import { createInstalledComposeRelease, installedComposeReleaseSchema, qualifyAc
 import { composeConfigurationDigest } from './lib/agent-host-release-compose-state.mjs';
 import { composeControllerPolicyRecord, composeMountDigest, renderComposePhaseCommands } from './lib/agent-host-release-compose-controller.mjs';
 import { coolifyGitSetDeploymentId } from './lib/agent-host-release-coolify-git-set-gateway.mjs';
+import { releaseEffectDiagnostic } from './lib/agent-host-release-broker.mjs';
 
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const rendererFile = fileURLToPath(new URL('./lib/agent-host-release-compose-controller.mjs', import.meta.url));
@@ -488,15 +489,42 @@ test('dispatch also refuses an earlier unresolved durable intent', async t => {
   assert.equal(f.calls.some(r => r.kind === 'queue' && r.payload.operation === 'dispatch'), false);
 });
 
-test('configuration verifies the same unresolved intent again after artifact staging', async t => {
+test('staged configuration preserves durable intent refusal before PATCH or model apply', async t => {
   const f = setup(t), native = f.deps.nativeProcess;
+  let staged = false;
   const installed = f.install({ nativeProcess: async (binary, options) => {
     const result = await native(binary, options);
-    if (result === '{"staged":true}') f.state.journal[0].outcome = { status: 'uncertain' };
+    if (result === '{"staged":true}') {
+      staged = true;
+      f.state.journal[0].outcome = { status: 'uncertain' };
+    }
     return result;
   } });
-  await assert.rejects(installed.coolify.configureCandidate(f.m, f.s), /configuration_mutation_uncertain/);
+  await assert.rejects(installed.coolify.configureCandidate(f.m, f.s), error => {
+    assert.equal(error.message, 'release_coolify_compose_configuration_mutation_uncertain');
+    assert.equal(error.cause.message, 'release_compose_installation_phase_intent_unproven');
+    assert.equal(error.uncertain, true); assert.equal(error.retryable, false);
+    assert.equal(releaseEffectDiagnostic(error), error.cause.message);
+    return true;
+  });
+  assert.equal(staged, true);
   assert.equal(f.calls.some(r => r.method === 'PATCH'), false);
+  assert.equal(f.calls.some(r => r.kind === 'queue' && ['apply', 'dispatch'].includes(r.payload.operation)), false);
+  assert.equal(f.live.phase, 'baseline'); assert.equal(f.live.queue, null);
+});
+
+test('configuration effect diagnostics keep fixed API and guard causes and reject private suffixes', () => {
+  for (const reason of ['release_compose_installation_phase_intent_changed',
+    'release_compose_installation_configuration_preimage_changed', 'release_compose_installation_private_file_changed',
+    'release_compose_inspector_source_unproven', 'release_compose_inspector_configuration_changed_during_inspection',
+    'release_api_uncertain', 'release_api_response_invalid', 'release_api_rejected', 'release_api_input_invalid']) {
+    const nested = cause => Error('release_coolify_compose_configuration_mutation_uncertain', { cause });
+    assert.equal(releaseEffectDiagnostic(nested(Error(reason))), reason);
+    assert.equal(releaseEffectDiagnostic(Error(reason + '\nBearer private-value')), 'release_effect_unproven');
+    assert.equal(releaseEffectDiagnostic(nested(Error(reason + '\nBearer private-value'))),
+      'release_coolify_compose_configuration_mutation_uncertain');
+  }
+  assert.equal(releaseEffectDiagnostic(Error('release_compose_installation_credential_private')), 'release_effect_unproven');
 });
 
 test('health binds baseline/candidate/rollback to the exact SHA and both public surfaces', async t => {

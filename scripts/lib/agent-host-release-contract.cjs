@@ -256,7 +256,11 @@ const postObservationEvidenceSchema=z.discriminatedUnion('kind',[
   ownedEffects:z.enum(['absent','present','unproven']),nativeChildrenClosed:z.literal(true)}).strict()
 ]);
 const evidenceSchema=z.object({composeConfigAbsence:composeConfigAbsenceSchema.optional(),postObservation:postObservationEvidenceSchema.optional(),composeRecovery:composeRecoverySchema.optional(),composeTargets:z.array(composeTargetEvidence).length(1).optional(),observedAt:z.string().datetime(),failureKind:z.literal('rollback_image_mismatch').optional(),remoteCommit:sha.optional(),remoteBase:sha.optional(),remoteTree:sha.optional(),pullRequestNumber:z.number().int().positive().optional(),prHeadCommit:sha.optional(),prMerged:z.boolean().optional(),reviewApproved:z.boolean().optional(),mergedCommit:sha.optional(),deploymentId:text.optional(),deploymentIds:z.array(deploymentIdentity).max(6).optional(),deployedTargets:z.array(deployedTarget).min(1).max(6).optional(),artifactSetDigest:hash.optional(),deployedSetDigest:hash.optional(),deployedCommit:sha.optional(),deployedTree:sha.optional(),imageDigest:image.optional(),configDigest:hash.optional(),schemaDigest:hash.optional(),healthDigest:hash.optional(),dataDigest:hash.optional(),backupDigest:hash.optional(),restoreDigest:hash.optional(),healthy:z.boolean().optional(),observationSeconds:z.number().int().nonnegative().max(3600).optional(),resourceIds:z.array(text).max(30).optional(),resourcePresent:z.boolean().optional(),repositoryArchived:z.boolean().optional(),localAbsent:z.boolean().optional(),absenceVerified:z.boolean().optional(),retentionVerified:z.boolean().optional(),repositoryUrl:url.optional(),canonicalDir:dir.optional(),targetId:text.optional(),applicationActive:z.boolean().optional(),localCommit:sha.optional(),localTree:sha.optional(),protectedResourcesDigest:hash.optional()}).strict().superRefine((e,c)=>{if(e.deploymentIds?.length===0&&!((e.composeRecovery?.kind==='queue_absent'||e.composeConfigAbsence!==undefined)&&e.absenceVerified===true))c.addIssue({code:'custom',message:'empty_deployment_ids_outside_recovery'});});
-const closeFailedReleaseSchema=z.object({requestId:id,expectedVersion:hash,failedOperationId:id,consentDigest:hash,evidence:evidenceSchema,nativeClosure:releaseNativeClosureSchema.optional()}).strict();
+// Closing its own still-active release attests exactly one catalog entry. Grant
+// admission continues to require zero active application releases.
+const configAbsenceClosureBaselineSchema=baselineRevalidationSchema.extend({activeApplicationReleaseCount:z.literal(1)}).strict();
+const configAbsenceRevalidationSchema=z.object({releaseId:id,evidenceDigest:hash,baseline:configAbsenceClosureBaselineSchema}).strict();
+const closeFailedReleaseSchema=z.object({requestId:id,expectedVersion:hash,failedOperationId:id,consentDigest:hash,evidence:evidenceSchema,nativeClosure:releaseNativeClosureSchema.optional(),absenceRevalidation:configAbsenceRevalidationSchema.optional()}).strict();
 const authorizeReconciliationSchema=z.object({requestId:id,expectedVersion:hash,credentialId:id,credentialVersion:z.number().int().positive(),operationIds:z.array(id).min(1).max(30),expiresAt:releaseExpirySchema}).strict();
 const publishedGitBasisSchema=z.object({schemaVersion:z.literal('roost-release-published-git-v1'),releaseId:id,expectedVersion:hash,
  closureId:id,closureDigest:hash,pushOperationId:id,prOperationId:id,reviewOperationId:id,mergeOperationId:id,
@@ -353,6 +357,31 @@ const composeConfigAbsenceEvidenceError=(s,e,operation)=>{
   const proof=compose.qualifyComposeRetainedBaseline({configuration:t.baseline.configuration,images:t.baseline.images,services:r.services,baselineServices:r.baselineServices});
   return e.deployedSetDigest===releaseDigest([{targetId:t.targetId,runtimeSetDigest:proof.runtimeSetDigest}])?null:'release_compose_config_absence_unproven';
  }catch{return 'release_compose_config_absence_unproven';}
+};
+const releaseConfigAbsenceRevalidationBindingError=(snapshot,input)=>{
+ if(input.absenceRevalidation===undefined)return null;
+ try {
+  const a=input.absenceRevalidation,e=input.evidence,r=e?.composeConfigAbsence;
+  if(!configAbsenceRevalidationSchema.safeParse(a).success||!releaseNativeClosureSchema.safeParse(input.nativeClosure).success||!releaseHasPublishedGit(snapshot)||!isComposeManifest(snapshot.manifest)
+   ||!id.safeParse(snapshot.releaseId).success||a.releaseId!==snapshot.releaseId||a.releaseId!==input.nativeClosure?.releaseId
+   ||a.evidenceDigest!==releaseDigest(e)||input.nativeClosure.evidenceDigest!==a.evidenceDigest
+   ||input.nativeClosure.operationId!==input.failedOperationId||input.nativeClosure.agentHostId!==snapshot.hostId
+   ||r?.releaseId!==a.releaseId||r.operationId!==input.failedOperationId
+   ||composeConfigAbsenceEvidenceError(snapshot,e,{id:input.failedOperationId,operation:'deploy_config',createdAt:r.since}))return 'release_config_absence_revalidation_invalid';
+  const binding=baselineRevalidation.baselineRevalidationBindingError({...snapshot,baselineRevalidation:a.baseline},configAbsenceClosureBaselineSchema,releaseDigest);
+  if(binding)return binding;
+  if(Object.values(a.baseline.actualReadTimes).some(at=>Date.parse(at)>Date.parse(a.baseline.observedAt)))return 'release_config_absence_revalidation_invalid';
+  if(Date.parse(input.nativeClosure.observedAt)<Date.parse(a.baseline.observedAt))return 'release_native_closure_stale';
+  return null;
+ }catch{return 'release_config_absence_revalidation_invalid';}
+};
+const releaseConfigAbsenceRevalidationError=(snapshot,input,now)=>{
+ const binding=releaseConfigAbsenceRevalidationBindingError(snapshot,input);if(binding||input.absenceRevalidation===undefined)return binding;
+ const a=input.absenceRevalidation,error=baselineRevalidation.baselineRevalidationError({...snapshot,baselineRevalidation:a.baseline},configAbsenceClosureBaselineSchema,releaseDigest,now);
+ if(error)return error;
+ const at=now instanceof Date?now.getTime():Number(now),native=Date.parse(input.nativeClosure?.observedAt);
+ if(!Number.isFinite(native)||native<Date.parse(a.baseline.observedAt)||native>at+60000||at-native>300000)return 'release_native_closure_stale';
+ return null;
 };
 const composeRecoveryEvidenceError=(s,e,operation)=>{
  try {
@@ -491,3 +520,6 @@ module.exports.releaseBaselineRevalidationBindings=input=>baselineRevalidation.b
 module.exports.releaseBaselineRevalidationDigest=value=>baselineRevalidation.baselineRevalidationDigest(value,releaseDigest);
 module.exports.releaseBaselineRevalidationBindingError=input=>baselineRevalidation.baselineRevalidationBindingError(input,baselineRevalidationSchema,releaseDigest);
 module.exports.releaseBaselineRevalidationError=(input,now)=>baselineRevalidation.baselineRevalidationError(input,baselineRevalidationSchema,releaseDigest,now);
+module.exports.releaseConfigAbsenceRevalidationSchema=configAbsenceRevalidationSchema;
+module.exports.releaseConfigAbsenceRevalidationBindingError=releaseConfigAbsenceRevalidationBindingError;
+module.exports.releaseConfigAbsenceRevalidationError=releaseConfigAbsenceRevalidationError;

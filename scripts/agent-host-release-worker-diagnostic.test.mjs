@@ -47,3 +47,12 @@ test('hidden launcher diagnostic file keeps only the classified reason and never
   assert.equal(v.reason,expected);assert.equal(v.phase,phase);assert.equal(bytes.includes('private-value'),false);
  }}finally{rmSync(dir,{recursive:true,force:true});}
 });
+test('retained baseline inspection refusals remain attributable before the first intent',()=>{
+ for(const reason of ['release_compose_inspector_transport_unproven','release_compose_inspector_response_invalid',
+  'release_compose_inspector_configuration_unproven','release_compose_inspector_source_unproven',
+  'release_compose_installation_baseline_runtime_changed']){
+  assert.equal(releaseWorkerDiagnostic(Error('outer',{cause:Error(reason)})),reason);
+  assert.equal(releaseWorkerDiagnostic(Error(reason+' private-value')),'release_preflight_unproven');
+ }
+ assert.equal(releaseWorkerDiagnostic(Error('release_compose_inspector_password_private')),'release_preflight_unproven');
+});

@@ -9,7 +9,7 @@ import { createReleaseCleanupGateway } from './agent-host-release-cleanup.mjs';
 import { prepareReleaseProcessScope, withReleaseProcessScope } from './agent-host-release-process.mjs';
 import { beginReleaseWriterCheckpoint, checkpointReleaseOperation, sealReleaseWriterCheckpoint,
  releaseRecoveryCandidate, clearReleaseWriterRecovery } from './agent-host-release-writer-recovery.mjs';
-import { nextReleaseOperation } from './agent-host-release-broker.mjs';
+import { nextReleaseOperation, releaseOutcomeStatus } from './agent-host-release-broker.mjs';
 import { createReleaseImageCleanup, createFixedDockerImageCleanupTransport, releaseImageOwnershipSchema } from './agent-host-release-image-cleanup.mjs';
 import { coolifyHttpsJson } from './agent-host-release-coolify.mjs';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -31,6 +31,16 @@ for (const reason of ['native_assignment_unobserved','native_resume_or_cleanup_u
 releaseDiagnosticReasons.add('release_native_request_bounds_invalid');
 releaseDiagnosticReasons.add('release_compose_no_effect_diagnosis_required');
 releaseDiagnosticReasons.add('release_coolify_git_set_runtime_identity_changed');
+// Fixed, reviewed refusal codes from the installed Compose preflight readers.
+// agent-host-release-compose-worker.mjs
+for(const reason of ["activity_current_queue_required","activity_file_bound_invalid","activity_finished_queue_required","activity_installation_binding_changed","activity_native_capability_required","activity_observation_unproven","activity_runtime_binding_changed","activity_runtime_intent_unproven","activity_runtime_version_changed","artifact_stage_unproven","backup_changed","baseline_adoption_changed","baseline_observation_unproven","baseline_runtime_changed","binding_invalid","cadence_activity_present","capacity_unproven","clone_changed","configuration_absence_baseline_unproven","configuration_absence_candidate_only","configuration_absence_changed_during_inspection","configuration_absence_control_plane_unproven","configuration_absence_data_or_health_changed","configuration_absence_observation_unproven","configuration_absence_operation_changed","configuration_absence_preimage_changed","configuration_preimage_changed","controller_origin_changed","controller_renderer_changed","current_queue_required","database_changed_during_measurement","database_configuration_changed","database_recreation_unproven","database_runtime_changed","database_source_binding_changed","disposable_resources_unsupported","fingerprint_unproven","finished_queue_required","git_scope_invalid","live_source_pin_changed","maintenance_unproven","owned_process_scope_required","ownership_binding_changed","ownership_path_invalid","permanent_application_deletion_prohibited","permanent_repository_deletion_prohibited","phase_binding_changed","phase_configuration_changed","phase_intent_changed","phase_intent_unproven","private_file_changed","private_file_unproven","private_path_invalid","recovery_baseline_health_changed","recovery_changed_during_inspection","recovery_configuration_changed","recovery_control_plane_active","recovery_observation_unproven","recovery_operation_unproven","recovery_queue_not_terminal","remote_commit_changed","response_size_invalid","service_identity_unproven","tree_unproven","version_health_unproven"])
+ releaseDiagnosticReasons.add("release_compose_installation_"+reason);
+// agent-host-release-compose-inspector.mjs
+for(const reason of ["binding_unproven","commit_invalid","configuration_changed_during_inspection","configuration_invalid","configuration_unproven","controller_changed","controller_unproven","declared_service_missing","image_provenance_unproven","mount_declaration_unproven","queue_changed_during_inspection","queue_identity_changed","queue_unproven","release_configuration_unprepared","response_invalid","rollback_image_binding_required","rollback_image_binding_unproven","runtime_unproven","service_conflict","source_unproven","target_outside_scope","transport_unproven","tree_unproven"])
+ releaseDiagnosticReasons.add("release_compose_inspector_"+reason);
+// agent-host-release-compose-health.mjs
+for(const reason of ["restored_health_unproven","restored_scope_invalid","restored_ticks_unproven","restored_time_invalid","scope_changed","scope_invalid","transport_invalid"])
+ releaseDiagnosticReasons.add("release_compose_health_"+reason);
 for (const reason of ['phase_intent_unproven','phase_intent_changed','baseline_observation_unproven',
  'database_source_binding_changed','database_configuration_changed','database_runtime_changed','database_recreation_unproven',
  'database_changed_during_measurement','cadence_activity_present','maintenance_unproven','capacity_unproven',
@@ -134,7 +144,11 @@ export async function runGovernedReleaseQueueStep({config,baseUrl,hostId,writerL
   const queue=await api(`/v1/agent-runtime/releases?hostId=${hostId}`);
   if(queue.truncated||!Array.isArray(queue.releases)||queue.releases.length>1)throw Error('release_queue_ambiguous');
   const state=queue.releases[0];if(!state)return{handled:false};
-  if(writerLock.releaseRecovery&&nextReleaseOperation(state)!=='reconcile')clearReleaseWriterRecovery(writerLock,state,settings.client);
+  const settled=state.journal.length>0&&state.journal.every(row=>['succeeded','failed','absent'].includes(releaseOutcomeStatus(row.outcome)));
+  if(writerLock.releaseRecovery&&settled)clearReleaseWriterRecovery(writerLock,state,settings.client);
+  // Settled read-only admission never asks the effect planner for a new intent.
+  // A fresh native checkout inspection creates its own signed closure. It does
+  // not reconstruct a missing historical checkpoint or rewrite an outcome.
   const s=state.release.snapshot,m=s.manifest;
   assertReleaseWorkerAdapter(settings,m);
   if(m.backup.digest!==backup.digest||m.backup.restoreDigest!==backup.restoreDigest||m.backup.bytes!==backup.bytes
@@ -142,6 +156,14 @@ export async function runGovernedReleaseQueueStep({config,baseUrl,hostId,writerL
   const mappings=Object.values(config.repositories).filter(r=>r.path?.toLowerCase()===m.repository.canonicalDir.toLowerCase()
    &&r.originUrl?.replace(/\.git$/,'')===m.repository.url.replace(/\.git$/,''));
   if(mappings.length!==1)throw Error('release_repository_not_installed');
+  if(settings.reconciliationOnly===true&&settled){
+   prepared=await prepareReleaseProcessScope();
+   context=beginReleaseWriterCheckpoint({writerLock,state,client:settings.client});
+   checkpointReleaseOperation(context,state,state.journal.at(-1),settings.client);
+   await withReleaseProcessScope(prepared,context,()=>inspectReleaseCheckout(m,s.commit,s.baseCommit,s.candidateTree));
+   sealReleaseWriterCheckpoint(context);
+   return{handled:true,state,reconciliationOnlyComplete:true};
+  }
   const gateway=set?undefined:createReleaseResourceGateway(settings.resources);
   // Credential readers and native launcher construction precede the checkpoint.
   // This dedicated process never claims or launches a model execution.

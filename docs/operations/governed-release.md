@@ -960,6 +960,27 @@ forbids repeating push, PR, review or merge. Preserve all baseline facts,
 configuration, artifacts, rollback, data and protected resources; only the new
 baseline observation time may change. Credential expiry remains immutable.
 
+A restarted attempt has only its own configuration operation. Authenticate its
+inherited four Git operation IDs against the durable parent closure/history,
+with bounded cycle detection; never replay Git. Closing that one observed
+ABSENT operation can carry the original Git IDs into a later grant, with a new
+credential/runtime and separate exact owner authority.
+
+If immutable absence evidence becomes old while repairing the controller,
+require a new complete nine-component baseline read, exactly the current lone
+active application release, all parity checks and a freshly inspected signed
+native closure after every component. Keep the original evidence unchanged.
+Owner authentication and native observation retain their five-minute limits;
+invalid optional revalidation fails even if the original evidence is fresh.
+
+Every sealed release reclaim must archive the exact signed prior Writer before
+unlinking it. A settled reconciliation-only cycle can perform a fresh governed
+native checkout inspection and archive its own closure without a new intent,
+model or application effect. This does not reconstruct a missing older record.
+The real current attempt's older archive was lost by the previous reclaim path;
+controller 187440 produced a distinct seven-child signed read-only closure and
+released its Writer. Original configuration refusal remains unattributed.
+
 These source mechanisms require actual native and production qualification;
 their tests alone do not prove a completed application release.
 

@@ -9,6 +9,16 @@ const effectReasons=new Set(['release_git_push_uncertain','release_git_merge_unc
  'release_coolify_git_set_configuration_mutation_uncertain','release_coolify_git_set_service_health_unproven',
  'release_compose_identity_invalid','release_compose_queue_identity_invalid','release_compose_deployment_unproven',
  'release_compose_configuration_identity_invalid','release_compose_controller_result_uncertain',
+ // Keep fixed configuration guard causes after artifact staging; never retain
+ // arbitrary exception text or treat a diagnostic prefix as an approved code.
+ 'release_coolify_compose_configuration_mutation_uncertain',
+ ...['phase_intent_unproven','phase_intent_changed','phase_binding_changed','configuration_preimage_changed',
+ 'clone_changed','private_file_changed','controller_renderer_changed','live_source_pin_changed',
+ 'git_scope_invalid','tree_unproven','ssh_unavailable','response_size_invalid'].map(v=>'release_compose_installation_'+v),
+ ...['configuration_changed_during_inspection','configuration_unproven','configuration_invalid',
+ 'controller_unproven','controller_changed','response_invalid','transport_unproven','source_unproven',
+ 'release_configuration_unprepared','runtime_unproven','service_conflict','mount_declaration_unproven'].map(v=>'release_compose_inspector_'+v),
+ 'release_api_uncertain','release_api_response_invalid','release_api_rejected','release_api_input_invalid',
  ...['native_assignment_unobserved','native_resume_or_cleanup_unproven','native_exit_failed',
  'native_access_denied','git_ownership_unproven','git_config_unreadable','git_repository_unavailable',
  'ssh_timeout','ssh_connection_closed','ssh_host_identity_unproven'].map(v=>'release_child_'+v)]);

@@ -275,7 +275,9 @@ async function reclaimSealedRelease(directory, candidate) {
     const recovered = qualifyReleaseWriterReclaim(current, candidate, directory);
     const latest = await lstat(lockPath);
     if (latest.dev !== stat.dev || latest.ino !== stat.ino || await readFile(lockPath, "utf8") !== bytes) throw Error("agent_host_writer_locked");
-    if (recovered.preflightQuiescence) {
+    // Preserve every validated original release Writer before retiring its lock.
+    // Clearing recovery on the replacement cannot recreate this signed record.
+    {
       const archivePath = path.join(directory, `release-writer-reclaimed-${recovered.priorContextNonce}.json`);
       let archive;
       try { archive = await open(archivePath, "wx", 0o600); }

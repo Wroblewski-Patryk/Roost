@@ -187,18 +187,17 @@ an immediate implementation dependency or mark it complete.
 Review rejected `c21e0e0c` for its missing regression log. Log-only `c82e68b3`
 passes seven tests, native build and independent read-only acceptance.
 
-Roost `c185743d` and both Compose recovery migrations are deployed. Backup,
-isolated restore and schema/data/sequence parity pass; DB writes/cadences are held.
-Grant `a14dba8b` binds 0857; PR 2 merges exact `c82e68b3`. Signed Worker proves
-configuration absent. Closure `2eb9cdfd` records FAILED; 88 children close and
-Writer archived/released; immutable history retained.
-Prior refused, expired and closed attempts remain historical.
-Audit `2a951463` closes unchanged; credential renewed.
-`0dbbc62a` / `e7483bd5` approve c82; `7e6d0105` reconciled.
+Roost `219a2844` is deployed. Backup/restore and parity pass; writes/cadences
+are held. Historical a14 closure `2eb9cdfd` retains PR 2/exact c82 and Git proof.
+Current audit `2a951463` and review `0dbbc62a` / `e7483bd5` close natively;
+release grant `3c75a93e` binds 6ca/b5a9. Its sole configuration operation was
+uncertain, then Worker observed ABSENT. No application deployment started.
+Original cause remains unknown; diagnostics now retain fixed refusal codes.
+Recovery extends inherited Git closure and fresh nine-read parity, preserving
+original evidence clocks. A reclaim archive defect lost the older checkpoint;
+fresh read-only controller 187440 closed seven signed children and archived it.
+Source/DB checks pass; recovery migration deployment/owner closure pending.
 Docker startup repaired; guarded start preserves socket parents.
-No app deployment started.
-Source adds fresh owner-attested baseline parity without changing the manifest;
-normal grant and runtime use remain unproven.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

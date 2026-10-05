@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import path from "node:path";
 import type { Prisma } from "@prisma/client";
 import type { AuthContext } from "../../auth/api-key.middleware";
 import { resolveReviewPrincipal } from "../../auth/agent-principal";
@@ -11,6 +12,7 @@ import { freshWorkerOwner } from "../api-keys/worker-credential.service";
 import { requireRuntimeContent } from "./runtime-redaction-policy";
 import { createReleaseSchema, releaseIntentSchema, releaseOutcomeSchema, releaseDigest, releaseApprovalError, releaseWindowError, releaseIntentError, releaseOutcomeError, effectiveOutcome, releaseCandidateNativeError, renewReleaseSchema, releaseRenewalWindowError, releaseRenewalStateError, releasePurposeMatches, releaseTargetMetadataMatches, releaseCanonicalDirectoryMatches, releaseSuccessorBasis, closeFailedReleaseSchema, authorizeReconciliationSchema, releaseFailedClosureError, releasePublishedGitBasis } from "./governed-release-contract";
 type Db=Prisma.TransactionClient;
+const releaseWire=require(path.resolve(__dirname,"../../../scripts/lib/agent-host-release-contract.cjs"));
 // A completed result does not preserve authority after its task basis changes.
 // Reuse the current readiness validator, including admission expiry, without
 // replacing the completed execution's pin or mutating its source task.
@@ -284,7 +286,14 @@ export async function closeFailedRelease(db:Db,workspaceId:string,id:string,auth
  if(prior)return prior.request_hash===hash?{...publicState(state),closureId:prior.id,replayed:true}:{error:"release_request_conflict"};
  const error=releaseFailedClosureError(state,input);if(error)return {error};
  if(state.release.issuer_user_id!==auth.userId)return {error:"release_issuer_required"};
- const observed=Date.parse(input.evidence.observedAt),now=Date.now();if(observed>now+60000||now-observed>300000)return {error:"release_outcome_evidence_stale"};
+ const observed=Date.parse(input.evidence.observedAt),now=Date.now();
+ // Never replace the immutable Worker observation. Only a complete new actual
+ // read can revalidate its no-effect baseline before owner closure.
+ if(input.absenceRevalidation!==undefined){
+  const revalidationError=releaseWire.releaseConfigAbsenceRevalidationError({...state.release.snapshot,releaseId:state.release.id},input,now);
+  if(revalidationError)return {error:revalidationError};
+ }
+ if(!Number.isFinite(observed)||observed>now+60000||(now-observed>300000&&input.absenceRevalidation===undefined))return {error:"release_outcome_evidence_stale"};
  if(input.nativeClosure){
   const nativeObserved=Date.parse(input.nativeClosure.observedAt);
   if(!Number.isFinite(nativeObserved)||nativeObserved>now+60000||now-nativeObserved>300000)return {error:"release_native_closure_stale"};

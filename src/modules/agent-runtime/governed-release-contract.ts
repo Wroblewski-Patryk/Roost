@@ -205,14 +205,21 @@ function composeConfigAbsentClosureError(state:any,input:any,checkVersion=true) 
  const r=state.release,s=r.snapshot,j=state.journal,e=input.evidence,n=input.nativeClosure;
  if(checkVersion&&state.expectedVersion!==input.expectedVersion)return "release_version_stale";
  const op=j.at(-1),schema=shared.releaseNativeClosureSchema.safeParse(n);
- if(s.predecessor||s.successorBasis||s.baselineRestart||s.publishedGitBasis||checkVersion&&state.revocations.length
-  ||j.length!==5||j.map((x:any)=>x.operation).join(',')!=="push,pr,review,merge,deploy_config"
-  ||op.id!==input.failedOperationId||op.outcome?.status!=="reconciled"||effectiveOutcome(op.outcome)!=="absent"
+ const revalidationError=shared.releaseConfigAbsenceRevalidationBindingError({...s,releaseId:r.id},input);
+ if(revalidationError)return revalidationError;
+ const restarted=releaseHasPublishedGitBasis(s),hasRestart=s.baselineRestart!==undefined||s.publishedGitBasis!==undefined;
+ // A restarted release has no Git effects of its own. Its immutable admitted
+ // basis carries the already published Git proof; absence must still prove
+ // that exactly its sole configuration operation produced no candidate effect.
+ if(s.predecessor||s.successorBasis||hasRestart&&!restarted||checkVersion&&state.revocations.length
+  ||j.length!==(restarted?1:5)||j.map((x:any)=>x.operation).join(',')!==(restarted?"deploy_config":"push,pr,review,merge,deploy_config")
+  ||op?.id!==input.failedOperationId||op.outcome?.status!=="reconciled"||effectiveOutcome(op.outcome)!=="absent"
   ||(op.outcome.observation_only??op.outcome.observationOnly)!==true
   ||releaseDigest(op.outcome.evidence)!==releaseDigest(e)
   ||releaseComposeConfigAbsenceEvidenceError({...s,releaseId:r.id},e,op)||!schema.success
   ||n.releaseId!==r.id||n.operationId!==op.id||n.agentHostId!==(r.host_id??s.hostId)||n.evidenceDigest!==releaseDigest(e)
   ||Date.parse(n.observedAt)<Date.parse(e.observedAt))return "release_failed_closure_unproven";
+ if(restarted)return null;
  const git=j.slice(0,4);if(git.some((x:any)=>effectiveOutcome(x.outcome)!=="succeeded"||releaseOutcomeError(r,x,{status:x.outcome.status,reconciledStatus:x.outcome.reconciled_status??x.outcome.reconciledStatus,observationOnly:x.outcome.observation_only??x.outcome.observationOnly,evidence:x.outcome.evidence},j))
   ||git.slice(1).some((x:any)=>x.outcome.evidence.pullRequestNumber!==git[1].outcome.evidence.pullRequestNumber))return "release_restart_git_unproven";
  return null;
@@ -230,9 +237,11 @@ function composeConfigAbsentPublishedBasis(state:any,input:any):any {
   ||["taskId","applicationId","hostId","commit","candidateTree","baseCommit","baseTree","releaserAgentId"].some(k=>input[k]!==s[k]))return {error:"release_restart_binding_changed"};
  const stable=(m:any)=>({...m,baseline:Object.fromEntries(Object.entries(m.baseline).filter(([k])=>k!=="observedAt"))});
  if(releaseDigest(stable(input.manifest))!==releaseDigest(stable(s.manifest)))return {error:"release_restart_binding_changed"};
- const ops=state.journal.slice(0,4),publishedGitBasis={schemaVersion:"roost-release-published-git-v1",basisKind:"compose_config_absence",composeEvidenceDigest:releaseDigest(receipt.evidence),
+ const ops=state.journal.slice(0,4),git=releaseHasPublishedGitBasis(s)?s.publishedGitBasis:
+  {pushOperationId:ops[0].id,prOperationId:ops[1].id,reviewOperationId:ops[2].id,mergeOperationId:ops[3].id};
+ const publishedGitBasis={schemaVersion:"roost-release-published-git-v1",basisKind:"compose_config_absence",composeEvidenceDigest:releaseDigest(receipt.evidence),
   releaseId:r.id,expectedVersion:state.expectedVersion,closureId:closure.id,closureDigest:closure.closure_digest,
-  pushOperationId:ops[0].id,prOperationId:ops[1].id,reviewOperationId:ops[2].id,mergeOperationId:ops[3].id,baselineDeploymentIds:[]};
+  pushOperationId:git.pushOperationId,prOperationId:git.prOperationId,reviewOperationId:git.reviewOperationId,mergeOperationId:git.mergeOperationId,baselineDeploymentIds:[]};
  return releaseHasPublishedGitBasis({...input,publishedGitBasis})?{publishedGitBasis}:{error:"release_restart_baseline_changed"};
 }
 export function releasePublishedGitBasis(state:any,input:any):any {
