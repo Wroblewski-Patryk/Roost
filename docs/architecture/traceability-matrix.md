@@ -1998,3 +1998,27 @@ before native execution, then renew coder Ready/result basis and obtain a new
 independent code review before preparing exact owner release authority.
 Source checks cover stale/rejected/changed acceptance denial; this does not prove
 a new application release. The applied earlier migration remains unchanged.
+
+### New exact manifest audit and independent current code acceptance
+
+Native audit `07a0bb46-b138-4646-b1dc-a58d5cf7b6b1` completed its first
+attempt at `2026-10-05T00:57:27.042Z` for manifest
+`30a3665f52def7eafcf5b78ff5c04c0c03a197933e807833da199e70ebb2bb74`.
+Signed native admission, closed Job/exit 0/zero active processes and unchanged
+Git/repository/process/Docker footprints are verified. Its `CHANGES_REQUIRED`
+finding remains evidence of pending release requirements.
+
+Append-only coder revalidation `aa508e81-0dd9-41a5-b623-2815a3b9a9c9`
+creates current material
+`84e56c664e8c53249b62f2910734263cebfa544926234944f193b2120a89bb0d`
+for unchanged `c82e68b30f937e00438d6b64a3c39e010364e24d`.
+Independent native execution `0ad18541-c50d-4292-baf9-bc0b4c9219b9`
+completed at `2026-10-05T01:05:22.298Z`; decision
+`8e1d7f02-284a-4a54-8966-b612d28b6a11` approves this exact commit/material.
+Signed Job closure/exit 0/zero active processes and unchanged native footprints
+are verified. Both official controllers stopped with exit 0. Original approvals,
+rejections, frozen admission and eight installed artifacts remain preserved.
+Actual inputs are 130313/130282 bytes against the unchanged 131072-byte limit;
+Hermes usage is unavailable. Current normal review and new manifest readiness
+are qualified, but a separate owner grant and all production proof remain
+pending. No new application deployment or gate completion is claimed.

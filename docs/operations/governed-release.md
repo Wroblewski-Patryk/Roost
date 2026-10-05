@@ -978,3 +978,23 @@ invalidates group Ready and the old code approval; retain it as dated history.
 Freeze the new audit admission, close its native attempt, then renew coder Ready
 and result basis and obtain a new independent code review. A separate exact
 owner release grant is still required; prior failed authority is not transferred.
+
+The new manifest audit `07a0bb46-b138-4646-b1dc-a58d5cf7b6b1` completed
+on its first attempt at `2026-10-05T00:57:27.042Z`. Signed native admission,
+Job exit 0/closure/zero active processes and unchanged repository/Git/process/
+Docker footprints are verified. Its semantic finding remains `CHANGES_REQUIRED`:
+release observations and independent postrelease acceptance are still required.
+The official controller stopped with exit 0 before any following operation.
+
+Normal append-only result revalidation `aa508e81-0dd9-41a5-b623-2815a3b9a9c9`
+qualified unchanged `c82e68b3` against the new current basis. Independent
+execution `0ad18541-c50d-4292-baf9-bc0b4c9219b9` completed at
+`2026-10-05T01:05:22.298Z`; decision
+`8e1d7f02-284a-4a54-8966-b612d28b6a11` accepts exact commit/material
+`84e56c664e8c53249b62f2910734263cebfa544926234944f193b2120a89bb0d`.
+Its signed Job is closed, exit 0, with unchanged native footprints; the Worker
+is stopped. Audit and reviewer inputs measured 130313 and 130282 bytes,
+respectively, within the unchanged 131072-byte limit. Hermes usage is unavailable.
+Eight new installed files and the current normal review are physically qualified.
+This is preparation for a new separate exact-manifest owner grant, not deployment
+proof or transferred authority from the failed attempt.
