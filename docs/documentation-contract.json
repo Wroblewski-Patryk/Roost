@@ -15,7 +15,7 @@
     "activePlanning": ["docs/implementation.md", "docs/planning/open-decisions.md"]
   },
   "budgets": {
-    "maxDefaultContextBytes": 150000,
+    "maxDefaultContextBytes": 160000,
     "maxActivePlanningFileBytes": 256000,
     "maxActivePlanningFiles": 10
   }

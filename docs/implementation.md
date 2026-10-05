@@ -45,21 +45,46 @@ work.
 
 ## Current verified state
 
-Roost has PostgreSQL/Prisma, Express, a React owner console, workspace API/MCP
-boundaries, provider/task/context/review and a Windows Worker with Hermes.
+Existing foundations: PostgreSQL/Prisma, Express, React owner console, workspace
+API/MCP boundaries, provider/task/context/review, Windows Worker and Hermes.
 
-**Gate 1 is met at production/runtime evidence level (2026-09-27).** Deployed
-API build `18bd5c64`, execution `9fc132c6-af99-4d98-a2e2-27de7d576879`
-and signed native closure prove one supervised agent round trip. Forced
-production cancellation/lease-loss, coding/release and Ollama are not covered.
+**Gate 1 is met at production/runtime evidence level (2026-09-27).** The
+API build `18bd5c6466372263316a5846f990f61cacd41040`, deployment
+`yesokuu2ikcxh43zdf3fju9w`, migrations 87–89, v3 signing/issuer,
+owner-provisioned key and HTTPS credential handoff to Windows Credential Manager
+are verified. Execution uses attested Hermes 0.21.2; installation values are private.
 
-**Gate 2 is met at native coding/review evidence level (2026-09-27).** Execution
-`b95cf777-fe24-46a4-a88e-4bd0a9314bef` produced local commit `774e858a`;
-independent review `5c27d054-7cc3-45a1-9ef6-d43760316e69` and Decision
-`c349899b-72c3-4260-9b77-de733f42866c` accepted its exact material. No
-push/deploy or general recovery of arbitrary after-spawn failures is claimed.
-Exact identities, checks, limits and historical failure evidence are in the
-[traceability matrix](architecture/traceability-matrix.md).
+Execution `9fc132c6-af99-4d98-a2e2-27de7d576879` completed its first attempt
+at 01:08:43 UTC under signed Decision `2c12bf61-7cfe-475a-8431-40c8f3d8514a`:
+`codex_responses`, `gpt-5.6-sol`, low reasoning, no fallback. Native proof:
+clean `cf90418cc694dc0cb773a44c001c569407d05f9f`, unchanged files, signed
+admission, Job exit 0/zero active processes and durable `verified_candidate`.
+Exact task/host and archived artifacts remain in the
+[matrix](architecture/traceability-matrix.md). Hermes token/cost usage is
+unavailable. Cancellation/lease-loss passed 66 focused Worker/native checks;
+forced production cancellation/lease-loss were not exercised.
+
+Readiness reports `executionEnabled: true` / `supervised_execution`.
+Coding/release and Ollama are outside this Gate 1 proof.
+
+**Gate 2 is met at native coding and independent review evidence level
+(2026-09-27).** Independent read-only canaries preceded separate first-write
+consent. Native proof covers incomplete/scope refusal, one writer, checkpoint/resume,
+Hermes coding/tests and independent rejection/correction. Execution
+`b95cf777-fe24-46a4-a88e-4bd0a9314bef` produced
+commit `774e858ae48d1f05d2b56982a7113da983f62af8` with a signed local
+commit receipt, `verified_candidate`, passing Windows/POSIX tests and clean
+checkout. Independent execution `5c27d054-7cc3-45a1-9ef6-d43760316e69`
+preserved Git/process/Docker state; Decision
+`c349899b-72c3-4260-9b77-de733f42866c` accepted the exact commit/material.
+The branch remains local without push/deploy; see the [matrix](architecture/traceability-matrix.md).
+
+Gate 2 proves only its task/paths/procedures/roles/runtime. General scheduling,
+arbitrary filesystem effects and release are not certified; Hermes usage is
+unavailable. An earlier failed attempt required manual native lease/admission
+reconciliation; signed closure and private archives remain. Automatic recovery
+of every after-spawn failure is not claimed.
+
 ## End-to-end delivery gates
 
 These gates are outcome-sized delivery boundaries, not internal technical
@@ -83,17 +108,28 @@ authority.
 
 ### Gate 1 — real agent round trip
 
-The Windows Worker claims an accepted low-risk task; attested Hermes executes
-with approved model policy and returns signed status/evidence. Cancellation and
-lease loss stop safely. Gate 1 included migration, signing, credential handoff
-and HTTPS admission, rather than treating those pieces as separate outcomes.
+An accepted low-risk Roost task is claimed by the intended Windows Worker.
+Managed Hermes starts with an explicit approved backend, model and reasoning
+effort. The execution reports heartbeats, terminal result, usage when available
+and bounded evidence back to Roost. Cancellation and lease loss stop safely.
+
+Completing this gate includes every missing internal dependency, including the
+Prisma v3 integration, applying and qualifying migration 87, real signing and
+verification, key provisioning, HTTPS admission and default runtime wiring.
+None of those internal components is independently considered delivery.
 
 ### Gate 2 — governed coding delivery
 
-The agent works in the canonical checkout from pinned task/procedure context,
-under one-writer admission, with checkpoints, tests and an exact reviewable
-commit. An independent role accepts or returns it with evidence. Supporting
-roles, decisions and resource controls are proven within this outcome.
+The agent receives the pinned task/application/procedure context, works only in
+the configured canonical checkout, respects the one-writer and one-instance
+rules, checkpoints progress, resumes safely after interruption, runs the
+required tests and produces a reviewable commit. An independent competent role
+accepts or returns the work with reproducible evidence.
+
+This gate also proves hierarchy, role/competence assignment, task decomposition,
+clarification, Decision escalation, resource admission and learning feedback to
+the extent required by the real delivery. Missing supporting behavior is fixed
+inside the same outcome rather than deferred into unrelated contract work.
 
 ### Gate 3 — governed release
 
@@ -101,8 +137,9 @@ roles, decisions and resource controls are proven within this outcome.
 interrupted deployment, controlled failure, healthy rollback and owned cleanup
 passed. [Evidence](operations/governed-release.md).
 
-The exact accepted commit follows Git, deployment, observed health and
-certification or rollback, with audit, backup/restore and owned cleanup.
+An accepted exact commit follows Git, deployment, baseline health, observation
+and certification or rollback. Audit, secrets, backup/restore, compatibility
+and owned cleanup are required; no extra clones or services.
 
 ### Gate 4 — pilot application proof
 
@@ -113,8 +150,10 @@ The failed rollback remains unqualified; exact adopted rollback image and
 verified backup/restore are retained. Worker stopped; resources cleaned.
 Gate 5 received a separate owner assignment; no later phase is authorized.
 
-The configured pilot's low-risk defect passed managed discovery, repair, review,
-release and production verification under its application-specific safety rules.
+One real low-risk defect in the configured pilot application is discovered,
+planned, implemented, independently tested, committed, released and verified in
+production through Gates 1–3. Application-specific safety rules and any owner
+consent explicitly required by `product/requirements.md` remain binding.
 
 ### Gate 5 — reusable company operation
 
@@ -128,9 +167,19 @@ continuation are verified on Roost `d7a5e0de`. Worker stopped; no application
 push/deploy. Whole-product readiness and later capabilities remain unproven.
 See [evidence and operating limits](operations/internal-application-operation.md).
 
-This proves reusable internal application development only. Each applicable
-requirement retains its own evidence and applicability in the traceability
-matrix. Sales, customer service and mobile remain later phases.
+The same mechanism can onboard another configured application without changing
+the core runtime. Accepted requirements applicable to internal application
+delivery are reconciled against real operation: organization and competencies,
+procedures and goals, attention and
+Decision UX, localization/time, recovery, resources, security, monitoring,
+release and continuous improvement. A requirement is complete only with the
+runtime evidence defined in the traceability matrix.
+
+This gate proves reusable internal application development. Commercial sales,
+customer-service delivery, native mobile and other explicitly deferred product
+directions remain later phases. Reconciling a requirement means recording its
+evidence and applicability; it does not make every accepted future requirement
+an immediate implementation dependency or mark it complete.
 
 ### Second-application release gate — ship the accepted bounded repair
 
@@ -248,7 +297,9 @@ Prepare one outcome-sized assignment from the selected gate below. It contains:
 Inspect code/configuration for the selected gate. Reuse adequate existing
 dependencies; justify additions by missing behavior and maintenance/resource cost.
 
-Past gate briefs are in Git history; evidence remains above and in the matrix.
+Completed Gate 2–5 execution briefs are retained as
+[historical protocol records](operations/completed-gate-briefs.md); their older
+entry/exit language does not authorize a new gate.
 
 ## Later product phases
 
@@ -258,11 +309,16 @@ business choices are available. Do not silently add them to Gate 5.
 
 | Horizon | Result and entry condition | Existing requirements / decisions |
 | --- | --- | --- |
-| Application completion | After this release, take the selected app from audited baseline to product readiness; repeat with app-specific proof. | RF-APP-001–014; private app baseline |
-| Context and owner access | Before customer work, filter default Worker/API/MCP context without losing audit history; diagnose repeat login versus fresh owner approval. | RF-CTX-027, RF-SEC-013, RF-GOV-014 |
-| Owner-console usability | Inventory routes/configuration, repair whole journeys in gates and repeat console regression as features grow. | RF-UX-010, RF-REL-012 |
-| Website method and public entry | Verify site findings, approve a checklist, prove supervised use, then redesign the public page for its approved audience and truthful claims. | RF-CTX-028, RF-UX-011; OPEN-UX-001 |
-| Environment stewardship | Before scaling, prove read-only inventory and one supervised host/VPS update; later mandates need separate proof. | RF-HOST-021, RF-RES-001–008, RF-SEC-007 |
+| Application completion | After the current release, take the selected app to owner-accepted readiness, then repeat with an app-specific baseline and proof. | RF-APP-001–014; private app baseline |
+| Context classification and Worker packet | Classify operational versus historical sources; prove only current, approved, scoped material enters a sealed task packet. | RF-CTX-027; RF-GOV-020 |
+| Context API/MCP and audit | With the same fixtures, prove ordinary agent reads exclude old/test material while explicit authorized audit retrieves it with provenance. | RF-CTX-027; RF-SEC-007 |
+| Owner access | Reproduce repeat-login behavior; prove sustained ordinary work, exact-action reauthentication and separate agent identity. | RF-SEC-013; OPEN-AUTH-001 |
+| Owner-console usability | Inventory every current route/configuration; improve complete journeys in bounded gates with independent review and full-console regression. | RF-UX-010, RF-REL-012 |
+| Reference-site study | Inspect only authorized, version-identified sites and preserve sourced findings, uncertainties and applicability. | RF-CTX-028 |
+| Website checklist governance | Independently verify findings and approve a versioned checklist/procedure with acceptance criteria and rollback. | RF-CTX-028 |
+| Website method proof | Prove real supervised use of the approved checklist in a scoped application task. | RF-CTX-028 |
+| Public entry | Redesign and verify Roost's public page for the approved audience and truthful claims. | RF-UX-011; OPEN-UX-001 |
+| Environment stewardship | Before scaling, prove read-only host/VPS inventory and one supervised exact-target update; later mandates require separate acceptance. | RF-HOST-021, RF-RES-001–008; OPEN-HOST-001 |
 | Product sales | Prove offer, payments/access, invoices/accounting, support and controlled launch for a ready product. | RF-APP-015, RF-BIZ, RF-SUP; OPEN-FIN-001 |
 | Customer-service capability | After sale readiness, configure website/service scoping, delivery, access, acceptance and settlement. | RF-SVC, RF-SCOPE-004/006; OPEN-SVC-001–004 |
 | Customer acquisition | After proving delivery capacity and commercial rules, operate prospect qualification, offers and paid delivery. | RF-SVC, RF-SUP, RF-BIZ |
