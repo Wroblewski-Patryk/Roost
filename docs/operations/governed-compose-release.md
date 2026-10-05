@@ -359,3 +359,22 @@ trusted callbacks; exception properties cannot invent an observed stage.
 The broker persists only the closed classification enum. This adds attribution,
 not retries, relaxed validation, changed timeouts or a different mutation route.
 It does not identify the cause of earlier attempts that lacked this metadata.
+
+### Closed retry after controller schema repair
+
+Attempt `f579ca87` never deployed the application. Its sole configuration
+operation `594c5f37` reconciled ABSENT; preserve original evidence at
+`2026-10-05T19:52:20.503Z` separately from the later outcome timestamp.
+Normal closure `4b0a9d74` records FAILED at `20:00:03.900Z`, joining the
+original 154-child and reconciliation 88-child signed checkpoints. Both
+official controllers closed at exit zero; owned writer locks are absent.
+Normal V6 credential rotation and masked Credential Manager read-back pass.
+
+Read-only audit `5f056660` completed at `20:12:50.861Z` with signed native
+closure, exit zero, zero active processes and unchanged repository/process/
+Docker evidence. Retain its literal `CHANGES_REQUIRED` and all fifteen
+findings. Normal code review GET reports prior `56ee77da` stale after the
+current risk basis changed; source equality alone cannot renew that approval.
+Obtain append-only basis revalidation and independent current review before
+new authority. No successor grant, candidate deployment or gate completion
+is established by this recovery. Preserve the published Git lineage.

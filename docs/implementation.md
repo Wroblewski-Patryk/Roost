@@ -188,17 +188,17 @@ Review rejected `c21e0e0c` for its missing regression log. Log-only `c82e68b3`
 passes seven tests, native build and independent read-only acceptance.
 
 Roost `d4014466` is deployed. Backup/restore and parity pass; writes/cadences
-are held. Historical a14 closure `2eb9cdfd` retains PR 2/exact c82 and Git proof.
-Prior grant `3c75a93e` is FAILED via closure `14348e4c`, preserving absence
-clocks, inherited Git and distinct seven-child closure after the archive defect.
-Fresh backup/restore and deployed backup-only restart guards pass.
-Prior `e7320bdf` is FAILED via closure `4d79f05f` with 88 signed closed children.
-Current audit `73c725f3` retains `CHANGES_REQUIRED`; review `56ee77da` accepts c82.
-Grant `f579ca87` binds unchanged `742c2d4d`; configuration reconciled ABSENT at
-`19:52:21.685Z`. No deployment. Closure and subsequent issuance remain pending.
-Actual Coolify schema repair `2d63cf62` verifies rollback rehearsal, two command
-columns widened to text and parity of all ten records. Worker capacity guard is
-component-tested; source diagnostics and failed histories remain preserved.
+are held. Closure `2eb9cdfd` retains PR 2/exact c82 and Git proof.
+Prior `3c75a93e` is FAILED via `14348e4c`, preserving absence clocks, inherited
+Git and seven-child closure. Fresh backup and deployed restart guards pass.
+Prior `e7320bdf` is FAILED via `4d79f05f`, with 88 signed closed children.
+Grant `f579ca87` binds `742c2d4d`; configuration reconciled ABSENT, preserving
+evidence clock `19:52:20.503Z`. Closure `4b0a9d74` records FAILED; V6 rotation
+passes. Audit `5f056660` has signed native closure and literal CHANGES_REQUIRED.
+Prior review `56ee77da` is stale; current code approval and issuance are pending.
+Coolify repair `2d63cf62` verifies rollback rehearsal, two command columns
+widened to text and parity of ten records. Worker guard is component-tested;
+source diagnostics and failed histories remain preserved.
 Docker startup repaired; guarded start preserves socket parents.
 
 Reuse the existing application, repository and Compose installation; create no
