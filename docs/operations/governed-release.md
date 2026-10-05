@@ -998,3 +998,16 @@ respectively, within the unchanged 131072-byte limit. Hermes usage is unavailabl
 Eight new installed files and the current normal review are physically qualified.
 This is preparation for a new separate exact-manifest owner grant, not deployment
 proof or transferred authority from the failed attempt.
+
+The 30a preparation expired without owner consent or a grant. A new actual
+read-only baseline at `2026-10-05T10:25:28.713Z` preserves the previous encrypted
+backup/isolated restore, four protected images and schema/data/sequence parity.
+An inspection after expiry verifies that write fences and paused cadences remain
+active; it does not renew the historical maintenance effect window. Package
+`e82fe60c` has eight physical installed read-backs and the same accepted commit.
+Ordinary bound-agent rotations are verified through the normal catalog and
+masked Windows Credential Manager read-back; old keys retain their original
+expiry and are revoked. This does not grant Worker lifecycle or release authority.
+The new native audit admission is in progress; current code recertification and
+separate exact owner release consent remain required before deployment. Preserve
+the prior signed audits and their `CHANGES_REQUIRED` findings as dated evidence.

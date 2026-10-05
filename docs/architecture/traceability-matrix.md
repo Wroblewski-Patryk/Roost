@@ -2022,3 +2022,17 @@ Actual inputs are 130313/130282 bytes against the unchanged 131072-byte limit;
 Hermes usage is unavailable. Current normal review and new manifest readiness
 are qualified, but a separate owner grant and all production proof remain
 pending. No new application deployment or gate completion is claimed.
+
+### Expired preparation refreshed without transferred authority
+
+The 30a preparation expired without owner consent or a grant. Actual baseline
+`2026-10-05T10:25:28.713Z` and installed manifest
+`e82fe60c7a3b4c7e364dd910060ebe76aae39e97da3d676a4d12e450a942347f`
+retain the exact candidate, backup/restore, four images and configuration/schema/
+data/sequence parity. Read-only inspection after the maintenance effect window
+expired verifies held writes/cadences without extending that authority. Eight
+physical files have exact read-backs. Normal ordinary agent credential rotations
+and Windows Credential Manager read-backs are verified; secrets are not stored
+in repository evidence. The new native audit, current independent code review,
+separate exact owner grant and production proof remain pending. Historical
+reviews and audit findings remain dated evidence, not current release authority.
