@@ -1242,3 +1242,28 @@ historical missing-build finding; installed version, migration, health, smoke,
 1,200-second observation, fixture cleanup, cadence restoration and independent
 postrelease acceptance still require actual release evidence. Current exact
 independent approval and normal owner release authority remain pending.
+
+### Unchanged readonly audit basis — 2026-10-06
+
+Adding the required independent audit-receipt review changed the reviewer's
+prompt and therefore the shared risk assessment. Normal API readback `aaa0b17f`
+confirmed the completed audit's Ready became `needs_revalidation`, while the
+existing coding-only basis endpoint returned `completed_result_native_unproven`.
+Rerunning or changing the audit would discard valid evidence unnecessarily.
+
+The additive `20261006002000_readonly_completed_result_basis` migration and
+matching API eligibility allow only an unchanged completed auditor result with
+signed managed admission, exact job/source identity, closed zero-process tree,
+unchanged repository/process/Docker evidence, no lease and no application writes.
+Contract, prompt, base, application and admitted commit must match fresh Ready.
+Owner, latest-result, review/rejection, context, admission, composition and
+suspension guards remain. The coding native guard is preserved verbatim.
+The append-only mapping does not change the native result, original Ready,
+timestamps, CHANGES_REQUIRED verdict or release authority.
+
+Root checks: 57 focused tests, including the existing rejection-disposition
+PostgreSQL proof; 39 new checks with a real forward disposable PostgreSQL
+migration, refusal probes and immutable-history checks; `npm run validate`.
+The first new database fixture failed its actor constraint and was corrected;
+the rerun passed without skips. Its owned test database was removed. Deployment
+and normal API audit mapping remain required before release admission.

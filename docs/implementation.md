@@ -198,10 +198,11 @@ readback; native rolled-back CAS `bb121957` verifies all-record parity.
 Native c82 build `3e8510be`: seven tests pass; outputs restored.
 Audit `d1004c62`: CHANGES_REQUIRED; review `17f8c1db` accepts c82.
 Grant `63750d89`: both queues ABSENT, prior services healthy, native closed.
-Two-queue tests: 96 shared/API, 202 Worker, eight rollback probes, disposable DB.
-Roost `241c1264`/migration deployed; FAILED closure `4a98987c` persisted.
-Eight-file manifest `b374cfe3` verified; audit `ba9a2999`: CHANGES_REQUIRED.
-Actual release proof remains pending.
+Two-queue: 96 API, 202 Worker and eight SQL probes pass.
+Roost `241c1264` deployed; FAILED closure `4a98987c` persisted.
+Manifest `b374cfe3` verified; audit `ba9a2999`: CHANGES_REQUIRED.
+Readonly basis: 57 checks and 39 DB tests pass.
+Release proof pending.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

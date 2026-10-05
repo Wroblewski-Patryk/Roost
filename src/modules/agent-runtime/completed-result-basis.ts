@@ -3,7 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import type { AuthContext } from "../../auth/api-key.middleware";
 import { inspectReady, lockReadyTask } from "./task-execution-readiness";
-import { exactReviewCommit, object, reviewDigest } from "./task-review-contract";
+import { exactReviewCommit, nativeBoundaryResultBlocked, object, reviewDigest } from "./task-review-contract";
 import { releaseCandidateNativeError } from "./governed-release-contract";
 
 type Db = Prisma.TransactionClient;
@@ -14,13 +14,42 @@ export const completedResultBasisSchema = z.object({ requestId: z.string().uuid(
 
 // A new Ready validates today's required context. It cannot rewrite what the
 // native execution saw or grandfather a review made against an earlier basis.
+export function completedReadonlyAuditNativeProven(execution: any, contract: any): boolean {
+  const boundary = object(contract.nativeBoundary), access = object(contract.access);
+  const verification = object(execution.verification), managed = object(verification.managedAdmission);
+  const owned = object(verification.ownedTreeReceipt);
+  const revision = object(object(execution.metadata).resultRevision);
+  return boundary.profile === "inspect-readonly" && object(boundary.inspectReadOnly).kind === "auditor"
+    && object(boundary.runtime).required === false && Array.isArray(object(boundary.runtime).ports)
+    && object(boundary.runtime).ports.length === 0
+    && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(contract.assignment?.agentId ?? "")
+    && contract.assignment.agentId === contract.taskRoles?.executor?.id
+    && access.sandbox === "read-only" && access.externalWrites === false
+    && Array.isArray(access.tools) && access.tools.length === 1 && access.tools[0] === "repository_read"
+    && Array.isArray(access.permissions) && access.permissions.length === 1 && access.permissions[0] === "repository_read"
+    && contract.modelSelection?.schemaVersion === "roost-managed-hermes-backend-v1"
+    && contract.modelSelection?.backend === "codex_responses"
+    && managed.qualification === "signed_native_v1"
+    && /^[a-f0-9]{64}$/.test(managed.evidenceDigest ?? "")
+    && /^[a-f0-9]{64}$/.test(managed.jobSourceDigest ?? "")
+    && owned.version === "roost-windows-job-v2"
+    && owned.sourceSha256 === managed.jobSourceDigest && owned.attempt === execution.id
+    && owned.cleanup === true && owned.jobClosed === true && owned.rootExit === 0 && owned.activeProcesses === 0
+    && owned.assignedBeforeResume === true && owned.resumed === true && owned.killOnClose === true && owned.breakaway === false
+    && !execution.errorState && !execution.leaseToken && !execution.leaseExpiresAt
+    && Array.isArray(execution.changedFiles) && execution.changedFiles.length === 0
+    && /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$/.test(revision.observedAt ?? "")
+    && !nativeBoundaryResultBlocked(verification, contract);
+}
+
 export function completedResultBasisEligibility(execution: any, pin: any): string | null {
   const metadata = object(execution?.metadata), contract = object(metadata.executionContract);
   const originalPin = object(metadata.readyContextPin), revision = object(metadata.resultRevision);
   if (!execution || execution.status !== "completed" || !execution.completedAt || execution.contextInvalidatedAt
     || !exactReviewCommit({ contract, resultRevision: revision }, execution)
-    || releaseCandidateNativeError(execution, contract)
-    || object(execution.verification).codingTests?.passed !== true)
+    || !(completedReadonlyAuditNativeProven(execution, contract)
+      || (!releaseCandidateNativeError(execution, contract)
+        && object(execution.verification).codingTests?.passed === true)))
     return "completed_result_native_unproven";
   if (!pin || pin.status !== "ready" || !originalPin.pinId || !originalPin.revision
     || pin.applicationId !== execution.applicationId

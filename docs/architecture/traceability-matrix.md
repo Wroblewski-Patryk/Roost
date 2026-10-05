@@ -2100,3 +2100,12 @@ Normal FAILED closure `4a98987c` is persisted; V8/V3 credentials are verified.
 Eight-file manifest `b374cfe3` and readonly native audit `ba9a2999` are recorded.
 All 17 CHANGES_REQUIRED findings remain literal. Current independent approval,
 owner release authority and actual runtime acceptance remain pending.
+
+Unchanged readonly audit-basis support adds guarded migration
+`20261006002000_readonly_completed_result_basis` and matching API eligibility.
+Actual API receipt `aaa0b17f` records the shared-risk Ready invalidation and old
+coding-only refusal. Root checks passed: 57 focused/rejection tests, 39 checks
+with real disposable PostgreSQL forward migration and history preservation,
+and `npm run validate`. Original audit/native/CHANGES_REQUIRED evidence remains
+immutable; a new mapping grants no release authority. Deployment and normal API
+mapping are pending, as is Aviary production proof.
