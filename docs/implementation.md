@@ -191,15 +191,16 @@ Roost `c185743d` and both Compose recovery migrations are deployed. Backup,
 isolated restore and schema/data/sequence parity pass; DB writes/cadences are held.
 Grant `a14dba8b` binds 0857; PR 2 merges exact `c82e68b3`. Signed Worker proves
 configuration absent. Closure `2eb9cdfd` records FAILED; 88 children close and
-Writer is archived/released. Historical evidence remains immutable.
-Expired 30a/e82 have no grant. Audit `03a119f0` retains 16 pending proofs.
-API review `ae02d15d` approves code; `c2154bd6` fails without native closure.
-Worker `6b15819d` adds encrypted intent/GET reconciliation; Windows checks pass.
-Audit `12cbabd3` signs unchanged state and zero processes; 15 findings pending.
-Review `3c4ad6b9` stops before model launch. Worker `3256d57e` bounds renewal;
-signed `9383a914` closes with zero processes; `29ae29db` approves exact c82.
-8c87 expires ungranted. 4f9c audit `d051fb0a` signs unchanged state;
-review `45930056` is unclaimed. Host rotation needs fresh owner authentication.
+Writer archived/released; immutable history retained.
+30a/e82 ungranted; audit `03a119f0` retains 16 pending proofs.
+`ae02d15d` approves code; `c2154bd6` fails without native closure.
+Worker `6b15819d` adds encrypted intent/GET reconciliation; Windows tests pass.
+Signed `12cbabd3`: unchanged source, zero processes, 15 pending findings.
+`3c4ad6b9` stops before model launch; Worker `3256d57e` bounds renewal.
+Signed `9383a914` closes with zero processes; `29ae29db` approves c82.
+8c87/4f9c expire ungranted; audit `d051fb0a` stays historical.
+`45930056` cancels unclaimed; host credential renewed; 6ca audit pending.
+Docker startup repaired; guarded start preserves socket parents.
 No application deployment started.
 
 Reuse the existing application, repository and Compose installation; create no

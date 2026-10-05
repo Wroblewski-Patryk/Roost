@@ -8,6 +8,29 @@ unaffected.
 This runbook connects a Windows laptop containing application repositories to
 the production Roost queue on the VPS. The connection is outbound HTTPS only.
 
+## Windows Docker startup guard
+
+When native inspection requires local Docker, use
+`scripts/roost-docker-runtime-guard.ps1`. Its default invocation only inspects
+the fixed local engine and runtime directory metadata. `-Recover -Start` is the
+explicit guarded startup path. A healthy engine is left running unchanged.
+
+On the Windows AF_UNIX stale-socket failure, the guard requires Docker fully
+stopped, no retained Roost Writer/recovery lock, and only recognized empty socket
+entries in the two runtime directories. It preserves their parent directories
+under unique names before normal hidden startup. It never deletes socket files,
+secrets, images, containers or volumes, resets Desktop, prunes storage or kills
+Docker processes. Only its own bounded read-only probe may be stopped on timeout.
+Outside-repository durable receipts retain partial outcomes; reconcile them
+before retrying. Unknown contents, links, a running unhealthy Desktop or uncertain
+health stop recovery. Native work still requires a real healthy engine.
+
+This is a workaround for the [reported startup failure](https://github.com/docker/for-win/issues/15064),
+not a guarantee against the underlying Windows/vendor defect. Use a graceful
+Desktop stop; do not force-stop it as routine cleanup. Quarantines contain only
+socket metadata and remain preserved for diagnosis. No startup monitor or
+automatic maintenance schedule is installed.
+
 ## Current Gate 1 operating state
 
 The owner-authorized Gate 1 installation uses `executionMode: "supervised"` in
