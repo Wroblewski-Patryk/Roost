@@ -189,7 +189,7 @@ passes seven tests, native build and independent read-only acceptance.
 
 Roost `613741a0` is deployed. Backup/restore and parity pass; writes/cadences
 are held. Historical a14 closure `2eb9cdfd` retains PR 2/exact c82 and Git proof.
-Current audit `2a951463` and review `0dbbc62a` / `e7483bd5` close natively;
+Prior audit `2a951463` and review `0dbbc62a` / `e7483bd5` closed natively;
 release grant `3c75a93e` binds 6ca/b5a9. Its sole configuration operation was
 uncertain, then Worker observed ABSENT. No application deployment started.
 Original cause remains unknown; diagnostics now retain fixed refusal codes.
@@ -198,6 +198,7 @@ original evidence clocks. A reclaim archive defect lost the older checkpoint;
 fresh read-only controller 187440 closed seven signed children and archived it.
 Source/DB checks and migration checksum pass. Normal owner closure `14348e4c`
 marks `3c75a93e` FAILED, retaining the original absence clock. No deployment.
+New audit group risk requires fresh coding context and independent review.
 Docker startup repaired; guarded start preserves socket parents.
 
 Reuse the existing application, repository and Compose installation; create no
