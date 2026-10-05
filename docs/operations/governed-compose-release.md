@@ -321,6 +321,16 @@ signed children and the planner refused replay. No application deployment
 started. Preserve the original evidence clock and close this attempt before
 admitting a successor. The initial HTTPS failure remains unattributed.
 
+Normal owner closure `4d79f05f` now records this attempt FAILED with fresh
+nine-read parity and the authentic retained 88-child checkpoint. Its signed
+Node owner PID is 72204; the outer official controller PID is 130764. The idle
+checkpoint has no current operation binding, but its HMAC covers the complete
+one-operation journal. Original absence evidence remains at
+`2026-10-05T18:43:15.666Z`; the later reconciliation outcome clock is distinct.
+Normal credential rotation and masked Windows Credential Manager read-back
+pass. No successor grant, application deployment or postrelease acceptance is
+claimed. Preserve all original package, consent and Git records.
+
 Worker diagnostic `bfadccd2` preserves the inspector's bounded in-memory cause
 and selects only fixed native failure codes for the private status file. Raw
 exception text, commands and credentials are not retained. Source checks pass;

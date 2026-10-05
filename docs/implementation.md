@@ -189,17 +189,15 @@ passes seven tests, native build and independent read-only acceptance.
 
 Roost `d4014466` is deployed. Backup/restore and parity pass; writes/cadences
 are held. Historical a14 closure `2eb9cdfd` retains PR 2/exact c82 and Git proof.
-Prior grant `3c75a93e` observed configuration ABSENT. Closure `14348e4c`
-records FAILED with fresh nine-read parity, inherited Git and original clocks.
-A reclaim defect lost its older checkpoint; read-only controller 187440
-archived a distinct seven-child signed closure. Source/DB/checksum pass.
+Prior grant `3c75a93e` is FAILED via closure `14348e4c`, preserving absence
+clocks, inherited Git and distinct seven-child closure after the archive defect.
 Fresh backup/restore and deployed backup-only restart guards pass.
 Native audit `26eafebe` retains `CHANGES_REQUIRED`; current code review
 `aaa9c480` accepts c82. Owner grant `e7320bdf` binds manifest `742c2d4d`.
-Its configuration operation reconciled ABSENT at `18:43:16.855Z`;
-controller 130764 closed 88 signed children. No deployment started.
-Worker diagnostic `bfadccd2` is source-tested and used by that reconciliation.
-The initial HTTPS cause remains unknown; close this attempt before a successor.
+Configuration reconciled ABSENT; closure `4d79f05f` records FAILED with 88
+signed closed children and original clock `18:43:15.666Z`. No deployment.
+Normal credential rotation passes. Worker `bfadccd2` performed reconciliation;
+`52525f94` adds source-tested stage diagnostics. Initial HTTPS cause is unknown.
 Docker startup repaired; guarded start preserves socket parents.
 
 Reuse the existing application, repository and Compose installation; create no
