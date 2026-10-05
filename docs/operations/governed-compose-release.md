@@ -378,3 +378,14 @@ current risk basis changed; source equality alone cannot renew that approval.
 Obtain append-only basis revalidation and independent current review before
 new authority. No successor grant, candidate deployment or gate completion
 is established by this recovery. Preserve the published Git lineage.
+
+Append-only basis `2e4b213f` now maps the same code to material `826c9c02`.
+Independent execution `59f78101` completed at `20:26:12.366Z`; normal review
+`b8f69273` approves that exact material. Official controller 205184 closed at
+exit zero, with signed unchanged-state native verification. Fresh nine-read
+baseline completed at `20:31:06.849Z`; preparation `f35b3009` preserves the
+original consent and standing continuation mandate without inventing a new
+human response. It is preparation only: normal recent-owner authentication
+and authoritative grant read-back remain required before any effect.
+Read-only API timeouts were followed by successful IPv4-priority reads;
+their cause is not established. No operation was replayed.
