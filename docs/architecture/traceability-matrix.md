@@ -2095,5 +2095,8 @@ manifest audit and actual Aviary release proof remain required.
 Roost `241c1264` deployment is verified by finished queue
 `ukrtf327hyqx5hhxpltf6bmu` and exact health/build-info at 23:13:20.610 UTC;
 database readback verifies committed migration checksum, four functions, two
-guards and unchanged four-operation/zero-closure history. Normal owner closure,
-renewed manifest, runtime release and independent acceptance remain pending.
+guards and unchanged four-operation/zero-closure history before normal closure.
+Normal FAILED closure `4a98987c` is persisted; V8/V3 credentials are verified.
+Eight-file manifest `b374cfe3` and readonly native audit `ba9a2999` are recorded.
+All 17 CHANGES_REQUIRED findings remain literal. Current independent approval,
+owner release authority and actual runtime acceptance remain pending.

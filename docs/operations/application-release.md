@@ -1206,7 +1206,7 @@ The separate disposable PostgreSQL test passed all five checks, including
 guarded closure/revocation, inherited Git/adoption, negative inserts and old
 guard preservation; its temporary database was removed. Backend typecheck and
 59 focused shared/backend tests passed. Roost deployment and normal owner
-closure are still required; Aviary remains undeployed and its cadences held.
+closure were then required; Aviary remains undeployed and its cadences held.
 
 Deployment readback at `2026-10-05T23:13:20.610Z` confirms Roost
 `241c12649ae41e9999a779e1f75251f09b79680b`, pushed to branch and main,
@@ -1214,5 +1214,31 @@ sole automatic queue `ukrtf327hyqx5hhxpltf6bmu` finished, health and
 build-info HTTP 200 with that exact commit. Database receipt
 `241c1264-1791242010870` verifies the applied migration checksum against
 committed bytes, four new functions, two triggers and unchanged four-operation,
-zero-closure history. Normal FAILED closure and credential rotation await fresh
-owner authentication; neither has been retried. Aviary is not deployed.
+zero-closure history before the normal closure below. Aviary is not deployed.
+
+### Normal two-queue closure and replacement audit — 2026-10-05
+
+Normal owner closure `4a98987c-d93b-4c14-9655-7cbd41957bb6` persisted FAILED
+for `63750d89`; receipt `de0a888d` preserves all four original operations,
+two absent queues and the signed closed native tree. Ordinary rotations
+verified releaser V8 `751701d5` and independent reviewer V3 `13339a52` in
+Windows Credential Manager; no secret was saved in records. These credentials
+are distinct from release authority.
+
+Installed package `47b29b55` contains eight physically verified files and
+manifest `b374cfe3`. The allowed deterministic recipe adopts the retained
+rollback configuration and corrected renderer; commands, artifacts, data,
+services and inherited Git remain bound. A first local preparation failed
+before installation because the native key file identity used a rounded NTFS
+inode. Reading the actual identity as bigint repaired that comparison without
+changing the key or evidence.
+
+Actual readonly audit `ba9a2999` completed at `2026-10-05T23:26:54.895Z`:
+signed native admission, unchanged repository, closed job and no application
+writes. Its 129,513-byte provider input passed the 131,072-byte bound.
+Normal Worker shutdown closed controller 221632 with exit 0. All 17 literal
+CHANGES_REQUIRED findings remain preserved. The fresh build closes only the
+historical missing-build finding; installed version, migration, health, smoke,
+1,200-second observation, fixture cleanup, cadence restoration and independent
+postrelease acceptance still require actual release evidence. Current exact
+independent approval and normal owner release authority remain pending.

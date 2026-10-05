@@ -192,16 +192,16 @@ Closure `2eb9cdfd` retains PR 2/exact c82 and Git proof.
 Prior FAILED releases `3c75a93e`, `e7320bdf`, `f579ca87` and `6b4471c5`
 retain dated outcomes, native closures and Git. Closures `14348e4c`, `4d79f05f`,
 `4b0a9d74`, `4d4d7db5` are recorded; negative audits remain literal.
-Backup guards pass; V7 renewed. Receipts: release operations.
+Backup guards pass; V8/V3 renewed. Receipts: release operations.
 Coolify repair `2d63cf62` preserves records. Locked requery fixes Stringable
 readback; native rolled-back CAS `bb121957` verifies all-record parity.
 Native c82 build `3e8510be`: seven tests pass; outputs restored.
 Audit `d1004c62`: CHANGES_REQUIRED; review `17f8c1db` accepts c82.
 Grant `63750d89`: both queues ABSENT, prior services healthy, native closed.
-Two-queue closure/adoption pass 96 tests; Worker checks pass 202.
-Roost 241c1264 and queue-absence migration are deployed and verified.
-Eight rolled-back probes and disposable DB closure/adoption pass.
-FAILED closure, renewed manifest and actual release proof remain pending.
+Two-queue tests: 96 shared/API, 202 Worker, eight rollback probes, disposable DB.
+Roost `241c1264`/migration deployed; FAILED closure `4a98987c` persisted.
+Eight-file manifest `b374cfe3` verified; audit `ba9a2999`: CHANGES_REQUIRED.
+Actual release proof remains pending.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,
