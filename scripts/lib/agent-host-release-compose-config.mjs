@@ -45,7 +45,10 @@ function roost_compose_config_qualify($a,$p,$readSource,$validate,$invariants){
 }
 function roost_compose_config_cas($p,$readSource,$validate,$invariants,$transaction,$loadLocked){
  return $transaction(function()use($p,$readSource,$validate,$invariants,$loadLocked){$a=$loadLocked($p['targetId']);roost_compose_config_qualify($a,$p,$readSource,$validate,$invariants);$before=$a->attributesToArray();
- foreach($p['fields'] as $key=>$value)$a->$key=$value;$a->save();$after=$a->attributesToArray();
+ foreach($p['fields'] as $key=>$value)$a->$key=$value;$a->save();
+ // Requery the persisted row under the same lock. Unlike refresh(), the same
+ // model query preserves default count projections as well as stored strings.
+ $a = $loadLocked($p['targetId']);$after=$a->attributesToArray();
  foreach(array_unique(array_merge(array_keys($before),array_keys($after)))as$key)if(!in_array($key,['git_commit_sha','docker_compose_custom_build_command','docker_compose_custom_start_command','updated_at'],true)&&($before[$key]??null)!==($after[$key]??null))throw new Exception('other_field');
  if(roost_compose_config_fields($a)!==$p['fields'])throw new Exception('readback');foreach(['settingsInvariantDigest','runtimeInvariantDigest']as$key)if(($invariants($a)[$key]??null)!==$p[$key])throw new Exception('invariant');return ['applied'=>true,'targetId'=>$a->uuid];});
 }`;

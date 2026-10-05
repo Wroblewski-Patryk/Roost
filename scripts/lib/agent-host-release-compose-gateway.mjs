@@ -22,8 +22,8 @@ const payloadSchema = z.object({ targetId: id, composePath: canonicalPath, repos
 const queueSchema = z.object({ targetId: id, deploymentId: id, commit: z.union([sha, z.literal('HEAD')]),
   status: z.enum(['queued', 'in_progress', 'finished', 'failed', 'cancelled-by-user']), createdAt: date,
   finishedAt: date.nullable() }).strict();
-const deny = (reason, uncertain = false) => {
-  throw Object.assign(Error(`release_compose_gateway_${reason}`), { retryable: false, uncertain });
+const deny = (reason, uncertain = false, cause) => {
+  throw Object.assign(Error(`release_compose_gateway_${reason}`, cause === undefined ? undefined : {cause}), { retryable: false, uncertain });
 };
 const check = (value, reason, uncertain = false) => { if (!value) deny(reason, uncertain); };
 const parse = (schema, value, reason) => { const result = schema.safeParse(value); if (!result.success) deny(reason); return result.data; };
@@ -219,7 +219,7 @@ export function createComposeReleaseGateway({ releaseId, expected, rollbackExpec
       if (mode === 'candidate') check((await inspectRemote())?.mainCommit === commit, 'remote_changed');
       try { await configureTarget(Object.freeze({ targetId: declared.configuration.targetId,
         expectedConfigDigest: declared.configDigest, desiredConfigDigest: (mode === 'rollback' ? rollbackCopy : declared).configDigest,
-        commit, mode })); } catch { deny('configuration_result_uncertain', true); }
+        commit, mode })); } catch (error) { deny('configuration_result_uncertain', true, error); }
       const after = await state(mode === 'rollback'); check(after.gitCommit === commit, 'configuration_result_uncertain', true);
       return { targetId: after.targetId, commit, configDigest: (mode === 'rollback' ? rollbackCopy : declared).configDigest };
     },

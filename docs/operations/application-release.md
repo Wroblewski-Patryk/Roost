@@ -1054,3 +1054,40 @@ inspection remain required. Changed artifacts fail binding; they need their
 own checks and approval. Historical receipts are never rewritten or restamped.
 Source tests prove this validator; an actual owner grant and runtime outcome
 are still required to prove installation use.
+
+### Persisted Compose model readback and retry diagnosis
+
+The normal grant `6b4471c5-9c12-4204-abc2-010d1b0d20b3` bound unchanged
+candidate `c82e68b3`, manifest `742c2d4d` and current code acceptance `b8f69273`.
+Its sole configuration operation `c12aa38f` returned uncertainty; the official
+Worker reconciled it as ABSENT at `2026-10-05T20:52:01.679Z`. Original evidence
+time is preserved. No candidate deployment queue was created; baseline health,
+data, schema, service identities and held cadences remained compatible.
+Signed original 156-child and reconciliation 88-child checkpoints are retained;
+both controllers exited zero. HMAC, full journal, actual process absence and
+exact lock/state comparison passed before owned lock archival and release.
+
+The installed model retained `git_commit_sha` as an Eloquent `Stringable` after
+`save()`. Comparing this transient object with the required string failed and
+rolled back the transaction. Plain `refresh()` then dropped the model's default
+relationship-count projections. The corrected adapter requeries through the
+same locked model query, preserving those projections while checking actual
+persisted values. Exact commit/command comparisons and all protected-field and
+configuration invariants remain mandatory. The installation's API rules remain
+unchanged; no permission or validation relaxation is introduced.
+
+Native rollback rehearsal `bb121957-9d28-4cd8-b384-ee015d2c14a3` at
+`2026-10-05T20:55:25.775Z` applied the exact fields inside a transaction, verified
+readback, then rolled back. Complete parity of all ten controller application
+records passed with zero queued deployments and zero persistent application
+writes. This is installation compatibility evidence, not a shipped release.
+The gateway retains configuration errors as non-enumerable in-memory causes so
+the broker can emit only its bounded diagnostic codes; arbitrary error text is
+never written to the release journal or serialized as evidence. Focused config,
+gateway and transport diagnostic checks passed 67 tests, including lost query
+projections and the real gateway-to-HTTPS diagnostic path.
+
+The current release gate remains incomplete. Durable FAILED closure, normal
+credential rotation, a distinct native audit and new exact authority must precede
+another attempt. Deployment, full observation, fixture cleanup, cadence recovery
+and independent postruntime acceptance remain required.

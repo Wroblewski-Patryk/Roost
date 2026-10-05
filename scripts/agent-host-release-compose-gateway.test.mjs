@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { composeMountDigest, qualifyComposePhaseArtifact, composeControllerPolicyRecord }
   from './lib/agent-host-release-compose-controller.mjs';
 import { composeConfigurationDigest } from './lib/agent-host-release-compose-state.mjs';
+import { releaseEffectDiagnostic } from './lib/agent-host-release-broker.mjs';
 import { createFixedComposeQueueTransport, createComposeReleaseGateway, composeQueueOperationPhp,
   composeRollbackDocumentDigest, createImmutableComposeRollback } from './lib/agent-host-release-compose-gateway.mjs';
 
@@ -55,6 +56,20 @@ function fixture(changes = {}) {
     sourcePins, repositoryPath: 'fixture/private', transport, ...callbacks, ...changes });
   return { gateway, configuration, calls, transport, callbacks, setQueue: q => { savedQueue = q; } };
 }
+
+test('configuration uncertainty retains its in-memory cause for bounded broker diagnosis without serializing it', async () => {
+ const cause=Object.assign(Error('release_child_native_exit_failed'),{privateDetails:'fictional-secret'});
+ const f=fixture({configureTarget:async()=>{throw cause;}});
+ await assert.rejects(f.gateway.configure('candidate'),error=>{
+  assert.equal(error.message,'release_compose_gateway_configuration_result_uncertain');assert.equal(error.uncertain,true);assert.equal(error.retryable,false);
+  assert.equal(error.cause,cause);assert.equal(Object.prototype.propertyIsEnumerable.call(error,'cause'),false);
+  assert.equal(releaseEffectDiagnostic(error),'release_child_native_exit_failed');assert(!JSON.stringify(error).includes('fictional-secret'));return true;
+ });assert.equal(f.calls.length,0);
+});
+test('arbitrary configuration cause never supplies a broker diagnostic or leaks details',async()=>{
+ const cause=Error('fictional credential-bearing error'),f=fixture({configureTarget:async()=>{throw cause;}});
+ await assert.rejects(f.gateway.configure('candidate'),error=>{assert.equal(error.cause,cause);assert.equal(releaseEffectDiagnostic(error),'release_effect_unproven');assert(!JSON.stringify(error).includes('credential'));return true;});
+});
 
 test('fixed descriptor streams typed payload with pinned SSH and bounded output; input cannot select code', async () => {
   const f = transportFixture(); await f.transport.run('read', payload());

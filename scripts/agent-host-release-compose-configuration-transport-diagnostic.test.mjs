@@ -10,6 +10,8 @@ import { configureComposeWithQualifiedModelCas, composeConfigurationFailureStage
  isComposeConfigurationTransportDiagnostic } from './lib/agent-host-release-compose-config.mjs';
 import { renderComposePhaseCommands } from './lib/agent-host-release-compose-controller.mjs';
 import { releaseEffectDiagnostic } from './lib/agent-host-release-broker.mjs';
+import { createComposeReleaseGateway } from './lib/agent-host-release-compose-gateway.mjs';
+import { composeConfigurationDigest } from './lib/agent-host-release-compose-state.mjs';
 import { persistReleaseWorkerDiagnostic } from './lib/agent-host-release-worker.mjs';
 
 const h=c=>c.repeat(64),sha=c=>c.repeat(40),token='fictional-private-token';
@@ -95,6 +97,34 @@ test('PATCH timeout keeps its exact stage through outer wrapper and safe persist
   assert.equal(record.reason,expected);assert.deepEqual(Object.keys(record).sort(),['observedAt','phase','reason']);
   for(const privateValue of [token,'example.test','native-message','docker compose'])assert(!bytes.includes(privateValue));
  }finally{rmSync(dir,{recursive:true,force:true});}
+ assert.deepEqual(requests.map(r=>r.method),['GET','PATCH']);assert.deepEqual(f.calls,['guard']);
+});
+
+test('actual configuration gateway preserves HTTPS stage through adapter cause and broker',async t=>{
+ const f=fixture(),requests=transportMock(t,[{body:f.before},{event:'request_error',error:native('ECONNRESET')}]);
+ const configuration={targetId:'fixtureapp',buildPack:'dockercompose',composePath:'/compose.yml',
+  repositoryUrl:'https://github.com/example/private-app',branch:'main',gitCommit:f.options.policy.commit,autoDeploy:false,
+  sourcePins:{queueHelper:h('3'),deploymentJob:h('4')},sourceDigest:h('a'),composeDigest:h('b'),
+  environmentDigest:h('c'),storageDigest:h('d'),settingsDigest:h('e'),runtimePolicyDigest:h('f'),
+  topology:{applicationId:'1',projectId:'2',environmentId:'3',destinationId:'4',destinationType:'StandaloneDocker',serverId:'5'},
+  services:f.options.policy.services.map(s=>({name:s.name,role:s.role,source:s.source,
+   expectedState:s.role==='migration'?'completed':'running',mountDigest:s.mountDigest,
+   ...(s.source==='image'?{imageDigest:s.imageDigest}:{})}))};
+ const gateway=createComposeReleaseGateway({releaseId:f.options.policy.releaseId,
+  expected:{configuration,configDigest:composeConfigurationDigest(configuration)},
+  binding:{commit:f.options.policy.commit,tree:f.options.policy.tree,baselineCommit:sha('0'),baselineTree:sha('1')},
+  sourcePins:{queueHelper:h('3'),deploymentJob:h('4'),applicationModel:h('5'),composeParser:h('6')},
+  repositoryPath:'example/private-app',transport:{run:async()=>{throw Error('unexpected queue');}},
+  readConfiguration:async()=>structuredClone(configuration),readRuntime:async()=>{},readBuildImages:async()=>[],
+  inspectRemote:async()=>({mainCommit:f.options.policy.commit}),assertSafety:async()=>{},
+  configureTarget:async()=>configureComposeWithQualifiedModelCas(f.options)});
+ await assert.rejects(gateway.configure('candidate'),error=>{
+  assert.equal(error.message,'release_compose_gateway_configuration_result_uncertain');
+  assert.equal(composeConfigurationFailureStage(error),'patch');
+  const adapter=Error('release_coolify_compose_configuration_mutation_uncertain',{cause:error});
+  assert.equal(releaseEffectDiagnostic(adapter),'release_compose_config_patch_request_error_econnreset');
+  assert(!JSON.stringify(error).includes(token));return true;
+ });
  assert.deepEqual(requests.map(r=>r.method),['GET','PATCH']);assert.deepEqual(f.calls,['guard']);
 });
 
