@@ -95,11 +95,18 @@ export function createExecutionLease({ renew, onLost, now = () => performance.no
         assertValid();
       }
       if (deadline || failure || disposed) assertValid();
-      const before = confirmations;
-      await refresh();
-      assertValid();
-      if (confirmations === before || deadline - now() < minimumRemainingMs)
-        throw new Error("agent_execution_lease_refresh_unconfirmed");
+      // Renewal is an idempotent heartbeat, not a new execution attempt. A
+      // transient missing acknowledgement may be followed by one serialized
+      // fresh RPC while the last confirmed lease still covers its 30s bound.
+      // No failed, expired, cancelled or disposed lease can be revived here.
+      for (let request = 0; request < 2; request += 1) {
+        const before = confirmations;
+        await refresh();
+        assertValid();
+        if (confirmations > before && deadline - now() >= minimumRemainingMs) return;
+        if (request === 1 || deadline - now() <= 35_000) break;
+      }
+      throw new Error("agent_execution_lease_refresh_unconfirmed");
     },
     reject,
     assertValid,

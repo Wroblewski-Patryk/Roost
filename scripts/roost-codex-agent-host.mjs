@@ -249,7 +249,9 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     });
   }
   const lease = createExecutionLease({
-    renew: () => api(`/v1/agent-runtime/executions/${claimed.id}/heartbeat`, { method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken, status: "running", codexThreadId }) }),
+    renew: () => api(`/v1/agent-runtime/executions/${claimed.id}/heartbeat`, { method: "POST",
+      signal: AbortSignal.timeout(30_000),
+      body: JSON.stringify({ leaseToken: claimed.leaseToken, status: "running", codexThreadId }) }),
     onLost: stopWorker
   });
 

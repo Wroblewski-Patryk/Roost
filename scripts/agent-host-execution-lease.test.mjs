@@ -148,7 +148,49 @@ test("a granted earlier heartbeat cannot stand in for a failed fresh boundary RP
   h.setTime(130_000); resolveOld({ leaseExpiresAt: new Date(1_800_000_000_000 + 310_000).toISOString() });
   await earlier;
   await assert.rejects(boundary, /lease_refresh_unconfirmed/);
-  assert.equal(calls, 2); assert.equal(h.lease.remainingMs, 65_000);
+  assert.equal(calls, 3); assert.equal(h.lease.remainingMs, 65_000);
+});
+
+test("one missing heartbeat acknowledgement is followed by a genuinely fresh serialized confirmation", async () => {
+  const h = harness(); await h.lease.refresh(); h.setTime(20_000);
+  let calls = 0, active = 0, maximumActive = 0;
+  h.setRenew(async () => {
+    calls += 1; active += 1; maximumActive = Math.max(maximumActive, active);
+    try {
+      if (calls === 1) { h.setTime(50_000); throw { status: 503 }; }
+      return { leaseExpiresAt: new Date(1_800_000_000_000 + 50_000 + 180_000).toISOString() };
+    } finally { active -= 1; }
+  });
+  await h.lease.refreshConfirmed(75_000);
+  assert.equal(calls, 2); assert.equal(maximumActive, 1);
+  assert.equal(h.lease.remainingMs, 175_000); assert.deepEqual(h.losses, []);
+});
+
+test("bounded confirmation retry cannot extend authority when both replies are missing", async () => {
+  const h = harness(); await h.lease.refresh(); h.setTime(20_000); let calls = 0;
+  h.setRenew(async () => { calls += 1; h.setTime(20_000 + calls * 30_000); throw { status: 503 }; });
+  await assert.rejects(h.lease.refreshConfirmed(), /lease_refresh_unconfirmed/);
+  assert.equal(calls, 2); assert.equal(h.lease.remainingMs, 95_000);
+});
+
+for (const outcome of ['expired', 'cancelled', 'rejected']) test(`confirmation retry never revives ${outcome} authority`, async () => {
+  const h = harness(); await h.lease.refresh(); h.setTime(20_000); let calls = 0;
+  h.setRenew(async () => {
+    calls += 1;
+    if (calls === 1) throw { status: 503 };
+    if (outcome === 'expired') { h.setTime(176_000); return { leaseExpiresAt: new Date(1_800_000_000_000 + 360_000).toISOString() }; }
+    if (outcome === 'cancelled') return { cancelRequested: true };
+    throw { status: 403 };
+  });
+  await assert.rejects(h.lease.refreshConfirmed(), outcome === 'expired' ? /lease_expired/ : outcome === 'cancelled' ? /cancel_requested/ : /lease_rejected/);
+  assert.equal(calls, 2); assert.equal(h.losses.length, 1);
+});
+
+test("insufficient confirmed time prevents another heartbeat attempt", async () => {
+  const h = harness(); await h.lease.refresh(); h.setTime(145_000); let calls = 0;
+  h.setRenew(async () => { calls += 1; throw { status: 503 }; });
+  await assert.rejects(h.lease.refreshConfirmed(), /lease_refresh_unconfirmed/);
+  assert.equal(calls, 1); assert.equal(h.lease.remainingMs, 30_000);
 });
 
 for (const outcome of ["expired", "cancelled"]) test(`draining an earlier ${outcome} heartbeat never starts a replacement RPC`, async () => {

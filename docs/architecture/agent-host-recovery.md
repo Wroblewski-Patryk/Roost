@@ -8,6 +8,9 @@ A separate durable dispatch marker allows one POST only. A fresh confirmed lease
 reserves 75 seconds; completion waits at most 30 seconds (the server transaction
 may take 20 seconds plus five seconds in its queue). This changes no lease grant.
 
+Execution heartbeats wait at most 30 seconds. A managed boundary may make one
+additional serialized heartbeat while the last confirmed lease has over 35
+seconds left; it never extends authority from a missing reply or retries a model.
 After a lost or mismatched acknowledgement, the Worker performs only a bounded
 normal GET. Success requires exact execution/workspace/task/application/host,
 attempt, checkpoint, full result/proof and generated result-revision identity.

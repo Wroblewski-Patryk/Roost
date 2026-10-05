@@ -183,23 +183,23 @@ an immediate implementation dependency or mark it complete.
 
 ### Second-application release gate — ship the accepted bounded repair
 
-**Authorized release; production proof pending.** After Gate 5 the owner
-selected the second application's repair for the next bounded gate. Preserve
-local accepted `3cf9645e`. Independent review rejected `c21e0e0c` for its missing
-regression log. Log-only `c82e68b3` passes seven tests, a separate native build
-and independent read-only acceptance.
+**Authorized release; production proof pending.** Preserve accepted `3cf9645e`.
+Review rejected `c21e0e0c` for its missing regression log. Log-only `c82e68b3`
+passes seven tests, native build and independent read-only acceptance.
 
 Roost `c185743d` and both Compose recovery migrations are deployed. Backup,
 isolated restore and schema/data/sequence parity pass; DB writes/cadences are held.
 Grant `a14dba8b` binds 0857; PR 2 merges exact `c82e68b3`. Signed Worker proves
 configuration absent. Closure `2eb9cdfd` records FAILED; 88 children close and
 Writer is archived/released. Historical evidence remains immutable.
-Expired 30a/e82 have no grant. Signed audit `03a119f0` retains 16 pending release
-proofs. API review `ae02d15d` approves current code, but reviewer `c2154bd6`
-fails with a terminal timeout and no durable native result. Worker completion
-repair adds encrypted intent, bounded acknowledgement and GET reconciliation;
-Windows process/DPAPI checks pass, actual repaired completion is pending. Refresh
-baseline/package, audit and signed current review before exact owner grant.
+Expired 30a/e82 have no grant. Audit `03a119f0` retains 16 pending proofs.
+API review `ae02d15d` approves code; reviewer `c2154bd6` fails with a terminal
+timeout and no durable native result. Worker `6b15819d`
+adds encrypted intent, bounded acknowledgement and GET reconciliation. Windows
+process/DPAPI checks pass. Fresh audit `12cbabd3` completes with signed native
+unchanged proof and zero processes; its 15 release findings remain pending.
+Review `3c4ad6b9` stops before model launch on an unconfirmed heartbeat. Add
+bounded renewal acknowledgement, then signed review before exact 8c87 grant.
 No application deployment started.
 
 Reuse the existing application, repository and Compose installation; create no
