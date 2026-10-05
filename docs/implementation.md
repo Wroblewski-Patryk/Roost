@@ -197,10 +197,10 @@ Writer archived/released; immutable history retained.
 `6b15819d`: encrypted intent/GET reconciliation; Windows tests pass.
 Signed `12cbabd3`: source unchanged, zero processes, 15 pending.
 `3c4ad6b9` stops before model; `3256d57e` bounds renewal.
-Signed `9383a914`: zero processes; `29ae29db` approves c82.
+`9383a914` closes; `29ae29db` approves c82.
 8c87/4f9c expire ungranted; audit `d051fb0a` stays historical.
 `45930056` cancels; credential renewed; audit `2a951463` closes unchanged.
-`7e6d0105` fails schema; reconciled without acceptance.
+`0dbbc62a` / `e7483bd5` approve c82; `7e6d0105` reconciled.
 Docker startup repaired; guarded start preserves socket parents.
 No app deployment started.
 
