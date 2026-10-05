@@ -1087,7 +1087,10 @@ never written to the release journal or serialized as evidence. Focused config,
 gateway and transport diagnostic checks passed 67 tests, including lost query
 projections and the real gateway-to-HTTPS diagnostic path.
 
-The current release gate remains incomplete. Durable FAILED closure, normal
-credential rotation, a distinct native audit and new exact authority must precede
-another attempt. Deployment, full observation, fixture cleanup, cadence recovery
-and independent postruntime acceptance remain required.
+Normal closure `4d4d7db5-9517-4a13-a8ff-0daf1f954ddd` durably records this attempt
+as FAILED. Normal credential rotation issued `ed39ef15` and verified its masked
+Windows Credential Manager storage, preserving all six existing scopes.
+The current release gate remains incomplete. A distinct native audit and new
+exact authority must precede another attempt. Deployment, full observation,
+fixture cleanup, cadence recovery and independent postruntime acceptance remain
+required.

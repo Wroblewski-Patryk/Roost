@@ -195,8 +195,8 @@ Prior `e7320bdf` is FAILED via `4d79f05f`, with 88 signed closed children.
 Grant `f579ca87` binds `742c2d4d`; configuration reconciled ABSENT, preserving
 evidence clock `19:52:20.503Z`. Closure `4b0a9d74` records FAILED; V6 rotation
 passes. Audit `5f056660` has signed native closure and literal CHANGES_REQUIRED.
-Review `b8f69273` accepts c82. Grant `6b4471c5` reconciles configuration ABSENT
-at `20:52:01.679Z`; signed 156/88-child closures are preserved. No deployment.
+Review `b8f69273` accepts c82. Grant `6b4471c5` is FAILED via `4d4d7db5`;
+ABSENT at `20:52:01.679Z`, signed 156/88-child closures retained. V7 renewed.
 Coolify repair `2d63cf62` preserves ten records. Locked model requery fixes
 Stringable readback; native rolled-back CAS `bb121957` verifies all-record parity.
 Docker startup repaired; guarded start preserves socket parents.
