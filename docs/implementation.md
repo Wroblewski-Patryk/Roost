@@ -194,14 +194,15 @@ configuration absent. Closure `2eb9cdfd` records FAILED; 88 children close and
 Writer archived/released; immutable history retained.
 30a/e82 ungranted; audit `03a119f0` retains 16 pending proofs.
 `ae02d15d` approves code; `c2154bd6` fails without native closure.
-Worker `6b15819d` adds encrypted intent/GET reconciliation; Windows tests pass.
-Signed `12cbabd3`: unchanged source, zero processes, 15 pending findings.
-`3c4ad6b9` stops before model launch; Worker `3256d57e` bounds renewal.
-Signed `9383a914` closes with zero processes; `29ae29db` approves c82.
+`6b15819d`: encrypted intent/GET reconciliation; Windows tests pass.
+Signed `12cbabd3`: source unchanged, zero processes, 15 pending.
+`3c4ad6b9` stops before model; `3256d57e` bounds renewal.
+Signed `9383a914`: zero processes; `29ae29db` approves c82.
 8c87/4f9c expire ungranted; audit `d051fb0a` stays historical.
-`45930056` cancels unclaimed; host credential renewed; 6ca audit pending.
+`45930056` cancels; credential renewed; audit `2a951463` closes unchanged.
+`7e6d0105` fails schema; reconciled without acceptance.
 Docker startup repaired; guarded start preserves socket parents.
-No application deployment started.
+No app deployment started.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

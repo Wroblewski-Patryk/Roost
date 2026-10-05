@@ -85,6 +85,13 @@ test("review transport accepts only exact commit and material digest", () => {
   assert.throws(() => prepareCodeReviewDecision({ finalResponse: JSON.stringify({ ...candidate,
     evidence: [{ kind: "artifact", reference: "diff", result: "reviewed diff" }] }), view, review, config, readOnlyAudit: audit }),
     error => error.message === "code_reviewer_unproven" && error.details.reason === "model_schema_evidence");
+  assert.throws(() => prepareCodeReviewDecision({ finalResponse: JSON.stringify({ ...candidate,
+    evidence: [...candidate.evidence, { kind: "artifact", reference: "runtime", result: "Runtime not exercised", verdict: "not_proved" }] }),
+    view, review, config, readOnlyAudit: audit }),
+    error => error.message === "code_reviewer_unproven" && error.details.reason === "model_schema_evidence");
+  assert.equal(prepareCodeReviewDecision({ finalResponse: JSON.stringify({ ...candidate,
+    evidence: [...candidate.evidence, { kind: "artifact", reference: "runtime", result: "Runtime not exercised", verdict: "unknown" }] }),
+    view, review, config, readOnlyAudit: audit }).evidence.at(-1).verdict, "unknown");
   assert.throws(() => prepareCodeReviewDecision({ finalResponse: "```json\n{}\n```", view, review, config, readOnlyAudit: audit }),
     error => error.message === "code_reviewer_unproven" && error.details.reason === "model_json_invalid");
 });

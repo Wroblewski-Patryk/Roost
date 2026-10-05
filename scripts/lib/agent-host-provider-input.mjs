@@ -217,7 +217,7 @@ function projection(fresh, claimed, repositoryEvidence, priorAudit) {
       ...(packet.contract.nativeBoundary?.inspectReadOnly?.kind === "code-reviewer" ? [
         "Independently review the exact commit and Worker-provided diff, tests and coding receipt. Return ONLY a strict JSON object, no Markdown.",
         "diffCertificate proves complete patch reconstruction and uniform LF-to-CRLF conversion for every exact blob. Assess the conversion; do not assume it harmless. Exact blobs, bytes and raw/normalized digests are bound. No other whitespace or edit is omitted.",
-        "JSON must contain decision ('approve' or 'reject'), reviewedCommit (exact 40-hex), evidenceDigest (the reviewed materialVersion), summary, and evidence array of {kind:'test'|'artifact',reference,result,verdict?}.",
+        "JSON must contain decision ('approve' or 'reject'), reviewedCommit (exact 40-hex), evidenceDigest (the reviewed materialVersion), summary, and evidence array of {kind:'test'|'artifact',reference,result,verdict?:'pass'|'fail'|'unknown'}.",
         "For approve include a passing test item. For reject include reproduction array, expected, observed, and correction {scope,excluded,outcome,competencies}. Do not claim a test you did not observe."
       ] : []),
       "Execute only the contract objective and acceptance criteria in the current approved repository; leave results for owner review.",
