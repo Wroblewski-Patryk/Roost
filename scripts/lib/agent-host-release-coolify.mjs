@@ -19,6 +19,24 @@ const canonical = value => JSON.stringify(value, (_key, item) => item && typeof 
 const digest = value => createHash("sha256").update(canonical(value)).digest("hex");
 const digestOrder = (a, b) => digest(a) < digest(b) ? -1 : digest(a) > digest(b) ? 1 : 0;
 const transportReasons = new Set(['transport_uncertain','response_unproven','response_size_invalid','response_invalid']);
+const transportFailureMetadata = new WeakMap();
+const transportErrnos = new Set(['ENOTFOUND','EAI_AGAIN','ECONNREFUSED','ECONNRESET','ETIMEDOUT','EHOSTUNREACH','ENETUNREACH','EPIPE',
+  'CERT_HAS_EXPIRED','CERT_NOT_YET_VALID','ERR_TLS_CERT_ALTNAME_INVALID','DEPTH_ZERO_SELF_SIGNED_CERT','SELF_SIGNED_CERT_IN_CHAIN',
+  'UNABLE_TO_VERIFY_LEAF_SIGNATURE','UNABLE_TO_GET_ISSUER_CERT_LOCALLY','ERR_SSL_WRONG_VERSION_NUMBER','ERR_TLS_HANDSHAKE_TIMEOUT']);
+const transportFailureCodes = new Set(['timeout', ...['request_error','response_error'].flatMap(event =>
+  [event, ...Array.from(transportErrnos, errno => `${event}_${errno.toLowerCase()}`)])]);
+export function isCoolifyTransportFailureDiagnosticCode(value) { return transportFailureCodes.has(value); }
+/** Only actual transport callbacks supply metadata; exception properties are not proof. */
+export function coolifyTransportFailureDiagnostic(error) {
+  for(let depth=0;error&&depth<5;depth++,error=error.cause){
+    const observed=transportFailureMetadata.get(error);if(observed)return {...observed};
+  }
+  return null;
+}
+function transportErrno(error) {
+  try { const code=error && Object.getOwnPropertyDescriptor(error,'code')?.value;return transportErrnos.has(code)?code:undefined; }
+  catch { return undefined; }
+}
 export function coolifyTransportDiagnostic(error) {
   const reason=error?.message?.replace(/^release_coolify_/, '');
   if(!transportReasons.has(reason))return 'transport_unclassified';
@@ -102,8 +120,14 @@ export async function coolifyHttpsJson({ url, method = "GET", body, token, certi
   const payload = body === undefined ? undefined : JSON.stringify(body);
   assert(payload === undefined || Buffer.byteLength(payload) <= 32768, "request_size_invalid");
   return new Promise((resolve, reject) => {
-    const error = (reason = "transport_uncertain", httpStatus) => reject(Object.assign(new Error(`release_coolify_${reason}`),
-      { uncertain: method !== "GET", retryable: false, ...(Number.isInteger(httpStatus)?{httpStatus}:{}) }));
+    let timedOut=false;
+    const error = (reason = "transport_uncertain", httpStatus, event, cause) => {
+      const failure=Object.assign(new Error(`release_coolify_${reason}`,cause===undefined?undefined:{cause}),
+        { uncertain: method !== "GET", retryable: false, ...(Number.isInteger(httpStatus)?{httpStatus}:{}) });
+      if(event){const actualEvent=timedOut?'timeout':event,errno=actualEvent==='timeout'?undefined:transportErrno(cause);
+        transportFailureMetadata.set(failure,{event:actualEvent,...(errno?{errno}:{})});}
+      reject(failure);
+    };
     const request = https.request(target, { method, agent: false, timeout: timeoutMs, minVersion: "TLSv1.2",
       rejectUnauthorized: true, maxHeaderSize: 8192,
       checkServerIdentity(host, cert) {
@@ -123,12 +147,12 @@ export async function coolifyHttpsJson({ url, method = "GET", body, token, certi
       response.on("data", chunk => { size += chunk.length; if (size > 1048576) {
         response.destroy(); error("response_size_invalid");
       } else chunks.push(chunk); });
-      response.on("error", () => error());
+      response.on("error", cause => error("transport_uncertain",undefined,"response_error",cause));
       response.on("end", () => { try { const bytes=Buffer.concat(chunks);resolve(response.statusCode===204&&bytes.length===0?{accepted:true}:JSON.parse(bytes.toString("utf8"))); }
         catch { error("response_invalid"); } });
     });
-    request.on("error", () => error());
-    request.on("timeout", () => { request.destroy(); error(); });
+    request.on("error", cause => error("transport_uncertain",undefined,"request_error",cause));
+    request.on("timeout", () => { timedOut=true;request.destroy(); error("transport_uncertain",undefined,"timeout"); });
     request.end(payload);
   });
 }

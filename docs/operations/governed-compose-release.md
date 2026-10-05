@@ -312,4 +312,24 @@ Shared/server predicates and additive migration
 after authentic closure, rejecting scope drift and clock-only archive reuse.
 Normal fresh parity, native manifest audit, independent current approval, exact
 owner grant and the 24-hour backup age remain mandatory. Source checks do not
-prove production deployment; new audit and release proof remain pending.
+prove application deployment. Roost `d4014466` and this additive migration are
+deployed with exact Git-blob checksum parity. Native audit `26eafebe` retains
+`CHANGES_REQUIRED`; review `aaa9c480` accepts the unchanged candidate. Owner
+grant `e7320bdf` binds `742c2d4d`. Its sole configuration operation reconciled
+ABSENT at `2026-10-05T18:43:16.855Z`; official controller 130764 closed 88
+signed children and the planner refused replay. No application deployment
+started. Preserve the original evidence clock and close this attempt before
+admitting a successor. The initial HTTPS failure remains unattributed.
+
+Worker diagnostic `bfadccd2` preserves the inspector's bounded in-memory cause
+and selects only fixed native failure codes for the private status file. Raw
+exception text, commands and credentials are not retained. Source checks pass;
+the successful native absence reconciliation does not exercise its error branch.
+
+Configuration transport diagnostics additionally bind a fixed stage to an
+actual HTTPS event: timeout, request error or response error, with a bounded
+DNS/connection/TLS code when present. In-memory metadata originates only in
+trusted callbacks; exception properties cannot invent an observed stage.
+The broker persists only the closed classification enum. This adds attribution,
+not retries, relaxed validation, changed timeouts or a different mutation route.
+It does not identify the cause of earlier attempts that lacked this metadata.

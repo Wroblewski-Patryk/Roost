@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import contract from './agent-host-release-contract.cjs';
 import { inspectReleaseCheckout } from './agent-host-release-github.mjs';
+import {composeConfigurationTransportDiagnostic,isComposeConfigurationTransportDiagnostic} from './agent-host-release-compose-config.mjs';
 
 const fail=code=>{throw Object.assign(Error(code),{retryable:false,releaseBlocked:true});};
 const effectReasons=new Set(['release_git_push_uncertain','release_git_merge_uncertain','release_git_remote_uncertain',
@@ -23,6 +24,11 @@ const effectReasons=new Set(['release_git_push_uncertain','release_git_merge_unc
  'native_access_denied','git_ownership_unproven','git_config_unreadable','git_repository_unavailable',
  'ssh_timeout','ssh_connection_closed','ssh_host_identity_unproven'].map(v=>'release_child_'+v)]);
 export function releaseEffectDiagnostic(error){
+ const configurationTransport=composeConfigurationTransportDiagnostic(error);
+ if(configurationTransport)return configurationTransport;
+ // Persisted classifications pass through this same closed enum. Arbitrary
+ // errors cannot contribute text, URLs, credentials or custom suffixes.
+ if(isComposeConfigurationTransportDiagnostic(error?.transportDiagnostic))return error.transportDiagnostic;
  if(/^(transport_uncertain|response_unproven|response_size_invalid|response_invalid)(_http_[1-5][0-9]{2})?$/.test(error?.transportDiagnostic??''))return error.transportDiagnostic;
  let reason='release_effect_unproven';
  for(let depth=0;error&&depth<5;depth++,error=error.cause)if(effectReasons.has(error.message))reason=error.message;
