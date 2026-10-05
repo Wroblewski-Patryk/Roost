@@ -187,7 +187,7 @@ an immediate implementation dependency or mark it complete.
 Review rejected `c21e0e0c` for its missing regression log. Log-only `c82e68b3`
 passes seven tests, native build and independent read-only acceptance.
 
-Roost `219a2844` is deployed. Backup/restore and parity pass; writes/cadences
+Roost `613741a0` is deployed. Backup/restore and parity pass; writes/cadences
 are held. Historical a14 closure `2eb9cdfd` retains PR 2/exact c82 and Git proof.
 Current audit `2a951463` and review `0dbbc62a` / `e7483bd5` close natively;
 release grant `3c75a93e` binds 6ca/b5a9. Its sole configuration operation was
@@ -196,7 +196,7 @@ Original cause remains unknown; diagnostics now retain fixed refusal codes.
 Recovery extends inherited Git closure and fresh nine-read parity, preserving
 original evidence clocks. A reclaim archive defect lost the older checkpoint;
 fresh read-only controller 187440 closed seven signed children and archived it.
-Source/DB checks pass; recovery migration deployment/owner closure pending.
+Source/DB checks pass; migration checksum verified; owner closure pending.
 Docker startup repaired; guarded start preserves socket parents.
 
 Reuse the existing application, repository and Compose installation; create no

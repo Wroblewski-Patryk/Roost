@@ -980,6 +980,9 @@ model or application effect. This does not reconstruct a missing older record.
 The real current attempt's older archive was lost by the previous reclaim path;
 controller 187440 produced a distinct seven-child signed read-only closure and
 released its Writer. Original configuration refusal remains unattributed.
+Recovery `613741a0` is deployed as `g14d73fu3b91a0x8cglgtbge`; both health
+and build version pass. Forward migration `20261005030000` has exact Git-blob
+checksum parity. Closure and the application release remain pending.
 
 These source mechanisms require actual native and production qualification;
 their tests alone do not prove a completed application release.
