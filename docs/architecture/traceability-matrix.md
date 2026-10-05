@@ -1709,11 +1709,11 @@ provider, installed controller/queue/health contracts and actual PostgreSQL 15
 encrypted backup with isolated verified restore are recorded in
 [governed Compose release](../operations/governed-compose-release.md).
 This prerequisite evidence does not establish a deployed application or rollback.
-Current exact c82 review `60699758` / decision `82672c5e` approves material b5de
+Historical exact c82 review `60699758` / decision `82672c5e` approved material b5de
 after native audit `8469a7d0` of replacement manifest 06bf. Both signed Jobs
 closed unchanged at exit zero. The audit retains all sixteen negative findings;
 qualified monitoring configuration does not prove future event delivery.
-The unsigned exact owner package and its separate grant remain prerequisites;
+At that checkpoint the exact owner package and separate grant were prerequisites;
 deployment, observation, fixture cleanup and independent final acceptance are
 still unproven. Historical 3e and original review records are preserved.
 Independent review rejected the initial build fix for missing regression evidence.
@@ -1721,6 +1721,30 @@ Managed log-only `c82e68b3` now has its own seven-test and canonical native buil
 receipts and independent native acceptance (`41e75879`, decision `25632c42`).
 Governed deployment and postrelease proof remain pending; the activity fixture,
 cleanup and resume contracts are source integration, not production evidence.
+
+Current native audit `d1004c62` retains twelve literal CHANGES_REQUIRED findings.
+Fresh Windows build `3e8510be` passes the canonical build and seven tests with
+source/dependency parity, restored outputs and both Jobs closed. Independent
+execution `62ee94ce` accepts exact c82/material eed23 in normal approval
+`17f8c1db`; signed closure and official Worker stop pass. Private qualification
+checks pass 137 tests, including forged-proof and native-path refusals. The
+normal owner grant `63750d89` binds unchanged 742 and the fresh nine-read
+baseline, using the preserved same-gate mandate. It is read back and bound to
+the official Worker under root-supervised 30-second journal reads. Later normal
+reconciliation proves both deployment queues absent and prior services healthy;
+signed native closure covers four operations and 52 closed children. Both
+successful configuration mutations and original evidence clocks are retained.
+Read-only VPS rehearsal `242d0888` proves the bounded migrator-validation repair;
+202 focused Worker checks pass. Closure/adoption and prior regressions pass 96
+tests; typecheck passes. Exact closure uses the actual rollback configuration,
+fresh nine reads and newer native closure. Explicit renderer adoption derives
+configuration/artifact digests while retaining physical state and published Git.
+Roost backup `f478b19d` passes encrypted-copy and isolated-restore verification.
+The production two-queue FAILED closure and updated
+renderer/manifest remain pending. Deployment,
+20-minute observation, fixture cleanup, cadence recovery and independent
+postruntime acceptance remain unproven; no whole-product readiness is claimed.
+See [current release evidence](../operations/application-release.md).
 
 **RELEASE** — Gate 3 is certified on the sole temporary target (2026-10-02).
 Gate 4 exact candidate `7512bc395d65df0fca7cf701047033031f63eb7e` was deployed;

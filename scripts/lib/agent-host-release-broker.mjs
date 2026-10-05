@@ -13,6 +13,16 @@ const effectReasons=new Set(['release_git_push_uncertain','release_git_merge_unc
  // Keep fixed configuration guard causes after artifact staging; never retain
  // arbitrary exception text or treat a diagnostic prefix as an approved code.
  'release_coolify_compose_configuration_mutation_uncertain',
+ // Deployment wrappers and phase refusals are fixed classifications only.
+ // Causes stay in RAM; diagnosis never supplies evidence of remote absence.
+ 'release_coolify_compose_dispatch_uncertain','release_deployment_identity_unproven',
+ 'release_compose_controller_service_set_changed',
+ ...['transport_unproven','response_invalid','response_unproven','configuration_unproven',
+  'configuration_changed','configuration_changed_during_inspection','queue_unproven','queue_identity_changed',
+  'source_pin_changed','phase_capability_invalid','exact_rollback_transport_unavailable',
+  'dispatch_result_uncertain','remote_changed_after_dispatch','runtime_unproven','runtime_queue_unproven'].map(v=>'release_compose_gateway_'+v),
+ ...['phase_configuration_changed','remote_commit_changed','service_identity_unproven',
+  'maintenance_unproven','fingerprint_unproven','cadence_activity_present'].map(v=>'release_compose_installation_'+v),
  ...['phase_intent_unproven','phase_intent_changed','phase_binding_changed','configuration_preimage_changed',
  'clone_changed','private_file_changed','controller_renderer_changed','live_source_pin_changed',
  'git_scope_invalid','tree_unproven','ssh_unavailable','response_size_invalid'].map(v=>'release_compose_installation_'+v),

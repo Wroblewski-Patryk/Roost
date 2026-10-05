@@ -256,3 +256,59 @@ echo json_encode(['ok'=>true,'queue'=>$q,'calls'=>$calls]);}catch(Throwable $e){
   assert.equal(rollback.reason, 'exact_rollback_transport_unavailable'); assert.deepEqual(rollback.calls, []);
   const read = run({ active: true }, { ...payload(), operation: 'read' }); assert.equal(read.ok, true); assert.equal(read.queue, null);
 });
+
+
+test('fixed queue transport keeps native causes non-enumerable through deployment reads and dispatch',async()=>{
+ const leaf=Object.assign(Error('release_child_ssh_timeout'),{privateDetails:'fictional-private-value'});
+ const original=Error('release_compose_installation_ssh_unavailable',{cause:leaf});
+ const transport=createFixedComposeQueueTransport({sshBinary:'/usr/bin/ssh',sshHost:'fixture',runOwned:async()=>{throw original;}});
+ for(const [operation,input]of [['read',payload()],['dispatch',await qualifiedTransportPayload()]]){
+  await assert.rejects(transport.run(operation,input),error=>{
+   assert.equal(error.message,'release_compose_gateway_transport_unproven');assert.equal(error.cause,original);
+   assert.equal(error.uncertain,operation==='dispatch');assert.equal(error.retryable,false);
+   assert.equal(Object.prototype.propertyIsEnumerable.call(error,'cause'),false);
+   assert.equal(releaseEffectDiagnostic(error),'release_child_ssh_timeout');
+   assert(!JSON.stringify(error).includes('fictional-private-value'));return true;
+  });
+ }
+});
+
+test('deployment gateway preserves dispatch cause without retrying the uncertain action',async()=>{
+ const f=fixture(),run=f.transport.run,leaf=Object.assign(Error('release_child_native_exit_failed'),{privateDetails:'fictional-private-value'});
+ f.transport.run=async(...args)=>{const result=await run(...args);if(args[0]==='dispatch')throw leaf;return result;};
+ await assert.rejects(f.gateway.deploy({operationId,since}),error=>{
+  assert.equal(error.message,'release_compose_gateway_dispatch_result_uncertain');assert.equal(error.uncertain,true);
+  assert.equal(error.cause,leaf);assert.equal(Object.prototype.propertyIsEnumerable.call(error,'cause'),false);
+  assert.equal(releaseEffectDiagnostic(error),'release_child_native_exit_failed');
+  assert(!JSON.stringify(error).includes('fictional-private-value'));return true;
+ });
+ assert.equal(f.calls.filter(c=>c.operation==='dispatch').length,1);
+ assert.equal((await f.gateway.reconcileDeployment({operationId,since})).state,'pending');
+ assert.equal(f.calls.filter(c=>c.operation==='dispatch').length,1);
+});
+
+test('phase preparation refusal retains fixed diagnosis and performs zero dispatches',async()=>{
+ const failure=Object.assign(Error('release_compose_controller_service_set_changed'),{privateDetails:'fictional-private-value'});
+ const f=qualifiedRollbackFixture(()=>{throw failure;});await f.gateway.configure('rollback');
+ await assert.rejects(f.gateway.deploy({operationId,since,rollback:true}),error=>{
+  assert.equal(error,failure);assert.equal(releaseEffectDiagnostic(error),'release_compose_controller_service_set_changed');return true;
+ });
+ assert.equal(f.calls.filter(c=>c.operation==='dispatch').length,0);
+ assert.deepEqual(await f.gateway.reconcileDeployment({operationId,since,rollback:true}),{state:'absent',absenceVerified:true});
+ assert.equal(f.calls.filter(c=>c.operation==='dispatch').length,0);
+});
+
+test('deployment read keeps arbitrary cause private and rejects spoofed or suffix-bearing diagnostics',async()=>{
+ for(const cause of [Error('release_child_ssh_timeout\nBearer fictional-private-value'),
+  Object.assign(Error('fictional-private-value'),{transportDiagnostic:'release_child_ssh_timeout'}),
+  Error('release_compose_gateway_queue_unproven fictional-private-value')]){
+  assert.equal(releaseEffectDiagnostic(cause),'release_effect_unproven');
+  const f=fixture({transport:{run:async()=>{throw cause;}}});
+  await assert.rejects(f.gateway.deploy({operationId,since}),error=>{
+   assert.equal(error.message,'release_compose_gateway_queue_unproven');assert.equal(error.cause,cause);
+   assert.equal(Object.prototype.propertyIsEnumerable.call(error,'cause'),false);
+   assert.equal(error.uncertain,false);assert.equal(releaseEffectDiagnostic(error),'release_compose_gateway_queue_unproven');
+   assert(!JSON.stringify(error).includes('fictional-private-value'));return true;
+  });assert.equal(f.calls.length,0);
+ }
+});

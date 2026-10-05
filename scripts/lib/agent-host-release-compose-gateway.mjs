@@ -103,7 +103,7 @@ export function createFixedComposeQueueTransport({ runOwned, sshBinary, sshHost,
       '-o', 'ConnectTimeout=8', sshHost, `docker exec -i ${containerName} php`],
       stdin: `<?php\n$p=json_decode(base64_decode('${data}',true),true,32,JSON_THROW_ON_ERROR);\n${queueMainPhp}`,
       timeoutMs, maxOutputBytes: 8192, write: operation === 'dispatch' }); }
-    catch { deny('transport_unproven', operation === 'dispatch'); }
+    catch (error) { deny('transport_unproven', operation === 'dispatch', error); }
     check(typeof result?.stdout === 'string' && Buffer.byteLength(result.stdout) <= 8192, 'response_invalid', operation === 'dispatch');
     let response; try { response = JSON.parse(result.stdout); } catch { deny('response_invalid', operation === 'dispatch'); }
     const parsed = z.object({ ok: z.literal(true), queue: queueSchema.nullable() }).strict().safeParse(response);
@@ -182,7 +182,7 @@ export function createComposeReleaseGateway({ releaseId, expected, rollbackExpec
       && Object.keys(pins).every(key => policy.sourcePins[key] === pins[key]), 'phase_policy_invalid');
   }
   const state = async (rollback = false) => {
-    let value; try { value = await readConfiguration(); } catch { deny('configuration_unproven'); }
+    let value; try { value = await readConfiguration(); } catch (error) { deny('configuration_unproven', false, error); }
     const current = parse(composeConfigurationSchema, value, 'configuration_unproven');
     check(composeConfigurationDigest(current) === (rollback ? rollbackCopy : expectedCopy).configDigest, 'configuration_changed');
     return current;
@@ -195,7 +195,7 @@ export function createComposeReleaseGateway({ releaseId, expected, rollbackExpec
   const read = async options => {
     check(date.safeParse(options?.since).success, 'operation_invalid');
     const p = payload(options); let response;
-    try { response = await transport.run('read', p); } catch { deny('queue_unproven'); }
+    try { response = await transport.run('read', p); } catch (error) { deny('queue_unproven', false, error); }
     const row = parse(z.object({ queue: queueSchema.nullable() }).strict(), response, 'queue_unproven').queue;
     check(row === null || row.targetId === p.targetId && row.deploymentId === p.deploymentId
       && [p.commit, 'HEAD'].includes(row.commit) && Date.parse(row.createdAt) >= Date.parse(options.since), 'queue_identity_changed');
@@ -204,7 +204,7 @@ export function createComposeReleaseGateway({ releaseId, expected, rollbackExpec
   const runtime = async options => {
     const before = await state(options.rollback === true), queue = await read(options);
     check(queue?.status === 'finished' && queue.finishedAt !== null && queue.commit !== 'HEAD', 'runtime_queue_unproven');
-    let live, images; try { live = await readRuntime(queue); images = await readBuildImages(queue); } catch { deny('runtime_unproven'); }
+    let live, images; try { live = await readRuntime(queue); images = await readBuildImages(queue); } catch (error) { deny('runtime_unproven', false, error); }
     const proof = qualifyComposeRuntime({ expected: options.rollback ? rollbackCopy : expectedCopy, configuration: before, runtime: live,
       binding: { commit: options.rollback ? source.baselineCommit : source.commit,
         tree: options.rollback ? source.baselineTree : source.tree, deploymentId: queue.deploymentId, queue, images } });
@@ -244,7 +244,7 @@ export function createComposeReleaseGateway({ releaseId, expected, rollbackExpec
           && digest(cap.services) === digest(policy.services) && digest(cap.sourcePins) === digest(policy.sourcePins), 'phase_capability_invalid');
         p.phaseCapability = cap;
       }
-      try { await transport.run('dispatch', p); } catch { deny('dispatch_result_uncertain', true); }
+      try { await transport.run('dispatch', p); } catch (error) { deny('dispatch_result_uncertain', true, error); }
       const row = await read(options); check(row !== null, 'dispatch_result_uncertain', true);
       if (!options?.rollback) check((await inspectRemote())?.mainCommit === source.commit, 'remote_changed_after_dispatch', true);
       return row;

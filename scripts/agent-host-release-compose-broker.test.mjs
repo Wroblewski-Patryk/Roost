@@ -5,6 +5,8 @@ import {require as tsRequire} from 'tsx/cjs/api';
 import contract from './lib/agent-host-release-contract.cjs';
 import {fixture as contractFixture,hash,image} from './fixtures/release-compose-contract.cjs';
 import {nextReleaseOperation,runReleaseStep} from './lib/agent-host-release-broker.mjs';
+import {createComposeReleaseGateway,createFixedComposeQueueTransport} from './lib/agent-host-release-compose-gateway.mjs';
+import {createCoolifyComposeAdapter} from './lib/agent-host-release-coolify-compose.mjs';
 const {releaseIntentError,releaseOutcomeError}=tsRequire('../src/modules/agent-runtime/governed-release-contract.ts',import.meta.url);
 
 function fixture(start='deploy'){
@@ -192,4 +194,29 @@ for(const [key,value]of[['noCandidateQueue',false],['controlPlaneQuiescent',fals
  const f=fixture('deploy_config'),op={...f.done('deploy_config'),outcome:{status:'uncertain'},intent:{parameters:{commit:f.s.commit,artifactSetDigest:f.m.deployment.artifactSetDigest,configDigest:f.m.deployment.configDigest,schemaDigest:f.m.deployment.schemaDigest}}};f.state.journal.push(op);
  const e=configurationAbsence(f,op);e.composeConfigAbsence[key]=value;f.args.coolify.reconcileConfiguration=async()=>({state:'absent',evidence:e});await assert.rejects(runReleaseStep(f.args),/release_compose_configuration_absence_unproven/);
  assert.equal(op.outcome.status,'uncertain');assert.equal(f.calls.some(x=>x.kind==='api'),false);
+});
+
+
+test('native queue-read cause crosses installed wrapper, gateway, adapter and broker without entering outcome evidence',async()=>{
+ const f=fixture(),t=f.target,leaf=Object.assign(Error('release_child_ssh_timeout'),{privateDetails:'fictional-private-value'}),descriptors=[];
+ const transport=createFixedComposeQueueTransport({sshBinary:'/usr/bin/ssh',sshHost:'fixture',runOwned:async descriptor=>{
+  descriptors.push(descriptor);throw Error('release_compose_installation_ssh_unavailable',{cause:leaf});
+ }});
+ const unexpected=async()=>assert.fail('a denied queue read must not continue to preparation or dispatch');
+ const raw=createComposeReleaseGateway({releaseId:f.state.release.id,expected:{configuration:t.configuration,configDigest:t.configDigest},
+  rollbackExpected:{configuration:t.rollbackConfiguration,configDigest:t.rollbackConfigDigest},
+  binding:{commit:f.s.commit,tree:f.s.candidateTree,baselineCommit:f.s.baseCommit,baselineTree:f.s.baseTree},
+  sourcePins:{queueHelper:t.configuration.sourcePins.queueHelper,deploymentJob:t.configuration.sourcePins.deploymentJob,
+   applicationModel:hash('3'),composeParser:hash('4')},repositoryPath:'example/private-app',transport,
+  readConfiguration:unexpected,readRuntime:unexpected,readBuildImages:unexpected,configureTarget:unexpected,
+  inspectRemote:unexpected,assertSafety:unexpected});
+ f.args.coolify=createCoolifyComposeAdapter({gateway:{inspectConfiguration:unexpected,inspectBaseline:unexpected,
+  inspectRuntime:unexpected,readQueue:raw.readQueue,configure:unexpected,deployTarget:raw.deploy,safety:unexpected,
+  checkServices:unexpected,inspectBackup:unexpected}});
+ const result=await runReleaseStep(f.args),operation=f.state.journal.at(-1);
+ assert.equal(result.reconciliationRequired,true);assert.equal(result.uncertaintyDiagnostic,'release_child_ssh_timeout');
+ assert.equal(operation.outcome.status,'uncertain');assert.deepEqual(Object.keys(operation.outcome.evidence),['observedAt']);
+ assert.equal(nextReleaseOperation(f.state),'reconcile');assert.equal(descriptors.length,1);assert.equal(descriptors[0].write,false);
+ for(const value of ['fictional-private-value','release_child_ssh_timeout','cause','transportDiagnostic'])
+  assert(!JSON.stringify(operation.outcome).includes(value));
 });

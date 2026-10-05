@@ -111,10 +111,10 @@ export function qualifyComposePhaseArtifact({ policy, artifactBytes, configurati
   check(new Set(actual.map(row => row.name)).size === actual.length
     && actual.every(row => p.services.some(service => service.name === row.name))
     && p.services.every(row => actual.some(service => service.name === row.name)
-      || p.phase === 'candidate' && row.role === 'migration'), 'service_set_changed');
+      || row.role === 'migration'), 'service_set_changed');
   for (const declared of p.services) {
     const row = actual.find(service => service.name === declared.name);
-    if (!row && p.phase === 'candidate' && declared.role === 'migration') continue;
+    if (!row && declared.role === 'migration') continue;
     check(composeMountDigest(row.mounts) === declared.mountDigest, 'mount_changed');
     if (p.phase === 'candidate') check(row.imageDigest === declared.imageDigest, 'candidate_image_changed');
     if (declared.source === 'image') check(row.imageDigest === declared.imageDigest, 'database_image_changed');
@@ -177,7 +177,7 @@ function roost_validate_compose_phase($a,$cap,$readFile,$readSource,$run,$readIn
  $doc=json_decode($bytes,true,32,JSON_THROW_ON_ERROR);$services=$doc['services']??null;
  if(!is_array($services)||count($services)!==count($cap['services']))throw new Exception('phase-services');
  $ids=trim($run('docker container ls -a --no-trunc --filter '.escapeshellarg('label=com.docker.compose.project='.$a->uuid).' --format '.escapeshellarg('{{.ID}}')));
- $ids=$ids===''?[]:preg_split('/\R/',$ids);if(count($ids)>count($cap['services'])||count($ids)<count($cap['services'])-($cap['phase']==='candidate'?1:0))throw new Exception('phase-runtime');$rows=[];
+ $ids=$ids===''?[]:preg_split('/\R/',$ids);if(count($ids)>count($cap['services'])||count($ids)<count($cap['services'])-1)throw new Exception('phase-runtime');$rows=[];
  foreach($ids as $id){if(!preg_match('/^[a-f0-9]{64}$/',$id))throw new Exception('phase-container');
  $format='{"name":{{json (index .Config.Labels "com.docker.compose.service")}},"imageDigest":{{json .Image}},"mounts":{{json .Mounts}}}';
  $row=json_decode($run('docker container inspect --format '.escapeshellarg($format).' -- '.escapeshellarg($id)),true,32,JSON_THROW_ON_ERROR);
@@ -194,6 +194,10 @@ function roost_validate_compose_phase($a,$cap,$readFile,$readSource,$run,$readIn
    foreach($cap['services'] as $declared)if($declared['name']===$name&&$declared['role']!=='cadence')$allowed=true;
    if(!$allowed)throw new Exception('phase-dependencies');}}
  if(!$row&&$cap['phase']==='candidate'&&$s['role']==='migration')continue;
+ if(!$row&&$cap['phase']==='rollback'&&$s['role']==='migration'){
+  if(trim($run('docker image inspect --format '.escapeshellarg('{{.Id}}').' -- '.escapeshellarg($s['imageDigest'])))!==$s['imageDigest'])throw new Exception('phase-image');
+  continue;
+ }
  if(!$row||roost_phase_mount_hash($row['mounts'])!==$s['mountDigest'])throw new Exception('phase-service');
  if($cap['phase']==='candidate'&&$row['imageDigest']!==$s['imageDigest'])throw new Exception('phase-image');
  $inspect=fn($ref)=>trim($run('docker image inspect --format '.escapeshellarg('{{.Id}}').' -- '.escapeshellarg($ref)));

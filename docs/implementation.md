@@ -187,19 +187,19 @@ an immediate implementation dependency or mark it complete.
 Review rejected `c21e0e0c` for its missing regression log. Log-only `c82e68b3`
 passes seven tests, native build and independent read-only acceptance.
 
-Roost `d4014466` is deployed. Backup/restore and parity pass; writes/cadences
-are held. Closure `2eb9cdfd` retains PR 2/exact c82 and Git proof.
-Prior `3c75a93e` is FAILED via `14348e4c`, preserving absence clocks, inherited
-Git and seven-child closure. Fresh backup and deployed restart guards pass.
-Prior `e7320bdf` is FAILED via `4d79f05f`, with 88 signed closed children.
-Grant `f579ca87` binds `742c2d4d`; configuration reconciled ABSENT, preserving
-evidence clock `19:52:20.503Z`. Closure `4b0a9d74` records FAILED; V6 rotation
-passes. Audit `5f056660` has signed native closure and literal CHANGES_REQUIRED.
-Review `b8f69273` accepts c82. Grant `6b4471c5` is FAILED via `4d4d7db5`;
-ABSENT at `20:52:01.679Z`, signed 156/88-child closures retained. V7 renewed.
-Coolify repair `2d63cf62` preserves ten records. Locked model requery fixes
-Stringable readback; native rolled-back CAS `bb121957` verifies all-record parity.
-Docker startup repaired; guarded start preserves socket parents.
+Roost `d4014466` is deployed; restore/parity pass, writes/cadences held.
+Closure `2eb9cdfd` retains PR 2/exact c82 and Git proof.
+Prior FAILED releases `3c75a93e`, `e7320bdf`, `f579ca87` and `6b4471c5`
+retain dated outcomes, native closures and Git. Closures `14348e4c`, `4d79f05f`,
+`4b0a9d74`, `4d4d7db5` are recorded; negative audits remain literal.
+Backup guards pass; V7 is renewed. Full receipts remain in release operations.
+Coolify repair `2d63cf62` preserves records. Locked requery fixes Stringable
+readback; native rolled-back CAS `bb121957` verifies all-record parity.
+Native c82 build `3e8510be`: seven tests pass, outputs restored.
+Audit `d1004c62`: CHANGES_REQUIRED; review `17f8c1db` accepts c82.
+Grant `63750d89`: both queues ABSENT, prior services healthy, native closed.
+Two-queue closure/adoption pass 96 tests; Worker checks pass 202.
+Production FAILED closure and renewed manifest remain pending.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

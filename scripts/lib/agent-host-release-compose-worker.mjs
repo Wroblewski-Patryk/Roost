@@ -153,7 +153,17 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   sourceForCommit:async(commit,composePath)=>{check(/^[a-f0-9]{40}$/.test(commit)&&composePath===t.composePath,'git_scope_invalid');return hash(await git(['show',`${commit}:${composePath.slice(1)}`]));},
   treeForCommit:async commit=>{check(/^[a-f0-9]{40}$/.test(commit),'git_scope_invalid');const out=(await git(['rev-parse',`${commit}^{tree}`],4096)).toString('utf8').trim();check(/^[a-f0-9]{40}$/.test(out),'tree_unproven');return out;},
   readDeployment:payload=>php(queueRead,payload),
-  readControllerPolicy:async({controllerObserved})=>Object.values(policies).map(composeControllerPolicyRecord).find(p=>Object.entries(controllerObserved).every(([key,value])=>p[key]===value))??null,
+  readControllerPolicy:async({controllerObserved})=>{
+   const current=await dependencies.readReleaseState();
+   check(current?.release?.id===s.releaseId&&contract.releaseDigest(current.release.snapshot)===snapshotDigest
+    &&Array.isArray(current.journal),'controller_release_binding_changed');
+   // An admitted baseline may retain the preceding release's rollback commands.
+   // Their bytes do not identify the phase: the current durable journal does.
+   const rollbackStarted=current.journal.some(r=>['rollback_config','rollback'].includes(r.operation));
+   const records=[composeControllerPolicyRecord(policies.candidate),rollbackStarted
+    ?composeControllerPolicyRecord(policies.rollback):t.baseline.configuration.controllerPolicy].filter(Boolean);
+   return records.find(p=>Object.entries(controllerObserved).every(([key,value])=>p[key]===value))??null;
+  },
   readImageBinding:async({queue,configuration})=>{check(queue.commit===t.baseline.commit&&configuration.controllerPolicy?.phase==='rollback'
    &&configuration.controllerPolicy.artifactDigest===policies.rollback.artifactDigest,'baseline_adoption_changed');
    return{kind:'sealed_baseline_adoption',commit:t.baseline.commit,tree:t.baseline.tree,artifactDigest:policies.rollback.artifactDigest,

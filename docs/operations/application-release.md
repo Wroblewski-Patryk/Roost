@@ -1094,3 +1094,75 @@ The current release gate remains incomplete. A distinct native audit and new
 exact authority must precede another attempt. Deployment, full observation,
 fixture cleanup, cadence recovery and independent postruntime acceptance remain
 required.
+
+### Fresh source qualification and current release authority
+
+Native audit execution `d1004c62-8448-4d46-b7f5-ee9c177fab9a` preserves its
+literal twelve-finding `CHANGES_REQUIRED` result and earlier negative audits.
+Its missing current-source build was resolved by actual Windows Job run
+`3e8510be-5e00-4ae5-a384-b2c62692e677`, completed at
+`2026-10-05T21:44:42.463Z`: the canonical build and all seven tests passed for
+exact candidate c82. Both Jobs closed with zero active processes; original
+output state and source/dependency parity were restored. A preceding pre-spawn
+path refusal remains a separate failure record; guarded prestate recovery did
+not turn that refusal into build evidence.
+
+Independent read-only execution `62ee94ce-b1a3-42dc-affc-979f39d5de67` produced
+normal current approval `17f8c1db-91b0-4661-ac6f-c3be7a2a9648` for exact c82 and
+material `eed23b95`. Signed closure and official Worker shutdown are verified.
+Finding disposition retains the audit verbatim: current build is qualified,
+configuration compatibility is only a rolled-back rehearsal, and actual
+deployment/observation/cleanup/recovery/postruntime proof remains mandatory.
+Private qualification checks passed 137 tests, including rejection of forged
+build status and noncanonical native executable/working-directory paths.
+
+Normal owner grant `63750d89-3606-4c1b-8654-174d128c8ddb` binds unchanged manifest
+`742c2d4d`, current independent acceptance and fresh nine-read baseline. It was
+read back from Roost before binding and starting the official Worker. Existing
+Git publication is inherited without replay. The root supervises journal reads
+every 30 seconds; this is not an autonomous daemon or external alert service.
+Its later journal confirms configuration success, candidate queue absence,
+rollback configuration success and rollback queue absence. No candidate was
+deployed; the prior four services remain healthy. The final reconciliation at
+`2026-10-05T22:21:58.764Z` preserves data/schema parity and empty deployment IDs.
+Official reconciliation-only controller closed with zero active children;
+HMAC/OS qualification covers all four operations and 52 registered closed
+children. The prior 65-child closure is retained separately. Writer/recovery
+locks are absent. Both configuration mutations remain successful facts.
+
+The original rollback validator rejected the missing baseline migration
+container. The narrow repair permits only that absence while still checking
+the sealed migrator image and complete artifact. Actual read-only VPS rehearsal
+`242d0888-0ca6-416f-bd68-58c1e29fb3fa` demonstrates original refusal, corrected
+qualification and rejection of a changed migration image digest. It performs
+only bounded Docker inspection and no deployment. JavaScript/PHP controller
+checks pass 11 tests; focused diagnostic checks pass 74. Fixed diagnostic
+causes remain private classifications and cannot supply absence evidence.
+
+Changing the pinned renderer requires a reviewed replacement manifest; old
+manifest 742 cannot authorize the modified controller. The governed FAILED close
+for this exact two-absent-queue journal now has source qualification. Deployment, complete
+observation, fixture cleanup, cadence recovery and postruntime acceptance are
+still unproven. This checkpoint does not complete the release gate.
+
+The closure requires both original queue-absence outcomes, the successful
+configuration mutations, exact retained services and actual rollback
+configuration, nine fresh component reads, and newer native closure. It keeps
+the historical evidence clocks and never promotes queue absence to deployment.
+An explicit baseline adoption binds this authentic closure and the old/new
+renderer identities. The deterministic replacement manifest preserves commands,
+artifacts, images, source, data, health and effect policy; it derives all three
+configuration and artifact-set digests again. Fresh revalidation, a replacement
+credential/runtime and current independent approval remain mandatory. The
+inherited Git identifiers prohibit repeated push/PR/review/merge.
+
+When retained rollback commands also describe the admitted new baseline, the
+Worker selects their descriptor from its exact current snapshot and durable
+journal: baseline before rollback starts, rollback afterwards. Command or
+snapshot drift is refused. Focused Worker checks pass 202 tests; backend closure,
+adoption and prior freshness/restart regressions pass 96. Typecheck passes.
+Roost backup `f478b19d` has encrypted-copy and isolated-restore evidence at
+`2026-10-05T22:31:02.160Z`; the same backend was restored healthy afterwards.
+An earlier backup preparation with a stale database-container reference failed
+before completion and remains a failure record. The corrected private binding
+preserves the database, volume, encryption key and previous backup records.

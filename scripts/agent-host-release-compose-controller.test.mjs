@@ -138,7 +138,20 @@ test('candidate capability permits only missing declared migration before first 
   assert.throws(() => qualifyComposePhaseArtifact({ ...input, services: input.services.filter(row => row.name !== 'app') }));
   assert.throws(() => qualifyComposePhaseArtifact({ ...input, services: input.services.filter(row => row.name !== 'db') }));
   assert.throws(() => qualifyComposePhaseArtifact({ ...input, services: [...input.services, { ...f.services[0], name: 'other' }] }), /service_set_changed/);
-  assert.throws(() => qualifyComposePhaseArtifact({ ...input, policy: { ...input.policy, phase: 'rollback' } }), /service_set_changed/);
+  assert.throws(() => qualifyComposePhaseArtifact({ ...input, policy: { ...input.policy, phase: 'rollback' } }), /image_identity_changed/);
+});
+
+test('rollback without a baseline migrator still requires its sealed image and complete artifact', () => {
+  const f = fixture(), input = { ...f.preflight, services: f.services.filter(row => row.name !== 'migrate') };
+  assert.equal(qualifyComposePhaseArtifact(input).phase, 'rollback');
+  assert.deepEqual(renderComposePhaseCommands(input.policy), renderComposePhaseCommands(f.policy));
+  assert.throws(() => qualifyComposePhaseArtifact({ ...input, imageIdentities: input.imageIdentities.filter(row => row.imageDigest !== image('b')) }), /image_identity_changed/);
+  assert.throws(() => qualifyComposePhaseArtifact({ ...input, services: input.services.filter(row => row.name !== 'app') }), /(?:service_set_changed|services_invalid)/);
+  assert.throws(() => qualifyComposePhaseArtifact({ ...input, services: input.services.filter(row => row.name !== 'db') }), /(?:service_set_changed|services_invalid)/);
+  assert.throws(() => qualifyComposePhaseArtifact({ ...input, services: [...input.services, input.services[0]] }), /service_set_changed/);
+  const document = structuredClone(f.document); delete document.services.migrate;
+  const artifactBytes = Buffer.from(JSON.stringify(document));
+  assert.throws(() => qualifyComposePhaseArtifact({ ...input, artifactBytes, policy: { ...input.policy, artifactDigest: bytesDigest(artifactBytes) } }), /artifact_service_set_changed/);
 });
 
 const php = process.env.ROOST_TEST_PHP_BINARY ?? 'php';
@@ -182,6 +195,10 @@ catch(Throwable $e){echo json_encode(['ok'=>false,'reason'=>$e->getMessage(),'ca
   const candidateCap = qualifyComposePhaseArtifact(candidate);
   const candidateInput = { ...input, cap: candidateCap, commands: renderComposePhaseCommands(candidate.policy), artifact: candidate.artifactBytes.toString() };
   assert.equal(run({ missingMigrator: true }, candidateInput).ok, true);
-  assert.equal(run({ missingMigrator: true }).ok, false);
+  const rollbackMissing = run({ missingMigrator: true });
+  assert.equal(rollbackMissing.ok, true);
+  assert(rollbackMissing.calls.some(command => command.startsWith('docker image inspect') && command.includes(image('b'))));
+  assert.equal(run({ missingMigrator: true }, { ...input, identities: input.identities.filter(row => row.imageDigest !== image('b')) }).ok, false);
+  assert.equal(run({ missingMigrator: true, image: true }).ok, false);
   assert.equal(run({ missing: true }, candidateInput).ok, false);
 });

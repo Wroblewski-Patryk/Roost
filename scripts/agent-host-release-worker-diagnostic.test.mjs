@@ -64,3 +64,25 @@ test('retained baseline inspection refusals remain attributable before the first
  }
  assert.equal(releaseWorkerDiagnostic(Error('release_compose_inspector_password_private')),'release_preflight_unproven');
 });
+
+
+test('deployment diagnostic enum persists only exact fixed reasons and keeps the five-node cause bound',()=>{
+ const reasons=['release_compose_gateway_transport_unproven','release_compose_gateway_queue_unproven',
+  'release_compose_gateway_dispatch_result_uncertain','release_compose_gateway_phase_capability_invalid',
+  'release_coolify_compose_dispatch_uncertain','release_compose_installation_phase_configuration_changed',
+  'release_compose_controller_service_set_changed'];
+ const dir=mkdtempSync(path.join(os.tmpdir(),'release-deploy-diagnostic-'));
+ try{for(const reason of reasons){
+  assert.equal(releaseEffectDiagnostic(Error(reason)),reason);
+  assert.equal(persistReleaseWorkerDiagnostic(path.join(dir,'config.json'),'uncertainty',reason),true);
+  const bytes=readFileSync(path.join(dir,'release-worker-diagnostic.json'),'utf8');
+  assert.deepEqual(Object.keys(JSON.parse(bytes)).sort(),['observedAt','phase','reason']);assert.equal(JSON.parse(bytes).reason,reason);
+  for(const spoof of [Error(reason+'\nBearer fictional-private-value'),Object.assign(Error('fictional-private-value'),{transportDiagnostic:reason})])
+   assert.equal(releaseEffectDiagnostic(spoof),'release_effect_unproven');
+ }
+ let chain=Error('release_child_ssh_timeout');for(let i=0;i<4;i++)chain=Error('private outer',{cause:chain});
+ assert.equal(releaseEffectDiagnostic(chain),'release_child_ssh_timeout');chain=Error('private outer',{cause:chain});
+ assert.equal(releaseEffectDiagnostic(chain),'release_effect_unproven');
+ const cycle=Error('fictional-private-value');cycle.cause=cycle;assert.equal(releaseEffectDiagnostic(cycle),'release_effect_unproven');
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});

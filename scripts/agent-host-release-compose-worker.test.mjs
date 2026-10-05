@@ -357,6 +357,35 @@ test('missing current write intent cannot dispatch a new deployment', async t =>
   assert.equal(f.calls.some(r => r.kind === 'queue' && r.payload.operation === 'dispatch'), false);
 });
 
+test('retained rollback commands describe the admitted baseline until this release starts rollback',async t=>{
+ const f=setup(t),target=f.target;
+ target.baseline.configuration=structuredClone(target.rollbackConfiguration);
+ target.baseline.configuration.controllerPolicy.phase='baseline';
+ target.baseline.sourceDigest=target.baseline.configuration.sourceDigest;
+ target.baseline.configDigest=composeConfigurationDigest(target.baseline.configuration);
+ f.baseline.configDigest=target.baseline.configDigest;f.sealBaseline();
+ f.m.baseline.configDigest=contract.releaseDigest([{targetId:target.targetId,configDigest:target.baseline.configDigest}]);
+ f.m.baseline.artifactSetDigest=contract.sourceArtifactDigest(f.m,f.s,'baseline');
+ f.m.deployment.artifactSetDigest=contract.sourceArtifactDigest(f.m,f.s);
+ f.m.rollback.artifactSetDigest=contract.sourceArtifactDigest(f.m,f.s,true);
+ for(const phase of ['candidate','rollback'])f.rewritePolicy(phase,p=>p.originalConfigDigest=target.baseline.configDigest);
+ f.state.journal=[];f.install();
+ const observed=Object.fromEntries(['buildCommandDigest','startCommandDigest','settingsInvariantDigest','runtimeInvariantDigest']
+  .map(k=>[k,target.rollbackConfiguration.controllerPolicy[k]]));
+ const reader=f.inspectorOptions().readControllerPolicy;
+ assert.equal((await reader({controllerObserved:observed})).phase,'baseline');
+ f.configIntent(false);
+ assert.equal((await reader({controllerObserved:observed})).phase,'baseline');
+ const candidate=Object.fromEntries(Object.keys(observed).map(k=>[k,target.configuration.controllerPolicy[k]]));
+ assert.equal((await reader({controllerObserved:candidate})).phase,'candidate');
+ f.configIntent(true);
+ assert.equal((await reader({controllerObserved:observed})).phase,'rollback');
+ assert.equal(await reader({controllerObserved:{...observed,startCommandDigest:fixtureModule.hash('0')}}),null);
+ assert.equal(f.calls.some(r=>r.kind==='queue'||r.method==='PATCH'),false);
+ f.state.release.snapshot=structuredClone(f.s);f.state.release.snapshot.commit=fixtureModule.git('0');
+ await assert.rejects(reader({controllerObserved:observed}),/controller_release_binding_changed/);
+});
+
 test('legacy controller command capacity blocks before any configuration write or queue dispatch', async t => {
  const f=setup(t);f.live.configurationSchema=['build','start'].map(x=>({name:`docker_compose_custom_${x}_command`,type:'character varying',maxLength:255}));
  const journal=JSON.stringify(f.state.journal);
