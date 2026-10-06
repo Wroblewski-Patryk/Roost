@@ -49,29 +49,39 @@ export function composePhasePolicyDigest(policy) {
   return digest(parse(composePhasePolicySchema, policy, 'policy_invalid'));
 }
 
+export function composePhaseChecksumBytes(policy) {
+  const p = parse(composePhasePolicySchema, policy, 'policy_invalid');
+  return Buffer.from(`${p.artifactDigest}  /artifacts/${composePhaseArtifactFile(p)}\n`);
+}
+
+// Docker evaluates json's arity only in the mismatch branch. A changed alias
+// therefore exits nonzero without shell substitution or an unchecked output.
+const imageIdentityCommand = (reference, expected) =>
+  `docker image inspect --format '{{if ne .Id "${expected}"}}{{json}}{{end}}' -- ${reference}`;
+
 /** Fixed commands are rendered only from an installed, exact grant-bound policy. */
 export function renderComposePhaseCommands(policy) {
   const p = parse(composePhasePolicySchema, policy, 'policy_invalid');
   const suffix = p.baseDirectory === '/' ? '' : p.baseDirectory;
-  const project = `--project-name ${p.targetId} --project-directory "$PWD${suffix}"`;
+  const project = `--project-name ${p.targetId} --project-directory .${suffix}`;
   const databaseImages = p.services.filter(service => service.source === 'image')
-    .map(service => `test "$(docker image inspect --format '{{.Id}}' -- ${service.imageRef})" = ${service.imageDigest}`).join(' && ');
+    .map(service => imageIdentityCommand(service.imageRef, service.imageDigest)).join(' && ');
   const cadence = p.services.filter(service => service.role === 'cadence').map(service => service.name).sort();
   const active = p.services.filter(service => service.role !== 'cadence').map(service => service.name).sort();
   const start = file => {
-    const compose = `docker compose ${project} --env-file "$PWD${suffix}/.env" -f ${file}`;
+    const compose = `docker compose ${project} --env-file .${suffix}/.env -f ${file}`;
     const create = cadence.length ? `${compose} create --no-build --pull never --force-recreate ${cadence.join(' ')} && ` : '';
     return `${create}${compose} up -d --no-build --pull never ${active.join(' ')}`;
   };
   if (p.phase === 'candidate') return Object.freeze({
-    build: `${databaseImages} && docker compose ${project} --env-file /artifacts/build-time.env -f "$PWD${suffix}${p.composePath}" build --pull`,
-    start: `${databaseImages} && ${start(`"$PWD${suffix}${p.composePath}"`)}`
+    build: `${databaseImages} && docker compose ${project} --env-file /artifacts/build-time.env -f .${suffix}${p.composePath} build --pull`,
+    start: `${databaseImages} && ${start(`.${suffix}${p.composePath}`)}`
   });
   const artifact = composePhaseArtifactFile(p), destination = `/artifacts/${artifact}`;
-  const copy = `docker cp coolify:/var/www/html/storage/app/applications/${p.targetId}/${artifact} ${destination}`;
-  const verify = `printf '%s  %s\\n' ${p.artifactDigest} ${destination} | sha256sum -c -`;
+  const copy = `docker cp coolify:/var/www/html/storage/app/applications/${p.targetId}/${artifact} ${destination} && docker cp coolify:/var/www/html/storage/app/applications/${p.targetId}/${artifact}.sha256 ${destination}.sha256`;
+  const verify = `sha256sum -c ${destination}.sha256`;
   const images = [...new Set(p.services.map(service => service.imageDigest))].sort()
-    .map(value => `test "$(docker image inspect --format '{{.Id}}' -- ${value})" = ${value}`).join(' && ');
+    .map(value => imageIdentityCommand(value, value)).join(' && ');
   return Object.freeze({
     build: `${copy} && ${verify} && ${images} && docker compose ${project} --env-file /artifacts/build-time.env -f ${destination} config --quiet`,
     start: `${verify} && ${images} && ${databaseImages} && ${start(destination)}`
@@ -167,6 +177,8 @@ function roost_validate_compose_phase($a,$cap,$readFile,$readSource,$run,$readIn
   ||$a->settings->is_raw_compose_deployment_enabled!==false||$a->settings->is_preserve_repository_enabled!==false
   ||$a->settings->is_build_server_enabled!==false||hash('sha256',$a->docker_compose_custom_build_command??'')!==$cap['buildCommandDigest']
   ||hash('sha256',$a->docker_compose_custom_start_command??'')!==$cap['startCommandDigest'])throw new Exception('phase');
+ foreach(['docker_compose_custom_build_command','docker_compose_custom_start_command'] as $field)
+  if(preg_match(App\Support\ValidationPatterns::SHELL_SAFE_COMMAND_PATTERN,$a->$field??'')!==1)throw new Exception('phase-command');
  $invariants=$readInvariants($a);foreach(['settingsInvariantDigest','runtimeInvariantDigest'] as $key)
   if(($invariants[$key]??null)!==$cap[$key])throw new Exception('phase-invariant');
  foreach(['dockerHelper'=>'/var/www/html/bootstrap/helpers/docker.php','applicationsController'=>'/var/www/html/app/Http/Controllers/Api/ApplicationsController.php'] as $key=>$path)
@@ -174,6 +186,7 @@ function roost_validate_compose_phase($a,$cap,$readFile,$readSource,$run,$readIn
  if($cap['artifactFile']!=='roost-release-'.$cap['policyId'].'-'.$cap['phase'].'-'.$cap['artifactDigest'].'.json')throw new Exception('phase-path');
  $bytes=$readFile('/var/www/html/storage/app/applications/'.$a->uuid.'/'.$cap['artifactFile']);
  if(!is_string($bytes)||strlen($bytes)>131072||hash('sha256',$bytes)!==$cap['artifactDigest'])throw new Exception('phase-artifact');
+ if($cap['phase']==='rollback'&&$readFile('/var/www/html/storage/app/applications/'.$a->uuid.'/'.$cap['artifactFile'].'.sha256')!==$cap['artifactDigest'].'  /artifacts/'.$cap['artifactFile']."\n")throw new Exception('phase-checksum');
  $doc=json_decode($bytes,true,32,JSON_THROW_ON_ERROR);$services=$doc['services']??null;
  if(!is_array($services)||count($services)!==count($cap['services']))throw new Exception('phase-services');
  $ids=trim($run('docker container ls -a --no-trunc --filter '.escapeshellarg('label=com.docker.compose.project='.$a->uuid).' --format '.escapeshellarg('{{.ID}}')));

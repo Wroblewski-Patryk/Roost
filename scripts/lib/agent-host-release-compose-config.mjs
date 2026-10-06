@@ -39,8 +39,8 @@ function roost_compose_config_qualify($a,$p,$readSource,$validate,$invariants){
  if(!preg_match('/^[a-f0-9]{40}$/',$p['fields']['git_commit_sha']))throw new Exception('commit');
  foreach(['docker_compose_custom_build_command'=>'buildCommandDigest','docker_compose_custom_start_command'=>'startCommandDigest'] as $field=>$digest)if(!is_string($p['fields'][$field])||strlen($p['fields'][$field])<1||strlen($p['fields'][$field])>32768||hash('sha256',$p['fields'][$field])!==$p[$digest])throw new Exception('command');
  $failed=$validate($p['fields']);ksort($failed);
- $expected=['docker_compose_custom_build_command','docker_compose_custom_start_command'];if(array_keys($failed)!==$expected)throw new Exception('validation');
- foreach($failed as $field=>$reasons){$codes=array_keys($reasons);sort($codes);$allowed=strlen($p['fields'][$field])>1000?['Max','Regex']:['Regex'];if($codes!==$allowed)throw new Exception('validation');}
+ $expected=array_values(array_filter(['docker_compose_custom_build_command','docker_compose_custom_start_command'],fn($field)=>strlen($p['fields'][$field])>1000));if(count($expected)===0||array_keys($failed)!==$expected)throw new Exception('validation');
+ foreach($failed as $field=>$reasons){$codes=array_keys($reasons);sort($codes);if($codes!==['Max'])throw new Exception('validation');}
  return ['validationRejected'=>true,'rejectedFields'=>$expected];
 }
 function roost_compose_config_cas($p,$readSource,$validate,$invariants,$transaction,$loadLocked){
@@ -67,7 +67,8 @@ export async function configureComposeWithQualifiedModelCas({policy,scope,readAp
  await atStage('pre_effect_before_patch',beforeEffect);try{await atStage('patch',()=>patchApplication(desired));return {route:'normal_https'};}catch(error){if(!isExplicitConfigurationValidationRejection(error))throw error;}
  const unchanged=await atStage('unchanged_get',readApplication);if(unchanged.uuid!==p.targetId||!same(composeConfigurationFields(unchanged),expectedFields))fail('release_compose_controller_result_uncertain');
  const payload={operation:'qualify',targetId:p.targetId,composePath:p.composePath,repositoryPath:scope.repositoryPath,branch:scope.branch,expectedFields,fields:desired,sourcePins:p.sourcePins,settingsInvariantDigest:p.settingsInvariantDigest,runtimeInvariantDigest:p.runtimeInvariantDigest,buildCommandDigest:hash(commands.build),startCommandDigest:hash(commands.start)};
- const qualification=await atStage('qualification_read',()=>php(composeConfigurationProductionPhp,payload));if(qualification?.validationRejected!==true||!same(qualification.rejectedFields,['docker_compose_custom_build_command','docker_compose_custom_start_command']))fail('release_compose_configuration_identity_invalid');
+ const expectedRejected=fields.slice(1).filter(field=>Buffer.byteLength(desired[field])>1000);
+ const qualification=await atStage('qualification_read',()=>php(composeConfigurationProductionPhp,payload));if(!expectedRejected.length||qualification?.validationRejected!==true||!same(qualification.rejectedFields,expectedRejected))fail('release_compose_configuration_identity_invalid');
  await atStage('pre_effect_before_apply',beforeEffect);let proof;try{proof=await atStage('apply',()=>php(composeConfigurationProductionPhp,{...payload,operation:'apply'}));}catch(error){fail('release_compose_controller_result_uncertain',error);}
  if(proof?.applied!==true||proof.targetId!==p.targetId)fail('release_compose_controller_result_uncertain');const after=await atStage('final_get',readApplication);if(after.uuid!==p.targetId||!same(composeConfigurationFields(after),desired))fail('release_compose_controller_result_uncertain');return {route:'qualified_installed_model_cas',validationRulesChanged:false};
 }

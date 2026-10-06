@@ -182,11 +182,20 @@ const composeQueueAbsenceBaselineAdoptionSchema=z.object({schemaVersion:z.litera
  releaseId:id,closureId:id,closureDigest:hash,failedOperationId:id,failedOutcomeId:id,failedEvidenceDigest:hash,targetId:text,
  previousManifestDigest:hash,previousRendererDigest:hash,newRendererDigest:hash,previousRollbackConfigurationDigest:hash,
  retainedServicesDigest:hash}).strict();
+// A terminal queue failure is not queue absence or a successful rollback.
+// This sibling admission retains those failures and seals only the repaired
+// controller projection, while data/source/service policy remains unchanged.
+const composeRetainedBaselineAdoptionSchema=composeQueueAbsenceBaselineAdoptionSchema.extend({
+ schemaVersion:z.literal('roost-compose-retained-baseline-adoption-v1'),
+ candidateControllerPolicy:compose.composeControllerPolicySchema,
+ rollbackControllerPolicy:compose.composeControllerPolicySchema,
+ candidateSettingsDigest:hash,candidateRuntimePolicyDigest:hash,
+ rollbackSettingsDigest:hash,rollbackRuntimePolicyDigest:hash}).strict();
 const baselineRevalidationSchema=baselineRevalidation.createBaselineRevalidationSchema(sourceSetArtifact.extend({healthDigest:hash,dataDigest:hash}).strict());
 // Git publication may advance from a different exact main than the deployed rollback baseline.
 const gitPublicationBaseSchema=z.object({commit:sha,tree:sha}).strict();
 const releaseGitPublicationBase=s=>s.gitPublicationBase??{commit:s.baseCommit,tree:s.baseTree};
-const createReleaseSchema=z.object({requestId:id,taskId:id,applicationId:id,hostId:id,releaseExecutionId:id,releaserAgentId:id,releaserCredentialId:id,credentialVersion:z.number().int().positive(),reviewId:id,materialVersion:hash,commit:sha,candidateTree:sha,baseCommit:sha,baseTree:sha,releaserRevision:z.string().datetime(),expiresAt:releaseExpirySchema,manifest:manifestSchema,manifestDigest:hash,predecessor:predecessorSchema.optional(),baselineRestart:baselineRestartSchema.optional(),baselineAdoption:composeQueueAbsenceBaselineAdoptionSchema.optional(),baselineRevalidation:baselineRevalidationSchema.optional(),gitPublicationBase:gitPublicationBaseSchema.optional()}).strict().superRefine((s,c)=>{
+const createReleaseSchema=z.object({requestId:id,taskId:id,applicationId:id,hostId:id,releaseExecutionId:id,releaserAgentId:id,releaserCredentialId:id,credentialVersion:z.number().int().positive(),reviewId:id,materialVersion:hash,commit:sha,candidateTree:sha,baseCommit:sha,baseTree:sha,releaserRevision:z.string().datetime(),expiresAt:releaseExpirySchema,manifest:manifestSchema,manifestDigest:hash,predecessor:predecessorSchema.optional(),baselineRestart:baselineRestartSchema.optional(),baselineAdoption:z.union([composeQueueAbsenceBaselineAdoptionSchema,composeRetainedBaselineAdoptionSchema]).optional(),baselineRevalidation:baselineRevalidationSchema.optional(),gitPublicationBase:gitPublicationBaseSchema.optional()}).strict().superRefine((s,c)=>{
  if(s.gitPublicationBase&&(!isComposeManifest(s.manifest)||s.predecessor||s.baselineRestart||s.baselineAdoption||s.gitPublicationBase.commit===s.commit))c.addIssue({code:'custom',message:'release_git_publication_base_scope_invalid'});
  if(isReleaseSetManifest(s.manifest)&&(s.manifest.deployment.artifactSetDigest!==sourceArtifactDigest(s.manifest,s)||s.manifest.baseline.commit!==s.baseCommit))c.addIssue({code:'custom',message:'release_source_set_mismatch'});
  if(isComposeManifest(s.manifest)&&s.manifest.deployment.targets.some(t=>t.configuration.gitCommit!==s.commit||t.baseline.tree!==s.baseTree))c.addIssue({code:'custom',message:'release_compose_source_changed'});
@@ -280,13 +289,17 @@ const composeQueueAbsenceRevalidationSchema=z.object({schemaVersion:z.literal('r
  configuration:compose.composeConfigurationSchema,services:z.array(compose.composeRuntimeServiceSchema).min(2).max(12),
  queues:z.array(z.object({operationId:id,targetId:text,deploymentId:text,queue:z.null()}).strict()).length(2),
  baseline:configAbsenceClosureBaselineSchema,revalidationDigest:hash}).strict();
-const closeFailedReleaseSchema=z.object({requestId:id,expectedVersion:hash,failedOperationId:id,consentDigest:hash,evidence:evidenceSchema,nativeClosure:releaseNativeClosureSchema.optional(),absenceRevalidation:z.union([configAbsenceRevalidationSchema,composeQueueAbsenceRevalidationSchema]).optional()}).strict();
+const composeRetainedBaselineRevalidationSchema=composeQueueAbsenceRevalidationSchema.extend({
+ schemaVersion:z.literal('roost-compose-retained-baseline-closure-revalidation-v1'),
+ baseline:configAbsenceClosureBaselineSchema.extend({noCandidateQueue:z.literal(false),candidateQueueCount:z.literal(1)}).strict(),
+ queues:z.array(z.object({operationId:id,targetId:text,deploymentId:text,queue:composeRecoverySchema.shape.queue.unwrap()}).strict()).length(2)}).strict();
+const closeFailedReleaseSchema=z.object({requestId:id,expectedVersion:hash,failedOperationId:id,consentDigest:hash,evidence:evidenceSchema,nativeClosure:releaseNativeClosureSchema.optional(),absenceRevalidation:z.union([configAbsenceRevalidationSchema,composeQueueAbsenceRevalidationSchema,composeRetainedBaselineRevalidationSchema]).optional()}).strict();
 const authorizeReconciliationSchema=z.object({requestId:id,expectedVersion:hash,credentialId:id,credentialVersion:z.number().int().positive(),operationIds:z.array(id).min(1).max(30),expiresAt:releaseExpirySchema}).strict();
 const publishedGitBasisSchema=z.object({schemaVersion:z.literal('roost-release-published-git-v1'),releaseId:id,expectedVersion:hash,
  closureId:id,closureDigest:hash,pushOperationId:id,prOperationId:id,reviewOperationId:id,mergeOperationId:id,
- baselineDeploymentIds:z.array(deploymentIdentity).max(6),basisKind:z.enum(['compose_config_absence','compose_queue_absence']).optional(),composeEvidenceDigest:hash.optional(),baselineAdoptionDigest:hash.optional()}).strict().superRefine((b,c)=>{
+ baselineDeploymentIds:z.array(deploymentIdentity).max(6),basisKind:z.enum(['compose_config_absence','compose_queue_absence','compose_retained_baseline']).optional(),composeEvidenceDigest:hash.optional(),baselineAdoptionDigest:hash.optional()}).strict().superRefine((b,c)=>{
  if(b.basisKind!==undefined?b.baselineDeploymentIds.length!==0||!b.composeEvidenceDigest:b.baselineDeploymentIds.length===0||b.composeEvidenceDigest!==undefined)c.addIssue({code:'custom',message:'published_git_basis_kind_invalid'});
- if(b.basisKind==='compose_queue_absence'?!b.baselineAdoptionDigest:b.baselineAdoptionDigest!==undefined)c.addIssue({code:'custom',message:'published_git_basis_adoption_invalid'});
+ if(['compose_queue_absence','compose_retained_baseline'].includes(b.basisKind)?!b.baselineAdoptionDigest:b.baselineAdoptionDigest!==undefined)c.addIssue({code:'custom',message:'published_git_basis_adoption_invalid'});
 });
 const releaseHasPublishedGit=s=>{
  const parsed=publishedGitBasisSchema.safeParse(s?.publishedGitBasis), restart=baselineRestartSchema.safeParse(s?.baselineRestart);
@@ -295,8 +308,9 @@ const releaseHasPublishedGit=s=>{
  if(isComposeManifest(s.manifest)){
   if(b.releaseId!==r.releaseId||b.expectedVersion!==r.expectedVersion||b.closureId!==r.closureId||rows.length!==0)return false;
   if(b.basisKind==='compose_config_absence')return s.baselineAdoption===undefined;
-  const adoption=composeQueueAbsenceBaselineAdoptionSchema.safeParse(s.baselineAdoption);
-  return b.basisKind==='compose_queue_absence'&&adoption.success&&s.baselineRevalidation!==undefined
+  const retained=b.basisKind==='compose_retained_baseline';
+  const adoption=(retained?composeRetainedBaselineAdoptionSchema:composeQueueAbsenceBaselineAdoptionSchema).safeParse(s.baselineAdoption);
+  return (b.basisKind==='compose_queue_absence'||retained)&&adoption.success&&s.baselineRevalidation!==undefined
    &&!baselineRevalidation.baselineRevalidationBindingError(s,baselineRevalidationSchema,releaseDigest)
    &&adoption.data.releaseId===r.releaseId&&adoption.data.closureId===r.closureId&&adoption.data.closureDigest===b.closureDigest
    &&adoption.data.failedEvidenceDigest===b.composeEvidenceDigest&&releaseDigest(adoption.data)===b.baselineAdoptionDigest
@@ -392,6 +406,7 @@ const composeConfigAbsenceEvidenceError=(s,e,operation)=>{
  }catch{return 'release_compose_config_absence_unproven';}
 };
 const releaseConfigAbsenceRevalidationBindingError=(snapshot,input)=>{
+ if(input.absenceRevalidation?.schemaVersion==='roost-compose-retained-baseline-closure-revalidation-v1')return releaseComposeRetainedBaselineRevalidationBindingError(snapshot,input);
  if(input.absenceRevalidation?.schemaVersion==='roost-compose-queue-absence-closure-revalidation-v1')return releaseComposeQueueAbsenceRevalidationBindingError(snapshot,input);
  if(input.absenceRevalidation===undefined)return null;
  try {
@@ -410,6 +425,7 @@ const releaseConfigAbsenceRevalidationBindingError=(snapshot,input)=>{
  }catch{return 'release_config_absence_revalidation_invalid';}
 };
 const releaseConfigAbsenceRevalidationError=(snapshot,input,now)=>{
+ if(input.absenceRevalidation?.schemaVersion==='roost-compose-retained-baseline-closure-revalidation-v1')return releaseComposeRetainedBaselineRevalidationError(snapshot,input,now);
  if(input.absenceRevalidation?.schemaVersion==='roost-compose-queue-absence-closure-revalidation-v1')return releaseComposeQueueAbsenceRevalidationError(snapshot,input,now);
  const binding=releaseConfigAbsenceRevalidationBindingError(snapshot,input);if(binding||input.absenceRevalidation===undefined)return binding;
  const a=input.absenceRevalidation,error=baselineRevalidation.baselineRevalidationError({...snapshot,baselineRevalidation:a.baseline},configAbsenceClosureBaselineSchema,releaseDigest,now);
@@ -450,16 +466,18 @@ const releaseComposeQueueAbsenceRevalidationDigest=value=>{
 };
 const releaseComposeQueueAbsenceRevalidationBindings=snapshot=>baselineRevalidation.baselineRevalidationBindings(
  {...snapshot,baselineRestart:snapshot.baselineRestart??null},releaseDigest);
-const releaseComposeQueueAbsenceRevalidationBindingError=(snapshot,input)=>{
+const releaseComposeQueueAbsenceRevalidationBindingError=(snapshot,input,retained=false)=>{
  try {
   const a=input.absenceRevalidation,e=input.evidence,n=input.nativeClosure,m=snapshot.manifest,t=m.deployment.targets[0];
-  if(!composeQueueAbsenceRevalidationSchema.safeParse(a).success||!releaseNativeClosureSchema.safeParse(n).success
+  if(!(retained?composeRetainedBaselineRevalidationSchema:composeQueueAbsenceRevalidationSchema).safeParse(a).success||!releaseNativeClosureSchema.safeParse(n).success
    ||!isComposeManifest(m)||!manifestSchema.safeParse(m).success||!id.safeParse(snapshot.releaseId).success
    ||a.releaseId!==snapshot.releaseId||n.releaseId!==snapshot.releaseId||n.agentHostId!==snapshot.hostId
    ||n.operationId!==input.failedOperationId||n.evidenceDigest!==releaseDigest(e)||a.nativeClosureDigest!==releaseDigest(n)
    ||a.rollbackEvidenceDigest!==releaseDigest(e)||a.revalidationDigest!==releaseComposeQueueAbsenceRevalidationDigest(a))return 'release_compose_queue_absence_revalidation_invalid';
   const candidate=a.candidateEvidence.composeRecovery,rollback=e.composeRecovery;
-  if(!candidate||!rollback||candidate.kind!=='queue_absent'||rollback.kind!=='queue_absent'||candidate.operationId===rollback.operationId
+  const kind=retained?'queue_failed':'queue_absent';
+  if(!candidate||!rollback||candidate.kind!==kind||rollback.kind!==kind||candidate.operationId===rollback.operationId
+   ||retained&&[candidate,rollback].some(r=>r.queue?.status!=='failed'||r.queue.finishedAt===null)
    ||rollback.operationId!==input.failedOperationId
    ||composeRecoveryEvidenceError(snapshot,a.candidateEvidence,{id:candidate.operationId,operation:'deploy',createdAt:candidate.since,intent:{parameters:{targetId:t.targetId}}})
    ||composeRecoveryEvidenceError(snapshot,e,{id:rollback.operationId,operation:'rollback',createdAt:rollback.since,intent:{parameters:{targetId:t.targetId}}}))return 'release_compose_queue_absence_revalidation_invalid';
@@ -471,7 +489,7 @@ const releaseComposeQueueAbsenceRevalidationBindingError=(snapshot,input)=>{
    ||releaseDigest(a.configuration)!==releaseDigest(rollback.configuration)
    ||compose.composeConfigurationDigest(a.configuration)!==t.rollbackConfigDigest)return 'release_compose_queue_absence_revalidation_invalid';
   compose.qualifyComposeRetainedBaseline({configuration:t.baseline.configuration,images:t.baseline.images,services:a.services,baselineServices:rollback.baselineServices});
-  const expectedQueues=[candidate,rollback].map(r=>({operationId:r.operationId,targetId:r.targetId,deploymentId:r.deploymentId,queue:null}));
+  const expectedQueues=[candidate,rollback].map(r=>({operationId:r.operationId,targetId:r.targetId,deploymentId:r.deploymentId,queue:retained?r.queue:null}));
   if(releaseDigest(a.queues)!==releaseDigest(expectedQueues))return 'release_compose_queue_absence_revalidation_invalid';
   const expected=releaseComposeQueueAbsenceRevalidationBindings(snapshot),b=a.baseline;
   if(snapshot.manifestDigest!==expected.manifestDigest||Object.entries(expected).some(([key,value])=>releaseDigest(b[key])!==releaseDigest(value))
@@ -482,8 +500,9 @@ const releaseComposeQueueAbsenceRevalidationBindingError=(snapshot,input)=>{
   return null;
  }catch{return 'release_compose_queue_absence_revalidation_invalid';}
 };
-const releaseComposeQueueAbsenceRevalidationError=(snapshot,input,now)=>{
- const error=releaseComposeQueueAbsenceRevalidationBindingError(snapshot,input);if(error)return error;
+const releaseComposeRetainedBaselineRevalidationBindingError=(snapshot,input)=>releaseComposeQueueAbsenceRevalidationBindingError(snapshot,input,true);
+const releaseComposeQueueAbsenceRevalidationError=(snapshot,input,now,retained=false)=>{
+ const error=releaseComposeQueueAbsenceRevalidationBindingError(snapshot,input,retained);if(error)return error;
  const b=input.absenceRevalidation.baseline,at=now instanceof Date?now.getTime():Number(now);
  if(!Number.isFinite(at)||[b.observedAt,...baselineRevalidation.readKeys.map(key=>b.actualReadTimes[key])].some(time=>{
   const age=at-Date.parse(time);return !Number.isFinite(age)||age<0||age>300000;
@@ -491,6 +510,7 @@ const releaseComposeQueueAbsenceRevalidationError=(snapshot,input,now)=>{
  const native=Date.parse(input.nativeClosure.observedAt);
  return native>at+60000||at-native>300000?'release_native_closure_stale':null;
 };
+const releaseComposeRetainedBaselineRevalidationError=(snapshot,input,now)=>releaseComposeQueueAbsenceRevalidationError(snapshot,input,now,true);
 const postResult=o=>o?.status==='reconciled'?(o.reconciledStatus??o.reconciled_status):o?.status;
 const latestPostObservation=(s,journal)=>{
  const observations=journal.filter(j=>j.operation==='observe'),last=observations.at(-1);
@@ -610,6 +630,12 @@ module.exports.releaseComposeQueueAbsenceRevalidationDigest=releaseComposeQueueA
 module.exports.releaseComposeQueueAbsenceRevalidationBindingError=releaseComposeQueueAbsenceRevalidationBindingError;
 module.exports.releaseComposeQueueAbsenceRevalidationError=releaseComposeQueueAbsenceRevalidationError;
 module.exports.releaseComposeQueueAbsenceBaselineAdoptionSchema=composeQueueAbsenceBaselineAdoptionSchema;
+module.exports.releaseComposeRetainedBaselineAdoptionSchema=composeRetainedBaselineAdoptionSchema;
+module.exports.releaseComposeRetainedBaselineRevalidationSchema=composeRetainedBaselineRevalidationSchema;
+module.exports.releaseComposeRetainedBaselineRevalidationBindings=releaseComposeQueueAbsenceRevalidationBindings;
+module.exports.releaseComposeRetainedBaselineRevalidationDigest=releaseComposeQueueAbsenceRevalidationDigest;
+module.exports.releaseComposeRetainedBaselineRevalidationBindingError=releaseComposeRetainedBaselineRevalidationBindingError;
+module.exports.releaseComposeRetainedBaselineRevalidationError=releaseComposeRetainedBaselineRevalidationError;
 // Reconstruct every permitted byte from the authenticated previous snapshot.
 // Aggregate artifact digests include configuration, so they are derived again;
 // physical images, source commits and sealed controller command hashes stay put.
@@ -656,6 +682,42 @@ module.exports.releaseComposeQueueAbsenceAdoptionManifestMatches=(snapshot,candi
   const expected=releaseComposeQueueAbsenceAdoptionManifest(snapshot,adoption.newRendererDigest,candidate.baseline.observedAt,candidate.backup);
   return expected!==null&&releaseDigest(expected)===releaseDigest(candidate);
  }catch{return false;}
+};
+// Deterministic projected baseline: the closure retains the actual old rollback
+// controller separately. This projection does not assert that the new renderer
+// or a rollback ever ran; ordinary deployment must still prove every effect.
+const releaseComposeRetainedBaselineAdoptionManifest=(snapshot,adoption,observedAt,backup=snapshot.manifest.backup)=>{
+ try {
+  const a=composeRetainedBaselineAdoptionSchema.parse(adoption),old=snapshot.manifest,t=old.deployment.targets[0];
+  if(a.previousManifestDigest!==snapshot.manifestDigest||a.previousManifestDigest!==releaseDigest(old)
+   ||a.targetId!==t.targetId||a.previousRendererDigest!==t.baseline.controllerInvariants.rendererDigest
+   ||a.previousRollbackConfigurationDigest!==t.rollbackConfigDigest)return null;
+  for(const [policy,phase]of [[a.candidateControllerPolicy,'candidate'],[a.rollbackControllerPolicy,'rollback']])
+   if(policy.phase!==phase||policy.rendererDigest!==a.newRendererDigest
+    ||['settingsInvariantDigest','runtimeInvariantDigest'].some(k=>policy[k]!==t.baseline.controllerInvariants[k]))return null;
+  const m=releaseComposeQueueAbsenceAdoptionManifest(snapshot,a.newRendererDigest,observedAt,backup);if(!m)return null;
+  const target=m.deployment.targets[0];
+  target.configuration.controllerPolicy=structuredClone(a.candidateControllerPolicy);
+  target.configuration.settingsDigest=a.candidateSettingsDigest;target.configuration.runtimePolicyDigest=a.candidateRuntimePolicyDigest;
+  target.rollbackConfiguration.controllerPolicy=structuredClone(a.rollbackControllerPolicy);
+  target.rollbackConfiguration.settingsDigest=a.rollbackSettingsDigest;target.rollbackConfiguration.runtimePolicyDigest=a.rollbackRuntimePolicyDigest;
+  // Keep the observed old rollback command/settings preimage in the baseline.
+  // The recipe above only requalifies its local renderer descriptor and phase;
+  // repaired candidate/rollback commands have not yet been installed.
+  target.configDigest=compose.composeConfigurationDigest(target.configuration);
+  target.rollbackConfigDigest=compose.composeConfigurationDigest(target.rollbackConfiguration);
+  target.baseline.configDigest=compose.composeConfigurationDigest(target.baseline.configuration);
+  for(const [key,digest]of [['deployment',target.configDigest],['rollback',target.rollbackConfigDigest],['baseline',target.baseline.configDigest]])
+   m[key].configDigest=releaseDigest([{targetId:target.targetId,configDigest:digest}]);
+  m.deployment.artifactSetDigest=sourceArtifactDigest(m,snapshot);m.rollback.artifactSetDigest=sourceArtifactDigest(m,snapshot,true);
+  m.baseline.artifactSetDigest=sourceArtifactDigest(m,snapshot,'baseline');
+  return manifestSchema.safeParse(m).success?m:null;
+ }catch{return null;}
+};
+module.exports.releaseComposeRetainedBaselineAdoptionManifest=releaseComposeRetainedBaselineAdoptionManifest;
+module.exports.releaseComposeRetainedBaselineAdoptionManifestMatches=(snapshot,candidate,adoption)=>{
+ const expected=releaseComposeRetainedBaselineAdoptionManifest(snapshot,adoption,candidate?.baseline?.observedAt,candidate?.backup);
+ return expected!==null&&releaseDigest(expected)===releaseDigest(candidate);
 };
 // A new encrypted backup/restore does not change the already published source.
 // All runtime, data, rollback and effect policy stays identical. Fresh admission

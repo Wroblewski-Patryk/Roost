@@ -1531,6 +1531,35 @@ Actual Worker push, PR 3 and review succeeded. Immediate merge readback was
 uncertain; later normal GitHub GET confirmed exact candidate SHA/tree and merged
 PR. Signed Writer reclaim and normal observation-only reconciliation settled
 operation `e29f9d65` without replaying merge. Configuration `3ad349c7` passed;
-deployment `d77db144` is in progress. Retained images, data, verified backup and
-cadence holds remain protected. Production observation, cleanup/resume, signed
-final closure and independent postrelease acceptance are still required.
+candidate queue `r0e25a42b35dbf63acefe4c0` failed before build at 13:34:55 UTC.
+Rollback configuration succeeded; queue `rbc8516e34a360ae1a48ab86` also failed
+before build at 13:41:34 UTC. Coolify's installed shell-command validator rejects
+shell substitution in the old renderer. The original healthy runtime, images,
+mounts, schema and data remain unchanged; both cadences remain paused. These are
+terminal failed queues, not absent queues or a successful rollback.
+
+The repaired renderer uses relative paths in Coolify's actual build directory,
+Docker's conditional template as an image identity guard, and an immutable,
+path-bound checksum companion for rollback artifacts. Installed validation and
+flag/build-argument injectors accept all four rendered commands. On the VPS,
+the exact installed helper image admitted the matching image and rejected both
+a different identity and a missing image; all three transient test containers
+were removed. The configuration exception accepts only length-limit rejection;
+shell validation failures cannot enter the installed model CAS path.
+
+Additive retained-baseline recovery preserves both failures and the published
+Git lineage. Closing FAILED requires fresh nine-read parity and signed native
+process closure. Restart requires new independent review/material, execution
+and credential, and permits only sealed controller changes. Actual old rollback
+configuration is evidence of the failed attempt; the repaired controller is a
+new projection, never a claimed installed baseline. A new read-only Worker
+inspection closed seven native children and released Writer/recovery locks.
+The repair has 181 passing controller/Worker/transport checks, 98 existing
+release/absence regression checks and ten retained-baseline SQL/contract cases.
+At 14:01:54.720 UTC the new SQL qualified this actual eight-operation history
+inside a rolled-back production rehearsal; all new functions were absent after
+rollback. The closure records one real candidate queue, not absence. Its next
+baseline preserves the old installed command preimage, while repaired commands
+belong only to the planned candidate/rollback configuration. It is not yet
+deployed. Production observation, cleanup/resume, final native closure and
+independent postrelease acceptance remain required.

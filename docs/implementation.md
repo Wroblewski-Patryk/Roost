@@ -202,7 +202,7 @@ Review234dfc97/4dc1812a: historical approval.
 Pkg8ec8b319/4b9db111 installed; Audit31a929c9 signed/closed.
 Its eighteen negative findings remain. Basis0c942064 current; b2ff5d55 approved.
 Roost `a6654113` healthy; grant `ed01d66e` admitted.
-PR3/c643 Git verified; merge reconciled without replay. Config verified; deploying.
+PR3/c643 merged without replay. Both queues failed before build; baseline healthy.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

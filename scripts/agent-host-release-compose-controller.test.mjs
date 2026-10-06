@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { composePhasePolicySchema, composePhaseArtifactFile, composePhasePolicyDigest, renderComposePhaseCommands,
-  composeMountDigest, qualifyComposePhaseArtifact, composePhaseValidationPhp, composeControllerPolicyRecord } from './lib/agent-host-release-compose-controller.mjs';
+  composeMountDigest, qualifyComposePhaseArtifact, composePhaseValidationPhp, composeControllerPolicyRecord, composePhaseChecksumBytes } from './lib/agent-host-release-compose-controller.mjs';
 import { createImmutableComposeRollback, composeRollbackDocumentDigest } from './lib/agent-host-release-compose-gateway.mjs';
 
 const hash = c => c.repeat(64), sha = c => c.repeat(40), image = c => `sha256:${hash(c)}`;
@@ -38,13 +38,13 @@ function fixture() {
 test('trusted phase renders supported normal build and immutable no-build rollback commands only', () => {
   const f = fixture(), commands = renderComposePhaseCommands(f.policy), file = composePhaseArtifactFile(f.policy);
   assert.match(commands.build, /^docker cp coolify:\/var\/www\/html\/storage\/app\/applications\/fixtureapp\//);
-  assert(commands.build.includes(file)); assert.match(commands.build, /sha256sum -c -/);
+  assert(commands.build.includes(file)); assert(commands.build.includes(`sha256sum -c /artifacts/${file}.sha256`));
   assert.match(commands.build, /config --quiet$/); assert.doesNotMatch(commands.build, /\bbuild --pull\b/);
   assert.match(commands.start, /up -d --no-build --pull never app db migrate$/);
   assert(commands.start.includes('pgvector/pgvector:pg15')); assert(commands.start.includes(image('d')));
-  assert(commands.start.includes('--project-name fixtureapp --project-directory "$PWD"'));
+  assert(commands.start.includes('--project-name fixtureapp --project-directory .'));
   const candidate = renderComposePhaseCommands({ ...f.policy, phase: 'candidate', baseDirectory: '/subdirectory' });
-  assert.match(candidate.build, /build --pull$/); assert(candidate.build.includes('$PWD/subdirectory/docker-compose.coolify.yml'));
+  assert.match(candidate.build, /build --pull$/); assert(candidate.build.includes('./subdirectory/docker-compose.coolify.yml'));
   assert.match(candidate.start, /--no-build --pull never app db migrate$/); assert.doesNotMatch(candidate.start, /docker cp/);
   assert(candidate.build.indexOf('pgvector/pgvector:pg15') < candidate.build.indexOf('build --pull'));
 });
@@ -158,14 +158,16 @@ const php = process.env.ROOST_TEST_PHP_BINARY ?? 'php';
 let phpAvailable = false; try { execFileSync(php, ['-v'], { stdio: 'ignore', timeout: 5000 }); phpAvailable = true; } catch {}
 test('identical fixed PHP rechecks installed command/file/code/images/mounts using bounded Docker descriptors', { skip: !phpAvailable }, () => {
   const f = fixture(), cap = qualifyComposePhaseArtifact(f.preflight), commands = renderComposePhaseCommands(f.policy);
-  const program = String.raw`<?php
+const program = String.raw`<?php
+class FixtureValidationPatterns {const SHELL_SAFE_COMMAND_PATTERN='/^[a-zA-Z0-9 \t._\-\/=:@,+\[\]{}#%^~&"\x27]+$/';}class_alias('FixtureValidationPatterns','App\\Support\\ValidationPatterns');
 ${composePhaseValidationPhp}
 $input=json_decode(base64_decode('__INPUT__'),true);$controls=json_decode(base64_decode('__CONTROLS__'),true);$cap=$input['cap'];$calls=[];
 $a=(object)['uuid'=>$cap['targetId'],'docker_compose_custom_build_command'=>$input['commands']['build'],
  'docker_compose_custom_start_command'=>$input['commands']['start'],'settings'=>(object)['is_raw_compose_deployment_enabled'=>false,
  'is_preserve_repository_enabled'=>false,'is_build_server_enabled'=>false]];
 if(isset($controls['command']))$a->docker_compose_custom_start_command='other';if(isset($controls['mode']))$a->settings->is_raw_compose_deployment_enabled=true;
-$readFile=fn($path)=>isset($controls['file'])?'changed':$input['artifact'];
+if(isset($controls['invalid_shell'])){$a->docker_compose_custom_start_command='docker compose --env-file "$PWD/.env" up -d';$cap['startCommandDigest']=hash('sha256',$a->docker_compose_custom_start_command);}
+$readFile=fn($path)=>isset($controls['file'])?'changed':(str_ends_with($path,'.sha256')?(isset($controls['checksum'])?'changed':$cap['artifactDigest'].'  /artifacts/'.$cap['artifactFile']."\n"):$input['artifact']);
 $readSource=fn($path)=>isset($controls['source'])?str_repeat('0',64):(str_contains($path,'docker.php')?$cap['sourcePins']['dockerHelper']:$cap['sourcePins']['applicationsController']);
 $run=function($command)use(&$calls,$controls,$input,$cap){$calls[]=$command;
  if(str_starts_with($command,'docker container ls')&&isset($controls['missingMigrator']))return str_repeat('1',64)."\n".str_repeat('3',64);
@@ -185,7 +187,7 @@ catch(Throwable $e){echo json_encode(['ok'=>false,'reason'=>$e->getMessage(),'ca
       .replace('__CONTROLS__', Buffer.from(JSON.stringify(controls)).toString('base64')) }));
   const qualified = run(); assert.equal(qualified.ok, true, JSON.stringify(qualified)); assert(qualified.calls.length >= 7);
   assert(qualified.calls.every(command => /^docker (?:container (?:ls|inspect)|image inspect) /.test(command)));
-  for (const controls of [{ command: true }, { mode: true }, { file: true }, { source: true }, { missing: true },
+  for (const controls of [{ command: true }, { invalid_shell: true }, { checksum: true }, { mode: true }, { file: true }, { source: true }, { missing: true },
     { duplicate: true }, { mount: true }, { database: true }, { image: true }, { invariant: true }]) assert.equal(run(controls).ok, false);
   const candidate = structuredClone(f.preflight); candidate.artifactBytes = Buffer.from(candidate.artifactBytes);
   candidate.policy.phase = 'candidate'; const doc = JSON.parse(candidate.artifactBytes.toString());

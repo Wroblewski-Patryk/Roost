@@ -17,14 +17,14 @@ import { persistReleaseWorkerDiagnostic } from './lib/agent-host-release-worker.
 const h=c=>c.repeat(64),sha=c=>c.repeat(40),token='fictional-private-token';
 const url='https://release.example.test/api/v1/applications/fixtureapp';
 const stages=['before_get','patch','unchanged_get','qualification_read','apply','final_get','pre_effect_before_patch','pre_effect_before_apply'];
-function fixture(){
+function fixture(phase='rollback'){
  const policy={schemaVersion:'roost-compose-phase-policy-v1',releaseId:'12345678-1234-1234-1234-123456789abc',
-  policyId:'22345678-1234-1234-1234-123456789abc',targetId:'fixtureapp',phase:'candidate',commit:sha('c'),tree:sha('e'),
+  policyId:'22345678-1234-1234-1234-123456789abc',targetId:'fixtureapp',phase,commit:sha('c'),tree:sha('e'),
   composePath:'/compose.yml',baseDirectory:'/',rawCompose:false,preserveRepository:false,useBuildServer:false,
   originalConfigDigest:h('1'),phaseConfigDigest:h('2'),artifactDigest:h('3'),rendererDigest:h('f'),
   settingsInvariantDigest:h('a'),runtimeInvariantDigest:h('b'),
   services:[['app','app','built'],['migrate','migration','built'],['db','database','image']].map(([name,role,source])=>
-   ({name,role,source,imageDigest:'sha256:'+h('a'),imageRef:source==='image'?'postgres:15':'fixture/'+name,mountDigest:h('b')})),
+   ({name,role,source,imageDigest:'sha256:'+h(name==='app'?'a':name==='migrate'?'b':'d'),imageRef:source==='image'?'postgres:15':'fixture/'+name,mountDigest:h('b')})),
   sourcePins:{queueHelper:h('3'),deploymentJob:h('4'),applicationModel:h('5'),composeParser:h('6'),dockerHelper:h('7'),
    applicationsController:h('8'),controllerRenderer:h('f')}};
  const commands=renderComposePhaseCommands(policy),before={uuid:'fixtureapp',git_commit_sha:sha('0'),

@@ -10,7 +10,7 @@ import { physicalIdentity } from './agent-host-native-footprint.mjs';
 import { runReleaseNativeProcess, hasReleaseProcessScope, minimalReleaseEnvironment } from './agent-host-release-process.mjs';
 import { createComposeStateInspector } from './agent-host-release-compose-inspector.mjs';
 import { createComposeReleaseGateway, createFixedComposeQueueTransport } from './agent-host-release-compose-gateway.mjs';
-import { composePhasePolicySchema, composePhaseArtifactFile, renderComposePhaseCommands,
+import { composePhasePolicySchema, composePhaseArtifactFile, composePhaseChecksumBytes, renderComposePhaseCommands,
   composeControllerPolicyRecord, qualifyComposePhaseArtifact } from './agent-host-release-compose-controller.mjs';
 import { createCoolifyComposeAdapter } from './agent-host-release-coolify-compose.mjs';
 import { composeConfigurationDigest, qualifyComposeRuntime, qualifyComposeRetainedBaseline } from './agent-host-release-compose-state.mjs';
@@ -48,11 +48,12 @@ echo json_encode($q?['targetId'=>$a->uuid,'deploymentId'=>$q->deployment_uuid,'c
 // Only a content-addressed file owned by this installation may be staged. It is
 // never logged, and changing an existing artifact is refused before mutation.
 const stagePhp=String.raw`$a=App\Models\Application::where('uuid',$p['targetId'])->firstOrFail();
-if(!preg_match('/^roost-release-[a-f0-9-]{36}-(candidate|rollback)-[a-f0-9]{64}\.json$/',$p['name']))throw new Exception('scope');
+if(!preg_match('/^roost-release-[a-f0-9-]{36}-(candidate|rollback)-[a-f0-9]{64}\.json(?:\.sha256)?$/',$p['name']))throw new Exception('scope');
 $dir='/var/www/html/storage/app/applications/'.$a->uuid;$target=$dir.'/'.$p['name'];
 if(!is_dir($dir)||is_link($dir)||is_link($target)||realpath($dir)!==$dir)throw new Exception('path');
 $bytes=base64_decode($p['bytes'],true);if(!is_string($bytes)||strlen($bytes)>131072||hash('sha256',$bytes)!==$p['sha256'])throw new Exception('content');
-json_decode($bytes,true,32,JSON_THROW_ON_ERROR);
+if(str_ends_with($p['name'],'.sha256')){$artifact=substr($p['name'],0,-7);if(!preg_match('/-([a-f0-9]{64})\.json$/',$artifact,$parts)||$bytes!==$parts[1].'  /artifacts/'.$artifact."\n")throw new Exception('checksum');}
+else json_decode($bytes,true,32,JSON_THROW_ON_ERROR);
 if(file_exists($target)){if(hash_file('sha256',$target)!==$p['sha256'])throw new Exception('changed');}
 else{$f=fopen($target,'x');if(!$f)throw new Exception('create');if(fwrite($f,$bytes)!==strlen($bytes)){fclose($f);throw new Exception('write');}fflush($f);fclose($f);chmod($target,0600);}
 if(is_link($target)||hash_file('sha256',$target)!==$p['sha256'])throw new Exception('readback');echo '{"staged":true}';`;
@@ -252,6 +253,11 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   const p=policies[mode];check((await php(stagePhp,{targetId:t.targetId,name:composePhaseArtifactFile(p),bytes:artifacts[mode].toString('base64'),sha256:p.artifactDigest})).staged===true,'artifact_stage_unproven');
   check((await checkIntent({rollback:mode==='rollback'},true)).id===intent.id,'phase_intent_changed');
   check(p.commit===commit,'phase_binding_changed');
+  if(mode==='rollback'){
+   const checksum=composePhaseChecksumBytes(p);
+   check((await php(stagePhp,{targetId:t.targetId,name:composePhaseArtifactFile(p)+'.sha256',bytes:checksum.toString('base64'),sha256:hash(checksum)})).staged===true,'artifact_stage_unproven');
+   check((await checkIntent({rollback:true},true)).id===intent.id,'phase_intent_changed');
+  }
   const url=`${new URL(cfg.coolify.origin).origin}/api/v1/applications/${t.targetId}`;
   await configureComposeWithQualifiedModelCas({policy:p,scope:{targetId:t.targetId,repositoryPath:new URL(m.repository.url).pathname.slice(1).replace(/\.git$/,''),branch:m.repository.defaultBranch},
    readApplication:()=>httpsJson({url,method:'GET',token:coolifyCredential,certificateSha256:cfg.coolify.certificateSha256}),
