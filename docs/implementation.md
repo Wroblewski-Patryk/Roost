@@ -183,15 +183,15 @@ an immediate implementation dependency or mark it complete.
 
 ### Second-application release gate — ship the accepted bounded repair
 
-**Authorized release; production proof pending.** Preserve accepted `3cf9645e`.
+**Release incomplete.** Preserve accepted `3cf9645e`.
 `c21e0e0c`/`c82e68b3` rejections remain historical. Successor `c64378df`
-Native build/seven tests and independent review pass; release pending.
+Native build, seven tests and review pass.
 
 Restore/parity pass; writes and cadences remain held.
-Historical failures, PR 2/c82, backups, closures and negative audits remain
-in the evidence matrix. Audit `d1004c62` remained CHANGES_REQUIRED.
+Matrix retains failures, PR2/c82, backups, closures and negative audits.
+Audit `d1004c62`: CHANGES_REQUIRED.
 Grant `63750d89`: both queues ABSENT, prior services healthy, native closed.
-Two-queue: 96 API, 202 Worker and eight SQL probes pass.
+Two-queue checks: 96 API, 202 Worker, eight SQL pass.
 Roost `171a76f3` deployed; closure `4a98987c` persisted.
 Audit `ba9a2999`: CHANGES_REQUIRED; basis mapping `d7758c8c` recorded.
 Historical basis checks, input and failed review archives remain in the matrix.
@@ -201,7 +201,8 @@ Build `6c602f42`: exact SHA, 7/7, closed/restored; twelve sources unchanged.
 Review234dfc97/4dc1812a: historical approval.
 Pkg8ec8b319/4b9db111 installed; Audit31a929c9 signed/closed.
 Its eighteen negative findings remain. Basis0c942064 current; b2ff5d55 approved.
-Roost `a6654113` deployed/healthy; Git/runtime pending.
+Roost `a6654113` healthy; grant `ed01d66e` admitted.
+PR3/c643 Git verified; merge reconciled without replay. Config verified; deploying.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

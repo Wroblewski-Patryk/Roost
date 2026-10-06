@@ -1520,7 +1520,17 @@ repeating a POST. An uncertain intent remains retained for reconciliation.
 Normal reads also confirm current code approval `ab074cb6` and actual remote
 Git base `c82e68b3`, distinct from the retained deployed baseline.
 
-The application release remains incomplete: no new application push or
-deployment has occurred. Normal credential rotation and grant still require
-fresh owner authentication; a stopped Worker and retained images, data,
-verified backup and cadence holds preserve the recovery boundary.
+The application release remains incomplete. On 6 October, normal credential
+V9 was verified at 13:08:43.020 UTC and ordinary grant `ed01d66e` admitted at
+13:15:53.206 UTC for unchanged candidate `c64378df` and manifest `4b9db111`.
+The private root join preserves original observation clocks while separately
+checking current nine-read freshness; native Windows file aliases are qualified
+before launch. The private boundary checks pass 34/34.
+
+Actual Worker push, PR 3 and review succeeded. Immediate merge readback was
+uncertain; later normal GitHub GET confirmed exact candidate SHA/tree and merged
+PR. Signed Writer reclaim and normal observation-only reconciliation settled
+operation `e29f9d65` without replaying merge. Configuration `3ad349c7` passed;
+deployment `d77db144` is in progress. Retained images, data, verified backup and
+cadence holds remain protected. Production observation, cleanup/resume, signed
+final closure and independent postrelease acceptance are still required.
