@@ -1476,3 +1476,31 @@ the original journal was archived before compaction. Typed response projections
 retain identity and full-response digests without disabling the guard. Unknown
 outcomes retain their original intent and require authoritative readback before
 continuation. No duplicate scope POST, model or application effect was used.
+
+Roost commit `425dff66` was pushed to the authorized branch and main. Its single
+existing auto-deploy queue `f10x7avzh1zvfz2zfsg64o9c` finished; both health and
+build-info returned 200 with that exact SHA at 11:21:05.882 UTC on 6 October.
+The compatible verified Roost backup was retained. A transient startup 502
+stopped reviewer binding before its local intent; no Worker was launched or
+deployment repeated. After exact health recovery, binding resumed normally.
+
+Post-audit reviewer `b2ff5d55` completed at 11:24:06.292 UTC on 6 October;
+decision `ab074cb6` APPROVES exact `c64378df` on current material `caaa3182`.
+Its separate artifact evidence accepts the exact original `31a929c9` source
+and receipt while preserving CHANGES_REQUIRED and denying runtime/release
+authority. The independently authored result prose is preserved verbatim;
+the private parser accepts that inspected literal, not fuzzy readiness wording.
+Signed native admission `0ba5c487`, unchanged read-only footprints, archived
+signature pair and process absence qualified after official Stop; input was
+128882/131072 bytes. The old `4dc1812a` approval is historical after mapping.
+Shared-risk invalidation still requires same-intent audit Ready and append-only
+result-basis reconciliation before a grant. No new model audit is substituted.
+
+Fresh supplemental baseline proof is also supported for an ordinary permanent
+single-target Compose release without an invented failed predecessor. All nine
+actual reads must remain within five minutes, all parity facts true and activity
+counts zero. Commit/tree, manifest, baseline, rollback, backup and protected
+resources stay bound. The absent restart tuple is explicitly hashed as null;
+historical restart tuples keep their original digest. Mixed ancestry/restart
+paths are refused. Backup age, credential expiry, independent review and fresh
+owner authentication remain separate checks. Historical clocks are unchanged.

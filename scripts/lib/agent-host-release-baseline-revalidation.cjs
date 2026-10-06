@@ -2,6 +2,7 @@
 const {z}=require('zod');
 const readKeys=Object.freeze(['legacy','health','inventory','fingerprint','capacity','maintenance','queue','protectedImages','backup']);
 const hash=z.string().regex(/^[a-f0-9]{64}$/),sha=z.string().regex(/^[a-f0-9]{40}$/),date=z.string().datetime();
+const restartBindingSchema=z.object({releaseId:z.string().uuid(),expectedVersion:hash,closureId:z.string().uuid(),consentDigest:hash}).strict();
 const requiredParity=Object.freeze(['configurationParity','serviceIdentityParity','schemaDataSequenceCatalogParity','protectedImagesPresent','fixtureAbsent','noUnownedChanges','controlPlaneQuiescent','noCandidateQueue','normalCatalogComplete','priorReleaseClosed','databaseReadOnly','cadencesHeld','ingressOpen','workerStopped','writerLockAbsent','capacityQualified','backupPhysicalCopyVerified']);
 const zeroCounts=Object.freeze(['candidateQueueCount','activeQueueCount','activeApplicationReleaseCount','activeOtherSessions','ownedTransactions','apiWrites','modelCalls','businessWrites','providerCalls']);
 
@@ -21,14 +22,19 @@ function baselineRevalidationBindings(input,digest){
  const m=input.manifest,{observedAt:_historical,...baseline}=m.baseline,t=m.deployment.targets[0];
  return {applicationId:input.applicationId,hostId:input.hostId,targetId:t.targetId,commit:input.commit,candidateTree:input.candidateTree,baseCommit:input.baseCommit,baseTree:input.baseTree,
   manifestDigest:digest(m),baseline,baselineDigest:digest(baseline),targetBaselineDigest:digest(t.baseline),
-  protectedResourcesDigest:digest(m.cleanup.protectedResourceIds),rollbackDigest:digest(m.rollback),backupDigest:digest(m.backup),baselineRestartDigest:digest(input.baselineRestart)};
+  protectedResourcesDigest:digest(m.cleanup.protectedResourceIds),rollbackDigest:digest(m.rollback),backupDigest:digest(m.backup),baselineRestartDigest:digest(input.baselineRestart===undefined?null:input.baselineRestart)};
 }
 function baselineRevalidationBindingError(input,schema,digest){
  const v=input.baselineRevalidation,m=input.manifest;
  if(v===undefined)return null;
+ // An ordinary retained Compose release may reobserve its exact runtime without
+ // inventing a failed predecessor. Restart receipts retain their original tuple.
+ const restart=input.baselineRestart!==undefined;
+ const ordinary=!restart&&['predecessor','baselineAdoption','successorBasis','publishedGitBasis'].every(key=>input[key]===undefined);
  if(!schema.safeParse(v).success||m?.schemaVersion!=='roost-release-manifest-v2'||m.purpose!=='application_release'
   ||m.deployment?.provider!=='coolify_compose'||m.cleanup?.archiveRepository!==false||m.deployment.targets?.length!==1
-  ||!input.baselineRestart||input.predecessor)return 'release_baseline_revalidation_invalid';
+  ||(!ordinary&&(!restart||!restartBindingSchema.safeParse(input.baselineRestart).success||input.predecessor))
+  ||restart&&input.gitPublicationBase!==undefined)return 'release_baseline_revalidation_invalid';
  const expected=baselineRevalidationBindings(input,digest);
  if(input.baseCommit!==m.baseline.commit||input.baseTree!==m.deployment.targets[0].baseline.tree
   ||input.manifestDigest!==expected.manifestDigest||Object.entries(expected).some(([k,value])=>digest(v[k])!==digest(value))
