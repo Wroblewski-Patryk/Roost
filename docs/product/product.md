@@ -46,6 +46,12 @@ not authorize new product scope or change existing API/database identifiers.
   state without importing assumptions from another product, resolve or escalate
   contradictions, and carry an accepted outcome through verification. The same
   process must then work for further configured applications.
+- Roost and application delivery improve together: real, bounded application
+  work exposes gaps in context, configuration, owner experience and agent
+  execution. Each reusable gap is repaired and verified in Roost before broader
+  agent autonomy depends on it; application-specific behavior remains in its
+  own repository. Separate accountable work can improve Roost while managed
+  agents deliver application outcomes, subject to checkout and resource limits.
 - Subscription sale readiness follows only after that internal creation and
   completion system works. It is not the current Worker-completion gate.
 - Later business expansion: after the application-completion flow works, extend

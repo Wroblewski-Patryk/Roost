@@ -307,16 +307,23 @@ These are planning horizons, not additional authorized execution gates. Prepare
 concrete gates here when the preceding outcome is proven and the phase's
 business choices are available. Do not silently add them to Gate 5.
 
+After the current release, use the owner-selected application to test Roost.
+Each bounded outcome may expose a reusable gap for separate Roost repair; expand
+agent authority only after proof. The rows guide dependencies, not execution.
+
 | Horizon | Result and entry condition | Existing requirements / decisions |
 | --- | --- | --- |
-| Application completion | After the current release, take the selected app to owner-accepted readiness, then repeat with an app-specific baseline and proof. | RF-APP-001–014; private app baseline |
-| Managed local model execution | After the active Aviary release and owner-prioritized Soar completion, unless the owner explicitly reprioritizes, run an explicitly assigned real bounded Roost task through Worker -> managed Hermes -> an exact admitted local Ollama model. Prove owner-visible per-task backend/model choice, resource and budget limits, safe refusal without fallback, actual-result evidence, review, recovery and unchanged release authority. The manual CLI smoke and source-only admission contract do not satisfy this gate; this row does not start it. | RF-HOST-016–018/022; [managed backend admission](architecture/managed-hermes-backend-admission-v1.md) |
-| Task model policy and savings proof | After managed local execution works, offer policy-based backend/model proposals for each task from competence, risk and host resources, with owner override and Codex as an explicit option. Compare comparable accepted outcomes, elapsed time, rework and total cost before claiming savings; do not weaken required tests or review. | RF-HOST-012/017/018/022; OPEN-MODEL-001 |
+| Next-application baseline | Reconcile its own intent, code and evidence; configure roles, procedures, context and the next accepted outcome in Roost. Prove owner-visible blockers and authority. | RF-APP-003/009–014; private baseline |
 | Company strategic direction | Adopt a private, versioned company purpose; prove relevant decisions and agent tasks compare outcomes to it, then derive measurable targets from a real baseline. | RF-OUT-008; OPEN-STRATEGY-001 |
 | Context classification and Worker packet | Classify operational versus historical sources; prove only current, approved, scoped material enters a sealed task packet. | RF-CTX-027; RF-GOV-020 |
 | Context API/MCP and audit | With the same fixtures, prove ordinary agent reads exclude old/test material while explicit authorized audit retrieves it with provenance. | RF-CTX-027; RF-SEC-007 |
 | Owner access | Reproduce repeat-login behavior; prove sustained ordinary work, exact-action reauthentication and separate agent identity. | RF-SEC-013; OPEN-AUTH-001 |
 | Owner-console usability | Inventory every current route/configuration; improve complete journeys in bounded gates with independent review and full-console regression. | RF-UX-010, RF-REL-012 |
+| Agent-initiated task planning | A managed agent proposes one real, deduplicated task with outcome, owner, dependencies and risk. Prove owner review and no execution before Ready. | RF-PROD-013, RF-HOST-009, RF-GOV-001 |
+| Managed local model execution | Prove one real bounded Roost task through Worker -> managed Hermes -> exact admitted Ollama model, with visible choice, resource limits, evidence, review, recovery and refusal without fallback. Manual smoke is insufficient. | RF-HOST-016–018/022 |
+| Task model policy and savings proof | Propose model per task by competence, risk and resources, with owner override. Compare accepted quality, time, rework and total cost against Codex before claiming savings. | RF-HOST-012/017/018/022; OPEN-MODEL-001 |
+| Sustained application delivery | In successive authorized gates, managed agents propose and deliver application outcomes; separately owned Codex work fixes reusable Roost gaps. Keep distinct checkouts, one-writer/resource limits, review, release and owner-visible evidence. | RF-PROD-011/013, RF-APP-001–014 |
+| Application readiness and reuse | Reach owner-accepted product readiness through verified outcomes, then apply the same Roost process to another application with its own baseline and safety rules. | RF-APP-004/008–014, RF-ACT-010 |
 | Reference-site study | Inspect only authorized, version-identified sites and preserve sourced findings, uncertainties and applicability. | RF-CTX-028 |
 | Website checklist governance | Independently verify findings and approve a versioned checklist/procedure with acceptance criteria and rollback. | RF-CTX-028 |
 | Website method proof | Prove real supervised use of the approved checklist in a scoped application task. | RF-CTX-028 |
