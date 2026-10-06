@@ -11,6 +11,7 @@ import { sealHermesProfile, assertHermesProfile, hermesStartupProfileVersion, he
 import { createHermesStartupCandidate, sealHermesStartup, assertHermesStartup } from "./agent-host-hermes-startup.mjs";
 import { basisRevalidationSchema } from "./agent-host-code-reviewer.mjs";
 import { qualifiedCrlfDiffCertificateSchema } from "./agent-host-review-crlf-diff.mjs";
+import { projectApplicationSharedRecords, assertApplicationSharedRecords } from "./agent-host-application-shared-records.mjs";
 
 import { sealHermesBudget, assertHermesBudget, assertHermesBudgetReceipt, createHermesBudgetReceipt } from "./agent-host-hermes-budget.mjs";
 
@@ -78,6 +79,8 @@ export const providerInputSchema = z.object({
   startupTools: z.tuple([]),
   seal: hash
 }).strict().superRefine((input, context) => {
+  try { assertApplicationSharedRecords(input.evidence.application.value); }
+  catch { context.addIssue({ code: z.ZodIssueCode.custom, path: ["evidence", "application", "value", "applicationSharedRecords"], message: "application_shared_records_invalid" }); }
   const application = input.evidence.application.value, indexProjection = application.documentationIndexProjection;
   if (indexProjection !== undefined) {
     const parsed = documentationIndexProjectionSchema.safeParse(indexProjection), selected = navigationIndexSelection(application, input.contract);
@@ -195,8 +198,8 @@ function projection(fresh, claimed, repositoryEvidence, priorAudit) {
   const refs = field => packet.contract[field].items.map(ref => task[field].find(item => item.id === ref.id));
   const sources = packet.sources;
   const procedures = refs("procedures");
-  const applicationEvidence = applicationNavigationIndexProjection(applicationProcedureReferences(Object.fromEntries(applicationKeys
-    .filter(key => application[key] !== undefined).map(key => [key, application[key]])), procedures), packet.contract);
+  const applicationEvidence = projectApplicationSharedRecords(applicationNavigationIndexProjection(applicationProcedureReferences(Object.fromEntries(applicationKeys
+    .filter(key => application[key] !== undefined).map(key => [key, application[key]])), procedures), packet.contract));
   const allowed = new Set(Object.values(packet.contract.context).flat().map(ref => ref.id));
   if (sources.some(source => !allowed.has(source.id)) || new Set(sources.map(source => source.id)).size !== sources.length) throw blocked();
   return {
@@ -227,6 +230,7 @@ function projection(fresh, claimed, repositoryEvidence, priorAudit) {
       "Required startup context was fetched and validated by Worker. No Roost tool call is required or available for bootstrap; never discover additional sources or refresh this envelope silently.",
       "roost-shared-procedure-evidence-v1 references the identical full evidence.procedures.value record by id, version and canonical digest. Resolve it with its complete application supplement; the reference grants no authority.",
       "documentationIndexProjection selects application and contract-pinned navigation rows. Counts and original canonical digest bind omitted navigation, which proves no source read or discovery authority. Freshness checks cover the complete authoritative context.",
+      "applicationSharedRecords stores each identical capability domain/readinessDimension record once. Resolve definition.{domain,readinessDimension}.sharedRecord by zero-based index in its matching table; use the complete value. Digests bind exact restoration; references grant no authority.",
       "Stop and report missing authority or changed context. Report outcome, changed files, verification, unrun checks and blockers."
     ],
     contract: packet.contract,

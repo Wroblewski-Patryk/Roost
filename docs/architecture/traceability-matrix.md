@@ -2107,5 +2107,15 @@ Actual API receipt `aaa0b17f` records the shared-risk Ready invalidation and old
 coding-only refusal. Root checks passed: 57 focused/rejection tests, 39 checks
 with real disposable PostgreSQL forward migration and history preservation,
 and `npm run validate`. Original audit/native/CHANGES_REQUIRED evidence remains
-immutable; a new mapping grants no release authority. Deployment and normal API
-mapping are pending, as is Aviary production proof.
+immutable; a new mapping grants no release authority. Roost `3403347e` is
+deployed and normal audit mapping `d7758c8c` is persisted. Review `228eaf9c`
+was refused at measurement (136612 > 131072 bytes), before model launch;
+its unchanged unclaimed queue is retained. Independent approval and Aviary
+production proof remain pending.
+
+Provider input now deduplicates only identical capability domain and readiness
+dimension records through complete local tables, exact canonical restoration
+and strict relation indexes. The original context still controls redaction,
+Ready and freshness; the 131072-byte cap and all permissions remain unchanged.
+Root's 80 component/integration checks, `npm run validate` and `codex:check`
+pass. Corrected actual input, native review and release proof remain pending.

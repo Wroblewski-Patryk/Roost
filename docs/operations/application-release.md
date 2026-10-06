@@ -1265,5 +1265,29 @@ Root checks: 57 focused tests, including the existing rejection-disposition
 PostgreSQL proof; 39 new checks with a real forward disposable PostgreSQL
 migration, refusal probes and immutable-history checks; `npm run validate`.
 The first new database fixture failed its actor constraint and was corrected;
-the rerun passed without skips. Its owned test database was removed. Deployment
-and normal API audit mapping remain required before release admission.
+the rerun passed without skips. Its owned test database was removed.
+Roost `3403347e` deployed through sole queue `vxjyd1667huaazybo79hgjl0`;
+health/build-info confirmed the exact commit at 23:57:44.952 UTC. Database
+readback confirmed the forward migration checksum and original history.
+Normal Ready `fa16d08e` and append-only audit mapping `d7758c8c` preserve
+the original native result and all 17 findings. The stale coder procedure was
+refreshed only after actual durable rejection `b66ec4d0` was read and archived;
+normal coder mapping and reviewer Ready then succeeded.
+
+Reviewer execution `228eaf9c` remains unclaimed. Actual measurement at
+00:05:27.014 UTC refused 136,612 bytes against 131,072 before any model call.
+The refusal is preserved. Repeated application domain and readiness-dimension
+definitions are the bounded context repair; no task scope, Ready or cap is
+changed. Actual successor measurement and independent review remain required.
+
+The Worker now packs only canonically identical capability domain/readiness-dimension
+records into `roost-application-shared-records-v1`. Each full record remains once,
+with canonical digest; field-specific indexes must match declared relation IDs.
+Exact restoration verifies the original complete projected context digest.
+Unsupported or conflicting records remain inline. Malformed, missing, changed,
+ambiguous or supplementary references are rejected. Full original context still
+undergoes redaction, Ready revision and freshness checks before projection;
+no discovery, permission, audit or release authority is granted by references.
+Provider measurement and launch use the same projection and unchanged cap.
+Root's 80 shared-record, integration and existing provider-input checks pass;
+actual corrected measurement, native launch and release evidence remain pending.
