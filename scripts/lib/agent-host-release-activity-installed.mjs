@@ -51,7 +51,7 @@ const qualifiedSchema=z.object({observedAt:instant,targetId:id,commit:git,tree:g
 const structuralSchema=qualifiedSchema.pick({observedAt:true,targetId:true,commit:true,tree:true,services:true}).strict();
 const ingressProbeSchema=z.object({blocked:z.literal(true),observedAt:instant,httpStatus:z.union([z.literal(502),z.literal(504),z.null()]),transportTimeout:z.boolean()}).strict();
 const runtimeObservationSchema=z.object({schemaVersion:z.literal('roost-activity-runtime-observation-v1'),operation:z.enum([
- 'read_runtime_fence','read_runtime_settings','hold_ingress','open_fixture_window','refence_fixture_window','restore_runtime']),
+ 'read_runtime_fence','read_runtime_settings','hold_ingress','open_fixture_window','refence_fixture_window','restore_runtime','open_candidate_ingress','hold_candidate_ingress']),
  releaseId:uuid,operationId:uuid,fixtureId:uuid,targetId:id,manifestDigest:hex,controllerProgramDigest:hex,runtimeDigest:hex,
  databaseReadOnly:z.boolean(),activeOtherSessions:z.number().int().nonnegative(),activeOwnedSessions:z.number().int().nonnegative(),roleConfigDigest:hex,
  originalRoleConfigMatches:z.boolean(),ingressOwnedRulePresent:z.boolean(),ingressBlockedByRoot:z.boolean(),cadencesHeld:z.boolean(),
@@ -125,14 +125,28 @@ export function activityRestorationDigests(raw){
 }
 export function qualifyActivityCompatibleIngressObservation(value,{policy,controllerProgramDigest,operation,ingressPresent,now=Date.now()}){
  const v=parse(compatibleIngressObservationSchema,value,'compatible_ingress_observation_unproven'),r=v.receipt;
- check(['read_runtime_fence','read_runtime_settings','hold_ingress','open_fixture_window','refence_fixture_window','restore_runtime'].includes(operation)
+ check(['read_runtime_fence','read_runtime_settings','hold_ingress','open_fixture_window','refence_fixture_window','restore_runtime','open_candidate_ingress','hold_candidate_ingress'].includes(operation)
   &&v.controllerProgramDigest===controllerProgramDigest&&v.policyDigest===hash(canonical(policy))
   &&r.rulePresent===ingressPresent&&r.evidenceDigest===ingressFenceContract.composeIngressFenceDigest(r)
   &&['targetId','networkId','subnet','proxyId','proxyPid','namespaceDigest','databaseContainerId','databaseIpv4','proxyIpv4','ruleComment','originalRulesDigest'].every(k=>r[k]===policy[k])
   &&Date.parse(r.observedAt)<=now+2000&&now-Date.parse(r.observedAt)<=60000,'compatible_ingress_observation_changed');
  const args=['-d',policy.subnet,'-p','tcp','--dport','8000','-m','comment','--comment',policy.ruleComment,'-j','REJECT','--reject-with','tcp-reset'];
  check(r.ruleDigest===hash(canonical(args))&&(r.rulePresent||r.observedRulesDigest===r.originalRulesDigest)
-  &&(operation==='restore_runtime'?r.rulePresent===false:['hold_ingress','open_fixture_window','refence_fixture_window'].includes(operation)?r.rulePresent===true:true),'compatible_ingress_rule_readback_unproven');return v;
+  &&(['restore_runtime','open_candidate_ingress'].includes(operation)?r.rulePresent===false:['hold_ingress','open_fixture_window','refence_fixture_window','hold_candidate_ingress'].includes(operation)?r.rulePresent===true:true),'compatible_ingress_rule_readback_unproven');return v;
+}
+
+// Deploy admission is distinct from the post-observation fixture scope. This is
+// state qualification only; the installed caller owns normal API authentication.
+export function qualifyCandidateIngressScope(s,state,operationId,{writes=false,now=Date.now()}={}){
+ const j=state?.journal,op=j?.find(r=>r.id===operationId),last=j?.at(-1);
+ check(s.compatibleArtifactRecovery&&state?.release?.id===s.releaseId&&Array.isArray(j)&&j.length<=300
+  &&same(snapshotBasis(state.release.snapshot),snapshotBasis(s))&&state.release.manifestDigest===s.manifestDigest
+  &&op?.operation==='deploy'&&op.intent?.manifestDigest===s.manifestDigest&&op.intent.commit===s.commit&&op.intent.baseCommit===s.baseCommit
+  &&op.intent.parameters?.targetId===s.manifest.deployment.targetId&&[undefined,null,'uncertain','succeeded'].includes(result(op.outcome))
+  &&j.slice(0,j.indexOf(op)).every(r=>['succeeded','failed','absent'].includes(result(r.outcome))),'candidate_deploy_scope_unproven');
+ if(writes)check(last===op&&!op.outcome&&['active','reconciliation_required'].includes(state.status)
+  &&Date.parse(state.effectiveExpiresAt??s.expiresAt)>now,'candidate_open_write_authority_unproven');
+ return op;
 }
 
 /** Pure rendering of the one source-sealed raw Python literal. No packet code,
@@ -163,7 +177,7 @@ export function renderActivityPythonStdin(source,request,{compatibleIngressSourc
 /** All dependencies are fixed root-owned native adapters. Settings contain
  * data/seals only. Importing/creating this factory executes no native process. */
 export function createInstalledActivityTransport({manifest,binding,settings,seed,installation,baselineServices,readScopeBytes,readRuntime,fullFingerprint,
- readReleaseState,ssh,nativeProcess,assertNativeClosed,healthProbe,probeIngressBlocked,compatibleIngress}){
+ readReleaseState,ssh,nativeProcess,assertNativeClosed,healthProbe,probeIngressBlocked,compatibleIngress,authorizeCandidateIngress}){
  const cfg=installedActivitySettingsSchema.parse(settings),m=contract.manifestSchema.parse(manifest),s=structuredClone(binding),p=m.postObservation;
  const install=parse(z.object({sshHost:z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,79}$/),frontendMetaName:activityBrowserInputSchema.shape.frontendMetaName}).strict(),installation,'installation_invalid');
  check(contract.isComposeManifest(m)&&p&&s.manifestDigest===contract.releaseDigest(m)&&same(s.manifest,m)&&uuid.safeParse(s.releaseId).success,'release_scope_invalid');
@@ -288,6 +302,88 @@ export function createInstalledActivityTransport({manifest,binding,settings,seed
  };
  const nativeRead=async options=>{const {r}=await qualified(options),native=await runtimeOp('read_runtime_settings',r,options.operationId);
   return {r,native};};
+ const candidateInventory=async(options,writes=false)=>{
+  check(compatible&&options.commit===s.commit&&options.tree===s.candidateTree,'candidate_only_ingress_scope');
+  const state=await readReleaseState(),operation=qualifyCandidateIngressScope(s,state,options.operationId,{writes});await readSeals();
+  const r=parse(structuralSchema,await readRuntime({...options,purpose:'candidate_ingress'}),'candidate_runtime_unproven');
+  check(fresh(r.observedAt)&&r.targetId===target.targetId&&r.commit===s.commit&&r.tree===s.candidateTree
+   &&new Set(r.services.map(v=>v.name)).size===5&&new Set(r.services.map(v=>v.containerId)).size===5
+   &&Object.entries(roles).every(([name,role])=>r.services.some(v=>v.name===name&&v.role===role))
+   &&r.services.filter(v=>v.role==='cadence').every(v=>['paused','created','exited'].includes(v.state)&&v.exitCode===0&&v.health===null)
+   &&r.services.every(v=>target.configuration.services.some(d=>d.name===v.name&&d.role===v.role&&d.mountDigest===v.mountDigest))
+   &&r.services.find(v=>v.name==='db').containerId===compatiblePolicy.databaseContainerId,'candidate_runtime_changed');
+  const request={policy:runtimePolicy(options.operationId,r),runtimeSettings:materializeSettings(r),facts:facts(r)};
+  const health=parse(internalHealthSchema,await invokePython(runtimeSource,{...request,operation:'read_health'}),'candidate_internal_health_unproven');
+  check(health.backendCommit===s.commit&&health.frontendCommit===s.commit&&fresh(health.observedAt)
+   &&health.runtimeDigest===hash(canonical(observedRows(r.services))),'candidate_internal_health_changed');
+  const native=parse(runtimeObservationSchema,await invokePython(runtimeSource,{...request,operation:'read_runtime_settings'}),'candidate_native_fence_unproven');
+  qualifyActivityCompatibleIngressObservation(native.compatibleIngress,{policy:compatiblePolicy,controllerProgramDigest:compatibleCfg.controllerProgramDigest,
+   operation:'read_runtime_settings',ingressPresent:native.ingressOwnedRulePresent});
+  check(native.operation==='read_runtime_settings'&&native.operationId===options.operationId&&native.releaseId===s.releaseId
+   &&native.manifestDigest===s.manifestDigest&&native.controllerProgramDigest===cfg.runtimeController.sha256&&fresh(native.observedAt)
+   &&native.runtimeDigest===hash(canonical(observedRows(r.services)))&&native.databaseReadOnly&&native.activeOtherSessions===0&&native.cadencesHeld&&!native.effect
+   &&native.databaseSettingsDigest===sealed.runtimeSettings.databaseSettingsDigest&&native.ingressSettingsDigest===sealed.runtimeSettings.ingressSettingsDigest
+   &&native.cadenceSettingsDigest===hash(canonical(normalizedCadences(rawSettings.cadences))),'candidate_native_scope_changed');
+  const policy={schemaVersion:'roost-activity-fixture-policy-v1',kind:'synthetic_recent_activity',targetId:target.targetId,applicationId:s.applicationId,
+   coolifyApplicationId:target.configuration.topology.applicationId,releaseId:s.releaseId,operationId:options.operationId,...p.fixture,
+   createdAt:sealed.policy.createdAt,expiresAt:sealed.policy.expiresAt,commit:s.commit,tree:s.candidateTree,manifestDigest:s.manifestDigest,
+   expectedRuntime:pins(r.services),controllerProgramDigest:fixtureProgramDigest,frontendMetaName:install.frontendMetaName,baseline:null};
+  const fixture=parse(fixtureEnvelope,await invokePython(fixtureSource,{operation:'reconcile',policy,seedHex:secret.toString('hex')}),'candidate_fixture_inventory_unproven');
+  const observed=fixture.observed;
+  check(fixture.operation==='reconcile'&&fixture.releaseId===s.releaseId&&fixture.operationId===options.operationId&&fixture.manifestDigest===s.manifestDigest
+   &&fixture.targetId===target.targetId&&fixture.commit===s.commit&&fixture.tree===s.candidateTree&&fixture.fixtureId===p.fixture.fixtureId
+   &&fixture.controllerProgramDigest===fixtureProgramDigest&&fixture.runtimeDigest===hash(canonical(observedRows(r.services)))&&fresh(fixture.observedAt)
+   &&observed.phase==='needs_baseline_seal'&&observed.state==='absent'&&!observed.effect
+   &&observed.observed.fullDataDigest===m.baseline.dataDigest&&observed.observed.sequenceDigest===p.baselineSequenceDigest
+   &&observed.observed.catalogDigest===sealed.policy.catalogDigest,'candidate_fixture_or_sequence_changed');
+  const fp=parse(z.object({schemaDigest:hex,dataDigest:hex}).strict(),await fullFingerprint(),'candidate_full_fingerprint_unproven');
+  check(fp.schemaDigest===m.baseline.schemaDigest&&fp.dataDigest===m.baseline.dataDigest,'candidate_data_changed');
+  const after=parse(structuralSchema,await readRuntime({...options,purpose:'candidate_ingress'}),'candidate_runtime_readback_unproven');
+  check(same(pins(after.services),pins(r.services))&&after.commit===r.commit&&after.tree===r.tree,'candidate_runtime_drift');
+  qualifyCandidateIngressScope(s,await readReleaseState(),options.operationId,{writes});
+  return{operation,r,native,parityDigest:hash(canonical({fingerprint:fp,inventory:observed.observed}))};
+ };
+ const readCandidateIngress=async options=>{const v=await candidateInventory(options);return{blocked:v.native.ingressOwnedRulePresent,
+  receipt:v.native.compatibleIngress.receipt,runtimeDigest:v.native.runtimeDigest,parityDigest:v.parityDigest};};
+ const openCandidateIngress=async options=>{
+  check(typeof authorizeCandidateIngress==='function','candidate_fixed_intent_writer_required');const before=await candidateInventory(options,true);
+  check(before.native.ingressOwnedRulePresent,'candidate_rule_already_absent_no_repeat');await probeIngress(options.operationId,before.r);
+  const auth=parse(z.object({intentDigest:hex}).strict(),await authorizeCandidateIngress({operationId:options.operationId,
+   runtimeDigest:before.native.runtimeDigest,parityDigest:before.parityDigest,policyDigest:hash(canonical(compatiblePolicy)),receipt:before.native.compatibleIngress.receipt}),'candidate_native_intent_unproven');
+  qualifyCandidateIngressScope(s,await readReleaseState(),options.operationId,{writes:true});
+  try{
+  const out=parse(runtimeObservationSchema,await invokePython(runtimeSource,{operation:'open_candidate_ingress',policy:runtimePolicy(options.operationId,before.r),
+   runtimeSettings:materializeSettings(before.r),facts:facts(before.r,{ingressBlockedByRoot:true,fixtureAbsentByRoot:true,parityVerifiedByRoot:true,
+    proofDigest:hash(canonical({intentDigest:auth.intentDigest,parityDigest:before.parityDigest}))})}),'candidate_open_native_unproven');
+  qualifyActivityCompatibleIngressObservation(out.compatibleIngress,{policy:compatiblePolicy,controllerProgramDigest:compatibleCfg.controllerProgramDigest,
+   operation:'open_candidate_ingress',ingressPresent:out.ingressOwnedRulePresent});
+  check(out.operation==='open_candidate_ingress'&&out.releaseId===s.releaseId&&out.operationId===options.operationId&&out.manifestDigest===s.manifestDigest
+   &&out.controllerProgramDigest===cfg.runtimeController.sha256&&out.runtimeDigest===before.native.runtimeDigest&&fresh(out.observedAt)
+   &&out.effect&&!out.ingressOwnedRulePresent&&out.databaseReadOnly&&out.cadencesHeld&&out.activeOtherSessions===0,'candidate_open_readback_unproven');
+  const after=await candidateInventory(options);check(!after.native.ingressOwnedRulePresent&&after.parityDigest===before.parityDigest
+   &&same(pins(after.r.services),pins(before.r.services)),'candidate_open_postimage_changed');
+  parse(closedSchema,await assertNativeClosed({operation:'deploy',operationId:options.operationId}),'candidate_native_children_unclosed');
+  return{opened:true,intentDigest:auth.intentDigest,...await readCandidateIngress(options)};
+  }catch{fail('candidate_open_uncertain_read_before_retry',true);}
+ };
+ const holdCandidateIngress=async options=>{
+  check(compatible&&typeof authorizeCandidateIngress==='function'&&options.commit===s.commit&&options.tree===s.candidateTree,'candidate_hold_scope_unproven');
+  qualifyCandidateIngressScope(s,await readReleaseState(),options.operationId,{writes:true});await readSeals();
+  const r=parse(structuralSchema,await readRuntime({...options,purpose:'candidate_hold'}),'candidate_hold_runtime_unproven');
+  const auth=parse(z.object({intentDigest:hex}).strict(),await authorizeCandidateIngress({operationId:options.operationId,hold:true}),'candidate_hold_intent_unproven');
+  qualifyCandidateIngressScope(s,await readReleaseState(),options.operationId,{writes:true});
+  try{
+  const out=parse(runtimeObservationSchema,await invokePython(runtimeSource,{operation:'hold_candidate_ingress',policy:runtimePolicy(options.operationId,r),
+   runtimeSettings:materializeSettings(r),facts:facts(r,{proofDigest:auth.intentDigest})}),'candidate_hold_native_unproven');
+  qualifyActivityCompatibleIngressObservation(out.compatibleIngress,{policy:compatiblePolicy,controllerProgramDigest:compatibleCfg.controllerProgramDigest,
+   operation:'hold_candidate_ingress',ingressPresent:out.ingressOwnedRulePresent});
+  check(out.operation==='hold_candidate_ingress'&&out.releaseId===s.releaseId&&out.operationId===options.operationId&&out.manifestDigest===s.manifestDigest
+   &&out.controllerProgramDigest===cfg.runtimeController.sha256&&out.runtimeDigest===hash(canonical(observedRows(r.services)))&&fresh(out.observedAt)
+   &&out.effect&&out.ingressOwnedRulePresent&&out.databaseReadOnly&&out.cadencesHeld&&out.activeOtherSessions===0,'candidate_hold_readback_unproven');
+  parse(closedSchema,await assertNativeClosed({operation:'deploy',operationId:options.operationId}),'candidate_hold_children_unclosed');
+  return{held:true,intentDigest:auth.intentDigest,receipt:out.compatibleIngress.receipt};
+  }catch{fail('candidate_hold_uncertain_read_before_retry',true);}
+ };
  const readBrowserAccess=async(r,operationId)=>{
   check(rawSettings.browserAccess,'browser_source_contract_required');
   const out=parse(browserAccessSchema,await invokePython(runtimeSource,{operation:'read_browser_access',policy:runtimePolicy(operationId,r),runtimeSettings:materializeSettings(r),facts:facts(r)}),'native_browser_access_unproven');
@@ -402,5 +498,5 @@ export function createInstalledActivityTransport({manifest,binding,settings,seed
   holdIngressAndOpenFixtureWindow:window,refenceFixtureWindow:refence,restoreRuntimeAndObserve:restore,browse,
   assertClosed:async context=>parse(closedSchema,await assertNativeClosed(context),'native_children_unclosed')
  };
- return {transport,readCadenceTicks};
+ return {transport,readCadenceTicks,...(compatible?{openCandidateIngress,readCandidateIngress,holdCandidateIngress}:{})};
 }

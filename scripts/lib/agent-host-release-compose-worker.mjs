@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import {configureComposeWithQualifiedModelCas} from './agent-host-release-compose-config.mjs';
 import {composeConfigurationSchemaReadPhp,qualifyComposeConfigurationSchema} from './agent-host-release-compose-config-schema.mjs';
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, openSync, closeSync, fsyncSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
@@ -22,7 +22,7 @@ import { buildReleaseFingerprintCommand, releaseFingerprintTimeoutSchema } from 
 import { coolifyGitSetDeploymentId } from './agent-host-release-coolify-git-set-gateway.mjs';
 import contract from './agent-host-release-contract.cjs';
 import { installedActivitySettingsSchema, createActivityReleaseAdapter } from './agent-host-release-activity-adapter.mjs';
-import { createInstalledActivityTransport, activityCompatibleIngressInstallationSchema } from './agent-host-release-activity-installed.mjs';
+import { createInstalledActivityTransport, activityCompatibleIngressInstallationSchema, qualifyCandidateIngressScope } from './agent-host-release-activity-installed.mjs';
 import { imageRetentionPolicySchema, retainedImageAnchor, qualifyRetentionImage, qualifyRetentionAnchor } from './agent-host-image-retention.mjs';
 import ingressFenceContract from './agent-host-release-compose-ingress-fence.cjs';
 import {readCompatibleRecoveryFailure as readFixedCompatibleFailure} from './agent-host-release-compose-failure-inspector.mjs';
@@ -305,6 +305,24 @@ export function qualifyInstalledDatabaseSource({snapshot,baselineDatabase,databa
  check(r?.containerId===container&&r.name===database.name&&r.imageDigest===database.imageDigest&&r.mountDigest===database.mountDigest
   &&r.state==='running'&&r.health==='healthy'&&r.exitCode===0&&p.databaseReadOnly===true&&p.activeOtherSessions===0&&p.ownedTransactions===0
   &&p.projectServiceSetComplete===true&&e.schemaDigest===snapshot.manifest.baseline.schemaDigest&&e.dataDigest===snapshot.manifest.baseline.dataDigest,'database_source_binding_changed');return true;
+}
+
+export function qualifyCandidateIngressRuntime(snapshot,current,evidence,operationId,{allowUnhealthyApp=false}={}){
+ const op=qualifyCandidateIngressScope(snapshot,current,operationId),t=snapshot.manifest.deployment.targets[0],q=evidence?.binding?.queue;
+ const id=coolifyGitSetDeploymentId({releaseId:snapshot.releaseId,operationId:op.id,targetId:t.targetId,rollback:false});
+ check(q?.status==='finished'&&q.targetId===t.targetId&&q.deploymentId===id&&q.commit===snapshot.commit
+  &&Date.parse(q.createdAt)>=Date.parse(op.createdAt)&&Date.parse(q.finishedAt)>=Date.parse(q.createdAt)
+  &&Date.parse(q.finishedAt)<=Date.now()&&evidence.targetId===t.targetId&&evidence.binding.commit===snapshot.commit
+  &&evidence.binding.tree===snapshot.candidateTree,'candidate_ingress_exact_finished_queue_required');
+ const runtime=allowUnhealthyApp?{...evidence.runtime,services:evidence.runtime.services.map(v=>v.role==='app'?{...v,health:'healthy'}:v)}:evidence.runtime;
+ qualifyComposeRuntime({expected:{configuration:t.configuration,configDigest:t.configDigest},configuration:evidence.configuration,runtime,binding:evidence.binding});
+ if(allowUnhealthyApp)check(evidence.runtime.services.filter(v=>v.role==='app').every(v=>['healthy','starting','unhealthy'].includes(v.health)),'candidate_hold_actual_health_unproven');
+ const rows=evidence.runtime.services,r=snapshot.compatibleArtifactRecovery;
+ check(rows.length===5&&new Set(rows.map(v=>v.containerId)).size===5&&rows.filter(v=>v.role==='cadence').every(v=>['paused','created','exited'].includes(v.state)&&v.exitCode===0&&v.health===null)
+  &&r.replacement.images.length===4&&r.replacement.images.every(v=>rows.some(row=>row.name===v.name&&row.imageDigest===v.imageDigest))
+  &&rows.some(v=>v.role==='database'&&v.containerId===r.currentEntry.database.containerId&&v.imageDigest===r.currentEntry.database.imageDigest&&v.mountDigest===r.currentEntry.database.mountDigest),
+  'candidate_ingress_replacement_or_database_changed');
+ return{commit:snapshot.commit,tree:snapshot.candidateTree,services:rows};
 }
 
 // Server provenance is owner-verified evidence, never a current OS observation.
@@ -987,6 +1005,37 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   qualifyCompatibleRecoveryEntryState({snapshot:s,previousState,currentEntry,now:(dependencies.now??Date.now)(),admittedAt});await assertClone();
   compatibleContext={previousState:structuredClone(previousState)};return{currentEntry,closureReceipt:q.closureReceipt};
  };
+ let activityFacade;
+ const ingressIntentFile=(id,hold=false)=>{check(/^[a-f0-9-]{36}$/.test(id),'candidate_ingress_operation_invalid');return path.join(path.dirname(cfg.compatibleIngress.policy.file),`roost-compose-candidate-ingress-${s.releaseId}-${id}${hold?'-hold':''}.json`);};
+ const ingressIntent=async(options,{write=false,proof}={})=>{
+  await assertClone();const current=await dependencies.readReleaseState(),op=qualifyCandidateIngressScope(s,current,options.operationId,{writes:write});
+  const context=live.get(t.targetId);check(context?.operationId===op.id&&!context.rollback,'candidate_ingress_context_changed');
+  const hold=proof?.hold===true,q=await raw.readQueue(context),e=await inspector.readEvidence(q),r=qualifyCandidateIngressRuntime(s,current,e,op.id,{allowUnhealthyApp:hold}),source={...cfg.source,container:r.services.find(v=>v.role==='database').containerId};
+  const fence=await readDatabaseFence(source);check(fence.readOnlyFence===true&&fence.activeOtherSessions===0&&fence.ownedTransactions===0,'candidate_ingress_database_fence_changed');
+  const filename=ingressIntentFile(op.id,hold),parent=path.dirname(filename),parentIdentity=identity(parent),identityDigest=contract.releaseDigest(r.services.map(v=>Object.fromEntries(['name','role','containerId','imageDigest','mountDigest','createdAt','commit','tree','deploymentId'].filter(k=>v[k]!==undefined).map(k=>[k,v[k]]))).sort((a,b)=>a.name.localeCompare(b.name)));
+  const basis={schemaVersion:'roost-compose-candidate-ingress-intent-v1',releaseId:s.releaseId,operationId:op.id,manifestDigest:s.manifestDigest,
+   deploymentId:q.deploymentId,configurationDigest:composeConfigurationDigest(e.configuration),runtimeIdentityDigest:identityDigest,policySha256:cfg.compatibleIngress.policy.sha256,
+   controllerProgramDigest:cfg.compatibleIngress.controllerProgramDigest,activityControllerDigest:contract.releaseDigest(cfg.activity)};
+  const actualPolicy=JSON.parse(bytesFor(cfg.compatibleIngress.policy.file,cfg.compatibleIngress.policy.sha256));
+  if(write&&hold){const previous=JSON.parse(bytesFor(ingressIntentFile(op.id)));check(Object.keys(basis).every(k=>previous[k]===basis[k])
+    &&previous.retryAuthorized===false&&previous.beforeFence?.rulePresent===true&&!existsSync(filename),'candidate_hold_original_open_intent_required');
+   const bytes=Buffer.from(JSON.stringify({...basis,createdAt:new Date().toISOString(),retryAuthorized:false,hold:true,openIntentDigest:hash(bytesFor(ingressIntentFile(op.id)))})),fd=openSync(filename,'wx',0o600);
+   try{writeFileSync(fd,bytes);fsyncSync(fd);}finally{closeSync(fd);}check(identity(parent)===parentIdentity,'candidate_hold_parent_changed');
+  }else if(write){check(proof&&proof.operationId===op.id&&hex.safeParse(proof.runtimeDigest).success&&hex.safeParse(proof.parityDigest).success
+    &&proof.policyDigest===contract.releaseDigest(actualPolicy)
+    &&proof.receipt?.rulePresent===true&&!inside(cfg.workspaceRoot,filename)&&!existsSync(filename),'candidate_ingress_no_retry_or_scope_unproven');
+   ingressFenceContract.qualifyComposeIngressFence(proof.receipt,{targetId:t.targetId,databaseContainerId:source.container});
+   check(['targetId','networkId','subnet','proxyId','proxyPid','namespaceDigest','databaseContainerId','databaseIpv4','proxyIpv4','ruleComment','originalRulesDigest'].every(k=>proof.receipt[k]===actualPolicy[k]),'candidate_ingress_actual_policy_changed');
+   const bytes=Buffer.from(JSON.stringify({...basis,createdAt:new Date().toISOString(),runtimeDigest:proof.runtimeDigest,parityDigest:proof.parityDigest,policyDigest:proof.policyDigest,
+    beforeFence:proof.receipt,retryAuthorized:false}));
+   const fd=openSync(filename,'wx',0o600);try{writeFileSync(fd,bytes);fsyncSync(fd);}finally{closeSync(fd);}check(identity(parent)===parentIdentity,'candidate_ingress_parent_changed');
+  }
+  const bytes=bytesFor(filename),saved=JSON.parse(bytes);
+  check(Object.keys(basis).every(k=>saved[k]===basis[k])&&saved.retryAuthorized===false
+   &&(hold?saved.hold===true&&saved.openIntentDigest===hash(bytesFor(ingressIntentFile(op.id))):saved.beforeFence?.rulePresent===true
+   &&hex.safeParse(saved.runtimeDigest).success&&hex.safeParse(saved.parityDigest).success&&saved.policyDigest===contract.releaseDigest(actualPolicy)),'candidate_ingress_saved_intent_changed');
+  await assertClone();return{intentDigest:hash(bytes)};
+ };
  const adapter=createCoolifyComposeAdapter({now:dependencies.now,sleep:dependencies.sleep,gateway:{
   inspectConfiguration:observeConfig,
   inspectBaseline:async()=>{await assertClone();
@@ -1000,19 +1049,29 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
       &&(r.role!=='database'||r.containerId===b.containerId))),'baseline_runtime_changed');
    const f=await fingerprint(),h=await services(m,{baseline:true});return{...baseline,...f,healthDigest:h.healthDigest,healthy:h.healthy,
     ...(lastRetentionEvidence?{imageRetention:lastRetentionEvidence}:{})};},
-  inspectRuntime:async()=>{const context=live.get(t.targetId);check(context,'current_queue_required');const q=await raw.readQueue(context);check(q?.status==='finished'&&q.commit!=='HEAD','finished_queue_required');const e=await inspector.readEvidence(q);
+  inspectRuntime:async(_id,options={})=>{const context=live.get(t.targetId);check(context,'current_queue_required');const q=await raw.readQueue(context);check(q?.status==='finished'&&q.commit!=='HEAD','finished_queue_required');const e=await inspector.readEvidence(q);
    if(imageRetention){const built=t.configuration.services.filter(r=>r.source==='built'),images=built.map(d=>{const row=e.binding.images.find(r=>r.name===d.name),runtime=e.runtime.services.find(r=>r.name===d.name);
      check(row&&runtime&&row.imageDigest===runtime.imageDigest&&row.commit===q.commit&&row.tree===(context.rollback?t.baseline.tree:s.candidateTree)&&row.deploymentId===q.deploymentId,'retention_finished_built_image_unproven');return row.imageDigest;});
     check(e.configuration.gitCommit===q.commit&&composeConfigurationDigest(e.configuration)===(context.rollback?t.rollbackConfigDigest:t.configDigest),'retention_runtime_configuration_changed');
     const current=await dependencies.readReleaseState(),operation=current.journal.find(r=>r.id===context.operationId);
     check(operation?.operation===(context.rollback?'rollback':'deploy')&&operation.intent?.parameters?.targetId===t.targetId&&operation.createdAt===context.since,'retention_exact_finished_intent_required');
-    const effect=!operation.outcome?{operationId:operation.id,operation:operation.operation,since:operation.createdAt}:null;
+    if(options.operationEffect===true){await checkIntent(context);check(!operation.outcome,'retention_effect_unresolved_intent_required');}
+    const effect=options.operationEffect===true?{operationId:operation.id,operation:operation.operation,since:operation.createdAt}:null;
     lastRetentionEvidence=await imageRetention.ensure({additionalImages:images,effect});check(lastRetentionEvidence.pendingCreate===null,'retention_pending_effect_unproven');
    }
    return{targetId:t.targetId,...e,healthy:e.runtime.services.every(r=>['app','database'].includes(r.role)?r.health==='healthy':r.role==='migration'?r.state==='exited'&&r.exitCode===0:['paused','created','exited'].includes(r.state))};},
   readQueue:async o=>{live.set(t.targetId,o);return raw.readQueue(o);},inspectRecovery:recoveryObservation,inspectConfigurationAbsence:configurationAbsenceObservation,
   configure:(_id,mode)=>configurePhase({mode,commit:mode==='rollback'?t.baseline.commit:s.commit}),
   deployTarget:async o=>{live.set(t.targetId,o);return raw.deploy(o);},safety,checkServices:services,
+  ...(compatible?{
+   openCandidateIngress:async o=>{check(activityFacade&&!o.rollback,'candidate_ingress_adapter_required');const current=await dependencies.readReleaseState();
+    qualifyCandidateIngressScope(s,current,o.operationId,{writes:true});await checkIntent(o);return activityFacade.openCandidateIngress({operationId:o.operationId,commit:s.commit,tree:s.candidateTree});},
+   inspectCandidateIngress:async()=>{check(activityFacade,'candidate_ingress_adapter_required');const context=live.get(t.targetId);check(context&&!context.rollback,'candidate_ingress_context_required');
+    const proof=await activityFacade.readCandidateIngress({operationId:context.operationId,commit:s.commit,tree:s.candidateTree});
+    if(!proof.blocked)await ingressIntent(context);return proof;},
+   holdCandidateIngress:async o=>{check(activityFacade&&!o.rollback,'candidate_hold_adapter_required');await checkIntent(o);
+    return activityFacade.holdCandidateIngress({operationId:o.operationId,commit:s.commit,tree:s.candidateTree});}
+  }:{}),
   inspectBackup:async()=>{check(['digest','bytes','capturedAt','restoreVerifiedAt','restoreDigest'].every(k=>backup?.[k]===m.backup[k]),'backup_changed');return backup;}
  }});
  const resources={assertClone,async inspectCapacity(){const c=JSON.parse(await ssh({command:capacityCommand})),q=await php("echo json_encode(['activeDeployments'=>App\\Models\\ApplicationDeploymentQueue::whereIn('status',['queued','in_progress'])->count()]);");
@@ -1036,14 +1095,16 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
    readRuntime:async options=>{
     await assertClone();const current=await dependencies.readReleaseState(),context=live.get(t.targetId);check(context,'activity_current_queue_required');
     const q=await raw.readQueue(context);check(q?.status==='finished'&&q.commit!=='HEAD','activity_finished_queue_required');
-    const e=await inspector.readEvidence(q),r=qualifyActivityRuntimeEvidence(s,current,e);
-    check(r.commit===options.commit&&r.tree===options.tree&&current.journal.at(-1).id===options.operationId,'activity_runtime_version_changed');
+    const candidatePurpose=['candidate_ingress','candidate_hold'].includes(options.purpose),e=await inspector.readEvidence(q),r=candidatePurpose?qualifyCandidateIngressRuntime(s,current,e,options.operationId,{allowUnhealthyApp:options.purpose==='candidate_hold'}):qualifyActivityRuntimeEvidence(s,current,e);
+    check(r.commit===options.commit&&r.tree===options.tree&&(candidatePurpose||current.journal.at(-1).id===options.operationId),'activity_runtime_version_changed');
     return {observedAt:new Date().toISOString(),targetId:t.targetId,...r};
    },fullFingerprint:fingerprint,readReleaseState:dependencies.readReleaseState,ssh,nativeProcess:native,assertNativeClosed:dependencies.assertNativeClosed,
+   authorizeCandidateIngress:compatible?proof=>ingressIntent(proof,{write:true,proof}):undefined,
    probeIngressBlocked:()=>probeComposeIngressBlocked({publicUrl:m.deployment.url,health:cfg.health}),
    healthProbe:input=>observeRestoredComposeRuntime(input,{probeHealth:healthProbe,
     readCadenceTicks:options=>facade.readCadenceTicks(options),now:dependencies.now,sleep:dependencies.sleep})
   });
+  activityFacade=facade;
   Object.assign(resources,createActivityReleaseAdapter({manifest:m,binding:s,settings:cfg.activity,seed:activitySeed,
    readState:dependencies.readReleaseState,transport:facade.transport}));
  }

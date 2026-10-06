@@ -548,3 +548,29 @@ complete queue/runtime inventories, database fence, ingress, fingerprints and
 original observation clock. Unknown reads cannot authorize another effect.
 Root's 293 reader/broker/Worker checks and `codex:check` pass. Native compatible
 grant, replacement image, application recovery and release remain unverified.
+
+The exact dependency repair `d73e6234` subsequently obtained normal independent
+review `ba3f0616` through execution `c8dc2d59`, completed 6 October at 23:02 UTC.
+Actual provider input measured 108297/131072 bytes, retaining the full source
+diff and canonical replay evidence. Official Worker Stop/exit zero, signed
+archive verification, OS absence, lease release and owned configuration restore
+passed. Removing a private transport path from the prompt changed no source,
+scope or evidence; the previous never-claimed queue was normally cancelled.
+
+The proxy guard `4916b226` was applied once through an owned Windows Job and
+read back present at 22:55 UTC. It blocks only the exclusive application subnet
+and fixed application TCP port; database traffic and other applications remain
+unchanged. Its installed rule remains held. The protected-entry read rejected
+an administrative database collation warning despite exit zero; diagnosis
+retained only the fixed classification, hash and byte count. This does not
+authorize a database refresh or prove the application restored. Linux image,
+isolated restore, compatible grant and application recovery remain pending.
+
+Candidate-ingress source integration restricts opening to the authenticated
+deployment effect after exact finished queue, runtime identity, internal health,
+database fence and full parity checks. Later settlement probes are read-only;
+a later public-health failure can rehold once under the same effect. Public
+wait/reconcile cannot open ingress or create retention anchors. A retention
+read may reconcile its own local journal after exact anchor readback; this
+does not create a container or modify the application. These additions have
+component evidence, not a live deployment or completed-gate claim.

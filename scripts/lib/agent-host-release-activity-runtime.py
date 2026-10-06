@@ -21,7 +21,7 @@ POLICY_SCHEMA = "roost-activity-runtime-policy-v1"
 SETTINGS_SCHEMA = "roost-activity-runtime-settings-private-v1"
 OPS = {"read_runtime_fence", "read_runtime_settings", "hold_ingress",
        "open_fixture_window", "refence_fixture_window", "restore_runtime",
-       "read_browser_access", "cadence_tick_read", "read_health"}
+       "read_browser_access", "cadence_tick_read", "read_health", "open_candidate_ingress", "hold_candidate_ingress"}
 ROLES = {"app": "app", "migrate": "migration", "db": "database",
          "maintenance_cadence": "cadence", "proactive_cadence": "cadence"}
 MAX_INPUT, MAX_OUTPUT = 65536, 65536
@@ -120,8 +120,10 @@ def validate_input(v, now=None, source_digest=None):
     created, expires = utc(p["createdAt"]), utc(p["expiresAt"])
     now = now or datetime.now(timezone.utc)
     require(0 < (expires - created).total_seconds() <= 7200 and created.timestamp() <= now.timestamp() + 120, "window")
-    if v["operation"] in {"hold_ingress", "open_fixture_window"}:
+    if v["operation"] in {"hold_ingress", "open_fixture_window", "open_candidate_ingress", "hold_candidate_ingress"}:
         require(now < expires, "expired")
+    if v["operation"] in {"open_candidate_ingress", "hold_candidate_ingress"}:
+        require("compatibleIngress" in v, "candidate_compatible_only")
     rows = p["expectedRuntime"]
     require(isinstance(rows, list) and len(rows) == 5
             and {r.get("name") for r in rows if isinstance(r, dict)} == set(ROLES), "five_services")
@@ -709,7 +711,8 @@ class Controller:
             status, paused, running = state.get("Status"), state.get("Paused"), state.get("Running")
             health = (state.get("Health") or {}).get("Status")
             if e["role"] in {"app", "database"}:
-                require(status == "running" and running is True and paused is False and health == "healthy", "service_health")
+                allowed_health = {"healthy", "starting", "unhealthy"} if e["role"] == "app" and self.r["operation"] == "hold_candidate_ingress" else {"healthy"}
+                require(status == "running" and running is True and paused is False and health in allowed_health, "service_health")
             elif e["role"] == "migration":
                 require(status == "exited" and running is False and paused is False and state.get("ExitCode") == 0 and health is None, "migration_closed")
             else:
@@ -980,7 +983,7 @@ class Controller:
 
     def execute(self):
         op = self.r["operation"]
-        held = op in {"hold_ingress", "open_fixture_window", "refence_fixture_window"}
+        held = op in {"hold_ingress", "open_fixture_window", "refence_fixture_window", "open_candidate_ingress", "hold_candidate_ingress"}
         before = self.runtime(require_held=held)
         if op == "read_health":
             return self.read_health(before)
@@ -993,7 +996,27 @@ class Controller:
         if op.startswith("read_runtime_"):
             return self.observe(before, db, rule)
         require(db["activeOthers"] == 0, "other_sessions")
-        if op == "hold_ingress":
+        if op == "open_candidate_ingress":
+            require("compatibleIngress" in self.r and rule and db["databaseReadOnly"]
+                    and self.f["ingressBlockedByRoot"] and self.f["fixtureAbsentByRoot"]
+                    and self.f["parityVerifiedByRoot"], "candidate_open_basis")
+            transactions = self.sql("SELECT count(*) FROM pg_stat_activity WHERE pid<>pg_backend_pid() AND datname="
+                                    + literal(self.s["database"]["applicationDatabase"])
+                                    + " AND xact_start IS NOT NULL AND state<>'idle';")
+            require(transactions == "0", "candidate_open_transactions")
+            self.read_health(before)
+            require(self.runtime(require_held=True) == before and self.database(before) == db,
+                    "candidate_open_preimage_changed")
+            self.effect = True
+            require(self.compatible_ingress("remove")["removed"] is True, "candidate_open_removal_unproven")
+        elif op == "hold_candidate_ingress":
+            require("compatibleIngress" in self.r and not rule and db["databaseReadOnly"], "candidate_hold_basis")
+            require(self.sql("SELECT count(*) FROM pg_stat_activity WHERE pid<>pg_backend_pid() AND datname="
+                             + literal(self.s["database"]["applicationDatabase"])
+                             + " AND xact_start IS NOT NULL AND state<>'idle';") == "0", "candidate_hold_transactions")
+            self.effect = True
+            self.compatible_ingress("apply")
+        elif op == "hold_ingress":
             require(not rule, "reconcile_before_ingress_repeat")
             self.effect = True
             if "compatibleIngress" in self.r:
@@ -1039,7 +1062,14 @@ class Controller:
         final_rule = self.ingress(after["appIp"])
         final_db = self.database(after)
         require(final_db["activeOthers"] == 0, "post_other_sessions")
-        if op == "hold_ingress":
+        if op == "open_candidate_ingress":
+            require(not final_rule and final_db == db and final_db["databaseReadOnly"], "candidate_open_readback")
+            require(self.sql("SELECT count(*) FROM pg_stat_activity WHERE pid<>pg_backend_pid() AND datname="
+                             + literal(self.s["database"]["applicationDatabase"])
+                             + " AND xact_start IS NOT NULL AND state<>'idle';") == "0", "candidate_open_post_transactions")
+        elif op == "hold_candidate_ingress":
+            require(final_rule and final_db == db and final_db["databaseReadOnly"], "candidate_hold_readback")
+        elif op == "hold_ingress":
             require(final_rule, "ingress_readback")
         elif op in {"open_fixture_window", "refence_fixture_window"}:
             wanted = op == "refence_fixture_window"

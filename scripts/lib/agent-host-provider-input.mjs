@@ -313,6 +313,50 @@ function containerSourceScanRows(body) {
   }
   return rows;
 }
+// The same public literal may occur in the exact reviewed Git diff when line
+// endings change. Qualify it only against a declared, hash-bound whole
+// Dockerfile source row and its matching Git section/hunk. These scan strings
+// never replace the original evidence or any of its digests.
+function containerDiffScanRows(body, sourceRows) {
+  const rows = new Map(), repository = body.evidence.repositoryInspection?.value;
+  if (!sourceRows.size) return rows;
+  const reviewed = repository?.reviewed, reference = body.contract.nativeBoundary?.inspectReadOnly;
+  if (reference?.kind !== "code-reviewer" || !reviewed || reviewed.resultKind === "readonly-audit"
+      || reviewed.verifiedTaskId !== reference.verifiedTaskId
+      || reviewed.verifiedExecutionId !== reference.verifiedExecutionId
+      || reviewed.baselineCommit !== reference.baselineCommit
+      || reviewed.reviewedCommit !== reference.reviewedCommit || reviewed.reviewedCommit !== repository.head
+      || createHash("sha256").update(reviewed.diff, "utf8").digest("hex") !== reviewed.diffDigest) return rows;
+  const sources = new Map();
+  for (const [row, value] of sourceRows) {
+    if (!reviewed.changedFiles.includes(row.path)) continue;
+    const originalLines = value.content.split("\n"), scannedLines = value.scan.split("\n"), lines = new Map();
+    if (originalLines.length !== scannedLines.length) continue;
+    for (let index = 0; index < originalLines.length; index++) {
+      const original = originalLines[index].replace(/\r$/, ""), scanned = scannedLines[index].replace(/\r$/, "");
+      if (original !== scanned && original.includes("/var/lib/apt/lists/*")) lines.set(original, scanned);
+    }
+    if (lines.size) sources.set(row.path, lines);
+  }
+  let section = null, oldHeader = false, newHeader = false, hunk = false;
+  const scan = reviewed.diff.replace(/[^\n]+(?:\n|$)|\n/g, raw => {
+    const ending = raw.endsWith("\n") ? "\n" : "", line = ending ? raw.slice(0, -1) : raw;
+    const text = line.replace(/\r$/, ""), header = /^diff --git a\/(\S+) b\/(\S+)$/.exec(text);
+    if (text.startsWith("diff --git ")) {
+      section = header && header[1] === header[2] && sources.has(header[1]) ? header[1] : null;
+      oldHeader = false; newHeader = false; hunk = false; return raw;
+    }
+    if (!section) return raw;
+    if (text.startsWith("--- ")) { oldHeader = text === "--- a/" + section; hunk = false; return raw; }
+    if (text.startsWith("+++ ")) { newHeader = text === "+++ b/" + section; hunk = false; return raw; }
+    if (text.startsWith("@@")) { hunk = oldHeader && newHeader && /^@@ -\d+(?:,\d+)? \+\d+(?:,\d+)? @@(?:.*)$/.test(text); return raw; }
+    if (!hunk || !/^[ +\-]/.test(text)) return raw;
+    const replacement = sources.get(section).get(text.slice(1));
+    return replacement === undefined ? raw : text[0] + replacement + (line.endsWith("\r") ? "\r" : "") + ending;
+  });
+  if (scan !== reviewed.diff) rows.set(reviewed, { content: reviewed.diff, scan });
+  return rows;
+}
 function checkedEnvelope(fresh, claimed, secrets, repositoryEvidence, priorAudit, codeReviewerPriorAudit) {
   // Check the original response before the navigation projection too: omission
   // must never conceal credentials or secret-bearing authoritative context.
@@ -322,8 +366,9 @@ function checkedEnvelope(fresh, claimed, secrets, repositoryEvidence, priorAudit
   // Private local paths are never prompt context. Relative repository paths and
   // canonical HTTPS origins remain evidence, not transport configuration.
   const containerRows = containerSourceScanRows(body);
+  const containerDiffRows = containerDiffScanRows(body, containerRows);
   const visit = (value, field = "input", parent, key) => {
-    const source = key === "content" ? containerRows.get(parent) : undefined;
+    const source = key === "content" ? containerRows.get(parent) : key === "diff" ? containerDiffRows.get(parent) : undefined;
     const scanned = source?.content === value ? source.scan : value;
     if (typeof scanned === "string" && /(?:(?:^|[^a-z0-9])[a-z]:[\\/]|\\\\[A-Za-z0-9][A-Za-z0-9._-]{0,63}[\\/][A-Za-z0-9]|file:\/\/|(?:^|[\s"'])\/(?:home|Users|tmp|var|etc|mnt|Volumes|root|srv|opt|run)\/)/i.test(scanned)) throw blocked("private_path", { field });
     if (value && typeof value === "object") for (const [key, item] of Object.entries(value)) {

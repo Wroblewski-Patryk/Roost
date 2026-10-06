@@ -15,7 +15,9 @@ class Native:
   if a[:3]==['docker','network','inspect']:
    members={'b'*64:{'IPv4Address':'192.0.2.6/24'},'c'*64:{'IPv4Address':'192.0.2.2/24'}}
    if self.case=='unrelated':members['9'*64]={'IPv4Address':'192.0.2.9/24'}
-   return json.dumps([{'Id':'a'*64,'IPAM':{'Config':[{'Subnet':'192.0.2.0/24'}]},'Containers':members},{'Id':'f'*64,'IPAM':{'Config':[{'Subnet':'192.0.2.128/25' if self.case=='overlap' else '198.51.100.0/24'}]}}])
+   target_ipam={'Config':None if self.case=='null-target' else [{'Subnet':'192.0.2.0/24'}]}
+   foreign_ipam=None if self.case=='positive-null-ipam' else {'Config':None if self.case=='positive-null-config' else [{'Subnet':'192.0.2.128/25' if self.case=='overlap' else '198.51.100.0/24'}]}
+   return json.dumps([{'Id':'a'*64,'IPAM':target_ipam,'Containers':members},{'Id':'f'*64,'IPAM':foreign_ipam}])
   if a[:2]==['docker','inspect']:
    ident=a[2]
    if ident=='b'*64:
@@ -24,7 +26,9 @@ class Native:
    return json.dumps([{'Id':ident,'Config':{'Labels':{'com.docker.compose.project':'other' if self.case=='unrelated' and ident=='9'*64 else 'example-project','com.docker.compose.service':'db'}},'HostConfig':{'PortBindings':{'8000/tcp':[{}]} if self.case=='published' else {}},'NetworkSettings':{'Ports':{}}}])
   if '/usr/bin/readlink' in a:return 'net:[123]\n'
   i=a.index('/usr/sbin/iptables');args=a[i+3:]
-  if args[:2]==['-S','OUTPUT']:return '\n'.join(self.rules)+'\n'
+  if args[:2]==['-S','OUTPUT']:
+   rules=[line.replace('-p tcp --dport','-p tcp -m tcp --dport') for line in self.rules] if self.case=='positive-tcp' else self.rules
+   return '\n'.join(rules)+'\n'
   self.mutations.append(args)
   if self.case=='timeout':raise TimeoutError('unknown native result')
   if args[:3]==['-I','OUTPUT','1']:self.rules.append('-A OUTPUT '+' '.join(args[3:]));return ''
@@ -33,10 +37,16 @@ class Native:
 case=sys.argv[2];native=Native(case)
 if case=='unowned':native.rules.append('-A OUTPUT -j ACCEPT')
 if case=='conflict':native.rules.append('-A OUTPUT -m comment --comment '+p['ruleComment']+' -j ACCEPT')
+if case in {'duplicate-tcp','wrong-port'}:
+ tokens=m.Controller({'operation':'read','policy':p},native).rule_args()
+ at=tokens.index('--dport')
+ if case=='duplicate-tcp':tokens=tokens[:at]+['-m','tcp','-m','tcp']+tokens[at:]
+ else:tokens[at+1]='8001'
+ native.rules.append('-A OUTPUT '+' '.join(tokens))
 c=m.Controller({'operation':'apply','policy':p},native)
 try:
  applied=c.execute()
- if case=='positive':
+ if case in {'positive','positive-tcp','positive-null-ipam','positive-null-config'}:
   read=m.Controller({'operation':'read','policy':p},native).execute()
   removed=m.Controller({'operation':'remove','policy':p},native).execute()
   print(json.dumps({'applied':applied,'read':read,'removed':removed,'mutations':native.mutations}));sys.exit(0)
@@ -44,14 +54,22 @@ try:
  print(json.dumps({'unexpected':True}))
 except Exception as e:print(json.dumps({'refused':True,'code':str(e),'effects':c.effects,'mutations':native.mutations}))
 `;
-function run(kind){const r=spawnSync('python',['-c',script,file,kind],{encoding:'utf8',timeout:10000});assert.equal(r.status,0,r.stderr);return JSON.parse(r.stdout);}
+function run(kind){const r=spawnSync('python',['-B','-c',script,file,kind],{encoding:'utf8',timeout:10000});assert.equal(r.status,0,r.stderr);return JSON.parse(r.stdout);}
 test('fixed Python controller with fixture transport applies, reads and removes exact owned OUTPUT rule',()=>{
  const r=run('positive');assert.equal(r.mutations.length,2);assert.equal(r.applied.effects,1);assert.equal(r.read.effects,0);
  assert.equal(r.removed.removed,true);assert.equal(r.removed.receipt.rulePresent,false);
  assert.equal(composeIngressFenceSchema.safeParse(r.applied.receipt).success,true);
  assert.equal(qualifyComposeIngressFence(r.applied.receipt,{targetId:'example-project',databaseContainerId:'c'.repeat(64)}).port,8000);
 });
-for(const kind of ['overlap','unrelated','published','unowned','conflict'])test(`native ingress refuses ${kind} before changing a rule`,()=>{
+test('fixed controller recognizes only iptables implicit TCP match and still removes the exact rule',()=>{
+ const r=run('positive-tcp');assert.equal(r.mutations.length,2);assert.equal(r.read.effects,0);
+ assert.equal(r.removed.removed,true);assert.equal(r.removed.receipt.rulePresent,false);
+ assert.equal(composeIngressFenceSchema.safeParse(r.applied.receipt).success,true);
+});
+for(const kind of ['positive-null-ipam','positive-null-config'])test(`standard foreign Docker ${kind} network allocates no overlapping subnet`,()=>{
+ const r=run(kind);assert.equal(r.mutations.length,2);assert.equal(r.read.effects,0);assert.equal(r.removed.removed,true);
+});
+for(const kind of ['overlap','unrelated','published','unowned','conflict','duplicate-tcp','wrong-port','null-target'])test(`native ingress refuses ${kind} before changing a rule`,()=>{
  const r=run(kind);assert.equal(r.refused,true);assert.equal(r.effects,0);assert.equal(r.mutations.length,0);
 });
 for(const kind of ['timeout','restart'])test(`native ingress preserves uncertain ${kind} after attempted effect`,()=>{

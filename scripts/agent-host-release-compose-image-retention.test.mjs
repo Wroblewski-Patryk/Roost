@@ -230,7 +230,8 @@ test('installed prequeue rechecks protection; successful config does not grandfa
 });
 test('installed finished candidate retains actual complete built-image set before returning deployment outcome',async t=>{
  const x=installedFixture(t),o=optIn(x,{preexisting:true}),installed=o.install();x.live.phase='candidate';const options=x.operation(false);x.intentFor(options);x.live.queue=x.queueFor(options);o.images.set(fixtureModule.image('f'),image(fixtureModule.image('f')));
- const actual=await installed.coolify.reconcileDeployment(x.m,x.s,options);assert.equal(actual.state,'finished');assert.equal(x.calls.filter(c=>c.kind==='retention-create').length,1);const retained=installed.imageRetention.lastEvidence();assert.deepEqual(retained.additionalImages,[fixtureModule.image('f')]);assert.equal(retained.anchors.length,4);assert.equal(retained.runtimeStarted,false);
+ await assert.rejects(()=>installed.coolify.reconcileDeployment(x.m,x.s,options),/retention_anchor_required/);assert.equal(x.calls.filter(c=>c.kind==='retention-create').length,0);
+ const actual=await installed.coolify.deploy(x.m,x.s,options);assert.equal(actual.state,'finished');assert.equal(x.calls.filter(c=>c.kind==='retention-create').length,1);const retained=installed.imageRetention.lastEvidence();assert.deepEqual(retained.additionalImages,[fixtureModule.image('f')]);assert.equal(retained.anchors.length,4);assert.equal(retained.runtimeStarted,false);
 });
 test('installed runtime reconciliation may query pending retention but cannot create anchors after deploy outcome',async t=>{
  const x=installedFixture(t),o=optIn(x,{preexisting:true}),installed=o.install();x.live.phase='candidate';const options=x.operation(false);x.intentFor(options);x.state.journal[0].outcome={status:'uncertain'};x.live.queue=x.queueFor(options);o.images.set(fixtureModule.image('f'),image(fixtureModule.image('f')));

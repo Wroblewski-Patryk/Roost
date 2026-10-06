@@ -87,13 +87,23 @@ class Controller:
         target = [n for n in networks if n["Id"] == p["networkId"]]
         require(len(target) == 1, "network_missing")
         target = target[0]
-        subnets = target.get("IPAM", {}).get("Config", [])
-        require(len(subnets) == 1 and subnets[0].get("Subnet") == p["subnet"], "network_subnet_changed")
+        target_ipam = target.get("IPAM")
+        require(isinstance(target_ipam, dict), "network_subnet_changed")
+        subnets = target_ipam.get("Config")
+        require(isinstance(subnets, list) and len(subnets) == 1
+                and isinstance(subnets[0], dict) and subnets[0].get("Subnet") == p["subnet"], "network_subnet_changed")
         selected = ipaddress.ip_network(p["subnet"])
         for n in networks:
             if n["Id"] == p["networkId"]:
                 continue
-            for c in n.get("IPAM", {}).get("Config", []):
+            # Docker host/none networks report null IPAM configuration. They
+            # allocate no subnet; the selected project still requires its exact subnet.
+            ipam = n.get("IPAM") or {}
+            require(isinstance(ipam, dict), "network_ipam_invalid")
+            configs = ipam.get("Config") or []
+            require(isinstance(configs, list) and len(configs) <= 16
+                    and all(isinstance(c, dict) for c in configs), "network_ipam_invalid")
+            for c in configs:
                 if c.get("Subnet"):
                     other = ipaddress.ip_network(c["Subnet"])
                     require(other.version != 4 or not selected.overlaps(other), "shared_subnet")
@@ -130,9 +140,14 @@ class Controller:
         require(len(lines) <= 128 and sum(map(len, lines)) <= 16384, "rules_bound")
         owned = [line for line in lines if self.p["ruleComment"] in line]
         expected = "-A OUTPUT " + " ".join(self.rule_args())
-        # iptables may quote an otherwise identical comment; parse tokens.
+        # iptables may quote comments and print its implicit TCP match module.
+        # Accept only that exact optional module at its canonical position;
+        # every other token, duplicate match or changed effect still refuses.
         import shlex
-        require(len(owned) <= 1 and all(shlex.split(line) == shlex.split(expected) for line in owned), "owned_rule_conflict")
+        expected_tokens = shlex.split(expected)
+        tcp_at = expected_tokens.index("--dport")
+        with_tcp_match = expected_tokens[:tcp_at] + ["-m", "tcp"] + expected_tokens[tcp_at:]
+        require(len(owned) <= 1 and all(shlex.split(line) in (expected_tokens, with_tcp_match) for line in owned), "owned_rule_conflict")
         others = [line for line in lines if line not in owned]
         require(digest(others) == self.p["originalRulesDigest"], "unowned_rules_changed")
         return lines, bool(owned)

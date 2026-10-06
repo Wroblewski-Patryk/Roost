@@ -112,6 +112,12 @@ export function createCoolifyComposeAdapter({ gateway, now = () => Date.now(),
         configuration: row.configuration, runtime: row.runtime, binding: row.binding }],
         deploymentIds: [{ targetId: t.targetId, deploymentId: row.binding.deploymentId }] };
     }
+    if(!rollback&&typeof gateway.inspectCandidateIngress==='function'){
+      const ingress=await gateway.inspectCandidateIngress();
+      check(ingress&&typeof ingress.blocked==='boolean','candidate_ingress_observation_unproven');
+      if(ingress.blocked)return{state:'uncertain',candidateIngressBlocked:true,settling:false,
+        deploymentIds:[{targetId:t.targetId,deploymentId:row.binding.deploymentId}]};
+    }
     const probes = await gateway.checkServices(m, { rollback });
     check(probes && typeof probes.healthy === 'boolean' && hash.test(probes.healthDigest)
       && probes.dataDigest === m.baseline.dataDigest, 'health_or_data_unproven');
@@ -131,7 +137,7 @@ export function createCoolifyComposeAdapter({ gateway, now = () => Date.now(),
       'runtime_identity_unproven');
     return evidence;
   };
-  const reconcileOnce = async (m, s, o) => {
+  const reconcileOnce = async (m, s, o,effectScope=null) => {
     const result = await queue(m, s, o);
     if (['absent','failed'].includes(result.state)) {
       check(typeof gateway.inspectRecovery==='function','recovery_reader_required');
@@ -143,23 +149,47 @@ export function createCoolifyComposeAdapter({ gateway, now = () => Date.now(),
       return {...result,evidence,composeRecovery:evidence.composeRecovery};
     }
     if (result.state !== 'finished') return result;
-    const evidence = await health(m, s, o);
+    // This permission is selected by start(), never by a dispatch packet or a
+    // readonly waiter. Installed image retention may create only in this path.
+    const mayOpen=effectScope!==null&&!effectScope.opened&&!effectScope.held;
+    const effectRuntime=mayOpen?await gateway.inspectRuntime(bound(m,s).targetId,{rollback:o.rollback===true,operationEffect:true}):null;
+    let ingressOpened=effectScope?.opened===true&&!effectScope.held;
+    if(mayOpen&&!o.rollback&&typeof gateway.openCandidateIngress==='function'){
+      const t=bound(m,s),r=effectRuntime;
+      if(r.runtime.services.some(service=>['app','database'].includes(service.role)&&service.health==='starting'))return health(m,s,o);
+      try{qualifyComposeRuntime({expected:phase(t,false),configuration:r.configuration,runtime:r.runtime,binding:r.binding});}
+      catch{deny('candidate_ingress_runtime_unproven');}
+      check(r.binding.deploymentId===result.queue.deploymentId&&r.binding.queue.status==='finished'&&r.binding.commit===s.commit&&r.binding.tree===s.candidateTree,'candidate_ingress_queue_changed');
+      try{await gateway.openCandidateIngress(optionsFor(m,s,o));effectScope.opened=true;ingressOpened=true;}catch(error){deny('candidate_ingress_open_uncertain',true,error);}
+    }
+    let evidence;
+    try{evidence=await health(m,s,o);}catch(error){
+      if(ingressOpened&&typeof gateway.holdCandidateIngress==='function'){
+        try{await gateway.holdCandidateIngress(optionsFor(m,s,o));effectScope.held=true;}catch(cause){deny('candidate_ingress_failure_hold_uncertain',true,cause);}
+      }
+      throw error;
+    }
+    if(ingressOpened&&evidence.healthy===false){
+      check(typeof gateway.holdCandidateIngress==='function','candidate_failure_hold_required');
+      try{await gateway.holdCandidateIngress(optionsFor(m,s,o));effectScope.held=true;}catch(error){deny('candidate_ingress_failure_hold_uncertain',true,error);}
+    }
     check(contract.releaseDigest(result.deploymentIds) === contract.releaseDigest(evidence.deploymentIds), 'runtime_queue_changed');
     return { ...result, ...evidence };
   };
   const isSettling = result => result.settling === true || result.state === 'finished' && result.composeTargets?.some(r => r.runtime.services.some(s =>
     ['app', 'database'].includes(s.role) && s.health === 'starting'));
-  const waitForDeployment = async (m, s, o) => {
+  const waitForDeploymentInternal = async (m, s, o,effectScope=null) => {
     const deadline = now() + 60000;
     do {
       if (o.stopped?.()) deny('wait_stopped', true);
-      const result = await reconcileOnce(m, s, o);
+      const result = await reconcileOnce(m, s, o,effectScope);
       const settling = isSettling(result);
       if (result.state !== 'pending' && !settling) return result;
       if (now() >= deadline) return { ...result, state: 'uncertain' };
       await sleep(Math.min(1000, deadline - now()));
     } while (true);
   };
+  const waitForDeployment=(m,s,o)=>waitForDeploymentInternal(m,s,o,null);
   const reconcileDeployment = async (m, s, o) => {
     const result = await reconcileOnce(m, s, o);
     // Reconciliation can observe the same finished queue while its new
@@ -177,7 +207,7 @@ export function createCoolifyComposeAdapter({ gateway, now = () => Date.now(),
       result = await queue(m, s, context);
       if (result.state === 'absent') deny('dispatch_uncertain', true);
     }
-    return ['pending', 'finished'].includes(result.state) ? waitForDeployment(m, s, context) : result;
+    return ['pending', 'finished'].includes(result.state) ? waitForDeploymentInternal(m, s, context,{opened:false,held:false}) : result;
   };
   const reconcileConfiguration = async (m, s, o = {}) => {
     const t = bound(m, s), rollback = o.rollback === true, row = await gateway.inspectConfiguration(t.targetId);
