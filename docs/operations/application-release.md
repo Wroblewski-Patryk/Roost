@@ -1611,7 +1611,7 @@ claimed. The existing daily cleanup remains configured for 01:00 UTC, with
 unused-volume deletion disabled; no additional timer or paid resource was added.
 
 `agent-host-image-retention.mjs` qualifies an explicit bounded installation
-policy and stopped image anchors. Anchors have no application environment,
+policy and stopped image anchors. Anchors add no application environment,
 mounts, ports or network, and override inherited `coolify.managed` to false.
 They are never started. Four surviving candidate images have actual anchors;
 native proof `a33cd6fb` shows Docker refusing image removal because its exact
@@ -1623,9 +1623,32 @@ forced deletion or a generic system prune. Eighteen retention cases pass.
 An attempted retention-count change from two to eight was read back, then
 reverted to two: changing this setting would invalidate the immutable release
 configuration. Fresh scoped-query digests prove application and other settings
-unchanged after the reversion. Anchor retention provides the current protection;
-automatic anchor creation and retirement in future release lifecycles are not
-yet proven. Missing images still require a genuinely governed replacement path.
+unchanged after the reversion. Anchor retention provides the current protection.
+Missing images still require a genuinely governed replacement path.
+
+Normal application evidence record `7461882a` stores the bounded native anchor
+proof and its readback. It explicitly records that the original baseline images
+were not restored and the application is down; it is not release acceptance.
+
+The Compose Worker now supports a sealed installation opt-in
+`imageRetention: { policy: { file, sha256 } }`. The policy is outside the checkout,
+binds the exact manifest digest and deduplicated built baseline image IDs, and
+excludes the database image. Provision and inspect baseline anchors before
+admission: readonly baseline inspection does not create missing anchors. A
+qualified configuration intent can ensure existing baseline protection; queue
+dispatch rechecks it. Exact finished build attribution or qualified failed
+partial attribution can retain candidate images before the outcome is recorded.
+An unknown create is inspected by its deterministic name; absence never permits
+an automatic retry. The Worker exposes bounded inspection evidence separately
+from the unchanged release outcome schema. No application environment is added;
+nonempty sensitive image environment is refused before creation.
+
+Root verification passes 502 component cases, including 31 new retention cases.
+This lifecycle integration has not yet run in a new application release. The
+candidate is not protected against cleanup during its build or between completion
+and its first qualified inspection. Baseline protection does not imply candidate
+protection, healthy rollback, automatic anchor retirement or bounded long-term
+anchor storage. The existing cleanup schedule is unchanged.
 
 Primary independent review of a readonly auditor result now has a strict
 existing-contract branch: the pinned prior-audit execution must equal the

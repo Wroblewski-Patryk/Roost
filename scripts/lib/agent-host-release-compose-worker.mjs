@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import {configureComposeWithQualifiedModelCas} from './agent-host-release-compose-config.mjs';
 import {composeConfigurationSchemaReadPhp,qualifyComposeConfigurationSchema} from './agent-host-release-compose-config-schema.mjs';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
@@ -22,6 +22,7 @@ import { coolifyGitSetDeploymentId } from './agent-host-release-coolify-git-set-
 import contract from './agent-host-release-contract.cjs';
 import { installedActivitySettingsSchema, createActivityReleaseAdapter } from './agent-host-release-activity-adapter.mjs';
 import { createInstalledActivityTransport } from './agent-host-release-activity-installed.mjs';
+import { imageRetentionPolicySchema, retainedImageAnchor, qualifyRetentionImage, qualifyRetentionAnchor } from './agent-host-image-retention.mjs';
 
 const hex=z.string().regex(/^[a-f0-9]{64}$/),alias=z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,79}$/);
 const file=z.string().min(3).max(1000).refine(v=>path.isAbsolute(v)&&path.normalize(v)===v);
@@ -38,7 +39,8 @@ export const installedComposeReleaseSchema=z.object({sshHost:alias,sshAddressFam
  fingerprintTimeoutMs:releaseFingerprintTimeoutSchema.min(30000).max(300000).optional(),
  capacity:z.object({minDiskBytes:z.number().int().positive(),minMemoryBytes:z.number().int().positive(),maxLoad1:z.number().positive().max(100)}).strict(),
  coolify:z.object({origin,certificateSha256:hex.optional()}).strict(),health:composeHealthSettingsSchema,
- activity:installedActivitySettingsSchema.optional()
+ activity:installedActivitySettingsSchema.optional(),
+ imageRetention:z.object({policy:sealedFile}).strict().optional()
 }).strict().superRefine((v,c)=>{if(v.sshHost!==v.source.sshHost)c.addIssue({code:'custom',message:'installation_scope_invalid'});});
 const deny=(reason,cause)=>{throw Object.assign(Error(`release_compose_installation_${reason}`,cause?{cause}:undefined),{retryable:false,releaseBlocked:true});};
 const check=(v,r)=>{if(!v)deny(r);};
@@ -61,6 +63,71 @@ if(file_exists($target)){if(hash_file('sha256',$target)!==$p['sha256'])throw new
 else{$f=fopen($target,'x');if(!$f)throw new Exception('create');if(fwrite($f,$bytes)!==strlen($bytes)){fclose($f);throw new Exception('write');}fflush($f);fclose($f);chmod($target,0600);}
 if(is_link($target)||hash_file('sha256',$target)!==$p['sha256'])throw new Exception('readback');echo '{"staged":true}';`;
 const capacityCommand="set -eu; dockerRoot=$(docker info --format '{{.DockerRootDir}}'); disk=$(df -PB1 -- \"$dockerRoot\" | awk 'NR==2{print $4}'); memory=$(awk '/^MemAvailable:/{printf \"%.0f\",$2*1024}' /proc/meminfo); load=$(cut -d ' ' -f1 /proc/loadavg); printf '{\"diskBytes\":%s,\"memoryBytes\":%s,\"load1\":%s}' \"$disk\" \"$memory\" \"$load\"";
+
+/** Exact installation opt-in; legacy snapshots retain their original wire.
+ * Retention never proves a healthy runtime or a compatible image build. */
+export function qualifyComposeImageRetentionPolicy(value,snapshot){
+ const policy=imageRetentionPolicySchema.parse(value),m=contract.manifestSchema.parse(snapshot.manifest),t=m.deployment.targets[0];
+ check(contract.isComposeManifest(m)&&m.purpose==='application_release'&&policy.scopeDigest===contract.releaseDigest(m),'retention_scope_changed');
+ const built=t.baseline.configuration.services.filter(r=>r.source==='built'),database=t.baseline.configuration.services.filter(r=>r.role==='database');
+ check(database.length===1&&built.every(r=>['app','migration','cadence'].includes(r.role)),'retention_service_scope_invalid');
+ const images=built.map(r=>{const rows=t.baseline.images.filter(i=>i.name===r.name);check(rows.length===1,'retention_baseline_image_unproven');return rows[0].imageDigest;});
+ const exact=[...new Set(images)].sort();check(contract.releaseDigest([...policy.images].sort())===contract.releaseDigest(exact)
+  &&!policy.images.includes(database[0].imageDigest)&&policy.images.every(i=>m.cleanup.protectedResourceIds.includes(i)),'retention_images_changed');
+ return{...policy,images:exact};
+}
+export function composeImageRetentionJournalFile(policyFile,policy,releaseId){
+ const parsed=imageRetentionPolicySchema.parse(policy);check(path.isAbsolute(policyFile)&&path.normalize(policyFile)===policyFile&&z.string().uuid().safeParse(releaseId).success,'retention_policy_path_invalid');
+ const target=path.join(path.dirname(policyFile),`image-retention-journal-${parsed.scopeDigest}-${releaseId}.json`);
+ check(target!==policyFile,'retention_journal_policy_collision');return target;
+}
+const retentionEnvironment=observed=>{const env=observed?.Config?.Env??[];check(Array.isArray(env)&&env.length<=200&&env.every(v=>typeof v==='string'&&v.length<=8192),'retention_environment_unproven');
+ check(env.every(v=>{const at=v.indexOf('=');return at>0&&(!/(?:SECRET|TOKEN|PASSWORD|API_KEY|PRIVATE_KEY|SIGNING_KEY|ENCRYPTION_KEY|CREDENTIAL|SESSION_KEY|DATABASE_URL)/i.test(v.slice(0,at))||v.slice(at+1)==='');}),'retention_sensitive_image_environment_forbidden');return env;};
+export function qualifyComposeRetentionObservation(image,anchor,plan){
+ const i=qualifyRetentionImage(image,plan),a=qualifyRetentionAnchor(anchor,plan),env=retentionEnvironment(image);
+ check(contract.releaseDigest(retentionEnvironment(anchor))===contract.releaseDigest(env),'retention_application_environment_added');
+ return{...a,environmentFromImageOnly:true,environmentDigest:contract.releaseDigest(env),imageMetadataDigest:contract.releaseDigest(i)};
+}
+/** Fixed native transports and journal IO are supplied only by installed code.
+ * An uncertain create is queried by its deterministic name, never repeated. */
+export function createComposeImageRetention({policy,snapshot,ssh,readJournal,writeJournal,assertEffect,now=()=>Date.now()}){
+ const p=qualifyComposeImageRetentionPolicy(policy,snapshot),m=snapshot.manifest,t=m.deployment.targets[0];
+ check([ssh,readJournal,writeJournal,assertEffect].every(f=>typeof f==='function'),'retention_fixed_callbacks_required');
+ const binding={installationId:p.installationId,scopeDigest:p.scopeDigest,manifestDigest:contract.releaseDigest(m),releaseId:snapshot.releaseId,
+  applicationId:snapshot.applicationId,targetId:t.targetId,policyDigest:contract.releaseDigest(p)};
+ const load=async()=>{const j=await readJournal();if(j===null)return{schemaVersion:'roost-compose-image-retention-journal-v1',binding,anchors:{},pending:null};
+  check(j?.schemaVersion==='roost-compose-image-retention-journal-v1'&&contract.releaseDigest(j.binding)===contract.releaseDigest(binding)
+   &&j.anchors&&typeof j.anchors==='object'&&!Array.isArray(j.anchors)&&(!j.pending||/^sha256:[a-f0-9]{64}$/.test(j.pending.image)),'retention_journal_scope_changed');return structuredClone(j);};
+ const imageRead=async image=>{let v;try{v=JSON.parse(await ssh({command:`docker image inspect --format '{{json .}}' -- ${quote(image)}`,maxOutputBytes:65536}));}catch(e){deny('retention_image_missing',e);}return v;};
+ const anchorRead=async plan=>{const ids=(await ssh({command:`docker container ls --all --no-trunc --filter ${quote('name=^/'+plan.name+'$')} --format '{{.ID}}'`,maxOutputBytes:1024})).trim().split(/\r?\n/).filter(Boolean);
+  check(ids.length<=1&&ids.every(i=>/^[a-f0-9]{64}$/.test(i)),'retention_anchor_identity_unproven');if(!ids.length)return null;
+  return JSON.parse(await ssh({command:`docker container inspect --format '{{json .}}' -- ${quote(ids[0])}`,maxOutputBytes:65536}));};
+ const desired=additional=>{check(Array.isArray(additional)&&additional.every(i=>/^sha256:[a-f0-9]{64}$/.test(i)),'retention_extra_images_invalid');
+  const database=t.baseline.configuration.services.find(r=>r.role==='database');check(!additional.includes(database.imageDigest),'retention_database_anchor_forbidden');
+  return imageRetentionPolicySchema.parse({...p,images:[...new Set([...p.images,...additional])].sort()});};
+ const observe=async({additionalImages=[],effect=null}={})=>{const effective=desired(additionalImages),j=await load(),proofs=[];let created=0;
+  for(const image of effective.images){const plan=retainedImageAnchor(effective,image),imageObservation=await imageRead(image);qualifyRetentionImage(imageObservation,plan);retentionEnvironment(imageObservation);let anchor=await anchorRead(plan);
+   if(!anchor){check(effect,'retention_anchor_required');check(!j.pending,'retention_uncertain_create_no_retry');await assertEffect(effect);
+    const pending={image,name:plan.name,planDigest:contract.releaseDigest(plan),effect:structuredClone(effect),at:new Date(now()).toISOString()};j.pending=pending;await writeJournal(j);
+    await assertEffect(effect);let createError;try{const argv=[plan.argv[0],'--pull','never',...plan.argv.slice(1)],out=(await ssh({command:'docker '+argv.map(quote).join(' '),maxOutputBytes:1024})).trim();check(/^[a-f0-9]{64}$/.test(out),'retention_create_result_unproven');created++;}catch(e){createError=e;}
+    // An inspect failure or absence after dispatch preserves the durable intent.
+    try{anchor=await anchorRead(plan);}catch(e){throw Object.assign(Error('release_compose_installation_retention_create_uncertain',{cause:e}),{uncertain:true,retryable:false,releaseBlocked:true});}
+    if(!anchor)throw Object.assign(Error('release_compose_installation_retention_create_uncertain',createError?{cause:createError}:undefined),{uncertain:true,retryable:false,releaseBlocked:true});
+   }
+   const proof=qualifyComposeRetentionObservation(await imageRead(image),anchor,plan);proofs.push(proof);
+   if(!effect&&j.pending?.image===image){check(j.pending.name===plan.name&&j.pending.planDigest===contract.releaseDigest(plan),'retention_pending_identity_changed');
+    j.anchors[image]={...proof,observedAt:new Date(now()).toISOString(),effect:j.pending.effect,readbackVerified:true,reconciledByActualInspection:true};j.pending=null;await writeJournal(j);}
+   if(effect){await assertEffect(effect);check(!j.pending||j.pending.image===image&&j.pending.planDigest===contract.releaseDigest(plan),'retention_pending_identity_changed');
+    j.anchors[image]={...proof,observedAt:new Date(now()).toISOString(),effect:structuredClone(effect),readbackVerified:true};if(j.pending?.image===image)j.pending=null;await writeJournal(j);}
+  }
+  // A missing anchor never authorizes retry. Only an exact actual readback of
+  // an already-created owned anchor can reconcile the local durable intent.
+  return{schemaVersion:'roost-compose-image-retention-evidence-v1',...binding,baselineImages:[...p.images],additionalImages:[...new Set(additionalImages)].sort(),anchors:proofs,
+   observedAt:new Date(now()).toISOString(),pendingCreate:j.pending?{image:j.pending.image,name:j.pending.name}:null,createdAnchors:created,
+   observationOnly:effect===null,allStopped:true,applicationEnvironmentAdded:false,mounts:0,network:'none',runtimeStarted:false,deploymentOrHealthProof:false,
+   journalDigest:contract.releaseDigest(j)};};
+ return Object.freeze({inspect:options=>observe(options),ensure:options=>observe(options)});
+}
 
 // The post-observation stages may deliberately resume cadence state, but may
 // never replace a container, image, mount or accepted source binding.
@@ -298,6 +365,10 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
  check(ownership.applicationId===s.applicationId&&ownership.canonicalDir===m.repository.canonicalDir&&ownership.repositoryUrl===m.repository.url
   &&contract.releaseDigest(ownership.targetIds)===contract.releaseDigest([t.targetId])
   &&contract.releaseDigest(ownership.protectedResourceIds)===contract.releaseDigest(m.cleanup.protectedResourceIds),'ownership_binding_changed');
+ const retentionPolicy=cfg.imageRetention?qualifyComposeImageRetentionPolicy(JSON.parse(bytesFor(cfg.imageRetention.policy.file,cfg.imageRetention.policy.sha256)),s):null;
+ const retentionJournalFile=retentionPolicy?composeImageRetentionJournalFile(cfg.imageRetention.policy.file,retentionPolicy,s.releaseId):null;
+ const retentionDirectoryIdentity=retentionPolicy?identity(path.dirname(retentionJournalFile)):null;
+ if(retentionPolicy)check(!inside(cfg.workspaceRoot,retentionJournalFile)&&!seals.has(retentionJournalFile),'retention_journal_path_invalid');
  const baseline=JSON.parse(bytesFor(cfg.baselineObservation.file,cfg.baselineObservation.sha256));
  const recovery=contract.releaseHasRecoveryOnly(s);
  check(s.recoveryOnly===undefined?cfg.recoveryEntryTemplate===undefined&&cfg.recoveryPreviousManifest===undefined&&cfg.recoveryMaterializationTemplate===undefined
@@ -344,6 +415,22 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
    cwd:os.tmpdir(),input:stdin,durationMs:timeoutMs,maxBytes:maxOutputBytes});}catch(e){deny('ssh_unavailable',e);}
   await assertClone();check(Buffer.byteLength(out)<=maxOutputBytes,'response_size_invalid');return out.toString('utf8');
  };
+ let retentionJournalSource=null,lastRetentionEvidence=null;
+ const readRetentionJournal=async()=>{check(identity(path.dirname(retentionJournalFile))===retentionDirectoryIdentity,'retention_directory_changed');
+  if(!existsSync(retentionJournalFile)){check(!retentionJournalSource,'retention_journal_disappeared');return null;}
+  const id=identity(retentionJournalFile,false),bytes=read(retentionJournalFile);check(Buffer.isBuffer(bytes)&&bytes.length>0&&bytes.length<=1048576,'retention_journal_unproven');
+  if(retentionJournalSource)check(id===retentionJournalSource.id&&hash(bytes)===retentionJournalSource.hash,'retention_journal_changed');retentionJournalSource={id,hash:hash(bytes)};return JSON.parse(bytes);};
+ const writeRetentionJournal=async value=>{await assertClone();check(identity(path.dirname(retentionJournalFile))===retentionDirectoryIdentity,'retention_directory_changed');
+  if(retentionJournalSource){check(identity(retentionJournalFile,false)===retentionJournalSource.id&&hash(read(retentionJournalFile))===retentionJournalSource.hash,'retention_journal_changed');}
+  else check(!existsSync(retentionJournalFile),'retention_journal_collision');
+  const bytes=Buffer.from(JSON.stringify(value,null,2)+'\n');check(bytes.length<=1048576,'retention_journal_unproven');writeFileSync(retentionJournalFile,bytes,{flag:retentionJournalSource?'w':'wx',mode:0o600,flush:true});
+  const id=identity(retentionJournalFile,false);check(read(retentionJournalFile).equals(bytes)&&(!retentionJournalSource||id===retentionJournalSource.id),'retention_journal_readback_unproven');retentionJournalSource={id,hash:hash(bytes)};};
+ const assertRetentionEffect=async effect=>{const current=await dependencies.readReleaseState(),last=current?.journal?.at(-1);
+  check(current?.release?.id===s.releaseId&&['active','reconciliation_required'].includes(current.status)&&contract.releaseDigest(current.release.snapshot)===snapshotDigest
+   &&last?.id===effect.operationId&&last.operation===effect.operation&&last.createdAt===effect.since&&!last.outcome
+   &&['deploy_config','rollback_config','deploy','rollback'].includes(last.operation),'retention_durable_intent_required');};
+ const imageRetention=retentionPolicy?createComposeImageRetention({policy:retentionPolicy,snapshot:s,ssh,readJournal:readRetentionJournal,writeJournal:writeRetentionJournal,
+  assertEffect:assertRetentionEffect,now:dependencies.now??Date.now}):null;
  const php=async(program,payload={})=>{
   const encoded=Buffer.from(JSON.stringify(payload)).toString('base64');let value;
   try{value=JSON.parse(await ssh({command:'docker exec -i coolify php',stdin:`<?php\nerror_reporting(0);ini_set('display_errors','0');try{$p=json_decode(base64_decode('${encoded}',true),true,32,JSON_THROW_ON_ERROR);${bootstrap}${program}}catch(Throwable $e){echo '{"unproven":true}';exit(1);}`}));}catch(e){deny('response_unproven',e);}return value;
@@ -473,6 +560,7 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
  };
  const preparePhase=async(mode,options)=>{
   await checkIntent({...options,rollback:mode==='rollback'});const p=policies[mode],configuration=await observeConfig();
+  if(imageRetention){lastRetentionEvidence=await imageRetention.inspect();check(lastRetentionEvidence.pendingCreate===null,'retention_pending_effect_unproven');}
   check(composeConfigurationDigest(configuration)===p.phaseConfigDigest,'phase_configuration_changed');
   const observed=await inspector.inspectLegacyBaseline(t.targetId,configuration.gitCommit);
   const refs=[...new Set(p.services.flatMap(r=>[r.imageDigest,...(r.source==='image'?[r.imageRef]:[])]))];
@@ -495,6 +583,8 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
    await inspectRecoveryEntry({previousState:recoveryContext.previousState});
   }else check(ordinaryPreimage,'configuration_preimage_changed');
   if(mode==='candidate')check((await github.inspect(m,{allowArchived:false})).remoteBase===s.commit,'remote_commit_changed');
+  check((await checkIntent({rollback:mode==='rollback'},true)).id===intent.id,'phase_intent_changed');
+  if(imageRetention)lastRetentionEvidence=await imageRetention.ensure({effect:{operationId:intent.id,operation:intent.operation,since:intent.createdAt}});
   check((await checkIntent({rollback:mode==='rollback'},true)).id===intent.id,'phase_intent_changed');
   const p=policies[mode];check((await php(stagePhp,{targetId:t.targetId,name:composePhaseArtifactFile(p),bytes:artifacts[mode].toString('base64'),sha256:p.artifactDigest})).staged===true,'artifact_stage_unproven');
   check((await checkIntent({rollback:mode==='rollback'},true)).id===intent.id,'phase_intent_changed');
@@ -643,7 +733,13 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
     const evidence={composeRecovery:r,deploymentIds:[{targetId:t.targetId,deploymentId:queue.deploymentId}],artifactSetDigest:m.deployment.artifactSetDigest,
      configDigest:m.deployment.configDigest,schemaDigest:safe.schemaDigest,dataDigest:safe.dataDigest,healthDigest:health.healthDigest,healthy:false,
      observedAt:new Date((dependencies.now??Date.now)()).toISOString(),currentServiceSetDigest:composeRuntimeSetDigest(r.services)};
-    check(contract.composeRecoveryEvidenceError(s,evidence,operation)===null,'partial_observation_unproven');return evidence;
+    check(contract.composeRecoveryEvidenceError(s,evidence,operation)===null,'partial_observation_unproven');
+    if(imageRetention){check(partial.proof.sourceAttribution&&partial.proof.images.length===t.configuration.services.filter(d=>d.source==='built').length,'retention_failed_build_attribution_required');
+     const current=await dependencies.readReleaseState(),last=current.journal.at(-1),effect=last.id===operation.id&&!last.outcome
+      ?{operationId:last.id,operation:last.operation,since:last.createdAt}:null;
+     lastRetentionEvidence=await imageRetention.ensure({additionalImages:partial.proof.images.map(i=>i.imageDigest),effect});
+     check(lastRetentionEvidence.pendingCreate===null,'retention_pending_effect_unproven');
+    }return evidence;
    }
   }
   const proof=qualifyComposeRetainedBaseline({configuration:t.baseline.configuration,images:t.baseline.images,services,baselineServices});
@@ -700,6 +796,7 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
  const adapter=createCoolifyComposeAdapter({now:dependencies.now,sleep:dependencies.sleep,gateway:{
   inspectConfiguration:observeConfig,
   inspectBaseline:async()=>{await assertClone();
+   if(imageRetention){lastRetentionEvidence=await imageRetention.inspect();check(lastRetentionEvidence.pendingCreate===null,'retention_pending_effect_unproven');}
    // Read the installed controller capacity before the broker records a write
    // intent. Installation DDL remains an explicit operator operation.
    qualifyComposeConfigurationSchema((await php(composeConfigurationSchemaReadPhp)).schema);
@@ -707,8 +804,17 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
    check(composeConfigurationDigest(o.configuration)===t.baseline.configDigest&&o.services.length===baseline.services.length
     &&o.services.every(r=>baseline.services.some(b=>b.name===r.name&&b.role===r.role&&b.imageDigest===r.imageDigest&&b.mountDigest===r.mountDigest
       &&(r.role!=='database'||r.containerId===b.containerId))),'baseline_runtime_changed');
-   const f=await fingerprint(),h=await services(m,{baseline:true});return{...baseline,...f,healthDigest:h.healthDigest,healthy:h.healthy};},
+   const f=await fingerprint(),h=await services(m,{baseline:true});return{...baseline,...f,healthDigest:h.healthDigest,healthy:h.healthy,
+    ...(lastRetentionEvidence?{imageRetention:lastRetentionEvidence}:{})};},
   inspectRuntime:async()=>{const context=live.get(t.targetId);check(context,'current_queue_required');const q=await raw.readQueue(context);check(q?.status==='finished'&&q.commit!=='HEAD','finished_queue_required');const e=await inspector.readEvidence(q);
+   if(imageRetention){const built=t.configuration.services.filter(r=>r.source==='built'),images=built.map(d=>{const row=e.binding.images.find(r=>r.name===d.name),runtime=e.runtime.services.find(r=>r.name===d.name);
+     check(row&&runtime&&row.imageDigest===runtime.imageDigest&&row.commit===q.commit&&row.tree===(context.rollback?t.baseline.tree:s.candidateTree)&&row.deploymentId===q.deploymentId,'retention_finished_built_image_unproven');return row.imageDigest;});
+    check(e.configuration.gitCommit===q.commit&&composeConfigurationDigest(e.configuration)===(context.rollback?t.rollbackConfigDigest:t.configDigest),'retention_runtime_configuration_changed');
+    const current=await dependencies.readReleaseState(),operation=current.journal.find(r=>r.id===context.operationId);
+    check(operation?.operation===(context.rollback?'rollback':'deploy')&&operation.intent?.parameters?.targetId===t.targetId&&operation.createdAt===context.since,'retention_exact_finished_intent_required');
+    const effect=!operation.outcome?{operationId:operation.id,operation:operation.operation,since:operation.createdAt}:null;
+    lastRetentionEvidence=await imageRetention.ensure({additionalImages:images,effect});check(lastRetentionEvidence.pendingCreate===null,'retention_pending_effect_unproven');
+   }
    return{targetId:t.targetId,...e,healthy:e.runtime.services.every(r=>['app','database'].includes(r.role)?r.health==='healthy':r.role==='migration'?r.state==='exited'&&r.exitCode===0:['paused','created','exited'].includes(r.state))};},
   readQueue:async o=>{live.set(t.targetId,o);return raw.readQueue(o);},inspectRecovery:recoveryObservation,inspectConfigurationAbsence:configurationAbsenceObservation,
   configure:(_id,mode)=>configurePhase({mode,commit:mode==='rollback'?t.baseline.commit:s.commit}),
@@ -718,8 +824,16 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
  const resources={assertClone,async inspectCapacity(){const c=JSON.parse(await ssh({command:capacityCommand})),q=await php("echo json_encode(['activeDeployments'=>App\\Models\\ApplicationDeploymentQueue::whereIn('status',['queued','in_progress'])->count()]);");
   check(Number.isSafeInteger(c.diskBytes)&&c.diskBytes>=cfg.capacity.minDiskBytes&&Number.isSafeInteger(c.memoryBytes)&&c.memoryBytes>=cfg.capacity.minMemoryBytes
    &&Number.isFinite(c.load1)&&c.load1<=cfg.capacity.maxLoad1&&q.activeDeployments===0,'capacity_unproven');return{available:true,...c,activeDeployments:0};},
-  async verifyRetention(){await assertClone();await observeConfig();check(m.cleanup.ownedResourceIds.length===0,'disposable_resources_unsupported');return{applicationActive:true,targetId:t.targetId,
-   protectedResourcesDigest:contract.releaseDigest(ownership.protectedResourceIds),absenceVerified:true,resourceIds:[]};},
+  async inspectImageRetention(){check(imageRetention,'retention_installation_opt_in_required');await assertClone();
+   const additional=lastRetentionEvidence?.additionalImages??[];lastRetentionEvidence=await imageRetention.inspect({additionalImages:additional});return structuredClone(lastRetentionEvidence);},
+  async verifyRetention(){await assertClone();await observeConfig();check(m.cleanup.ownedResourceIds.length===0,'disposable_resources_unsupported');if(imageRetention){
+   const current=await dependencies.readReleaseState(),observation=current.journal.filter(r=>r.operation==='observe'&&(r.outcome?.status==='succeeded'||r.outcome?.status==='reconciled'&&r.outcome.reconciledStatus==='succeeded')).at(-1),proof=observation?.outcome?.evidence;
+   check(proof&&contract.composeEvidenceError(s,proof,observation.intent?.parameters?.mode==='rollback')===null,'retention_final_observation_unproven');
+   const expected=t.configuration.services.filter(r=>r.source==='built'),row=proof.composeTargets?.find(r=>r.targetId===t.targetId);
+   check(row?.binding?.queue?.status==='finished'&&row.binding.images.length===expected.length&&expected.every(d=>row.binding.images.some(i=>i.name===d.name)),'retention_final_complete_build_set');
+   lastRetentionEvidence=await imageRetention.inspect({additionalImages:row.binding.images.map(i=>i.imageDigest)});check(lastRetentionEvidence.pendingCreate===null,'retention_pending_effect_unproven');
+  }return{applicationActive:true,targetId:t.targetId,
+   protectedResourcesDigest:contract.releaseDigest(ownership.protectedResourceIds),absenceVerified:true,resourceIds:[],...(lastRetentionEvidence?{imageRetention:structuredClone(lastRetentionEvidence)}:{})};},
   ownedResource(){deny('disposable_resources_unsupported');},cleanupLocal(){deny('permanent_repository_deletion_prohibited');},cleanupCoolifyApplication(){deny('permanent_application_deletion_prohibited');}};
  if(cfg.activity){
   const facade=createInstalledActivityTransport({manifest:m,binding:s,settings:cfg.activity,seed:activitySeed,
@@ -739,7 +853,9 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   Object.assign(resources,createActivityReleaseAdapter({manifest:m,binding:s,settings:cfg.activity,seed:activitySeed,
    readState:dependencies.readReleaseState,transport:facade.transport}));
  }
- return Object.freeze({coolify:Object.freeze({...adapter,inspectRecoveryEntry}),resources:Object.freeze(resources),assertClone,safety});
+ return Object.freeze({coolify:Object.freeze({...adapter,inspectRecoveryEntry}),resources:Object.freeze(resources),assertClone,safety,
+  ...(imageRetention?{imageRetention:Object.freeze({inspect:async()=>{lastRetentionEvidence=await imageRetention.inspect({additionalImages:lastRetentionEvidence?.additionalImages??[]});return structuredClone(lastRetentionEvidence);},
+   lastEvidence:()=>lastRetentionEvidence?structuredClone(lastRetentionEvidence):null,journalFile:retentionJournalFile})}:{})});
 }
 
 // Persisted Coolify Compose uses the old candidate build document even when rollback commands are selected.

@@ -202,7 +202,7 @@ Roost `d794af51` deployed; recovery migration verified.
 FAILED closure `6a5bc353`: fresh reads, seven native children closed.
 Renderer/helper, 386 Worker and contract/SQL checks pass.
 Fresh encrypted backup/isolated restore verified.
-Retained images vanished; audit blocked. App down; release unproven.
+Manual cleanup removed rollback images. Anchors verified; app down, release unproven.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,
