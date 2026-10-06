@@ -30,6 +30,9 @@ const origin=z.string().url().refine(v=>{const u=new URL(v);return u.protocol===
 export const installedComposeReleaseSchema=z.object({sshHost:alias,sshAddressFamily:z.enum(['auto','ipv4','ipv6']).optional(),workspaceRoot:file,
  ownershipFile:file,baselineObservation:sealedFile,
  phases:z.object({candidate:z.object({policy:sealedFile,artifact:sealedFile}).strict(),rollback:z.object({policy:sealedFile,artifact:sealedFile}).strict()}).strict(),
+ recoveryEntryTemplate:sealedFile.optional(),
+ recoveryPreviousManifest:sealedFile.optional(),
+ recoveryMaterializationTemplate:sealedFile.optional(),
  sourcePins:z.object({queueHelper:hex,deploymentJob:hex,applicationModel:hex,composeParser:hex,dockerHelper:hex,applicationsController:hex,controllerRenderer:hex}).strict(),
  source:z.object({sshHost:alias,container:hex,user:pg,database:pg}).strict(),
  fingerprintTimeoutMs:releaseFingerprintTimeoutSchema.min(30000).max(300000).optional(),
@@ -113,6 +116,160 @@ export function qualifyFailedComposePartialRuntime({snapshot,operation,queue,obs
   ...(unknownBuild?{sourceAttribution:'failed_queue_exact_reference_and_runtime_environment',candidateCodeProvenanceVerified:false}:{})};
 }
 
+/** Old scope stays immutable. A fresh failed entry is separate read evidence. */
+export function qualifyRecoveryOnlyEntryState({snapshot,previousState,currentEvidence,now}){
+ const r=snapshot?.recoveryOnly,old=previousState?.release?.snapshot,last=previousState?.journal?.at(-1);
+ check(contract.releaseHasRecoveryOnly(snapshot)&&previousState?.release?.id===r.releaseId&&previousState.status==='failed'
+  &&previousState.expectedVersion===r.expectedVersion&&old?.manifestDigest===r.previousManifestDigest
+  &&contract.releaseDigest(old.manifest)===r.previousManifestDigest
+  &&contract.releaseRecoveryOnlyManifestMatches(old.manifest,snapshot.manifest)
+  &&['taskId','applicationId','hostId','commit','candidateTree','baseCommit','baseTree','releaserAgentId'].every(k=>old[k]===snapshot[k]),'recovery_only_previous_scope_changed');
+ const closure=previousState.failedClosures?.find(c=>c.id===r.closureId),receipt=closure?.snapshot;
+ const digest=closure?.closureDigest??closure?.closure_digest,revocation=closure?.revocationId??closure?.revocation_id;
+ check(receipt&&digest===r.closureDigest&&contract.releaseDigest(receipt)===r.closureDigest
+  &&previousState.revocations?.some(v=>v.id===revocation)
+  &&last?.id===r.failedOperationId&&last.operation==='rollback'&&last.outcome?.id===r.failedOutcomeId
+  &&(last.outcome.status==='failed'||last.outcome.status==='reconciled'&&last.outcome.reconciledStatus==='failed')
+  &&contract.releaseDigest(last.outcome.evidence)===r.failedEvidenceDigest
+  &&contract.composeFailedRollbackPartialJournalError({...old,releaseId:r.releaseId},last,last.outcome.evidence,previousState.journal)===null
+  &&contract.releaseRecoveryOnlyEntryError(old,snapshot,receipt)===null,'recovery_only_previous_closure_unproven');
+ if(currentEvidence!==undefined){
+  qualifyFreshFailedEntryEvidence({oldSnapshot:old,failedOperation:last,saved:r.currentEvidence,currentEvidence,now});
+ }
+ return {oldSnapshot:old,failedOperation:last,closureReceipt:receipt};
+}
+
+export function qualifyFreshFailedEntryEvidence({oldSnapshot,failedOperation,saved,currentEvidence,now}){
+ const stable=e=>{const x=structuredClone(e);delete x.observedAt;delete x.healthDigest;delete x.composeRecovery.partialRollbackFailure.publicHealth.healthDigest;return x;};
+ const at=now instanceof Date?now.getTime():Number(now),observed=Date.parse(currentEvidence?.observedAt);
+ check(contract.composeFailedRollbackPartialEvidenceError({...oldSnapshot,releaseId:saved.composeRecovery.releaseId},currentEvidence,failedOperation)===null
+  &&Number.isFinite(at)&&Number.isFinite(observed)&&observed<=at&&at-observed<=300000
+  &&contract.releaseDigest(stable(currentEvidence))===contract.releaseDigest(stable(saved)),'recovery_only_fresh_entry_unproven');
+ return currentEvidence;
+}
+
+export function qualifyClosedFailedComposeEntry(previousState){
+ const old=previousState?.release?.snapshot,last=previousState?.journal?.at(-1),closure=previousState?.failedClosures?.at(-1),receipt=closure?.snapshot;
+ check(previousState?.status==='failed'&&old?.manifestDigest===contract.releaseDigest(old.manifest)&&contract.isComposeManifest(old.manifest)
+  &&contract.manifestSchema.safeParse(old.manifest).success&&contract.releaseDigest(receipt)===(closure?.closureDigest??closure?.closure_digest)
+  &&previousState.revocations?.some(v=>v.id===(closure.revocationId??closure.revocation_id))
+  &&receipt.failedOperationId===last?.id&&receipt.failedOutcomeId===last.outcome?.id
+  &&(last.outcome.status==='failed'||last.outcome.status==='reconciled'&&last.outcome.reconciledStatus==='failed')
+  &&receipt.failedEvidenceDigest===contract.releaseDigest(last.outcome.evidence)
+  &&contract.composeFailedRollbackPartialJournalError({...old,releaseId:previousState.release.id},last,last.outcome.evidence,previousState.journal)===null
+  &&contract.composeFailedRollbackPartialClosureBindingError({...old,releaseId:previousState.release.id},receipt)===null,'closed_failed_entry_unproven');
+ return{oldSnapshot:old,failedOperation:last,closureReceipt:receipt,saved:receipt.absenceRevalidation.currentEvidence};
+}
+
+/** Read-only old-scope reader. It never loads/executes an old renderer or admits a new effect. */
+export function createComposeRecoveryEntryReader({settings,previousState},dependencies={}){
+ const cfg=installedComposeReleaseSchema.parse(settings),qualified=qualifyClosedFailedComposeEntry(previousState),old=qualified.oldSnapshot,m=old.manifest,target=m.deployment.targets[0];
+ check(cfg.recoveryEntryTemplate&&typeof dependencies.readReleaseState==='function','recovery_entry_reader_binding_invalid');
+ const identity=dependencies.identity??physicalIdentity,read=dependencies.readFile??readFileSync,native=dependencies.nativeProcess??runReleaseNativeProcess;
+ const seals=new Map(),bytesFor=(file,expected)=>{const id=identity(file,false),bytes=read(file);check(!inside(cfg.workspaceRoot,file)&&Buffer.isBuffer(bytes)&&bytes.length>0&&bytes.length<=131072&&hash(bytes)===expected,'recovery_entry_reader_private_seal');seals.set(file,{id,digest:hash(bytes)});return bytes;};
+ const owner=permanentReleaseOwnershipSchema.parse(JSON.parse(bytesFor(cfg.ownershipFile,hash(read(cfg.ownershipFile))))),baseline=JSON.parse(bytesFor(cfg.baselineObservation.file,cfg.baselineObservation.sha256));
+ check(owner.applicationId===old.applicationId&&owner.canonicalDir===m.repository.canonicalDir&&owner.repositoryUrl===m.repository.url
+  &&contract.releaseDigest(owner.targetIds)===contract.releaseDigest([target.targetId])
+  &&contract.releaseDigest(owner.protectedResourceIds)===contract.releaseDigest(m.cleanup.protectedResourceIds),'recovery_entry_reader_ownership_changed');
+ const renderer=target.baseline.controllerInvariants.rendererDigest;
+ check(cfg.sourcePins.controllerRenderer===renderer&&cfg.sshHost===cfg.source.sshHost&&inside(cfg.workspaceRoot,m.repository.canonicalDir)
+  &&new URL(cfg.coolify.origin).origin===new URL(m.deployment.controllerUrl).origin
+  &&baseline.observed===true&&baseline.healthy===true&&baseline.migrationSchemaVerified===true&&baseline.commit===target.baseline.commit
+  &&baseline.tree===target.baseline.tree&&baseline.configDigest===target.baseline.configDigest
+  &&baseline.observedAt===m.baseline.observedAt&&['schemaDigest','dataDigest','healthDigest'].every(k=>baseline[k]===m.baseline[k])
+  &&contract.releaseDigest(baseline.images)===contract.releaseDigest(target.baseline.images),'recovery_entry_reader_old_scope_changed');
+ let materializationTemplate;
+ for(const phase of['candidate','rollback']){
+  const row=cfg.phases[phase],policy=composePhasePolicySchema.parse({...JSON.parse(bytesFor(row.policy.file,row.policy.sha256)),releaseId:previousState.release.id}),artifact=bytesFor(row.artifact.file,row.artifact.sha256),config=phase==='candidate'?target.configuration:target.rollbackConfiguration;
+  check(policy.phase===phase&&policy.targetId===target.targetId&&policy.commit===(phase==='candidate'?old.commit:target.baseline.commit)
+   &&policy.tree===(phase==='candidate'?old.candidateTree:target.baseline.tree)&&policy.rendererDigest===renderer
+   &&policy.artifactDigest===hash(artifact)&&policy.artifactDigest===config.controllerPolicy.artifactDigest
+   &&policy.phaseConfigDigest===(phase==='candidate'?target.configDigest:target.rollbackConfigDigest)
+   &&contract.releaseDigest(policy.sourcePins)===contract.releaseDigest(cfg.sourcePins),'recovery_entry_reader_old_policy_changed');
+  if(phase==='candidate')materializationTemplate=qualifyRecoveryMaterializationTemplate({previousManifest:m,bytes:artifact,reference:row.artifact});
+ }
+ check(Boolean(m.postObservation)===Boolean(cfg.activity),'recovery_entry_reader_activity_scope_changed');
+ if(cfg.activity){const policy=JSON.parse(bytesFor(cfg.activity.policy.file,cfg.activity.policy.sha256)),runtime=JSON.parse(bytesFor(cfg.activity.runtimeSettings.file,cfg.activity.runtimeSettings.sha256));
+  check(policy.postObservationDigest===contract.releaseDigest(m.postObservation)&&policy.targetId===target.targetId&&policy.applicationId===old.applicationId
+   &&runtime.targetId===target.targetId&&runtime.database.containerId===baseline.services.find(r=>r.role==='database').containerId,'recovery_entry_reader_activity_scope_changed');}
+ const oldEntryTemplate=bytesFor(cfg.recoveryEntryTemplate.file,cfg.recoveryEntryTemplate.sha256);
+ check(hash(oldEntryTemplate)===qualified.saved.composeRecovery.configuration.controllerPolicy.artifactDigest,'recovery_entry_reader_template_changed');
+ const rootId=identity(cfg.workspaceRoot),repoId=identity(m.repository.canonicalDir),gitId=identity(path.join(m.repository.canonicalDir,'.git'));
+ const assertClone=async()=>{check(identity(cfg.workspaceRoot)===rootId&&identity(m.repository.canonicalDir)===repoId&&identity(path.join(m.repository.canonicalDir,'.git'))===gitId,'recovery_entry_reader_clone_changed');for(const[file,v]of seals)check(identity(file,false)===v.id&&hash(read(file))===v.digest,'recovery_entry_reader_private_seal_changed');};
+ const ssh=async({command,stdin='',timeoutMs=25000,maxOutputBytes=32768})=>{await assertClone();if(!dependencies.nativeProcess)check(hasReleaseProcessScope(),'owned_process_scope_required');const af=cfg.sshAddressFamily==='ipv4'?['-4']:cfg.sshAddressFamily==='ipv6'?['-6']:[];const output=await native('ssh',{argv:[...af,'-T','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','ConnectTimeout=10',cfg.sshHost,command],cwd:os.tmpdir(),input:stdin,durationMs:timeoutMs,maxBytes:maxOutputBytes});await assertClone();check(Buffer.byteLength(output)<=maxOutputBytes,'response_size_invalid');return output.toString('utf8');};
+ const php=async(program,payload={})=>{const encoded=Buffer.from(JSON.stringify(payload)).toString('base64');return JSON.parse(await ssh({command:'docker exec -i coolify php',stdin:`<?php\nerror_reporting(0);ini_set('display_errors','0');try{$p=json_decode(base64_decode('${encoded}',true),true,32,JSON_THROW_ON_ERROR);${bootstrap}${program}}catch(Throwable $e){echo '{"unproven":true}';exit(1);}`}));};
+ const git=async(args,maxBytes=131072)=>{await assertClone();return native('git',{argv:['--no-replace-objects','-c',`core.hooksPath=${process.platform==='win32'?'NUL':'/dev/null'}`,'-c','core.fsmonitor=false','-C',m.repository.canonicalDir,...args],cwd:m.repository.canonicalDir,environment:{...minimalReleaseEnvironment(),GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:process.platform==='win32'?'NUL':'/dev/null',GIT_OPTIONAL_LOCKS:'0',GIT_TERMINAL_PROMPT:'0'},durationMs:10000,maxBytes});};
+ const readFingerprint=async source=>{const out=(await ssh({command:'bash -s',stdin:buildReleaseFingerprintCommand(source,cfg.fingerprintTimeoutMs??60000)+'\n',timeoutMs:cfg.fingerprintTimeoutMs??60000})).trim().split(/\r?\n/);check(out.length===2&&out.every(v=>/^[a-f0-9]{64}\s+-\s*$/.test(v)),'fingerprint_unproven');return{schemaDigest:out[0].slice(0,64),dataDigest:out[1].slice(0,64)};};
+ const readDatabaseFence=async source=>JSON.parse(await ssh({command:`docker exec -i ${quote(source.container)} psql -X -qAt -v ON_ERROR_STOP=1 -U ${quote(source.user)} -d ${quote(source.database)}`,stdin:"BEGIN READ ONLY; SELECT json_build_object('readOnlyFence',EXISTS(SELECT 1 FROM pg_db_role_setting s JOIN pg_database d ON d.oid=s.setdatabase JOIN pg_roles r ON r.oid=s.setrole WHERE d.datname=current_database() AND r.rolname=current_user AND 'default_transaction_read_only=on'=ANY(s.setconfig)),'activeOtherSessions',(SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid() AND state='active'),'ownedTransactions',(SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid() AND xact_start IS NOT NULL AND state<>'idle'))::text; COMMIT;"}));
+ const healthProbe=(dependencies.createHealthProbe??createComposeHealthProbe)({publicUrl:m.deployment.url,health:cfg.health});
+ return Object.freeze({async inspect(){await assertClone();check(contract.releaseDigest(await dependencies.readReleaseState())===contract.releaseDigest(previousState),'recovery_entry_reader_closed_state_changed');const result=await readFixedRecoveryEntry({old,previousState,closureReceipt:qualified.closureReceipt,saved:qualified.saved,cfg,materializationTemplate,assertClone,ssh,php,git,healthProbe,readDatabaseFence,readFingerprint,createInspector:dependencies.createInspector??createComposeStateInspector,now:dependencies.now??Date.now,readCurrentState:dependencies.readReleaseState});await assertClone();return{state:'failed',evidence:result.currentEvidence,closureReceipt:qualified.closureReceipt};}});
+}
+
+export function qualifyRecoveryOnlyConfigurationPreimage({snapshot,current,configuration}){
+ const {releaseId,...bound}=snapshot??{},last=current?.journal?.[0],p=last?.intent?.parameters,r=snapshot?.recoveryOnly;
+ check(contract.releaseHasRecoveryOnly(snapshot)&&current?.release?.id===releaseId&&current.status==='active'
+  &&contract.releaseDigest(current.release.snapshot)===contract.releaseDigest(bound)
+  &&current.journal?.length===1&&last.operation==='rollback_config'&&!last.outcome
+  &&contract.intentSchema.safeParse(last.intent).success&&last.intent.operation==='rollback_config'
+  &&last.intent.manifestDigest===snapshot.manifestDigest&&last.intent.commit===snapshot.commit
+  &&last.intent.baseCommit===snapshot.baseCommit&&p.commit===snapshot.manifest.rollback.commit
+  &&p.configDigest===snapshot.manifest.rollback.configDigest&&p.artifactSetDigest===snapshot.manifest.rollback.artifactSetDigest
+  &&p.schemaDigest===snapshot.manifest.rollback.schemaDigest
+  &&composeConfigurationDigest(configuration)===composeConfigurationDigest(r.currentEvidence.composeRecovery.configuration),'recovery_only_configuration_preimage_unproven');
+ return true;
+}
+
+export function qualifyInstalledDatabaseSource({snapshot,baselineDatabase,database,container}){
+ if(baselineDatabase?.containerId===container)return true;
+ const e=contract.releaseHasRecoveryOnly(snapshot)?snapshot.recoveryOnly.currentEvidence:null,r=e?.composeRecovery.services.find(v=>v.role==='database'),p=e?.composeRecovery.partialRollbackFailure;
+ check(r?.containerId===container&&r.name===database.name&&r.imageDigest===database.imageDigest&&r.mountDigest===database.mountDigest
+  &&r.state==='running'&&r.health==='healthy'&&r.exitCode===0&&p.databaseReadOnly===true&&p.activeOtherSessions===0&&p.ownedTransactions===0
+  &&p.projectServiceSetComplete===true&&e.schemaDigest===snapshot.manifest.baseline.schemaDigest&&e.dataDigest===snapshot.manifest.baseline.dataDigest,'database_source_binding_changed');return true;
+}
+
+
+async function readFixedRecoveryEntry({old,previousState,closureReceipt,saved,cfg,materializationTemplate,assertClone,ssh,php,git,healthProbe,readDatabaseFence,readFingerprint,createInspector,now,readCurrentState}){
+ const started=now();
+  const entry=saved.composeRecovery,failure=entry.partialRollbackFailure;
+  const target=old.manifest.deployment.targets[0],oldConfiguration=entry.configuration;
+  const originalCurrent=await readCurrentState();
+  const oldInspector=createInspector({targets:[{targetId:target.targetId,composePath:target.composePath,repositoryUrl:old.manifest.repository.url,branch:old.manifest.repository.defaultBranch,
+   services:oldConfiguration.services.map(({name,role,source,expectedState})=>({name,role,source,expectedState}))}],
+   sourcePins:oldConfiguration.sourcePins,configurationTemplate:{sha256:hash(materializationTemplate),bytesBase64:materializationTemplate.toString('base64')},transport:ssh,
+   sourceForCommit:async(commit,composePath)=>{check(commit===oldConfiguration.gitCommit&&composePath===target.composePath,'recovery_only_old_source_changed');return hash(await git(['show',`${commit}:${composePath.slice(1)}`]));},
+   treeForCommit:async commit=>{const out=(await git(['rev-parse',`${commit}^{tree}`],4096)).toString('utf8').trim();check(/^[a-f0-9]{40}$/.test(out),'tree_unproven');return out;},
+   readDeployment:p=>php(queueRead,p),readControllerPolicy:async({controllerObserved})=>Object.entries(controllerObserved).every(([k,v])=>oldConfiguration.controllerPolicy[k]===v)?oldConfiguration.controllerPolicy:null});
+  const candidateOperation=failure.candidateOperation,candidateExpected=failure.candidateEvidence.composeRecovery.queue;
+  const candidateQueue=await php(queueRead,{targetId:target.targetId,deploymentId:candidateExpected.deploymentId});
+  const oldQueue=await php(queueRead,{targetId:target.targetId,deploymentId:entry.deploymentId});
+  const absenceId=failure.absenceEvidence.composeRecovery.deploymentId;
+  const absent=await php(queueRead,{targetId:target.targetId,deploymentId:absenceId});
+  check(contract.releaseDigest(candidateQueue)===contract.releaseDigest(candidateExpected)
+   &&contract.releaseDigest(oldQueue)===contract.releaseDigest(entry.queue)&&absent===null,'recovery_only_original_queues_changed');
+  const quiescent=async()=>{const q=await php("echo json_encode(['activeDeployments'=>App\\Models\\ApplicationDeploymentQueue::whereIn('status',['queued','in_progress'])->count()]);");check(q.activeDeployments===0,'recovery_control_plane_active');};
+  await quiescent();const before=await oldInspector.inspectLegacyBaseline(target.targetId,oldConfiguration.gitCommit);
+  check(composeConfigurationDigest(before.configuration)===composeConfigurationDigest(oldConfiguration),'recovery_only_old_configuration_changed');
+  const required=failure.presentRollbackImageDigests.slice().sort(),present=[];
+  for(const ref of required)present.push((await ssh({command:`docker image inspect --format '{{.Id}}' -- ${quote(ref)}`})).trim());
+  const partial=qualifyFailedComposePartialRuntime({snapshot:{...old,releaseId:previousState.release.id},operation:candidateOperation,queue:candidateQueue,
+   observed:before,baselineServices:entry.baselineServices,presentRollbackImageDigests:present});
+  check(contract.releaseDigest(partial.services)===contract.releaseDigest(entry.services)&&contract.releaseDigest(partial.images)===contract.releaseDigest(failure.images),'recovery_only_failed_runtime_changed');
+  const db=before.services.find(r=>r.role==='database'),source={...cfg.source,container:db.containerId},fence=await readDatabaseFence(source),fp=await readFingerprint(source),health=await healthProbe({expectedCommit:old.commit});
+  check(fence.readOnlyFence===true&&fence.activeOtherSessions===0&&fence.ownedTransactions===0&&fp.schemaDigest===old.manifest.baseline.schemaDigest
+   &&fp.dataDigest===old.manifest.baseline.dataDigest&&health.healthy===false&&hex.safeParse(health.healthDigest).success,'recovery_only_data_fence_health_unproven');
+  const after=await oldInspector.inspectLegacyBaseline(target.targetId,oldConfiguration.gitCommit),fenceAfter=await readDatabaseFence(source),fpAfter=await readFingerprint(source);await quiescent();
+  check(contract.releaseDigest(before)===contract.releaseDigest(after)&&contract.releaseDigest(fence)===contract.releaseDigest(fenceAfter)
+   &&contract.releaseDigest(fp)===contract.releaseDigest(fpAfter)
+   &&contract.releaseDigest(candidateQueue)===contract.releaseDigest(await php(queueRead,{targetId:target.targetId,deploymentId:candidateExpected.deploymentId}))
+   &&await php(queueRead,{targetId:target.targetId,deploymentId:absenceId})===null
+   &&contract.releaseDigest(oldQueue)===contract.releaseDigest(await php(queueRead,{targetId:target.targetId,deploymentId:entry.deploymentId}))
+   &&contract.releaseDigest(originalCurrent)===contract.releaseDigest(await readCurrentState()),'recovery_only_entry_changed_during_read');
+  const currentEvidence=structuredClone(saved);currentEvidence.observedAt=new Date(now()).toISOString();currentEvidence.healthDigest=health.healthDigest;
+  currentEvidence.composeRecovery.partialRollbackFailure.publicHealth.healthDigest=health.healthDigest;
+  check(now()-started<=300000,'recovery_only_read_window_exceeded');
+  qualifyFreshFailedEntryEvidence({oldSnapshot:old,failedOperation:previousState.journal.at(-1),saved,currentEvidence,now:now()});await assertClone();
+  return{currentEvidence,closureReceipt,context:{oldSnapshot:old,previousState:structuredClone(previousState),configuration:oldConfiguration,inspector:oldInspector,candidateOperation,candidateQueue,baselineServices:entry.baselineServices,protectedImageDigests:required}};
+}
 /** Fixed per-installation wiring. Dependency substitutions exist for source
  * tests only; no executable/module/SQL comes from settings or a model. */
 export function createInstalledComposeRelease({settings,state,backup,github,coolifyCredential,activitySeed},dependencies={}){
@@ -142,18 +299,29 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   &&contract.releaseDigest(ownership.targetIds)===contract.releaseDigest([t.targetId])
   &&contract.releaseDigest(ownership.protectedResourceIds)===contract.releaseDigest(m.cleanup.protectedResourceIds),'ownership_binding_changed');
  const baseline=JSON.parse(bytesFor(cfg.baselineObservation.file,cfg.baselineObservation.sha256));
+ const recovery=contract.releaseHasRecoveryOnly(s);
+ check(s.recoveryOnly===undefined?cfg.recoveryEntryTemplate===undefined&&cfg.recoveryPreviousManifest===undefined&&cfg.recoveryMaterializationTemplate===undefined
+  :recovery&&cfg.recoveryEntryTemplate&&cfg.recoveryPreviousManifest&&cfg.recoveryMaterializationTemplate,'recovery_only_installation_unproven');
+ const previousManifest=recovery?contract.manifestSchema.parse(JSON.parse(bytesFor(cfg.recoveryPreviousManifest.file,cfg.recoveryPreviousManifest.sha256))):null;
+ if(recovery)check(contract.releaseDigest(previousManifest)===s.recoveryOnly.previousManifestDigest
+  &&contract.releaseRecoveryOnlyManifestMatches(previousManifest,m),'recovery_only_previous_manifest_changed');
+ const historicalManifest=previousManifest??m,historicalTarget=historicalManifest.deployment.targets[0];
  const database=t.baseline.configuration.services.find(r=>r.role==='database');
  check(baseline.observed===true&&baseline.migrationSchemaVerified===true&&baseline.healthy===true
-  &&baseline.commit===t.baseline.commit&&baseline.tree===t.baseline.tree&&baseline.configDigest===t.baseline.configDigest
-  &&['schemaDigest','dataDigest','healthDigest'].every(k=>baseline[k]===m.baseline[k])
-  &&contract.releaseDigest(baseline.images)===contract.releaseDigest(t.baseline.images)
+  &&baseline.commit===historicalTarget.baseline.commit&&baseline.tree===historicalTarget.baseline.tree&&baseline.configDigest===historicalTarget.baseline.configDigest
+  &&(!recovery||baseline.observedAt===historicalManifest.baseline.observedAt)
+  &&['schemaDigest','dataDigest','healthDigest'].every(k=>baseline[k]===historicalManifest.baseline[k])
+  &&contract.releaseDigest(baseline.images)===contract.releaseDigest(historicalTarget.baseline.images)
   &&Array.isArray(baseline.services)&&new Set(baseline.services.map(r=>r.name)).size===baseline.services.length
-  &&baseline.services.every(r=>t.baseline.configuration.services.some(d=>d.name===r.name&&d.role===r.role&&d.mountDigest===r.mountDigest
-   &&r.imageDigest===(d.source==='image'?d.imageDigest:t.baseline.images.find(i=>i.name===r.name)?.imageDigest)&&/^[a-f0-9]{64}$/.test(r.containerId)))
-  &&t.baseline.configuration.services.every(d=>d.role==='migration'||baseline.services.some(r=>r.name===d.name)), 'baseline_observation_unproven');
+  &&baseline.services.every(r=>historicalTarget.baseline.configuration.services.some(d=>d.name===r.name&&d.role===r.role&&d.mountDigest===r.mountDigest
+   &&r.imageDigest===(d.source==='image'?d.imageDigest:historicalTarget.baseline.images.find(i=>i.name===r.name)?.imageDigest)&&/^[a-f0-9]{64}$/.test(r.containerId)))
+  &&historicalTarget.baseline.configuration.services.every(d=>d.role==='migration'||baseline.services.some(r=>r.name===d.name)), 'baseline_observation_unproven');
  const baselineDatabase=baseline.services.find(r=>r.name===database.name);
- check(baselineDatabase?.containerId===cfg.source.container,'database_source_binding_changed');
- const policies={},artifacts={};
+ qualifyInstalledDatabaseSource({snapshot:s,baselineDatabase,database,container:cfg.source.container});
+ const policies={},artifacts={};let recoveryContext=null;
+ const oldEntryTemplate=recovery?bytesFor(cfg.recoveryEntryTemplate.file,cfg.recoveryEntryTemplate.sha256):null;
+ if(recovery)check(cfg.recoveryEntryTemplate.sha256===s.recoveryOnly.currentEvidence.composeRecovery.configuration.controllerPolicy?.artifactDigest,'recovery_only_entry_template_changed');
+ const recoveryMaterializationTemplate=recovery?qualifyRecoveryMaterializationTemplate({previousManifest,bytes:bytesFor(cfg.recoveryMaterializationTemplate.file,cfg.recoveryMaterializationTemplate.sha256),reference:cfg.recoveryMaterializationTemplate}):null;
  for(const mode of ['candidate','rollback']){
   const row=cfg.phases[mode];policies[mode]=composePhasePolicySchema.parse({...JSON.parse(bytesFor(row.policy.file,row.policy.sha256)),releaseId:state.release.id});
   artifacts[mode]=bytesFor(row.artifact.file,row.artifact.sha256);const p=policies[mode],expected=mode==='rollback'?t.rollbackConfiguration:t.configuration;
@@ -209,18 +377,46 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
  const observeConfig=async()=>{
   const app=await httpsJson({url:`${new URL(cfg.coolify.origin).origin}/api/v1/applications/${t.targetId}`,method:'GET',token:coolifyCredential,certificateSha256:cfg.coolify.certificateSha256});
   check(app?.uuid===t.targetId&&[s.commit,t.baseline.commit].includes(app.git_commit_sha),'live_source_pin_changed');
+  const entry=recoveryContext?.configuration?.controllerPolicy;
+  if(entry&&app.git_commit_sha===recoveryContext.configuration.gitCommit
+   &&typeof app.docker_compose_custom_build_command==='string'&&typeof app.docker_compose_custom_start_command==='string'
+   &&hash(Buffer.from(app.docker_compose_custom_build_command))===entry.buildCommandDigest
+   &&hash(Buffer.from(app.docker_compose_custom_start_command))===entry.startCommandDigest)
+   return recoveryContext.inspector.inspectConfiguration(t.targetId,app.git_commit_sha);
   return inspector.inspectConfiguration(t.targetId,app.git_commit_sha);
  };
  const databaseObservation=async()=>{
   const configuration=await observeConfig(),digest=composeConfigurationDigest(configuration);
-  const phase=digest===t.baseline.configDigest?'baseline':digest===t.configDigest?'candidate':digest===t.rollbackConfigDigest?'rollback':null;
+  const oldEntry=recoveryContext&&digest===composeConfigurationDigest(recoveryContext.configuration);
+  const phase=digest===t.baseline.configDigest?'baseline':digest===t.configDigest?'candidate':digest===t.rollbackConfigDigest?'rollback':oldEntry?'recovery_entry':null;
   check(phase,'database_configuration_changed');
-  const observed=await inspector.inspectLegacyBaseline(t.targetId,configuration.gitCommit);
+  const observed=await(oldEntry?recoveryContext.inspector:inspector).inspectLegacyBaseline(t.targetId,configuration.gitCommit);
   check(composeConfigurationDigest(observed.configuration)===digest,'database_configuration_changed');
   const rows=observed.services.filter(r=>r.role==='database'),row=rows[0];
   check(rows.length===1&&row.name===database.name&&row.imageDigest===database.imageDigest&&row.mountDigest===database.mountDigest
    &&/^[a-f0-9]{64}$/.test(row.containerId)&&row.state==='running'&&row.health==='healthy','database_runtime_changed');
   if(row.containerId!==baselineDatabase.containerId){
+   if(recoveryContext){
+    const current=await dependencies.readReleaseState(),last=current?.journal?.at(-1),entry=recoveryContext;
+    check(current?.release?.id===s.releaseId&&contract.releaseDigest(current.release.snapshot)===snapshotDigest,'recovery_only_current_scope_changed');
+    const configPending=current.journal.length===1&&last.operation==='rollback_config'&&!last.outcome;
+    const rollbackPending=current.journal.length===2&&current.journal[0].operation==='rollback_config'
+     &&(current.journal[0].outcome?.status==='succeeded'||current.journal[0].outcome?.status==='reconciled'&&current.journal[0].outcome.reconciledStatus==='succeeded')
+     &&last.operation==='rollback'&&!last.outcome;
+    const beforeIntent=current.journal.length===0;
+    const oldRuntime=observed.services.every(r=>r.role==='database'||r.runtimeRevision===entry.oldSnapshot.commit);
+    if((beforeIntent||configPending||rollbackPending)&&oldRuntime){
+     check(digest===composeConfigurationDigest(entry.configuration)||!beforeIntent&&digest===t.rollbackConfigDigest,'recovery_only_runtime_configuration_changed');
+     const proof=qualifyFailedComposePartialRuntime({snapshot:{...entry.oldSnapshot,releaseId:s.recoveryOnly.releaseId},operation:entry.candidateOperation,
+      queue:entry.candidateQueue,observed,baselineServices:entry.baselineServices,presentRollbackImageDigests:entry.protectedImageDigests});
+     check(contract.releaseDigest(proof.services)===contract.releaseDigest(s.recoveryOnly.currentEvidence.composeRecovery.services)
+      &&contract.releaseDigest(proof.images)===contract.releaseDigest(s.recoveryOnly.currentEvidence.composeRecovery.partialRollbackFailure.images),'recovery_only_runtime_entry_changed');
+     const source={...cfg.source,container:row.containerId},fence=await readDatabaseFence(source),fp=await readFingerprint(source);
+     check(fence.readOnlyFence===true&&fence.activeOtherSessions===0&&fence.ownedTransactions===0
+      &&fp.schemaDigest===m.baseline.schemaDigest&&fp.dataDigest===m.baseline.dataDigest,'recovery_only_database_safety_unproven');
+     return{row,observed,configDigest:digest,partial:proof};
+    }
+   }
    const partial=await failedPartialContext(configuration,observed);
    if(partial){const source={...cfg.source,container:row.containerId},fence=await readDatabaseFence(source),fp=await readFingerprint(source);
     check(fence.readOnlyFence===true&&fence.activeOtherSessions===0&&fence.ownedTransactions===0
@@ -289,9 +485,15 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
    settingsInvariantDigest:observed.controllerObserved.settingsInvariantDigest,runtimeInvariantDigest:observed.controllerObserved.runtimeInvariantDigest});
  };
  const configurePhase=async({mode,commit})=>{
+  check(!recovery||mode==='rollback','recovery_only_candidate_configuration_forbidden');
   const intent=await checkIntent({rollback:mode==='rollback'},true);
   await assertClone();const before=await observeConfig(),prior=composeConfigurationDigest(before);
-  check(mode==='candidate'?[t.baseline.configDigest,t.configDigest].includes(prior):[t.configDigest,t.rollbackConfigDigest].includes(prior),'configuration_preimage_changed');
+  const ordinaryPreimage=mode==='candidate'?[t.baseline.configDigest,t.configDigest].includes(prior):[t.configDigest,t.rollbackConfigDigest].includes(prior);
+  if(!ordinaryPreimage&&recovery&&mode==='rollback'){
+   check(recoveryContext,'recovery_only_entry_inspection_required');
+   qualifyRecoveryOnlyConfigurationPreimage({snapshot:s,current:await dependencies.readReleaseState(),configuration:before});
+   await inspectRecoveryEntry({previousState:recoveryContext.previousState});
+  }else check(ordinaryPreimage,'configuration_preimage_changed');
   if(mode==='candidate')check((await github.inspect(m,{allowArchived:false})).remoteBase===s.commit,'remote_commit_changed');
   check((await checkIntent({rollback:mode==='rollback'},true)).id===intent.id,'phase_intent_changed');
   const p=policies[mode];check((await php(stagePhp,{targetId:t.targetId,name:composePhaseArtifactFile(p),bytes:artifacts[mode].toString('base64'),sha256:p.artifactDigest})).staged===true,'artifact_stage_unproven');
@@ -487,6 +689,14 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
    healthDigest:health.healthDigest,healthy:true,observedAt:new Date((dependencies.now??Date.now)()).toISOString(),absenceVerified:true,deploymentIds:[],deployedSetDigest:contract.releaseDigest([{targetId:t.targetId,runtimeSetDigest:proof.runtimeSetDigest}])};
   check(contract.composeConfigAbsenceEvidenceError(s,evidence,operation)===null,'configuration_absence_observation_unproven');return evidence;
  };
+ const inspectRecoveryEntry=async({previousState})=>{
+  await assertClone();check(recovery,'recovery_only_inspection_required');qualifyComposeConfigurationSchema((await php(composeConfigurationSchemaReadPhp)).schema);
+  const qualified=qualifyRecoveryOnlyEntryState({snapshot:s,previousState}),originalCurrent=await dependencies.readReleaseState();
+  check(originalCurrent?.release?.id===s.releaseId&&originalCurrent.status==='active'&&contract.releaseDigest(originalCurrent.release.snapshot)===snapshotDigest
+   &&(originalCurrent.journal.length===0||originalCurrent.journal.length===1&&originalCurrent.journal[0].operation==='rollback_config'&&!originalCurrent.journal[0].outcome),'recovery_only_entry_phase_changed');
+  const result=await readFixedRecoveryEntry({old:qualified.oldSnapshot,previousState,closureReceipt:qualified.closureReceipt,saved:s.recoveryOnly.currentEvidence,cfg,materializationTemplate:recoveryMaterializationTemplate,assertClone,ssh,php,git,healthProbe,readDatabaseFence,readFingerprint,createInspector:dependencies.createInspector??createComposeStateInspector,now:dependencies.now??Date.now,readCurrentState:dependencies.readReleaseState});
+  qualifyRecoveryOnlyEntryState({snapshot:s,previousState,currentEvidence:result.currentEvidence,now:(dependencies.now??Date.now)()});recoveryContext=result.context;return{currentEvidence:result.currentEvidence,closureReceipt:result.closureReceipt};
+ };
  const adapter=createCoolifyComposeAdapter({now:dependencies.now,sleep:dependencies.sleep,gateway:{
   inspectConfiguration:observeConfig,
   inspectBaseline:async()=>{await assertClone();
@@ -529,5 +739,8 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   Object.assign(resources,createActivityReleaseAdapter({manifest:m,binding:s,settings:cfg.activity,seed:activitySeed,
    readState:dependencies.readReleaseState,transport:facade.transport}));
  }
- return Object.freeze({coolify:adapter,resources:Object.freeze(resources),assertClone,safety});
+ return Object.freeze({coolify:Object.freeze({...adapter,inspectRecoveryEntry}),resources:Object.freeze(resources),assertClone,safety});
 }
+
+// Persisted Coolify Compose uses the old candidate build document even when rollback commands are selected.
+export function qualifyRecoveryMaterializationTemplate({previousManifest,bytes,reference}){const target=previousManifest?.deployment?.targets?.[0];check(Buffer.isBuffer(bytes)&&bytes.length>0&&bytes.length<=131072&&reference?.sha256===hash(bytes)&&hash(bytes)===target?.configuration?.controllerPolicy?.artifactDigest,'recovery_materialization_template_changed');let doc;try{doc=JSON.parse(bytes);}catch{deny('recovery_materialization_template_invalid');}check(doc?.services&&!Array.isArray(doc.services)&&contract.releaseDigest(Object.keys(doc.services).sort())===contract.releaseDigest(target.configuration.services.map(r=>r.name).sort()),'recovery_materialization_template_services_changed');return bytes;}

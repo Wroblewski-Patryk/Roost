@@ -467,8 +467,12 @@ The allowed sequence is rollback configuration, one image-only rollback,
 rollback observation, and required existing restoration/cleanup. Candidate and
 Git effects are refused. The new credential may read only its exact old failure
 through the active recovery grant; this conveys no authority on the old grant.
-The sealed old entry template is an installation input for read-only recognition,
-not an executable recovery capability. No failed entry becomes a healthy baseline.
+The installation seals the original manifest, rollback command artifact and
+candidate Compose materialization separately. Coolify retains the candidate
+document while rollback configuration changes its commands. The fixed entry
+reader qualifies that document against the original candidate artifact and binds
+the command hashes to the original rollback artifact. These read-only inputs
+convey no effect authority. Historical baseline bytes and clocks stay unchanged.
 
 The repaired rollback build checks the service graph before Coolify creates its
 runtime environment file. Runtime start still requires the normal environment,
