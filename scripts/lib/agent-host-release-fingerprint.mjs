@@ -126,6 +126,9 @@ export function buildReleaseFingerprintCommand(endpoint, timeoutMs) {
   // Fresh Bash avoids an asynchronous subshell inheriting the supervisor's
   // other jobs. Signal traps set a flag; only ordinary code waits for sleep.
   const timer = `fingerprint_timer_stopped=0; trap 'fingerprint_timer_stopped=1' TERM HUP INT; sleep ${remoteMs / 1000} & fingerprint_sleep=$!; wait "$fingerprint_sleep" || { wait "$fingerprint_sleep" 2>/dev/null || true; exit 124; }; if test "$fingerprint_timer_stopped" = 1; then exit 124; fi; kill -ALRM "$1"`;
-  const supervisor = `set -m; fingerprint_owner=$BASHPID; fingerprint_child=; fingerprint_timer=; trap ${quote(stopGroup)} ALRM TERM HUP INT; bash -e -o pipefail -c ${quote(script)} & fingerprint_child=$!; bash -e -o pipefail -c ${quote(timer)} fingerprint-timer "$fingerprint_owner" & fingerprint_timer=$!; fingerprint_status=0; wait "$fingerprint_child" || fingerprint_status=$?; kill -TERM -- -"$fingerprint_timer" 2>/dev/null || true; wait "$fingerprint_timer" 2>/dev/null || true; exit "$fingerprint_status"`;
+  // Both background groups are already assigned. Disable monitor notifications
+  // before waiting so Bash cannot print the completed fixed program to stderr;
+  // the existing group identities, signal traps and explicit reaping remain.
+  const supervisor = `set -m; fingerprint_owner=$BASHPID; fingerprint_child=; fingerprint_timer=; trap ${quote(stopGroup)} ALRM TERM HUP INT; bash -e -o pipefail -c ${quote(script)} & fingerprint_child=$!; bash -e -o pipefail -c ${quote(timer)} fingerprint-timer "$fingerprint_owner" & fingerprint_timer=$!; set +m; fingerprint_status=0; wait "$fingerprint_child" || fingerprint_status=$?; kill -TERM -- -"$fingerprint_timer" 2>/dev/null || true; wait "$fingerprint_timer" 2>/dev/null || true; exit "$fingerprint_status"`;
   return `docker exec -i ${quote(endpoint.container)} bash -e -o pipefail -c ${quote(supervisor)}`;
 }

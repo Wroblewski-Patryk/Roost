@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import { execFileSync, spawn } from 'node:child_process';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import { buildReleaseFingerprintCommand, releaseFingerprintSql } from './lib/agent-host-release-fingerprint.mjs';
 
 const quote = value => `'${value.replaceAll("'", "'\\''")}'`;
@@ -25,6 +25,15 @@ test('streaming program preserves historical oracle and fixes per-session resour
   assert(command.includes('COPY (SELECT')); assert(command.includes('TO STDOUT'));
   assert(!command.includes('TO PROGRAM')); assert(command.includes('BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY'));
   assert(!command.includes('SHELL_ERROR')); assert(command.includes('fingerprint_prepared_valid'));assert(command.includes('complete.pending'));
+  const prefix = "docker exec -i '" + 'a'.repeat(64) + "' bash -e -o pipefail -c ";
+  const supervisor = unquote(command.slice(prefix.length));
+  assert(supervisor.startsWith('set -m;'));
+  const childGroup = supervisor.indexOf(' & fingerprint_child=$!;');
+  const timerGroup = supervisor.indexOf(' & fingerprint_timer=$!;');
+  const monitorOff = supervisor.indexOf('set +m;');
+  const waitChild = supervisor.indexOf('fingerprint_status=0; wait "$fingerprint_child"');
+  assert(childGroup > 0 && childGroup < timerGroup && timerGroup < monitorOff && monitorOff < waitChild);
+  assert.equal(supervisor.match(/set \+m;/g)?.length, 1);
 });
 
 test('native streaming fingerprint matches historical bytes, bounds sort, fails closed and reaps actual COPY pipes', async t => {
@@ -42,7 +51,16 @@ test('native streaming fingerprint matches historical bytes, bounds sort, fails 
   assert(new RegExp(`^[0-9]+:${ownership}$`).test(identity));
   const endpoint = { container, user: 'companycore', database };
   const args = (change = value => value, timeout = 30000) => changeProgram(buildReleaseFingerprintCommand(endpoint, timeout), container, change);
-  const fingerprint = () => docker(args());
+  const fingerprint = () => {
+    const result = spawnSync('docker', ['exec', container, ...args()], {
+      windowsHide: true, encoding: 'utf8', timeout: 60000, maxBuffer: 4 * 1024 * 1024,
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+    assert.equal(result.error, undefined);
+    assert.equal(result.status, 0);
+    assert.equal(result.stderr, '', 'successful fingerprint emits no Bash job notice or hidden warning');
+    return result.stdout;
+  };
   const historical = () => {
     const schema = docker(['bash', '-e', '-o', 'pipefail', '-c', `pg_dump --schema-only --no-owner --no-acl --quote-all-identifiers -U companycore -d ${quote(database)} | sed -e '/^\\\\restrict /d' -e '/^\\\\unrestrict /d' | sha256sum`]);
     const records = sql(releaseFingerprintSql);

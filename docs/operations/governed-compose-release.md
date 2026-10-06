@@ -574,3 +574,16 @@ wait/reconcile cannot open ingress or create retention anchors. A retention
 read may reconcile its own local journal after exact anchor readback; this
 does not create a container or modify the application. These additions have
 component evidence, not a live deployment or completed-gate claim.
+
+The protected fingerprint diagnostic identified one Bash completion notice,
+not a database error: successful exit, two hashes, 5805 stderr bytes. Turning
+monitor notifications off after both background process groups are assigned
+preserves the groups, signals, timer and explicit reaping. A real local
+PostgreSQL fixture passes historical hash parity, changed data/sequences,
+snapshot isolation, bounded sort, forced failures and timeout cleanup without
+new zombies, sessions or directories; successful stderr is empty. The actual
+VPS fingerprint likewise returns two hashes with zero stderr. This changes no
+fingerprint algorithm or baseline. A separate administrative-catalog read can
+qualify only the exact previously diagnosed PostgreSQL warning, with fixed
+command/SQL, successful native closure and validated fence JSON; application
+fingerprints and every other warning retain strict refusal.
