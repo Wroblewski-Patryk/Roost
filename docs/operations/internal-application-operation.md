@@ -279,3 +279,12 @@ operation and product/sale readiness were not certified. Physical provider call
 counts, token totals and cost were unavailable; no zero values are inferred.
 Worker is stopped with its Writer released; the clean candidate and prior pilot
 handoff remain recoverable. No second-app push/deploy or later-phase work ran.
+
+### Partial-runtime rollback queue absence
+
+When a rollback queue is absent but the accepted failed candidate remains,
+`queue_absent_partial` is observation-only ABSENT. Require immutable failed
+deploy evidence, successful rollback configuration, exact unchanged service/image
+sets, protected rollback images, database fence and schema/data parity. It grants
+one new rollback intent only; never replay Git, candidate deployment or config.
+A second absence/retry is refused. This profile cannot close recovery as healthy.

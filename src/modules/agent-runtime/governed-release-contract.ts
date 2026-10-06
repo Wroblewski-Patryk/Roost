@@ -25,6 +25,8 @@ export const releaseComposeEvidenceError: (snapshot:any,evidence:any,rollback?:b
 export const releaseComposeConfigAbsenceEvidenceError: (snapshot:any,evidence:any,operation:any)=>string|null=shared.composeConfigAbsenceEvidenceError;
 export const releaseComposeRecoveryEvidenceError: (snapshot:any,evidence:any,operation:any)=>string|null=shared.composeRecoveryEvidenceError;
 export const releaseComposeFailedPartialEvidenceError: (snapshot:any,evidence:any,operation:any)=>string|null=shared.composeFailedPartialEvidenceError;
+export const releaseComposePartialRollbackAbsenceJournalError: (snapshot:any,operation:any,evidence:any,journal:any[])=>string|null=shared.composePartialRollbackAbsenceJournalError;
+export const releaseComposePartialRollbackRetryValid: (snapshot:any,journal:any[])=>boolean=shared.composePartialRollbackRetryValid;
 export const releaseGitSetArtifactDigest: (manifest: any, binding: any, rollback?: boolean) => string = shared.gitSetArtifactDigest;
 export const releaseSuccessorBasisSchema = shared.releaseSuccessorBasisSchema as z.ZodType<any>;
 export const releaseHasSuccessor: (snapshot: any) => boolean = shared.releaseHasSuccessor;
@@ -185,6 +187,7 @@ export function effectiveOutcome(outcome: any): string | null {
 export function releaseFailedClosureError(state:any,input:any,checkVersion=true) {
  if(!state)return "release_not_found";
  const s=state.release.snapshot,m=s.manifest,j=state.journal,e=input.evidence;
+ if(e?.composeRecovery?.kind==='queue_absent_partial')return 'release_compose_partial_rollback_absence_not_completed_recovery';
  if(releaseIsCompose(m))return input.absenceRevalidation?.schemaVersion==='roost-compose-retained-baseline-closure-revalidation-v1'
   ?composeQueuesAbsentClosureError(state,input,checkVersion,true):input.absenceRevalidation?.schemaVersion==='roost-compose-queue-absence-closure-revalidation-v1'
   ?composeQueuesAbsentClosureError(state,input,checkVersion):composeConfigAbsentClosureError(state,input,checkVersion);
@@ -384,6 +387,20 @@ export function releaseSuccessorBasis(state:any,input:any):any {
  if(!releaseHasSuccessor({...input,successorBasis}))return {error:"release_predecessor_recovery_unproven"};
  return {successorBasis};
 }
+function partialRollbackContinuationError(snapshot:any,input:any,journal:any[]) {
+ const rows=journal.filter(j=>effectiveOutcome(j.outcome)==='absent'&&j.outcome?.evidence?.composeRecovery?.kind==='queue_absent_partial');
+ if(!rows.length)return null;
+ if(rows.length!==1)return 'release_compose_partial_rollback_retry_exhausted';
+ const absence=rows[0],index=journal.indexOf(absence);
+ if(releaseComposePartialRollbackAbsenceJournalError(snapshot,absence,absence.outcome.evidence,journal.slice(0,index+1)))return 'release_compose_partial_rollback_absence_lineage_unproven';
+ const suffix=journal.slice(index+1);
+ if(!suffix.length)return input.operation==='rollback'&&releaseComposePartialRollbackRetryValid(snapshot,journal)?null:'release_compose_partial_rollback_retry_required';
+ if(suffix[0].operation!=='rollback'||releaseDigest(suffix[0].intent?.parameters)!==releaseDigest(absence.intent.parameters)
+  ||suffix.slice(1).some(j=>!['observe','fixture_cleanup','runtime_resume','cleanup','cleanup_resource'].includes(j.operation)))return 'release_compose_partial_rollback_absence_lineage_unproven';
+ if(input.operation==='rollback')return 'release_compose_partial_rollback_retry_exhausted';
+ if(!['observe','fixture_cleanup','runtime_resume','cleanup','cleanup_resource'].includes(input.operation))return 'release_compose_partial_rollback_continuation_forbidden';
+ return null;
+}
 export function releaseIntentError(release: any, input: any, journal: any[]) {
   const s=release.snapshot, m=s.manifest;
   const retained=releaseRetainsApplication(m);
@@ -392,7 +409,9 @@ export function releaseIntentError(release: any, input: any, journal: any[]) {
     || input.observed.commit!==s.commit || input.observed.manifestDigest!==release.manifest_digest)
     return "release_candidate_changed";
   if(journal.some(j=>!effectiveOutcome(j.outcome)||effectiveOutcome(j.outcome)==="uncertain"))return "release_operation_unresolved";
-  if(releaseIsCompose(m)&&journal.some(j=>effectiveOutcome(j.outcome)==="absent"&&j.outcome?.evidence?.composeRecovery))return "release_compose_no_effect_diagnosis_required";
+  if(releaseIsCompose(m)&&journal.some(j=>effectiveOutcome(j.outcome)==="absent"&&j.outcome?.evidence?.composeRecovery
+    &&j.outcome.evidence.composeRecovery.kind!=='queue_absent_partial'))return "release_compose_no_effect_diagnosis_required";
+  if(releaseIsCompose(m)){const retryError=partialRollbackContinuationError({...s,releaseId:release.id},input,journal);if(retryError)return retryError;}
   // A failed partial candidate may proceed only through its already sealed
   // rollback, rollback observation and normal restoration/cleanup. It never
   // authorizes another candidate configuration, queue or source/Git effect.
@@ -456,6 +475,10 @@ export function releaseOutcomeError(release: any, operation: any, input: any,jou
    return releaseComposeConfigAbsenceEvidenceError({...s,releaseId:release.id},e,operation);
   }
   if(e.composeRecovery!==undefined){
+   if(e.composeRecovery.kind==='queue_absent_partial'){
+    if(!releaseIsCompose(m)||input.status!=='reconciled'||result!=='absent'||input.observationOnly!==true)return 'release_evidence_scope_invalid';
+    return releaseComposePartialRollbackAbsenceJournalError({...s,releaseId:release.id},operation,e,journal);
+   }
    if(!releaseIsCompose(m)||!(result==="failed"&&['queue_failed','queue_absent','queue_failed_partial'].includes(e.composeRecovery.kind)
      ||input.status==="reconciled"&&result==="absent"&&e.composeRecovery.kind==="queue_absent"))return "release_evidence_scope_invalid";
    return releaseComposeRecoveryEvidenceError({...s,releaseId:release.id},e,operation);

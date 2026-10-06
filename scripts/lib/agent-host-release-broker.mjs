@@ -49,11 +49,23 @@ const completedSet=(state,operation)=>state.release.snapshot.manifest.deployment
  &&j.intent?.parameters?.targetId===target.targetId&&releaseOutcomeStatus(j.outcome)==='succeeded'));
 export function nextReleaseOperation(state){
  const j=state.journal??[],done=op=>j.some(x=>x.operation===op&&releaseOutcomeStatus(x.outcome)==='succeeded');
+ const recoverySnapshot={...state.release.snapshot,releaseId:state.release.id};
  if(contract.retainsApplication(state.release?.snapshot?.manifest)&&j.some(x=>['archive_repository','cleanup_local'].includes(x.operation)))fail('release_retention_policy_violation');
  if(j.some(x=>!releaseOutcomeStatus(x.outcome)||releaseOutcomeStatus(x.outcome)==='uncertain'))return 'reconcile';
- if(contract.isComposeManifest(state.release?.snapshot?.manifest)&&j.some(x=>releaseOutcomeStatus(x.outcome)==='absent'&&(x.outcome?.evidence?.composeRecovery||x.outcome?.evidence?.composeConfigAbsence)))
+ if(contract.isComposeManifest(state.release?.snapshot?.manifest)&&j.some((x,index)=>{
+  if(releaseOutcomeStatus(x.outcome)!=='absent'||!(x.outcome?.evidence?.composeRecovery||x.outcome?.evidence?.composeConfigAbsence))return false;
+  if(x.outcome.evidence.composeRecovery?.kind!=='queue_absent_partial'
+   ||contract.composePartialRollbackAbsenceJournalError(recoverySnapshot,x,x.outcome.evidence,j.slice(0,index+1))!==null)return true;
+  const later=j.slice(index+1);
+  return later.filter(r=>r.operation==='rollback').length>1
+   ||later.some((r,i)=>i===0?r.operation!=='rollback':!['observe','fixture_cleanup','runtime_resume','cleanup','cleanup_resource'].includes(r.operation));
+ }))
   fail('release_compose_no_effect_diagnosis_required');
  if(state.status!=='active')return null;
+ if(j.at(-1)?.outcome?.evidence?.composeRecovery?.kind==='queue_absent_partial'){
+  if(!contract.composePartialRollbackRetryValid(recoverySnapshot,j))fail('release_compose_no_effect_diagnosis_required');
+  return 'rollback';
+ }
  const post=state.release.snapshot.manifest.postObservation;
  if(post){
   if(!contract.isComposeManifest(state.release.snapshot.manifest))fail('release_post_observation_scope_required');
@@ -238,10 +250,16 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
    if(contract.isComposeManifest(m)&&result?.evidence?.composeRecovery){
     const evidence=result.evidence;
     if(contract.composeRecoveryEvidenceError(s,evidence,pending)||!['failed','absent'].includes(result.state)
-     ||!(result.state==='absent'?evidence.composeRecovery.kind==='queue_absent':['queue_failed','queue_failed_partial'].includes(evidence.composeRecovery.kind)))fail('release_compose_recovery_unproven');
-    // Proven absence closes the attempted release as failed, rather than
-    // enabling a new candidate intent/queue ID. Only sealed recovery follows.
-    result={status:'failed',evidence};
+     ||!(result.state==='absent'?['queue_absent','queue_absent_partial'].includes(evidence.composeRecovery.kind):['queue_failed','queue_failed_partial'].includes(evidence.composeRecovery.kind)))fail('release_compose_recovery_unproven');
+    if(evidence.composeRecovery.kind==='queue_absent_partial'){
+     if(result.state!=='absent'||contract.composePartialRollbackAbsenceJournalError(s,pending,evidence,state.journal)!==null)
+      fail('release_compose_recovery_unproven');
+     result={status:'absent',evidence};
+    }else{
+     // Other absence profiles close the attempt as failure; they cannot
+     // authorize a new candidate intent or a new queue identity.
+     result={status:'failed',evidence};
+    }
    }else if(contract.isReleaseSetManifest(m)&&['finished','failed'].includes(result?.state)){
     assertComposeQueueIds(m,result.deploymentIds,pending.intent.parameters.targetId);
     const health=result.healthy===undefined?await coolify.health(m,s,{rollback:pending.operation==='rollback',targetId:pending.intent.parameters.targetId}):result;

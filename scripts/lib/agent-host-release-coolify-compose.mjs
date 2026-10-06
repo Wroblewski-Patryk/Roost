@@ -138,7 +138,7 @@ export function createCoolifyComposeAdapter({ gateway, now = () => Date.now(),
       const context=optionsFor(m,s,o),evidence=await gateway.inspectRecovery(context);
       check(contract.composeRecoveryEvidenceError({...s,manifest:m},evidence,{id:o.operationId,createdAt:o.since,
         operation:o.rollback?'rollback':'deploy',intent:o.operationIntent??{parameters:{targetId:context.targetId}}})===null
-        &&(result.state==='absent'?evidence.composeRecovery.kind==='queue_absent':['queue_failed','queue_failed_partial'].includes(evidence.composeRecovery.kind))
+        &&(result.state==='absent'?['queue_absent','queue_absent_partial'].includes(evidence.composeRecovery.kind):['queue_failed','queue_failed_partial'].includes(evidence.composeRecovery.kind))
         &&contract.releaseDigest(evidence.composeRecovery.queue)===contract.releaseDigest(result.queue??null), 'recovery_unproven');
       return {...result,evidence,composeRecovery:evidence.composeRecovery};
     }

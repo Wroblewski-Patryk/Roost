@@ -87,3 +87,7 @@ test('deployment diagnostic enum persists only exact fixed reasons and keeps the
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
 test('partial rollout refusals retain only fixed public codes',()=>{for(const suffix of ['partial_exact_failed_queue','partial_complete_service_set','partial_owned_service_identity','partial_protected_database','partial_candidate_revision','partial_candidate_image','partial_exact_failure_states','partial_retained_images_present','partial_database_safety_unproven','partial_release_changed','partial_saved_failure_unproven','partial_data_fence_health_unproven','partial_changed_during_read','partial_observation_unproven']){const reason='release_compose_installation_'+suffix;assert.equal(releaseWorkerDiagnostic(Error(reason)),reason);assert.equal(releaseWorkerDiagnostic(Error(reason+' private-value')),'release_preflight_unproven');}});
+test('actual partial rollback state refusal remains a fixed code with no exception details',()=>{
+ const reason='release_compose_state_service_set_changed';assert.equal(releaseWorkerDiagnostic(Error(reason)),reason);
+ assert.equal(releaseWorkerDiagnostic(Error(reason+' private-value')),'release_preflight_unproven');
+});
