@@ -6,6 +6,7 @@ import { z } from "zod";
 import { executionContractSchema, validateExecutionPacket } from "./agent-host-execution-packet.mjs";
 import { executionContextRevision, assertFreshExecutionContext } from "./agent-host-execution-context.mjs";
 import { guardHostContent } from "./agent-host-redaction.mjs";
+import { nativeDigest, nativeRelative } from "./agent-host-native-footprint.mjs";
 import ready from "./agent-host-ready-context.cjs";
 import { sealHermesProfile, assertHermesProfile, hermesStartupProfileVersion, hermesBudgetProfileVersion, hermesNativeProfileVersion } from "./agent-host-hermes-profile.mjs";
 import { createHermesStartupCandidate, sealHermesStartup, assertHermesStartup } from "./agent-host-hermes-startup.mjs";
@@ -276,6 +277,39 @@ function validate(fresh, claimed, currentCommit, secrets) {
   ready.assertReadyContext(fresh.taskContext, fresh.applicationContext, claimed);
   ready.assertRiskAdmission(fresh.taskContext, claimed, currentCommit);
 }
+// This is a scan-only exception for standard container build source, never a
+// content projection or an operator-path allowlist. Match an actual selected
+// whole Dockerfile object with both its byte hash and native evidence digest.
+// Fragment provenance remains the native boundary's responsibility; fragments
+// cannot obtain this whole-file exception by supplying a metadata label.
+function containerSourceScanRows(body) {
+  const rows = new Map(), boundary = body.contract.nativeBoundary;
+  const repository = body.evidence.repositoryInspection?.value;
+  if (boundary?.profile !== "inspect-readonly" || !repository
+      || repository.head !== body.evidence.risk.value.commit
+      || repository.branch !== body.contract.singleTask.branch
+      || !providerInputSchema.safeParse({ ...body, seal: digest(body) }).success) return rows;
+  const { digest: claimedDigest, ...original } = repository;
+  if (nativeDigest(original) !== claimedDigest) return rows;
+  for (const row of repository.files) {
+    try {
+      if (row.range !== undefined || nativeRelative(row.path) !== row.path
+          || row.path.split("/").at(-1) !== "Dockerfile"
+          || !boundary.readPaths.includes(row.path)
+          || createHash("sha256").update(Buffer.from(row.content, "utf8")).digest("hex") !== row.sha256) continue;
+      // Only default Linux Dockerfile RUN/apt-get cleanup commands qualify.
+      // Other instructions, comments and alternate escape syntaxes stay exact.
+      if (/^\s*#\s*escape\s*=\s*[^\\\s]/im.test(row.content)) continue;
+      const scan = row.content.replace(/^[\t ]*RUN[\t ]+(?:[^\r\n]*\\\r?\n)*[^\r\n]*/gm, block => {
+        if (!/\bapt-get[\t ]+(?:update|install)\b/.test(block)) return block;
+        return block.replace(/((?:&&|;)[\t ]*(?:\\\r?\n[\t ]*)?rm[\t ]+-(?:rf|fr)[\t ]+)\/var\/lib\/apt\/lists(?:\/\*?)?(?=$|[\s"';&|)])/g,
+          "$1CONTAINER_APT_PACKAGE_LISTS");
+      });
+      if (scan !== row.content) rows.set(row, { content: row.content, scan });
+    } catch { /* Invalid source selection gains no exception. */ }
+  }
+  return rows;
+}
 function checkedEnvelope(fresh, claimed, secrets, repositoryEvidence, priorAudit, codeReviewerPriorAudit) {
   // Check the original response before the navigation projection too: omission
   // must never conceal credentials or secret-bearing authoritative context.
@@ -284,11 +318,14 @@ function checkedEnvelope(fresh, claimed, secrets, repositoryEvidence, priorAudit
   guardHostContent(body, "required", [claimed.leaseToken, ...secrets].filter(Boolean));
   // Private local paths are never prompt context. Relative repository paths and
   // canonical HTTPS origins remain evidence, not transport configuration.
-  const visit = (value, field = "input") => {
-    if (typeof value === "string" && /(?:(?:^|[^a-z0-9])[a-z]:[\\/]|\\\\[A-Za-z0-9][A-Za-z0-9._-]{0,63}[\\/][A-Za-z0-9]|file:\/\/|(?:^|[\s"'])\/(?:home|Users|tmp|var|etc|mnt|Volumes|root|srv|opt|run)\/)/i.test(value)) throw blocked("private_path", { field });
+  const containerRows = containerSourceScanRows(body);
+  const visit = (value, field = "input", parent, key) => {
+    const source = key === "content" ? containerRows.get(parent) : undefined;
+    const scanned = source?.content === value ? source.scan : value;
+    if (typeof scanned === "string" && /(?:(?:^|[^a-z0-9])[a-z]:[\\/]|\\\\[A-Za-z0-9][A-Za-z0-9._-]{0,63}[\\/][A-Za-z0-9]|file:\/\/|(?:^|[\s"'])\/(?:home|Users|tmp|var|etc|mnt|Volumes|root|srv|opt|run)\/)/i.test(scanned)) throw blocked("private_path", { field });
     if (value && typeof value === "object") for (const [key, item] of Object.entries(value)) {
       const safeKey = /^[A-Za-z][A-Za-z0-9_]{0,40}$/.test(key) ? key : Array.isArray(value) ? "item" : "field";
-      visit(item, `${field}.${safeKey}`.slice(0, 160));
+      visit(item, `${field}.${safeKey}`.slice(0, 160), value, key);
     }
   };
   visit(body);

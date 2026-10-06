@@ -479,3 +479,13 @@ runtime environment file. Runtime start still requires the normal environment,
 sealed images and mounts. Candidate builds separately receive the exact accepted
 revision as a fixed build argument. Supporting contract, controller and SQL checks
 do not establish application recovery or release completion.
+# Dockerfile source in read-only provider context
+
+The private-path scan permits the standard APT package-list cleanup literal
+only inside a selected whole Dockerfile's `RUN`/`apt-get` command. Qualification
+requires the typed read-only envelope, canonical declared path, matching branch
+and head, content SHA and native repository evidence digest. The scan exception
+does not alter emitted source bytes, hashes or the envelope seal. Fragments,
+operator instructions, metadata and other private paths retain the existing
+denial. The root ran 141 provider/read-only component checks and `codex:check`;
+native admission and model execution remain separate evidence.
