@@ -1566,6 +1566,21 @@ finished state and exact health/build-info 200 were verified at 14:05:17.988 UTC
 Applied additive migration, checksum from the committed source and installed
 functions/trigger were read back at 14:05:53.265 UTC. Nine current bounded reads
 and the actual signed native closure qualified normal FAILED preparation
-`71757dee` at 14:06:24.043 UTC. Owner authentication is still required to persist
-the closure and rotate credentials. Production observation, cleanup/resume, final native closure and
-independent postrelease acceptance remain required.
+`71757dee` at 14:06:24.043 UTC. Normal FAILED closure `00b660cc` persisted after
+fresh owner authentication. Host claim epoch six and ordinary releaser generation
+ten were issued through normal rotation and HTTPS/Windows credential readback;
+the latter expires at 20:08:43.650 UTC. No secret was persisted in these records.
+
+Postclosure nine-read receipt `a5701619` at 14:14:24.470 UTC preserves both exact
+historical failed queues. The new-attempt selection starts after the closure and
+has zero candidate queues, zero active global queues and no open release for the
+application; this is not a claim that the old queues are absent. Digest-only
+installed Coolify preview `0d2522fd` verifies the new command hashes, the actual
+old rollback settings and invariant preimage. Eight exact private files were
+installed with physical readback and actual signed seven-child closure checks
+before and after installation. Manifest `9e7e3e70` preserves source, artifacts,
+data, images, original backup clocks and observation/cleanup effects. Old commands
+remain the observed preimage; new commands remain planned. Fifty-six offline
+package qualification cases pass. This preparation grants no release authority:
+a new native audit, independent exact receipt/code review, fresh normal grant and
+real deployment/observation/cleanup/resume/final acceptance remain required.

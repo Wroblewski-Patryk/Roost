@@ -201,7 +201,7 @@ Build `6c602f42`: exact SHA, 7/7, closed/restored; twelve sources unchanged.
 Review234dfc97/4dc1812a: historical approval.
 Pkg8ec8b319/4b9db111 installed; Audit31a929c9 signed/closed.
 Its eighteen negative findings remain. Basis0c942064 current; b2ff5d55 approved.
-Roost `1cfe5a0b` healthy; `ed01d66e` closure prepared.
+Roost `1cfe5a0b` healthy; FAILED closure `00b660cc` persisted.
 PR3/c643 merged without replay. Both queues failed before build; baseline healthy.
 
 Reuse the existing application, repository and Compose installation; create no
