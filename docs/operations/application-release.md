@@ -1353,3 +1353,24 @@ byte preservation. Worker failure cleanup now requires the same execution's
 signed pair and an observed closed native Job; it retains the original failure
 and ownership fences. All 50 managed/prior-audit checks, including actual Windows Jobs, pass.
 A new actual accepted review and application release remain pending.
+
+Actual review `4793c21f-6864-4365-bc3c-a01bb687676c` completed at
+01:03:22.463 UTC on 6 October. Its signed closed native Job reports no workspace
+changes, and its separate artifact independently passes the original `ba9a2999`
+audit provenance. Code decision `f3df40a7-0b5a-493e-8f90-07f51fae5b6d` is
+REJECT: the dated log does not contain the later exact candidate receipts.
+Official Worker controller `124596` closed normally at 01:06:09.475 UTC.
+Neither that artifact pass nor completed execution grants release authority.
+
+The chronology dispute was independently inspected against the accepted
+requirements and app log rules. A commit cannot embed its own resulting hash
+and post-commit receipts. Preserve the rejection and use its existing manager
+return: the executor will append the specifically requested predecessor
+receipts as history; any successor's later checks belong to its formal handoff.
+Do not rewrite a verdict or revalidate rejected material to bypass that return.
+Manager extension version 2, selection and a fresh nine-member risk assessment
+are recorded; normal `return_to_executor` procedure admission passed. Its
+expired credential rotation is prepared, with fresh owner authentication still
+required. No return, application edit, new candidate, release grant or app
+deployment has occurred. Private rotation/correction preparation checks pass
+7/7 and 3/3; the gate remains incomplete.

@@ -185,13 +185,12 @@ an immediate implementation dependency or mark it complete.
 
 **Authorized release; production proof pending.** Preserve accepted `3cf9645e`.
 Review rejected `c21e0e0c` for its missing regression log. Log-only `c82e68b3`
-passes seven tests, native build and independent read-only acceptance.
+has seven-test/native-build proof; latest review below blocks release.
 
 Restore/parity pass; writes and cadences remain held.
 Closure `2eb9cdfd` retains PR 2/exact c82 and Git proof.
-Prior FAILED releases `3c75a93e`, `e7320bdf`, `f579ca87` and `6b4471c5`
-retain dated outcomes, native closures and Git. Closures `14348e4c`, `4d79f05f`,
-`4b0a9d74`, `4d4d7db5` are recorded; negative audits remain literal.
+Prior FAILED releases retain dated outcomes, native closures and Git;
+their closures and literal negative audits are in the evidence matrix.
 Backup guards pass; V8/V3 renewed.
 Coolify/CAS `2d63cf62`/`bb121957`: all-record parity verified.
 Native c82 build `3e8510be`: seven tests pass; outputs restored.
@@ -201,8 +200,9 @@ Two-queue: 96 API, 202 Worker and eight SQL probes pass.
 Roost `171a76f3` deployed; closure `4a98987c` persisted.
 Audit `ba9a2999`: CHANGES_REQUIRED; basis mapping `d7758c8c` recorded.
 Basis: 57 checks, 39 DB tests pass. Packed input: 130426 bytes.
-Reviews `228`/`ab692270` failed; no verdict. Signed archives preserved.
-Prior-audit transport: 162 checks pass; runtime proof pending.
+Reviews `228`/`ab692270` failed. Signed archives preserved.
+Review `4793c21f`: audit provenance passed; code rejected for log chronology.
+Manager correction and release remain pending; Worker stopped.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

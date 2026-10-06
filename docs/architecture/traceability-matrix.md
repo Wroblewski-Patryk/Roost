@@ -2146,3 +2146,9 @@ byte preservation. Worker failure cleanup now requires the same execution's
 signed pair and an observed closed native Job; it retains the original failure
 and ownership fences. All 50 managed/prior-audit checks, including actual Windows Jobs, pass.
 A new actual accepted review and application release remain pending.
+
+| Current second-application evidence | Observation | Limit |
+| --- | --- | --- |
+| Review `4793c21f`, decision `f3df40a7` | Actual signed native completion at 01:03:22.463 UTC on 6 October; unchanged workspace; original audit provenance artifact PASS; code REJECT for log chronology. | No code acceptance or release authority. |
+| Official controller `124596` | Normal close at 01:06:09.475 UTC; owned native Job closed with zero active processes. | No app deployment. |
+| Manager correction preparation | Existing extension version 2, current nine-member risk and normal return procedure admitted; rotation/correction checks 7/7 and 3/3 pass. | Manager credential expired; fresh owner authentication needed. No manager return or app edit yet. |
