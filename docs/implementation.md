@@ -196,7 +196,7 @@ PR3/c643 merged. Both queues failed before build; baseline healthy.
 Pkg9e7/audit34b: 19 CHANGES_REQUIRED, native closed; review19ab approved.
 Grant f88: candidate queue failed after recreating five services; migration
 import lacks greenlet. App unavailable; schema/data parity verified.
-Roost `d794af51` deployed; recovery migration verified.
+Roost `23d12063` deployed; compatible migration verified.
 FAILED closure `6a5bc353`: fresh reads, seven native children closed.
 14 lineage/66 negative SQL probes rolled back.
 Fresh encrypted backup/isolated restore verified.

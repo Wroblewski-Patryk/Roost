@@ -538,4 +538,13 @@ The subsequent rollback-only rehearsal `8519d589` passed 66 dedicated negative
 content probes. Final qualification also refused every missing stored proof;
 the before/after function and trigger inventory was unchanged. Full stored
 negative lineage and actual earlier successful deployment ancestry remain
-unverified. The migration is still unapplied.
+unverified. The migration was unapplied during that rehearsal.
+
+Roost `23d12063` subsequently deployed through its existing main-branch automatic
+deployment. Exact health/build-info and the applied migration checksum match;
+21 functions and all four enabled guards were read back in a read-only
+transaction. The installed failure reader preserves the actual operation,
+complete queue/runtime inventories, database fence, ingress, fingerprints and
+original observation clock. Unknown reads cannot authorize another effect.
+Root's 293 reader/broker/Worker checks and `codex:check` pass. Native compatible
+grant, replacement image, application recovery and release remain unverified.
