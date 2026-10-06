@@ -1431,3 +1431,14 @@ Existing files, rollback, ownership and baseline remain preserved. This private
 installation grants no release authority and performs no application Git or
 deployment effect. The new manifest requires its own native audit and normal
 current code/audit provenance qualification before a new exact grant.
+
+Audit `0fe8c893` failed before any model/native launch at 10:38:23 UTC on
+6 October: inherited admission still pinned `c82`, so the actual Ready guard
+refused candidate `c643`. Verification and usage remained empty; no application
+effect occurred. Official Stop closed the observer, then normal core writer
+recovery qualified the terminal-before-spawn checkpoint and absent owner before
+reclaiming/releasing its stale lock. No manual lock deletion occurred.
+The private adapter now requires exact `c643` admission and Ready seals before
+queue, measurement and launch; 107 regression checks pass. New cycle `042c1db4`
+queued execution `31a929c9`; actual input 118989/131072 bytes. Signed native audit,
+new audit-provenance review, release authority and runtime proof remain pending.
