@@ -185,23 +185,22 @@ an immediate implementation dependency or mark it complete.
 
 **Authorized release; production proof pending.** Preserve accepted `3cf9645e`.
 `c21e0e0c`/`c82e68b3` rejections remain historical. Successor `c64378df`
-has native seven-test proof; exact build, independent review and release pending.
+Native build/seven tests pass; independent review and release pending.
 
 Restore/parity pass; writes and cadences remain held.
 Historical FAILED releases, PR 2/c82, backups, credentials, native closures
 and literal negative audits remain in the evidence matrix.
-Coolify/CAS `2d63cf62`/`bb121957`: all-record parity verified.
-Native c82 build `3e8510be`: seven tests pass; outputs restored.
-Audit `d1004c62`: CHANGES_REQUIRED; review `17f8c1db`: accepted.
+Historical c82 build/parity passed; audit `d1004c62` remained CHANGES_REQUIRED.
 Grant `63750d89`: both queues ABSENT, prior services healthy, native closed.
 Two-queue: 96 API, 202 Worker and eight SQL probes pass.
 Roost `171a76f3` deployed; closure `4a98987c` persisted.
 Audit `ba9a2999`: CHANGES_REQUIRED; basis mapping `d7758c8c` recorded.
-Basis: 57 checks, 39 DB tests pass. Packed input: 130426 bytes.
-Reviews `228`/`ab692270` failed. Signed archives preserved.
+Historical basis checks, input and failed review archives remain in the matrix.
 Review `4793c21f`: audit provenance passed; code rejected for log chronology.
 Return `99bb9555` → coder `645f792b` → log-only `c64378df`: 7/7, native closed.
-Twelve sources unchanged; Worker stopped. Roost `f817253b` deployed/healthy.
+Build `6c602f42`: exact SHA, 7/7, closed/restored; twelve sources unchanged.
+Worker stopped; reviewer credential rotation needs fresh authentication.
+Roost `f817253b` deployed/healthy.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

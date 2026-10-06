@@ -1395,3 +1395,16 @@ successor; predecessor receipts remain historical. The official controller
 closed normally and the Worker stopped. A distinct exact-successor canonical
 build and fresh independent review remain required before any new release
 package, Git path or application deployment. The gate is incomplete.
+
+The distinct successor build `6c602f42` completed at 10:01:33.755 UTC on
+6 October. Actual `npm run build` and a separate seven-test Job passed;
+generated HTML and bundle contained the exact successor SHA. Both native Jobs
+closed with zero active processes; source, dependencies and tooling remained
+unchanged and only new build outputs were removed. The signed private evidence
+digest is `e04c6ba0`; its canonical handoff digest is `13596acd`. This is new
+successor proof, not a promotion of the predecessor build. The independent
+review preparation binds `645f792b` and original material `39d86760`, twelve
+source seals and the full latest log section. Its expired reviewer credential
+rotation is prepared; fresh owner authentication is the remaining dependency
+before normal admission, measurement and Worker execution. No successor Git
+publication or application deployment has occurred.

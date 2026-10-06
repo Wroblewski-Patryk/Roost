@@ -2165,3 +2165,6 @@ Test/local-commit receipts `ccf6cddf`/`4f4bcbfe` are current successor evidence;
 Roost `f817253b` deployment health/version passed at 09:41:27 UTC. Distinct
 successor canonical build, independent review and release remain pending;
 earlier chronology and authentication observations remain dated.
+
+| Successor build `6c602f42` | Actual exact-`c64378df` canonical build and seven-test rerun completed at 10:01:33.755 UTC on 6 October; two closed Jobs, exact frontend build revision, unchanged sources/dependencies/tooling, original outputs restored. Signed evidence `e04c6ba0`, canonical handoff `13596acd`. | No deployment/runtime or full-product claim. |
+| Successor review preparation | Current coder `645f792b`, original material `39d86760`, twelve unchanged source seals and full latest log; 34 factory, 53 build-boundary and two material-drift checks pass. Expired reviewer credential rotation prepared. | Fresh owner authentication required; review not yet launched or accepted. |
