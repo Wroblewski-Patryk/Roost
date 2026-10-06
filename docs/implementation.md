@@ -200,6 +200,7 @@ Review `4793c21f`: audit provenance passed; code rejected for log chronology.
 Return `99bb9555` → coder `645f792b` → log-only `c64378df`: 7/7, native closed.
 Build `6c602f42`: exact SHA, 7/7, closed/restored; twelve sources unchanged.
 Review234dfc97/4dc1812a: approved, signed/closed; Worker stopped.
+Pkg8ec8b319/4b9db111 installed; nine reads pass. New audit/Git/runtime pending.
 Roost `f817253b` deployed/healthy.
 
 Reuse the existing application, repository and Compose installation; create no

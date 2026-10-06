@@ -2175,3 +2175,6 @@ receipt `a133fa3d`, signed native admission `5850fcb0`, exact archived pair
 verified, owned processes absent and controller closed. Full provider input
 117841/131072 bytes. Prior rejection4793 stays historical; new application
 package/audit/Git/deployment/observation are not yet proven.
+
+| Successor retained baseline `c91c8af5` | Nine actual bounded reads completed 6 October 10:25:43.241 UTC, receipt `3ca9eefd` / source `df7b4431`; full retained parity, holds, capacity, protected images, original verified backup and absent candidate queue. Collector 72/72 checks. | Read-only; no backup clock renewal, historical closure promotion or release authority. |
+| Successor exact package `8ec8b319` | Manifest `4b9db111`, package `a379d906`, selector `6143d6c3`; eight exclusive new file writes with qualified physical readback. Factory 22/22 checks and independent thin-installer source review. Existing package bytes preserved. | Pure-factory summaries describe pure preparation; actual root installation created one directory, eight artifacts and three intent/receipt files. New audit, grant, Git and runtime proof pending. |

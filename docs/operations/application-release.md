@@ -1418,3 +1418,16 @@ footprints stayed unchanged; the signed archived admission pair passed core
 verification, all owned process identities were absent, and the official
 controller closed normally. This code approval does not certify an app release.
 A new exact package, manifest audit, Git path and runtime proof remain required.
+
+At 10:25:43.241 UTC on 6 October, nine bounded reads qualified the retained
+baseline: services/version/health, data/schema/sequences, held maintenance,
+capacity, protected images, retained verified backup and complete quiescent
+release/queue state. Receipt `3ca9eefd`, source `df7b4431`; backup clocks were
+retained. The controller witness contains four actually observed hashes;
+its historical eight-field descriptor is not claimed as a new measurement.
+Package `8ec8b319` / manifest `4b9db111` installs eight new files with exclusive
+creation and physical readback. Package digest `a379d906`, selector `6143d6c3`.
+Existing files, rollback, ownership and baseline remain preserved. This private
+installation grants no release authority and performs no application Git or
+deployment effect. The new manifest requires its own native audit and normal
+current code/audit provenance qualification before a new exact grant.
