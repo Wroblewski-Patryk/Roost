@@ -432,3 +432,17 @@ The same candidate preimage is used by inspection, model configuration CAS and
 queue admission, including rollback configuration before its image-only document
 has been applied. The rollback artifact must not substitute for that preimage.
 This comparison is configuration evidence; it never implies healthy containers.
+
+### Failed images without build revision
+
+Failed-partial v2 retains actual image references, creation times, nullable labels
+and an observed `buildRevision: unknown`. Exact queue tags and runtime environment
+identify the intended failed attempt; `candidateCodeProvenanceVerified: false`
+explicitly prevents source or deployed-version acceptance. At least one image
+must actually have the unknown revision. Image/container times, complete service
+identity, unchanged data/schema and all retained-image guards still qualify.
+
+Only the original failed deployment reconciliation and planned rollback are
+allowed. Healthy candidate validation remains unchanged. Migration
+`20261006165000_compose_failed_partial_image_attribution` preserves the v1
+validator and adds this strict failed-only dispatcher without rewriting evidence.

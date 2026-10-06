@@ -89,7 +89,7 @@ export function qualifyFailedComposePartialRuntime({snapshot,operation,queue,obs
  const declarations=t.configuration.services,rows=observed.services;
  check(declarations.length===5&&rows.length===5&&new Set(rows.map(r=>r.name)).size===5&&new Set(rows.map(r=>r.containerId)).size===5
   &&observed.missingDeclared.length===0&&declarations.every(d=>rows.some(r=>r.name===d.name&&r.role===d.role)),'partial_complete_service_set');
- const images=[];
+ const images=[],unknownBuild=observed.images.some(r=>r.buildRevision==='unknown');
  for(const d of declarations){const r=rows.find(r=>r.name===d.name);
   check(/^[a-f0-9]{64}$/.test(r.containerId)&&!baselineServices.some(x=>x.containerId===r.containerId)&&r.mountDigest===d.mountDigest&&Date.parse(r.createdAt)>=Date.parse(queue.createdAt)
    &&Date.parse(r.createdAt)<=Date.parse(queue.finishedAt),'partial_owned_service_identity');
@@ -98,15 +98,19 @@ export function qualifyFailedComposePartialRuntime({snapshot,operation,queue,obs
     &&r.containerId!==prior.containerId&&r.state==='running'&&r.health==='healthy'&&r.exitCode===0,'partial_protected_database');
   }else{check(r.runtimeRevision===commit&&r.imageRef===`${t.targetId}_${d.name}:${commit}`,'partial_candidate_revision');
    const image=observed.images.find(x=>x.name===d.name);check(image&&image.imageDigest===r.imageDigest&&image.imageRef===r.imageRef
-    &&image.buildRevision===commit&&(image.revisionLabel===null||image.revisionLabel===commit)
+    &&(image.buildRevision===commit||unknownBuild&&image.buildRevision==='unknown')&&(image.revisionLabel===null||image.revisionLabel===commit)
     &&(image.treeLabel===null||image.treeLabel===tree),'partial_candidate_image');
+   if(unknownBuild)check(Number.isFinite(Date.parse(image.createdAt))&&Date.parse(image.createdAt)>=Date.parse(queue.createdAt)
+    &&Date.parse(image.createdAt)<=Date.parse(r.createdAt),'partial_image_creation_unproven');
    check(d.role==='migration'?r.state==='exited'&&r.exitCode===1&&r.health===null:r.state==='created'&&r.exitCode===0&&r.health===null,'partial_exact_failure_states');
-   images.push({name:d.name,imageDigest:r.imageDigest,commit,tree,deploymentId});}
+   images.push({name:d.name,imageDigest:r.imageDigest,commit,tree,deploymentId,...(unknownBuild?{
+    imageRef:image.imageRef,createdAt:image.createdAt,buildRevision:image.buildRevision,revisionLabel:image.revisionLabel,treeLabel:image.treeLabel}:{})});}
  }
  const required=[...new Set([...t.baseline.images.map(x=>x.imageDigest),...t.configuration.services.filter(x=>x.source==='image').map(x=>x.imageDigest)])].sort();
  check(required.length>0&&contract.releaseDigest(required)===contract.releaseDigest(presentRollbackImageDigests.slice().sort()),'partial_retained_images_present');
  const services=rows.map(row=>({...Object.fromEntries(['name','role','containerId','imageDigest','mountDigest','state','health','exitCode','createdAt'].map(k=>[k,row[k]])),...(row.role==='database'?{}:{commit,tree,deploymentId})})).sort((a,b)=>a.name.localeCompare(b.name));
- return{services,images:images.sort((a,b)=>a.name.localeCompare(b.name)),protectedRollbackImages:structuredClone(t.baseline.images),presentRollbackImageDigests:required};
+ return{services,images:images.sort((a,b)=>a.name.localeCompare(b.name)),protectedRollbackImages:structuredClone(t.baseline.images),presentRollbackImageDigests:required,
+  ...(unknownBuild?{sourceAttribution:'failed_queue_exact_reference_and_runtime_environment',candidateCodeProvenanceVerified:false}:{})};
 }
 
 /** Fixed per-installation wiring. Dependency substitutions exist for source
@@ -364,7 +368,7 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
     const r={schemaVersion:'roost-compose-recovery-observation-v1',kind:'queue_failed_partial',releaseId:s.releaseId,operationId:options.operationId,since:options.since,targetId:t.targetId,
      phase:'candidate',requestedCommit:s.commit,requestedTree:s.candidateTree,deploymentId:queue.deploymentId,queue,controlPlaneQuiescent:true,configuration,
      baselineCommit:t.baseline.commit,baselineTree:t.baseline.tree,migrationSchemaVerified:true,baselineServices,services:partial.proof.services,
-     partial:{schemaVersion:'roost-compose-failed-partial-runtime-v1',...partial.proof,databaseReadOnly:true,activeOtherSessions:0,ownedTransactions:0,projectServiceSetComplete:true,
+     partial:{schemaVersion:partial.proof.sourceAttribution?'roost-compose-failed-partial-runtime-v2':'roost-compose-failed-partial-runtime-v1',...partial.proof,databaseReadOnly:true,activeOtherSessions:0,ownedTransactions:0,projectServiceSetComplete:true,
       publicHealth:{healthy:false,healthDigest:health.healthDigest},candidateConfigDigest:t.configDigest}};
     delete r.partial.services;
     const evidence={composeRecovery:r,deploymentIds:[{targetId:t.targetId,deploymentId:queue.deploymentId}],artifactSetDigest:m.deployment.artifactSetDigest,

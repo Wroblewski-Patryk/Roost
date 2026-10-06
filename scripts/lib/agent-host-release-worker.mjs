@@ -31,6 +31,9 @@ for (const reason of ['native_assignment_unobserved','native_resume_or_cleanup_u
  'ssh_timeout','ssh_connection_closed','ssh_host_identity_unproven']) releaseNativeDiagnosticReasons.add('release_child_'+reason);
 for(const reason of releaseNativeDiagnosticReasons)releaseDiagnosticReasons.add(reason);
 releaseDiagnosticReasons.add('release_compose_no_effect_diagnosis_required');
+for(const reason of ['partial_exact_failed_queue','partial_complete_service_set','partial_owned_service_identity','partial_protected_database','partial_candidate_revision','partial_candidate_image','partial_exact_failure_states','partial_retained_images_present','partial_database_safety_unproven','partial_release_changed','partial_saved_failure_unproven','partial_data_fence_health_unproven','partial_changed_during_read','partial_observation_unproven'])
+ releaseDiagnosticReasons.add('release_compose_installation_'+reason);
+releaseDiagnosticReasons.add('release_compose_installation_partial_image_creation_unproven');
 for(const reason of ['unproven','unsupported','mixed','capacity_insufficient'])
  releaseDiagnosticReasons.add('release_compose_configuration_schema_'+reason);
 releaseDiagnosticReasons.add('release_coolify_git_set_runtime_identity_changed');

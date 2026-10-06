@@ -235,11 +235,22 @@ const composeTargetEvidence=z.object({targetId:text,configuration:compose.compos
 // Explicit failed partial rollout. This is neither an unchanged healthy baseline
 // nor installed candidate health. The fixed reader supplies image/source proof,
 // preserved data and fenced database plus the entire five-service project set.
-const composeFailedPartialSchema=z.object({schemaVersion:z.literal('roost-compose-failed-partial-runtime-v1'),
+const composeFailedPartialV1Schema=z.object({schemaVersion:z.literal('roost-compose-failed-partial-runtime-v1'),
  images:z.array(z.object({name:text,imageDigest:image,commit:sha,tree:sha,deploymentId:text}).strict()).length(4),
  candidateConfigDigest:hash,databaseReadOnly:z.literal(true),activeOtherSessions:z.literal(0),ownedTransactions:z.literal(0),projectServiceSetComplete:z.literal(true),
  protectedRollbackImages:z.array(z.object({name:text,imageDigest:image}).strict()).length(4),presentRollbackImageDigests:z.array(image).min(1).max(5),
  publicHealth:z.object({healthy:z.literal(false),healthDigest:hash}).strict()}).strict();
+// Version 2 records actual failed-image metadata when a build omitted its SHA.
+// Exact failed-queue tags/runtime environment identify an intended attempt;
+// they do not certify candidate source, deployed version or installed health.
+const composeFailedPartialV2ImageSchema=z.object({name:text,imageDigest:image,commit:sha,tree:sha,deploymentId:text,
+ imageRef:text,createdAt:z.string().datetime({offset:true}),buildRevision:z.union([sha,z.literal('unknown')]),
+ revisionLabel:sha.nullable(),treeLabel:sha.nullable()}).strict();
+const composeFailedPartialV2Schema=composeFailedPartialV1Schema.omit({schemaVersion:true,images:true}).extend({
+ schemaVersion:z.literal('roost-compose-failed-partial-runtime-v2'),images:z.array(composeFailedPartialV2ImageSchema).length(4),
+ sourceAttribution:z.literal('failed_queue_exact_reference_and_runtime_environment'),candidateCodeProvenanceVerified:z.literal(false)
+}).strict().refine(p=>p.images.some(i=>i.buildRevision==='unknown'),{message:'failed_partial_v2_requires_actual_unknown_image_revision'});
+const composeFailedPartialSchema=z.union([composeFailedPartialV1Schema,composeFailedPartialV2Schema]);
 const composeRecoverySchema=z.object({schemaVersion:z.literal('roost-compose-recovery-observation-v1'),kind:z.enum(['queue_failed','queue_absent','queue_failed_partial']),
  releaseId:id,operationId:id,since:z.string().datetime(),targetId:text,phase:z.enum(['candidate','rollback']),requestedCommit:sha,requestedTree:sha,
  deploymentId:text,queue:z.object({targetId:text,deploymentId:text,commit:z.union([sha,z.literal('HEAD')]),
@@ -485,6 +496,13 @@ const composeFailedPartialEvidenceError=(s,e,operation)=>{
   for(const row of rows){const d=declared.find(x=>x.name===row.name),prior=before.find(x=>x.name===row.name),proof=p.images.find(x=>x.name===row.name);
    if(!d||row.role!==d.role||row.mountDigest!==d.mountDigest||Date.parse(row.createdAt)<Date.parse(q.createdAt)||Date.parse(row.createdAt)>Date.parse(q.finishedAt)
     ||before.some(x=>x.containerId===row.containerId))return 'release_compose_failed_partial_service_binding';
+   if(d.source==='built'&&p.schemaVersion==='roost-compose-failed-partial-runtime-v2'&&(!proof
+    ||proof.imageRef!==`${t.targetId}_${row.name}:${s.commit}`
+    ||Date.parse(proof.createdAt)<Date.parse(q.createdAt)||Date.parse(proof.createdAt)>Date.parse(q.finishedAt)
+    ||Date.parse(proof.createdAt)>Date.parse(row.createdAt)
+    ||proof.buildRevision!=='unknown'&&proof.buildRevision!==s.commit
+    ||proof.revisionLabel!==null&&proof.revisionLabel!==s.commit||proof.treeLabel!==null&&proof.treeLabel!==s.candidateTree))
+    return 'release_compose_failed_partial_image_attribution_unproven';
    if(d.source==='image'){
     if(!prior||prior.role!=='database'||row.imageDigest!==d.imageDigest||row.imageDigest!==prior.imageDigest||row.mountDigest!==prior.mountDigest
      ||row.state!=='running'||row.health!=='healthy'||row.exitCode!==0||row.commit!==undefined||row.tree!==undefined||row.deploymentId!==undefined)
@@ -679,7 +697,7 @@ const postObservationIntentError=(s,input,journal=[])=>{
  }
  return null;
 };
-module.exports={gitPublicationBaseSchema,releaseGitPublicationBase,baselineRevalidationSchema,composeConfigAbsenceSchema,composeConfigAbsenceEvidenceError,releaseNativeClosureSchema,postObservationScopeSchema,postObservationEvidenceSchema,postObservationOperations,postObservationIntentError,postObservationOutcomeError,composeFailedPartialSchema,composeFailedPartialEvidenceError,composeRecoverySchema,composeRecoveryEvidenceError,composeManifestObject,isComposeManifest,isReleaseSetManifest,sourceArtifactDigest,composeEvidenceError,manifestSchema,createReleaseSchema,intentSchema,outcomeSchema,operations,releaseDigest,retainsApplication,applicationManifestObject,refineApplicationManifest,gitSetManifestObject,isGitSetManifest,gitSetArtifactDigest,releaseExpirySchema,releaseSuccessorBasisSchema,releaseHasSuccessor,releaseRollbackImageFailureValid,baselineRestartSchema,closeFailedReleaseSchema,authorizeReconciliationSchema,publishedGitBasisSchema,releaseHasPublishedGitBasis:releaseHasPublishedGit,releaseRestartProtectedResourceIds};
+module.exports={gitPublicationBaseSchema,releaseGitPublicationBase,baselineRevalidationSchema,composeConfigAbsenceSchema,composeConfigAbsenceEvidenceError,releaseNativeClosureSchema,postObservationScopeSchema,postObservationEvidenceSchema,postObservationOperations,postObservationIntentError,postObservationOutcomeError,composeFailedPartialSchema,composeFailedPartialV1Schema,composeFailedPartialV2Schema,composeFailedPartialV2ImageSchema,composeFailedPartialEvidenceError,composeRecoverySchema,composeRecoveryEvidenceError,composeManifestObject,isComposeManifest,isReleaseSetManifest,sourceArtifactDigest,composeEvidenceError,manifestSchema,createReleaseSchema,intentSchema,outcomeSchema,operations,releaseDigest,retainsApplication,applicationManifestObject,refineApplicationManifest,gitSetManifestObject,isGitSetManifest,gitSetArtifactDigest,releaseExpirySchema,releaseSuccessorBasisSchema,releaseHasSuccessor,releaseRollbackImageFailureValid,baselineRestartSchema,closeFailedReleaseSchema,authorizeReconciliationSchema,publishedGitBasisSchema,releaseHasPublishedGitBasis:releaseHasPublishedGit,releaseRestartProtectedResourceIds};
 module.exports.releaseBaselineRevalidationSchema=baselineRevalidationSchema;
 module.exports.releaseBaselineRevalidationBindings=input=>baselineRevalidation.baselineRevalidationBindings(input,releaseDigest);
 module.exports.releaseBaselineRevalidationDigest=value=>baselineRevalidation.baselineRevalidationDigest(value,releaseDigest);
