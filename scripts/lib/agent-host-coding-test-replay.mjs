@@ -13,7 +13,39 @@ import { isWindowsJobCleanupReceipt, startWindowsJob, temporaryWindowsJobLaunche
 const proofs = new WeakMap();
 const receipts = new WeakMap();
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
-const fail = () => { throw Object.assign(new Error('coding_test_replay_unproven'), { retryable: false }); };
+const fail = (phase) => { throw Object.assign(new Error('coding_test_replay_unproven'), { retryable: false,
+  ...(typeof phase === 'string' && /^python_[a-z_]{1,60}$/.test(phase) ? { replayPhase: phase } : {}) }); };
+export const codingReplayDiagnosticPhases=Object.freeze(['python_initial_pins','python_runtime_probe','python_runtime_observation','python_projection_prepare','python_projection_job','python_projection_report','python_candidate_green']);
+export const codingReplayDiagnosticBoundaries=Object.freeze(['before_job','data_authority','data_consumer','poll_pins','poll_subset','job_completion','closed_check','post_job_pins','post_job_subset','phase_failure']);
+const diagnosticReasons=new Set(['coding_test_replay_unproven','windows_job_output_rejected','hermes_stop_recovery_unproven',
+ 'greenlet_actual_replay_actual_stopped_process_inventory','greenlet_actual_replay_no_foreign_native_launcher','greenlet_actual_replay_core_owned_job_temp_parent',
+ 'greenlet_actual_replay_writer_recovery_absent','greenlet_actual_replay_actual_clean_candidate_direct_parent','greenlet_actual_replay_exact_four_changes',
+ 'greenlet_actual_replay_twelve_ui_and_migration_parity','greenlet_actual_replay_append_only_log','greenlet_actual_replay_actual_current_decision_revision',
+ 'greenlet_successor_replay_fresh_current_root_record','greenlet_successor_replay_actual_current_normal_completed_source','greenlet_coding_native_actual_fixed_sdk_cas',
+ 'native_root_invalid','native_root_unavailable','native_reparse_denied','native_inventory_limit','native_git_observation_failed','native_scope_invalid']);
+const nativeTerminationReasons=new Set(['root_exit','timeout','cancel','lease_lost','context_stop','controller_shutdown','controller_closed','preparation_failed','request_invalid','startup_timeout','protocol_error','stdin_error','pipe_error','output_limit']);
+// Diagnostic projection alone grants no receipt/native authority. Raw errors,
+// channels, output, paths and callback details never cross this boundary.
+export function codingReplayDiagnostic({phase,boundary,error,receipt}) {
+ if(!codingReplayDiagnosticPhases.includes(phase)||!codingReplayDiagnosticBoundaries.includes(boundary))fail();
+ const safe=receipt&&nativeTerminationReasons.has(receipt.terminationReason)
+  &&(receipt.rootExit===null||Number.isSafeInteger(receipt.rootExit)&&receipt.rootExit>=0)
+  &&['resumed','jobClosed','cleanup'].every(k=>typeof receipt[k]==='boolean')
+  &&Number.isSafeInteger(receipt.activeProcesses)&&receipt.activeProcesses>=0;
+ const r=safe?{terminationReason:receipt.terminationReason,rootExit:receipt.rootExit,resumed:receipt.resumed,jobClosed:receipt.jobClosed,
+  cleanup:receipt.cleanup,activeProcesses:receipt.activeProcesses,receiptDigest:nativeDigest(receipt),
+  cleanupReceiptQualified:isWindowsJobCleanupReceipt(receipt)}:null;
+ return Object.freeze({schemaVersion:'roost-coding-replay-diagnostic-v1',phase,boundary,
+  guardCode:diagnosticReasons.has(error?.message)?error.message:error?'unknown_guard':null,
+  receipt:r,diagnosticOnly:true,retryAllowed:false});
+}
+// The returned value still requires the original branded cleanup predicates.
+// This observation helper cannot qualify a JSON receipt or grant a retry.
+export async function observeCodingReplayJobCompletion(completion,{phase,onDiagnostic,getProblem=()=>undefined,getCallbackProblem=()=>undefined}) {
+ const emit=(error,receipt)=>{if(typeof onDiagnostic==='function'&&onDiagnostic(codingReplayDiagnostic({phase,boundary:'job_completion',error,receipt}))?.then)fail();};
+ try{const receipt=await completion,problem=getProblem();emit(problem,receipt);if(problem)throw problem;return receipt;}
+ catch(error){emit(getCallbackProblem()??getProblem()??error,error?.details?.ownedTreeReceipt);throw error;}
+}
 const inside = (root, value) => { const r = path.relative(root, value); return !!r && !r.startsWith('..') && !path.isAbsolute(r); };
 const same = (a, b) => process.platform === 'win32' ? a.toLowerCase() === b.toLowerCase() : a === b;
 const env = () => Object.fromEntries(Object.entries(process.env).filter(([key]) =>
@@ -337,25 +369,38 @@ function cleanupDirectory(directory, parent) {
   if (existsSync(directory)) fail();
 }
 const pythonReplayProbe="import json,sys;print(json.dumps({'version':sys.version.split()[0],'executable':sys.executable,'prefix':sys.prefix,'basePrefix':sys.base_prefix,'paths':sys.path,'isolated':bool(sys.flags.isolated),'ignoreEnvironment':bool(sys.flags.ignore_environment),'bytecodeDisabled':bool(sys.flags.dont_write_bytecode),'safePath':bool(sys.flags.safe_path)},sort_keys=True))";
-async function runPythonReplay(p,{workspaceSeal,remainingMs,assertAuthority}) {
- let directory, directoryIdentity;
+async function runPythonReplay(p,{workspaceSeal,remainingMs,assertAuthority,onDiagnostic}) {
+ let directory, directoryIdentity, phase='python_initial_pins';
+ const emit=(boundary,error,receipt)=>{if(onDiagnostic!==undefined){if(typeof onDiagnostic!=='function')fail();
+  if(onDiagnostic(codingReplayDiagnostic({phase,boundary,error,receipt}))?.then)fail();}};
  try {
   assertPinned(p,assertAuthority);
   const probeChunks=[],probeOutput=createHash('sha256');let probeBytes=0;
   const job=async(argv,cwd,onData,verify)=>temporaryWindowsJobLauncher(async artifact=>{
+   emit('before_job');
    assertPinned(p,assertAuthority);if(verify)verify();
    const duration=remainingMs();if(!Number.isFinite(duration)||duration<1)fail();
+   let callbackProblem;
    const handle=await startWindowsJob(artifact,{executable:p.runtime.executable,argv,cwd,input:'',environment:env(),attempt:randomUUID(),
-    durationMs:Math.floor(Math.min(duration,120000)),onData:(channel,chunk)=>{if(assertAuthority()?.then)fail();onData(channel,chunk);}});
-   let problem;const timer=setInterval(()=>{try{assertPinned(p,assertAuthority);if(verify)verify();}catch(e){problem=e;handle.stop('lease_lost');}},2000);
-   try{const receipt=await handle.completion;if(problem)throw problem;return receipt;}finally{clearInterval(timer);}
+    durationMs:Math.floor(Math.min(duration,120000)),onData:(channel,chunk)=>{
+     try{if(assertAuthority()?.then)fail();}catch(error){callbackProblem=error;emit('data_authority',error);throw error;}
+     try{onData(channel,chunk);}catch(error){callbackProblem=error;emit('data_consumer',error);throw error;}}});
+   let problem;const timer=setInterval(()=>{
+    try{assertPinned(p,assertAuthority);}catch(error){problem=error;try{emit('poll_pins',error);}catch{}finally{handle.stop('lease_lost');}return;}
+    try{if(verify)verify();}catch(error){problem=error;try{emit('poll_subset',error);}catch{}finally{handle.stop('lease_lost');}}
+   },2000);
+   try{return await observeCodingReplayJobCompletion(handle.completion,{phase,onDiagnostic,getProblem:()=>problem,getCallbackProblem:()=>callbackProblem});}
+   finally{clearInterval(timer);}
   });
-  const closed=(r)=>{if(!isWindowsJobCleanupReceipt(r)||!r.cleanup||!r.jobClosed||r.activeProcesses!==0
+  const closed=(r)=>{emit('closed_check',undefined,r);if(!isWindowsJobCleanupReceipt(r)||!r.cleanup||!r.jobClosed||r.activeProcesses!==0
    ||r.terminationReason!=='root_exit'||r.resumed!==true||r.executableDigest!==p.runtime.executableDigest)fail();};
+  phase='python_runtime_probe';
   const probe=await job(['-I','-B','-c',pythonReplayProbe],p.runtime.root,(channel,chunk)=>{
    probeBytes+=chunk.length;if(probeBytes>65536)fail();probeOutput.update(chunk);if(channel==='stdout')probeChunks.push(chunk);
   });closed(probe);if(probe.rootExit!==0)fail();assertPinned(p,assertAuthority);
+  phase='python_runtime_observation';
   const runtimeObservation=qualifyPythonRuntimeObservation(probeChunks,p.runtime);
+  phase='python_projection_prepare';
   directory=mkdtempSync(path.join(p.temporaryParent,'roost-test-replay-'));directoryIdentity=physicalIdentity(directory);
   const subset=[];
   for(const pin of p.pins){const relative=pin.relative;nativeRelative(relative);const projection=p.projections.find(x=>x.relativePath===relative);
@@ -371,8 +416,11 @@ async function runPythonReplay(p,{workspaceSeal,remainingMs,assertAuthority}) {
    for(const pin of [...subset,{...runnerPin,filename:runner}]){const current=bytes(pin.filename);if(current.identity!==pin.identity||current.digest!==pin.digest)fail();}
   };
   verify();const output=createHash('sha256'),chunks=[];let outputBytes=0;
+  phase='python_projection_job';
   const native=await job(['-I','-B',runner],directory,(channel,chunk)=>{outputBytes+=chunk.length;if(outputBytes>131072)fail();
-   output.update(chunk);if(channel==='stdout')chunks.push(chunk);},verify);closed(native);assertPinned(p,assertAuthority);verify();
+   output.update(chunk);if(channel==='stdout')chunks.push(chunk);},verify);closed(native);
+  emit('post_job_pins',undefined,native);assertPinned(p,assertAuthority);emit('post_job_subset',undefined,native);verify();
+  phase='python_projection_report';
   const marker='ROOST_PYTHON_REPLAY_REPORT ', lines=Buffer.concat(chunks).toString('utf8').split(/\r?\n/).filter(line=>line.startsWith(marker));
   if(lines.length!==1)fail();const report=JSON.parse(lines[0].slice(marker.length));
   const counts=classifyPythonCodingReplayReport(report,native.rootExit,p.expectedFailure,p.projections);
@@ -381,6 +429,7 @@ async function runPythonReplay(p,{workspaceSeal,remainingMs,assertAuthority}) {
    projectionWitnessDigest:nativeDigest(report.observedProjections),subsetDigest:nativeDigest(subset.map(({relative,digest,identity})=>({relative,digest,identity}))),
    runnerDigest:runnerPin.digest,cleanup:{jobClosed:true,activeProcesses:0}};
   if(physicalIdentity(directory)!==directoryIdentity)fail();cleanupDirectory(directory,p.temporaryParent);directory=undefined;
+  phase='python_candidate_green';
   assertPinned(p,assertAuthority);const green=await runCodingTests(p.candidateProof,{phase:'candidate',workspaceSeal,remainingMs,assertAuthority});
   assertPinned(p,assertAuthority);
   if(!green.passed||green.tests.length!==1||green.tests[0].testCounts?.pendingTests!==0||green.tests[0].testCounts?.failedTests!==0
@@ -393,15 +442,15 @@ async function runPythonReplay(p,{workspaceSeal,remainingMs,assertAuthority}) {
    pinnedInputsDigest:nativeDigest(p.pins.map(({filename,digest,identity})=>({filename,digest,identity}))),
    red,green,repositoryUnchanged:true,temporaryConfigurationRemoved:true,completedAt:new Date().toISOString()};
   const value=Object.freeze({...result,digest:nativeDigest(result)});receipts.set(value,{candidate:p.candidateCommit,digest:value.digest,at:performance.now()});return value;
- }catch{fail();}finally{if(directory){if(physicalIdentity(directory)!==directoryIdentity)fail();cleanupDirectory(directory,p.temporaryParent);}}
+ }catch(error){emit('phase_failure',error);fail(phase);}finally{if(directory){if(physicalIdentity(directory)!==directoryIdentity)fail();cleanupDirectory(directory,p.temporaryParent);}}
 }
-export async function runCodingTestReplay(proof, { workspaceSeal, remainingMs, assertAuthority }) {
+export async function runCodingTestReplay(proof, { workspaceSeal, remainingMs, assertAuthority,onDiagnostic }) {
   let directory, p;
   try {
     p = proofs.get(proof);
     if (!p || p.used || !/^[a-f0-9]{64}$/.test(workspaceSeal) || typeof remainingMs !== 'function') fail();
     p.used = true; assertPinned(p, assertAuthority);
-    if(p.python)return await runPythonReplay(p,{workspaceSeal,remainingMs,assertAuthority});
+    if(p.python)return await runPythonReplay(p,{workspaceSeal,remainingMs,assertAuthority,onDiagnostic});
     directory = mkdtempSync(path.join(p.temporaryParent, 'roost-test-replay-'));
     const config = path.join(directory, 'baseline.config.mjs'), witness = path.join(directory, 'projection-witness.json');
     writeFileSync(config, configSource(p, directory, witness), { flag: 'wx' });
@@ -452,6 +501,6 @@ export async function runCodingTestReplay(proof, { workspaceSeal, remainingMs, a
     const value = Object.freeze({ ...result, digest: nativeDigest(result) });
     receipts.set(value, { candidate: p.candidateCommit, digest: value.digest, at: performance.now() });
     return value;
-  } catch { fail(); }
+  } catch (error) { fail(error?.replayPhase); }
   finally { if (directory && p) cleanupDirectory(directory, p.temporaryParent); }
 }

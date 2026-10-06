@@ -511,9 +511,10 @@ outcome; JSON assertions alone cannot supply that provenance.
 The sequence includes new Git publication, deployment, full observation,
 isolated smoke, fixture cleanup, cadence restoration and final cleanup. Failure
 freezes protected resources and grants no historical rollback or data restore.
-Root's 240 offline shared-contract/Compose checks pass. Server, SQL and native
-Worker integration are still pending; this source contract creates no release
-authority, healthy baseline, compatible image proof or application recovery.
+Root's 347 installed-contract tests, 153 server tests, server build, Prisma
+validation and full validation pass; these tests use counterfactual inputs.
+Native compatible release remains pending. This source contract creates no
+release authority, healthy baseline, image proof or application recovery.
 
 The separate source-pinned proxy OUTPUT guard (`11a03bf7`) binds the exclusive
 application subnet, proxy PID/namespace and database identity. It covers a
