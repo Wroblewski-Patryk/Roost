@@ -99,6 +99,7 @@ def normalized_cadences(cadences):
 def validate_input(v, now=None, source_digest=None):
     require(isinstance(v, dict), "input")
     keys(v, {"operation", "policy", "runtimeSettings", "facts"}
+         | ({"compatibleIngress"} if "compatibleIngress" in v else set())
          | ({"observation"} if v.get("operation") == "cadence_tick_read" else set()))
     require(v["operation"] in OPS, "operation")
     p, s, f = v["policy"], v["runtimeSettings"], v["facts"]
@@ -131,6 +132,16 @@ def validate_input(v, now=None, source_digest=None):
         hash_value(r["mountDigest"])
         require(isinstance(r["imageDigest"], str) and re.fullmatch(r"sha256:[a-f0-9]{64}", r["imageDigest"]), "image")
     require(len({r["containerId"] for r in rows}) == 5, "distinct_containers")
+    if "compatibleIngress" in v:
+        c = v["compatibleIngress"]
+        keys(c, {"schemaVersion", "policy", "controllerProgramDigest"})
+        require(c["schemaVersion"] == "roost-activity-compatible-ingress-v1", "compatible_ingress_schema")
+        hash_value(c["controllerProgramDigest"])
+        guard = load_compatible_ingress(c["controllerProgramDigest"])
+        guard["validate"]({"operation": "read", "policy": c["policy"]}, c["controllerProgramDigest"])
+        require(c["policy"]["targetId"] == p["targetId"]
+                and c["policy"]["controllerProgramDigest"] == c["controllerProgramDigest"]
+                and c["policy"]["databaseContainerId"] == next(r["containerId"] for r in rows if r["name"] == "db"), "compatible_ingress_scope")
     required_settings = {"schemaVersion", "targetId", "database", "ingress", "cadences"}
     require(isinstance(s, dict) and required_settings <= set(s)
             and set(s) <= required_settings | {"browserAccess", "cadenceEvidence", "internalHealth"}, "settings_fields")
@@ -220,6 +231,18 @@ def validate_input(v, now=None, source_digest=None):
     return v
 
 
+def load_compatible_ingress(expected_digest):
+    """Only the installed, fixed sibling source; JSON cannot select code/path."""
+    source = globals().get("TRUSTED_COMPATIBLE_INGRESS_SOURCE")
+    if source is None:
+        source = Path(__file__).with_name("agent-host-release-compose-ingress-runtime.py").read_bytes().decode("utf-8")
+    require(isinstance(source, str) and 0 < len(source.encode()) <= 131072
+            and digest(source.encode()) == expected_digest, "compatible_ingress_source_seal")
+    namespace = {"__name__": "roost_activity_compatible_ingress"}
+    exec(compile(source, "<roost-compatible-ingress-sealed>", "exec"), namespace)
+    return namespace
+
+
 def bounded_process(argv, payload=None, timeout=10):
     namespace = (isinstance(argv, list) and len(argv) >= 11 and argv[:4] == ["sudo", "-n", "/usr/bin/nsenter", "-t"]
                  and isinstance(argv[4], str) and re.fullmatch(r"[1-9][0-9]{0,9}", argv[4]) and int(argv[4]) <= 2147483647
@@ -248,6 +271,32 @@ def bounded_process(argv, payload=None, timeout=10):
     except BaseException:
         raise Refusal("release_activity_runtime_transport") from None
     require(r.returncode == 0 and len(r.stdout) <= MAX_OUTPUT, "native_process")
+    return r.stdout
+
+
+def bounded_compatible_process(argv, policy, runtime_rows, timeout=10):
+    """Dedicated source-selected guard transport; never generic OUTPUT access."""
+    allowed = False
+    if argv == ["docker", "network", "ls", "--no-trunc", "--format", "{{.ID}}"]:
+        allowed = True
+    elif (isinstance(argv, list) and 4 <= len(argv) <= 33 and argv[:3] == ["docker", "network", "inspect"]
+          and all(isinstance(v, str) and HASH.fullmatch(v) for v in argv[3:])):
+        allowed = len(set(argv[3:])) == len(argv[3:])
+    elif isinstance(argv, list) and len(argv) == 3 and argv[:2] == ["docker", "inspect"]:
+        allowed = argv[2] in {policy["proxyId"], *[r["containerId"] for r in runtime_rows]}
+    elif argv == ["sudo", "-n", "/usr/bin/readlink", "/proc/" + str(policy["proxyPid"]) + "/ns/net"]:
+        allowed = True
+    else:
+        prefix = ["sudo", "-n", "/usr/bin/nsenter", "-t", str(policy["proxyPid"]), "-n", "/usr/sbin/iptables", "-w", "3"]
+        rule = ["-d", policy["subnet"], "-p", "tcp", "--dport", "8000", "-m", "comment", "--comment",
+                policy["ruleComment"], "-j", "REJECT", "--reject-with", "tcp-reset"]
+        allowed = argv in [prefix + ["-S", "OUTPUT"], prefix + ["-I", "OUTPUT", "1"] + rule, prefix + ["-D", "OUTPUT"] + rule]
+    require(allowed, "compatible_fixed_executable")
+    try:
+        r = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=timeout, check=False, shell=False)
+    except BaseException:
+        raise Refusal("release_activity_runtime_compatible_transport") from None
+    require(r.returncode == 0 and len(r.stdout) <= MAX_OUTPUT, "compatible_native_process")
     return r.stdout
 
 
@@ -619,6 +668,24 @@ class Controller:
         self.run = run or bounded_process  # Source-only test double; not an input selector.
         self.effect = False
         self.namespace_snapshot = None
+        self.compatible_receipt = None
+
+    def compatible_ingress(self, operation="read"):
+        require(operation in {"read", "apply", "remove"}, "compatible_ingress_operation")
+        c = self.r["compatibleIngress"]
+        module = load_compatible_ingress(c["controllerProgramDigest"])
+        def runner(argv):
+            result = (bounded_compatible_process(argv, c["policy"], self.p["expectedRuntime"])
+                      if self.run is bounded_process else self.call(argv))
+            return result.decode("utf-8")
+        controller = module["Controller"]({"operation": operation, "policy": c["policy"]}, runner=runner)
+        try:
+            result = controller.execute()
+        finally:
+            self.effect = self.effect or controller.effects > 0
+        require(isinstance(result, dict) and set(result) == {"receipt", "effects", "removed"}, "compatible_ingress_result")
+        self.compatible_receipt = result["receipt"]
+        return result
 
     def call(self, argv, payload=None):
         result = self.run(argv, payload)
@@ -660,13 +727,19 @@ class Controller:
                     if n.get("IPAddress"):
                         ips.add(ipv4(n["IPAddress"]))
             if e["role"] == "app":
-                matched = [n for n in a["networks"].values() if n.get("NetworkID") == self.s["ingress"]["networkId"]]
+                network_id = (self.r["compatibleIngress"]["policy"]["networkId"] if "compatibleIngress" in self.r
+                              else self.s["ingress"]["networkId"])
+                matched = [n for n in a["networks"].values() if n.get("NetworkID") == network_id]
                 require(len(matched) == 1, "exact_app_network")
                 app_ip = ipv4(matched[0].get("IPAddress", ""))
             rows.append({**e, "status": status, "paused": paused, "health": health})
         require(app_ip is not None and len(ips) <= 24, "scoped_networks")
         result = {"services": rows, "runtimeDigest": digest(canonical(rows)), "appIp": app_ip, "sessionIps": sorted(ips)}
-        if "namespace" in self.s["ingress"]:
+        if "compatibleIngress" in self.r:
+            receipt = self.compatible_ingress()["receipt"]
+            result["ingressNamespace"] = {k: receipt[k] for k in ("proxyId", "proxyPid", "namespaceDigest", "networkId", "subnet",
+                                                               "databaseContainerId", "databaseIpv4", "proxyIpv4")}
+        elif "namespace" in self.s["ingress"]:
             self.namespace_snapshot = self.namespace_state(app_ip)
             result["ingressNamespace"] = self.namespace_snapshot
         return result
@@ -742,6 +815,8 @@ class Controller:
                 "-m", "comment", "--comment", "roost-activity-" + self.p["fixtureId"], "-j", "REJECT", "--reject-with", "tcp-reset"]
 
     def ingress(self, ip):
+        if "compatibleIngress" in self.r:
+            return self.compatible_ingress()["receipt"]["rulePresent"]
         chain = self.s["ingress"]["chain"]
         raw = self.iptables("-S", ip).decode()
         try:
@@ -830,6 +905,11 @@ class Controller:
                               "behaviorDigest": next(c["behaviorDigest"] for c in self.s["cadences"] if c["name"] == r["name"])}
                              for r in runtime["services"] if r["role"] == "cadence"],
                 **settings_digests(self.s), "effect": self.effect, "providerCalls": 0,
+                **({"compatibleIngress": {"schemaVersion": "roost-activity-compatible-ingress-observation-v1",
+                     "controllerProgramDigest": self.r["compatibleIngress"]["controllerProgramDigest"],
+                     "policyDigest": digest(canonical(self.r["compatibleIngress"]["policy"])),
+                     "historicalIngressRuleChecked": False, "originalIngressSettingsUnchanged": True,
+                     "receipt": self.compatible_receipt}} if "compatibleIngress" in self.r else {}),
                 "nativeJobQualified": False, "externalHealthVerified": False, "cadenceTicksVerified": False,
                 "observedAt": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")}
 
@@ -916,7 +996,10 @@ class Controller:
         if op == "hold_ingress":
             require(not rule, "reconcile_before_ingress_repeat")
             self.effect = True
-            self.iptables("-I", before["appIp"])
+            if "compatibleIngress" in self.r:
+                self.compatible_ingress("apply")
+            else:
+                self.iptables("-I", before["appIp"])
         elif op in {"open_fixture_window", "refence_fixture_window"}:
             require(rule and self.f["ingressBlockedByRoot"] is True, "external_ingress_fence")
             require(db["databaseReadOnly"] is (op == "open_fixture_window"), "reconcile_before_fence_repeat")
@@ -926,13 +1009,17 @@ class Controller:
                     and self.f["parityVerifiedByRoot"] and db["databaseReadOnly"], "restore_basis")
             # Restoration is not a deployment: every identity is rechecked before
             # removing the one owned rule or resuming an existing cadence.
+            if "compatibleIngress" in self.r:
+                require(self.compatible_ingress()["receipt"]["rulePresent"] is True, "compatible_owned_rule_before_remove")
+                require(self.compatible_ingress("remove")["removed"] is True, "compatible_owned_rule_removal_unproven")
             original = [a.split("=", 1)[1] for a in self.s["database"]["originalRoleConfig"]
                         if a.startswith("default_transaction_read_only=")]
             self.set_role(original[0] if original else "reset", before)
             restored = self.database(before)
             require(restored["roleConfig"] == self.s["database"]["originalRoleConfig"] and restored["activeOthers"] == 0, "original_role_restore")
-            require(self.ingress(before["appIp"]) is True, "owned_rule_before_remove")
-            self.iptables("-D", before["appIp"])
+            if "compatibleIngress" not in self.r:
+                require(self.ingress(before["appIp"]) is True, "owned_rule_before_remove")
+                self.iptables("-D", before["appIp"])
             for c in sorted(self.s["cadences"], key=lambda c: c["name"]):
                 current = self.runtime()["services"]
                 row = next(r for r in current if r["name"] == c["name"])
