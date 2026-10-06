@@ -35,6 +35,7 @@ for(const reason of ['partial_exact_failed_queue','partial_complete_service_set'
  releaseDiagnosticReasons.add('release_compose_installation_'+reason);
 releaseDiagnosticReasons.add('release_compose_installation_partial_image_creation_unproven');
 releaseDiagnosticReasons.add('release_compose_state_service_set_changed');
+for(const reason of ['release_writer_recovery_unproven','release_compose_recovery_unproven','release_compose_partial_rollback_absence_unproven','release_compose_partial_rollback_absence_lineage_unproven','release_compose_partial_rollback_absence_runtime_changed'])releaseDiagnosticReasons.add(reason);
 for(const reason of ['unproven','unsupported','mixed','capacity_insufficient'])
  releaseDiagnosticReasons.add('release_compose_configuration_schema_'+reason);
 releaseDiagnosticReasons.add('release_coolify_git_set_runtime_identity_changed');

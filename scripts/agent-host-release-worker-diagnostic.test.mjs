@@ -91,3 +91,5 @@ test('actual partial rollback state refusal remains a fixed code with no excepti
  const reason='release_compose_state_service_set_changed';assert.equal(releaseWorkerDiagnostic(Error(reason)),reason);
  assert.equal(releaseWorkerDiagnostic(Error(reason+' private-value')),'release_preflight_unproven');
 });
+
+test('partial absence and checkpoint refusals retain only exact fixed public codes',()=>{for(const reason of ['release_writer_recovery_unproven','release_compose_recovery_unproven','release_compose_partial_rollback_absence_unproven','release_compose_partial_rollback_absence_lineage_unproven','release_compose_partial_rollback_absence_runtime_changed']){assert.equal(releaseWorkerDiagnostic(Error(reason)),reason);assert.equal(releaseWorkerDiagnostic(Error(reason+' private-value')),'release_preflight_unproven');}});
