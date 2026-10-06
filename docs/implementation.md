@@ -201,9 +201,9 @@ PR3/c643 merged. Both queues failed before build; baseline healthy.
 Pkg9e7/audit34b: 19 CHANGES_REQUIRED, native closed; review19ab approved.
 Grant f88: candidate queue failed after recreating five services; migration
 import lacks greenlet. App unavailable; schema/data parity verified.
-Roost5d deployed; failed-only reconciliation and rollback config passed.
-Partial absence: 28 broker tests and actual SQL guards pass.
-Deployment and governed retry pending.
+Roost0968 deployed; partial absence SQL guards pass.
+Actual Prisma Date mismatch reproduced; fix passes.
+Official persistence and rollback pending.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

@@ -562,13 +562,13 @@ const composePartialRollbackAbsenceJournalError=(s,operation,e,journal)=>{
   if(candidate.operation!=='deploy'||partialEffective(candidate.outcome)!=='failed'
    ||candidate.outcome.status==='reconciled'&&(candidate.outcome.observationOnly??candidate.outcome.observation_only)!==true
    ||releaseDigest(candidate.outcome.evidence)!==p.candidateEvidenceDigest
-   ||releaseDigest({id:candidate.id,operation:candidate.operation,createdAt:candidate.createdAt??candidate.created_at,intent:candidate.intent})!==releaseDigest(p.candidateOperation)
+   ||releaseDigest({id:candidate.id,operation:candidate.operation,createdAt:new Date(candidate.createdAt??candidate.created_at).toISOString(),intent:candidate.intent})!==releaseDigest(p.candidateOperation)
    ||configuration.operation!=='rollback_config'||partialEffective(configuration.outcome)!=='succeeded'
    ||releaseDigest(configuration.intent?.parameters)!==releaseDigest({commit:m.rollback.commit,artifactSetDigest:m.rollback.artifactSetDigest,configDigest:m.rollback.configDigest,schemaDigest:m.rollback.schemaDigest})
    ||configuration.outcome.evidence?.deployedCommit!==m.rollback.commit||configuration.outcome.evidence?.configDigest!==m.rollback.configDigest
    ||configuration.outcome.evidence?.artifactSetDigest!==m.rollback.artifactSetDigest||configuration.outcome.evidence?.schemaDigest!==m.rollback.schemaDigest
    ||!Number.isFinite(Date.parse(configuration.createdAt??configuration.created_at))||!Number.isFinite(Date.parse(configuration.outcome.evidence.observedAt))
-   ||Date.parse(configuration.createdAt??configuration.created_at)<Date.parse(candidate.outcome.evidence.observedAt)
+   ||new Date(configuration.createdAt??configuration.created_at).getTime()<Date.parse(candidate.outcome.evidence.observedAt)
    ||Date.parse(configuration.outcome.evidence.observedAt)>Date.parse(e.composeRecovery.since)
    ||current.operation!=='rollback'||releaseDigest(current.intent)!==releaseDigest(operation.intent)
    ||!(current.outcome?.status==='uncertain'||current.outcome?.status==='reconciled'&&partialEffective(current.outcome)==='absent'
