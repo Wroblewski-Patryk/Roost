@@ -195,7 +195,10 @@ for (const scenario of ["valid", "transportRecovered", "transportFailed", "incom
   } finally {
     if (host && host.exitCode === null && host.signalCode === null) await terminateWindowsProcessTree(host);
     server.closeAllConnections(); await new Promise((resolve) => server.close(resolve));
-    for (const file of [configPath, path.join(directory, writerLockFilename)]) await unlink(file).catch((error) => { if (error.code !== "ENOENT") throw error; });
+    for (const file of [configPath, path.join(directory, writerLockFilename),
+      path.join(directory, `terminal-completion-${f.claimed.id}.intent.json`),
+      path.join(directory, `terminal-completion-${f.claimed.id}.dispatch.json`)])
+      await unlink(file).catch((error) => { if (error.code !== "ENOENT") throw error; });
     await rmdir(directory);
   }
 });

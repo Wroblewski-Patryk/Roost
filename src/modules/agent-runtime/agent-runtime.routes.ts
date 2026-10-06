@@ -1,6 +1,6 @@
 import { nativeBoundaryResultBlocked } from "./task-review-contract";
 import { retryContextRead } from "./context-read-retry";
-import { completedResultBasisView, revalidateCompletedResultBasis } from "./completed-result-basis";
+import { completedResultBasisView, revalidateCompletedResultBasis, completedReadonlyAuditNativeProven } from "./completed-result-basis";
 import { governedReleaseRouter } from "./governed-release.routes";
 import { ownerTicketHandler } from "./owner-ticket-http";
 import { managedAdmission, managedAdmissionSignerFromEnvironment } from "./managed-admission";
@@ -935,8 +935,11 @@ agentRuntimeRouter.post("/executions/:id/actions/prior-readonly-audit", asyncHan
       || !await workerClaimAllowed(prisma, req.auth!, current.agentHostId, now))
     return sendApiError(res, 403, "worker_credential_forbidden");
   const contract = (current.metadata as any)?.executionContract;
-  const reference = contract?.nativeBoundary?.inspectReadOnly;
-  if (contract?.nativeBoundary?.profile !== "inspect-readonly" || reference?.kind !== "verifier"
+  const inspection = contract?.nativeBoundary?.inspectReadOnly;
+  const reviewingAudit = inspection?.kind === "code-reviewer" && Boolean(inspection.priorAudit);
+  const reference = reviewingAudit ? { verifiedExecutionId: inspection.priorAudit.executionId,
+    verifiedEvidenceDigest: inspection.priorAudit.receiptDigest } : inspection;
+  if (contract?.nativeBoundary?.profile !== "inspect-readonly" || !reviewingAudit && inspection?.kind !== "verifier"
       || !z.string().uuid().safeParse(reference.verifiedExecutionId).success
       || !/^[a-f0-9]{64}$/.test(reference.verifiedEvidenceDigest ?? ""))
     return sendApiError(res, 409, "prior_readonly_audit_not_pinned");
@@ -950,17 +953,24 @@ agentRuntimeRouter.post("/executions/:id/actions/prior-readonly-audit", asyncHan
       || previous.nativeBoundary.inspectReadOnly?.kind !== "auditor"
       || previous.assignment?.agentId === contract.assignment?.agentId
       || receipt?.schemaVersion !== "roost-readonly-audit-v1" || receipt.verdict !== "verified"
-      || receipt.evidenceDigest !== reference.verifiedEvidenceDigest
+      || (reviewingAudit ? receipt.digest : receipt.evidenceDigest) !== reference.verifiedEvidenceDigest
       || typeof prior.finalResponse !== "string" || !prior.finalResponse.trim()
       || Buffer.byteLength(prior.finalResponse, "utf8") > 10000)
     return sendApiError(res, 409, "prior_readonly_audit_invalid");
+  if (reviewingAudit && !completedReadonlyAuditNativeProven(prior, previous))
+    return sendApiError(res, 409, "prior_readonly_audit_native_unproven");
   res.json({ data: { id: prior.id, taskId: prior.taskId, workspaceId: prior.workspaceId,
     applicationId: prior.applicationId, agentHostId: prior.agentHostId, status: prior.status,
     completedAt: prior.completedAt, contextInvalidatedAt: prior.contextInvalidatedAt,
     errorState: prior.errorState, changedFiles: prior.changedFiles,
+    ...(reviewingAudit ? { attempt: prior.attempt, checkpointVersion: prior.checkpointVersion,
+      leaseToken: prior.leaseToken, leaseExpiresAt: prior.leaseExpiresAt } : {}),
     finalResponse: prior.finalResponse,
-    metadata: { executionContract: previous, resultRevision: (prior.metadata as any).resultRevision },
-    verification: { readOnlyAudit: receipt } } });
+    metadata: { executionContract: previous, resultRevision: (prior.metadata as any).resultRevision,
+      ...(reviewingAudit ? { readyContextPin: (prior.metadata as any).readyContextPin } : {}) },
+    verification: { readOnlyAudit: receipt, ...(reviewingAudit ? {
+      managedAdmission: (prior.verification as any).managedAdmission,
+      ownedTreeReceipt: (prior.verification as any).ownedTreeReceipt } : {}) } } });
 }));
 
 agentRuntimeRouter.post("/executions", asyncHandler(async (req, res) => {

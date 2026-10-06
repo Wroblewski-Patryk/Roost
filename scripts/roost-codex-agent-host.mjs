@@ -33,6 +33,7 @@ import { prepareFixedExecution, runFixedExecution, createFixedOutputBudget, asse
 import { collectWorkspaceEvidence } from "./lib/agent-host-workspace-evidence.mjs";
 import { collectReadOnlyRepositoryEvidence } from "./lib/agent-host-readonly-boundary.mjs";
 import { verifiedPriorReadOnlyAudit } from "./lib/agent-host-prior-readonly-audit.mjs";
+import { verifiedCodeReviewerPriorAudit } from "./lib/agent-host-code-reviewer-prior-audit.mjs";
 import { prepareCodingTests, runCodingTests } from "./lib/agent-host-coding-tests.mjs";
 import { prepareCodingTestReplay, runCodingTestReplay, bindCodingTestReplayVerification } from "./lib/agent-host-coding-test-replay.mjs";
 import { prepareTestReplayConfiguration } from "./lib/agent-host-test-replay-config.mjs";
@@ -383,6 +384,10 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       await duration.wait(api(`/v1/agent-runtime/executions/${claimed.id}/actions/prior-readonly-audit`, {
         method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken }) })),
       { claimed, contract: taskContract, repositoryEvidence: readOnlyEvidence });
+    const codeReviewerPriorAudit = inspection?.kind === "code-reviewer" && inspection.priorAudit
+      ? verifiedCodeReviewerPriorAudit(await duration.wait(api(`/v1/agent-runtime/executions/${claimed.id}/actions/prior-readonly-audit`, {
+        method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken }) })),
+      { claimed, contract: taskContract, repositoryEvidence: readOnlyEvidence }) : undefined;
     if(coding&&firstWrite?.existingCommitVerification&&!config.executionProvider.testReplayPath)
       throw protocolAdmissionError("existing_commit_verification_replay_required");
     if (coding && config.executionProvider.testReplayPath) {
@@ -402,7 +407,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     const providerInput = prepareProviderInput({ fresh: { taskContext, applicationContext }, claimed,
       currentCommit: preparedCommit, assertAuthority: assertProviderAuthority, secrets: [apiKey, codeReviewerKey].filter(Boolean),
       provider: config.executionProvider, repositoryPath,
-      repositoryEvidence: readOnlyEvidence, priorAudit,
+      repositoryEvidence: readOnlyEvidence, priorAudit, codeReviewerPriorAudit,
       nativeBoundaryOptions: { writerLock, expected: { head: preparedCommit, branch: taskContext.executionPacket.contract.singleTask.branch, origin: repository.originUrl } },
       startupEnvironment: config.executionProvider?.kind === "hermes_codex" && config.executionProvider.profile
         ? hermesStartupEnvironment(config.executionProvider.profile, process.env, repositoryPath) : undefined });

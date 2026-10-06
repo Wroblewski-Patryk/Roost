@@ -23,11 +23,26 @@ const entrySchema = z.object({ digest: hash, value: z.record(z.unknown()) }).str
 export const applicationSharedRecordsSchema = z.object({ schemaVersion: z.literal('roost-application-shared-records-v1'),
   originalDigest: hash, domain: z.array(entrySchema), readinessDimension: z.array(entrySchema) }).strict();
 function slots(application) {
-  if (!Array.isArray(application?.targetCapabilities)) return [];
-  return application.targetCapabilities.filter(row => plain(row?.definition)).flatMap(row =>
-    fields.filter(field => Object.hasOwn(row.definition, field)).map(field => ({ definition: row.definition, field })));
+  const targets = Array.isArray(application?.targetCapabilities)
+    ? application.targetCapabilities.filter(row => plain(row?.definition)) : [];
+  const definitions = targets.flatMap(row => fields.filter(field => Object.hasOwn(row.definition, field))
+    .map(field => ({ definition: row.definition, field, expectedId: row.definition[field + 'Id'], gap: false })));
+  const gaps = Array.isArray(application?.gaps) ? application.gaps.filter(row => plain(row) && Object.hasOwn(row, 'domain')) : [];
+  return [...definitions, ...gaps.map(row => {
+    // Gap rows have capabilityDefinitionId rather than domainId. A reference
+    // must resolve through exactly one original target definition relation.
+    const matches = targets.filter(target => id.safeParse(row.capabilityDefinitionId).success
+      && target.definition.id === row.capabilityDefinitionId);
+    const domainId = matches.length === 1 ? matches[0].definition.domainId : undefined;
+    const expectedId = id.safeParse(domainId).success && (!Object.hasOwn(row, 'domainId') || row.domainId === domainId)
+      ? domainId : undefined;
+    return { definition: row, field: 'domain', expectedId, gap: true };
+  })];
 }
-function detachRows(application) { if (Array.isArray(application?.targetCapabilities)) application.targetCapabilities = application.targetCapabilities.map(clone); }
+function detachRows(application) {
+  if (Array.isArray(application?.targetCapabilities)) application.targetCapabilities = application.targetCapabilities.map(clone);
+  if (Array.isArray(application?.gaps)) application.gaps = application.gaps.map(clone);
+}
 const reference = value => plain(value) && Object.hasOwn(value, 'sharedRecord');
 const supported = value => plain(value) && id.safeParse(value.id).success && jsonSafe(value);
 
@@ -45,12 +60,14 @@ export function restoreApplicationSharedRecords(application) {
       identities[field].add(item.value.id);
     }
   }
-  for (const { definition, field } of positions) {
+  for (const { definition, field, expectedId, gap } of positions) {
     const value = definition[field];
-    if (!reference(value)) { if (plain(value) && identities[field].has(value.id)) invalid(); continue; }
+    // Earlier v1 inputs shared only target definitions. Their full inline gap
+    // records remain valid, bound by the unchanged original full-context digest.
+    if (!reference(value)) { if (!gap && plain(value) && identities[field].has(value.id)) invalid(); continue; }
     const ref = applicationSharedRecordReferenceSchema.safeParse(value); if (!ref.success) invalid();
     const entry = table[field][ref.data.sharedRecord];
-    if (!entry || definition[field + 'Id'] !== entry.value.id) invalid();
+    if (!entry || expectedId !== entry.value.id) invalid();
     use[field][ref.data.sharedRecord]++; definition[field] = clone(entry.value);
   }
   // Extra, singleton or partially shared entries cannot supplement evidence.
@@ -66,10 +83,10 @@ export function projectApplicationSharedRecords(application) {
   // Unsupported non-JSON contexts retain all their original inline data.
   if (!plain(output) || !jsonSafe(output)) return output;
   const groups = Object.fromEntries(fields.map(field => [field, new Map()]));
-  for (const { definition, field } of slots(output)) {
+  for (const { definition, field, expectedId } of slots(output)) {
     const value = definition[field]; if (!plain(value) || !id.safeParse(value.id).success) continue;
     const group = groups[field].get(value.id) ?? { positions: [], value, digest: null, conflict: false };
-    const eligible = supported(value) && definition[field + 'Id'] === value.id;
+    const eligible = supported(value) && expectedId === value.id;
     const current = eligible ? digest(value) : null;
     if (!eligible || group.digest !== null && current !== group.digest) group.conflict = true;
     if (group.digest === null && eligible) group.digest = current;

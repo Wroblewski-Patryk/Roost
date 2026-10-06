@@ -60,7 +60,7 @@ test('unsupported/missing/conflicting IDs, null values and singletons remain inl
   const single = fixture(); single.targetCapabilities = single.targetCapabilities.slice(0, 1);
   assert.deepEqual(projectApplicationSharedRecords(single), single); assert.equal(projectApplicationSharedRecords(single).applicationSharedRecords, undefined);
 });
-test('only the two capability definition fields can project; all other duplicate records retain full data', () => {
+test('only the declared target definition and gap domain fields can project; other records retain full data', () => {
   const input = fixture(); input.otherDomain = structuredClone(input.targetCapabilities[0].definition.domain);
   input.operatingModel.domain = structuredClone(input.otherDomain);
   const out = projectApplicationSharedRecords(input); assert.deepEqual(out.otherDomain, input.otherDomain);
@@ -112,4 +112,75 @@ test('unsupported complete contexts are unchanged and any orphan reference fails
   for (const value of [null, {}, { targetCapabilities: null }, { targetCapabilities: [{ definition: null }] }]) assert.deepEqual(projectApplicationSharedRecords(value), value);
   const x = fixture(); x.targetCapabilities[0].definition.domain = { sharedRecord: 0 };
   assert.throws(() => projectApplicationSharedRecords(x), /agent_application_shared_records_invalid/);
+});
+
+function gapFixture() {
+  const input = fixture();
+  input.gaps = input.targetCapabilities.map(row => ({ id: 'gap-' + row.id,
+    capabilityDefinitionId: row.definition.id, domain: structuredClone(row.definition.domain),
+    severity: 'required', blockedBy: [], observation: { state: 'unknown', evidence: ['preserved'] } }));
+  return input;
+}
+test('explicit gap domains reuse the complete domain table through original target relations', () => {
+  const input = gapFixture(), before = structuredClone(input), out = projectApplicationSharedRecords(input);
+  assert.deepEqual(input, before); assert.equal(out.applicationSharedRecords.domain.length, 1);
+  for (let i = 0; i < out.gaps.length; i++) {
+    assert.deepEqual(out.gaps[i].domain, out.targetCapabilities[i].definition.domain);
+    assert.equal(out.gaps[i].capabilityDefinitionId, input.gaps[i].capabilityDefinitionId);
+    assert.deepEqual(out.gaps[i].observation, input.gaps[i].observation);
+  }
+  assert.deepEqual(restoreApplicationSharedRecords(out), input);
+  assert.deepEqual(projectApplicationSharedRecords(out), out);
+});
+test('one target and its exact gap can share a previously singleton domain without sharing other fields', () => {
+  const input = gapFixture(); input.targetCapabilities = input.targetCapabilities.slice(0, 1); input.gaps = input.gaps.slice(0, 1);
+  const out = projectApplicationSharedRecords(input);
+  assert.equal(out.applicationSharedRecords.domain.length, 1); assert.equal(out.applicationSharedRecords.readinessDimension.length, 0);
+  assert.deepEqual(out.gaps[0].domain, { sharedRecord: 0 });
+  assert.deepEqual(out.targetCapabilities[0].definition.readinessDimension, input.targetCapabilities[0].definition.readinessDimension);
+  assert.deepEqual(restoreApplicationSharedRecords(out), input);
+});
+test('missing, ambiguous or mismatched gap target relations remain fully inline for the affected group', () => {
+  for (const mutate of [x => delete x.gaps[0].capabilityDefinitionId,
+    x => x.gaps[0].capabilityDefinitionId = 'unmatched-definition',
+    x => x.gaps[0].domainId = 'mismatched-domain',
+    x => x.targetCapabilities.push(structuredClone(x.targetCapabilities[0]))]) {
+    const input = gapFixture(); mutate(input); const out = projectApplicationSharedRecords(input);
+    assert.equal(out.applicationSharedRecords.domain.length, 0);
+    assert.deepEqual(out.gaps.map(row => row.domain), input.gaps.map(row => row.domain));
+    assert.deepEqual(restoreApplicationSharedRecords(out), input);
+  }
+});
+test('a conflicting full gap domain cannot overwrite any record sharing that ID', () => {
+  const input = gapFixture(); input.gaps[0].domain.policy.conditions.push('different full policy');
+  const out = projectApplicationSharedRecords(input); assert.equal(out.applicationSharedRecords.domain.length, 0);
+  assert.deepEqual(restoreApplicationSharedRecords(out), input);
+});
+test('gap references reject missing tables/entries, altered relations, extra fields and changed original context', () => {
+  for (const mutate of [x => delete x.applicationSharedRecords,
+    x => x.applicationSharedRecords.domain.pop(), x => delete x.gaps[0].domain,
+    x => x.gaps[0].domain.sharedRecord = 99, x => x.gaps[0].domain.supplement = {},
+    x => x.gaps[0].capabilityDefinitionId = 'unmatched-definition',
+    x => x.gaps[0].domainId = 'wrong-domain', x => x.gaps[0].observation.state = 'invented',
+    x => x.applicationSharedRecords.domain[0].value.policy.conditions.push('tampered')]) {
+    const out = projectApplicationSharedRecords(gapFixture()); mutate(out);
+    assert.throws(() => restoreApplicationSharedRecords(out), /agent_application_shared_records_invalid/);
+  }
+});
+test('previous v1 target-only projections preserve their original full inline gap records', () => {
+  const input = gapFixture(), targetOnly = structuredClone(input); targetOnly.gaps = [];
+  const legacy = projectApplicationSharedRecords(targetOnly); legacy.gaps = structuredClone(input.gaps);
+  legacy.applicationSharedRecords.originalDigest = digest(input);
+  assert.deepEqual(restoreApplicationSharedRecords(legacy), input);
+  assert.deepEqual(projectApplicationSharedRecords(legacy), legacy);
+  legacy.gaps[0].domain.description += 'changed';
+  assert.throws(() => restoreApplicationSharedRecords(legacy), /agent_application_shared_records_invalid/);
+});
+test('unknown gap shapes and unrelated duplicate fields remain complete inline evidence', () => {
+  const input = gapFixture(); input.gaps.push(null, { domain: null }, { domain: { id: 'unsupported whitespace', extra: 'kept' } });
+  input.gaps[0].otherDomain = structuredClone(input.gaps[0].domain);
+  const out = projectApplicationSharedRecords(input); assert.deepEqual(out.gaps[0].otherDomain, input.gaps[0].otherDomain);
+  assert.deepEqual(out.gaps.slice(-3), input.gaps.slice(-3)); assert.deepEqual(restoreApplicationSharedRecords(out), input);
+  const orphan = { gaps: [{ domain: { sharedRecord: 0 } }] };
+  assert.throws(() => projectApplicationSharedRecords(orphan), /agent_application_shared_records_invalid/);
 });

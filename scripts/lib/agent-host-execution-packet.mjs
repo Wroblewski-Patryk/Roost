@@ -44,7 +44,8 @@ const readonlyBoundary = z.object({ profile: z.literal('inspect-readonly'),
       verifiedEvidenceDigest: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
     z.object({ kind: z.literal('code-reviewer'), verifiedTaskId: id, verifiedExecutionId: id,
       verifiedEvidenceDigest: z.string().regex(/^[a-f0-9]{64}$/),
-      baselineCommit: z.string().regex(/^[a-f0-9]{40}$/), reviewedCommit: z.string().regex(/^[a-f0-9]{40}$/) }).strict()
+      baselineCommit: z.string().regex(/^[a-f0-9]{40}$/), reviewedCommit: z.string().regex(/^[a-f0-9]{40}$/),
+      priorAudit: z.object({ executionId: id, receiptDigest: z.string().regex(/^[a-f0-9]{64}$/) }).strict().optional() }).strict()
   ]) }).strict();
 export const executionContractSchema = z.object({
   executionClass: z.literal("roost-fixed-effect-v1").optional(),

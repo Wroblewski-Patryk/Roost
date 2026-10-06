@@ -1305,3 +1305,38 @@ bounds and prohibition of extra fields explicitly. Validation and review
 authority are unchanged. Root's 128 relevant schema, provider-input and
 shared-record checks pass. A new actual review, release and postrelease
 acceptance remain required; no candidate deployment is proven.
+
+### Independently supplied audit evidence for code review
+
+The rejected raw response also identified an availability gap: audit findings
+and receipt attribution arrived through the owner instruction rather than
+Worker-qualified evidence. A code-reviewer contract can now optionally pin
+`priorAudit.executionId` and the original `priorAudit.receiptDigest`. The
+existing leased prior-audit endpoint preserves verifier behavior and supplies
+only the pinned completed independent auditor result to the assigned Worker.
+The code-review path also requires signed native admission and a successfully
+closed zero-process job. The Worker rechecks identity, original receipt digest,
+current repository commit/branch/tree, clean result and source selection.
+It transports all original findings with their original native receipts and
+timestamps as bounded `codeReviewerPriorAudit` evidence. Later Ready mappings
+cannot replace that evidence. The input seal binds the optional pin to the
+packet; missing, changed or unpinned evidence is refused. Evidence remains
+untrusted model context and grants no release authority.
+
+The packet test's synthetic successful completions now retain two expected
+terminal journal files. Its cleanup omitted them and failed `ENOTEMPTY` despite
+successful assertions; cleanup now removes only those two owned fixture files.
+The corrected 74-check suite passes without skips. Root's 123 relevant review,
+prior-audit and provider checks pass; `npm run validate` passes. Actual delivery
+through the new evidence path remains required.
+
+Forward migration `20261006010000_code_reviewer_prior_audit_risk` updates only
+the strict readonly schema function. No stored assessment or business row is
+changed. Root's 36 checks, including real rolled-back PostgreSQL refusal and
+classification probes, pass without skips. Existing verifier/coder rules remain.
+
+The lossless shared-domain projection now also covers `gaps[*].domain`, only
+through a unique capability-definition relation. Conflicting or unsupported
+groups remain inline. Exact restoration and legacy v1 packets remain supported;
+39 focused checks pass. Saved actual input inspection shows 5228 fewer bytes,
+with all records restored exactly. This is a size diagnosis, not launch proof.

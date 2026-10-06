@@ -2125,3 +2125,11 @@ Its raw rejection has no accepted decision. Controller 124956 closed with
 exit 0; normal terminal reconciliation and shared writer reclamation passed
 at 00:27:11.377 UTC with unchanged source. Explicit JSON type/bound instructions
 pass 128 relevant checks. A new actual review and release proof remain pending.
+
+Roost `e7b8d052` deployed through sole queue `o11d3hmtbp40trqo7j1u3zuw`;
+health/version confirmed at 00:30:57.068 UTC. The raw rejected review also
+reported missing independently supplied audit evidence. Optional code-reviewer
+prior-audit pins, leased API retrieval, original signed native/closed-job checks,
+complete findings and sealed provider transport address that gap. Root's 162
+relevant checks and corrected 74 packet checks pass without skips; validation
+passes. These are supporting source checks, not a new accepted model verdict.

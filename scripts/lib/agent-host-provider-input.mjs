@@ -12,6 +12,7 @@ import { createHermesStartupCandidate, sealHermesStartup, assertHermesStartup } 
 import { basisRevalidationSchema } from "./agent-host-code-reviewer.mjs";
 import { qualifiedCrlfDiffCertificateSchema } from "./agent-host-review-crlf-diff.mjs";
 import { projectApplicationSharedRecords, assertApplicationSharedRecords } from "./agent-host-application-shared-records.mjs";
+import { codeReviewerPriorAuditEvidenceSchema } from "./agent-host-code-reviewer-prior-audit.mjs";
 
 import { sealHermesBudget, assertHermesBudget, assertHermesBudgetReceipt, createHermesBudgetReceipt } from "./agent-host-hermes-budget.mjs";
 
@@ -58,6 +59,7 @@ export const providerInputSchema = z.object({
         comparisonScope: z.literal("same_repository_and_per_execution_state").optional() }).strict(),
       finalResponse: z.string().min(1).max(10000), digest: hash
     }).strict()).optional(),
+    codeReviewerPriorAudit: evidence("worker.verified_code_reviewer_prior_audit", codeReviewerPriorAuditEvidenceSchema).optional(),
     repositoryInspection: evidence("worker.bounded_repository_read", z.object({
       schemaVersion: z.literal("roost-readonly-repository-evidence-v1"), head: z.string().regex(/^[a-f0-9]{40}$/), branch: z.string().min(1),
       files: z.array(z.union([
@@ -79,6 +81,13 @@ export const providerInputSchema = z.object({
   startupTools: z.tuple([]),
   seal: hash
 }).strict().superRefine((input, context) => {
+  const auditReference = input.contract.nativeBoundary?.inspectReadOnly?.kind === "code-reviewer"
+    ? input.contract.nativeBoundary.inspectReadOnly.priorAudit : undefined;
+  const auditEvidence = input.evidence.codeReviewerPriorAudit?.value;
+  if (Boolean(auditReference) !== Boolean(auditEvidence)
+    || auditReference && (auditEvidence.identity.executionId !== auditReference.executionId
+      || auditEvidence.readOnlyAudit.digest !== auditReference.receiptDigest)) context.addIssue({ code: z.ZodIssueCode.custom,
+    path: ["evidence", "codeReviewerPriorAudit"], message: "code_reviewer_prior_audit_binding_invalid" });
   try { assertApplicationSharedRecords(input.evidence.application.value); }
   catch { context.addIssue({ code: z.ZodIssueCode.custom, path: ["evidence", "application", "value", "applicationSharedRecords"], message: "application_shared_records_invalid" }); }
   const application = input.evidence.application.value, indexProjection = application.documentationIndexProjection;
@@ -190,7 +199,7 @@ function applicationNavigationIndexProjection(application, contract) {
     originalCount: index.length, selectedCount: retained.length, omittedCount: index.length - retained.length,
     originalCanonicalDigest: digest(index) } };
 }
-function projection(fresh, claimed, repositoryEvidence, priorAudit) {
+function projection(fresh, claimed, repositoryEvidence, priorAudit, codeReviewerPriorAudit) {
   const { taskContext: task, applicationContext: application } = fresh, packet = task.executionPacket;
   // Only the existing execution compiler response. New top-level sources need a
   // deliberate contract change; provider-supplied context is never merged here.
@@ -242,6 +251,7 @@ function projection(fresh, claimed, repositoryEvidence, priorAudit) {
       procedures: wrap("taskContext.procedures.contract_refs", procedures), decisions: wrap("taskContext.decisions.contract_refs", refs("decisions")),
       dependencies: wrap("taskContext.dependencies.contract_refs", refs("dependencies")), ownerInstruction: wrap("claimed.prompt.ready_approved", claimed.prompt ?? null),
       ...(priorAudit ? { priorAudit: wrap("worker.verified_prior_readonly_audit", priorAudit) } : {}),
+      ...(codeReviewerPriorAudit ? { codeReviewerPriorAudit: wrap("worker.verified_code_reviewer_prior_audit", codeReviewerPriorAudit) } : {}),
       ...(repositoryEvidence ? { repositoryInspection: wrap("worker.bounded_repository_read", repositoryEvidence) } : {})
     }, startupTools: []
   };
@@ -252,11 +262,11 @@ function validate(fresh, claimed, currentCommit, secrets) {
   ready.assertReadyContext(fresh.taskContext, fresh.applicationContext, claimed);
   ready.assertRiskAdmission(fresh.taskContext, claimed, currentCommit);
 }
-function checkedEnvelope(fresh, claimed, secrets, repositoryEvidence, priorAudit) {
+function checkedEnvelope(fresh, claimed, secrets, repositoryEvidence, priorAudit, codeReviewerPriorAudit) {
   // Check the original response before the navigation projection too: omission
   // must never conceal credentials or secret-bearing authoritative context.
   guardHostContent(fresh, "required", [claimed.leaseToken, ...secrets].filter(Boolean));
-  const body = projection(fresh, claimed, repositoryEvidence, priorAudit);
+  const body = projection(fresh, claimed, repositoryEvidence, priorAudit, codeReviewerPriorAudit);
   guardHostContent(body, "required", [claimed.leaseToken, ...secrets].filter(Boolean));
   // Private local paths are never prompt context. Relative repository paths and
   // canonical HTTPS origins remain evidence, not transport configuration.
@@ -272,8 +282,8 @@ function checkedEnvelope(fresh, claimed, secrets, repositoryEvidence, priorAudit
   if (!providerInputSchema.safeParse(envelope).success) throw blocked("schema_invalid");
   return envelope;
 }
-function seal(fresh, claimed, secrets, repositoryEvidence, priorAudit) {
-  const envelope = checkedEnvelope(fresh, claimed, secrets, repositoryEvidence, priorAudit);
+function seal(fresh, claimed, secrets, repositoryEvidence, priorAudit, codeReviewerPriorAudit) {
+  const envelope = checkedEnvelope(fresh, claimed, secrets, repositoryEvidence, priorAudit, codeReviewerPriorAudit);
   const inputBytes = Buffer.byteLength(serialize(envelope));
   if (inputBytes > providerInputMaxBytes) throw blocked("size_exceeded", { inputBytes, maximumBytes: providerInputMaxBytes });
   return freeze(JSON.parse(serialize(envelope)));
@@ -281,8 +291,8 @@ function seal(fresh, claimed, secrets, repositoryEvidence, priorAudit) {
 
 // Read-only planning diagnostic. No issued envelope, native proof, authority
 // callback or startup state is created. Measurements cannot authorize a launch.
-export function measureProviderInput({ fresh, claimed, secrets = [], repositoryEvidence, priorAudit }) {
-  const envelope = checkedEnvelope(fresh, claimed, secrets, repositoryEvidence, priorAudit);
+export function measureProviderInput({ fresh, claimed, secrets = [], repositoryEvidence, priorAudit, codeReviewerPriorAudit }) {
+  const envelope = checkedEnvelope(fresh, claimed, secrets, repositoryEvidence, priorAudit, codeReviewerPriorAudit);
   const size = value => Buffer.byteLength(serialize(value));
   const inputBytes = size(envelope);
   return Object.freeze({ schemaVersion: "roost-provider-input-measurement-v1", measurementOnly: true,
@@ -295,14 +305,14 @@ export function measureProviderInput({ fresh, claimed, secrets = [], repositoryE
 // Only Worker calls these factories. No config/env/network argument can provide
 // the authority callback. Existing lease/writer/Ready/checkpoint own authority.
 /** @returns {ProviderInput} */
-export function prepareProviderInput({ fresh, claimed, currentCommit, assertAuthority, secrets = [], provider, repositoryPath, hermesAuthReceipt, startupEnvironment, startupCandidate, nativeBoundaryOptions, repositoryEvidence, priorAudit }) {
+export function prepareProviderInput({ fresh, claimed, currentCommit, assertAuthority, secrets = [], provider, repositoryPath, hermesAuthReceipt, startupEnvironment, startupCandidate, nativeBoundaryOptions, repositoryEvidence, priorAudit, codeReviewerPriorAudit }) {
   let stage = "validate";
   try {
     assertAuthority(); validate(fresh, claimed, currentCommit, secrets);
     if (fresh.taskContext.executionPacket.contract.nativeBoundary?.profile === "inspect-readonly" ? !repositoryEvidence : Boolean(repositoryEvidence)) throw blocked();
     if ((fresh.taskContext.executionPacket.contract.nativeBoundary?.inspectReadOnly?.kind === "verifier") !== Boolean(priorAudit)) throw blocked("prior_audit_missing");
     stage = "seal";
-    const envelope = seal(fresh, claimed, secrets, repositoryEvidence, priorAudit);
+    const envelope = seal(fresh, claimed, secrets, repositoryEvidence, priorAudit, codeReviewerPriorAudit);
     assertAuthority();
     stage = "profile";
     const profile = provider?.kind === "hermes_codex" ? sealHermesProfile(provider.profile,
@@ -315,7 +325,7 @@ export function prepareProviderInput({ fresh, claimed, currentCommit, assertAuth
       ? sealHermesStartup({ provider, envelope, repositoryPath, budget, candidate: startupCandidate ?? createHermesStartupCandidate({
         provider, envelope, repositoryPath, budget, environment: startupEnvironment }) }) : undefined;
     assertAuthority();
-    issued.set(envelope, { consumed: false, profile, startup, budget, repositoryEvidence, priorAudit });
+    issued.set(envelope, { consumed: false, profile, startup, budget, repositoryEvidence, priorAudit, codeReviewerPriorAudit });
     if (provider?.kind === "hermes_codex" && provider.profile?.schemaVersion === hermesNativeProfileVersion) {
       stage = "native_boundary";
       const checked = assertProviderStartup({ envelope, provider, repositoryPath, startupEnvironment, startupCandidate });
@@ -385,7 +395,7 @@ export function consumeProviderInput(envelope, { fresh, claimed, currentCommit, 
     if (state.budget) assertHermesBudget(state.budget, envelope, claimed);
     assertAuthority(); validate(fresh, claimed, currentCommit, secrets);
     assertFreshExecutionContext(envelope.revisions.context, fresh, claimed);
-    if (seal(fresh, claimed, secrets, state.repositoryEvidence, state.priorAudit).seal !== envelope.seal) throw blocked();
+    if (seal(fresh, claimed, secrets, state.repositoryEvidence, state.priorAudit, state.codeReviewerPriorAudit).seal !== envelope.seal) throw blocked();
     assertAuthority();
     return providerInputTransport("direct_codex", envelope);
   } catch (error) { if (error.redaction || error.readyAdmission || error.leaseLost || error.durationLimit || error.outputLimit || error.contextStop || error.protocolAdmission) throw error; throw blocked(); }

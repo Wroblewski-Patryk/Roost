@@ -198,11 +198,11 @@ Native c82 build `3e8510be`: seven tests pass; outputs restored.
 Audit `d1004c62`: CHANGES_REQUIRED; review `17f8c1db`: accepted.
 Grant `63750d89`: both queues ABSENT, prior services healthy, native closed.
 Two-queue: 96 API, 202 Worker and eight SQL probes pass.
-Roost `3274aef5` deployed; closure `4a98987c` persisted.
+Roost `e7b8d052` deployed; closure `4a98987c` persisted.
 Audit `ba9a2999`: CHANGES_REQUIRED; basis mapping `d7758c8c` recorded.
 Basis: 57 checks, 39 DB tests pass. Packed input: 130426 bytes.
 Review `228eaf9c` failed JSON validation; no accepted verdict.
-Typed JSON: 128 checks pass; release proof pending.
+Prior-audit transport: 162 checks pass; runtime proof pending.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,
