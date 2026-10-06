@@ -121,6 +121,11 @@ physical identities and executable SHA are sealed before model launch. Fixed
 `-I -B` probe/test jobs must both close; an unsealed base interpreter, external
 search path, links, executable path hooks, drift and empty/skipped unittest
 results are refused. No installer, PATH Python or arbitrary arguments are used.
+Python replay projects only the exact direct-parent TOML into an owned subset.
+The fixed wrapper requires a real unittest assertion and witnessed TOML read;
+printed reports without a runner result are refused. Candidate GREEN uses the
+unchanged checkout and sealed runtime. This Windows proof does not prove a Linux
+image, database migration or managed application acceptance.
 Windows regression proof does not certify a Linux image or deployed migration.
 
 Measure the real queued packet and native selections before starting Worker.
