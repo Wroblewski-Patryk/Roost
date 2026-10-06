@@ -201,7 +201,8 @@ FAILED closure `6a5bc353`: fresh reads, seven native children closed.
 Renderer/helper, 386 Worker and contract/SQL checks pass.
 Fresh encrypted backup/isolated restore verified.
 Manual cleanup removed rollback images; anchors verified, app down.
-Audit queued; oversized context blocked model start. Release unproven.
+Lossless context fix verified; native audit closed: CHANGES_REQUIRED.
+Verifier `5dd327dc` closed/verified; repair/recovery remain unproven.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,
