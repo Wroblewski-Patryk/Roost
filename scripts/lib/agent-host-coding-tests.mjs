@@ -22,6 +22,12 @@ const commandSchema = z.discriminatedUnion("kind", [
     versions: z.object({ react: z.string().regex(/^[0-9]+\.[0-9]+\.[0-9]+$/),
       reactDom: z.string().regex(/^[0-9]+\.[0-9]+\.[0-9]+$/), typescript: z.string().regex(/^[0-9]+\.[0-9]+\.[0-9]+$/) }).strict(),
     acceptanceTest: z.string().min(1).max(2000) }).strict(),
+  z.object({ kind: z.literal("python_unittest"), relativePath: z.string().min(1).max(512),
+    sourcePaths: z.array(z.string().min(1).max(512)).min(1).max(8),
+    configurationPaths: z.array(z.string().min(1).max(512)).min(1).max(8),
+    runtimeRoot: z.string().min(1).max(1024), pythonVersion: z.string().regex(/^3\.(?:1[1-9]|[2-9][0-9])\.\d{1,3}$/),
+    executableIdentity: z.string().regex(/^[a-f0-9]{64}$/), executableDigest: z.string().regex(/^[a-f0-9]{64}$/),
+    runtimeDigest: z.string().regex(/^[a-f0-9]{64}$/), acceptanceTest: z.string().min(1).max(2000) }).strict(),
   z.object({ kind: z.literal("workspace_vitest"), workspace: z.string().min(1).max(200),
     packageName: z.string().regex(/^(?:@[a-z0-9._-]+\/)?[a-z0-9][a-z0-9._-]{0,79}$/),
     version: z.string().regex(/^[0-9]+\.[0-9]+\.[0-9]+$/), relativePath: z.string().min(1).max(300),
@@ -257,6 +263,127 @@ function prepareRenderToolkit(repository, command) {
 function assertRenderToolkit(toolkit) {
   if (physicalIdentity(toolkit.root) !== toolkit.identity || renderInventory(toolkit.root).digest !== toolkit.digest) fail();
 }
+const pythonLimits = Object.freeze({ entries: 8192, depth: 16, fileBytes: 64 * 1024 * 1024, totalBytes: 256 * 1024 * 1024 });
+/** A provisioned standalone interpreter/dependency tree, never an installer or
+ * PATH lookup. The private manifest seals the complete inventory before any
+ * model launch. A venv borrowing an unsealed base is refused by the owned probe. */
+export function pythonRuntimeInventory(root) {
+  physicalIdentity(root); const rows = []; let totalBytes = 0;
+  function walk(filename, relative, depth) {
+    if (depth > pythonLimits.depth || rows.length >= pythonLimits.entries) fail();
+    const stat = lstatSync(filename, { bigint: true });
+    if (stat.isSymbolicLink() || (!stat.isFile() && !stat.isDirectory())) fail();
+    const row = { relative, identity: physicalIdentity(filename, stat.isDirectory()), time: String(stat.mtimeNs) };
+    if (stat.isFile()) {
+      if (stat.nlink !== 1n || stat.size > BigInt(pythonLimits.fileBytes)) fail();
+      totalBytes += Number(stat.size); if (totalBytes > pythonLimits.totalBytes) fail();
+      const data = fileBytes(filename, pythonLimits.fileBytes);
+      row.bytes = data.length; row.digest = h(data);
+      const name = path.basename(filename).toLowerCase();
+      if (/^(?:sitecustomize|usercustomize)\.(?:py|pyc|pyo)$/.test(name)) fail();
+      if (name.endsWith(".pth") || name.endsWith("._pth")) {
+        const text = new TextDecoder("utf-8", { fatal: true }).decode(data);
+        for (const line of text.split(/\r?\n/).map(value => value.trim()).filter(value => value && !value.startsWith("#"))) {
+          if (line === "import site" && relative.indexOf("/") < 0 && /^python(?:\d{2,3})?\._pth$/.test(name)) continue;
+          if (line === ".") continue;
+          nativeRelative(line);
+          const target = path.join(path.dirname(filename), line);
+          if (!inside(root, target)) fail();
+          physicalIdentity(target, lstatSync(target).isDirectory());
+        }
+      }
+    }
+    rows.push(row);
+    if (stat.isDirectory()) {
+      const names = readdirSync(filename); if (names.length + rows.length > pythonLimits.entries) fail();
+      for (const name of names.sort()) {
+        if (/[\\:\x00-\x1f]/.test(name) || [".", ".."].includes(name)) fail();
+        const child = path.join(filename, name); if (!inside(root, child)) fail();
+        walk(child, relative ? `${relative}/${name}` : name, depth + 1);
+      }
+    }
+  }
+  walk(root, "", 0);
+  return { digest: nativeDigest(rows), fileCount: rows.filter(row => row.digest).length, totalBytes };
+}
+function pythonFile(root, relative, required = true) {
+  nativeRelative(relative); const filename = path.join(root, relative);
+  if (!inside(root, filename)) fail(); physicalIdentity(path.dirname(filename));
+  if (!existsSync(filename)) { if (required) fail(); return; }
+  const data = fileBytes(filename, 1024 * 1024), text = new TextDecoder("utf-8", { fatal: true }).decode(data);
+  if (!text.trim() || text.includes("\0")) fail();
+  return { filename, identity: physicalIdentity(filename, false), digest: h(data) };
+}
+function preparePython(repository, command, writePaths) {
+  nativeRelative(command.relativePath);
+  if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*\.py$/.test(command.relativePath)
+      || !/^test_[A-Za-z0-9_]+\.py$/.test(path.basename(command.relativePath))
+      || !writePaths.includes(command.relativePath) || command.acceptanceTest !== `python -I -B ${command.relativePath}`
+      || new Set([...command.sourcePaths, ...command.configurationPaths, command.relativePath]).size !== command.sourcePaths.length + command.configurationPaths.length + 1) fail();
+  const sources = command.sourcePaths.map(relative => {
+    nativeRelative(relative); if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*\.py$/.test(relative)) fail();
+    const pin = trackedUnchanged(repository, relative); pythonFile(repository, relative);
+    return { ...pin, relative, writable: writePaths.includes(relative) };
+  });
+  const configurations = command.configurationPaths.map(relative => {
+    nativeRelative(relative); if (path.posix.basename(relative) !== "pyproject.toml") fail();
+    const pin = trackedUnchanged(repository, relative); pythonFile(repository, relative);
+    return { ...pin, relative, writable: writePaths.includes(relative) };
+  });
+  pythonFile(repository, command.relativePath, false);
+  const root = command.runtimeRoot;
+  if (!path.isAbsolute(root) || path.normalize(root) !== root || root.toLowerCase() === repository.toLowerCase()
+      || inside(repository, root) || inside(root, repository)) fail();
+  const identity = physicalIdentity(root), inventory = pythonRuntimeInventory(root), executable = path.join(root, "python.exe");
+  const marker = JSON.parse(fileBytes(path.join(root, "roost-python-runtime.json"), 16384));
+  if (JSON.stringify(Object.keys(marker).sort()) !== JSON.stringify(["executable", "schemaVersion", "version"])
+      || marker.schemaVersion !== "roost-python-unittest-runtime-v1" || marker.version !== command.pythonVersion || marker.executable !== "python.exe"
+      || physicalIdentity(executable, false) !== command.executableIdentity || h(fileBytes(executable, pythonLimits.fileBytes)) !== command.executableDigest
+      || inventory.digest !== command.runtimeDigest || pythonRuntimeInventory(root).digest !== inventory.digest) fail();
+  return { command, sources, configurations, runtime: { root, identity, executable, executableIdentity: command.executableIdentity,
+    executableDigest: command.executableDigest, version: command.pythonVersion, ...inventory } };
+}
+function assertPythonRuntime(runtime) {
+  if (physicalIdentity(runtime.root) !== runtime.identity || physicalIdentity(runtime.executable, false) !== runtime.executableIdentity
+      || h(fileBytes(runtime.executable, pythonLimits.fileBytes)) !== runtime.executableDigest
+      || pythonRuntimeInventory(runtime.root).digest !== runtime.digest) fail();
+}
+function pythonCandidate(p, item) {
+  assertProof(p.proof); assertTypescriptScope(p);
+  return [...item.sources, ...item.configurations].map(pin => pythonFile(p.repositoryPath, pin.relative))
+    .concat(pythonFile(p.repositoryPath, item.command.relativePath));
+}
+const pythonProbe = "import json,sys;print(json.dumps({'version':sys.version.split()[0],'executable':sys.executable,'prefix':sys.prefix,'basePrefix':sys.base_prefix,'paths':sys.path,'isolated':bool(sys.flags.isolated),'ignoreEnvironment':bool(sys.flags.ignore_environment),'bytecodeDisabled':bool(sys.flags.dont_write_bytecode),'safePath':bool(sys.flags.safe_path)},sort_keys=True))";
+export function qualifyPythonRuntimeObservation(data, runtime) {
+  try {
+    const v = JSON.parse(Buffer.concat(data).toString("utf8"));
+    if (JSON.stringify(Object.keys(v).sort()) !== JSON.stringify(["basePrefix", "bytecodeDisabled", "executable", "ignoreEnvironment", "isolated", "paths", "prefix", "safePath", "version"])
+        || v.version !== runtime.version || v.isolated !== true || v.ignoreEnvironment !== true || v.bytecodeDisabled !== true || v.safePath !== true
+        || !path.isAbsolute(v.executable) || !path.isAbsolute(v.prefix) || !path.isAbsolute(v.basePrefix)
+        || path.resolve(v.executable).toLowerCase() !== runtime.executable.toLowerCase()
+        || path.resolve(v.prefix).toLowerCase() !== runtime.root.toLowerCase() || path.resolve(v.basePrefix).toLowerCase() !== runtime.root.toLowerCase()
+        || !Array.isArray(v.paths) || !v.paths.length || v.paths.length > 32) fail();
+    for (const value of v.paths) {
+      if (typeof value !== "string" || !path.isAbsolute(value) || !inside(runtime.root, path.normalize(value)) && path.normalize(value) !== runtime.root) fail();
+      const filename = path.normalize(value); physicalIdentity(filename, lstatSync(filename).isDirectory());
+    }
+    return { version: v.version, sourceDigest: h(Buffer.concat(data)), containedSearchPathCount: v.paths.length, isolated: true };
+  } catch { fail(); }
+}
+export function pythonUnittestCounts(chunks, exitCode) {
+  const output = Buffer.concat(chunks).toString("utf8"), runs = [...output.matchAll(/^Ran ([1-9][0-9]*) tests? in [0-9]+(?:\.[0-9]+)?s\r?$/gm)],
+    ok = [...output.matchAll(/^OK\r?$/gm)], failed = [...output.matchAll(/^FAILED \(([^\r\n]+)\)\r?$/gm)];
+  if (!Number.isInteger(exitCode) || runs.length !== 1 || ok.length + failed.length !== 1 || /^(?:OK|FAILED) \([^\r\n]*(?:skipped|expected failures|unexpected successes)=/m.test(output)) fail();
+  const total = Number(runs[0][1]); let failures = 0;
+  if (failed.length) {
+    const entries = failed[0][1].split(", ");
+    if (entries.length > 2 || new Set(entries.map(item => item.split("=")[0])).size !== entries.length) fail();
+    for (const entry of entries) { if (!/^(?:failures|errors)=[1-9][0-9]*$/.test(entry)) fail(); failures += Number(entry.split("=")[1]); }
+  }
+  if (!Number.isSafeInteger(total) || !Number.isSafeInteger(failures) || failures > total || failures === 0 && (exitCode !== 0 || ok.length !== 1)
+      || failures > 0 && (exitCode === 0 || failed.length !== 1)) fail();
+  return { totalTests: total, passedTests: total - failures, failedTests: failures, pendingTests: 0 };
+}
 function renderSourceFile(root, relative) {
   nativeRelative(relative); const filename = path.join(root, relative);
   if (!inside(root, filename)) fail();
@@ -330,19 +457,21 @@ export function prepareCodingTests({ manifestPath, repositoryPath, originUrl, ac
         || new Set(manifest.commands.map(x => x.acceptanceTest)).size !== manifest.commands.length
         || acceptanceTests.some(test => !manifest.commands.some(x => x.acceptanceTest === test))) fail();
     const typescriptCommands = manifest.commands.filter(command => ["node_typescript_test", "node_typescript_render_test"].includes(command.kind));
+    const pythonCommands = manifest.commands.filter(command => command.kind === "python_unittest");
     const packagePath = path.join(repositoryPath, "package.json");
-    const packageBytes = manifest.commands.every(command => ["node_typescript_test", "node_typescript_render_test"].includes(command.kind)) && !existsSync(packagePath)
+    const packageBytes = manifest.commands.every(command => ["node_typescript_test", "node_typescript_render_test", "python_unittest"].includes(command.kind)) && !existsSync(packagePath)
       ? undefined : fileBytes(packagePath, 128 * 1024);
     const pkg = packageBytes ? JSON.parse(packageBytes) : {};
     if (manifest.commands.some(x => x.kind === "npm_script" && pkg.scripts?.[x.script] !== x.expectedCommand)) fail();
     for (const command of manifest.commands) if (command.kind === "node_test") nodeTestFile(repositoryPath, command.relativePath);
     const workspaceCommands = manifest.commands.filter(command => command.kind === "workspace_vitest");
-    if (workspaceCommands.length || typescriptCommands.length) { physicalIdentity(repositoryPath);
+    if (workspaceCommands.length || typescriptCommands.length || pythonCommands.length) { physicalIdentity(repositoryPath);
       if (!Array.isArray(writePaths) || new Set(writePaths).size !== writePaths.length) fail(); for (const relative of writePaths) nativeRelative(relative); }
     if (workspaceCommands.length) trackedUnchanged(repositoryPath, "package.json");
     const workspaces = workspaceCommands.map(command => prepareWorkspaceVitest(repositoryPath, command, writePaths));
     const typescript = typescriptCommands.map(command => command.kind === "node_typescript_render_test"
       ? prepareNodeRender(repositoryPath, command, writePaths) : prepareNodeTypescript(repositoryPath, command, writePaths));
+    const python = pythonCommands.map(command => preparePython(repositoryPath, command, writePaths));
     if (typescript.length && (!/^v22\./.test(process.version) || !process.allowedNodeEnvironmentFlags.has("--experimental-strip-types"))) fail();
     const npm = manifest.commands.some(command => ["npm_script", "node_test"].includes(command.kind))
       ? path.join(path.dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js") : undefined;
@@ -350,8 +479,8 @@ export function prepareCodingTests({ manifestPath, repositoryPath, originUrl, ac
     const proof = Object.freeze({});
     proofs.set(proof, { manifestPath, manifestDigest: h(bytes), packagePath, packageAbsent: !packageBytes, packageDigest: packageBytes ? h(packageBytes) : nativeDigest(null),
       repositoryPath, commands: manifest.commands, npm, npmIdentity, npmDigest, runs: 0 });
-    const saved = proofs.get(proof); Object.assign(saved, { proof, writePaths: [...writePaths], workspaces, typescript,
-      ...(typescript.length ? { repositoryIdentity: physicalIdentity(repositoryPath) } : {}),
+    const saved = proofs.get(proof); Object.assign(saved, { proof, writePaths: [...writePaths], workspaces, typescript, python,
+      ...(typescript.length || python.length ? { repositoryIdentity: physicalIdentity(repositoryPath) } : {}),
       ...(workspaceCommands.length || typescript.length ? { nodeExecutable: process.execPath, nodeVersion: process.version,
         nodeIdentity: dependencyIdentity(process.execPath), nodeDigest: h(dependencyBytes(process.execPath, 128 * 1024 * 1024)) } : {}) });
     return proof;
@@ -379,6 +508,10 @@ function assertProof(proof) {
     for (const pin of item.sources) if (!pin.writable) assertPin(pin);
     if (item.toolkit) assertRenderToolkit(item.toolkit);
   }
+  for (const item of p.python) {
+    assertPythonRuntime(item.runtime);
+    for (const pin of [...item.sources, ...item.configurations]) if (!pin.writable) assertPin(pin);
+  }
   return p;
 }
 async function runOne(p, command, remainingMs, assertAuthority) {
@@ -390,28 +523,53 @@ async function runOne(p, command, remainingMs, assertAuthority) {
       npm_config_update_notifier: "false", GIT_TERMINAL_PROMPT: "0" });
     let bytes = 0; const output = createHash("sha256"), reporterChunks = [];
     const typescript = ["node_typescript_test", "node_typescript_render_test"].includes(command.kind) ? p.typescript.find(item => item.command === command) : undefined;
+    const python = command.kind === "python_unittest" ? p.python.find(item => item.command === command) : undefined;
     if (typescript?.toolkit) env.ROOST_TEST_DEPENDENCY_ROOT = typescript.toolkit.root;
-    const candidate = typescript ? typescriptCandidate(p, typescript) : undefined;
+    const candidate = typescript ? typescriptCandidate(p, typescript) : python ? pythonCandidate(p, python) : undefined;
+    let pythonObservation, pythonProbeJobDigest;
+    if (python) {
+      const probeChunks = []; let probeBytes = 0;
+      const probeReceipt = await temporaryWindowsJobLauncher(async artifact => {
+        assertProof(p.proof); assertTypescriptScope(p); for (const pin of candidate) assertPin(pin); assertAuthority();
+        const handle = await startWindowsJob(artifact, { executable: python.runtime.executable,
+          argv: ["-I", "-B", "-c", pythonProbe], cwd: python.runtime.root, environment: env, input: "", attempt: randomUUID(),
+          durationMs: Math.max(1, Math.min(remainingMs(), 30000)),
+          onData: (channel, chunk) => { probeBytes += chunk.length; if (probeBytes > 65536) throw Error("output_limit");
+            if (channel === "stdout") probeChunks.push(chunk); assertAuthority(); } });
+        return handle.completion;
+      });
+      if (!isWindowsJobCleanupReceipt(probeReceipt) || !probeReceipt.cleanup || !probeReceipt.jobClosed || probeReceipt.activeProcesses !== 0
+          || probeReceipt.terminationReason !== "root_exit" || probeReceipt.rootExit !== 0
+          || probeReceipt.executableDigest !== python.runtime.executableDigest) fail();
+      assertProof(p.proof); assertAuthority(); for (const pin of candidate) assertPin(pin);
+      pythonObservation = qualifyPythonRuntimeObservation(probeChunks, python.runtime);
+      pythonProbeJobDigest = nativeDigest(probeReceipt);
+    }
     const receipt = await temporaryWindowsJobLauncher(async artifact => {
       if (command.kind === "node_test") nodeTestFile(p.repositoryPath, command.relativePath);
       const workspace = command.kind === "workspace_vitest" ? p.workspaces.find(item => item.command === command) : undefined;
       if (workspace) { assertProof(p.proof); workspaceTestFile(p, command); }
       if (typescript) { assertProof(p.proof); assertTypescriptScope(p); for (const pin of candidate) assertPin(pin); }
-      const handle = await startWindowsJob(artifact, { executable: process.execPath,
-        argv: command.kind === "npm_script" ? [p.npm, "--ignore-scripts", "run", command.script]
+      if (python) { assertProof(p.proof); assertTypescriptScope(p); for (const pin of candidate) assertPin(pin); }
+      const handle = await startWindowsJob(artifact, { executable: python ? python.runtime.executable : process.execPath,
+        argv: python ? ["-I", "-B", command.relativePath]
+          : command.kind === "npm_script" ? [p.npm, "--ignore-scripts", "run", command.script]
           : workspace ? [workspace.cli, "run", command.relativePath, "--maxWorkers=1", "--fileParallelism=false", "--pool=forks", "--passWithNoTests=false", "--reporter=json"]
           : [ ...(typescript ? ["--experimental-strip-types"] : []), "--test", "--", command.relativePath], cwd: workspace?.directory ?? p.repositoryPath,
         environment: env, input: "", attempt: randomUUID(), durationMs: Math.max(1, Math.min(remainingMs(), 120000)),
         onData: (channel, chunk) => { bytes += chunk.length; if (bytes > 131072) throw Error("output_limit"); output.update(chunk);
-          if ((workspace || typescript) && channel === "stdout") reporterChunks.push(chunk); assertAuthority(); } });
+          if (python || (workspace || typescript) && channel === "stdout") reporterChunks.push(chunk); assertAuthority(); } });
       return handle.completion;
     });
     if (!isWindowsJobCleanupReceipt(receipt) || !receipt.cleanup || !receipt.jobClosed || receipt.activeProcesses !== 0
-        || receipt.terminationReason !== "root_exit" || !Number.isInteger(receipt.rootExit)) fail();
+        || receipt.terminationReason !== "root_exit" || !Number.isInteger(receipt.rootExit)
+        || python && receipt.executableDigest !== python.runtime.executableDigest) fail();
     assertAuthority();
     if (typescript) { assertProof(p.proof); assertTypescriptScope(p); for (const pin of candidate) assertPin(pin); }
+    if (python) { assertProof(p.proof); assertTypescriptScope(p); for (const pin of candidate) assertPin(pin); }
     let testCounts;
     if (typescript) testCounts = nodeTapCounts(reporterChunks, receipt.rootExit, command.relativePath);
+    if (python) testCounts = pythonUnittestCounts(reporterChunks, receipt.rootExit);
     if (command.kind === "workspace_vitest") {
       let report; try { report = JSON.parse(Buffer.concat(reporterChunks).toString("utf8")); } catch { fail(); }
       const counts = [report.numTotalTests, report.numPassedTests, report.numFailedTests, report.numPendingTests];
@@ -427,7 +585,13 @@ async function runOne(p, command, remainingMs, assertAuthority) {
         sourceDigests: typescript.sources.map((source, index) => ({ relativePath: source.relative, digest: candidate[index].digest })),
         testDigest: candidate.at(-1).digest,
         ...(typescript.toolkit ? { dependencyDigest: typescript.toolkit.digest, dependencyVersions: typescript.toolkit.versions,
-          dependencyFileCount: typescript.toolkit.fileCount, dependencyBytes: typescript.toolkit.totalBytes } : {}) } : {}) };
+          dependencyFileCount: typescript.toolkit.fileCount, dependencyBytes: typescript.toolkit.totalBytes } : {}) } : {}),
+      ...(python ? { runtimeVersion: pythonObservation.version, runtimeDigest: python.runtime.executableDigest,
+        runtimeIdentityDigest: python.runtime.executableIdentity, runtimeObservationDigest: pythonObservation.sourceDigest, runtimeProbeJobDigest: pythonProbeJobDigest,
+        dependencyDigest: python.runtime.digest, dependencyFileCount: python.runtime.fileCount, dependencyBytes: python.runtime.totalBytes,
+        sourceDigests: python.sources.map((source, index) => ({ relativePath: source.relative, digest: candidate[index].digest })),
+        configurationDigests: python.configurations.map((source, index) => ({ relativePath: source.relative, digest: candidate[python.sources.length + index].digest })),
+        testDigest: candidate.at(-1).digest, isolatedRuntime: true, linuxImageVerified: false } : {}) };
   } catch { fail(); }
 }
 export async function runCodingTests(proof, { phase, workspaceSeal, remainingMs, assertAuthority }) {

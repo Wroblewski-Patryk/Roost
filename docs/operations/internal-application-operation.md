@@ -114,6 +114,15 @@ Only `ROOST_TEST_DEPENDENCY_ROOT` is exposed to the test. Meaningful nonempty
 TAP must pass with zero pending/skipped assertions. Rendered output is component
 proof; it does not establish browser layout or whole-application readiness.
 
+For a bounded Python dependency regression, `python_unittest` pins an exact
+writable `test_*.py`, tracked Python source and `pyproject.toml` paths, and a
+private standalone interpreter/dependency tree. The complete bounded inventory,
+physical identities and executable SHA are sealed before model launch. Fixed
+`-I -B` probe/test jobs must both close; an unsealed base interpreter, external
+search path, links, executable path hooks, drift and empty/skipped unittest
+results are refused. No installer, PATH Python or arbitrary arguments are used.
+Windows regression proof does not certify a Linux image or deployed migration.
+
 Measure the real queued packet and native selections before starting Worker.
 The 128 KiB input limit remains enforced. Reserve space for the verifier's
 complete prior-auditor report. Execution navigation indexes retain selected
