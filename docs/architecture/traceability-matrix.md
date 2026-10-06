@@ -2152,3 +2152,10 @@ A new actual accepted review and application release remain pending.
 | Review `4793c21f`, decision `f3df40a7` | Actual signed native completion at 01:03:22.463 UTC on 6 October; unchanged workspace; original audit provenance artifact PASS; code REJECT for log chronology. | No code acceptance or release authority. |
 | Official controller `124596` | Normal close at 01:06:09.475 UTC; owned native Job closed with zero active processes. | No app deployment. |
 | Manager correction preparation | Existing extension version 2, current nine-member risk and normal return procedure admitted; rotation/correction checks 7/7 and 3/3 pass. | Manager credential expired; fresh owner authentication needed. No manager return or app edit yet. |
+
+Subsequent normal rotation/readback and manager return `99bb9555` completed.
+Its former review basis is historical rejected lineage, not current acceptance.
+The compound-intent heuristic's “and build receipts” false positive is repaired
+with 97 packet/single-task checks, including separate build-target rejection.
+Actual successor Ready, native correction, independent review and release remain
+pending; the earlier chronology and authentication observations remain dated.

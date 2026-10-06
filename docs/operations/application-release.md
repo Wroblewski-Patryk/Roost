@@ -1374,3 +1374,14 @@ expired credential rotation is prepared, with fresh owner authentication still
 required. No return, application edit, new candidate, release grant or app
 deployment has occurred. Private rotation/correction preparation checks pass
 7/7 and 3/3; the gate remains incomplete.
+
+Normal manager credential rotation and masked Windows Credential Manager
+readback completed on 6 October. Return `99bb9555` preserved rejection
+`f3df40a7` and its exact log-only correction. Nine-member risk, procedure
+selection and admission were renewed. Ready correctly retained a rejected
+submission, but its compound-intent heuristic incorrectly treated the noun
+phrase “and build receipts” as another build instruction. The shared validator
+now distinguishes named build evidence from another build target; structured
+cardinality, component, outcome and manager correction checks are unchanged.
+All 97 packet/single-task checks and `npm run validate` pass. Application
+execution and release still require actual fresh Ready and native evidence.

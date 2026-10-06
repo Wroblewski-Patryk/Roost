@@ -202,7 +202,7 @@ Audit `ba9a2999`: CHANGES_REQUIRED; basis mapping `d7758c8c` recorded.
 Basis: 57 checks, 39 DB tests pass. Packed input: 130426 bytes.
 Reviews `228`/`ab692270` failed. Signed archives preserved.
 Review `4793c21f`: audit provenance passed; code rejected for log chronology.
-Manager correction and release remain pending; Worker stopped.
+Manager return `99bb9555` recorded; correction/release pending; Worker stopped.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

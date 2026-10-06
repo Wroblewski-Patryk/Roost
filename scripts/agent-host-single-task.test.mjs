@@ -2,9 +2,20 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { validPacketFixture, sealPacket } from "./fixtures/execution-packet.mjs";
 import { validateExecutionPacket } from "./lib/agent-host-execution-packet.mjs";
-import { singleTaskIdentity, assertTaskBranch, readCurrentTaskBranch } from "./lib/agent-host-single-task.mjs";
+import { singleTaskIdentity, assertTaskBranch, readCurrentTaskBranch, compoundIntent } from "./lib/agent-host-single-task.mjs";
 
 const validate = f => validateExecutionPacket(sealPacket(f.packet), f.claimed, f.taskContext, f.applicationContext);
+test("single result can list build receipts without authorizing another build", () => {
+  const f=validPacketFixture(),outcome="A new log-only candidate whose complete latest section truthfully binds both historical provenance and exact current-candidate test, commit, and build receipts, followed by fresh independent review.";
+  f.packet.contract.objective.outcome=outcome;
+  f.packet.contract.singleTask.problems[0].statement=outcome;
+  f.packet.contract.singleTask.problems[0].outcome=outcome;
+  validate(f);
+  for(const target of ["a service","release pipeline","another application","receipts; repair billing"])
+    assert.equal(compoundIntent("Fix the regression log and build "+target),true);
+  assert.equal(compoundIntent("Attach test and build receipts and add billing"),true);
+  assert.equal(compoundIntent("Attach build evidence for separate outcomes"),true);
+});
 test("branch admission reads the real checkout and refuses a different task branch", async () => {
   const current = await readCurrentTaskBranch(process.cwd());
   assertTaskBranch(current, current);

@@ -36,7 +36,9 @@ export const singleTaskSchema = z.object({
 export function compoundIntent(value) {
   return typeof value !== "string" || value.length > 400 || /[\r\n;]|(?:^|\s)(?:[-*•]|\d+[.)])\s/u.test(value) ||
     /\b(?:unrelated|independent|separate)\s+(?:issues|problems|outcomes|features)\b|\bniezależn\w*\s+(?:problem\w*|wynik\w*|funkcj\w*)/iu.test(value) ||
-    /\b(?:and|plus|also|oraz|i|dodatkowo)\s+(?:fix|repair|add|build|implement|improve|remove|update|napraw\w*|dodaj\w*|zbuduj\w*|wdroż\w*|popraw\w*|usuń\w*|zaktualizuj\w*)\b/iu.test(value);
+    // "Build receipts" names evidence for the same result, rather than a
+    // second imperative. Other build targets still signal compound work.
+    /\b(?:and|plus|also|oraz|i|dodatkowo)\s+(?:fix|repair|add|build(?!\s+(?:receipts?|proofs?|evidence|logs?|artifacts?|results?|reports?)\b)|implement|improve|remove|update|napraw\w*|dodaj\w*|zbuduj\w*|wdroż\w*|popraw\w*|usuń\w*|zaktualizuj\w*)\b/iu.test(value);
 }
 
 export function singleTaskIssues(contract, packet, claimed) {
