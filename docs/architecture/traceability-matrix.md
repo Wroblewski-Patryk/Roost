@@ -2133,3 +2133,16 @@ prior-audit pins, leased API retrieval, original signed native/closed-job checks
 complete findings and sealed provider transport address that gap. Root's 162
 relevant checks and corrected 74 packet checks pass without skips; validation
 passes. These are supporting source checks, not a new accepted model verdict.
+
+Roost `171a76f3` deployed through sole queue `zhes1pyhu5s7ndfsju21k83o`;
+health/version confirmed at 00:45:57.460 UTC. Migration
+`20261006010000_code_reviewer_prior_audit_risk` checksum and schema mirror
+match the deployed source. Actual input measurement: 130296/131072 bytes.
+Review `ab692270` stopped before model launch at backend-evidence persistence:
+old signed admission files from failed `228eaf9c` remained active. Normal
+reconciliation and shared writer/application reclamation completed at
+00:54:42.763 UTC. The expired authenticated prior pair was archived with exact
+byte preservation. Worker failure cleanup now requires the same execution's
+signed pair and an observed closed native Job; it retains the original failure
+and ownership fences. All 50 managed/prior-audit checks, including actual Windows Jobs, pass.
+A new actual accepted review and application release remain pending.

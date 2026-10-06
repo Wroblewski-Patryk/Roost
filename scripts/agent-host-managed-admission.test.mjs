@@ -16,7 +16,9 @@ import { writerRecoveryEvidence } from "./lib/agent-host-writer-lock.mjs";
 import { createOwnerAttestation } from "./lib/agent-host-hermes-owner-auth.mjs";
 import { managedOwnerBinding, nativeEvidenceSchema } from "./lib/agent-host-managed-backend.mjs";
 import { trustedPilotBytes, trustedPilotDecisionSchema } from "./lib/agent-host-trusted-pilot.mjs";
-import { requestManagedAdmission, requestFirstWriteAdmission, buildManagedAdmissionSource, retireManagedAdmissionArtifacts, reserveManagedDispatch } from "./lib/agent-host-managed-admission.mjs";
+import { requestManagedAdmission, requestFirstWriteAdmission, buildManagedAdmissionSource, retireManagedAdmissionArtifacts,
+  retireFailedReadOnlyManagedAdmissionArtifacts, reserveManagedDispatch } from "./lib/agent-host-managed-admission.mjs";
+import { buildWindowsJobLauncher, startWindowsJob, isWindowsJobCleanupReceipt } from "./lib/agent-host-windows-job.mjs";
 import { prepareProviderLaunch } from "./lib/agent-host-provider-launch.mjs";
 import { prepareProviderInput, assertProviderStartup, abandonProviderNativeBoundary } from "./lib/agent-host-provider-input.mjs";
 import { collectReadOnlyRepositoryEvidence } from "./lib/agent-host-readonly-boundary.mjs";
@@ -82,9 +84,80 @@ async function signedAdmissionFixture(t, settings = {}) {
   assert.ok(fs.statSync(x.decisionPath).size > 0);
   const evidenceDigest = sha(fs.readFileSync(x.evidencePath));
   const executionId = JSON.parse(fs.readFileSync(x.decisionPath, "utf8")).payload.scope.executionId;
-  return { ...x, evidenceDigest, executionId };
+  return { ...x, evidenceDigest, executionId, signAdmission: signed };
 }
 const windows = { skip: process.platform !== "win32", timeout: 60000 };
+
+test("failed readonly retirement refuses fabricated or absent cleanup proof before any file operation", () => {
+  const identity = { executionId: "00000000-0000-4000-8000-000000000001", workspaceId: "00000000-0000-4000-8000-000000000002",
+    taskId: "00000000-0000-4000-8000-000000000003", applicationId: "00000000-0000-4000-8000-000000000004", attempt: 1 };
+  const envelope = { identity, seal: "a".repeat(64), contract: { access: { sandbox: "read-only", externalWrites: false,
+    tools: ["repository_read"], permissions: ["repository_read"] }, nativeBoundary: { profile: "inspect-readonly",
+    inspectReadOnly: { kind: "code-reviewer" }, runtime: { required: false, ports: [] } } } };
+  const claimed = { ...identity, id: identity.executionId }; delete claimed.executionId;
+  for (const ownedTreeReceipt of [undefined, null, { version: "roost-windows-job-v2", attempt: claimed.id,
+    cleanup: true, jobClosed: true, activeProcesses: 0, assignedBeforeResume: true, killOnClose: true, breakaway: false }]) {
+    assert.equal(isWindowsJobCleanupReceipt(ownedTreeReceipt), false);
+    assert.throws(() => retireFailedReadOnlyManagedAdmissionArtifacts({ envelope, claimed, writerLock: null,
+      evidenceDigest: "b".repeat(64), ownedTreeReceipt }), e => e.details?.phase === "failure_retire");
+  }
+});
+
+test("failed readonly admission retirement with observed native cleanup preserves exact pair and ownership", windows, async t => {
+  const x = await signedAdmissionFixture(t), envelope = structuredClone(x.options.envelope);
+  delete envelope.contract.executionClass;
+  envelope.contract.access = { ...envelope.contract.access, sandbox: "read-only", externalWrites: false,
+    tools: ["repository_read"], permissions: ["repository_read"] };
+  envelope.contract.nativeBoundary = { profile: "inspect-readonly", readPaths: ["fixture.txt"],
+    runtime: { required: false, ports: [] }, inspectReadOnly: { kind: "code-reviewer" } };
+  envelope.seal = nativeDigest({ fixture: "signed read-only failure cleanup", identity: envelope.identity, contract: envelope.contract });
+  const backend = JSON.parse(fs.readFileSync(x.evidencePath)).payload;
+  backend.context.inputSeal = envelope.seal;
+  fs.writeFileSync(x.evidencePath, trustedPilotBytes(x.signAdmission(backend)));
+  const evidenceDigest = sha(fs.readFileSync(x.evidencePath)), decision = JSON.parse(fs.readFileSync(x.decisionPath)).payload;
+  decision.scope.inputSeal = envelope.seal; decision.scope.accessDigest = nativeDigest(envelope.contract.access);
+  decision.provider.managedBackend.evidence.digest = evidenceDigest;
+  fs.writeFileSync(x.decisionPath, trustedPilotBytes(x.signAdmission(decision)));
+  const originals = [x.evidencePath, x.decisionPath].map(file => {
+    const stat = fs.lstatSync(file, { bigint: true });
+    return { file, bytes: fs.readFileSync(file), identity: `${stat.dev}:${stat.ino}` };
+  });
+  const writerBefore = writerRecoveryEvidence(x.options.writerLock);
+  const leasePath = path.join(x.state, `application-${nativeDigest(envelope.identity.applicationId)}.lease`);
+  const leaseBefore = fs.existsSync(leasePath) ? fs.readFileSync(leasePath) : null;
+  const jobDirectory = path.join(x.root, "retirement-job"); fs.mkdirSync(jobDirectory);
+  const artifact = await buildWindowsJobLauncher(jobDirectory);
+  const job = await startWindowsJob(artifact, { executable: process.execPath, argv: ["-e", "process.exit(0)"],
+    cwd: jobDirectory, environment: { SystemRoot: process.env.SystemRoot }, input: "", durationMs: 5000,
+    attempt: x.executionId, confirmResume: () => "c".repeat(64) });
+  const receipt = await job.completion; assert.equal(isWindowsJobCleanupReceipt(receipt), true);
+  const options = { envelope, claimed: x.f.claimed, writerLock: x.options.writerLock, evidenceDigest, ownedTreeReceipt: receipt };
+  for (const change of [o => o.ownedTreeReceipt = { ...receipt }, o => o.ownedTreeReceipt = undefined,
+    o => o.claimed = { ...o.claimed, id: randomUUID() }, o => o.evidenceDigest = "d".repeat(64),
+    o => o.envelope = { ...envelope, contract: { ...envelope.contract, access: { ...envelope.contract.access, externalWrites: true } } }]) {
+    const attempt = { ...options }; change(attempt); assert.throws(() => retireFailedReadOnlyManagedAdmissionArtifacts(attempt));
+    originals.forEach(a => assert.ok(fs.readFileSync(a.file).equals(a.bytes)));
+  }
+  for (const fault of ["unsigned", "foreign", "partial"]) {
+    let held;
+    if (fault === "unsigned") { const value = JSON.parse(originals[1].bytes); value.signature = "0".repeat(128); fs.writeFileSync(x.decisionPath, trustedPilotBytes(value)); }
+    if (fault === "foreign") { const value = JSON.parse(originals[1].bytes).payload; value.scope.executionId = randomUUID(); fs.writeFileSync(x.decisionPath, trustedPilotBytes(x.signAdmission(value))); }
+    if (fault === "partial") { held = x.decisionPath + ".fixture-held"; fs.renameSync(x.decisionPath, held); }
+    const before = [x.evidencePath, x.decisionPath].filter(fs.existsSync).map(file => ({ file, bytes: fs.readFileSync(file) }));
+    try { assert.throws(() => retireFailedReadOnlyManagedAdmissionArtifacts(options)); before.forEach(a => assert.ok(fs.readFileSync(a.file).equals(a.bytes))); }
+    finally { if (held) fs.renameSync(held, x.decisionPath); else fs.writeFileSync(x.decisionPath, originals[1].bytes); }
+  }
+  const archive = retireFailedReadOnlyManagedAdmissionArtifacts(options);
+  for (const original of originals) {
+    const archived = path.join(archive, path.basename(original.file));
+    const stat = fs.lstatSync(archived, { bigint: true });
+    assert.ok(fs.readFileSync(archived).equals(original.bytes)); assert.equal(`${stat.dev}:${stat.ino}`, original.identity);
+    assert.equal(fs.existsSync(original.file), false);
+  }
+  assert.deepEqual(writerRecoveryEvidence(x.options.writerLock), writerBefore);
+  if (leaseBefore) assert.ok(fs.readFileSync(leasePath).equals(leaseBefore));
+  assert.equal(retireFailedReadOnlyManagedAdmissionArtifacts(options), archive);
+});
 
 for (const scenario of ["current", "cold_preparation", "expired_startup", "repository_changed_before_signing", "repository_changed_after_signing", "process_changed_before_signing", "docker_changed_before_signing", "tcp_observation_timeout_before_signing", "docker_observation_timeout_before_signing"]) test(`signed managed read-only retry-zero launch: ${scenario}`, windows, async t => {
   const x = await nativeFixture(t, { prepare: false });

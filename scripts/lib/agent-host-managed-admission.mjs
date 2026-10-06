@@ -10,7 +10,7 @@ import { consumeProviderInput } from "./agent-host-provider-input.mjs";
 import { nativeEvidenceSchema, managedBackendContext, managedBackendRuntime } from "./agent-host-managed-backend.mjs";
 import { trustedPilotBytes, inspectTrustedPilotInstallation, proposeTrustedPilotDecision,
   trustedPilotDecisionSchema, inspectTrustedPilotDecision } from "./agent-host-trusted-pilot.mjs";
-import { windowsJobSourceDigest } from "./agent-host-windows-job.mjs";
+import { windowsJobSourceDigest, isWindowsJobCleanupReceipt } from "./agent-host-windows-job.mjs";
 import { managedBackendVersion } from "./agent-host-model-policy.mjs";
 import { bindNativeSpentRecord } from "./agent-host-hermes-native-boundary.mjs";
 import { nativeArtifactSnapshot } from "./agent-host-native-review.mjs";
@@ -197,6 +197,52 @@ export function retireManagedAdmissionArtifacts({ directory, executionId, eviden
     }
     return target;
   } catch (error) { fail("retire", undefined, error?.message); }
+}
+
+// Failure cleanup grants no result, retry, lease release or Writer release.
+// Persisted/API receipt JSON cannot qualify: only this process's recently
+// observed native cleanup proof can authorize retirement of its own signed pair.
+export function retireFailedReadOnlyManagedAdmissionArtifacts({ writerLock, envelope, claimed, evidenceDigest, ownedTreeReceipt }) {
+  try {
+    const c = envelope?.contract, identity = envelope?.identity;
+    const expectedIdentity = { executionId: claimed?.id, workspaceId: claimed?.workspaceId,
+      taskId: claimed?.taskId, applicationId: claimed?.applicationId, attempt: claimed?.attempt };
+    if (c?.nativeBoundary?.profile !== "inspect-readonly"
+      || !["auditor", "verifier", "code-reviewer"].includes(c.nativeBoundary.inspectReadOnly?.kind)
+      || c.nativeBoundary.runtime?.required !== false || !same(c.nativeBoundary.runtime.ports, [])
+      || c.access?.sandbox !== "read-only" || c.access.externalWrites !== false
+      || !same(c.access.tools, ["repository_read"]) || !same(c.access.permissions, ["repository_read"])
+      || claimed?.attempt !== 1 || !same(identity, expectedIdentity)
+      || !/^[a-f0-9-]{36}$/.test(claimed?.id ?? "") || !/^[a-f0-9]{64}$/.test(envelope.seal ?? "")
+      || !/^[a-f0-9]{64}$/.test(evidenceDigest ?? "")
+      || !isWindowsJobCleanupReceipt(ownedTreeReceipt)
+      || ownedTreeReceipt.version !== "roost-windows-job-v2" || ownedTreeReceipt.attempt !== claimed.id
+      || ownedTreeReceipt.cleanup !== true || ownedTreeReceipt.jobClosed !== true || ownedTreeReceipt.activeProcesses !== 0
+      || ownedTreeReceipt.assignedBeforeResume !== true || ownedTreeReceipt.killOnClose !== true
+      || ownedTreeReceipt.breakaway !== false) fail();
+    const writer = writerRecoveryEvidence(writerLock), directory = path.join(writer.directory, "trusted-provider-pilot");
+    const anchor = admissionAnchor(directory);
+    if (anchor.qualification !== "signed_native_v1") fail();
+    const snapshot = name => {
+      const active = path.join(directory, name), archived = path.join(directory, "spent", claimed.id, name);
+      if (existsSync(active) === existsSync(archived)) fail();
+      return admissionFile(existsSync(active) ? active : archived);
+    };
+    const pair = verifyAdmissionPair(snapshot("managed-backend-evidence.json"), snapshot(anchor.decisionFile),
+      anchor, claimed.id, evidenceDigest);
+    const scope = pair.decision.scope, backend = pair.backend.context, writerDigest = nativeDigest(writer);
+    if (pair.backend.qualification !== "signed_native_v1" || pair.decision.qualification !== "signed_native_v1"
+      || pair.decision.provider.kind !== "hermes_codex"
+      || ["executionId", "workspaceId", "taskId", "applicationId"].some(key => scope[key] !== identity[key])
+      || scope.inputSeal !== envelope.seal || backend.inputSeal !== envelope.seal
+      || backend.identityDigest !== nativeDigest(identity)
+      || scope.accessDigest !== nativeDigest(c.access) || scope.singleTaskDigest !== nativeDigest(c.singleTask)
+      || backend.assignmentDigest !== nativeDigest(c.assignment)
+      || scope.writerDigest !== writerDigest || backend.writerDigest !== writerDigest
+      || pair.backend.context.gates.launcher.sourceDigest !== ownedTreeReceipt.sourceSha256
+      || !same(writerRecoveryEvidence(writerLock), writer)) fail();
+    return retireManagedAdmissionArtifacts({ directory, executionId: claimed.id, evidenceDigest });
+  } catch (error) { fail("failure_retire", undefined, error?.message); }
 }
 
 // The source is rebuilt only from local sealed startup, native boundary, live

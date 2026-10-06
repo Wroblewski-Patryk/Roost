@@ -26,7 +26,7 @@ import { verifyCompletedNativeBoundary, releaseReviewedNativeBoundary } from "./
 import { verifyHermesSmokeInstallation } from "./lib/agent-host-hermes-smoke-installation.mjs";
 import { captureReadOnlyReviewBaseline, verifyReadOnlyReview } from "./lib/agent-host-readonly-review.mjs";
 import { isWindowsJobCleanupReceipt } from "./lib/agent-host-windows-job.mjs";
-import { buildManagedAdmissionSource, requestManagedAdmission, requestFirstWriteAdmission, retireManagedAdmissionArtifacts } from "./lib/agent-host-managed-admission.mjs";
+import { buildManagedAdmissionSource, requestManagedAdmission, requestFirstWriteAdmission, retireManagedAdmissionArtifacts, retireFailedReadOnlyManagedAdmissionArtifacts } from "./lib/agent-host-managed-admission.mjs";
 import { managedBackendVersion } from "./lib/agent-host-model-policy.mjs";
 import fixed from "./lib/agent-host-fixed-program.cjs";
 import { prepareFixedExecution, runFixedExecution, createFixedOutputBudget, assertFixedTask, abandonFixedExecution } from "./lib/agent-host-fixed-execution.mjs";
@@ -232,6 +232,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
   let codeReviewerView, codeReviewerKey;
   let preparedCommit;
   let hermesCollection, hermesAbort, hermesCompletedReceipt;
+  let readonlyAdmissionEvidenceDigest;
   let executionPhase = "context";
   function stopWorker() {
     stopping = true;
@@ -496,6 +497,8 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       launchOptions.containmentReceipt = prepareFixedHostContainment(launchOptions, launchAuthority);
     executionPhase = "provider_launch";
     const launch = prepareProviderLaunch(launchOptions, launchAuthority);
+    if (launch.kind === "hermes_codex" && inspecting)
+      readonlyAdmissionEvidenceDigest = launch.managedBackend.evidence.digest;
     executionPhase = "native_execution";
     assertProviderAuthority();
     let transportAccounting;
@@ -728,6 +731,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
           ? { headers: { ...options.headers, "X-Roost-Redaction-Notice": "1" } } : {}) }) });
   } catch (error) {
     let hermesStopReceipt;
+    let readonlyRetirementFailed = false;
     if (hermesCollection) {
       hermesAbort.abort();
       await hermesCollection.catch(stopped => {
@@ -739,6 +743,16 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     // Report only closed, bounded diagnostic fields after observing cleanup.
     // This append-only observation grants no authority and cannot revive a lease.
     const observedStop = hermesStopReceipt ?? hermesCompletedReceipt ?? error.details?.ownedTreeReceipt;
+    if (nativeInput?.contract.nativeBoundary?.profile === "inspect-readonly"
+      && readonlyAdmissionEvidenceDigest && isWindowsJobCleanupReceipt(observedStop)
+      && executionPhase !== "terminal_completion") {
+      // Archive only this attempt's authenticated pair after observed cleanup.
+      // The original failure and ownership still require normal reconciliation.
+      try { retireFailedReadOnlyManagedAdmissionArtifacts({ writerLock, envelope: nativeInput,
+        claimed, evidenceDigest: readonlyAdmissionEvidenceDigest, ownedTreeReceipt: observedStop }); }
+      catch { readonlyRetirementFailed = true; stopWorker();
+        process.stderr.write("Managed admission retirement could not be confirmed; ownership retained for reconciliation.\n"); }
+    }
     const diagnostic = safeExecutionDiagnostic({ error, executionPhase, leaseFailure: lease.failure,
       nativeTermination: isWindowsJobCleanupReceipt(observedStop) ? observedStop.terminationReason : undefined });
     process.stderr.write(`Agent Host safe diagnostic: ${JSON.stringify(diagnostic)}.\n`);
@@ -752,7 +766,7 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
       && isWindowsJobCleanupReceipt(hermesStopReceipt ?? hermesCompletedReceipt)) {
       await api(`/v1/agent-runtime/executions/${claimed.id}/actions/cancelled`, {
         method: "POST", body: JSON.stringify({ leaseToken: claimed.leaseToken }) });
-      retainWriterLock = false;
+      retainWriterLock = readonlyRetirementFailed;
       return;
     }
     if (error.hostLifecycle) { stopWorker(); lease.stop(); await stopPromise; throw error; }
