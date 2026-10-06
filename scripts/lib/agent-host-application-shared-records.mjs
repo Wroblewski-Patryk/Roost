@@ -20,8 +20,111 @@ function jsonSafe(value, seen = new Set()) {
 function clone(value) { try { return structuredClone(value); } catch { return invalid(); } }
 export const applicationSharedRecordReferenceSchema = z.object({ sharedRecord: z.number().int().min(0) }).strict();
 const entrySchema = z.object({ digest: hash, value: z.record(z.unknown()) }).strict();
-export const applicationSharedRecordsSchema = z.object({ schemaVersion: z.literal('roost-application-shared-records-v1'),
+const v1Schema = z.object({ schemaVersion: z.literal('roost-application-shared-records-v1'),
   originalDigest: hash, domain: z.array(entrySchema), readinessDimension: z.array(entrySchema) }).strict();
+export const applicationSharedDescriptionReferenceSchema = z.object({ sharedDescription: z.number().int().min(0) }).strict();
+const capabilityRelationsSchema = z.object({ schemaVersion: z.literal('roost-capability-relations-v1'),
+  gapRecords: z.number().int().min(0), observedRecords: z.number().int().min(0) }).strict();
+const descriptionEntrySchema = z.object({ digest: hash, value: z.string().max(65536) }).strict();
+const v2Schema = v1Schema.extend({ schemaVersion: z.literal('roost-application-shared-records-v2'),
+  capabilityRelations: capabilityRelationsSchema.optional(), companyDescription: z.array(descriptionEntrySchema).optional() }).strict();
+export const applicationSharedRecordsSchema = z.discriminatedUnion('schemaVersion', [v1Schema, v2Schema]);
+const capabilityFields = ['id', 'capabilityDefinitionId', 'key', 'name', 'domain', 'applicability', 'targetState', 'observedState'];
+const capabilityReference = row => plain(row) && Object.hasOwn(row, 'sharedCapability') && !Object.hasOwn(row, 'id');
+const descriptionReference = value => plain(value) && Object.hasOwn(value, 'sharedDescription');
+const capabilityRows = application => [...(Array.isArray(application?.observedCapabilities) ? application.observedCapabilities : []),
+  ...(Array.isArray(application?.gaps) ? application.gaps : [])];
+function targetAt(application, index) {
+  if (!Number.isSafeInteger(index) || index < 0 || !Array.isArray(application.targetCapabilities)) invalid();
+  const target = application.targetCapabilities[index];
+  if (!supported(target) || !supported(target.definition)
+      || application.targetCapabilities.filter(row => row?.id === target.id).length !== 1) invalid();
+  return target;
+}
+function gapValues(application, target) {
+  const observed = Array.isArray(application.observedCapabilities)
+    ? application.observedCapabilities.filter(row => supported(row) && row.id === target.id) : [];
+  if (observed.length !== 1 || !Object.hasOwn(observed[0], 'observedState') || !Object.hasOwn(observed[0], 'definitionKey')
+      || !Object.hasOwn(target.definition, 'key') || digest(observed[0].definitionKey) !== digest(target.definition.key)
+      || !['key', 'name', 'domain'].every(key => Object.hasOwn(target.definition, key))
+      || !['applicability', 'targetState'].every(key => Object.hasOwn(target, key))) invalid();
+  return { id: target.id, capabilityDefinitionId: target.definition.id, key: target.definition.key,
+    name: target.definition.name, domain: clone(target.definition.domain), applicability: target.applicability,
+    targetState: target.targetState, observedState: clone(observed[0].observedState) };
+}
+function restoreRelations(application, table) {
+  const counts = { gapRecords: 0, observedRecords: 0 }, relation = table.capabilityRelations;
+  for (const [array, copied, count] of [['observedCapabilities', ['id', 'definitionKey'], 'observedRecords'],
+    ['gaps', capabilityFields, 'gapRecords']]) {
+    if (!Array.isArray(application[array])) continue;
+    const targetsUsed = new Set();
+    for (let i = 0; i < application[array].length; i++) {
+      const row = application[array][i]; if (!capabilityReference(row)) continue;
+      if (!relation || copied.some(key => Object.hasOwn(row, key)) || targetsUsed.has(row.sharedCapability)) invalid();
+      const target = targetAt(application, row.sharedCapability);
+      if (application[array].some(other => other !== row && other?.id === target.id)) invalid();
+      const restored = array === 'gaps' ? gapValues(application, target) : { id: target.id, definitionKey: target.definition.key };
+      if (array === 'observedCapabilities' && !Object.hasOwn(target.definition, 'key')) invalid();
+      const { sharedCapability: ignored, ...distinct } = row;
+      application[array][i] = { ...restored, ...distinct }; targetsUsed.add(row.sharedCapability); counts[count]++;
+    }
+  }
+  if (relation && (relation.gapRecords !== counts.gapRecords || relation.observedRecords !== counts.observedRecords
+      || counts.gapRecords + counts.observedRecords === 0)) invalid();
+  const descriptions = table.companyDescription ?? [], uses = descriptions.map(() => new Set()), digests = new Set();
+  for (const entry of descriptions) {
+    if (digest(entry.value) !== entry.digest || digests.has(entry.digest)) invalid(); digests.add(entry.digest);
+  }
+  for (const row of Array.isArray(application.companyRecords) ? application.companyRecords : []) {
+    if (!descriptionReference(row?.description)) continue;
+    const parsed = applicationSharedDescriptionReferenceSchema.safeParse(row.description);
+    if (!supported(row) || !parsed.success || application.companyRecords.filter(other => other?.id === row.id).length !== 1) invalid();
+    const entry = descriptions[parsed.data.sharedDescription]; if (!entry) invalid();
+    uses[parsed.data.sharedDescription].add(row.id); row.description = entry.value;
+  }
+  if (uses.some(ids => ids.size < 2) || !relation && !descriptions.length) invalid();
+}
+function projectRelations(application, table) {
+  const candidate = clone(application), counts = { gapRecords: 0, observedRecords: 0 };
+  if (Array.isArray(candidate.targetCapabilities)) {
+    // Gaps use the original observed rows. Restore performs the inverse order.
+    for (const [array, copied, count] of [['gaps', capabilityFields, 'gapRecords'],
+      ['observedCapabilities', ['id', 'definitionKey'], 'observedRecords']]) {
+      if (!Array.isArray(candidate[array])) continue;
+      for (const row of candidate[array]) {
+        if (!supported(row) || Object.hasOwn(row, 'sharedCapability')
+            || candidate[array].filter(other => other?.id === row.id).length !== 1) continue;
+        const matches = candidate.targetCapabilities.map((target, index) => ({ target, index })).filter(({ target }) => target?.id === row.id);
+        if (matches.length !== 1) continue;
+        try {
+          const target = targetAt(candidate, matches[0].index);
+          const source = array === 'gaps' ? gapValues(candidate, target) : { id: target.id, definitionKey: target.definition.key };
+          if (copied.some(key => !Object.hasOwn(row, key) || !Object.hasOwn(source, key) || digest(row[key]) !== digest(source[key]))) continue;
+          for (const key of copied) delete row[key]; row.sharedCapability = matches[0].index; counts[count]++;
+        } catch { /* Unsupported or ambiguous relations retain full inline data. */ }
+      }
+    }
+  }
+  const descriptions = [], groups = new Map(), records = Array.isArray(candidate.companyRecords) ? candidate.companyRecords : [];
+  for (const row of records) {
+    if (!supported(row) || typeof row.description !== 'string' || row.description.length > 65536
+        || records.filter(other => other?.id === row.id).length !== 1) continue;
+    const key = digest(row.description), group = groups.get(key) ?? { value: row.description, rows: [], conflict: false };
+    if (group.value !== row.description) group.conflict = true; group.rows.push(row); groups.set(key, group);
+  }
+  for (const [key, group] of groups) {
+    if (group.conflict || group.rows.length < 2) continue;
+    const index = descriptions.length; descriptions.push({ digest: key, value: group.value });
+    for (const row of group.rows) row.description = { sharedDescription: index };
+  }
+  if (!counts.gapRecords && !counts.observedRecords && !descriptions.length) return application;
+  const next = { ...table, schemaVersion: 'roost-application-shared-records-v2',
+    ...(counts.gapRecords + counts.observedRecords ? { capabilityRelations: { schemaVersion: 'roost-capability-relations-v1', ...counts } } : {}),
+    ...(descriptions.length ? { companyDescription: descriptions } : {}) };
+  candidate[tableKey] = next;
+  if (Buffer.byteLength(JSON.stringify(candidate)) >= Buffer.byteLength(JSON.stringify(application))) return application;
+  assertApplicationSharedRecords(candidate); return candidate;
+}
 function slots(application) {
   const targets = Array.isArray(application?.targetCapabilities)
     ? application.targetCapabilities.filter(row => plain(row?.definition)) : [];
@@ -42,6 +145,7 @@ function slots(application) {
 function detachRows(application) {
   if (Array.isArray(application?.targetCapabilities)) application.targetCapabilities = application.targetCapabilities.map(clone);
   if (Array.isArray(application?.gaps)) application.gaps = application.gaps.map(clone);
+  if (Array.isArray(application?.observedCapabilities)) application.observedCapabilities = application.observedCapabilities.map(clone);
 }
 const reference = value => plain(value) && Object.hasOwn(value, 'sharedRecord');
 const supported = value => plain(value) && id.safeParse(value.id).success && jsonSafe(value);
@@ -49,10 +153,13 @@ const supported = value => plain(value) && id.safeParse(value.id).success && jso
 // References are local table indexes, never discovery or authority. The table
 // binds every full record by canonical digest and the reconstructed full input.
 export function restoreApplicationSharedRecords(application) {
-  const output = clone(application); detachRows(output); const positions = slots(output), hasTable = plain(output) && Object.hasOwn(output, tableKey);
-  if (!hasTable) { if (positions.some(({ definition, field }) => reference(definition[field]))) invalid(); return output; }
+  const output = clone(application); detachRows(output); let positions = slots(output); const hasTable = plain(output) && Object.hasOwn(output, tableKey);
+  if (!hasTable) { if (positions.some(({ definition, field }) => reference(definition[field])) || capabilityRows(output).some(capabilityReference)
+    || output?.companyRecords?.some?.(row => descriptionReference(row?.description))) invalid(); return output; }
   const parsed = applicationSharedRecordsSchema.safeParse(output[tableKey]); if (!parsed.success) invalid();
   const table = parsed.data, use = {}, identities = {};
+  if (table.schemaVersion === 'roost-application-shared-records-v2') { restoreRelations(output, table); positions = slots(output); }
+  else if (capabilityRows(output).some(capabilityReference) || output?.companyRecords?.some?.(row => descriptionReference(row?.description))) invalid();
   for (const field of fields) {
     use[field] = table[field].map(() => 0); identities[field] = new Set();
     for (const item of table[field]) {
@@ -79,7 +186,8 @@ export function assertApplicationSharedRecords(application) { restoreApplication
 export function projectApplicationSharedRecords(application) {
   const output = clone(application); detachRows(output);
   if (plain(output) && Object.hasOwn(output, tableKey)) { assertApplicationSharedRecords(output); return output; }
-  if (slots(output).some(({ definition, field }) => reference(definition[field]))) invalid();
+  if (slots(output).some(({ definition, field }) => reference(definition[field])) || capabilityRows(output).some(capabilityReference)
+      || output?.companyRecords?.some?.(row => descriptionReference(row?.description))) invalid();
   // Unsupported non-JSON contexts retain all their original inline data.
   if (!plain(output) || !jsonSafe(output)) return output;
   const groups = Object.fromEntries(fields.map(field => [field, new Map()]));
@@ -99,5 +207,5 @@ export function projectApplicationSharedRecords(application) {
     for (const definition of group.positions) definition[field] = { sharedRecord: index };
   }
   if (fields.some(field => table[field].length > 0)) { output[tableKey] = table; assertApplicationSharedRecords(output); }
-  return output;
+  return projectRelations(output, table);
 }

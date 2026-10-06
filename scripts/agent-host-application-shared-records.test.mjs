@@ -184,3 +184,97 @@ test('unknown gap shapes and unrelated duplicate fields remain complete inline e
   const orphan = { gaps: [{ domain: { sharedRecord: 0 } }] };
   assert.throws(() => projectApplicationSharedRecords(orphan), /agent_application_shared_records_invalid/);
 });
+
+function relationFixture() {
+  const x = fixture();
+  x.targetCapabilities.forEach((target, i) => { target.definition.key = 'definition-key-' + i; });
+  x.observedCapabilities = x.targetCapabilities.map(target => ({ id: target.id, definitionKey: target.definition.key,
+    observedState: 'missing', observedSummary: 'No deployed proof', evidence: [], unknownObservation: { retained: true } }));
+  x.gaps = x.targetCapabilities.map(target => ({ id: target.id, capabilityDefinitionId: target.definition.id,
+    key: target.definition.key, name: target.definition.name, domain: structuredClone(target.definition.domain),
+    applicability: target.applicability, targetState: target.targetState, observedState: 'missing',
+    severity: 'critical', blocked: true, blockedBy: ['Unproved runtime'], evidenceCount: 0, verifiedEvidenceCount: 0,
+    unknownGap: { retainEveryAttribute: true } }));
+  const description = 'Identical complete declared technical context, with no runtime approval. '.repeat(30);
+  x.companyRecords.push({ id: 'document-2', description, title: 'First distinct record', status: 'active', extra: { preserve: 2 } },
+    { id: 'document-3', description, title: 'Second distinct record', status: 'unverified', extra: { preserve: 3 } });
+  return x;
+}
+test('v2 exact capability relations and descriptions restore every original field and known negative', () => {
+  const x = relationFixture(), before = structuredClone(x), out = projectApplicationSharedRecords(x), table = out.applicationSharedRecords;
+  assert.equal(table.schemaVersion, 'roost-application-shared-records-v2');
+  assert.deepEqual(table.capabilityRelations, { schemaVersion: 'roost-capability-relations-v1', gapRecords: 8, observedRecords: 8 });
+  assert.equal(table.companyDescription.length, 1); assert.deepEqual(out.companyRecords[1].description, { sharedDescription: 0 });
+  for (let i = 0; i < 8; i++) { assert.equal(out.gaps[i].sharedCapability, i); assert.equal(out.observedCapabilities[i].sharedCapability, i);
+    assert.equal(out.gaps[i].blocked, true); assert.equal(out.gaps[i].severity, 'critical'); assert.deepEqual(out.gaps[i].unknownGap, x.gaps[i].unknownGap);
+    assert.deepEqual(out.observedCapabilities[i].unknownObservation, x.observedCapabilities[i].unknownObservation); }
+  assert.deepEqual(restoreApplicationSharedRecords(out), x); assert.deepEqual(x, before);
+  assert.deepEqual(projectApplicationSharedRecords(out), out);
+  assert.equal(table.originalDigest, digest(x)); assert.ok(Buffer.byteLength(JSON.stringify(out)) < Buffer.byteLength(JSON.stringify(x)));
+});
+test('relation mismatch or ambiguous joins stay inline without changing distinct authoritative facts', () => {
+  for (const mutate of [x => x.gaps[0].name += ' separate value', x => delete x.gaps[0].targetState,
+    x => x.observedCapabilities[0].definitionKey = 'different-key', x => x.targetCapabilities.push(structuredClone(x.targetCapabilities[0])),
+    x => x.observedCapabilities.push(structuredClone(x.observedCapabilities[0]))]) {
+    const x = relationFixture(); mutate(x); const out = projectApplicationSharedRecords(x);
+    assert.equal(out.gaps[0].sharedCapability, undefined); assert.deepEqual(restoreApplicationSharedRecords(out), x);
+  }
+});
+test('unrelated unknown marker-like fields on full inline records remain intact', () => {
+  const x = relationFixture(); x.gaps[0].sharedCapability = 'unrelated-original-data';
+  x.observedCapabilities[0].sharedCapability = 'unrelated-original-data';
+  const out = projectApplicationSharedRecords(x); assert.equal(out.gaps[0].id, x.gaps[0].id);
+  assert.deepEqual(restoreApplicationSharedRecords(out), x);
+});
+test('description singleton, conflicting text and duplicate record IDs are not erased or supplemented', () => {
+  for (const mutate of [x => x.companyRecords[2].description += ' distinct', x => x.companyRecords[2].id = x.companyRecords[1].id,
+    x => x.companyRecords[2].description = null, x => x.companyRecords[2].description = { content: 'full unsupported description' }]) {
+    const x = relationFixture(); mutate(x); const out = projectApplicationSharedRecords(x);
+    assert.equal(out.applicationSharedRecords.companyDescription, undefined); assert.deepEqual(restoreApplicationSharedRecords(out), x);
+  }
+});
+const badRelations = {
+  noTable: x => delete x.applicationSharedRecords,
+  wrongVersion: x => x.applicationSharedRecords.schemaVersion = 'roost-application-shared-records-v1',
+  noRelation: x => delete x.applicationSharedRecords.capabilityRelations,
+  wrongCount: x => x.applicationSharedRecords.capabilityRelations.gapRecords++,
+  fractional: x => x.gaps[0].sharedCapability = 0.5,
+  badIndex: x => x.gaps[0].sharedCapability = 99,
+  supplementName: x => x.gaps[0].name = 'Override original',
+  supplementID: x => x.gaps[0].id = 'Override original',
+  supplementState: x => x.observedCapabilities[0].definitionKey = 'Override original',
+  reusedTarget: x => x.gaps[1].sharedCapability = 0,
+  alteredTarget: x => x.targetCapabilities[0].definition.key = 'changed-target-key',
+  alteredObservation: x => x.observedCapabilities[0].observedState = 'invented-success',
+  lostDistinctField: x => delete x.gaps[0].blocked,
+  hiddenField: x => x.gaps[0].unknownGap.extra = 'Added hidden data',
+  wrongDescriptionIndex: x => x.companyRecords[1].description.sharedDescription = 9,
+  descriptionSupplement: x => x.companyRecords[1].description.supplement = 'Override original',
+  missingDescriptionTable: x => delete x.applicationSharedRecords.companyDescription,
+  alteredDescription: x => x.applicationSharedRecords.companyDescription[0].value += ' changed',
+  rehashedDescription: x => { const e = x.applicationSharedRecords.companyDescription[0]; e.value += ' changed'; e.digest = digest(e.value); },
+  duplicateDescription: x => x.applicationSharedRecords.companyDescription.push(structuredClone(x.applicationSharedRecords.companyDescription[0])),
+  oneDescriptionUse: x => x.companyRecords[1].description = x.applicationSharedRecords.companyDescription[0].value,
+  duplicateDescriptionUser: x => x.companyRecords[2].id = x.companyRecords[1].id,
+  extraRelationMetadata: x => x.applicationSharedRecords.capabilityRelations.authority = true
+};
+for (const [name, mutate] of Object.entries(badRelations)) test(`v2 strict restoration rejects ${name}`, () => {
+  const out = projectApplicationSharedRecords(relationFixture()); mutate(out);
+  assert.throws(() => restoreApplicationSharedRecords(out), /agent_application_shared_records_invalid/);
+});
+test('old v1 inputs with all new inline relation data are still restored without a version rewrite', () => {
+  const complete = relationFixture(), old = fixture(), legacy = projectApplicationSharedRecords(old);
+  legacy.observedCapabilities = structuredClone(complete.observedCapabilities); legacy.gaps = structuredClone(complete.gaps);
+  legacy.companyRecords = structuredClone(complete.companyRecords);
+  legacy.targetCapabilities.forEach((t, i) => { t.definition.key = complete.targetCapabilities[i].definition.key; });
+  legacy.applicationSharedRecords.originalDigest = digest(complete);
+  assert.equal(legacy.applicationSharedRecords.schemaVersion, 'roost-application-shared-records-v1');
+  assert.deepEqual(restoreApplicationSharedRecords(legacy), complete); assert.deepEqual(projectApplicationSharedRecords(legacy), legacy);
+});
+test('new relational and description references without their table cannot masquerade as plain evidence', () => {
+  for (const x of [{ observedCapabilities: [{ sharedCapability: 0 }] }, { gaps: [{ sharedCapability: 0 }] },
+    { companyRecords: [{ id: 'document', description: { sharedDescription: 0 } }] }]) {
+    assert.throws(() => projectApplicationSharedRecords(x), /agent_application_shared_records_invalid/);
+    assert.throws(() => restoreApplicationSharedRecords(x), /agent_application_shared_records_invalid/);
+  }
+});

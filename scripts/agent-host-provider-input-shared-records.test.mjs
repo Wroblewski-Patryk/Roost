@@ -48,3 +48,35 @@ test("original full-context redaction runs before shared references", () => {
   const f = fixture(); f.applicationContext.targetCapabilities[0].definition.domain.description = "synthetic-worker-private-key";
   pinReadyFixture(f); assert.throws(() => prepareProviderInput(options(f)), /agent_runtime_content_blocked/);
 });
+function relatedFixture() {
+  const f = fixture(); f.applicationContext.targetCapabilities.forEach((t, i) => { t.definition.key = 'capability-key-' + i; t.definition.name = 'Capability ' + i; });
+  f.applicationContext.observedCapabilities = f.applicationContext.targetCapabilities.map(t => ({ id: t.id,
+    definitionKey: t.definition.key, observedState: 'missing', observedSummary: 'Unproved', evidence: [] }));
+  f.applicationContext.gaps = f.applicationContext.targetCapabilities.map(t => ({ id: t.id, capabilityDefinitionId: t.definition.id,
+    key: t.definition.key, name: t.definition.name, domain: structuredClone(t.definition.domain), applicability: t.applicability,
+    targetState: t.targetState, observedState: 'missing', blocked: true, blockedBy: ['Unproved'], severity: 'critical', unknown: { retained: true } }));
+  const description = 'Complete identical context text remains authoritative evidence. '.repeat(30);
+  f.applicationContext.companyRecords = [{ id: 'document-first', description, state: 'active' },
+    { id: 'document-second', description, state: 'unverified' }]; pinReadyFixture(f); return f;
+}
+test("provider input uses typed lossless v2 relations and description references without changing full context revision", () => {
+  const f = relatedFixture(), original = structuredClone(f.applicationContext), envelope = prepareProviderInput(options(f)), app = envelope.evidence.application.value;
+  assert.equal(app.applicationSharedRecords.schemaVersion, 'roost-application-shared-records-v2');
+  assert.equal(app.applicationSharedRecords.capabilityRelations.gapRecords, 24);
+  assert.equal(app.applicationSharedRecords.capabilityRelations.observedRecords, 24);
+  assert.equal(app.applicationSharedRecords.companyDescription.length, 1);
+  assert.deepEqual(restoreApplicationSharedRecords(app), original); assert.equal(envelope.revisions.context, executionContextRevision(f.taskContext, f.applicationContext));
+  assert.equal(measureProviderInput(options(f)).inputBytes, Buffer.byteLength(providerInputTransport('direct_codex', envelope).input));
+  for (const mutate of [x => x.gaps[0].sharedCapability = 9, x => x.observedCapabilities[0].observedState = 'invented',
+    x => x.companyRecords[0].description.sharedDescription = 8, x => x.applicationSharedRecords.companyDescription[0].value += 'changed']) {
+    const changed = structuredClone(envelope); mutate(changed.evidence.application.value);
+    assert.equal(providerInputSchema.safeParse(changed).success, false);
+  }
+  f.claimed.checkpoint = { stage: 'spawn_intent', packetRevision: envelope.revisions.packet, contextRevision: envelope.revisions.context };
+  assert.equal(JSON.parse(consumeProviderInput(envelope, options(f)).input).evidence.application.value.applicationSharedRecords.schemaVersion,
+    'roost-application-shared-records-v2');
+});
+test("shared description format never conceals original secrets before projection", () => {
+  const f = relatedFixture(); f.applicationContext.companyRecords.forEach(r => r.description = 'synthetic-worker-private-key');
+  pinReadyFixture(f); assert.throws(() => prepareProviderInput(options(f)), /agent_runtime_content_blocked/);
+});

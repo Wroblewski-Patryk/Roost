@@ -491,6 +491,12 @@ operator instructions, metadata and other private paths retain the existing
 denial. The root ran 141 provider/read-only component checks and `codex:check`;
 native admission and model execution remain separate evidence.
 
+Provider shared-record v2 also references exact capability relations and repeated
+company-record descriptions. Full original fields, negatives and context digest
+must restore exactly; ambiguous or differing values stay inline. The input cap
+and original-context redaction remain unchanged. Root's 172 provider/read-only
+checks pass; a byte measurement still precedes every native launch.
+
 ## Compatible-artifact recovery contract
 
 The additive `compatibleArtifactRecovery` source contract separates a new
