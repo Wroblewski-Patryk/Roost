@@ -2,6 +2,7 @@
 // Pure opt-in contract. No transport, file/process/key access or effect runner.
 // Base schemas are injected by the trusted shared contract to avoid a cycle.
 const {z}=require('zod');
+const {composeIngressFenceSchema,qualifyComposeIngressFence}=require('./agent-host-release-compose-ingress-fence.cjs');
 const hash=z.string().regex(/^[a-f0-9]{64}$/),sha=z.string().regex(/^[a-f0-9]{40}$/),id=z.string().uuid();
 const image=z.string().regex(/^sha256:[a-f0-9]{64}$/),at=z.string().datetime({offset:true});
 const name=z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/);
@@ -53,7 +54,7 @@ function createCompatibleRecoveryContract(base){
    readOnlyFence:z.literal(true),activeOtherSessions:z.literal(0),ownedTransactions:z.literal(0)}).strict(),
   cadences:z.array(cadenceSchema).length(2),
   databaseSettingsDigest:hash,ingressSettingsDigest:hash,ingressBlocked:z.literal(true),activeDeploymentCount:z.literal(0),
-  publicHealth:z.object({healthy:z.literal(false),healthDigest:hash}).strict(),evidenceDigest:hash}).strict();
+  publicHealth:z.object({healthy:z.literal(false),healthDigest:hash}).strict(),ingressFence:composeIngressFenceSchema.optional(),evidenceDigest:hash}).strict();
  const compatibleArtifactRecoverySchema=z.object({schemaVersion:z.literal('roost-compose-compatible-artifact-recovery-v1'),
   prior:z.object({releaseId:id,expectedVersion:hash,closureId:id,closureDigest:hash,failedOperationId:id,failedOutcomeId:id,
    failedEvidenceDigest:hash,previousManifestDigest:hash}).strict(),currentEntry:entrySchema,nativeClosure:base.releaseNativeClosureSchema,
@@ -74,6 +75,7 @@ function createCompatibleRecoveryContract(base){
   // the stable effect scope never manufactures a refreshed observation.
   delete scope.currentEntry.observedAt;delete scope.currentEntry.evidenceDigest;
   delete scope.currentEntry.publicHealth.healthDigest;
+  if(scope.currentEntry.ingressFence){delete scope.currentEntry.ingressFence.observedAt;delete scope.currentEntry.ingressFence.evidenceDigest;}
   delete scope.currentEntry.projectInventory.observedAt;delete scope.currentEntry.projectInventory.digest;
   for(const row of [...scope.currentEntry.services,...scope.currentEntry.cadences]){delete row.observedAt;delete row.inventoryDigest;}
   delete scope.nativeClosure.observedAt;delete scope.nativeClosure.evidenceDigest;
@@ -146,6 +148,11 @@ function createCompatibleRecoveryContract(base){
   const oldServices=prior.last.outcome.evidence.composeRecovery.services,db=e.services.find(v=>v.role==='database'),oldDb=oldServices.find(v=>v.role==='database');
   check(db?.presence==='present'&&oldDb&&['containerId','imageDigest','mountDigest'].every(k=>db[k]===oldDb[k]&&db[k]===e.database[k])
    &&db.state==='running'&&db.health==='healthy'&&db.exitCode===0,'protected_database');
+  if(e.services.some(v=>v.role==='app'&&v.presence==='absent')||e.ingressFence!==undefined){
+   const clock=now instanceof Date?now.getTime():Number(now);
+   qualifyComposeIngressFence(e.ingressFence,{targetId:e.targetId,databaseContainerId:db.containerId,now:clock});
+   check(Date.parse(e.ingressFence.observedAt)<=Date.parse(e.observedAt),'actual_ingress_fence_before_entry');
+  }
   check(exactNames(e.historicalServiceReferences,oldServices)&&e.historicalServiceReferences.every(v=>{const o=oldServices.find(q=>q.name===v.name);return v.containerId===o.containerId&&v.imageDigest===o.imageDigest&&v.failedEvidenceDigest===r.prior.failedEvidenceDigest;}),'immutable_historical_service_references');
   check(e.services.every(v=>{const d=p.baseline.configuration.services.find(q=>q.name===v.name),o=oldServices.find(q=>q.name===v.name);return d&&o&&v.role===d.role&&v.mountDigest===d.mountDigest
    &&(v.presence==='absent'||v.imageDigest===o.imageDigest&&(v.role==='database'||['exited','created','paused'].includes(v.state)&&v.health!== 'healthy'));}),'held_non_database_entry');
@@ -242,16 +249,33 @@ function createCompatibleRecoveryContract(base){
     &&(intent.operation!=='deploy'||intent.parameters.targetId===s.manifest.deployment.targetId),'exact_replacement_intent');}
   if(intent.operation==='observe')check(intent.parameters?.mode==='candidate','no_historical_rollback_observe');
  });
- const compatibleRecoveryOutcomeError=safe((input,operation,outcome,qualifyCanonicalOutcome)=>{validEnvelope(input);
+ const compatibleRecoveryOutcomeError=safe((input,operation,outcome,qualifyCanonicalOutcome,failureOptions={})=>{validEnvelope(input);
   check(sequence.includes(operation?.operation)&&operation.intent?.manifestDigest===input.manifestDigest&&operation.intent.commit===input.commit,'own_outcome');
   check(['succeeded','failed','uncertain','reconciled'].includes(outcome?.status)
    &&(outcome.status==='reconciled'?['succeeded','failed','absent'].includes(effective(outcome))&&outcome.observationOnly===true
     :!own(outcome,'reconciledStatus')&&!own(outcome,'reconciled_status')),'normal_outcome_shape');
+  if(own(outcome.evidence,'compatibleRecoveryFailure')){
+   check(typeof base.qualifyCompatibleFailureOutcome==='function','compatible_failure_validator_required');
+   const releaseId=input.releaseId??failureOptions.releaseId;
+   check(id.safeParse(releaseId).success&&(failureOptions.releaseId===undefined||failureOptions.releaseId===releaseId),'compatible_failure_release_binding');
+   check(base.qualifyCompatibleFailureOutcome({...input,releaseId},operation,outcome,{now:failureOptions.now,
+    readSuccessfulDeployment:failureOptions.readSuccessfulDeployment})===null,'qualified_compatible_negative');return;
+  }
+  check(outcome.evidence?.sequenceDigest===undefined&&outcome.evidence?.currentServiceSetDigest===undefined,'negative_fields_without_marker');
   check(typeof qualifyCanonicalOutcome==='function','canonical_outcome_validator_required');
   check(qualifyCanonicalOutcome(input,operation,outcome)===null,'canonical_outcome');
   if(effective(outcome)==='succeeded'&&['deploy','observe'].includes(operation.operation)){const e=outcome.evidence,r=input.compatibleArtifactRecovery.replacement;
    check(e?.healthy===true&&e.deployedCommit===input.commit&&e.deployedTree===input.candidateTree&&e.artifactSetDigest===r.artifactSetDigest
     &&e.configDigest===r.configurationDigest&&e.schemaDigest===r.schemaDigest&&e.dataDigest===input.manifest.baseline.dataDigest,'new_runtime_only');
+   const target=input.manifest.deployment.targets[0],row=e.composeTargets?.[0];
+   check(e.composeTargets?.length===1&&row?.targetId===target.targetId
+    &&Array.isArray(row.binding?.images)&&Array.isArray(row.runtime?.services),'replacement_runtime_binding');
+   const declared=target.configuration.services.filter(v=>v.source==='built');
+   const bound=row.binding.images.map(v=>({name:v.name,imageDigest:v.imageDigest,commit:v.commit,tree:v.tree}));
+   const live=row.runtime.services.filter(v=>declared.some(d=>d.name===v.name))
+    .map(v=>({name:v.name,imageDigest:v.imageDigest,commit:v.commit,tree:v.tree}));
+   check(bound.length===4&&live.length===4&&exactNames(bound,r.images)&&exactNames(live,r.images)
+    &&same(ordered(bound),ordered(r.images))&&same(ordered(live),ordered(r.images)),'exact_compatible_build_images');
    if(operation.operation==='observe')check(operation.intent.parameters?.mode==='candidate'&&e.observationSeconds>=input.manifest.observation.seconds,'full_candidate_observation');}
  });
  return Object.freeze({compatibleArtifactRecoverySchema,compatibleRecoveryEntrySchema:entrySchema,compatibleRecoveryCompatibilitySchema:compatibilitySchema,

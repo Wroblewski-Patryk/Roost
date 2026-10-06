@@ -514,3 +514,27 @@ freezes protected resources and grants no historical rollback or data restore.
 Root's 240 offline shared-contract/Compose checks pass. Server, SQL and native
 Worker integration are still pending; this source contract creates no release
 authority, healthy baseline, compatible image proof or application recovery.
+
+The separate source-pinned proxy OUTPUT guard (`11a03bf7`) binds the exclusive
+application subnet, proxy PID/namespace and database identity. It covers a
+replacement app with a new container address without changing original activity
+restoration settings. Activity integration (`55082c75`) removes only its owned
+rule after fixture absence and parity; an unknown removal holds database/cadence
+restoration. Root ran 26 guard, 51 Python activity and 78 installed JS checks
+using counterfactual transports. Actual VPS rule application/removal is pending.
+Installed compatible recovery additionally requires the sealed
+`compatibleIngress` policy and fixed controller digest; ordinary release does
+not accept that opt-in configuration.
+
+A rolled-back PostgreSQL DDL rehearsal passed 14 checks: stable scope and
+historical manifest, DB-only entry/negative inventory cases, refusal of synthetic
+unregistered proof, and raw stored review basis hash parity with the JavaScript
+projection. The new migration is not applied. Positive full provenance, normal
+release inserts, replacement Linux image/restore and application recovery remain
+unverified. The rehearsal makes no new owner or operating-system attestation.
+
+The subsequent rollback-only rehearsal `8519d589` passed 66 dedicated negative
+content probes. Final qualification also refused every missing stored proof;
+the before/after function and trigger inventory was unchanged. Full stored
+negative lineage and actual earlier successful deployment ancestry remain
+unverified. The migration is still unapplied.

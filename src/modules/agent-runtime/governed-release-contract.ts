@@ -103,7 +103,7 @@ function lexicalDirectory(value:unknown,platform:DirectoryPlatform,absolute:bool
  if((windows&&/^[\\/]/.test(value))||(!windows&&value.includes("\\")))return null;
  const body=absolute?(windows?value.slice(3):value.slice(1)):value;
  const parts=body.split(windows?/[\\/]/:/\//).filter(Boolean);
- if(parts.some(p=>p==="."||p===".."||windows&&(/[<>:"|?*]/.test(p)||/[. ]$/.test(p)||/^(?:con|conin\$|conout\$|prn|aux|nul|com[1-9Ä‚â€šĂ„â€¦Ä‚â€šĂ‹â€şÄ‚â€šÄąâ€š]|lpt[1-9Ä‚â€šĂ„â€¦Ä‚â€šĂ‹â€şÄ‚â€šÄąâ€š])(?:\.|$)/i.test(p))))return null;
+ if(parts.some(p=>p==="."||p===".."||windows&&(/[<>:"|?*]/.test(p)||/[. ]$/.test(p)||/^(?:con|conin\$|conout\$|prn|aux|nul|com[1-9\u00b9\u00b2\u00b3]|lpt[1-9\u00b9\u00b2\u00b3])(?:\.|$)/i.test(p))))return null;
  if(!absolute&&!parts.length)return null;
  const api=windows?path.win32:path.posix,normalized=api.normalize(value),root=absolute?api.parse(normalized).root:"";
  const trimmed=normalized.replace(windows?/[\\/]+$/:/\/+$/,"");
@@ -178,7 +178,8 @@ export function releaseWindowError(input: any, credentialExpiry: Date, now = new
     if(error)return error;
   }
   if(input.recoveryOnly!==undefined&&!releaseHasRecoveryOnly(input))return 'release_recovery_only_scope_invalid';
-  if (Date.parse(m.baseline.observedAt) > now.getTime()+60000 || (input.baselineRevalidation===undefined&&input.recoveryOnly===undefined&&now.getTime()-Date.parse(m.baseline.observedAt)>3600000)
+  if(input.compatibleArtifactRecovery!==undefined&&!shared.createReleaseSchema.safeParse(input).success)return 'release_compatible_recovery_unproven';
+  if (Date.parse(m.baseline.observedAt) > now.getTime()+60000 || (input.baselineRevalidation===undefined&&input.recoveryOnly===undefined&&input.compatibleArtifactRecovery===undefined&&now.getTime()-Date.parse(m.baseline.observedAt)>3600000)
     || now.getTime()-Date.parse(m.backup.restoreVerifiedAt)>86400000 || Date.parse(m.backup.restoreVerifiedAt)>now.getTime()+60000)
     return "release_prerequisite_stale";
   return null;
@@ -417,6 +418,19 @@ function partialRollbackContinuationError(snapshot:any,input:any,journal:any[]) 
  return null;
 }
 export function releaseIntentError(release: any, input: any, journal: any[]) {
+  if(release.snapshot?.compatibleArtifactRecovery!==undefined) {
+    const error=shared.compatibleRecoveryIntentError({release,journal,status:'active'},input);
+    if(error)return error;
+    return ordinaryReleaseIntentError(compatibleCanonicalRelease(release),input,journal);
+  }
+  return ordinaryReleaseIntentError(release,input,journal);
+}
+export function compatibleRecoveryCurrentBackupError(snapshot:any,now=new Date()) {
+ if(snapshot?.compatibleArtifactRecovery===undefined)return null;
+ const restored=Date.parse(snapshot.manifest?.backup?.restoreVerifiedAt),clock=now.getTime();
+ return !Number.isFinite(restored)||restored>clock+60000||clock-restored>86400000?'release_prerequisite_stale':null;
+}
+function ordinaryReleaseIntentError(release: any, input: any, journal: any[]) {
   const s=release.snapshot, m=s.manifest;
   const retained=releaseRetainsApplication(m),recovery=releaseHasRecoveryOnly(s);
   const recoveryError=shared.releaseRecoveryOnlyOperationError(s,input,journal);if(recoveryError)return recoveryError;
@@ -477,6 +491,20 @@ export function releaseIntentError(release: any, input: any, journal: any[]) {
   return null;
 }
 export function releaseOutcomeError(release: any, operation: any, input: any,journal:any[]=[]) {
+  if(release.snapshot?.compatibleArtifactRecovery!==undefined)
+    return shared.compatibleRecoveryOutcomeError(release.snapshot,operation,input,
+      ()=>ordinaryReleaseOutcomeError(compatibleCanonicalRelease(release),operation,input,journal),
+      {releaseId:release.id,readSuccessfulDeployment:(ref:any)=>{
+        const ownIndex=journal.findIndex((j:any)=>j.id===operation.id);
+        if(ownIndex<0||ref.releaseId!==release.id)return null;
+        const prior=journal.slice(0,ownIndex).find((j:any)=>j.id===ref.operationId);
+        if(!prior||prior.operation!=='deploy'||(prior.releaseId??prior.release_id)!==release.id
+          ||prior.outcome?.id!==ref.outcomeId)return null;
+        return prior;
+      }});
+  return ordinaryReleaseOutcomeError(release,operation,input,journal);
+}
+function ordinaryReleaseOutcomeError(release: any, operation: any, input: any,journal:any[]=[]) {
   const recoveryError=shared.releaseRecoveryOnlyOperationError(release.snapshot,{operation:operation.operation,parameters:operation.intent?.parameters},[]);if(recoveryError)return recoveryError;
   const s=release.snapshot,m=s.manifest,e=input.evidence,result=effectiveOutcome({status:input.status,reconciledStatus:input.reconciledStatus});
   const retained=releaseRetainsApplication(m);
@@ -574,6 +602,21 @@ export function releaseOutcomeError(release: any, operation: any, input: any,jou
     }else if(e.repositoryArchived!==true||e.localAbsent!==true||e.absenceVerified!==true||releaseDigest(e.resourceIds??[])!==releaseDigest(m.cleanup.ownedResourceIds))return "release_cleanup_unproven";
   }
   return null;
+}
+
+// A compatible replacement follows all canonical Git/runtime/post-observation
+// validation after its stricter sequence. This local projection carries the
+// new Git base only; it never changes the historical runtime baseline.
+function compatibleCanonicalRelease(release:any) {
+ const {compatibleArtifactRecovery,compatibleRecoveryProof,...snapshot}=release.snapshot;
+ return {...release,snapshot:{...snapshot,gitPublicationBase:{commit:compatibleArtifactRecovery.publication.baseCommit,
+  tree:compatibleArtifactRecovery.publication.baseTree}}};
+}
+export function releaseCompatibleRecoveryAdmissionError(state:any,input:any,now=new Date()) {
+ return shared.compatibleRecoveryAdmissionError({...state,status:state?.failedClosures?.length?'failed':undefined},input,now,releaseFailedClosureError);
+}
+export function releaseCompatibleRecoveryAuditError(view:any,input:any,sourceView:any,previous:any) {
+ return shared.compatibleRecoveryAuditError(view,input,sourceView,previous);
 }
 
 /** Recovery-only does not adopt the failed live candidate as a baseline. */

@@ -1,0 +1,132 @@
+// Counterfactual offline fixtures. No API, native process, Docker, key or app effects.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import shared from './lib/agent-host-release-contract.cjs';
+import compose from './lib/agent-host-release-compose-state.cjs';
+import {createCompatibleRecoveryContract} from './lib/agent-host-release-compatible-recovery.cjs';
+import ingress from './lib/agent-host-release-compose-ingress-fence.cjs';
+import {fixture as originalFixture,hash as H,image} from './fixtures/release-compose-contract.cjs';
+const clone=structuredClone,sha=x=>x.repeat(40),now=Date.parse('2026-10-04T12:10:00.000Z');
+const api=createCompatibleRecoveryContract({manifestSchema:shared.manifestSchema,composeConfigurationSchema:compose.composeConfigurationSchema,
+ composeRuntimeServiceSchema:compose.composeRuntimeServiceSchema,releaseNativeClosureSchema:shared.releaseNativeClosureSchema,
+ releaseDigest:shared.releaseDigest,composeConfigurationDigest:compose.composeConfigurationDigest});
+const d=shared.releaseDigest;
+function reseal(input){const r=input.compatibleArtifactRecovery;r.currentEntry.evidenceDigest=api.compatibleRecoveryEntryDigest(r.currentEntry);
+ r.nativeClosure.evidenceDigest=r.currentEntry.evidenceDigest;r.scopeAudit.scopeDigest=api.compatibleRecoveryScopeDigest(input);}
+function sealInventory(entry){entry.projectInventory.digest=api.compatibleRecoveryInventoryDigest(entry.projectInventory);
+ for(const v of [...entry.services,...entry.cadences])if(v.presence==='absent'||v.declarationDigest){v.inventoryDigest=entry.projectInventory.digest;v.observedAt=entry.projectInventory.observedAt;}}
+function rehash(m,s){const t=m.deployment.targets[0];t.configDigest=compose.composeConfigurationDigest(t.configuration);
+ t.rollbackConfigDigest=compose.composeConfigurationDigest(t.rollbackConfiguration);t.baseline.configDigest=compose.composeConfigurationDigest(t.baseline.configuration);
+ m.deployment.configDigest=d([{targetId:t.targetId,configDigest:t.configDigest}]);m.rollback.configDigest=d([{targetId:t.targetId,configDigest:t.rollbackConfigDigest}]);m.baseline.configDigest=d([{targetId:t.targetId,configDigest:t.baseline.configDigest}]);
+ for(const[k,mode]of [['deployment',false],['rollback',true],['baseline','baseline']])m[k].artifactSetDigest=shared.sourceArtifactDigest(m,s,mode);}
+function native(executionId){return{ownedTreeReceipt:{version:'roost-windows-job-v2',attempt:executionId,rootExit:0,jobClosed:true,cleanup:true,activeProcesses:0,
+ assignedBeforeResume:true,resumed:true,killOnClose:true,breakaway:false,sourceSha256:H('a')},managedAdmission:{qualification:'signed_native_v1',evidenceDigest:H('b'),jobSourceDigest:H('a')}};}
+function compatibleFixture(){const f=originalFixture(),t=f.target;
+ const cadence={name:'scheduler',role:'cadence',source:'built',expectedState:'paused',mountDigest:H('9')};
+ for(const c of[t.configuration,t.rollbackConfiguration,t.baseline.configuration])c.services.push(clone(cadence));
+ t.baseline.images.push({name:'scheduler',imageDigest:image('4')});f.m.cleanup.protectedResourceIds.push(H('9'),image('4'));
+ f.m.observation={seconds:1200,intervalSeconds:30,maxFailures:0};
+ f.m.postObservation={schemaVersion:'roost-release-post-observation-v1',kind:'synthetic_recent_activity',candidateCommit:f.s.commit,candidateTree:f.s.candidateTree,
+  controllerDigest:H('a'),fixture:{fixtureId:randomUUID(),userId:randomUUID(),sessionId:randomUUID(),eventId:randomUUID(),traceId:randomUUID(),memoryId:-1,markerDigest:H('b'),summaryDigest:H('c')},
+  baselineSequenceDigest:H('8'),budget:{providerRequests:0,externalActions:0},runtimeResume:{approved:true,databaseSettingsDigest:H('7'),ingressSettingsDigest:H('6'),observationSeconds:300,
+   cadences:[{name:'maintenance',behavior:'restore_existing_loop',behaviorDigest:H('2')},{name:'scheduler',behavior:'restore_existing_loop',behaviorDigest:H('3')}]}};
+ rehash(f.m,f.s);
+ const old={...clone(f.s),taskId:randomUUID(),applicationId:randomUUID(),hostId:randomUUID(),releaserAgentId:randomUUID(),releaseExecutionId:randomUUID(),manifestDigest:d(f.m)};
+ const priorId=randomUUID(),op=randomUUID(),outcomeId=randomUUID(),closureId=randomUUID(),revocationId=randomUUID(),issuer=randomUUID();
+ const rows=t.configuration.services.map((v,i)=>({name:v.name,role:v.role,containerId:H(String(i+1)),imageDigest:v.role==='database'?v.imageDigest:image('f'),
+  mountDigest:v.mountDigest,state:v.role==='database'?'running':'exited',health:v.role==='database'?'healthy':null,exitCode:v.role==='migration'?1:0,createdAt:'2026-10-04T12:00:03.000Z'}));
+ const evidence={composeRecovery:{configuration:clone(t.rollbackConfiguration),services:clone(rows)},healthy:false,schemaDigest:f.m.baseline.schemaDigest,dataDigest:f.m.baseline.dataDigest,observedAt:'2026-10-04T12:05:00.000Z'};
+ const receipt={releaseId:priorId,applicationId:old.applicationId,hostId:old.hostId,issuerUserId:issuer,failedOperationId:op,failedOutcomeId:outcomeId,
+  failedEvidenceDigest:d(evidence),consentDigest:H('c'),evidence};
+ const closure={id:closureId,release_id:priorId,failed_operation_id:op,failed_outcome_id:outcomeId,consent_digest:receipt.consentDigest,
+  closure_digest:d(receipt),revocation_id:revocationId,snapshot:receipt,created_at:'2026-10-04T12:06:00.000Z'};
+ const state={status:'failed',release:{id:priorId,snapshot:old,issuer_user_id:issuer},expectedVersion:H('d'),failedClosures:[closure],revocations:[{id:revocationId}],
+  journal:[{id:op,operation:'rollback',outcome:{id:outcomeId,status:'reconciled',reconciledStatus:'failed',evidence}}]};
+ const m=clone(f.m),target=m.deployment.targets[0],commit=sha('7'),tree=sha('8');
+ target.configuration.gitCommit=commit;target.configuration.sourceDigest=H('4');target.sourceDigest=H('4');m.repository.candidateBranch='codex/greenlet-repair';
+ m.postObservation.candidateCommit=commit;m.postObservation.candidateTree=tree;
+ const input={requestId:randomUUID(),taskId:randomUUID(),applicationId:old.applicationId,hostId:old.hostId,releaserAgentId:old.releaserAgentId,
+  releaseExecutionId:randomUUID(),reviewId:randomUUID(),materialVersion:H('5'),commit,candidateTree:tree,baseCommit:old.baseCommit,baseTree:old.baseTree,manifest:m};
+ rehash(m,input);input.manifestDigest=d(m);
+ const images=target.configuration.services.filter(v=>v.source==='built').map(v=>({name:v.name,imageDigest:image('7'),commit,tree}));
+ m.cleanup.protectedResourceIds.push(image('7'));input.manifestDigest=d(m);
+ const db=rows.find(v=>v.role==='database');
+ const inventory={schemaVersion:'roost-compose-project-inventory-v1',targetId:target.targetId,observedAt:'2026-10-04T12:09:00.000Z',projectServiceSetComplete:true,physicalServices:[clone(db)],digest:H('0')};
+ const currentServices=t.rollbackConfiguration.services.map(v=>v.role==='database'?{...clone(db),presence:'present',declarationDigest:d(v),inventoryDigest:H('0'),observedAt:inventory.observedAt}:
+  {presence:'absent',name:v.name,role:v.role,source:v.source,declarationDigest:d(v),mountDigest:v.mountDigest,containerId:null,imageDigest:null,state:'absent',absenceVerified:true,inventoryDigest:H('0'),observedAt:inventory.observedAt});
+ const entry={schemaVersion:'roost-compose-down-entry-v1',observedAt:'2026-10-04T12:09:00.000Z',targetId:target.targetId,configuration:clone(t.rollbackConfiguration),services:currentServices,projectInventory:inventory,
+  historicalServiceReferences:rows.map(v=>({name:v.name,containerId:v.containerId,imageDigest:v.imageDigest,failedEvidenceDigest:d(evidence)})),
+  imageAvailability:t.baseline.images.map(v=>({...v,present:false})),schemaDigest:m.baseline.schemaDigest,dataDigest:m.baseline.dataDigest,sequenceDigest:m.postObservation.baselineSequenceDigest,
+  database:{containerId:db.containerId,imageDigest:db.imageDigest,mountDigest:db.mountDigest,running:true,healthy:true,readOnlyFence:true,activeOtherSessions:0,ownedTransactions:0},
+  cadences:m.postObservation.runtimeResume.cadences.map(v=>({presence:'absent',name:v.name,behaviorDigest:v.behaviorDigest,held:true,containerId:null,imageDigest:null,state:'absent',absenceVerified:true,inventoryDigest:H('0'),observedAt:inventory.observedAt})),
+  databaseSettingsDigest:m.postObservation.runtimeResume.databaseSettingsDigest,ingressSettingsDigest:m.postObservation.runtimeResume.ingressSettingsDigest,
+  ingressBlocked:true,activeDeploymentCount:0,publicHealth:{healthy:false,healthDigest:H('6')},evidenceDigest:H('0')};
+ entry.ingressFence={schemaVersion:'roost-compose-proxy-network-fence-v1',observedAt:entry.observedAt,targetId:entry.targetId,
+  networkId:H('b'),subnet:'192.0.2.0/24',proxyId:H('c'),proxyPid:4321,namespaceDigest:H('d'),databaseContainerId:db.containerId,
+  databaseIpv4:'192.0.2.2',proxyIpv4:'192.0.2.6',port:8000,ruleComment:'roost-release-hold-'+H('e').slice(0,32),ruleDigest:H('f'),
+  originalRulesDigest:H('a'),observedRulesDigest:H('b'),projectNetworkExclusive:true,publishedPortsAbsent:true,rulePresent:true,evidenceDigest:H('0')};
+ entry.ingressFence.evidenceDigest=ingress.composeIngressFenceDigest(entry.ingressFence);
+ sealInventory(entry);
+ const sourceId=randomUUID(),buildId=randomUUID();
+ const build={schemaVersion:'roost-compatible-artifact-build-proof-v1',observedAt:'2026-10-04T12:07:00.000Z',executionId:buildId,sourceExecutionId:sourceId,commit,tree,images:clone(images),
+  artifactSetDigest:m.deployment.artifactSetDigest,configurationDigest:m.deployment.configDigest,nativeReceiptDigest:H('a'),signedNativeVerified:true,ownedJobClosed:true,sourceUnchanged:true,evidenceDigest:H('0')};
+ build.evidenceDigest=api.compatibleRecoveryCompatibilityDigest(build);
+ const compatibility={schemaVersion:'roost-compose-replacement-compatibility-v1',observedAt:'2026-10-04T12:08:00.000Z',commit,tree,artifactSetDigest:m.deployment.artifactSetDigest,
+  configurationDigest:m.deployment.configDigest,images:clone(images),schemaDigest:m.baseline.schemaDigest,dataDigest:m.baseline.dataDigest,sequenceDigest:m.postObservation.baselineSequenceDigest,
+  backupDigest:m.backup.digest,linuxImageVerified:true,asyncBridgeVerified:true,migrationImportVerified:true,restoredSchemaCompatible:true,nonOwnedDataUnchanged:true,sequencesUnchanged:true,
+  providerRequests:0,externalActions:0,ownedJobClosed:true,sourceExecutionId:sourceId,buildExecutionId:buildId,nativeReceiptDigest:build.nativeReceiptDigest,evidenceDigest:H('0')};
+ compatibility.evidenceDigest=api.compatibleRecoveryCompatibilityDigest(compatibility);
+ input.compatibleArtifactRecovery={schemaVersion:'roost-compose-compatible-artifact-recovery-v1',prior:{releaseId:priorId,expectedVersion:state.expectedVersion,closureId,closureDigest:closure.closure_digest,
+  failedOperationId:op,failedOutcomeId:outcomeId,failedEvidenceDigest:d(evidence),previousManifestDigest:old.manifestDigest},currentEntry:entry,
+  nativeClosure:{schemaVersion:'roost-release-owner-native-closure-v1',releaseId:priorId,operationId:op,agentHostId:input.hostId,evidenceDigest:H('0'),checkpointDigest:H('9'),controllerPid:1234,
+   registeredChildCount:7,allChildrenClosed:true,nativeProcessesAbsent:true,writerAbsent:true,observedAt:'2026-10-04T12:09:01.000Z'},
+  replacement:{commit,tree,artifactSetDigest:m.deployment.artifactSetDigest,configurationDigest:m.deployment.configDigest,images:clone(images),buildReceiptDigest:build.evidenceDigest,
+   compatibilityReceiptDigest:d(compatibility),schemaDigest:m.baseline.schemaDigest,schemaChangeAllowed:false},
+  publication:{mode:'new_exact_commit',baseCommit:old.commit,baseTree:old.candidateTree},scopeAudit:{taskId:randomUUID(),executionId:input.releaseExecutionId,reviewId:randomUUID(),materialVersion:H('2'),scopeDigest:H('0')},
+  failurePolicy:{mode:'freeze_protected_database',automaticHistoricalRollback:false,dataRestoreAllowed:false,volumeDeletionAllowed:false,keepIngressBlocked:true,keepCadencesHeld:true}};
+ reseal(input);
+ const sourceView={current:true,roleIssues:[],materialVersion:input.materialVersion,approvalCommit:commit,
+  execution:{id:sourceId,taskId:input.taskId,applicationId:input.applicationId,agentHostId:input.hostId,status:'completed',leaseToken:null,leaseExpiresAt:null,contextInvalidatedAt:null,errorState:null,
+   metadata:{resultRevision:{commit,workingTree:'clean'}},verification:{...native(sourceId),codingTests:{schemaVersion:'roost-coding-tests-v1',passed:true,digest:H('1')},
+    localCommit:{schemaVersion:'roost-local-commit-v1',executionId:sourceId,commit,tree,testDigest:H('1'),baselineCommit:old.commit,branch:m.repository.candidateBranch,remotePush:false,deployment:false}}},
+  contract:{assignment:{agentId:randomUUID()},nativeBoundary:{profile:'coding-local'},modelSelection:{schemaVersion:'roost-managed-hermes-backend-v1',backend:'codex_responses'}},
+  decision:{id:input.reviewId,decision:'approve',materialVersion:input.materialVersion,verifierId:randomUUID(),evidence:{reviewedCommit:commit}}};
+ const a=input.compatibleArtifactRecovery.scopeAudit,scopeView={current:true,roleIssues:[],materialVersion:a.materialVersion,approvalCommit:commit,
+  execution:{id:a.executionId,taskId:a.taskId,applicationId:input.applicationId,agentHostId:input.hostId,status:'completed',leaseToken:null,leaseExpiresAt:null,errorState:null,contextInvalidatedAt:null,
+   changedFiles:[],completedAt:'2026-10-04T12:09:10.000Z',verification:{...native(a.executionId),readOnlyAudit:{schemaVersion:'roost-readonly-audit-v1',verdict:'verified',evidenceDigest:H('3'),digest:H('4'),preTree:H('5'),postTree:H('5'),gitState:'unchanged',processState:'unchanged',dockerState:'unchanged',nativeTools:[]}}},
+  contract:{assignment:{agentId:input.releaserAgentId},nativeBoundary:{profile:'inspect-readonly',inspectReadOnly:{kind:'auditor'}},access:{sandbox:'read-only',externalWrites:false,tools:['repository_read'],permissions:['repository_read']}},
+  decision:{id:a.reviewId,decision:'approve',materialVersion:a.materialVersion,verifierId:randomUUID(),createdAt:'2026-10-04T12:09:11.000Z',evidence:{reviewedCommit:commit,evidence:[
+   {kind:'artifact',verdict:'pass',reference:'roost-release-compatible-artifact-scope:'+a.scopeDigest},{kind:'test',verdict:'pass',reference:'offline fixture only'}]}}};
+ return{state,input,entry,build,compatibility,sourceView,scopeView,closedValidator:()=>null,buildValidator:()=>null};
+}
+
+import {qualifyCompatibleRecoveryBuildSnapshot,qualifyCompatiblePhysicalEntry,qualifyCompatibleReplacementMetadata,compatibleCandidateEntryWitness,qualifyCompatibleRecoveryConfigurationPreimage,qualifyInstalledDatabaseSource,qualifyComposeImageRetentionPolicy,qualifyCompatibleSettingsRead} from './lib/agent-host-release-compose-worker.mjs';
+import {composePhasePolicySchema,composeReplacementImagesDigest,composePhasePolicyDigest,qualifyImmutableCandidateEntry} from './lib/agent-host-release-compose-controller.mjs';
+function workerFixture(){const f=compatibleFixture(),s=f.input;
+ Object.assign(s,{releaserCredentialId:randomUUID(),credentialVersion:1,releaserRevision:'2026-10-04T12:09:00.000Z',expiresAt:'2026-10-04T13:00:00.000Z'});
+ const r=s.compatibleArtifactRecovery;
+ const proof={schemaVersion:'roost-compatible-recovery-proof-snapshot-v1',classification:'owner_verified_native_receipt',workspaceId:randomUUID(),applicationId:s.applicationId,issuerUserId:randomUUID(),evidenceId:randomUUID(),recordDigest:H('1'),metadataDigest:H('2'),requestDigest:d(s),manifestDigest:s.manifestDigest,scopeDigest:r.scopeAudit.scopeDigest,publicPayloadDigest:H('3'),buildReceiptDigest:r.replacement.buildReceiptDigest,compatibilityReceiptDigest:r.replacement.compatibilityReceiptDigest,privateSignedRecordDigest:H('4'),jobReceiptDigest:H('5'),toolchainDigest:H('6'),sourceCASDigest:H('7'),nativeAttemptId:randomUUID(),nativeAttemptIsAgentExecution:false,sourceExecutionId:f.sourceView.execution.id,sourceBasisDigest:H('8'),scopeBasisDigest:H('9'),serverOperatingSystemAttestation:false,serverPrivateSignatureVerification:false,releaseAuthority:false};
+ s.compatibleRecoveryProof=proof;
+ const p={schemaVersion:'roost-compose-phase-policy-v1',releaseId:randomUUID(),policyId:randomUUID(),targetId:s.manifest.deployment.targetId,phase:'candidate',commit:s.commit,tree:s.candidateTree,composePath:s.manifest.deployment.targets[0].composePath,baseDirectory:'/',rawCompose:false,preserveRepository:false,useBuildServer:false,originalConfigDigest:H('1'),phaseConfigDigest:H('2'),artifactDigest:H('3'),rendererDigest:H('4'),settingsInvariantDigest:H('5'),runtimeInvariantDigest:H('6'),sourcePins:{queueHelper:H('1'),deploymentJob:H('2'),applicationModel:H('3'),composeParser:H('4'),dockerHelper:H('5'),applicationsController:H('6'),controllerRenderer:H('4')},candidateExecution:{mode:'qualified_immutable_images',replacementImagesDigest:composeReplacementImagesDigest(r.replacement.images),buildProofDigest:r.replacement.buildReceiptDigest},services:s.manifest.deployment.targets[0].configuration.services.map(v=>({name:v.name,role:v.role,source:v.source,mountDigest:v.mountDigest,imageDigest:v.source==='image'?v.imageDigest:r.replacement.images.find(x=>x.name===v.name).imageDigest,imageRef:v.source==='image'?'postgres:15':r.replacement.images.find(x=>x.name===v.name).imageDigest}))};
+ const db=r.currentEntry.projectInventory.physicalServices[0],observed={services:[clone(db)],missingDeclared:p.services.filter(v=>v.source==='built').map(v=>v.name)};
+ const images=r.replacement.images.map(v=>({name:v.name,observation:{Id:v.imageDigest,Config:{Env:['APP_BUILD_REVISION='+s.commit],Labels:{'org.opencontainers.image.revision':s.commit,'io.roost.release.tree':s.candidateTree}}}}));
+ return{...f,s,proof,p,observed,images};}
+
+test('server proof remains owner provenance, no fabricated OS/private signature or AgentExecution',()=>{const f=workerFixture(),before=clone(f.s);const {compatibleRecoveryProof:_,...body}=f.s;assert(shared.createReleaseSchema.safeParse(body).success);const q=qualifyCompatibleRecoveryBuildSnapshot(f.s);assert.equal(q.serverOperatingSystemAttestation,false);assert.equal(q.nativeAttemptIsAgentExecution,false);assert.deepEqual(f.s,before);});
+for(const [name,change]of Object.entries({os:f=>f.proof.serverOperatingSystemAttestation=true,signature:f=>f.proof.serverPrivateSignatureVerification=true,agentExecution:f=>f.proof.nativeAttemptIsAgentExecution=true,request:f=>f.proof.requestDigest=H('0'),scope:f=>f.proof.scopeDigest=H('0'),manifest:f=>f.proof.manifestDigest=H('0'),build:f=>f.proof.buildReceiptDigest=H('0'),restore:f=>f.proof.compatibilityReceiptDigest=H('0'),alias:f=>f.proof.nativeAttemptId=f.proof.sourceExecutionId,extra:f=>f.proof.nativeOSProof=true}))test('server proof refuses '+name,()=>{const f=workerFixture();change(f);assert.throws(()=>qualifyCompatibleRecoveryBuildSnapshot(f.s));});
+test('actual DB-only observer produces 4 absence rows with null IDs, never historic baseline IDs',()=>{const f=workerFixture(),before=clone(f.s);assert.equal(qualifyCompatiblePhysicalEntry({snapshot:f.s,observed:f.observed,now}),f.observed.services[0]);const e=compatibleCandidateEntryWitness({snapshot:f.s,policy:f.p,observed:f.observed,observedAt:new Date(now).toISOString()});assert.equal(e.inventory.services.length,1);assert.equal(e.absences.length,4);assert(e.absences.every(v=>!Object.hasOwn(v,'containerId')&&!Object.hasOwn(v,'imageDigest')));assert.deepEqual(f.s,before);assert.equal(e.policyDigest,composePhasePolicyDigest(f.p));});
+for(const [name,change]of Object.entries({missingDb:f=>f.observed.services=[],fakeOldApp:f=>f.observed.services.push(clone(f.state.journal[0].outcome.evidence.composeRecovery.services[0])),omittedAbsence:f=>f.observed.missingDeclared.pop(),unknownService:f=>f.observed.missingDeclared.push('unmanaged_anchor'),dbContainer:f=>f.observed.services[0].containerId=H('0'),dbImage:f=>f.observed.services[0].imageDigest=image('0'),dbMount:f=>f.observed.services[0].mountDigest=H('0'),dbHealth:f=>f.observed.services[0].health='starting'}))test('physical observer refuses '+name,()=>{const f=workerFixture();change(f);assert.throws(()=>qualifyCompatiblePhysicalEntry({snapshot:f.s,observed:f.observed,now}));});
+test('phase uses genuine fresh absence witness and independently observed four image metadata rows',()=>{const f=workerFixture();assert(composePhasePolicySchema.safeParse(f.p).success);const entryQualification=compatibleCandidateEntryWitness({snapshot:f.s,policy:f.p,observed:f.observed,observedAt:new Date(now).toISOString()}),replacementImageMetadata=qualifyCompatibleReplacementMetadata({snapshot:f.s,policy:f.p,images:f.images});assert.equal(replacementImageMetadata.length,4);assert.equal(entryQualification.absences.length,4);assert.equal(entryQualification.evidenceDigest.length,64);});
+for(const [name,change]of Object.entries({digest:f=>f.images[0].observation.Id=image('0'),commit:f=>f.images[0].observation.Config.Env=['APP_BUILD_REVISION='+sha('0')],tree:f=>f.images[0].observation.Config.Labels['io.roost.release.tree']=sha('0'),missing:f=>f.images.pop(),proof:f=>f.p.candidateExecution.buildProofDigest=H('0'),replacement:f=>f.p.candidateExecution.replacementImagesDigest=H('0'),tag:f=>f.p.services[0].imageRef='mutable:latest'}))test('immutable replacement refuses '+name,()=>{const f=workerFixture();change(f);assert.throws(()=>qualifyCompatibleReplacementMetadata({snapshot:f.s,policy:f.p,images:f.images}));});
+test('compatible DB source uses actual retained DB while preserving historical baseline',()=>{const f=workerFixture(),e=f.entry,database=f.s.manifest.deployment.targets[0].baseline.configuration.services.find(v=>v.role==='database');assert(qualifyInstalledDatabaseSource({snapshot:f.s,baselineDatabase:{containerId:H('0')},database,container:e.database.containerId}));assert.throws(()=>qualifyInstalledDatabaseSource({snapshot:f.s,baselineDatabase:{containerId:e.database.containerId},database,container:H('0')}));});
+test('retention targets exact NEW images and cannot require now-missing historical images',()=>{const f=workerFixture(),policy={schemaVersion:'roost-retained-image-policy-v1',installationId:randomUUID(),scopeDigest:d(f.s.manifest),images:[image('7')]};assert.equal(qualifyComposeImageRetentionPolicy(policy,f.s).images[0],image('7'));assert.throws(()=>qualifyComposeImageRetentionPolicy({...policy,images:f.s.manifest.deployment.targets[0].baseline.images.map(v=>v.imageDigest)},f.s));});
+function configPreimage(){const f=workerFixture(),s={...f.s,releaseId:randomUUID()},journal=['push','pr','review','merge'].map(operation=>({operation,outcome:{status:'succeeded'}})),basis=s.manifest.deployment;journal.push({operation:'deploy_config',intent:{parameters:{commit:s.commit,configDigest:basis.configDigest,artifactSetDigest:basis.artifactSetDigest,schemaDigest:basis.schemaDigest}}});return{snapshot:s,current:{release:{id:s.releaseId,snapshot:f.s},status:'active',journal},configuration:clone(f.entry.configuration)};}
+test('only exact failed-entry preimage after OWN settled four Git operations can be configured',()=>{assert(qualifyCompatibleRecoveryConfigurationPreimage(configPreimage()));});
+for(const [name,change]of Object.entries({noGit:x=>x.current.journal.shift(),wrongGit:x=>x.current.journal[0].operation='pr',oldRollback:x=>x.current.journal.at(-1).operation='rollback_config',revoked:x=>x.current.status='revoked',unknown:x=>x.current.journal[2].outcome={status:'uncertain'},settled:x=>x.current.journal.at(-1).outcome={status:'succeeded'},config:x=>x.configuration.environmentDigest=H('0'),scope:x=>x.current.release.snapshot.commit=sha('0')}))test('compatible CAS refuses '+name,()=>{const x=configPreimage();change(x);assert.throws(()=>qualifyCompatibleRecoveryConfigurationPreimage(x));});
+test('settings observer must give genuinely current clocks and exact unchanged full tuple',()=>{const f=workerFixture(),value={observedAt:new Date(now).toISOString(),sequenceDigest:f.entry.sequenceDigest,databaseSettingsDigest:f.entry.databaseSettingsDigest,ingressSettingsDigest:f.entry.ingressSettingsDigest,ingressBlocked:true,ingressFence:clone(f.entry.ingressFence)};assert.equal(qualifyCompatibleSettingsRead({snapshot:f.s,value,now}),value);for(const change of [x=>x.observedAt='2026-10-04T12:00:00.000Z',x=>x.observedAt='2026-10-04T12:11:00.000Z',x=>x.sequenceDigest=H('0'),x=>x.ingressBlocked=false]){const x=clone(value);change(x);assert.throws(()=>qualifyCompatibleSettingsRead({snapshot:f.s,value:x,now}));}});
+
+import ingressFenceContract from './lib/agent-host-release-compose-ingress-fence.cjs';
+test('normal pending-intent status is accepted with exact owned unresolved config only',()=>{const x=configPreimage();x.current.status='reconciliation_required';assert(qualifyCompatibleRecoveryConfigurationPreimage(x));x.current.journal[0].outcome={status:'uncertain'};assert.throws(()=>qualifyCompatibleRecoveryConfigurationPreimage(x));});
+test('fence fresh genuine read clocks may change, physical namespace/network/rule facts cannot',()=>{const f=workerFixture(),value={observedAt:new Date(now).toISOString(),sequenceDigest:f.entry.sequenceDigest,databaseSettingsDigest:f.entry.databaseSettingsDigest,ingressSettingsDigest:f.entry.ingressSettingsDigest,ingressBlocked:true,ingressFence:clone(f.entry.ingressFence)};value.ingressFence.observedAt='2026-10-04T12:09:30.000Z';value.ingressFence.evidenceDigest=ingressFenceContract.composeIngressFenceDigest(value.ingressFence);assert.equal(qualifyCompatibleSettingsRead({snapshot:f.s,value,now}),value);for(const change of [x=>delete x.ingressFence,x=>x.ingressFence.observedAt='2026-10-04T12:11:00.000Z',x=>x.ingressFence.proxyPid++,x=>x.ingressFence.namespaceDigest=H('0'),x=>x.ingressFence.rulePresent=false,x=>x.ingressFence.projectNetworkExclusive=false,x=>x.ingressFence.databaseContainerId=H('0')]){const x=clone(value);change(x);if(x.ingressFence)x.ingressFence.evidenceDigest=ingressFenceContract.composeIngressFenceDigest(x.ingressFence);assert.throws(()=>qualifyCompatibleSettingsRead({snapshot:f.s,value:x,now}));}});
+test('immutable image metadata requires actual commit/tree labels, no nullable legacy fallback',()=>{const f=workerFixture();delete f.images[0].observation.Config.Labels['io.roost.release.tree'];assert.throws(()=>qualifyCompatibleReplacementMetadata({snapshot:f.s,policy:f.p,images:f.images}));});

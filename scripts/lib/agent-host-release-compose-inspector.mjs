@@ -232,7 +232,7 @@ const observedServiceSchema = composeRuntimeSchema.shape.services.element.omit({
 /** Trusted installation callbacks, never packet-selected code. sourceForCommit
  * reads the canonical Git compose blob and returns its SHA256 source digest. */
 export const composeConfigurationTemplateSchema=z.object({sha256:hash,bytesBase64:z.string().min(1).max(174764).regex(/^[A-Za-z0-9+/]+={0,2}$/)}).strict().refine(v=>{const bytes=Buffer.from(v.bytesBase64,'base64');return bytes.length>0&&bytes.length<=131072&&bytes.toString('base64')===v.bytesBase64&&createHash('sha256').update(bytes).digest('hex')===v.sha256;});
-export function createComposeStateInspector({ targets, sourcePins, transport, sourceForCommit, treeForCommit, readDeployment, readControllerPolicy, readImageBinding, configurationTemplate }) {
+export function createComposeStateInspector({ targets, sourcePins, transport, sourceForCommit, treeForCommit, readDeployment, readControllerPolicy, readImageBinding, readCandidateImageBinding, configurationTemplate }) {
   const template=configurationTemplate===undefined?undefined:parse(composeConfigurationTemplateSchema,configurationTemplate,'template_invalid');
   const scoped = parse(z.array(targetSchema).min(1).max(6),targets,'configuration_invalid');
   const pins = parse(configurationFields.sourcePins,sourcePins,'configuration_invalid');
@@ -299,9 +299,24 @@ export function createComposeStateInspector({ targets, sourcePins, transport, so
         &&adoption.rendererDigest===configuration.controllerPolicy.rendererDigest
         &&adoption.images.length===t.services.filter(s=>s.source==='built').length&&new Set(adoption.images.map(s=>s.name)).size===adoption.images.length,'rollback_image_binding_unproven');
     }
+    if(configuration.controllerPolicy?.phase==='candidate'&&readCandidateImageBinding!==undefined){
+      check(typeof readCandidateImageBinding==='function','candidate_image_binding_required');
+      try{adoption=await readCandidateImageBinding({queue:structuredClone(q),configuration:structuredClone(configuration),
+        services:structuredClone(observed.services),images:structuredClone(observed.images),tree});}catch{fail('candidate_image_binding_unproven');}
+      adoption=parse(z.object({kind:z.literal('sealed_immutable_candidate'),commit:sha,tree:sha,artifactDigest:hash,rendererDigest:hash,
+        buildProofDigest:hash,replacementImagesDigest:hash,images:z.array(z.object({name:id,imageDigest:z.string().regex(/^sha256:[a-f0-9]{64}$/),commit:sha,tree:sha}).strict()).length(4)}).strict(),adoption,'candidate_image_binding_unproven');
+      check(adoption.commit===q.commit&&adoption.tree===tree&&adoption.artifactDigest===configuration.controllerPolicy.artifactDigest
+        &&adoption.rendererDigest===configuration.controllerPolicy.rendererDigest
+        &&t.services.filter(s=>s.source==='built').length===4&&new Set(adoption.images.map(s=>s.name)).size===4
+        &&adoption.images.every(r=>r.commit===q.commit&&r.tree===tree&&t.services.some(s=>s.source==='built'&&s.name===r.name))
+        &&adoption.replacementImagesDigest===digest([...adoption.images].sort((a,b)=>a.name<b.name?-1:a.name>b.name?1:0)),'candidate_image_binding_unproven');
+    }
     const images=t.services.filter(s=>s.source==='built').map(s=>{
       const image=observed.images.find(r=>r.name===s.name), live=observed.services.find(r=>r.name===s.name);
-      const sourceBound=adoption?adoption.images.some(r=>r.name===s.name&&r.imageDigest===image?.imageDigest)
+      const sourceBound=adoption?.kind==='sealed_immutable_candidate'?adoption.images.some(r=>r.name===s.name&&r.imageDigest===image?.imageDigest)
+        &&image?.imageRef===image?.imageDigest&&live?.imageRef===image?.imageDigest&&live?.runtimeRevision===q.commit
+        &&image?.buildRevision===q.commit&&image?.revisionLabel===q.commit&&image?.treeLabel===tree
+        :adoption?adoption.images.some(r=>r.name===s.name&&r.imageDigest===image?.imageDigest)
         &&live?.runtimeRevision===q.commit&&[image?.imageDigest,`${q.targetId}_${s.name}:${q.commit}`].includes(image?.imageRef)
         :image?.imageRef===`${q.targetId}_${s.name}:${q.commit}`&&image?.buildRevision===q.commit;
       check(image&&live&&image.imageDigest===live.imageDigest&&sourceBound&&(!image.revisionLabel||image.revisionLabel===q.commit)

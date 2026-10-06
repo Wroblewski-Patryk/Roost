@@ -198,11 +198,12 @@ Grant f88: candidate queue failed after recreating five services; migration
 import lacks greenlet. App unavailable; schema/data parity verified.
 Roost `d794af51` deployed; recovery migration verified.
 FAILED closure `6a5bc353`: fresh reads, seven native children closed.
-Renderer/helper, 386 Worker and contract/SQL checks pass.
+14 lineage/66 negative SQL probes rolled back.
 Fresh encrypted backup/isolated restore verified.
 Manual cleanup removed rollback images; anchors verified, app down.
 Lossless context fix verified; native audit closed: CHANGES_REQUIRED.
-Verifier `5dd327dc` closed/verified; repair/recovery remain unproven.
+Verifier `5dd327dc` closed; coder `eccd0cfb`/`d73e6234` signed-closed.
+Replay/review/recovery pending.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

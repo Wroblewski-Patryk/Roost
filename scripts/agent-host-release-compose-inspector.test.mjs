@@ -161,6 +161,34 @@ test('baseline adoption cannot weaken ordinary candidate image provenance',async
   await assert.rejects(f.inspector().readEvidence(f.queue),/image_provenance_unproven/);
 });
 
+function immutableCandidateFixture(){
+ const f=fixture(),policy={schemaVersion:'roost-compose-controller-policy-v1',phase:'candidate',rendererDigest:h('c'),artifactDigest:h('d'),...f.metadata.controllerObserved};
+ f.options.readControllerPolicy=async()=>policy;
+ for(const i of f.runtime.images.filter(i=>i.name!=='db')){i.imageRef=i.imageDigest;i.revisionLabel=f.commit;i.treeLabel=f.tree;i.createdAt='2026-10-03T12:00:00.000Z';}
+ for(const s of f.runtime.services.filter(s=>s.name!=='db'))s.imageRef=s.imageDigest;
+ const images=f.runtime.images.filter(i=>i.name!=='db').map(i=>({name:i.name,imageDigest:i.imageDigest,commit:f.commit,tree:f.tree}));
+ const adoption={kind:'sealed_immutable_candidate',commit:f.commit,tree:f.tree,artifactDigest:policy.artifactDigest,rendererDigest:policy.rendererDigest,
+  buildProofDigest:h('e'),replacementImagesDigest:(()=>{const canonical=v=>Array.isArray(v)?v.map(canonical):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])])):v;return createHash('sha256').update(JSON.stringify(canonical([...images].sort((a,b)=>a.name<b.name?-1:a.name>b.name?1:0)))).digest('hex');})(),images};
+ f.options.readCandidateImageBinding=async()=>adoption;return{f,adoption};
+}
+test('explicit immutable candidate preserves image provenance and finished queue timing',async()=>{
+ const {f}=immutableCandidateFixture(),e=await f.inspector().readEvidence(f.queue);
+ assert.equal(e.binding.images.length,4);assert(e.binding.images.every(i=>i.commit===f.commit&&i.tree===f.tree));
+});
+for(const[label,mutate]of[
+ ['wrong image same commit',(f,a)=>a.images[0].imageDigest=image('f')],
+ ['duplicate image role',(f,a)=>a.images[0].name=a.images[1].name],
+ ['changed image-set digest',(f,a)=>a.replacementImagesDigest=h('f')],
+ ['missing build proof',(f,a)=>delete a.buildProofDigest],
+ ['unknown proof field',(f,a)=>a.verified=true],
+ ['mutable image reference',f=>f.runtime.images[0].imageRef='latest'],
+ ['missing image revision',f=>f.runtime.images[0].revisionLabel=null],
+ ['missing tree binding',f=>f.runtime.images[0].treeLabel=null],
+ ['unknown build revision',f=>f.runtime.images[0].buildRevision='unknown'],
+ ['old container despite new image',f=>f.runtime.services[0].createdAt='2026-10-03T12:00:00.000Z'],
+ ['wrong runtime revision',f=>f.runtime.services[0].runtimeRevision=sha('f')]
+])test('immutable candidate refuses '+label,async()=>{const{f,adoption}=immutableCandidateFixture();mutate(f,adoption);await assert.rejects(f.inspector().readEvidence(f.queue),/candidate_image_binding_unproven|image_provenance_unproven/);});
+
 test('changed configuration between fixed reads fails closed without retry',async()=>{
   const f=fixture();f.changeMetadata();await assert.rejects(f.inspector().inspectLegacyBaseline(f.target.targetId,f.commit),/configuration_changed_during_inspection/);
   assert.equal(f.calls.length,3);

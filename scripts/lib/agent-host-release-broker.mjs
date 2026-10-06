@@ -1,4 +1,6 @@
 import { randomUUID } from 'node:crypto';
+import {z} from 'zod';
+import ingressFence from './agent-host-release-compose-ingress-fence.cjs';
 import contract from './agent-host-release-contract.cjs';
 import { inspectReleaseCheckout } from './agent-host-release-github.mjs';
 import {composeConfigurationTransportDiagnostic,isComposeConfigurationTransportDiagnostic} from './agent-host-release-compose-config.mjs';
@@ -45,6 +47,74 @@ export function releaseEffectDiagnostic(error){
  return reason;
 }
 export const releaseOutcomeStatus=o=>!o?null:o.status==='reconciled'?(o.reconciledStatus??o.reconciled_status):o.status;
+const compatibleProofSchema=z.object({schemaVersion:z.literal('roost-compatible-recovery-proof-snapshot-v1'),classification:z.literal('owner_verified_native_receipt'),
+ ...Object.fromEntries(['workspaceId','applicationId','issuerUserId','evidenceId','nativeAttemptId','sourceExecutionId'].map(k=>[k,z.string().uuid()])),
+ ...Object.fromEntries(['recordDigest','metadataDigest','requestDigest','manifestDigest','scopeDigest','publicPayloadDigest','buildReceiptDigest','compatibilityReceiptDigest',
+  'privateSignedRecordDigest','jobReceiptDigest','toolchainDigest','sourceCASDigest','sourceBasisDigest','scopeBasisDigest'].map(k=>[k,z.string().regex(/^[a-f0-9]{64}$/)])),
+ nativeAttemptIsAgentExecution:z.literal(false),serverOperatingSystemAttestation:z.literal(false),serverPrivateSignatureVerification:z.literal(false),releaseAuthority:z.literal(false)}).strict();
+function compatibleSnapshot(state){
+ const {readinessDigest:_r,configurationDigest:_c,compatibleRecoveryProof,successorBasis,publishedGitBasis,...body}=state.release.snapshot;
+ const parsed=contract.createReleaseSchema.safeParse(body),proof=compatibleProofSchema.safeParse(compatibleRecoveryProof);
+ if(!parsed.success||parsed.data.compatibleArtifactRecovery===undefined||successorBasis!==undefined||publishedGitBasis!==undefined||!proof.success)fail('release_compatible_recovery_scope_invalid');
+ const s=parsed.data,r=s.compatibleArtifactRecovery,p=proof.data;
+ if(r.prior.releaseId===state.release.id||state.release.manifestDigest!==s.manifestDigest
+  ||p.applicationId!==s.applicationId||p.workspaceId!==state.release.workspaceId||p.issuerUserId!==state.release.issuerUserId
+  ||p.requestDigest!==contract.releaseDigest(s)||p.manifestDigest!==s.manifestDigest||p.scopeDigest!==r.scopeAudit.scopeDigest
+  ||p.buildReceiptDigest!==r.replacement.buildReceiptDigest||p.compatibilityReceiptDigest!==r.replacement.compatibilityReceiptDigest)fail('release_compatible_recovery_proof_changed');
+ return {...s,releaseId:state.release.id,compatibleRecoveryProof:p};
+}
+function outcomeBody(o){return {requestId:o.requestId??o.request_id,status:o.status,observationOnly:o.observationOnly??o.observation_only,
+ ...(o.status==='reconciled'?{reconciledStatus:o.reconciledStatus??o.reconciled_status}:{}),evidence:o.evidence};}
+function compatibleCanonicalOutcome(s,row,body,journal){
+ if(!contract.outcomeSchema.safeParse(body).success)return 'release_compatible_recovery_outcome_unproven';
+ const result=releaseOutcomeStatus(body),e=body.evidence,op=row.operation;
+ if(contract.postObservationOperations.includes(op))return contract.postObservationOutcomeError(s,row,body,journal);
+ if(result==='uncertain')return Object.keys(e).every(k=>k==='observedAt')?null:'release_compatible_recovery_outcome_unproven';
+ if(['push','pr','review','merge'].includes(op)){
+  const base=contract.releaseGitPublicationBase(s);
+  if(result==='absent')return e.absenceVerified===true&&e.remoteCommit===base.commit&&e.remoteTree===base.tree?null:'release_compatible_recovery_git_unproven';
+  if(result==='succeeded'&&(e.remoteCommit!==s.commit||e.remoteTree!==s.candidateTree||e.remoteBase!==base.commit||e.remoteBaseTree!==base.tree
+   ||['pr','review','merge'].includes(op)&&(!Number.isSafeInteger(e.pullRequestNumber)||e.pullRequestNumber<=0||e.prHeadCommit!==s.commit)
+   ||op==='review'&&e.reviewApproved!==true||op==='merge'&&(e.prMerged!==true||e.mergedCommit!==s.commit)))return 'release_compatible_recovery_git_unproven';
+  return null;
+ }
+ if(op==='deploy_config'&&result==='succeeded'){
+  try{composeEvidence(e,s.manifest,s,{configuration:true});return null;}catch{return 'release_compatible_recovery_configuration_unproven';}
+ }
+ if(['deploy','observe'].includes(op)&&['succeeded','failed'].includes(result)){
+  if(contract.composeEvidenceError(s,e,false,op==='deploy'?row.intent.parameters.targetId:undefined,result==='failed')!==null
+   ||e.healthy!==(result==='succeeded'))return 'release_compatible_recovery_runtime_unproven';
+  if(op==='observe'&&(contract.releaseDigest(e.deploymentIds)!==contract.releaseDigest(priorDeployment({...stateFor(s),journal},false)?.outcome.evidence.deploymentIds)
+   ||result==='succeeded'&&(!Number.isInteger(e.observationSeconds)||e.observationSeconds<s.manifest.observation.seconds)))return 'release_compatible_recovery_observation_unproven';
+ }
+ if(op==='cleanup'&&result==='succeeded'){
+  const post=contract.postObservationIntentError(s,{operation:op,parameters:row.intent.parameters},journal);if(post)return post;
+  if(e.retentionVerified!==true||e.repositoryArchived!==false||e.localAbsent!==false||e.applicationActive!==true||e.targetId!==s.manifest.deployment.targetId
+   ||e.localCommit!==s.commit||e.localTree!==s.candidateTree||e.remoteCommit!==s.commit||e.remoteTree!==s.candidateTree
+   ||e.protectedResourcesDigest!==contract.releaseDigest(s.manifest.cleanup.protectedResourceIds)||e.absenceVerified!==true
+   ||contract.releaseDigest(e.resourceIds)!==contract.releaseDigest(s.manifest.cleanup.ownedResourceIds))return 'release_retention_unproven';
+ }
+ return null;
+}
+const stateFor=s=>({release:{snapshot:s}});
+function compatibleOutcomeError(s,row,body,journal){return contract.compatibleRecoveryOutcomeError(s,row,body,
+ ()=>compatibleCanonicalOutcome(s,row,body,journal),{releaseId:s.releaseId,readSuccessfulDeployment:ref=>{
+  if(ref.releaseId!==s.releaseId)return null;
+  const prior=journal.find(j=>j.id===ref.operationId&&j.operation==='deploy');
+  if(!prior||(prior.releaseId??prior.release_id)!==s.releaseId||prior.outcome?.id!==ref.outcomeId)return null;
+  return prior;
+ }});}
+function nextCompatibleOperation(state){
+ const s=compatibleSnapshot(state),prefix=[];
+ for(const row of state.journal??[]){
+  const view={...state,journal:prefix,status:'active'},parsed=contract.intentSchema.safeParse(row.intent);
+  if(!parsed.success||row.intent.operation!==row.operation||contract.compatibleRecoveryIntentError(view,row.intent)!==null
+   ||contract.releaseDigest(row.intent.parameters)!==contract.releaseDigest(parameters(row.operation,s,view)))fail('release_compatible_recovery_intent_changed');
+  if(row.outcome&&compatibleOutcomeError(s,row,outcomeBody(row.outcome),prefix)!==null)fail('release_compatible_recovery_outcome_unproven');
+  prefix.push(row);
+ }
+ try{return contract.nextCompatibleRecoveryOperation(state);}catch{fail('release_compatible_recovery_sequence_invalid');}
+}
 // Recovery is a separate fixed sequence. Historical failed runtime is never
 // represented as a healthy baseline or as a newly approved candidate release.
 function recoveryOnlyExpected(state){
@@ -94,6 +164,7 @@ function nextRecoveryOnlyOperation(state){
 const completedSet=(state,operation)=>state.release.snapshot.manifest.deployment.targets.every(target=>state.journal.some(j=>j.operation===operation
  &&j.intent?.parameters?.targetId===target.targetId&&releaseOutcomeStatus(j.outcome)==='succeeded'));
 export function nextReleaseOperation(state){
+ if(Object.hasOwn(state.release?.snapshot??{},'compatibleArtifactRecovery'))return nextCompatibleOperation(state);
  if(state.release?.snapshot?.recoveryOnly!==undefined)return nextRecoveryOnlyOperation(state);
  const j=state.journal??[],done=op=>j.some(x=>x.operation===op&&releaseOutcomeStatus(x.outcome)==='succeeded');
  const recoverySnapshot={...state.release.snapshot,releaseId:state.release.id};
@@ -175,7 +246,7 @@ async function assertDisposable(manifest,binding,resources,id){
 }
 async function verifyRetention(manifest,binding,{resources,github,inspectCheckout}){
  if(typeof resources?.verifyRetention!=='function')fail('release_retention_gateway_required');
- const local=await inspectCheckout(manifest,binding.commit,binding.baseCommit,binding.candidateTree);
+ const local=await inspectCheckout(manifest,binding.commit,binding.compatibleArtifactRecovery?contract.releaseGitPublicationBase(binding).commit:binding.baseCommit,binding.candidateTree);
  const remote=await github.inspect(manifest,{allowArchived:false});
  const retained=await resources.verifyRetention(manifest,binding);
  if(local?.commit!==binding.commit||local?.tree!==binding.candidateTree||remote?.remoteBase!==binding.commit||remote?.remoteTree!==binding.candidateTree
@@ -188,6 +259,9 @@ async function verifyRetention(manifest,binding,{resources,github,inspectCheckou
 }
 function validateState(state,client){
  if(!state?.release?.id||!Array.isArray(state.journal))fail('release_view_invalid');
+ if(Object.hasOwn(state.release.snapshot,'compatibleArtifactRecovery')){
+  const s=compatibleSnapshot(state);if(s.hostId!==client.hostId||s.releaserAgentId!==client.agentId)fail('release_binding_changed');return s;
+ }
  const {readinessDigest:_readiness,configurationDigest:_configuration,successorBasis,publishedGitBasis,...snapshot}=state.release.snapshot;
  const s=contract.createReleaseSchema.parse(snapshot);
  if(s.predecessor||successorBasis){if(s.predecessor?.releaseId===state.release.id||!contract.releaseHasSuccessor({...s,successorBasis}))fail('release_successor_binding_changed');s.successorBasis=successorBasis;}
@@ -220,6 +294,38 @@ async function inspectRecoveryOnlyEntry(s,api,coolify){
    ||contract.composeFailedRollbackPartialEvidenceError({...old,releaseId:r.releaseId},e,last)!==null
    ||contract.releaseDigest(stable(e))!==contract.releaseDigest(stable(r.currentEvidence)))fail('release_recovery_only_entry_unproven');
  }catch{fail('release_recovery_only_entry_unproven');}
+}
+function canonicalCompatiblePrior(previous,receipt){
+ const old=previous?.release?.snapshot,last=previous?.journal?.at(-1),e=receipt?.evidence;
+ if(e?.composeRecovery?.kind!=='queue_failed_rollback_partial'||last?.id!==receipt.failedOperationId
+  ||last.outcome?.id!==receipt.failedOutcomeId||last.outcome?.status!=='reconciled'||releaseOutcomeStatus(last.outcome)!=='failed'
+  ||(last.outcome.observationOnly??last.outcome.observation_only)!==true||contract.releaseDigest(e)!==contract.releaseDigest(last.outcome.evidence)
+  ||contract.composeFailedRollbackPartialJournalError({...old,releaseId:previous.release.id},last,e,previous.journal)!==null)
+  return 'release_compatible_recovery_prior_unproven';
+ return contract.composeFailedRollbackPartialClosureBindingError({...old,releaseId:previous.release.id},receipt);
+}
+async function inspectCompatibleEntry(state,s,api,coolify){
+ const r=s.compatibleArtifactRecovery,previous=await api(`/v1/agent-runtime/releases/${r.prior.releaseId}`,{method:'GET'});
+ const admittedAt=Date.parse(state.release.createdAt),now=Date.now();
+ // This verifies the immutable admission at its actual server creation epoch.
+ // It does not restamp a native receipt or qualify it as a new observation.
+ if(!Number.isFinite(admittedAt)||admittedAt>now||contract.compatibleRecoveryAdmissionError(previous,s,admittedAt,canonicalCompatiblePrior)!==null)
+  fail('release_compatible_recovery_entry_unproven');
+ const closure=previous.failedClosures.find(c=>c.id===r.prior.closureId);
+ if(typeof coolify.inspectCompatibleRecoveryEntry!=='function')fail('release_compatible_recovery_entry_gateway_required');
+ const result=await coolify.inspectCompatibleRecoveryEntry({previousState:previous});
+ if(!result||Object.keys(result).some(k=>!['currentEntry','closureReceipt'].includes(k))
+  ||contract.releaseDigest(result.closureReceipt)!==contract.releaseDigest(closure.snapshot))fail('release_compatible_recovery_entry_unproven');
+ const parsed=contract.compatibleRecoveryEntrySchema.safeParse(result.currentEntry);if(!parsed.success)fail('release_compatible_recovery_entry_unproven');
+ const e=parsed.data,inv=e.projectInventory,fresh=time=>{const t=Date.parse(time),at=Date.now();return Number.isFinite(t)&&t<=at&&at-t<=300000;};
+ try{ingressFence.qualifyComposeIngressFence(e.ingressFence,{targetId:e.targetId,databaseContainerId:e.database.containerId,now:Date.now()});}
+ catch{fail('release_compatible_recovery_entry_unproven');}
+ const bound={...s,compatibleArtifactRecovery:{...r,currentEntry:e}};
+ if(!fresh(e.observedAt)||!fresh(inv.observedAt)||Date.parse(inv.observedAt)>Date.parse(e.observedAt)
+  ||e.evidenceDigest!==contract.compatibleRecoveryEntryDigest(e)||inv.digest!==contract.compatibleRecoveryInventoryDigest(inv)
+  ||e.services.some(row=>row.inventoryDigest!==inv.digest||row.observedAt!==inv.observedAt)
+  ||e.cadences.some(row=>row.presence==='absent'&&(row.inventoryDigest!==inv.digest||row.observedAt!==inv.observedAt))
+  ||contract.compatibleRecoveryScopeDigest(bound)!==r.scopeAudit.scopeDigest)fail('release_compatible_recovery_entry_unproven');
 }
 function parameters(operation,s,state){
  const m=s.manifest;
@@ -302,6 +408,8 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
  inspectCheckout=inspectReleaseCheckout,stopped=()=>false,onOperation=async()=>{},onChildrenClosed=async()=>{}}){
  const s=validateState(state,client),m=s.manifest,operation=nextReleaseOperation(state);
  if(reconciliationOnly&&operation!=='reconcile')return{handled:true,state,reconciliationOnlyComplete:true};
+ if(operation==='frozen')return{handled:true,state,nextOperationBlocked:true,compatibleRecoveryFrozen:true,
+  diagnosisReason:'release_compatible_recovery_frozen',failureDisposition:contract.compatibleRecoveryFailureState(state),nativeHoldReinspected:false};
  if(!operation)return{handled:false,state};
  const route=`/v1/agent-runtime/releases/${state.release.id}`;
  await assertWriter();
@@ -361,10 +469,12 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
   if(!['succeeded','failed','absent'].includes(result?.status))fail('release_reconciliation_unproven');
   await onChildrenClosed();
   const body=contract.outcomeSchema.parse({requestId:randomUUID(),status:'reconciled',reconciledStatus:result.status,observationOnly:true,evidence:dated(result.evidence)});
+  if(s.compatibleArtifactRecovery&&compatibleOutcomeError(s,pending,body,state.journal.filter(r=>r.id!==pending.id))!==null)fail('release_compatible_recovery_outcome_unproven');
   const updated=await api(`${route}/operations/${pending.id}/outcome`,{method:'POST',body});
   return{handled:true,state:updated,...(reconciliationOnly?{reconciliationOnlyComplete:true}:{}),...(result.evidence?.composeConfigAbsence?{nextOperationBlocked:true,configurationDiagnosisRequired:true,diagnosisReason:'release_compose_no_effect_diagnosis_required'}:{})};
  }
  if(stopped())return{handled:false,state};
+ if(s.compatibleArtifactRecovery&&['push','pr','review','merge'].includes(operation))await inspectCompatibleEntry(state,s,api,coolify);
  // Validate actual checkout and remote base before requesting a capability.
  const cleanupStage=['cleanup','cleanup_local','cleanup_resource','archive_repository'].includes(operation);
  if(operation!=='cleanup')await inspectCheckout(m,s.commit,contract.releaseGitPublicationBase(s).commit,s.candidateTree);
@@ -373,13 +483,15 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
  if(remote.remoteBase!==(merged?s.commit:publicationBase.commit)
   ||remote.remoteTree!==(merged?s.candidateTree:publicationBase.tree))fail('release_base_changed');
  if(!state.journal.length){
-  if(s.recoveryOnly)await inspectRecoveryOnlyEntry(s,api,coolify);
+  if(s.compatibleArtifactRecovery){/* Fresh down entry already inspected before Git. */}
+  else if(s.recoveryOnly)await inspectRecoveryOnlyEntry(s,api,coolify);
   else await coolify.inspect(m,s);
  }
  if(['deploy_config','deploy','rollback_config','rollback'].includes(operation))await resources.inspectCapacity(m);
  const intent=contract.intentSchema.parse({requestId:randomUUID(),operation,manifestDigest:s.manifestDigest,commit:s.commit,baseCommit:s.baseCommit,
   expectedVersion:state.expectedVersion,observed:{commit:s.commit,baseCommit:remote.remoteBase,baseTree:remote.remoteTree,manifestDigest:s.manifestDigest},parameters:parameters(operation,s,state)});
  const recoveryError=contract.releaseRecoveryOnlyOperationError(s,intent,state.journal);if(recoveryError)fail(recoveryError);
+ if(s.compatibleArtifactRecovery&&contract.compatibleRecoveryIntentError(state,intent)!==null)fail('release_compatible_recovery_intent_changed');
  if(contract.postObservationOperations.includes(operation)){
   if(typeof resources?.postObservation!=='function')fail('release_post_observation_gateway_required');
   const error=contract.postObservationIntentError(s,intent,state.journal);if(error)fail(error);
@@ -437,6 +549,9 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
   else if(operation==='cleanup_local')evidence=await resources.cleanupLocal(m,s);
   else if(operation==='cleanup')evidence=contract.retainsApplication(m)?await verifyRetention(m,s,{resources,github,inspectCheckout}):{...await resources.verifyCleanup(m,s),...await github.verifyArchive(m)};
   else fail('release_operation_unsupported');
+  if(s.compatibleArtifactRecovery&&compatibleOutcomeError(s,{...authorized.operation,intent},
+   {requestId:randomUUID(),status,observationOnly:['observe','cleanup'].includes(operation),evidence:dated(evidence)},state.journal.filter(r=>r.id!==authorized.operation.id))!==null)
+   fail('release_compatible_recovery_outcome_unproven');
  }catch(error){
   // A transport can lose a reply after committing the effect. Preserve this
   // fact without retaining credential-bearing errors or replaying the action.

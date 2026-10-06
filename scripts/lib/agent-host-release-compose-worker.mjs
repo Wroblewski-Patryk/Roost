@@ -11,7 +11,8 @@ import { runReleaseNativeProcess, hasReleaseProcessScope, minimalReleaseEnvironm
 import { createComposeStateInspector } from './agent-host-release-compose-inspector.mjs';
 import { createComposeReleaseGateway, createFixedComposeQueueTransport } from './agent-host-release-compose-gateway.mjs';
 import { composePhasePolicySchema, composePhaseArtifactFile, composePhaseChecksumBytes, renderComposePhaseCommands,
-  composeControllerPolicyRecord, qualifyComposePhaseArtifact } from './agent-host-release-compose-controller.mjs';
+  composeControllerPolicyRecord, qualifyComposePhaseArtifact, composeReplacementImagesDigest, composePhasePolicyDigest,
+  composeImmutableCandidateInventoryDigest, composeImmutableCandidateEntryDigest } from './agent-host-release-compose-controller.mjs';
 import { createCoolifyComposeAdapter } from './agent-host-release-coolify-compose.mjs';
 import { composeConfigurationDigest, composeRuntimeSetDigest, qualifyComposeRuntime, qualifyComposeRetainedBaseline } from './agent-host-release-compose-state.mjs';
 import { permanentReleaseOwnershipSchema } from './agent-host-release-git-set-worker.mjs';
@@ -21,8 +22,9 @@ import { buildReleaseFingerprintCommand, releaseFingerprintTimeoutSchema } from 
 import { coolifyGitSetDeploymentId } from './agent-host-release-coolify-git-set-gateway.mjs';
 import contract from './agent-host-release-contract.cjs';
 import { installedActivitySettingsSchema, createActivityReleaseAdapter } from './agent-host-release-activity-adapter.mjs';
-import { createInstalledActivityTransport } from './agent-host-release-activity-installed.mjs';
+import { createInstalledActivityTransport, activityCompatibleIngressInstallationSchema } from './agent-host-release-activity-installed.mjs';
 import { imageRetentionPolicySchema, retainedImageAnchor, qualifyRetentionImage, qualifyRetentionAnchor } from './agent-host-image-retention.mjs';
+import ingressFenceContract from './agent-host-release-compose-ingress-fence.cjs';
 
 const hex=z.string().regex(/^[a-f0-9]{64}$/),alias=z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,79}$/);
 const file=z.string().min(3).max(1000).refine(v=>path.isAbsolute(v)&&path.normalize(v)===v);
@@ -34,6 +36,8 @@ export const installedComposeReleaseSchema=z.object({sshHost:alias,sshAddressFam
  recoveryEntryTemplate:sealedFile.optional(),
  recoveryPreviousManifest:sealedFile.optional(),
  recoveryMaterializationTemplate:sealedFile.optional(),
+ compatibleRecovery:z.object({previousManifest:sealedFile,entryTemplate:sealedFile,materializationTemplate:sealedFile}).strict().optional(),
+ compatibleIngress:activityCompatibleIngressInstallationSchema.optional(),
  sourcePins:z.object({queueHelper:hex,deploymentJob:hex,applicationModel:hex,composeParser:hex,dockerHelper:hex,applicationsController:hex,controllerRenderer:hex}).strict(),
  source:z.object({sshHost:alias,container:hex,user:pg,database:pg}).strict(),
  fingerprintTimeoutMs:releaseFingerprintTimeoutSchema.min(30000).max(300000).optional(),
@@ -71,7 +75,9 @@ export function qualifyComposeImageRetentionPolicy(value,snapshot){
  check(contract.isComposeManifest(m)&&m.purpose==='application_release'&&policy.scopeDigest===contract.releaseDigest(m),'retention_scope_changed');
  const built=t.baseline.configuration.services.filter(r=>r.source==='built'),database=t.baseline.configuration.services.filter(r=>r.role==='database');
  check(database.length===1&&built.every(r=>['app','migration','cadence'].includes(r.role)),'retention_service_scope_invalid');
- const images=built.map(r=>{const rows=t.baseline.images.filter(i=>i.name===r.name);check(rows.length===1,'retention_baseline_image_unproven');return rows[0].imageDigest;});
+ const replacement=snapshot.compatibleArtifactRecovery?.replacement;
+ if(replacement)qualifyCompatibleRecoveryBuildSnapshot(snapshot);
+ const images=built.map(r=>{const rows=(replacement?.images??t.baseline.images).filter(i=>i.name===r.name);check(rows.length===1,'retention_baseline_image_unproven');return rows[0].imageDigest;});
  const exact=[...new Set(images)].sort();check(contract.releaseDigest([...policy.images].sort())===contract.releaseDigest(exact)
   &&!policy.images.includes(database[0].imageDigest)&&policy.images.every(i=>m.cleanup.protectedResourceIds.includes(i)),'retention_images_changed');
  return{...policy,images:exact};
@@ -122,7 +128,8 @@ export function createComposeImageRetention({policy,snapshot,ssh,readJournal,wri
   }
   // A missing anchor never authorizes retry. Only an exact actual readback of
   // an already-created owned anchor can reconcile the local durable intent.
-  return{schemaVersion:'roost-compose-image-retention-evidence-v1',...binding,baselineImages:[...p.images],additionalImages:[...new Set(additionalImages)].sort(),anchors:proofs,
+  return{schemaVersion:'roost-compose-image-retention-evidence-v1',...binding,baselineImages:snapshot.compatibleArtifactRecovery?[]:[...p.images],
+   ...(snapshot.compatibleArtifactRecovery?{replacementImages:[...p.images],historicalRollbackExecutable:false}:{}),additionalImages:[...new Set(additionalImages)].sort(),anchors:proofs,
    observedAt:new Date(now()).toISOString(),pendingCreate:j.pending?{image:j.pending.image,name:j.pending.name}:null,createdAnchors:created,
    observationOnly:effect===null,allStopped:true,applicationEnvironmentAdded:false,mounts:0,network:'none',runtimeStarted:false,deploymentOrHealthProof:false,
    journalDigest:contract.releaseDigest(j)};};
@@ -287,11 +294,98 @@ export function qualifyRecoveryOnlyConfigurationPreimage({snapshot,current,confi
 }
 
 export function qualifyInstalledDatabaseSource({snapshot,baselineDatabase,database,container}){
+ if(snapshot.compatibleArtifactRecovery){const e=contract.compatibleRecoveryEntrySchema.parse(snapshot.compatibleArtifactRecovery.currentEntry),r=e.services.find(v=>v.role==='database');
+  check(r?.presence==='present'&&r.containerId===container&&r.name===database.name&&r.imageDigest===database.imageDigest&&r.mountDigest===database.mountDigest
+   &&r.state==='running'&&r.health==='healthy'&&r.exitCode===0&&e.database.containerId===container&&e.database.readOnlyFence===true
+   &&e.database.activeOtherSessions===0&&e.database.ownedTransactions===0&&e.schemaDigest===snapshot.manifest.baseline.schemaDigest
+   &&e.dataDigest===snapshot.manifest.baseline.dataDigest,'compatible_database_source_binding_changed');return true;}
  if(baselineDatabase?.containerId===container)return true;
  const e=contract.releaseHasRecoveryOnly(snapshot)?snapshot.recoveryOnly.currentEvidence:null,r=e?.composeRecovery.services.find(v=>v.role==='database'),p=e?.composeRecovery.partialRollbackFailure;
  check(r?.containerId===container&&r.name===database.name&&r.imageDigest===database.imageDigest&&r.mountDigest===database.mountDigest
   &&r.state==='running'&&r.health==='healthy'&&r.exitCode===0&&p.databaseReadOnly===true&&p.activeOtherSessions===0&&p.ownedTransactions===0
   &&p.projectServiceSetComplete===true&&e.schemaDigest===snapshot.manifest.baseline.schemaDigest&&e.dataDigest===snapshot.manifest.baseline.dataDigest,'database_source_binding_changed');return true;
+}
+
+// Server provenance is owner-verified evidence, never a current OS observation.
+const compatibleProofSchema=z.object({schemaVersion:z.literal('roost-compatible-recovery-proof-snapshot-v1'),classification:z.literal('owner_verified_native_receipt'),
+ workspaceId:z.string().uuid(),applicationId:z.string().uuid(),issuerUserId:z.string().uuid(),evidenceId:z.string().uuid(),recordDigest:hex,metadataDigest:hex,
+ requestDigest:hex,manifestDigest:hex,scopeDigest:hex,publicPayloadDigest:hex,buildReceiptDigest:hex,compatibilityReceiptDigest:hex,
+ privateSignedRecordDigest:hex,jobReceiptDigest:hex,toolchainDigest:hex,sourceCASDigest:hex,nativeAttemptId:z.string().uuid(),nativeAttemptIsAgentExecution:z.literal(false),
+ sourceExecutionId:z.string().uuid(),sourceBasisDigest:hex,scopeBasisDigest:hex,serverOperatingSystemAttestation:z.literal(false),
+ serverPrivateSignatureVerification:z.literal(false),releaseAuthority:z.literal(false)}).strict();
+export function qualifyCompatibleRecoveryBuildSnapshot(snapshot){
+ const r=contract.compatibleArtifactRecoverySchema.parse(snapshot?.compatibleArtifactRecovery),p=compatibleProofSchema.parse(snapshot.compatibleRecoveryProof);
+ const input=structuredClone(snapshot);for(const k of['compatibleRecoveryProof','readinessDigest','configurationDigest','releaseId'])delete input[k];
+ check(contract.createReleaseSchema.safeParse(input).success&&p.requestDigest===contract.releaseDigest(input)&&p.applicationId===snapshot.applicationId
+  &&p.manifestDigest===snapshot.manifestDigest&&p.scopeDigest===r.scopeAudit.scopeDigest&&p.buildReceiptDigest===r.replacement.buildReceiptDigest
+  &&p.compatibilityReceiptDigest===r.replacement.compatibilityReceiptDigest&&p.sourceExecutionId!==r.scopeAudit.executionId
+  &&p.nativeAttemptId!==p.sourceExecutionId&&p.nativeAttemptId!==r.scopeAudit.executionId,'compatible_build_provenance_unproven');return p;
+}
+export function qualifyCompatibleRecoveryEntryState({snapshot,previousState,currentEntry,now,admittedAt}){
+ qualifyCompatibleRecoveryBuildSnapshot(snapshot);
+ const validate=(state,receipt)=>{try{const q=qualifyClosedFailedComposeEntry(state);return contract.releaseDigest(q.closureReceipt)===contract.releaseDigest(receipt)?null:'closed_prior_changed';}catch{return'closed_prior_unproven';}};
+ check(Number.isFinite(Date.parse(admittedAt))&&contract.compatibleRecoveryAdmissionError(previousState,snapshot,new Date(admittedAt),validate)===null,'compatible_previous_scope_changed');
+ const prior=snapshot.compatibleArtifactRecovery.prior,closure=previousState.failedClosures.find(v=>v.id===prior.closureId);
+ if(currentEntry!==undefined){const e=contract.compatibleRecoveryEntrySchema.parse(currentEntry),at=now instanceof Date?now.getTime():Number(now),observed=Date.parse(e.observedAt),inventoryAt=Date.parse(e.projectInventory.observedAt);
+  const candidate={...snapshot,compatibleArtifactRecovery:{...snapshot.compatibleArtifactRecovery,currentEntry:e}};
+  check(Number.isFinite(at)&&observed<=at&&at-observed<=300000&&inventoryAt<=observed&&at-inventoryAt<=300000
+   &&e.evidenceDigest===contract.compatibleRecoveryEntryDigest(e)&&e.projectInventory.digest===contract.compatibleRecoveryInventoryDigest(e.projectInventory)
+   &&contract.compatibleRecoveryScopeDigest(candidate)===snapshot.compatibleArtifactRecovery.scopeAudit.scopeDigest,'compatible_fresh_entry_changed');
+ }
+ return{oldSnapshot:previousState.release.snapshot,closureReceipt:closure.snapshot};
+}
+export function qualifyCompatibleRecoveryConfigurationPreimage({snapshot,current,configuration}){
+ const r=snapshot.compatibleArtifactRecovery,last=current?.journal?.at(-1),before=current?.journal?.slice(0,-1);
+ const{releaseId:_,...wireSnapshot}=snapshot;
+ check(r&&current.release?.id===snapshot.releaseId&&['active','reconciliation_required'].includes(current.status)&&contract.releaseDigest(current.release.snapshot)===contract.releaseDigest(wireSnapshot),'compatible_configuration_scope_changed');
+ check(before?.length===4&&before.every((v,i)=>v.operation===['push','pr','review','merge'][i]&&(v.outcome?.status==='succeeded'||v.outcome?.status==='reconciled'&&v.outcome.reconciledStatus==='succeeded'))
+  &&last.operation==='deploy_config'&&!last.outcome&&last.intent?.parameters?.commit===snapshot.commit&&last.intent.parameters.configDigest===snapshot.manifest.deployment.configDigest
+  &&last.intent.parameters.artifactSetDigest===snapshot.manifest.deployment.artifactSetDigest&&last.intent.parameters.schemaDigest===snapshot.manifest.deployment.schemaDigest
+  &&composeConfigurationDigest(configuration)===composeConfigurationDigest(r.currentEntry.configuration),'compatible_configuration_preimage_unproven');return true;
+}
+export function qualifyCompatiblePhysicalEntry({snapshot,observed,now}){
+ const r=snapshot.compatibleArtifactRecovery,e=contract.compatibleRecoveryEntrySchema.parse(r?.currentEntry),t=snapshot.manifest.deployment.targets[0],db=e.services.find(v=>v.role==='database');
+ check(Array.isArray(observed?.services)&&observed.services.length===1&&Array.isArray(observed.missingDeclared)
+  &&contract.releaseDigest(observed.missingDeclared.slice().sort())===contract.releaseDigest(t.configuration.services.filter(v=>v.source==='built').map(v=>v.name).sort())
+  &&['name','role','containerId','imageDigest','mountDigest','state','health','exitCode','createdAt'].every(k=>observed.services[0][k]===db[k])
+  &&observed.services[0].role==='database'&&db.presence==='present'&&db.state==='running'&&db.health==='healthy'&&db.exitCode===0
+  &&e.services.filter(v=>v.presence==='absent').length===4&&e.services.filter(v=>v.role!=='database').every(v=>v.presence==='absent'&&v.containerId===null&&v.imageDigest===null),
+  'compatible_actual_project_inventory_changed');
+ check(Number.isFinite(now),'compatible_actual_read_clock_invalid');return observed.services[0];
+}
+export function qualifyCompatibleReplacementMetadata({snapshot,policy,images}){
+ const r=snapshot.compatibleArtifactRecovery,p=composePhasePolicySchema.parse(policy);qualifyCompatibleRecoveryBuildSnapshot(snapshot);
+ check(p.targetId===snapshot.manifest.deployment.targetId&&p.phase==='candidate'&&p.commit===snapshot.commit&&p.tree===snapshot.candidateTree
+  &&p.candidateExecution?.mode==='qualified_immutable_images'&&p.candidateExecution.buildProofDigest===r.replacement.buildReceiptDigest
+  &&p.candidateExecution.replacementImagesDigest===composeReplacementImagesDigest(r.replacement.images)
+  &&p.services.filter(v=>v.source==='built').every(v=>r.replacement.images.some(i=>i.name===v.name&&i.imageDigest===v.imageDigest&&v.imageRef===i.imageDigest))
+  &&Array.isArray(images)&&images.length===4,'compatible_replacement_policy_changed');
+ return p.services.filter(v=>v.source==='built').map(v=>{const image=images.find(i=>i.name===v.name),o=image?.observation,env=o?.Config?.Env??[],labels=o?.Config?.Labels??{},revisions=env.filter(x=>typeof x==='string'&&x.startsWith('APP_BUILD_REVISION=')).map(x=>x.slice(19));
+  check(o?.Id===v.imageDigest&&revisions.length===1&&revisions[0]===snapshot.commit
+   &&labels['org.opencontainers.image.revision']===snapshot.commit
+   &&labels['io.roost.release.tree']===snapshot.candidateTree,'compatible_actual_image_metadata_changed');
+  return{name:v.name,imageDigest:v.imageDigest,buildRevision:revisions[0],revisionLabel:labels['org.opencontainers.image.revision']??null,treeLabel:labels['io.roost.release.tree']??null};});
+}
+export function compatibleCandidateEntryWitness({snapshot,policy,observed,observedAt}){
+ const p=composePhasePolicySchema.parse(policy),db=qualifyCompatiblePhysicalEntry({snapshot,observed,now:Date.parse(observedAt)});
+ check(p.targetId===snapshot.manifest.deployment.targetId&&p.phase==='candidate'&&p.commit===snapshot.commit&&p.tree===snapshot.candidateTree
+  &&p.candidateExecution?.mode==='qualified_immutable_images','compatible_candidate_entry_policy_changed');
+ const inventory={targetId:p.targetId,observedAt,projectServiceSetComplete:true,services:[Object.fromEntries(['name','role','containerId','imageDigest','mountDigest','state','health','exitCode'].map(k=>[k,db[k]]))],digest:'0'.repeat(64)};
+ inventory.digest=composeImmutableCandidateInventoryDigest(inventory);
+ const entry={schemaVersion:'roost-compose-immutable-candidate-entry-v1',targetId:p.targetId,policyDigest:composePhasePolicyDigest(p),observedAt,inventory,
+  absences:p.services.filter(v=>v.source==='built').map(v=>({name:v.name,role:v.role,source:'built',mountDigest:v.mountDigest,policyServiceDigest:contract.releaseDigest(v),absenceVerified:true,inventoryDigest:inventory.digest,observedAt})),evidenceDigest:'0'.repeat(64)};
+ entry.evidenceDigest=composeImmutableCandidateEntryDigest(entry);return entry;
+}
+export function qualifyCompatibleSettingsRead({snapshot,value,now}){
+ const e=snapshot.compatibleArtifactRecovery.currentEntry,at=now instanceof Date?now.getTime():Number(now),t=Date.parse(value?.observedAt);
+ check(Number.isFinite(at)&&Number.isFinite(t)&&t<=at&&at-t<=300000&&value.sequenceDigest===snapshot.manifest.postObservation.baselineSequenceDigest
+  &&value.databaseSettingsDigest===e.databaseSettingsDigest&&value.ingressSettingsDigest===e.ingressSettingsDigest&&value.ingressBlocked===true,
+  'compatible_native_settings_unproven');
+ check(e.ingressFence&&value.ingressFence&&Date.parse(value.ingressFence.observedAt)<=t,'compatible_native_ingress_fence_stale');
+ ingressFenceContract.qualifyComposeIngressFence(value.ingressFence,{targetId:e.targetId,databaseContainerId:e.database.containerId,now:at});
+ const stableFence=v=>{const x=structuredClone(v);delete x.observedAt;delete x.evidenceDigest;return x;};
+ check(contract.releaseDigest(stableFence(value.ingressFence))===contract.releaseDigest(stableFence(e.ingressFence)),'compatible_native_ingress_fence_changed');
+ return value;
 }
 
 
@@ -370,17 +464,23 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
  const retentionDirectoryIdentity=retentionPolicy?identity(path.dirname(retentionJournalFile)):null;
  if(retentionPolicy)check(!inside(cfg.workspaceRoot,retentionJournalFile)&&!seals.has(retentionJournalFile),'retention_journal_path_invalid');
  const baseline=JSON.parse(bytesFor(cfg.baselineObservation.file,cfg.baselineObservation.sha256));
- const recovery=contract.releaseHasRecoveryOnly(s);
+ const recovery=contract.releaseHasRecoveryOnly(s),compatible=s.compatibleArtifactRecovery!==undefined;
+ if(compatible){const proof=qualifyCompatibleRecoveryBuildSnapshot(s);check(proof.workspaceId===(state.release.workspaceId??state.release.workspace_id)
+   &&proof.issuerUserId===(state.release.issuerUserId??state.release.issuer_user_id),'compatible_authoritative_grant_owner_changed');
+  check(cfg.compatibleRecovery&&cfg.compatibleIngress&&cfg.activity&&cfg.imageRetention&&typeof dependencies.readCompatibleRecoverySettings==='function','compatible_installation_dependencies_required');}
+ else check(cfg.compatibleRecovery===undefined&&cfg.compatibleIngress===undefined,'compatible_installation_without_scope');
  check(s.recoveryOnly===undefined?cfg.recoveryEntryTemplate===undefined&&cfg.recoveryPreviousManifest===undefined&&cfg.recoveryMaterializationTemplate===undefined
   :recovery&&cfg.recoveryEntryTemplate&&cfg.recoveryPreviousManifest&&cfg.recoveryMaterializationTemplate,'recovery_only_installation_unproven');
- const previousManifest=recovery?contract.manifestSchema.parse(JSON.parse(bytesFor(cfg.recoveryPreviousManifest.file,cfg.recoveryPreviousManifest.sha256))):null;
+ const previousFile=compatible?cfg.compatibleRecovery.previousManifest:cfg.recoveryPreviousManifest;
+ const previousManifest=recovery||compatible?contract.manifestSchema.parse(JSON.parse(bytesFor(previousFile.file,previousFile.sha256))):null;
  if(recovery)check(contract.releaseDigest(previousManifest)===s.recoveryOnly.previousManifestDigest
   &&contract.releaseRecoveryOnlyManifestMatches(previousManifest,m),'recovery_only_previous_manifest_changed');
+ if(compatible)check(contract.releaseDigest(previousManifest)===s.compatibleArtifactRecovery.prior.previousManifestDigest,'compatible_previous_manifest_changed');
  const historicalManifest=previousManifest??m,historicalTarget=historicalManifest.deployment.targets[0];
  const database=t.baseline.configuration.services.find(r=>r.role==='database');
  check(baseline.observed===true&&baseline.migrationSchemaVerified===true&&baseline.healthy===true
   &&baseline.commit===historicalTarget.baseline.commit&&baseline.tree===historicalTarget.baseline.tree&&baseline.configDigest===historicalTarget.baseline.configDigest
-  &&(!recovery||baseline.observedAt===historicalManifest.baseline.observedAt)
+  &&(!(recovery||compatible)||baseline.observedAt===historicalManifest.baseline.observedAt)
   &&['schemaDigest','dataDigest','healthDigest'].every(k=>baseline[k]===historicalManifest.baseline[k])
   &&contract.releaseDigest(baseline.images)===contract.releaseDigest(historicalTarget.baseline.images)
   &&Array.isArray(baseline.services)&&new Set(baseline.services.map(r=>r.name)).size===baseline.services.length
@@ -389,10 +489,13 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   &&historicalTarget.baseline.configuration.services.every(d=>d.role==='migration'||baseline.services.some(r=>r.name===d.name)), 'baseline_observation_unproven');
  const baselineDatabase=baseline.services.find(r=>r.name===database.name);
  qualifyInstalledDatabaseSource({snapshot:s,baselineDatabase,database,container:cfg.source.container});
- const policies={},artifacts={};let recoveryContext=null;
+ const policies={},artifacts={};let recoveryContext=null,compatibleContext=null;
  const oldEntryTemplate=recovery?bytesFor(cfg.recoveryEntryTemplate.file,cfg.recoveryEntryTemplate.sha256):null;
  if(recovery)check(cfg.recoveryEntryTemplate.sha256===s.recoveryOnly.currentEvidence.composeRecovery.configuration.controllerPolicy?.artifactDigest,'recovery_only_entry_template_changed');
  const recoveryMaterializationTemplate=recovery?qualifyRecoveryMaterializationTemplate({previousManifest,bytes:bytesFor(cfg.recoveryMaterializationTemplate.file,cfg.recoveryMaterializationTemplate.sha256),reference:cfg.recoveryMaterializationTemplate}):null;
+ const compatibleMaterializationTemplate=compatible?qualifyRecoveryMaterializationTemplate({previousManifest,bytes:bytesFor(cfg.compatibleRecovery.materializationTemplate.file,cfg.compatibleRecovery.materializationTemplate.sha256),reference:cfg.compatibleRecovery.materializationTemplate}):null;
+ if(compatible){const entryBytes=bytesFor(cfg.compatibleRecovery.entryTemplate.file,cfg.compatibleRecovery.entryTemplate.sha256);
+  check(hash(entryBytes)===s.compatibleArtifactRecovery.currentEntry.configuration.controllerPolicy?.artifactDigest,'compatible_entry_template_changed');}
  for(const mode of ['candidate','rollback']){
   const row=cfg.phases[mode];policies[mode]=composePhasePolicySchema.parse({...JSON.parse(bytesFor(row.policy.file,row.policy.sha256)),releaseId:state.release.id});
   artifacts[mode]=bytesFor(row.artifact.file,row.artifact.sha256);const p=policies[mode],expected=mode==='rollback'?t.rollbackConfiguration:t.configuration;
@@ -401,6 +504,9 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
    &&p.phaseConfigDigest===(mode==='rollback'?t.rollbackConfigDigest:t.configDigest)
    &&contract.releaseDigest(p.sourcePins)===contract.releaseDigest(cfg.sourcePins)
    &&contract.releaseDigest(composeControllerPolicyRecord(p))===contract.releaseDigest(expected.controllerPolicy),'phase_binding_changed');
+  if(compatible)check(mode==='candidate'?p.candidateExecution?.mode==='qualified_immutable_images'&&p.candidateExecution.buildProofDigest===s.compatibleArtifactRecovery.replacement.buildReceiptDigest
+    &&p.candidateExecution.replacementImagesDigest===composeReplacementImagesDigest(s.compatibleArtifactRecovery.replacement.images):p.candidateExecution===undefined,'compatible_phase_execution_changed');
+  else check(p.candidateExecution===undefined,'immutable_candidate_without_compatible_scope');
  }
  const assertClone=async(manifest=m)=>{
   check(hash(read(rendererFile))===cfg.sourcePins.controllerRenderer&&identity(rendererFile,false)===rendererIdentity,'controller_renderer_changed');
@@ -439,7 +545,10 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   environment:{...minimalReleaseEnvironment(),GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:process.platform==='win32'?'NUL':'/dev/null',GIT_OPTIONAL_LOCKS:'0',GIT_TERMINAL_PROMPT:'0'},durationMs:10000,maxBytes});};
  const targetDef={targetId:t.targetId,composePath:t.composePath,repositoryUrl:m.repository.url,branch:m.repository.defaultBranch,
   services:t.configuration.services.map(({name,role,source,expectedState})=>({name,role,source,expectedState}))};
- const configurationTemplate={sha256:hash(artifacts.candidate),bytesBase64:artifacts.candidate.toString('base64')};
+ // Immutable commands consume their new executable artifact; Coolify still
+ // stores the repository parser's build materialization as configuration.
+ const materialization=compatible?compatibleMaterializationTemplate:artifacts.candidate;
+ const configurationTemplate={sha256:hash(materialization),bytesBase64:materialization.toString('base64')};
  const inspector=(dependencies.createInspector??createComposeStateInspector)({targets:[targetDef],configurationTemplate,
   sourcePins:{queueHelper:cfg.sourcePins.queueHelper,deploymentJob:cfg.sourcePins.deploymentJob,controllerRenderer:cfg.sourcePins.controllerRenderer},transport:ssh,
   sourceForCommit:async(commit,composePath)=>{check(/^[a-f0-9]{40}$/.test(commit)&&composePath===t.composePath,'git_scope_invalid');return hash(await git(['show',`${commit}:${composePath.slice(1)}`]));},
@@ -459,8 +568,19 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   readImageBinding:async({queue,configuration})=>{check(queue.commit===t.baseline.commit&&configuration.controllerPolicy?.phase==='rollback'
    &&configuration.controllerPolicy.artifactDigest===policies.rollback.artifactDigest,'baseline_adoption_changed');
    return{kind:'sealed_baseline_adoption',commit:t.baseline.commit,tree:t.baseline.tree,artifactDigest:policies.rollback.artifactDigest,
-    rendererDigest:cfg.sourcePins.controllerRenderer,images:t.baseline.images};}
+    rendererDigest:cfg.sourcePins.controllerRenderer,images:t.baseline.images};},
+  ...(compatible?{readCandidateImageBinding:async({queue,configuration})=>{qualifyCompatibleRecoveryBuildSnapshot(s);const p=policies.candidate;
+   check(queue.commit===s.commit&&configuration.controllerPolicy?.phase==='candidate'&&configuration.controllerPolicy.artifactDigest===p.artifactDigest
+    &&composeConfigurationDigest(configuration)===t.configDigest,'compatible_candidate_binding_changed');
+   return{kind:'sealed_immutable_candidate',commit:s.commit,tree:s.candidateTree,artifactDigest:p.artifactDigest,rendererDigest:p.rendererDigest,
+    buildProofDigest:p.candidateExecution.buildProofDigest,replacementImagesDigest:p.candidateExecution.replacementImagesDigest,images:s.compatibleArtifactRecovery.replacement.images};}}:{}),
  });
+ const compatibleEntryInspector=compatible?(dependencies.createInspector??createComposeStateInspector)({targets:[targetDef],
+  configurationTemplate:{sha256:hash(compatibleMaterializationTemplate),bytesBase64:compatibleMaterializationTemplate.toString('base64')},
+  sourcePins:s.compatibleArtifactRecovery.currentEntry.configuration.sourcePins,transport:ssh,
+  sourceForCommit:async(commit,composePath)=>{check(commit===s.compatibleArtifactRecovery.currentEntry.configuration.gitCommit&&composePath===t.composePath,'compatible_old_source_changed');return hash(await git(['show',`${commit}:${composePath.slice(1)}`]));},
+  treeForCommit:async commit=>(await git(['rev-parse',`${commit}^{tree}`],4096)).toString('utf8').trim(),readDeployment:payload=>php(queueRead,payload),
+  readControllerPolicy:async({controllerObserved})=>{const p=s.compatibleArtifactRecovery.currentEntry.configuration.controllerPolicy;return Object.entries(controllerObserved).every(([k,v])=>p[k]===v)?p:null;}}):null;
  const observeConfig=async()=>{
   const app=await httpsJson({url:`${new URL(cfg.coolify.origin).origin}/api/v1/applications/${t.targetId}`,method:'GET',token:coolifyCredential,certificateSha256:cfg.coolify.certificateSha256});
   check(app?.uuid===t.targetId&&[s.commit,t.baseline.commit].includes(app.git_commit_sha),'live_source_pin_changed');
@@ -470,19 +590,28 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
    &&hash(Buffer.from(app.docker_compose_custom_build_command))===entry.buildCommandDigest
    &&hash(Buffer.from(app.docker_compose_custom_start_command))===entry.startCommandDigest)
    return recoveryContext.inspector.inspectConfiguration(t.targetId,app.git_commit_sha);
+  const compatibleEntry=s.compatibleArtifactRecovery?.currentEntry.configuration;
+  if(compatibleEntry&&app.git_commit_sha===compatibleEntry.gitCommit&&typeof app.docker_compose_custom_build_command==='string'&&typeof app.docker_compose_custom_start_command==='string'
+   &&hash(Buffer.from(app.docker_compose_custom_build_command))===compatibleEntry.controllerPolicy.buildCommandDigest&&hash(Buffer.from(app.docker_compose_custom_start_command))===compatibleEntry.controllerPolicy.startCommandDigest)
+   return compatibleEntryInspector.inspectConfiguration(t.targetId,app.git_commit_sha);
   return inspector.inspectConfiguration(t.targetId,app.git_commit_sha);
  };
  const databaseObservation=async()=>{
   const configuration=await observeConfig(),digest=composeConfigurationDigest(configuration);
   const oldEntry=recoveryContext&&digest===composeConfigurationDigest(recoveryContext.configuration);
-  const phase=digest===t.baseline.configDigest?'baseline':digest===t.configDigest?'candidate':digest===t.rollbackConfigDigest?'rollback':oldEntry?'recovery_entry':null;
+  const compatibleEntry=compatible&&digest===composeConfigurationDigest(s.compatibleArtifactRecovery.currentEntry.configuration);
+  const phase=digest===t.baseline.configDigest?'baseline':digest===t.configDigest?'candidate':digest===t.rollbackConfigDigest?'rollback':oldEntry?'recovery_entry':compatibleEntry?'compatible_entry':null;
   check(phase,'database_configuration_changed');
-  const observed=await(oldEntry?recoveryContext.inspector:inspector).inspectLegacyBaseline(t.targetId,configuration.gitCommit);
+  const observed=await(oldEntry?recoveryContext.inspector:compatibleEntry?compatibleEntryInspector:inspector).inspectLegacyBaseline(t.targetId,configuration.gitCommit);
   check(composeConfigurationDigest(observed.configuration)===digest,'database_configuration_changed');
   const rows=observed.services.filter(r=>r.role==='database'),row=rows[0];
   check(rows.length===1&&row.name===database.name&&row.imageDigest===database.imageDigest&&row.mountDigest===database.mountDigest
    &&/^[a-f0-9]{64}$/.test(row.containerId)&&row.state==='running'&&row.health==='healthy','database_runtime_changed');
   if(row.containerId!==baselineDatabase.containerId){
+   if(compatible&&observed.services.length===1){qualifyCompatiblePhysicalEntry({snapshot:s,observed,now:(dependencies.now??Date.now)()});
+    const source={...cfg.source,container:row.containerId},fence=await readDatabaseFence(source),fp=await readFingerprint(source);
+    check(fence.readOnlyFence===true&&fence.activeOtherSessions===0&&fence.ownedTransactions===0&&fp.schemaDigest===m.baseline.schemaDigest&&fp.dataDigest===m.baseline.dataDigest,'compatible_database_safety_unproven');
+    return{row,observed,configDigest:digest};}
    if(recoveryContext){
     const current=await dependencies.readReleaseState(),last=current?.journal?.at(-1),entry=recoveryContext;
     check(current?.release?.id===s.releaseId&&contract.releaseDigest(current.release.snapshot)===snapshotDigest,'recovery_only_current_scope_changed');
@@ -535,7 +664,8 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   try{return JSON.parse(await ssh({command:`docker exec -i ${quote(source.container)} psql -X -qAt -v ON_ERROR_STOP=1 -U ${quote(source.user)} -d ${quote(source.database)}`,stdin:sql}));}catch(e){deny('maintenance_unproven',e);}
  };
  const safety=()=>withDatabase(async(source,{observed})=>{
-  check(t.configuration.services.filter(r=>r.role==='cadence').every(r=>observed.services.some(x=>x.name===r.name&&x.role==='cadence'
+  if(compatible&&observed.services.length===1)qualifyCompatiblePhysicalEntry({snapshot:s,observed,now:(dependencies.now??Date.now)()});
+  else check(t.configuration.services.filter(r=>r.role==='cadence').every(r=>observed.services.some(x=>x.name===r.name&&x.role==='cadence'
    &&['paused','created','exited'].includes(x.state)&&x.exitCode===0&&x.health===null)),'cadence_activity_present');
   const row=await readDatabaseFence(source);
   check(row?.readOnlyFence===true&&row.activeOtherSessions===0,'maintenance_unproven');return{quiescent:true,...row,...await readFingerprint(source)};
@@ -559,6 +689,7 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   return last;
  };
  const preparePhase=async(mode,options)=>{
+  check(!compatible||mode==='candidate','compatible_historical_rollback_forbidden');
   await checkIntent({...options,rollback:mode==='rollback'});const p=policies[mode],configuration=await observeConfig();
   if(imageRetention){lastRetentionEvidence=await imageRetention.inspect();check(lastRetentionEvidence.pendingCreate===null,'retention_pending_effect_unproven');}
   check(composeConfigurationDigest(configuration)===p.phaseConfigDigest,'phase_configuration_changed');
@@ -568,16 +699,27 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   const actual=[];for(const row of observed.services){check(/^[a-f0-9]{64}$/.test(row.containerId),'service_identity_unproven');
    const mounts=JSON.parse(await ssh({command:`docker container inspect --format '{{json .Mounts}}' -- ${quote(row.containerId)}`}));
    actual.push({name:row.name,imageDigest:row.imageDigest,mounts});}
+  let entryQualification,replacementImageMetadata;
+  if(compatible){qualifyCompatiblePhysicalEntry({snapshot:s,observed,now:(dependencies.now??Date.now)()});const images=[];
+   for(const r of s.compatibleArtifactRecovery.replacement.images)images.push({name:r.name,observation:JSON.parse(await ssh({command:`docker image inspect --format '{{json .}}' -- ${quote(r.imageDigest)}`,maxOutputBytes:65536}))});
+   replacementImageMetadata=qualifyCompatibleReplacementMetadata({snapshot:s,policy:p,images});
+   const after=await inspector.inspectLegacyBaseline(t.targetId,configuration.gitCommit);check(contract.releaseDigest(after)===contract.releaseDigest(observed),'compatible_entry_changed_during_phase_read');
+   entryQualification=compatibleCandidateEntryWitness({snapshot:s,policy:p,observed:after,observedAt:new Date((dependencies.now??Date.now)()).toISOString()});
+  }
   return qualifyComposePhaseArtifact({policy:p,artifactBytes:artifacts[mode],configurationDigest:composeConfigurationDigest(configuration),sourcePins:cfg.sourcePins,
    services:actual,imageIdentities:identities,rendererDigest:cfg.sourcePins.controllerRenderer,
-   settingsInvariantDigest:observed.controllerObserved.settingsInvariantDigest,runtimeInvariantDigest:observed.controllerObserved.runtimeInvariantDigest});
+   settingsInvariantDigest:observed.controllerObserved.settingsInvariantDigest,runtimeInvariantDigest:observed.controllerObserved.runtimeInvariantDigest,
+   ...(compatible?{entryQualification,replacementImageMetadata,now:(dependencies.now??Date.now)()}: {})});
  };
  const configurePhase=async({mode,commit})=>{
+  check(!compatible||mode==='candidate','compatible_historical_rollback_forbidden');
   check(!recovery||mode==='rollback','recovery_only_candidate_configuration_forbidden');
   const intent=await checkIntent({rollback:mode==='rollback'},true);
   await assertClone();const before=await observeConfig(),prior=composeConfigurationDigest(before);
   const ordinaryPreimage=mode==='candidate'?[t.baseline.configDigest,t.configDigest].includes(prior):[t.configDigest,t.rollbackConfigDigest].includes(prior);
-  if(!ordinaryPreimage&&recovery&&mode==='rollback'){
+  if(compatible){check(compatibleContext,'compatible_entry_inspection_required');qualifyCompatibleRecoveryConfigurationPreimage({snapshot:s,current:await dependencies.readReleaseState(),configuration:before});
+   await inspectCompatibleRecoveryEntry({previousState:compatibleContext.previousState});}
+  else if(!ordinaryPreimage&&recovery&&mode==='rollback'){
    check(recoveryContext,'recovery_only_entry_inspection_required');
    qualifyRecoveryOnlyConfigurationPreimage({snapshot:s,current:await dependencies.readReleaseState(),configuration:before});
    await inspectRecoveryEntry({previousState:recoveryContext.previousState});
@@ -589,7 +731,7 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   const p=policies[mode];check((await php(stagePhp,{targetId:t.targetId,name:composePhaseArtifactFile(p),bytes:artifacts[mode].toString('base64'),sha256:p.artifactDigest})).staged===true,'artifact_stage_unproven');
   check((await checkIntent({rollback:mode==='rollback'},true)).id===intent.id,'phase_intent_changed');
   check(p.commit===commit,'phase_binding_changed');
-  if(mode==='rollback'){
+  if(mode==='rollback'||p.candidateExecution){
    const checksum=composePhaseChecksumBytes(p);
    check((await php(stagePhp,{targetId:t.targetId,name:composePhaseArtifactFile(p)+'.sha256',bytes:checksum.toString('base64'),sha256:hash(checksum)})).staged===true,'artifact_stage_unproven');
    check((await checkIntent({rollback:true},true)).id===intent.id,'phase_intent_changed');
@@ -636,6 +778,7 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   return{healthy:result.healthy&&result.versionVerified,healthDigest:result.healthDigest,dataDigest:(await fingerprint()).dataDigest};
  };
  const recoveryObservation=async(options)=>{
+  check(!compatible,'compatible_failure_requires_frozen_entry_reinspection');
   await assertClone();const current=await dependencies.readReleaseState(),operation=current?.journal?.find(r=>r.id===options.operationId);
   check(current?.release?.id===s.releaseId&&contract.releaseDigest(current.release.snapshot)===snapshotDigest
    &&operation?.operation===(options.rollback?'rollback':'deploy')&&operation.createdAt===options.since
@@ -762,6 +905,7 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
  };
  const servicesProbeBaseline=()=>services(m,{baseline:true});
  const configurationAbsenceObservation=async options=>{
+  check(!compatible,'compatible_configuration_absence_requires_down_entry_proof');
   await assertClone();check(options.rollback!==true,'configuration_absence_candidate_only');
   const operation=await checkIntent(options,true,true);
   check(operation.id===options.operationId&&operation.createdAt===options.since,'configuration_absence_operation_changed');
@@ -792,6 +936,40 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
    &&(originalCurrent.journal.length===0||originalCurrent.journal.length===1&&originalCurrent.journal[0].operation==='rollback_config'&&!originalCurrent.journal[0].outcome),'recovery_only_entry_phase_changed');
   const result=await readFixedRecoveryEntry({old:qualified.oldSnapshot,previousState,closureReceipt:qualified.closureReceipt,saved:s.recoveryOnly.currentEvidence,cfg,materializationTemplate:recoveryMaterializationTemplate,assertClone,ssh,php,git,healthProbe,readDatabaseFence,readFingerprint,createInspector:dependencies.createInspector??createComposeStateInspector,now:dependencies.now??Date.now,readCurrentState:dependencies.readReleaseState});
   qualifyRecoveryOnlyEntryState({snapshot:s,previousState,currentEvidence:result.currentEvidence,now:(dependencies.now??Date.now)()});recoveryContext=result.context;return{currentEvidence:result.currentEvidence,closureReceipt:result.closureReceipt};
+ };
+ const inspectCompatibleRecoveryEntry=async({previousState})=>{
+  await assertClone();check(compatible,'compatible_inspection_required');qualifyComposeConfigurationSchema((await php(composeConfigurationSchemaReadPhp)).schema);
+  const admittedAt=state.release.createdAt??state.release.created_at,q=qualifyCompatibleRecoveryEntryState({snapshot:s,previousState,admittedAt}),originalCurrent=await dependencies.readReleaseState();
+  check(originalCurrent?.release?.id===s.releaseId&&['active','reconciliation_required'].includes(originalCurrent.status)&&contract.releaseDigest(originalCurrent.release.snapshot)===snapshotDigest
+   &&(originalCurrent.release.createdAt??originalCurrent.release.created_at)===admittedAt,'compatible_entry_grant_changed');
+  if(originalCurrent.journal.length<=4)check(originalCurrent.status==='active'&&['push','pr','review','merge','deploy_config'].includes(contract.nextCompatibleRecoveryOperation(originalCurrent)),'compatible_entry_phase_changed');
+  else qualifyCompatibleRecoveryConfigurationPreimage({snapshot:s,current:originalCurrent,configuration:s.compatibleArtifactRecovery.currentEntry.configuration});
+  const saved=s.compatibleArtifactRecovery.currentEntry,quiescent=async()=>{const q=await php("echo json_encode(['activeDeployments'=>App\\Models\\ApplicationDeploymentQueue::whereIn('status',['queued','in_progress'])->count()]);");check(q.activeDeployments===0,'compatible_active_deployment');};
+  await quiescent();const before=await compatibleEntryInspector.inspectLegacyBaseline(t.targetId,saved.configuration.gitCommit);
+  check(composeConfigurationDigest(before.configuration)===composeConfigurationDigest(saved.configuration),'compatible_current_configuration_changed');
+  const row=qualifyCompatiblePhysicalEntry({snapshot:s,observed:before,now:(dependencies.now??Date.now)()}),source={...cfg.source,container:row.containerId};
+  const fence=await readDatabaseFence(source),fp=await readFingerprint(source),settings=qualifyCompatibleSettingsRead({snapshot:s,value:await dependencies.readCompatibleRecoverySettings({source,configuration:before.configuration,services:before.services}),now:(dependencies.now??Date.now)()}),health=await healthProbe({expectedCommit:saved.configuration.gitCommit});
+  check(fence.readOnlyFence===true&&fence.activeOtherSessions===0&&fence.ownedTransactions===0&&fp.schemaDigest===m.baseline.schemaDigest&&fp.dataDigest===m.baseline.dataDigest
+   &&settings.sequenceDigest===m.postObservation.baselineSequenceDigest&&settings.databaseSettingsDigest===saved.databaseSettingsDigest&&settings.ingressSettingsDigest===saved.ingressSettingsDigest
+   &&settings.ingressBlocked===true&&health.healthy===false&&hex.safeParse(health.healthDigest).success,'compatible_current_protected_settings_unproven');
+  const availabilityProgram=`import json,subprocess\nids=set(subprocess.check_output(['docker','image','ls','--no-trunc','--quiet'],stderr=subprocess.DEVNULL,timeout=15).decode().split())\nassert len(ids)<=512 and all(__import__('re').fullmatch('sha256:[a-f0-9]{64}',v) for v in ids)\nrows=json.loads(${JSON.stringify(JSON.stringify(saved.imageAvailability.map(({name,imageDigest})=>({name,imageDigest}))))})\nprint(json.dumps([dict(v,present=v['imageDigest'] in ids) for v in rows]))\n`;
+  const imageAvailability=JSON.parse(await ssh({command:'python3 -',stdin:availabilityProgram,maxOutputBytes:8192}));
+  check(contract.releaseDigest(imageAvailability)===contract.releaseDigest(saved.imageAvailability),'compatible_historical_image_availability_changed');
+  const after=await compatibleEntryInspector.inspectLegacyBaseline(t.targetId,saved.configuration.gitCommit),fenceAfter=await readDatabaseFence(source),fpAfter=await readFingerprint(source),settingsAfter=qualifyCompatibleSettingsRead({snapshot:s,value:await dependencies.readCompatibleRecoverySettings({source,configuration:after.configuration,services:after.services}),now:(dependencies.now??Date.now)()});await quiescent();
+  const settingsStable=value=>{const x=structuredClone(Object.fromEntries(['sequenceDigest','databaseSettingsDigest','ingressSettingsDigest','ingressBlocked','ingressFence'].map(k=>[k,value[k]])));if(x.ingressFence){delete x.ingressFence.observedAt;delete x.ingressFence.evidenceDigest;}return x;};
+  check(contract.releaseDigest(before)===contract.releaseDigest(after)&&contract.releaseDigest(fence)===contract.releaseDigest(fenceAfter)&&contract.releaseDigest(fp)===contract.releaseDigest(fpAfter)
+   &&contract.releaseDigest(settingsStable(settings))===contract.releaseDigest(settingsStable(settingsAfter))
+   &&contract.releaseDigest(await dependencies.readReleaseState())===contract.releaseDigest(originalCurrent),'compatible_entry_changed_during_read');
+  const observedAt=new Date((dependencies.now??Date.now)()).toISOString(),physical=Object.fromEntries(['name','role','containerId','imageDigest','mountDigest','state','health','exitCode','createdAt'].map(k=>[k,row[k]]));
+  const inventory={schemaVersion:'roost-compose-project-inventory-v1',targetId:t.targetId,observedAt,projectServiceSetComplete:true,physicalServices:[physical],digest:'0'.repeat(64)};inventory.digest=contract.compatibleRecoveryInventoryDigest(inventory);
+  const currentEntry={...structuredClone(saved),observedAt,projectInventory:inventory,configuration:before.configuration,imageAvailability,schemaDigest:fp.schemaDigest,dataDigest:fp.dataDigest,
+   sequenceDigest:settings.sequenceDigest,databaseSettingsDigest:settings.databaseSettingsDigest,ingressSettingsDigest:settings.ingressSettingsDigest,ingressBlocked:settings.ingressBlocked,
+   ...(settings.ingressFence?{ingressFence:settings.ingressFence}:{}),publicHealth:{healthy:false,healthDigest:health.healthDigest}};
+  currentEntry.services=saved.services.map(v=>v.presence==='present'?{...physical,presence:'present',declarationDigest:contract.releaseDigest(before.configuration.services.find(d=>d.name===v.name)),inventoryDigest:inventory.digest,observedAt}
+   :{...v,declarationDigest:contract.releaseDigest(before.configuration.services.find(d=>d.name===v.name)),inventoryDigest:inventory.digest,observedAt});
+  currentEntry.cadences=saved.cadences.map(v=>({...v,inventoryDigest:inventory.digest,observedAt}));currentEntry.evidenceDigest=contract.compatibleRecoveryEntryDigest(currentEntry);
+  qualifyCompatibleRecoveryEntryState({snapshot:s,previousState,currentEntry,now:(dependencies.now??Date.now)(),admittedAt});await assertClone();
+  compatibleContext={previousState:structuredClone(previousState)};return{currentEntry,closureReceipt:q.closureReceipt};
  };
  const adapter=createCoolifyComposeAdapter({now:dependencies.now,sleep:dependencies.sleep,gateway:{
   inspectConfiguration:observeConfig,
@@ -836,7 +1014,7 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
    protectedResourcesDigest:contract.releaseDigest(ownership.protectedResourceIds),absenceVerified:true,resourceIds:[],...(lastRetentionEvidence?{imageRetention:structuredClone(lastRetentionEvidence)}:{})};},
   ownedResource(){deny('disposable_resources_unsupported');},cleanupLocal(){deny('permanent_repository_deletion_prohibited');},cleanupCoolifyApplication(){deny('permanent_application_deletion_prohibited');}};
  if(cfg.activity){
-  const facade=createInstalledActivityTransport({manifest:m,binding:s,settings:cfg.activity,seed:activitySeed,
+  const facade=createInstalledActivityTransport({manifest:m,binding:s,settings:cfg.activity,seed:activitySeed,compatibleIngress:cfg.compatibleIngress,
    installation:{sshHost:cfg.sshHost,frontendMetaName:cfg.health.frontendMetaName},baselineServices:baseline.services,
    readScopeBytes:async({file,sha256,maxBytes})=>{check(maxBytes===131072,'activity_file_bound_invalid');return bytesFor(file,sha256);},
    readRuntime:async options=>{
@@ -853,7 +1031,16 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   Object.assign(resources,createActivityReleaseAdapter({manifest:m,binding:s,settings:cfg.activity,seed:activitySeed,
    readState:dependencies.readReleaseState,transport:facade.transport}));
  }
- return Object.freeze({coolify:Object.freeze({...adapter,inspectRecoveryEntry}),resources:Object.freeze(resources),assertClone,safety,
+ const compatibleMethods=compatible?{inspect:async()=>deny('compatible_historical_baseline_unavailable'),configureRollback:async()=>deny('compatible_historical_rollback_forbidden'),rollback:async()=>deny('compatible_historical_rollback_forbidden'),
+  health:async(a,b,o={})=>{check(o.rollback!==true,'compatible_historical_rollback_forbidden');return adapter.health(a,b,o);},
+  observe:async(a,b,o={})=>{check(o.rollback!==true,'compatible_historical_rollback_forbidden');return adapter.observe(a,b,o);},
+  reconcileDeployment:async(a,b,o={})=>{check(o.rollback!==true,'compatible_historical_rollback_forbidden');return adapter.reconcileDeployment(a,b,o);},
+  reconcileConfiguration:async(a,b,o={})=>{check(o.rollback!==true,'compatible_historical_rollback_forbidden');return adapter.reconcileConfiguration(a,b,o);},
+  configureCandidate:async(_m,_s)=>{check(contract.releaseDigest(_m)===contract.releaseDigest(m)&&_s.releaseId===s.releaseId&&_s.commit===s.commit,'compatible_candidate_scope_changed');
+   await safety();check(['digest','bytes','capturedAt','restoreVerifiedAt','restoreDigest'].every(k=>backup?.[k]===m.backup[k]),'backup_changed');await configurePhase({mode:'candidate',commit:s.commit});
+   check(composeConfigurationDigest(await observeConfig())===t.configDigest,'compatible_configuration_readback_unproven');
+   return{commit:s.commit,deployedCommit:s.commit,artifactSetDigest:m.deployment.artifactSetDigest,configDigest:m.deployment.configDigest,schemaDigest:m.deployment.schemaDigest};}}:{};
+ return Object.freeze({coolify:Object.freeze({...adapter,...compatibleMethods,inspectRecoveryEntry,inspectCompatibleRecoveryEntry}),resources:Object.freeze(resources),assertClone,safety,
   ...(imageRetention?{imageRetention:Object.freeze({inspect:async()=>{lastRetentionEvidence=await imageRetention.inspect({additionalImages:lastRetentionEvidence?.additionalImages??[]});return structuredClone(lastRetentionEvidence);},
    lastEvidence:()=>lastRetentionEvidence?structuredClone(lastRetentionEvidence):null,journalFile:retentionJournalFile})}:{})});
 }

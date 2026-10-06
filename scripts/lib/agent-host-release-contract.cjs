@@ -5,6 +5,8 @@ const { createHash } = require("node:crypto");
 const compose = require('./agent-host-release-compose-state.cjs');
 const baselineRevalidation = require('./agent-host-release-baseline-revalidation.cjs');
 const { createCompatibleRecoveryContract } = require('./agent-host-release-compatible-recovery.cjs');
+const { createCompatibleFailureContract } = require('./agent-host-release-compatible-failure.cjs');
+const ingressFence = require('./agent-host-release-compose-ingress-fence.cjs');
 const id=z.string().uuid(), sha=z.string().regex(/^[a-f0-9]{40}$/), hash=z.string().regex(/^[a-f0-9]{64}$/);
 const text=z.string().trim().min(1).max(1000).refine(v=>!/(?:cc_v1_[A-Za-z0-9_-]{24,}|Bearer\s+\S+|-----BEGIN .*PRIVATE KEY|(?:password|api[_-]?key|access[_-]?token|secret)\s*[:=]\s*\S+)/i.test(v),"Credentials prohibited");
 const url=z.string().url().max(2000).refine(v=>{const u=new URL(v);return u.protocol==="https:"&&!u.username&&!u.password&&!u.search&&!u.hash;},"HTTPS URL without credentials required");
@@ -195,7 +197,14 @@ const composeRetainedBaselineAdoptionSchema=composeQueueAbsenceBaselineAdoptionS
 const baselineRevalidationSchema=baselineRevalidation.createBaselineRevalidationSchema(sourceSetArtifact.extend({healthDigest:hash,dataDigest:hash}).strict());
 // Git publication may advance from a different exact main than the deployed rollback baseline.
 const gitPublicationBaseSchema=z.object({commit:sha,tree:sha}).strict();
-const releaseGitPublicationBase=s=>s.gitPublicationBase??{commit:s.baseCommit,tree:s.baseTree};
+const releaseGitPublicationBase=s=>{
+ if(Object.prototype.hasOwnProperty.call(s,'compatibleArtifactRecovery')){
+  if(!compatibleArtifactRecoverySchema.safeParse(s.compatibleArtifactRecovery).success||s.gitPublicationBase!==undefined)
+   throw Error('release_compatible_recovery_publication_invalid');
+  const p=s.compatibleArtifactRecovery.publication;return {commit:p.baseCommit,tree:p.baseTree};
+ }
+ return s.gitPublicationBase??{commit:s.baseCommit,tree:s.baseTree};
+};
 const recoveryOnlySchema=z.lazy(()=>z.object({schemaVersion:z.literal('roost-compose-recovery-only-v1'),releaseId:id,expectedVersion:hash,closureId:id,closureDigest:hash,failedOperationId:id,failedOutcomeId:id,failedEvidenceDigest:hash,previousManifestDigest:hash,currentEvidence:evidenceSchema,nativeClosure:releaseNativeClosureSchema,scopeAudit:z.object({taskId:id,executionId:id,reviewId:id,materialVersion:hash,scopeDigest:hash}).strict()}).strict());
 // Instantiated after all base schemas/digests below. The lazy reference is only
 // resolved at parse time; neither module imports the other in a loader cycle.
@@ -332,7 +341,15 @@ const postObservationEvidenceSchema=z.discriminatedUnion('kind',[
   failureCode:z.enum(['fixture_unproven','empty_render_failed','populated_render_failed','data_parity_failed','runtime_resume_failed']),
   ownedEffects:z.enum(['absent','present','unproven']),nativeChildrenClosed:z.literal(true)}).strict()
 ]);
-const evidenceSchema=z.object({composeConfigAbsence:composeConfigAbsenceSchema.optional(),postObservation:postObservationEvidenceSchema.optional(),composeRecovery:composeRecoverySchema.optional(),composeTargets:z.array(composeTargetEvidence).length(1).optional(),observedAt:z.string().datetime(),failureKind:z.literal('rollback_image_mismatch').optional(),remoteCommit:sha.optional(),remoteBase:sha.optional(),remoteBaseTree:sha.optional(),remoteTree:sha.optional(),pullRequestNumber:z.number().int().positive().optional(),prHeadCommit:sha.optional(),prMerged:z.boolean().optional(),reviewApproved:z.boolean().optional(),mergedCommit:sha.optional(),deploymentId:text.optional(),deploymentIds:z.array(deploymentIdentity).max(6).optional(),deployedTargets:z.array(deployedTarget).min(1).max(6).optional(),artifactSetDigest:hash.optional(),deployedSetDigest:hash.optional(),currentServiceSetDigest:hash.optional(),deployedCommit:sha.optional(),deployedTree:sha.optional(),imageDigest:image.optional(),configDigest:hash.optional(),schemaDigest:hash.optional(),healthDigest:hash.optional(),dataDigest:hash.optional(),backupDigest:hash.optional(),restoreDigest:hash.optional(),healthy:z.boolean().optional(),observationSeconds:z.number().int().nonnegative().max(3600).optional(),resourceIds:z.array(text).max(30).optional(),resourcePresent:z.boolean().optional(),repositoryArchived:z.boolean().optional(),localAbsent:z.boolean().optional(),absenceVerified:z.boolean().optional(),retentionVerified:z.boolean().optional(),repositoryUrl:url.optional(),canonicalDir:dir.optional(),targetId:text.optional(),applicationActive:z.boolean().optional(),localCommit:sha.optional(),localTree:sha.optional(),protectedResourcesDigest:hash.optional()}).strict().superRefine((e,c)=>{if(e.deploymentIds?.length===0&&!((['queue_absent','queue_absent_partial'].includes(e.composeRecovery?.kind)||e.composeConfigAbsence!==undefined)&&e.absenceVerified===true))c.addIssue({code:'custom',message:'empty_deployment_ids_outside_recovery'});
+const evidenceSchema=z.object({compatibleRecoveryFailure:z.lazy(()=>compatibleFailureContract.compatibleFailureMarkerSchema).optional(),sequenceDigest:hash.optional(),composeConfigAbsence:composeConfigAbsenceSchema.optional(),postObservation:postObservationEvidenceSchema.optional(),composeRecovery:composeRecoverySchema.optional(),composeTargets:z.array(composeTargetEvidence).length(1).optional(),observedAt:z.string().datetime(),failureKind:z.literal('rollback_image_mismatch').optional(),remoteCommit:sha.optional(),remoteBase:sha.optional(),remoteBaseTree:sha.optional(),remoteTree:sha.optional(),pullRequestNumber:z.number().int().positive().optional(),prHeadCommit:sha.optional(),prMerged:z.boolean().optional(),reviewApproved:z.boolean().optional(),mergedCommit:sha.optional(),deploymentId:text.optional(),deploymentIds:z.array(deploymentIdentity).max(6).optional(),deployedTargets:z.array(deployedTarget).min(1).max(6).optional(),artifactSetDigest:hash.optional(),deployedSetDigest:hash.optional(),currentServiceSetDigest:hash.optional(),deployedCommit:sha.optional(),deployedTree:sha.optional(),imageDigest:image.optional(),configDigest:hash.optional(),schemaDigest:hash.optional(),healthDigest:hash.optional(),dataDigest:hash.optional(),backupDigest:hash.optional(),restoreDigest:hash.optional(),healthy:z.boolean().optional(),observationSeconds:z.number().int().nonnegative().max(3600).optional(),resourceIds:z.array(text).max(30).optional(),resourcePresent:z.boolean().optional(),repositoryArchived:z.boolean().optional(),localAbsent:z.boolean().optional(),absenceVerified:z.boolean().optional(),retentionVerified:z.boolean().optional(),repositoryUrl:url.optional(),canonicalDir:dir.optional(),targetId:text.optional(),applicationActive:z.boolean().optional(),localCommit:sha.optional(),localTree:sha.optional(),protectedResourcesDigest:hash.optional()}).strict().superRefine((e,c)=>{
+ if(Object.prototype.hasOwnProperty.call(e,'compatibleRecoveryFailure')){
+  const parsed=compatibleFailureContract.compatibleFailureEvidenceSchema.safeParse(e);
+  if(!parsed.success||e.compatibleRecoveryFailure===undefined)c.addIssue({code:'custom',message:'compatible_failure_evidence_invalid'});
+  else{const absent=e.compatibleRecoveryFailure.kind.endsWith('_absent');if(e.deploymentIds.length!==(absent?0:1))c.addIssue({code:'custom',message:'compatible_failure_queue_shape_invalid'});}
+  return;
+ }
+ if(e.sequenceDigest!==undefined)c.addIssue({code:'custom',message:'sequence_digest_outside_compatible_failure'});
+ if(e.deploymentIds?.length===0&&!((['queue_absent','queue_absent_partial'].includes(e.composeRecovery?.kind)||e.composeConfigAbsence!==undefined)&&e.absenceVerified===true))c.addIssue({code:'custom',message:'empty_deployment_ids_outside_recovery'});
  if(e.currentServiceSetDigest!==undefined&&!['queue_failed_partial','queue_absent_partial','queue_failed_rollback_partial'].includes(e.composeRecovery?.kind))c.addIssue({code:'custom',message:'partial_runtime_digest_outside_failed_partial'});});
 // Closing its own still-active release attests exactly one catalog entry. Grant
 // admission continues to require zero active application releases.
@@ -414,7 +431,9 @@ const releaseRollbackImageFailureValid=(s,e,targetId)=>{
  const actual={targetId:r.targetId,commit:r.commit,tree:r.tree,imageDigest:r.imageDigest,configDigest:r.configDigest,schemaDigest:r.schemaDigest};
  return e.deployedSetDigest===releaseDigest([actual]);
 };
-const outcomeSchema=z.object({requestId:id,status:z.enum(["succeeded","failed","uncertain","reconciled"]),reconciledStatus:z.enum(["succeeded","absent","failed"]).optional(),observationOnly:z.boolean(),evidence:evidenceSchema}).strict().superRefine((v,c)=>{if(v.status==="reconciled"?(!v.observationOnly||!v.reconciledStatus):v.reconciledStatus!==undefined)c.addIssue({code:"custom",message:"reconciliation_shape_invalid"});});
+const outcomeSchema=z.object({requestId:id,status:z.enum(["succeeded","failed","uncertain","reconciled"]),reconciledStatus:z.enum(["succeeded","absent","failed"]).optional(),observationOnly:z.boolean(),evidence:evidenceSchema}).strict().superRefine((v,c)=>{if(v.status==="reconciled"?(!v.observationOnly||!v.reconciledStatus):v.reconciledStatus!==undefined)c.addIssue({code:"custom",message:"reconciliation_shape_invalid"});
+ if(v.evidence.compatibleRecoveryFailure!==undefined){const absent=v.evidence.compatibleRecoveryFailure.kind.endsWith("_absent");if(v.status!=="reconciled"||v.observationOnly!==true||v.reconciledStatus!==(absent?"absent":"failed"))c.addIssue({code:"custom",message:"compatible_failure_outcome_shape_invalid"});}
+});
 const canonical=v=>Array.isArray(v)?v.map(canonical):v&&typeof v==="object"?Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])])):v;
 const releaseDigest=v=>createHash("sha256").update(JSON.stringify(canonical(v))).digest("hex");
 // Raw fixed-reader facts are retained in the journal. Qualification recomputes
@@ -1061,5 +1080,13 @@ module.exports.releaseRecoveryOnlyEntryError=releaseRecoveryOnlyEntryError;
 module.exports.releaseRecoveryOnlyOperationError=releaseRecoveryOnlyOperationError;
 const compatibleRecoveryContract=createCompatibleRecoveryContract({manifestSchema,
  composeConfigurationSchema:compose.composeConfigurationSchema,composeRuntimeServiceSchema:compose.composeRuntimeServiceSchema,
- releaseNativeClosureSchema,releaseDigest,composeConfigurationDigest:compose.composeConfigurationDigest});
+ releaseNativeClosureSchema,releaseDigest,composeConfigurationDigest:compose.composeConfigurationDigest,
+ qualifyCompatibleFailureOutcome:(...args)=>compatibleFailureContract.compatibleFailureOutcomeError(...args)});
 Object.assign(module.exports,compatibleRecoveryContract);
+// Both base graphs are initialized before the lazy marker is ever parsed.
+// The recovery factory receives a fixed deferred callback, never packet code.
+const compatibleFailureContract=createCompatibleFailureContract({manifestSchema,intentSchema,compatibleArtifactRecoverySchema,
+ composeConfigurationSchema:compose.composeConfigurationSchema,composeRuntimeServiceSchema:compose.composeRuntimeServiceSchema,
+ composeIngressFenceSchema:ingressFence.composeIngressFenceSchema,releaseDigest,composeConfigurationDigest:compose.composeConfigurationDigest,
+ compatibleRecoveryScopeDigest:compatibleRecoveryContract.compatibleRecoveryScopeDigest,qualifyComposeIngressFence:ingressFence.qualifyComposeIngressFence});
+Object.assign(module.exports,compatibleFailureContract);

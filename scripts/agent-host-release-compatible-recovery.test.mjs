@@ -5,6 +5,7 @@ import {randomUUID} from 'node:crypto';
 import shared from './lib/agent-host-release-contract.cjs';
 import compose from './lib/agent-host-release-compose-state.cjs';
 import {createCompatibleRecoveryContract} from './lib/agent-host-release-compatible-recovery.cjs';
+import ingress from './lib/agent-host-release-compose-ingress-fence.cjs';
 import {fixture as originalFixture,hash as H,image} from './fixtures/release-compose-contract.cjs';
 const clone=structuredClone,sha=x=>x.repeat(40),now=Date.parse('2026-10-04T12:10:00.000Z');
 const api=createCompatibleRecoveryContract({manifestSchema:shared.manifestSchema,composeConfigurationSchema:compose.composeConfigurationSchema,
@@ -21,7 +22,7 @@ function rehash(m,s){const t=m.deployment.targets[0];t.configDigest=compose.comp
  for(const[k,mode]of [['deployment',false],['rollback',true],['baseline','baseline']])m[k].artifactSetDigest=shared.sourceArtifactDigest(m,s,mode);}
 function native(executionId){return{ownedTreeReceipt:{version:'roost-windows-job-v2',attempt:executionId,rootExit:0,jobClosed:true,cleanup:true,activeProcesses:0,
  assignedBeforeResume:true,resumed:true,killOnClose:true,breakaway:false,sourceSha256:H('a')},managedAdmission:{qualification:'signed_native_v1',evidenceDigest:H('b'),jobSourceDigest:H('a')}};}
-function fixture(){const f=originalFixture(),t=f.target;
+export function fixture(){const f=originalFixture(),t=f.target;
  const cadence={name:'scheduler',role:'cadence',source:'built',expectedState:'paused',mountDigest:H('9')};
  for(const c of[t.configuration,t.rollbackConfiguration,t.baseline.configuration])c.services.push(clone(cadence));
  t.baseline.images.push({name:'scheduler',imageDigest:image('4')});f.m.cleanup.protectedResourceIds.push(H('9'),image('4'));
@@ -61,6 +62,11 @@ function fixture(){const f=originalFixture(),t=f.target;
   cadences:m.postObservation.runtimeResume.cadences.map(v=>({presence:'absent',name:v.name,behaviorDigest:v.behaviorDigest,held:true,containerId:null,imageDigest:null,state:'absent',absenceVerified:true,inventoryDigest:H('0'),observedAt:inventory.observedAt})),
   databaseSettingsDigest:m.postObservation.runtimeResume.databaseSettingsDigest,ingressSettingsDigest:m.postObservation.runtimeResume.ingressSettingsDigest,
   ingressBlocked:true,activeDeploymentCount:0,publicHealth:{healthy:false,healthDigest:H('6')},evidenceDigest:H('0')};
+ entry.ingressFence={schemaVersion:'roost-compose-proxy-network-fence-v1',observedAt:entry.observedAt,targetId:entry.targetId,
+  networkId:H('b'),subnet:'192.0.2.0/24',proxyId:H('c'),proxyPid:4321,namespaceDigest:H('d'),databaseContainerId:db.containerId,
+  databaseIpv4:'192.0.2.2',proxyIpv4:'192.0.2.6',port:8000,ruleComment:'roost-release-hold-'+H('e').slice(0,32),ruleDigest:H('f'),
+  originalRulesDigest:H('a'),observedRulesDigest:H('b'),projectNetworkExclusive:true,publishedPortsAbsent:true,rulePresent:true,evidenceDigest:H('0')};
+ entry.ingressFence.evidenceDigest=ingress.composeIngressFenceDigest(entry.ingressFence);
  sealInventory(entry);
  const sourceId=randomUUID(),buildId=randomUUID();
  const build={schemaVersion:'roost-compatible-artifact-build-proof-v1',observedAt:'2026-10-04T12:07:00.000Z',executionId:buildId,sourceExecutionId:sourceId,commit,tree,images:clone(images),
@@ -175,6 +181,13 @@ test('fresh grant has its OWN new Git sequence; historical operations are not a 
  assert.equal(api.nextCompatibleRecoveryOperation(state),'push');assert.equal(api.compatibleRecoveryIntentError(state,intent(f,'push')),null);
  assert.notEqual(api.compatibleRecoveryIntentError(state,intent(f,'deploy_config')),null);state.journal=journal(f,4);assert.equal(api.nextCompatibleRecoveryOperation(state),'deploy_config');
  assert.equal(api.compatibleRecoveryIntentError(state,intent(f,'deploy_config',4)),null);assert.notEqual(api.compatibleRecoveryIntentError(state,intent(f,'push',4)),null);});
+
+test('compatible Git publication uses its exact previous source without changing historical runtime baseline',()=>{const f=fixture(),p=f.input.compatibleArtifactRecovery.publication;
+ assert.deepEqual(shared.releaseGitPublicationBase(f.input),{commit:p.baseCommit,tree:p.baseTree});
+ assert.equal(f.input.baseCommit,f.state.release.snapshot.baseCommit);
+ const bad=clone(f.input);bad.gitPublicationBase={commit:p.baseCommit,tree:p.baseTree};assert.throws(()=>shared.releaseGitPublicationBase(bad));
+ delete bad.gitPublicationBase;bad.compatibleArtifactRecovery=undefined;assert.throws(()=>shared.releaseGitPublicationBase(bad));
+});
 test('rollback/failure/uncertainty freeze rather than promising recovery to absent images',()=>{const f=fixture();for(const status of['failed','uncertain','absent']){const rows=journal(f,6);rows.at(-1).outcome={status};const state={status:'active',release:{snapshot:f.input},journal:rows};
  assert.equal(api.nextCompatibleRecoveryOperation(state),status==='uncertain'?'reconcile':'frozen');const q=api.compatibleRecoveryFailureState(state);assert.equal(q.frozen,true);assert.equal(q.healthyRollbackProven,false);assert.equal(q.keepCadencesHeld,true);assert.equal(q.releaseAuthority,false);
  assert.notEqual(api.compatibleRecoveryIntentError(state,intent(f,'rollback',6)),null);}
@@ -190,8 +203,19 @@ test('real isolated empty/populated smoke precedes fixture cleanup and cadence r
  state.journal=journal(f,8);assert.equal(api.nextCompatibleRecoveryOperation(state),'fixture_cleanup');assert.equal(api.compatibleRecoveryIntentError(state,intent(f,'fixture_cleanup',8)),null);
  state.journal=journal(f,9);assert.equal(api.nextCompatibleRecoveryOperation(state),'runtime_resume');});
 test('successful runtime outcome needs canonical full queue/service qualification; response-only green flags fail',()=>{const f=fixture(),operation={operation:'observe',intent:intent(f,'observe',6)},outcome={status:'succeeded',evidence:{healthy:true,deployedCommit:f.input.commit,deployedTree:f.input.candidateTree,
- artifactSetDigest:f.input.manifest.deployment.artifactSetDigest,configDigest:f.input.manifest.deployment.configDigest,schemaDigest:f.input.manifest.baseline.schemaDigest,dataDigest:f.input.manifest.baseline.dataDigest,observationSeconds:1200}};
+ artifactSetDigest:f.input.manifest.deployment.artifactSetDigest,configDigest:f.input.manifest.deployment.configDigest,schemaDigest:f.input.manifest.baseline.schemaDigest,dataDigest:f.input.manifest.baseline.dataDigest,observationSeconds:1200,
+ composeTargets:[{targetId:f.input.manifest.deployment.targetId,binding:{images:clone(f.input.compatibleArtifactRecovery.replacement.images)},runtime:{services:clone(f.input.compatibleArtifactRecovery.replacement.images)}}]}};
  assert.equal(api.compatibleRecoveryOutcomeError(f.input,operation,outcome,()=>null),null);
  assert.notEqual(api.compatibleRecoveryOutcomeError(f.input,operation,outcome),null);assert.notEqual(api.compatibleRecoveryOutcomeError(f.input,operation,outcome,()=> 'queue_mismatch'),null);
  outcome.evidence.observationSeconds=1199;assert.notEqual(api.compatibleRecoveryOutcomeError(f.input,operation,outcome,()=>null),null);
  outcome.evidence.observationSeconds=1200;outcome.evidence.deployedCommit=f.state.release.snapshot.commit;assert.notEqual(api.compatibleRecoveryOutcomeError(f.input,operation,outcome,()=>null),null);});
+
+test('same commit with different runtime images cannot inherit the compatible build proof',()=>{const f=fixture(),operation={operation:'deploy',intent:intent(f,'deploy',5)},r=f.input.compatibleArtifactRecovery.replacement;
+ const result={status:'succeeded',evidence:{healthy:true,deployedCommit:f.input.commit,deployedTree:f.input.candidateTree,artifactSetDigest:r.artifactSetDigest,configDigest:r.configurationDigest,
+ schemaDigest:r.schemaDigest,dataDigest:f.input.manifest.baseline.dataDigest,composeTargets:[{targetId:f.input.manifest.deployment.targetId,binding:{images:clone(r.images)},runtime:{services:clone(r.images)}}]}};
+ assert.equal(api.compatibleRecoveryOutcomeError(f.input,operation,result,()=>null),null);
+ for(const side of ['binding','runtime']){const bad=clone(result),rows=side==='binding'?bad.evidence.composeTargets[0].binding.images:bad.evidence.composeTargets[0].runtime.services;
+ rows[0].imageDigest=image('e');assert.notEqual(api.compatibleRecoveryOutcomeError(f.input,operation,bad,()=>null),null);
+ rows[0]=clone(rows[1]);assert.notEqual(api.compatibleRecoveryOutcomeError(f.input,operation,bad,()=>null),null);}
+ const missing=clone(result);delete missing.evidence.composeTargets;assert.notEqual(api.compatibleRecoveryOutcomeError(f.input,operation,missing,()=>null),null);
+});

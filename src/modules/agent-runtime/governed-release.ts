@@ -10,7 +10,10 @@ import { nativeBoundaryResultBlocked, object, wire } from "./task-review-contrac
 import { suspensionBlocks } from "./capability-suspension";
 import { freshWorkerOwner } from "../api-keys/worker-credential.service";
 import { requireRuntimeContent } from "./runtime-redaction-policy";
-import { createReleaseSchema, releaseIntentSchema, releaseOutcomeSchema, releaseDigest, releaseApprovalError, releaseWindowError, releaseIntentError, releaseOutcomeError, effectiveOutcome, releaseCandidateNativeError, renewReleaseSchema, releaseRenewalWindowError, releaseRenewalStateError, releasePurposeMatches, releaseTargetMetadataMatches, releaseCanonicalDirectoryMatches, releaseSuccessorBasis, closeFailedReleaseSchema, authorizeReconciliationSchema, releaseFailedClosureError, releasePublishedGitBasis, releaseRecoveryOnlyAdmissionError, releaseRecoveryOnlyAuditError, releaseRecoveryOnlyReadError } from "./governed-release-contract";
+import { createReleaseSchema, releaseIntentSchema, releaseOutcomeSchema, releaseDigest, releaseApprovalError, releaseWindowError, releaseIntentError, releaseOutcomeError, effectiveOutcome, releaseCandidateNativeError, renewReleaseSchema, releaseRenewalWindowError, releaseRenewalStateError, releasePurposeMatches, releaseTargetMetadataMatches, releaseCanonicalDirectoryMatches, releaseSuccessorBasis, closeFailedReleaseSchema, authorizeReconciliationSchema, releaseFailedClosureError, releasePublishedGitBasis, releaseRecoveryOnlyAdmissionError, releaseRecoveryOnlyAuditError, releaseRecoveryOnlyReadError, releaseCompatibleRecoveryAdmissionError, releaseCompatibleRecoveryAuditError } from "./governed-release-contract";
+import {loadCompatibleRecoveryProof} from './compatible-recovery-store';
+import {compatibleRecoveryBuildProofCallback} from './compatible-recovery-proof';
+import {compatibleRecoveryCurrentBackupError} from './governed-release-contract';
 type Db=Prisma.TransactionClient;
 const releaseWire=require(path.resolve(__dirname,"../../../scripts/lib/agent-host-release-contract.cjs"));
 // A completed result does not preserve authority after its task basis changes.
@@ -82,6 +85,19 @@ async function load(db:Db,workspaceId:string,id:string) {
  const failedClosures=revocations.some(v=>typeof v.reason==="string"&&v.reason.startsWith("Closed FAILED; owner baseline receipt "))?await db.$queryRaw<any[]>`SELECT * FROM governed_release_failed_closures WHERE release_id=${id}::uuid`:[];
  return {release,journal,revocations,renewals,failedClosures,effectiveExpiresAt,expectedVersion:releaseDigest(wire({release,journal,revocations,renewals}))};
 }
+// Every effect requalifies trusted rows inside the same application-fenced
+// transaction. Client JSON cannot supply this stored provenance snapshot.
+async function compatibleBasis(db:Db,workspaceId:string,input:any,issuerUserId:string,source:any,previous:any,auth:AuthContext,admittedAt=new Date()) {
+ const admission=releaseCompatibleRecoveryAdmissionError(previous,input,admittedAt);if(admission)return {error:admission};
+ if(previous?.release.issuer_user_id!==issuerUserId)return {error:'release_predecessor_issuer_required'};
+ const scope=await reviewState(db,workspaceId,input.compatibleArtifactRecovery.scopeAudit.taskId,auth);
+ const audit=releaseCompatibleRecoveryAuditError(scope,input,source,previous);if(audit)return {error:audit};
+ const proof=await loadCompatibleRecoveryProof(db,workspaceId,input,issuerUserId,source,scope,previous,new Date());
+ if('error' in proof)return proof;
+ const replacement=releaseWire.compatibleRecoveryReplacementError(input,source,proof.build,proof.compatibility,new Date(),
+  compatibleRecoveryBuildProofCallback(proof.proof));
+ return replacement?{error:replacement}:proof;
+}
 async function reconciliationAccess(db:Db,workspaceId:string,state:any,auth:AuthContext,operationId?:string) {
  const p=await resolveReviewPrincipal(db,workspaceId,auth),r=state.release;
  if(p?.kind!=="agent"||p.id!==r.releaser_agent_id||!auth.scopes?.includes("agent-runtime:release"))return false;
@@ -99,9 +115,16 @@ async function mayRead(db:Db,workspaceId:string,state:any,auth:AuthContext) {
  if(p?.kind!=="agent"||p.id!==r.releaser_agent_id)return false;
  if(p.credentialId===r.releaser_credential_id&&auth.credentialVersion===r.credential_version||await reconciliationAccess(db,workspaceId,state,auth))return true;
  if(!auth.scopes?.includes("agent-runtime:release"))return false;
- const candidates=await db.$queryRaw<any[]>`SELECT n.id FROM governed_releases n WHERE n.workspace_id=${workspaceId}::uuid AND n.host_id=${r.host_id}::uuid AND n.releaser_agent_id=${p.id}::uuid AND n.releaser_credential_id=${p.credentialId}::uuid AND n.credential_version=${auth.credentialVersion} AND n.snapshot->'recoveryOnly'->>'releaseId'=${r.id} AND governed_release_effective_expiry(n.id)>now() AND NOT EXISTS(SELECT 1 FROM governed_release_revocations v WHERE v.release_id=n.id) LIMIT 2`;
+ const candidates=await db.$queryRaw<any[]>`SELECT n.id FROM governed_releases n WHERE n.workspace_id=${workspaceId}::uuid AND n.host_id=${r.host_id}::uuid AND n.releaser_agent_id=${p.id}::uuid AND n.releaser_credential_id=${p.credentialId}::uuid AND n.credential_version=${auth.credentialVersion} AND (n.snapshot->'recoveryOnly'->>'releaseId'=${r.id} OR n.snapshot->'compatibleArtifactRecovery'->'prior'->>'releaseId'=${r.id}) AND governed_release_effective_expiry(n.id)>now() AND NOT EXISTS(SELECT 1 FROM governed_release_revocations v WHERE v.release_id=n.id) LIMIT 2`;
  for(const candidate of candidates){const recovery=await load(db,workspaceId,candidate.id);
-  if(releaseRecoveryOnlyReadError(state,recovery,{agentId:p.id,credentialId:p.credentialId,credentialVersion:auth.credentialVersion,scopes:auth.scopes})===null)return true;}
+  if(releaseRecoveryOnlyReadError(state,recovery,{agentId:p.id,credentialId:p.credentialId,credentialVersion:auth.credentialVersion,scopes:auth.scopes})===null)return true;
+  // The new credential can inspect only its exact closed predecessor. Read
+  // authority still requires the new grant's live source/scope/provenance CAS;
+  // the historical failure does not become an executable release grant.
+  if(recovery?.release.snapshot.compatibleArtifactRecovery
+   &&!recovery.journal.some((j:any)=>j.operation==='cleanup'&&effectiveOutcome(j.outcome)==='succeeded')
+   &&releaseCompatibleRecoveryAdmissionError(state,recovery.release.snapshot,new Date(recovery.release.created_at))===null
+   &&await currentBasisError(db,workspaceId,recovery,auth)===null)return true;}
  return false;
 }
 function publicState(state:any) {
@@ -137,7 +160,7 @@ export async function createRelease(db:Db,workspaceId:string,auth:AuthContext,bo
  await appLock(db,input.applicationId);
  const lockedPrior=(await db.$queryRaw<any[]>`SELECT * FROM governed_releases WHERE workspace_id=${workspaceId}::uuid AND request_id=${input.requestId}::uuid`)[0];
  if(lockedPrior)return lockedPrior.request_hash===hash?{...await releaseView(db,workspaceId,lockedPrior.id,auth),replayed:true}:{error:"release_request_conflict"};
- let successorBasis,publishedGitBasis;
+ let successorBasis,publishedGitBasis,compatibleRecoveryProof;
  if(input.predecessor) {
   const predecessor=await load(db,workspaceId,input.predecessor.releaseId),basis=releaseSuccessorBasis(predecessor,input);
   if(basis.error)return basis;
@@ -164,6 +187,13 @@ export async function createRelease(db:Db,workspaceId:string,auth:AuthContext,bo
  if((s as any).execution.agentHostId!==input.hostId)return {error:"release_host_invalid"};
  if(!await releaseExecutionBasisCurrent(db,workspaceId,(s as any).execution))return {error:"release_source_basis_changed"};
  const nativeError=releaseCandidateNativeError((s as any).execution,(s as any).contract);if(nativeError)return {error:nativeError};
+ if(input.compatibleArtifactRecovery){
+  const previous=await load(db,workspaceId,input.compatibleArtifactRecovery.prior.releaseId);
+  const qualified=await compatibleBasis(db,workspaceId,input,auth.userId!,s,previous,auth);if('error' in qualified)return qualified;
+  const prior=await db.$queryRaw<any[]>`SELECT id FROM governed_releases WHERE workspace_id=${workspaceId}::uuid AND snapshot->'compatibleArtifactRecovery'->'prior'->>'closureId'=${input.compatibleArtifactRecovery.prior.closureId}`;
+  if(prior.length)return {error:'release_compatible_recovery_already_admitted'};
+  compatibleRecoveryProof=qualified.snapshot;
+ }
  const key=await credential(db,workspaceId,input);if(!key)return {error:"release_credential_invalid"};
  const windowError=releaseWindowError(input,key.expiresAt!);if(windowError)return {error:windowError};
  if(releaseDigest(input.manifest)!==input.manifestDigest||input.baseCommit!==input.manifest.baseline.commit)return {error:"release_manifest_mismatch"};
@@ -172,7 +202,7 @@ export async function createRelease(db:Db,workspaceId:string,auth:AuthContext,bo
  if(await suspensionBlocks(db,workspaceId,input.taskId,input.applicationId,"runtime_execute",input.releaserAgentId,input.releaserCredentialId,input.hostId))return {error:"native_capability_suspended"};
  const active=await db.$queryRaw<any[]>`SELECT r.id FROM governed_releases r WHERE r.application_id=${input.applicationId}::uuid AND ((NOT EXISTS(SELECT 1 FROM governed_release_revocations v WHERE v.release_id=r.id) AND NOT EXISTS(SELECT 1 FROM governed_release_operations o JOIN governed_release_outcomes x ON x.operation_id=o.id WHERE o.release_id=r.id AND o.operation='cleanup' AND (x.status='succeeded' OR x.status='reconciled' AND x.reconciled_status='succeeded'))) OR EXISTS(SELECT 1 FROM governed_release_operations o WHERE o.release_id=r.id AND COALESCE((SELECT x.status FROM governed_release_outcomes x WHERE x.operation_id=o.id ORDER BY x.sequence DESC LIMIT 1),'unresolved') IN ('unresolved','uncertain')))`;
  if(active.length)return {error:"release_application_busy"};
- const id=randomUUID(),snapshot=wire({...input,readinessDigest,configurationDigest:config,...(successorBasis?{successorBasis}:{}),...(publishedGitBasis?{publishedGitBasis}:{})});
+ const id=randomUUID(),snapshot=wire({...input,readinessDigest,configurationDigest:config,...(successorBasis?{successorBasis}:{}),...(publishedGitBasis?{publishedGitBasis}:{}),...(compatibleRecoveryProof?{compatibleRecoveryProof}:{})});
  await db.$executeRaw`INSERT INTO governed_releases(id,workspace_id,task_id,application_id,host_id,release_execution_id,review_id,releaser_agent_id,releaser_credential_id,credential_version,issuer_user_id,expires_at,manifest_digest,configuration_digest,snapshot,request_id,request_hash)
  VALUES(${id}::uuid,${workspaceId}::uuid,${input.taskId}::uuid,${input.applicationId}::uuid,${input.hostId}::uuid,${input.releaseExecutionId}::uuid,${input.reviewId}::uuid,${input.releaserAgentId}::uuid,${input.releaserCredentialId}::uuid,${input.credentialVersion},${auth.userId}::uuid,${new Date(input.expiresAt)},${input.manifestDigest},${config},${JSON.stringify(snapshot)}::jsonb,${input.requestId}::uuid,${hash})`;
  const state=await load(db,workspaceId,id);await supplemental(db,workspaceId,state!.release,"authorized",{reviewId:input.reviewId,releaseExecutionId:input.releaseExecutionId,manifestDigest:input.manifestDigest,...(successorBasis?{predecessorReleaseId:successorBasis.releaseId}:{})},auth);
@@ -201,6 +231,16 @@ async function currentBasisError(db:Db,workspaceId:string,state:any,auth:AuthCon
  if(s.recoveryOnly){const previous=await load(db,workspaceId,s.recoveryOnly.releaseId);
   const recoveryError=releaseRecoveryOnlyAdmissionError(previous,s);if(recoveryError)return recoveryError;
   const audit=await reviewState(db,workspaceId,s.recoveryOnly.scopeAudit.taskId,auth),auditError=releaseRecoveryOnlyAuditError(audit,s,review,previous);if(auditError)return auditError;}
+ if(s.compatibleArtifactRecovery){
+  const backupError=compatibleRecoveryCurrentBackupError(s);if(backupError)return backupError;
+  const {compatibleRecoveryProof,...input}=s;
+  const previous=await load(db,workspaceId,s.compatibleArtifactRecovery.prior.releaseId);
+  // Freshness was qualified at creation; later effects preserve that actual
+  // admission clock. Worker must separately re-read its current native entry.
+  const qualified=await compatibleBasis(db,workspaceId,input,r.issuer_user_id,review,previous,auth,new Date(r.created_at));
+  if('error' in qualified)return qualified.error;
+  if(!compatibleRecoveryProof||releaseDigest(qualified.snapshot)!==releaseDigest(compatibleRecoveryProof))return 'release_compatible_recovery_proof_changed';
+ }
  if(!await releaseExecutionBasisCurrent(db,workspaceId,(review as any).execution))return "release_source_basis_changed";
  const nativeError=releaseCandidateNativeError((review as any).execution,(review as any).contract);if(nativeError)return nativeError;
  if(await configuration(db,workspaceId,s)!==r.configuration_digest)return "release_configuration_changed";
@@ -251,6 +291,11 @@ export async function releaseOutcome(db:Db,workspaceId:string,id:string,operatio
  if(!isOwner&&(auth.apiKeyId!==state.release.releaser_credential_id||auth.credentialVersion!==state.release.credential_version)
   &&(input.status!=="reconciled"||!input.observationOnly||!await reconciliationAccess(db,workspaceId,state,auth,operationId)))return {error:"release_reconciliation_forbidden"};
  if(input.status!=="reconciled") {const error=await liveError(db,workspaceId,state,auth);if(error)return {error};}
+ else if(state.release.snapshot.compatibleArtifactRecovery&&effectiveOutcome(input)==='succeeded'){
+  // Reconciliation records an observed effect; it cannot certify a changed
+  // source, owner receipt or scope after an uncertain response.
+  const error=await currentBasisError(db,workspaceId,state,auth);if(error)return {error};
+ }
  const hash=releaseDigest({input,operationId,actorId:auth.userId??auth.apiKeyId}),prior=(await db.$queryRaw<any[]>`SELECT * FROM governed_release_outcomes WHERE workspace_id=${workspaceId}::uuid AND request_id=${input.requestId}::uuid`)[0];
  if(prior)return prior.operation_id===operationId&&prior.request_hash===hash?{...publicState(state),replayed:true}:{error:"release_request_conflict"};
  if(operation.outcome&&!(operation.outcome.status==="uncertain"&&input.status==="reconciled"))return {error:"release_outcome_already_terminal"};
