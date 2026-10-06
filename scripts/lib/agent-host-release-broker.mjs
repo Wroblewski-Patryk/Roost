@@ -79,6 +79,7 @@ export function nextReleaseOperation(state){
   if(j.some(x=>['fixture_cleanup','runtime_resume'].includes(x.operation)&&releaseOutcomeStatus(x.outcome)==='failed'))
    fail('release_post_observation_diagnosis_required');
  }
+ if(j.some(x=>x.outcome?.evidence?.composeRecovery?.kind==='queue_failed_rollback_partial'))fail('release_recovery_diagnosis_required');
  if(j.some(x=>x.operation==='rollback'&&releaseOutcomeStatus(x.outcome)==='failed'
   &&!contract.releaseRollbackImageFailureValid(state.release.snapshot,x.outcome.evidence,x.intent.parameters.targetId)
   ||x.operation==='observe'&&x.intent.parameters.mode==='rollback'&&releaseOutcomeStatus(x.outcome)==='failed'))fail('release_recovery_diagnosis_required');
@@ -250,7 +251,10 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
    if(contract.isComposeManifest(m)&&result?.evidence?.composeRecovery){
     const evidence=result.evidence;
     if(contract.composeRecoveryEvidenceError(s,evidence,pending)||!['failed','absent'].includes(result.state)
-     ||!(result.state==='absent'?['queue_absent','queue_absent_partial'].includes(evidence.composeRecovery.kind):['queue_failed','queue_failed_partial'].includes(evidence.composeRecovery.kind)))fail('release_compose_recovery_unproven');
+     ||!(result.state==='absent'?['queue_absent','queue_absent_partial'].includes(evidence.composeRecovery.kind):['queue_failed','queue_failed_partial','queue_failed_rollback_partial'].includes(evidence.composeRecovery.kind)))fail('release_compose_recovery_unproven');
+    if(evidence.composeRecovery.kind==='queue_failed_rollback_partial'
+     &&(result.state!=='failed'||contract.composeFailedRollbackPartialJournalError(s,pending,evidence,state.journal)!==null))
+     fail('release_compose_recovery_unproven');
     if(evidence.composeRecovery.kind==='queue_absent_partial'){
      if(result.state!=='absent'||contract.composePartialRollbackAbsenceJournalError(s,pending,evidence,state.journal)!==null)
       fail('release_compose_recovery_unproven');

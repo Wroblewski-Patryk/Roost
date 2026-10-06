@@ -386,6 +386,38 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
     check(contract.composePartialRollbackAbsenceJournalError(s,operation,evidence,current.journal)===null,'partial_observation_unproven');return evidence;
    }
   }
+  if(options.rollback&&queue?.status==='failed'){
+   const partial=await failedPartialContext(configuration,before),index=current.journal.findIndex(r=>r.id===operation.id),absence=current.journal[index-1];
+   if(partial?.operation.outcome?.evidence?.composeRecovery?.partial?.schemaVersion==='roost-compose-failed-partial-runtime-v2'
+    &&absence?.outcome?.evidence?.composeRecovery?.kind==='queue_absent_partial'){
+    const candidateEvidence=partial.operation.outcome.evidence,absenceEvidence=absence.outcome.evidence,safe=await safety(),health=await healthProbe({expectedCommit:s.commit});
+    check(contract.releaseDigest(partial.proof.services)===contract.releaseDigest(candidateEvidence.composeRecovery.services)
+     &&contract.releaseDigest(partial.proof.images)===contract.releaseDigest(candidateEvidence.composeRecovery.partial.images)
+     &&safe.readOnlyFence===true&&safe.activeOtherSessions===0&&safe.ownedTransactions===0
+     &&safe.schemaDigest===m.baseline.schemaDigest&&safe.dataDigest===m.baseline.dataDigest
+     &&health.healthy===false&&hex.safeParse(health.healthDigest).success,'partial_data_fence_health_unproven');
+    const after=await inspector.inspectLegacyBaseline(t.targetId,t.baseline.commit),fresh=await failedPartialContext(after.configuration,after);await quiescent();
+    check(fresh&&contract.releaseDigest(services)===contract.releaseDigest(normalize(after.services))
+     &&contract.releaseDigest(partial.proof)===contract.releaseDigest(fresh.proof)
+     &&composeConfigurationDigest(after.configuration)===expected
+     &&contract.releaseDigest(queue)===contract.releaseDigest(await raw.readQueue(options)),'partial_changed_during_read');
+    const composeRecovery={schemaVersion:'roost-compose-recovery-observation-v1',kind:'queue_failed_rollback_partial',releaseId:s.releaseId,
+     operationId:options.operationId,since:options.since,targetId:t.targetId,phase:'rollback',requestedCommit:t.baseline.commit,
+     requestedTree:t.baseline.tree,deploymentId:queue.deploymentId,queue,controlPlaneQuiescent:true,configuration,
+     baselineCommit:t.baseline.commit,baselineTree:t.baseline.tree,migrationSchemaVerified:true,baselineServices,services:partial.proof.services,
+     partialRollbackFailure:{schemaVersion:'roost-compose-failed-rollback-partial-v1',candidateOperation:{id:partial.operation.id,
+      operation:'deploy',createdAt:partial.operation.createdAt,intent:partial.operation.intent},candidateEvidence,
+      candidateEvidenceDigest:contract.releaseDigest(candidateEvidence),images:partial.proof.images,databaseReadOnly:true,
+      activeOtherSessions:0,ownedTransactions:0,projectServiceSetComplete:true,protectedRollbackImages:partial.proof.protectedRollbackImages,
+      presentRollbackImageDigests:partial.proof.presentRollbackImageDigests,publicHealth:{healthy:false,healthDigest:health.healthDigest},retryOrdinal:1,
+      absenceOperation:{id:absence.id,operation:'rollback',createdAt:absence.createdAt,intent:absence.intent},absenceEvidence,
+      absenceEvidenceDigest:contract.releaseDigest(absenceEvidence)}};
+    const evidence={composeRecovery,deploymentIds:[{targetId:t.targetId,deploymentId:queue.deploymentId}],configDigest:m.rollback.configDigest,
+     schemaDigest:safe.schemaDigest,dataDigest:safe.dataDigest,healthDigest:health.healthDigest,healthy:false,
+     observedAt:new Date((dependencies.now??Date.now)()).toISOString(),currentServiceSetDigest:composeRuntimeSetDigest(composeRecovery.services)};
+    check(contract.composeFailedRollbackPartialJournalError(s,operation,evidence,current.journal)===null,'partial_observation_unproven');return evidence;
+   }
+  }
   if(!options.rollback&&queue?.status==='failed'&&before.services.length===5&&before.services.some(r=>r.role==='migration'&&r.exitCode===1)){
    const partial=await failedPartialContext(configuration,before);
    if(partial){const safe=await safety(),health=await healthProbe({expectedCommit:s.commit});

@@ -27,6 +27,7 @@ export const releaseComposeRecoveryEvidenceError: (snapshot:any,evidence:any,ope
 export const releaseComposeFailedPartialEvidenceError: (snapshot:any,evidence:any,operation:any)=>string|null=shared.composeFailedPartialEvidenceError;
 export const releaseComposePartialRollbackAbsenceJournalError: (snapshot:any,operation:any,evidence:any,journal:any[])=>string|null=shared.composePartialRollbackAbsenceJournalError;
 export const releaseComposePartialRollbackRetryValid: (snapshot:any,journal:any[])=>boolean=shared.composePartialRollbackRetryValid;
+export const releaseComposeFailedRollbackPartialJournalError: (snapshot:any,operation:any,evidence:any,journal:any[])=>string|null=shared.composeFailedRollbackPartialJournalError;
 export const releaseGitSetArtifactDigest: (manifest: any, binding: any, rollback?: boolean) => string = shared.gitSetArtifactDigest;
 export const releaseSuccessorBasisSchema = shared.releaseSuccessorBasisSchema as z.ZodType<any>;
 export const releaseHasSuccessor: (snapshot: any) => boolean = shared.releaseHasSuccessor;
@@ -187,6 +188,16 @@ export function effectiveOutcome(outcome: any): string | null {
 export function releaseFailedClosureError(state:any,input:any,checkVersion=true) {
  if(!state)return "release_not_found";
  const s=state.release.snapshot,m=s.manifest,j=state.journal,e=input.evidence;
+ if(e?.composeRecovery?.kind==='queue_failed_rollback_partial'){
+  const last=j.at(-1),a=input.absenceRevalidation;
+  if(checkVersion&&state.expectedVersion!==input.expectedVersion)return 'release_version_stale';
+  if(checkVersion&&state.revocations?.length||!last||last.id!==input.failedOperationId
+   ||last.outcome?.status!=='reconciled'||effectiveOutcome(last.outcome)!=='failed'
+   ||(last.outcome.observationOnly??last.outcome.observation_only)!==true
+   ||a?.failedOutcomeId!==last.outcome.id||releaseDigest(e)!==releaseDigest(last.outcome.evidence)
+   ||releaseComposeFailedRollbackPartialJournalError({...s,releaseId:state.release.id},last,e,j))return 'release_compose_failed_rollback_partial_closure_unproven';
+  return shared.composeFailedRollbackPartialClosureBindingError({...s,releaseId:state.release.id},input);
+ }
  if(e?.composeRecovery?.kind==='queue_absent_partial')return 'release_compose_partial_rollback_absence_not_completed_recovery';
  if(releaseIsCompose(m))return input.absenceRevalidation?.schemaVersion==='roost-compose-retained-baseline-closure-revalidation-v1'
   ?composeQueuesAbsentClosureError(state,input,checkVersion,true):input.absenceRevalidation?.schemaVersion==='roost-compose-queue-absence-closure-revalidation-v1'
@@ -388,6 +399,7 @@ export function releaseSuccessorBasis(state:any,input:any):any {
  return {successorBasis};
 }
 function partialRollbackContinuationError(snapshot:any,input:any,journal:any[]) {
+ if(journal.some(j=>j.outcome?.evidence?.composeRecovery?.kind==='queue_failed_rollback_partial'))return 'release_compose_failed_rollback_partial_terminal';
  const rows=journal.filter(j=>effectiveOutcome(j.outcome)==='absent'&&j.outcome?.evidence?.composeRecovery?.kind==='queue_absent_partial');
  if(!rows.length)return null;
  if(rows.length!==1)return 'release_compose_partial_rollback_retry_exhausted';
@@ -475,6 +487,10 @@ export function releaseOutcomeError(release: any, operation: any, input: any,jou
    return releaseComposeConfigAbsenceEvidenceError({...s,releaseId:release.id},e,operation);
   }
   if(e.composeRecovery!==undefined){
+   if(e.composeRecovery.kind==='queue_failed_rollback_partial'){
+    if(!releaseIsCompose(m)||input.status!=='reconciled'||result!=='failed'||input.observationOnly!==true)return 'release_evidence_scope_invalid';
+    return releaseComposeFailedRollbackPartialJournalError({...s,releaseId:release.id},operation,e,journal);
+   }
    if(e.composeRecovery.kind==='queue_absent_partial'){
     if(!releaseIsCompose(m)||input.status!=='reconciled'||result!=='absent'||input.observationOnly!==true)return 'release_evidence_scope_invalid';
     return releaseComposePartialRollbackAbsenceJournalError({...s,releaseId:release.id},operation,e,journal);
