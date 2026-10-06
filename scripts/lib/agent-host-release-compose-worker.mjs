@@ -415,7 +415,13 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
     const evidence={composeRecovery,deploymentIds:[{targetId:t.targetId,deploymentId:queue.deploymentId}],configDigest:m.rollback.configDigest,
      schemaDigest:safe.schemaDigest,dataDigest:safe.dataDigest,healthDigest:health.healthDigest,healthy:false,
      observedAt:new Date((dependencies.now??Date.now)()).toISOString(),currentServiceSetDigest:composeRuntimeSetDigest(composeRecovery.services)};
-    check(contract.composeFailedRollbackPartialJournalError(s,operation,evidence,current.journal)===null,'partial_observation_unproven');return evidence;
+    const saved=operation.outcome?.status==='reconciled'&&operation.outcome.reconciledStatus==='failed'
+     ?operation.outcome.evidence:null;
+    const stable=e=>{const v=structuredClone(e);delete v.observedAt;delete v.healthDigest;
+     delete v.composeRecovery.partialRollbackFailure.publicHealth.healthDigest;return v;};
+    check(contract.composeFailedRollbackPartialEvidenceError(s,evidence,operation)===null
+     &&contract.composeFailedRollbackPartialJournalError(s,operation,saved??evidence,current.journal)===null
+     &&(!saved||contract.releaseDigest(stable(saved))===contract.releaseDigest(stable(evidence))),'partial_observation_unproven');return evidence;
    }
   }
   if(!options.rollback&&queue?.status==='failed'&&before.services.length===5&&before.services.some(r=>r.role==='migration'&&r.exitCode===1)){
