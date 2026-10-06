@@ -185,7 +185,7 @@ an immediate implementation dependency or mark it complete.
 
 **Authorized release; production proof pending.** Preserve accepted `3cf9645e`.
 `c21e0e0c`/`c82e68b3` rejections remain historical. Successor `c64378df`
-Native build/seven tests pass; independent review and release pending.
+Native build/seven tests and independent review pass; release pending.
 
 Restore/parity pass; writes and cadences remain held.
 Historical FAILED releases, PR 2/c82, backups, credentials, native closures
@@ -199,7 +199,7 @@ Historical basis checks, input and failed review archives remain in the matrix.
 Review `4793c21f`: audit provenance passed; code rejected for log chronology.
 Return `99bb9555` → coder `645f792b` → log-only `c64378df`: 7/7, native closed.
 Build `6c602f42`: exact SHA, 7/7, closed/restored; twelve sources unchanged.
-Worker stopped; reviewer credential rotation needs fresh authentication.
+Review234dfc97/4dc1812a: approved, signed/closed; Worker stopped.
 Roost `f817253b` deployed/healthy.
 
 Reuse the existing application, repository and Compose installation; create no

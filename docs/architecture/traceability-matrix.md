@@ -2168,3 +2168,10 @@ earlier chronology and authentication observations remain dated.
 
 | Successor build `6c602f42` | Actual exact-`c64378df` canonical build and seven-test rerun completed at 10:01:33.755 UTC on 6 October; two closed Jobs, exact frontend build revision, unchanged sources/dependencies/tooling, original outputs restored. Signed evidence `e04c6ba0`, canonical handoff `13596acd`. | No deployment/runtime or full-product claim. |
 | Successor review preparation | Current coder `645f792b`, original material `39d86760`, twelve unchanged source seals and full latest log; 34 factory, 53 build-boundary and two material-drift checks pass. Expired reviewer credential rotation prepared. | Fresh owner authentication required; review not yet launched or accepted. |
+
+Successor code review on 6 October: execution `234dfc97` → decision `4dc1812a`
+APPROVE for `c64378df`/tree `968ff13c`, original material `39d86760`. Read-only
+receipt `a133fa3d`, signed native admission `5850fcb0`, exact archived pair
+verified, owned processes absent and controller closed. Full provider input
+117841/131072 bytes. Prior rejection4793 stays historical; new application
+package/audit/Git/deployment/observation are not yet proven.
