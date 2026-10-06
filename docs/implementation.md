@@ -184,15 +184,13 @@ an immediate implementation dependency or mark it complete.
 ### Second-application release gate — ship the accepted bounded repair
 
 **Release incomplete.** Preserve accepted `3cf9645e`.
-`c21e0e0c`/`c82e68b3` rejections remain historical. Successor `c64378df`
-Native build, seven tests and review pass.
+Historical rejections remain; `c64378df` native build, seven tests and review pass.
 
 Restore/parity pass; writes and cadences remain held.
 Matrix retains failures, PR2/c82, backups, closures and negative audits.
 Audit `d1004c62`: CHANGES_REQUIRED.
-Review `4793c21f`: audit provenance passed; code rejected for log chronology.
-Return `99bb9555` → coder `645f792b` → log-only `c64378df`: 7/7, native closed.
-Build `6c602f42`: exact SHA, 7/7, closed/restored; twelve sources unchanged.
+Review `4793c21f` rejected chronology; coder `645f792b` corrected it.
+Build `6c602f42`: exact c643, 7/7, closed/restored; twelve sources unchanged.
 FAILED closure `00b660cc` persisted.
 PR3/c643 merged. Both queues failed before build; baseline healthy.
 Pkg9e7/audit34b: 19 CHANGES_REQUIRED, native closed; review19ab approved.
@@ -202,7 +200,8 @@ Roost `d794af51` deployed; recovery migration verified.
 FAILED closure `6a5bc353`: fresh reads, seven native children closed.
 Renderer/helper, 386 Worker and contract/SQL checks pass.
 Fresh encrypted backup/isolated restore verified.
-Manual cleanup removed rollback images. Anchors verified; app down, release unproven.
+Manual cleanup removed rollback images; anchors verified, app down.
+Audit queued; oversized context blocked model start. Release unproven.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

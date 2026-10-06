@@ -4,6 +4,7 @@ const { createHash } = require("node:crypto");
 // The pure CommonJS engine also backs the ESM transport wrapper; no loader cycle.
 const compose = require('./agent-host-release-compose-state.cjs');
 const baselineRevalidation = require('./agent-host-release-baseline-revalidation.cjs');
+const { createCompatibleRecoveryContract } = require('./agent-host-release-compatible-recovery.cjs');
 const id=z.string().uuid(), sha=z.string().regex(/^[a-f0-9]{40}$/), hash=z.string().regex(/^[a-f0-9]{64}$/);
 const text=z.string().trim().min(1).max(1000).refine(v=>!/(?:cc_v1_[A-Za-z0-9_-]{24,}|Bearer\s+\S+|-----BEGIN .*PRIVATE KEY|(?:password|api[_-]?key|access[_-]?token|secret)\s*[:=]\s*\S+)/i.test(v),"Credentials prohibited");
 const url=z.string().url().max(2000).refine(v=>{const u=new URL(v);return u.protocol==="https:"&&!u.username&&!u.password&&!u.search&&!u.hash;},"HTTPS URL without credentials required");
@@ -196,7 +197,10 @@ const baselineRevalidationSchema=baselineRevalidation.createBaselineRevalidation
 const gitPublicationBaseSchema=z.object({commit:sha,tree:sha}).strict();
 const releaseGitPublicationBase=s=>s.gitPublicationBase??{commit:s.baseCommit,tree:s.baseTree};
 const recoveryOnlySchema=z.lazy(()=>z.object({schemaVersion:z.literal('roost-compose-recovery-only-v1'),releaseId:id,expectedVersion:hash,closureId:id,closureDigest:hash,failedOperationId:id,failedOutcomeId:id,failedEvidenceDigest:hash,previousManifestDigest:hash,currentEvidence:evidenceSchema,nativeClosure:releaseNativeClosureSchema,scopeAudit:z.object({taskId:id,executionId:id,reviewId:id,materialVersion:hash,scopeDigest:hash}).strict()}).strict());
-const createReleaseSchema=z.object({requestId:id,taskId:id,applicationId:id,hostId:id,releaseExecutionId:id,releaserAgentId:id,releaserCredentialId:id,credentialVersion:z.number().int().positive(),reviewId:id,materialVersion:hash,commit:sha,candidateTree:sha,baseCommit:sha,baseTree:sha,releaserRevision:z.string().datetime(),expiresAt:releaseExpirySchema,manifest:manifestSchema,manifestDigest:hash,recoveryOnly:recoveryOnlySchema.optional(),predecessor:predecessorSchema.optional(),baselineRestart:baselineRestartSchema.optional(),baselineAdoption:z.union([composeQueueAbsenceBaselineAdoptionSchema,composeRetainedBaselineAdoptionSchema]).optional(),baselineRevalidation:baselineRevalidationSchema.optional(),gitPublicationBase:gitPublicationBaseSchema.optional()}).strict().superRefine((s,c)=>{
+// Instantiated after all base schemas/digests below. The lazy reference is only
+// resolved at parse time; neither module imports the other in a loader cycle.
+const compatibleArtifactRecoverySchema=z.lazy(()=>compatibleRecoveryContract.compatibleArtifactRecoverySchema);
+const createReleaseSchema=z.object({requestId:id,taskId:id,applicationId:id,hostId:id,releaseExecutionId:id,releaserAgentId:id,releaserCredentialId:id,credentialVersion:z.number().int().positive(),reviewId:id,materialVersion:hash,commit:sha,candidateTree:sha,baseCommit:sha,baseTree:sha,releaserRevision:z.string().datetime(),expiresAt:releaseExpirySchema,manifest:manifestSchema,manifestDigest:hash,recoveryOnly:recoveryOnlySchema.optional(),compatibleArtifactRecovery:compatibleArtifactRecoverySchema.optional(),predecessor:predecessorSchema.optional(),baselineRestart:baselineRestartSchema.optional(),baselineAdoption:z.union([composeQueueAbsenceBaselineAdoptionSchema,composeRetainedBaselineAdoptionSchema]).optional(),baselineRevalidation:baselineRevalidationSchema.optional(),gitPublicationBase:gitPublicationBaseSchema.optional()}).strict().superRefine((s,c)=>{
  if(s.gitPublicationBase&&(!isComposeManifest(s.manifest)||s.predecessor||s.baselineRestart||s.baselineAdoption||s.gitPublicationBase.commit===s.commit))c.addIssue({code:'custom',message:'release_git_publication_base_scope_invalid'});
  if(isReleaseSetManifest(s.manifest)&&(s.manifest.deployment.artifactSetDigest!==sourceArtifactDigest(s.manifest,s)||s.manifest.baseline.commit!==s.baseCommit))c.addIssue({code:'custom',message:'release_source_set_mismatch'});
  if(isComposeManifest(s.manifest)&&s.manifest.deployment.targets.some(t=>t.configuration.gitCommit!==s.commit||t.baseline.tree!==s.baseTree))c.addIssue({code:'custom',message:'release_compose_source_changed'});
@@ -209,6 +213,25 @@ const createReleaseSchema=z.object({requestId:id,taskId:id,applicationId:id,host
   ||s.baselineAdoption.previousRendererDigest===s.baselineAdoption.newRendererDigest
   ||s.baselineAdoption.newRendererDigest!==s.manifest.deployment.targets[0].baseline.controllerInvariants.rendererDigest))c.addIssue({code:'custom',message:'release_baseline_adoption_unproven'});
  if(s.recoveryOnly&&(!isComposeManifest(s.manifest)||s.manifest.purpose!=='application_release'||!retainsApplication(s.manifest)||['predecessor','baselineRestart','baselineAdoption','baselineRevalidation','gitPublicationBase'].some(k=>s[k]!==undefined)))c.addIssue({code:'custom',message:'release_recovery_only_scope_invalid'});
+ if(Object.prototype.hasOwnProperty.call(s,'compatibleArtifactRecovery')&&s.compatibleArtifactRecovery===undefined)
+  c.addIssue({code:'custom',message:'release_compatible_recovery_scope_invalid'});
+ if(s.compatibleArtifactRecovery!==undefined){
+  const r=s.compatibleArtifactRecovery,t=s.manifest.deployment.targets?.[0],p=s.manifest.postObservation;
+  const forbidden=['recoveryOnly','predecessor','baselineRestart','baselineAdoption','baselineRevalidation','gitPublicationBase'];
+  if(!isComposeManifest(s.manifest)||!retainsApplication(s.manifest)||forbidden.some(k=>Object.prototype.hasOwnProperty.call(s,k))
+   ||!p||s.manifestDigest!==releaseDigest(s.manifest)||r.scopeAudit.executionId!==s.releaseExecutionId||r.scopeAudit.reviewId===s.reviewId
+   ||r.scopeAudit.taskId===s.taskId||r.publication.baseCommit===s.commit
+   ||r.scopeAudit.scopeDigest!==compatibleRecoveryContract.compatibleRecoveryScopeDigest(s))
+   c.addIssue({code:'custom',message:'release_compatible_recovery_scope_invalid'});
+  if(!t||r.replacement.commit!==s.commit||r.replacement.tree!==s.candidateTree
+   ||r.replacement.artifactSetDigest!==s.manifest.deployment.artifactSetDigest
+   ||r.replacement.configurationDigest!==s.manifest.deployment.configDigest
+   ||r.replacement.schemaDigest!==s.manifest.baseline.schemaDigest
+   ||r.currentEntry.targetId!==t.targetId||r.currentEntry.configuration.targetId!==t.targetId
+   ||r.currentEntry.schemaDigest!==s.manifest.baseline.schemaDigest||r.currentEntry.dataDigest!==s.manifest.baseline.dataDigest
+   ||r.currentEntry.sequenceDigest!==p?.baselineSequenceDigest)
+   c.addIssue({code:'custom',message:'release_compatible_recovery_source_changed'});
+ }
  const baselineError=baselineRevalidation.baselineRevalidationBindingError(s,baselineRevalidationSchema,releaseDigest);if(baselineError)c.addIssue({code:'custom',message:baselineError});
 });
 const postObservationOperations=['smoke','fixture_cleanup','runtime_resume'];
@@ -1036,3 +1059,7 @@ module.exports.releaseHasRecoveryOnly=releaseHasRecoveryOnly;
 module.exports.releaseRecoveryOnlyManifestMatches=releaseRecoveryOnlyManifestMatches;
 module.exports.releaseRecoveryOnlyEntryError=releaseRecoveryOnlyEntryError;
 module.exports.releaseRecoveryOnlyOperationError=releaseRecoveryOnlyOperationError;
+const compatibleRecoveryContract=createCompatibleRecoveryContract({manifestSchema,
+ composeConfigurationSchema:compose.composeConfigurationSchema,composeRuntimeServiceSchema:compose.composeRuntimeServiceSchema,
+ releaseNativeClosureSchema,releaseDigest,composeConfigurationDigest:compose.composeConfigurationDigest});
+Object.assign(module.exports,compatibleRecoveryContract);

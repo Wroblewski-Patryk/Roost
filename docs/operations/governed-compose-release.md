@@ -479,7 +479,8 @@ runtime environment file. Runtime start still requires the normal environment,
 sealed images and mounts. Candidate builds separately receive the exact accepted
 revision as a fixed build argument. Supporting contract, controller and SQL checks
 do not establish application recovery or release completion.
-# Dockerfile source in read-only provider context
+
+## Dockerfile source in read-only provider context
 
 The private-path scan permits the standard APT package-list cleanup literal
 only inside a selected whole Dockerfile's `RUN`/`apt-get` command. Qualification
@@ -489,3 +490,21 @@ does not alter emitted source bytes, hashes or the envelope seal. Fragments,
 operator instructions, metadata and other private paths retain the existing
 denial. The root ran 141 provider/read-only component checks and `codex:check`;
 native admission and model execution remain separate evidence.
+
+## Compatible-artifact recovery contract
+
+The additive `compatibleArtifactRecovery` source contract separates a new
+replacement commit and immutable Linux images from the failed historical
+release. Its down-entry inventory represents missing services and cadences
+explicitly, while preserving the actual database and historical references.
+Scope, data/schema/sequences, configuration, signed closure, source acceptance,
+build proof and a separate independent scope audit remain required. Trusted
+validators must qualify the canonical failed closure, build receipts and full
+outcome; JSON assertions alone cannot supply that provenance.
+
+The sequence includes new Git publication, deployment, full observation,
+isolated smoke, fixture cleanup, cadence restoration and final cleanup. Failure
+freezes protected resources and grants no historical rollback or data restore.
+Root's 240 offline shared-contract/Compose checks pass. Server, SQL and native
+Worker integration are still pending; this source contract creates no release
+authority, healthy baseline, compatible image proof or application recovery.
