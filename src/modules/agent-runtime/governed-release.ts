@@ -10,7 +10,7 @@ import { nativeBoundaryResultBlocked, object, wire } from "./task-review-contrac
 import { suspensionBlocks } from "./capability-suspension";
 import { freshWorkerOwner } from "../api-keys/worker-credential.service";
 import { requireRuntimeContent } from "./runtime-redaction-policy";
-import { createReleaseSchema, releaseIntentSchema, releaseOutcomeSchema, releaseDigest, releaseApprovalError, releaseWindowError, releaseIntentError, releaseOutcomeError, effectiveOutcome, releaseCandidateNativeError, renewReleaseSchema, releaseRenewalWindowError, releaseRenewalStateError, releasePurposeMatches, releaseTargetMetadataMatches, releaseCanonicalDirectoryMatches, releaseSuccessorBasis, closeFailedReleaseSchema, authorizeReconciliationSchema, releaseFailedClosureError, releasePublishedGitBasis } from "./governed-release-contract";
+import { createReleaseSchema, releaseIntentSchema, releaseOutcomeSchema, releaseDigest, releaseApprovalError, releaseWindowError, releaseIntentError, releaseOutcomeError, effectiveOutcome, releaseCandidateNativeError, renewReleaseSchema, releaseRenewalWindowError, releaseRenewalStateError, releasePurposeMatches, releaseTargetMetadataMatches, releaseCanonicalDirectoryMatches, releaseSuccessorBasis, closeFailedReleaseSchema, authorizeReconciliationSchema, releaseFailedClosureError, releasePublishedGitBasis, releaseRecoveryOnlyAdmissionError, releaseRecoveryOnlyAuditError, releaseRecoveryOnlyReadError } from "./governed-release-contract";
 type Db=Prisma.TransactionClient;
 const releaseWire=require(path.resolve(__dirname,"../../../scripts/lib/agent-host-release-contract.cjs"));
 // A completed result does not preserve authority after its task basis changes.
@@ -96,7 +96,13 @@ async function reconciliationAccess(db:Db,workspaceId:string,state:any,auth:Auth
 async function mayRead(db:Db,workspaceId:string,state:any,auth:AuthContext) {
  if(await owner(db,workspaceId,auth))return true;
  const p=await resolveReviewPrincipal(db,workspaceId,auth),r=state.release;
- return p?.kind==="agent"&&p.id===r.releaser_agent_id&&(p.credentialId===r.releaser_credential_id&&auth.credentialVersion===r.credential_version||await reconciliationAccess(db,workspaceId,state,auth));
+ if(p?.kind!=="agent"||p.id!==r.releaser_agent_id)return false;
+ if(p.credentialId===r.releaser_credential_id&&auth.credentialVersion===r.credential_version||await reconciliationAccess(db,workspaceId,state,auth))return true;
+ if(!auth.scopes?.includes("agent-runtime:release"))return false;
+ const candidates=await db.$queryRaw<any[]>`SELECT n.id FROM governed_releases n WHERE n.workspace_id=${workspaceId}::uuid AND n.host_id=${r.host_id}::uuid AND n.releaser_agent_id=${p.id}::uuid AND n.releaser_credential_id=${p.credentialId}::uuid AND n.credential_version=${auth.credentialVersion} AND n.snapshot->'recoveryOnly'->>'releaseId'=${r.id} AND governed_release_effective_expiry(n.id)>now() AND NOT EXISTS(SELECT 1 FROM governed_release_revocations v WHERE v.release_id=n.id) LIMIT 2`;
+ for(const candidate of candidates){const recovery=await load(db,workspaceId,candidate.id);
+  if(releaseRecoveryOnlyReadError(state,recovery,{agentId:p.id,credentialId:p.credentialId,credentialVersion:auth.credentialVersion,scopes:auth.scopes})===null)return true;}
+ return false;
 }
 function publicState(state:any) {
  const {release,journal,revocations,renewals,effectiveExpiresAt,expectedVersion}=state;
@@ -144,8 +150,17 @@ export async function createRelease(db:Db,workspaceId:string,auth:AuthContext,bo
   if(previous!.release.issuer_user_id!==auth.userId)return {error:"release_predecessor_issuer_required"};
   publishedGitBasis=basis.publishedGitBasis;
  }
+ if(input.recoveryOnly){
+  const previous=await load(db,workspaceId,input.recoveryOnly.releaseId);
+  const recoveryError=releaseRecoveryOnlyAdmissionError(previous,input,new Date());if(recoveryError)return {error:recoveryError};
+  if(previous!.release.issuer_user_id!==auth.userId)return {error:'release_predecessor_issuer_required'};
+  const priorRecoveries=await db.$queryRaw<any[]>`SELECT id FROM governed_releases WHERE workspace_id=${workspaceId}::uuid AND snapshot->'recoveryOnly'->>'closureId'=${input.recoveryOnly.closureId}`;
+  if(priorRecoveries.length)return {error:'release_recovery_only_already_admitted'};
+ }
  const s=await reviewState(db,workspaceId,input.taskId,auth),approvalError=releaseApprovalError(s,input);
  if(approvalError)return {error:approvalError};
+ if(input.recoveryOnly){const audit=await reviewState(db,workspaceId,input.recoveryOnly.scopeAudit.taskId,auth);
+  const auditError=releaseRecoveryOnlyAuditError(audit,input,s,await load(db,workspaceId,input.recoveryOnly.releaseId));if(auditError)return {error:auditError};}
  if((s as any).execution.agentHostId!==input.hostId)return {error:"release_host_invalid"};
  if(!await releaseExecutionBasisCurrent(db,workspaceId,(s as any).execution))return {error:"release_source_basis_changed"};
  const nativeError=releaseCandidateNativeError((s as any).execution,(s as any).contract);if(nativeError)return {error:nativeError};
@@ -183,6 +198,9 @@ async function currentBasisError(db:Db,workspaceId:string,state:any,auth:AuthCon
  }
  if(!await credential(db,workspaceId,s))return "release_credential_invalid";
  const review=await reviewState(db,workspaceId,r.task_id,auth),reviewError=releaseApprovalError(review,s);if(reviewError)return reviewError;
+ if(s.recoveryOnly){const previous=await load(db,workspaceId,s.recoveryOnly.releaseId);
+  const recoveryError=releaseRecoveryOnlyAdmissionError(previous,s);if(recoveryError)return recoveryError;
+  const audit=await reviewState(db,workspaceId,s.recoveryOnly.scopeAudit.taskId,auth),auditError=releaseRecoveryOnlyAuditError(audit,s,review,previous);if(auditError)return auditError;}
  if(!await releaseExecutionBasisCurrent(db,workspaceId,(review as any).execution))return "release_source_basis_changed";
  const nativeError=releaseCandidateNativeError((review as any).execution,(review as any).contract);if(nativeError)return nativeError;
  if(await configuration(db,workspaceId,s)!==r.configuration_digest)return "release_configuration_changed";

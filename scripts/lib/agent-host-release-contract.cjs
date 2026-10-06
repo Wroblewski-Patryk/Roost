@@ -195,7 +195,8 @@ const baselineRevalidationSchema=baselineRevalidation.createBaselineRevalidation
 // Git publication may advance from a different exact main than the deployed rollback baseline.
 const gitPublicationBaseSchema=z.object({commit:sha,tree:sha}).strict();
 const releaseGitPublicationBase=s=>s.gitPublicationBase??{commit:s.baseCommit,tree:s.baseTree};
-const createReleaseSchema=z.object({requestId:id,taskId:id,applicationId:id,hostId:id,releaseExecutionId:id,releaserAgentId:id,releaserCredentialId:id,credentialVersion:z.number().int().positive(),reviewId:id,materialVersion:hash,commit:sha,candidateTree:sha,baseCommit:sha,baseTree:sha,releaserRevision:z.string().datetime(),expiresAt:releaseExpirySchema,manifest:manifestSchema,manifestDigest:hash,predecessor:predecessorSchema.optional(),baselineRestart:baselineRestartSchema.optional(),baselineAdoption:z.union([composeQueueAbsenceBaselineAdoptionSchema,composeRetainedBaselineAdoptionSchema]).optional(),baselineRevalidation:baselineRevalidationSchema.optional(),gitPublicationBase:gitPublicationBaseSchema.optional()}).strict().superRefine((s,c)=>{
+const recoveryOnlySchema=z.lazy(()=>z.object({schemaVersion:z.literal('roost-compose-recovery-only-v1'),releaseId:id,expectedVersion:hash,closureId:id,closureDigest:hash,failedOperationId:id,failedOutcomeId:id,failedEvidenceDigest:hash,previousManifestDigest:hash,currentEvidence:evidenceSchema,nativeClosure:releaseNativeClosureSchema,scopeAudit:z.object({taskId:id,executionId:id,reviewId:id,materialVersion:hash,scopeDigest:hash}).strict()}).strict());
+const createReleaseSchema=z.object({requestId:id,taskId:id,applicationId:id,hostId:id,releaseExecutionId:id,releaserAgentId:id,releaserCredentialId:id,credentialVersion:z.number().int().positive(),reviewId:id,materialVersion:hash,commit:sha,candidateTree:sha,baseCommit:sha,baseTree:sha,releaserRevision:z.string().datetime(),expiresAt:releaseExpirySchema,manifest:manifestSchema,manifestDigest:hash,recoveryOnly:recoveryOnlySchema.optional(),predecessor:predecessorSchema.optional(),baselineRestart:baselineRestartSchema.optional(),baselineAdoption:z.union([composeQueueAbsenceBaselineAdoptionSchema,composeRetainedBaselineAdoptionSchema]).optional(),baselineRevalidation:baselineRevalidationSchema.optional(),gitPublicationBase:gitPublicationBaseSchema.optional()}).strict().superRefine((s,c)=>{
  if(s.gitPublicationBase&&(!isComposeManifest(s.manifest)||s.predecessor||s.baselineRestart||s.baselineAdoption||s.gitPublicationBase.commit===s.commit))c.addIssue({code:'custom',message:'release_git_publication_base_scope_invalid'});
  if(isReleaseSetManifest(s.manifest)&&(s.manifest.deployment.artifactSetDigest!==sourceArtifactDigest(s.manifest,s)||s.manifest.baseline.commit!==s.baseCommit))c.addIssue({code:'custom',message:'release_source_set_mismatch'});
  if(isComposeManifest(s.manifest)&&s.manifest.deployment.targets.some(t=>t.configuration.gitCommit!==s.commit||t.baseline.tree!==s.baseTree))c.addIssue({code:'custom',message:'release_compose_source_changed'});
@@ -207,6 +208,7 @@ const createReleaseSchema=z.object({requestId:id,taskId:id,applicationId:id,host
   ||s.baselineAdoption.targetId!==s.manifest.deployment.targets[0].targetId
   ||s.baselineAdoption.previousRendererDigest===s.baselineAdoption.newRendererDigest
   ||s.baselineAdoption.newRendererDigest!==s.manifest.deployment.targets[0].baseline.controllerInvariants.rendererDigest))c.addIssue({code:'custom',message:'release_baseline_adoption_unproven'});
+ if(s.recoveryOnly&&(!isComposeManifest(s.manifest)||s.manifest.purpose!=='application_release'||!retainsApplication(s.manifest)||['predecessor','baselineRestart','baselineAdoption','baselineRevalidation','gitPublicationBase'].some(k=>s[k]!==undefined)))c.addIssue({code:'custom',message:'release_recovery_only_scope_invalid'});
  const baselineError=baselineRevalidation.baselineRevalidationBindingError(s,baselineRevalidationSchema,releaseDigest);if(baselineError)c.addIssue({code:'custom',message:baselineError});
 });
 const postObservationOperations=['smoke','fixture_cleanup','runtime_resume'];
@@ -963,3 +965,74 @@ module.exports.releaseComposeRestartManifestMatches=(previous,candidate)=>{
    &&Date.parse(b.restoreVerifiedAt)>=Date.parse(b.capturedAt);
  }catch{return false;}
 };
+
+// A recovery grant describes the failed current entry separately from retained
+// immutable baseline artifacts. It never admits a candidate or healthy baseline.
+const recoveryOnlyOperations=Object.freeze(['rollback_config','rollback','observe','fixture_cleanup','runtime_resume','cleanup_resource','cleanup']);
+const releaseRecoveryOnlyScopeDigest=input=>{
+ const r=input.recoveryOnly;if(!r)return null;
+ return releaseDigest({schemaVersion:'roost-compose-recovery-only-scope-v1',
+  binding:Object.fromEntries(['taskId','applicationId','hostId','commit','candidateTree','baseCommit','baseTree','releaserAgentId'].map(k=>[k,input[k]])),
+  manifestDigest:input.manifestDigest,prior:Object.fromEntries(['releaseId','expectedVersion','closureId','closureDigest','failedOperationId','failedOutcomeId','failedEvidenceDigest','previousManifestDigest'].map(k=>[k,r[k]])),
+  currentEntryDigest:releaseDigest(failedRollbackPartialStableEvidence(r.currentEvidence)),operations:recoveryOnlyOperations,observationMode:'rollback'});
+};
+const releaseHasRecoveryOnly=s=>{
+ try{return recoveryOnlySchema.safeParse(s?.recoveryOnly).success&&manifestSchema.safeParse(s.manifest).success&&isComposeManifest(s.manifest)
+  &&s.manifest.purpose==='application_release'&&retainsApplication(s.manifest)
+  &&['predecessor','baselineRestart','baselineAdoption','baselineRevalidation','gitPublicationBase','publishedGitBasis','successorBasis'].every(k=>s[k]===undefined)
+  &&s.manifestDigest===releaseDigest(s.manifest)&&s.recoveryOnly.scopeAudit.scopeDigest===releaseRecoveryOnlyScopeDigest(s);}catch{return false;}
+};
+const recoveryManifestStable=m=>{
+ const copy=structuredClone(m),t=copy.deployment.targets[0];delete copy.backup;
+ for(const section of ['baseline','deployment','rollback']){delete copy[section].configDigest;delete copy[section].artifactSetDigest;}
+ // Historical observedAt/health stay historical. Only the local contextual
+ // renderer descriptor and phase commands are projected; no runtime adoption.
+ for(const [field,config]of [['configuration',t.configuration],['rollbackConfiguration',t.rollbackConfiguration],['baseline',t.baseline.configuration]]){
+  delete config.sourcePins.controllerRenderer;
+  if(field==='baseline'){if(config.controllerPolicy)delete config.controllerPolicy.rendererDigest;}
+  else{delete config.controllerPolicy;delete config.settingsDigest;delete config.runtimePolicyDigest;}
+ }
+ delete t.configDigest;delete t.rollbackConfigDigest;delete t.baseline.configDigest;delete t.baseline.controllerInvariants.rendererDigest;
+ return copy;
+};
+const releaseRecoveryOnlyManifestMatches=(previous,candidate)=>{
+ try{if(!isComposeManifest(previous)||!manifestSchema.safeParse(previous).success||!isComposeManifest(candidate)||!manifestSchema.safeParse(candidate).success
+  ||releaseDigest(recoveryManifestStable(previous))!==releaseDigest(recoveryManifestStable(candidate)))return false;
+  const p=previous.deployment.targets[0],t=candidate.deployment.targets[0],renderer=t.baseline.controllerInvariants.rendererDigest;
+  if(renderer===p.baseline.controllerInvariants.rendererDigest||t.rollbackConfigDigest===p.rollbackConfigDigest)return false;
+  for(const [config,phase]of [[t.configuration,'candidate'],[t.rollbackConfiguration,'rollback']]){
+   const policy=config.controllerPolicy;
+   if(!policy||policy.phase!==phase||policy.rendererDigest!==renderer
+    ||['settingsInvariantDigest','runtimeInvariantDigest'].some(k=>policy[k]!==p.baseline.controllerInvariants[k]))return false;
+  }
+  if(releaseDigest(previous.backup)!==releaseDigest(candidate.backup)){
+   const b=candidate.backup,pb=previous.backup;if(b.digest===pb.digest||Date.parse(b.capturedAt)<=Date.parse(pb.restoreVerifiedAt)||Date.parse(b.restoreVerifiedAt)<Date.parse(b.capturedAt))return false;
+  }
+  return true;
+ }catch{return false;}
+};
+const releaseRecoveryOnlyEntryError=(old,input,closureReceipt,now)=>{
+ try{const r=input.recoveryOnly,c=closureReceipt,e=c.evidence;
+  const v={failedOperationId:r.failedOperationId,evidence:e,nativeClosure:r.nativeClosure,absenceRevalidation:{
+   schemaVersion:'roost-compose-failed-rollback-partial-closure-revalidation-v1',releaseId:r.releaseId,failedOutcomeId:r.failedOutcomeId,
+   failedEvidenceDigest:r.failedEvidenceDigest,currentEvidence:r.currentEvidence,nativeClosureDigest:releaseDigest(r.nativeClosure),observedAt:r.currentEvidence.observedAt}};
+  const error=now===undefined?composeFailedRollbackPartialClosureBindingError({...old,releaseId:r.releaseId},v)
+   :composeFailedRollbackPartialClosureRevalidationError({...old,releaseId:r.releaseId},v,now);
+  if(error)return 'release_recovery_only_entry_unproven';
+  return releaseHasRecoveryOnly(input)?null:'release_recovery_only_scope_invalid';
+ }catch{return 'release_recovery_only_entry_unproven';}
+};
+const releaseRecoveryOnlyOperationError=(s,input,journal=[])=>{
+ if(s?.recoveryOnly===undefined)return null;
+ if(!releaseHasRecoveryOnly(s))return 'release_recovery_only_scope_invalid';
+ if(!recoveryOnlyOperations.includes(input.operation)||input.operation==='observe'&&input.parameters?.mode!=='rollback')return 'release_recovery_only_forward_forbidden';
+ if(['rollback_config','rollback'].includes(input.operation)&&journal.some(j=>j.operation===input.operation))return 'release_recovery_only_retry_exhausted';
+ return null;
+};
+module.exports.recoveryOnlySchema=recoveryOnlySchema;
+module.exports.recoveryOnlyOperations=recoveryOnlyOperations;
+module.exports.releaseRecoveryOnlyScopeDigest=releaseRecoveryOnlyScopeDigest;
+module.exports.releaseHasRecoveryOnly=releaseHasRecoveryOnly;
+module.exports.releaseRecoveryOnlyManifestMatches=releaseRecoveryOnlyManifestMatches;
+module.exports.releaseRecoveryOnlyEntryError=releaseRecoveryOnlyEntryError;
+module.exports.releaseRecoveryOnlyOperationError=releaseRecoveryOnlyOperationError;

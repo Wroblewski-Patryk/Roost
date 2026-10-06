@@ -201,7 +201,8 @@ import lacks greenlet. App unavailable; schema/data parity verified.
 Roost `2d1e687a` deployed; Worker persisted failed rollback.
 FAILED closure `6a5bc353`: fresh reads, seven native children closed.
 Renderer fixes pass 14 tests and actual helper proof.
-App remains down; recovery and release unproven.
+Recovery-only contract/SQL checks pass; app remains down.
+Actual recovery and release remain unproven.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

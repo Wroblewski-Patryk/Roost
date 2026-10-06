@@ -5,6 +5,8 @@ import { nativeBoundaryResultBlocked, object } from "./task-review-contract";
 const shared = require(path.resolve(__dirname, "../../../scripts/lib/agent-host-release-contract.cjs"));
 export const gitPublicationBaseSchema = shared.gitPublicationBaseSchema as z.ZodType<any>;
 export const releaseGitPublicationBase: (snapshot:any)=>{commit:string;tree:string} = shared.releaseGitPublicationBase;
+export const releaseHasRecoveryOnly:(snapshot:any)=>boolean=shared.releaseHasRecoveryOnly;
+export const releaseRecoveryOnlyScopeDigest:(input:any)=>string=shared.releaseRecoveryOnlyScopeDigest;
 export const createReleaseSchema = shared.createReleaseSchema as z.ZodType<any>;
 export const releaseManifestSchema = shared.manifestSchema as z.ZodType<any>;
 export const releaseIntentSchema = shared.intentSchema as z.ZodType<any>;
@@ -101,7 +103,7 @@ function lexicalDirectory(value:unknown,platform:DirectoryPlatform,absolute:bool
  if((windows&&/^[\\/]/.test(value))||(!windows&&value.includes("\\")))return null;
  const body=absolute?(windows?value.slice(3):value.slice(1)):value;
  const parts=body.split(windows?/[\\/]/:/\//).filter(Boolean);
- if(parts.some(p=>p==="."||p===".."||windows&&(/[<>:"|?*]/.test(p)||/[. ]$/.test(p)||/^(?:con|conin\$|conout\$|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\.|$)/i.test(p))))return null;
+ if(parts.some(p=>p==="."||p===".."||windows&&(/[<>:"|?*]/.test(p)||/[. ]$/.test(p)||/^(?:con|conin\$|conout\$|prn|aux|nul|com[1-9Ä‚â€šĂ„â€¦Ä‚â€šĂ‹â€şÄ‚â€šÄąâ€š]|lpt[1-9Ä‚â€šĂ„â€¦Ä‚â€šĂ‹â€şÄ‚â€šÄąâ€š])(?:\.|$)/i.test(p))))return null;
  if(!absolute&&!parts.length)return null;
  const api=windows?path.win32:path.posix,normalized=api.normalize(value),root=absolute?api.parse(normalized).root:"";
  const trimmed=normalized.replace(windows?/[\\/]+$/:/\/+$/,"");
@@ -175,7 +177,8 @@ export function releaseWindowError(input: any, credentialExpiry: Date, now = new
     const error=shared.releaseBaselineRevalidationError(input,now);
     if(error)return error;
   }
-  if (Date.parse(m.baseline.observedAt) > now.getTime()+60000 || (input.baselineRevalidation===undefined&&now.getTime()-Date.parse(m.baseline.observedAt)>3600000)
+  if(input.recoveryOnly!==undefined&&!releaseHasRecoveryOnly(input))return 'release_recovery_only_scope_invalid';
+  if (Date.parse(m.baseline.observedAt) > now.getTime()+60000 || (input.baselineRevalidation===undefined&&input.recoveryOnly===undefined&&now.getTime()-Date.parse(m.baseline.observedAt)>3600000)
     || now.getTime()-Date.parse(m.backup.restoreVerifiedAt)>86400000 || Date.parse(m.backup.restoreVerifiedAt)>now.getTime()+60000)
     return "release_prerequisite_stale";
   return null;
@@ -415,7 +418,8 @@ function partialRollbackContinuationError(snapshot:any,input:any,journal:any[]) 
 }
 export function releaseIntentError(release: any, input: any, journal: any[]) {
   const s=release.snapshot, m=s.manifest;
-  const retained=releaseRetainsApplication(m);
+  const retained=releaseRetainsApplication(m),recovery=releaseHasRecoveryOnly(s);
+  const recoveryError=shared.releaseRecoveryOnlyOperationError(s,input,journal);if(recoveryError)return recoveryError;
   if(retained&&["archive_repository","cleanup_local"].includes(input.operation))return "release_retention_policy_violation";
   if (input.manifestDigest!==release.manifest_digest || input.commit!==s.commit || input.baseCommit!==s.baseCommit
     || input.observed.commit!==s.commit || input.observed.manifestDigest!==release.manifest_digest)
@@ -437,7 +441,7 @@ export function releaseIntentError(release: any, input: any, journal: any[]) {
   if((s.baselineRestart||s.publishedGitBasis)&&!restarted)return "release_restart_basis_invalid";
   if((s.predecessor||s.successorBasis)&&!successor)return "release_successor_basis_invalid";
   if(successor&&["push","pr","review","merge"].includes(input.operation))return "release_successor_git_effect_forbidden";
-  const merged=successor||successful("merge"),publicationBase=releaseGitPublicationBase(s);
+  const merged=successor||recovery||successful("merge"),publicationBase=releaseGitPublicationBase(s);
   if(input.observed.baseCommit!==(merged?s.commit:publicationBase.commit)||input.observed.baseTree!==(merged?s.candidateTree:publicationBase.tree))return "release_base_changed";
   const postError=releasePostObservationIntentError(s,input,journal);
   if(postError)return postError;
@@ -463,7 +467,7 @@ export function releaseIntentError(release: any, input: any, journal: any[]) {
    &&!releasePostObservationOutcomeError(s,j,{requestId:j.outcome.requestId??j.outcome.request_id,status:j.outcome.status,
     ...(j.outcome.status==='reconciled'?{reconciledStatus:j.outcome.reconciledStatus??j.outcome.reconciled_status}:{}),
     observationOnly:j.outcome.observationOnly??j.outcome.observation_only,evidence:j.outcome.evidence},journal.slice(0,i)));
-  if(input.operation.startsWith("rollback")&&!failedSmoke&&!journal.some(j=>["deploy","observe"].includes(j.operation)&&effectiveOutcome(j.outcome)==="failed"))return "release_rollback_without_attributed_failure";
+  if(input.operation.startsWith("rollback")&&!recovery&&!failedSmoke&&!journal.some(j=>["deploy","observe"].includes(j.operation)&&effectiveOutcome(j.outcome)==="failed"))return "release_rollback_without_attributed_failure";
   if(input.operation==="push"&&p.branch!==m.repository.candidateBranch)return "release_parameter_scope_invalid";
   if(["review","merge"].includes(input.operation)&&p.pullRequestNumber!==journal.find(j=>j.operation==="pr"&&effectiveOutcome(j.outcome)==="succeeded")?.outcome?.evidence?.pullRequestNumber)return "release_parameter_scope_invalid";
   const artifactInvalid=(expected:any)=>releaseIsSet(m)?p.artifactSetDigest!==expected.artifactSetDigest||p.imageDigest!==undefined:p.imageDigest!==expected.imageDigest||p.artifactSetDigest!==undefined;
@@ -473,6 +477,7 @@ export function releaseIntentError(release: any, input: any, journal: any[]) {
   return null;
 }
 export function releaseOutcomeError(release: any, operation: any, input: any,journal:any[]=[]) {
+  const recoveryError=shared.releaseRecoveryOnlyOperationError(release.snapshot,{operation:operation.operation,parameters:operation.intent?.parameters},[]);if(recoveryError)return recoveryError;
   const s=release.snapshot,m=s.manifest,e=input.evidence,result=effectiveOutcome({status:input.status,reconciledStatus:input.reconciledStatus});
   const retained=releaseRetainsApplication(m);
   if(releasePostObservationOperations.includes(operation.operation)||e.postObservation!==undefined)
@@ -569,4 +574,62 @@ export function releaseOutcomeError(release: any, operation: any, input: any,jou
     }else if(e.repositoryArchived!==true||e.localAbsent!==true||e.absenceVerified!==true||releaseDigest(e.resourceIds??[])!==releaseDigest(m.cleanup.ownedResourceIds))return "release_cleanup_unproven";
   }
   return null;
+}
+
+/** Recovery-only does not adopt the failed live candidate as a baseline. */
+export function releaseRecoveryOnlyAdmissionError(state:any,input:any,now?:Date|number) {
+ try {const r=state?.release,old=r?.snapshot,v=input.recoveryOnly,last=state?.journal?.at(-1);
+  if(!r||!v||state.expectedVersion!==v.expectedVersion||r.id!==v.releaseId)return 'release_recovery_only_version_stale';
+  const c=state.failedClosures?.find((x:any)=>x.id===v.closureId),receipt=c?.snapshot;
+  if(!c||!receipt||c.closure_digest!==v.closureDigest||releaseDigest(receipt)!==v.closureDigest
+   ||c.release_id!==r.id||c.failed_operation_id!==v.failedOperationId||c.failed_outcome_id!==v.failedOutcomeId
+   ||c.consent_digest!==receipt.consentDigest||!state.revocations.some((x:any)=>x.id===c.revocation_id)
+   ||receipt.releaseId!==r.id||receipt.applicationId!==old.applicationId||receipt.hostId!==old.hostId||receipt.issuerUserId!==r.issuer_user_id
+   ||receipt.failedOperationId!==last?.id||receipt.failedOutcomeId!==last?.outcome?.id
+   ||v.failedOperationId!==last?.id||v.failedOutcomeId!==last?.outcome?.id
+   ||receipt.failedEvidenceDigest!==v.failedEvidenceDigest||releaseDigest(last.outcome.evidence)!==v.failedEvidenceDigest
+   ||releaseDigest(receipt.evidence)!==v.failedEvidenceDigest||receipt.evidence.composeRecovery?.kind!=='queue_failed_rollback_partial'
+   ||releaseFailedClosureError(state,receipt,false))return 'release_recovery_only_closure_unproven';
+  if(!releaseHasRecoveryOnly(input)||v.previousManifestDigest!==releaseDigest(old.manifest)
+   ||v.previousManifestDigest!==old.manifestDigest||input.releaseExecutionId===old.releaseExecutionId
+   ||['taskId','applicationId','hostId','commit','candidateTree','baseCommit','baseTree','releaserAgentId'].some(k=>input[k]!==old[k])
+   ||!shared.releaseRecoveryOnlyManifestMatches(old.manifest,input.manifest))return 'release_recovery_only_binding_changed';
+  return shared.releaseRecoveryOnlyEntryError(old,input,receipt,now);
+ }catch{return 'release_recovery_only_closure_unproven';}
+}
+/** Independent normal review of the exact fixed recovery scope, not an inherited release audit. */
+export function releaseRecoveryOnlyAuditError(view:any,input:any,sourceView:any,previous:any) {
+ try {const a=input.recoveryOnly.scopeAudit,e=view.execution,c=view.contract,d=view.decision,v=object(e?.verification);
+  const closure=previous?.failedClosures?.find((x:any)=>x.id===input.recoveryOnly.closureId),closedAt=new Date(closure?.created_at??closure?.createdAt).getTime();
+  if(!Number.isFinite(closedAt)||new Date(e?.completedAt).getTime()<closedAt||!Number.isFinite(new Date(e?.completedAt).getTime())
+   ||new Date(d?.createdAt).getTime()<closedAt||!Number.isFinite(new Date(d?.createdAt).getTime())||e?.status!=='completed'||e.contextInvalidatedAt
+   ||!sourceView?.contract?.assignment?.agentId||a.reviewId===input.reviewId||a.executionId===sourceView.execution?.id
+   ||d?.verifierId===sourceView.contract.assignment.agentId||!view.current||view.roleIssues?.length||d?.decision!=='approve'||d.id!==a.reviewId||e?.id!==a.executionId||e.taskId!==a.taskId
+   ||e.id!==input.releaseExecutionId||e.applicationId!==input.applicationId||e.agentHostId!==input.hostId
+   ||view.materialVersion!==a.materialVersion||d.materialVersion!==a.materialVersion||view.approvalCommit!==input.commit
+   ||d.evidence?.reviewedCommit!==input.commit||c?.nativeBoundary?.profile!=='inspect-readonly'
+   ||c.assignment?.agentId!==input.releaserAgentId||d.verifierId===input.releaserAgentId
+   ||c.modelSelection?.schemaVersion!=='roost-managed-hermes-backend-v1'||c.modelSelection.backend!=='codex_responses'
+   ||v.managedAdmission?.qualification!=='signed_native_v1'||!/^[a-f0-9]{64}$/.test(v.managedAdmission.evidenceDigest??'')
+   ||!/^[a-f0-9]{64}$/.test(v.managedAdmission.jobSourceDigest??'')||v.ownedTreeReceipt?.cleanup!==true
+   ||v.ownedTreeReceipt.activeProcesses!==0||v.ownedTreeReceipt.attempt!==e.id
+   ||!Array.isArray(e.changedFiles)||e.changedFiles.length||nativeBoundaryResultBlocked(v,c)
+   ||a.scopeDigest!==releaseRecoveryOnlyScopeDigest(input))return 'release_recovery_scope_audit_unproven';
+  const evidence=d.evidence.evidence;
+  if(!Array.isArray(evidence)||!evidence.some((x:any)=>x.kind==='artifact'&&x.verdict==='pass'&&x.reference===`roost-release-recovery-scope:${a.scopeDigest}`)
+   ||!evidence.some((x:any)=>x.kind==='test'&&x.verdict==='pass'))return 'release_recovery_scope_audit_unproven';
+  return null;
+ }catch{return 'release_recovery_scope_audit_unproven';}
+}
+
+/** Read-only access to immutable old failure from the separately admitted recovery credential. */
+export function releaseRecoveryOnlyReadError(previous:any,current:any,reader:any,now=new Date()) {
+ const r=current?.release,s=r?.snapshot;
+ if(!r||!s||!reader?.scopes?.includes('agent-runtime:release')||r.releaser_agent_id!==reader.agentId
+  ||r.releaser_credential_id!==reader.credentialId||r.credential_version!==reader.credentialVersion
+  ||r.host_id!==previous?.release?.host_id||r.workspace_id!==previous?.release?.workspace_id
+  ||current.revocations?.length||!Array.isArray(current.revocations)||new Date(current.effectiveExpiresAt).getTime()<=now.getTime()
+  ||!Number.isFinite(new Date(current.effectiveExpiresAt).getTime())
+  ||current.journal?.some((j:any)=>j.operation==='cleanup'&&effectiveOutcome(j.outcome)==='succeeded'))return 'release_recovery_read_forbidden';
+ return releaseRecoveryOnlyAdmissionError(previous,s)===null?null:'release_recovery_read_forbidden';
 }

@@ -45,9 +45,56 @@ export function releaseEffectDiagnostic(error){
  return reason;
 }
 export const releaseOutcomeStatus=o=>!o?null:o.status==='reconciled'?(o.reconciledStatus??o.reconciled_status):o.status;
+// Recovery is a separate fixed sequence. Historical failed runtime is never
+// represented as a healthy baseline or as a newly approved candidate release.
+function recoveryOnlyExpected(state){
+ const j=state.journal,done=op=>j.some(r=>r.operation===op&&releaseOutcomeStatus(r.outcome)==='succeeded');
+ if(j.some(r=>['failed','absent'].includes(releaseOutcomeStatus(r.outcome))))fail('release_recovery_diagnosis_required');
+ if(!done('rollback_config'))return 'rollback_config';
+ if(!completedSet(state,'rollback'))return 'rollback';
+ if(!j.some(r=>r.operation==='observe'&&r.intent.parameters.mode==='rollback'&&releaseOutcomeStatus(r.outcome)==='succeeded'))return 'observe';
+ return nextPostObservation(state,true);
+}
+function nextRecoveryOnlyOperation(state){
+ const s={...state.release.snapshot,releaseId:state.release.id};
+ if(!contract.releaseHasRecoveryOnly(s))fail('release_recovery_only_scope_invalid');
+ const prefix=[];
+ for(const row of state.journal??[]){
+  const error=contract.releaseRecoveryOnlyOperationError(s,{operation:row.operation,parameters:row.intent?.parameters},prefix);
+  if(error)fail(error);
+  if(prefix.some(r=>!releaseOutcomeStatus(r.outcome)||releaseOutcomeStatus(r.outcome)==='uncertain'))fail('release_operation_unresolved');
+  const view={...state,journal:prefix},expected=recoveryOnlyExpected(view);
+  if(row.operation!==expected)fail('release_recovery_only_sequence_invalid');
+  const parsed=contract.intentSchema.safeParse(row.intent);
+  if(!parsed.success||row.intent.operation!==row.operation||row.intent.manifestDigest!==s.manifestDigest
+   ||row.intent.commit!==s.commit||row.intent.baseCommit!==s.baseCommit
+   ||row.intent.observed.commit!==s.commit||row.intent.observed.baseCommit!==s.commit||row.intent.observed.baseTree!==s.candidateTree
+   ||contract.releaseDigest(row.intent.parameters)!==contract.releaseDigest(parameters(row.operation,s,view)))fail('release_recovery_only_intent_changed');
+  if(releaseOutcomeStatus(row.outcome)==='succeeded'){
+   const e=row.outcome.evidence;
+   if(row.operation==='rollback_config')composeEvidence(e,s.manifest,s,{configuration:true,rollback:true});
+   if(['rollback','observe'].includes(row.operation)){
+    if(contract.composeEvidenceError(s,e,true)!==null||e.healthy!==true)fail('release_recovery_only_runtime_unproven');
+    if(row.operation==='observe'&&(!Number.isInteger(e.observationSeconds)||e.observationSeconds<s.manifest.observation.seconds
+     ||contract.releaseDigest(e.deploymentIds)!==contract.releaseDigest(priorDeployment(view,true)?.outcome.evidence.deploymentIds)))fail('release_recovery_only_observation_unproven');
+   }
+  }
+  if(contract.postObservationOperations.includes(row.operation)&&row.outcome){
+   const o=row.outcome,body={requestId:o.requestId??o.request_id,status:o.status,
+    ...(o.status==='reconciled'?{reconciledStatus:o.reconciledStatus??o.reconciled_status}:{}),
+    observationOnly:o.observationOnly??o.observation_only,evidence:o.evidence};
+   const invalid=contract.postObservationOutcomeError(s,row,body,state.journal);if(invalid)fail(invalid);
+  }
+  prefix.push(row);
+ }
+ if(prefix.some(r=>!releaseOutcomeStatus(r.outcome)||releaseOutcomeStatus(r.outcome)==='uncertain'))return 'reconcile';
+ if(state.status!=='active')return null;
+ return recoveryOnlyExpected(state);
+}
 const completedSet=(state,operation)=>state.release.snapshot.manifest.deployment.targets.every(target=>state.journal.some(j=>j.operation===operation
  &&j.intent?.parameters?.targetId===target.targetId&&releaseOutcomeStatus(j.outcome)==='succeeded'));
 export function nextReleaseOperation(state){
+ if(state.release?.snapshot?.recoveryOnly!==undefined)return nextRecoveryOnlyOperation(state);
  const j=state.journal??[],done=op=>j.some(x=>x.operation===op&&releaseOutcomeStatus(x.outcome)==='succeeded');
  const recoverySnapshot={...state.release.snapshot,releaseId:state.release.id};
  if(contract.retainsApplication(state.release?.snapshot?.manifest)&&j.some(x=>['archive_repository','cleanup_local'].includes(x.operation)))fail('release_retention_policy_violation');
@@ -148,6 +195,31 @@ function validateState(state,client){
  if(s.hostId!==client.hostId||s.releaserAgentId!==client.agentId||state.release.manifestDigest!==s.manifestDigest
   ||contract.releaseDigest(s.manifest)!==s.manifestDigest)fail('release_binding_changed');
  return {...s,releaseId:state.release.id};
+}
+async function inspectRecoveryOnlyEntry(s,api,coolify){
+ const r=s.recoveryOnly,previous=await api(`/v1/agent-runtime/releases/${r.releaseId}`,{method:'GET'});
+ const old=previous?.release?.snapshot,last=previous?.journal?.at(-1),closure=previous?.failedClosures?.find(c=>c.id===r.closureId);
+ if(previous?.status!=='failed'||previous.release.id!==r.releaseId||previous.expectedVersion!==r.expectedVersion
+  ||!old||old.manifestDigest!==r.previousManifestDigest||contract.releaseDigest(old.manifest)!==r.previousManifestDigest
+  ||['taskId','applicationId','hostId','commit','candidateTree','baseCommit','baseTree','releaserAgentId'].some(k=>s[k]!==old[k])
+  ||!contract.releaseRecoveryOnlyManifestMatches(old.manifest,s.manifest)
+  ||!closure||closure.releaseId!==r.releaseId||closure.closureDigest!==r.closureDigest||contract.releaseDigest(closure.snapshot)!==r.closureDigest
+  ||closure.failedOperationId!==r.failedOperationId||closure.failedOutcomeId!==r.failedOutcomeId
+  ||!previous.revocations?.some(v=>v.id===closure.revocationId)
+  ||last?.id!==r.failedOperationId||last.outcome?.id!==r.failedOutcomeId||releaseOutcomeStatus(last.outcome)!=='failed'
+  ||contract.releaseDigest(last.outcome.evidence)!==r.failedEvidenceDigest
+  ||contract.releaseRecoveryOnlyEntryError(old,s,closure.snapshot)!==null)fail('release_recovery_only_entry_unproven');
+ if(typeof coolify.inspectRecoveryEntry!=='function')fail('release_recovery_only_entry_gateway_required');
+ const result=await coolify.inspectRecoveryEntry({previousState:previous});
+ if(!result||Object.keys(result).some(k=>!['currentEvidence','closureReceipt'].includes(k))
+  ||contract.releaseDigest(result.closureReceipt)!==contract.releaseDigest(closure.snapshot))fail('release_recovery_only_entry_unproven');
+ const e=result.currentEvidence,at=Date.parse(e?.observedAt),now=Date.now();
+ const stable=value=>{const copy=structuredClone(value);delete copy.observedAt;delete copy.healthDigest;delete copy.composeRecovery.partialRollbackFailure.publicHealth.healthDigest;return copy;};
+ try{
+  if(!Number.isFinite(at)||at>now+60000||now-at>300000
+   ||contract.composeFailedRollbackPartialEvidenceError({...old,releaseId:r.releaseId},e,last)!==null
+   ||contract.releaseDigest(stable(e))!==contract.releaseDigest(stable(r.currentEvidence)))fail('release_recovery_only_entry_unproven');
+ }catch{fail('release_recovery_only_entry_unproven');}
 }
 function parameters(operation,s,state){
  const m=s.manifest;
@@ -296,14 +368,18 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
  // Validate actual checkout and remote base before requesting a capability.
  const cleanupStage=['cleanup','cleanup_local','cleanup_resource','archive_repository'].includes(operation);
  if(operation!=='cleanup')await inspectCheckout(m,s.commit,contract.releaseGitPublicationBase(s).commit,s.candidateTree);
- const remote=await github.inspect(m,{allowArchived:cleanupStage&&!contract.retainsApplication(m)}),merged=contract.releaseHasSuccessor(state.release.snapshot)||contract.releaseHasPublishedGitBasis(state.release.snapshot)||state.journal.some(j=>j.operation==='merge'&&releaseOutcomeStatus(j.outcome)==='succeeded');
+ const remote=await github.inspect(m,{allowArchived:cleanupStage&&!contract.retainsApplication(m)}),merged=contract.releaseHasRecoveryOnly(s)||contract.releaseHasSuccessor(state.release.snapshot)||contract.releaseHasPublishedGitBasis(state.release.snapshot)||state.journal.some(j=>j.operation==='merge'&&releaseOutcomeStatus(j.outcome)==='succeeded');
  const publicationBase=contract.releaseGitPublicationBase(s);
  if(remote.remoteBase!==(merged?s.commit:publicationBase.commit)
   ||remote.remoteTree!==(merged?s.candidateTree:publicationBase.tree))fail('release_base_changed');
- if(!state.journal.length)await coolify.inspect(m,s);
+ if(!state.journal.length){
+  if(s.recoveryOnly)await inspectRecoveryOnlyEntry(s,api,coolify);
+  else await coolify.inspect(m,s);
+ }
  if(['deploy_config','deploy','rollback_config','rollback'].includes(operation))await resources.inspectCapacity(m);
  const intent=contract.intentSchema.parse({requestId:randomUUID(),operation,manifestDigest:s.manifestDigest,commit:s.commit,baseCommit:s.baseCommit,
   expectedVersion:state.expectedVersion,observed:{commit:s.commit,baseCommit:remote.remoteBase,baseTree:remote.remoteTree,manifestDigest:s.manifestDigest},parameters:parameters(operation,s,state)});
+ const recoveryError=contract.releaseRecoveryOnlyOperationError(s,intent,state.journal);if(recoveryError)fail(recoveryError);
  if(contract.postObservationOperations.includes(operation)){
   if(typeof resources?.postObservation!=='function')fail('release_post_observation_gateway_required');
   const error=contract.postObservationIntentError(s,intent,state.journal);if(error)fail(error);

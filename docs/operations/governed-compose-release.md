@@ -446,3 +446,32 @@ Only the original failed deployment reconciliation and planned rollback are
 allowed. Healthy candidate validation remains unchanged. Migration
 `20261006165000_compose_failed_partial_image_attribution` preserves the v1
 validator and adds this strict failed-only dispatcher without rewriting evidence.
+
+### Closed failed rollback and recovery-only authority
+
+`queue_failed_rollback_partial` records a failed sole rollback retry while the
+original failed services, protected images and schema/data remain unchanged.
+Its terminal FAILED closure keeps the original observation and binds a separate
+fresh complete read to a signed native checkpoint. All children must be closed,
+with actual process and writer absence. Closing the attempt proves neither
+runtime health nor successful recovery.
+
+A new `recoveryOnly` request is bound to that exact closure, old journal version,
+immutable failure, fresh failed-entry read and native closure. It preserves the
+historical baseline and permits only repaired controller commands and a genuinely
+new verified backup. A completed normal read-only scope audit and independent
+approval must follow the closure; the existing exact source review also remains
+current. Recent owner authentication and ordinary credential/Ready checks apply.
+
+The allowed sequence is rollback configuration, one image-only rollback,
+rollback observation, and required existing restoration/cleanup. Candidate and
+Git effects are refused. The new credential may read only its exact old failure
+through the active recovery grant; this conveys no authority on the old grant.
+The sealed old entry template is an installation input for read-only recognition,
+not an executable recovery capability. No failed entry becomes a healthy baseline.
+
+The repaired rollback build checks the service graph before Coolify creates its
+runtime environment file. Runtime start still requires the normal environment,
+sealed images and mounts. Candidate builds separately receive the exact accepted
+revision as a fixed build argument. Supporting contract, controller and SQL checks
+do not establish application recovery or release completion.
