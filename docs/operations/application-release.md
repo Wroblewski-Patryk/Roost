@@ -1504,3 +1504,23 @@ resources stay bound. The absent restart tuple is explicitly hashed as null;
 historical restart tuples keep their original digest. Mixed ancestry/restart
 paths are refused. Backup age, credential expiry, independent review and fresh
 owner authentication remain separate checks. Historical clocks are unchanged.
+
+Roost `a6654113` was pushed and deployed through its single existing automatic
+queue `rt4byzaslvfawxuxcbstq60n`. Finished state and health/build-info 200 with
+that exact SHA were read back at 11:34:23.632 UTC on 6 October. The ordinary
+Compose supplemental baseline path has 168 passing component tests.
+
+Original audit `31a929c9` now has same-intent Ready `341101da` and append-only
+basis mapping `0c942064`, verified through the normal API at 11:39:03.218 UTC.
+Material changed from `9cecd33a` to `ad07a469`; original execution metadata,
+signed receipt, manifest and eighteen negative findings were unchanged. No new
+model run or readiness promotion was used. The private adapter's 73 offline
+tests cover partial Ready recovery and authoritative mapping readback without
+repeating a POST. An uncertain intent remains retained for reconciliation.
+Normal reads also confirm current code approval `ab074cb6` and actual remote
+Git base `c82e68b3`, distinct from the retained deployed baseline.
+
+The application release remains incomplete: no new application push or
+deployment has occurred. Normal credential rotation and grant still require
+fresh owner authentication; a stopped Worker and retained images, data,
+verified backup and cadence holds preserve the recovery boundary.

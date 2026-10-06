@@ -198,10 +198,10 @@ Historical basis checks, input and failed review archives remain in the matrix.
 Review `4793c21f`: audit provenance passed; code rejected for log chronology.
 Return `99bb9555` → coder `645f792b` → log-only `c64378df`: 7/7, native closed.
 Build `6c602f42`: exact SHA, 7/7, closed/restored; twelve sources unchanged.
-Review234dfc97/4dc1812a: approved, signed/closed.
-Pkg8ec8b319/4b9db111 installed; nine reads pass. Audit31a929c9 signed/closed;
-eighteen negative findings retained. Review b2ff5d55 approved; Git/runtime pending.
-Roost `425dff66` deployed/healthy.
+Review234dfc97/4dc1812a: historical approval.
+Pkg8ec8b319/4b9db111 installed; Audit31a929c9 signed/closed.
+Its eighteen negative findings remain. Basis0c942064 current; b2ff5d55 approved.
+Roost `a6654113` deployed/healthy; Git/runtime pending.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,
