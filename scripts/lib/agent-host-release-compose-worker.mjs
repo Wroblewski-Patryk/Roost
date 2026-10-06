@@ -25,6 +25,7 @@ import { installedActivitySettingsSchema, createActivityReleaseAdapter } from '.
 import { createInstalledActivityTransport, activityCompatibleIngressInstallationSchema } from './agent-host-release-activity-installed.mjs';
 import { imageRetentionPolicySchema, retainedImageAnchor, qualifyRetentionImage, qualifyRetentionAnchor } from './agent-host-image-retention.mjs';
 import ingressFenceContract from './agent-host-release-compose-ingress-fence.cjs';
+import {readCompatibleRecoveryFailure as readFixedCompatibleFailure} from './agent-host-release-compose-failure-inspector.mjs';
 
 const hex=z.string().regex(/^[a-f0-9]{64}$/),alias=z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,79}$/);
 const file=z.string().min(3).max(1000).refine(v=>path.isAbsolute(v)&&path.normalize(v)===v);
@@ -386,6 +387,21 @@ export function qualifyCompatibleSettingsRead({snapshot,value,now}){
  const stableFence=v=>{const x=structuredClone(v);delete x.observedAt;delete x.evidenceDigest;return x;};
  check(contract.releaseDigest(stableFence(value.ingressFence))===contract.releaseDigest(stableFence(e.ingressFence)),'compatible_native_ingress_fence_changed');
  return value;
+}
+/** The installation maps fixed readers only; packets cannot select a channel. */
+export function createInstalledCompatibleFailureReader({snapshot,source},dependencies){
+ const s=structuredClone(snapshot),m=s.manifest;
+ check(s.compatibleArtifactRecovery&&['readCurrentState','readConfiguration','transport','readCompatibleRecoverySettings','probeHealth','assertClone'].every(k=>typeof dependencies?.[k]==='function'),
+  'compatible_failure_fixed_dependencies_required');
+ return async(_manifest,_binding,options)=>{
+  check(contract.releaseDigest(_manifest)===contract.releaseDigest(m)&&_binding.releaseId===s.releaseId&&_binding.commit===s.commit
+   &&_binding.candidateTree===s.candidateTree&&_binding.manifestDigest===s.manifestDigest&&z.object({operationId:z.string().uuid()}).strict().safeParse(options).success,'compatible_failure_reader_scope_changed');
+  return readFixedCompatibleFailure({snapshot:s,operationId:options.operationId,source},{readCurrentState:dependencies.readCurrentState,
+   readConfiguration:dependencies.readConfiguration,entryInspector:dependencies.entryInspector,candidateInspector:dependencies.candidateInspector,
+   transport:async descriptor=>{check(descriptor.write===false,'compatible_failure_read_effect_forbidden');return dependencies.transport(descriptor);},
+   readIngressFence:async input=>{const settings=qualifyCompatibleSettingsRead({snapshot:s,value:await dependencies.readCompatibleRecoverySettings(input),now:(dependencies.now??Date.now)()});return settings.ingressFence;},
+   probeHealth:dependencies.probeHealth,assertClone:dependencies.assertClone,now:dependencies.now??Date.now});
+ };
 }
 
 
@@ -1031,7 +1047,11 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   Object.assign(resources,createActivityReleaseAdapter({manifest:m,binding:s,settings:cfg.activity,seed:activitySeed,
    readState:dependencies.readReleaseState,transport:facade.transport}));
  }
+ const readCompatibleFailure=compatible?createInstalledCompatibleFailureReader({snapshot:s,source:cfg.source},{readCurrentState:dependencies.readReleaseState,
+  readConfiguration:observeConfig,entryInspector:compatibleEntryInspector,candidateInspector:inspector,transport:ssh,
+  readCompatibleRecoverySettings:dependencies.readCompatibleRecoverySettings,probeHealth:healthProbe,assertClone,now:dependencies.now??Date.now}):null;
  const compatibleMethods=compatible?{inspect:async()=>deny('compatible_historical_baseline_unavailable'),configureRollback:async()=>deny('compatible_historical_rollback_forbidden'),rollback:async()=>deny('compatible_historical_rollback_forbidden'),
+  readCompatibleRecoveryFailure:readCompatibleFailure,
   health:async(a,b,o={})=>{check(o.rollback!==true,'compatible_historical_rollback_forbidden');return adapter.health(a,b,o);},
   observe:async(a,b,o={})=>{check(o.rollback!==true,'compatible_historical_rollback_forbidden');return adapter.observe(a,b,o);},
   reconcileDeployment:async(a,b,o={})=>{check(o.rollback!==true,'compatible_historical_rollback_forbidden');return adapter.reconcileDeployment(a,b,o);},

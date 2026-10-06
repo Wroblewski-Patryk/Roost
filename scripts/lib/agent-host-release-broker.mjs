@@ -409,7 +409,8 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
  const s=validateState(state,client),m=s.manifest,operation=nextReleaseOperation(state);
  if(reconciliationOnly&&operation!=='reconcile')return{handled:true,state,reconciliationOnlyComplete:true};
  if(operation==='frozen')return{handled:true,state,nextOperationBlocked:true,compatibleRecoveryFrozen:true,
-  diagnosisReason:'release_compatible_recovery_frozen',failureDisposition:contract.compatibleRecoveryFailureState(state),nativeHoldReinspected:false};
+  diagnosisReason:'release_compatible_recovery_frozen',failureDisposition:contract.compatibleRecoveryFailureState(state),nativeHoldReinspected:false,
+  nativeHoldReinspectionAvailable:typeof coolify.readCompatibleRecoveryFailure==='function'};
  if(!operation)return{handled:false,state};
  const route=`/v1/agent-runtime/releases/${state.release.id}`;
  await assertWriter();
@@ -417,6 +418,46 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
   const pending=state.journal.find(j=>!releaseOutcomeStatus(j.outcome)||releaseOutcomeStatus(j.outcome)==='uncertain');
   if(pending.operation==='cleanup_resource')await assertDisposable(m,s,resources,pending.intent.parameters.resourceId);
   let result;
+  if(s.compatibleArtifactRecovery&&['deploy_config','deploy','observe'].includes(pending.operation)){
+   let positive,positiveBody;
+   try{
+    if(pending.operation==='deploy_config'){
+     const readback=await coolify.reconcileConfiguration(m,s,{rollback:false,operationId:pending.id,since:pending.createdAt});
+     if(readback?.state==='applied')positive=releaseSetEvidence(readback,m,s,{configuration:true});
+    }else if(pending.operation==='deploy'){
+     const readback=await coolify.reconcileDeployment(m,s,{rollback:false,since:pending.createdAt,operationId:pending.id,operationIntent:pending.intent,targetId:pending.intent.parameters.targetId});
+     if(readback?.state==='finished'){
+      assertComposeQueueIds(m,readback.deploymentIds,pending.intent.parameters.targetId);
+      const health=readback.healthy===undefined?await coolify.health(m,s,{rollback:false,targetId:pending.intent.parameters.targetId}):readback;
+      if(health.healthy===true)positive=releaseSetEvidence(health,m,s,{deploymentIds:readback.deploymentIds});
+     }
+    }else{
+     const health=await coolify.observe(m,s,{rollback:false});
+     if(health?.healthy===true)positive=releaseSetEvidence(health,m,s,{deploymentIds:priorDeployment(state,false)?.outcome.evidence.deploymentIds});
+    }
+    if(positive){const body=contract.outcomeSchema.parse({requestId:randomUUID(),status:'reconciled',reconciledStatus:'succeeded',observationOnly:true,evidence:dated(positive)});
+     if(compatibleOutcomeError(s,pending,body,state.journal.filter(r=>r.id!==pending.id))===null)positiveBody=body;
+    }
+   }catch{positive=null;}
+   // A POST or native-close uncertainty must escape to normal state readback;
+   // it cannot become a second negative POST or restart an observation.
+   if(positiveBody){await onChildrenClosed();const updated=await api(`${route}/operations/${pending.id}/outcome`,{method:'POST',body:positiveBody});
+    return{handled:true,state:updated,...(reconciliationOnly?{reconciliationOnlyComplete:true}:{})};}
+   if(typeof coolify.readCompatibleRecoveryFailure!=='function')fail('release_compatible_failure_gateway_required');
+   const negative=await coolify.readCompatibleRecoveryFailure(m,s,{operationId:pending.id});
+   if(negative?.status==='reconciled'){
+    const body=contract.outcomeSchema.parse({requestId:randomUUID(),status:'reconciled',reconciledStatus:negative.reconciledStatus,observationOnly:true,evidence:negative.evidence});
+    if(compatibleOutcomeError(s,pending,body,state.journal.filter(r=>r.id!==pending.id))!==null)fail('release_compatible_recovery_outcome_unproven');
+    await onChildrenClosed();const updated=await api(`${route}/operations/${pending.id}/outcome`,{method:'POST',body});
+    return{handled:true,state:updated,nextOperationBlocked:true,compatibleRecoveryFrozen:true,negativeObservationRecorded:true,
+     diagnosisReason:'release_compatible_recovery_frozen',failureDisposition:contract.compatibleFailureDisposition(body.evidence.compatibleRecoveryFailure.kind),
+     ...(reconciliationOnly?{reconciliationOnlyComplete:true}:{})};
+   }
+   // Unknown fixed observations remain unknown. They never repeat an effect,
+   // adopt a historic healthy baseline or relabel a collected marker's clock.
+   await onChildrenClosed();return{handled:true,state,compatibleFailureUnresolved:true,nextOperationBlocked:true,
+    diagnosisReason:'release_compatible_failure_read_unproven',nativeHoldReinspected:false};
+  }
   if(['push','pr','review','merge'].includes(pending.operation))result=await github.reconcile(m,s,pending.operation,pending.intent.parameters.pullRequestNumber);
   else if(['deploy_config','rollback_config'].includes(pending.operation)){
    result=await coolify.reconcileConfiguration(m,s,{rollback:pending.operation==='rollback_config',operationId:pending.id,since:pending.createdAt});
