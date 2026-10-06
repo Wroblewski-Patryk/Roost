@@ -199,10 +199,10 @@ Review `4793c21f`: audit provenance passed; code rejected for log chronology.
 Return `99bb9555` → coder `645f792b` → log-only `c64378df`: 7/7, native closed.
 Build `6c602f42`: exact SHA, 7/7, closed/restored; twelve sources unchanged.
 Review234dfc97/4dc1812a: historical approval.
-Pkg8ec8b319/4b9db111 installed; Audit31a929c9 signed/closed.
-Its eighteen negative findings remain. Basis0c942064 current; b2ff5d55 approved.
+Historical pkg4b9/audit31: eighteen negative findings; basis0c94/b2 approved.
 Roost `1cfe5a0b` healthy; FAILED closure `00b660cc` persisted.
-PR3/c643 merged without replay. Both queues failed before build; baseline healthy.
+PR3/c643 merged. Both queues failed before build; baseline healthy.
+Pkg9e7/audit34b: 19 CHANGES_REQUIRED, native closed; review19ab approved.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

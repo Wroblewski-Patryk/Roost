@@ -1584,3 +1584,17 @@ remain the observed preimage; new commands remain planned. Fifty-six offline
 package qualification cases pass. This preparation grants no release authority:
 a new native audit, independent exact receipt/code review, fresh normal grant and
 real deployment/observation/cleanup/resume/final acceptance remain required.
+
+Native audit `34b301fe` completed at 14:25:44.319 UTC for exact manifest
+`9e7e3e70`. Official Worker stopped normally with code zero. Capture
+`5e31ace4` verifies actual OS absence and unchanged archived core signatures.
+Its literal nineteen `CHANGES_REQUIRED` findings remain separate from the
+historical eighteen. Narrow negative-header recognition accepts the observed
+format without rewriting text or permitting READY promotion. Seventeen literal
+and twenty-eight frozen-prompt cases pass. The frozen prompt retains only its
+original material snapshot; the current normal material is verified separately.
+Independent review `91093e89` completed at 14:41:34.354 UTC, full measured input
+129777/131072, signed native/official closure and current APPROVE `19ab2868`
+for material `a3bbd77f`. Its separate exact new-audit artifact passes while
+preserving CHANGES_REQUIRED. The literal free-text result is retained, not
+rewritten. New release grant and candidate deployment remain pending.
