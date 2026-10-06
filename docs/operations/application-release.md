@@ -1598,3 +1598,39 @@ Independent review `91093e89` completed at 14:41:34.354 UTC, full measured input
 for material `a3bbd77f`. Its separate exact new-audit artifact passes while
 preserving CHANGES_REQUIRED. The literal free-text result is retained, not
 rewritten. New release grant and candidate deployment remain pending.
+
+## Retained images and scheduled cleanup
+
+The operator confirmed manual Coolify cleanup on 6 October. Native bounded
+readback identifies cleanup 395 at 18:38:55–18:40:15 UTC: the three original
+retained rollback images and four stopped candidate service containers are
+absent. The protected database container and volume remain. The earlier image
+and package proofs are historical; they cannot authorize image-only rollback
+after this loss. No replacement healthy baseline or successful recovery is
+claimed. The existing daily cleanup remains configured for 01:00 UTC, with
+unused-volume deletion disabled; no additional timer or paid resource was added.
+
+`agent-host-image-retention.mjs` qualifies an explicit bounded installation
+policy and stopped image anchors. Anchors have no application environment,
+mounts, ports or network, and override inherited `coolify.managed` to false.
+They are never started. Four surviving candidate images have actual anchors;
+native proof `a33cd6fb` shows Docker refusing image removal because its exact
+stopped anchor still references it. The installed Coolify cleanup selects
+managed stopped containers and uses non-forced application image removal, so
+these anchors survive that path. This is not protection against arbitrary
+forced deletion or a generic system prune. Eighteen retention cases pass.
+
+An attempted retention-count change from two to eight was read back, then
+reverted to two: changing this setting would invalidate the immutable release
+configuration. Fresh scoped-query digests prove application and other settings
+unchanged after the reversion. Anchor retention provides the current protection;
+automatic anchor creation and retirement in future release lifecycles are not
+yet proven. Missing images still require a genuinely governed replacement path.
+
+Primary independent review of a readonly auditor result now has a strict
+existing-contract branch: the pinned prior-audit execution must equal the
+reviewed execution, and baseline/reviewed commits must match. The compact
+projection binds the full verified original response and closed native receipts;
+it declares empty diff and no coding receipts or tests. Coding review retains
+its existing checks. Root verification passes 166 material cases and 24 actual
+owned Windows readonly fixture cases; no live primary review is claimed yet.

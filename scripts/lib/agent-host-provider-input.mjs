@@ -12,7 +12,8 @@ import { createHermesStartupCandidate, sealHermesStartup, assertHermesStartup } 
 import { basisRevalidationSchema } from "./agent-host-code-reviewer.mjs";
 import { qualifiedCrlfDiffCertificateSchema } from "./agent-host-review-crlf-diff.mjs";
 import { projectApplicationSharedRecords, assertApplicationSharedRecords } from "./agent-host-application-shared-records.mjs";
-import { codeReviewerPriorAuditEvidenceSchema } from "./agent-host-code-reviewer-prior-audit.mjs";
+import { codeReviewerPriorAuditEvidenceSchema, primaryReadOnlyReviewedSchema,
+  isPrimaryReadOnlyReview, primaryReadOnlyReviewMatches } from "./agent-host-code-reviewer-prior-audit.mjs";
 
 import { sealHermesBudget, assertHermesBudget, assertHermesBudgetReceipt, createHermesBudgetReceipt } from "./agent-host-hermes-budget.mjs";
 
@@ -69,13 +70,13 @@ export const providerInputSchema = z.object({
             .refine(value => value.endLine >= value.startLine && value.endLine - value.startLine < 200) }).strict()
       ])).min(1).max(32),
       tree: hash, processDigest: hash, dockerDigest: hash,
-      reviewed: z.object({ verifiedTaskId: id, verifiedExecutionId: id, materialVersion: hash,
+      reviewed: z.union([z.object({ verifiedTaskId: id, verifiedExecutionId: id, materialVersion: hash,
         originalMaterialVersion: hash.optional(), basisCurrent: z.literal(true).optional(),
         basisRevalidation: basisRevalidationSchema.optional(),
         baselineCommit: z.string().regex(/^[a-f0-9]{40}$/), reviewedCommit: z.string().regex(/^[a-f0-9]{40}$/),
         changedFiles: z.array(z.string()).max(128), codingTests: record, localCommit: record, nativeReview: record,
         diff: z.string().max(32768), diffDigest: hash,
-        diffCertificate: qualifiedCrlfDiffCertificateSchema.optional() }).strict().optional(), digest: hash
+        diffCertificate: qualifiedCrlfDiffCertificateSchema.optional() }).strict(), primaryReadOnlyReviewedSchema]).optional(), digest: hash
     }).strict()).optional()
   }).strict(),
   startupTools: z.tuple([]),
@@ -116,6 +117,14 @@ export const providerInputSchema = z.object({
     }
   }
   const reviewed = input.evidence.repositoryInspection?.value.reviewed;
+  const reference = input.contract.nativeBoundary?.inspectReadOnly;
+  const primary = isPrimaryReadOnlyReview(reference);
+  if (primary || reviewed?.resultKind === "readonly-audit") {
+    if (!primary || !primaryReadOnlyReviewMatches(reviewed, auditEvidence, { inspection: reference,
+      repositoryEvidence: input.evidence.repositoryInspection?.value, identity: input.identity,
+      reviewerAgentId: input.contract.assignment.agentId })) context.addIssue({ code: z.ZodIssueCode.custom,
+      path: ["evidence", "repositoryInspection", "value", "reviewed"], message: "primary_readonly_review_binding_invalid" });
+  }
   if (!reviewed) return;
   const certificate = reviewed.diffCertificate;
   if (certificate && (certificate.baselineCommit !== reviewed.baselineCommit
@@ -127,7 +136,7 @@ export const providerInputSchema = z.object({
     || JSON.stringify(certificate.files.map(file => file.path).sort()) !== JSON.stringify([...reviewed.changedFiles].sort())))
     context.addIssue({ code: z.ZodIssueCode.custom,
       path: ["evidence", "repositoryInspection", "value", "reviewed"], message: "review_diff_certificate_binding_invalid" });
-  const mapping = reviewed.basisRevalidation, reference = input.contract.nativeBoundary?.inspectReadOnly;
+  const mapping = reviewed.basisRevalidation;
   // Ordinary reviews keep their historical evidence shape. A revalidated input
   // cannot discard the original reference or substitute a different task/result.
   const mapped = mapping !== undefined || reviewed.basisCurrent !== undefined || reviewed.originalMaterialVersion !== undefined;
@@ -227,8 +236,13 @@ function projection(fresh, claimed, repositoryEvidence, priorAudit, codeReviewer
         "Return a reasoned audit of scope, requirements and evidence. A verifier must independently assess the cited auditor evidence; report discrepancies."
       ] : []),
       ...(packet.contract.nativeBoundary?.inspectReadOnly?.kind === "code-reviewer" ? [
-        "Independently review the exact commit and Worker-provided diff, tests and coding receipt. Return ONLY a strict JSON object, no Markdown.",
-        "diffCertificate proves complete patch reconstruction and uniform LF-to-CRLF conversion for every exact blob. Assess the conversion; do not assume it harmless. Exact blobs, bytes and raw/normalized digests are bound. No other whitespace or edit is omitted.",
+        ...(isPrimaryReadOnlyReview(packet.contract.nativeBoundary.inspectReadOnly) ? [
+          "Independently review the exact completed read-only auditor result in evidence.codeReviewerPriorAudit. The readonly-audit projection pins the SAME full response, original Ready/source selection and signed closed native receipts by packet digest. Return ONLY a strict JSON object, no Markdown.",
+          "This primary source made no application edits: diff is explicitly empty and its empty digest is bound. No coding tests, local commit or native coding review is claimed. Assess the actual supplied readonly checks and cited observations; do not invent coding/build/runtime tests or promote the auditor's semantic disposition."
+        ] : [
+          "Independently review the exact commit and Worker-provided diff, tests and coding receipt. Return ONLY a strict JSON object, no Markdown.",
+          "diffCertificate proves complete patch reconstruction and uniform LF-to-CRLF conversion for every exact blob. Assess the conversion; do not assume it harmless. Exact blobs, bytes and raw/normalized digests are bound. No other whitespace or edit is omitted."
+        ]),
         "JSON must contain decision ('approve' or 'reject'), reviewedCommit (exact 40-hex), evidenceDigest (the reviewed materialVersion), summary, and evidence array of {kind:'test'|'artifact',reference,result,verdict?:'pass'|'fail'|'unknown'}.",
         "For approve include a passing test item. For reject include reproduction array, expected, observed, and correction {scope,excluded,outcome,competencies}. Do not claim a test you did not observe.",
         "JSON constraints: text fields and reproduction/scope/excluded items are strings of 3-2000 characters; evidence/reproduction/scope/excluded have 1-12 items. correction.scope/excluded and reproduction MUST be arrays; competencies is 1-30 strings of 1-120 characters. No additional fields; omit reject-only fields for approve."

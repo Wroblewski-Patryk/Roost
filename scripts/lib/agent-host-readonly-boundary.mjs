@@ -11,6 +11,7 @@ import { isWindowsJobCleanupReceipt } from "./agent-host-windows-job.mjs";
 import { guardHostContent } from "./agent-host-redaction.mjs";
 import { codeReviewReferenceMatches } from "./agent-host-code-reviewer.mjs";
 import { collectQualifiedCrlfReviewDiff } from "./agent-host-review-crlf-diff.mjs";
+import { isPrimaryReadOnlyReview, qualifyPrimaryReadOnlyReviewMaterial } from "./agent-host-code-reviewer-prior-audit.mjs";
 
 const sealed = new WeakMap(), receipts = new WeakMap();
 const hex = value => createHash("sha256").update(value).digest("hex");
@@ -212,6 +213,11 @@ export function collectReadOnlyRepositoryEvidence({ repositoryPath, expected, pa
     let reviewed = null;
     if (review) {
       stage = "review_material_unavailable";
+      if (isPrimaryReadOnlyReview(review)) {
+        reviewed = qualifyPrimaryReadOnlyReviewMaterial(reviewMaterial, review, {
+          head: expected.head, branch: expected.branch, tree: pre.footprint.digest
+        });
+      } else {
       if (!reviewMaterial || review.reviewedCommit !== expected.head
           || !codeReviewReferenceMatches(reviewMaterial, review)
           || reviewMaterial.result?.executionId !== review.verifiedExecutionId
@@ -240,6 +246,7 @@ export function collectReadOnlyRepositoryEvidence({ repositoryPath, expected, pa
         localCommit: reviewMaterial.result.verification.localCommit,
         nativeReview: reviewMaterial.result.verification.nativeReviewReceipt,
         diff, diffDigest: hex(diff), ...(certificate ? { diffCertificate: certificate } : {}) };
+      }
       const checked = guardHostContent(reviewed, "required", secrets);
       if (checked.redacted || nativeDigest(checked.value) !== nativeDigest(reviewed)) fail("review_material_redaction_blocked");
     }

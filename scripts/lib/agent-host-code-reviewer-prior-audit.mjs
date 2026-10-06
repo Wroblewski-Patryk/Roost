@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
+import { basisRevalidationSchema, codeReviewReferenceMatches } from "./agent-host-code-reviewer.mjs";
 
 const id = z.string().uuid(), hash = z.string().regex(/^[a-f0-9]{64}$/);
 const commit = z.string().regex(/^[a-f0-9]{40}$/), integer = z.number().int().nonnegative();
@@ -75,6 +76,96 @@ export const codeReviewerPriorAuditEvidenceSchema = evidenceBodySchema.extend({ 
     context.addIssue({ code: z.ZodIssueCode.custom, message: "code_reviewer_prior_audit_invalid" });
 });
 
+// This explicit existing-contract tuple distinguishes a review of an auditor
+// result from a coding review with supplementary auditor evidence.
+export function isPrimaryReadOnlyReview(inspection) {
+  return inspection?.kind === "code-reviewer"
+    && codeReviewerPriorAuditReferenceSchema.safeParse(inspection.priorAudit).success
+    && inspection.priorAudit.executionId === inspection.verifiedExecutionId
+    && commit.safeParse(inspection.baselineCommit).success
+    && inspection.baselineCommit === inspection.reviewedCommit;
+}
+
+export const primaryReadOnlyReviewedSchema = z.object({ resultKind: z.literal("readonly-audit"),
+  verifiedTaskId: id, verifiedExecutionId: id, materialVersion: hash,
+  originalMaterialVersion: hash.optional(), basisCurrent: z.literal(true).optional(),
+  basisRevalidation: basisRevalidationSchema.optional(), baselineCommit: commit, reviewedCommit: commit,
+  changedFiles: z.tuple([]), primaryAudit: z.object({ executionId: id, receiptDigest: hash, packetDigest: hash }).strict(),
+  diff: z.literal(""), diffDigest: z.literal(createHash("sha256").update("").digest("hex")) }).strict();
+
+function sourceSelection(contract, ready) {
+  return sourceSelectionSchema.parse({ contractDigest: digest(contract), readPaths: contract.nativeBoundary.readPaths,
+    readFragments: (contract.nativeBoundary.readFragments ?? []).map(row => [row.path, row.startLine, row.endLine]),
+    context: Object.fromEntries(["company", "product", "technical"].map(key => [key,
+      (contract.context?.[key] ?? []).map(row => [row.id, row.revision])])), originalReady: originalReadySchema.parse(ready) });
+}
+
+/** A normal pinned-TLS review view supplies current material, while every native
+ * field and original Ready remains the immutable auditor result. No coding
+ * receipt, synthetic local commit or approval is introduced by this projection. */
+export function qualifyPrimaryReadOnlyReviewMaterial(view, inspection, repositoryEvidence) {
+  try {
+    const r = view?.result, c = r?.contract, v = r?.verification;
+    if (!isPrimaryReadOnlyReview(inspection) || !codeReviewReferenceMatches(view, inspection)
+      || view.canReview !== true || view.reason === "stale_result" || view.roleIssues?.length
+      || view.grantAccess?.review_decision?.status === "blocked"
+      || view.task?.id !== inspection.verifiedTaskId || r?.taskId !== inspection.verifiedTaskId
+      || r.executionId !== inspection.verifiedExecutionId || view.approvalCommit !== inspection.reviewedCommit
+      || !id.safeParse(view.task.workspaceId).success || !id.safeParse(r.applicationId).success
+      || c?.nativeBoundary?.profile !== "inspect-readonly" || c.nativeBoundary.inspectReadOnly?.kind !== "auditor"
+      || c.access?.sandbox !== "read-only" || c.access.externalWrites !== false
+      || !same(c.access.tools, ["repository_read"]) || !same(c.access.permissions, ["repository_read"])
+      || c.nativeBoundary.runtime?.required !== false || !same(c.nativeBoundary.runtime.ports, [])
+      || c.modelSelection?.schemaVersion !== "roost-managed-hermes-backend-v1" || c.modelSelection.backend !== "codex_responses"
+      || !id.safeParse(c.assignment?.agentId).success || c.assignment.agentId !== c.taskRoles?.executor?.id
+      || !Array.isArray(r.changedFiles) || r.changedFiles.length
+      || ["boundary_violation", "policy_blocked", "acceptance_failed", "verification_blocked", "process_failed"].includes(v?.outcome)
+      || ["codingTests", "localCommit", "nativeReviewReceipt", "nativeToolReceipt"].some(key => Object.hasOwn(v ?? {}, key))) invalid();
+    const readOnlyAudit = auditReceiptSchema.parse(v.readOnlyAudit), managedAdmission = managedSchema.parse(v.managedAdmission),
+      ownedTreeReceipt = ownedSchema.parse(v.ownedTreeReceipt), resultRevision = resultRevisionSchema.parse(r.resultRevision);
+    if (readOnlyAudit.digest !== inspection.priorAudit.receiptDigest || readOnlyAudit.preTree !== repositoryEvidence?.tree
+      || resultRevision.commit !== inspection.reviewedCommit || resultRevision.commit !== repositoryEvidence?.head
+      || resultRevision.branch !== repositoryEvidence?.branch || resultRevision.branch !== c.singleTask?.branch
+      || resultRevision.attempt !== r.attempt || resultRevision.checkpointVersion !== r.checkpointVersion) invalid();
+    const body = evidenceBodySchema.parse({ schemaVersion: "roost-code-reviewer-prior-audit-v1",
+      identity: { executionId: r.executionId, taskId: r.taskId, workspaceId: view.task.workspaceId,
+        applicationId: r.applicationId, hostId: resultRevision.hostId, auditorAgentId: c.assignment.agentId },
+      completedAt: r.completedAt, finalResponse: r.finalResponse, readOnlyAudit, managedAdmission, ownedTreeReceipt,
+      resultRevision, sourceSelection: sourceSelection(c, r.pin), authority: false });
+    const packet = codeReviewerPriorAuditEvidenceSchema.parse({ ...body, digest: digest(body) });
+    return primaryReadOnlyReviewedSchema.parse({ resultKind: "readonly-audit", verifiedTaskId: inspection.verifiedTaskId,
+      verifiedExecutionId: inspection.verifiedExecutionId, materialVersion: view.materialVersion,
+      ...(r.basisRevalidation ? { originalMaterialVersion: inspection.verifiedEvidenceDigest, basisCurrent: view.basisCurrent,
+        basisRevalidation: structuredClone(r.basisRevalidation) } : {}),
+      baselineCommit: inspection.baselineCommit, reviewedCommit: inspection.reviewedCommit, changedFiles: [],
+      primaryAudit: { executionId: r.executionId, receiptDigest: packet.readOnlyAudit.digest, packetDigest: packet.digest },
+      diff: "", diffDigest: createHash("sha256").update("").digest("hex") });
+  } catch { invalid(); }
+}
+
+export function primaryReadOnlyReviewMatches(reviewed, packet, { inspection, repositoryEvidence, identity, reviewerAgentId }) {
+  try {
+    const r = primaryReadOnlyReviewedSchema.parse(reviewed), e = codeReviewerPriorAuditEvidenceSchema.parse(packet);
+    const mapping = r.basisRevalidation;
+    if (mapping ? r.basisCurrent !== true || r.originalMaterialVersion !== inspection.verifiedEvidenceDigest
+      || mapping.originalMaterialVersion !== r.originalMaterialVersion || r.materialVersion === r.originalMaterialVersion
+      || mapping.originalPinId !== e.sourceSelection.originalReady.pinId
+      || mapping.originalRevision !== e.sourceSelection.originalReady.revision || mapping.originalPinId === mapping.readyPinId
+      || mapping.commit !== r.reviewedCommit || Date.parse(mapping.createdAt) < Date.parse(e.completedAt)
+      : r.materialVersion !== inspection.verifiedEvidenceDigest || r.originalMaterialVersion !== undefined || r.basisCurrent !== undefined) return false;
+    return isPrimaryReadOnlyReview(inspection) && r.verifiedTaskId === inspection.verifiedTaskId
+      && r.verifiedExecutionId === inspection.verifiedExecutionId && r.baselineCommit === inspection.baselineCommit
+      && r.reviewedCommit === inspection.reviewedCommit && r.primaryAudit.executionId === e.identity.executionId
+      && r.primaryAudit.receiptDigest === inspection.priorAudit.receiptDigest && r.primaryAudit.receiptDigest === e.readOnlyAudit.digest
+      && r.primaryAudit.packetDigest === e.digest && r.verifiedTaskId === e.identity.taskId
+      && r.verifiedExecutionId === e.identity.executionId && e.resultRevision.commit === r.reviewedCommit
+      && e.resultRevision.commit === repositoryEvidence.head && e.resultRevision.branch === repositoryEvidence.branch
+      && e.readOnlyAudit.preTree === repositoryEvidence.tree && e.identity.workspaceId === identity.workspaceId
+      && e.identity.applicationId === identity.applicationId && e.identity.taskId !== identity.taskId
+      && e.identity.executionId !== identity.executionId && e.identity.auditorAgentId !== reviewerAgentId;
+  } catch { return false; }
+}
+
 export function verifiedCodeReviewerPriorAudit(prior, { claimed, contract, repositoryEvidence }) {
   try {
     const inspection = contract?.nativeBoundary?.inspectReadOnly;
@@ -106,16 +197,12 @@ export function verifiedCodeReviewerPriorAudit(prior, { claimed, contract, repos
       || resultRevision.branch !== repositoryEvidence?.branch || resultRevision.branch !== previous.singleTask?.branch
       || resultRevision.branch !== contract.singleTask?.branch || resultRevision.attempt !== prior.attempt
       || resultRevision.checkpointVersion !== prior.checkpointVersion) invalid();
-    const sourceSelection = { contractDigest: digest(previous), readPaths: previous.nativeBoundary.readPaths,
-      readFragments: (previous.nativeBoundary.readFragments ?? []).map(row => [row.path, row.startLine, row.endLine]),
-      context: Object.fromEntries(["company", "product", "technical"].map(key => [key,
-        (previous.context?.[key] ?? []).map(row => [row.id, row.revision])])),
-      originalReady: originalReadySchema.parse(ready) };
+    const selection = sourceSelection(previous, ready);
     const body = evidenceBodySchema.parse({ schemaVersion: "roost-code-reviewer-prior-audit-v1",
       identity: { executionId: prior.id, taskId: prior.taskId, workspaceId: prior.workspaceId,
         applicationId: prior.applicationId, hostId: prior.agentHostId, auditorAgentId: previous.assignment.agentId },
       completedAt: prior.completedAt, finalResponse: prior.finalResponse, readOnlyAudit, managedAdmission, ownedTreeReceipt,
-      resultRevision, sourceSelection, authority: false });
+      resultRevision, sourceSelection: selection, authority: false });
     const evidence = codeReviewerPriorAuditEvidenceSchema.parse({ ...body, digest: digest(body) });
     // Freeze a detached copy; later callers cannot mutate the original API row
     // or silently change the evidence already admitted into the input envelope.
