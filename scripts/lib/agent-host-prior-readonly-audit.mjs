@@ -1,8 +1,11 @@
 import { nativeDigest } from "./agent-host-native-footprint.mjs";
+import { isDeepStrictEqual } from "node:util";
 
 const hash = /^[a-f0-9]{64}$/;
 const commit = /^[a-f0-9]{40}$/;
-const same = (left, right) => JSON.stringify(left) === JSON.stringify(right);
+// JSONB may reorder object keys. Preserve array order and exact values while
+// accepting that storage representation change for the same pinned scope.
+const same = isDeepStrictEqual;
 
 function invalid() {
   throw Object.assign(new Error("prior_readonly_audit_invalid"), {

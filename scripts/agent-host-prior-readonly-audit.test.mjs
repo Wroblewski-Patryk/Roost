@@ -51,6 +51,16 @@ test('verifier must retain the exact bounded fragment selection from its qualifi
   assert.throws(() => verifiedPriorReadOnlyAudit(candidate, scope), /prior_readonly_audit_invalid/);
 });
 
+test('a JSONB key reorder preserves the exact bounded fragment selection', () => {
+  const scope = expected();
+  scope.contract.nativeBoundary.readFragments = [{ path: 'docs/accepted.md', startLine: 20, endLine: 25 }];
+  const candidate = prior(scope);
+  candidate.metadata.executionContract.nativeBoundary.readFragments = [{ path: 'docs/accepted.md', endLine: 25, startLine: 20 }];
+  assert.equal(verifiedPriorReadOnlyAudit(candidate, scope).executionId, candidate.id);
+  candidate.metadata.executionContract.nativeBoundary.readFragments[0].startLine = 19;
+  assert.throws(() => verifiedPriorReadOnlyAudit(candidate, scope), /prior_readonly_audit_invalid/);
+});
+
 for (const [label, alter] of Object.entries({
   unfinished: p => { p.status = "running"; },
   otherHost: p => { p.agentHostId = id(99); },
