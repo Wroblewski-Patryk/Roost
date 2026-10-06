@@ -221,7 +221,8 @@ function projection(fresh, claimed, repositoryEvidence, priorAudit) {
         "Independently review the exact commit and Worker-provided diff, tests and coding receipt. Return ONLY a strict JSON object, no Markdown.",
         "diffCertificate proves complete patch reconstruction and uniform LF-to-CRLF conversion for every exact blob. Assess the conversion; do not assume it harmless. Exact blobs, bytes and raw/normalized digests are bound. No other whitespace or edit is omitted.",
         "JSON must contain decision ('approve' or 'reject'), reviewedCommit (exact 40-hex), evidenceDigest (the reviewed materialVersion), summary, and evidence array of {kind:'test'|'artifact',reference,result,verdict?:'pass'|'fail'|'unknown'}.",
-        "For approve include a passing test item. For reject include reproduction array, expected, observed, and correction {scope,excluded,outcome,competencies}. Do not claim a test you did not observe."
+        "For approve include a passing test item. For reject include reproduction array, expected, observed, and correction {scope,excluded,outcome,competencies}. Do not claim a test you did not observe.",
+        "JSON constraints: text fields and reproduction/scope/excluded items are strings of 3-2000 characters; evidence/reproduction/scope/excluded have 1-12 items. correction.scope/excluded and reproduction MUST be arrays; competencies is 1-30 strings of 1-120 characters. No additional fields; omit reject-only fields for approve."
       ] : []),
       "Execute only the contract objective and acceptance criteria in the current approved repository; leave results for owner review.",
       "Follow applicable repository instructions and documentation. Preserve unrelated changes; create no checkout, worktree or sibling project.",

@@ -192,17 +192,17 @@ Closure `2eb9cdfd` retains PR 2/exact c82 and Git proof.
 Prior FAILED releases `3c75a93e`, `e7320bdf`, `f579ca87` and `6b4471c5`
 retain dated outcomes, native closures and Git. Closures `14348e4c`, `4d79f05f`,
 `4b0a9d74`, `4d4d7db5` are recorded; negative audits remain literal.
-Backup guards pass; V8/V3 renewed. Receipts: release operations.
-Coolify repair `2d63cf62` preserves records. Locked requery fixes Stringable
-readback; native rolled-back CAS `bb121957` verifies all-record parity.
+Backup guards pass; V8/V3 renewed.
+Coolify/CAS `2d63cf62`/`bb121957`: all-record parity verified.
 Native c82 build `3e8510be`: seven tests pass; outputs restored.
-Audit `d1004c62`: CHANGES_REQUIRED; review `17f8c1db` accepts c82.
+Audit `d1004c62`: CHANGES_REQUIRED; review `17f8c1db`: accepted.
 Grant `63750d89`: both queues ABSENT, prior services healthy, native closed.
 Two-queue: 96 API, 202 Worker and eight SQL probes pass.
-Roost `3403347e` deployed; closure `4a98987c` persisted.
+Roost `3274aef5` deployed; closure `4a98987c` persisted.
 Audit `ba9a2999`: CHANGES_REQUIRED; basis mapping `d7758c8c` recorded.
-Basis: 57 checks, 39 DB tests pass. Input cap refused review;
-model and release proof pending.
+Basis: 57 checks, 39 DB tests pass. Packed input: 130426 bytes.
+Review `228eaf9c` failed JSON validation; no accepted verdict.
+Typed JSON: 128 checks pass; release proof pending.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

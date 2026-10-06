@@ -2110,7 +2110,7 @@ and `npm run validate`. Original audit/native/CHANGES_REQUIRED evidence remains
 immutable; a new mapping grants no release authority. Roost `3403347e` is
 deployed and normal audit mapping `d7758c8c` is persisted. Review `228eaf9c`
 was refused at measurement (136612 > 131072 bytes), before model launch;
-its unchanged unclaimed queue is retained. Independent approval and Aviary
+the original refusal remains retained. Independent approval and Aviary
 production proof remain pending.
 
 Provider input now deduplicates only identical capability domain and readiness
@@ -2118,4 +2118,10 @@ dimension records through complete local tables, exact canonical restoration
 and strict relation indexes. The original context still controls redaction,
 Ready and freshness; the 131072-byte cap and all permissions remain unchanged.
 Root's 80 component/integration checks, `npm run validate` and `codex:check`
-pass. Corrected actual input, native review and release proof remain pending.
+pass. Roost `3274aef5` and sole queue `e9gvqvplxp8eigmhn0v95axi` are confirmed.
+Same-queue measurement passed at 130426 bytes. Actual reviewer `228eaf9c`
+failed strict JSON validation: two correction arrays were returned as strings.
+Its raw rejection has no accepted decision. Controller 124956 closed with
+exit 0; normal terminal reconciliation and shared writer reclamation passed
+at 00:27:11.377 UTC with unchanged source. Explicit JSON type/bound instructions
+pass 128 relevant checks. A new actual review and release proof remain pending.

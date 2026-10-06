@@ -1274,7 +1274,7 @@ the original native result and all 17 findings. The stale coder procedure was
 refreshed only after actual durable rejection `b66ec4d0` was read and archived;
 normal coder mapping and reviewer Ready then succeeded.
 
-Reviewer execution `228eaf9c` remains unclaimed. Actual measurement at
+Reviewer execution `228eaf9c` was initially unclaimed. Actual measurement at
 00:05:27.014 UTC refused 136,612 bytes against 131,072 before any model call.
 The refusal is preserved. Repeated application domain and readiness-dimension
 definitions are the bounded context repair; no task scope, Ready or cap is
@@ -1289,5 +1289,19 @@ ambiguous or supplementary references are rejected. Full original context still
 undergoes redaction, Ready revision and freshness checks before projection;
 no discovery, permission, audit or release authority is granted by references.
 Provider measurement and launch use the same projection and unchanged cap.
-Root's 80 shared-record, integration and existing provider-input checks pass;
-actual corrected measurement, native launch and release evidence remain pending.
+Root's 80 shared-record, integration and existing provider-input checks pass.
+Roost `3274aef5` deployed through sole queue `e9gvqvplxp8eigmhn0v95axi`;
+exact health/version confirmed at 00:16:26.753 UTC. The same queued review's
+successor measurement passed at 130426 bytes; its original refusal is retained.
+Actual execution `228eaf9c` failed at 00:18:50.295 UTC with
+`code_reviewer_unproven/model_schema_correction`. Offline read-only Hermes
+session inspection confirms `correction.scope` and `correction.excluded` were
+strings, although the strict response schema requires arrays. The raw reject
+is not an accepted review decision. Official controller 124956 closed with
+exit 0. Normal readonly terminal reconciliation preserves that failure.
+
+The provider instructions now state the existing JSON field types, array
+bounds and prohibition of extra fields explicitly. Validation and review
+authority are unchanged. Root's 128 relevant schema, provider-input and
+shared-record checks pass. A new actual review, release and postrelease
+acceptance remain required; no candidate deployment is proven.
