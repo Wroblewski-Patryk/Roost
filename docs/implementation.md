@@ -190,20 +190,18 @@ Native build, seven tests and review pass.
 Restore/parity pass; writes and cadences remain held.
 Matrix retains failures, PR2/c82, backups, closures and negative audits.
 Audit `d1004c62`: CHANGES_REQUIRED.
-Prior absence closures, negative audits and checks remain in the matrix.
 Review `4793c21f`: audit provenance passed; code rejected for log chronology.
 Return `99bb9555` → coder `645f792b` → log-only `c64378df`: 7/7, native closed.
 Build `6c602f42`: exact SHA, 7/7, closed/restored; twelve sources unchanged.
-Review234dfc97/4dc1812a: historical approval.
-Historical pkg4b9/audit31: eighteen negative findings; basis0c94/b2 approved.
 FAILED closure `00b660cc` persisted.
 PR3/c643 merged. Both queues failed before build; baseline healthy.
 Pkg9e7/audit34b: 19 CHANGES_REQUIRED, native closed; review19ab approved.
 Grant f88: candidate queue failed after recreating five services; migration
 import lacks greenlet. App unavailable; schema/data parity verified.
-Roost a81a065c deployed; Worker persisted queue absence.
-Sole retry failed before start: missing env.
-Readonly/SQL proof passes; recovery unproven.
+Roost `2d1e687a` deployed; Worker persisted failed rollback.
+FAILED closure `6a5bc353`: fresh reads, seven native children closed.
+Renderer fixes pass 14 tests and actual helper proof.
+App remains down; recovery and release unproven.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

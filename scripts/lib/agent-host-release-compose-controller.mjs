@@ -74,7 +74,7 @@ export function renderComposePhaseCommands(policy) {
     return `${create}${compose} up -d --no-build --pull never ${active.join(' ')}`;
   };
   if (p.phase === 'candidate') return Object.freeze({
-    build: `${databaseImages} && docker compose ${project} --env-file /artifacts/build-time.env -f .${suffix}${p.composePath} build --pull`,
+    build: `${databaseImages} && docker compose ${project} --env-file /artifacts/build-time.env -f .${suffix}${p.composePath} build --pull --build-arg APP_BUILD_REVISION=${p.commit}`,
     start: `${databaseImages} && ${start(`.${suffix}${p.composePath}`)}`
   });
   const artifact = composePhaseArtifactFile(p), destination = `/artifacts/${artifact}`;
@@ -83,7 +83,7 @@ export function renderComposePhaseCommands(policy) {
   const images = [...new Set(p.services.map(service => service.imageDigest))].sort()
     .map(value => imageIdentityCommand(value, value)).join(' && ');
   return Object.freeze({
-    build: `${copy} && ${verify} && ${images} && docker compose ${project} --env-file /artifacts/build-time.env -f ${destination} config --quiet`,
+    build: `${copy} && ${verify} && ${images} && docker compose ${project} --env-file /artifacts/build-time.env -f ${destination} config --no-env-resolution --services --quiet`,
     start: `${verify} && ${images} && ${databaseImages} && ${start(destination)}`
   });
 }

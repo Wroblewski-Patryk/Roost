@@ -39,14 +39,48 @@ test('trusted phase renders supported normal build and immutable no-build rollba
   const f = fixture(), commands = renderComposePhaseCommands(f.policy), file = composePhaseArtifactFile(f.policy);
   assert.match(commands.build, /^docker cp coolify:\/var\/www\/html\/storage\/app\/applications\/fixtureapp\//);
   assert(commands.build.includes(file)); assert(commands.build.includes(`sha256sum -c /artifacts/${file}.sha256`));
-  assert.match(commands.build, /config --quiet$/); assert.doesNotMatch(commands.build, /\bbuild --pull\b/);
+  assert.match(commands.build, /config --no-env-resolution --services --quiet$/); assert.doesNotMatch(commands.build, /\bbuild --pull\b/);
   assert.match(commands.start, /up -d --no-build --pull never app db migrate$/);
   assert(commands.start.includes('pgvector/pgvector:pg15')); assert(commands.start.includes(image('d')));
   assert(commands.start.includes('--project-name fixtureapp --project-directory .'));
   const candidate = renderComposePhaseCommands({ ...f.policy, phase: 'candidate', baseDirectory: '/subdirectory' });
-  assert.match(candidate.build, /build --pull$/); assert(candidate.build.includes('./subdirectory/docker-compose.coolify.yml'));
+  assert.match(candidate.build, new RegExp(`build --pull --build-arg APP_BUILD_REVISION=${f.policy.commit}$`)); assert(candidate.build.includes('./subdirectory/docker-compose.coolify.yml'));
   assert.match(candidate.start, /--no-build --pull never app db migrate$/); assert.doesNotMatch(candidate.start, /docker cp/);
   assert(candidate.build.indexOf('pgvector/pgvector:pg15') < candidate.build.indexOf('build --pull'));
+});
+
+
+test('candidate embeds the exact accepted revision into every Compose build without changing sealed environment or start', () => {
+  const f = fixture(), policy = { ...f.policy, phase: 'candidate', baseDirectory: '/subdirectory' };
+  const commands = renderComposePhaseCommands(policy);
+  assert.equal(commands.build.split(' && ').at(-1),
+    `docker compose --project-name ${policy.targetId} --project-directory ./subdirectory --env-file /artifacts/build-time.env -f ./subdirectory${policy.composePath} build --pull --build-arg APP_BUILD_REVISION=${policy.commit}`);
+  assert.equal(commands.build.match(/--build-arg APP_BUILD_REVISION=/g)?.length, 1);
+  const changed = { ...policy, commit: sha('9') }, changedCommands = renderComposePhaseCommands(changed);
+  assert.notEqual(changedCommands.build, commands.build);
+  assert.equal(changedCommands.start, commands.start);
+  assert.notEqual(composeControllerPolicyRecord(changed).buildCommandDigest,
+    composeControllerPolicyRecord(policy).buildCommandDigest);
+  assert.equal(composeControllerPolicyRecord(changed).startCommandDigest,
+    composeControllerPolicyRecord(policy).startCommandDigest);
+  assert.equal(composeControllerPolicyRecord(policy).buildCommandDigest, bytesDigest(commands.build));
+  for (const commit of ['unknown', sha('a').slice(1), sha('a').toUpperCase(), `${sha('a')} --pull`, `${sha('a')};echo private`])
+    assert.throws(() => renderComposePhaseCommands({ ...policy, commit }), /policy_invalid/);
+});
+
+test('build revision injection is candidate-only and rollback remains the original immutable image commands', () => {
+  const f = fixture(), policy = f.policy, file = composePhaseArtifactFile(policy), destination = `/artifacts/${file}`;
+  const verify = `sha256sum -c ${destination}.sha256`;
+  const inspect = (reference, expected) => `docker image inspect --format '{{if ne .Id "${expected}"}}{{json}}{{end}}' -- ${reference}`;
+  const retained = [...new Set(policy.services.map(row => row.imageDigest))].sort().map(value => inspect(value, value)).join(' && ');
+  const db = inspect(policy.services.find(row => row.role === 'database').imageRef, image('d'));
+  const expected = {
+    build: `docker cp coolify:/var/www/html/storage/app/applications/${policy.targetId}/${file} ${destination} && docker cp coolify:/var/www/html/storage/app/applications/${policy.targetId}/${file}.sha256 ${destination}.sha256 && ${verify} && ${retained} && docker compose --project-name ${policy.targetId} --project-directory . --env-file /artifacts/build-time.env -f ${destination} config --no-env-resolution --services --quiet`,
+    start: `${verify} && ${retained} && ${db} && docker compose --project-name ${policy.targetId} --project-directory . --env-file ./.env -f ${destination} up -d --no-build --pull never app db migrate`
+  };
+  assert.deepEqual(renderComposePhaseCommands(policy), expected);
+  assert.doesNotMatch(expected.build + expected.start, /--build-arg|APP_BUILD_REVISION|(?:^|\s)build --pull(?:\s|$)/);
+  assert.deepEqual(renderComposePhaseCommands({ ...policy, commit: sha('9') }), expected);
 });
 
 test('start creates cadence without execution, then starts only app/database/migration in both phases', () => {
@@ -152,6 +186,26 @@ test('rollback without a baseline migrator still requires its sealed image and c
   const document = structuredClone(f.document); delete document.services.migrate;
   const artifactBytes = Buffer.from(JSON.stringify(document));
   assert.throws(() => qualifyComposePhaseArtifact({ ...input, artifactBytes, policy: { ...input.policy, artifactDigest: bytesDigest(artifactBytes) } }), /artifact_service_set_changed/);
+});
+
+
+test('rollback build validates the service graph without reading runtime env before the controller creates it', () => {
+  const f = fixture(), commands = renderComposePhaseCommands(f.policy), file = composePhaseArtifactFile(f.policy);
+  assert.deepEqual(f.document.services.app.env_file, ['.env']);
+  assert.match(commands.build, /config --no-env-resolution --services --quiet$/);
+  assert.equal(commands.build.match(/--no-env-resolution/g)?.length, 1);
+  assert.equal(commands.build.match(/--services/g)?.length, 1);
+  assert(commands.build.includes(`-f /artifacts/${file}`));
+  assert(commands.build.includes('--env-file /artifacts/build-time.env'));
+  assert.doesNotMatch(commands.build, /--no-interpolate|--no-consistency|--no-normalize|\btouch\b|\bcp\b[^&]*\.env/);
+  assert.doesNotMatch(commands.start, /--no-env-resolution|--services|--no-interpolate/);
+  assert(commands.start.includes('--env-file ./.env'));
+  assert.match(commands.start, /up -d --no-build --pull never app db migrate$/);
+  const cap = qualifyComposePhaseArtifact(f.preflight);
+  assert.equal(cap.buildCommandDigest, bytesDigest(commands.build));
+  assert.equal(cap.startCommandDigest, bytesDigest(commands.start));
+  const candidate = renderComposePhaseCommands({ ...f.policy, phase: 'candidate' });
+  assert.doesNotMatch(candidate.build + candidate.start, /--no-env-resolution|--services/);
 });
 
 const php = process.env.ROOST_TEST_PHP_BINARY ?? 'php';
