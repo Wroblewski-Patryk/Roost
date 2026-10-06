@@ -13,7 +13,7 @@ import { createComposeReleaseGateway, createFixedComposeQueueTransport } from '.
 import { composePhasePolicySchema, composePhaseArtifactFile, composePhaseChecksumBytes, renderComposePhaseCommands,
   composeControllerPolicyRecord, qualifyComposePhaseArtifact } from './agent-host-release-compose-controller.mjs';
 import { createCoolifyComposeAdapter } from './agent-host-release-coolify-compose.mjs';
-import { composeConfigurationDigest, qualifyComposeRuntime, qualifyComposeRetainedBaseline } from './agent-host-release-compose-state.mjs';
+import { composeConfigurationDigest, composeRuntimeSetDigest, qualifyComposeRuntime, qualifyComposeRetainedBaseline } from './agent-host-release-compose-state.mjs';
 import { permanentReleaseOwnershipSchema } from './agent-host-release-git-set-worker.mjs';
 import { createComposeHealthProbe, composeHealthSettingsSchema, probeComposeIngressBlocked, observeRestoredComposeRuntime } from './agent-host-release-compose-health.mjs';
 import { coolifyHttpsJson } from './agent-host-release-coolify.mjs';
@@ -76,6 +76,37 @@ export function qualifyActivityRuntimeEvidence(snapshot,current,evidence){
   &&composeConfigurationDigest(evidence.configuration)===composeConfigurationDigest(prior.configuration)
   &&contract.releaseDigest(pins(evidence.runtime.services))===contract.releaseDigest(pins(prior.runtime.services)), 'activity_runtime_binding_changed');
  return {commit:proof.deployedCommit,tree:proof.deployedTree,services:evidence.runtime.services};
+}
+
+// Failure attribution only. This does not attest a deployed/healthy candidate
+// or adopt changed containers as the retained baseline.
+export function qualifyFailedComposePartialRuntime({snapshot,operation,queue,observed,baselineServices,presentRollbackImageDigests}){
+ const t=snapshot.manifest.deployment.targets[0],commit=snapshot.commit,tree=snapshot.candidateTree;
+ const deploymentId=coolifyGitSetDeploymentId({releaseId:snapshot.releaseId,operationId:operation.id,targetId:t.targetId,rollback:false});
+ check(operation.operation==='deploy'&&operation.intent?.parameters?.targetId===t.targetId&&queue?.targetId===t.targetId
+  &&queue.deploymentId===deploymentId&&queue.commit===commit&&queue.status==='failed'&&Number.isFinite(Date.parse(queue.finishedAt))
+  &&Date.parse(queue.createdAt)>=Date.parse(operation.createdAt)&&Date.parse(queue.finishedAt)>=Date.parse(queue.createdAt),'partial_exact_failed_queue');
+ const declarations=t.configuration.services,rows=observed.services;
+ check(declarations.length===5&&rows.length===5&&new Set(rows.map(r=>r.name)).size===5&&new Set(rows.map(r=>r.containerId)).size===5
+  &&observed.missingDeclared.length===0&&declarations.every(d=>rows.some(r=>r.name===d.name&&r.role===d.role)),'partial_complete_service_set');
+ const images=[];
+ for(const d of declarations){const r=rows.find(r=>r.name===d.name);
+  check(/^[a-f0-9]{64}$/.test(r.containerId)&&!baselineServices.some(x=>x.containerId===r.containerId)&&r.mountDigest===d.mountDigest&&Date.parse(r.createdAt)>=Date.parse(queue.createdAt)
+   &&Date.parse(r.createdAt)<=Date.parse(queue.finishedAt),'partial_owned_service_identity');
+  if(d.role==='database'){const prior=baselineServices.find(x=>x.name===d.name&&x.role==='database');
+   check(prior&&r.imageDigest===d.imageDigest&&r.imageDigest===prior.imageDigest&&r.mountDigest===prior.mountDigest
+    &&r.containerId!==prior.containerId&&r.state==='running'&&r.health==='healthy'&&r.exitCode===0,'partial_protected_database');
+  }else{check(r.runtimeRevision===commit&&r.imageRef===`${t.targetId}_${d.name}:${commit}`,'partial_candidate_revision');
+   const image=observed.images.find(x=>x.name===d.name);check(image&&image.imageDigest===r.imageDigest&&image.imageRef===r.imageRef
+    &&image.buildRevision===commit&&(image.revisionLabel===null||image.revisionLabel===commit)
+    &&(image.treeLabel===null||image.treeLabel===tree),'partial_candidate_image');
+   check(d.role==='migration'?r.state==='exited'&&r.exitCode===1&&r.health===null:r.state==='created'&&r.exitCode===0&&r.health===null,'partial_exact_failure_states');
+   images.push({name:d.name,imageDigest:r.imageDigest,commit,tree,deploymentId});}
+ }
+ const required=[...new Set([...t.baseline.images.map(x=>x.imageDigest),...t.configuration.services.filter(x=>x.source==='image').map(x=>x.imageDigest)])].sort();
+ check(required.length>0&&contract.releaseDigest(required)===contract.releaseDigest(presentRollbackImageDigests.slice().sort()),'partial_retained_images_present');
+ const services=rows.map(row=>({...Object.fromEntries(['name','role','containerId','imageDigest','mountDigest','state','health','exitCode','createdAt'].map(k=>[k,row[k]])),...(row.role==='database'?{}:{commit,tree,deploymentId})})).sort((a,b)=>a.name.localeCompare(b.name));
+ return{services,images:images.sort((a,b)=>a.name.localeCompare(b.name)),protectedRollbackImages:structuredClone(t.baseline.images),presentRollbackImageDigests:required};
 }
 
 /** Fixed per-installation wiring. Dependency substitutions exist for source
@@ -185,6 +216,11 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   check(rows.length===1&&row.name===database.name&&row.imageDigest===database.imageDigest&&row.mountDigest===database.mountDigest
    &&/^[a-f0-9]{64}$/.test(row.containerId)&&row.state==='running'&&row.health==='healthy','database_runtime_changed');
   if(row.containerId!==baselineDatabase.containerId){
+   const partial=await failedPartialContext(configuration,observed);
+   if(partial){const source={...cfg.source,container:row.containerId},fence=await readDatabaseFence(source),fp=await readFingerprint(source);
+    check(fence.readOnlyFence===true&&fence.activeOtherSessions===0&&fence.ownedTransactions===0
+     &&fp.schemaDigest===m.baseline.schemaDigest&&fp.dataDigest===m.baseline.dataDigest,'partial_database_safety_unproven');
+    return {row,observed,configDigest:digest,partial};}
    const context=live.get(t.targetId);check(phase!=='baseline'&&context?.rollback===(phase==='rollback'),'database_recreation_unproven');
    const q=await raw.readQueue(context);check(q?.status==='finished'&&q.commit===configuration.gitCommit,'database_recreation_unproven');
    const e=await inspector.readEvidence(q);
@@ -206,12 +242,15 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
  const readFingerprint=async source=>{const output=(await ssh({command:'bash -s',stdin:buildReleaseFingerprintCommand(source,cfg.fingerprintTimeoutMs??60000)+'\n',timeoutMs:cfg.fingerprintTimeoutMs??60000})).trim().split(/\r?\n/);
   check(output.length===2&&output.every(r=>/^[a-f0-9]{64}\s+-\s*$/.test(r)),'fingerprint_unproven');return{schemaDigest:output[0].slice(0,64),dataDigest:output[1].slice(0,64)};};
  const fingerprint=()=>withDatabase(readFingerprint);
+ const readDatabaseFence=async(source)=>{
+  const sql=`BEGIN READ ONLY; SELECT json_build_object('readOnlyFence',EXISTS(SELECT 1 FROM pg_db_role_setting s JOIN pg_database d ON d.oid=s.setdatabase JOIN pg_roles r ON r.oid=s.setrole WHERE d.datname=current_database() AND r.rolname=current_user AND 'default_transaction_read_only=on'=ANY(s.setconfig)), 'activeOtherSessions',(SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid() AND state='active'),'ownedTransactions',(SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid() AND xact_start IS NOT NULL AND state<>'idle'))::text; COMMIT;`;
+  try{return JSON.parse(await ssh({command:`docker exec -i ${quote(source.container)} psql -X -qAt -v ON_ERROR_STOP=1 -U ${quote(source.user)} -d ${quote(source.database)}`,stdin:sql}));}catch(e){deny('maintenance_unproven',e);}
+ };
  const safety=()=>withDatabase(async(source,{observed})=>{
   check(t.configuration.services.filter(r=>r.role==='cadence').every(r=>observed.services.some(x=>x.name===r.name&&x.role==='cadence'
    &&['paused','created','exited'].includes(x.state)&&x.exitCode===0&&x.health===null)),'cadence_activity_present');
-  const sql=`BEGIN READ ONLY; SELECT json_build_object('readOnlyFence',EXISTS(SELECT 1 FROM pg_db_role_setting s JOIN pg_database d ON d.oid=s.setdatabase JOIN pg_roles r ON r.oid=s.setrole WHERE d.datname=current_database() AND r.rolname=current_user AND 'default_transaction_read_only=on'=ANY(s.setconfig)), 'activeOtherSessions',(SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid() AND state='active'))::text; COMMIT;`;
-  let row;try{row=JSON.parse(await ssh({command:`docker exec -i ${quote(source.container)} psql -X -qAt -v ON_ERROR_STOP=1 -U ${quote(source.user)} -d ${quote(source.database)}`,stdin:sql}));}catch(e){deny('maintenance_unproven',e);}
-  check(row?.readOnlyFence===true&&row.activeOtherSessions===0,'maintenance_unproven');return{quiescent:true,...await readFingerprint(source)};
+  const row=await readDatabaseFence(source);
+  check(row?.readOnlyFence===true&&row.activeOtherSessions===0,'maintenance_unproven');return{quiescent:true,...row,...await readFingerprint(source)};
  });
  const pins={queueHelper:cfg.sourcePins.queueHelper,deploymentJob:cfg.sourcePins.deploymentJob,applicationModel:cfg.sourcePins.applicationModel,composeParser:cfg.sourcePins.composeParser};
  const transport=createFixedComposeQueueTransport({sshBinary:process.platform==='win32'?'C:\\Windows\\System32\\OpenSSH\\ssh.exe':'/usr/bin/ssh',sshHost:cfg.sshHost,
@@ -273,6 +312,22 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   configureTarget:configurePhase
  });
  const live=new Map();for(const row of state.journal??[])if(['deploy','rollback'].includes(row.operation))live.set(t.targetId,{operationId:row.id,since:row.createdAt,rollback:row.operation==='rollback',targetId:t.targetId});
+ const failedPartialContext=async(configuration,observed)=>{
+  const current=await dependencies.readReleaseState();check(current?.release?.id===s.releaseId&&contract.releaseDigest(current.release.snapshot)===snapshotDigest,'partial_release_changed');
+  const index=current.journal.findIndex(r=>r.operation==='deploy'&&(!r.outcome||r.outcome.status==='uncertain'
+   ||(r.outcome.status==='failed'||r.outcome.status==='reconciled'&&r.outcome.reconciledStatus==='failed')&&r.outcome.evidence?.composeRecovery?.kind==='queue_failed_partial'));
+  if(index<0)return null;const operation=current.journal[index],later=current.journal.slice(index+1),digest=composeConfigurationDigest(configuration);
+  if(![t.configDigest,t.rollbackConfigDigest].includes(digest)||later.some(r=>!['rollback_config','rollback'].includes(r.operation)))return null;
+  if(operation.outcome?.evidence?.composeRecovery?.kind==='queue_failed_partial')check(contract.composeRecoveryEvidenceError(s,operation.outcome.evidence,operation)===null,'partial_saved_failure_unproven');
+  const queue=await raw.readQueue({operationId:operation.id,since:operation.createdAt,targetId:t.targetId,rollback:false});if(queue?.status!=='failed')return null;
+  // A rollback that has begun replacing services must use its own finished
+  // queue qualification. Only the still-exact failed candidate is exempted.
+  if(observed.services.some(r=>r.role!=='database'&&r.runtimeRevision!==s.commit))return null;
+  const required=[...new Set([...t.baseline.images.map(x=>x.imageDigest),...t.configuration.services.filter(x=>x.source==='image').map(x=>x.imageDigest)])].sort(),present=[];
+  for(const ref of required)present.push((await ssh({command:`docker image inspect --format '{{.Id}}' -- ${quote(ref)}`})).trim());
+  const proof=qualifyFailedComposePartialRuntime({snapshot:s,operation,queue,observed,baselineServices:baseline.services,presentRollbackImageDigests:present});
+  return{operation,queue,proof};
+ };
  const services=async(_manifest,options={})=>{
   const expectedCommit=options.baseline?t.baseline.commit:options.rollback?t.baseline.commit:s.commit;
   const result=await healthProbe({expectedCommit});
@@ -297,6 +352,26 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   check(composeConfigurationDigest(configuration)===expected,'recovery_configuration_changed');
   const before=await inspector.inspectLegacyBaseline(t.targetId,t.baseline.commit),services=normalize(before.services),baselineServices=normalize(baseline.services);
   check(composeConfigurationDigest(before.configuration)===expected,'recovery_configuration_changed');
+  if(!options.rollback&&queue?.status==='failed'&&before.services.length===5&&before.services.some(r=>r.role==='migration'&&r.exitCode===1)){
+   const partial=await failedPartialContext(configuration,before);
+   if(partial){const safe=await safety(),health=await healthProbe({expectedCommit:s.commit});
+    check(safe.readOnlyFence===true&&safe.activeOtherSessions===0&&safe.ownedTransactions===0&&safe.schemaDigest===m.baseline.schemaDigest
+     &&safe.dataDigest===m.baseline.dataDigest&&health.healthy===false&&hex.safeParse(health.healthDigest).success,'partial_data_fence_health_unproven');
+    const after=await inspector.inspectLegacyBaseline(t.targetId,t.baseline.commit);await quiescent();
+    check(contract.releaseDigest(services)===contract.releaseDigest(normalize(after.services))&&composeConfigurationDigest(after.configuration)===expected
+     &&contract.releaseDigest(queue)===contract.releaseDigest(await raw.readQueue(options)),'partial_changed_during_read');
+    const r={schemaVersion:'roost-compose-recovery-observation-v1',kind:'queue_failed_partial',releaseId:s.releaseId,operationId:options.operationId,since:options.since,targetId:t.targetId,
+     phase:'candidate',requestedCommit:s.commit,requestedTree:s.candidateTree,deploymentId:queue.deploymentId,queue,controlPlaneQuiescent:true,configuration,
+     baselineCommit:t.baseline.commit,baselineTree:t.baseline.tree,migrationSchemaVerified:true,baselineServices,services:partial.proof.services,
+     partial:{schemaVersion:'roost-compose-failed-partial-runtime-v1',...partial.proof,databaseReadOnly:true,activeOtherSessions:0,ownedTransactions:0,projectServiceSetComplete:true,
+      publicHealth:{healthy:false,healthDigest:health.healthDigest},candidateConfigDigest:t.configDigest}};
+    delete r.partial.services;
+    const evidence={composeRecovery:r,deploymentIds:[{targetId:t.targetId,deploymentId:queue.deploymentId}],artifactSetDigest:m.deployment.artifactSetDigest,
+     configDigest:m.deployment.configDigest,schemaDigest:safe.schemaDigest,dataDigest:safe.dataDigest,healthDigest:health.healthDigest,healthy:false,
+     observedAt:new Date((dependencies.now??Date.now)()).toISOString(),currentServiceSetDigest:composeRuntimeSetDigest(r.services)};
+    check(contract.composeRecoveryEvidenceError(s,evidence,operation)===null,'partial_observation_unproven');return evidence;
+   }
+  }
   const proof=qualifyComposeRetainedBaseline({configuration:t.baseline.configuration,images:t.baseline.images,services,baselineServices});
   const safe=await safety(),health=await servicesProbeBaseline();
   check(safe.schemaDigest===m.baseline.schemaDigest&&safe.dataDigest===m.baseline.dataDigest

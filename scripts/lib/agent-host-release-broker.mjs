@@ -234,11 +234,11 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
    else if(contract.isReleaseSetManifest(m)&&result?.state==='absent'&&result.evidence?.absenceVerified===true)
     result={status:'absent',evidence:releaseSetEvidence(result.evidence,m,s,{rollback:contract.isComposeManifest(m)?pending.operation==='rollback_config'?false:'baseline':false})};
   }else if(['deploy','rollback'].includes(pending.operation)){
-   result=await coolify.reconcileDeployment(m,s,{rollback:pending.operation==='rollback',since:pending.createdAt,operationId:pending.id,targetId:pending.intent.parameters.targetId,deploymentId:pending.intent.parameters.deploymentId});
+   result=await coolify.reconcileDeployment(m,s,{rollback:pending.operation==='rollback',since:pending.createdAt,operationId:pending.id,operationIntent:pending.intent,targetId:pending.intent.parameters.targetId,deploymentId:pending.intent.parameters.deploymentId});
    if(contract.isComposeManifest(m)&&result?.evidence?.composeRecovery){
     const evidence=result.evidence;
     if(contract.composeRecoveryEvidenceError(s,evidence,pending)||!['failed','absent'].includes(result.state)
-     ||evidence.composeRecovery.kind!==(result.state==='absent'?'queue_absent':'queue_failed'))fail('release_compose_recovery_unproven');
+     ||!(result.state==='absent'?evidence.composeRecovery.kind==='queue_absent':['queue_failed','queue_failed_partial'].includes(evidence.composeRecovery.kind)))fail('release_compose_recovery_unproven');
     // Proven absence closes the attempted release as failed, rather than
     // enabling a new candidate intent/queue ID. Only sealed recovery follows.
     result={status:'failed',evidence};
@@ -305,18 +305,18 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
   else if(operation==='deploy_config')evidence=releaseSetEvidence(await coolify.configureCandidate(m,s),m,s,{configuration:true});
   else if(operation==='rollback_config')evidence=releaseSetEvidence(await coolify.configureRollback(m,s),m,s,{configuration:true,rollback:true});
   else if(operation==='deploy'||operation==='rollback'){
-   const operationOptions={operationId:authorized.operation.id,since:authorized.operation.createdAt,rollback:operation==='rollback',targetId:intent.parameters.targetId,stopped};
+   const operationOptions={operationId:authorized.operation.id,since:authorized.operation.createdAt,operationIntent:authorized.operation.intent,rollback:operation==='rollback',targetId:intent.parameters.targetId,stopped};
    const result=await coolify[operation](m,s,operationOptions);
    if(contract.isReleaseSetManifest(m)&&!['finished','failed'].includes(result?.state))fail('release_deployment_identity_unproven');
    assertComposeQueueIds(m,result.deploymentIds,intent.parameters.targetId);
    const deployment=await coolify.waitForDeployment(m,s,{rollback:operation==='rollback',since:authorized.operation.createdAt,
-    operationId:authorized.operation.id,targetId:intent.parameters.targetId,deploymentId:result.deploymentId,deploymentIds:result.deploymentIds,stopped});
+    operationId:authorized.operation.id,operationIntent:authorized.operation.intent,targetId:intent.parameters.targetId,deploymentId:result.deploymentId,deploymentIds:result.deploymentIds,stopped});
    if(!['finished','failed'].includes(deployment.state))fail('release_deployment_identity_unproven');
    assertComposeQueueIds(m,deployment.deploymentIds,intent.parameters.targetId);
    if(contract.isComposeManifest(m)&&contract.releaseDigest(result.deploymentIds)!==contract.releaseDigest(deployment.deploymentIds))fail('release_compose_queue_identity_invalid');
    if(contract.isComposeManifest(m)&&deployment.evidence?.composeRecovery){
     evidence=deployment.evidence;
-    if(deployment.state!=='failed'||evidence.composeRecovery.kind!=='queue_failed'
+    if(deployment.state!=='failed'||!['queue_failed','queue_failed_partial'].includes(evidence.composeRecovery.kind)
      ||contract.composeRecoveryEvidenceError(s,evidence,authorized.operation))fail('release_compose_recovery_unproven');
     status='failed';
    }else{

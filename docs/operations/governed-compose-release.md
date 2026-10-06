@@ -389,3 +389,27 @@ human response. It is preparation only: normal recent-owner authentication
 and authoritative grant read-back remain required before any effect.
 Read-only API timeouts were followed by successful IPv4-priority reads;
 their cause is not established. No operation was replayed.
+
+### Failed candidate after partial container recreation
+
+`queue_failed_partial` is an explicit failure observation, not an installed
+version or a healthy retained baseline. It binds the saved candidate intent,
+deterministic failed queue, complete five-service set and built source images.
+The protected database image/mount, read-only fence, zero other active sessions
+and transactions, baseline schema/data hashes and retained rollback images must
+all agree. Current services receive their own digest; no deployed SHA is claimed.
+
+Only the planned rollback and its normal observation/restoration/cleanup may
+follow. Another candidate queue or Git effect is refused. Reconciliation first
+records the original failure; the closed native writer is reclaimed through the
+existing signed checkpoint protocol. Historical absence/retained-baseline
+closure and adoption validators are unchanged.
+
+The forward migration `20261006153000_compose_failed_partial_recovery` adds an
+outcome guard. Its real PostgreSQL rehearsal rolled back all DDL and passed one
+valid synthetic observation plus twenty refusals, including null timestamps,
+foreign intent fields and changed data/schema/images. This is SQL validation,
+not application recovery proof. Current actual candidate `c64378df` failed after
+container recreation because the clean migration image lacked greenlet. Schema
+and data hashes matched the baseline in the bounded read at 15:29:02.466 UTC on
+6 October; the application remains unavailable pending governed rollback.

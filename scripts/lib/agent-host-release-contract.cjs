@@ -232,13 +232,22 @@ const releaseHasSuccessor=s=>{
 };
 const deployedTarget=z.object({targetId:text,commit:sha,tree:sha,imageDigest:image,configDigest:hash,schemaDigest:hash,healthy:z.boolean(),deploymentId:text.optional()}).strict();
 const composeTargetEvidence=z.object({targetId:text,configuration:compose.composeConfigurationSchema,runtime:compose.composeRuntimeSchema,binding:compose.composeRuntimeBindingSchema}).strict();
-const composeRecoverySchema=z.object({schemaVersion:z.literal('roost-compose-recovery-observation-v1'),kind:z.enum(['queue_failed','queue_absent']),
+// Explicit failed partial rollout. This is neither an unchanged healthy baseline
+// nor installed candidate health. The fixed reader supplies image/source proof,
+// preserved data and fenced database plus the entire five-service project set.
+const composeFailedPartialSchema=z.object({schemaVersion:z.literal('roost-compose-failed-partial-runtime-v1'),
+ images:z.array(z.object({name:text,imageDigest:image,commit:sha,tree:sha,deploymentId:text}).strict()).length(4),
+ candidateConfigDigest:hash,databaseReadOnly:z.literal(true),activeOtherSessions:z.literal(0),ownedTransactions:z.literal(0),projectServiceSetComplete:z.literal(true),
+ protectedRollbackImages:z.array(z.object({name:text,imageDigest:image}).strict()).length(4),presentRollbackImageDigests:z.array(image).min(1).max(5),
+ publicHealth:z.object({healthy:z.literal(false),healthDigest:hash}).strict()}).strict();
+const composeRecoverySchema=z.object({schemaVersion:z.literal('roost-compose-recovery-observation-v1'),kind:z.enum(['queue_failed','queue_absent','queue_failed_partial']),
  releaseId:id,operationId:id,since:z.string().datetime(),targetId:text,phase:z.enum(['candidate','rollback']),requestedCommit:sha,requestedTree:sha,
  deploymentId:text,queue:z.object({targetId:text,deploymentId:text,commit:z.union([sha,z.literal('HEAD')]),
   status:z.enum(['failed','cancelled-by-user']),createdAt:z.string().datetime(),finishedAt:z.string().datetime().nullable()}).strict().nullable(),
  controlPlaneQuiescent:z.literal(true),configuration:compose.composeConfigurationSchema,
  baselineCommit:sha,baselineTree:sha,migrationSchemaVerified:z.literal(true),
- baselineServices:z.array(compose.composeRuntimeServiceSchema).min(2).max(12),services:z.array(compose.composeRuntimeServiceSchema).min(2).max(12)}).strict();
+ baselineServices:z.array(compose.composeRuntimeServiceSchema).min(2).max(12),services:z.array(compose.composeRuntimeServiceSchema).min(2).max(12),
+ partial:composeFailedPartialSchema.optional()}).strict();
 // An unchanged legacy baseline is a no-effect observation, never a deployment.
 const composeConfigAbsenceSchema=z.object({schemaVersion:z.literal('roost-compose-config-absence-v1'),releaseId:id,operationId:id,
  since:z.string().datetime(),targetId:text,requestedCommit:sha,requestedTree:sha,configuration:compose.composeConfigurationSchema,
@@ -277,7 +286,8 @@ const postObservationEvidenceSchema=z.discriminatedUnion('kind',[
   failureCode:z.enum(['fixture_unproven','empty_render_failed','populated_render_failed','data_parity_failed','runtime_resume_failed']),
   ownedEffects:z.enum(['absent','present','unproven']),nativeChildrenClosed:z.literal(true)}).strict()
 ]);
-const evidenceSchema=z.object({composeConfigAbsence:composeConfigAbsenceSchema.optional(),postObservation:postObservationEvidenceSchema.optional(),composeRecovery:composeRecoverySchema.optional(),composeTargets:z.array(composeTargetEvidence).length(1).optional(),observedAt:z.string().datetime(),failureKind:z.literal('rollback_image_mismatch').optional(),remoteCommit:sha.optional(),remoteBase:sha.optional(),remoteBaseTree:sha.optional(),remoteTree:sha.optional(),pullRequestNumber:z.number().int().positive().optional(),prHeadCommit:sha.optional(),prMerged:z.boolean().optional(),reviewApproved:z.boolean().optional(),mergedCommit:sha.optional(),deploymentId:text.optional(),deploymentIds:z.array(deploymentIdentity).max(6).optional(),deployedTargets:z.array(deployedTarget).min(1).max(6).optional(),artifactSetDigest:hash.optional(),deployedSetDigest:hash.optional(),deployedCommit:sha.optional(),deployedTree:sha.optional(),imageDigest:image.optional(),configDigest:hash.optional(),schemaDigest:hash.optional(),healthDigest:hash.optional(),dataDigest:hash.optional(),backupDigest:hash.optional(),restoreDigest:hash.optional(),healthy:z.boolean().optional(),observationSeconds:z.number().int().nonnegative().max(3600).optional(),resourceIds:z.array(text).max(30).optional(),resourcePresent:z.boolean().optional(),repositoryArchived:z.boolean().optional(),localAbsent:z.boolean().optional(),absenceVerified:z.boolean().optional(),retentionVerified:z.boolean().optional(),repositoryUrl:url.optional(),canonicalDir:dir.optional(),targetId:text.optional(),applicationActive:z.boolean().optional(),localCommit:sha.optional(),localTree:sha.optional(),protectedResourcesDigest:hash.optional()}).strict().superRefine((e,c)=>{if(e.deploymentIds?.length===0&&!((e.composeRecovery?.kind==='queue_absent'||e.composeConfigAbsence!==undefined)&&e.absenceVerified===true))c.addIssue({code:'custom',message:'empty_deployment_ids_outside_recovery'});});
+const evidenceSchema=z.object({composeConfigAbsence:composeConfigAbsenceSchema.optional(),postObservation:postObservationEvidenceSchema.optional(),composeRecovery:composeRecoverySchema.optional(),composeTargets:z.array(composeTargetEvidence).length(1).optional(),observedAt:z.string().datetime(),failureKind:z.literal('rollback_image_mismatch').optional(),remoteCommit:sha.optional(),remoteBase:sha.optional(),remoteBaseTree:sha.optional(),remoteTree:sha.optional(),pullRequestNumber:z.number().int().positive().optional(),prHeadCommit:sha.optional(),prMerged:z.boolean().optional(),reviewApproved:z.boolean().optional(),mergedCommit:sha.optional(),deploymentId:text.optional(),deploymentIds:z.array(deploymentIdentity).max(6).optional(),deployedTargets:z.array(deployedTarget).min(1).max(6).optional(),artifactSetDigest:hash.optional(),deployedSetDigest:hash.optional(),currentServiceSetDigest:hash.optional(),deployedCommit:sha.optional(),deployedTree:sha.optional(),imageDigest:image.optional(),configDigest:hash.optional(),schemaDigest:hash.optional(),healthDigest:hash.optional(),dataDigest:hash.optional(),backupDigest:hash.optional(),restoreDigest:hash.optional(),healthy:z.boolean().optional(),observationSeconds:z.number().int().nonnegative().max(3600).optional(),resourceIds:z.array(text).max(30).optional(),resourcePresent:z.boolean().optional(),repositoryArchived:z.boolean().optional(),localAbsent:z.boolean().optional(),absenceVerified:z.boolean().optional(),retentionVerified:z.boolean().optional(),repositoryUrl:url.optional(),canonicalDir:dir.optional(),targetId:text.optional(),applicationActive:z.boolean().optional(),localCommit:sha.optional(),localTree:sha.optional(),protectedResourcesDigest:hash.optional()}).strict().superRefine((e,c)=>{if(e.deploymentIds?.length===0&&!((e.composeRecovery?.kind==='queue_absent'||e.composeConfigAbsence!==undefined)&&e.absenceVerified===true))c.addIssue({code:'custom',message:'empty_deployment_ids_outside_recovery'});
+ if(e.currentServiceSetDigest!==undefined&&e.composeRecovery?.kind!=='queue_failed_partial')c.addIssue({code:'custom',message:'partial_runtime_digest_outside_failed_partial'});});
 // Closing its own still-active release attests exactly one catalog entry. Grant
 // admission continues to require zero active application releases.
 const configAbsenceClosureBaselineSchema=baselineRevalidationSchema.extend({activeApplicationReleaseCount:z.literal(1)}).strict();
@@ -434,12 +444,66 @@ const releaseConfigAbsenceRevalidationError=(snapshot,input,now)=>{
  if(!Number.isFinite(native)||native<Date.parse(a.baseline.observedAt)||native>at+60000||at-native>300000)return 'release_native_closure_stale';
  return null;
 };
+const composeFailedPartialEvidenceError=(s,e,operation)=>{
+ try{
+  const m=s.manifest,t=m?.deployment?.targets?.[0],r=e.composeRecovery,p=r?.partial,q=r?.queue,op=operation.intent;
+  if(!isComposeManifest(m)||!manifestSchema.safeParse(m).success||!evidenceSchema.safeParse(e).success
+   ||r?.kind!=='queue_failed_partial'||!composeFailedPartialSchema.safeParse(p).success
+   ||Object.keys(e).some(k=>!['composeRecovery','deploymentIds','artifactSetDigest','configDigest','schemaDigest','dataDigest','healthDigest','healthy','observedAt','currentServiceSetDigest'].includes(k))
+   ||operation.operation!=='deploy'||!id.safeParse(operation.id).success||!intentSchema.safeParse(op).success||op.operation!=='deploy'
+   ||op.manifestDigest!==releaseDigest(m)||op.commit!==s.commit||op.baseCommit!==s.baseCommit
+   ||op.observed.commit!==s.commit||op.observed.baseCommit!==s.commit||op.observed.baseTree!==s.candidateTree||op.observed.manifestDigest!==releaseDigest(m)
+   ||op.parameters.targetId!==t.targetId||op.parameters.commit!==s.commit||op.parameters.artifactSetDigest!==m.deployment.artifactSetDigest
+   ||op.parameters.configDigest!==m.deployment.configDigest||op.parameters.schemaDigest!==m.deployment.schemaDigest
+   ||op.parameters.imageDigest!==undefined||op.parameters.faultInjection!==undefined
+   ||r.releaseId!==s.releaseId||r.operationId!==operation.id||r.targetId!==t.targetId||r.phase!=='candidate'
+   ||Date.parse(r.since)!==new Date(operation.createdAt??operation.created_at).getTime()
+   ||r.requestedCommit!==s.commit||r.requestedTree!==s.candidateTree||r.baselineCommit!==s.baseCommit||r.baselineTree!==s.baseTree
+   ||r.deploymentId!==`r${releaseDigest([s.releaseId,operation.id,t.targetId,'candidate']).slice(0,23)}`
+   ||!q||q.targetId!==t.targetId||q.deploymentId!==r.deploymentId||q.commit!==s.commit||q.status!=='failed'||q.finishedAt===null
+   ||Date.parse(q.createdAt)<Date.parse(r.since)||Date.parse(q.finishedAt)<Date.parse(q.createdAt)||Date.parse(e.observedAt)<Date.parse(q.finishedAt)
+   ||r.controlPlaneQuiescent!==true||r.migrationSchemaVerified!==true||releaseDigest(r.configuration)!==releaseDigest(t.configuration)
+   ||compose.composeConfigurationDigest(r.configuration)!==t.configDigest||p.candidateConfigDigest!==t.configDigest
+   ||e.artifactSetDigest!==m.deployment.artifactSetDigest||e.configDigest!==m.deployment.configDigest||e.schemaDigest!==m.baseline.schemaDigest
+   ||e.schemaDigest!==m.deployment.schemaDigest||e.dataDigest!==m.baseline.dataDigest||e.healthy!==false
+   ||e.healthDigest!==p.publicHealth.healthDigest||e.healthDigest===m.baseline.healthDigest
+   ||releaseDigest(e.deploymentIds)!==releaseDigest([{targetId:t.targetId,deploymentId:r.deploymentId}]))return 'release_compose_failed_partial_unproven';
+  const declared=t.configuration.services,rows=r.services,before=r.baselineServices,built=declared.filter(d=>d.source==='built'),ordered=v=>v.slice().sort((a,b)=>a.name.localeCompare(b.name));
+  // Scope this exception to the actual five-service failure profile. Foreign,
+  // missing, running cadence/app, or unknown migration states remain refused.
+  if(declared.length!==5||built.length!==4||declared.filter(d=>d.role==='cadence').length!==2||rows.length!==5||before.length!==4
+   ||before.some(d=>d.role==='migration')||new Set(rows.map(d=>d.name)).size!==5||new Set(rows.map(d=>d.containerId)).size!==5
+   ||new Set(p.images.map(d=>d.name)).size!==4||built.some(d=>!p.images.some(x=>x.name===d.name))
+   ||new Set(before.map(d=>d.name)).size!==4||new Set(before.map(d=>d.containerId)).size!==4)return 'release_compose_failed_partial_service_set';
+  compose.qualifyComposeRetainedBaseline({configuration:t.baseline.configuration,images:t.baseline.images,services:before,baselineServices:before});
+  const requiredImages=[...new Set([...t.baseline.images.map(x=>x.imageDigest),...declared.filter(d=>d.source==='image').map(d=>d.imageDigest)])].sort();
+  if(releaseDigest(ordered(p.protectedRollbackImages))!==releaseDigest(ordered(t.baseline.images))
+   ||new Set(p.presentRollbackImageDigests).size!==p.presentRollbackImageDigests.length
+   ||releaseDigest(p.presentRollbackImageDigests.slice().sort())!==releaseDigest(requiredImages)
+   ||requiredImages.some(x=>!m.cleanup.protectedResourceIds.includes(x))
+   ||!m.rollback.compatibleSchemaDigests.includes(e.schemaDigest)||m.rollback.schemaDigest!==e.schemaDigest)return 'release_compose_failed_partial_rollback_unproven';
+  for(const row of rows){const d=declared.find(x=>x.name===row.name),prior=before.find(x=>x.name===row.name),proof=p.images.find(x=>x.name===row.name);
+   if(!d||row.role!==d.role||row.mountDigest!==d.mountDigest||Date.parse(row.createdAt)<Date.parse(q.createdAt)||Date.parse(row.createdAt)>Date.parse(q.finishedAt)
+    ||before.some(x=>x.containerId===row.containerId))return 'release_compose_failed_partial_service_binding';
+   if(d.source==='image'){
+    if(!prior||prior.role!=='database'||row.imageDigest!==d.imageDigest||row.imageDigest!==prior.imageDigest||row.mountDigest!==prior.mountDigest
+     ||row.state!=='running'||row.health!=='healthy'||row.exitCode!==0||row.commit!==undefined||row.tree!==undefined||row.deploymentId!==undefined)
+     return 'release_compose_failed_partial_database_unproven';
+   }else if(!proof||proof.commit!==s.commit||proof.tree!==s.candidateTree||proof.deploymentId!==r.deploymentId||row.imageDigest!==proof.imageDigest
+    ||row.commit!==s.commit||row.tree!==s.candidateTree||row.deploymentId!==r.deploymentId||row.health!==null
+    ||(row.role==='migration'?row.state!=='exited'||row.exitCode===0:row.state!=='created'||row.exitCode!==0))
+    return 'release_compose_failed_partial_candidate_unproven';
+  }
+  return e.currentServiceSetDigest===compose.composeRuntimeSetDigest(rows)?null:'release_compose_failed_partial_runtime_digest';
+ }catch{return 'release_compose_failed_partial_unproven';}
+};
 const composeRecoveryEvidenceError=(s,e,operation)=>{
+ if(e?.composeRecovery?.kind==='queue_failed_partial')return composeFailedPartialEvidenceError(s,e,operation);
  try {
   const m=s.manifest,t=m.deployment.targets[0],r=e.composeRecovery,rollback=operation.operation==='rollback';
   if(!isComposeManifest(m)||!manifestSchema.safeParse(m).success||!evidenceSchema.safeParse(e).success
    ||Object.keys(e).some(k=>!['composeRecovery','deploymentIds','deployedCommit','deployedTree','artifactSetDigest','configDigest','schemaDigest','dataDigest','healthDigest','healthy','observedAt','deployedSetDigest','absenceVerified'].includes(k))
-   ||!['deploy','rollback'].includes(operation.operation)||!r||r.releaseId!==s.releaseId||r.operationId!==operation.id
+   ||!['deploy','rollback'].includes(operation.operation)||!r||r.partial!==undefined||r.releaseId!==s.releaseId||r.operationId!==operation.id
    ||Date.parse(r.since)!==new Date(operation.createdAt??operation.created_at).getTime()||r.targetId!==t.targetId
    ||operation.intent?.parameters?.targetId!==t.targetId||r.phase!==(rollback?'rollback':'candidate')
    ||r.requestedCommit!==(rollback?m.rollback.commit:s.commit)||r.requestedTree!==(rollback?s.baseTree:s.candidateTree)
@@ -615,7 +679,7 @@ const postObservationIntentError=(s,input,journal=[])=>{
  }
  return null;
 };
-module.exports={gitPublicationBaseSchema,releaseGitPublicationBase,baselineRevalidationSchema,composeConfigAbsenceSchema,composeConfigAbsenceEvidenceError,releaseNativeClosureSchema,postObservationScopeSchema,postObservationEvidenceSchema,postObservationOperations,postObservationIntentError,postObservationOutcomeError,composeRecoverySchema,composeRecoveryEvidenceError,composeManifestObject,isComposeManifest,isReleaseSetManifest,sourceArtifactDigest,composeEvidenceError,manifestSchema,createReleaseSchema,intentSchema,outcomeSchema,operations,releaseDigest,retainsApplication,applicationManifestObject,refineApplicationManifest,gitSetManifestObject,isGitSetManifest,gitSetArtifactDigest,releaseExpirySchema,releaseSuccessorBasisSchema,releaseHasSuccessor,releaseRollbackImageFailureValid,baselineRestartSchema,closeFailedReleaseSchema,authorizeReconciliationSchema,publishedGitBasisSchema,releaseHasPublishedGitBasis:releaseHasPublishedGit,releaseRestartProtectedResourceIds};
+module.exports={gitPublicationBaseSchema,releaseGitPublicationBase,baselineRevalidationSchema,composeConfigAbsenceSchema,composeConfigAbsenceEvidenceError,releaseNativeClosureSchema,postObservationScopeSchema,postObservationEvidenceSchema,postObservationOperations,postObservationIntentError,postObservationOutcomeError,composeFailedPartialSchema,composeFailedPartialEvidenceError,composeRecoverySchema,composeRecoveryEvidenceError,composeManifestObject,isComposeManifest,isReleaseSetManifest,sourceArtifactDigest,composeEvidenceError,manifestSchema,createReleaseSchema,intentSchema,outcomeSchema,operations,releaseDigest,retainsApplication,applicationManifestObject,refineApplicationManifest,gitSetManifestObject,isGitSetManifest,gitSetArtifactDigest,releaseExpirySchema,releaseSuccessorBasisSchema,releaseHasSuccessor,releaseRollbackImageFailureValid,baselineRestartSchema,closeFailedReleaseSchema,authorizeReconciliationSchema,publishedGitBasisSchema,releaseHasPublishedGitBasis:releaseHasPublishedGit,releaseRestartProtectedResourceIds};
 module.exports.releaseBaselineRevalidationSchema=baselineRevalidationSchema;
 module.exports.releaseBaselineRevalidationBindings=input=>baselineRevalidation.baselineRevalidationBindings(input,releaseDigest);
 module.exports.releaseBaselineRevalidationDigest=value=>baselineRevalidation.baselineRevalidationDigest(value,releaseDigest);

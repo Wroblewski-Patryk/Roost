@@ -24,6 +24,7 @@ export const releaseSourceArtifactDigest: (manifest: any, binding: any, rollback
 export const releaseComposeEvidenceError: (snapshot:any,evidence:any,rollback?:boolean|'baseline',targetId?:string,allowUnhealthy?:boolean)=>string|null=shared.composeEvidenceError;
 export const releaseComposeConfigAbsenceEvidenceError: (snapshot:any,evidence:any,operation:any)=>string|null=shared.composeConfigAbsenceEvidenceError;
 export const releaseComposeRecoveryEvidenceError: (snapshot:any,evidence:any,operation:any)=>string|null=shared.composeRecoveryEvidenceError;
+export const releaseComposeFailedPartialEvidenceError: (snapshot:any,evidence:any,operation:any)=>string|null=shared.composeFailedPartialEvidenceError;
 export const releaseGitSetArtifactDigest: (manifest: any, binding: any, rollback?: boolean) => string = shared.gitSetArtifactDigest;
 export const releaseSuccessorBasisSchema = shared.releaseSuccessorBasisSchema as z.ZodType<any>;
 export const releaseHasSuccessor: (snapshot: any) => boolean = shared.releaseHasSuccessor;
@@ -392,6 +393,13 @@ export function releaseIntentError(release: any, input: any, journal: any[]) {
     return "release_candidate_changed";
   if(journal.some(j=>!effectiveOutcome(j.outcome)||effectiveOutcome(j.outcome)==="uncertain"))return "release_operation_unresolved";
   if(releaseIsCompose(m)&&journal.some(j=>effectiveOutcome(j.outcome)==="absent"&&j.outcome?.evidence?.composeRecovery))return "release_compose_no_effect_diagnosis_required";
+  // A failed partial candidate may proceed only through its already sealed
+  // rollback, rollback observation and normal restoration/cleanup. It never
+  // authorizes another candidate configuration, queue or source/Git effect.
+  if(releaseIsCompose(m)&&journal.some(j=>j.operation==='deploy'&&effectiveOutcome(j.outcome)==='failed'
+    &&j.outcome?.evidence?.composeRecovery?.kind==='queue_failed_partial')
+    &&!(['rollback_config','rollback','runtime_resume','cleanup','cleanup_resource'].includes(input.operation)
+      ||input.operation==='observe'&&input.parameters?.mode==='rollback'))return 'release_compose_partial_failure_requires_rollback';
   const successful=(op:string)=>journal.some(j=>j.operation===op&&effectiveOutcome(j.outcome)==="succeeded");
   const setComplete=(op:string)=>m.deployment.targets.every((t:any)=>journal.some(j=>j.operation===op&&j.intent?.parameters?.targetId===t.targetId&&effectiveOutcome(j.outcome)==="succeeded"));
   const restarted=releaseHasPublishedGitBasis(s),successor=releaseHasSuccessor(s)||restarted;
@@ -448,7 +456,7 @@ export function releaseOutcomeError(release: any, operation: any, input: any,jou
    return releaseComposeConfigAbsenceEvidenceError({...s,releaseId:release.id},e,operation);
   }
   if(e.composeRecovery!==undefined){
-   if(!releaseIsCompose(m)||!(result==="failed"&&['queue_failed','queue_absent'].includes(e.composeRecovery.kind)
+   if(!releaseIsCompose(m)||!(result==="failed"&&['queue_failed','queue_absent','queue_failed_partial'].includes(e.composeRecovery.kind)
      ||input.status==="reconciled"&&result==="absent"&&e.composeRecovery.kind==="queue_absent"))return "release_evidence_scope_invalid";
    return releaseComposeRecoveryEvidenceError({...s,releaseId:release.id},e,operation);
   }

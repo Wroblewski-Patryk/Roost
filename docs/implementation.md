@@ -190,11 +190,7 @@ Native build, seven tests and review pass.
 Restore/parity pass; writes and cadences remain held.
 Matrix retains failures, PR2/c82, backups, closures and negative audits.
 Audit `d1004c62`: CHANGES_REQUIRED.
-Grant `63750d89`: both queues ABSENT, prior services healthy, native closed.
-Two-queue checks: 96 API, 202 Worker, eight SQL pass.
-Roost `171a76f3` deployed; closure `4a98987c` persisted.
-Audit `ba9a2999`: CHANGES_REQUIRED; basis mapping `d7758c8c` recorded.
-Historical basis checks, input and failed review archives remain in the matrix.
+Prior absence closures, negative audits and checks remain in the matrix.
 Review `4793c21f`: audit provenance passed; code rejected for log chronology.
 Return `99bb9555` → coder `645f792b` → log-only `c64378df`: 7/7, native closed.
 Build `6c602f42`: exact SHA, 7/7, closed/restored; twelve sources unchanged.
@@ -203,6 +199,9 @@ Historical pkg4b9/audit31: eighteen negative findings; basis0c94/b2 approved.
 Roost `1cfe5a0b` healthy; FAILED closure `00b660cc` persisted.
 PR3/c643 merged. Both queues failed before build; baseline healthy.
 Pkg9e7/audit34b: 19 CHANGES_REQUIRED, native closed; review19ab approved.
+Grant f88: candidate queue failed after recreating five services; migration
+import lacks greenlet. App unavailable; schema/data parity verified.
+Worker closed; partial-rollout recovery repair in progress. No Git replay.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,
