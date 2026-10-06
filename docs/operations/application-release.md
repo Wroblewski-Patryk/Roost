@@ -1383,5 +1383,15 @@ submission, but its compound-intent heuristic incorrectly treated the noun
 phrase “and build receipts” as another build instruction. The shared validator
 now distinguishes named build evidence from another build target; structured
 cardinality, component, outcome and manager correction checks are unchanged.
-All 97 packet/single-task checks and `npm run validate` pass. Application
-execution and release still require actual fresh Ready and native evidence.
+All 97 packet/single-task checks and `npm run validate` pass. Roost `f817253b`
+was deployed and its health/version read back at 09:41:27 UTC on 6 October.
+
+Fresh Ready `ce767548` admitted the exact returned correction. Actual Worker
+execution `645f792b` completed at 09:47:41 UTC: local successor `c64378df`,
+tree `968ff13c`, only ten appended log lines, seven tests passed and the native
+Job closed with zero active processes. All twelve protected sources remained
+unchanged. Test receipt `ccf6cddf` and local-commit receipt `4f4bcbfe` bind this
+successor; predecessor receipts remain historical. The official controller
+closed normally and the Worker stopped. A distinct exact-successor canonical
+build and fresh independent review remain required before any new release
+package, Git path or application deployment. The gate is incomplete.

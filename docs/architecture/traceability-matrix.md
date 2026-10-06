@@ -2157,5 +2157,11 @@ Subsequent normal rotation/readback and manager return `99bb9555` completed.
 Its former review basis is historical rejected lineage, not current acceptance.
 The compound-intent heuristic's “and build receipts” false positive is repaired
 with 97 packet/single-task checks, including separate build-target rejection.
-Actual successor Ready, native correction, independent review and release remain
-pending; the earlier chronology and authentication observations remain dated.
+Actual Ready `ce767548` and correction `645f792b` completed on 6 October,
+09:47:41 UTC: log-only successor `c64378df`/tree `968ff13c`, seven tests pass,
+native Job closed/zero active processes and twelve protected sources unchanged.
+Test/local-commit receipts `ccf6cddf`/`4f4bcbfe` are current successor evidence;
+`c82` receipts are historical. Official Worker stopped/controller exit zero.
+Roost `f817253b` deployment health/version passed at 09:41:27 UTC. Distinct
+successor canonical build, independent review and release remain pending;
+earlier chronology and authentication observations remain dated.

@@ -184,14 +184,12 @@ an immediate implementation dependency or mark it complete.
 ### Second-application release gate — ship the accepted bounded repair
 
 **Authorized release; production proof pending.** Preserve accepted `3cf9645e`.
-Review rejected `c21e0e0c` for its missing regression log. Log-only `c82e68b3`
-has seven-test/native-build proof; latest review below blocks release.
+`c21e0e0c`/`c82e68b3` rejections remain historical. Successor `c64378df`
+has native seven-test proof; exact build, independent review and release pending.
 
 Restore/parity pass; writes and cadences remain held.
-Closure `2eb9cdfd` retains PR 2/exact c82 and Git proof.
-Prior FAILED releases retain dated outcomes, native closures and Git;
-their closures and literal negative audits are in the evidence matrix.
-Backup guards pass; V8/V3 renewed.
+Historical FAILED releases, PR 2/c82, backups, credentials, native closures
+and literal negative audits remain in the evidence matrix.
 Coolify/CAS `2d63cf62`/`bb121957`: all-record parity verified.
 Native c82 build `3e8510be`: seven tests pass; outputs restored.
 Audit `d1004c62`: CHANGES_REQUIRED; review `17f8c1db`: accepted.
@@ -202,7 +200,8 @@ Audit `ba9a2999`: CHANGES_REQUIRED; basis mapping `d7758c8c` recorded.
 Basis: 57 checks, 39 DB tests pass. Packed input: 130426 bytes.
 Reviews `228`/`ab692270` failed. Signed archives preserved.
 Review `4793c21f`: audit provenance passed; code rejected for log chronology.
-Manager return `99bb9555` recorded; correction/release pending; Worker stopped.
+Return `99bb9555` → coder `645f792b` → log-only `c64378df`: 7/7, native closed.
+Twelve sources unchanged; Worker stopped. Roost `f817253b` deployed/healthy.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,
