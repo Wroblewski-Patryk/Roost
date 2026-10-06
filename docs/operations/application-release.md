@@ -1560,6 +1560,12 @@ At 14:01:54.720 UTC the new SQL qualified this actual eight-operation history
 inside a rolled-back production rehearsal; all new functions were absent after
 rollback. The closure records one real candidate queue, not absence. Its next
 baseline preserves the old installed command preimage, while repaired commands
-belong only to the planned candidate/rollback configuration. It is not yet
-deployed. Production observation, cleanup/resume, final native closure and
+belong only to the planned candidate/rollback configuration. Roost `1cfe5a0b`
+was pushed to its existing main autodeploy, queue `o5e52yrw37u4j9pyq4iopaf9`;
+finished state and exact health/build-info 200 were verified at 14:05:17.988 UTC.
+Applied additive migration, checksum from the committed source and installed
+functions/trigger were read back at 14:05:53.265 UTC. Nine current bounded reads
+and the actual signed native closure qualified normal FAILED preparation
+`71757dee` at 14:06:24.043 UTC. Owner authentication is still required to persist
+the closure and rotate credentials. Production observation, cleanup/resume, final native closure and
 independent postrelease acceptance remain required.
