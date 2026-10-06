@@ -180,7 +180,8 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   environment:{...minimalReleaseEnvironment(),GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:process.platform==='win32'?'NUL':'/dev/null',GIT_OPTIONAL_LOCKS:'0',GIT_TERMINAL_PROMPT:'0'},durationMs:10000,maxBytes});};
  const targetDef={targetId:t.targetId,composePath:t.composePath,repositoryUrl:m.repository.url,branch:m.repository.defaultBranch,
   services:t.configuration.services.map(({name,role,source,expectedState})=>({name,role,source,expectedState}))};
- const inspector=(dependencies.createInspector??createComposeStateInspector)({targets:[targetDef],
+ const configurationTemplate={sha256:hash(artifacts.candidate),bytesBase64:artifacts.candidate.toString('base64')};
+ const inspector=(dependencies.createInspector??createComposeStateInspector)({targets:[targetDef],configurationTemplate,
   sourcePins:{queueHelper:cfg.sourcePins.queueHelper,deploymentJob:cfg.sourcePins.deploymentJob,controllerRenderer:cfg.sourcePins.controllerRenderer},transport:ssh,
   sourceForCommit:async(commit,composePath)=>{check(/^[a-f0-9]{40}$/.test(commit)&&composePath===t.composePath,'git_scope_invalid');return hash(await git(['show',`${commit}:${composePath.slice(1)}`]));},
   treeForCommit:async commit=>{check(/^[a-f0-9]{40}$/.test(commit),'git_scope_invalid');const out=(await git(['rev-parse',`${commit}^{tree}`],4096)).toString('utf8').trim();check(/^[a-f0-9]{40}$/.test(out),'tree_unproven');return out;},
@@ -300,13 +301,13 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   const url=`${new URL(cfg.coolify.origin).origin}/api/v1/applications/${t.targetId}`;
   await configureComposeWithQualifiedModelCas({policy:p,scope:{targetId:t.targetId,repositoryPath:new URL(m.repository.url).pathname.slice(1).replace(/\.git$/,''),branch:m.repository.defaultBranch},
    readApplication:()=>httpsJson({url,method:'GET',token:coolifyCredential,certificateSha256:cfg.coolify.certificateSha256}),
-   patchApplication:body=>httpsJson({url,method:'PATCH',token:coolifyCredential,certificateSha256:cfg.coolify.certificateSha256,body}),php,
+   patchApplication:body=>httpsJson({url,method:'PATCH',token:coolifyCredential,certificateSha256:cfg.coolify.certificateSha256,body}),php,configurationTemplate,
    beforeEffect:async()=>{await assertClone();check((await checkIntent({rollback:mode==='rollback'},true)).id===intent.id,'phase_intent_changed');check(composeConfigurationDigest(await observeConfig())===prior,'configuration_preimage_changed');}});
  };
  const raw=createComposeReleaseGateway({releaseId:state.release.id,expected:{configuration:t.configuration,configDigest:t.configDigest},
   rollbackExpected:{configuration:t.rollbackConfiguration,configDigest:t.rollbackConfigDigest},candidatePolicy:policies.candidate,rollbackPolicy:policies.rollback,
   binding:{commit:s.commit,tree:s.candidateTree,baselineCommit:t.baseline.commit,baselineTree:t.baseline.tree},sourcePins:pins,
-  repositoryPath:new URL(m.repository.url).pathname.slice(1).replace(/\.git$/,''),transport,readConfiguration:observeConfig,
+  repositoryPath:new URL(m.repository.url).pathname.slice(1).replace(/\.git$/,''),transport,readConfiguration:observeConfig,configurationTemplate,
   readRuntime:inspector.readRuntime,readBuildImages:inspector.readBuildImages,assertSafety:safety,inspectRemote:async()=>({mainCommit:(await github.inspect(m,{allowArchived:false})).remoteBase}),
   prepareCandidatePhase:o=>preparePhase('candidate',o),prepareRollbackPhase:o=>preparePhase('rollback',o),
   configureTarget:configurePhase

@@ -5,7 +5,7 @@ import { composeConfigurationSchema, composeConfigurationDigest, qualifyComposeR
 import { coolifyGitSetDeploymentId } from './agent-host-release-coolify-git-set-gateway.mjs';
 import { composePhaseCapabilitySchema, composePhasePolicySchema, composePhasePolicyDigest, composePhaseArtifactFile,
   renderComposePhaseCommands, composePhaseValidationPhp, composeControllerPolicyRecord } from './agent-host-release-compose-controller.mjs';
-import { composeControllerInvariantPhp } from './agent-host-release-compose-inspector.mjs';
+import { composeControllerInvariantPhp,composeConfigurationTemplateSchema } from './agent-host-release-compose-inspector.mjs';
 
 const hash = z.string().regex(/^[a-f0-9]{64}$/), sha = z.string().regex(/^[a-f0-9]{40}$/);
 const image = z.string().regex(/^sha256:[a-f0-9]{64}$/);
@@ -18,7 +18,7 @@ const payloadSchema = z.object({ targetId: id, composePath: canonicalPath, repos
   .regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/), branch: z.string().max(200).regex(/^[A-Za-z0-9][A-Za-z0-9._/-]*$/)
   .refine(value => !value.includes('..') && !value.includes('//')),
   deploymentId: z.string().regex(/^r[a-f0-9]{23}$/), commit: sha, rollback: z.boolean(), sourcePins: sourcePinsSchema,
-  phaseCapability: composePhaseCapabilitySchema.optional() }).strict();
+  phaseCapability: composePhaseCapabilitySchema.optional(),configurationTemplate:composeConfigurationTemplateSchema.optional() }).strict();
 const queueSchema = z.object({ targetId: id, deploymentId: id, commit: z.union([sha, z.literal('HEAD')]),
   status: z.enum(['queued', 'in_progress', 'finished', 'failed', 'cancelled-by-user']), createdAt: date,
   finishedAt: date.nullable() }).strict();
@@ -77,7 +77,7 @@ $call=fn()=>roost_compose_queue($a,$p,fn($path)=>hash_file('sha256',$path),$read
  fn()=>App\Models\ApplicationDeploymentQueue::whereIn('status',['queued','in_progress'])->exists(),
  fn($application,$cap)=>roost_validate_compose_phase($application,$cap,fn($file)=>file_get_contents($file),
   fn($file)=>hash_file('sha256',$file),fn($command)=>instant_remote_process([$command],$application->destination->server,true),
-  fn($application)=>roost_compose_controller_invariants($application)));
+  fn($application)=>roost_compose_controller_invariants($application,$p['configurationTemplate']??null)));
 $queue=$p['operation']==='dispatch'?Illuminate\Support\Facades\Cache::lock('roost-release-'.$p['deploymentId'],30)->block(3,$call):$call();
 echo json_encode(['ok'=>true,'queue'=>$queue],JSON_THROW_ON_ERROR);
 }catch(Throwable $e){echo '{"ok":false}';exit(1);}
@@ -157,7 +157,8 @@ export function createImmutableComposeRollback({ document, sourceDocumentDigest,
 
 /** Installed callbacks are trusted code; neither packets nor settings select them. */
 export function createComposeReleaseGateway({ releaseId, expected, rollbackExpected, rollbackPolicy, candidatePolicy, binding, sourcePins, repositoryPath, transport,
-  readConfiguration, readRuntime, readBuildImages, configureTarget, inspectRemote, assertSafety, prepareRollbackPhase, prepareCandidatePhase }) {
+  readConfiguration, readRuntime, readBuildImages, configureTarget, inspectRemote, assertSafety, prepareRollbackPhase, prepareCandidatePhase, configurationTemplate }) {
+  const template=configurationTemplate===undefined?undefined:parse(composeConfigurationTemplateSchema,configurationTemplate,'template_invalid');
   const declared = parse(z.object({ configuration: composeConfigurationSchema, configDigest: hash }).strict(), expected, 'configuration_invalid');
   const source = parse(z.object({ commit: sha, tree: sha, baselineCommit: sha, baselineTree: sha }).strict(), binding, 'binding_invalid');
   const pins = parse(sourcePinsSchema, sourcePins, 'source_pins_invalid');
@@ -243,6 +244,7 @@ export function createComposeReleaseGateway({ releaseId, expected, rollbackExpec
           && cap.startCommandDigest === createHash('sha256').update(renderComposePhaseCommands(policy).start).digest('hex')
           && digest(cap.services) === digest(policy.services) && digest(cap.sourcePins) === digest(policy.sourcePins), 'phase_capability_invalid');
         p.phaseCapability = cap;
+        if(template)p.configurationTemplate=template;
       }
       try { await transport.run('dispatch', p); } catch (error) { deny('dispatch_result_uncertain', true, error); }
       const row = await read(options); check(row !== null, 'dispatch_result_uncertain', true);

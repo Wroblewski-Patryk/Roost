@@ -196,12 +196,12 @@ Return `99bb9555` → coder `645f792b` → log-only `c64378df`: 7/7, native clos
 Build `6c602f42`: exact SHA, 7/7, closed/restored; twelve sources unchanged.
 Review234dfc97/4dc1812a: historical approval.
 Historical pkg4b9/audit31: eighteen negative findings; basis0c94/b2 approved.
-Roost `1cfe5a0b` healthy; FAILED closure `00b660cc` persisted.
+FAILED closure `00b660cc` persisted.
 PR3/c643 merged. Both queues failed before build; baseline healthy.
 Pkg9e7/audit34b: 19 CHANGES_REQUIRED, native closed; review19ab approved.
 Grant f88: candidate queue failed after recreating five services; migration
 import lacks greenlet. App unavailable; schema/data parity verified.
-Worker closed; partial-rollout recovery repair in progress. No Git replay.
+Roost457 deployed; Worker closed. Verified-template recovery repair pending.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

@@ -413,3 +413,22 @@ not application recovery proof. Current actual candidate `c64378df` failed after
 container recreation because the clean migration image lacked greenlet. Schema
 and data hashes matched the baseline in the bounded read at 15:29:02.466 UTC on
 6 October; the application remains unavailable pending governed rollback.
+
+### Materialized Compose environment references
+
+The fixed reader may receive the exact hash-sealed candidate Compose artifact
+from the installed Worker. It verifies each materialized environment reference
+against the persisted environment table and its original literal/default, then
+compares the entire remaining document. Generated container-name metadata must
+match the actual service identity and have no source or environment override.
+Unsupported substitutions, ambiguous variables and changed literals remain
+failures. The full persisted environment values/flags retain their separate seal.
+
+The production projection preserves the verified live materialized values. Only
+the qualified generated name returns to its sealed original value; reference
+expressions in the executable artifact never replace live secret/default values.
+
+The same candidate preimage is used by inspection, model configuration CAS and
+queue admission, including rollback configuration before its image-only document
+has been applied. The rollback artifact must not substitute for that preimage.
+This comparison is configuration evidence; it never implies healthy containers.

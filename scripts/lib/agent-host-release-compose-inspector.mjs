@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
+import { composeTemplateQualificationPhp } from './agent-host-release-compose-template.mjs';
 import { composeConfigurationSchema, composeConfigurationDigest, composeRuntimeSchema,
   composeRuntimeBindingSchema, qualifyComposeRuntime } from './agent-host-release-compose-state.mjs';
 
@@ -24,6 +25,7 @@ const encode = value => Buffer.from(JSON.stringify(value)).toString('base64');
 
 /** Shared by the fixed reader and queue controller; one invariant projection. */
 export const composeControllerInvariantPhp = String.raw`
+${composeTemplateQualificationPhp}
 function roost_compose_canonical($v){if(is_object($v))$v=get_object_vars($v);if(is_array($v)){if(!array_is_list($v))ksort($v,SORT_STRING);foreach($v as $k=>$x)$v[$k]=roost_compose_canonical($x);}return $v;}
 function roost_compose_hash($v){return hash('sha256',json_encode(roost_compose_canonical($v),JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR));}
 function roost_compose_normalize($d,$targetId){foreach($d['services'] as $name=>&$s){
@@ -41,9 +43,33 @@ function roost_compose_normalize($d,$targetId){foreach($d['services'] as $name=>
 function roost_compose_configuration_projection($a){$raw=$a->attributesToArray();$settings=$a->settings?->attributesToArray()??[];
  foreach(['id','uuid','name','description','created_at','updated_at','deleted_at','status','config_hash','git_commit_sha','docker_compose','docker_compose_raw','last_online_at','restart_count','last_restart_at','last_restart_type','server_status','settings','additional_servers','destination'] as $key)unset($raw[$key]);
  foreach(['id','application_id','created_at','updated_at'] as $key)unset($settings[$key]);return ['attributes'=>$raw,'settings'=>$settings];}
-function roost_compose_controller_invariants($a){$projection=roost_compose_configuration_projection($a);
+function roost_compose_effective_document($a,$packet=null){
+ $live=Symfony\Component\Yaml\Yaml::parse($a->docker_compose??'');
+ if($packet===null)return roost_compose_normalize($live,$a->uuid);
+ if(!is_array($packet)||array_keys($packet)!==['sha256','bytesBase64']||!preg_match('/^[a-f0-9]{64}$/',$packet['sha256']??'')||!is_string($packet['bytesBase64']))throw new Exception('template-packet');
+ $bytes=base64_decode($packet['bytesBase64'],true);if(!is_string($bytes)||strlen($bytes)<1||strlen($bytes)>131072||hash('sha256',$bytes)!==$packet['sha256'])throw new Exception('template-bytes');
+ $doc=json_decode($bytes,true,32,JSON_THROW_ON_ERROR);if(!is_array($doc)||!is_array($doc['services']??null))throw new Exception('template-document');
+ $verified=roost_compose_qualified_template($a,$live,$doc);
+ // The executable artifact retains references to protect secret values. The
+ // persisted configuration seal describes the actual parser materialization.
+ // Keep those independently verified values; only generated identity metadata
+ // returns to the original sealed name after exact physical-name qualification.
+ $out=roost_compose_normalize($live,$a->uuid);$vars=roost_compose_template_env($a);
+ foreach($out['services'] as $name=>&$service){
+  $original=$verified['services'][$name]['environment']['COOLIFY_CONTAINER_NAME']??null;
+  if($original!==null&&($service['environment']['COOLIFY_CONTAINER_NAME']??null)!==$original){
+   $declared=roost_compose_template_declared($a,$name);
+   if(array_key_exists('COOLIFY_CONTAINER_NAME',$vars)||roost_compose_template_has_name_override($declared))roost_compose_template_deny();
+   $reference=roost_compose_template_reference($original);
+   if($reference){if($reference['key']!=='COOLIFY_CONTAINER_NAME'||!$reference['hasDefault'])roost_compose_template_deny();$original=$reference['default'];}
+   if(!roost_compose_template_name($original,$name,$a->uuid))roost_compose_template_deny();
+   $service['environment']['COOLIFY_CONTAINER_NAME']=$original;
+  }
+ }unset($service);return $out;
+}
+function roost_compose_controller_invariants($a,$packet=null){$projection=roost_compose_configuration_projection($a);
  foreach(['attributes','settings'] as $part){unset($projection[$part]['docker_compose_custom_build_command'],$projection[$part]['docker_compose_custom_start_command']);}
- $runtime=roost_compose_normalize(Symfony\Component\Yaml\Yaml::parse($a->docker_compose??''),$a->uuid);
+ $runtime=roost_compose_effective_document($a,$packet);
  foreach($runtime['services'] as &$s){unset($s['build'],$s['image']);}unset($s);
  return ['settingsInvariantDigest'=>roost_compose_hash($projection),'runtimeInvariantDigest'=>roost_compose_hash($runtime)];}
 `;
@@ -73,7 +99,7 @@ if($names!==$wanted||!is_array($effective['services']??null))throw new Exception
 foreach($p['target']['services'] as $s){$d=$doc['services'][$s['name']];if(($s['source']==='built')!==isset($d['build']))throw new Exception('source');}
 // Only the authorized build revision and Coolify-generated container identity
 // are normalized. Every other effective compose value remains sealed.
-$doc=roost_compose_normalize($doc,$a->uuid);$effective=roost_compose_normalize($effective,$a->uuid);
+$doc=roost_compose_normalize($doc,$a->uuid);$effective=roost_compose_effective_document($a,$p['configurationTemplate']??null);
 $env=[];foreach($a->environment_variables->merge($a->environment_variables_preview) as $item){$v=$item->toArray();$v['value']=$item->value;
  if(!is_string($v['key']??null)||!is_string($v['value']))throw new Exception('environment');
  if(in_array($v['key'],['APP_BUILD_REVISION','SOURCE_COMMIT'],true))$v['value']='__AUTHORIZED_COMMIT__';
@@ -83,7 +109,7 @@ $files=[];foreach($a->fileStorages as $item){if(!is_string($item->content))throw
 // Operational counters and source SHA are not deployment configuration. All
 // remaining persisted attributes/settings (including secret hashes) are sealed.
 $projection=roost_compose_configuration_projection($a);$raw=$projection['attributes'];$settings=$projection['settings'];
-$invariants=roost_compose_controller_invariants($a);
+$invariants=roost_compose_controller_invariants($a,$p['configurationTemplate']??null);
 $controllerObserved=['buildCommandDigest'=>hash('sha256',$raw['docker_compose_custom_build_command']??''),
  'startCommandDigest'=>hash('sha256',$raw['docker_compose_custom_start_command']??''),
  'settingsInvariantDigest'=>$invariants['settingsInvariantDigest'],'runtimeInvariantDigest'=>$invariants['runtimeInvariantDigest']];
@@ -205,7 +231,9 @@ const observedServiceSchema = composeRuntimeSchema.shape.services.element.omit({
 
 /** Trusted installation callbacks, never packet-selected code. sourceForCommit
  * reads the canonical Git compose blob and returns its SHA256 source digest. */
-export function createComposeStateInspector({ targets, sourcePins, transport, sourceForCommit, treeForCommit, readDeployment, readControllerPolicy, readImageBinding }) {
+export const composeConfigurationTemplateSchema=z.object({sha256:hash,bytesBase64:z.string().min(1).max(174764).regex(/^[A-Za-z0-9+/]+={0,2}$/)}).strict().refine(v=>{const bytes=Buffer.from(v.bytesBase64,'base64');return bytes.length>0&&bytes.length<=131072&&bytes.toString('base64')===v.bytesBase64&&createHash('sha256').update(bytes).digest('hex')===v.sha256;});
+export function createComposeStateInspector({ targets, sourcePins, transport, sourceForCommit, treeForCommit, readDeployment, readControllerPolicy, readImageBinding, configurationTemplate }) {
+  const template=configurationTemplate===undefined?undefined:parse(composeConfigurationTemplateSchema,configurationTemplate,'template_invalid');
   const scoped = parse(z.array(targetSchema).min(1).max(6),targets,'configuration_invalid');
   const pins = parse(configurationFields.sourcePins,sourcePins,'configuration_invalid');
   check(new Set(scoped.map(t=>t.targetId)).size===scoped.length && [transport,sourceForCommit,treeForCommit,readDeployment].every(f=>typeof f==='function'),'configuration_invalid');
@@ -217,7 +245,7 @@ export function createComposeStateInspector({ targets, sourcePins, transport, so
     try{return JSON.parse(output);}catch{fail('response_invalid');}
   };
   const metadata = async t => parse(metadataSchema,await run('compose_configuration','docker exec -i coolify php',
-    `<?php\n$p=json_decode(base64_decode('${encode({target:t,sourcePins:pins})}',true),true,32,JSON_THROW_ON_ERROR);\n${configurationPhp}`),'configuration_unproven');
+    `<?php\n$p=json_decode(base64_decode('${encode({target:t,sourcePins:pins,...(template?{configurationTemplate:template}:{})})}',true),true,32,JSON_THROW_ON_ERROR);\n${configurationPhp}`),'configuration_unproven');
   const observe = async (targetId, observedCommit) => {
     const t=target(targetId);parse(sha,observedCommit,'commit_invalid');
     const before=await metadata(t);check(before.targetId===targetId,'configuration_unproven');

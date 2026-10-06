@@ -1,10 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { createComposeStateInspector, composeControllerInvariantPhp } from './lib/agent-host-release-compose-inspector.mjs';
 import { composeConfigurationDigest } from './lib/agent-host-release-compose-state.mjs';
 
 const h=c=>c.repeat(64),sha=c=>c.repeat(40),image=c=>`sha256:${h(c)}`;
+test('sealed template bytes reach each fixed reader, while changed hash/encoding fails before transport',async()=>{
+ const f=fixture(),bytes=Buffer.from(JSON.stringify({services:{app:{environment:{MODE:'${MODE:-safe}'}}}})),
+  packet={sha256:createHash('sha256').update(bytes).digest('hex'),bytesBase64:bytes.toString('base64')};
+ f.options.configurationTemplate=packet;
+ await f.inspector().inspectConfiguration(f.target.targetId,f.commit);
+ const readers=f.calls.filter(c=>c.operation==='compose_configuration');assert.equal(readers.length,2);
+ for(const call of readers){const encoded=call.stdin.match(/base64_decode\('([A-Za-z0-9+/=]+)'/)[1];
+  assert.deepEqual(JSON.parse(Buffer.from(encoded,'base64')).configurationTemplate,packet);
+  assert.match(call.stdin,/roost_compose_effective_document\(\$a,\$p\['configurationTemplate'\]/);}
+ for(const bad of [{...packet,sha256:h('f')},{...packet,bytesBase64:packet.bytesBase64+'='},{...packet,program:'anything'}]){
+  const g=fixture();g.options.configurationTemplate=bad;assert.throws(g.inspector,/template_invalid/);assert.equal(g.calls.length,0);}
+});
 test('shared projection selects cast attributes while environment/storage keep independent seals',async()=>{
  assert.match(composeControllerInvariantPhp,/\$raw=\$a->attributesToArray\(\)/);
  assert.match(composeControllerInvariantPhp,/\$a->settings\?->attributesToArray\(\)/);
