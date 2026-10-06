@@ -5,6 +5,32 @@ import {createReleaseSchema,releaseManifestSchema,releaseOutcomeError,releaseInt
  releaseWindowError,releaseDigest,releaseIsCompose,releaseIsGitSet,releaseIsSet,releaseSourceArtifactDigest,releaseTargetMetadataMatches} from './governed-release-contract';
 const {fixture,hash,git,image}=require(path.resolve(__dirname,'../../../scripts/fixtures/release-compose-contract.cjs'));
 const deploy={operation:'deploy',intent:{parameters:{targetId:'composeapp'}}};
+test('ordinary Compose publication intent uses exact Git main independently from rollback source',()=>{
+ const f=fixture();f.s.gitPublicationBase={commit:git('e'),tree:git('f')};
+ const input:any={operation:'push',manifestDigest:f.release.manifest_digest,commit:f.s.commit,baseCommit:f.s.baseCommit,
+  observed:{commit:f.s.commit,baseCommit:git('e'),baseTree:git('f'),manifestDigest:f.release.manifest_digest},parameters:{branch:f.m.repository.candidateBranch}};
+ assert.equal(releaseIntentError(f.release,input,[]),null);
+ assert.equal(releaseIntentError(f.release,{...input,observed:{...input.observed,baseTree:git('1')}},[]),'release_base_changed');
+ assert.equal(releaseIntentError(f.release,{...input,observed:{...input.observed,baseCommit:f.s.baseCommit,baseTree:f.s.baseTree}},[]),'release_base_changed');
+ assert.equal(f.m.baseline.commit,f.s.baseCommit);
+});
+test('all ordinary Git success and absence evidence bind publication base, while postmerge uses candidate',()=>{
+ const f=fixture();f.s.gitPublicationBase={commit:git('e'),tree:git('f')};
+ for(const operation of ['push','pr','review','merge']){
+  const e:any={remoteCommit:f.s.commit,remoteTree:f.s.candidateTree,remoteBase:git('e'),remoteBaseTree:git('f'),pullRequestNumber:3,prHeadCommit:f.s.commit,reviewApproved:true,prMerged:true,mergedCommit:f.s.commit};
+  assert.equal(releaseOutcomeError(f.release,{operation},{status:'succeeded',evidence:e}),null);
+  assert.equal(releaseOutcomeError(f.release,{operation},{status:'succeeded',evidence:{...e,remoteBaseTree:git('1')}}),'release_git_publication_base_changed');
+  const absent={remoteCommit:git('e'),remoteTree:git('f'),absenceVerified:true};
+  assert.equal(releaseOutcomeError(f.release,{operation},{status:'reconciled',reconciledStatus:'absent',observationOnly:true,evidence:absent}),null);
+  assert.equal(releaseOutcomeError(f.release,{operation},{status:'reconciled',reconciledStatus:'absent',observationOnly:true,evidence:{...absent,remoteTree:f.s.baseTree}}),'release_absence_unproven');
+ }
+ const input:any={operation:'deploy_config',manifestDigest:f.release.manifest_digest,commit:f.s.commit,baseCommit:f.s.baseCommit,
+  observed:{commit:f.s.commit,baseCommit:f.s.commit,baseTree:f.s.candidateTree,manifestDigest:f.release.manifest_digest},
+  parameters:{commit:f.s.commit,artifactSetDigest:f.m.deployment.artifactSetDigest,configDigest:f.m.deployment.configDigest,schemaDigest:f.m.deployment.schemaDigest}};
+ const j=['push','pr','review','merge'].map(operation=>({operation,outcome:{status:'succeeded'}}));
+ assert.equal(releaseIntentError(f.release,input,j),null);
+ assert.equal(releaseIntentError(f.release,{...input,observed:{...input.observed,baseCommit:git('e'),baseTree:git('f')}},j),'release_base_changed');
+});
 test('application metadata selects its own Compose path/target/origin and cannot borrow a Dockerfile target',()=>{
  const f=fixture(),metadata={releaseTargets:[{targetId:'composeapp',composePath:f.target.composePath}],releasePublicOrigins:f.m.deployment.publicOrigins};
  assert.equal(releaseTargetMetadataMatches(metadata,f.m),true);

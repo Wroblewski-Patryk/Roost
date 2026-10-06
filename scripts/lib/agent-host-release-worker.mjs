@@ -171,7 +171,7 @@ export async function runGovernedReleaseQueueStep({config,baseUrl,hostId,writerL
    prepared=await prepareReleaseProcessScope();
    context=beginReleaseWriterCheckpoint({writerLock,state,client:settings.client});
    checkpointReleaseOperation(context,state,state.journal.at(-1),settings.client);
-   await withReleaseProcessScope(prepared,context,()=>inspectReleaseCheckout(m,s.commit,s.baseCommit,s.candidateTree));
+   await withReleaseProcessScope(prepared,context,()=>inspectReleaseCheckout(m,s.commit,releaseContract.releaseGitPublicationBase(s).commit,s.candidateTree));
    sealReleaseWriterCheckpoint(context);
    return{handled:true,state,reconciliationOnlyComplete:true};
   }

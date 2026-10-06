@@ -1442,3 +1442,37 @@ The private adapter now requires exact `c643` admission and Ready seals before
 queue, measurement and launch; 107 regression checks pass. New cycle `042c1db4`
 queued execution `31a929c9`; actual input 118989/131072 bytes. Signed native audit,
 new audit-provenance review, release authority and runtime proof remain pending.
+
+Audit `31a929c9` completed at 10:53:47.935 UTC on 6 October for exact `c643` /
+manifest `4b9db111`: signed native Job closed, unchanged selected source/tree,
+Git/process/Docker footprints, no tools or source writes. Root qualified the
+normal terminal, actual absence of root/launcher/controller and archived core
+signature pair; capture `71ca5b64`, receipt `07f53107`, signed digest `5709747d`.
+Its original literal `READINESS FINDING: CHANGES_REQUIRED — NOT READY FOR
+DEPLOYMENT` and eighteen negative findings remain unchanged. The parser accepts
+this exact negative declaration and rejects conflicting declarations; 16 checks
+pass. This capture is neither a positive readiness finding nor release authority.
+Current coder Ready reports shared-risk invalidation; reconcile the same original
+coding intent before any append-only basis mapping or fresh independent review.
+Git publication must bind actual remote base separately from retained runtime
+rollback baseline; no candidate application Git or deployment occurred.
+
+Ordinary permanent Compose releases may bind `gitPublicationBase.commit/tree`
+in the exact owner request and release snapshot. It identifies the actual Git
+publication base; `baseCommit/baseTree`, manifest baseline and rollback remain
+the deployed runtime basis. Omitting it preserves the original behavior. It is
+excluded from predecessor, restart and baseline-adoption paths. Before merge,
+all Git operations require the publication commit/tree; afterward the broker
+requires the candidate commit/tree. Success and uncertain-result readback bind
+the publication tree too. Existing candidate branches may advance only from
+that exact base with a normal fast-forward. A prior PR is history only after
+GitHub confirms it merged at that base; the candidate needs its own PR and
+independent decision. Tests exercise changed bases, unrelated heads, historical
+PRs and lost push/merge responses. Source verification does not prove publication.
+
+The post-audit review scope was accepted but its large response exceeded the
+private journal content guard. Normal GET readback proved the exact new scope;
+the original journal was archived before compaction. Typed response projections
+retain identity and full-response digests without disabling the guard. Unknown
+outcomes retain their original intent and require authoritative readback before
+continuation. No duplicate scope POST, model or application effect was used.

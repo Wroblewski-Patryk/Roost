@@ -188,9 +188,8 @@ an immediate implementation dependency or mark it complete.
 Native build/seven tests and independent review pass; release pending.
 
 Restore/parity pass; writes and cadences remain held.
-Historical FAILED releases, PR 2/c82, backups, credentials, native closures
-and literal negative audits remain in the evidence matrix.
-Historical c82 build/parity passed; audit `d1004c62` remained CHANGES_REQUIRED.
+Historical failures, PR 2/c82, backups, closures and negative audits remain
+in the evidence matrix. Audit `d1004c62` remained CHANGES_REQUIRED.
 Grant `63750d89`: both queues ABSENT, prior services healthy, native closed.
 Two-queue: 96 API, 202 Worker and eight SQL probes pass.
 Roost `171a76f3` deployed; closure `4a98987c` persisted.
@@ -200,7 +199,8 @@ Review `4793c21f`: audit provenance passed; code rejected for log chronology.
 Return `99bb9555` → coder `645f792b` → log-only `c64378df`: 7/7, native closed.
 Build `6c602f42`: exact SHA, 7/7, closed/restored; twelve sources unchanged.
 Review234dfc97/4dc1812a: approved, signed/closed.
-Pkg8ec8b319/4b9db111 installed; nine reads pass. Audit31a929c9 queued; Git/runtime pending.
+Pkg8ec8b319/4b9db111 installed; nine reads pass. Audit31a929c9 signed/closed;
+eighteen negative findings retained. Current review and Git/runtime pending.
 Roost `f817253b` deployed/healthy.
 
 Reuse the existing application, repository and Compose installation; create no

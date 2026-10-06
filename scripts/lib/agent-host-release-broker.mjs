@@ -273,10 +273,11 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
  if(stopped())return{handled:false,state};
  // Validate actual checkout and remote base before requesting a capability.
  const cleanupStage=['cleanup','cleanup_local','cleanup_resource','archive_repository'].includes(operation);
- if(operation!=='cleanup')await inspectCheckout(m,s.commit,s.baseCommit,s.candidateTree);
+ if(operation!=='cleanup')await inspectCheckout(m,s.commit,contract.releaseGitPublicationBase(s).commit,s.candidateTree);
  const remote=await github.inspect(m,{allowArchived:cleanupStage&&!contract.retainsApplication(m)}),merged=contract.releaseHasSuccessor(state.release.snapshot)||contract.releaseHasPublishedGitBasis(state.release.snapshot)||state.journal.some(j=>j.operation==='merge'&&releaseOutcomeStatus(j.outcome)==='succeeded');
- if(remote.remoteBase!==(merged?s.commit:s.baseCommit)
-  ||remote.remoteTree!==(merged?s.candidateTree:s.baseTree))fail('release_base_changed');
+ const publicationBase=contract.releaseGitPublicationBase(s);
+ if(remote.remoteBase!==(merged?s.commit:publicationBase.commit)
+  ||remote.remoteTree!==(merged?s.candidateTree:publicationBase.tree))fail('release_base_changed');
  if(!state.journal.length)await coolify.inspect(m,s);
  if(['deploy_config','deploy','rollback_config','rollback'].includes(operation))await resources.inspectCapacity(m);
  const intent=contract.intentSchema.parse({requestId:randomUUID(),operation,manifestDigest:s.manifestDigest,commit:s.commit,baseCommit:s.baseCommit,

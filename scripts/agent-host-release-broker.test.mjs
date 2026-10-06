@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import contract from './lib/agent-host-release-contract.cjs';
 import { runReleaseStep,nextReleaseOperation } from './lib/agent-host-release-broker.mjs';
+import {fixture as composeFixture} from './fixtures/release-compose-contract.cjs';
 
 function fixture(){
  const id=randomUUID(),commit='a'.repeat(40),base='b'.repeat(40),tree='c'.repeat(40),hash='d'.repeat(64),at=new Date().toISOString();
@@ -28,6 +29,28 @@ function harness(state,overrides={}){
   coolify:{inspect:async()=>calls.push({kind:'baseline'})},resources:{},...overrides};
  return{args,calls,state};
 }
+
+function publicationState(){const state=fixture(),f=composeFixture(),s=state.release.snapshot;
+ Object.assign(s,{commit:f.s.commit,candidateTree:f.s.candidateTree,baseCommit:f.s.baseCommit,baseTree:f.s.baseTree,manifest:f.m,manifestDigest:contract.releaseDigest(f.m),gitPublicationBase:{commit:'e'.repeat(40),tree:'f'.repeat(40)}});
+ state.release.manifestDigest=s.manifestDigest;return state;}
+test('broker validates publication ancestry/main while preserving runtime base in durable intent',async()=>{
+ const state=publicationState(),s=state.release.snapshot,seen=[],h=harness(state,{inspectCheckout:async(_m,c,b,t)=>seen.push({c,b,t})});
+ h.args.github.inspect=async()=>({remoteBase:s.gitPublicationBase.commit,remoteTree:s.gitPublicationBase.tree});
+ await runReleaseStep(h.args);assert.deepEqual(seen,[{c:s.commit,b:s.gitPublicationBase.commit,t:s.candidateTree}]);
+ const intent=h.calls.find(c=>c.kind==='api'&&c.route.endsWith('/operations')).body;
+ assert.equal(intent.baseCommit,s.baseCommit);assert.equal(intent.observed.baseCommit,s.gitPublicationBase.commit);assert.equal(intent.observed.baseTree,s.gitPublicationBase.tree);
+ assert.equal(nextReleaseOperation(publicationState()),'push');
+});
+test('publication base/tree drift refuses capability and first effect',async()=>{
+ for(const remote of [{remoteBase:'1'.repeat(40),remoteTree:'f'.repeat(40)},{remoteBase:'e'.repeat(40),remoteTree:'1'.repeat(40)}]){
+  const h=harness(publicationState());h.args.github.inspect=async()=>remote;await assert.rejects(runReleaseStep(h.args),/release_base_changed/);assert(!h.calls.some(c=>c.kind==='api'||c.kind==='effect'));
+ }
+});
+test('uncertain publication push performs one effect and forces read-only reconciliation',async()=>{
+ const state=publicationState(),s=state.release.snapshot,h=harness(state);h.args.github.inspect=async()=>({remoteBase:s.gitPublicationBase.commit,remoteTree:s.gitPublicationBase.tree});
+ h.args.github.push=async()=>{h.calls.push({kind:'effect'});throw Error('lost');};await runReleaseStep(h.args);await runReleaseStep(h.args);
+ assert.equal(h.calls.filter(c=>c.kind==='effect').length,1);assert.equal(h.calls.filter(c=>c.kind==='readonly_reconcile').length,1);
+});
 test('server intent is durable before the first external effect',async()=>{
  const h=harness(fixture());await runReleaseStep(h.args);
  assert.ok(h.calls.findIndex(c=>c.kind==='api'&&c.route.endsWith('/operations'))<h.calls.findIndex(c=>c.kind==='effect'));

@@ -10,6 +10,51 @@ const manifest={repository:{url:'https://github.com/example/certificate',default
 const binding={commit,baseCommit:base,candidateTree:tree,reviewId:'independent-decision',materialVersion:'d'.repeat(64)};
 const repo={private:true,archived:false,default_branch:'main',full_name:'example/certificate'};
 const pr={number:1,head:{sha:commit,ref:'codex/certificate',repo:{full_name:'example/certificate'}},base:{ref:'main'},state:'open',merged:false};
+const publication='4'.repeat(40),publicationTree='5'.repeat(40);
+const publicationManifest={...manifest,schemaVersion:'roost-release-manifest-v2',purpose:'application_release',cleanup:{archiveRepository:false},deployment:{provider:'coolify_compose'}};
+const publicationBinding={...binding,gitPublicationBase:{commit:publication,tree:publicationTree}};
+function publicationHarness({main=publication,mainTree=publicationTree,head=publication,parents=[{sha:publication}],historyMerged=true,historyCommit=publication,losePush=false,loseMerge=false}={}){
+ const calls=[];let currentHead=head,currentMain=main,currentTree=mainTree,nextPr=null,uploads=0;
+ const history={...structuredClone(pr),number:2,state:'closed',merged:historyMerged,merge_commit_sha:historyCommit,head:{...pr.head,sha:publication}};
+ const transport=async r=>{calls.push(r);
+  if(r.method==='PATCH'){assert.deepEqual(r.body,{sha:commit,force:false});currentMain=commit;currentTree=tree;if(nextPr){nextPr.state='closed';nextPr.merged=true;nextPr.merge_commit_sha=commit;}if(loseMerge)throw Error('lost');return{status:200,body:{}};}
+  if(r.method==='POST'&&r.route.endsWith('/pulls')){nextPr={...structuredClone(pr),number:3};return{status:201,body:nextPr};}
+  if(r.method==='POST'&&r.route.endsWith('/reviews'))return{status:200,body:{}};
+  if(r.route.endsWith('/git/ref/heads/main'))return{status:200,body:{object:{sha:currentMain}}};
+  if(r.route.endsWith('/git/ref/heads/codex/certificate'))return currentHead?{status:200,body:{object:{sha:currentHead}}}:{status:404,body:{}};
+  if(r.route.endsWith('/git/commits/'+publication))return{status:200,body:{tree:{sha:currentTree===tree?publicationTree:currentTree},parents:[]}};
+  if(r.route.endsWith('/git/commits/'+commit))return{status:200,body:{tree:{sha:tree},parents}};
+  if(r.route.includes('/pulls?'))return{status:200,body:[history,...(nextPr?[nextPr]:[])]};
+  if(r.route.endsWith('/pulls/2'))return{status:200,body:history};
+  if(r.route.endsWith('/pulls/3'))return{status:200,body:nextPr};
+  return{status:200,body:{...repo,private:false}};
+ };
+ const adapter=createGithubReleaseAdapter({credential:async()=>'synthetic-credential',transport,upload:async()=>{uploads++;currentHead=commit;if(losePush)throw Error('lost');}});
+ return{adapter,calls,get uploads(){return uploads;}};
+}
+test('new publication base allows exact branch fast-forward, new PR3 and independent review/merge without inheriting merged PR2',async()=>{
+ const h=publicationHarness();const pushed=await h.adapter.push(publicationManifest,publicationBinding);assert.equal(h.uploads,1);assert.equal(pushed.remoteBase,publication);assert.equal(pushed.remoteBaseTree,publicationTree);
+ const created=await h.adapter.createPullRequest(publicationManifest,publicationBinding);assert.equal(created.pullRequestNumber,3);assert.equal(created.prMerged,false);
+ const reviewed=await h.adapter.recordIndependentReview(publicationManifest,publicationBinding,3);assert.equal(reviewed.reviewApproved,true);assert.equal(reviewed.remoteBaseTree,publicationTree);
+ const merged=await h.adapter.merge(publicationManifest,publicationBinding,3);assert.equal(merged.remoteCommit,commit);assert.equal(merged.remoteTree,tree);assert.equal(merged.remoteBase,publication);assert.equal(merged.remoteBaseTree,publicationTree);assert.equal(merged.pullRequestNumber,3);
+ assert.equal(h.calls.filter(c=>c.method==='POST'&&c.route.endsWith('/pulls')).length,1);assert.equal(h.calls.filter(c=>c.method==='PATCH').length,1);assert.equal(publicationBinding.baseCommit,base);
+});
+test('publication refuses changed main/tree, unrelated branch and mixed scope before any mutation',async()=>{
+ for(const options of [{main:'6'.repeat(40)},{mainTree:'6'.repeat(40)},{head:'6'.repeat(40)}]){const h=publicationHarness(options);await assert.rejects(h.adapter.push(publicationManifest,publicationBinding));assert.equal(h.uploads,0);assert(h.calls.every(c=>c.method==='GET'));}
+ const h=publicationHarness();await assert.rejects(h.adapter.push(publicationManifest,{...publicationBinding,baselineRestart:{}}),/scope_invalid/);assert.equal(h.calls.length,0);
+ await assert.rejects(publicationHarness().adapter.push(manifest,publicationBinding),/scope_invalid/);
+});
+test('only authenticated merged predecessor can be ignored as history; wrong ancestry refuses merge',async()=>{
+ for(const options of [{head:commit,historyMerged:false},{head:commit,historyCommit:'6'.repeat(40)}]){const h=publicationHarness(options);await assert.rejects(h.adapter.createPullRequest(publicationManifest,publicationBinding));assert(h.calls.every(c=>c.method==='GET'));}
+ const h=publicationHarness({head:commit,parents:[]});await h.adapter.createPullRequest(publicationManifest,publicationBinding);await assert.rejects(h.adapter.merge(publicationManifest,publicationBinding,3),/exact_fastforward_required/);assert.equal(h.calls.filter(c=>c.method==='PATCH').length,0);
+});
+test('lost publication push is recognized readonly before any retry and unchanged old branch is proven absent',async()=>{
+ const h=publicationHarness({losePush:true});await assert.rejects(h.adapter.push(publicationManifest,publicationBinding),e=>e.uncertain===true);const outcome=await h.adapter.reconcile(publicationManifest,publicationBinding,'push');assert.equal(outcome.status,'succeeded');assert.equal(outcome.evidence.remoteBaseTree,publicationTree);assert.equal(h.uploads,1);
+ const absent=publicationHarness();const r=await absent.adapter.reconcile(publicationManifest,publicationBinding,'push');assert.equal(r.status,'absent');assert.equal(r.evidence.remoteCommit,publication);assert.equal(r.evidence.remoteTree,publicationTree);assert.equal(absent.uploads,0);
+});
+test('lost publication merge reconciles exact candidate/main/PR and original publication tree readonly',async()=>{
+ const h=publicationHarness({loseMerge:true,head:commit});await h.adapter.createPullRequest(publicationManifest,publicationBinding);await assert.rejects(h.adapter.merge(publicationManifest,publicationBinding,3),e=>e.uncertain===true);const writes=h.calls.filter(c=>c.method!=='GET').length,r=await h.adapter.reconcile(publicationManifest,publicationBinding,'merge',3);assert.equal(r.status,'succeeded');assert.equal(r.evidence.mergedCommit,commit);assert.equal(r.evidence.remoteBaseTree,publicationTree);assert.equal(h.calls.filter(c=>c.method!=='GET').length,writes);
+});
 function harness({main=base,head=commit,privateRepo=true,commitParents=[{sha:base}],candidateTree=tree,ancestry,mutation=async()=>({status:200,body:{}})}={}) {
  const calls=[];
  const transport=async r=>{calls.push(r); if(r.method!=='GET')return mutation(r);

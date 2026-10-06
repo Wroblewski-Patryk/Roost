@@ -4,6 +4,20 @@ import {randomUUID} from 'node:crypto';
 import contract from './lib/agent-host-release-contract.cjs';
 import {fixture,hash,image} from './fixtures/release-compose-contract.cjs';
 
+test('publication Git base is exact grant-bound and independent from immutable runtime rollback baseline',()=>{
+ const f=fixture(),before=structuredClone({baseline:f.m.baseline,rollback:f.m.rollback,targets:f.m.deployment.targets});
+ const ids=['requestId','taskId','applicationId','hostId','releaseExecutionId','releaserAgentId','releaserCredentialId','reviewId'];
+ const body={...f.s,...Object.fromEntries(ids.map(k=>[k,randomUUID()])),credentialVersion:1,materialVersion:hash('1'),releaserRevision:'2026-10-04T12:00:00.000Z',expiresAt:'2026-10-04T13:00:00.000Z',manifestDigest:contract.releaseDigest(f.m),gitPublicationBase:{commit:'e'.repeat(40),tree:'f'.repeat(40)}};
+ assert.equal(contract.createReleaseSchema.safeParse(body).success,true);
+ assert.deepEqual(contract.releaseGitPublicationBase(body),body.gitPublicationBase);
+ assert.deepEqual(contract.releaseGitPublicationBase(f.s),{commit:f.s.baseCommit,tree:f.s.baseTree});
+ assert.deepEqual({baseline:f.m.baseline,rollback:f.m.rollback,targets:f.m.deployment.targets},before);
+ const altered={...body,gitPublicationBase:{...body.gitPublicationBase,tree:'1'.repeat(40)}};
+ assert.notEqual(contract.releaseDigest(body),contract.releaseDigest(altered));
+ for(const pub of [{commit:body.commit,tree:'f'.repeat(40)},{commit:'invalid',tree:'f'.repeat(40)},{commit:'e'.repeat(40),tree:'invalid'},{commit:'e'.repeat(40),tree:'f'.repeat(40),extra:true}])assert.equal(contract.createReleaseSchema.safeParse({...body,gitPublicationBase:pub}).success,false);
+ for(const extra of [{predecessor:{releaseId:randomUUID(),expectedVersion:hash('2')}},{baselineRestart:{releaseId:randomUUID(),expectedVersion:hash('2'),closureId:randomUUID(),consentDigest:hash('3')}},{publishedGitBasis:{}},{successorBasis:{}}])assert.equal(contract.createReleaseSchema.safeParse({...body,...extra}).success,false);
+});
+
 test('permanent Compose seals phase-specific config, immutable rollback and complete native service facts',()=>{
  const f=fixture();assert.equal(contract.manifestSchema.safeParse(f.m).success,true);
  assert.equal(contract.isComposeManifest(f.m),true);assert.equal(contract.isGitSetManifest(f.m),false);

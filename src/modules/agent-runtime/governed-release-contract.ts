@@ -3,6 +3,8 @@ import { z } from "zod";
 import { nativeBoundaryResultBlocked, object } from "./task-review-contract";
 // One wire validator is used by both the server and Windows broker.
 const shared = require(path.resolve(__dirname, "../../../scripts/lib/agent-host-release-contract.cjs"));
+export const gitPublicationBaseSchema = shared.gitPublicationBaseSchema as z.ZodType<any>;
+export const releaseGitPublicationBase: (snapshot:any)=>{commit:string;tree:string} = shared.releaseGitPublicationBase;
 export const createReleaseSchema = shared.createReleaseSchema as z.ZodType<any>;
 export const releaseManifestSchema = shared.manifestSchema as z.ZodType<any>;
 export const releaseIntentSchema = shared.intentSchema as z.ZodType<any>;
@@ -392,8 +394,8 @@ export function releaseIntentError(release: any, input: any, journal: any[]) {
   if((s.baselineRestart||s.publishedGitBasis)&&!restarted)return "release_restart_basis_invalid";
   if((s.predecessor||s.successorBasis)&&!successor)return "release_successor_basis_invalid";
   if(successor&&["push","pr","review","merge"].includes(input.operation))return "release_successor_git_effect_forbidden";
-  const merged=successor||successful("merge");
-  if(input.observed.baseCommit!==(merged?s.commit:s.baseCommit)||input.observed.baseTree!==(merged?s.candidateTree:s.baseTree))return "release_base_changed";
+  const merged=successor||successful("merge"),publicationBase=releaseGitPublicationBase(s);
+  if(input.observed.baseCommit!==(merged?s.commit:publicationBase.commit)||input.observed.baseTree!==(merged?s.candidateTree:publicationBase.tree))return "release_base_changed";
   const postError=releasePostObservationIntentError(s,input,journal);
   if(postError)return postError;
   if(releasePostObservationOperations.includes(input.operation))return null;
@@ -455,7 +457,7 @@ export function releaseOutcomeError(release: any, operation: any, input: any,jou
   if(retained&&operation.operation==="cleanup_resource"&&(!m.cleanup.ownedResourceIds.includes(operation.intent?.parameters?.resourceId)||m.cleanup.protectedResourceIds.includes(operation.intent?.parameters?.resourceId)))return "release_cleanup_scope_invalid";
   if(input.status==="reconciled"&&result==="absent") {
     if(!e.absenceVerified)return "release_absence_unproven";
-    if(["push","pr","review","merge"].includes(operation.operation))return e.remoteCommit===s.baseCommit&&e.remoteTree===s.baseTree?null:"release_absence_unproven";
+    if(["push","pr","review","merge"].includes(operation.operation))return e.remoteCommit===releaseGitPublicationBase(s).commit&&e.remoteTree===releaseGitPublicationBase(s).tree?null:"release_absence_unproven";
     if(operation.operation==="archive_repository")return e.repositoryArchived===false?null:"release_absence_unproven";
     if(operation.operation==="cleanup_local")return e.localAbsent===false?null:"release_absence_unproven";
     if(operation.operation==="cleanup_resource")return e.resourcePresent===true&&releaseDigest(e.resourceIds??[])===releaseDigest([operation.intent.parameters.resourceId])?null:"release_absence_unproven";
@@ -477,6 +479,8 @@ export function releaseOutcomeError(release: any, operation: any, input: any,jou
     if(e.deployedCommit!==expected.commit||e.imageDigest!==expected.imageDigest||e.configDigest!==expected.configDigest||e.schemaDigest!==expected.schemaDigest||e.healthy!==false||!e.healthDigest||e.dataDigest!==m.baseline.dataDigest)return "release_failure_not_attributed";
   }
   if(result!=="succeeded")return null;
+  if(s.gitPublicationBase&&["push","pr","review","merge"].includes(operation.operation)
+    &&(e.remoteBase!==s.gitPublicationBase.commit||e.remoteBaseTree!==s.gitPublicationBase.tree))return "release_git_publication_base_changed";
   if(["push","pr","review","merge"].includes(operation.operation)&&(e.remoteCommit!==s.commit||e.remoteTree!==s.candidateTree))return "release_remote_identity_mismatch";
   if(["pr","review","merge"].includes(operation.operation)&&(!e.pullRequestNumber||e.prHeadCommit!==s.commit))return "release_pr_identity_mismatch";
   if(operation.operation==="review"&&e.reviewApproved!==true)return "release_pr_review_missing";
