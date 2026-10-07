@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { verifiedCodeReviewerPriorAudit, codeReviewerPriorAuditReferenceSchema,
-  codeReviewerPriorAuditEvidenceSchema } from "./lib/agent-host-code-reviewer-prior-audit.mjs";
+  codeReviewerPriorAuditEvidenceSchema, qualifyPrimaryReadOnlyReviewMaterial,
+  primaryReadOnlyReviewMatches } from "./lib/agent-host-code-reviewer-prior-audit.mjs";
 
 const uuid = n => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const h = n => String(n).repeat(64), head = "a".repeat(40);
@@ -102,4 +103,50 @@ test("empty/oversized response and a modified transported result cannot pass the
   const e = structuredClone(qualify(fixture())); e.finalResponse += "changed";
   assert.equal(codeReviewerPriorAuditEvidenceSchema.safeParse(e).success, false);
   e.digest = "a".repeat(64); assert.equal(codeReviewerPriorAuditEvidenceSchema.safeParse(e).success, false);
+});
+
+function primaryFixture({ naive = true } = {}) {
+  const f = fixture(), p = f.prior, materialVersion = "c".repeat(64);
+  const inspection = { ...f.options.contract.nativeBoundary.inspectReadOnly, baselineCommit: head,
+    verifiedTaskId: p.taskId, verifiedExecutionId: p.id, verifiedEvidenceDigest: materialVersion };
+  const view = { task: { id: p.taskId, workspaceId: p.workspaceId }, materialVersion, approvalCommit: head, canReview: true, reason: null,
+    result: { executionId: p.id, taskId: p.taskId, applicationId: p.applicationId, contract: p.metadata.executionContract,
+      verification: p.verification, resultRevision: p.metadata.resultRevision, pin: p.metadata.readyContextPin,
+      completedAt: naive ? p.completedAt.slice(0, -1) : p.completedAt, attempt: p.attempt, checkpointVersion: p.checkpointVersion,
+      changedFiles: p.changedFiles, finalResponse: p.finalResponse },
+    executionChronology: { schemaVersion: "roost-task-review-execution-chronology-v1", executionId: p.id,
+      materialVersion, completedAt: p.completedAt } };
+  return { ...f, view: JSON.parse(JSON.stringify(view)), inspection };
+}
+function matchPrimary(f) {
+  const packet = verifiedCodeReviewerPriorAudit(f.prior, f.options), reviewed = qualifyPrimaryReadOnlyReviewMaterial(f.view, f.inspection, f.options.repositoryEvidence);
+  return primaryReadOnlyReviewMatches(reviewed, packet, { inspection: f.inspection, repositoryEvidence: f.options.repositoryEvidence,
+    identity: f.options.claimed, reviewerAgentId: f.options.contract.assignment.agentId });
+}
+test("primary SQL-naive completion uses exact authenticated UTC tuple while raw material/hash/native receipts stay unchanged", () => {
+  const f = primaryFixture(), raw = JSON.stringify(f.view.result), native = JSON.stringify(f.prior.verification), version = f.view.materialVersion;
+  const previousZone = process.env.TZ;
+  try {
+    process.env.TZ = "Europe/Berlin";
+    assert.notEqual(Date.parse(f.view.result.completedAt), Date.parse(f.view.executionChronology.completedAt));
+    assert.equal(matchPrimary(f), true);
+    assert.equal(JSON.stringify(f.view.result), raw); assert.equal(JSON.stringify(f.prior.verification), native);
+    assert.equal(f.view.materialVersion, version);
+  } finally { if (previousZone === undefined) delete process.env.TZ; else process.env.TZ = previousZone; }
+});
+test("primary naive completion refuses missing/wrong execution/material/UTC witnesses and invalid ISO/calendar/range", () => {
+  for (const mutation of [f => delete f.view.executionChronology, f => f.view.executionChronology.executionId = uuid(20),
+    f => f.view.executionChronology.materialVersion = h(1), f => f.view.executionChronology.completedAt = "2026-01-01T00:00:01.000Z",
+    f => f.view.executionChronology.schemaVersion = "untrusted_clock", f => f.view.executionChronology.authority = true,
+    f => f.view.result.completedAt = "2026-01-01 00:00:00.000", f => f.view.result.completedAt = "2026-01-01T00:00:00.0001",
+    f => { f.view.result.completedAt = "2026-02-30T00:00:00.000"; f.view.executionChronology.completedAt = "2026-03-02T00:00:00.000Z"; },
+    f => { f.view.result.completedAt = "2026-01-01T24:00:00.000"; f.view.executionChronology.completedAt = "2026-01-02T00:00:00.000Z"; },
+    f => { f.view.result.completedAt = "0000-01-01T00:00:00.000"; f.view.executionChronology.completedAt = "0000-01-01T00:00:00.000Z"; }]) {
+    const f = primaryFixture(); mutation(f); assert.throws(() => matchPrimary(f), /code_reviewer_prior_audit_invalid/);
+  }
+});
+test("already zoned native completion requires no witness and keeps exact native packet timestamp", () => {
+  const f = primaryFixture({ naive: false }); delete f.view.executionChronology;
+  assert.equal(matchPrimary(f), true);
+  assert.equal(f.view.result.completedAt, f.prior.completedAt);
 });

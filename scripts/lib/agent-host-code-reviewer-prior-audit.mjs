@@ -100,6 +100,23 @@ function sourceSelection(contract, ready) {
       (contract.context?.[key] ?? []).map(row => [row.id, row.revision])])), originalReady: originalReadySchema.parse(ready) });
 }
 
+const executionChronologySchema = z.object({ schemaVersion: z.literal("roost-task-review-execution-chronology-v1"),
+  executionId: id, materialVersion: hash, completedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/) }).strict();
+// JSONB serializes a timestamp-without-zone without Z; it is never a private
+// local-time clock. Only the authenticated API's actual database Date witness
+// can resolve that projection. SQL material and native timestamps stay intact.
+function primaryAuditCompletedAt(view) {
+  const raw = view?.result?.completedAt;
+  if (typeof raw === "string" && /(?:Z|[+-]\d{2}:\d{2})$/.test(raw)) return raw;
+  const match = typeof raw === "string" && raw.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d{1,3}))?$/);
+  if (!match || Number(raw.slice(0, 4)) < 1) invalid();
+  const witness = executionChronologySchema.parse(view.executionChronology), utc = `${match[1]}.${(match[2] ?? "").padEnd(3, "0")}Z`;
+  const instant = new Date(utc);
+  if (!Number.isFinite(instant.getTime()) || instant.toISOString() !== utc || witness.completedAt !== utc
+    || witness.executionId !== view.result.executionId || witness.materialVersion !== view.materialVersion) invalid();
+  return witness.completedAt;
+}
+
 /** A normal pinned-TLS review view supplies current material, while every native
  * field and original Ready remains the immutable auditor result. No coding
  * receipt, synthetic local commit or approval is introduced by this projection. */
@@ -130,7 +147,7 @@ export function qualifyPrimaryReadOnlyReviewMaterial(view, inspection, repositor
     const body = evidenceBodySchema.parse({ schemaVersion: "roost-code-reviewer-prior-audit-v1",
       identity: { executionId: r.executionId, taskId: r.taskId, workspaceId: view.task.workspaceId,
         applicationId: r.applicationId, hostId: resultRevision.hostId, auditorAgentId: c.assignment.agentId },
-      completedAt: r.completedAt, finalResponse: r.finalResponse, readOnlyAudit, managedAdmission, ownedTreeReceipt,
+      completedAt: primaryAuditCompletedAt(view), finalResponse: r.finalResponse, readOnlyAudit, managedAdmission, ownedTreeReceipt,
       resultRevision, sourceSelection: sourceSelection(c, r.pin), authority: false });
     const packet = codeReviewerPriorAuditEvidenceSchema.parse({ ...body, digest: digest(body) });
     return primaryReadOnlyReviewedSchema.parse({ resultKind: "readonly-audit", verifiedTaskId: inspection.verifiedTaskId,

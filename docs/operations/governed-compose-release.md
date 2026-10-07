@@ -708,3 +708,12 @@ after one hidden launch. Only an observed healthy daemon permits completion;
 timeout retains the uncertain operation receipt for read-back reconciliation.
 This handles the observed socket recovery startup race, without guaranteeing
 that Windows socket faults cannot recur or resetting Docker data.
+
+Reviewing an auditor result uses the existing primary read-only review profile:
+pin its execution and original read-only receipt digest in `priorAudit`, with
+equal baseline and reviewed commits. Coding test/local-commit receipts cannot
+stand in for this evidence. The authenticated review DTO returns the locked
+task's workspace and a database UTC chronology witness bound to execution and
+material version. A legacy SQL timestamp without a timezone must match that
+exact witness and calendar instant before entering the detached audit packet.
+Keep the original SQL material, CAS hashes and native timestamps unchanged.
