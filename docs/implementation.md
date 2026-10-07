@@ -196,14 +196,14 @@ PR3/c643 merged. Both queues failed before build; baseline healthy.
 Pkg9e7/audit34b: 19 CHANGES_REQUIRED, native closed; review19ab approved.
 Grant f88: candidate queue failed after recreating five services; migration
 import lacks greenlet. App unavailable; schema/data parity verified.
-Roost `23d12063` deployed; compatible migration verified.
+Roost recovery deployed; compatible migration verified.
 FAILED closure `6a5bc353`: fresh reads, seven native children closed.
 14 lineage/66 negative SQL probes rolled back.
 Fresh encrypted backup/isolated restore verified.
 Manual cleanup removed rollback images; anchors verified, app down.
 Lossless context fix verified; native audit closed: CHANGES_REQUIRED.
 Verifier `5dd327dc` closed; coder `eccd0cfb`/`d73e6234` signed-closed.
-Native RED/GREEN and review `ba3f0616` pass; recovery pending.
+Linux build/restore pass; import recovery pending.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,
