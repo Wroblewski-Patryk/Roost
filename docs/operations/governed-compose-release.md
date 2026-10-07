@@ -587,3 +587,26 @@ fingerprint algorithm or baseline. A separate administrative-catalog read can
 qualify only the exact previously diagnosed PostgreSQL warning, with fixed
 command/SQL, successful native closure and validated fence JSON; application
 fingerprints and every other warning retain strict refusal.
+
+### Retained import after a closed refusal
+
+The actual successor import `6b36d3bc` completed 7 October at 02:23 UTC.
+Remote image identity, full Config and ordered RootFS layers match the original
+Linux build; Docker Size is informational across storage implementations.
+Its retention anchor is stopped, mountless, network-none and not Coolify-managed.
+The application and cadences remain held; import is not deployment or health.
+
+Read slow protected observations before the final inventory and proxy fence.
+Combine immediate destination preflight with the final image/anchor absence;
+validate preflight first and absence last. Preserve the existing freshness
+limits and check them again before the owned effect resumes. Do not renew old
+observation clocks or retry a spent import after an uncertain result.
+
+Private custody and every consumer bind the complete successful native history,
+the failed native terminal and the prior refusal's nested physical sources.
+Reinspect recorded process instances by creation identity; embedded proxy
+receipts are checked separately from physical Job records. Split only the
+bounded inspection batches, retaining one complete signed source union.
+Private HMAC integrity is distinct from normal owner evidence and server OS
+attestation. Compatible package installation, independent scope review and
+the normal exact release grant remain required before application recovery.

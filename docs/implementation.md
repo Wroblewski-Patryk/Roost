@@ -203,7 +203,7 @@ Fresh encrypted backup/isolated restore verified.
 Manual cleanup removed rollback images; anchors verified, app down.
 Lossless context fix verified; native audit closed: CHANGES_REQUIRED.
 Verifier `5dd327dc` closed; coder `eccd0cfb`/`d73e6234` signed-closed.
-Linux build/restore pass; import recovery pending.
+Linux build/restore and retained import pass; release pending.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,
