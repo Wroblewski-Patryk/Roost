@@ -59,6 +59,15 @@ it. Restart never rotates its lease, resumes, spawns, retries or claims new work
 The server preserves the dedicated context-change diagnosis when the host reports
 blocked recovery. See the [active stop contract](execution-packet-contract.md#active-work-after-accepted-context-changes-rf-ctx-006).
 
+An invalidated queue may be cancelled through the normal authorized endpoint
+without a native stop acknowledgement only when it has attempt 0 and no host,
+start, heartbeat, thread, lease, completion or stop record. The database preserves
+the entire row except cancellation status and cancel-request/completion/update
+timestamps, including the original context fence and every future column. This
+closes unclaimed work; it grants no recovery or execution authority. Revalidate
+Ready and create a new execution explicitly. Any started or assigned attempt
+still follows the native stop and acknowledgement path below.
+
 After confirmed process-tree termination, the host's idempotent `context-stopped`
 report retains the API lease and returns the last confirmed checkpoint. Only its
 successful acknowledgement allows synchronization of a rejected local checkpoint
