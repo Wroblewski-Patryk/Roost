@@ -127,7 +127,16 @@ function sanitize(input, { secrets = [], mode = "diagnostic" } = {}) {
       if (descriptors.type?.value === "Buffer" && Array.isArray(descriptors.data?.value)) { fatal = true; finding("unsupported_format", location); seen.delete(value); return MARKER; }
       if (mode === "required" && descriptors.redacted?.value === true && descriptors.policy?.value === POLICY) { finding("previously_redacted", location); fatal = true; }
       const mime = descriptors.mimeType?.value ?? descriptors.contentType?.value;
-      if (!mime && /^(?:attachments?|files?)$/i.test(parent || field) && ["content", "data", "base64", "bytes"].some(key => descriptors[key])) { fatal = true; finding("unsupported_format", location); seen.delete(value); return MARKER; }
+      // Canonical digest references contain a byte count, not attachment bytes.
+      // Recognize only the exact three data fields; every value still passes
+      // the ordinary recursive secret/PII scan below, including encoded hashes.
+      const referenceFields = Reflect.ownKeys(descriptors);
+      const digestReference = !Array.isArray(value) && referenceFields.length === 3
+        && ["file", "sha256", "bytes"].every(key => Object.hasOwn(descriptors[key] ?? {}, "value"))
+        && typeof descriptors.file.value === "string" && descriptors.file.value.length > 0
+        && typeof descriptors.sha256.value === "string" && /^[a-f0-9]{64}$/.test(descriptors.sha256.value)
+        && Number.isSafeInteger(descriptors.bytes.value) && descriptors.bytes.value >= 0;
+      if (!mime && !digestReference && /^(?:attachments?|files?)$/i.test(parent || field) && ["content", "data", "base64", "bytes"].some(key => descriptors[key])) { fatal = true; finding("unsupported_format", location); seen.delete(value); return MARKER; }
       if (mime && typeof mime === "string" && !/^(?:text\/(?:plain|markdown|csv)|application\/json)(?:;|$)/i.test(mime)) { fatal = true; finding("unsupported_format", location); seen.delete(value); return MARKER; }
       let index = 0;
       for (const [key, descriptor] of Object.entries(descriptors)) {

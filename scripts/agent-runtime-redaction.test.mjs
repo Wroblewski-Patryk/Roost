@@ -140,6 +140,29 @@ test("bounded source files retain an explicit text MIME type in required provide
       && error.details?.findings?.some(finding => finding.category === "unsupported_format")
       && !JSON.stringify(error.details).includes(file.content));
 });
+test("exact file digest references are metadata while malformed references and hidden content fail closed", () => {
+  const reference = { file: "C:/fixture/release-policy.json", sha256: "f".repeat(64), bytes: 321 };
+  for (const input of [{ files: { "release-policy.json": reference } }, { attachments: [reference] }]) {
+    const result = guardHostContent(input, "required");
+    assert.equal(result.blocked, false);
+    assert.deepEqual(result.value, input);
+  }
+  const hidden = { ...reference };
+  Object.defineProperty(hidden, "content", { value: "untyped attachment", enumerable: false });
+  let getterCalled = false;
+  const getter = { ...reference };
+  Object.defineProperty(getter, "file", { get() { getterCalled = true; return reference.file; } });
+  for (const invalid of [{ ...reference, bytes: "binary-content" }, { ...reference, bytes: -1 },
+    { ...reference, bytes: 1.5 }, { ...reference, sha256: "invalid" }, { ...reference, file: "" },
+    { ...reference, content: "untyped attachment" }, hidden, getter]) {
+    assert.equal(policy.sanitize({ files: [invalid] }, { mode: "required" }).blocked, true);
+  }
+  assert.equal(getterCalled, false);
+  for (const sensitive of [{ ...reference, file: known },
+    { ...reference, sha256: Buffer.from("api_key=fictional-value".padEnd(32)).toString("hex") }]) {
+    assert.equal(policy.sanitize({ files: [sensitive] }, { mode: "required", secrets: [known] }).blocked, true);
+  }
+});
 test("host transport preserves only root authentication and bounds UTF-8 streams without a fallback", async () => {
   const leaseToken = "00000000-0000-4000-8000-000000000019";
   const result = hostTransport(JSON.stringify({ leaseToken, payload: { secret: known } }));

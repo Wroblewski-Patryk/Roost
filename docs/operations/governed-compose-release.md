@@ -610,3 +610,12 @@ bounded inspection batches, retaining one complete signed source union.
 Private HMAC integrity is distinct from normal owner evidence and server OS
 attestation. Compatible package installation, independent scope review and
 the normal exact release grant remain required before application recovery.
+
+Digest-only file references use exactly three data fields: nonempty `file`,
+lowercase SHA-256 `sha256` and a nonnegative safe-integer byte count `bytes`.
+They are metadata, not attachment payloads. The ordinary recursive secret and
+PII scan still examines every field and encoded digest. Extra fields, getters,
+invalid counts and untyped content do not receive this classification; actual
+source attachments continue to require a supported explicit MIME type.
+The first private installation refusal remains preserved; qualifying a fresh
+private installation does not repeat the completed image import.
