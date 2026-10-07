@@ -671,3 +671,11 @@ for Windows zero-path/positive-fd; refuse every other identity difference.
 The owned temporary-file replacement, readback and cleanup are tested locally.
 Preserve a failed archive namespace and its unchanged original; a corrected
 archive uses a new explicit operation and source selection.
+
+Canonical procedure composition reports `composed` with a seal and empty missing
+and conflict lists. Validate exact scope, current risk, selected publications,
+versions, source hashes, component and repository-read tools before recording
+a procedure gate. Task readiness has its own `ready` state. Application reads
+pass through the normal projection once; a private capture can persist the safe
+projection while returning raw data to the existing normal collector. Preserve
+the raw digest and every authoritative field.
