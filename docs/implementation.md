@@ -199,11 +199,11 @@ import lacks greenlet. App unavailable; schema/data parity verified.
 Roost recovery deployed; compatible migration verified.
 FAILED closure `6a5bc353`: fresh reads, seven native children closed.
 14 lineage/66 negative SQL probes rolled back.
-Prior backup/restore verified; now expired.
+Fresh backup/restore verified; new scope pending.
 Manual cleanup removed rollback images; anchors verified, app down.
 Context fix verified; prior native audit: CHANGES_REQUIRED.
 Verifier `5dd327dc` closed; coder `eccd0cfb`/`d73e6234` signed-closed.
-Build/import pass; scope audit passes; fresh backup/review pending.
+Build/import pass; original scope passes; new scope/review pending.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,
