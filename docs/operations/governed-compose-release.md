@@ -619,3 +619,18 @@ invalid counts and untyped content do not receive this classification; actual
 source attachments continue to require a supported explicit MIME type.
 The first private installation refusal remains preserved; qualifying a fresh
 private installation does not repeat the completed image import.
+
+### Decision procedure composition compatibility
+
+The accepted `decision_supersede` operation must be recognized by the API
+and SQL contract, selection, admission and source-reference functions. Migration
+`20261007025000_decision_procedure_composition` adds it only to five existing
+operation lists. The later decision-epoch wrapper, table constraints, source CAS,
+owner publication, independent evidence and active-execution guards remain intact.
+Existing scopes without a decision selection retain their source digests.
+
+A rejected publication is not retried from the installer journal. Preserve the
+original intent and 409 receipt, establish absence by authoritative request and
+body reads, verify the deployed migration and current catalogue version, then
+explicitly recover that exact request once. An uncertain recovery requires
+readback rather than another dispatch.
