@@ -1,4 +1,5 @@
 import { inspectReady, readyTransaction } from "../agent-runtime/task-execution-readiness";
+import { retryContextRead } from "../agent-runtime/context-read-retry";
 import { Router } from "express";
 import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
@@ -348,7 +349,7 @@ companyIntelligenceRouter.get("/tasks/:id/agent-context", asyncHandler(async (re
   const execution = executionId ? await prisma.agentExecution.findFirst({ where: { id: executionId, taskId, workspaceId } }) : null;
   if (executionId && !execution) return res.status(404).json({ error: "agent_execution_not_found" });
   if (execution && ["queued", "claimed", "running"].includes(execution.status)) {
-    const ready = await readyTransaction(tx => inspectReady(tx, workspaceId, taskId, execution));
+    const ready = await retryContextRead(() => readyTransaction(tx => inspectReady(tx, workspaceId, taskId, execution)));
     if ("error" in ready && ready.error) return res.status(409).json({ error: ready.error });
     return res.json({ data: (ready as { taskContext: unknown }).taskContext });
   }

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { setTimeout as pause } from "node:timers/promises";
+import { readFileSync } from "node:fs";
 import { retryContextRead } from "../modules/agent-runtime/context-read-retry";
 
 test("an aborted read gives competing work time to finish before its fresh snapshot", async () => {
@@ -45,4 +46,25 @@ test("uncertain transport errors are propagated without another invocation", asy
   const uncertain = new Error("transport_uncertain");
   await assert.rejects(retryContextRead(async () => { attempts++; throw uncertain; }), error => error === uncertain);
   assert.equal(attempts, 1);
+});
+
+test("transaction codes alone do not prove rollback and never trigger a read retry", async () => {
+  for (const value of [{ error: "P2034" }, { error: "40001" }, { error: "40P01" }, { error: "task_ready_context_conflict_unknown" }]) {
+    let attempts = 0;
+    assert.equal(await retryContextRead(async () => { attempts++; return value; }), value);
+    assert.equal(attempts, 1);
+  }
+});
+
+test("active execution context GET uses the same bounded aborted-read wrapper as Ready", () => {
+  const source = readFileSync("src/modules/company-intelligence/company-intelligence.routes.ts", "utf8");
+  const route = source.slice(source.indexOf('companyIntelligenceRouter.get("/tasks/:id/agent-context"'));
+  assert.match(source, /import \{ retryContextRead \} from "\.\.\/agent-runtime\/context-read-retry"/);
+  assert.match(route, /if \(execution && \["queued", "claimed", "running"\]\.includes\(execution\.status\)\)/);
+  assert.match(route, /retryContextRead\(\(\) => readyTransaction\(tx => inspectReady\(tx, workspaceId, taskId, execution\)\)\)/);
+  assert.match(route, /where: \{ id: executionId, taskId, workspaceId \}/);
+  assert.match(route, /if \("error" in ready && ready\.error\) return res\.status\(409\)\.json\(\{ error: ready\.error \}\)/);
+  assert.match(route, /const context = await loadTaskAgentContext\(workspaceId, taskId, execution\)/);
+  assert.equal((route.match(/retryContextRead\(/g) ?? []).length, 1);
+  assert.ok(!/\.post\(|submitReady\(|updateMany\(|\.update\(/.test(route));
 });

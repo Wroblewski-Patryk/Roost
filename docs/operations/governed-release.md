@@ -1060,3 +1060,10 @@ This is a Windows Worker/provider update with no database migration. Close and
 restore an active attempt before updating it, then collect and measure a fresh
 input. Preserve any earlier finding caused by the ambiguous field as history;
 only a new real audit and independent decision can qualify the corrected case.
+
+Active execution context GETs use the same bounded `retryContextRead` helper as
+Ready reads. It repeats only the explicit rolled-back
+`task_ready_context_conflict` result, at most three reads with the existing
+100/250 ms delays. Other errors and uncertain transport failures propagate;
+commands are never retried by this helper. Source fencing, serializable
+transactions, permissions and current context pins remain enforced.
