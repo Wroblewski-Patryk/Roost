@@ -1,6 +1,6 @@
 import { nativeBoundaryRules } from "./agent-host-native-authority.mjs";
 import { sealNativeToolBoundary, assertNativeToolBoundary, abandonNativeToolBoundary } from "./agent-host-hermes-native-boundary.mjs";
-import { sealReadOnlyBoundary, assertReadOnlyBoundary, abortReadOnlyBoundary } from "./agent-host-readonly-boundary.mjs";
+import { sealReadOnlyBoundary, assertReadOnlyBoundary, abortReadOnlyBoundary, projectReadOnlyRepositoryIdentityDomains } from "./agent-host-readonly-boundary.mjs";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import { executionContractSchema, validateExecutionPacket } from "./agent-host-execution-packet.mjs";
@@ -32,6 +32,14 @@ const documentationIndexProjectionSchema = z.object({ schemaVersion: z.literal("
   selectedCount: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   omittedCount: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER), originalCanonicalDigest: hash }).strict();
 const evidence = (origin, schema = record) => z.object({ provenance: z.literal(origin), trust: z.literal("untrusted_evidence"), value: schema }).strict();
+const repositoryIdentityDomainsSchema = z.object({ schemaVersion: z.literal("roost-readonly-repository-identity-domains-v1"),
+  commitOid: z.string().regex(/^[a-f0-9]{40}$/), nativeSnapshotSha256: hash,
+  nativeSnapshotKind: z.literal("bounded_physical_native_repository_footprint"),
+  gitTreeObservation: z.enum(["observed_from_same_bounded_collection", "not_observed_in_this_receipt"]),
+  gitTreeOid: z.string().regex(/^[a-f0-9]{40}$/).optional() }).strict().superRefine((value, context) => {
+  if ((value.gitTreeObservation === "observed_from_same_bounded_collection") !== (value.gitTreeOid !== undefined))
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["gitTreeOid"], message: "git_tree_observation_invalid" });
+});
 // Runtime schema is also the type source; no parallel API context/compiler model.
 export const providerInputSchema = z.object({
   schemaVersion: z.literal(providerInputVersion),
@@ -63,6 +71,7 @@ export const providerInputSchema = z.object({
       finalResponse: z.string().min(1).max(10000), digest: hash
     }).strict()).optional(),
     codeReviewerPriorAudit: evidence("worker.verified_code_reviewer_prior_audit", codeReviewerPriorAuditEvidenceSchema).optional(),
+    repositoryIdentityDomains: evidence("worker.native_snapshot_and_bounded_git_identity", repositoryIdentityDomainsSchema).optional(),
     repositoryInspection: evidence("worker.bounded_repository_read", z.object({
       schemaVersion: z.literal("roost-readonly-repository-evidence-v1"), head: z.string().regex(/^[a-f0-9]{40}$/), branch: z.string().min(1),
       files: z.array(z.union([
@@ -84,6 +93,9 @@ export const providerInputSchema = z.object({
   startupTools: z.tuple([]),
   seal: hash
 }).strict().superRefine((input, context) => {
+  const domains = input.evidence.repositoryIdentityDomains?.value, repository = input.evidence.repositoryInspection?.value;
+  if (domains && (!repository || domains.commitOid !== repository.head || domains.nativeSnapshotSha256 !== repository.tree))
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["evidence", "repositoryIdentityDomains"], message: "repository_identity_domains_binding_invalid" });
   try { assertProviderSharedAudit(input); }
   catch { context.addIssue({ code: z.ZodIssueCode.custom, path: ["evidence", "ownerInstruction"], message: "provider_shared_audit_invalid" }); }
   const auditReference = input.contract.nativeBoundary?.inspectReadOnly?.kind === "code-reviewer"
@@ -237,7 +249,8 @@ function projection(fresh, claimed, repositoryEvidence, priorAudit, codeReviewer
       ] : []),
       ...(packet.contract.nativeBoundary?.profile === "inspect-readonly" ? [
         "Audit evidence only; no native tools or shell/file/process/Docker/Git/network effects.",
-        "Assess scope/requirements/cited audit independently; report discrepancies."
+        "Assess scope/requirements/cited audit independently; report discrepancies.",
+        "Repository identity domains are distinct: repositoryInspection.value.tree is the SHA256 bounded physical native footprint used for unchanged-state checks, NOT a Git tree object OID. repositoryIdentityDomains.value.gitTreeOid, when actually observed, is the 40-hex Git tree object for commitOid. Do not compare these differently typed hashes for equality or infer a missing Git OID from a legacy receipt; assess evidence gaps independently."
       ] : []),
       ...(packet.contract.nativeBoundary?.inspectReadOnly?.kind === "code-reviewer" ? [
         ...(isPrimaryReadOnlyReview(packet.contract.nativeBoundary.inspectReadOnly) ? [
@@ -270,7 +283,8 @@ function projection(fresh, claimed, repositoryEvidence, priorAudit, codeReviewer
       dependencies: wrap("taskContext.dependencies.contract_refs", refs("dependencies")), ownerInstruction: wrap("claimed.prompt.ready_approved", claimed.prompt ?? null),
       ...(priorAudit ? { priorAudit: wrap("worker.verified_prior_readonly_audit", priorAudit) } : {}),
       ...(codeReviewerPriorAudit ? { codeReviewerPriorAudit: wrap("worker.verified_code_reviewer_prior_audit", codeReviewerPriorAudit) } : {}),
-      ...(repositoryEvidence ? { repositoryInspection: wrap("worker.bounded_repository_read", repositoryEvidence) } : {})
+      ...(repositoryEvidence ? { repositoryInspection: wrap("worker.bounded_repository_read", repositoryEvidence),
+        repositoryIdentityDomains: wrap("worker.native_snapshot_and_bounded_git_identity", projectReadOnlyRepositoryIdentityDomains(repositoryEvidence)) } : {})
     }, startupTools: []
   });
 }

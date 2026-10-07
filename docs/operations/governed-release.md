@@ -1041,3 +1041,22 @@ expiry and are revoked. This does not grant Worker lifecycle or release authorit
 The new native audit admission is in progress; current code recertification and
 separate exact owner release consent remain required before deployment. Preserve
 the prior signed audits and their `CHANGES_REQUIRED` findings as dated evidence.
+## Readonly repository identity domains
+
+The Windows provider's `repositoryInspection.value.tree` is the SHA256 of its
+bounded physical repository footprint. It proves an unchanged native snapshot;
+it is not a Git tree object OID. The original receipt fields and digest retain
+their meaning.
+
+The additive model evidence `repositoryIdentityDomains` labels that footprint
+as `nativeSnapshotSha256`. A fresh collector also reads the actual Git tree OID
+before and after the bounded collection and exposes it as `gitTreeOid`, bound
+to the same commit, branch, footprint and receipt. A serialized historical
+receipt has `gitTreeObservation: not_observed_in_this_receipt`; no Git OID is
+inferred or added to historical evidence. Different hash domains are assessed
+separately. These labels grant no release authority and prescribe no verdict.
+
+This is a Windows Worker/provider update with no database migration. Close and
+restore an active attempt before updating it, then collect and measure a fresh
+input. Preserve any earlier finding caused by the ambiguous field as history;
+only a new real audit and independent decision can qualify the corrected case.

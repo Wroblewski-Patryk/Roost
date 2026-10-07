@@ -13,7 +13,7 @@ import { codeReviewReferenceMatches } from "./agent-host-code-reviewer.mjs";
 import { collectQualifiedCrlfReviewDiff } from "./agent-host-review-crlf-diff.mjs";
 import { isPrimaryReadOnlyReview, qualifyPrimaryReadOnlyReviewMaterial } from "./agent-host-code-reviewer-prior-audit.mjs";
 
-const sealed = new WeakMap(), receipts = new WeakMap();
+const sealed = new WeakMap(), receipts = new WeakMap(), observedRepositoryIdentities = new WeakMap();
 const hex = value => createHash("sha256").update(value).digest("hex");
 const fail = (reason = "unproven") => { throw Object.assign(new Error("readonly_boundary_unproven"), { protocolAdmission: true,
   retryable: false, details: { reason: /^[a-z][a-z0-9_]{2,80}$/.test(reason) ? reason : "unproven" }, publicMessage: "Read-only inspection changed or cannot be proven; reconcile before another attempt." }); };
@@ -159,12 +159,29 @@ function assertFragmentProvenance(evidence,root){
       ||new TextDecoder("utf-8",{fatal:true,ignoreBOM:true}).decode(bytes)!==entry.content)fail("read_fragment_source_changed");
   }
 }
+// Model-only identity labels. The original native tree/digest stay unchanged.
+// A serialized legacy receipt cannot acquire an unobserved Git object identity.
+export function projectReadOnlyRepositoryIdentityDomains(evidence) {
+  if (evidence?.schemaVersion !== "roost-readonly-repository-evidence-v1"
+      || !/^[a-f0-9]{64}$/.test(evidence.tree ?? "") || !/^[a-f0-9]{40}$/.test(evidence.head ?? "")) return null;
+  const observed = observedRepositoryIdentities.get(evidence);
+  if (observed && (observed.nativeSnapshotSha256 !== evidence.tree || observed.commitOid !== evidence.head
+      || observed.branch !== evidence.branch || observed.evidenceDigest !== evidence.digest)) fail("repository_identity_changed");
+  return frozen({ schemaVersion: "roost-readonly-repository-identity-domains-v1", commitOid: evidence.head,
+    nativeSnapshotSha256: evidence.tree, nativeSnapshotKind: "bounded_physical_native_repository_footprint",
+    gitTreeObservation: observed ? "observed_from_same_bounded_collection" : "not_observed_in_this_receipt",
+    ...(observed ? { gitTreeOid: observed.gitTreeOid } : {}) });
+}
+
 export function collectReadOnlyRepositoryEvidence({ repositoryPath, expected, paths = [], fragments = [], secrets = [], reviewMaterial = null, review = null }) {
   let stage = "repository_root_unavailable";
   try {
     assertSelections(paths,fragments);
     const root = realpathSync.native(repositoryPath), pre = state(root, expected);
     if (pre.footprint.dirty.length) fail("repository_dirty");
+    stage = "repository_git_tree_unavailable";
+    const gitTreeOid = git(root, ["rev-parse", expected.head + "^{tree}"]);
+    if (!/^[a-f0-9]{40}$/.test(gitTreeOid)) fail("repository_git_tree_invalid");
     const files = []; let total = 0;
     for (const relative of paths) {
       stage = "read_file_observation_unavailable";
@@ -204,6 +221,8 @@ export function collectReadOnlyRepositoryEvidence({ repositoryPath, expected, pa
     if (pre.footprint.digest !== post.footprint.digest) fail("repository_changed");
     if (pre.processDigest !== post.processDigest) fail("process_changed");
     if (pre.dockerDigest !== post.dockerDigest) fail("docker_changed");
+    stage = "repository_git_tree_unavailable";
+    if (git(root, ["rev-parse", expected.head + "^{tree}"]) !== gitTreeOid) fail("repository_git_tree_changed");
     // The full source is read only for provenance and never projected. Recheck
     // it after the paired observations, including unselected source lines.
     for(const [file,source]of fragmentSources){
@@ -253,7 +272,10 @@ export function collectReadOnlyRepositoryEvidence({ repositoryPath, expected, pa
     const evidence = { schemaVersion: "roost-readonly-repository-evidence-v1", head: expected.head,
       branch: expected.branch, files, tree: pre.footprint.digest, processDigest: pre.processDigest, dockerDigest: pre.dockerDigest,
       ...(reviewed ? { reviewed } : {}) };
-    return frozen({ ...evidence, digest: nativeDigest(evidence) });
+    const result = frozen({ ...evidence, digest: nativeDigest(evidence) });
+    observedRepositoryIdentities.set(result, frozen({ commitOid: result.head, branch: result.branch,
+      nativeSnapshotSha256: result.tree, gitTreeOid, evidenceDigest: result.digest }));
+    return result;
   } catch (error) { preserveBoundaryFailure(error, stage); }
 }
 
