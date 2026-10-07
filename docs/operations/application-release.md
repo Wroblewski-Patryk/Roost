@@ -1668,5 +1668,8 @@ release has a terminal status. More than fifty matching release identities
 refuse with `release_catalog_truncated`; a partial list cannot prove quiescence.
 Owner and exact agent/credential/version read authority remain enforced.
 The default full evidence response is unchanged. Root focused summary,
-baseline, reconciliation and context-read tests pass 28 cases. Deployment and
-the actual quiescence read are pending; this is not application release proof.
+baseline, reconciliation and context-read tests pass 28 cases. Roost `d85826f9`
+is deployed through `wbva39qo4z05727nt3m9lo33`; health/build-info return 200
+with that exact commit. The normal scoped read returns eight closed failures
+and zero unresolved, uncertain or unknown outcomes. No active executions were
+present. This is infrastructure recovery evidence, not application release proof.
