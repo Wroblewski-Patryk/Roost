@@ -634,3 +634,17 @@ original intent and 409 receipt, establish absence by authoritative request and
 body reads, verify the deployed migration and current catalogue version, then
 explicitly recover that exact request once. An uncertain recovery requires
 readback rather than another dispatch.
+
+Final protected measurements retain their existing freshness limits. Measure
+slow image availability and public health before the second database-fence and
+fingerprint reads, then inspect final runtime inventory and ingress. The actual
+ordered read closed all twenty read-only Jobs and qualified the same protected
+entry; the earlier 62.7-second fence refusal remains recorded. Neither read
+imports an image, changes ingress or authorizes deployment.
+
+Risk history is cursor-paged. A truncated first page is not a complete history;
+consume each actual cursor under stable authority and preserve every immutable
+row before constructing the shared assessment. A refused admission scope with
+no current risk requires authoritative scope/request absence before closing its
+local intent. Obtain current risk and a new source version before another scope
+request; never replay the rejected request from an uncertain journal.
