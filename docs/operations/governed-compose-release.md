@@ -679,3 +679,32 @@ a procedure gate. Task readiness has its own `ready` state. Application reads
 pass through the normal projection once; a private capture can persist the safe
 projection while returning raw data to the existing normal collector. Preserve
 the raw digest and every authoritative field.
+
+Include every active mandatory application/capability procedure reference from
+the actual operating model and eligible task catalogue in the execution
+contract. Selected base/extension composition remains separately bound; adding
+an existing verification reference changes context, not tools or permissions.
+Replace preparation and accepted-context references coherently, preserve their
+original source/acceptance history and freeze the new provenance references.
+
+For the managed read-only runtime, qualify the immutable accepted owner body,
+exact task/application/installation/model selection, absence of an accepted
+superseder and current task decision authority. Generic governance preview
+currentness tracks impact risk/scope IDs separately. The canonical managed
+issuer and task authority remain the authorization source; private helpers
+must verify those actual records without rewriting preview flags or acceptance
+clocks. Release grants retain their own exact-commit and basis requirements.
+
+Keep a completed audit's native closure separate from its semantic verdict.
+Archive the exact signed admission pair only after lease release and verified
+absence of its recorded processes. A malformed result can be closed safely
+without becoming accepted evidence. Use a canonical Windows directory without
+a trailing separator when invoking the physical identity reader; do not relax
+its path, reparse, hardlink or signature checks.
+
+Docker Desktop startup can transiently report unavailable or unproven status.
+The local runtime guard polls within its existing 60-second startup deadline
+after one hidden launch. Only an observed healthy daemon permits completion;
+timeout retains the uncertain operation receipt for read-back reconciliation.
+This handles the observed socket recovery startup race, without guaranteeing
+that Windows socket faults cannot recur or resetting Docker data.

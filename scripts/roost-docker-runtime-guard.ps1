@@ -111,6 +111,24 @@ function Get-DockerDaemonState([int]$TimeoutMilliseconds = 3000) {
         $process.Dispose()
     }
 }
+function Wait-DockerDaemonHealthy(
+    $Clock = [Diagnostics.Stopwatch]::StartNew(),
+    [scriptblock]$Probe = { param($Milliseconds) Get-DockerDaemonState $Milliseconds },
+    [scriptblock]$Pause = { param($Milliseconds) Start-Sleep -Milliseconds $Milliseconds }
+) {
+    # Startup can make a read-only probe temporarily unavailable or unproven.
+    # This wait never starts Docker again and never treats either as healthy.
+    while ($Clock.ElapsedMilliseconds -lt 60000) {
+        $remaining = 60000 - [int]$Clock.ElapsedMilliseconds
+        if ($remaining -le 0) { break }
+        $status = & $Probe ([Math]::Min(3000, $remaining))
+        Assert-Guard ($status -in @('healthy', 'unavailable', 'unproven')) 'daemon_probe_status'
+        if ($status -eq 'healthy') { return ($Clock.ElapsedMilliseconds -le 60000) }
+        $remaining = 60000 - [int]$Clock.ElapsedMilliseconds
+        if ($remaining -gt 0) { & $Pause ([Math]::Min(250, $remaining)) }
+    }
+    return $false
+}
 function Read-GuardParent([string]$Target) {
     Assert-PlainAncestors ([IO.Path]::GetDirectoryName($Target))
     $exists = Test-Path -LiteralPath $Target
@@ -187,12 +205,7 @@ function Invoke-DockerRuntimeGuard {
             Assert-Guard (Test-Path -LiteralPath $desktop -PathType Leaf) 'desktop_executable_missing'
             Write-GuardReceipt (Join-Path $paths.Receipts ($id + '-start-intent.json')) @{ operationId = $id; phase = 'normal_desktop_start_intent' }
             Start-Process -FilePath $desktop -WindowStyle Hidden | Out-Null
-            $clock = [Diagnostics.Stopwatch]::StartNew(); $ready = $false
-            while ($clock.ElapsedMilliseconds -lt 60000) {
-                $status = Get-DockerDaemonState ([Math]::Min(3000, 60000 - [int]$clock.ElapsedMilliseconds))
-                Assert-Guard ($status -ne 'unproven') 'start_probe_uncertain'
-                if ($status -eq 'healthy') { $ready = $true; break }; Start-Sleep -Milliseconds 250
-            }
+            $ready = Wait-DockerDaemonHealthy
             Assert-Guard $ready 'desktop_not_ready_within_60_seconds'
         }
         $finalDaemon = Get-DockerDaemonState
