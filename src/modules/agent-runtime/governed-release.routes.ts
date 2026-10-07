@@ -11,7 +11,11 @@ function send(res:any,result:any,created=false) {
  if(result.error)return sendApiError(res,result.error.endsWith("not_found")?404:result.error.includes("forbidden")||result.error.endsWith("required")&&result.error.includes("owner")?403:409,result.error);
  return res.status(created&&!result.replayed?201:200).json({data:result});
 }
-governedReleaseRouter.get("/",asyncHandler(async(req,res)=>send(res,await readyTransaction(db=>listReleases(db,req.auth!.workspaceId,req.auth!,uuid.optional().parse(req.query.hostId))))));
+governedReleaseRouter.get("/",asyncHandler(async(req,res)=>{
+ const hostId=uuid.optional().parse(req.query.hostId),applicationId=uuid.optional().parse(req.query.applicationId);
+ const summary=z.enum(["true","false"]).optional().parse(req.query.summary)==="true";
+ return send(res,await readyTransaction(db=>listReleases(db,req.auth!.workspaceId,req.auth!,hostId,{applicationId,summary})));
+}));
 governedReleaseRouter.post("/",asyncHandler(async(req,res)=>{
  if(!requireWorkspaceRole(req,res,"owner"))return;
  return send(res,await readyTransaction(db=>createRelease(db,req.auth!.workspaceId,req.auth!,req.body)),true);

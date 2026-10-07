@@ -1657,3 +1657,16 @@ projection binds the full verified original response and closed native receipts;
 it declares empty diff and no coding receipts or tests. Coding review retains
 its existing checks. Root verification passes 166 material cases and 24 actual
 owned Windows readonly fixture cases; no live primary review is claimed yet.
+
+### Bounded release-state catalogue
+
+The existing release GET catalogue accepts explicit `summary=true` and an
+`applicationId` filter. Its compact projection preserves the authoritative
+release status, effective operation outcome counts and failed-closure count.
+Unresolved, uncertain and unknown operations remain visible even when the
+release has a terminal status. More than fifty matching release identities
+refuse with `release_catalog_truncated`; a partial list cannot prove quiescence.
+Owner and exact agent/credential/version read authority remain enforced.
+The default full evidence response is unchanged. Root focused summary,
+baseline, reconciliation and context-read tests pass 28 cases. Deployment and
+the actual quiescence read are pending; this is not application release proof.

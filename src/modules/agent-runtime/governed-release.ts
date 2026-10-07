@@ -127,11 +127,27 @@ async function mayRead(db:Db,workspaceId:string,state:any,auth:AuthContext) {
    &&await currentBasisError(db,workspaceId,recovery,auth)===null)return true;}
  return false;
 }
+function releaseStatus(state:any) {
+ const {journal,revocations,effectiveExpiresAt}=state;
+ const completed=journal.some((j:any)=>j.operation==="cleanup"&&effectiveOutcome(j.outcome)==="succeeded");
+ return state.failedClosures?.length?"failed":completed?"completed":revocations.length?"revoked":new Date(effectiveExpiresAt)<=new Date()?"expired":journal.some((j:any)=>!effectiveOutcome(j.outcome)||effectiveOutcome(j.outcome)==="uncertain")?"reconciliation_required":"active";
+}
 function publicState(state:any) {
  const {release,journal,revocations,renewals,effectiveExpiresAt,expectedVersion}=state;
- const completed=journal.some((j:any)=>j.operation==="cleanup"&&effectiveOutcome(j.outcome)==="succeeded");
  return {release:camel(release),journal:journal.map((j:any)=>({...camel(j),outcome:j.outcome?camel(j.outcome):null})),revocations:revocations.map(camel),renewals:renewals.map(camel),effectiveExpiresAt,expectedVersion,
-  failedClosures:(state.failedClosures??[]).map(camel),status:state.failedClosures?.length?"failed":completed?"completed":revocations.length?"revoked":new Date(effectiveExpiresAt)<=new Date()?"expired":journal.some((j:any)=>!effectiveOutcome(j.outcome)||effectiveOutcome(j.outcome)==="uncertain")?"reconciliation_required":"active"};
+  failedClosures:(state.failedClosures??[]).map(camel),status:releaseStatus(state)};
+}
+function releaseSummary(state:any) {
+ const effectiveOutcomeCounts={succeeded:0,failed:0,absent:0,uncertain:0,unresolved:0,unknown:0};
+ for(const operation of state.journal) {
+  const outcome=effectiveOutcome(operation.outcome);
+  if(!outcome)effectiveOutcomeCounts.unresolved++;
+  else if(outcome==="succeeded"||outcome==="failed"||outcome==="absent"||outcome==="uncertain")effectiveOutcomeCounts[outcome]++;
+  else effectiveOutcomeCounts.unknown++;
+ }
+ return {release:{id:state.release.id,applicationId:state.release.application_id,hostId:state.release.host_id},
+  status:releaseStatus(state),effectiveExpiresAt:state.effectiveExpiresAt,operationCount:state.journal.length,
+  effectiveOutcomeCounts,failedClosureCount:(state.failedClosures??[]).length};
 }
 export async function releaseView(db:Db,workspaceId:string,id:string,auth:AuthContext) {
  const state=await load(db,workspaceId,id);
@@ -139,13 +155,27 @@ export async function releaseView(db:Db,workspaceId:string,id:string,auth:AuthCo
  if(!await mayRead(db,workspaceId,state,auth))return {error:"release_forbidden"};
  return publicState(state);
 }
-export async function listReleases(db:Db,workspaceId:string,auth:AuthContext,hostId?:string) {
+export async function listReleases(db:Db,workspaceId:string,auth:AuthContext,hostId?:string,options:{applicationId?:string,summary?:boolean}={}) {
  const isOwner=await owner(db,workspaceId,auth),p=isOwner?null:await resolveReviewPrincipal(db,workspaceId,auth);
  if(!isOwner&&(p?.kind!=="agent"||!hostId||!auth.scopes?.includes("agent-runtime:release")))return {error:"release_forbidden"};
- const rows=isOwner?await db.$queryRaw<any[]>`SELECT id FROM governed_releases WHERE workspace_id=${workspaceId}::uuid ORDER BY created_at DESC,id DESC LIMIT 51`:
-  await db.$queryRaw<any[]>`SELECT r.id FROM governed_releases r WHERE r.workspace_id=${workspaceId}::uuid AND r.host_id=${hostId}::uuid AND r.releaser_agent_id=${p!.id}::uuid AND r.releaser_credential_id=${p!.credentialId}::uuid AND r.credential_version=${auth.credentialVersion} AND ((governed_release_effective_expiry(r.id)>now() AND NOT EXISTS(SELECT 1 FROM governed_release_revocations v WHERE v.release_id=r.id) AND NOT EXISTS(SELECT 1 FROM governed_release_operations o JOIN governed_release_outcomes x ON x.operation_id=o.id WHERE o.release_id=r.id AND o.operation='cleanup' AND (x.status='succeeded' OR x.status='reconciled' AND x.reconciled_status='succeeded'))) OR EXISTS(SELECT 1 FROM governed_release_operations o WHERE o.release_id=r.id AND COALESCE((SELECT x.status FROM governed_release_outcomes x WHERE x.operation_id=o.id ORDER BY x.sequence DESC LIMIT 1),'unresolved') IN ('unresolved','uncertain'))) ORDER BY r.created_at,r.id LIMIT 51`;
- const mapped=isOwner?[]:await db.$queryRaw<any[]>`SELECT DISTINCT r.id FROM governed_releases r JOIN governed_release_reconciliation_authorizations a ON a.release_id=r.id WHERE r.workspace_id=${workspaceId}::uuid AND r.host_id=${hostId}::uuid AND r.releaser_agent_id=${p!.id}::uuid AND a.credential_id=${p!.credentialId}::uuid AND a.credential_version=${auth.credentialVersion} AND a.expires_at>now() LIMIT 51`;
+ const applicationId=options.applicationId??null;
+ const rows=isOwner?(options.summary||options.applicationId
+  ?await db.$queryRaw<any[]>`SELECT id FROM governed_releases WHERE workspace_id=${workspaceId}::uuid AND (${hostId??null}::uuid IS NULL OR host_id=${hostId??null}::uuid) AND (${applicationId}::uuid IS NULL OR application_id=${applicationId}::uuid) ORDER BY created_at DESC,id DESC LIMIT 51`
+  :await db.$queryRaw<any[]>`SELECT id FROM governed_releases WHERE workspace_id=${workspaceId}::uuid ORDER BY created_at DESC,id DESC LIMIT 51`):
+  await db.$queryRaw<any[]>`SELECT r.id FROM governed_releases r WHERE r.workspace_id=${workspaceId}::uuid AND r.host_id=${hostId}::uuid AND (${applicationId}::uuid IS NULL OR r.application_id=${applicationId}::uuid) AND r.releaser_agent_id=${p!.id}::uuid AND r.releaser_credential_id=${p!.credentialId}::uuid AND r.credential_version=${auth.credentialVersion} AND ((governed_release_effective_expiry(r.id)>now() AND NOT EXISTS(SELECT 1 FROM governed_release_revocations v WHERE v.release_id=r.id) AND NOT EXISTS(SELECT 1 FROM governed_release_operations o JOIN governed_release_outcomes x ON x.operation_id=o.id WHERE o.release_id=r.id AND o.operation='cleanup' AND (x.status='succeeded' OR x.status='reconciled' AND x.reconciled_status='succeeded'))) OR EXISTS(SELECT 1 FROM governed_release_operations o WHERE o.release_id=r.id AND COALESCE((SELECT x.status FROM governed_release_outcomes x WHERE x.operation_id=o.id ORDER BY x.sequence DESC LIMIT 1),'unresolved') IN ('unresolved','uncertain'))) ORDER BY r.created_at,r.id LIMIT 51`;
+ const mapped=isOwner?[]:await db.$queryRaw<any[]>`SELECT DISTINCT r.id FROM governed_releases r JOIN governed_release_reconciliation_authorizations a ON a.release_id=r.id WHERE r.workspace_id=${workspaceId}::uuid AND r.host_id=${hostId}::uuid AND (${applicationId}::uuid IS NULL OR r.application_id=${applicationId}::uuid) AND r.releaser_agent_id=${p!.id}::uuid AND a.credential_id=${p!.credentialId}::uuid AND a.credential_version=${auth.credentialVersion} AND a.expires_at>now() LIMIT 51`;
  const ids=[...new Set([...rows,...mapped].map(r=>r.id))];
+ if(options.summary) {
+  if(ids.length>50)return {error:"release_catalog_truncated"};
+  const releases=[];
+  for(const id of ids) {
+   const state=await load(db,workspaceId,id);
+   if(!state)return {error:"release_not_found"};
+   if(!await mayRead(db,workspaceId,state,auth))return {error:"release_forbidden"};
+   releases.push(releaseSummary(state));
+  }
+  return {releases,truncated:false,projection:"summary"};
+ }
  return {releases:await Promise.all(ids.slice(0,50).map(id=>releaseView(db,workspaceId,id,auth))),truncated:ids.length>50};
 }
 async function supplemental(db:Db,workspaceId:string,release:any,event:string,details:any,auth:AuthContext) {
