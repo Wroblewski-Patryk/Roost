@@ -648,3 +648,26 @@ row before constructing the shared assessment. A refused admission scope with
 no current risk requires authoritative scope/request absence before closing its
 local intent. Obtain current risk and a new source version before another scope
 request; never replay the rejected request from an uncertain journal.
+
+A newly published procedure must also be linked to the actual application through
+the normal application/procedure API before admission. Verify its active steps,
+contract revision, link and target/release records. Configuration can invalidate
+the shared risk basis; re-read current risk after configuration and assess the
+complete unchanged group before requesting admission. A refused scope is never
+retried until its exact request and scope absence are authoritative.
+
+A successful risk POST can outlive a failed local journal write. Recognize the
+exact server request, hash, actor, entries and rationale with normal current
+reads before closing the intent; do not repeat POST. Preserve complete responses
+in individually guarded immutable sidecars rather than accumulating repeated
+display catalogues beyond the unchanged redaction limits. Archives preserve
+original values and clocks and confer no new acceptance or release authority.
+
+On the verified Windows runtime, Node path stat reports device zero and fd stat
+reports a positive volume value. Retain the original path physical digest and
+compare exact BigInt inode, link count, size and nanosecond birth/mtime/ctime
+from path and fd before replacement. Allow that device-field difference only
+for Windows zero-path/positive-fd; refuse every other identity difference.
+The owned temporary-file replacement, readback and cleanup are tested locally.
+Preserve a failed archive namespace and its unchanged original; a corrected
+archive uses a new explicit operation and source selection.
