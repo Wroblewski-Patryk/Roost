@@ -35,7 +35,7 @@ export function riskSchemaDescriptor(schema) {
     const rule = keys === 'items,noneReason' ? 'optionalSet' : keys === 'model,reasoningEffort' ? 'codexModel'
       : keys === 'model,modelDigest,modelFamily,provider,reasoningEffort' ? 'localModel'
       : keys === 'endLine,path,startLine' ? 'readFragment'
-      : keys === 'inspectReadOnly,profile,readFragments,readPaths,runtime' ? 'readSelections' : null;
+      : keys === 'inspectReadOnly,profile,readFragments,readPaths,releaseInspection,runtime' ? 'readSelections' : null;
     assert.ok(rule, `Unmirrored refinement ${keys}`);
     return { k: 'refinement', rule, inner: riskSchemaDescriptor(d.schema) };
   }

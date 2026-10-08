@@ -13,6 +13,8 @@ const migration = readFileSync(path.join(root, "prisma/migrations/20261001120000
 const fragmentsMigration = readFileSync(path.join(root, 'prisma/migrations/20261004001500_readonly_fragments_risk/migration.sql'), 'utf8');
 const managedMigration = readFileSync(path.join(root, 'prisma/migrations/20261004004000_readonly_managed_extended_budget/migration.sql'), 'utf8');
 const priorAuditMigration = readFileSync(path.join(root, 'prisma/migrations/20261006010000_code_reviewer_prior_audit_risk/migration.sql'), 'utf8');
+const releaseInspectionMigration = readFileSync(path.join(root, 'prisma/migrations/20261008195000_release_inspection_readonly_risk/migration.sql'), 'utf8');
+const inspectionDeclaration = () => ({ schemaVersion: 'roost-governed-release-inspection-v1', commit: 'a'.repeat(40), tree: 'b'.repeat(40), manifestDigest: 'c'.repeat(64), scopeDigest: 'd'.repeat(64), imageDigest: `sha256:${'e'.repeat(64)}`, minimumObservationSeconds: 1200, minimumRestoredActivitySeconds: 300 });
 const evidence = { id: randomUUID(), revision: "2026-10-01T00:00:00.000Z" };
 const entry = (): RiskEntry => ({ taskId: randomUUID(),
   dimensions: Object.fromEntries(riskDimensions.map(d => [d, { level: "low", rationale: "Bounded synthetic impact", evidence: [evidence] }])) as RiskEntry["dimensions"],
@@ -37,7 +39,7 @@ const managedSelection = (maxTurns: number, budgetPolicy?: string) => ({
 test("SQL readonly classifier is pinned to the real strict execution schema", async () => {
   const { readonlyRiskSchema } = await loadESM(pathToFileURL(path.join(root, 'scripts/lib/agent-host-risk-readonly-schema.mjs')).href);
   const expected = readonlyRiskSchema();
-  const stored = priorAuditMigration.match(/SELECT \$schema\$(.+)\$schema\$::jsonb/)?.[1];
+  const stored = releaseInspectionMigration.match(/SELECT \$schema\$(.+)\$schema\$::jsonb/)?.[1];
   assert.ok(stored); assert.deepEqual(JSON.parse(stored), JSON.parse(JSON.stringify(expected)));
 });
 
@@ -73,6 +75,15 @@ function priorAuditReviewer(c: any, priorAudit: unknown) {
     baselineCommit: "b".repeat(40), reviewedCommit: "c".repeat(40), priorAudit };
 }
 const malformed: Record<string, (c: any) => void> = {
+  releaseInspectionVerifier: c => { c.nativeBoundary.releaseInspection=inspectionDeclaration(); c.nativeBoundary.inspectReadOnly={kind:'verifier',verifiedExecutionId:randomUUID(),verifiedEvidenceDigest:'a'.repeat(64)}; },
+  releaseInspectionReviewer: c => { c.nativeBoundary.releaseInspection=inspectionDeclaration(); c.nativeBoundary.inspectReadOnly={kind:'code-reviewer',verifiedTaskId:randomUUID(),verifiedExecutionId:randomUUID(),verifiedEvidenceDigest:'a'.repeat(64),baselineCommit:'b'.repeat(40),reviewedCommit:'c'.repeat(40)}; },
+  releaseInspectionChangedVersion: c => { c.nativeBoundary.releaseInspection={...inspectionDeclaration(),schemaVersion:'arbitrary-authority'}; },
+  releaseInspectionInvalidCommit: c => { c.nativeBoundary.releaseInspection={...inspectionDeclaration(),commit:'bad'}; },
+  releaseInspectionInvalidManifest: c => { c.nativeBoundary.releaseInspection={...inspectionDeclaration(),manifestDigest:'bad'}; },
+  releaseInspectionInvalidImage: c => { c.nativeBoundary.releaseInspection={...inspectionDeclaration(),imageDigest:'a'.repeat(64)}; },
+  releaseInspectionExtraField: c => { c.nativeBoundary.releaseInspection={...inspectionDeclaration(),authority:true}; },
+  releaseInspectionFractionalObservation: c => { c.nativeBoundary.releaseInspection={...inspectionDeclaration(),minimumObservationSeconds:1200.5}; },
+  releaseInspectionNull: c => { c.nativeBoundary.releaseInspection=null; },
   priorAuditInvalidId: c => priorAuditReviewer(c, { executionId: "invalid", receiptDigest: "d".repeat(64) }),
   priorAuditInvalidDigest: c => priorAuditReviewer(c, { executionId: randomUUID(), receiptDigest: "invalid" }),
   priorAuditExtraAuthority: c => priorAuditReviewer(c, { executionId: randomUUID(), receiptDigest: "d".repeat(64), authority: true }),
@@ -122,7 +133,7 @@ const malformed: Record<string, (c: any) => void> = {
     config: { reasoning: 'explicit_model_effort', remote: false }, attemptPolicy: managedSelection(30, 'coding-extended-v1').attemptPolicy }; }
 };
 async function validVariants() {
-  const base = await fixture(), variants: any[] = [base];
+  const base = await fixture(), variants: any[] = [base, {...structuredClone(base), nativeBoundary: {...base.nativeBoundary, releaseInspection: inspectionDeclaration()}}];
   for (const inspectReadOnly of [
     { kind: "verifier", verifiedExecutionId: randomUUID(), verifiedEvidenceDigest: "a".repeat(64) },
     { kind: "code-reviewer", verifiedTaskId: randomUUID(), verifiedExecutionId: randomUUID(), verifiedEvidenceDigest: "a".repeat(64), baselineCommit: "b".repeat(40), reviewedCommit: "c".repeat(40) },
@@ -170,7 +181,8 @@ test("PostgreSQL derives the same changes and rejects forged low assessment resu
   const functions = qualify(migration.slice(migration.indexOf("CREATE FUNCTION task_risk_contract_shape"), migration.lastIndexOf("COMMIT;")))
     + qualify(fragmentsMigration.replace(/^BEGIN;\s*/, '').replace(/COMMIT;\s*$/, ''))
     + qualify(managedMigration.replace(/^BEGIN;\s*/, '').replace(/COMMIT;\s*$/, ''))
-    + qualify(priorAuditMigration.replace(/^BEGIN;\s*/, '').replace(/COMMIT;\s*$/, ''));
+    + qualify(priorAuditMigration.replace(/^BEGIN;\s*/, '').replace(/COMMIT;\s*$/, ''))
+    + qualify(releaseInspectionMigration.replace(/^BEGIN;\s*/, '').replace(/COMMIT;\s*$/, ''));
   const json = (v: unknown) => `$json$${JSON.stringify(v)}$json$::jsonb`;
   const c = await fixture(), audits = Array.from({ length: 4 }, entry), changes = Array.from({ length: 4 }, entry);
   let sql = `BEGIN;
