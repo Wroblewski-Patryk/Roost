@@ -17,6 +17,8 @@ import { runObserver } from "./lib/agent-host-observer.mjs";
 import { prepareProviderLaunch } from "./lib/agent-host-provider-launch.mjs";
 import { prepareFixedHostContainment } from "./lib/agent-host-containment.mjs";
 import { prepareProviderInput } from "./lib/agent-host-provider-input.mjs";
+import { prepareVerifiedReleaseDelivery, loadReleaseInspectionCustody } from "./lib/agent-host-release-inspection.mjs";
+import { loadHandoffBinding } from "./lib/agent-host-handoff-client.mjs";
 import { hermesStartupEnvironment } from "./lib/agent-host-hermes-startup.mjs";
 import { createDirectTurnGuard } from "./lib/agent-host-direct-turn.mjs";
 import { createHermesOutputIntent } from "./lib/agent-host-hermes-budget.mjs";
@@ -66,7 +68,7 @@ const host = {
   name: String(config.host?.name || os.hostname()),
   slug: String(config.host?.slug || os.hostname().toLowerCase().replace(/[^a-z0-9._-]+/g, "-")),
   platform: `${process.platform}-${process.arch}`,
-  capabilities: protocol.requiredHostCapabilities,
+  capabilities: [...protocol.requiredHostCapabilities, "governed_release_inspection_v1"],
   applicationSlugs: Object.keys(config.repositories || {}),
   metadata: {
     runnerVersion: "roost-codex-agent-host-v1",
@@ -405,10 +407,21 @@ async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, cr
     } else if (coding && taskContract.nativeBoundary.writePaths.length) codingTests = prepareCodingTests({
       manifestPath: config.executionProvider.testManifestPath, repositoryPath, originUrl: repository.originUrl,
       acceptanceTests: taskContract.acceptance.tests, writePaths: taskContract.nativeBoundary.writePaths });
+    let releaseDelivery;
+    if(taskContract.nativeBoundary?.releaseInspection){
+      const stateDirectory=path.dirname(path.resolve(configPath));
+      const handoff=await duration.wait(loadHandoffBinding(path.join(stateDirectory,"handoff.json"),configPath));
+      if(handoff.hostId!==claimed.agentHostId)throw protocolAdmissionError("release_inspection_host_mismatch");
+      const normalContext=await duration.wait(api(`/v1/agent-runtime/executions/${claimed.id}/actions/release-inspection`,{
+        method:"POST",body:JSON.stringify({leaseToken:claimed.leaseToken,releaseId:claimed.metadata?.releaseVerification?.releaseId})}));
+      releaseDelivery=await duration.wait(prepareVerifiedReleaseDelivery({claimed,contract:taskContract,normalContext,
+        custodyLookup:loadReleaseInspectionCustody,installation:{stateDirectory,installationId:handoff.installationId}}));
+      assertProviderAuthority();
+    }
     const providerInput = prepareProviderInput({ fresh: { taskContext, applicationContext }, claimed,
       currentCommit: preparedCommit, assertAuthority: assertProviderAuthority, secrets: [apiKey, codeReviewerKey].filter(Boolean),
       provider: config.executionProvider, repositoryPath,
-      repositoryEvidence: readOnlyEvidence, priorAudit, codeReviewerPriorAudit,
+      repositoryEvidence: readOnlyEvidence, priorAudit, codeReviewerPriorAudit, releaseDelivery,
       nativeBoundaryOptions: { writerLock, expected: { head: preparedCommit, branch: taskContext.executionPacket.contract.singleTask.branch, origin: repository.originUrl } },
       startupEnvironment: config.executionProvider?.kind === "hermes_codex" && config.executionProvider.profile
         ? hermesStartupEnvironment(config.executionProvider.profile, process.env, repositoryPath) : undefined });

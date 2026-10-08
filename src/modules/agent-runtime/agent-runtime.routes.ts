@@ -2,6 +2,7 @@ import { nativeBoundaryResultBlocked } from "./task-review-contract";
 import { retryContextRead } from "./context-read-retry";
 import { completedResultBasisView, revalidateCompletedResultBasis, completedReadonlyAuditNativeProven } from "./completed-result-basis";
 import { governedReleaseRouter } from "./governed-release.routes";
+import { releaseInspectionView } from "./governed-release";
 import { ownerTicketHandler } from "./owner-ticket-http";
 import { managedAdmission, managedAdmissionSignerFromEnvironment } from "./managed-admission";
 import { recordV3OwnerAuth } from "../api-keys/bootstrap-v3-owner-auth";
@@ -926,6 +927,29 @@ agentRuntimeRouter.post("/executions/:id/actions/refused-tracked-recovery-result
   res.json({data:result.data});
 }));
 
+agentRuntimeRouter.post("/executions/:id/actions/release-inspection", asyncHandler(async (req, res) => {
+  res.setHeader("Cache-Control","no-store");
+  const input=leaseSchema.extend({releaseId:z.string().uuid()}).strict().parse(req.body),now=new Date();
+  const current=await prisma.agentExecution.findFirst({where:{id:String(req.params.id),workspaceId:req.auth!.workspaceId,
+    leaseToken:input.leaseToken,leaseExpiresAt:{gt:now},cancelRequestedAt:null,contextInvalidatedAt:null,
+    status:{in:["claimed","running"]}}});
+  if(!current?.agentHostId||!req.auth!.workerTicketIdentity||!await workerClaimAllowed(prisma,req.auth!,current.agentHostId,now))
+    return sendApiError(res,403,"worker_credential_forbidden");
+  const selection=(current.metadata as any)?.releaseVerification;
+  if(selection?.schemaVersion!=="roost-release-verification-selection-v1"||selection.releaseId!==input.releaseId
+    ||!z.string().uuid().safeParse(selection.custodyEvidenceId).success)
+    return sendApiError(res,409,"release_inspection_selection_required");
+  const result=await readyTransaction(db=>releaseInspectionView(db,current,input.releaseId));
+  if(typeof result.error==="string")return sendApiError(res,result.error==="release_not_found"?404:409,result.error);
+  // Check the lease again after the potentially slow read; cancellation cannot
+  // return a new evidence envelope to a stopped or replaced attempt.
+  const retained=await prisma.agentExecution.count({where:{id:current.id,workspaceId:current.workspaceId,
+    agentHostId:current.agentHostId,leaseToken:input.leaseToken,leaseExpiresAt:{gt:new Date()},
+    cancelRequestedAt:null,contextInvalidatedAt:null,status:{in:["claimed","running"]}}});
+  if(retained!==1||!await workerClaimAllowed(prisma,req.auth!,current.agentHostId))return sendApiError(res,409,"release_inspection_attempt_stale");
+  return res.json({data:result});
+}));
+
 agentRuntimeRouter.post("/executions/:id/actions/prior-readonly-audit", asyncHandler(async (req, res) => {
   const input = leaseSchema.parse(req.body), now = new Date();
   const current = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId,
@@ -984,6 +1008,13 @@ agentRuntimeRouter.post("/executions", asyncHandler(async (req, res) => {
     const ready = await inspectReady(tx, req.auth!.workspaceId, input.taskId);
     if (ready.error) return ready;
     const pin = ready.pin!;
+    const inspection=(pin.contract as any).nativeBoundary?.releaseInspection;
+    const releaseSelection=(input.metadata as any).releaseVerification;
+    if(inspection||releaseSelection!==undefined){
+      const {releaseVerificationSelectionSchema}=require("../../../scripts/lib/agent-host-release-inspection-contract.cjs");
+      if(!inspection||!releaseVerificationSelectionSchema.safeParse(releaseSelection).success)
+        return {error:"release_inspection_selection_required"};
+    }
     if ((pin.contract as any).executionClass === "roost-fixed-effect-v1" && await tx.agentExecution.count({ where: { workspaceId: req.auth!.workspaceId, taskId: input.taskId } })) return { error: "synthetic_task_already_spent" };
     if (resolved.application!.id !== pin.applicationId || (input.prompt !== undefined && input.prompt !== pin.prompt) || (input.baseBranch !== undefined && input.baseBranch !== pin.baseBranch) || (input.metadata.executionContract !== undefined && !isDeepStrictEqual(input.metadata.executionContract, pin.contract))) return { error: "task_ready_contract_mismatch" };
     const execution = await tx.agentExecution.create({ data: { workspaceId: req.auth!.workspaceId, taskId: input.taskId, applicationId: pin.applicationId,
@@ -1013,6 +1044,9 @@ agentRuntimeRouter.post("/executions/claim", asyncHandler(async (req, res) => {
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const candidate = await prisma.agentExecution.findFirst({ where: { workspaceId, status: "queued", attempt: 0, cancelRequestedAt: null, ...(String((host.metadata as any)?.executionProvider?.kind) === "synthetic_fixed" ? { metadata: { path: ["executionContract", "executionClass"], equals: "roost-fixed-effect-v1" } } : {}), ...(applicationSlugs.length ? { application: { slug: { in: applicationSlugs } } } : {}) }, orderBy: { createdAt: "asc" } });
     if (!candidate) return res.status(204).send();
+    if((candidate.metadata as any)?.executionContract?.nativeBoundary?.releaseInspection
+      &&(!Array.isArray(host.capabilities)||!host.capabilities.includes("governed_release_inspection_v1")))
+      return sendApiError(res,409,"release_inspection_host_required");
     const leaseToken = randomUUID();
     const checkpoint = { schemaVersion: "roost-recovery-v1", stage: "claimed", sessionId: input.sessionId ?? randomUUID(), packetRevision: null, workspaceDigest: null };
     const admitted = await readyTransaction(async tx => {

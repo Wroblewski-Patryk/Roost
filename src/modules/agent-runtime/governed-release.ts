@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import type { Prisma } from "@prisma/client";
 import type { AuthContext } from "../../auth/api-key.middleware";
 import { resolveReviewPrincipal } from "../../auth/agent-principal";
@@ -16,6 +17,8 @@ import {compatibleRecoveryBuildProofCallback} from './compatible-recovery-proof'
 import {compatibleRecoveryCurrentBackupError} from './governed-release-contract';
 type Db=Prisma.TransactionClient;
 const releaseWire=require(path.resolve(__dirname,"../../../scripts/lib/agent-host-release-contract.cjs"));
+const loadStoredReleaseProof = new Function("specifier","return import(specifier)") as
+ (specifier:string)=>Promise<{qualifyCompatibleReleaseSnapshot:(state:any)=>any}>;
 // A completed result does not preserve authority after its task basis changes.
 // Reuse the current readiness validator, including admission expiry, without
 // replacing the completed execution's pin or mutating its source task.
@@ -154,6 +157,26 @@ export async function releaseView(db:Db,workspaceId:string,id:string,auth:AuthCo
  if(!state)return {error:"release_not_found"};
  if(!await mayRead(db,workspaceId,state,auth))return {error:"release_forbidden"};
  return publicState(state);
+}
+// Read-only evidence for one already claimed independent audit. The caller
+// verifies its live host credential and lease; this grants no release operation.
+export async function releaseInspectionView(db:Db,execution:any,releaseId:string) {
+ const c=object(execution.metadata).executionContract as any;
+ const pin=c?.nativeBoundary?.releaseInspection;
+ if(c?.nativeBoundary?.profile!=="inspect-readonly"||c.nativeBoundary.inspectReadOnly?.kind!=="auditor"
+  ||c.access?.sandbox!=="read-only"||c.access.externalWrites!==false||c.singleTask?.applicationId!==execution.applicationId)
+  return {error:"release_inspection_scope_required"};
+ const state=await load(db,execution.workspaceId,releaseId);
+ if(!state)return {error:"release_not_found"};
+ const result=publicState(state);
+ const inspection=require(path.resolve(__dirname,"../../../scripts/lib/agent-host-release-inspection-contract.cjs"));
+ try { const stored=await loadStoredReleaseProof(pathToFileURL(path.resolve(__dirname,"../../../scripts/lib/agent-host-release-broker.mjs")).href);
+   inspection.assertCompletedReleaseInspection(result,{inspection:pin,applicationId:execution.applicationId,
+   hostId:execution.agentHostId,agentId:c.assignment?.agentId,validateOutcome:releaseOutcomeError,
+   qualifyStoredSnapshot:stored.qualifyCompatibleReleaseSnapshot}); }
+ catch { return {error:"release_inspection_completed_scope_required"}; }
+ return {schemaVersion:"roost-governed-release-inspection-context-v1",executionId:execution.id,taskId:execution.taskId,
+  applicationId:execution.applicationId,agentHostId:execution.agentHostId,observedAt:new Date().toISOString(),release:result};
 }
 export async function listReleases(db:Db,workspaceId:string,auth:AuthContext,hostId?:string,options:{applicationId?:string,summary?:boolean}={}) {
  const isOwner=await owner(db,workspaceId,auth),p=isOwner?null:await resolveReviewPrincipal(db,workspaceId,auth);

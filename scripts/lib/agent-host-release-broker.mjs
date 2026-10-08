@@ -63,6 +63,8 @@ function compatibleSnapshot(state){
   ||p.buildReceiptDigest!==r.replacement.buildReceiptDigest||p.compatibilityReceiptDigest!==r.replacement.compatibilityReceiptDigest)fail('release_compatible_recovery_proof_changed');
  return {...s,releaseId:state.release.id,compatibleRecoveryProof:p};
 }
+// One strict stored-proof qualification shared with recovery and inspection.
+export const qualifyCompatibleReleaseSnapshot=compatibleSnapshot;
 function outcomeBody(o){return {requestId:o.requestId??o.request_id,status:o.status,observationOnly:o.observationOnly??o.observation_only,
  ...(o.status==='reconciled'?{reconciledStatus:o.reconciledStatus??o.reconciled_status}:{}),evidence:o.evidence};}
 function compatibleCanonicalOutcome(s,row,body,journal){

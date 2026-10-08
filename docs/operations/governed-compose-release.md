@@ -4,6 +4,40 @@ The authorized outcome remains in [implementation](../implementation.md).
 The second application release is pending. Component checks establish source
 behavior; they do not establish a production release.
 
+## Independent final release inspection
+
+The static read-only auditor contract may declare `nativeBoundary.releaseInspection`:
+exact commit, Git tree, manifest, compatible scope, image and minimum observation
+periods. Register that scope before the final shared risk assessment and release
+grant. Later execution metadata supplies only `releaseVerification` UUID selectors
+for the completed release and installation-owned custody descriptor; it never
+replaces the approved prompt or contract with future facts.
+
+The claim credential reads one release through the live lease-bound
+`actions/release-inspection` endpoint. It gains no release effect permission.
+The API checks application/host identity, independent actor, exact stored proof,
+complete successful operation journal, observation, cleanup parity and restored
+cadence evidence, then rechecks lease/cancellation and credential authority.
+An older Worker cannot claim this boundary without its optional
+`governed_release_inspection_v1` capability.
+
+The Worker separately seals the UUID-selected local custody sources, checks
+the closed Writer HMAC and actual Windows process absence, and checks the
+Root-supervised monitor's complete coverage and bounded gaps. Only that live
+qualification can create the private provider-input handle. Serialized JSON
+cannot restore it. The model receives bounded untrusted evidence and no paths,
+keys, native tools or release authority. Native signatures and OS observations
+remain Worker evidence; the server does not claim an OS attestation.
+
+Component tests prove the channel and its refusals. Actual final acceptance still
+requires the real completed release, current custody qualification, official
+Worker/Hermes round trip, unchanged source and independent result. The canonical
+implementation state records whether that proof exists.
+
+Compatible grants retain their strictly qualified server proof in the Writer's
+grant digest. The native launcher uses fixed LF source bytes so Windows Git
+checkout conversion cannot alter the historical source receipt.
+
 ## Installed boundary
 
 `coolify_compose` is a separate strict manifest and installed-adapter discriminator.

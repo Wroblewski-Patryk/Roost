@@ -1,7 +1,9 @@
 * text=auto
 
 *.sh text eol=lf
-*.md text
+*.md text eol=lf
 *.yml text
 *.yaml text
 *.json text
+# The native launcher's historical source receipt pins these exact LF bytes.
+scripts/roost-windows-job.cs text eol=lf

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { normalizeGitRemote } from "./agent-host-workspace-guard.mjs";
 import { nativeRelative } from "./agent-host-native-footprint.mjs";
 import { taskModelSelectionSchema } from "./agent-host-model-policy.mjs";
+import releaseInspectionContract from './agent-host-release-inspection-contract.cjs';
 export { codexEditorModels } from "./agent-host-model-policy.mjs";
 import { singleTaskSchema, singleTaskIssues } from "./agent-host-single-task.mjs";
 import { taskRolesSchema, roleAuthoritiesSchema, taskRoleIssues } from "./agent-host-task-roles.mjs";
@@ -20,6 +21,8 @@ export const readFragmentSchema = z.object({ path: z.string().min(1).max(512),
   startLine: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER), endLine: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER) }).strict()
   .refine(value => value.endLine >= value.startLine && value.endLine - value.startLine < 200);
 const readSelections = (boundary, context) => {
+  if (boundary.releaseInspection && boundary.inspectReadOnly.kind !== 'auditor')
+    context.addIssue({ code: 'custom', path: ['releaseInspection'], message: 'release_inspection_requires_readonly_auditor' });
   const paths = boundary.readPaths, fragments = boundary.readFragments ?? [];
   if (paths.length + fragments.length < 1 || paths.length + fragments.length > 32)
     context.addIssue({ code: 'custom', path: ['readPaths'], message: 'invalid_read_selection_count' });
@@ -35,6 +38,7 @@ const readSelections = (boundary, context) => {
   } catch { context.addIssue({ code: 'custom', path: ['readPaths'], message: 'invalid_read_selection' }); }
 };
 const readonlyBoundary = z.object({ profile: z.literal('inspect-readonly'),
+  releaseInspection: releaseInspectionContract.releaseInspectionSchema.optional(),
   readPaths: z.array(z.string().min(1).max(512)).max(32),
   readFragments: z.array(readFragmentSchema).max(32).optional(),
   runtime: z.object({ required: z.literal(false), ports: z.tuple([]) }).strict(),

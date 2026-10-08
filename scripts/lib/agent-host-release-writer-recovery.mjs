@@ -3,6 +3,7 @@ import { readFileSync, realpathSync, lstatSync, openSync, closeSync, writeSync, 
 import path from "node:path";
 import { z } from "zod";
 import contract from "./agent-host-release-contract.cjs";
+import {qualifyCompatibleReleaseSnapshot} from "./agent-host-release-broker.mjs";
 import { writerRecoveryEvidence, persistReleaseWriterCheckpoint, clearWriterReleaseRecoveryRestriction } from "./agent-host-writer-lock.mjs";
 import { currentNativeProcessIdentity, observeWindowsProcessIdentity, observeReleasePreflightQuiescence } from "./agent-host-process-identity.mjs";
 import { assertWindowsJobCapability, isWindowsJobCleanupReceipt, windowsJobSourceDigest } from "./agent-host-windows-job.mjs";
@@ -44,8 +45,13 @@ export function releaseOwnerInstanceAbsent(owner, current) {
 }
 function grant(state, client) {
   check(state?.release && Array.isArray(state.journal) && state.journal.length <= 100 && !state.truncated);
-  const { readinessDigest, configurationDigest, successorBasis, publishedGitBasis, ...raw } = state.release.snapshot ?? {};
+  const { readinessDigest, configurationDigest, successorBasis, publishedGitBasis, compatibleRecoveryProof, ...raw } = state.release.snapshot ?? {};
   const snapshot = contract.createReleaseSchema.parse(raw);
+  if(snapshot.compatibleArtifactRecovery!==undefined||compatibleRecoveryProof!==undefined){
+    const checked=qualifyCompatibleReleaseSnapshot(state);
+    check(!successorBasis&&!publishedGitBasis&&same(checked.compatibleArtifactRecovery,snapshot.compatibleArtifactRecovery));
+    snapshot.compatibleRecoveryProof=checked.compatibleRecoveryProof;
+  }
   if (snapshot.predecessor || successorBasis) {
     check(snapshot.predecessor?.releaseId !== state.release.id && contract.releaseHasSuccessor({ ...snapshot, successorBasis }));
     snapshot.successorBasis = successorBasis;

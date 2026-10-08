@@ -2,6 +2,10 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';
 import shared from './lib/agent-host-release-contract.cjs';import compose from './lib/agent-host-release-compose-state.cjs';
 import ingressFence from './lib/agent-host-release-compose-ingress-fence.cjs';
+import {releaseRecoveryCandidate} from './lib/agent-host-release-writer-recovery.mjs';
+import inspectionContract from './lib/agent-host-release-inspection-contract.cjs';
+import {qualifyCompatibleReleaseSnapshot} from './lib/agent-host-release-broker.mjs';
+import backend from '../dist/modules/agent-runtime/governed-release-contract.js';
 import {fixture as composeFixture,hash,image} from './fixtures/release-compose-contract.cjs';import {runReleaseStep,nextReleaseOperation} from './lib/agent-host-release-broker.mjs';
 const clone=structuredClone,H=x=>x.repeat(64);const fixturePost=true,fixtureOwned=false;
 let timeOffset=0;const stamp=t=>new Date(Date.parse(t)+timeOffset).toISOString();
@@ -181,6 +185,39 @@ function setup(){
    const row=state.journal.find(r=>route.includes(r.id));row.outcome=body;if(row.operation==='cleanup'&&body.status==='succeeded')state.status='completed';return state;}};
  return{f,s,m,t,entry,proof,previous,state,args,calls,health,freshEntry,phase};
 }
+test('native recovery grant includes the server compatible proof and refuses substituted provenance',()=>{
+ const f=setup(),snapshot=f.state.release.snapshot;
+ snapshot.readinessDigest=H('c');snapshot.configurationDigest=H('d');
+ const client={hostId:snapshot.hostId,agentId:snapshot.releaserAgentId};
+ const candidate=releaseRecoveryCandidate(f.state,client);
+ assert.equal(candidate.grantDigest,shared.releaseDigest({releaseId:f.state.release.id,snapshot}));
+ const changed=clone(f.state);changed.release.snapshot.compatibleRecoveryProof.sourceBasisDigest=H('e');
+ assert.notEqual(releaseRecoveryCandidate(changed,client).grantDigest,candidate.grantDigest);
+ for(const mutate of [s=>{delete s.compatibleRecoveryProof;},s=>{s.compatibleRecoveryProof.requestDigest=H('0');},
+   s=>{s.compatibleRecoveryProof.applicationId=randomUUID();},s=>{s.compatibleRecoveryProof.serverOperatingSystemAttestation=true;}]){
+  const invalid=clone(f.state);mutate(invalid.release.snapshot);assert.throws(()=>releaseRecoveryCandidate(invalid,client));
+ }
+});
+
+test('counterfactual completed journal binds distinct outcome request IDs by operation identity',async()=>{
+ const f=setup();for(let n=0;n<11;n++)await runReleaseStep(f.args);
+ const base=Date.now()-2000;f.state.release.createdAt=new Date(base-1000).toISOString();
+ for(const [n,row]of f.state.journal.entries()){
+  row.releaseId=f.state.release.id;row.outcome.operationId=row.id;
+  row.createdAt=new Date(base).toISOString();
+  assert.notEqual(row.outcome.requestId,row.intent.requestId);
+ }
+ f.state.release.snapshot.readinessDigest=H('c');f.state.release.snapshot.configurationDigest=H('d');
+ f.state.release.applicationId=f.s.applicationId;f.state.release.hostId=f.s.hostId;
+ const pin={schemaVersion:'roost-governed-release-inspection-v1',commit:f.s.commit,tree:f.s.candidateTree,
+  manifestDigest:f.s.manifestDigest,scopeDigest:f.s.compatibleArtifactRecovery.scopeAudit.scopeDigest,imageDigest:image('7'),minimumObservationSeconds:1,minimumRestoredActivitySeconds:1};
+ const args={inspection:pin,applicationId:f.s.applicationId,hostId:f.s.hostId,agentId:randomUUID(),
+  validateOutcome:(release,row,outcome,prior)=>{const reason=backend.releaseOutcomeError(release,row,outcome,prior);assert.equal(reason,null,row.operation+': '+reason);return reason;},qualifyStoredSnapshot:qualifyCompatibleReleaseSnapshot};
+ assert.equal(inspectionContract.assertCompletedReleaseInspection(f.state,args).phaseCount,11);
+ const wrong=clone(f.state);wrong.journal[0].outcome.operationId=randomUUID();
+ assert.throws(()=>inspectionContract.assertCompletedReleaseInspection(wrong,args),/phase_unproven/);
+});
+
 test('compatible broker follows only its full governed sequence after genuine-shaped canonical down entry',async()=>{
  const f=setup();assert(shared.createReleaseSchema.safeParse(f.s).success);assert.equal(shared.composeFailedRollbackPartialJournalError({...f.previous.release.snapshot,releaseId:f.previous.release.id},f.previous.journal.at(-1),f.previous.journal.at(-1).outcome.evidence,f.previous.journal),null);
  assert.equal(nextReleaseOperation(f.state),'push');for(let i=0;i<11;i++)await runReleaseStep(f.args);

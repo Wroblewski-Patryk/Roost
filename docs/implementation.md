@@ -196,8 +196,8 @@ Risk `56880aad` binds the correction; source/scope bases now `a021bd29`/
 `1f045a90`. Source `cce14a2f` approved/closed/restored. Renewal `49488dcd`
 qualifies the unchanged activity namespace until 8 October 19:16:02 UTC.
 Atomic `ed607903` refused before grant: Ready/DTO corrections are source-tested.
-Final verifier still has a historical build scope; a release evidence channel
-and static final scope are required before grant.
+Release-inspection channel is source/component verified; seven native recovery
+checks pass. Deployment and static final scope remain required before grant.
 No `d73e6234` Git publication, release grant, deployment or health proof.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 

@@ -472,6 +472,7 @@ export const adapterManifest = {
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/reconcile-coding-claimed", capability: "agent-runtime:claim" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/reconcile-coding-unsigned-spawn", capability: "agent-runtime:claim" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/prior-readonly-audit", capability: "agent-runtime:claim" },
+      { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/release-inspection", capability: "agent-runtime:claim" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/prior-coding-refusal", capability: "agent-runtime:claim" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/refused-tracked-recovery-admission", capability: "agent-runtime:write" },
       { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/refused-tracked-recovery-status", capability: "agent-runtime:claim" },
