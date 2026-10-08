@@ -186,24 +186,19 @@ an immediate implementation dependency or mark it complete.
 **Release incomplete.** Preserve accepted `3cf9645e`.
 Historical rejections remain; `c64378df` native build, seven tests and review pass.
 
-Restore/parity pass; writes and cadences remain held.
-Matrix retains PR2/c82, backups, closures and failures.
-Audit `d1004c62`: CHANGES_REQUIRED.
-Review `4793c21f` rejected chronology; coder `645f792b` corrected it.
-Build `6c602f42`: exact c643, 7/7, closed/restored; twelve sources unchanged.
-FAILED closure `00b660cc` persisted.
-PR3/c643 merged. Both queues failed before build; baseline healthy.
-Pkg9e7/audit34b: 19 CHANGES_REQUIRED, native closed; review19ab approved.
-Grant f88: candidate queue failed after recreating five services; migration
-import lacks greenlet. App unavailable; schema/data parity verified.
-Roost recovery deployed; compatible migration verified.
-FAILED closure `6a5bc353`: fresh reads, seven native children closed.
-14 lineage/66 negative SQL probes rolled back.
-Fresh backup/restore verified; new scope pending.
-Manual cleanup removed rollback images; anchors verified, app down.
-Context fix verified; prior native audit: CHANGES_REQUIRED.
-Verifier `5dd327dc` closed; coder `eccd0cfb`/`d73e6234` signed-closed.
-Build/import pass; original scope passes; new scope/review pending.
+Application unavailable; writes/cadences held, schema/data parity verified.
+Matrix retains earlier PRs, failed queues/rollback, closures and rejections.
+Managed dependency repair `eccd0cfb`/`d73e6234` is signed-closed.
+Linux build/import and encrypted backup `71b69546`/isolated restore pass.
+Renewed package `f768c42b` is published as evidence, without release authority.
+Audit `4b6f8027` refused mismatched old acceptance references; signed closure
+and restoration passed. Corrected audit `09907b49` has three PASS findings,
+signed closure and restored bindings. Code review `ae847caa` approved its
+then-current material; adding a separate scope-review task requires current
+basis qualification. Dedicated reviewer `e0b048fe` has complete sixteen-member
+risk/procedure gates; its runtime decision `a93fb4aa` awaits fresh owner login.
+Activity policy expired; Linux proof expires 8 October 00:29 UTC. Renew actual
+qualification before release. No publication/deployment of `d73e6234` yet.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,
