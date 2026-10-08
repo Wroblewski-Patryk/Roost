@@ -194,15 +194,18 @@ Historical refusals, recovery and stale approvals remain in the evidence matrix.
 Current risk `5f9a59e9` and append-only revalidations bind source `d03922b3`
 and scope `ee54a2bd`. Signed reviews `ef9d21b6`/`875907a6` approved;
 closure, process absence and binding restoration pass. Historical refusals remain.
-Roost `a22ce518` deploys the release-inspection channel and additive risk-schema
-migration; health/exact version and isolated database parity pass. Static final
+Roost `c0b043f8` is deployed; health/version and additive migrations pass.
+Revoked empty grants can be replaced; any prior intent still consumes admission.
+Roost backup `ac0d501f` passes restore and exact server restart. Static final
 verifier `ee0ebab6` has Ready `77dad092`; it has not run postrelease.
 Activity capture `284dd3a0` refused before policy write: its proposed expiry
 exceeded the real backup deadline. New native `21b09d91` qualifies unchanged
 namespace/policy effects until 8 October 21:21:39 UTC without extending backup.
 Atomic `fc61181d` created grant `f3069781`; binding refused before config/Git.
 Normal revocation `1208dca4` confirms zero operations and unchanged configuration.
-A genuine fresh backup/compatibility package is required after window expiry.
+New backup `60ce77d9` passes restore; its final metadata refused stale capture
+clocks. Read-only recovery `4c9b281d` is running, without repeated dump/restore.
+Fresh C78 compatibility and a new signed package/scope remain required.
 No `d73e6234` Git publication, deployment or health proof.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 
