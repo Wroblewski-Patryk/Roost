@@ -243,7 +243,9 @@ export async function createRelease(db:Db,workspaceId:string,auth:AuthContext,bo
  if(input.compatibleArtifactRecovery){
   const previous=await load(db,workspaceId,input.compatibleArtifactRecovery.prior.releaseId);
   const qualified=await compatibleBasis(db,workspaceId,input,auth.userId!,s,previous,auth);if('error' in qualified)return qualified;
-  const prior=await db.$queryRaw<any[]>`SELECT id FROM governed_releases WHERE workspace_id=${workspaceId}::uuid AND snapshot->'compatibleArtifactRecovery'->'prior'->>'closureId'=${input.compatibleArtifactRecovery.prior.closureId}`;
+  const prior=await db.$queryRaw<any[]>`SELECT r.id FROM governed_releases r WHERE r.workspace_id=${workspaceId}::uuid AND r.snapshot->'compatibleArtifactRecovery'->'prior'->>'closureId'=${input.compatibleArtifactRecovery.prior.closureId}
+   AND (NOT EXISTS(SELECT 1 FROM governed_release_revocations v WHERE v.release_id=r.id)
+    OR EXISTS(SELECT 1 FROM governed_release_operations o WHERE o.release_id=r.id))`;
   if(prior.length)return {error:'release_compatible_recovery_already_admitted'};
   compatibleRecoveryProof=qualified.snapshot;
  }

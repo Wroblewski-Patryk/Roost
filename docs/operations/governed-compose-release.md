@@ -751,3 +751,14 @@ task's workspace and a database UTC chronology witness bound to execution and
 material version. A legacy SQL timestamp without a timezone must match that
 exact witness and calendar instant before entering the detached audit packet.
 Keep the original SQL material, CAS hashes and native timestamps unchanged.
+## Revoked grants before the first operation
+
+A compatible recovery grant may be replaced after an owner revokes it only
+when its operation journal is completely empty. Preserve that grant and its
+revocation as history. The new grant still needs fresh backup and compatibility
+evidence, current independent approval, exact scope and owner authentication.
+
+Any prior operation intent consumes the recovery admission, including an
+unresolved, failed or reconciled operation. Reconcile its real effect before
+following the documented recovery path. Revocation never clears that history.
+Application locks serialize competing grants; two active successors are refused.
