@@ -200,8 +200,10 @@ verifier `ee0ebab6` has Ready `77dad092`; it has not run postrelease.
 Activity capture `284dd3a0` refused before policy write: its proposed expiry
 exceeded the real backup deadline. New native `21b09d91` qualifies unchanged
 namespace/policy effects until 8 October 21:21:39 UTC without extending backup.
-Atomic owner collection `fc61181d` is in progress; no grant is inferred.
-No `d73e6234` Git publication, release grant, deployment or health proof.
+Atomic `fc61181d` created grant `f3069781`; binding refused before config/Git.
+Normal revocation `1208dca4` confirms zero operations and unchanged configuration.
+A genuine fresh backup/compatibility package is required after window expiry.
+No `d73e6234` Git publication, deployment or health proof.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 
 Reuse the existing application, repository and Compose installation; create no
