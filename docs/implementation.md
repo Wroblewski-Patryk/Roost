@@ -188,16 +188,16 @@ Application unavailable; writes/cadences held, schema/data parity verified.
 Managed `eccd0cfb`/`d73e6234` is signed-closed. Build `b99f2a19` passes
 59 Jobs/restore/cleanup; `fd9cefd7` retains image `c78ed34b`.
 Signed custody and owner evidence `17f72f79` are verified.
-Actual C78 installation `85195c60`/`93f0771c` binds manifest `e068b6c5`
-and scope `b448191c`; activity expires 8 October 16:10:55 UTC.
+C78 installation `85195c60` binds manifest `e068b6c5`/scope `b448191c`.
 Audit `7a8ea0ea` has three PASS findings; signed closure/restoration pass.
-First dedicated review `530972ca` refused before model launch; its failure,
-normal reconciliation, Writer reclamation and binding restoration are retained.
-Review `a6782e51` recorded APPROVE `b8765247`; closed/restored.
-Later shared risk invalidates its current basis; no approval is promoted.
-Source `92363e72` approved in `0bd92c96`/`052c79ab`; closed/restored.
-`ec290b55` refusal/recovery remain. Scope `e9e186cf` approved in `4bda22de`;
-review `4f38bcb4` closed/restored. Operational window renewal is pending.
+Historical refusals, recovery and stale approvals remain in the evidence matrix.
+Scope `4bda22de` misclassified build evidence; corrected `e266ac67` approved.
+Risk `56880aad` binds the correction; source/scope bases now `a021bd29`/
+`1f045a90`. Source `cce14a2f` approved/closed/restored. Renewal `49488dcd`
+qualifies the unchanged activity namespace until 8 October 19:16:02 UTC.
+Atomic `ed607903` refused before grant: Ready/DTO corrections are source-tested.
+Final verifier still has a historical build scope; a release evidence channel
+and static final scope are required before grant.
 No `d73e6234` Git publication, release grant, deployment or health proof.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 
