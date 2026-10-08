@@ -183,23 +183,22 @@ an immediate implementation dependency or mark it complete.
 
 ### Second-application release gate — ship the accepted bounded repair
 
-**Release incomplete.** Preserve accepted `3cf9645e`.
-Historical rejections remain; `c64378df` native build, seven tests and review pass.
-
+**Release incomplete.** Preserve `3cf9645e` and historical rejections.
 Application unavailable; writes/cadences held, schema/data parity verified.
-Matrix retains earlier PRs, failed queues/rollback, closures and rejections.
-Managed dependency repair `eccd0cfb`/`d73e6234` is signed-closed.
-Linux build/import and encrypted backup `71b69546`/isolated restore pass.
-Renewed package `f768c42b` is published as evidence, without release authority.
-Audit `4b6f8027` refused mismatched old acceptance references; signed closure
-and restoration passed. Corrected audit `09907b49` has three PASS findings,
-signed closure and restored bindings. Current code review `03190381` approved
-material `2df5b302` in `8eb61096`; signed closure and restoration pass.
-Dedicated reviewer `e0b048fe` has complete risk/procedures and accepted runtime.
-Build `b99f2a19` passes 59 jobs/restore/cleanup. Recovery `fd9cefd7` retains
-image `c78ed34b`; signed custody and owner evidence `17f72f79` are verified.
-Windows resync/proxy read pass. New scope/release proof remains pending;
-old build/activity expired. No `d73e6234` Git publication or deployment.
+Managed `eccd0cfb`/`d73e6234` is signed-closed. Build `b99f2a19` passes
+59 Jobs/restore/cleanup; `fd9cefd7` retains image `c78ed34b`.
+Signed custody and owner evidence `17f72f79` are verified.
+Actual C78 installation `85195c60`/`93f0771c` binds manifest `e068b6c5`
+and scope `b448191c`; activity expires 8 October 16:10:55 UTC.
+Audit `7a8ea0ea` has three PASS findings; signed closure/restoration pass.
+First dedicated review `530972ca` refused before model launch; its failure,
+normal reconciliation, Writer reclamation and binding restoration are retained.
+Review `a6782e51` recorded APPROVE `b8765247`; closed/restored.
+Later shared risk invalidates its current basis; no approval is promoted.
+Source basis `92363e72` needs a new review. `ec290b55` failed before model;
+normal reconciliation and restoration pass; fresh review remains pending.
+No `d73e6234` Git publication, release grant, deployment or health proof.
+Prior clocks and expired policies remain historical; see the evidence matrix.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,
