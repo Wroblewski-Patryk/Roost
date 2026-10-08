@@ -193,9 +193,9 @@ Linux build/import and encrypted backup `71b69546`/isolated restore pass.
 Renewed package `f768c42b` is published as evidence, without release authority.
 Audit `4b6f8027` refused mismatched old acceptance references; signed closure
 and restoration passed. Corrected audit `09907b49` has three PASS findings,
-signed closure and restored bindings. Code review `ae847caa` approved its
-then-current material; adding a separate scope-review task requires current
-basis qualification. Dedicated reviewer `e0b048fe` has complete sixteen-member
+signed closure and restored bindings. Current code review `03190381` approved
+material `2df5b302` in `8eb61096`; signed closure and restoration pass.
+Dedicated reviewer `e0b048fe` has complete sixteen-member
 risk/procedure gates; its runtime decision `a93fb4aa` awaits fresh owner login.
 Activity policy expired; Linux proof expires 8 October 00:29 UTC. Renew actual
 qualification before release. No publication/deployment of `d73e6234` yet.
