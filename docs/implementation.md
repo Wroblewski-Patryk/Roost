@@ -196,7 +196,8 @@ normal reconciliation, Writer reclamation and binding restoration are retained.
 Review `a6782e51` recorded APPROVE `b8765247`; closed/restored.
 Later shared risk invalidates its current basis; no approval is promoted.
 Source `92363e72` approved in `0bd92c96`/`052c79ab`; closed/restored.
-`ec290b55` refusal/recovery remain. Scope `e9e186cf` needs fresh review.
+`ec290b55` refusal/recovery remain. Scope `e9e186cf` approved in `4bda22de`;
+review `4f38bcb4` closed/restored. Operational window renewal is pending.
 No `d73e6234` Git publication, release grant, deployment or health proof.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 
