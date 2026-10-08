@@ -198,8 +198,8 @@ material `2df5b302` in `8eb61096`; signed closure and restoration pass.
 Dedicated reviewer `e0b048fe` has complete sixteen-member
 risk/procedures; runtime `a93fb4aa` awaits owner login.
 Local build `b99f2a19` passes 59 jobs/restore/cleanup; image `c78ed34b` is local.
-Pre-import proof refused Windows clock skew; admin resync denied.
-Owner helper prepared. Old build/activity expired. No `d73e6234` publication.
+Windows time now runs automatically; resync and native proxy read pass.
+Owner session expired. Old build/activity expired. No `d73e6234` publication.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,

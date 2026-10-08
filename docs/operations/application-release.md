@@ -1680,6 +1680,8 @@ Future-dated remote receipts must be diagnosed against actual local and remote
 clocks. Preserve strict receipt TTLs and original timestamps; repair the
 unsynchronized operating-system clock through its configured time provider.
 An administrative access denial is an owner authentication dependency.
+Start a stopped time service before requesting synchronization, preserve the
+configured time provider, and verify service state and actual synchronization.
 After synchronization, collect genuinely new observations. Archived build
 receipts retain their clocks and never regain a live runtime capability from
 JSON. Reconcile the actual image/tag and protected retention resources before
