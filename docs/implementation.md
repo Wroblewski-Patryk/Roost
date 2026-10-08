@@ -191,13 +191,16 @@ Signed custody and owner evidence `17f72f79` are verified.
 C78 installation `85195c60` binds manifest `e068b6c5`/scope `b448191c`.
 Audit `7a8ea0ea` has three PASS findings; signed closure/restoration pass.
 Historical refusals, recovery and stale approvals remain in the evidence matrix.
-Scope `4bda22de` misclassified build evidence; corrected `e266ac67` approved.
-Risk `56880aad` binds the correction; source/scope bases now `a021bd29`/
-`1f045a90`. Source `cce14a2f` approved/closed/restored. Renewal `49488dcd`
-qualifies the unchanged activity namespace until 8 October 19:16:02 UTC.
-Atomic `ed607903` refused before grant: Ready/DTO corrections are source-tested.
-Release-inspection channel is source/component verified; seven native recovery
-checks pass. Deployment and static final scope remain required before grant.
+Current risk `5f9a59e9` and append-only revalidations bind source `d03922b3`
+and scope `ee54a2bd`. Signed reviews `ef9d21b6`/`875907a6` approved;
+closure, process absence and binding restoration pass. Historical refusals remain.
+Roost `a22ce518` deploys the release-inspection channel and additive risk-schema
+migration; health/exact version and isolated database parity pass. Static final
+verifier `ee0ebab6` has Ready `77dad092`; it has not run postrelease.
+Activity capture `284dd3a0` refused before policy write: its proposed expiry
+exceeded the real backup deadline. New native `21b09d91` qualifies unchanged
+namespace/policy effects until 8 October 21:21:39 UTC without extending backup.
+Atomic owner collection `fc61181d` is in progress; no grant is inferred.
 No `d73e6234` Git publication, release grant, deployment or health proof.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 
