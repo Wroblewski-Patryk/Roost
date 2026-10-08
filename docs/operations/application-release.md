@@ -1673,3 +1673,15 @@ is deployed through `wbva39qo4z05727nt3m9lo33`; health/build-info return 200
 with that exact commit. The normal scoped read returns eight closed failures
 and zero unresolved, uncertain or unknown outcomes. No active executions were
 present. This is infrastructure recovery evidence, not application release proof.
+
+### Native proof clock synchronization
+
+Future-dated remote receipts must be diagnosed against actual local and remote
+clocks. Preserve strict receipt TTLs and original timestamps; repair the
+unsynchronized operating-system clock through its configured time provider.
+An administrative access denial is an owner authentication dependency.
+After synchronization, collect genuinely new observations. Archived build
+receipts retain their clocks and never regain a live runtime capability from
+JSON. Reconcile the actual image/tag and protected retention resources before
+any separately qualified import successor; a failed read does not authorize
+repeating build, import or deployment.
