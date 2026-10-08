@@ -203,9 +203,12 @@ exceeded the real backup deadline. New native `21b09d91` qualifies unchanged
 namespace/policy effects until 8 October 21:21:39 UTC without extending backup.
 Atomic `fc61181d` created grant `f3069781`; binding refused before config/Git.
 Normal revocation `1208dca4` confirms zero operations and unchanged configuration.
-New backup `60ce77d9` passes restore; its final metadata refused stale capture
-clocks. Read-only recovery `4c9b281d` is running, without repeated dump/restore.
-Fresh C78 compatibility and a new signed package/scope remain required.
+Backup `60ce77d9` passes restore and read-only recovery `30f6d6cb`; no dump
+or restore was repeated. C78 compatibility `7dc715c3` passes 49 native Jobs,
+schema/data/raw-sequence parity and cleanup. Signed owner evidence `ce7d4451`
+is verified in Roost. Package `e277a44b` passes actual readback after eight
+fresh read-only Jobs; its remote snapshot remains historical. New scope audit,
+independent review and current grant/effect reinspection remain required.
 No `d73e6234` Git publication, deployment or health proof.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 
