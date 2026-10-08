@@ -195,11 +195,11 @@ Audit `4b6f8027` refused mismatched old acceptance references; signed closure
 and restoration passed. Corrected audit `09907b49` has three PASS findings,
 signed closure and restored bindings. Current code review `03190381` approved
 material `2df5b302` in `8eb61096`; signed closure and restoration pass.
-Dedicated reviewer `e0b048fe` has complete sixteen-member
-risk/procedures; runtime `a93fb4aa` accepted, role credentials renewed.
-Local build `b99f2a19` passes 59 jobs/restore/cleanup; image `c78ed34b` is local.
-Windows time now runs automatically; resync and native proxy read pass.
-Fresh import qualification runs. Old build/activity expired. No `d73e6234` publication.
+Dedicated reviewer `e0b048fe` has complete risk/procedures and accepted runtime.
+Build `b99f2a19` passes 59 jobs/restore/cleanup. Recovery `fd9cefd7` retains
+image `c78ed34b`; signed custody and owner evidence `17f72f79` are verified.
+Windows resync/proxy read pass. New scope/release proof remains pending;
+old build/activity expired. No `d73e6234` Git publication or deployment.
 
 Reuse the existing application, repository and Compose installation; create no
 additional application or environment. Bind its own services, migrations,
