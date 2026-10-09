@@ -517,7 +517,7 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
   return{handled:true,state:updated,...(reconciliationOnly?{reconciliationOnlyComplete:true}:{}),...(result.evidence?.composeConfigAbsence?{nextOperationBlocked:true,configurationDiagnosisRequired:true,diagnosisReason:'release_compose_no_effect_diagnosis_required'}:{})};
  }
  if(stopped())return{handled:false,state};
- if(s.compatibleArtifactRecovery&&['push','pr','review','merge'].includes(operation))await inspectCompatibleEntry(state,s,api,coolify);
+ if(s.compatibleArtifactRecovery&&['push','pr','review','merge','deploy_config'].includes(operation))await inspectCompatibleEntry(state,s,api,coolify);
  // Validate actual checkout and remote base before requesting a capability.
  const cleanupStage=['cleanup','cleanup_local','cleanup_resource','archive_repository'].includes(operation);
  if(operation!=='cleanup')await inspectCheckout(m,s.commit,contract.releaseGitPublicationBase(s).commit,s.candidateTree);

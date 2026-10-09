@@ -210,9 +210,9 @@ rows, signed-closed/restored; actual input is 131027/131072 bytes.
 Historical approvals remain in the matrix.
 Renewal `651f50be` passes 23 read-only Jobs; staged measurements pass 22 tests.
 Owner `1e629f08` admits grant `bdc1387e`; renewal and signed closures pass.
-Worker10 pushes exact `d73e6234`; normal reconciliation succeeds in Roost.
-Signed close/restoration pass. Git repair and recovery pass 31/45 checks;
-deployment, health and final acceptance remain pending.
+Worker11 merges exact `d73e6234`; configuration is absent/frozen.
+Signed closure/restoration pass. Source repairs pass 314 checks;
+safe continuation, deployment and final acceptance remain pending.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 
 Reuse the existing application, repository and Compose installation; create no

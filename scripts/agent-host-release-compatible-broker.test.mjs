@@ -223,7 +223,7 @@ test('compatible broker follows only its full governed sequence after genuine-sh
  assert.equal(nextReleaseOperation(f.state),'push');for(let i=0;i<11;i++)await runReleaseStep(f.args);
  assert.deepEqual(f.state.journal.map(r=>r.operation),shared.compatibleRecoveryOperations);assert.equal(nextReleaseOperation(f.state),null);
  assert(f.calls.indexOf('down_entry')<f.calls.indexOf('git_read'));assert(f.calls.indexOf('down_entry')<f.calls.indexOf('push'));
- assert.equal(f.calls.filter(c=>c==='down_entry').length,4);assert.equal(f.calls.filter(c=>c==='deploy').length,1);
+ assert.equal(f.calls.filter(c=>c==='down_entry').length,5);assert.equal(f.calls.filter(c=>c==='deploy').length,1);
  assert(f.calls.filter(c=>c.kind==='checkout').every(c=>c.base===f.s.compatibleArtifactRecovery.publication.baseCommit));assert.equal(f.m.baseline.observedAt,f.previous.release.snapshot.manifest.baseline.observedAt);
 });
 test('lost push reply is read-only reconciled under same intent without another publication',async()=>{const f=setup();f.args.github.push=async()=>{f.calls.push('push');throw Error('private transport reply');};const first=await runReleaseStep(f.args);assert(first.reconciliationRequired);assert.equal(nextReleaseOperation(f.state),'reconcile');await runReleaseStep(f.args);assert.equal(f.state.journal.length,1);assert.equal(f.calls.filter(c=>c==='push').length,1);assert.equal(f.calls.filter(c=>c==='git_reconcile').length,1);assert.equal(nextReleaseOperation(f.state),'pr');});
@@ -244,3 +244,22 @@ test('missing dedicated down reader does not fall back to ordinary healthy basel
 test('publication drift rejects new Git capability while historical runtime commit stays unchanged',async()=>{const f=setup();f.args.github.inspect=async()=>({remoteBase:f.s.baseCommit,remoteTree:f.s.baseTree});await assert.rejects(runReleaseStep(f.args),/release_base_changed/);assert(!f.calls.includes('api_post'));});
 test('candidate observation shorter than manifest cannot authorize smoke/resume',async()=>{const f=setup();for(let i=0;i<6;i++)await runReleaseStep(f.args);f.args.coolify.observe=async()=>{const e=f.health();e.observationSeconds=0;return e;};const r=await runReleaseStep(f.args);assert(r.reconciliationRequired);assert.equal(nextReleaseOperation(f.state),'reconcile');assert(!f.calls.includes('smoke'));});
 test('failed smoke freezes without fixture reset, runtime resume or historical rollback dispatch',async()=>{const f=setup();for(let i=0;i<7;i++)await runReleaseStep(f.args);f.args.resources.postObservation=async()=>({status:'failed',evidence:{postObservation:{postObservationDigest:shared.releaseDigest(f.m.postObservation),fixtureDigest:shared.releaseDigest(f.m.postObservation.fixture),controllerDigest:f.m.postObservation.controllerDigest,targetId:f.t.targetId,commit:f.s.commit,tree:f.s.candidateTree,kind:'failure',phase:'smoke',failureCode:'populated_render_failed',ownedEffects:'present',nativeChildrenClosed:true}}});await runReleaseStep(f.args);assert.equal(nextReleaseOperation(f.state),'frozen');assert.equal(f.state.journal.at(-1).outcome.status,'failed');assert(!f.calls.includes('fixture_cleanup'));assert(!f.calls.includes('runtime_resume'));});
+
+// New installed adapters are constructed for every ordinary Worker step; no context carries over from merge.
+test('fresh post-merge configuration adapter re-reads actual prior release and qualified entry before capability/effect',async()=>{
+ const f=setup();for(let n=0;n<4;n++)await runReleaseStep(f.args);assert.equal(nextReleaseOperation(f.state),'deploy_config');
+ f.calls.length=0;let initialized=false;
+ const original=f.args.coolify,reader=original.inspectCompatibleRecoveryEntry,configure=original.configureCandidate;
+ f.args.coolify={...original,inspectCompatibleRecoveryEntry:async input=>{assert.equal(f.state.journal.length,4);assert.equal(f.calls.at(-1),'old_get');const result=await reader(input);initialized=true;return result;},
+  configureCandidate:async(...args)=>{assert.equal(initialized,true,'this NEW adapter was genuinely initialized');assert.equal(f.state.journal.length,5);assert.equal(f.state.journal.at(-1).operation,'deploy_config');return configure(...args);}};
+ const result=await runReleaseStep(f.args);assert.equal(result.reconciliationRequired,undefined);assert.equal(f.state.journal.length,5);assert.equal(f.state.journal.at(-1).outcome.status,'succeeded');
+ assert(f.calls.indexOf('old_get')<f.calls.indexOf('down_entry'));assert(f.calls.indexOf('down_entry')<f.calls.indexOf('api_post'));assert(f.calls.indexOf('api_post')<f.calls.indexOf('deploy_config'));
+ assert.equal(f.calls.filter(v=>v==='old_get').length,1);assert.equal(f.calls.filter(v=>v==='down_entry').length,1);assert.equal(f.calls.filter(v=>v==='deploy_config').length,1);
+});
+for(const condition of ['changed_prior','changed_current_entry','missing_initializer'])test('fresh configuration refuses '+condition+' before durable intent or effect',async()=>{
+ const f=setup();for(let n=0;n<4;n++)await runReleaseStep(f.args);f.calls.length=0;
+ if(condition==='changed_prior')f.previous.expectedVersion=H('0');
+ if(condition==='missing_initializer')delete f.args.coolify.inspectCompatibleRecoveryEntry;
+ if(condition==='changed_current_entry')f.args.coolify.inspectCompatibleRecoveryEntry=async()=>{f.calls.push('down_entry');const currentEntry=f.freshEntry();currentEntry.database.containerId=H('0');currentEntry.evidenceDigest=shared.compatibleRecoveryEntryDigest(currentEntry);return{currentEntry,closureReceipt:clone(f.previous.failedClosures[0].snapshot)};};
+ await assert.rejects(runReleaseStep(f.args),/release_compatible_recovery_entry_/);assert.equal(f.state.journal.length,4);assert(!f.calls.includes('api_post'));assert(!f.calls.includes('deploy_config'));assert(!f.calls.includes('capacity'));
+});

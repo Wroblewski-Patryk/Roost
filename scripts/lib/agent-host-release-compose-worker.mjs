@@ -553,6 +553,40 @@ async function readFixedRecoveryEntry({old,previousState,closureReceipt,saved,cf
 }
 /** Fixed per-installation wiring. Dependency substitutions exist for source
  * tests only; no executable/module/SQL comes from settings or a model. */
+
+export function qualifyInstalledComposePhaseIntent({snapshot:s,current,options,configuration=false,reconciliation=false,snapshotDigest=contract.releaseDigest(Object.fromEntries(Object.entries(s).filter(([k])=>k!=='releaseId')))}){
+ const m=s.manifest,t=m.deployment.targets[0],last=current?.journal?.at(-1);
+  check(current?.release?.id===s.releaseId&&['active','reconciliation_required'].includes(current.status)
+   &&contract.releaseDigest(current.release.snapshot)===snapshotDigest
+   &&Array.isArray(current.journal)&&current.journal.slice(0,-1).every(r=>['succeeded','failed'].includes(r.outcome?.status)
+    ||r.outcome?.status==='reconciled'&&['succeeded','failed','absent'].includes(r.outcome.reconciledStatus))
+   &&last?.operation===(configuration?options.rollback?'rollback_config':'deploy_config':options.rollback?'rollback':'deploy')
+   &&/^[a-f0-9-]{36}$/.test(last.id)&&Number.isFinite(Date.parse(last.createdAt))&&(!last.outcome||configuration&&reconciliation&&last.outcome.status==='uncertain')
+   &&(configuration?last.intent?.parameters?.commit===(options.rollback?t.baseline.commit:s.commit)
+     &&last.intent.parameters.configDigest===(options.rollback?m.rollback.configDigest:m.deployment.configDigest)
+     &&last.intent.parameters.artifactSetDigest===(options.rollback?m.rollback.artifactSetDigest:m.deployment.artifactSetDigest)
+     &&last.intent.parameters.schemaDigest===m.deployment.schemaDigest
+    :last.id===options.operationId&&last.createdAt===options.since&&last.intent?.parameters?.targetId===t.targetId),'phase_intent_unproven');
+  return last;
+}
+
+// Installation supplies these fixed transports only. Neither packets nor model input can select a driver.
+// This is the actual final configuration preparation used after source/entry/preimage qualification.
+export async function prepareComposePhaseConfiguration({policy,artifactBytes,mode,commit,intent,checkIntent,php,stagePhp,apply}){
+ const p=composePhasePolicySchema.parse(policy);
+ check(['candidate','rollback'].includes(mode)&&p.phase===mode&&p.commit===commit&&Buffer.isBuffer(artifactBytes)
+  &&hash(artifactBytes)===p.artifactDigest&&[checkIntent,php,apply].every(v=>typeof v==='function'),'phase_binding_changed');
+ const options={rollback:mode==='rollback'},sameIntent=async()=>check((await checkIntent(options,true)).id===intent.id,'phase_intent_changed');
+ await sameIntent();
+ check((await php(stagePhp,{targetId:p.targetId,name:composePhaseArtifactFile(p),bytes:artifactBytes.toString('base64'),sha256:p.artifactDigest})).staged===true,'artifact_stage_unproven');
+ await sameIntent();
+ if(mode==='rollback'||p.candidateExecution){const checksum=composePhaseChecksumBytes(p);
+  check((await php(stagePhp,{targetId:p.targetId,name:composePhaseArtifactFile(p)+'.sha256',bytes:checksum.toString('base64'),sha256:hash(checksum)})).staged===true,'artifact_stage_unproven');
+  await sameIntent();
+ }
+ return apply(p);
+}
+
 export function createInstalledComposeRelease({settings,state,backup,github,coolifyCredential,activitySeed},dependencies={}){
  const cfg=installedComposeReleaseSchema.parse(settings),s=structuredClone(state?.release?.snapshot),m=contract.manifestSchema.parse(s?.manifest);
  check(contract.isComposeManifest(m)&&m.cleanup.ownedResourceIds.length===0&&typeof dependencies.readReleaseState==='function'
@@ -799,21 +833,7 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
  const pins={queueHelper:cfg.sourcePins.queueHelper,deploymentJob:cfg.sourcePins.deploymentJob,applicationModel:cfg.sourcePins.applicationModel,composeParser:cfg.sourcePins.composeParser};
  const transport=createFixedComposeQueueTransport({sshBinary:process.platform==='win32'?'C:\\Windows\\System32\\OpenSSH\\ssh.exe':'/usr/bin/ssh',sshHost:cfg.sshHost,
   runOwned:async d=>({exitCode:0,stdout:await ssh({command:d.args.at(-1),stdin:d.stdin,timeoutMs:d.timeoutMs,maxOutputBytes:d.maxOutputBytes})})});
- const checkIntent=async(options,configuration=false,reconciliation=false)=>{
-  const current=await dependencies.readReleaseState(),last=current?.journal?.at(-1);
-  check(current?.release?.id===s.releaseId&&['active','reconciliation_required'].includes(current.status)
-   &&contract.releaseDigest(current.release.snapshot)===snapshotDigest
-   &&Array.isArray(current.journal)&&current.journal.slice(0,-1).every(r=>['succeeded','failed'].includes(r.outcome?.status)
-    ||r.outcome?.status==='reconciled'&&['succeeded','failed','absent'].includes(r.outcome.reconciledStatus))
-   &&last?.operation===(configuration?options.rollback?'rollback_config':'deploy_config':options.rollback?'rollback':'deploy')
-   &&/^[a-f0-9-]{36}$/.test(last.id)&&Number.isFinite(Date.parse(last.createdAt))&&(!last.outcome||configuration&&reconciliation&&last.outcome.status==='uncertain')
-   &&(configuration?last.intent?.parameters?.commit===(options.rollback?t.baseline.commit:s.commit)
-     &&last.intent.parameters.configDigest===(options.rollback?m.rollback.configDigest:m.deployment.configDigest)
-     &&last.intent.parameters.artifactSetDigest===(options.rollback?m.rollback.artifactSetDigest:m.deployment.artifactSetDigest)
-     &&last.intent.parameters.schemaDigest===m.deployment.schemaDigest
-    :last.id===options.operationId&&last.createdAt===options.since&&last.intent?.parameters?.targetId===t.targetId),'phase_intent_unproven');
-  return last;
- };
+ const checkIntent=async(options,configuration=false,reconciliation=false)=>qualifyInstalledComposePhaseIntent({snapshot:s,current:await dependencies.readReleaseState(),options,configuration,reconciliation,snapshotDigest});
  const preparePhase=async(mode,options)=>{
   check(!compatible||mode==='candidate','compatible_historical_rollback_forbidden');
   await checkIntent({...options,rollback:mode==='rollback'});const p=policies[mode],configuration=await observeConfig();
@@ -854,19 +874,13 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   check((await checkIntent({rollback:mode==='rollback'},true)).id===intent.id,'phase_intent_changed');
   if(imageRetention)lastRetentionEvidence=await imageRetention.ensure({effect:{operationId:intent.id,operation:intent.operation,since:intent.createdAt}});
   check((await checkIntent({rollback:mode==='rollback'},true)).id===intent.id,'phase_intent_changed');
-  const p=policies[mode];check((await php(stagePhp,{targetId:t.targetId,name:composePhaseArtifactFile(p),bytes:artifacts[mode].toString('base64'),sha256:p.artifactDigest})).staged===true,'artifact_stage_unproven');
-  check((await checkIntent({rollback:mode==='rollback'},true)).id===intent.id,'phase_intent_changed');
-  check(p.commit===commit,'phase_binding_changed');
-  if(mode==='rollback'||p.candidateExecution){
-   const checksum=composePhaseChecksumBytes(p);
-   check((await php(stagePhp,{targetId:t.targetId,name:composePhaseArtifactFile(p)+'.sha256',bytes:checksum.toString('base64'),sha256:hash(checksum)})).staged===true,'artifact_stage_unproven');
-   check((await checkIntent({rollback:true},true)).id===intent.id,'phase_intent_changed');
-  }
-  const url=`${new URL(cfg.coolify.origin).origin}/api/v1/applications/${t.targetId}`;
-  await configureComposeWithQualifiedModelCas({policy:p,scope:{targetId:t.targetId,repositoryPath:new URL(m.repository.url).pathname.slice(1).replace(/\.git$/,''),branch:m.repository.defaultBranch},
-   readApplication:()=>httpsJson({url,method:'GET',token:coolifyCredential,certificateSha256:cfg.coolify.certificateSha256}),
-   patchApplication:body=>httpsJson({url,method:'PATCH',token:coolifyCredential,certificateSha256:cfg.coolify.certificateSha256,body}),php,configurationTemplate,
-   beforeEffect:async()=>{await assertClone();check((await checkIntent({rollback:mode==='rollback'},true)).id===intent.id,'phase_intent_changed');check(composeConfigurationDigest(await observeConfig())===prior,'configuration_preimage_changed');}});
+  return prepareComposePhaseConfiguration({policy:policies[mode],artifactBytes:artifacts[mode],mode,commit,intent,
+   checkIntent,php,stagePhp,apply:async p=>{const url=`${new URL(cfg.coolify.origin).origin}/api/v1/applications/${t.targetId}`;
+    return configureComposeWithQualifiedModelCas({policy:p,scope:{targetId:t.targetId,repositoryPath:new URL(m.repository.url).pathname.slice(1).replace(/\.git$/,''),branch:m.repository.defaultBranch},
+     readApplication:()=>httpsJson({url,method:'GET',token:coolifyCredential,certificateSha256:cfg.coolify.certificateSha256}),
+     patchApplication:body=>httpsJson({url,method:'PATCH',token:coolifyCredential,certificateSha256:cfg.coolify.certificateSha256,body}),php,configurationTemplate,
+     beforeEffect:async()=>{await assertClone();check((await checkIntent({rollback:mode==='rollback'},true)).id===intent.id,'phase_intent_changed');check(composeConfigurationDigest(await observeConfig())===prior,'configuration_preimage_changed');}});}});
+
  };
  const raw=createComposeReleaseGateway({releaseId:state.release.id,expected:{configuration:t.configuration,configDigest:t.configDigest},
   rollbackExpected:{configuration:t.rollbackConfiguration,configDigest:t.rollbackConfigDigest},candidatePolicy:policies.candidate,rollbackPolicy:policies.rollback,

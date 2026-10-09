@@ -791,3 +791,13 @@ original configuration. A read-only recovery window never reduces the full
 release margin or authorizes another publication effect. Extending fixture clocks
 requires a genuine fresh namespace, seed, fence and protected-scope observation;
 preserve the original grant, policy and executable sources as history.
+
+Each configuration step constructs a fresh adapter. Qualify the compatible
+prior-state/protected entry on that same adapter before requesting its intent;
+do not rely on context from an earlier Git step. Artifact and checksum staging
+must use the actual candidate or rollback mode at every durable intent check.
+Final delivery includes canonical smoke counts, negative authentication and
+provider budgets, full fixture cleanup parity and each restored cadence's
+identity, behavior and ticks. Private Root summaries are not model input;
+literal historical findings need an ordinary selected context source. Neither
+the evidence channel nor the provider input cap may be widened to fit them.
