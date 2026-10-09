@@ -209,9 +209,9 @@ Scope review `9c0dbb1d` approves (`56074819`) with three exact artifact/PASS
 rows, signed-closed/restored; actual input is 131027/131072 bytes.
 Historical approval `25971566` lacks the required artifact row and is not
 grant-eligible. Original refusals and source reviews remain unchanged.
-Fixture renewal `8e3bee9b` passes. Owner preparation `a0a9cfe5` passes native
-guards; its fresh-auth wait expires, with no remote grant. Immediate grant
-attempt `ae1534bc` refuses stale proxy evidence before preparation or intent.
+Renewal `651f50be` passes 23 read-only Jobs. Owners `ae1534bc`/`e0723cf3`
+refuse native proxy age before intent; requests are not_found. Staged final
+measurements retain every clock/OS/CAS guard; 22 supporting tests pass.
 No `d73e6234` Git publication, deployment or health proof.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 
