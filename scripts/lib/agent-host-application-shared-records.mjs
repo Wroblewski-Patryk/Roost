@@ -28,7 +28,46 @@ const capabilityRelationsSchema = z.object({ schemaVersion: z.literal('roost-cap
 const descriptionEntrySchema = z.object({ digest: hash, value: z.string().max(65536) }).strict();
 const v2Schema = v1Schema.extend({ schemaVersion: z.literal('roost-application-shared-records-v2'),
   capabilityRelations: capabilityRelationsSchema.optional(), companyDescription: z.array(descriptionEntrySchema).optional() }).strict();
-export const applicationSharedRecordsSchema = z.discriminatedUnion('schemaVersion', [v1Schema, v2Schema]);
+const valueEntrySchema = z.object({ value: z.record(z.unknown()) }).strict();
+const descriptionValueEntrySchema = z.object({ value: z.string().max(65536) }).strict();
+const v3Schema = v2Schema.extend({ schemaVersion: z.literal('roost-application-shared-records-v3'),
+  valueDigestAlgorithm: z.literal('canonical-json-sha256'), sourceTableVersion: z.enum(['v1', 'v2']), domain: z.array(valueEntrySchema),
+  readinessDimension: z.array(valueEntrySchema), companyDescription: z.array(descriptionValueEntrySchema).optional() }).strict();
+export const applicationSharedRecordsSchema = z.discriminatedUnion('schemaVersion', [v1Schema, v2Schema, v3Schema]);
+
+// Presentation only: every omitted digest is derived from its unchanged full
+// value. The inverse restores the exact v1/v2 table before its original full-context
+// digest and all pointer/duplicate/singleton checks are evaluated.
+export function restoreApplicationSharedRecordValues(application, expectedOriginal) {
+  if (!plain(application) || !jsonSafe(application)) invalid();
+  const output = clone(application), table = output[tableKey];
+  if (table?.schemaVersion === 'roost-application-shared-records-v3') {
+    const parsed = v3Schema.safeParse(table); if (!parsed.success) invalid();
+    const { valueDigestAlgorithm: ignored, sourceTableVersion, ...restored } = parsed.data;
+    restored.schemaVersion = 'roost-application-shared-records-' + sourceTableVersion;
+    for (const field of [...fields, 'companyDescription']) if (Object.hasOwn(restored, field))
+      restored[field] = restored[field].map(({ value }) => ({ digest: digest(value), value }));
+    output[tableKey] = restored;
+  }
+  // This runs the existing strict inverse, not a second authority mechanism.
+  restoreApplicationSharedRecords(output);
+  if (expectedOriginal !== undefined && (!plain(expectedOriginal) || !jsonSafe(expectedOriginal)
+      || digest(output) !== digest(expectedOriginal))) invalid();
+  return output;
+}
+export function projectApplicationSharedRecordValues(application, expectedOriginal) {
+  if (expectedOriginal === undefined) invalid();
+  const original = restoreApplicationSharedRecordValues(application, expectedOriginal);
+  if (!['roost-application-shared-records-v1', 'roost-application-shared-records-v2'].includes(original[tableKey]?.schemaVersion)) return original;
+  const output = clone(original), table = output[tableKey];
+  table.sourceTableVersion = table.schemaVersion.endsWith('-v1') ? 'v1' : 'v2';
+  table.schemaVersion = 'roost-application-shared-records-v3';
+  table.valueDigestAlgorithm = 'canonical-json-sha256';
+  for (const field of [...fields, 'companyDescription']) if (Object.hasOwn(table, field))
+    table[field] = table[field].map(({ value }) => ({ value }));
+  restoreApplicationSharedRecordValues(output, original);
+  return output;
+}
 const capabilityFields = ['id', 'capabilityDefinitionId', 'key', 'name', 'domain', 'applicability', 'targetState', 'observedState'];
 const capabilityReference = row => plain(row) && Object.hasOwn(row, 'sharedCapability') && !Object.hasOwn(row, 'id');
 const descriptionReference = value => plain(value) && Object.hasOwn(value, 'sharedDescription');
@@ -153,6 +192,8 @@ const supported = value => plain(value) && id.safeParse(value.id).success && jso
 // References are local table indexes, never discovery or authority. The table
 // binds every full record by canonical digest and the reconstructed full input.
 export function restoreApplicationSharedRecords(application) {
+  if (application?.[tableKey]?.schemaVersion === 'roost-application-shared-records-v3')
+    return restoreApplicationSharedRecords(restoreApplicationSharedRecordValues(application));
   const output = clone(application); detachRows(output); let positions = slots(output); const hasTable = plain(output) && Object.hasOwn(output, tableKey);
   if (!hasTable) { if (positions.some(({ definition, field }) => reference(definition[field])) || capabilityRows(output).some(capabilityReference)
     || output?.companyRecords?.some?.(row => descriptionReference(row?.description))) invalid(); return output; }

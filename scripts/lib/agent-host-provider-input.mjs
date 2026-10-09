@@ -14,7 +14,7 @@ import { sealHermesProfile, assertHermesProfile, hermesStartupProfileVersion, he
 import { createHermesStartupCandidate, sealHermesStartup, assertHermesStartup } from "./agent-host-hermes-startup.mjs";
 import { basisRevalidationSchema } from "./agent-host-code-reviewer.mjs";
 import { qualifiedCrlfDiffCertificateSchema } from "./agent-host-review-crlf-diff.mjs";
-import { projectApplicationSharedRecords, assertApplicationSharedRecords } from "./agent-host-application-shared-records.mjs";
+import { projectApplicationSharedRecords, projectApplicationSharedRecordValues, assertApplicationSharedRecords } from "./agent-host-application-shared-records.mjs";
 import { projectProviderSharedAudit, assertProviderSharedAudit, providerSharedAuditInstructionSchema } from "./agent-host-provider-shared-audit.mjs";
 import { codeReviewerPriorAuditEvidenceSchema, primaryReadOnlyReviewedSchema,
   isPrimaryReadOnlyReview, primaryReadOnlyReviewMatches } from "./agent-host-code-reviewer-prior-audit.mjs";
@@ -23,6 +23,7 @@ import { sealHermesBudget, assertHermesBudget, assertHermesBudgetReceipt, create
 
 export const providerInputVersion = "roost-provider-input-v1";
 export const providerInputMaxBytes = 131072;
+export const providerSharedRecordValuesRule = "applicationSharedRecords v3: full .value entries retained; digest=SHA256(canonical JSON with sorted object keys). sourceTableVersion restores exact v1/v2; originalDigest binds full restored context.";
 export const primaryReadOnlyProviderRules = Object.freeze([
   "Readonly audit: no native/shell/file/process/Docker/Git/network tools/effects.",
   "Independently assess scope/requirements/cited audit; report discrepancies.",
@@ -134,7 +135,13 @@ export const providerInputSchema = z.object({
     || auditReference && (auditEvidence.identity.executionId !== auditReference.executionId
       || auditEvidence.readOnlyAudit.digest !== auditReference.receiptDigest)) context.addIssue({ code: z.ZodIssueCode.custom,
     path: ["evidence", "codeReviewerPriorAudit"], message: "code_reviewer_prior_audit_binding_invalid" });
-  try { assertApplicationSharedRecords(input.evidence.application.value); }
+  try {
+    const valuesOnly = input.evidence.application.value.applicationSharedRecords?.schemaVersion === "roost-application-shared-records-v3";
+    if (valuesOnly && (input.contract.nativeBoundary?.profile !== "inspect-readonly"
+        || !isPrimaryReadOnlyReview(input.contract.nativeBoundary.inspectReadOnly)
+        || input.rules.filter(rule => rule === providerSharedRecordValuesRule).length !== 1)) throw Error("shared_values_scope_invalid");
+    assertApplicationSharedRecords(input.evidence.application.value);
+  }
   catch { context.addIssue({ code: z.ZodIssueCode.custom, path: ["evidence", "application", "value", "applicationSharedRecords"], message: "application_shared_records_invalid" }); }
   const application = input.evidence.application.value, indexProjection = application.documentationIndexProjection;
   if (indexProjection !== undefined) {
@@ -261,8 +268,14 @@ function projection(fresh, claimed, repositoryEvidence, priorAudit, codeReviewer
   const refs = field => packet.contract[field].items.map(ref => task[field].find(item => item.id === ref.id));
   const sources = packet.sources;
   const procedures = refs("procedures");
-  const applicationEvidence = projectApplicationSharedRecords(applicationNavigationIndexProjection(applicationProcedureReferences(Object.fromEntries(applicationKeys
+  const primaryReadOnly = packet.contract.nativeBoundary?.profile === "inspect-readonly" && isPrimaryReadOnlyReview(packet.contract.nativeBoundary.inspectReadOnly);
+  let applicationEvidence = projectApplicationSharedRecords(applicationNavigationIndexProjection(applicationProcedureReferences(Object.fromEntries(applicationKeys
     .filter(key => application[key] !== undefined).map(key => [key, application[key]])), procedures), packet.contract));
+  if (primaryReadOnly) {
+    const values = projectApplicationSharedRecordValues(applicationEvidence, applicationEvidence);
+    if (Buffer.byteLength(JSON.stringify(values)) + Buffer.byteLength(JSON.stringify(providerSharedRecordValuesRule)) + 1
+        < Buffer.byteLength(JSON.stringify(applicationEvidence))) applicationEvidence = values;
+  }
   const allowed = new Set(Object.values(packet.contract.context).flat().map(ref => ref.id));
   if (sources.some(source => !allowed.has(source.id)) || new Set(sources.map(source => source.id)).size !== sources.length) throw blocked();
   return projectProviderComposedInstructions(projectProviderSharedAudit({
@@ -271,7 +284,8 @@ function projection(fresh, claimed, repositoryEvidence, priorAudit, codeReviewer
     revisions: { packet: packet.revision, context: executionContextRevision(task, application), ready: task.readyAdmission.revision,
       risk: task.readyAdmission.riskAdmission.seal, composition: packet.procedureComposition.seal },
     provenance: { identity: "worker.claimed_attempt", revisions: "worker.validated_ready_context", contract: "executionPacket.contract", rules: "worker.provider_input_v1" },
-    rules: packet.contract.nativeBoundary?.profile === "inspect-readonly" && isPrimaryReadOnlyReview(packet.contract.nativeBoundary.inspectReadOnly) ? primaryReadOnlyProviderRules.slice() : [
+    rules: primaryReadOnly ? [...primaryReadOnlyProviderRules,
+      ...(applicationEvidence.applicationSharedRecords?.schemaVersion === "roost-application-shared-records-v3" ? [providerSharedRecordValuesRule] : [])] : [
       ...(packet.contract.nativeBoundary?.profile === "coding-local" ? nativeBoundaryRules : []),
       ...(packet.contract.nativeBoundary?.existingCommitVerification ? [
         "This stage verifies an existing accepted commit. Read the canonical repository and report evidence only; do not write source, create or amend a commit, switch branches, push or deploy. Worker runs the fixed regression replay and rejects any observed workspace change."

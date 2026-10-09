@@ -37,6 +37,12 @@ Native metadata inventory retains at most 32,768 entries per tree; depth,
 identity, dirty-file and content limits remain enforced. Large historical
 documentation is retained rather than omitted or deleted to fit the observer.
 The verifier must retain the auditor's exact selection and evidence binding.
+Primary read-only review may present shared-record tables as typed v3 values:
+every full value remains inline, with canonical JSON SHA256 derivation and
+the original v1/v2 table version. The inverse reconstructs literal entry
+digests and validates the full original-context digest and pointer joins.
+Projection requires equality with the caller-held original. Other profiles
+retain v1/v2; the 131072-byte whole-input cap and redaction remain unchanged.
 Protected project-state material may be supplied as an explicitly attributed,
 dated operator summary; it is never treated as a native model read or current
 runtime proof.
