@@ -333,8 +333,10 @@ const compatibleProofSchema=z.object({schemaVersion:z.literal('roost-compatible-
  sourceExecutionId:z.string().uuid(),sourceBasisDigest:hex,scopeBasisDigest:hex,serverOperatingSystemAttestation:z.literal(false),
  serverPrivateSignatureVerification:z.literal(false),releaseAuthority:z.literal(false)}).strict();
 export function qualifyCompatibleRecoveryBuildSnapshot(snapshot){
+ if(snapshot?.compatibleConfigurationContinuation)check(contract.compatibleConfigurationContinuationStoredError(snapshot)===null,'compatible_continuation_provenance_unproven');
+ else check(snapshot?.compatibleContinuationBasis===undefined,'compatible_continuation_provenance_unproven');
  const r=contract.compatibleArtifactRecoverySchema.parse(snapshot?.compatibleArtifactRecovery),p=compatibleProofSchema.parse(snapshot.compatibleRecoveryProof);
- const input=structuredClone(snapshot);for(const k of['compatibleRecoveryProof','readinessDigest','configurationDigest','releaseId'])delete input[k];
+ const input=structuredClone(snapshot);for(const k of['compatibleRecoveryProof','compatibleContinuationBasis','readinessDigest','configurationDigest','releaseId'])delete input[k];
  check(contract.createReleaseSchema.safeParse(input).success&&p.requestDigest===contract.releaseDigest(input)&&p.applicationId===snapshot.applicationId
   &&p.manifestDigest===snapshot.manifestDigest&&p.scopeDigest===r.scopeAudit.scopeDigest&&p.buildReceiptDigest===r.replacement.buildReceiptDigest
   &&p.compatibilityReceiptDigest===r.replacement.compatibilityReceiptDigest&&p.sourceExecutionId!==r.scopeAudit.executionId
@@ -357,7 +359,11 @@ export function qualifyCompatibleRecoveryConfigurationPreimage({snapshot,current
  const r=snapshot.compatibleArtifactRecovery,last=current?.journal?.at(-1),before=current?.journal?.slice(0,-1);
  const{releaseId:_,...wireSnapshot}=snapshot;
  check(r&&current.release?.id===snapshot.releaseId&&['active','reconciliation_required'].includes(current.status)&&contract.releaseDigest(current.release.snapshot)===contract.releaseDigest(wireSnapshot),'compatible_configuration_scope_changed');
- check(before?.length===4&&before.every((v,i)=>v.operation===['push','pr','review','merge'][i]&&(v.outcome?.status==='succeeded'||v.outcome?.status==='reconciled'&&v.outcome.reconciledStatus==='succeeded'))
+ const continued=snapshot.compatibleConfigurationContinuation!==undefined;
+ if(continued)qualifyCompatibleRecoveryBuildSnapshot(snapshot);
+ else check(snapshot.compatibleContinuationBasis===undefined,'compatible_configuration_preimage_unproven');
+ const publication=continued?before?.length===0:before?.length===4&&before.every((v,i)=>v.operation===['push','pr','review','merge'][i]&&(v.outcome?.status==='succeeded'||v.outcome?.status==='reconciled'&&v.outcome.reconciledStatus==='succeeded'));
+ check(publication
   &&last.operation==='deploy_config'&&!last.outcome&&last.intent?.parameters?.commit===snapshot.commit&&last.intent.parameters.configDigest===snapshot.manifest.deployment.configDigest
   &&last.intent.parameters.artifactSetDigest===snapshot.manifest.deployment.artifactSetDigest&&last.intent.parameters.schemaDigest===snapshot.manifest.deployment.schemaDigest
   &&composeConfigurationDigest(configuration)===composeConfigurationDigest(r.currentEntry.configuration),'compatible_configuration_preimage_unproven');return true;

@@ -6,7 +6,8 @@ import path from 'node:path';
 import wire from './lib/agent-host-release-contract.cjs';
 import { qualifyReleaseInspectionIdentity, qualifyRootMonitor, qualifyDetailedReleaseOutcomes,
   assertVerifiedReleaseDelivery, loadReleaseInspectionCustody, readReleaseInspectionSource,
-  releaseDeliveryEvidenceSchema, releaseDeliveryDetailSchema, closedReleaseControllerIdentity } from './lib/agent-host-release-inspection.mjs';
+  releaseDeliveryEvidenceSchema, releaseDeliveryDetailSchema, closedReleaseControllerIdentity,
+  projectQualifiedReleaseNormal,inheritedReleasePublicationSchema } from './lib/agent-host-release-inspection.mjs';
 import { validPacketFixture, pinReadyFixture } from './fixtures/execution-packet.mjs';
 import { prepareProviderInput, providerInputSchema } from './lib/agent-host-provider-input.mjs';
 
@@ -119,4 +120,60 @@ test('public evidence schema joins exact declaration and claim but is never a li
     const changed=structuredClone(input);mutate(changed);assert.equal(providerInputSchema.safeParse(changed).success,false);
   }
   assert.throws(()=>assertVerifiedReleaseDelivery(JSON.parse(JSON.stringify(synthetic)),x),/genuine_bound_handle/);
+});
+function continuationDeliveryFixture(){const x=identity(),at='2026-01-01T13:00:00.000Z',parentAt='2026-01-01T11:00:00.000Z';
+ const inheritedPublication={schemaVersion:'roost-governed-release-inherited-publication-v1',releaseId:id(50),closureId:id(51),closureDigest:h(1),nativeClosureDigest:h(2),revocationId:id(52),
+  closedAt:'2026-01-01T11:01:00.000Z',parentManifestDigest:h(3),journalDigest:h(4),commit,tree:x.inspection.tree,baseCommit:'c'.repeat(40),baseTree:'d'.repeat(40),pullRequestNumber:4,operationCount:4,
+  operationsSummary:['push','pr','review','merge'].map((operation,n)=>({operation,operationId:id(60+n),outcomeId:id(70+n),intentDigest:h(n+1),outcomeDigest:h(n+2),evidenceDigest:h(n+3),createdAt:parentAt,observedAt:parentAt})),
+  claimBoundary:{historicalOwnerClosure:true,currentNativeCapability:false,serverOsAttestation:false}};
+ const state=outcomes();state.release.id=x.claimed.metadata.releaseVerification.releaseId;
+ state.journal=['deploy_config','deploy','observe','smoke','fixture_cleanup','runtime_resume','cleanup'].map(operation=>({operation,outcome:{evidence:{observedAt:at}}}));
+ const facts={journalDigest:wire.releaseDigest(state.journal),ownPhaseCount:7,inheritedPublication};
+ const normal=projectQualifiedReleaseNormal(state,at,facts),postObservation=qualifyDetailedReleaseOutcomes(outcomes(),x.inspection);
+ const value={schemaVersion:'roost-governed-release-delivery-evidence-v1',binding:{executionId:x.claimed.id,taskId:x.claimed.taskId,applicationId:x.claimed.applicationId,hostId:x.claimed.agentHostId,
+  releaseId:state.release.id,commit,tree:x.inspection.tree,manifestDigest:x.inspection.manifestDigest,scopeDigest:x.inspection.scopeDigest,imageDigest:x.inspection.imageDigest},normal,
+  native:{archiveDigest:h(1),checkpointDigest:h(2),registeredChildCount:7,currentOsObservedAt:at,closedChildren:true},
+  monitor:{digest:h(3),samples:52,firstAt:at,lastAt:at,maxGapMilliseconds:30000},postObservation,
+  claimBoundary:{rootSupervised:true,autonomousDaemon:false,serverOsAttestation:false,modelAuthority:false}};
+ return {value,x,state,facts};
+}
+test('typed continuation has seven own phases, four immutable historical Git summaries and explicit effective provenance',()=>{
+ const f=continuationDeliveryFixture(),before=structuredClone(f.state),v=releaseDeliveryEvidenceSchema.parse(f.value);
+ assert.equal(v.normal.operationCount,7);assert.equal(v.normal.inheritedPublication.operationCount,4);assert.equal(v.normal.effectiveOperationCount,11);
+ assert.deepEqual(v.normal.effectiveOperationsSummary.slice(0,4).map(r=>r.provenance),Array(4).fill('inherited_publication'));
+ assert.deepEqual(v.normal.effectiveOperationsSummary.slice(4).map(r=>r.provenance),Array(7).fill('current_release'));
+ assert.equal(v.normal.inheritedPublication.operationsSummary[0].observedAt,'2026-01-01T11:00:00.000Z');
+ assert.deepEqual(f.state,before);assert.equal(v.native.registeredChildCount,7,'native proof belongs to current release only');
+ assert.equal(v.normal.inheritedPublication.claimBoundary.currentNativeCapability,false);
+ assert.equal(v.postObservation.details.smoke.negativePathStatus,401);assert.equal(v.postObservation.details.runtimeResume.cadenceEvidence.length,2);
+ assert.throws(()=>assertVerifiedReleaseDelivery(v,f.x),/genuine_bound_handle/);
+});
+for(const [name,change]of Object.entries({
+ missingDetails:v=>delete v.postObservation.details,sevenFakeGit:v=>v.normal.operationsSummary[0].operation='push',
+ inventedInheritedCount:v=>v.normal.inheritedPublication.operationCount=11,ownCount:v=>v.normal.operationCount=11,
+ wrongParentCommit:v=>v.normal.inheritedPublication.commit='e'.repeat(40),wrongParentTree:v=>v.normal.inheritedPublication.tree='e'.repeat(40),
+ parentSameRelease:v=>v.normal.inheritedPublication.releaseId=v.binding.releaseId,foreignCurrentRelease:v=>v.normal.effectiveOperationsSummary[4].releaseId=id(99),
+ fabricatedOldClock:v=>v.normal.effectiveOperationsSummary[0].observedAt='2026-01-01T12:00:00.000Z',
+ swappedProvenance:v=>v.normal.effectiveOperationsSummary[0].provenance='current_release',omittedOperationId:v=>delete v.normal.inheritedPublication.operationsSummary[0].operationId,
+ duplicateGitId:v=>v.normal.inheritedPublication.operationsSummary[1].operationId=v.normal.inheritedPublication.operationsSummary[0].operationId,
+ duplicateOutcomeId:v=>v.normal.inheritedPublication.operationsSummary[1].outcomeId=v.normal.inheritedPublication.operationsSummary[0].outcomeId,
+ reversedGit:v=>v.normal.inheritedPublication.operationsSummary.reverse(),gitAfterClosure:v=>v.normal.inheritedPublication.operationsSummary[0].observedAt='2026-01-01T13:00:00.000Z',
+ revivedHistoricalNative:v=>v.normal.inheritedPublication.claimBoundary.currentNativeCapability=true,
+ rootClaims:v=>v.normal.inheritedPublication.operatorClaim='Root says success',changedHash:v=>v.normal.effectiveOperationsSummary[0].evidenceDigest=h(9),
+ extraInherited:v=>v.normal.inheritedPublication.operationsSummary.push(structuredClone(v.normal.inheritedPublication.operationsSummary[0])),
+ shortObservation:v=>v.postObservation.observationSeconds=1199,shortActivity:v=>v.postObservation.restoredActivitySeconds=299,
+ tooBig:v=>v.normal.effectiveOperationsSummary[4].operation='x'.repeat(32768)
+}))test('typed continuation refuses '+name,()=>{const v=continuationDeliveryFixture().value;change(v);assert.equal(releaseDeliveryEvidenceSchema.safeParse(v).success,false);});
+test('provider strict schema preserves both provenance sets without claiming a custody handle',()=>{
+ const f=validPacketFixture(),x=continuationDeliveryFixture(),o={fresh:{taskContext:f.taskContext,applicationContext:f.applicationContext},claimed:f.claimed,currentCommit:commit,assertAuthority(){}};
+ const input=structuredClone(prepareProviderInput(o));input.contract.nativeBoundary={...x.x.contract.nativeBoundary,readPaths:['release.json'],runtime:{required:false,ports:[]}};
+ input.contract.access={...input.contract.access,...x.x.contract.access};const v=x.value;
+ Object.assign(v.binding,{executionId:input.identity.executionId,taskId:input.identity.taskId,applicationId:input.identity.applicationId});
+ input.evidence.releaseDelivery={provenance:'worker.verified_governed_release_delivery',trust:'untrusted_evidence',value:v};
+ assert.equal(providerInputSchema.safeParse(input).success,true,JSON.stringify(providerInputSchema.safeParse(input).error?.issues));
+ const parsed=providerInputSchema.parse(input);assert.equal(parsed.evidence.releaseDelivery.value.normal.operationCount,7);
+ assert.deepEqual(parsed.evidence.releaseDelivery.value.normal.inheritedPublication.operationsSummary,v.normal.inheritedPublication.operationsSummary);
+ assert.equal(parsed.evidence.releaseDelivery.value.normal.effectiveOperationCount,11);
+ assert.throws(()=>assertVerifiedReleaseDelivery(v,x.x),/genuine_bound_handle/);
+ assert.equal(inheritedReleasePublicationSchema.safeParse({...v.normal.inheritedPublication,releaseAuthority:true}).success,false);
 });

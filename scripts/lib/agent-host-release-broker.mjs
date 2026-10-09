@@ -53,7 +53,7 @@ const compatibleProofSchema=z.object({schemaVersion:z.literal('roost-compatible-
   'privateSignedRecordDigest','jobReceiptDigest','toolchainDigest','sourceCASDigest','sourceBasisDigest','scopeBasisDigest'].map(k=>[k,z.string().regex(/^[a-f0-9]{64}$/)])),
  nativeAttemptIsAgentExecution:z.literal(false),serverOperatingSystemAttestation:z.literal(false),serverPrivateSignatureVerification:z.literal(false),releaseAuthority:z.literal(false)}).strict();
 function compatibleSnapshot(state){
- const {readinessDigest:_r,configurationDigest:_c,compatibleRecoveryProof,successorBasis,publishedGitBasis,...body}=state.release.snapshot;
+ const {readinessDigest:_r,configurationDigest:_c,compatibleRecoveryProof,compatibleContinuationBasis,successorBasis,publishedGitBasis,...body}=state.release.snapshot;
  const parsed=contract.createReleaseSchema.safeParse(body),proof=compatibleProofSchema.safeParse(compatibleRecoveryProof);
  if(!parsed.success||parsed.data.compatibleArtifactRecovery===undefined||successorBasis!==undefined||publishedGitBasis!==undefined||!proof.success)fail('release_compatible_recovery_scope_invalid');
  const s=parsed.data,r=s.compatibleArtifactRecovery,p=proof.data;
@@ -61,7 +61,10 @@ function compatibleSnapshot(state){
   ||p.applicationId!==s.applicationId||p.workspaceId!==state.release.workspaceId||p.issuerUserId!==state.release.issuerUserId
   ||p.requestDigest!==contract.releaseDigest(s)||p.manifestDigest!==s.manifestDigest||p.scopeDigest!==r.scopeAudit.scopeDigest
   ||p.buildReceiptDigest!==r.replacement.buildReceiptDigest||p.compatibilityReceiptDigest!==r.replacement.compatibilityReceiptDigest)fail('release_compatible_recovery_proof_changed');
- return {...s,releaseId:state.release.id,compatibleRecoveryProof:p};
+ if(s.compatibleConfigurationContinuation&&(compatibleContinuationBasis===undefined
+  ||contract.compatibleConfigurationContinuationStoredError({...s,compatibleContinuationBasis})!==null))fail('release_compatible_recovery_proof_changed');
+ if(!s.compatibleConfigurationContinuation&&compatibleContinuationBasis!==undefined)fail('release_compatible_recovery_scope_invalid');
+ return {...s,releaseId:state.release.id,compatibleRecoveryProof:p,...(compatibleContinuationBasis?{compatibleContinuationBasis}:{})};
 }
 // One strict stored-proof qualification shared with recovery and inspection.
 export const qualifyCompatibleReleaseSnapshot=compatibleSnapshot;
@@ -521,7 +524,7 @@ export async function runReleaseStep({state,client,api,github,coolify,assertWrit
  // Validate actual checkout and remote base before requesting a capability.
  const cleanupStage=['cleanup','cleanup_local','cleanup_resource','archive_repository'].includes(operation);
  if(operation!=='cleanup')await inspectCheckout(m,s.commit,contract.releaseGitPublicationBase(s).commit,s.candidateTree);
- const remote=await github.inspect(m,{allowArchived:cleanupStage&&!contract.retainsApplication(m)}),merged=contract.releaseHasRecoveryOnly(s)||contract.releaseHasSuccessor(state.release.snapshot)||contract.releaseHasPublishedGitBasis(state.release.snapshot)||state.journal.some(j=>j.operation==='merge'&&releaseOutcomeStatus(j.outcome)==='succeeded');
+ const remote=await github.inspect(m,{allowArchived:cleanupStage&&!contract.retainsApplication(m)}),merged=!!s.compatibleConfigurationContinuation||contract.releaseHasRecoveryOnly(s)||contract.releaseHasSuccessor(state.release.snapshot)||contract.releaseHasPublishedGitBasis(state.release.snapshot)||state.journal.some(j=>j.operation==='merge'&&releaseOutcomeStatus(j.outcome)==='succeeded');
  const publicationBase=contract.releaseGitPublicationBase(s);
  if(remote.remoteBase!==(merged?s.commit:publicationBase.commit)
   ||remote.remoteTree!==(merged?s.candidateTree:publicationBase.tree))fail('release_base_changed');

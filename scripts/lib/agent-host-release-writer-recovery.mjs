@@ -45,13 +45,18 @@ export function releaseOwnerInstanceAbsent(owner, current) {
 }
 function grant(state, client) {
   check(state?.release && Array.isArray(state.journal) && state.journal.length <= 100 && !state.truncated);
-  const { readinessDigest, configurationDigest, successorBasis, publishedGitBasis, compatibleRecoveryProof, ...raw } = state.release.snapshot ?? {};
+  const { readinessDigest, configurationDigest, successorBasis, publishedGitBasis, compatibleRecoveryProof, compatibleContinuationBasis, ...raw } = state.release.snapshot ?? {};
   const snapshot = contract.createReleaseSchema.parse(raw);
   if(snapshot.compatibleArtifactRecovery!==undefined||compatibleRecoveryProof!==undefined){
     const checked=qualifyCompatibleReleaseSnapshot(state);
     check(!successorBasis&&!publishedGitBasis&&same(checked.compatibleArtifactRecovery,snapshot.compatibleArtifactRecovery));
     snapshot.compatibleRecoveryProof=checked.compatibleRecoveryProof;
+    if(snapshot.compatibleConfigurationContinuation){
+      check(same(checked.compatibleContinuationBasis,compatibleContinuationBasis));
+      snapshot.compatibleContinuationBasis=checked.compatibleContinuationBasis;
+    }else check(compatibleContinuationBasis===undefined);
   }
+  else check(compatibleContinuationBasis===undefined);
   if (snapshot.predecessor || successorBasis) {
     check(snapshot.predecessor?.releaseId !== state.release.id && contract.releaseHasSuccessor({ ...snapshot, successorBasis }));
     snapshot.successorBasis = successorBasis;

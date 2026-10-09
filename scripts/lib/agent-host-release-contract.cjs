@@ -209,7 +209,8 @@ const recoveryOnlySchema=z.lazy(()=>z.object({schemaVersion:z.literal('roost-com
 // Instantiated after all base schemas/digests below. The lazy reference is only
 // resolved at parse time; neither module imports the other in a loader cycle.
 const compatibleArtifactRecoverySchema=z.lazy(()=>compatibleRecoveryContract.compatibleArtifactRecoverySchema);
-const createReleaseSchema=z.object({requestId:id,taskId:id,applicationId:id,hostId:id,releaseExecutionId:id,releaserAgentId:id,releaserCredentialId:id,credentialVersion:z.number().int().positive(),reviewId:id,materialVersion:hash,commit:sha,candidateTree:sha,baseCommit:sha,baseTree:sha,releaserRevision:z.string().datetime(),expiresAt:releaseExpirySchema,manifest:manifestSchema,manifestDigest:hash,recoveryOnly:recoveryOnlySchema.optional(),compatibleArtifactRecovery:compatibleArtifactRecoverySchema.optional(),predecessor:predecessorSchema.optional(),baselineRestart:baselineRestartSchema.optional(),baselineAdoption:z.union([composeQueueAbsenceBaselineAdoptionSchema,composeRetainedBaselineAdoptionSchema]).optional(),baselineRevalidation:baselineRevalidationSchema.optional(),gitPublicationBase:gitPublicationBaseSchema.optional()}).strict().superRefine((s,c)=>{
+const createReleaseSchema=z.object({requestId:id,taskId:id,applicationId:id,hostId:id,releaseExecutionId:id,releaserAgentId:id,releaserCredentialId:id,credentialVersion:z.number().int().positive(),reviewId:id,materialVersion:hash,commit:sha,candidateTree:sha,baseCommit:sha,baseTree:sha,releaserRevision:z.string().datetime(),expiresAt:releaseExpirySchema,manifest:manifestSchema,manifestDigest:hash,recoveryOnly:recoveryOnlySchema.optional(),compatibleArtifactRecovery:compatibleArtifactRecoverySchema.optional(),compatibleConfigurationContinuation:z.lazy(()=>compatibleContinuationContract.compatibleConfigurationContinuationSchema).optional(),predecessor:predecessorSchema.optional(),baselineRestart:baselineRestartSchema.optional(),baselineAdoption:z.union([composeQueueAbsenceBaselineAdoptionSchema,composeRetainedBaselineAdoptionSchema]).optional(),baselineRevalidation:baselineRevalidationSchema.optional(),gitPublicationBase:gitPublicationBaseSchema.optional()}).strict().superRefine((s,c)=>{
+ if(s.compatibleConfigurationContinuation&&!s.compatibleArtifactRecovery)c.addIssue({code:'custom',message:'release_compatible_continuation_scope_required'});
  if(s.gitPublicationBase&&(!isComposeManifest(s.manifest)||s.predecessor||s.baselineRestart||s.baselineAdoption||s.gitPublicationBase.commit===s.commit))c.addIssue({code:'custom',message:'release_git_publication_base_scope_invalid'});
  if(isReleaseSetManifest(s.manifest)&&(s.manifest.deployment.artifactSetDigest!==sourceArtifactDigest(s.manifest,s)||s.manifest.baseline.commit!==s.baseCommit))c.addIssue({code:'custom',message:'release_source_set_mismatch'});
  if(isComposeManifest(s.manifest)&&s.manifest.deployment.targets.some(t=>t.configuration.gitCommit!==s.commit||t.baseline.tree!==s.baseTree))c.addIssue({code:'custom',message:'release_compose_source_changed'});
@@ -368,7 +369,7 @@ const composeRetainedBaselineRevalidationSchema=composeQueueAbsenceRevalidationS
  queues:z.array(z.object({operationId:id,targetId:text,deploymentId:text,queue:composeRecoverySchema.shape.queue.unwrap()}).strict()).length(2)}).strict();
 const composeFailedRollbackPartialClosureRevalidationSchema=z.object({schemaVersion:z.literal('roost-compose-failed-rollback-partial-closure-revalidation-v1'),
  releaseId:id,failedOutcomeId:id,failedEvidenceDigest:hash,currentEvidence:evidenceSchema,nativeClosureDigest:hash,observedAt:z.string().datetime()}).strict();
-const closeFailedReleaseSchema=z.object({requestId:id,expectedVersion:hash,failedOperationId:id,consentDigest:hash,evidence:evidenceSchema,nativeClosure:releaseNativeClosureSchema.optional(),absenceRevalidation:z.union([configAbsenceRevalidationSchema,composeQueueAbsenceRevalidationSchema,composeRetainedBaselineRevalidationSchema,composeFailedRollbackPartialClosureRevalidationSchema]).optional()}).strict();
+const closeFailedReleaseSchema=z.object({requestId:id,expectedVersion:hash,failedOperationId:id,consentDigest:hash,evidence:evidenceSchema,nativeClosure:releaseNativeClosureSchema.optional(),absenceRevalidation:z.union([z.lazy(()=>compatibleConfigClosureContract.compatibleConfigClosureRevalidationSchema),configAbsenceRevalidationSchema,composeQueueAbsenceRevalidationSchema,composeRetainedBaselineRevalidationSchema,composeFailedRollbackPartialClosureRevalidationSchema]).optional()}).strict();
 const authorizeReconciliationSchema=z.object({requestId:id,expectedVersion:hash,credentialId:id,credentialVersion:z.number().int().positive(),operationIds:z.array(id).min(1).max(30),expiresAt:releaseExpirySchema}).strict();
 const publishedGitBasisSchema=z.object({schemaVersion:z.literal('roost-release-published-git-v1'),releaseId:id,expectedVersion:hash,
  closureId:id,closureDigest:hash,pushOperationId:id,prOperationId:id,reviewOperationId:id,mergeOperationId:id,
@@ -483,6 +484,7 @@ const composeConfigAbsenceEvidenceError=(s,e,operation)=>{
  }catch{return 'release_compose_config_absence_unproven';}
 };
 const releaseConfigAbsenceRevalidationBindingError=(snapshot,input)=>{
+  if(input.evidence?.compatibleRecoveryFailure!==undefined)return compatibleConfigClosureContract.compatibleConfigClosureRevalidationBindingError(snapshot,input);
  if(input.absenceRevalidation?.schemaVersion==='roost-compose-failed-rollback-partial-closure-revalidation-v1')return composeFailedRollbackPartialClosureBindingError(snapshot,input);
  if(input.absenceRevalidation?.schemaVersion==='roost-compose-retained-baseline-closure-revalidation-v1')return releaseComposeRetainedBaselineRevalidationBindingError(snapshot,input);
  if(input.absenceRevalidation?.schemaVersion==='roost-compose-queue-absence-closure-revalidation-v1')return releaseComposeQueueAbsenceRevalidationBindingError(snapshot,input);
@@ -502,7 +504,8 @@ const releaseConfigAbsenceRevalidationBindingError=(snapshot,input)=>{
   return null;
  }catch{return 'release_config_absence_revalidation_invalid';}
 };
-const releaseConfigAbsenceRevalidationError=(snapshot,input,now)=>{
+const releaseConfigAbsenceRevalidationError=(snapshot,input,now,operation)=>{
+  if(input.evidence?.compatibleRecoveryFailure!==undefined)return compatibleConfigClosureContract.compatibleConfigClosureRevalidationError(snapshot,input,now,operation);
  if(input.absenceRevalidation?.schemaVersion==='roost-compose-failed-rollback-partial-closure-revalidation-v1')return composeFailedRollbackPartialClosureRevalidationError(snapshot,input,now);
  if(input.absenceRevalidation?.schemaVersion==='roost-compose-retained-baseline-closure-revalidation-v1')return releaseComposeRetainedBaselineRevalidationError(snapshot,input,now);
  if(input.absenceRevalidation?.schemaVersion==='roost-compose-queue-absence-closure-revalidation-v1')return releaseComposeQueueAbsenceRevalidationError(snapshot,input,now);
@@ -1081,7 +1084,12 @@ module.exports.releaseRecoveryOnlyOperationError=releaseRecoveryOnlyOperationErr
 const compatibleRecoveryContract=createCompatibleRecoveryContract({manifestSchema,
  composeConfigurationSchema:compose.composeConfigurationSchema,composeRuntimeServiceSchema:compose.composeRuntimeServiceSchema,
  releaseNativeClosureSchema,releaseDigest,composeConfigurationDigest:compose.composeConfigurationDigest,
- qualifyCompatibleFailureOutcome:(...args)=>compatibleFailureContract.compatibleFailureOutcomeError(...args)});
+ qualifyCompatibleFailureOutcome:(...args)=>compatibleFailureContract.compatibleFailureOutcomeError(...args),
+ continuationScopeDigest:input=>compatibleContinuationContract.compatibleConfigurationContinuationScopeDigest(input),
+ nextContinuationOperation:state=>compatibleContinuationContract.nextCompatibleConfigurationContinuationOperation(state),
+ continuationIntentError:(...args)=>compatibleContinuationContract.compatibleConfigurationContinuationIntentError(...args),
+ continuationStoredError:s=>compatibleContinuationContract.compatibleConfigurationContinuationStoredError(s),
+ continuationOperations:()=>compatibleContinuationContract.compatibleConfigurationContinuationOperations});
 Object.assign(module.exports,compatibleRecoveryContract);
 // Both base graphs are initialized before the lazy marker is ever parsed.
 // The recovery factory receives a fixed deferred callback, never packet code.
@@ -1090,3 +1098,13 @@ const compatibleFailureContract=createCompatibleFailureContract({manifestSchema,
  composeIngressFenceSchema:ingressFence.composeIngressFenceSchema,releaseDigest,composeConfigurationDigest:compose.composeConfigurationDigest,
  compatibleRecoveryScopeDigest:compatibleRecoveryContract.compatibleRecoveryScopeDigest,qualifyComposeIngressFence:ingressFence.qualifyComposeIngressFence});
 Object.assign(module.exports,compatibleFailureContract);
+
+const {createCompatibleConfigClosureContract}=require("./agent-host-release-compatible-config-closure.cjs");
+const compatibleConfigClosureContract=createCompatibleConfigClosureContract({releaseDigest,releaseNativeClosureSchema,compatibleArtifactRecoverySchema,...compatibleFailureContract});
+Object.assign(module.exports,compatibleConfigClosureContract);
+
+const {createCompatibleConfigurationContinuationContract}=require('./agent-host-release-compatible-config-continuation.cjs');
+const compatibleContinuationContract=createCompatibleConfigurationContinuationContract({manifestSchema,intentSchema,releaseDigest,
+ compatibleArtifactRecoverySchema,compatibleRecoveryScopeDigest:compatibleRecoveryContract.compatibleRecoveryBaseScopeDigest,
+ compatibleRecoveryEntryDigest:compatibleRecoveryContract.compatibleRecoveryEntryDigest,...compatibleConfigClosureContract});
+Object.assign(module.exports,compatibleContinuationContract);

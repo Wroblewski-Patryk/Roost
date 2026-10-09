@@ -68,7 +68,7 @@ function createCompatibleRecoveryContract(base){
  function entryDigest(e){const{evidenceDigest,...body}=e;return digest(body);}
  function compatibilityDigest(e){const{evidenceDigest,...body}=e;return digest(body);}
  function inventoryDigest(e){const{digest:_,...body}=e;return digest(body);}
- function compatibleRecoveryScopeDigest(input){const r=input?.compatibleArtifactRecovery;if(!r)return null;
+ function compatibleRecoveryBaseScopeDigest(input){const r=input?.compatibleArtifactRecovery;if(!r)return null;
   const {scopeAudit:_,...scope}=structuredClone(r);
   // Fresh reinspection may change only volatile read clocks/probe hashes. Every
   // fresh value remains bound by the full grant snapshot and admission checks;
@@ -83,6 +83,8 @@ function createCompatibleRecoveryContract(base){
    binding:Object.fromEntries(['taskId','applicationId','hostId','commit','candidateTree','baseCommit','baseTree','releaserAgentId'].map(k=>[k,input[k]])),
    manifestDigest:input.manifestDigest,recovery:scope,operations:sequence,historicalRollbackExecutable:false});
  }
+ function compatibleRecoveryScopeDigest(input){return own(input,'compatibleConfigurationContinuation')
+  ?base.continuationScopeDigest(input):compatibleRecoveryBaseScopeDigest(input);}
  function validEnvelope(input){check(compatibleArtifactRecoverySchema.safeParse(input?.compatibleArtifactRecovery).success,'shape');
   check(base.manifestSchema.safeParse(input.manifest).success&&input.manifest.schemaVersion==='roost-release-manifest-v2'
    &&input.manifest.purpose==='application_release'&&input.manifest.deployment.provider==='coolify_compose'
@@ -230,7 +232,9 @@ function createCompatibleRecoveryContract(base){
   return {schemaVersion:'roost-compatible-recovery-failure-disposition-v1',frozen:bad,configurationRollbackAllowed:false,healthyRollbackProven:false,
    dbPreservationMustBeReinspected:bad,keepIngressBlocked:bad||held,keepCadencesHeld:bad||held,normalReconciliationRequired:bad,
    historicalBaselineCertified:false,newHealthyBaselineCertified:false,releaseAuthority:false};}
- function nextCompatibleRecoveryOperation(state){const s=state?.release?.snapshot;validEnvelope(s);const j=state.journal??[];
+ function nextCompatibleRecoveryOperation(state){const s=state?.release?.snapshot;validEnvelope(s);
+  if(own(s,'compatibleConfigurationContinuation'))return base.nextContinuationOperation(state);
+  const j=state.journal??[];
   check(Array.isArray(j)&&j.length<=sequence.length,'bounded_journal');
   for(let i=0;i<j.length;i++){check(j[i].operation===sequence[i]&&j[i].intent?.operation===sequence[i]
    &&j[i].intent.manifestDigest===s.manifestDigest&&j[i].intent.commit===s.commit,'own_operation_sequence');
@@ -239,6 +243,7 @@ function createCompatibleRecoveryContract(base){
   if(state.status!=='active')return null;return sequence[j.length]??null;
  }
  const compatibleRecoveryIntentError=safe((state,intent)=>{const s=state?.release?.snapshot;validEnvelope(s);
+  if(own(s,'compatibleConfigurationContinuation')){check(base.continuationIntentError(state,intent)===null,'continuation_intent');return;}
   check(nextCompatibleRecoveryOperation(state)===intent.operation&&intent.manifestDigest===s.manifestDigest&&intent.commit===s.commit
    &&intent.baseCommit===s.baseCommit&&intent.observed?.commit===s.commit&&intent.observed.manifestDigest===s.manifestDigest,'exact_next_intent');
   const beforeMerge=(state.journal??[]).every(v=>v.operation!=='merge'||effective(v.outcome)!=='succeeded'),p=s.compatibleArtifactRecovery.publication;
@@ -250,7 +255,9 @@ function createCompatibleRecoveryContract(base){
   if(intent.operation==='observe')check(intent.parameters?.mode==='candidate','no_historical_rollback_observe');
  });
  const compatibleRecoveryOutcomeError=safe((input,operation,outcome,qualifyCanonicalOutcome,failureOptions={})=>{validEnvelope(input);
-  check(sequence.includes(operation?.operation)&&operation.intent?.manifestDigest===input.manifestDigest&&operation.intent.commit===input.commit,'own_outcome');
+  if(own(input,'compatibleConfigurationContinuation'))check(base.continuationStoredError(input)===null,'continuation_snapshot');
+  const ownSequence=own(input,'compatibleConfigurationContinuation')?base.continuationOperations():sequence;
+  check(ownSequence.includes(operation?.operation)&&operation.intent?.manifestDigest===input.manifestDigest&&operation.intent.commit===input.commit,'own_outcome');
   check(['succeeded','failed','uncertain','reconciled'].includes(outcome?.status)
    &&(outcome.status==='reconciled'?['succeeded','failed','absent'].includes(effective(outcome))&&outcome.observationOnly===true
     :!own(outcome,'reconciledStatus')&&!own(outcome,'reconciled_status')),'normal_outcome_shape');
@@ -280,7 +287,7 @@ function createCompatibleRecoveryContract(base){
  });
  return Object.freeze({compatibleArtifactRecoverySchema,compatibleRecoveryEntrySchema:entrySchema,compatibleRecoveryCompatibilitySchema:compatibilitySchema,
   compatibleRecoveryBuildSchema:buildSchema,compatibleRecoveryInventorySchema:inventorySchema,compatibleRecoveryInventoryDigest:inventoryDigest,
-  compatibleRecoveryScopeDigest,compatibleRecoveryEntryDigest:entryDigest,compatibleRecoveryCompatibilityDigest:compatibilityDigest,
+  compatibleRecoveryScopeDigest,compatibleRecoveryBaseScopeDigest,compatibleRecoveryEntryDigest:entryDigest,compatibleRecoveryCompatibilityDigest:compatibilityDigest,
   compatibleRecoveryAdmissionError,compatibleRecoveryAuditError,compatibleRecoveryReplacementError,compatibleRecoveryIntentError,
   compatibleRecoveryOutcomeError,nextCompatibleRecoveryOperation,compatibleRecoveryFailureState,compatibleRecoveryOperations:sequence});
 }

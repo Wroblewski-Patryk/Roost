@@ -801,3 +801,33 @@ provider budgets, full fixture cleanup parity and each restored cadence's
 identity, behavior and ticks. Private Root summaries are not model input;
 literal historical findings need an ordinary selected context source. Neither
 the evidence channel nor the provider input cap may be widened to fit them.
+
+## Configuration absent after compatible publication
+
+An unchanged, unavailable compatible entry is not a healthy rollback baseline.
+After the normal Worker reconciles `deploy_config` as `configuration_absent`,
+preserve that literal outcome and its original observation time. Owner FAILED
+closure requires a separate complete fresh read of configuration, protected
+database, sequences, namespace, ingress fence, images and queues. Requalify the
+original signed journal and real process absence. The owner attests private
+native closure; the server does not claim Windows HMAC or OS attestation.
+
+The dedicated continuation references that authenticated FAILED closure and
+four exact successful publication outcomes. The server derives their basis
+from stored rows. They remain historical Git evidence; never insert synthetic
+publication rows or repeat push, PR, review or merge. The continuation has seven
+own operations: configuration, deployment, observation, smoke, fixture cleanup,
+runtime resume and cleanup. Configuration preimage requires the qualified
+inherited basis and an empty own publication prefix.
+
+Keep the same accepted code, source review, repository, application, images and
+original failed-partial lineage. Obtain a new credential, scope audit/review and
+actual backup/restore after closure; refresh real entry observations. Admission
+still uses the complete original proof and normal authority guards. A closure
+can be consumed once under the application lock. A changed code or historical
+Git receipt invalidates this path.
+
+Final inspection presents inherited four and current seven operations with
+separate release identities and original clocks. Fresh native qualification and
+Root monitoring cover the current seven operations. These source contracts
+and isolated PostgreSQL checks do not prove a completed application release.

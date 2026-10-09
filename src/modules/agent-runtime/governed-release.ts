@@ -99,7 +99,21 @@ async function compatibleBasis(db:Db,workspaceId:string,input:any,issuerUserId:s
  if('error' in proof)return proof;
  const replacement=releaseWire.compatibleRecoveryReplacementError(input,source,proof.build,proof.compatibility,new Date(),
   compatibleRecoveryBuildProofCallback(proof.proof));
- return replacement?{error:replacement}:proof;
+ return replacement?{error:replacement}:{...proof,scope};
+}
+async function compatibleContinuationBasis(db:Db,workspaceId:string,input:any,issuerUserId:string,source:any,originalPrior:any,qualified:any,auth:AuthContext,admittedAt=new Date()) {
+ const parent=await load(db,workspaceId,input.compatibleConfigurationContinuation.releaseId);
+ if(!parent||parent.release.issuer_user_id!==issuerUserId)return {error:'release_predecessor_issuer_required'};
+ try {const basis=releaseWire.compatibleConfigurationContinuationBasis(publicState(parent),input,admittedAt,{
+  qualifyGitOutcome:(r:any,o:any,j:any[])=>releaseOutcomeError(r,o,{requestId:o.outcome.requestId,status:o.outcome.status,
+   ...(o.outcome.status==='reconciled'?{reconciledStatus:o.outcome.reconciledStatus}:{}),observationOnly:o.outcome.observationOnly,evidence:o.outcome.evidence},j),
+  qualifyCurrentEntry:()=>releaseCompatibleRecoveryAdmissionError(originalPrior,input,admittedAt),
+  verifyBackupAndCompatibility:()=>releaseWire.compatibleRecoveryReplacementError(input,source,qualified.build,qualified.compatibility,admittedAt,
+   compatibleRecoveryBuildProofCallback(qualified.proof)),
+  verifyOriginalSourceAcceptance:()=>releaseApprovalError(source,input),
+  verifyCurrentScopeAudit:()=>releaseCompatibleRecoveryAuditError(qualified.scope,input,source,originalPrior)});
+  return {basis,parent};
+ }catch{return {error:'release_compatible_configuration_continuation_unproven'};}
 }
 async function reconciliationAccess(db:Db,workspaceId:string,state:any,auth:AuthContext,operationId?:string) {
  const p=await resolveReviewPrincipal(db,workspaceId,auth),r=state.release;
@@ -169,14 +183,18 @@ export async function releaseInspectionView(db:Db,execution:any,releaseId:string
  const state=await load(db,execution.workspaceId,releaseId);
  if(!state)return {error:"release_not_found"};
  const result=publicState(state);
+ const parentReference=state.release.snapshot.compatibleConfigurationContinuation;
+ const parent=parentReference?await load(db,execution.workspaceId,parentReference.releaseId):null;
+ const historicalPublication=parent?publicState(parent):undefined;
  const inspection=require(path.resolve(__dirname,"../../../scripts/lib/agent-host-release-inspection-contract.cjs"));
  try { const stored=await loadStoredReleaseProof(pathToFileURL(path.resolve(__dirname,"../../../scripts/lib/agent-host-release-broker.mjs")).href);
    inspection.assertCompletedReleaseInspection(result,{inspection:pin,applicationId:execution.applicationId,
    hostId:execution.agentHostId,agentId:c.assignment?.agentId,validateOutcome:releaseOutcomeError,
-   qualifyStoredSnapshot:stored.qualifyCompatibleReleaseSnapshot}); }
+   qualifyStoredSnapshot:stored.qualifyCompatibleReleaseSnapshot,publicationState:historicalPublication}); }
  catch { return {error:"release_inspection_completed_scope_required"}; }
  return {schemaVersion:"roost-governed-release-inspection-context-v1",executionId:execution.id,taskId:execution.taskId,
-  applicationId:execution.applicationId,agentHostId:execution.agentHostId,observedAt:new Date().toISOString(),release:result};
+  applicationId:execution.applicationId,agentHostId:execution.agentHostId,observedAt:new Date().toISOString(),release:result,
+  ...(historicalPublication?{historicalPublication}:{})};
 }
 export async function listReleases(db:Db,workspaceId:string,auth:AuthContext,hostId?:string,options:{applicationId?:string,summary?:boolean}={}) {
  const isOwner=await owner(db,workspaceId,auth),p=isOwner?null:await resolveReviewPrincipal(db,workspaceId,auth);
@@ -213,7 +231,7 @@ export async function createRelease(db:Db,workspaceId:string,auth:AuthContext,bo
  await appLock(db,input.applicationId);
  const lockedPrior=(await db.$queryRaw<any[]>`SELECT * FROM governed_releases WHERE workspace_id=${workspaceId}::uuid AND request_id=${input.requestId}::uuid`)[0];
  if(lockedPrior)return lockedPrior.request_hash===hash?{...await releaseView(db,workspaceId,lockedPrior.id,auth),replayed:true}:{error:"release_request_conflict"};
- let successorBasis,publishedGitBasis,compatibleRecoveryProof;
+ let successorBasis,publishedGitBasis,compatibleRecoveryProof,continuationBasis;
  if(input.predecessor) {
   const predecessor=await load(db,workspaceId,input.predecessor.releaseId),basis=releaseSuccessorBasis(predecessor,input);
   if(basis.error)return basis;
@@ -246,7 +264,14 @@ export async function createRelease(db:Db,workspaceId:string,auth:AuthContext,bo
   const prior=await db.$queryRaw<any[]>`SELECT r.id FROM governed_releases r WHERE r.workspace_id=${workspaceId}::uuid AND r.snapshot->'compatibleArtifactRecovery'->'prior'->>'closureId'=${input.compatibleArtifactRecovery.prior.closureId}
    AND (NOT EXISTS(SELECT 1 FROM governed_release_revocations v WHERE v.release_id=r.id)
     OR EXISTS(SELECT 1 FROM governed_release_operations o WHERE o.release_id=r.id))`;
-  if(prior.length)return {error:'release_compatible_recovery_already_admitted'};
+  if(input.compatibleConfigurationContinuation){
+   const continuation=await compatibleContinuationBasis(db,workspaceId,input,auth.userId!,s,previous,qualified,auth);
+   if('error' in continuation)return continuation;
+   if(prior.some((row:any)=>row.id!==input.compatibleConfigurationContinuation.releaseId))return {error:'release_compatible_recovery_already_admitted'};
+   const used=await db.$queryRaw<any[]>`SELECT id FROM governed_releases WHERE workspace_id=${workspaceId}::uuid AND snapshot->'compatibleConfigurationContinuation'->>'closureId'=${input.compatibleConfigurationContinuation.closureId}`;
+   if(used.length)return {error:'release_compatible_continuation_already_admitted'};
+   continuationBasis=continuation.basis;
+  }else if(prior.length)return {error:'release_compatible_recovery_already_admitted'};
   compatibleRecoveryProof=qualified.snapshot;
  }
  const key=await credential(db,workspaceId,input);if(!key)return {error:"release_credential_invalid"};
@@ -257,7 +282,7 @@ export async function createRelease(db:Db,workspaceId:string,auth:AuthContext,bo
  if(await suspensionBlocks(db,workspaceId,input.taskId,input.applicationId,"runtime_execute",input.releaserAgentId,input.releaserCredentialId,input.hostId))return {error:"native_capability_suspended"};
  const active=await db.$queryRaw<any[]>`SELECT r.id FROM governed_releases r WHERE r.application_id=${input.applicationId}::uuid AND ((NOT EXISTS(SELECT 1 FROM governed_release_revocations v WHERE v.release_id=r.id) AND NOT EXISTS(SELECT 1 FROM governed_release_operations o JOIN governed_release_outcomes x ON x.operation_id=o.id WHERE o.release_id=r.id AND o.operation='cleanup' AND (x.status='succeeded' OR x.status='reconciled' AND x.reconciled_status='succeeded'))) OR EXISTS(SELECT 1 FROM governed_release_operations o WHERE o.release_id=r.id AND COALESCE((SELECT x.status FROM governed_release_outcomes x WHERE x.operation_id=o.id ORDER BY x.sequence DESC LIMIT 1),'unresolved') IN ('unresolved','uncertain')))`;
  if(active.length)return {error:"release_application_busy"};
- const id=randomUUID(),snapshot=wire({...input,readinessDigest,configurationDigest:config,...(successorBasis?{successorBasis}:{}),...(publishedGitBasis?{publishedGitBasis}:{}),...(compatibleRecoveryProof?{compatibleRecoveryProof}:{})});
+ const id=randomUUID(),snapshot=wire({...input,readinessDigest,configurationDigest:config,...(successorBasis?{successorBasis}:{}),...(publishedGitBasis?{publishedGitBasis}:{}),...(compatibleRecoveryProof?{compatibleRecoveryProof}:{}),...(continuationBasis?{compatibleContinuationBasis:continuationBasis}:{})});
  await db.$executeRaw`INSERT INTO governed_releases(id,workspace_id,task_id,application_id,host_id,release_execution_id,review_id,releaser_agent_id,releaser_credential_id,credential_version,issuer_user_id,expires_at,manifest_digest,configuration_digest,snapshot,request_id,request_hash)
  VALUES(${id}::uuid,${workspaceId}::uuid,${input.taskId}::uuid,${input.applicationId}::uuid,${input.hostId}::uuid,${input.releaseExecutionId}::uuid,${input.reviewId}::uuid,${input.releaserAgentId}::uuid,${input.releaserCredentialId}::uuid,${input.credentialVersion},${auth.userId}::uuid,${new Date(input.expiresAt)},${input.manifestDigest},${config},${JSON.stringify(snapshot)}::jsonb,${input.requestId}::uuid,${hash})`;
  const state=await load(db,workspaceId,id);await supplemental(db,workspaceId,state!.release,"authorized",{reviewId:input.reviewId,releaseExecutionId:input.releaseExecutionId,manifestDigest:input.manifestDigest,...(successorBasis?{predecessorReleaseId:successorBasis.releaseId}:{})},auth);
@@ -288,13 +313,18 @@ async function currentBasisError(db:Db,workspaceId:string,state:any,auth:AuthCon
   const audit=await reviewState(db,workspaceId,s.recoveryOnly.scopeAudit.taskId,auth),auditError=releaseRecoveryOnlyAuditError(audit,s,review,previous);if(auditError)return auditError;}
  if(s.compatibleArtifactRecovery){
   const backupError=compatibleRecoveryCurrentBackupError(s);if(backupError)return backupError;
-  const {compatibleRecoveryProof,...input}=s;
+  const {compatibleRecoveryProof,compatibleContinuationBasis:storedContinuation,...input}=s;
   const previous=await load(db,workspaceId,s.compatibleArtifactRecovery.prior.releaseId);
   // Freshness was qualified at creation; later effects preserve that actual
   // admission clock. Worker must separately re-read its current native entry.
   const qualified=await compatibleBasis(db,workspaceId,input,r.issuer_user_id,review,previous,auth,new Date(r.created_at));
   if('error' in qualified)return qualified.error;
   if(!compatibleRecoveryProof||releaseDigest(qualified.snapshot)!==releaseDigest(compatibleRecoveryProof))return 'release_compatible_recovery_proof_changed';
+  if(s.compatibleConfigurationContinuation){
+   const continuation=await compatibleContinuationBasis(db,workspaceId,input,r.issuer_user_id,review,previous,qualified,auth,new Date(r.created_at));
+   if('error' in continuation)return continuation.error;
+   if(!storedContinuation||releaseDigest(continuation.basis)!==releaseDigest(storedContinuation))return 'release_compatible_continuation_basis_changed';
+  }else if(storedContinuation!==undefined)return 'release_compatible_continuation_basis_changed';
  }
  if(!await releaseExecutionBasisCurrent(db,workspaceId,(review as any).execution))return "release_source_basis_changed";
  const nativeError=releaseCandidateNativeError((review as any).execution,(review as any).contract);if(nativeError)return nativeError;
@@ -407,8 +437,8 @@ export async function closeFailedRelease(db:Db,workspaceId:string,id:string,auth
  const observed=Date.parse(input.evidence.observedAt),now=Date.now();
  // Never replace the immutable Worker observation. Only a complete new actual
  // read can revalidate its no-effect baseline before owner closure.
- if(input.absenceRevalidation!==undefined){
-  const revalidationError=releaseWire.releaseConfigAbsenceRevalidationError({...state.release.snapshot,releaseId:state.release.id},input,now);
+ if(input.absenceRevalidation!==undefined||input.evidence.compatibleRecoveryFailure!==undefined){
+  const revalidationError=releaseWire.releaseConfigAbsenceRevalidationError({...state.release.snapshot,releaseId:state.release.id},input,now,state.journal.at(-1));
   if(revalidationError)return {error:revalidationError};
  }
  if(!Number.isFinite(observed)||observed>now+60000||(now-observed>300000&&input.absenceRevalidation===undefined))return {error:"release_outcome_evidence_stale"};

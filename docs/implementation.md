@@ -211,8 +211,8 @@ Historical approvals remain in the matrix.
 Renewal `651f50be` passes 23 read-only Jobs; staged measurements pass 22 tests.
 Owner `1e629f08` admits grant `bdc1387e`; renewal and signed closures pass.
 Worker11 merges exact `d73e6234`; configuration is absent/frozen.
-Signed closure/restoration pass. Source repairs pass 314 checks;
-safe continuation, deployment and final acceptance remain pending.
+Signed closure/restoration pass. Closure/continuation source and local SQL pass;
+native continuation, deployment and final acceptance remain pending.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 
 Reuse the existing application, repository and Compose installation; create no

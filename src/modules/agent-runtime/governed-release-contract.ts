@@ -192,6 +192,7 @@ export function effectiveOutcome(outcome: any): string | null {
 export function releaseFailedClosureError(state:any,input:any,checkVersion=true) {
  if(!state)return "release_not_found";
  const s=state.release.snapshot,m=s.manifest,j=state.journal,e=input.evidence;
+ if(e?.compatibleRecoveryFailure!==undefined)return shared.compatibleConfigClosureError(state,input,{checkVersion,qualifyGitOutcome:(r:any,o:any,j:any[])=>releaseOutcomeError(r,o,{status:o.outcome.status,...(o.outcome.status==="reconciled"?{reconciledStatus:o.outcome.reconciled_status??o.outcome.reconciledStatus,observationOnly:o.outcome.observation_only??o.outcome.observationOnly}:{}),evidence:o.outcome.evidence},j)});
  if(e?.composeRecovery?.kind==='queue_failed_rollback_partial'){
   const last=j.at(-1),a=input.absenceRevalidation;
   if(checkVersion&&state.expectedVersion!==input.expectedVersion)return 'release_version_stale';
@@ -421,7 +422,9 @@ export function releaseIntentError(release: any, input: any, journal: any[]) {
   if(release.snapshot?.compatibleArtifactRecovery!==undefined) {
     const error=shared.compatibleRecoveryIntentError({release,journal,status:'active'},input);
     if(error)return error;
-    return ordinaryReleaseIntentError(compatibleCanonicalRelease(release),input,journal);
+    const inheritedPublication=release.snapshot.compatibleConfigurationContinuation!==undefined
+      &&shared.compatibleConfigurationContinuationStoredError(release.snapshot)===null;
+    return ordinaryReleaseIntentError(compatibleCanonicalRelease(release),input,journal,inheritedPublication);
   }
   return ordinaryReleaseIntentError(release,input,journal);
 }
@@ -430,7 +433,7 @@ export function compatibleRecoveryCurrentBackupError(snapshot:any,now=new Date()
  const restored=Date.parse(snapshot.manifest?.backup?.restoreVerifiedAt),clock=now.getTime();
  return !Number.isFinite(restored)||restored>clock+60000||clock-restored>86400000?'release_prerequisite_stale':null;
 }
-function ordinaryReleaseIntentError(release: any, input: any, journal: any[]) {
+function ordinaryReleaseIntentError(release: any, input: any, journal: any[],inheritedCompatiblePublication=false) {
   const s=release.snapshot, m=s.manifest;
   const retained=releaseRetainsApplication(m),recovery=releaseHasRecoveryOnly(s);
   const recoveryError=shared.releaseRecoveryOnlyOperationError(s,input,journal);if(recoveryError)return recoveryError;
@@ -449,7 +452,7 @@ function ordinaryReleaseIntentError(release: any, input: any, journal: any[]) {
     &&j.outcome?.evidence?.composeRecovery?.kind==='queue_failed_partial')
     &&!(['rollback_config','rollback','runtime_resume','cleanup','cleanup_resource'].includes(input.operation)
       ||input.operation==='observe'&&input.parameters?.mode==='rollback'))return 'release_compose_partial_failure_requires_rollback';
-  const successful=(op:string)=>journal.some(j=>j.operation===op&&effectiveOutcome(j.outcome)==="succeeded");
+  const successful=(op:string)=>op==='merge'&&inheritedCompatiblePublication||journal.some(j=>j.operation===op&&effectiveOutcome(j.outcome)==="succeeded");
   const setComplete=(op:string)=>m.deployment.targets.every((t:any)=>journal.some(j=>j.operation===op&&j.intent?.parameters?.targetId===t.targetId&&effectiveOutcome(j.outcome)==="succeeded"));
   const restarted=releaseHasPublishedGitBasis(s),successor=releaseHasSuccessor(s)||restarted;
   if((s.baselineRestart||s.publishedGitBasis)&&!restarted)return "release_restart_basis_invalid";
@@ -608,8 +611,11 @@ function ordinaryReleaseOutcomeError(release: any, operation: any, input: any,jo
 // validation after its stricter sequence. This local projection carries the
 // new Git base only; it never changes the historical runtime baseline.
 function compatibleCanonicalRelease(release:any) {
- const {compatibleArtifactRecovery,compatibleRecoveryProof,...snapshot}=release.snapshot;
- return {...release,snapshot:{...snapshot,gitPublicationBase:{commit:compatibleArtifactRecovery.publication.baseCommit,
+ const {compatibleArtifactRecovery,compatibleRecoveryProof,compatibleConfigurationContinuation,compatibleContinuationBasis,...snapshot}=release.snapshot;
+ if(compatibleConfigurationContinuation&&shared.compatibleConfigurationContinuationStoredError(release.snapshot)!==null)
+  throw Error('release_compatible_configuration_continuation_unproven');
+ return {...release,snapshot:{...snapshot,gitPublicationBase:compatibleConfigurationContinuation
+  ?{commit:snapshot.commit,tree:snapshot.candidateTree}:{commit:compatibleArtifactRecovery.publication.baseCommit,
   tree:compatibleArtifactRecovery.publication.baseTree}}};
 }
 export function releaseCompatibleRecoveryAdmissionError(state:any,input:any,now=new Date()) {
