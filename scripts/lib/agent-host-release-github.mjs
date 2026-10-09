@@ -165,24 +165,27 @@ export function createGithubReleaseAdapter({ credential, transport = githubRelea
     return p; };
   const proof = p => ({ pullRequestNumber: p.number, prHeadCommit: p.head.sha, prMerged: p.merged === true,
     ...(p.merged ? { mergedCommit: p.merge_commit_sha } : {}) });
+  const anchoredPublication = binding => binding.gitPublicationBase !== undefined || binding.compatibleArtifactRecovery !== undefined;
   const publicationBase = binding => {
     if (binding.gitPublicationBase && (!releaseContract.gitPublicationBaseSchema.safeParse(binding.gitPublicationBase).success
       || binding.predecessor || binding.baselineRestart || binding.baselineAdoption
       || binding.successorBasis || binding.publishedGitBasis)) fail('release_git_publication_base_scope_invalid');
+    if (binding.compatibleArtifactRecovery !== undefined && (!releaseContract.isComposeManifest(binding.manifest)
+      || ['recoveryOnly','predecessor','baselineRestart','baselineAdoption','baselineRevalidation','successorBasis','publishedGitBasis'].some(k=>binding[k]!==undefined))) fail('release_git_publication_base_scope_invalid');
     return releaseContract.releaseGitPublicationBase(binding);
   };
   const inspectBase = async (manifest, binding) => {
-    if (binding.gitPublicationBase && !releaseContract.isComposeManifest(manifest)) fail('release_git_publication_base_scope_invalid');
+    if (anchoredPublication(binding) && !releaseContract.isComposeManifest(manifest)) fail('release_git_publication_base_scope_invalid');
     const base = publicationBase(binding), state = await inspect(manifest);
-    if (state.remoteBase !== base.commit || binding.gitPublicationBase && state.remoteTree !== base.tree)
+    if (state.remoteBase !== base.commit || anchoredPublication(binding) && state.remoteTree !== base.tree)
       fail('release_git_base_changed');
     return state;
   };
-  const baseEvidence = (binding, state) => binding.gitPublicationBase
+  const baseEvidence = (binding, state) => anchoredPublication(binding)
     ? { remoteBase: state.remoteBase, remoteBaseTree: state.remoteTree } : {};
   const exactCandidate = async (manifest, binding) => {
     const base = publicationBase(binding);
-    if (binding.gitPublicationBase) {
+    if (anchoredPublication(binding)) {
       const original = await required('GET', `/repos/${repository(manifest)}/git/commits/${base.commit}`);
       if (original.tree?.sha !== base.tree) fail('release_git_base_changed');
     }
@@ -203,7 +206,7 @@ export function createGithubReleaseAdapter({ credential, transport = githubRelea
   const findPull = async (manifest, binding) => {
     const prs = await required('GET', `/repos/${repository(manifest)}/pulls?state=all&head=${encodeURIComponent(repository(manifest).split('/')[0] + ':' + manifest.repository.candidateBranch)}&base=${encodeURIComponent(manifest.repository.defaultBranch)}&per_page=100`);
     if (!Array.isArray(prs) || prs.length >= 100) fail('release_git_pr_ambiguous');
-    if (binding?.gitPublicationBase) {
+    if (binding && anchoredPublication(binding)) {
       const eligible = [];
       for (const row of prs) {
         const observed = await pull(manifest, row.number);
@@ -224,7 +227,7 @@ export function createGithubReleaseAdapter({ credential, transport = githubRelea
     inspect,
     async push(manifest, binding) {
       const state = await inspectBase(manifest, binding), head = await candidate(manifest);
-      const oldPublishedHead = binding.gitPublicationBase && head === publicationBase(binding).commit;
+      const oldPublishedHead = anchoredPublication(binding) && head === publicationBase(binding).commit;
       if (head && head !== binding.commit && !oldPublishedHead) fail('release_git_base_changed');
       if (!head || oldPublishedHead) { try { await upload(manifest, binding.commit, await credential(), binding.candidateTree); } catch { fail('release_git_push_uncertain', true); } }
       if (await candidate(manifest) !== binding.commit) fail('release_git_push_uncertain', true);
@@ -235,21 +238,23 @@ export function createGithubReleaseAdapter({ credential, transport = githubRelea
     async createPullRequest(manifest, binding) {
       const state = await inspectBase(manifest, binding);
       if (await candidate(manifest) !== binding.commit) fail('release_git_base_changed');
+      const candidateEvidence = anchoredPublication(binding) ? {remoteCommit:binding.commit,remoteTree:(await exactCandidate(manifest,binding)).tree.sha} : {};
       const p = await findPull(manifest, binding) ?? await required('POST', `/repos/${repository(manifest)}/pulls`, {
         title: `Governed release ${binding.commit.slice(0, 12)}`, head: manifest.repository.candidateBranch,
         base: manifest.repository.defaultBranch, body: `Roost independent decision ${binding.reviewId}; exact commit ${binding.commit}; material ${binding.materialVersion}.` });
       if (p.head?.sha !== binding.commit || p.state !== 'open') fail('release_git_pr_changed');
-      return { ...proof(p), ...baseEvidence(binding, state) };
+      return { ...proof(p), ...candidateEvidence, ...baseEvidence(binding, state) };
     },
     async recordIndependentReview(manifest, binding, number) {
-      const state = binding.gitPublicationBase ? await inspectBase(manifest, binding) : null;
+      const state = anchoredPublication(binding) ? await inspectBase(manifest, binding) : null;
       const p = await pull(manifest, number);
       if (p.head.sha !== binding.commit || p.merged || p.state !== 'open') fail('release_git_pr_changed');
+      const candidateEvidence = anchoredPublication(binding) ? {remoteCommit:binding.commit,remoteTree:(await exactCandidate(manifest,binding)).tree.sha} : {};
       // A broker may be the PR author. The independent Roost decision is authoritative;
       // a GitHub COMMENT records that decision without pretending to be another person.
       await required('POST', `/repos/${repository(manifest)}/pulls/${number}/reviews`, {
         commit_id: binding.commit, event: 'COMMENT', body: `Roost independent acceptance: decision ${binding.reviewId}, material ${binding.materialVersion}, commit ${binding.commit}.` });
-      return { ...proof(p), reviewApproved: true, ...(state ? baseEvidence(binding, state) : {}) };
+      return { ...proof(p), ...candidateEvidence, reviewApproved: true, ...(state ? baseEvidence(binding, state) : {}) };
     },
     async merge(manifest, binding, number) {
       const p = await pull(manifest, number), state = await inspectBase(manifest, binding);
@@ -259,20 +264,20 @@ export function createGithubReleaseAdapter({ credential, transport = githubRelea
       await required('PATCH', `/repos/${repository(manifest)}/git/refs/heads/${manifest.repository.defaultBranch}`, { sha: binding.commit, force: false });
       const merged = await pull(manifest, number), main = await inspect(manifest);
       if (!merged.merged || merged.merge_commit_sha !== binding.commit || main.remoteBase !== binding.commit
-        || binding.gitPublicationBase && main.remoteTree !== binding.candidateTree) fail('release_git_merge_uncertain', true);
+        || anchoredPublication(binding) && main.remoteTree !== binding.candidateTree) fail('release_git_merge_uncertain', true);
       return { ...proof(merged), remoteCommit: main.remoteBase, remoteTree: binding.candidateTree,
         ...baseEvidence(binding, state) };
     },
     async reconcile(manifest, binding, operation, number) {
-      if (binding.gitPublicationBase && !releaseContract.isComposeManifest(manifest)) fail('release_git_publication_base_scope_invalid');
+      if (anchoredPublication(binding) && !releaseContract.isComposeManifest(manifest)) fail('release_git_publication_base_scope_invalid');
       const state = await inspect(manifest), head = await candidate(manifest), base = publicationBase(binding);
-      if (binding.gitPublicationBase && !(operation === 'merge' && state.remoteBase === binding.commit)
+      if (anchoredPublication(binding) && !(operation === 'merge' && state.remoteBase === binding.commit)
         && (state.remoteBase !== base.commit || state.remoteTree !== base.tree)) fail('release_git_base_changed');
       if (operation === 'push') {
         if (state.remoteBase !== base.commit) fail('release_git_base_changed');
         if (head === binding.commit) await exactCandidate(manifest, binding);
         return head === binding.commit ? { status: 'succeeded', evidence: { remoteCommit: head, ...state, remoteTree: binding.candidateTree, ...baseEvidence(binding, state) } }
-          : head === null || binding.gitPublicationBase && head === base.commit
+          : head === null || anchoredPublication(binding) && head === base.commit
             ? { status: 'absent', evidence: { ...state,remoteCommit:state.remoteBase, absenceVerified: true } } : fail('release_git_remote_changed');
       }
       const p = number ? await pull(manifest, number) : await findPull(manifest, binding);
@@ -292,12 +297,12 @@ export function createGithubReleaseAdapter({ credential, transport = githubRelea
       }
       if (operation === 'merge') {
         if (state.remoteBase === binding.commit && p.merged && p.merge_commit_sha === binding.commit) {
-          if (binding.gitPublicationBase) {
+          if (anchoredPublication(binding)) {
             if (state.remoteTree !== binding.candidateTree) fail('release_git_remote_changed');
             await exactCandidate(manifest,binding);
           }
           return { status: 'succeeded', evidence: { ...proof(p), remoteCommit: binding.commit, remoteTree: binding.candidateTree,
-            ...(binding.gitPublicationBase ? {remoteBase:base.commit,remoteBaseTree:base.tree} : {}) } };
+            ...(anchoredPublication(binding) ? {remoteBase:base.commit,remoteBaseTree:base.tree} : {}) } };
         }
         if (state.remoteBase === base.commit && !p.merged && p.state === 'open')
           return { status: 'absent', evidence: { ...proof(p), ...state,remoteCommit:state.remoteBase, absenceVerified: true } };
