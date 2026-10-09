@@ -19,6 +19,7 @@ test('controller schema capacity refusals expose only fixed classifications',()=
 });
 import {mkdtempSync,readFileSync,rmSync} from 'node:fs';import path from 'node:path';import os from 'node:os';
 import {releaseEffectDiagnostic} from './lib/agent-host-release-broker.mjs';
+test('sealed activity source mismatch exposes only fixed refusal codes',()=>{for(const reason of ['release_activity_installed_fixed_source_seal_changed','release_activity_installed_compatible_ingress_fixed_source_changed']){assert.equal(releaseWorkerDiagnostic(Error(reason)),reason);assert.equal(releaseWorkerDiagnostic(Error(reason+'\nprivate')),'release_preflight_unproven');assert.equal(releaseWorkerDiagnostic(Error(reason+' private')),'release_preflight_unproven');}});
 test('fixed SSH child reasons survive nested effect and preflight diagnostics',()=>{
  for(const reason of ['ssh_timeout','ssh_connection_closed','ssh_host_identity_unproven']){
   const expected='release_child_'+reason;

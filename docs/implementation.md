@@ -207,11 +207,11 @@ Source `bf913802` independently approves exact `d73e6234` (`4912e26a`),
 signed-closed/restored; actual input is 114279/131072 bytes.
 Scope review `9c0dbb1d` approves (`56074819`) with three exact artifact/PASS
 rows, signed-closed/restored; actual input is 131027/131072 bytes.
-Historical `25971566` is not grant-eligible; evidence remains in the matrix.
+Historical approvals remain in the matrix.
 Renewal `651f50be` passes 23 read-only Jobs; staged measurements pass 22 tests.
-Owner `1e629f08` admits grant `bdc1387e`, with zero operations. Worker9 stops
-before Git: its native settings reader was unwired. The repair passes 480 tests;
-exact configuration restoration pass; repair and final acceptance remain pending.
+Owner `1e629f08` admits grant `bdc1387e`; renewal and signed closures pass.
+Worker10 stops before Git. Settings and LF source repairs pass component checks;
+the installed constructor now passes. Actual release and final acceptance remain pending.
 No `d73e6234` Git publication, deployment or health proof.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 
