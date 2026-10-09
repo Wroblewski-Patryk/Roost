@@ -191,9 +191,7 @@ Signed custody and owner evidence `17f72f79` are verified.
 C78 installation `85195c60` binds manifest `e068b6c5`/scope `b448191c`.
 Audit `7a8ea0ea` has three PASS findings; signed closure/restoration pass.
 Historical refusals, recovery and stale approvals remain in the evidence matrix.
-Current risk `5f9a59e9` and append-only revalidations bind source `d03922b3`
-and scope `ee54a2bd`. Signed reviews `ef9d21b6`/`875907a6` approved;
-closure, process absence and binding restoration pass. Historical refusals remain.
+Historical risk/revalidations and signed reviews remain in the evidence matrix.
 Roost `c0b043f8` is deployed; health/version and additive migrations pass.
 Revoked empty grants can be replaced; any prior intent still consumes admission.
 Roost backup `ac0d501f` passes restore and exact server restart. Static final
@@ -209,8 +207,10 @@ fresh read-only Jobs; its remote snapshot remains historical. Audit `3e3d094b`
 passes three artifacts; review `73c351ba` approves (`62df927c`). Source review
 `1fafca80` approves `d73e6234` (`ad1fd20c`); signed closure/restoration pass.
 Build `aa15e52e` passes 25 native Jobs and owned cleanup, producing different
-image `36d1746f`. C78 evidence remains historical; new compatibility, retention,
-signed publication, scope review and grant remain required. Temporary tag held.
+image `36d1746f`. Interrupted compatibility `57e803fb` resumed without build or
+chunk replay: 49 Jobs, migration, full parity and owned cleanup pass. Original
+29 clocks remain unchanged. C78 evidence is historical; new retention, signed
+publication, scope review and grant remain required. Temporary tag held.
 No `d73e6234` Git publication, deployment or health proof.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 
