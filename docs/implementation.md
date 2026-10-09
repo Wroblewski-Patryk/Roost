@@ -186,7 +186,7 @@ an immediate implementation dependency or mark it complete.
 **Release incomplete.** Preserve `3cf9645e` and historical rejections.
 Application unavailable; writes/cadences held, schema/data parity verified.
 Managed `eccd0cfb`/`d73e6234` is signed-closed; earlier C78 proofs remain
-historical. Original clocks, refusals and signed reviews remain in the matrix.
+historical. Prior clocks, refusals and reviews remain in the matrix.
 Roost `590835b8` is deployed; health/version and additive migrations pass.
 Revoked empty grants can be replaced; any prior intent still consumes admission.
 Roost backup `9642ddc7` passes restore and exact server restart. Static final
@@ -211,8 +211,9 @@ Historical approvals remain in the matrix.
 Renewal `651f50be` passes 23 read-only Jobs; staged measurements pass 22 tests.
 Owner `1e629f08` admits grant `bdc1387e`; renewal and signed closures pass.
 Worker11 merges exact `d73e6234`; configuration is absent/frozen.
-Signed closure/restoration pass. Closure/continuation and restored SQL pass;
-native continuation, deployment and final acceptance remain pending.
+Normal FAILED closure `9154a122` preserves all five operations. Fresh read
+`7441bb91` passes 27 closed native Jobs. Continuation, deployment and final
+acceptance remain pending.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 
 Reuse the existing application, repository and Compose installation; create no
