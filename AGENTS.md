@@ -24,6 +24,14 @@ that advances the objective in `docs/implementation.md`, use the
 `roost-runtime-delivery` repository skill. The skill is the operating method;
 the canonical documents remain the source of product and implementation truth.
 
+Use `roost-gate-design` when asked to define or refine a future Roost delivery
+gate. For an authorized company capability spanning product surfaces, use
+`roost-capability-slice` alongside `roost-runtime-delivery`. Use
+`roost-independent-acceptance` for a separately owned review of a claimed
+Roost outcome. Use `roost-model-qualification` only for an authorized managed
+model-admission or routing task. These skills do not authorize a new gate or
+change accepted product requirements.
+
 Do not create repository-local agent roles, task boards, project memory or
 coordination systems. External tools such as Codex keep their
 execution state outside this repository.
@@ -78,6 +86,11 @@ execution state outside this repository.
 - At a completed gate boundary, leave the repository recoverable and clean when
   the task authorizes commits. Push or deploy only when the current gate and
   user authority require it. Report the next gate without starting it.
+- An agent may propose a skill improvement when a repeated, evidenced workflow
+  failure shows a reusable gap. One owner changes the skill in a separate
+  non-overlapping scope after checking whether the durable fix belongs in code,
+  tests or canonical docs. Validate the revised skill on a realistic task;
+  agents do not silently rewrite their own operating rules mid-gate.
 
 ## Project boundaries
 
