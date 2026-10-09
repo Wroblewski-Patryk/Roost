@@ -204,11 +204,13 @@ Host epoch 9 renewal and ordinary role renewals pass. Audit `97e80557`
 reports three PASS findings, signed-closed/restored. Full risk `748a424e`
 and source basis `eb2aba30` are verified. Source `348772d2` independently
 approves exact `d73e6234` (`4073bb5d`), signed-closed/configuration restored.
-Package review `74bf1e76` approves audit `97e80557` (`e7ab8ebf`),
-signed-closed/restored. After preserved 132337-byte refusal, lossless projection
-passes actual 130939/131072-byte measurement. Fixture renewal `bdf6174e`
-refused stale installer linkage before scope read/policy write. Repair, current
-fixture window, grant and final native release proof remain required.
+Review `74bf1e76`/`e7ab8ebf` approves the original audit material and closes.
+Lossless input repair passes actual 130939/131072-byte measurement.
+Ready renewal `8acc0099`/basis `5bd34ff6` changes material to `0b66ae3f`;
+Current review `fce54ae0` approves (`25971566`), signed-closed/restored.
+Lossless values pass 130933/131072 bytes after preserved 131723-byte refusal.
+Genuine fixture renewal
+`33ba3e04` passes after preserved installer refusal; grant/release remain pending.
 No `d73e6234` Git publication, deployment or health proof.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 
