@@ -38,27 +38,34 @@ execution state outside this repository.
 
 ## Delivery behavior
 
+- Before assigning a gate, inspect the actual target and existing adapters. A
+  missing deployment provider or other substantial new capability needs its
+  own bounded outcome and estimate; do not hide it inside "complete the gate".
+  The owner approves the outcome, permitted effects and time/token/cost/attempt
+  limits before execution. No budget increases itself.
 - One implementation owner carries the currently authorized gate in
   `docs/implementation.md` through coding, integration, verification and the
   required demonstration. Internal substeps and multiple reviewable commits
   are allowed; they are not handoff boundaries.
-- Do not stop after producing a proposal, source-only contract, migration,
-  adapter or mocked test when the accepted outcome requires a working
-  integration. Continue through the remaining technical work and repair failed
-  checks within the same task.
+- Within the approved scope and budget, do not stop after producing a proposal,
+  source-only contract, migration, adapter or mocked test when the accepted
+  outcome requires a working integration. Repair ordinary failed checks within
+  that task.
 - Resolve ordinary reversible technical choices from the accepted requirements,
   current architecture, inspected code and test evidence. Do not ask the owner
   to choose implementation details already determined by those sources.
-- A larger-than-expected implementation, failing test, missing adapter,
-  migration requirement, Docker/database problem or architecture correction is
-  work to solve, not a reason to bounce the task between conversations.
-- Stop for owner input only when progress requires an unavailable login/2FA or
-  secret, an unapproved irreversible action against real data, a genuine
-  contradiction in accepted business intent, or an unavailable external
-  service with no safe technical alternative. Prepare everything possible
-  before reporting that dependency and ask one concrete question.
+- Resolve ordinary defects inside the approved scope. If work exposes an
+  unplanned provider, material architecture change, repeated ineffective
+  attempt or exhausted budget, stop at a safe checkpoint. Preserve evidence,
+  diagnose the actual cause and return a smaller revised proposal for owner
+  approval. Do not invent failure scenarios or recheck unaffected evidence.
+- Also stop when progress requires an unavailable login/2FA or secret, an
+  unapproved irreversible real-data action, a contradiction in accepted
+  business intent, or an unavailable service without a safe alternative.
+  Complete independent safe preparation before asking one concrete question.
 - Report progress at the end-to-end gates defined in `docs/implementation.md`,
-  not by counting internal atoms, contracts or files.
+  not by counting internal atoms, contracts or files. State verified capability,
+  failed or unrun checks, remaining path, and budget used or unavailable.
 - One user task authorizes exactly one delivery gate unless the user explicitly
   names a wider range. Complete that gate autonomously, record its evidence and
   stop at its boundary. Never begin the next gate merely because context,

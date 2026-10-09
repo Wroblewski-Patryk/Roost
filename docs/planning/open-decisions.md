@@ -2,17 +2,18 @@
 
 ## Current delivery
 
-There is no unresolved owner business decision blocking the current delivery
-objective in [`docs/implementation.md`](../implementation.md): completing the
-Roost VPS, Windows Local Worker and managed Hermes path, then proving it through
-the configured application pilot.
+There is no active delivery gate. The owner stopped the second-application release on
+2026-10-10. Its incomplete state and any future authorization are in
+[`docs/implementation.md`](../implementation.md). Planning another bounded
+Roost outcome does not resume that release.
 
 Accepted product intent is canonical in
-[`docs/product/requirements.md`](../product/requirements.md). Implementation
-gaps, audits, migrations, adapters, configuration and failed checks are delivery
-work rather than owner decisions. The implementation owner resolves ordinary
-reversible technical choices from the accepted requirements, current
-architecture, inspected code and evidence.
+[`docs/product/requirements.md`](../product/requirements.md). Ordinary
+implementation gaps inside an approved gate are delivery work. A new provider,
+material scope change, repeated ineffective attempt or exhausted budget
+requires a safe checkpoint and revised owner-approved assignment. The
+implementation owner resolves other reversible technical choices from the
+accepted requirements, current architecture, inspected code and evidence.
 
 ## Required takeover outputs, not open decisions
 
@@ -52,7 +53,7 @@ application repair pilot.
 
 ## True owner dependencies during implementation
 
-Implementation pauses only for the bounded dependencies in
+Implementation pauses for scope/budget stops and the bounded dependencies in
 [`docs/implementation.md`](../implementation.md#true-owner-dependencies): an
 unavailable login, 2FA response or secret; an unapproved irreversible action
 against real data or an external account; a genuine contradiction in accepted

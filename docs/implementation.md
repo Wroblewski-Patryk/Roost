@@ -21,6 +21,8 @@ Roost task
 The first proof uses the configured pilot application. Successful proof must be
 reusable for later applications; installation-specific paths, domains and
 credentials remain private configuration rather than repository defaults.
+This runtime path is a foundation for Roost, not completion of the company
+product or of any configured application.
 
 ## Execution ownership
 
@@ -50,40 +52,24 @@ API/MCP boundaries, provider/task/context/review, Windows Worker and Hermes.
 
 **Gate 1 is met at production/runtime evidence level (2026-09-27).** The
 API build `18bd5c6466372263316a5846f990f61cacd41040`, deployment
-`yesokuu2ikcxh43zdf3fju9w`, migrations 87–89, v3 signing/issuer,
-owner-provisioned key and HTTPS credential handoff to Windows Credential Manager
-are verified. Execution uses attested Hermes 0.21.2; installation values are private.
-
-Execution `9fc132c6-af99-4d98-a2e2-27de7d576879` completed its first attempt
-at 01:08:43 UTC under signed Decision `2c12bf61-7cfe-475a-8431-40c8f3d8514a`:
-`codex_responses`, `gpt-5.6-sol`, low reasoning, no fallback. Native proof:
-clean `cf90418cc694dc0cb773a44c001c569407d05f9f`, unchanged files, signed
-admission, Job exit 0/zero active processes and durable `verified_candidate`.
-Exact task/host and archived artifacts remain in the
-[matrix](architecture/traceability-matrix.md). Hermes token/cost usage is
-unavailable. Cancellation/lease-loss passed 66 focused Worker/native checks;
-forced production cancellation/lease-loss were not exercised.
-
-Readiness reports `executionEnabled: true` / `supervised_execution`.
-Coding/release and Ollama are outside this Gate 1 proof.
+`yesokuu2ikcxh43zdf3fju9w`, migrations 87–89 and Hermes 0.21.2 are verified.
+Execution `9fc132c6-af99-4d98-a2e2-27de7d576879` finished one signed
+`codex_responses` attempt as `verified_candidate`; files stayed unchanged and
+the Worker stopped. The [matrix](architecture/traceability-matrix.md) preserves
+exact signing, credential, model, task, cancellation and archive evidence.
+Provider token/cost usage and forced production cancellation remain unproved;
+coding, release and Ollama were outside Gate 1.
 
 **Gate 2 is met at native coding and independent review evidence level
-(2026-09-27).** Independent read-only canaries preceded separate first-write
-consent. Native proof covers incomplete/scope refusal, one writer, checkpoint/resume,
-Hermes coding/tests and independent rejection/correction. Execution
-`b95cf777-fe24-46a4-a88e-4bd0a9314bef` produced
-commit `774e858ae48d1f05d2b56982a7113da983f62af8` with a signed local
-commit receipt, `verified_candidate`, passing Windows/POSIX tests and clean
-checkout. Independent execution `5c27d054-7cc3-45a1-9ef6-d43760316e69`
-preserved Git/process/Docker state; Decision
-`c349899b-72c3-4260-9b77-de733f42866c` accepted the exact commit/material.
-The branch remains local without push/deploy; see the [matrix](architecture/traceability-matrix.md).
-
-Gate 2 proves only its task/paths/procedures/roles/runtime. General scheduling,
-arbitrary filesystem effects and release are not certified; Hermes usage is
-unavailable. An earlier failed attempt required manual native lease/admission
-reconciliation; signed closure and private archives remain. Automatic recovery
-of every after-spawn failure is not claimed.
+(2026-09-27).** Read-only canaries and separate first-write consent preceded
+one-writer coding, checkpoint/resume and independent rejection/correction.
+Execution `b95cf777-fe24-46a4-a88e-4bd0a9314bef` produced clean local commit
+`774e858ae48d1f05d2b56982a7113da983f62af8`; independent execution
+`5c27d054-7cc3-45a1-9ef6-d43760316e69` accepted it without push/deploy.
+The [matrix](architecture/traceability-matrix.md) retains exact checks,
+refusals, signed receipts and recovery evidence. General scheduling, arbitrary
+filesystem effects, release, provider usage and every after-spawn recovery
+remain unproved.
 
 ## End-to-end delivery gates
 
@@ -148,7 +134,8 @@ Managed PWA repair `7512bc3` is released with 1238s healthy observation,
 unchanged data/protected services and independent postrelease verification.
 The failed rollback remains unqualified; exact adopted rollback image and
 verified backup/restore are retained. Worker stopped; resources cleaned.
-Gate 5 received a separate owner assignment; no later phase is authorized.
+Gate 5 later received a separate owner assignment; neither result authorizes a
+subsequent release.
 
 One real low-risk defect in the configured pilot application is discovered,
 planned, implemented, independently tested, committed, released and verified in
@@ -181,65 +168,69 @@ directions remain later phases. Reconciling a requirement means recording its
 evidence and applicability; it does not make every accepted future requirement
 an immediate implementation dependency or mark it complete.
 
-### Second-application release gate — ship the accepted bounded repair
+### Second-application release — paused by owner
 
-**Release incomplete.** Preserve `3cf9645e` and historical rejections.
-Application unavailable; writes/cadences held, schema/data parity verified.
-Managed `eccd0cfb`/`d73e6234` is signed-closed; earlier C78 proofs remain
-historical. Prior clocks, refusals and reviews remain in the matrix.
-Roost `590835b8` is deployed; health/version and additive migrations pass.
-Revoked empty grants can be replaced; any prior intent still consumes admission.
-Roost backup `9642ddc7` passes restore and exact server restart. Static final
-verifier `ee0ebab6` has historical Ready `77dad092`; its new scope is registered.
-Grant `f3069781` was normally revoked (`1208dca4`), with zero operations.
-Backup `60ce77d9` passes restore and read-only recovery; no dump/restore replay.
-Build `aa15e52e` passes 25 native Jobs and owned cleanup, producing different
-image `36d1746f`. Interrupted compatibility `57e803fb` resumed without build or
-chunk replay: 49 Jobs, migration, full parity and owned cleanup pass. Original
-29 clocks remain unchanged. Import `e803e592` passes 20 closed native Jobs:
-image `36d1746f` and stopped anchor `2710b900` are verified; protected resources
-remain unchanged. Signed owner evidence `d1108cf6` is verified in Roost.
-Package `bd41ee9c` binds manifest `ddb16c41`/scope `571169cb`.
-Host epoch 9 renewal and ordinary role renewals pass. Audit `97e80557`
-reports three PASS findings, signed-closed/restored. Full risk `b17dcefe`
-binds audit material `f381ac49` and source material `ff36e4f0`.
-Source `bf913802` independently approves exact `d73e6234` (`4912e26a`),
-signed-closed/restored; actual input is 114279/131072 bytes.
-Scope review `9c0dbb1d` approves (`56074819`) with three exact artifact/PASS
-rows, signed-closed/restored; actual input is 131027/131072 bytes.
-Historical approvals remain in the matrix.
-Renewal `651f50be` passes 23 read-only Jobs; staged measurements pass 22 tests.
-Owner `1e629f08` admits grant `bdc1387e`; renewal and signed closures pass.
-Worker11 merges exact `d73e6234`; configuration is absent/frozen.
-Normal FAILED closure `9154a122` preserves all five operations. Fresh read
-`7441bb91` passes 27 closed native Jobs. Continuation, deployment and final
-acceptance remain pending.
-Prior clocks and expired policies remain historical; see the evidence matrix.
+**STOP on 2026-10-10; no delivery gate is active.** Preserve Gate 5's local
+commit `3cf9645e`, the exact accepted candidate `d73e6234`, and historical
+evidence. Managed Git push/PR/merge occurred, but release `bdc1387e` failed
+at deployment configuration. Normal closure `9154a122` retained its five
+operations as FAILED. Fresh read `7441bb91` passed 27 closed native Jobs.
+Preparation of another backup stopped before dump/restore; no new credential
+rotation or deployment followed. Worker and write/recovery locks were absent at
+STOP. The deployment queue was not read after STOP. There is no verified
+deployment, observation or independent postrelease acceptance. Exact identities,
+refusals and earlier proofs remain in the [matrix](architecture/traceability-matrix.md)
+and [Compose record](operations/governed-compose-release.md).
 
-Reuse the existing application, repository and Compose installation; create no
-additional application or environment. Bind its own services, migrations,
-cadences, health/parity, capacity, encrypted backup/verified restore, retained
-compatible images and observation policy. Extend shared release capabilities
-only where this actual target requires it. Do not copy pilot assumptions.
+This release cannot restart from a generic "finish the repair" instruction.
+A future owner-approved brief must first confirm the actual stopped state and
+whether the installed Compose adapter can complete the remaining path. It must
+name one result, permitted effects, evidence reuse, rollback, time/token/cost/
+attempt limits and a stop rule for a new provider, repeated failure or exhausted
+budget. An application push, grant or deployment still requires its own exact
+authority. The paused gate grants none.
 
-Before any application push/PR/merge/deploy, present a reviewable exact-commit
-package and obtain a separate owner release grant. Include any bounded smoke
-writes/model calls, compatible rollback and protected resources. Application
-edits are made through Worker/Hermes; root integrates Roost changes. Reconcile
-uncertain effects before retry. Prove deployed SHA, truthful empty/populated
-activity, data safety and independent postrelease acceptance in Roost. Run
-component checks and `codex:check`, record evidence and stop. Soar completion
-requires a later assignment; no whole-product or commercial claim is authorized.
+### Proposed next gate — stop ineffective agent work (not authorized)
+
+**Roost outcome:** one supervised local task that repeats an ineffective action
+or reaches its approved attempt/time limit stops without another model call or
+side effect. Roost retains the task, actual attempts, failed check, elapsed time,
+usage when exposed (otherwise `unknown`), exact checkpoint and next safe action.
+A new attempt requires an independent diagnosis, a materially changed plan and
+fresh owner-approved budget. This advances RF-HOST-010–012 and RF-CTX-006/019;
+it does not claim complete token/cost metering or application readiness.
+
+**Scope:** first inspect the existing packet budget, Worker/Hermes attempt
+handling, task status and owner-visible evidence path. Reuse those mechanisms;
+change only the missing stop/admission and evidence behavior. No new provider,
+deployment platform, application work, production write or release is part of
+this gate. Prove the stop and a permitted resumed attempt through the native
+Worker path using a disposable bounded task; run focused checks and
+`npm run codex:check`. Independent review checks the exact result and absence
+of a repeated side effect. Reuse unaffected Gate 1–5 evidence.
+
+**Proposed execution ceiling for owner review:** one implementation owner,
+45-minute diagnostic checkpoint, 90-minute total wall-clock ceiling and at most
+one materially changed retry of the same failed action. No subagent unless an
+independent review is needed. Token/dollar caps must be stated as unavailable
+unless a provider-enforced meter is demonstrated; wall time is not a dollar cap.
+For external Codex this is a procedural checkpoint, not an automatic spend cap.
+At the ceiling, repeated failure or discovery of a new provider/material
+architecture dependency, stop with a recoverable checkpoint and ask for a
+smaller revised assignment. No silent extension or next gate.
 
 ## What is not a blocker
 
-Missing components, failed checks, migrations, architecture corrections and
-larger coordinated changes are implementation work. Resolve reversible choices,
-repair, verify and continue within the authorized gate.
+Ordinary defects inside the approved surfaces are implementation work. An
+unplanned provider, material architecture change, repeated ineffective attempt
+or exhausted budget requires a safe checkpoint and a smaller revised gate for
+owner approval. Preserve the actual failure; do not add hypothetical cases or
+repeat unaffected certification.
 
 ## True owner dependencies
 
-Pause for owner input only when progress requires one of these:
+Pause for owner input when a scope/budget stop above occurs, or when progress
+requires one of these:
 
 1. a login, 2FA response or secret unavailable to the runtime;
 2. an unapproved irreversible operation against real data or an external
@@ -277,7 +268,9 @@ Conversation history is supporting context, never the required handoff source.
 Batch new requirements for the next handoff; interrupt active work only for
 STOP, safety or material scope correction. Preserve verified-state sections.
 Before assigning a gate, reconcile its prerequisites against the previous
-result and current repository. Planning alone never advances runtime status.
+result and current repository. Inspect the real target topology, installed
+adapter and observed failure before estimating work. Planning alone never
+advances runtime status.
 
 ### Assignment contents
 
@@ -292,7 +285,15 @@ Prepare one outcome-sized assignment from the selected gate below. It contains:
 - observable success and failure cases, evidence locations and completion
   checks;
 - one implementation owner, permitted bounded delegation, commit/push/deploy
-  authority, current resource/usage budget and a mandatory stop after the gate.
+  authority, an owner-approved time/attempt ceiling and token/cost ceiling where
+  enforceable, plus a mandatory stop after the gate. If token/cost enforcement
+  is unavailable, say so and use a shorter time/attempt checkpoint; never call
+  an estimate a hard cap;
+- a stop rule for an unplanned provider, material architecture change, repeated
+  ineffective operation or exhausted budget. Preserve a checkpoint and require
+  independent diagnosis, a materially changed plan and fresh owner authority
+  before another attempt. Reuse unaffected proof; do not expand the gate to
+  hypothetical failure cases.
 
 Inspect code/configuration for the selected gate. Reuse adequate existing
 dependencies; justify additions by missing behavior and maintenance/resource cost.
@@ -307,12 +308,17 @@ These are planning horizons, not additional authorized execution gates. Prepare
 concrete gates here when the preceding outcome is proven and the phase's
 business choices are available. Do not silently add them to Gate 5.
 
-After the current release, use the owner-selected application to test Roost.
-Each bounded outcome may expose a reusable gap for separate Roost repair; expand
+The second-application release is paused. It does not block work on reusable Roost controls
+or an independently approved application baseline. Use real application work to
+test Roost, then repair reusable gaps in separately approved, bounded outcomes.
+The owner-selected next application needs its own baseline; the paused release
+needs an explicit disposition before it resumes. Expand
 agent authority only after proof. The rows guide dependencies, not execution.
 
 | Horizon | Result and entry condition | Existing requirements / decisions |
 | --- | --- | --- |
+| Cost and progress stop | Before more long-running agent delivery, prove a bounded task stops after repeated ineffective action or its approved attempt/time ceiling, preserves a truthful checkpoint, and requires independent diagnosis and fresh budget before resuming. Record provider usage as unknown when unavailable. | RF-HOST-010–012, RF-CTX-006/019 |
+| Paused release disposition | Preserve the accepted candidate and FAILED release evidence. Resume only through a new exact-target brief after checking the installed Compose path and permitted effects; otherwise leave it paused while Roost work proceeds. | RF-REL-001–011; owner STOP 2026-10-10 |
 | Next-application baseline | Reconcile its own intent, code and evidence; configure roles, procedures, context and the next accepted outcome in Roost. Prove owner-visible blockers and authority. | RF-APP-003/009–014; private baseline |
 | Company strategic direction | Adopt a private, versioned company purpose; prove relevant decisions and agent tasks compare outcomes to it, then derive measurable targets from a real baseline. | RF-OUT-008; OPEN-STRATEGY-001 |
 | Context classification and Worker packet | Classify operational versus historical sources; prove only current, approved, scoped material enters a sealed task packet. | RF-CTX-027; RF-GOV-020 |

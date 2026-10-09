@@ -14,9 +14,10 @@ define intent and current truth.
 1. Read `docs/documentation-contract.json` and its bounded
    `defaultAgentContext`.
 2. Run `npm run codex:preflight`.
-3. Identify the one gate explicitly authorized by the current request. If none
-   is named, use only the earliest unmet gate in `docs/implementation.md`. Do
-   not derive work from an old versioned document or start a later gate.
+3. Identify the one gate explicitly authorized by the current request and its
+   owner-approved budget. If none is named, use only the earliest unmet gate in
+   `docs/implementation.md`; a missing budget never means unlimited execution.
+   Do not derive work from an old versioned document or start a later gate.
 4. Inspect only the architecture, operations, security and engineering sources
    needed for that gate and the components actually being changed.
 
@@ -30,11 +31,13 @@ define intent and current truth.
 - Break work into internal milestones when useful, but do not report those as
   delivered outcomes.
 - Resolve reversible technical choices from accepted requirements, current
-  architecture, code and test evidence. Ask the owner only for a true owner
-  dependency listed in `docs/implementation.md`.
-- Repair discovered missing adapters, migrations, tests and integration defects
-  within the same outcome. Do not replace a real path with a mock or temporary
-  bypass.
+  architecture, code and test evidence. Ask the owner only for a scope/budget
+  stop or true owner dependency listed in `docs/implementation.md`.
+- Repair defects within the approved surfaces. A newly required provider,
+  material architecture change, repeated ineffective attempt or budget limit
+  triggers the safe checkpoint and revised-gate rule in `AGENTS.md`; it is not
+  permission to grow this gate indefinitely. Do not replace a real path with
+  a mock or temporary bypass.
 - Update canonical documentation when actual behavior or verified state
   changes. Never create another active plan, task board or status source.
 
@@ -61,5 +64,5 @@ For realistic forward tests of this workflow, read
 5. If the authorized gate is proven, leave recoverable clean state as permitted
    by the task, report the next gate and stop without beginning it.
 6. Report the gate state, exact checks and evidence, changed files, remaining
-   limitations and any true owner dependency. Do not provide a subjective
-   completion percentage.
+   limitations, budget used (or unavailable) and any owner dependency. Do not
+   provide a subjective completion percentage.
