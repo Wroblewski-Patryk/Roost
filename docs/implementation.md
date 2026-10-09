@@ -210,7 +210,7 @@ chunk replay: 49 Jobs, migration, full parity and owned cleanup pass. Original
 29 clocks remain unchanged. Import `e803e592` passes 20 closed native Jobs:
 image `36d1746f` and stopped anchor `2710b900` are verified; protected resources
 remain unchanged. Signed owner evidence `d1108cf6` is verified in Roost.
-New package installation, scope review and grant remain required. Tag held.
+Package `bd41ee9c` is installed; new scope review and grant remain required.
 No `d73e6234` Git publication, deployment or health proof.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 
