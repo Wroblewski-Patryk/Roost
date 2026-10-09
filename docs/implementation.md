@@ -190,13 +190,11 @@ Managed `eccd0cfb`/`d73e6234` is signed-closed. Build `b99f2a19` passes
 Signed custody and owner evidence `17f72f79` are verified.
 C78 installation `85195c60` binds manifest `e068b6c5`/scope `b448191c`.
 Audit `7a8ea0ea` has three PASS findings; signed closure/restoration pass.
-Historical refusals, recovery and stale approvals remain in the evidence matrix.
-Historical risk/revalidations and signed reviews remain in the evidence matrix.
+Historical refusals, recovery, risks and signed reviews remain in the matrix.
 Roost `c0b043f8` is deployed; health/version and additive migrations pass.
 Revoked empty grants can be replaced; any prior intent still consumes admission.
 Roost backup `ac0d501f` passes restore and exact server restart. Static final
 verifier `ee0ebab6` has Ready `77dad092`; it has not run postrelease.
-Historical activity refusals and expired policies remain in the evidence matrix.
 Atomic `fc61181d` created grant `f3069781`; binding refused before config/Git.
 Normal revocation `1208dca4` confirms zero operations and unchanged configuration.
 Backup `60ce77d9` passes restore and read-only recovery `30f6d6cb`; no dump
@@ -209,8 +207,10 @@ passes three artifacts; review `73c351ba` approves (`62df927c`). Source review
 Build `aa15e52e` passes 25 native Jobs and owned cleanup, producing different
 image `36d1746f`. Interrupted compatibility `57e803fb` resumed without build or
 chunk replay: 49 Jobs, migration, full parity and owned cleanup pass. Original
-29 clocks remain unchanged. C78 evidence is historical; new retention, signed
-publication, scope review and grant remain required. Temporary tag held.
+29 clocks remain unchanged. Import `e803e592` passes 20 closed native Jobs:
+image `36d1746f` and stopped anchor `2710b900` are verified; protected resources
+remain unchanged. Signed owner evidence `d1108cf6` is verified in Roost.
+New package installation, scope review and grant remain required. Tag held.
 No `d73e6234` Git publication, deployment or health proof.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 
