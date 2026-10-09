@@ -201,16 +201,17 @@ image `36d1746f` and stopped anchor `2710b900` are verified; protected resources
 remain unchanged. Signed owner evidence `d1108cf6` is verified in Roost.
 Package `bd41ee9c` binds manifest `ddb16c41`/scope `571169cb`.
 Host epoch 9 renewal and ordinary role renewals pass. Audit `97e80557`
-reports three PASS findings, signed-closed/restored. Full risk `748a424e`
-and source basis `eb2aba30` are verified. Source `348772d2` independently
-approves exact `d73e6234` (`4073bb5d`), signed-closed/configuration restored.
-Review `74bf1e76`/`e7ab8ebf` approves the original audit material and closes.
-Lossless input repair passes actual 130939/131072-byte measurement.
-Ready renewal `8acc0099`/basis `5bd34ff6` changes material to `0b66ae3f`;
-Current review `fce54ae0` approves (`25971566`), signed-closed/restored.
-Lossless values pass 130933/131072 bytes after preserved 131723-byte refusal.
-Fixture renewal `5fb91bd7` passes. Same-process owner preparation
-`7a3d74be` passes native guards; fresh-auth wait expires without a grant.
+reports three PASS findings, signed-closed/restored. Full risk `b17dcefe`
+binds audit material `f381ac49` and source material `ff36e4f0`.
+Source `bf913802` independently approves exact `d73e6234` (`4912e26a`),
+signed-closed/restored; actual input is 114279/131072 bytes.
+Scope review `9c0dbb1d` approves (`56074819`) with three exact artifact/PASS
+rows, signed-closed/restored; actual input is 131027/131072 bytes.
+Historical approval `25971566` lacks the required artifact row and is not
+grant-eligible. Original refusals and source reviews remain unchanged.
+Fixture renewal `8e3bee9b` passes. Owner preparation `a0a9cfe5` passes native
+guards; its fresh-auth wait expires, with no remote grant. Immediate grant
+attempt `ae1534bc` refuses stale proxy evidence before preparation or intent.
 No `d73e6234` Git publication, deployment or health proof.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 
