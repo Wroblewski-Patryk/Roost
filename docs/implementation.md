@@ -185,32 +185,28 @@ an immediate implementation dependency or mark it complete.
 
 **Release incomplete.** Preserve `3cf9645e` and historical rejections.
 Application unavailable; writes/cadences held, schema/data parity verified.
-Managed `eccd0cfb`/`d73e6234` is signed-closed. Build `b99f2a19` passes
-59 Jobs/restore/cleanup; `fd9cefd7` retains image `c78ed34b`.
-Signed custody and owner evidence `17f72f79` are verified.
-C78 installation `85195c60` binds manifest `e068b6c5`/scope `b448191c`.
-Audit `7a8ea0ea` has three PASS findings; signed closure/restoration pass.
-Historical refusals, recovery, risks and signed reviews remain in the matrix.
+Managed `eccd0cfb`/`d73e6234` is signed-closed; earlier C78 proofs remain
+historical. Original clocks, refusals and signed reviews remain in the matrix.
 Roost `c0b043f8` is deployed; health/version and additive migrations pass.
 Revoked empty grants can be replaced; any prior intent still consumes admission.
 Roost backup `ac0d501f` passes restore and exact server restart. Static final
 verifier `ee0ebab6` has historical Ready `77dad092`; its new scope is registered.
-Atomic `fc61181d` created grant `f3069781`; binding refused before config/Git.
-Normal revocation `1208dca4` confirms zero operations and unchanged configuration.
-Backup `60ce77d9` passes restore and read-only recovery `30f6d6cb`; no dump
-or restore was repeated. C78 compatibility `7dc715c3` passes 49 native Jobs,
-schema/data/raw-sequence parity and cleanup. Signed owner evidence `ce7d4451`
-is verified in Roost. Package `e277a44b` passes actual readback after eight
-fresh read-only Jobs; its remote snapshot remains historical. Audit `3e3d094b`
-passes three artifacts; review `73c351ba` approves (`62df927c`). Source review
-`1fafca80` accepted `d73e6234`; its current basis is stale. Closure/restore pass.
+Grant `f3069781` was normally revoked (`1208dca4`), with zero operations.
+Backup `60ce77d9` passes restore and read-only recovery; no dump/restore replay.
 Build `aa15e52e` passes 25 native Jobs and owned cleanup, producing different
 image `36d1746f`. Interrupted compatibility `57e803fb` resumed without build or
 chunk replay: 49 Jobs, migration, full parity and owned cleanup pass. Original
 29 clocks remain unchanged. Import `e803e592` passes 20 closed native Jobs:
 image `36d1746f` and stopped anchor `2710b900` are verified; protected resources
 remain unchanged. Signed owner evidence `d1108cf6` is verified in Roost.
-Package `bd41ee9c` is installed; new scope review and grant remain required.
+Package `bd41ee9c` binds manifest `ddb16c41`/scope `571169cb`.
+Host epoch 9 renewal and ordinary role renewals pass. Audit `97e80557`
+reports three PASS findings, signed-closed/restored. Full risk `748a424e`
+and source basis `eb2aba30` are verified. Source `348772d2` independently
+approves exact `d73e6234` (`4073bb5d`), signed-closed/configuration restored.
+Package review `74bf1e76` remains unclaimed: actual 132337/131072-byte input
+refused before model launch. A verified reduction and independent acceptance,
+current fixture window, grant and final native release proof remain required.
 No `d73e6234` Git publication, deployment or health proof.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 

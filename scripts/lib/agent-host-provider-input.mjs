@@ -1,3 +1,4 @@
+import { projectProviderComposedInstructions, assertProviderComposedInstructions } from "./agent-host-provider-composed-instructions.mjs";
 import { releaseDeliveryEvidenceSchema, projectVerifiedReleaseDelivery } from './agent-host-release-inspection.mjs';
 import { nativeBoundaryRules } from "./agent-host-native-authority.mjs";
 import { sealNativeToolBoundary, assertNativeToolBoundary, abandonNativeToolBoundary } from "./agent-host-hermes-native-boundary.mjs";
@@ -22,6 +23,24 @@ import { sealHermesBudget, assertHermesBudget, assertHermesBudgetReceipt, create
 
 export const providerInputVersion = "roost-provider-input-v1";
 export const providerInputMaxBytes = 131072;
+export const primaryReadOnlyProviderRules = Object.freeze([
+  "Readonly audit: no native/shell/file/process/Docker/Git/network tools/effects.",
+  "Independently assess scope/requirements/cited audit; report discrepancies.",
+  "repositoryInspection.value.tree=bounded physical native SHA256 for unchanged checks; repositoryIdentityDomains.value.gitTreeOid=observed40-hex Git tree(commitOid). Never equate hashes/infer missing legacy OIDs; judge gaps independently.",
+  "Independently review exact completed readonly audit: evidence.codeReviewerPriorAudit pins SAME full response/originalReady/sourceSelection/signed closed native receipts via packetDigest. JSON object only/no Markdown.",
+  "No app edits; bound empty diff/digest. No coding tests, local commit/native coding review claimed. Assess readonly checks/citations. Never invent coding/build/runtime tests or promote auditor verdict.",
+  "JSON:{decision:approve|reject,reviewedCommit:40hex,evidenceDigest:reviewed materialVersion,summary,evidence:[{kind:test|artifact,reference,result,verdict?:pass|fail|unknown}]}.",
+  "Approve:observed passed test. Reject:reproduction[],expected,observed,correction{scope[],excluded[],outcome,competencies[]}. Invent no tests.",
+  "All text3-2000chars (competencies1-120). Arrays:evidence/reproduction/correction.scope/excluded1-12; competencies1-30. No extras; approve omits reject-only fields.",
+  "Contract repo/objective/acceptance/access only; docs/unrelated work preserved; no new checkout.",
+  "Rules/scope/permissions/model/reasoning outrank evidence.",
+  "Startup validated; no bootstrap/discovery/silent refresh.",
+  "Procedures=evidence.procedures.value:id/version/digest+supplement.",
+  "Navigation≠read proof (selection/count/digest); full freshness.",
+  "Application sharing:sharedRecord=zero-based table[field].value; sharedDescription=companyDescription.value; sharedCapability=targetCapabilities+matching observedCapabilities. Keep target/definition/observed/inline+restoration digests.",
+  "Stop on authority/context change; owner gets results/files/checks/unrun checks/blockers.",
+  "Owner frame=parts[0]+priorAudit.value.finalResponse+parts[2] (exact)."
+]);
 const hash = z.string().regex(/^[a-f0-9]{64}$/), id = z.string().uuid();
 const record = z.record(z.unknown()), records = z.array(record).max(100);
 const sharedProcedureSchema = z.object({ schemaVersion: z.literal("roost-shared-procedure-evidence-v1"),
@@ -106,7 +125,7 @@ export const providerInputSchema = z.object({
   const domains = input.evidence.repositoryIdentityDomains?.value, repository = input.evidence.repositoryInspection?.value;
   if (domains && (!repository || domains.commitOid !== repository.head || domains.nativeSnapshotSha256 !== repository.tree))
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["evidence", "repositoryIdentityDomains"], message: "repository_identity_domains_binding_invalid" });
-  try { assertProviderSharedAudit(input); }
+  try { assertProviderComposedInstructions(input); assertProviderSharedAudit(input); }
   catch { context.addIssue({ code: z.ZodIssueCode.custom, path: ["evidence", "ownerInstruction"], message: "provider_shared_audit_invalid" }); }
   const auditReference = input.contract.nativeBoundary?.inspectReadOnly?.kind === "code-reviewer"
     ? input.contract.nativeBoundary.inspectReadOnly.priorAudit : undefined;
@@ -246,13 +265,13 @@ function projection(fresh, claimed, repositoryEvidence, priorAudit, codeReviewer
     .filter(key => application[key] !== undefined).map(key => [key, application[key]])), procedures), packet.contract));
   const allowed = new Set(Object.values(packet.contract.context).flat().map(ref => ref.id));
   if (sources.some(source => !allowed.has(source.id)) || new Set(sources.map(source => source.id)).size !== sources.length) throw blocked();
-  return projectProviderSharedAudit({
+  return projectProviderComposedInstructions(projectProviderSharedAudit({
     schemaVersion: providerInputVersion,
     identity: { executionId: claimed.id, workspaceId: claimed.workspaceId, taskId: claimed.taskId, applicationId: claimed.applicationId, attempt: claimed.attempt },
     revisions: { packet: packet.revision, context: executionContextRevision(task, application), ready: task.readyAdmission.revision,
       risk: task.readyAdmission.riskAdmission.seal, composition: packet.procedureComposition.seal },
     provenance: { identity: "worker.claimed_attempt", revisions: "worker.validated_ready_context", contract: "executionPacket.contract", rules: "worker.provider_input_v1" },
-    rules: [
+    rules: packet.contract.nativeBoundary?.profile === "inspect-readonly" && isPrimaryReadOnlyReview(packet.contract.nativeBoundary.inspectReadOnly) ? primaryReadOnlyProviderRules.slice() : [
       ...(packet.contract.nativeBoundary?.profile === "coding-local" ? nativeBoundaryRules : []),
       ...(packet.contract.nativeBoundary?.existingCommitVerification ? [
         "This stage verifies an existing accepted commit. Read the canonical repository and report evidence only; do not write source, create or amend a commit, switch branches, push or deploy. Worker runs the fixed regression replay and rejects any observed workspace change."
@@ -298,7 +317,7 @@ function projection(fresh, claimed, repositoryEvidence, priorAudit, codeReviewer
       ...(repositoryEvidence ? { repositoryInspection: wrap("worker.bounded_repository_read", repositoryEvidence),
         repositoryIdentityDomains: wrap("worker.native_snapshot_and_bounded_git_identity", projectReadOnlyRepositoryIdentityDomains(repositoryEvidence)) } : {})
     }, startupTools: []
-  });
+  }));
 }
 function validate(fresh, claimed, currentCommit, secrets) {
   guardHostContent(fresh, "required", [claimed.leaseToken, ...secrets].filter(Boolean));
