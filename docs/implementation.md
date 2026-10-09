@@ -198,17 +198,19 @@ Roost `c0b043f8` is deployed; health/version and additive migrations pass.
 Revoked empty grants can be replaced; any prior intent still consumes admission.
 Roost backup `ac0d501f` passes restore and exact server restart. Static final
 verifier `ee0ebab6` has Ready `77dad092`; it has not run postrelease.
-Activity capture `284dd3a0` refused before policy write: its proposed expiry
-exceeded the real backup deadline. New native `21b09d91` qualifies unchanged
-namespace/policy effects until 8 October 21:21:39 UTC without extending backup.
+Historical activity refusals and expired policies remain in the evidence matrix.
 Atomic `fc61181d` created grant `f3069781`; binding refused before config/Git.
 Normal revocation `1208dca4` confirms zero operations and unchanged configuration.
 Backup `60ce77d9` passes restore and read-only recovery `30f6d6cb`; no dump
 or restore was repeated. C78 compatibility `7dc715c3` passes 49 native Jobs,
 schema/data/raw-sequence parity and cleanup. Signed owner evidence `ce7d4451`
 is verified in Roost. Package `e277a44b` passes actual readback after eight
-fresh read-only Jobs; its remote snapshot remains historical. New scope audit,
-independent review and current grant/effect reinspection remain required.
+fresh read-only Jobs; its remote snapshot remains historical. Audit `3e3d094b`
+passes three artifacts; review `73c351ba` approves (`62df927c`). Source review
+`1fafca80` approves `d73e6234` (`ad1fd20c`); signed closure/restoration pass.
+Build `aa15e52e` passes 25 native Jobs and owned cleanup, producing different
+image `36d1746f`. C78 evidence remains historical; new compatibility, retention,
+signed publication, scope review and grant remain required. Temporary tag held.
 No `d73e6234` Git publication, deployment or health proof.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 
