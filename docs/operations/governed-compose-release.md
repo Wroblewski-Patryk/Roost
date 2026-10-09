@@ -780,3 +780,14 @@ PR, review and merge. Resolve an uncertain push through the normal Worker's
 read-only Git reconciliation; do not repeat upload to repair missing evidence.
 Preserve its signed pending checkpoint and original executable bytes when a
 local adapter repair requires a new selected source graph.
+
+A stopped reconciliation controller may retain the exact signed pending writer.
+Before changing its mode or launching, qualify that original checkpoint against
+the entire current journal with HMAC and actual process-instance absence; require
+the observer ready, no native jobs or Hermes, and no recovery lock. Admit no
+foreign writer. Change only the reconciliation flag, retain literal preimages,
+then require normal signed closure and both locks absent before restoring the
+original configuration. A read-only recovery window never reduces the full
+release margin or authorizes another publication effect. Extending fixture clocks
+requires a genuine fresh namespace, seed, fence and protected-scope observation;
+preserve the original grant, policy and executable sources as history.
