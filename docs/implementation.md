@@ -209,8 +209,8 @@ Lossless input repair passes actual 130939/131072-byte measurement.
 Ready renewal `8acc0099`/basis `5bd34ff6` changes material to `0b66ae3f`;
 Current review `fce54ae0` approves (`25971566`), signed-closed/restored.
 Lossless values pass 130933/131072 bytes after preserved 131723-byte refusal.
-Genuine fixture renewal
-`33ba3e04` passes after preserved installer refusal; grant/release remain pending.
+Fixture renewal `5fb91bd7` passes. Same-process owner preparation
+`7a3d74be` passes native guards; fresh-auth wait expires without a grant.
 No `d73e6234` Git publication, deployment or health proof.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 
