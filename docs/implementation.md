@@ -210,9 +210,9 @@ rows, signed-closed/restored; actual input is 131027/131072 bytes.
 Historical approvals remain in the matrix.
 Renewal `651f50be` passes 23 read-only Jobs; staged measurements pass 22 tests.
 Owner `1e629f08` admits grant `bdc1387e`; renewal and signed closures pass.
-Worker10 stops before Git. Settings and LF source repairs pass component checks;
-the installed constructor now passes. Actual release and final acceptance remain pending.
-No `d73e6234` Git publication, deployment or health proof.
+Worker10 pushes exact `d73e6234`; outcome is uncertain in Roost.
+Read-only Git proof confirms the effect. Git evidence repair passes 31 checks;
+normal reconciliation, deployment, health and final acceptance remain pending.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 
 Reuse the existing application, repository and Compose installation; create no

@@ -773,3 +773,10 @@ Any prior operation intent consumes the recovery admission, including an
 unresolved, failed or reconciled operation. Reconcile its real effect before
 following the documented recovery path. Revocation never clears that history.
 Application locks serialize competing grants; two active successors are refused.
+
+Compatible publication uses its admitted publication base. Git outcomes must
+include the actual remote base commit/tree and candidate commit/tree for push,
+PR, review and merge. Resolve an uncertain push through the normal Worker's
+read-only Git reconciliation; do not repeat upload to repair missing evidence.
+Preserve its signed pending checkpoint and original executable bytes when a
+local adapter repair requires a new selected source graph.
