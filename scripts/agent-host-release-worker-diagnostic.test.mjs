@@ -1,5 +1,15 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {releaseWorkerDiagnostic,persistReleaseWorkerDiagnostic} from './lib/agent-host-release-worker.mjs';
 
+test('compatible preflight dependency and native parity refusals retain fixed codes only',()=>{
+ for(const suffix of ['compatible_installation_dependencies_required','compatible_native_settings_unproven',
+  'compatible_native_ingress_fence_stale','compatible_native_ingress_fence_changed']){
+  const reason='release_compose_installation_'+suffix;
+  assert.equal(releaseWorkerDiagnostic(Error('outer',{cause:Error(reason)})),reason);
+  assert.equal(releaseWorkerDiagnostic(Error(reason+'\nBearer private-value')),'release_preflight_unproven');
+ }
+ assert.equal(releaseWorkerDiagnostic(Error('release_compose_installation_compatible_private_value')),'release_preflight_unproven');
+});
+
 test('controller schema capacity refusals expose only fixed classifications',()=>{
  for(const suffix of ['unproven','unsupported','mixed','capacity_insufficient']){
   const reason='release_compose_configuration_schema_'+suffix;

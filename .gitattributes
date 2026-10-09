@@ -7,3 +7,6 @@
 *.json text
 # The native launcher's historical source receipt pins these exact LF bytes.
 scripts/roost-windows-job.cs text eol=lf
+# Installed Compose policies pin these exact executable source bytes too.
+scripts/lib/agent-host-release-compose-controller.mjs text eol=lf
+scripts/lib/agent-host-release-compose-ingress-runtime.py text eol=lf

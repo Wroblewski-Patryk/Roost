@@ -22,7 +22,7 @@ import { buildReleaseFingerprintCommand, releaseFingerprintTimeoutSchema } from 
 import { coolifyGitSetDeploymentId } from './agent-host-release-coolify-git-set-gateway.mjs';
 import contract from './agent-host-release-contract.cjs';
 import { installedActivitySettingsSchema, createActivityReleaseAdapter } from './agent-host-release-activity-adapter.mjs';
-import { createInstalledActivityTransport, activityCompatibleIngressInstallationSchema, qualifyCandidateIngressScope } from './agent-host-release-activity-installed.mjs';
+import { createInstalledActivityTransport, activityCompatibleIngressInstallationSchema, qualifyCandidateIngressScope, activityRestorationDigests } from './agent-host-release-activity-installed.mjs';
 import { imageRetentionPolicySchema, retainedImageAnchor, qualifyRetentionImage, qualifyRetentionAnchor } from './agent-host-image-retention.mjs';
 import ingressFenceContract from './agent-host-release-compose-ingress-fence.cjs';
 import {readCompatibleRecoveryFailure as readFixedCompatibleFailure} from './agent-host-release-compose-failure-inspector.mjs';
@@ -406,6 +406,92 @@ export function qualifyCompatibleSettingsRead({snapshot,value,now}){
  check(contract.releaseDigest(stableFence(value.ingressFence))===contract.releaseDigest(stableFence(e.ingressFence)),'compatible_native_ingress_fence_changed');
  return value;
 }
+
+// Read the protected database and current proxy namespace before application
+// containers exist. The installed SSH transport still owns every native child.
+export const compatibleSequenceReadSql="BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY; SELECT format('SELECT jsonb_build_object(''schema'',%L,''sequence'',%L,''lastValue'',last_value,''isCalled'',is_called)::text FROM %I.%I;',n.nspname,c.relname,n.nspname,c.relname) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relkind='S' ORDER BY n.nspname,c.relname\n\\gexec\nCOMMIT;";
+export function compatibleRoleReadSql(database){
+ const db=database;check(db&&[db.adminUser,db.adminDatabase,db.applicationUser,db.applicationDatabase].every(x=>/^[A-Za-z_][A-Za-z0-9_]{0,62}$/.test(x)),'compatible_settings_database_names_unproven');
+ const u="'"+db.applicationUser+"'",n="'"+db.applicationDatabase+"'";
+ return `BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY; SELECT json_build_object('roleExists',EXISTS(SELECT 1 FROM pg_roles WHERE rolname=${u}),'databaseExists',EXISTS(SELECT 1 FROM pg_database WHERE datname=${n}),'adminSuperuser',(SELECT rolsuper FROM pg_roles WHERE rolname=current_user),'roleConfig',COALESCE((SELECT to_json(setconfig) FROM pg_db_role_setting WHERE setrole=(SELECT oid FROM pg_roles WHERE rolname=${u}) AND setdatabase=(SELECT oid FROM pg_database WHERE datname=${n})),'[]'::json),'globalRoleConfig',COALESCE((SELECT to_json(setconfig) FROM pg_db_role_setting WHERE setrole=(SELECT oid FROM pg_roles WHERE rolname=${u}) AND setdatabase=0),'[]'::json),'databaseConfig',COALESCE((SELECT to_json(setconfig) FROM pg_db_role_setting WHERE setrole=0 AND setdatabase=(SELECT oid FROM pg_database WHERE datname=${n})),'[]'::json),'serverReadOnly',(SELECT reset_val FROM pg_settings WHERE name='default_transaction_read_only'),'activeOtherSessions',(SELECT count(*) FROM pg_stat_activity WHERE datname=${n} AND pid<>pg_backend_pid() AND state='active'),'ownedTransactions',(SELECT count(*) FROM pg_stat_activity WHERE datname=${n} AND pid<>pg_backend_pid() AND xact_start IS NOT NULL AND state<>'idle'))::text; COMMIT;`;
+}
+const compatibleSettingsReadProgram=String.raw`
+import base64,hashlib,json,re,subprocess
+from datetime import datetime,timezone
+controller=base64.b64decode('__ROOST_CONTROLLER__')
+request=json.loads(base64.b64decode('__ROOST_INPUT__'))
+def require(ok):
+    if not ok: raise RuntimeError('compatible-settings-unproven')
+require(hashlib.sha256(controller).hexdigest()==request['controllerDigest'])
+scope={'__name__':'_roost_fixed_compatible_read'}
+exec(compile(controller,'<sealed-ingress-controller>','exec'),scope)
+policy=request['policy'];db=request['database']
+scope['validate']({'operation':'read','policy':policy},request['controllerDigest'])
+def fence():
+    value=scope['Controller']({'operation':'read','policy':policy}).execute()
+    require(value['effects']==0 and value['removed'] is False and value['receipt']['rulePresent'] is True)
+    return value['receipt']
+def stable(v): return {k:x for k,x in v.items() if k not in {'observedAt','evidenceDigest'}}
+def sql(user,database,query,limit):
+    r=subprocess.run(['docker','exec','-i',db['containerId'],'psql','-X','-qAt','-v','ON_ERROR_STOP=1','-U',user,'-d',database],input=query.encode(),stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=25)
+    require(r.returncode==0 and len(r.stdout)<=limit and len(r.stderr)<=1024)
+    if r.stderr:
+        # PostgreSQL's administrative collation warning does not invalidate a
+        # completed read. Accept its exact standard frame for that database only.
+        require(user==db['adminUser'] and database==db['adminDatabase'] and database!=db['applicationDatabase'])
+        lines=r.stderr.decode().splitlines()
+        require(len(lines)==3 and lines[0]=='WARNING:  database "'+database+'" has a collation version mismatch')
+        require(re.fullmatch(r'DETAIL:  The database was created using collation version [0-9.]+, but the operating system provides version [0-9.]+\.',lines[1]) is not None)
+        require(lines[2]=='HINT:  Rebuild all objects in this database that use the default collation and run ALTER DATABASE '+database+' REFRESH COLLATION VERSION, or build PostgreSQL with the right library version.')
+    return r.stdout.decode()
+def role():
+    v=json.loads(sql(db['adminUser'],db['adminDatabase'],request['roleSql'],8192))
+    require(v['roleExists'] is True and v['databaseExists'] is True and v['adminSuperuser'] is True and v['activeOtherSessions']==0 and v['ownedTransactions']==0)
+    effective=v['serverReadOnly'];require(effective in {'on','off'})
+    for key in ['databaseConfig','globalRoleConfig','roleConfig']:
+        rows=v[key];require(isinstance(rows,list) and len(rows)<=32)
+        require(all(isinstance(x,str) and 0<len(x)<=1024 and '=' in x and not any(c in x for c in '\x00\r\n') for x in rows))
+        require(len({x.split('=',1)[0] for x in rows})==len(rows))
+        settings=[x for x in rows if x.startswith('default_transaction_read_only=')]
+        require(len(settings)<=1 and all(x in {'default_transaction_read_only=on','default_transaction_read_only=off'} for x in settings))
+        if settings: effective=settings[0].split('=',1)[1]
+    require(effective=='on' and 'default_transaction_read_only=on' in v['roleConfig'])
+    require([x for x in v['roleConfig'] if not x.startswith('default_transaction_read_only=')]==[x for x in db['originalRoleConfig'] if not x.startswith('default_transaction_read_only=')])
+    return v
+before=fence();roleBefore=role()
+lines=sql(db['applicationUser'],db['applicationDatabase'],request['sequenceSql'],1048576).splitlines()
+lines=[x for x in lines if x]
+for line in lines:
+    v=json.loads(line)
+    require(set(v)=={'schema','sequence','lastValue','isCalled'} and isinstance(v['schema'],str) and isinstance(v['sequence'],str) and type(v['lastValue']) is int and abs(v['lastValue'])<=9007199254740991 and type(v['isCalled']) is bool)
+sequence=hashlib.sha256(''.join(x+'\n' for x in sorted(lines,key=lambda x:x.encode('utf-16-be'))).encode()).hexdigest()
+roleAfter=role();after=fence()
+require(roleBefore==roleAfter and stable(before)==stable(after))
+print(json.dumps({'observedAt':datetime.now(timezone.utc).isoformat().replace('+00:00','Z'),'sequenceDigest':sequence,'databaseSettingsDigest':request['settingsDigests']['databaseSettingsDigest'],'ingressSettingsDigest':request['settingsDigests']['ingressSettingsDigest'],'ingressBlocked':True,'ingressFence':after},separators=(',',':')))
+`;
+export function createCompatibleSettingsReader({snapshot,runtimeSettingsBytes,ingressPolicyBytes,ingressControllerBytes,expectedControllerDigest,ssh,assertUnchanged,now=Date.now}){
+ check([runtimeSettingsBytes,ingressPolicyBytes,ingressControllerBytes].every(b=>Buffer.isBuffer(b)&&b.length>0&&b.length<=131072)&&typeof ssh==='function'&&typeof assertUnchanged==='function','compatible_settings_reader_binding_unproven');
+ check(hash(ingressControllerBytes)===expectedControllerDigest,'compatible_settings_program_unproven');
+ const raw=JSON.parse(runtimeSettingsBytes),digests=activityRestorationDigests(raw),policy=JSON.parse(ingressPolicyBytes),e=contract.compatibleRecoveryEntrySchema.parse(snapshot.compatibleArtifactRecovery.currentEntry);
+ check(raw.targetId===e.targetId&&raw.database.containerId===e.database.containerId&&policy.targetId===e.targetId&&policy.databaseContainerId===e.database.containerId&&policy.controllerProgramDigest===expectedControllerDigest
+  &&digests.databaseSettingsDigest===e.databaseSettingsDigest&&digests.ingressSettingsDigest===e.ingressSettingsDigest,'compatible_settings_scope_unproven');
+ const policyFields=['networkId','subnet','proxyId','proxyPid','namespaceDigest','databaseIpv4','proxyIpv4','ruleComment','originalRulesDigest'];
+ check(policyFields.every(k=>policy[k]===e.ingressFence[k]),'compatible_settings_policy_unproven');
+ const request={database:raw.database,policy,controllerDigest:expectedControllerDigest,settingsDigests:digests,roleSql:compatibleRoleReadSql(raw.database),sequenceSql:compatibleSequenceReadSql};
+ const program=compatibleSettingsReadProgram.replace('__ROOST_CONTROLLER__',ingressControllerBytes.toString('base64')).replace('__ROOST_INPUT__',Buffer.from(JSON.stringify(request)).toString('base64'));
+ check(Buffer.byteLength(program)<=131072,'compatible_settings_program_bound');
+ return async({source,configuration,services})=>{
+  const target=snapshot.manifest.deployment?.targets?.find(v=>v.targetId===e.targetId),allowed=[e.configuration,...(target?.configuration?[target.configuration]:[])];
+  const current=allowed.find(v=>contract.releaseDigest(configuration)===contract.releaseDigest(v)),databaseRows=Array.isArray(services)?services.filter(v=>v.role==='database'):[];
+  check(source?.container===e.database.containerId&&source.user===raw.database.applicationUser&&source.database===raw.database.applicationDatabase&&current
+   &&Array.isArray(services)&&services.length>=1&&services.length<=5&&new Set(services.map(v=>v.name)).size===services.length&&databaseRows.length===1
+   &&['containerId','imageDigest','mountDigest'].every(k=>databaseRows[0][k]===e.database[k])&&services.every(v=>current.services.some(d=>d.name===v.name&&d.role===v.role&&d.mountDigest===v.mountDigest)),'compatible_settings_current_binding_unproven');
+  await assertUnchanged();const output=await ssh({command:'python3 -',stdin:program,timeoutMs:120000,maxOutputBytes:8192});await assertUnchanged();
+  let value;try{check(typeof output==='string'&&Buffer.byteLength(output)<=8192,'compatible_settings_output_bound');value=JSON.parse(output);}catch{deny('compatible_settings_output_unproven');}
+  const shape=z.object({observedAt:z.string().datetime(),sequenceDigest:hex,databaseSettingsDigest:hex,ingressSettingsDigest:hex,ingressBlocked:z.literal(true),ingressFence:ingressFenceContract.composeIngressFenceSchema}).strict();
+  check(shape.safeParse(value).success,'compatible_settings_output_unproven');return qualifyCompatibleSettingsRead({snapshot,value,now:now()});
+ };
+}
 /** The installation maps fixed readers only; packets cannot select a channel. */
 export function createInstalledCompatibleFailureReader({snapshot,source},dependencies){
  const s=structuredClone(snapshot),m=s.manifest;
@@ -501,7 +587,7 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
  const recovery=contract.releaseHasRecoveryOnly(s),compatible=s.compatibleArtifactRecovery!==undefined;
  if(compatible){const proof=qualifyCompatibleRecoveryBuildSnapshot(s);check(proof.workspaceId===(state.release.workspaceId??state.release.workspace_id)
    &&proof.issuerUserId===(state.release.issuerUserId??state.release.issuer_user_id),'compatible_authoritative_grant_owner_changed');
-  check(cfg.compatibleRecovery&&cfg.compatibleIngress&&cfg.activity&&cfg.imageRetention&&typeof dependencies.readCompatibleRecoverySettings==='function','compatible_installation_dependencies_required');}
+  check(cfg.compatibleRecovery&&cfg.compatibleIngress&&cfg.activity&&cfg.imageRetention&&(dependencies.readCompatibleRecoverySettings===undefined||typeof dependencies.readCompatibleRecoverySettings==='function'),'compatible_installation_dependencies_required');}
  else check(cfg.compatibleRecovery===undefined&&cfg.compatibleIngress===undefined,'compatible_installation_without_scope');
  check(s.recoveryOnly===undefined?cfg.recoveryEntryTemplate===undefined&&cfg.recoveryPreviousManifest===undefined&&cfg.recoveryMaterializationTemplate===undefined
   :recovery&&cfg.recoveryEntryTemplate&&cfg.recoveryPreviousManifest&&cfg.recoveryMaterializationTemplate,'recovery_only_installation_unproven');
@@ -555,7 +641,13 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
    cwd:os.tmpdir(),input:stdin,durationMs:timeoutMs,maxBytes:maxOutputBytes});}catch(e){deny('ssh_unavailable',e);}
   await assertClone();check(Buffer.byteLength(out)<=maxOutputBytes,'response_size_invalid');return out.toString('utf8');
  };
- let retentionJournalSource=null,lastRetentionEvidence=null;
+ const readCompatibleRecoverySettings=compatible?(dependencies.readCompatibleRecoverySettings??(()=>{
+   const file=fileURLToPath(new URL('./agent-host-release-compose-ingress-runtime.py',import.meta.url)),program=read(file),id=identity(file,false);
+   check(Buffer.isBuffer(program)&&program.length>0&&program.length<=131072&&hash(program)===cfg.compatibleIngress.controllerProgramDigest,'compatible_settings_program_unproven');
+   seals.set(file,{id,hash:hash(program)});
+   return createCompatibleSettingsReader({snapshot:s,runtimeSettingsBytes:bytesFor(cfg.activity.runtimeSettings.file,cfg.activity.runtimeSettings.sha256),ingressPolicyBytes:bytesFor(cfg.compatibleIngress.policy.file,cfg.compatibleIngress.policy.sha256),ingressControllerBytes:program,expectedControllerDigest:cfg.compatibleIngress.controllerProgramDigest,ssh,assertUnchanged:assertClone,now:dependencies.now??Date.now});
+  })()):undefined;
+  let retentionJournalSource=null,lastRetentionEvidence=null;
  const readRetentionJournal=async()=>{check(identity(path.dirname(retentionJournalFile))===retentionDirectoryIdentity,'retention_directory_changed');
   if(!existsSync(retentionJournalFile)){check(!retentionJournalSource,'retention_journal_disappeared');return null;}
   const id=identity(retentionJournalFile,false),bytes=read(retentionJournalFile);check(Buffer.isBuffer(bytes)&&bytes.length>0&&bytes.length<=1048576,'retention_journal_unproven');
@@ -982,14 +1074,14 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
   await quiescent();const before=await compatibleEntryInspector.inspectLegacyBaseline(t.targetId,saved.configuration.gitCommit);
   check(composeConfigurationDigest(before.configuration)===composeConfigurationDigest(saved.configuration),'compatible_current_configuration_changed');
   const row=qualifyCompatiblePhysicalEntry({snapshot:s,observed:before,now:(dependencies.now??Date.now)()}),source={...cfg.source,container:row.containerId};
-  const fence=await readDatabaseFence(source),fp=await readFingerprint(source),settings=qualifyCompatibleSettingsRead({snapshot:s,value:await dependencies.readCompatibleRecoverySettings({source,configuration:before.configuration,services:before.services}),now:(dependencies.now??Date.now)()}),health=await healthProbe({expectedCommit:saved.configuration.gitCommit});
+  const fence=await readDatabaseFence(source),fp=await readFingerprint(source),settings=qualifyCompatibleSettingsRead({snapshot:s,value:await readCompatibleRecoverySettings({source,configuration:before.configuration,services:before.services}),now:(dependencies.now??Date.now)()}),health=await healthProbe({expectedCommit:saved.configuration.gitCommit});
   check(fence.readOnlyFence===true&&fence.activeOtherSessions===0&&fence.ownedTransactions===0&&fp.schemaDigest===m.baseline.schemaDigest&&fp.dataDigest===m.baseline.dataDigest
    &&settings.sequenceDigest===m.postObservation.baselineSequenceDigest&&settings.databaseSettingsDigest===saved.databaseSettingsDigest&&settings.ingressSettingsDigest===saved.ingressSettingsDigest
    &&settings.ingressBlocked===true&&health.healthy===false&&hex.safeParse(health.healthDigest).success,'compatible_current_protected_settings_unproven');
   const availabilityProgram=`import json,subprocess\nids=set(subprocess.check_output(['docker','image','ls','--no-trunc','--quiet'],stderr=subprocess.DEVNULL,timeout=15).decode().split())\nassert len(ids)<=512 and all(__import__('re').fullmatch('sha256:[a-f0-9]{64}',v) for v in ids)\nrows=json.loads(${JSON.stringify(JSON.stringify(saved.imageAvailability.map(({name,imageDigest})=>({name,imageDigest}))))})\nprint(json.dumps([dict(v,present=v['imageDigest'] in ids) for v in rows]))\n`;
   const imageAvailability=JSON.parse(await ssh({command:'python3 -',stdin:availabilityProgram,maxOutputBytes:8192}));
   check(contract.releaseDigest(imageAvailability)===contract.releaseDigest(saved.imageAvailability),'compatible_historical_image_availability_changed');
-  const after=await compatibleEntryInspector.inspectLegacyBaseline(t.targetId,saved.configuration.gitCommit),fenceAfter=await readDatabaseFence(source),fpAfter=await readFingerprint(source),settingsAfter=qualifyCompatibleSettingsRead({snapshot:s,value:await dependencies.readCompatibleRecoverySettings({source,configuration:after.configuration,services:after.services}),now:(dependencies.now??Date.now)()});await quiescent();
+  const after=await compatibleEntryInspector.inspectLegacyBaseline(t.targetId,saved.configuration.gitCommit),fenceAfter=await readDatabaseFence(source),fpAfter=await readFingerprint(source),settingsAfter=qualifyCompatibleSettingsRead({snapshot:s,value:await readCompatibleRecoverySettings({source,configuration:after.configuration,services:after.services}),now:(dependencies.now??Date.now)()});await quiescent();
   const settingsStable=value=>{const x=structuredClone(Object.fromEntries(['sequenceDigest','databaseSettingsDigest','ingressSettingsDigest','ingressBlocked','ingressFence'].map(k=>[k,value[k]])));if(x.ingressFence){delete x.ingressFence.observedAt;delete x.ingressFence.evidenceDigest;}return x;};
   check(contract.releaseDigest(before)===contract.releaseDigest(after)&&contract.releaseDigest(fence)===contract.releaseDigest(fenceAfter)&&contract.releaseDigest(fp)===contract.releaseDigest(fpAfter)
    &&contract.releaseDigest(settingsStable(settings))===contract.releaseDigest(settingsStable(settingsAfter))
@@ -1110,7 +1202,7 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
  }
  const readCompatibleFailure=compatible?createInstalledCompatibleFailureReader({snapshot:s,source:cfg.source},{readCurrentState:dependencies.readReleaseState,
   readConfiguration:observeConfig,entryInspector:compatibleEntryInspector,candidateInspector:inspector,transport:ssh,
-  readCompatibleRecoverySettings:dependencies.readCompatibleRecoverySettings,probeHealth:healthProbe,assertClone,now:dependencies.now??Date.now}):null;
+  readCompatibleRecoverySettings,probeHealth:healthProbe,assertClone,now:dependencies.now??Date.now}):null;
  const compatibleMethods=compatible?{inspect:async()=>deny('compatible_historical_baseline_unavailable'),configureRollback:async()=>deny('compatible_historical_rollback_forbidden'),rollback:async()=>deny('compatible_historical_rollback_forbidden'),
   readCompatibleRecoveryFailure:readCompatibleFailure,
   health:async(a,b,o={})=>{check(o.rollback!==true,'compatible_historical_rollback_forbidden');return adapter.health(a,b,o);},

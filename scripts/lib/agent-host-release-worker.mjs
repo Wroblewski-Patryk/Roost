@@ -39,6 +39,21 @@ for(const reason of ['release_writer_recovery_unproven','release_compose_recover
 for(const reason of ['unproven','unsupported','mixed','capacity_insufficient'])
  releaseDiagnosticReasons.add('release_compose_configuration_schema_'+reason);
 releaseDiagnosticReasons.add('release_coolify_git_set_runtime_identity_changed');
+// Compatible recovery uses the same fixed diagnostic boundary as normal Compose.
+// Do not turn a missing native reader into an opaque error or persist its text.
+for(const reason of ['compatible_installation_dependencies_required','compatible_installation_without_scope',
+ 'compatible_build_provenance_unproven','compatible_authoritative_grant_owner_changed',
+ 'compatible_previous_scope_changed','compatible_previous_manifest_changed','compatible_entry_template_changed',
+ 'compatible_phase_execution_changed','compatible_native_settings_unproven',
+ 'compatible_native_ingress_fence_stale','compatible_native_ingress_fence_changed',
+ 'compatible_actual_project_inventory_changed','compatible_actual_read_clock_invalid',
+ 'compatible_current_protected_settings_unproven','compatible_database_source_binding_changed',
+ 'compatible_entry_changed_during_read','compatible_entry_changed_during_phase_read',
+ 'compatible_settings_reader_binding_unproven','compatible_settings_program_unproven',
+ 'compatible_settings_scope_unproven','compatible_settings_policy_unproven','compatible_settings_program_bound',
+ 'compatible_settings_current_binding_unproven','compatible_settings_output_bound',
+ 'compatible_settings_output_unproven','compatible_settings_database_names_unproven'])
+ releaseDiagnosticReasons.add('release_compose_installation_'+reason);
 // Fixed, reviewed refusal codes from the installed Compose preflight readers.
 // agent-host-release-compose-worker.mjs
 for(const reason of ["activity_current_queue_required","activity_file_bound_invalid","activity_finished_queue_required","activity_installation_binding_changed","activity_native_capability_required","activity_observation_unproven","activity_runtime_binding_changed","activity_runtime_intent_unproven","activity_runtime_version_changed","artifact_stage_unproven","backup_changed","baseline_adoption_changed","baseline_observation_unproven","baseline_runtime_changed","binding_invalid","cadence_activity_present","capacity_unproven","clone_changed","configuration_absence_baseline_unproven","configuration_absence_candidate_only","configuration_absence_changed_during_inspection","configuration_absence_control_plane_unproven","configuration_absence_data_or_health_changed","configuration_absence_observation_unproven","configuration_absence_operation_changed","configuration_absence_preimage_changed","configuration_preimage_changed","controller_origin_changed","controller_renderer_changed","current_queue_required","database_changed_during_measurement","database_configuration_changed","database_recreation_unproven","database_runtime_changed","database_source_binding_changed","disposable_resources_unsupported","fingerprint_unproven","finished_queue_required","git_scope_invalid","live_source_pin_changed","maintenance_unproven","owned_process_scope_required","ownership_binding_changed","ownership_path_invalid","permanent_application_deletion_prohibited","permanent_repository_deletion_prohibited","phase_binding_changed","phase_configuration_changed","phase_intent_changed","phase_intent_unproven","private_file_changed","private_file_unproven","private_path_invalid","recovery_baseline_health_changed","recovery_changed_during_inspection","recovery_configuration_changed","recovery_control_plane_active","recovery_observation_unproven","recovery_operation_unproven","recovery_queue_not_terminal","remote_commit_changed","response_size_invalid","service_identity_unproven","tree_unproven","version_health_unproven"])

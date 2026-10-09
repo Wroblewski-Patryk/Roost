@@ -38,6 +38,17 @@ Compatible grants retain their strictly qualified server proof in the Writer's
 grant digest. The native launcher uses fixed LF source bytes so Windows Git
 checkout conversion cannot alter the historical source receipt.
 
+The installed compatible adapter reads protected settings through its fixed owned
+SSH transport, including the database role fence, original restoration settings,
+raw sequence digest and the current proxy namespace/rule. It seals the local
+ingress controller, runtime settings and policy before reading; current facts
+are read again and compared. Stored settings and an old receipt do not replace
+a live observation. Missing or changed facts refuse before an effect.
+
+Compose renderer and ingress source use explicit LF checkout attributes because
+installation policies pin their raw bytes. Preserve an already approved source
+exactly; changing a pin requires normal review rather than hash normalization.
+
 ## Installed boundary
 
 `coolify_compose` is a separate strict manifest and installed-adapter discriminator.
