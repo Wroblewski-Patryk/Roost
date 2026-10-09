@@ -187,9 +187,9 @@ an immediate implementation dependency or mark it complete.
 Application unavailable; writes/cadences held, schema/data parity verified.
 Managed `eccd0cfb`/`d73e6234` is signed-closed; earlier C78 proofs remain
 historical. Original clocks, refusals and signed reviews remain in the matrix.
-Roost `c0b043f8` is deployed; health/version and additive migrations pass.
+Roost `590835b8` is deployed; health/version and additive migrations pass.
 Revoked empty grants can be replaced; any prior intent still consumes admission.
-Roost backup `ac0d501f` passes restore and exact server restart. Static final
+Roost backup `9642ddc7` passes restore and exact server restart. Static final
 verifier `ee0ebab6` has historical Ready `77dad092`; its new scope is registered.
 Grant `f3069781` was normally revoked (`1208dca4`), with zero operations.
 Backup `60ce77d9` passes restore and read-only recovery; no dump/restore replay.
@@ -211,7 +211,7 @@ Historical approvals remain in the matrix.
 Renewal `651f50be` passes 23 read-only Jobs; staged measurements pass 22 tests.
 Owner `1e629f08` admits grant `bdc1387e`; renewal and signed closures pass.
 Worker11 merges exact `d73e6234`; configuration is absent/frozen.
-Signed closure/restoration pass. Closure/continuation source and local SQL pass;
+Signed closure/restoration pass. Closure/continuation and restored SQL pass;
 native continuation, deployment and final acceptance remain pending.
 Prior clocks and expired policies remain historical; see the evidence matrix.
 
