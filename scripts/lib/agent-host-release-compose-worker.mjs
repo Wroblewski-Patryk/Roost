@@ -469,15 +469,15 @@ roleAfter=role();after=fence()
 require(roleBefore==roleAfter and stable(before)==stable(after))
 print(json.dumps({'observedAt':datetime.now(timezone.utc).isoformat().replace('+00:00','Z'),'sequenceDigest':sequence,'databaseSettingsDigest':request['settingsDigests']['databaseSettingsDigest'],'ingressSettingsDigest':request['settingsDigests']['ingressSettingsDigest'],'ingressBlocked':True,'ingressFence':after},separators=(',',':')))
 `;
-export function createCompatibleSettingsReader({snapshot,runtimeSettingsBytes,ingressPolicyBytes,ingressControllerBytes,expectedControllerDigest,ssh,assertUnchanged,now=Date.now}){
+export function createCompatibleSettingsReader({snapshot,runtimeSettingsBytes,ingressPolicyBytes,ingressControllerBytes,expectedControllerDigest,historicalDatabase,ssh,assertUnchanged,now=Date.now}){
  check([runtimeSettingsBytes,ingressPolicyBytes,ingressControllerBytes].every(b=>Buffer.isBuffer(b)&&b.length>0&&b.length<=131072)&&typeof ssh==='function'&&typeof assertUnchanged==='function','compatible_settings_reader_binding_unproven');
  check(hash(ingressControllerBytes)===expectedControllerDigest,'compatible_settings_program_unproven');
  const raw=JSON.parse(runtimeSettingsBytes),digests=activityRestorationDigests(raw),policy=JSON.parse(ingressPolicyBytes),e=contract.compatibleRecoveryEntrySchema.parse(snapshot.compatibleArtifactRecovery.currentEntry);
- check(raw.targetId===e.targetId&&raw.database.containerId===e.database.containerId&&policy.targetId===e.targetId&&policy.databaseContainerId===e.database.containerId&&policy.controllerProgramDigest===expectedControllerDigest
+ check(raw.targetId===e.targetId&&(raw.database.containerId===e.database.containerId||(historicalDatabase?.role==='database'&&raw.database.containerId===historicalDatabase.containerId))&&policy.targetId===e.targetId&&policy.databaseContainerId===e.database.containerId&&policy.controllerProgramDigest===expectedControllerDigest
   &&digests.databaseSettingsDigest===e.databaseSettingsDigest&&digests.ingressSettingsDigest===e.ingressSettingsDigest,'compatible_settings_scope_unproven');
  const policyFields=['networkId','subnet','proxyId','proxyPid','namespaceDigest','databaseIpv4','proxyIpv4','ruleComment','originalRulesDigest'];
  check(policyFields.every(k=>policy[k]===e.ingressFence[k]),'compatible_settings_policy_unproven');
- const request={database:raw.database,policy,controllerDigest:expectedControllerDigest,settingsDigests:digests,roleSql:compatibleRoleReadSql(raw.database),sequenceSql:compatibleSequenceReadSql};
+ const request={database:{...raw.database,containerId:e.database.containerId},policy,controllerDigest:expectedControllerDigest,settingsDigests:digests,roleSql:compatibleRoleReadSql(raw.database),sequenceSql:compatibleSequenceReadSql};
  const program=compatibleSettingsReadProgram.replace('__ROOST_CONTROLLER__',ingressControllerBytes.toString('base64')).replace('__ROOST_INPUT__',Buffer.from(JSON.stringify(request)).toString('base64'));
  check(Buffer.byteLength(program)<=131072,'compatible_settings_program_bound');
  return async({source,configuration,services})=>{
@@ -645,7 +645,7 @@ export function createInstalledComposeRelease({settings,state,backup,github,cool
    const file=fileURLToPath(new URL('./agent-host-release-compose-ingress-runtime.py',import.meta.url)),program=read(file),id=identity(file,false);
    check(Buffer.isBuffer(program)&&program.length>0&&program.length<=131072&&hash(program)===cfg.compatibleIngress.controllerProgramDigest,'compatible_settings_program_unproven');
    seals.set(file,{id,hash:hash(program)});
-   return createCompatibleSettingsReader({snapshot:s,runtimeSettingsBytes:bytesFor(cfg.activity.runtimeSettings.file,cfg.activity.runtimeSettings.sha256),ingressPolicyBytes:bytesFor(cfg.compatibleIngress.policy.file,cfg.compatibleIngress.policy.sha256),ingressControllerBytes:program,expectedControllerDigest:cfg.compatibleIngress.controllerProgramDigest,ssh,assertUnchanged:assertClone,now:dependencies.now??Date.now});
+   return createCompatibleSettingsReader({snapshot:s,runtimeSettingsBytes:bytesFor(cfg.activity.runtimeSettings.file,cfg.activity.runtimeSettings.sha256),ingressPolicyBytes:bytesFor(cfg.compatibleIngress.policy.file,cfg.compatibleIngress.policy.sha256),ingressControllerBytes:program,expectedControllerDigest:cfg.compatibleIngress.controllerProgramDigest,historicalDatabase:baselineDatabase,ssh,assertUnchanged:assertClone,now:dependencies.now??Date.now});
   })()):undefined;
   let retentionJournalSource=null,lastRetentionEvidence=null;
  const readRetentionJournal=async()=>{check(identity(path.dirname(retentionJournalFile))===retentionDirectoryIdentity,'retention_directory_changed');

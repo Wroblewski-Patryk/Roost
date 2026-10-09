@@ -19,7 +19,7 @@ for(const kind of ['unknown service','changed database image','changed database 
 // Execute the generated Python with a counterfactual subprocess transport. Only
 // the fixed psql reads and modeled ingress reads are permitted; no Docker runs.
 function pythonTransport(f,scenario){return async request=>{
- const data={scenario,receipt:f.value.ingressFence,sequences:['{"schema":"public","sequence":"event_seq","lastValue":7,"isCalled":true}']};
+ const data={scenario,expectedDatabaseContainer:f.args.source.container,receipt:f.value.ingressFence,sequences:['{"schema":"public","sequence":"event_seq","lastValue":7,"isCalled":true}']};
  const setup=String.raw`
 import base64,json,subprocess
 _fixture=json.loads(base64.b64decode('__FIXTURE__'))
@@ -27,6 +27,7 @@ _role_calls=0
 _fence_calls=0
 def _run(argv,**options):
     global _role_calls
+    assert request['database']['containerId']==_fixture['expectedDatabaseContainer']
     assert argv[:4]==['docker','exec','-i',request['database']['containerId']]
     assert argv[4:9]==['psql','-X','-qAt','-v','ON_ERROR_STOP=1']
     query=options['input'].decode()
@@ -74,3 +75,6 @@ scope['Controller'].execute=_fence_read
 function pythonReader(f,scenario){const sequence='{"schema":"public","sequence":"event_seq","lastValue":7,"isCalled":true}\n',digest=hash(sequence);f.snapshot.manifest.postObservation.baselineSequenceDigest=digest;f.snapshot.compatibleArtifactRecovery.currentEntry.sequenceDigest=digest;return createCompatibleSettingsReader({snapshot:f.snapshot,runtimeSettingsBytes:Buffer.from(JSON.stringify(f.raw)),ingressPolicyBytes:Buffer.from(JSON.stringify(f.policy)),ingressControllerBytes:controller,expectedControllerDigest:hash(controller),ssh:pythonTransport(f,scenario),assertUnchanged:async()=>{},now:Date.now});}
 for(const scenario of ['valid','valid_admin_collation'])test('generated actual Python program preserves readonly role/sequence/proxy semantics with modeled '+scenario,async()=>{const f=fixture(),reader=pythonReader(f,scenario),value=await reader(f.args);assert.equal(value.sequenceDigest,f.snapshot.manifest.postObservation.baselineSequenceDigest);assert.equal(value.databaseSettingsDigest,f.value.databaseSettingsDigest);assert.equal(value.ingressSettingsDigest,f.value.ingressSettingsDigest);assert.equal(value.ingressBlocked,true);assert.deepEqual(Object.keys(value).sort(),['databaseSettingsDigest','ingressBlocked','ingressFence','ingressSettingsDigest','observedAt','sequenceDigest'].sort());});
 for(const scenario of ['role_off','other_role_setting','global_drift','active_session','native_error','stderr_spoof','sequence_changed','sequence_malformed','proxy_drift'])test('generated Python refuses modeled '+scenario,async()=>{const f=fixture();await assert.rejects(pythonReader(f,scenario)(f.args));});
+
+test('materializes only the sealed historical database identity into exact current entry',async()=>{const f=fixture(),old=H('f');f.raw.database.containerId=old;const args={snapshot:f.snapshot,runtimeSettingsBytes:Buffer.from(JSON.stringify(f.raw)),ingressPolicyBytes:Buffer.from(JSON.stringify(f.policy)),ingressControllerBytes:controller,expectedControllerDigest:hash(controller),historicalDatabase:{role:'database',containerId:old},ssh:async request=>{assert.ok(request.stdin.includes('request'));return JSON.stringify(f.value)},assertUnchanged:async()=>{},now:()=>now};assert.deepEqual(await createCompatibleSettingsReader(args)(f.args),f.value);assert.throws(()=>createCompatibleSettingsReader({...args,historicalDatabase:{role:'database',containerId:H('e')}}));assert.throws(()=>createCompatibleSettingsReader({...args,historicalDatabase:{role:'app',containerId:old}}));assert.throws(()=>createCompatibleSettingsReader({...args,historicalDatabase:undefined}));});
+test('generated Python reads the current retained DB when sealed runtime settings keep historical identity',async()=>{const f=fixture(),old=H('f');f.raw.database.containerId=old;const digest=hash('{"schema":"public","sequence":"event_seq","lastValue":7,"isCalled":true}\n');f.snapshot.manifest.postObservation.baselineSequenceDigest=digest;f.snapshot.compatibleArtifactRecovery.currentEntry.sequenceDigest=digest;const args={snapshot:f.snapshot,runtimeSettingsBytes:Buffer.from(JSON.stringify(f.raw)),ingressPolicyBytes:Buffer.from(JSON.stringify(f.policy)),ingressControllerBytes:controller,expectedControllerDigest:hash(controller),historicalDatabase:{role:'database',containerId:old},ssh:pythonTransport(f,'valid'),assertUnchanged:async()=>{},now:Date.now};const result=await createCompatibleSettingsReader(args)(f.args);assert.equal(result.ingressBlocked,true);assert.equal(f.raw.database.containerId,old);});
