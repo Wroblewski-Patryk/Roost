@@ -194,7 +194,7 @@ Historical refusals, recovery, risks and signed reviews remain in the matrix.
 Roost `c0b043f8` is deployed; health/version and additive migrations pass.
 Revoked empty grants can be replaced; any prior intent still consumes admission.
 Roost backup `ac0d501f` passes restore and exact server restart. Static final
-verifier `ee0ebab6` has Ready `77dad092`; it has not run postrelease.
+verifier `ee0ebab6` has historical Ready `77dad092`; its new scope is registered.
 Atomic `fc61181d` created grant `f3069781`; binding refused before config/Git.
 Normal revocation `1208dca4` confirms zero operations and unchanged configuration.
 Backup `60ce77d9` passes restore and read-only recovery `30f6d6cb`; no dump
@@ -203,7 +203,7 @@ schema/data/raw-sequence parity and cleanup. Signed owner evidence `ce7d4451`
 is verified in Roost. Package `e277a44b` passes actual readback after eight
 fresh read-only Jobs; its remote snapshot remains historical. Audit `3e3d094b`
 passes three artifacts; review `73c351ba` approves (`62df927c`). Source review
-`1fafca80` approves `d73e6234` (`ad1fd20c`); signed closure/restoration pass.
+`1fafca80` accepted `d73e6234`; its current basis is stale. Closure/restore pass.
 Build `aa15e52e` passes 25 native Jobs and owned cleanup, producing different
 image `36d1746f`. Interrupted compatibility `57e803fb` resumed without build or
 chunk replay: 49 Jobs, migration, full parity and owned cleanup pass. Original
