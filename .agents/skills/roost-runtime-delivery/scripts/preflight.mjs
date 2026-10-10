@@ -15,6 +15,7 @@ function findRoot(start) {
 const root = findRoot(process.cwd());
 const errors = [];
 const warnings = [];
+let activeGate = null;
 const contractPath = path.join(root, "docs", "documentation-contract.json");
 let contract;
 
@@ -44,6 +45,9 @@ if (!existsSync(implementationPath)) {
   errors.push("implementation_handoff_missing");
 } else {
   const implementation = readFileSync(implementationPath, "utf8");
+  activeGate = implementation.match(/^\*\*Active gate:\*\* ([^\r\n]+)$/m)?.[1] ?? null;
+  if (!activeGate) errors.push("active_gate_statement_missing");
+  else if (!/^(?:none\b|G\d+[a-z]?\b)/.test(activeGate)) errors.push(`active_gate_statement_invalid:${activeGate}`);
   const requiredSections = [
     "## Delivery objective",
     "## Execution ownership",
@@ -87,6 +91,7 @@ const report = {
   ok: errors.length === 0,
   root,
   defaultContextBytes,
+  activeGate,
   git,
   warnings,
   errors,

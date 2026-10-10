@@ -14,6 +14,7 @@ function findRoot(start) {
 
 const root = findRoot(process.cwd());
 const requirements = readFileSync(path.join(root, "docs", "product", "requirements.md"), "utf8");
+const requirementsIndex = readFileSync(path.join(root, "docs", "product", "requirements-index.md"), "utf8");
 const traceability = readFileSync(path.join(root, "docs", "architecture", "traceability-matrix.md"), "utf8");
 
 const requirementRows = parseRequirements(requirements);
@@ -26,6 +27,10 @@ const uniqueTraceabilityIds = [...new Set(traceabilityIds)].sort();
 const traceabilityDuplicates = [...new Set(traceabilityIds.filter((id, index) => traceabilityIds.indexOf(id) !== index))].sort();
 const missing = uniqueIds.filter((id) => !uniqueTraceabilityIds.includes(id));
 const unknown = uniqueTraceabilityIds.filter((id) => !uniqueIds.includes(id));
+const requirementPrefixes = [...new Set(uniqueIds.map((id) => id.split("-")[1]))].sort();
+const indexedPrefixes = [...new Set([...requirementsIndex.matchAll(/`RF-([A-Z]+)-\*`/g)].map((match) => match[1]))].sort();
+const indexMissingPrefixes = requirementPrefixes.filter((prefix) => !indexedPrefixes.includes(prefix));
+const indexUnknownPrefixes = indexedPrefixes.filter((prefix) => !requirementPrefixes.includes(prefix));
 const assessment = assessStatus(requirementRows, traceabilityRows);
 
 const errors = [...assessment.errors];
@@ -34,6 +39,8 @@ if (duplicates.length) errors.push(`duplicate_requirement_ids:${duplicates.join(
 if (traceabilityDuplicates.length) errors.push(`duplicate_traceability_rows:${traceabilityDuplicates.join(",")}`);
 if (missing.length) errors.push(`requirements_missing_from_traceability:${missing.join(",")}`);
 if (unknown.length) errors.push(`unknown_traceability_requirement_ids:${unknown.join(",")}`);
+if (indexMissingPrefixes.length) errors.push(`requirements_missing_from_index:${indexMissingPrefixes.join(",")}`);
+if (indexUnknownPrefixes.length) errors.push(`unknown_requirement_index_prefixes:${indexUnknownPrefixes.join(",")}`);
 
 console.log(JSON.stringify({
   schema: "roost-requirement-coverage-v2",
@@ -45,6 +52,8 @@ console.log(JSON.stringify({
   traceabilityDuplicates,
   missing,
   unknown,
+  indexMissingPrefixes,
+  indexUnknownPrefixes,
   decisionCounts: Object.fromEntries(DECISIONS.map((decision) => [decision, requirementRows.filter((row) => row.decision === decision).length])),
   acceptedStatusCounts: Object.fromEntries(EVIDENCE_STATUSES.map((status) => [status, assessment.rows.filter((row) => row.decision === "accepted" && row.status === status).length])),
   errors,

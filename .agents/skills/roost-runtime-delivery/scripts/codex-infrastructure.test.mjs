@@ -22,6 +22,7 @@ test("delivery preflight exposes a valid repository contract", () => {
   assert.equal(result.errors.length, 0);
   assert.match(result.git.head, /^[a-f0-9]{40}$/);
   assert.ok(result.defaultContextBytes > 0);
+  assert.match(result.activeGate, /^(?:none\b|G\d+[a-z]?\b)/);
 });
 
 test("every canonical requirement has traceability coverage", () => {
@@ -35,6 +36,8 @@ test("every canonical requirement has traceability coverage", () => {
   assert.deepEqual(result.traceabilityDuplicates, []);
   assert.deepEqual(result.missing, []);
   assert.deepEqual(result.unknown, []);
+  assert.deepEqual(result.indexMissingPrefixes, []);
+  assert.deepEqual(result.indexUnknownPrefixes, []);
   assert.equal(Object.values(result.decisionCounts).reduce((sum, value) => sum + value, 0), result.requirementCount);
   assert.equal(Object.values(result.acceptedStatusCounts).reduce((sum, value) => sum + value, 0), result.decisionCounts.accepted);
 });

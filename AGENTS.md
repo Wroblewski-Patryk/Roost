@@ -3,13 +3,16 @@
 ## Context
 
 Read `docs/documentation-contract.json`, then load its bounded
-`defaultAgentContext` and only the sources relevant to the task. Product,
+`defaultAgentContext` and only the sources relevant to the task. Read exact
+acceptance clauses from `docs/product/requirements.md` for the task's IDs;
+read the full registry for whole-product coverage work. Product,
 architecture, operations and release truth lives under `docs/`.
 
 The durable starting set is intentionally small:
 
 - `docs/product/product.md` defines what Roost is and why it exists.
-- `docs/product/requirements.md` contains the current accepted requirements.
+- `docs/product/requirements-index.md` routes to the relevant sections of the
+  canonical `docs/product/requirements.md` registry.
 - `docs/implementation.md` contains the current implementation state, the
   outcome being delivered and its end-to-end acceptance gates.
 - architecture, operations and evidence documents are loaded only for the
@@ -34,6 +37,8 @@ gate. For an authorized company capability spanning product surfaces, use
 Roost outcome. Use `roost-model-qualification` only for an authorized managed
 model-admission or routing task. These skills do not authorize a new gate or
 change accepted product requirements.
+For external Codex thread coordination, use `roost-program-steering` when it is
+installed; its output remains subordinate to the canonical documents here.
 
 Do not create repository-local agent roles, task boards, project memory or
 coordination systems. External tools such as Codex keep their

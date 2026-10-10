@@ -12,9 +12,10 @@ treat historical implementation notes as a queue.
 
 1. [Product definition](product/product.md) — product purpose, users, scope and
    durable business rules.
-2. [Accepted requirements](product/requirements.md) — the current consolidated
-   assumptions and acceptance clauses from the owner interview. This is a live
-   requirements registry, not a product version and not an execution history.
+2. [Requirements navigation](product/requirements-index.md) — find the exact
+   section in the [accepted requirements](product/requirements.md) relevant to
+   the task. Read the full registry for whole-product coverage work. It is a
+   live requirements registry, not a product version or execution history.
 3. [Current implementation](implementation.md) — what is actually complete,
    what is not, the single outcome currently being delivered and the
    end-to-end gates that prove it.

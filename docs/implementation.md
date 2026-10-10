@@ -79,11 +79,15 @@ ordinary reversible technical work inside it.
 
 ## Gate authorization boundary
 
-One user task authorizes one named gate, or the earliest unmet gate if unnamed.
-The owner may decompose and repair inside it, but must not start the next gate
-without a new user instruction. At completion update this handoff, run checks,
-leave recoverable state, report evidence and stop. Remaining account usage is
-not continuation authority. Push/deploy need the gate's explicit authority.
+An explicit owner task to deliver work may authorize one named gate, or the
+earliest unmet gate if unnamed, only after its outcome, effects and budget are
+bounded. A proposed gate, a status/planning/readiness request, or an earlier
+task does not override the current owner STOP or activate work. The owner may
+decompose and repair inside an authorized gate, but must not start the next
+gate without a new user instruction. At completion update this handoff, run
+checks, leave recoverable state, report evidence and stop. Remaining account
+usage is not continuation authority. Push/deploy need the gate's explicit
+authority.
 
 ### Gate 1 — real agent round trip
 
@@ -148,7 +152,7 @@ Resumption needs a new owner-approved brief based on the actual stopped state,
 installed adapter, permitted effects, reused proof, rollback and bounded budget.
 This paused release grants no push, deployment or continuation authority.
 
-### Proposed next gate — owner-to-local-agent task loop (not authorized)
+### Proposed Gate 6 — owner-to-local-agent task loop (not authorized)
 
 **Roost outcome:** the owner creates one low-risk informational company task in
 the console, assigns the configured local agent and sees its result and status

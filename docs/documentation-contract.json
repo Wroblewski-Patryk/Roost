@@ -4,7 +4,7 @@
   "entrypoint": "docs/README.md",
   "defaultAgentContext": [
     "docs/product/product.md",
-    "docs/product/requirements.md",
+    "docs/product/requirements-index.md",
     "docs/implementation.md"
   ],
   "authority": {

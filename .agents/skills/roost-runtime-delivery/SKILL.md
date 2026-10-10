@@ -14,12 +14,19 @@ define intent and current truth.
 1. Read `docs/documentation-contract.json` and its bounded
    `defaultAgentContext`.
 2. Run `npm run codex:preflight`.
-3. Identify the one gate explicitly authorized by the current request and its
-   owner-approved budget. If none is named, use only the earliest unmet gate in
-   `docs/implementation.md`; a missing budget never means unlimited execution.
-   Do not derive work from an old versioned document or start a later gate.
-4. Inspect only the architecture, operations, security and engineering sources
-   needed for that gate and the components actually being changed.
+3. Identify the one gate authorized by the current request, the active-gate
+   statement in `docs/implementation.md`, and its owner-approved budget. An
+   unnamed request to deliver work can select only the earliest unmet gate as
+   a **candidate**; it cannot activate a candidate or override `STOP` / `none`.
+   After `STOP`, require a fresh owner instruction authorizing the bounded
+   outcome, effects and budget before implementation. A status, planning or
+   readiness request never starts a gate. Missing budget is not unlimited
+   execution. Do not derive work from an old versioned document.
+4. Read the exact clauses for the gate's requirement IDs in
+   `docs/product/requirements.md`, including applicable cross-cutting
+   authority, security, data and review constraints. Inspect only the
+   architecture, operations and engineering sources needed for the gate and
+   components actually being changed.
 
 ## Deliver
 
