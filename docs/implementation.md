@@ -3,7 +3,7 @@
 This is the sole active delivery handoff: current facts, authorized outcome
 and required end-to-end evidence.
 
-**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10, with one bounded Roost-native production information result accepted but repeatable owner-console-only execution still unproved. The second, separately approved production attempt completed and the owner accepted its result in Roost. The ClickUp-owned task remains `todo` while the production board and preview separately show the accepted Worker result. A disposable PostgreSQL, real HTTP API and owner-console browser scenario proved recovery from a synthetic spent attempt through a successor Decision, renewed risk/admission and Ready without a new model call. The console repair is deployed at `96513da8`; both public health endpoints and the refreshed owner board were read back. The Roost-native Task completed one production Worker/Hermes attempt on one selected record; the owner console shows **Worker result: accepted** while the Task remains `todo`. The installed Worker was restored to its dedicated release configuration and stopped, so an ordinary next information Task cannot execute from the console alone. Full production console-only recovery after a spent attempt also remains unproved. G7 has no authorization.
+**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10, with one bounded Roost-native production information result accepted. The second, separately approved production attempt completed and the owner accepted its result in Roost. The ClickUp-owned task remains `todo` while the production board and preview separately show the accepted Worker result. A disposable PostgreSQL, real HTTP API and owner-console browser scenario proved recovery from a synthetic spent attempt through a successor Decision, renewed risk/admission and Ready without a new model call. The console repair is deployed at `96513da8`; both public health endpoints and the refreshed owner board were read back. The installed Worker now runs in company-information-only supervised mode under the Windows login schedule; production host admission and repeated heartbeat are online, with zero queued/claimed/running executions at verification. A next approved Ready task has not been claimed to prove repeatability, and full production console-only recovery after a spent attempt also remains unproved. G7 has no authorization.
 
 Update this line only when the owner authorizes a bounded gate; a proposed
 candidate is not active work.
@@ -471,17 +471,17 @@ was restored with the exact pre-change SHA-256. The separate release credential
 remains expired; no release operation was attempted. This restoration also
 restored the release-only behavior: `governedRelease` makes the Worker check
 release recovery/queue before the Writer lock and intentionally skip all model
-claims. The one installed Windows login task is currently stopped. A read-only
+claims. The one installed Windows login task was then stopped. A read-only
 recovery GET with the bound Worker credential and current protocol headers
 returned no pending model executions, but it does not inspect the separate
 release queue. A later owner-authenticated, read-only host-filtered release
 summary returned 13 non-truncated records: ten failed with recorded closure,
 two completed and one revoked. Across their journals there were zero
 unresolved, uncertain or unknown outcomes. A separate owner read returned zero
-queued model executions. The scheduled task was stopped, no Roost Worker
-process was running, and both local and shared Writer locks were absent. With
-the present installation, a next information Task would stay queued and
-cannot finish solely through the owner console.
+queued model executions. At that snapshot the scheduled task was stopped, no
+Roost Worker process was running, and both local and shared Writer locks were
+absent. In that mode, a next information Task would stay queued and could not
+finish solely through the owner console.
 
 Production execution `e61eb1d9-a193-47d1-a23c-ada92e46051d` completed
 attempt 1/1. The owner console showed **Worker result: review needed** and a
@@ -503,17 +503,22 @@ edit command; this sentence does not determine record provenance. The prior
 accepted production Task and failed predecessor remain separate evidence, and
 the disposable PostgreSQL recovery scenario does not prove a production rerun
 after a spent attempt. The production result is a valid single-task proof, not
-proof of a repeatable owner-to-agent loop. Simply deleting the optional release
-setting would skip release recovery checks and park a separately governed
-capability. The owner summary establishes that the bound host has no active or
-unresolved release record, but does not renew the expired release credential.
-Keeping the release-only setting makes information claims impossible by design.
-A lasting installation-mode choice, scheduled Worker heartbeat and native
-claim evidence are needed before claiming G6 complete. The prior production
-consent covered one model attempt; it did not approve continuous future
-information claims under the Windows account. No persistent mode switch,
-further model attempt or production Task was started during this diagnosis.
-G6 remains in progress; G7 is not authorized by it.
+proof of a repeatable owner-to-agent loop. The host-filtered owner summary
+established no active or unresolved release record. The previous release-only
+private configuration was copied byte-for-byte and hash-checked before the
+current installation was switched to the existing `companyInformationOnly`
+mode; the governed-release journal and expired credential were preserved. The
+login-scheduled Worker started with no queued execution. Its production host
+record reported `online`, compatible protocol, supervised Hermes 0.21.2
+admission, no unavailable reasons, empty application slugs and the company
+information capability. Two successive heartbeats advanced while owner reads
+showed zero queued, claimed and running executions; no model call, new Task,
+release operation or application mutation was made by this transition. The
+shared Writer was acquired by the supervised Worker. The private release-only
+backup can restore the prior installation mode when a separately authorized
+release resumes. A real subsequent Ready claim and a full production
+console-only recovery after a spent attempt remain unproved. G6 remains in
+progress; G7 is not authorized by it.
 
 **Roost outcome:** the owner creates one low-risk informational company task in
 the console, assigns the configured local agent and sees its result and status
