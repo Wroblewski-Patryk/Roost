@@ -455,6 +455,11 @@ export function TaskPreviewModal({
     event.preventDefault();
     const submitter = (event.nativeEvent as SubmitEvent).submitter;
     const prepare = submitter instanceof HTMLButtonElement && submitter.value === "prepare";
+    if (prepare && !edited) {
+      onClose();
+      onReady(item.id);
+      return;
+    }
     const form = new FormData(event.currentTarget);
     const dueDate = String(form.get("dueDate") || "");
     const startDate = String(form.get("startDate") || "");

@@ -145,6 +145,16 @@ try {
   assert.equal(savedTitle, "Saved before Ready");
   assert.equal(await preview.evaluate(() => window.readyOpened), packet.editor.task.id);
   await preview.close(); checked++;
+  const unchangedPreview = await browser.newPage({ viewport: { width: 834, height: 1000 } });
+  await unchangedPreview.addInitScript(task => { localStorage.setItem("companycoreLocale", "en"); window.readyPreview = { id: task.id, task: { ...task, description: "Original description", priority: "normal" } }; }, packet.editor.task);
+  const unchangedRequests = [];
+  await unchangedPreview.route("**/v1/**", async route => { unchangedRequests.push(route.request().method()); return route.fulfill({ json: { data: {} } }); });
+  await unchangedPreview.goto(`http://127.0.0.1:${server.address().port}`);
+  await unchangedPreview.getByRole("button", { name: "Save and prepare execution", exact: true }).click();
+  await unchangedPreview.waitForFunction(() => window.readyOpened);
+  assert.equal(await unchangedPreview.evaluate(() => window.readyOpened), packet.editor.task.id);
+  assert.deepEqual(unchangedRequests, []);
+  await unchangedPreview.close(); checked++;
   const reviewPreview = await browser.newPage({ viewport: { width: 390, height: 960 } });
   await reviewPreview.addInitScript(task => { localStorage.setItem("companycoreLocale", "en"); window.readyPreview = { id: task.id, task: { ...task, description: "Original description", priority: "normal" } }; }, packet.editor.task);
   const reviewRequests = [];
