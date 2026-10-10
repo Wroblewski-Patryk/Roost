@@ -51,6 +51,7 @@ test('informational stdin contains exactly selected company records and no lease
   assert.equal(value.input.includes(f.claimed.leaseToken), false);
   assert.equal(Object.hasOwn(body, 'applicationContext'), false);
   assert.equal(Object.hasOwn(body, 'nativeObservation'), false);
+  assert.ok(body.rules.some(rule => /Never claim.*token or cost budget/.test(rule)));
 });
 for (const [name, mutate] of [
   ['preparation cannot borrow runtime authority', f => { f.packet.contract.executionClass = 'roost-company-information-v1'; }],

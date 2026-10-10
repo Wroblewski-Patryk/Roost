@@ -7,7 +7,8 @@ import { useLanguage } from "../../i18n/i18n";
 import { DecisionGovernanceModal } from "./decision-governance";
 
 type Candidate = { approval: Record<string, unknown>; model: string; reasoningEffort: string;
-  maxDurationSeconds: number; maxOutputTokensIntent: number };
+  maxDurationSeconds: number; maxOutputTokensIntent: number;
+  previousDecision: { id: string; decision: string } | null };
 
 export function CompanyInformationAuthorization({ taskId, taskTitle, onClose }: { taskId: string; taskTitle: string; onClose: () => void }) {
   const { locale } = useLanguage(), pl = locale === "pl";
@@ -25,15 +26,22 @@ export function CompanyInformationAuthorization({ taskId, taskTitle, onClose }: 
     setBusy(true); setError(null);
     try {
       const governance = await api<{ data: { expectedVersion: string } }>("/v1/decisions/governance", { cache: "no-store" });
+      const previous = candidate.previousDecision;
+      const decision = previous
+        ? "Renew authority for one additional low-risk, tool-free installed Worker/Hermes information attempt for this Task only. Owner result acceptance remains separate."
+        : "Authorize one low-risk, tool-free installed Worker/Hermes information attempt for this Task only. Owner result acceptance remains separate.";
       const proposal = await api<{ data: { record: { id: string } } }>("/v1/decisions/governance/proposals", {
         method: "POST", body: JSON.stringify({ requestId: crypto.randomUUID(), expectedVersion: governance.data.expectedVersion,
           title: `One information runtime attempt: ${taskTitle}`,
-          context: "The owner accepted this company information Task with one selected current Roost record. The Task remains read only and has no Application or repository authority.",
-          decision: "Authorize one low-risk, tool-free installed Worker/Hermes information attempt for this Task only. Owner result acceptance remains separate.",
+          context: "The owner accepted this company information Task with selected current Roost records. The Task remains read only and has no Application or repository authority.",
+          decision,
           rationale: "Obtain the requested source-bound company summary in the owner console.",
           consequences: "One provider attempt under the Task duration limit. Output tokens are an intent, not a provider-enforced cost cap. The Windows account boundary is not OS isolation. No repository, native tool, external write, push or deployment is authorized.",
           scopeReason: "This exact Task and installation are the narrowest available scope; the signed selection digest binds the model choice.",
-          scope: [{ type: "task", id: taskId }], supersedesId: null, conflicts: [], managedRuntimeApproval: candidate.approval })
+          scope: [{ type: "task", id: taskId }], supersedesId: previous?.id ?? null,
+          conflicts: previous ? [{ kind: "replaces", oldProvision: previous.decision, newProvision: decision,
+            explanation: "The prior single attempt has ended. This proposal requests one further attempt under the current Task limits." }] : [],
+          managedRuntimeApproval: candidate.approval })
       });
       setDecisionId(proposal.data.record.id);
     } catch (caught) { setError(caught instanceof AppApiError ? caught.code : "request_failed"); }
@@ -52,6 +60,7 @@ export function CompanyInformationAuthorization({ taskId, taskTitle, onClose }: 
         <div><dt>{pl ? "Maksymalny czas zadania" : "Maximum task duration"}</dt><dd>{candidate.maxDurationSeconds} s</dd></div>
         <div><dt>{pl ? "Założony limit wyjścia" : "Output token intent"}</dt><dd>{candidate.maxOutputTokensIntent}</dd></div></dl>
       <p>{pl ? "Limit tokenów i kosztu nie jest wymuszany przez dostawcę. Worker działa w granicach uprawnień konta Windows, bez izolacji systemowej." : "The provider does not enforce this token or cost limit. The Worker runs under the Windows account authority without OS isolation."}</p>
+      {candidate.previousDecision ? <p className="text-warning">{pl ? "Poprzednia decyzja upoważniała do jednej próby. Nowa propozycja zastąpi ją dopiero po odrębnym przeglądzie ryzyka i akceptacji właściciela." : "The prior decision authorized one attempt. This proposal replaces it only after separate risk review and owner acceptance."}</p> : null}
       <label className="flex items-start gap-3"><input type="checkbox" className="checkbox" checked={acknowledged} onChange={event => setAcknowledged(event.target.checked)} />
         <span>{pl ? "Rozumiem te ograniczenia i chcę zapisać propozycję dla tego jednego zadania." : "I understand these limits and want to record a proposal for this one Task."}</span></label>
     </div>}

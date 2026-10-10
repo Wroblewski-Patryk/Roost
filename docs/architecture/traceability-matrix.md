@@ -132,8 +132,8 @@ isolated restore and fingerprint comparison on 2026-10-10. A separate disposable
 local restore of the same archive applied all three company-information
 migrations and preserved Task, execution, risk-scope and admission-scope row
 counts. The test database was removed. Coolify's Roost application tracks `main`;
-the runtime environment key has been created, but neither deployed backend
-read-back nor a production company-task round trip is yet evidenced.
+the runtime environment key had been created. At that checkpoint, neither
+deployed backend read-back nor a production company-task round trip was proven.
 
 ### G6 production observation — failed single attempt
 
@@ -158,6 +158,44 @@ Writer lock for reconciliation. No further model attempt is authorized by
 this task budget. RF-PROD-011/RF-CTX-001 remain unmet at production outcome
 level; RF-HOST-010/011 have bounded failure and cleanup evidence, with provider
 token/cost enforcement still unavailable.
+
+Subsequent owner device login added a second Hermes OAuth credential; the
+original pool entry is `dead` / `token_revoked`. A separately approved local
+maintenance attempt matched the terminal production row and dead Writer owner,
+verified 94 extra `.pyc` bodies against pinned sources with isolated Python
+3.13.1, then updated the private generated-file receipt. Full installation
+verification passed. An incorrect local check for a nonexistent receipt
+`status` left a new empty maintenance Writer; its digest, dead owner and absent
+checkpoint were verified before clearing it. Both locks are absent and the
+production failed row is unchanged. The new OAuth credential has not yet
+produced a model result; a fresh owner-approved attempt budget is still needed.
+
+### G6 production continuation — completed result and owner acceptance
+
+The owner then approved exactly one additional production attempt for the same
+task and selected company record. The accepted successor runtime Decision was
+`38d37cf4-c4c3-49f8-8831-33cfdca74cfc`; current Low joint risk assessment,
+runtime admission and Ready pin `e29e834d-5853-44fa-98de-019edae83683`
+preceded the one queued execution
+`7f3712f0-45b5-43fb-9435-5e29f4c92435`. The supervised Windows Worker
+claimed it at attempt 1/1, prepared the selected context, received signed
+admission and returned a completed information result. The text cited the
+selected record revision, separated recorded commitments from a proposed next
+owner action, and made no application or external changes. The owner accepted
+it in the Roost console with an explicit caveat: the model's claim that it was
+within a 1,200-token budget is not independently measured or enforced. The
+task appeared in **Done** after refresh. Physical token/cost usage remains
+unknown and no further model attempt is authorized.
+
+This is production result/review evidence for RF-PROD-011, RF-CTX-001 and
+RF-HOST-010/011, with the preceding failed attempt retained as failure/recovery
+evidence. Operator API calls were required to renew Decision, risk, admission
+and Ready for this recovery; they do not prove a wholly console-driven retry.
+Local source repairs now cover the typed successor Decision, truncated task
+selection, preservation of the last Ready contract after rejection and a
+no-token-measurement model instruction. Focused tests pass. A disposable
+PostgreSQL/HTTP regression and deployment remain open because Docker Desktop
+is unavailable; G6 is therefore still in progress.
 
 Current delivery work starts at [Matrix](#matrix). The amendment stream before
 it is historical evidence and should be skipped unless a specific requirement

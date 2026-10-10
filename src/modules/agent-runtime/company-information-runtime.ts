@@ -36,13 +36,26 @@ export async function informationApprovalCandidate(db: Db, auth: AuthContext, ta
   if (!["roost-company-information-v1", companyRuntimeClass].includes(contract.executionClass)) return { error: "company_information_scope_invalid" };
   const key = await db.trustedProviderTicketKey.findUnique({ where: { workspaceId: auth.workspaceId }, select: { installationId: true } });
   if (!key) return { error: "managed_installation_unavailable" };
+  const previous = await db.$queryRaw<{ id: string; decision: string }[]>`SELECT d.id,r.body->>'decision' AS decision
+    FROM decisions d JOIN decision_acceptances a ON a.decision_id=d.id
+    JOIN workspaces w ON w.id=d.workspace_id
+    JOIN LATERAL (SELECT body FROM decision_revisions WHERE decision_id=d.id ORDER BY version DESC LIMIT 1) r ON true
+    WHERE d.workspace_id=${auth.workspaceId}::uuid AND d.status='accepted' AND decision_state(d.id)='accepted'
+    AND a.actor_user_id=w.owner_user_id AND a.actor_agent_id IS NULL
+    AND r.body->'managedRuntimeApproval'->>'taskId'=${taskId}
+    AND r.body->'managedRuntimeApproval'->>'installationId'=${key.installationId}
+    AND r.body->'managedRuntimeApproval'->>'executionClass'=${companyRuntimeClass}
+    AND NOT EXISTS(SELECT 1 FROM decisions s JOIN decision_acceptances sa ON sa.decision_id=s.id WHERE s.supersedes_id=d.id)
+    LIMIT 2`;
+  if (previous.length > 1) return { error: "runtime_authority_ambiguous" };
   const selection = managedInformationSelection(contract);
   return { approval: { schemaVersion: "roost-managed-runtime-approval-v1" as const, taskId, applicationId: null,
     executionClass: companyRuntimeClass, installationId: key.installationId, selectionDigest: await digest(selection),
     backend: "codex_responses" as const, riskClass: "low" as const, mode: "trusted_provider_pilot" as const,
     residualRiskAccepted: true as const, acknowledgement: "windows_account_authority_not_os_isolation" as const },
     model: selection.modelSelection.model, reasoningEffort: selection.modelSelection.reasoningEffort,
-    maxDurationSeconds: contract.budgets.maxDurationSeconds, maxOutputTokensIntent: contract.budgets.maxOutputTokens };
+    maxDurationSeconds: contract.budgets.maxDurationSeconds, maxOutputTokensIntent: contract.budgets.maxOutputTokens,
+    previousDecision: previous[0] ?? null };
 }
 
 export async function informationApproval(db: Db, workspaceId: string, taskId: string, selection: any) {

@@ -3,7 +3,7 @@
 This is the sole active delivery handoff: current facts, authorized outcome
 and required end-to-end evidence.
 
-**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10. Local installed Worker/Hermes execution and owner review passed. The first production information attempt failed after native launch; its one-attempt budget is exhausted, so production result/review and G6 completion remain open
+**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10. The second, separately approved production attempt completed and the owner accepted its result in Roost. Gate closure remains open while the owner-facing recovery fixes below lack the disposable PostgreSQL regression check and deployment. No further model attempt is authorized.
 
 Update this line only when the owner authorizes a bounded gate; a proposed
 candidate is not active work.
@@ -154,7 +154,7 @@ This paused release grants no push, deployment or continuation authority.
 
 ### Gate 6 — owner-to-local-agent task loop
 
-**Authorized on 2026-10-10; local end-to-end proof passed, production attempt failed.**
+**Authorized on 2026-10-10; production result accepted, console recovery still under verification.**
 At the initial diagnostic snapshot, the installed Hermes 0.21.2 profile
 qualified as `managed_hermes_codex_low_v1` after normal workspace validation;
 no model request had been made. The ordinary Ready route, execution packet,
@@ -291,22 +291,69 @@ The Worker prepared the selected context and received a signed one-use managed
 admission. Hermes exited 1 after its native launch. The execution became
 `failed`, attempt 1/1, with no information result and no owner accept/return
 decision. Its Windows Job receipt proves closure with zero active descendants.
-Private Hermes diagnostics report OAuth HTTP 401; they do not establish whether
-the provider spent any output tokens or cost. The owner console displays the
+Private Hermes diagnostics report OAuth HTTP 401 and mark the pooled token
+`dead` with reason `token_revoked`; they do not establish whether the provider
+spent any output tokens or cost. The owner console displays the
 failed state. No application operation or external write was requested.
 
 The Worker retained its Writer lock after a second failure-report call could
 not confirm the already persisted terminal failure. A subsequent read-only
 Hermes help command generated Python cache files that invalidate its exact
 installation inventory; an automatic policy review rejected removal of those
-files. No lock or installation files were manually cleared. Restore provider
-authentication, requalify the installation and reconcile the retained lock
-before another execution. The task's attempt budget is spent; a changed plan,
-new task budget and owner authority are required for a further model attempt.
+files. At that stop, no lock or installation files were manually cleared. The
+task's attempt budget is spent; a changed plan, new task budget and owner
+authority are required for a further model attempt.
 
-**Remaining Gate 6:** obtain one real owner-visible information result and a
-genuine owner accept/return decision after those prerequisites. The production
-failure and the earlier local synthetic success do not satisfy this outcome.
+**2026-10-10 recovery checkpoint:** the owner completed a fresh Hermes OAuth
+device login. The pool now contains the prior dead credential and one new
+credential with access and refresh tokens; no provider request has qualified
+the new credential yet. Under a separate one-time maintenance approval, the
+exact terminal production row and absent owner process qualified reclamation
+of the retained Writer. All 94 unexpected CPython caches matched their pinned
+sources under the isolated Python 3.13.1 compiler. The existing generated-file
+maintenance procedure recorded them in the private receipt without removing
+cache files, and a full installation check passed. A local controller then
+mistakenly expected a `status` field absent from the valid check receipt and
+retained its own new empty Writer lock. Its exact digest, absent process and
+absent checkpoint were verified before clearing that maintenance-owned lock.
+Both Writer/recovery locks are now absent; the production execution remains
+terminal `failed` at attempt 1/1. This was no model call or Roost data write.
+
+**2026-10-10 owner-approved final attempt and review:** the owner approved one
+additional attempt for the same task and selected record after the failed
+execution and separately authorized Worker maintenance. A successor runtime
+Decision `38d37cf4-c4c3-49f8-8831-33cfdca74cfc` bound the same installed
+backend and one tool-free `gpt-5.6-sol` low attempt. The joint risk assessment
+`2c625f19-3453-4793-ae93-6a2ced662d26` computed Low, runtime admission was
+current, and Ready pin `e29e834d-5853-44fa-98de-019edae83683` was accepted.
+The owner console queued exactly one new execution,
+`7f3712f0-45b5-43fb-9435-5e29f4c92435`. The company-only supervised Windows
+Worker claimed it and reported `information_prepared`, `information_admitted`
+and `completed` in attempt 1/1. The result cited the selected current record
+and gave a separate owner suggestion. The owner explicitly accepted that result
+in the console; the persisted review explanation notes that the model's phrase
+“within the 1,200-token budget” is not a measured or provider-enforced cap.
+After refresh the task appeared in **Done** with the accepted review. The
+Worker stopped cleanly. Provider token/cost usage remains unknown; no second
+retry, tool, application action or external write was observed.
+
+The production continuation used operator API calls to renew the typed
+Decision, risk scope, admission and Ready after the first failure. That
+operator assistance is not proof that the owner can recover this path solely
+through the console. The source now prepares a typed successor Decision for a
+spent attempt, keeps the previous contract after rejected Ready, includes the
+parent task in a truncated replacement selector and instructs the Worker not
+to claim a token/cost measurement. Focused unit and browser checks pass, but
+the disposable PostgreSQL/HTTP test cannot start: Docker Desktop's engine is
+absent and this process cannot start its Windows service. These repairs are
+local only, not deployed or production-verified. No model budget remains.
+
+**Remaining Gate 6:** run the disposable PostgreSQL regression, complete the
+applicable repository checks, release the recovery fixes under the existing
+Roost delivery authority, and verify the owner console path without another
+model call. Preserve the accepted result and failed predecessor as separate
+production evidence; do not treat the operator-assisted run as proof of the
+entire self-service recovery path.
 
 **Roost outcome:** the owner creates one low-risk informational company task in
 the console, assigns the configured local agent and sees its result and status

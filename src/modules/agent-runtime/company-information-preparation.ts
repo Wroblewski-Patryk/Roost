@@ -45,10 +45,15 @@ export async function submitCompanyPreparation(db: Prisma.TransactionClient, wor
   catch (error: any) {
     if (error?.message === "agent_runtime_content_blocked") throw error;
     const issues = error?.details?.issues ?? [{ field: "contract", reason: "invalid" }];
-    const readiness = { status: "needs_context", reason: "submission_incomplete", issues };
+    // Keep the last accepted contract/source pin available for a corrected
+    // submission while removing its Ready authority.
+    const previous = task.executionReadiness && typeof task.executionReadiness === "object" && !Array.isArray(task.executionReadiness)
+      ? task.executionReadiness : {};
+    const rejected = { status: "needs_context", reason: "submission_incomplete", issues };
+    const readiness = { ...previous, ...rejected };
     await db.task.update({ where: { id: task.id }, data: { executionReadiness: readiness } });
-    await db.event.create({ data: { workspaceId, taskId: task.id, type: "task_execution_submission_rejected", source: "roost", resourceType: "task", resourceId: task.id, payload: { requestId: input.requestId, ...readiness, ...actor } } });
-    return receipt({ error: "task_execution_contract_invalid", issues, readiness });
+    await db.event.create({ data: { workspaceId, taskId: task.id, type: "task_execution_submission_rejected", source: "roost", resourceType: "task", resourceId: task.id, payload: { requestId: input.requestId, ...rejected, ...actor } } });
+    return receipt({ error: "task_execution_contract_invalid", issues, readiness: rejected });
   }
   await context.watched.persist(task.id);
   const risk = runtime ? await riskAdmission(db, task.id, input) : null;

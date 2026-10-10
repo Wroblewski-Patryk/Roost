@@ -69,6 +69,16 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       assert.equal(replay.status, 200); assert.equal(replay.body.data.readiness.pinId, response.body.data.readiness.pinId);
       const actual = await request(readinessRoute(), token); assert.equal(actual.body.data.status, 'ready');
     });
+    await t.test('rejected correction removes Ready but preserves the prior contract for recovery', async () => {
+      const before = await prisma.task.findUniqueOrThrow({ where: { id: task.id } });
+      const bad = structuredClone(contract); bad.context.company = [];
+      const { response } = await submit(bad); assert.equal(response.status, 409);
+      const after = await prisma.task.findUniqueOrThrow({ where: { id: task.id } });
+      assert.equal(after.executionReadiness.status, 'needs_context');
+      assert.equal(after.executionReadiness.pinId, before.executionReadiness.pinId);
+      assert.deepEqual(after.executionReadiness.contract, before.executionReadiness.contract);
+      const corrected = await submit(); assert.equal(corrected.response.status, 200, JSON.stringify(corrected.response.body));
+    });
     await t.test('actual console request queues attempt zero with null app and no model privilege', async () => {
       const body = { taskId: task.id, executionClass: 'roost-company-information-v1' }; assert.equal('applicationId' in body, false);
       const queued = await request('/v1/agent-runtime/executions', token, body); assert.equal(queued.status, 201, JSON.stringify(queued.body));
@@ -181,6 +191,7 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       finally { delete process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED; }
       assert.equal(candidate.status, 200, JSON.stringify(candidate.body));
       assert.equal(candidate.body.data.approval.taskId, runtimeTask.id);
+      assert.equal(candidate.body.data.previousDecision, null);
       assert.equal(candidate.body.data.approval.installationId, installationId);
       assert.equal(candidate.body.data.approval.selectionDigest, createHash('sha256').update(trustedPilotBytes(selection)).digest('hex'));
       const gov = await request('/v1/decisions/governance', token); assert.equal(gov.status, 200);
@@ -255,6 +266,13 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         applicationId: null, contract: runtimeContract });
       assert.equal(ready.status, 200, JSON.stringify(ready.body));
       assert.equal(ready.body.data.readiness.modelExecutionQualified, true);
+      process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
+      try {
+        const successor = await request(`${root}/information-approval-candidate`, token);
+        assert.equal(successor.status, 200, JSON.stringify(successor.body));
+        assert.equal(successor.body.data.previousDecision?.id, decisionId);
+        assert.equal(successor.body.data.previousDecision?.decision, 'Run one tool-free informational task');
+      } finally { delete process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED; }
       process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
       let started;
       try { started = await request(`/v1/agent-runtime/tasks/${runtimeTask.id}/actions/start-information`, token, { requestId: randomUUID() }); }
