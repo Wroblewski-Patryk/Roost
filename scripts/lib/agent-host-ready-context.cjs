@@ -43,6 +43,10 @@ function assertReadyContext(taskContext, applicationContext, execution) {
   if (admission?.status !== "ready" || !pin?.pinId || admission.pinId !== pin.pinId || admission.revision !== pin.revision || admission.validationRevision !== pin.revision || revision !== pin.revision) {
     throw readyAdmissionError();
   }
+  if (taskContext?.executionPacket?.contract?.executionClass === "roost-company-information-v1") {
+    if (execution.applicationId !== null || admission.preparationOnly !== true || admission.modelExecutionQualified !== false || pin.preparationOnly !== true || pin.modelExecutionQualified !== false) throw readyAdmissionError();
+    return;
+  }
   assertRiskAdmission(taskContext, execution);
   assertProcedureComposition(taskContext,execution);
 }

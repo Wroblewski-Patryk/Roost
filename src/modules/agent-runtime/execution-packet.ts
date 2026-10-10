@@ -18,13 +18,13 @@ export async function prepareExecutionPacket(execution: AgentExecution, task: Ta
       .filter((id): id is string => typeof id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) : [];
   }))];
   const sources = await db.companyRecord.findMany({
-    where: { workspaceId: execution.workspaceId, id: { in: ids }, status: { not: "archived" }, OR: [{ applicationId: null }, { applicationId: execution.applicationId }] },
+    where: { workspaceId: execution.workspaceId, id: { in: ids }, status: object(contract).executionClass === "roost-company-information-v1" ? { in: ["active", "approved", "accepted"] } : { not: "archived" }, OR: [{ applicationId: null }, { applicationId: execution.applicationId }] },
     select: { id: true, workspaceId: true, applicationId: true, recordType: true, title: true, description: true, businessPurpose: true, desiredState: true, expectedBehavior: true, updatedAt: true },
     orderBy: { id: "asc" }
   });
   const single = object(object(contract).singleTask), componentRef = object(single.component), managerRef = object(single.accountableManager);
   const validId = (value: unknown): value is string => typeof value === "string" && /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(value);
-  const scopeApplication = await db.application.findFirst({ where: { id: execution.applicationId, workspaceId: execution.workspaceId }, select: { id: true } });
+  const scopeApplication = execution.applicationId ? await db.application.findFirst({ where: { id: execution.applicationId, workspaceId: execution.workspaceId }, select: { id: true } }) : null;
   const component = scopeApplication && validId(componentRef.id) ? await db.applicationArchitectureComponent.findFirst({ where: { id: componentRef.id, applicationId: scopeApplication.id }, select: { id: true, applicationId: true, status: true, updatedAt: true } }) : null;
   const manager = validId(managerRef.id) ? await db.workforceEntity.findFirst({ where: { id: managerRef.id, workspaceId: execution.workspaceId }, select: { id: true, workspaceId: true, status: true, updatedAt: true } }) : null;
   const body = {

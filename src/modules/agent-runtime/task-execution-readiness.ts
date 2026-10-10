@@ -14,6 +14,7 @@ import { admissionVersion, riskLevelAdmission } from "./task-risk-admission";
 import { composeProcedure, compositionVersion } from "./procedure-composition";
 import { admissionOperations } from "./task-risk-admission-contract";
 import { taskDecisionAuthorities } from "../decisions/decision-authority";
+import { isCompanyInformation, submitCompanyPreparation, inspectCompanyPreparation } from "./company-information-preparation";
 
 const { readyContextRevision, readyContextQuery } = require("../../../scripts/lib/agent-host-ready-context.cjs") as {
   readyContextRevision: (task: any, application: any, input: any) => string;
@@ -21,7 +22,7 @@ const { readyContextRevision, readyContextQuery } = require("../../../scripts/li
 };
 // Preserve native ESM loading in this CommonJS build. The specifier is a fixed
 // repository module, never request data; the host and API use one validator.
-const loadESM = new Function("specifier", "return import(specifier)") as (specifier: string) => Promise<{ validateExecutionPacket: (...args: any[]) => unknown; codexEditorModels: ReadonlyArray<{ id: string; efforts: readonly string[] }>; executionContractSchema: { shape: any; safeParse: (value: unknown) => { success: boolean; data?: any } }; executionEditorContractSchema: { safeParse: (value: unknown) => { success: boolean; data?: any } } }>;
+const loadESM = new Function("specifier", "return import(specifier)") as (specifier: string) => Promise<{ validateExecutionPacket: (...args: any[]) => unknown; codexEditorModels: ReadonlyArray<{ id: string; efforts: readonly string[] }>; companyInformationContractSchema: { safeParse: (value: unknown) => { success: boolean; data?: any } }; executionContractSchema: { shape: any; safeParse: (value: unknown) => { success: boolean; data?: any } }; executionEditorContractSchema: { safeParse: (value: unknown) => { success: boolean; data?: any } } }>;
 const validation = loadESM(pathToFileURL(path.resolve(__dirname, "../../../scripts/lib/agent-host-execution-packet.mjs")).href);
 const object = (value: unknown): Record<string, any> => value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, any> : {};
 const wire = (value: unknown) => JSON.parse(JSON.stringify(value));
@@ -153,6 +154,7 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
         CASE WHEN ${encodedPin}::text IS NULL THEN NULL ELSE encode(sha256(convert_to((${encodedPin}::jsonb)::text, 'UTF8')), 'hex') END, ${encodedResult}::jsonb)`);
     return result;
   }
+  if (isCompanyInformation(input.contract)) return submitCompanyPreparation(db, workspaceId, task, input, actor, receipt);
   let context;
   try { context = await at("resolved_context", () => resolved(db, workspaceId, taskId, input, undefined, { authorId: actor.requestedById!, requestId: input.requestId })); }
   catch (error) {
@@ -214,6 +216,7 @@ export async function inspectReady(db: Prisma.TransactionClient, workspaceId: st
   if (execution?.contextInvalidatedAt) return {error:"agent_execution_context_invalidated",readiness:{status:"needs_revalidation",reason:"context_changed"}};
   if (pin.applicationId && await suspensionBlocks(db,workspaceId,taskId,pin.applicationId,"runtime_execute",task.assignedWorkforceEntityId,null,execution?.agentHostId)) return {error:"native_capability_suspended",readiness:{status:"needs_decision",reason:"native_capability_suspended"}};
   const reviewError = await reviewAdmissionError(db, workspaceId, taskId, pin.contract);
+  if (!reviewError && isCompanyInformation(pin.contract)) return inspectCompanyPreparation(db, workspaceId, task, execution, readOnly);
   if (reviewError) return { error: reviewError, readiness: { status: "needs_decision", reason: reviewError } };
   if (["draft", "needs_context", "needs_decision"].includes(pin.status)) return { error: "task_ready_pin_required", readiness: { status: pin.status, reason: pin.reason ?? "ready_pin_required", issues: pin.issues ?? [] } };
   const proof = { pinId: pin.pinId, revision: pin.revision, validationRevision: pin.validation?.revision };
@@ -253,15 +256,16 @@ export async function inspectReady(db: Prisma.TransactionClient, workspaceId: st
 
 // Human editor projection: labels and revision references, never resolved source
 // bodies, agent metadata, credentials or client-authorable acceptance evidence.
-export async function readyEditorData(db: Prisma.TransactionClient, workspaceId: string, taskId: string, applicationId?: string, userId?: string) {
+export async function readyEditorData(db: Prisma.TransactionClient, workspaceId: string, taskId: string, applicationId?: string, userId?: string, executionClass?: string) {
   const context = await loadTaskAgentContext(workspaceId, taskId, null, db);
   if (!context) return null;
   const task = context.task, pin = object(task.executionReadiness);
   const applications = await db.application.findMany({ where: { workspaceId, slug: { not: "roost" }, projects: { some: { projectId: task.projectId ?? "00000000-0000-0000-0000-000000000000" } } }, select: { id: true, name: true }, orderBy: { name: "asc" } });
-  const selected = applicationId ?? (applications.some(app => app.id === pin.applicationId) ? pin.applicationId : applications.length === 1 ? applications[0]!.id : null);
+  const company = executionClass === "roost-company-information-v1" || !executionClass && isCompanyInformation(pin.contract);
+  const selected = company ? null : applicationId ?? (applications.some(app => app.id === pin.applicationId) ? pin.applicationId : applications.length === 1 ? applications[0]!.id : null);
   if (selected && !applications.some(app => app.id === selected)) return { error: "application_not_found" };
-  const records = await db.companyRecord.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ applicationId: null }, ...(selected ? [{ applicationId: selected }] : [])] }, select: { id: true, title: true, applicationId: true, updatedAt: true }, orderBy: { updatedAt: "desc" }, take: 501 });
-  const accepted = (await validation).executionEditorContractSchema.safeParse(pin.contract);
+  const records = await db.companyRecord.findMany({ where: { workspaceId, status: company ? { in: ["active", "approved", "accepted"] } : { not: "archived" }, OR: [{ applicationId: null }, ...(selected ? [{ applicationId: selected }] : [])] }, select: { id: true, title: true, applicationId: true, updatedAt: true }, orderBy: { updatedAt: "desc" }, take: 501 });
+  const accepted = (company ? (await validation).companyInformationContractSchema : (await validation).executionEditorContractSchema).safeParse(pin.contract);
   const models = (await validation).codexEditorModels;
   const author = pin.requestedByType === "user" && typeof pin.requestedById === "string" ? await db.workspaceMembership.findFirst({ where: { workspaceId, userId: pin.requestedById }, select: { user: { select: { name: true } } } }) : null;
   const active = await db.agentExecution.count({ where: { workspaceId, taskId, status: { in: ["queued", "claimed", "running", "waiting_for_approval"] } } });
@@ -294,6 +298,7 @@ export async function readyEditorData(db: Prisma.TransactionClient, workspaceId:
     return !checked.blocked && !checked.redacted;
   });
   return {
+    executionClass: company ? "roost-company-information-v1" : "application",
     roleCatalog, roleCatalogTruncated: roleWorkers.length > 500,
     requester: requester ? { id: requester.userId, label: requester.user.name ?? "—", revision: requester.updatedAt.toISOString() } : null,
     roleOrigin: { established: Boolean(provenance.requesterUserId), submissionId: provenance.originatingSubmissionId ?? null },

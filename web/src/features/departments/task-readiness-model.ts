@@ -2,9 +2,10 @@ export type Reference = { id: string; revision: string; evidence?: string };
 export type CatalogEntry = { id: string; label: string; revision: string; eligible?: boolean; applicationId?: string | null };
 export type RoleCatalogEntry = CatalogEntry & { principalKey: string | null; type: string; role: string | null; competencies: string[]; mandates: string[] };
 export type ReadyEditor = {
+  executionClass?: "roost-company-information-v1";
   decisionAuthorities?: { decisionId: string; title?: string; current: boolean; acceptedAuthority: unknown }[];
   submissionVersion: string;
-  taskIdentity: { contractId: string; branch: string };
+  taskIdentity: { contractId: string; branch: string | null };
   components: CatalogEntry[]; managers: CatalogEntry[];
   roleCatalog: RoleCatalogEntry[]; requester: CatalogEntry | null; excludedRolePrincipals: string[]; roleOrigin: { established: boolean; submissionId: string | null }; roleCatalogTruncated: boolean;
   task: { id: string; title: string; status: string; project: { id: string; name: string } | null; goal: { id: string; title: string } | null };
@@ -14,12 +15,16 @@ export type ReadyEditor = {
   activeExecution: boolean; catalogTruncated: boolean;
   sources: CatalogEntry[]; procedures: CatalogEntry[]; dependencies: CatalogEntry[]; decisions: CatalogEntry[];
   models: { id: string; efforts: string[] }[];
-  accepted: { contract: Record<string, any>; prompt: string | null; baseBranch: string | null; applicationId: string } | null;
+  accepted: { contract: Record<string, any>; prompt: string | null; baseBranch: string | null; applicationId: string | null } | null;
   acceptance: { validatedAt: string; authorName: string | null; authorType: string } | null;
 };
-export type ReadyPacket = { status: string; reason?: string; changedSources?: { table: string; id: string; label: string; operation: string; changedAt: string }[]; revision?: string; validationRevision?: string; pinId?: string; canSubmit: boolean; executionEnabled: boolean; editor: ReadyEditor };
+export type ReadyPacket = { status: string; reason?: string; changedSources?: { table: string; id: string; label: string; operation: string; changedAt: string }[]; revision?: string; validationRevision?: string; pinId?: string; canSubmit: boolean; executionEnabled: boolean; preparationEnabled?: boolean; editor: ReadyEditor };
 export const groups = ["company", "product", "technical", "procedures", "skills", "dependencies", "decisions"] as const;
 export type RefGroup = typeof groups[number];
+export const companyInformationClass = "roost-company-information-v1" as const;
+export const isCompanyInformation = (editor: ReadyEditor) => editor.executionClass === companyInformationClass;
+export const canPrepareForWorker = (packet: ReadyPacket) => isCompanyInformation(packet.editor) ? packet.preparationEnabled === true : packet.executionEnabled;
+export const visibleContextGroups = (editor: ReadyEditor) => groups.filter(group => !isCompanyInformation(editor) || (group !== "product" && group !== "technical"));
 export const fields = {
   intent: ["version", "outcome", "allowed", "forbidden", "prompt", "baseBranch"],
   limits: ["maxAttempts", "maxDurationSeconds", "maxOutputTokens", "restrictions"],
@@ -45,7 +50,7 @@ export function draftFrom(editor: ReadyEditor): Draft {
       problems: (s.problems ?? [{ statement: "" }]).map((p: any) => ({ statement: p.statement, causalLink: p.causalLink ?? "" })), mechanism: s.commonCause?.mechanism ?? "", inseparability: s.commonCause?.inseparability ?? "", evidence: s.commonCause?.evidence ?? null },
     model: c.modelSelection?.model ?? "", effort: c.modelSelection?.reasoningEffort ?? "", competencies: c.assignment?.competencies ?? [], tools: c.access?.tools ?? [], permissions: c.access?.permissions ?? [],
     refs: Object.fromEntries(groups.map(key => [key, key === "skills" ? (c.skills?.items ?? []).map((item: { name: string; version: string }) => ({ id: item.name, revision: item.version })) : c.context?.[key] ?? c[key]?.items ?? []])) as Draft["refs"],
-    none: Object.fromEntries(groups.map(key => [key, c[key]?.noneReason ?? ""])) as Draft["none"], rollbackMode: c.recovery?.rollback?.mode ?? "" };
+    none: Object.fromEntries(groups.map(key => [key, c[key]?.noneReason ?? ""])) as Draft["none"], rollbackMode: isCompanyInformation(editor) ? "not_applicable" : c.recovery?.rollback?.mode ?? "" };
 }
 export function catalogFor(editor: ReadyEditor, group: RefGroup): CatalogEntry[] {
   if (group === "skills") return (editor.agent?.competencies ?? []).filter(value => value.includes("@")).map(value => ({ id: value.slice(0, value.lastIndexOf("@")), label: value.slice(0, value.lastIndexOf("@")), revision: value.slice(value.lastIndexOf("@") + 1) }));
@@ -61,21 +66,23 @@ export function selectReferences(previous: Reference[], catalog: CatalogEntry[],
 export function contractInput(editor: ReadyEditor, draft: Draft) {
   const v = draft.values;
   const s = draft.singleTask;
+  const informational = isCompanyInformation(editor);
   const set = (key: RefGroup) => ({ items: draft.refs[key].map(item => key === "skills" ? { name: item.id, version: item.revision } : key === "dependencies" ? { id: item.id, revision: item.revision, evidence: item.evidence ?? "", resolution: "satisfied" } : { id: item.id, revision: item.revision }), noneReason: draft.refs[key].length ? null : draft.none[key] });
-  return { expectedVersion: editor.submissionVersion, applicationId: editor.applicationId, prompt: v.prompt || null, baseBranch: v.baseBranch || null, contract: {
+  return { expectedVersion: editor.submissionVersion, applicationId: informational ? null : editor.applicationId, prompt: v.prompt || null, baseBranch: informational ? null : v.baseBranch || null, contract: {
+    ...(informational ? { executionClass: companyInformationClass } : {}),
     version: v.version, objective: { outcome: v.outcome, goalId: editor.task.goal?.id }, scope: { allowed: lines(v.allowed), forbidden: lines(v.forbidden) },
     taskRoles: { schemaVersion: "roost-task-roles-v1", ...draft.taskRoles, accountableManager: s.manager },
-    singleTask: { schemaVersion: "roost-single-task-v1", ...editor.taskIdentity, applicationId: editor.applicationId, component: s.component, accountableManager: s.manager,
+    singleTask: { schemaVersion: "roost-single-task-v1", ...editor.taskIdentity, branch: informational ? null : editor.taskIdentity.branch, applicationId: informational ? null : editor.applicationId, component: informational ? null : s.component, accountableManager: s.manager,
       measurement: { metric: s.metric, comparison: s.comparison, target: s.target.trim() ? Number(s.target) : null, unit: s.unit, method: s.method },
-      problems: s.problems.map(p => ({ statement: p.statement, componentId: s.component?.id, outcome: v.outcome, causalLink: s.problems.length > 1 ? p.causalLink : null })),
-      commonCause: s.problems.length > 1 ? { mechanism: s.mechanism, inseparability: s.inseparability, evidence: s.evidence } : null },
+      problems: s.problems.map(p => ({ statement: p.statement, componentId: informational ? null : s.component?.id, outcome: v.outcome, causalLink: !informational && s.problems.length > 1 ? p.causalLink : null })),
+      commonCause: !informational && s.problems.length > 1 ? { mechanism: s.mechanism, inseparability: s.inseparability, evidence: s.evidence } : null },
     assignment: { agentId: editor.agent?.id, role: editor.agent?.role, competencies: draft.competencies }, modelSelection: { model: draft.model, reasoningEffort: draft.effort },
-    context: Object.fromEntries(["company", "product", "technical"].map(key => [key, draft.refs[key as RefGroup].map(({ id, revision }) => ({ id, revision }))])),
+    context: Object.fromEntries(["company", "product", "technical"].map(key => [key, informational && key !== "company" ? [] : draft.refs[key as RefGroup].map(({ id, revision }) => ({ id, revision }))])),
     procedures: set("procedures"), skills: set("skills"), dependencies: set("dependencies"), decisions: set("decisions"),
-    access: { tools: draft.tools, permissions: draft.permissions, sandbox: "workspace-write", externalWrites: false, restrictions: lines(v.restrictions) },
+    access: { tools: informational ? [] : draft.tools, permissions: informational ? [] : draft.permissions, sandbox: informational ? "read-only" : "workspace-write", externalWrites: false, restrictions: lines(v.restrictions) },
     budgets: { maxAttempts: Number(v.maxAttempts), maxDurationSeconds: Number(v.maxDurationSeconds), maxOutputTokens: Number(v.maxOutputTokens) },
     acceptance: { criteria: lines(v.criteria), tests: lines(v.tests), evidence: lines(v.evidence) },
-    recovery: { handoff: v.handoff, failure: v.failure, escalation: v.escalation, rollback: { mode: draft.rollbackMode, instructions: v.rollbackInstructions } }
+    recovery: { handoff: v.handoff, failure: v.failure, escalation: v.escalation, rollback: { mode: informational ? "not_applicable" : draft.rollbackMode, instructions: v.rollbackInstructions } }
   } };
 }
 

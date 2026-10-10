@@ -3,7 +3,7 @@
 This is the sole active delivery handoff: current facts, authorized outcome
 and required end-to-end evidence.
 
-**Active gate:** none (owner STOP on 2026-10-10)
+**Active gate:** none — G6a preparation verified locally on 2026-10-10; stopped at its boundary.
 
 Update this line only when the owner authorizes a bounded gate; a proposed
 candidate is not active work.
@@ -152,7 +152,62 @@ Resumption needs a new owner-approved brief based on the actual stopped state,
 installed adapter, permitted effects, reused proof, rollback and bounded budget.
 This paused release grants no push, deployment or continuation authority.
 
-### Proposed Gate 6 — owner-to-local-agent task loop (not authorized)
+### Gate 6 — owner-to-local-agent task loop
+
+**Authorized on 2026-10-10; full outcome unmet. Initial diagnostic stopped before G6a.**
+The installed Hermes 0.21.2 profile qualifies as `managed_hermes_codex_low_v1`
+after normal workspace validation; no model request was made. The ordinary
+Ready route, execution packet, database and Worker required an Application,
+architecture component and Git checkout at that diagnostic snapshot. G6a below
+adds a separately qualified preparation class; it does not admit model execution.
+No trial task, grant, migration, application operation, push or deployment ran.
+The smaller G6a brief below was subsequently approved; the Aviary STOP remains.
+
+#### Gate 6a — company information preparation
+
+**Authorized outcome:** an existing company Task without Application,
+architecture component or Git can pass preparation/Ready and enter the existing
+Worker queue with explicit selected Roost company records, workspace and actor
+identity. Integrate data, API, existing console and Worker packet validation.
+Do not rebuild task management or ClickUp synchronization.
+
+The company class grants no repository read/write, push, deployment or native
+tools. G6a qualifies preparation only: queue rows cannot be claimed, run or
+completed, and no model/result/review round trip is claimed. Application Ready
+and execution guards retain their existing requirements. Real Worker/Hermes
+execution and owner result review remain a separately authorized remainder of
+G6. No application work, production writes or Roost push/deployment is authorized.
+
+**Approved ceiling:** diagnostic point after 30 minutes, 60 minutes total wall
+time, at most one materially changed retry of the same ineffective action.
+External Codex token/dollar caps remain unenforced/unknown. Bonus credits are
+allowed; no reset credits may be consumed. After bonus exhaustion, stop at 70%
+weekly usage. Root owns integration; bounded console work and independent
+authority review follow AGENTS.md orchestration boundaries.
+
+**Verified G6a result:** the existing Task, Ready submission, owner console and
+execution queue support `roost-company-information-v1` without Application,
+component, project or Git. A fresh disposable PostgreSQL database applied the
+full migration chain; actual HTTP Ready/queue/source invalidation and a separate
+native Worker-validation process passed 10/10. The unchanged queued row has
+attempt 0, no host/lease and `modelExecutionQualified: false`. SQL refuses runtime
+transitions, host/lease/start/attempt changes and forged qualification. An owner
+can cancel stale preparation without a native process or result. Selected records
+are exact/current/workspace-bound; unselected company content is not transported.
+
+Checks: 109 packet/context/component tests, six console-model tests, 77 browser
+scenarios using synthetic API fixtures, `npm run validate`, `npm run codex:check`
+and `git diff --check` pass. Native API/SQL tests use real services and no provider
+mock; browser fixtures remain a separate UI claim. The disposable database/role
+are absent and the existing PostgreSQL container returned to its prior stopped
+state. Two initial defects (migration newline anchor and SQL variable ambiguity)
+and a browser focus-test race were diagnosed and corrected; failed logs remain.
+Changes are local/uncommitted and the migration is not installed in production.
+No model, installed Worker daemon, Hermes turn, production write, push or deployment
+ran. This completes only G6a local preparation, not G6 or the paused Aviary release.
+See [exact evidence](architecture/traceability-matrix.md#e-company-information-preparation).
+
+#### Remaining Gate 6 outcome — outside G6a authority
 
 **Roost outcome:** the owner creates one low-risk informational company task in
 the console, assigns the configured local agent and sees its result and status
@@ -178,7 +233,7 @@ application backup or product-readiness review belongs to this gate. Preserve
 the existing Roost database protection; do not repeat full backup/restore
 certification unless its underlying recovery contract changes.
 
-**Proposed execution ceiling for owner review:** one implementation owner,
+**Authorized execution ceiling:** one implementation owner,
 45-minute diagnostic checkpoint, 90-minute total wall-clock ceiling and at most
 one materially changed retry of the same failed action. No subagent unless a
 distinct code change needs review. Token/dollar caps must be stated as unavailable

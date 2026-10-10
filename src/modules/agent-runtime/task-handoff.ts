@@ -130,7 +130,7 @@ export async function handoffGrantChoices(db:Db,workspaceId:string,taskId:string
   for(const role of s.roles.filter(r=>r.principal?.kind==="agent")) {
     const keys=await db.apiKey.findMany({where:{workspaceId,boundAgentId:role.principal!.id,active:true,revokedAt:null,expiresAt:{gt:new Date()}},take:100});
     for(const key of keys)for(const operation of handoffOperations) {
-      if((await riskLevelAdmission(db,taskId,operation)).error || await suspensionBlocks(db,workspaceId,taskId,s.execution!.applicationId,operation,role.principal!.id,key.id))continue;
+      if(!s.execution!.applicationId || (await riskLevelAdmission(db,taskId,operation)).error || await suspensionBlocks(db,workspaceId,taskId,s.execution!.applicationId,operation,role.principal!.id,key.id))continue;
       const bindings=operation==="handoff_create"?s.roles.filter(r=>!same(r.principal,role.principal)).map(r=>({role:role.role,recipientRole:r.role,recipient:r.principal})):
         s.history.filter(h=>h.current&&!h.decision&&h.recipient_role===role.role&&same(h.recipient,role.principal)).map(h=>({role:role.role,handoffId:h.id}));
       for(const handoff of bindings)options.push({operation,agentId:role.principal!.id,agentLabel:role.role,credentialId:key.id,credentialPrefix:key.keyPrefix,credentialVersion:key.credentialVersion,credentialExpiresAt:key.expiresAt,role:role.reference,handoff,handoffSourceVersion:s.sourceVersion});

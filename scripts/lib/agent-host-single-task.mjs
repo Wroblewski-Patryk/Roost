@@ -45,17 +45,22 @@ export function singleTaskIssues(contract, packet, claimed) {
   const s = contract.singleTask, issues = [], add = (field, reason) => issues.push({ field: `contract.singleTask.${field}`, reason });
   const identity = singleTaskIdentity(claimed.taskId);
   if (s.contractId !== identity.contractId) add("contractId", "mismatch");
-  if (contract.nativeBoundary?.profile === "inspect-readonly") {
+  const company = contract.executionClass === "roost-company-information-v1";
+  if (company) {
+    if (s.branch !== null || s.component !== null || s.applicationId !== null) add("applicationId", "company_scope_required");
+  } else if (contract.nativeBoundary?.profile === "inspect-readonly") {
     if (!/^[A-Za-z0-9][A-Za-z0-9._\/-]{0,119}$/.test(s.branch) || s.branch.includes("..") || s.branch.endsWith("/")) add("branch", "invalid");
   } else if (s.branch !== identity.branch) add("branch", "mismatch");
   if (s.applicationId !== claimed.applicationId) add("applicationId", "mismatch");
   const { component, manager } = packet.scopeAuthorities;
-  if (!component || component.id !== s.component.id || component.applicationId !== claimed.applicationId || component.status !== "active") add("component", "unavailable");
-  else if (component.revision !== s.component.revision) add("component", "stale");
+  if (!company) {
+    if (!component || component.id !== s.component.id || component.applicationId !== claimed.applicationId || component.status !== "active") add("component", "unavailable");
+    else if (component.revision !== s.component.revision) add("component", "stale");
+  }
   if (!manager || manager.id !== s.accountableManager.id || manager.workspaceId !== claimed.workspaceId || manager.status !== "active") add("accountableManager", "unavailable");
   else if (manager.revision !== s.accountableManager.revision) add("accountableManager", "stale");
   if (compoundIntent(contract.objective.outcome) || s.problems.some(p => compoundIntent(p.statement))) add("problems", "split_required");
-  if (s.problems.some(p => p.outcome !== contract.objective.outcome || p.componentId !== s.component.id)) add("problems", "split_required");
+  if (s.problems.some(p => p.outcome !== contract.objective.outcome || p.componentId !== (company ? null : s.component.id))) add("problems", "split_required");
   if (new Set(s.problems.map(p => p.statement.trim().toLowerCase())).size !== s.problems.length) add("problems", "duplicate");
   if (s.problems.length === 1) {
     if (s.commonCause !== null || s.problems[0].causalLink !== null) add("commonCause", "not_applicable");

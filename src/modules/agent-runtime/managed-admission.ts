@@ -194,7 +194,7 @@ export async function managedAdmission(client: PrismaClient, auth: AuthContext, 
     const execution = await db.agentExecution.findFirst({ where: { id: executionId, workspaceId: identity.workspaceId,
       agentHostId: identity.hostId, leaseToken: input.leaseToken, status: { in: ['claimed', 'running'] },
       leaseExpiresAt: { gt: now }, cancelRequestedAt: null, contextInvalidatedAt: null } });
-    if (!execution) fail();
+    if (!execution || !execution.applicationId) fail();
     if (execution.attempt !== 1 || !await workerClaimAllowed(db, auth, identity.hostId, now)) fail();
     const key = await db.trustedProviderTicketKey.findUnique({ where: { workspaceId: identity.workspaceId } });
     const publicDigest = createHash('sha256').update(createPublicKey(signer.publicKey).export({ format: 'der', type: 'spki' })).digest('hex');
@@ -253,7 +253,7 @@ export async function managedAdmission(client: PrismaClient, auth: AuthContext, 
     const evidenceFileDigest=sha(JSON.stringify(signedEvidence,null,2)+'\n');
     const leaseDigest = sha(input.leaseToken);
     pending.set(executionId, { leaseDigest, hostId: identity.hostId, workspaceId: identity.workspaceId,
-      installationId: identity.installationId, taskId: execution.taskId, applicationId: execution.applicationId,
+      installationId: identity.installationId, taskId: execution.taskId, applicationId: execution.applicationId!,
       selection, context: payload.context, runtime: payload.runtime, profile: payload.profile,
       installationIdentity: payload.installationIdentity, ownerAttestation: payload.ownerAttestation,evidenceFileDigest,
       expiry: expiresAt.getTime(), decisionId: decision.id, decisionRevision: decision.version, decisionAt: decision.at.toISOString(),

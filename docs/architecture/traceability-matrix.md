@@ -1,5 +1,55 @@
 # Foundation requirements traceability
 
+## Gate 6 diagnostic — 2026-10-10
+
+Gate 6 is authorized but unmet. Normal local configuration validation and
+`inspectExecutionProvider` qualify installed Hermes 0.21.2 as
+`managed_hermes_codex_low_v1`, with no blockers. This proves local installation
+admission, not a current Responses request or completed company task.
+An earlier raw-config inspection lacked resolved repository paths; the normal
+Worker validation path corrects that diagnostic and is the accepted observation.
+
+At the initial diagnostic snapshot the company-task path was application-bound: the Ready console
+requires Application; `submit-for-execution` requires its UUID; the packet and
+single-task schemas require application/component/Git identity; AgentExecution
+has a non-null application FK; Worker prepares repository evidence before launch.
+RF-PROD-011/RF-CTX-001 are not satisfied for an application-free information task.
+No trial task, model request or owner-result round trip was performed. The
+authorized material-architecture stop rule requires a smaller data/admission
+brief before implementation. RF-HOST-010/011 remain partial; no token or dollar
+enforcement is inferred from procedural time limits or the managed output intent.
+
+### <a id="e-company-information-preparation"></a>G6a — local company information preparation
+
+The separately authorized `roost-company-information-v1` class uses existing
+Task/Ready/AgentExecution surfaces with no Application/component/project/Git.
+The contract permits exactly selected current workspace company records and
+zero repository/native tools or external effects. Independent source review
+found two integration defects (null UI applicationId and queued attempt 0); both
+were corrected, then its targeted re-read found no remaining blocker.
+
+Actual local PostgreSQL/HTTP proof uses no provider substitution: full migrations,
+normal owner registration and Ready receipt/CAS, idempotent replay, actual queued
+row, exact selected source transport and separate native Node Worker validator.
+Final task `2c1b6cf0-6c8f-462c-9d72-3b207070ad30`, execution
+`2e0faf4b-2466-47c3-b779-ba8eee78631f`, pin `393d4827-2eed-4eef-90f9-9cf7c4013bc9`;
+packet `e127944f8f4b47ae68aabba78202be9e7088c24be73606f506c74b4130bb2dbf`.
+Ten tests pass without skips, including missing/stale sources, repository
+authority, foreign workspace, duplicate queue, native runtime/host/lease/start/
+attempt/qualification refusals, source invalidation and owner cancellation.
+Owned synthetic database and role were removed; prior container state restored.
+
+Supporting checks: 109 shared packet/context tests, six console-model tests,
+77 real browser scenarios with synthetic API responses, validate and codex:check.
+Browser evidence does not claim an actual authenticated production console flow.
+The unchanged queue row is preparation-only and model-unqualified; no provider
+request, installed daemon/Hermes execution or owner result/review was attempted.
+Migration `20261010100000_company_information_preparation` was applied only in
+fresh disposable databases. Source is local/uncommitted, not pushed/deployed.
+Full G6 and its budget enforcement requirements remain unmet. Failed migration,
+initial HTTP run and initial browser focus-test run remain retained privately;
+subsequent runs follow their diagnosed corrections, not an unchanged replay.
+
 Current delivery work starts at [Matrix](#matrix). The amendment stream before
 it is historical evidence and should be skipped unless a specific requirement
 or implementation claim needs provenance; it is never the work queue.

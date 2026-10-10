@@ -214,6 +214,7 @@ async function confirmContextStop(execution, writerLock) {
 }
 
 async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, createOutputBudget = createCodexOutputBudget, readTaskBranch = readCurrentTaskBranch, readTaskCommit = readCurrentTaskCommit, readTaskPaths = readCommittedTaskPaths } = {}) {
+  if (claimed?.metadata?.executionContract?.executionClass === "roost-company-information-v1") throw protocolAdmissionError("company_information_execution_unqualified");
   const repository = repositoryForExecution(config, claimed);
   const repositoryPath = path.resolve(String(repository.path));
   let taskContext, applicationContext, contextRevision;

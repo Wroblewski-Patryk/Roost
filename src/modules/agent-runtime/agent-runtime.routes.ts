@@ -25,6 +25,7 @@ import { taskCapabilityView, issueTaskCapability, revokeTaskCapability } from ".
 import { isDeepStrictEqual } from "node:util";
 import { taskReviewView, recordTaskReview, actOnTaskReview } from "./task-review";
 import { inspectReady, lockReadyTask, readyTransaction, submitReady, readyEditorData, submissionVersion } from "./task-execution-readiness";
+import { companyInformationClass, isCompanyInformation } from "./company-information-preparation";
 import { taskRiskView, prepareRiskScope, recordRiskAssessment } from "./task-risk";
 import { acknowledgeContextStop, contextStopCode, guardExecutionContext } from "./execution-context-stop";
 import { requireWorkspaceRole, roleAtLeast } from "../../auth/workspace-access";
@@ -53,6 +54,7 @@ const hostSchema = z.object({
 const createExecutionSchema = z.object({
   taskId: z.string().uuid(),
   applicationId: z.string().uuid().optional(),
+  executionClass: z.literal("roost-company-information-v1").optional(),
   prompt: z.string().trim().max(20000).optional(),
   baseBranch: z.string().trim().max(240).optional(),
   metadata: jsonRecord.default({})
@@ -397,7 +399,8 @@ agentRuntimeRouter.post("/tasks/:id/risk/assessments", asyncHandler(async (req,r
 agentRuntimeRouter.post("/tasks/:id/actions/submit-for-execution", asyncHandler(async (req, res) => {
   if (!requireWorkspaceRole(req, res, "member")) return;
   const taskId = z.string().uuid().parse(req.params.id);
-  const input = z.object({ requestId: z.string().uuid(), expectedVersion: z.string().regex(/^[a-f0-9]{64}$/), applicationId: z.string().uuid(), contract: z.record(z.unknown()), prompt: z.string().max(20000).nullable().optional(), baseBranch: z.string().max(240).nullable().optional() }).strict().parse(req.body);
+  const input = z.object({ requestId: z.string().uuid(), expectedVersion: z.string().regex(/^[a-f0-9]{64}$/), applicationId: z.string().uuid().nullable(), executionClass: z.literal("roost-company-information-v1").optional(), contract: z.record(z.unknown()), prompt: z.string().max(20000).nullable().optional(), baseBranch: z.string().max(240).nullable().optional() }).strict().parse(req.body);
+  if (input.applicationId === null && !isCompanyInformation(input.contract) || input.executionClass && !isCompanyInformation(input.contract)) return sendApiError(res, 422, "company_information_scope_invalid");
   const result = await readyTransaction(tx => submitReady(tx, req.auth!.workspaceId, taskId, input, actor(req)));
   if ("error" in result && result.error) return sendApiError(res, result.error === "task_not_found" ? 404 : result.error === "forbidden" ? 403 : 409, result.error, { details: result });
   res.json({ data: result });
@@ -407,11 +410,13 @@ agentRuntimeRouter.get("/tasks/:id/execution-readiness", asyncHandler(async (req
   res.setHeader("Cache-Control", "no-store");
   const taskId = z.string().uuid().parse(req.params.id);
   if (req.query.version === "1") {
-    const applicationId = z.string().uuid().parse(req.query.applicationId);
+    const company = req.query.executionClass === companyInformationClass;
+    const applicationId = company ? null : z.string().uuid().parse(req.query.applicationId);
     const result = await retryContextRead(() => readyTransaction(async tx => {
       const task = await tx.task.findFirst({ where: { id: taskId, workspaceId: req.auth!.workspaceId }, select: { projectId: true } });
       if (!task) return { error: "task_not_found" };
-      const application = await tx.application.findFirst({ where: { id: applicationId, workspaceId: req.auth!.workspaceId,
+      if (company) return { applicationId: null, submissionVersion: await submissionVersion(tx, req.auth!.workspaceId, taskId, null) };
+      const application = await tx.application.findFirst({ where: { id: applicationId!, workspaceId: req.auth!.workspaceId,
         projects: { some: { projectId: task.projectId ?? "00000000-0000-0000-0000-000000000000" } } }, select: { id: true } });
       if (!application) return { error: "application_not_found" };
       return { applicationId, submissionVersion: await submissionVersion(tx, req.auth!.workspaceId, taskId, applicationId) };
@@ -422,9 +427,9 @@ agentRuntimeRouter.get("/tasks/:id/execution-readiness", asyncHandler(async (req
   const result = await retryContextRead(() => readyTransaction(async tx => {
     const ready = await inspectReady(tx, req.auth!.workspaceId, taskId);
     if (ready.error === "task_not_found" || req.query.editor !== "1") return ready;
-    const editor = await readyEditorData(tx, req.auth!.workspaceId, taskId, req.query.applicationId ? z.string().uuid().parse(req.query.applicationId) : undefined, req.auth!.userId ?? undefined);
+    const editor = await readyEditorData(tx, req.auth!.workspaceId, taskId, req.query.applicationId ? z.string().uuid().parse(req.query.applicationId) : undefined, req.auth!.userId ?? undefined, req.query.executionClass ? z.enum(["application", "roost-company-information-v1"]).parse(req.query.executionClass) : undefined);
     if (editor && "error" in editor) return { error: editor.error };
-    return { ...ready, readiness: { ...ready.readiness, editor, canSubmit: req.auth!.authType === "user" && roleAtLeast(req.auth!.workspaceRole, "member"), executionEnabled: executionEnabled() } };
+    return { ...ready, readiness: { ...ready.readiness, editor, canSubmit: req.auth!.authType === "user" && roleAtLeast(req.auth!.workspaceRole, "member"), executionEnabled: executionEnabled(), preparationEnabled: true } };
   }));
   if ("error" in result && result.error === "task_not_found") return sendApiError(res, 404, result.error);
   if ("error" in result && result.error === "application_not_found") return sendApiError(res, 404, result.error);
@@ -998,9 +1003,12 @@ agentRuntimeRouter.post("/executions/:id/actions/prior-readonly-audit", asyncHan
 }));
 
 agentRuntimeRouter.post("/executions", asyncHandler(async (req, res) => {
-  if (!executionEnabled()) return sendApiError(res, 409, "agent_execution_disabled");
   const input = createExecutionSchema.parse(req.body);
-  const resolved = await applicationForTask(req.auth!.workspaceId, input.taskId, input.applicationId);
+  const company = input.executionClass === companyInformationClass;
+  if (!company && !executionEnabled()) return sendApiError(res, 409, "agent_execution_disabled");
+  if (company && (!requireWorkspaceRole(req, res, "member"))) return;
+  if (company && (input.applicationId || input.baseBranch || Object.keys(input.metadata).length)) return sendApiError(res, 422, "company_information_scope_invalid");
+  const resolved = company ? { task: null, application: null, error: null } : await applicationForTask(req.auth!.workspaceId, input.taskId, input.applicationId);
   if (resolved.error) return sendApiError(res, resolved.error === "task_not_found" || resolved.error === "application_not_found" ? 404 : 422, resolved.error);
   const result = await readyTransaction(async tx => {
     await lockReadyTask(tx, req.auth!.workspaceId, input.taskId);
@@ -1008,6 +1016,7 @@ agentRuntimeRouter.post("/executions", asyncHandler(async (req, res) => {
     const ready = await inspectReady(tx, req.auth!.workspaceId, input.taskId);
     if (ready.error) return ready;
     const pin = ready.pin!;
+    if (company !== isCompanyInformation(pin.contract)) return { error: "task_ready_contract_mismatch" };
     const inspection=(pin.contract as any).nativeBoundary?.releaseInspection;
     const releaseSelection=(input.metadata as any).releaseVerification;
     if(inspection||releaseSelection!==undefined){
@@ -1016,14 +1025,14 @@ agentRuntimeRouter.post("/executions", asyncHandler(async (req, res) => {
         return {error:"release_inspection_selection_required"};
     }
     if ((pin.contract as any).executionClass === "roost-fixed-effect-v1" && await tx.agentExecution.count({ where: { workspaceId: req.auth!.workspaceId, taskId: input.taskId } })) return { error: "synthetic_task_already_spent" };
-    if (resolved.application!.id !== pin.applicationId || (input.prompt !== undefined && input.prompt !== pin.prompt) || (input.baseBranch !== undefined && input.baseBranch !== pin.baseBranch) || (input.metadata.executionContract !== undefined && !isDeepStrictEqual(input.metadata.executionContract, pin.contract))) return { error: "task_ready_contract_mismatch" };
+    if ((resolved.application?.id ?? null) !== pin.applicationId || (input.prompt !== undefined && input.prompt !== pin.prompt) || (input.baseBranch !== undefined && input.baseBranch !== pin.baseBranch) || (input.metadata.executionContract !== undefined && !isDeepStrictEqual(input.metadata.executionContract, pin.contract))) return { error: "task_ready_contract_mismatch" };
     const execution = await tx.agentExecution.create({ data: { workspaceId: req.auth!.workspaceId, taskId: input.taskId, applicationId: pin.applicationId,
-      prompt: pin.prompt, baseBranch: pin.baseBranch, metadata: json({ ...input.metadata, executionContract: pin.contract, readyContextPin: { pinId: pin.pinId, revision: pin.revision, riskAdmissionSeal:pin.riskAdmissionSeal, riskAdmissionCommit:pin.riskAdmissionCommit, compositionSeal:pin.procedureComposition.seal } }), ...actor(req) }, include: executionInclude });
+      prompt: pin.prompt, baseBranch: pin.baseBranch, metadata: json({ ...input.metadata, executionContract: pin.contract, readyContextPin: { pinId: pin.pinId, revision: pin.revision, ...(company ? { preparationOnly: true, modelExecutionQualified: false } : { riskAdmissionSeal:pin.riskAdmissionSeal, riskAdmissionCommit:pin.riskAdmissionCommit, compositionSeal:pin.procedureComposition.seal }) } }), ...actor(req) }, include: executionInclude });
     return { execution };
   });
   if ("error" in result && result.error) return sendApiError(res, 409, result.error, { details: "readiness" in result ? result.readiness : undefined });
   const execution = (result as { execution: Prisma.AgentExecutionGetPayload<{ include: typeof executionInclude }> }).execution;
-  await appendExecutionEvent({ workspaceId: req.auth!.workspaceId, executionId: execution.id, type: "queued", message: "Codex execution queued for a local agent host." });
+  await appendExecutionEvent({ workspaceId: req.auth!.workspaceId, executionId: execution.id, type: "queued", message: company ? "Company information packet prepared for Worker validation; model execution is not qualified." : "Codex execution queued for a local agent host." });
   await createEvent({ type: "agent_execution_queued", workspaceId: req.auth!.workspaceId, taskId: execution.taskId, projectId: execution.task.projectId, resourceType: "agent_execution", resourceId: execution.id, source: "roost", payload: { executionId: execution.id, applicationId: execution.applicationId } });
   res.status(201).json({ data: execution });
 }));
@@ -1053,6 +1062,7 @@ agentRuntimeRouter.post("/executions/claim", asyncHandler(async (req, res) => {
       if (req.auth!.workerTicketIdentity && !await workerClaimAllowed(tx, req.auth!, host.id)) return { error: "worker_credential_forbidden" };
       const ready = await inspectReady(tx, workspaceId, candidate.taskId, candidate);
       if (ready.error) return { error: ready.error };
+      if (!candidate.applicationId) return { error: "company_information_execution_unqualified" };
       if (await suspensionBlocks(tx, workspaceId, candidate.taskId, candidate.applicationId, "runtime_execute", ready.taskContext?.task?.assignedWorkforceEntityId, null, host.id)) return { error: "native_capability_suspended" };
     const changed = await tx.agentExecution.updateMany({ where: { id: candidate.id, workspaceId, status: "queued", attempt: 0 }, data: { status: "claimed", agentHostId: host.id, leaseToken, leaseExpiresAt: new Date(Date.now() + executionLeaseMs), lastHeartbeatAt: now, startedAt: candidate.startedAt ?? now, attempt: { increment: 1 }, checkpoint: json(checkpoint), checkpointVersion: 1 } });
       return { count: changed.count };

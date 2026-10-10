@@ -80,6 +80,19 @@ export const executionEditorContractSchema = executionContractSchema.extend({
   taskRoles: taskRolesSchema.optional()
 });
 
+// Preparation is a separate task class, not a repository contract with missing
+// fields. It grants no tools and cannot activate a model/runtime in G6a.
+export const companyInformationClass = "roost-company-information-v1";
+export const companyInformationContractSchema = executionContractSchema.omit({ nativeBoundary: true }).extend({
+  executionClass: z.literal(companyInformationClass),
+  singleTask: singleTaskSchema.extend({ applicationId: z.literal(null), component: z.literal(null), branch: z.literal(null),
+    problems: z.array(z.object({ statement: text, componentId: z.literal(null), outcome: text, causalLink: z.literal(null) }).strict()).min(1).max(1),
+    commonCause: z.literal(null) }),
+  context: z.object({ company: refs, product: z.tuple([]), technical: z.tuple([]) }).strict(),
+  access: z.object({ tools: z.tuple([]), permissions: z.tuple([]), sandbox: z.literal("read-only"), externalWrites: z.literal(false), restrictions: texts }).strict(),
+  recovery: executionContractSchema.shape.recovery.extend({ rollback: z.object({ mode: z.literal("not_applicable"), instructions: text }).strict() })
+}).strict();
+
 const packetSchema = z.object({
   schemaVersion: z.literal("roost-execution-packet-v1"), revision: z.string().regex(/^[a-f0-9]{64}$/),
   identity: z.object({ executionId: id, workspaceId: id, taskId: id, applicationId: id, agentId: id }).strict(),
@@ -94,11 +107,18 @@ const packetSchema = z.object({
     description: z.string().nullable(), businessPurpose: z.string().nullable(), desiredState: z.string().nullable(), expectedBehavior: z.string().nullable(), revision: text }).strict()).max(30)
 }).strict();
 
+const companyPacketSchema = packetSchema.extend({
+  contract: companyInformationContractSchema,
+  identity: packetSchema.shape.identity.extend({ applicationId: z.literal(null) }),
+  scopeAuthorities: packetSchema.shape.scopeAuthorities.extend({ component: z.literal(null) })
+});
+
 const list = (value) => Array.isArray(value) ? value : [];
 export function validateExecutionPacket(packet, claimed, taskContext, applicationContext, options = {}) {
   const issues = [];
   const add = (field, reason) => issues.push({ field, reason });
-  const parsed = packetSchema.safeParse(packet);
+  const company = packet?.contract?.executionClass === companyInformationClass;
+  const parsed = (company ? companyPacketSchema : packetSchema).safeParse(packet);
   if (!parsed.success) {
     // Never forward Zod messages, input values, unknown property names or raw payloads.
     for (const issue of parsed.error.issues) {
@@ -116,9 +136,17 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
     if (inspect) for (const entry of c.nativeBoundary.readPaths) {
       try { nativeRelative(entry); } catch { add("contract.nativeBoundary.readPaths", "invalid"); }
     }
-    if (!inspect && c.access.sandbox !== "workspace-write") add("contract.access.sandbox", "coding_sandbox_required");
+    if (!company && !inspect && c.access.sandbox !== "workspace-write") add("contract.access.sandbox", "coding_sandbox_required");
     const composition=p.procedureComposition;
-    if(!options.allowUncomposed && (composition.algorithm!=="roost-procedure-composition-v1" || composition.status!=="composed" || !/^[a-f0-9]{64}$/.test(composition.seal??"") || composition.operation!=="runtime_execute" || composition.applicationId!==claimed?.applicationId || !Array.isArray(composition.missing) || composition.missing.length || !Array.isArray(composition.conflicts) || composition.conflicts.length)) add("procedureComposition","missing_or_conflicting");
+    if (company) {
+      if (claimed?.applicationId !== null || claimed?.application != null || claimed?.baseBranch != null || Object.keys(applicationContext ?? {}).length) add("identity.applicationId", "company_scope_required");
+      if (claimed?.status !== undefined && claimed.status !== "queued") add("identity.executionId", "preparation_only_required");
+      if (claimed?.status === "queued" && (claimed.attempt !== 0 || claimed.agentHostId != null || claimed.leaseToken != null || claimed.leaseExpiresAt != null || claimed.startedAt != null || claimed.metadata?.readyContextPin?.preparationOnly !== true || claimed.metadata?.readyContextPin?.modelExecutionQualified !== false)) add("identity.executionId", "preparation_only_required");
+      if (composition.algorithm !== "roost-company-information-preparation-v1" || composition.preparationOnly !== true || composition.modelExecutionQualified !== false) add("procedureComposition", "preparation_only_required");
+      const selected = c.context.company.map(item => item.id);
+      if (p.sources.length !== selected.length || new Set(selected).size !== selected.length || p.sources.some(item => !selected.includes(item.id))) add("sources", "exact_selection_required");
+    }
+    if(!company && !options.allowUncomposed && (composition.algorithm!=="roost-procedure-composition-v1" || composition.status!=="composed" || !/^[a-f0-9]{64}$/.test(composition.seal??"") || composition.operation!=="runtime_execute" || composition.applicationId!==claimed?.applicationId || !Array.isArray(composition.missing) || composition.missing.length || !Array.isArray(composition.conflicts) || composition.conflicts.length)) add("procedureComposition","missing_or_conflicting");
     if((!options.allowUncomposed || composition.status==="composed") && c.access.tools.some(tool=>!composition.fields?.tools?.includes(tool)))add("procedureComposition.tools","outside_composed_authority");
     issues.push(...singleTaskIssues(c, p, claimed));
     issues.push(...taskRoleIssues(c, p, claimed));
@@ -134,6 +162,7 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
     if (task?.id !== p.identity.taskId || task?.workspaceId !== p.identity.workspaceId) add("taskContext.task", "mismatch");
     if (task?.updatedAt !== p.taskRevision) add("taskRevision", "stale");
     if (!["todo", "in_progress"].includes(task?.status)) add("taskContext.task.status", "blocked");
+    if (!company) {
     if (applicationContext?.schemaVersion !== "application-agent-context-v2") add("applicationContext.schemaVersion", "invalid");
     for (const field of ["applicationProcedures", "capabilityProcedures"]) {
       if (!Array.isArray(applicationContext?.operatingModel?.[field])) add(`applicationContext.operatingModel.${field}`, "missing");
@@ -147,6 +176,7 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
     try {
       if (normalizeGitRemote(primaryRepository(applicationContext?.application)?.url) !== normalizeGitRemote(primaryRepository(claimed?.application)?.url)) add("applicationContext.application.repositories", "mismatch");
     } catch { add("applicationContext.application.repositories", "invalid"); }
+    }
     if (c.objective.goalId !== task?.goalId || task?.goal?.id !== c.objective.goalId || task?.goal?.workspaceId !== p.identity.workspaceId) add("contract.objective.goalId", "mismatch");
     if (c.assignment.agentId !== p.identity.agentId || agent?.id !== p.identity.agentId || agent?.workspaceId !== p.identity.workspaceId || agent?.type !== "agent" || agent?.status !== "active") add("contract.assignment.agentId", "mismatch");
     if (c.assignment.role !== agent?.role) add("contract.assignment.role", "mismatch");
@@ -155,7 +185,8 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
     if (c.access.permissions.some((name) => !list(agent?.authorityScope).includes(name)) || c.access.tools.some((name) => !c.access.permissions.includes(name))) add("contract.access.permissions", "unavailable");
     if (c.scope.allowed.some((entry) => c.scope.forbidden.some((other) => other.toLowerCase() === entry.toLowerCase()))) add("contract.scope", "mismatch");
     if (c.access.permissions.includes("repository_write") && c.recovery.rollback.mode !== "restore_task_changes") add("contract.recovery.rollback", "mismatch");
-    if (!Number.isInteger(claimed?.attempt) || claimed.attempt < 1 || claimed.attempt > c.budgets.maxAttempts) add("contract.budgets.maxAttempts", "blocked");
+    const preparing = company && claimed?.status === "queued" && claimed?.attempt === 0 && claimed?.metadata?.readyContextPin?.preparationOnly === true;
+    if (!Number.isInteger(claimed?.attempt) || claimed.attempt < 1 && !preparing || claimed.attempt > c.budgets.maxAttempts) add("contract.budgets.maxAttempts", "blocked");
     for (const category of ["company", "product", "technical"]) {
       for (const reference of c.context[category]) {
         const source = p.sources.find((item) => item.id === reference.id);

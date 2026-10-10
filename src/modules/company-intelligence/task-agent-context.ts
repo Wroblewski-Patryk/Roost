@@ -6,7 +6,8 @@ import { taskDecisionAuthorities } from "../decisions/decision-authority";
 
 export async function loadTaskAgentContext(workspaceId: string, taskId: string, execution: AgentExecution | null = null, db: Prisma.TransactionClient = prisma, submission?: import("../agent-runtime/task-role-context").RoleSubmission, authorities?: Awaited<ReturnType<typeof taskDecisionAuthorities>>) {
   const task = await db.task.findFirst({ where: { id: taskId, workspaceId }, include: { project: true, goal: true, target: true, taskList: true, assignedWorkforceEntity: true, reviewerUser: { select: { id: true } } } });
-  if (!task) return null; const [contexts, dependencies, policies, procedures] = await Promise.all([
+  if (!task) return null;
+  const [contexts, dependencies, policies, procedures] = await Promise.all([
     organizationalContextsForEntities(workspaceId, "task", [task.id], db), db.dependency.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ fromEntityType: "task", fromEntityId: task.id }, { toEntityType: "task", toEntityId: task.id }] } }),
     db.policy.findMany({ where: { workspaceId, status: { not: "archived" } }, take: 50 }), db.procedure.findMany({ where: { workspaceId, status: { not: "archived" } }, include: { steps: { orderBy: { stepOrder: "asc" } } }, take: 50 })
   ]);
@@ -49,4 +50,31 @@ export async function loadTaskAgentContext(workspaceId: string, taskId: string, 
     constraints: { sourceOfTruth: "roost", requireVerifiedEvidenceForCompletion: true, preserveHumanApprovalRequirements: true, declarationIsNotObservation: true, escalateWhenAuthorityMissing: true },
     escalationRules: { records: knownIssues.filter((record) => record.recordType === "escalation"), policyModesRequiringApproval: policies.filter((policy) => policy.enforcementMode === "require_approval" || policy.enforcementMode === "block") }
   };
+}
+
+export async function loadCompanyInformationContext(workspaceId: string, taskId: string, execution: AgentExecution, db: Prisma.TransactionClient, submission?: import("../agent-runtime/task-role-context").RoleSubmission) {
+  const task = await db.task.findFirst({ where: { id: taskId, workspaceId }, include: { goal: true, assignedWorkforceEntity: true } });
+  if (!task) return null;
+  const contract = (execution?.metadata as any)?.executionContract;
+  if (contract?.executionClass !== "roost-company-information-v1") throw new Error("company_information_scope_invalid");
+  {
+    const ids = (field: string) => Array.isArray(contract[field]?.items) ? contract[field].items.slice(0, 30).map((r: any) => r.id).filter((id: unknown): id is string => typeof id === "string" && /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id)) : [];
+    const [procedures, dependencies, decisions, effects] = await Promise.all([
+      db.procedure.findMany({ where: { workspaceId, id: { in: ids("procedures") } } }),
+      db.dependency.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ fromEntityType: "task", fromEntityId: task.id }, { toEntityType: "task", toEntityId: task.id }] } }),
+      db.decision.findMany({ where: { workspaceId, id: { in: ids("decisions") } } }),
+      db.taskDecisionEffect.findMany({ where: { workspaceId, taskId } })
+    ]);
+    const superseded = new Set(effects.map(e => e.supersedesId).filter(Boolean));
+    const effective = await db.decision.findMany({ where: { workspaceId, id: { in: effects.map(e => e.decisionId).filter(id => !superseded.has(id)) } } });
+    return { schemaVersion: "task-agent-execution-context-v1", generatedAt: new Date().toISOString(),
+      task: { id: task.id, workspaceId, title: task.title, status: task.status, updatedAt: task.updatedAt,
+        goalId: task.goalId, projectId: task.projectId, goal: task.goal ? { id: task.goal.id, workspaceId: task.goal.workspaceId } : null,
+        assignedWorkforceEntityId: task.assignedWorkforceEntityId, assignedWorkforceEntity: task.assignedWorkforceEntity ? {
+          id: task.assignedWorkforceEntity.id, workspaceId, type: task.assignedWorkforceEntity.type, status: task.assignedWorkforceEntity.status,
+          role: task.assignedWorkforceEntity.role, skillIndex: task.assignedWorkforceEntity.skillIndex, toolIndex: [], authorityScope: [] } : null },
+      executionPacket: await prepareExecutionPacket(execution!, task, db, submission),
+      procedures, dependencies, decisions: [...decisions.filter(d => !superseded.has(d.id) && !effective.some(e => e.id === d.id)), ...effective]
+    };
+  }
 }

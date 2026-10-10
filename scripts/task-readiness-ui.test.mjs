@@ -103,6 +103,9 @@ try {
   await page.locator("button:visible").filter({ hasText: "Prepare execution" }).first().click();
   await page.getByLabel(/^Company context/).click();
   await page.getByRole("searchbox").last().waitFor();
+  // Visibility precedes React's focus effect; check the actual focus before
+  // testing keyboard wrapping rather than racing the popup initialization.
+  await page.waitForFunction(() => document.activeElement?.getAttribute("role") === "searchbox" || document.activeElement?.getAttribute("type") === "search");
   await page.keyboard.press("Shift+Tab");
   assert.equal(await page.getByRole("button", { name: "Done", exact: true }).evaluate(node => node === document.activeElement), true);
   await page.keyboard.press("Tab");
@@ -292,5 +295,50 @@ try {
     await rolePage.screenshot({ path: path.join(output, `${locale}-roles-accepted.png`), fullPage: true });
     await rolePage.close(); checked++;
   }
+  // Native browser interactions use synthetic API fixtures; they do not prove native API or model execution.
+  for (const locale of ['en','pl']) {
+    const page = await browser.newPage({viewport:{width:390,height:960}});
+    const errors=[];page.on('pageerror',error=>errors.push(error.message));
+    await page.addInitScript(value=>localStorage.setItem('companycoreLocale',value),locale);
+    const {packet}=fixture('changed');const c=packet.editor.accepted.contract;
+    c.executionClass='roost-company-information-v1';
+    c.singleTask.applicationId=null;c.singleTask.component=null;c.singleTask.branch=null;
+    c.singleTask.problems.forEach(p=>p.componentId=null);
+    c.context.product=[];c.context.technical=[];c.access.tools=[];c.access.permissions=[];c.access.sandbox='read-only';
+    c.recovery.rollback.mode='not_applicable';
+    packet.editor.applicationId=null;packet.editor.executionClass=c.executionClass;packet.editor.taskIdentity.branch=null;
+    packet.editor.accepted.applicationId=null;packet.editor.task.project=null;packet.executionEnabled=false;packet.preparationEnabled=true;
+    let submitted=0,queued=0;const queries=[];
+    await page.route('**/v1/**',async route=>{
+      const url=route.request().url();
+      if(url.includes('execution-readiness')) {queries.push(new URL(url).searchParams.get('executionClass'));return route.fulfill({json:{data:packet}});}
+      if(url.includes('submit-for-execution')) {
+        const input=route.request().postDataJSON();
+        assert.equal(input.contract.executionClass,c.executionClass);assert.equal(input.applicationId,null);assert.equal(input.baseBranch,null);
+        assert.deepEqual(input.contract.access.tools,[]);assert.deepEqual(input.contract.access.permissions,[]);assert.equal(input.contract.access.sandbox,'read-only');
+        assert.deepEqual(input.contract.context.product,[]);assert.deepEqual(input.contract.context.technical,[]);assert.equal(input.contract.context.company.length,1);
+        assert.equal(input.contract.singleTask.component,null);assert.equal(input.contract.singleTask.branch,null);
+        submitted++;packet.status='ready';return route.fulfill({json:{data:{readiness:packet}}});
+      }
+      if(url.endsWith('/executions')){const queueInput=route.request().postDataJSON();assert.equal(Object.hasOwn(queueInput,'applicationId'),false);assert.deepEqual(queueInput,{taskId:packet.editor.task.id,executionClass:c.executionClass});queued++;packet.editor.activeExecution=true;return route.fulfill({json:{data:{id:'synthetic-preparation'}}});}
+      assert.equal(route.request().method(),'GET');return route.fulfill({json:{data:url.includes('/v1/tasks?')?[{...packet.editor.task,priority:'normal'}]:{departments:[]}}});
+    });
+    await page.goto(`http://127.0.0.1:${server.address().port}?executionClass=roost-company-information-v1`);
+    await page.getByRole('button',{name:locale==='pl'?'Przygotuj wykonanie':'Prepare execution',exact:true}).first().click();
+    await page.getByRole('dialog').waitFor();
+    await page.getByLabel(locale==='pl'?'Rodzaj wykonania zadania':'Task execution type',{exact:true}).waitFor();
+    for (const label of locale==='pl'?['Aplikacja','Docelowy komponent','Gałąź zadania','Gałąź bazowa (opcjonalnie)','Kontekst produktu','Kontekst techniczny','Wykorzystywane narzędzia','Wymagane uprawnienia']:['Application','Target component','Task branch','Base branch (optional)','Product context','Technical context','Tools to use','Required permissions']) assert.equal(await page.getByLabel(label,{exact:true}).count(),0,label);
+    assert.equal(await page.getByRole('button',{name:locale==='pl'?'Ocena ryzyka':'Risk assessment',exact:true}).count(),0);
+    assert.equal(await page.getByRole('button',{name:locale==='pl'?'Skład procedury':'Procedure composition',exact:true}).count(),0);
+    assert.equal(await page.getByRole('button',{name:locale==='pl'?'Oceń wynik':'Review result',exact:true}).count(),0);
+    await page.getByRole('button',{name:locale==='pl'?'Przekaż do wykonania':'Submit for execution',exact:true}).click();
+    await page.getByText(locale==='pl'?'Bieżący kontrakt został sprawdzony i zaakceptowany.':'The current contract was validated and accepted.',{exact:true}).waitFor();
+    await page.getByRole('button',{name:locale==='pl'?'Przygotuj dla Workera':'Prepare for Worker',exact:true}).click();
+    await page.getByText(locale==='pl'?'Pakiet przygotowany do walidacji Workera. Wykonanie przez model i gotowy wynik nie zostały potwierdzone.':'Packet prepared for Worker validation. Model execution and a completed result have not been proved.',{exact:true}).waitFor();
+    assert.equal(submitted,1);assert.equal(queued,1);assert.ok(queries.every(value=>value===c.executionClass));assert.deepEqual(errors,[]);
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+    await page.screenshot({path:path.join(output,`${locale}-company-prepared-390.png`),fullPage:true});await page.close();checked++;
+  }
+
   console.log(JSON.stringify({ checked, output }));
 } finally { await browser.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }

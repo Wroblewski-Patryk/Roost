@@ -40,6 +40,19 @@ behavior. Run the component and end-to-end checks required by
 
 Keep this file aligned with the package scripts and implemented runtime.
 
+Company information preparation (G6a): `npm run test:agent-host-company-information`
+checks the shared contract and existing packet/context behavior. Run
+`npm run test:company-information:local` for the native HTTP Ready -> persisted
+queue -> separate Worker validator proof and PostgreSQL denial/invalidation/
+cancellation checks. The runner requires an available Docker Engine, reuses only
+the existing Roost PostgreSQL container and creates a uniquely named disposable
+database/role. It applies the full migration chain without seeds, mocks, trigger
+disabling or resetting an existing database. Cleanup verifies database/role
+absence and restores a previously stopped container. No provider call, installed
+Worker daemon or production qualification is inferred. Console checks remain
+`tsx --test web/src/features/departments/task-readiness-model.test.ts` and
+`node scripts/task-readiness-ui.test.mjs`; browser API responses are synthetic.
+
 `npm test` delegates to `npm run test:api` and expects `DATABASE_URL` to point
 at a disposable PostgreSQL database. `npm run test:api:local` is the preferred
 local entrypoint: it reuses `DATABASE_URL` when it is already set, or starts a

@@ -32,7 +32,8 @@ export async function grantState(db: Db, id: string) {
 }
 export async function admitCapability(db: Db, workspaceId: string, taskId: string, principal: any, operation: string, grantId?: string, prior?: any) {
   const execution = await db.agentExecution.findFirst({where:{workspaceId,taskId},orderBy:[{createdAt:"desc"},{id:"desc"}]});
-  if(execution && await suspensionBlocks(db,workspaceId,taskId,execution.applicationId,operation,principal.kind==="agent"?principal.id:null,principal.credentialId)) return {error:"native_capability_suspended"};
+  if (execution && !execution.applicationId) return { error: "company_information_execution_unqualified" };
+  if(execution?.applicationId && await suspensionBlocks(db,workspaceId,taskId,execution.applicationId,operation,principal.kind==="agent"?principal.id:null,principal.credentialId)) return {error:"native_capability_suspended"};
   if (!prior && (await riskLevelAdmission(db,taskId,operation)).error) return {error:"risk_admission_required"};
   if (principal.kind !== "agent") return grantId ? { error: "capability_agent_only" } : { grant: null };
   if (!prior) {

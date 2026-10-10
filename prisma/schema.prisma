@@ -2037,8 +2037,8 @@ model AgentExecution {
   workspace         Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   taskId            String                @map("task_id") @db.Uuid
   task              Task                  @relation(fields: [taskId], references: [id], onDelete: Restrict)
-  applicationId     String                @map("application_id") @db.Uuid
-  application       Application           @relation(fields: [applicationId], references: [id], onDelete: Restrict)
+  applicationId     String?               @map("application_id") @db.Uuid
+  application       Application?          @relation(fields: [applicationId], references: [id], onDelete: Restrict)
   agentHostId       String?               @map("agent_host_id") @db.Uuid
   agentHost         AgentHost?            @relation(fields: [agentHostId], references: [id], onDelete: SetNull)
   status            AgentExecutionStatus  @default(queued)

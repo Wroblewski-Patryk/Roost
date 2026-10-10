@@ -1,5 +1,29 @@
 # Local Codex Agent Runtime
 
+## Company information preparation (G6a, locally qualified 2026-10-10)
+
+`roost-company-information-v1` is a preparation class in the existing Task,
+Ready and AgentExecution protocol. Application/component/Git identity is null;
+company sources are explicitly selected, current, active and workspace-bound.
+Product/technical selections and nativeBoundary are absent. Tools/permissions
+are empty, sandbox is read-only and external writes are false. Existing actor,
+five-role provenance, receipt/CAS, source-watch and interview guards remain.
+
+Ready pins bind `preparationOnly: true` and `modelExecutionQualified: false`.
+Only queued attempt 0 with no host, lease or start qualifies for Worker packet
+validation; SQL and runtime admission refuse claim/run/completion. The console
+offers **Prepare for Worker**, not a completed result. Source drift invalidates
+Ready; an owner may cancel the unclaimed preparation. App contracts keep their
+existing Application/Git/risk/composition requirements.
+
+The additive migration is tested in a disposable local database; it is not
+installed in production. The repo-free stdin validator uses the same shared
+packet and Ready checks, without installation credentials, filesystem tools or
+model calls. See [native proof and limits](traceability-matrix.md#e-company-information-preparation).
+Real Worker/Hermes execution requires a separately authorized G6 remainder.
+
+## Historical protocol amendments
+
 Owner amendment v76: [v3 source projection](bootstrap-proof-projection-v3.md)
 defines exact own-XID/receipt lineage, complete source sets, explicit shared/nested
 epoch cardinality and immutable phase prefixes. Source-only; native projection,
