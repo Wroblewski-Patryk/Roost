@@ -5,24 +5,28 @@ and required end-to-end evidence.
 
 ## Delivery objective
 
-Finish the reusable Roost runtime so an accepted task can travel through the
-complete path below without manual technical coordination:
+Make Roost usable as the owner's company workspace with an optional local agent.
+An accepted company task must travel through the path below without manual
+technical coordination:
 
 ```text
-Roost task
+Owner-created Roost task and current, scoped company context
   -> outbound-connected Windows Local Worker
   -> managed Hermes
   -> explicitly selected provider/model/reasoning effort
-  -> bounded work in the canonical application checkout
-  -> evidence, review and result returned to Roost
-  -> authorized release and production verification when the task requires it
+  -> bounded work within the task's actual authority
+  -> result and status visible to the owner in Roost
+  -> owner decision or review appropriate to that task
 ```
 
-The first proof uses the configured pilot application. Successful proof must be
-reusable for later applications; installation-specific paths, domains and
-credentials remain private configuration rather than repository defaults.
-This runtime path is a foundation for Roost, not completion of the company
-product or of any configured application.
+Local repository work is one task type. Git push, application deployment,
+production observation and application backup apply only when a separately
+authorized task has those effects. A local read-only company task needs none of
+them. Preserve the separately accepted recoverability requirement for Roost's
+own business database before allowing agent writes to those records; reuse
+existing proof rather than repeating it for every task. Configured applications
+may later exercise the mechanism, but their readiness does not define Roost's
+product completion. Installation paths, domains and credentials stay private.
 
 ## Execution ownership
 
@@ -190,29 +194,34 @@ attempt limits and a stop rule for a new provider, repeated failure or exhausted
 budget. An application push, grant or deployment still requires its own exact
 authority. The paused gate grants none.
 
-### Proposed next gate — stop ineffective agent work (not authorized)
+### Proposed next gate — owner-to-local-agent task loop (not authorized)
 
-**Roost outcome:** one supervised local task that repeats an ineffective action
-or reaches its approved attempt/time limit stops without another model call or
-side effect. Roost retains the task, actual attempts, failed check, elapsed time,
-usage when exposed (otherwise `unknown`), exact checkpoint and next safe action.
-A new attempt requires an independent diagnosis, a materially changed plan and
-fresh owner-approved budget. This advances RF-HOST-010–012 and RF-CTX-006/019;
-it does not claim complete token/cost metering or application readiness.
+**Roost outcome:** the owner creates one low-risk informational company task in
+the console, assigns the configured local agent and sees its result and status
+back in Roost without using a terminal, database or another conversation. The
+agent receives a small, owner-selected set of current Roost records through
+the existing task packet and Worker/Hermes path. The owner can accept or return the
+result. A repeated ineffective attempt or approved time/attempt limit stops the
+task with a visible reason and recoverable state; continuation needs a changed
+plan and fresh budget. This advances RF-PROD-011, RF-CTX-001 and RF-HOST-010/011
+without claiming full company readiness or completing general API/MCP context
+classification under RF-CTX-027.
 
-**Scope:** first inspect the existing packet budget, Worker/Hermes attempt
-handling, task status and owner-visible evidence path. Reuse those mechanisms;
-change only the missing stop/admission and evidence behavior. No new provider,
-deployment platform, application work, production write or release is part of
-this gate. Prove the stop and a permitted resumed attempt through the native
-Worker path using a disposable bounded task; run focused checks and
-`npm run codex:check`. Independent review checks the exact result and absence
-of a repeated side effect. Reuse unaffected Gate 1–5 evidence.
+**Scope:** inspect the existing console task flow, selected-record packet,
+Worker/Hermes result path and budget handling first. Reuse working pieces and
+change only the missing owner-facing or agent-facing link. Prove one real
+low-risk company task, such as a sourced status and proposed next action for an
+existing project, and its owner-visible outcome using current Roost records.
+Reuse unaffected Gate 1–5 evidence and run focused checks plus
+`npm run codex:check`. No application repository change, push, deployment,
+application backup or product-readiness review belongs to this gate. Preserve
+the existing Roost database protection; do not repeat full backup/restore
+certification unless its underlying recovery contract changes.
 
 **Proposed execution ceiling for owner review:** one implementation owner,
 45-minute diagnostic checkpoint, 90-minute total wall-clock ceiling and at most
-one materially changed retry of the same failed action. No subagent unless an
-independent review is needed. Token/dollar caps must be stated as unavailable
+one materially changed retry of the same failed action. No subagent unless a
+distinct code change needs review. Token/dollar caps must be stated as unavailable
 unless a provider-enforced meter is demonstrated; wall time is not a dollar cap.
 For external Codex this is a procedural checkpoint, not an automatic spend cap.
 At the ceiling, repeated failure or discovery of a new provider/material
@@ -305,8 +314,9 @@ entry/exit language does not authorize a new gate.
 ## Later product phases
 
 These are planning horizons, not additional authorized execution gates. Prepare
-concrete gates here when the preceding outcome is proven and the phase's
-business choices are available. Do not silently add them to Gate 5.
+concrete Roost gates here when the preceding outcome is proven and the phase's
+business choices are available. Application delivery rows describe later agent
+work through Roost, not application repairs owned by the Codex Roost builder.
 
 The second-application release is paused. It does not block work on reusable Roost controls
 or an independently approved application baseline. Use real application work to
@@ -317,8 +327,7 @@ agent authority only after proof. The rows guide dependencies, not execution.
 
 | Horizon | Result and entry condition | Existing requirements / decisions |
 | --- | --- | --- |
-| Cost and progress stop | Before more long-running agent delivery, prove a bounded task stops after repeated ineffective action or its approved attempt/time ceiling, preserves a truthful checkpoint, and requires independent diagnosis and fresh budget before resuming. Record provider usage as unknown when unavailable. | RF-HOST-010–012, RF-CTX-006/019 |
-| Paused release disposition | Preserve the accepted candidate and FAILED release evidence. Resume only through a new exact-target brief after checking the installed Compose path and permitted effects; otherwise leave it paused while Roost work proceeds. | RF-REL-001–011; owner STOP 2026-10-10 |
+| Deeper cost and progress control | After the owner-to-agent loop, extend budget and no-progress enforcement to other task types as each is admitted; preserve truthful unknown provider usage and require a changed plan before renewed budget. | RF-HOST-010–012, RF-CTX-006/019 |
 | Next-application baseline | Reconcile its own intent, code and evidence; configure roles, procedures, context and the next accepted outcome in Roost. Prove owner-visible blockers and authority. | RF-APP-003/009–014; private baseline |
 | Company strategic direction | Adopt a private, versioned company purpose; prove relevant decisions and agent tasks compare outcomes to it, then derive measurable targets from a real baseline. | RF-OUT-008; OPEN-STRATEGY-001 |
 | Context classification and Worker packet | Classify operational versus historical sources; prove only current, approved, scoped material enters a sealed task packet. | RF-CTX-027; RF-GOV-020 |
@@ -329,7 +338,7 @@ agent authority only after proof. The rows guide dependencies, not execution.
 | Managed local model execution | Prove one real bounded Roost task through Worker -> managed Hermes -> exact admitted Ollama model, with visible choice, resource limits, evidence, review, recovery and refusal without fallback. Manual smoke is insufficient. | RF-HOST-016–018/022 |
 | Task model policy and savings proof | Propose model per task by competence, risk and resources, with owner override. Compare accepted quality, time, rework and total cost against Codex before claiming savings. | RF-HOST-012/017/018/022; OPEN-MODEL-001 |
 | Sustained application delivery | In successive authorized gates, managed agents propose and deliver application outcomes; separately owned Codex work fixes reusable Roost gaps. Keep distinct checkouts, one-writer/resource limits, review, release and owner-visible evidence. | RF-PROD-011/013, RF-APP-001–014 |
-| Application readiness and reuse | Reach owner-accepted product readiness through verified outcomes, then apply the same Roost process to another application with its own baseline and safety rules. | RF-APP-004/008–014, RF-ACT-010 |
+| Later application outcomes | Agents operating through Roost may reach owner-accepted readiness for each configured application in its own project and task scope. That readiness is not an acceptance gate for building Roost itself. | RF-APP-004/008–014, RF-ACT-010 |
 | Reference-site study | Inspect only authorized, version-identified sites and preserve sourced findings, uncertainties and applicability. | RF-CTX-028 |
 | Website checklist governance | Independently verify findings and approve a versioned checklist/procedure with acceptance criteria and rollback. | RF-CTX-028 |
 | Website method proof | Prove real supervised use of the approved checklist in a scoped application task. | RF-CTX-028 |

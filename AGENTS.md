@@ -43,6 +43,11 @@ execution state outside this repository.
   own bounded outcome and estimate; do not hide it inside "complete the gate".
   The owner approves the outcome, permitted effects and time/token/cost/attempt
   limits before execution. No budget increases itself.
+- Scope safety and proof to the task's real effect. Roost owner/agent task flow
+  does not inherit application push, deployment, backup or product-readiness
+  gates. Preserve Roost's own business-data recovery requirement; use
+  application release and data safeguards when a separately authorized task
+  actually changes that application or its production data.
 - One implementation owner carries the currently authorized gate in
   `docs/implementation.md` through coding, integration, verification and the
   required demonstration. Internal substeps and multiple reviewable commits
