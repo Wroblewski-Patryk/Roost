@@ -59,10 +59,9 @@ export async function loadCompanyInformationContext(workspaceId: string, taskId:
   if (!["roost-company-information-v1", "roost-company-information-runtime-v1"].includes(contract?.executionClass)) throw new Error("company_information_scope_invalid");
   {
     const ids = (field: string) => Array.isArray(contract[field]?.items) ? contract[field].items.slice(0, 30).map((r: any) => r.id).filter((id: unknown): id is string => typeof id === "string" && /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id)) : [];
-    const [procedures, dependencies, decisions, effects] = await Promise.all([
+    const [procedures, dependencies, effects] = await Promise.all([
       db.procedure.findMany({ where: { workspaceId, id: { in: ids("procedures") } } }),
       db.dependency.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ fromEntityType: "task", fromEntityId: task.id }, { toEntityType: "task", toEntityId: task.id }] } }),
-      db.decision.findMany({ where: { workspaceId, id: { in: ids("decisions") } } }),
       db.taskDecisionEffect.findMany({ where: { workspaceId, taskId } })
     ]);
     const superseded = new Set(effects.map(e => e.supersedesId).filter(Boolean));
@@ -74,7 +73,7 @@ export async function loadCompanyInformationContext(workspaceId: string, taskId:
           id: task.assignedWorkforceEntity.id, workspaceId, type: task.assignedWorkforceEntity.type, status: task.assignedWorkforceEntity.status,
           role: task.assignedWorkforceEntity.role, skillIndex: task.assignedWorkforceEntity.skillIndex, toolIndex: [], authorityScope: [] } : null },
       executionPacket: await prepareExecutionPacket(execution!, task, db, submission),
-      procedures, dependencies, decisions: [...decisions.filter(d => !superseded.has(d.id) && !effective.some(e => e.id === d.id)), ...effective]
+      procedures, dependencies, decisions: effective
     };
   }
 }

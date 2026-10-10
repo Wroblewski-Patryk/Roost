@@ -2440,6 +2440,8 @@ GET    /v1/company-records/:id
 POST   /v1/company-records
 PATCH  /v1/company-records/:id
 DELETE /v1/company-records/:id
+POST   /v1/company-records/:id/context-reviews
+GET    /v1/company-records/:id/context-reviews?taskId=<uuid>
 
 GET    /v1/company-objects/:type
 GET    /v1/company-objects/:type/:id
@@ -2485,6 +2487,18 @@ acceptance criteria, functional and verification state, implementation
 coverage, hierarchy, application/project/client links, due date, priority,
 status, metadata, and organizational context. `recordType` identifies the
 family; `departmentKey` returns a contextual projection over the same IDs.
+
+`POST /v1/company-records/:id/context-reviews` is owner-only. It appends an
+immutable task-scoped source approval or withdrawal for the exact
+`expectedRevision`. The strict body requires `requestId`, `taskId`, `action`,
+`classification`, `provenance`, `environment`, `verificationMethod`,
+`verificationRef`, `inclusionReason`, and `validUntil`. The server binds the
+current content digest and actor; changed idempotency replays fail. This
+review governs the company-information Worker packet only; ordinary search
+behavior is addressed in G9. See
+[trusted company information packet](architecture/trusted-company-information-packet-v1.md).
+The owner can read up to 100 most recent reviews for an exact record and task
+through the matching GET route; no history row is overwritten.
 
 `company-objects` is the native CRUD surface for `resource`, `risk`, `metric`,
 and `policy`. All four types accept `organizationalContext`; list reads accept

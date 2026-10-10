@@ -67,10 +67,13 @@ for (const [name, mutate] of [
   ['unselected extra record denied', f => { f.packet.sources.push({ ...f.packet.sources[0], id: randomUUID() }); }],
   ['stale source denied', f => { f.packet.sources[0].revision = 'stale'; }],
   ['foreign source denied', f => { f.packet.sources[0].workspaceId = randomUUID(); }],
-  ['missing source content denied', f => { const s = f.packet.sources[0]; s.description = ''; s.businessPurpose = ''; s.desiredState = ''; s.expectedBehavior = ''; }]
+  ['missing source content denied', f => { const s = f.packet.sources[0]; s.description = ''; s.businessPurpose = ''; s.desiredState = ''; s.expectedBehavior = ''; }],
+  ['missing source review denied', f => { delete f.packet.sources[0].provenance; }],
+  ['expired source review denied', f => { f.packet.sources[0].provenance.validUntil = new Date(Date.now() - 1000).toISOString(); }],
+  ['wrong source environment denied', f => { f.packet.sources[0].provenance.environment = process.env.NODE_ENV === 'test' ? 'production' : 'isolated_test'; }]
 ]) test(name, () => {
   const f = fixture(); mutate(f); seal(f);
-  assert.throws(() => buildCompanyInformationInput(f), /company_information_runtime_blocked/);
+  assert.throws(() => buildCompanyInformationInput(f), /(company_information_runtime_blocked|execution_packet_invalid)/);
 });
 test('Ready mismatch and changed packet block before admission', () => {
   const f = fixture(); f.claimed.metadata.readyContextPin.modelExecutionQualified = false;

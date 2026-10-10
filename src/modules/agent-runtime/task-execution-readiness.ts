@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import { Prisma, type AgentExecution } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { loadTaskAgentContext } from "../company-intelligence/task-agent-context";
+import { companySourceEligible, companySourceReviews } from "./company-source-trust";
 import { loadApplicationAgentContext } from "../product-engineering/application-agent-context";
 import { watchReadySources } from "./ready-source-watch";
 import { reviewAdmissionError } from "./task-review-admission";
@@ -267,7 +268,14 @@ export async function readyEditorData(db: Prisma.TransactionClient, workspaceId:
   // Runtime redaction incidents are audit tombstones, not source material for
   // a new information task. They can otherwise fill the bounded owner catalog
   // and hide current company requirements behind the 500-record limit.
-  const records = await db.companyRecord.findMany({ where: { workspaceId, status: company ? { in: ["active", "approved", "accepted"] } : { not: "archived" }, ...(company ? { source: { not: "runtime_redaction_v1" } } : {}), OR: [{ applicationId: null }, ...(selected ? [{ applicationId: selected }] : [])] }, select: { id: true, title: true, applicationId: true, updatedAt: true }, orderBy: { updatedAt: "desc" }, take: 501 });
+  const sourceReviews = company ? await companySourceReviews(db, workspaceId, taskId) : new Map();
+  const candidateIds = company ? [...sourceReviews.keys()] : undefined;
+  const candidates = await db.companyRecord.findMany({ where: { workspaceId,
+    ...(candidateIds ? { id: { in: candidateIds } } : {}),
+    status: company ? { in: ["active", "approved", "accepted"] } : { not: "archived" },
+    OR: [{ applicationId: null }, ...(selected ? [{ applicationId: selected }] : [])] },
+    orderBy: { updatedAt: "desc" }, ...(!company ? { take: 501 } : {}) });
+  const records = company ? candidates.filter(item => companySourceEligible(item, sourceReviews.get(item.id), taskId, null)).slice(0, 501) : candidates;
   const schemas: any = await validation;
   const accepted = (pin.contract?.executionClass === "roost-company-information-runtime-v1" ? schemas.companyInformationRuntimeContractSchema : company ? schemas.companyInformationContractSchema : schemas.executionEditorContractSchema).safeParse(pin.contract);
   const models = (await validation).codexEditorModels;

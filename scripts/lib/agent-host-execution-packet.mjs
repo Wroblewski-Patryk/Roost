@@ -115,10 +115,23 @@ const packetSchema = z.object({
     description: z.string().nullable(), businessPurpose: z.string().nullable(), desiredState: z.string().nullable(), expectedBehavior: z.string().nullable(), revision: text }).strict()).max(30)
 }).strict();
 
+const provenanceSchema = z.object({
+  reviewId: id, classification: z.enum(['fact', 'observation', 'proposal', 'inference']),
+  provenance: text, environment: z.enum(['production', 'isolated_test']),
+  originSource: text, sourceStatus: z.enum(['active', 'approved', 'accepted']),
+  originKind: text.nullable(), originSystem: text.nullable(),
+  recordVerificationState: z.enum(['not_started', 'pending', 'passed']),
+  verificationLevel: z.literal('owner_attested'),
+  verificationMethod: text, verificationRef: text, inclusionReason: text,
+  contentDigest: z.string().regex(/^[a-f0-9]{64}$/), validFrom: z.string().datetime(),
+  validUntil: z.string().datetime(), reviewedAt: z.string().datetime(), reviewedByUserId: id
+}).strict();
+
 const companyPacketSchema = packetSchema.extend({
   contract: companyInformationContractSchema,
   identity: packetSchema.shape.identity.extend({ applicationId: z.literal(null) }),
-  scopeAuthorities: packetSchema.shape.scopeAuthorities.extend({ component: z.literal(null) })
+  scopeAuthorities: packetSchema.shape.scopeAuthorities.extend({ component: z.literal(null) }),
+  sources: z.array(packetSchema.shape.sources.element.extend({ provenance: provenanceSchema })).max(10)
 });
 const companyRuntimePacketSchema = companyPacketSchema.extend({ contract: companyInformationRuntimeContractSchema });
 
@@ -205,6 +218,10 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
         if (!source || ![source.description, source.businessPurpose, source.desiredState, source.expectedBehavior].some((value) => typeof value === "string" && value.trim())) add(`contract.context.${category}`, "unavailable");
         else if (source.revision !== reference.revision) add(`contract.context.${category}`, "stale");
         else if (source.workspaceId !== p.identity.workspaceId || (category === "company" ? source.applicationId !== null : source.applicationId !== p.identity.applicationId)) add(`contract.context.${category}`, "mismatch");
+        else if (company && (!source.provenance || Date.parse(source.provenance.validFrom) > Date.now()
+          || Date.parse(source.provenance.validUntil) <= Date.now()
+          || source.provenance.environment !== (process.env.NODE_ENV === 'test' ? 'isolated_test' : 'production')))
+          add(`contract.context.${category}`, "source_review_invalid");
       }
     }
     const checkRefs = (field, actual, version, accepted = () => true, requireAll = false) => {
@@ -221,7 +238,9 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
     checkRefs("procedures", list(taskContext?.procedures), "version", (item) => item.status === "active");
     for (const skill of c.skills.items) if (!list(agent?.skillIndex).includes(`${skill.name}@${skill.version}`)) add("contract.skills", "unavailable");
     checkRefs("dependencies", list(taskContext?.dependencies), "updatedAt", (item) => item.status !== "blocked", true);
-    checkRefs("decisions", list(taskContext?.decisions), "updatedAt", (item) => item.status === "approved" || item.status === "accepted" && item.source === "roost_decision", true);
+    checkRefs("decisions", list(taskContext?.decisions), "updatedAt", (item) => company
+      ? item.status === "accepted" && item.source === "roost_decision"
+      : item.status === "approved" || item.status === "accepted" && item.source === "roost_decision", true);
     const requiredProcedures = [...list(applicationContext?.operatingModel?.applicationProcedures), ...list(applicationContext?.operatingModel?.capabilityProcedures)]
       .filter(link => link?.required !== false);
     if (requiredProcedures.some((link) => !c.procedures.items.some((item) => item.id === link?.procedureId))) add("contract.procedures", "missing");

@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import type { AgentExecution, Task, Prisma } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { resolveTaskRoleContext, type RoleSubmission } from "./task-role-context";
+import { companySourceEligible, companySourceProvenance, companySourceReviews } from "./company-source-trust";
 
 function object(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
@@ -17,11 +18,12 @@ export async function prepareExecutionPacket(execution: AgentExecution, task: Ta
     return Array.isArray(refs) ? refs.slice(0, 10).map((ref) => object(ref).id)
       .filter((id): id is string => typeof id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) : [];
   }))];
+  const companyInformation = ["roost-company-information-v1", "roost-company-information-runtime-v1"].includes(String(object(contract).executionClass));
   const sources = await db.companyRecord.findMany({
-    where: { workspaceId: execution.workspaceId, id: { in: ids }, status: ["roost-company-information-v1", "roost-company-information-runtime-v1"].includes(String(object(contract).executionClass)) ? { in: ["active", "approved", "accepted"] } : { not: "archived" }, OR: [{ applicationId: null }, { applicationId: execution.applicationId }] },
-    select: { id: true, workspaceId: true, applicationId: true, recordType: true, title: true, description: true, businessPurpose: true, desiredState: true, expectedBehavior: true, updatedAt: true },
+    where: { workspaceId: execution.workspaceId, id: { in: ids }, status: companyInformation ? { in: ["active", "approved", "accepted"] } : { not: "archived" }, OR: [{ applicationId: null }, { applicationId: execution.applicationId }] },
     orderBy: { id: "asc" }
   });
+  const reviews = companyInformation ? await companySourceReviews(db, execution.workspaceId, task.id, ids) : new Map();
   const single = object(object(contract).singleTask), componentRef = object(single.component), managerRef = object(single.accountableManager);
   const validId = (value: unknown): value is string => typeof value === "string" && /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(value);
   const scopeApplication = execution.applicationId ? await db.application.findFirst({ where: { id: execution.applicationId, workspaceId: execution.workspaceId }, select: { id: true } }) : null;
@@ -37,7 +39,15 @@ export async function prepareExecutionPacket(execution: AgentExecution, task: Ta
       component: component ? { id: component.id, applicationId: component.applicationId, status: component.status, revision: component.updatedAt.toISOString() } : null,
       manager: manager ? { id: manager.id, workspaceId: manager.workspaceId, status: manager.status, revision: manager.updatedAt.toISOString() } : null
     },
-    sources: sources.map(({ updatedAt, ...source }) => ({ ...source, revision: updatedAt.toISOString() }))
+    sources: sources.flatMap((source) => {
+      const review = reviews.get(source.id);
+      if (companyInformation && !companySourceEligible(source, review, task.id, null)) return [];
+      return [{ id: source.id, workspaceId: source.workspaceId, applicationId: source.applicationId,
+        recordType: source.recordType, title: source.title, description: source.description,
+        businessPurpose: source.businessPurpose, desiredState: source.desiredState,
+        expectedBehavior: source.expectedBehavior, revision: source.updatedAt.toISOString(),
+        ...(companyInformation && review ? { provenance: companySourceProvenance(review, source) } : {}) }];
+    })
   };
   return { ...body, revision: createHash("sha256").update(JSON.stringify(body)).digest("hex") };
 }

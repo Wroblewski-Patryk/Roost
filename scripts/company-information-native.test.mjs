@@ -22,6 +22,12 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
     return { status: response.status, body: response.status === 204 ? null : await response.json() };
   }
   const ref = row => ({ id: row.id, revision: row.updatedAt.toISOString() });
+  const approveSource = async (row, taskId, ownerToken) => request(`/v1/company-records/${row.id}/context-reviews`, ownerToken, {
+    requestId: randomUUID(), taskId, expectedRevision: row.updatedAt.toISOString(), action: 'approve',
+    classification: 'fact', provenance: 'Isolated native test owner review', environment: 'isolated_test',
+    verificationMethod: 'Native fixture inspection', verificationRef: 'isolated-postgresql-http-proof',
+    inclusionReason: 'Explicit source selected for this task', validUntil: new Date(Date.now() + 86400000).toISOString()
+  });
   let token, workspaceId, contract, task, source, execution;
   try {
     await t.test('existing Task needs neither project, Application nor repository; explicit current company source and roles', async () => {
@@ -57,6 +63,11 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       contract.objective.goalId = goal.id; contract.assignment.agentId = agent.id;
       contract.singleTask.contractId = `roost-task:${task.id}`; contract.singleTask.accountableManager = ref(manager);
       contract.context.company = [ref(source)];
+      const unreviewed = await request(`/v1/agent-runtime/tasks/${task.id}/execution-readiness?editor=1&executionClass=roost-company-information-v1`, token);
+      assert.equal(unreviewed.status, 200);
+      assert.ok(!unreviewed.body.data.editor.sources.some(item => item.id === source.id));
+      const reviewed = await approveSource(source, task.id, token);
+      assert.equal(reviewed.status, 201, JSON.stringify(reviewed.body));
       const editor = await request(`/v1/agent-runtime/tasks/${task.id}/execution-readiness?editor=1&executionClass=roost-company-information-v1`, token);
       assert.equal(editor.status, 200); assert.equal(editor.body.data.editor.applicationId, null); assert.equal(editor.body.data.preparationEnabled, true);
       assert.ok(editor.body.data.editor.sources.some(item => item.id === source.id));
@@ -139,6 +150,29 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       assert.equal(row.attempt, 0); assert.equal(row.agentHostId, null); assert.equal(row.leaseToken, null); assert.equal(row.finalResponse, null);
       assert.equal(await prisma.application.count({ where: { workspaceId } }), 0);
     });
+    await t.test('owner withdrawal invalidates a renewed Ready pin and removes the source from the catalog', async () => {
+      const current = await prisma.companyRecord.findUniqueOrThrow({ where: { id: source.id } });
+      assert.equal((await approveSource(current, task.id, token)).status, 201);
+      contract.context.company = [ref(current)];
+      const renewed = await submit(contract);
+      assert.equal(renewed.response.status, 200, JSON.stringify(renewed.response.body));
+      assert.equal(renewed.response.body.data.readiness.status, 'ready');
+      const withdrawn = await request(`/v1/company-records/${source.id}/context-reviews`, token, {
+        requestId: randomUUID(), taskId: task.id, expectedRevision: current.updatedAt.toISOString(), action: 'withdraw',
+        classification: 'fact', provenance: 'Isolated native test owner withdrawal', environment: 'isolated_test',
+        verificationMethod: 'Native fixture inspection', verificationRef: 'isolated-postgresql-http-proof',
+        inclusionReason: 'Source withdrawn for this task', validUntil: new Date(Date.now() + 86400000).toISOString()
+      });
+      assert.equal(withdrawn.status, 201, JSON.stringify(withdrawn.body));
+      const ready = await request(readinessRoute(), token);
+      assert.notEqual(ready.body.data.status, 'ready');
+      const editor = await request(`${readinessRoute()}?editor=1&executionClass=roost-company-information-v1`, token);
+      assert.ok(!editor.body.data.editor.sources.some(item => item.id === source.id));
+      const history = await request(`/v1/company-records/${source.id}/context-reviews?taskId=${task.id}`, token);
+      assert.equal(history.status, 200);
+      assert.equal(history.body.data[0].action, 'withdraw');
+      assert.ok(history.body.data.some(item => item.action === 'approve'));
+    });
     await t.test('company risk and admission qualify normal Decision and information Ready', async () => {
       const runtimeTask = await prisma.task.create({ data: { workspaceId, title: 'Summarize current evidenced Roost preparation and next action', goalId: contract.objective.goalId, assignedWorkforceEntityId: contract.assignment.agentId,
         ...(process.env.ROOST_G6_NATIVE_RUNTIME === '1' ? {} : { source: 'clickup', externalId: 'synthetic-company-information-task' }) } });
@@ -151,6 +185,9 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const foreignOwner = await request('/auth/register', null, { email: 'foreign@g6-risk.example.test', password: 'synthetic-test-password-only', name: 'Foreign owner', workspaceName: 'Foreign risk workspace' });
       assert.equal(foreignOwner.status, 201);
       const foreignToken = foreignOwner.body.data.token;
+      assert.equal((await approveSource(currentSource, runtimeTask.id, memberToken)).status, 403);
+      assert.equal((await approveSource(currentSource, runtimeTask.id, foreignToken)).status, 404);
+      assert.equal((await approveSource(currentSource, runtimeTask.id, token)).status, 201);
       const c = structuredClone(contract); c.singleTask.contractId = `roost-task:${runtimeTask.id}`; c.context.company = [ref(currentSource)]; c.decisions = { items: [], noneReason: 'No decision yet selected' };
       c.objective.outcome = 'Summarize the verified preparation capability, remaining proof and one safe next action';
       c.singleTask.problems = [{ statement: 'Owner needs a concise sourced status of the current company capability', componentId: null, outcome: c.objective.outcome, causalLink: null }];
@@ -423,6 +460,22 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const fetched = await fetchExecutionContext(nativeApi, claimed.body.data, { signal: new AbortController().signal,
         secrets: [apiKey.body.data.key] });
       assert.equal(fetched.taskContext.executionPacket.identity.executionId, runtimeExecutionId);
+      const { buildCompanyInformationInput } = await import('./lib/agent-host-company-information-runtime.mjs');
+      const sealed = buildCompanyInformationInput({ claimed: claimed.body.data, taskContext: fetched.taskContext,
+        secrets: [apiKey.body.data.key] });
+      const finalInput = JSON.parse(sealed.input);
+      assert.deepEqual(finalInput.sources.map(item => item.id), [currentSource.id]);
+      assert.equal(finalInput.sources[0].provenance.environment, 'isolated_test');
+      assert.equal(finalInput.sources[0].provenance.originSource, currentSource.source);
+      assert.equal(finalInput.sources[0].provenance.recordVerificationState, 'not_started');
+      assert.equal(finalInput.sources[0].provenance.verificationLevel, 'owner_attested');
+      assert.equal(finalInput.sources[0].provenance.inclusionReason, 'Explicit source selected for this task');
+      assert.equal(sealed.input.includes(unrelatedSource.title), false);
+      assert.equal(sealed.input.includes(apiKey.body.data.key), false);
+      const sink = spawnSync(process.execPath, ['-e', 'let s="";process.stdin.setEncoding("utf8");process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>process.stdout.write(require("node:crypto").createHash("sha256").update(s).digest("hex")))'],
+        { input: sealed.input, encoding: 'utf8', windowsHide: true });
+      assert.equal(sink.status, 0, sink.stderr);
+      assert.equal(sink.stdout, sealed.inputSeal);
       process.env.ROOST_MANAGED_ADMISSION_PRIVATE_KEY_B64 = signer.privateKey.export({ format: 'der', type: 'pkcs8' }).toString('base64');
       process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
       process.env.ROOST_CODEX_EXECUTION_ENABLED = 'true';
@@ -442,6 +495,7 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const leaseDigest = createHash('sha256').update(trustedPilotBytes({ executionId: runtimeExecutionId,
         hostId: host.id, token: claimed.body.data.leaseToken })).digest('hex');
       verifyInformationAdmission(signedAdmission, signer.publicKey.export({ format: 'pem', type: 'spki' }).toString(), { leaseDigest });
+      assert.equal(signedAdmission.payload.inputSeal, sealed.inputSeal);
       // The read-only projection reflects a real admitted row. Native SQL
       // correctly refuses a fabricated completed result without a Worker job.
       const board = await request('/v1/operations/work-items?limit=200', token);

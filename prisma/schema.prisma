@@ -551,6 +551,7 @@ enum FunctionalState {
 }
 
 model User {
+  companySourceReviews CompanySourceReview[]
   ownerTickets TrustedProviderTicket[]
   preferredLanguage String? @map("preferred_language")
   admissionScopes TaskAdmissionScope[]
@@ -659,6 +660,7 @@ model Workspace {
   organizationalScopes              OrganizationalScope[]
   entityOwnerships                  EntityOwnership[]
   companyRecords                    CompanyRecord[]
+  companySourceReviews              CompanySourceReview[]
   evidenceRecords                   EvidenceRecord[]
   departmentViewDefinitions         DepartmentViewDefinition[]
   departmentViewAvailabilities      DepartmentViewAvailability[]
@@ -864,6 +866,7 @@ model CompanyRecord {
   parentId               String?            @map("parent_id") @db.Uuid
   parent                 CompanyRecord?     @relation("CompanyRecordHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
   children               CompanyRecord[]    @relation("CompanyRecordHierarchy")
+  sourceReviews           CompanySourceReview[]
   projectId              String?            @map("project_id") @db.Uuid
   applicationId          String?            @map("application_id") @db.Uuid
   clientId               String?            @map("client_id") @db.Uuid
@@ -878,6 +881,35 @@ model CompanyRecord {
   @@index([workspaceId, clientId])
   @@index([workspaceId, parentId])
   @@map("company_records")
+}
+
+model CompanySourceReview {
+  id                 String        @id @default(uuid()) @db.Uuid
+  ordinal            Int           @unique @default(autoincrement())
+  workspaceId        String        @map("workspace_id") @db.Uuid
+  workspace          Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  recordId           String        @map("record_id") @db.Uuid
+  record             CompanyRecord @relation(fields: [recordId], references: [id], onDelete: Restrict)
+  taskId             String        @map("task_id") @db.Uuid
+  task               Task          @relation(fields: [taskId], references: [id], onDelete: Restrict)
+  recordRevision     DateTime      @map("record_revision")
+  contentDigest      String        @map("content_digest")
+  requestHash        String        @map("request_hash")
+  action             String
+  classification     String
+  provenance         String
+  environment        String
+  verificationMethod String        @map("verification_method")
+  verificationRef    String        @map("verification_ref")
+  inclusionReason    String        @map("inclusion_reason")
+  validFrom          DateTime      @map("valid_from")
+  validUntil         DateTime      @map("valid_until")
+  actorUserId        String        @map("actor_user_id") @db.Uuid
+  actorUser          User          @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+  createdAt          DateTime      @default(now()) @map("created_at")
+
+  @@index([workspaceId, taskId, recordId, createdAt])
+  @@map("company_source_reviews")
 }
 
 model EvidenceRecord {
@@ -2918,6 +2950,7 @@ model Task {
   notes                     Note[]
   events                    Event[]
   agentExecutions           AgentExecution[]
+  companySourceReviews      CompanySourceReview[]
   createdAt                 DateTime              @default(now()) @map("created_at")
   updatedAt                 DateTime              @updatedAt @map("updated_at")
 
