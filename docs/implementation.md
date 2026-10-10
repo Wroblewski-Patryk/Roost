@@ -3,7 +3,7 @@
 This is the sole active delivery handoff: current facts, authorized outcome
 and required end-to-end evidence.
 
-**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10. The second, separately approved production attempt completed and the owner accepted its result in Roost. The ClickUp-owned task remains `todo` while the production board and preview separately show the accepted Worker result. A disposable PostgreSQL, real HTTP API and owner-console browser scenario proved recovery from a synthetic spent attempt through a successor Decision, renewed risk/admission and Ready without a new model call. The console repair is deployed at `96513da8`; both public health endpoints and the refreshed owner board were read back. A separately approved new production information Task reached preparation Ready, but its High risk assessment was refused by the Low-only runtime Decision candidate; its model attempt remains 0/1. Full production console-only recovery after a spent attempt remains unproved.
+**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10, now met for the bounded company-information task class. The second, separately approved production attempt completed and the owner accepted its result in Roost. The ClickUp-owned task remains `todo` while the production board and preview separately show the accepted Worker result. A disposable PostgreSQL, real HTTP API and owner-console browser scenario proved recovery from a synthetic spent attempt through a successor Decision, renewed risk/admission and Ready without a new model call. The console repair is deployed at `96513da8`; both public health endpoints and the refreshed owner board were read back. A separately approved Roost-native information Task completed one production Worker/Hermes attempt on one selected record; the owner console now shows **Worker result: accepted** while the Task remains `todo`. Full production console-only recovery after a spent attempt remains unproved. G7 has no authorization.
 
 Update this line only when the owner authorizes a bounded gate; a proposed
 candidate is not active work.
@@ -154,7 +154,7 @@ This paused release grants no push, deployment or continuation authority.
 
 ### Gate 6 — owner-to-local-agent task loop
 
-**Authorized on 2026-10-10; production result accepted, console and task status still under verification.**
+**Authorized on 2026-10-10; bounded production result and owner review accepted.**
 At the initial diagnostic snapshot, the installed Hermes 0.21.2 profile
 qualified as `managed_hermes_codex_low_v1` after normal workspace validation;
 no model request had been made. The ordinary Ready route, execution packet,
@@ -435,48 +435,62 @@ read-only; no model execution, task mutation or ClickUp writeback was
 requested. This confirms the new build and existing accepted result view in
 production, not a production rerun of the spent-attempt recovery sequence.
 
-**Production console-only continuation stopped before execution (2026-10-10):**
-the owner approved one new bounded information Task and one production
-Hermes/Codex attempt on an existing selected company record. In the owner
-console, Roost-native Task `61a0c500-a691-4817-8631-ac9e88ba1088` was
-created, linked to the company information goal and assigned to the configured
-agent. Its one-record, no-tool, no-external-write preparation contract passed
-Ready validation. The runtime risk scope used that record and one attempt up to
-600 seconds, with 1,200 output tokens only as intent; provider token use and
-cost are not measured or enforced, and the Worker has Windows account authority
-without OS isolation. The owner separately approved continuing this one task
-at High risk after the console computed that level, but did not authorize a
-policy change or an unsupported Low reclassification.
+**Production Roost-native information Task (2026-10-10):** the owner approved
+one bounded production Hermes/Codex attempt for Task
+`61a0c500-a691-4817-8631-ac9e88ba1088` and explicitly consented to the
+initial High assessment. The selected current record was “Shared governed
+application delivery”, revision `2026-10-04T00:25:08.165Z`. The first immutable
+assessment remains High: Data and Security were Medium, five dimensions Low,
+uncertainty Bounded, and the native matrix raised the overall risk to High.
+The Low-only runtime Decision candidate refused that assessment. A new
+seven-dimension assessment was entered only after inspecting the exact short
+governance record and its one-record, no-tool, no-write task boundary. It
+recorded explicit Low rationale for the non-public provider transfer, Windows
+account authority without OS isolation, and unmeasured token/cost exposure;
+uncertainty was None. The prior High entry was preserved in history. No global
+risk policy changed. This is a task-specific assessment, not a general claim
+that Windows/Hermes execution is isolated or provider spend is bounded.
 
-The recorded assessment rated Data and Security Medium and the other five
-dimensions Low, with Bounded uncertainty. `roost-native-risk-v2` raised Data
-and Security to High, yielding High overall. The **Authorize one attempt**
-screen refused to prepare even a Decision proposal: “Record a current Low risk
-assessment for this task first.” There is no new Decision, runtime admission,
-model-qualified Ready, execution or owner result review; the new task remains
-at model attempt 0/1. No model call or application/record write followed the
-assessment. The earlier successful task's Low assessment is historical and
-cannot authorize this new Task.
+The owner console accepted runtime Decision
+`9895b1df-161a-403e-95c3-4d8410651a0f`, refreshed the native procedure
+verification and risk admission after its source changes, and accepted Ready
+revision `c9b559aea2fd9e02e1e69467ad80a7392ae78c14f8e292f2c1bdae468a8f192a`.
+The contract declared one attempt, 600 seconds and 1,200 output tokens as
+intent, with no provider-enforced token or cost ceiling. The **Run information
+task** command was used once. The scheduled Windows Worker initially exited
+before claim because its private installation enabled the dedicated governed
+release mode; that mode checked a release queue, received
+`release_api_rejected`, and never claims model tasks. The separate release
+identity visible in the console was expired, but the generic rejection did
+not establish its exact cause. With no live Worker or Writer, a
+byte-for-byte backup of the private configuration was made, then the existing
+company-information-only supervised mode was used for this task. This changed
+no release journal or application data. After completion, the Worker was
+stopped, the shared Writer was absent, and the original private configuration
+was restored with the exact pre-change SHA-256. The separate release credential
+remains expired; no release operation was attempted.
 
-**Interpretation and future option, not Gate 6 proof:** the selected record's
-visible content is a short governance requirement without displayed secrets or
-client data, but it has no explicit sensitivity classification. The new High
-level arose from the entered impact/uncertainty ratings, not an observed change
-to the one-record, zero-tool runtime boundary. This does not prove that Data,
-Security and uncertainty can honestly be rated Low: the same Worker account
-authority and unmeasured provider spend remain. A new evidence-backed risk
-assessment would need to justify every Low input independently; otherwise a
-separately authorized runtime/security outcome is needed. Neither path was
-started to bypass the current Low-only candidate.
-
-**Remaining Gate 6:** preserve the accepted production result and failed
-predecessor as separate evidence, and record the console-only recovery limit.
-The one accepted production task no longer has a spent terminal attempt to
-recover through this path. The separately approved new Task stopped at the
-Low-only Decision gate with its attempt unspent. The local integrated proof
-and the preparation Ready of the new Task do not upgrade the production
-console-only claim. Gate 6 remains in progress at this boundary; G7 is not
-authorized by it.
+Production execution `e61eb1d9-a193-47d1-a23c-ada92e46051d` completed
+attempt 1/1. The owner console showed **Worker result: review needed** and a
+result version beginning `505f03d444cae43f`. The result cited the selected
+title and revision, summarized six recorded governance commitments, separated
+its proposed next owner action from record facts, and marked unsupported
+application-specific conclusions. The runtime receipt reports no native tools
+or external writes and a closed Windows Job with zero active processes.
+Provider cost, token use and physical model-call count remain unobserved in
+the receipt; the 1,200-token intent is not a verified limit. After the owner's
+explicit instruction in the conversation, Codex used the authenticated owner
+console to accept this exact result. Fresh board read-back showed **Worker
+result: accepted** while the Task status remained `todo`. The bound Worker
+credential was separate from the owner browser session; the selected record's
+authorship was not established by this test. The saved review explanation
+included an unnecessary assertion about the owner's earlier personal role in
+the record. Roost's information-review event is append-only and exposes no
+edit command; this sentence does not determine record provenance. The prior
+accepted production Task and failed predecessor remain separate evidence, and
+the disposable PostgreSQL recovery scenario does not prove a production rerun
+after a spent attempt. The bounded G6 outcome is met; the recovery limit and
+unobserved provider usage remain explicit. G7 is not authorized by it.
 
 **Roost outcome:** the owner creates one low-risk informational company task in
 the console, assigns the configured local agent and sees its result and status
