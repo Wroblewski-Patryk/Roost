@@ -52,9 +52,10 @@ not authorize new product scope or change existing API/database identifiers.
   agent autonomy depends on it; application-specific behavior remains in its
   own repository. Separate accountable work can improve Roost while managed
   agents deliver application outcomes, subject to checkout and resource limits.
-  Building Roost and its Worker does not make the Codex implementation team the
-  owner of application repairs. Configured applications are future workloads
-  for agents working through Roost, not a queue of repairs inside Roost delivery.
+  Codex builds Roost and its Worker. Roost is company infrastructure, not a
+  portfolio project or a source-development task for its local agent. That
+  agent uses scoped Roost tasks, records and events to perform company work;
+  configured applications are later task targets, not Codex Roost repairs.
 - Subscription sale readiness follows only after that internal creation and
   completion system works. It is not the current Worker-completion gate.
 - Later business expansion: after the application-completion flow works, extend

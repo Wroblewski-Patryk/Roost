@@ -106,6 +106,9 @@ execution state outside this repository.
 
 ## Project boundaries
 
+- Codex builds Roost and its Worker. Roost is not a company portfolio project;
+  the connected local agent uses Roost for assigned company work and must not
+  receive Roost source-development tasks.
 - Keep changes scoped and preserve unrelated worktree changes.
 - Follow the documented architecture and update canonical docs when runtime
   behavior or contracts change.

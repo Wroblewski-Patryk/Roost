@@ -24,9 +24,11 @@ production observation and application backup apply only when a separately
 authorized task has those effects. A local read-only company task needs none of
 them. Preserve the separately accepted recoverability requirement for Roost's
 own business database before allowing agent writes to those records; reuse
-existing proof rather than repeating it for every task. Configured applications
-may later exercise the mechanism, but their readiness does not define Roost's
-product completion. Installation paths, domains and credentials stay private.
+existing proof rather than repeating it for every task. Codex develops Roost
+and its Worker; the connected agent works from authorized Roost tasks and
+context, never on Roost's source. Configured applications may later exercise
+the mechanism, but their readiness does not define Roost's product completion.
+Installation paths, domains and credentials stay private.
 
 ## Execution ownership
 
