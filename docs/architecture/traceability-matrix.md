@@ -280,6 +280,28 @@ console-only recovery from a spent attempt remains unproved because the one
 accepted task is no longer in that state. Gate 6 remains in progress at this
 authority boundary; G7 has not started.
 
+### Gate 6 bounded closure — 2026-10-10
+
+The later Roost-native Task `61a0c500-a691-4817-8631-ac9e88ba1088`
+completed one owner-approved production Worker/Hermes attempt
+`e61eb1d9-a193-47d1-a23c-ada92e46051d` against one selected current company
+record; the owner console persisted acceptance of its result. The task's risk
+history retains an initial High assessment and a later exact-scope Low
+reassessment; no general risk rule was changed. The earlier
+one-attempt production failure was visible, and the integrated disposable
+PostgreSQL/HTTP/browser scenario above proved owner-console recovery to Ready
+without another model call. The same existing company-information-only Worker
+mode is now the installed supervised Windows login configuration. Its production
+host reported compatible admission, online heartbeat, empty application slugs
+and no queued/claimed/running executions after start. The prior release-only
+private configuration has an exact verified backup; no release operation or new
+model turn was made during the mode change. Together these satisfy the one-task
+bounded G6 outcome in `docs/implementation.md`. A subsequent production claim
+after the permanent switch, provider token/cost measurement and a full
+production console-only spent-attempt recovery remain unproved. This closure
+does not upgrade broader RF-PROD-011, RF-CTX-027 or RF-HOST-010/011 requirement
+coverage to complete, and gives no authority for G7 or application release.
+
 Current delivery work starts at [Matrix](#matrix). The amendment stream before
 it is historical evidence and should be skipped unless a specific requirement
 or implementation claim needs provenance; it is never the work queue.

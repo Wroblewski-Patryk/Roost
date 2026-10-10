@@ -3,7 +3,7 @@
 This is the sole active delivery handoff: current facts, authorized outcome
 and required end-to-end evidence.
 
-**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10, with one bounded Roost-native production information result accepted. The second, separately approved production attempt completed and the owner accepted its result in Roost. The ClickUp-owned task remains `todo` while the production board and preview separately show the accepted Worker result. A disposable PostgreSQL, real HTTP API and owner-console browser scenario proved recovery from a synthetic spent attempt through a successor Decision, renewed risk/admission and Ready without a new model call. The console repair is deployed at `96513da8`; both public health endpoints and the refreshed owner board were read back. The installed Worker now runs in company-information-only supervised mode under the Windows login schedule; production host admission and repeated heartbeat are online, with zero queued/claimed/running executions at verification. A next approved Ready task has not been claimed to prove repeatability, and full production console-only recovery after a spent attempt also remains unproved. G7 has no authorization.
+**Active gate:** none — G6 met at bounded production/native evidence level on 2026-10-10. A Roost-native production information Task completed one owner-approved Worker/Hermes attempt on a selected current company record, and its exact result was accepted in the owner console. The ClickUp-owned task remains `todo` while the production board and preview separately show its accepted Worker result. A disposable PostgreSQL, real HTTP API and owner-console browser scenario proved recovery from a synthetic spent attempt through a successor Decision, renewed risk/admission and Ready without a new model call. The console repair is deployed at `96513da8`; both public health endpoints and the refreshed owner board were read back. The installed Worker now runs in company-information-only supervised mode under the Windows login schedule; production host admission and repeated heartbeat are online, with zero queued/claimed/running executions at verification. A subsequent production claim after this permanent mode switch and full production console-only recovery after a spent attempt remain unproved limitations, not additional G6 exit criteria. G7 has no authorization.
 
 Update this line only when the owner authorizes a bounded gate; a proposed
 candidate is not active work.
@@ -154,7 +154,7 @@ This paused release grants no push, deployment or continuation authority.
 
 ### Gate 6 — owner-to-local-agent task loop
 
-**Authorized on 2026-10-10; bounded production result and owner review accepted, repeatability not met.**
+**Met at bounded production/native evidence level (2026-10-10).**
 At the initial diagnostic snapshot, the installed Hermes 0.21.2 profile
 qualified as `managed_hermes_codex_low_v1` after normal workspace validation;
 no model request had been made. The ordinary Ready route, execution packet,
@@ -516,9 +516,13 @@ showed zero queued, claimed and running executions; no model call, new Task,
 release operation or application mutation was made by this transition. The
 shared Writer was acquired by the supervised Worker. The private release-only
 backup can restore the prior installation mode when a separately authorized
-release resumes. A real subsequent Ready claim and a full production
-console-only recovery after a spent attempt remain unproved. G6 remains in
-progress; G7 is not authorized by it.
+release resumes. The accepted production information result, owner review,
+visible one-attempt failure stop, integrated console recovery and current
+admitted supervised installation meet the bounded G6 outcome below. A real
+subsequent Ready claim after this permanent mode switch and a full production
+console-only recovery after a spent attempt remain unproved limitations. They
+are not extra attempts required by this gate. G6 is met; G7 is not authorized
+by it.
 
 **Roost outcome:** the owner creates one low-risk informational company task in
 the console, assigns the configured local agent and sees its result and status
