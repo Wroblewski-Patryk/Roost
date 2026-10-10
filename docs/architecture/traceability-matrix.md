@@ -1586,7 +1586,7 @@ persisted settings; environment/storage seals remain. PHP regression checks and
 | [RF-CTX-024](../product/requirements.md#rf-ctx-024) | P1 | brak | [CTX](#e-ctx) | No automated provenance/license release gate. |
 | [RF-CTX-025](../product/requirements.md#rf-ctx-025) | P1 | brak | [REVIEW](#e-review) | No dispute protocol. |
 | [RF-CTX-026](../product/requirements.md#rf-ctx-026) | P1 | nieocenione | [PROC](#e-proc) | Executor-class declarations, bounded retry/fallback and promotion to deterministic automation require procedure-runtime proof. |
-| [RF-CTX-027](../product/requirements.md#rf-ctx-027) | P0 | nieocenione | [CTX](#e-ctx), [PACKET](#e-packet) | Historical/temporary-source exclusion needs negative native proof for both the sealed Worker packet and ordinary API/MCP reads, with explicit audit access preserved. |
+| [RF-CTX-027](../product/requirements.md#rf-ctx-027) | P0 | częściowo działa | [CTX](#e-ctx), [PACKET](#e-packet) | G8 native sealed Worker input and G9a native task-bound CompanyRecord HTTP/global MCP reads have positive/negative proof; G9a build is deployed. Other source families, overwritten historical bodies and production positive source adoption remain open. |
 | [RF-CTX-028](../product/requirements.md#rf-ctx-028) | P1 | nieocenione | [FIND](#e-find), [PROC](#e-proc) | Reference-site findings and versioned procedures have partial foundations; promotion and real supervised reuse of an approved checklist have not been accepted. |
 | [RF-HOST-001](../product/requirements.md#rf-host-001) | P0 | częściowo działa | [HOST](#e-host) | Queue/observer implemented; full scheduler pending. |
 | [RF-HOST-002](../product/requirements.md#rf-host-002) | P0 | częściowo działa | [LOCK](#e-lock), Gate 2 native evidence above | Global writer lock rejected a second writing executor while the first held the pilot slot. General waiting/read resource admission remains partial. |
@@ -1756,7 +1756,9 @@ Each entry links existing canonical files; a test link is not a passing result.
 [local API tests](../../src/tests/api.test.ts).
 
 <a id="e-ctx"></a>
-**CTX** — Context projections and company records; full policy compiler is not established.
+**CTX** — G9a binds CompanyRecord reads to the authenticated agent's current Task assignment and the latest eligible owner review. The approved-field projection is shared with Worker execution context; unrelated API/MCP keys cannot use broad source-bearing routes. Owner audit pages through surviving review decisions, but earlier overwritten record bodies are unavailable. A disposable PostgreSQL database with all migrations passed native HTTP/global MCP and Worker-projection checks 6/6; the G8 native Ready/Worker regression passed 13/13. Independent Security review found no remaining direct CompanyRecord bypass in the changed surfaces. Exact build `823ed3df` was read back on both public health endpoints after Coolify rollout. No positive production key or owner-audit read was exercised and other source families remain outside this slice.
+
+[task-bound source read](../../src/modules/agent-runtime/company-source-read.ts), [source eligibility and digest](../../src/modules/agent-runtime/company-source-trust.ts), [API-key boundary](../../src/auth/company-source-read-boundary.ts), [native HTTP/MCP test](../../scripts/company-source-read-native.test.mjs).
 
 [src/modules/company-intelligence/company-intelligence.routes.ts](../../src/modules/company-intelligence/company-intelligence.routes.ts), [src/modules/company-records/company-records.routes.ts](../../src/modules/company-records/company-records.routes.ts), [scripts/import-application-documentation-context.ts](../../scripts/import-application-documentation-context.ts).
 
