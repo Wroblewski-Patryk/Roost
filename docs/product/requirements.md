@@ -183,8 +183,8 @@ deliveries before medium risk. This batch activates none of these stages.
 
 2FA, dedicated Roost/runtime staging, paid GitHub, bigger VPS, investment
 optimization, workspace-language migration, external notifications, native
-Roost self-development/Constitution and retiring both bootstrap automations are
-deferred and nonblocking. Existing
+Constitution work and retiring both bootstrap automations are deferred and
+nonblocking. Local-agent development of Roost is excluded by RF-GOV-019. Existing
 Example Company workspace must use **English** and **Europe/Zurich**; communication
 language and UI language are independent user settings, with PL/EN UI initially.
 
@@ -410,7 +410,7 @@ Gate/scope of enforcement: nonblocking and disabled.
 | <a id="rf-def-003"></a>RF-DEF-003 | — | deferred | Investment optimization agent and its detailed mandate remain future decisions; current work only stabilizes/tests DemoApp. | — |
 | <a id="rf-def-004"></a>RF-DEF-004 | — | deferred | Changing workspace language after creation is deferred. | — |
 | <a id="rf-def-005"></a>RF-DEF-005 | — | deferred | External email/Telegram notifications are deferred; use Roost attention surfaces initially. | — |
-| <a id="rf-def-006"></a>RF-DEF-006 | — | deferred | Native Roost self-development, Constitution work and shutdown of both bootstrap automations remain deferred until separate owner decision. | current rule |
+| <a id="rf-def-006"></a>RF-DEF-006 | — | deferred | Constitution work and shutdown of both bootstrap automations remain deferred until separate owner decision. Local-agent development of Roost is excluded by RF-GOV-019, not queued here. | Clarifies the owner-set development boundary. |
 
 ## Organization and product lifecycle
 

@@ -1387,7 +1387,7 @@ persisted settings; environment/storage seals remain. PHP regression checks and
 | [RF-DEF-003](../product/requirements.md#rf-def-003) | P2 | brak | [PILOT](#e-demoapp) | Deferred; no optimization worker activated. |
 | [RF-DEF-004](../product/requirements.md#rf-def-004) | P2 | brak | [LANG](#e-lang) | Deferred; creation choice remains immutable. |
 | [RF-DEF-005](../product/requirements.md#rf-def-005) | P2 | brak | [ATTENTION](#e-attention) | Deferred; no external notification channel activation. |
-| [RF-DEF-006](../product/requirements.md#rf-def-006) | P2 | brak | [GOV](#e-gov) | Deferred; neither automation is retired by this batch. |
+| [RF-DEF-006](../product/requirements.md#rf-def-006) | P2 | brak | [GOV](#e-gov) | Constitution work and automation retirement are deferred; local-agent Roost development is excluded by RF-GOV-019. |
 | [RF-ORG-001](../product/requirements.md#rf-org-001) | P1 | częściowo działa | [ORG](#e-org), [APP-OP](#e-app-operation) | Configured competent requester/manager/executor/verifier/releaser roles are reused in two application flows; full workforce/competence policy remains partial. |
 | [RF-ORG-002](../product/requirements.md#rf-org-002) | P1 | częściowo działa | [PROC](#e-proc), [APP-OP](#e-app-operation) | Pinned goals, procedures and atomic bounded tasks ran natively; complete company execution semantics remain partial. |
 | [RF-ORG-003](../product/requirements.md#rf-org-003) | P1 | częściowo działa | [PORT](#e-port), [APP-OP](#e-app-operation) | Two existing apps entered own accepted baselines and reused delivery controls. New-product/full commercialization lifecycle remains unproven. |
