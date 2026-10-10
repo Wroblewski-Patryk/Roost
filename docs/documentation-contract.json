@@ -3,7 +3,6 @@
   "project": "Roost",
   "entrypoint": "docs/README.md",
   "defaultAgentContext": [
-    "docs/README.md",
     "docs/product/product.md",
     "docs/product/requirements.md",
     "docs/implementation.md"
