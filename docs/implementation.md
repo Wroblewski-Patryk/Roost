@@ -268,6 +268,10 @@ Roost and its Worker; the connected agent executes company tasks through Roost,
 never Roost source development. Application repair/readiness is a separate
 agent workload, not a Codex Roost gate. The paused second-application release
 stays paused until the owner separately disposes of it.
+The entry column, not every earlier row, defines prerequisites: application
+control may advance after G11/G17, without waiting for sales or company
+composition. Local-model qualification may run during application work; neither
+requires that application to be finished first.
 
 Before each gate, inspect the actual path and matrix evidence; brief one user
 outcome, proof to reuse, affected surfaces/effects, native positive/negative
