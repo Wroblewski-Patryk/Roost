@@ -3,7 +3,7 @@
 This is the sole active delivery handoff: current facts, authorized outcome
 and required end-to-end evidence.
 
-**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10. The second, separately approved production attempt completed and the owner accepted its result in Roost. The ClickUp-owned task remains `todo` while the production board and preview separately show the accepted Worker result. A disposable PostgreSQL, real HTTP API and owner-console browser scenario proved recovery from a synthetic spent attempt through a successor Decision, renewed risk/admission and Ready without a new model call. The console repair is deployed at `96513da8`; both public health endpoints and the refreshed owner board were read back. Full production console-only recovery after a spent attempt remains unproved. No further model attempt is authorized.
+**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10. The second, separately approved production attempt completed and the owner accepted its result in Roost. The ClickUp-owned task remains `todo` while the production board and preview separately show the accepted Worker result. A disposable PostgreSQL, real HTTP API and owner-console browser scenario proved recovery from a synthetic spent attempt through a successor Decision, renewed risk/admission and Ready without a new model call. The console repair is deployed at `96513da8`; both public health endpoints and the refreshed owner board were read back. A separately approved new production information Task reached preparation Ready, but its High risk assessment was refused by the Low-only runtime Decision candidate; its model attempt remains 0/1. Full production console-only recovery after a spent attempt remains unproved.
 
 Update this line only when the owner authorizes a bounded gate; a proposed
 candidate is not active work.
@@ -435,14 +435,48 @@ read-only; no model execution, task mutation or ClickUp writeback was
 requested. This confirms the new build and existing accepted result view in
 production, not a production rerun of the spent-attempt recovery sequence.
 
+**Production console-only continuation stopped before execution (2026-10-10):**
+the owner approved one new bounded information Task and one production
+Hermes/Codex attempt on an existing selected company record. In the owner
+console, Roost-native Task `61a0c500-a691-4817-8631-ac9e88ba1088` was
+created, linked to the company information goal and assigned to the configured
+agent. Its one-record, no-tool, no-external-write preparation contract passed
+Ready validation. The runtime risk scope used that record and one attempt up to
+600 seconds, with 1,200 output tokens only as intent; provider token use and
+cost are not measured or enforced, and the Worker has Windows account authority
+without OS isolation. The owner separately approved continuing this one task
+at High risk after the console computed that level, but did not authorize a
+policy change or an unsupported Low reclassification.
+
+The recorded assessment rated Data and Security Medium and the other five
+dimensions Low, with Bounded uncertainty. `roost-native-risk-v2` raised Data
+and Security to High, yielding High overall. The **Authorize one attempt**
+screen refused to prepare even a Decision proposal: “Record a current Low risk
+assessment for this task first.” There is no new Decision, runtime admission,
+model-qualified Ready, execution or owner result review; the new task remains
+at model attempt 0/1. No model call or application/record write followed the
+assessment. The earlier successful task's Low assessment is historical and
+cannot authorize this new Task.
+
+**Interpretation and future option, not Gate 6 proof:** the selected record's
+visible content is a short governance requirement without displayed secrets or
+client data, but it has no explicit sensitivity classification. The new High
+level arose from the entered impact/uncertainty ratings, not an observed change
+to the one-record, zero-tool runtime boundary. This does not prove that Data,
+Security and uncertainty can honestly be rated Low: the same Worker account
+authority and unmeasured provider spend remain. A new evidence-backed risk
+assessment would need to justify every Low input independently; otherwise a
+separately authorized runtime/security outcome is needed. Neither path was
+started to bypass the current Low-only candidate.
+
 **Remaining Gate 6:** preserve the accepted production result and failed
 predecessor as separate evidence, and record the console-only recovery limit.
 The one accepted production task no longer has a spent terminal attempt to
-recover through this path. A full production console-only recovery
-demonstration would need fresh authority for a new model attempt or synthetic
-production writes. Neither is part of this continuation. The local integrated
-proof does not upgrade that production claim. Gate 6 remains in progress at
-this boundary; G7 is not authorized by it.
+recover through this path. The separately approved new Task stopped at the
+Low-only Decision gate with its attempt unspent. The local integrated proof
+and the preparation Ready of the new Task do not upgrade the production
+console-only claim. Gate 6 remains in progress at this boundary; G7 is not
+authorized by it.
 
 **Roost outcome:** the owner creates one low-risk informational company task in
 the console, assigns the configured local agent and sees its result and status
