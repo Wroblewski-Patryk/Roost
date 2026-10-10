@@ -1,5 +1,5 @@
 type PacketIssue = {
-  reason: "packet_shape" | "root_reference" | "node_shape" | "edge_endpoint" | "edge_reference";
+  reason: "packet_shape" | "summary_shape" | "root_reference" | "node_shape" | "edge_shape" | "edge_endpoint" | "edge_reference";
   schemaVersion: string;
   index?: number;
   keys?: string[];
@@ -34,23 +34,34 @@ export function companyGraphPacketIssue(value: unknown): PacketIssue | null {
         organizationalMemberships: kind(object(value) ? value.organizationalMemberships : undefined)
       }
     };
-  const ids = new Set<string>();
+  const summary = value.summary;
+  if (!object(summary) || !["recordCount", "contextualizedRecordCount", "unassignedRecordCount", "unrootedComponentCount", "relationshipCoverage"]
+    .every((field) => typeof summary[field] === "number" && Number.isFinite(summary[field]))) {
+    return { reason: "summary_shape", schemaVersion, keys: object(summary) ? Object.keys(summary).sort() : [] };
+  }
+  const nodeTypes = new Map<string, string>();
   for (let index = 0; index < value.nodes.length; index += 1) {
     const node = value.nodes[index];
     if (!object(node) || typeof node.id !== "string" || !node.id
-      || typeof node.entityType !== "string" || typeof node.label !== "string" || ids.has(node.id)) {
+      || typeof node.entityType !== "string" || !node.entityType || typeof node.label !== "string" || nodeTypes.has(node.id)) {
       return { reason: "node_shape", schemaVersion, index, keys: object(node) ? Object.keys(node).sort() : [] };
     }
-    ids.add(node.id);
+    nodeTypes.set(node.id, node.entityType);
   }
-  if (!ids.has(value.rootNodeId)) return { reason: "root_reference", schemaVersion };
+  if (!nodeTypes.has(value.rootNodeId)) return { reason: "root_reference", schemaVersion };
   for (let index = 0; index < value.edges.length; index += 1) {
     const edge = value.edges[index];
     if (!object(edge) || !reference(edge.from) || !reference(edge.to)) {
       return { reason: "edge_endpoint", schemaVersion, index, keys: object(edge) ? Object.keys(edge).sort() : [] };
     }
-    if (!ids.has(edge.from.entityId) || !ids.has(edge.to.entityId)) {
+    if (!nodeTypes.has(edge.from.entityId) || !nodeTypes.has(edge.to.entityId)
+      || nodeTypes.get(edge.from.entityId) !== edge.from.entityType || nodeTypes.get(edge.to.entityId) !== edge.to.entityType) {
       return { reason: "edge_reference", schemaVersion, index, keys: Object.keys(edge).sort() };
+    }
+    if (typeof edge.id !== "string" || !edge.id || typeof edge.type !== "string" || !edge.type
+      || typeof edge.status !== "string" || !edge.status
+      || !["explicit", "structural", "derived", "fallback"].includes(String(edge.source))) {
+      return { reason: "edge_shape", schemaVersion, index, keys: Object.keys(edge).sort() };
     }
   }
   return null;

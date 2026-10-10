@@ -68,6 +68,10 @@ function project(body: any, all: boolean, state: RedactionState, allowLease: boo
 }
 export function runtimeRedactionBoundary(req: Request, res: Response, next: NextFunction) {
   if (!req.auth?.workspaceId) return next();
+  // Company Graph is a typed read projection, not a shared runtime-content
+  // envelope. Walking its full topology through the shared-content budget
+  // replaces later edges with redaction sentinels and breaks their endpoints.
+  if (req.method === "GET" && /^\/(?:v1\/)?company-intelligence\/graph\/?$/.test(req.path)) return next();
   const path = req.path, native = nativePath(path), parts = path.split("/");
   const ticketControl = req.method === "POST" && /^\/v1\/agent-runtime\/owner-tickets\/(?:consume|status)\/?$/.test(path);
   const executionId = safeRuntimeId(parts[parts.indexOf("executions") + 1]);

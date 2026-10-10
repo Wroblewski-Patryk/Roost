@@ -14,6 +14,7 @@ const packet = {
     from: { entityType: "workspace", entityId: "workspace:one" },
     to: { entityType: "company_record", entityId: "record:one" }
   }],
+  summary: { recordCount: 1, contextualizedRecordCount: 1, unassignedRecordCount: 0, unrootedComponentCount: 0, relationshipCoverage: 100 },
   organizationalMemberships: []
 };
 
@@ -34,11 +35,21 @@ test("rejects a relationship to an absent node instead of silently dropping it",
   assert.equal(companyGraphPacketIssue(malformed)?.reason, "edge_reference");
 });
 
+test("rejects an untyped edge or missing coverage summary", () => {
+  assert.equal(companyGraphPacketIssue({ ...packet, edges: [{ ...packet.edges[0], type: undefined }] })?.reason, "edge_shape");
+  assert.equal(companyGraphPacketIssue({ ...packet, summary: undefined })?.reason, "summary_shape");
+});
+
+test("rejects an endpoint whose type conflicts with the referenced node", () => {
+  const malformed = { ...packet, edges: [{ ...packet.edges[0], to: { entityType: "procedure", entityId: "record:one" } }] };
+  assert.equal(companyGraphPacketIssue(malformed)?.reason, "edge_reference");
+});
+
 test("reports only field kinds for an incomplete packet", () => {
   const incomplete = { ...packet, organizationalMemberships: undefined };
   assert.deepEqual(companyGraphPacketIssue(incomplete), {
     reason: "packet_shape", schemaVersion: "company-graph-v2",
-    keys: ["edges", "nodes", "organizationalMemberships", "rootNodeId", "schemaVersion"],
+    keys: ["edges", "nodes", "organizationalMemberships", "rootNodeId", "schemaVersion", "summary"],
     shape: { rootNodeId: "string", nodes: "array", edges: "array", organizationalMemberships: "undefined" }
   });
 });
