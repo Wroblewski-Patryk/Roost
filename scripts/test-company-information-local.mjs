@@ -12,6 +12,12 @@ const port = process.env.ROOST_POSTGRES_PORT ?? installation.ROOST_POSTGRES_PORT
 const admin = new PrismaClient({ datasources: { db: { url: `postgresql://companycore:${encodeURIComponent(installation.SERVICE_PASSWORD_POSTGRES ?? 'companycore')}@127.0.0.1:${port}/postgres` } } });
 const environment = Object.fromEntries(Object.entries(process.env).filter(([name]) => /^(PATH|PATHEXT|SYSTEMROOT|COMSPEC|TEMP|TMP|APPDATA|LOCALAPPDATA)$/i.test(name)));
 Object.assign(environment, { DATABASE_URL: `postgresql://${role}:${password}@127.0.0.1:${port}/${database}?schema=public`, NODE_ENV: 'test', COMPANYCORE_SKIP_DOTENV: '1', DOTENV_CONFIG_QUIET: 'true', GOOGLE_OAUTH_CLIENT_ID: 'dev-fixture-client-id', GOOGLE_OAUTH_CLIENT_SECRET: 'dev-fixture-client-secret' });
+if (process.env.ROOST_G6_NATIVE_RUNTIME === '1') {
+  if (!process.env.ROOST_G6_NATIVE_HOST_CONFIG) throw Error('native_host_config_required');
+  environment.ROOST_G6_NATIVE_RUNTIME = '1';
+  environment.ROOST_G6_NATIVE_HOST_CONFIG = process.env.ROOST_G6_NATIVE_HOST_CONFIG;
+  for (const name of ['USERPROFILE', 'HOME', 'HOMEDRIVE', 'HOMEPATH', 'SYSTEMDRIVE']) if (process.env[name]) environment[name] = process.env[name];
+}
 const run = (command, args, env = process.env, timeout = 60000) => spawnSync(command, args, { env, windowsHide: true, encoding: 'utf8', timeout, maxBuffer: 4 * 1024 * 1024 });
 let wasRunning = false, started = false, roleCreated = false, databaseCreated = false, stage = 'engine';
 try {
@@ -34,7 +40,8 @@ try {
   if (migration.status !== 0) { process.stdout.write(migration.stdout.slice(-4000)); process.stderr.write(migration.stderr.slice(-2000)); throw new Error(); }
   process.stdout.write('G6a fresh database: all migrations applied\n');
   stage = 'native_http_worker_proof';
-  const proof = run(process.execPath, ['--test', 'scripts/company-information-native.test.mjs'], environment, 180000);
+  const proof = run(process.execPath, ['--test', 'scripts/company-information-native.test.mjs'], environment,
+    environment.ROOST_G6_NATIVE_RUNTIME === '1' ? 600000 : 180000);
   process.stdout.write(proof.stdout); process.stderr.write(proof.stderr);
   if (proof.status !== 0) throw new Error();
   stage = 'passed';

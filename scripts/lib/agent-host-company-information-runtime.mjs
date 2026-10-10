@@ -182,7 +182,7 @@ export async function runCompanyInformationRuntime({ claimed, taskContext, provi
     executionId: claimed.id, taskId: claimed.taskId, workspaceId: claimed.workspaceId, installationId: claimed.installationId,
     hostId: claimed.agentHostId, applicationId: null, attempt: 1, readyRevision: sealed.readyRevision, packetRevision: sealed.packetRevision,
     inputSeal: sealed.inputSeal, selectionDigest: sealed.selectionDigest, profileDigest: sha(observedProfile), runtimeDigest: sha(runtime), leaseDigest: sha({ executionId: claimed.id,
-      hostId: claimed.agentHostId, token: claimed.leaseToken, expiresAt: claimed.leaseExpiresAt }), tools: [], externalWrites: false, deadline: new Date(absoluteDeadline).toISOString() };
+    hostId: claimed.agentHostId, token: claimed.leaseToken }), tools: [], externalWrites: false, deadline: new Date(absoluteDeadline).toISOString() };
   if (!uuid.safeParse(expected.installationId).success || !uuid.safeParse(expected.hostId).success || typeof claimed.leaseToken !== 'string'
     || Date.parse(claimed.leaseExpiresAt) <= Date.now()) fail('installation_or_lease_missing');
   const snapshot = sha({ claimed, taskContext, provider });

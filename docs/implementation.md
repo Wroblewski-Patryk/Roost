@@ -3,7 +3,7 @@
 This is the sole active delivery handoff: current facts, authorized outcome
 and required end-to-end evidence.
 
-**Active gate:** none — the bounded company risk/admission continuation was verified locally on 2026-10-10; full G6 remains unmet pending installed Worker/Hermes execution and the owner result round trip
+**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10. Local installed Worker/Hermes execution and owner review passed; deployment and production observation remain
 
 Update this line only when the owner authorizes a bounded gate; a proposed
 candidate is not active work.
@@ -154,7 +154,7 @@ This paused release grants no push, deployment or continuation authority.
 
 ### Gate 6 — owner-to-local-agent task loop
 
-**Authorized on 2026-10-10; full outcome unmet. Initial diagnostic stopped before G6a.**
+**Authorized on 2026-10-10; local end-to-end proof passed, production outcome pending.**
 The installed Hermes 0.21.2 profile qualifies as `managed_hermes_codex_low_v1`
 after normal workspace validation; no model request was made. The ordinary
 Ready route, execution packet, database and Worker required an Application,
@@ -178,12 +178,10 @@ and execution guards retain their existing requirements. Real Worker/Hermes
 execution and owner result review remain a separately authorized remainder of
 G6. No application work, production writes or Roost push/deployment is authorized.
 
-**Approved ceiling:** diagnostic point after 30 minutes, 60 minutes total wall
-time, at most one materially changed retry of the same ineffective action.
-External Codex token/dollar caps remain unenforced/unknown. Bonus credits are
+The G6a preparation authorization and its limits were historical; the current
+full Gate 6 authorization below governs the remaining work. Bonus credits are
 allowed; no reset credits may be consumed. After bonus exhaustion, stop at 70%
-weekly usage. Root owns integration; bounded console work and independent
-authority review follow AGENTS.md orchestration boundaries.
+weekly usage.
 
 **Verified G6a result:** the existing Task, Ready submission, owner console and
 execution queue support `roost-company-information-v1` without Application,
@@ -207,14 +205,13 @@ No model, installed Worker daemon, Hermes turn, production write, push or deploy
 ran. This completes only G6a local preparation, not G6 or the paused Aviary release.
 See [exact evidence](architecture/traceability-matrix.md#e-company-information-preparation).
 
-#### Remaining Gate 6 outcome — outside G6a authority
+#### Historical Gate 6 remainder and resolved admission stop
 
-Separately authorized after G6a: implement the existing company Task -> local
-Worker/Hermes -> owner-visible result/accept-or-return path. Local scoped commits
-are permitted; push/VPS deployment/irreversible data effects remain unauthorized.
-Maximum additional active work is 80 minutes, with diagnosis after 35 minutes
-and at most one materially changed retry of the same ineffective action. Reuse
-G6a proof. No application workload, new task/ClickUp system, model routing or G7.
+The earlier bounded continuation after G6a permitted local implementation only.
+Its stop and evidence below explain the risk/admission dependency that was later
+resolved. The owner's subsequent full Gate 6 authorization permits scoped commit,
+push, Coolify redeploy and production verification. No application workload, new
+task/ClickUp system, model routing or G7 is included.
 
 **Stopped at a material data/admission dependency:** the normal owner Decision
 proposal for a repo-free information task succeeds, but normal acceptance returns
@@ -249,10 +246,39 @@ claim. The claimed row has no Application, branch, Git revision or model result;
 the synthetic host has no provider turn. Foreign workspace, non-owner actor,
 wrong operation, stale version and source, unselected evidence, and application
 shape on the company task are refused. The application SQL branches retain
-their guards. This closes the risk/admission dependency locally, not the full
-Gate 6 outcome: real installed Worker/Hermes execution, owner-visible result,
-accept-or-return, and production/deployment proof remain unrun. See
+their guards. This closed the risk/admission dependency locally; the subsequent
+installed Worker proof is recorded below. See
 [native evidence](architecture/traceability-matrix.md#e-company-information-risk-admission).
+
+**2026-10-10 installed Worker/Hermes proof:** a fresh disposable PostgreSQL
+database applied every migration. The normal low-risk company Decision, owner
+acceptance, renewed risk/admission, Ready and queue led to an actual installed
+Windows Worker and Hermes 0.21.2 model turn through signed managed admission
+and Windows Job. The model result reached the Roost HTTP result route, the owner
+API accepted its material version, and the task became `done` with one completed
+execution and a closed owned job. The native suite passed 11/11; its disposable
+database and role were removed and the prior PostgreSQL container state restored.
+The Worker/server signed-lease digest mismatch and a reset of a pooled HTTP
+connection before a fresh context GET were repaired and covered by tests. This
+is local installed-provider evidence with synthetic company records and an
+owner API action, not a production owner-console observation. See
+[native evidence](architecture/traceability-matrix.md#e-company-information-runtime).
+
+**Production preparation:** encrypted Roost backup
+`af1e1e41-9146-4b67-861a-ec6bb6c35eab` was restored in isolation and
+verified on 2026-10-10; its private latest copy and recovery key remain outside
+Git. A second disposable local restore of that current archive applied all three
+company-information migrations; Task, execution, risk and admission row counts
+were unchanged. Its test database was removed and local PostgreSQL returned to
+its previous stopped state. `npm run validate`, `npm run codex:check`, focused
+Worker tests and Compose syntax pass. Coolify's Roost resource tracks `main`;
+the production runtime setting was created but has not yet been observed in a
+redeployed backend.
+
+**Remaining Gate 6:** commit and push the Gate 6 change to the tracked branch;
+verify the automatic Coolify redeploy, enabled runtime configuration, installed
+Worker compatibility and owner-visible production task/result/review. Do not
+infer production success from the local synthetic task or the backup alone.
 
 **Roost outcome:** the owner creates one low-risk informational company task in
 the console, assigns the configured local agent and sees its result and status
@@ -278,15 +304,14 @@ application backup or product-readiness review belongs to this gate. Preserve
 the existing Roost database protection; do not repeat full backup/restore
 certification unless its underlying recovery contract changes.
 
-**Authorized execution ceiling:** one implementation owner,
-45-minute diagnostic checkpoint, 90-minute total wall-clock ceiling and at most
-one materially changed retry of the same failed action. No subagent unless a
-distinct code change needs review. Token/dollar caps must be stated as unavailable
-unless a provider-enforced meter is demonstrated; wall time is not a dollar cap.
-For external Codex this is a procedural checkpoint, not an automatic spend cap.
-At the ceiling, repeated failure or discovery of a new provider/material
-architecture dependency, stop with a recoverable checkpoint and ask for a
-smaller revised assignment. No silent extension or next gate.
+**Progress control:** one implementation owner completes Gate 6 without an
+arbitrary wall-clock or gate-level attempt ceiling. The company task retains its
+explicit RF-HOST-010 duration and attempt budget; token/dollar enforcement is
+unavailable unless a provider-enforced meter is demonstrated. Repeated ineffective
+actions require diagnosis and a changed approach under RF-HOST-011. An unplanned
+provider, material architecture change, unavailable service without a safe
+alternative or irreversible real-data action outside the approved scope requires
+a recoverable checkpoint and owner decision. Do not start the next gate.
 
 ## What is not a blocker
 

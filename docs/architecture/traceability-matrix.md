@@ -104,6 +104,37 @@ the seal after source change. Owned database and role were removed and the
 PostgreSQL container returned to its prior stopped state. This is local native
 Roost API/database admission evidence, not provider or full Gate 6 proof.
 
+### <a id="e-company-information-runtime"></a>G6 installed Worker/Hermes — local native proof
+
+On 2026-10-10 a fresh disposable PostgreSQL database applied the full migration
+chain. The normal owner Decision/risk/admission/Ready/queue path created an
+application-free information execution. The installed Windows Worker with its
+Hermes 0.21.2 provider performed one signed managed model turn in a Windows Job.
+Roost received the final response through its normal completion route; the
+owner result route exposed the material version and a normal owner API review
+accepted it. Native read-back verified Task `done`, execution `completed`, one
+attempt and an owned-job closure receipt. The 11/11 native HTTP/SQL suite passed;
+the disposable database/role were removed and the pre-existing PostgreSQL
+container returned to its previous stopped state. The accepted synthetic proof
+task was `a85be2f4-7514-4ac5-89bc-02d68f7dcea4` with execution
+`87ebd4a7-6ca2-448c-a813-457fed5de720`.
+
+The Worker/server lease-digest mismatch was corrected so both sign the stable
+execution/host/token tuple. A stale pooled HTTP socket reset before a context
+GET; the Worker now repeats only that read once for `ECONNRESET`, then validates
+the fresh packet and signed admission. This is local provider and owner API
+evidence, not an authenticated production console observation. Production
+deployment and a live owner-visible task remain outstanding.
+
+Production preparation after that local proof: encrypted backup
+`af1e1e41-9146-4b67-861a-ec6bb6c35eab` of the current Roost database passed
+isolated restore and fingerprint comparison on 2026-10-10. A separate disposable
+local restore of the same archive applied all three company-information
+migrations and preserved Task, execution, risk-scope and admission-scope row
+counts. The test database was removed. Coolify's Roost application tracks `main`;
+the runtime environment key has been created, but neither deployed backend
+read-back nor a production company-task round trip is yet evidenced.
+
 Current delivery work starts at [Matrix](#matrix). The amendment stream before
 it is historical evidence and should be skipped unless a specific requirement
 or implementation claim needs provenance; it is never the work queue.

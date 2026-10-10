@@ -12,7 +12,8 @@ const require = createRequire(import.meta.url);
 const { createApp } = require('../dist/app.js');
 const { prisma } = require('../dist/db/prisma.js');
 
-test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL authority fences', { timeout: 150000 }, async t => {
+test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL authority fences',
+  { timeout: process.env.ROOST_G6_NATIVE_RUNTIME === '1' ? 540000 : 150000 }, async t => {
   const server = createApp().listen(0, '127.0.0.1');
   await new Promise(resolve => server.once('listening', resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -257,8 +258,78 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         } } } });
       const apiKey = await request('/v1/api-keys', token, { name: 'Synthetic company worker', profileId: 'mcp_codex_worker' });
       assert.equal(apiKey.status, 201, JSON.stringify(apiKey.body));
+      const workerKey = await prisma.apiKey.findFirstOrThrow({ where: { workspaceId }, orderBy: { createdAt: 'desc' } });
+      await prisma.apiKey.update({ where: { id: workerKey.id }, data: { workerHostId: host.id, workerInstallationId: installationId,
+        workerBindingEpoch: 1, expiresAt: new Date(Date.now() + 3600_000), scopes: ['agent-runtime:claim'] } });
       const worker = { 'X-API-Key': apiKey.body.data.key, 'X-Roost-Host-Protocol': String(protocol.version),
         'X-Roost-Host-Capabilities': [...protocol.requiredHostCapabilities, 'company_information_runtime_v1'].join(',') };
+      if (process.env.ROOST_G6_NATIVE_RUNTIME === '1') {
+        const fs = await import('node:fs/promises');
+        const os = await import('node:os');
+        const path = await import('node:path');
+        const { spawn } = await import('node:child_process');
+        const temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'roost-g6-native-'));
+        const writerDirectory = path.join(temporary, 'writer');
+        const configPath = path.join(temporary, 'agent-host.json');
+        const stopPath = path.join(temporary, 'stop.request');
+        await fs.mkdir(path.join(writerDirectory, 'trusted-provider-pilot'), { recursive: true });
+        await fs.writeFile(path.join(writerDirectory, 'trusted-provider-pilot', 'installation.json'), JSON.stringify({
+          schemaVersion: 'roost-trusted-provider-pilot-v1', installationId, workspaceId,
+          authorityPublicKey: signer.publicKey.export({ format: 'pem', type: 'spki' }).toString(),
+          decisionFile: 'trusted-provider-pilot.json', profileFile: 'trusted-provider-profile.json', qualification: 'signed_native_v1'
+        }) + '\n', { mode: 0o600 });
+        const installed = JSON.parse(await fs.readFile(process.env.ROOST_G6_NATIVE_HOST_CONFIG, 'utf8'));
+        const localConfig = { ...installed, host: { name: 'Disposable G6 native Worker', slug: hostSlug }, baseUrl: base,
+          governedRelease: null, executionMode: 'supervised', pollIntervalMs: 2000 };
+        await fs.writeFile(configPath, JSON.stringify(localConfig) + '\n', { mode: 0o600 });
+        const childEnvironment = { ...process.env, ROOST_BASE_URL: base, ROOST_AGENT_API_KEY: apiKey.body.data.key,
+          ROOST_AGENT_HOST_CONFIG: configPath, ROOST_G6_NATIVE_WRITER_DIR: writerDirectory };
+        delete childEnvironment.ROOST_MANAGED_ADMISSION_PRIVATE_KEY_B64;
+        process.env.ROOST_MANAGED_ADMISSION_PRIVATE_KEY_B64 = signer.privateKey.export({ format: 'der', type: 'pkcs8' }).toString('base64');
+        process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
+        process.env.ROOST_CODEX_EXECUTION_ENABLED = 'true';
+        let child, exitCode = null, output = '', errorOutput = '', result;
+        try {
+          child = spawn(process.execPath, ['scripts/run-company-information-native-worker.mjs'], {
+            cwd: process.cwd(), env: childEnvironment, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+          child.stdout.on('data', chunk => { output = (output + chunk.toString()).slice(-4000); });
+          child.stderr.on('data', chunk => { errorOutput = (errorOutput + chunk.toString()).slice(-4000); });
+          child.once('exit', code => { exitCode = code; });
+          const until = Date.now() + 390_000;
+          while (Date.now() < until) {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            result = await request(`${root}/information-result`, token);
+            assert.equal(result.status, 200, JSON.stringify(result.body));
+            if (['completed', 'failed', 'cancelled'].includes(result.body.data.status) || exitCode !== null) break;
+          }
+          assert.equal(result?.body?.data?.status, 'completed', JSON.stringify({ exitCode, output, errorOutput, result: result?.body?.data?.reason }));
+          assert.equal(result.body.data.canReview, true, JSON.stringify({ exitCode, output, errorOutput, reason: result.body.data.reason }));
+          assert.ok(result.body.data.finalResponse?.trim().length >= 10);
+          const reviewed = await request(`${root}/actions/review-information`, token, { requestId: randomUUID(),
+            executionId: runtimeExecutionId, materialVersion: result.body.data.materialVersion, decision: 'accept',
+            summary: 'Accepted the sourced company information result after owner review' });
+          assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
+          assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: runtimeTask.id } })).status, 'done');
+          const completed = await prisma.agentExecution.findUniqueOrThrow({ where: { id: runtimeExecutionId } });
+          assert.equal(completed.applicationId, null); assert.equal(completed.status, 'completed');
+          assert.equal(completed.attempt, 1); assert.equal(completed.verification?.informationRuntime?.ownedJob, true);
+          process.stdout.write(`G6 native Worker/Hermes ${JSON.stringify({ taskId: runtimeTask.id, executionId: runtimeExecutionId,
+            acceptanceCommitted: true, ownerReview: 'accept', status: completed.status, ownedJob: true })}\n`);
+        } finally {
+          await fs.writeFile(stopPath, 'stop');
+          if (child && exitCode === null) {
+            const until = Date.now() + 60_000;
+            while (exitCode === null && Date.now() < until) await new Promise(resolve => setTimeout(resolve, 500));
+          }
+          delete process.env.ROOST_MANAGED_ADMISSION_PRIVATE_KEY_B64;
+          delete process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED;
+          delete process.env.ROOST_CODEX_EXECUTION_ENABLED;
+          if (exitCode === 0 && path.dirname(temporary) === os.tmpdir() && !await fs.stat(path.join(writerDirectory, 'agent-host-writer.lock')).then(() => true, () => false))
+            await fs.rm(temporary, { recursive: true, force: false });
+          else process.stderr.write(`G6 native Worker diagnostic: ${JSON.stringify({ exitCode, output, errorOutput, privateStateRetained: true })}\n`);
+        }
+        return;
+      }
       process.env.ROOST_CODEX_EXECUTION_ENABLED = 'true';
       let claimed;
       try { claimed = await request('/v1/agent-runtime/executions/claim', worker, { hostSlug }); }
@@ -267,6 +338,46 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       assert.equal(claimed.body.data.id, runtimeExecutionId); assert.equal(claimed.body.data.agentHostId, host.id);
       const claimedRow = await prisma.agentExecution.findUniqueOrThrow({ where: { id: runtimeExecutionId } });
       assert.equal(claimedRow.status, 'claimed'); assert.equal(claimedRow.attempt, 1); assert.equal(claimedRow.finalResponse, null);
+      const heartbeat = await request(`/v1/agent-runtime/executions/${runtimeExecutionId}/heartbeat`, worker, { leaseToken: claimed.body.data.leaseToken });
+      assert.equal(heartbeat.status, 200, JSON.stringify(heartbeat.body));
+      const workerContext = await request(`/v1/company-intelligence/tasks/${runtimeTask.id}/agent-context?executionId=${runtimeExecutionId}`,
+        { ...worker, 'X-Roost-Host-Capabilities': protocol.requiredHostCapabilities.join(',') });
+      assert.equal(workerContext.status, 200, JSON.stringify(workerContext.body));
+      const { validateExecutionPacket } = await import('./lib/agent-host-execution-packet.mjs');
+      validateExecutionPacket(workerContext.body.data.executionPacket, claimed.body.data, workerContext.body.data, {});
+      const { fetchExecutionContext } = await import('./lib/agent-host-execution-context.mjs');
+      const { readHostResponse } = await import('./lib/agent-host-redaction.mjs');
+      const nativeApi = async (route, options = {}) => {
+        const response = await fetch(base + route, { ...options, signal: options.signal ?? AbortSignal.timeout(10_000),
+          headers: { 'X-API-Key': apiKey.body.data.key, 'Content-Type': 'application/json',
+            'X-Roost-Host-Protocol': String(protocol.version), 'X-Roost-Host-Capabilities': protocol.requiredHostCapabilities.join(','),
+            ...(options.headers ?? {}) } });
+        const body = await readHostResponse(response);
+        if (!response.ok) throw Object.assign(new Error(`roost_http_${response.status}`), { status: response.status, details: { reason: body.error } });
+        return body.data;
+      };
+      const fetched = await fetchExecutionContext(nativeApi, claimed.body.data, { signal: new AbortController().signal,
+        secrets: [apiKey.body.data.key] });
+      assert.equal(fetched.taskContext.executionPacket.identity.executionId, runtimeExecutionId);
+      process.env.ROOST_MANAGED_ADMISSION_PRIVATE_KEY_B64 = signer.privateKey.export({ format: 'der', type: 'pkcs8' }).toString('base64');
+      process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
+      process.env.ROOST_CODEX_EXECUTION_ENABLED = 'true';
+      let signedAdmission;
+      try {
+        const admitted = await request(`/v1/agent-runtime/executions/${runtimeExecutionId}/actions/managed-admission`, worker, {
+          schemaVersion: 'roost-managed-admission-v1', phase: 'information', executionId: runtimeExecutionId,
+          leaseToken: claimed.body.data.leaseToken, observation: { profileDigest: 'a'.repeat(64), runtimeDigest: 'b'.repeat(64) }
+        });
+        assert.equal(admitted.status, 200, JSON.stringify(admitted.body)); signedAdmission = admitted.body.data;
+      } finally {
+        delete process.env.ROOST_MANAGED_ADMISSION_PRIVATE_KEY_B64;
+        delete process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED;
+        delete process.env.ROOST_CODEX_EXECUTION_ENABLED;
+      }
+      const { verifyInformationAdmission } = await import('./lib/agent-host-company-information-runtime.mjs');
+      const leaseDigest = createHash('sha256').update(trustedPilotBytes({ executionId: runtimeExecutionId,
+        hostId: host.id, token: claimed.body.data.leaseToken })).digest('hex');
+      verifyInformationAdmission(signedAdmission, signer.publicKey.export({ format: 'pem', type: 'spki' }).toString(), { leaseDigest });
       await prisma.companyRecord.update({ where: { id: currentSource.id }, data: { description: 'Synthetic source changed after claim.' } });
       assert.equal((await prisma.$queryRawUnsafe(`SELECT task_risk_current('${runtimeTask.id}'::uuid) AS risk, task_admission_seal('${runtimeTask.id}'::uuid,'runtime_execute') AS seal`))[0].risk, null);
       assert.equal((await prisma.$queryRawUnsafe(`SELECT task_admission_seal('${runtimeTask.id}'::uuid,'runtime_execute') AS seal`))[0].seal, null);

@@ -40,6 +40,17 @@ test("fresh retrieval uses existing scoped endpoints and derives application que
   assert.ok(calls[1].options.headers["X-Roost-Agent-Context-Query"].includes("Fresh authoritative task"));
   assert.ok(calls.every((c) => c.options.cache === "no-store" && c.options.headers["Cache-Control"] === "no-cache"));
 });
+test("one reset before a context GET reaches Roost repeats only that read", async () => {
+  const f = validPacketFixture(), calls = [];
+  const result = await fetchExecutionContext(async route => {
+    calls.push(route);
+    if (calls.length === 1) throw Object.assign(new TypeError("fetch failed"), { cause: { code: "ECONNRESET" } });
+    return calls.length === 2 ? f.taskContext : f.applicationContext;
+  }, f.claimed);
+  assert.equal(result.taskContext, f.taskContext);
+  assert.equal(calls.length, 3);
+  assert.equal(calls[0], calls[1]);
+});
 test("refresh failures retain only fixed diagnostics and authority rejection status", async () => {
   const f = validPacketFixture();
   for (const status of [401, 403, 503, undefined]) await assert.rejects(fetchExecutionContext(async () => { throw Object.assign(new Error("SYNTHETIC_SECRET"), { status, body: "SYNTHETIC_SECRET" }); }, f.claimed),

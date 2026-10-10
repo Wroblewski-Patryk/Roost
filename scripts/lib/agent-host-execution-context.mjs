@@ -33,7 +33,15 @@ export async function fetchExecutionContext(api, claimed, { signal, secrets = []
   try {
     signal?.throwIfAborted();
     const fresh = { cache: "no-store", ...(signal ? { signal } : {}), headers: { "Cache-Control": "no-cache" } };
-    const taskContext = await api(`/v1/company-intelligence/tasks/${claimed.taskId}/agent-context?executionId=${encodeURIComponent(claimed.id)}`, fresh);
+    const route = `/v1/company-intelligence/tasks/${claimed.taskId}/agent-context?executionId=${encodeURIComponent(claimed.id)}`;
+    let taskContext;
+    try { taskContext = await api(route, fresh); }
+    catch (error) {
+      // A stale pooled HTTP socket can reset before the GET reaches Roost.
+      // Repeat only this read; admission still validates the returned revision.
+      if (signal?.aborted || error?.cause?.code !== "ECONNRESET") throw error;
+      taskContext = await api(route, fresh);
+    }
     guardHostContent({ taskContext, prompt: claimed.prompt }, "required", [claimed.leaseToken, ...secrets]);
     signal?.throwIfAborted();
     if (["roost-company-information-v1", "roost-company-information-runtime-v1"].includes(taskContext?.executionPacket?.contract?.executionClass)) {

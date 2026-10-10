@@ -93,6 +93,10 @@ Required environment values:
 - `ROOST_CODEX_EXECUTION_ENABLED` remains `false` during the foundation
   rollout. Set it to `true` only after the application map, scoped worker key,
   Windows host, paused trigger contract, and non-critical trial are reviewed.
+- `ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED` defaults to `false`. Set it to
+  `true` for the separately qualified company-information task loop after the
+  managed admission signing key, Worker identity and database migration are
+  verified. Keep its task-level risk, admission and owner-review guards active.
 - `ROOST_V3_TICKET_PRIVATE_KEY_B64`: canonical base64 of an Ed25519 PKCS8 DER
   key for the approved worker bootstrap ticket issuer. Its public SPKI digest
   must match the persisted issuer history and trusted ticket-key anchor.
