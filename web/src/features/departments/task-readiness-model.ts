@@ -22,7 +22,18 @@ export type ReadyPacket = { status: string; reason?: string; changedSources?: { 
 export const groups = ["company", "product", "technical", "procedures", "skills", "dependencies", "decisions"] as const;
 export type RefGroup = typeof groups[number];
 export const companyInformationClass = "roost-company-information-v1" as const;
+export const companyInformationRuntimeClass = "roost-company-information-runtime-v1" as const;
 export const isCompanyInformation = (editor: ReadyEditor) => [companyInformationClass, "roost-company-information-runtime-v1"].includes(editor.executionClass ?? "");
+export function runtimeInformationInput<T extends { contract: Record<string, any> }>(base: T): T {
+  return { ...base, contract: { ...base.contract,
+    executionClass: companyInformationRuntimeClass,
+    budgets: { ...base.contract.budgets, maxAttempts: 1 },
+    modelSelection: { schemaVersion: "roost-managed-hermes-backend-v1", agent: "managed_hermes", riskClass: "low", fallback: "none",
+      attemptPolicy: { maxTurns: 1, apiMaxRetries: 0, unavailable: "stop_attempt", restart: "never" },
+      backend: "codex_responses", provider: "openai-codex",
+      modelSelection: base.contract.modelSelection?.schemaVersion === "roost-managed-hermes-backend-v1" ? base.contract.modelSelection.modelSelection : base.contract.modelSelection,
+      auth: "same_owner_subscription" } } };
+}
 export const canPrepareForWorker = (packet: ReadyPacket) => isCompanyInformation(packet.editor) ? packet.preparationEnabled === true : packet.executionEnabled;
 export const visibleContextGroups = (editor: ReadyEditor) => groups.filter(group => !isCompanyInformation(editor) || (group !== "product" && group !== "technical"));
 export const fields = {
@@ -48,7 +59,7 @@ export function draftFrom(editor: ReadyEditor): Draft {
     taskRoles: { requester: c.taskRoles?.requester ?? (editor.requester ? { id: editor.requester.id, revision: editor.requester.revision } : null), executor: c.taskRoles?.executor ?? null, verifier: c.taskRoles?.verifier ?? null, releaser: c.taskRoles?.releaser ?? null },
     singleTask: { component: s.component ?? null, manager: s.accountableManager ?? null, metric: m.metric ?? "", comparison: m.comparison ?? "eq", target: m.target === undefined ? "" : String(m.target), unit: m.unit ?? "", method: m.method ?? "",
       problems: (s.problems ?? [{ statement: "" }]).map((p: any) => ({ statement: p.statement, causalLink: p.causalLink ?? "" })), mechanism: s.commonCause?.mechanism ?? "", inseparability: s.commonCause?.inseparability ?? "", evidence: s.commonCause?.evidence ?? null },
-    model: c.modelSelection?.model ?? "", effort: c.modelSelection?.reasoningEffort ?? "", competencies: c.assignment?.competencies ?? [], tools: c.access?.tools ?? [], permissions: c.access?.permissions ?? [],
+    model: (c.modelSelection?.modelSelection ?? c.modelSelection)?.model ?? "", effort: (c.modelSelection?.modelSelection ?? c.modelSelection)?.reasoningEffort ?? "", competencies: c.assignment?.competencies ?? [], tools: c.access?.tools ?? [], permissions: c.access?.permissions ?? [],
     refs: Object.fromEntries(groups.map(key => [key, key === "skills" ? (c.skills?.items ?? []).map((item: { name: string; version: string }) => ({ id: item.name, revision: item.version })) : c.context?.[key] ?? c[key]?.items ?? []])) as Draft["refs"],
     none: Object.fromEntries(groups.map(key => [key, c[key]?.noneReason ?? ""])) as Draft["none"], rollbackMode: isCompanyInformation(editor) ? "not_applicable" : c.recovery?.rollback?.mode ?? "" };
 }
@@ -68,7 +79,7 @@ export function contractInput(editor: ReadyEditor, draft: Draft) {
   const s = draft.singleTask;
   const informational = isCompanyInformation(editor);
   const set = (key: RefGroup) => ({ items: draft.refs[key].map(item => key === "skills" ? { name: item.id, version: item.revision } : key === "dependencies" ? { id: item.id, revision: item.revision, evidence: item.evidence ?? "", resolution: "satisfied" } : { id: item.id, revision: item.revision }), noneReason: draft.refs[key].length ? null : draft.none[key] });
-  return { expectedVersion: editor.submissionVersion, applicationId: informational ? null : editor.applicationId, prompt: v.prompt || null, baseBranch: informational ? null : v.baseBranch || null, contract: {
+  const input = { expectedVersion: editor.submissionVersion, applicationId: informational ? null : editor.applicationId, prompt: v.prompt || null, baseBranch: informational ? null : v.baseBranch || null, contract: {
     ...(informational ? { executionClass: companyInformationClass } : {}),
     version: v.version, objective: { outcome: v.outcome, goalId: editor.task.goal?.id }, scope: { allowed: lines(v.allowed), forbidden: lines(v.forbidden) },
     taskRoles: { schemaVersion: "roost-task-roles-v1", ...draft.taskRoles, accountableManager: s.manager },
@@ -84,6 +95,7 @@ export function contractInput(editor: ReadyEditor, draft: Draft) {
     acceptance: { criteria: lines(v.criteria), tests: lines(v.tests), evidence: lines(v.evidence) },
     recovery: { handoff: v.handoff, failure: v.failure, escalation: v.escalation, rollback: { mode: informational ? "not_applicable" : draft.rollbackMode, instructions: v.rollbackInstructions } }
   } };
+  return editor.executionClass === companyInformationRuntimeClass ? runtimeInformationInput(input) : input;
 }
 
 // Only fixed server field paths/reasons become UI copy. Unknown payloads never render.

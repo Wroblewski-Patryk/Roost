@@ -18,7 +18,7 @@ import { TaskReviewModal } from "./task-review";
 import { TaskProcedureCompositionModal } from "./procedure-composition";
 import { TaskRiskModal } from "./task-risk";
 import { reviewMessages } from "./task-review-messages";
-import { canPrepareForWorker, catalogFor, companyInformationClass, contractInput, draftFrom, fields, isCompanyInformation, visibleContextGroups, selectReferences, validationSections, type Draft, type FieldName, type ReadyPacket, type RefGroup } from "./task-readiness-model";
+import { canPrepareForWorker, catalogFor, companyInformationClass, companyInformationRuntimeClass, contractInput, draftFrom, fields, isCompanyInformation, runtimeInformationInput, visibleContextGroups, selectReferences, validationSections, type Draft, type FieldName, type ReadyPacket, type RefGroup } from "./task-readiness-model";
 
 export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: string; onClose: () => void; onSaved?: () => void }) {
   const { locale, t } = useLanguage();
@@ -98,7 +98,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
   if (leave) return <CcRecordEditorModal titleId="ready-discard-title" eyebrow={tr("title")} title={tr("leave")} closeLabel={tr("stay")} onClose={() => setLeave(false)} onSubmit={event => { event.preventDefault(); onClose(); }} actions={<><CcButton variant="ghost" onClick={() => setLeave(false)}>{tr("stay")}</CcButton><CcButton variant="warning" type="submit">{tr("discard")}</CcButton></>}><p>{tr("unsaved")}</p></CcRecordEditorModal>;
   const e = packet?.editor;
   const informational = Boolean(e && isCompanyInformation(e));
-  const runtimeInformation = String(e?.executionClass) === "roost-company-information-runtime-v1";
+  const runtimeInformation = e?.executionClass === companyInformationRuntimeClass;
   const writable = packet?.canSubmit && !e?.activeExecution;
   const pendingLinks = e && (links.projectId !== (e.task.project?.id ?? "") || links.goalId !== (e.task.goal?.id ?? "") || links.assignedWorkforceEntityId !== (e.agent?.id ?? ""));
   const linksValid = Boolean(!pendingLinks && e && (informational || e.task.project) && e.task.goal && e.agent?.eligible && (informational || e.applicationId) && ["todo", "in_progress"].includes(e.task.status));
@@ -136,13 +136,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
     const base = e && draft ? !dirty && e.accepted
       ? { applicationId: e.accepted.applicationId, contract: e.accepted.contract, prompt: e.accepted.prompt, baseBranch: e.accepted.baseBranch }
       : contractInput(e, draft) : undefined;
-    const riskInput = base && informational ? { ...base, contract: { ...base.contract,
-      executionClass: "roost-company-information-runtime-v1",
-      budgets: { ...base.contract.budgets, maxAttempts: 1 },
-      modelSelection: { schemaVersion: "roost-managed-hermes-backend-v1", agent: "managed_hermes", riskClass: "low", fallback: "none",
-        attemptPolicy: { maxTurns: 1, apiMaxRetries: 0, unavailable: "stop_attempt", restart: "never" },
-        backend: "codex_responses", provider: "openai-codex", modelSelection: base.contract.modelSelection?.schemaVersion === "roost-managed-hermes-backend-v1" ? base.contract.modelSelection.modelSelection : base.contract.modelSelection, auth: "same_owner_subscription" }
-    } } : base;
+    const riskInput = base && informational ? runtimeInformationInput(base) : base;
     return <TaskRiskModal taskId={taskId} input={riskInput} onClose={()=>{setRiskOpen(false);void load(e?.applicationId??undefined,true);}} onSaved={onSaved}/>;
   }
   if (authorizationOpen) return <CompanyInformationAuthorization taskId={taskId} taskTitle={e?.task.title ?? "Information task"} onClose={()=>{setAuthorizationOpen(false);void load();onSaved?.();}}/>;
@@ -171,7 +165,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
         {dirty ? <p role="status" className="text-sm text-warning">{tr("unsaved")}</p> : null}
         <div className="flex flex-wrap gap-2">{packet.status === "ready" && !writable ? <CcButton size="sm" variant="outline" onClick={() => setExpanded(!expanded)}>{tr("edit")}</CcButton> : null}{packet.status === "ready" && packet.canSubmit ? <CcButton size="sm" variant="outline" onClick={() => void queue()} disabled={!canPrepareForWorker(packet) || Boolean(busy) || dirty || e.activeExecution}>{tr(informational ? "information.queue" : "queue")}</CcButton> : null}<CcButton size="sm" variant="ghost" href="/areas?area=06-kadry&view=executions" onClick={event => { if (dirty) { event.preventDefault(); setError("unsaved"); } }}>{tr("runs")}</CcButton></div>
       </section>
-      <CcField label={tr("executionClass")} hint={tr("executionClassHint")}>{({ id }) => <CcSelect id={id} disabled={!writable || Boolean(busy) || dirty} value={runtimeInformation ? "roost-company-information-runtime-v1" : informational ? companyInformationClass : "application"} onChange={event => { requestedClass.current = event.target.value; submission.current = null; void load(); }}><option value="application">{tr("applicationTask")}</option><option value={companyInformationClass}>{tr("informationTask")}</option>{runtimeInformation ? <option disabled value="roost-company-information-runtime-v1">{locale === "pl" ? "Zadanie informacyjne — wykonanie" : "Information task — runtime"}</option> : null}</CcSelect>}</CcField>
+      <CcField label={tr("executionClass")} hint={tr("executionClassHint")}>{({ id }) => <CcSelect id={id} disabled={!writable || Boolean(busy) || dirty} value={runtimeInformation ? companyInformationRuntimeClass : informational ? companyInformationClass : "application"} onChange={event => { requestedClass.current = event.target.value; submission.current = null; void load(); }}><option value="application">{tr("applicationTask")}</option><option value={companyInformationClass}>{tr("informationTask")}</option>{informational ? <option value={companyInformationRuntimeClass}>{locale === "pl" ? "Zadanie informacyjne — wykonanie" : "Information task — runtime"}</option> : null}</CcSelect>}</CcField>
       {informational && !runtimeInformation ? <CcNotice tone="info" title={tr("informationTask")} detail={tr("information.boundary")} /> : null}
       {informational ? <CompanyInformationResult taskId={taskId} canStart={Boolean(packet.canSubmit && packet.status === "ready" && !dirty && !busy && !e.activeExecution)} onAuthorize={()=>setAuthorizationOpen(true)} onSaved={() => { void load(); onSaved?.(); }} /> : null}
       {showForm ? <fieldset disabled={!writable || Boolean(busy)} className="min-w-0 grid gap-4">

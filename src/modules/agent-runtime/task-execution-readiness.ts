@@ -302,7 +302,7 @@ export async function readyEditorData(db: Prisma.TransactionClient, workspaceId:
     return !checked.blocked && !checked.redacted;
   });
   return {
-    executionClass: company ? (pin.contract?.executionClass === "roost-company-information-runtime-v1" ? pin.contract.executionClass : "roost-company-information-v1") : "application",
+    executionClass: company ? (executionClass === "roost-company-information-runtime-v1" || !executionClass && pin.contract?.executionClass === "roost-company-information-runtime-v1" ? "roost-company-information-runtime-v1" : "roost-company-information-v1") : "application",
     roleCatalog, roleCatalogTruncated: roleWorkers.length > 500,
     requester: requester ? { id: requester.userId, label: requester.user.name ?? "—", revision: requester.updatedAt.toISOString() } : null,
     roleOrigin: { established: Boolean(provenance.requesterUserId), submissionId: provenance.originatingSubmissionId ?? null },

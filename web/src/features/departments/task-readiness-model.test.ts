@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { canPrepareForWorker, catalogFor, companyInformationClass, contractInput, draftFrom, selectReferences, validationSections, visibleContextGroups, type ReadyEditor, type ReadyPacket } from "./task-readiness-model";
+import { canPrepareForWorker, catalogFor, companyInformationClass, companyInformationRuntimeClass, contractInput, draftFrom, runtimeInformationInput, selectReferences, validationSections, visibleContextGroups, type ReadyEditor, type ReadyPacket } from "./task-readiness-model";
 
 test("selecting another source preserves old revisions until explicit review", () => {
   const old = [{ id: "a", revision: "old", evidence: "Reviewed evidence" }];
@@ -54,6 +54,29 @@ test("company picker shows explicit company sources and keeps required company c
   assert.deepEqual(catalogFor(editor, "company").map(source => source.id), ["company"]);
   assert.deepEqual(visibleContextGroups(editor), ["company", "procedures", "skills", "dependencies", "decisions"]);
   assert.deepEqual(draftFrom(editor).refs.company, []);
+});
+
+test("runtime risk input and Ready submission use the same bounded company contract", () => {
+  const preparation = { ...editorFixture(), executionClass: companyInformationClass, applicationId: null };
+  const draft = draftFrom(preparation);
+  draft.model = "gpt-5.6-sol";
+  draft.effort = "low";
+  draft.values.maxAttempts = "1";
+  draft.values.maxDurationSeconds = "600";
+  draft.values.maxOutputTokens = "1200";
+  draft.refs.company = [{ id: "company", revision: "company-r1" }];
+  const runtime = { ...preparation, executionClass: companyInformationRuntimeClass };
+  const submitted = contractInput(runtime, draft);
+  assert.deepEqual(submitted, runtimeInformationInput(contractInput(preparation, draft)));
+  assert.deepEqual(runtimeInformationInput(submitted), submitted);
+  assert.equal(submitted.contract.executionClass, companyInformationRuntimeClass);
+  assert.deepEqual(submitted.contract.access.tools, []);
+  assert.deepEqual(submitted.contract.access.permissions, []);
+  assert.equal(submitted.contract.modelSelection.modelSelection.model, "gpt-5.6-sol");
+  assert.equal(submitted.contract.budgets.maxAttempts, 1);
+  const reopened = draftFrom({ ...runtime, accepted: { contract: submitted.contract, prompt: submitted.prompt, baseBranch: null, applicationId: null } });
+  assert.equal(reopened.model, "gpt-5.6-sol");
+  assert.equal(reopened.effort, "low");
 });
 
 test("existing application input keeps its discriminator-free shape and application authority", () => {

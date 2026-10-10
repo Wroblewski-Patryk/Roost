@@ -328,17 +328,56 @@ try {
     await page.getByRole('dialog').waitFor();
     await page.getByLabel(locale==='pl'?'Rodzaj wykonania zadania':'Task execution type',{exact:true}).waitFor();
     for (const label of locale==='pl'?['Aplikacja','Docelowy komponent','Gałąź zadania','Gałąź bazowa (opcjonalnie)','Kontekst produktu','Kontekst techniczny','Wykorzystywane narzędzia','Wymagane uprawnienia']:['Application','Target component','Task branch','Base branch (optional)','Product context','Technical context','Tools to use','Required permissions']) assert.equal(await page.getByLabel(label,{exact:true}).count(),0,label);
-    assert.equal(await page.getByRole('button',{name:locale==='pl'?'Ocena ryzyka':'Risk assessment',exact:true}).count(),0);
+    assert.equal(await page.getByRole('button',{name:locale==='pl'?'Ocena ryzyka':'Risk assessment',exact:true}).count(),1);
     assert.equal(await page.getByRole('button',{name:locale==='pl'?'Skład procedury':'Procedure composition',exact:true}).count(),0);
     assert.equal(await page.getByRole('button',{name:locale==='pl'?'Oceń wynik':'Review result',exact:true}).count(),0);
     await page.getByRole('button',{name:locale==='pl'?'Przekaż do wykonania':'Submit for execution',exact:true}).click();
     await page.getByText(locale==='pl'?'Bieżący kontrakt został sprawdzony i zaakceptowany.':'The current contract was validated and accepted.',{exact:true}).waitFor();
-    await page.getByRole('button',{name:locale==='pl'?'Przygotuj dla Workera':'Prepare for Worker',exact:true}).click();
+    await page.getByRole('button',{name:locale==='pl'?'Przygotuj tylko pakiet':'Prepare packet only',exact:true}).click();
     await page.getByText(locale==='pl'?'Pakiet przygotowany do walidacji Workera. Wykonanie przez model i gotowy wynik nie zostały potwierdzone.':'Packet prepared for Worker validation. Model execution and a completed result have not been proved.',{exact:true}).waitFor();
     assert.equal(submitted,1);assert.equal(queued,1);assert.ok(queries.every(value=>value===c.executionClass));assert.deepEqual(errors,[]);
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
     await page.screenshot({path:path.join(output,`${locale}-company-prepared-390.png`),fullPage:true});await page.close();checked++;
   }
+
+  const runtimePage=await browser.newPage({viewport:{width:834,height:960}});
+  await runtimePage.addInitScript(()=>localStorage.setItem('companycoreLocale','en'));
+  const {packet:runtimePacket}=fixture('changed'),runtimeContract=runtimePacket.editor.accepted.contract;
+  runtimeContract.executionClass='roost-company-information-v1';
+  runtimeContract.singleTask.applicationId=null;runtimeContract.singleTask.component=null;runtimeContract.singleTask.branch=null;
+  runtimeContract.singleTask.problems.forEach(problem=>problem.componentId=null);
+  runtimeContract.context.product=[];runtimeContract.context.technical=[];
+  runtimeContract.access.tools=[];runtimeContract.access.permissions=[];runtimeContract.access.sandbox='read-only';
+  runtimeContract.recovery.rollback.mode='not_applicable';
+  runtimePacket.editor.applicationId=null;runtimePacket.editor.executionClass=runtimeContract.executionClass;
+  runtimePacket.editor.taskIdentity.branch=null;runtimePacket.editor.accepted.applicationId=null;runtimePacket.editor.task.project=null;
+  const runtimeQueries=[],runtimeSubmissions=[];
+  await runtimePage.route('**/v1/**',async route=>{
+    const url=route.request().url();
+    if(url.includes('execution-readiness')){
+      const selected=new URL(url).searchParams.get('executionClass');runtimeQueries.push(selected);
+      runtimePacket.editor.executionClass=selected==='roost-company-information-runtime-v1'?selected:'roost-company-information-v1';
+      return route.fulfill({json:{data:runtimePacket}});
+    }
+    if(url.includes('submit-for-execution')){
+      runtimeSubmissions.push(route.request().postDataJSON());runtimePacket.status='ready';
+      return route.fulfill({json:{data:{readiness:runtimePacket}}});
+    }
+    assert.equal(route.request().method(),'GET');
+    return route.fulfill({json:{data:url.includes('/v1/tasks?')?[{...runtimePacket.editor.task,priority:'normal'}]:{departments:[]}}});
+  });
+  await runtimePage.goto(`http://127.0.0.1:${server.address().port}?executionClass=roost-company-information-v1`);
+  await runtimePage.getByRole('button',{name:'Prepare execution',exact:true}).first().click();
+  await runtimePage.getByLabel('Task execution type',{exact:true}).selectOption('roost-company-information-runtime-v1');
+  await runtimePage.getByRole('button',{name:'Submit for execution',exact:true}).click();
+  await runtimePage.getByText('The current contract was validated and accepted.',{exact:true}).waitFor();
+  assert.ok(runtimeQueries.includes('roost-company-information-runtime-v1'));
+  assert.equal(runtimeSubmissions.length,1);
+  assert.equal(runtimeSubmissions[0].contract.executionClass,'roost-company-information-runtime-v1');
+  assert.equal(runtimeSubmissions[0].contract.budgets.maxAttempts,1);
+  assert.equal(runtimeSubmissions[0].contract.modelSelection.schemaVersion,'roost-managed-hermes-backend-v1');
+  assert.deepEqual(runtimeSubmissions[0].contract.access.tools,[]);
+  await runtimePage.close();checked++;
 
   console.log(JSON.stringify({ checked, output }));
 } finally { await browser.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }
