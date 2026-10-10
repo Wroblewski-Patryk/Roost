@@ -132,7 +132,17 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
   }
   if (reviewOpen) return <TaskReviewModal taskId={taskId} onClose={() => { setReviewOpen(false); void load(); }} onSaved={onSaved}/>;
   if (compositionOpen) return <TaskProcedureCompositionModal taskId={taskId} onClose={()=>{setCompositionOpen(false);void load(e?.applicationId??undefined,true);}}/>;
-  if (riskOpen) return <TaskRiskModal taskId={taskId} input={e && draft ? contractInput(e,draft) : undefined} onClose={()=>{setRiskOpen(false);void load(e?.applicationId??undefined,true);}} onSaved={onSaved}/>;
+  if (riskOpen) {
+    const base = e && draft ? contractInput(e, draft) : undefined;
+    const riskInput = base && informational ? { ...base, contract: { ...base.contract,
+      executionClass: "roost-company-information-runtime-v1",
+      budgets: { ...base.contract.budgets, maxAttempts: 1 },
+      modelSelection: { schemaVersion: "roost-managed-hermes-backend-v1", agent: "managed_hermes", riskClass: "low", fallback: "none",
+        attemptPolicy: { maxTurns: 1, apiMaxRetries: 0, unavailable: "stop_attempt", restart: "never" },
+        backend: "codex_responses", provider: "openai-codex", modelSelection: base.contract.modelSelection, auth: "same_owner_subscription" }
+    } } : base;
+    return <TaskRiskModal taskId={taskId} input={riskInput} onClose={()=>{setRiskOpen(false);void load(e?.applicationId??undefined,true);}} onSaved={onSaved}/>;
+  }
   if (authorizationOpen) return <CompanyInformationAuthorization taskId={taskId} taskTitle={e?.task.title ?? "Information task"} onClose={()=>{setAuthorizationOpen(false);void load();onSaved?.();}}/>;
   return <CcRecordEditorModal titleId="task-readiness-title" eyebrow={tr("title")} title={e?.task.title || tr("title")} description={tr("description")} closeLabel={tr("close")} onClose={close} onSubmit={submit} maxWidthClassName="max-w-5xl" actions={<>
     {!informational ? <CcButton disabled={Boolean(busy)||dirty} onClick={()=>setCompositionOpen(true)}>{locale==="pl"?"Skład procedury":"Procedure composition"}</CcButton> : null}

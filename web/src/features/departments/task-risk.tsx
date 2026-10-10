@@ -41,7 +41,8 @@ export function TaskRiskModal({taskId,input,onClose,onSaved}:{taskId:string;inpu
   const scope=input??data.members.find((m:any)=>m.id===taskId)?.scope;
   const ref=data.evidence.find((e:any)=>e.id===release);
   const {applicationId,contract,prompt,baseBranch}=scope??{};
-  const r=await send("scope",{applicationId,contract,prompt:prompt??null,baseBranch:baseBranch??null,releaseSet:ref?{id:ref.id,revision:ref.revision}:null,expectedVersion:data.expectedVersion});
+  const company = contract?.executionClass === "roost-company-information-runtime-v1";
+  const r=await send("scope",{...(company?{scopeKind:"company_information"}:{}),applicationId,contract,prompt:prompt??null,baseBranch:baseBranch??null,releaseSet:company?null:ref?{id:ref.id,revision:ref.revision}:null,expectedVersion:data.expectedVersion});
   if(mounted.current){apply(r.data,true);command.current=null;onSaved?.();}
  }catch{if(mounted.current)setError(true);}finally{if(mounted.current)setBusy(false);}}
  async function submit(e:FormEvent){e.preventDefault();if(busy||!data?.canAssess)return;setBusy(true);setError(false);setSaved(false);try{
@@ -67,7 +68,7 @@ export function TaskRiskModal({taskId,input,onClose,onSaved}:{taskId:string;inpu
     {data.blockers.map((b:string)=><p key={b} className="text-sm text-warning">{c[b]??c.blocked}</p>)}
    </section>
    <section className="grid gap-2"><h3 className="font-bold">{c.related} ({data.members.length})</h3>{data.members.map((m:any)=><div key={m.id} className="border-b border-base-300 py-2"><p className="font-medium">{m.title}</p><p className="text-sm text-company-muted">{m.objective??c.noScope}</p><p className="text-xs text-company-muted">{m.relatedBy?.map((r:string)=>c[r]).join(" · ")}</p></div>)}{!complete?<p className="text-warning">{c.missing}</p>:null}</section>
-   {data.canAssess?<section className="grid gap-3 border-b border-base-300 pb-4"><CcField label={c.release}>{({id})=><CcSelect id={id} disabled={busy} value={release} onChange={e=>{setRelease(e.target.value);setDirty(true);}}><option value="">{c.noneRelease}</option>{data.evidence.filter((r:any)=>r.applicationId===(input?.applicationId??data.members.find((m:any)=>m.id===taskId)?.applicationId)).map((r:any)=><option value={r.id} key={r.id}>{r.label}</option>)}</CcSelect>}</CcField><CcButton disabled={busy||!input&&!data.members.find((m:any)=>m.id===taskId)?.scope} onClick={()=>void prepare()} variant="outline">{c.prepare}</CcButton></section>:null}
+   {data.canAssess?<section className="grid gap-3 border-b border-base-300 pb-4">{input?.contract?.executionClass!=="roost-company-information-runtime-v1"?<CcField label={c.release}>{({id})=><CcSelect id={id} disabled={busy} value={release} onChange={e=>{setRelease(e.target.value);setDirty(true);}}><option value="">{c.noneRelease}</option>{data.evidence.filter((r:any)=>r.applicationId===(input?.applicationId??data.members.find((m:any)=>m.id===taskId)?.applicationId)).map((r:any)=><option value={r.id} key={r.id}>{r.label}</option>)}</CcSelect>}</CcField>:null}<CcButton disabled={busy||!input&&!data.members.find((m:any)=>m.id===taskId)?.scope} onClick={()=>void prepare()} variant="outline">{c.prepare}</CcButton></section>:null}
    {data.evidenceTruncated?<p>{c.limited}</p>:null}
    {complete?<fieldset disabled={!data.canAssess||busy} className="grid min-w-0 gap-4">{entries.map((entry,index)=>{
     const member=data.members.find((m:any)=>m.id===entry.taskId);
