@@ -18,6 +18,7 @@ import { departmentLabel } from "./department-labels";
 import { DepartmentScopeControl } from "./department-scope-control";
 import { ProceduresWorkbench } from "./procedures-workbench";
 import { TaskReadinessModal } from "./task-readiness";
+import { navigateApp } from "../../app-navigation";
 import { TaskReviewModal } from "./task-review";
 import { reviewMessages } from "./task-review-messages";
 
@@ -526,9 +527,9 @@ export function TaskPreviewModal({
   if (reviewOpen) return <TaskReviewModal taskId={item.id} onClose={()=>setReviewOpen(false)} onSaved={onSaved}/>;
   return (
     <CcRecordEditorModal
-      actions={<><CcButton disabled={edited || saveState === "saving"} onClick={()=>setReviewOpen(true)} variant="outline">{reviewMessages[locale === "pl" ? "pl" : "en"].open}</CcButton><CcButton name="action" value="prepare" disabled={saveState === "saving"} type="submit" variant="outline">{t("ready.saveAndPrepare")}</CcButton><CcButton onClick={onClose} variant="ghost">{t("operations.cancel")}</CcButton><CcButton loading={saveState === "saving"} type="submit" variant="primary">{t("operations.saveTask")}</CcButton></>}
+      actions={<><CcButton disabled={edited || saveState === "saving"} onClick={()=>setReviewOpen(true)} variant="outline">{reviewMessages[locale === "pl" ? "pl" : "en"].open}</CcButton><CcButton name="action" value="prepare" disabled={saveState === "saving"} type="submit" variant="outline">{informationBadge ? edited ? locale === "pl" ? "Zapisz i otwórz wynik" : "Save and open result" : locale === "pl" ? "Otwórz wynik Workera" : "Open Worker result" : t("ready.saveAndPrepare")}</CcButton><CcButton onClick={onClose} variant="ghost">{t("operations.cancel")}</CcButton><CcButton loading={saveState === "saving"} type="submit" variant="primary">{t("operations.saveTask")}</CcButton></>}
       description={item.hierarchy?.taskList?.name || t("operations.unassigned")}
-      eyebrow="04 Operations · Task"
+      eyebrow={locale === "pl" ? "04 Operacje · Zadanie" : "04 Operations · Task"}
       maxWidthClassName="max-w-5xl"
       meta={<span>{item.task.status}</span>}
       onClose={onClose}
@@ -550,10 +551,10 @@ export function TaskPreviewModal({
                 <div><dt className="font-bold text-company-muted">{t("operations.project")}</dt><dd>{item.hierarchy?.project?.name || "-"}</dd></div>
                 <div><dt className="font-bold text-company-muted">{item.task.source === "clickup" ? (locale === "pl" ? "Status zadania ClickUp" : "ClickUp task status") : t("table.status")}</dt><dd>{item.task.status || "-"}</dd></div>
                 {informationBadge ? <div><dt className="font-bold text-company-muted">{locale === "pl" ? "Odbiór pracy agenta" : "Agent work review"}</dt><dd><span className={`badge badge-outline ${informationBadge.tone}`}>{informationBadge.label}</span></dd></div> : null}
-                <div><dt className="font-bold text-company-muted">Owner</dt><dd>{item.responsibility?.ownerUser?.name || item.responsibility?.ownerUser?.email || "-"}</dd></div>
-                <div><dt className="font-bold text-company-muted">Assigned</dt><dd>{item.responsibility?.assignedWorkforceEntity?.name || "-"}</dd></div>
-                <div><dt className="font-bold text-company-muted">Schedule</dt><dd>{formatDate(item.task.startDate)} {"->"} {formatDate(item.task.estimatedEndDate || item.task.dueDate)}</dd></div>
-                <div><dt className="font-bold text-company-muted">Duration</dt><dd>{item.task.estimatedDurationMinutes ? `${item.task.estimatedDurationMinutes} min` : "-"}</dd></div>
+                <div><dt className="font-bold text-company-muted">{locale === "pl" ? "Właściciel zadania" : "Task owner"}</dt><dd>{item.responsibility?.ownerUser?.name || item.responsibility?.ownerUser?.email || "-"}</dd></div>
+                <div><dt className="font-bold text-company-muted">{locale === "pl" ? "Przypisano" : "Assigned"}</dt><dd>{item.responsibility?.assignedWorkforceEntity?.name || "-"}</dd></div>
+                <div><dt className="font-bold text-company-muted">{locale === "pl" ? "Harmonogram" : "Schedule"}</dt><dd>{formatDate(item.task.startDate)} {"→"} {formatDate(item.task.estimatedEndDate || item.task.dueDate)}</dd></div>
+                <div><dt className="font-bold text-company-muted">{locale === "pl" ? "Czas trwania" : "Duration"}</dt><dd>{item.task.estimatedDurationMinutes ? `${item.task.estimatedDurationMinutes} min` : "-"}</dd></div>
                 <div><dt className="font-bold text-company-muted">{t("operations.updated")}</dt><dd>{formatDate(item.task.updatedAt)}</dd></div>
               </dl>
             </section>
@@ -1347,6 +1348,7 @@ function OperationsCalendar({
 
 export function OperationsRoute() {
   const { t, locale } = useLanguage();
+  const fromAttention = new URLSearchParams(window.location.search).get("from") === "attention";
   const [archive, setArchive] = useState("exclude");
   const activeView = currentOperationsView();
   const departmentScope = new URLSearchParams(window.location.search).get("department") as CoreAreaKey | null;
@@ -1355,10 +1357,11 @@ export function OperationsRoute() {
   const [listSelectionInitialized, setListSelectionInitialized] = useState(false);
   const [selectedTask, setSelectedTask] = useState<OperationsWorkItem | null>(null);
   const [readinessTask, setReadinessTask] = useState<string | null>(null);
-  const [holdBoardForRecord, setHoldBoardForRecord] = useState(() => Boolean(recordIdFromQuery(window.location.search, 'taskId')));
+  const [holdBoardForRecord, setHoldBoardForRecord] = useState(() => new URLSearchParams(window.location.search).has('taskId'));
   const [navigationError, setNavigationError] = useState(false);
   useEffect(() => {
     const taskId = recordIdFromQuery(window.location.search, 'taskId');
+    if (new URLSearchParams(window.location.search).has('taskId') && !taskId) { setNavigationError(true); return; }
     if (!taskId) return;
     let active = true;
     validateTaskPacketNavigation(taskId, id => api(`/v1/tasks/${id}`)).then(id => {
@@ -1426,7 +1429,7 @@ export function OperationsRoute() {
   return (
     <>
       {navigationError ? <CcNotice tone="error" title={locale === 'pl' ? 'Wskazane zadanie jest niedostępne w tym workspace.' : 'The requested task is unavailable in this workspace.'}
-        action={<CcButton variant="outline" onClick={() => { setNavigationError(false); setHoldBoardForRecord(false); }}>{locale === 'pl' ? 'Pokaż rejestr zadań' : 'Show task register'}</CcButton>} /> : null}
+        action={<CcButton variant="outline" href="/areas?area=04-operacje&view=tasks">{locale === 'pl' ? 'Pokaż rejestr zadań' : 'Show task register'}</CcButton>} /> : null}
       <CcPageHeader
         actions={<><DepartmentScopeControl baseHref={`/areas?area=04-operacje&view=${activeView}`} value={departmentScope} />{activeView !== "calendar" ? <CcSelect aria-label={locale === "pl" ? "Widok zadań" : "Task view"} value={archive} onChange={event => { setArchive(event.target.value); setListSelectionInitialized(false); clearTaskFilters(); }}><option value="exclude">{locale === "pl" ? "Bieżące" : "Current"}</option><option value="only">{locale === "pl" ? "Archiwum" : "Archive"}</option><option value="all">{locale === "pl" ? "Wszystkie" : "All"}</option></CcSelect> : null}</>}
         description={departmentScope ? `Filtered to work assigned to ${departmentLabel(departmentScope, t)}.` : t(activeView === "calendar" ? "operations.calendarDescription" : "operations.description")}
@@ -1484,7 +1487,7 @@ export function OperationsRoute() {
         </section>
       ) : null}
 
-      {readinessTask ? <TaskReadinessModal key={readinessTask} taskId={readinessTask} onClose={() => { setReadinessTask(null); setHoldBoardForRecord(false); }} onSaved={refresh} /> : null}
+      {readinessTask ? <TaskReadinessModal key={readinessTask} taskId={readinessTask} onClose={() => { setReadinessTask(null); setHoldBoardForRecord(false); if (fromAttention) navigateApp("/areas?area=00-ogolny&view=overview"); }} onSaved={refresh} /> : null}
       {selectedTask ? <TaskPreviewModal onReady={setReadinessTask} assignmentOptions={assignmentOptions} item={selectedTask} statuses={statuses} taskLists={taskLists} onClose={() => setSelectedTask(null)} onSaved={refresh} /> : null}
       {isCreateTaskOpen ? <TaskCreateModal assignmentOptions={assignmentOptions} taskLists={taskLists} statuses={statuses} defaultTaskListId={createTaskListId || undefined} onClose={() => setIsCreateTaskOpen(false)} onSaved={refresh} /> : null}
       {isCreateListOpen ? <TaskListModal departments={departments} onClose={() => setIsCreateListOpen(false)} onSaved={refresh} /> : null}

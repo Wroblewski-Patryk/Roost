@@ -1,5 +1,5 @@
 import { CapabilitySuspensionModal } from "./capability-suspension";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
 import { CcConfirmDialog } from "../../components/cc-confirm-dialog";
@@ -16,6 +16,8 @@ import type { CoreAreaKey } from "../../types";
 import { departmentLabel } from "./department-labels";
 import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
 import { RuntimeRedactionNotice, type RedactionIncident } from "./runtime-redaction-notice";
+import { recordIdFromQuery } from "../../owner-record-navigation";
+import { navigateApp } from "../../app-navigation";
 
 type Department = { id: string; key: CoreAreaKey; name: string; status: string };
 type CompanyRecord = {
@@ -105,6 +107,22 @@ function RecordEditor({ record, recordType, departmentKey, departments, onClose,
 
 export function CompanyRecordsWorkbench({ departmentKey, recordType, title }: { departmentKey: CoreAreaKey; recordType: string; title?: string }) {
   const { locale, t } = useLanguage(); const polish = locale === "pl"; const recordName = localizedRecordType(recordType, polish); const [refreshKey, setRefreshKey] = useState(0); const [editing, setEditing] = useState<CompanyRecord | null | undefined>(undefined); const [archiveRecord, setArchiveRecord] = useState<CompanyRecord | null>(null); const [archiveBusy, setArchiveBusy] = useState(false);
+  const requestedRecordId = recordIdFromQuery(window.location.search, "recordId");
+  const registerPath = `/areas?area=${departmentKey}&view=${encodeURIComponent(new URLSearchParams(window.location.search).get("view") || "overview")}`;
+  const hasInvalidRecordId = new URLSearchParams(window.location.search).has("recordId") && !requestedRecordId;
+  const fromAttention = new URLSearchParams(window.location.search).get("from") === "attention";
+  const [navigationError, setNavigationError] = useState(hasInvalidRecordId);
+  useEffect(() => {
+    if (!requestedRecordId) { setNavigationError(hasInvalidRecordId); return; }
+    setNavigationError(false);
+    let current = true;
+    void api<{ data: CompanyRecord }>(`/v1/company-records/${requestedRecordId}`).then(response => {
+      if (!current) return;
+      if (response.data?.id !== requestedRecordId || response.data.recordType !== recordType) throw new Error("record_navigation_mismatch");
+      setEditing(response.data);
+    }).catch(() => { if (current) setNavigationError(true); });
+    return () => { current = false; };
+  }, [requestedRecordId, recordType, hasInvalidRecordId]);
   const packet = useOwnerPacket<CompanyRecord[]>(`/v1/company-records?recordType=${encodeURIComponent(recordType)}&departmentKey=${departmentKey}&includeCompanyWide=true&refresh=${refreshKey}`, true, t);
   const departmentPacket = useOwnerPacket<{ departments: Department[] }>(`/v1/departments?refresh=${refreshKey}`, true, t); const rows = packet.data || []; const tableLabels = useTranslatedTableLabels();
   const columns = useMemo<Array<CcTableColumn<CompanyRecord>>>(() => [
@@ -119,8 +137,10 @@ export function CompanyRecordsWorkbench({ departmentKey, recordType, title }: { 
   function refresh() { setEditing(undefined); setRefreshKey((value) => value + 1); }
   async function confirmArchive() { if (!archiveRecord) return; setArchiveBusy(true); try { await api(`/v1/company-records/${archiveRecord.id}`, { method: "DELETE" }); setArchiveRecord(null); refresh(); } finally { setArchiveBusy(false); } }
   return <><CcPageHeader actions={<CcButton iconLeft="ph-plus" onClick={() => setEditing(null)} size="sm" variant="primary">{polish ? "Utwórz" : "Create"}</CcButton>} description={polish ? `Wspólne rekordy „${recordName.toLowerCase()}” widoczne w tym dziale przez kontekst organizacyjny. Rekord kanoniczny nigdy nie jest kopiowany.` : `Shared ${label(recordType).toLowerCase()} records visible here through organizational context. The canonical object is never copied.`} eyebrow={departmentLabel(departmentKey, t)} title={polish ? recordName : title || recordName} />
+    {navigationError ? <CcNotice live tone="error" title={polish ? "Wskazany rekord jest niedostępny w tym workspace." : "The requested record is unavailable in this workspace."} action={<CcButton href={registerPath} variant="outline">{polish ? "Otwórz rejestr" : "Open register"}</CcButton>} /> : null}
+    {fromAttention ? <CcButton href="/areas?area=00-ogolny&view=overview" variant="ghost">{polish ? "Wróć do uwag" : "Back to attention"}</CcButton> : null}
     {packet.status === "error" ? <CcNotice live tone="error" title={packet.error || "Records could not load."} /> : null}
     <CcDataTable columns={columns} rows={rows} emptyDetail={polish ? "Utwórz pierwszy rekord i przypisz jego zakres organizacyjny." : `Create the first ${label(recordType).toLowerCase()} record and assign its scope.`} emptyTitle={polish ? `Brak rekordów: ${recordName.toLowerCase()}` : `No ${label(recordType).toLowerCase()} records`} error={packet.status === "error" ? packet.error || "Records could not load." : null} getRowLabel={(row) => row.title} labels={tableLabels} loading={packet.status === "loading"} mobileMode="cards" />
-    {editing !== undefined ? <RecordEditor departmentKey={departmentKey} departments={departmentPacket.data?.departments || []} onClose={() => setEditing(undefined)} onSaved={refresh} record={editing} recordType={recordType} /> : null}
+    {editing !== undefined ? <RecordEditor departmentKey={departmentKey} departments={departmentPacket.data?.departments || []} onClose={() => fromAttention ? navigateApp("/areas?area=00-ogolny&view=overview") : setEditing(undefined)} onSaved={refresh} record={editing} recordType={recordType} /> : null}
     {archiveRecord ? <CcConfirmDialog busy={archiveBusy} confirmIcon="ph-archive" confirmLabel="Archive" confirmTone="warning" description="The record remains auditable and can be queried with archived status." detail={<strong>{archiveRecord.title}</strong>} eyebrow={label(recordType)} onCancel={() => setArchiveRecord(null)} onConfirm={confirmArchive} title="Archive record?" /> : null}</>;
 }

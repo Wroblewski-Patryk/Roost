@@ -1,3 +1,5 @@
+import { recordIdFromQuery } from "./owner-record-navigation";
+
 export type AppRouteMeta = {
   id: string;
   href: string;
@@ -326,14 +328,18 @@ export function canonicalPostAuthPath(pathname?: string | null) {
     const params = new URLSearchParams(rawQuery);
     const area = params.get("area");
     const view = params.get("view");
+    const fromAttention = params.getAll("from").length === 1 && params.get("from") === "attention" ? "&from=attention" : "";
+    const recordId = recordIdFromQuery(rawQuery, "recordId");
+    const taskId = recordIdFromQuery(rawQuery, "taskId");
+    const decisionId = recordIdFromQuery(rawQuery, "decisionId");
+    if (area && view === "decisions" && contextualDecisionAreas.has(area)) {
+      return `/areas?area=${encodeURIComponent(area)}&view=decisions${decisionId ? `&decisionId=${decisionId}${fromAttention}` : ""}`;
+    }
     if (area && view && contextualRecordViews[area]?.includes(view)) {
-      return `/areas?area=${encodeURIComponent(area)}&view=${encodeURIComponent(view)}`;
+      return `/areas?area=${encodeURIComponent(area)}&view=${encodeURIComponent(view)}${recordId ? `&recordId=${recordId}${fromAttention}` : ""}`;
     }
     if (area && view === "tasks" && contextualTaskAreas.has(area)) {
-      return `/areas?area=${encodeURIComponent(area)}&view=tasks`;
-    }
-    if (area && view === "decisions" && contextualDecisionAreas.has(area)) {
-      return `/areas?area=${encodeURIComponent(area)}&view=decisions`;
+      return `/areas?area=${encodeURIComponent(area)}&view=tasks${taskId ? `&taskId=${taskId}${fromAttention}` : ""}`;
     }
     if (area && view === "procedures" && contextualProcedureAreas.has(area)) {
       return `/areas?area=${encodeURIComponent(area)}&view=procedures`;
@@ -357,6 +363,7 @@ export function canonicalPostAuthPath(pathname?: string | null) {
       const view = params.get("view");
       const department = params.get("department");
       const base = view === "calendar" ? "/areas?area=04-operacje&view=calendar" : view === "procedures" ? "/areas?area=04-operacje&view=procedures" : canonicalOperationsPath;
+      if (view === "tasks" && taskId) return `${canonicalOperationsPath}&taskId=${taskId}${fromAttention}`;
       return department ? `${base}&department=${encodeURIComponent(department)}` : base;
     }
     if (area === "05-relacje") {

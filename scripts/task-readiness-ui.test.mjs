@@ -152,7 +152,7 @@ try {
   await unchangedPreview.goto(`http://127.0.0.1:${server.address().port}`);
   await unchangedPreview.getByText("ClickUp task status", { exact: true }).waitFor();
   await unchangedPreview.getByText("Worker result: accepted", { exact: true }).waitFor();
-  await unchangedPreview.getByRole("button", { name: "Save and prepare execution", exact: true }).click();
+  await unchangedPreview.getByRole("button", { name: "Open Worker result", exact: true }).click();
   await unchangedPreview.waitForFunction(() => window.readyOpened);
   assert.equal(await unchangedPreview.evaluate(() => window.readyOpened), packet.editor.task.id);
   assert.deepEqual(unchangedRequests, []);

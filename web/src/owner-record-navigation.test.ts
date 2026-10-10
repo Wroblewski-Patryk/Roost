@@ -1,10 +1,19 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { innovationRecordPath, recordIdFromQuery, validateDecisionNavigation, validateTaskNavigation, validateTaskPacketNavigation, validateGovernedDecisionPacketNavigation } from "./owner-record-navigation";
+import { canonicalPostAuthPath } from "./app-route-registry";
 
 const id = "00000000-0000-4000-8000-000000000001";
 const other = "00000000-0000-4000-8000-000000000002";
 const canonical = "/areas?area=11-innowacje&view=overview";
+
+test("attention links retain only exact record targets after authentication", () => {
+  assert.equal(canonicalPostAuthPath(`/areas?area=04-operacje&view=tasks&taskId=${id}&from=attention`), `/areas?area=04-operacje&view=tasks&taskId=${id}&from=attention`);
+  assert.equal(canonicalPostAuthPath(`/areas?area=01-strategia&view=decisions&decisionId=${id}&from=attention`), `/areas?area=01-strategia&view=decisions&decisionId=${id}&from=attention`);
+  assert.equal(canonicalPostAuthPath(`/areas?area=09-technologia&view=incidents&recordId=${id}&from=attention`), `/areas?area=09-technologia&view=incidents&recordId=${id}&from=attention`);
+  assert.equal(canonicalPostAuthPath(`/areas?area=04-operacje&view=tasks&taskId=${id}&taskId=${other}&from=attention`), "/areas?area=04-operacje&view=tasks");
+  assert.equal(canonicalPostAuthPath(`/areas?area=01-strategia&view=decisions&decisionId=invalid&from=attention`), "/areas?area=01-strategia&view=decisions");
+});
 
 test("governed Decision navigation checks the exact canonical record before loading its current impact", async () => {
   assert.equal(await validateGovernedDecisionPacketNavigation(id, async () => ({ data: { id, source: "roost_decision" } })), id);

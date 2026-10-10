@@ -114,6 +114,8 @@ export type RouteProposalPacket = {
 export type DashboardPriorityItem = {
   id: string;
   title: string;
+  kind?: "decision" | "result" | "blocker" | "incident" | "task" | "risk";
+  target?: string;
   source: string;
   severity?: string;
   status?: string;
@@ -144,6 +146,8 @@ export type DashboardCommandPacket = {
   summary?: Record<string, number>;
   departmentSignals?: DashboardDepartmentSignal[];
   priorityItems?: DashboardPriorityItem[];
+  attentionHasMore?: boolean;
+  attentionNextOffset?: number;
   nextActions?: DashboardNextAction[];
   latestRouteProposals?: RouteProposal[];
   blockedActions?: Array<string | { action?: string; reason?: string }>;

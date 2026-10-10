@@ -155,7 +155,8 @@ export const adapterManifest = {
       { method: "GET", path: "/v1/mcp/manifest", capability: "mcp:read" }
     ],
     dashboard: [
-      { method: "GET", path: "/v1/dashboard/command", capability: "dashboard:read" }
+      { method: "GET", path: "/v1/dashboard/command", capability: "dashboard:read" },
+      { method: "GET", path: "/v1/dashboard/attention", capability: "dashboard:read" }
     ],
     departments: [
       { method: "GET", path: "/v1/departments", capability: "departments:read" },

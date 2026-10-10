@@ -171,6 +171,8 @@ export async function informationResult(db: Db, auth: AuthContext, taskId: strin
   const sources = await db.companyRecord.findMany({ where: { workspaceId: auth.workspaceId, id: { in: contract.context.company.map((r: any) => r.id) } }, select: { id: true, title: true, updatedAt: true } });
   const materialVersion = await digest({ id: execution.id, finalResponse: execution.finalResponse, summary: execution.summary, metadata: execution.metadata, verification: execution.verification });
   const history = await db.agentExecutionEvent.findFirst({ where: { executionId: execution.id, type: "information_review" }, orderBy: { createdAt: "desc" } });
+  const timeline = await db.agentExecutionEvent.findMany({ where: { workspaceId: auth.workspaceId, executionId: execution.id },
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }], take: 101, select: { id: true, type: true, createdAt: true } });
   const w = await db.workspace.findUniqueOrThrow({ where: { id: auth.workspaceId } });
   const admitted = await db.agentExecutionEvent.findFirst({ where: { executionId: execution.id, type: "information_admitted" } });
   const native: any = (execution.verification as any)?.informationRuntime, owned: any = (execution.verification as any)?.ownedTreeReceipt;
@@ -181,7 +183,13 @@ export async function informationResult(db: Db, auth: AuthContext, taskId: strin
     reason: (execution.errorState as any)?.code ?? null, canReview: nativeProven && execution.status === "completed" && auth.authType === "user" && auth.userId === w.ownerUserId && !history,
     materialVersion, review: history ? { decision: (history.payload as any).decision, summary: (history.payload as any).summary } : null,
     sources: sources.map(s => ({ id: s.id, title: s.title, revision: s.updatedAt.toISOString() })),
-    budget: { maxAttempts: contract.budgets.maxAttempts, maxDurationSeconds: contract.budgets.maxDurationSeconds, maxOutputTokensIntent: contract.budgets.maxOutputTokens, tokenCostEnforcement: "unavailable" } };
+    budget: { maxAttempts: contract.budgets.maxAttempts, maxDurationSeconds: contract.budgets.maxDurationSeconds, maxOutputTokensIntent: contract.budgets.maxOutputTokens, tokenCostEnforcement: "unavailable" },
+    execution: { attempt: execution.attempt, startedAt: execution.startedAt, completedAt: execution.completedAt,
+      model: (contract.modelSelection?.modelSelection ?? contract.modelSelection)?.model ?? null,
+      effort: (contract.modelSelection?.modelSelection ?? contract.modelSelection)?.effort ?? null,
+      checkpoint: (execution.checkpoint as any)?.stage ?? null,
+      eventsTruncated: timeline.length > 100,
+      events: timeline.slice(0, 100).map(event => ({ id: event.id, type: event.type, at: event.createdAt.toISOString() })) } };
   requireRuntimeContent(result, "owner.information_result", { workspaceId: auth.workspaceId, taskId }); return result;
 }
 

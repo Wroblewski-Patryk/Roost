@@ -8115,6 +8115,23 @@ textarea:focus-visible,
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.09), inset 3px 0 0 #8b83ff, 0 0 32px rgb(94 101 255 / 0.13);
 }
 
+.roost-attention-toggle {
+  min-height: 44px;
+  margin: 0.35rem 0 0 3.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.65rem;
+  color: #c7d9f3;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.roost-attention-toggle:hover,
+.roost-attention-toggle:focus-visible {
+  background: rgb(128 172 255 / 0.14);
+  outline: 2px solid #8b83ff;
+  outline-offset: 2px;
+}
+
 .roost-decision-number {
   color: #8bd99e;
   font-family: inherit;
@@ -8455,8 +8472,8 @@ textarea:focus-visible,
 
 .roost-decision-inspector > header button {
   display: grid;
-  width: 2rem;
-  height: 2rem;
+  width: 2.75rem;
+  height: 2.75rem;
   place-items: center;
   border: 1px solid transparent;
   border-radius: 8px;
@@ -8689,6 +8706,13 @@ textarea:focus-visible,
 }
 
 @media (max-width: 1279px) {
+  .roost-inspector-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 59;
+    background: rgb(0 7 15 / 0.72);
+  }
+
   .roost-liquid-dashboard.has-inspector {
     display: block;
   }
@@ -8703,6 +8727,7 @@ textarea:focus-visible,
     overflow-y: auto;
     border: 1px solid var(--roost-glass-line-strong);
     border-radius: 17px;
+    background: #0b1c2b;
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), -28px 20px 80px rgb(0 0 0 / 0.45);
   }
 
@@ -8908,7 +8933,7 @@ textarea:focus-visible,
     top: 4.35rem;
     right: 0.55rem;
     bottom: 0.55rem;
-    width: calc(100vw - 1.1rem);
+    width: calc(100% - 1.1rem);
   }
 
   .roost-workspace-popover {

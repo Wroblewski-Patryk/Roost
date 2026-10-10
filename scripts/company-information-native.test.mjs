@@ -39,6 +39,20 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       // Model a pre-existing audit tombstone in the disposable database. The
       // normal application writer intentionally refuses to create one directly.
       await prisma.$executeRaw`UPDATE company_records SET source='runtime_redaction_v1' WHERE id=${redacted.id}::uuid`;
+      const initialAttention = await request('/v1/dashboard/command', token);
+      assert.equal(initialAttention.status, 200, JSON.stringify(initialAttention.body));
+      assert.ok(initialAttention.body.data.priorityItems.some(item => item.kind === 'incident' && item.id === redacted.id
+        && item.target === `/areas?area=09-technologia&view=incidents&recordId=${redacted.id}&from=attention`));
+      await prisma.companyRecord.createMany({ data: Array.from({ length: 26 }, (_, index) => ({ workspaceId, recordType: 'technical_incident', key: `g7-attention-${index}`, title: `Synthetic attention incident ${index}`, status: 'active' })) });
+      const firstAttentionPage = await request('/v1/dashboard/command', token);
+      assert.equal(firstAttentionPage.status, 200, JSON.stringify(firstAttentionPage.body));
+      assert.equal(firstAttentionPage.body.data.priorityItems.length, 25);
+      assert.equal(firstAttentionPage.body.data.attentionHasMore, true);
+      const secondAttentionPage = await request(`/v1/dashboard/attention?offset=${firstAttentionPage.body.data.attentionNextOffset}`, token);
+      assert.equal(secondAttentionPage.status, 200, JSON.stringify(secondAttentionPage.body));
+      assert.ok(secondAttentionPage.body.data.items.some(item => item.id === redacted.id && item.kind === 'incident'));
+      assert.equal(secondAttentionPage.body.data.hasMore, false);
+      assert.equal(new Set([...firstAttentionPage.body.data.priorityItems, ...secondAttentionPage.body.data.items].map(item => `${item.kind}:${item.id}`)).size, 27);
       contract = companyInformationFixture().packet.contract;
       contract.objective.goalId = goal.id; contract.assignment.agentId = agent.id;
       contract.singleTask.contractId = `roost-task:${task.id}`; contract.singleTask.accountableManager = ref(manager);
@@ -207,6 +221,10 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         managedRuntimeApproval: candidate.body.data.approval });
       assert.equal(proposal.status, 201, JSON.stringify(proposal.body));
       const decisionId = proposal.body.data.record.id;
+      const decisionAttention = await request('/v1/dashboard/command', token);
+      assert.equal(decisionAttention.status, 200, JSON.stringify(decisionAttention.body));
+      assert.ok(decisionAttention.body.data.priorityItems.some(item => item.kind === 'decision' && item.id === decisionId
+        && item.target === `/areas?area=01-strategia&view=decisions&decisionId=${decisionId}&from=attention`));
       let decision = await request(`/v1/decisions/${decisionId}/governance`, token); assert.equal(decision.status, 200);
       let accepted = await request(`/v1/decisions/${decisionId}/governance/actions`, token, { requestId: randomUUID(), expectedVersion: decision.body.data.expectedVersion, action: 'accept', previewId: decision.body.data.previews[0].id });
       assert.equal(accepted.status, 409, JSON.stringify(accepted.body));
@@ -249,6 +267,9 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       decision = await request(`/v1/decisions/${decisionId}/governance`, token);
       accepted = await request(`/v1/decisions/${decisionId}/governance/actions`, token, { requestId: randomUUID(), expectedVersion: decision.body.data.expectedVersion, action: 'accept', previewId: decision.body.data.previews[0].id });
       assert.equal(accepted.status, 201, JSON.stringify(accepted.body));
+      const acceptedAttention = await request('/v1/dashboard/command', token);
+      assert.equal(acceptedAttention.status, 200, JSON.stringify(acceptedAttention.body));
+      assert.ok(!acceptedAttention.body.data.priorityItems.some(item => item.kind === 'decision' && item.id === decisionId));
       assert.equal(await prisma.$queryRawUnsafe(`SELECT count(*)::int AS n FROM decision_acceptances WHERE decision_id='${decisionId}'`).then(rows => rows[0].n), 1);
       const acceptedDecision = await prisma.decision.findUniqueOrThrow({ where: { id: decisionId } });
       const runtimeContract = structuredClone(c);
@@ -436,6 +457,11 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const failedResult = await request(`${root}/information-result`, token);
       assert.equal(failedResult.body.data.status, 'failed');
       assert.equal(failedResult.body.data.canReview, false);
+      assert.ok(failedResult.body.data.execution.events.some(event => event.type === 'failed'));
+      const resultAttention = await request('/v1/dashboard/command', token);
+      assert.equal(resultAttention.status, 200, JSON.stringify(resultAttention.body));
+      assert.ok(resultAttention.body.data.priorityItems.some(item => item.kind === 'result' && item.id === runtimeTask.id
+        && item.status === 'failed' && item.target === `/areas?area=04-operacje&view=tasks&taskId=${runtimeTask.id}&from=attention`));
       assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: runtimeTask.id } })).status, 'todo');
       const failedBoard = await request('/v1/operations/work-items?limit=200', token);
       const failedBoardTask = failedBoard.body.data.workItems.find(item => item.task.id === runtimeTask.id);
