@@ -80,7 +80,10 @@ try {
         const resultLink = page.locator(`a[href='${resultTarget}']`);
         assert.equal(await resultLink.isVisible(), true);
         if (width === 720) {
-          await resultLink.focus();
+          await close.evaluate(node => new Promise(resolve => requestAnimationFrame(resolve)));
+          assert.equal(await close.evaluate(node => node === document.activeElement), true);
+          await page.keyboard.press("Shift+Tab");
+          assert.equal(await resultLink.evaluate(node => node === document.activeElement), true);
           assert.equal(await resultLink.evaluate(node => {
             const bounds = node.getBoundingClientRect();
             return bounds.top >= 0 && bounds.bottom <= innerHeight;
