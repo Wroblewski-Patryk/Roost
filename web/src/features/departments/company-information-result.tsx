@@ -42,7 +42,7 @@ const messages = {
   }
 } as const;
 
-export function CompanyInformationResult({ taskId, canStart, onSaved }: { taskId: string; canStart: boolean; onSaved?: () => void }) {
+export function CompanyInformationResult({ taskId, canStart, onAuthorize, onSaved }: { taskId: string; canStart: boolean; onAuthorize?: () => void; onSaved?: () => void }) {
   const { locale } = useLanguage(), c = messages[locale === "pl" ? "pl" : "en"];
   const [data, setData] = useState<InformationResult | null>(null), [reading, setReading] = useState(true), [busy, setBusy] = useState(false);
   const [error, setError] = useState<"error" | "authority" | "conflict" | null>(null), [saved, setSaved] = useState<"started" | "saved" | null>(null), [summary, setSummary] = useState("");
@@ -95,7 +95,7 @@ export function CompanyInformationResult({ taskId, canStart, onSaved }: { taskId
   }
   return <section aria-label={c.title} className="grid min-w-0 gap-4 border-t border-base-300 pt-4">
     <h3 className="font-bold">{c.title}</h3><p className="text-sm text-company-muted">{c.boundary}</p>
-    <div className="flex flex-wrap gap-2"><CcButton type="button" size="sm" variant="outline" disabled={reading || busy} onClick={() => void load()}>{c.refresh}</CcButton>{canStart ? <CcButton type="button" size="sm" disabled={busy || reading || status === "pending" || status === "running"} onClick={() => void start()}>{c.run}</CcButton> : null}</div>
+    <div className="flex flex-wrap gap-2"><CcButton type="button" size="sm" variant="outline" disabled={reading || busy} onClick={() => void load()}>{c.refresh}</CcButton>{canStart && status === "empty" && onAuthorize ? <CcButton type="button" size="sm" variant="outline" disabled={busy || reading} onClick={onAuthorize}>{locale === "pl" ? "Autoryzuj jedną próbę" : "Authorize one attempt"}</CcButton> : null}{canStart ? <CcButton type="button" size="sm" disabled={busy || reading || status === "pending" || status === "running"} onClick={() => void start()}>{c.run}</CcButton> : null}</div>
     {reading && !data ? <CcNotice tone="loading" title={c.loading} /> : null}
     {error ? <CcNotice live tone="error" title={c[error]} /> : saved ? <CcNotice live tone="success" title={c[saved]} /> : null}
     {data ? <>

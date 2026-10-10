@@ -26,7 +26,7 @@ import { isDeepStrictEqual } from "node:util";
 import { taskReviewView, recordTaskReview, actOnTaskReview } from "./task-review";
 import { inspectReady, lockReadyTask, readyTransaction, submitReady, readyEditorData, submissionVersion } from "./task-execution-readiness";
 import { companyInformationClass, isCompanyInformation } from "./company-information-preparation";
-import { companyRuntimeClass, isInformationRuntime, startInformationTask, informationResult, reviewInformationResult } from "./company-information-runtime";
+import { companyRuntimeClass, isInformationRuntime, informationApprovalCandidate, startInformationTask, informationResult, reviewInformationResult } from "./company-information-runtime";
 import { taskRiskView, prepareRiskScope, recordRiskAssessment } from "./task-risk";
 import { acknowledgeContextStop, contextStopCode, guardExecutionContext } from "./execution-context-stop";
 import { requireWorkspaceRole, roleAtLeast } from "../../auth/workspace-access";
@@ -401,6 +401,12 @@ agentRuntimeRouter.get("/tasks/:id/information-result", asyncHandler(async (req,
   res.setHeader("Cache-Control", "no-store");
   const result = await readyTransaction(tx => informationResult(tx, req.auth!, z.string().uuid().parse(req.params.id)));
   if ("error" in result) return sendApiError(res, 404, result.error!);
+  res.json({ data: result });
+}));
+agentRuntimeRouter.get("/tasks/:id/information-approval-candidate", asyncHandler(async (req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  const result = await retryContextRead(() => readyTransaction(tx => informationApprovalCandidate(tx, req.auth!, z.string().uuid().parse(req.params.id))));
+  if ("error" in result && result.error) return sendApiError(res, result.error === "forbidden" ? 403 : result.error === "task_not_found" ? 404 : 409, result.error);
   res.json({ data: result });
 }));
 agentRuntimeRouter.post("/tasks/:id/actions/start-information", asyncHandler(async (req, res) => {

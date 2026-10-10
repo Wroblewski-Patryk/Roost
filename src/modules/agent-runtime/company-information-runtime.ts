@@ -17,6 +17,34 @@ const digest = async (v: any) => createHash("sha256").update((await pilot).trust
 const hash = z.string().regex(/^[a-f0-9]{64}$/), id = z.string().uuid();
 export const isInformationRuntime = (c: any) => c?.executionClass === companyRuntimeClass;
 
+function managedInformationSelection(contract: any) {
+  const selected = contract.modelSelection?.schemaVersion ? contract.modelSelection.modelSelection : contract.modelSelection;
+  return { schemaVersion: "roost-managed-hermes-backend-v1" as const, agent: "managed_hermes" as const,
+    riskClass: "low" as const, fallback: "none" as const,
+    attemptPolicy: { maxTurns: 1, apiMaxRetries: 0, unavailable: "stop_attempt" as const, restart: "never" as const },
+    backend: "codex_responses" as const, provider: "openai-codex" as const,
+    modelSelection: selected, auth: "same_owner_subscription" as const };
+}
+
+export async function informationApprovalCandidate(db: Db, auth: AuthContext, taskId: string) {
+  if (process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED !== "true") return { error: "company_runtime_unqualified" };
+  const workspace = await db.workspace.findUnique({ where: { id: auth.workspaceId }, select: { ownerUserId: true } });
+  if (!workspace || auth.authType !== "user" || auth.userId !== workspace.ownerUserId || auth.workspaceRole !== "owner") return { error: "forbidden" };
+  const ready = await inspectReady(db, auth.workspaceId, taskId);
+  if (ready.error) return ready;
+  const contract: any = ready.pin.contract;
+  if (!["roost-company-information-v1", companyRuntimeClass].includes(contract.executionClass)) return { error: "company_information_scope_invalid" };
+  const key = await db.trustedProviderTicketKey.findUnique({ where: { workspaceId: auth.workspaceId }, select: { installationId: true } });
+  if (!key) return { error: "managed_installation_unavailable" };
+  const selection = managedInformationSelection(contract);
+  return { approval: { schemaVersion: "roost-managed-runtime-approval-v1" as const, taskId, applicationId: null,
+    executionClass: companyRuntimeClass, installationId: key.installationId, selectionDigest: await digest(selection),
+    backend: "codex_responses" as const, riskClass: "low" as const, mode: "trusted_provider_pilot" as const,
+    residualRiskAccepted: true as const, acknowledgement: "windows_account_authority_not_os_isolation" as const },
+    model: selection.modelSelection.model, reasoningEffort: selection.modelSelection.reasoningEffort,
+    maxDurationSeconds: contract.budgets.maxDurationSeconds, maxOutputTokensIntent: contract.budgets.maxOutputTokens };
+}
+
 export async function informationApproval(db: Db, workspaceId: string, taskId: string, selection: any) {
   const selectionDigest = await digest(selection);
   const rows = await db.$queryRaw<any[]>`SELECT d.id,r.version,d.updated_at AS revision,r.body,
@@ -54,10 +82,8 @@ export async function startInformationTask(db: Db, auth: AuthContext, taskId: st
   if (ready.error) return ready;
   const pin: any = ready.pin, c = structuredClone(pin.contract);
   if (!["roost-company-information-v1", companyRuntimeClass].includes(c.executionClass)) return { error: "company_information_scope_invalid" };
-  const selected = c.modelSelection?.schemaVersion ? c.modelSelection.modelSelection : c.modelSelection;
   c.executionClass = companyRuntimeClass; c.budgets.maxAttempts = 1;
-  c.modelSelection = { schemaVersion: "roost-managed-hermes-backend-v1", agent: "managed_hermes", riskClass: "low", fallback: "none",
-    attemptPolicy: { maxTurns: 1, apiMaxRetries: 0, unavailable: "stop_attempt", restart: "never" }, backend: "codex_responses", provider: "openai-codex", modelSelection: selected, auth: "same_owner_subscription" };
+  c.modelSelection = managedInformationSelection(c);
   const approval = await informationApproval(db, auth.workspaceId, taskId, c.modelSelection);
   if (!approval) return { error: "runtime_authority_required" };
   if (await db.agentExecution.count({ where: { workspaceId: auth.workspaceId, taskId, metadata: { path: ["readyContextPin", "runtimeDecisionId"], equals: approval.decisionId } } })) return { error: "information_budget_spent_new_plan_required" };

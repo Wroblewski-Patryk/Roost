@@ -11,6 +11,7 @@ import { useLanguage, type MessageKey } from "../../i18n/i18n";
 import { humanizeBusinessValue } from "./shared";
 import { ChangedContextSources } from "./changed-context-sources";
 import { CompanyInformationResult } from "./company-information-result";
+import { CompanyInformationAuthorization } from "./company-information-authorization";
 import { SingleTaskFields } from "./single-task-fields";
 import { TaskRoleFields, TaskRoleSummary } from "./task-role-fields";
 import { TaskReviewModal } from "./task-review";
@@ -29,6 +30,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
   const [reviewOpen, setReviewOpen] = useState(false);
   const [compositionOpen,setCompositionOpen]=useState(false);
   const [riskOpen, setRiskOpen] = useState(false);
+  const [authorizationOpen, setAuthorizationOpen] = useState(false);
   const [links, setLinks] = useState({ projectId: "", goalId: "", assignedWorkforceEntityId: "" });
   const mounted = useRef(true), errorRef = useRef<HTMLDivElement>(null);
   const submission = useRef<{ body: string; requestId: string } | null>(null);
@@ -131,6 +133,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
   if (reviewOpen) return <TaskReviewModal taskId={taskId} onClose={() => { setReviewOpen(false); void load(); }} onSaved={onSaved}/>;
   if (compositionOpen) return <TaskProcedureCompositionModal taskId={taskId} onClose={()=>{setCompositionOpen(false);void load(e?.applicationId??undefined,true);}}/>;
   if (riskOpen) return <TaskRiskModal taskId={taskId} input={e && draft ? contractInput(e,draft) : undefined} onClose={()=>{setRiskOpen(false);void load(e?.applicationId??undefined,true);}} onSaved={onSaved}/>;
+  if (authorizationOpen) return <CompanyInformationAuthorization taskId={taskId} taskTitle={e?.task.title ?? "Information task"} onClose={()=>{setAuthorizationOpen(false);void load();onSaved?.();}}/>;
   return <CcRecordEditorModal titleId="task-readiness-title" eyebrow={tr("title")} title={e?.task.title || tr("title")} description={tr("description")} closeLabel={tr("close")} onClose={close} onSubmit={submit} maxWidthClassName="max-w-5xl" actions={<>
     {!informational ? <CcButton disabled={Boolean(busy)||dirty} onClick={()=>setCompositionOpen(true)}>{locale==="pl"?"Skład procedury":"Procedure composition"}</CcButton> : null}
     {!informational ? <CcButton variant="outline" disabled={Boolean(busy) || dirty} onClick={()=>setReviewOpen(true)}>{reviewMessages[locale === "pl" ? "pl" : "en"].open}</CcButton> : null}
@@ -142,7 +145,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
     {success ? <CcNotice live tone="success" title={tr(success)} /> : null}
     {packet && e && draft ? <>
       <section aria-label={tr("title")} className="grid gap-4 border-b border-base-300 pb-4">
-        <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-3"><span className={`badge ${packet.status === "ready" ? "badge-success" : "badge-warning"}`}>{tr(["ready", "draft", "needs_context", "needs_decision", "not_ready", "needs_revalidation"].includes(packet.status) ? packet.status : "needs_revalidation")}</span><span className="text-sm text-company-muted">{tr("taskStatus")}: {humanizeBusinessValue(e.task.status, undefined, locale)}</span></div>{!informational ? <CcButton variant="outline" disabled={Boolean(busy) || !e} onClick={()=>setRiskOpen(true)}>{locale==="pl"?"Ocena ryzyka":"Risk assessment"}</CcButton> : null}<CcButton size="sm" variant="outline" disabled={Boolean(busy)} onClick={() => void load(e.applicationId ?? undefined, dirty)}>{tr("refresh")}</CcButton></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-3"><span className={`badge ${packet.status === "ready" ? "badge-success" : "badge-warning"}`}>{tr(["ready", "draft", "needs_context", "needs_decision", "not_ready", "needs_revalidation"].includes(packet.status) ? packet.status : "needs_revalidation")}</span><span className="text-sm text-company-muted">{tr("taskStatus")}: {humanizeBusinessValue(e.task.status, undefined, locale)}</span></div><CcButton variant="outline" disabled={Boolean(busy) || !e} onClick={()=>setRiskOpen(true)}>{locale==="pl"?"Ocena ryzyka":"Risk assessment"}</CcButton><CcButton size="sm" variant="outline" disabled={Boolean(busy)} onClick={() => void load(e.applicationId ?? undefined, dirty)}>{tr("refresh")}</CcButton></div>
         {packet.status !== "ready" ? <p className="text-sm">{tr(`reason.${reason}`)}</p> : null}
         <TaskDecisionAuthorityHistory records={packet.editor.decisionAuthorities}/>
         <ChangedContextSources sources={packet.changedSources} />
@@ -158,7 +161,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
       </section>
       <CcField label={tr("executionClass")} hint={tr("executionClassHint")}>{({ id }) => <CcSelect id={id} disabled={!writable || Boolean(busy) || dirty} value={runtimeInformation ? "roost-company-information-runtime-v1" : informational ? companyInformationClass : "application"} onChange={event => { requestedClass.current = event.target.value; submission.current = null; void load(); }}><option value="application">{tr("applicationTask")}</option><option value={companyInformationClass}>{tr("informationTask")}</option>{runtimeInformation ? <option disabled value="roost-company-information-runtime-v1">{locale === "pl" ? "Zadanie informacyjne — wykonanie" : "Information task — runtime"}</option> : null}</CcSelect>}</CcField>
       {informational && !runtimeInformation ? <CcNotice tone="info" title={tr("informationTask")} detail={tr("information.boundary")} /> : null}
-      {informational ? <CompanyInformationResult taskId={taskId} canStart={Boolean(packet.canSubmit && packet.status === "ready" && !dirty && !busy && !e.activeExecution)} onSaved={() => { void load(); onSaved?.(); }} /> : null}
+      {informational ? <CompanyInformationResult taskId={taskId} canStart={Boolean(packet.canSubmit && packet.status === "ready" && !dirty && !busy && !e.activeExecution)} onAuthorize={()=>setAuthorizationOpen(true)} onSaved={() => { void load(); onSaved?.(); }} /> : null}
       {showForm ? <fieldset disabled={!writable || Boolean(busy)} className="min-w-0 grid gap-4">
         <details open={!linksValid} className="border-b border-base-300 pb-4"><summary className="cursor-pointer py-2 font-bold">{tr("links")}</summary><p className="my-2 text-sm text-company-muted">{tr("linksHint")}</p><div className="grid gap-4 sm:grid-cols-3">{(["projectId", "goalId", "assignedWorkforceEntityId"] as const).map((key, index) => <CcField key={key} label={tr(["project", "goal", "agent"][index]!)}>{({ id }) => <CcSelect id={id} value={links[key]} onChange={event => { setLinks({ ...links, [key]: event.target.value }); setDirty(true); }}><option value="">{tr("choose")}</option>{(index === 0 ? e.projects : index === 1 ? e.goals.map(item => ({ id: item.id, name: item.title })) : e.agents).map(item => <option value={item.id} key={item.id}>{item.name}</option>)}</CcSelect>}</CcField>)}</div><CcButton className="mt-3" size="sm" variant="outline" onClick={() => void saveLinks()}>{tr("saveLinks")}</CcButton></details>
         <div className="grid gap-4 sm:grid-cols-2">{!informational ? <CcField label={tr("application")} required>{({ id }) => <CcSelect id={id} value={e.applicationId ?? ""} required onChange={event => { if (!event.target.value) return; update({ ...draft, refs: { ...draft.refs, product: [], technical: [] } }); void load(event.target.value, true); }}><option value="">{tr("choose")}</option>{e.applications.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</CcSelect>}</CcField> : null}<div className="text-sm"><p className="text-company-muted">{tr("goal")}</p><p>{e.task.goal?.title || "—"}</p><p className="mt-2 text-company-muted">{tr("agent")}</p><p>{e.agent?.name || "—"}</p></div></div>

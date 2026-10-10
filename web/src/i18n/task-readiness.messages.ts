@@ -3,7 +3,7 @@ const copy = {
   executionClassHint: ["Changing the type requires a new Ready review. Save or discard your current edits first.", "Zmiana rodzaju wymaga nowego sprawdzenia Ready. Najpierw zapisz albo odrzuć bieżące zmiany."],
   applicationTask: ["Application task", "Zadanie aplikacji"],
   informationTask: ["Company information task", "Informacyjne zadanie firmowe"],
-  "information.queue": ["Prepare for Worker", "Przygotuj dla Workera"],
+  "information.queue": ["Prepare packet only", "Przygotuj tylko pakiet"],
   "information.queued": ["Packet prepared for Worker validation. Model execution and a completed result have not been proved.", "Pakiet przygotowany do walidacji Workera. Wykonanie przez model i gotowy wynik nie zostały potwierdzone."],
   "information.preparationDisabled": ["Worker preparation is disabled. You can prepare and validate the contract.", "Przygotowanie dla Workera jest wyłączone. Możesz przygotować i sprawdzić kontrakt."],
   "information.boundary": ["Only the selected Roost company records are provided. Repository access, local file writes, push and deployment are forbidden. Ready does not launch the model; an accepted owner Decision and current risk admission are required to start.", "Przekazywane są wyłącznie wybrane rekordy firmy w Roost. Dostęp do repozytorium, lokalne zapisy, push i deployment są zabronione. Ready nie uruchamia modelu; rozpoczęcie wymaga zaakceptowanej decyzji właściciela i aktualnego dopuszczenia ryzyka."],

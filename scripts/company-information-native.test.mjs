@@ -171,11 +171,21 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const assessed = await request(`${root}/risk/assessments`, token, assessmentBody);
       assert.equal(assessed.status, 200, JSON.stringify(assessed.body));
       assert.equal(assessed.body.data.history[0].result.level, 'low');
+      process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
+      let candidate;
+      try {
+        candidate = await request(`${root}/information-approval-candidate`, token);
+        assert.equal((await request(`${root}/information-approval-candidate`, memberToken)).status, 403);
+      }
+      finally { delete process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED; }
+      assert.equal(candidate.status, 200, JSON.stringify(candidate.body));
+      assert.equal(candidate.body.data.approval.taskId, runtimeTask.id);
+      assert.equal(candidate.body.data.approval.installationId, installationId);
+      assert.equal(candidate.body.data.approval.selectionDigest, createHash('sha256').update(trustedPilotBytes(selection)).digest('hex'));
       const gov = await request('/v1/decisions/governance', token); assert.equal(gov.status, 200);
       const proposal = await request('/v1/decisions/governance/proposals', token, { requestId: randomUUID(), expectedVersion: gov.body.data.expectedVersion,
         title: 'Bounded company information runtime', context: 'Current selected preparation evidence', decision: 'Run one tool-free informational task', rationale: 'Owner needs the sourced status', consequences: 'One bounded provider attempt; no repository or native tools', scopeReason: 'Only this informational Task', scope: [{ type: 'task', id: runtimeTask.id }], supersedesId: null, conflicts: [],
-        managedRuntimeApproval: { schemaVersion: 'roost-managed-runtime-approval-v1', taskId: runtimeTask.id, applicationId: null, executionClass: 'roost-company-information-runtime-v1', installationId,
-          selectionDigest: createHash('sha256').update(trustedPilotBytes(selection)).digest('hex'), backend: 'codex_responses', riskClass: 'low', mode: 'trusted_provider_pilot', residualRiskAccepted: true, acknowledgement: 'windows_account_authority_not_os_isolation' } });
+        managedRuntimeApproval: candidate.body.data.approval });
       assert.equal(proposal.status, 201, JSON.stringify(proposal.body));
       const decisionId = proposal.body.data.record.id;
       let decision = await request(`/v1/decisions/${decisionId}/governance`, token); assert.equal(decision.status, 200);
