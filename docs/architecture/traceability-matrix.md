@@ -193,9 +193,14 @@ evidence. Operator API calls were required to renew Decision, risk, admission
 and Ready for this recovery; they do not prove a wholly console-driven retry.
 Local source repairs now cover the typed successor Decision, truncated task
 selection, preservation of the last Ready contract after rejection and a
-no-token-measurement model instruction. Focused tests pass. A disposable
-PostgreSQL/HTTP regression and deployment remain open because Docker Desktop
-is unavailable; G6 is therefore still in progress.
+no-token-measurement model instruction. Disposable PostgreSQL/HTTP testing
+exposed a proposal dependency on Ready before the Decision and admission that
+must authorize qualified Ready. The candidate now reads the current
+owner-scoped Low risk assessment; it refuses missing assessment and grants no
+execution authority. The native suite passed 12/12, removed its owned database
+and role, and restored the previous local container state. Browser checks pass.
+Deployment and production console verification remain open; G6 is still in
+progress.
 
 Current delivery work starts at [Matrix](#matrix). The amendment stream before
 it is historical evidence and should be skipped unless a specific requirement

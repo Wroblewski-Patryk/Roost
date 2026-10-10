@@ -30,10 +30,20 @@ export async function informationApprovalCandidate(db: Db, auth: AuthContext, ta
   if (process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED !== "true") return { error: "company_runtime_unqualified" };
   const workspace = await db.workspace.findUnique({ where: { id: auth.workspaceId }, select: { ownerUserId: true } });
   if (!workspace || auth.authType !== "user" || auth.userId !== workspace.ownerUserId || auth.workspaceRole !== "owner") return { error: "forbidden" };
-  const ready = await inspectReady(db, auth.workspaceId, taskId);
-  if (ready.error) return ready;
-  const contract: any = ready.pin.contract;
-  if (!["roost-company-information-v1", companyRuntimeClass].includes(contract.executionClass)) return { error: "company_information_scope_invalid" };
+  // A proposal must precede the accepted runtime Decision and qualified Ready.
+  // Read the current owner-scoped Low assessment; Ready remains mandatory when
+  // the owner actually starts an attempt.
+  const scopes = await db.$queryRaw<{ contract: any }[]>`SELECT s.input->'contract' AS contract FROM task_risk_scopes s
+    WHERE s.workspace_id=${auth.workspaceId}::uuid AND s.task_id=${taskId}::uuid
+    AND s.id=(SELECT id FROM task_risk_scopes WHERE task_id=${taskId}::uuid ORDER BY version DESC LIMIT 1)
+    AND s.scope_kind='company_information' AND s.actor_user_id=${auth.userId}::uuid
+    AND company_information_risk_contract(s.task_id,s.workspace_id,s.actor_user_id,s.input) IS TRUE
+    AND EXISTS(SELECT 1 FROM task_risk_assessments a WHERE a.id=task_risk_current(s.task_id)
+      AND a.result->>'level'='low' AND a.actor_user_id=${auth.userId}::uuid)
+    LIMIT 1`;
+  if (scopes.length !== 1) return { error: "company_risk_assessment_required" };
+  const contract = scopes[0].contract;
+  if (contract?.executionClass !== companyRuntimeClass) return { error: "company_information_scope_invalid" };
   const key = await db.trustedProviderTicketKey.findUnique({ where: { workspaceId: auth.workspaceId }, select: { installationId: true } });
   if (!key) return { error: "managed_installation_unavailable" };
   const previous = await db.$queryRaw<{ id: string; decision: string }[]>`SELECT d.id,r.body->>'decision' AS decision

@@ -3,7 +3,7 @@
 This is the sole active delivery handoff: current facts, authorized outcome
 and required end-to-end evidence.
 
-**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10. The second, separately approved production attempt completed and the owner accepted its result in Roost. Gate closure remains open while the owner-facing recovery fixes below lack the disposable PostgreSQL regression check and deployment. No further model attempt is authorized.
+**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10. The second, separately approved production attempt completed and the owner accepted its result in Roost. Owner-facing recovery fixes now pass disposable PostgreSQL regression; deployment and production console verification remain open. No further model attempt is authorized.
 
 Update this line only when the owner authorizes a bounded gate; a proposed
 candidate is not active work.
@@ -343,17 +343,22 @@ operator assistance is not proof that the owner can recover this path solely
 through the console. The source now prepares a typed successor Decision for a
 spent attempt, keeps the previous contract after rejected Ready, includes the
 parent task in a truncated replacement selector and instructs the Worker not
-to claim a token/cost measurement. Focused unit and browser checks pass, but
-the disposable PostgreSQL/HTTP test cannot start: Docker Desktop's engine is
-absent and this process cannot start its Windows service. These repairs are
-local only, not deployed or production-verified. No model budget remains.
+to claim a token/cost measurement. Native PostgreSQL/HTTP regression exposed
+one further console dependency: the Decision candidate had required Ready even
+though the accepted Decision and admission must precede qualified Ready. The
+candidate now reads the current owner-scoped Low risk assessment and refuses
+without it; actual execution still requires the accepted Decision, admission
+and qualified Ready. The disposable PostgreSQL suite passed 12/12 after this
+repair, removed its database and role, and restored the local PostgreSQL
+container to its prior stopped state. Focused browser checks also pass. These
+repairs are local only, not deployed or production-verified. No model budget
+remains.
 
-**Remaining Gate 6:** run the disposable PostgreSQL regression, complete the
-applicable repository checks, release the recovery fixes under the existing
-Roost delivery authority, and verify the owner console path without another
-model call. Preserve the accepted result and failed predecessor as separate
-production evidence; do not treat the operator-assisted run as proof of the
-entire self-service recovery path.
+**Remaining Gate 6:** complete the applicable repository checks, release the
+recovery fixes under the existing Roost delivery authority, and verify the
+owner console path without another model call. Preserve the accepted result
+and failed predecessor as separate production evidence; do not treat the
+operator-assisted run as proof of the entire self-service recovery path.
 
 **Roost outcome:** the owner creates one low-risk informational company task in
 the console, assigns the configured local agent and sees its result and status

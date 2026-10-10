@@ -163,6 +163,12 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         scopeKind: 'company_information', applicationId: null, contract: c, prompt: 'Use only the selected current source and cite its revision.', baseBranch: null, releaseSet: null });
       assert.equal(riskScope.status, 200, JSON.stringify(riskScope.body));
       assert.equal(riskScope.body.data.members.find(member => member.id === runtimeTask.id).scope.prompt, 'Use only the selected current source and cite its revision.');
+      process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
+      try {
+        const premature = await request(`${root}/information-approval-candidate`, token);
+        assert.equal(premature.status, 409);
+        assert.equal(premature.body.error, 'company_risk_assessment_required');
+      } finally { delete process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED; }
       const staleScope = await request(`${root}/risk/scope`, token, { requestId: randomUUID(), expectedVersion: risk.body.data.expectedVersion,
         scopeKind: 'company_information', applicationId: null, contract: c, prompt: null, baseBranch: null, releaseSet: null });
       assert.equal(staleScope.status, 409); assert.equal(staleScope.body.error, 'task_risk_stale');

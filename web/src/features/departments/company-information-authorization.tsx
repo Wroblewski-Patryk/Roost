@@ -52,8 +52,10 @@ export function CompanyInformationAuthorization({ taskId, taskTitle, onClose }: 
     title={pl ? "Decyzja o jednej próbie runtime" : "Decision for one runtime attempt"}
     description={pl ? "Najpierw zapisz propozycję. Przegląd wpływu, dopuszczenie ryzyka i akceptacja właściciela są osobnymi krokami." : "Record a proposal first. Impact review, risk admission and owner acceptance are separate steps."}
     onClose={onClose} actions={<><CcButton variant="ghost" onClick={onClose}>{pl ? "Wróć" : "Back"}</CcButton><CcButton variant="primary" disabled={!candidate || !acknowledged || busy} loading={busy} onClick={() => void propose()}>{pl ? "Zapisz propozycję" : "Record proposal"}</CcButton></>}>
-    {error ? <CcNotice tone="error" title={pl ? "Nie można przygotować decyzji" : "Decision could not be prepared"} detail={error} /> : null}
-    {!candidate ? <CcNotice tone="loading" title={pl ? "Wczytywanie dokładnego zakresu" : "Loading exact scope"} /> : <div className="grid gap-4 text-sm">
+    {error ? <CcNotice tone="error" title={pl ? "Nie można przygotować decyzji" : "Decision could not be prepared"}
+      detail={error === "company_risk_assessment_required" ? (pl ? "Najpierw zapisz aktualną ocenę ryzyka Low dla tego zadania." : "Record a current Low risk assessment for this task first.") : error} /> : null}
+    {!candidate && !error ? <CcNotice tone="loading" title={pl ? "Wczytywanie dokładnego zakresu" : "Loading exact scope"} /> : null}
+    {candidate ? <div className="grid gap-4 text-sm">
       <p className="font-semibold">{taskTitle}</p>
       <dl className="grid gap-2 sm:grid-cols-2"><div><dt>{pl ? "Model" : "Model"}</dt><dd>{candidate.model} · {candidate.reasoningEffort}</dd></div>
         <div><dt>{pl ? "Granica" : "Boundary"}</dt><dd>{pl ? "Jedna próba, bez narzędzi i zapisów zewnętrznych" : "One attempt, no tools or external writes"}</dd></div>
@@ -63,6 +65,6 @@ export function CompanyInformationAuthorization({ taskId, taskTitle, onClose }: 
       {candidate.previousDecision ? <p className="text-warning">{pl ? "Poprzednia decyzja upoważniała do jednej próby. Nowa propozycja zastąpi ją dopiero po odrębnym przeglądzie ryzyka i akceptacji właściciela." : "The prior decision authorized one attempt. This proposal replaces it only after separate risk review and owner acceptance."}</p> : null}
       <label className="flex items-start gap-3"><input type="checkbox" className="checkbox" checked={acknowledged} onChange={event => setAcknowledged(event.target.checked)} />
         <span>{pl ? "Rozumiem te ograniczenia i chcę zapisać propozycję dla tego jednego zadania." : "I understand these limits and want to record a proposal for this one Task."}</span></label>
-    </div>}
+    </div> : null}
   </CcRecordEditorModal>;
 }
