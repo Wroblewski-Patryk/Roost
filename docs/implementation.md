@@ -3,7 +3,7 @@
 This is the sole active delivery handoff: current facts, authorized outcome
 and required end-to-end evidence.
 
-**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10. The second, separately approved production attempt completed and the owner accepted its result in Roost. Recovery fixes passed native regression and were deployed. The ClickUp-owned task remains `todo` while the production board and preview separately show the accepted Worker result. Full console-only recovery after a spent attempt remains unproved. No further model attempt is authorized.
+**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10. The second, separately approved production attempt completed and the owner accepted its result in Roost. The ClickUp-owned task remains `todo` while the production board and preview separately show the accepted Worker result. A disposable PostgreSQL, real HTTP API and owner-console browser scenario proved recovery from a synthetic spent attempt through a successor Decision, renewed risk/admission and Ready without a new model call. The console repair has not yet been observed in production; full production console-only recovery remains unproved. No further model attempt is authorized.
 
 Update this line only when the owner authorizes a bounded gate; a proposed
 candidate is not active work.
@@ -399,11 +399,34 @@ task remained in TO DO with **Worker result: accepted**; its preview showed
 **ClickUp task status: todo** and **Agent work review: Worker result: accepted**.
 No task mutation or model attempt was made during this read-back.
 
-**Remaining Gate 6:** establish bounded proof for console-only recovery after
-a spent attempt without another model call, or report why a full production
-demonstration needs new authority. Preserve the
-accepted result and failed predecessor as separate production evidence; the
-operator-assisted renewal does not prove the full self-service recovery path.
+**Local owner-console recovery proof (2026-10-10):** one integrated scenario
+used a fresh disposable PostgreSQL database with every migration, the actual
+HTTP API and the built React console in a browser, without fixture or mock API.
+It recorded a synthetic terminal failure before any provider request on a
+ClickUp-owned task. Only console clicks then changed the plan from 300 seconds
+and 4,000 output-token intent to 360 seconds and 1,200 output-token intent,
+accepted successor Decision `3312ba0e-e008-4135-9bbc-7c87c9463c78`,
+renewed Low joint risk and task-execution admission, and submitted Ready. The
+console displayed **Ready · accepted**. Authoritative read-back found exactly
+one execution, the original failed execution
+`d1f11381-fad4-417a-8bb9-f32860418797`, no final response, task status
+`todo`, unchanged ClickUp external identity, and current risk/admission seals.
+The test launched no Worker/model process, and this disposable workspace had
+no ClickUp integration. The browser stopped before **Run information task**.
+The suite passed 12/12 and removed its database and role; the pre-existing PostgreSQL
+container returned to its prior stopped state. A minimal console repair
+exposes successor authorization before renewed Ready and preserves draft edits
+when returning from authorization. This is local integrated recovery proof,
+not a second production model attempt or production console-only recovery.
+See [exact evidence](architecture/traceability-matrix.md#e-company-information-console-recovery).
+
+**Remaining Gate 6:** release and observe the console repair, while preserving
+the accepted production result and failed predecessor as separate evidence.
+The one accepted production task no longer has a spent terminal attempt to
+recover through this path. A full production console-only recovery
+demonstration would need fresh authority for a new model attempt or synthetic
+production writes. Neither is part of this continuation. The local integrated proof does not
+upgrade that production claim.
 
 **Roost outcome:** the owner creates one low-risk informational company task in
 the console, assigns the configured local agent and sees its result and status

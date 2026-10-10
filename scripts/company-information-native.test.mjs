@@ -13,7 +13,7 @@ const { createApp } = require('../dist/app.js');
 const { prisma } = require('../dist/db/prisma.js');
 
 test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL authority fences',
-  { timeout: process.env.ROOST_G6_NATIVE_RUNTIME === '1' ? 540000 : 150000 }, async t => {
+  { timeout: process.env.ROOST_G6_CONSOLE_RECOVERY_DIR ? 900000 : process.env.ROOST_G6_NATIVE_RUNTIME === '1' ? 540000 : 150000 }, async t => {
   const server = createApp().listen(0, '127.0.0.1');
   await new Promise(resolve => server.once('listening', resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -446,6 +446,42 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         assert.equal(recoveryCandidate.status, 200, JSON.stringify(recoveryCandidate.body));
         assert.equal(recoveryCandidate.body.data.previousDecision?.id, decisionId);
       } finally { delete process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED; }
+      if (process.env.ROOST_G6_CONSOLE_RECOVERY_DIR) {
+        const fs = await import('node:fs/promises');
+        const path = await import('node:path');
+        const directory = process.env.ROOST_G6_CONSOLE_RECOVERY_DIR;
+        process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
+        process.env.ROOST_CODEX_EXECUTION_ENABLED = 'true';
+        await fs.writeFile(path.join(directory, 'ready.json'), JSON.stringify({ base, taskId: runtimeTask.id,
+          failedExecutionId: runtimeExecutionId, priorDecisionId: decisionId }) + '\n');
+        const resume = path.join(directory, 'resume');
+        const deadline = Date.now() + 12 * 60_000;
+        while (Date.now() < deadline && !await fs.stat(resume).then(() => true, () => false))
+          await new Promise(resolve => setTimeout(resolve, 500));
+        assert.ok(await fs.stat(resume).then(() => true, () => false), 'console recovery did not reach the verification checkpoint');
+        const successor = await prisma.decision.findFirst({ where: { workspaceId, supersedesId: decisionId, status: 'accepted' },
+          orderBy: { createdAt: 'desc' } });
+        assert.ok(successor, 'owner console did not accept a successor Decision');
+        const renewed = await request(`${root}/execution-readiness`, token);
+        assert.equal(renewed.status, 200, JSON.stringify(renewed.body));
+        assert.equal(renewed.body.data.status, 'ready', JSON.stringify(renewed.body));
+        assert.equal(renewed.body.data.modelExecutionQualified, true);
+        const seals = await prisma.$queryRawUnsafe(`SELECT task_risk_current('${runtimeTask.id}'::uuid) AS risk, task_admission_seal('${runtimeTask.id}'::uuid,'runtime_execute') AS seal`);
+        assert.ok(seals[0].risk && seals[0].seal, 'renewed risk and admission must be current');
+        const finalTask = await prisma.task.findUniqueOrThrow({ where: { id: runtimeTask.id } });
+        assert.equal(finalTask.source, 'clickup'); assert.equal(finalTask.status, 'todo');
+        assert.equal(finalTask.externalId, 'synthetic-company-information-task');
+        assert.equal(await prisma.agentExecution.count({ where: { taskId: runtimeTask.id } }), 1,
+          'console proof must stop before another model attempt');
+        const failed = await prisma.agentExecution.findUniqueOrThrow({ where: { id: runtimeExecutionId } });
+        assert.equal(failed.status, 'failed'); assert.equal(failed.finalResponse, null);
+        process.stdout.write(`G6 console-only recovery ${JSON.stringify({ taskId: runtimeTask.id,
+          priorDecisionId: decisionId, successorDecisionId: successor.id, failedExecutionId: runtimeExecutionId,
+          ready: true, sourceTaskStatus: finalTask.status, providerInvoked: false, newExecutionCount: 0 })}\n`);
+        delete process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED;
+        delete process.env.ROOST_CODEX_EXECUTION_ENABLED;
+        return;
+      }
       await prisma.companyRecord.update({ where: { id: currentSource.id }, data: { description: 'Synthetic source changed after claim.' } });
       assert.equal((await prisma.$queryRawUnsafe(`SELECT task_risk_current('${runtimeTask.id}'::uuid) AS risk, task_admission_seal('${runtimeTask.id}'::uuid,'runtime_execute') AS seal`))[0].risk, null);
       assert.equal((await prisma.$queryRawUnsafe(`SELECT task_admission_seal('${runtimeTask.id}'::uuid,'runtime_execute') AS seal`))[0].seal, null);

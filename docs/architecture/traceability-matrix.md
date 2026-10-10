@@ -232,6 +232,38 @@ exact build. Authenticated owner API returned ClickUp task `todo`, execution
 separately showed the accepted Worker result. Full production console-only
 successor recovery remains unproved.
 
+### <a id="e-company-information-console-recovery"></a>G6 console-only recovery — integrated local proof
+
+On 2026-10-10, `npm run test:company-information:local` with
+`ROOST_G6_CONSOLE_RECOVERY=1` used one disposable PostgreSQL database with
+all migrations, a real HTTP API and the built React console in the in-app
+browser. Its synthetic ClickUp-owned task
+`3e33c76e-c2ac-4a49-b762-b67d2a83d1be` had one terminal failed execution
+`d1f11381-fad4-417a-8bb9-f32860418797` without a provider request. Via
+the owner console alone, the plan changed to 360 seconds and 1,200 intended
+output tokens; the owner accepted successor Decision
+`3312ba0e-e008-4135-9bbc-7c87c9463c78`, recorded renewed Low risk and
+`runtime_execute` admission, and submitted a new Ready. The console displayed
+**Ready · accepted**. Database/API read-back confirmed a current risk and
+admission seal, unchanged ClickUp task status `todo` and external identity,
+exactly one execution (the failed predecessor), and no final response. The
+test launched no model/Worker process, and the synthetic workspace had no
+ClickUp integration; no model call or provider writeback occurred. It stopped
+before queueing. Suite result: 12/12 passed. The owned database and role were
+absent afterward, and the existing PostgreSQL container was restored to its
+prior stopped state. Focused browser checks passed 80 readiness scenarios and
+20 information-authorization checks.
+
+The scenario exposed a console dependency: successor authorization was hidden
+when a changed plan invalidated the old Ready, despite the successor Decision
+being required before a renewed Ready. The repaired console separates the
+authorization affordance from the execution button and keeps draft edits when
+the authorization dialog closes. This is integrated local recovery evidence
+for RF-HOST-010/011 and the G6 outcome. It does not prove a production
+console-only recovery after a spent attempt; that would require fresh
+authority for a new model attempt or synthetic production writes. The previously
+observed production result and owner acceptance remain separate evidence.
+
 Current delivery work starts at [Matrix](#matrix). The amendment stream before
 it is historical evidence and should be skipped unless a specific requirement
 or implementation claim needs provenance; it is never the work queue.

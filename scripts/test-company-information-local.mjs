@@ -1,5 +1,8 @@
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
+import { mkdtemp, rm } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import { config } from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 
@@ -40,10 +43,28 @@ try {
   if (migration.status !== 0) { process.stdout.write(migration.stdout.slice(-4000)); process.stderr.write(migration.stderr.slice(-2000)); throw new Error(); }
   process.stdout.write('G6a fresh database: all migrations applied\n');
   stage = 'native_http_worker_proof';
-  const proof = run(process.execPath, ['--test', 'scripts/company-information-native.test.mjs'], environment,
-    environment.ROOST_G6_NATIVE_RUNTIME === '1' ? 600000 : 180000);
-  process.stdout.write(proof.stdout); process.stderr.write(proof.stderr);
-  if (proof.status !== 0) throw new Error();
+  if (process.env.ROOST_G6_CONSOLE_RECOVERY === '1') {
+    const bridge = await mkdtemp(path.join(os.tmpdir(), 'roost-g6-console-'));
+    try {
+      environment.ROOST_G6_CONSOLE_RECOVERY_DIR = bridge;
+      process.stdout.write(`G6 console recovery bridge: ${bridge}\n`);
+      const proof = spawn(process.execPath, ['--test', 'scripts/company-information-native.test.mjs'], {
+        env: environment, windowsHide: true, stdio: 'inherit' });
+      const code = await new Promise((resolve, reject) => {
+        proof.once('error', reject);
+        proof.once('exit', resolve);
+      });
+      if (code !== 0) throw new Error();
+    } finally {
+      if (path.dirname(bridge) === os.tmpdir() && path.basename(bridge).startsWith('roost-g6-console-'))
+        await rm(bridge, { recursive: true, force: false });
+    }
+  } else {
+    const proof = run(process.execPath, ['--test', 'scripts/company-information-native.test.mjs'], environment,
+      environment.ROOST_G6_NATIVE_RUNTIME === '1' ? 600000 : 180000);
+    process.stdout.write(proof.stdout); process.stderr.write(proof.stderr);
+    if (proof.status !== 0) throw new Error();
+  }
   stage = 'passed';
 } catch { process.stderr.write(`G6a native proof failed at ${stage}\n`); process.exitCode = 1; }
 finally {
