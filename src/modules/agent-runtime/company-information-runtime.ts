@@ -114,7 +114,7 @@ export async function informationResult(db: Db, auth: AuthContext, taskId: strin
   const task = await db.task.findFirst({ where: { id: taskId, workspaceId: auth.workspaceId } });
   if (!task) return { error: "task_not_found" };
   const execution = await db.agentExecution.findFirst({ where: { taskId, workspaceId: auth.workspaceId, applicationId: null, metadata: { path: ["executionContract", "executionClass"], equals: companyRuntimeClass } }, orderBy: { createdAt: "desc" } });
-  if (!execution) return { status: "pending", executionId: null, summary: null, finalResponse: null, reason: null, canReview: false, materialVersion: null, review: null, sources: [], budget: null };
+  if (!execution) return { status: "empty", executionId: null, summary: null, finalResponse: null, reason: null, canReview: false, materialVersion: null, review: null, sources: [], budget: null };
   const contract = (execution.metadata as any).executionContract;
   const sources = await db.companyRecord.findMany({ where: { workspaceId: auth.workspaceId, id: { in: contract.context.company.map((r: any) => r.id) } }, select: { id: true, title: true, updatedAt: true } });
   const materialVersion = await digest({ id: execution.id, finalResponse: execution.finalResponse, summary: execution.summary, metadata: execution.metadata, verification: execution.verification });
