@@ -150,8 +150,9 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         scopeKind: 'company_information', applicationId: null, contract: c, prompt: null, baseBranch: null, releaseSet: null });
       assert.equal(memberScope.status, 403, JSON.stringify(memberScope.body));
       const riskScope = await request(`${root}/risk/scope`, token, { requestId: randomUUID(), expectedVersion: risk.body.data.expectedVersion,
-        scopeKind: 'company_information', applicationId: null, contract: c, prompt: null, baseBranch: null, releaseSet: null });
+        scopeKind: 'company_information', applicationId: null, contract: c, prompt: 'Use only the selected current source and cite its revision.', baseBranch: null, releaseSet: null });
       assert.equal(riskScope.status, 200, JSON.stringify(riskScope.body));
+      assert.equal(riskScope.body.data.members.find(member => member.id === runtimeTask.id).scope.prompt, 'Use only the selected current source and cite its revision.');
       const staleScope = await request(`${root}/risk/scope`, token, { requestId: randomUUID(), expectedVersion: risk.body.data.expectedVersion,
         scopeKind: 'company_information', applicationId: null, contract: c, prompt: null, baseBranch: null, releaseSet: null });
       assert.equal(staleScope.status, 409); assert.equal(staleScope.body.error, 'task_risk_stale');

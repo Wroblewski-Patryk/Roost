@@ -20,7 +20,7 @@ const applicationRiskScopeSchema = z.object({ requestId: uuid, expectedVersion: 
 export const companyInformationRiskScopeSchema = z.object({ requestId: uuid, expectedVersion: z.string().regex(/^[a-f0-9]{64}$/),
   scopeKind: z.literal("company_information"), applicationId: z.literal(null),
   contract: z.record(z.unknown()).refine(c => c.executionClass === "roost-company-information-runtime-v1"),
-  prompt: z.literal(null).optional(), baseBranch: z.literal(null).optional(), releaseSet: z.literal(null)
+  prompt: z.string().max(20000).nullable().optional(), baseBranch: z.literal(null).optional(), releaseSet: z.literal(null)
 }).strict();
 export const riskScopeSchema = z.union([applicationRiskScopeSchema, companyInformationRiskScopeSchema]);
 export const riskAssessmentSchema = z.object({ requestId: uuid, expectedVersion: z.string().regex(/^[a-f0-9]{64}$/),

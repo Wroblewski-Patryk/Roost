@@ -133,13 +133,15 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
   if (reviewOpen) return <TaskReviewModal taskId={taskId} onClose={() => { setReviewOpen(false); void load(); }} onSaved={onSaved}/>;
   if (compositionOpen) return <TaskProcedureCompositionModal taskId={taskId} onClose={()=>{setCompositionOpen(false);void load(e?.applicationId??undefined,true);}}/>;
   if (riskOpen) {
-    const base = e && draft ? contractInput(e, draft) : undefined;
+    const base = e && draft ? !dirty && e.accepted
+      ? { applicationId: e.accepted.applicationId, contract: e.accepted.contract, prompt: e.accepted.prompt, baseBranch: e.accepted.baseBranch }
+      : contractInput(e, draft) : undefined;
     const riskInput = base && informational ? { ...base, contract: { ...base.contract,
       executionClass: "roost-company-information-runtime-v1",
       budgets: { ...base.contract.budgets, maxAttempts: 1 },
       modelSelection: { schemaVersion: "roost-managed-hermes-backend-v1", agent: "managed_hermes", riskClass: "low", fallback: "none",
         attemptPolicy: { maxTurns: 1, apiMaxRetries: 0, unavailable: "stop_attempt", restart: "never" },
-        backend: "codex_responses", provider: "openai-codex", modelSelection: base.contract.modelSelection, auth: "same_owner_subscription" }
+        backend: "codex_responses", provider: "openai-codex", modelSelection: base.contract.modelSelection?.schemaVersion === "roost-managed-hermes-backend-v1" ? base.contract.modelSelection.modelSelection : base.contract.modelSelection, auth: "same_owner_subscription" }
     } } : base;
     return <TaskRiskModal taskId={taskId} input={riskInput} onClose={()=>{setRiskOpen(false);void load(e?.applicationId??undefined,true);}} onSaved={onSaved}/>;
   }
