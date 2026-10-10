@@ -10,7 +10,7 @@ const approval = { schemaVersion: 'roost-managed-runtime-approval-v1', taskId, a
   executionClass: 'roost-company-information-runtime-v1', installationId: '00000000-0000-4000-8000-000000000004',
   selectionDigest: 'a'.repeat(64), backend: 'codex_responses', riskClass: 'low', mode: 'trusted_provider_pilot',
   residualRiskAccepted: true, acknowledgement: 'windows_account_authority_not_os_isolation' };
-const bundle = await build({ stdin: { contents: `import React from 'react';import{createRoot}from'react-dom/client';import{LanguageProvider}from'./web/src/i18n/i18n';import{CompanyInformationAuthorization}from'./web/src/features/departments/company-information-authorization';createRoot(document.getElementById('root')).render(<LanguageProvider><CompanyInformationAuthorization taskId='${taskId}' taskTitle='Selected source summary' onClose={()=>{}}/></LanguageProvider>);`,
+const bundle = await build({ stdin: { contents: `import React from 'react';import{createRoot}from'react-dom/client';import{LanguageProvider}from'./web/src/i18n/i18n';import{CompanyInformationAuthorization}from'./web/src/features/departments/company-information-authorization';import{CompanyInformationResult}from'./web/src/features/departments/company-information-result';function RecoveryFlow(){const[open,setOpen]=React.useState(false);return open?<CompanyInformationAuthorization taskId='${taskId}' taskTitle='Selected source summary' onClose={()=>setOpen(false)}/>:<CompanyInformationResult taskId='${taskId}' canStart={true} onAuthorize={()=>setOpen(true)}/>};createRoot(document.getElementById('root')).render(<LanguageProvider>{window.recoveryFlow?<RecoveryFlow/>:<CompanyInformationAuthorization taskId='${taskId}' taskTitle='Selected source summary' onClose={()=>{}}/>}</LanguageProvider>);`,
   resolveDir: process.cwd(), loader: 'tsx' }, bundle: true, write: false, jsx: 'automatic', define: { 'process.env.NODE_ENV': '"test"' } });
 const server = createServer((req, res) => {
   if (req.url === '/app.js') { res.setHeader('Content-Type', 'text/javascript'); return res.end(bundle.outputFiles[0].text); }
@@ -52,6 +52,26 @@ try {
     } else assert.deepEqual(writes[0].conflicts, []);
     assert.deepEqual(errors, []); checks += 6;
     await page.close();
+  }
+  for (const locale of ['en', 'pl']) {
+    const page = await browser.newPage(); const requests = [];
+    await page.addInitScript(value => { localStorage.setItem('companycoreLocale', value); window.recoveryFlow = true; }, locale);
+    await page.route('**/v1/**', route => {
+      requests.push({ method: route.request().method(), url: route.request().url() });
+      if (route.request().url().includes('information-result')) return route.fulfill({ json: { data: {
+        status: 'failed', executionId: oldId, summary: null, finalResponse: null, reason: 'synthetic_provider_unavailable',
+        canReview: false, materialVersion: null, review: null, sources: [], budget: null } } });
+      if (route.request().url().includes('information-approval-candidate')) return route.fulfill({ json: { data: {
+        approval, model: 'gpt-5.6-sol', reasoningEffort: 'low', maxDurationSeconds: 600,
+        maxOutputTokensIntent: 1200, previousDecision: { id: oldId, decision: 'Authorize the previous single attempt.' } } } });
+      throw new Error('Unexpected recovery UI request');
+    });
+    await page.goto(`http://127.0.0.1:${server.address().port}/`);
+    await page.getByText(locale === 'pl' ? 'Zadanie informacyjne nie powiodło się.' : 'Information task failed.').waitFor();
+    await page.getByRole('button', { name: locale === 'pl' ? 'Autoryzuj jedną próbę' : 'Authorize one attempt' }).click();
+    await page.getByText(locale === 'pl' ? 'Poprzednia decyzja upoważniała do jednej próby. Nowa propozycja zastąpi ją dopiero po odrębnym przeglądzie ryzyka i akceptacji właściciela.' : 'The prior decision authorized one attempt. This proposal replaces it only after separate risk review and owner acceptance.').waitFor();
+    assert.deepEqual(requests.map(request => request.method), ['GET', 'GET']);
+    checks += 4; await page.close();
   }
   console.log(`Company information authorization UI: ${checks} checks passed`);
 } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }

@@ -16,6 +16,9 @@ const wire = (v: any) => JSON.parse(JSON.stringify(v));
 const digest = async (v: any) => createHash("sha256").update((await pilot).trustedPilotBytes(v)).digest("hex");
 const hash = z.string().regex(/^[a-f0-9]{64}$/), id = z.string().uuid();
 export const isInformationRuntime = (c: any) => c?.executionClass === companyRuntimeClass;
+export function informationReviewTaskStatus(source: string | null, decision: "accept" | "return") {
+  return source === "clickup" ? null : decision === "accept" ? "done" : "todo";
+}
 
 function managedInformationSelection(contract: any) {
   const selected = contract.modelSelection?.schemaVersion ? contract.modelSelection.modelSelection : contract.modelSelection;
@@ -184,7 +187,8 @@ export async function informationResult(db: Db, auth: AuthContext, taskId: strin
 
 export async function reviewInformationResult(db: Db, auth: AuthContext, taskId: string, raw: unknown) {
   const input = z.object({ requestId: id, executionId: id, materialVersion: hash, decision: z.enum(["accept", "return"]), summary: z.string().trim().min(3).max(2000) }).strict().parse(raw);
-  await lockReadyTask(db, auth.workspaceId, taskId);
+  const task = await lockReadyTask(db, auth.workspaceId, taskId);
+  if (!task) return { error: "task_not_found" };
   requireRuntimeContent(input, "owner.information_review", { workspaceId: auth.workspaceId, taskId });
   const replay = await db.agentExecutionEvent.findFirst({ where: { workspaceId: auth.workspaceId, executionId: input.executionId, type: "information_review", payload: { path: ["requestId"], equals: input.requestId } } });
   const requestHash = await digest({ ...input, userId: auth.userId });
@@ -194,6 +198,9 @@ export async function reviewInformationResult(db: Db, auth: AuthContext, taskId:
   if (view.executionId !== input.executionId || view.materialVersion !== input.materialVersion) return { error: "information_review_stale" };
   const event = await db.agentExecutionEvent.create({ data: { workspaceId: auth.workspaceId, executionId: input.executionId, type: "information_review", message: input.summary,
     payload: { ...input, requestHash, actorUserId: auth.userId } } });
-  await db.task.update({ where: { id: taskId }, data: { status: input.decision === "accept" ? "done" : "todo" } });
+  // A provider owns its task status. The Roost review event is an independent
+  // result decision and must not briefly override ClickUp before the next sync.
+  const taskStatus = informationReviewTaskStatus(task.source, input.decision);
+  if (taskStatus) await db.task.update({ where: { id: taskId }, data: { status: taskStatus } });
   return { review: event.payload, replay: false };
 }

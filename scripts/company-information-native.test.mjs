@@ -126,7 +126,8 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       assert.equal(await prisma.application.count({ where: { workspaceId } }), 0);
     });
     await t.test('company risk and admission qualify normal Decision and information Ready', async () => {
-      const runtimeTask = await prisma.task.create({ data: { workspaceId, title: 'Summarize current evidenced Roost preparation and next action', goalId: contract.objective.goalId, assignedWorkforceEntityId: contract.assignment.agentId } });
+      const runtimeTask = await prisma.task.create({ data: { workspaceId, title: 'Summarize current evidenced Roost preparation and next action', goalId: contract.objective.goalId, assignedWorkforceEntityId: contract.assignment.agentId,
+        ...(process.env.ROOST_G6_NATIVE_RUNTIME === '1' ? {} : { source: 'clickup', externalId: 'synthetic-company-information-task' }) } });
       const currentSource = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: 'g6-real-status', title: 'Current Roost delivery evidence', description: 'G6a has local PostgreSQL/HTTP preparation proof. A company task can be Ready and queued without an Application or Git. Actual model execution and owner result review are still required for full G6. No application work or VPS deployment is authorized.' } });
       const unrelatedSource = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: 'g6-unselected-status', title: 'Unselected company source', description: 'This source is outside the exact task context.' } });
       const wrongActor = await prisma.user.create({ data: { email: 'member@g6-risk.example.test', passwordHash: 'synthetic-not-a-login' } });
@@ -420,12 +421,37 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const leaseDigest = createHash('sha256').update(trustedPilotBytes({ executionId: runtimeExecutionId,
         hostId: host.id, token: claimed.body.data.leaseToken })).digest('hex');
       verifyInformationAdmission(signedAdmission, signer.publicKey.export({ format: 'pem', type: 'spki' }).toString(), { leaseDigest });
+      // The read-only projection reflects a real admitted row. Native SQL
+      // correctly refuses a fabricated completed result without a Worker job.
+      const board = await request('/v1/operations/work-items?limit=200', token);
+      assert.equal(board.status, 200, JSON.stringify(board.body));
+      const boardTask = board.body.data.workItems.find(item => item.task.id === runtimeTask.id);
+      assert.equal(boardTask.task.status, 'todo');
+      assert.equal(boardTask.informationResult.executionStatus, 'running');
+      assert.equal(boardTask.informationResult.reviewDecision, null);
+      const failedAttempt = await request(`/v1/agent-runtime/executions/${runtimeExecutionId}/actions/fail`, worker, {
+        leaseToken: claimed.body.data.leaseToken, code: 'synthetic_provider_unavailable',
+        message: 'Synthetic terminal failure before any provider request', retryable: false, details: {} });
+      assert.equal(failedAttempt.status, 200, JSON.stringify(failedAttempt.body));
+      const failedResult = await request(`${root}/information-result`, token);
+      assert.equal(failedResult.body.data.status, 'failed');
+      assert.equal(failedResult.body.data.canReview, false);
+      assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: runtimeTask.id } })).status, 'todo');
+      const failedBoard = await request('/v1/operations/work-items?limit=200', token);
+      const failedBoardTask = failedBoard.body.data.workItems.find(item => item.task.id === runtimeTask.id);
+      assert.equal(failedBoardTask.informationResult.executionStatus, 'failed');
+      process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
+      try {
+        const recoveryCandidate = await request(`${root}/information-approval-candidate`, token);
+        assert.equal(recoveryCandidate.status, 200, JSON.stringify(recoveryCandidate.body));
+        assert.equal(recoveryCandidate.body.data.previousDecision?.id, decisionId);
+      } finally { delete process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED; }
       await prisma.companyRecord.update({ where: { id: currentSource.id }, data: { description: 'Synthetic source changed after claim.' } });
       assert.equal((await prisma.$queryRawUnsafe(`SELECT task_risk_current('${runtimeTask.id}'::uuid) AS risk, task_admission_seal('${runtimeTask.id}'::uuid,'runtime_execute') AS seal`))[0].risk, null);
       assert.equal((await prisma.$queryRawUnsafe(`SELECT task_admission_seal('${runtimeTask.id}'::uuid,'runtime_execute') AS seal`))[0].seal, null);
       const invalidated = await request(`${root}/execution-readiness`, token);
       assert.notEqual(invalidated.body.data.status, 'ready');
-      process.stdout.write(`G6 native risk/admission ${JSON.stringify({ taskId: runtimeTask.id, decisionId, executionId: runtimeExecutionId, hostId: host.id, acceptanceCommitted: true, ready: true, claimed: true, providerInvoked: false })}\n`);
+      process.stdout.write(`G6 native risk/admission ${JSON.stringify({ taskId: runtimeTask.id, decisionId, executionId: runtimeExecutionId, hostId: host.id, acceptanceCommitted: true, ready: true, claimed: true, providerInvoked: false, providerTaskStatus: 'todo' })}\n`);
     });
   } finally { await new Promise(resolve => server.close(resolve)); await prisma.$disconnect(); }
 });

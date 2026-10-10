@@ -1099,7 +1099,8 @@ agentRuntimeRouter.post("/executions/claim", asyncHandler(async (req, res) => {
     await prisma.agentHost.update({ where: { id: host.id }, data: { status: "online", lastSeenAt: now } });
     await appendExecutionEvent({ workspaceId, executionId: candidate.id, type: "claimed", message: `Execution claimed by ${host.name}.`, payload: { hostId: host.id, attempt: candidate.attempt + 1 } });
     const execution = await prisma.agentExecution.findUniqueOrThrow({ where: { id: candidate.id }, include: executionInclude });
-    if (execution.task.status === "todo") await prisma.task.update({ where: { id: execution.taskId }, data: { status: "in_progress" } });
+    if (execution.task.status === "todo" && !(isInformationRuntime((execution.metadata as any)?.executionContract) && execution.task.source === "clickup"))
+      await prisma.task.update({ where: { id: execution.taskId }, data: { status: "in_progress" } });
     return res.json({ data: execution });
   }
   return res.status(409).json({ error: "agent_execution_claim_conflict" });

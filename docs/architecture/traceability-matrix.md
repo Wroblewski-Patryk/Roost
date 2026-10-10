@@ -216,6 +216,17 @@ navigation did not write the Task. The `todo` board status and console-only
 spent-attempt recovery remain unproved. G6 is still in progress; no further
 model attempt is authorized.
 
+Local follow-up under RF-INT-002/003/005 separates ClickUp-owned Task status
+from Roost-owned information-result review. Claim/review no longer rewrite a
+ClickUp Task's status; the Operations board and preview project the latest
+information execution and review. Disposable PostgreSQL/HTTP passed 12/12 with
+a no-model terminal failure, unchanged source task status and a normal owner
+successor-candidate read. The database refused a fabricated completed result.
+Browser fixtures passed 80 readiness and 20 authorization checks, including
+PL/EN failed-result entry to the successor proposal without writing. These
+are local evidence only; production badge/read-back and full console-only
+successor recovery are still unproved.
+
 Current delivery work starts at [Matrix](#matrix). The amendment stream before
 it is historical evidence and should be skipped unless a specific requirement
 or implementation claim needs provenance; it is never the work queue.

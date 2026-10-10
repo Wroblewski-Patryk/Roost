@@ -7,6 +7,7 @@ import { createCompanyCoreTaskInClickUp, writeBackCompanyCoreTaskToClickUp } fro
 import { asyncHandler } from "../../middleware/async-handler";
 import { departmentRegistry, resolveDepartmentEntry } from "../../operating-model/department-registry";
 import { createEvent } from "../events/event.service";
+import { companyRuntimeClass } from "../agent-runtime/company-information-runtime";
 import { contextualEntityIds } from "../organizational-context/organizational-context.service";
 
 const OPERATIONS_DEPARTMENT_KEY = "04-operacje";
@@ -419,6 +420,21 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
   }) : taskLists;
   const taskIds = tasks.map((task) => task.id);
   const projectIds = Array.from(new Set(tasks.map((task) => task.projectId).filter((id): id is string => Boolean(id))));
+  const informationReviews = taskIds.length ? await prisma.$queryRaw<Array<{ taskId: string; executionStatus: string; reviewDecision: string | null }>>(Prisma.sql`
+    SELECT DISTINCT ON (e.task_id) e.task_id AS "taskId", e.status::text AS "executionStatus",
+      CASE WHEN review.payload->>'decision' IN ('accept', 'return') THEN review.payload->>'decision' ELSE NULL END AS "reviewDecision"
+    FROM agent_executions e
+    LEFT JOIN LATERAL (
+      SELECT event.payload FROM agent_execution_events event
+      WHERE event.workspace_id=e.workspace_id AND event.execution_id=e.id AND event.type='information_review'
+      ORDER BY event.created_at DESC, event.id DESC LIMIT 1
+    ) review ON true
+    WHERE e.workspace_id=${workspaceId}::uuid AND e.task_id IN (${Prisma.join(taskIds.map(taskId => Prisma.sql`${taskId}::uuid`))})
+      AND e.application_id IS NULL
+      AND e.metadata->'executionContract'->>'executionClass'=${companyRuntimeClass}
+    ORDER BY e.task_id, e.created_at DESC, e.id DESC
+  `) : [];
+  const informationReviewByTaskId = new Map(informationReviews.map(row => [row.taskId, row]));
 
   const [
     dependencies,
@@ -499,6 +515,7 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
     const readiness = taskReadiness(task, taskDependencies.length);
 
     return {
+      informationResult: informationReviewByTaskId.get(task.id) ?? null,
       task: {
         id: task.id,
         title: task.title,

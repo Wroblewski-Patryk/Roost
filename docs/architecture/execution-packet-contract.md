@@ -126,6 +126,12 @@ The client sends the reviewed `submissionVersion` as `expectedVersion` and a
 UUID `requestId`, never an admission pin, validation proof or acceptance identity.
 Only the existing submit command can validate and persist admission. Task status remains
 separate from Ready, and prior acceptance proof remains visible after invalidation.
+For a ClickUp-backed company information Task, ClickUp owns `Task.status`.
+Claim and owner information-result review record execution and review state in
+Roost without changing that provider-owned field. The Operations board and task
+preview show the latest information execution/review beside the source task
+status, including a distinct accepted-result badge. Native Roost tasks retain
+their ordinary status transition on owner result review.
 Errors display fixed translated diagnostic groups without echoing raw payloads.
 The form action is **Submit for execution / Przekaż do wykonania**. Missing input
 persists **Needs context**, or **Needs decision** when all diagnostics concern

@@ -372,6 +372,21 @@ that 1,200 output tokens are only intent. The Task `updatedAt` remained
 still says `todo`; its later writer and correct source-status behavior require
 separate reconciliation. No model budget remains.
 
+**Provider-owned status repair, local verification:** RF-INT-002/003/005 and
+the current ClickUp adapter make the imported Task's status provider-owned.
+The information result review event remains Roost-owned. For ClickUp-backed
+information tasks, the claim and owner review no longer change `Task.status`;
+the Operations board and task preview project the latest Worker result/review
+beside the source status. The disposable PostgreSQL/HTTP suite passed 12/12:
+a tool-free synthetic terminal failure left the ClickUp task `todo`, while the
+ordinary owner candidate read identified the previous one-attempt Decision
+for a successor proposal. No model ran. Browser fixtures passed 80 task
+readiness cases and 20 information-authorization checks, including the failed
+result → successor proposal entry in PL/EN without a write. The database
+refused a fabricated completed native result, so these checks are not proof
+of another completed model turn. Production badge/read-back and the full
+console-only successor sequence remain open.
+
 **Remaining Gate 6:** reconcile the imported Task's `todo` board status with
 the accepted result without an unauthorized ClickUp write or model call, then
 determine the bounded proof needed for console-only recovery after a spent

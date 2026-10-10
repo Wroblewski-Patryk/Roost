@@ -11,7 +11,7 @@ import { validateExecutionPacket } from "./lib/agent-host-execution-packet.mjs";
 
 const output = process.env.ROOST_QA_OUTPUT || path.join(os.tmpdir(), "roost-ready-workbench-qa");
 await mkdir(output, { recursive: true });
-const bundle = await build({ stdin: { contents: `import React from 'react';import{createRoot}from'react-dom/client';import{LanguageProvider}from'./web/src/i18n/i18n';import{TasksWorkbench}from'./web/src/features/departments/tasks-workbench';import{TaskPreviewModal}from'./web/src/features/departments/operations-route';createRoot(document.getElementById('root')).render(<LanguageProvider>{window.readyPreview ? <TaskPreviewModal item={window.readyPreview} taskLists={[]} statuses={[]} onSaved={()=>window.readySaved=true} onClose={()=>{}} onReady={id=>window.readyOpened=id}/> : <TasksWorkbench departmentKey="04-operacje" canonical/>}</LanguageProvider>);`, resolveDir: process.cwd(), loader: "tsx" }, bundle: true, write: false, jsx: "automatic", define: { "process.env.NODE_ENV": '"test"' } });
+const bundle = await build({ stdin: { contents: `import React from 'react';import{createRoot}from'react-dom/client';import{LanguageProvider}from'./web/src/i18n/i18n';import{TasksWorkbench}from'./web/src/features/departments/tasks-workbench';import{TaskCard,TaskPreviewModal}from'./web/src/features/departments/operations-route';createRoot(document.getElementById('root')).render(<LanguageProvider>{window.cardPreview ? <TaskCard row={window.cardPreview} onOpen={()=>window.cardOpened=true} draggable={false}/> : window.readyPreview ? <TaskPreviewModal item={window.readyPreview} taskLists={[]} statuses={[]} onSaved={()=>window.readySaved=true} onClose={()=>{}} onReady={id=>window.readyOpened=id}/> : <TasksWorkbench departmentKey="04-operacje" canonical/>}</LanguageProvider>);`, resolveDir: process.cwd(), loader: "tsx" }, bundle: true, write: false, jsx: "automatic", define: { "process.env.NODE_ENV": '"test"' } });
 const cssName = (await readdir("public/react/assets")).find(name => /^index-.*\.css$/.test(name));
 const css = await readFile(path.join("public/react/assets", cssName));
 const server = createServer(async (req, res) => {
@@ -146,15 +146,24 @@ try {
   assert.equal(await preview.evaluate(() => window.readyOpened), packet.editor.task.id);
   await preview.close(); checked++;
   const unchangedPreview = await browser.newPage({ viewport: { width: 834, height: 1000 } });
-  await unchangedPreview.addInitScript(task => { localStorage.setItem("companycoreLocale", "en"); window.readyPreview = { id: task.id, task: { ...task, description: "Original description", priority: "normal" } }; }, packet.editor.task);
+  await unchangedPreview.addInitScript(task => { localStorage.setItem("companycoreLocale", "en"); window.readyPreview = { id: task.id, task: { ...task, status: "todo", source: "clickup", description: "Original description", priority: "normal" }, informationResult: { executionStatus: "completed", reviewDecision: "accept" } }; }, packet.editor.task);
   const unchangedRequests = [];
   await unchangedPreview.route("**/v1/**", async route => { unchangedRequests.push(route.request().method()); return route.fulfill({ json: { data: {} } }); });
   await unchangedPreview.goto(`http://127.0.0.1:${server.address().port}`);
+  await unchangedPreview.getByText("ClickUp task status", { exact: true }).waitFor();
+  await unchangedPreview.getByText("Worker result: accepted", { exact: true }).waitFor();
   await unchangedPreview.getByRole("button", { name: "Save and prepare execution", exact: true }).click();
   await unchangedPreview.waitForFunction(() => window.readyOpened);
   assert.equal(await unchangedPreview.evaluate(() => window.readyOpened), packet.editor.task.id);
   assert.deepEqual(unchangedRequests, []);
   await unchangedPreview.close(); checked++;
+  const acceptedCard = await browser.newPage({ viewport: { width: 390, height: 650 } });
+  await acceptedCard.addInitScript(task => { localStorage.setItem("companycoreLocale", "en"); window.cardPreview = { id: task.id, task: { ...task, status: "todo", source: "clickup", priority: "low" }, informationResult: { executionStatus: "completed", reviewDecision: "accept" } }; }, packet.editor.task);
+  await acceptedCard.goto(`http://127.0.0.1:${server.address().port}`);
+  await acceptedCard.getByText("Worker result: accepted", { exact: true }).waitFor();
+  await acceptedCard.getByRole("button", { name: /Worker result: accepted/ }).click();
+  assert.equal(await acceptedCard.evaluate(() => window.cardOpened), true);
+  await acceptedCard.close(); checked++;
   const reviewPreview = await browser.newPage({ viewport: { width: 390, height: 960 } });
   await reviewPreview.addInitScript(task => { localStorage.setItem("companycoreLocale", "en"); window.readyPreview = { id: task.id, task: { ...task, description: "Original description", priority: "normal" } }; }, packet.editor.task);
   const reviewRequests = [];

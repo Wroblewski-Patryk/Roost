@@ -130,6 +130,24 @@ function statusTone(status?: string) {
   return "";
 }
 
+function informationResultBadge(row: OperationsWorkItem, locale: string) {
+  const result = row.informationResult;
+  if (!result) return null;
+  if (result.executionStatus === "completed" && result.reviewDecision === "accept") return {
+    label: locale === "pl" ? "Wynik Workera: zaakceptowany" : "Worker result: accepted", tone: "badge-success"
+  };
+  if (result.executionStatus === "completed" && result.reviewDecision === "return") return {
+    label: locale === "pl" ? "Wynik Workera: zwrócony" : "Worker result: returned", tone: "badge-warning"
+  };
+  if (result.executionStatus === "completed") return {
+    label: locale === "pl" ? "Wynik Workera: do oceny" : "Worker result: review needed", tone: "badge-info"
+  };
+  if (result.executionStatus === "failed") return {
+    label: locale === "pl" ? "Próba Workera: nieudana" : "Worker attempt: failed", tone: "badge-error"
+  };
+  return null;
+}
+
 function priorityTone(priority?: string | null) {
   const normalized = (priority || "normal").toLowerCase();
   if (normalized === "urgent" || normalized === "critical") return { className: "badge-error", icon: "ph-warning-diamond" };
@@ -216,7 +234,7 @@ function DueBadge({ dueDate, overdue }: { dueDate?: string | null; overdue?: boo
   );
 }
 
-function TaskCard({
+export function TaskCard({
   row,
   onOpen,
   onDragStart,
@@ -233,8 +251,10 @@ function TaskCard({
   density?: "board" | "calendar" | "month";
   draggable?: boolean;
 }) {
+  const { locale } = useLanguage();
   const isMonth = density === "month";
   const isCalendar = density === "calendar";
+  const informationBadge = informationResultBadge(row, locale);
   return (
     <button
       className={`roost-task-card grid rounded-company border text-left transition hover:border-primary ${isMonth ? "gap-1 px-2 py-1.5" : isCalendar ? "gap-1.5 p-2.5" : "gap-2 p-3"} ${isDragging ? "opacity-55 ring-2 ring-primary/25" : ""} ${statusTone(row.task.status)}`}
@@ -251,6 +271,7 @@ function TaskCard({
       </div>
       {!isMonth ? <div className="flex flex-wrap gap-1.5">
         <PriorityBadge priority={row.task.priority} />
+        {informationBadge ? <span className={`badge badge-outline badge-sm ${informationBadge.tone}`}>{informationBadge.label}</span> : null}
         {!isCalendar ? <DueBadge dueDate={row.task.dueDate} overdue={row.readiness?.overdue} /> : null}
         {!isCalendar && row.task.description ? <span className="badge badge-ghost badge-sm gap-1"><i className="ph-bold ph-text-align-left" aria-hidden="true"></i></span> : null}
         {!isCalendar && row.evidence?.projectResources?.length ? <span className="badge badge-ghost badge-sm gap-1"><i className="ph-bold ph-paperclip" aria-hidden="true"></i></span> : null}
@@ -448,6 +469,7 @@ export function TaskPreviewModal({
   onReady: (taskId: string) => void;
 }) {
   const { t, locale } = useLanguage();
+  const informationBadge = informationResultBadge(item, locale);
   const [reviewOpen, setReviewOpen] = useState(false), [edited, setEdited] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "error">("idle");
   const [error, setError] = useState("");
@@ -526,7 +548,8 @@ export function TaskPreviewModal({
               <dl className="mt-3 grid gap-3 text-sm">
                 <div><dt className="font-bold text-company-muted">{t("table.list")}</dt><dd>{item.hierarchy?.taskList?.name || t("operations.unassigned")}</dd></div>
                 <div><dt className="font-bold text-company-muted">{t("operations.project")}</dt><dd>{item.hierarchy?.project?.name || "-"}</dd></div>
-                <div><dt className="font-bold text-company-muted">{t("table.status")}</dt><dd>{item.task.status || "-"}</dd></div>
+                <div><dt className="font-bold text-company-muted">{item.task.source === "clickup" ? (locale === "pl" ? "Status zadania ClickUp" : "ClickUp task status") : t("table.status")}</dt><dd>{item.task.status || "-"}</dd></div>
+                {informationBadge ? <div><dt className="font-bold text-company-muted">{locale === "pl" ? "Odbiór pracy agenta" : "Agent work review"}</dt><dd><span className={`badge badge-outline ${informationBadge.tone}`}>{informationBadge.label}</span></dd></div> : null}
                 <div><dt className="font-bold text-company-muted">Owner</dt><dd>{item.responsibility?.ownerUser?.name || item.responsibility?.ownerUser?.email || "-"}</dd></div>
                 <div><dt className="font-bold text-company-muted">Assigned</dt><dd>{item.responsibility?.assignedWorkforceEntity?.name || "-"}</dd></div>
                 <div><dt className="font-bold text-company-muted">Schedule</dt><dd>{formatDate(item.task.startDate)} {"->"} {formatDate(item.task.estimatedEndDate || item.task.dueDate)}</dd></div>
