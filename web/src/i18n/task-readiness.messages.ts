@@ -30,7 +30,7 @@ const copy = {
   needs_decision: ["Needs decision", "Wymaga decyzji"],
   ready: ["Ready · accepted", "Ready · zaakceptowane"],
   needs_revalidation: ["Review required", "Wymaga ponownego sprawdzenia"],
-  author: ["Accepted by", "Akceptacja"],
+  author: ["Accepted through account", "Zapisano z konta"],
   unknownAuthor: ["Former or unavailable author", "Autor niedostępny lub poza zespołem"],
   agentAuthor: ["Historical agent acceptance", "Historyczna akceptacja agenta"],
   date: ["Accepted at", "Czas akceptacji"],
