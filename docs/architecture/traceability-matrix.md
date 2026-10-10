@@ -224,8 +224,13 @@ a no-model terminal failure, unchanged source task status and a normal owner
 successor-candidate read. The database refused a fabricated completed result.
 Browser fixtures passed 80 readiness and 20 authorization checks, including
 PL/EN failed-result entry to the successor proposal without writing. These
-are local evidence only; production badge/read-back and full console-only
-successor recovery are still unproved.
+are local evidence only. Repair commit `4b4e5040` reached `main`; Coolify
+webhook deployment `b5at3aaywxy0z2ugmt3he3zw` succeeded after a transient
+Redis `MISCONF` page error, and both public health endpoints reported the
+exact build. Authenticated owner API returned ClickUp task `todo`, execution
+`completed` and review `accept`; the refreshed Operations board and preview
+separately showed the accepted Worker result. Full production console-only
+successor recovery remains unproved.
 
 Current delivery work starts at [Matrix](#matrix). The amendment stream before
 it is historical evidence and should be skipped unless a specific requirement

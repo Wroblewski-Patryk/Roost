@@ -3,7 +3,7 @@
 This is the sole active delivery handoff: current facts, authorized outcome
 and required end-to-end evidence.
 
-**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10. The second, separately approved production attempt completed and the owner accepted its result in Roost. Recovery fixes passed native regression and were deployed; production console read-back confirms the accepted information result, while the imported task's board status later returned to `todo`. Status consistency and console-only recovery remain open. No further model attempt is authorized.
+**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10. The second, separately approved production attempt completed and the owner accepted its result in Roost. Recovery fixes passed native regression and were deployed. The ClickUp-owned task remains `todo` while the production board and preview separately show the accepted Worker result. Full console-only recovery after a spent attempt remains unproved. No further model attempt is authorized.
 
 Update this line only when the owner authorizes a bounded gate; a proposed
 candidate is not active work.
@@ -387,12 +387,23 @@ refused a fabricated completed native result, so these checks are not proof
 of another completed model turn. Production badge/read-back and the full
 console-only successor sequence remain open.
 
-**Remaining Gate 6:** reconcile the imported Task's `todo` board status with
-the accepted result without an unauthorized ClickUp write or model call, then
-determine the bounded proof needed for console-only recovery after a spent
-attempt. Preserve the accepted result and failed predecessor as separate
-production evidence; the operator-assisted renewal does not prove the full
-self-service recovery path.
+**Deployment and production read-back (2026-10-10):** repair commit `4b4e5040`
+was pushed to `main`. During rollout, the Coolify deployment page briefly
+returned HTTP 500 with Redis `MISCONF` (failed RDB persistence); the underlying
+cause was not established. The page recovered and webhook deployment
+`b5at3aaywxy0z2ugmt3he3zw` succeeded at 15:59:44 UTC. Both public `/health`
+endpoints reported exact build `4b4e5040`. Authenticated owner API read-back
+for the selected task returned source `clickup`, task status `todo`, execution
+`completed`, review `accept`. In the refreshed owner Operations board, the
+task remained in TO DO with **Worker result: accepted**; its preview showed
+**ClickUp task status: todo** and **Agent work review: Worker result: accepted**.
+No task mutation or model attempt was made during this read-back.
+
+**Remaining Gate 6:** establish bounded proof for console-only recovery after
+a spent attempt without another model call, or report why a full production
+demonstration needs new authority. Preserve the
+accepted result and failed predecessor as separate production evidence; the
+operator-assisted renewal does not prove the full self-service recovery path.
 
 **Roost outcome:** the owner creates one low-risk informational company task in
 the console, assigns the configured local agent and sees its result and status
