@@ -197,6 +197,7 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const admissionRoot = `${root}/risk-admission`;
       assert.equal((await request(admissionRoot, foreignToken)).status, 404);
       let admission = await request(admissionRoot, token); assert.equal(admission.status, 200, JSON.stringify(admission.body));
+      assert.equal(admission.body.data.scopeKind, 'company_information');
       const mixedAdmission = await request(`${admissionRoot}/scope`, token, { requestId: randomUUID(), expectedVersion: admission.body.data.expectedVersion,
         taskType: 'review', environment: 'development', targetId: currentSource.id, releaseId: currentSource.id, commit: 'a'.repeat(40),
         destructive: false, procedureId: procedure.id, rationale: 'Application fields cannot authorize company information' });

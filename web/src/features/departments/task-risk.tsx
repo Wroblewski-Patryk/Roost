@@ -19,7 +19,7 @@ export function TaskRiskModal({taskId,input,onClose,onSaved}:{taskId:string;inpu
  const [admissionOpen,setAdmissionOpen]=useState(false);
  const {locale}=useLanguage(), c:any=messages[locale==="pl"?"pl":"en"];
  const [data,setData]=useState<any>(null),[entries,setEntries]=useState<any[]>([]),[joint,setJoint]=useState(""),[release,setRelease]=useState("");
- const [busy,setBusy]=useState(false),[error,setError]=useState(false),[saved,setSaved]=useState(false),[dirty,setDirty]=useState(false),[leave,setLeave]=useState(false);
+ const [busy,setBusy]=useState(false),[error,setError]=useState<string|null>(null),[saved,setSaved]=useState(false),[dirty,setDirty]=useState(false),[leave,setLeave]=useState(false);
  const mounted=useRef(true),command=useRef<{body:string;id:string}|null>(null),base=`/v1/agent-runtime/tasks/${taskId}/risk`;
  function apply(value:any,preserve=false) {
   setData(value);
@@ -29,7 +29,7 @@ export function TaskRiskModal({taskId,input,onClose,onSaved}:{taskId:string;inpu
    setJoint(previous?.jointRationale??"");setRelease(value.members.find((m:any)=>m.id===taskId)?.releaseSetId??"");setDirty(false);
   } else setEntries(rows=>value.members.map((m:any)=>rows.find(e=>e.taskId===m.id)??{taskId:m.id,dimensions:Object.fromEntries(dimensions.map(d=>[d,{level:"",rationale:"",evidence:[]}])),uncertainty:{level:"",reasons:"",evidence:[]},contradictions:[]}));
  }
- async function load(preserve=false) {setBusy(true);setError(false);try {const r=await api<{data:any}>(base);if(mounted.current)apply(r.data,preserve);}catch{if(mounted.current)setError(true);}finally{if(mounted.current)setBusy(false);}}
+ async function load(preserve=false) {setBusy(true);setError(null);try {const r=await api<{data:any}>(base);if(mounted.current)apply(r.data,preserve);}catch(caught){if(mounted.current)setError(caught instanceof AppApiError?caught.code:"request_failed");}finally{if(mounted.current)setBusy(false);}}
  useEffect(()=>{mounted.current=true;void load();return()=>{mounted.current=false;};},[taskId]);
  function close(){if(busy)return;if(dirty)setLeave(true);else onClose();}
  function change(index:number,update:any){setEntries(rows=>rows.map((row,i)=>i===index?update:row));setDirty(true);setSaved(false);}
@@ -37,18 +37,18 @@ export function TaskRiskModal({taskId,input,onClose,onSaved}:{taskId:string;inpu
   const encoded=JSON.stringify({path,body});if(command.current?.body!==encoded)command.current={body:encoded,id:crypto.randomUUID()};
   return api<{data:any}>(`${base}/${path}`,{method:"POST",body:JSON.stringify({...body,requestId:command.current.id})});
  }
- async function prepare(){if(busy||!data?.canAssess)return;setBusy(true);setError(false);setSaved(false);try{
+ async function prepare(){if(busy||!data?.canAssess)return;setBusy(true);setError(null);setSaved(false);try{
   const scope=input??data.members.find((m:any)=>m.id===taskId)?.scope;
   const ref=data.evidence.find((e:any)=>e.id===release);
   const {applicationId,contract,prompt,baseBranch}=scope??{};
   const company = contract?.executionClass === "roost-company-information-runtime-v1";
   const r=await send("scope",{...(company?{scopeKind:"company_information"}:{}),applicationId,contract,prompt:prompt??null,baseBranch:baseBranch??null,releaseSet:company?null:ref?{id:ref.id,revision:ref.revision}:null,expectedVersion:data.expectedVersion});
   if(mounted.current){apply(r.data,true);command.current=null;onSaved?.();}
- }catch{if(mounted.current)setError(true);}finally{if(mounted.current)setBusy(false);}}
- async function submit(e:FormEvent){e.preventDefault();if(busy||!data?.canAssess)return;setBusy(true);setError(false);setSaved(false);try{
+ }catch(caught){if(mounted.current)setError(caught instanceof AppApiError?caught.code:"request_failed");}finally{if(mounted.current)setBusy(false);}}
+ async function submit(e:FormEvent){e.preventDefault();if(busy||!data?.canAssess)return;setBusy(true);setError(null);setSaved(false);try{
   const r=await send("assessments",{expectedVersion:data.expectedVersion,entries,jointRationale:joint});
   if(mounted.current){apply(r.data);command.current=null;setSaved(true);onSaved?.();}
- }catch(caught){if(mounted.current){setError(true);if(caught instanceof AppApiError && caught.code==="task_risk_stale")command.current=null;}}finally{if(mounted.current)setBusy(false);}}
+ }catch(caught){if(mounted.current){setError(caught instanceof AppApiError?caught.code:"request_failed");if(caught instanceof AppApiError && caught.code==="task_risk_stale")command.current=null;}}finally{if(mounted.current)setBusy(false);}}
  function proof(value:any,onChange:(refs:any[])=>void,applicationId:string) {
   const current=data.evidence.find((r:any)=>r.id===value[0]?.id),stale=value.length&&(!current||current.revision!==value[0].revision);
   return <div className="grid gap-2"><CcField label={c.evidence} hint={c.proof} error={stale?c.staleProof:undefined} required>{({id})=><CcSelect id={id} required value={value[0]?.id??""} onChange={e=>{const ref=data.evidence.find((r:any)=>r.id===e.target.value);onChange(ref?[{id:ref.id,revision:ref.revision}]:[]);}}><option value="">{c.choose}</option>{data.evidence.filter((r:any)=>!r.applicationId||r.applicationId===applicationId).map((r:any)=><option key={r.id} value={r.id}>{r.label}</option>)}</CcSelect>}</CcField>{stale&&current&&data.canAssess?<CcButton variant="outline" size="sm" onClick={()=>onChange([{id:current.id,revision:current.revision}])}>{c.refreshProof}</CcButton>:null}</div>;
@@ -58,7 +58,7 @@ export function TaskRiskModal({taskId,input,onClose,onSaved}:{taskId:string;inpu
  if(leave)return <CcRecordEditorModal titleId="risk-discard" title={c.discard} onClose={()=>setLeave(false)} closeLabel={c.stay} onSubmit={e=>{e.preventDefault();onClose();}} actions={<><CcButton onClick={()=>setLeave(false)}>{c.stay}</CcButton><CcButton type="submit" variant="warning">{c.leave}</CcButton></>}>{c.dirty}</CcRecordEditorModal>;
  const current=data?.history.find((h:any)=>h.id===data.currentId),shown=current??data?.history[0],complete=data&&data.members.length<=50&&data.members.every((m:any)=>m.scopeId);
  return <CcRecordEditorModal titleId="risk-title" title={c.title} eyebrow={data?.task.title} description={c.boundary} closeLabel={c.close} onClose={close} onSubmit={submit} maxWidthClassName="max-w-5xl" actions={<><CcButton disabled={busy} onClick={close} variant="ghost">{c.close}</CcButton>{data?.canAssess&&complete?<CcButton disabled={busy} type="submit" variant="primary">{c.save}</CcButton>:null}</>}>
-  {busy?<p role="status">{c.loading}</p>:null}{error?<CcNotice live tone="error" title={c.error}/>:null}{saved?<CcNotice live tone={data?.currentId?"success":"warning"} title={data?.currentId?c.saved:c.blocked}/>:null}
+  {busy?<p role="status">{c.loading}</p>:null}{error?<CcNotice live tone="error" title={c.error} detail={error}/>:null}{saved?<CcNotice live tone={data?.currentId?"success":"warning"} title={data?.currentId?c.saved:c.blocked}/>:null}
   <div className="flex flex-wrap gap-2"><CcButton disabled={busy} onClick={()=>void load(dirty)} variant="outline">{c.refresh}</CcButton><CcButton disabled={busy||dirty} onClick={()=>setAdmissionOpen(true)} variant="outline">{locale==="pl"?"Warunki dopuszczenia":"Admission requirements"}</CcButton></div>
   {data?<>
    {!data.canAssess?<CcNotice tone="info" title={c.readOnly}/>:null}

@@ -34,7 +34,7 @@ export async function admissionView(db: Db, workspaceId: string, taskId: string,
   const operations = Object.fromEntries(await Promise.all(admissionOperations.map(async op=>[op,await riskLevelAdmission(db,taskId,op)])));
   const history = await db.$queryRaw<any[]>`SELECT id,operation,gate,version,verdict,actor_user_id AS "issuerId",created_at AS "createdAt" FROM task_admission_evidence WHERE task_id=${taskId}::uuid ORDER BY created_at DESC,id DESC LIMIT 21`;
   const independent = (await db.$queryRaw<any[]>`SELECT task_admission_independent(${taskId}::uuid,${userId}::uuid) AS allowed`)[0].allowed;
-  return { task:{id:taskId,title:task.title},expectedVersion:await admissionVersion(db,taskId),scope,operations,
+  return { task:{id:taskId,title:task.title},scopeKind:company?"company_information":"application",expectedVersion:await admissionVersion(db,taskId),scope,operations,
     permissions:{canWrite:company ? await isPrimaryOwner(db,workspaceId,userId) : ["owner","admin","member"].includes(role??""),canApprove:company ? await isPrimaryOwner(db,workspaceId,userId) : role==="owner",independent},
     procedures:procedures.slice(0,100),records:records.slice(0,500).map(r=>({...r,revision:r.updatedAt.toISOString(),updatedAt:undefined})),
     catalogTruncated:procedures.length>100||records.length>500,history:history.slice(0,20),historyTruncated:history.length>20 };
