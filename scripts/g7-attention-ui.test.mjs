@@ -39,7 +39,7 @@ let checked = 0;
 try {
   for (const locale of ["pl", "en"]) for (const width of [390, 720, 834, 1440]) {
     for (const mode of ["dashboard", "result", "accepted", "returned", "running", "failed", "stopped", "pending", "error", "empty"]) {
-      const page = await browser.newPage({ viewport: { width, height: 960 } });
+      const page = await browser.newPage({ viewport: { width, height: width === 720 ? 450 : 960 } });
       const errors = []; page.on("pageerror", error => errors.push(error.message));
       await page.addInitScript(value => localStorage.setItem("companycoreLocale", value), locale);
       await page.route("**/v1/**", route => {
@@ -69,11 +69,23 @@ try {
           assert.equal(await close.evaluate(node => node === document.activeElement), true);
           await page.keyboard.press("Shift+Tab");
           assert.equal(await link.evaluate(node => node === document.activeElement), true);
+          if (width === 720) assert.equal(await link.evaluate(node => {
+            const bounds = node.getBoundingClientRect();
+            return bounds.top >= 0 && bounds.bottom <= innerHeight;
+          }), true, `${locale}/decision/720: focused exact-record link must be in the viewport`);
           await page.keyboard.press("Escape");
           assert.equal(await decision.evaluate(node => node === document.activeElement), true);
         } else await close.click();
         await page.getByRole("button", { name: /Review worker finding/ }).click();
-        assert.equal(await page.locator(`a[href='${resultTarget}']`).isVisible(), true);
+        const resultLink = page.locator(`a[href='${resultTarget}']`);
+        assert.equal(await resultLink.isVisible(), true);
+        if (width === 720) {
+          await resultLink.focus();
+          assert.equal(await resultLink.evaluate(node => {
+            const bounds = node.getBoundingClientRect();
+            return bounds.top >= 0 && bounds.bottom <= innerHeight;
+          }), true, `${locale}/result/720: focused exact-record link must be in the viewport`);
+        }
       }
       if (result && mode === "result") {
         assert.equal(await page.getByRole("button", { name: locale === "pl" ? "Przyjmij wynik informacyjny" : "Accept information result" }).isDisabled(), true);
