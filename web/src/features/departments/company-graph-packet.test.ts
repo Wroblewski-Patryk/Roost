@@ -33,3 +33,12 @@ test("rejects a relationship to an absent node instead of silently dropping it",
   const malformed = { ...packet, edges: [{ ...packet.edges[0], to: { entityType: "company_record", entityId: "record:missing" } }] };
   assert.equal(companyGraphPacketIssue(malformed)?.reason, "edge_reference");
 });
+
+test("reports only field kinds for an incomplete packet", () => {
+  const incomplete = { ...packet, organizationalMemberships: undefined };
+  assert.deepEqual(companyGraphPacketIssue(incomplete), {
+    reason: "packet_shape", schemaVersion: "company-graph-v2",
+    keys: ["edges", "nodes", "organizationalMemberships", "rootNodeId", "schemaVersion"],
+    shape: { rootNodeId: "string", nodes: "array", edges: "array", organizationalMemberships: "undefined" }
+  });
+});
