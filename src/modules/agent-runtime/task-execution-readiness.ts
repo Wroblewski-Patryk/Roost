@@ -114,7 +114,7 @@ async function resolved(db: Prisma.TransactionClient, workspaceId: string, taskI
   const {revision:_packetRevision,...packetBody}=taskContext.executionPacket;
   taskContext.executionPacket.revision=createHash("sha256").update(JSON.stringify(packetBody)).digest("hex");
   const applicationContext = wire(await loadApplicationAgentContext(workspaceId, application.id, true, readyContextQuery(taskContext.task, input.prompt), db,
-    object(object(input.contract).singleTask).component?.id));
+    object(object(input.contract).singleTask).component?.id, taskId));
   requireRuntimeContent({ input, taskContext, applicationContext }, "model.ready_context", { workspaceId, taskId, executionId: execution?.id });
   const claimed = { ...envelope, attempt: Math.max(1, envelope.attempt), application };
   (await validation).validateExecutionPacket(taskContext.executionPacket, claimed, taskContext, applicationContext, {allowUncomposed:!!submission});

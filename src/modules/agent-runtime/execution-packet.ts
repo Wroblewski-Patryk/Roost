@@ -23,7 +23,7 @@ export async function prepareExecutionPacket(execution: AgentExecution, task: Ta
     where: { workspaceId: execution.workspaceId, id: { in: ids }, status: companyInformation ? { in: ["active", "approved", "accepted"] } : { not: "archived" }, OR: [{ applicationId: null }, { applicationId: execution.applicationId }] },
     orderBy: { id: "asc" }
   });
-  const reviews = companyInformation ? await companySourceReviews(db, execution.workspaceId, task.id, ids) : new Map();
+  const reviews = await companySourceReviews(db, execution.workspaceId, task.id, ids);
   const single = object(object(contract).singleTask), componentRef = object(single.component), managerRef = object(single.accountableManager);
   const validId = (value: unknown): value is string => typeof value === "string" && /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(value);
   const scopeApplication = execution.applicationId ? await db.application.findFirst({ where: { id: execution.applicationId, workspaceId: execution.workspaceId }, select: { id: true } }) : null;
@@ -41,12 +41,12 @@ export async function prepareExecutionPacket(execution: AgentExecution, task: Ta
     },
     sources: sources.flatMap((source) => {
       const review = reviews.get(source.id);
-      if (companyInformation && !companySourceEligible(source, review, task.id, null)) return [];
+      if (!companySourceEligible(source, review, task.id, execution.applicationId)) return [];
       return [{ id: source.id, workspaceId: source.workspaceId, applicationId: source.applicationId,
         recordType: source.recordType, title: source.title, description: source.description,
         businessPurpose: source.businessPurpose, desiredState: source.desiredState,
         expectedBehavior: source.expectedBehavior, revision: source.updatedAt.toISOString(),
-        ...(companyInformation && review ? { provenance: companySourceProvenance(review, source) } : {}) }];
+        provenance: companySourceProvenance(review!, source) }];
     })
   };
   return { ...body, revision: createHash("sha256").update(JSON.stringify(body)).digest("hex") };

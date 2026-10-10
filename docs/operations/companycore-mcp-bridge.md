@@ -22,6 +22,13 @@ GET /v1/mcp/manifest
 The returned tool catalog is filtered by the workspace service key's effective
 capabilities.
 
+For G9a CompanyRecord reads, use a credential bound to the assigned agent and
+the `companycore_get_agent_runtime_tasks_by_id_company_sources` tool. The
+server verifies current Task assignment and owner review on each read.
+Workspace-wide MCP service keys cannot read CompanyRecords or broad views that
+expose their titles. The MCP bridge does not add task authority of its own;
+restart it after a manifest change as described below.
+
 ## Local Stdio Server
 
 CompanyCore includes a first local stdio bridge:

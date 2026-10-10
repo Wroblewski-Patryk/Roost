@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { gapsFor, loadCapabilities, procedureInclude, projectInclude, readinessInput } from "./application-graph-projection.service";
 import { calculateApplicationReadiness } from "./readiness";
+import { companySourceApprovedContent, companySourceEligible, companySourceProvenance, companySourceReviews } from "../agent-runtime/company-source-trust";
 type AgentContextRecord = {
   id: string;
   parentId: string | null;
@@ -113,7 +114,7 @@ function executionRecordSelection<T extends AgentContextRecord>(records: T[], qu
 }
 
 
-export async function loadApplicationAgentContext(workspaceId: string, applicationId: string, executionProfile = false, contextQuery = "", db: Prisma.TransactionClient = prisma, targetComponentId?: string) {
+export async function loadApplicationAgentContext(workspaceId: string, applicationId: string, executionProfile = false, contextQuery = "", db: Prisma.TransactionClient = prisma, targetComponentId?: string, taskId?: string) {
   const application = await db.application.findFirst({
     where: { id: applicationId, workspaceId: workspaceId },
     include: {
@@ -130,16 +131,19 @@ export async function loadApplicationAgentContext(workspaceId: string, applicati
   });
   if (!application) return null;
   const capabilities = await loadCapabilities(application.id, db);
-  const [records, genericEvidence, entityRelations] = await Promise.all([
+  const [candidateRecords, genericEvidence, entityRelations] = await Promise.all([
     db.companyRecord.findMany({ where: { workspaceId: workspaceId, applicationId: application.id, status: { not: "archived" } }, orderBy: [{ recordType: "asc" }, { priority: "asc" }] }),
     db.evidenceRecord.findMany({ where: { workspaceId: workspaceId, OR: [{ entityType: "application", entityId: application.id }, { entityId: { in: await db.companyRecord.findMany({ where: { workspaceId: workspaceId, applicationId: application.id }, select: { id: true } }).then((items) => items.map((item) => item.id)) } }] } }),
     db.dependency.findMany({ where: { workspaceId: workspaceId, status: { not: "archived" }, OR: [{ fromEntityType: "application", fromEntityId: application.id }, { toEntityType: "application", toEntityId: application.id }] } })
   ]);
+  const reviews = taskId ? await companySourceReviews(db, workspaceId, taskId, candidateRecords.map(record => record.id)) : null;
+  const records = reviews ? candidateRecords.filter(record => companySourceEligible(record, reviews.get(record.id), taskId!, application.id)) : candidateRecords;
   const gaps = gapsFor(capabilities);
   const readiness = calculateApplicationReadiness(readinessInput(capabilities));
-  const executionContext = executionProfile
+  const executionContext = executionProfile && !taskId
     ? executionRecordSelection(records, contextQuery.slice(0, 4000))
     : null;
+  const approvedSelection = taskId && executionProfile ? records.slice().sort((a, b) => a.title.localeCompare(b.title) || a.id.localeCompare(b.id)).slice(0, 8) : null;
   const executionApplication = executionProfile ? {
     ...application,
     // Installation metadata can contain machine-local paths and transport
@@ -208,10 +212,13 @@ export async function loadApplicationAgentContext(workspaceId: string, applicati
       gaps,
       blockers: gaps.filter((gap) => gap.blocked),
       dependencies: capabilities.flatMap((item) => item.dependenciesFrom),
-      companyRecords: executionContext?.records ?? records,
-      documentationIndex: executionContext?.documentationIndex ?? undefined,
-      contextSelection: executionContext?.selection ?? { profile: "complete", totalRecordCount: records.length, selectedRecordCount: records.length, omittedRecordCount: 0 },
-      genericEvidence,
+      companyRecords: approvedSelection ? approvedSelection.map(record => ({ ...companySourceApprovedContent(record), provenance: companySourceProvenance(reviews!.get(record.id)!, record) })) : executionContext?.records ?? records,
+      documentationIndex: approvedSelection ? approvedSelection.flatMap(record => {
+        const content = companySourceApprovedContent(record);
+        return content.recordType === "architecture_document" && typeof content.filePath === "string" ? [{ id: content.id, title: content.title, filePath: content.filePath, sourceSystem: content.sourceSystem, sourceKind: content.sourceKind }] : [];
+      }) : executionContext?.documentationIndex ?? undefined,
+      contextSelection: approvedSelection ? { profile: "execution", totalRecordCount: records.length, selectedRecordCount: approvedSelection.length, omittedRecordCount: records.length - approvedSelection.length, approvalBound: true } : executionContext?.selection ?? { profile: "complete", totalRecordCount: records.length, selectedRecordCount: records.length, omittedRecordCount: 0 },
+      genericEvidence: taskId && executionProfile ? genericEvidence.filter(item => item.entityType === "application" && item.entityId === application.id) : genericEvidence,
       entityRelations,
       operatingModel: {
         applicationProcedures: application.procedures,

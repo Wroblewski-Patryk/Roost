@@ -26,6 +26,7 @@ import { isDeepStrictEqual } from "node:util";
 import { taskReviewView, recordTaskReview, actOnTaskReview } from "./task-review";
 import { inspectReady, lockReadyTask, readyTransaction, submitReady, readyEditorData, submissionVersion } from "./task-execution-readiness";
 import { companyInformationClass, isCompanyInformation } from "./company-information-preparation";
+import { taskCompanySources } from "./company-source-read";
 import { companyRuntimeClass, isInformationRuntime, informationApprovalCandidate, startInformationTask, informationResult, reviewInformationResult } from "./company-information-runtime";
 import { taskRiskView, prepareRiskScope, recordRiskAssessment } from "./task-risk";
 import { acknowledgeContextStop, contextStopCode, guardExecutionContext } from "./execution-context-stop";
@@ -251,6 +252,27 @@ agentRuntimeRouter.post('/bootstrap/issuer',bootstrapOwnerWrite('issuer'));
 agentRuntimeRouter.post('/bootstrap/proof-key',bootstrapOwnerWrite('proof-key'));
 agentRuntimeRouter.post('/bootstrap/proof-authority',bootstrapOwnerWrite('proof-authority'));
 agentRuntimeRouter.use("/capability-suspensions", capabilitySuspensionRouter);
+
+agentRuntimeRouter.get("/tasks/:id/company-sources", asyncHandler(async (req, res) => {
+  const auth = req.auth!;
+  if (auth.authType !== "api_key" || !auth.agentId) return sendApiError(res, 403, "task_bound_source_read_required");
+  const taskId = z.string().uuid().parse(req.params.id);
+  const q = z.string().max(240).optional().parse(req.query.q)?.trim().toLocaleLowerCase();
+  const sources = await prisma.$transaction((db) => taskCompanySources(db, auth.workspaceId, auth.agentId!, taskId), { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
+  if (!sources) return sendApiError(res, 404, "task_source_scope_invalid");
+  res.json({ data: { taskId, sources: q ? sources.filter((item) => item.content.title.toLocaleLowerCase().includes(q) || (item.content.description ?? "").toLocaleLowerCase().includes(q)) : sources } });
+}));
+
+agentRuntimeRouter.get("/tasks/:id/company-sources/:recordId", asyncHandler(async (req, res) => {
+  const auth = req.auth!;
+  if (auth.authType !== "api_key" || !auth.agentId) return sendApiError(res, 403, "task_bound_source_read_required");
+  const taskId = z.string().uuid().parse(req.params.id), recordId = z.string().uuid().parse(req.params.recordId);
+  const sources = await prisma.$transaction((db) => taskCompanySources(db, auth.workspaceId, auth.agentId!, taskId), { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
+  if (!sources) return sendApiError(res, 404, "task_source_scope_invalid");
+  const source = sources.find((item) => item.content.id === recordId);
+  if (!source) return sendApiError(res, 404, "task_source_not_found");
+  res.json({ data: source });
+}));
 
 agentRuntimeRouter.get("/tasks/:id/interviews",asyncHandler(async(req,res)=>{
  const result=await reviewTransaction(db=>interviewView(db,req.auth!.workspaceId,z.string().uuid().parse(req.params.id),req.auth!,z.string().uuid().optional().parse(req.query.caseId)));

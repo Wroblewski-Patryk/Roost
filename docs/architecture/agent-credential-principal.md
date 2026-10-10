@@ -12,11 +12,24 @@ This credential class supports native RF-CTX-014 review and
 [RF-CTX-013 typed handoff](typed-work-handoff.md). Its explicit capabilities allow
 connection metadata, task/workforce reads, review/handoff reads, the two
 review/manager commands and exact handoff create/accept/reject commands. A separate method/path allowlist rejects
-other commands, host execution, Submit, key administration, MCP dispatch and
-release operations even if another route uses the same capability. The current
-supported agent interface for these commands is HTTP. Other service clients keep
+other commands, host execution, Submit, key administration, unrestricted MCP
+dispatch and release operations even if another route uses the same capability.
+G9a additionally permits the bound agent's MCP manifest and
+`GET /v1/agent-runtime/tasks/:id/company-sources[/:recordId]`. The server
+checks the credential's agent ID against the Task's current assignment and
+returns only the latest, current owner-reviewed source projection. A task ID
+supplied by the caller does not grant access. Other service clients keep
 their existing scoped integration behavior; their unbound keys cannot act as a
 task verifier or manager. No installation credentials are automatically converted.
+
+General API keys cannot read broad CompanyRecord-bearing routes or the source
+audit. This includes record/search/graph and task/application context views,
+source-bearing governance, event and dashboard views. Owner authentication
+keeps those views. Worker credentials use separately checked active execution
+context routes; their CompanyRecords use the same approved-field projection.
+The review digest covers only those fields. Nested values in provenance
+metadata fail eligibility. Existing review history is paginated for the owner;
+overwritten earlier record bodies cannot be reconstructed.
 
 Authentication derives workspace and agent ID from the verified credential and
 current database records. Inactive, revoked, expired or invalidly bound keys fail

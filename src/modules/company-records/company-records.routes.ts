@@ -91,6 +91,22 @@ companyRecordsRouter.get("/:id/context-reviews", asyncHandler(async (req, res) =
   res.json({ data: reviews });
 }));
 
+companyRecordsRouter.get("/:id/source-audit", asyncHandler(async (req, res) => {
+  const auth = req.auth!, workspaceId = auth.workspaceId;
+  if (auth.authType !== "user" || !auth.userId || auth.workspaceRole !== "owner") return res.status(403).json({ error: "source_audit_owner_required" });
+  const [owner, record] = await Promise.all([
+    prisma.workspace.findFirst({ where: { id: workspaceId, ownerUserId: auth.userId }, select: { id: true } }),
+    prisma.companyRecord.findFirst({ where: { id: String(req.params.id), workspaceId } })
+  ]);
+  if (!owner || !record) return res.status(404).json({ error: "source_audit_scope_invalid" });
+  const page = z.object({ limit: z.coerce.number().int().min(1).max(100).default(100), beforeOrdinal: z.coerce.number().int().positive().optional() }).parse(req.query);
+  const reviews = await prisma.companySourceReview.findMany({ where: { workspaceId, recordId: record.id, ...(page.beforeOrdinal ? { ordinal: { lt: page.beforeOrdinal } } : {}) }, orderBy: { ordinal: "desc" }, take: page.limit + 1 });
+  const currentPage = reviews.slice(0, page.limit);
+  const hasMore = reviews.length > page.limit;
+  res.json({ data: { currentRecord: record, currentRevision: record.updatedAt.toISOString(), reviews: currentPage,
+    reviewHistoryTruncated: hasMore, nextBeforeOrdinal: hasMore ? currentPage.at(-1)?.ordinal : null, priorBodiesAvailable: false } });
+}));
+
 // A source review is an owner assertion for one exact record revision and one
 // task. It does not edit or silently certify the underlying company record.
 companyRecordsRouter.post("/:id/context-reviews", asyncHandler(async (req, res) => {
@@ -105,10 +121,12 @@ companyRecordsRouter.post("/:id/context-reviews", asyncHandler(async (req, res) 
       ? { status: 200, review: prior } : { status: 409, error: "source_review_request_conflict" };
     const [owner, task, record] = await Promise.all([
       db.workspace.findFirst({ where: { id: workspaceId, ownerUserId: auth.userId! }, select: { id: true } }),
-      db.task.findFirst({ where: { id: input.taskId, workspaceId }, select: { id: true } }),
+      db.task.findFirst({ where: { id: input.taskId, workspaceId }, select: { id: true, projectId: true } }),
       db.companyRecord.findFirst({ where: { id: String(req.params.id), workspaceId } })
     ]);
     if (!owner || !task || !record) return { status: 404, error: "source_review_scope_invalid" };
+    if (record.applicationId && (!task.projectId || !await db.applicationProject.findFirst({ where: { projectId: task.projectId, applicationId: record.applicationId, application: { workspaceId } }, select: { applicationId: true } })))
+      return { status: 400, error: "source_review_application_scope_invalid" };
     if (record.updatedAt.toISOString() !== input.expectedRevision) return { status: 409, error: "source_review_revision_changed" };
     const now = new Date(), validUntil = new Date(input.validUntil);
     if (validUntil <= now || validUntil.getTime() - now.getTime() > 366 * 86400000) return { status: 400, error: "source_review_validity_invalid" };
@@ -117,7 +135,7 @@ companyRecordsRouter.post("/:id/context-reviews", asyncHandler(async (req, res) 
       classification: input.classification, provenance: input.provenance, environment: input.environment,
       verificationMethod: input.verificationMethod, verificationRef: input.verificationRef,
       inclusionReason: input.inclusionReason, validFrom: now, validUntil, actorUserId: auth.userId! };
-    if (input.action === "approve" && !companySourceEligible(record, { ...base, createdAt: now } as any, input.taskId, null, now))
+    if (input.action === "approve" && !companySourceEligible(record, { ...base, createdAt: now } as any, input.taskId, record.applicationId, now))
       return { status: 400, error: "source_review_record_ineligible" };
     const review = await db.companySourceReview.create({ data: base });
     await db.event.create({ data: { workspaceId, taskId: input.taskId, type: "company_source_reviewed", source: "roost", resourceType: "company_record", resourceId: record.id,

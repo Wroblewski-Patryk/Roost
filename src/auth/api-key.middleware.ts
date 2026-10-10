@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { prisma } from "../db/prisma";
 import { agentPrincipalRoute } from "./agent-principal";
+import { unboundCompanySourceRead } from "./company-source-read-boundary";
 import { hashApiKey } from "./api-key";
 import { capabilityForRequest, hasCapability } from "./capabilities";
 import { verifyAuthToken } from "./token";
@@ -104,6 +105,8 @@ return async function requireAuthContext(req: Request, res: Response, next: Next
   }
   const workerIdentity = workerTicketPrincipal(record);
   const requestPath=`${req.baseUrl}${req.path}`.replace(/\/+$/, "");
+  if (unboundCompanySourceRead(req.method, requestPath) && !workerIdentity)
+    return sendApiError(res, 403, "task_bound_source_read_required");
   if ((record.workerHostId || record.workerInstallationId || record.workerBindingEpoch) && (!workerIdentity
     || !record.workerHost || record.workerHost.workspaceId !== record.workspaceId || record.workerHost.status === "disabled"
     || !workerCredentialRoute(req.method, requestPath)))
@@ -133,7 +136,8 @@ return async function requireAuthContext(req: Request, res: Response, next: Next
   const requiredCapability = capabilityForRequest(req);
   const workerTransport=!!workerIdentity&&workerCredentialRoute(req.method,requestPath)
     && ["agent-runtime:claim","agent-runtime:report","company-graph:read","product-engineering:read"].includes(requiredCapability??"");
-  if (requiredCapability && !workerTransport&&!hasCapability(scopes, requiredCapability)) {
+  const agentManifest = !!record.boundAgentId && requestPath === "/v1/mcp/manifest" && hasCapability(scopes, "agent-runtime:read");
+  if (requiredCapability && !workerTransport && !agentManifest && !hasCapability(scopes, requiredCapability)) {
     return sendApiError(res, 403, "forbidden");
   }
 

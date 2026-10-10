@@ -67,6 +67,11 @@ export const tasksRouter = Router();
 
 const taskInclude = { taskList: { select: { id: true, name: true, externalId: true, source: true } }, project: { select: { id: true, name: true } }, goal: { select: { id: true, title: true } }, target: { select: { id: true, title: true } } };
 async function serializeTasks(workspaceId: string, tasks: Array<Record<string, any>>) { const contexts = await organizationalContextsForEntities(workspaceId, "task", tasks.map((task) => task.id)); return tasks.map((task) => ({ ...task, organizationalContext: contexts.get(task.id) })); }
+function apiKeyTaskView(task: Record<string, any>) {
+  const { executionReadiness, executionRoleProvenance: _roleProvenance, ...rest } = task;
+  const status = executionReadiness && typeof executionReadiness === "object" && !Array.isArray(executionReadiness) ? executionReadiness.status : undefined;
+  return { ...rest, executionReadiness: { status: typeof status === "string" ? status : "draft" } };
+}
 
 async function visibleTaskRelations(workspaceId: string, input: {
   projectId?: string;
@@ -93,7 +98,8 @@ tasksRouter.get("/", asyncHandler(async (req, res) => {
     where: { workspaceId, ...(archive === "all" ? {} : { status: archive === "only" ? "archived" : { not: "archived" as const } }), ...(ids ? { id: { in: ids } } : {}) }, include: taskInclude,
     orderBy: { createdAt: "desc" }
   });
-  res.json({ data: await serializeTasks(workspaceId, tasks) });
+  const data = await serializeTasks(workspaceId, tasks);
+  res.json({ data: req.auth!.authType === "api_key" ? data.map(apiKeyTaskView) : data });
 }));
 
 tasksRouter.get("/:id", asyncHandler(async (req, res) => {
@@ -106,7 +112,8 @@ tasksRouter.get("/:id", asyncHandler(async (req, res) => {
     return res.status(404).json({ error: "not_found" });
   }
 
-  res.json({ data: (await serializeTasks(req.auth!.workspaceId, [task]))[0] });
+  const data = (await serializeTasks(req.auth!.workspaceId, [task]))[0];
+  res.json({ data: req.auth!.authType === "api_key" ? apiKeyTaskView(data) : data });
 }));
 
 tasksRouter.post("/", asyncHandler(async (req, res) => {

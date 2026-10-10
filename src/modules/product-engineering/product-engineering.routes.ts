@@ -629,9 +629,12 @@ productEngineeringRouter.get("/applications/:id/agent-context", asyncHandler(asy
   if (executionId && !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(executionId)) return sendApiError(res, 400, "execution_id_invalid");
   const execution = executionId ? await prisma.agentExecution.findFirst({ where: { id: executionId, workspaceId: req.auth!.workspaceId, applicationId: String(req.params.id) } }) : null;
   if (executionId && !execution) return sendApiError(res, 404, "agent_execution_not_found");
+  if (req.auth!.workerTicketIdentity && (!execution || !["queued", "claimed", "running"].includes(execution.status)))
+    return sendApiError(res, 403, "task_bound_source_read_required");
   const pinnedComponentId = (execution?.metadata as any)?.executionContract?.singleTask?.component?.id;
   if (execution && (req.query.profile !== "execution" || typeof pinnedComponentId !== "string" || !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(pinnedComponentId))) return sendApiError(res, 409, "task_ready_contract_mismatch");
-  const context = await loadApplicationAgentContext(req.auth!.workspaceId, String(req.params.id), req.query.profile === "execution", query, prisma, pinnedComponentId);
+  const context = await loadApplicationAgentContext(req.auth!.workspaceId, String(req.params.id), req.query.profile === "execution", query, prisma, pinnedComponentId,
+    req.auth!.workerTicketIdentity ? execution?.taskId : undefined);
   if (!context) return sendApiError(res, 404, "application_not_found");
   requireRuntimeContent(context, "model.application_context");
   res.json({ data: context });

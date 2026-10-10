@@ -348,6 +348,8 @@ companyIntelligenceRouter.get("/tasks/:id/agent-context", asyncHandler(async (re
   if (executionId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(executionId)) return res.status(400).json({ error: "execution_id_invalid" });
   const execution = executionId ? await prisma.agentExecution.findFirst({ where: { id: executionId, taskId, workspaceId } }) : null;
   if (executionId && !execution) return res.status(404).json({ error: "agent_execution_not_found" });
+  if (req.auth!.workerTicketIdentity && (!execution || !["queued", "claimed", "running"].includes(execution.status)))
+    return res.status(403).json({ error: "task_bound_source_read_required" });
   if (execution && ["queued", "claimed", "running"].includes(execution.status)) {
     const ready = await retryContextRead(() => readyTransaction(tx => inspectReady(tx, workspaceId, taskId, execution)));
     if ("error" in ready && ready.error) return res.status(409).json({ error: ready.error });

@@ -2,6 +2,7 @@ import type { AgentExecution, Prisma } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { contextualEntityIds, organizationalContextsForEntities } from "../organizational-context/organizational-context.service";
 import { prepareExecutionPacket } from "../agent-runtime/execution-packet";
+import { companySourceApprovedContent, companySourceEligible, companySourceReviews } from "../agent-runtime/company-source-trust";
 import { taskDecisionAuthorities } from "../decisions/decision-authority";
 
 export async function loadTaskAgentContext(workspaceId: string, taskId: string, execution: AgentExecution | null = null, db: Prisma.TransactionClient = prisma, submission?: import("../agent-runtime/task-role-context").RoleSubmission, authorities?: Awaited<ReturnType<typeof taskDecisionAuthorities>>) {
@@ -17,7 +18,7 @@ export async function loadTaskAgentContext(workspaceId: string, taskId: string, 
   const ids = (entityType: string) => related.filter((item) => item.entityType === entityType && item.entityId).map((item) => item.entityId!);
   const taskDepartmentKeys = [contexts.get(task.id)?.ownerDepartment?.key, ...(contexts.get(task.id)?.relatedDepartments ?? []).map((department) => department.key), ...(contexts.get(task.id)?.applicableDepartments ?? []).map((department) => department.key)].filter((key): key is string => Boolean(key));
   const contextualRiskIds = [...new Set((await Promise.all(taskDepartmentKeys.map((key) => contextualEntityIds(workspaceId, "risk", key, true, db)))).flat())];
-  const [records, features, resources, decisions, applications, risks, knownIssues] = await Promise.all([
+  const [candidateRecords, features, resources, decisions, applications, risks, candidateIssues] = await Promise.all([
     db.companyRecord.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ id: { in: [...ids("company_record"), ...ids("requirement")] } }, ...(task.projectId ? [{ projectId: task.projectId }] : [])] } }),
     db.applicationFeature.findMany({ where: { id: { in: ids("feature") }, application: { workspaceId } }, include: { featureDefinition: true, application: { select: { id: true, name: true } } } }),
     db.resource.findMany({ where: { workspaceId, id: { in: ids("resource") } } }), db.decision.findMany({ where: { workspaceId, id: { in: ids("decision") } } }),
@@ -25,6 +26,11 @@ export async function loadTaskAgentContext(workspaceId: string, taskId: string, 
     db.risk.findMany({ where: { workspaceId, status: { not: "archived" }, id: { in: [...ids("risk"), ...contextualRiskIds] } }, include: { controls: true } }),
     db.companyRecord.findMany({ where: { workspaceId, status: { not: "archived" }, recordType: { in: ["operational_issue", "technical_incident", "escalation"] }, OR: [{ id: { in: [...ids("company_record"), ...ids("requirement")] } }, ...(task.projectId ? [{ projectId: task.projectId }] : [])] } })
   ]);
+  const sourceReviews = execution ? await companySourceReviews(db, workspaceId, taskId) : null;
+  const records = sourceReviews ? candidateRecords.filter((record) => companySourceEligible(record, sourceReviews.get(record.id), taskId, execution!.applicationId)) : candidateRecords;
+  const knownIssues = sourceReviews ? candidateIssues.filter((record) => companySourceEligible(record, sourceReviews.get(record.id), taskId, execution!.applicationId)) : candidateIssues;
+  const visibleRecords = execution ? records.map(companySourceApprovedContent) : records;
+  const visibleIssues = execution ? knownIssues.map(companySourceApprovedContent) : knownIssues;
   const governed=await db.taskDecisionEffect.findMany({where:{workspaceId,taskId}});
   const decisionAuthorities = authorities ?? await taskDecisionAuthorities(db, workspaceId, taskId);
   const replaced=new Set(governed.map(r=>r.supersedesId).filter(Boolean));
@@ -35,20 +41,20 @@ export async function loadTaskAgentContext(workspaceId: string, taskId: string, 
   // and evidence attached to required records still participates in Ready.
   const evidence = await db.evidenceRecord.findMany({ where: {
     workspaceId,
-    OR: [{ entityType: "task", entityId: task.id }, { entityId: { in: records.map((record) => record.id) } }],
+    OR: [{ entityType: "task", entityId: task.id }, ...(!execution ? [{ entityId: { in: records.map((record) => record.id) } }] : [])],
     NOT: { entityType: "task", entityId: task.id, source: { in: ["agent", "system"] }, type: { in: ["manual_verification", "deployment"] } }
   }, orderBy: { observedAt: "desc" } });
   return {
     schemaVersion: "task-agent-execution-context-v1", generatedAt: new Date().toISOString(), task, organizationalContext: contexts.get(task.id),...(decisionAuthorities.length?{decisionAuthorities}:{}),
     ...(execution ? { executionPacket: await prepareExecutionPacket(execution, task, db, submission) } : {}),
-    intent: { objective: task.goal, target: task.target, project: task.project, businessContext: records.map((record) => ({ id: record.id, type: record.recordType, purpose: record.businessPurpose, rationale: record.rationale })) },
-    requirements: records.filter((record) => record.recordType === "requirement"), relatedRecords: records, features, applications,
+    intent: { objective: task.goal, target: task.target, project: task.project, businessContext: visibleRecords.map((record) => ({ id: record.id, type: record.recordType, purpose: record.businessPurpose, ...(!execution && { rationale: "rationale" in record ? record.rationale : null }) })) },
+    requirements: visibleRecords.filter((record) => record.recordType === "requirement"), relatedRecords: visibleRecords, features, applications,
     affectedComponents: applications.flatMap((application) => application.architecture), dependencies, resources, procedures, policies, decisions, evidence,
-    risks, knownIssues: knownIssues.filter((record) => record.recordType === "operational_issue"), incidents: knownIssues.filter((record) => record.recordType === "technical_incident"),
+    risks, knownIssues: visibleIssues.filter((record) => record.recordType === "operational_issue"), incidents: visibleIssues.filter((record) => record.recordType === "technical_incident"),
     permissions: task.assignedWorkforceEntity ? { authorityScope: task.assignedWorkforceEntity.authorityScope, tools: task.assignedWorkforceEntity.toolIndex, runtimeMode: task.assignedWorkforceEntity.runtimeMode } : null,
-    verification: { acceptanceCriteria: records.flatMap((record) => Array.isArray(record.acceptanceCriteria) ? record.acceptanceCriteria : []), requiredEvidence: ["implementation", "test", "runtime_or_human_verification"] },
+    verification: { acceptanceCriteria: execution ? [] : records.flatMap((record) => Array.isArray(record.acceptanceCriteria) ? record.acceptanceCriteria : []), requiredEvidence: ["implementation", "test", "runtime_or_human_verification"] },
     constraints: { sourceOfTruth: "roost", requireVerifiedEvidenceForCompletion: true, preserveHumanApprovalRequirements: true, declarationIsNotObservation: true, escalateWhenAuthorityMissing: true },
-    escalationRules: { records: knownIssues.filter((record) => record.recordType === "escalation"), policyModesRequiringApproval: policies.filter((policy) => policy.enforcementMode === "require_approval" || policy.enforcementMode === "block") }
+    escalationRules: { records: visibleIssues.filter((record) => record.recordType === "escalation"), policyModesRequiringApproval: policies.filter((policy) => policy.enforcementMode === "require_approval" || policy.enforcementMode === "block") }
   };
 }
 

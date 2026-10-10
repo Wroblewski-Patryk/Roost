@@ -1,24 +1,29 @@
 import { createHash } from "node:crypto";
 import type { CompanyRecord, CompanySourceReview, Prisma } from "@prisma/client";
 
-export function companySourceDigest(record: CompanyRecord) {
+export function companySourceApprovedContent(record: CompanyRecord) {
   const metadata = record.metadata && typeof record.metadata === "object" && !Array.isArray(record.metadata) ? record.metadata as Record<string, unknown> : {};
-  const body = {
+  const sourceField = (key: string) => typeof metadata[key] === "string" ? metadata[key] as string : null;
+  return {
     id: record.id, workspaceId: record.workspaceId, applicationId: record.applicationId,
     recordType: record.recordType, title: record.title, description: record.description,
     businessPurpose: record.businessPurpose, desiredState: record.desiredState,
     expectedBehavior: record.expectedBehavior, status: record.status,
     verificationState: record.verificationState, source: record.source,
-    sourceKind: metadata.sourceKind ?? null, sourceSystem: metadata.sourceSystem ?? null,
-    sourceId: metadata.sourceId ?? null, filePath: metadata.filePath ?? null,
+    sourceKind: sourceField("sourceKind"), sourceSystem: sourceField("sourceSystem"),
+    sourceId: sourceField("sourceId"), filePath: sourceField("filePath"),
     revision: record.updatedAt.toISOString()
   };
-  return createHash("sha256").update(JSON.stringify(body)).digest("hex");
+}
+
+export function companySourceDigest(record: CompanyRecord) {
+  return createHash("sha256").update(JSON.stringify(companySourceApprovedContent(record))).digest("hex");
 }
 
 const forbiddenOrigin = /(?:^|[\s_-])(bootstrap|certification|synthetic|fixture|test|superseded|unverified|legacy_assumption|runtime_redaction)(?:$|[\s_-])/i;
 export function companySourceEligible(record: CompanyRecord, review: CompanySourceReview | undefined, taskId: string, applicationId: string | null, now = new Date()) {
   const metadata = record.metadata && typeof record.metadata === "object" && !Array.isArray(record.metadata) ? record.metadata as Record<string, unknown> : {};
+  if (["sourceKind", "sourceSystem", "sourceId", "filePath"].some(key => metadata[key] != null && typeof metadata[key] !== "string")) return false;
   if (!review || review.action !== "approve" || review.taskId !== taskId || review.recordId !== record.id || review.workspaceId !== record.workspaceId
     || review.environment !== (process.env.NODE_ENV === "test" ? "isolated_test" : "production")
     || !["active", "approved", "accepted"].includes(record.status) || ["failed", "waived"].includes(record.verificationState)

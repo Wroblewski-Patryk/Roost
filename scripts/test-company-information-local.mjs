@@ -11,7 +11,7 @@ import { PrismaClient } from '@prisma/client';
 const installation = {}; config({ processEnv: installation, quiet: true });
 const suffix = randomBytes(8).toString('hex');
 const database = `companycore_test_g6a_${suffix}`, role = `roost_g6a_${suffix}`, password = randomBytes(32).toString('hex');
-const proofLabel = process.env.ROOST_G7_REVIEW_ONLY === '1' ? 'G7' : 'G6a';
+const proofLabel = process.env.ROOST_G9_SOURCE_READ_ONLY === '1' ? 'G9a' : process.env.ROOST_G7_REVIEW_ONLY === '1' ? 'G7' : 'G6a';
 const port = process.env.ROOST_POSTGRES_PORT ?? installation.ROOST_POSTGRES_PORT ?? '55432';
 const admin = new PrismaClient({ datasources: { db: { url: `postgresql://companycore:${encodeURIComponent(installation.SERVICE_PASSWORD_POSTGRES ?? 'companycore')}@127.0.0.1:${port}/postgres` } } });
 const environment = Object.fromEntries(Object.entries(process.env).filter(([name]) => /^(PATH|PATHEXT|SYSTEMROOT|COMSPEC|TEMP|TMP|APPDATA|LOCALAPPDATA)$/i.test(name)));
@@ -44,7 +44,11 @@ try {
   if (migration.status !== 0) { process.stdout.write(migration.stdout.slice(-4000)); process.stderr.write(migration.stderr.slice(-2000)); throw new Error(); }
   process.stdout.write(`${proofLabel} fresh database: all migrations applied\n`);
   stage = 'native_http_worker_proof';
-  if (process.env.ROOST_G7_REVIEW_ONLY === '1') {
+  if (process.env.ROOST_G9_SOURCE_READ_ONLY === '1') {
+    const proof = run(process.execPath, ['--test', 'scripts/company-source-read-native.test.mjs'], environment, 180000);
+    process.stdout.write(proof.stdout); process.stderr.write(proof.stderr);
+    if (proof.status !== 0) throw new Error();
+  } else if (process.env.ROOST_G7_REVIEW_ONLY === '1') {
     const proof = run(process.execPath, ['--test', 'scripts/g7-owner-review-native.test.mjs'], environment, 180000);
     process.stdout.write(proof.stdout); process.stderr.write(proof.stderr);
     if (proof.status !== 0) throw new Error();
