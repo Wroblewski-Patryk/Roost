@@ -161,6 +161,8 @@ Worker/Hermes result path and budget handling first. Reuse working pieces and
 change only the missing owner-facing or agent-facing link. Prove one real
 low-risk company task, such as a sourced status and proposed next action for an
 existing project, and its owner-visible outcome using current Roost records.
+Use the already qualified Codex Responses path for this proof; local-model
+admission and routing remain G22–G23 outcomes.
 Reuse unaffected Gate 1–5 evidence and run focused checks plus
 `npm run codex:check`. No application repository change, push, deployment,
 application backup or product-readiness review belongs to this gate. Preserve
@@ -301,8 +303,8 @@ when the gate actually has those effects.
 | G19 Company direction | Owner adopts/revises private purpose; one aligned and one conflicting task/decision show evidence or exception. | G11; RF-OUT-003/008 |
 | G20 Goals and economics | Owner sees attributable goals, progress, task effort/cost and unknown usage, with source drill-down; agents act within mandate. | G19; RF-OUT-001–007, RF-HOST-012/018, OPEN-STRATEGY-001 |
 | G21 Application control | Owner sees one configured application's own baseline, blockers, roles and agent task in Roost; no cross-app assumptions or Codex repair. | G11/G17; RF-APP-001/003/009/013/014, RF-ACT-010; reuse Gate 4/5 proof |
-| G22 Local model | One managed Hermes task runs on an explicitly admitted local model; missing model/resources refuse safely, with no silent fallback. | G12; RF-HOST-016–018/022 |
-| G23 Model policy | Owner can accept/override a per-task model proposal; comparable accepted outcomes prove or reject savings. | G22; RF-HOST-012/017/022, OPEN-MODEL-001 |
+| G22 Local model | One managed Hermes task runs on an explicitly admitted local model (initial candidate: gpt-oss); missing model/resources refuse safely, with no silent fallback. | G12; RF-HOST-016–018/022 |
+| G23 Model policy | Qualified local model is the default proposal for suitable task classes; unsuitable tasks propose Codex before Ready. Owner can override within policy; comparable accepted outcomes prove or reject savings. | G22; RF-HOST-012/017/022, OPEN-MODEL-001 |
 | G24a Site study | Authorized versioned sites yield sourced findings, unknowns and applicability. | G17; RF-CTX-028 |
 | G24b Website checklist | Independent review promotes findings into one versioned checklist with acceptance and rollback. | G24a; RF-CTX-028 |
 | G24c Method proof | One supervised task uses the approved checklist and returns verifiable evidence. | G24b; RF-CTX-028 |
