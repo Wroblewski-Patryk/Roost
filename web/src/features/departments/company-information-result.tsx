@@ -9,7 +9,7 @@ export type InformationResult = {
   status: string; executionId: string | null; summary: string | null; finalResponse: string | null; reason: string | null;
   canReview: boolean; materialVersion: string | null; review: { decision: "accept" | "return"; summary: string } | null;
   sources: { id: string; title: string; revision: string }[];
-  budget: { maxAttempts: number; maxDurationSeconds: number; maxOutputTokensIntent: number; tokenCostEnforcement: "unavailable" };
+  budget: { maxAttempts: number; maxDurationSeconds: number; maxOutputTokensIntent: number; tokenCostEnforcement: "unavailable" } | null;
 };
 type CommandIdentity = { body: string; requestId: string };
 export function informationCommand(previous: CommandIdentity | null, input: object): CommandIdentity {
@@ -53,7 +53,7 @@ export function CompanyInformationResult({ taskId, canStart, onSaved }: { taskId
     try {
       const response = await api<{ data: InformationResult }>(`/v1/agent-runtime/tasks/${taskId}/information-result`, { cache: "no-store" });
       if (!mounted.current || sequence !== readSequence.current) return;
-      if (!response.data || typeof response.data.status !== "string" || !Array.isArray(response.data.sources) || !response.data.budget) throw new Error("information_result_invalid");
+      if (!response.data || typeof response.data.status !== "string" || !Array.isArray(response.data.sources) || response.data.budget === undefined) throw new Error("information_result_invalid");
       setData(response.data); setError(null);
     } catch { if (mounted.current && sequence === readSequence.current) setError("error"); }
     finally { if (mounted.current && sequence === readSequence.current) setReading(false); }
@@ -103,7 +103,7 @@ export function CompanyInformationResult({ taskId, canStart, onSaved }: { taskId
       {data.summary ? <p className="whitespace-pre-wrap break-words">{data.summary}</p> : null}
       {data.finalResponse ? <details><summary className="cursor-pointer py-2 font-semibold">{c.details}</summary><pre className="whitespace-pre-wrap break-words text-sm">{data.finalResponse}</pre></details> : null}
       {data.sources.length ? <div><h4 className="font-semibold">{c.sources}</h4><ul className="grid gap-2 text-sm">{data.sources.map(source => <li key={source.id} className="break-words">{source.title} · <span className="break-all font-mono text-xs">{source.revision}</span></li>)}</ul></div> : null}
-      <div><h4 className="font-semibold">{c.limits}</h4><p className="text-sm">{c.attempts}: {data.budget.maxAttempts} · {c.seconds}: {data.budget.maxDurationSeconds} · {c.intent}: {data.budget.maxOutputTokensIntent}</p><p className="mt-2 text-sm text-company-muted">{c.unknown}</p></div>
+      {data.budget ? <div><h4 className="font-semibold">{c.limits}</h4><p className="text-sm">{c.attempts}: {data.budget.maxAttempts} · {c.seconds}: {data.budget.maxDurationSeconds} · {c.intent}: {data.budget.maxOutputTokensIntent}</p><p className="mt-2 text-sm text-company-muted">{c.unknown}</p></div> : null}
       {data.review ? <CcNotice tone={data.review.decision === "accept" ? "success" : "warning"} title={data.review.decision === "accept" ? c.accepted : c.returned} detail={data.review.summary} /> : null}
       {data.canReview && data.executionId && data.materialVersion ? <div className="grid gap-3"><CcField label={c.summary} required>{({ id }) => <textarea id={id} className="textarea textarea-bordered min-h-24 w-full" minLength={3} maxLength={2000} value={summary} disabled={busy} onChange={event => { setSummary(event.target.value); setSaved(null); }} />}</CcField><div className="flex flex-wrap gap-2"><CcButton type="button" disabled={busy || reading || summary.trim().length < 3} onClick={() => void review("accept")}>{c.accept}</CcButton><CcButton type="button" variant="warning" disabled={busy || reading || summary.trim().length < 3} onClick={() => void review("return")}>{c.return}</CcButton></div></div> : !data.review ? <p className="text-sm text-company-muted">{c.noReview}</p> : null}
     </> : null}

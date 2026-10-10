@@ -35,12 +35,18 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       task = await prisma.task.create({ data: { workspaceId, title: 'Summarize explicitly selected synthetic company status', goalId: goal.id, assignedWorkforceEntityId: agent.id } });
       source = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: 'g6a-selected', title: 'Selected company status', description: 'Synthetic project is in preparation; next action is owner review.' } });
       await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: 'g6a-unselected', title: 'Unselected record', description: 'Must not be transported.' } });
+      const redacted = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'technical_incident', key: 'g6a-redacted-audit', title: 'Agent runtime content removed', description: 'Synthetic audit tombstone.' } });
+      // Model a pre-existing audit tombstone in the disposable database. The
+      // normal application writer intentionally refuses to create one directly.
+      await prisma.$executeRaw`UPDATE company_records SET source='runtime_redaction_v1' WHERE id=${redacted.id}::uuid`;
       contract = companyInformationFixture().packet.contract;
       contract.objective.goalId = goal.id; contract.assignment.agentId = agent.id;
       contract.singleTask.contractId = `roost-task:${task.id}`; contract.singleTask.accountableManager = ref(manager);
       contract.context.company = [ref(source)];
       const editor = await request(`/v1/agent-runtime/tasks/${task.id}/execution-readiness?editor=1&executionClass=roost-company-information-v1`, token);
       assert.equal(editor.status, 200); assert.equal(editor.body.data.editor.applicationId, null); assert.equal(editor.body.data.preparationEnabled, true);
+      assert.ok(editor.body.data.editor.sources.some(item => item.id === source.id));
+      assert.ok(!editor.body.data.editor.sources.some(item => item.id === redacted.id));
       contract.taskRoles = { schemaVersion: 'roost-task-roles-v1', requester: { id: editor.body.data.editor.requester.id, revision: editor.body.data.editor.requester.revision }, accountableManager: ref(manager), executor: ref(agent), verifier: ref(verifier), releaser: ref(releaser) };
       assert.equal(task.projectId, null); assert.equal(await prisma.application.count({ where: { workspaceId } }), 0);
     });

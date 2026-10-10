@@ -264,7 +264,10 @@ export async function readyEditorData(db: Prisma.TransactionClient, workspaceId:
   const company = ["roost-company-information-v1", "roost-company-information-runtime-v1"].includes(executionClass ?? "") || !executionClass && isCompanyInformation(pin.contract);
   const selected = company ? null : applicationId ?? (applications.some(app => app.id === pin.applicationId) ? pin.applicationId : applications.length === 1 ? applications[0]!.id : null);
   if (selected && !applications.some(app => app.id === selected)) return { error: "application_not_found" };
-  const records = await db.companyRecord.findMany({ where: { workspaceId, status: company ? { in: ["active", "approved", "accepted"] } : { not: "archived" }, OR: [{ applicationId: null }, ...(selected ? [{ applicationId: selected }] : [])] }, select: { id: true, title: true, applicationId: true, updatedAt: true }, orderBy: { updatedAt: "desc" }, take: 501 });
+  // Runtime redaction incidents are audit tombstones, not source material for
+  // a new information task. They can otherwise fill the bounded owner catalog
+  // and hide current company requirements behind the 500-record limit.
+  const records = await db.companyRecord.findMany({ where: { workspaceId, status: company ? { in: ["active", "approved", "accepted"] } : { not: "archived" }, ...(company ? { source: { not: "runtime_redaction_v1" } } : {}), OR: [{ applicationId: null }, ...(selected ? [{ applicationId: selected }] : [])] }, select: { id: true, title: true, applicationId: true, updatedAt: true }, orderBy: { updatedAt: "desc" }, take: 501 });
   const schemas: any = await validation;
   const accepted = (pin.contract?.executionClass === "roost-company-information-runtime-v1" ? schemas.companyInformationRuntimeContractSchema : company ? schemas.companyInformationContractSchema : schemas.executionEditorContractSchema).safeParse(pin.contract);
   const models = (await validation).codexEditorModels;
