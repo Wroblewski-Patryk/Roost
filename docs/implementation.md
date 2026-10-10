@@ -474,8 +474,14 @@ release recovery/queue before the Writer lock and intentionally skip all model
 claims. The one installed Windows login task is currently stopped. A read-only
 recovery GET with the bound Worker credential and current protocol headers
 returned no pending model executions, but it does not inspect the separate
-release queue. With the present installation, a next information Task would
-stay queued and cannot finish solely through the owner console.
+release queue. A later owner-authenticated, read-only host-filtered release
+summary returned 13 non-truncated records: ten failed with recorded closure,
+two completed and one revoked. Across their journals there were zero
+unresolved, uncertain or unknown outcomes. A separate owner read returned zero
+queued model executions. The scheduled task was stopped, no Roost Worker
+process was running, and both local and shared Writer locks were absent. With
+the present installation, a next information Task would stay queued and
+cannot finish solely through the owner console.
 
 Production execution `e61eb1d9-a193-47d1-a23c-ada92e46051d` completed
 attempt 1/1. The owner console showed **Worker result: review needed** and a
@@ -499,11 +505,15 @@ the disposable PostgreSQL recovery scenario does not prove a production rerun
 after a spent attempt. The production result is a valid single-task proof, not
 proof of a repeatable owner-to-agent loop. Simply deleting the optional release
 setting would skip release recovery checks and park a separately governed
-capability while its queue is unverified. Keeping it makes information claims
-impossible by design. A lasting installation-mode choice and verified release
-state are needed before claiming G6 complete; the release credential is
-expired. No further model attempt or production Task was started during this
-diagnosis. G6 remains in progress; G7 is not authorized by it.
+capability. The owner summary establishes that the bound host has no active or
+unresolved release record, but does not renew the expired release credential.
+Keeping the release-only setting makes information claims impossible by design.
+A lasting installation-mode choice, scheduled Worker heartbeat and native
+claim evidence are needed before claiming G6 complete. The prior production
+consent covered one model attempt; it did not approve continuous future
+information claims under the Windows account. No persistent mode switch,
+further model attempt or production Task was started during this diagnosis.
+G6 remains in progress; G7 is not authorized by it.
 
 **Roost outcome:** the owner creates one low-risk informational company task in
 the console, assigns the configured local agent and sees its result and status
