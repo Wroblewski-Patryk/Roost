@@ -1,6 +1,6 @@
 # Foundation requirements traceability
 
-## Gate 6 diagnostic — 2026-10-10
+## Historical Gate 6 diagnostic — 2026-10-10
 
 Gate 6 is authorized but unmet. Normal local configuration validation and
 `inspectExecutionProvider` qualify installed Hermes 0.21.2 as
@@ -134,6 +134,30 @@ migrations and preserved Task, execution, risk-scope and admission-scope row
 counts. The test database was removed. Coolify's Roost application tracks `main`;
 the runtime environment key has been created, but neither deployed backend
 read-back nor a production company-task round trip is yet evidenced.
+
+### G6 production observation — failed single attempt
+
+On 2026-10-10 the authorized runtime code was deployed through `0d6ed15b`.
+An authenticated owner-console task used one selected current company record,
+the active task procedure, accepted Worker and runtime Decisions, a current Low
+joint risk assessment, a current runtime admission seal and an accepted runtime
+Ready contract. Production database read-back found the exact Ready/risk
+contract match and a queued application-free execution at attempt 0. A
+company-only supervised Windows Worker claimed it at attempt 1, prepared the
+selected context and obtained a signed managed admission. This is real
+production owner/Worker/admission evidence, beyond the earlier synthetic tests.
+
+Hermes then exited 1. The execution is terminal `failed`, attempt 1/1, with
+no final response, no owner review and a Windows Job cleanup receipt showing
+zero active descendants. Private diagnostics classify the provider error as
+OAuth HTTP 401; token and cost usage are unknown. The owner console shows the
+failure. A subsequent read-only help command added Python cache files outside
+the installation inventory, so provider requalification is now blocked.
+Automatic policy review rejected their removal. The Worker retained its
+Writer lock for reconciliation. No further model attempt is authorized by
+this task budget. RF-PROD-011/RF-CTX-001 remain unmet at production outcome
+level; RF-HOST-010/011 have bounded failure and cleanup evidence, with provider
+token/cost enforcement still unavailable.
 
 Current delivery work starts at [Matrix](#matrix). The amendment stream before
 it is historical evidence and should be skipped unless a specific requirement

@@ -3,7 +3,7 @@
 This is the sole active delivery handoff: current facts, authorized outcome
 and required end-to-end evidence.
 
-**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10. Local installed Worker/Hermes execution and owner review passed; deployment and production observation remain
+**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10. Local installed Worker/Hermes execution and owner review passed. The first production information attempt failed after native launch; its one-attempt budget is exhausted, so production result/review and G6 completion remain open
 
 Update this line only when the owner authorizes a bounded gate; a proposed
 candidate is not active work.
@@ -154,14 +154,15 @@ This paused release grants no push, deployment or continuation authority.
 
 ### Gate 6 — owner-to-local-agent task loop
 
-**Authorized on 2026-10-10; local end-to-end proof passed, production outcome pending.**
-The installed Hermes 0.21.2 profile qualifies as `managed_hermes_codex_low_v1`
-after normal workspace validation; no model request was made. The ordinary
-Ready route, execution packet, database and Worker required an Application,
-architecture component and Git checkout at that diagnostic snapshot. G6a below
-adds a separately qualified preparation class; it does not admit model execution.
-No trial task, grant, migration, application operation, push or deployment ran.
-The smaller G6a brief below was subsequently approved; the Aviary STOP remains.
+**Authorized on 2026-10-10; local end-to-end proof passed, production attempt failed.**
+At the initial diagnostic snapshot, the installed Hermes 0.21.2 profile
+qualified as `managed_hermes_codex_low_v1` after normal workspace validation;
+no model request had been made. The ordinary Ready route, execution packet,
+database and Worker required an Application, architecture component and Git
+checkout then. G6a below added a separately qualified preparation class; it
+did not admit model execution. No trial task, grant, migration, application
+operation, push or deployment had run at that snapshot. The smaller G6a brief
+was subsequently approved; the Aviary STOP remains.
 
 #### Gate 6a — company information preparation
 
@@ -271,14 +272,41 @@ Git. A second disposable local restore of that current archive applied all three
 company-information migrations; Task, execution, risk and admission row counts
 were unchanged. Its test database was removed and local PostgreSQL returned to
 its previous stopped state. `npm run validate`, `npm run codex:check`, focused
-Worker tests and Compose syntax pass. Coolify's Roost resource tracks `main`;
-the production runtime setting was created but has not yet been observed in a
-redeployed backend.
+Worker tests and Compose syntax pass. Coolify's Roost resource tracks `main`.
 
-**Remaining Gate 6:** commit and push the Gate 6 change to the tracked branch;
-verify the automatic Coolify redeploy, enabled runtime configuration, installed
-Worker compatibility and owner-visible production task/result/review. Do not
-infer production success from the local synthetic task or the backup alone.
+**Production observation and stop (2026-10-10):** the Gate 6 runtime commits
+through `0d6ed15b` were pushed to `main` and Coolify deployed them. In the
+authenticated owner console, one existing company record and the active task
+procedure were selected for a tool-free informational task. The owner accepted
+an exact one-attempt runtime Decision, and the renewed joint risk assessment
+computed Low. The task execution admission was current. The first Ready
+submission used the preparation contract; a corrected console mapping was
+deployed in `0d6ed15b`. The second Ready submission used the runtime contract.
+Production read-back confirmed its contract matched the risk scope and that
+both the risk and runtime admission seal were current. The owner console then
+queued one application-free execution, and the company-only supervised Windows
+Worker claimed it.
+
+The Worker prepared the selected context and received a signed one-use managed
+admission. Hermes exited 1 after its native launch. The execution became
+`failed`, attempt 1/1, with no information result and no owner accept/return
+decision. Its Windows Job receipt proves closure with zero active descendants.
+Private Hermes diagnostics report OAuth HTTP 401; they do not establish whether
+the provider spent any output tokens or cost. The owner console displays the
+failed state. No application operation or external write was requested.
+
+The Worker retained its Writer lock after a second failure-report call could
+not confirm the already persisted terminal failure. A subsequent read-only
+Hermes help command generated Python cache files that invalidate its exact
+installation inventory; an automatic policy review rejected removal of those
+files. No lock or installation files were manually cleared. Restore provider
+authentication, requalify the installation and reconcile the retained lock
+before another execution. The task's attempt budget is spent; a changed plan,
+new task budget and owner authority are required for a further model attempt.
+
+**Remaining Gate 6:** obtain one real owner-visible information result and a
+genuine owner accept/return decision after those prerequisites. The production
+failure and the earlier local synthetic success do not satisfy this outcome.
 
 **Roost outcome:** the owner creates one low-risk informational company task in
 the console, assigns the configured local agent and sees its result and status
