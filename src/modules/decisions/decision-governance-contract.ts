@@ -14,11 +14,14 @@ import { admissionEvidenceSchema } from "../agent-runtime/task-risk-admission-co
 import { applicationBaseline } from "../product-engineering/application-takeover-contract";
 
 const uuid=z.string().uuid(), text=z.string().trim().min(3).max(2000), hash=z.string().regex(/^[a-f0-9]{64}$/);
-export const managedRuntimeApproval=z.object({schemaVersion:z.literal('roost-managed-runtime-approval-v1'),
+const applicationRuntimeApproval=z.object({schemaVersion:z.literal('roost-managed-runtime-approval-v1'),
   taskId:uuid,applicationId:uuid,installationId:uuid,selectionDigest:hash,
   backend:z.literal('codex_responses'),riskClass:z.literal('low'),
   mode:z.literal('trusted_provider_pilot'),residualRiskAccepted:z.literal(true),
   acknowledgement:z.literal('windows_account_authority_not_os_isolation')}).strict();
+export const managedRuntimeApproval=z.union([applicationRuntimeApproval,applicationRuntimeApproval.extend({
+  executionClass:z.literal('roost-company-information-runtime-v1'),applicationId:z.literal(null)
+}).strict()]);
 // A coding task needs a separate owner decision after two completed, independent
 // read-only canaries. The decision is scoped to one installation, task and branch;
 // it grants no push or deployment capability.

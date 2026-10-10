@@ -18,7 +18,7 @@ export async function prepareExecutionPacket(execution: AgentExecution, task: Ta
       .filter((id): id is string => typeof id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) : [];
   }))];
   const sources = await db.companyRecord.findMany({
-    where: { workspaceId: execution.workspaceId, id: { in: ids }, status: object(contract).executionClass === "roost-company-information-v1" ? { in: ["active", "approved", "accepted"] } : { not: "archived" }, OR: [{ applicationId: null }, { applicationId: execution.applicationId }] },
+    where: { workspaceId: execution.workspaceId, id: { in: ids }, status: ["roost-company-information-v1", "roost-company-information-runtime-v1"].includes(String(object(contract).executionClass)) ? { in: ["active", "approved", "accepted"] } : { not: "archived" }, OR: [{ applicationId: null }, { applicationId: execution.applicationId }] },
     select: { id: true, workspaceId: true, applicationId: true, recordType: true, title: true, description: true, businessPurpose: true, desiredState: true, expectedBehavior: true, updatedAt: true },
     orderBy: { id: "asc" }
   });

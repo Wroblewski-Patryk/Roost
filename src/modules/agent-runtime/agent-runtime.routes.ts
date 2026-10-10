@@ -26,6 +26,7 @@ import { isDeepStrictEqual } from "node:util";
 import { taskReviewView, recordTaskReview, actOnTaskReview } from "./task-review";
 import { inspectReady, lockReadyTask, readyTransaction, submitReady, readyEditorData, submissionVersion } from "./task-execution-readiness";
 import { companyInformationClass, isCompanyInformation } from "./company-information-preparation";
+import { companyRuntimeClass, isInformationRuntime, startInformationTask, informationResult, reviewInformationResult } from "./company-information-runtime";
 import { taskRiskView, prepareRiskScope, recordRiskAssessment } from "./task-risk";
 import { acknowledgeContextStop, contextStopCode, guardExecutionContext } from "./execution-context-stop";
 import { requireWorkspaceRole, roleAtLeast } from "../../auth/workspace-access";
@@ -396,6 +397,23 @@ agentRuntimeRouter.post("/tasks/:id/risk/assessments", asyncHandler(async (req,r
   res.json({data:result});
 }));
 
+agentRuntimeRouter.get("/tasks/:id/information-result", asyncHandler(async (req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  const result = await readyTransaction(tx => informationResult(tx, req.auth!, z.string().uuid().parse(req.params.id)));
+  if ("error" in result) return sendApiError(res, 404, result.error!);
+  res.json({ data: result });
+}));
+agentRuntimeRouter.post("/tasks/:id/actions/start-information", asyncHandler(async (req, res) => {
+  const result = await readyTransaction(tx => startInformationTask(tx, req.auth!, z.string().uuid().parse(req.params.id), req.body));
+  if ("error" in result && result.error) return sendApiError(res, result.error === "forbidden" ? 403 : 409, result.error);
+  res.status(201).json({ data: result });
+}));
+agentRuntimeRouter.post("/tasks/:id/actions/review-information", asyncHandler(async (req, res) => {
+  const result = await readyTransaction(tx => reviewInformationResult(tx, req.auth!, z.string().uuid().parse(req.params.id), req.body));
+  if ("error" in result && result.error) return sendApiError(res, 409, result.error);
+  res.json({ data: result });
+}));
+
 agentRuntimeRouter.post("/tasks/:id/actions/submit-for-execution", asyncHandler(async (req, res) => {
   if (!requireWorkspaceRole(req, res, "member")) return;
   const taskId = z.string().uuid().parse(req.params.id);
@@ -410,7 +428,7 @@ agentRuntimeRouter.get("/tasks/:id/execution-readiness", asyncHandler(async (req
   res.setHeader("Cache-Control", "no-store");
   const taskId = z.string().uuid().parse(req.params.id);
   if (req.query.version === "1") {
-    const company = req.query.executionClass === companyInformationClass;
+    const company = [companyInformationClass, companyRuntimeClass].includes(String(req.query.executionClass));
     const applicationId = company ? null : z.string().uuid().parse(req.query.applicationId);
     const result = await retryContextRead(() => readyTransaction(async tx => {
       const task = await tx.task.findFirst({ where: { id: taskId, workspaceId: req.auth!.workspaceId }, select: { projectId: true } });
@@ -427,7 +445,7 @@ agentRuntimeRouter.get("/tasks/:id/execution-readiness", asyncHandler(async (req
   const result = await retryContextRead(() => readyTransaction(async tx => {
     const ready = await inspectReady(tx, req.auth!.workspaceId, taskId);
     if (ready.error === "task_not_found" || req.query.editor !== "1") return ready;
-    const editor = await readyEditorData(tx, req.auth!.workspaceId, taskId, req.query.applicationId ? z.string().uuid().parse(req.query.applicationId) : undefined, req.auth!.userId ?? undefined, req.query.executionClass ? z.enum(["application", "roost-company-information-v1"]).parse(req.query.executionClass) : undefined);
+    const editor = await readyEditorData(tx, req.auth!.workspaceId, taskId, req.query.applicationId ? z.string().uuid().parse(req.query.applicationId) : undefined, req.auth!.userId ?? undefined, req.query.executionClass ? z.enum(["application", "roost-company-information-v1", "roost-company-information-runtime-v1"]).parse(req.query.executionClass) : undefined);
     if (editor && "error" in editor) return { error: editor.error };
     return { ...ready, readiness: { ...ready.readiness, editor, canSubmit: req.auth!.authType === "user" && roleAtLeast(req.auth!.workspaceRole, "member"), executionEnabled: executionEnabled(), preparationEnabled: true } };
   }));
@@ -1046,12 +1064,14 @@ agentRuntimeRouter.post("/executions/claim", asyncHandler(async (req, res) => {
   if (req.auth!.workerTicketIdentity && !await workerClaimAllowed(prisma, req.auth!, host.id)) return sendApiError(res, 403, "worker_credential_forbidden");
   if (protocolBlocked(req, res, host)) return;
   const applicationSlugs = Array.isArray(host.applicationSlugs) ? host.applicationSlugs.filter((value): value is string => typeof value === "string" && value !== "roost") : [];
+  const companyEnabled = Array.isArray(host.capabilities) && host.capabilities.includes("company_information_runtime_v1")
+    && (host.metadata as any)?.executionProvider?.kind === "hermes_codex";
   const now = new Date();
   // Expiry is not proof that an old worker stopped. Keep ownership and identity.
   if (await prisma.agentExecution.count({ where: { workspaceId, agentHostId: host.id, status: { in: ["claimed", "running", "waiting_for_approval"] } } })) return sendApiError(res, 409, "agent_host_recovery_required");
-  if (!applicationSlugs.length) return res.status(204).send();
+  if (!applicationSlugs.length && !companyEnabled) return res.status(204).send();
   for (let attempt = 0; attempt < 5; attempt += 1) {
-    const candidate = await prisma.agentExecution.findFirst({ where: { workspaceId, status: "queued", attempt: 0, cancelRequestedAt: null, ...(String((host.metadata as any)?.executionProvider?.kind) === "synthetic_fixed" ? { metadata: { path: ["executionContract", "executionClass"], equals: "roost-fixed-effect-v1" } } : {}), ...(applicationSlugs.length ? { application: { slug: { in: applicationSlugs } } } : {}) }, orderBy: { createdAt: "asc" } });
+    const candidate = await prisma.agentExecution.findFirst({ where: { workspaceId, status: "queued", attempt: 0, cancelRequestedAt: null, ...(String((host.metadata as any)?.executionProvider?.kind) === "synthetic_fixed" ? { metadata: { path: ["executionContract", "executionClass"], equals: "roost-fixed-effect-v1" } } : {}), OR: [...(applicationSlugs.length ? [{ application: { slug: { in: applicationSlugs } } }] : []), ...(companyEnabled ? [{ applicationId: null, metadata: { path: ["executionContract", "executionClass"], equals: companyRuntimeClass } }] : [])] }, orderBy: { createdAt: "asc" } });
     if (!candidate) return res.status(204).send();
     if((candidate.metadata as any)?.executionContract?.nativeBoundary?.releaseInspection
       &&(!Array.isArray(host.capabilities)||!host.capabilities.includes("governed_release_inspection_v1")))
@@ -1062,8 +1082,8 @@ agentRuntimeRouter.post("/executions/claim", asyncHandler(async (req, res) => {
       if (req.auth!.workerTicketIdentity && !await workerClaimAllowed(tx, req.auth!, host.id)) return { error: "worker_credential_forbidden" };
       const ready = await inspectReady(tx, workspaceId, candidate.taskId, candidate);
       if (ready.error) return { error: ready.error };
-      if (!candidate.applicationId) return { error: "company_information_execution_unqualified" };
-      if (await suspensionBlocks(tx, workspaceId, candidate.taskId, candidate.applicationId, "runtime_execute", ready.taskContext?.task?.assignedWorkforceEntityId, null, host.id)) return { error: "native_capability_suspended" };
+      if (!candidate.applicationId && !isInformationRuntime((candidate.metadata as any)?.executionContract)) return { error: "company_information_execution_unqualified" };
+      if (candidate.applicationId && await suspensionBlocks(tx, workspaceId, candidate.taskId, candidate.applicationId, "runtime_execute", ready.taskContext?.task?.assignedWorkforceEntityId, null, host.id)) return { error: "native_capability_suspended" };
     const changed = await tx.agentExecution.updateMany({ where: { id: candidate.id, workspaceId, status: "queued", attempt: 0 }, data: { status: "claimed", agentHostId: host.id, leaseToken, leaseExpiresAt: new Date(Date.now() + executionLeaseMs), lastHeartbeatAt: now, startedAt: candidate.startedAt ?? now, attempt: { increment: 1 }, checkpoint: json(checkpoint), checkpointVersion: 1 } });
       return { count: changed.count };
     });
@@ -1108,6 +1128,7 @@ agentRuntimeRouter.post("/executions/:id/heartbeat", asyncHandler(async (req, re
 
 agentRuntimeRouter.post("/executions/:id/events", asyncHandler(async (req, res) => {
   const input = executionEventSchema.parse(req.body);
+  if (["information_admitted", "information_review"].includes(input.type)) return sendApiError(res, 403, "information_server_event_reserved");
   const execution = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, leaseToken: input.leaseToken, status: { in: ["claimed", "running", "waiting_for_approval"] } } });
   if (!execution) return sendApiError(res, 409, "agent_execution_lease_invalid");
   if (execution.contextInvalidatedAt) return sendApiError(res, 409, contextStopCode);

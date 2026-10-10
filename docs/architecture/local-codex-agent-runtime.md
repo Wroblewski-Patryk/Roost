@@ -24,6 +24,13 @@ Real Worker/Hermes execution requires a separately authorized G6 remainder.
 
 ## Historical protocol amendments
 
+G6 remainder source candidate (2026-10-10): `roost-company-information-runtime-v1`
+is distinct from G6a preparation and proposes signed exact owner/Task/installation/
+selection/context/lease admission, pinned Hermes with zero tools, one turn and no
+automatic retry. The normal risk/Decision path currently blocks it. Runtime stays
+disabled; the forward migration and UI/source checks do not qualify a model run.
+See the [current dependency](traceability-matrix.md#g6-remainder--current-native-riskadmission-stop).
+
 Owner amendment v76: [v3 source projection](bootstrap-proof-projection-v3.md)
 defines exact own-XID/receipt lineage, complete source sets, explicit shared/nested
 epoch cardinality and immutable phase prefixes. Source-only; native projection,

@@ -6,6 +6,7 @@ import { workerClaimAllowed } from '../../auth/worker-ticket-principal';
 import { inspectReady } from './task-execution-readiness';
 import { firstWriteApproval, managedRuntimeApproval } from '../decisions/decision-governance-contract';
 import { releaseCandidateNativeError, releaseDigest } from './governed-release-contract';
+import { informationManagedAdmission } from './company-information-runtime';
 
 const load = new Function('p', 'return import(p)') as (p: string) => Promise<any>;
 const pilot = load(require('node:url').pathToFileURL(require('node:path').resolve(__dirname, '../../../scripts/lib/agent-host-trusted-pilot.mjs')).href);
@@ -187,6 +188,7 @@ async function signed(value: unknown, signer: ManagedAdmissionSigner) {
 
 export async function managedAdmission(client: PrismaClient, auth: AuthContext, executionId: string, raw: unknown,
   signer: ManagedAdmissionSigner, now = new Date()) {
+  if ((raw as any)?.phase === "information") return informationManagedAdmission(client, auth, executionId, raw, signer);
   const input = managedAdmissionInput.parse(raw);
   const identity = auth.workerTicketIdentity;
   if (input.executionId !== executionId || auth.authType !== 'api_key' || !identity || !auth.apiKeyId) fail();

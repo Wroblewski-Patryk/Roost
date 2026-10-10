@@ -45,10 +45,35 @@ Browser evidence does not claim an actual authenticated production console flow.
 The unchanged queue row is preparation-only and model-unqualified; no provider
 request, installed daemon/Hermes execution or owner result/review was attempted.
 Migration `20261010100000_company_information_preparation` was applied only in
-fresh disposable databases. Source is local/uncommitted, not pushed/deployed.
+fresh disposable databases. G6a is preserved in local commit `466abe69`, not pushed/deployed.
 Full G6 and its budget enforcement requirements remain unmet. Failed migration,
 initial HTTP run and initial browser focus-test run remain retained privately;
 subsequent runs follow their diagnosed corrections, not an unchanged replay.
+
+### G6 remainder — current native risk/admission stop
+
+The remaining loop is **unmet**. A real local PostgreSQL/HTTP run applies the
+forward runtime migration and creates a normal exact owner Decision proposal.
+Its normal acceptance refuses `decision_risk_admission_required`; read-back has
+zero acceptance and zero execution for that task. This is a refusal proof, not a
+completed business task or genuine Hermes/provider request. Final suite 11/11
+includes preserved G6a behavior and the specific denial. No trigger was disabled,
+no native acceptance was fabricated, and owned database/role cleanup passed.
+
+Independent diagnosis confirms TaskRiskScope's Application/component and
+TaskAdmissionScope's Application/Git/target/release/procedure requirements cannot
+be met by configuration for this class. Normal Decision acceptance retains its
+`task_admission_seal(...,'decision_supersede')` guard. The source candidates add
+an explicit runtime variant of the existing signing/Worker/console path, not a
+new provider or task system. They remain unqualified and disabled by default.
+Checks: 130 shared/component tests, eight UI-model tests, PL/EN browser transport
+fixtures, validate and codex:check. None proves actual model output, native owned
+Hermes closure or owner result acceptance/return; production was untouched.
+
+Continuation requires a separately bounded company-information risk/admission
+data variant, current-source/actor/operation checks and actual positive/refusal
+proof before this prepared runtime path can launch. Do not label a source-only
+variant or the passing expected-refusal test as Gate 6 completion.
 
 Current delivery work starts at [Matrix](#matrix). The amendment stream before
 it is historical evidence and should be skipped unless a specific requirement

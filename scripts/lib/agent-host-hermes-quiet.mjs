@@ -1,5 +1,6 @@
 import { consumeNativeToolBoundary, completeNativeToolBoundary, prepareNativeBoundaryResume, authorizeNativeBoundaryResume } from "./agent-host-hermes-native-boundary.mjs";
 import { consumeReadOnlyBoundary, completeReadOnlyBoundary, abortReadOnlyBoundary, authorizeReadOnlyResume } from "./agent-host-readonly-boundary.mjs";
+import { consumeInformationQualification, assertInformationQualification, authorizeInformationResume, completeInformationQualification } from "./agent-host-company-information-runtime.mjs";
 import { fixtureRuntimeBinding } from "./agent-host-fixture-ownership.mjs";
 import { guardHostContent } from "./agent-host-redaction.mjs";
 import { terminateWindowsProcessTree } from "./agent-host-execution-lease.mjs";
@@ -11,10 +12,10 @@ import { consumeHermesBudgetReceipt, assertHermesBudgetProcess, completeHermesBu
 // Real native backend; no receipt or cleanup callback can be injected by config.
 // Build happens before any target process, rechecking authority afterward.
 export async function runHermesOwnedProcess({ executable, argv, cwd, environment, input, attempt,
-  remainingMs, secrets = [], assertAuthority, assertLaunchAuthority = () => {}, signal, shutdownRequested = () => false, stopReason = () => undefined, budgetReceipt, nativeToolReceipt, readOnlyToolReceipt, jobArtifact, expectedJobSourceDigest, onAssigned = () => {} }) {
+  remainingMs, secrets = [], assertAuthority, assertLaunchAuthority = () => {}, signal, shutdownRequested = () => false, stopReason = () => undefined, budgetReceipt, nativeToolReceipt, readOnlyToolReceipt, informationToolReceipt, jobArtifact, expectedJobSourceDigest, onAssigned = () => {} }) {
   const began = performance.now();
-  let observedJob, observedExit, nativeProof, nativeResult, readOnlyProof, readOnlyResult;
-  if (nativeToolReceipt && readOnlyToolReceipt) throw Object.assign(failure("hermes_boundary_ambiguous"), { protocolAdmission: true });
+  let observedJob, observedExit, nativeProof, nativeResult, readOnlyProof, readOnlyResult, informationProof, informationResult;
+  if ([nativeToolReceipt, readOnlyToolReceipt, informationToolReceipt].filter(Boolean).length > 1) throw Object.assign(failure("hermes_boundary_ambiguous"), { protocolAdmission: true });
   if (hermesBudgetRequiresNativeBoundary(budgetReceipt) && !nativeToolReceipt && !readOnlyToolReceipt)
     throw Object.assign(failure("hermes_native_boundary_required"), { protocolAdmission: true, outcome: "policy_blocked" });
   const budgetRemaining = budgetReceipt ? consumeHermesBudgetReceipt(budgetReceipt, { attempt, input, executable, argv, cwd, environment }) : null;
@@ -42,6 +43,7 @@ export async function runHermesOwnedProcess({ executable, argv, cwd, environment
     if (budgetReceipt) assertHermesBudgetProcess(budgetReceipt, { executable, argv, cwd, environment });
     if (nativeToolReceipt) nativeProof = consumeNativeToolBoundary(nativeToolReceipt, { cwd, environment, attempt, budgetReceipt });
     if (readOnlyToolReceipt) readOnlyProof = consumeReadOnlyBoundary(readOnlyToolReceipt, { cwd, environment, attempt, budgetReceipt });
+    if (informationToolReceipt) informationProof = consumeInformationQualification(informationToolReceipt, { executable, argv, cwd, environment, input, attempt });
     check(); if (problem) throw problem;
     // Footprint work can take time: recheck startup/profile expiry after it,
     // even though the budget/native one-use proofs have already been consumed.
@@ -57,10 +59,11 @@ export async function runHermesOwnedProcess({ executable, argv, cwd, environment
     const runtimeBinding = () => ({ executable: fixtureRuntimeBinding(executable), launcher: fixtureRuntimeBinding(artifact.executable), node: fixtureRuntimeBinding(process.execPath) });
     if (nativeProof) prepareNativeBoundaryResume(nativeProof, runtimeBinding());
     handle = await startWindowsJob(artifact, { executable, argv, cwd, environment, input, attempt,
-      ...(nativeProof || readOnlyProof ? { confirmResume: assignment => {
+      ...(nativeProof || readOnlyProof || informationProof ? { confirmResume: assignment => {
         check(); if (problem) throw problem;
         assertLaunchAuthority();
-        const receipt = nativeProof ? authorizeNativeBoundaryResume(nativeProof, assignment, runtimeBinding())
+        if (informationProof) assertInformationQualification(informationProof);
+        const receipt = informationProof ? authorizeInformationResume(informationProof, assignment, runtimeBinding()) : nativeProof ? authorizeNativeBoundaryResume(nativeProof, assignment, runtimeBinding())
           : authorizeReadOnlyResume(readOnlyProof, assignment, runtimeBinding());
         check(); if (problem) throw problem; return receipt;
       } } : {}),
@@ -97,7 +100,9 @@ export async function runHermesOwnedProcess({ executable, argv, cwd, environment
       if (problem) throw problem;
       check(); if (problem) throw problem;
       if (receipt.terminationReason !== "root_exit") throw failure(`hermes_quiet_${receipt.terminationReason}`);
+      if (informationProof) informationResult = completeInformationQualification(informationProof, receipt);
       return Object.freeze({ ...(quietResult ?? guard.complete(receipt.rootExit)), ownedTreeReceipt: receipt, nativeToolReceipt: nativeResult, readOnlyAudit: readOnlyResult,
+        ...(informationResult ? { informationRuntime: informationResult } : {}),
         ...(budgetReceipt ? { attemptBudgetReceipt: completeHermesBudgetReceipt(budgetReceipt, { ownedTreeReceipt: receipt, exitCode: receipt.rootExit, wallTimeMs: performance.now() - began }) } : {}) });
     } finally {
       clearTimeout(deadlineTimer); clearInterval(timer); signal?.removeEventListener("abort", abort);

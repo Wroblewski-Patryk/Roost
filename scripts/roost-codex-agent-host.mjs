@@ -53,6 +53,7 @@ import { createTaskBranch } from "./lib/agent-host-task-branch.mjs";
 import { observeUnchangedTaskBranch } from "./lib/agent-host-unchanged-branch-continuation.mjs";
 import { runGovernedReleaseQueueStep, getGovernedReleaseRecoveryCandidate, persistReleaseWorkerDiagnostic } from "./lib/agent-host-release-worker.mjs";
 import { createTerminalCompletionIntent, submitTerminalCompletion } from "./lib/agent-host-terminal-completion.mjs";
+import { executeInformationTask } from "./lib/agent-host-company-information-worker.mjs";
 
 const baseUrl = String(process.env.ROOST_BASE_URL || process.env.COMPANYCORE_BASE_URL || "").replace(/\/+$/, "");
 const apiKey = process.env.ROOST_AGENT_API_KEY || process.env.COMPANYCORE_API_KEY;
@@ -68,8 +69,8 @@ const host = {
   name: String(config.host?.name || os.hostname()),
   slug: String(config.host?.slug || os.hostname().toLowerCase().replace(/[^a-z0-9._-]+/g, "-")),
   platform: `${process.platform}-${process.arch}`,
-  capabilities: [...protocol.requiredHostCapabilities, "governed_release_inspection_v1"],
-  applicationSlugs: Object.keys(config.repositories || {}),
+  capabilities: [...protocol.requiredHostCapabilities, "governed_release_inspection_v1", "company_information_runtime_v1"],
+  applicationSlugs: config.companyInformationOnly === true ? [] : Object.keys(config.repositories || {}),
   metadata: {
     runnerVersion: "roost-codex-agent-host-v1",
     executionProvider: await inspectExecutionProvider(config),
@@ -215,6 +216,10 @@ async function confirmContextStop(execution, writerLock) {
 
 async function execute(claimed, writerLock, { resumeCheckpoint, onCheckpoint, createOutputBudget = createCodexOutputBudget, readTaskBranch = readCurrentTaskBranch, readTaskCommit = readCurrentTaskCommit, readTaskPaths = readCommittedTaskPaths } = {}) {
   if (claimed?.metadata?.executionContract?.executionClass === "roost-company-information-v1") throw protocolAdmissionError("company_information_execution_unqualified");
+  if (claimed?.metadata?.executionContract?.executionClass === "roost-company-information-runtime-v1") {
+    if (resumeCheckpoint) throw protocolAdmissionError("information_automatic_resume_forbidden");
+    return executeInformationTask({ claimed, api, writerLock, provider: config.executionProvider, secrets: [apiKey], shutdownRequested: () => shutdownRequested || stopping });
+  }
   const repository = repositoryForExecution(config, claimed);
   const repositoryPath = path.resolve(String(repository.path));
   let taskContext, applicationContext, contextRevision;

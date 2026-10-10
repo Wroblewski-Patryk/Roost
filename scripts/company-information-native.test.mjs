@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, generateKeyPairSync, createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { companyInformationFixture } from './fixtures/company-information.mjs';
 
@@ -17,7 +17,7 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
   await new Promise(resolve => server.once('listening', resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
   async function request(route, token, body) {
-    const response = await fetch(base + route, { method: body === undefined ? 'GET' : 'POST', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(30000) });
+    const response = await fetch(base + route, { method: body === undefined ? 'GET' : 'POST', headers: { 'Content-Type': 'application/json', ...(token && typeof token === 'object' ? token : token ? { Authorization: `Bearer ${token}` } : {}) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(30000) });
     return { status: response.status, body: response.status === 204 ? null : await response.json() };
   }
   const ref = row => ({ id: row.id, revision: row.updatedAt.toISOString() });
@@ -107,6 +107,34 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const row = await prisma.agentExecution.findUniqueOrThrow({ where: { id: execution.id } });
       assert.equal(row.attempt, 0); assert.equal(row.agentHostId, null); assert.equal(row.leaseToken, null); assert.equal(row.finalResponse, null);
       assert.equal(await prisma.application.count({ where: { workspaceId } }), 0);
+    });
+    await t.test('normal owner Decision refuses an unclassified app-free task before runtime authority or model', async () => {
+      const runtimeTask = await prisma.task.create({ data: { workspaceId, title: 'Summarize current evidenced Roost preparation and next action', goalId: contract.objective.goalId, assignedWorkforceEntityId: contract.assignment.agentId } });
+      const currentSource = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: 'g6-real-status', title: 'Current Roost delivery evidence', description: 'G6a has local PostgreSQL/HTTP preparation proof. A company task can be Ready and queued without an Application or Git. Actual model execution and owner result review are still required for full G6. No application work or VPS deployment is authorized.' } });
+      const c = structuredClone(contract); c.singleTask.contractId = `roost-task:${runtimeTask.id}`; c.context.company = [ref(currentSource)]; c.decisions = { items: [], noneReason: 'No decision yet selected' };
+      c.objective.outcome = 'Summarize the verified preparation capability, remaining proof and one safe next action';
+      c.singleTask.problems = [{ statement: 'Owner needs a concise sourced status of the current company capability', componentId: null, outcome: c.objective.outcome, causalLink: null }];
+      c.acceptance = { criteria: ['Uses only selected current records and distinguishes preparation from execution'], tests: ['Owner checks factual consistency with the selected record'], evidence: ['A sourced summary and one next action'] }; c.budgets.maxDurationSeconds = 300;
+      const selection = { schemaVersion: 'roost-managed-hermes-backend-v1', agent: 'managed_hermes', riskClass: 'low', fallback: 'none', attemptPolicy: { maxTurns: 1, apiMaxRetries: 0, unavailable: 'stop_attempt', restart: 'never' }, backend: 'codex_responses', provider: 'openai-codex', modelSelection: { model: 'gpt-5.6-sol', reasoningEffort: 'low' }, auth: 'same_owner_subscription' };
+      const { trustedPilotBytes } = await import('./lib/agent-host-trusted-pilot.mjs');
+      const signer = generateKeyPairSync('ed25519'); const installationId = randomUUID();
+      await prisma.trustedProviderTicketKey.create({ data: { workspaceId, installationId, keyId: 'ephemeral-native-test', epoch: 1, publicKeyDigest: createHash('sha256').update(signer.publicKey.export({ format: 'der', type: 'spki' })).digest('hex') } });
+      const gov = await request('/v1/decisions/governance', token); assert.equal(gov.status, 200);
+      const proposal = await request('/v1/decisions/governance/proposals', token, { requestId: randomUUID(), expectedVersion: gov.body.data.expectedVersion,
+        title: 'Bounded company information runtime', context: 'Current selected preparation evidence', decision: 'Run one tool-free informational task', rationale: 'Owner needs the sourced status', consequences: 'One bounded provider attempt; no repository or native tools', scopeReason: 'Only this informational Task', scope: [{ type: 'task', id: runtimeTask.id }], supersedesId: null, conflicts: [],
+        managedRuntimeApproval: { schemaVersion: 'roost-managed-runtime-approval-v1', taskId: runtimeTask.id, applicationId: null, executionClass: 'roost-company-information-runtime-v1', installationId,
+          selectionDigest: createHash('sha256').update(trustedPilotBytes(selection)).digest('hex'), backend: 'codex_responses', riskClass: 'low', mode: 'trusted_provider_pilot', residualRiskAccepted: true, acknowledgement: 'windows_account_authority_not_os_isolation' } });
+      assert.equal(proposal.status, 201, JSON.stringify(proposal.body));
+      const decisionId = proposal.body.data.record.id;
+      let decision = await request(`/v1/decisions/${decisionId}/governance`, token); assert.equal(decision.status, 200);
+      let accepted = await request(`/v1/decisions/${decisionId}/governance/actions`, token, { requestId: randomUUID(), expectedVersion: decision.body.data.expectedVersion, action: 'accept', previewId: decision.body.data.previews[0].id });
+      assert.equal(accepted.status, 409, JSON.stringify(accepted.body));
+      assert.equal(accepted.body.error, 'decision_risk_admission_required');
+      assert.equal(await prisma.agentExecution.count({ where: { taskId: runtimeTask.id } }), 0);
+      assert.equal(await prisma.$queryRawUnsafe(`SELECT count(*)::int AS n FROM decision_acceptances WHERE decision_id='${decisionId}'`).then(rows => rows[0].n), 0);
+      const started = await request(`/v1/agent-runtime/tasks/${runtimeTask.id}/actions/start-information`, token, { requestId: randomUUID() });
+      assert.equal(started.status, 409); assert.equal(started.body.error, 'company_runtime_unqualified');
+      process.stdout.write(`G6 actual risk refusal ${JSON.stringify({ taskId: runtimeTask.id, decisionId, acceptanceCommitted: false, providerInvoked: false })}\n`);
     });
   } finally { await new Promise(resolve => server.close(resolve)); await prisma.$disconnect(); }
 });

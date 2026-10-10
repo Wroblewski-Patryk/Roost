@@ -3,7 +3,7 @@
 This is the sole active delivery handoff: current facts, authorized outcome
 and required end-to-end evidence.
 
-**Active gate:** none — G6a preparation verified locally on 2026-10-10; stopped at its boundary.
+**Active gate:** none — G6 remainder stopped at the company risk/admission dependency on 2026-10-10.
 
 Update this line only when the owner authorizes a bounded gate; a proposed
 candidate is not active work.
@@ -202,12 +202,42 @@ mock; browser fixtures remain a separate UI claim. The disposable database/role
 are absent and the existing PostgreSQL container returned to its prior stopped
 state. Two initial defects (migration newline anchor and SQL variable ambiguity)
 and a browser focus-test race were diagnosed and corrected; failed logs remain.
-Changes are local/uncommitted and the migration is not installed in production.
+G6a is preserved in local commit `466abe69`; its migration is not installed in production.
 No model, installed Worker daemon, Hermes turn, production write, push or deployment
 ran. This completes only G6a local preparation, not G6 or the paused Aviary release.
 See [exact evidence](architecture/traceability-matrix.md#e-company-information-preparation).
 
 #### Remaining Gate 6 outcome — outside G6a authority
+
+Separately authorized after G6a: implement the existing company Task -> local
+Worker/Hermes -> owner-visible result/accept-or-return path. Local scoped commits
+are permitted; push/VPS deployment/irreversible data effects remain unauthorized.
+Maximum additional active work is 80 minutes, with diagnosis after 35 minutes
+and at most one materially changed retry of the same ineffective action. Reuse
+G6a proof. No application workload, new task/ClickUp system, model routing or G7.
+
+**Stopped at a material data/admission dependency:** the normal owner Decision
+proposal for a repo-free information task succeeds, but normal acceptance returns
+`decision_risk_admission_required`. Native read-back proves no acceptance and no
+runtime execution were created. Existing TaskRiskScope requires Application and
+active architecture component; TaskAdmissionScope requires Git commit and an
+application-owned target/release/procedure. Independent diagnosis confirms that
+configuration cannot supply a valid application-free scope. Do not fabricate an
+Application or weaken the Decision guard. A separately approved typed company
+risk/admission variant and its native positive/refusal tests are required before
+continuing this remainder. The original 80-minute ceiling does not expand itself.
+
+Safe preparation exists in source: separate information-runtime contract,
+exact signed-owner admission candidate, zero-tool Hermes/Windows Job integration,
+API result/review and existing-console controls. Runtime is disabled by default
+(`ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED` unset); a boolean cannot substitute
+for missing risk qualification or native launch proof. Supporting checks pass:
+130 packet/context/runtime tests, eight UI-model tests, PL/EN browser fixtures,
+validate and codex:check. Fresh PostgreSQL/HTTP verifies all migrations and the
+actual owner-acceptance refusal, while preserving G6a. Owned database/role are
+removed and prior container state restored. No model/Hermes process, completed
+information result, genuine owner acceptance/return of such result, production
+write, push or deployment is proved. Full G6 remains unmet.
 
 **Roost outcome:** the owner creates one low-risk informational company task in
 the console, assigns the configured local agent and sees its result and status

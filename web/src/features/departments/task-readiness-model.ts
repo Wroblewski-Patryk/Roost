@@ -2,7 +2,7 @@ export type Reference = { id: string; revision: string; evidence?: string };
 export type CatalogEntry = { id: string; label: string; revision: string; eligible?: boolean; applicationId?: string | null };
 export type RoleCatalogEntry = CatalogEntry & { principalKey: string | null; type: string; role: string | null; competencies: string[]; mandates: string[] };
 export type ReadyEditor = {
-  executionClass?: "roost-company-information-v1";
+  executionClass?: "application" | "roost-company-information-v1" | "roost-company-information-runtime-v1";
   decisionAuthorities?: { decisionId: string; title?: string; current: boolean; acceptedAuthority: unknown }[];
   submissionVersion: string;
   taskIdentity: { contractId: string; branch: string | null };
@@ -22,7 +22,7 @@ export type ReadyPacket = { status: string; reason?: string; changedSources?: { 
 export const groups = ["company", "product", "technical", "procedures", "skills", "dependencies", "decisions"] as const;
 export type RefGroup = typeof groups[number];
 export const companyInformationClass = "roost-company-information-v1" as const;
-export const isCompanyInformation = (editor: ReadyEditor) => editor.executionClass === companyInformationClass;
+export const isCompanyInformation = (editor: ReadyEditor) => [companyInformationClass, "roost-company-information-runtime-v1"].includes(editor.executionClass ?? "");
 export const canPrepareForWorker = (packet: ReadyPacket) => isCompanyInformation(packet.editor) ? packet.preparationEnabled === true : packet.executionEnabled;
 export const visibleContextGroups = (editor: ReadyEditor) => groups.filter(group => !isCompanyInformation(editor) || (group !== "product" && group !== "technical"));
 export const fields = {

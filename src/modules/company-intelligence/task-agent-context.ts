@@ -56,7 +56,7 @@ export async function loadCompanyInformationContext(workspaceId: string, taskId:
   const task = await db.task.findFirst({ where: { id: taskId, workspaceId }, include: { goal: true, assignedWorkforceEntity: true } });
   if (!task) return null;
   const contract = (execution?.metadata as any)?.executionContract;
-  if (contract?.executionClass !== "roost-company-information-v1") throw new Error("company_information_scope_invalid");
+  if (!["roost-company-information-v1", "roost-company-information-runtime-v1"].includes(contract?.executionClass)) throw new Error("company_information_scope_invalid");
   {
     const ids = (field: string) => Array.isArray(contract[field]?.items) ? contract[field].items.slice(0, 30).map((r: any) => r.id).filter((id: unknown): id is string => typeof id === "string" && /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id)) : [];
     const [procedures, dependencies, decisions, effects] = await Promise.all([

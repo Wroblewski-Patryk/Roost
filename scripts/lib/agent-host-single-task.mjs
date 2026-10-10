@@ -45,7 +45,7 @@ export function singleTaskIssues(contract, packet, claimed) {
   const s = contract.singleTask, issues = [], add = (field, reason) => issues.push({ field: `contract.singleTask.${field}`, reason });
   const identity = singleTaskIdentity(claimed.taskId);
   if (s.contractId !== identity.contractId) add("contractId", "mismatch");
-  const company = contract.executionClass === "roost-company-information-v1";
+  const company = ["roost-company-information-v1", "roost-company-information-runtime-v1"].includes(contract.executionClass);
   if (company) {
     if (s.branch !== null || s.component !== null || s.applicationId !== null) add("applicationId", "company_scope_required");
   } else if (contract.nativeBoundary?.profile === "inspect-readonly") {

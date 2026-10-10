@@ -261,11 +261,12 @@ export async function readyEditorData(db: Prisma.TransactionClient, workspaceId:
   if (!context) return null;
   const task = context.task, pin = object(task.executionReadiness);
   const applications = await db.application.findMany({ where: { workspaceId, slug: { not: "roost" }, projects: { some: { projectId: task.projectId ?? "00000000-0000-0000-0000-000000000000" } } }, select: { id: true, name: true }, orderBy: { name: "asc" } });
-  const company = executionClass === "roost-company-information-v1" || !executionClass && isCompanyInformation(pin.contract);
+  const company = ["roost-company-information-v1", "roost-company-information-runtime-v1"].includes(executionClass ?? "") || !executionClass && isCompanyInformation(pin.contract);
   const selected = company ? null : applicationId ?? (applications.some(app => app.id === pin.applicationId) ? pin.applicationId : applications.length === 1 ? applications[0]!.id : null);
   if (selected && !applications.some(app => app.id === selected)) return { error: "application_not_found" };
   const records = await db.companyRecord.findMany({ where: { workspaceId, status: company ? { in: ["active", "approved", "accepted"] } : { not: "archived" }, OR: [{ applicationId: null }, ...(selected ? [{ applicationId: selected }] : [])] }, select: { id: true, title: true, applicationId: true, updatedAt: true }, orderBy: { updatedAt: "desc" }, take: 501 });
-  const accepted = (company ? (await validation).companyInformationContractSchema : (await validation).executionEditorContractSchema).safeParse(pin.contract);
+  const schemas: any = await validation;
+  const accepted = (pin.contract?.executionClass === "roost-company-information-runtime-v1" ? schemas.companyInformationRuntimeContractSchema : company ? schemas.companyInformationContractSchema : schemas.executionEditorContractSchema).safeParse(pin.contract);
   const models = (await validation).codexEditorModels;
   const author = pin.requestedByType === "user" && typeof pin.requestedById === "string" ? await db.workspaceMembership.findFirst({ where: { workspaceId, userId: pin.requestedById }, select: { user: { select: { name: true } } } }) : null;
   const active = await db.agentExecution.count({ where: { workspaceId, taskId, status: { in: ["queued", "claimed", "running", "waiting_for_approval"] } } });
@@ -298,7 +299,7 @@ export async function readyEditorData(db: Prisma.TransactionClient, workspaceId:
     return !checked.blocked && !checked.redacted;
   });
   return {
-    executionClass: company ? "roost-company-information-v1" : "application",
+    executionClass: company ? (pin.contract?.executionClass === "roost-company-information-runtime-v1" ? pin.contract.executionClass : "roost-company-information-v1") : "application",
     roleCatalog, roleCatalogTruncated: roleWorkers.length > 500,
     requester: requester ? { id: requester.userId, label: requester.user.name ?? "—", revision: requester.updatedAt.toISOString() } : null,
     roleOrigin: { established: Boolean(provenance.requesterUserId), submissionId: provenance.originatingSubmissionId ?? null },

@@ -5,9 +5,10 @@ import type { AgentExecution, Prisma } from "@prisma/client";
 import { loadCompanyInformationContext } from "../company-intelligence/task-agent-context";
 import { watchReadySources } from "./ready-source-watch";
 import { requireRuntimeContent } from "./runtime-redaction-policy";
+import { companyRuntimeClass, isInformationRuntime, informationApproval } from "./company-information-runtime";
 
 export const companyInformationClass = "roost-company-information-v1";
-export const isCompanyInformation = (contract: any) => contract?.executionClass === companyInformationClass;
+export const isCompanyInformation = (contract: any) => [companyInformationClass, companyRuntimeClass].includes(contract?.executionClass);
 const loadESM = new Function("specifier", "return import(specifier)") as (specifier: string) => Promise<any>;
 const validation = loadESM(pathToFileURL(path.resolve(__dirname, "../../../scripts/lib/agent-host-execution-packet.mjs")).href);
 const { readyContextRevision } = require("../../../scripts/lib/agent-host-ready-context.cjs");
@@ -22,7 +23,10 @@ async function resolve(db: Prisma.TransactionClient, workspaceId: string, taskId
     metadata: { executionContract: input.contract } } as unknown as AgentExecution;
   const taskContext: any = wire(await loadCompanyInformationContext(workspaceId, taskId, envelope, watched.db, author));
   if (!taskContext) throw new Error("task_not_found");
-  taskContext.executionPacket.procedureComposition = { algorithm: "roost-company-information-preparation-v1", preparationOnly: true, modelExecutionQualified: false };
+  const runtime = isInformationRuntime(input.contract);
+  const approval = runtime ? await informationApproval(db, workspaceId, taskId, input.contract.modelSelection) : null;
+  if (runtime && !approval) throw Error("runtime_authority_required");
+  taskContext.executionPacket.procedureComposition = { algorithm: runtime ? companyRuntimeClass : "roost-company-information-preparation-v1", preparationOnly: !runtime, modelExecutionQualified: runtime, ...(approval ? { runtimeApproval: approval } : {}) };
   const { revision: _revision, ...body } = taskContext.executionPacket;
   taskContext.executionPacket.revision = createHash("sha256").update(JSON.stringify(body)).digest("hex");
   requireRuntimeContent({ input, taskContext }, "model.company_preparation", { workspaceId, taskId });
@@ -31,6 +35,9 @@ async function resolve(db: Prisma.TransactionClient, workspaceId: string, taskId
 }
 
 export async function submitCompanyPreparation(db: Prisma.TransactionClient, workspaceId: string, task: any, input: any, actor: { requestedByType: string; requestedById: string | null }, receipt: (result: any, pin?: any) => Promise<any>) {
+  const runtime = isInformationRuntime(input.contract);
+  const approval = runtime ? await informationApproval(db, workspaceId, task.id, input.contract.modelSelection) : null;
+  if (runtime && (!approval || approval.ownerUserId !== actor.requestedById)) return { error: "runtime_authority_required" };
   let context;
   try { context = await resolve(db, workspaceId, task.id, input, undefined, { authorId: actor.requestedById!, requestId: input.requestId }); }
   catch (error: any) {
@@ -43,12 +50,12 @@ export async function submitCompanyPreparation(db: Prisma.TransactionClient, wor
   }
   await context.watched.persist(task.id);
   const pin = { schemaVersion: "roost-ready-context-v1", sourceWatchVersion: "1", submissionId: input.requestId, status: "ready", pinId: randomUUID(),
-    revision: context.revision, preparationOnly: true, modelExecutionQualified: false,
+    revision: context.revision, preparationOnly: !runtime, modelExecutionQualified: runtime, ...(approval ? { runtimeApproval: approval } : {}),
     applicationId: null, contract: input.contract, prompt: input.prompt ?? null, baseBranch: null,
     roleProvenance: context.taskContext.executionPacket.roleAuthorities.provenance,
     interviewVersion: (await db.$queryRaw<any[]>`SELECT task_interview_version(${task.id}::uuid) AS value`)[0].value,
     validatedAt: new Date().toISOString(), validation: { validator: "company-information-packet-v1", revision: context.revision }, ...actor };
-  const result = { readiness: { status: "ready", pinId: pin.pinId, revision: pin.revision, validationRevision: pin.revision, preparationOnly: true, modelExecutionQualified: false } };
+  const result = { readiness: { status: "ready", pinId: pin.pinId, revision: pin.revision, validationRevision: pin.revision, preparationOnly: !runtime, modelExecutionQualified: runtime } };
   await receipt(result, pin);
   await db.task.update({ where: { id: task.id }, data: { executionReadiness: pin, executionRoleProvenance: pin.roleProvenance } });
   await db.event.create({ data: { workspaceId, taskId: task.id, type: "task_execution_ready", source: "roost", resourceType: "task", resourceId: task.id,
@@ -58,20 +65,21 @@ export async function submitCompanyPreparation(db: Prisma.TransactionClient, wor
 
 export async function inspectCompanyPreparation(db: Prisma.TransactionClient, workspaceId: string, task: any, execution?: AgentExecution, readOnly = false) {
   const pin = task.executionReadiness;
+  const runtime = isInformationRuntime(pin.contract);
   let context, reason: string | null = null;
-  if (pin.status !== "ready" || !pin.submissionId || !pin.pinId || pin.sourceWatchVersion !== "1" || pin.preparationOnly !== true || pin.modelExecutionQualified !== false || pin.validation?.validator !== "company-information-packet-v1" || pin.validation?.revision !== pin.revision) reason = "preparation_required";
+  if (pin.status !== "ready" || !pin.submissionId || !pin.pinId || pin.sourceWatchVersion !== "1" || pin.preparationOnly !== !runtime || pin.modelExecutionQualified !== runtime || pin.validation?.validator !== "company-information-packet-v1" || pin.validation?.revision !== pin.revision) reason = "preparation_required";
   if (!reason) {
     try { context = await resolve(db, workspaceId, task.id, pin, execution); if (context.revision !== pin.revision) reason = "context_changed"; }
     catch { reason = "context_invalid"; }
   }
   if (!reason && execution) {
     const bound: any = (execution.metadata as any)?.readyContextPin;
-    if (execution.applicationId !== null || execution.baseBranch !== null || bound?.pinId !== pin.pinId || bound?.revision !== pin.revision || bound?.preparationOnly !== true || bound?.modelExecutionQualified !== false) reason = "execution_pin_mismatch";
+    if (execution.applicationId !== null || execution.baseBranch !== null || bound?.pinId !== pin.pinId || bound?.revision !== pin.revision || bound?.preparationOnly !== !runtime || bound?.modelExecutionQualified !== runtime || runtime && (bound?.runtimeDecisionId !== pin.runtimeApproval?.decisionId || bound?.runtimeDecisionVersion !== pin.runtimeApproval?.decisionVersion)) reason = "execution_pin_mismatch";
   }
   if (reason) {
     if (!readOnly && pin.status === "ready") await db.task.update({ where: { id: task.id }, data: { executionReadiness: { ...pin, status: "needs_revalidation", reason } } });
     return { error: "task_ready_revalidation_required", readiness: { status: "needs_revalidation", reason, preparationOnly: true, modelExecutionQualified: false } };
   }
-  const readiness = { status: "ready", pinId: pin.pinId, revision: pin.revision, validationRevision: pin.revision, preparationOnly: true, modelExecutionQualified: false };
+  const readiness = { status: "ready", pinId: pin.pinId, revision: pin.revision, validationRevision: pin.revision, preparationOnly: !runtime, modelExecutionQualified: runtime };
   return { readiness, pin, taskContext: { ...context!.taskContext, readyAdmission: readiness }, applicationContext: {} };
 }

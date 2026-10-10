@@ -83,6 +83,7 @@ export const executionEditorContractSchema = executionContractSchema.extend({
 // Preparation is a separate task class, not a repository contract with missing
 // fields. It grants no tools and cannot activate a model/runtime in G6a.
 export const companyInformationClass = "roost-company-information-v1";
+export const companyInformationRuntimeClass = "roost-company-information-runtime-v1";
 export const companyInformationContractSchema = executionContractSchema.omit({ nativeBoundary: true }).extend({
   executionClass: z.literal(companyInformationClass),
   singleTask: singleTaskSchema.extend({ applicationId: z.literal(null), component: z.literal(null), branch: z.literal(null),
@@ -92,6 +93,13 @@ export const companyInformationContractSchema = executionContractSchema.omit({ n
   access: z.object({ tools: z.tuple([]), permissions: z.tuple([]), sandbox: z.literal("read-only"), externalWrites: z.literal(false), restrictions: texts }).strict(),
   recovery: executionContractSchema.shape.recovery.extend({ rollback: z.object({ mode: z.literal("not_applicable"), instructions: text }).strict() })
 }).strict();
+
+export const companyInformationRuntimeContractSchema = companyInformationContractSchema.extend({
+  executionClass: z.literal(companyInformationRuntimeClass),
+  budgets: companyInformationContractSchema.shape.budgets.extend({ maxAttempts: z.literal(1), maxDurationSeconds: z.number().int().min(60).max(1800) })
+}).strict();
+export const companyInformationRuntimeModelAllowed = model => model?.schemaVersion === "roost-managed-hermes-backend-v1"
+  && model.backend === "codex_responses" && model.riskClass === "low" && model.attemptPolicy?.maxTurns === 1 && model.attemptPolicy?.apiMaxRetries === 0;
 
 const packetSchema = z.object({
   schemaVersion: z.literal("roost-execution-packet-v1"), revision: z.string().regex(/^[a-f0-9]{64}$/),
@@ -112,13 +120,15 @@ const companyPacketSchema = packetSchema.extend({
   identity: packetSchema.shape.identity.extend({ applicationId: z.literal(null) }),
   scopeAuthorities: packetSchema.shape.scopeAuthorities.extend({ component: z.literal(null) })
 });
+const companyRuntimePacketSchema = companyPacketSchema.extend({ contract: companyInformationRuntimeContractSchema });
 
 const list = (value) => Array.isArray(value) ? value : [];
 export function validateExecutionPacket(packet, claimed, taskContext, applicationContext, options = {}) {
   const issues = [];
   const add = (field, reason) => issues.push({ field, reason });
-  const company = packet?.contract?.executionClass === companyInformationClass;
-  const parsed = (company ? companyPacketSchema : packetSchema).safeParse(packet);
+  const runtime = packet?.contract?.executionClass === companyInformationRuntimeClass;
+  const company = packet?.contract?.executionClass === companyInformationClass || runtime;
+  const parsed = (runtime ? companyRuntimePacketSchema : company ? companyPacketSchema : packetSchema).safeParse(packet);
   if (!parsed.success) {
     // Never forward Zod messages, input values, unknown property names or raw payloads.
     for (const issue of parsed.error.issues) {
@@ -139,10 +149,12 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
     if (!company && !inspect && c.access.sandbox !== "workspace-write") add("contract.access.sandbox", "coding_sandbox_required");
     const composition=p.procedureComposition;
     if (company) {
+      if (runtime && !companyInformationRuntimeModelAllowed(c.modelSelection)) add("contract.modelSelection", "company_runtime_policy_invalid");
       if (claimed?.applicationId !== null || claimed?.application != null || claimed?.baseBranch != null || Object.keys(applicationContext ?? {}).length) add("identity.applicationId", "company_scope_required");
-      if (claimed?.status !== undefined && claimed.status !== "queued") add("identity.executionId", "preparation_only_required");
-      if (claimed?.status === "queued" && (claimed.attempt !== 0 || claimed.agentHostId != null || claimed.leaseToken != null || claimed.leaseExpiresAt != null || claimed.startedAt != null || claimed.metadata?.readyContextPin?.preparationOnly !== true || claimed.metadata?.readyContextPin?.modelExecutionQualified !== false)) add("identity.executionId", "preparation_only_required");
-      if (composition.algorithm !== "roost-company-information-preparation-v1" || composition.preparationOnly !== true || composition.modelExecutionQualified !== false) add("procedureComposition", "preparation_only_required");
+      if (!runtime && claimed?.status !== undefined && claimed.status !== "queued" || runtime && claimed?.status !== undefined && !["queued", "claimed", "running"].includes(claimed.status)) add("identity.executionId", "company_stage_invalid");
+      if (claimed?.status === "queued" && (claimed.attempt !== 0 || claimed.agentHostId != null || claimed.leaseToken != null || claimed.leaseExpiresAt != null || claimed.startedAt != null || claimed.metadata?.readyContextPin?.preparationOnly !== !runtime || claimed.metadata?.readyContextPin?.modelExecutionQualified !== runtime)) add("identity.executionId", "company_stage_invalid");
+      if (runtime && ["claimed", "running"].includes(claimed?.status) && (claimed.attempt !== 1 || !claimed.agentHostId || !claimed.leaseToken || !Number.isFinite(Date.parse(claimed.startedAt)) || Date.parse(claimed.leaseExpiresAt) <= Date.now())) add("identity.executionId", "company_lease_invalid");
+      if (composition.algorithm !== (runtime ? companyInformationRuntimeClass : "roost-company-information-preparation-v1") || composition.preparationOnly !== !runtime || composition.modelExecutionQualified !== runtime) add("procedureComposition", "company_stage_invalid");
       const selected = c.context.company.map(item => item.id);
       if (p.sources.length !== selected.length || new Set(selected).size !== selected.length || p.sources.some(item => !selected.includes(item.id))) add("sources", "exact_selection_required");
     }
@@ -185,7 +197,7 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
     if (c.access.permissions.some((name) => !list(agent?.authorityScope).includes(name)) || c.access.tools.some((name) => !c.access.permissions.includes(name))) add("contract.access.permissions", "unavailable");
     if (c.scope.allowed.some((entry) => c.scope.forbidden.some((other) => other.toLowerCase() === entry.toLowerCase()))) add("contract.scope", "mismatch");
     if (c.access.permissions.includes("repository_write") && c.recovery.rollback.mode !== "restore_task_changes") add("contract.recovery.rollback", "mismatch");
-    const preparing = company && claimed?.status === "queued" && claimed?.attempt === 0 && claimed?.metadata?.readyContextPin?.preparationOnly === true;
+    const preparing = company && claimed?.status === "queued" && claimed?.attempt === 0 && claimed?.metadata?.readyContextPin?.preparationOnly === !runtime;
     if (!Number.isInteger(claimed?.attempt) || claimed.attempt < 1 && !preparing || claimed.attempt > c.budgets.maxAttempts) add("contract.budgets.maxAttempts", "blocked");
     for (const category of ["company", "product", "technical"]) {
       for (const reference of c.context[category]) {
