@@ -199,8 +199,22 @@ must authorize qualified Ready. The candidate now reads the current
 owner-scoped Low risk assessment; it refuses missing assessment and grants no
 execution authority. The native suite passed 12/12, removed its owned database
 and role, and restored the previous local container state. Browser checks pass.
-Deployment and production console verification remain open; G6 is still in
-progress.
+The recovery fixes in `3b2ac2bd` and `d42d65b5` were deployed successfully
+by Coolify operation `lztawlkjo3d5a89zxyj2n912`; both public health endpoints
+reported build `d42d65b5`. Authenticated production API read-back still shows
+the completed execution and `accept` review with one selected source. The
+imported ClickUp Task's global status and board are now `todo`, with a Task
+update at 15:10:51 UTC after the review event at 14:57:50 UTC. The later
+writer is unproved. An unchanged console **Save and prepare execution** action
+had performed an unnecessary Task PATCH and ClickUp writeback; commit
+`77428063` removes that write and passed 79 browser scenarios, validate and
+codex:check. Coolify deployment `e9hku82vg2sy2c8agjwrx8fz` succeeded;
+both public health endpoints reported exact build `77428063`. The refreshed
+owner console opened the completed result and persisted `accept` review from
+the task preview. Task `updatedAt` remained 15:10:51.191 UTC, proving that
+navigation did not write the Task. The `todo` board status and console-only
+spent-attempt recovery remain unproved. G6 is still in progress; no further
+model attempt is authorized.
 
 Current delivery work starts at [Matrix](#matrix). The amendment stream before
 it is historical evidence and should be skipped unless a specific requirement

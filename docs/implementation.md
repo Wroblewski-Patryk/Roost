@@ -3,7 +3,7 @@
 This is the sole active delivery handoff: current facts, authorized outcome
 and required end-to-end evidence.
 
-**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10. The second, separately approved production attempt completed and the owner accepted its result in Roost. Owner-facing recovery fixes now pass disposable PostgreSQL regression; deployment and production console verification remain open. No further model attempt is authorized.
+**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10. The second, separately approved production attempt completed and the owner accepted its result in Roost. Recovery fixes passed native regression and were deployed; production console read-back confirms the accepted information result, while the imported task's board status later returned to `todo`. Status consistency and console-only recovery remain open. No further model attempt is authorized.
 
 Update this line only when the owner authorizes a bounded gate; a proposed
 candidate is not active work.
@@ -154,7 +154,7 @@ This paused release grants no push, deployment or continuation authority.
 
 ### Gate 6 — owner-to-local-agent task loop
 
-**Authorized on 2026-10-10; production result accepted, console recovery still under verification.**
+**Authorized on 2026-10-10; production result accepted, console and task status still under verification.**
 At the initial diagnostic snapshot, the installed Hermes 0.21.2 profile
 qualified as `managed_hermes_codex_low_v1` after normal workspace validation;
 no model request had been made. The ordinary Ready route, execution packet,
@@ -351,14 +351,33 @@ without it; actual execution still requires the accepted Decision, admission
 and qualified Ready. The disposable PostgreSQL suite passed 12/12 after this
 repair, removed its database and role, and restored the local PostgreSQL
 container to its prior stopped state. Focused browser checks also pass. These
-repairs are local only, not deployed or production-verified. No model budget
-remains.
+repairs were released in `3b2ac2bd` and `d42d65b5`. Coolify deployment
+`lztawlkjo3d5a89zxyj2n912` succeeded on 2026-10-10 at 15:27:08 UTC;
+both public health endpoints reported exact build `d42d65b5`. An authenticated
+owner API read after deployment returned execution
+`7f3712f0-45b5-43fb-9435-5e29f4c92435` as `completed` with one selected
+source and persisted review `accept`. The global Task API and owner board
+instead reported `todo`, updated at 15:10:51 UTC, after the review event at
+14:57:50 UTC. This imported task has `source=clickup` and an external ID.
+The exact later writer is not yet established; an unchanged **Save and prepare
+execution** action had performed a Task PATCH and ClickUp writeback. Commit
+`77428063` removes that unnecessary write for an unchanged task, with a
+79-scenario browser suite, `npm run validate` and `npm run codex:check` passing.
+Coolify deployment `e9hku82vg2sy2c8agjwrx8fz` succeeded at 15:36:20 UTC;
+both public health endpoints reported exact build `77428063`. In the refreshed
+owner console, **Save and prepare execution** opened the existing result:
+execution complete, one selected source, review `accept` and explicit caveat
+that 1,200 output tokens are only intent. The Task `updatedAt` remained
+15:10:51.191 UTC after this navigation, so no Task write occurred. The board
+still says `todo`; its later writer and correct source-status behavior require
+separate reconciliation. No model budget remains.
 
-**Remaining Gate 6:** complete the applicable repository checks, release the
-recovery fixes under the existing Roost delivery authority, and verify the
-owner console path without another model call. Preserve the accepted result
-and failed predecessor as separate production evidence; do not treat the
-operator-assisted run as proof of the entire self-service recovery path.
+**Remaining Gate 6:** reconcile the imported Task's `todo` board status with
+the accepted result without an unauthorized ClickUp write or model call, then
+determine the bounded proof needed for console-only recovery after a spent
+attempt. Preserve the accepted result and failed predecessor as separate
+production evidence; the operator-assisted renewal does not prove the full
+self-service recovery path.
 
 **Roost outcome:** the owner creates one low-risk informational company task in
 the console, assigns the configured local agent and sees its result and status

@@ -99,7 +99,8 @@ Then queue through `POST /v1/agent-runtime/executions` with `taskId` (and
 branch and pin into the execution. Supplied alternatives must match; caller pins
 cannot override the server pin. The task workbench opens a shared PL/EN contract
 editor through **Prepare execution**. The Operations task preview saves ordinary
-task edits before opening it through **Save and prepare execution**. Acceptance
+task edits before opening it through **Save and prepare execution**. An unchanged
+preview opens Ready without a Task PATCH or provider writeback. Acceptance
 and queueing are separate actions; disabled runtime keeps queueing unavailable.
 No defaults invent missing intent or permissions.
 
