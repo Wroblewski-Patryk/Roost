@@ -3423,10 +3423,11 @@ model TaskRiskScope {
   taskId String @map("task_id") @db.Uuid
   task Task @relation(fields:[taskId],references:[id],onDelete:Restrict,onUpdate:NoAction)
   version Int
-  applicationId String @map("application_id") @db.Uuid
-  application Application @relation(fields:[applicationId],references:[id],onDelete:Restrict,onUpdate:NoAction)
-  componentId String @map("component_id") @db.Uuid
-  component ApplicationArchitectureComponent @relation(fields:[componentId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  scopeKind String @default("application") @map("scope_kind")
+  applicationId String? @map("application_id") @db.Uuid
+  application Application? @relation(fields:[applicationId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  componentId String? @map("component_id") @db.Uuid
+  component ApplicationArchitectureComponent? @relation(fields:[componentId],references:[id],onDelete:Restrict,onUpdate:NoAction)
   releaseSetId String? @map("release_set_id") @db.Uuid
   releaseSet CompanyRecord? @relation(fields:[releaseSetId],references:[id],onDelete:Restrict,onUpdate:NoAction)
   input Json
@@ -3478,14 +3479,15 @@ model TaskAdmissionScope {
   taskId String @map("task_id") @db.Uuid
   task Task @relation(fields:[taskId],references:[id],onDelete:Restrict,onUpdate:NoAction)
   version Int
-  applicationId String @map("application_id") @db.Uuid
-  application Application @relation(fields:[applicationId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  scopeKind String @default("application") @map("scope_kind")
+  applicationId String? @map("application_id") @db.Uuid
+  application Application? @relation(fields:[applicationId],references:[id],onDelete:Restrict,onUpdate:NoAction)
   procedureId String @map("procedure_id") @db.Uuid
   procedure Procedure @relation(fields:[procedureId],references:[id],onDelete:Restrict,onUpdate:NoAction)
-  targetId String @map("target_id") @db.Uuid
-  target CompanyRecord @relation("AdmissionTarget",fields:[targetId],references:[id],onDelete:Restrict,onUpdate:NoAction)
-  releaseId String @map("release_id") @db.Uuid
-  release CompanyRecord @relation("AdmissionRelease",fields:[releaseId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  targetId String? @map("target_id") @db.Uuid
+  target CompanyRecord? @relation("AdmissionTarget",fields:[targetId],references:[id],onDelete:Restrict,onUpdate:NoAction)
+  releaseId String? @map("release_id") @db.Uuid
+  release CompanyRecord? @relation("AdmissionRelease",fields:[releaseId],references:[id],onDelete:Restrict,onUpdate:NoAction)
   input Json
   actorUserId String @map("actor_user_id") @db.Uuid
   actor User @relation(fields:[actorUserId],references:[id],onDelete:Restrict,onUpdate:NoAction)

@@ -13,10 +13,16 @@ export const riskEntrySchema = z.object({ taskId: uuid,
   uncertainty: z.object({ level: z.enum(["none", "bounded", "unverifiable"]), reasons: text, evidence: z.array(evidence).min(1).max(10) }).strict(),
   contradictions: z.array(text).max(20)
 }).strict();
-export const riskScopeSchema = z.object({ requestId: uuid, expectedVersion: z.string().regex(/^[a-f0-9]{64}$/), applicationId: uuid,
+const applicationRiskScopeSchema = z.object({ requestId: uuid, expectedVersion: z.string().regex(/^[a-f0-9]{64}$/), applicationId: uuid,
   contract: z.record(z.unknown()), prompt: z.string().max(20000).nullable().optional(), baseBranch: z.string().max(240).nullable().optional(),
   releaseSet: evidence.nullable()
 }).strict();
+export const companyInformationRiskScopeSchema = z.object({ requestId: uuid, expectedVersion: z.string().regex(/^[a-f0-9]{64}$/),
+  scopeKind: z.literal("company_information"), applicationId: z.literal(null),
+  contract: z.record(z.unknown()).refine(c => c.executionClass === "roost-company-information-runtime-v1"),
+  prompt: z.literal(null).optional(), baseBranch: z.literal(null).optional(), releaseSet: z.literal(null)
+}).strict();
+export const riskScopeSchema = z.union([applicationRiskScopeSchema, companyInformationRiskScopeSchema]);
 export const riskAssessmentSchema = z.object({ requestId: uuid, expectedVersion: z.string().regex(/^[a-f0-9]{64}$/),
   entries: z.array(riskEntrySchema).min(1).max(50), jointRationale: text
 }).strict();
@@ -31,7 +37,9 @@ export async function riskScopeIsReadonly(contract: unknown): Promise<boolean> {
     loadESM(pathToFileURL(path.resolve(__dirname, "../../../scripts/lib/agent-host-execution-packet.mjs")).href),
     loadESM(pathToFileURL(path.resolve(__dirname, "../../../scripts/lib/agent-host-native-footprint.mjs")).href)
   ]);
-  const [{ executionContractSchema }, { nativeRelative }] = await readonlyValidation;
+  const [{ executionContractSchema, companyInformationRuntimeContractSchema, companyInformationRuntimeModelAllowed }, { nativeRelative }] = await readonlyValidation;
+  const information = companyInformationRuntimeContractSchema.safeParse(contract);
+  if (information.success && companyInformationRuntimeModelAllowed(information.data.modelSelection)) return true;
   const parsed = executionContractSchema.safeParse(contract);
   if (!parsed.success) return false;
   const c = parsed.data;

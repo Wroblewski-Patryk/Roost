@@ -6,6 +6,8 @@ import { loadCompanyInformationContext } from "../company-intelligence/task-agen
 import { watchReadySources } from "./ready-source-watch";
 import { requireRuntimeContent } from "./runtime-redaction-policy";
 import { companyRuntimeClass, isInformationRuntime, informationApproval } from "./company-information-runtime";
+import { riskAdmission } from "./task-risk";
+import { riskLevelAdmission } from "./task-risk-admission";
 
 export const companyInformationClass = "roost-company-information-v1";
 export const isCompanyInformation = (contract: any) => [companyInformationClass, companyRuntimeClass].includes(contract?.executionClass);
@@ -49,8 +51,13 @@ export async function submitCompanyPreparation(db: Prisma.TransactionClient, wor
     return receipt({ error: "task_execution_contract_invalid", issues, readiness });
   }
   await context.watched.persist(task.id);
+  const risk = runtime ? await riskAdmission(db, task.id, input) : null;
+  if (risk && "error" in risk) return { error: risk.error };
+  const admission = runtime ? await riskLevelAdmission(db, task.id, "runtime_execute") : null;
+  if (admission?.error) return { error: admission.error };
   const pin = { schemaVersion: "roost-ready-context-v1", sourceWatchVersion: "1", submissionId: input.requestId, status: "ready", pinId: randomUUID(),
     revision: context.revision, preparationOnly: !runtime, modelExecutionQualified: runtime, ...(approval ? { runtimeApproval: approval } : {}),
+    ...(runtime ? { riskAssessmentId: risk!.id, riskAdmissionSeal: admission!.seal, riskAdmissionCommit: null } : {}),
     applicationId: null, contract: input.contract, prompt: input.prompt ?? null, baseBranch: null,
     roleProvenance: context.taskContext.executionPacket.roleAuthorities.provenance,
     interviewVersion: (await db.$queryRaw<any[]>`SELECT task_interview_version(${task.id}::uuid) AS value`)[0].value,
@@ -71,6 +78,11 @@ export async function inspectCompanyPreparation(db: Prisma.TransactionClient, wo
   if (!reason) {
     try { context = await resolve(db, workspaceId, task.id, pin, execution); if (context.revision !== pin.revision) reason = "context_changed"; }
     catch { reason = "context_invalid"; }
+  }
+  if (!reason && runtime) {
+    const risk = await riskAdmission(db, task.id, pin);
+    const admission = await riskLevelAdmission(db, task.id, "runtime_execute");
+    if ("error" in risk || risk.id !== pin.riskAssessmentId || admission.error || admission.seal !== pin.riskAdmissionSeal) reason = "risk_admission_changed";
   }
   if (!reason && execution) {
     const bound: any = (execution.metadata as any)?.readyContextPin;

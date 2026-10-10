@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { lockReadyTask } from "./task-execution-readiness";
 import { watchReadySources } from "./ready-source-watch";
@@ -8,11 +8,62 @@ import { loadApplicationAgentContext } from "../product-engineering/application-
 import { reviewDigest } from "./task-review-contract";
 import { requireRuntimeContent } from "./runtime-redaction-policy";
 import { computeRisk, riskAlgorithm, riskAssessmentSchema, riskScopeSchema, riskScopeIsReadonly } from "./task-risk-contract";
+import { prepareExecutionPacket } from "./execution-packet";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
 type Db = Prisma.TransactionClient;
+const loadESM = new Function("specifier", "return import(specifier)") as (specifier: string) => Promise<any>;
+const companyValidation = loadESM(pathToFileURL(path.resolve(__dirname, "../../../scripts/lib/agent-host-execution-packet.mjs")).href);
+const wire = (v: any) => JSON.parse(JSON.stringify(v));
 const object = (v: any): any => v && typeof v === "object" && !Array.isArray(v) ? v : {};
 export const riskInputHash = (input: any) => reviewDigest({ applicationId: input.applicationId, contract: input.contract, prompt: input.prompt ?? null, baseBranch: input.baseBranch ?? null });
 async function canAssess(db: Db, workspaceId: string, userId?: string) {
   return Boolean(userId && await db.workspaceMembership.findFirst({ where: { workspaceId, userId, role: { in: ["owner", "admin", "member"] } } }));
+}
+async function isPrimaryOwner(db: Db, workspaceId: string, userId?: string) {
+  if (!userId) return false;
+  const workspace = await db.workspace.findFirst({ where: { id: workspaceId, ownerUserId: userId }, select: { id: true } });
+  return Boolean(workspace && await db.workspaceMembership.findFirst({ where: { workspaceId, userId, role: "owner" }, select: { id: true } }));
+}
+// Company scope compilation deliberately excludes governance-only effects: the
+// forthcoming runtime approval grants authority and is not task intent/evidence.
+async function prepareCompanyRiskScope(db: Db, workspaceId: string, taskId: string, userId: string, input: any, hash: string) {
+  if (!(await companyValidation).companyInformationRuntimeContractSchema.safeParse(input.contract).success) return { error: "task_risk_scope_invalid" };
+  const watched = watchReadySources(db), reader = watched.db;
+  const task = await reader.task.findFirst({ where: { id: taskId, workspaceId }, include: { goal: true, assignedWorkforceEntity: true } });
+  if (!task) return { error: "task_not_found" };
+  if (task.projectId !== null) return { error: "task_risk_scope_invalid" };
+  const envelope = { id: taskId, taskId, workspaceId, applicationId: null, attempt: 1, baseBranch: null,
+    metadata: { executionContract: input.contract }, prompt: input.prompt ?? null } as any;
+  const refs = (field: string) => Array.isArray(input.contract[field]?.items) ? input.contract[field].items.map((r: any) => r.id) : [];
+  const [procedures, dependencies, decisions] = await Promise.all([
+    reader.procedure.findMany({ where: { workspaceId, id: { in: refs("procedures") } } }),
+    reader.dependency.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ fromEntityType: "task", fromEntityId: taskId }, { toEntityType: "task", toEntityId: taskId }] } }),
+    reader.decision.findMany({ where: { workspaceId, id: { in: refs("decisions") } } })
+  ]);
+  const packet: any = await prepareExecutionPacket(envelope, task, reader, { authorId: userId, requestId: input.requestId });
+  packet.procedureComposition = { algorithm: "roost-company-information-runtime-v1", preparationOnly: false, modelExecutionQualified: true };
+  const { revision: _revision, ...body } = packet;
+  packet.revision = createHash("sha256").update(JSON.stringify(body)).digest("hex");
+  const context = wire({ schemaVersion: "task-agent-execution-context-v1", task: { id: task.id, workspaceId: task.workspaceId,
+    title: task.title, status: task.status, updatedAt: task.updatedAt, goalId: task.goalId,
+    goal: task.goal ? { id: task.goal.id, workspaceId: task.goal.workspaceId } : null,
+    assignedWorkforceEntityId: task.assignedWorkforceEntityId, assignedWorkforceEntity: task.assignedWorkforceEntity ? {
+      id: task.assignedWorkforceEntity.id, workspaceId: task.assignedWorkforceEntity.workspaceId,
+      type: task.assignedWorkforceEntity.type, status: task.assignedWorkforceEntity.status, role: task.assignedWorkforceEntity.role,
+      skillIndex: task.assignedWorkforceEntity.skillIndex, toolIndex: [], authorityScope: [] } : null },
+    executionPacket: packet, procedures, dependencies, decisions });
+  requireRuntimeContent({ input, context }, "task_risk.company_context", { workspaceId, taskId });
+  try { (await companyValidation).validateExecutionPacket(context.executionPacket, { ...envelope, application: null }, context, {}); }
+  catch { return { error: "task_risk_scope_invalid" }; }
+  await db.$executeRaw`INSERT INTO task_risk_heads(task_id) VALUES(${taskId}::uuid) ON CONFLICT DO NOTHING`;
+  await watched.persist(taskId, true);
+  const stored = { scopeKind: "company_information", applicationId: null, contract: input.contract, prompt: input.prompt ?? null, baseBranch: null, releaseSet: null };
+  await db.$executeRaw`INSERT INTO task_risk_scopes(id,workspace_id,task_id,version,scope_kind,application_id,component_id,release_set_id,input,input_hash,actor_user_id,request_id,request_hash)
+    VALUES(${randomUUID()}::uuid,${workspaceId}::uuid,${taskId}::uuid,(SELECT COALESCE(max(version),0)+1 FROM task_risk_scopes WHERE task_id=${taskId}::uuid),
+      'company_information',NULL,NULL,NULL,${JSON.stringify(stored)}::jsonb,${riskInputHash(input)},${userId}::uuid,${input.requestId}::uuid,${hash})`;
+  await audit(db, workspaceId, taskId, userId, "scope_prepared", input.requestId);
+  return taskRiskView(db, workspaceId, taskId, userId);
 }
 async function sourceState(db: Db, taskId: string) {
   const state=(await db.$queryRaw<any[]>`SELECT task_risk_sources(${taskId}::uuid) AS sources,task_risk_version(${taskId}::uuid) AS "sourceVersion",task_risk_current(${taskId}::uuid) AS current,
@@ -33,7 +84,7 @@ export async function taskRiskView(db: Db, workspaceId: string, taskId: string, 
   const task = await lockReadyTask(db, workspaceId, taskId);
   if (!task) return { error: "task_not_found" };
   const state = await sourceState(db, taskId), ids = state.sources.map((s: any) => s.taskId);
-  const members = await db.$queryRaw<any[]>`SELECT t.id,t.title,t.goal_id AS "goalId",s.id AS "scopeId",s.input,s.application_id AS "applicationId",s.component_id AS "componentId",s.release_set_id AS "releaseSetId",s.version
+  const members = await db.$queryRaw<any[]>`SELECT t.id,t.title,t.goal_id AS "goalId",s.id AS "scopeId",s.scope_kind AS "scopeKind",s.input,s.application_id AS "applicationId",s.component_id AS "componentId",s.release_set_id AS "releaseSetId",s.version
     FROM tasks t LEFT JOIN LATERAL(SELECT * FROM task_risk_scopes WHERE task_id=t.id ORDER BY version DESC LIMIT 1)s ON true
     WHERE t.workspace_id=${workspaceId}::uuid AND t.id IN (${Prisma.join(ids.map((id: string) => Prisma.sql`${id}::uuid`))}) ORDER BY t.id`;
   const before = cursor ? (await db.$queryRaw<Array<{sequence: bigint}>>`SELECT sequence FROM task_risk_assessments
@@ -44,10 +95,13 @@ export async function taskRiskView(db: Db, workspaceId: string, taskId: string, 
   const history = await db.$queryRaw<any[]>`SELECT id,task_id AS "taskId",version,source_version AS "sourceVersion",entries,result,joint_rationale AS "jointRationale",actor_user_id AS "assessorId",created_at AS "createdAt"
     FROM task_risk_assessments WHERE workspace_id=${workspaceId}::uuid AND sources @> ${JSON.stringify([{taskId}])}::jsonb
     AND (${before?.sequence ?? null}::bigint IS NULL OR sequence < ${before?.sequence ?? null}::bigint) ORDER BY sequence DESC LIMIT 6`;
-  const records = await db.companyRecord.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ applicationId: null }, { applicationId: { in: members.map((m: any) => m.applicationId).filter(Boolean) } }] }, select: { id: true, title: true, updatedAt: true, applicationId: true }, take: 501, orderBy: { id: "asc" } });
-  const blockers = [...(members.length > 50 ? ["group_limit"] : []), ...(members.some(m => !m.scopeId) ? ["scope_missing"] : []), ...(!state.current ? ["assessment_missing_or_stale"] : [])];
+  const company = members.length > 0 && members.every(m => m.scopeKind === "company_information");
+  const selectedIds = members.flatMap(m => m.input?.contract?.context?.company?.map((r:any)=>r.id) ?? []);
+  const records = await db.companyRecord.findMany({ where: { workspaceId, status: { not: "archived" }, ...(company ? { applicationId:null,id:{in:selectedIds} } : { OR: [{ applicationId: null }, { applicationId: { in: members.map((m: any) => m.applicationId).filter(Boolean) } }] }) }, select: { id: true, title: true, updatedAt: true, applicationId: true }, take: 501, orderBy: { id: "asc" } });
+  const mixedCompany = members.some(m => m.scopeKind === "company_information") && members.some(m => m.scopeKind !== "company_information");
+  const blockers = [...(members.length > 50 ? ["group_limit"] : []), ...(members.some(m => !m.scopeId) ? ["scope_missing"] : []), ...(mixedCompany ? ["mixed_scope_kinds"] : []), ...(!state.current ? ["assessment_missing_or_stale"] : [])];
   return { task: { id: taskId, title: task.title }, algorithm: riskAlgorithm, expectedVersion: state.version, currentId: state.current,
-    canAssess: await canAssess(db, workspaceId, userId), blockers, members: members.map(m => ({ ...m, input: undefined,
+    canAssess: company ? await isPrimaryOwner(db,workspaceId,userId) : await canAssess(db, workspaceId, userId), blockers, members: members.map(m => ({ ...m, input: undefined,
       relatedBy: [...new Set(members.filter(other=>other.id!==m.id).flatMap(other=>[
         ...(m.applicationId&&m.applicationId===other.applicationId&&m.componentId&&m.componentId===other.componentId?["component"]:[]),
         ...(m.applicationId&&m.applicationId===other.applicationId&&m.goalId&&m.goalId===other.goalId?["objective"]:[]),
@@ -63,10 +117,14 @@ export async function prepareRiskScope(db: Db, workspaceId: string, taskId: stri
   const task = await lockReadyTask(db, workspaceId, taskId);
   if (!task) return { error: "task_not_found" };
   if (!await canAssess(db, workspaceId, userId)) return { error: "task_risk_forbidden" };
+  const company = "scopeKind" in input && input.scopeKind === "company_information";
+  if (company && !await isPrimaryOwner(db, workspaceId, userId)) return { error: "task_risk_forbidden" };
   const hash = reviewDigest({ input, taskId, userId });
   const prior = await db.$queryRaw<any[]>`SELECT id,request_hash FROM task_risk_scopes WHERE workspace_id=${workspaceId}::uuid AND request_id=${input.requestId}::uuid`;
   if (prior[0]) return prior[0].request_hash === hash ? { ...await taskRiskView(db,workspaceId,taskId,userId), replayed:true } : { error:"task_risk_request_conflict" };
   if ((await sourceState(db,taskId)).version !== input.expectedVersion) return { error:"task_risk_stale" };
+  if (company) return prepareCompanyRiskScope(db, workspaceId, taskId, userId, input, hash);
+  if (input.applicationId === null) return { error:"task_risk_scope_invalid" };
   const c = object(input.contract), componentId = object(object(c.singleTask).component).id;
   if (!/^[a-f0-9-]{36}$/i.test(componentId ?? "") || object(c.objective).goalId !== task.goalId || object(c.singleTask).applicationId !== input.applicationId) return { error:"task_risk_scope_invalid" };
   const component = await db.applicationArchitectureComponent.findFirst({ where: { id: componentId, applicationId: input.applicationId, status: "active" } });
@@ -97,9 +155,16 @@ export async function recordRiskAssessment(db: Db, workspaceId: string, taskId: 
   const state=await sourceState(db,taskId);
   if (state.version!==input.expectedVersion) return {error:"task_risk_stale"};
   if (state.sources.length>50 || state.sources.some((s:any)=>!s.scopeId) || input.entries.length!==state.sources.length || new Set(input.entries.map(e=>e.taskId)).size!==input.entries.length || input.entries.some(e=>!state.sources.some((s:any)=>s.taskId===e.taskId))) return {error:"task_risk_group_incomplete"};
+  const scopes = await db.$queryRaw<any[]>`SELECT id,task_id AS "taskId",scope_kind AS "scopeKind",actor_user_id AS "authorId",input->'contract' AS contract FROM task_risk_scopes
+    WHERE workspace_id=${workspaceId}::uuid AND id IN (${Prisma.join(state.sources.map((s:any)=>Prisma.sql`${s.scopeId}::uuid`))})`;
+  const companyScopes = scopes.filter(s => s.scopeKind === "company_information");
+  if (companyScopes.length && companyScopes.length !== scopes.length) return {error:"task_risk_scope_invalid"};
+  if (companyScopes.length && (!await isPrimaryOwner(db,workspaceId,userId) || companyScopes.some(s => s.authorId !== userId))) return {error:"task_risk_forbidden"};
   for (const entry of input.entries) {
     const source=state.sources.find((s:any)=>s.taskId===entry.taskId);
     const references=[...new Map([...Object.values(entry.dimensions).flatMap(d=>d.evidence),...entry.uncertainty.evidence].map(r=>[`${r.id}:${r.revision}`,r])).values()];
+    const companyScope = companyScopes.find(s => s.taskId === entry.taskId && s.id === source.scopeId);
+    if (companyScope && references.some(ref => !companyScope.contract?.context?.company?.some((selected: any) => selected.id === ref.id && selected.revision === ref.revision))) return {error:"task_risk_evidence_stale"};
     for (const ref of references) {
       const record=await db.companyRecord.findFirst({where:{id:ref.id,workspaceId,status:{not:"archived"},OR:[{applicationId:null},{applicationId:source.applicationId}]},select:{updatedAt:true,description:true,businessPurpose:true,desiredState:true,expectedBehavior:true}});
       if (!record || record.updatedAt.toISOString()!==ref.revision) return {error:"task_risk_evidence_stale"};
@@ -112,8 +177,6 @@ export async function recordRiskAssessment(db: Db, workspaceId: string, taskId: 
   }
   // Read exact immutable scopes pinned by the canonical full group. Missing or
   // malformed contracts conservatively count as changes; callers cannot opt out.
-  const scopes = await db.$queryRaw<any[]>`SELECT id,task_id AS "taskId",input->'contract' AS contract FROM task_risk_scopes
-    WHERE workspace_id=${workspaceId}::uuid AND id IN (${Prisma.join(state.sources.map((s:any)=>Prisma.sql`${s.scopeId}::uuid`))})`;
   const readonlyTaskIds = new Set<string>();
   for (const source of state.sources) {
     const scope = scopes.find(s => s.id === source.scopeId && s.taskId === source.taskId);

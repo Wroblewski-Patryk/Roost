@@ -75,6 +75,35 @@ data variant, current-source/actor/operation checks and actual positive/refusal
 proof before this prepared runtime path can launch. Do not label a source-only
 variant or the passing expected-refusal test as Gate 6 completion.
 
+### <a id="e-company-information-risk-admission"></a>G6 risk/admission continuation — local native proof
+
+The additive `20261010113000_company_information_risk_admission` migration gives
+risk and admission scopes a checked `company_information` variant with nullable
+application-only references. Existing application rows retain `application`
+as their default kind and their original non-null relationships. A company
+scope requires a project-free Task, primary owner, zero-tool managed runtime
+contract, selected current company records and exact role/procedure revisions.
+The existing seven-dimension risk algorithm must produce `low`; mixed company
+and application risk groups are refused. Admission accepts only the selected
+procedure evidence for `decision_supersede` or `runtime_execute`, bound to the
+current risk, source, owner and operation. The normal Decision acceptance guard
+remains active. The runtime Ready pin contains the current risk ID and seal and
+rechecks both at inspection and claim.
+
+A fresh disposable PostgreSQL database applied the full migration chain. The
+`scripts/company-information-native.test.mjs` HTTP run exercised an initially
+refused Decision, then risk scope/assessment, admission scope/evidence, current
+seal, renewed impact preview, normal owner acceptance, renewed exact runtime
+risk/admission, Ready, queue and HTTP claim. Read-back showed one acceptance,
+null Application/branch, `queued` attempt 0 becoming `claimed` attempt 1, and
+no model result. The claim host declaration was synthetic in this disposable
+database; no installed Worker daemon or Hermes process ran. Negative HTTP and
+SQL read-backs covered foreign workspace, non-owner actor, wrong operation,
+stale version, unselected or changed source, mixed scope shape, and removal of
+the seal after source change. Owned database and role were removed and the
+PostgreSQL container returned to its prior stopped state. This is local native
+Roost API/database admission evidence, not provider or full Gate 6 proof.
+
 Current delivery work starts at [Matrix](#matrix). The amendment stream before
 it is historical evidence and should be skipped unless a specific requirement
 or implementation claim needs provenance; it is never the work queue.

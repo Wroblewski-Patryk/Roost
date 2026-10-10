@@ -3,7 +3,7 @@
 This is the sole active delivery handoff: current facts, authorized outcome
 and required end-to-end evidence.
 
-**Active gate:** none — G6 remainder stopped at the company risk/admission dependency on 2026-10-10.
+**Active gate:** none — the bounded company risk/admission continuation was verified locally on 2026-10-10; full G6 remains unmet pending installed Worker/Hermes execution and the owner result round trip
 
 Update this line only when the owner authorizes a bounded gate; a proposed
 candidate is not active work.
@@ -238,6 +238,21 @@ actual owner-acceptance refusal, while preserving G6a. Owned database/role are
 removed and prior container state restored. No model/Hermes process, completed
 information result, genuine owner acceptance/return of such result, production
 write, push or deployment is proved. Full G6 remains unmet.
+
+**2026-10-10 bounded risk/admission continuation:** a typed
+`company_information` risk and admission scope is implemented with a forward
+additive migration. A disposable PostgreSQL database and actual HTTP routes
+prove the low-risk owner assessment, selected current evidence, procedure gate,
+current `decision_supersede` seal, normal Decision acceptance, renewed exact
+runtime assessment/admission, company Ready submission, runtime queue and HTTP
+claim. The claimed row has no Application, branch, Git revision or model result;
+the synthetic host has no provider turn. Foreign workspace, non-owner actor,
+wrong operation, stale version and source, unselected evidence, and application
+shape on the company task are refused. The application SQL branches retain
+their guards. This closes the risk/admission dependency locally, not the full
+Gate 6 outcome: real installed Worker/Hermes execution, owner-visible result,
+accept-or-return, and production/deployment proof remain unrun. See
+[native evidence](architecture/traceability-matrix.md#e-company-information-risk-admission).
 
 **Roost outcome:** the owner creates one low-risk informational company task in
 the console, assigns the configured local agent and sees its result and status

@@ -6,12 +6,19 @@ export const admissionGates = ["procedure", "extended_review", "mandate", "backu
 const uuid = z.string().uuid(), text = z.string().trim().min(3).max(2000);
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const command = { requestId: uuid, expectedVersion: hash };
-export const admissionScopeSchema = z.object({ ...command,
+const applicationAdmissionScopeSchema = z.object({ ...command,
   taskType: z.enum(["code_change", "maintenance", "migration", "review"]),
   environment: z.enum(["development", "staging", "production"]),
   targetId: uuid, releaseId: uuid, commit: z.string().regex(/^[a-f0-9]{40}$/),
   destructive: z.boolean(), procedureId: uuid, rationale: text
 }).strict();
+export const companyInformationAdmissionScopeSchema = z.object({ ...command,
+  scopeKind: z.literal("company_information"), taskType: z.literal("information"), environment: z.literal("local"),
+  targetId: z.literal(null), releaseId: z.literal(null), commit: z.literal(null), destructive: z.literal(false),
+  procedureId: uuid, operations: z.array(z.enum(["decision_supersede", "runtime_execute"])).min(1).max(2)
+    .refine(operations => new Set(operations).size === operations.length), rationale: text
+}).strict();
+export const admissionScopeSchema = z.union([applicationAdmissionScopeSchema, companyInformationAdmissionScopeSchema]);
 const common = { ...command, operation: z.enum(admissionOperations), verdict: z.enum(["passed", "failed"]),
   evidence: z.object({ id: uuid, revision: z.string().datetime() }).strict(), rationale: text };
 export const admissionEvidenceSchema = z.discriminatedUnion("gate", [
