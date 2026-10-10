@@ -11,11 +11,12 @@ import { PrismaClient } from '@prisma/client';
 const installation = {}; config({ processEnv: installation, quiet: true });
 const suffix = randomBytes(8).toString('hex');
 const database = `companycore_test_g6a_${suffix}`, role = `roost_g6a_${suffix}`, password = randomBytes(32).toString('hex');
+const proofLabel = process.env.ROOST_G7_REVIEW_ONLY === '1' ? 'G7' : 'G6a';
 const port = process.env.ROOST_POSTGRES_PORT ?? installation.ROOST_POSTGRES_PORT ?? '55432';
 const admin = new PrismaClient({ datasources: { db: { url: `postgresql://companycore:${encodeURIComponent(installation.SERVICE_PASSWORD_POSTGRES ?? 'companycore')}@127.0.0.1:${port}/postgres` } } });
 const environment = Object.fromEntries(Object.entries(process.env).filter(([name]) => /^(PATH|PATHEXT|SYSTEMROOT|COMSPEC|TEMP|TMP|APPDATA|LOCALAPPDATA)$/i.test(name)));
 Object.assign(environment, { DATABASE_URL: `postgresql://${role}:${password}@127.0.0.1:${port}/${database}?schema=public`, NODE_ENV: 'test', COMPANYCORE_SKIP_DOTENV: '1', DOTENV_CONFIG_QUIET: 'true', GOOGLE_OAUTH_CLIENT_ID: 'dev-fixture-client-id', GOOGLE_OAUTH_CLIENT_SECRET: 'dev-fixture-client-secret' });
-if (process.env.ROOST_G6_NATIVE_RUNTIME === '1') {
+if (process.env.ROOST_G6_NATIVE_RUNTIME === '1' && process.env.ROOST_G7_REVIEW_ONLY !== '1') {
   if (!process.env.ROOST_G6_NATIVE_HOST_CONFIG) throw Error('native_host_config_required');
   environment.ROOST_G6_NATIVE_RUNTIME = '1';
   environment.ROOST_G6_NATIVE_HOST_CONFIG = process.env.ROOST_G6_NATIVE_HOST_CONFIG;
@@ -41,9 +42,13 @@ try {
   stage = 'migrate';
   const migration = run(process.execPath, ['node_modules/prisma/build/index.js', 'migrate', 'deploy'], environment, 120000);
   if (migration.status !== 0) { process.stdout.write(migration.stdout.slice(-4000)); process.stderr.write(migration.stderr.slice(-2000)); throw new Error(); }
-  process.stdout.write('G6a fresh database: all migrations applied\n');
+  process.stdout.write(`${proofLabel} fresh database: all migrations applied\n`);
   stage = 'native_http_worker_proof';
-  if (process.env.ROOST_G6_CONSOLE_RECOVERY === '1') {
+  if (process.env.ROOST_G7_REVIEW_ONLY === '1') {
+    const proof = run(process.execPath, ['--test', 'scripts/g7-owner-review-native.test.mjs'], environment, 180000);
+    process.stdout.write(proof.stdout); process.stderr.write(proof.stderr);
+    if (proof.status !== 0) throw new Error();
+  } else if (process.env.ROOST_G6_CONSOLE_RECOVERY === '1') {
     const bridge = await mkdtemp(path.join(os.tmpdir(), 'roost-g6-console-'));
     try {
       environment.ROOST_G6_CONSOLE_RECOVERY_DIR = bridge;
@@ -66,20 +71,20 @@ try {
     if (proof.status !== 0) throw new Error();
   }
   stage = 'passed';
-} catch { process.stderr.write(`G6a native proof failed at ${stage}\n`); process.exitCode = 1; }
+} catch { process.stderr.write(`${proofLabel} native proof failed at ${stage}\n`); process.exitCode = 1; }
 finally {
   try {
     if (databaseCreated) { await admin.$executeRawUnsafe(`DROP DATABASE ${database} WITH (FORCE)`); databaseCreated = false; }
     if (roleCreated) { await admin.$executeRawUnsafe(`DROP ROLE ${role}`); roleCreated = false; }
     const remaining = await admin.$queryRawUnsafe(`SELECT datname FROM pg_database WHERE datname='${database}' UNION ALL SELECT rolname FROM pg_roles WHERE rolname='${role}'`);
     if (remaining.length) throw new Error();
-    process.stdout.write('G6a cleanup: owned database and role absent\n');
-  } catch { process.stderr.write('G6a cleanup verification failed\n'); process.exitCode = 1; }
+    process.stdout.write(`${proofLabel} cleanup: owned database and role absent\n`);
+  } catch { process.stderr.write(`${proofLabel} cleanup verification failed\n`); process.exitCode = 1; }
   await admin.$disconnect();
   if (started) {
     const stopped = run('docker', ['stop', 'roost-postgres-1'], process.env, 30000);
     const state = run('docker', ['inspect', '--format', '{{.State.Running}}', 'roost-postgres-1'], process.env, 10000);
     if (stopped.status !== 0 || state.stdout.trim() !== 'false') process.exitCode = 1;
-    else process.stdout.write('G6a cleanup: prior stopped container state restored\n');
+    else process.stdout.write(`${proofLabel} cleanup: prior stopped container state restored\n`);
   }
 }

@@ -8068,6 +8068,10 @@ textarea:focus-visible,
   font-size: 0.59rem;
 }
 
+.roost-owner-decisions > header > span {
+  color: #b8c9dc;
+}
+
 .roost-decision-columns {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 6rem 6.6rem 7.7rem 5rem;
@@ -8161,7 +8165,7 @@ textarea:focus-visible,
 .roost-decision-copy small {
   overflow: hidden;
   margin-top: 0.22rem;
-  color: rgb(184 201 220 / 0.56);
+  color: #b8c9dc;
   font-size: 0.62rem;
   line-height: 1.4;
   text-overflow: ellipsis;

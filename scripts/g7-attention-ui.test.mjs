@@ -37,7 +37,7 @@ function dashboardPacket() { return { generatedAt: new Date().toISOString(), sum
 function resultPacket(mode) { return { status: ({ running: "running", failed: "failed", stopped: "stopped", pending: "queued" })[mode] || "completed", executionId: id, summary: mode === "failed" ? null : "Six current principles summarized.", finalResponse: ["failed", "running", "pending", "stopped"].includes(mode) ? null : "Full source-backed result.", reason: mode === "failed" ? "provider_auth_expired" : null, canReview: mode === "result", materialVersion: "a".repeat(64), review: mode === "accepted" ? { decision: "accept", summary: "Reviewed in the owner account." } : mode === "returned" ? { decision: "return", summary: "Needs a source correction." } : null, sources: [{ id: decisionId, title: "Orchid sample governance note", revision: "2026-10-04T00:25:08.165Z" }], budget: { maxAttempts: 1, maxDurationSeconds: 600, maxOutputTokensIntent: 1200, tokenCostEnforcement: "unavailable" }, execution: { attempt: 1, startedAt: "2026-10-10T10:00:00Z", completedAt: ["running", "pending"].includes(mode) ? null : "2026-10-10T10:01:00Z", model: "gpt-5.6-sol", effort: "low", checkpoint: ["running", "pending"].includes(mode) ? null : "complete", eventsTruncated: false, events: [{ id: decisionId, type: "information_admitted", at: "2026-10-10T10:00:00Z" }] } }; }
 let checked = 0;
 try {
-  for (const locale of ["pl", "en"]) for (const width of [390, 834, 1440]) {
+  for (const locale of ["pl", "en"]) for (const width of [390, 720, 834, 1440]) {
     for (const mode of ["dashboard", "result", "accepted", "returned", "running", "failed", "stopped", "pending", "error", "empty"]) {
       const page = await browser.newPage({ viewport: { width, height: 960 } });
       const errors = []; page.on("pageerror", error => errors.push(error.message));
@@ -133,5 +133,5 @@ try {
     await conflictPage.getByRole("button", { name: locale === "pl" ? "Przyjmij wynik informacyjny" : "Accept information result" }).waitFor();
     await conflictPage.close(); checked++;
   }
-  console.log(`G7 attention UI: ${checked} checks passed (60 PL/EN × 390/834/1440 attention and result states, pagination, and PL/EN review-conflict recovery). Screenshots: ${output}`);
+  console.log(`G7 attention UI: ${checked} checks passed (80 PL/EN × 390/720/834/1440 attention and result states, pagination, and PL/EN review-conflict recovery). Screenshots: ${output}`);
 } finally { await browser.close(); server.close(); }
