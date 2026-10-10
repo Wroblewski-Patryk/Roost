@@ -264,6 +264,22 @@ console-only recovery after a spent attempt; that would require fresh
 authority for a new model attempt or synthetic production writes. The previously
 observed production result and owner acceptance remain separate evidence.
 
+Commit `96513da8` containing the console repair and this local proof reached
+`main`. The earlier documentation-only webhook deployment
+`l9vlbm3nw57yw34wxqvcijg8` was cancelled after its build made no progress
+and Coolify recovered. Manual deployment `u735yd4umy77aq58hgc613as`
+imported exact `96513da80d5c330e8f7577e725b21a1ae468305a`, succeeded at
+2026-10-10 16:27:17 UTC and was shown as Running. Both public `/health`
+endpoints returned `ok` and that exact build. The refreshed authenticated
+owner Operations board retained the selected ClickUp task in TO DO with
+**Worker result: accepted**; its preview separately read **ClickUp task
+status: todo** and **Agent work review: Worker result: accepted**. This is
+read-only production evidence for the deployed UI and existing result. No
+model run, Task write or ClickUp writeback was requested. Production
+console-only recovery from a spent attempt remains unproved because the one
+accepted task is no longer in that state. Gate 6 remains in progress at this
+authority boundary; G7 has not started.
+
 Current delivery work starts at [Matrix](#matrix). The amendment stream before
 it is historical evidence and should be skipped unless a specific requirement
 or implementation claim needs provenance; it is never the work queue.

@@ -3,7 +3,7 @@
 This is the sole active delivery handoff: current facts, authorized outcome
 and required end-to-end evidence.
 
-**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10. The second, separately approved production attempt completed and the owner accepted its result in Roost. The ClickUp-owned task remains `todo` while the production board and preview separately show the accepted Worker result. A disposable PostgreSQL, real HTTP API and owner-console browser scenario proved recovery from a synthetic spent attempt through a successor Decision, renewed risk/admission and Ready without a new model call. The console repair has not yet been observed in production; full production console-only recovery remains unproved. No further model attempt is authorized.
+**Active gate:** G6 — full owner-to-local-agent task loop authorized on 2026-10-10. The second, separately approved production attempt completed and the owner accepted its result in Roost. The ClickUp-owned task remains `todo` while the production board and preview separately show the accepted Worker result. A disposable PostgreSQL, real HTTP API and owner-console browser scenario proved recovery from a synthetic spent attempt through a successor Decision, renewed risk/admission and Ready without a new model call. The console repair is deployed at `96513da8`; both public health endpoints and the refreshed owner board were read back. Full production console-only recovery after a spent attempt remains unproved. No further model attempt is authorized.
 
 Update this line only when the owner authorizes a bounded gate; a proposed
 candidate is not active work.
@@ -420,13 +420,29 @@ when returning from authorization. This is local integrated recovery proof,
 not a second production model attempt or production console-only recovery.
 See [exact evidence](architecture/traceability-matrix.md#e-company-information-console-recovery).
 
-**Remaining Gate 6:** release and observe the console repair, while preserving
-the accepted production result and failed predecessor as separate evidence.
+**Production release and read-back (2026-10-10):** commit `96513da8` was pushed
+to `main`. The earlier documentation-only webhook deployment
+`l9vlbm3nw57yw34wxqvcijg8` had stopped making progress during build and was
+cancelled after Coolify recovered. The manual deployment
+`u735yd4umy77aq58hgc613as` imported exact `96513da8`, succeeded at
+16:27:17 UTC, and Coolify showed that commit as Running. Both public
+`/health` endpoints returned `ok` and exact build
+`96513da80d5c330e8f7577e725b21a1ae468305a`. In the refreshed
+authenticated owner console the selected task remained in TO DO with **Worker
+result: accepted**. Its preview separately showed **ClickUp task status:
+todo** and **Agent work review: Worker result: accepted**. These checks were
+read-only; no model execution, task mutation or ClickUp writeback was
+requested. This confirms the new build and existing accepted result view in
+production, not a production rerun of the spent-attempt recovery sequence.
+
+**Remaining Gate 6:** preserve the accepted production result and failed
+predecessor as separate evidence, and record the console-only recovery limit.
 The one accepted production task no longer has a spent terminal attempt to
 recover through this path. A full production console-only recovery
 demonstration would need fresh authority for a new model attempt or synthetic
-production writes. Neither is part of this continuation. The local integrated proof does not
-upgrade that production claim.
+production writes. Neither is part of this continuation. The local integrated
+proof does not upgrade that production claim. Gate 6 remains in progress at
+this boundary; G7 is not authorized by it.
 
 **Roost outcome:** the owner creates one low-risk informational company task in
 the console, assigns the configured local agent and sees its result and status
