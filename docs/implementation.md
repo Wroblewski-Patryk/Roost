@@ -3,6 +3,11 @@
 This is the sole active delivery handoff: current facts, authorized outcome
 and required end-to-end evidence.
 
+**Active gate:** none (owner STOP on 2026-10-10)
+
+Update this line only when the owner authorizes a bounded gate; a proposed
+candidate is not active work.
+
 ## Delivery objective
 
 Make Roost usable as the owner's company workspace with an optional local agent.
@@ -134,7 +139,7 @@ runtime evidence in the traceability matrix.
 
 ### Second-application release — paused by owner
 
-**STOP on 2026-10-10; no gate is active.** Gate 5 local `3cf9645e` and accepted
+**This release remains paused after the owner STOP on 2026-10-10.** Gate 5 local `3cf9645e` and accepted
 candidate `d73e6234` remain, but release `bdc1387e` failed at deployment
 configuration. No deployment, observation or postrelease acceptance was proved.
 Worker and locks were stopped. Exact identities and limits remain in the

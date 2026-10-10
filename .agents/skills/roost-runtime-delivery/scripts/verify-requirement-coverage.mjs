@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { assessStatus, DECISIONS, EVIDENCE_STATUSES, parseRequirements, parseTraceability } from "./requirement-status.mjs";
 
 function findRoot(start) {
   let current = path.resolve(start);
@@ -15,16 +16,19 @@ const root = findRoot(process.cwd());
 const requirements = readFileSync(path.join(root, "docs", "product", "requirements.md"), "utf8");
 const traceability = readFileSync(path.join(root, "docs", "architecture", "traceability-matrix.md"), "utf8");
 
-const requirementIds = [...requirements.matchAll(/<a id="rf-[^"]+"><\/a>(RF-[A-Z]+-\d{3})/g)].map((match) => match[1]);
+const requirementRows = parseRequirements(requirements);
+const traceabilityRows = parseTraceability(traceability);
+const requirementIds = requirementRows.map((row) => row.id);
 const uniqueIds = [...new Set(requirementIds)].sort();
 const duplicates = [...new Set(requirementIds.filter((id, index) => requirementIds.indexOf(id) !== index))].sort();
-const traceabilityIds = [...traceability.matchAll(/^\| \[(RF-[A-Z]+-\d{3})\]\([^\r\n]+\) \|/gm)].map((match) => match[1]);
+const traceabilityIds = traceabilityRows.map((row) => row.id);
 const uniqueTraceabilityIds = [...new Set(traceabilityIds)].sort();
 const traceabilityDuplicates = [...new Set(traceabilityIds.filter((id, index) => traceabilityIds.indexOf(id) !== index))].sort();
 const missing = uniqueIds.filter((id) => !uniqueTraceabilityIds.includes(id));
 const unknown = uniqueTraceabilityIds.filter((id) => !uniqueIds.includes(id));
+const assessment = assessStatus(requirementRows, traceabilityRows);
 
-const errors = [];
+const errors = [...assessment.errors];
 if (uniqueIds.length === 0) errors.push("no_canonical_requirement_ids_found");
 if (duplicates.length) errors.push(`duplicate_requirement_ids:${duplicates.join(",")}`);
 if (traceabilityDuplicates.length) errors.push(`duplicate_traceability_rows:${traceabilityDuplicates.join(",")}`);
@@ -41,6 +45,8 @@ console.log(JSON.stringify({
   traceabilityDuplicates,
   missing,
   unknown,
+  decisionCounts: Object.fromEntries(DECISIONS.map((decision) => [decision, requirementRows.filter((row) => row.decision === decision).length])),
+  acceptedStatusCounts: Object.fromEntries(EVIDENCE_STATUSES.map((status) => [status, assessment.rows.filter((row) => row.decision === "accepted" && row.status === status).length])),
   errors,
 }, null, 2));
 

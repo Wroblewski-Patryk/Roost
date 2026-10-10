@@ -23,6 +23,9 @@ For implementation, integration, verification, release or delivery-status work
 that advances the objective in `docs/implementation.md`, use the
 `roost-runtime-delivery` repository skill. The skill is the operating method;
 the canonical documents remain the source of product and implementation truth.
+For a status answer, run `npm run codex:status` and read `docs/implementation.md`;
+report inspected proof, unknowns and the active gate separately. Requirement
+coverage is not implementation completion.
 
 Use `roost-gate-design` when asked to define or refine a future Roost delivery
 gate. For an authorized company capability spanning product surfaces, use

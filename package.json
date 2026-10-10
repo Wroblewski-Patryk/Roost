@@ -77,6 +77,7 @@
     "validate": "npm run lint && npm run typecheck && npm run build",
     "codex:preflight": "node .agents/skills/roost-runtime-delivery/scripts/preflight.mjs",
     "codex:requirements": "node .agents/skills/roost-runtime-delivery/scripts/verify-requirement-coverage.mjs",
+    "codex:status": "node .agents/skills/roost-runtime-delivery/scripts/report-status.mjs",
     "test:codex-infrastructure": "node --test .agents/skills/roost-runtime-delivery/scripts/codex-infrastructure.test.mjs",
     "codex:check": "npm run codex:preflight && npm run codex:requirements && npm run test:codex-infrastructure",
     "test:application-release-scope": "tsx --test src/tests/application-release-scope-migration.test.ts"

@@ -956,8 +956,12 @@ This matrix is product verification truth, not a task board or execution history
 ## Reading the evidence
 
 The required status vocabulary is: **działa** (works within the stated scope),
-**częściowo działa** (partial), **brak** (missing), **wymaga konfiguracji**
-(needs configuration), **wymaga testu** (needs verification).
+**częściowo działa** (partial), **brak** (confirmed missing),
+**wymaga konfiguracji** (needs configuration), **wymaga testu** (needs
+verification), **nieocenione** (not yet audited), **odroczone** (deferred)
+and **poza zakresem** (rejected/out of scope). The decision column in
+`product/requirements.md` is separate: a deferred requirement may still have
+`brak` as its implementation status. Do not count it as current work.
 Code existence never proves autonomous operation. “Works” on a governance
 prohibition means the documented current boundary, not a new automated enforcement
 claim. Deferred/superseded rows are excluded from activation blockers and work

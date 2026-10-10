@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import { test } from "node:test";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { assessStatus, parseRequirements, parseTraceability } from "./requirement-status.mjs";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(scriptDirectory, "..", "..", "..", "..");
@@ -34,4 +35,17 @@ test("every canonical requirement has traceability coverage", () => {
   assert.deepEqual(result.traceabilityDuplicates, []);
   assert.deepEqual(result.missing, []);
   assert.deepEqual(result.unknown, []);
+  assert.equal(Object.values(result.decisionCounts).reduce((sum, value) => sum + value, 0), result.requirementCount);
+  assert.equal(Object.values(result.acceptedStatusCounts).reduce((sum, value) => sum + value, 0), result.decisionCounts.accepted);
+});
+
+test("status assessment distinguishes unassessed evidence from working behavior", () => {
+  const requirements = parseRequirements("| <a id=\"rf-host-022\"></a>RF-HOST-022 | reference | accepted | Select a managed model. | — |");
+  const unassessed = parseTraceability("| [RF-HOST-022](../product/requirements.md#rf-host-022) | P1 | nieocenione | [MODEL](#e-model) | Native task proof absent. |");
+  const report = assessStatus(requirements, unassessed);
+  assert.deepEqual(report.errors, []);
+  assert.equal(report.rows[0].status, "nieocenione");
+  assert.notEqual(report.rows[0].status, "działa");
+  const invalid = assessStatus(requirements, [{ ...unassessed[0], status: "ukończone" }]);
+  assert.ok(invalid.errors.includes("invalid_traceability_row:RF-HOST-022"));
 });

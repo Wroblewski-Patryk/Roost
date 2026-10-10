@@ -27,6 +27,16 @@ The [traceability matrix](architecture/traceability-matrix.md) maps accepted
 requirement IDs to inspected implementation evidence. It is an audit view, not
 a second requirements file or a task plan.
 
+Run `npm run codex:status` for a read-only summary of requirement decisions
+and evidence status by area. On Windows PowerShell, use
+`npm.cmd run codex:status -- --all` for every requirement, or
+`npm.cmd run codex:status -- --id=RF-HOST-022` for one. The command derives its
+output from the requirements registry, matrix and `implementation.md`; it does
+not create another status file. Current work and gate authorization live only
+in `implementation.md`. Coverage or row counts are not completion percentages.
+The matrix is at requirement granularity; a complete route/function inventory
+and end-to-end console acceptance remain unverified under RF-UX-010.
+
 ## Stable product chapters
 
 New assumptions extend the existing chapter that owns the subject. Do not
