@@ -92,6 +92,8 @@ context, ordinary company search and agent runtime application readiness also
 exclude archived items. Archiving retains identity, links and audit history; a
 test or certification artifact must be archived through its scoped API after
 its production proof is complete, not deleted directly from the database.
+The company-record editor exposes that archive action for an exact record link
+even when a department list does not include the record.
 
 ## Web Route Ownership
 
