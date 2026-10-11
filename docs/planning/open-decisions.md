@@ -2,9 +2,10 @@
 
 ## Current delivery
 
-The active G16b Composition gate and its approved effects are in
-[`docs/implementation.md`](../implementation.md). This does not resume the
-earlier stopped second-application release or authorize G17.
+G16b Composition reached its authorized boundary; its proof and limitations
+are in [`docs/implementation.md`](../implementation.md) and the
+[composition contract](../architecture/department-composition.md). No gate is
+active. The earlier stopped second-application release and G17 remain closed.
 
 Accepted product intent is canonical in
 [`docs/product/requirements.md`](../product/requirements.md). Ordinary

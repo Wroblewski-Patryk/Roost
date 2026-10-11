@@ -88,4 +88,26 @@ attached view had an enabled availability row. The VPS had 9.3 GB free. The
 last documented isolated restore of an encrypted recovery copy was on
 2026-10-10; no fresh backup is claimed for this gate.
 
-Deployed read-back is recorded only after deployment.
+## Deployed read-back and boundary
+
+Implementation commit `a4d0f17c04b59ee5f647d0e54b96d0a4f6aa44ec` was
+fast-forward pushed to `main`. Coolify webhook deployment `6380` completed at
+2026-10-11 18:44:39 UTC. Public `/health` and `/v1/health` returned `ok` with
+that exact build, the web root returned 200, and unauthenticated department
+read returned 401. The running backend matched the build. Production migration
+`20261011220000_g16b_department_composition` finished without rollback.
+PostgreSQL stayed healthy on its retained named volume. Read-only counts
+remained 13 departments, 2,799 organizational relations, 51 view definitions,
+184 availability rows and 26 provider mappings. All 13 departments retained
+`composition_version = 1`; every attached view had enabled availability and
+there were no unfinished migrations. The VPS had 7.5 GB free after rollout;
+no cache cleanup was run.
+
+The signed-in owner console loaded the department-management view and showed
+the 13 departments with their attached shared views, including `00 General`
+and the existing contextual views. This is a deployed owner read-back of the
+current catalog. No production preview/apply, configuration change, company
+record, paid model request or Worker run was made for proof. The positive
+preview/apply journey was proven in the isolated PostgreSQL/browser tests,
+not by a production composition change. G16b meets its bounded release and
+read-only smoke boundary; G17 needs separate authorization.
