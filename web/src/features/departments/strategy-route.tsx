@@ -8,6 +8,7 @@ import { formatAppDate } from "../../i18n/date-format";
 import { StrategyPacket } from "../../types";
 import { BlockedActions, humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
 import { GoalsWorkbench } from "./goals-workbench";
+import { CompanyDirectionPanel } from "./company-direction-panel";
 
 function formatDate(value?: string | null) {
   if (!value) return "-";
@@ -61,13 +62,11 @@ export function StrategyRoute() {
     }
   ];
 
-  if (packet.status === "ready" && !rows.length) {
-    return <>{header}<CcNotice tone="empty" title={t("strategy.empty.title")} detail={t("strategy.empty.detail")} /></>;
-  }
-
   return (
     <>
       {header}
+
+      <CompanyDirectionPanel tasks={packet.data?.tasks || []} decisions={packet.data?.decisions || []} />
 
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}
       {packet.status === "error" ? <CcNotice tone="error" title={packet.error || "Strategy context could not load."} live /> : null}

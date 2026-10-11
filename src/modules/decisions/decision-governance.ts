@@ -9,6 +9,7 @@ import { resolveReviewPrincipal, type ReviewActor } from "../../auth/agent-princ
 import { admitCapability,recordCapabilityUse,grantState } from "../agent-runtime/task-capability-admission";
 import { admissionCommand,admissionVersion } from "../agent-runtime/task-risk-admission";
 import { validateApplicationTakeoverBaseline } from "../product-engineering/application-takeover-validation";
+import { directionDecisionAcceptanceError } from "../strategy/company-direction";
 type Db=Prisma.TransactionClient;
 const wire=(r:any)=>Object.fromEntries(Object.entries(r).filter(([k])=>k!=="request_hash").map(([k,v])=>[k.replace(/_([a-z])/g,(_,c)=>c.toUpperCase()),v]));
 async function state(db:Db,w:string,actor:ReviewActor|null,id?:string){
@@ -164,6 +165,9 @@ export async function decisionGovernanceCommand(db:Db,w:string,actor:ReviewActor
    await db.$executeRaw`INSERT INTO decision_impact_previews(id,decision_id,workspace_id,version,impact,authority,actor_user_id,request_id,request_hash) VALUES(${rid}::uuid,${id}::uuid,${w}::uuid,${(s.previews[0]?.version??0)+1},${JSON.stringify(s.impact)}::jsonb,${JSON.stringify(s.authority)}::jsonb,${u}::uuid,${input.requestId}::uuid,${hash})`;
   }else{
    if(!input.previewId)return {error:"decision_preview_required"};
+   if(input.previewId!==s.previews[0]?.id)return {error:"decision_stale"};
+   const directionError=await directionDecisionAcceptanceError(db,w,id!,input.previewId);
+   if(directionError)return {error:directionError};
    if(s.selected.body.applicationBaseline){const validation=await validateApplicationTakeoverBaseline(db,w,s.selected.body.applicationBaseline);if(validation.error)return validation;}
    if(s.previews[0]?.authority&&reviewDigest(s.previews[0].authority)!==reviewDigest(s.authority))return {error:"decision_authority_stale"};
    const grants:any[]=[];

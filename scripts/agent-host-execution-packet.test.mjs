@@ -18,6 +18,24 @@ test("a complete packet passes without changing its contents", () => {
   const f = validPacketFixture(); const before = JSON.stringify(f);
   assert.equal(validate(f), f.packet); assert.equal(JSON.stringify(f), before);
 });
+test("current owner direction survives native packet validation and mismatched context is refused", () => {
+  const f = validPacketFixture();
+  const direction = { id: f.claimed.id, workspaceId: f.claimed.workspaceId, version: 1,
+    text: "Synthetic company direction", provenance: "Isolated owner fixture",
+    adoptedAt: new Date().toISOString(), adoptedByUserId: f.claimed.id };
+  f.packet.companyDirection = direction;
+  f.taskContext.companyDirection = structuredClone(direction);
+  sealPacket(f.packet);
+  assert.equal(validate(f), f.packet);
+  f.taskContext.companyDirection = { ...direction, version: 2 };
+  assert.throws(() => validate(f), error => error.message === "execution_packet_invalid"
+    && error.details.issues.some(issue => issue.field === "companyDirection"));
+  f.taskContext.companyDirection = direction;
+  f.packet.companyDirection.workspaceId = f.claimed.id;
+  sealPacket(f.packet);
+  assert.throws(() => validate(f), error => error.message === "execution_packet_invalid"
+    && error.details.issues.some(issue => issue.field === "companyDirection"));
+});
 test("application packet refuses a context source without owner review provenance", () => {
   const f = validPacketFixture(); delete f.packet.sources[0].provenance; sealPacket(f.packet);
   assert.throws(() => validate(f), error => error.message === "execution_packet_invalid"

@@ -29,6 +29,7 @@ export const capabilities = [
   "assets:read",
   "assets:write",
   "strategy:read",
+  "strategy:write",
   "operating-graph:read",
   "operating-model:read",
   "operating-model:write",
@@ -206,7 +207,14 @@ export const adapterManifest = {
       { method: "PATCH", path: "/v1/assets/folders/:id", capability: "assets:write" }
     ],
     strategy: [
-      { method: "GET", path: "/v1/strategy/context", capability: "strategy:read" }
+      { method: "GET", path: "/v1/strategy/context", capability: "strategy:read" },
+      { method: "GET", path: "/v1/strategy/direction", capability: "strategy:read" },
+      { method: "POST", path: "/v1/strategy/direction/drafts", capability: "strategy:write" },
+      { method: "POST", path: "/v1/strategy/direction/drafts/:id/preview", capability: "strategy:write" },
+      { method: "POST", path: "/v1/strategy/direction/drafts/:id/adopt", capability: "strategy:write" },
+      { method: "POST", path: "/v1/strategy/direction/comparisons", capability: "strategy:write" },
+      { method: "POST", path: "/v1/strategy/direction/comparisons/:id/actions/resolve", capability: "strategy:write" },
+      { method: "GET", path: "/v1/strategy/tasks/:id/direction", capability: "agent-runtime:read" }
     ],
     operatingGraph: [
       { method: "GET", path: "/v1/operating-graph/areas/:areaKey", capability: "operating-graph:read" }

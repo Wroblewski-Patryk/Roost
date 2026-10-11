@@ -113,10 +113,16 @@ const provenanceSchema = z.object({
   validUntil: z.string().datetime(), reviewedAt: z.string().datetime(), reviewedByUserId: id
 }).strict();
 
+const companyDirectionSchema = z.object({
+  id, workspaceId: id, version: z.number().int().positive(), text: z.string().trim().min(1).max(4000),
+  provenance: z.string().trim().min(1).max(1000), adoptedAt: z.string().datetime(), adoptedByUserId: id
+}).strict();
+
 const packetSchema = z.object({
   schemaVersion: z.literal("roost-execution-packet-v1"), revision: z.string().regex(/^[a-f0-9]{64}$/),
   identity: z.object({ executionId: id, workspaceId: id, taskId: id, applicationId: id, agentId: id }).strict(),
   taskRevision: text, contract: executionContractSchema,
+  companyDirection: companyDirectionSchema.nullable().optional(),
   procedureComposition: z.record(z.unknown()),
   roleAuthorities: roleAuthoritiesSchema,
   scopeAuthorities: z.object({
@@ -182,6 +188,10 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
       if (p.identity[field] !== expected) add(`identity.${field}`, "mismatch");
     }
     if (taskContext?.schemaVersion !== "task-agent-execution-context-v1") add("taskContext.schemaVersion", "invalid");
+    if (taskContext?.companyDirection !== undefined && JSON.stringify(p.companyDirection ?? null) !== JSON.stringify(taskContext.companyDirection ?? null))
+      add("companyDirection", "context_mismatch");
+    if (p.companyDirection && (p.companyDirection.workspaceId !== p.identity.workspaceId || !p.companyDirection.adoptedAt))
+      add("companyDirection", "workspace_mismatch");
     for (const field of ["procedures", "dependencies", "decisions"]) {
       if (!Array.isArray(taskContext?.[field])) add(`taskContext.${field}`, "missing");
     }

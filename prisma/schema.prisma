@@ -611,6 +611,10 @@ model OwnerActionProof {
 }
 
 model Workspace {
+  directionHead CompanyDirectionHead?
+  directionVersions CompanyDirectionVersion[]
+  directionComparisons CompanyDirectionComparison[]
+  directionImpactPreviews CompanyDirectionImpactPreview[]
   ownerTicketKey TrustedProviderTicketKey?
   ownerTickets TrustedProviderTicket[]
   canonicalLanguage String? @map("canonical_language")
@@ -3468,6 +3472,83 @@ model TaskCapabilityUse {
   createdAt DateTime @default(now()) @map("created_at")
   @@unique([workspaceId, requestId])
   @@map("task_capability_uses")
+}
+
+model CompanyDirectionHead {
+  id String @id @default(uuid()) @db.Uuid
+  workspaceId String @unique @map("workspace_id") @db.Uuid
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  currentVersionId String @map("current_version_id") @db.Uuid
+  currentVersion CompanyDirectionVersion @relation("CompanyDirectionCurrent", fields: [currentVersionId, workspaceId], references: [id, workspaceId], onDelete: NoAction, onUpdate: NoAction)
+  nextVersion Int @default(1) @map("next_version")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("company_direction_heads")
+}
+
+model CompanyDirectionVersion {
+  id String @id @default(uuid()) @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  version Int?
+  text String
+  provenance String
+  status String @default("draft")
+  previousVersionId String? @map("previous_version_id") @db.Uuid
+  previousVersion CompanyDirectionVersion? @relation("CompanyDirectionPrevious", fields: [previousVersionId, workspaceId], references: [id, workspaceId], onDelete: NoAction, onUpdate: NoAction)
+  successorVersions CompanyDirectionVersion[] @relation("CompanyDirectionPrevious")
+  currentForHeads CompanyDirectionHead[] @relation("CompanyDirectionCurrent")
+  impactDigest String? @map("impact_digest")
+  createdByUserId String @map("created_by_user_id") @db.Uuid
+  adoptedByUserId String? @map("adopted_by_user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  adoptedAt DateTime? @map("adopted_at")
+
+  @@unique([workspaceId, version])
+  @@unique([id, workspaceId])
+  @@index([workspaceId, status, createdAt])
+  @@map("company_direction_versions")
+}
+
+model CompanyDirectionComparison {
+  id String @id @default(uuid()) @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  directionVersionId String @map("direction_version_id") @db.Uuid
+  subjectType String @map("subject_type")
+  subjectId String @map("subject_id") @db.Uuid
+  subjectRevision DateTime @map("subject_revision")
+  subjectGovernancePreviewId String? @map("subject_governance_preview_id") @db.Uuid
+  subjectTitle String @map("subject_title")
+  outcome String
+  evidence String
+  assessment String
+  status String @default("proposed")
+  exceptionRationale String? @map("exception_rationale")
+  createdByUserId String @map("created_by_user_id") @db.Uuid
+  decidedByUserId String? @map("decided_by_user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  decidedAt DateTime? @map("decided_at")
+
+  @@index([workspaceId, subjectType, subjectId, createdAt])
+  @@index([workspaceId, directionVersionId])
+  @@map("company_direction_comparisons")
+}
+
+model CompanyDirectionImpactPreview {
+  id String @id @default(uuid()) @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  draftId String @map("draft_id") @db.Uuid
+  expectedCurrentId String? @map("expected_current_id") @db.Uuid
+  impactDigest String @map("impact_digest")
+  ownerUserId String @map("owner_user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime @map("expires_at")
+  consumedAt DateTime? @map("consumed_at")
+
+  @@index([workspaceId, draftId, createdAt])
+  @@map("company_direction_impact_previews")
 }
 
 model GoogleDocMandate {

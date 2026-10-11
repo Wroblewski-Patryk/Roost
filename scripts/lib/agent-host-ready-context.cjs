@@ -24,7 +24,8 @@ function readyContextRevision(taskContext, applicationContext, input = {}) {
   const { generatedAt: _taskTime, executionPacket, readyAdmission: _admission, ...task } = taskContext;
   const { generatedAt: _appTime, ...application } = applicationContext;
   const body = normalize({ schemaVersion: "roost-ready-context-v1", task, application,
-    contract: executionPacket.contract, sources: executionPacket.sources, scopeAuthorities: executionPacket.scopeAuthorities,
+    contract: executionPacket.contract, sources: executionPacket.sources, companyDirection: executionPacket.companyDirection,
+    scopeAuthorities: executionPacket.scopeAuthorities,
     roleAuthorities: executionPacket.roleAuthorities,
     procedureComposition: executionPacket.procedureComposition,
     prompt: input.prompt ?? null, baseBranch: input.baseBranch ?? null }, taskContext.task.id);

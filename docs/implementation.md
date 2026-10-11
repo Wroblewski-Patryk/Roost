@@ -3,7 +3,7 @@
 This is the canonical delivery handoff: current facts, authorized outcome
 and required end-to-end evidence for the next owner-authorized gate.
 
-**Active gate:** none — G18b delivered on 2026-10-11; [evidence and limits](architecture/google-doc-authority-g18b.md#deployed-boundary). G19 needs owner authorization.
+**Active gate:** G19 owner-adopted company direction; approved 2026-10-12. [Scope and evidence](architecture/company-direction-g19.md).
 
 **G17 release:** Implementation commit `cbc20bf5` was deployed in Coolify run 6382. Native/API/UI/Security checks and read-only production smoke passed within the bounded gate. No production business-data write or paid model call was made. See [exact evidence and limits](architecture/procedure-improvement-g17.md#g17-verification-and-release).
 

@@ -4,6 +4,7 @@ import { contextualEntityIds, organizationalContextsForEntities } from "../organ
 import { prepareExecutionPacket } from "../agent-runtime/execution-packet";
 import { companySourceApprovedContent, companySourceEligible, companySourceReviews } from "../agent-runtime/company-source-trust";
 import { taskDecisionAuthorities } from "../decisions/decision-authority";
+import { currentCompanyDirection } from "../strategy/company-direction";
 import { projectTaskSource, taskSourceCandidate, taskSourceEligible, taskSourceProvenance, taskSourceReviews, type TaskSourceType } from "../agent-runtime/task-source-trust";
 
 export async function loadTaskAgentContext(workspaceId: string, taskId: string, execution: AgentExecution | null = null, db: Prisma.TransactionClient = prisma, submission?: import("../agent-runtime/task-role-context").RoleSubmission, authorities?: Awaited<ReturnType<typeof taskDecisionAuthorities>>) {
@@ -83,6 +84,7 @@ export async function loadTaskAgentContext(workspaceId: string, taskId: string, 
     } : null } : task;
   return {
     schemaVersion: "task-agent-execution-context-v1", generatedAt: new Date().toISOString(), task: executionTask, organizationalContext: execution ? null : contexts.get(task.id),...(decisionAuthorities.length?{decisionAuthorities}:{}),
+    companyDirection: await currentCompanyDirection(db, workspaceId),
     ...(execution ? { executionPacket: await prepareExecutionPacket(execution, task, db, submission) } : {}),
     intent: { objective: executionTask.goal, target: executionTask.target, project: executionTask.project, businessContext: visibleRecords.map((record) => ({ id: record.id, type: record.recordType, purpose: record.businessPurpose, ...(!execution && { rationale: "rationale" in record ? record.rationale : null }) })) },
     requirements: visibleRecords.filter((record) => record.recordType === "requirement"), relatedRecords: visibleRecords,
@@ -120,6 +122,7 @@ export async function loadCompanyInformationContext(workspaceId: string, taskId:
       return taskSourceEligible(source, reviews.get(`${type}:${row.id}`), workspaceId, taskId, applicationIds, task.projectId);
     });
     return { schemaVersion: "task-agent-execution-context-v1", generatedAt: new Date().toISOString(),
+      companyDirection: await currentCompanyDirection(db, workspaceId),
       task: { id: task.id, workspaceId, title: task.title, status: task.status, updatedAt: task.updatedAt,
         goalId: task.goalId, projectId: task.projectId, goal: task.goal ? { id: task.goal.id, workspaceId: task.goal.workspaceId } : null,
         assignedWorkforceEntityId: task.assignedWorkforceEntityId, assignedWorkforceEntity: task.assignedWorkforceEntity ? {

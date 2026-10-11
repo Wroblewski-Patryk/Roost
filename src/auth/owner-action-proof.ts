@@ -11,6 +11,8 @@ export function digest(value: string) {
 export function proofEligibleAction(method: string, path: string) {
   if (method !== "POST" || path.includes("?") || path.includes("#")) return false;
   return path === "/v1/api-keys/agent-credentials"
+    || /^\/v1\/strategy\/direction\/drafts\/[0-9a-f-]{36}\/adopt$/.test(path)
+    || /^\/v1\/strategy\/direction\/comparisons\/[0-9a-f-]{36}\/actions\/resolve$/.test(path)
     || /^\/v1\/api-keys\/[0-9a-f-]{36}\/actions\/(?:rotate|revoke)$/.test(path)
     || /^\/v1\/api-keys\/worker-credentials\/(?:enroll|rotate|revoke)$/.test(path)
     || path === "/v1/api-keys/worker-credentials/handoff/approve"

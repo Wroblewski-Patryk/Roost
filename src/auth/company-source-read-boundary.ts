@@ -6,6 +6,7 @@ export function unboundCompanySourceRead(method: string, path: string) {
   if (method !== "GET") return false;
   const route = path.replace(/\/+$/, "").toLowerCase().replace(/^\/v1(?=\/)/, "");
   return /^\/company-records(?:\/|$)/.test(route)
+    || route === "/strategy/direction"
     || /^\/company-intelligence\/(?:search|graph)$/.test(route)
     || /^\/company-intelligence\/entities\/(?:company_record|requirement)\/[^/]+$/.test(route)
     || /^\/company-intelligence\/tasks\/[^/]+\/agent-context$/.test(route)
@@ -47,6 +48,7 @@ export function ordinaryApiKeyReadAllowed(method: string, path: string, boundAge
   if (route === "/connection" || route === "/mcp/manifest") return true;
   if (!boundAgent) return false;
   return /^\/google-drive\/tasks\/[a-f0-9-]{36}\/docs\/[a-f0-9-]{36}\/governed$/.test(route)
+    || /^\/strategy\/tasks\/[a-f0-9-]{36}\/direction$/.test(route)
     || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/company-sources(?:\/[a-f0-9-]{36})?$/.test(route)
     || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/sources(?:\/(?:procedure|policy|decision|evidence|note|knowledge_item|application_evidence|application_architecture|application_interface|application_capability|drive_snapshot)\/[a-f0-9-]{36})?$/.test(route)
     || route === "/tasks" || /^\/tasks\/[a-f0-9-]{36}$/.test(route)

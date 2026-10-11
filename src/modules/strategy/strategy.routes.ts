@@ -1,7 +1,14 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
 import { resolveDepartmentEntry } from "../../operating-model/department-registry";
+import { z } from "zod";
+import { sendApiError } from "../../middleware/api-error";
+import { taskSourceScope } from "../agent-runtime/task-source-trust";
+import { resolveReviewPrincipal } from "../../auth/agent-principal";
+import { Prisma } from "@prisma/client";
+import { DirectionError, adoptDirectionDraft, createDirectionComparison, createDirectionDraft,
+  currentCompanyDirection, ownerDirectionView, previewDirectionDraft, resolveDirectionComparison } from "./company-direction";
 
 const STRATEGY_DEPARTMENT_KEY = "01-strategia";
 const STRATEGY_LIMIT = 12;
@@ -20,6 +27,95 @@ function taskLooksStrategic(task: { title: string; description: string | null })
 }
 
 export const strategyRouter = Router();
+
+const uuid = z.string().uuid();
+const draftSchema = z.object({ text: z.string().trim().min(1).max(4000), provenance: z.string().trim().min(1).max(1000) }).strict();
+const adoptionSchema = z.object({ previewId: uuid, expectedCurrentId: uuid.nullable(), impactDigest: z.string().regex(/^[a-f0-9]{64}$/) }).strict();
+const comparisonSchema = z.object({ subjectType: z.enum(["task", "decision"]), subjectId: uuid,
+  outcome: z.string().trim().min(1).max(2000), evidence: z.string().trim().min(1).max(4000), assessment: z.enum(["aligned", "conflict"]) }).strict();
+const resolutionSchema = z.object({ action: z.enum(["confirm_aligned", "accept_exception", "reject_exception"]),
+  rationale: z.string().trim().min(1).max(2000) }).strict();
+
+function owner(req: Request) {
+  const auth = req.auth;
+  return auth?.authType === "user" && auth.workspaceRole === "owner" && auth.userId ? auth.userId as string : null;
+}
+function responseError(res: Response, error: unknown) {
+  if (error instanceof DirectionError) return sendApiError(res, error.status, error.code);
+  throw error;
+}
+
+strategyRouter.get("/direction", asyncHandler(async (req, res) => {
+  if (!owner(req)) return sendApiError(res, 403, "direction_owner_required");
+  res.json({ data: await ownerDirectionView(req.auth!.workspaceId) });
+}));
+
+strategyRouter.post("/direction/drafts", asyncHandler(async (req, res) => {
+  const userId = owner(req);
+  if (!userId) return sendApiError(res, 403, "direction_owner_required");
+  const input = draftSchema.parse(req.body);
+  try { res.status(201).json({ data: await createDirectionDraft(req.auth!.workspaceId, userId, input.text, input.provenance) }); }
+  catch (error) { return responseError(res, error); }
+}));
+
+strategyRouter.post("/direction/drafts/:id/preview", asyncHandler(async (req, res) => {
+  const userId = owner(req);
+  if (!userId) return sendApiError(res, 403, "direction_owner_required");
+  z.object({}).strict().parse(req.body ?? {});
+  try { res.json({ data: await previewDirectionDraft(req.auth!.workspaceId, userId, uuid.parse(req.params.id)) }); }
+  catch (error) { return responseError(res, error); }
+}));
+
+strategyRouter.post("/direction/drafts/:id/adopt", asyncHandler(async (req, res) => {
+  const userId = owner(req);
+  if (!userId || !req.header("X-Owner-Action-Proof") || !req.auth!.authenticatedAt ||
+    Math.floor(Date.now() / 1000) - req.auth!.authenticatedAt > 90)
+    return sendApiError(res, 403, "direction_fresh_owner_required");
+  const input = adoptionSchema.parse(req.body);
+  try { res.json({ data: await adoptDirectionDraft(req.auth!.workspaceId, userId, uuid.parse(req.params.id), input.previewId, input.expectedCurrentId, input.impactDigest) }); }
+  catch (error) { return responseError(res, error); }
+}));
+
+strategyRouter.post("/direction/comparisons", asyncHandler(async (req, res) => {
+  const userId = owner(req);
+  if (!userId) return sendApiError(res, 403, "direction_owner_required");
+  const input = comparisonSchema.parse(req.body);
+  try { res.status(201).json({ data: await createDirectionComparison(req.auth!.workspaceId, userId, input) }); }
+  catch (error) { return responseError(res, error); }
+}));
+
+strategyRouter.post("/direction/comparisons/:id/actions/resolve", asyncHandler(async (req, res) => {
+  const userId = owner(req);
+  if (!userId || !req.header("X-Owner-Action-Proof") || !req.auth!.authenticatedAt ||
+    Math.floor(Date.now() / 1000) - req.auth!.authenticatedAt > 90)
+    return sendApiError(res, 403, "direction_fresh_owner_required");
+  const input = resolutionSchema.parse(req.body);
+  try { res.json({ data: await resolveDirectionComparison(req.auth!.workspaceId, userId, uuid.parse(req.params.id), input) }); }
+  catch (error) { return responseError(res, error); }
+}));
+
+strategyRouter.get("/tasks/:id/direction", asyncHandler(async (req, res) => {
+  const auth = req.auth!;
+  if (auth.authType !== "api_key" || !auth.agentId) return sendApiError(res, 403, "direction_task_agent_required");
+  const taskId = uuid.parse(req.params.id);
+  const data = await prisma.$transaction(async db => {
+    const principal = await resolveReviewPrincipal(db, auth.workspaceId, auth);
+    if (principal?.kind !== "agent" || principal.id !== auth.agentId) return null;
+    const workforce = await db.$queryRaw<Array<{ id: string }>>`SELECT id FROM workforce_entities
+      WHERE id=${auth.agentId}::uuid AND workspace_id=${auth.workspaceId}::uuid AND status='active' FOR SHARE`;
+    if (!workforce.length) return null;
+    await db.$queryRaw`SELECT id FROM workspaces WHERE id=${auth.workspaceId}::uuid FOR SHARE`;
+    const lockedTask = await db.$queryRaw<Array<{ id: string }>>`SELECT id FROM tasks
+      WHERE id=${taskId}::uuid AND workspace_id=${auth.workspaceId}::uuid
+        AND assigned_workforce_entity_id=${auth.agentId}::uuid AND status IN ('todo', 'in_progress') FOR SHARE`;
+    if (!lockedTask.length) return null;
+    const scope = await taskSourceScope(db, auth.workspaceId, taskId, auth.agentId!);
+    if (!scope) return null;
+    return { taskId, current: await currentCompanyDirection(db, auth.workspaceId) };
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
+  if (!data) return sendApiError(res, 404, "direction_task_scope_invalid");
+  res.json({ data });
+}));
 
 strategyRouter.get("/context", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
