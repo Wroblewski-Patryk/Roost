@@ -91,8 +91,22 @@ and one transient browser fixture fetch failure; the shape was repaired and
 both cases passed in a focused 2/2 rerun. The all-API suite was not completed
 as one green run. Independent Security code review found no remaining confirmed
 scope bypass after the invitation race and primary-owner lifecycle repairs.
-These are local proofs; deployed behavior and production human invitation are
-not claimed here.
+These are local proofs; a production human invitation is not claimed here.
+
+### G16a deployed read-back
+
+Implementation commit `eee7835791b18d0d514528599f0d9f18b109daf4`
+reached `main` and Coolify deployment `xy86mksrewo9hasbnske8m2w` finished.
+Both public health endpoints reported `ok` with the exact build. Production
+PostgreSQL was healthy on its retained named volume and recorded migration
+`20261011210000_g16a_scoped_human_task_access` finished, with both task-scope
+foreign keys present and no unfinished migration. A read-only query found no
+task-scoped invitation or membership rows. The signed-in owner console showed
+the exact-task invite action, the warning that invitation alone does not appoint
+the verifier, and the one-email invitation form for the selected task. The form
+was closed without submission. Unauthenticated account and task-review reads
+returned 401. This is deployed read-only proof of the owner entry point and
+database schema, not a production acceptance, scoped login or human review.
 
 ## Invitations
 
