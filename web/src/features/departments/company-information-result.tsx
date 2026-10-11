@@ -132,7 +132,7 @@ export function ExecutionContinuationReview({ taskId, executionId, fallback, onA
     </dl> : null}
     <p className="mt-3 text-sm text-company-muted">{c.limitation}</p>
     {continuationRelevant ? <p className="mt-2 text-sm">{c.next}</p> : null}
-    {continuationRelevant && onPrepareReady ? <CcButton className="mt-3 min-h-11" size="sm" variant="outline" onClick={onPrepareReady}>{c.prepare}</CcButton> : null}
+    {continuationRelevant && state !== "earlier" && onPrepareReady ? <CcButton className="mt-3 min-h-11" size="sm" variant="outline" onClick={onPrepareReady}>{c.prepare}</CcButton> : null}
     {reading && !packet ? <CcNotice tone="loading" title={c.title} /> : null}
     {error ? <CcNotice live tone="error" title={error} /> : null}
     {saved ? <CcNotice live tone="success" title={c.saved} /> : null}
