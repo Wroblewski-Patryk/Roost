@@ -26,6 +26,7 @@ import { capabilitySuspensionRouter, suspensionBlocks } from "./capability-suspe
 import { taskCapabilityView, issueTaskCapability, revokeTaskCapability } from "./task-capability";
 import { isDeepStrictEqual } from "node:util";
 import { taskReviewView, recordTaskReview, actOnTaskReview } from "./task-review";
+import { improvementView, proposeImprovement, decideImprovement } from "./procedure-improvements";
 import { inspectReady, lockReadyTask, readyTransaction, submitReady, readyEditorData, submissionVersion } from "./task-execution-readiness";
 import { approveExecutionContinuation, assertBoundExecutionContinuation, assertExecutionContinuation, continuationView } from "./task-execution-continuation";
 import { companyInformationClass, isCompanyInformation } from "./company-information-preparation";
@@ -527,6 +528,29 @@ agentRuntimeRouter.post("/tasks/:id/actions/review-return", asyncHandler(async (
   const result = await reviewTransaction(tx => actOnTaskReview(tx, req.auth!.workspaceId, taskId, req.auth!, req.body));
   if ("error" in result) return sendApiError(res, result.error === "task_not_found" ? 404 : result.error === "task_review_forbidden" ? 403 : 409, result.error!);
   res.json({ data: result });
+}));
+
+agentRuntimeRouter.get("/tasks/:id/procedure-improvements", asyncHandler(async (req, res) => {
+  const taskId = z.string().uuid().parse(req.params.id);
+  const result = await readyTransaction(tx => improvementView(tx, req.auth!.workspaceId, taskId, req.auth!));
+  if ("error" in result && typeof result.error === "string") return sendApiError(res, result.error === "task_not_found" ? 404 : 403, result.error);
+  res.setHeader("Cache-Control", "no-store");
+  res.json({ data: result });
+}));
+agentRuntimeRouter.post("/tasks/:id/procedure-improvements", asyncHandler(async (req, res) => {
+  if (req.auth!.authType === "user" ? !roleAtLeast(req.auth!.workspaceRole, "member") : !req.auth!.agentId)
+    return sendApiError(res, 403, "procedure_improvement_forbidden");
+  const taskId = z.string().uuid().parse(req.params.id);
+  const result = await reviewTransaction(tx => proposeImprovement(tx, req.auth!.workspaceId, taskId, req.auth!, req.body));
+  if ("error" in result && typeof result.error === "string") return sendApiError(res, result.error === "task_not_found" ? 404 : result.error === "procedure_improvement_forbidden" ? 403 : 409, result.error);
+  res.status("replayed" in result && result.replayed ? 200 : 201).json({ data: result });
+}));
+agentRuntimeRouter.post("/tasks/:id/procedure-improvements/:proposalId/decision", asyncHandler(async (req, res) => {
+  if (!requireWorkspaceRole(req, res, "owner")) return;
+  const taskId = z.string().uuid().parse(req.params.id), proposalId = z.string().uuid().parse(req.params.proposalId);
+  const result = await reviewTransaction(tx => decideImprovement(tx, req.auth!.workspaceId, taskId, proposalId, req.auth!, req.body));
+  if ("error" in result && typeof result.error === "string") return sendApiError(res, result.error.endsWith("not_found") ? 404 : result.error.endsWith("forbidden") || result.error.endsWith("self_review") ? 403 : 409, result.error);
+  res.status("replayed" in result && result.replayed ? 200 : 201).json({ data: result });
 }));
 
 function executionReportMetadata(existing: Prisma.JsonValue, reported: Record<string, unknown>) {
@@ -1344,7 +1368,7 @@ agentRuntimeRouter.post("/executions", asyncHandler(async (req, res) => {
     if ((pin.contract as any).executionClass === "roost-fixed-effect-v1" && await tx.agentExecution.count({ where: { workspaceId: req.auth!.workspaceId, taskId: input.taskId } })) return { error: "synthetic_task_already_spent" };
     if ((resolved.application?.id ?? null) !== pin.applicationId || (input.prompt !== undefined && input.prompt !== pin.prompt) || (input.baseBranch !== undefined && input.baseBranch !== pin.baseBranch) || (input.metadata.executionContract !== undefined && !isDeepStrictEqual(input.metadata.executionContract, pin.contract))) return { error: "task_ready_contract_mismatch" };
     const execution = await tx.agentExecution.create({ data: { workspaceId: req.auth!.workspaceId, taskId: input.taskId, applicationId: pin.applicationId,
-      prompt: pin.prompt, baseBranch: pin.baseBranch, metadata: json({ ...input.metadata, executionContract: pin.contract, readyContextPin: { pinId: pin.pinId, revision: pin.revision, ...(company ? { preparationOnly: true, modelExecutionQualified: false } : { riskAdmissionSeal:pin.riskAdmissionSeal, riskAdmissionCommit:pin.riskAdmissionCommit, compositionSeal:pin.procedureComposition.seal }), continuationEventId: continuation.continuationEventId } }), ...actor(req) }, include: executionInclude });
+      prompt: pin.prompt, baseBranch: pin.baseBranch, metadata: json({ ...input.metadata, executionContract: pin.contract, readyContextPin: { pinId: pin.pinId, revision: pin.revision, ...(company ? { preparationOnly: true, modelExecutionQualified: false } : { riskAdmissionSeal:pin.riskAdmissionSeal, riskAdmissionCommit:pin.riskAdmissionCommit, compositionSeal:pin.procedureComposition.seal, procedureCompositionSnapshot:pin.procedureComposition }), continuationEventId: continuation.continuationEventId } }), ...actor(req) }, include: executionInclude });
     return { execution };
   });
   if ("error" in result && result.error) return sendApiError(res, 409, result.error, { details: "readiness" in result ? result.readiness : undefined });

@@ -66,6 +66,8 @@ export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) =
     const interviewError=nativeDiagnostic.match(/\binterview_(?:history_immutable|scope_invalid|content_invalid|forbidden|grant_required|revision_invalid|evidence_invalid|stale|transition_invalid|proposal_required|ready_required|decision_immutable|receipt_required)\b/)?.[0];if(interviewError)return {error:interviewError};
     const compositionError=nativeDiagnostic.match(/\bprocedure_composition_[a-z_]+\b/)?.[0];
     if(compositionError)return {error:compositionError};
+    const procedureStepError=nativeDiagnostic.match(/\bprocedure_step_source_invalid\b/)?.[0];
+    if(procedureStepError)return {error:procedureStepError};
     const scopeError=nativeDiagnostic.match(/\btask_(?:single_scope_required|scope_split_required|scope_shared_cause_required|roles_required)\b/)?.[0];
     if(scopeError)return {error:scopeError};
     const specialistError=nativeDiagnostic.match(/\btask_specialist_(?:offer_invalid|ready_denied|return_pending|decision_append_only)\b/)?.[0];

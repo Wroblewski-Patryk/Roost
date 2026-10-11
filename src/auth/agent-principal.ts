@@ -8,6 +8,8 @@ export function agentPrincipalRoute(method: string, path: string) {
   const route = path.replace(/^\/v1(?=\/)/, "");
   if (method === "GET" && (route === "/mcp/manifest" || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/company-sources(?:\/[a-f0-9-]{36})?$/i.test(route))) return true;
   if (method === "POST" && /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/proposals$/i.test(route)) return true;
+  if (method === "GET" && /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/procedure-improvements$/i.test(route)
+    || method === "POST" && /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/procedure-improvements$/i.test(route)) return true;
   if (method === "GET" && /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/sources(?:\/(?:procedure|policy|decision|evidence|note|knowledge_item|application_evidence|application_architecture|application_interface|application_capability|drive_snapshot)\/[a-f0-9-]{36})?$/i.test(route)) return true;
   if (method === "GET" && (route === "/agent-runtime/releases" || /^\/agent-runtime\/releases\/[a-f0-9-]{36}$/.test(route))
     || method === "POST" && /^\/agent-runtime\/releases\/[a-f0-9-]{36}\/operations(?:\/[a-f0-9-]{36}\/outcome)?$/.test(route)) return true;

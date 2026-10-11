@@ -17,6 +17,9 @@ export async function reviewTransaction<T>(work: (db: Db) => Promise<T>) {
   } catch (error) {
     const diagnostic = error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2010" && error.meta?.code === "P0001" ? String(error.meta.message) : error instanceof Prisma.PrismaClientUnknownRequestError ? error.message.split("Error occurred during query execution:").at(-1) ?? "" : "";
     if (/\b(?:capability_(?:receipt_required|use_invalid|scope_invalid|grant_denied)|clarification_(?:scope_invalid|content_invalid|authority_invalid|receipt_required)|task_review_child_invalid|task_handoff_(?:stale|scope_invalid|supersedes_invalid))\b/.test(diagnostic)) return { error: "capability_context_changed" };
+    if (/\bprocedure_improvement_(?:source_invalid|decision_invalid)\b/.test(diagnostic)) return { error: "procedure_improvement_source_changed" };
+    if (/\bprocedure_improvement_actor_invalid\b/.test(diagnostic)) return { error: "procedure_improvement_forbidden" };
+    if (/\bnative_capability_suspended\b/.test(diagnostic)) return { error: "native_capability_suspended" };
     throw error;
   }
 }

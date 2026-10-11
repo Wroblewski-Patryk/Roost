@@ -52,6 +52,7 @@ export async function compositionCommand(db:Db,workspaceId:string,taskId:string,
 }
 export async function procedureContractsView(db:Db,workspaceId:string,procedureId:string,userId:string) {
  const p=await db.procedure.findFirst({where:{id:procedureId,workspaceId},select:{id:true,name:true,version:true,status:true}}); if(!p)return {error:"procedure_not_found"};
+ const sourceSteps=await db.procedureStep.findMany({where:{procedureId},select:{id:true,stepOrder:true,instruction:true},orderBy:{stepOrder:"asc"}});
  const versions=await db.$queryRaw<any[]>`SELECT v.id,v.version,v.body,v.rationale,v.source_version AS "sourceVersion",v.actor_user_id AS "issuerId",v.created_at AS "createdAt",procedure_contract_valid(v) AS valid FROM procedure_contract_versions v WHERE procedure_id=${procedureId}::uuid ORDER BY version DESC LIMIT 51`;
  const source=(await db.$queryRaw<any[]>`SELECT procedure_contract_source(${procedureId}::uuid) AS value`)[0].value;
  const membership=await db.workspaceMembership.findFirst({where:{workspaceId,userId}});
@@ -68,7 +69,7 @@ export async function procedureContractsView(db:Db,workspaceId:string,procedureI
  const catalog={procedure:{...p,name:label(p.name)},applications:applications.slice(0,100).map(a=>({...a,name:label(a.name),architecture:components.slice(0,500).filter(c=>c.applicationId===a.id).map(c=>({id:c.id,name:label(c.name)}))})),procedures:procedures.slice(0,100).map(p=>({...p,name:label(p.name)}))};
  const aggregate=inspectRuntime(catalog,"procedure_contract.catalog","diagnostic",{workspaceId});
  if(aggregate.blocked){catalogRedacted=true;catalog.procedure.name=redactionPolicy.MARKER;for(const a of catalog.applications){a.name=redactionPolicy.MARKER;for(const c of a.architecture)c.name=redactionPolicy.MARKER;}for(const p of catalog.procedures)p.name=redactionPolicy.MARKER;}
- const authority={expectedVersion,versions:versions.slice(0,50),historyTruncated:versions.length>50,permissions:{canPublish:membership?.role==="owner"&&p.status==="active",canWithdraw:membership?.role==="owner"}};
+ const authority={expectedVersion,versions:versions.slice(0,50),sourceSteps,historyTruncated:versions.length>50,permissions:{canPublish:membership?.role==="owner"&&p.status==="active",canWithdraw:membership?.role==="owner"}};
  requireRuntimeContent(authority,"procedure_contract.view",{workspaceId});
  return {...catalog,...authority,catalogRedacted,catalogTruncated:applications.length>100||procedures.length>100||components.length>500};
 }
@@ -86,6 +87,10 @@ export async function procedureContractCommand(db:Db,workspaceId:string,procedur
  const id=randomUUID();
  if(kind==="publish") {
   const p=publishContractSchema.parse(input);
+  if(p.contract.stepControlVersion===1 && (p.contract.steps.length!==view.sourceSteps.length
+    || new Set(p.contract.steps.map(step=>step.sourceStepId)).size!==view.sourceSteps.length
+    || p.contract.steps.some(step=>!view.sourceSteps.some(source=>source.id===step.sourceStepId
+      && source.instruction===step.instruction)))) return {error:"procedure_step_source_invalid"};
   await db.$executeRaw`INSERT INTO procedure_contract_versions(id,workspace_id,procedure_id,version,source_version,body,rationale,actor_user_id,request_id,request_hash)
    VALUES(${id}::uuid,${workspaceId}::uuid,${procedureId}::uuid,(SELECT COALESCE(max(version),0)+1 FROM procedure_contract_versions WHERE procedure_id=${procedureId}::uuid),procedure_contract_source(${procedureId}::uuid),${JSON.stringify(p.contract)}::jsonb,${p.rationale},${userId}::uuid,${p.requestId}::uuid,${hash})`;
  } else {

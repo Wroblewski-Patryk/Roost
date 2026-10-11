@@ -31,8 +31,10 @@ export async function enforceHumanWorkspaceAccess(req: Request, res: Response, n
   if (req.auth.taskScopeId) {
     const taskId = req.auth.taskScopeId;
     const allowed = (req.method === "GET" && (path === `/tasks/${taskId}`
-      || path === `/agent-runtime/tasks/${taskId}/review`))
-      || (req.method === "POST" && path === `/agent-runtime/tasks/${taskId}/actions/review`);
+      || path === `/agent-runtime/tasks/${taskId}/review`
+      || path === `/agent-runtime/tasks/${taskId}/procedure-improvements`))
+      || (req.method === "POST" && (path === `/agent-runtime/tasks/${taskId}/actions/review`
+        || path === `/agent-runtime/tasks/${taskId}/procedure-improvements`));
     if (!allowed) return sendApiError(res, 403, "task_scope_forbidden");
     try {
       const task = await prisma.task.findFirst({ where: { id: taskId, workspaceId: req.auth.workspaceId, status: { not: "archived" } }, select: { id: true } });

@@ -360,6 +360,10 @@ processCoreRouter.patch("/procedures/:id", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
   const existing = await prisma.procedure.findFirst({ where: { id: String(req.params.id), workspaceId }, include: { steps: { orderBy: { stepOrder: "asc" } } } });
   if (!existing) return sendApiError(res, 404, "procedure_not_found");
+  const reviewedDraft = await prisma.$queryRaw<Array<{ id: string }>>`
+    SELECT id FROM procedure_improvement_decisions
+    WHERE workspace_id=${workspaceId}::uuid AND draft_procedure_id=${existing.id}::uuid`;
+  if (reviewedDraft.length) return sendApiError(res, 409, "procedure_improvement_draft_immutable");
   if (organizationalContext && !departmentKeysAreValid(organizationalContext)) return sendApiError(res, 400, "invalid_department_key");
   const relationError = await validateProcedureRelations(workspaceId, procedureInput);
   if (relationError) return sendApiError(res, 404, relationError);
@@ -444,6 +448,10 @@ processCoreRouter.post("/procedures/:id/actions/activate", asyncHandler(async (r
   const workspaceId = req.auth!.workspaceId;
   const existing = await prisma.procedure.findFirst({ where: { id: String(req.params.id), workspaceId }, include: { steps: true } });
   if (!existing) return sendApiError(res, 404, "procedure_not_found");
+  const reviewedDraft = await prisma.$queryRaw<Array<{ id: string }>>`
+    SELECT id FROM procedure_improvement_decisions
+    WHERE workspace_id=${workspaceId}::uuid AND draft_procedure_id=${existing.id}::uuid`;
+  if (reviewedDraft.length && !requireWorkspaceRole(req, res, "owner")) return;
   if (existing.status !== OperatingStatus.draft) return sendApiError(res, 409, "only_draft_procedure_can_be_activated");
   if (!existing.steps.length || !existing.expectedResult) return sendApiError(res, 409, "procedure_activation_requirements_missing");
   const procedure = await prisma.$transaction(async (tx) => {

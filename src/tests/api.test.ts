@@ -1656,6 +1656,7 @@ const admissionFixtureDetail=(gate:string)=>({
  owner_approval:{decision:"approve_exact_operation",residualRisk:"Only isolated synthetic effects accepted"}
 } as Record<string,any>)[gate];
 const handoffFixtureInputs=new WeakSet<object>();
+const g17ProcedureTasks=new Set<string>();
 const interviewFixtureInputs=new WeakSet<object>();
 const clarificationFixtureInputs=new WeakSet<object>();
 const fixtureAdmissionOperations=(input:any)=>["runtime_execute","review_decision","return_to_executor","create_specialist_task",...(handoffFixtureInputs.has(input)?["handoff_create","handoff_accept","handoff_reject"]:[]),...(clarificationFixtureInputs.has(input)?["clarification_send","clarification_reply"]:[]),...(interviewFixtureInputs.has(input)?["interview_prepare"]:[])];
@@ -1691,14 +1692,28 @@ async function prepareCompositionFixture(taskId:string,input:any,resources:any,o
    const procedureId=kind==="base"?resources.procedure.id:resources.extension.id;
    const route=`/v1/process-core/procedures/${procedureId}/contracts`;
    const v=((await request(route,{headers:owner})).body as any).data;
-   const body={kind,taskType,operation,applicationId:kind==="base"?null:input.applicationId,componentId:kind==="base"?null:input.contract.singleTask.component.id,
+   const body:any={kind,taskType,operation,applicationId:kind==="base"?null:input.applicationId,componentId:kind==="base"?null:input.contract.singleTask.component.id,
     baseProcedureId:kind==="base"?null:resources.procedure.id,inputs:["Synthetic exact input"],outputs:["Synthetic exact result"],evidence:["Synthetic observed evidence"],completion:["Synthetic checks passed"],
     roles:["requester","accountableManager","executor","verifier","releaser"],tools:input.contract.access.tools,
     steps:kind==="base"?[{key:"verify",instruction:"Verify the isolated fixture",role:"executor",tools:[],inputs:[],outputs:["Observed fixture result"],evidence:["Fixture test result"],requires:[]}]:[]};
+   if(g17ProcedureTasks.has(taskId)&&kind==="base"&&operation==="runtime_execute"){
+    assert.equal(v.sourceSteps.length,1);
+    body.stepControlVersion=1;
+    body.steps[0].sourceStepId=v.sourceSteps[0].id;
+    body.steps[0].instruction=v.sourceSteps[0].instruction;
+    body.steps[0].control={executorClass:"agent",success:"Fixture result verified",maxAttempts:1,
+     escalation:"Send failed result to manager",fallback:"Return to the previous procedure version"};
+   }
    const prior=v.versions.find((x:any)=>x.body.operation===operation&&x.body.taskType===taskType);
    if(!prior?.valid || JSON.stringify(prior.body)!==JSON.stringify(body)) {
     const {reviewDigest}=await import("../modules/agent-runtime/task-review-contract");
     if(!prior?.valid || reviewDigest(prior.body)!==reviewDigest(body)) {
+     if(body.stepControlVersion===1){
+      const invalid={...body,steps:body.steps.map((step:any)=>({...step,instruction:"Unrelated replacement instruction"}))};
+      const denied=await request(route+"/publish",{method:"POST",headers:owner,
+       body:JSON.stringify({requestId:randomUUID(),expectedVersion:v.expectedVersion,contract:invalid,rationale:"Invalid source instruction"})});
+      assert.equal(denied.status,409,JSON.stringify(denied.body));
+     }
      const r=await request(route+"/publish",{method:"POST",headers:owner,body:JSON.stringify({requestId:randomUUID(),expectedVersion:v.expectedVersion,contract:body,rationale:"Publish synthetic fixture contract"})});assert.equal(r.status,200,JSON.stringify(r.body));
     }
    }
@@ -2408,7 +2423,46 @@ test("governed release transport requires separately provisioned principal scope
  const incomplete=await request(root,{method:"POST",headers:auth,body:JSON.stringify({requestId:randomUUID()})});assert.equal(incomplete.status,400,JSON.stringify(incomplete.body));
  const operation=await request(`${root}/${randomUUID()}/operations`,{method:"POST",headers:auth,body:JSON.stringify({})});assert.ok([400,403,404].includes(operation.status));
 });
-  async function prepareReviewFixture(agentMode = false, autoGrants = true, handoff = false, clarification = false, interview = false, decisionNeighbor = false) {
+  async function claimG17Fixture(workspaceId:string,taskId:string,host:any,auth:Record<string,string>,expectedComposition:any) {
+    const {ownerTicketFixture}=await import("./owner-ticket-fixture"),{hashApiKey}=await import("../auth/api-key");
+    const ticketKey=(await ownerTicketFixture()).state().key;
+    await prisma.trustedProviderTicketKey.create({data:{workspaceId,...ticketKey}});
+    const workerSecret=randomUUID();
+    await prisma.apiKey.create({data:{workspaceId,name:"G17 bound Worker",keyHash:hashApiKey(workerSecret),
+      scopes:["agent-runtime:claim"],active:true,expiresAt:new Date(Date.now()+600000),
+      workerHostId:host.id,workerInstallationId:ticketKey.installationId,workerBindingEpoch:1}});
+    const workerAuth={"X-API-Key":workerSecret,...hostProtocolHeaders};
+    const fs=await import("node:fs/promises"),os=await import("node:os");
+    const loadESM=new Function("specifier","return import(specifier)") as (specifier:string)=>Promise<any>;
+    const writer=await loadESM(pathToFileURL(path.resolve("scripts/lib/agent-host-writer-lock.mjs")).href);
+    const temporary=await fs.mkdtemp(path.join(os.tmpdir(),"roost-g17-native-"));
+    const previous=process.env.ROOST_CODEX_EXECUTION_ENABLED;
+    let writerLock:any;
+    try {
+      writerLock=await writer.acquireWriterLock(temporary);
+      process.env.ROOST_CODEX_EXECUTION_ENABLED="true";
+      const queued=await request("/v1/agent-runtime/executions",{method:"POST",headers:auth,body:JSON.stringify({taskId})});
+      assert.equal(queued.status,201,JSON.stringify(queued.body));
+      assert.deepEqual((queued.body as any).data.metadata.readyContextPin.procedureCompositionSnapshot,expectedComposition);
+      const claim=await request("/v1/agent-runtime/executions/claim",{method:"POST",headers:workerAuth,
+        body:JSON.stringify({hostSlug:host.slug,sessionId:writerLock.sessionId})});
+      assert.equal(claim.status,200,JSON.stringify(claim.body));
+      const claimed=(claim.body as any).data;
+      await writerLock.checkpoint(claimed);
+      const context=await request(`/v1/company-intelligence/tasks/${taskId}/agent-context?executionId=${claimed.id}`,{headers:workerAuth});
+      assert.equal(context.status,200,JSON.stringify(context.body));
+      assert.deepEqual((context.body as any).data.executionPacket.procedureComposition,expectedComposition);
+      return claimed;
+    } finally {
+      await writerLock?.release();
+      const resolved=await fs.realpath(temporary);
+      assert.equal(path.dirname(resolved),await fs.realpath(os.tmpdir()));
+      await fs.rm(resolved,{recursive:true,force:false});
+      if(previous===undefined)delete process.env.ROOST_CODEX_EXECUTION_ENABLED;
+      else process.env.ROOST_CODEX_EXECUTION_ENABLED=previous;
+    }
+  }
+  async function prepareReviewFixture(agentMode = false, autoGrants = true, handoff = false, clarification = false, interview = false, decisionNeighbor = false, g17 = false) {
     const suffix = `${Date.now()}-${reviewFixtureSequence++}`;
     const owner = await registerOwner(`review-${suffix}@example.test`, "Review fixture"), workspaceId = owner.workspace.id;
     const auth = { Authorization: `Bearer ${owner.token}` };
@@ -2416,6 +2470,7 @@ test("governed release transport requires separately provisioned principal scope
     const project = await prisma.project.create({ data: { workspaceId, name: "Review fixture project" } });
     await prisma.applicationProject.create({ data: { applicationId: app.id, projectId: project.id } });
     const task = await prisma.task.create({ data: { workspaceId, projectId: project.id, title: "Repair fixture parser" } });
+    if(g17)g17ProcedureTasks.add(task.id);
     if(decisionNeighbor)await prisma.task.create({data:{workspaceId,projectId:project.id,title:"Unrelated same-project research"}});
     const f = await prepareReadyFixture(workspaceId, task.id, app.id, auth, false);
     const manager = await prisma.workforceEntity.findFirstOrThrow({ where: { workspaceId, type: "human", source: "user", externalId: f.input.contract.taskRoles.requester.id } });
@@ -2443,10 +2498,28 @@ test("governed release transport requires separately provisioned principal scope
     if(clarification)clarificationFixtureInputs.add(f.input);
     if(interview)interviewFixtureInputs.add(f.input);
     const accepted = await post(submitRoute, await submissionInput(submitRoute, f.input, auth)); assert.equal(accepted.status, 200, JSON.stringify(accepted.body));
+    if(g17)g17ProcedureTasks.delete(task.id);
     const pin = (await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).executionReadiness as any;
-    const host = await prisma.agentHost.create({ data: { workspaceId, name: "Review fixture host", slug: `review-host-${reviewFixtureSequence}`, platform: "win32" } });
-    const executionId = randomUUID(), resultCommit = "c".repeat(40);
-    const execution = await prisma.agentExecution.create({ data: { id: executionId, workspaceId, taskId: task.id, applicationId: app.id, agentHostId: host.id, status: "completed", requestedByType: "user", requestedById: manager.externalId, attempt: 1, startedAt: new Date(Date.now()-1000), completedAt: new Date(), summary: "Parser result", finalResponse: "Changed empty-input handling", changedFiles: ["src/parser.ts"], verification: { command: "npm test -- parser", result: "fixture completed" }, checkpointVersion: 1, checkpoint: { schemaVersion: "roost-recovery-v1", stage: "effect_possible", sessionId: randomUUID(), packetRevision: "a".repeat(64), workspaceDigest: "b".repeat(64), contextRevision: pin.revision }, metadata: { executionContract: f.input.contract, readyContextPin: { pinId: pin.pinId, revision: pin.revision, compositionSeal:pin.procedureComposition.seal, riskAdmissionSeal:pin.riskAdmissionSeal, riskAdmissionCommit:pin.riskAdmissionCommit }, resultRevisionReviewVersion: "1", resultRevision: { schemaVersion: "roost-result-revision-v1", id: randomUUID(), executionId, attempt: 1, hostId: host.id, checkpointVersion: 1, observedAt: new Date().toISOString(), commit: resultCommit, branch: pin.contract.singleTask.branch, workingTree: "clean" } } } });
+    const host = await prisma.agentHost.create({ data: { workspaceId, name: "Review fixture host", slug: `review-host-${reviewFixtureSequence}`, platform: "win32",
+      ...(g17?{status:"online" as const,lastSeenAt:new Date(),metadata:validHostMetadata(),
+        capabilities:protocol.requiredHostCapabilities,applicationSlugs:[app.slug]}:{}) } });
+    const claimed=g17?await claimG17Fixture(workspaceId,task.id,host,auth,pin.procedureComposition):null;
+    const executionId = claimed?.id??randomUUID(), resultCommit = "c".repeat(40);
+    const metadata = { ...(claimed?.metadata??{}),executionContract: f.input.contract,
+      readyContextPin:claimed?.metadata?.readyContextPin??{pinId:pin.pinId,revision:pin.revision,
+        compositionSeal:pin.procedureComposition.seal,riskAdmissionSeal:pin.riskAdmissionSeal,riskAdmissionCommit:pin.riskAdmissionCommit},
+      resultRevisionReviewVersion:"1",resultRevision:{schemaVersion:"roost-result-revision-v1",id:randomUUID(),
+        executionId,attempt:1,hostId:host.id,checkpointVersion:1,observedAt:new Date().toISOString(),
+        commit:resultCommit,branch:pin.contract.singleTask.branch,workingTree:"clean"}};
+    const resultData={status:"completed" as const,startedAt:new Date(Date.now()-1000),completedAt:new Date(),
+      summary:"Parser result",finalResponse:"Changed empty-input handling",changedFiles:["src/parser.ts"],
+      verification:{command:"npm test -- parser",result:"fixture completed"},checkpointVersion:1,
+      checkpoint:{schemaVersion:"roost-recovery-v1",stage:"effect_possible",sessionId:randomUUID(),
+        packetRevision:"a".repeat(64),workspaceDigest:"b".repeat(64),contextRevision:pin.revision},metadata};
+    const execution = claimed
+      ? await prisma.agentExecution.update({where:{id:executionId},data:resultData})
+      : await prisma.agentExecution.create({data:{id:executionId,workspaceId,taskId:task.id,applicationId:app.id,
+          agentHostId:host.id,requestedByType:"user",requestedById:manager.externalId,attempt:1,...resultData}});
     if(handoff)await prepareHandoffResultFixture(execution,pin);
     const view = async (headers = reviewerAuth) => (await request(`${root}/review`, { headers })).body as any;
     const grants: Record<string,string> = {};
@@ -2827,10 +2900,137 @@ test("typed handoff requires its own admission while preserving older Ready sour
  assert.equal(((await prisma.task.findUniqueOrThrow({where:{id:f.task.id}})).executionReadiness as any).status,"ready");
 });
 
+test("G17 reviewed result yields one independently approved draft without repinning",async()=>{
+    const f=await prepareReviewFixture(false,true,false,false,false,false,true);
+    const before=(await prisma.task.findUniqueOrThrow({where:{id:f.task.id}})).executionReadiness as any;
+    assert.equal(before.procedureComposition.steps[0].control.executorClass,"agent");
+    const {readyTransaction,inspectReady}=await import("../modules/agent-runtime/task-execution-readiness");
+    const packet=await readyTransaction(tx=>inspectReady(tx,f.workspaceId,f.task.id));
+    assert.equal((packet as any).taskContext.executionPacket.procedureComposition.seal,before.procedureComposition.seal);
+    await f.reject();
+    const executorId=f.input.contract.taskRoles.executor.id;
+    const executorKey=await f.issue(executorId),executorAuth={"X-API-Key":executorKey.key};
+    const route=f.root+"/procedure-improvements";
+    const view=await request(route,{headers:executorAuth});assert.equal(view.status,200,JSON.stringify(view.body));
+    const state=(view.body as any).data,step=state.composition.steps[0];
+    assert.equal(state.canPropose,true);assert.equal(step.sourceStepId,before.procedureComposition.steps[0].sourceStepId);
+    const input={requestId:randomUUID(),executionId:f.execution.id,materialVersion:state.materialVersion,
+     compositionSeal:state.composition.seal,contractVersionId:step.versionId,sourceStepId:step.sourceStepId,stepKey:step.key,
+     observation:"Fixture result revealed an incomplete validation condition",
+     proposedInstruction:"Verify empty input and return a structured validation message",
+     applicability:"Only the bounded parser procedure for this application task",
+     rollback:"Restore the prior active procedure version if verification fails"};
+    assert.equal((await f.post(route,{...input,sourceStepId:randomUUID()},executorAuth)).status,409);
+    const created=await f.post(route,input,executorAuth);assert.equal(created.status,201,JSON.stringify(created.body));
+    const proposal=(created.body as any).data.proposal;
+    const secondInput={...input,requestId:randomUUID(),proposedInstruction:"Verify empty input with a different bounded message"};
+    const secondCreated=await f.post(route,secondInput,executorAuth);assert.equal(secondCreated.status,201,JSON.stringify(secondCreated.body));
+    const pending=(secondCreated.body as any).data.proposal;
+    const unrelated=await prisma.task.create({data:{workspaceId:f.workspaceId,title:"Unrelated G17 task"}});
+    assert.equal((await request(`/v1/agent-runtime/tasks/${unrelated.id}/procedure-improvements`,{headers:executorAuth})).status,403);
+    await assert.rejects(prisma.$executeRaw`INSERT INTO procedure_improvement_proposals
+      (id,workspace_id,task_id,execution_id,material_version,composition_seal,procedure_id,contract_version_id,
+       source_step_id,step_key,step_snapshot,observation,proposed_instruction,applicability,rollback,
+       actor_kind,actor_id,actor_credential_id,request_id,request_hash)
+      SELECT ${randomUUID()}::uuid,workspace_id,${unrelated.id}::uuid,execution_id,material_version,composition_seal,
+       procedure_id,contract_version_id,source_step_id,step_key,step_snapshot,observation,proposed_instruction,
+       applicability,rollback,actor_kind,actor_id,actor_credential_id,${randomUUID()}::uuid,request_hash
+      FROM procedure_improvement_proposals WHERE id=${proposal.id}::uuid`,/procedure_improvement_source_invalid/);
+    assert.equal((await f.post(route,input,executorAuth)).status,200);
+    assert.equal((await f.post(route,{...input,observation:"Changed observation"},executorAuth)).status,409);
+    assert.equal((await request(route,{headers:f.reviewerAuth})).status,403);
+    const ownerView=await request(route,{headers:f.auth});assert.equal(ownerView.status,200,JSON.stringify(ownerView.body));
+    assert.ok((ownerView.body as any).data.proposals.some((item:any)=>item.id===proposal.id));
+    const decision={requestId:randomUUID(),expectedVersion:proposal.expectedVersion,decision:"accept",
+     diagnosis:"The observed parser result exposes a missing validation condition",
+     applicability:"Apply only to this procedure family and selected source step",
+     rollback:"Keep the previous active version until the new draft is separately approved"};
+    const decisionRoute=`${route}/${proposal.id}/decision`;
+    assert.equal((await f.post(decisionRoute,decision,executorAuth)).status,403);
+    assert.equal((await f.post(decisionRoute,{...decision,expectedVersion:"a".repeat(64)})).status,409);
+    const accepted=await f.post(decisionRoute,decision);assert.equal(accepted.status,201,JSON.stringify(accepted.body));
+    assert.equal((await f.post(decisionRoute,decision)).status,200);
+    const draftId=(accepted.body as any).data.proposal.decision.draftProcedureId;
+    const draft=await prisma.procedure.findUniqueOrThrow({where:{id:draftId},include:{steps:true}});
+    assert.equal(draft.status,"draft");
+    assert.ok(draft.steps.some(s=>s.instruction===input.proposedInstruction));
+    const changed=await request(`/v1/process-core/procedures/${draftId}`,{method:"PATCH",headers:f.reviewerAuth,body:JSON.stringify({purpose:"Expanded purpose"})});
+    assert.equal(changed.status,409,JSON.stringify(changed.body));
+    await assert.rejects(prisma.procedureStep.update({where:{id:draft.steps[0].id},data:{instruction:"Alter reviewed draft"}}),/procedure_improvement_draft_immutable/);
+    const source=await prisma.procedure.findUniqueOrThrow({where:{id:proposal.procedureId},include:{steps:true}});
+    const ownerId=(await prisma.workspace.findUniqueOrThrow({where:{id:f.workspaceId}})).ownerUserId;
+    await assert.rejects(prisma.$transaction(async tx=>{
+      const fake=await tx.procedure.create({data:{workspaceId:f.workspaceId,familyId:source.familyId,
+        version:draft.version+1,status:"draft",name:source.name,purpose:source.purpose,scope:source.scope,
+        processId:source.processId,ownerRoleId:source.ownerRoleId,expectedResult:source.expectedResult,
+        qualityStandardId:source.qualityStandardId,requiredTools:source.requiredTools as any,
+        requiredPermissions:["expanded-authority"],steps:{create:source.steps.map(s=>({stepOrder:s.stepOrder,
+          instruction:s.id===pending.sourceStepId?secondInput.proposedInstruction:s.instruction,
+          stepType:s.stepType,requiredToolAdapterId:s.requiredToolAdapterId,expectedInput:s.expectedInput as any,
+          expectedOutput:s.expectedOutput as any,validationRule:s.validationRule as any,
+          rollbackInstruction:s.rollbackInstruction}))}}});
+      await tx.$executeRaw`INSERT INTO procedure_improvement_decisions
+        (id,workspace_id,proposal_id,decision,diagnosis,applicability,rollback,reviewer_user_id,draft_procedure_id,request_id,request_hash)
+        VALUES (${randomUUID()}::uuid,${f.workspaceId}::uuid,${pending.id}::uuid,'accept',
+          'Forged diagnosis','Forged applicability','Forged rollback',${ownerId}::uuid,${fake.id}::uuid,
+          ${randomUUID()}::uuid,${"a".repeat(64)})`;
+    }),/procedure_improvement_decision_invalid/);
+    const {organizationalContextsForEntities,replaceOrganizationalContext}=await import("../modules/organizational-context/organizational-context.service");
+    const sourceContext=(await organizationalContextsForEntities(f.workspaceId,"procedure",[source.id])).get(source.id)!;
+    await assert.rejects(prisma.$transaction(async tx=>{
+      const fake=await tx.procedure.create({data:{workspaceId:f.workspaceId,familyId:source.familyId,
+        version:draft.version+1,status:"draft",name:source.name,purpose:source.purpose,scope:source.scope,
+        processId:source.processId,ownerRoleId:source.ownerRoleId,expectedResult:source.expectedResult,
+        qualityStandardId:source.qualityStandardId,requiredTools:source.requiredTools as any,
+        requiredPermissions:source.requiredPermissions as any,steps:{create:source.steps.map(s=>({stepOrder:s.stepOrder,
+          instruction:s.id===pending.sourceStepId?secondInput.proposedInstruction:s.instruction,
+          stepType:s.stepType,requiredToolAdapterId:s.requiredToolAdapterId,expectedInput:s.expectedInput as any,
+          expectedOutput:s.expectedOutput as any,validationRule:s.validationRule as any,
+          rollbackInstruction:s.rollbackInstruction}))}}});
+      await replaceOrganizationalContext(tx,f.workspaceId,"procedure",fake.id,{
+        ownerDepartmentKey:sourceContext.ownerDepartment?.key??null,
+        relatedDepartmentKeys:sourceContext.relatedDepartments.map((d:any)=>d.key),
+        applicableDepartmentKeys:sourceContext.applicableDepartments.map((d:any)=>d.key),
+        scopes:[...sourceContext.scopes,{type:"company",label:"Expanded applicability"}]
+      });
+      await tx.$executeRaw`INSERT INTO procedure_improvement_decisions
+        (id,workspace_id,proposal_id,decision,diagnosis,applicability,rollback,reviewer_user_id,draft_procedure_id,request_id,request_hash)
+        VALUES (${randomUUID()}::uuid,${f.workspaceId}::uuid,${pending.id}::uuid,'accept',
+          'Forged diagnosis','Forged applicability','Forged rollback',${ownerId}::uuid,${fake.id}::uuid,
+          ${randomUUID()}::uuid,${"a".repeat(64)})`;
+    }),/procedure_improvement_decision_invalid/);
+    const contractRoute=`/v1/process-core/procedures/${proposal.procedureId}/contracts`;
+    const contracts=(await request(contractRoute,{headers:f.auth})).body as any;
+    const withdrawn=await f.post(contractRoute+"/withdraw",{requestId:randomUUID(),
+      expectedVersion:contracts.data.expectedVersion,versionId:step.versionId,rationale:"Withdraw exact test source"});
+    assert.equal(withdrawn.status,200,JSON.stringify(withdrawn.body));
+    const pendingDecision={...decision,requestId:randomUUID(),expectedVersion:pending.expectedVersion};
+    assert.equal((await f.post(`${route}/${pending.id}/decision`,pendingDecision)).status,409);
+    assert.equal((await f.post(route,{...input,requestId:randomUUID()},executorAuth)).status,409);
+    const incident=await prisma.companyRecord.create({data:{workspaceId:f.workspaceId,recordType:"technical_incident",key:"g17-proposal-stop",title:"Synthetic G17 suspension"}});
+    const stop=await f.post("/v1/agent-runtime/capability-suspensions",{requestId:randomUUID(),incidentId:incident.id,
+      taskId:f.task.id,applicationId:f.app.id,operation:"procedure_improvement_propose",agentId:executorId,
+      credentialId:executorKey.id,reason:"Pause one executor proposal path",scopeProof:"Bound fixture credential and task"});
+    assert.equal(stop.status,201,JSON.stringify(stop.body));
+    const denied=await f.post(route,{...input,requestId:randomUUID()},executorAuth);
+    assert.equal(denied.status,409,JSON.stringify(denied.body));
+    assert.match(JSON.stringify(denied.body),/native_capability_suspended/);
+    await assert.rejects(prisma.$executeRaw`INSERT INTO procedure_improvement_proposals
+      (id,workspace_id,task_id,execution_id,material_version,composition_seal,procedure_id,contract_version_id,
+       source_step_id,step_key,step_snapshot,observation,proposed_instruction,applicability,rollback,
+       actor_kind,actor_id,actor_credential_id,request_id,request_hash)
+      SELECT ${randomUUID()}::uuid,workspace_id,task_id,execution_id,material_version,composition_seal,
+       procedure_id,contract_version_id,source_step_id,step_key,step_snapshot,observation,proposed_instruction,
+       applicability,rollback,actor_kind,actor_id,actor_credential_id,${randomUUID()}::uuid,request_hash
+      FROM procedure_improvement_proposals WHERE id=${proposal.id}::uuid`,/procedure_improvement_source_invalid|native_capability_suspended/);
+    const after=(await prisma.task.findUniqueOrThrow({where:{id:f.task.id}})).executionReadiness as any;
+    assert.equal(after.procedureComposition.seal,before.procedureComposition.seal);
+    await assert.rejects(prisma.$executeRaw`UPDATE procedure_improvement_proposals SET observation='Changed' WHERE id=${proposal.id}::uuid`,/procedure_improvement_immutable/);
+});
+
 test("native review records decisions and manager returns without implementation side effects", async t => {
   let sequence=0;
   const fixture=prepareReviewFixture;
-
   await t.test("serious incident suspension narrows authority and independently restores without reviving old grants", async () => {
     const f=await fixture(true,false), original=await f.grant(), grant=(original.response.body as any).data.grant;
     const incident=await prisma.companyRecord.create({data:{workspaceId:f.workspaceId,recordType:"technical_incident",key:"synthetic-serious",title:"Synthetic serious incident"}});

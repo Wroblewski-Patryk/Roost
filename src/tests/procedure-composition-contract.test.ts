@@ -6,6 +6,18 @@ const base=()=>({kind:"base",taskType:"code_change",operation:"runtime_execute",
  inputs:["Exact input"],outputs:["Exact result"],evidence:["Verified evidence"],completion:["Checks passed"],roles:["requester","accountableManager","executor","verifier","releaser"],tools:["repository_read"],
  steps:[{key:"inspect",instruction:"Inspect the exact component",role:"executor",tools:["repository_read"],inputs:[],outputs:[],evidence:[],requires:[]}]});
 test("versioned base accepts an explicit bounded contract",()=>assert.equal(procedureContractSchema.safeParse(base()).success,true));
+test("G17 step controls require an exact source and bounded execution plan",()=>{
+ const contract:any=base();contract.stepControlVersion=1;
+ contract.steps[0].sourceStepId=id;
+ contract.steps[0].control={executorClass:"agent",success:"Verified result exists",maxAttempts:2,escalation:"Notify accountable manager",fallback:"Return task for review"};
+ assert.equal(procedureContractSchema.safeParse(contract).success,true);
+ for(const mutation of [
+  (v:any)=>delete v.steps[0].sourceStepId,
+  (v:any)=>v.steps[0].control.maxAttempts=6,
+  (v:any)=>v.steps[0].control.executorClass="owner",
+  (v:any)=>v.steps[0].control.success=""
+ ]) {const changed=structuredClone(contract);mutation(changed);assert.equal(procedureContractSchema.safeParse(changed).success,false);}
+});
 for(const [name,mutate] of Object.entries({
  "missing inputs":(b:any):any=>b.inputs=[],"removed roles":(b:any):any=>b.roles=["executor"],"self dependency":(b:any):any=>b.steps[0].requires=["inspect"],
  "forward dependency":(b:any):any=>b.steps[0].requires=["future"],"duplicate steps":(b:any):any=>b.steps.push({...b.steps[0]}),"tool widening":(b:any):any=>b.steps[0].tools=["release"],

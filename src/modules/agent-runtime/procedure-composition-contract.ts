@@ -7,13 +7,22 @@ const id = z.string().uuid(), hash = z.string().regex(/^[a-f0-9]{64}$/);
 const text = z.string().trim().min(3).max(2000);
 const key = z.string().regex(/^[a-z][a-z0-9_-]{0,63}$/);
 const list = z.array(text).max(30);
+export const procedureStepControlSchema = z.object({
+  executorClass: z.enum(["deterministic_script", "agent", "human"]),
+  success: text,
+  maxAttempts: z.number().int().min(1).max(5),
+  escalation: text,
+  fallback: text
+}).strict();
 export const procedureContractSchema = z.object({
+  stepControlVersion: z.literal(1).optional(),
   kind: z.enum(["base", "extension"]), taskType: z.enum(["code_change", "maintenance", "migration", "review"]),
   operation: z.enum(admissionOperations), applicationId: id.nullable(), componentId: id.nullable(), baseProcedureId: id.nullable(),
   inputs: list, outputs: list, evidence: list, completion: list,
   roles: z.array(z.enum(compositionRoles)).max(5), tools: z.array(key).max(30),
   steps: z.array(z.object({ key, instruction: text, role: z.enum(compositionRoles), tools: z.array(key).max(30),
-    inputs: list, outputs: list, evidence: list, requires: z.array(key).max(50) }).strict()).max(50)
+    inputs: list, outputs: list, evidence: list, requires: z.array(key).max(50),
+    sourceStepId: id.optional(), control: procedureStepControlSchema.optional() }).strict()).max(50)
 }).strict().superRefine((v, ctx) => {
   const issue = (message:string) => ctx.addIssue({code:"custom",message});
   if(v.kind === "base" && (v.applicationId || v.componentId || v.baseProcedureId || !v.steps.length ||
@@ -22,6 +31,8 @@ export const procedureContractSchema = z.object({
   for(const a of [v.roles,v.tools,...[v.inputs,v.outputs,v.evidence,v.completion]]) if(new Set(a).size !== a.length) issue("duplicate_requirement");
   const seen = new Set<string>();
   for(const step of v.steps) {
+    if(v.stepControlVersion === 1 && (!step.sourceStepId || !step.control)) issue("step_control_required");
+    if(v.stepControlVersion !== 1 && (step.sourceStepId || step.control)) issue("step_control_version_required");
     if(seen.has(step.key) || step.requires.includes(step.key) || new Set(step.requires).size!==step.requires.length) issue("step_cycle_or_duplicate");
     if(v.kind === "base" && step.requires.some(k=>!seen.has(k))) issue("dependency_must_precede_step");
     if(!v.roles.includes(step.role) || step.tools.some(t=>!v.tools.includes(t))) issue("step_authority_outside_contract");

@@ -33,6 +33,7 @@ export function ordinaryApiKeyReadAllowed(method: string, path: string, boundAge
   // a separately governed release; all other commands use human auth.
   if (method !== "GET") return boundAgent && method === "POST" && (
     /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/proposals$/.test(route)
+    || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/procedure-improvements$/.test(route)
     ||
     /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/actions\/review(?:-return)?$/.test(route)
     || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/handoffs(?:\/actions\/(?:accept|reject))?$/.test(route)
@@ -47,6 +48,7 @@ export function ordinaryApiKeyReadAllowed(method: string, path: string, boundAge
     || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/sources(?:\/(?:procedure|policy|decision|evidence|note|knowledge_item|application_evidence|application_architecture|application_interface|application_capability|drive_snapshot)\/[a-f0-9-]{36})?$/.test(route)
     || route === "/tasks" || /^\/tasks\/[a-f0-9-]{36}$/.test(route)
     || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/review$/.test(route)
+    || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/procedure-improvements$/.test(route)
     || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/(?:handoffs|clarifications)$/.test(route)
     || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/specialist-offer$/.test(route)
     || /^\/agent-runtime\/releases(?:\/[a-f0-9-]{36})?$/.test(route)
