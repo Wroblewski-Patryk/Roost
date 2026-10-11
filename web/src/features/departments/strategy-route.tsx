@@ -19,7 +19,7 @@ export function StrategyRoute() {
   if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("view") === "goals") {
     return <GoalsWorkbench canonical />;
   }
-  const { t } = useLanguage();
+  const { locale, t } = useLanguage();
   const packet = useOwnerPacket<StrategyPacket>("/v1/strategy/context", true, t);
   const rows = packet.data?.goals || [];
   const metrics = packet.data?.metrics || [];
@@ -81,7 +81,7 @@ export function StrategyRoute() {
                   <strong>{metric.name}</strong>
                   <span className="badge badge-outline">{humanizeBusinessValue(metric.status, "Active")}</span>
                 </div>
-                <p className="mt-1 text-xs text-company-muted">{metric.category || "General"} • {metric.currentValue ?? "-"} / {metric.targetValue ?? "-"}</p>
+                <p className="mt-1 text-xs text-company-muted">{metric.category || "General"} • {metric.currentValue ?? "-"} / {metric.targetValue ?? "-"} · {locale === "pl" ? "starsze wartości bez dowodu pomiaru" : "legacy values without measurement evidence"}</p>
               </div>
             ))}
           </div>

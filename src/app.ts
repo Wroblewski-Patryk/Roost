@@ -27,6 +27,7 @@ import { decisionsRouter } from "./modules/decisions/decisions.routes";
 import { eventsRouter } from "./modules/events/events.routes";
 import { financeRouter } from "./modules/finance/finance.routes";
 import { goalsRouter } from "./modules/goals/goals.routes";
+import { goalMandateRouter } from "./modules/goals/goal-mandate.routes";
 import { googleDriveRouter } from "./modules/google-drive/google-drive.routes";
 import { intakeRouter } from "./modules/intake/intake.routes";
 import { integrationSettingsRouter } from "./modules/integration-settings/integration-settings.routes";
@@ -77,6 +78,7 @@ function mountProtectedRoutes(router: Router) {
   router.use("/sales", salesRouter);
   router.use("/strategy", strategyRouter);
   router.use("/goals", goalsRouter);
+  router.use("/goal-mandates", goalMandateRouter);
   router.use("/google-drive", googleDriveRouter);
   router.use("/intake", intakeRouter);
   router.use("/targets", targetsRouter);

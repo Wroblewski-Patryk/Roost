@@ -36,6 +36,27 @@ test("current owner direction survives native packet validation and mismatched c
   assert.throws(() => validate(f), error => error.message === "execution_packet_invalid"
     && error.details.issues.some(issue => issue.field === "companyDirection"));
 });
+test("current goal mandate is task-bound in the native execution packet", () => {
+  const f = validPacketFixture();
+  const goalId = f.taskContext.task.goalId;
+  const mandate = { id: f.claimed.id, workspaceId: f.claimed.workspaceId, goalId, version: 1,
+    result: "Twelve verified fictional outcomes", metric: "Verified outcomes", unit: "cases",
+    targetValue: 12, evidenceSource: "Verified task evidence", accountableUserId: f.claimed.id,
+    bindingDeadline: null, forecastDate: null, forecastBasis: null, executionSchedule: null,
+    provenance: "Isolated owner fixture", adoptedAt: new Date().toISOString(), adoptedByUserId: f.claimed.id };
+  f.taskContext.goalMandate = structuredClone(mandate);
+  f.packet.goalMandate = structuredClone(mandate);
+  sealPacket(f.packet);
+  assert.equal(validate(f), f.packet);
+  f.taskContext.goalMandate.version = 2;
+  assert.throws(() => validate(f), error => error.message === "execution_packet_invalid"
+    && error.details.issues.some(issue => issue.field === "goalMandate"));
+  f.taskContext.goalMandate.version = 1;
+  f.packet.goalMandate.goalId = f.claimed.workspaceId;
+  sealPacket(f.packet);
+  assert.throws(() => validate(f), error => error.message === "execution_packet_invalid"
+    && error.details.issues.some(issue => issue.field === "goalMandate"));
+});
 test("application packet refuses a context source without owner review provenance", () => {
   const f = validPacketFixture(); delete f.packet.sources[0].provenance; sealPacket(f.packet);
   assert.throws(() => validate(f), error => error.message === "execution_packet_invalid"

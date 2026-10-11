@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
 import { CcConfirmDialog } from "../../components/cc-confirm-dialog";
@@ -15,6 +15,7 @@ import type { CoreAreaKey } from "../../types";
 import { departmentLabel } from "./department-labels";
 import { DepartmentScopeControl } from "./department-scope-control";
 import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
+import { GoalMandatePanel } from "./goal-mandate-panel";
 
 type Department = { id: string; key: CoreAreaKey; name: string; status: string };
 type Goal = {
@@ -140,8 +141,14 @@ export function GoalsWorkbench({ departmentKey, canonical = false }: { departmen
   const scoped = Boolean(requestedDepartment);
   const [refreshKey, setRefreshKey] = useState(0);
   const [editing, setEditing] = useState<Goal | null | undefined>(undefined);
+  const [selected, setSelected] = useState<Goal | null>(null);
   const [archiveGoal, setArchiveGoal] = useState<Goal | null>(null);
   const [archiveBusy, setArchiveBusy] = useState(false);
+  useEffect(() => {
+    if (!selected) return;
+    const frame = window.requestAnimationFrame(() => document.getElementById("goal-mandate-title")?.scrollIntoView({ block: "start" }));
+    return () => window.cancelAnimationFrame(frame);
+  }, [selected]);
   const query = requestedDepartment ? `?departmentKey=${requestedDepartment}&includeCompanyWide=false` : "";
   const packet = useOwnerPacket<Goal[]>(`/v1/goals${query}${query ? "&" : "?"}refresh=${refreshKey}`, true, t);
   const departmentPacket = useOwnerPacket<{ departments: Department[] }>(`/v1/departments?refresh=${refreshKey}`, true, t);
@@ -150,12 +157,12 @@ export function GoalsWorkbench({ departmentKey, canonical = false }: { departmen
   const visibleTitle = scoped ? t("goals.departmentGoals", { department: departmentLabel(requestedDepartment!, t) }) : t("goals.allGoals");
   const departmentOptions = departmentPacket.data?.departments || [];
   const columns = useMemo<Array<CcTableColumn<Goal>>>(() => [
-    { key: "goal", header: t("goals.title"), sortable: true, searchValue: (row) => `${row.title} ${row.description || ""} ${row.businessPurpose || ""}`, cell: (row) => <button className="grid text-left" onClick={() => setEditing(row)} type="button"><strong>{row.title}</strong><span className="text-xs text-company-muted">{row.businessPurpose || row.description || t("common.noDescription")}</span></button> },
+    { key: "goal", header: t("goals.title"), sortable: true, searchValue: (row) => `${row.title} ${row.description || ""} ${row.businessPurpose || ""}`, cell: (row) => <button className="grid text-left" onClick={() => setSelected(row)} type="button"><strong>{row.title}</strong><span className="text-xs text-company-muted">{row.businessPurpose || row.description || t("common.noDescription")}</span></button> },
     { key: "department", header: t("goals.ownerDepartment"), filterable: true, filterValue: (row) => row.organizationalContext?.ownerDepartment?.key || "unassigned", cell: (row) => <span className="text-sm text-company-muted">{row.organizationalContext?.ownerDepartment ? departmentLabel(row.organizationalContext.ownerDepartment.key, t) : t("goals.unassigned")}</span> },
     { key: "status", header: t("table.status"), filterable: true, filterValue: (row) => row.status, cell: (row) => <span className="badge badge-outline">{humanizeBusinessValue(row.status)}</span> },
     { key: "priority", header: t("goals.priority"), filterable: true, filterValue: (row) => row.priority, cell: (row) => <span className="text-sm text-company-muted">{humanizeBusinessValue(row.priority)}</span> },
     { key: "relations", header: t("goals.relations"), cell: (row) => <span className="text-sm text-company-muted">{(row.targets?.length || 0) + (row.tasks?.length || 0)}</span> },
-    { key: "actions", header: t("table.actions"), cell: (row) => <div className="flex justify-end gap-1"><CcButton ariaLabel={t("goals.edit")} iconLeft="ph-pencil-simple" onClick={() => setEditing(row)} size="xs" variant="ghost"><span className="sr-only">{t("goals.edit")}</span></CcButton>{row.status !== "archived" ? <CcButton ariaLabel={t("goals.archive")} iconLeft="ph-archive" onClick={() => setArchiveGoal(row)} size="xs" variant="ghost"><span className="sr-only">{t("goals.archive")}</span></CcButton> : null}</div> }
+    { key: "actions", header: t("table.actions"), cell: (row) => <CcButton ariaLabel={t("goals.title")} iconLeft="ph-chart-line-up" onClick={() => setSelected(row)} size="xs" variant="ghost"><span className="sr-only">{t("goals.title")}</span></CcButton> }
   ], [t]);
 
   function refresh() { setEditing(undefined); setRefreshKey((value) => value + 1); }
@@ -169,6 +176,7 @@ export function GoalsWorkbench({ departmentKey, canonical = false }: { departmen
     <CcPageHeader actions={<><DepartmentScopeControl baseHref="/areas?area=01-strategia&view=goals" value={requestedDepartment} /><CcButton iconLeft="ph-plus" onClick={() => setEditing(null)} size="sm" variant="primary">{t("goals.create")}</CcButton></>} description={scoped ? t("goals.contextualDescription") : t("goals.canonicalDescription")} eyebrow={scoped ? t("goals.contextualEyebrow") : t("goals.canonicalEyebrow")} title={visibleTitle} />
     {packet.status === "error" ? <CcNotice live tone="error" title={packet.error || t("goals.loadError")} /> : null}
     <CcDataTable columns={columns} rows={rows} emptyDetail={canonical ? t("goals.emptyCanonicalDetail") : t("goals.emptyContextualDetail")} emptyTitle={t("goals.emptyTitle")} error={packet.status === "error" ? packet.error || t("goals.loadError") : null} getRowLabel={(row) => row.title} labels={tableLabels} loading={packet.status === "loading"} mobileMode="cards" />
+    {selected ? <GoalMandatePanel key={selected.id} goalId={selected.id} onClose={() => setSelected(null)} onChanged={() => setRefreshKey(value => value + 1)} onEditLegacy={() => { setEditing(selected); setSelected(null); }} onArchiveLegacy={() => { setArchiveGoal(selected); setSelected(null); }} /> : null}
     {editing !== undefined ? <GoalEditor departmentKey={requestedDepartment || departmentKey} departments={departmentOptions} goal={editing} onClose={() => setEditing(undefined)} onSaved={refresh} /> : null}
     {archiveGoal ? <CcConfirmDialog busy={archiveBusy} confirmIcon="ph-archive" confirmLabel={t("goals.archive")} confirmTone="warning" description={t("goals.archiveDescription")} detail={<strong>{archiveGoal.title}</strong>} eyebrow={t("goals.eyebrow")} onCancel={() => setArchiveGoal(null)} onConfirm={confirmArchive} title={t("goals.archiveTitle")} /> : null}
   </>;

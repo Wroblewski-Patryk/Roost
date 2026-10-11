@@ -4,6 +4,7 @@ import { prisma } from "../../db/prisma";
 import { resolveTaskRoleContext, type RoleSubmission } from "./task-role-context";
 import { companySourceEligible, companySourceProvenance, companySourceReviews } from "./company-source-trust";
 import { currentCompanyDirection } from "../strategy/company-direction";
+import { currentGoalMandate } from "../goals/goal-mandate";
 
 function object(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
@@ -35,6 +36,7 @@ export async function prepareExecutionPacket(execution: AgentExecution, task: Ta
     identity: { executionId: execution.id, workspaceId: execution.workspaceId, taskId: task.id, applicationId: execution.applicationId, agentId: task.assignedWorkforceEntityId },
     taskRevision: task.updatedAt.toISOString(),
     companyDirection: await currentCompanyDirection(db, execution.workspaceId),
+    goalMandate: task.goalId ? await currentGoalMandate(db, execution.workspaceId, task.goalId) : null,
     contract,
     roleAuthorities: await resolveTaskRoleContext(db, execution.workspaceId, task, contract, submission),
     scopeAuthorities: {

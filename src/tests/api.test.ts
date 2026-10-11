@@ -43,12 +43,14 @@ import { registerTaskProposalTests } from "./task-proposal-api";
 import { registerDepartmentCompositionTests } from "./department-composition-api";
 import { registerGovernedGoogleDocTests } from "./governed-google-doc-api";
 import { registerCompanyDirectionTests } from "./company-direction-api";
+import { registerGoalMandateTests } from "./goal-mandate-api";
 
 registerFindingTests({request,registerOwner,prepareReviewFixture,decisionFixtureProposal,decisionFixtureProof,refreshCompositionRisk,submissionInput});
 registerTaskProposalTests({ request, registerOwner });
 registerDepartmentCompositionTests({ request, registerOwner });
 registerGovernedGoogleDocTests({ request, registerOwner });
 registerCompanyDirectionTests({ request, registerOwner, prepareReviewFixture, decisionFixtureProposal, decisionFixtureProof, runMcpBridgeSmoke });
+registerGoalMandateTests({ request, registerOwner, runMcpBridgeSmoke });
 registerOwnerTicketDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof });
 registerOwnerTicketDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof }, true);
 registerWorkerCredentialDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof, refreshCompositionRisk });
@@ -172,6 +174,7 @@ async function resetDatabase() {
       assert.match(guard.triggerName, /^[a-z_][a-z0-9_]*$/);
       await db.$executeRawUnsafe(`ALTER TABLE ${guard.tableName} DISABLE TRIGGER ${guard.triggerName}`);
     }
+    await db.$executeRawUnsafe("TRUNCATE goal_measurements, goal_mandate_previews, goal_mandate_heads, goal_mandate_versions CASCADE");
     await db.$executeRawUnsafe("TRUNCATE critical_preemptions CASCADE");
     await db.$executeRawUnsafe("TRUNCATE task_proposal_decisions, task_proposal_occurrences, task_proposal_mandate_uses, task_proposals, task_proposal_mandate_revocations, task_proposal_mandates CASCADE");
     await db.$executeRawUnsafe("TRUNCATE task_review_actions, task_review_decisions, agent_credential_operations, api_keys, events CASCADE");
@@ -272,6 +275,7 @@ async function resetDatabase() {
     await db.authSessionRevocation.deleteMany();
     await db.workspace.deleteMany();
     await db.user.deleteMany();
+    await db.$executeRawUnsafe("SET CONSTRAINTS ALL IMMEDIATE");
     for (const guard of guards)
       await db.$executeRawUnsafe(`ALTER TABLE ${guard.tableName} ENABLE TRIGGER ${guard.triggerName}`);
   }, { timeout: 120000 });

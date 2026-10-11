@@ -118,6 +118,8 @@ goalsRouter.patch("/:id", asyncHandler(async (req, res) => {
   const input = updateGoalSchema.parse(req.body);
   const existing = await prisma.goal.findFirst({ where: { id: String(req.params.id), workspaceId } });
   if (!existing) return res.status(404).json({ error: "not_found" });
+  if (await prisma.goalMandateHead.findFirst({ where: { workspaceId, goalId: existing.id } }))
+    return res.status(409).json({ error: "goal_mandate_change_requires_adoption" });
   const relationError = await invalidRelation(workspaceId, input, existing.id);
   if (relationError) return res.status(404).json({ error: relationError });
   if (input.organizationalContext && !departmentKeysAreValid(input.organizationalContext)) return res.status(400).json({ error: "invalid_department_key" });
@@ -136,6 +138,8 @@ goalsRouter.delete("/:id", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
   const existing = await prisma.goal.findFirst({ where: { id: String(req.params.id), workspaceId } });
   if (!existing) return res.status(404).json({ error: "not_found" });
+  if (await prisma.goalMandateHead.findFirst({ where: { workspaceId, goalId: existing.id } }))
+    return res.status(409).json({ error: "goal_mandate_change_requires_adoption" });
   const goal = await prisma.goal.update({ where: { id: existing.id }, data: { status: "archived" }, include: goalInclude });
   await createEvent({ type: "goal_archived", workspaceId, projectId: goal.projectId, source: goal.source, payload: { goalId: goal.id } });
   res.json({ data: (await serializeGoals(workspaceId, [goal]))[0] });

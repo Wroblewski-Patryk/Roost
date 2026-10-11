@@ -36,6 +36,7 @@ export function ordinaryApiKeyReadAllowed(method: string, path: string, boundAge
     /^\/google-drive\/tasks\/[a-f0-9-]{36}\/docs\/[a-f0-9-]{36}\/governed\/append$/.test(route)
     ||
     /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/proposals$/.test(route)
+    || /^\/goal-mandates\/tasks\/[a-f0-9-]{36}\/measurements$/.test(route)
     || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/procedure-improvements$/.test(route)
     ||
     /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/actions\/review(?:-return)?$/.test(route)
@@ -49,6 +50,7 @@ export function ordinaryApiKeyReadAllowed(method: string, path: string, boundAge
   if (!boundAgent) return false;
   return /^\/google-drive\/tasks\/[a-f0-9-]{36}\/docs\/[a-f0-9-]{36}\/governed$/.test(route)
     || /^\/strategy\/tasks\/[a-f0-9-]{36}\/direction$/.test(route)
+    || /^\/goal-mandates\/tasks\/[a-f0-9-]{36}$/.test(route)
     || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/company-sources(?:\/[a-f0-9-]{36})?$/.test(route)
     || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/sources(?:\/(?:procedure|policy|decision|evidence|note|knowledge_item|application_evidence|application_architecture|application_interface|application_capability|drive_snapshot)\/[a-f0-9-]{36})?$/.test(route)
     || route === "/tasks" || /^\/tasks\/[a-f0-9-]{36}$/.test(route)

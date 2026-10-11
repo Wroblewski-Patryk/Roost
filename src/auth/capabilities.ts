@@ -378,6 +378,16 @@ export const adapterManifest = {
       { method: "PATCH", path: "/v1/goals/:id", capability: "goals:write" },
       { method: "DELETE", path: "/v1/goals/:id", capability: "goals:write" }
     ],
+    goalMandates: [
+      { method: "GET", path: "/v1/goal-mandates/goals/:goalId", capability: "goals:read" },
+      { method: "POST", path: "/v1/goal-mandates/goals/:goalId/drafts", capability: "goals:write" },
+      { method: "POST", path: "/v1/goal-mandates/goals/:goalId/drafts/:draftId/preview", capability: "goals:write" },
+      { method: "POST", path: "/v1/goal-mandates/goals/:goalId/drafts/:draftId/adopt", capability: "goals:write" },
+      { method: "POST", path: "/v1/goal-mandates/goals/:goalId/measurements", capability: "goals:write" },
+      { method: "POST", path: "/v1/goal-mandates/goals/:goalId/measurements/:measurementId/actions", capability: "goals:write" },
+      { method: "GET", path: "/v1/goal-mandates/tasks/:taskId", capability: "agent-runtime:read" },
+      { method: "POST", path: "/v1/goal-mandates/tasks/:taskId/measurements", capability: "agent-runtime:write" }
+    ],
     targets: [
       { method: "GET", path: "/v1/targets", capability: "targets:read" },
       { method: "GET", path: "/v1/targets/:id", capability: "targets:read" },

@@ -281,6 +281,7 @@ strategyRouter.get("/context", asyncHandler(async (req, res) => {
           } : null,
           targetValue: target.targetValue,
           currentValue: target.currentValue,
+          measurementAuthority: "legacy_unverified",
           dueDate: target.dueDate?.toISOString() ?? null,
           status: target.status
         })),
@@ -301,6 +302,7 @@ strategyRouter.get("/context", asyncHandler(async (req, res) => {
         unit: metric.unit,
         targetValue: metric.targetValue,
         currentValue: metric.currentValue,
+        measurementAuthority: "legacy_unverified",
         ownerRole: metric.ownerRole?.name ?? null,
         status: metric.status
       })),

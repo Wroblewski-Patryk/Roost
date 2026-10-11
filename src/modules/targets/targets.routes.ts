@@ -86,6 +86,8 @@ targetsRouter.get("/:id", asyncHandler(async (req, res) => {
 
 targetsRouter.post("/", asyncHandler(async (req, res) => {
   const input = createTargetSchema.parse(req.body);
+  if (input.goalId && await prisma.goalMandateHead.findFirst({ where: { workspaceId: req.auth!.workspaceId, goalId: input.goalId } }))
+    return res.status(409).json({ error: "goal_target_change_requires_adoption" });
   if (!await goalIsVisible(req.auth!.workspaceId, input.goalId)) {
     return res.status(404).json({ error: "not_found" });
   }
@@ -131,6 +133,9 @@ targetsRouter.patch("/:id", asyncHandler(async (req, res) => {
   if (!existing) {
     return res.status(404).json({ error: "not_found" });
   }
+  if (await prisma.goalMandateHead.findFirst({ where: { workspaceId: req.auth!.workspaceId,
+    goalId: { in: [existing.goalId, input.goalId].filter((id): id is string => Boolean(id)) } } }))
+    return res.status(409).json({ error: "goal_target_change_requires_adoption" });
 
   const target = await prisma.target.update({
     where: { id: existing.id },
@@ -156,6 +161,8 @@ targetsRouter.delete("/:id", asyncHandler(async (req, res) => {
   if (!existing) {
     return res.status(404).json({ error: "not_found" });
   }
+  if (existing.goalId && await prisma.goalMandateHead.findFirst({ where: { workspaceId: req.auth!.workspaceId, goalId: existing.goalId } }))
+    return res.status(409).json({ error: "goal_target_change_requires_adoption" });
 
   const target = await prisma.target.update({
     where: { id: existing.id },

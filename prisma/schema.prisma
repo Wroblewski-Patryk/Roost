@@ -611,6 +611,10 @@ model OwnerActionProof {
 }
 
 model Workspace {
+  goalMandateVersions GoalMandateVersion[]
+  goalMandateHeads GoalMandateHead[]
+  goalMandatePreviews GoalMandatePreview[]
+  goalMeasurements GoalMeasurement[]
   directionHead CompanyDirectionHead?
   directionVersions CompanyDirectionVersion[]
   directionComparisons CompanyDirectionComparison[]
@@ -1012,6 +1016,7 @@ model EvidenceRecord {
   updatedAt          DateTime                   @updatedAt @map("updated_at")
 
   @@index([workspaceId, entityType, entityId])
+  @@unique([id, workspaceId])
   @@index([workspaceId, verificationStatus, observedAt])
   @@map("evidence_records")
 }
@@ -2140,6 +2145,9 @@ model AgentHost {
 }
 
 model AgentExecution {
+  goalIdAtQueue String? @map("goal_id_at_queue") @db.Uuid
+  mandateVersionIdAtQueue String? @map("mandate_version_id_at_queue") @db.Uuid
+  parentGoalIdAtQueue String? @map("parent_goal_id_at_queue") @db.Uuid
   ownerTickets TrustedProviderTicket[]
   capabilityGrants TaskCapabilityGrant[]
   reviewDecisions   TaskReviewDecision[]
@@ -2915,6 +2923,10 @@ model ProductOffering {
 }
 
 model Goal {
+  mandateVersions GoalMandateVersion[]
+  mandateHead GoalMandateHead?
+  mandatePreviews GoalMandatePreview[]
+  measurements GoalMeasurement[]
   id              String     @id @default(uuid()) @db.Uuid
   workspaceId     String?    @map("workspace_id") @db.Uuid
   workspace       Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -2940,7 +2952,106 @@ model Goal {
 
   @@index([processId])
   @@index([workspaceId, parentGoalId])
+  @@unique([id, workspaceId])
   @@map("goals")
+}
+
+model GoalMandateHead {
+  id String @id @default(uuid()) @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  goalId String @unique @map("goal_id") @db.Uuid
+  goal Goal @relation(fields: [goalId, workspaceId], references: [id, workspaceId], onDelete: NoAction, onUpdate: NoAction)
+  currentVersionId String @map("current_version_id") @db.Uuid
+  currentVersion GoalMandateVersion @relation("GoalMandateCurrent", fields: [currentVersionId, workspaceId, goalId], references: [id, workspaceId, goalId], onDelete: NoAction, onUpdate: NoAction)
+  nextVersion Int @default(1) @map("next_version")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([workspaceId, goalId])
+  @@unique([goalId, workspaceId])
+  @@map("goal_mandate_heads")
+}
+
+model GoalMandateVersion {
+  id String @id @default(uuid()) @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  goalId String @map("goal_id") @db.Uuid
+  goal Goal @relation(fields: [goalId, workspaceId], references: [id, workspaceId], onDelete: NoAction, onUpdate: NoAction)
+  version Int?
+  status String @default("draft")
+  result String
+  metric String
+  unit String
+  targetValue Float @map("target_value")
+  evidenceSource String @map("evidence_source")
+  accountableUserId String @map("accountable_user_id") @db.Uuid
+  bindingDeadline DateTime? @map("binding_deadline")
+  forecastDate DateTime? @map("forecast_date")
+  forecastBasis String? @map("forecast_basis")
+  executionSchedule String? @map("execution_schedule")
+  provenance String
+  previousVersionId String? @map("previous_version_id") @db.Uuid
+  previousVersion GoalMandateVersion? @relation("GoalMandatePrevious", fields: [previousVersionId, workspaceId, goalId], references: [id, workspaceId, goalId], onDelete: NoAction, onUpdate: NoAction)
+  successorVersions GoalMandateVersion[] @relation("GoalMandatePrevious")
+  currentForHeads GoalMandateHead[] @relation("GoalMandateCurrent")
+  measurements GoalMeasurement[]
+  impactDigest String? @map("impact_digest")
+  createdByUserId String @map("created_by_user_id") @db.Uuid
+  adoptedByUserId String? @map("adopted_by_user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  adoptedAt DateTime? @map("adopted_at")
+
+  @@unique([id, workspaceId])
+  @@unique([id, workspaceId, goalId])
+  @@unique([goalId, version])
+  @@index([workspaceId, goalId, status, createdAt])
+  @@map("goal_mandate_versions")
+}
+
+model GoalMandatePreview {
+  id String @id @default(uuid()) @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  goalId String @map("goal_id") @db.Uuid
+  goal Goal @relation(fields: [goalId, workspaceId], references: [id, workspaceId], onDelete: NoAction, onUpdate: NoAction)
+  draftId String @map("draft_id") @db.Uuid
+  expectedCurrentId String? @map("expected_current_id") @db.Uuid
+  impactDigest String @map("impact_digest")
+  ownerUserId String @map("owner_user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime @map("expires_at")
+  consumedAt DateTime? @map("consumed_at")
+
+  @@index([workspaceId, goalId, draftId, createdAt])
+  @@map("goal_mandate_previews")
+}
+
+model GoalMeasurement {
+  id String @id @default(uuid()) @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  goalId String @map("goal_id") @db.Uuid
+  goal Goal @relation(fields: [goalId, workspaceId], references: [id, workspaceId], onDelete: NoAction, onUpdate: NoAction)
+  versionId String @map("version_id") @db.Uuid
+  version GoalMandateVersion @relation(fields: [versionId, workspaceId, goalId], references: [id, workspaceId, goalId], onDelete: NoAction, onUpdate: NoAction)
+  evidenceId String @map("evidence_id") @db.Uuid
+  evidenceDigest String @map("evidence_digest")
+  evidenceRevision DateTime @map("evidence_revision")
+  taskId String? @map("task_id") @db.Uuid
+  value Float
+  note String
+  observedAt DateTime @map("observed_at")
+  status String @default("proposed")
+  proposedByType String @map("proposed_by_type")
+  proposedById String @map("proposed_by_id") @db.Uuid
+  decidedByUserId String? @map("decided_by_user_id") @db.Uuid
+  decidedAt DateTime? @map("decided_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([workspaceId, goalId, versionId, observedAt])
+  @@index([workspaceId, evidenceId])
+  @@map("goal_measurements")
 }
 
 model Target {
@@ -2957,7 +3068,7 @@ model Target {
   metricId     String?    @map("metric_id") @db.Uuid
   metricRef    Metric?    @relation("TargetMetric", fields: [metricId], references: [id], onDelete: SetNull)
   targetValue  Float?     @map("target_value")
-  currentValue Float?     @default(0) @map("current_value")
+  currentValue Float?     @map("current_value")
   dueDate      DateTime?  @map("due_date")
   status       String     @default("active")
   externalId   String?    @map("external_id")

@@ -131,6 +131,9 @@ companyObjectsRouter.post("/:type", asyncHandler(async (req, res) => {
 companyObjectsRouter.patch("/:type/:id", asyncHandler(async (req, res) => {
   const type = parseType(String(req.params.type)); if (!type) return res.status(404).json({ error: "unsupported_company_object_type" });
   const workspaceId = req.auth!.workspaceId; const existing = await findObject(type, workspaceId, String(req.params.id)); if (!existing) return res.status(404).json({ error: "not_found" });
+  if (type === "metric" && await prisma.target.findFirst({ where: { workspaceId, metricId: existing.id,
+    goal: { mandateHead: { isNot: null } } }, select: { id: true } }))
+    return res.status(409).json({ error: "goal_metric_change_requires_adoption" });
   const input = schemaFor(type).partial().parse(req.body); if (input.organizationalContext && !departmentKeysAreValid(input.organizationalContext)) return res.status(400).json({ error: "invalid_department_key" });
   const updated = await prisma.$transaction(async (transaction) => { const record = await updateObject(transaction, type, existing.id, input as Record<string, unknown>); if (input.organizationalContext) await replaceOrganizationalContext(transaction, workspaceId, type, existing.id, input.organizationalContext); return record; });
   await createEvent({ type: `${type}_updated`, workspaceId, source: "companycore", payload: { entityType: type, entityId: updated.id, changed: Object.keys(input) } });
@@ -140,6 +143,9 @@ companyObjectsRouter.patch("/:type/:id", asyncHandler(async (req, res) => {
 companyObjectsRouter.delete("/:type/:id", asyncHandler(async (req, res) => {
   const type = parseType(String(req.params.type)); if (!type) return res.status(404).json({ error: "unsupported_company_object_type" });
   const workspaceId = req.auth!.workspaceId; const existing = await findObject(type, workspaceId, String(req.params.id)); if (!existing) return res.status(404).json({ error: "not_found" });
+  if (type === "metric" && await prisma.target.findFirst({ where: { workspaceId, metricId: existing.id,
+    goal: { mandateHead: { isNot: null } } }, select: { id: true } }))
+    return res.status(409).json({ error: "goal_metric_change_requires_adoption" });
   if (type === "resource") await prisma.resource.delete({ where: { id: existing.id } });
   else if (type === "risk") await prisma.risk.update({ where: { id: existing.id }, data: { status: "archived" } });
   else if (type === "metric") await prisma.metric.update({ where: { id: existing.id }, data: { status: "archived" } });

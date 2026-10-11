@@ -118,11 +118,23 @@ const companyDirectionSchema = z.object({
   provenance: z.string().trim().min(1).max(1000), adoptedAt: z.string().datetime(), adoptedByUserId: id
 }).strict();
 
+const goalMandateSchema = z.object({
+  id, workspaceId: id, goalId: id, version: z.number().int().positive(),
+  result: z.string().trim().min(1).max(2000), metric: z.string().trim().min(1).max(240),
+  unit: z.string().trim().min(1).max(80), targetValue: z.number().finite(),
+  evidenceSource: z.string().trim().min(1).max(1000), accountableUserId: id,
+  bindingDeadline: z.string().datetime().nullable(), forecastDate: z.string().datetime().nullable(),
+  forecastBasis: z.string().nullable(), executionSchedule: z.string().nullable(),
+  provenance: z.string().trim().min(1).max(1000), adoptedAt: z.string().datetime(),
+  adoptedByUserId: id
+}).strict();
+
 const packetSchema = z.object({
   schemaVersion: z.literal("roost-execution-packet-v1"), revision: z.string().regex(/^[a-f0-9]{64}$/),
   identity: z.object({ executionId: id, workspaceId: id, taskId: id, applicationId: id, agentId: id }).strict(),
   taskRevision: text, contract: executionContractSchema,
   companyDirection: companyDirectionSchema.nullable().optional(),
+  goalMandate: goalMandateSchema.nullable().optional(),
   procedureComposition: z.record(z.unknown()),
   roleAuthorities: roleAuthoritiesSchema,
   scopeAuthorities: z.object({
@@ -192,6 +204,11 @@ export function validateExecutionPacket(packet, claimed, taskContext, applicatio
       add("companyDirection", "context_mismatch");
     if (p.companyDirection && (p.companyDirection.workspaceId !== p.identity.workspaceId || !p.companyDirection.adoptedAt))
       add("companyDirection", "workspace_mismatch");
+    if (taskContext?.goalMandate !== undefined && JSON.stringify(p.goalMandate ?? null) !== JSON.stringify(taskContext.goalMandate ?? null))
+      add("goalMandate", "context_mismatch");
+    if (p.goalMandate && (p.goalMandate.workspaceId !== p.identity.workspaceId
+      || p.goalMandate.goalId !== task?.goalId || !p.goalMandate.adoptedAt))
+      add("goalMandate", "task_scope_mismatch");
     for (const field of ["procedures", "dependencies", "decisions"]) {
       if (!Array.isArray(taskContext?.[field])) add(`taskContext.${field}`, "missing");
     }
