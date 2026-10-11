@@ -37,7 +37,7 @@ strategyRouter.get("/context", asyncHandler(async (req, res) => {
     counts
   ] = await Promise.all([
     prisma.goal.findMany({
-      where: { workspaceId },
+      where: { workspaceId, status: { not: "archived" } },
       orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
       take: STRATEGY_LIMIT,
       include: {
@@ -51,13 +51,13 @@ strategyRouter.get("/context", asyncHandler(async (req, res) => {
       }
     }),
     prisma.metric.findMany({
-      where: { workspaceId },
+      where: { workspaceId, status: { not: "archived" } },
       orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
       take: STRATEGY_LIMIT,
       include: { ownerRole: true }
     }),
     prisma.risk.findMany({
-      where: { workspaceId },
+      where: { workspaceId, status: { not: "archived" } },
       orderBy: [{ status: "asc" }, { riskLevel: "desc" }, { updatedAt: "desc" }],
       take: STRATEGY_LIMIT,
       include: { controls: { orderBy: { updatedAt: "desc" }, take: 6 } }
@@ -93,7 +93,7 @@ strategyRouter.get("/context", asyncHandler(async (req, res) => {
       take: 50
     }),
     Promise.all([
-      prisma.goal.count({ where: { workspaceId } }),
+      prisma.goal.count({ where: { workspaceId, status: { not: "archived" } } }),
       prisma.goal.count({ where: { workspaceId, status: "active" } }),
       prisma.target.count({ where: { workspaceId } }),
       prisma.target.count({ where: { workspaceId, status: "active" } }),

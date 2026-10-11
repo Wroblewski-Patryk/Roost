@@ -274,7 +274,7 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
     knowledgeRoots
   ] = await Promise.all([
     prisma.goal.findMany({
-      where: { workspaceId, ...(shouldLoadAllGoals ? {} : { id: EMPTY_UUID }) },
+      where: { workspaceId, status: { not: "archived" }, ...(shouldLoadAllGoals ? {} : { id: EMPTY_UUID }) },
       orderBy: { createdAt: "desc" },
       take: limit,
       include: { targets: true, tasks: { where: { status: { not: "archived" } } }, project: true, process: true }
@@ -321,7 +321,7 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
       take: limit * 3
     }),
     prisma.metric.findMany({
-      where: { workspaceId, ...(shouldLoadAllMetrics ? {} : { OR: [{ process: { department: { contains: area.name, mode: "insensitive" } } }, { pipeline: { process: { department: { contains: area.name, mode: "insensitive" } } } }] }) },
+      where: { workspaceId, status: { not: "archived" }, ...(shouldLoadAllMetrics ? {} : { OR: [{ process: { department: { contains: area.name, mode: "insensitive" } } }, { pipeline: { process: { department: { contains: area.name, mode: "insensitive" } } } }] }) },
       orderBy: { name: "asc" },
       take: limit,
       include: { process: true, pipeline: true }

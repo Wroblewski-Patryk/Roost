@@ -1272,7 +1272,7 @@ const collectionReaders: Record<CollectionName, CollectionReader> = {
   },
   "metrics": {
     list: (workspaceId, take) => prisma.metric.findMany({
-      where: workspaceWhere(workspaceId),
+      where: { workspaceId, status: { not: "archived" } },
       orderBy: { name: "asc" },
       take,
       include: { ownerRole: true, process: true, pipeline: true }
@@ -1284,7 +1284,7 @@ const collectionReaders: Record<CollectionName, CollectionReader> = {
   },
   "risks": {
     list: (workspaceId, take) => prisma.risk.findMany({
-      where: workspaceWhere(workspaceId),
+      where: { workspaceId, status: { not: "archived" } },
       orderBy: [{ riskLevel: "desc" }, { createdAt: "desc" }],
       take,
       include: { controls: true, process: true, pipeline: true }

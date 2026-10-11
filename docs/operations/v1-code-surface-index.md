@@ -82,11 +82,14 @@ Use it with:
 | auth | `/auth`, `/v1/auth` | Register, login, and current user context. |
 | workspace access | `/v1/workspaces/:id/access` | Members, roles, expiring invitations, removal, ownership transfer, and audit evidence. |
 
-Ordinary application and project lists exclude archived records by default; use
-`?archive=only` or `?archive=all` for an explicit history read. The company-record
-list also excludes archived records by default and accepts `?status=archived`
-for explicit history. Agent runtime application readiness excludes archived
-applications. Archiving retains record identity, links and audit history; a
+Ordinary application, project and goal lists exclude archived records by
+default; use `?archive=only` or `?archive=all` for an explicit history read.
+The company-record list excludes archived records by default and accepts
+`?status=archived` for explicit history. The agent list hides retired agents by
+default and accepts `?retired=only` or `?retired=all`; the workforce list hides
+archived people and agents unless `?status=archived` is requested. Strategy
+context, ordinary company search and agent runtime application readiness also
+exclude archived items. Archiving retains identity, links and audit history; a
 test or certification artifact must be archived through its scoped API after
 its production proof is complete, not deleted directly from the database.
 

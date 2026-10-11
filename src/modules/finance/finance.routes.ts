@@ -193,6 +193,7 @@ financeRouter.get("/context", asyncHandler(async (req, res) => {
     prisma.risk.findMany({
       where: {
         workspaceId,
+        status: { not: "archived" },
         OR: [
           { category: { contains: "finance", mode: "insensitive" } },
           { category: { contains: "billing", mode: "insensitive" } },

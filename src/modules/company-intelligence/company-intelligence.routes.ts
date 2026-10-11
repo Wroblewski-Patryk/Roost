@@ -52,20 +52,20 @@ async function resolveEntity(workspaceId: string, entityType: string, entityId: 
 companyIntelligenceRouter.get("/search", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId; const q = typeof req.query.q === "string" ? req.query.q.trim() : ""; const departmentKey = typeof req.query.departmentKey === "string" ? req.query.departmentKey : null; if (departmentKey && !isCanonicalDepartmentKey(departmentKey)) return res.status(400).json({ error: "invalid_department_key" }); if (q.length < 2) return res.json({ data: [] });
   const [goals, tasks, projects, records, applications, clients, procedures, resources, features, workforce, agents, decisions, risks, metrics, policies, files] = await Promise.all([
-    prisma.goal.findMany({ where: { workspaceId, OR: [{ title: { contains: q, mode: "insensitive" } }, { description: { contains: q, mode: "insensitive" } }] }, take: 20 }),
+    prisma.goal.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ title: { contains: q, mode: "insensitive" } }, { description: { contains: q, mode: "insensitive" } }] }, take: 20 }),
     prisma.task.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ title: { contains: q, mode: "insensitive" } }, { description: { contains: q, mode: "insensitive" } }] }, take: 20 }),
-    prisma.project.findMany({ where: { workspaceId, OR: [{ name: { contains: q, mode: "insensitive" } }, { description: { contains: q, mode: "insensitive" } }] }, take: 20 }),
-    prisma.companyRecord.findMany({ where: { workspaceId, OR: [{ title: { contains: q, mode: "insensitive" } }, { description: { contains: q, mode: "insensitive" } }, { key: { contains: q, mode: "insensitive" } }] }, take: 30 }),
-    prisma.application.findMany({ where: { workspaceId, OR: [{ name: { contains: q, mode: "insensitive" } }, { description: { contains: q, mode: "insensitive" } }] }, take: 20 }),
+    prisma.project.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ name: { contains: q, mode: "insensitive" } }, { description: { contains: q, mode: "insensitive" } }] }, take: 20 }),
+    prisma.companyRecord.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ title: { contains: q, mode: "insensitive" } }, { description: { contains: q, mode: "insensitive" } }, { key: { contains: q, mode: "insensitive" } }] }, take: 30 }),
+    prisma.application.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ name: { contains: q, mode: "insensitive" } }, { description: { contains: q, mode: "insensitive" } }] }, take: 20 }),
     prisma.client.findMany({ where: { workspaceId, OR: [{ name: { contains: q, mode: "insensitive" } }, { companyName: { contains: q, mode: "insensitive" } }] }, take: 20 }),
     prisma.procedure.findMany({ where: { workspaceId, OR: [{ name: { contains: q, mode: "insensitive" } }, { purpose: { contains: q, mode: "insensitive" } }] }, take: 20 }),
     prisma.resource.findMany({ where: { workspaceId, name: { contains: q, mode: "insensitive" } }, take: 20 }),
-    prisma.applicationFeature.findMany({ where: { application: { workspaceId }, featureDefinition: { name: { contains: q, mode: "insensitive" } } }, include: { featureDefinition: true, application: { select: { id: true, name: true } } }, take: 20 }),
-    prisma.workforceEntity.findMany({ where: { workspaceId, OR: [{ name: { contains: q, mode: "insensitive" } }, { role: { contains: q, mode: "insensitive" } }] }, take: 20 }),
-    prisma.agent.findMany({ where: { workspaceId, name: { contains: q, mode: "insensitive" } }, take: 20 }),
-    prisma.decision.findMany({ where: { workspaceId, OR: [{ title: { contains: q, mode: "insensitive" } }, { rationale: { contains: q, mode: "insensitive" } }] }, take: 20 }),
-    prisma.risk.findMany({ where: { workspaceId, name: { contains: q, mode: "insensitive" } }, take: 20 }),
-    prisma.metric.findMany({ where: { workspaceId, name: { contains: q, mode: "insensitive" } }, take: 20 }),
+    prisma.applicationFeature.findMany({ where: { application: { workspaceId, status: { not: "archived" } }, featureDefinition: { name: { contains: q, mode: "insensitive" } } }, include: { featureDefinition: true, application: { select: { id: true, name: true } } }, take: 20 }),
+    prisma.workforceEntity.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ name: { contains: q, mode: "insensitive" } }, { role: { contains: q, mode: "insensitive" } }] }, take: 20 }),
+    prisma.agent.findMany({ where: { workspaceId, status: { not: "retired" }, name: { contains: q, mode: "insensitive" } }, take: 20 }),
+    prisma.decision.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ title: { contains: q, mode: "insensitive" } }, { rationale: { contains: q, mode: "insensitive" } }] }, take: 20 }),
+    prisma.risk.findMany({ where: { workspaceId, status: { not: "archived" }, name: { contains: q, mode: "insensitive" } }, take: 20 }),
+    prisma.metric.findMany({ where: { workspaceId, status: { not: "archived" }, name: { contains: q, mode: "insensitive" } }, take: 20 }),
     prisma.policy.findMany({ where: { workspaceId, OR: [{ name: { contains: q, mode: "insensitive" } }, { description: { contains: q, mode: "insensitive" } }] }, take: 20 }),
     prisma.googleDriveFile.findMany({ where: { workspaceId, trashed: false, OR: [{ name: { contains: q, mode: "insensitive" } }, { description: { contains: q, mode: "insensitive" } }] }, take: 20 })
   ]);

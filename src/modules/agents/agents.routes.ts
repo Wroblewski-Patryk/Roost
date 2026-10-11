@@ -21,8 +21,9 @@ const updateAgentSchema = createAgentSchema.partial().omit({
 export const agentsRouter = Router();
 
 agentsRouter.get("/", asyncHandler(async (req, res) => {
+  const retired = z.enum(["exclude", "only", "all"]).default("exclude").parse(req.query.retired);
   const agents = await prisma.agent.findMany({
-    where: { workspaceId: req.auth!.workspaceId },
+    where: { workspaceId: req.auth!.workspaceId, ...(retired === "all" ? {} : { status: retired === "only" ? AgentStatus.retired : { not: AgentStatus.retired } }) },
     orderBy: { createdAt: "desc" }
   });
 

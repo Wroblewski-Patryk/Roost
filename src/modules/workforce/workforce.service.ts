@@ -597,7 +597,7 @@ export async function listWorkforceEntities(workspaceId: string, filters: {
   const where: Prisma.WorkforceEntityWhereInput = {
     workspaceId,
     ...(filters.type ? { type: filters.type } : {}),
-    ...(filters.status ? { status: filters.status } : {}),
+    ...(filters.status ? { status: filters.status } : { status: { not: "archived" } }),
     ...((filters.departmentKey || filters.q) ? { AND: [
       ...(filters.departmentKey ? [{ OR: [{ id: { in: contextualIds } }, { department: filters.departmentKey }] }] : []),
       ...(filters.q ? [{ OR: [

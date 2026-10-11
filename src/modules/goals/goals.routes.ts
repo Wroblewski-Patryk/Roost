@@ -76,12 +76,13 @@ const goalInclude = {
 };
 
 goalsRouter.get("/", asyncHandler(async (req, res) => {
+  const archive = z.enum(["exclude", "only", "all"]).default("exclude").parse(req.query.archive);
   const workspaceId = req.auth!.workspaceId;
   const departmentKey = typeof req.query.departmentKey === "string" ? req.query.departmentKey : null;
   if (departmentKey && !isCanonicalDepartmentKey(departmentKey)) return res.status(400).json({ error: "invalid_department_key" });
   const ids = departmentKey ? await contextualGoalIds(workspaceId, departmentKey, req.query.includeCompanyWide !== "false") : null;
   const goals = await prisma.goal.findMany({
-    where: { workspaceId, ...(ids ? { id: { in: ids } } : {}) },
+    where: { workspaceId, ...(archive === "all" ? {} : { status: archive === "only" ? "archived" : { not: "archived" as const } }), ...(ids ? { id: { in: ids } } : {}) },
     orderBy: [{ status: "asc" }, { priority: "asc" }, { updatedAt: "desc" }],
     include: goalInclude
   });

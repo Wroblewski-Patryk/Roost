@@ -607,7 +607,7 @@ export async function readProjection(workspaceId: string, now = new Date()) {
       select: { id: true, context: true, chosenOption: true, decidedAt: true, reviewDate: true }
     }),
     prisma.metric.findMany({
-      where: { workspaceId, processId },
+      where: { workspaceId, processId, status: { not: "archived" } },
       orderBy: { name: "asc" },
       take: 50,
       select: {

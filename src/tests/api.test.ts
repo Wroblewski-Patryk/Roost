@@ -868,6 +868,48 @@ test("archived application, project and record stay out of ordinary company list
   }
 });
 
+test("archived strategy and retired agent fixtures stay out of ordinary views", async () => {
+  const owner = await registerOwner("strategy-archive-owner@example.test", "Strategy archive scope");
+  const headers = { Authorization: `Bearer ${owner.token}` };
+  const workspaceId = owner.workspace.id;
+  const currentGoal = await prisma.goal.create({ data: { workspaceId, title: "Current Hygiene strategy" } });
+  const historicalGoal = await prisma.goal.create({ data: { workspaceId, title: "Historical Hygiene gate", status: "archived" } });
+  const currentMetric = await prisma.metric.create({ data: { workspaceId, name: "Current Hygiene metric", category: "operations", measurementType: "count" } });
+  const historicalMetric = await prisma.metric.create({ data: { workspaceId, name: "Historical Hygiene metric", category: "operations", measurementType: "count", status: "archived" } });
+  const currentRisk = await prisma.risk.create({ data: { workspaceId, name: "Current Hygiene risk" } });
+  const historicalRisk = await prisma.risk.create({ data: { workspaceId, name: "Historical Hygiene risk", status: "archived" } });
+  const currentAgent = await prisma.agent.create({ data: { workspaceId, name: "Current Hygiene agent" } });
+  const retiredAgent = await prisma.agent.create({ data: { workspaceId, name: "Historical Hygiene agent", status: "retired" } });
+  const currentWorker = await prisma.workforceEntity.create({ data: { workspaceId, type: "agent", name: "Current Hygiene worker", slug: "current-hygiene-worker" } });
+  const historicalWorker = await prisma.workforceEntity.create({ data: { workspaceId, type: "agent", name: "Historical Hygiene worker", slug: "historical-hygiene-worker", status: "archived" } });
+  for (const [route, currentId, historicalId] of [
+    ["/v1/goals", currentGoal.id, historicalGoal.id],
+    ["/v1/agents", currentAgent.id, retiredAgent.id],
+    ["/v1/workforce", currentWorker.id, historicalWorker.id]
+  ] as const) {
+    const response = await request(route, { headers });
+    assert.equal(response.status, 200, route);
+    assert.ok(JSON.stringify(response.body).includes(currentId), route);
+    assert.equal(JSON.stringify(response.body).includes(historicalId), false, route);
+  }
+  const strategy = await request("/v1/strategy/context", { headers });
+  assert.equal(strategy.status, 200);
+  for (const id of [currentGoal.id, currentMetric.id, currentRisk.id]) assert.ok(JSON.stringify(strategy.body).includes(id));
+  for (const id of [historicalGoal.id, historicalMetric.id, historicalRisk.id]) assert.equal(JSON.stringify(strategy.body).includes(id), false);
+  const search = await request("/v1/company-intelligence/search?q=Hygiene", { headers });
+  assert.equal(search.status, 200);
+  for (const id of [historicalGoal.id, historicalMetric.id, historicalRisk.id, retiredAgent.id, historicalWorker.id]) assert.equal(JSON.stringify(search.body).includes(id), false);
+  for (const [route, id] of [
+    ["/v1/goals?archive=only", historicalGoal.id],
+    ["/v1/agents?retired=only", retiredAgent.id],
+    ["/v1/workforce?status=archived", historicalWorker.id]
+  ] as const) {
+    const response = await request(route, { headers });
+    assert.equal(response.status, 200, route);
+    assert.ok(JSON.stringify(response.body).includes(id), route);
+  }
+});
+
 test("account and workspace settings profile contract exposes active owner workspace", async () => {
   const owner = await registerOwner("settings-profile-owner@example.com", "Settings Profile Workspace");
   const headers = { Authorization: `Bearer ${owner.token}` };

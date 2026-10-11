@@ -164,6 +164,7 @@ export async function buildCommercialExceptionsContext(workspaceId: string, quer
     prisma.risk.findMany({
       where: {
         workspaceId,
+        status: { not: "archived" },
         OR: [
           ...commercialTerms.map((term) => ({ name: { contains: term, mode: "insensitive" as const } })),
           ...commercialTerms.map((term) => ({ description: { contains: term, mode: "insensitive" as const } })),
