@@ -802,6 +802,49 @@ after(async () => {
   await prisma.$disconnect();
 });
 
+test("G18a HTTP keeps ClickUp status pending and allows owner to close a moved-out conflict", async () => {
+  const owner = await registerOwner(`g18a-${randomUUID()}@example.test`, "G18a fixture");
+  const workspaceId = owner.workspace.id;
+  const headers = { Authorization: `Bearer ${owner.token}` };
+  await prisma.integrationSetting.create({ data: { workspaceId, provider: "clickup", active: true,
+    config: { teamId: "team", listIds: ["selected", "other"], governedStatusListId: "selected" },
+    secretCiphertext: encryptSecret("synthetic-provider-token") } });
+  const selected = await prisma.taskList.create({ data: { workspaceId, name: "Selected", source: "clickup", externalId: "selected" } });
+  const other = await prisma.taskList.create({ data: { workspaceId, name: "Other", source: "clickup", externalId: "other" } });
+  const selectedTask = await prisma.task.create({ data: { workspaceId, taskListId: selected.id, title: "Governed", source: "clickup", externalId: "governed-g18a", status: "todo" } });
+  const otherTask = await prisma.task.create({ data: { workspaceId, taskListId: other.id, title: "Outside", source: "clickup", externalId: "outside-g18a", status: "todo" } });
+  await prisma.externalWebhookRegistration.create({ data: { workspaceId, provider: "clickup", externalId: `wh-${randomUUID()}`,
+    scopeType: "list", scopeExternalId: "selected", endpointUrl: "https://example.test", events: ["taskStatusUpdated"],
+    status: "active", secretCiphertext: encryptSecret("synthetic-webhook-secret") } });
+  let postCount = 0;
+  globalThis.fetch = async (input, init) => {
+    const path = new URL(String(input)).pathname;
+    if (path.endsWith("/task/governed-g18a") && !init?.method) return new Response(JSON.stringify({ id: "governed-g18a", name: "Governed", list: { id: "selected" }, status: { status: "to do", type: "open" } }), { status: 200 });
+    if (path.endsWith("/task/governed-g18a/comment") && init?.method === "POST") { postCount++; return new Response(JSON.stringify({ id: "comment-g18a" }), { status: 200 }); }
+    if (path.endsWith("/task/governed-g18a/comment") && !init?.method) return new Response(JSON.stringify({ comments: [{ id: "comment-g18a", comment: [{ text: "[Roost status request" }] }] }), { status: 200 });
+    throw new Error(`Unexpected ClickUp fixture call ${path}`);
+  };
+  try {
+    const accepted = await request(`/v1/tasks/${selectedTask.id}`, { method: "PATCH", headers, body: JSON.stringify({ status: "done" }) });
+    assert.equal(accepted.status, 202);
+    assert.equal(postCount, 1);
+    assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: selectedTask.id } })).status, "todo");
+    const blocked = await request(`/v1/tasks/${otherTask.id}`, { method: "PATCH", headers, body: JSON.stringify({ status: "done" }) });
+    assert.equal(blocked.status, 422);
+    const manual = await request("/v1/tasks/sync/clickup", { method: "POST", headers, body: JSON.stringify({ externalId: otherTask.externalId, title: "Outside", status: "done", taskListId: other.id }) });
+    assert.equal(manual.status, 422);
+    const intent = await prisma.clickUpStatusIntent.findFirstOrThrow({ where: { taskId: selectedTask.id } });
+    await prisma.$transaction([prisma.task.update({ where: { id: selectedTask.id }, data: { taskListId: other.id } }),
+      prisma.clickUpStatusIntent.update({ where: { id: intent.id }, data: { state: "conflict", errorCode: "provider_task_left_selected_list" } })]);
+    const detail = await request(`/v1/tasks/${selectedTask.id}`, { headers });
+    assert.equal((detail.body as any).data.clickUpStatusControl.intent.state, "conflict");
+    assert.equal((detail.body as any).data.clickUpStatusControl.governedList, false);
+    const closed = await request(`/v1/tasks/${selectedTask.id}/clickup/status-intents/${intent.id}/close`, { method: "POST", headers, body: "{}" });
+    assert.equal(closed.status, 200);
+    assert.equal((await prisma.clickUpStatusIntent.findUniqueOrThrow({ where: { id: intent.id } })).state, "closed");
+  } finally { globalThis.fetch = realFetch; }
+});
+
 test("task archives stay out of current work and remain explicitly accessible", async () => {
   const owner = await registerOwner("archive-owner@example.test", "Archive scope");
   const other = await registerOwner("archive-other@example.test", "Other archive scope");

@@ -38,6 +38,7 @@ const clickUpConfigSchema = z.object({
   spaceIds: z.array(z.string().min(1)).optional(),
   folderIds: z.array(z.string().min(1)).optional(),
   listIds: z.array(z.string().min(1)).optional(),
+  governedStatusListId: z.string().min(1).nullable().optional(),
   syncMode: z.enum(["pull", "two_way"]).optional(),
   importMode: z.enum(["merge", "skip_existing", "replace_selected_lists", "inspect_only"]).optional()
 }).strict();
@@ -662,6 +663,17 @@ integrationSettingsRouter.put("/:provider", asyncHandler(async (req, res) => {
 
   if (provider === "clickup") {
     const input = upsertIntegrationSettingSchema.parse(req.body);
+
+    if (req.auth!.authType !== "user" || req.auth!.workspaceRole !== "owner") return res.status(403).json({ error: "forbidden" });
+    if (input.config?.governedStatusListId && !input.config.listIds?.includes(input.config.governedStatusListId)) {
+      return res.status(422).json({ error: "clickup_governed_list_not_selected" });
+    }
+    const previousConfig = existing?.config as { governedStatusListId?: string } | null;
+    if (previousConfig?.governedStatusListId && input.config && input.config.governedStatusListId !== previousConfig.governedStatusListId) {
+      const openIntents = await prisma.clickUpStatusIntent.count({ where: { workspaceId: req.auth!.workspaceId,
+        externalListId: previousConfig.governedStatusListId, state: { in: ["posting", "awaiting_provider", "uncertain", "conflict"] } } });
+      if (openIntents) return res.status(409).json({ error: "clickup_status_intent_open" });
+    }
 
     if (!existing && !input.token) {
       return res.status(400).json({ error: "integration_secret_required" });

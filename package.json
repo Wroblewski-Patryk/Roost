@@ -56,6 +56,7 @@
     "test:agent-host-observer": "node --test scripts/agent-host-observer.test.mjs",
     "test:task-readiness-ui": "npm run build:web && tsx --test web/src/features/departments/task-readiness-model.test.ts && node scripts/task-readiness-ui.test.mjs",
     "test:task-scoped-human-ui": "npm run build:web && tsx --test web/src/features/departments/task-work-model.test.ts && node scripts/task-scoped-human-ui.test.mjs",
+    "test:clickup-status-g18a-ui": "npm run build:web && node scripts/clickup-status-g18a-ui.test.mjs",
     "test:agent-host-launcher": "powershell.exe -NoProfile -NonInteractive -File scripts/agent-host-windows-launcher.test.ps1",
     "owner-console:ux-smoke": "node scripts/owner-console-ux-smoke.mjs",
     "company-os:trace-smoke": "node scripts/company-os-lifecycle-trace-smoke.mjs",

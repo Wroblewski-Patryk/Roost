@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "../../db/prisma";
 import { IntegrationError } from "../../integrations/errors";
 import { createCompanyCoreTaskInClickUp, writeBackCompanyCoreTaskToClickUp } from "../../integrations/clickup/clickup.webhooks";
+import { clickUpStatusControlForTasks, governedClickUpListForNewTask, governedClickUpListForTask, requestGovernedClickUpStatus } from "../../integrations/clickup/clickup.status-authority";
 import { asyncHandler } from "../../middleware/async-handler";
 import { departmentRegistry, resolveDepartmentEntry } from "../../operating-model/department-registry";
 import { createEvent } from "../events/event.service";
@@ -259,6 +260,7 @@ operationsRouter.post("/work-items", asyncHandler(async (req, res) => {
   };
 
   if (taskList?.source === "clickup" && taskList.externalId) {
+    if (await governedClickUpListForNewTask(workspaceId, taskList.externalId)) return res.status(422).json({ error: "clickup_governed_list_create_unavailable" });
     try {
       const clickUpTask = await createCompanyCoreTaskInClickUp({
         workspaceId,
@@ -359,6 +361,7 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
       events: { orderBy: { createdAt: "desc" }, take: 8 }
     }
   });
+  const clickUpStatusControls = await clickUpStatusControlForTasks(workspaceId, tasks);
 
   const [taskLists, taskCountByList, workspaceMembers, workforceEntities] = await Promise.all([
     prisma.taskList.findMany({
@@ -544,6 +547,7 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
         createdAt: task.createdAt.toISOString(),
         updatedAt: task.updatedAt.toISOString()
       },
+      clickUpStatusControl: clickUpStatusControls.get(task.id) ?? null,
       responsibility: {
         ownerUserId: task.ownerUserId,
         ownerUser: task.ownerUser ? {
@@ -947,6 +951,26 @@ operationsRouter.patch("/work-items/:id", asyncHandler(async (req, res) => {
     return res.status(404).json({ error: "not_found" });
   }
 
+  const governed = await governedClickUpListForTask(existing);
+  if (input.taskListId !== undefined) {
+    if (governed) return res.status(422).json({ error: "clickup_governed_list_move_unavailable" });
+    const destination = input.taskListId ? await prisma.taskList.findFirst({ where: { id: input.taskListId, workspaceId } }) : null;
+    if (await governedClickUpListForNewTask(workspaceId, destination?.externalId)) return res.status(422).json({ error: "clickup_governed_list_move_unavailable" });
+  }
+  if (governed && input.status !== undefined) {
+    if (req.auth!.authType !== "user" || !req.auth!.userId) return res.status(403).json({ error: "forbidden" });
+    if (Object.keys(input).length !== 1) return res.status(422).json({ error: "clickup_status_request_must_be_separate" });
+    try {
+      await requestGovernedClickUpStatus({ task: existing, requestedStatus: input.status, requesterUserId: req.auth!.userId });
+      const current = await prisma.task.findFirstOrThrow({ where: { id: existing.id, workspaceId } });
+      const statusControls = await clickUpStatusControlForTasks(workspaceId, [current]);
+      return res.status(202).json({ data: { id: current.id, status: current.status, clickUpStatusControl: statusControls.get(current.id) ?? null } });
+    } catch (error) {
+      if (error instanceof IntegrationError) return res.status(error.status).json({ error: error.code });
+      throw error;
+    }
+  }
+
   if (existing.source === "clickup" && existing.externalId && ["title", "description", "status", "priority", "dueDate", "taskListId"].some(key => key in input)) {
     try {
       await writeBackCompanyCoreTaskToClickUp({
@@ -1016,7 +1040,8 @@ operationsRouter.patch("/work-items/:id", asyncHandler(async (req, res) => {
       reviewerUserId: task.reviewerUserId,
       source: task.source,
       externalId: task.externalId,
-      updatedAt: task.updatedAt.toISOString()
+      updatedAt: task.updatedAt.toISOString(),
+      clickUpStatusControl: (await clickUpStatusControlForTasks(workspaceId, [task])).get(task.id) ?? null
     }
   });
 }));

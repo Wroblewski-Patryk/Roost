@@ -163,6 +163,29 @@ export type DashboardCommandPacket = {
 export type OperationsWorkItem = {
   id: string;
   informationResult?: { taskId: string; executionStatus: string; reviewDecision: "accept" | "reject" | "return" | null } | null;
+  clickUpStatusControl?: {
+    governedList: boolean;
+    directActionsDisabled: boolean;
+    providerStatus: string | null;
+    providerStatusName: string | null;
+    providerUpdatedAt: string | null;
+    providerMismatch: boolean;
+    providerErrorCode: string | null;
+    intent: {
+      id: string;
+      requestedStatus: string;
+      baseStatus: string;
+      state: "posting" | "awaiting_provider" | "uncertain" | "confirmed" | "conflict" | "closed";
+      commentId: string | null;
+      createdAt: string;
+      errorCode: string | null;
+    } | null;
+    actor: {
+      providerUserId: string | null;
+      verification: "verified" | "unverified";
+      userId?: string | null;
+    } | null;
+  } | null;
   task: {
     id: string;
     title: string;

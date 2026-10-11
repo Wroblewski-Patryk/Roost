@@ -319,6 +319,12 @@ export function WorkspaceSettingsRoute() {
   const googleDriveSetting = useIntegrationSetting("google_drive", connection.status === "ready" && Boolean(googleDriveConnectionStatus?.configured), refreshKey);
   const activeWorkspace = profile.data?.workspaces?.find((workspace) => workspace.active);
   const clickUpStatus = clickUpSetting.data ?? clickUpConnectionStatus;
+  const clickUpListIds = Array.isArray(clickUpSetting.data?.config?.listIds)
+    ? clickUpSetting.data.config.listIds.filter((id): id is string => typeof id === "string" && id.length > 0)
+    : [];
+  const governedStatusListId = typeof clickUpSetting.data?.config?.governedStatusListId === "string"
+    ? clickUpSetting.data.config.governedStatusListId
+    : "";
   const googleDriveStatus = googleDriveSetting.data ?? googleDriveConnectionStatus;
   const configuredCount = [
     Boolean(clickUpStatus?.active && (clickUpStatus.secretConfigured ?? clickUpStatus.configured)),
@@ -365,11 +371,24 @@ export function WorkspaceSettingsRoute() {
     event.preventDefault();
     setSaving(true);
     setActionError(null);
+    if (clickUpConnectionStatus?.configured && clickUpSetting.status !== "ready") {
+      setSaving(false);
+      setActionError(t("workspaceSettings.clickupSettingsNotLoaded"));
+      return;
+    }
     const form = new FormData(event.currentTarget);
     const token = String(form.get("clickupApiToken") || "").trim();
     const teamId = String(form.get("clickupWorkspaceReference") || "").trim();
     const syncMode = String(form.get("syncMode") || "pull");
+    const selectedStatusListId = String(form.get("governedStatusListId") || "");
+    if (selectedStatusListId && !clickUpListIds.includes(selectedStatusListId)) {
+      setSaving(false);
+      setActionError(t("workspaceSettings.clickupStatusListInvalid"));
+      return;
+    }
     const nextConfig = { ...(clickUpSetting.data?.config ?? {}), syncMode };
+    if (selectedStatusListId) nextConfig.governedStatusListId = selectedStatusListId;
+    else delete nextConfig.governedStatusListId;
     if (teamId) {
       nextConfig.teamId = teamId;
     } else {
@@ -562,6 +581,14 @@ export function WorkspaceSettingsRoute() {
               <label className="form-control sm:col-span-2"><span className="label py-1"><span className="label-text font-bold">{t("workspaceSettings.clickupToken")}{clickUpSetting.data?.secretConfigured ? "" : " *"}</span></span><input autoComplete="new-password" className="input input-bordered w-full" data-1p-ignore="true" data-lpignore="true" name="clickupApiToken" placeholder={clickUpSetting.data?.secretConfigured ? t("workspaceSettings.secretKeepPlaceholder") : t("workspaceSettings.secretEnterPlaceholder")} required={!clickUpSetting.data?.secretConfigured} type="password" /></label>
               <label className="form-control"><span className="label py-1"><span className="label-text font-bold">{t("workspaceSettings.clickupTeamId")}</span></span><input autoComplete="one-time-code" className="input input-bordered w-full" data-1p-ignore="true" data-lpignore="true" defaultValue={String(clickUpSetting.data?.config?.teamId || "")} name="clickupWorkspaceReference" /></label>
               <label className="form-control"><span className="label py-1"><span className="label-text font-bold">{t("workspaceSettings.syncMode")}</span></span><select className="select select-bordered w-full" defaultValue={String(clickUpSetting.data?.config?.syncMode || "pull")} name="syncMode"><option value="pull">{t("workspaceSettings.syncPull")}</option><option value="two_way">{t("workspaceSettings.syncTwoWay")}</option></select></label>
+              <label className="form-control sm:col-span-2">
+                <span className="label py-1"><span className="label-text font-bold">{t("workspaceSettings.clickupStatusList")}</span></span>
+                <select className="select select-bordered w-full" defaultValue={governedStatusListId} disabled={!clickUpListIds.length} name="governedStatusListId">
+                  <option value="">{t("workspaceSettings.clickupStatusListDisabled")}</option>
+                  {clickUpListIds.map((id) => <option key={id} value={id}>{id}</option>)}
+                </select>
+                <span className="mt-1 text-xs text-company-muted">{clickUpListIds.length ? t("workspaceSettings.clickupStatusListHint") : t("workspaceSettings.clickupStatusListNoLists")}</span>
+              </label>
               <label className="label cursor-pointer justify-start gap-3 sm:col-span-2"><input className="toggle toggle-primary" defaultChecked={clickUpSetting.data?.active ?? true} name="active" type="checkbox" /><span className="label-text font-bold">{t("workspaceSettings.connectionEnabled")}</span></label>
             </div>
           </CcRecordEditorSection>

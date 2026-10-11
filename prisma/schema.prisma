@@ -2985,6 +2985,8 @@ model TaskList {
 }
 
 model Task {
+  clickUpStatusState ClickUpStatusState?
+  clickUpStatusIntents ClickUpStatusIntent[]
   scopedHumanMemberships WorkspaceMembership[] @relation("TaskScopedMembership")
   scopedHumanInvitations WorkspaceInvitation[] @relation("TaskScopedInvitation")
   ownerTickets TrustedProviderTicket[]
@@ -3464,6 +3466,45 @@ model TaskCapabilityUse {
   createdAt DateTime @default(now()) @map("created_at")
   @@unique([workspaceId, requestId])
   @@map("task_capability_uses")
+}
+
+model ClickUpStatusState {
+  taskId              String   @id @map("task_id") @db.Uuid
+  task                Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  workspaceId         String   @map("workspace_id") @db.Uuid
+  externalListId      String   @map("external_list_id")
+  providerStatus      TaskStatus @map("provider_status")
+  providerStatusName  String?  @map("provider_status_name")
+  providerUpdatedAt   DateTime? @map("provider_updated_at")
+  providerErrorCode   String?  @map("provider_error_code")
+  signedInboxId       String?  @map("signed_inbox_id") @db.Uuid
+  actorProviderUserId String?  @map("actor_provider_user_id")
+  actorVerification   String   @default("unverified") @map("actor_verification")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  @@index([workspaceId, externalListId])
+  @@map("clickup_status_states")
+}
+
+model ClickUpStatusIntent {
+  id             String     @id @default(uuid()) @db.Uuid
+  workspaceId    String     @map("workspace_id") @db.Uuid
+  taskId         String     @map("task_id") @db.Uuid
+  task           Task       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  externalTaskId String     @map("external_task_id")
+  externalListId String     @map("external_list_id")
+  requesterUserId String?   @map("requester_user_id") @db.Uuid
+  baseStatus     TaskStatus @map("base_status")
+  requestedStatus TaskStatus @map("requested_status")
+  state          String
+  commentId      String?    @map("comment_id")
+  errorCode      String?    @map("error_code")
+  signedInboxId  String?    @map("signed_inbox_id") @db.Uuid
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
+  @@index([workspaceId, taskId, createdAt])
+  @@map("clickup_status_intents")
 }
 
 model TaskSpecialistDecision {

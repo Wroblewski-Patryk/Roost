@@ -6,7 +6,8 @@ import { decryptSecret, encryptSecret } from "../integrations/secrets";
 import { ClickUpClient } from "../integrations/clickup/clickup.client";
 import { mapClickUpTaskToCompanyCoreTask } from "../integrations/clickup/clickup.mapper";
 import { syncClickUpTasksForWorkspaceWithOptions } from "../integrations/clickup/clickup.sync";
-import { ingestClickUpWebhook, clickUpWebhookEvents, reconcileClickUpWebhooksForWorkspace, processClickUpProviderEvent, writeBackCompanyCoreTaskToClickUp } from "../integrations/clickup/clickup.webhooks";
+import { archiveCompanyCoreTaskInClickUp, ingestClickUpWebhook, clickUpWebhookEvents, reconcileClickUpWebhooksForWorkspace, processClickUpProviderEvent, retryFailedClickUpProviderEvents, writeBackCompanyCoreTaskToClickUp } from "../integrations/clickup/clickup.webhooks";
+import { acknowledgeGovernedClickUpIntent, clickUpStatusControlForTasks, recoverStaleClickUpStatusIntents, requestGovernedClickUpStatus } from "../integrations/clickup/clickup.status-authority";
 import { reconcileGoogleDriveChangesForWorkspace } from "../integrations/google-drive/google-drive.sync";
 import { withIntegrationLock } from "../integrations/sync-lock";
 import { providerRequest } from "../integrations/provider-request";
@@ -194,7 +195,9 @@ test("ClickUp acknowledges a durable webhook while maintenance holds the workspa
 
 test("concurrent ClickUp webhook replay commits one event and one agent signal", async () => {
   const id = await workspace("clickup", { teamId: "team", listIds: ["list"] });
+  const registration = await prisma.externalWebhookRegistration.create({ data: { workspaceId: id, provider: "clickup", externalId: "synthetic", scopeType: "list", scopeExternalId: "list", endpointUrl: "https://example.test", events: [], status: "active", secretCiphertext: encryptSecret("synthetic") } });
   const inbox = await prisma.providerEventInbox.create({ data: { workspaceId: id, provider: "clickup", externalWebhookId: "synthetic",
+    webhookRegistrationId: registration.id,
     eventName: "taskStatusUpdated", idempotencyKey: "one", payloadHash: "one", signatureVerified: true,
     payload: { event: "taskStatusUpdated", task_id: "task", history_items: [{ field: "status", before: "todo", after: "done" }] } } });
   globalThis.fetch = async () => json({ id: "task", name: "Task", status: { status: "complete", type: "closed" }, list: { id: "list" } });
@@ -202,6 +205,295 @@ test("concurrent ClickUp webhook replay commits one event and one agent signal",
   assert.equal(await prisma.event.count({ where: { workspaceId: id, type: "clickup_taskStatusUpdated" } }), 1);
   assert.equal(await prisma.agentEventOutbox.count({ where: { workspaceId: id } }), 1);
   assert.equal((await prisma.task.findFirstOrThrow({ where: { workspaceId: id } })).status, "done");
+});
+
+test("governed ClickUp status request is an append-only comment until signed event and readback", async () => {
+  const id = await workspace("clickup", { teamId: "team", listIds: ["selected", "other"], governedStatusListId: "selected" });
+  const owner = await prisma.workspace.findUniqueOrThrow({ where: { id }, select: { ownerUserId: true } });
+  const list = await prisma.taskList.create({ data: { workspaceId: id, name: "Selected", source: "clickup", externalId: "selected" } });
+  await prisma.taskList.create({ data: { workspaceId: id, name: "Other", source: "clickup", externalId: "other" } });
+  const task = await prisma.task.create({ data: { workspaceId: id, taskListId: list.id, title: "Owned by provider", source: "clickup", externalId: "task-governed", status: "todo", ownerUserId: owner.ownerUserId } });
+  const registration = await prisma.externalWebhookRegistration.create({ data: { workspaceId: id, provider: "clickup", externalId: `wh-${randomUUID()}`, scopeType: "list", scopeExternalId: "selected", endpointUrl: "https://example.test", events: [...clickUpWebhookEvents], status: "active", secretCiphertext: encryptSecret("synthetic") } });
+  let remoteStatus = "to do";
+  let comments: Array<{ id: string; comment: Array<{ text: string }> }> = [];
+  const methods: string[] = [];
+  globalThis.fetch = async (input, init) => {
+    const path = new URL(String(input)).pathname;
+    const method = init?.method ?? "GET"; methods.push(`${method} ${path}`);
+    if (path.endsWith("/task/task-governed") && method === "GET") return json({ id: "task-governed", name: "Owned by provider", list: { id: "selected" }, status: { status: remoteStatus, type: remoteStatus === "done" ? "closed" : "open" } });
+    if (path.endsWith("/task/task-governed/comment") && method === "POST") {
+      const body = JSON.parse(String(init?.body)); comments = [{ id: "comment-one", comment: [{ text: body.comment_text }] }]; return json({ id: "comment-one" });
+    }
+    if (path.endsWith("/task/task-governed/comment") && method === "GET") return json({ comments });
+    throw new Error(`Unexpected provider call ${method} ${path}`);
+  };
+  const intent = await requestGovernedClickUpStatus({ task, requestedStatus: "done", requesterUserId: owner.ownerUserId });
+  assert.equal(intent.state, "awaiting_provider");
+  assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).status, "todo");
+  assert.equal(methods.filter(method => method.startsWith("POST ")).length, 1);
+  assert.equal(methods.some(method => method.startsWith("PUT ")), false);
+  await assert.rejects(requestGovernedClickUpStatus({ task, requestedStatus: "blocked", requesterUserId: owner.ownerUserId }), /already open/);
+
+  const invalidBody = Buffer.from(JSON.stringify({ webhook_id: registration.externalId, event: "taskStatusUpdated", task_id: task.externalId, history_items: [{ id: "history-one", field: "status", before: "to do", after: "done", user: { id: 77 } }] }));
+  await assert.rejects(ingestClickUpWebhook({ rawBody: invalidBody, signature: "bad" }), /signature/);
+  assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).status, "todo");
+  remoteStatus = "done";
+  const accepted = await ingestClickUpWebhook({ rawBody: invalidBody, signature: createHmac("sha256", "synthetic").update(invalidBody).digest("hex") });
+  await processClickUpProviderEvent(accepted.inboxId);
+  assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).status, "done");
+  assert.equal((await prisma.clickUpStatusIntent.findUniqueOrThrow({ where: { id: intent.id } })).state, "confirmed");
+  const providerState = await prisma.clickUpStatusState.findUniqueOrThrow({ where: { taskId: task.id } });
+  assert.equal(providerState.actorProviderUserId, "77"); assert.equal(providerState.actorVerification, "unverified");
+  assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).ownerUserId, owner.ownerUserId);
+  assert.equal((await ingestClickUpWebhook({ rawBody: invalidBody, signature: createHmac("sha256", "synthetic").update(invalidBody).digest("hex") })).status, "duplicate");
+  assert.equal(await prisma.event.count({ where: { workspaceId: id, type: "clickup_status_reconciled" } }), 1);
+});
+
+test("governed ClickUp ambiguous comment and out-of-scope event stay visible without retry or overwrite", async () => {
+  const id = await workspace("clickup", { teamId: "team", listIds: ["selected"], governedStatusListId: "selected" });
+  const owner = await prisma.workspace.findUniqueOrThrow({ where: { id }, select: { ownerUserId: true } });
+  const list = await prisma.taskList.create({ data: { workspaceId: id, name: "Selected", source: "clickup", externalId: "selected" } });
+  const task = await prisma.task.create({ data: { workspaceId: id, taskListId: list.id, title: "Task", source: "clickup", externalId: "task-ambiguous", status: "todo" } });
+  const registration = await prisma.externalWebhookRegistration.create({ data: { workspaceId: id, provider: "clickup", externalId: `wh-${randomUUID()}`, scopeType: "list", scopeExternalId: "selected", endpointUrl: "https://example.test", events: [...clickUpWebhookEvents], status: "active", secretCiphertext: encryptSecret("synthetic") } });
+  let posts = 0;
+  let listId = "selected";
+  globalThis.fetch = async (input, init) => {
+    const path = new URL(String(input)).pathname;
+    if (path.endsWith("/task/task-ambiguous") && !init?.method) return json({ id: "task-ambiguous", name: "Task", list: { id: listId }, status: { status: "to do", type: "open" } });
+    if (path.endsWith("/task/task-ambiguous/comment") && init?.method === "POST") { posts += 1; throw new Error("connection lost after provider may have posted"); }
+    throw new Error(`Unexpected provider call ${path}`);
+  };
+  const intent = await requestGovernedClickUpStatus({ task, requestedStatus: "done", requesterUserId: owner.ownerUserId });
+  assert.equal(intent.state, "uncertain"); assert.equal(posts, 1);
+  await assert.rejects(writeBackCompanyCoreTaskToClickUp({ workspaceId: id, externalId: task.externalId!, changes: { status: "done" } }), /Direct ClickUp status and task moves/);
+  const body = Buffer.from(JSON.stringify({ webhook_id: registration.externalId, event: "taskStatusUpdated", task_id: task.externalId, history_items: [{ id: "outside", field: "status", after: "done" }] }));
+  listId = "other";
+  const accepted = await ingestClickUpWebhook({ rawBody: body, signature: createHmac("sha256", "synthetic").update(body).digest("hex") });
+  await processClickUpProviderEvent(accepted.inboxId);
+  assert.equal((await prisma.providerEventInbox.findUniqueOrThrow({ where: { id: accepted.inboxId } })).processingStatus, "rejected");
+  assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).status, "todo");
+  assert.equal(posts, 1);
+  assert.equal((await acknowledgeGovernedClickUpIntent({ workspaceId: id, taskId: task.id, intentId: intent.id })).state, "closed");
+});
+
+test("governed ClickUp detects a task moved after comment POST without repeating the POST", async () => {
+  const id = await workspace("clickup", { teamId: "team", listIds: ["selected", "other"], governedStatusListId: "selected" });
+  const owner = await prisma.workspace.findUniqueOrThrow({ where: { id }, select: { ownerUserId: true } });
+  const list = await prisma.taskList.create({ data: { workspaceId: id, name: "Selected", source: "clickup", externalId: "selected" } });
+  const task = await prisma.task.create({ data: { workspaceId: id, taskListId: list.id, title: "Move race", source: "clickup", externalId: "move-race", status: "todo" } });
+  await prisma.externalWebhookRegistration.create({ data: { workspaceId: id, provider: "clickup", externalId: `wh-${randomUUID()}`,
+    scopeType: "list", scopeExternalId: "selected", endpointUrl: "https://example.test", events: [...clickUpWebhookEvents],
+    status: "active", secretCiphertext: encryptSecret("synthetic") } });
+  let posts = 0;
+  let moved = false;
+  globalThis.fetch = async (input, init) => {
+    const path = new URL(String(input)).pathname;
+    if (path.endsWith("/task/move-race") && !init?.method) return json({ id: "move-race", name: "Move race",
+      list: { id: moved ? "other" : "selected" }, status: { status: "to do", type: "open" } });
+    if (path.endsWith("/task/move-race/comment") && init?.method === "POST") { posts++; moved = true; return json({ id: "comment-race" }); }
+    if (path.endsWith("/task/move-race/comment") && !init?.method) return json({ comments: [{ id: "comment-race",
+      comment: [{ text: "[Roost status request" }] }] });
+    throw new Error(`Unexpected provider call ${path}`);
+  };
+  const result = await requestGovernedClickUpStatus({ task, requestedStatus: "done", requesterUserId: owner.ownerUserId });
+  assert.equal(result.state, "conflict");
+  assert.equal(result.errorCode, "provider_task_left_selected_list");
+  assert.equal(posts, 1);
+  assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).status, "todo");
+  assert.equal((await prisma.clickUpStatusState.findUniqueOrThrow({ where: { taskId: task.id } })).providerErrorCode, "provider_task_left_selected_list");
+});
+
+test("governed ClickUp disables direct status, archive and moves across every List", async () => {
+  const id = await workspace("clickup", { teamId: "team", listIds: ["selected", "other"], governedStatusListId: "selected" });
+  const other = await prisma.taskList.create({ data: { workspaceId: id, name: "Other", source: "clickup", externalId: "other" } });
+  const selected = await prisma.taskList.create({ data: { workspaceId: id, name: "Selected", source: "clickup", externalId: "selected" } });
+  const task = await prisma.task.create({ data: { workspaceId: id, taskListId: other.id, title: "Outside", source: "clickup", externalId: "outside", status: "todo" } });
+  let providerCalls = 0;
+  globalThis.fetch = async () => { providerCalls++; throw new Error("Provider should not be called"); };
+  await assert.rejects(writeBackCompanyCoreTaskToClickUp({ workspaceId: id, externalId: task.externalId!, changes: { status: "done" } }), /Direct ClickUp status and task moves/);
+  await assert.rejects(writeBackCompanyCoreTaskToClickUp({ workspaceId: id, externalId: task.externalId!, changes: { taskListId: selected.id } }), /Direct ClickUp status and task moves/);
+  await assert.rejects(archiveCompanyCoreTaskInClickUp({ workspaceId: id, externalId: task.externalId! }), /Direct ClickUp archive/);
+  assert.equal(providerCalls, 0);
+  const controls = await clickUpStatusControlForTasks(id, [task]);
+  assert.equal((controls.get(task.id) as { governedList: boolean; directActionsDisabled: boolean }).governedList, false);
+  assert.equal((controls.get(task.id) as { directActionsDisabled: boolean }).directActionsDisabled, true);
+});
+
+test("older signed status event cannot attribute a newer ClickUp readback", async () => {
+  const id = await workspace("clickup", { teamId: "team", listIds: ["selected"], governedStatusListId: "selected" });
+  const list = await prisma.taskList.create({ data: { workspaceId: id, name: "Selected", source: "clickup", externalId: "selected" } });
+  const task = await prisma.task.create({ data: { workspaceId: id, taskListId: list.id, title: "Rapid changes", source: "clickup", externalId: "rapid", status: "todo" } });
+  const registration = await prisma.externalWebhookRegistration.create({ data: { workspaceId: id, provider: "clickup", externalId: `wh-${randomUUID()}`,
+    scopeType: "list", scopeExternalId: "selected", endpointUrl: "https://example.test", events: [...clickUpWebhookEvents],
+    status: "active", secretCiphertext: encryptSecret("synthetic") } });
+  globalThis.fetch = async () => json({ id: "rapid", name: "Rapid changes", list: { id: "selected" }, status: { status: "done", type: "closed" } });
+  const submit = async (event: string, historyId: string, after: string, actorId: number, nonStatusFirst = false) => {
+    const statusItem = { id: historyId, field: "status", after, user: { id: actorId } };
+    const body = Buffer.from(JSON.stringify({ webhook_id: registration.externalId, event, task_id: task.externalId,
+      history_items: nonStatusFirst ? [{ id: `other-${historyId}`, field: "name", after: "Rapid changes" }, statusItem] : [statusItem] }));
+    return ingestClickUpWebhook({ rawBody: body, signature: createHmac("sha256", "synthetic").update(body).digest("hex") });
+  };
+  const older = await submit("taskUpdated", "first", "in progress", 41, true);
+  await processClickUpProviderEvent(older.inboxId);
+  assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).status, "todo");
+  const divergent = await prisma.clickUpStatusState.findUniqueOrThrow({ where: { taskId: task.id } });
+  assert.equal(divergent.providerErrorCode, "signed_event_readback_diverged");
+  assert.equal(divergent.actorProviderUserId, null);
+  const paired = await submit("taskStatusUpdated", "first", "in progress", 41);
+  assert.equal(paired.status, "accepted");
+  await processClickUpProviderEvent(paired.inboxId);
+  assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).status, "todo");
+  const newer = await submit("taskStatusUpdated", "second", "done", 42);
+  await processClickUpProviderEvent(newer.inboxId);
+  assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).status, "done");
+  const reconciled = await prisma.clickUpStatusState.findUniqueOrThrow({ where: { taskId: task.id } });
+  assert.equal(reconciled.actorProviderUserId, "42");
+  assert.equal(reconciled.signedInboxId, newer.inboxId);
+  assert.equal(await prisma.agentEventOutbox.count({ where: { workspaceId: id, eventType: "task_status_updated_from_clickup" } }), 3);
+  assert.equal(await prisma.event.count({ where: { workspaceId: id, type: "clickup_taskUpdated" } }), 1);
+  assert.equal(await prisma.event.count({ where: { workspaceId: id, type: "clickup_taskStatusUpdated" } }), 2);
+});
+
+test("selected ClickUp deletion quarantines even when local List has not caught up", async () => {
+  const id = await workspace("clickup", { teamId: "team", listIds: ["selected", "other"], governedStatusListId: "selected" });
+  const other = await prisma.taskList.create({ data: { workspaceId: id, name: "Other", source: "clickup", externalId: "other" } });
+  const task = await prisma.task.create({ data: { workspaceId: id, taskListId: other.id, title: "Moved", source: "clickup", externalId: "deleted-race", status: "todo" } });
+  const registration = await prisma.externalWebhookRegistration.create({ data: { workspaceId: id, provider: "clickup", externalId: `wh-${randomUUID()}`,
+    scopeType: "list", scopeExternalId: "selected", endpointUrl: "https://example.test", events: [...clickUpWebhookEvents],
+    status: "active", secretCiphertext: encryptSecret("synthetic") } });
+  const body = Buffer.from(JSON.stringify({ webhook_id: registration.externalId, event: "taskDeleted", task_id: task.externalId }));
+  const accepted = await ingestClickUpWebhook({ rawBody: body, signature: createHmac("sha256", "synthetic").update(body).digest("hex") });
+  await processClickUpProviderEvent(accepted.inboxId);
+  assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).status, "todo");
+  assert.equal((await prisma.clickUpStatusState.findUniqueOrThrow({ where: { taskId: task.id } })).providerErrorCode, "provider_delete_readback_unavailable");
+});
+
+test("ClickUp import quarantines move out until signed move and readback", async () => {
+  const id = await workspace("clickup", { teamId: "team", listIds: ["selected", "other"], governedStatusListId: "selected" });
+  const selected = await prisma.taskList.create({ data: { workspaceId: id, name: "Selected", source: "clickup", externalId: "selected" } });
+  const other = await prisma.taskList.create({ data: { workspaceId: id, name: "Other", source: "clickup", externalId: "other" } });
+  const task = await prisma.task.create({ data: { workspaceId: id, taskListId: selected.id, title: "Moved", source: "clickup", externalId: "moved-out", status: "todo" } });
+  const intent = await prisma.clickUpStatusIntent.create({ data: { workspaceId: id, taskId: task.id, externalTaskId: task.externalId!,
+    externalListId: "selected", baseStatus: "todo", requestedStatus: "done", state: "awaiting_provider" } });
+  const remote = { id: "moved-out", name: "Moved", list: { id: "other" }, status: { status: "done", type: "closed" } };
+  globalThis.fetch = async input => {
+    const path = new URL(String(input)).pathname;
+    if (path.endsWith("/team/team/task")) return json({ tasks: [remote], last_page: true });
+    if (path.endsWith("/task/moved-out")) return json(remote);
+    throw new Error(`Unexpected provider read ${path}`);
+  };
+  await syncClickUpTasksForWorkspaceWithOptions(id);
+  const preserved = await prisma.task.findUniqueOrThrow({ where: { id: task.id } });
+  assert.equal(preserved.status, "todo"); assert.equal(preserved.taskListId, selected.id);
+  assert.equal((await prisma.clickUpStatusIntent.findUniqueOrThrow({ where: { id: intent.id } })).state, "conflict");
+  assert.equal((await prisma.clickUpStatusState.findUniqueOrThrow({ where: { taskId: task.id } })).providerErrorCode, "provider_task_left_selected_list");
+  const registration = await prisma.externalWebhookRegistration.create({ data: { workspaceId: id, provider: "clickup", externalId: `wh-${randomUUID()}`,
+    scopeType: "list", scopeExternalId: "other", endpointUrl: "https://example.test", events: [...clickUpWebhookEvents],
+    status: "active", secretCiphertext: encryptSecret("synthetic") } });
+  const body = Buffer.from(JSON.stringify({ webhook_id: registration.externalId, event: "taskMoved", task_id: task.externalId,
+    history_items: [{ id: "move-out", field: "list", before: { id: "selected" }, after: { id: "other" } }] }));
+  const accepted = await ingestClickUpWebhook({ rawBody: body, signature: createHmac("sha256", "synthetic").update(body).digest("hex") });
+  await processClickUpProviderEvent(accepted.inboxId);
+  const after = await prisma.task.findUniqueOrThrow({ where: { id: task.id } });
+  assert.equal(after.status, "todo"); assert.equal(after.taskListId, other.id);
+  await syncClickUpTasksForWorkspaceWithOptions(id);
+  assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).status, "done");
+  const controls = await clickUpStatusControlForTasks(id, [after]);
+  assert.equal((controls.get(task.id) as { providerErrorCode: string | null }).providerErrorCode, null);
+});
+
+test("signed move into selected ClickUp List does not borrow a later status", async () => {
+  const id = await workspace("clickup", { teamId: "team", listIds: ["selected", "other"], governedStatusListId: "selected" });
+  const other = await prisma.taskList.create({ data: { workspaceId: id, name: "Other", source: "clickup", externalId: "other" } });
+  const selected = await prisma.taskList.create({ data: { workspaceId: id, name: "Selected", source: "clickup", externalId: "selected" } });
+  const task = await prisma.task.create({ data: { workspaceId: id, taskListId: other.id, title: "Entering", source: "clickup", externalId: "entering", status: "todo" } });
+  const registration = await prisma.externalWebhookRegistration.create({ data: { workspaceId: id, provider: "clickup", externalId: `wh-${randomUUID()}`,
+    scopeType: "list", scopeExternalId: "selected", endpointUrl: "https://example.test", events: [...clickUpWebhookEvents],
+    status: "active", secretCiphertext: encryptSecret("synthetic") } });
+  globalThis.fetch = async () => json({ id: "entering", name: "Entering", list: { id: "selected" }, status: { status: "done", type: "closed" } });
+  const submit = async (event: string, history: unknown[]) => {
+    const body = Buffer.from(JSON.stringify({ webhook_id: registration.externalId, event, task_id: task.externalId, history_items: history }));
+    const accepted = await ingestClickUpWebhook({ rawBody: body, signature: createHmac("sha256", "synthetic").update(body).digest("hex") });
+    await processClickUpProviderEvent(accepted.inboxId);
+  };
+  await submit("taskMoved", [{ id: "move-in", field: "list", after: { id: "selected" } }]);
+  const moved = await prisma.task.findUniqueOrThrow({ where: { id: task.id } });
+  assert.equal(moved.taskListId, selected.id); assert.equal(moved.status, "todo");
+  assert.equal((await prisma.clickUpStatusState.findUniqueOrThrow({ where: { taskId: task.id } })).providerErrorCode, "provider_status_awaiting_signed_event");
+  await submit("taskStatusUpdated", [{ id: "later-status", field: "status", after: "done", user: { id: 33 } }]);
+  assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).status, "done");
+  assert.equal((await prisma.clickUpStatusState.findUniqueOrThrow({ where: { taskId: task.id } })).providerErrorCode, null);
+});
+
+test("governed ClickUp provider version mismatch records conflict without comment or status overwrite", async () => {
+  const id = await workspace("clickup", { teamId: "team", listIds: ["selected"], governedStatusListId: "selected" });
+  const owner = await prisma.workspace.findUniqueOrThrow({ where: { id }, select: { ownerUserId: true } });
+  const list = await prisma.taskList.create({ data: { workspaceId: id, name: "Selected", source: "clickup", externalId: "selected" } });
+  const task = await prisma.task.create({ data: { workspaceId: id, taskListId: list.id, title: "Task", source: "clickup", externalId: "task-mismatch", status: "todo" } });
+  await prisma.externalWebhookRegistration.create({ data: { workspaceId: id, provider: "clickup", externalId: `wh-${randomUUID()}`, scopeType: "list", scopeExternalId: "selected", endpointUrl: "https://example.test", events: [...clickUpWebhookEvents], status: "active", secretCiphertext: encryptSecret("synthetic") } });
+  const methods: string[] = [];
+  globalThis.fetch = async (input, init) => { methods.push(init?.method ?? "GET"); return json({ id: "task-mismatch", name: "Task", list: { id: "selected" }, status: { status: "in progress", type: "custom" } }); };
+  await assert.rejects(requestGovernedClickUpStatus({ task, requestedStatus: "done", requesterUserId: owner.ownerUserId }), /differs from Roost/);
+  assert.equal(methods.includes("POST"), false);
+  assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).status, "todo");
+  assert.equal((await prisma.clickUpStatusIntent.findFirstOrThrow({ where: { taskId: task.id } })).state, "conflict");
+  assert.equal((await prisma.clickUpStatusState.findUniqueOrThrow({ where: { taskId: task.id } })).providerStatus, "in_progress");
+});
+
+test("signed ClickUp provider outage retains inbox, then maintenance applies provider readback", async () => {
+  const id = await workspace("clickup", { teamId: "team", listIds: ["selected"], governedStatusListId: "selected" });
+  const list = await prisma.taskList.create({ data: { workspaceId: id, name: "Selected", source: "clickup", externalId: "selected" } });
+  const task = await prisma.task.create({ data: { workspaceId: id, taskListId: list.id, title: "Task", source: "clickup", externalId: "task-outage", status: "todo" } });
+  const registration = await prisma.externalWebhookRegistration.create({ data: { workspaceId: id, provider: "clickup", externalId: `wh-${randomUUID()}`, scopeType: "list", scopeExternalId: "selected", endpointUrl: "https://example.test", events: [...clickUpWebhookEvents], status: "active", secretCiphertext: encryptSecret("synthetic") } });
+  const inbox = await prisma.providerEventInbox.create({ data: { workspaceId: id, provider: "clickup", webhookRegistrationId: registration.id, externalWebhookId: registration.externalId,
+    eventName: "taskStatusUpdated", externalTaskId: task.externalId, idempotencyKey: randomUUID(), payloadHash: "synthetic", signatureVerified: true,
+    payload: { webhook_id: registration.externalId, event: "taskStatusUpdated", task_id: task.externalId, history_items: [{ id: "outage-change", field: "status", after: "done" }] } } });
+  globalThis.fetch = async () => json({}, 503);
+  await assert.rejects(processClickUpProviderEvent(inbox.id));
+  assert.equal((await prisma.providerEventInbox.findUniqueOrThrow({ where: { id: inbox.id } })).processingStatus, "failed");
+  assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).status, "todo");
+  globalThis.fetch = async () => json({ id: "task-outage", name: "Task", list: { id: "selected" }, status: { status: "done", type: "closed" } });
+  const retried = await retryFailedClickUpProviderEvents({ workspaceId: id, eventIds: [inbox.id] });
+  assert.equal(retried.processedCount, 1);
+  assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).status, "done");
+});
+
+test("stale ClickUp posting intent is recovered by readback without a second comment POST", async () => {
+  const id = await workspace("clickup", { teamId: "team", listIds: ["selected"], governedStatusListId: "selected" });
+  const list = await prisma.taskList.create({ data: { workspaceId: id, name: "Selected", source: "clickup", externalId: "selected" } });
+  const tasks = await Promise.all(["found", "unknown"].map(externalId => prisma.task.create({ data: {
+    workspaceId: id, taskListId: list.id, title: externalId, source: "clickup", externalId, status: "todo" } })));
+  const old = new Date(Date.now() - 10 * 60_000);
+  const intents = await Promise.all(tasks.map(task => prisma.clickUpStatusIntent.create({ data: { workspaceId: id, taskId: task.id,
+    externalTaskId: task.externalId!, externalListId: "selected", baseStatus: "todo", requestedStatus: "done", state: "posting", createdAt: old } })));
+  const methods: string[] = [];
+  globalThis.fetch = async (input, init) => {
+    const path = new URL(String(input)).pathname; methods.push(init?.method ?? "GET");
+    return json({ comments: path.includes("/task/found/") ? [{ id: "comment-found", comment: [{ text: `[Roost status request ${intents[0].id}]` }] }] : [] });
+  };
+  const recovery = await recoverStaleClickUpStatusIntents(id);
+  assert.deepEqual(recovery, { inspected: 2, recovered: 1, uncertain: 1 });
+  assert.equal((await prisma.clickUpStatusIntent.findUniqueOrThrow({ where: { id: intents[0].id } })).state, "awaiting_provider");
+  assert.equal((await prisma.clickUpStatusIntent.findUniqueOrThrow({ where: { id: intents[1].id } })).state, "uncertain");
+  assert.equal(methods.every(method => method === "GET"), true);
+});
+
+test("provider readback without signed status event exposes mismatch while preserving canonical status", async () => {
+  const id = await workspace("clickup", { teamId: "team", listIds: ["selected"], governedStatusListId: "selected" });
+  const list = await prisma.taskList.create({ data: { workspaceId: id, name: "Selected", source: "clickup", externalId: "selected" } });
+  const task = await prisma.task.create({ data: { workspaceId: id, taskListId: list.id, title: "Task", source: "clickup", externalId: "missing-event", status: "todo" } });
+  globalThis.fetch = async input => {
+    const path = new URL(String(input)).pathname;
+    if (path.endsWith("/team/team/task")) return json({ tasks: [{ id: "missing-event", name: "Task", list: { id: "selected" }, status: { status: "done", type: "closed" } }], last_page: true });
+    throw new Error(`Unexpected provider read ${path}`);
+  };
+  await syncClickUpTasksForWorkspaceWithOptions(id);
+  const after = await prisma.task.findUniqueOrThrow({ where: { id: task.id } });
+  assert.equal(after.status, "todo");
+  const controls = await clickUpStatusControlForTasks(id, [after]);
+  assert.deepEqual((controls.get(task.id) as { providerStatus: string; providerMismatch: boolean; signedInboxId: string | null }).providerStatus, "done");
+  assert.equal((controls.get(task.id) as { providerMismatch: boolean }).providerMismatch, true);
+  assert.equal((controls.get(task.id) as { signedInboxId: string | null }).signedInboxId, null);
 });
 
 test("ambiguous provider writes are not retried", async () => {

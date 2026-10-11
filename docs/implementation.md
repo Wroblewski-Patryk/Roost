@@ -3,7 +3,7 @@
 This is the canonical delivery handoff: current facts, authorized outcome
 and required end-to-end evidence for the next owner-authorized gate.
 
-**Active gate:** none — G17 completed on 2026-10-11; G18 requires a separate owner task. See [G17 evidence](architecture/procedure-improvement-g17.md#g17-verification-and-release)
+**Active gate:** G18a ClickUp, one selected List; see [contract and evidence](architecture/clickup-status-authority-g18a.md).
 
 **G17 release:** Implementation commit `cbc20bf5` was deployed in Coolify run 6382. Native/API/UI/Security checks and read-only production smoke passed within the bounded gate. No production business-data write or paid model call was made. See [exact evidence and limits](architecture/procedure-improvement-g17.md#g17-verification-and-release).
 

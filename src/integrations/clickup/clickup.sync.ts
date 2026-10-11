@@ -5,8 +5,9 @@ import { createEvent } from "../../modules/events/event.service";
 import { IntegrationError } from "../errors";
 import { getClickUpSettingsForWorkspace } from "../integration-settings.service";
 import { ClickUpClient } from "./clickup.client";
-import { mapClickUpTaskToCompanyCoreTask, safeClickUpTaskPayload } from "./clickup.mapper";
+import { mapClickUpTaskToCompanyCoreTask, mapStatus, safeClickUpTaskPayload } from "./clickup.mapper";
 import { findClickUpListTable } from "../../operating-model/clickup-structure";
+import { quarantineGovernedClickUpStatus } from "./clickup.status-authority";
 
 type SyncResult = {
   provider: "clickup";
@@ -129,6 +130,10 @@ async function syncClickUpTasks(
   }
 
   const listIds = settings.config.listIds ?? [];
+  const governedTaskLists = settings.config.governedStatusListId
+    ? await prisma.taskList.findMany({ where: { workspaceId, source: "clickup", externalId: settings.config.governedStatusListId }, select: { id: true } })
+    : [];
+  const governedTaskListIds = new Set(governedTaskLists.map(list => list.id));
   const teamId = settings.config.teamId;
   const importMode = options.importMode ?? settings.config.importMode ?? "merge";
 
@@ -199,6 +204,10 @@ async function syncClickUpTasks(
         skippedCount += 1;
         continue;
       }
+      if (!clickUpTask.list?.id || !listIds.includes(clickUpTask.list.id)) {
+        skippedCount += 1;
+        continue;
+      }
 
       const existing = await prisma.task.findUnique({
         where: {
@@ -226,9 +235,28 @@ async function syncClickUpTasks(
       }
 
       const data = mapClickUpTaskToCompanyCoreTask(clickUpTask, workspaceId);
+      const governed = clickUpTask.list.id === settings.config.governedStatusListId;
+      const movedOutBeforeSignedEvent = Boolean(existing?.taskListId && governedTaskListIds.has(existing.taskListId) && !governed);
+      if (governed && existing) data.status = existing.status;
+      if (movedOutBeforeSignedEvent && existing) {
+        data.status = existing.status;
+        await quarantineGovernedClickUpStatus({ workspaceId, externalTaskId: clickUpTask.id,
+          externalListId: settings.config.governedStatusListId!, errorCode: "provider_task_left_selected_list",
+          providerStatus: mapStatus(clickUpTask), providerStatusName: clickUpTask.status?.status ?? null });
+      }
+      if (governed && existing) {
+        const providerStatus = mapStatus(clickUpTask);
+        const prior = await prisma.clickUpStatusState.findUnique({ where: { taskId: existing.id } });
+        await prisma.clickUpStatusState.upsert({ where: { taskId: existing.id }, update: {
+          externalListId: clickUpTask.list.id, providerStatus, providerStatusName: clickUpTask.status?.status ?? null,
+          providerErrorCode: null,
+          ...(prior?.providerStatus !== providerStatus || prior.providerStatusName !== (clickUpTask.status?.status ?? null) ? { signedInboxId: null, actorProviderUserId: null, providerUpdatedAt: null } : {})
+        }, create: { taskId: existing.id, workspaceId, externalListId: clickUpTask.list.id,
+          providerStatus, providerStatusName: clickUpTask.status?.status ?? null } });
+      }
       const taskList = await findOrCreateClickUpTaskList(workspaceId, clickUpTask.list?.id);
       if (taskList) {
-        data.taskListId = taskList.id;
+        data.taskListId = movedOutBeforeSignedEvent && existing ? existing.taskListId : taskList.id;
       }
 
       const shouldWrite = !existing || hasClickUpTaskDataChanges(existing, data);
@@ -248,6 +276,9 @@ async function syncClickUpTasks(
         update: data,
         create: data
       });
+
+      if (governed && !existing) await prisma.clickUpStatusState.create({ data: { taskId: task.id, workspaceId,
+        externalListId: clickUpTask.list.id, providerStatus: mapStatus(clickUpTask), providerStatusName: clickUpTask.status?.status ?? null } });
 
       if (existing) {
         updatedCount += 1;

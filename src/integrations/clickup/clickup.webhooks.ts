@@ -11,6 +11,7 @@ import { ClickUpClient, type ClickUpTask } from "./clickup.client";
 import { mapStatus, mapClickUpTaskToCompanyCoreTask, safeClickUpTaskPayload } from "./clickup.mapper";
 import { clickUpImportModes, findOrCreateClickUpTaskList, syncClickUpTasksForWorkspaceWithOptions, type ClickUpImportMode } from "./clickup.sync";
 import { verifyClickUpWebhookSignature } from "./webhook-signature";
+import { quarantineGovernedClickUpStatus, reconcileGovernedClickUpStatus, recoverStaleClickUpStatusIntents } from "./clickup.status-authority";
 
 export const clickUpWebhookEvents = [
   "taskCreated",
@@ -384,6 +385,14 @@ function statusChange(payload: ClickUpWebhookPayload) {
   };
 }
 
+function statusName(value: unknown): string | null {
+  if (typeof value === "string") return value.trim() || null;
+  if (!value || typeof value !== "object") return null;
+  const object = value as { status?: unknown; name?: unknown };
+  const name = typeof object.status === "string" ? object.status : object.name;
+  return typeof name === "string" ? name.trim() || null : null;
+}
+
 function commentTextFromSegments(value: unknown) {
   if (typeof value === "string") {
     return value.trim();
@@ -463,9 +472,12 @@ export async function ingestClickUpWebhook(input: {
     }
   });
 
-  if (!registration) {
+  if (!registration || registration.status !== "active" || registration.scopeType !== "list" || !registration.scopeExternalId) {
     throw new IntegrationError("webhook_not_registered", 404, "ClickUp webhook is not registered.");
   }
+
+  const settings = await getClickUpSettingsForWorkspace(registration.workspaceId);
+  if (!settings?.config.listIds?.includes(registration.scopeExternalId)) throw new IntegrationError("webhook_not_registered", 404, "ClickUp webhook scope is no longer selected.");
 
   const secret = decryptSecret(registration.secretCiphertext);
   const signatureVerified = verifyClickUpWebhookSignature({
@@ -524,17 +536,27 @@ async function processClickUpProviderEventLocked(inboxId: string) {
   });
   const payload = inbox.payload as ClickUpWebhookPayload;
 
-  if (inbox.processingStatus === "processed") {
+  if (inbox.processingStatus === "processed" || inbox.processingStatus === "rejected") {
     return { status: "already_processed", inboxId: inbox.id };
   }
 
   try {
     let fetchedTask: ClickUpTask | null = null;
     let mappedList: Awaited<ReturnType<typeof findOrCreateClickUpTaskList>> = null;
+    const settings = await getClickUpSettingsForWorkspace(inbox.workspaceId);
+    if (!settings || inbox.webhookRegistration?.status !== "active" || inbox.webhookRegistration.scopeType !== "list" ||
+      !inbox.webhookRegistration.scopeExternalId || !settings.config.listIds?.includes(inbox.webhookRegistration.scopeExternalId)) {
+      throw new IntegrationError("webhook_not_registered", 404, "ClickUp webhook scope is inactive.");
+    }
+    const scopeListId = inbox.webhookRegistration.scopeExternalId;
+    const governedListId = settings.config.governedStatusListId;
     if (payload.event !== "taskDeleted" && payload.task_id) {
-      const settings = await getClickUpSettingsForWorkspace(inbox.workspaceId);
-      if (!settings) throw new IntegrationError("integration_not_configured", 422, "ClickUp integration is not configured.");
       fetchedTask = await new ClickUpClient(settings.token).getTask(payload.task_id);
+      if (fetchedTask.list?.id !== scopeListId) {
+        if (scopeListId === governedListId) await quarantineGovernedClickUpStatus({ workspaceId: inbox.workspaceId,
+          externalTaskId: payload.task_id, externalListId: scopeListId, errorCode: "provider_task_left_selected_list" });
+        throw new IntegrationError("clickup_status_scope_mismatch", 409, "Webhook task is outside the registered List.");
+      }
       mappedList = await findOrCreateClickUpTaskList(inbox.workspaceId, fetchedTask.list?.id);
     }
     return await prisma.$transaction(async tx => {
@@ -545,8 +567,18 @@ async function processClickUpProviderEventLocked(inboxId: string) {
 
       if (payload.event === "taskDeleted" && externalId) {
         const where = { workspaceId: inbox.workspaceId, source: "clickup", externalId };
-        await tx.task.updateMany({ where, data: { status: "archived" } });
-        taskId = (await tx.task.findFirst({ where, select: { id: true } }))?.id ?? null;
+        const existing = await tx.task.findFirst({ where, include: { taskList: { select: { externalId: true } } } });
+        taskId = existing?.id ?? null;
+        if (!existing || (scopeListId !== governedListId && existing.taskList?.externalId !== governedListId)) {
+          await tx.task.updateMany({ where, data: { status: "archived" } });
+        } else {
+          await tx.clickUpStatusState.upsert({ where: { taskId: existing.id }, update: { providerErrorCode: "provider_delete_readback_unavailable",
+            signedInboxId: null, actorProviderUserId: null, providerUpdatedAt: null }, create: {
+            taskId: existing.id, workspaceId: inbox.workspaceId, externalListId: scopeListId,
+            providerStatus: existing.status, providerErrorCode: "provider_delete_readback_unavailable" } });
+          await tx.clickUpStatusIntent.updateMany({ where: { taskId: existing.id, state: { in: ["posting", "awaiting_provider", "uncertain"] } },
+            data: { state: "conflict", errorCode: "provider_delete_readback_unavailable" } });
+        }
       } else if (externalId) {
         const clickUpTask = fetchedTask!;
         const data = mapClickUpTaskToCompanyCoreTask(clickUpTask, inbox.workspaceId);
@@ -554,6 +586,21 @@ async function processClickUpProviderEventLocked(inboxId: string) {
         if (taskList) {
           data.taskListId = taskList.id;
         }
+        const existing = await tx.task.findUnique({ where: { workspaceId_source_externalId: { workspaceId: inbox.workspaceId, source: "clickup", externalId } } });
+        const governed = scopeListId === governedListId;
+        const locallyGoverned = Boolean(existing?.taskListId && governedListId && await tx.taskList.findFirst({ where: {
+          id: existing.taskListId, workspaceId: inbox.workspaceId, source: "clickup", externalId: governedListId
+        }, select: { id: true } }));
+        const movedOut = locallyGoverned && !governed;
+        if ((governed || movedOut) && !clickUpTask.status?.status?.trim()) {
+          throw new IntegrationError("sync_failed", 502, "ClickUp status readback is incomplete.");
+        }
+        if (movedOut && existing) {
+          data.status = existing.status;
+          if (payload.event !== "taskMoved") data.taskListId = existing.taskListId;
+        }
+        const change = statusChange(payload);
+        const signedStatusChange = governed && (payload.event === "taskStatusUpdated" || (["taskUpdated", "taskMoved"].includes(payload.event ?? "") && change.after !== null));
         const task = await tx.task.upsert({
           where: {
             workspaceId_source_externalId: {
@@ -562,10 +609,43 @@ async function processClickUpProviderEventLocked(inboxId: string) {
               externalId
             }
           },
-          update: data,
+          update: governed && existing ? { ...data, status: existing.status } : data,
           create: data
         });
         taskId = task.id;
+
+        if (governed && payload.event === "taskMoved" && !signedStatusChange && existing) {
+          const providerStatus = mapStatus(clickUpTask);
+          const mismatch = providerStatus !== existing.status;
+          await tx.clickUpStatusState.upsert({ where: { taskId: task.id }, update: {
+            providerStatus, providerStatusName: clickUpTask.status?.status ?? null,
+            providerErrorCode: mismatch ? "provider_status_awaiting_signed_event" : null,
+            signedInboxId: null, actorProviderUserId: null, providerUpdatedAt: null
+          }, create: { taskId: task.id, workspaceId: inbox.workspaceId, externalListId: governedListId!,
+            providerStatus, providerStatusName: clickUpTask.status?.status ?? null,
+            providerErrorCode: mismatch ? "provider_status_awaiting_signed_event" : null } });
+          if (mismatch) await tx.clickUpStatusIntent.updateMany({ where: { taskId: task.id,
+            state: { in: ["posting", "awaiting_provider", "uncertain"] } },
+            data: { state: "conflict", errorCode: "provider_status_awaiting_signed_event" } });
+        }
+
+        if (movedOut && existing) {
+          const unresolvedMove = payload.event !== "taskMoved";
+          await tx.clickUpStatusState.upsert({ where: { taskId: task.id }, update: {
+            providerStatus: mapStatus(clickUpTask), providerStatusName: clickUpTask.status?.status ?? null,
+            providerErrorCode: unresolvedMove ? "provider_task_left_selected_list" : null, signedInboxId: null,
+            actorProviderUserId: null, providerUpdatedAt: null
+          }, create: { taskId: task.id, workspaceId: inbox.workspaceId, externalListId: governedListId!,
+            providerStatus: mapStatus(clickUpTask), providerStatusName: clickUpTask.status?.status ?? null,
+            providerErrorCode: unresolvedMove ? "provider_task_left_selected_list" : null } });
+          await tx.clickUpStatusIntent.updateMany({ where: { taskId: task.id, state: { in: ["posting", "awaiting_provider", "uncertain"] } },
+            data: { state: "conflict", errorCode: "provider_task_left_selected_list" } });
+        }
+
+        if (signedStatusChange) await reconcileGovernedClickUpStatus({ workspaceId: inbox.workspaceId,
+          externalListId: scopeListId, taskId: task.id, task: clickUpTask, inboxId: inbox.id,
+          actor: change.actor, changedAt: change.changedAt, statusEvent: true,
+          expectedStatusName: statusName(change.after), tx });
 
         if (webhookComment) {
           const note = await upsertClickUpCommentNote({
@@ -614,7 +694,7 @@ async function processClickUpProviderEventLocked(inboxId: string) {
         } as Prisma.InputJsonValue
       } });
 
-      if (payload.event === "taskStatusUpdated" && taskId && externalId) {
+      if ((payload.event === "taskStatusUpdated" || (payload.event === "taskUpdated" && statusChange(payload).after !== null)) && taskId && externalId) {
         const change = statusChange(payload);
         await tx.agentEventOutbox.create({
           data: {
@@ -635,6 +715,7 @@ async function processClickUpProviderEventLocked(inboxId: string) {
               before: change.before,
               after: change.after,
               actor: change.actor,
+              actorVerification: "unverified",
               changedAt: change.changedAt
             })
           }
@@ -653,14 +734,16 @@ async function processClickUpProviderEventLocked(inboxId: string) {
     });
   } catch (error) {
     const errorCode = error instanceof IntegrationError ? error.code : "sync_failed";
+    const permanentScopeFailure = ["webhook_not_registered", "clickup_status_scope_mismatch"].includes(errorCode);
     await prisma.providerEventInbox.update({
       where: { id: inbox.id },
       data: {
-        processingStatus: "failed",
-        retryCount: { increment: 1 },
+        processingStatus: permanentScopeFailure ? "rejected" : "failed",
+        retryCount: permanentScopeFailure ? undefined : { increment: 1 },
         lastErrorCode: errorCode
       }
     });
+    if (permanentScopeFailure) return { status: "rejected", inboxId: inbox.id };
     throw error;
   }
 }
@@ -754,6 +837,7 @@ export async function runClickUpMaintenanceForWorkspace(input: {
     workspaceId: input.workspaceId,
     limit: 100
   });
+  const statusIntentRecovery = await recoverStaleClickUpStatusIntents(input.workspaceId);
   const sync = await syncClickUpTasksForWorkspaceWithOptions(input.workspaceId, { importMode });
 
   const [failedAfter, pendingAfter] = await Promise.all([
@@ -779,6 +863,7 @@ export async function runClickUpMaintenanceForWorkspace(input: {
     importMode,
     webhookReconcile,
     retry,
+    statusIntentRecovery,
     sync,
     inboxHealth: {
       failedBefore,
@@ -891,6 +976,9 @@ export async function createCompanyCoreTaskInClickUp(input: {
   if (!settings) {
     throw new IntegrationError("integration_not_configured", 422, "ClickUp integration is not configured for this workspace.");
   }
+  if (settings.config.governedStatusListId === input.listExternalId) {
+    throw new IntegrationError("clickup_status_scope_unavailable", 422, "Direct create is disabled for the selected List.");
+  }
 
   const payload = clickUpTaskPayload(input.task);
   if (!payload.name) {
@@ -926,6 +1014,9 @@ export async function writeBackCompanyCoreTaskToClickUp(input: {
   if (!settings) {
     throw new IntegrationError("integration_not_configured", 422, "ClickUp integration is not configured for this workspace.");
   }
+  if (settings.config.governedStatusListId && (input.changes.status !== undefined || input.changes.taskListId !== undefined)) {
+    throw new IntegrationError("clickup_status_scope_unavailable", 422, "Direct ClickUp status and task moves are disabled while a governed List is configured.");
+  }
 
   const payload = clickUpTaskPayload(input.changes);
 
@@ -934,8 +1025,11 @@ export async function writeBackCompanyCoreTaskToClickUp(input: {
   }
 
   const client = new ClickUpClient(settings.token);
-  const remote = (input.changes.status !== undefined && input.changes.status !== "archived") || input.changes.taskListId !== undefined
+  const remote = (input.changes.status !== undefined) || input.changes.taskListId !== undefined
     ? await client.getTask(input.externalId) : null;
+  if (remote?.list?.id === settings.config.governedStatusListId && input.changes.status !== undefined) {
+    throw new IntegrationError("clickup_status_scope_unavailable", 422, "Direct ClickUp status write is disabled for the selected List.");
+  }
   let listId = remote?.list?.id;
   let destination: { externalId: string | null } | null = null;
   if (input.changes.taskListId !== undefined) {
@@ -943,6 +1037,7 @@ export async function writeBackCompanyCoreTaskToClickUp(input: {
       id: input.changes.taskListId, workspaceId: input.workspaceId, source: "clickup"
     } }) : null;
     if (!destination?.externalId || !settings.config.teamId) throw new IntegrationError("sync_failed", 422, "A ClickUp-backed task must remain in a mapped ClickUp List.");
+    if (destination.externalId === settings.config.governedStatusListId) throw new IntegrationError("clickup_status_scope_unavailable", 422, "Moving into the governed List requires a provider-side action.");
     listId = destination.externalId;
   }
   if (input.changes.status && input.changes.status !== "archived") {
@@ -989,8 +1084,13 @@ export async function archiveCompanyCoreTaskInClickUp(input: {
   if (!settings) {
     throw new IntegrationError("integration_not_configured", 422, "ClickUp integration is not configured for this workspace.");
   }
+  if (settings.config.governedStatusListId) {
+    throw new IntegrationError("clickup_status_scope_unavailable", 422, "Direct ClickUp archive is disabled while a governed List is configured.");
+  }
 
   const client = new ClickUpClient(settings.token);
+  const remote = await client.getTask(input.externalId);
+  if (remote.list?.id === settings.config.governedStatusListId) throw new IntegrationError("clickup_status_scope_unavailable", 422, "Direct archive is disabled for the selected List.");
   return client.updateTask(input.externalId, { archived: true });
 }
 

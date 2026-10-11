@@ -40,6 +40,7 @@ import { requireWorkspaceRole, roleAtLeast } from "../../auth/workspace-access";
 import { createHash, randomUUID } from "node:crypto";
 import { AgentExecutionStatus, Prisma } from "@prisma/client";
 import { Router } from "express";
+import { clickUpDirectActionsDisabled } from "../../integrations/clickup/clickup.status-authority";
 import { z } from "zod";
 import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
@@ -1428,7 +1429,8 @@ agentRuntimeRouter.post("/executions/claim", asyncHandler(async (req, res) => {
     await prisma.agentHost.update({ where: { id: host.id }, data: { status: "online", lastSeenAt: now } });
     await appendExecutionEvent({ workspaceId, executionId: candidate.id, type: "claimed", message: `Execution claimed by ${host.name}.`, payload: { hostId: host.id, attempt: candidate.attempt + 1 } });
     const execution = await prisma.agentExecution.findUniqueOrThrow({ where: { id: candidate.id }, include: executionInclude });
-    if (execution.task.status === "todo" && !(isInformationRuntime((execution.metadata as any)?.executionContract) && execution.task.source === "clickup"))
+    if (execution.task.status === "todo" && !(isInformationRuntime((execution.metadata as any)?.executionContract) && execution.task.source === "clickup")
+      && !(execution.task.source === "clickup" && await clickUpDirectActionsDisabled(workspaceId)))
       await prisma.task.update({ where: { id: execution.taskId }, data: { status: "in_progress" } });
     return res.json({ data: execution });
   }

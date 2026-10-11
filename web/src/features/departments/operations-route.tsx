@@ -13,7 +13,7 @@ import { CcTextInput } from "../../components/cc-text-input";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
 import { formatAppDate } from "../../i18n/date-format";
-import { CoreAreaKey, OperationsDepartment, OperationsPacket, OperationsStatusColumn, OperationsTaskList, OperationsWorkItem } from "../../types";
+import { AuthMe, CoreAreaKey, OperationsDepartment, OperationsPacket, OperationsStatusColumn, OperationsTaskList, OperationsWorkItem } from "../../types";
 import { departmentLabel } from "./department-labels";
 import { DepartmentScopeControl } from "./department-scope-control";
 import { ProceduresWorkbench } from "./procedures-workbench";
@@ -152,6 +152,35 @@ function informationResultBadge(row: OperationsWorkItem, locale: string) {
   return null;
 }
 
+const clickUpIntentLabels = {
+  posting: "operations.clickupIntent.posting",
+  awaiting_provider: "operations.clickupIntent.awaiting_provider",
+  uncertain: "operations.clickupIntent.uncertain",
+  conflict: "operations.clickupIntent.conflict",
+  confirmed: "operations.clickupIntent.confirmed",
+  closed: "operations.clickupIntent.closed"
+} as const;
+
+function clickUpIntentTone(state: keyof typeof clickUpIntentLabels) {
+  if (state === "conflict") return "badge-error";
+  if (state === "uncertain") return "badge-warning";
+  if (state === "confirmed") return "badge-success";
+  return "badge-info";
+}
+
+function clickUpStatusRequestBlocked(row: OperationsWorkItem) {
+  const control = row.clickUpStatusControl;
+  const state = control?.intent?.state;
+  return Boolean(control?.directActionsDisabled && !control.governedList)
+    || Boolean(control?.providerMismatch || control?.providerErrorCode)
+    || state === "posting" || state === "awaiting_provider" || state === "uncertain" || state === "conflict";
+}
+
+function clickUpIntentClosable(row: OperationsWorkItem) {
+  const state = row.clickUpStatusControl?.intent?.state;
+  return state === "conflict" || state === "uncertain";
+}
+
 function priorityTone(priority?: string | null) {
   const normalized = (priority || "normal").toLowerCase();
   if (normalized === "urgent" || normalized === "critical") return { className: "badge-error", icon: "ph-warning-diamond" };
@@ -255,10 +284,19 @@ export function TaskCard({
   density?: "board" | "calendar" | "month";
   draggable?: boolean;
 }) {
-  const { locale } = useLanguage();
+  const { locale, t } = useLanguage();
   const isMonth = density === "month";
   const isCalendar = density === "calendar";
   const informationBadge = informationResultBadge(row, locale);
+  const monthClickUpAttention = row.clickUpStatusControl?.providerMismatch
+    ? t("operations.clickupProviderMismatch")
+    : row.clickUpStatusControl?.providerErrorCode
+      ? t("operations.clickupProviderUnavailable")
+      : row.clickUpStatusControl?.directActionsDisabled && !row.clickUpStatusControl.governedList
+        ? t("operations.clickupDirectActionsDisabled")
+      : row.clickUpStatusControl?.intent && clickUpStatusRequestBlocked(row)
+        ? t(clickUpIntentLabels[row.clickUpStatusControl.intent.state])
+        : null;
   return (
     <button
       className={`roost-task-card grid rounded-company border text-left transition hover:border-primary ${isMonth ? "gap-1 px-2 py-1.5" : isCalendar ? "gap-1.5 p-2.5" : "gap-2 p-3"} ${isDragging ? "opacity-55 ring-2 ring-primary/25" : ""} ${statusTone(row.task.status)}`}
@@ -271,11 +309,20 @@ export function TaskCard({
     >
       <div className="flex items-start justify-between gap-2">
         <strong className={`${isMonth ? "line-clamp-1 text-xs" : isCalendar ? "line-clamp-2 text-xs leading-4" : "line-clamp-2 text-sm leading-5"} text-company-ink`}>{row.task.title}</strong>
+        {isMonth && monthClickUpAttention ? <span aria-label={monthClickUpAttention} className="badge badge-error badge-outline badge-xs shrink-0" title={monthClickUpAttention}>!</span> : null}
         {draggable ? <i className="ph-bold ph-dots-six-vertical mt-0.5 shrink-0 text-company-muted" aria-hidden="true"></i> : null}
       </div>
       {!isMonth ? <div className="flex flex-wrap gap-1.5">
         <PriorityBadge priority={row.task.priority} />
         {informationBadge ? <span className={`badge badge-outline badge-sm ${informationBadge.tone}`}>{informationBadge.label}</span> : null}
+        {row.clickUpStatusControl?.intent && !["closed", "confirmed"].includes(row.clickUpStatusControl.intent.state) ? (
+          <span className={`badge badge-outline badge-sm ${clickUpIntentTone(row.clickUpStatusControl.intent.state)}`}>
+            {t(clickUpIntentLabels[row.clickUpStatusControl.intent.state])}: {row.clickUpStatusControl.intent.requestedStatus}
+          </span>
+        ) : null}
+        {row.clickUpStatusControl?.providerMismatch ? <span className="badge badge-error badge-outline badge-sm">{t("operations.clickupProviderMismatch")}</span> : null}
+        {row.clickUpStatusControl?.providerErrorCode ? <span className="badge badge-warning badge-outline badge-sm">{t("operations.clickupProviderUnavailable")}</span> : null}
+        {row.clickUpStatusControl?.directActionsDisabled && !row.clickUpStatusControl.governedList ? <span className="badge badge-warning badge-outline badge-sm">{t("operations.clickupDirectActionsDisabled")}</span> : null}
         {!isCalendar ? <DueBadge dueDate={row.task.dueDate} overdue={row.readiness?.overdue} /> : null}
         {!isCalendar && row.task.description ? <span className="badge badge-ghost badge-sm gap-1"><i className="ph-bold ph-text-align-left" aria-hidden="true"></i></span> : null}
         {!isCalendar && row.evidence?.projectResources?.length ? <span className="badge badge-ghost badge-sm gap-1"><i className="ph-bold ph-paperclip" aria-hidden="true"></i></span> : null}
@@ -380,17 +427,25 @@ function TaskFields({
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <label className="form-control">
           <span className="label"><span className="label-text font-bold">{t("operations.taskListField")}</span></span>
-           <CcSelect name="taskListId" defaultValue={defaultList}>
-            <option value="">{t("operations.unassigned")}</option>
-            {lists.map((list) => <option key={list.id} value={list.id}>{list.name}</option>)}
-           </CcSelect>
+          {item?.clickUpStatusControl?.directActionsDisabled ? (
+            <span className="rounded-company border border-base-300 bg-base-200/50 px-3 py-2 text-sm font-bold text-company-ink">{item.hierarchy?.taskList?.name || t("operations.unassigned")}</span>
+          ) : (
+            <CcSelect name="taskListId" defaultValue={defaultList}>
+              <option value="">{t("operations.unassigned")}</option>
+              {lists.map((list) => <option key={list.id} value={list.id}>{list.name}</option>)}
+            </CcSelect>
+          )}
         </label>
 
         <label className="form-control">
           <span className="label"><span className="label-text font-bold">{t("table.status")}</span></span>
-           <CcSelect name="status" defaultValue={item?.task.status || statuses[0]?.key || "todo"}>
-            {statuses.map((status) => <option key={status.key} value={status.key}>{status.label}</option>)}
-           </CcSelect>
+          {item?.clickUpStatusControl?.directActionsDisabled ? (
+            <span className="rounded-company border border-base-300 bg-base-200/50 px-3 py-2 text-sm font-bold text-company-ink">{item.task.status || "—"}</span>
+          ) : (
+            <CcSelect name="status" defaultValue={item?.task.status || statuses[0]?.key || "todo"}>
+              {statuses.map((status) => <option key={status.key} value={status.key}>{status.label}</option>)}
+            </CcSelect>
+          )}
         </label>
 
         <label className="form-control">
@@ -477,8 +532,54 @@ export function TaskPreviewModal({
   const [reviewOpen, setReviewOpen] = useState(false), [edited, setEdited] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "error">("idle");
   const [error, setError] = useState("");
+  const [requestedStatus, setRequestedStatus] = useState(() => statuses.some((status) => status.key === item.task.status) ? item.task.status || "" : "");
+  const [statusRequestBusy, setStatusRequestBusy] = useState(false);
+  const [statusRequestError, setStatusRequestError] = useState("");
+  const closableIntent = clickUpIntentClosable(item);
+  const profile = useOwnerPacket<AuthMe>("/v1/auth/me", closableIntent, t);
+  const canCloseIntent = profile.data?.authType === "user" && profile.data.workspaces?.some((workspace) => workspace.id === profile.data?.workspaceId && workspace.role === "owner");
+
+  async function requestClickUpStatus() {
+    if (!item.clickUpStatusControl?.governedList || clickUpStatusRequestBlocked(item) || !requestedStatus || requestedStatus === item.task.status) return;
+    if (edited) {
+      setStatusRequestError(t("operations.clickupSaveOtherChangesFirst"));
+      return;
+    }
+    setStatusRequestBusy(true);
+    setStatusRequestError("");
+    try {
+      await api(`/v1/operations/work-items/${item.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: requestedStatus })
+      });
+      onSaved();
+      onClose();
+    } catch (requestError) {
+      onSaved();
+      setStatusRequestError(`${userErrorMessage(requestError, t)} ${t("operations.clickupRefreshAfterError")}`);
+    } finally {
+      setStatusRequestBusy(false);
+    }
+  }
+
+  async function closeClickUpStatusRequest() {
+    const intent = item.clickUpStatusControl?.intent;
+    if (!canCloseIntent || !intent || !closableIntent) return;
+    setStatusRequestBusy(true);
+    setStatusRequestError("");
+    try {
+      await api(`/v1/tasks/${item.id}/clickup/status-intents/${intent.id}/close`, { method: "POST" });
+      onSaved();
+      onClose();
+    } catch (closeError) {
+      setStatusRequestError(userErrorMessage(closeError, t));
+    } finally {
+      setStatusRequestBusy(false);
+    }
+  }
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (statusRequestBusy) return;
     const submitter = (event.nativeEvent as SubmitEvent).submitter;
     const prepare = submitter instanceof HTMLButtonElement && submitter.value === "prepare";
     if (prepare && !edited) {
@@ -505,9 +606,9 @@ export function TaskPreviewModal({
         body: JSON.stringify({
           title: String(form.get("title") || ""),
           description: String(form.get("description") || ""),
-          status: String(form.get("status") || "todo"),
+          ...(item.clickUpStatusControl?.directActionsDisabled ? {} : { status: String(form.get("status") || item.task.status || "todo") }),
           priority: String(form.get("priority") || ""),
-          taskListId: taskListId || null,
+          ...(item.clickUpStatusControl?.directActionsDisabled ? {} : { taskListId: taskListId || null }),
           dueDate: dueDate ? new Date(`${dueDate}T00:00:00.000Z`).toISOString() : null,
           startDate: startDate ? new Date(`${startDate}T00:00:00.000Z`).toISOString() : null,
           estimatedEndDate: estimatedEndDate ? new Date(`${estimatedEndDate}T00:00:00.000Z`).toISOString() : null,
@@ -530,7 +631,7 @@ export function TaskPreviewModal({
   if (reviewOpen) return <TaskReviewModal taskId={item.id} onClose={()=>setReviewOpen(false)} onSaved={onSaved}/>;
   return (
     <CcRecordEditorModal
-      actions={<>{!item.informationResult || item.informationResult.executionStatus === "completed" && (!item.informationResult.reviewDecision || item.informationResult.reviewDecision === "reject") ? <CcButton disabled={edited || saveState === "saving"} onClick={()=>setReviewOpen(true)} variant="outline">{item.informationResult?.reviewDecision === "reject" ? locale === "pl" ? "Decyzja managera o zwrocie" : "Manager return decision" : reviewMessages[locale === "pl" ? "pl" : "en"].open}</CcButton> : null}<CcButton name="action" value="prepare" disabled={saveState === "saving"} type="submit" variant="outline">{informationBadge ? edited ? locale === "pl" ? "Zapisz i otwórz wynik" : "Save and open result" : locale === "pl" ? "Otwórz wynik Workera" : "Open Worker result" : t("ready.saveAndPrepare")}</CcButton><CcButton onClick={onClose} variant="ghost">{t("operations.cancel")}</CcButton><CcButton loading={saveState === "saving"} type="submit" variant="primary">{t("operations.saveTask")}</CcButton></>}
+      actions={<>{!item.informationResult || item.informationResult.executionStatus === "completed" && (!item.informationResult.reviewDecision || item.informationResult.reviewDecision === "reject") ? <CcButton disabled={edited || saveState === "saving" || statusRequestBusy} onClick={()=>setReviewOpen(true)} variant="outline">{item.informationResult?.reviewDecision === "reject" ? locale === "pl" ? "Decyzja managera o zwrocie" : "Manager return decision" : reviewMessages[locale === "pl" ? "pl" : "en"].open}</CcButton> : null}<CcButton name="action" value="prepare" disabled={saveState === "saving" || statusRequestBusy} type="submit" variant="outline">{informationBadge ? edited ? locale === "pl" ? "Zapisz i otwórz wynik" : "Save and open result" : locale === "pl" ? "Otwórz wynik Workera" : "Open Worker result" : t("ready.saveAndPrepare")}</CcButton><CcButton onClick={onClose} variant="ghost">{t("operations.cancel")}</CcButton><CcButton disabled={statusRequestBusy} loading={saveState === "saving"} type="submit" variant="primary">{t("operations.saveTask")}</CcButton></>}
       description={item.hierarchy?.taskList?.name || t("operations.unassigned")}
       eyebrow={locale === "pl" ? "04 Operacje · Zadanie" : "04 Operations · Task"}
       maxWidthClassName="max-w-5xl"
@@ -540,7 +641,7 @@ export function TaskPreviewModal({
       title={item.task.title || t("operations.taskPreview")}
       titleId="operations-task-modal-title"
     >
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_18rem]" onChangeCapture={()=>setEdited(true)}>
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_18rem]" onChangeCapture={(event) => { if ((event.target as HTMLInputElement).name !== "clickUpStatusRequest") setEdited(true); }}>
           <section className="grid gap-4">
             <TaskFields assignmentOptions={assignmentOptions} item={item} mode="edit" statuses={statuses} taskLists={taskLists} />
             {error ? <CcNotice tone="error" title={error} live /> : null}
@@ -553,6 +654,11 @@ export function TaskPreviewModal({
                 <div><dt className="font-bold text-company-muted">{t("table.list")}</dt><dd>{item.hierarchy?.taskList?.name || t("operations.unassigned")}</dd></div>
                 <div><dt className="font-bold text-company-muted">{t("operations.project")}</dt><dd>{item.hierarchy?.project?.name || "-"}</dd></div>
                 <div><dt className="font-bold text-company-muted">{item.task.source === "clickup" ? (locale === "pl" ? "Status zadania ClickUp" : "ClickUp task status") : t("table.status")}</dt><dd>{item.task.status || "-"}</dd></div>
+                {item.clickUpStatusControl && (item.clickUpStatusControl.governedList || closableIntent) ? <div><dt className="font-bold text-company-muted">{t("operations.clickupStatusSource")}</dt><dd>{item.clickUpStatusControl.providerStatusName || item.clickUpStatusControl.providerStatus || "—"}{item.clickUpStatusControl.providerUpdatedAt ? <span className="block text-xs text-company-muted">{formatAppDate(item.clickUpStatusControl.providerUpdatedAt, { dateStyle: "medium", timeStyle: "short" })}</span> : null}</dd></div> : null}
+                {item.clickUpStatusControl?.providerMismatch ? <div><dt className="font-bold text-company-muted">{t("operations.clickupProviderMismatch")}</dt><dd><span className="badge badge-error badge-outline">{t("operations.clickupProviderMismatch")}</span><span className="mt-1 block text-xs text-company-muted">{t("operations.clickupProviderMismatchHint")}</span></dd></div> : null}
+                {item.clickUpStatusControl?.providerErrorCode ? <div><dt className="font-bold text-company-muted">{t("operations.clickupProviderUnavailable")}</dt><dd><span className="badge badge-warning badge-outline">{t("operations.clickupProviderUnavailable")}</span><span className="mt-1 block text-xs text-company-muted">{t("operations.clickupProviderUnavailableHint")}</span><code className="mt-1 block break-all text-xs text-company-muted">{item.clickUpStatusControl.providerErrorCode}</code></dd></div> : null}
+                {item.clickUpStatusControl?.intent ? <div><dt className="font-bold text-company-muted">{t("operations.clickupIntent")}</dt><dd><span className={`badge badge-outline ${clickUpIntentTone(item.clickUpStatusControl.intent.state)}`}>{t(clickUpIntentLabels[item.clickUpStatusControl.intent.state])}</span><span className="mt-1 block">{t("operations.clickupStatusRequest", { status: item.clickUpStatusControl.intent.requestedStatus })}</span><span className="block text-xs text-company-muted">{t("operations.clickupBaseStatus", { status: item.clickUpStatusControl.intent.baseStatus })} · {formatAppDate(item.clickUpStatusControl.intent.createdAt, { dateStyle: "medium", timeStyle: "short" })}</span>{item.clickUpStatusControl.intent.errorCode ? <span className="block text-xs text-company-muted">{item.clickUpStatusControl.intent.errorCode}</span> : null}</dd></div> : null}
+                {item.clickUpStatusControl?.actor ? <div><dt className="font-bold text-company-muted">{t("operations.clickupActor")}</dt><dd>{t(item.clickUpStatusControl.actor.verification === "verified" ? "operations.clickupActorVerified" : "operations.clickupActorUnverified")}{item.clickUpStatusControl.actor.userId ? <span className="block text-xs text-company-muted">Roost ID: {item.clickUpStatusControl.actor.userId}</span> : null}{item.clickUpStatusControl.actor.providerUserId ? <span className="block text-xs text-company-muted">ClickUp ID: {item.clickUpStatusControl.actor.providerUserId}</span> : null}</dd></div> : null}
                 {informationBadge ? <div><dt className="font-bold text-company-muted">{locale === "pl" ? "Odbiór pracy agenta" : "Agent work review"}</dt><dd><span className={`badge badge-outline ${informationBadge.tone}`}>{informationBadge.label}</span></dd></div> : null}
                 <div><dt className="font-bold text-company-muted">{locale === "pl" ? "Właściciel zadania" : "Task owner"}</dt><dd>{item.responsibility?.ownerUser?.name || item.responsibility?.ownerUser?.email || "-"}</dd></div>
                 <div><dt className="font-bold text-company-muted">{locale === "pl" ? "Przypisano" : "Assigned"}</dt><dd>{item.responsibility?.assignedWorkforceEntity?.name || "-"}</dd></div>
@@ -561,6 +667,30 @@ export function TaskPreviewModal({
                 <div><dt className="font-bold text-company-muted">{t("operations.updated")}</dt><dd>{formatDate(item.task.updatedAt)}</dd></div>
               </dl>
             </section>
+            {item.clickUpStatusControl?.directActionsDisabled && !item.clickUpStatusControl.governedList ? <CcNotice tone="warning" title={t("operations.clickupDirectActionsDisabled")} detail={t("operations.clickupDirectActionsDisabledHint")} /> : null}
+            {item.clickUpStatusControl?.governedList ? <section className="rounded-company border border-info/30 bg-info/10 p-4">
+              <h3 className="text-sm font-black uppercase text-company-ink">{t("operations.clickupIntent")}</h3>
+              <p className="mt-2 text-xs leading-5 text-company-muted">{t("operations.clickupStatusSourceHint")}</p>
+              <p className="mt-1 text-xs leading-5 text-company-muted">{t("operations.clickupSelectedListDirectLockHint")}</p>
+              <label className="form-control mt-3"><span className="label py-1"><span className="label-text font-bold">{t("operations.clickupStatusRequestField")}</span></span>
+                <CcSelect disabled={clickUpStatusRequestBlocked(item) || statusRequestBusy || saveState === "saving"} name="clickUpStatusRequest" onChange={(event) => setRequestedStatus(event.target.value)} value={requestedStatus}>
+                  <option value="">{t("operations.clickupSelectRequestedStatus")}</option>
+                  {statuses.map((status) => <option key={status.key} value={status.key}>{status.label}</option>)}
+                </CcSelect>
+              </label>
+              <CcButton className="mt-3" disabled={edited || clickUpStatusRequestBlocked(item) || !requestedStatus || requestedStatus === item.task.status || saveState === "saving"} loading={statusRequestBusy} onClick={() => void requestClickUpStatus()} type="button" variant="outline">{t("operations.clickupSendStatusRequest")}</CcButton>
+              {edited ? <p className="mt-2 text-xs text-company-muted">{t("operations.clickupSaveOtherChangesFirst")}</p> : null}
+              {closableIntent ? <p className="mt-3 text-xs leading-5 text-company-muted">{t(item.clickUpStatusControl.intent?.state === "uncertain" ? "operations.clickupUncertainHelp" : "operations.clickupConflictHelp")}</p> : null}
+              {closableIntent && canCloseIntent ? <CcButton className="mt-3" disabled={saveState === "saving"} loading={statusRequestBusy} onClick={() => void closeClickUpStatusRequest()} type="button" variant="outline">{t("operations.clickupCloseRequest")}</CcButton> : null}
+              {statusRequestError ? <CcNotice tone="error" title={statusRequestError} live /> : null}
+            </section> : null}
+            {item.clickUpStatusControl && !item.clickUpStatusControl.governedList && closableIntent ? <section className="rounded-company border border-warning/35 bg-warning/10 p-4">
+              <h3 className="text-sm font-black uppercase text-company-ink">{t("operations.clickupIntent")}</h3>
+              <p className="mt-2 text-xs leading-5 text-company-muted">{t("operations.clickupHistoricalIntentOutsideList")}</p>
+              <p className="mt-2 text-xs leading-5 text-company-muted">{t(item.clickUpStatusControl.intent?.state === "uncertain" ? "operations.clickupUncertainHelp" : "operations.clickupConflictHelp")}</p>
+              {canCloseIntent ? <CcButton className="mt-3" disabled={saveState === "saving"} loading={statusRequestBusy} onClick={() => void closeClickUpStatusRequest()} type="button" variant="outline">{t("operations.clickupCloseRequest")}</CcButton> : null}
+              {statusRequestError ? <CcNotice tone="error" title={statusRequestError} live /> : null}
+            </section> : null}
           </aside>
         </div>
     </CcRecordEditorModal>
@@ -913,6 +1043,7 @@ function OperationsBoard({
   const [draggedTaskId, setDraggedTaskId] = useState("");
   const [dragOverStatus, setDragOverStatus] = useState("");
   const [moveError, setMoveError] = useState("");
+  const [moveNotice, setMoveNotice] = useState("");
   const selectedSet = new Set(selectedListIds);
   const visibleRows = rows.filter((row) => {
     const listId = row.hierarchy?.taskList?.id || "unassigned";
@@ -931,17 +1062,19 @@ function OperationsBoard({
   async function moveTaskToStatus(status: string) {
     if (!draggedTaskId) return;
     const task = rows.find((row) => row.id === draggedTaskId);
-    if (!task || task.task.status === "archived" || task.task.status === status) {
+    if (!task || task.task.status === "archived" || task.task.status === status || clickUpStatusRequestBlocked(task)) {
       setDraggedTaskId("");
       setDragOverStatus("");
       return;
     }
     setMoveError("");
+    setMoveNotice("");
     try {
       await api(`/v1/operations/work-items/${task.id}`, {
         method: "PATCH",
         body: JSON.stringify({ status })
       });
+      if (task.clickUpStatusControl) setMoveNotice(t("operations.clickupStatusRequestSent"));
       onRefresh();
     } catch (error) {
       setMoveError(userErrorMessage(error, t));
@@ -977,6 +1110,7 @@ function OperationsBoard({
         </div>
 
         {moveError ? <CcNotice tone="error" title={moveError} live /> : null}
+        {moveNotice ? <CcNotice tone="info" title={moveNotice} live /> : null}
         <OperationsTaskFilterBar
           dateFilter={dateFilter}
           onClear={onClearTaskFilters}
@@ -1051,9 +1185,9 @@ function OperationsBoard({
                     <TaskCard
                       key={row.id}
                       row={row}
-                      draggable={row.task.status !== "archived"}
+                      draggable={row.task.status !== "archived" && !clickUpStatusRequestBlocked(row)}
                       isDragging={draggedTaskId === row.id}
-                      onOpen={() => row.task.status === "archived" ? window.location.assign(`/areas?area=00-ogolny&view=entity&type=task&id=${row.id}`) : setSelectedTask(row)}
+                      onOpen={() => row.task.status === "archived" && !clickUpIntentClosable(row) ? window.location.assign(`/areas?area=00-ogolny&view=entity&type=task&id=${row.id}`) : setSelectedTask(row)}
                       onDragStart={(event) => startTaskDrag(event, row.id)}
                       onDragEnd={clearTaskDrag}
                     />

@@ -389,6 +389,7 @@ export const adapterManifest = {
       { method: "GET", path: "/v1/tasks/:id", capability: "tasks:read" },
       { method: "POST", path: "/v1/tasks", capability: "tasks:write" },
       { method: "PATCH", path: "/v1/tasks/:id", capability: "tasks:write" },
+      { method: "POST", path: "/v1/tasks/:id/clickup/status-intents/:intentId/close", capability: "tasks:write" },
       { method: "DELETE", path: "/v1/tasks/:id", capability: "tasks:write" },
       { method: "POST", path: "/v1/tasks/:id/clickup/custom-fields/:fieldId", capability: "tasks:clickup:custom-fields:write" },
       { method: "POST", path: "/v1/tasks/sync/clickup", capability: "tasks:sync:clickup" },
