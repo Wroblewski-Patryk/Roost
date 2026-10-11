@@ -53,7 +53,7 @@ function navigationAreasFromCatalog(catalog: DepartmentCatalogPacket | undefined
         sourceDepartmentKey: view.sourceDepartmentKey
       }));
       const seenViewDestinations = new Set<string>();
-      const ownedViews = catalogViews.filter((view) => !view.sourceDepartmentKey || view.sourceDepartmentKey === department.key).filter((view) => {
+      const ownedViews = catalogViews.filter((view) => department.key !== "00-ogolny" || view.sourceDepartmentKey === "00-ogolny").filter((view) => {
         const destination = view.href || view.key;
         if (seenViewDestinations.has(destination)) return false;
         seenViewDestinations.add(destination);
@@ -101,7 +101,7 @@ function DepartmentSidebar({ activeArea, navigationAreas, onNavigate }: { active
           const isEnabled = area.enabled !== false && Boolean(area.href);
           const label = displayDepartmentLabel(translatedAreaLabel(area.labelKey, t));
           const activeViews = isActive ? (area.views || []).filter((view) => view.enabled !== false && view.href) : [];
-          const primaryViews = activeViews.filter((view) => !view.sourceDepartmentKey || view.sourceDepartmentKey === area.key);
+          const primaryViews = activeViews;
 
           return (
             <div className="roost-sidebar-area-group" key={area.key}>
@@ -193,7 +193,13 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
   const { t, locale } = useLanguage();
   const pathname = typeof window === "undefined" ? "" : window.location.pathname;
   const profile = useOwnerPacket<AuthMe>("/v1/auth/me", true, t);
-  const departmentCatalog = useOwnerPacket<DepartmentCatalogPacket>("/v1/departments", true, t);
+  const [departmentCatalogRevision, setDepartmentCatalogRevision] = useState(0);
+  useEffect(() => {
+    const refresh = () => setDepartmentCatalogRevision((current) => current + 1);
+    window.addEventListener("roost:department-catalog-updated", refresh);
+    return () => window.removeEventListener("roost:department-catalog-updated", refresh);
+  }, []);
+  const departmentCatalog = useOwnerPacket<DepartmentCatalogPacket>(`/v1/departments?refresh=${departmentCatalogRevision}`, true, t);
   const navigationAreas = useMemo(() => navigationAreasFromCatalog(departmentCatalog.data), [departmentCatalog.data]);
   const [workspaceUpdate, setWorkspaceUpdate] = useState<Partial<NonNullable<AuthMe["workspaces"]>[number]> | null>(null);
   const workspaces = (profile.data?.workspaces || []).map((workspace) => workspace.id === workspaceUpdate?.id ? { ...workspace, ...workspaceUpdate } : workspace);

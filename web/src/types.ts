@@ -778,6 +778,7 @@ export type DepartmentCatalogView = {
   icon: string;
   sourceDepartmentKey: string;
   enabled: boolean;
+  configurableShared?: boolean;
 };
 
 export type WorkspaceDepartment = {
@@ -790,6 +791,7 @@ export type WorkspaceDepartment = {
   isSystem: boolean;
   status: string;
   linkedViews: string[];
+  compositionVersion: number;
   views: DepartmentCatalogView[];
   href?: string | null;
   updatedAt: string;
@@ -798,4 +800,32 @@ export type WorkspaceDepartment = {
 export type DepartmentCatalogPacket = {
   departments: WorkspaceDepartment[];
   availableViews: DepartmentCatalogView[];
+};
+
+export type DepartmentCompositionPreview = {
+  department: { id: string; key: string; version: number };
+  before: { name: string; description: string | null; icon: string; position: number; linkedViews: string[] };
+  after: { name: string; description: string | null; icon: string; position: number; linkedViews: string[] };
+  attachedViews: string[];
+  detachedViews: string[];
+  navigationBefore: Array<{ viewKey: string; href: string | null }>;
+  navigationAfter: Array<{ viewKey: string; href: string | null }>;
+  existingRelations: Array<{ id: string; entityType: string; entityId: string; role: string }>;
+  existingOwnerships: Array<{ id: string; entityType: string; entityId: string }>;
+  existingWorkforce: Array<{ id: string; type: string; department: string | null; managerId: string | null }>;
+  existingProviderMappings: Array<{ id: string; provider: string; entityType: string; externalId: string; operatingAreaId: string | null }>;
+  preserved: {
+    organizationalRelations: number;
+    accountableRelations: number;
+    entityOwnerships: number;
+    workforce: number;
+    providerMappings: number;
+    recordIdentityAndHistory: boolean;
+    oldLinks: boolean;
+    permissionsAndTaskScopes: boolean;
+  };
+  changesProviderData: false;
+  changesResponsibility: false;
+  expiresAt: string;
+  confirmationToken: string;
 };

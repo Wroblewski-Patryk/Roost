@@ -5,6 +5,8 @@ import { asyncHandler } from "../../middleware/async-handler";
 import { sendApiError } from "../../middleware/api-error";
 import { normalizeDepartmentKey } from "../../operating-model/department-registry";
 import { DEFAULT_DEPARTMENTS } from "./default-departments";
+import { CONTEXTUAL_SHARED_VIEWS } from "./department-view-policy";
+import { applyDepartmentComposition, compositionDraftSchema, CompositionRefusal, previewDepartmentComposition } from "./department-composition";
 
 type ViewDefinition = {
   id: string;
@@ -76,15 +78,6 @@ const createDepartmentSchema = z.object({
   linkedViews: z.array(z.string().trim().min(1)).default([])
 }).strict();
 
-const updateDepartmentSchema = z.object({
-  name: z.string().trim().min(1).max(120).optional(),
-  description: z.string().trim().max(500).nullable().optional(),
-  icon: z.string().trim().min(1).max(80).optional(),
-  position: z.coerce.number().int().min(0).max(999).optional(),
-  status: z.enum(["active", "archived"]).optional(),
-  linkedViews: z.array(z.string().trim().min(1)).optional()
-}).strict();
-
 export const departmentsRouter = Router();
 
 function linkedViews(value: unknown) {
@@ -106,12 +99,11 @@ function serializeDepartment(department: {
   position: number;
   isSystem: boolean;
   status: string;
+  compositionVersion: number;
   linkedViews: unknown;
   updatedAt: Date;
 }) {
-  const requiredOverview = ({ "04-operacje": "operations.overview", "06-kadry": "people.overview", "12-zarzadzanie": "management.overview" } as Record<string, string>)[department.key];
-  const persistedViewIds = linkedViews(department.linkedViews).filter((id) => id !== "technology.goals");
-  const viewIds = requiredOverview && !persistedViewIds.includes(requiredOverview) ? [requiredOverview, ...persistedViewIds] : persistedViewIds;
+  const viewIds = linkedViews(department.linkedViews);
   const views = viewSummaries(viewIds);
   return {
     id: department.id,
@@ -122,6 +114,7 @@ function serializeDepartment(department: {
     position: department.position,
     isSystem: department.isSystem,
     status: department.status,
+    compositionVersion: department.compositionVersion,
     linkedViews: viewIds,
     views,
     href: views.find((view) => view.enabled && view.href)?.href ?? null,
@@ -130,54 +123,66 @@ function serializeDepartment(department: {
 }
 
 export async function ensureDefaultDepartments(workspaceId: string) {
-  await Promise.all(DEFAULT_DEPARTMENTS.map(async (department) => {
-    const existing = await prisma.workspaceDepartment.findUnique({
-      where: { workspaceId_key: { workspaceId, key: department.key } }
-    });
-    const mergedViews = [...new Set([
-      ...linkedViews(existing?.linkedViews),
-      ...department.linkedViews
-    ])];
-    await prisma.workspaceDepartment.upsert({
-      where: { workspaceId_key: { workspaceId, key: department.key } },
-      update: { linkedViews: mergedViews },
-      create: {
-        workspaceId,
-        key: department.key,
-        name: department.name,
-        description: department.description,
-        icon: department.icon,
-        position: department.position,
-        isSystem: true,
-        linkedViews: [...department.linkedViews]
+  if (await prisma.departmentViewDefinition.count({ where: { workspaceId } })) return;
+  await prisma.$transaction(async (tx) => {
+    // Serialise first-use initialization; an established composition is never
+    // reconciled with the template by a later read or unrelated write.
+    await tx.$queryRaw`SELECT id FROM workspaces WHERE id = ${workspaceId}::uuid FOR UPDATE`;
+    const departmentCount = await tx.workspaceDepartment.count({ where: { workspaceId } });
+    const definitionCount = await tx.departmentViewDefinition.count({ where: { workspaceId } });
+    if (definitionCount) return;
+    if (!departmentCount) {
+      for (const department of DEFAULT_DEPARTMENTS) {
+        await tx.workspaceDepartment.create({ data: {
+          workspaceId, key: department.key, name: department.name,
+          description: department.description, icon: department.icon,
+          position: department.position, isSystem: true,
+          linkedViews: [...department.linkedViews]
+        } });
       }
-    });
-  }));
-  const departments = await prisma.workspaceDepartment.findMany({ where: { workspaceId } });
-  const byKey = new Map(departments.map((department) => [department.key, department]));
-  await Promise.all(AVAILABLE_VIEWS.map(async (view, displayOrder) => {
-    const canonicalDepartment = byKey.get(view.sourceDepartmentKey);
-    if (!canonicalDepartment) return;
-    const routeView = view.href ? new URL(view.href, "https://roost.local").searchParams.get("view") || "overview" : "overview";
-    const definition = await prisma.departmentViewDefinition.upsert({
-      where: { workspaceId_key: { workspaceId, key: view.id } },
-      update: { label: view.label, icon: view.icon, canonicalDepartmentId: canonicalDepartment.id, routeView, displayOrder, enabled: view.enabled },
-      create: { workspaceId, key: view.id, label: view.label, icon: view.icon, canonicalDepartmentId: canonicalDepartment.id, routeView, defaultScope: {}, permissions: ["workspace.read", "workspace.write"], displayOrder, enabled: view.enabled }
-    });
-    const globallyContextualViews = new Set(["strategy.goals", "strategy.decisions", "strategy.metrics", "operations.tasks", "operations.procedures", "people.directory", "assets.files", "assets.resources", "legal.policies", "innovation.projects", "management.risks"]);
-    const availableDepartmentKeys = globallyContextualViews.has(view.id)
-      ? DEFAULT_DEPARTMENTS.map((department) => department.key)
-      : DEFAULT_DEPARTMENTS.filter((department) => department.linkedViews.includes(view.id as never)).map((department) => department.key);
-    await Promise.all(availableDepartmentKeys.map(async (departmentKey, availabilityOrder) => {
-      const department = byKey.get(departmentKey);
-      if (!department) return;
-      await prisma.departmentViewAvailability.upsert({
-        where: { viewId_departmentId: { viewId: definition.id, departmentId: department.id } },
-        update: { displayOrder: availabilityOrder, enabled: view.enabled, isCore: departmentKey === view.sourceDepartmentKey },
-        create: { workspaceId, viewId: definition.id, departmentId: department.id, displayOrder: availabilityOrder, enabled: view.enabled, isCore: departmentKey === view.sourceDepartmentKey }
-      });
-    }));
-  }));
+    }
+    const departments = await tx.workspaceDepartment.findMany({ where: { workspaceId } });
+    const byKey = new Map(departments.map((department) => [department.key, department]));
+    if (DEFAULT_DEPARTMENTS.some((department) => !byKey.has(department.key))) {
+      throw new Error("department_catalog_initialization_incomplete");
+    }
+    for (const [displayOrder, view] of AVAILABLE_VIEWS.entries()) {
+      const canonicalDepartment = byKey.get(view.sourceDepartmentKey);
+      if (!canonicalDepartment) continue;
+      const routeView = view.href ? new URL(view.href, "https://roost.local").searchParams.get("view") || "overview" : "overview";
+      const definition = await tx.departmentViewDefinition.create({ data: {
+        workspaceId, key: view.id, label: view.label, icon: view.icon,
+        canonicalDepartmentId: canonicalDepartment.id, routeView,
+        defaultScope: {}, permissions: ["workspace.read", "workspace.write"],
+        displayOrder, enabled: view.enabled
+      } });
+      const availableDepartmentKeys = CONTEXTUAL_SHARED_VIEWS.has(view.id)
+        ? DEFAULT_DEPARTMENTS.map((department) => department.key)
+        : DEFAULT_DEPARTMENTS.filter((department) => department.linkedViews.includes(view.id as never)).map((department) => department.key);
+      for (const [availabilityOrder, departmentKey] of availableDepartmentKeys.entries()) {
+        const department = byKey.get(departmentKey);
+        if (!department) continue;
+        await tx.departmentViewAvailability.create({ data: {
+          workspaceId, viewId: definition.id, departmentId: department.id,
+          displayOrder: availabilityOrder, enabled: view.enabled,
+          isCore: departmentKey === view.sourceDepartmentKey
+        } });
+      }
+    }
+  }, { timeout: 30000 });
+}
+
+async function requireCompositionOwner(req: import("express").Request, res: import("express").Response) {
+  if (req.auth?.authType !== "user" || req.auth.workspaceRole !== "owner" || !req.auth.userId) {
+    sendApiError(res, 403, "primary_owner_required");
+    return false;
+  }
+  const workspace = await prisma.workspace.findUnique({ where: { id: req.auth.workspaceId }, select: { ownerUserId: true } });
+  if (workspace?.ownerUserId !== req.auth.userId) {
+    sendApiError(res, 403, "primary_owner_required");
+    return false;
+  }
+  return true;
 }
 
 async function uniqueDepartmentKey(workspaceId: string, name: string) {
@@ -197,16 +202,6 @@ function validLinkedViewsOrError(values: string[]) {
   return values.every((value) => allowed.has(value));
 }
 
-async function syncDepartmentViewAvailability(workspaceId: string, departmentId: string, viewKeys: string[]) {
-  const definitions = await prisma.departmentViewDefinition.findMany({ where: { workspaceId } });
-  const selected = new Set(viewKeys);
-  await prisma.$transaction(definitions.map((definition, displayOrder) => prisma.departmentViewAvailability.upsert({
-    where: { viewId_departmentId: { viewId: definition.id, departmentId } },
-    update: { enabled: selected.has(definition.key), displayOrder },
-    create: { workspaceId, viewId: definition.id, departmentId, enabled: selected.has(definition.key), displayOrder, isCore: false }
-  })));
-}
-
 departmentsRouter.get("/", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
   await ensureDefaultDepartments(workspaceId);
@@ -218,7 +213,8 @@ departmentsRouter.get("/", asyncHandler(async (req, res) => {
   res.json({
     data: {
       departments: departments.map((department) => {
-        const available = viewDefinitions.filter((view) => view.availability.some((item) => item.department.key === department.key));
+        const attached = new Set(linkedViews(department.linkedViews));
+        const available = viewDefinitions.filter((view) => attached.has(view.key) && view.availability.some((item) => item.department.key === department.key));
         const views = available.map((view) => ({
           id: view.key,
           label: view.label,
@@ -236,6 +232,7 @@ departmentsRouter.get("/", asyncHandler(async (req, res) => {
       availableViews: viewDefinitions.map((view) => ({
         id: view.key, label: view.label, icon: view.icon, sourceDepartmentKey: view.canonicalDepartment.key, routeView: view.routeView,
         defaultScope: view.defaultScope, permissions: view.permissions, enabled: view.enabled, availableInDepartments: view.availability.map((item) => item.department.key),
+        configurableShared: CONTEXTUAL_SHARED_VIEWS.has(view.key),
         href: AVAILABLE_VIEWS.find((candidate) => candidate.id === view.key)?.href ?? null
       }))
     }
@@ -243,11 +240,15 @@ departmentsRouter.get("/", asyncHandler(async (req, res) => {
 }));
 
 departmentsRouter.post("/", asyncHandler(async (req, res) => {
+  if (!await requireCompositionOwner(req, res)) return;
   const workspaceId = req.auth!.workspaceId;
   const input = createDepartmentSchema.parse(req.body);
   if (!validLinkedViewsOrError(input.linkedViews)) {
     return sendApiError(res, 400, "invalid_department_view");
   }
+  // A new empty department is only a draft identity. Linking views to it must
+  // use a separately qualified composition path, never this legacy write.
+  if (input.linkedViews.length) return sendApiError(res, 409, "department_composition_preview_required");
 
   await ensureDefaultDepartments(workspaceId);
   const maxPosition = await prisma.workspaceDepartment.aggregate({
@@ -265,35 +266,36 @@ departmentsRouter.post("/", asyncHandler(async (req, res) => {
       linkedViews: input.linkedViews
     }
   });
-  await syncDepartmentViewAvailability(workspaceId, department.id, input.linkedViews);
-
   res.status(201).json({ data: serializeDepartment(department) });
 }));
 
 departmentsRouter.patch("/:id", asyncHandler(async (req, res) => {
-  const workspaceId = req.auth!.workspaceId;
-  const input = updateDepartmentSchema.parse(req.body);
-  if (input.linkedViews && !validLinkedViewsOrError(input.linkedViews)) {
-    return sendApiError(res, 400, "invalid_department_view");
+  if (!await requireCompositionOwner(req, res)) return;
+  return sendApiError(res, 409, "department_composition_preview_required");
+}));
+
+departmentsRouter.post("/:id/preview", asyncHandler(async (req, res) => {
+  if (!await requireCompositionOwner(req, res)) return;
+  const departmentId = z.string().uuid().parse(req.params.id);
+  const input = compositionDraftSchema.parse(req.body);
+  try {
+    const preview = await previewDepartmentComposition(req.auth!.workspaceId, req.auth!.userId!, departmentId, input);
+    res.json({ data: preview });
+  } catch (error) {
+    if (error instanceof CompositionRefusal) return sendApiError(res, error.status, error.code);
+    throw error;
   }
+}));
 
-  const current = await prisma.workspaceDepartment.findFirst({ where: { id: String(req.params.id), workspaceId } });
-  if (!current) {
-    return sendApiError(res, 404, "department_not_found");
+departmentsRouter.post("/:id/actions/apply", asyncHandler(async (req, res) => {
+  if (!await requireCompositionOwner(req, res)) return;
+  const departmentId = z.string().uuid().parse(req.params.id);
+  const { confirmationToken } = z.object({ confirmationToken: z.string().min(1).max(6000) }).strict().parse(req.body);
+  try {
+    const result = await applyDepartmentComposition(req.auth!.workspaceId, req.auth!.userId!, departmentId, confirmationToken);
+    res.json({ data: result });
+  } catch (error) {
+    if (error instanceof CompositionRefusal) return sendApiError(res, error.status, error.code);
+    throw error;
   }
-
-  const department = await prisma.workspaceDepartment.update({
-    where: { id: current.id },
-    data: {
-      ...(input.name !== undefined ? { name: input.name } : {}),
-      ...(input.description !== undefined ? { description: input.description } : {}),
-      ...(input.icon !== undefined ? { icon: input.icon } : {}),
-      ...(input.position !== undefined ? { position: input.position } : {}),
-      ...(input.status !== undefined ? { status: input.status } : {}),
-      ...(input.linkedViews !== undefined ? { linkedViews: input.linkedViews } : {})
-    }
-  });
-  if (input.linkedViews !== undefined) await syncDepartmentViewAvailability(workspaceId, department.id, input.linkedViews);
-
-  res.json({ data: serializeDepartment(department) });
 }));

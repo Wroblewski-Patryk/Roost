@@ -2,10 +2,9 @@
 
 ## Current delivery
 
-There is no active delivery gate. The owner stopped the second-application release on
-2026-10-10. Its incomplete state and any future authorization are in
-[`docs/implementation.md`](../implementation.md). Planning another bounded
-Roost outcome does not resume that release.
+The active G16b Composition gate and its approved effects are in
+[`docs/implementation.md`](../implementation.md). This does not resume the
+earlier stopped second-application release or authorize G17.
 
 Accepted product intent is canonical in
 [`docs/product/requirements.md`](../product/requirements.md). Ordinary
@@ -30,6 +29,35 @@ escalated as one concrete Decision with the conflicting sources and affected
 work. Missing implementation or uncertain current behavior is not such a
 contradiction.
 
+## Accepted G16b composition decision
+
+The bounded implementation contract is in
+[`department-composition.md`](../architecture/department-composition.md).
+
+The owner approved the bounded `OPEN-ORG-001` migration direction on
+2026-10-11. Keep each existing `WorkspaceDepartment.id`, key and old URL as
+stable identity. Keep `OperatingArea` separate: its IDs and provider container
+bindings are not department IDs. `00 General` remains a company-wide owner
+projection; the twelve model departments are an initial template, not a
+required topology. A shared view keeps one canonical steward and can appear
+in another department without copying records or transferring authority.
+
+G16b changes one existing department and its shared view availability. The
+owner sees the current and proposed navigation, responsibilities and existing
+relations before confirming exactly that version. The apply command must be
+atomic, reject stale previews, keep old links working, and never let a later
+read or default seed restore an intentionally detached view. It must not
+delete or reassign records, people, managers, roles, permissions, task-scoped
+human access, ClickUp/Drive mappings or provider data. A configuration change
+that would require ambiguous reassignment is refused pending a separate
+decision; general hierarchy migration and blank onboarding are outside G16b.
+
+The permitted proof is an isolated populated-data migration and native owner
+flow, browser PL/EN checks, Security review, then standard release with only
+read-only production verification. No synthetic production business records,
+production composition change, paid model proof, purchase, reset or VPS cleanup
+is authorized. G17 remains closed.
+
 ## Deferred decisions
 
 The following choices become necessary only when their later phase is opened.
@@ -44,7 +72,6 @@ application repair pilot.
 | OPEN-SVC-003 | Before making public support commitments | Select additional support channels and evidence-based response commitments for the offering. | `RF-SUP-001` through `RF-SUP-004` already define centralized, severity-based handling without an unstaffed public SLA. |
 | OPEN-SVC-004 | Before the customer-service delivery phase | Set working-copy/evidence retention and fund isolated staging/anonymization infrastructure. | `RF-SVC-011` through `RF-SVC-013` define access and closure direction without making that infrastructure a current gate. |
 | OPEN-DATA-001 | Before later lifecycle administration | Define export formats, retention, backup interaction, permanent-deletion guarantees and provider effects. | `RF-INT-006` keeps this explicitly deferred beyond the current MVP. |
-| OPEN-ORG-001 | Before migrating the current fixed department surface to configurable composition | Define stable area identity, `00 General`, hierarchy/workforce migration, permissions, navigation, provider mappings, compatibility, versioning, impact preview and safe reassignment. | `RF-PROD-002` defines the target; the current installation remains valid until a separately accepted migration design exists. |
 | OPEN-UX-001 | Before redesigning the public pre-login page | Decide whether its primary audience is only people entering an existing installation or also people evaluating Roost; approve the truthful promise and primary action. | `RF-UX-011` requires verified content and interaction without implying unproven sale readiness. |
 | OPEN-AUTH-001 | Before changing normal browser-session persistence beyond the currently observed behavior | Set the intended trusted-browser lifetime and reauthentication/revocation experience after the reported login behavior is reproduced. | `RF-SEC-013` preserves fresh, exact-action owner authorization and separate agent identities; a five-minute fresh-owner check is not evidence that the normal token expires then. |
 | OPEN-HOST-001 | Before granting the environment steward unattended change authority | Define eligible update classes, exact host/VPS scope, maintenance windows, notification and approval boundaries, and risk/rollback limits. | `RF-HOST-021` starts with observation and supervised proof; initial host updates remain manual, Windows reboot is not autonomous, and hosting-platform cleanup is not duplicated. |

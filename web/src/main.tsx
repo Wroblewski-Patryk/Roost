@@ -159,6 +159,20 @@ function App() {
   const metadata = <AppDocumentMetadata locationKey={locationKey} route={route} />;
 
   const areaKey = currentAreaKey();
+  const showContextualDepartment = () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("department") !== areaKey) {
+      params.set("department", areaKey);
+      window.history.replaceState(null, "", `/areas?${params.toString()}`);
+    }
+  };
+  const showGeneralProjection = () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("department")) {
+      params.delete("department");
+      window.history.replaceState(null, "", `/areas?${params.toString()}`);
+    }
+  };
   const taskWorkMatch = pathname.match(/^\/task-work\/([0-9a-fA-F-]{36})$/);
   if (taskWorkMatch) return <>{metadata}<PrivateRoute><TaskWorkRoute taskId={taskWorkMatch[1]} /></PrivateRoute></>;
   if (pathname === "/areas" && currentAreaView() === "company-graph") {
@@ -173,44 +187,47 @@ function App() {
   const companyObjectType = ({ resources: "resource", risks: "risk", metrics: "metric", policies: "policy" } as const)[currentAreaView() as "resources" | "risks" | "metrics" | "policies"];
   if (pathname === "/areas" && companyObjectType) {
     const sourceArea = ({ resource: "08-zasoby", risk: "12-zarzadzanie", metric: "01-strategia", policy: "10-prawo" } as const)[companyObjectType];
-    const sourceView = ({ resource: "resources", risk: "risks", metric: "metrics", policy: "policies" } as const)[companyObjectType];
-    if (areaKey !== sourceArea) window.history.replaceState(null, "", `/areas?area=${sourceArea}&view=${sourceView}&department=${encodeURIComponent(areaKey)}`);
-    return <>{metadata}<PrivateAppRoute activeArea={sourceArea}><CompanyObjectsWorkbench departmentKey={sourceArea} type={companyObjectType} /></PrivateAppRoute></>;
+    if (areaKey === "00-ogolny") showGeneralProjection();
+    else if (areaKey !== sourceArea) showContextualDepartment();
+    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><CompanyObjectsWorkbench departmentKey={sourceArea} type={companyObjectType} /></PrivateAppRoute></>;
   }
   if (pathname === "/areas" && currentAreaView() === "projects") {
-    if (areaKey !== "11-innowacje") window.history.replaceState(null, "", `/areas?area=11-innowacje&view=projects&department=${encodeURIComponent(areaKey)}`);
-    return <>{metadata}<PrivateAppRoute activeArea="11-innowacje"><ProjectsWorkbench departmentKey={areaKey === "11-innowacje" ? undefined : areaKey} /></PrivateAppRoute></>;
+    if (areaKey === "00-ogolny") showGeneralProjection();
+    else if (areaKey !== "11-innowacje") showContextualDepartment();
+    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><ProjectsWorkbench departmentKey={areaKey === "11-innowacje" || areaKey === "00-ogolny" ? undefined : areaKey} /></PrivateAppRoute></>;
   }
   if (pathname === "/areas" && currentAreaView() === "project-workspace") {
     return <>{metadata}<PrivateAppRoute activeArea="11-innowacje"><ProjectWorkspaceRoute /></PrivateAppRoute></>;
   }
   if (pathname === "/areas" && currentAreaView() === "directory" && areaKey !== "06-kadry") {
-    window.history.replaceState(null, "", `/areas?area=06-kadry&view=directory&department=${encodeURIComponent(areaKey)}`);
-    return <>{metadata}<PrivateAppRoute activeArea="06-kadry"><PeopleAgentsRoute departmentKey={areaKey} /></PrivateAppRoute></>;
+    if (areaKey === "00-ogolny") { showGeneralProjection(); return <>{metadata}<PrivateAppRoute activeArea={areaKey}><PeopleAgentsRoute /></PrivateAppRoute></>; }
+    showContextualDepartment();
+    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><PeopleAgentsRoute departmentKey={areaKey} /></PrivateAppRoute></>;
   }
   if (pathname === "/areas" && currentAreaView() === "goals" && areaKey !== "01-strategia") {
-    window.history.replaceState(null, "", `/areas?area=01-strategia&view=goals&department=${encodeURIComponent(areaKey)}`);
-    return <>{metadata}<PrivateAppRoute activeArea="01-strategia"><GoalsWorkbench canonical departmentKey="01-strategia" /></PrivateAppRoute></>;
+    if (areaKey === "00-ogolny") showGeneralProjection();
+    else showContextualDepartment();
+    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><GoalsWorkbench canonical departmentKey="01-strategia" /></PrivateAppRoute></>;
   }
   if (pathname === "/areas" && currentAreaView() === "tasks" && areaKey !== "04-operacje") {
-    const taskId = recordIdFromQuery(window.location.search, "taskId");
-    window.history.replaceState(null, "", `/areas?area=04-operacje&view=tasks&department=${encodeURIComponent(areaKey)}${taskId ? `&taskId=${encodeURIComponent(taskId)}` : ""}`);
-    return <>{metadata}<PrivateAppRoute activeArea="04-operacje"><OperationsRoute /></PrivateAppRoute></>;
+    if (areaKey === "00-ogolny") showGeneralProjection();
+    else showContextualDepartment();
+    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><OperationsRoute /></PrivateAppRoute></>;
   }
   if (pathname === "/areas" && currentAreaView() === "decisions") {
-    if (areaKey !== "01-strategia") {
-      const decisionId = recordIdFromQuery(window.location.search, "decisionId");
-      window.history.replaceState(null, "", `/areas?area=01-strategia&view=decisions&department=${encodeURIComponent(areaKey)}${decisionId ? `&decisionId=${encodeURIComponent(decisionId)}` : ""}`);
-    }
-    return <>{metadata}<PrivateAppRoute activeArea="01-strategia"><DecisionsWorkbench canonical departmentKey="01-strategia" /></PrivateAppRoute></>;
+    if (areaKey === "00-ogolny") showGeneralProjection();
+    else if (areaKey !== "01-strategia") showContextualDepartment();
+    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><DecisionsWorkbench canonical departmentKey="01-strategia" /></PrivateAppRoute></>;
   }
   if (pathname === "/areas" && currentAreaView() === "procedures" && areaKey !== "04-operacje") {
-    window.history.replaceState(null, "", `/areas?area=04-operacje&view=procedures&department=${encodeURIComponent(areaKey)}`);
-    return <>{metadata}<PrivateAppRoute activeArea="04-operacje"><ProceduresWorkbench canonical={false} departmentKey={areaKey} /></PrivateAppRoute></>;
+    if (areaKey === "00-ogolny") { showGeneralProjection(); return <>{metadata}<PrivateAppRoute activeArea={areaKey}><ProceduresWorkbench /></PrivateAppRoute></>; }
+    showContextualDepartment();
+    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><ProceduresWorkbench canonical={false} departmentKey={areaKey} /></PrivateAppRoute></>;
   }
   if (pathname === "/areas" && currentAreaView() === "files" && areaKey !== "08-zasoby") {
-    window.history.replaceState(null, "", `/areas?area=08-zasoby&view=files&department=${encodeURIComponent(areaKey)}`);
-    return <>{metadata}<PrivateAppRoute activeArea="08-zasoby"><AssetsRoute /></PrivateAppRoute></>;
+    if (areaKey === "00-ogolny") showGeneralProjection();
+    else showContextualDepartment();
+    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><AssetsRoute /></PrivateAppRoute></>;
   }
   const recordView = pathname === "/areas" ? companyRecordViews[`${areaKey}:${currentAreaView()}`] : null;
   if (recordView) {

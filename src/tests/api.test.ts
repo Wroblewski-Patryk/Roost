@@ -40,9 +40,11 @@ import { registerWorkerCredentialDatabaseTests } from "./worker-credential-api";
 import { registerWorkerHandoffDatabaseTests } from "./worker-handoff-api";
 import { registerReleaseRenewalTests } from "./governed-release-renewal-api";
 import { registerTaskProposalTests } from "./task-proposal-api";
+import { registerDepartmentCompositionTests } from "./department-composition-api";
 
 registerFindingTests({request,registerOwner,prepareReviewFixture,decisionFixtureProposal,decisionFixtureProof,refreshCompositionRisk,submissionInput});
 registerTaskProposalTests({ request, registerOwner });
+registerDepartmentCompositionTests({ request, registerOwner });
 registerOwnerTicketDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof });
 registerOwnerTicketDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof }, true);
 registerWorkerCredentialDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof, refreshCompositionRisk });
@@ -5283,7 +5285,7 @@ test("CompanyCore v1 protected API flow", async () => {
       name: "13 Marketing Lab",
       description: "Cross-functional launch workspace.",
       icon: "ph-megaphone",
-      linkedViews: ["operations.tasks", "assets.files"]
+      linkedViews: []
     })
   });
   assert.equal(createdDepartment.status, 201);
@@ -5307,8 +5309,8 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(createdDepartmentBody.data.description, "Cross-functional launch workspace.");
   assert.equal(createdDepartmentBody.data.icon, "ph-megaphone");
   assert.equal(createdDepartmentBody.data.isSystem, false);
-  assert.deepEqual(createdDepartmentBody.data.linkedViews, ["operations.tasks", "assets.files"]);
-  assert.equal(createdDepartmentBody.data.href, "/areas?area=04-operacje&view=tasks");
+  assert.deepEqual(createdDepartmentBody.data.linkedViews, []);
+  assert.equal(createdDepartmentBody.data.href, null);
 
   const updatedDepartment = await request(`/v1/departments/${createdDepartmentBody.data.id}`, {
     method: "PATCH",
@@ -5322,29 +5324,8 @@ test("CompanyCore v1 protected API flow", async () => {
       linkedViews: ["assets.files"]
     })
   });
-  assert.equal(updatedDepartment.status, 200);
-  const updatedDepartmentBody = updatedDepartment.body as {
-    data: {
-      id: string;
-      key: string;
-      name: string;
-      description: string | null;
-      icon: string;
-      position: number;
-      status: string;
-      linkedViews: string[];
-      href: string | null;
-    };
-  };
-  assert.equal(updatedDepartmentBody.data.id, createdDepartmentBody.data.id);
-  assert.equal(updatedDepartmentBody.data.key, "13-marketing-lab");
-  assert.equal(updatedDepartmentBody.data.name, "13 Growth Lab");
-  assert.equal(updatedDepartmentBody.data.description, "Launch and growth operating room.");
-  assert.equal(updatedDepartmentBody.data.icon, "ph-rocket-launch");
-  assert.equal(updatedDepartmentBody.data.position, 14);
-  assert.equal(updatedDepartmentBody.data.status, "archived");
-  assert.deepEqual(updatedDepartmentBody.data.linkedViews, ["assets.files"]);
-  assert.equal(updatedDepartmentBody.data.href, "/areas?area=08-zasoby&view=files");
+  assert.equal(updatedDepartment.status, 409);
+  assert.equal((updatedDepartment.body as { error: string }).error, "department_composition_preview_required");
 
   const invalidDepartmentView = await request("/v1/departments", {
     method: "POST",

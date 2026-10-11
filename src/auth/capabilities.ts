@@ -14,6 +14,7 @@ export const capabilities = [
   "dashboard:read",
   "departments:read",
   "departments:write",
+  "department-composition:owner",
   "mcp:read",
   "intake:read",
   "intake:write",
@@ -161,7 +162,9 @@ export const adapterManifest = {
     departments: [
       { method: "GET", path: "/v1/departments", capability: "departments:read" },
       { method: "POST", path: "/v1/departments", capability: "departments:write" },
-      { method: "PATCH", path: "/v1/departments/:id", capability: "departments:write" }
+      { method: "PATCH", path: "/v1/departments/:id", capability: "departments:write" },
+      { method: "POST", path: "/v1/departments/:id/preview", capability: "department-composition:owner" },
+      { method: "POST", path: "/v1/departments/:id/actions/apply", capability: "department-composition:owner" }
     ],
     intake: [
       { method: "GET", path: "/v1/intake", capability: "intake:read" },

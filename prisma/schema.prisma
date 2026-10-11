@@ -756,6 +756,7 @@ model WorkspaceDepartment {
   position                 Int                                @default(0)
   isSystem                 Boolean                            @default(false) @map("is_system")
   status                   String                             @default("active")
+  compositionVersion       Int                                @default(1) @map("composition_version")
   linkedViews              Json                               @default("[]") @map("linked_views")
   metadata                 Json                               @default("{}")
   organizationalRelations  OrganizationalDepartmentRelation[]
