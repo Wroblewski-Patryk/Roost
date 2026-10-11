@@ -127,7 +127,7 @@ export function ExecutionContinuationReview({ taskId, executionId, fallback, onA
     {execution ? <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
       <div><dt className="text-company-muted">{c.attempt}</dt><dd>{execution.attempt ?? "—"}</dd></div>
       <div><dt className="text-company-muted">{c.checkpoint}</dt><dd>{checkpointStage(execution.checkpoint) || "—"} · v{execution.checkpointVersion ?? "—"}</dd></div>
-      <div><dt className="text-company-muted">{c.stop}</dt><dd className="break-words">{stopped ? execution.errorState?.code || execution.status : "—"}{stopped && execution.errorState?.message ? ` · ${execution.errorState.message}` : ""}</dd></div>
+      <div><dt className="text-company-muted">{c.stop}</dt><dd className="break-words">{stopped ? execution.errorState?.code || execution.status : "—"}</dd></div>
       <div><dt className="text-company-muted">{c.usage}</dt><dd>{measures.map(([name, value]) => <span className="block break-all" key={name}>{name}: {value.toLocaleString(locale)}</span>)}{unknownMeasures.map(name => <span className="block break-all" key={name}>{name}: {c.unknown}</span>)}{!measures.length && !unknownMeasures.length ? c.unknown : null}</dd></div>
     </dl> : null}
     <p className="mt-3 text-sm text-company-muted">{c.limitation}</p>

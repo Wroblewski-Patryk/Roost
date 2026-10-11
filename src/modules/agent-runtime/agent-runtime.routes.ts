@@ -1078,7 +1078,25 @@ agentRuntimeRouter.get("/executions", asyncHandler(async (req, res) => {
   const status = typeof req.query.status === "string" && Object.values(AgentExecutionStatus).includes(req.query.status as AgentExecutionStatus) ? req.query.status as AgentExecutionStatus : undefined;
   const taskId = typeof req.query.taskId === "string" ? req.query.taskId : undefined;
   const applicationId = typeof req.query.applicationId === "string" ? req.query.applicationId : undefined;
-  const executions = await prisma.agentExecution.findMany({ where: { workspaceId: req.auth!.workspaceId, ...(status ? { status } : {}), ...(taskId ? { taskId } : {}), ...(applicationId ? { applicationId } : {}) }, include: executionInclude, orderBy: { createdAt: "desc" }, take: 200 });
+  // The native redaction boundary scans at most 512 KiB per response. A full
+  // history row includes its prompt, task context and up to 500 events; even a
+  // modest history can exceed that bound and fail closed. Keep this list small
+  // and fetch a bounded detail only when the owner opens one execution.
+  const rawPage = req.query.page;
+  if (rawPage !== undefined && (typeof rawPage !== "string" || !/^\d+$/.test(rawPage))) return sendApiError(res, 400, "invalid_page");
+  const page = rawPage === undefined ? 0 : Number(rawPage);
+  if (!Number.isSafeInteger(page) || page > 1000) return sendApiError(res, 400, "invalid_page");
+  const executions = await prisma.agentExecution.findMany({
+    where: { workspaceId: req.auth!.workspaceId, ...(status ? { status } : {}), ...(taskId ? { taskId } : {}), ...(applicationId ? { applicationId } : {}) },
+    select: {
+      id: true, status: true, attempt: true, createdAt: true, startedAt: true,
+      contextInvalidatedAt: true, contextStoppedAt: true,
+      task: { select: { id: true, title: true, project: { select: { id: true, name: true } } } },
+      application: { select: { id: true, name: true, slug: true } },
+      agentHost: { select: { id: true, name: true } }
+    },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }], skip: page * 50, take: 50
+  });
   res.json({ data: executions });
 }));
 
@@ -1094,9 +1112,27 @@ agentRuntimeRouter.post("/executions/:id/actions/revalidate-result-basis", async
 }));
 
 agentRuntimeRouter.get("/executions/:id", asyncHandler(async (req, res) => {
-  const execution = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId }, include: executionInclude });
+  const execution = await prisma.agentExecution.findFirst({
+    where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId },
+    select: {
+      id: true, status: true, attempt: true, createdAt: true, startedAt: true, completedAt: true,
+      summary: true, finalResponse: true, changedFiles: true, usage: true, errorState: true,
+      checkpoint: true, checkpointVersion: true, metadata: true,
+      contextInvalidatedAt: true, contextStoppedAt: true, contextInvalidation: true,
+      task: { select: { id: true, title: true, project: { select: { id: true, name: true } } } },
+      application: { select: { id: true, name: true, slug: true } },
+      agentHost: { select: { id: true, name: true } },
+      events: { orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 20,
+        select: { id: true, type: true, level: true, message: true, payload: true, createdAt: true } }
+    }
+  });
   if (!execution) return sendApiError(res, 404, "agent_execution_not_found");
-  res.json({ data: execution });
+  const eventTotalCount = await prisma.agentExecutionEvent.count({ where: { workspaceId: req.auth!.workspaceId, executionId: execution.id } });
+  const metadata = execution.metadata && typeof execution.metadata === "object" && !Array.isArray(execution.metadata)
+    ? execution.metadata as Record<string, unknown> : {};
+  res.json({ data: { ...execution, leaseToken: null,
+    metadata: { resultRevision: metadata.resultRevision ?? null, refusedTrackedRecoveries: metadata.refusedTrackedRecoveries ?? null },
+    events: [...execution.events].reverse(), eventTotalCount } });
 }));
 
 agentRuntimeRouter.post("/executions/:id/actions/prior-coding-refusal", asyncHandler(async (req, res) => {

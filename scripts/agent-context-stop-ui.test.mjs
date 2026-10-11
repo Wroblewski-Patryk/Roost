@@ -37,6 +37,7 @@ try {
       assert.equal(route.request().method(), "GET");
       if (url.includes("execution-readiness")) return route.fulfill({ status: 503, json: { error: "fixture_read_unavailable" } });
       if (url.includes("/executions?")) return route.fulfill({ json: { data: [execution] } });
+      if (url.includes(`/executions/${execution.id}?`)) return route.fulfill({ json: { data: execution } });
       if (url.endsWith("/readiness")) return route.fulfill({ json: { data: { executionEnabled: false, mode: "foundation_only", applications: [] } } });
       return route.fulfill({ json: { data: [] } });
     });
@@ -56,11 +57,11 @@ try {
     if (state === "stopped") {
       const close = dialog.getByRole("button", { name: locale === "pl" ? "Zamknij zatrzymaną próbę" : "Close stopped attempt" });
       await close.focus(); await page.keyboard.press("Enter");
-      await dialog.getByRole("button", { name: locale === "pl" ? "Sprawdź nowy kontekst" : "Review new context" }).waitFor();
+      await dialog.getByRole("button", { name: locale === "pl" ? "Przygotuj nowe Ready" : "Prepare new Ready" }).waitFor();
       assert.equal(requests.filter(r => r.method === "POST").length, 1);
     }
     if (state === "cancelled") {
-      await dialog.getByRole("button", { name: locale === "pl" ? "Sprawdź nowy kontekst" : "Review new context" }).click();
+      await dialog.getByRole("button", { name: locale === "pl" ? "Przygotuj nowe Ready" : "Prepare new Ready" }).click();
       await page.getByText(locale === "pl" ? "Nie udało się potwierdzić żądania." : "The request could not be confirmed.", { exact: false }).waitFor();
       assert.ok(requests.some(r => r.url.includes(`/tasks/${execution.task.id}/execution-readiness?editor=1`)));
       assert.equal(requests.some(r => r.method === "POST"), false);

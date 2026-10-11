@@ -32,7 +32,10 @@ try {
     await page.route("**/v1/**", async route => {
       const url = route.request().url();
       assert.equal(route.request().method(), "GET");
-      if (url.includes("/executions?")) return route.fulfill({ json: { data: [{ id: "fixture-execution", status: "failed", createdAt: "2026-09-08T08:00:00Z", task: { id: fingerprint, title: "Synthetic parser task" }, application: { id: "fixture-app", name: "Synthetic app", slug: "fixture" }, changedFiles: [], verification: {}, usage: {}, finalResponse: "[REDACTED]", errorState: { code: "agent_runtime_content_blocked", retryable: false }, events: [{ id: "fixture-event", type: "runtime_redaction", level: "warning", message: "Content removed.", payload: metadata, createdAt: "2026-09-08T08:00:00Z" }] }] } });
+      if (url.includes("/executions?") || url.includes("/executions/fixture-execution?")) {
+        const execution = { id: "fixture-execution", status: "failed", createdAt: "2026-09-08T08:00:00Z", task: { id: fingerprint, title: "Synthetic parser task" }, application: { id: "fixture-app", name: "Synthetic app", slug: "fixture" }, changedFiles: [], verification: {}, usage: {}, finalResponse: "[REDACTED]", errorState: { code: "agent_runtime_content_blocked", retryable: false }, events: [{ id: "fixture-event", type: "runtime_redaction", level: "warning", message: "Content removed.", payload: metadata, createdAt: "2026-09-08T08:00:00Z" }] };
+        return route.fulfill({ json: { data: url.includes("/executions?") ? [execution] : execution } });
+      }
       if (url.includes("/company-records?")) return route.fulfill({ json: { data: [{ id: "fixture-incident", recordType: "technical_incident", key: "runtime-redaction:fixture", title: "Agent runtime content removed", status: "active", priority: "high", functionalState: "unknown", verificationState: "unverified", evidenceCount: 0, source: "runtime_redaction_v1", metadata }] } });
       if (url.includes("/departments?")) return route.fulfill({ json: { data: { departments: [] } } });
       if (url.endsWith("/readiness")) return route.fulfill({ json: { data: { executionEnabled: false, applications: [] } } });

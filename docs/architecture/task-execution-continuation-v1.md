@@ -66,6 +66,14 @@ only for the latest eligible terminal attempt and current Ready. No synthetic
 production task or paid model invocation is required solely to demonstrate the
 guard; native process and disposable-database proofs are separate from exact
 deployment/health read-back.
+Execution history is a paged summary read (50 rows per page); opening one row
+reads its result, stop evidence and the 20 most recent events, with total event
+count shown. The summary never transports prompts, metadata or event bodies,
+and detail omits the prompt and unrelated task/application fields. This keeps
+the present production history within the native redaction boundary without
+weakening it. An unusually large single result or event payload may still be
+blocked by that boundary; such a detail is not claimed readable. Company-
+information executions have no application relation and display as company work.
 
 ## Remaining boundary
 

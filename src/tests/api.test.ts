@@ -3927,6 +3927,29 @@ test("spent application work needs a changed Ready plan and explicit owner conti
     assert.equal((next.body as any).data.metadata.readyContextPin.continuationEventId, approval.requestId);
     assert.equal((next.body as any).data.metadata.readyContextPin.pinId, pin.pinId);
     assert.equal((next.body as any).data.attempt, 0);
+    const history = await request("/v1/agent-runtime/executions?page=0", { headers: auth });
+    assert.equal(history.status, 200, JSON.stringify(history.body));
+    const historyRows = (history.body as any).data as any[];
+    assert.deepEqual(new Set(historyRows.map(row => row.id)), new Set([first.id, (next.body as any).data.id]));
+    for (const row of historyRows) {
+      assert.equal(Object.hasOwn(row, "prompt"), false);
+      assert.equal(Object.hasOwn(row, "metadata"), false);
+      assert.equal(Object.hasOwn(row, "events"), false);
+      assert.equal(row.task.title, task.title);
+    }
+    await prisma.agentExecutionEvent.createMany({ data: Array.from({ length: 25 }, (_, index) => ({
+      workspaceId: owner.workspace.id, executionId: first.id, type: "progress", level: "info",
+      message: `Bounded event ${index}`, payload: {}, createdAt: new Date(Date.now() + index * 1000)
+    })) });
+    const detail = await request(`/v1/agent-runtime/executions/${first.id}`, { headers: auth });
+    assert.equal(detail.status, 200, JSON.stringify(detail.body));
+    assert.equal((detail.body as any).data.eventTotalCount,
+      await prisma.agentExecutionEvent.count({ where: { executionId: first.id } }));
+    assert.equal((detail.body as any).data.events.length, 20);
+    assert.equal((detail.body as any).data.events.at(-1).message, "Bounded event 24");
+    assert.equal(Object.hasOwn((detail.body as any).data, "prompt"), false);
+    assert.deepEqual((await request("/v1/agent-runtime/executions?page=1", { headers: auth })).body, { data: [] });
+    assert.equal((await request("/v1/agent-runtime/executions?page=-1", { headers: auth })).status, 400);
     assert.equal((await prisma.event.count({ where: { id: approval.requestId,
       type: "task_execution_continuation_approved", taskId: task.id } })), 1);
     const hostAuth = { ...auth, ...hostProtocolHeaders };
