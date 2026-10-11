@@ -11,6 +11,12 @@ export const reviewDecisionSchema = z.discriminatedUnion("decision", [
   z.object({ ...precondition, decision: z.literal("approve"), reviewedCommit: z.string().regex(/^[a-f0-9]{40}$/), summary: text, evidence: approvalEvidence }).strict(),
   z.object({ ...precondition, decision: z.literal("reject"), summary: text, evidence, reproduction: lines, expected: text, observed: text, correction: correctionSchema }).strict()
 ]);
+// Information results have no repository revision. Their exact completed
+// material and native receipt are checked by the API and database guard.
+export const informationReviewDecisionSchema = z.discriminatedUnion("decision", [
+  z.object({ ...precondition, decision: z.literal("approve"), reviewedInformationSeal: precondition.materialVersion, summary: text, evidence: approvalEvidence }).strict(),
+  z.object({ ...precondition, decision: z.literal("reject"), summary: text, evidence, reproduction: lines, expected: text, observed: text, correction: correctionSchema }).strict()
+]);
 export const reviewActionSchema = z.discriminatedUnion("action", [
   z.object({ grantId: precondition.grantId, requestId: precondition.requestId, expectedVersion: precondition.expectedVersion, reviewId: z.string().uuid(), action: z.literal("return_to_executor"), scope: lines,
     competencies: z.array(z.string().trim().min(1).max(120)).min(1).max(30).optional(),
@@ -76,8 +82,9 @@ export function correctionDraft(original: any, taskId: string, executor: any, co
   contract.scope = { allowed: correction.scope, forbidden: correction.excluded };
   contract.assignment = { agentId: executor.id, role: executor.role, competencies: correction.competencies };
   contract.taskRoles.executor = { id: executor.id, revision: executor.updatedAt.toISOString() };
-  contract.singleTask = { ...contract.singleTask, contractId: `roost-task:${taskId}`, branch: `codex/task-${taskId}`,
+  const information = contract.singleTask?.applicationId === null && contract.singleTask?.component === null;
+  contract.singleTask = { ...contract.singleTask, contractId: `roost-task:${taskId}`, branch: information ? null : `codex/task-${taskId}`,
     measurement: { metric: "", comparison: "eq", target: 0, unit: "", method: "" },
-    problems: [{ statement: correction.outcome, componentId: contract.singleTask.component.id, outcome: correction.outcome, causalLink: null }], commonCause: null };
+    problems: [{ statement: correction.outcome, componentId: information ? null : contract.singleTask.component.id, outcome: correction.outcome, causalLink: null }], commonCause: null };
   return contract;
 }

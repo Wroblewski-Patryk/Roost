@@ -49,6 +49,11 @@ operation. Scope preparation never grants Ready or execution authority.
 Evidence is separately bound to one of `runtime_execute`, `review_decision`,
 `return_to_executor` or `create_specialist_task`. An approval for one operation
 cannot authorize another task, application, target, release, commit or operation.
+For the bounded company-information task, `decision_supersede`, `runtime_execute`,
+`review_decision` and `return_to_executor` use the selected current company
+source without an application, Git commit or release target. The review and
+return attestations are distinct from execution admission and do not admit
+`create_specialist_task`.
 Scope changes require new evidence. Operation/environment/destructiveness are
 explicit accountable declarations; this bounded system does not inspect arbitrary
 SQL, discover undeclared effects or authorize execution of migrations outside the

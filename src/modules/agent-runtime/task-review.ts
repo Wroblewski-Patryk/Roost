@@ -6,10 +6,13 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import type { Prisma } from "@prisma/client";
-import { lockReadyTask } from "./task-execution-readiness";
+import { inspectReady, lockReadyTask } from "./task-execution-readiness";
+import { inspectCompanyPreparation } from "./company-information-preparation";
+import { informationNativeProven, isInformationRuntime } from "./company-information-runtime";
+import { riskLevelAdmission } from "./task-risk-admission";
 import { effectiveCompletedResult, effectiveRejectedResultForDisposition } from "./completed-result-basis";
 import { resolveTaskRoleContext } from "./task-role-context";
-import { nativeBoundaryResultBlocked, exactReviewCommit, correctionDraft, managerCorrectionCompetencies, object, reviewActionSchema, reviewDecisionSchema, reviewDigest, wire } from "./task-review-contract";
+import { nativeBoundaryResultBlocked, exactReviewCommit, correctionDraft, managerCorrectionCompetencies, object, reviewActionSchema, reviewDecisionSchema, informationReviewDecisionSchema, reviewDigest, wire } from "./task-review-contract";
 
 const loadESM = new Function("specifier", "return import(specifier)") as (specifier: string) => Promise<any>;
 const roleValidator = loadESM(pathToFileURL(path.resolve(__dirname, "../../../scripts/lib/agent-host-task-roles.mjs")).href);
@@ -25,6 +28,9 @@ export async function reviewState(db: Db, workspaceId: string, taskId: string, a
   const material = execution ? (await db.$queryRaw<Array<{ material: any; version: string }>>`SELECT task_review_material(e) AS material, encode(sha256(convert_to(task_review_material(e)::text,'UTF8')),'hex') AS version FROM agent_executions e WHERE id=${execution.id}::uuid`)[0] : null;
   const result = material?.material ?? null;
   const pin = object(task.executionReadiness), contract = object(result?.contract);
+  const information = Boolean(execution && execution.applicationId === null && isInformationRuntime(contract));
+  const informationProven = information && await informationNativeProven(db, execution);
+  const legacyInformationReview = information && await db.agentExecutionEvent.findFirst({ where: { workspaceId, executionId: execution!.id, type: "information_review" }, select: { id: true } });
   const authorities = await resolveTaskRoleContext(db, workspaceId, task, contract);
   const workers = await db.workforceEntity.findMany({ where: { workspaceId, id: { in: [authorities.verifier?.id, authorities.accountableManager?.id].filter((id): id is string => Boolean(id)) } }, select: { id: true, name: true } });
   const labels = { verifier: workers.find(w=>w.id===authorities.verifier?.id)?.name, manager: workers.find(w=>w.id===authorities.accountableManager?.id)?.name };
@@ -40,32 +46,47 @@ export async function reviewState(db: Db, workspaceId: string, taskId: string, a
   const approvalCommit = exactReviewCommit(result, execution);
   const effective = execution && pin.pinId !== result?.pin?.pinId ? await effectiveCompletedResult(db, workspaceId, execution) : execution;
   const effectivePin = object(object(effective?.metadata).readyContextPin);
-  const current = Boolean(execution?.status === "completed" && execution.completedAt && !execution.contextInvalidatedAt && result?.pin?.pinId && pin.pinId === effectivePin.pinId && pin.revision === effectivePin.revision && task.assignedWorkforceEntityId === contract.assignment?.agentId);
-  const disposition = !current && decision?.decision === "reject" && !decision.action
+  // A completed execution is no longer a claimable Worker envelope. Recheck
+  // today's Ready from the task, then compare its exact bound execution pin.
+  const ready = information && informationProven && pin.status === "ready" ? await inspectReady(db, workspaceId, taskId, undefined, true) : null;
+  const baseCurrent = Boolean(execution?.status === "completed" && execution.completedAt && !execution.contextInvalidatedAt && result?.pin?.pinId && pin.pinId === effectivePin.pinId && pin.revision === effectivePin.revision && task.assignedWorkforceEntityId === contract.assignment?.agentId
+    && (!information || pin.runtimeApproval?.decisionId === effectivePin.runtimeDecisionId && pin.runtimeApproval?.decisionVersion === effectivePin.runtimeDecisionVersion));
+  const current = baseCurrent && (!information || Boolean(ready && !ready.error && !legacyInformationReview));
+  const disposition = !information && !current && decision?.decision === "reject" && !decision.action
     ? await effectiveRejectedResultForDisposition(db, workspaceId, execution) : execution;
   const dispositionPin = object(object(disposition?.metadata).readyContextPin);
-  const manageCurrent = current || Boolean(disposition !== execution && pin.pinId === dispositionPin.pinId
+  const rejectedPin = information && baseCurrent && decision?.decision === "reject" && !decision.action
+    && pin.status === "needs_revalidation" && pin.reason === "review_rejected"
+    && pin.pinId === object(result?.pin).pinId && pin.revision === object(result?.pin).revision
+    && reviewDigest(task.executionRoleProvenance) === reviewDigest(pin.roleProvenance)
+    ? await inspectCompanyPreparation(db, workspaceId, { ...task, executionReadiness: { ...pin, status: "ready", reason: undefined } }, undefined, true) : null;
+  const manageCurrent = current || Boolean(rejectedPin && !rejectedPin.error) || Boolean(disposition !== execution && pin.pinId === dispositionPin.pinId
     && pin.revision === dispositionPin.revision && task.assignedWorkforceEntityId === contract.assignment?.agentId);
   const expectedVersion = reviewDigest({ task: { id: task.id, updatedAt: task.updatedAt, readiness: pin, provenance: task.executionRoleProvenance, executor: task.assignedWorkforceEntityId }, result, authorities, decision });
-  return { task, execution, result, contract, authorities, labels, decision, materialVersion, approvalCommit, expectedVersion, current, manageCurrent, basisCurrent: Boolean(current && effective !== execution), roleIssues, principal, roleMatches,
-    canReview: current && !decision && !roleIssues.length && roleMatches(authorities.verifier),
-    canManage: manageCurrent && decision?.decision === "reject" && !decision.action && !roleIssues.length && roleMatches(authorities.accountableManager) };
+  return { task, execution, result, contract, authorities, labels, decision, materialVersion, approvalCommit, information, informationProven, expectedVersion, current, manageCurrent, basisCurrent: Boolean(current && effective !== execution), roleIssues, principal, roleMatches,
+    canReview: current && !decision && !roleIssues.length && roleMatches(authorities.verifier) && (!information || principal?.kind === "user"),
+    canManage: manageCurrent && decision?.decision === "reject" && !decision.action && !roleIssues.length && roleMatches(authorities.accountableManager) && (!information || principal?.kind === "user") };
 }
 
 export async function taskReviewView(db: Db, workspaceId: string, taskId: string, actor: ReviewActor, cursor?: string) {
   const s = await reviewState(db, workspaceId, taskId, actor);
   if ("error" in s) return s;
+  if (actor && typeof actor !== "string" && actor.authType === "api_key" && !s.principal) return { error: "task_review_forbidden" } as const;
+  if (s.information && (!s.principal || s.principal.kind !== "user"
+    || !s.roleMatches(s.authorities.verifier) && !s.roleMatches(s.authorities.accountableManager)
+      && !(actor && typeof actor !== "string" && actor.workspaceRole === "owner")))
+    return { error: "task_review_forbidden" } as const;
   if (s.principal?.kind === "agent" && s.task.assignedWorkforceEntityId !== s.principal.id
     && !s.roleMatches(s.authorities.verifier) && !s.roleMatches(s.authorities.accountableManager))
     return { error: "task_review_forbidden" } as const;
   if (cursor && !await db.taskReviewDecision.findFirst({ where: { id: cursor, workspaceId, taskId } })) return { error: "task_review_cursor_invalid" };
   const history = await db.taskReviewDecision.findMany({ where: { workspaceId, taskId }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 51, ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}), include: { action: true } });
   const grantAccess = await agentGrantAccess(db, workspaceId, taskId, s.principal);
-  const blocked = async(operation:string)=>Boolean(s.execution && (!s.execution.applicationId || await suspensionBlocks(db,workspaceId,taskId,s.execution.applicationId,operation,s.principal?.kind==="agent"?s.principal.id:null,s.principal?.credentialId)));
+  const blocked = async(operation:string)=>Boolean(s.execution && (!s.execution.applicationId ? !s.information || s.principal?.kind !== "user" || operation === "create_specialist_task" || Boolean((await riskLevelAdmission(db,taskId,operation)).error) : await suspensionBlocks(db,workspaceId,taskId,s.execution.applicationId,operation,s.principal?.kind==="agent"?s.principal.id:null,s.principal?.credentialId)));
   const reviewBlocked=await blocked("review_decision"), returnBlocked=await blocked("return_to_executor"), specialistBlocked=await blocked("create_specialist_task");
   const canReview = s.canReview && !reviewBlocked && (!grantAccess || grantAccess.review_decision.status === "active");
   const canManage = s.canManage && ((!returnBlocked&&(!grantAccess||grantAccess.return_to_executor.status==="active")) || (!specialistBlocked&&(!grantAccess||grantAccess.create_specialist_task.status==="active")));
-  const specialists = s.principal?.kind === "agent" && !canManage ? []
+  const specialists = s.information || s.principal?.kind === "agent" && !canManage ? []
     : await db.workforceEntity.findMany({ where: { workspaceId, type: "agent", status: "active", source: { not: "user" } }, select: { id: true, name: true, role: true, skillIndex: true, updatedAt: true }, orderBy: { name: "asc" }, take: 501 });
   const canManageGrants = s.principal?.kind === "user" && Boolean(await db.workspaceMembership.findFirst({ where: { workspaceId, userId: s.principal.id, role: { in: ["owner", "admin"] } } }));
   return { task: { id: taskId, title: s.task.title, workspaceId: s.task.workspaceId }, decisionAuthorities:await taskDecisionAuthorities(db,workspaceId,taskId),expectedVersion: s.expectedVersion, materialVersion: s.materialVersion,
@@ -73,16 +94,19 @@ export async function taskReviewView(db: Db, workspaceId: string, taskId: string
     executionChronology: s.execution?.completedAt && s.materialVersion ? { schemaVersion: "roost-task-review-execution-chronology-v1",
       executionId: s.execution.id, materialVersion: s.materialVersion, completedAt: s.execution.completedAt.toISOString() } : null,
     ...await suspensionList(db,workspaceId,taskId), blockedOperations:{review_decision:reviewBlocked,return_to_executor:returnBlocked,create_specialist_task:specialistBlocked},
-    result: s.result, basisCurrent: s.basisCurrent, labels: s.labels, decision: decisionView(s.decision), approvalCommit: s.approvalCommit, canReview: Boolean(canReview), canManage: Boolean(canManage), grantAccess, canManageGrants,
+    result: s.result, basisCurrent: s.basisCurrent, labels: s.labels, decision: decisionView(s.decision), approvalCommit: s.approvalCommit, approvalInformationSeal: s.information && s.informationProven ? s.materialVersion : null, informationTask: s.information, canReview: Boolean(canReview), canManage: Boolean(canManage), grantAccess, canManageGrants,
     reason: grantAccess && (s.canReview && !canReview || s.canManage && !canManage) ? "capability_grant_required" : !s.execution ? "no_result" : !s.current && !s.manageCurrent ? "stale_result" : s.roleIssues.length ? "roles_need_context" : s.canReview || s.canManage ? null : s.decision ? s.decision.action ? "action_recorded" : s.decision.decision === "approve" ? "approved" : "manager_required" : "verifier_required",
     history: history.slice(0, 50).map(decisionView), nextCursor: history.length > 50 ? history[49]!.id : null,
     specialists: specialists.slice(0, 500).map(w => ({ id: w.id, label: w.name, revision: w.updatedAt.toISOString(), competencies: w.skillIndex, role: w.role })), specialistsTruncated: specialists.length > 500 };
 }
 
 export async function recordTaskReview(db: Db, workspaceId: string, taskId: string, actor: ReviewActor, body: unknown) {
-  const input = reviewDecisionSchema.parse(body), s = await reviewState(db, workspaceId, taskId, actor);
+  const s = await reviewState(db, workspaceId, taskId, actor);
   if ("error" in s) return s;
+  if (actor && typeof actor !== "string" && actor.authType === "api_key" && !s.principal) return { error: "task_review_forbidden" } as const;
+  const input = (s.information ? informationReviewDecisionSchema : reviewDecisionSchema).parse(body);
   if (input.decision === "approve" && nativeBoundaryResultBlocked(s.execution?.verification, s.contract)) return { error: "native_boundary_reconciliation_required" };
+  if (s.information && !s.informationProven) return { error: "information_native_proof_required" };
   const principal = s.principal;
   const actorUserId = principal?.kind === "user" ? principal.id : null;
   const actorAgentId = principal?.kind === "agent" ? principal.id : null;
@@ -97,20 +121,25 @@ export async function recordTaskReview(db: Db, workspaceId: string, taskId: stri
   if (prior) return prior.requestHash === requestHash ? { decision: decisionView(prior), replayed: true } : { error: "task_review_key_conflict" };
   if (!s.current || input.executionId !== s.execution?.id || input.materialVersion !== s.materialVersion || input.expectedVersion !== s.expectedVersion) return { error: "task_review_stale" };
   if (!s.canReview) return { error: "task_review_already_decided" };
-  if (input.decision === "approve" && (!s.approvalCommit || input.reviewedCommit !== s.approvalCommit)) return { error: "task_review_exact_commit_required" };
+  if (input.decision === "approve" && (s.information ? !s.materialVersion || !("reviewedInformationSeal" in input) || input.reviewedInformationSeal !== s.materialVersion
+    : !s.approvalCommit || !("reviewedCommit" in input) || input.reviewedCommit !== s.approvalCommit)) return { error: s.information ? "information_result_seal_required" : "task_review_exact_commit_required" };
   const { grantId: _grantId, requestId, expectedVersion: _version, executionId, materialVersion, decision, ...evidence } = input;
   const saved = await db.taskReviewDecision.create({ data: { workspaceId, taskId, executionId, requestId, requestHash, materialVersion, ...actorEvidence, capabilityGrantId: capability.grant?.id,
     verifierId: s.contract.taskRoles.verifier.id, managerId: s.contract.taskRoles.accountableManager.id, decision, evidence: wire(evidence), snapshot: wire({ result: s.result, authorities: s.authorities, labels: s.labels, reviewedVersion: s.expectedVersion }) } });
-  // Review changes admission only; it never edits assignment, task branch or files.
+  if (s.information && decision === "approve" && s.task.source !== "clickup")
+    await db.task.update({ where: { id: taskId }, data: { status: "done" } });
+  // Review never edits assignment, task branch or files. Local information
+  // tasks reflect an approved result in their ordinary status.
   if (decision === "reject") await db.task.update({ where: { id: taskId }, data: { executionReadiness: { ...object(s.task.executionReadiness), status: "needs_revalidation", reason: "review_rejected" } } });
   await recordCapabilityUse(db, capability.grant, requestId, "decision", saved.id);
-  await db.event.create({ data: { workspaceId, taskId, actorType: principal.kind, actorId: principal.id, type: "task_review_decided", source: "roost", resourceType: "task_review", resourceId: saved.id, payload: { reviewId: saved.id, executionId, materialVersion, decision, ...(decision === "approve" ? { reviewedCommit: input.reviewedCommit } : {}), ...actorEvidence } } });
+  await db.event.create({ data: { workspaceId, taskId, actorType: principal.kind, actorId: principal.id, type: "task_review_decided", source: "roost", resourceType: "task_review", resourceId: saved.id, payload: { reviewId: saved.id, executionId, materialVersion, decision, ...(decision === "approve" ? s.information ? { reviewedInformationSeal: s.materialVersion } : { reviewedCommit: "reviewedCommit" in input ? input.reviewedCommit : null } : {}), ...actorEvidence } } });
   return { decision: decisionView(saved), replayed: false };
 }
 
 export async function actOnTaskReview(db: Db, workspaceId: string, taskId: string, actor: ReviewActor, body: unknown) {
   const input = reviewActionSchema.parse(body), s = await reviewState(db, workspaceId, taskId, actor);
   if ("error" in s) return s;
+  if (s.information && input.action !== "return_to_executor") return { error: "information_specialist_unqualified" };
   const principal = s.principal;
   const actorUserId = principal?.kind === "user" ? principal.id : null;
   const actorAgentId = principal?.kind === "agent" ? principal.id : null;
@@ -148,6 +177,8 @@ export async function actOnTaskReview(db: Db, workspaceId: string, taskId: strin
     await db.dependency.create({ data: { id: dependencyId!, workspaceId, dependencyType: "review_correction", fromEntityType: "task", fromEntityId: taskId, toEntityType: "task", toEntityId: childTaskId, metadata: { reviewId: input.reviewId } } });
   }
   await db.task.update({ where: { id: taskId }, data: childTaskId ? { executionReadiness: { ...object(s.task.executionReadiness), status: "needs_decision", reason: "review_specialist_pending" } } : { executionReadiness: { ...object(s.task.executionReadiness), ...readiness } } });
+  if (s.information && !childTaskId && s.task.source !== "clickup")
+    await db.task.update({ where: { id: taskId }, data: { status: "todo" } });
   await recordCapabilityUse(db, capability.grant, input.requestId, "action", action.id);
   await db.event.create({ data: { workspaceId, taskId, actorType: principal.kind, actorId: principal.id, type: "task_review_manager_action", source: "roost", resourceType: "task_review_action", resourceId: action.id, payload: { actionId: action.id, reviewId: input.reviewId, action: input.action, ...actorEvidence, childTaskId, dependencyId } } });
   return { action: actionView(action), replayed: false };

@@ -160,7 +160,7 @@ export type DashboardCommandPacket = {
 
 export type OperationsWorkItem = {
   id: string;
-  informationResult?: { taskId: string; executionStatus: string; reviewDecision: "accept" | "return" | null } | null;
+  informationResult?: { taskId: string; executionStatus: string; reviewDecision: "accept" | "reject" | "return" | null } | null;
   task: {
     id: string;
     title: string;

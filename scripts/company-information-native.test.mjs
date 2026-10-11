@@ -181,13 +181,27 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
     });
     await t.test('company risk and admission qualify normal Decision and information Ready', async () => {
       const runtimeTask = await prisma.task.create({ data: { workspaceId, title: 'Summarize current evidenced Roost preparation and next action', goalId: contract.objective.goalId, assignedWorkforceEntityId: contract.assignment.agentId,
-        ...(process.env.ROOST_G6_NATIVE_RUNTIME === '1' ? {} : { source: 'clickup', externalId: 'synthetic-company-information-task' }) } });
+        ...(process.env.ROOST_G6_NATIVE_RUNTIME === '1' || process.env.ROOST_G11_REVIEW_ACTION === 'local-approve'
+          ? {} : { source: 'clickup', externalId: 'synthetic-company-information-task' }) } });
       const currentSource = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: 'g6-real-status', title: 'Current Roost delivery evidence', description: 'G6a has local PostgreSQL/HTTP preparation proof. A company task can be Ready and queued without an Application or Git. Actual model execution and owner result review are still required for full G6. No application work or VPS deployment is authorized.' } });
       const unrelatedSource = await prisma.companyRecord.create({ data: { workspaceId, recordType: 'requirement', key: 'g6-unselected-status', title: 'Unselected company source', description: 'This source is outside the exact task context.' } });
       const wrongActor = await prisma.user.create({ data: { email: 'member@g6-risk.example.test', passwordHash: 'synthetic-not-a-login' } });
       await prisma.workspaceMembership.create({ data: { workspaceId, userId: wrongActor.id, role: 'member' } });
       const { createAuthToken } = require('../dist/auth/token.js');
       const memberToken = createAuthToken({ workspaceId, userId: wrongActor.id });
+      let verifierToken, managerToken;
+      if (process.env.ROOST_G11_REVIEW_ACTION) {
+        const verifierUser = await prisma.user.create({ data: { email: 'verifier@g11.example.test', passwordHash: 'synthetic-not-a-login' } });
+        await prisma.workspaceMembership.create({ data: { workspaceId, userId: verifierUser.id, role: 'member' } });
+        const humanManager = await prisma.workforceEntity.create({ data: { workspaceId, name: 'Independent human manager', slug: 'g11-manager', type: 'human', source: 'user', externalId: wrongActor.id,
+          role: 'accountable manager', skillIndex: ['javascript'], authorityScope: ['task_accountability'] } });
+        const humanVerifier = await prisma.workforceEntity.create({ data: { workspaceId, name: 'Independent human verifier', slug: 'g11-verifier', type: 'human', source: 'user', externalId: verifierUser.id,
+          role: 'verifier', skillIndex: ['javascript'], authorityScope: ['task_verification'] } });
+        managerToken = memberToken; verifierToken = createAuthToken({ workspaceId, userId: verifierUser.id });
+        contract.singleTask.accountableManager = ref(humanManager);
+        contract.taskRoles.accountableManager = ref(humanManager);
+        contract.taskRoles.verifier = ref(humanVerifier);
+      }
       const foreignOwner = await request('/auth/register', null, { email: 'foreign@g6-risk.example.test', password: 'synthetic-test-password-only', name: 'Foreign owner', workspaceName: 'Foreign risk workspace' });
       assert.equal(foreignOwner.status, 201);
       const foreignToken = foreignOwner.body.data.token;
@@ -326,19 +340,31 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       const renewedAssessment = await request(`${root}/risk/assessments`, token, { ...assessmentBody, requestId: randomUUID(), expectedVersion: (await request(`${root}/risk`, token)).body.data.expectedVersion });
       assert.equal(renewedAssessment.status, 200, JSON.stringify(renewedAssessment.body));
       admission = await request(admissionRoot, token);
-      const runtimeScope = await request(`${admissionRoot}/scope`, token, { ...scopeBody, requestId: randomUUID(), expectedVersion: admission.body.data.expectedVersion, operations: ['runtime_execute'] });
+      const runtimeScope = await request(`${admissionRoot}/scope`, token, { ...scopeBody, requestId: randomUUID(), expectedVersion: admission.body.data.expectedVersion,
+        operations: process.env.ROOST_G11_REVIEW_ACTION ? ['runtime_execute', 'review_decision', 'return_to_executor'] : ['runtime_execute'] });
       assert.equal(runtimeScope.status, 200, JSON.stringify(runtimeScope.body));
       admission = await request(admissionRoot, token);
       const runtimeEvidence = await request(`${admissionRoot}/evidence`, token, { requestId: randomUUID(), expectedVersion: admission.body.data.expectedVersion,
         operation: 'runtime_execute', gate: 'procedure', verdict: 'passed', evidence, rationale: 'Current source checked for runtime',
         validation: 'Compared selected source with exact runtime task', observedResult: 'Source supports a tool-free summary' });
       assert.equal(runtimeEvidence.status, 200, JSON.stringify(runtimeEvidence.body));
+      if (process.env.ROOST_G11_REVIEW_ACTION) for (const operation of ['review_decision', 'return_to_executor']) {
+        admission = await request(admissionRoot, token);
+        const attestedReview = await request(`${admissionRoot}/evidence`, token, { requestId: randomUUID(), expectedVersion: admission.body.data.expectedVersion,
+          operation, gate: 'procedure', verdict: 'passed', evidence, rationale: 'Exact company information review operation',
+          validation: 'Selected source and declared roles checked', observedResult: 'Scoped review operation admitted' });
+        assert.equal(attestedReview.status, 200, JSON.stringify(attestedReview.body));
+      }
       assert.ok((await prisma.$queryRawUnsafe(`SELECT task_admission_seal('${runtimeTask.id}'::uuid,'runtime_execute') AS seal`))[0].seal);
       const readyVersion = await request(`${root}/execution-readiness?version=1&executionClass=roost-company-information-runtime-v1`, token);
       const ready = await request(`${root}/actions/submit-for-execution`, token, { requestId: randomUUID(), expectedVersion: readyVersion.body.data.submissionVersion,
         applicationId: null, contract: runtimeContract });
       assert.equal(ready.status, 200, JSON.stringify(ready.body));
       assert.equal(ready.body.data.readiness.modelExecutionQualified, true);
+      const forgedPreparation = await request('/v1/agent-runtime/executions', memberToken,
+        { taskId: runtimeTask.id, executionClass: 'roost-company-information-v1' });
+      assert.equal(forgedPreparation.status, 409); assert.equal(forgedPreparation.body.error, 'task_ready_contract_mismatch');
+      assert.equal(await prisma.agentExecution.count({ where: { taskId: runtimeTask.id } }), 0);
       process.env.ROOST_COMPANY_INFORMATION_RUNTIME_ENABLED = 'true';
       try {
         const successor = await request(`${root}/information-approval-candidate`, token);
@@ -372,6 +398,9 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         workerBindingEpoch: 1, expiresAt: new Date(Date.now() + 3600_000), scopes: ['agent-runtime:claim'] } });
       const worker = { 'X-API-Key': apiKey.body.data.key, 'X-Roost-Host-Protocol': String(protocol.version),
         'X-Roost-Host-Capabilities': [...protocol.requiredHostCapabilities, 'company_information_runtime_v1'].join(',') };
+      const wrongCancel = await request(`/v1/agent-runtime/executions/${runtimeExecutionId}/actions/cancel`, memberToken, {});
+      assert.equal(wrongCancel.status, 403);
+      assert.equal((await prisma.agentExecution.findUniqueOrThrow({ where: { id: runtimeExecutionId } })).status, 'queued');
       if (process.env.ROOST_G6_NATIVE_RUNTIME === '1') {
         const fs = await import('node:fs/promises');
         const os = await import('node:os');
@@ -504,6 +533,105 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
         hostId: host.id, token: claimed.body.data.leaseToken })).digest('hex');
       verifyInformationAdmission(signedAdmission, signer.publicKey.export({ format: 'pem', type: 'spki' }).toString(), { leaseDigest });
       assert.equal(signedAdmission.payload.inputSeal, sealed.inputSeal);
+      if (process.env.ROOST_G11_REVIEW_ACTION) {
+        const admittedEvent = await prisma.agentExecutionEvent.findFirstOrThrow({ where: { executionId: runtimeExecutionId, type: 'information_admitted' } });
+        // Isolated fixture for the result/review boundary. The separate G6
+        // conditional test exercises the actual Worker/Hermes process.
+        const invalidReceipt = process.env.ROOST_G11_REVIEW_ACTION === 'tamper';
+        const verification = { informationRuntime: { schemaVersion: 'roost-company-information-runtime-verification-v1', executionId: runtimeExecutionId,
+          admissionDigest: admittedEvent.payload.admissionDigest, inputSeal: admittedEvent.payload.inputSeal,
+          ownedJob: true, reviewRequired: true, externalWrites: invalidReceipt, nativeTools: invalidReceipt ? ['terminal'] : [] },
+          ownedTreeReceipt: { version: 'roost-windows-job-v2', attempt: runtimeExecutionId, cleanup: true, jobClosed: true, activeProcesses: 0, rootExit: 0 } };
+        const completed = await request(`/v1/agent-runtime/executions/${runtimeExecutionId}/actions/complete`, worker, { leaseToken: claimed.body.data.leaseToken,
+          summary: 'Synthetic sourced information result', finalResponse: 'The selected synthetic source supports the stated preparation status.',
+          changedFiles: invalidReceipt ? ['outside-scope.txt'] : [], verification });
+        if (invalidReceipt) {
+          assert.equal(completed.status, 409, JSON.stringify(completed.body));
+          assert.equal(completed.body.error, 'company_information_result_scope_invalid');
+          assert.notEqual((await prisma.agentExecution.findUniqueOrThrow({ where: { id: runtimeExecutionId } })).status, 'completed');
+          const refused = await request(`${root}/review`, verifierToken);
+          assert.equal(refused.status, 200, JSON.stringify(refused.body));
+          assert.equal(refused.body.data.canReview, false);
+          assert.equal(await prisma.taskReviewDecision.count({ where: { taskId: runtimeTask.id } }), 0);
+          process.stdout.write(`G11 isolated native-proof refusal ${JSON.stringify({ taskId: runtimeTask.id, reviewed: false })}\n`);
+          return;
+        }
+        assert.equal(completed.status, 200, JSON.stringify(completed.body));
+        const legacy = await request(`${root}/actions/review-information`, token, { requestId: randomUUID(), executionId: runtimeExecutionId,
+          materialVersion: 'a'.repeat(64), decision: 'accept', summary: 'Legacy shortcut attempt' });
+        assert.equal(legacy.status, 409); assert.equal(legacy.body.error, 'information_task_review_required');
+        const broadWorker = await request(`${root}/actions/review`, worker, { requestId: randomUUID() });
+        assert.equal(broadWorker.status, 403);
+        const broadView = await request(`${root}/review`, worker);
+        assert.equal(broadView.status, 403);
+        const view = await request(`${root}/review`, verifierToken);
+        assert.equal(view.status, 200, JSON.stringify(view.body));
+        assert.equal(view.body.data.canReview, true, JSON.stringify({ reason: view.body.data.reason, informationTask: view.body.data.informationTask,
+          approvalInformationSeal: Boolean(view.body.data.approvalInformationSeal), blocked: view.body.data.blockedOperations,
+          readiness: (await request(`${root}/execution-readiness`, token)).body.data }));
+        assert.equal(view.body.data.informationTask, true);
+        const baseReview = { requestId: randomUUID(), expectedVersion: view.body.data.expectedVersion, executionId: runtimeExecutionId,
+          materialVersion: view.body.data.materialVersion, summary: 'Independent check of the exact selected source',
+          evidence: [{ kind: 'test', reference: 'Native source comparison', result: 'Selected synthetic fact matches the reported result', verdict: 'pass' }] };
+        if (process.env.ROOST_G11_REVIEW_ACTION === 'status' || process.env.ROOST_G11_REVIEW_ACTION === 'stale') {
+          if (process.env.ROOST_G11_REVIEW_ACTION === 'status') await prisma.task.update({ where: { id: runtimeTask.id }, data: { status: 'done' } });
+          else await prisma.companyRecord.update({ where: { id: currentSource.id }, data: { description: 'Changed selected synthetic source after result completion.' } });
+          const changed = await request(`${root}/review`, verifierToken);
+          assert.equal(changed.status, 200, JSON.stringify(changed.body));
+          assert.equal(changed.body.data.canReview, false);
+          const staleDecision = await request(`${root}/actions/review`, verifierToken, { ...baseReview, decision: 'approve', reviewedInformationSeal: view.body.data.approvalInformationSeal });
+          assert.equal(staleDecision.status, 409);
+          assert.equal(await prisma.taskReviewDecision.count({ where: { taskId: runtimeTask.id } }), 0);
+          process.stdout.write(`G11 isolated refusal ${JSON.stringify({ reason: process.env.ROOST_G11_REVIEW_ACTION, taskId: runtimeTask.id,
+            reviewed: false, providerInvoked: false })}\n`);
+          return;
+        }
+        const wrongRole = await request(`${root}/actions/review`, token, { ...baseReview, decision: 'approve', reviewedInformationSeal: view.body.data.approvalInformationSeal });
+        assert.equal(wrongRole.status, 403); assert.equal(wrongRole.body.error, 'task_review_forbidden');
+        const stale = await request(`${root}/actions/review`, verifierToken, { ...baseReview, requestId: randomUUID(), expectedVersion: 'a'.repeat(64),
+          decision: 'approve', reviewedInformationSeal: view.body.data.approvalInformationSeal });
+        assert.equal(stale.status, 409); assert.equal(stale.body.error, 'task_review_stale');
+        const wrongSeal = await request(`${root}/actions/review`, verifierToken, { ...baseReview, requestId: randomUUID(), decision: 'approve',
+          reviewedInformationSeal: 'a'.repeat(64) });
+        assert.equal(wrongSeal.status, 409); assert.equal(wrongSeal.body.error, 'information_result_seal_required');
+        const action = process.env.ROOST_G11_REVIEW_ACTION;
+        const decisionBody = action === 'approve' || action === 'local-approve' ? { ...baseReview, decision: 'approve', reviewedInformationSeal: view.body.data.approvalInformationSeal }
+          : { ...baseReview, decision: 'reject', reproduction: ['Compare result against the exact selected source'], expected: 'Source fully cited',
+            observed: 'Citation needs correction', correction: { scope: ['Cite the selected source'], excluded: ['Do not add other company records'],
+              outcome: 'Return a sourced summary', competencies: ['javascript'] } };
+        const reviewed = await request(`${root}/actions/review`, verifierToken, decisionBody);
+        assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
+        assert.equal(reviewed.body.data.replayed, false);
+        const replay = await request(`${root}/actions/review`, verifierToken, decisionBody);
+        assert.equal(replay.status, 200, JSON.stringify(replay.body)); assert.equal(replay.body.data.replayed, true);
+        if (action === 'reject') {
+          const pendingResult = await request(`${root}/information-result`, token);
+          assert.equal(pendingResult.body.data.review?.decision, 'reject');
+          const pendingAttention = await request('/v1/dashboard/command', token);
+          assert.ok(pendingAttention.body.data.priorityItems.some(item => item.kind === 'result' && item.id === runtimeTask.id));
+          const pendingBoard = await request('/v1/operations/work-items?limit=200', token);
+          assert.equal(pendingBoard.body.data.workItems.find(item => item.task.id === runtimeTask.id).informationResult.reviewDecision, 'reject');
+          const managerView = await request(`${root}/review`, managerToken);
+          assert.equal(managerView.status, 200, JSON.stringify(managerView.body));
+          assert.equal(managerView.body.data.canManage, true);
+          const returned = await request(`${root}/actions/review-return`, managerToken, { requestId: randomUUID(), expectedVersion: managerView.body.data.expectedVersion,
+            reviewId: reviewed.body.data.decision.id, action: 'return_to_executor', scope: ['Cite the selected source'] });
+          assert.equal(returned.status, 200, JSON.stringify(returned.body));
+          assert.equal(returned.body.data.action.action, 'return_to_executor');
+        }
+        assert.equal(await prisma.taskReviewDecision.count({ where: { taskId: runtimeTask.id } }), 1);
+        assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: runtimeTask.id } })).status,
+          action === 'local-approve' ? 'done' : 'todo');
+        const resultView = await request(`${root}/information-result`, token);
+        assert.equal(resultView.body.data.review?.decision, action === 'approve' || action === 'local-approve' ? 'accept' : 'return');
+        const operations = await request('/v1/operations/work-items?limit=200', token);
+        assert.equal(operations.status, 200);
+        assert.equal(operations.body.data.workItems.find(item => item.task.id === runtimeTask.id).informationResult.reviewDecision,
+          action === 'approve' || action === 'local-approve' ? 'accept' : 'return');
+        process.stdout.write(`G11 isolated review ${JSON.stringify({ action, taskId: runtimeTask.id, executionId: runtimeExecutionId,
+          reviewed: true, returned: action === 'reject', providerInvoked: false })}\n`);
+        return;
+      }
       // The read-only projection reflects a real admitted row. Native SQL
       // correctly refuses a fabricated completed result without a Worker job.
       const board = await request('/v1/operations/work-items?limit=200', token);
@@ -514,8 +642,15 @@ test('native G6a: HTTP Ready -> real queue -> native Worker validation with SQL 
       assert.equal(boardTask.informationResult.reviewDecision, null);
       const failedAttempt = await request(`/v1/agent-runtime/executions/${runtimeExecutionId}/actions/fail`, worker, {
         leaseToken: claimed.body.data.leaseToken, code: 'synthetic_provider_unavailable',
-        message: 'Synthetic terminal failure before any provider request', retryable: false, details: {} });
+        message: 'Synthetic terminal failure before any provider request', retryable: true, details: {} });
       assert.equal(failedAttempt.status, 200, JSON.stringify(failedAttempt.body));
+      process.env.ROOST_CODEX_EXECUTION_ENABLED = 'true';
+      let forbiddenRetry;
+      try { forbiddenRetry = await request(`/v1/agent-runtime/executions/${runtimeExecutionId}/actions/retry`, memberToken, {}); }
+      finally { delete process.env.ROOST_CODEX_EXECUTION_ENABLED; }
+      assert.equal(forbiddenRetry.status, 409);
+      assert.equal(forbiddenRetry.body.error, 'company_information_owner_decision_required');
+      assert.equal(await prisma.agentExecution.count({ where: { taskId: runtimeTask.id } }), 1);
       const failedResult = await request(`${root}/information-result`, token);
       assert.equal(failedResult.body.data.status, 'failed');
       assert.equal(failedResult.body.data.canReview, false);

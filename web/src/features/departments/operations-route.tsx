@@ -140,6 +140,9 @@ function informationResultBadge(row: OperationsWorkItem, locale: string) {
   if (result.executionStatus === "completed" && result.reviewDecision === "return") return {
     label: locale === "pl" ? "Wynik Workera: zwrócony" : "Worker result: returned", tone: "badge-warning"
   };
+  if (result.executionStatus === "completed" && result.reviewDecision === "reject") return {
+    label: locale === "pl" ? "Wynik Workera: odrzucony, czeka na decyzję menedżera" : "Worker result: rejected, awaiting manager", tone: "badge-warning"
+  };
   if (result.executionStatus === "completed") return {
     label: locale === "pl" ? "Wynik Workera: do oceny" : "Worker result: review needed", tone: "badge-info"
   };

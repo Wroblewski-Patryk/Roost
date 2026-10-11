@@ -57,6 +57,10 @@ async function attentionPage(workspaceId: string, offset: number) {
       SELECT e.* FROM latest_execution e WHERE e.status IN ('completed', 'failed')
         AND NOT EXISTS (SELECT 1 FROM agent_execution_events r
           WHERE r.workspace_id=${workspaceId}::uuid AND r.execution_id=e.id AND r.type='information_review')
+        AND NOT EXISTS (SELECT 1 FROM task_review_decisions r
+          WHERE r.workspace_id=${workspaceId}::uuid AND r.execution_id=e.id
+            AND (r.decision='approve' OR EXISTS (SELECT 1 FROM task_review_actions a
+              WHERE a.workspace_id=r.workspace_id AND a.review_id=r.id AND a.action='return_to_executor')))
     ), attention AS (
       SELECT 1 AS rank, d.id, 'decision'::text AS kind, d.title, 'pending'::text AS status, 'high'::text AS severity,
         NULL::timestamp AS due_date, revision.created_at AS updated_at

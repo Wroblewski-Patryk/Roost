@@ -124,6 +124,36 @@ Forms retain their idempotency key on connection failure; a stale result can be
 refreshed explicitly. Empty, loading, read-only, stale, failure and success states
 do not fabricate actionable work.
 
+## Company information task subset (G11)
+
+A company-information task has no application or Git commit. Its assigned human
+verifier may approve or reject one completed Worker result with the exact
+information-material SHA-256 seal. The accountable human manager may return a
+rejected result to the same executor with a narrower correction scope. Specialist
+creation and agent reviewer credentials remain outside this subset. The old
+owner-only `review-information` command refuses new writes; historical events
+remain readable. The existing human workspace-member `information-result` read
+remains available; the new review view, which includes role eligibility and
+decision history, is limited to the owner or assigned human verifier/manager.
+
+Review and return require separate, current operation-specific risk admissions,
+the accepted Ready pin, assigned Worker, source and role provenance, and a
+completed information execution. Both API and database check the matching
+admission/input seals and the Worker-reported Windows Job receipt, zero native
+tools, no external writes and no changed files. This is checked Worker evidence,
+not independent OS attestation or a new provider/model run. A source, role,
+ordinary status, Decision or Ready change makes a new review stale. Rejection
+alone stays visible as pending manager action; only a manager action is shown as
+returned. Approval sets a local Roost task to done, and manager return sets it
+to todo; externally sourced task status is left to its provider. Ordinary status
+edits never create approval. The append-only decision/action ledger and audit
+events retain the distinct verifier and manager actions.
+The generic execution-create route accepts only the preparation class for a
+preparation Ready pin. It cannot queue a preparation execution against a runtime
+Ready pin or hide its result. Company-information retry requires a new owner
+Decision and the owner start route; generic retry is refused. Only the owner
+may cancel a company-information execution.
+
 ## Migration and verification boundary
 
 Migrations `20260908050000` through `20260908050300` add the review records and

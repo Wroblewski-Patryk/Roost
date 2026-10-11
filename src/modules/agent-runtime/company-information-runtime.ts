@@ -1,4 +1,4 @@
-import { createHash, createPublicKey, randomUUID } from "node:crypto";
+import { createHash, createPublicKey } from "node:crypto";
 import { z } from "zod";
 import type { Prisma, PrismaClient } from "@prisma/client";
 import type { AuthContext } from "../../auth/api-key.middleware";
@@ -16,10 +16,24 @@ const wire = (v: any) => JSON.parse(JSON.stringify(v));
 const digest = async (v: any) => createHash("sha256").update((await pilot).trustedPilotBytes(v)).digest("hex");
 const hash = z.string().regex(/^[a-f0-9]{64}$/), id = z.string().uuid();
 export const isInformationRuntime = (c: any) => c?.executionClass === companyRuntimeClass;
+// Historical G6 event interpretation remains readable after the route closes.
 export function informationReviewTaskStatus(source: string | null, decision: "accept" | "return") {
   return source === "clickup" ? null : decision === "accept" ? "done" : "todo";
 }
-
+export async function informationNativeProven(db: Db, execution: any) {
+  if (!execution || execution.applicationId !== null || !isInformationRuntime((execution.metadata as any)?.executionContract)
+    || execution.status !== "completed" || !execution.completedAt || execution.contextInvalidatedAt
+    || !Array.isArray(execution.changedFiles) || execution.changedFiles.length !== 0) return false;
+  const admitted = await db.agentExecutionEvent.findFirst({ where: { workspaceId: execution.workspaceId, executionId: execution.id, type: "information_admitted" } });
+  const native: any = (execution.verification as any)?.informationRuntime, owned: any = (execution.verification as any)?.ownedTreeReceipt;
+  return !!admitted && native?.schemaVersion === "roost-company-information-runtime-verification-v1"
+    && hash.safeParse(native?.admissionDigest).success && hash.safeParse(native?.inputSeal).success
+    && native?.admissionDigest === (admitted.payload as any).admissionDigest && native?.inputSeal === (admitted.payload as any).inputSeal
+    && native?.executionId === execution.id && native?.ownedJob === true && native?.reviewRequired === true
+    && native?.externalWrites === false && Array.isArray(native?.nativeTools) && native.nativeTools.length === 0
+    && owned?.version === "roost-windows-job-v2" && owned?.attempt === execution.id
+    && owned?.cleanup === true && owned?.jobClosed === true && owned?.activeProcesses === 0 && owned?.rootExit === 0;
+}
 function managedInformationSelection(contract: any) {
   const selected = contract.modelSelection?.schemaVersion ? contract.modelSelection.modelSelection : contract.modelSelection;
   return { schemaVersion: "roost-managed-hermes-backend-v1" as const, agent: "managed_hermes" as const,
@@ -171,17 +185,14 @@ export async function informationResult(db: Db, auth: AuthContext, taskId: strin
   const sources = await db.companyRecord.findMany({ where: { workspaceId: auth.workspaceId, id: { in: contract.context.company.map((r: any) => r.id) } }, select: { id: true, title: true, updatedAt: true } });
   const materialVersion = await digest({ id: execution.id, finalResponse: execution.finalResponse, summary: execution.summary, metadata: execution.metadata, verification: execution.verification });
   const history = await db.agentExecutionEvent.findFirst({ where: { executionId: execution.id, type: "information_review" }, orderBy: { createdAt: "desc" } });
+  const roleReview = await db.taskReviewDecision.findFirst({ where: { workspaceId: auth.workspaceId, taskId, executionId: execution.id }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], include: { action: true } });
   const timeline = await db.agentExecutionEvent.findMany({ where: { workspaceId: auth.workspaceId, executionId: execution.id },
     orderBy: [{ createdAt: "asc" }, { id: "asc" }], take: 101, select: { id: true, type: true, createdAt: true } });
-  const w = await db.workspace.findUniqueOrThrow({ where: { id: auth.workspaceId } });
-  const admitted = await db.agentExecutionEvent.findFirst({ where: { executionId: execution.id, type: "information_admitted" } });
-  const native: any = (execution.verification as any)?.informationRuntime, owned: any = (execution.verification as any)?.ownedTreeReceipt;
-  const nativeProven = !!admitted && native?.admissionDigest === (admitted.payload as any).admissionDigest && native?.inputSeal === (admitted.payload as any).inputSeal
-    && native?.executionId === execution.id && native?.ownedJob === true && owned?.version === "roost-windows-job-v2" && owned?.attempt === execution.id
-    && owned?.cleanup === true && owned?.jobClosed === true && owned?.activeProcesses === 0 && owned?.rootExit === 0;
+  const nativeProven = await informationNativeProven(db, execution);
   const result = { status: execution.status, executionId: execution.id, summary: execution.summary, finalResponse: execution.finalResponse,
-    reason: (execution.errorState as any)?.code ?? null, canReview: nativeProven && execution.status === "completed" && auth.authType === "user" && auth.userId === w.ownerUserId && !history,
-    materialVersion, review: history ? { decision: (history.payload as any).decision, summary: (history.payload as any).summary } : null,
+    reason: (execution.errorState as any)?.code ?? null, canReview: false,
+    materialVersion, review: roleReview ? { decision: roleReview.decision === "approve" ? "accept" : roleReview.action?.action === "return_to_executor" ? "return" : "reject", summary: (roleReview.evidence as any)?.summary,
+      verifierId: roleReview.verifierId, managerAction: roleReview.action?.action ?? null } : history ? { decision: (history.payload as any).decision, summary: (history.payload as any).summary } : null,
     sources: sources.map(s => ({ id: s.id, title: s.title, revision: s.updatedAt.toISOString() })),
     budget: { maxAttempts: contract.budgets.maxAttempts, maxDurationSeconds: contract.budgets.maxDurationSeconds, maxOutputTokensIntent: contract.budgets.maxOutputTokens, tokenCostEnforcement: "unavailable" },
     execution: { attempt: execution.attempt, startedAt: execution.startedAt, completedAt: execution.completedAt,
@@ -194,21 +205,8 @@ export async function informationResult(db: Db, auth: AuthContext, taskId: strin
 }
 
 export async function reviewInformationResult(db: Db, auth: AuthContext, taskId: string, raw: unknown) {
-  const input = z.object({ requestId: id, executionId: id, materialVersion: hash, decision: z.enum(["accept", "return"]), summary: z.string().trim().min(3).max(2000) }).strict().parse(raw);
-  const task = await lockReadyTask(db, auth.workspaceId, taskId);
-  if (!task) return { error: "task_not_found" };
-  requireRuntimeContent(input, "owner.information_review", { workspaceId: auth.workspaceId, taskId });
-  const replay = await db.agentExecutionEvent.findFirst({ where: { workspaceId: auth.workspaceId, executionId: input.executionId, type: "information_review", payload: { path: ["requestId"], equals: input.requestId } } });
-  const requestHash = await digest({ ...input, userId: auth.userId });
-  if (replay) return (replay.payload as any).requestHash === requestHash ? { review: replay.payload, replay: true } : { error: "information_review_key_conflict" };
-  const view = await informationResult(db, auth, taskId);
-  if ("error" in view || !view.canReview) return { error: "information_review_forbidden" };
-  if (view.executionId !== input.executionId || view.materialVersion !== input.materialVersion) return { error: "information_review_stale" };
-  const event = await db.agentExecutionEvent.create({ data: { workspaceId: auth.workspaceId, executionId: input.executionId, type: "information_review", message: input.summary,
-    payload: { ...input, requestHash, actorUserId: auth.userId } } });
-  // A provider owns its task status. The Roost review event is an independent
-  // result decision and must not briefly override ClickUp before the next sync.
-  const taskStatus = informationReviewTaskStatus(task.source, input.decision);
-  if (taskStatus) await db.task.update({ where: { id: taskId }, data: { status: taskStatus } });
-  return { review: event.payload, replay: false };
+  // Historical reads remain available. New reviews use the task-role ledger.
+  // This route must not permit the former owner-event shortcut.
+  void db; void auth; void taskId; void raw;
+  return { error: "information_task_review_required" };
 }

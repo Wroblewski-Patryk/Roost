@@ -1193,7 +1193,8 @@ agentRuntimeRouter.post("/executions", asyncHandler(async (req, res) => {
     const ready = await inspectReady(tx, req.auth!.workspaceId, input.taskId);
     if (ready.error) return ready;
     const pin = ready.pin!;
-    if (company !== isCompanyInformation(pin.contract)) return { error: "task_ready_contract_mismatch" };
+    if (company ? (pin.contract as any).executionClass !== companyInformationClass : isCompanyInformation(pin.contract))
+      return { error: "task_ready_contract_mismatch" };
     const inspection=(pin.contract as any).nativeBoundary?.releaseInspection;
     const releaseSelection=(input.metadata as any).releaseVerification;
     if(inspection||releaseSelection!==undefined){
@@ -1305,6 +1306,13 @@ agentRuntimeRouter.post("/executions/:id/actions/complete", asyncHandler(async (
     if (context.error) return context;
     const current = await tx.agentExecution.findUniqueOrThrow({where:{id:existing.id}});
     const metadata=executionReportMetadata(current.metadata,input.metadata??{}) as Record<string,any>;
+    if (isInformationRuntime(metadata.executionContract)) {
+      const information = (input.verification as any)?.informationRuntime;
+      if (input.changedFiles.length !== 0 || information?.schemaVersion !== "roost-company-information-runtime-verification-v1"
+        || information?.reviewRequired !== true || information?.externalWrites !== false
+        || !Array.isArray(information?.nativeTools) || information.nativeTools.length !== 0)
+        return { error: "company_information_result_scope_invalid" };
+    }
     if(nativeBoundaryResultBlocked(input.verification, metadata.executionContract)) return {error:"native_boundary_reconciliation_required"};
     if((metadata.executionContract as any)?.nativeBoundary?.profile === "inspect-readonly"
       && (input.changedFiles.length !== 0 || !input.resultRevision
@@ -1365,6 +1373,7 @@ agentRuntimeRouter.post("/executions/:id/actions/cancelled", asyncHandler(async 
 agentRuntimeRouter.post("/executions/:id/actions/cancel", asyncHandler(async (req, res) => {
   const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId } });
   if (!existing) return sendApiError(res, 404, "agent_execution_not_found");
+  if (isCompanyInformation((existing.metadata as any)?.executionContract) && !requireWorkspaceRole(req, res, "owner")) return;
   if (["completed", "failed", "cancelled"].includes(existing.status)) return res.json({ data: existing });
   const immediate = existing.status === "queued" || Boolean(existing.contextInvalidatedAt && existing.contextStoppedAt);
   const execution = await prisma.agentExecution.update({ where: { id: existing.id }, data: { cancelRequestedAt: new Date(), ...(immediate ? { status: "cancelled", completedAt: new Date(), leaseToken: null, leaseExpiresAt: null } : {}) } });
@@ -1376,6 +1385,7 @@ agentRuntimeRouter.post("/executions/:id/actions/retry", asyncHandler(async (req
   if (!executionEnabled()) return sendApiError(res, 409, "agent_execution_disabled");
   const existing = await prisma.agentExecution.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId, status: { in: ["failed", "cancelled"] } } });
   if (!existing) return sendApiError(res, 409, "agent_execution_not_retryable");
+  if (isCompanyInformation((existing.metadata as any)?.executionContract)) return sendApiError(res, 409, "company_information_owner_decision_required");
   if ((existing.metadata as any)?.executionContract?.executionClass === "roost-fixed-effect-v1") return sendApiError(res, 409, "synthetic_task_already_spent");
   const errorState = existing.errorState as { retryable?: boolean } | null;
   if (errorState?.retryable === false) return sendApiError(res, 409, "agent_execution_requires_correction");

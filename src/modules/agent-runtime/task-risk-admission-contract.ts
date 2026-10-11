@@ -15,7 +15,7 @@ const applicationAdmissionScopeSchema = z.object({ ...command,
 export const companyInformationAdmissionScopeSchema = z.object({ ...command,
   scopeKind: z.literal("company_information"), taskType: z.literal("information"), environment: z.literal("local"),
   targetId: z.literal(null), releaseId: z.literal(null), commit: z.literal(null), destructive: z.literal(false),
-  procedureId: uuid, operations: z.array(z.enum(["decision_supersede", "runtime_execute"])).min(1).max(2)
+  procedureId: uuid, operations: z.array(z.enum(["decision_supersede", "runtime_execute", "review_decision", "return_to_executor"])).min(1).max(4)
     .refine(operations => new Set(operations).size === operations.length), rationale: text
 }).strict();
 export const admissionScopeSchema = z.union([applicationAdmissionScopeSchema, companyInformationAdmissionScopeSchema]);
