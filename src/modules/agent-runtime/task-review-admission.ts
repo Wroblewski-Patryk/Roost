@@ -13,6 +13,9 @@ export async function reviewAdmissionError(db: Prisma.TransactionClient, workspa
       JOIN agent_executions e ON e.id=d.execution_id WHERE e.id=${child.id}::uuid
       AND d.decision='approve' AND d.snapshot->'result'=task_review_material(e)) AS approved`)[0]?.approved;
     if (child?.status !== "completed" || !approved) return "task_review_specialist_pending";
+    const returned = (await db.$queryRaw<Array<{ current: boolean }>>`
+      SELECT task_specialist_return_current(${taskId}::uuid) AS current`)[0]?.current;
+    if (!returned) return "task_review_specialist_return_pending";
   }
   const correctionAction = latest?.decision === "reject" && latest.action?.action === "return_to_executor" ? latest.action :
     !latest ? await db.taskReviewAction.findUnique({ where: { childTaskId: taskId } }) : null;

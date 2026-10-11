@@ -18,12 +18,14 @@ import { TaskReviewModal } from "./task-review";
 import { TaskProcedureCompositionModal } from "./procedure-composition";
 import { TaskRiskModal } from "./task-risk";
 import { reviewMessages } from "./task-review-messages";
+import { isSpecialistOfferData, TaskSpecialistOffer, type SpecialistOfferState } from "./task-specialist-offer";
 import { canPrepareForWorker, catalogFor, companyInformationClass, companyInformationRuntimeClass, contractInput, draftFrom, fields, isCompanyInformation, runtimeInformationInput, visibleContextGroups, selectReferences, validationSections, type Draft, type FieldName, type ReadyPacket, type RefGroup } from "./task-readiness-model";
 
 export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: string; onClose: () => void; onSaved?: () => void }) {
   const { locale, t } = useLanguage();
   const tr = (key: string) => t(`ready.${key}` as MessageKey);
   const [packet, setPacket] = useState<ReadyPacket | null>(null), [draft, setDraft] = useState<Draft | null>(null);
+  const [specialistOffer, setSpecialistOffer] = useState<SpecialistOfferState>({ kind: "loading" });
   const [busy, setBusy] = useState<string | null>("loading"), [error, setError] = useState<string | null>(null);
   const [issues, setIssues] = useState<string[]>([]), [success, setSuccess] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false), [leave, setLeave] = useState(false), [expanded, setExpanded] = useState(false);
@@ -50,6 +52,15 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
     if (caught.code === "task_execution_contract_invalid") return "invalid";
     return "error.failed";
   }
+  async function loadSpecialistOffer() {
+    setSpecialistOffer({ kind: "loading" });
+    try {
+      const response = await api<{ data: Omit<Extract<SpecialistOfferState, { kind: "offer" }>, "kind"> }>(`/v1/agent-runtime/tasks/${encodeURIComponent(taskId)}/specialist-offer`, { cache: "no-store" });
+      if (mounted.current) setSpecialistOffer(isSpecialistOfferData(response.data, taskId) ? { kind: "offer", ...response.data } : { kind: "error" });
+    } catch (caught) {
+      if (mounted.current) setSpecialistOffer({ kind: caught instanceof AppApiError && caught.status === 404 ? "none" : "error" });
+    }
+  }
   async function load(applicationId?: string, preserve = false) {
     setBusy("loading"); setError(null);
     try {
@@ -66,16 +77,16 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
     }
     finally { if (mounted.current) setBusy(null); }
   }
-  useEffect(() => { mounted.current = true; void load(); return () => { mounted.current = false; }; }, [taskId]);
+  useEffect(() => { mounted.current = true; void load(); void loadSpecialistOffer(); return () => { mounted.current = false; }; }, [taskId]);
   async function submit(event: FormEvent) {
-    event.preventDefault(); if (!packet || !draft || !packet.canSubmit || packet.editor.activeExecution || busy) return;
+    event.preventDefault(); if (!packet || !draft || !packet.canSubmit || !offerAllowsSubmit || packet.editor.activeExecution || busy) return;
     setBusy("submitting"); setError(null); setIssues([]); setSuccess(null);
     try {
       const input = contractInput(packet.editor, draft), body = JSON.stringify(input);
       if (submission.current?.body !== body) submission.current = { body, requestId: crypto.randomUUID() };
       await api(`/v1/agent-runtime/tasks/${taskId}/actions/submit-for-execution`, { method: "POST", body: JSON.stringify({ ...input, requestId: submission.current!.requestId }) });
       if (!mounted.current) return;
-      submission.current = null; setDirty(false); setExpanded(false); await load(); setSuccess("accepted"); onSaved?.();
+      submission.current = null; setDirty(false); setExpanded(false); await Promise.all([load(), loadSpecialistOffer()]); setSuccess("accepted"); onSaved?.();
     } catch (caught) {
       if (!mounted.current) return;
       if (caught instanceof AppApiError && (caught.code === "task_execution_contract_invalid" || (caught.code.startsWith("task_risk_") || caught.code.startsWith("risk_admission_") || caught.code.startsWith("procedure_composition_")))) await load(packet.editor.applicationId ?? undefined, true);
@@ -90,13 +101,14 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
     catch (caught) { setError(errorCopy(caught)); } finally { setBusy(null); }
   }
   async function queue() {
-    if (!packet?.canSubmit || packet.status !== "ready" || !canPrepareForWorker(packet) || packet.editor.activeExecution || dirty || busy) return;
+    if (!packet?.canSubmit || !offerAllowsSubmit || packet.status !== "ready" || !canPrepareForWorker(packet) || packet.editor.activeExecution || dirty || busy) return;
     setBusy("queue"); setError(null);
     try { await api("/v1/agent-runtime/executions", { method: "POST", body: JSON.stringify({ taskId, ...(isCompanyInformation(packet.editor) ? { executionClass: companyInformationClass } : { applicationId: packet.editor.applicationId }) }) }); await load(); setSuccess(isCompanyInformation(packet.editor) ? "information.queued" : "queued"); onSaved?.(); }
     catch (caught) { setError(errorCopy(caught)); } finally { setBusy(null); }
   }
   if (leave) return <CcRecordEditorModal titleId="ready-discard-title" eyebrow={tr("title")} title={tr("leave")} closeLabel={tr("stay")} onClose={() => setLeave(false)} onSubmit={event => { event.preventDefault(); onClose(); }} actions={<><CcButton variant="ghost" onClick={() => setLeave(false)}>{tr("stay")}</CcButton><CcButton variant="warning" type="submit">{tr("discard")}</CcButton></>}><p>{tr("unsaved")}</p></CcRecordEditorModal>;
   const e = packet?.editor;
+  const offerAllowsSubmit = specialistOffer.kind === "none" || specialistOffer.kind === "offer" && specialistOffer.canSubmit;
   const informational = Boolean(e && isCompanyInformation(e));
   const runtimeInformation = e?.executionClass === companyInformationRuntimeClass;
   const writable = packet?.canSubmit && !e?.activeExecution;
@@ -144,11 +156,12 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
     {!informational ? <CcButton disabled={Boolean(busy)||dirty} onClick={()=>setCompositionOpen(true)}>{locale==="pl"?"Skład procedury":"Procedure composition"}</CcButton> : null}
     {!informational ? <CcButton variant="outline" disabled={Boolean(busy) || dirty} onClick={()=>setReviewOpen(true)}>{reviewMessages[locale === "pl" ? "pl" : "en"].open}</CcButton> : null}
     <CcButton className="min-h-11" onClick={close} variant="ghost" disabled={Boolean(busy && busy !== "loading")}>{tr("close")}</CcButton>
-    {packet && writable ? showForm ? <CcButton key="submit" className="min-h-11" variant="primary" type="submit" loading={busy === "submitting"} disabled={Boolean(busy) || !linksValid}>{packet.revision ? tr("resubmit") : tr("submit")}</CcButton> : <CcButton key="review" className="min-h-11" variant="primary" onClick={event => { event.preventDefault(); setExpanded(true); }}>{tr("edit")}</CcButton> : null}
+    {packet && writable ? showForm ? <CcButton key="submit" className="min-h-11" variant="primary" type="submit" loading={busy === "submitting"} disabled={Boolean(busy) || !linksValid || !offerAllowsSubmit}>{packet.revision ? tr("resubmit") : tr("submit")}</CcButton> : <CcButton key="review" className="min-h-11" variant="primary" onClick={event => { event.preventDefault(); setExpanded(true); }}>{tr("edit")}</CcButton> : null}
   </>}>
     {busy === "loading" ? <div aria-live="polite" className="grid gap-3 py-3"><p>{tr("loading")}</p><div className="skeleton h-12 w-full" /><div className="skeleton h-12 w-3/4" /></div> : null}
     {error ? <div ref={errorRef} tabIndex={-1}><CcNotice live tone="error" title={tr(error)} />{issues.length ? <ul className="mt-3 grid gap-2 text-sm list-disc pl-5">{issues.map(issue => <li key={issue}>{tr(`issue.${issue}`)}</li>)}</ul> : null}{!packet ? <CcButton onClick={() => void load()} variant="outline">{tr("retry")}</CcButton> : null}</div> : null}
     {success ? <CcNotice live tone="success" title={tr(success)} /> : null}
+    <TaskSpecialistOffer taskId={taskId} state={specialistOffer} onRefresh={loadSpecialistOffer} onSaved={() => { void load(); onSaved?.(); }} />
     {packet && e && draft ? <>
       <section aria-label={tr("title")} className="grid gap-4 border-b border-base-300 pb-4">
         <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-3"><span className={`badge ${packet.status === "ready" ? "badge-success" : "badge-warning"}`}>{tr(["ready", "draft", "needs_context", "needs_decision", "not_ready", "needs_revalidation"].includes(packet.status) ? packet.status : "needs_revalidation")}</span><span className="text-sm text-company-muted">{tr("taskStatus")}: {humanizeBusinessValue(e.task.status, undefined, locale)}</span></div><CcButton variant="outline" disabled={Boolean(busy) || !e} onClick={()=>setRiskOpen(true)}>{locale==="pl"?"Ocena ryzyka":"Risk assessment"}</CcButton><CcButton size="sm" variant="outline" disabled={Boolean(busy)} onClick={() => void load(e.applicationId ?? undefined, dirty)}>{tr("refresh")}</CcButton></div>
@@ -163,7 +176,7 @@ export function TaskReadinessModal({ taskId, onClose, onSaved }: { taskId: strin
         {!packet.canSubmit ? <CcNotice tone="info" title={tr("readOnly")} /> : e.activeExecution ? <CcNotice tone="warning" title={tr("active")} /> : !linksValid ? <CcNotice tone="warning" title={tr(informational ? "information.missingLinks" : "missingLinks")} /> : null}
         {!canPrepareForWorker(packet) ? <p className="text-sm text-company-muted">{tr(informational ? "information.preparationDisabled" : "disabled")}</p> : null}
         {dirty ? <p role="status" className="text-sm text-warning">{tr("unsaved")}</p> : null}
-        <div className="flex flex-wrap gap-2">{packet.status === "ready" && !writable ? <CcButton size="sm" variant="outline" onClick={() => setExpanded(!expanded)}>{tr("edit")}</CcButton> : null}{packet.status === "ready" && packet.canSubmit ? <CcButton size="sm" variant="outline" onClick={() => void queue()} disabled={!canPrepareForWorker(packet) || Boolean(busy) || dirty || e.activeExecution}>{tr(informational ? "information.queue" : "queue")}</CcButton> : null}<CcButton size="sm" variant="ghost" href="/areas?area=06-kadry&view=executions" onClick={event => { if (dirty) { event.preventDefault(); setError("unsaved"); } }}>{tr("runs")}</CcButton></div>
+        <div className="flex flex-wrap gap-2">{packet.status === "ready" && !writable ? <CcButton size="sm" variant="outline" onClick={() => setExpanded(!expanded)}>{tr("edit")}</CcButton> : null}{packet.status === "ready" && packet.canSubmit ? <CcButton size="sm" variant="outline" onClick={() => void queue()} disabled={!offerAllowsSubmit || !canPrepareForWorker(packet) || Boolean(busy) || dirty || e.activeExecution}>{tr(informational ? "information.queue" : "queue")}</CcButton> : null}<CcButton size="sm" variant="ghost" href="/areas?area=06-kadry&view=executions" onClick={event => { if (dirty) { event.preventDefault(); setError("unsaved"); } }}>{tr("runs")}</CcButton></div>
       </section>
       <CcField label={tr("executionClass")} hint={tr("executionClassHint")}>{({ id }) => <CcSelect id={id} disabled={!writable || Boolean(busy) || dirty} value={runtimeInformation ? companyInformationRuntimeClass : informational ? companyInformationClass : "application"} onChange={event => { requestedClass.current = event.target.value; submission.current = null; void load(); }}><option value="application">{tr("applicationTask")}</option><option value={companyInformationClass}>{tr("informationTask")}</option>{informational ? <option value={companyInformationRuntimeClass}>{locale === "pl" ? "Zadanie informacyjne — wykonanie" : "Information task — runtime"}</option> : null}</CcSelect>}</CcField>
       {informational && !runtimeInformation ? <CcNotice tone="info" title={tr("informationTask")} detail={tr("information.boundary")} /> : null}

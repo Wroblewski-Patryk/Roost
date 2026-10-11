@@ -3095,6 +3095,230 @@ test("native review records decisions and manager returns without implementation
     await assert.rejects(prisma.dependency.delete({ where: { id: savedAction.dependencyId! } }), /Foreign key constraint/);
     assert.equal((await f.post(f.submitRoute, await submissionInput(f.submitRoute, f.input, f.auth))).status, 409);
   });
+  await t.test("G15 exact specialist accepts before a separate owner child budget Submit", async () => {
+    const f = await fixture(); await f.reject();
+    const specialist = await prisma.workforceEntity.create({ data: { workspaceId: f.workspaceId, name: "Synthetic correction specialist", slug: randomUUID(),
+      type: "agent", role: "developer", skillIndex: ["javascript"], toolIndex: f.input.contract.access.tools,
+      authorityScope: f.input.contract.access.permissions } });
+    const key = await f.issue(specialist.id), specialistAuth = { "X-API-Key": key.key };
+    const actionBody = { ...await f.action("create_specialist_task"), specialist: { id: specialist.id, revision: specialist.updatedAt.toISOString() } };
+    const created = await f.post(`${f.root}/actions/review-return`, actionBody);
+    assert.equal(created.status, 200, JSON.stringify(created.body));
+    const childId = (created.body as any).data.action.childTaskId;
+    const offerRoute = `/v1/agent-runtime/tasks/${childId}/specialist-offer`;
+    const offerRead = await request(offerRoute, { headers: specialistAuth });
+    assert.equal(offerRead.status, 200, JSON.stringify(offerRead.body));
+    const offer = (offerRead.body as any).data;
+    assert.equal(offer.offer.parentTaskId, f.task.id);
+    assert.equal(offer.offer.specialistId, specialist.id);
+    assert.equal(offer.offer.status, "pending");
+    assert.equal(offer.canDecide, true);
+    assert.equal((await request(offerRoute, { headers: f.reviewerAuth })).status, 403);
+    const child = await prisma.task.findUniqueOrThrow({ where: { id: childId } });
+    const draft = structuredClone((child.executionReadiness as any).contract);
+    const submitRoute = `/v1/agent-runtime/tasks/${childId}/actions/submit-for-execution`;
+    const precondition = { requestId: randomUUID(), expectedVersion: "a".repeat(64), applicationId: f.app.id, contract: draft };
+    const pending = await f.post(submitRoute, precondition);
+    assert.equal((pending.body as any).error, "specialist_offer_pending");
+    assert.equal((await f.post(`${offerRoute}/actions/accept`, { requestId: randomUUID(), expectedVersion: offer.expectedVersion, decision: "accept" }, f.auth)).status, 403);
+    const decision = { requestId: randomUUID(), expectedVersion: offer.expectedVersion, decision: "accept" };
+    const accepted = await f.post(`${offerRoute}/actions/accept`, decision, specialistAuth);
+    assert.equal(accepted.status, 201, JSON.stringify(accepted.body));
+    assert.equal((await f.post(`${offerRoute}/actions/accept`, decision, specialistAuth)).status, 200);
+    const saved = await prisma.taskSpecialistDecision.findUniqueOrThrow({ where: { actionId: offer.offer.id } });
+    assert.equal(saved.actorCredentialId, key.id);
+    await assert.rejects(prisma.taskSpecialistDecision.update({ where: { id: saved.id }, data: { decision: "reject" } }), /task_specialist_decision_append_only/);
+    const ownerView = (await request(offerRoute, { headers: f.auth })).body as any;
+    assert.equal(ownerView.data.canSubmit, true);
+    assert.equal(ownerView.data.offer.status, "accepted");
+    assert.deepEqual(ownerView.data.offer.contract.acceptance, draft.acceptance);
+    assert.equal(((await f.post(submitRoute, { ...precondition, requestId: randomUUID(),
+      contract: { ...draft, acceptance: { ...draft.acceptance, tests: ["Run an unrelated test"] } } })).body as any).error,
+      "specialist_offer_scope_changed");
+    assert.equal(((await f.post(submitRoute, { ...precondition, requestId: randomUUID(),
+      contract: { ...draft, taskRoles: { ...draft.taskRoles, releaser: draft.taskRoles.verifier } } })).body as any).error,
+      "specialist_offer_scope_changed");
+    assert.equal((await f.post(submitRoute, { ...precondition, requestId: randomUUID(), contract: { ...draft, budgets: { ...draft.budgets, maxDurationSeconds: draft.budgets.maxDurationSeconds + 1 } } })).status, 409);
+    assert.equal((await f.post(submitRoute, { ...precondition, requestId: randomUUID() }, f.reviewerAuth)).status, 409);
+    assert.equal(await prisma.agentExecution.count({ where: { taskId: childId } }), 0);
+    // Source reviews are task-bound. The owner explicitly admits the same
+    // selected revisions to the child; parent approval never transfers access.
+    const approveChildSource = async (route: string, source: { id: string; updatedAt: Date }, sourceType?: string) => {
+      const reviewed = await f.post(route, { requestId: randomUUID(), taskId: childId,
+        ...(sourceType ? { sourceType, sourceId: source.id } : {}),
+        expectedRevision: source.updatedAt.toISOString(), action: "approve", classification: "fact",
+        provenance: "Isolated child source review", environment: "isolated_test",
+        verificationMethod: "Owner inspected the selected synthetic revision", verificationRef: "disposable-postgresql-test",
+        inclusionReason: "Exact correction task context", validUntil: new Date(Date.now() + 86400000).toISOString() });
+      assert.equal(reviewed.status, 201, JSON.stringify(reviewed.body));
+    };
+    for (const source of f.sources) await approveChildSource(`/v1/company-records/${source.id}/context-reviews`, source);
+    const procedure = (await admissionFixtureResources(f.app.id))!.procedure;
+    await approveChildSource("/v1/agent-runtime/source-reviews", procedure, "procedure");
+    draft.singleTask.measurement = { metric: "empty_input_failures", comparison: "eq", target: 0,
+      unit: "failures", method: "Run the empty parser fixture" };
+    const childInput = { applicationId: f.app.id, contract: draft };
+    handoffFixtureInputs.add(childInput);
+    const readyInput = await submissionInput(submitRoute, childInput, f.auth);
+    const ready = await f.post(submitRoute, readyInput);
+    assert.equal(ready.status, 200, JSON.stringify(ready.body));
+    assert.equal((ready.body as any).data.readiness.status, "ready");
+    const readyTask = await prisma.task.findUniqueOrThrow({ where: { id: childId } });
+    assert.equal((readyTask.executionReadiness as any).status, "ready");
+    assert.equal((readyTask.executionReadiness as any).requestedById, (await prisma.workspace.findUniqueOrThrow({ where: { id: f.workspaceId } })).ownerUserId);
+    await assert.rejects(prisma.task.update({ where: { id: childId }, data: { executionReadiness: {
+      ...(readyTask.executionReadiness as any), contract: { ...draft,
+        recovery: { ...draft.recovery, failure: "A different recovery procedure" } } } } }), /task_specialist_ready_denied/);
+    const parentProgress = ((await request(`${f.root}/review`, { headers: f.auth })).body as any).data.specialistProgress;
+    assert.deepEqual({ childTaskId: parentProgress.childTaskId, offerDecision: parentProgress.offerDecision,
+      executionStatus: parentProgress.executionStatus, returned: parentProgress.returned },
+      { childTaskId: childId, offerDecision: "accept", executionStatus: null, returned: false });
+    const pin = readyTask.executionReadiness as any, commit = "d".repeat(40);
+    // Exercise the real one-Writer claim for this accepted child without a paid
+    // provider call. The completed result below is deliberately synthetic.
+    const { ownerTicketFixture } = await import("./owner-ticket-fixture");
+    const { hashApiKey } = await import("../auth/api-key");
+    const ticketKey = (await ownerTicketFixture()).state().key;
+    await prisma.trustedProviderTicketKey.create({ data: { workspaceId: f.workspaceId, ...ticketKey } });
+    const host = await prisma.agentHost.create({ data: { workspaceId: f.workspaceId, name: "G15 bound host", slug: `g15-${randomUUID()}`,
+      platform: "win32", status: "online", lastSeenAt: new Date(), metadata: validHostMetadata(),
+      capabilities: protocol.requiredHostCapabilities, applicationSlugs: [f.app.slug] } });
+    const workerSecret = randomUUID();
+    await prisma.apiKey.create({ data: { workspaceId: f.workspaceId, name: "G15 bound Worker", keyHash: hashApiKey(workerSecret),
+      scopes: ["agent-runtime:claim"], active: true, expiresAt: new Date(Date.now() + 600000),
+      workerHostId: host.id, workerInstallationId: ticketKey.installationId, workerBindingEpoch: 1 } });
+    const workerAuth = { "X-API-Key": workerSecret, ...hostProtocolHeaders };
+    const fs = await import("node:fs/promises"), os = await import("node:os");
+    const loadESM = new Function("specifier", "return import(specifier)") as (specifier: string) => Promise<any>;
+    const writer = await loadESM(pathToFileURL(path.resolve("scripts/lib/agent-host-writer-lock.mjs")).href);
+    const temporary = await fs.mkdtemp(path.join(os.tmpdir(), "roost-g15-child-"));
+    let writerLock: any, claimed: any;
+    process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
+    try {
+      writerLock = await writer.acquireWriterLock(temporary);
+      const queued = await f.post("/v1/agent-runtime/executions", { taskId: childId });
+      assert.equal(queued.status, 201, JSON.stringify(queued.body));
+      const claim = await f.post("/v1/agent-runtime/executions/claim", { hostSlug: host.slug, sessionId: writerLock.sessionId }, workerAuth);
+      assert.equal(claim.status, 200, JSON.stringify(claim.body));
+      claimed = (claim.body as any).data;
+      assert.equal(claimed.id, (queued.body as any).data.id);
+      assert.equal(claimed.taskId, childId);
+      assert.equal(claimed.attempt, 1);
+      await writerLock.checkpoint(claimed);
+      assert.equal((await prisma.agentExecution.findUniqueOrThrow({ where: { id: claimed.id } })).status, "claimed");
+    } finally {
+      await writerLock?.release();
+      const resolved = await fs.realpath(temporary);
+      assert.equal(path.dirname(resolved), await fs.realpath(os.tmpdir()));
+      await fs.rm(resolved, { recursive: true, force: false });
+      delete process.env.ROOST_CODEX_EXECUTION_ENABLED;
+    }
+    const executionId = claimed.id;
+    const childExecution = await prisma.agentExecution.update({ where: { id: executionId }, data: {
+      status: "completed", startedAt: new Date(Date.now() - 1000), completedAt: new Date(),
+      summary: "Empty input now returns a validation message", finalResponse: "Bounded parser correction complete",
+      changedFiles: ["src/parser.ts"], verification: f.execution.verification as any, checkpointVersion: 5,
+      checkpoint: { schemaVersion: "roost-recovery-v1", stage: "effect_possible", sessionId: randomUUID(),
+        packetRevision: "a".repeat(64), workspaceDigest: "b".repeat(64), contextRevision: pin.revision },
+      metadata: { executionContract: draft, readyContextPin: { pinId: pin.pinId, revision: pin.revision,
+        compositionSeal: pin.procedureComposition.seal, riskAdmissionSeal: pin.riskAdmissionSeal,
+        riskAdmissionCommit: pin.riskAdmissionCommit }, resultRevisionReviewVersion: "1",
+        resultRevision: { schemaVersion: "roost-result-revision-v1", id: randomUUID(), executionId,
+          attempt: 1, hostId: host.id, checkpointVersion: 5, observedAt: new Date().toISOString(),
+          commit, branch: draft.singleTask.branch, workingTree: "clean" } }
+    } });
+    const reviewRoute = `/v1/agent-runtime/tasks/${childId}/review`;
+    const reviewView = await request(reviewRoute, { headers: f.reviewerAuth });
+    assert.equal(reviewView.status, 200, JSON.stringify(reviewView.body));
+    const review = (reviewView.body as any).data;
+    assert.equal(review.canReview, true, JSON.stringify(review));
+    const approved = await f.post(`/v1/agent-runtime/tasks/${childId}/actions/review`, {
+      requestId: randomUUID(), expectedVersion: review.expectedVersion, executionId: childExecution.id,
+      materialVersion: review.materialVersion, decision: "approve", reviewedCommit: commit,
+      summary: "Independent parser fixture passed", evidence: [{ kind: "test", reference: "npm test -- parser",
+        result: "Empty input returns the required message", verdict: "pass" }] }, f.reviewerAuth);
+    assert.equal(approved.status, 200, JSON.stringify(approved.body));
+    assert.equal((await prisma.$queryRaw<Array<{ current: boolean }>>`SELECT task_specialist_return_current(${f.task.id}::uuid) AS current`)[0].current, false);
+    const handoffRoute = `/v1/agent-runtime/tasks/${childId}/handoffs`;
+    const handoffView = await request(handoffRoute, { headers: specialistAuth });
+    assert.equal(handoffView.status, 200, JSON.stringify(handoffView.body));
+    const hv = (handoffView.body as any).data;
+    assert.ok(hv.source, JSON.stringify(hv));
+    const recipient = hv.recipients.find((r: any) => r.role === "accountableManager");
+    assert.ok(recipient);
+    const grantCatalog = await request(`/v1/agent-runtime/tasks/${childId}/capability-grants`, { headers: f.auth });
+    assert.equal(grantCatalog.status, 200, JSON.stringify(grantCatalog.body));
+    const catalog = (grantCatalog.body as any).data;
+    const option = catalog.options.find((o: any) => o.operation === "handoff_create" && o.credentialId === key.id
+      && o.handoff?.role === "executor" && o.handoff?.recipientRole === "accountableManager");
+    assert.ok(option, JSON.stringify(catalog));
+    const granted = await f.post(`/v1/agent-runtime/tasks/${childId}/capability-grants`, {
+      requestId: randomUUID(), expectedVersion: catalog.expectedVersion, credentialId: option.credentialId,
+      operation: "handoff_create", handoff: option.handoff, validFrom: new Date().toISOString(),
+      validUntil: new Date(Date.now() + 1800000).toISOString(), reason: "Exact child result return" });
+    assert.equal(granted.status, 201, JSON.stringify(granted.body));
+    const handoff = await f.post(handoffRoute, { requestId: randomUUID(), expectedVersion: hv.expectedVersion,
+      sourceVersion: hv.sourceVersion, senderRole: "executor", recipientRole: "accountableManager",
+      recipient: recipient.principal, supersedes: null, grantId: (granted.body as any).data.grant.id,
+      content: handoffFixtureContent() }, specialistAuth);
+    assert.equal(handoff.status, 201, JSON.stringify(handoff.body));
+    const handoffRecord = (handoff.body as any).data.record;
+    const managerView = (await request(handoffRoute, { headers: f.auth })).body as any;
+    const acceptedReturn = await f.post(`${handoffRoute}/actions/accept`, { requestId: randomUUID(),
+      expectedVersion: managerView.data.expectedVersion, handoffId: handoffRecord.id,
+      handoffVersion: handoffRecord.version, decision: "accept" });
+    assert.equal(acceptedReturn.status, 201, JSON.stringify(acceptedReturn.body));
+    assert.equal((await prisma.$queryRaw<Array<{ current: boolean }>>`SELECT task_specialist_return_current(${f.task.id}::uuid) AS current`)[0].current, true);
+    const returnedProgress = ((await request(`${f.root}/review`, { headers: f.auth })).body as any).data.specialistProgress;
+    assert.equal(returnedProgress.returned, true);
+    assert.equal(returnedProgress.handoffId, handoffRecord.id);
+  });
+  await t.test("G15 revoking the exact acceptance key fences child Ready", async () => {
+    const f = await fixture(); await f.reject();
+    const specialist = await prisma.workforceEntity.create({ data: { workspaceId: f.workspaceId,
+      name: "Synthetic revoked specialist", slug: randomUUID(), type: "agent", role: "developer", skillIndex: ["javascript"] } });
+    const key = await f.issue(specialist.id);
+    const created = await f.post(`${f.root}/actions/review-return`, { ...await f.action("create_specialist_task"),
+      specialist: { id: specialist.id, revision: specialist.updatedAt.toISOString() } });
+    assert.equal(created.status, 200, JSON.stringify(created.body));
+    const childId = (created.body as any).data.action.childTaskId;
+    const route = `/v1/agent-runtime/tasks/${childId}/specialist-offer`, specialistAuth = { "X-API-Key": key.key };
+    const offer = ((await request(route, { headers: specialistAuth })).body as any).data;
+    const accepted = await f.post(`${route}/actions/accept`, { requestId: randomUUID(), expectedVersion: offer.expectedVersion, decision: "accept" }, specialistAuth);
+    assert.equal(accepted.status, 201, JSON.stringify(accepted.body));
+    await prisma.apiKey.update({ where: { id: key.id }, data: { active: false, revokedAt: new Date() } });
+    const view = ((await request(route, { headers: f.auth })).body as any).data;
+    assert.equal(view.canSubmit, false);
+    assert.equal(view.reason, "specialist_offer_stale");
+    const child = await prisma.task.findUniqueOrThrow({ where: { id: childId } });
+    const denied = await f.post(`/v1/agent-runtime/tasks/${childId}/actions/submit-for-execution`, {
+      requestId: randomUUID(), expectedVersion: "a".repeat(64), applicationId: f.app.id,
+      contract: (child.executionReadiness as any).contract });
+    assert.equal(denied.status, 409);
+    assert.equal((denied.body as any).error, "specialist_offer_stale");
+  });
+  await t.test("G15 refusal is durable and cannot become Ready or be replaced by another specialist", async () => {
+    const f = await fixture(); await f.reject();
+    const specialist = await prisma.workforceEntity.create({ data: { workspaceId: f.workspaceId, name: "Synthetic refusing specialist", slug: randomUUID(),
+      type: "agent", role: "developer", skillIndex: ["javascript"] } });
+    const key = await f.issue(specialist.id), specialistAuth = { "X-API-Key": key.key };
+    const action = { ...await f.action("create_specialist_task"), specialist: { id: specialist.id, revision: specialist.updatedAt.toISOString() } };
+    const created = await f.post(`${f.root}/actions/review-return`, action);
+    assert.equal(created.status, 200, JSON.stringify(created.body));
+    const childId = (created.body as any).data.action.childTaskId;
+    const route = `/v1/agent-runtime/tasks/${childId}/specialist-offer`;
+    const offered = (await request(route, { headers: specialistAuth })).body as any;
+    const refused = await f.post(`${route}/actions/reject`, { requestId: randomUUID(), expectedVersion: offered.data.expectedVersion,
+      decision: "reject", reason: "The requested correction requires a different specialization" }, specialistAuth);
+    assert.equal(refused.status, 201, JSON.stringify(refused.body));
+    assert.equal(((await request(route, { headers: f.auth })).body as any).data.offer.status, "rejected");
+    const child = await prisma.task.findUniqueOrThrow({ where: { id: childId } });
+    const ready = await f.post(`/v1/agent-runtime/tasks/${childId}/actions/submit-for-execution`, { requestId: randomUUID(),
+      expectedVersion: "a".repeat(64), applicationId: f.app.id, contract: (child.executionReadiness as any).contract });
+    assert.equal((ready.body as any).error, "specialist_offer_rejected");
+    assert.equal((await f.post(`${route}/actions/accept`, { requestId: randomUUID(), expectedVersion: offered.data.expectedVersion,
+      decision: "accept" }, specialistAuth)).status, 409);
+  });
   await t.test("manager must use a current competent independent specialist and a current review", async () => {
     const f = await fixture(); await f.reject();
     const unqualified = await prisma.workforceEntity.create({ data: { workspaceId: f.workspaceId, name: "Unqualified fixture", slug: "unqualified-fixture", type: "agent", role: "designer", skillIndex: ["illustration"] } });

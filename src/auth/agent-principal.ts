@@ -13,8 +13,8 @@ export function agentPrincipalRoute(method: string, path: string) {
     || method === "POST" && /^\/agent-runtime\/releases\/[a-f0-9-]{36}\/operations(?:\/[a-f0-9-]{36}\/outcome)?$/.test(route)) return true;
   if(method==="GET"&&/^\/product-engineering\/findings\/[a-f0-9-]+$/i.test(route)||method==="POST"&&/^\/product-engineering\/findings\/[a-f0-9-]+\/actions$/i.test(route))return true;
   if (method === "GET" && /^\/decisions\/[a-f0-9-]+\/governance$/i.test(route) || method === "POST" && /^\/decisions\/[a-f0-9-]+\/governance\/actions$/i.test(route)) return true;
-  return method === "GET" && (route === "/connection" || route === "/tasks" || /^\/tasks\/[a-f0-9-]+$/i.test(route) || route === "/workforce" || /^\/agent-runtime\/tasks\/[a-f0-9-]+\/(?:review|handoffs|clarifications)$/i.test(route)) ||
-    method === "POST" && (/^\/agent-runtime\/tasks\/[a-f0-9-]+\/actions\/review(?:-return)?$/i.test(route) || /^\/agent-runtime\/tasks\/[a-f0-9-]+\/handoffs(?:\/actions\/(?:accept|reject))?$/i.test(route) || /^\/agent-runtime\/tasks\/[a-f0-9-]+\/clarifications(?:\/actions\/(?:reply|read))?$/i.test(route));
+  return method === "GET" && (route === "/connection" || route === "/tasks" || /^\/tasks\/[a-f0-9-]+$/i.test(route) || route === "/workforce" || /^\/agent-runtime\/tasks\/[a-f0-9-]+\/(?:review|handoffs|clarifications|specialist-offer)$/i.test(route)) ||
+    method === "POST" && (/^\/agent-runtime\/tasks\/[a-f0-9-]+\/actions\/review(?:-return)?$/i.test(route) || /^\/agent-runtime\/tasks\/[a-f0-9-]+\/handoffs(?:\/actions\/(?:accept|reject))?$/i.test(route) || /^\/agent-runtime\/tasks\/[a-f0-9-]+\/clarifications(?:\/actions\/(?:reply|read))?$/i.test(route) || /^\/agent-runtime\/tasks\/[a-f0-9-]+\/specialist-offer\/actions\/(?:accept|reject)$/i.test(route));
 }
 export type ReviewActor = string | AuthContext | undefined;
 export async function resolveReviewPrincipal(db: Prisma.TransactionClient, workspaceId: string, actor: ReviewActor) {
@@ -30,5 +30,6 @@ export async function resolveReviewPrincipal(db: Prisma.TransactionClient, works
   if (!key?.active || key.revokedAt || !key.expiresAt || key.expiresAt <= new Date() || key.credentialVersion !== auth.credentialVersion ||
     key.boundAgentId !== auth.agentId || worker?.workspaceId !== workspaceId || worker.type !== "agent" || worker.status !== "active" || worker.source === "user" ||
     !Array.isArray(key.scopes) || !key.scopes.includes("agent-runtime:write")) return null;
-  return { kind: "agent" as const, id: worker.id, credentialId: key.id, credentialPrefix: key.keyPrefix };
+  return { kind: "agent" as const, id: worker.id, credentialId: key.id,
+    credentialPrefix: key.keyPrefix, credentialVersion: key.credentialVersion };
 }

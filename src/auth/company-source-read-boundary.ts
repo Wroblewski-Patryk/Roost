@@ -36,6 +36,7 @@ export function ordinaryApiKeyReadAllowed(method: string, path: string, boundAge
     ||
     /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/actions\/review(?:-return)?$/.test(route)
     || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/handoffs(?:\/actions\/(?:accept|reject))?$/.test(route)
+    || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/specialist-offer\/actions\/(?:accept|reject)$/.test(route)
     || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/clarifications(?:\/actions\/(?:reply|read))?$/.test(route)
     || /^\/agent-runtime\/releases\/[a-f0-9-]{36}\/operations(?:\/[a-f0-9-]{36}\/outcome)?$/.test(route)
     || /^\/product-engineering\/findings\/[a-f0-9-]{36}\/actions$/.test(route)
@@ -47,6 +48,7 @@ export function ordinaryApiKeyReadAllowed(method: string, path: string, boundAge
     || route === "/tasks" || /^\/tasks\/[a-f0-9-]{36}$/.test(route)
     || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/review$/.test(route)
     || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/(?:handoffs|clarifications)$/.test(route)
+    || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/specialist-offer$/.test(route)
     || /^\/agent-runtime\/releases(?:\/[a-f0-9-]{36})?$/.test(route)
     || /^\/product-engineering\/findings\/[a-f0-9-]{36}$/.test(route)
     || /^\/decisions\/[a-f0-9-]{36}\/governance$/.test(route);

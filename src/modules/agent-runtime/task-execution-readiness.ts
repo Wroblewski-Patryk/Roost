@@ -9,6 +9,7 @@ import { companySourceEligible, companySourceReviews } from "./company-source-tr
 import { loadApplicationAgentContext } from "../product-engineering/application-agent-context";
 import { watchReadySources } from "./ready-source-watch";
 import { reviewAdmissionError } from "./task-review-admission";
+import { specialistOfferAdmissionError } from "./task-specialist-offer-admission";
 import { suspensionBlocks } from "./capability-suspension";
 import { riskAdmission, riskContextVersion } from "./task-risk";
 import { admissionVersion, riskLevelAdmission } from "./task-risk-admission";
@@ -67,6 +68,8 @@ export async function readyTransaction<T>(work: (tx: Prisma.TransactionClient) =
     if(compositionError)return {error:compositionError};
     const scopeError=nativeDiagnostic.match(/\btask_(?:single_scope_required|scope_split_required|scope_shared_cause_required|roles_required)\b/)?.[0];
     if(scopeError)return {error:scopeError};
+    const specialistError=nativeDiagnostic.match(/\btask_specialist_(?:offer_invalid|ready_denied|return_pending|decision_append_only)\b/)?.[0];
+    if(specialistError)return {error:specialistError};
     if (error instanceof Prisma.PrismaClientKnownRequestError && (["P2034", "P2028"].includes(error.code) ||
       error.code === "P2010" && ["40001", "40P01"].includes(String(error.meta?.code)))) {
       console.warn("Ready transaction conflict",{code:error.code,sqlstate:error.code==="P2010"?String(error.meta?.code):null,elapsedMs:Date.now()-startedAt,timeoutMs});
@@ -135,6 +138,8 @@ export async function submitReady(db: Prisma.TransactionClient, workspaceId: str
   if (await at("suspension", () => suspensionBlocks(db,workspaceId,taskId,input.applicationId,"runtime_execute",task.assignedWorkforceEntityId))) return {error:"native_capability_suspended"};
   const reviewError = await at("review_admission", () => reviewAdmissionError(db, workspaceId, taskId, input.contract));
   if (reviewError) return { error: reviewError };
+  const specialistError = await at("specialist_admission", () => specialistOfferAdmissionError(db, workspaceId, taskId, input.contract, actor));
+  if (specialistError) return { error: specialistError };
   if (!/^[a-f0-9]{64}$/.test(input.expectedVersion ?? "") || !/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(input.requestId ?? "")) return { error: "task_submission_precondition_required" };
   const requestHash = digest({ ...input, ...actor });
   const receipts = await at("prior_receipt", () => db.$queryRaw<Array<{ request_hash: string; result: any }>>`SELECT request_hash, result FROM task_execution_submissions WHERE task_id = ${taskId}::uuid AND request_id = ${input.requestId}::uuid`);
@@ -217,8 +222,10 @@ export async function inspectReady(db: Prisma.TransactionClient, workspaceId: st
   if (execution?.contextInvalidatedAt) return {error:"agent_execution_context_invalidated",readiness:{status:"needs_revalidation",reason:"context_changed"}};
   if (pin.applicationId && await suspensionBlocks(db,workspaceId,taskId,pin.applicationId,"runtime_execute",task.assignedWorkforceEntityId,null,execution?.agentHostId)) return {error:"native_capability_suspended",readiness:{status:"needs_decision",reason:"native_capability_suspended"}};
   const reviewError = await reviewAdmissionError(db, workspaceId, taskId, pin.contract);
+  const specialistError = await specialistOfferAdmissionError(db, workspaceId, taskId, pin.contract);
   if (!reviewError && isCompanyInformation(pin.contract)) return inspectCompanyPreparation(db, workspaceId, task, execution, readOnly);
   if (reviewError) return { error: reviewError, readiness: { status: "needs_decision", reason: reviewError } };
+  if (specialistError) return { error: specialistError, readiness: { status: "needs_decision", reason: specialistError } };
   if (["draft", "needs_context", "needs_decision"].includes(pin.status)) return { error: "task_ready_pin_required", readiness: { status: pin.status, reason: pin.reason ?? "ready_pin_required", issues: pin.issues ?? [] } };
   const proof = { pinId: pin.pinId, revision: pin.revision, validationRevision: pin.validation?.revision };
   if (pin.schemaVersion !== "roost-ready-context-v1" || !pin.pinId || !/^[a-f0-9]{64}$/.test(pin.revision) || pin.validation?.validator !== "execution-packet-v1" || pin.validation?.revision !== pin.revision) {

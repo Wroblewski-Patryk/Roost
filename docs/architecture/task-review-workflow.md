@@ -103,8 +103,87 @@ Correction Submit is still subject to the full packet validator and versioned
 RF-CTX-008 command. The agreed correction scope, outcome, competencies, component
 and executor cannot be silently replaced. A parent awaiting a specialist remains
 blocked until the specialist's latest completed result receives an independent
-approve decision; the parent still needs explicit revalidation/Submit. This is
-not a general dependency scheduler or an automatic continuation mechanism.
+approve decision and a current [typed return](typed-work-handoff.md) from the
+specialist to the accountable manager is accepted. The parent still needs
+explicit revalidation/Submit. This is not a general dependency scheduler or an
+automatic continuation mechanism.
+
+## Sequential specialist offer (G15)
+
+For one rejected application result, the accountable manager's immutable
+`create_specialist_task` action is the offer to its exact, currently qualified
+specialist. It creates one linked child draft. The child cannot become Ready
+until that specialist, using an active bound API credential, records one
+append-only accept receipt. A refusal is terminal for this offer; neither the
+owner nor a different specialist can replace it. The offer endpoint exposes the
+full proposed contract, correction scope, outcome and budget ceiling to the
+owner and exact specialist. It does not itself queue work or spend a budget.
+
+The accepted contract stays exact except for a measurement the owner must
+complete and budget fields the owner may narrow. Changes to any other term,
+including tests, recovery, roles, references, access or model selection,
+invalidate this one offer; they cannot be silently accepted by the existing
+receipt. Revocation, expiry or credential version change likewise invalidates
+an acceptance for Ready admission; its historical receipt remains. This first
+slice has no replacement offer on the same rejection. Only a separate
+authenticated workspace-owner Submit can approve the child's single attempt
+and bounded duration/configured output
+token count. The API and PostgreSQL Ready guard check this boundary; claim and
+Worker admission recheck current Ready. Roost does not measure provider cost or
+actual token use, and the provider may not enforce the configured output token
+setting.
+
+Parent task source reviews do not grant the specialist access to the child's
+sources. The owner must review each selected company record and procedure for
+the child task through the existing task-bound source-review routes before
+Submit. The Ready packet omits unreviewed sources, so a child missing those
+reviews remains in Needs context. No automatic source approval is copied.
+
+The child uses the existing native Worker scheduler and one-Writer constraint.
+Its latest completed result requires the assigned independent verifier's
+approval. The specialist then sends a typed handoff with outcome, changes,
+tests, limits and continuation evidence from that child result to the current
+accountable manager, who accepts it. PostgreSQL and Ready admission block the
+parent until the exact approved result and accepted handoff are current. This
+first slice is sequential; it adds no concurrent parent/child Writer and no
+general dynamic delegation.
+
+## G15 local and release evidence
+
+On 2026-10-11 the manager's one specialist correction created an immutable
+exact offer and Draft child. A bound specialist credential accepted or refused
+it once; only a separately authenticated owner Submit set the child's bounded
+single-attempt Ready after child-specific source reviews. The existing scheduler
+admitted and claimed that child through an actual Windows Writer lock in the
+disposable PostgreSQL journey. The child completion in this journey was a
+synthetic result after the real claim, followed by independent review and an
+accepted typed return. It was not a Hermes/provider execution or proof of
+actual provider tokens or cost. Parent Ready remained blocked until the latest
+approved child result and accepted current return were present.
+
+All 139 migrations applied to the disposable database. The relevant native
+review/API suite passed 29/29, including acceptance, refusal, revoked key,
+scoped source review, concurrent decisions and restart replay. The database
+and temporary role were removed. Owner Ready UI checks passed 80/80 and the
+focused specialist-offer browser test passed 1/1. Native Writer tests passed
+20/20, packet tests 76/76, and Gate 2 Worker coding/process tests passed 27
+with three fixture skips. `npm run validate`, `npm run codex:check` and
+`git diff --check` passed. Independent Security rereview
+found no remaining blocker in the inspected code/SQL after the exact-contract,
+revoked-key, former-manager-read and null-expiry fixes. No paid model,
+application repository change or production company-data write was made for
+proof. A production specialist task, actual Worker/Provider completion and a
+combined monetary limit remain unobserved.
+
+The read-only release preflight found remote `main`, public health and the
+running backend at baseline commit `954055297f60e73c145f726ccb9fcb9b98654ecf`.
+PostgreSQL was healthy on the retained named volume. The latest two G14
+migrations were finished, with zero unfinished non-rolled-back migrations. A
+read-only count found no active execution, the previous backend image was
+retained, and the VPS had 14 GB free. The last documented encrypted backup with
+isolated restore remains 2026-10-10; this check does not claim a fresh recovery
+copy of intervening production changes. No VPS cleanup or deployment occurred
+during this preflight.
 
 ## History and UI
 

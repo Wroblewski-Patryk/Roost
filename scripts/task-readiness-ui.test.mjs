@@ -59,6 +59,7 @@ try {
     const { packet } = fixture(mode); let failedRead = mode === "error", releaseRead;
     await page.route("**/v1/**", async route => {
       const url = route.request().url();
+      if (url.includes("/specialist-offer")) return route.fulfill({ status: 404, json: { error: "task_specialist_offer_not_found" } });
       if (url.includes("execution-readiness")) {
         if (failedRead) { failedRead = false; return route.fulfill({ status: 503, json: { error: "SYNTHETIC_SECRET_SERVER" } }); }
         if (mode === "loading" && !releaseRead) await new Promise(resolve => { releaseRead = resolve; });
@@ -89,6 +90,7 @@ try {
   const { f, packet } = fixture("changed"); let submitCount = 0;
   await page.route("**/v1/**", async route => {
     const url = route.request().url();
+    if (url.includes("/specialist-offer")) return route.fulfill({ status: 404, json: { error: "task_specialist_offer_not_found" } });
     if (url.includes("execution-readiness")) return route.fulfill({ json: { data: packet } });
     if (url.includes("submit-for-execution")) {
       const input = route.request().postDataJSON(); assert.deepEqual(Object.keys(input).sort(), ["applicationId", "baseBranch", "contract", "expectedVersion", "prompt", "requestId"]);
@@ -182,6 +184,7 @@ try {
     const { packet: retryPacket } = fixture("changed"); const attempts = [];
     await retryPage.route("**/v1/**", async route => {
       const url = route.request().url();
+      if (url.includes("/specialist-offer")) return route.fulfill({ status: 404, json: { error: "task_specialist_offer_not_found" } });
       if (url.includes("execution-readiness")) return route.fulfill({ json: { data: retryPacket } });
       if (url.includes("submit-for-execution")) {
         attempts.push(route.request().postDataJSON());
@@ -209,6 +212,7 @@ try {
     const { f: scopeFixture, packet: scopePacket } = fixture("changed"); let scopeSubmits = 0;
     await scopePage.route("**/v1/**", async route => {
       const url = route.request().url();
+      if (url.includes("/specialist-offer")) return route.fulfill({ status: 404, json: { error: "task_specialist_offer_not_found" } });
       if (url.includes("execution-readiness")) return route.fulfill({ json: { data: scopePacket } });
       if (url.includes("submit-for-execution")) {
         const input = route.request().postDataJSON(); scopeSubmits++;
@@ -269,6 +273,7 @@ try {
     delete rolePacket.editor.accepted.contract.taskRoles; let submissions = 0;
     await rolePage.route("**/v1/**", async route => {
       const url = route.request().url();
+      if (url.includes("/specialist-offer")) return route.fulfill({ status: 404, json: { error: "task_specialist_offer_not_found" } });
       if (url.includes("execution-readiness")) return route.fulfill({ json: { data: rolePacket } });
       if (url.includes("submit-for-execution")) {
         const input = route.request().postDataJSON(); submissions++;
@@ -330,6 +335,7 @@ try {
     let submitted=0,queued=0;const queries=[];
     await page.route('**/v1/**',async route=>{
       const url=route.request().url();
+      if(url.includes('/specialist-offer'))return route.fulfill({status:404,json:{error:'task_specialist_offer_not_found'}});
       if(url.includes('execution-readiness')) {queries.push(new URL(url).searchParams.get('executionClass'));return route.fulfill({json:{data:packet}});}
       if(url.includes('submit-for-execution')) {
         const input=route.request().postDataJSON();
@@ -373,6 +379,7 @@ try {
   const runtimeQueries=[],runtimeSubmissions=[];
   await runtimePage.route('**/v1/**',async route=>{
     const url=route.request().url();
+    if(url.includes('/specialist-offer'))return route.fulfill({status:404,json:{error:'task_specialist_offer_not_found'}});
     if(url.includes('execution-readiness')){
       const selected=new URL(url).searchParams.get('executionClass');runtimeQueries.push(selected);
       runtimePacket.editor.executionClass=selected==='roost-company-information-runtime-v1'?selected:'roost-company-information-v1';

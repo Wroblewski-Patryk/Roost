@@ -20,6 +20,7 @@ import { executionProviderRegistry, projectProvider, sanitizeProviderMetadata } 
 import { interviewView,interviewCommand } from "./task-interview";
 import { clarificationView,clarificationCommand } from "./task-clarification";
 import { taskHandoffView, handoffCommand } from "./task-handoff";
+import { specialistOfferView, decideSpecialistOffer } from "./task-specialist-offer";
 import { reviewTransaction } from "./task-capability-admission";
 import { capabilitySuspensionRouter, suspensionBlocks } from "./capability-suspension";
 import { taskCapabilityView, issueTaskCapability, revokeTaskCapability } from "./task-capability";
@@ -446,6 +447,21 @@ const handoffHandler=(action:"create"|"accept"|"reject")=>asyncHandler(async(req
 agentRuntimeRouter.post("/tasks/:id/handoffs",handoffHandler("create"));
 agentRuntimeRouter.post("/tasks/:id/handoffs/actions/accept",handoffHandler("accept"));
 agentRuntimeRouter.post("/tasks/:id/handoffs/actions/reject",handoffHandler("reject"));
+
+agentRuntimeRouter.get("/tasks/:id/specialist-offer", asyncHandler(async(req,res)=>{
+  const result=await readyTransaction(db=>specialistOfferView(db,req.auth!.workspaceId,z.string().uuid().parse(req.params.id),req.auth!));
+  if("error" in result && result.error)return sendApiError(res,result.error.endsWith("not_found")?404:403,result.error);
+  res.json({data:result});
+}));
+const specialistOfferHandler=(decision:"accept"|"reject")=>asyncHandler(async(req,res)=>{
+  if(!req.auth!.agentId)return sendApiError(res,403,"task_specialist_offer_forbidden");
+  if(req.body?.decision!==decision)return sendApiError(res,400,"task_specialist_offer_decision_mismatch");
+  const result=await reviewTransaction(db=>decideSpecialistOffer(db,req.auth!.workspaceId,z.string().uuid().parse(req.params.id),req.auth!,req.body));
+  if(result.error)return sendApiError(res,result.error.endsWith("not_found")?404:result.error.endsWith("forbidden")?403:409,result.error);
+  res.status("replayed" in result && result.replayed?200:201).json({data:result});
+});
+agentRuntimeRouter.post("/tasks/:id/specialist-offer/actions/accept",specialistOfferHandler("accept"));
+agentRuntimeRouter.post("/tasks/:id/specialist-offer/actions/reject",specialistOfferHandler("reject"));
 
 agentRuntimeRouter.get("/tasks/:id/capability-grants", asyncHandler(async (req, res) => {
   if (!requireWorkspaceRole(req, res, "admin")) return;

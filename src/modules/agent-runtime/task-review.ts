@@ -81,6 +81,27 @@ export async function taskReviewView(db: Db, workspaceId: string, taskId: string
     return { error: "task_review_forbidden" } as const;
   if (cursor && !await db.taskReviewDecision.findFirst({ where: { id: cursor, workspaceId, taskId } })) return { error: "task_review_cursor_invalid" };
   const history = await db.taskReviewDecision.findMany({ where: { workspaceId, taskId }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 51, ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}), include: { action: true } });
+  const specialistAction = s.decision?.action?.action === "create_specialist_task" ? s.decision.action : null;
+  const specialistProgress = specialistAction?.childTaskId ? await (async () => {
+    const [offer, childExecution, returned] = await Promise.all([
+      db.taskSpecialistDecision.findUnique({ where: { actionId: specialistAction.id } }),
+      db.agentExecution.findFirst({ where: { workspaceId, taskId: specialistAction.childTaskId! }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] }),
+      db.$queryRaw<Array<{ current: boolean }>>`SELECT task_specialist_return_current(${taskId}::uuid) AS current`
+    ]);
+    const handoff = returned[0]?.current ? (await db.$queryRaw<Array<{ id: string; version: number; decision_id: string }>>`
+      SELECT h.id,h.version,d.id AS decision_id FROM task_handoffs h
+      JOIN task_handoff_decisions d ON d.handoff_id=h.id AND d.decision='accept'
+      JOIN task_review_decisions r ON r.id=(h.source->'reviewDecision'->>'id')::uuid
+      WHERE h.task_id=${specialistAction.childTaskId}::uuid AND h.sender_role='executor'
+        AND h.recipient_role='accountableManager' AND h.sender=jsonb_build_object('kind','agent','id',${String(object(specialistAction.snapshot).executor?.id)})
+        AND h.recipient=${JSON.stringify(object(object(specialistAction.snapshot).manager).principal)}::jsonb
+        AND r.execution_id=h.execution_id AND r.decision='approve' AND task_handoff_current(h)
+      ORDER BY h.version DESC LIMIT 1`)[0] : null;
+    return { childTaskId: specialistAction.childTaskId, offerDecision: offer?.decision ?? "pending",
+      executionStatus: childExecution?.status ?? null, returned: Boolean(returned[0]?.current),
+      handoffId: handoff?.id ?? null, handoffVersion: handoff?.version ?? null,
+      handoffDecisionId: handoff?.decision_id ?? null };
+  })() : null;
   const grantAccess = await agentGrantAccess(db, workspaceId, taskId, s.principal);
   const blocked = async(operation:string)=>Boolean(s.execution && (!s.execution.applicationId ? !s.information || s.principal?.kind !== "user" || operation === "create_specialist_task" || Boolean((await riskLevelAdmission(db,taskId,operation)).error) : await suspensionBlocks(db,workspaceId,taskId,s.execution.applicationId,operation,s.principal?.kind==="agent"?s.principal.id:null,s.principal?.credentialId)));
   const reviewBlocked=await blocked("review_decision"), returnBlocked=await blocked("return_to_executor"), specialistBlocked=await blocked("create_specialist_task");
@@ -94,7 +115,7 @@ export async function taskReviewView(db: Db, workspaceId: string, taskId: string
     executionChronology: s.execution?.completedAt && s.materialVersion ? { schemaVersion: "roost-task-review-execution-chronology-v1",
       executionId: s.execution.id, materialVersion: s.materialVersion, completedAt: s.execution.completedAt.toISOString() } : null,
     ...await suspensionList(db,workspaceId,taskId), blockedOperations:{review_decision:reviewBlocked,return_to_executor:returnBlocked,create_specialist_task:specialistBlocked},
-    result: s.result, basisCurrent: s.basisCurrent, labels: s.labels, decision: decisionView(s.decision), approvalCommit: s.approvalCommit, approvalInformationSeal: s.information && s.informationProven ? s.materialVersion : null, informationTask: s.information, canReview: Boolean(canReview), canManage: Boolean(canManage), grantAccess, canManageGrants,
+    result: s.result, basisCurrent: s.basisCurrent, labels: s.labels, decision: decisionView(s.decision), specialistProgress, approvalCommit: s.approvalCommit, approvalInformationSeal: s.information && s.informationProven ? s.materialVersion : null, informationTask: s.information, canReview: Boolean(canReview), canManage: Boolean(canManage), grantAccess, canManageGrants,
     reason: grantAccess && (s.canReview && !canReview || s.canManage && !canManage) ? "capability_grant_required" : !s.execution ? "no_result" : !s.current && !s.manageCurrent ? "stale_result" : s.roleIssues.length ? "roles_need_context" : s.canReview || s.canManage ? null : s.decision ? s.decision.action ? "action_recorded" : s.decision.decision === "approve" ? "approved" : "manager_required" : "verifier_required",
     history: history.slice(0, 50).map(decisionView), nextCursor: history.length > 50 ? history[49]!.id : null,
     specialists: specialists.slice(0, 500).map(w => ({ id: w.id, label: w.name, revision: w.updatedAt.toISOString(), competencies: w.skillIndex, role: w.role })), specialistsTruncated: specialists.length > 500 };
@@ -168,6 +189,7 @@ export async function actOnTaskReview(db: Db, workspaceId: string, taskId: strin
   if (!executor?.role || executor.source === "user" || !Array.isArray(executor.skillIndex) || correction.competencies.some((skill: string) => !(executor.skillIndex as any[]).includes(skill)) || input.action === "create_specialist_task" && (executor.id === s.contract.assignment.agentId || executor.updatedAt.toISOString() !== input.specialist.revision)) return { error: "task_review_specialist_invalid" };
   const childTaskId = input.action === "create_specialist_task" ? randomUUID() : null;
   const targetId = childTaskId ?? taskId, draft = correctionDraft(s.contract, targetId, executor, correction);
+  if (childTaskId) draft.budgets = { ...draft.budgets, maxAttempts: 1 };
   const readiness = { status: "draft", reason: "review_correction", applicationId: s.result.applicationId, contract: draft };
   const dependencyId = childTaskId ? randomUUID() : null;
   const action = await db.taskReviewAction.create({ data: { workspaceId, taskId, reviewId: input.reviewId, requestId: input.requestId, requestHash, ...actorEvidence, capabilityGrantId: capability.grant?.id, managerId: manager!.id, action: input.action, childTaskId, dependencyId, correction,
