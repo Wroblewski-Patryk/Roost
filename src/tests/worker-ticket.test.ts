@@ -158,6 +158,9 @@ test("real auth middleware derives Worker identity; HTTP output does not leak pr
   const f = await fixture();
   let credentialWrites = 0;
   const middleware = createAuthContextMiddleware({
+    user: { findUnique: async () => ({ authVersion: 0 }) },
+    authSessionRevocation: { findUnique: async () => null },
+    ownerActionProof: { updateMany: async () => ({ count: 0 }) },
     apiKey: { findFirst: async (args: any) => args.where.OR[0].keyHash === f.credential.keyHash ? { ...f.credential, workerHost: { workspaceId: f.auth.workspaceId, status: "online" } } : null, update: async () => { credentialWrites++; return f.credential; } },
     workspaceMembership: { findUnique: async () => ({ workspaceId: f.auth.workspaceId, userId: f.auth.userId, role: "owner" }) }
   } as any);

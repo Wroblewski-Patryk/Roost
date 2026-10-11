@@ -113,7 +113,9 @@ workspacesRouter.post("/", asyncHandler(async (req, res) => {
 
   const token = createAuthToken({
     userId,
-    workspaceId: workspace.id
+    workspaceId: workspace.id,
+    authVersion: req.auth!.authVersion,
+    sessionId: req.ownerSession!.sessionId
   }, req.auth!.authenticatedAt ?? null);
 
   res.status(201).json({
@@ -168,7 +170,9 @@ workspacesRouter.post("/:id/actions/select", asyncHandler(async (req, res) => {
 
   const token = createAuthToken({
     userId,
-    workspaceId
+    workspaceId,
+    authVersion: req.auth!.authVersion,
+    sessionId: req.ownerSession!.sessionId
   }, req.auth!.authenticatedAt ?? null);
 
   res.json({

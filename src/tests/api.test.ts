@@ -2,7 +2,7 @@ import { protocol } from "../modules/agent-runtime/host-protocol";
 const hostProtocolHeaders = { "X-Roost-Host-Protocol": String(protocol.version), "X-Roost-Host-Capabilities": protocol.requiredHostCapabilities.join(",") };
 const validHostMetadata = { runnerVersion: "roost-codex-agent-host-v1", protocolVersion: protocol.version, executionMode: "supervised" };
 import { strict as assert } from "assert";
-import { randomUUID } from "node:crypto";
+import { createHmac, randomUUID } from "node:crypto";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { spawn } from "node:child_process";
 import path from "node:path";
@@ -253,6 +253,8 @@ async function resetDatabase() {
     await db.agent.deleteMany();
     await db.integrationSetting.deleteMany();
     await db.apiKey.deleteMany();
+    await db.ownerActionProof.deleteMany();
+    await db.authSessionRevocation.deleteMany();
     await db.workspaceMembership.deleteMany();
     await db.workspace.deleteMany();
     await db.user.deleteMany();
@@ -1123,6 +1125,142 @@ test("owner can update account identity and password with current-password verif
     body: JSON.stringify({ email: "account-actions-updated@example.com", password: "another-strong-password" })
   });
   assert.equal(newLogin.status, 200);
+});
+
+test("G10 stale human session keeps ordinary access and can finish one exact credential action after password confirmation", async () => {
+  const { createAuthToken } = await import("../auth/token");
+  const { digest } = await import("../auth/owner-action-proof");
+  const owner = await registerOwner("owner-reauth@example.test", "Owner Reauth Workspace");
+  const me = await request("/v1/auth/me", { headers: { Authorization: `Bearer ${owner.token}` } });
+  assert.equal(me.status, 200);
+  const userId = (me.body as any).data.userId as string;
+  const agent = await prisma.workforceEntity.create({ data: {
+    workspaceId: owner.workspace.id, type: "agent", status: "active", name: "Reauth fixture agent", slug: `reauth-${randomUUID()}`
+  } });
+  const staleToken = createAuthToken({ userId, workspaceId: owner.workspace.id, authVersion: 0 }, Math.floor(Date.now() / 1000) - 400);
+  const auth = { Authorization: `Bearer ${staleToken}` };
+  assert.equal((await request("/v1/auth/me", { headers: auth })).status, 200);
+  const path = "/v1/api-keys/agent-credentials";
+  const body = JSON.stringify({ requestId: randomUUID(), agentId: agent.id, name: "Confirmed credential", expiresAt: new Date(Date.now() + 86400000).toISOString() });
+  const command = (headers: Record<string, string> = auth, requestBody = body) => request(path, { method: "POST", headers, body: requestBody });
+  assert.equal((await command()).status, 403);
+  const proofInput = { method: "POST", path, bodyDigest: digest(body) };
+  const confirm = (password: string, headers: Record<string, string> = auth) => request("/v1/auth/reauth", {
+    method: "POST", headers, body: JSON.stringify({ ...proofInput, password })
+  });
+  assert.equal((await confirm("wrong-password")).status, 401);
+  const issued = await confirm("very-strong-password");
+  assert.equal(issued.status, 200, JSON.stringify(issued.body));
+  const proof = (issued.body as any).data.proof as string;
+  assert.equal((await command({ ...auth, "X-Owner-Action-Proof": proof }, JSON.stringify({ ...JSON.parse(body), name: "Altered" }))).status, 403);
+  assert.equal((await request(`/v1/api-keys/${randomUUID()}/actions/revoke`, { method: "POST", headers: { ...auth, "X-Owner-Action-Proof": proof }, body })).status, 403);
+  await prisma.ownerActionProof.update({ where: { proofHash: digest(proof) }, data: { expiresAt: new Date(Date.now() - 1_000) } });
+  assert.equal((await command({ ...auth, "X-Owner-Action-Proof": proof })).status, 403);
+  const validProof = ((await confirm("very-strong-password")).body as any).data.proof as string;
+  const created = await command({ ...auth, "X-Owner-Action-Proof": validProof });
+  assert.equal(created.status, 201, JSON.stringify(created.body));
+  assert.equal((await command({ ...auth, "X-Owner-Action-Proof": validProof })).status, 403);
+  assert.equal(await prisma.agentCredentialOperation.count({ where: { workspaceId: owner.workspace.id, action: "create" } }), 1);
+  const replayProof = (await confirm("very-strong-password")).body as any;
+  const replay = await command({ ...auth, "X-Owner-Action-Proof": replayProof.data.proof });
+  assert.equal(replay.status, 200);
+  assert.equal((replay.body as any).data.key, null);
+  assert.equal(await prisma.agentCredentialOperation.count({ where: { workspaceId: owner.workspace.id, action: "create" } }), 1);
+  const apiKey = await request("/v1/api-keys", { method: "POST", headers: auth, body: JSON.stringify({ name: "Agent impersonation negative", fullAccessConfirmed: true }) });
+  assert.equal(apiKey.status, 201);
+  const key = (apiKey.body as any).data.key as string;
+  assert.equal((await confirm("very-strong-password", { "X-API-Key": key })).status, 403);
+  const workerPath = "/v1/api-keys/worker-credentials/enroll";
+  const workerBody = "{}";
+  const staleWorker = await request(workerPath, { method: "POST", headers: auth, body: workerBody });
+  assert.equal((staleWorker.body as any).error, "worker_credential_forbidden");
+  const workerProofResponse = await request("/v1/auth/reauth", { method: "POST", headers: auth,
+    body: JSON.stringify({ password: "very-strong-password", method: "POST", path: workerPath, bodyDigest: digest(workerBody) }) });
+  assert.equal(workerProofResponse.status, 200);
+  const workerProof = (workerProofResponse.body as any).data.proof as string;
+  const freshWorker = await request(workerPath, { method: "POST", headers: { ...auth, "X-Owner-Action-Proof": workerProof }, body: workerBody });
+  assert.equal(freshWorker.status, 400);
+  assert.equal((freshWorker.body as any).error, "validation_error");
+  assert.equal((await request(workerPath, { method: "POST", headers: { ...auth, "X-Owner-Action-Proof": workerProof }, body: workerBody })).status, 403);
+  const createdWorkspace = await request("/v1/workspaces", { method: "POST", headers: auth,
+    body: JSON.stringify({ name: "Second G10 workspace" }) });
+  assert.equal(createdWorkspace.status, 201);
+  const createdWorkspaceToken = (createdWorkspace.body as any).data.token as string;
+  assert.ok(createdWorkspaceToken !== staleToken, "new workspace must issue a distinct token");
+  const switched = await request(`/v1/workspaces/${owner.workspace.id}/actions/select`, { method: "POST", headers: { Authorization: `Bearer ${createdWorkspaceToken}` } });
+  assert.equal(switched.status, 200);
+  const switchedToken = (switched.body as any).data.token as string;
+  const logout = await request("/v1/auth/logout", { method: "POST", headers: { Authorization: `Bearer ${switchedToken}` } });
+  assert.equal(logout.status, 200);
+  assert.equal((await request("/v1/auth/me", { headers: auth })).status, 401);
+  assert.equal((await request("/v1/auth/me", { headers: { Authorization: `Bearer ${createdWorkspaceToken}` } })).status, 401);
+  assert.equal((await request("/v1/auth/me", { headers: { Authorization: `Bearer ${switchedToken}` } })).status, 401);
+  assert.equal((await confirm("very-strong-password")).status, 401);
+  const passwordChange = await request("/v1/auth/password", { method: "POST", headers: { Authorization: `Bearer ${owner.token}` },
+    body: JSON.stringify({ currentPassword: "very-strong-password", newPassword: "different-strong-password" }) });
+  assert.equal(passwordChange.status, 200);
+  assert.equal((await request("/v1/auth/me", { headers: { Authorization: `Bearer ${owner.token}` } })).status, 401);
+  const replacement = (passwordChange.body as any).data.token as string;
+  assert.equal((await request("/v1/auth/me", { headers: { Authorization: `Bearer ${replacement}` } })).status, 200);
+});
+
+test("G10 browser preserves the prepared credential form and request ID across reauthentication", async () => {
+  const { chromium } = await import("playwright");
+  const { createAuthToken } = await import("../auth/token");
+  const owner = await registerOwner("owner-reauth-browser@example.test", "Owner Reauth Browser Workspace");
+  const me = await request("/v1/auth/me", { headers: { Authorization: `Bearer ${owner.token}` } });
+  const userId = (me.body as any).data.userId as string;
+  const agent = await prisma.workforceEntity.create({ data: {
+    workspaceId: owner.workspace.id, type: "agent", status: "active", name: "Browser reauth agent", slug: `browser-reauth-${randomUUID()}`
+  } });
+  const staleToken = createAuthToken({ userId, workspaceId: owner.workspace.id, authVersion: 0 }, Math.floor(Date.now() / 1000) - 400);
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const page = await browser.newPage({ locale: "en-US" });
+    const submitted: string[] = [];
+    page.on("request", (request) => {
+      if (request.method() === "POST" && new URL(request.url()).pathname === "/v1/api-keys/agent-credentials")
+        submitted.push(request.postData() ?? "");
+    });
+    await page.addInitScript((token) => window.sessionStorage.setItem("companycoreOwnerToken", token), staleToken);
+    await page.goto(`${baseUrl}/workspace/settings`, { waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: /Bind agent credential|Powiąż poświadczenie agenta/ }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.locator('select[name="agentId"]').selectOption(agent.id);
+    await dialog.locator('input[name="name"]').fill("Preserved browser credential");
+    await dialog.getByRole("button", { name: /Create credential|Utwórz poświadczenie/ }).click();
+    await dialog.locator('input[name="reauthPassword"]').waitFor();
+    assert.equal(await dialog.locator('input[name="name"]').inputValue(), "Preserved browser credential");
+    assert.equal(await dialog.locator('input[name="name"]').isDisabled(), true);
+    await dialog.locator('input[name="reauthPassword"]').fill("wrong-password");
+    await dialog.getByRole("button", { name: /Confirm and continue|Potwierdź i kontynuuj/ }).click();
+    await dialog.getByText(/Password confirmation failed|Potwierdzenie hasła nie powiodło się/).waitFor();
+    assert.equal(await dialog.locator('input[name="name"]').inputValue(), "Preserved browser credential");
+    await dialog.locator('input[name="reauthPassword"]').fill("very-strong-password");
+    await dialog.getByRole("button", { name: /Confirm and continue|Potwierdź i kontynuuj/ }).click();
+    await page.getByRole("dialog").getByText(/Copy this credential now|Skopiuj poświadczenie teraz/).waitFor();
+    assert.equal(submitted.length, 2);
+    assert.equal(submitted[0], submitted[1]);
+    assert.equal(await prisma.agentCredentialOperation.count({ where: { workspaceId: owner.workspace.id, action: "create" } }), 1);
+  } finally { await browser.close(); }
+});
+
+test("G10 legacy token remains valid until its selected workspace session is revoked", async () => {
+  const { digest } = await import("../auth/owner-action-proof");
+  const owner = await registerOwner("owner-legacy-session@example.test", "Legacy Session Workspace");
+  const me = await request("/v1/auth/me", { headers: { Authorization: `Bearer ${owner.token}` } });
+  const payload = { userId: (me.body as any).data.userId, workspaceId: owner.workspace.id,
+    exp: Math.floor(Date.now() / 1000) + 3600, authTime: Math.floor(Date.now() / 1000) - 400 };
+  const unsigned = `v1.${Buffer.from(JSON.stringify(payload)).toString("base64url")}`;
+  const legacy = `${unsigned}.${createHmac("sha256", env.authTokenSecret).update(unsigned).digest("base64url")}`;
+  assert.equal((await request("/v1/auth/me", { headers: { Authorization: `Bearer ${legacy}` } })).status, 200);
+  const selected = await request(`/v1/workspaces/${owner.workspace.id}/actions/select`, { method: "POST", headers: { Authorization: `Bearer ${legacy}` } });
+  assert.equal(selected.status, 200);
+  const replacement = (selected.body as any).data.token as string;
+  assert.ok(replacement !== legacy);
+  assert.equal((await request("/v1/auth/logout", { method: "POST", headers: { Authorization: `Bearer ${replacement}` } })).status, 200);
+  assert.equal((await request("/v1/auth/me", { headers: { Authorization: `Bearer ${legacy}` } })).status, 401);
+  assert.equal(await prisma.authSessionRevocation.count({ where: { sessionHash: digest(digest(legacy)) } }), 1);
 });
 
 test("workspace owner can update scoped workspace identity", async () => {

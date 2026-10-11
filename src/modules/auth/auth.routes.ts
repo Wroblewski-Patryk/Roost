@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { randomUUID } from "crypto";
+import { randomBytes, randomUUID } from "crypto";
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../db/prisma";
@@ -12,6 +12,7 @@ import { ensureLifecycleProcedureForWorkspace } from "../company-os/lifecycle-pr
 import { createWorkforceEntity } from "../workforce/workforce.service";
 import { env } from "../../config/env";
 import { hashWorkspaceInvitationToken } from "../../auth/workspace-invitation-token";
+import { digest, proofEligibleAction, proofLifetimeSeconds } from "../../auth/owner-action-proof";
 
 const registerSchema = z.object({
   email: z.string().email().transform((value) => value.toLowerCase()),
@@ -44,6 +45,13 @@ const updateProfileSchema = z.object({
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1),
   newPassword: z.string().min(12)
+}).strict();
+
+const reauthSchema = z.object({
+  password: z.string().min(1),
+  method: z.literal("POST"),
+  path: z.string().max(300),
+  bodyDigest: z.string().regex(/^[a-f0-9]{64}$/)
 }).strict();
 
 const acceptInvitationSchema = z.object({
@@ -128,7 +136,7 @@ authRouter.post("/invitations/:token/accept", asyncHandler(async (req, res) => {
     }, { source: "user", externalId: accepted.user.id });
   }
 
-  const authToken = createAuthToken({ userId: accepted.user.id, workspaceId: invitation.workspaceId });
+  const authToken = createAuthToken({ userId: accepted.user.id, workspaceId: invitation.workspaceId, authVersion: accepted.user.authVersion });
   res.json({ data: {
     token: authToken,
     user: { id: accepted.user.id, email: accepted.user.email, name: accepted.user.name },
@@ -175,7 +183,8 @@ authRouter.post("/register", asyncHandler(async (req, res) => {
 
     const token = createAuthToken({
       userId: result.user.id,
-      workspaceId: result.workspace.id
+      workspaceId: result.workspace.id,
+      authVersion: result.user.authVersion
     });
 
     await createWorkforceEntity(result.workspace.id, {
@@ -238,7 +247,8 @@ authRouter.post("/login", asyncHandler(async (req, res) => {
 
   const token = createAuthToken({
     userId: user.id,
-    workspaceId: membership.workspaceId
+    workspaceId: membership.workspaceId,
+    authVersion: user.authVersion
   });
 
   res.json({
@@ -288,6 +298,42 @@ authRouter.get("/me", requireAuthContext, asyncHandler(async (req, res) => {
   });
 }));
 
+authRouter.post("/logout", requireAuthContext, asyncHandler(async (req, res) => {
+  if (req.auth?.authType !== "user" || !req.auth.userId || !req.ownerSession) {
+    return res.status(403).json({ error: "forbidden" });
+  }
+  await prisma.authSessionRevocation.upsert({
+    where: { sessionHash: req.ownerSession.sessionHash },
+    create: { sessionHash: req.ownerSession.sessionHash, userId: req.auth.userId, expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000) },
+    update: {}
+  });
+  res.json({ data: { revoked: true } });
+}));
+
+authRouter.post("/reauth", requireAuthContext, asyncHandler(async (req, res) => {
+  if (req.auth?.authType !== "user" || !req.auth.userId || !req.ownerSession
+    || !["owner", "admin"].includes(req.auth.workspaceRole ?? "")) {
+    return res.status(403).json({ error: "forbidden" });
+  }
+  const input = reauthSchema.parse(req.body);
+  if (!proofEligibleAction(input.method, input.path)) return res.status(403).json({ error: "owner_action_forbidden" });
+  const user = await prisma.user.findUnique({ where: { id: req.auth.userId }, select: { passwordHash: true } });
+  if (!user || !(await verifyPassword(input.password, user.passwordHash))) {
+    return res.status(401).json({ error: "invalid_credentials" });
+  }
+  const now = new Date();
+  const proof = randomBytes(32).toString("base64url");
+  await prisma.ownerActionProof.deleteMany({ where: { expiresAt: { lte: now } } });
+  await prisma.ownerActionProof.create({ data: {
+    proofHash: digest(proof), tokenHash: req.ownerSession.tokenHash,
+    userId: req.auth.userId, workspaceId: req.auth.workspaceId,
+    method: input.method, path: input.path, bodyDigest: input.bodyDigest,
+    authenticatedAt: now, expiresAt: new Date(now.getTime() + proofLifetimeSeconds * 1000)
+  } });
+  res.setHeader("Cache-Control", "no-store");
+  res.json({ data: { proof, expiresAt: new Date(now.getTime() + proofLifetimeSeconds * 1000).toISOString() } });
+}));
+
 authRouter.patch("/me", requireAuthContext, asyncHandler(async (req, res) => {
   if (req.auth!.authType !== "user" || !req.auth!.userId) {
     return res.status(403).json({ error: "forbidden" });
@@ -334,9 +380,13 @@ authRouter.post("/password", requireAuthContext, asyncHandler(async (req, res) =
     return res.status(400).json({ error: "new_password_must_differ" });
   }
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { passwordHash: await hashPassword(input.newPassword) }
+  const changed = await prisma.user.updateMany({
+    where: { id: user.id, passwordHash: user.passwordHash },
+    data: { passwordHash: await hashPassword(input.newPassword), authVersion: { increment: 1 } }
   });
-  return res.json({ data: { changed: true } });
+  if (changed.count !== 1) return res.status(409).json({ error: "password_changed_concurrently" });
+  const updated = await prisma.user.findUniqueOrThrow({ where: { id: user.id }, select: { authVersion: true } });
+  const token = createAuthToken({ userId: user.id, workspaceId: req.auth!.workspaceId, authVersion: updated.authVersion });
+  res.setHeader("Cache-Control", "no-store");
+  return res.json({ data: { changed: true, token } });
 }));

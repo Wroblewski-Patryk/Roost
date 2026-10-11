@@ -181,12 +181,18 @@ export function workerCredentialCatalogHandler(db: Pick<typeof prisma, "apiKey">
 apiKeysRouter.get("/worker-credentials", asyncHandler(workerCredentialCatalogHandler()));
 apiKeysRouter.post("/agent-credentials", asyncHandler(async (req, res) => {
   if (!requireOwner(req, res)) return;
+  if (!req.auth!.authenticatedAt || req.auth!.authenticatedAt > Math.floor(Date.now() / 1000)
+    || Date.now() / 1000 - req.auth!.authenticatedAt > 300)
+    return sendApiError(res, 403, "owner_reauth_required");
   const result = await agentCredentialCommand(req.auth!.workspaceId, req.auth!.userId!, "create", null, req.body);
   if ("error" in result) return sendApiError(res, result.error === "credential_forbidden" ? 403 : 409, result.error!);
   res.status(result.replayed ? 200 : 201).json({ data: result });
 }));
 for (const action of ["rotate", "revoke"] as const) apiKeysRouter.post(`/:id/actions/${action}`, asyncHandler(async (req, res) => {
   if (!requireOwner(req, res)) return;
+  if (!req.auth!.authenticatedAt || req.auth!.authenticatedAt > Math.floor(Date.now() / 1000)
+    || Date.now() / 1000 - req.auth!.authenticatedAt > 300)
+    return sendApiError(res, 403, "owner_reauth_required");
   const id = z.string().uuid().parse(req.params.id);
   const result = await agentCredentialCommand(req.auth!.workspaceId, req.auth!.userId!, action, id, req.body);
   if ("error" in result) return sendApiError(res, result.error === "credential_forbidden" ? 403 : result.error === "credential_not_found" ? 404 : 409, result.error!);

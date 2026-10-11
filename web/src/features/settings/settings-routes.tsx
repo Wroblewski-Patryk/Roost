@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { api, AppApiError } from "../../api/client";
+import { setOwnerToken } from "../../api/auth-token";
 import { CcButton } from "../../components/cc-button";
 import { CcField } from "../../components/cc-field";
 import { CcIdentityMark, CcIdentityPicker } from "../../components/cc-identity-picker";
@@ -210,7 +211,8 @@ export function AccountSettingsRoute() {
     setError(null);
     setSuccess(null);
     try {
-      await api("/v1/auth/password", { method: "POST", body: JSON.stringify({ currentPassword, newPassword }) });
+      const response = await api<{ data: { token: string } }>("/v1/auth/password", { method: "POST", body: JSON.stringify({ currentPassword, newPassword }) });
+      setOwnerToken(response.data.token);
       setPasswordEditorOpen(false);
       setSuccess(t("account.passwordChanged"));
     } catch (reason) {

@@ -190,7 +190,7 @@ function WorkspaceControl({ activeWorkspaceId, workspaces, onSelect }: { activeW
 }
 
 export function Shell({ children, activeArea }: { children: React.ReactNode; activeArea?: string }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const pathname = typeof window === "undefined" ? "" : window.location.pathname;
   const profile = useOwnerPacket<AuthMe>("/v1/auth/me", true, t);
   const departmentCatalog = useOwnerPacket<DepartmentCatalogPacket>("/v1/departments", true, t);
@@ -202,6 +202,8 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
   const [profileAvatar, setProfileAvatar] = useState<string | null | undefined>(undefined);
   const userLabel = profileName || profile.data?.user?.name || (activeWorkspace?.role === "owner" ? t("user.admin") : t("user.account"));
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [signOutError, setSignOutError] = useState(false);
+  const [signOutBusy, setSignOutBusy] = useState(false);
   const mobileNavRef = useRef<HTMLElement>(null);
   const mobileNavTriggerRef = useRef<HTMLButtonElement>(null);
   const mobileNavCloseRef = useRef<HTMLButtonElement>(null);
@@ -354,9 +356,20 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
     }
   }
 
-  function signOut() {
-    clearOwnerToken();
-    window.location.assign("/");
+  async function signOut() {
+    if (signOutBusy) return;
+    setSignOutBusy(true); setSignOutError(false);
+    try {
+      await api("/v1/auth/logout", { method: "POST" });
+      clearOwnerToken();
+      window.location.assign("/");
+    } catch (reason) {
+      if (reason instanceof Error && reason.message === "invalid_auth_token") {
+        clearOwnerToken(); window.location.assign("/");
+      } else {
+        setSignOutError(true);
+      }
+    } finally { setSignOutBusy(false); }
   }
 
   function sidebar(mobile = false) {
@@ -377,7 +390,8 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
           <span><strong>{userLabel}</strong><small>{t("user.myAccount")}</small></span>
           <i className="ph-bold ph-caret-right" aria-hidden="true"></i>
         </a>
-        <button className="roost-sidebar-signout" onClick={signOut} type="button"><i className="ph-bold ph-sign-out" aria-hidden="true"></i><span>{t("nav.signOut")}</span></button>
+        {signOutError ? <p role="alert" className="px-4 text-sm text-error">{locale === "pl" ? "Nie udało się unieważnić sesji. Spróbuj ponownie." : "Could not revoke this session. Please retry."}</p> : null}
+        <button className="roost-sidebar-signout" onClick={() => void signOut()} disabled={signOutBusy} type="button"><i className="ph-bold ph-sign-out" aria-hidden="true"></i><span>{t("nav.signOut")}</span></button>
       </div>
     </>
   );

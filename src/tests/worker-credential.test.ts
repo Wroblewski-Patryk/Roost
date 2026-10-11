@@ -100,6 +100,9 @@ function fixture() {
     return input;
   }
   const db: any = {
+    user: { findUnique: async () => ({ authVersion: 0 }) },
+    authSessionRevocation: { findUnique: async () => null },
+    ownerActionProof: { updateMany: async () => ({ count: 0 }) },
     apiKey: { findUnique: async ({ where }: any) => state.keys.find(k => k.id === where.id) ?? null,
       findFirst: async ({ where }: any) => { const k = state.keys.find(k => k.keyHash === where.OR[0].keyHash); return k ? { ...k, workerHost: state.host.id === k.workerHostId ? state.host : null } : null; },
       update: async () => { throw Error("Worker authentication must not write outside its command"); } },

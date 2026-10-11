@@ -551,6 +551,9 @@ enum FunctionalState {
 }
 
 model User {
+  authVersion Int @default(0) @map("auth_version")
+  authSessionRevocations AuthSessionRevocation[]
+  ownerActionProofs OwnerActionProof[]
   companySourceReviews CompanySourceReview[]
   ownerTickets TrustedProviderTicket[]
   preferredLanguage String? @map("preferred_language")
@@ -577,6 +580,34 @@ model User {
   updatedAt         DateTime              @updatedAt @map("updated_at")
 
   @@map("users")
+}
+
+model AuthSessionRevocation {
+  sessionHash String @id @map("session_hash")
+  userId String @map("user_id") @db.Uuid
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  expiresAt DateTime @map("expires_at")
+  revokedAt DateTime @default(now()) @map("revoked_at")
+
+  @@index([expiresAt])
+  @@map("auth_session_revocations")
+}
+
+model OwnerActionProof {
+  proofHash String @id @map("proof_hash")
+  tokenHash String @map("token_hash")
+  userId String @map("user_id") @db.Uuid
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  workspaceId String @map("workspace_id") @db.Uuid
+  method String
+  path String
+  bodyDigest String @map("body_digest")
+  authenticatedAt DateTime @map("authenticated_at")
+  expiresAt DateTime @map("expires_at")
+  usedAt DateTime? @map("used_at")
+
+  @@index([expiresAt])
+  @@map("owner_action_proofs")
 }
 
 model Workspace {

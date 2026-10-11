@@ -5,6 +5,7 @@ import { ordinaryApiKeyReadAllowed, unboundCompanySourceRead } from "./company-s
 import { hashApiKey } from "./api-key";
 import { capabilityForRequest, hasCapability } from "./capabilities";
 import { verifyAuthToken } from "./token";
+import { digest, proofEligibleAction } from "./owner-action-proof";
 import { sendApiError } from "../middleware/api-error";
 import type { WorkspaceRole, PrismaClient } from "@prisma/client";
 import { workerCredentialRoute, workerTicketPrincipal, type WorkerTicketIdentity } from "./worker-ticket-principal";
@@ -20,6 +21,7 @@ export type AuthContext = {
   scopes?: string[];
   workspaceRole?: WorkspaceRole;
   authenticatedAt?: number;
+  authVersion?: number;
   workerTicketIdentity?: WorkerTicketIdentity;
 };
 
@@ -27,6 +29,7 @@ declare global {
   namespace Express {
     interface Request {
       auth?: AuthContext;
+      ownerSession?: { tokenHash: string; sessionId: string; sessionHash: string };
     }
   }
 }
@@ -39,13 +42,24 @@ function bearerToken(req: Request) {
   return authorization.slice("Bearer ".length).trim();
 }
 
-export function createAuthContextMiddleware(db: Pick<PrismaClient, "apiKey" | "workspaceMembership"> & Partial<Pick<PrismaClient,"agentExecution"|"agentHost">> = prisma) {
+export function createAuthContextMiddleware(db: Pick<PrismaClient, "apiKey" | "workspaceMembership" | "user" | "authSessionRevocation" | "ownerActionProof"> & Partial<Pick<PrismaClient,"agentExecution"|"agentHost">> = prisma) {
 return async function requireAuthContext(req: Request, res: Response, next: NextFunction) {
   const token = bearerToken(req);
 
   if (token) {
     const payload = verifyAuthToken(token);
     if (!payload) {
+      return sendApiError(res, 401, "invalid_auth_token");
+    }
+
+    const tokenHash = digest(token);
+    const sessionId = payload.sessionId ?? tokenHash;
+    const sessionHash = digest(sessionId);
+    const [user, revoked] = await Promise.all([
+      db.user.findUnique({ where: { id: payload.userId }, select: { authVersion: true } }),
+      db.authSessionRevocation.findUnique({ where: { sessionHash }, select: { sessionHash: true } })
+    ]);
+    if (!user || revoked || (payload.authVersion ?? 0) !== user.authVersion) {
       return sendApiError(res, 401, "invalid_auth_token");
     }
 
@@ -67,12 +81,34 @@ return async function requireAuthContext(req: Request, res: Response, next: Next
       workspaceId: payload.workspaceId,
       authType: "user",
       workspaceRole: membership.role,
-      authenticatedAt: payload.authTime
+      authenticatedAt: payload.authTime,
+      authVersion: user.authVersion
     };
+    req.ownerSession = { tokenHash, sessionId, sessionHash };
+    const proof = req.header("X-Owner-Action-Proof");
+    if (proof) {
+      const path = req.originalUrl;
+      if (!proofEligibleAction(req.method, path) || !/^[A-Za-z0-9_-]{43}$/.test(proof)) {
+        return sendApiError(res, 403, "owner_action_proof_invalid");
+      }
+      const now = new Date();
+      const proofHash = digest(proof);
+      const consumed = await db.ownerActionProof.updateMany({
+        where: { proofHash, tokenHash, userId: payload.userId, workspaceId: payload.workspaceId,
+          method: req.method, path, bodyDigest: digest(JSON.stringify(req.body ?? null)),
+          expiresAt: { gt: now }, usedAt: null },
+        data: { usedAt: now }
+      });
+      if (consumed.count !== 1) return sendApiError(res, 403, "owner_action_proof_invalid");
+      const used = await db.ownerActionProof.findUniqueOrThrow({ where: { proofHash }, select: { authenticatedAt: true } });
+      req.auth.authenticatedAt = Math.floor(used.authenticatedAt.getTime() / 1000);
+    }
     return next();
   }
 
   const apiKey = req.header("X-API-Key");
+
+  if (req.header("X-Owner-Action-Proof")) return sendApiError(res, 403, "owner_action_proof_invalid");
 
   if (!apiKey) {
     return sendApiError(res, 401, "missing_api_key");

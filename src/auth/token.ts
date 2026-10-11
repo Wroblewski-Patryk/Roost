@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 import { env } from "../config/env";
 
 type AuthTokenPayload = {
@@ -6,6 +6,8 @@ type AuthTokenPayload = {
   workspaceId: string;
   exp: number;
   authTime?: number;
+  authVersion?: number;
+  sessionId?: string;
 };
 
 const tokenVersion = "v1";
@@ -26,6 +28,7 @@ function sign(unsignedToken: string) {
 export function createAuthToken(input: Omit<AuthTokenPayload, "exp" | "authTime">, authenticatedAt: number | null = Math.floor(Date.now() / 1000)) {
   const payload: AuthTokenPayload = {
     ...input,
+    sessionId: input.sessionId ?? randomBytes(32).toString("base64url"),
     ...(authenticatedAt === null ? {} : { authTime: authenticatedAt }),
     exp: Math.floor(Date.now() / 1000) + defaultTtlSeconds
   };
@@ -55,7 +58,10 @@ export function verifyAuthToken(token: string): AuthTokenPayload | null {
 
   try {
     const payload = JSON.parse(base64UrlDecode(encodedPayload)) as AuthTokenPayload;
-    if (!payload.userId || !payload.workspaceId || payload.exp < Math.floor(Date.now() / 1000)) {
+    if (!payload.userId || !payload.workspaceId || !Number.isInteger(payload.exp)
+      || payload.exp < Math.floor(Date.now() / 1000)
+      || (payload.sessionId !== undefined && !/^(?:[A-Za-z0-9_-]{43}|[a-f0-9]{64})$/.test(payload.sessionId))
+      || (payload.authVersion !== undefined && (!Number.isInteger(payload.authVersion) || payload.authVersion < 0))) {
       return null;
     }
     return payload;
