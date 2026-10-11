@@ -3,7 +3,9 @@
 This is the canonical delivery handoff: current facts, authorized outcome
 and required end-to-end evidence for the next owner-authorized gate.
 
-**Active gate:** G19 owner-adopted company direction; approved 2026-10-12. [Scope and evidence](architecture/company-direction-g19.md).
+**Active gate:** none.
+
+G19 reached its bounded native and deployed read-only evidence on 2026-10-12. [Scope, proof and limits](architecture/company-direction-g19.md). G20 requires separate owner authorization.
 
 **G17 release:** Implementation commit `cbc20bf5` was deployed in Coolify run 6382. Native/API/UI/Security checks and read-only production smoke passed within the bounded gate. No production business-data write or paid model call was made. See [exact evidence and limits](architecture/procedure-improvement-g17.md#g17-verification-and-release).
 
