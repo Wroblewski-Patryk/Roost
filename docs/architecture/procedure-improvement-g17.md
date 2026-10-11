@@ -56,3 +56,33 @@ PL/EN owner navigation and decision, existing pins, component checks,
 recovery/disk preflight; production smoke reads exact build, migration and
 unchanged existing business rows only. A packet proves delivery of instructions,
 not semantic execution of every step by a model. G18 remains outside this gate.
+
+## G17 verification and release
+
+On 2026-10-11, the additive migration and bounded API/console integration
+published exact controlled Procedure steps, pinned the complete composition in
+Ready and a queued Worker packet, accepted one result-bound executor proposal,
+and created an independently accepted next draft without changing the active
+task pin. Accepted draft content, steps and organizational context are
+immutable. Source withdrawal, unrelated task/step, changed scope or permissions,
+self-review and active capability suspension were denied.
+
+A disposable PostgreSQL database applied all 142 migrations. The focused G17
+and adjacent composition API journeys passed 9/9, including native Worker
+claim/context read and direct-SQL forgery attempts. Procedure contract checks
+passed 14/14; PL/EN owner UI checks passed 3/3. `npm run validate`,
+`npm run codex:check` and `git diff --check` passed before release. Independent
+Security review identified five defects, all repaired; its final review found
+no remaining concrete gap.
+
+Implementation commit `cbc20bf5` was pushed to `origin/main`; Coolify
+deployment 6382 completed. Both public health endpoints returned that exact
+build and the G17 migration completed without rollback. Read-only production
+counts remained 5,223 CompanyRecords, 279 Tasks and 32 Procedures, with zero
+G17 proposals or decisions. The logged-in owner view displayed the controlled
+step fields after page refresh; an unauthenticated G17 read returned 401.
+
+No production business-data write or paid model call was made. The native packet
+proves delivery of pinned instructions, not semantic model execution of every
+step. A positive production proposal/decision was not tested. The last
+documented encrypted backup and isolated restore remain dated 2026-10-10.
