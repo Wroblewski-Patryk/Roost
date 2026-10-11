@@ -3453,6 +3453,113 @@ model TaskCapabilityUse {
   @@map("task_capability_uses")
 }
 
+// G13 company-task proposals are deliberately separate from application Findings.
+// Foreign keys and append-only guards for these scalar IDs live in the additive
+// migration; no application or provider record is fabricated for company work.
+model TaskProposalMandate {
+  id                String   @id @default(uuid()) @db.Uuid
+  workspaceId       String   @map("workspace_id") @db.Uuid
+  sourceTaskId      String   @map("source_task_id") @db.Uuid
+  sourceRecordId    String   @map("source_record_id") @db.Uuid
+  sourceReviewId    String   @map("source_review_id") @db.Uuid
+  sourceRevision    DateTime @map("source_revision")
+  sourceDigest      String   @map("source_digest")
+  agentId           String   @map("agent_id") @db.Uuid
+  credentialId      String   @map("credential_id") @db.Uuid
+  credentialVersion Int      @map("credential_version")
+  issuerUserId      String   @map("issuer_user_id") @db.Uuid
+  reason            String
+  validUntil        DateTime @map("valid_until")
+  requestId         String   @map("request_id") @db.Uuid
+  requestHash       String   @map("request_hash")
+  createdAt         DateTime @default(now()) @map("created_at")
+  @@unique([workspaceId, requestId])
+  @@index([workspaceId, sourceTaskId, createdAt])
+  @@map("task_proposal_mandates")
+}
+
+model TaskProposalMandateRevocation {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @map("workspace_id") @db.Uuid
+  mandateId   String   @unique @map("mandate_id") @db.Uuid
+  actorUserId String   @map("actor_user_id") @db.Uuid
+  reason      String
+  requestId   String   @map("request_id") @db.Uuid
+  requestHash String   @map("request_hash")
+  createdAt   DateTime @default(now()) @map("created_at")
+  @@unique([workspaceId, requestId])
+  @@map("task_proposal_mandate_revocations")
+}
+
+model TaskProposalMandateUse {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @map("workspace_id") @db.Uuid
+  mandateId   String   @unique @map("mandate_id") @db.Uuid
+  proposalId  String   @map("proposal_id") @db.Uuid
+  fingerprint String
+  createdAt   DateTime @default(now()) @map("created_at")
+  @@index([workspaceId, proposalId])
+  @@map("task_proposal_mandate_uses")
+}
+
+model TaskProposal {
+  id                String   @id @default(uuid()) @db.Uuid
+  workspaceId       String   @map("workspace_id") @db.Uuid
+  originMandateId   String   @map("origin_mandate_id") @db.Uuid
+  sourceTaskId      String   @map("source_task_id") @db.Uuid
+  sourceRecordId    String   @map("source_record_id") @db.Uuid
+  sourceReviewId    String   @map("source_review_id") @db.Uuid
+  sourceRevision    DateTime @map("source_revision")
+  sourceDigest      String   @map("source_digest")
+  authorAgentId     String   @map("author_agent_id") @db.Uuid
+  authorCredentialId String  @map("author_credential_id") @db.Uuid
+  authorCredentialVersion Int @map("author_credential_version")
+  title             String
+  outcome           String
+  category          String
+  priorityBand      String   @map("priority_band")
+  priorityRationale String   @map("priority_rationale")
+  fingerprint       String
+  createdAt         DateTime @default(now()) @map("created_at")
+  @@unique([workspaceId, fingerprint])
+  @@index([workspaceId, createdAt, id])
+  @@map("task_proposals")
+}
+
+model TaskProposalOccurrence {
+  id                String   @id @default(uuid()) @db.Uuid
+  workspaceId       String   @map("workspace_id") @db.Uuid
+  proposalId        String   @map("proposal_id") @db.Uuid
+  mandateId         String   @map("mandate_id") @db.Uuid
+  sourceReviewId    String   @map("source_review_id") @db.Uuid
+  sourceRevision    DateTime @map("source_revision")
+  actorAgentId      String   @map("actor_agent_id") @db.Uuid
+  actorCredentialId String   @map("actor_credential_id") @db.Uuid
+  requestId         String   @map("request_id") @db.Uuid
+  requestHash       String   @map("request_hash")
+  body              Json
+  createdAt         DateTime @default(now()) @map("created_at")
+  @@unique([workspaceId, requestId])
+  @@index([workspaceId, proposalId, createdAt])
+  @@map("task_proposal_occurrences")
+}
+
+model TaskProposalDecision {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @map("workspace_id") @db.Uuid
+  proposalId  String   @unique @map("proposal_id") @db.Uuid
+  actorUserId String   @map("actor_user_id") @db.Uuid
+  action      String
+  reason      String
+  taskId      String?  @unique @map("task_id") @db.Uuid
+  snapshot    Json
+  requestId   String   @map("request_id") @db.Uuid
+  requestHash String   @map("request_hash")
+  createdAt   DateTime @default(now()) @map("created_at")
+  @@unique([workspaceId, requestId])
+  @@map("task_proposal_decisions")
+}
+
 
 model NativeCapabilitySuspension {
   id String @id @default(uuid()) @db.Uuid

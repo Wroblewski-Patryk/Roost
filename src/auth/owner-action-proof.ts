@@ -19,5 +19,6 @@ export function proofEligibleAction(method: string, path: string) {
     || path === "/v1/agent-runtime/bootstrap/lifecycle"
     || path === "/v1/agent-runtime/bootstrap/v3/owner-auth"
     || path === "/v1/agent-runtime/releases"
-    || /^\/v1\/agent-runtime\/releases\/[0-9a-f-]{36}\/actions\/(?:renew|close-failed|authorize-reconciliation)$/.test(path);
+    || /^\/v1\/agent-runtime\/releases\/[0-9a-f-]{36}\/actions\/(?:renew|close-failed|authorize-reconciliation)$/.test(path)
+    || /^\/v1\/agent-runtime\/tasks\/[0-9a-f-]{36}\/proposal-mandates(?:\/[0-9a-f-]{36}\/actions\/revoke)?$/.test(path);
 }

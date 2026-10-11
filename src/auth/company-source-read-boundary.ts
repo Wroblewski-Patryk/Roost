@@ -32,6 +32,8 @@ export function ordinaryApiKeyReadAllowed(method: string, path: string, boundAge
   // commands whose handlers authenticate the bound agent against that task or
   // a separately governed release; all other commands use human auth.
   if (method !== "GET") return boundAgent && method === "POST" && (
+    /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/proposals$/.test(route)
+    ||
     /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/actions\/review(?:-return)?$/.test(route)
     || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/handoffs(?:\/actions\/(?:accept|reject))?$/.test(route)
     || /^\/agent-runtime\/tasks\/[a-f0-9-]{36}\/clarifications(?:\/actions\/(?:reply|read))?$/.test(route)

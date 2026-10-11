@@ -1,0 +1,29 @@
+# Company task proposals (G13)
+
+RF-PROD-013 and RF-CTX-008/018/021/022 govern this bounded company-only path. An agent's verified credential identifies the proposer; it does not authorize a proposal by itself. The owner issues a short-lived mandate for one existing assigned source Task, one bound credential and one currently approved CompanyRecord revision. Application-linked source tasks and application-specific records are outside this path.
+
+## Authority and source
+
+The owner selects from a bounded catalogue of current eligible tasks and reviewed sources. Issuing or revoking a mandate requires the exact-action owner password proof. The proof binds method, path, serialized request body, session, workspace and user; it is consumed before the command. A mandate pins the source review, revision and content digest, the assigned agent, credential ID/version and expiry. It cannot outlive the source review or credential, and has a maximum 24-hour window. Revocation is append-only. Issuance does not start work or make an unreviewed source available.
+
+`POST /v1/agent-runtime/tasks/:id/proposals` is the only new agent command. HTTP and MCP use the same exact path allowlist. The service checks the current bound principal, task assignment/status, credential, mandate, review and source under a serializable transaction and source fence. An unbound integration key, a different agent/task, an expired or revoked mandate, and a changed or withdrawn source are denied. The response contains a receipt, not a broad source projection. Existing `company-sources` task reads remain the source viewing path.
+
+Mandate and credential expiry stop *new submissions*. They do not retroactively erase a proposal submitted while authorized: its later acceptance is a separate owner decision against the still-current source. Acceptance needs at least one currently authorized occurrence for that exact approved review. Explicit mandate or credential revocation, changed task assignment or agent deactivation removes the affected occurrence as an acceptance basis; another valid occurrence may remain. Expired or withdrawn source review blocks all acceptance against that review.
+
+## Proposal and owner decision
+
+The proposal contains a title, one expected outcome, RF-CTX-021 category, RF-CTX-022 priority band and rationale. A workspace-scoped fingerprint of the exact approved source review, category and normalized title/outcome selects the canonical proposal. Another separately authorized occurrence of the same fingerprint is recorded without a second proposal or Task. A new approved source review may yield a new canonical proposal even when the task wording is unchanged. A mandate is single-fingerprint use. Immutable occurrences preserve who submitted each account and against which reviewed revision.
+
+Only the current workspace owner can list or inspect proposals and decide. The owner sees proposer identity, approved source provenance, category, priority rationale, duplicate occurrences, current-source state and decision history. The review version changes when another occurrence arrives. An owner may edit the proposed task fields while accepting or reject with a reason. Acceptance rechecks the source and a current authorized occurrence, creates exactly one owner-accountable `todo` Task with Draft readiness, and records an immutable decision and chosen occurrence basis in the same transaction. It creates no Worker execution, assignment, project link or Ready packet. Later execution requires the separate Submit-for-execution and complete Ready gate. Rejection creates no Task. A changed source blocks acceptance; the historical proposal remains visible.
+
+The accepted decision retains the exact seven-level proposal priority band and rationale. Its Task uses the existing editor's four-level priority: `security_data_incident_outage` maps to `critical`; `blocked_core_flow`, `wrong_result_action` and `incomplete_flow_regression` to `high`; `stability_debt` and `approved_missing_feature` to `normal`; `cosmetic_optimization` to `low`.
+
+Request IDs bind the actor, exact command and target. Identical retries return a receipt where authority is still current; conflicting reuse fails. Unique database constraints and row locks prevent concurrent duplicate decisions, mandate use or task creation. A serialization conflict requires retry with the same request ID. History tables are append-only with workspace and relationship guards. No migration seeds, resets or modifies company records.
+
+## API and UI
+
+Owner routes under `/v1/agent-runtime` are `GET /task-proposal-mandate-candidates`, `GET/POST /tasks/:id/proposal-mandates`, `POST /tasks/:id/proposal-mandates/:mandateId/actions/revoke`, `GET /task-proposals`, `GET /task-proposals/:id`, and `POST /task-proposals/:id/actions/accept|reject`. Candidate and history lists are bounded and expose truncation. The General dashboard shows issue/revoke and review in PL/EN. It uses current candidate IDs and revisions, keeps an exact request body across password confirmation, and refreshes after conflicts. It does not offer a free UUID or direct Worker start.
+
+Migration `20261011150000_company_task_proposals` is additive. Preserve the existing database volume, source reviews, credentials and authentication secrets during release. Before rolling back to an older backend, revoke live proposal mandates or verify there are none, because the older backend does not enforce this command. Preserve the additive schema and audit history; use a forward fix rather than editing an applied migration.
+
+This path is a proposal and owner triage surface, not autonomous scheduling or an independent finding-verification engine. A proposed category or priority is an assertion for owner review. No paid model call, synthetic production task or automatic agent mandate is part of deployment.

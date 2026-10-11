@@ -22,6 +22,11 @@ supplied by the caller does not grant access. Other service clients keep
 their existing scoped integration behavior; their unbound keys cannot act as a
 task verifier or manager. No installation credentials are automatically converted.
 
+G13 permits `POST /v1/agent-runtime/tasks/:id/proposals` only for the bound
+agent holding an exact, current, owner-issued [company task proposal mandate](company-task-proposals.md).
+The credential does not gain owner proposal-list or mandate-administration
+routes. Proposal submission cannot create a Ready Task or start the Worker.
+
 General API keys cannot read broad CompanyRecord-bearing routes or the source
 audit. This includes record/search/graph and task/application context views,
 source-bearing governance, event and dashboard views. Owner authentication

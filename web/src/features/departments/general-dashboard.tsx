@@ -5,6 +5,8 @@ import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
 import { formatAppDate } from "../../i18n/date-format";
 import { DashboardCommandPacket, DashboardPriorityItem } from "../../types";
+import { TaskProposalReview } from "./task-proposal-review";
+import { TaskProposalMandates } from "./task-proposal-mandates";
 
 function formattedDate(value?: string | null) {
   if (!value) return "";
@@ -174,6 +176,11 @@ export function GeneralDashboard() {
                 {showAllAttention && hasMoreAttention ? <button className="roost-attention-toggle" type="button" disabled={loadingMore} onClick={() => void loadMoreAttention()}>{loadingMore ? t("table.loading.title") : t("general.attention.loadMore")}</button> : null}
                 {moreError ? <CcNotice live tone="error" title={t("general.attention.moreError")} action={<button className="roost-attention-toggle" type="button" onClick={() => void loadMoreAttention()}>{t("general.attention.retry")}</button>} /> : null}
               </section>
+
+              <div className="grid gap-4">
+                <TaskProposalReview />
+                <TaskProposalMandates />
+              </div>
 
               {pulseMetrics.length ? <section className="roost-company-pulse" aria-labelledby="company-pulse-heading">
                 <header><h2 id="company-pulse-heading">{t("general.companyPulse")}</h2><span><i aria-hidden="true"></i>{t("general.live")}</span></header>

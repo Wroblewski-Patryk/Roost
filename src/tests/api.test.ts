@@ -36,8 +36,10 @@ import { registerOwnerTicketDatabaseTests } from "./owner-ticket-api";
 import { registerWorkerCredentialDatabaseTests } from "./worker-credential-api";
 import { registerWorkerHandoffDatabaseTests } from "./worker-handoff-api";
 import { registerReleaseRenewalTests } from "./governed-release-renewal-api";
+import { registerTaskProposalTests } from "./task-proposal-api";
 
 registerFindingTests({request,registerOwner,prepareReviewFixture,decisionFixtureProposal,decisionFixtureProof,refreshCompositionRisk,submissionInput});
+registerTaskProposalTests({ request, registerOwner });
 registerOwnerTicketDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof });
 registerOwnerTicketDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, prepareAdmissionFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof }, true);
 registerWorkerCredentialDatabaseTests({ request, registerOwner, prepareReadyFixture, prepareRiskFixture, submissionInput, decisionFixtureProposal, decisionFixtureProof, refreshCompositionRisk });
@@ -161,6 +163,7 @@ async function resetDatabase() {
       assert.match(guard.triggerName, /^[a-z_][a-z0-9_]*$/);
       await db.$executeRawUnsafe(`ALTER TABLE ${guard.tableName} DISABLE TRIGGER ${guard.triggerName}`);
     }
+    await db.$executeRawUnsafe("TRUNCATE task_proposal_decisions, task_proposal_occurrences, task_proposal_mandate_uses, task_proposals, task_proposal_mandate_revocations, task_proposal_mandates CASCADE");
     await db.$executeRawUnsafe("TRUNCATE task_review_actions, task_review_decisions, agent_credential_operations, api_keys, events CASCADE");
     await db.agentExecutionEvent.deleteMany();
     await db.agentExecution.deleteMany();

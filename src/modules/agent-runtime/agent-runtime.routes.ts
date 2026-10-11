@@ -2,6 +2,7 @@ import { nativeBoundaryResultBlocked } from "./task-review-contract";
 import { retryContextRead } from "./context-read-retry";
 import { completedResultBasisView, revalidateCompletedResultBasis, completedReadonlyAuditNativeProven } from "./completed-result-basis";
 import { governedReleaseRouter } from "./governed-release.routes";
+import { taskProposalRouter } from "./task-proposal.routes";
 import { releaseInspectionView } from "./governed-release";
 import { ownerTicketHandler } from "./owner-ticket-http";
 import { managedAdmission, managedAdmissionSignerFromEnvironment } from "./managed-admission";
@@ -196,6 +197,7 @@ async function applicationForTask(workspaceId: string, taskId: string, requested
 
 export const agentRuntimeRouter = Router();
 agentRuntimeRouter.use("/releases", governedReleaseRouter);
+agentRuntimeRouter.use(taskProposalRouter);
 agentRuntimeRouter.post('/bootstrap/installation',asyncHandler(async(req,res)=>{
   res.setHeader('Cache-Control','no-store');
   if(process.env.NODE_ENV==='production'&&req.header('x-forwarded-proto')!=='https')
